@@ -151,7 +151,7 @@
       <file leaf-file-name="InputFilesPanel.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/InputFilesPanel.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="121" column="69" selection-start="3909" selection-end="3909" vertical-scroll-proportion="0.4377432">
+            <state line="121" column="69" selection-start="3909" selection-end="3909" vertical-scroll-proportion="0.4368932">
               <folding />
             </state>
           </provider>
@@ -160,7 +160,7 @@
       <file leaf-file-name="GSEAResultFileReader.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/GSEAResultFileReader.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="13" column="13" selection-start="254" selection-end="254" vertical-scroll-proportion="-0.92607003">
+            <state line="13" column="13" selection-start="254" selection-end="254" vertical-scroll-proportion="-0.9242718">
               <folding />
             </state>
           </provider>
@@ -169,7 +169,7 @@
       <file leaf-file-name="InitializeGenesetsOfInterest.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/InitializeGenesetsOfInterest.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="124" column="0" selection-start="5610" selection-end="5610" vertical-scroll-proportion="0.807393">
+            <state line="124" column="0" selection-start="5610" selection-end="5610" vertical-scroll-proportion="0.80582523">
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -180,7 +180,7 @@
       <file leaf-file-name="TaskWrapper.class" pinned="false" current="false" current-in-tab="false">
         <entry file="jar://C:/Program Files/cytoscape-v2.6.1/lib/cytoscape-task.jar!/cytoscape/task/util/TaskWrapper.class">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="11" column="0" selection-start="369" selection-end="369" vertical-scroll-proportion="0.32136106">
+            <state line="11" column="0" selection-start="369" selection-end="369" vertical-scroll-proportion="0.3207547">
               <folding />
             </state>
           </provider>
@@ -189,7 +189,7 @@
       <file leaf-file-name="Thread.java" pinned="false" current="false" current-in-tab="false">
         <entry file="jar://C:/Program Files/Java/jdk1.5.0_06/src.zip!/java/lang/Thread.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="603" column="0" selection-start="23328" selection-end="23328" vertical-scroll-proportion="0.2911153">
+            <state line="603" column="0" selection-start="23328" selection-end="23328" vertical-scroll-proportion="0.29056603">
               <folding />
             </state>
           </provider>
@@ -198,7 +198,7 @@
       <file leaf-file-name="ComputeSimilarity.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/ComputeSimilarity.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="45" column="0" selection-start="1101" selection-end="1101" vertical-scroll-proportion="0.09143969">
+            <state line="45" column="0" selection-start="1101" selection-end="1101" vertical-scroll-proportion="0.09126214">
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -209,7 +209,7 @@
       <file leaf-file-name="BuildEnrichmentMap.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/BuildEnrichmentMap.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="126" column="65" selection-start="6211" selection-end="6211" vertical-scroll-proportion="2.1186771">
+            <state line="126" column="65" selection-start="6211" selection-end="6211" vertical-scroll-proportion="2.114563">
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -220,7 +220,7 @@
       <file leaf-file-name="GSEAResult.java" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/GSEAResult.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="27" column="56" selection-start="745" selection-end="745" vertical-scroll-proportion="0.7937743">
+            <state line="27" column="56" selection-start="745" selection-end="745" vertical-scroll-proportion="0.792233">
               <folding />
             </state>
           </provider>
@@ -229,7 +229,7 @@
       <file leaf-file-name="BuildEnrichmentMapActionListener.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/BuildEnrichmentMapActionListener.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="90" column="0" selection-start="2603" selection-end="2603" vertical-scroll-proportion="1.7859923">
+            <state line="90" column="0" selection-start="2603" selection-end="2603" vertical-scroll-proportion="1.7825242">
               <folding />
             </state>
           </provider>
@@ -238,7 +238,7 @@
       <file leaf-file-name="GeneSet.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/GeneSet.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="17" column="13" selection-start="257" selection-end="257" vertical-scroll-proportion="0.12665406">
+            <state line="17" column="13" selection-start="257" selection-end="257" vertical-scroll-proportion="0.12641509">
               <folding />
             </state>
           </provider>
@@ -521,20 +521,20 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-4" y="-4" width="1288" height="998" extended-state="6" />
-    <editor active="true" />
+    <editor active="false" />
     <layout>
       <window_info id="CVS" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.33" order="8" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.33" order="7" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="docked" type="docked" visible="true" weight="0.30987054" order="0" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.3275862" order="1" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.25" order="1" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.3218391" order="8" />
+      <window_info id="Messages" active="true" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="true" weight="0.3218391" order="8" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.4" order="6" />
       <window_info id="Module Dependencies" active="false" anchor="right" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.33" order="3" />
       <window_info id="Dependency Viewer" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.33" order="8" />
       <window_info id="Favorites" active="false" anchor="right" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.33" order="3" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.25" order="1" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="true" weight="0.3229885" order="2" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.3229885" order="2" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.24939272" order="2" />
       <window_info id="File View" active="false" anchor="right" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.33" order="3" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.39770114" order="4" />
@@ -654,21 +654,21 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/GeneSet.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="17" column="13" selection-start="257" selection-end="257" vertical-scroll-proportion="0.12665406">
+        <state line="17" column="13" selection-start="257" selection-end="257" vertical-scroll-proportion="0.12641509">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/BuildEnrichmentMapActionListener.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="90" column="0" selection-start="2603" selection-end="2603" vertical-scroll-proportion="1.7859923">
+        <state line="90" column="0" selection-start="2603" selection-end="2603" vertical-scroll-proportion="1.7825242">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/BuildEnrichmentMap.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="126" column="65" selection-start="6211" selection-end="6211" vertical-scroll-proportion="2.1186771">
+        <state line="126" column="65" selection-start="6211" selection-end="6211" vertical-scroll-proportion="2.114563">
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
@@ -677,21 +677,21 @@
     </entry>
     <entry file="jar://C:/Program Files/cytoscape-v2.6.1/lib/cytoscape-task.jar!/cytoscape/task/util/TaskWrapper.class">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="11" column="0" selection-start="369" selection-end="369" vertical-scroll-proportion="0.32136106">
+        <state line="11" column="0" selection-start="369" selection-end="369" vertical-scroll-proportion="0.3207547">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="jar://C:/Program Files/Java/jdk1.5.0_06/src.zip!/java/lang/Thread.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="603" column="0" selection-start="23328" selection-end="23328" vertical-scroll-proportion="0.2911153">
+        <state line="603" column="0" selection-start="23328" selection-end="23328" vertical-scroll-proportion="0.29056603">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/ComputeSimilarity.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="45" column="0" selection-start="1101" selection-end="1101" vertical-scroll-proportion="0.09143969">
+        <state line="45" column="0" selection-start="1101" selection-end="1101" vertical-scroll-proportion="0.09126214">
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
@@ -700,7 +700,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/InitializeGenesetsOfInterest.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="124" column="0" selection-start="5610" selection-end="5610" vertical-scroll-proportion="0.807393">
+        <state line="124" column="0" selection-start="5610" selection-end="5610" vertical-scroll-proportion="0.80582523">
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
@@ -709,21 +709,21 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/InputFilesPanel.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="121" column="69" selection-start="3909" selection-end="3909" vertical-scroll-proportion="0.4377432">
+        <state line="121" column="69" selection-start="3909" selection-end="3909" vertical-scroll-proportion="0.4368932">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/GSEAResultFileReader.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="13" column="13" selection-start="254" selection-end="254" vertical-scroll-proportion="-0.92607003">
+        <state line="13" column="13" selection-start="254" selection-end="254" vertical-scroll-proportion="-0.9242718">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/GSEAResult.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="27" column="56" selection-start="745" selection-end="745" vertical-scroll-proportion="0.7937743">
+        <state line="27" column="56" selection-start="745" selection-end="745" vertical-scroll-proportion="0.792233">
           <folding />
         </state>
       </provider>
