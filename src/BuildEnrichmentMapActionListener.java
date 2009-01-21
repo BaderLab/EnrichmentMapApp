@@ -29,6 +29,8 @@ public class BuildEnrichmentMapActionListener implements ActionListener {
 
         GMTFileReader gmtFile;
         GSEAResultFileReader gseaResultsFiles;
+        GCTFileReader gctFile;
+
 
         //set the pvalue, qvalue, and jaccardCurOff
         double pvalue = this.inputPanel.getPvalue();
@@ -73,16 +75,37 @@ public class BuildEnrichmentMapActionListener implements ActionListener {
 
         }
 
+        //Load in the GCT file
+        try{
+            //Load the GSEA geneset file
+            gctFile = new GCTFileReader(params);
+            boolean success = TaskManager.executeTask(gctFile, config);
+
+
+        } catch(Exception e){
+            JOptionPane.showMessageDialog(inputPanel,"unable to load GSEA DATA (.GCT) file");
+
+        }
+
+        //trim the genesets to only contain the genes that are in the data file.
+        params.filterGenesets();
+
         try{
             //Load the GSEA result files
-            //UP
-            GSEAResultFileReader gseaResultsFilesUP = new GSEAResultFileReader(params, params.getGSEAUpFileName());
-            boolean success1 = TaskManager.executeTask(gseaResultsFilesUP, config);
+            //Dataset1 (each dataset should have two files.)
+            GSEAResultFileReader gseaResultsFilesDataset1File1 = new GSEAResultFileReader(params, params.getGSEADataset1FileName1(), 1);
+            boolean success1a = TaskManager.executeTask(gseaResultsFilesDataset1File1, config);
+            GSEAResultFileReader gseaResultsFilesDataset1File2 = new GSEAResultFileReader(params, params.getGSEADataset1FileName2(), 1);
+            boolean success1b = TaskManager.executeTask(gseaResultsFilesDataset1File2, config);
 
-            //Down
-            GSEAResultFileReader gseaResultsFilesDOWN = new GSEAResultFileReader(params, params.getGSEADownFileName());
-            boolean success2 = TaskManager.executeTask(gseaResultsFilesDOWN, config);
-
+            //Load the second dataset only if there is a second dataset to load
+            if (params.isTwoDatasets()){
+                //Dataset2
+                GSEAResultFileReader gseaResultsFilesDataset2File1 = new GSEAResultFileReader(params, params.getGSEADataset2FileName1(), 2);
+                boolean success2a = TaskManager.executeTask(gseaResultsFilesDataset2File1, config);
+                GSEAResultFileReader gseaResultsFilesDataset2File2 = new GSEAResultFileReader(params, params.getGSEADataset2FileName2(), 2);
+                boolean success2b = TaskManager.executeTask(gseaResultsFilesDataset2File2, config);
+            }
 
             //Initialize the set of genesets and GSEA results that we want to compute over
             InitializeGenesetsOfInterest genesets_init = new InitializeGenesetsOfInterest(params);

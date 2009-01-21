@@ -40,14 +40,13 @@ public class ComputeSimilarity implements Task {
         try{
 
 
-            HashMap GSEAResultsOfInterest = params.getGseaResultsOfInterest();
             HashMap genesetsOfInterest = params.getGenesetsOfInterest();
 
             int currentProgress = 0;
-            int maxValue = GSEAResultsOfInterest.size();
+            int maxValue = genesetsOfInterest.size();
 
             //iterate through the each of the GSEA Results of interest
-            for(Iterator i = GSEAResultsOfInterest.keySet().iterator(); i.hasNext(); ){
+            for(Iterator i = genesetsOfInterest.keySet().iterator(); i.hasNext(); ){
 
                  // Calculate Percentage.  This must be a value between 0..100.
                 int percentComplete = (int) (((double) currentProgress / maxValue) * 100);
@@ -55,7 +54,7 @@ public class ComputeSimilarity implements Task {
                 long timeRemaining = maxValue - currentProgress;
                 if (taskMonitor != null) {
                    taskMonitor.setPercentCompleted(percentComplete);
-                   taskMonitor.setStatus("Parsing GMT file " + currentProgress + " of " + maxValue);
+                   taskMonitor.setStatus("Computing Geneset similirity " + currentProgress + " of " + maxValue);
                    taskMonitor.setEstimatedTimeRemaining(timeRemaining);
                 }
                 currentProgress++;
@@ -63,7 +62,7 @@ public class ComputeSimilarity implements Task {
                 String geneset1_name = i.next().toString();
 
                 //for each individual geneset compute its jaccard index with all other genesets
-                 for(Iterator j = GSEAResultsOfInterest.keySet().iterator(); j.hasNext(); ){
+                 for(Iterator j = genesetsOfInterest.keySet().iterator(); j.hasNext(); ){
 
                     String geneset2_name = j.next().toString();
 

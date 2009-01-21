@@ -79,6 +79,21 @@
     <disable_hints />
   </component>
   <component name="DebuggerManager">
+    <line_breakpoints>
+      <breakpoint url="file://$PROJECT_DIR$/src/ComputeSimilarity.java" line="42" class="ComputeSimilarity" package="">
+        <option name="ENABLED" value="true" />
+        <option name="SUSPEND_POLICY" value="SuspendAll" />
+        <option name="LOG_ENABLED" value="false" />
+        <option name="LOG_EXPRESSION_ENABLED" value="false" />
+        <option name="COUNT_FILTER_ENABLED" value="false" />
+        <option name="COUNT_FILTER" value="0" />
+        <option name="CONDITION_ENABLED" value="false" />
+        <option name="CLASS_FILTERS_ENABLED" value="false" />
+        <option name="INSTANCE_FILTERS_ENABLED" value="false" />
+        <option name="CONDITION" value="" />
+        <option name="LOG_MESSAGE" value="" />
+      </breakpoint>
+    </line_breakpoints>
     <breakpoint_any>
       <breakpoint>
         <option name="NOTIFY_CAUGHT" value="true" />
@@ -133,50 +148,19 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="BuildEnrichmentMap.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/BuildEnrichmentMap.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="234" column="23" selection-start="10134" selection-end="10134" vertical-scroll-proportion="0.5565217">
-              <folding>
-                <element signature="imports" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Enrichment_Map_Plugin.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/Enrichment_Map_Plugin.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="75" column="0" selection-start="2554" selection-end="2554" vertical-scroll-proportion="1.1333333">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file leaf-file-name="InputFilesPanel.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/InputFilesPanel.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="285" column="12" selection-start="9131" selection-end="9131" vertical-scroll-proportion="6.715942">
+            <state line="121" column="69" selection-start="3909" selection-end="3909" vertical-scroll-proportion="0.4377432">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="ComputeSimilarity.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/ComputeSimilarity.java">
+      <file leaf-file-name="GSEAResultFileReader.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/GSEAResultFileReader.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="127" column="10" selection-start="5214" selection-end="5214" vertical-scroll-proportion="0.04927536">
-              <folding>
-                <element signature="imports" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="GeneSet.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/GeneSet.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="64" column="41" selection-start="1195" selection-end="1195" vertical-scroll-proportion="1.0416666">
+            <state line="13" column="13" selection-start="254" selection-end="254" vertical-scroll-proportion="-0.92607003">
               <folding />
             </state>
           </provider>
@@ -185,7 +169,7 @@
       <file leaf-file-name="InitializeGenesetsOfInterest.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/InitializeGenesetsOfInterest.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="65" column="41" selection-start="2441" selection-end="2458" vertical-scroll-proportion="0.04927536">
+            <state line="124" column="0" selection-start="5610" selection-end="5610" vertical-scroll-proportion="0.807393">
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -193,37 +177,68 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="GenesetSimilarity.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/GenesetSimilarity.java">
+      <file leaf-file-name="TaskWrapper.class" pinned="false" current="false" current-in-tab="false">
+        <entry file="jar://C:/Program Files/cytoscape-v2.6.1/lib/cytoscape-task.jar!/cytoscape/task/util/TaskWrapper.class">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="58" column="55" selection-start="1537" selection-end="1537" vertical-scroll-proportion="1.1913043">
+            <state line="11" column="0" selection-start="369" selection-end="369" vertical-scroll-proportion="0.32136106">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="BuildEnrichmentMapActionListener.java" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="Thread.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="jar://C:/Program Files/Java/jdk1.5.0_06/src.zip!/java/lang/Thread.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="603" column="0" selection-start="23328" selection-end="23328" vertical-scroll-proportion="0.2911153">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="ComputeSimilarity.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/ComputeSimilarity.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="45" column="0" selection-start="1101" selection-end="1101" vertical-scroll-proportion="0.09143969">
+              <folding>
+                <element signature="imports" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="BuildEnrichmentMap.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/BuildEnrichmentMap.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="126" column="65" selection-start="6211" selection-end="6211" vertical-scroll-proportion="2.1186771">
+              <folding>
+                <element signature="imports" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="GSEAResult.java" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/GSEAResult.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="27" column="56" selection-start="745" selection-end="745" vertical-scroll-proportion="0.7937743">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="BuildEnrichmentMapActionListener.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/BuildEnrichmentMapActionListener.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="89" column="35" selection-start="2913" selection-end="2913" vertical-scroll-proportion="0.4289855">
+            <state line="90" column="0" selection-start="2603" selection-end="2603" vertical-scroll-proportion="1.7859923">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="GMTFileReader.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/GMTFileReader.java">
+      <file leaf-file-name="GeneSet.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/GeneSet.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="102" column="36" selection-start="3355" selection-end="3355" vertical-scroll-proportion="0.04927536">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="EnrichmentMapParameters.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/EnrichmentMapParameters.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="123" column="20" selection-start="3029" selection-end="3038" vertical-scroll-proportion="0.04927536">
+            <state line="17" column="13" selection-start="257" selection-end="257" vertical-scroll-proportion="0.12665406">
               <folding />
             </state>
           </provider>
@@ -398,22 +413,6 @@
   <component name="RestoreUpdateTree" />
   <component name="RunManager">
     <activeType name="Application" />
-    <configuration selected="false" default="true" type="Remote" factoryName="Remote">
-      <option name="USE_SOCKET_TRANSPORT" value="true" />
-      <option name="SERVER_MODE" value="false" />
-      <option name="SHMEM_ADDRESS" value="javadebug" />
-      <option name="HOST" value="localhost" />
-      <option name="PORT" value="5005" />
-    </configuration>
-    <configuration selected="false" default="true" type="Application" factoryName="Application">
-      <option name="MAIN_CLASS_NAME" />
-      <option name="VM_PARAMETERS" />
-      <option name="PROGRAM_PARAMETERS" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" />
-      <module name="" />
-    </configuration>
     <configuration selected="false" default="true" type="Applet" factoryName="Applet">
       <module name="" />
       <option name="MAIN_CLASS_NAME" />
@@ -425,6 +424,15 @@
       <option name="VM_PARAMETERS" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" />
+    </configuration>
+    <configuration selected="false" default="true" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" />
+      <option name="VM_PARAMETERS" />
+      <option name="PROGRAM_PARAMETERS" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <module name="" />
     </configuration>
     <configuration selected="false" default="true" type="JUnit" factoryName="JUnit">
       <module name="" />
@@ -442,22 +450,29 @@
         <value defaultName="wholeProject" />
       </option>
     </configuration>
+    <configuration selected="false" default="true" type="Remote" factoryName="Remote">
+      <option name="USE_SOCKET_TRANSPORT" value="true" />
+      <option name="SERVER_MODE" value="false" />
+      <option name="SHMEM_ADDRESS" value="javadebug" />
+      <option name="HOST" value="localhost" />
+      <option name="PORT" value="5005" />
+    </configuration>
     <configuration selected="true" default="false" name="EnrichmentMapPlugin" type="Application" factoryName="Application">
       <option name="MAIN_CLASS_NAME" value="cytoscape.CyMain" />
-      <option name="VM_PARAMETERS" value="" />
+      <option name="VM_PARAMETERS" value="-Xmx1512M" />
       <option name="PROGRAM_PARAMETERS" value="-p &quot;C:\Program Files\cytoscape-v2.5.2\plugins&quot;" />
       <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$/classes" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" value="" />
       <module name="Cytoscape_EnrichmentMap" />
-      <RunnerSettings RunnerId="Run" />
       <RunnerSettings RunnerId="Debug">
         <option name="DEBUG_PORT" value="3746" />
         <option name="TRANSPORT" value="0" />
         <option name="LOCAL" value="true" />
       </RunnerSettings>
-      <ConfigurationWrapper RunnerId="Run" />
+      <RunnerSettings RunnerId="Run" />
       <ConfigurationWrapper RunnerId="Debug" />
+      <ConfigurationWrapper RunnerId="Run" />
     </configuration>
   </component>
   <component name="SelectInManager" />
@@ -505,24 +520,24 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="0" width="1036" height="780" extended-state="1" />
+    <frame x="-4" y="-4" width="1288" height="998" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info id="CVS" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.33" order="8" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.33" order="7" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="docked" type="docked" visible="true" weight="0.22764228" order="0" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.32822084" order="1" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="docked" type="docked" visible="true" weight="0.30987054" order="0" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.3275862" order="1" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.25" order="1" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="true" weight="0.32515338" order="8" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.3218391" order="8" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.4" order="6" />
       <window_info id="Module Dependencies" active="false" anchor="right" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.33" order="3" />
       <window_info id="Dependency Viewer" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.33" order="8" />
       <window_info id="Favorites" active="false" anchor="right" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.33" order="3" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.25" order="1" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.32515338" order="2" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="true" weight="0.3229885" order="2" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.24939272" order="2" />
       <window_info id="File View" active="false" anchor="right" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.33" order="3" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.398773" order="4" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.39770114" order="4" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="sliding" type="sliding" visible="false" weight="0.4" order="0" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.33" order="8" />
       <window_info id="Web" active="false" anchor="left" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.25" order="2" />
@@ -596,37 +611,41 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="jar://C:/Program Files/Java/jdk1.5.0_06/src.zip!/java/awt/EventDispatchThread.java">
+    <entry file="file://$PROJECT_DIR$/src/GenesetSimilarity.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="241" column="0" selection-start="9014" selection-end="9014" vertical-scroll-proportion="0.030141843">
+        <state line="9" column="13" selection-start="124" selection-end="124" vertical-scroll-proportion="0.03448276">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="jar://C:/Program Files/Java/jdk1.5.0_06/src.zip!/java/lang/Thread.java">
+    <entry file="file://$PROJECT_DIR$/src/Enrichment_Map_Plugin.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="615" column="0" selection-start="23712" selection-end="23712" vertical-scroll-proportion="0.2932331">
+        <state line="13" column="13" selection-start="327" selection-end="327" vertical-scroll-proportion="-0.6891892">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="jar://C:/Program Files/cytoscape-v2.5.2/lib/cytoscape-task.jar!/cytoscape/task/util/TaskWrapper.class">
+    <entry file="file://$PROJECT_DIR$/src/GMTFileReader.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="11" column="0" selection-start="369" selection-end="369" vertical-scroll-proportion="0.44270834">
-          <folding />
+        <state line="65" column="76" selection-start="1554" selection-end="1554" vertical-scroll-proportion="0.4675835">
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/GSEAResult.java">
+    <entry file="file://$PROJECT_DIR$/src/GCTFileReader.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="26" column="19" selection-start="637" selection-end="637" vertical-scroll-proportion="0.04927536">
-          <folding />
+        <state line="122" column="37" selection-start="3292" selection-end="3292" vertical-scroll-proportion="2.7545044">
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/ComputeSimilarity.java">
+    <entry file="file://$PROJECT_DIR$/src/EnrichmentMapParameters.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="127" column="10" selection-start="5214" selection-end="5214" vertical-scroll-proportion="0.04927536">
+        <state line="231" column="54" selection-start="5886" selection-end="5886" vertical-scroll-proportion="0.06616257">
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
@@ -635,74 +654,76 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/GeneSet.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="64" column="41" selection-start="1195" selection-end="1195" vertical-scroll-proportion="1.0416666">
+        <state line="17" column="13" selection-start="257" selection-end="257" vertical-scroll-proportion="0.12665406">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/InitializeGenesetsOfInterest.java">
+    <entry file="file://$PROJECT_DIR$/src/BuildEnrichmentMapActionListener.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="65" column="41" selection-start="2441" selection-end="2458" vertical-scroll-proportion="0.04927536">
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/GMTFileReader.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="102" column="36" selection-start="3355" selection-end="3355" vertical-scroll-proportion="0.04927536">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/EnrichmentMapParameters.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="123" column="20" selection-start="3029" selection-end="3038" vertical-scroll-proportion="0.04927536">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://C:/Program Files/cytoscape-v2.6.1/lib/cytoscape-task.jar!/cytoscape/task/util/TaskWrapper.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="11" column="0" selection-start="369" selection-end="369" vertical-scroll-proportion="0.49275362">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/Enrichment_Map_Plugin.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="75" column="0" selection-start="2554" selection-end="2554" vertical-scroll-proportion="1.1333333">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/InputFilesPanel.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="285" column="12" selection-start="9131" selection-end="9131" vertical-scroll-proportion="6.715942">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/GenesetSimilarity.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="58" column="55" selection-start="1537" selection-end="1537" vertical-scroll-proportion="1.1913043">
+        <state line="90" column="0" selection-start="2603" selection-end="2603" vertical-scroll-proportion="1.7859923">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/BuildEnrichmentMap.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="234" column="23" selection-start="10134" selection-end="10134" vertical-scroll-proportion="0.5565217">
+        <state line="126" column="65" selection-start="6211" selection-end="6211" vertical-scroll-proportion="2.1186771">
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/BuildEnrichmentMapActionListener.java">
+    <entry file="jar://C:/Program Files/cytoscape-v2.6.1/lib/cytoscape-task.jar!/cytoscape/task/util/TaskWrapper.class">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="89" column="35" selection-start="2913" selection-end="2913" vertical-scroll-proportion="0.4289855">
+        <state line="11" column="0" selection-start="369" selection-end="369" vertical-scroll-proportion="0.32136106">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://C:/Program Files/Java/jdk1.5.0_06/src.zip!/java/lang/Thread.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="603" column="0" selection-start="23328" selection-end="23328" vertical-scroll-proportion="0.2911153">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/ComputeSimilarity.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="45" column="0" selection-start="1101" selection-end="1101" vertical-scroll-proportion="0.09143969">
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/InitializeGenesetsOfInterest.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="124" column="0" selection-start="5610" selection-end="5610" vertical-scroll-proportion="0.807393">
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/InputFilesPanel.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="121" column="69" selection-start="3909" selection-end="3909" vertical-scroll-proportion="0.4377432">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/GSEAResultFileReader.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="13" column="13" selection-start="254" selection-end="254" vertical-scroll-proportion="-0.92607003">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/GSEAResult.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="27" column="56" selection-start="745" selection-end="745" vertical-scroll-proportion="0.7937743">
           <folding />
         </state>
       </provider>

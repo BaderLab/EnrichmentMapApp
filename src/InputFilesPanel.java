@@ -28,7 +28,7 @@ public class InputFilesPanel extends JDialog {
     /**
      * the height of the panel
      */
-    private final int DIM_HEIGHT = 200;
+    private final int DIM_HEIGHT = 250;
     /**
      * the width of the panel
      */
@@ -44,19 +44,22 @@ public class InputFilesPanel extends JDialog {
     private javax.swing.JTextField GMTFileNameTextField;
     private javax.swing.JButton selectGMTFileButton;
 
-    private javax.swing.JTextField UPFileNameTextField;
-    private javax.swing.JButton selectUPFileButton;
+    private javax.swing.JTextField GCTFileNameTextField;
+    private javax.swing.JButton selectGCTFileButton;
 
-    private javax.swing.JTextField DOWNFileNameTextField;
-    private javax.swing.JButton selectDOWNFileButton;
+    private javax.swing.JTextArea Dataset1FileNameTextField;
+    private javax.swing.JButton selectDataset1FileButton;
+
+    private javax.swing.JTextArea Dataset2FileNameTextField;
+    private javax.swing.JButton selectDataset2FileButton;
 
     private javax.swing.JTextField pvalueTextField;
     private javax.swing.JTextField qvalueTextField;
     private javax.swing.JTextField jaccardTextField; 
 
-    private boolean UpFileSelected = false;
-    private boolean DownFileSelected = false;
+    private boolean Dataset1FileSelected = false;
     private boolean GMTFileSelected = false;
+    private boolean GCTFileSelected = false;
 
     private EnrichmentMapParameters params;
 
@@ -84,16 +87,18 @@ public class InputFilesPanel extends JDialog {
 
         //text boxes
         GMTFileNameTextField = new javax.swing.JTextField();
-        UPFileNameTextField = new javax.swing.JTextField();
-        DOWNFileNameTextField = new javax.swing.JTextField();
+        GCTFileNameTextField = new javax.swing.JTextField();
+        Dataset1FileNameTextField = new javax.swing.JTextArea();
+        Dataset2FileNameTextField = new javax.swing.JTextArea();
         pvalueTextField = new javax.swing.JTextField();
         qvalueTextField = new javax.swing.JTextField();
         jaccardTextField = new javax.swing.JTextField();
 
         //buttons
         selectGMTFileButton = new javax.swing.JButton();
-        selectUPFileButton = new javax.swing.JButton();
-        selectDOWNFileButton = new javax.swing.JButton();
+        selectGCTFileButton = new javax.swing.JButton();
+        selectDataset1FileButton = new javax.swing.JButton();
+        selectDataset2FileButton = new javax.swing.JButton();
 
         cancelButton = new javax.swing.JButton();
         importButton = new javax.swing.JButton();
@@ -104,8 +109,8 @@ public class InputFilesPanel extends JDialog {
 
 
         //components needed for the GMT file load
+        GMTFileNameTextField.setFont(new java.awt.Font("Dialog",1,12));
         GMTFileNameTextField.setText("Please select a geneset (.gmt) file...");
-
 
         selectGMTFileButton.setText("Select");
         selectGMTFileButton
@@ -114,26 +119,45 @@ public class InputFilesPanel extends JDialog {
                         selectGMTFileButtonActionPerformed(evt);
                     }
                 });
-        //components needed for the GSEA Up file
-        UPFileNameTextField.setText("Please select a gsea UP regulated geneset result file...");
 
-        selectUPFileButton.setText("Select");
-        selectUPFileButton
+        //components needed for the GMT file load
+        GCTFileNameTextField.setFont(new java.awt.Font("Dialog",1,12));
+        GCTFileNameTextField.setText("Please select the dataset (.gct) file used for GSEA analysis...");
+
+        selectGCTFileButton.setText("Select");
+        selectGCTFileButton
                 .addActionListener(new java.awt.event.ActionListener() {
                     public void actionPerformed(java.awt.event.ActionEvent evt) {
-                        selectUPFileButtonActionPerformed(evt);
+                        selectGCTFileButtonActionPerformed(evt);
+                    }
+                });
+
+        //components needed for the GSEA Up file
+        Dataset1FileNameTextField.setFont(new java.awt.Font("Dialog",1,12));
+        Dataset1FileNameTextField.setText("Please select the gsea result files for first dataset...");
+        Dataset1FileNameTextField.setLineWrap(true);
+        Dataset1FileNameTextField.setRows(2);
+
+        selectDataset1FileButton.setText("Select");
+        selectDataset1FileButton
+                .addActionListener(new java.awt.event.ActionListener() {
+                    public void actionPerformed(java.awt.event.ActionEvent evt) {
+                        selectDataset1FileButtonActionPerformed(evt);
                     }
                 });
 
 
         //components needed for the GSEA Up file
-        DOWNFileNameTextField.setText("Please select a gsea DOWN regulated geneset result file...");
+        Dataset2FileNameTextField.setFont(new java.awt.Font("Dialog",1,12));
+        Dataset2FileNameTextField.setText("Please select the gsea result files for second dataset...");
+        Dataset2FileNameTextField.setLineWrap(true);
+        Dataset2FileNameTextField.setRows(2);
 
-        selectDOWNFileButton.setText("Select");
-        selectDOWNFileButton
+        selectDataset2FileButton.setText("Select");
+        selectDataset2FileButton
                 .addActionListener(new java.awt.event.ActionListener() {
                     public void actionPerformed(java.awt.event.ActionEvent evt) {
-                        selectDOWNFileButtonActionPerformed(evt);
+                        selectDataset2FileButtonActionPerformed(evt);
                     }
                 });
 
@@ -178,24 +202,34 @@ public class InputFilesPanel extends JDialog {
         add(selectGMTFileButton);
         current_row++;
 
+         //put in the fields for the gsea dataset file
+        c.gridx = 0;
+        c.gridy = current_row;
+        gridbag.setConstraints(GCTFileNameTextField, c);
+        add(GCTFileNameTextField);
+        c.gridx = 1;
+        gridbag.setConstraints(selectGCTFileButton, c);
+        add(selectGCTFileButton);
+        current_row++;
+
         //put in the fields for the GSEA UP results file
         c.gridx = 0;
         c.gridy = current_row;
-        gridbag.setConstraints(UPFileNameTextField, c);
-        add(UPFileNameTextField);
+        gridbag.setConstraints(Dataset1FileNameTextField, c);
+        add(Dataset1FileNameTextField);
         c.gridx = 1;
-        gridbag.setConstraints(selectUPFileButton, c);
-        add(selectUPFileButton);
+        gridbag.setConstraints(selectDataset1FileButton, c);
+        add(selectDataset1FileButton);
         current_row++;
 
         //put in the fields for the GSEA DOWN results file.
         c.gridx = 0;
         c.gridy = current_row;
-        gridbag.setConstraints(DOWNFileNameTextField, c);
-        add(DOWNFileNameTextField);
+        gridbag.setConstraints(Dataset2FileNameTextField, c);
+        add(Dataset2FileNameTextField);
         c.gridx = 1;
-        gridbag.setConstraints(selectDOWNFileButton, c);
-        add(selectDOWNFileButton);
+        gridbag.setConstraints(selectDataset2FileButton, c);
+        add(selectDataset2FileButton);
         current_row++;
 
         //put the fields to set p-value
@@ -306,13 +340,38 @@ public class InputFilesPanel extends JDialog {
                params.setGMTFileName(file.getAbsolutePath());
                GMTFileNameTextField.setToolTipText(file.getAbsolutePath());
                GMTFileSelected = true;
-                if (UpFileSelected && DownFileSelected  ){
+                if (Dataset1FileSelected && GCTFileSelected  ){
                     importButton.setEnabled(true);
                }
            }
        }
 
-        private void selectUPFileButtonActionPerformed(
+         private void selectGCTFileButtonActionPerformed(
+               java.awt.event.ActionEvent evt) {
+
+//         Create FileFilter
+           CyFileFilter filter = new CyFileFilter();
+
+           // Add accepted File Extensions
+           filter.addExtension("gct");
+           filter.addExtension("txt");
+           filter.setDescription("All GCT files");
+
+           // Get the file name
+           File file = FileUtil.getFile("Import GCT File", FileUtil.LOAD,
+                        new CyFileFilter[] { filter });
+           if(file != null) {
+               GCTFileNameTextField.setText(file.getAbsolutePath());
+               params.setGCTFileName(file.getAbsolutePath());
+               GCTFileNameTextField.setToolTipText(file.getAbsolutePath());
+               GCTFileSelected = true;
+                if (Dataset1FileSelected && GMTFileSelected   ){
+                    importButton.setEnabled(true);
+               }
+           }
+       }
+
+        private void selectDataset1FileButtonActionPerformed(
                java.awt.event.ActionEvent evt) {
 
 //         Create FileFilter
@@ -324,21 +383,26 @@ public class InputFilesPanel extends JDialog {
            filter.setDescription("All GSEA result files");
 
            // Get the file name
-           File file = FileUtil.getFile("Import GSEA UP result File", FileUtil.LOAD,
-                        new CyFileFilter[] { filter });
-           if(file != null) {
-               UPFileNameTextField.setText(file.getAbsolutePath());
-               params.setGSEAUpFileName(file.getAbsolutePath());
-               UPFileNameTextField.setToolTipText(file.getAbsolutePath());
-               UpFileSelected = true;
-               if ( DownFileSelected && GMTFileSelected ){
-                importButton.setEnabled(true);
+            File files[] = FileUtil.getFiles("import GSEA dataset 1 result files", FileUtil.LOAD, new CyFileFilter[]{ filter });
+
+
+           if(files != null) {
+               //There should be two files inputted.  If it more or less then report error
+               if(files.length == 2){
+                    Dataset1FileNameTextField.setText(files[0].getName() + "\n" + files[1].getName());
+                    params.setGSEADataset1FileName1(files[0].getAbsolutePath());
+                    params.setGSEADataset1FileName2(files[1].getAbsolutePath());
+                    Dataset1FileNameTextField.setToolTipText(files[0].getAbsolutePath() + "," + files[1].getAbsolutePath());
+                    Dataset1FileSelected = true;
+                    if ( GMTFileSelected && GCTFileSelected){
+                        importButton.setEnabled(true);
+                    }
                }
            }
        }
 
 
-        private void selectDOWNFileButtonActionPerformed(
+        private void selectDataset2FileButtonActionPerformed(
                java.awt.event.ActionEvent evt) {
 
 //         Create FileFilter
@@ -350,15 +414,18 @@ public class InputFilesPanel extends JDialog {
            filter.setDescription("All GSEA results files");
 
            // Get the file name
-           File file = FileUtil.getFile("Import GSEA DOWN result File", FileUtil.LOAD,
+           File files[] = FileUtil.getFiles("Import GSEA Dataset 2 result Files", FileUtil.LOAD,
                         new CyFileFilter[] { filter });
-           if(file != null) {
-               DOWNFileNameTextField.setText(file.getAbsolutePath());
-               params.setGSEADownFileName(file.getAbsolutePath());
-               DOWNFileNameTextField.setToolTipText(file.getAbsolutePath());
-               DownFileSelected = true;
-               if (UpFileSelected &&  GMTFileSelected ){
-                importButton.setEnabled(true);
+           if(files != null) {
+               if(files.length == 2){
+                    Dataset2FileNameTextField.setText(files[0].getName() + "\n" + files[1].getName());
+                    params.setGSEADataset2FileName1(files[0].getAbsolutePath());
+                    params.setGSEADataset2FileName2(files[1].getAbsolutePath());
+                    params.setTwoDatasets(true);
+                    Dataset2FileNameTextField.setToolTipText(files[0].getAbsolutePath() + "," + files[1].getAbsolutePath());
+                    if (Dataset1FileSelected &&  GMTFileSelected && GCTFileSelected){
+                        importButton.setEnabled(true);
+                    }
                }
            }
        }
