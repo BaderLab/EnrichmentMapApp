@@ -25,15 +25,18 @@ public class GSEAResultFileReader implements Task {
     private TaskMonitor taskMonitor = null;
     private boolean interrupted = false;
 
-    public GSEAResultFileReader(EnrichmentMapParameters params, TaskMonitor taskMonitor, String FileName) {
-        this(params, FileName);
+    public GSEAResultFileReader(EnrichmentMapParameters params, TaskMonitor taskMonitor, String FileName, int dataset) {
+        this(params, FileName, dataset);
         this.taskMonitor = taskMonitor;
     }
 
-    public GSEAResultFileReader(EnrichmentMapParameters params, String FileName) {
+    public GSEAResultFileReader(EnrichmentMapParameters params, String FileName, int dataset) {
         this.params = params;
         GSEAResultFileName = FileName;
-        results = params.getGseaResults();
+        if(dataset == 1)
+            results = params.getGseaResults1();
+        else if(dataset == 2)
+            results = params.getGseaResults2();
 
 
     }
@@ -59,28 +62,56 @@ public class GSEAResultFileReader implements Task {
                 String line = lines[i];
 
                 String [] tokens = line.split("\t");
+                int size = 0;
+                double ES = 0.0;
+                double NES = 0.0;
+                double pvalue = 1.0;
+                double FDRqvalue = 1.0;
+                double FWERqvalue = 1.0;
 
                 //The first column of the file is the name of the geneset
                 String Name = tokens[0].toUpperCase();
 
                 //The fourth column is the size of the geneset
-                int size = Integer.parseInt(tokens[3]);
+                if(tokens[3].equalsIgnoreCase("")){
+                    //do nothing
+                }else{
+                    size = Integer.parseInt(tokens[3]);
+                }
 
                 //The fifth column is the Enrichment score (ES)
-                double ES = Double.parseDouble(tokens[4]);
+                if(tokens[4].equalsIgnoreCase("")){
+                    //do nothing
+                }else{
+                     ES = Double.parseDouble(tokens[4]);
+                }
 
                 //The sixth column is the Normalize Enrichment Score (NES)
-                double NES = Double.parseDouble(tokens[5]);
+                if(tokens[5].equalsIgnoreCase("")){
+                    //do nothing
+                }else{
+                     NES = Double.parseDouble(tokens[5]);
+                }
 
                 //The seventh column is the nominal p-value
-                double pvalue = Double.parseDouble(tokens[6]);
+                if(tokens[6].equalsIgnoreCase("")){
+                    //do nothing
+                }else{
+                    pvalue = Double.parseDouble(tokens[6]);
+                }
 
                 //the eighth column is the FDR q-value
-                double FDRqvalue = Double.parseDouble(tokens[7]);
-
+                if(tokens[7].equalsIgnoreCase("")){
+                    //do nothing
+                }else{
+                    FDRqvalue = Double.parseDouble(tokens[7]);
+                }
                 //the ninth column is the FWER q-value
-                double FWERqvalue = Double.parseDouble(tokens[8]);
-
+                if(tokens[8].equalsIgnoreCase("")){
+                    //do nothing
+                }else{
+                    FWERqvalue = Double.parseDouble(tokens[8]);
+                }
                 GSEAResult result = new GSEAResult(Name, size, ES, NES,pvalue,FDRqvalue,FWERqvalue);
 
 
@@ -90,7 +121,7 @@ public class GSEAResultFileReader implements Task {
                 long timeRemaining = maxValue - currentProgress;
                 if (taskMonitor != null) {
                         taskMonitor.setPercentCompleted(percentComplete);
-                        taskMonitor.setStatus("Parsing GMT file " + currentProgress + " of " + maxValue);
+                        taskMonitor.setStatus("Parsing GSEA Results file " + currentProgress + " of " + maxValue);
                         taskMonitor.setEstimatedTimeRemaining(timeRemaining);
                     }
                 currentProgress++;

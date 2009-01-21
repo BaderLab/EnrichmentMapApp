@@ -25,7 +25,7 @@ public class GSEAResult {
     }
 
     public boolean geneSetOfInterest(double pvalue, double fdrqvalue){
-        if((this.pvalue < pvalue) && (this.fdrqvalue < fdrqvalue)){
+        if((this.pvalue <= pvalue) && (this.fdrqvalue <= fdrqvalue)){
             return true;
        }else{
             return false;
