@@ -1,5 +1,7 @@
 import cytoscape.util.CyFileFilter;
 import cytoscape.util.FileUtil;
+import cytoscape.task.util.TaskManager;
+import cytoscape.task.ui.JTaskConfig;
 
 import javax.swing.*;
 import java.io.File;
@@ -53,6 +55,10 @@ public class InputFilesPanel extends JDialog {
     private javax.swing.JTextArea Dataset2FileNameTextField;
     private javax.swing.JButton selectDataset2FileButton;
 
+    private javax.swing.JRadioButton jaccard;
+    private javax.swing.JRadioButton overlap;
+    private javax.swing.ButtonGroup jaccardOrOverlap;
+
     private javax.swing.JTextField pvalueTextField;
     private javax.swing.JTextField qvalueTextField;
     private javax.swing.JTextField jaccardTextField; 
@@ -71,6 +77,14 @@ public class InputFilesPanel extends JDialog {
 	    status = false;
 	    pack();
     }
+
+    /** Creates new form AttributeMatrixImportDialog */
+       public InputFilesPanel(java.awt.Frame parent, boolean modal,boolean child) {
+           super(parent, modal);
+           status = false;
+           pack();
+       }
+
 
     public void initComponents() {
 
@@ -103,10 +117,23 @@ public class InputFilesPanel extends JDialog {
         cancelButton = new javax.swing.JButton();
         importButton = new javax.swing.JButton();
 
+        jaccard = new javax.swing.JRadioButton("Jaccard Coeffecient");
+        jaccard.setActionCommand("jaccard");
+        jaccard.setSelected(true);
+        overlap = new javax.swing.JRadioButton("Overlap Coeffecient");
+        overlap.setActionCommand("overlap");
+        jaccardOrOverlap = new javax.swing.ButtonGroup();
+        jaccardOrOverlap.add(jaccard);
+        jaccardOrOverlap.add(overlap);
+
+        jaccard.addActionListener(new java.awt.event.ActionListener() {
+                    public void actionPerformed(java.awt.event.ActionEvent evt) {
+                        selectJaccardOrOverlapActionPerformed(evt);
+                    }
+                });
 
         titleLabel.setFont(new java.awt.Font("Dialog", 1, 14));
         titleLabel.setText("Import GSEA files used to calculate enrichment maps");
-
 
         //components needed for the GMT file load
         GMTFileNameTextField.setFont(new java.awt.Font("Dialog",1,12));
@@ -132,7 +159,7 @@ public class InputFilesPanel extends JDialog {
                     }
                 });
 
-        //components needed for the GSEA Up file
+        //components needed for the GSEA Dataset1 Results
         Dataset1FileNameTextField.setFont(new java.awt.Font("Dialog",1,12));
         Dataset1FileNameTextField.setText("Please select the gsea result files for first dataset...");
         Dataset1FileNameTextField.setLineWrap(true);
@@ -147,9 +174,9 @@ public class InputFilesPanel extends JDialog {
                 });
 
 
-        //components needed for the GSEA Up file
+        //components needed for the GSEA Dataset1 Results
         Dataset2FileNameTextField.setFont(new java.awt.Font("Dialog",1,12));
-        Dataset2FileNameTextField.setText("Please select the gsea result files for second dataset...");
+        Dataset2FileNameTextField.setText("(OPTIONAL) Please select the gsea result files for second dataset...");
         Dataset2FileNameTextField.setLineWrap(true);
         Dataset2FileNameTextField.setRows(2);
 
@@ -171,8 +198,9 @@ public class InputFilesPanel extends JDialog {
         });
 
         importButton.setText("Build Enrichment Map");
-        importButton.addActionListener(new BuildEnrichmentMapActionListener(this,params));
-	    importButton.setEnabled(false);
+        importButton.addActionListener(new BuildEnrichmentMapActionListener(this, params));
+        importButton.setEnabled(false);
+
 
         // Layout with GridBagLayout.
         GridBagLayout gridbag = new GridBagLayout();
@@ -188,97 +216,111 @@ public class InputFilesPanel extends JDialog {
 
         c.gridx = 0;
         c.gridy = current_row;
+        c.gridwidth = 3;
         gridbag.setConstraints(titleLabel, c);
         add(titleLabel);
         current_row++;
 
         //put in the fields for the genesets file
         c.gridx = 0;
+        c.gridwidth = 3;
         c.gridy = current_row;
         gridbag.setConstraints(GMTFileNameTextField, c);
         add(GMTFileNameTextField);
-        c.gridx = 1;
+        c.gridx = 3;
         gridbag.setConstraints(selectGMTFileButton, c);
         add(selectGMTFileButton);
         current_row++;
 
          //put in the fields for the gsea dataset file
         c.gridx = 0;
+        c.gridwidth = 3;
         c.gridy = current_row;
         gridbag.setConstraints(GCTFileNameTextField, c);
         add(GCTFileNameTextField);
-        c.gridx = 1;
+        c.gridx = 3;
         gridbag.setConstraints(selectGCTFileButton, c);
         add(selectGCTFileButton);
         current_row++;
 
         //put in the fields for the GSEA UP results file
         c.gridx = 0;
+        c.gridwidth = 3;
         c.gridy = current_row;
         gridbag.setConstraints(Dataset1FileNameTextField, c);
         add(Dataset1FileNameTextField);
-        c.gridx = 1;
+        c.gridx = 3;
         gridbag.setConstraints(selectDataset1FileButton, c);
         add(selectDataset1FileButton);
         current_row++;
 
         //put in the fields for the GSEA DOWN results file.
         c.gridx = 0;
+        c.gridwidth = 3;
         c.gridy = current_row;
         gridbag.setConstraints(Dataset2FileNameTextField, c);
         add(Dataset2FileNameTextField);
-        c.gridx = 1;
+        c.gridx = 3;
         gridbag.setConstraints(selectDataset2FileButton, c);
         add(selectDataset2FileButton);
         current_row++;
 
         //put the fields to set p-value
         c.gridx = 0;
+        c.gridwidth = 3;
         c.gridy = current_row;
         pvalueLabel.setFont(new java.awt.Font("Dialog", 1, 10));
         pvalueLabel.setText("P-value cut-off (Only genesets with p-value less than this value will be included)");
         pvalueTextField.setText("0.05");
         gridbag.setConstraints(pvalueLabel, c);
         add(pvalueLabel);
-        c.gridx = 1;
+        c.gridx = 3;
         gridbag.setConstraints(pvalueTextField, c);
         add(pvalueTextField);
         current_row++;
 
         //put the fields to set q-value
         c.gridx = 0;
+        c.gridwidth = 3;
         c.gridy = current_row;
         qvalueLabel.setFont(new java.awt.Font("Dialog", 1, 10));
         qvalueLabel.setText("FDR Q-value cut-off (Only genesets with fdr q-value less than this value will be included)");
         qvalueTextField.setText("0.25");
         gridbag.setConstraints(qvalueLabel, c);
         add(qvalueLabel);
-        c.gridx = 1;
+        c.gridx = 3;
         gridbag.setConstraints(qvalueTextField, c);
         add(qvalueTextField);
         current_row++;
 
 
-        //put the fields to set q-value
+        //put the fields to set jaccard coeffecient
         c.gridx = 0;
+        c.gridwidth = 1;
         c.gridy = current_row;
         jaccardLabel.setFont(new java.awt.Font("Dialog", 1, 10));
-        jaccardLabel.setText("Jaccard Coeffecient (only edges that exceed this cutoff will be included)");
+        jaccardLabel.setText("Cut-off");
         jaccardTextField.setText("0.50");
+        gridbag.setConstraints(jaccard,c);
+        add(jaccard);
+        c.gridx = 1;
+        gridbag.setConstraints(overlap,c);
+        add(overlap);
+        c.gridx = 2;
         gridbag.setConstraints(jaccardLabel, c);
         add(jaccardLabel);
-        c.gridx = 1;
+        c.gridx = 3;
         gridbag.setConstraints(jaccardTextField, c);
         add(jaccardTextField);
         current_row++;
 
         //put in the cancel and import buttons.
-        c.gridx = 0;
+        c.gridx = 1;
         c.gridy = current_row;
         c.fill = GridBagConstraints.NONE;
         gridbag.setConstraints(cancelButton, c);
         add(cancelButton);
-        c.gridx = 1;
+        c.gridx = 3;
         gridbag.setConstraints(importButton, c);
         add(importButton);
 
@@ -320,6 +362,17 @@ public class InputFilesPanel extends JDialog {
             this.dispose();
        }
 
+ private void selectJaccardOrOverlapActionPerformed(java.awt.event.ActionEvent evt) {
+        if(evt.getActionCommand().equalsIgnoreCase("jaccard")){
+            params.setJaccard(true);
+        }
+     else if(evt.getActionCommand().equalsIgnoreCase("overlap")){
+            params.setJaccard(false);
+        }
+     else{
+            JOptionPane.showMessageDialog(this,"Invalid Jaccard Radio Button action command");
+        }
+ }
 
 
        private void selectGMTFileButtonActionPerformed(
@@ -385,7 +438,6 @@ public class InputFilesPanel extends JDialog {
            // Get the file name
             File files[] = FileUtil.getFiles("import GSEA dataset 1 result files", FileUtil.LOAD, new CyFileFilter[]{ filter });
 
-
            if(files != null) {
                //There should be two files inputted.  If it more or less then report error
                if(files.length == 2){
@@ -397,6 +449,9 @@ public class InputFilesPanel extends JDialog {
                     if ( GMTFileSelected && GCTFileSelected){
                         importButton.setEnabled(true);
                     }
+               }
+               else{
+                   JOptionPane.showMessageDialog(this,"Expecting two files to be selected.");
                }
            }
        }
@@ -426,6 +481,9 @@ public class InputFilesPanel extends JDialog {
                     if (Dataset1FileSelected &&  GMTFileSelected && GCTFileSelected){
                         importButton.setEnabled(true);
                     }
+               }
+                else{
+                   JOptionPane.showMessageDialog(this,"Expecting two files to be selected.");
                }
            }
        }

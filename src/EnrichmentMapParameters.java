@@ -22,6 +22,8 @@ public class EnrichmentMapParameters {
 
     private boolean twoDatasets = false;
 
+    private boolean jaccard;
+
     //p-value cutoff
     private double pvalue;
 
@@ -59,6 +61,7 @@ public class EnrichmentMapParameters {
         this.gseaResults1OfInterest = new HashMap();
         this.gseaResults2OfInterest = new HashMap();
         this.genesetsOfInterest = new HashMap();
+        jaccard = true;
 
     }
 
@@ -75,6 +78,14 @@ public class EnrichmentMapParameters {
         this.gseaResults1OfInterest = new HashMap();
         this.gseaResults2OfInterest = new HashMap();
         this.genesetsOfInterest = new HashMap();
+    }
+
+    public boolean isJaccard() {
+        return jaccard;
+    }
+
+    public void setJaccard(boolean jaccard) {
+        this.jaccard = jaccard;
     }
 
     public HashMap getGseaResults1() {
@@ -267,5 +278,18 @@ public class EnrichmentMapParameters {
          }
         //once we have filtered the genesets clear the original genesets object
         genesets.clear();
+    }
+
+    public void dispose(){
+        genesets.clear();
+        genesetsOfInterest.clear();
+        gseaResults1.clear();
+        gseaResults2.clear();
+        genes.clear();
+        datasetGenes.clear();        
+        filteredGenesets.clear();
+        gseaResults1OfInterest.clear();
+        gseaResults2OfInterest.clear();
+
     }
 }
