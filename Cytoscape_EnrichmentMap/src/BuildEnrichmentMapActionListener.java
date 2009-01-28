@@ -19,10 +19,10 @@ public class BuildEnrichmentMapActionListener implements ActionListener {
 
     private JTaskConfig config;
 
-    private InputFilesPanel inputPanel;
+    private GSEAInputFilesPanel inputPanel;
     private EnrichmentMapParameters params;
 
-    public BuildEnrichmentMapActionListener (InputFilesPanel inputPanel, EnrichmentMapParameters params) {
+    public BuildEnrichmentMapActionListener (GSEAInputFilesPanel inputPanel, EnrichmentMapParameters params) {
         this.inputPanel = inputPanel;
         this.params = params;
 
