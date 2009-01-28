@@ -16,7 +16,7 @@ public class BuildGSEAEnrichmentMapTask implements Task {
 
 
 
-    private InputFilesPanel inputPanel;
+    private GSEAInputFilesPanel inputPanel;
     private EnrichmentMapParameters params;
 
     // Keep track of progress for monitoring:
@@ -25,7 +25,7 @@ public class BuildGSEAEnrichmentMapTask implements Task {
     private boolean interrupted = false;
 
 
-    public BuildGSEAEnrichmentMapTask(InputFilesPanel inputPanel, EnrichmentMapParameters params) {
+    public BuildGSEAEnrichmentMapTask(GSEAInputFilesPanel inputPanel, EnrichmentMapParameters params) {
         this.inputPanel = inputPanel;
         this.params = params;
     }

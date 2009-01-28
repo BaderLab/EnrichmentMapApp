@@ -19,8 +19,8 @@ public class LoadGSEAPanelAction implements ActionListener {
             // open new dialog
             //if the operating system is Mac, open a special window
            if(os.contains("Mac") || (os.contains("mac"))){
-                InputFilesPanelMac amd
-                = new InputFilesPanelMac(Cytoscape.getDesktop(),
+                GSEAInputFilesPanelMac amd
+                = new GSEAInputFilesPanelMac(Cytoscape.getDesktop(),
                               true);
 
                 amd.pack();
@@ -28,8 +28,8 @@ public class LoadGSEAPanelAction implements ActionListener {
                 amd.setVisible(true);
             }
             else{
-                InputFilesPanel amd
-                = new InputFilesPanel(Cytoscape.getDesktop(),
+                GSEAInputFilesPanel amd
+                = new GSEAInputFilesPanel(Cytoscape.getDesktop(),
                               true);
 
                 amd.pack();
