@@ -79,6 +79,86 @@
     <disable_hints />
   </component>
   <component name="DebuggerManager">
+    <line_breakpoints>
+      <breakpoint url="file://$PROJECT_DIR$/src/VisualizeEnrichmentMapTask.java" line="159" class="VisualizeEnrichmentMapTask" package="">
+        <option name="ENABLED" value="true" />
+        <option name="SUSPEND_POLICY" value="SuspendAll" />
+        <option name="LOG_ENABLED" value="false" />
+        <option name="LOG_EXPRESSION_ENABLED" value="false" />
+        <option name="COUNT_FILTER_ENABLED" value="false" />
+        <option name="COUNT_FILTER" value="0" />
+        <option name="CONDITION_ENABLED" value="false" />
+        <option name="CLASS_FILTERS_ENABLED" value="false" />
+        <option name="INSTANCE_FILTERS_ENABLED" value="false" />
+        <option name="CONDITION" value="" />
+        <option name="LOG_MESSAGE" value="" />
+      </breakpoint>
+      <breakpoint url="file://$PROJECT_DIR$/src/VisualizeEnrichmentMapTask.java" line="200" class="VisualizeEnrichmentMapTask" package="">
+        <option name="ENABLED" value="true" />
+        <option name="SUSPEND_POLICY" value="SuspendAll" />
+        <option name="LOG_ENABLED" value="false" />
+        <option name="LOG_EXPRESSION_ENABLED" value="false" />
+        <option name="COUNT_FILTER_ENABLED" value="false" />
+        <option name="COUNT_FILTER" value="0" />
+        <option name="CONDITION_ENABLED" value="false" />
+        <option name="CLASS_FILTERS_ENABLED" value="false" />
+        <option name="INSTANCE_FILTERS_ENABLED" value="false" />
+        <option name="CONDITION" value="" />
+        <option name="LOG_MESSAGE" value="" />
+      </breakpoint>
+      <breakpoint url="file://$PROJECT_DIR$/src/VisualizeEnrichmentMapTask.java" line="218" class="VisualizeEnrichmentMapTask" package="">
+        <option name="ENABLED" value="true" />
+        <option name="SUSPEND_POLICY" value="SuspendAll" />
+        <option name="LOG_ENABLED" value="false" />
+        <option name="LOG_EXPRESSION_ENABLED" value="false" />
+        <option name="COUNT_FILTER_ENABLED" value="false" />
+        <option name="COUNT_FILTER" value="0" />
+        <option name="CONDITION_ENABLED" value="false" />
+        <option name="CLASS_FILTERS_ENABLED" value="false" />
+        <option name="INSTANCE_FILTERS_ENABLED" value="false" />
+        <option name="CONDITION" value="" />
+        <option name="LOG_MESSAGE" value="" />
+      </breakpoint>
+      <breakpoint url="file://$PROJECT_DIR$/src/BuildGenericEnrichmentMapTask.java" line="41" class="BuildGenericEnrichmentMapTask" package="">
+        <option name="ENABLED" value="true" />
+        <option name="SUSPEND_POLICY" value="SuspendAll" />
+        <option name="LOG_ENABLED" value="false" />
+        <option name="LOG_EXPRESSION_ENABLED" value="false" />
+        <option name="COUNT_FILTER_ENABLED" value="false" />
+        <option name="COUNT_FILTER" value="0" />
+        <option name="CONDITION_ENABLED" value="false" />
+        <option name="CLASS_FILTERS_ENABLED" value="false" />
+        <option name="INSTANCE_FILTERS_ENABLED" value="false" />
+        <option name="CONDITION" value="" />
+        <option name="LOG_MESSAGE" value="" />
+      </breakpoint>
+      <breakpoint url="file://$PROJECT_DIR$/src/VisualizeEnrichmentMapTask.java" line="138" class="VisualizeEnrichmentMapTask" package="">
+        <option name="ENABLED" value="true" />
+        <option name="SUSPEND_POLICY" value="SuspendAll" />
+        <option name="LOG_ENABLED" value="false" />
+        <option name="LOG_EXPRESSION_ENABLED" value="false" />
+        <option name="COUNT_FILTER_ENABLED" value="false" />
+        <option name="COUNT_FILTER" value="0" />
+        <option name="CONDITION_ENABLED" value="false" />
+        <option name="CLASS_FILTERS_ENABLED" value="false" />
+        <option name="INSTANCE_FILTERS_ENABLED" value="false" />
+        <option name="CONDITION" value="" />
+        <option name="LOG_MESSAGE" value="" />
+      </breakpoint>
+      <breakpoint url="file://$PROJECT_DIR$/src/GCTFileReaderTask.java" line="61" class="GCTFileReaderTask" package="">
+        <option name="ENABLED" value="true" />
+        <option name="SUSPEND_POLICY" value="SuspendAll" />
+        <option name="LOG_ENABLED" value="false" />
+        <option name="LOG_EXPRESSION_ENABLED" value="false" />
+        <option name="COUNT_FILTER_ENABLED" value="false" />
+        <option name="COUNT_FILTER" value="0" />
+        <option name="CONDITION_ENABLED" value="false" />
+        <option name="CLASS_FILTERS_ENABLED" value="false" />
+        <option name="INSTANCE_FILTERS_ENABLED" value="false" />
+        <option name="CONDITION" value="" />
+        <option name="LOG_MESSAGE" value="" />
+      </breakpoint>
+    </line_breakpoints>
     <breakpoint_any>
       <breakpoint>
         <option name="NOTIFY_CAUGHT" value="true" />
@@ -133,48 +213,10 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="BuildEnrichmentMapActionListener.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/BuildEnrichmentMapActionListener.java">
+      <file leaf-file-name="GenericInputFilesPanel.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/GenericInputFilesPanel.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="59" column="76" selection-start="1804" selection-end="1804" vertical-scroll-proportion="1.4396136">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="GSEAInputFilesPanelMac.java" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/GSEAInputFilesPanelMac.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="217" column="0" selection-start="8608" selection-end="8608" vertical-scroll-proportion="3.310777">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Enrichment_Map_Plugin.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/Enrichment_Map_Plugin.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="33" column="84" selection-start="1067" selection-end="1067" vertical-scroll-proportion="0.9444444">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="LoadGenericPanelAction.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/LoadGenericPanelAction.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="11" column="61" selection-start="248" selection-end="248" vertical-scroll-proportion="0.45169082">
-              <folding>
-                <element signature="imports" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="LoadGSEAPanelAction.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/LoadGSEAPanelAction.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="33" column="34" selection-start="978" selection-end="978" vertical-scroll-proportion="1.3550725">
+            <state line="170" column="12" selection-start="5118" selection-end="5670" vertical-scroll-proportion="1.2782608">
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -185,16 +227,43 @@
       <file leaf-file-name="GSEAInputFilesPanel.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/GSEAInputFilesPanel.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="200" column="0" selection-start="7329" selection-end="7329" vertical-scroll-proportion="0.49874687">
+            <state line="95" column="13" selection-start="2067" selection-end="2611" vertical-scroll-proportion="1.4652174">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="BuildGSEAEnrichmentMapTask.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/BuildGSEAEnrichmentMapTask.java">
+      <file leaf-file-name="GSEAInputFilesPanelMac.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/GSEAInputFilesPanelMac.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="27" column="42" selection-start="550" selection-end="550" vertical-scroll-proportion="0.46867168">
+            <state line="62" column="48" selection-start="1638" selection-end="1638" vertical-scroll-proportion="0.9478261">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="GenesetSimilarity.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/GenesetSimilarity.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="9" column="13" selection-start="124" selection-end="124" vertical-scroll-proportion="0.5347826">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="GeneSet.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/GeneSet.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="17" column="13" selection-start="257" selection-end="257" vertical-scroll-proportion="0.52244896">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="EnrichmentMapParameters.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/EnrichmentMapParameters.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="325" column="36" selection-start="8752" selection-end="8752" vertical-scroll-proportion="2.395652">
               <folding />
             </state>
           </provider>
@@ -203,8 +272,37 @@
       <file leaf-file-name="GCTFileReaderTask.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/GCTFileReaderTask.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="14" column="13" selection-start="260" selection-end="260" vertical-scroll-proportion="0.042606518">
+            <state line="87" column="0" selection-start="2565" selection-end="2565" vertical-scroll-proportion="0.76086956">
               <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="BuildGSEAEnrichmentMapTask.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/BuildGSEAEnrichmentMapTask.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="55" column="0" selection-start="1424" selection-end="1424" vertical-scroll-proportion="0.79130435">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="GeneExpression.java" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/GeneExpression.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="51" column="56" selection-start="1071" selection-end="1071" vertical-scroll-proportion="2.2489796">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="GenericResultFileReaderTask.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/GenericResultFileReaderTask.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="89" column="55" selection-start="2766" selection-end="2796" vertical-scroll-proportion="0.5869565">
+              <folding>
+                <element signature="imports" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -424,7 +522,7 @@
     </configuration>
     <configuration selected="true" default="false" name="EnrichmentMapPlugin" type="Application" factoryName="Application">
       <option name="MAIN_CLASS_NAME" value="cytoscape.CyMain" />
-      <option name="VM_PARAMETERS" value="" />
+      <option name="VM_PARAMETERS" value="-Xmx512M" />
       <option name="PROGRAM_PARAMETERS" value="-p &quot;C:\Program Files\cytoscape-v2.5.2\plugins&quot;" />
       <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$/classes" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
@@ -485,24 +583,24 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="-4" y="-4" width="1288" height="998" extended-state="0" />
-    <editor active="false" />
+    <frame x="1" y="0" width="1022" height="734" extended-state="0" />
+    <editor active="true" />
     <layout>
       <window_info id="CVS" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.33" order="8" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.33" order="7" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="docked" type="docked" visible="true" weight="0.25485438" order="0" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.32736155" order="1" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="docked" type="docked" visible="true" weight="0.32474226" order="0" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="true" weight="0.46369636" order="1" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.25" order="1" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.22528736" order="8" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.225058" order="8" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.4" order="6" />
       <window_info id="Module Dependencies" active="false" anchor="right" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.33" order="3" />
       <window_info id="Dependency Viewer" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.33" order="8" />
       <window_info id="Favorites" active="false" anchor="right" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.33" order="3" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.25" order="1" />
-      <window_info id="Run" active="true" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="true" weight="0.45517242" order="2" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.45939675" order="2" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.24939272" order="2" />
       <window_info id="File View" active="false" anchor="right" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.33" order="3" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.27931035" order="4" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.27842227" order="4" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="sliding" type="sliding" visible="false" weight="0.4" order="0" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.33" order="8" />
       <window_info id="Web" active="false" anchor="left" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.25" order="2" />
@@ -576,57 +674,46 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="jar://C:/Program Files/Java/jdk1.5.0_06/src.zip!/java/lang/Thread.java">
+    <entry file="file://$PROJECT_DIR$/src/ComputeSimilarityTask.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="603" column="0" selection-start="23328" selection-end="23328" vertical-scroll-proportion="0.030035336">
+        <state line="14" column="13" selection-start="260" selection-end="260" vertical-scroll-proportion="-3.2425876">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/EnrichmentMapParameters.java">
+    <entry file="file://$PROJECT_DIR$/src/BuildEnrichmentMapActionListener.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="279" column="20" selection-start="7571" selection-end="7571" vertical-scroll-proportion="1.4009662">
+        <state line="51" column="23" selection-start="1422" selection-end="1422" vertical-scroll-proportion="0.6787565">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/BuildGenericEnrichmentMapTask.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="114" column="0" selection-start="3970" selection-end="3970" vertical-scroll-proportion="1.7088948">
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/EnrichmentMapVisualStyle.java">
+    <entry file="file://$PROJECT_DIR$/src/GenericResult.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="53" column="89" selection-start="1945" selection-end="1945" vertical-scroll-proportion="2.0025063">
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/LoadGenericPanelAction.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="11" column="61" selection-start="248" selection-end="248" vertical-scroll-proportion="0.45169082">
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/GCTFileReaderTask.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="14" column="13" selection-start="260" selection-end="260" vertical-scroll-proportion="0.042606518">
+        <state line="98" column="21" selection-start="2160" selection-end="2160" vertical-scroll-proportion="1.4274611">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/Enrichment_Map_Plugin.java">
+    <entry file="file://$PROJECT_DIR$/src/VisualizeEnrichmentMapTask.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="33" column="84" selection-start="1067" selection-end="1067" vertical-scroll-proportion="0.9444444">
+        <state line="367" column="102" selection-start="18183" selection-end="18183" vertical-scroll-proportion="1.7362429">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/LoadGSEAPanelAction.java">
+    <entry file="file://$PROJECT_DIR$/src/GenericInputFilesPanel.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="33" column="34" selection-start="978" selection-end="978" vertical-scroll-proportion="1.3550725">
+        <state line="170" column="12" selection-start="5118" selection-end="5670" vertical-scroll-proportion="1.2782608">
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
@@ -635,28 +722,65 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/GSEAInputFilesPanel.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="200" column="0" selection-start="7329" selection-end="7329" vertical-scroll-proportion="0.49874687">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/BuildGSEAEnrichmentMapTask.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="27" column="42" selection-start="550" selection-end="550" vertical-scroll-proportion="0.46867168">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/BuildEnrichmentMapActionListener.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="59" column="76" selection-start="1804" selection-end="1804" vertical-scroll-proportion="1.4396136">
+        <state line="95" column="13" selection-start="2067" selection-end="2611" vertical-scroll-proportion="1.4652174">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/GSEAInputFilesPanelMac.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="217" column="0" selection-start="8608" selection-end="8608" vertical-scroll-proportion="3.310777">
+        <state line="62" column="48" selection-start="1638" selection-end="1638" vertical-scroll-proportion="0.9478261">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/GenesetSimilarity.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="9" column="13" selection-start="124" selection-end="124" vertical-scroll-proportion="0.5347826">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/GeneSet.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="17" column="13" selection-start="257" selection-end="257" vertical-scroll-proportion="0.52244896">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/EnrichmentMapParameters.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="325" column="36" selection-start="8752" selection-end="8752" vertical-scroll-proportion="2.395652">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/GenericResultFileReaderTask.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="89" column="55" selection-start="2766" selection-end="2796" vertical-scroll-proportion="0.5869565">
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/BuildGSEAEnrichmentMapTask.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="55" column="0" selection-start="1424" selection-end="1424" vertical-scroll-proportion="0.79130435">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/GCTFileReaderTask.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="87" column="0" selection-start="2565" selection-end="2565" vertical-scroll-proportion="0.76086956">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/GeneExpression.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="51" column="56" selection-start="1071" selection-end="1071" vertical-scroll-proportion="2.2489796">
           <folding />
         </state>
       </provider>

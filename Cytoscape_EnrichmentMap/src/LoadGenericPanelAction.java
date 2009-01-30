@@ -11,31 +11,15 @@ import java.awt.event.ActionListener;
  */
 public class LoadGenericPanelAction implements ActionListener {
       public void actionPerformed(ActionEvent event) {
+           // open new dialog
 
-            String os = System.getProperty("os.name");
-
-            // open new dialog
-            //if the operating system is Mac, open a special window
-           if(os.contains("Mac") || (os.contains("mac"))){
-                InputFilesPanelMac amd
-                = new InputFilesPanelMac(Cytoscape.getDesktop(),
+            GenericInputFilesPanel amd
+                = new GenericInputFilesPanel(Cytoscape.getDesktop(),
                               true);
 
-                amd.pack();
-                amd.setLocationRelativeTo(Cytoscape.getDesktop());
-                amd.setVisible(true);
-            }
-            else{
-                InputFilesPanel amd
-                = new InputFilesPanel(Cytoscape.getDesktop(),
-                              true);
-
-                amd.pack();
-                amd.setLocationRelativeTo(Cytoscape.getDesktop());
-                amd.setVisible(true);
-            }
-
-
-
+            amd.pack();
+            amd.setLocationRelativeTo(Cytoscape.getDesktop());
+            amd.setVisible(true);
+           
         }
 }
