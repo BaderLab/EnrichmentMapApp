@@ -36,20 +36,20 @@ public class InitializeGenesetsOfInterestTask implements Task {
         try{
             //create subset of genesets that contains only the genesets of interest with pvalue and qbalue less than values
             //specified by the user.
-            HashMap GSEAResults1 = params.getGseaResults1();
-            HashMap GSEAResults2 = params.getGseaResults2();
+            HashMap enrichmentResults1 = params.getEnrichmentResults1();
+            HashMap enrichmentResults2 = params.getEnrichmentResults2();
             HashMap genesets = params.getFilteredGenesets();
 
-            HashMap GSEAResults1OfInterest = params.getGseaResults1OfInterest();
-            HashMap GSEAResults2OfInterest = params.getGseaResults2OfInterest();
+            HashMap enrichmentResults1OfInterest = params.getEnrichmentResults1OfInterest();
+            HashMap enrichmentResults2OfInterest = params.getEnrichmentResults2OfInterest();
             HashMap genesetsOfInterest = params.getGenesetsOfInterest();
 
 
             int currentProgress = 0;
-            int maxValue = GSEAResults1.size() + GSEAResults2.size();
+            int maxValue = enrichmentResults1.size() + enrichmentResults2.size();
 
             //iterate through the GSEA Results to figure out which genesets we want to use
-            for(Iterator i = GSEAResults1.keySet().iterator(); i.hasNext(); ){
+            for(Iterator i = enrichmentResults1.keySet().iterator(); i.hasNext(); ){
 
                  // Calculate Percentage.  This must be a value between 0..100.
                 int percentComplete = (int) (((double) currentProgress / maxValue) * 100);
@@ -64,19 +64,43 @@ public class InitializeGenesetsOfInterestTask implements Task {
 
                 String current_name = i.next().toString();
                 //check geneset result to see if it meets the required cutoffs
-                GSEAResult current_result = (GSEAResult)GSEAResults1.get(current_name);
 
-                if(current_result.geneSetOfInterest(params.getPvalue(),params.getQvalue())){
-                    GSEAResults1OfInterest.put(current_name,current_result);
+                //if it is a GSEA Result then
+                if(params.isGSEA()){
+                    GSEAResult current_result = (GSEAResult)enrichmentResults1.get(current_name);
 
-                    //check to see that the geneset in the results file is in the geneset talbe
-                    //if it isn't then the user has given two files that don't match up
-                   if(genesets.containsKey(current_name)){
-                       GeneSet current_set = (GeneSet)genesets.get(current_name);
-                       genesetsOfInterest.put(current_name, current_set);
-                   }
-                    else{
-                       throw new IllegalThreadStateException("GMT file and GSEA Results file Do not match up.");
+                    if(current_result.geneSetOfInterest(params.getPvalue(),params.getQvalue())){
+                        enrichmentResults1OfInterest.put(current_name,current_result);
+
+                        //check to see that the geneset in the results file is in the geneset talbe
+                        //if it isn't then the user has given two files that don't match up
+                        if(genesets.containsKey(current_name)){
+                            GeneSet current_set = (GeneSet)genesets.get(current_name);
+                            genesetsOfInterest.put(current_name, current_set);
+                        }
+                        else{
+                            System.out.println(current_name);
+                            //throw new IllegalThreadStateException("GMT file and GSEA Results file Do not match up.");
+                        }
+                    }
+                }
+                //otherwise it is a generic enrichment set
+                else{
+                   GenericResult current_result = (GenericResult)enrichmentResults1.get(current_name);
+
+                    if(current_result.geneSetOfInterest(params.getPvalue(),params.getQvalue(), params.isFDR())){
+                        enrichmentResults1OfInterest.put(current_name,current_result);
+
+                        //check to see that the geneset in the results file is in the geneset talbe
+                        //if it isn't then the user has given two files that don't match up
+                        if(genesets.containsKey(current_name)){
+                            GeneSet current_set = (GeneSet)genesets.get(current_name);
+                            genesetsOfInterest.put(current_name, current_set);
+                        }
+                        else{
+                            System.out.println(current_name);
+                            //throw new IllegalThreadStateException("GMT file and Results file Do not match up.");
+                        }
                     }
                 }
 
@@ -86,7 +110,7 @@ public class InitializeGenesetsOfInterestTask implements Task {
             if(params.isTwoDatasets()){
 
                 //iterate through the GSEA Results to figure out which genesets we want to use
-                for(Iterator j = GSEAResults2.keySet().iterator(); j.hasNext(); ){
+                for(Iterator j = enrichmentResults2.keySet().iterator(); j.hasNext(); ){
 
                     // Calculate Percentage.  This must be a value between 0..100.
                     int percentComplete = (int) (((double) currentProgress / maxValue) * 100);
@@ -100,22 +124,44 @@ public class InitializeGenesetsOfInterestTask implements Task {
                    currentProgress++;
 
                     String current_name = j.next().toString();
-                    //check geneset result to see if it meets the required cutoffs
-                    GSEAResult current_result = (GSEAResult)GSEAResults2.get(current_name);
+                    //if it is a GSEA Result then
+                    if(params.isGSEA()){
+                       GSEAResult current_result = (GSEAResult)enrichmentResults2.get(current_name);
 
-                    if(current_result.geneSetOfInterest(params.getPvalue(),params.getQvalue())){
-                        GSEAResults2OfInterest.put(current_name,current_result);
+                        if(current_result.geneSetOfInterest(params.getPvalue(),params.getQvalue())){
+                           enrichmentResults2OfInterest.put(current_name,current_result);
 
-                        //check to see that the geneset in the results file is in the geneset talbe
-                        //if it isn't then the user has given two files that don't match up
-                        if(genesets.containsKey(current_name)){
-                            GeneSet current_set = (GeneSet)genesets.get(current_name);
-                            genesetsOfInterest.put(current_name, current_set);
-                        }
-                        else{
-                            throw new IllegalThreadStateException("GMT file and GSEA Results file Do not match up.");
-                        }
+                           //check to see that the geneset in the results file is in the geneset talbe
+                           //if it isn't then the user has given two files that don't match up
+                           if(genesets.containsKey(current_name)){
+                                 GeneSet current_set = (GeneSet)genesets.get(current_name);
+                                 genesetsOfInterest.put(current_name, current_set);
+                           }
+                           else{
+                               System.out.println(current_name);
+                               //throw new IllegalThreadStateException("GMT file and GSEA Results file Do not match up.");
+                           }
+                       }
                     }
+                    //otherwise it is a generic enrichment set
+                   else{
+                       GenericResult current_result = (GenericResult)enrichmentResults2.get(current_name);
+
+                       if(current_result.geneSetOfInterest(params.getPvalue(),params.getQvalue(), params.isFDR())){
+                           enrichmentResults2OfInterest.put(current_name,current_result);
+
+                           //check to see that the geneset in the results file is in the geneset talbe
+                           //if it isn't then the user has given two files that don't match up
+                           if(genesets.containsKey(current_name)){
+                                GeneSet current_set = (GeneSet)genesets.get(current_name);
+                                genesetsOfInterest.put(current_name, current_set);
+                           }
+                           else{
+                               System.out.println(current_name);
+                               //throw new IllegalThreadStateException("GMT file and Results file Do not match up.");
+                           }
+                       }
+                   }
 
                 }
             }

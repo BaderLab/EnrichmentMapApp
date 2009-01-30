@@ -14,11 +14,11 @@ public class EnrichmentMapParameters {
     //GMT and GSEA output files
     private String GMTFileName;
     private String GCTFileName;
-    private String GSEADataset1FileName1;
-    private String GSEADataset1FileName2;
+    private String enrichmentDataset1FileName1;
+    private String enrichmentDataset1FileName2;
 
-    private String GSEADataset2FileName1;
-    private String GSEADataset2FileName2;
+    private String enrichmentDataset2FileName1;
+    private String enrichmentDataset2FileName2;
 
     private boolean twoDatasets = false;
 
@@ -32,52 +32,54 @@ public class EnrichmentMapParameters {
 
     private double jaccardCutOff;
 
+    //flag to indicate if the results are from GSEA or generic
+    private boolean GSEA = true;
+    //flag to indicate if the user has supplied a data file
+    private boolean Data = false;
+    //falg to indicate if there are FDR Q-values
+    private boolean FDR = false;
+
     //Hashmap stores the unique set of genes used in the gmt file
     private HashMap genes;
     private HashSet datasetGenes;
     private int NumberOfGenes = 0;
 
     //Hashmap of the GSEA Results, It is is a hash of the GSEAResults objects
-    private HashMap gseaResults1;
-    private HashMap gseaResults2;
+    private HashMap enrichmentResults1;
+    private HashMap enrichmentResults2;
     private HashMap genesets;
     private HashMap filteredGenesets;
 
     //The GSEA results that pass the thresholds.
     //If there are two datasets these list can be different.
-    private HashMap gseaResults1OfInterest;
-    private HashMap gseaResults2OfInterest;
-
+    private HashMap enrichmentResults1OfInterest;
+    private HashMap enrichmentResults2OfInterest;
 
     private HashMap genesetsOfInterest;
 
+    private HashMap expression;
+
     public EnrichmentMapParameters() {
-        this.gseaResults1 = new HashMap();
-        this.gseaResults2 = new HashMap();
+        this.enrichmentResults1 = new HashMap();
+        this.enrichmentResults2 = new HashMap();
         this.genes = new HashMap();
         this.datasetGenes = new HashSet();
         this.genesets = new HashMap();
         this.filteredGenesets = new HashMap();
-        this.gseaResults1OfInterest = new HashMap();
-        this.gseaResults2OfInterest = new HashMap();
+        this.enrichmentResults1OfInterest = new HashMap();
+        this.enrichmentResults2OfInterest = new HashMap();
         this.genesetsOfInterest = new HashMap();
+        this.expression = new HashMap();
         jaccard = true;
 
     }
 
     public EnrichmentMapParameters(String GMTFileName,  double pvalue, double qvalue) {
+        this();
         this.GMTFileName = GMTFileName;
         this.pvalue = pvalue;
         this.qvalue = qvalue;
-        this.gseaResults1 = new HashMap();
-        this.gseaResults2 = new HashMap();
-        this.genes = new HashMap();
-        this.datasetGenes = new HashSet();
-        this.genesets = new HashMap();
-        this.filteredGenesets = new HashMap();
-        this.gseaResults1OfInterest = new HashMap();
-        this.gseaResults2OfInterest = new HashMap();
-        this.genesetsOfInterest = new HashMap();
+
     }
 
     public boolean isJaccard() {
@@ -88,36 +90,36 @@ public class EnrichmentMapParameters {
         this.jaccard = jaccard;
     }
 
-    public HashMap getGseaResults1() {
-        return gseaResults1;
+    public HashMap getEnrichmentResults1() {
+        return enrichmentResults1;
     }
 
-    public void setGseaResults1(HashMap gseaResults1) {
-        this.gseaResults1 = gseaResults1;
+    public void setEnrichmentResults1(HashMap enrichmentResults1) {
+        this.enrichmentResults1 = enrichmentResults1;
     }
 
-    public HashMap getGseaResults2() {
-        return gseaResults2;
+    public HashMap getEnrichmentResults2() {
+        return enrichmentResults2;
     }
 
-    public void setGseaResults2(HashMap gseaResults2) {
-        this.gseaResults2 = gseaResults2;
+    public void setEnrichmentResults2(HashMap enrichmentResults2) {
+        this.enrichmentResults2 = enrichmentResults2;
     }
 
-    public HashMap getGseaResults1OfInterest() {
-        return gseaResults1OfInterest;
+    public HashMap getEnrichmentResults1OfInterest() {
+        return enrichmentResults1OfInterest;
     }
 
-    public void setGseaResults1OfInterest(HashMap gseaResults1OfInterest) {
-        this.gseaResults1OfInterest = gseaResults1OfInterest;
+    public void setEnrichmentResults1OfInterest(HashMap enrichmentResults1OfInterest) {
+        this.enrichmentResults1OfInterest = enrichmentResults1OfInterest;
     }
 
-    public HashMap getGseaResults2OfInterest() {
-        return gseaResults2OfInterest;
+    public HashMap getEnrichmentResults2OfInterest() {
+        return enrichmentResults2OfInterest;
     }
 
-    public void setGseaResults2OfInterest(HashMap gseaResults2OfInterest) {
-        this.gseaResults2OfInterest = gseaResults2OfInterest;
+    public void setEnrichmentResults2OfInterest(HashMap enrichmentResults2OfInterest) {
+        this.enrichmentResults2OfInterest = enrichmentResults2OfInterest;
     }
 
     public HashMap getGenesetsOfInterest() {
@@ -165,36 +167,36 @@ public class EnrichmentMapParameters {
         this.GCTFileName = GCTFileName;
     }
 
-    public String getGSEADataset1FileName1() {
-        return GSEADataset1FileName1;
+    public String getEnrichmentDataset1FileName1() {
+        return enrichmentDataset1FileName1;
     }
 
-    public void setGSEADataset1FileName1(String GSEADataset1FileName1) {
-        this.GSEADataset1FileName1 = GSEADataset1FileName1;
+    public void setEnrichmentDataset1FileName1(String enrichmentDataset1FileName1) {
+        this.enrichmentDataset1FileName1 = enrichmentDataset1FileName1;
     }
 
-    public String getGSEADataset1FileName2() {
-        return GSEADataset1FileName2;
+    public String getEnrichmentDataset1FileName2() {
+        return enrichmentDataset1FileName2;
     }
 
-    public void setGSEADataset1FileName2(String GSEADataset1FileName2) {
-        this.GSEADataset1FileName2 = GSEADataset1FileName2;
+    public void setEnrichmentDataset1FileName2(String enrichmentDataset1FileName2) {
+        this.enrichmentDataset1FileName2 = enrichmentDataset1FileName2;
     }
 
-    public String getGSEADataset2FileName1() {
-        return GSEADataset2FileName1;
+    public String getEnrichmentDataset2FileName1() {
+        return enrichmentDataset2FileName1;
     }
 
-    public void setGSEADataset2FileName1(String GSEADataset2FileName1) {
-        this.GSEADataset2FileName1 = GSEADataset2FileName1;
+    public void setEnrichmentDataset2FileName1(String enrichmentDataset2FileName1) {
+        this.enrichmentDataset2FileName1 = enrichmentDataset2FileName1;
     }
 
-    public String getGSEADataset2FileName2() {
-        return GSEADataset2FileName2;
+    public String getEnrichmentDataset2FileName2() {
+        return enrichmentDataset2FileName2;
     }
 
-    public void setGSEADataset2FileName2(String GSEADataset2FileName2) {
-        this.GSEADataset2FileName2 = GSEADataset2FileName2;
+    public void setEnrichmentDataset2FileName2(String enrichmentDataset2FileName2) {
+        this.enrichmentDataset2FileName2 = enrichmentDataset2FileName2;
     }
 
     public double getPvalue() {
@@ -253,6 +255,10 @@ public class EnrichmentMapParameters {
         this.twoDatasets = twoDatasets;
     }
 
+    public void noFilter(){
+        this.filteredGenesets = genesets;
+    }
+
     public void filterGenesets(){
         //iterate through each geneset and filter each one
          for(Iterator j = genesets.keySet().iterator(); j.hasNext(); ){
@@ -283,13 +289,45 @@ public class EnrichmentMapParameters {
     public void dispose(){
         genesets.clear();
         genesetsOfInterest.clear();
-        gseaResults1.clear();
-        gseaResults2.clear();
+        enrichmentResults1.clear();
+        enrichmentResults2.clear();
         genes.clear();
         datasetGenes.clear();        
         filteredGenesets.clear();
-        gseaResults1OfInterest.clear();
-        gseaResults2OfInterest.clear();
+        enrichmentResults1OfInterest.clear();
+        enrichmentResults2OfInterest.clear();
 
+    }
+
+    public boolean isGSEA() {
+        return GSEA;
+    }
+
+    public void setGSEA(boolean GSEA) {
+        this.GSEA = GSEA;
+    }
+
+    public boolean isData() {
+        return Data;
+    }
+
+    public void setData(boolean data) {
+        Data = data;
+    }
+
+    public boolean isFDR() {
+        return FDR;
+    }
+
+    public void setFDR(boolean FDR) {
+        this.FDR = FDR;
+    }
+
+    public HashMap getExpression() {
+        return expression;
+    }
+
+    public void setExpression(HashMap expression) {
+        this.expression = expression;
     }
 }

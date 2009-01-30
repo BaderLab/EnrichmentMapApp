@@ -53,9 +53,12 @@ public class GCTFileReaderTask implements Task {
       public void parse() {
         int currentProgress = 0;
         maxValue = lines.length;
+        HashMap expression = params.getExpression();
 
 
         for (int i = 0; i < lines.length; i++) {
+            Object genekey ;
+
             String line = lines[i];
 
             String [] tokens = line.split("\t");
@@ -75,9 +78,17 @@ public class GCTFileReaderTask implements Task {
 
             //Check to see if this gene is in the genes list
             if(genes.containsKey(Name)){
+                genekey = genes.get(Name);
                 //we want the genes hashmap and dataset genes hashmap to have the same keys so it is
                 //easier to compare.
                 datasetGenes.add(genes.get(Name));
+
+                String description = tokens[1];
+                GeneExpression expres = new GeneExpression(Name, description);
+                expres.setExpression(tokens);
+
+                expression.put(genekey,expres);
+
             }
 
             // Calculate Percentage.  This must be a value between 0..100.

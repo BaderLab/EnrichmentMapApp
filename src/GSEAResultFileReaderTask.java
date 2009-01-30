@@ -33,10 +33,11 @@ public class GSEAResultFileReaderTask implements Task {
     public GSEAResultFileReaderTask(EnrichmentMapParameters params, String FileName, int dataset) {
         this.params = params;
         GSEAResultFileName = FileName;
+        params.setFDR(true);
         if(dataset == 1)
-            results = params.getGseaResults1();
+            results = params.getEnrichmentResults1();
         else if(dataset == 2)
-            results = params.getGseaResults2();
+            results = params.getEnrichmentResults2();
 
 
     }

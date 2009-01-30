@@ -16,7 +16,7 @@ public class BuildGSEAEnrichmentMapTask implements Task {
 
 
 
-    private GSEAInputFilesPanel inputPanel;
+    private GenericInputFilesPanel inputPanel;
     private EnrichmentMapParameters params;
 
     // Keep track of progress for monitoring:
@@ -25,7 +25,7 @@ public class BuildGSEAEnrichmentMapTask implements Task {
     private boolean interrupted = false;
 
 
-    public BuildGSEAEnrichmentMapTask(GSEAInputFilesPanel inputPanel, EnrichmentMapParameters params) {
+    public BuildGSEAEnrichmentMapTask(GenericInputFilesPanel inputPanel, EnrichmentMapParameters params) {
         this.inputPanel = inputPanel;
         this.params = params;
     }
@@ -64,20 +64,20 @@ public class BuildGSEAEnrichmentMapTask implements Task {
         try{
             //Load the GSEA result files
             //Dataset1 (each dataset should have two files.)
-            GSEAResultFileReaderTask gseaResultsFilesDataset1File1 = new GSEAResultFileReaderTask(params,taskMonitor,  params.getGSEADataset1FileName1(), 1);
+            GSEAResultFileReaderTask gseaResultsFilesDataset1File1 = new GSEAResultFileReaderTask(params,taskMonitor,  params.getEnrichmentDataset1FileName1(), 1);
             gseaResultsFilesDataset1File1.run();
             //boolean success1a = TaskManager.executeTask(gseaResultsFilesDataset1File1, config);
-            GSEAResultFileReaderTask gseaResultsFilesDataset1File2 = new GSEAResultFileReaderTask(params,taskMonitor,  params.getGSEADataset1FileName2(), 1);
+            GSEAResultFileReaderTask gseaResultsFilesDataset1File2 = new GSEAResultFileReaderTask(params,taskMonitor,  params.getEnrichmentDataset1FileName2(), 1);
             gseaResultsFilesDataset1File2.run();
             //boolean success1b = TaskManager.executeTask(gseaResultsFilesDataset1File2, config);
 
             //Load the second dataset only if there is a second dataset to load
             if (params.isTwoDatasets()){
                 //Dataset2
-                GSEAResultFileReaderTask gseaResultsFilesDataset2File1 = new GSEAResultFileReaderTask(params,taskMonitor,  params.getGSEADataset2FileName1(), 2);
+                GSEAResultFileReaderTask gseaResultsFilesDataset2File1 = new GSEAResultFileReaderTask(params,taskMonitor,  params.getEnrichmentDataset2FileName1(), 2);
                 gseaResultsFilesDataset2File1.run();
                 //boolean success2a = TaskManager.executeTask(gseaResultsFilesDataset2File1, config);
-                GSEAResultFileReaderTask gseaResultsFilesDataset2File2 = new GSEAResultFileReaderTask(params,taskMonitor,  params.getGSEADataset2FileName2(), 2);
+                GSEAResultFileReaderTask gseaResultsFilesDataset2File2 = new GSEAResultFileReaderTask(params,taskMonitor,  params.getEnrichmentDataset2FileName2(), 2);
                 gseaResultsFilesDataset2File2.run();
                 //boolean success2b = TaskManager.executeTask(gseaResultsFilesDataset2File2, config);
             }

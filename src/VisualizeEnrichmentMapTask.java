@@ -83,13 +83,13 @@ public class VisualizeEnrichmentMapTask implements Task {
             }
 
 
-            HashMap GSEAResults1OfInterest = params.getGseaResults1OfInterest();
-            HashMap GSEAResults2OfInterest = params.getGseaResults2OfInterest();
-            HashMap GSEAResults1 = params.getGseaResults1();
-            HashMap GSEAResults2 = params.getGseaResults2();
+            HashMap enrichmentResults1OfInterest = params.getEnrichmentResults1OfInterest();
+            HashMap enrichmentResults2OfInterest = params.getEnrichmentResults2OfInterest();
+            HashMap enrichmentResults1 = params.getEnrichmentResults1();
+            HashMap enrichmentResults2 = params.getEnrichmentResults2();
 
             int currentProgress = 0;
-            int maxValue = GSEAResults1OfInterest.size();
+            int maxValue = enrichmentResults1OfInterest.size();
 
             //create the nodes
             //Each geneset of interest is a node
@@ -100,61 +100,45 @@ public class VisualizeEnrichmentMapTask implements Task {
             //we resolve this?
 
             //iterate through the each of the GSEA Results of interest
-            for(Iterator i = GSEAResults1OfInterest.keySet().iterator(); i.hasNext(); ){
+            for(Iterator i = enrichmentResults1OfInterest.keySet().iterator(); i.hasNext(); ){
                 String current_name =i.next().toString();
-                GSEAResult current_result = (GSEAResult) GSEAResults1OfInterest.get(current_name);
+
 
                 Node node = Cytoscape.getCyNode(current_name,true);
 
                 network.addNode(node);
 
-                CyAttributes nodeAttrs = Cytoscape.getNodeAttributes();
-                nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.NAME, current_name);
-                nodeAttrs.setAttribute(node.getIdentifier(), prefix + EnrichmentMapVisualStyle.PVALUE_DATASET1, current_result.getPvalue());
-                nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1, current_result.getFdrqvalue());
-                nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.FWER_QVALUE_DATASET1, current_result.getFwerqvalue());
-                nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.GS_SIZE_DATASET1, current_result.getSize());
-                nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.ES_DATASET1, current_result.getES());
-                nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.NES_DATASET1, current_result.getNES());
-
-                //colouring is based on the pvalue but in order to maintain the up down, the p-values are either
-                // positive or negative depending on the ES score
-                if(current_result.getNES()>=0){
-                     nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.COLOURING_DATASET1,  (1-current_result.getPvalue()));
+                if(params.isGSEA()){
+                    GSEAResult current_result = (GSEAResult) enrichmentResults1OfInterest.get(current_name);
+                    setGSEAResultDataset1Attributes(node, current_result,prefix);
                 }
                 else{
-                      nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.COLOURING_DATASET1,  ((-1) * (1-current_result.getPvalue())));
+                   GenericResult current_result = (GenericResult) enrichmentResults1OfInterest.get(current_name);
+                   setGenericResultDataset1Attributes(node, current_result, prefix);
                 }
 
                 //if we are using two datasets check to see if there is data for this node
                 if(params.isTwoDatasets()){
-                       if(GSEAResults2.containsKey(current_name)){
-                           GSEAResult second_result = (GSEAResult) GSEAResults2.get(current_name);
-                           nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.PVALUE_DATASET2, second_result.getPvalue());
-                           nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2, second_result.getFdrqvalue());
-                           nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.FWER_QVALUE_DATASET2, second_result.getFwerqvalue());
-                           nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.GS_SIZE_DATASET2, second_result.getSize());
-                           nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.ES_DATASET2, second_result.getES());
-                           nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.NES_DATASET2, second_result.getNES());
-                            //colouring is based on the pvalue but in order to maintain the up down, the p-values are either
-                           // positive or negative depending on the ES score
-                           if(second_result.getNES()>=0){
-                                nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.COLOURING_DATASET2,  (1-second_result.getPvalue()));
-                           }
-                           else{
-                                 nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.COLOURING_DATASET2,  ((-1) * (1-second_result.getPvalue())));
-                           }
+                    if(params.isGSEA()){
+                       if(enrichmentResults2.containsKey(current_name)){
+                           GSEAResult second_result = (GSEAResult) enrichmentResults2.get(current_name);
+                           setGSEAResultDataset2Attributes(node, second_result,prefix);
 
                        }
                       else{
-                           nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.PVALUE_DATASET2, 1.0);
-                           nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2, 1.0);
-                           nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.FWER_QVALUE_DATASET2, 1.0);
-                           nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.GS_SIZE_DATASET2, 0);
-                           nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.ES_DATASET2, 0.0);
-                           nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.NES_DATASET2, 0.0);
-                           nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.COLOURING_DATASET2, 0.0);
+                          setdefaultGSEAResultDataset2Attributes(node,prefix);
                        }
+                    }
+                    else{
+                       if(enrichmentResults2.containsKey(current_name)){
+                           GenericResult second_result = (GenericResult) enrichmentResults2.get(current_name);
+                           setGenericResultDataset2Attributes(node, second_result,prefix);
+
+                       }
+                      else{
+                          setdefaultGenericResultDataset2Attributes(node,prefix);
+                       }
+                    }
                 }
 
                  // Calculate Percentage.  This must be a value between 0..100.
@@ -174,62 +158,41 @@ public class VisualizeEnrichmentMapTask implements Task {
 
             //Add any additional nodes from the second dataset that haven't been added yet
             if(params.isTwoDatasets()){
-                for(Iterator i = GSEAResults2OfInterest.keySet().iterator(); i.hasNext(); ){
+                for(Iterator i = enrichmentResults2OfInterest.keySet().iterator(); i.hasNext(); ){
                     String current_name =i.next().toString();
 
                     //is this already a node from the first subset
-                    if(GSEAResults1OfInterest.containsKey(current_name)){
+                    if(enrichmentResults1OfInterest.containsKey(current_name)){
                         //Don't need to add it
                     }
                     else{
                         Node node = Cytoscape.getCyNode(current_name, true);
 
                         network.addNode(node);
+                        if(params.isGSEA()){
+                            if(enrichmentResults1.containsKey(current_name)){
+                                GSEAResult result = (GSEAResult) enrichmentResults1.get(current_name);
+                                setGSEAResultDataset1Attributes(node,result, prefix);
+                            }
+                             else{
+                                setdefaultGSEAResultDataset1Attributes(node, prefix);
+                            }
 
-                        CyAttributes nodeAttrs = Cytoscape.getNodeAttributes();
-
-                        if(GSEAResults1.containsKey(current_name)){
-                            GSEAResult result = (GSEAResult) GSEAResults1.get(current_name);
-                            nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.NAME, result.getName());
-                            nodeAttrs.setAttribute(node.getIdentifier(), prefix+EnrichmentMapVisualStyle.PVALUE_DATASET1, result.getPvalue());
-                            nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1, result.getFdrqvalue());
-                            nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.FWER_QVALUE_DATASET1, result.getFwerqvalue());
-                            nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.GS_SIZE_DATASET1, result.getSize());
-                            nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.ES_DATASET1, result.getES());
-                            nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.NES_DATASET1, result.getNES());
-                            if(result.getNES()>=0){
-                                nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.COLOURING_DATASET1,  (1-result.getPvalue()));
-                           }
-                           else{
-                                 nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.COLOURING_DATASET1,  ((-1) * (1-result.getPvalue())));
-                           }
+                            GSEAResult second_result = (GSEAResult) enrichmentResults2OfInterest.get(current_name);
+                            setGSEAResultDataset2Attributes(node, second_result,prefix);
                         }
-                         else{
-                            nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.NAME, current_name);
-                            nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.PVALUE_DATASET1, 1.0);
-                            nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1, 1.0);
-                            nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.FWER_QVALUE_DATASET1, 1.0);
-                            nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.GS_SIZE_DATASET1, 0);
-                            nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.ES_DATASET1, 0.0);
-                            nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.NES_DATASET1, 0.0);
-                            nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.COLOURING_DATASET1, 0.0);
+                        else{
+                            if(enrichmentResults1.containsKey(current_name)){
+                                GenericResult result = (GenericResult) enrichmentResults1.get(current_name);
+                                setGenericResultDataset1Attributes(node,result, prefix);
+                            }
+                             else{
+                                setdefaultGenericResultDataset1Attributes(node, prefix);
+                            }
 
-                         }
-
-                         GSEAResult second_result = (GSEAResult) GSEAResults2OfInterest.get(current_name);
-                         nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.PVALUE_DATASET2, second_result.getPvalue());
-                         nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2, second_result.getFdrqvalue());
-                         nodeAttrs.setAttribute(node.getIdentifier(), prefix+EnrichmentMapVisualStyle.FWER_QVALUE_DATASET2, second_result.getFwerqvalue());
-                         nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.GS_SIZE_DATASET2, second_result.getSize());
-                         nodeAttrs.setAttribute(node.getIdentifier(), prefix+EnrichmentMapVisualStyle.ES_DATASET2, second_result.getES());
-                         nodeAttrs.setAttribute(node.getIdentifier(), prefix+EnrichmentMapVisualStyle.NES_DATASET2, second_result.getNES());
-                         if(second_result.getNES()>=0){
-                                nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.COLOURING_DATASET2,  (1-second_result.getPvalue()));
-                           }
-                         else{
-                                 nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.COLOURING_DATASET2,  ((-1) * (1-second_result.getPvalue())));
-                           }
-
+                            GenericResult second_result = (GenericResult) enrichmentResults2OfInterest.get(current_name);
+                            setGenericResultDataset2Attributes(node, second_result,prefix);
+                        }
                     }
                 }
             }
@@ -293,6 +256,120 @@ public class VisualizeEnrichmentMapTask implements Task {
        return true;
     }
 
+    private void setGenericResultDataset1Attributes(Node node, GenericResult result, String prefix){
+
+        CyAttributes nodeAttrs = Cytoscape.getNodeAttributes();
+
+        nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.NAME, result.getName());
+        nodeAttrs.setAttribute(node.getIdentifier(), prefix + EnrichmentMapVisualStyle.PVALUE_DATASET1, result.getPvalue());
+        nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1, result.getFdrqvalue());
+        nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.GS_SIZE_DATASET1, result.getGsSize());
+        nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.COLOURING_DATASET1,  (1-result.getPvalue()));
+
+    }
+
+    private void setGenericResultDataset2Attributes(Node node, GenericResult result, String prefix){
+
+        CyAttributes nodeAttrs = Cytoscape.getNodeAttributes();
+
+        nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.NAME, result.getName());
+        nodeAttrs.setAttribute(node.getIdentifier(), prefix + EnrichmentMapVisualStyle.PVALUE_DATASET2, result.getPvalue());
+        nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2, result.getFdrqvalue());
+        nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.GS_SIZE_DATASET2, result.getGsSize());
+        nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.COLOURING_DATASET2,  (1-result.getPvalue()));
+
+    }
+
+   private void setGSEAResultDataset1Attributes(Node node, GSEAResult result, String prefix){
+
+       CyAttributes nodeAttrs = Cytoscape.getNodeAttributes();
+
+       nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.NAME, result.getName());
+       nodeAttrs.setAttribute(node.getIdentifier(), prefix+EnrichmentMapVisualStyle.PVALUE_DATASET1, result.getPvalue());
+       nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1, result.getFdrqvalue());
+       nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.FWER_QVALUE_DATASET1, result.getFwerqvalue());
+       nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.GS_SIZE_DATASET1, result.getSize());
+       nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.ES_DATASET1, result.getES());
+       nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.NES_DATASET1, result.getNES());
+       if(result.getNES()>=0){
+            nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.COLOURING_DATASET1,  (1-result.getPvalue()));
+       }
+      else{
+            nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.COLOURING_DATASET1,  ((-1) * (1-result.getPvalue())));
+      }
+
+   }
+
+  private void setGSEAResultDataset2Attributes(Node node, GSEAResult result, String prefix){
+
+       CyAttributes nodeAttrs = Cytoscape.getNodeAttributes();
+
+       nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.NAME, result.getName());
+       nodeAttrs.setAttribute(node.getIdentifier(), prefix+EnrichmentMapVisualStyle.PVALUE_DATASET2, result.getPvalue());
+       nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2, result.getFdrqvalue());
+       nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.FWER_QVALUE_DATASET2, result.getFwerqvalue());
+       nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.GS_SIZE_DATASET2, result.getSize());
+       nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.ES_DATASET2, result.getES());
+       nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.NES_DATASET2, result.getNES());
+       if(result.getNES()>=0){
+            nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.COLOURING_DATASET2,  (1-result.getPvalue()));
+       }
+      else{
+            nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.COLOURING_DATASET2,  ((-1) * (1-result.getPvalue())));
+      }
+
+   }
+
+     private void setdefaultGSEAResultDataset1Attributes(Node node, String prefix){
+
+       CyAttributes nodeAttrs = Cytoscape.getNodeAttributes();
+       nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.PVALUE_DATASET1, 1.0);
+       nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1, 1.0);
+       nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.FWER_QVALUE_DATASET1, 1.0);
+       nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.GS_SIZE_DATASET1, 0);
+       nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.ES_DATASET1, 0.0);
+       nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.NES_DATASET1, 0.0);
+       nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.COLOURING_DATASET1, 0.0);
+
+
+   }
+
+     private void setdefaultGSEAResultDataset2Attributes(Node node, String prefix){
+
+       CyAttributes nodeAttrs = Cytoscape.getNodeAttributes();
+       nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.PVALUE_DATASET2, 1.0);
+       nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2, 1.0);
+       nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.FWER_QVALUE_DATASET2, 1.0);
+       nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.GS_SIZE_DATASET2, 0);
+       nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.ES_DATASET2, 0.0);
+       nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.NES_DATASET2, 0.0);
+       nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.COLOURING_DATASET2, 0.0);
+
+
+   }
+
+      private void setdefaultGenericResultDataset1Attributes(Node node, String prefix){
+
+       CyAttributes nodeAttrs = Cytoscape.getNodeAttributes();
+       nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.PVALUE_DATASET1, 1.0);
+       nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1, 1.0);
+       nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.GS_SIZE_DATASET1, 0);
+       nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.COLOURING_DATASET1, 0.0);
+
+
+   }
+
+
+    private void setdefaultGenericResultDataset2Attributes(Node node, String prefix){
+
+     CyAttributes nodeAttrs = Cytoscape.getNodeAttributes();
+     nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.PVALUE_DATASET2, 1.0);
+     nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2, 1.0);
+     nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.GS_SIZE_DATASET2, 0);
+     nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.COLOURING_DATASET2, 0.0);
+
+
+ }
 
 
     /**

@@ -19,11 +19,16 @@ public class BuildEnrichmentMapActionListener implements ActionListener {
 
     private JTaskConfig config;
 
-    private GSEAInputFilesPanel inputPanel;
+    private GenericInputFilesPanel inputPanel;
     private EnrichmentMapParameters params;
 
-    public BuildEnrichmentMapActionListener (GSEAInputFilesPanel inputPanel, EnrichmentMapParameters params) {
+    public BuildEnrichmentMapActionListener (GenericInputFilesPanel inputPanel, EnrichmentMapParameters params) {
         this.inputPanel = inputPanel;
+        this.params = params;
+
+    }
+
+    public BuildEnrichmentMapActionListener (EnrichmentMapParameters params) {
         this.params = params;
 
     }
@@ -44,7 +49,7 @@ public class BuildEnrichmentMapActionListener implements ActionListener {
         }
 
         double qvalue = this.inputPanel.getQvalue();
-        if(qvalue > 1.0 || qvalue < 0.0)
+        if(qvalue > 100.0 || qvalue < 0.0)
              JOptionPane.showMessageDialog(inputPanel,"invalid q-value");
         else{
             params.setQvalue(qvalue);
@@ -57,9 +62,14 @@ public class BuildEnrichmentMapActionListener implements ActionListener {
             params.setJaccardCutOff(jaccardCutOff);
         }
 
-        BuildGSEAEnrichmentMapTask new_map = new BuildGSEAEnrichmentMapTask(inputPanel,params);
-        boolean success = TaskManager.executeTask(new_map,config);
-
+       if(params.isGSEA()){
+            BuildGSEAEnrichmentMapTask new_map = new BuildGSEAEnrichmentMapTask(inputPanel,params);
+            boolean success = TaskManager.executeTask(new_map,config);
+       }
+       else{
+           BuildGenericEnrichmentMapTask new_map = new BuildGenericEnrichmentMapTask(inputPanel, params);
+           boolean success = TaskManager.executeTask(new_map, config);
+       }
      }
 
 
