@@ -91,10 +91,12 @@ public class BuildGSEAEnrichmentMapTask implements Task {
             ComputeSimilarityTask similarities = new ComputeSimilarityTask(params,taskMonitor);
             similarities.run();
             //boolean success5 = TaskManager.executeTask(similarities,config);
-            HashMap similarity_results = similarities.getGeneset_similarities();
+            HashMap<String, GenesetSimilarity> similarity_results = similarities.getGeneset_similarities();
 
+            params.setGenesetSimilarity(similarity_results);
+            
             //build the resulting map
-            VisualizeEnrichmentMapTask map = new VisualizeEnrichmentMapTask(params,similarity_results,taskMonitor);
+            VisualizeEnrichmentMapTask map = new VisualizeEnrichmentMapTask(params,taskMonitor);
             map.run();
             //boolean success3 =TaskManager.executeTask(map,config);
 

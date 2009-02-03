@@ -5,18 +5,20 @@ import cytoscape.CyNetwork;
 import cytoscape.Cytoscape;
 import cytoscape.layout.CyLayouts;
 import cytoscape.visual.*;
-import cytoscape.visual.calculators.BasicCalculator;
-import cytoscape.visual.calculators.Calculator;
-import cytoscape.visual.mappings.*;
 import cytoscape.data.CyAttributes;
 import cytoscape.data.Semantics;
 import cytoscape.view.CyNetworkView;
 
 import java.util.*;
-import java.awt.*;
 
 import giny.model.Node;
 import giny.model.Edge;
+import giny.view.NodeView;
+import giny.view.EdgeView;
+
+import javax.swing.*;
+
+import ding.view.EdgeContextMenuListener;
 
 
 /**
@@ -29,7 +31,7 @@ public class VisualizeEnrichmentMapTask implements Task {
 
     private EnrichmentMapParameters params;
 
-    private HashMap geneset_similarities;
+    private HashMap<String, GenesetSimilarity> geneset_similarities;
 
     private String clustername;
 
@@ -37,15 +39,15 @@ public class VisualizeEnrichmentMapTask implements Task {
     private TaskMonitor taskMonitor = null;
     private boolean interrupted = false;
 
-    public VisualizeEnrichmentMapTask(EnrichmentMapParameters params,HashMap similarities_results, TaskMonitor taskMonitor) {
-          this(params, similarities_results);
+    public VisualizeEnrichmentMapTask(EnrichmentMapParameters params, TaskMonitor taskMonitor) {
+          this(params);
           this.taskMonitor = taskMonitor;
       }
 
 
-    public VisualizeEnrichmentMapTask(EnrichmentMapParameters params, HashMap similarities_results) {
+    public VisualizeEnrichmentMapTask(EnrichmentMapParameters params) {
         this.params = params;
-        this.geneset_similarities = similarities_results;
+        this.geneset_similarities = params.getGenesetSimilarity();
         clustername = "Enrichment Map";
 
     }
@@ -196,13 +198,13 @@ public class VisualizeEnrichmentMapTask implements Task {
                     }
                 }
             }
-
+            int k = 0;
             //iterate through the similiarities to create the edges
             for(Iterator j = geneset_similarities.keySet().iterator(); j.hasNext(); ){
               String current_name =j.next().toString();
               GenesetSimilarity current_result = (GenesetSimilarity) geneset_similarities.get(current_name);
 
-              //only create edges where the jaccard coeffecient to great than 0.3
+              //only create edges where the jaccard coeffecient to great than
                 if(current_result.getJaccard_coeffecient()>params.getJaccardCutOff()){
                     Node node1 = Cytoscape.getCyNode(current_result.getGeneset1_Name(),false);
                     Node node2 = Cytoscape.getCyNode(current_result.getGeneset2_Name(),false);
@@ -210,14 +212,18 @@ public class VisualizeEnrichmentMapTask implements Task {
 
                     network.addEdge(edge);
 
+                    //Cytoscape.getNetworkView(network.getIdentifier()).addEdgeContextMenuListener(getEMEdgeContextMenuListener(current_result));
+
                     CyAttributes edgeAttrs = Cytoscape.getEdgeAttributes();
                     edgeAttrs.setAttribute(edge.getIdentifier(), prefix+EnrichmentMapVisualStyle.JACCARD_COEFFECIENT, current_result.getJaccard_coeffecient());
                     edgeAttrs.setAttribute(edge.getIdentifier(), prefix+ EnrichmentMapVisualStyle.OVERLAP_SIZE, current_result.getSizeOfOverlap());
+
+
                 }
             }
 
             CyNetworkView view = Cytoscape.createNetworkView( network );
-
+            view.addGraphViewChangeListener(new edgeOverlappingGenesActionListener(params));
             // get the VisualMappingManager and CalculatorCatalog
             VisualMappingManager manager = Cytoscape.getVisualMappingManager();
             CalculatorCatalog catalog = manager.getCalculatorCatalog();
@@ -246,6 +252,9 @@ public class VisualizeEnrichmentMapTask implements Task {
 
                   //view.applyLayout(CyLayouts.getDefaultLayout());
                view.applyLayout(CyLayouts.getLayout("force-directed"));
+
+            //test out overlap viewer
+
 
 
         } catch(IllegalThreadStateException e){

@@ -53,8 +53,8 @@ public class GCTFileReaderTask implements Task {
       public void parse() {
         int currentProgress = 0;
         maxValue = lines.length;
-        HashMap expression = params.getExpression();
-
+        GeneExpressionMatrix expressionMatrix = new GeneExpressionMatrix(lines[0].split("\t"));
+        HashMap expression = new HashMap();
 
         for (int i = 0; i < lines.length; i++) {
             Object genekey ;
@@ -66,15 +66,21 @@ public class GCTFileReaderTask implements Task {
             //The first column of the file is the name of the geneset
             String Name = tokens[0];
 
-            if(i==0 && Name.equalsIgnoreCase("#1.2")){
-                //if the first line contains "#1.2" then this file is a gct file and we should ignore the first three lines
-                //ignore the first three lines of a GCT file because it contains headers.
-                i=2;
-            }
-            else if(i==0){
-                //otherwise just skip the header line
+            if(i==0){
+                //otherwise the first line is the header
+                if(Name.equalsIgnoreCase("#1.2")){
+                   line = lines[2];
+                   i=2;
+                }
+                else{
+                    line = lines[0];
+                }
+                tokens = line.split("\t");
+                expressionMatrix = new GeneExpressionMatrix(tokens);
+                expressionMatrix.setExpressionMatrix(expression);
                 continue;
             }
+
 
             //Check to see if this gene is in the genes list
             if(genes.containsKey(Name)){
@@ -86,6 +92,11 @@ public class GCTFileReaderTask implements Task {
                 String description = tokens[1];
                 GeneExpression expres = new GeneExpression(Name, description);
                 expres.setExpression(tokens);
+
+                double newMax = expres.newMax(expressionMatrix.getMaxExpression());
+                if(newMax != -1) expressionMatrix.setMaxExpression(newMax);
+                double newMin = expres.newMin(expressionMatrix.getMinExpression());
+                if (newMin != -1) expressionMatrix.setMinExpression(newMin);
 
                 expression.put(genekey,expres);
 
@@ -104,7 +115,7 @@ public class GCTFileReaderTask implements Task {
 
 
         }
-
+        params.setExpression(expressionMatrix);
 
     }
 

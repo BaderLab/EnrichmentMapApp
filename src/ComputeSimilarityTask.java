@@ -70,8 +70,8 @@ public class ComputeSimilarityTask implements Task {
                      //The key for the set of geneset similarities is the
                      //combination of the two names.  Check for either variation name1_name2
                      //or name2_name1
-                     String similarity_key1 = geneset1_name + "_" + geneset2_name;
-                     String similarity_key2 = geneset2_name + "_" + geneset1_name;
+                     String similarity_key1 = geneset1_name + " (pp) " + geneset2_name;
+                     String similarity_key2 = geneset2_name + " (pp) " + geneset1_name;
 
                      //first check to see if the terms are the same
                      if(geneset1_name.equalsIgnoreCase(geneset2_name)){
