@@ -57,7 +57,9 @@ public class EnrichmentMapParameters {
 
     private HashMap genesetsOfInterest;
 
-    private HashMap expression;
+    private GeneExpressionMatrix expression;
+
+    private HashMap<String, GenesetSimilarity> genesetSimilarity;
 
     public EnrichmentMapParameters() {
         this.enrichmentResults1 = new HashMap();
@@ -69,7 +71,6 @@ public class EnrichmentMapParameters {
         this.enrichmentResults1OfInterest = new HashMap();
         this.enrichmentResults2OfInterest = new HashMap();
         this.genesetsOfInterest = new HashMap();
-        this.expression = new HashMap();
         jaccard = true;
 
     }
@@ -323,11 +324,19 @@ public class EnrichmentMapParameters {
         this.FDR = FDR;
     }
 
-    public HashMap getExpression() {
+    public GeneExpressionMatrix getExpression() {
         return expression;
     }
 
-    public void setExpression(HashMap expression) {
+    public void setExpression(GeneExpressionMatrix expression) {
         this.expression = expression;
+    }
+
+    public HashMap<String, GenesetSimilarity> getGenesetSimilarity() {
+        return genesetSimilarity;
+    }
+
+    public void setGenesetSimilarity(HashMap<String, GenesetSimilarity> genesetSimilarity) {
+        this.genesetSimilarity = genesetSimilarity;
     }
 }
