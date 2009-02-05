@@ -13,12 +13,6 @@ import java.util.*;
 
 import giny.model.Node;
 import giny.model.Edge;
-import giny.view.NodeView;
-import giny.view.EdgeView;
-
-import javax.swing.*;
-
-import ding.view.EdgeContextMenuListener;
 
 
 /**
@@ -223,7 +217,11 @@ public class VisualizeEnrichmentMapTask implements Task {
             }
 
             CyNetworkView view = Cytoscape.createNetworkView( network );
-            view.addGraphViewChangeListener(new edgeOverlappingGenesActionListener(params));
+
+            //only add the click on edge listener if there is an expression file loaded
+            if(params.isData()){
+                view.addGraphViewChangeListener(new EnrichmentMapActionListener(params));
+            }
             // get the VisualMappingManager and CalculatorCatalog
             VisualMappingManager manager = Cytoscape.getVisualMappingManager();
             CalculatorCatalog catalog = manager.getCalculatorCatalog();

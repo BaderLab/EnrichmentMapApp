@@ -17,6 +17,7 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
       CONSTRUCTOR.
       --------------------------------------------------------------*/
     public Enrichment_Map_Plugin(){
+
         //set-up menu options in plugins menu
         JMenu menu = Cytoscape.getDesktop().getCyMenus().getOperationsMenu();
         JMenuItem item;

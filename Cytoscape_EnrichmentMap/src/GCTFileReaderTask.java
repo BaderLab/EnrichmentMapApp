@@ -18,6 +18,8 @@ public class GCTFileReaderTask implements Task {
 
     private String GCTFileName;
 
+    private int dataset;
+
     private String fullText;
     private String [] lines;
 
@@ -30,27 +32,30 @@ public class GCTFileReaderTask implements Task {
     private boolean interrupted = false;
 
 
-     public GCTFileReaderTask(EnrichmentMapParameters params, TaskMonitor taskMonitor) {
-        this(params);
+     public GCTFileReaderTask(EnrichmentMapParameters params,String fileName, int dataset, TaskMonitor taskMonitor) {
+        this(params,fileName,dataset);
         this.taskMonitor = taskMonitor;
     }
 
-    public GCTFileReaderTask(EnrichmentMapParameters params)   {
+    public GCTFileReaderTask(EnrichmentMapParameters params,String fileName, int dataset )   {
         this.params = params;
 
-        this.GCTFileName = params.getGCTFileName();
         this.genes = params.getGenes();
         this.datasetGenes = params.getDatasetGenes();
 
         //open GCT file
-         TextFileReader reader = new TextFileReader(GCTFileName);
-         reader.read();
-         fullText = reader.getText();
+        this.GCTFileName = fileName;
+        this.dataset = dataset;
 
-        lines = fullText.split("\n");
+
 
     }
       public void parse() {
+        TextFileReader reader = new TextFileReader(GCTFileName);
+        reader.read();
+        fullText = reader.getText();
+
+        lines = fullText.split("\n");
         int currentProgress = 0;
         maxValue = lines.length;
         GeneExpressionMatrix expressionMatrix = new GeneExpressionMatrix(lines[0].split("\t"));
@@ -115,8 +120,12 @@ public class GCTFileReaderTask implements Task {
 
 
         }
-        params.setExpression(expressionMatrix);
-
+        if(dataset == 1){
+            params.setExpression(expressionMatrix);
+        }
+        else{
+            params.setExpression2(expressionMatrix);
+        }
     }
 
 

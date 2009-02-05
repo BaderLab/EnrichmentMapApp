@@ -13,7 +13,8 @@ public class EnrichmentMapParameters {
 
     //GMT and GSEA output files
     private String GMTFileName;
-    private String GCTFileName;
+    private String GCTFileName1;
+    private String GCTFileName2;
     private String enrichmentDataset1FileName1;
     private String enrichmentDataset1FileName2;
 
@@ -36,6 +37,8 @@ public class EnrichmentMapParameters {
     private boolean GSEA = true;
     //flag to indicate if the user has supplied a data file
     private boolean Data = false;
+    //flag to indicate if the user has supplied a data file
+    private boolean Data2 = false;
     //falg to indicate if there are FDR Q-values
     private boolean FDR = false;
 
@@ -58,6 +61,7 @@ public class EnrichmentMapParameters {
     private HashMap genesetsOfInterest;
 
     private GeneExpressionMatrix expression;
+    private GeneExpressionMatrix expression2;
 
     private HashMap<String, GenesetSimilarity> genesetSimilarity;
 
@@ -160,12 +164,21 @@ public class EnrichmentMapParameters {
         this.GMTFileName = GMTFileName;
     }
 
-    public String getGCTFileName() {
-        return GCTFileName;
+    public String getGCTFileName1() {
+        return GCTFileName1;
     }
 
-    public void setGCTFileName(String GCTFileName) {
-        this.GCTFileName = GCTFileName;
+    public void setGCTFileName1(String GCTFileName) {
+        this.GCTFileName1 = GCTFileName;
+    }
+
+
+    public String getGCTFileName2() {
+        return GCTFileName2;
+    }
+
+    public void setGCTFileName2(String GCTFileName) {
+        this.GCTFileName2 = GCTFileName;
     }
 
     public String getEnrichmentDataset1FileName1() {
@@ -316,6 +329,14 @@ public class EnrichmentMapParameters {
         Data = data;
     }
 
+    public boolean isData2() {
+        return Data2;
+    }
+
+    public void setData2(boolean data2) {
+        Data2 = data2;
+    }
+
     public boolean isFDR() {
         return FDR;
     }
@@ -330,6 +351,14 @@ public class EnrichmentMapParameters {
 
     public void setExpression(GeneExpressionMatrix expression) {
         this.expression = expression;
+    }
+
+    public GeneExpressionMatrix getExpression2() {
+        return expression2;
+    }
+
+    public void setExpression2(GeneExpressionMatrix expression2) {
+        this.expression2 = expression2;
     }
 
     public HashMap<String, GenesetSimilarity> getGenesetSimilarity() {

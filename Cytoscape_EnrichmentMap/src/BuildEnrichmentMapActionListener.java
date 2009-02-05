@@ -70,6 +70,9 @@ public class BuildEnrichmentMapActionListener implements ActionListener {
            BuildGenericEnrichmentMapTask new_map = new BuildGenericEnrichmentMapTask(inputPanel, params);
            boolean success = TaskManager.executeTask(new_map, config);
        }
+
+       inputPanel.dispose();
+       inputPanel.close();
      }
 
 

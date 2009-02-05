@@ -72,9 +72,8 @@ public class GSEAInputFilesPanelMac extends GenericInputFilesPanel {
         c.fill = GridBagConstraints.HORIZONTAL;
         int current_row = 0;
 
-        current_row = initTitleComponent(gridbag, c, current_row);
+        current_row = initTitleComponent(gridbag, c, current_row,"Import GSEA Result files used to calculate enrichment maps");
         current_row = initGMTComponent(gridbag, c, current_row);
-        current_row = initGCTComponent(gridbag, c, current_row);
         current_row = initEnrichmentFilesComponent(gridbag, c, current_row);
         current_row = initCutoffsComponent(gridbag, c, current_row);
         current_row = initActionButtonsComponent(gridbag, c, current_row);
@@ -82,24 +81,6 @@ public class GSEAInputFilesPanelMac extends GenericInputFilesPanel {
 
     }
 
-
-
-  public int initTitleComponent(GridBagLayout gridbag, GridBagConstraints c, int current_row){
-        javax.swing.JLabel titleLabel;
-        titleLabel = new javax.swing.JLabel();
-        titleLabel.setFont(new java.awt.Font("Dialog", 1, 14));
-        titleLabel.setText("Import GSEA Result files used to calculate enrichment maps");
-
-
-        c.gridx = 0;
-        c.gridy = current_row;
-        c.gridwidth = 3;
-        gridbag.setConstraints(titleLabel, c);
-        add(titleLabel);
-        current_row++;
-
-        return current_row;
-    }
 
     public int initEnrichmentFilesComponent(GridBagLayout gridbag, GridBagConstraints c, int current_row){
          Dataset1FileNameTextField = new javax.swing.JTextField();
@@ -111,6 +92,12 @@ public class GSEAInputFilesPanelMac extends GenericInputFilesPanel {
         selectDataset1File2Button = new javax.swing.JButton();
         selectDataset2FileButton = new javax.swing.JButton();
         selectDataset2File2Button = new javax.swing.JButton();
+
+        //Add title for Dataset1
+        current_row = initTitleComponent(gridbag, c, current_row,"Dataset 1");
+
+        //Put in the first GCT file load
+        current_row = initGCTComponent(gridbag, c, current_row);
 
         //components needed for the GSEA Dataset1 Results
         Dataset1FileNameTextField.setFont(new java.awt.Font("Dialog",1,12));
@@ -124,6 +111,8 @@ public class GSEAInputFilesPanelMac extends GenericInputFilesPanel {
                     }
                 });
 
+        current_row = addTextButtonRow(gridbag,c,current_row,Dataset1FileNameTextField,selectDataset1FileButton);
+
         //components needed for the GSEA Dataset1 Results
         Dataset1FileName2TextField.setFont(new java.awt.Font("Dialog",1,12));
         Dataset1FileName2TextField.setText("Please select the gsea result file 2 for first dataset...");
@@ -136,6 +125,15 @@ public class GSEAInputFilesPanelMac extends GenericInputFilesPanel {
                           }
                       });
 
+        current_row = addTextButtonRow(gridbag,c,current_row,Dataset1FileName2TextField,selectDataset1File2Button);
+
+        current_row = addSeparator(gridbag,c,current_row);
+
+        //Add title for Dataset2
+        current_row = initTitleComponent(gridbag, c, current_row,"Dataset 2 (Optional)");
+
+        //Put in the first GCT file load
+        current_row = initGCT2Component(gridbag, c, current_row);
 
         //components needed for the GSEA Dataset1 Results
         Dataset2FileNameTextField.setFont(new java.awt.Font("Dialog",1,12));
@@ -149,6 +147,8 @@ public class GSEAInputFilesPanelMac extends GenericInputFilesPanel {
                     }
                 });
 
+        current_row = addTextButtonRow(gridbag,c,current_row,Dataset2FileNameTextField,selectDataset2FileButton);
+
         Dataset2FileName2TextField.setFont(new java.awt.Font("Dialog",1,12));
         Dataset2FileName2TextField.setText("(OPTIONAL) Please select the gsea result file 2 for second dataset...");
 
@@ -161,47 +161,9 @@ public class GSEAInputFilesPanelMac extends GenericInputFilesPanel {
                 });
 
 
-        //put in the fields for the GSEA UP results file
-        c.gridx = 0;
-        c.gridwidth = 3;
-        c.gridy = current_row;
-        gridbag.setConstraints(Dataset1FileNameTextField, c);
-        add(Dataset1FileNameTextField);
-        c.gridx = 3;
-        gridbag.setConstraints(selectDataset1FileButton, c);
-        add(selectDataset1FileButton);
-        current_row++;
+        current_row = addTextButtonRow(gridbag,c,current_row,Dataset2FileName2TextField,selectDataset2File2Button);
 
-        c.gridx = 0;
-        c.gridwidth = 3;
-        c.gridy = current_row;
-        gridbag.setConstraints(Dataset1FileName2TextField, c);
-        add(Dataset1FileName2TextField);
-        c.gridx = 3;
-        gridbag.setConstraints(selectDataset1File2Button, c);
-        add(selectDataset1File2Button);
-        current_row++;
-
-        //put in the fields for the GSEA DOWN results file.
-        c.gridx = 0;
-        c.gridwidth = 3;
-        c.gridy = current_row;
-        gridbag.setConstraints(Dataset2FileNameTextField, c);
-        add(Dataset2FileNameTextField);
-        c.gridx = 3;
-        gridbag.setConstraints(selectDataset2FileButton, c);
-        add(selectDataset2FileButton);
-        current_row++;
-
-        c.gridx = 0;
-        c.gridwidth = 3;
-        c.gridy = current_row;
-        gridbag.setConstraints(Dataset2FileName2TextField, c);
-        add(Dataset2FileName2TextField);
-        c.gridx = 3;
-        gridbag.setConstraints(selectDataset2File2Button, c);
-        add(selectDataset2File2Button);
-        current_row++;
+        current_row = addSeparator(gridbag,c,current_row);
 
         return current_row;
 

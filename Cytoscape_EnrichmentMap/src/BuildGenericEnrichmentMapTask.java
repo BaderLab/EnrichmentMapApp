@@ -33,13 +33,11 @@ public class BuildGenericEnrichmentMapTask implements Task {
 
 
     public void buildGenericEnrichmentMap(){
-        GMTFileReaderTask gmtFile;
-         GCTFileReaderTask gctFile;
 
          //Load in the GMT file
          try{
              //Load the GSEA geneset file
-             gmtFile = new GMTFileReaderTask(params, taskMonitor);
+             GMTFileReaderTask gmtFile = new GMTFileReaderTask(params, taskMonitor);
              gmtFile.run();
              //boolean success = TaskManager.executeTask(gmtFile, config);
 
@@ -53,10 +51,13 @@ public class BuildGenericEnrichmentMapTask implements Task {
             //Load in the GCT file
             try{
                  //Load the GSEA geneset file
-                gctFile = new GCTFileReaderTask(params,taskMonitor);
-                gctFile.run();
+                GCTFileReaderTask gctFile1 = new GCTFileReaderTask(params,params.getGCTFileName1(),1,taskMonitor);
+                gctFile1.run();
                 //boolean success = TaskManager.executeTask(gctFile, config);
-
+                if(params.isData2()){
+                    GCTFileReaderTask gctFile2 = new GCTFileReaderTask(params,params.getGCTFileName2(),2,taskMonitor);
+                    gctFile2.run();
+                }
                 //trim the genesets to only contain the genes that are in the data file.
                 //Only perform if the data file has been supplied
                 params.filterGenesets();
@@ -104,7 +105,7 @@ public class BuildGenericEnrichmentMapTask implements Task {
              //boolean success3 =TaskManager.executeTask(map,config);
 
              //close input panel
-             inputPanel.dispose();
+             inputPanel.close();
 
 
          } catch(Exception e){
