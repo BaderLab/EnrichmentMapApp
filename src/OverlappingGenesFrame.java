@@ -90,7 +90,6 @@ public class OverlappingGenesFrame  extends javax.swing.JFrame  {
          result.setTabName(edgeName);
 
      getJTabbedPane().addTab(edgeName,result);
-
      getJTabbedPane().setSelectedIndex(getJTabbedPane().getTabCount()-1);
 
      result.validate();
@@ -99,6 +98,27 @@ public class OverlappingGenesFrame  extends javax.swing.JFrame  {
      resultPanelCount++;
 
  }
+
+    public void createResultTab(String edgeName,
+                                GeneExpressionMatrix matrix,
+                                HashMap currentOverlappingSet, String label){
+
+        OverlappingGenesPanel result=new OverlappingGenesPanel(matrix, currentOverlappingSet,
+                                          this,label);
+
+
+        if (getResultPanelCount()!=0)
+            result.setTabName(edgeName);
+
+        getJTabbedPane().addTab(edgeName,result);
+        getJTabbedPane().setSelectedIndex(getJTabbedPane().getTabCount()-1);
+
+        result.validate();
+        this.validate();
+
+        resultPanelCount++;
+
+    }
 
 
  void removeTab(OverlappingGenesPanel result){

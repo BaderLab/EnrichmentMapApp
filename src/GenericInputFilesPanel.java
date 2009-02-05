@@ -26,7 +26,8 @@ public class GenericInputFilesPanel extends JDialog {
        //Genesets file related components
        private javax.swing.JTextField GMTFileNameTextField;
 
-       private javax.swing.JTextField GCTFileNameTextField;
+       private javax.swing.JTextField GCTFileName1TextField;
+       private javax.swing.JTextField GCTFileName2TextField;
 
        private javax.swing.JTextField Dataset1FileNameTextField;
        private javax.swing.JTextField Dataset1FileName2TextField;
@@ -77,9 +78,9 @@ public class GenericInputFilesPanel extends JDialog {
 
         int current_row = 0;
 
-        current_row = initTitleComponent(gridbag, c, current_row);
+        current_row = initTitleComponent(gridbag, c, current_row, "Import Generic Enrichment Result files to calculate enrichment maps");
         current_row = initGMTComponent(gridbag, c,current_row);
-        current_row = initGCTComponent(gridbag,c,current_row);
+
         current_row = initEnrichmentFilesComponent(gridbag,c,current_row);
         current_row = initCutoffsComponent(gridbag, c,current_row);
         current_row = initActionButtonsComponent(gridbag,c,current_row);
@@ -87,6 +88,8 @@ public class GenericInputFilesPanel extends JDialog {
     }
 
     public int initEnrichmentFilesComponent(GridBagLayout gridbag, GridBagConstraints c, int current_row){
+
+
 
        javax.swing.JButton selectDataset1FileButton;
        javax.swing.JButton selectDataset2FileButton;
@@ -99,6 +102,12 @@ public class GenericInputFilesPanel extends JDialog {
         selectDataset2FileButton = new javax.swing.JButton();
 
 
+        //Add title for Dataset1
+        current_row = initTitleComponent(gridbag, c, current_row,"Dataset 1");
+
+        //Add the first GCT file load fields panel
+        current_row = initGCTComponent(gridbag,c,current_row);
+
         //components needed for the GSEA Dataset1 Results
         Dataset1FileNameTextField.setFont(new java.awt.Font("Dialog",1,12));
         Dataset1FileNameTextField.setText("Please select the Generic result file for first dataset...");
@@ -110,11 +119,20 @@ public class GenericInputFilesPanel extends JDialog {
                         selectDataset1FileButtonActionPerformed(evt);
                     }
                 });
+         current_row = addTextButtonRow(gridbag,c,current_row, Dataset1FileNameTextField, selectDataset1FileButton);
 
+        current_row = addSeparator(gridbag,c,current_row);
+
+        //Add title for Dataset1
+        current_row = initTitleComponent(gridbag, c, current_row,"Dataset 2 (Optional)");
+
+
+         //Add the first GCT file load fields panel
+        current_row = initGCT2Component(gridbag,c,current_row);
 
         //components needed for the GSEA Dataset1 Results
         Dataset2FileNameTextField.setFont(new java.awt.Font("Dialog",1,12));
-        Dataset2FileNameTextField.setText("(OPTIONAL) Please select the Generic result file  for second dataset...");
+        Dataset2FileNameTextField.setText(" Please select the Generic result file  for second dataset...");
 
         selectDataset2FileButton.setText("Select");
         selectDataset2FileButton
@@ -125,40 +143,19 @@ public class GenericInputFilesPanel extends JDialog {
                 });
 
 
+        current_row = addTextButtonRow(gridbag,c,current_row, Dataset2FileNameTextField, selectDataset2FileButton);
 
-        //put in the fields for the GSEA UP results file
-        c.gridx = 0;
-        c.gridwidth = 3;
-        c.gridy = current_row;
-        gridbag.setConstraints(Dataset1FileNameTextField, c);
-        add(Dataset1FileNameTextField);
-        c.gridx = 3;
-        gridbag.setConstraints(selectDataset1FileButton, c);
-        add(selectDataset1FileButton);
-        current_row++;
-
-
-        //put in the fields for the GSEA DOWN results file.
-        c.gridx = 0;
-        c.gridwidth = 3;
-        c.gridy = current_row;
-        gridbag.setConstraints(Dataset2FileNameTextField, c);
-        add(Dataset2FileNameTextField);
-        c.gridx = 3;
-        gridbag.setConstraints(selectDataset2FileButton, c);
-        add(selectDataset2FileButton);
-        current_row++;
+        current_row = addSeparator(gridbag, c,current_row);
 
        return current_row;
 
     }
 
-    public int initTitleComponent(GridBagLayout gridbag, GridBagConstraints c, int current_row){
+    public int initTitleComponent(GridBagLayout gridbag, GridBagConstraints c, int current_row,String title){
         javax.swing.JLabel titleLabel;
         titleLabel = new javax.swing.JLabel();
         titleLabel.setFont(new java.awt.Font("Dialog", 1, 14));
-        titleLabel.setText("Import Generic Enrichment files used to calculate enrichment maps");
-
+        titleLabel.setText(title);
 
         c.gridx = 0;
         c.gridy = current_row;
@@ -184,7 +181,6 @@ public class GenericInputFilesPanel extends JDialog {
 
         importButton.setText("Build Enrichment Map");
         importButton.addActionListener(new BuildEnrichmentMapActionListener(this, params));
-        //importButton.addActionListener(new BuildEnrichmentMapActionListener( params));
         importButton.setEnabled(false);
 
 
@@ -207,12 +203,12 @@ public class GenericInputFilesPanel extends JDialog {
     public int initGCTComponent(GridBagLayout gridbag, GridBagConstraints c, int current_row){
        javax.swing.JButton selectGCTFileButton;
 
-       GCTFileNameTextField = new javax.swing.JTextField();
+       GCTFileName1TextField = new javax.swing.JTextField();
        selectGCTFileButton = new javax.swing.JButton();
 
-       //components needed for the GMT file load
-       GCTFileNameTextField.setFont(new java.awt.Font("Dialog",1,12));
-       GCTFileNameTextField.setText("Please select the dataset (.gct) file used for GSEA analysis...");
+       //components needed for the GCT file load
+       GCTFileName1TextField.setFont(new java.awt.Font("Dialog",1,12));
+       GCTFileName1TextField.setText("Please select the dataset (.gct) file used for GSEA analysis...");
 
        selectGCTFileButton.setText("Select");
        selectGCTFileButton
@@ -222,20 +218,33 @@ public class GenericInputFilesPanel extends JDialog {
                     }
                 });
 
-         //put in the fields for the gsea dataset file
-        c.gridx = 0;
-        c.gridwidth = 3;
-        c.gridy = current_row;
-        gridbag.setConstraints(GCTFileNameTextField, c);
-        add(GCTFileNameTextField);
-        c.gridx = 3;
-        gridbag.setConstraints(selectGCTFileButton, c);
-        add(selectGCTFileButton);
-        current_row++;
-
-        return current_row;
+        return addTextButtonRow(gridbag,c,current_row, GCTFileName1TextField, selectGCTFileButton);
 
     }
+
+
+    public int initGCT2Component(GridBagLayout gridbag, GridBagConstraints c, int current_row){
+       javax.swing.JButton selectGCTFileButton;
+
+       GCTFileName2TextField = new javax.swing.JTextField();
+       selectGCTFileButton = new javax.swing.JButton();
+
+       //components needed for the GCT file load
+       GCTFileName2TextField.setFont(new java.awt.Font("Dialog",1,12));
+       GCTFileName2TextField.setText("OPTIONAL: Please select the dataset (.gct) file used for second GSEA analysis...");
+
+       selectGCTFileButton.setText("Select");
+       selectGCTFileButton
+                .addActionListener(new java.awt.event.ActionListener() {
+                    public void actionPerformed(java.awt.event.ActionEvent evt) {
+                        selectGCTFileButton2ActionPerformed(evt);
+                    }
+                });
+
+        return addTextButtonRow(gridbag,c,current_row, GCTFileName2TextField, selectGCTFileButton);
+
+    }
+
 
     public int initGMTComponent(GridBagLayout gridbag, GridBagConstraints c, int current_row){
         javax.swing.JButton selectGMTFileButton;
@@ -257,19 +266,37 @@ public class GenericInputFilesPanel extends JDialog {
                 });
 
 
+        return addTextButtonRow(gridbag,c,current_row, GMTFileNameTextField, selectGMTFileButton);
+
+    }
+
+    public int addTextButtonRow(GridBagLayout gridbag, GridBagConstraints c, int current_row, JTextField text, JButton button){
+
         //put in the fields for the genesets file
         c.gridx = 0;
         c.gridwidth = 3;
         c.gridy = current_row;
-        gridbag.setConstraints(GMTFileNameTextField, c);
-        add(GMTFileNameTextField);
+        gridbag.setConstraints(text, c);
+        add(text);
         c.gridx = 3;
-        gridbag.setConstraints(selectGMTFileButton, c);
-        add(selectGMTFileButton);
+        gridbag.setConstraints(button, c);
+        add(button);
         current_row++;
-
         return current_row;
 
+    }
+
+    public int addSeparator(GridBagLayout gridbag, GridBagConstraints c, int current_row){
+        JSeparator sep = new JSeparator();
+
+        c.gridx = 0;
+        c.gridwidth = 4;
+        c.gridy = current_row;
+
+        gridbag.setConstraints(sep, c);
+        add(sep);
+        current_row++;
+         return current_row;
     }
 
 /*Section of the input panel that specifies the p-value, fdr q-value, jaccard cutoffs
@@ -403,6 +430,13 @@ public class GenericInputFilesPanel extends JDialog {
             this.dispose();
        }
 
+    public void close() {
+            // TODO add your handling code here:
+            status = false;
+             this.dispose();
+        }
+
+
  private void selectJaccardOrOverlapActionPerformed(java.awt.event.ActionEvent evt) {
         if(evt.getActionCommand().equalsIgnoreCase("jaccard")){
             params.setJaccard(true);
@@ -456,9 +490,9 @@ public class GenericInputFilesPanel extends JDialog {
            File file = FileUtil.getFile("Import GCT File", FileUtil.LOAD,
                         new CyFileFilter[] { filter });
            if(file != null) {
-               GCTFileNameTextField.setText(file.getAbsolutePath());
-               params.setGCTFileName(file.getAbsolutePath());
-               GCTFileNameTextField.setToolTipText(file.getAbsolutePath());
+               GCTFileName1TextField.setText(file.getAbsolutePath());
+               params.setGCTFileName1(file.getAbsolutePath());
+               GCTFileName1TextField.setToolTipText(file.getAbsolutePath());
                GCTFileSelected = true;
                params.setData(true);
                 if (Dataset1FileSelected && GMTFileSelected   ){
@@ -466,6 +500,29 @@ public class GenericInputFilesPanel extends JDialog {
                }
            }
        }
+
+    private void selectGCTFileButton2ActionPerformed(
+          java.awt.event.ActionEvent evt) {
+
+//         Create FileFilter
+      CyFileFilter filter = new CyFileFilter();
+
+      // Add accepted File Extensions
+      filter.addExtension("gct");
+      filter.addExtension("txt");
+      filter.setDescription("All GCT files");
+
+      // Get the file name
+      File file = FileUtil.getFile("Import GCT File", FileUtil.LOAD,
+                   new CyFileFilter[] { filter });
+      if(file != null) {
+          GCTFileName2TextField.setText(file.getAbsolutePath());
+          params.setGCTFileName2(file.getAbsolutePath());
+          GCTFileName2TextField.setToolTipText(file.getAbsolutePath());
+          params.setData2(true);
+      }
+  }
+
 
         private void selectDataset1FileButtonActionPerformed(
                java.awt.event.ActionEvent evt) {

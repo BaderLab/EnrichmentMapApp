@@ -31,13 +31,11 @@ public class BuildGSEAEnrichmentMapTask implements Task {
     }
 
     public void buildGSEAMap(){
-        GMTFileReaderTask gmtFile;
-        GCTFileReaderTask gctFile;
 
         //Load in the GMT file
         try{
             //Load the GSEA geneset file
-            gmtFile = new GMTFileReaderTask(params, taskMonitor);
+            GMTFileReaderTask gmtFile = new GMTFileReaderTask(params, taskMonitor);
             gmtFile.run();
             //boolean success = TaskManager.executeTask(gmtFile, config);
 
@@ -48,10 +46,13 @@ public class BuildGSEAEnrichmentMapTask implements Task {
 
         //Load in the GCT file
         try{
-            //Load the GSEA geneset file
-            gctFile = new GCTFileReaderTask(params,taskMonitor);
-            gctFile.run();
-            //boolean success = TaskManager.executeTask(gctFile, config);
+            //Load the GCT file
+            GCTFileReaderTask gctFile1 = new GCTFileReaderTask(params,params.getGCTFileName1(),1,taskMonitor);
+            gctFile1.run();
+            if(params.isData2()){
+                GCTFileReaderTask gctFile2 = new GCTFileReaderTask(params,params.getGCTFileName2(),2,taskMonitor);
+                gctFile2.run();
+            }
 
         } catch(Exception e){
             JOptionPane.showMessageDialog(inputPanel,"unable to load GSEA DATA (.GCT) file");
@@ -94,14 +95,14 @@ public class BuildGSEAEnrichmentMapTask implements Task {
             HashMap<String, GenesetSimilarity> similarity_results = similarities.getGeneset_similarities();
 
             params.setGenesetSimilarity(similarity_results);
-            
+
             //build the resulting map
             VisualizeEnrichmentMapTask map = new VisualizeEnrichmentMapTask(params,taskMonitor);
             map.run();
             //boolean success3 =TaskManager.executeTask(map,config);
 
             //close input panel
-            inputPanel.dispose();
+            inputPanel.close();
 
 
         } catch(Exception e){

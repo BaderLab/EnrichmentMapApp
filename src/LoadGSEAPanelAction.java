@@ -1,6 +1,8 @@
 
 import cytoscape.Cytoscape;
+import cytoscape.util.CytoscapeAction;
 
+import javax.swing.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
@@ -10,7 +12,11 @@ import java.awt.event.ActionEvent;
  * Date: Jan 28, 2009
  * Time: 12:30:13 PM
  */
-public class LoadGSEAPanelAction implements ActionListener {
+public class LoadGSEAPanelAction extends CytoscapeAction {
+
+    public LoadGSEAPanelAction(){
+         super("Load GSEA Files");
+    }
 
       public void actionPerformed(ActionEvent event) {
 
@@ -21,21 +27,25 @@ public class LoadGSEAPanelAction implements ActionListener {
            if(os.contains("Mac") || (os.contains("mac"))){
                 GSEAInputFilesPanelMac amd
                 = new GSEAInputFilesPanelMac(Cytoscape.getDesktop(),
-                              true);
+                              false);
 
+                amd.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
                 amd.pack();
                 amd.setLocationRelativeTo(Cytoscape.getDesktop());
                 amd.setVisible(true);
+
             }
             else{
                 GSEAInputFilesPanel amd
                 = new GSEAInputFilesPanel(Cytoscape.getDesktop(),
-                              true);
+                              false);
 
+                amd.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
                 amd.pack();
                 amd.setLocationRelativeTo(Cytoscape.getDesktop());
                 amd.setVisible(true);
             }
+
 
 
         }
