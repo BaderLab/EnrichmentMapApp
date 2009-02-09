@@ -218,10 +218,6 @@ public class VisualizeEnrichmentMapTask implements Task {
 
             CyNetworkView view = Cytoscape.createNetworkView( network );
 
-            //only add the click on edge listener if there is an expression file loaded
-            if(params.isData()){
-                view.addGraphViewChangeListener(new EnrichmentMapActionListener(params));
-            }
             // get the VisualMappingManager and CalculatorCatalog
             VisualMappingManager manager = Cytoscape.getVisualMappingManager();
             CalculatorCatalog catalog = manager.getCalculatorCatalog();
@@ -251,7 +247,11 @@ public class VisualizeEnrichmentMapTask implements Task {
                   //view.applyLayout(CyLayouts.getDefaultLayout());
                view.applyLayout(CyLayouts.getLayout("force-directed"));
 
-            //test out overlap viewer
+
+            //only add the click on edge listener if there is an expression file loaded
+            if(params.isData()){
+                view.addGraphViewChangeListener(new EnrichmentMapActionListener(params));
+            }
 
 
 
