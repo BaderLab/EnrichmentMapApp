@@ -3,6 +3,9 @@ import cytoscape.visual.mappings.ContinuousMapping;
 import cytoscape.visual.mappings.ObjectMapping;
 import cytoscape.visual.mappings.LinearNumberToColorInterpolator;
 import cytoscape.visual.mappings.BoundaryRangeValues;
+import cytoscape.visual.mappings.continuous.ContinuousRangeCalculator;
+import cytoscape.visual.mappings.continuous.ContinuousLegend;
+import cytoscape.visual.VisualPropertyType;
 import cytoscape.view.CyNetworkView;
 
 import javax.swing.*;
@@ -12,6 +15,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.StringTokenizer;
 
 /**
  * Created by
@@ -21,229 +25,102 @@ import java.util.Iterator;
  */
 public class OverlappingGenesPanel extends JPanel {
 
-        javax.swing.JTable jTable1;
-        private JScrollPane jScrollPane;
-
-        private GeneExpressionMatrix expression;
-        private HashMap currentExpressionSet;
-        private GenesetSimilarity similarity;
-        private JPanel jPanelDeBase;
-
-        private Object[][] data;
-        private Cursor hand;
 
         private Object[] columnNames;
+        private Object[] columnNames2;
+        private Cursor hand;
 
-        OverlappingGenesFrame parentFrame;
-
-        private String tabName;
+        private ColorGradientRange range;
+        private ColorGradientTheme theme;
+        private int numConditions;
 
     /**
      * Creates a new instance of OverlappingGenesPanel
      */
 
-   public OverlappingGenesPanel( GeneExpressionMatrix expression,
-                                 HashMap currentExpressionSet,
-                                 OverlappingGenesFrame parentFrame, GenesetSimilarity similarity) {
 
-        this.hand = new Cursor(Cursor.HAND_CURSOR);
-        this.parentFrame=parentFrame;
-        this.expression = expression;
-        this.currentExpressionSet = currentExpressionSet;
-        this.similarity = similarity;
-        initComponents();
+
+    public OverlappingGenesPanel(GeneExpressionMatrix expression){
+
+        initColorGradients(expression);
+
+        numConditions = expression.getNumConditions();
+        columnNames = expression.getColumnNames();
+
+       this.setLayout(new java.awt.BorderLayout());
 
     }
 
-    public OverlappingGenesPanel( GeneExpressionMatrix expression,
-                                    HashMap currentExpressionSet,
-                                    OverlappingGenesFrame parentFrame, String label) {
+    private void initColorGradients(GeneExpressionMatrix expression){
 
-           this.hand = new Cursor(Cursor.HAND_CURSOR);
-           this.parentFrame=parentFrame;
-           this.expression = expression;
-           this.currentExpressionSet = currentExpressionSet;
-           initComponents_noSummary(label);
-
-       }
-
-
-     void initComponents() {
-                columnNames = makeHeadersForJTable();
-                data = makeDataForJTable();
-
-                jPanelDeBase = new javax.swing.JPanel();
-                this.setLayout(new java.awt.BorderLayout());
-                jPanelDeBase.setLayout(new BorderLayout());
-
-                JPanel jPanelButtons = new JPanel();
-
-                JButton jCloseButton = new JButton("close");
-                jCloseButton.addActionListener(new CloseOverlappingGenesPanelListener(this));
-                jPanelButtons.add(jCloseButton);
-
-                jPanelDeBase.add(jPanelButtons,java.awt.BorderLayout.SOUTH);
-
-                //summary panel
-                JPanel jPanelSummary = new JPanel();
-                GridBagLayout gridbag = new GridBagLayout();
-                GridBagConstraints c = new GridBagConstraints();
-                jPanelSummary.setLayout(gridbag);
-                JLabel geneset1Label = new JLabel("GeneSet 1: " + similarity.getGeneset1_Name());
-                JLabel geneset2Label = new JLabel("GeneSet 2: " + similarity.getGeneset2_Name());
-                JLabel overlapSize = new JLabel("Size : " + similarity.getSizeOfOverlap());
-                c.gridy=0;
-                c.gridx=0;
-                gridbag.setConstraints(geneset1Label,c);
-                jPanelSummary.add(geneset1Label);
-
-                c.gridy=1;
-                c.gridx=0;
-                gridbag.setConstraints(geneset2Label,c);
-                jPanelSummary.add(geneset2Label);
-
-                c.gridy=2;
-                c.gridx=0;
-                gridbag.setConstraints(overlapSize,c);
-                jPanelSummary.add(overlapSize);
-                jPanelDeBase.add(jPanelSummary, java.awt.BorderLayout.NORTH);
-
-                jTable1 = new JTable(new OverlappingGenesTableModel(columnNames,data));
-                //jTable1.setPreferredScrollableViewportSize(new Dimension(500,100));
-
-                 //Set up renderer and editor for the Color column.
-                jTable1.setDefaultRenderer(Color.class,new ColorRenderer());
-
-                TableColumnModel tcModel = jTable1.getColumnModel();
-
-
-                jTable1.setDragEnabled(false);
-                jTable1.setCellSelectionEnabled(true);
-                for (int i=0;i<columnNames.length;i++){
-                        if (i==0 || columnNames[i].equals("Name"))
-                            tcModel.getColumn(i).setPreferredWidth(50);
-                         else if (i==1 || columnNames[i].equals("Description"))
-                            tcModel.getColumn(i).setPreferredWidth(50);
-                         else
-                           tcModel.getColumn(i).setPreferredWidth(10);
-                }
-
-                jTable1.setColumnModel(tcModel);
-
-                jScrollPane = new javax.swing.JScrollPane(jTable1);
-                jScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-
-                jPanelDeBase.add(jScrollPane);
-
-                this.add(jPanelDeBase,java.awt.BorderLayout.CENTER);
-
-               //parentFrame.synchroColor(this);
-               //parentFrame.synchroSelections(this);
-
-
-      }
-
-
-     void initComponents_noSummary(String label) {
-                columnNames = makeHeadersForJTable();
-                data = makeDataForJTable();
-
-                jPanelDeBase = new javax.swing.JPanel();
-                this.setLayout(new java.awt.BorderLayout());
-                jPanelDeBase.setLayout(new BorderLayout());
-
-                JPanel jPanelButtons = new JPanel();
-
-                JButton jCloseButton = new JButton("close");
-                jCloseButton.addActionListener(new CloseOverlappingGenesPanelListener(this));
-                jPanelButtons.add(jCloseButton);
-
-                jPanelDeBase.add(jPanelButtons,java.awt.BorderLayout.SOUTH);
-
-                //summary panel
-                JPanel jPanelSummary = new JPanel();
-                GridBagLayout gridbag = new GridBagLayout();
-                GridBagConstraints c = new GridBagConstraints();
-                jPanelSummary.setLayout(gridbag);
-                JLabel geneset1Label = new JLabel("Genesets" + label );
-                JLabel overlapSize = new JLabel("Size : " + currentExpressionSet.size() );
-                c.gridy=0;
-                c.gridx=0;
-                gridbag.setConstraints(geneset1Label,c);
-                jPanelSummary.add(geneset1Label);
-
-                c.gridy=1;
-                c.gridx=0;
-                gridbag.setConstraints(overlapSize,c);
-                jPanelSummary.add(overlapSize);
-                jPanelDeBase.add(jPanelSummary, java.awt.BorderLayout.NORTH);
-
-                jTable1 = new JTable(new OverlappingGenesTableModel(columnNames,data));
-                //jTable1.setPreferredScrollableViewportSize(new Dimension(500,100));
-
-                 //Set up renderer and editor for the Color column.
-                jTable1.setDefaultRenderer(Color.class,new ColorRenderer());
-
-                TableColumnModel tcModel = jTable1.getColumnModel();
-
-
-                jTable1.setDragEnabled(false);
-                jTable1.setCellSelectionEnabled(true);
-                for (int i=0;i<columnNames.length;i++){
-                        if (i==0 || columnNames[i].equals("Name"))
-                            tcModel.getColumn(i).setPreferredWidth(50);
-                         else if (i==1 || columnNames[i].equals("Description"))
-                            tcModel.getColumn(i).setPreferredWidth(50);
-                         else
-                           tcModel.getColumn(i).setPreferredWidth(10);
-                }
-
-                jTable1.setColumnModel(tcModel);
-
-                jScrollPane = new javax.swing.JScrollPane(jTable1);
-                jScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-
-                jPanelDeBase.add(jScrollPane);
-
-                this.add(jPanelDeBase,java.awt.BorderLayout.CENTER);
-
-               //parentFrame.synchroColor(this);
-               //parentFrame.synchroSelections(this);
-
-
-      }
-
-    private Object[][] makeDataForJTable(){
-
-        Object[][] data = new Object[currentExpressionSet.size()][expression.getNumConditions()];
-        //Got through the hashmap and put all the values is
-
-        double maxExpression = expression.getMaxExpression();
         double minExpression = expression.getMinExpression();
+        double maxExpression = expression.getMaxExpression();
 
-        ContinuousMapping continuousMapping = new ContinuousMapping(Color.WHITE, ObjectMapping.NODE_MAPPING);
-		continuousMapping.setInterpolator(new LinearNumberToColorInterpolator());
+        double max = Math.max(Math.abs(minExpression), maxExpression);
 
-        final Color minColor = new Color(0,0,255);
-        final Color medColor = Color.WHITE;
-        final Color maxColor = new Color(255,0,0);
-
-		final BoundaryRangeValues bv0 = new BoundaryRangeValues(minColor, minColor, minColor);
-		final BoundaryRangeValues bv1a = new BoundaryRangeValues(medColor, medColor, medColor);
-		final BoundaryRangeValues bv2 = new BoundaryRangeValues(maxColor, maxColor, maxColor);
+        double median = max/2;
 
         //if the minimum expression is above zero make it a one colour heatmap
         if(minExpression >= 0){
-            // add points to continuous mapper
-		    continuousMapping.addPoint(minExpression, bv1a);
-            continuousMapping.addPoint(maxExpression, bv2);
+            range = ColorGradientRange.getInstance(0,median, median,max, 0,median,median,max);
+            theme = ColorGradientTheme.RED_ONECOLOR_GRADIENT_THEME;
         }
         else{
-            double max = Math.max(Math.abs(minExpression), maxExpression);
-            continuousMapping.addPoint(-max, bv0);
-            continuousMapping.addPoint(0, bv1a);
-            continuousMapping.addPoint(max, bv2);
+            range = ColorGradientRange.getInstance(-max,median, median,max, -max,median,median,max);
+            theme = ColorGradientTheme.YELLOW_BLUE_GRADIENT_THEME;
         }
+
+    }
+
+    public void updatePanel(HashMap currentGeneExpressionSet){
+
+        JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(new BorderLayout());
+
+        //add the legend in the south section
+        //mainPanel.add(legend, java.awt.BorderLayout.SOUTH);
+
+        mainPanel.add(createLegendPanel(), java.awt.BorderLayout.WEST);
+
+        //create data subset
+        Object[][] data = createTableData(currentGeneExpressionSet);
+        JTable jTable1 = new JTable(new OverlappingGenesTableModel(columnNames,data));
+
+        //Set up renderer and editor for the Color column.
+        jTable1.setDefaultRenderer(Color.class,new ColorRenderer());
+
+        TableColumnModel tcModel = jTable1.getColumnModel();
+
+
+        jTable1.setDragEnabled(false);
+        jTable1.setCellSelectionEnabled(true);
+        for (int i=0;i<columnNames.length;i++){
+             if (i==0 || columnNames[i].equals("Name"))
+                   tcModel.getColumn(i).setPreferredWidth(50);
+             else if (i==1 || columnNames[i].equals("Description"))
+                    tcModel.getColumn(i).setPreferredWidth(50);
+             else
+                   tcModel.getColumn(i).setPreferredWidth(10);
+         }
+
+       jTable1.setColumnModel(tcModel);
+
+       JScrollPane jScrollPane = new javax.swing.JScrollPane(jTable1);
+       jScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+
+       mainPanel.add(jScrollPane);
+
+       this.add(mainPanel, java.awt.BorderLayout.CENTER);
+       this.revalidate();
+
+
+    }
+
+    private Object[][] createTableData(HashMap currentExpressionSet){
+
+        Object[][] data = new Object[currentExpressionSet.size()][numConditions];
+        //Got through the hashmap and put all the values is
+
         int k = 0;
         for(Iterator i = currentExpressionSet.keySet().iterator();i.hasNext();){
             //Current expression row
@@ -254,32 +131,33 @@ public class OverlappingGenesPanel extends JPanel {
             data[k][1] = row.getDescription();
 
             for(int j = 0; j < row.getExpression().length;j++){
-                HashMap<String,Double> value =  new java.util.HashMap<String, Double>();
-                value.put(row.getName(),expression_values[j]);
 
-                cytoscape.visual.mappings.continuous.ContinuousRangeCalculator calculator =
-                        new cytoscape.visual.mappings.continuous.ContinuousRangeCalculator(continuousMapping.getAllPoints(),
-                                                                                       continuousMapping.getInterpolator(),
-                                                                                        value);
-                data[k][j+2] = (Color)calculator.calculateRangeValue(gene);
+                data[k][j+2] = ColorGradientMapper.getColorGradient(theme,range,row.getName(),expression_values[j]);
+
             }
             k++;
         }
         return data;
-        }
-
-    private Object[] makeHeadersForJTable(){
-        Object[] columnNames = expression.getColumnNames();
-        return columnNames;
     }
 
-    public String getTabName() {
-        return tabName;
+
+    public JPanel createLegendPanel(){
+
+        JPanel westPanel = new JPanel();
+
+        ColorGradientWidget new_legend = ColorGradientWidget.getInstance("expression legend",150,60,5,5,theme,range,true,ColorGradientWidget.LEGEND_POSITION.TOP);
+
+        westPanel.add(new_legend);
+        return westPanel;
     }
 
-    public void setTabName(String tabName) {
-        this.tabName = tabName;
+    public void clearPanel(){
+        JPanel mainPanel = new JPanel();
+
+        this.add(mainPanel);
+        this.revalidate();
     }
+
 }
 
 

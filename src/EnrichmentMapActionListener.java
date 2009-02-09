@@ -8,6 +8,15 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.util.HashSet;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.net.URL;
+
+import cytoscape.view.CytoscapeDesktop;
+import cytoscape.view.cytopanels.CytoPanel;
+import cytoscape.view.cytopanels.CytoPanelState;
+import cytoscape.Cytoscape;
+
+import javax.swing.*;
 
 /**
  * Created by
@@ -18,28 +27,51 @@ import java.util.HashMap;
 public class EnrichmentMapActionListener implements  GraphViewChangeListener {
 
     private EnrichmentMapParameters params;
-    private OverlappingGenesFrame overlapFrame;
+    private OverlappingGenesPanel edgeOverlapPanel;
+    private OverlappingGenesPanel nodeOverlapPanel;
+    private SummaryPanel summaryPanel;
+    private ParametersPanel parametersPanel;
+
+    private final CytoPanel cytoPanel;
+    private final CytoPanel cytoSidePanel;
 
     public EnrichmentMapActionListener(EnrichmentMapParameters params) {
         this.params = params;
+
+        //initialize the cyto panel to have the expression viewing.
+        final CytoscapeDesktop desktop = Cytoscape.getDesktop();
+        cytoPanel = desktop.getCytoPanel(SwingConstants.SOUTH);
+        cytoSidePanel = desktop.getCytoPanel(SwingConstants.EAST);
+        //final URL url = new URL("http","www.baderlab.org","/wiki/common/network_bader_website_icon.gif");
+        //final Icon icon = new ImageIcon(url);
+
+        edgeOverlapPanel = new OverlappingGenesPanel(params.getExpression());
+        cytoPanel.add("EM Overlap Expression viewer",edgeOverlapPanel);
+        nodeOverlapPanel = new OverlappingGenesPanel(params.getExpression());
+        cytoPanel.add("EM Geneset Expression viewer",nodeOverlapPanel);
+        summaryPanel = new SummaryPanel();
+        parametersPanel = new ParametersPanel(params);
+        cytoSidePanel.add("Geneset Summary", summaryPanel);
+        cytoSidePanel.add("Parameters Used", parametersPanel);
+        cytoSidePanel.setSelectedIndex(cytoSidePanel.indexOfComponent(parametersPanel));
+        cytoSidePanel.setState(CytoPanelState.DOCK);
+
     }
 
     public void graphViewChanged(GraphViewChangeEvent event){
         if(event.isEdgesSelectedType()){
-            //create an overlap viewer for one edge
-            if(overlapFrame == null)
-                overlapFrame = new OverlappingGenesFrame(params);
 
             Edge[] edges = event.getSelectedEdges();
             createEdgesData(edges);
 
         }
         if(event.isNodesSelectedType()){
-            if(overlapFrame == null)
-               overlapFrame = new OverlappingGenesFrame(params);
 
             Node[] nodes = event.getSelectedNodes();
             createNodesData(nodes);
+        }
+        if(event.isNodesUnselectedType() || event.isEdgesUnselectedType()){
+            clearPanels();
         }
     }
 
@@ -54,12 +86,17 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
 
         GenesetSimilarity similarity = params.getGenesetSimilarity().get(edgename);
 
-        overlapFrame.createResultTab("GeneSet overlap ",expressionSet,expressionSet.getExpressionMatrix(similarity.getOverlapping_genes()), similarity);
+        HashMap currentSubset = expressionSet.getExpressionMatrix(similarity.getOverlapping_genes());
+
+        edgeOverlapPanel.updatePanel(currentSubset);
+        cytoPanel.setSelectedIndex(cytoPanel.indexOfComponent(edgeOverlapPanel));
+
+        summaryPanel.updateEdgeInfo(edges);
+        cytoSidePanel.setSelectedIndex(cytoSidePanel.indexOfComponent(summaryPanel));
 
      }else{
         HashSet intersect = null;
         HashSet union = null;
-        HashMap<String,String> allNames = new HashMap();
 
         for(int i = 0; i< edges.length;i++){
 
@@ -69,8 +106,6 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
 
             GenesetSimilarity similarity = params.getGenesetSimilarity().get(edgename);
             HashSet current_set = similarity.getOverlapping_genes();
-            allNames.put(similarity.getGeneset1_Name(), similarity.getGeneset1_Name());
-            allNames.put(similarity.getGeneset2_Name(), similarity.getGeneset2_Name());
 
             if(intersect == null && union == null){
                 intersect = new HashSet(current_set);
@@ -80,10 +115,14 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
                 union.addAll(current_set);
              }
         }
-        overlapFrame.createResultTab("Multiple GeneSet Overlaps - intersect ",expressionSet,expressionSet.getExpressionMatrix(intersect),allNames.keySet().toString());
-        //overlapFrame.createResultTab("Multiple GeneSet Overlaps - union ",expressionSet,expressionSet.getExpressionMatrix(union),allNames.keySet().toString());
-    }
-    overlapFrame.setVisible(true);
+
+        edgeOverlapPanel.updatePanel(expressionSet.getExpressionMatrix(intersect));
+        cytoPanel.setSelectedIndex(cytoPanel.indexOfComponent(edgeOverlapPanel));
+        //summaryPanel.updateEdgeInfo(edges);
+     }
+      edgeOverlapPanel.revalidate();
+      //summaryPanel.revalidate();
+
   }
 
   private void createNodesData(Node[] nodes){
@@ -97,17 +136,18 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
 
         GeneSet current_geneset = (GeneSet)params.getGenesetsOfInterest().get(nodename);
 
-        overlapFrame.createResultTab("GeneSet ",expressionSet,expressionSet.getExpressionMatrix(current_geneset.getGenes()),nodename);
-
+        nodeOverlapPanel.updatePanel(expressionSet.getExpressionMatrix(current_geneset.getGenes()));
+        cytoPanel.setSelectedIndex(cytoPanel.indexOfComponent(nodeOverlapPanel));
+        summaryPanel.updateNodeInfo(nodes);
+        cytoSidePanel.setSelectedIndex(cytoSidePanel.indexOfComponent(summaryPanel));
      }else{
         HashSet union = null;
-        String allNames = "";
+
 
         for(int i = 0; i< nodes.length;i++){
 
             Node current_node = nodes[i];
             String nodename = current_node.getIdentifier();
-            allNames = allNames + nodename + ", ";
 
             GeneSet current_geneset = (GeneSet)params.getGenesetsOfInterest().get(nodename);
 
@@ -119,8 +159,18 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
                 union.addAll(current_set);
              }
         }
-        overlapFrame.createResultTab("Multiple Geneset - union ",expressionSet,expressionSet.getExpressionMatrix(union), allNames);
+        nodeOverlapPanel.updatePanel(expressionSet.getExpressionMatrix(union));
+        cytoPanel.setSelectedIndex(cytoPanel.indexOfComponent(nodeOverlapPanel));
+        summaryPanel.updateNodeInfo(nodes);
+        cytoSidePanel.setSelectedIndex(cytoSidePanel.indexOfComponent(summaryPanel));
     }
-    overlapFrame.setVisible(true);
+    nodeOverlapPanel.revalidate();
+    summaryPanel.revalidate();
   }
+
+    public void clearPanels(){
+        summaryPanel.clearInfo();
+        nodeOverlapPanel.clearPanel();
+        edgeOverlapPanel.clearPanel();
+    }
 }

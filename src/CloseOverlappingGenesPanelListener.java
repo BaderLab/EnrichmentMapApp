@@ -14,7 +14,7 @@ public class CloseOverlappingGenesPanelListener implements ActionListener {
     }
     public void actionPerformed(ActionEvent e){
 
-        result.parentFrame.removeTab(result);
+       // result.parentFrame.removeTab(result);
 
     }
 
