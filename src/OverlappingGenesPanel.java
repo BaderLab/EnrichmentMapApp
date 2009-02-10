@@ -104,6 +104,7 @@ public class OverlappingGenesPanel extends JPanel {
          }
 
        jTable1.setColumnModel(tcModel);
+       jTable1.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
        JScrollPane jScrollPane = new javax.swing.JScrollPane(jTable1);
        jScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);

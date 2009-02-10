@@ -26,7 +26,10 @@ public class ParametersPanel extends JPanel {
            runInfo.setContentType("text/html");
            runInfo.setText(getRunInfo());
 
-           this.add(runInfo);
+           JScrollPane jScrollPane = new javax.swing.JScrollPane(runInfo);
+
+           this.add(jScrollPane);
+
            //this.add(createLegend());
 
        }
