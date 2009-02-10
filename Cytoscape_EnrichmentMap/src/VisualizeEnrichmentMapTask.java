@@ -266,7 +266,10 @@ public class VisualizeEnrichmentMapTask implements Task {
     private void setGenericResultDataset1Attributes(Node node, GenericResult result, String prefix){
 
         CyAttributes nodeAttrs = Cytoscape.getNodeAttributes();
+        //format the node name
+        String formattedName = result.getName().length()<EnrichmentMapVisualStyle.maxNodeLabelLength?result.getName():result.getName().substring(0, EnrichmentMapVisualStyle.maxNodeLabelLength);
 
+        nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.FORMATTED_NAME, formattedName);      
         nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.NAME, result.getName());
         nodeAttrs.setAttribute(node.getIdentifier(), prefix + EnrichmentMapVisualStyle.PVALUE_DATASET1, result.getPvalue());
         nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1, result.getFdrqvalue());
@@ -278,7 +281,10 @@ public class VisualizeEnrichmentMapTask implements Task {
     private void setGenericResultDataset2Attributes(Node node, GenericResult result, String prefix){
 
         CyAttributes nodeAttrs = Cytoscape.getNodeAttributes();
+        //format the node name
+        String formattedName = result.getName().length()<EnrichmentMapVisualStyle.maxNodeLabelLength?result.getName():result.getName().substring(0, EnrichmentMapVisualStyle.maxNodeLabelLength);
 
+        nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.FORMATTED_NAME, formattedName);
         nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.NAME, result.getName());
         nodeAttrs.setAttribute(node.getIdentifier(), prefix + EnrichmentMapVisualStyle.PVALUE_DATASET2, result.getPvalue());
         nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2, result.getFdrqvalue());
@@ -290,7 +296,10 @@ public class VisualizeEnrichmentMapTask implements Task {
    private void setGSEAResultDataset1Attributes(Node node, GSEAResult result, String prefix){
 
        CyAttributes nodeAttrs = Cytoscape.getNodeAttributes();
+        //format the node name
+       String formattedName = result.getName().length()<EnrichmentMapVisualStyle.maxNodeLabelLength?result.getName():result.getName().substring(0, EnrichmentMapVisualStyle.maxNodeLabelLength);
 
+       nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.FORMATTED_NAME, formattedName);
        nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.NAME, result.getName());
        nodeAttrs.setAttribute(node.getIdentifier(), prefix+EnrichmentMapVisualStyle.PVALUE_DATASET1, result.getPvalue());
        nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1, result.getFdrqvalue());
@@ -311,6 +320,10 @@ public class VisualizeEnrichmentMapTask implements Task {
 
        CyAttributes nodeAttrs = Cytoscape.getNodeAttributes();
 
+      //format the node name
+      String formattedName = result.getName().length()<EnrichmentMapVisualStyle.maxNodeLabelLength?result.getName():result.getName().substring(0, EnrichmentMapVisualStyle.maxNodeLabelLength);
+
+      nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.FORMATTED_NAME, formattedName);
        nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.NAME, result.getName());
        nodeAttrs.setAttribute(node.getIdentifier(), prefix+EnrichmentMapVisualStyle.PVALUE_DATASET2, result.getPvalue());
        nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2, result.getFdrqvalue());

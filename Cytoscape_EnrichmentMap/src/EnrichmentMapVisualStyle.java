@@ -18,7 +18,10 @@ public class EnrichmentMapVisualStyle {
 
     EnrichmentMapParameters params;
 
+    public static final int maxNodeLabelLength = 25;
+
     public static String NAME = "Name";
+    public static String FORMATTED_NAME = "Formatted_name";
 
     public static String ES_DATASET1 = "ES_dataset1";
     public static String NES_DATASET1 = "NES_dataset1";
@@ -125,7 +128,7 @@ public class EnrichmentMapVisualStyle {
         nodeAppCalc.setDefaultAppearance(nodeAppear);
 
         // Passthrough Mapping - set node label
-        PassThroughMapping pm = new PassThroughMapping(new String(), prefix + EnrichmentMapVisualStyle.NAME);
+        PassThroughMapping pm = new PassThroughMapping(new String(), prefix + EnrichmentMapVisualStyle.FORMATTED_NAME);
         Calculator nlc = new BasicCalculator(prefix +"nodeLabel",
                                                           pm, VisualPropertyType.NODE_LABEL);
                nodeAppCalc.setCalculator(nlc);
