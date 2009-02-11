@@ -84,6 +84,8 @@ public class VisualizeEnrichmentMapTask implements Task {
             HashMap enrichmentResults1 = params.getEnrichmentResults1();
             HashMap enrichmentResults2 = params.getEnrichmentResults2();
 
+            HashMap genesetsOfInterest = params.getGenesetsOfInterest();
+
             int currentProgress = 0;
             int maxValue = enrichmentResults1OfInterest.size();
 
@@ -103,6 +105,12 @@ public class VisualizeEnrichmentMapTask implements Task {
                 Node node = Cytoscape.getCyNode(current_name,true);
 
                 network.addNode(node);
+
+                //Add the description to the node
+                GeneSet gs = (GeneSet)genesetsOfInterest.get(current_name);
+                CyAttributes nodeAttrs = Cytoscape.getNodeAttributes();
+                nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.GS_DESCR, gs.getDescription());
+
 
                 if(params.isGSEA()){
                     GSEAResult current_result = (GSEAResult) enrichmentResults1OfInterest.get(current_name);
@@ -165,6 +173,12 @@ public class VisualizeEnrichmentMapTask implements Task {
                         Node node = Cytoscape.getCyNode(current_name, true);
 
                         network.addNode(node);
+
+                        //Add the description to the node
+                        GeneSet gs = (GeneSet)genesetsOfInterest.get(current_name);
+                        CyAttributes nodeAttrs = Cytoscape.getNodeAttributes();
+                        nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.GS_DESCR, gs.getDescription());
+
                         if(params.isGSEA()){
                             if(enrichmentResults1.containsKey(current_name)){
                                 GSEAResult result = (GSEAResult) enrichmentResults1.get(current_name);
