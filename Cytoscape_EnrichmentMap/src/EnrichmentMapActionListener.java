@@ -4,11 +4,8 @@ import giny.model.Node;
 import giny.view.GraphViewChangeListener;
 import giny.view.GraphViewChangeEvent;
 
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
 import java.util.HashSet;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.net.URL;
 
 import cytoscape.view.CytoscapeDesktop;
@@ -31,6 +28,7 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
     private OverlappingGenesPanel nodeOverlapPanel;
     private SummaryPanel summaryPanel;
     private ParametersPanel parametersPanel;
+    private HeatMapParameters hmParams;
 
     private final CytoPanel cytoPanel;
     private final CytoPanel cytoSidePanel;
@@ -45,9 +43,11 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
         //final URL url = new URL("http","www.baderlab.org","/wiki/common/network_bader_website_icon.gif");
         //final Icon icon = new ImageIcon(url);
 
-        edgeOverlapPanel = new OverlappingGenesPanel(params.getExpression());
+        hmParams = new HeatMapParameters();
+
+        edgeOverlapPanel = new OverlappingGenesPanel(params.getExpression(),hmParams);
         cytoPanel.add("EM Overlap Expression viewer",edgeOverlapPanel);
-        nodeOverlapPanel = new OverlappingGenesPanel(params.getExpression());
+        nodeOverlapPanel = new OverlappingGenesPanel(params.getExpression(),hmParams);
         cytoPanel.add("EM Geneset Expression viewer",nodeOverlapPanel);
         summaryPanel = new SummaryPanel();
         parametersPanel = new ParametersPanel(params);
@@ -118,10 +118,9 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
 
         edgeOverlapPanel.updatePanel(expressionSet.getExpressionMatrix(intersect));
         cytoPanel.setSelectedIndex(cytoPanel.indexOfComponent(edgeOverlapPanel));
-        //summaryPanel.updateEdgeInfo(edges);
+
      }
       edgeOverlapPanel.revalidate();
-      //summaryPanel.revalidate();
 
   }
 
@@ -142,7 +141,6 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
         cytoSidePanel.setSelectedIndex(cytoSidePanel.indexOfComponent(summaryPanel));
      }else{
         HashSet union = null;
-
 
         for(int i = 0; i< nodes.length;i++){
 
@@ -172,5 +170,7 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
         summaryPanel.clearInfo();
         nodeOverlapPanel.clearPanel();
         edgeOverlapPanel.clearPanel();
+        cytoPanel.setSelectedIndex(cytoPanel.indexOfComponent(nodeOverlapPanel));
+        cytoPanel.setSelectedIndex(cytoPanel.indexOfComponent(edgeOverlapPanel));
     }
 }

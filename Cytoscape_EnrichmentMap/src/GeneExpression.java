@@ -84,4 +84,44 @@ public class GeneExpression {
     public String[] getRow() {
         return row;
     }
+
+    public Double[] rowNormalize(){
+        Double[] normalize = new Double[expression.length];
+
+        double mean = getMean();
+        double std = getSTD(mean);
+
+        for(int i = 0;i<expression.length;i++)
+            normalize[i] = (expression[i] - mean)/std;
+
+        return normalize;
+    }
+
+    private double getMean(){
+        double sum = 0.0;
+
+        for(int i = 0;i<expression.length;i++)
+           sum = sum + expression[i];
+
+        return sum/expression.length;
+    }
+
+    private double getSTD(double mean){
+        double sum = 0.0;
+
+        for(int i = 0;i<expression.length;i++)
+            sum = sum + Math.pow(expression[i] - mean,2);
+
+        return Math.sqrt(sum)/expression.length;
+    }
+   public Double[] rowLogTransform(){
+        Double[] logtransformed = new Double[expression.length];
+
+
+
+        for(int i = 0;i<expression.length;i++)
+            logtransformed[i] = Math.log1p(expression[i]);
+
+        return logtransformed;
+    }
 }

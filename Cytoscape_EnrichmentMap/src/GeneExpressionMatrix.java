@@ -93,4 +93,36 @@ public class GeneExpressionMatrix {
     public void setMinExpression(double minExpression) {
         this.minExpression = minExpression;
     }
+
+    public double getMeanExpression(){
+        double sum = 0.0;
+        int k = 0;
+        //go through the expression matrix
+        for(Iterator i = expressionMatrix.keySet().iterator(); i.hasNext();){
+            Double[] currentRow = ((GeneExpression)expressionMatrix.get(i.next())).getExpression();
+            for(int j = 0; j< currentRow.length;j++){
+                sum = sum + currentRow[j];
+                k++;
+            }
+
+        }
+
+        return sum/k;
+
+    }
+
+    public double getSTDExpression(double mean){
+        double sum = 0.0;
+        int k= 0;
+        //go through the expression matrix
+        for(Iterator i = expressionMatrix.keySet().iterator(); i.hasNext();){
+            Double[] currentRow = ((GeneExpression)expressionMatrix.get(i.next())).getExpression();
+            for(int j = 0; j< currentRow.length;j++){
+                sum = sum + Math.pow((currentRow[j]-mean),2);
+                k++;
+            }
+       }
+
+        return Math.sqrt(sum)/k;
+    }
 }
