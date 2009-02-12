@@ -1,4 +1,6 @@
 
+import cytoscape.util.FileUtil;
+
 import javax.swing.*;
 import javax.swing.table.TableColumnModel;
 import java.awt.*;
@@ -6,6 +8,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.io.FileOutputStream;
+import java.io.FileNotFoundException;
 
 
 /**
@@ -31,11 +35,7 @@ public class OverlappingGenesPanel extends JPanel {
      * Creates a new instance of OverlappingGenesPanel
      */
 
-    public OverlappingGenesPanel(GeneExpressionMatrix expression, HeatMapParameters hmParams){
-
-        this.hmParams = hmParams;
-
-        hmParams.initColorGradients(expression);
+    public OverlappingGenesPanel(GeneExpressionMatrix expression){
 
         numConditions = expression.getNumConditions();
         columnNames = expression.getColumnNames();
@@ -45,111 +45,60 @@ public class OverlappingGenesPanel extends JPanel {
 
     }
 
-    public void updatePanel(HashMap currentGeneExpressionSet){
+    public void updatePanel(){
 
-        this.currentGeneExpressionSet = currentGeneExpressionSet;
+        if((!currentGeneExpressionSet.isEmpty()) || (currentGeneExpressionSet != null)){
+            JPanel mainPanel = new JPanel();
+            mainPanel.setLayout(new BorderLayout());
 
-        JPanel mainPanel = new JPanel();
-        mainPanel.setLayout(new BorderLayout());
+            mainPanel.add(createLegendPanel(), java.awt.BorderLayout.WEST);
 
+            //create data subset
+            Object[][] data = createTableData();
+            JTable jTable1 = new JTable(new OverlappingGenesTableModel(columnNames,data));
 
-        mainPanel.add(createLegendPanel(), java.awt.BorderLayout.WEST);
+            //Set up renderer and editor for the Color column.
+            jTable1.setDefaultRenderer(Color.class,new ColorRenderer());
 
-        //create data subset
-        Object[][] data = createTableData(currentGeneExpressionSet);
-        JTable jTable1 = new JTable(new OverlappingGenesTableModel(columnNames,data));
-
-        //Set up renderer and editor for the Color column.
-        jTable1.setDefaultRenderer(Color.class,new ColorRenderer());
-
-        TableColumnModel tcModel = jTable1.getColumnModel();
+            TableColumnModel tcModel = jTable1.getColumnModel();
 
 
-        jTable1.setDragEnabled(false);
-        jTable1.setCellSelectionEnabled(true);
-        for (int i=0;i<columnNames.length;i++){
-             if (i==0 || columnNames[i].equals("Name"))
+            jTable1.setDragEnabled(false);
+            jTable1.setCellSelectionEnabled(true);
+            for (int i=0;i<columnNames.length;i++){
+                 if (i==0 || columnNames[i].equals("Name"))
                    tcModel.getColumn(i).setPreferredWidth(50);
-             else if (i==1 || columnNames[i].equals("Description"))
+                else if (i==1 || columnNames[i].equals("Description"))
                     tcModel.getColumn(i).setPreferredWidth(50);
-             else
+                else
                    tcModel.getColumn(i).setPreferredWidth(10);
-         }
+            }
 
-       jTable1.setColumnModel(tcModel);
-       if(columnNames.length>10)
-            jTable1.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+            jTable1.setColumnModel(tcModel);
+            if(columnNames.length>10)
+                jTable1.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
-       JScrollPane jScrollPane = new javax.swing.JScrollPane(jTable1);
-       //jScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+            JScrollPane jScrollPane = new javax.swing.JScrollPane(jTable1);
 
-       mainPanel.add(jScrollPane);
-       mainPanel.revalidate();
+            mainPanel.add(jScrollPane);
+            mainPanel.revalidate();
 
-
-
-       this.add(mainPanel, java.awt.BorderLayout.CENTER);
-
-       this.revalidate();
+            this.add(mainPanel, java.awt.BorderLayout.CENTER);
+        }
+        this.revalidate();
 
 
     }
 
-      public void updatePanel(){
+    private Object[][] createTableData(){
 
-        JPanel mainPanel = new JPanel();
-        mainPanel.setLayout(new BorderLayout());
-
-        //add the legend in the south section
-        //mainPanel.add(legend, java.awt.BorderLayout.SOUTH);
-
-        mainPanel.add(createLegendPanel(), java.awt.BorderLayout.WEST);
-
-        //create data subset
-        Object[][] data = createTableData(currentGeneExpressionSet);
-        JTable jTable1 = new JTable(new OverlappingGenesTableModel(columnNames,data));
-
-        //Set up renderer and editor for the Color column.
-        jTable1.setDefaultRenderer(Color.class,new ColorRenderer());
-
-        TableColumnModel tcModel = jTable1.getColumnModel();
-
-        jTable1.setDragEnabled(false);
-        jTable1.setCellSelectionEnabled(true);
-        for (int i=0;i<columnNames.length;i++){
-             if (i==0 || columnNames[i].equals("Name"))
-                   tcModel.getColumn(i).setPreferredWidth(50);
-             else if (i==1 || columnNames[i].equals("Description"))
-                    tcModel.getColumn(i).setPreferredWidth(50);
-             else
-                   tcModel.getColumn(i).setPreferredWidth(10);
-         }
-
-       jTable1.setColumnModel(tcModel);
-       jTable1.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-
-       JScrollPane jScrollPane = new javax.swing.JScrollPane(jTable1);
-       jScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-
-       mainPanel.add(jScrollPane);
-       mainPanel.revalidate();
-
-       this.add(mainPanel, java.awt.BorderLayout.CENTER);
-
-       this.revalidate();
-
-
-    }
-
-    private Object[][] createTableData(HashMap currentExpressionSet){
-
-        Object[][] data = new Object[currentExpressionSet.size()][numConditions];
+        Object[][] data = new Object[currentGeneExpressionSet.size()][numConditions];
         //Got through the hashmap and put all the values is
 
         int k = 0;
-        for(Iterator i = currentExpressionSet.keySet().iterator();i.hasNext();){
+        for(Iterator i = currentGeneExpressionSet.keySet().iterator();i.hasNext();){
             //Current expression row
-            GeneExpression row = (GeneExpression)currentExpressionSet.get(i.next());
+            GeneExpression row = (GeneExpression)currentGeneExpressionSet.get(i.next());
             Double[] expression_values;
             if(hmParams.isRowNorm())
                 expression_values = row.rowNormalize();
@@ -176,10 +125,26 @@ public class OverlappingGenesPanel extends JPanel {
 
         JPanel westPanel = new JPanel();
         westPanel.setLayout(new BorderLayout());
+        JPanel topPanel = new JPanel();
+        JPanel buttonPanel = new JPanel();
+        topPanel.setLayout(new GridLayout(2,1));
+
 
         ColorGradientWidget new_legend = ColorGradientWidget.getInstance("expression legend",150,60,5,5,hmParams.getTheme(),hmParams.getRange(),true,ColorGradientWidget.LEGEND_POSITION.TOP);
 
-        westPanel.add(new_legend, BorderLayout.NORTH);
+        JButton SaveExpressionSet = new JButton("Save Expression Set");
+
+        SaveExpressionSet.addActionListener(new java.awt.event.ActionListener() {
+               public void actionPerformed(java.awt.event.ActionEvent evt) {
+                      saveExpressionSetActionPerformed(evt);
+               }
+         });
+        buttonPanel.add(SaveExpressionSet);
+
+        topPanel.add(new_legend);
+        topPanel.add(buttonPanel);
+
+        westPanel.add(topPanel, BorderLayout.NORTH);
 
         westPanel.add(hmParams.createHeatMapOptionsPanel(),BorderLayout.SOUTH);
 
@@ -187,6 +152,44 @@ public class OverlappingGenesPanel extends JPanel {
         return westPanel;
     }
 
+   private void saveExpressionSetActionPerformed(ActionEvent evt){
+/*        java.io.File file = FileUtil.getFile("Export Heatmap as txt File", FileUtil.SAVE);
+        if (file != null && file.toString() != null) {
+            String fileName = file.toString();
+            if (!fileName.endsWith(".txt")) {
+                fileName += ".txt";
+            }
+            if(file.exists()){
+
+            }
+            else{
+                try{
+                    FileOutputStream out = new FileOutputStream(file);
+                    for(Iterator i = currentGeneExpressionSet.keySet().iterator(); i.hasNext();){
+
+                    }
+                }catch(FileNotFoundException e){
+
+                }
+            }
+        }*/
+    }
+
+    public HashMap getCurrentGeneExpressionSet() {
+        return currentGeneExpressionSet;
+    }
+
+    public void setCurrentGeneExpressionSet(HashMap currentGeneExpressionSet) {
+        this.currentGeneExpressionSet = currentGeneExpressionSet;
+    }
+
+    public HeatMapParameters getHmParams() {
+        return hmParams;
+    }
+
+    public void setHmParams(HeatMapParameters hmParams) {
+        this.hmParams = hmParams;
+    }
 
     public void clearPanel(){
 
