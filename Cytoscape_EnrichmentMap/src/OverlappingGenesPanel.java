@@ -3,11 +3,13 @@ import cytoscape.util.FileUtil;
 
 import javax.swing.*;
 import javax.swing.table.TableColumnModel;
+import javax.swing.table.TableColumn;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Enumeration;
 import java.io.FileOutputStream;
 import java.io.FileNotFoundException;
 
@@ -61,17 +63,20 @@ public class OverlappingGenesPanel extends JPanel {
             jTable1.setDefaultRenderer(Color.class,new ColorRenderer());
 
             TableColumnModel tcModel = jTable1.getColumnModel();
-
-
             jTable1.setDragEnabled(false);
             jTable1.setCellSelectionEnabled(true);
+            //set the table header renderer to the vertical renderer
+            ColumnHeaderVerticalRenderer renderer = new ColumnHeaderVerticalRenderer();
             for (int i=0;i<columnNames.length;i++){
                  if (i==0 || columnNames[i].equals("Name"))
                    tcModel.getColumn(i).setPreferredWidth(50);
                 else if (i==1 || columnNames[i].equals("Description"))
                     tcModel.getColumn(i).setPreferredWidth(50);
-                else
+                else{
                    tcModel.getColumn(i).setPreferredWidth(10);
+                   tcModel.getColumn(i).setHeaderRenderer(renderer);
+                 }
+
             }
 
             jTable1.setColumnModel(tcModel);
