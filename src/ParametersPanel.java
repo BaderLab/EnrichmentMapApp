@@ -39,12 +39,14 @@ public class ParametersPanel extends JPanel {
            String runInfoText = "<html> <h1>Parameters:</h1>";
            runInfoText = runInfoText + "<b>P-value Cut-off:</b>" + params.getPvalue() + "<br>";
            runInfoText = runInfoText + "<b>FDR Q-value Cut-off:</b>" + params.getQvalue() + "<br>";
-           runInfoText = runInfoText + "<b>Jaccard Cut-off:</b>" + params.getJaccardCutOff() + "<br>";
+
            if(params.isJaccard()){
-                runInfoText = runInfoText + "<b>Test used:</b>  Jaccard Index<br>";
+               runInfoText = runInfoText + "<b>Jaccard Cut-off:</b>" + params.getJaccardCutOff() + "<br>";
+               runInfoText = runInfoText + "<b>Test used:</b>  Jaccard Index<br>";
            }
            else{
-                runInfoText = runInfoText + "<b>Test used:</b>  Overlap Index<br>";
+               runInfoText = runInfoText + "<b>Overlap Cut-off:</b>" + params.getJaccardCutOff() + "<br>";
+               runInfoText = runInfoText + "<b>Test used:</b>  Overlap Index<br>";
            }
            runInfoText = runInfoText + "<font size=-1><b>Genesets File:</b>" + params.getGMTFileName() + "<br>";
            runInfoText = runInfoText + "<b>Dataset 1 Data Files:</b> " + params.getEnrichmentDataset1FileName1() + ",<br>" + params.getEnrichmentDataset1FileName2() + "<br>";
