@@ -281,7 +281,7 @@ public class VisualizeEnrichmentMapTask implements Task {
 
         CyAttributes nodeAttrs = Cytoscape.getNodeAttributes();
         //format the node name
-        String formattedName = result.getName().length()<EnrichmentMapVisualStyle.maxNodeLabelLength?result.getName():result.getName().substring(0, EnrichmentMapVisualStyle.maxNodeLabelLength);
+       String formattedName = formatLabel(result.getName());
 
         nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.FORMATTED_NAME, formattedName);      
         nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.NAME, result.getName());
@@ -296,7 +296,7 @@ public class VisualizeEnrichmentMapTask implements Task {
 
         CyAttributes nodeAttrs = Cytoscape.getNodeAttributes();
         //format the node name
-        String formattedName = result.getName().length()<EnrichmentMapVisualStyle.maxNodeLabelLength?result.getName():result.getName().substring(0, EnrichmentMapVisualStyle.maxNodeLabelLength);
+       String formattedName = formatLabel(result.getName());
 
         nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.FORMATTED_NAME, formattedName);
         nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.NAME, result.getName());
@@ -311,7 +311,7 @@ public class VisualizeEnrichmentMapTask implements Task {
 
        CyAttributes nodeAttrs = Cytoscape.getNodeAttributes();
         //format the node name
-       String formattedName = result.getName().length()<EnrichmentMapVisualStyle.maxNodeLabelLength?result.getName():result.getName().substring(0, EnrichmentMapVisualStyle.maxNodeLabelLength);
+       String formattedName = formatLabel(result.getName());
 
        nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.FORMATTED_NAME, formattedName);
        nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.NAME, result.getName());
@@ -335,7 +335,7 @@ public class VisualizeEnrichmentMapTask implements Task {
        CyAttributes nodeAttrs = Cytoscape.getNodeAttributes();
 
       //format the node name
-      String formattedName = result.getName().length()<EnrichmentMapVisualStyle.maxNodeLabelLength?result.getName():result.getName().substring(0, EnrichmentMapVisualStyle.maxNodeLabelLength);
+      String formattedName = formatLabel(result.getName());
 
       nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.FORMATTED_NAME, formattedName);
        nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.NAME, result.getName());
@@ -404,6 +404,26 @@ public class VisualizeEnrichmentMapTask implements Task {
 
 
  }
+
+    private String formatLabel(String label){
+       String formattedLabel = "";
+
+       int i = 0;
+       int k = 1;
+
+        while(i<=label.length()){
+
+            if(i+EnrichmentMapVisualStyle.maxNodeLabelLength > label.length())
+                formattedLabel = formattedLabel + label.substring(i, label.length()) + "\n";
+            else
+                formattedLabel = formattedLabel + label.substring(i, k* EnrichmentMapVisualStyle.maxNodeLabelLength) + "\n";
+            i = (k * EnrichmentMapVisualStyle.maxNodeLabelLength) + 1;
+            k++;
+
+        }
+
+        return formattedLabel;
+    }
 
 
     /**
