@@ -18,7 +18,7 @@ public class EnrichmentMapVisualStyle {
 
     EnrichmentMapParameters params;
 
-    public static final int maxNodeLabelLength = 25;
+    public static final int maxNodeLabelLength = 15;
 
     public static String NAME = "Name";
     public static String GS_DESCR = "GS_DESCR";
