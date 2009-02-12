@@ -21,7 +21,12 @@ public class HeatMapParameters {
       private double meanExpression;
       private double stdExpression;
 
-    public HeatMapParameters() {
+     private OverlappingGenesPanel edgeOverlapPanel;
+     private OverlappingGenesPanel nodeOverlapPanel;
+
+    public HeatMapParameters(OverlappingGenesPanel edgeOverlapPanel, OverlappingGenesPanel nodeOverlapPanel) {
+        this.edgeOverlapPanel = edgeOverlapPanel;
+        this.nodeOverlapPanel = nodeOverlapPanel;
     }
 
     public void initColorGradients(GeneExpressionMatrix expression){
@@ -110,23 +115,11 @@ public class HeatMapParameters {
          dataView.add(rowNormalized);
          dataView.add(logTransform);
 
-         asIs.addActionListener(new java.awt.event.ActionListener() {
-               public void actionPerformed(java.awt.event.ActionEvent evt) {
-                      selectDataViewActionPerformed(evt);
-               }
-         });
+        asIs.addActionListener(new selectDataViewActionListener(edgeOverlapPanel, nodeOverlapPanel,this));
 
-         rowNormalized.addActionListener(new java.awt.event.ActionListener() {
-               public void actionPerformed(java.awt.event.ActionEvent evt) {
-                      selectDataViewActionPerformed(evt);
-               }
-         });
+        rowNormalized.addActionListener(new selectDataViewActionListener(edgeOverlapPanel, nodeOverlapPanel,this));
 
-         logTransform.addActionListener(new java.awt.event.ActionListener() {
-               public void actionPerformed(java.awt.event.ActionEvent evt) {
-                      selectDataViewActionPerformed(evt);
-               }
-         });
+        logTransform.addActionListener(new selectDataViewActionListener(edgeOverlapPanel, nodeOverlapPanel,this));
 
         heatmapOptions.add(asIs);
         heatmapOptions.add(rowNormalized);
@@ -136,22 +129,6 @@ public class HeatMapParameters {
 
     }
 
-    private void selectDataViewActionPerformed(ActionEvent evt){
-       if(evt.getActionCommand().equalsIgnoreCase("asis")){
-           rowNorm = false;
-           logtransform = false;
-        }
-        else if(evt.getActionCommand().equalsIgnoreCase("rownorm")){
-           rowNorm = true;
-           logtransform = false;
-        }
-        else if(evt.getActionCommand().equalsIgnoreCase("logtransform")){
-           rowNorm = false;
-           logtransform = true;
-        }
-        ResetColorGradient();
-
-    }
 
     public ColorGradientRange getRange() {
         return range;
