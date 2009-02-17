@@ -1,10 +1,12 @@
 
 import cytoscape.util.CyFileFilter;
 import cytoscape.util.FileUtil;
+import cytoscape.data.readers.TextFileReader;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
+import java.util.HashMap;
 
 /**
  * Created by
@@ -45,14 +47,26 @@ public class GenericInputFilesPanel extends JDialog {
 
        private EnrichmentMapParameters params;
 
+    public static String title = "Import Generic Enrichment Result files to calculate enrichment maps";
+    public static String dataset1_title = "Dataset 1";
+    public static String dataset_instruction = "Please select the Generic result file for first dataset...";
+    public static String dataset2_title = "Dataset 2 (OPTIONAL)";
+    public static String gct_instruction = "Please select the dataset (.gct) or (.rpt) file used for GSEA analysis...";
+    public static String gmt_instruction = "Please select the Gene Set file (.gmt)...";
+    public static String pvalue_instruction = "P-value cut-off (Only genesets with p-value less than this value will be included)";
+    public static String qvalue_instruction = "FDR Q-value cut-off (Only genesets with fdr q-value less than this value will be included)";
+    public static String pvalue_default = "0.05";
+    public static String qvalue_default = "0.25";
+    public static String jaccard_default = "0.50";
+
 
     public GenericInputFilesPanel(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         params = new EnrichmentMapParameters();
         params.setGSEA(false);
         initComponents();
-	    status = false;
-	    pack();
+        status = false;
+        pack();
     }
 
     public GenericInputFilesPanel(java.awt.Frame parent, boolean modal,boolean child) {
@@ -64,9 +78,6 @@ public class GenericInputFilesPanel extends JDialog {
 
 
     public void initComponents() {
-
-
-
         GridBagLayout gridbag = new GridBagLayout();
         GridBagConstraints c = new GridBagConstraints();
         setLayout(gridbag);
@@ -78,7 +89,7 @@ public class GenericInputFilesPanel extends JDialog {
 
         int current_row = 0;
 
-        current_row = initTitleComponent(gridbag, c, current_row, "Import Generic Enrichment Result files to calculate enrichment maps");
+        current_row = initTitleComponent(gridbag, c, current_row, title);
         current_row = initGMTComponent(gridbag, c,current_row);
 
         current_row = initEnrichmentFilesComponent(gridbag,c,current_row);
@@ -103,14 +114,14 @@ public class GenericInputFilesPanel extends JDialog {
 
 
         //Add title for Dataset1
-        current_row = initTitleComponent(gridbag, c, current_row,"Dataset 1");
+        current_row = initTitleComponent(gridbag, c, current_row,dataset1_title);
 
         //Add the first GCT file load fields panel
         current_row = initGCTComponent(gridbag,c,current_row);
 
         //components needed for the GSEA Dataset1 Results
         Dataset1FileNameTextField.setFont(new java.awt.Font("Dialog",1,12));
-        Dataset1FileNameTextField.setText("Please select the Generic result file for first dataset...");
+        Dataset1FileNameTextField.setText(dataset_instruction);
 
         selectDataset1FileButton.setText("Select");
         selectDataset1FileButton
@@ -124,7 +135,7 @@ public class GenericInputFilesPanel extends JDialog {
         current_row = addSeparator(gridbag,c,current_row);
 
         //Add title for Dataset1
-        current_row = initTitleComponent(gridbag, c, current_row,"Dataset 2 (Optional)");
+        current_row = initTitleComponent(gridbag, c, current_row,dataset2_title);
 
 
          //Add the first GCT file load fields panel
@@ -132,7 +143,7 @@ public class GenericInputFilesPanel extends JDialog {
 
         //components needed for the GSEA Dataset1 Results
         Dataset2FileNameTextField.setFont(new java.awt.Font("Dialog",1,12));
-        Dataset2FileNameTextField.setText(" Please select the Generic result file  for second dataset...");
+        Dataset2FileNameTextField.setText(dataset_instruction);
 
         selectDataset2FileButton.setText("Select");
         selectDataset2FileButton
@@ -208,7 +219,7 @@ public class GenericInputFilesPanel extends JDialog {
 
        //components needed for the GCT file load
        GCTFileName1TextField.setFont(new java.awt.Font("Dialog",1,12));
-       GCTFileName1TextField.setText("Please select the dataset (.gct) file used for GSEA analysis...");
+       GCTFileName1TextField.setText(gct_instruction);
 
        selectGCTFileButton.setText("Select");
        selectGCTFileButton
@@ -231,7 +242,7 @@ public class GenericInputFilesPanel extends JDialog {
 
        //components needed for the GCT file load
        GCTFileName2TextField.setFont(new java.awt.Font("Dialog",1,12));
-       GCTFileName2TextField.setText("OPTIONAL: Please select the dataset (.gct) file used for second GSEA analysis...");
+       GCTFileName2TextField.setText("OPTIONAL:" + gct_instruction);
 
        selectGCTFileButton.setText("Select");
        selectGCTFileButton
@@ -255,7 +266,7 @@ public class GenericInputFilesPanel extends JDialog {
 
         //components needed for the GMT file load
         GMTFileNameTextField.setFont(new java.awt.Font("Dialog",1,12));
-        GMTFileNameTextField.setText("Please select a geneset (.gmt) file...");
+        GMTFileNameTextField.setText(gmt_instruction);
 
         selectGMTFileButton.setText("Select");
         selectGMTFileButton
@@ -347,8 +358,8 @@ public class GenericInputFilesPanel extends JDialog {
         c.gridwidth = 3;
         c.gridy = current_row;
         pvalueLabel.setFont(new java.awt.Font("Dialog", 1, 10));
-        pvalueLabel.setText("P-value cut-off (Only genesets with p-value less than this value will be included)");
-        pvalueTextField.setText("0.05");
+        pvalueLabel.setText(pvalue_instruction);
+        pvalueTextField.setText(pvalue_default);
         gridbag.setConstraints(pvalueLabel, c);
         add(pvalueLabel);
         c.gridx = 3;
@@ -361,8 +372,8 @@ public class GenericInputFilesPanel extends JDialog {
         c.gridwidth = 3;
         c.gridy = current_row;
         qvalueLabel.setFont(new java.awt.Font("Dialog", 1, 10));
-        qvalueLabel.setText("FDR Q-value cut-off (Only genesets with fdr q-value less than this value will be included)");
-        qvalueTextField.setText("0.25");
+        qvalueLabel.setText(qvalue_instruction);
+        qvalueTextField.setText(qvalue_default);
         gridbag.setConstraints(qvalueLabel, c);
         add(qvalueLabel);
         c.gridx = 3;
@@ -377,7 +388,7 @@ public class GenericInputFilesPanel extends JDialog {
         c.gridy = current_row;
         jaccardLabel.setFont(new java.awt.Font("Dialog", 1, 10));
         jaccardLabel.setText("Cut-off");
-        jaccardTextField.setText("0.50");
+        jaccardTextField.setText(jaccard_default);
         gridbag.setConstraints(jaccard,c);
         add(jaccard);
         c.gridx = 1;
@@ -483,6 +494,7 @@ public class GenericInputFilesPanel extends JDialog {
 
            // Add accepted File Extensions
            filter.addExtension("gct");
+           filter.addExtension("rpt");
            filter.addExtension("txt");
            filter.setDescription("All GCT files");
 
@@ -490,9 +502,18 @@ public class GenericInputFilesPanel extends JDialog {
            File file = FileUtil.getFile("Import GCT File", FileUtil.LOAD,
                         new CyFileFilter[] { filter });
            if(file != null) {
-               GCTFileName1TextField.setText(file.getAbsolutePath());
-               params.setGCTFileName1(file.getAbsolutePath());
-               GCTFileName1TextField.setToolTipText(file.getAbsolutePath());
+
+               if(file.getPath().contains(".rpt")){
+                   //The file loaded is an rpt file --> populate the fields based on the
+                   populateFieldsFromRpt(file,true);
+                   Dataset1FileSelected = true;
+                   GMTFileSelected = true;
+               }
+               else{
+                    GCTFileName1TextField.setText(file.getAbsolutePath());
+                    params.setGCTFileName1(file.getAbsolutePath());
+                    GCTFileName1TextField.setToolTipText(file.getAbsolutePath());
+               }
                GCTFileSelected = true;
                params.setData(true);
                 if (Dataset1FileSelected && GMTFileSelected   ){
@@ -510,15 +531,23 @@ public class GenericInputFilesPanel extends JDialog {
       // Add accepted File Extensions
       filter.addExtension("gct");
       filter.addExtension("txt");
+      filter.addExtension("rpt");
       filter.setDescription("All GCT files");
 
       // Get the file name
       File file = FileUtil.getFile("Import GCT File", FileUtil.LOAD,
                    new CyFileFilter[] { filter });
       if(file != null) {
-          GCTFileName2TextField.setText(file.getAbsolutePath());
-          params.setGCTFileName2(file.getAbsolutePath());
-          GCTFileName2TextField.setToolTipText(file.getAbsolutePath());
+          if(file.getPath().contains(".rpt")){
+                   //The file loaded is an rpt file --> populate the fields based on the
+                   populateFieldsFromRpt(file,false);
+                   params.setTwoDatasets(true);
+               }
+          else{
+            GCTFileName2TextField.setText(file.getAbsolutePath());
+            params.setGCTFileName2(file.getAbsolutePath());
+            GCTFileName2TextField.setToolTipText(file.getAbsolutePath());
+          }
           params.setData2(true);
       }
   }
@@ -533,10 +562,10 @@ public class GenericInputFilesPanel extends JDialog {
         // Add accepted File Extensions
         filter.addExtension("txt");
         filter.addExtension("xls");
-        filter.setDescription("All GSEA result files");
+        filter.setDescription("All result files");
 
         // Get the file name
-         File file = FileUtil.getFile("import GSEA dataset 1 result file 1", FileUtil.LOAD, new CyFileFilter[]{ filter });
+         File file = FileUtil.getFile("import dataset 1 result file", FileUtil.LOAD, new CyFileFilter[]{ filter });
 
         if(file != null) {
 
@@ -563,10 +592,10 @@ public class GenericInputFilesPanel extends JDialog {
         // Add accepted File Extensions
         filter.addExtension("txt");
         filter.addExtension("xls");
-        filter.setDescription("All GSEA result files");
+        filter.setDescription("All result files");
 
         // Get the file name
-         File file = FileUtil.getFile("import GSEA dataset 2 result file 1", FileUtil.LOAD, new CyFileFilter[]{ filter });
+         File file = FileUtil.getFile("import dataset 2 result file", FileUtil.LOAD, new CyFileFilter[]{ filter });
 
         if(file != null) {
 
@@ -580,6 +609,109 @@ public class GenericInputFilesPanel extends JDialog {
 
         }
   }
+
+    private void populateFieldsFromRpt(File file, boolean dataset1){
+
+        TextFileReader reader = new TextFileReader(file.getAbsolutePath());
+        reader.read();
+        String fullText = reader.getText();
+
+        //Create a hashmap to contain all the values in the rpt file.
+        HashMap rpt = new HashMap();
+
+        String [] lines = fullText.split("\n");
+
+        for (int i = 0; i < lines.length; i++) {
+            String line = lines[i];
+            String[] tokens = line.split("\t");
+            //there should be two values on each line of the rpt file.
+            if(tokens.length == 2 )
+                rpt.put(tokens[0] ,tokens[1]);
+            else if (tokens.length == 3)
+                rpt.put(tokens[0] + " "+ tokens[1],tokens[2]);
+        }
+
+         //set all the variables based on the parameters in the rpt file
+        //parameters needed
+        String timestamp = (String)rpt.get("producer_timestamp");
+        String out_dir = (String)rpt.get("param out");
+        String data = (String)rpt.get("param res");
+        String label = (String)rpt.get("param rpt_label");
+        String classes = (String)rpt.get("param cls");
+        String gmt = (String)rpt.get("param gmx");
+
+        //phenotypes are specified after # in the parameter cls and are separated by _versus_
+        String[] classes_split = classes.split("#");
+        String phenotypes = classes_split[1];
+        String[] phenotypes_split = phenotypes.split("_versus_");
+        String phenotype1 = phenotypes_split[0];
+        String phenotype2 = phenotypes_split[1];
+
+        String results1 = "" + out_dir + File.separator + label + ".Gsea." + timestamp + File.separator + "gsea_report_for_" + phenotype1 + "_" + timestamp + ".xls";
+        String results2 = "" + out_dir + File.separator + label + ".Gsea." + timestamp + File.separator + "gsea_report_for_" + phenotype2 + "_" + timestamp + ".xls";
+
+        if(dataset1){
+
+            //check to see if the gmt file has already been set.  if it has then
+            //make sure that this file is the same as the one from the other dataset.
+            if(!GMTFileNameTextField.getText().equalsIgnoreCase(gmt) &&
+                    !GMTFileNameTextField.getText().equalsIgnoreCase(gmt_instruction))
+                JOptionPane.showMessageDialog(this,"The gmt files between the two analyses do not match.\n  To compare to analyses the geneset files for the two analyses must be the same.");
+            else{
+                GMTFileNameTextField.setText(gmt);
+                params.setGMTFileName(gmt);
+                GMTFileNameTextField.setToolTipText(gmt);
+
+                GCTFileName1TextField.setText(data);
+                params.setGCTFileName1(data);
+                GCTFileName1TextField.setToolTipText(data);
+
+                params.setEnrichmentDataset1FileName1(results1);
+                params.setEnrichmentDataset1FileName2(results2);
+                this.setDatasetnames(results1,results2,dataset1);
+            }
+        }
+        else{
+            //check to see if the gmt file has already been set.  if it has then
+            //make sure that this file is the same as the one from the other dataset.
+            if(!GMTFileNameTextField.getText().equalsIgnoreCase(gmt) &&
+                               !GMTFileNameTextField.getText().equalsIgnoreCase("Please select a geneset (.gmt) file..."))
+                JOptionPane.showMessageDialog(this,"The gmt files between the two analyses do not match.\n  To compare to analyses the geneset files for the two analyses must be the same.");      
+            else{
+                GMTFileNameTextField.setText(gmt);
+                params.setGMTFileName(gmt);
+                GMTFileNameTextField.setToolTipText(gmt);
+
+                GCTFileName2TextField.setText(data);
+                params.setGCTFileName2(data);
+                GCTFileName2TextField.setToolTipText(data);
+
+                params.setEnrichmentDataset2FileName1(results1);
+                params.setEnrichmentDataset2FileName2(results2);
+                this.setDatasetnames(results1,results2,dataset1);
+            }
+        }
+    }
+
+
+    protected void setDatasetnames(String file1, String file2, boolean dataset1){
+
+        if(dataset1){
+            Dataset1FileNameTextField.setText(file1 );
+            Dataset1FileNameTextField.setToolTipText(file1 );
+
+            Dataset1FileName2TextField.setText(file2 );
+            Dataset1FileName2TextField.setToolTipText(file2 );
+        }
+        else{
+
+            Dataset2FileNameTextField.setText(file1 );
+            Dataset2FileNameTextField.setToolTipText(file1 );
+
+            Dataset2FileName2TextField.setText(file2 );
+            Dataset2FileName2TextField.setToolTipText(file2 );
+        }
+    }
 
     public void enableImport(){
         importButton.setEnabled(true);
