@@ -94,14 +94,14 @@ public class GSEAInputFilesPanelMac extends GenericInputFilesPanel {
         selectDataset2File2Button = new javax.swing.JButton();
 
         //Add title for Dataset1
-        current_row = initTitleComponent(gridbag, c, current_row,"Dataset 1");
+        current_row = initTitleComponent(gridbag, c, current_row,dataset1_title);
 
         //Put in the first GCT file load
         current_row = initGCTComponent(gridbag, c, current_row);
 
         //components needed for the GSEA Dataset1 Results
         Dataset1FileNameTextField.setFont(new java.awt.Font("Dialog",1,12));
-        Dataset1FileNameTextField.setText("Please select the gsea result file 1 for first dataset...");
+        Dataset1FileNameTextField.setText(dataset_instruction);
 
         selectDataset1FileButton.setText("Select");
         selectDataset1FileButton
@@ -115,7 +115,7 @@ public class GSEAInputFilesPanelMac extends GenericInputFilesPanel {
 
         //components needed for the GSEA Dataset1 Results
         Dataset1FileName2TextField.setFont(new java.awt.Font("Dialog",1,12));
-        Dataset1FileName2TextField.setText("Please select the gsea result file 2 for first dataset...");
+        Dataset1FileName2TextField.setText(dataset_instruction);
 
         selectDataset1File2Button.setText("Select");
         selectDataset1File2Button
@@ -130,14 +130,14 @@ public class GSEAInputFilesPanelMac extends GenericInputFilesPanel {
         current_row = addSeparator(gridbag,c,current_row);
 
         //Add title for Dataset2
-        current_row = initTitleComponent(gridbag, c, current_row,"Dataset 2 (Optional)");
+        current_row = initTitleComponent(gridbag, c, current_row,dataset2_title);
 
         //Put in the first GCT file load
         current_row = initGCT2Component(gridbag, c, current_row);
 
         //components needed for the GSEA Dataset1 Results
         Dataset2FileNameTextField.setFont(new java.awt.Font("Dialog",1,12));
-        Dataset2FileNameTextField.setText("(OPTIONAL) Please select the gsea result file 1 for second dataset...");
+        Dataset2FileNameTextField.setText("(OPTIONAL) "+ dataset_instruction);
 
         selectDataset2FileButton.setText("Select");
         selectDataset2FileButton
@@ -150,7 +150,7 @@ public class GSEAInputFilesPanelMac extends GenericInputFilesPanel {
         current_row = addTextButtonRow(gridbag,c,current_row,Dataset2FileNameTextField,selectDataset2FileButton);
 
         Dataset2FileName2TextField.setFont(new java.awt.Font("Dialog",1,12));
-        Dataset2FileName2TextField.setText("(OPTIONAL) Please select the gsea result file 2 for second dataset...");
+        Dataset2FileName2TextField.setText("(OPTIONAL)"+ dataset_instruction);
 
         selectDataset2File2Button.setText("Select");
         selectDataset2File2Button
@@ -279,4 +279,24 @@ public class GSEAInputFilesPanelMac extends GenericInputFilesPanel {
 
         }
     }
+
+    protected void setDatasetnames(String file1, String file2, boolean dataset1){
+
+           if(dataset1){
+               Dataset1FileNameTextField.setText(file1 );
+               Dataset1FileNameTextField.setToolTipText(file1 );
+
+               Dataset1FileName2TextField.setText(file2 );
+               Dataset1FileName2TextField.setToolTipText(file2 );
+           }
+           else{
+
+               Dataset2FileNameTextField.setText(file1 );
+               Dataset2FileNameTextField.setToolTipText(file1 );
+
+               Dataset2FileName2TextField.setText(file2 );
+               Dataset2FileName2TextField.setToolTipText(file2 );
+           }
+       }
+
 }
