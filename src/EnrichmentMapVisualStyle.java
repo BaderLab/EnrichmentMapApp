@@ -43,6 +43,14 @@ public class EnrichmentMapVisualStyle {
     public static String OVERLAP_SIZE = "Overlap_size";
     public static String JACCARD_COEFFECIENT= "jaccard_coeffecient";
 
+    public static Color max_red = new Color(255,0,0);
+    public static Color light_red1 = new Color(255,102,102);
+    public static Color light_red2 = new Color(255,179,179);
+    public static Color max_blue = new Color(0,100,255);
+    public static Color light_blue1 = new Color(102,162,255);
+    public static Color light_blue2 = new Color(179,208,255);
+    public static Color overColor = Color.WHITE;
+
     private VisualStyle vs;
 
     public EnrichmentMapVisualStyle(String string, EnrichmentMapParameters params) {
@@ -70,7 +78,7 @@ public class EnrichmentMapVisualStyle {
         //set the default edge appearance
         EdgeAppearance edgeAppear = new EdgeAppearance();
         edgeAppear.set(VisualPropertyType.EDGE_COLOR, new Color(100,200,000) );
-
+        edgeAppCalc.setDefaultAppearance(edgeAppear);
 
         //Continous Mapping - set edge line thickness based on the number of genes in the overlap
         ContinuousMapping continuousMapping_edgewidth = new ContinuousMapping(1, ObjectMapping.EDGE_MAPPING);
@@ -99,13 +107,6 @@ public class EnrichmentMapVisualStyle {
 
     private void createNodeAppearance(CyNetwork network,String prefix){
 
-        Color max_red = new Color(255,0,0);
-        Color light_red1 = new Color(255,102,102);
-        Color light_red2 = new Color(255,179,179);
-        Color max_blue = new Color(0,100,255);
-        Color light_blue1 = new Color(102,162,255);
-        Color light_blue2 = new Color(179,208,255);
-        Color overColor = Color.WHITE;
 
         // Create boundary conditions                  less than,   equals,  greater than
         BoundaryRangeValues bv3a = new BoundaryRangeValues(max_blue,max_blue,max_blue);
