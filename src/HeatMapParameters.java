@@ -18,8 +18,8 @@ public class HeatMapParameters {
 
       private double minExpression;
       private double maxExpression;
-      private double meanExpression;
-      private double stdExpression;
+      private double minExpression_rownorm;
+      private double maxExpression_rownorm;
 
      private OverlappingGenesPanel edgeOverlapPanel;
      private OverlappingGenesPanel nodeOverlapPanel;
@@ -33,8 +33,8 @@ public class HeatMapParameters {
 
         minExpression = expression.getMinExpression();
         maxExpression = expression.getMaxExpression();
-        meanExpression = expression.getMeanExpression();
-        stdExpression = expression.getSTDExpression(meanExpression);
+        minExpression_rownorm = expression.getMinExpression(expression.getExpressionMatrix_rowNormalized());
+        maxExpression_rownorm = expression.getMaxExpression(expression.getExpressionMatrix_rowNormalized());
 
         double max = Math.max(Math.abs(minExpression), maxExpression);
 
@@ -58,8 +58,8 @@ public class HeatMapParameters {
           double median;
 
           if(rowNorm){
-              min = (minExpression - meanExpression)/stdExpression;
-              max = (maxExpression - meanExpression)/stdExpression;
+              min = minExpression_rownorm;
+              max = maxExpression_rownorm;
               max = Math.max(Math.abs(min),max);
 
           }
@@ -69,11 +69,12 @@ public class HeatMapParameters {
               max = Math.max(Math.abs(min),max);
 
           }
-          else
+          else{
+              min = minExpression;
               max = Math.max(Math.abs(minExpression), maxExpression);
-
+          }
           median = max/2;
-          if(minExpression >= 0){
+          if(min >= 0){
               median = max/2;
               range = ColorGradientRange.getInstance(0,median, median,max, 0,median,median,max);
               theme = ColorGradientTheme.GREEN_ONECOLOR_GRADIENT_THEME;
