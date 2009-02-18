@@ -79,6 +79,9 @@ public class OverlappingGenesPanel extends JPanel {
             ColumnHeaderVerticalRenderer pheno2_renderer = new ColumnHeaderVerticalRenderer();
             pheno2_renderer.setBackground(EnrichmentMapVisualStyle.light_blue2);
 
+            ColumnHeaderVerticalRenderer default_renderer = new ColumnHeaderVerticalRenderer();
+
+
             for (int i=0;i<columnNames.length;i++){
                 if (i==0 || columnNames[i].equals("Name"))
                    tcModel.getColumn(i).setPreferredWidth(50);
@@ -86,10 +89,14 @@ public class OverlappingGenesPanel extends JPanel {
                     tcModel.getColumn(i).setPreferredWidth(50);
                 else{
                    tcModel.getColumn(i).setPreferredWidth(10);
-                   if(phenotypes[i-2].equalsIgnoreCase(phenotype1))
-                        tcModel.getColumn(i).setHeaderRenderer(pheno1_renderer);
-                   else if(phenotypes[i-2].equalsIgnoreCase(phenotype2))
-                        tcModel.getColumn(i).setHeaderRenderer(pheno2_renderer);
+                    if(phenotypes != null){
+                        if(phenotypes[i-2].equalsIgnoreCase(phenotype1))
+                            tcModel.getColumn(i).setHeaderRenderer(pheno1_renderer);
+                        else if(phenotypes[i-2].equalsIgnoreCase(phenotype2))
+                            tcModel.getColumn(i).setHeaderRenderer(pheno2_renderer);
+                    }
+                    else
+                         tcModel.getColumn(i).setHeaderRenderer(default_renderer);
                  }
 
             }
