@@ -71,7 +71,7 @@ public class GSEAResultFileReaderTask implements Task {
                 double FWERqvalue = 1.0;
 
                 //The first column of the file is the name of the geneset
-                String Name = tokens[0].toUpperCase();
+                String Name = tokens[0].toUpperCase().trim();
 
                 //The fourth column is the size of the geneset
                 if(tokens[3].equalsIgnoreCase("")){

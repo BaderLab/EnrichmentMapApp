@@ -417,7 +417,7 @@ public class VisualizeEnrichmentMapTask implements Task {
                 formattedLabel = formattedLabel + label.substring(i, label.length()) + "\n";
             else
                 formattedLabel = formattedLabel + label.substring(i, k* EnrichmentMapVisualStyle.maxNodeLabelLength) + "\n";
-            i = (k * EnrichmentMapVisualStyle.maxNodeLabelLength) + 1;
+            i = (k * EnrichmentMapVisualStyle.maxNodeLabelLength) ;
             k++;
 
         }

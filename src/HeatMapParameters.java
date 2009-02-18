@@ -42,7 +42,7 @@ public class HeatMapParameters {
 
         //if the minimum expression is above zero make it a one colour heatmap
         if(minExpression >= 0){
-            range = ColorGradientRange.getInstance(0,median, median,max, 0,median,median,max);
+            range = ColorGradientRange.getInstance(0,max/2, max/2,max, 0,max/2,max/2,max);
             theme = ColorGradientTheme.GREEN_ONECOLOR_GRADIENT_THEME;
         }
         else{
@@ -80,7 +80,7 @@ public class HeatMapParameters {
            }
           else{
               median = 0;
-              range = ColorGradientRange.getInstance(-max,median, median,max, -max,median,median,max);
+              range = ColorGradientRange.getInstance(-max,0, 0,max, -max,0,0,max);
               theme = ColorGradientTheme.GREEN_MAGENTA_GRADIENT_THEME;
           }
 
