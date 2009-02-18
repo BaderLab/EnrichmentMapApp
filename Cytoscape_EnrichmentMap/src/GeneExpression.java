@@ -114,6 +114,7 @@ public class GeneExpression {
 
         return Math.sqrt(sum)/expression.length;
     }
+
    public Double[] rowLogTransform(){
         Double[] logtransformed = new Double[expression.length];
 

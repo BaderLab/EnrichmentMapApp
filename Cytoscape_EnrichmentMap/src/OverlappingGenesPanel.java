@@ -55,7 +55,7 @@ public class OverlappingGenesPanel extends JPanel {
 
     public void updatePanel(){
 
-        if((!currentGeneExpressionSet.isEmpty()) || (currentGeneExpressionSet != null)){
+        if(currentGeneExpressionSet != null){
             JPanel mainPanel = new JPanel();
             mainPanel.setLayout(new BorderLayout());
 

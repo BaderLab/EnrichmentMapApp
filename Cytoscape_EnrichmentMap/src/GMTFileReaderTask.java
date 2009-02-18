@@ -67,10 +67,10 @@ public class GMTFileReaderTask implements Task {
             String [] tokens = line.split("\t");
 
             //The first column of the file is the name of the geneset
-            String Name = tokens[0].toUpperCase();
+            String Name = tokens[0].toUpperCase().trim();
 
             //The second column of the file is the description of the geneset
-            String description = tokens[1];
+            String description = tokens[1].trim();
 
             //create an object of type Geneset with the above Name and description
             GeneSet gs = new GeneSet(Name, description);
