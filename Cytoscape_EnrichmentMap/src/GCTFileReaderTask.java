@@ -118,14 +118,30 @@ public class GCTFileReaderTask implements Task {
                 }
             currentProgress++;
 
-
         }
         if(dataset == 1){
+            //set up the classes definition if it is set.
+            if(params.getClassFile1() != null)
+                expressionMatrix.setPhenotypes(setClasses(expressionMatrix, params.getClassFile1()));
             params.setExpression(expressionMatrix);
         }
         else{
+            //set up the classes definition if it is set.
+            if(params.getClassFile2() != null)
+                expressionMatrix.setPhenotypes(setClasses(expressionMatrix, params.getClassFile2()));
             params.setExpression2(expressionMatrix);
         }
+    }
+
+    private String[] setClasses(GeneExpressionMatrix expresson, String classFile){
+        TextFileReader reader2 = new TextFileReader(classFile);
+        reader2.read();
+        String fullText2 = reader2.getText();
+
+        String[] lines2 = fullText2.split("\n");
+
+        //the third line of the class file defines the classes
+        return lines2[2].split(" ");
     }
 
 

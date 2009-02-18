@@ -30,6 +30,7 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
     private ParametersPanel parametersPanel;
     private HeatMapParameters hmParams;
 
+
     private final CytoPanel cytoPanel;
     private final CytoPanel cytoSidePanel;
 
@@ -43,9 +44,10 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
         //final URL url = new URL("http","www.baderlab.org","/wiki/common/network_bader_website_icon.gif");
         //final Icon icon = new ImageIcon(url);
 
-        edgeOverlapPanel = new OverlappingGenesPanel(params.getExpression());
+
+        edgeOverlapPanel = new OverlappingGenesPanel(params.getExpression(), params.getPhenotype1(),params.getPhenotype2());
         cytoPanel.add("EM Overlap Expression viewer",edgeOverlapPanel);
-        nodeOverlapPanel = new OverlappingGenesPanel(params.getExpression());
+        nodeOverlapPanel = new OverlappingGenesPanel(params.getExpression(), params.getPhenotype1(),params.getPhenotype2());
         cytoPanel.add("EM Geneset Expression viewer",nodeOverlapPanel);
 
         hmParams = new HeatMapParameters(edgeOverlapPanel, nodeOverlapPanel);
@@ -59,6 +61,7 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
         cytoSidePanel.add("Parameters Used", parametersPanel);
         cytoSidePanel.setSelectedIndex(cytoSidePanel.indexOfComponent(parametersPanel));
         cytoSidePanel.setState(CytoPanelState.DOCK);
+
 
     }
 

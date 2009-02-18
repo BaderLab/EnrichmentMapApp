@@ -647,6 +647,14 @@ public class GenericInputFilesPanel extends JDialog {
         String phenotype1 = phenotypes_split[0];
         String phenotype2 = phenotypes_split[1];
 
+        params.setPhenotype1(phenotype1);
+        params.setPhenotype2(phenotype2);
+
+       if(dataset1)
+            params.setClassFile1(classes_split[0]);
+        else
+            params.setClassFile2(classes_split[0]);
+
         String results1 = "" + out_dir + File.separator + label + ".Gsea." + timestamp + File.separator + "gsea_report_for_" + phenotype1 + "_" + timestamp + ".xls";
         String results2 = "" + out_dir + File.separator + label + ".Gsea." + timestamp + File.separator + "gsea_report_for_" + phenotype2 + "_" + timestamp + ".xls";
 
@@ -676,7 +684,7 @@ public class GenericInputFilesPanel extends JDialog {
             //make sure that this file is the same as the one from the other dataset.
             if(!GMTFileNameTextField.getText().equalsIgnoreCase(gmt) &&
                                !GMTFileNameTextField.getText().equalsIgnoreCase("Please select a geneset (.gmt) file..."))
-                JOptionPane.showMessageDialog(this,"The gmt files between the two analyses do not match.\n  To compare to analyses the geneset files for the two analyses must be the same.");      
+                JOptionPane.showMessageDialog(this,"The gmt files between the two analyses do not match.\n  To compare to analyses the geneset files for the two analyses must be the same.");
             else{
                 GMTFileNameTextField.setText(gmt);
                 params.setGMTFileName(gmt);
@@ -712,6 +720,7 @@ public class GenericInputFilesPanel extends JDialog {
             Dataset2FileName2TextField.setToolTipText(file2 );
         }
     }
+
 
     public void enableImport(){
         importButton.setEnabled(true);

@@ -38,7 +38,7 @@ public class HeatMapParameters {
 
         double max = Math.max(Math.abs(minExpression), maxExpression);
 
-        double median = max/2;
+        double median = 0;
 
         //if the minimum expression is above zero make it a one colour heatmap
         if(minExpression >= 0){
@@ -47,7 +47,7 @@ public class HeatMapParameters {
         }
         else{
             range = ColorGradientRange.getInstance(-max,median, median,max, -max,median,median,max);
-            theme = ColorGradientTheme.GREEN_ONECOLOR_GRADIENT_THEME;
+            theme = ColorGradientTheme.GREEN_MAGENTA_GRADIENT_THEME;
         }
 
     }
@@ -61,23 +61,27 @@ public class HeatMapParameters {
               min = (minExpression - meanExpression)/stdExpression;
               max = (maxExpression - meanExpression)/stdExpression;
               max = Math.max(Math.abs(min),max);
+
           }
           else if(logtransform){
               min = Math.log1p(minExpression);
               max = Math.log1p(maxExpression) ;
               max = Math.max(Math.abs(min),max);
+
           }
           else
               max = Math.max(Math.abs(minExpression), maxExpression);
 
           median = max/2;
           if(minExpression >= 0){
+              median = max/2;
               range = ColorGradientRange.getInstance(0,median, median,max, 0,median,median,max);
               theme = ColorGradientTheme.GREEN_ONECOLOR_GRADIENT_THEME;
            }
           else{
+              median = 0;
               range = ColorGradientRange.getInstance(-max,median, median,max, -max,median,median,max);
-              theme = ColorGradientTheme.GREEN_ONECOLOR_GRADIENT_THEME;
+              theme = ColorGradientTheme.GREEN_MAGENTA_GRADIENT_THEME;
           }
 
       }

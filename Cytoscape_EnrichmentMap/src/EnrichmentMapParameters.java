@@ -63,6 +63,12 @@ public class EnrichmentMapParameters {
     private GeneExpressionMatrix expression;
     private GeneExpressionMatrix expression2;
 
+    private String phenotype1;
+    private String phenotype2;
+
+    private String classFile1;
+    private String classFile2;
+
     private HashMap<String, GenesetSimilarity> genesetSimilarity;
 
     public EnrichmentMapParameters() {
@@ -367,5 +373,37 @@ public class EnrichmentMapParameters {
 
     public void setGenesetSimilarity(HashMap<String, GenesetSimilarity> genesetSimilarity) {
         this.genesetSimilarity = genesetSimilarity;
+    }
+
+    public String getPhenotype1() {
+        return phenotype1;
+    }
+
+    public void setPhenotype1(String phenotype1) {
+        this.phenotype1 = phenotype1;
+    }
+
+    public String getPhenotype2() {
+        return phenotype2;
+    }
+
+    public void setPhenotype2(String phenotype2) {
+        this.phenotype2 = phenotype2;
+    }
+
+    public String getClassFile1() {
+        return classFile1;
+    }
+
+    public void setClassFile1(String classFile1) {
+        this.classFile1 = classFile1;
+    }
+
+    public String getClassFile2() {
+        return classFile2;
+    }
+
+    public void setClassFile2(String classFile2) {
+        this.classFile2 = classFile2;
     }
 }

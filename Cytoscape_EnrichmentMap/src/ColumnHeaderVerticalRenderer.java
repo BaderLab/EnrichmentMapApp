@@ -12,22 +12,24 @@ import java.awt.image.BufferedImage;
  */
 public class ColumnHeaderVerticalRenderer extends DefaultTableCellRenderer {
 
+
     @Override
     public Component getTableCellRendererComponent(JTable table,
                                                    Object value, boolean isSelected, boolean hasFocus,
                                                    int row, int column) {
 
         JLabel label = new JLabel();
+
+        label.setBorder(UIManager.getBorder("TableHeader.cellBorder"));
+        label.setBackground(this.getBackground());
+        label.setForeground(UIManager.getColor("TableHeader.foreground"));
+        label.setFont(UIManager.getFont("TableHeader.font"));
+
         Icon icon = VerticalCaption.getVerticalCaption(label, value.toString(), false);
 
         label.setIcon(icon);
         label.setVerticalAlignment(JLabel.BOTTOM);
         label.setHorizontalAlignment(JLabel.CENTER);
-
-        label.setBorder(UIManager.getBorder("TableHeader.cellBorder"));
-        label.setBackground(UIManager.getColor("TableHeader.background"));
-        label.setForeground(UIManager.getColor("TableHeader.foreground"));
-        label.setFont(UIManager.getFont("TableHeader.font"));
 
         return label;
     }
@@ -44,7 +46,7 @@ class VerticalCaption {
                 captionWidth + 4, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = (Graphics2D) bi.getGraphics();
 
-        g.setColor(new Color(0, 0, 0, 0)); // transparent
+        g.setColor(component.getBackground()); // transparent
         g.fillRect(0, 0, bi.getWidth(), bi.getHeight());
 
         g.setColor(component.getForeground());

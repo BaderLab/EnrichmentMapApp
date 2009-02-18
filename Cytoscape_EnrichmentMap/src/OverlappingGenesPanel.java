@@ -25,11 +25,14 @@ public class OverlappingGenesPanel extends JPanel {
 
         private Object[] columnNames;
         private Object[] columnNames2;
+        private String[] phenotypes;
         private Cursor hand;
 
         private int numConditions;
 
         private HashMap currentGeneExpressionSet;
+        private String phenotype1;
+        private String phenotype2;
 
         private HeatMapParameters hmParams;
 
@@ -37,11 +40,14 @@ public class OverlappingGenesPanel extends JPanel {
      * Creates a new instance of OverlappingGenesPanel
      */
 
-    public OverlappingGenesPanel(GeneExpressionMatrix expression){
+    public OverlappingGenesPanel(GeneExpressionMatrix expression, String phenotype1, String phenotype2){
 
         numConditions = expression.getNumConditions();
         columnNames = expression.getColumnNames();
+        phenotypes = expression.getPhenotypes();
 
+        this.phenotype1 = phenotype1;
+        this.phenotype2 = phenotype2;
        this.setLayout(new java.awt.BorderLayout());
 
 
@@ -65,16 +71,25 @@ public class OverlappingGenesPanel extends JPanel {
             TableColumnModel tcModel = jTable1.getColumnModel();
             jTable1.setDragEnabled(false);
             jTable1.setCellSelectionEnabled(true);
+
+
             //set the table header renderer to the vertical renderer
-            ColumnHeaderVerticalRenderer renderer = new ColumnHeaderVerticalRenderer();
+            ColumnHeaderVerticalRenderer pheno1_renderer = new ColumnHeaderVerticalRenderer();
+            pheno1_renderer.setBackground(EnrichmentMapVisualStyle.light_red2);
+            ColumnHeaderVerticalRenderer pheno2_renderer = new ColumnHeaderVerticalRenderer();
+            pheno2_renderer.setBackground(EnrichmentMapVisualStyle.light_blue2);
+
             for (int i=0;i<columnNames.length;i++){
-                 if (i==0 || columnNames[i].equals("Name"))
+                if (i==0 || columnNames[i].equals("Name"))
                    tcModel.getColumn(i).setPreferredWidth(50);
                 else if (i==1 || columnNames[i].equals("Description"))
                     tcModel.getColumn(i).setPreferredWidth(50);
                 else{
                    tcModel.getColumn(i).setPreferredWidth(10);
-                   tcModel.getColumn(i).setHeaderRenderer(renderer);
+                   if(phenotypes[i-2].equalsIgnoreCase(phenotype1))
+                        tcModel.getColumn(i).setHeaderRenderer(pheno1_renderer);
+                   else if(phenotypes[i-2].equalsIgnoreCase(phenotype2))
+                        tcModel.getColumn(i).setHeaderRenderer(pheno2_renderer);
                  }
 
             }

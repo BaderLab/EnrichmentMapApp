@@ -21,6 +21,9 @@ public class GeneExpressionMatrix {
     private double maxExpression = 0;
     private double minExpression = 0;
 
+    private String[] phenotypes;
+
+
     public GeneExpressionMatrix(String[] columnNames) {
         numConditions = columnNames.length;
         this.columnNames = columnNames;
@@ -125,4 +128,13 @@ public class GeneExpressionMatrix {
 
         return Math.sqrt(sum)/k;
     }
+
+    public String[] getPhenotypes() {
+        return phenotypes;
+    }
+
+    public void setPhenotypes(String[] phenotypes) {
+        this.phenotypes = phenotypes;
+    }
+    
 }
