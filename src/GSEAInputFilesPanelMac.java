@@ -184,7 +184,7 @@ public class GSEAInputFilesPanelMac extends GenericInputFilesPanel {
          File file = FileUtil.getFile("import GSEA dataset 1 result file 1", FileUtil.LOAD, new CyFileFilter[]{ filter });
 
         if(file != null) {
-
+                Dataset1FileNameTextField.setForeground(checkFile(file.getAbsolutePath()));
                 Dataset1FileNameTextField.setText(file.getName() );
                 setGSEADataset1FileName1(file.getAbsolutePath());
                 Dataset1FileNameTextField.setToolTipText(file.getAbsolutePath() );
@@ -214,7 +214,7 @@ public class GSEAInputFilesPanelMac extends GenericInputFilesPanel {
 
         if(file != null) {
 
-
+                Dataset1FileName2TextField.setForeground(checkFile(file.getAbsolutePath()));
                 Dataset1FileName2TextField.setText(file.getName() );
 
                 setGSEADataset1FileName2(file.getAbsolutePath());
@@ -243,7 +243,7 @@ public class GSEAInputFilesPanelMac extends GenericInputFilesPanel {
          File file = FileUtil.getFile("import GSEA dataset 2 result file 1", FileUtil.LOAD, new CyFileFilter[]{ filter });
 
         if(file != null) {
-
+                 Dataset2FileNameTextField.setForeground(checkFile(file.getAbsolutePath()));
                  Dataset2FileNameTextField.setText(file.getName() );
                  setGSEADataset2FileName1(file.getAbsolutePath());
                  Dataset2FileNameTextField.setToolTipText(file.getAbsolutePath() );
@@ -268,7 +268,7 @@ public class GSEAInputFilesPanelMac extends GenericInputFilesPanel {
          File file = FileUtil.getFile("import GSEA dataset 2 result file 2", FileUtil.LOAD, new CyFileFilter[]{ filter });
 
         if(file != null) {
-
+                 Dataset2FileName2TextField.setForeground(checkFile(file.getAbsolutePath()));
                  Dataset2FileName2TextField.setText(file.getName() );
                  setGSEADataset2FileName2(file.getAbsolutePath());
                  Dataset2FileName2TextField.setToolTipText(file.getAbsolutePath() );
@@ -283,17 +283,20 @@ public class GSEAInputFilesPanelMac extends GenericInputFilesPanel {
     protected void setDatasetnames(String file1, String file2, boolean dataset1){
 
            if(dataset1){
+               Dataset1FileNameTextField.setForeground(checkFile(file1));
                Dataset1FileNameTextField.setText(file1 );
                Dataset1FileNameTextField.setToolTipText(file1 );
 
+               Dataset1FileName2TextField.setForeground(checkFile(file2));
                Dataset1FileName2TextField.setText(file2 );
                Dataset1FileName2TextField.setToolTipText(file2 );
            }
            else{
-
+               Dataset2FileNameTextField.setForeground(checkFile(file1));
                Dataset2FileNameTextField.setText(file1 );
                Dataset2FileNameTextField.setToolTipText(file1 );
 
+               Dataset2FileName2TextField.setForeground(checkFile(file2));
                Dataset2FileName2TextField.setText(file2 );
                Dataset2FileName2TextField.setToolTipText(file2 );
            }

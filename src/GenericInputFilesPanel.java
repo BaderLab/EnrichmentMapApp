@@ -476,6 +476,7 @@ public class GenericInputFilesPanel extends JDialog {
            File file = FileUtil.getFile("Import GMT File", FileUtil.LOAD,
                         new CyFileFilter[] { filter });
            if(file != null) {
+               GMTFileNameTextField.setForeground(checkFile(file.getAbsolutePath()));
                GMTFileNameTextField.setText(file.getAbsolutePath());
                params.setGMTFileName(file.getAbsolutePath());
                GMTFileNameTextField.setToolTipText(file.getAbsolutePath());
@@ -510,6 +511,7 @@ public class GenericInputFilesPanel extends JDialog {
                    GMTFileSelected = true;
                }
                else{
+                    GCTFileName1TextField.setForeground(checkFile(file.getAbsolutePath()));
                     GCTFileName1TextField.setText(file.getAbsolutePath());
                     params.setGCTFileName1(file.getAbsolutePath());
                     GCTFileName1TextField.setToolTipText(file.getAbsolutePath());
@@ -544,6 +546,7 @@ public class GenericInputFilesPanel extends JDialog {
                    params.setTwoDatasets(true);
                }
           else{
+            GCTFileName2TextField.setForeground(checkFile(file.getAbsolutePath()));
             GCTFileName2TextField.setText(file.getAbsolutePath());
             params.setGCTFileName2(file.getAbsolutePath());
             GCTFileName2TextField.setToolTipText(file.getAbsolutePath());
@@ -568,7 +571,7 @@ public class GenericInputFilesPanel extends JDialog {
          File file = FileUtil.getFile("import dataset 1 result file", FileUtil.LOAD, new CyFileFilter[]{ filter });
 
         if(file != null) {
-
+                Dataset1FileNameTextField.setForeground(checkFile(file.getAbsolutePath()));
                 Dataset1FileNameTextField.setText(file.getName() );
                 params.setEnrichmentDataset1FileName1(file.getAbsolutePath());
                 Dataset1FileNameTextField.setToolTipText(file.getAbsolutePath() );
@@ -598,7 +601,7 @@ public class GenericInputFilesPanel extends JDialog {
          File file = FileUtil.getFile("import dataset 2 result file", FileUtil.LOAD, new CyFileFilter[]{ filter });
 
         if(file != null) {
-
+                 Dataset2FileNameTextField.setForeground(checkFile(file.getAbsolutePath()));
                  Dataset2FileNameTextField.setText(file.getName() );
                  params.setEnrichmentDataset2FileName1(file.getAbsolutePath());
                  Dataset2FileNameTextField.setToolTipText(file.getAbsolutePath() );
@@ -639,6 +642,7 @@ public class GenericInputFilesPanel extends JDialog {
         String label = (String)rpt.get("param rpt_label");
         String classes = (String)rpt.get("param cls");
         String gmt = (String)rpt.get("param gmx");
+        String gmt_nopath =  gmt.substring(gmt.lastIndexOf(File.separator)+1, gmt.length()-1);
 
         //phenotypes are specified after # in the parameter cls and are separated by _versus_
         String[] classes_split = classes.split("#");
@@ -662,14 +666,18 @@ public class GenericInputFilesPanel extends JDialog {
 
             //check to see if the gmt file has already been set.  if it has then
             //make sure that this file is the same as the one from the other dataset.
-            if(!GMTFileNameTextField.getText().equalsIgnoreCase(gmt) &&
+            if((!GMTFileNameTextField.getText().equalsIgnoreCase(gmt) && !GMTFileNameTextField.getText().contains(gmt_nopath)) &&
                     !GMTFileNameTextField.getText().equalsIgnoreCase(gmt_instruction))
-                JOptionPane.showMessageDialog(this,"The gmt files between the two analyses do not match.\n  To compare to analyses the geneset files for the two analyses must be the same.");
-            else{
+                JOptionPane.showMessageDialog(this,"The gmt files between the two analyses do not match.\n  To compare two analyses the geneset files for the two analyses must be the same.");
+            //only change the text if it hasn't been set yet. 
+            else if(GMTFileNameTextField.getText().equalsIgnoreCase(gmt_instruction)){
+                //check to see the file exists and can be read
+                GMTFileNameTextField.setForeground(checkFile(gmt));
                 GMTFileNameTextField.setText(gmt);
                 params.setGMTFileName(gmt);
                 GMTFileNameTextField.setToolTipText(gmt);
-
+            }
+                GCTFileName1TextField.setForeground(checkFile(data));
                 GCTFileName1TextField.setText(data);
                 params.setGCTFileName1(data);
                 GCTFileName1TextField.setToolTipText(data);
@@ -677,19 +685,22 @@ public class GenericInputFilesPanel extends JDialog {
                 params.setEnrichmentDataset1FileName1(results1);
                 params.setEnrichmentDataset1FileName2(results2);
                 this.setDatasetnames(results1,results2,dataset1);
-            }
+
         }
         else{
             //check to see if the gmt file has already been set.  if it has then
             //make sure that this file is the same as the one from the other dataset.
-            if(!GMTFileNameTextField.getText().equalsIgnoreCase(gmt) &&
-                               !GMTFileNameTextField.getText().equalsIgnoreCase("Please select a geneset (.gmt) file..."))
-                JOptionPane.showMessageDialog(this,"The gmt files between the two analyses do not match.\n  To compare to analyses the geneset files for the two analyses must be the same.");
-            else{
+             if((!GMTFileNameTextField.getText().equalsIgnoreCase(gmt) && !GMTFileNameTextField.getText().contains(gmt_nopath)) &&
+                    !GMTFileNameTextField.getText().equalsIgnoreCase(gmt_instruction))
+                JOptionPane.showMessageDialog(this,"The gmt files between the two analyses do not match.\n  To compare two analyses the geneset files for the two analyses must be the same.");
+             //only change the text if it hasn't been set yet.
+             else if(GMTFileNameTextField.getText().equalsIgnoreCase(gmt_instruction)){
+                GMTFileNameTextField.setForeground(checkFile(gmt));
                 GMTFileNameTextField.setText(gmt);
                 params.setGMTFileName(gmt);
                 GMTFileNameTextField.setToolTipText(gmt);
-
+             }
+                GCTFileName2TextField.setForeground(checkFile(data));
                 GCTFileName2TextField.setText(data);
                 params.setGCTFileName2(data);
                 GCTFileName2TextField.setToolTipText(data);
@@ -697,7 +708,7 @@ public class GenericInputFilesPanel extends JDialog {
                 params.setEnrichmentDataset2FileName1(results1);
                 params.setEnrichmentDataset2FileName2(results2);
                 this.setDatasetnames(results1,results2,dataset1);
-            }
+
         }
     }
 
@@ -705,22 +716,36 @@ public class GenericInputFilesPanel extends JDialog {
     protected void setDatasetnames(String file1, String file2, boolean dataset1){
 
         if(dataset1){
+            Dataset1FileNameTextField.setForeground(checkFile(file1));
             Dataset1FileNameTextField.setText(file1 );
             Dataset1FileNameTextField.setToolTipText(file1 );
 
+            Dataset1FileName2TextField.setForeground(checkFile(file2));
             Dataset1FileName2TextField.setText(file2 );
             Dataset1FileName2TextField.setToolTipText(file2 );
         }
         else{
-
+            Dataset2FileNameTextField.setForeground(checkFile(file1));
             Dataset2FileNameTextField.setText(file1 );
             Dataset2FileNameTextField.setToolTipText(file1 );
 
+            Dataset2FileName2TextField.setForeground(checkFile(file2));
             Dataset2FileName2TextField.setText(file2 );
             Dataset2FileName2TextField.setToolTipText(file2 );
         }
     }
 
+    public Color checkFile(String filename){
+        //check to see if the files exist and are readable.
+        //if the file is unreadable change the color of the font to red
+        //otherwise the font should be black.
+        if(filename != null){
+            File tempfile = new File(filename);
+            if(!tempfile.canRead())
+                return Color.RED;
+        }
+        return Color.BLACK;
+    }
 
     public void enableImport(){
         importButton.setEnabled(true);
