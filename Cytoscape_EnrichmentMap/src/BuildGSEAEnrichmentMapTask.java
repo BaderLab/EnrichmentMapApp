@@ -49,9 +49,11 @@ public class BuildGSEAEnrichmentMapTask implements Task {
             //Load the GCT file
             GCTFileReaderTask gctFile1 = new GCTFileReaderTask(params,params.getGCTFileName1(),1,taskMonitor);
             gctFile1.run();
+            params.getExpression().rowNormalizeMatrix();
             if(params.isData2()){
                 GCTFileReaderTask gctFile2 = new GCTFileReaderTask(params,params.getGCTFileName2(),2,taskMonitor);
                 gctFile2.run();
+                params.getExpression2().rowNormalizeMatrix();
             }
 
         } catch(Exception e){

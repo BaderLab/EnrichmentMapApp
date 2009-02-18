@@ -53,10 +53,12 @@ public class BuildGenericEnrichmentMapTask implements Task {
                  //Load the GSEA geneset file
                 GCTFileReaderTask gctFile1 = new GCTFileReaderTask(params,params.getGCTFileName1(),1,taskMonitor);
                 gctFile1.run();
+                params.getExpression().rowNormalizeMatrix();
                 //boolean success = TaskManager.executeTask(gctFile, config);
                 if(params.isData2()){
                     GCTFileReaderTask gctFile2 = new GCTFileReaderTask(params,params.getGCTFileName2(),2,taskMonitor);
                     gctFile2.run();
+                    params.getExpression2().rowNormalizeMatrix();
                 }
                 //trim the genesets to only contain the genes that are in the data file.
                 //Only perform if the data file has been supplied
