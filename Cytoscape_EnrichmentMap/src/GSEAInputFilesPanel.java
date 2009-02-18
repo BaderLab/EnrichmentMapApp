@@ -179,6 +179,7 @@ public class GSEAInputFilesPanel extends GenericInputFilesPanel {
            if(files != null) {
                //There should be two files inputted.  If it more or less then report error
                if(files.length == 2){
+                   Dataset1FileNameTextField.setForeground(checkFile(files[0].getAbsolutePath()));
                     Dataset1FileNameTextField.setText(files[0].getName() + "\n" + files[1].getName());
                     setGSEADataset1FileName1(files[0].getAbsolutePath());
                     setGSEADataset1FileName2(files[1].getAbsolutePath());
@@ -211,6 +212,7 @@ public class GSEAInputFilesPanel extends GenericInputFilesPanel {
                         new CyFileFilter[] { filter });
            if(files != null) {
                if(files.length == 2){
+                   Dataset2FileNameTextField.setForeground(checkFile(files[0].getAbsolutePath()));
                     Dataset2FileNameTextField.setText(files[0].getName() + "\n" + files[1].getName());
                     setGSEADataset2FileName1(files[0].getAbsolutePath());
                     setGSEADataset2FileName2(files[1].getAbsolutePath());
@@ -230,11 +232,12 @@ public class GSEAInputFilesPanel extends GenericInputFilesPanel {
     protected void setDatasetnames(String file1, String file2, boolean dataset1){
 
         if(dataset1){
-
+            Dataset1FileNameTextField.setForeground(checkFile(file1));
             Dataset1FileNameTextField.setText(file1 + "\n" + file2);
             Dataset1FileNameTextField.setToolTipText(file1 + "\n" + file2 );
         }
         else{
+            Dataset2FileNameTextField.setForeground(checkFile(file1));
             Dataset2FileNameTextField.setText(file1 + "\n" + file2 );
             Dataset2FileNameTextField.setToolTipText(file1 + "\n" + file2 );
         }
