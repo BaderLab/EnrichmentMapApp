@@ -31,23 +31,31 @@ public class OverlappingGenesPanel extends JPanel {
         private int numConditions;
 
         private HashMap currentGeneExpressionSet;
-        private String phenotype1;
-        private String phenotype2;
+        private String Dataset1phenotype1;
+        private String Dataset1phenotype2;
+        private String Dataset2phenotype1;
+        private String Dataset2phenotype2;
 
+        private EnrichmentMapParameters params;
         private HeatMapParameters hmParams;
 
     /**
      * Creates a new instance of OverlappingGenesPanel
      */
 
-    public OverlappingGenesPanel(GeneExpressionMatrix expression, String phenotype1, String phenotype2){
+    public OverlappingGenesPanel(EnrichmentMapParameters params){
+        this.params = params;
+
+        GeneExpressionMatrix expression = params.getExpression();
 
         numConditions = expression.getNumConditions();
         columnNames = expression.getColumnNames();
         phenotypes = expression.getPhenotypes();
 
-        this.phenotype1 = phenotype1;
-        this.phenotype2 = phenotype2;
+        this.Dataset1phenotype1 = params.getDataset1Phenotype1();
+        this.Dataset1phenotype2 = params.getDataset1Phenotype2();
+        this.Dataset2phenotype1 = params.getDataset2Phenotype1();
+        this.Dataset2phenotype2 = params.getDataset2Phenotype2();
        this.setLayout(new java.awt.BorderLayout());
 
 
@@ -75,9 +83,9 @@ public class OverlappingGenesPanel extends JPanel {
 
             //set the table header renderer to the vertical renderer
             ColumnHeaderVerticalRenderer pheno1_renderer = new ColumnHeaderVerticalRenderer();
-            pheno1_renderer.setBackground(EnrichmentMapVisualStyle.light_red2);
+            pheno1_renderer.setBackground(EnrichmentMapVisualStyle.lightest_phenotype1);
             ColumnHeaderVerticalRenderer pheno2_renderer = new ColumnHeaderVerticalRenderer();
-            pheno2_renderer.setBackground(EnrichmentMapVisualStyle.light_blue2);
+            pheno2_renderer.setBackground(EnrichmentMapVisualStyle.lightest_phenotype2);
 
             ColumnHeaderVerticalRenderer default_renderer = new ColumnHeaderVerticalRenderer();
 
@@ -90,9 +98,9 @@ public class OverlappingGenesPanel extends JPanel {
                 else{
                    tcModel.getColumn(i).setPreferredWidth(10);
                     if(phenotypes != null){
-                        if(phenotypes[i-2].equalsIgnoreCase(phenotype1))
+                        if(phenotypes[i-2].equalsIgnoreCase(Dataset1phenotype1))
                             tcModel.getColumn(i).setHeaderRenderer(pheno1_renderer);
-                        else if(phenotypes[i-2].equalsIgnoreCase(phenotype2))
+                        else if(phenotypes[i-2].equalsIgnoreCase(Dataset1phenotype2))
                             tcModel.getColumn(i).setHeaderRenderer(pheno2_renderer);
                     }
                     else

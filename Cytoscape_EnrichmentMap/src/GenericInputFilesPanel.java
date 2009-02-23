@@ -651,13 +651,18 @@ public class GenericInputFilesPanel extends JDialog {
         String phenotype1 = phenotypes_split[0];
         String phenotype2 = phenotypes_split[1];
 
-        params.setPhenotype1(phenotype1);
-        params.setPhenotype2(phenotype2);
 
-       if(dataset1)
+
+       if(dataset1){
             params.setClassFile1(classes_split[0]);
-        else
+            params.setDataset1Phenotype1(phenotype1);
+            params.setDataset1Phenotype2(phenotype2);
+       }
+       else{
             params.setClassFile2(classes_split[0]);
+            params.setDataset2Phenotype1(phenotype1);
+            params.setDataset2Phenotype2(phenotype2);
+       }
 
         String results1 = "" + out_dir + File.separator + label + ".Gsea." + timestamp + File.separator + "gsea_report_for_" + phenotype1 + "_" + timestamp + ".xls";
         String results2 = "" + out_dir + File.separator + label + ".Gsea." + timestamp + File.separator + "gsea_report_for_" + phenotype2 + "_" + timestamp + ".xls";
@@ -669,7 +674,7 @@ public class GenericInputFilesPanel extends JDialog {
             if((!GMTFileNameTextField.getText().equalsIgnoreCase(gmt) && !GMTFileNameTextField.getText().contains(gmt_nopath)) &&
                     !GMTFileNameTextField.getText().equalsIgnoreCase(gmt_instruction))
                 JOptionPane.showMessageDialog(this,"The gmt files between the two analyses do not match.\n  To compare two analyses the geneset files for the two analyses must be the same.");
-            //only change the text if it hasn't been set yet. 
+            //only change the text if it hasn't been set yet.
             else if(GMTFileNameTextField.getText().equalsIgnoreCase(gmt_instruction)){
                 //check to see the file exists and can be read
                 GMTFileNameTextField.setForeground(checkFile(gmt));

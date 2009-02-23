@@ -23,7 +23,7 @@ public class EnrichmentMapParameters {
 
     private boolean twoDatasets = false;
 
-    private boolean jaccard;
+    private boolean jaccard = true;
 
     //p-value cutoff
     private double pvalue;
@@ -63,8 +63,10 @@ public class EnrichmentMapParameters {
     private GeneExpressionMatrix expression;
     private GeneExpressionMatrix expression2;
 
-    private String phenotype1;
-    private String phenotype2;
+    private String dataset1Phenotype1 = "";
+    private String dataset1Phenotype2 = "";
+    private String dataset2Phenotype1 = "";
+    private String dataset2Phenotype2 = "";
 
     private String classFile1;
     private String classFile2;
@@ -375,22 +377,6 @@ public class EnrichmentMapParameters {
         this.genesetSimilarity = genesetSimilarity;
     }
 
-    public String getPhenotype1() {
-        return phenotype1;
-    }
-
-    public void setPhenotype1(String phenotype1) {
-        this.phenotype1 = phenotype1;
-    }
-
-    public String getPhenotype2() {
-        return phenotype2;
-    }
-
-    public void setPhenotype2(String phenotype2) {
-        this.phenotype2 = phenotype2;
-    }
-
     public String getClassFile1() {
         return classFile1;
     }
@@ -405,5 +391,37 @@ public class EnrichmentMapParameters {
 
     public void setClassFile2(String classFile2) {
         this.classFile2 = classFile2;
+    }
+
+    public String getDataset1Phenotype1() {
+        return dataset1Phenotype1;
+    }
+
+    public void setDataset1Phenotype1(String dataset1Phenotype1) {
+        this.dataset1Phenotype1 = dataset1Phenotype1;
+    }
+
+    public String getDataset1Phenotype2() {
+        return dataset1Phenotype2;
+    }
+
+    public void setDataset1Phenotype2(String dataset1Phenotype2) {
+        this.dataset1Phenotype2 = dataset1Phenotype2;
+    }
+
+    public String getDataset2Phenotype1() {
+        return dataset2Phenotype1;
+    }
+
+    public void setDataset2Phenotype1(String dataset2Phenotype1) {
+        this.dataset2Phenotype1 = dataset2Phenotype1;
+    }
+
+    public String getDataset2Phenotype2() {
+        return dataset2Phenotype2;
+    }
+
+    public void setDataset2Phenotype2(String dataset2Phenotype2) {
+        this.dataset2Phenotype2 = dataset2Phenotype2;
     }
 }
