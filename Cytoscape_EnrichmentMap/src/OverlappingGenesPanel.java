@@ -10,8 +10,7 @@ import java.awt.event.ActionEvent;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Enumeration;
-import java.io.FileOutputStream;
-import java.io.FileNotFoundException;
+import java.io.*;
 
 
 /**
@@ -188,26 +187,41 @@ public class OverlappingGenesPanel extends JPanel {
     }
 
    private void saveExpressionSetActionPerformed(ActionEvent evt){
-/*        java.io.File file = FileUtil.getFile("Export Heatmap as txt File", FileUtil.SAVE);
+        java.io.File file = FileUtil.getFile("Export Heatmap as txt File", FileUtil.SAVE);
         if (file != null && file.toString() != null) {
             String fileName = file.toString();
             if (!fileName.endsWith(".txt")) {
                 fileName += ".txt";
+                file = new File(fileName);
             }
-            if(file.exists()){
+
+            int response = JOptionPane.OK_OPTION;
+            if(file.exists())
+                    response = JOptionPane.showConfirmDialog(this, "The file already exists.  Would you like to overwrite it?");
+            if(response == JOptionPane.NO_OPTION || response == JOptionPane.CANCEL_OPTION ){
 
             }
-            else{
-                try{
-                    FileOutputStream out = new FileOutputStream(file);
-                    for(Iterator i = currentGeneExpressionSet.keySet().iterator(); i.hasNext();){
+            else if(response == JOptionPane.YES_OPTION || response == JOptionPane.OK_OPTION){
+                    try{
+                        BufferedWriter output = new BufferedWriter(new FileWriter(file));
+                        for(int j = 0; j < columnNames.length;j++)
+                            if(j == (columnNames.length-1))
+                                output.write(columnNames[j] + "\n");
+                            else
+                                output.write(columnNames[j] + "\t");
 
-                    }
-                }catch(FileNotFoundException e){
-
+                        for(Iterator i = currentGeneExpressionSet.keySet().iterator(); i.hasNext();){
+                            GeneExpression row = (GeneExpression)currentGeneExpressionSet.get(i.next());
+                            output.write(row.toString());
+                        }
+                        output.flush();
+                        output.close();
+                        JOptionPane.showMessageDialog(this, "File " + fileName + " saved.");
+                    }catch(IOException e){
+                        JOptionPane.showMessageDialog(this, "unable to write to file " + fileName);
                 }
             }
-        }*/
+        }
     }
 
     public HashMap getCurrentGeneExpressionSet() {
