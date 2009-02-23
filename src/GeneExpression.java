@@ -14,9 +14,26 @@ public class GeneExpression {
 
     private String[] row;
 
+    private String separator = "\t";
+
     public GeneExpression(String name, String description) {
         this.name = name;
         this.description = description;
+    }
+
+    public String toString(){
+        String GE_string;
+
+        GE_string = name + separator + description;
+
+        for(int i =0;i<expression.length;i++){
+
+                GE_string = GE_string + separator + expression[i];
+        }
+
+        GE_string = GE_string + "\n";
+
+        return GE_string;
     }
 
     public String getName() {
