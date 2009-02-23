@@ -45,9 +45,9 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
         //final Icon icon = new ImageIcon(url);
 
 
-        edgeOverlapPanel = new OverlappingGenesPanel(params.getExpression(), params.getPhenotype1(),params.getPhenotype2());
+        edgeOverlapPanel = new OverlappingGenesPanel(params);
         cytoPanel.add("EM Overlap Expression viewer",edgeOverlapPanel);
-        nodeOverlapPanel = new OverlappingGenesPanel(params.getExpression(), params.getPhenotype1(),params.getPhenotype2());
+        nodeOverlapPanel = new OverlappingGenesPanel(params);
         cytoPanel.add("EM Geneset Expression viewer",nodeOverlapPanel);
 
         hmParams = new HeatMapParameters(edgeOverlapPanel, nodeOverlapPanel);

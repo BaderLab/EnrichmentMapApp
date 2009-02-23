@@ -43,12 +43,12 @@ public class EnrichmentMapVisualStyle {
     public static String OVERLAP_SIZE = "Overlap_size";
     public static String JACCARD_COEFFECIENT= "jaccard_coeffecient";
 
-    public static Color max_red = new Color(255,0,0);
-    public static Color light_red1 = new Color(255,102,102);
-    public static Color light_red2 = new Color(255,179,179);
-    public static Color max_blue = new Color(0,100,255);
-    public static Color light_blue1 = new Color(102,162,255);
-    public static Color light_blue2 = new Color(179,208,255);
+    public static Color max_phenotype1 = new Color(255,0,0);
+   public static Color lighter_phenotype1 = new Color(255,102,102);
+    public static Color lightest_phenotype1 = new Color(255,179,179);
+    public static Color max_phenotype2 = new Color(0,100,255);
+    public static Color lighter_phenotype2 = new Color(102,162,255);
+    public static Color lightest_phenotype2 = new Color(179,208,255);
     public static Color overColor = Color.WHITE;
 
     private VisualStyle vs;
@@ -109,15 +109,15 @@ public class EnrichmentMapVisualStyle {
 
 
         // Create boundary conditions                  less than,   equals,  greater than
-        BoundaryRangeValues bv3a = new BoundaryRangeValues(max_blue,max_blue,max_blue);
-        BoundaryRangeValues bv3b = new BoundaryRangeValues(light_blue2, light_blue2, max_blue);
-        BoundaryRangeValues bv3c = new BoundaryRangeValues(light_blue1, light_blue1,light_blue2);
-        BoundaryRangeValues bv3d = new BoundaryRangeValues(overColor, overColor, light_blue1);
+        BoundaryRangeValues bv3a = new BoundaryRangeValues(max_phenotype2,max_phenotype2,max_phenotype2);
+        BoundaryRangeValues bv3b = new BoundaryRangeValues(lightest_phenotype2, lightest_phenotype2, max_phenotype2);
+        BoundaryRangeValues bv3c = new BoundaryRangeValues(lighter_phenotype2, lighter_phenotype2,lightest_phenotype2);
+        BoundaryRangeValues bv3d = new BoundaryRangeValues(overColor, overColor, lighter_phenotype2);
         BoundaryRangeValues bv3e = new BoundaryRangeValues(overColor, overColor,overColor);
-        BoundaryRangeValues bv3f = new BoundaryRangeValues(overColor, overColor, light_red2);
-        BoundaryRangeValues bv3g = new BoundaryRangeValues(light_red2, light_red2, light_red1);
-        BoundaryRangeValues bv3h = new BoundaryRangeValues(light_red1, light_red1, max_red);
-        BoundaryRangeValues bv3i = new BoundaryRangeValues(max_red, max_red, max_red);
+        BoundaryRangeValues bv3f = new BoundaryRangeValues(overColor, overColor, lightest_phenotype1);
+        BoundaryRangeValues bv3g = new BoundaryRangeValues(lightest_phenotype1, lightest_phenotype1, lighter_phenotype1);
+        BoundaryRangeValues bv3h = new BoundaryRangeValues(lighter_phenotype1, lighter_phenotype1, max_phenotype1);
+        BoundaryRangeValues bv3i = new BoundaryRangeValues(max_phenotype1, max_phenotype1, max_phenotype1);
 
 
         NodeAppearanceCalculator nodeAppCalc = new NodeAppearanceCalculator();
@@ -219,5 +219,4 @@ public class EnrichmentMapVisualStyle {
 
 
     }
-
 }
