@@ -190,4 +190,15 @@ public class ColorGradientTheme {
             = new ColorGradientTheme("Green", Color.WHITE, new Color(120,255,120),
 									 Color.GREEN, Color.LIGHT_GRAY,
 									 Color.BLACK, Color.WHITE);
+
+    /**
+     * Color Theme: enrichmentmap node coloring
+     */
+      public static final ColorGradientTheme ENRICHMENTMAP_NODE_THEME
+            = new ColorGradientTheme("Node colouring",
+                                    EnrichmentMapVisualStyle.max_phenotype2,
+                                    EnrichmentMapVisualStyle.overColor,
+                                    EnrichmentMapVisualStyle.max_phenotype1,
+                                    Color.gray, Color.black, Color.white);
+
 }
