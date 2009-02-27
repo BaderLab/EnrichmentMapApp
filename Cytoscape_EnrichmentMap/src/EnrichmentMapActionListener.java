@@ -7,11 +7,14 @@ import giny.view.GraphViewChangeEvent;
 import java.util.HashSet;
 import java.util.HashMap;
 import java.net.URL;
+import java.awt.event.ActionListener;
 
 import cytoscape.view.CytoscapeDesktop;
+import cytoscape.view.CyMenus;
 import cytoscape.view.cytopanels.CytoPanel;
 import cytoscape.view.cytopanels.CytoPanelState;
 import cytoscape.Cytoscape;
+import cytoscape.util.CytoscapeToolBar;
 
 import javax.swing.*;
 
@@ -44,7 +47,6 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
         //final URL url = new URL("http","www.baderlab.org","/wiki/common/network_bader_website_icon.gif");
         //final Icon icon = new ImageIcon(url);
 
-
         edgeOverlapPanel = new OverlappingGenesPanel(params);
         cytoPanel.add("EM Overlap Expression viewer",edgeOverlapPanel);
         nodeOverlapPanel = new OverlappingGenesPanel(params);
@@ -61,8 +63,7 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
         cytoSidePanel.add("Parameters Used", parametersPanel);
         cytoSidePanel.setSelectedIndex(cytoSidePanel.indexOfComponent(parametersPanel));
         cytoSidePanel.setState(CytoPanelState.DOCK);
-
-
+     
     }
 
     public void graphViewChanged(GraphViewChangeEvent event){

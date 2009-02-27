@@ -26,8 +26,27 @@ public class ParametersPanel extends JPanel {
 
            JPanel main = new JPanel(new BorderLayout());
 
-           main.add(createLegend(), BorderLayout.NORTH);
+           JPanel legends = createLegend();
+           main.add(legends, BorderLayout.NORTH);
 
+            //add slider bars
+ /*           JPanel center = new JPanel(new GridLayout(2,1));
+            SliderBarPanel pvalueSlider = new SliderBarPanel(0,params.getPvalue(),"P-value Cutoff",params, EnrichmentMapVisualStyle.PVALUE_DATASET1, EnrichmentMapVisualStyle.PVALUE_DATASET2);
+            pvalueSlider.setPreferredSize(new Dimension(summaryPanelWidth, 20));
+
+            center.add(pvalueSlider);
+
+            if(params.isFDR()){
+                SliderBarPanel qvalueSlider = new SliderBarPanel(0,params.getQvalue(),"Q-value Cutoff",params, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2);
+
+		        qvalueSlider.setPreferredSize(new Dimension(summaryPanelWidth, 20));
+
+                center.add(qvalueSlider);
+
+            }
+
+            main.add(center, BorderLayout.CENTER);
+*/
            //information about the current analysis
            runInfo = new JTextPane();
            runInfo.setEditable(false);
@@ -146,7 +165,34 @@ public class ParametersPanel extends JPanel {
             legends.add(maxlabel2);
         }
 
-        //legends.setPreferredSize(new Dimension(summaryPanelWidth ,summaryPanelHeight/4));
+
+            c.gridx = 0;
+            c.gridy = 5;
+            c.insets = new Insets(10,0,10,0);
+            c.gridwidth = GridBagConstraints.REMAINDER;
+            c.anchor = GridBagConstraints.LINE_START;
+            SliderBarPanel pvalueSlider = new SliderBarPanel(0,params.getPvalue(),"P-value Cutoff",params, EnrichmentMapVisualStyle.PVALUE_DATASET1, EnrichmentMapVisualStyle.PVALUE_DATASET2,summaryPanelWidth);
+            //pvalueSlider.setPreferredSize(new Dimension(summaryPanelWidth, 20));
+
+            gridbag.setConstraints(pvalueSlider,c);
+            legends.add(pvalueSlider);
+
+            if(params.isFDR()){
+                SliderBarPanel qvalueSlider = new SliderBarPanel(0,params.getQvalue(),"Q-value Cutoff",params, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2,summaryPanelWidth);
+
+
+                c.gridx = 0;
+                c.gridy = 6;
+                c.insets = new Insets(10,0,10,0);
+                c.gridwidth = GridBagConstraints.REMAINDER;
+                c.anchor = GridBagConstraints.LINE_START;
+                //qvalueSlider.setPreferredSize(new Dimension(summaryPanelWidth, 20));
+
+                gridbag.setConstraints(qvalueSlider,c);
+                legends.add(qvalueSlider);
+
+            }
+
 
         return legends;
 
