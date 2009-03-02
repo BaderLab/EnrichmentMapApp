@@ -48,24 +48,20 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
         cytoSidePanel = desktop.getCytoPanel(SwingConstants.EAST);
         //final URL url = new URL("http","www.baderlab.org","/wiki/common/network_bader_website_icon.gif");
         //final Icon icon = new ImageIcon(url);
+        if(params.isData()){
+            edgeOverlapPanel = new OverlappingGenesPanel(params);
+            cytoPanel.add("EM Overlap Expression viewer",edgeOverlapPanel);
+            nodeOverlapPanel = new OverlappingGenesPanel(params);
+            cytoPanel.add("EM Geneset Expression viewer",nodeOverlapPanel);
 
-        edgeOverlapPanel = new OverlappingGenesPanel(params);
-        cytoPanel.add("EM Overlap Expression viewer",edgeOverlapPanel);
-        nodeOverlapPanel = new OverlappingGenesPanel(params);
-        cytoPanel.add("EM Geneset Expression viewer",nodeOverlapPanel);
-
-        HeatMapParameters hmParams = new HeatMapParameters(edgeOverlapPanel, nodeOverlapPanel);
-        hmParams.initColorGradients(params.getExpression());
-        edgeOverlapPanel.setHmParams(hmParams);
-        nodeOverlapPanel.setHmParams(hmParams);
-
+            HeatMapParameters hmParams = new HeatMapParameters(edgeOverlapPanel, nodeOverlapPanel);
+            hmParams.initColorGradients(params.getExpression());
+            edgeOverlapPanel.setHmParams(hmParams);
+            nodeOverlapPanel.setHmParams(hmParams);
+        }
 
         summaryPanel = new SummaryPanel();
-        ParametersPanel parametersPanel = new ParametersPanel(params);
         cytoSidePanel.add("Geneset Summary", summaryPanel);
-        cytoSidePanel.add("Parameters Used", parametersPanel);
-        cytoSidePanel.setSelectedIndex(cytoSidePanel.indexOfComponent(parametersPanel));
-        cytoSidePanel.setState(CytoPanelState.DOCK);
 
         //initialize node and edge lists
         Nodes = new ArrayList<Node>();
@@ -148,45 +144,50 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
         Edge current_edge = (Edge)edges[0];
         String edgename = current_edge.getIdentifier();
 
-        GenesetSimilarity similarity = params.getGenesetSimilarity().get(edgename);
+        //only update the expression viewer if there is data loaded
+        if(params.isData()){
+            GenesetSimilarity similarity = params.getGenesetSimilarity().get(edgename);
 
-        HashMap currentSubset = expressionSet.getExpressionMatrix(similarity.getOverlapping_genes());
+            HashMap currentSubset = expressionSet.getExpressionMatrix(similarity.getOverlapping_genes());
 
-        edgeOverlapPanel.setCurrentGeneExpressionSet(currentSubset);
-        edgeOverlapPanel.updatePanel();
-        cytoPanel.setSelectedIndex(cytoPanel.indexOfComponent(edgeOverlapPanel));
+            edgeOverlapPanel.setCurrentGeneExpressionSet(currentSubset);
+            edgeOverlapPanel.updatePanel();
+            cytoPanel.setSelectedIndex(cytoPanel.indexOfComponent(edgeOverlapPanel));
+        }
 
         summaryPanel.updateEdgeInfo(edges);
         cytoSidePanel.setSelectedIndex(cytoSidePanel.indexOfComponent(summaryPanel));
 
      }else{
-        HashSet intersect = null;
-        HashSet union = null;
+        if(params.isData()){
+            HashSet intersect = null;
+            HashSet union = null;
 
-        for(int i = 0; i< edges.length;i++){
+            for(int i = 0; i< edges.length;i++){
 
-            Edge current_edge = (Edge) edges[i];
-            String edgename = current_edge.getIdentifier();
+                Edge current_edge = (Edge) edges[i];
+                String edgename = current_edge.getIdentifier();
 
 
-            GenesetSimilarity similarity = params.getGenesetSimilarity().get(edgename);
-            HashSet current_set = similarity.getOverlapping_genes();
+                GenesetSimilarity similarity = params.getGenesetSimilarity().get(edgename);
+                HashSet current_set = similarity.getOverlapping_genes();
 
-            if(intersect == null && union == null){
-                intersect = new HashSet(current_set);
-                union = new HashSet(current_set);
-            }else{
-                intersect.retainAll(current_set);
-                union.addAll(current_set);
-             }
+                if(intersect == null && union == null){
+                    intersect = new HashSet(current_set);
+                    union = new HashSet(current_set);
+                }else{
+                    intersect.retainAll(current_set);
+                    union.addAll(current_set);
+                }
+            }
+
+            edgeOverlapPanel.setCurrentGeneExpressionSet(expressionSet.getExpressionMatrix(intersect));
+            edgeOverlapPanel.updatePanel();
+            cytoPanel.setSelectedIndex(cytoPanel.indexOfComponent(edgeOverlapPanel));
         }
-
-        edgeOverlapPanel.setCurrentGeneExpressionSet(expressionSet.getExpressionMatrix(intersect));
-        edgeOverlapPanel.updatePanel();
-        cytoPanel.setSelectedIndex(cytoPanel.indexOfComponent(edgeOverlapPanel));
-
      }
-      edgeOverlapPanel.revalidate();
+     if(params.isData())
+        edgeOverlapPanel.revalidate();
 
   }
 
@@ -198,49 +199,56 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
 
     //if only one edge has been selected show the basic overlap tab
     if(nodes.length == 1){
-        Node current_node = (Node)nodes[0];
-        String nodename = current_node.getIdentifier();
-
-        GeneSet current_geneset = (GeneSet)params.getGenesetsOfInterest().get(nodename);
-
-        nodeOverlapPanel.setCurrentGeneExpressionSet(expressionSet.getExpressionMatrix(current_geneset.getGenes()));
-        nodeOverlapPanel.updatePanel();
-        cytoPanel.setSelectedIndex(cytoPanel.indexOfComponent(nodeOverlapPanel));
-        summaryPanel.updateNodeInfo(nodes);
-        cytoSidePanel.setSelectedIndex(cytoSidePanel.indexOfComponent(summaryPanel));
-     }else{
-        HashSet union = null;
-
-        for(int i = 0; i< nodes.length;i++){
-
-            Node current_node = (Node)nodes[i];
+        if(params.isData()){
+            Node current_node = (Node)nodes[0];
             String nodename = current_node.getIdentifier();
 
             GeneSet current_geneset = (GeneSet)params.getGenesetsOfInterest().get(nodename);
 
-            HashSet current_set = current_geneset.getGenes();
-
-            if( union == null){
-                union = new HashSet(current_set);
-            }else{
-                union.addAll(current_set);
-             }
+            nodeOverlapPanel.setCurrentGeneExpressionSet(expressionSet.getExpressionMatrix(current_geneset.getGenes()));
+            nodeOverlapPanel.updatePanel();
+            cytoPanel.setSelectedIndex(cytoPanel.indexOfComponent(nodeOverlapPanel));
         }
-        nodeOverlapPanel.setCurrentGeneExpressionSet(expressionSet.getExpressionMatrix(union));
-        nodeOverlapPanel.updatePanel();
-        cytoPanel.setSelectedIndex(cytoPanel.indexOfComponent(nodeOverlapPanel));
+        summaryPanel.updateNodeInfo(nodes);
+        cytoSidePanel.setSelectedIndex(cytoSidePanel.indexOfComponent(summaryPanel));
+     }else{
+        if(params.isData()){
+            HashSet union = null;
+
+            for(int i = 0; i< nodes.length;i++){
+
+                Node current_node = (Node)nodes[i];
+                String nodename = current_node.getIdentifier();
+
+                GeneSet current_geneset = (GeneSet)params.getGenesetsOfInterest().get(nodename);
+
+                HashSet current_set = current_geneset.getGenes();
+
+                if( union == null){
+                    union = new HashSet(current_set);
+                }else{
+                    union.addAll(current_set);
+                }
+            }
+            nodeOverlapPanel.setCurrentGeneExpressionSet(expressionSet.getExpressionMatrix(union));
+            nodeOverlapPanel.updatePanel();
+            cytoPanel.setSelectedIndex(cytoPanel.indexOfComponent(nodeOverlapPanel));
+        }
         summaryPanel.updateNodeInfo(nodes);
         cytoSidePanel.setSelectedIndex(cytoSidePanel.indexOfComponent(summaryPanel));
     }
-    nodeOverlapPanel.revalidate();
+    if(params.isData())
+        nodeOverlapPanel.revalidate();
     summaryPanel.revalidate();
   }
 
     public void clearPanels(){
         summaryPanel.clearInfo();
-        nodeOverlapPanel.clearPanel();
-        edgeOverlapPanel.clearPanel();
-        cytoPanel.setSelectedIndex(cytoPanel.indexOfComponent(nodeOverlapPanel));
-        cytoPanel.setSelectedIndex(cytoPanel.indexOfComponent(edgeOverlapPanel));
+        if(params.isData()){
+            nodeOverlapPanel.clearPanel();
+            edgeOverlapPanel.clearPanel();
+            cytoPanel.setSelectedIndex(cytoPanel.indexOfComponent(nodeOverlapPanel));
+            cytoPanel.setSelectedIndex(cytoPanel.indexOfComponent(edgeOverlapPanel));
+        }
     }
 }

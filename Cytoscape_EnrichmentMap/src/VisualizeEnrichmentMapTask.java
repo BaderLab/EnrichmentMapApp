@@ -8,11 +8,16 @@ import cytoscape.visual.*;
 import cytoscape.data.CyAttributes;
 import cytoscape.data.Semantics;
 import cytoscape.view.CyNetworkView;
+import cytoscape.view.CytoscapeDesktop;
+import cytoscape.view.cytopanels.CytoPanelState;
+import cytoscape.view.cytopanels.CytoPanel;
 
 import java.util.*;
 
 import giny.model.Node;
 import giny.model.Edge;
+
+import javax.swing.*;
 
 
 /**
@@ -262,10 +267,18 @@ public class VisualizeEnrichmentMapTask implements Task {
                view.applyLayout(CyLayouts.getLayout("force-directed"));
 
 
-            //only add the click on edge listener if there is an expression file loaded
-            if(params.isData()){
-                view.addGraphViewChangeListener(new EnrichmentMapActionListener(params));
-            }
+            //Add the parameters summary panel
+
+            ParametersPanel parametersPanel = new ParametersPanel(params);
+            final CytoscapeDesktop desktop = Cytoscape.getDesktop();
+            final CytoPanel cytoSidePanel = desktop.getCytoPanel(SwingConstants.EAST);
+            cytoSidePanel.add("Parameters Used", parametersPanel);
+            cytoSidePanel.setSelectedIndex(cytoSidePanel.indexOfComponent(parametersPanel));
+            cytoSidePanel.setState(CytoPanelState.DOCK);
+
+            //add the click on edge listener
+            view.addGraphViewChangeListener(new EnrichmentMapActionListener(params));
+
 
 
 
@@ -283,7 +296,7 @@ public class VisualizeEnrichmentMapTask implements Task {
         //format the node name
        String formattedName = formatLabel(result.getName());
 
-        nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.FORMATTED_NAME, formattedName);      
+        nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.FORMATTED_NAME, formattedName);
         nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.NAME, result.getName());
         nodeAttrs.setAttribute(node.getIdentifier(), prefix + EnrichmentMapVisualStyle.PVALUE_DATASET1, result.getPvalue());
         nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1, result.getFdrqvalue());
