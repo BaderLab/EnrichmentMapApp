@@ -35,12 +35,12 @@ public class SummaryPanel extends JPanel {
 
     }
 
-    public void updateNodeInfo(Node[] nodes){
+    public void updateNodeInfo(Object[] nodes){
 
         String genesets = "<html> <h1>Genesets:\n</h1>";
 
         for(int i = 0; i<nodes.length;i++){
-              genesets = genesets  + (i+1) +". " + nodes[i].getIdentifier() + "<br>";
+              genesets = genesets  + (i+1) +". " + ((Node)nodes[i]).getIdentifier() + "<br>";
         }
 
         genesets = genesets + "</html>";
@@ -49,12 +49,12 @@ public class SummaryPanel extends JPanel {
         this.revalidate();
     }
 
-    public void updateEdgeInfo(Edge[] edges){
+    public void updateEdgeInfo(Object[] edges){
 
         String genesets = "<html> <h1>Genesets Overlaps:\n</h1>";
 
         for(int i = 0; i<edges.length;i++){
-            genesets = genesets +  (i+1) +". " + edges[i].getIdentifier() + "\n<br>";
+            genesets = genesets +  (i+1) +". " + ((Edge)edges[i]).getIdentifier() + "\n<br>";
 
         }
 
