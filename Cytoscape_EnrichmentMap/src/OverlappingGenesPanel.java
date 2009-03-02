@@ -22,21 +22,24 @@ import java.io.*;
 public class OverlappingGenesPanel extends JPanel {
 
 
-        private Object[] columnNames;
-        private Object[] columnNames2;
-        private String[] phenotypes;
-        private Cursor hand;
+    private Object[] columnNames;
+    private Object[] columnNames2;
+    private String[] phenotypes;
+    private String[] phenotypes2;
 
-        private int numConditions;
+    private int numConditions;
+    private int numConditions2;
 
-        private HashMap currentGeneExpressionSet;
-        private String Dataset1phenotype1;
-        private String Dataset1phenotype2;
-        private String Dataset2phenotype1;
-        private String Dataset2phenotype2;
+    private HashMap currentGeneExpressionSet;
+    private HashMap currentGeneExpressionSet2;
 
-        private EnrichmentMapParameters params;
-        private HeatMapParameters hmParams;
+    private String Dataset1phenotype1;
+    private String Dataset1phenotype2;
+    private String Dataset2phenotype1;
+    private String Dataset2phenotype2;
+
+    private EnrichmentMapParameters params;
+    private HeatMapParameters hmParams;
 
     /**
      * Creates a new instance of OverlappingGenesPanel
@@ -53,8 +56,19 @@ public class OverlappingGenesPanel extends JPanel {
 
         this.Dataset1phenotype1 = params.getDataset1Phenotype1();
         this.Dataset1phenotype2 = params.getDataset1Phenotype2();
-        this.Dataset2phenotype1 = params.getDataset2Phenotype1();
-        this.Dataset2phenotype2 = params.getDataset2Phenotype2();
+
+        if(params.isData2()){
+
+            GeneExpressionMatrix expression2 = params.getExpression2();
+
+            numConditions2 = expression2.getNumConditions();
+            columnNames2 = expression2.getColumnNames();
+            phenotypes2 = expression2.getPhenotypes();
+
+            this.Dataset2phenotype1 = params.getDataset2Phenotype1();
+            this.Dataset2phenotype2 = params.getDataset2Phenotype2();
+        }
+
        this.setLayout(new java.awt.BorderLayout());
 
 
@@ -63,15 +77,27 @@ public class OverlappingGenesPanel extends JPanel {
     public void updatePanel(){
 
         if(currentGeneExpressionSet != null){
+            Object[][] data;
+            JTable jTable1;
+            String[] mergedcolumnNames = null;
+
             JPanel mainPanel = new JPanel();
             mainPanel.setLayout(new BorderLayout());
 
             mainPanel.add(createLegendPanel(), java.awt.BorderLayout.WEST);
 
             //create data subset
-            Object[][] data = createTableData();
-            JTable jTable1 = new JTable(new OverlappingGenesTableModel(columnNames,data));
-
+            if(params.isData2()){
+               data = createMergedTableData();
+               mergedcolumnNames = new String[columnNames.length + columnNames2.length - 2];
+               System.arraycopy(columnNames,0,mergedcolumnNames,0,columnNames.length);
+               System.arraycopy(columnNames2,2, mergedcolumnNames,columnNames.length,columnNames2.length-2);
+               jTable1 = new JTable(new OverlappingGenesTableModel(mergedcolumnNames,data));
+            }
+            else{
+               data = createTableData();
+               jTable1 = new JTable(new OverlappingGenesTableModel(columnNames,data));
+            }
             //Set up renderer and editor for the Color column.
             jTable1.setDefaultRenderer(Color.class,new ColorRenderer());
 
@@ -88,24 +114,58 @@ public class OverlappingGenesPanel extends JPanel {
 
             ColumnHeaderVerticalRenderer default_renderer = new ColumnHeaderVerticalRenderer();
 
-
-            for (int i=0;i<columnNames.length;i++){
-                if (i==0 || columnNames[i].equals("Name"))
-                   tcModel.getColumn(i).setPreferredWidth(50);
-                else if (i==1 || columnNames[i].equals("Description"))
-                    tcModel.getColumn(i).setPreferredWidth(50);
-                else{
-                   tcModel.getColumn(i).setPreferredWidth(10);
-                    if(phenotypes != null){
-                        if(phenotypes[i-2].equalsIgnoreCase(Dataset1phenotype1))
-                            tcModel.getColumn(i).setHeaderRenderer(pheno1_renderer);
-                        else if(phenotypes[i-2].equalsIgnoreCase(Dataset1phenotype2))
-                            tcModel.getColumn(i).setHeaderRenderer(pheno2_renderer);
+            if(params.isData2()){
+                //go through the first data set
+                for (int i=0;i<columnNames.length;i++){
+                    if (i==0 || columnNames[i].equals("Name"))
+                        tcModel.getColumn(i).setPreferredWidth(50);
+                    else if (i==1 || columnNames[i].equals("Description"))
+                        tcModel.getColumn(i).setPreferredWidth(50);
+                    else{
+                        tcModel.getColumn(i).setPreferredWidth(10);
+                        if(phenotypes != null){
+                            if(phenotypes[i-2].equalsIgnoreCase(Dataset1phenotype1))
+                                tcModel.getColumn(i).setHeaderRenderer(pheno1_renderer);
+                            else if(phenotypes[i-2].equalsIgnoreCase(Dataset1phenotype2))
+                                tcModel.getColumn(i).setHeaderRenderer(pheno2_renderer);
+                        }
+                        else
+                            tcModel.getColumn(i).setHeaderRenderer(default_renderer);
                     }
-                    else
-                         tcModel.getColumn(i).setHeaderRenderer(default_renderer);
-                 }
+                }
+                //go through the second data set
+                for(int i = columnNames.length; i< (columnNames.length +columnNames2.length-2); i++){
+                        tcModel.getColumn(i).setPreferredWidth(10);
+                        if(phenotypes2 != null){
+                            if(phenotypes2[i-columnNames.length].equalsIgnoreCase(Dataset2phenotype1))
+                                tcModel.getColumn(i).setHeaderRenderer(pheno1_renderer);
+                            else if(phenotypes2[i-columnNames.length].equalsIgnoreCase(Dataset2phenotype2))
+                                tcModel.getColumn(i).setHeaderRenderer(pheno2_renderer);
+                        }
+                        else
+                            tcModel.getColumn(i).setHeaderRenderer(default_renderer);
 
+                }
+            }
+            else{
+                for (int i=0;i<columnNames.length;i++){
+                    if (i==0 || columnNames[i].equals("Name"))
+                        tcModel.getColumn(i).setPreferredWidth(50);
+                    else if (i==1 || columnNames[i].equals("Description"))
+                        tcModel.getColumn(i).setPreferredWidth(50);
+                    else{
+                        tcModel.getColumn(i).setPreferredWidth(10);
+                        if(phenotypes != null){
+                            if(phenotypes[i-2].equalsIgnoreCase(Dataset1phenotype1))
+                                tcModel.getColumn(i).setHeaderRenderer(pheno1_renderer);
+                            else if(phenotypes[i-2].equalsIgnoreCase(Dataset1phenotype2))
+                                tcModel.getColumn(i).setHeaderRenderer(pheno2_renderer);
+                        }
+                        else
+                             tcModel.getColumn(i).setHeaderRenderer(default_renderer);
+                    }
+
+                }
             }
 
             jTable1.setColumnModel(tcModel);
@@ -154,6 +214,85 @@ public class OverlappingGenesPanel extends JPanel {
         return data;
     }
 
+
+
+    private Object[][] createMergedTableData(){
+
+        int totalConditions = (numConditions + numConditions2-2);
+
+        Object[][] data = new Object[Math.max(currentGeneExpressionSet.size(), currentGeneExpressionSet2.size())][totalConditions];
+
+        //Got through the hashmap and put all the values is
+
+        int k = 0;
+        for(Iterator i = currentGeneExpressionSet.keySet().iterator();i.hasNext();){
+
+            Object currentKey = i.next();
+
+            //Current expression row
+            GeneExpression halfRow1 = (GeneExpression)currentGeneExpressionSet.get(currentKey);
+
+            //get the corresponding row from the second dataset
+            GeneExpression halfRow2 = (GeneExpression)currentGeneExpressionSet2.get(currentKey);
+
+            Double[] expression_values1 = null;
+            Double[] expression_values2 = null;
+            if(hmParams.isRowNorm()){
+                if(halfRow1 != null)
+                    expression_values1 = halfRow1.rowNormalize();
+                if(halfRow2 != null)
+                    expression_values2 = halfRow2.rowNormalize();
+            }
+            else if(hmParams.isLogtransform()){
+                if(halfRow1 != null)
+                    expression_values1 = halfRow1.rowLogTransform();
+                if(halfRow2 != null)
+                    expression_values2 = halfRow2.rowLogTransform();
+            }
+            else{
+                if(halfRow1 != null)
+                    expression_values1   = halfRow1.getExpression();
+                if(halfRow2 != null)
+                    expression_values2   = halfRow2.getExpression();
+            }
+
+            if(halfRow1 != null){
+                data[k][0] = halfRow1.getName();
+                data[k][1] = halfRow1.getDescription();
+            }
+            else if(halfRow2 != null){
+                data[k][0] = halfRow2.getName();
+                data[k][1] = halfRow2.getDescription();
+            }
+
+            //if either of the expression_values is null set the array to have no data
+            if(expression_values1 == null){
+                expression_values1 = new Double[columnNames.length-2];
+                for(int m = 0; m < expression_values1.length;m++)
+                    expression_values1[m] = null;
+            }
+            if(expression_values2 == null){
+                expression_values2 = new Double[columnNames2.length-2];
+                for(int m = 0; m < expression_values2.length;m++)
+                    expression_values2[m] = null;
+            }
+
+
+            for(int j = 0; j < halfRow1.getExpression().length;j++){
+
+                data[k][j+2] = ColorGradientMapper.getColorGradient(hmParams.getTheme(),hmParams.getRange(),halfRow1.getName(),expression_values1[j]);
+
+            }
+            for(int j = halfRow1.getExpression().length; j < (halfRow1.getExpression().length + halfRow2.getExpression().length);j++){
+
+                data[k][j+2] = ColorGradientMapper.getColorGradient(hmParams.getTheme(),hmParams.getRange(),halfRow2.getName(),expression_values2[j-halfRow1.getExpression().length]);
+
+            }
+
+            k++;
+        }
+        return data;
+    }
 
     private JPanel createLegendPanel(){
 
@@ -230,6 +369,14 @@ public class OverlappingGenesPanel extends JPanel {
 
     public void setCurrentGeneExpressionSet(HashMap currentGeneExpressionSet) {
         this.currentGeneExpressionSet = currentGeneExpressionSet;
+    }
+
+    public HashMap getCurrentGeneExpressionSet2() {
+        return currentGeneExpressionSet2;
+    }
+
+    public void setCurrentGeneExpressionSet2(HashMap currentGeneExpressionSet2) {
+        this.currentGeneExpressionSet2 = currentGeneExpressionSet2;
     }
 
     public HeatMapParameters getHmParams() {

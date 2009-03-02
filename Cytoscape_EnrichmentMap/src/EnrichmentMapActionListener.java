@@ -133,8 +133,14 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
     }
 
   public void createEdgesData(){
+      GeneExpressionMatrix expressionSet = null;
+      GeneExpressionMatrix expressionSet2 = null;
 
-    GeneExpressionMatrix expressionSet = params.getExpression();
+      if(params.isData())
+        expressionSet = params.getExpression();
+
+      if(params.isData2())
+        expressionSet2 = params.getExpression2();
 
     //convert Edge list to array
       Object[] edges = Edges.toArray();
@@ -149,6 +155,11 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
             GenesetSimilarity similarity = params.getGenesetSimilarity().get(edgename);
 
             HashMap currentSubset = expressionSet.getExpressionMatrix(similarity.getOverlapping_genes());
+
+            if(params.isData2()){
+                HashMap currentSubset2 = expressionSet2.getExpressionMatrix(similarity.getOverlapping_genes());
+                edgeOverlapPanel.setCurrentGeneExpressionSet2(currentSubset2);
+            }
 
             edgeOverlapPanel.setCurrentGeneExpressionSet(currentSubset);
             edgeOverlapPanel.updatePanel();
@@ -182,6 +193,10 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
             }
 
             edgeOverlapPanel.setCurrentGeneExpressionSet(expressionSet.getExpressionMatrix(intersect));
+
+            if(params.isData2())
+                edgeOverlapPanel.setCurrentGeneExpressionSet2(expressionSet2.getExpressionMatrix(intersect));
+
             edgeOverlapPanel.updatePanel();
             cytoPanel.setSelectedIndex(cytoPanel.indexOfComponent(edgeOverlapPanel));
         }
@@ -193,7 +208,14 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
 
   private void createNodesData(){
 
-    GeneExpressionMatrix expressionSet = params.getExpression();
+      GeneExpressionMatrix expressionSet = null;
+      GeneExpressionMatrix expressionSet2 = null;
+
+      if(params.isData())
+        expressionSet = params.getExpression();
+
+      if(params.isData2())
+        expressionSet2 = params.getExpression2();
 
     Object[] nodes = Nodes.toArray();
 
@@ -206,6 +228,9 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
             GeneSet current_geneset = (GeneSet)params.getGenesetsOfInterest().get(nodename);
 
             nodeOverlapPanel.setCurrentGeneExpressionSet(expressionSet.getExpressionMatrix(current_geneset.getGenes()));
+            if(params.isData2())
+                nodeOverlapPanel.setCurrentGeneExpressionSet2(expressionSet2.getExpressionMatrix(current_geneset.getGenes()));
+
             nodeOverlapPanel.updatePanel();
             cytoPanel.setSelectedIndex(cytoPanel.indexOfComponent(nodeOverlapPanel));
         }
@@ -231,6 +256,9 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
                 }
             }
             nodeOverlapPanel.setCurrentGeneExpressionSet(expressionSet.getExpressionMatrix(union));
+
+            if(params.isData2())
+                 nodeOverlapPanel.setCurrentGeneExpressionSet2(expressionSet2.getExpressionMatrix(union));
             nodeOverlapPanel.updatePanel();
             cytoPanel.setSelectedIndex(cytoPanel.indexOfComponent(nodeOverlapPanel));
         }
