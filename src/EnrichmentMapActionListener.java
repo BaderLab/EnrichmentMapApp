@@ -6,6 +6,8 @@ import giny.view.GraphViewChangeEvent;
 
 import java.util.HashSet;
 import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
 import java.net.URL;
 import java.awt.event.ActionListener;
 
@@ -30,9 +32,9 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
     private OverlappingGenesPanel edgeOverlapPanel;
     private OverlappingGenesPanel nodeOverlapPanel;
     private SummaryPanel summaryPanel;
-    private ParametersPanel parametersPanel;
-    private HeatMapParameters hmParams;
 
+    private List<Node> Nodes;
+    private List<Edge> Edges;
 
     private final CytoPanel cytoPanel;
     private final CytoPanel cytoSidePanel;
@@ -52,44 +54,98 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
         nodeOverlapPanel = new OverlappingGenesPanel(params);
         cytoPanel.add("EM Geneset Expression viewer",nodeOverlapPanel);
 
-        hmParams = new HeatMapParameters(edgeOverlapPanel, nodeOverlapPanel);
+        HeatMapParameters hmParams = new HeatMapParameters(edgeOverlapPanel, nodeOverlapPanel);
         hmParams.initColorGradients(params.getExpression());
         edgeOverlapPanel.setHmParams(hmParams);
         nodeOverlapPanel.setHmParams(hmParams);
 
+
         summaryPanel = new SummaryPanel();
-        parametersPanel = new ParametersPanel(params);
+        ParametersPanel parametersPanel = new ParametersPanel(params);
         cytoSidePanel.add("Geneset Summary", summaryPanel);
         cytoSidePanel.add("Parameters Used", parametersPanel);
         cytoSidePanel.setSelectedIndex(cytoSidePanel.indexOfComponent(parametersPanel));
         cytoSidePanel.setState(CytoPanelState.DOCK);
+
+        //initialize node and edge lists
+        Nodes = new ArrayList<Node>();
+        Edges = new ArrayList<Edge>();
      
     }
 
     public void graphViewChanged(GraphViewChangeEvent event){
         if(event.isEdgesSelectedType()){
 
-            Edge[] edges = event.getSelectedEdges();
-            createEdgesData(edges);
+            Edge[] selectedEdges = event.getSelectedEdges();
+
+            //Add all the selected edges to the list of edges
+            for(int i=0;i<selectedEdges.length;i++){
+                //check to see that the edge isn't already in the list
+                if(!Edges.contains(selectedEdges[i]))
+                    Edges.add(selectedEdges[i]);
+            }
+
+            createEdgesData();
 
         }
         if(event.isNodesSelectedType()){
 
-            Node[] nodes = event.getSelectedNodes();
-            createNodesData(nodes);
+            Node[] selectedNodes = event.getSelectedNodes();
+
+            //Add all the selected nodes to the list of nodes
+            for(int i=0;i<selectedNodes.length;i++){
+                //check to see that the node isn't already in the list
+                if(!Nodes.contains(selectedNodes[i]))
+                    Nodes.add(selectedNodes[i]);
+            }
+
+            createNodesData();
         }
-        if(event.isNodesUnselectedType() || event.isEdgesUnselectedType()){
-            clearPanels();
+        if(event.isNodesUnselectedType()){
+            Node[] unselectedNodes = event.getUnselectedNodes();
+
+            //remove all the unselected nodes from the list of nodes
+            for(int i = 0; i < unselectedNodes.length; i++){
+                //check to make sure that the node is in the list
+                if(Nodes.contains(unselectedNodes[i]))
+                    Nodes.remove(unselectedNodes[i]);
+            }
+
+            if(!Nodes.isEmpty())
+                createNodesData();
+
+            if(Nodes.isEmpty() && Edges.isEmpty())
+                clearPanels();
+        }
+        if(event.isEdgesUnselectedType()){
+
+            Edge[] unselectedEdges = event.getUnselectedEdges();
+
+            //Add all the selected edges to the list of edges
+            for(int i=0;i<unselectedEdges.length;i++){
+                 //check to see that the edge isn't already in the list
+                 if(Edges.contains(unselectedEdges[i]))
+                      Edges.remove(unselectedEdges[i]);
+                 }
+
+            if(!Edges.isEmpty())
+                createEdgesData();
+
+            if(Nodes.isEmpty() && Edges.isEmpty())
+                clearPanels();
         }
     }
 
-  public void createEdgesData(Edge[] edges){
+  public void createEdgesData(){
 
     GeneExpressionMatrix expressionSet = params.getExpression();
 
+    //convert Edge list to array
+      Object[] edges = Edges.toArray();
+
     //if only one edge has been selected show the basic overlap tab
     if(edges.length == 1){
-        Edge current_edge = edges[0];
+        Edge current_edge = (Edge)edges[0];
         String edgename = current_edge.getIdentifier();
 
         GenesetSimilarity similarity = params.getGenesetSimilarity().get(edgename);
@@ -109,7 +165,7 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
 
         for(int i = 0; i< edges.length;i++){
 
-            Edge current_edge = edges[i];
+            Edge current_edge = (Edge) edges[i];
             String edgename = current_edge.getIdentifier();
 
 
@@ -134,13 +190,15 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
 
   }
 
-  private void createNodesData(Node[] nodes){
+  private void createNodesData(){
 
     GeneExpressionMatrix expressionSet = params.getExpression();
 
+    Object[] nodes = Nodes.toArray();
+
     //if only one edge has been selected show the basic overlap tab
     if(nodes.length == 1){
-        Node current_node = nodes[0];
+        Node current_node = (Node)nodes[0];
         String nodename = current_node.getIdentifier();
 
         GeneSet current_geneset = (GeneSet)params.getGenesetsOfInterest().get(nodename);
@@ -155,7 +213,7 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
 
         for(int i = 0; i< nodes.length;i++){
 
-            Node current_node = nodes[i];
+            Node current_node = (Node)nodes[i];
             String nodename = current_node.getIdentifier();
 
             GeneSet current_geneset = (GeneSet)params.getGenesetsOfInterest().get(nodename);
