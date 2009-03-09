@@ -59,10 +59,10 @@ public class GCTFileReaderTask implements Task {
         int currentProgress = 0;
         maxValue = lines.length;
         GeneExpressionMatrix expressionMatrix = new GeneExpressionMatrix(lines[0].split("\t"));
-        HashMap expression = new HashMap();
+        HashMap<Integer,GeneExpression> expression = new HashMap();
 
         for (int i = 0; i < lines.length; i++) {
-            Object genekey ;
+            Integer genekey ;
 
             String line = lines[i];
 
@@ -89,7 +89,7 @@ public class GCTFileReaderTask implements Task {
 
             //Check to see if this gene is in the genes list
             if(genes.containsKey(Name)){
-                genekey = genes.get(Name);
+                genekey = (Integer)genes.get(Name);
                 //we want the genes hashmap and dataset genes hashmap to have the same keys so it is
                 //easier to compare.
                 datasetGenes.add(genes.get(Name));

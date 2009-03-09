@@ -1,7 +1,10 @@
 
+import giny.model.Node;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.ArrayList;
 
 /**
  * Created by
@@ -16,8 +19,8 @@ public class GeneExpressionMatrix {
     private int numConditions;
     private int numGenes;
 
-    private HashMap expressionMatrix;
-    private HashMap expressionMatrix_rowNormalized;
+    private HashMap<Integer, GeneExpression> expressionMatrix;
+    private HashMap<Integer, GeneExpression> expressionMatrix_rowNormalized;
 
     private double maxExpression = 0;
     private double minExpression = 0;
@@ -76,7 +79,7 @@ public class GeneExpressionMatrix {
         //go through the expression matrix and get the subset of
         //genes of interest
         for(Iterator i = subset.iterator(); i.hasNext();){
-            int k = (Integer)i.next();
+            Integer k = (Integer)i.next();
             if(expressionMatrix.containsKey(k)){
                 expression_subset.put(k,expressionMatrix.get(k));
             }
@@ -89,6 +92,8 @@ public class GeneExpressionMatrix {
         return expression_subset;
 
     }
+
+
 
     public double getMaxExpression() {
         return maxExpression;
@@ -179,18 +184,19 @@ public double getMinExpression(HashMap currentMatrix){
 
         //create new matrix
         expressionMatrix_rowNormalized = new HashMap();
-       
+
          int k= 0;
         //go through the expression matrix
         for(Iterator i = expressionMatrix.keySet().iterator(); i.hasNext();){
-            GeneExpression currentexpression = ((GeneExpression)expressionMatrix.get(i.next()));
+            Integer key = (Integer)i.next();
+            GeneExpression currentexpression = ((GeneExpression)expressionMatrix.get(key));
             String Name = currentexpression.getName();
             String description = currentexpression.getDescription();
             GeneExpression norm_row = new GeneExpression(Name,description);
             Double[] currentexpression_row_normalized = currentexpression.rowNormalize();
             norm_row.setExpression( currentexpression_row_normalized);
 
-            expressionMatrix_rowNormalized.put(Name,norm_row);
+            expressionMatrix_rowNormalized.put(key,norm_row);
        }
 
     }
@@ -201,6 +207,22 @@ public double getMinExpression(HashMap currentMatrix){
 
     public void setPhenotypes(String[] phenotypes) {
         this.phenotypes = phenotypes;
+    }
+
+    public String toString(){
+
+        String expressionString = "";
+
+        for(int i = 0; i<columnNames.length; i++)
+            expressionString += columnNames[i] + "\t" ;
+
+        expressionString += "\n";
+
+        for(Iterator i = expressionMatrix.keySet().iterator(); i.hasNext();){
+                expressionString += ((GeneExpression)expressionMatrix.get(i.next())).toString() ;
+           }
+
+        return expressionString;
     }
 
 }

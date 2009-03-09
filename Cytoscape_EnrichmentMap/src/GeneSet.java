@@ -1,5 +1,6 @@
 
 import java.util.HashSet;
+import java.util.Iterator;
 
 /**
  * Created by
@@ -29,6 +30,18 @@ public class GeneSet {
         genes = new HashSet<Integer>();
 
     }
+
+    public GeneSet(String[] tokens){
+        this(tokens[1],tokens[2]);
+
+        if(tokens.length<3)
+            return;
+
+        for(int i = 3; i < tokens.length;i++)
+            this.genes.add(Integer.parseInt(tokens[i]));
+      
+    }
+
     /* Given a Hashkey
     * Add the gene hashkey to the set of genes
     */
@@ -64,6 +77,17 @@ public class GeneSet {
 
     public void setGenes(HashSet<Integer> genes) {
         this.genes = genes;
+    }
+
+    public String toString(){
+        String geneset = "";
+
+        geneset += Name + "\t" + Description + "\t";
+
+        for(Iterator i = genes.iterator(); i.hasNext();)
+            geneset += i.next().toString() + "\t";
+
+        return geneset;
     }
 
 

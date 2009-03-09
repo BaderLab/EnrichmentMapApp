@@ -69,6 +69,8 @@ public class VisualizeEnrichmentMapTask implements Task {
                 //create the network
 
                 prefix = "EM1_";
+                params.setAttributePrefix(prefix);
+                params.setNetworkName(prefix+clustername);
                 network = Cytoscape.createNetwork(prefix + clustername);
             }
             else{
@@ -80,6 +82,8 @@ public class VisualizeEnrichmentMapTask implements Task {
                         num_networks++;
                 }
                 prefix = "EM" + num_networks + "_";
+                params.setAttributePrefix(prefix);
+                params.setNetworkName(prefix+clustername);
                 network = Cytoscape.createNetwork(prefix + clustername);
             }
 
@@ -267,14 +271,25 @@ public class VisualizeEnrichmentMapTask implements Task {
                view.applyLayout(CyLayouts.getLayout("force-directed"));
 
 
-            //Add the parameters summary panel
+            //register the new Network
+            EnrichmentMapManager EMmanager = EnrichmentMapManager.getInstance();
+            EMmanager.registerNetwork(network,params);
 
-            ParametersPanel parametersPanel = new ParametersPanel(params);
+            //initialize parameter panel with info for this network
+            ParametersPanel parametersPanel = EMmanager.getParameterPanel();
+            parametersPanel.updatePanel(params);
             final CytoscapeDesktop desktop = Cytoscape.getDesktop();
             final CytoPanel cytoSidePanel = desktop.getCytoPanel(SwingConstants.EAST);
-            cytoSidePanel.add("Parameters Used", parametersPanel);
             cytoSidePanel.setSelectedIndex(cytoSidePanel.indexOfComponent(parametersPanel));
-            cytoSidePanel.setState(CytoPanelState.DOCK);
+
+            //Add the parameters summary panel
+
+            //ParametersPanel parametersPanel = new ParametersPanel(params);
+            //final CytoscapeDesktop desktop = Cytoscape.getDesktop();
+            //final CytoPanel cytoSidePanel = desktop.getCytoPanel(SwingConstants.EAST);
+            //cytoSidePanel.add("Parameters Used", parametersPanel);
+            //cytoSidePanel.setSelectedIndex(cytoSidePanel.indexOfComponent(parametersPanel));
+            //cytoSidePanel.setState(CytoPanelState.DOCK);
 
             //add the click on edge listener
             view.addGraphViewChangeListener(new EnrichmentMapActionListener(params));

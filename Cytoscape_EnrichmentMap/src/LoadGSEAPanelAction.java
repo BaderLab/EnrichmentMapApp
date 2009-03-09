@@ -3,7 +3,6 @@ import cytoscape.Cytoscape;
 import cytoscape.util.CytoscapeAction;
 
 import javax.swing.*;
-import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
 /**
@@ -14,6 +13,9 @@ import java.awt.event.ActionEvent;
  */
 public class LoadGSEAPanelAction extends CytoscapeAction {
 
+    //variable to track initialization of network event listener
+    private boolean initialized = false;
+
     public LoadGSEAPanelAction(){
          super("Load GSEA Files");
     }
@@ -21,6 +23,11 @@ public class LoadGSEAPanelAction extends CytoscapeAction {
       public void actionPerformed(ActionEvent event) {
 
             String os = System.getProperty("os.name");
+
+          if(!initialized){
+                EnrichmentMapManager.getInstance();
+                initialized = true;
+          }
 
             // open new dialog
             //if the operating system is Mac, open a special window

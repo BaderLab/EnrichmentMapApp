@@ -57,7 +57,7 @@ public class SliderBarActionListener implements ChangeListener {
         int[] nodes = network.getNodeIndicesArray();
 
        //get the prefix of the current network
-       String prefix = network.getTitle().split("_")[0] + "_";
+       String prefix = params.getAttributePrefix();
 
         /*There are two different ways to hide and restore nodes.
         *if you hide the nodes from the view perspective the node is still in the underlying

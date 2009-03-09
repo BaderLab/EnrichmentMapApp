@@ -24,6 +24,19 @@ public class GSEAResult {
         this.fwerqvalue = fwerqvalue;
     }
 
+    public GSEAResult(String[] tokens){
+       if(tokens.length != 8)
+        return;
+
+        this.Name = tokens[1];
+        this.size = Integer.parseInt(tokens[2]);
+        this.ES = Double.parseDouble(tokens[3]);
+        this.NES = Double.parseDouble(tokens[4]);
+        this.pvalue = Double.parseDouble(tokens[5]);
+        this.fdrqvalue = Double.parseDouble(tokens[6]);
+        this.fwerqvalue = Double.parseDouble(tokens[7]);
+    }
+
     public boolean geneSetOfInterest(double pvalue, double fdrqvalue){
         if((this.pvalue <= pvalue) && (this.fdrqvalue <= fdrqvalue)){
             return true;
@@ -86,5 +99,10 @@ public class GSEAResult {
 
     public void setFwerqvalue(double fwerqvalue) {
         this.fwerqvalue = fwerqvalue;
+    }
+
+    public String toString(){
+
+        return Name + "\t" + size + "\t" + ES + "\t" + NES +"\t"+pvalue + "\t" + fdrqvalue + "\t" + fwerqvalue;
     }
 }
