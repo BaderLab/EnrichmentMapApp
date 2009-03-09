@@ -10,7 +10,11 @@ import java.awt.event.ActionEvent;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.io.*;
+
+import giny.model.Node;
+import giny.model.Edge;
 
 
 /**
@@ -30,22 +34,32 @@ public class OverlappingGenesPanel extends JPanel {
     private int numConditions;
     private int numConditions2;
 
-    private HashMap currentGeneExpressionSet;
-    private HashMap currentGeneExpressionSet2;
+    private HashMap currentExpressionSet;
+    private HashMap currentExpressionSet2;
+
+    private boolean node=true;
 
     private String Dataset1phenotype1;
     private String Dataset1phenotype2;
     private String Dataset2phenotype1;
     private String Dataset2phenotype2;
 
-    private EnrichmentMapParameters params;
     private HeatMapParameters hmParams;
+
+    private EnrichmentMapParameters params;
 
     /**
      * Creates a new instance of OverlappingGenesPanel
      */
 
-    public OverlappingGenesPanel(EnrichmentMapParameters params){
+    public OverlappingGenesPanel(boolean node){
+       this.node = node;
+       this.setLayout(new java.awt.BorderLayout());
+
+
+    }
+
+    public void resetVariables(EnrichmentMapParameters params){
         this.params = params;
 
         GeneExpressionMatrix expression = params.getExpression();
@@ -57,6 +71,14 @@ public class OverlappingGenesPanel extends JPanel {
         this.Dataset1phenotype1 = params.getDataset1Phenotype1();
         this.Dataset1phenotype2 = params.getDataset1Phenotype2();
 
+        hmParams = params.getHmParams();
+
+        //get the current expressionSet
+        if(node)
+           currentExpressionSet = getNodeExpressionSet(params, expression);
+       else
+           currentExpressionSet = getEdgeExpressionSet(params, expression);
+
         if(params.isData2()){
 
             GeneExpressionMatrix expression2 = params.getExpression2();
@@ -67,16 +89,26 @@ public class OverlappingGenesPanel extends JPanel {
 
             this.Dataset2phenotype1 = params.getDataset2Phenotype1();
             this.Dataset2phenotype2 = params.getDataset2Phenotype2();
-        }
 
-       this.setLayout(new java.awt.BorderLayout());
+            if(node)
+               currentExpressionSet2 = getNodeExpressionSet(params, expression2);
+            else
+               currentExpressionSet2 = getEdgeExpressionSet(params, expression2);
+        }
 
 
     }
 
+    public void updatePanel(EnrichmentMapParameters params){
+
+        resetVariables(params);
+        updatePanel();
+    }
+
     public void updatePanel(){
 
-        if(currentGeneExpressionSet != null){
+
+        if(currentExpressionSet != null){
             Object[][] data;
             JTable jTable1;
             String[] mergedcolumnNames = null;
@@ -186,13 +218,13 @@ public class OverlappingGenesPanel extends JPanel {
 
     private Object[][] createTableData(){
 
-        Object[][] data = new Object[currentGeneExpressionSet.size()][numConditions];
+        Object[][] data = new Object[currentExpressionSet.size()][numConditions];
         //Got through the hashmap and put all the values is
 
         int k = 0;
-        for(Iterator i = currentGeneExpressionSet.keySet().iterator();i.hasNext();){
+        for(Iterator i = currentExpressionSet.keySet().iterator();i.hasNext();){
             //Current expression row
-            GeneExpression row = (GeneExpression)currentGeneExpressionSet.get(i.next());
+            GeneExpression row = (GeneExpression)currentExpressionSet.get(i.next());
             Double[] expression_values;
             if(hmParams.isRowNorm())
                 expression_values = row.rowNormalize();
@@ -220,20 +252,20 @@ public class OverlappingGenesPanel extends JPanel {
 
         int totalConditions = (numConditions + numConditions2-2);
 
-        Object[][] data = new Object[Math.max(currentGeneExpressionSet.size(), currentGeneExpressionSet2.size())][totalConditions];
+        Object[][] data = new Object[Math.max(currentExpressionSet.size(), currentExpressionSet2.size())][totalConditions];
 
         //Got through the hashmap and put all the values is
 
         int k = 0;
-        for(Iterator i = currentGeneExpressionSet.keySet().iterator();i.hasNext();){
+        for(Iterator i = currentExpressionSet.keySet().iterator();i.hasNext();){
 
             Object currentKey = i.next();
 
             //Current expression row
-            GeneExpression halfRow1 = (GeneExpression)currentGeneExpressionSet.get(currentKey);
+            GeneExpression halfRow1 = (GeneExpression)currentExpressionSet.get(currentKey);
 
             //get the corresponding row from the second dataset
-            GeneExpression halfRow2 = (GeneExpression)currentGeneExpressionSet2.get(currentKey);
+            GeneExpression halfRow2 = (GeneExpression)currentExpressionSet2.get(currentKey);
 
             Double[] expression_values1 = null;
             Double[] expression_values2 = null;
@@ -349,8 +381,8 @@ public class OverlappingGenesPanel extends JPanel {
                             else
                                 output.write(columnNames[j] + "\t");
 
-                        for(Iterator i = currentGeneExpressionSet.keySet().iterator(); i.hasNext();){
-                            GeneExpression row = (GeneExpression)currentGeneExpressionSet.get(i.next());
+                        for(Iterator i = currentExpressionSet.keySet().iterator(); i.hasNext();){
+                            GeneExpression row = (GeneExpression)currentExpressionSet.get(i.next());
                             output.write(row.toString());
                         }
                         output.flush();
@@ -363,29 +395,68 @@ public class OverlappingGenesPanel extends JPanel {
         }
     }
 
-    public HashMap getCurrentGeneExpressionSet() {
-        return currentGeneExpressionSet;
+    private HashMap getNodeExpressionSet(EnrichmentMapParameters params, GeneExpressionMatrix expressionSet){
+
+        Object[] nodes = params.getSelectedNodes().toArray();
+
+        //go through the nodes only if there are some
+        if(nodes.length > 0){
+            HashSet union = null;
+
+            for(int i = 0; i< nodes.length;i++){
+
+                Node current_node = (Node)nodes[i];
+                String nodename = current_node.getIdentifier();
+
+                GeneSet current_geneset = (GeneSet)params.getGenesetsOfInterest().get(nodename);
+
+                HashSet current_set = current_geneset.getGenes();
+
+                if( union == null){
+                    union = new HashSet(current_set);
+                 }else{
+                    union.addAll(current_set);
+                }
+            }
+            return expressionSet.getExpressionMatrix(union);
+        }
+
+        return null;
+
+
     }
 
-    public void setCurrentGeneExpressionSet(HashMap currentGeneExpressionSet) {
-        this.currentGeneExpressionSet = currentGeneExpressionSet;
+    private HashMap getEdgeExpressionSet(EnrichmentMapParameters params, GeneExpressionMatrix expressionSet){
+
+        Object[] edges = params.getSelectedEdges().toArray();
+
+        if(edges.length>0){
+            HashSet intersect = null;
+            HashSet union = null;
+
+            for(int i = 0; i< edges.length;i++){
+
+                Edge current_edge = (Edge) edges[i];
+                String edgename = current_edge.getIdentifier();
+
+
+                GenesetSimilarity similarity = params.getGenesetSimilarity().get(edgename);
+                HashSet current_set = similarity.getOverlapping_genes();
+
+                if(intersect == null && union == null){
+                    intersect = new HashSet(current_set);
+                    union = new HashSet(current_set);
+                }else{
+                    intersect.retainAll(current_set);
+                    union.addAll(current_set);
+                }
+            }
+            return expressionSet.getExpressionMatrix(intersect);
+        }
+        return null;
     }
 
-    public HashMap getCurrentGeneExpressionSet2() {
-        return currentGeneExpressionSet2;
-    }
 
-    public void setCurrentGeneExpressionSet2(HashMap currentGeneExpressionSet2) {
-        this.currentGeneExpressionSet2 = currentGeneExpressionSet2;
-    }
-
-    public HeatMapParameters getHmParams() {
-        return hmParams;
-    }
-
-    public void setHmParams(HeatMapParameters hmParams) {
-        this.hmParams = hmParams;
-    }
 
     public void clearPanel(){
 

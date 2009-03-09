@@ -13,55 +13,45 @@ import java.awt.*;
  * Time: 2:41:48 PM
  */
 public class ParametersPanel extends JPanel {
-    private JTextPane runInfo;
-    private EnrichmentMapParameters params;
 
-    private int summaryPanelWidth = 150;
-    private int summaryPanelHeight = 1000;
+    public static int summaryPanelWidth = 150;
+    public static int summaryPanelHeight = 1000;
 
-    public ParametersPanel(EnrichmentMapParameters params) {
-           this.setLayout(new java.awt.BorderLayout());
-
-           this.params = params;
-
-           JPanel main = new JPanel(new BorderLayout());
-
-           JPanel legends = createLegend();
-           main.add(legends, BorderLayout.NORTH);
-
-            //add slider bars
- /*           JPanel center = new JPanel(new GridLayout(2,1));
-            SliderBarPanel pvalueSlider = new SliderBarPanel(0,params.getPvalue(),"P-value Cutoff",params, EnrichmentMapVisualStyle.PVALUE_DATASET1, EnrichmentMapVisualStyle.PVALUE_DATASET2);
-            pvalueSlider.setPreferredSize(new Dimension(summaryPanelWidth, 20));
-
-            center.add(pvalueSlider);
-
-            if(params.isFDR()){
-                SliderBarPanel qvalueSlider = new SliderBarPanel(0,params.getQvalue(),"Q-value Cutoff",params, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2);
-
-		        qvalueSlider.setPreferredSize(new Dimension(summaryPanelWidth, 20));
-
-                center.add(qvalueSlider);
-
-            }
-
-            main.add(center, BorderLayout.CENTER);
-*/
-           //information about the current analysis
-           runInfo = new JTextPane();
-           runInfo.setEditable(false);
-           runInfo.setContentType("text/html");
-           runInfo.setText(getRunInfo());
-           runInfo.setPreferredSize(new Dimension(summaryPanelWidth,summaryPanelHeight));
-           main.add(runInfo, BorderLayout.SOUTH);
-
-           JScrollPane jScrollPane = new javax.swing.JScrollPane(main);
-           //jScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-           this.add(jScrollPane);
+    public ParametersPanel() {
 
        }
 
-       private String getRunInfo(){
+    public void updatePanel(EnrichmentMapParameters params){
+
+            this.removeAll();
+            this.revalidate();
+            this.setLayout(new java.awt.BorderLayout());
+
+            JPanel main = new JPanel(new BorderLayout());
+
+           JPanel legends = createLegend(params);
+           main.add(legends, BorderLayout.NORTH);
+
+           JTextPane runInfo;
+        //information about the current analysis
+           runInfo = new JTextPane();
+           runInfo.setEditable(false);
+           runInfo.setContentType("text/html");
+           runInfo.setText(getRunInfo(params));
+           runInfo.setPreferredSize(new Dimension(summaryPanelWidth,summaryPanelHeight));
+           main.add(runInfo, BorderLayout.SOUTH);
+
+            JScrollPane jScrollPane = new javax.swing.JScrollPane(main);
+
+          //jScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+          this.add(jScrollPane);
+
+
+        this.revalidate();
+
+    }
+
+       private String getRunInfo(EnrichmentMapParameters params){
 
            String runInfoText = "<html> <h1>Parameters:</h1>";
            runInfoText = runInfoText + "<b>P-value Cut-off:</b>" + params.getPvalue() + "<br>";
@@ -91,7 +81,7 @@ public class ParametersPanel extends JPanel {
            return runInfoText;
        }
 
-    private JPanel createLegend(){
+    private JPanel createLegend(EnrichmentMapParameters params){
 
         JPanel legends = new JPanel();
 
@@ -171,15 +161,14 @@ public class ParametersPanel extends JPanel {
             c.insets = new Insets(10,0,10,0);
             c.gridwidth = GridBagConstraints.REMAINDER;
             c.anchor = GridBagConstraints.LINE_START;
-            SliderBarPanel pvalueSlider = new SliderBarPanel(0,params.getPvalue(),"P-value Cutoff",params, EnrichmentMapVisualStyle.PVALUE_DATASET1, EnrichmentMapVisualStyle.PVALUE_DATASET2,summaryPanelWidth);
+            SliderBarPanel pvalueSlider = params.getPvalueSlider();
             //pvalueSlider.setPreferredSize(new Dimension(summaryPanelWidth, 20));
 
             gridbag.setConstraints(pvalueSlider,c);
             legends.add(pvalueSlider);
 
             if(params.isFDR()){
-                SliderBarPanel qvalueSlider = new SliderBarPanel(0,params.getQvalue(),"Q-value Cutoff",params, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2,summaryPanelWidth);
-
+                SliderBarPanel qvalueSlider =params.getQvalueSlider();
 
                 c.gridx = 0;
                 c.gridy = 6;

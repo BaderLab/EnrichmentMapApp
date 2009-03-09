@@ -1,7 +1,7 @@
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.HashSet;
-import java.util.Set;
+import giny.model.Node;
+import giny.model.Edge;
+
+import java.util.*;
 
 /**
  * Created by
@@ -10,6 +10,9 @@ import java.util.Set;
  * Time: 12:04:28 PM
  */
 public class EnrichmentMapParameters {
+
+    private String NetworkName;
+    private String attributePrefix;
 
     //GMT and GSEA output files
     private String GMTFileName;
@@ -27,9 +30,13 @@ public class EnrichmentMapParameters {
 
     //p-value cutoff
     private double pvalue;
+    //pvalue slider bar
+    private SliderBarPanel pvalueSlider;
 
     //fdr q-value cutoff
     private double qvalue;
+    //qvalue slider bar
+    private SliderBarPanel qvalueSlider;
 
     private double jaccardCutOff;
 
@@ -43,22 +50,22 @@ public class EnrichmentMapParameters {
     private boolean FDR = false;
 
     //Hashmap stores the unique set of genes used in the gmt file
-    private HashMap genes;
+    private HashMap<String,Integer> genes;
     private HashSet datasetGenes;
     private int NumberOfGenes = 0;
 
     //Hashmap of the GSEA Results, It is is a hash of the GSEAResults objects
     private HashMap enrichmentResults1;
     private HashMap enrichmentResults2;
-    private HashMap genesets;
-    private HashMap filteredGenesets;
+    private HashMap<String, GeneSet> genesets;
+    private HashMap<String, GeneSet> filteredGenesets;
 
     //The GSEA results that pass the thresholds.
     //If there are two datasets these list can be different.
     private HashMap enrichmentResults1OfInterest;
     private HashMap enrichmentResults2OfInterest;
 
-    private HashMap genesetsOfInterest;
+    private HashMap<String, GeneSet> genesetsOfInterest;
 
     private GeneExpressionMatrix expression;
     private GeneExpressionMatrix expression2;
@@ -73,6 +80,11 @@ public class EnrichmentMapParameters {
 
     private HashMap<String, GenesetSimilarity> genesetSimilarity;
 
+    private ArrayList<Node> selectedNodes;
+    private ArrayList<Edge> selectedEdges;
+
+    private HeatMapParameters hmParams;
+
     public EnrichmentMapParameters() {
         this.enrichmentResults1 = new HashMap();
         this.enrichmentResults2 = new HashMap();
@@ -84,6 +96,68 @@ public class EnrichmentMapParameters {
         this.enrichmentResults2OfInterest = new HashMap();
         this.genesetsOfInterest = new HashMap();
         jaccard = true;
+        this.selectedNodes = new ArrayList<Node>();
+        this.selectedEdges = new ArrayList<Edge>();
+
+    }
+
+    public EnrichmentMapParameters(String propFile){
+        this();
+
+        //Create a hashmap to contain all the values in the rpt file.
+        HashMap props = new HashMap();
+
+        String [] lines = propFile.split("\n");
+
+        for (int i = 0; i < lines.length; i++) {
+            String line = lines[i];
+            String[] tokens = line.split("\t");
+            //there should be two values on each line of the rpt file.
+            if(tokens.length == 2 )
+                props.put(tokens[0] ,tokens[1]);
+        }
+
+        this.NetworkName = (String)props.get("NetworkName");
+        this.attributePrefix = (String)props.get("attributePrefix");
+
+        this.GMTFileName = (String)props.get("GMTFileName");
+        this.GCTFileName1 = (String)props.get("GCTFileName1");
+
+        this.enrichmentDataset1FileName1 = (String)props.get("enerichmentDataset1FileName1");
+        this.enrichmentDataset1FileName2 = (String)props.get("enrichmentDataset1FileName2");
+
+        this.dataset1Phenotype1 = (String)props.get("dataset1Phenotype1");
+        this.dataset1Phenotype2 = (String)props.get("dataset1Phenotype2");
+        this.dataset2Phenotype1 = (String)props.get("dataset2Phenotype1");
+        this.dataset2Phenotype2 = (String)props.get("dataset2Phenotype2");
+
+        this.classFile1 = (String)props.get("classFile1");
+        this.classFile2 = (String)props.get("classFile2");
+
+        //boolean flags
+        if(((String)props.get("twoDatasets")).equalsIgnoreCase("true"))
+            this.twoDatasets = true;
+        if(((String)props.get("jaccard")).equalsIgnoreCase("false"))
+            this.jaccard = false;
+         if(((String)props.get("GSEA")).equalsIgnoreCase("false"))
+            this.GSEA = false;
+        if(((String)props.get("Data")).equalsIgnoreCase("true"))
+            this.Data = true;
+        if(((String)props.get("Data2")).equalsIgnoreCase("true"))
+            this.Data2 = true;
+        if(((String)props.get("FDR")).equalsIgnoreCase("true"))
+            this.FDR = true;
+
+        if(twoDatasets){
+            if(Data2)
+                this.GCTFileName2 = (String)props.get("GCTFileName2");
+            this.enrichmentDataset2FileName1 = (String)props.get("enerichmentDataset2FileName1");
+            this.enrichmentDataset2FileName2 = (String)props.get("enrichmentDataset2FileName2");
+        }
+        //cutoffs
+        setPvalue(Double.parseDouble((String)props.get("pvalue")));
+        setQvalue(Double.parseDouble((String)props.get("qvalue")));
+        this. jaccardCutOff = Double.parseDouble((String)props.get("jaccardCutOff"));
 
     }
 
@@ -227,6 +301,10 @@ public class EnrichmentMapParameters {
 
     public void setPvalue(double pvalue) {
         this.pvalue = pvalue;
+
+        //create the slider for this pvalue
+        pvalueSlider = new SliderBarPanel(0,this.pvalue,"P-value Cutoff",this, EnrichmentMapVisualStyle.PVALUE_DATASET1, EnrichmentMapVisualStyle.PVALUE_DATASET2,ParametersPanel.summaryPanelWidth);
+
     }
 
     public double getQvalue() {
@@ -235,6 +313,10 @@ public class EnrichmentMapParameters {
 
     public void setQvalue(double qvalue) {
         this.qvalue = qvalue;
+
+        //create the slider for the qvalue
+        qvalueSlider = new SliderBarPanel(0,this.qvalue,"Q-value Cutoff",this, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2,ParametersPanel.summaryPanelWidth);
+
     }
 
     public HashMap getGenes() {
@@ -267,6 +349,22 @@ public class EnrichmentMapParameters {
 
     public void setJaccardCutOff(double jaccardCutOff) {
         this.jaccardCutOff = jaccardCutOff;
+    }
+
+    public String getNetworkName() {
+        return NetworkName;
+    }
+
+    public void setNetworkName(String networkName) {
+        NetworkName = networkName;
+    }
+
+    public String getAttributePrefix() {
+        return attributePrefix;
+    }
+
+    public void setAttributePrefix(String attributePrefix) {
+        this.attributePrefix = attributePrefix;
     }
 
     public boolean isTwoDatasets() {
@@ -314,7 +412,7 @@ public class EnrichmentMapParameters {
         enrichmentResults1.clear();
         enrichmentResults2.clear();
         genes.clear();
-        datasetGenes.clear();        
+        datasetGenes.clear();
         filteredGenesets.clear();
         enrichmentResults1OfInterest.clear();
         enrichmentResults2OfInterest.clear();
@@ -424,4 +522,136 @@ public class EnrichmentMapParameters {
     public void setDataset2Phenotype2(String dataset2Phenotype2) {
         this.dataset2Phenotype2 = dataset2Phenotype2;
     }
+
+    public SliderBarPanel getPvalueSlider() {
+        return pvalueSlider;
+    }
+
+    public SliderBarPanel getQvalueSlider() {
+        return qvalueSlider;
+    }
+
+    public ArrayList<Node> getSelectedNodes() {
+        return selectedNodes;
+    }
+
+    public ArrayList<Edge> getSelectedEdges() {
+        return selectedEdges;
+    }
+
+    public void setSelectedNodes(ArrayList<Node> selectedNodes) {
+        this.selectedNodes = selectedNodes;
+    }
+
+    public void setSelectedEdges(ArrayList<Edge> selectedEdges) {
+        this.selectedEdges = selectedEdges;
+    }
+
+    public HeatMapParameters getHmParams() {
+        return hmParams;
+    }
+
+    public void setHmParams(HeatMapParameters hmParams) {
+        this.hmParams = hmParams;
+    }
+
+    public String toString(){
+        String paramVariables = "";
+
+        paramVariables += "NetworkName\t" + NetworkName + "\n";
+        paramVariables += "attributePrefix\t" + attributePrefix + "\n";
+
+        //file names
+        paramVariables += "GMTFileName\t" + GMTFileName + "\n";
+        paramVariables += "GCTFileName1\t" + GCTFileName1 + "\n";
+        paramVariables += "GCTFileName2\t" + GCTFileName2 + "\n";
+        paramVariables += "enerichmentDataset1FileName1\t" + enrichmentDataset1FileName1 + "\n";
+        paramVariables += "enrichmentDataset1FileName2\t" + enrichmentDataset1FileName2 + "\n";
+
+        paramVariables += "enerichmentDataset2FileName1\t" + enrichmentDataset2FileName1 + "\n";
+        paramVariables += "enrichmentDataset2FileName2\t" + enrichmentDataset2FileName2 + "\n";
+
+        paramVariables += "dataset1Phenotype1\t" + dataset1Phenotype1  + "\n";
+        paramVariables += "dataset1Phenotype2\t" + dataset1Phenotype2   + "\n";
+        paramVariables += "dataset2Phenotype1\t" + dataset2Phenotype1  + "\n";
+        paramVariables += "dataset2Phenotype2\t" + dataset2Phenotype2  + "\n";
+
+        paramVariables += "classFile1\t" + classFile1  + "\n";
+        paramVariables += "classFile2\t" + classFile2  + "\n";
+
+        //boolean flags
+        paramVariables += "twoDatasets\t" + twoDatasets + "\n";
+        paramVariables += "jaccard\t" + jaccard + "\n";
+        paramVariables += "GSEA\t" + GSEA + "\n";
+        paramVariables += "Data\t" + Data + "\n";
+        paramVariables += "Data2\t" + Data2 + "\n";
+        paramVariables += "FDR\t" + FDR + "\n";
+
+        //cutoffs
+        paramVariables += "pvalue\t" + pvalue + "\n";
+        paramVariables += "qvalue\t" + qvalue + "\n";
+        paramVariables += "jaccardCutOff\t" + jaccardCutOff + "\n";
+
+
+        return paramVariables;
+    }
+
+
+   //Given a hashmap, go through it and print all the objects(not the keys)
+    public String printHashmap(HashMap map ){
+       String result = "";
+
+       for(Iterator i = map.keySet().iterator();i.hasNext();){
+           Object key = i.next();
+           result += key.toString() + "\t" + map.get(key).toString() + "\n";
+       }
+       return result;
+
+   }
+
+    //repopulate hashmap,
+    public HashMap repopulateHashmap(String fileInput, int type ){
+
+        //Create a hashmap to contain all the values in the rpt file.
+        HashMap newMap = new HashMap();
+
+        String [] lines = fileInput.split("\n");
+
+        for (int i = 0; i < lines.length; i++) {
+            String line = lines[i];
+            String[] tokens = line.split("\t");
+
+            //the first token is the key and the rest of the line is the object
+            //depending on the type there is different data
+
+            //GenesetSimilarity
+            if(type == 0)
+                newMap.put(tokens[0] ,new GenesetSimilarity(tokens));
+
+            //Genesets
+            if(type == 1)
+                newMap.put(tokens[0], new GeneSet(tokens));
+
+            //Genes
+            if(type == 2)
+                newMap.put(tokens[0],Integer.parseInt(tokens[1]));
+
+            //GseaResult
+            if(type == 3)
+                newMap.put(tokens[0], new GSEAResult(tokens));
+
+            if(type == 4)
+                newMap.put(tokens[0], new GenericResult(tokens));
+
+
+        }
+
+    return newMap;
+    }
+
+
+
+
+
+
 }

@@ -6,20 +6,31 @@
  */
 public class GenericResult {
 
-    private String id;
-    private String Name;
-    private double pvalue;
-    private int gsSize;
+    private String id = "";
+    private String Name = "";
+    private double pvalue = 1.0;
+    private int gsSize = 0;
 
     //optional parameters
-    private double fdrqvalue;
-    private String phenotype;
+    private double fdrqvalue = 1.0;
+    private String phenotype = "";
 
     public GenericResult(String id, String name, double pvalue, int gs_size) {
         this.id = id;
         Name = name;
         this.pvalue = pvalue;
         this.gsSize = gs_size;
+    }
+
+    public GenericResult(String[] tokens){
+        //ignore the first token as it is from the hash
+        this.id = tokens[1];
+        Name = tokens[2];
+        this.pvalue = Double.parseDouble(tokens[3]);
+        this.gsSize = Integer.parseInt(tokens[4]);
+        this.fdrqvalue = Double.parseDouble(tokens[5]);
+        this.phenotype = tokens[6];
+
     }
 
     public GenericResult(String id, String name, double pvalue, int gs_size, double fdrqvalue) {
@@ -102,5 +113,10 @@ public class GenericResult {
 
     public void setGsSize(int gs_size) {
         this.gsSize = gs_size;
+    }
+
+    public String toString(){
+
+        return id + "\t" + Name + "\t" + pvalue + "\t" + gsSize + "\t" + fdrqvalue + "\t" +phenotype+"\n";
     }
 }

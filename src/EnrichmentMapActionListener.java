@@ -42,6 +42,8 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
     public EnrichmentMapActionListener(EnrichmentMapParameters params) {
         this.params = params;
 
+        EnrichmentMapManager manager = EnrichmentMapManager.getInstance();
+
         //initialize the cyto panel to have the expression viewing.
         final CytoscapeDesktop desktop = Cytoscape.getDesktop();
         cytoPanel = desktop.getCytoPanel(SwingConstants.SOUTH);
@@ -49,23 +51,18 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
         //final URL url = new URL("http","www.baderlab.org","/wiki/common/network_bader_website_icon.gif");
         //final Icon icon = new ImageIcon(url);
         if(params.isData()){
-            edgeOverlapPanel = new OverlappingGenesPanel(params);
-            cytoPanel.add("EM Overlap Expression viewer",edgeOverlapPanel);
-            nodeOverlapPanel = new OverlappingGenesPanel(params);
-            cytoPanel.add("EM Geneset Expression viewer",nodeOverlapPanel);
+            edgeOverlapPanel = manager.getEdgesOverlapPanel();
+            nodeOverlapPanel = manager.getNodesOverlapPanel();
 
             HeatMapParameters hmParams = new HeatMapParameters(edgeOverlapPanel, nodeOverlapPanel);
             hmParams.initColorGradients(params.getExpression());
-            edgeOverlapPanel.setHmParams(hmParams);
-            nodeOverlapPanel.setHmParams(hmParams);
+            params.setHmParams(hmParams);
         }
 
-        summaryPanel = new SummaryPanel();
-        cytoSidePanel.add("Geneset Summary", summaryPanel);
+        summaryPanel = (EnrichmentMapManager.getInstance()).getSummaryPanel();
 
-        //initialize node and edge lists
-        Nodes = new ArrayList<Node>();
-        Edges = new ArrayList<Edge>();
+        Nodes = params.getSelectedNodes();
+        Edges = params.getSelectedEdges();
      
     }
 
@@ -133,141 +130,32 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
     }
 
   public void createEdgesData(){
-      GeneExpressionMatrix expressionSet = null;
-      GeneExpressionMatrix expressionSet2 = null;
 
-      if(params.isData())
-        expressionSet = params.getExpression();
+      summaryPanel.updateEdgeInfo(Edges.toArray());
+      cytoSidePanel.setSelectedIndex(cytoSidePanel.indexOfComponent(summaryPanel));
+      summaryPanel.revalidate();
 
-      if(params.isData2())
-        expressionSet2 = params.getExpression2();
-
-    //convert Edge list to array
-      Object[] edges = Edges.toArray();
-
-    //if only one edge has been selected show the basic overlap tab
-    if(edges.length == 1){
-        Edge current_edge = (Edge)edges[0];
-        String edgename = current_edge.getIdentifier();
-
-        //only update the expression viewer if there is data loaded
-        if(params.isData()){
-            GenesetSimilarity similarity = params.getGenesetSimilarity().get(edgename);
-
-            HashMap currentSubset = expressionSet.getExpressionMatrix(similarity.getOverlapping_genes());
-
-            if(params.isData2()){
-                HashMap currentSubset2 = expressionSet2.getExpressionMatrix(similarity.getOverlapping_genes());
-                edgeOverlapPanel.setCurrentGeneExpressionSet2(currentSubset2);
-            }
-
-            edgeOverlapPanel.setCurrentGeneExpressionSet(currentSubset);
-            edgeOverlapPanel.updatePanel();
-            cytoPanel.setSelectedIndex(cytoPanel.indexOfComponent(edgeOverlapPanel));
-        }
-
-        summaryPanel.updateEdgeInfo(edges);
-        cytoSidePanel.setSelectedIndex(cytoSidePanel.indexOfComponent(summaryPanel));
-
-     }else{
-        if(params.isData()){
-            HashSet intersect = null;
-            HashSet union = null;
-
-            for(int i = 0; i< edges.length;i++){
-
-                Edge current_edge = (Edge) edges[i];
-                String edgename = current_edge.getIdentifier();
-
-
-                GenesetSimilarity similarity = params.getGenesetSimilarity().get(edgename);
-                HashSet current_set = similarity.getOverlapping_genes();
-
-                if(intersect == null && union == null){
-                    intersect = new HashSet(current_set);
-                    union = new HashSet(current_set);
-                }else{
-                    intersect.retainAll(current_set);
-                    union.addAll(current_set);
-                }
-            }
-
-            edgeOverlapPanel.setCurrentGeneExpressionSet(expressionSet.getExpressionMatrix(intersect));
-
-            if(params.isData2())
-                edgeOverlapPanel.setCurrentGeneExpressionSet2(expressionSet2.getExpressionMatrix(intersect));
-
-            edgeOverlapPanel.updatePanel();
-            cytoPanel.setSelectedIndex(cytoPanel.indexOfComponent(edgeOverlapPanel));
-        }
-     }
-     if(params.isData())
+      if(params.isData()){
+        edgeOverlapPanel.updatePanel(params);
+        cytoPanel.setSelectedIndex(cytoPanel.indexOfComponent(edgeOverlapPanel));
         edgeOverlapPanel.revalidate();
+
+      }
 
   }
 
   private void createNodesData(){
 
-      GeneExpressionMatrix expressionSet = null;
-      GeneExpressionMatrix expressionSet2 = null;
-
-      if(params.isData())
-        expressionSet = params.getExpression();
-
-      if(params.isData2())
-        expressionSet2 = params.getExpression2();
-
-    Object[] nodes = Nodes.toArray();
-
-    //if only one edge has been selected show the basic overlap tab
-    if(nodes.length == 1){
-        if(params.isData()){
-            Node current_node = (Node)nodes[0];
-            String nodename = current_node.getIdentifier();
-
-            GeneSet current_geneset = (GeneSet)params.getGenesetsOfInterest().get(nodename);
-
-            nodeOverlapPanel.setCurrentGeneExpressionSet(expressionSet.getExpressionMatrix(current_geneset.getGenes()));
-            if(params.isData2())
-                nodeOverlapPanel.setCurrentGeneExpressionSet2(expressionSet2.getExpressionMatrix(current_geneset.getGenes()));
-
-            nodeOverlapPanel.updatePanel();
-            cytoPanel.setSelectedIndex(cytoPanel.indexOfComponent(nodeOverlapPanel));
-        }
-        summaryPanel.updateNodeInfo(nodes);
+        summaryPanel.updateNodeInfo(Nodes.toArray());
         cytoSidePanel.setSelectedIndex(cytoSidePanel.indexOfComponent(summaryPanel));
-     }else{
+        summaryPanel.revalidate();
+
         if(params.isData()){
-            HashSet union = null;
-
-            for(int i = 0; i< nodes.length;i++){
-
-                Node current_node = (Node)nodes[i];
-                String nodename = current_node.getIdentifier();
-
-                GeneSet current_geneset = (GeneSet)params.getGenesetsOfInterest().get(nodename);
-
-                HashSet current_set = current_geneset.getGenes();
-
-                if( union == null){
-                    union = new HashSet(current_set);
-                }else{
-                    union.addAll(current_set);
-                }
-            }
-            nodeOverlapPanel.setCurrentGeneExpressionSet(expressionSet.getExpressionMatrix(union));
-
-            if(params.isData2())
-                 nodeOverlapPanel.setCurrentGeneExpressionSet2(expressionSet2.getExpressionMatrix(union));
-            nodeOverlapPanel.updatePanel();
+            nodeOverlapPanel.updatePanel(params);
             cytoPanel.setSelectedIndex(cytoPanel.indexOfComponent(nodeOverlapPanel));
+            nodeOverlapPanel.revalidate();
         }
-        summaryPanel.updateNodeInfo(nodes);
-        cytoSidePanel.setSelectedIndex(cytoSidePanel.indexOfComponent(summaryPanel));
-    }
-    if(params.isData())
-        nodeOverlapPanel.revalidate();
-    summaryPanel.revalidate();
+
   }
 
     public void clearPanels(){
