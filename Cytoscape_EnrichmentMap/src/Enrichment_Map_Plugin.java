@@ -1,6 +1,9 @@
 import cytoscape.plugin.CytoscapePlugin;
 import cytoscape.Cytoscape;
 import cytoscape.CytoscapeInit;
+import cytoscape.task.ui.JTaskConfig;
+import cytoscape.task.util.TaskManager;
+import cytoscape.task.TaskMonitor;
 import cytoscape.view.CyNetworkView;
 import cytoscape.data.readers.TextFileReader;
 
@@ -115,11 +118,6 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
                 subenr1writer.close();
                 pFileList.add(enrichmentresults1Ofinterest);
 
-                BufferedWriter gswriter = new BufferedWriter(new FileWriter(genesetSimilarity));
-                gswriter.write(params.printHashmap(params.getGenesetSimilarity()));
-                gswriter.close();
-                pFileList.add(genesetSimilarity);
-
                 if(params.isTwoDatasets()){
                     enrichmentresults2 = new File(tmpDir, name+".ENR2.txt");
                     BufferedWriter enr2writer = new BufferedWriter(new FileWriter(enrichmentresults2));
@@ -215,9 +213,6 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
                     if(prop_file.getName().contains(".genes.txt")){
                         params.setGenes(params.repopulateHashmap(fullText,2));
                     }
-                    if(prop_file.getName().contains(".similarity.txt")){
-                        params.setGenesetSimilarity(params.repopulateHashmap(fullText,0));
-                    }
                     if(prop_file.getName().contains(".ENR1.txt")){
                         if(params.isGSEA())
                             params.setEnrichmentResults1(params.repopulateHashmap(fullText,3));
@@ -292,6 +287,13 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
                 String currentNetwork = (String)j.next();
                 CyNetworkView view = Cytoscape.getNetworkView(currentNetwork);
                 EnrichmentMapParameters params = (EnrichmentMapParameters)networks.get(currentNetwork);
+
+                //for each map compute the similarity matrix, (easier than storing it)
+                //compute the geneset similarities
+                ComputeSimilarityTask similarities = new ComputeSimilarityTask(params);
+                similarities.run();
+                HashMap<String, GenesetSimilarity> similarity_results = similarities.getGeneset_similarities();
+                params.setGenesetSimilarity(similarity_results);
 
                 //add the click on edge listener
                 view.addGraphViewChangeListener(new EnrichmentMapActionListener(params));
