@@ -34,9 +34,6 @@ public class ComputeSimilarityTask implements Task {
     }
 
     public boolean computeMap(){
-        if(taskMonitor == null){
-            throw new IllegalStateException("Task Monitor is not set");
-        }
         try{
 
 
