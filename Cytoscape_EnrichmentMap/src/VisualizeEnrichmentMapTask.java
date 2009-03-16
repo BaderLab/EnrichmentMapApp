@@ -441,19 +441,8 @@ public class VisualizeEnrichmentMapTask implements Task {
 
         //only wrap at spaces
         String[] tokens = label.split(" ");
-        //if there is only one token wrap it anyways.
-        if(tokens.length == 1){
-            while(i<=label.length()){
-
-                if(i+EnrichmentMapVisualStyle.maxNodeLabelLength > label.length())
-                    formattedLabel = formattedLabel + label.substring(i, label.length()) + "\n";
-                else
-                    formattedLabel = formattedLabel + label.substring(i, k* EnrichmentMapVisualStyle.maxNodeLabelLength) + "\n";
-                i = (k * EnrichmentMapVisualStyle.maxNodeLabelLength) ;
-                k++;
-            }
-        }
-        else{
+        //first try and wrap label based on spacing
+        if(tokens.length > 1){
             int current_count = 0;
             for(int j = 0; j< tokens.length;j++){
                 if(current_count + tokens[j].length() <= EnrichmentMapVisualStyle.maxNodeLabelLength){
@@ -463,6 +452,38 @@ public class VisualizeEnrichmentMapTask implements Task {
                 else if(current_count + tokens[j].length() > EnrichmentMapVisualStyle.maxNodeLabelLength) {
                     formattedLabel = formattedLabel + "\n" + tokens[j] + " ";
                     current_count = tokens[j].length();
+                }
+            }
+        }
+        else{
+           tokens = label.split("_");
+
+           if(tokens.length > 1){
+                int current_count = 0;
+                for(int j = 0; j< tokens.length;j++){
+                    if(j != 0)
+                      formattedLabel = formattedLabel +  "_";
+                    if(current_count + tokens[j].length() <= EnrichmentMapVisualStyle.maxNodeLabelLength){
+                        formattedLabel = formattedLabel + tokens[j] ;
+                        current_count = current_count + tokens[j].length();
+                    }
+                    else if(current_count + tokens[j].length() > EnrichmentMapVisualStyle.maxNodeLabelLength) {
+                        formattedLabel = formattedLabel + "\n" + tokens[j] ;
+                        current_count = tokens[j].length();
+                    }
+                }
+            }
+
+            //if there is only one token wrap it anyways.
+            else if(tokens.length == 1){
+                while(i<=label.length()){
+
+                    if(i+EnrichmentMapVisualStyle.maxNodeLabelLength > label.length())
+                        formattedLabel = formattedLabel + label.substring(i, label.length()) + "\n";
+                    else
+                        formattedLabel = formattedLabel + label.substring(i, k* EnrichmentMapVisualStyle.maxNodeLabelLength) + "\n";
+                    i = (k * EnrichmentMapVisualStyle.maxNodeLabelLength) ;
+                    k++;
                 }
             }
         }
