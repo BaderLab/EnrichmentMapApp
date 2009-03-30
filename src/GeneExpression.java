@@ -79,21 +79,39 @@ public class GeneExpression {
     //given an expression row and the current maximum is there an element
     //that is higher and should be the new max
     public double newMax(double currentMax){
-        double newMax = -1;
+        double newMax = -100;
+         boolean found_newmin = false;
 
         for(int i =0;i<expression.length;i++){
-            if(expression[i] > currentMax)
-                newMax = expression[i];
+            if(expression[i] > currentMax){
+                //if we have already found a new min check if the new one is even smaller
+                if(found_newmin){
+                    if(expression[i] > newMax)
+                        newMax = expression[i];
+                }else{
+                    newMax = expression[i];
+                    found_newmin = true;
+                    }
+            }
         }
         return newMax;
     }
 
     public double newMin(double currentMin){
-        double newMin = -1;
+        double newMin = -100;
+        boolean found_newmin = false;
 
         for(int i =0;i<expression.length;i++){
-            if(expression[i] < currentMin)
-                newMin = expression[i];
+            if(expression[i] < currentMin){
+                //if we have already found a new min check if the new one is even smaller
+                if(found_newmin){
+                    if(expression[i] < newMin)
+                        newMin = expression[i];
+                }else{
+                    newMin = expression[i];
+                    found_newmin = true;
+                    }
+            }
         }
         return newMin;
     }

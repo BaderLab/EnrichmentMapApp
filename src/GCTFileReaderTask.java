@@ -99,9 +99,9 @@ public class GCTFileReaderTask implements Task {
                 expres.setExpression(tokens);
 
                 double newMax = expres.newMax(expressionMatrix.getMaxExpression());
-                if(newMax != -1) expressionMatrix.setMaxExpression(newMax);
+                if(newMax != -100) expressionMatrix.setMaxExpression(newMax);
                 double newMin = expres.newMin(expressionMatrix.getMinExpression());
-                if (newMin != -1) expressionMatrix.setMinExpression(newMin);
+                if (newMin != -100) expressionMatrix.setMinExpression(newMin);
 
                 expression.put(genekey,expres);
 
