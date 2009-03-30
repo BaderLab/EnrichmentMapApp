@@ -86,8 +86,7 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
 
             File enrichmentresults1 = new File(tmpDir, name+".ENR1.txt");
             File enrichmentresults1Ofinterest = new File(tmpDir, name+".SubENR1.txt");
-            File genesetSimilarity = new File(tmpDir, name+".similarity.txt");
-
+            
             File enrichmentresults2;
             File enrichmentresults2Ofinterest;
             File expression1;
