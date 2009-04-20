@@ -496,6 +496,7 @@ public class GenericInputFilesPanel extends JDialog {
            // Add accepted File Extensions
            filter.addExtension("gct");
            filter.addExtension("rpt");
+           filter.addExtension("rnk");
            filter.addExtension("txt");
            filter.setDescription("All GCT files");
 
@@ -533,6 +534,7 @@ public class GenericInputFilesPanel extends JDialog {
       // Add accepted File Extensions
       filter.addExtension("gct");
       filter.addExtension("txt");
+      filter.addExtension("rnk");  
       filter.addExtension("rpt");
       filter.setDescription("All GCT files");
 
@@ -637,6 +639,8 @@ public class GenericInputFilesPanel extends JDialog {
          //set all the variables based on the parameters in the rpt file
         //parameters needed
         String timestamp = (String)rpt.get("producer_timestamp");
+        String method = (String)rpt.get("producer_class");
+        method = method.split("\\p{Punct}")[2];
         String out_dir = (String)rpt.get("param out");
         String data = (String)rpt.get("param res");
         String label = (String)rpt.get("param rpt_label");
@@ -644,28 +648,59 @@ public class GenericInputFilesPanel extends JDialog {
         String gmt = (String)rpt.get("param gmx");
         String gmt_nopath =  gmt.substring(gmt.lastIndexOf(File.separator)+1, gmt.length()-1);
 
+        String phenotype1 = "na";
+        String phenotype2 = "na";
         //phenotypes are specified after # in the parameter cls and are separated by _versus_
-        String[] classes_split = classes.split("#");
-        String phenotypes = classes_split[1];
-        String[] phenotypes_split = phenotypes.split("_versus_");
-        String phenotype1 = phenotypes_split[0];
-        String phenotype2 = phenotypes_split[1];
+        //but phenotypes are only specified for classic GSEA, not PreRanked.
+        if(classes != null && method.equalsIgnoreCase("Gsea")){
+            String[] classes_split = classes.split("#");
+            String phenotypes = classes_split[1];
+            String[] phenotypes_split = phenotypes.split("_versus_");
+            phenotype1 = phenotypes_split[0];
+            phenotype2 = phenotypes_split[1];
 
+            if(dataset1){
+                params.setClassFile1(classes_split[0]);
+                params.setDataset1Phenotype1(phenotype1);
+                params.setDataset1Phenotype2(phenotype2);
+            }
+            else{
+                params.setClassFile2(classes_split[0]);
+                params.setDataset2Phenotype1(phenotype1);
+                params.setDataset2Phenotype2(phenotype2);
+            }
+        }
 
+       //check to see if the method is normal or pre-ranked GSEA.
+        //If it is pre-ranked the data file is contained in a different field
+        else if(method.equalsIgnoreCase("GseaPreranked")){
+            data = (String)rpt.get("param rnk");
+            phenotype1 = "na_pos";
+            phenotype2 = "na_neg";
+        }
 
-       if(dataset1){
-            params.setClassFile1(classes_split[0]);
-            params.setDataset1Phenotype1(phenotype1);
-            params.setDataset1Phenotype2(phenotype2);
-       }
-       else{
-            params.setClassFile2(classes_split[0]);
-            params.setDataset2Phenotype1(phenotype1);
-            params.setDataset2Phenotype2(phenotype2);
-       }
+        else{
+            JOptionPane.showMessageDialog(this,"The class field in the rpt file has been modified or doesn't specify a class file\n but the analysis is a classic GSEA not PreRanked.  ");
+        }
 
-        String results1 = "" + out_dir + File.separator + label + ".Gsea." + timestamp + File.separator + "gsea_report_for_" + phenotype1 + "_" + timestamp + ".xls";
-        String results2 = "" + out_dir + File.separator + label + ".Gsea." + timestamp + File.separator + "gsea_report_for_" + phenotype2 + "_" + timestamp + ".xls";
+        //check to see if the rpt file path is the same as the one specified in the
+        //rpt file.
+        //if it isn't then assume that the rpt file is in the same directory as the
+        //output files and the path of those files has changed accordingly
+        String results1 = "";
+         String results2 = "";
+
+        if(!(file.getAbsolutePath().substring(0,(file.getAbsolutePath()).lastIndexOf(File.separator))).equalsIgnoreCase(out_dir)){
+
+            //trim the last File Separator
+            out_dir = file.getAbsolutePath().substring(0,file.getAbsolutePath().lastIndexOf(File.separator));
+            results1 = out_dir + File.separator + "gsea_report_for_" + phenotype1 + "_" + timestamp + ".xls";
+            results2 = out_dir + File.separator + "gsea_report_for_" + phenotype2 + "_" + timestamp + ".xls";
+        }
+        else{
+            results1 = "" + out_dir + File.separator + label + "."+ method + "." + timestamp + File.separator + "gsea_report_for_" + phenotype1 + "_" + timestamp + ".xls";
+            results2 = "" + out_dir + File.separator + label + "."+ method + "." + timestamp + File.separator + "gsea_report_for_" + phenotype2 + "_" + timestamp + ".xls";
+        }
 
         if(dataset1){
 
