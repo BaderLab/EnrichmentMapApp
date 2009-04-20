@@ -5,6 +5,7 @@ import cytoscape.Cytoscape;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.io.File;
 
 /**
  * Created by
@@ -54,6 +55,7 @@ public class ParametersPanel extends JPanel {
        private String getRunInfo(EnrichmentMapParameters params){
 
            String runInfoText = "<html> <h1>Parameters:</h1>";
+
            runInfoText = runInfoText + "<b>P-value Cut-off:</b>" + params.getPvalue() + "<br>";
            runInfoText = runInfoText + "<b>FDR Q-value Cut-off:</b>" + params.getQvalue() + "<br>";
 
@@ -65,20 +67,20 @@ public class ParametersPanel extends JPanel {
                runInfoText = runInfoText + "<b>Overlap Cut-off:</b>" + params.getJaccardCutOff() + "<br>";
                runInfoText = runInfoText + "<b>Test used:</b>  Overlap Index<br>";
            }
-           runInfoText = runInfoText + "<font size=-1><b>Genesets File:</b>" + params.getGMTFileName() + "<br>";
-           runInfoText = runInfoText + "<b>Dataset 1 Data Files:</b> " + params.getEnrichmentDataset1FileName1() + ",<br>" + params.getEnrichmentDataset1FileName2() + "<br>";
+           runInfoText = runInfoText + "<font size=-1><b>Genesets File:</b>" + shortenPathname(params.getGMTFileName()) + "<br>";
+           runInfoText = runInfoText + "<b>Dataset 1 Data Files:</b> " + shortenPathname(params.getEnrichmentDataset1FileName1()) + ",<br>" + shortenPathname(params.getEnrichmentDataset1FileName2()) + "<br>";
            if(params.isTwoDatasets()){
-               runInfoText = runInfoText + "<b>Dataset 2 Data Files:</b> " + params.getEnrichmentDataset2FileName1() + ",<br>" + params.getEnrichmentDataset2FileName2() + "<br>";
+               runInfoText = runInfoText + "<b>Dataset 2 Data Files:</b> " + shortenPathname(params.getEnrichmentDataset2FileName1()) + ",<br>" + shortenPathname(params.getEnrichmentDataset2FileName2()) + "<br>";
            }
            if(params.isData()){
-               runInfoText = runInfoText + "<b>Data file:</b>" + params.getGCTFileName1() + "<br>";
+               runInfoText = runInfoText + "<b>Data file:</b>" + shortenPathname(params.getGCTFileName1()) + "<br>";
            }
            if(params.isData2()){
-               runInfoText = runInfoText + "<b>Data file 2:</b>" + params.getGCTFileName2() + "<br>";
+               runInfoText = runInfoText + "<b>Data file 2:</b>" + shortenPathname(params.getGCTFileName2()) + "<br>";
            }
 
            runInfoText = runInfoText + "</font></html>";
-           return runInfoText;
+           return runInfoText;          
        }
 
     private JPanel createLegend(EnrichmentMapParameters params){
@@ -185,6 +187,22 @@ public class ParametersPanel extends JPanel {
 
         return legends;
 
+
+    }
+
+    private String shortenPathname (String pathname){
+
+        String[] tokens = pathname.split("\\"+File.separator);
+
+        int num_tokens = tokens.length;
+
+        String new_pathname;
+        if(num_tokens >=2)
+            new_pathname = "..." + File.separator + tokens[num_tokens -2] + File.separator + tokens[num_tokens -1];
+        else
+            new_pathname = pathname;
+
+        return new_pathname;
 
     }
 
