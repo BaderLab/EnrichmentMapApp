@@ -112,7 +112,7 @@ public class EnrichmentMapVisualStyle {
         BoundaryRangeValues bv3a = new BoundaryRangeValues(max_phenotype2,max_phenotype2,max_phenotype2);
         BoundaryRangeValues bv3b = new BoundaryRangeValues(lighter_phenotype2, lighter_phenotype2, max_phenotype2);
         BoundaryRangeValues bv3c = new BoundaryRangeValues(lightest_phenotype2, lightest_phenotype2,lighter_phenotype2);
-        BoundaryRangeValues bv3d = new BoundaryRangeValues(overColor, overColor, lighter_phenotype2);
+        BoundaryRangeValues bv3d = new BoundaryRangeValues(lightest_phenotype2, overColor, overColor);
         BoundaryRangeValues bv3e = new BoundaryRangeValues(overColor, overColor,overColor);
         BoundaryRangeValues bv3f = new BoundaryRangeValues(overColor, overColor, lightest_phenotype1);
         BoundaryRangeValues bv3g = new BoundaryRangeValues(lightest_phenotype1, lightest_phenotype1, lighter_phenotype1);
