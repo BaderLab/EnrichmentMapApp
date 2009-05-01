@@ -40,6 +40,11 @@ public class BuildEnrichmentMapActionListener implements ActionListener {
         config.displayCloseButton(true);
         config.displayStatus(true);
 
+       //Check to see if the user changed any of the fields manually
+       if(this.inputPanel.checkForChanges()){
+
+
+
         //set the pvalue, qvalue, and jaccardCurOff
         double pvalue = this.inputPanel.getPvalue();
         if(pvalue > 1.0 || pvalue < 0.0)
@@ -74,6 +79,7 @@ public class BuildEnrichmentMapActionListener implements ActionListener {
        inputPanel.dispose();
        inputPanel.close();
      }
+   }
 
 
 }

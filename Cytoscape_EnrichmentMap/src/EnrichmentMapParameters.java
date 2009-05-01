@@ -16,8 +16,15 @@ public class EnrichmentMapParameters {
 
     //GMT and GSEA output files
     private String GMTFileName;
+
+    //flag to indicate if the user has supplied a data file
+    private boolean Data = false;
     private String GCTFileName1;
+
+    //flag to indicate if the user has supplied a data file
+    private boolean Data2 = false;
     private String GCTFileName2;
+
     private String enrichmentDataset1FileName1;
     private String enrichmentDataset1FileName2;
 
@@ -26,28 +33,23 @@ public class EnrichmentMapParameters {
 
     private boolean twoDatasets = false;
 
-    private boolean jaccard = true;
-
     //p-value cutoff
     private double pvalue;
     //pvalue slider bar
     private SliderBarPanel pvalueSlider;
 
+     //flag to indicate if there are FDR Q-values
+    private boolean FDR = false;
     //fdr q-value cutoff
     private double qvalue;
     //qvalue slider bar
     private SliderBarPanel qvalueSlider;
 
     private double jaccardCutOff;
+    private boolean jaccard = true;
 
     //flag to indicate if the results are from GSEA or generic
     private boolean GSEA = true;
-    //flag to indicate if the user has supplied a data file
-    private boolean Data = false;
-    //flag to indicate if the user has supplied a data file
-    private boolean Data2 = false;
-    //falg to indicate if there are FDR Q-values
-    private boolean FDR = false;
 
     //Hashmap stores the unique set of genes used in the gmt file
     private HashMap<String,Integer> genes;
@@ -84,6 +86,14 @@ public class EnrichmentMapParameters {
     private ArrayList<Edge> selectedEdges;
 
     private HeatMapParameters hmParams;
+
+    //Rank files
+    private String dataset1RankedFile = null;
+    private String dataset2RankedFile = null;
+
+    private HashMap<Integer, Ranking> dataset1Rankings;
+    private HashMap<Integer, Ranking> dataset2Rankings;
+
 
     public EnrichmentMapParameters() {
         this.enrichmentResults1 = new HashMap();
@@ -131,8 +141,14 @@ public class EnrichmentMapParameters {
         this.dataset2Phenotype1 = (String)props.get("dataset2Phenotype1");
         this.dataset2Phenotype2 = (String)props.get("dataset2Phenotype2");
 
-        this.classFile1 = (String)props.get("classFile1");
-        this.classFile2 = (String)props.get("classFile2");
+        if(((String)props.get("classFile1")).equalsIgnoreCase("null") )
+            this.classFile1 = null;
+        else
+            this.classFile1 = (String)props.get("classFile1");
+        if(((String)props.get("classFile2")).equalsIgnoreCase("null"))
+            this.classFile2 = null;
+        else
+            this.classFile2 = (String)props.get("classFile2");
 
         //boolean flags
         if(((String)props.get("twoDatasets")).equalsIgnoreCase("true"))
@@ -554,6 +570,39 @@ public class EnrichmentMapParameters {
     public void setHmParams(HeatMapParameters hmParams) {
         this.hmParams = hmParams;
     }
+
+    public String getDataset1RankedFile() {
+        return dataset1RankedFile;
+    }
+
+    public void setDataset1RankedFile(String dataset1RankedFile) {
+        this.dataset1RankedFile = dataset1RankedFile;
+    }
+
+    public String getDataset2RankedFile() {
+        return dataset2RankedFile;
+    }
+
+    public void setDataset2RankedFile(String dataset2RankedFile) {
+        this.dataset2RankedFile = dataset2RankedFile;
+    }
+
+    public HashMap getDataset1Rankings() {
+        return dataset1Rankings;
+    }
+
+    public void setDataset1Rankings(HashMap<Integer,Ranking> dataset1Rankings) {
+        this.dataset1Rankings = dataset1Rankings;
+    }
+
+    public HashMap getDataset2Rankings() {
+        return dataset2Rankings;
+    }
+
+    public void setDataset2Rankings(HashMap<Integer,Ranking> dataset2Rankings) {
+        this.dataset2Rankings = dataset2Rankings;
+    }
+
 
     public String toString(){
         String paramVariables = "";

@@ -134,14 +134,23 @@ public class GCTFileReaderTask implements Task {
     }
 
     private String[] setClasses(GeneExpressionMatrix expresson, String classFile){
-        TextFileReader reader2 = new TextFileReader(classFile);
-        reader2.read();
-        String fullText2 = reader2.getText();
 
-        String[] lines2 = fullText2.split("\n");
+        //check to see if the file was opened successfully
+        if(!classFile.equalsIgnoreCase(null)){
+            TextFileReader reader2 = new TextFileReader(classFile);
 
-        //the third line of the class file defines the classes
-        return lines2[2].split(" ");
+            reader2.read();
+            String fullText2 = reader2.getText();
+
+            String[] lines2 = fullText2.split("\n");
+
+            //the third line of the class file defines the classes
+            return lines2[2].split(" ");
+        }
+        else{
+            String[] def_pheno = {"Na_pos","NA_neg"};
+            return def_pheno;
+        }
     }
 
 

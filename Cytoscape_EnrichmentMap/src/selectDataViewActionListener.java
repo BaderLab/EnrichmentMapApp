@@ -43,6 +43,18 @@ public class selectDataViewActionListener implements ActionListener {
            hmParams.setRowNorm(false);
            hmParams.setLogtransform(true);
         }
+        else if(evt.getActionCommand().equalsIgnoreCase("noSort")){
+           hmParams.setRank_dataset1(false);
+           hmParams.setRank_dataset2(false);
+        }
+        else if(evt.getActionCommand().equalsIgnoreCase("dataset1")){
+           hmParams.setRank_dataset1(true);
+           hmParams.setRank_dataset2(false);
+        }
+        else if(evt.getActionCommand().equalsIgnoreCase("dataset2")){
+           hmParams.setRank_dataset1(false);
+           hmParams.setRank_dataset2(true);
+        }
 
         hmParams.ResetColorGradient();
         edgeOverlapPanel.updatePanel();

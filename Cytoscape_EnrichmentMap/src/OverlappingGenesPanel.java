@@ -7,10 +7,8 @@ import javax.swing.table.TableColumn;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Enumeration;
-import java.util.HashSet;
+import java.util.*;
+import java.util.List;
 import java.io.*;
 
 import giny.model.Node;
@@ -73,6 +71,14 @@ public class OverlappingGenesPanel extends JPanel {
 
         hmParams = params.getHmParams();
 
+        //specify how many rank files we have
+        if(params.getDataset1RankedFile() != null && params.getDataset2RankedFile() != null){
+            hmParams.setNum_ranks(2);
+        }
+        else if(params.getDataset1RankedFile() != null || params.getDataset2RankedFile() != null){
+            hmParams.setNum_ranks(1);
+        }
+
         //get the current expressionSet
         if(node)
            currentExpressionSet = getNodeExpressionSet(params, expression);
@@ -118,16 +124,20 @@ public class OverlappingGenesPanel extends JPanel {
 
             mainPanel.add(createLegendPanel(), java.awt.BorderLayout.WEST);
 
+            //if there are rank files loaded allow the user to sort the data
+            if(hmParams.getNum_ranks() > 0)
+                mainPanel.add(hmParams.createRankOptionsPanel(),java.awt.BorderLayout.EAST );
+
             //create data subset
             if(params.isData2()){
-               data = createMergedTableData();
+               data = createSortedMergedTableData();
                mergedcolumnNames = new String[columnNames.length + columnNames2.length - 2];
                System.arraycopy(columnNames,0,mergedcolumnNames,0,columnNames.length);
                System.arraycopy(columnNames2,2, mergedcolumnNames,columnNames.length,columnNames2.length-2);
                jTable1 = new JTable(new OverlappingGenesTableModel(mergedcolumnNames,data));
             }
             else{
-               data = createTableData();
+               data = createSortedTableData();
                jTable1 = new JTable(new OverlappingGenesTableModel(columnNames,data));
             }
             //Set up renderer and editor for the Color column.
@@ -215,6 +225,219 @@ public class OverlappingGenesPanel extends JPanel {
 
 
     }
+
+    private Object[][] createSortedTableData(){
+         Object[][] data = new Object[currentExpressionSet.size()][numConditions];
+        //Got through the hashmap and put all the values is
+
+        Integer[] ranks_subset = new Integer[currentExpressionSet.size()];
+
+        HashMap<Integer, ArrayList<Integer>> rank2keys = new HashMap<Integer,ArrayList<Integer>>();
+
+        //Get the ranks for all the keys, if there is a ranking file
+        HashMap<Integer,Ranking> ranks;
+        if(hmParams.isRank_dataset1())
+            ranks = params.getDataset1Rankings();
+        else if(hmParams.isRank_dataset2())
+            ranks = params.getDataset2Rankings();
+        else{
+            //create default ranks
+            int r = 1;
+            ranks = new HashMap<Integer,Ranking>();
+            for(Iterator i = currentExpressionSet.keySet().iterator();i.hasNext();){
+                Integer key = (Integer)i.next();
+                Ranking temp = new Ranking(key.toString(),0.0,r++);
+                ranks.put(key,temp);
+            }
+        }
+
+        int n = 0;
+        for(Iterator i = currentExpressionSet.keySet().iterator();i.hasNext();){
+            Integer key = (Integer)i.next();
+            ranks_subset[n] = ((Ranking)ranks.get(key)).getRank();
+            //check to see if the rank is already in the list.
+            if(!rank2keys.containsKey(ranks_subset[n])){
+               ArrayList<Integer> temp = new ArrayList<Integer>();
+               temp.add(key);
+               rank2keys.put(ranks_subset[n],temp);
+            }
+            else{
+               rank2keys.get(ranks_subset[n]).add(key);
+            }
+
+            n++;
+        }
+        //sort ranks
+        Arrays.sort(ranks_subset);
+
+        int k = 0;
+        int previous = 0;
+
+        for(int m = 0 ; m < ranks_subset.length;m++){
+
+            if(ranks_subset[m] == previous)
+               continue;
+
+            previous = ranks_subset[m];
+
+            ArrayList keys = rank2keys.get(ranks_subset[m]);
+
+            for(Iterator p = keys.iterator();p.hasNext();){
+                Integer key = (Integer)p.next();
+
+                //Current expression row
+                GeneExpression row = (GeneExpression)currentExpressionSet.get(key);
+                Double[] expression_values;
+                if(hmParams.isRowNorm())
+                   expression_values = row.rowNormalize();
+                else if(hmParams.isLogtransform())
+                   expression_values = row.rowLogTransform();
+                else
+                   expression_values   = row.getExpression();
+
+                data[k][0] = row.getName();
+                data[k][1] = row.getDescription();
+
+                for(int j = 0; j < row.getExpression().length;j++){
+
+                   data[k][j+2] = ColorGradientMapper.getColorGradient(hmParams.getTheme(),hmParams.getRange(),row.getName(),expression_values[j]);
+
+                }
+                k++;
+             }
+         }
+        return data;
+    }
+
+     private Object[][] createSortedMergedTableData(){
+
+        int totalConditions = (numConditions + numConditions2-2);
+
+        Object[][] data = new Object[Math.max(currentExpressionSet.size(), currentExpressionSet2.size())][totalConditions];
+
+
+        Integer[] ranks_subset = new Integer[currentExpressionSet.size()];
+
+        HashMap<Integer, ArrayList<Integer>> rank2keys = new HashMap<Integer,ArrayList<Integer>>();
+
+        //Get the ranks for all the keys, if there is a ranking file
+         HashMap<Integer,Ranking> ranks;
+         if(hmParams.isRank_dataset1())
+             ranks = params.getDataset1Rankings();
+         else if(hmParams.isRank_dataset2())
+             ranks = params.getDataset2Rankings();
+         else{
+             //create default ranks
+             int r = 1;
+             ranks = new HashMap<Integer,Ranking>();
+             for(Iterator i = currentExpressionSet.keySet().iterator();i.hasNext();){
+                 Integer key = (Integer)i.next();
+                 Ranking temp = new Ranking(key.toString(),0.0,r++);
+                 ranks.put(key,temp);
+             }
+         }
+
+        int n = 0;
+        for(Iterator i = currentExpressionSet.keySet().iterator();i.hasNext();){
+            Integer key = (Integer)i.next();
+            ranks_subset[n] = ((Ranking)ranks.get(key)).getRank();
+            //check to see if the rank is already in the list.
+            if(!rank2keys.containsKey(ranks_subset[n])){
+               ArrayList<Integer> temp = new ArrayList<Integer>();
+               temp.add(key);
+               rank2keys.put(ranks_subset[n],temp);
+            }
+            else{
+               rank2keys.get(ranks_subset[n]).add(key);
+            }
+
+            n++;
+         }
+        //sort ranks
+        Arrays.sort(ranks_subset);
+
+        int k = 0;
+        int previous = 0;
+
+        for(int m = 0 ; m < ranks_subset.length;m++){
+
+            if(ranks_subset[m] == previous)
+                continue;
+
+            previous = ranks_subset[m];
+
+            ArrayList keys = rank2keys.get(ranks_subset[m]);
+
+            for(Iterator p = keys.iterator();p.hasNext();){
+                Integer currentKey = (Integer)p.next();
+
+                //Current expression row
+                GeneExpression halfRow1 = (GeneExpression)currentExpressionSet.get(currentKey);
+
+                //get the corresponding row from the second dataset
+                GeneExpression halfRow2 = (GeneExpression)currentExpressionSet2.get(currentKey);
+
+                Double[] expression_values1 = null;
+                Double[] expression_values2 = null;
+                if(hmParams.isRowNorm()){
+                    if(halfRow1 != null)
+                        expression_values1 = halfRow1.rowNormalize();
+                    if(halfRow2 != null)
+                        expression_values2 = halfRow2.rowNormalize();
+                }
+                else if(hmParams.isLogtransform()){
+                    if(halfRow1 != null)
+                        expression_values1 = halfRow1.rowLogTransform();
+                    if(halfRow2 != null)
+                        expression_values2 = halfRow2.rowLogTransform();
+                }
+                else{
+                    if(halfRow1 != null)
+                        expression_values1   = halfRow1.getExpression();
+                    if(halfRow2 != null)
+                        expression_values2   = halfRow2.getExpression();
+                }
+
+                if(halfRow1 != null){
+                    data[k][0] = halfRow1.getName();
+                    data[k][1] = halfRow1.getDescription();
+                }
+                else if(halfRow2 != null){
+                    data[k][0] = halfRow2.getName();
+                    data[k][1] = halfRow2.getDescription();
+                }
+
+               //if either of the expression_values is null set the array to have no data
+                if(expression_values1 == null){
+                    expression_values1 = new Double[columnNames.length-2];
+                    for(int q = 0; m < expression_values1.length;q++)
+                        expression_values1[q] = null;
+                }
+                if(expression_values2 == null){
+                    expression_values2 = new Double[columnNames2.length-2];
+                    for(int q = 0; m < expression_values2.length;q++)
+                       expression_values2[q] = null;
+                }
+
+
+                for(int j = 0; j < halfRow1.getExpression().length;j++){
+
+                  data[k][j+2] = ColorGradientMapper.getColorGradient(hmParams.getTheme(),hmParams.getRange(),halfRow1.getName(),expression_values1[j]);
+
+                }
+                for(int j = halfRow1.getExpression().length; j < (halfRow1.getExpression().length + halfRow2.getExpression().length);j++){
+
+                   data[k][j+2] = ColorGradientMapper.getColorGradient(hmParams.getTheme(),hmParams.getRange(),halfRow2.getName(),expression_values2[j-halfRow1.getExpression().length]);
+
+                }
+
+                k++;
+            }
+        }
+
+        return data;
+    }
+
 
     private Object[][] createTableData(){
 
