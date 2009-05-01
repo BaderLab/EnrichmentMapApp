@@ -302,4 +302,55 @@ public class GSEAInputFilesPanelMac extends GenericInputFilesPanel {
            }
        }
 
+    public boolean checkResultsFiles(){
+
+          if(!getGSEADataset1FileName1().equalsIgnoreCase( Dataset1FileNameTextField.getText())){
+            int answer = JOptionPane.showConfirmDialog(this,"The Dataset 1 Filename has been modified from the original one loaded.  Would you like to use the original file specified??","File changed",JOptionPane.YES_NO_OPTION) ;
+            if(!(answer == JOptionPane.YES_OPTION))
+                if(checkFile( Dataset1FileNameTextField.getText()) == Color.RED){
+                    JOptionPane.showMessageDialog(this, "The file specified in the Dataset 1 file 1 does not exist.");
+                    return false;
+                }
+                else
+                    setGSEADataset1FileName1(Dataset1FileNameTextField.getText());
+         }
+
+        if(!getGSEADataset1FileName2().equalsIgnoreCase( Dataset1FileName2TextField.getText())){
+            int answer = JOptionPane.showConfirmDialog(this,"The Dataset 1 Filename 2 has been modified from the original one loaded.  Would you like to use the original file specified??","File changed",JOptionPane.YES_NO_OPTION);
+            if(!(answer == JOptionPane.YES_OPTION))
+                if(checkFile( Dataset1FileName2TextField.getText()) == Color.RED){
+                    JOptionPane.showMessageDialog(this, "The file specified in the Dataset 1 file 2 does not exist.");
+                return false;
+                }
+                else
+                    setGSEADataset1FileName2(Dataset1FileName2TextField.getText());
+         }
+
+        if(isTwoDatasets()){
+            if(!getGSEADataset2FileName1().equalsIgnoreCase( Dataset2FileNameTextField.getText())){
+                int answer = JOptionPane.showConfirmDialog(this,"The Dataset 2 Filename has been modified from the original one loaded.  Would you like to use the original file specified??","File changed",JOptionPane.YES_NO_OPTION);
+                if(!(answer == JOptionPane.YES_OPTION))
+                    if(checkFile( Dataset2FileNameTextField.getText()) == Color.RED){
+                        JOptionPane.showMessageDialog(this, "The file specified in the Dataset 2 file 1 does not exist.");
+                        return false;
+                    }
+                    else
+                        setGSEADataset2FileName1(Dataset2FileNameTextField.getText());
+            }
+
+            if(!getGSEADataset2FileName2().equalsIgnoreCase( Dataset2FileName2TextField.getText())){
+                int answer = JOptionPane.showConfirmDialog(this,"The Dataset 2 Filename 2 has been modified from the original one loaded.  Would you like to use the original file specified??","File changed",JOptionPane.YES_NO_OPTION);
+                if(!(answer == JOptionPane.YES_OPTION))
+                    if(checkFile( Dataset2FileName2TextField.getText()) == Color.RED){
+                        JOptionPane.showMessageDialog(this, "The file specified in the Dataset 2 file 2 does not exist.");
+                        return false;
+                    }
+                    else
+                        setGSEADataset2FileName2(Dataset2FileName2TextField.getText());
+           }
+        }
+        return true;
+
+    }
+
 }

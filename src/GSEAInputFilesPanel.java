@@ -180,7 +180,7 @@ public class GSEAInputFilesPanel extends GenericInputFilesPanel {
                //There should be two files inputted.  If it more or less then report error
                if(files.length == 2){
                    Dataset1FileNameTextField.setForeground(checkFile(files[0].getAbsolutePath()));
-                    Dataset1FileNameTextField.setText(files[0].getName() + "\n" + files[1].getName());
+                    Dataset1FileNameTextField.setText(files[0].getAbsolutePath() + "\n" + files[1].getAbsolutePath());
                     setGSEADataset1FileName1(files[0].getAbsolutePath());
                     setGSEADataset1FileName2(files[1].getAbsolutePath());
                     Dataset1FileNameTextField.setToolTipText(files[0].getAbsolutePath() + "," + files[1].getAbsolutePath());
@@ -213,7 +213,7 @@ public class GSEAInputFilesPanel extends GenericInputFilesPanel {
            if(files != null) {
                if(files.length == 2){
                    Dataset2FileNameTextField.setForeground(checkFile(files[0].getAbsolutePath()));
-                    Dataset2FileNameTextField.setText(files[0].getName() + "\n" + files[1].getName());
+                    Dataset2FileNameTextField.setText(files[0].getAbsolutePath() + "\n" + files[1].getAbsolutePath());
                     setGSEADataset2FileName1(files[0].getAbsolutePath());
                     setGSEADataset2FileName2(files[1].getAbsolutePath());
                     setTwoDatasets(true);
@@ -241,5 +241,90 @@ public class GSEAInputFilesPanel extends GenericInputFilesPanel {
             Dataset2FileNameTextField.setText(file1 + "\n" + file2 );
             Dataset2FileNameTextField.setToolTipText(file1 + "\n" + file2 );
         }
+    }
+
+       public boolean checkResultsFiles(){
+
+          String current_filenames1 =  getGSEADataset1FileName1() + "\n" + getGSEADataset1FileName2();
+
+          if(!current_filenames1.equalsIgnoreCase( Dataset1FileNameTextField.getText())){
+            int answer = JOptionPane.showConfirmDialog(this,"The Dataset 1 Filename has been modified from the original one loaded.  Would you like to use the original file specified??","File changed",JOptionPane.YES_NO_OPTION);
+            if(!(answer == JOptionPane.YES_OPTION)){
+                String[] tokens = Dataset1FileNameTextField.getText().split("\\n");
+                String file1 = "";
+                String file2 = "";
+                if(tokens.length == 2){
+                    file1 = tokens[0];
+                    file2 = tokens[1];
+                }
+                else if(tokens.length == 1){
+                    file1 = tokens[0];
+                    file2 = "";
+                }
+                else{
+                    file1 = Dataset1FileNameTextField.getText();
+                    file2 = "";
+                }
+                if((file1.equalsIgnoreCase("")) || (file2.equalsIgnoreCase(""))){
+                        JOptionPane.showMessageDialog(this, "One or both of the Dataset 1 results files has been erased.  To run EM with GSEA results you need two results files. \nCan not run EM without 2 GSEA results files. ");
+                        return false;
+                    }
+                else if((checkFile(file1) == Color.RED) || (checkFile(file2) == Color.RED)){
+                    JOptionPane.showMessageDialog(this, "One of The files specified in the Dataset 1 does not exist.");
+                    return false;
+                }
+                else{
+                    setGSEADataset1FileName1(file1);
+                    setGSEADataset1FileName2(file2);
+                }
+            }
+          }
+
+        if(isTwoDatasets()){
+            String current_filenames2 =  getGSEADataset2FileName1() + "\n" + getGSEADataset2FileName2();
+            if(!current_filenames2.equalsIgnoreCase( Dataset2FileNameTextField.getText())){
+                int answer = JOptionPane.showConfirmDialog(this,"The Dataset 2 Filename has been modified from the original one loaded.  Would you like to use the original file specified??","File changed",JOptionPane.YES_NO_OPTION);
+                if(!(answer == JOptionPane.YES_OPTION)){
+                    String[] tokens = Dataset2FileNameTextField.getText().split("\\n");
+                    String file1 = "";
+                    String file2 = "";
+                    if(tokens.length == 2){
+                        file1 = tokens[0];
+                        file2 = tokens[1];
+                    }
+                    else if(tokens.length == 1){
+                        file1 = tokens[0];
+                        file2 = "";
+                    }
+                    else{
+                        file1 = Dataset1FileNameTextField.getText();
+                        file2 = "";
+                    }
+
+                    if((file1.equalsIgnoreCase("")) || (file2.equalsIgnoreCase(""))){
+                        int answer2 = JOptionPane.showConfirmDialog(this, "One or both of the Dataset 2 results files has been erased.  To run EM with GSEA results you need two results files. Would you like to clear the field?","File deleted",JOptionPane.YES_NO_OPTION);
+                        if(answer2 == JOptionPane.YES_OPTION){
+                            setGSEADataset2FileName1("");
+                            setGSEADataset2FileName2("");
+                            setTwoDatasets(false);
+                            Dataset2FileNameTextField.setText("");
+                        }
+                    }
+                else if((checkFile(file1) == Color.RED) || (checkFile(file2) == Color.RED)){
+                    JOptionPane.showMessageDialog(this, "One of The files specified in the Dataset 2 does not exist.");
+                    return false;
+                    }
+                else{
+                    setGSEADataset2FileName1(file1);
+                    setGSEADataset2FileName2(file2);
+                }
+
+                }
+            }
+        }
+
+
+     return true;
+
     }
 }

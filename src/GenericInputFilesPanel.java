@@ -534,7 +534,7 @@ public class GenericInputFilesPanel extends JDialog {
       // Add accepted File Extensions
       filter.addExtension("gct");
       filter.addExtension("txt");
-      filter.addExtension("rnk");  
+      filter.addExtension("rnk");
       filter.addExtension("rpt");
       filter.setDescription("All GCT files");
 
@@ -574,7 +574,7 @@ public class GenericInputFilesPanel extends JDialog {
 
         if(file != null) {
                 Dataset1FileNameTextField.setForeground(checkFile(file.getAbsolutePath()));
-                Dataset1FileNameTextField.setText(file.getName() );
+                Dataset1FileNameTextField.setText(file.getAbsolutePath() );
                 params.setEnrichmentDataset1FileName1(file.getAbsolutePath());
                 Dataset1FileNameTextField.setToolTipText(file.getAbsolutePath() );
 
@@ -677,6 +677,15 @@ public class GenericInputFilesPanel extends JDialog {
             data = (String)rpt.get("param rnk");
             phenotype1 = "na_pos";
             phenotype2 = "na_neg";
+
+            if(dataset1){
+                params.setDataset1Phenotype1(phenotype1);
+                params.setDataset1Phenotype2(phenotype2);
+            }
+            else{
+                params.setDataset2Phenotype1(phenotype1);
+                params.setDataset2Phenotype2(phenotype2);
+            }
         }
 
         else{
@@ -689,6 +698,7 @@ public class GenericInputFilesPanel extends JDialog {
         //output files and the path of those files has changed accordingly
         String results1 = "";
          String results2 = "";
+        String ranks = "";
 
         if(!(file.getAbsolutePath().substring(0,(file.getAbsolutePath()).lastIndexOf(File.separator))).equalsIgnoreCase(out_dir)){
 
@@ -696,10 +706,12 @@ public class GenericInputFilesPanel extends JDialog {
             out_dir = file.getAbsolutePath().substring(0,file.getAbsolutePath().lastIndexOf(File.separator));
             results1 = out_dir + File.separator + "gsea_report_for_" + phenotype1 + "_" + timestamp + ".xls";
             results2 = out_dir + File.separator + "gsea_report_for_" + phenotype2 + "_" + timestamp + ".xls";
+            ranks = out_dir + File.separator + "ranked_gene_list_" + phenotype1 + "_versus_" + phenotype2 +"_" + timestamp + ".xls";
         }
         else{
             results1 = "" + out_dir + File.separator + label + "."+ method + "." + timestamp + File.separator + "gsea_report_for_" + phenotype1 + "_" + timestamp + ".xls";
             results2 = "" + out_dir + File.separator + label + "."+ method + "." + timestamp + File.separator + "gsea_report_for_" + phenotype2 + "_" + timestamp + ".xls";
+            ranks = "" + out_dir + File.separator + label + "."+ method + "." + timestamp + File.separator + "ranked_gene_list_" + phenotype1 + "_versus_" + phenotype2 +"_" + timestamp + ".xls";
         }
 
         if(dataset1){
@@ -724,6 +736,7 @@ public class GenericInputFilesPanel extends JDialog {
 
                 params.setEnrichmentDataset1FileName1(results1);
                 params.setEnrichmentDataset1FileName2(results2);
+                params.setDataset1RankedFile(ranks);
                 this.setDatasetnames(results1,results2,dataset1);
 
         }
@@ -747,6 +760,7 @@ public class GenericInputFilesPanel extends JDialog {
 
                 params.setEnrichmentDataset2FileName1(results1);
                 params.setEnrichmentDataset2FileName2(results2);
+                params.setDataset2RankedFile(ranks);
                 this.setDatasetnames(results1,results2,dataset1);
 
         }
@@ -787,6 +801,102 @@ public class GenericInputFilesPanel extends JDialog {
         return Color.BLACK;
     }
 
+    public boolean checkForChanges(){
+
+        //Go through each variable to see if the user changed any of the fields
+         if(!params.getGMTFileName().equalsIgnoreCase(GMTFileNameTextField.getText())){
+            int answer = JOptionPane.showConfirmDialog(this,"The GMT file name has been modified from the original one loaded.  Would you like to use the original file specified??","File changed",JOptionPane.YES_NO_OPTION);
+            if(!(answer == JOptionPane.YES_OPTION)){
+                if(checkFile(GMTFileNameTextField.getText()) == Color.RED){
+                    JOptionPane.showMessageDialog(this, "The file specified in the GMT text field does not exist.");
+                    return false;
+                }
+                else
+                    params.setGMTFileName(GMTFileNameTextField.getText());
+            }
+         }
+
+        if(params.isData()){
+            if(!params.getGCTFileName1().equalsIgnoreCase(GCTFileName1TextField.getText())){
+                int answer = JOptionPane.showConfirmDialog(this,"The GCT file name 1 has been modified from the original one loaded.  Would you like to use the original file specified??","File changed",JOptionPane.YES_NO_OPTION);
+                if(!(answer == JOptionPane.YES_OPTION)){
+                    if(GCTFileName1TextField.getText().equalsIgnoreCase("")){
+                        int answer2 = JOptionPane.showConfirmDialog(this, "The Data file name has been erased would you like to clear this field?","File deleted",JOptionPane.YES_NO_OPTION);
+                        if(answer2 == JOptionPane.YES_OPTION){
+                            params.setData(false);
+                            params.setGCTFileName1("");
+                        }
+                    }
+                    else if(checkFile(GCTFileName1TextField.getText()) == Color.RED){
+                        JOptionPane.showMessageDialog(this, "The file specified in the GCT text field 1 does not exist.");
+                        return false;
+                    }else
+                        params.setGCTFileName1(GCTFileName1TextField.getText());
+                }
+            }
+        }
+        if(params.isData2()){
+            if(!params.getGCTFileName2().equalsIgnoreCase(GCTFileName2TextField.getText())){
+                int answer = JOptionPane.showConfirmDialog(this,"The GCT file name 2 has been modified from the original one loaded.  Would you like to use the original file specified??","File changed",JOptionPane.YES_NO_OPTION);
+                if(!(answer == JOptionPane.YES_OPTION)){
+                    if(GCTFileName2TextField.getText().equalsIgnoreCase("")){
+                        int answer2 = JOptionPane.showConfirmDialog(this, "The Data 2 file name has been erased would you like to clear this field?","File deleted",JOptionPane.YES_NO_OPTION);
+                        if(answer2 == JOptionPane.YES_OPTION){
+                            params.setData2(false);
+                            params.setGCTFileName2("");
+                        }
+                    }
+                    else if(checkFile(GCTFileName2TextField.getText()) == Color.RED){
+                        JOptionPane.showMessageDialog(this, "The file specified in the GCT text field 2 does not exist.");
+                        return false;
+                    }
+                    else
+                        params.setGCTFileName2(GCTFileName2TextField.getText());
+                }
+            }
+        }
+
+
+        if(this.checkResultsFiles())
+            return true;
+        else
+            return false;
+
+
+    }
+
+    public boolean checkResultsFiles(){
+
+          if(!params.getEnrichmentDataset1FileName1().equalsIgnoreCase( Dataset1FileNameTextField.getText())){
+            int answer = JOptionPane.showConfirmDialog(this,"The Dataset 1 Filename has been modified from the original one loaded.  Would you like to use the original file specified??","File changed",JOptionPane.YES_NO_OPTION) ;
+            if(!(answer == JOptionPane.YES_OPTION))
+                if(checkFile( Dataset1FileNameTextField.getText()) == Color.RED){
+                    JOptionPane.showMessageDialog(this, "The file specified in the Dataset 1 file 1 does not exist.");
+                    return false;
+                }
+                else
+                    params.setEnrichmentDataset1FileName1(Dataset1FileNameTextField.getText());
+         }
+
+
+        if(isTwoDatasets()){
+            if(!params.getEnrichmentDataset2FileName1().equalsIgnoreCase( Dataset2FileNameTextField.getText())){
+                int answer = JOptionPane.showConfirmDialog(this,"The Dataset 2 Filename has been modified from the original one loaded.  Would you like to use the original file specified??","File changed",JOptionPane.YES_NO_OPTION);
+                if(!(answer == JOptionPane.YES_OPTION))
+                    if(checkFile( Dataset2FileNameTextField.getText()) == Color.RED){
+                        JOptionPane.showMessageDialog(this, "The file specified in the Dataset 2 file 1 does not exist.");
+                        return false;
+                    }
+                    else
+                        params.setEnrichmentDataset2FileName1(Dataset2FileNameTextField.getText());
+            }
+
+
+        }
+        return true;
+
+    }
+
     public void enableImport(){
         importButton.setEnabled(true);
     }
@@ -808,8 +918,29 @@ public class GenericInputFilesPanel extends JDialog {
         params.setEnrichmentDataset2FileName2(name);
     }
 
+     public String getGSEADataset1FileName1(){
+        return params.getEnrichmentDataset1FileName1();
+    }
+
+    public String getGSEADataset1FileName2(){
+        return params.getEnrichmentDataset1FileName2();
+    }
+
+
+    public String getGSEADataset2FileName1(){
+        return params.getEnrichmentDataset2FileName1();
+    }
+
+    public String getGSEADataset2FileName2(){
+        return params.getEnrichmentDataset2FileName2();
+    }
+
     public void setTwoDatasets(boolean datasets){
         params.setTwoDatasets(datasets);
+    }
+
+    public boolean isTwoDatasets(){
+        return params.isTwoDatasets();
     }
 
     public boolean isGCTFileSelected() {

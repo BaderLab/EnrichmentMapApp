@@ -74,6 +74,12 @@ public class BuildGSEAEnrichmentMapTask implements Task {
             gseaResultsFilesDataset1File2.run();
             //boolean success1b = TaskManager.executeTask(gseaResultsFilesDataset1File2, config);
 
+            //check to see if we have ranking files
+            if(params.getDataset1RankedFile() != null){
+                RanksFileReaderTask ranking1 = new RanksFileReaderTask(params,params.getDataset1RankedFile(),1,taskMonitor);
+                ranking1.run();
+            }
+
             //Load the second dataset only if there is a second dataset to load
             if (params.isTwoDatasets()){
                 //Dataset2
@@ -83,6 +89,12 @@ public class BuildGSEAEnrichmentMapTask implements Task {
                 GSEAResultFileReaderTask gseaResultsFilesDataset2File2 = new GSEAResultFileReaderTask(params,taskMonitor,  params.getEnrichmentDataset2FileName2(), 2);
                 gseaResultsFilesDataset2File2.run();
                 //boolean success2b = TaskManager.executeTask(gseaResultsFilesDataset2File2, config);
+                //check to see if we have ranking files
+                if(params.getDataset2RankedFile() != null){
+                    RanksFileReaderTask ranking2 = new RanksFileReaderTask(params,params.getDataset2RankedFile(),2,taskMonitor);
+                    ranking2.run();
+                }
+
             }
 
             //Initialize the set of genesets and GSEA results that we want to compute over

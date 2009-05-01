@@ -16,6 +16,10 @@ public class HeatMapParameters {
       private boolean rowNorm = false;
       private boolean logtransform = false;
 
+      private int num_ranks = 0;
+      private boolean rank_dataset1 = false;
+      private boolean rank_dataset2 = false;
+
       private double minExpression;
       private double maxExpression;
       private double minExpression_rownorm;
@@ -87,6 +91,48 @@ public class HeatMapParameters {
 
       }
 
+    public JPanel createRankOptionsPanel(){
+       JPanel RankOptions = new JPanel();
+        RankOptions.setLayout(new GridLayout(3,1));
+
+        JRadioButton noSort;
+        JRadioButton RankDataset1;
+        JRadioButton RankDataset2;
+        ButtonGroup rankView;
+
+        noSort = new JRadioButton("No Sorting");
+        noSort.setActionCommand("noSort");
+        RankDataset1 = new JRadioButton("Sort by Dataset1 Rank");
+        RankDataset1.setActionCommand("dataset1");
+        RankDataset2 = new JRadioButton("Sort by Dataset2 Rank");
+        RankDataset2.setActionCommand("dataset2");
+
+        if(rank_dataset1)
+            RankDataset1.setSelected(true);
+        else if(rank_dataset2)
+             RankDataset2.setSelected(true);
+        else
+            noSort.setSelected(true);
+
+         rankView = new javax.swing.ButtonGroup();
+         rankView.add(noSort);
+         rankView.add(RankDataset1);
+
+
+        noSort.addActionListener(new selectDataViewActionListener(edgeOverlapPanel, nodeOverlapPanel,this));
+        RankDataset1.addActionListener(new selectDataViewActionListener(edgeOverlapPanel, nodeOverlapPanel,this));
+
+        RankOptions.add(noSort);
+        RankOptions.add(RankDataset1);
+
+        if(num_ranks == 2){
+            rankView.add(RankDataset2);
+            RankDataset2.addActionListener(new selectDataViewActionListener(edgeOverlapPanel, nodeOverlapPanel,this));
+            RankOptions.add(RankDataset2);
+        }
+
+        return RankOptions;
+    }
 
     public JPanel createHeatMapOptionsPanel(){
 
@@ -165,5 +211,29 @@ public class HeatMapParameters {
 
     public void setLogtransform(boolean logtransform) {
         this.logtransform = logtransform;
+    }
+
+    public boolean isRank_dataset1() {
+        return rank_dataset1;
+    }
+
+    public void setRank_dataset1(boolean rank_dataset1) {
+        this.rank_dataset1 = rank_dataset1;
+    }
+
+    public boolean isRank_dataset2() {
+        return rank_dataset2;
+    }
+
+    public void setRank_dataset2(boolean rank_dataset2) {
+        this.rank_dataset2 = rank_dataset2;
+    }
+
+    public int getNum_ranks() {
+        return num_ranks;
+    }
+
+    public void setNum_ranks(int num_ranks) {
+        this.num_ranks = num_ranks;
     }
 }
