@@ -191,18 +191,20 @@ public class ParametersPanel extends JPanel {
     }
 
     private String shortenPathname (String pathname){
+        if(pathname != null){
+            String[] tokens = pathname.split("\\"+File.separator);
 
-        String[] tokens = pathname.split("\\"+File.separator);
+            int num_tokens = tokens.length;
 
-        int num_tokens = tokens.length;
+            String new_pathname;
+            if(num_tokens >=2)
+                new_pathname = "..." + File.separator + tokens[num_tokens -2] + File.separator + tokens[num_tokens -1];
+            else
+                new_pathname = pathname;
 
-        String new_pathname;
-        if(num_tokens >=2)
-            new_pathname = "..." + File.separator + tokens[num_tokens -2] + File.separator + tokens[num_tokens -1];
-        else
-            new_pathname = pathname;
-
-        return new_pathname;
+            return new_pathname;
+        }
+        return pathname;
 
     }
 
