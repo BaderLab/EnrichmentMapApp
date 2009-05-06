@@ -185,7 +185,7 @@ public class GSEAInputFilesPanelMac extends GenericInputFilesPanel {
 
         if(file != null) {
                 Dataset1FileNameTextField.setForeground(checkFile(file.getAbsolutePath()));
-                Dataset1FileNameTextField.setText(file.getName() );
+                Dataset1FileNameTextField.setText(file.getAbsolutePath() );
                 setGSEADataset1FileName1(file.getAbsolutePath());
                 Dataset1FileNameTextField.setToolTipText(file.getAbsolutePath() );
 
@@ -215,7 +215,7 @@ public class GSEAInputFilesPanelMac extends GenericInputFilesPanel {
         if(file != null) {
 
                 Dataset1FileName2TextField.setForeground(checkFile(file.getAbsolutePath()));
-                Dataset1FileName2TextField.setText(file.getName() );
+                Dataset1FileName2TextField.setText(file.getAbsolutePath() );
 
                 setGSEADataset1FileName2(file.getAbsolutePath());
                 Dataset1FileName2TextField.setToolTipText(file.getAbsolutePath() );
@@ -244,7 +244,7 @@ public class GSEAInputFilesPanelMac extends GenericInputFilesPanel {
 
         if(file != null) {
                  Dataset2FileNameTextField.setForeground(checkFile(file.getAbsolutePath()));
-                 Dataset2FileNameTextField.setText(file.getName() );
+                 Dataset2FileNameTextField.setText(file.getAbsolutePath() );
                  setGSEADataset2FileName1(file.getAbsolutePath());
                  Dataset2FileNameTextField.setToolTipText(file.getAbsolutePath() );
                  if ( isGMTFileSelected() && isGCTFileSelected() && isDataset1FileSelected()){
@@ -269,7 +269,7 @@ public class GSEAInputFilesPanelMac extends GenericInputFilesPanel {
 
         if(file != null) {
                  Dataset2FileName2TextField.setForeground(checkFile(file.getAbsolutePath()));
-                 Dataset2FileName2TextField.setText(file.getName() );
+                 Dataset2FileName2TextField.setText(file.getAbsolutePath() );
                  setGSEADataset2FileName2(file.getAbsolutePath());
                  Dataset2FileName2TextField.setToolTipText(file.getAbsolutePath() );
                  if ( isGMTFileSelected() && isGCTFileSelected() && isDataset1FileSelected()){

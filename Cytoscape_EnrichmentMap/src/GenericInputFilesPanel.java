@@ -694,19 +694,32 @@ public class GenericInputFilesPanel extends JDialog {
 
         //check to see if the rpt file path is the same as the one specified in the
         //rpt file.
-        //if it isn't then assume that the rpt file is in the same directory as the
-        //output files and the path of those files has changed accordingly
+        //if it isn't then assume that the rpt file has the right file names but if the files specified in the rpt
+        //don't exist then use the path for the rpt to change the file paths.
+
         String results1 = "";
          String results2 = "";
         String ranks = "";
 
+
+
         if(!(file.getAbsolutePath().substring(0,(file.getAbsolutePath()).lastIndexOf(File.separator))).equalsIgnoreCase(out_dir)){
 
-            //trim the last File Separator
-            out_dir = file.getAbsolutePath().substring(0,file.getAbsolutePath().lastIndexOf(File.separator));
-            results1 = out_dir + File.separator + "gsea_report_for_" + phenotype1 + "_" + timestamp + ".xls";
-            results2 = out_dir + File.separator + "gsea_report_for_" + phenotype2 + "_" + timestamp + ".xls";
-            ranks = out_dir + File.separator + "ranked_gene_list_" + phenotype1 + "_versus_" + phenotype2 +"_" + timestamp + ".xls";
+            //check to see if the files in the rpt file exist
+            results1 = "" + out_dir + File.separator + label + "."+ method + "." + timestamp + File.separator + "gsea_report_for_" + phenotype1 + "_" + timestamp + ".xls";
+            results2 = "" + out_dir + File.separator + label + "."+ method + "." + timestamp + File.separator + "gsea_report_for_" + phenotype2 + "_" + timestamp + ".xls";
+            ranks = "" + out_dir + File.separator + label + "."+ method + "." + timestamp + File.separator + "ranked_gene_list_" + phenotype1 + "_versus_" + phenotype2 +"_" + timestamp + ".xls";
+
+            if((checkFile(results1) == Color.BLACK) && (checkFile(results2) == Color.BLACK) && (checkFile(ranks) == Color.BLACK)){
+
+            }
+            else{
+                //trim the last File Separator
+                out_dir = file.getAbsolutePath().substring(0,file.getAbsolutePath().lastIndexOf(File.separator));
+                results1 = out_dir + File.separator + "gsea_report_for_" + phenotype1 + "_" + timestamp + ".xls";
+                results2 = out_dir + File.separator + "gsea_report_for_" + phenotype2 + "_" + timestamp + ".xls";
+                ranks = out_dir + File.separator + "ranked_gene_list_" + phenotype1 + "_versus_" + phenotype2 +"_" + timestamp + ".xls";
+            }
         }
         else{
             results1 = "" + out_dir + File.separator + label + "."+ method + "." + timestamp + File.separator + "gsea_report_for_" + phenotype1 + "_" + timestamp + ".xls";
