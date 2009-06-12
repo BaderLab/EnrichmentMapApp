@@ -128,7 +128,7 @@ public class EnrichmentMapVisualStyle {
         nodeAppear.set(VisualPropertyType.NODE_SHAPE, NodeShape.ELLIPSE);
         nodeAppear.set(VisualPropertyType.NODE_SIZE, new Double(35.0));
         nodeAppCalc.setDefaultAppearance(nodeAppear);
-
+        
         // Passthrough Mapping - set node label
         PassThroughMapping pm = new PassThroughMapping(new String(), prefix + EnrichmentMapVisualStyle.FORMATTED_NAME);
         Calculator nlc = new BasicCalculator(prefix +"nodeLabel",
