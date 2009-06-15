@@ -14,6 +14,7 @@ import giny.view.EdgeView;
 
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
+import javax.swing.*;
 
 /**
  * Created by
@@ -25,7 +26,7 @@ public class SliderBarActionListener implements ChangeListener {
 
 
     private SliderBarPanel panel;
-    private NumberRangeModel rangeModel;
+   // private NumberRangeModel rangeModel;
     private EnrichmentMapParameters params;
     //private CyNetwork network;
     //private int[] nodes;
@@ -35,21 +36,29 @@ public class SliderBarActionListener implements ChangeListener {
     private String attrib_dataset1;
     private String attrib_dataset2;
 
+
     public SliderBarActionListener(SliderBarPanel panel, EnrichmentMapParameters params, String attrib1, String attrib2) {
         this.panel = panel;
         this.params = params;
-        rangeModel = panel.getRangeModel();
+        //rangeModel = panel.getRangeModel();
         hiddenNodes = new ArrayList();
         hiddenEdges = new ArrayList();
 
         attrib_dataset1 = attrib1;
         attrib_dataset2 = attrib2;
+
     }
 
     public void stateChanged(ChangeEvent e){
 
-        Double max_cutoff = (Double) rangeModel.getHighValue();
-        Double min_cutoff = (Double) rangeModel.getLowValue();
+        JSlider source = (JSlider)e.getSource();
+        Double max_cutoff = source.getValue()/panel.getPrecision();
+        Double min_cutoff = source.getMinimum()/panel.getPrecision();
+
+        panel.setLabel(source.getValue());
+
+        //Double max_cutoff = (Double) rangeModel.getHighValue();
+        //Double min_cutoff = (Double) rangeModel.getLowValue();
         CyNetwork network = Cytoscape.getCurrentNetwork();
         CyNetworkView view = Cytoscape.getCurrentNetworkView();
         CyAttributes attributes = Cytoscape.getNodeAttributes();
