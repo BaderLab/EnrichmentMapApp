@@ -38,6 +38,9 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
 
     private final CytoPanel cytoPanel;
     private final CytoPanel cytoSidePanel;
+    
+    public static String disable_heatmap_autofocus = Enrichment_Map_Plugin.cyto_prop.getProperty("EnrichmentMap_disable_heatmap_autofocus", "false");
+
 
     public EnrichmentMapActionListener(EnrichmentMapParameters params) {
         this.params = params;
@@ -137,7 +140,9 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
 
       if(params.isData()){
         edgeOverlapPanel.updatePanel(params);
-        cytoPanel.setSelectedIndex(cytoPanel.indexOfComponent(edgeOverlapPanel));
+        if ( ! disable_heatmap_autofocus.equalsIgnoreCase("TRUE") ) {
+        	cytoPanel.setSelectedIndex(cytoPanel.indexOfComponent(edgeOverlapPanel));
+        }
         edgeOverlapPanel.revalidate();
 
       }
@@ -152,7 +157,9 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
 
         if(params.isData()){
             nodeOverlapPanel.updatePanel(params);
-            cytoPanel.setSelectedIndex(cytoPanel.indexOfComponent(nodeOverlapPanel));
+            if ( ! disable_heatmap_autofocus.equalsIgnoreCase("TRUE") ) {
+            	cytoPanel.setSelectedIndex(cytoPanel.indexOfComponent(nodeOverlapPanel));
+            }
             nodeOverlapPanel.revalidate();
         }
 
@@ -163,8 +170,10 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
         if(params.isData()){
             nodeOverlapPanel.clearPanel();
             edgeOverlapPanel.clearPanel();
-            cytoPanel.setSelectedIndex(cytoPanel.indexOfComponent(nodeOverlapPanel));
-            cytoPanel.setSelectedIndex(cytoPanel.indexOfComponent(edgeOverlapPanel));
+            if ( ! disable_heatmap_autofocus.equalsIgnoreCase("TRUE") ) {
+	            cytoPanel.setSelectedIndex(cytoPanel.indexOfComponent(nodeOverlapPanel));
+	            cytoPanel.setSelectedIndex(cytoPanel.indexOfComponent(edgeOverlapPanel));
+            }
         }
     }
 }

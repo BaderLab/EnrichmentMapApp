@@ -16,10 +16,12 @@ import java.io.FileReader;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Properties;
 
 
 public class Enrichment_Map_Plugin extends CytoscapePlugin {
-
+	static Properties cyto_prop ;
+	
     /*--------------------------------------------------------------
       CONSTRUCTOR.
       --------------------------------------------------------------*/
@@ -45,6 +47,8 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
 
        menu.add(submenu);
 
+       //load Cytoscape properties
+       Enrichment_Map_Plugin.cyto_prop = CytoscapeInit.getProperties() ;
 
     }
 

@@ -55,9 +55,12 @@ public class GenericInputFilesPanel extends JDialog {
     public static String gmt_instruction = "Please select the Gene Set file (.gmt)...";
     public static String pvalue_instruction = "P-value cut-off (Only genesets with p-value less than this value will be included)";
     public static String qvalue_instruction = "FDR Q-value cut-off (Only genesets with fdr q-value less than this value will be included)";
-    public static String pvalue_default = "0.05";
-    public static String qvalue_default = "0.25";
-    public static String jaccard_default = "0.50";
+
+    public static String pvalue_default = Enrichment_Map_Plugin.cyto_prop.getProperty("EnrichmentMap_default_pvalue", "0.05");
+    public static String qvalue_default = Enrichment_Map_Plugin.cyto_prop.getProperty("EnrichmentMap_default_qvalue", "0.25");
+    public static String jaccard_default = Enrichment_Map_Plugin.cyto_prop.getProperty("EnrichmentMap_default_jaccard", "0.25");
+    public static String overlap_default = Enrichment_Map_Plugin.cyto_prop.getProperty("EnrichmentMap_default_overlap", "0.50");
+    public static String overlap_metric_default = Enrichment_Map_Plugin.cyto_prop.getProperty("EnrichmentMap_default_overlap_metric", "jaccard");
 
 
     public GenericInputFilesPanel(java.awt.Frame parent, boolean modal) {
@@ -333,9 +336,17 @@ public class GenericInputFilesPanel extends JDialog {
 
         jaccard = new javax.swing.JRadioButton("Jaccard Coeffecient");
         jaccard.setActionCommand("jaccard");
-        jaccard.setSelected(true);
         overlap = new javax.swing.JRadioButton("Overlap Coeffecient");
         overlap.setActionCommand("overlap");
+        if ( overlap_metric_default.equalsIgnoreCase("overlap") ){
+        	//select overlap
+        	overlap.setSelected(true);
+        	jaccard.setSelected(false);
+        } else {
+        	//select jaccard
+        	overlap.setSelected(false);
+        	jaccard.setSelected(true);
+        }
         jaccardOrOverlap = new javax.swing.ButtonGroup();
         jaccardOrOverlap.add(jaccard);
         jaccardOrOverlap.add(overlap);
@@ -388,7 +399,14 @@ public class GenericInputFilesPanel extends JDialog {
         c.gridy = current_row;
         jaccardLabel.setFont(new java.awt.Font("Dialog", 1, 10));
         jaccardLabel.setText("Cut-off");
-        jaccardTextField.setText(jaccard_default);
+        if ( overlap_metric_default.equalsIgnoreCase("overlap") ){
+        	// use overlap_default
+        	jaccardTextField.setText(overlap_default);
+        } else {
+        	// use jaccard_default
+        	jaccardTextField.setText(jaccard_default);
+        }        
+        
         gridbag.setConstraints(jaccard,c);
         add(jaccard);
         c.gridx = 1;
