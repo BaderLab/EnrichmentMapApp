@@ -9,10 +9,14 @@ import cytoscape.data.readers.TextFileReader;
 
 
 import javax.swing.*;
+
 import java.io.File;
 import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -20,7 +24,9 @@ import java.util.Properties;
 
 
 public class Enrichment_Map_Plugin extends CytoscapePlugin {
+	static Properties build_props = new Properties();
 	static Properties cyto_prop ;
+	static String buildId ;
 	
     /*--------------------------------------------------------------
       CONSTRUCTOR.
@@ -45,10 +51,33 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
         item.addActionListener(new LoadGenericPanelAction());
         submenu.add(item);
 
+        //About Box
+        item = new JMenuItem("About");
+        item.addActionListener(new ShowAboutPanelAction());
+        submenu.add(item);
+
        menu.add(submenu);
 
        //load Cytoscape properties
        Enrichment_Map_Plugin.cyto_prop = CytoscapeInit.getProperties() ;
+       
+       // read buildId properties:
+       try {
+    	   Enrichment_Map_Plugin.build_props = getPropertiesFromClasspath("buildID.props");
+		} catch (IOException e) {
+			// TODO: write Warning "Could not load 'buildID.props' - using default settings"
+			Enrichment_Map_Plugin.build_props.setProperty("build.number", "0");
+			Enrichment_Map_Plugin.build_props.setProperty("svn.revision", "0");
+			Enrichment_Map_Plugin.build_props.setProperty("build.user", "user");
+			Enrichment_Map_Plugin.build_props.setProperty("build.host", "host");
+			Enrichment_Map_Plugin.build_props.setProperty("build.timestemp", "1900/01/01 00:00:00 +0000 (GMT)");
+		}
+
+		Enrichment_Map_Plugin.buildId =  "Build: " + Enrichment_Map_Plugin.build_props.getProperty("build.number") +
+						  " from SVN: " + Enrichment_Map_Plugin.build_props.getProperty("svn.revision") +
+								" by: " + Enrichment_Map_Plugin.build_props.getProperty("build.user") + "@" + Enrichment_Map_Plugin.build_props.getProperty("build.host") +
+								" at: " + Enrichment_Map_Plugin.build_props.getProperty("build.timestamp") ;
+
 
     }
 
@@ -317,6 +346,21 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
 		}
 
     }
+    
+    private Properties getPropertiesFromClasspath(String propFileName) throws IOException {
+        // loading properties file from the classpath
+        Properties props = new Properties();
+        InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream(propFileName);
+
+        if (inputStream == null) {
+            throw new FileNotFoundException("property file '" + propFileName
+                + "' not found in the classpath");
+        }
+
+        props.load(inputStream);
+        return props;
+    }
+
 
 }
 
