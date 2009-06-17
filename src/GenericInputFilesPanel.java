@@ -56,11 +56,11 @@ public class GenericInputFilesPanel extends JDialog {
     public static String pvalue_instruction = "P-value cut-off (Only genesets with p-value less than this value will be included)";
     public static String qvalue_instruction = "FDR Q-value cut-off (Only genesets with fdr q-value less than this value will be included)";
 
-    public static String pvalue_default = Enrichment_Map_Plugin.cyto_prop.getProperty("EnrichmentMap_default_pvalue", "0.05");
-    public static String qvalue_default = Enrichment_Map_Plugin.cyto_prop.getProperty("EnrichmentMap_default_qvalue", "0.25");
-    public static String jaccard_default = Enrichment_Map_Plugin.cyto_prop.getProperty("EnrichmentMap_default_jaccard", "0.25");
-    public static String overlap_default = Enrichment_Map_Plugin.cyto_prop.getProperty("EnrichmentMap_default_overlap", "0.50");
-    public static String overlap_metric_default = Enrichment_Map_Plugin.cyto_prop.getProperty("EnrichmentMap_default_overlap_metric", "jaccard");
+    public static String pvalue_default  = Enrichment_Map_Plugin.cyto_prop.getProperty("EnrichmentMap.default_pvalue",  "0.05");
+    public static String qvalue_default  = Enrichment_Map_Plugin.cyto_prop.getProperty("EnrichmentMap.default_qvalue",  "0.25");
+    public static String jaccard_default = Enrichment_Map_Plugin.cyto_prop.getProperty("EnrichmentMap.default_jaccard", "0.25");
+    public static String overlap_default = Enrichment_Map_Plugin.cyto_prop.getProperty("EnrichmentMap.default_overlap", "0.50");
+    public static String overlap_metric_default = Enrichment_Map_Plugin.cyto_prop.getProperty("EnrichmentMap.default_overlap_metric", "jaccard");
 
 
     public GenericInputFilesPanel(java.awt.Frame parent, boolean modal) {
@@ -342,10 +342,12 @@ public class GenericInputFilesPanel extends JDialog {
         	//select overlap
         	overlap.setSelected(true);
         	jaccard.setSelected(false);
+        	params.setJaccard(false);
         } else {
-        	//select jaccard
+        	//select Jaccard
         	overlap.setSelected(false);
         	jaccard.setSelected(true);
+        	params.setJaccard(true);
         }
         jaccardOrOverlap = new javax.swing.ButtonGroup();
         jaccardOrOverlap.add(jaccard);

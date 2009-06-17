@@ -39,7 +39,8 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
     private final CytoPanel cytoPanel;
     private final CytoPanel cytoSidePanel;
     
-    public static String disable_heatmap_autofocus = Enrichment_Map_Plugin.cyto_prop.getProperty("EnrichmentMap_disable_heatmap_autofocus", "false");
+    public static String disable_heatmap_autofocus = Enrichment_Map_Plugin.cyto_prop.getProperty("EnrichmentMap.disable_heatmap_autofocus", "false");
+    public static String disable_genesetSummary_autofocus = Enrichment_Map_Plugin.cyto_prop.getProperty("EnrichmentMap.disable_genesetSummary_autofocus", "false");
 
 
     public EnrichmentMapActionListener(EnrichmentMapParameters params) {
@@ -135,7 +136,8 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
   public void createEdgesData(){
 
       summaryPanel.updateEdgeInfo(Edges.toArray());
-      cytoSidePanel.setSelectedIndex(cytoSidePanel.indexOfComponent(summaryPanel));
+      if ( ! disable_genesetSummary_autofocus.equalsIgnoreCase("TRUE") )
+    	  cytoSidePanel.setSelectedIndex(cytoSidePanel.indexOfComponent(summaryPanel));
       summaryPanel.revalidate();
 
       if(params.isData()){
@@ -152,7 +154,8 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
   private void createNodesData(){
 
         summaryPanel.updateNodeInfo(Nodes.toArray());
-        cytoSidePanel.setSelectedIndex(cytoSidePanel.indexOfComponent(summaryPanel));
+        if ( ! disable_genesetSummary_autofocus.equalsIgnoreCase("TRUE") ) 
+        	cytoSidePanel.setSelectedIndex(cytoSidePanel.indexOfComponent(summaryPanel));
         summaryPanel.revalidate();
 
         if(params.isData()){
