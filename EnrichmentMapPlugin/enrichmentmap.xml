@@ -116,7 +116,7 @@
 	</target>
 
 	<target name="jars" depends="compile.module.enrichment_map.production, buildID" description="Creates jar file for enrichment_map">
-		<!--	<copy file="${module.enrichment_map.basedir}/plugin.props" todir="${enrichment_map.output.dir}" />	-->
+		<copy file="${module.enrichment_map.basedir}/plugin.props" todir="${enrichment_map.output.dir}" />
 		<property file="${enrichment_map.output.dir}/buildID.props" />
 		<echo message="Build: ${build.number} from SVN: ${svn.revision} by: ${build.user}@${build.host} at: ${build.timestamp}" />
 
