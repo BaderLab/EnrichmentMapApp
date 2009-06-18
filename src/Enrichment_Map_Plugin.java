@@ -25,6 +25,7 @@ import java.util.Properties;
 
 public class Enrichment_Map_Plugin extends CytoscapePlugin {
 	static Properties build_props = new Properties();
+	static Properties plugin_props = new Properties();
 	static Properties cyto_prop ;
 	static String buildId ;
 	
@@ -78,6 +79,11 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
 								" by: " + Enrichment_Map_Plugin.build_props.getProperty("build.user") + "@" + Enrichment_Map_Plugin.build_props.getProperty("build.host") +
 								" at: " + Enrichment_Map_Plugin.build_props.getProperty("build.timestamp") ;
 
+       try {
+    	   Enrichment_Map_Plugin.plugin_props = getPropertiesFromClasspath("plugin.props");
+		} catch (IOException e) {
+			// TODO: write Warning "Could not load 'plugin.props' - using default settings"
+		}
 
     }
 
