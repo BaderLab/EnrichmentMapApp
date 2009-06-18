@@ -24,7 +24,7 @@ public class ShowAboutPanelAction extends CytoscapeAction {
 	public void actionPerformed(ActionEvent event) {
 
 		// open new dialog
-		AboutPanel aboutPanel = new AboutPanel(Cytoscape.getDesktop(), true);
+		AboutPanel aboutPanel = new AboutPanel( );
 		aboutPanel.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		aboutPanel.pack();
 		aboutPanel.setLocationRelativeTo(Cytoscape.getDesktop());

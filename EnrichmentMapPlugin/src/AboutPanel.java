@@ -1,8 +1,11 @@
 import java.awt.*;
 import java.awt.event.*;
-
+import java.net.URL;
 import javax.swing.*;
-
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
+import javax.swing.text.html.HTMLEditorKit;
+import cytoscape.*;
 import cytoscape.util.*;
 
 /**
@@ -15,84 +18,52 @@ import cytoscape.util.*;
  */
 public class AboutPanel extends JDialog {
 	String pluginUrl = "http://www.baderlab.org/Software/EnrichmentMaps/";
+	String pluginVersion = Enrichment_Map_Plugin.plugin_props.getProperty("pluginVersion", "0.1");
 	
-	/**
-	 * Constructor
-	 * @param owner
-	 * @param modal
-	 * @throws HeadlessException
-	 */
-	public AboutPanel(Frame owner, boolean modal) throws HeadlessException {
-		super(owner, modal);
-		initComponents();
-		pack();
+	public AboutPanel() {
+	    super(Cytoscape.getDesktop(), "About Enrichment Map", false);
+	    setResizable(false);
+	
+	    //main panel for dialog box
+	    JEditorPane editorPane = new JEditorPane();
+	    editorPane.setMargin(new Insets(10,10,10,10));
+	    editorPane.setEditable(false);
+	    editorPane.setEditorKit(new HTMLEditorKit());
+	    editorPane.addHyperlinkListener(new HyperlinkAction(editorPane));
+	
+	    
+	    editorPane.setText(
+	            "<html><body><p align=center><b>Enrichment Map v" +  pluginVersion + " </b><BR>" +
+	            "A Cytoscape Plugin<BR>" +
+	            "<BR>" +
+	            "by Gary Bader, Daniele Merico, Ruth Isserlin and Oliver Stueker<BR>" +
+	            "(<a href='http://www.baderlab.org/'>Bader Lab</a>, University of Toronto)<BR>" +
+	            "<BR>" +
+	            "Plugin Homepage:<BR>" +
+	            "<a href='http://www.baderlab.org/Software/EnrichmentMap'>http://www.baderlab.org/Software/EnrichmentMap</a><BR>" +
+	            "<BR>" +
+	            "If you use this plugin in your research, please cite:<BR>" +
+	            "Merico D, Isserlin R, Stueker O, Emili A, Bader GD<BR>" +
+	            "Enrichment Map: a network-based method for <BR>" +
+	            "gene-set enrichment visualization and interpretation<BR>" +
+	            "<i>in preparation</i><BR>" +
+	            "<BR>" +
+	            "<font size='-1'>" + Enrichment_Map_Plugin.buildId + "</font>" +
+	            "</p></body></html>");
+	    setContentPane(editorPane);
 	}
+
+	private class HyperlinkAction implements HyperlinkListener {
+	    JEditorPane pane;
 	
-	/**
-	 * Content of About Panel
-	 */
-	public void initComponents() {
-		this.setDefaultCloseOperation( JDialog.DISPOSE_ON_CLOSE );
-
-		// Window Title
-		this.setTitle("About EnrichmentMap Plugin");
-
-		// Buttons and ActionListeners
-		ActionListener openPluginHomeInBrowser = new ActionListener() { 
-			public void actionPerformed( ActionEvent e ) { 
-				OpenBrowser.openURL(pluginUrl); 
-			} 
-		}; 
-		JButton button1 = new JButton("Visit Plugin Homepage");
-		button1.addActionListener(openPluginHomeInBrowser) ;
-
-		ActionListener disposeWindowAction = new ActionListener() { 
-			public void actionPerformed( ActionEvent e ) { 
-				dispose(); 
-			} 
-		}; 
-		JButton button2 = new JButton("Close");
-		button2.addActionListener(disposeWindowAction) ;
-
-		// Box container
-		Box box = new Box(BoxLayout.Y_AXIS);
-
-		// Header
-		JPanel p1 = new JPanel();
-		p1.setLayout(new FlowLayout());
-		p1.add( new JLabel("<html><h1>Enrichment Map Plugin</h1></html>" ) );
-		box.add( p1 );
-
-		// Plugin Description
-		//TODO: write Plugin Description
-		
-		
-		// Link to Homepage
-		JPanel p3 = new JPanel();
-		p3.setLayout(new FlowLayout());
-		p3.add( new JLabel("<html>For more Information visit <a href=\"" + pluginUrl + "\" target=\"_blank\">" + pluginUrl + "</a></html>" ) );
-		box.add( p3 );
-		
-		// Version Info
-		//TODO: Check local properties to show either Version Info (default) or BuildID  
-		JPanel p4 = new JPanel();
-		p4.setLayout(new FlowLayout());
-		p4.add( new JLabel(Enrichment_Map_Plugin.buildId));
-		box.add( p4 );
-
-		// Visit Homepage and Close buttons
-		JPanel p5 = new JPanel();
-		p5.setLayout(new FlowLayout());
-		p5.add(button1);
-		p5.add(new JPanel());
-		p5.add(button2);
-		box.add( p5 ); 
-
-		this.add( box);
-		this.pack();
-//		this.setSize(500,300);
-		
-	}
+	    public HyperlinkAction(JEditorPane pane) {
+	        this.pane = pane;
+	    }
 	
-
+	    public void hyperlinkUpdate(HyperlinkEvent event) {
+	        if (event.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+	            cytoscape.util.OpenBrowser.openURL(event.getURL().toString());
+	        }
+	    }
+	}	
 }
