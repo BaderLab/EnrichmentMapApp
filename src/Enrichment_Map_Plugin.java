@@ -24,11 +24,11 @@ import java.util.Properties;
 
 
 public class Enrichment_Map_Plugin extends CytoscapePlugin {
-	static Properties build_props = new Properties();
-	static Properties plugin_props = new Properties();
-	static Properties cyto_prop ;
-	static String buildId ;
-	
+    static Properties build_props = new Properties();
+    static Properties plugin_props = new Properties();
+    static Properties cyto_prop ;
+    static String buildId ;
+
     /*--------------------------------------------------------------
       CONSTRUCTOR.
       --------------------------------------------------------------*/
@@ -57,33 +57,33 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
         item.addActionListener(new ShowAboutPanelAction());
         submenu.add(item);
 
-       menu.add(submenu);
+        menu.add(submenu);
 
-       //load Cytoscape properties
-       Enrichment_Map_Plugin.cyto_prop = CytoscapeInit.getProperties() ;
-       
-       // read buildId properties:
-       try {
-    	   Enrichment_Map_Plugin.build_props = getPropertiesFromClasspath("buildID.props");
-		} catch (IOException e) {
-			// TODO: write Warning "Could not load 'buildID.props' - using default settings"
-			Enrichment_Map_Plugin.build_props.setProperty("build.number", "0");
-			Enrichment_Map_Plugin.build_props.setProperty("svn.revision", "0");
-			Enrichment_Map_Plugin.build_props.setProperty("build.user", "user");
-			Enrichment_Map_Plugin.build_props.setProperty("build.host", "host");
-			Enrichment_Map_Plugin.build_props.setProperty("build.timestemp", "1900/01/01 00:00:00 +0000 (GMT)");
-		}
+        //load Cytoscape properties
+        Enrichment_Map_Plugin.cyto_prop = CytoscapeInit.getProperties() ;
 
-		Enrichment_Map_Plugin.buildId =  "Build: " + Enrichment_Map_Plugin.build_props.getProperty("build.number") +
-						  " from SVN: " + Enrichment_Map_Plugin.build_props.getProperty("svn.revision") +
-								" by: " + Enrichment_Map_Plugin.build_props.getProperty("build.user") + "@" + Enrichment_Map_Plugin.build_props.getProperty("build.host") +
-								" at: " + Enrichment_Map_Plugin.build_props.getProperty("build.timestamp") ;
+        // read buildId properties:
+        try {
+            Enrichment_Map_Plugin.build_props = getPropertiesFromClasspath("buildID.props");
+        } catch (IOException e) {
+            // TODO: write Warning "Could not load 'buildID.props' - using default settings"
+            Enrichment_Map_Plugin.build_props.setProperty("build.number", "0");
+            Enrichment_Map_Plugin.build_props.setProperty("svn.revision", "0");
+            Enrichment_Map_Plugin.build_props.setProperty("build.user", "user");
+            Enrichment_Map_Plugin.build_props.setProperty("build.host", "host");
+            Enrichment_Map_Plugin.build_props.setProperty("build.timestemp", "1900/01/01 00:00:00 +0000 (GMT)");
+        }
 
-       try {
-    	   Enrichment_Map_Plugin.plugin_props = getPropertiesFromClasspath("plugin.props");
-		} catch (IOException e) {
-			// TODO: write Warning "Could not load 'plugin.props' - using default settings"
-		}
+        Enrichment_Map_Plugin.buildId = "Build: " + Enrichment_Map_Plugin.build_props.getProperty("build.number") +
+                                        " from SVN: " + Enrichment_Map_Plugin.build_props.getProperty("svn.revision") +
+                                        " by: " + Enrichment_Map_Plugin.build_props.getProperty("build.user") + "@" + Enrichment_Map_Plugin.build_props.getProperty("build.host") +
+                                        " at: " + Enrichment_Map_Plugin.build_props.getProperty("build.timestamp") ;
+
+        try {
+            Enrichment_Map_Plugin.plugin_props = getPropertiesFromClasspath("plugin.props");
+        } catch (IOException e) {
+            // TODO: write Warning "Could not load 'plugin.props' - using default settings"
+        }
 
     }
 
@@ -105,7 +105,7 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
     }
 
     public void saveSessionStateFiles(List<File> pFileList){
-       // Create an empty file on system temp directory
+        // Create an empty file on system temp directory
 
         String tmpDir = System.getProperty("java.io.tmpdir");
         System.out.println("java.io.tmpdir: [" + tmpDir + "]");
@@ -125,7 +125,7 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
 
             File enrichmentresults1 = new File(tmpDir, name+".ENR1.txt");
             File enrichmentresults1Ofinterest = new File(tmpDir, name+".SubENR1.txt");
-            
+
             File enrichmentresults2;
             File enrichmentresults2Ofinterest;
             File expression1;
@@ -195,12 +195,12 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
 
     public void restoreSessionState(List<File> pStateFileList) {
 
-		if ((pStateFileList == null) || (pStateFileList.size() == 0)) {
-			//No previous state to restore
-			return;
-		}
+        if ((pStateFileList == null) || (pStateFileList.size() == 0)) {
+            //No previous state to restore
+            return;
+        }
 
-		try {
+        try {
             //go through the prop files first to create the correct objects to be able
             //to add other files to.
             for(int i = 0; i < pStateFileList.size(); i++){
@@ -223,7 +223,7 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
                     EnrichmentMapManager.getInstance().registerNetwork(Cytoscape.getNetwork(name),params);
                 }
             }
-                //go through the rest of the files
+            //go through the rest of the files
             for(int i = 0; i < pStateFileList.size(); i++){
 
                 File prop_file = pStateFileList.get(i);
@@ -281,40 +281,40 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
                     }
                 }
 
+            }
+
+            //load the expression files.  Load them last because they require
+            //info from the parameters
+            for(int i = 0; i < pStateFileList.size(); i++){
+
+                File prop_file = pStateFileList.get(i);
+
+                if(prop_file.getName().contains("expression1.txt")){
+                    String[] fullname = prop_file.getName().split("Enrichment_Map_Plugin_");
+                    String  name = (fullname[1].split("\\."))[0];
+
+                    EnrichmentMapParameters params = EnrichmentMapManager.getInstance().getParameters(name);
+
+                    //Load the GCT file
+                    GCTFileReaderTask gctFile1 = new GCTFileReaderTask(params,prop_file.getAbsolutePath(),1);
+                    gctFile1.run();
+                    params.getExpression().rowNormalizeMatrix();
+                }
+                if(prop_file.getName().contains("expression2.txt")){
+                    //get the network name and network and parameters
+                    //for this file
+                    String[] fullname = prop_file.getName().split("Enrichment_Map_Plugin_");
+                    String  name = (fullname[1].split("\\."))[0];
+
+                    EnrichmentMapParameters params = EnrichmentMapManager.getInstance().getParameters(name);
+
+
+                    GCTFileReaderTask gctFile2 = new GCTFileReaderTask(params,prop_file.getAbsolutePath(),2);
+                    gctFile2.run();
+                    params.getExpression2().rowNormalizeMatrix();
                 }
 
-                //load the expression files.  Load them last because they require
-                //info from the parameters
-                for(int i = 0; i < pStateFileList.size(); i++){
-
-                    File prop_file = pStateFileList.get(i);
-
-                    if(prop_file.getName().contains("expression1.txt")){
-                        String[] fullname = prop_file.getName().split("Enrichment_Map_Plugin_");
-                        String  name = (fullname[1].split("\\."))[0];
-
-                        EnrichmentMapParameters params = EnrichmentMapManager.getInstance().getParameters(name);
-
-                        //Load the GCT file
-                        GCTFileReaderTask gctFile1 = new GCTFileReaderTask(params,prop_file.getAbsolutePath(),1);
-                        gctFile1.run();
-                        params.getExpression().rowNormalizeMatrix();
-                    }
-                    if(prop_file.getName().contains("expression2.txt")){
-                        //get the network name and network and parameters
-                        //for this file
-                        String[] fullname = prop_file.getName().split("Enrichment_Map_Plugin_");
-                        String  name = (fullname[1].split("\\."))[0];
-
-                        EnrichmentMapParameters params = EnrichmentMapManager.getInstance().getParameters(name);
-
-
-                        GCTFileReaderTask gctFile2 = new GCTFileReaderTask(params,prop_file.getAbsolutePath(),2);
-                        gctFile2.run();
-                        params.getExpression2().rowNormalizeMatrix();
-                    }
-
-                }
+            }
 
             //register the action listeners for all the networks.
             EnrichmentMapManager manager = EnrichmentMapManager.getInstance();
@@ -348,11 +348,11 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
             }
 
         } catch (Exception ee) {
-			ee.printStackTrace();
-		}
+            ee.printStackTrace();
+        }
 
     }
-    
+
     private Properties getPropertiesFromClasspath(String propFileName) throws IOException {
         // loading properties file from the classpath
         Properties props = new Properties();
@@ -360,7 +360,7 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
 
         if (inputStream == null) {
             throw new FileNotFoundException("property file '" + propFileName
-                + "' not found in the classpath");
+                    + "' not found in the classpath");
         }
 
         props.load(inputStream);
