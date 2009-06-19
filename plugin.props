@@ -20,7 +20,18 @@ cytoscapeVersion=2.6
 # Category, use one of the categories listed on the website or create your own
 pluginCategory=Analysis
 
+# -- The following properties are OPTIONAL -- #
 
 # List of authors.  Note each author and institution pair are separated by a : (colon)
 # each additional author institution pair must be separated from other pairs bye a ; (semicolon)
 pluginAuthorsIntsitutions=Gary Bader, Daniele Merico, Ruth Isserlin, Oliver Stueker:University of Toronto
+
+
+# URL to a website that gives more information about your plugin, Ex. http://my-lab-site.org
+#projectURL=http://www.baderlab.org/Software/EnrichmentMap
+
+# Date this plugin/plugin version was released
+#releaseDate=July 1, 2009
+
+# If this plugin is never meant to be downloaded except as part of a plugin (not common) add this property.  Default is "no"
+#themeOnly=no
