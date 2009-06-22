@@ -8,12 +8,12 @@
     written 2009 by Oliver Stueker <oliver.stueker@utoronto.ca>
     http://www.baderlab.org/OliverStueker
 
-    $Id: replace_affy_IDs.py 56 2009-05-28 18:46:19Z revilo $
+    $Id$
 """
 from __future__ import with_statement
-__author__  = '$Author: revilo $'[9:-2]
-__version__ = '$Revision: 56 $'[11:-2]
-__date__    = '$Date: 2009-05-28 14:46:19 -0400 (Thu, 28 May 2009) $'[7:17]
+__author__  = '$Author$'[9:-2]
+__version__ = '$Revision$'[11:-2]
+__date__    = '$Date$'[7:17]
 
 # Revision History:  at the end of File
 if __name__ == "__main__":
