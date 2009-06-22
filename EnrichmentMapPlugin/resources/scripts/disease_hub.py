@@ -18,11 +18,11 @@
 	written 2009 by Oliver Stueker <oliver.stueker@utoronto.ca>
 	http://www.baderlab.org/OliverStueker
 
-    $Id: disease_hub.py 53 2009-05-15 22:55:36Z revilo $
+    $Id$
 """
-__author__  = '$Author: revilo $'[9:-2]
-__version__ = '$Revision: 53 $'[11:-2]
-__date__    = '$Date: 2009-05-15 18:55:36 -0400 (Fri, 15 May 2009) $'[7:17]
+__author__  = '$Author$'[9:-2]
+__version__ = '$Revision$'[11:-2]
+__date__    = '$Date$'[7:17]
 
 # IMPORTS
 from cytoscape import Cytoscape
