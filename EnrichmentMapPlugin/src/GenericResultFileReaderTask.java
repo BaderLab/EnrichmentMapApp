@@ -72,6 +72,7 @@ public class GenericResultFileReaderTask implements Task {
             double FDRqvalue = 1.0;
             GenericResult result;
             int gs_size = 0;
+            double NES = 1.0;
 
             //The first column of the file is the name of the geneset
             String id = tokens[0].toUpperCase();
@@ -91,14 +92,27 @@ public class GenericResultFileReaderTask implements Task {
             }
 
             if(length > 3){
-                //the eighth column is the FDR q-value
+                //the fourth column is the FDR q-value
                 if(tokens[3].equalsIgnoreCase("")){
                     //do nothing
                 }else{
                     FDRqvalue = Double.parseDouble(tokens[3]);
                     FDR = true;
                 }
-                 result = new GenericResult(id, Name,pvalue,gs_size,FDRqvalue);
+
+                //the fifth column is the phenotype and it should be an integer but the only important
+                //part is the sign
+                if(length > 4){
+                    if(tokens[4].equalsIgnoreCase("")){
+
+                    }else{
+                        NES = Double.parseDouble(tokens[4]);
+                    }
+                    result = new GenericResult(id,Name,pvalue,gs_size,FDRqvalue,NES);
+                }
+                else
+                    result = new GenericResult(id, Name,pvalue,gs_size,FDRqvalue);
+                                
             }
             else{
                 result = new GenericResult(id, Name,pvalue,gs_size);

@@ -29,7 +29,7 @@ public class BuildGSEAEnrichmentMapTask implements Task {
         //create a new instance of the paramaters and copy the version received from the input
         //window into this new instance.
         this.params = new EnrichmentMapParameters(params);
-        
+
     }
 
     public void buildGSEAMap(){
@@ -46,35 +46,42 @@ public class BuildGSEAEnrichmentMapTask implements Task {
 
         }
 
-        //Load in the GCT file
-        try{
-            //Load the GCT file
-            GCTFileReaderTask gctFile1 = new GCTFileReaderTask(params,params.getGCTFileName1(),1,taskMonitor);
-            gctFile1.run();
-            params.getExpression().rowNormalizeMatrix();
-            if(params.isData2()){
-                GCTFileReaderTask gctFile2 = new GCTFileReaderTask(params,params.getGCTFileName2(),2,taskMonitor);
-                gctFile2.run();
-                params.getExpression2().rowNormalizeMatrix();
+        //Load the Data if the user has supplied the data file.
+        if(params.isData()){
+            //Load in the GCT file
+            try{
+                //Load the GCT file
+                GCTFileReaderTask gctFile1 = new GCTFileReaderTask(params,params.getGCTFileName1(),1,taskMonitor);
+                gctFile1.run();
+                params.getExpression().rowNormalizeMatrix();
+                if(params.isData2()){
+                    GCTFileReaderTask gctFile2 = new GCTFileReaderTask(params,params.getGCTFileName2(),2,taskMonitor);
+                    gctFile2.run();
+                    params.getExpression2().rowNormalizeMatrix();
+                }
+                //trim the genesets to only contain the genes that are in the data file.
+                params.filterGenesets();
+
+            } catch(Exception e){
+                JOptionPane.showMessageDialog(Cytoscape.getDesktop(),"unable to load GSEA DATA (.GCT) file");
+
             }
-
-        } catch(Exception e){
-            JOptionPane.showMessageDialog(Cytoscape.getDesktop(),"unable to load GSEA DATA (.GCT) file");
-
+        }
+        else{
+            params.noFilter();
         }
 
-        //trim the genesets to only contain the genes that are in the data file.
-        params.filterGenesets();
 
         try{
+
             //Load the GSEA result files
             //Dataset1 (each dataset should have two files.)
-            GSEAResultFileReaderTask gseaResultsFilesDataset1File1 = new GSEAResultFileReaderTask(params,taskMonitor,  params.getEnrichmentDataset1FileName1(), 1);
-            gseaResultsFilesDataset1File1.run();
-            //boolean success1a = TaskManager.executeTask(gseaResultsFilesDataset1File1, config);
-            GSEAResultFileReaderTask gseaResultsFilesDataset1File2 = new GSEAResultFileReaderTask(params,taskMonitor,  params.getEnrichmentDataset1FileName2(), 1);
-            gseaResultsFilesDataset1File2.run();
-            //boolean success1b = TaskManager.executeTask(gseaResultsFilesDataset1File2, config);
+            EnrichmentResultFileReaderTask enrichmentResultsFilesDataset1File1 = new EnrichmentResultFileReaderTask(params,taskMonitor,  params.getEnrichmentDataset1FileName1(), 1);
+            enrichmentResultsFilesDataset1File1.run();
+            if(params.isGSEA()){
+                EnrichmentResultFileReaderTask enrichmentResultsFilesDataset1File2 = new EnrichmentResultFileReaderTask(params,taskMonitor,  params.getEnrichmentDataset1FileName2(), 1);
+                enrichmentResultsFilesDataset1File2.run();
+            }
 
             //check to see if we have ranking files
             if(params.getDataset1RankedFile() != null){
@@ -85,12 +92,13 @@ public class BuildGSEAEnrichmentMapTask implements Task {
             //Load the second dataset only if there is a second dataset to load
             if (params.isTwoDatasets()){
                 //Dataset2
-                GSEAResultFileReaderTask gseaResultsFilesDataset2File1 = new GSEAResultFileReaderTask(params,taskMonitor,  params.getEnrichmentDataset2FileName1(), 2);
-                gseaResultsFilesDataset2File1.run();
-                //boolean success2a = TaskManager.executeTask(gseaResultsFilesDataset2File1, config);
-                GSEAResultFileReaderTask gseaResultsFilesDataset2File2 = new GSEAResultFileReaderTask(params,taskMonitor,  params.getEnrichmentDataset2FileName2(), 2);
-                gseaResultsFilesDataset2File2.run();
-                //boolean success2b = TaskManager.executeTask(gseaResultsFilesDataset2File2, config);
+                EnrichmentResultFileReaderTask enrichmentResultsFilesDataset2File1 = new EnrichmentResultFileReaderTask(params,taskMonitor,  params.getEnrichmentDataset2FileName1(), 2);
+                enrichmentResultsFilesDataset2File1.run();
+
+                if(params.isGSEA()){
+                    EnrichmentResultFileReaderTask enrichmentResultsFilesDataset2File2 = new EnrichmentResultFileReaderTask(params,taskMonitor,  params.getEnrichmentDataset2FileName2(), 2);
+                    enrichmentResultsFilesDataset2File2.run();
+                }
                 //check to see if we have ranking files
                 if(params.getDataset2RankedFile() != null){
                     RanksFileReaderTask ranking2 = new RanksFileReaderTask(params,params.getDataset2RankedFile(),2,taskMonitor);
