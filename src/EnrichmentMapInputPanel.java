@@ -134,7 +134,7 @@ public class EnrichmentMapInputPanel extends JPanel {
            buttonsPanel.setLayout(gridbag_buttons);
            buttonsPanel.setBorder(BorderFactory.createTitledBorder("Info:"));
 
-           JButton help = new JButton("Online Help");
+           JButton help = new JButton("Online Manual");
            help.addActionListener(new java.awt.event.ActionListener() {
                                       public void actionPerformed(java.awt.event.ActionEvent evt) {
                                           OpenBrowser.openURL("http://www.baderlab.org/Software/EnrichmentMap");
@@ -1015,28 +1015,34 @@ public class EnrichmentMapInputPanel extends JPanel {
          String results2 = "";
         String ranks = "";
 
-        if(!(rptFile.getAbsolutePath().substring(0,(rptFile.getAbsolutePath()).lastIndexOf(File.separator))).equalsIgnoreCase(out_dir)){
 
-            //check to see if the files in the rpt file exist
-            results1 = "" + out_dir + File.separator + label + "."+ method + "." + timestamp + File.separator + "gsea_report_for_" + phenotype1 + "_" + timestamp + ".xls";
-            results2 = "" + out_dir + File.separator + label + "."+ method + "." + timestamp + File.separator + "gsea_report_for_" + phenotype2 + "_" + timestamp + ".xls";
-            ranks = "" + out_dir + File.separator + label + "."+ method + "." + timestamp + File.separator + "ranked_gene_list_" + phenotype1 + "_versus_" + phenotype2 +"_" + timestamp + ".xls";
 
-            if((checkFile(results1) == Color.BLACK) && (checkFile(results2) == Color.BLACK) && (checkFile(ranks) == Color.BLACK)){
+        //files built directly from the rpt specification
+        //try these files first
+        results1 = "" + out_dir + File.separator + label + "."+ method + "." + timestamp + File.separator + "gsea_report_for_" + phenotype1 + "_" + timestamp + ".xls";
+        results2 = "" + out_dir + File.separator + label + "."+ method + "." + timestamp + File.separator + "gsea_report_for_" + phenotype2 + "_" + timestamp + ".xls";
+        ranks = "" + out_dir + File.separator + label + "."+ method + "." + timestamp + File.separator + "ranked_gene_list_" + phenotype1 + "_versus_" + phenotype2 +"_" + timestamp + ".xls";
+        if(!((checkFile(results1) == Color.BLACK) && (checkFile(results2) == Color.BLACK) && (checkFile(ranks) == Color.BLACK))){
+            if(!(rptFile.getAbsolutePath().substring(0,(rptFile.getAbsolutePath()).lastIndexOf(File.separator))).equalsIgnoreCase(out_dir)){
 
+                    //trim the last File Separator
+                    String new_dir = rptFile.getAbsolutePath().substring(0,rptFile.getAbsolutePath().lastIndexOf(File.separator));
+                    results1 = new_dir + File.separator + "gsea_report_for_" + phenotype1 + "_" + timestamp + ".xls";
+                    results2 = new_dir + File.separator + "gsea_report_for_" + phenotype2 + "_" + timestamp + ".xls";
+                    ranks = new_dir + File.separator + "ranked_gene_list_" + phenotype1 + "_versus_" + phenotype2 +"_" + timestamp + ".xls";
+
+                    //If after trying the directory that the rpt file is in doesn't produce valid file names, revert to what
+                    //is specified in the rpt.
+                    if(!((checkFile(results1) == Color.BLACK) && (checkFile(results2) == Color.BLACK) && (checkFile(ranks) == Color.BLACK))){
+                        results1 = "" + out_dir + File.separator + label + "."+ method + "." + timestamp + File.separator + "gsea_report_for_" + phenotype1 + "_" + timestamp + ".xls";
+                        results2 = "" + out_dir + File.separator + label + "."+ method + "." + timestamp + File.separator + "gsea_report_for_" + phenotype2 + "_" + timestamp + ".xls";
+                        ranks = "" + out_dir + File.separator + label + "."+ method + "." + timestamp + File.separator + "ranked_gene_list_" + phenotype1 + "_versus_" + phenotype2 +"_" + timestamp + ".xls";
+                    }
+                    else{
+                        out_dir = new_dir;
+                    }
             }
-            else{
-                //trim the last File Separator
-                out_dir = rptFile.getAbsolutePath().substring(0,rptFile.getAbsolutePath().lastIndexOf(File.separator));
-                results1 = out_dir + File.separator + "gsea_report_for_" + phenotype1 + "_" + timestamp + ".xls";
-                results2 = out_dir + File.separator + "gsea_report_for_" + phenotype2 + "_" + timestamp + ".xls";
-                ranks = out_dir + File.separator + "ranked_gene_list_" + phenotype1 + "_versus_" + phenotype2 +"_" + timestamp + ".xls";
-            }
-        }
-        else{
-            results1 = "" + out_dir + File.separator + label + "."+ method + "." + timestamp + File.separator + "gsea_report_for_" + phenotype1 + "_" + timestamp + ".xls";
-            results2 = "" + out_dir + File.separator + label + "."+ method + "." + timestamp + File.separator + "gsea_report_for_" + phenotype2 + "_" + timestamp + ".xls";
-            ranks = "" + out_dir + File.separator + label + "."+ method + "." + timestamp + File.separator + "ranked_gene_list_" + phenotype1 + "_versus_" + phenotype2 +"_" + timestamp + ".xls";
+
         }
 
         if(dataset1){
