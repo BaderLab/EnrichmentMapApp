@@ -2,6 +2,7 @@
 
 import cytoscape.task.Task;
 import cytoscape.task.TaskMonitor;
+import cytoscape.Cytoscape;
 
 import javax.swing.*;
 import java.util.HashMap;
@@ -15,8 +16,6 @@ import java.util.HashMap;
 public class BuildGSEAEnrichmentMapTask implements Task {
 
 
-
-    private GenericInputFilesPanel inputPanel;
     private EnrichmentMapParameters params;
 
     // Keep track of progress for monitoring:
@@ -25,9 +24,12 @@ public class BuildGSEAEnrichmentMapTask implements Task {
     private boolean interrupted = false;
 
 
-    public BuildGSEAEnrichmentMapTask(GenericInputFilesPanel inputPanel, EnrichmentMapParameters params) {
-        this.inputPanel = inputPanel;
-        this.params = params;
+    public BuildGSEAEnrichmentMapTask( EnrichmentMapParameters params) {
+
+        //create a new instance of the paramaters and copy the version received from the input
+        //window into this new instance.
+        this.params = new EnrichmentMapParameters(params);
+        
     }
 
     public void buildGSEAMap(){
@@ -40,7 +42,7 @@ public class BuildGSEAEnrichmentMapTask implements Task {
             //boolean success = TaskManager.executeTask(gmtFile, config);
 
         } catch(Exception e){
-            JOptionPane.showMessageDialog(inputPanel,"unable to load GMT file");
+            JOptionPane.showMessageDialog(Cytoscape.getDesktop(),"unable to load GMT file");
 
         }
 
@@ -57,7 +59,7 @@ public class BuildGSEAEnrichmentMapTask implements Task {
             }
 
         } catch(Exception e){
-            JOptionPane.showMessageDialog(inputPanel,"unable to load GSEA DATA (.GCT) file");
+            JOptionPane.showMessageDialog(Cytoscape.getDesktop(),"unable to load GSEA DATA (.GCT) file");
 
         }
 
@@ -115,13 +117,10 @@ public class BuildGSEAEnrichmentMapTask implements Task {
             map.run();
             //boolean success3 =TaskManager.executeTask(map,config);
 
-            //close input panel
-            inputPanel.close();
-
 
         } catch(Exception e){
 
-            JOptionPane.showMessageDialog(inputPanel,"unable to build map");
+            JOptionPane.showMessageDialog(Cytoscape.getDesktop(),"unable to build map");
 
         }
 

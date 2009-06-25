@@ -18,15 +18,15 @@ public class BuildGenericEnrichmentMapTask implements Task {
     private boolean interrupted = false;
 
     private EnrichmentMapParameters params;
-    private GenericInputFilesPanel inputPanel;
+    private EnrichmentMapInputPanel inputPanel;
 
-    public BuildGenericEnrichmentMapTask( GenericInputFilesPanel inputPanel, EnrichmentMapParameters params,TaskMonitor taskMonitor) {
+    public BuildGenericEnrichmentMapTask( EnrichmentMapInputPanel inputPanel, EnrichmentMapParameters params,TaskMonitor taskMonitor) {
         this.taskMonitor = taskMonitor;
         this.params = params;
         this.inputPanel = inputPanel;
     }
 
-    public BuildGenericEnrichmentMapTask( GenericInputFilesPanel inputPanel, EnrichmentMapParameters params) {
+    public BuildGenericEnrichmentMapTask( EnrichmentMapInputPanel inputPanel, EnrichmentMapParameters params) {
         this.params = params;
         this.inputPanel = inputPanel;
     }

@@ -34,18 +34,18 @@ public class EnrichmentMapParameters {
     private boolean twoDatasets = false;
 
     //p-value cutoff
-    private double pvalue;
+    private double pvalue = 0.05;
     //pvalue slider bar
     private SliderBarPanel pvalueSlider;
 
      //flag to indicate if there are FDR Q-values
     private boolean FDR = false;
     //fdr q-value cutoff
-    private double qvalue;
+    private double qvalue = 0.25;
     //qvalue slider bar
     private SliderBarPanel qvalueSlider;
 
-    private double jaccardCutOff;
+    private double jaccardCutOff = 0.5;
     private boolean jaccard = true;
 
     //flag to indicate if the results are from GSEA or generic
@@ -72,10 +72,10 @@ public class EnrichmentMapParameters {
     private GeneExpressionMatrix expression;
     private GeneExpressionMatrix expression2;
 
-    private String dataset1Phenotype1 = "";
-    private String dataset1Phenotype2 = "";
-    private String dataset2Phenotype1 = "";
-    private String dataset2Phenotype2 = "";
+    private String dataset1Phenotype1 = "UP";
+    private String dataset1Phenotype2 = "DOWN";
+    private String dataset2Phenotype1 = "UP";
+    private String dataset2Phenotype2 = "DOWN";
 
     private String classFile1;
     private String classFile2;
@@ -175,6 +175,47 @@ public class EnrichmentMapParameters {
         setQvalue(Double.parseDouble((String)props.get("qvalue")));
         this. jaccardCutOff = Double.parseDouble((String)props.get("jaccardCutOff"));
 
+    }
+
+    //Constructor for Enrichment Map Parameters that take another instance of enrichment map parameters
+    //And copies its contents.
+    //The assumptionis that these parameters were populated by the input window and therefore only  contain
+    //info for file names, cutoffs, and phenotypes.
+    public EnrichmentMapParameters(EnrichmentMapParameters copy){
+        this();
+
+        this.GMTFileName = copy.getGMTFileName();
+        this.GCTFileName1 = copy.getGCTFileName1();
+        this.GCTFileName2 = copy.getGCTFileName2();
+
+        this.dataset1RankedFile = copy.getDataset1RankedFile();
+        this.dataset2RankedFile = copy.getDataset2RankedFile();
+
+        this.enrichmentDataset1FileName1 = copy.getEnrichmentDataset1FileName1();
+        this.enrichmentDataset1FileName2 = copy.getEnrichmentDataset1FileName2();
+        this.enrichmentDataset2FileName1 = copy.getEnrichmentDataset2FileName1();
+        this.enrichmentDataset2FileName2 = copy.getEnrichmentDataset2FileName2();
+
+        this.dataset1Phenotype1 = copy.getDataset1Phenotype1();
+        this.dataset1Phenotype2 = copy.getDataset1Phenotype2();
+        this.dataset2Phenotype1 = copy.getDataset2Phenotype1();
+        this.dataset2Phenotype2 = copy.getDataset2Phenotype2();
+
+        this.pvalue = copy.getPvalue();
+        //create the slider for this pvalue
+        pvalueSlider = new SliderBarPanel(0,this.pvalue,"P-value Cutoff",this, EnrichmentMapVisualStyle.PVALUE_DATASET1, EnrichmentMapVisualStyle.PVALUE_DATASET2,ParametersPanel.summaryPanelWidth);
+
+        this.qvalue = copy.getQvalue();
+        //create the slider for the qvalue
+        qvalueSlider = new SliderBarPanel(0,this.qvalue,"Q-value Cutoff",this, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2,ParametersPanel.summaryPanelWidth);
+
+        this.jaccardCutOff = copy.getJaccardCutOff();
+
+        this.Data = copy.isData();
+        this.Data2 = copy.isData2();
+        this.twoDatasets = copy.isTwoDatasets();
+        this.GSEA = copy.isGSEA();
+        this.jaccard = copy.isJaccard();
     }
 
     public EnrichmentMapParameters(String GMTFileName,  double pvalue, double qvalue) {
@@ -318,9 +359,6 @@ public class EnrichmentMapParameters {
     public void setPvalue(double pvalue) {
         this.pvalue = pvalue;
 
-        //create the slider for this pvalue
-        pvalueSlider = new SliderBarPanel(0,this.pvalue,"P-value Cutoff",this, EnrichmentMapVisualStyle.PVALUE_DATASET1, EnrichmentMapVisualStyle.PVALUE_DATASET2,ParametersPanel.summaryPanelWidth);
-
     }
 
     public double getQvalue() {
@@ -329,9 +367,6 @@ public class EnrichmentMapParameters {
 
     public void setQvalue(double qvalue) {
         this.qvalue = qvalue;
-
-        //create the slider for the qvalue
-        qvalueSlider = new SliderBarPanel(0,this.qvalue,"Q-value Cutoff",this, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2,ParametersPanel.summaryPanelWidth);
 
     }
 

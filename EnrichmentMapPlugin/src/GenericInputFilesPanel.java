@@ -194,7 +194,7 @@ public class GenericInputFilesPanel extends JDialog {
         });
 
         importButton.setText("Build Enrichment Map");
-        importButton.addActionListener(new BuildEnrichmentMapActionListener(this, params));
+//        importButton.addActionListener(new BuildEnrichmentMapActionListener(this, params));
         importButton.setEnabled(false);
 
 

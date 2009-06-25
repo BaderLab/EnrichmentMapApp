@@ -29,6 +29,8 @@ public class EnrichmentMapManager implements PropertyChangeListener {
     private OverlappingGenesPanel nodesOverlapPanel;
     private OverlappingGenesPanel edgesOverlapPanel;
 
+    private EnrichmentMapInputPanel inputWindow;
+
     /**
      * Method to get instance of EnrichmentMapManager.
      *
@@ -160,6 +162,9 @@ public class EnrichmentMapManager implements PropertyChangeListener {
                     //update the parameters panel
                     parameterPanel.updatePanel(currentNetworkParams);
 
+                    //update the input window to contain the parameters of the selected network
+                    inputWindow.updateContents(currentNetworkParams);
+
                     summaryPanel.updateNodeInfo(currentNetworkParams.getSelectedNodes().toArray());
 
                     nodesOverlapPanel.updatePanel(currentNetworkParams);
@@ -259,5 +264,13 @@ public class EnrichmentMapManager implements PropertyChangeListener {
             return cyNetworkList.get(name);
         else
             return null;
+    }
+
+    public EnrichmentMapInputPanel getInputWindow() {
+        return inputWindow;
+    }
+
+    public void setInputWindow(EnrichmentMapInputPanel inputWindow) {
+        this.inputWindow = inputWindow;
     }
 }
