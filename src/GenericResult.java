@@ -6,47 +6,53 @@
  */
 public class GenericResult {
 
-    private String id = "";
-    private String Name = "";
+    private String name = "";
+    private String description = "";
     private double pvalue = 1.0;
     private int gsSize = 0;
 
     //optional parameters
     private double fdrqvalue = 1.0;
-    private String phenotype = "";
 
-    public GenericResult(String id, String name, double pvalue, int gs_size) {
-        this.id = id;
-        Name = name;
-        this.pvalue = pvalue;
-        this.gsSize = gs_size;
-    }
+    //make the generic file synonamous with gsea result file
+    //the phenotype is deduced from the sign of the ES score so create a variable to store
+    //the phenotype.
+    private double NES = 1.0;
 
     public GenericResult(String[] tokens){
-        //ignore the first token as it is from the hash
-        this.id = tokens[1];
-        Name = tokens[2];
-        this.pvalue = Double.parseDouble(tokens[3]);
-        this.gsSize = Integer.parseInt(tokens[4]);
-        this.fdrqvalue = Double.parseDouble(tokens[5]);
-        this.phenotype = tokens[6];
+            //ignore the first token as it is from the hash
+            this.name = tokens[1];
+            this.description = tokens[2];
+            this.pvalue = Double.parseDouble(tokens[3]);
+            this.gsSize = Integer.parseInt(tokens[4]);
+            this.fdrqvalue = Double.parseDouble(tokens[5]);
+            this.NES = Double.parseDouble(tokens[6]);
 
+        }
+
+
+    public GenericResult(String name, String description, double pvalue, int gs_size) {
+        this.name = name;
+        this.description = description;
+        this.pvalue = pvalue;
+        this.gsSize = gs_size;
     }
 
-    public GenericResult(String id, String name, double pvalue, int gs_size, double fdrqvalue) {
-        this.id = id;
-        Name = name;
+    public GenericResult(String name, String description, double pvalue, int gs_size, double fdrqvalue) {
+        this.name = name;
+        this.description = description;
         this.pvalue = pvalue;
         this.gsSize = gs_size;
         this.fdrqvalue = fdrqvalue;
     }
 
-    public GenericResult(String id, String name, double pvalue, double fdrqvalue, String phenotype) {
-        this.id = id;
-        Name = name;
+    public GenericResult(String name, String description, double pvalue, int gs_size, double fdrqvalue, double phenotype) {
+         this.name = name;
+        this.description = description;
+        this.gsSize = gs_size;
         this.pvalue = pvalue;
         this.fdrqvalue = fdrqvalue;
-        this.phenotype = phenotype;
+        this.NES = phenotype;
     }
 
     public boolean geneSetOfInterest(double pvalue, double fdrqvalue, boolean useFDR){
@@ -67,20 +73,20 @@ public class GenericResult {
     }
 
 
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
     public String getName() {
-        return Name;
+        return name;
     }
 
     public void setName(String name) {
-        Name = name;
+        this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public double getPvalue() {
@@ -99,14 +105,6 @@ public class GenericResult {
         this.fdrqvalue = fdrqvalue;
     }
 
-    public String getPhenotype() {
-        return phenotype;
-    }
-
-    public void setPhenotype(String phenotype) {
-        this.phenotype = phenotype;
-    }
-
     public int getGsSize() {
         return gsSize;
     }
@@ -115,8 +113,16 @@ public class GenericResult {
         this.gsSize = gs_size;
     }
 
+    public double getNES() {
+        return NES;
+    }
+
+    public void setNES(double NES) {
+        this.NES = NES;
+    }
+
     public String toString(){
 
-        return id + "\t" + Name + "\t" + pvalue + "\t" + gsSize + "\t" + fdrqvalue + "\t" +phenotype+"\n";
+        return name + "\t" + description + "\t" + pvalue + "\t" + gsSize + "\t" + fdrqvalue + "\t" + NES +"\n";
     }
 }

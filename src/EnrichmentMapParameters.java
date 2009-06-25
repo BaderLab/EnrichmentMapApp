@@ -95,6 +95,7 @@ public class EnrichmentMapParameters {
     private HashMap<Integer, Ranking> dataset2Rankings;
 
 
+
     public EnrichmentMapParameters() {
         this.enrichmentResults1 = new HashMap();
         this.enrichmentResults2 = new HashMap();
