@@ -42,15 +42,11 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
         JMenu submenu = new JMenu("Enrichment Maps");
 
         //GSEA results panel panel
-        item = new JMenuItem("Load GSEA Results");
+        item = new JMenuItem("Load Enrichment Results");
         item.addActionListener(new LoadGSEAPanelAction());
         submenu.add(item);
 
 
-        //Generic Results panel
-        item = new JMenuItem("Load Generic Results");
-        item.addActionListener(new LoadGenericPanelAction());
-        submenu.add(item);
 
         //About Box
         item = new JMenuItem("About");

@@ -1,5 +1,7 @@
 
 import cytoscape.Cytoscape;
+import cytoscape.view.CytoscapeDesktop;
+import cytoscape.view.cytopanels.CytoPanel;
 import cytoscape.util.CytoscapeAction;
 
 import javax.swing.*;
@@ -15,45 +17,38 @@ public class LoadGSEAPanelAction extends CytoscapeAction {
 
     //variable to track initialization of network event listener
     private boolean initialized = false;
-
+    private int index = 0;
     public LoadGSEAPanelAction(){
          super("Load GSEA Files");
     }
 
       public void actionPerformed(ActionEvent event) {
 
-            String os = System.getProperty("os.name");
+          String os = System.getProperty("os.name");
+
+          CytoscapeDesktop desktop = Cytoscape.getDesktop();
+          CytoPanel cytoPanel = desktop.getCytoPanel(SwingConstants.WEST);
 
           if(!initialized){
                 EnrichmentMapManager.getInstance();
                 initialized = true;
+
+             EnrichmentMapInputPanel inputwindow = new EnrichmentMapInputPanel();
+
+              //set the input window in the instance so we can udate the instance window
+              //on network focus
+              EnrichmentMapManager.getInstance().setInputWindow(inputwindow);
+
+              cytoPanel.add("Enrichment Map", inputwindow);
+              index =  cytoPanel.indexOfComponent(inputwindow);
+
+              cytoPanel.setSelectedIndex(index);
           }
+          else{
 
-            // open new dialog
-            //if the operating system is Mac, open a special window
-           if(os.contains("Mac") || (os.contains("mac"))){
-                GSEAInputFilesPanelMac amd
-                = new GSEAInputFilesPanelMac(Cytoscape.getDesktop(),
-                              false);
+              cytoPanel.setSelectedIndex(index);
 
-                amd.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-                amd.pack();
-                amd.setLocationRelativeTo(Cytoscape.getDesktop());
-                amd.setVisible(true);
-
-            }
-            else{
-                GSEAInputFilesPanel amd
-                = new GSEAInputFilesPanel(Cytoscape.getDesktop(),
-                              false);
-
-                amd.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-                amd.pack();
-                amd.setLocationRelativeTo(Cytoscape.getDesktop());
-                amd.setVisible(true);
-            }
-
-
+          }
 
         }
 }
