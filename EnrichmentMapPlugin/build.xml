@@ -1,22 +1,36 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <project name="enrichment_map" default="all">
 
-	<!-- DEFINE PATH TO CYTOSCAPE HERE (cytoscape.jar and lib/*jar are needed for compiling the plugin) -->
+    <!-- 
+	********************************
+	* TO DEFINE PATH TO CYTOSCAPE: *
+	********************************
+	- Either set an environment variable called CYTOSCAPE_HOME 
+	  pointing to your Cytoscape 2.6 installation
+	
+	- or place a file called "enrichment_map.properties" in the same directory as this build.xml 
+	  file that contains a line like this (choose one depending on your platform and adjust to the 
+	  actual installation directory and the version you are using):
 
-	<echo message="${env.CYTOSCAPE_HOME}" />
-	<!--
-	<conditon property="CYTOSCAPE_HOME" value="${env.CYTOSCAPE_HOME}" 
-										else="${module.enrichment_map.basedir}/../../../Program Files/Cytoscape-v2.5.0" >
-		<isset property="env.CYTOSCAPE_HOME" />
-	</conditon>
-	-->
-	<property name="CYTOSCAPE_HOME" value="/Applications/Cytoscape_v2.6.2"   />
-	<!--
-	<property name="CYTOSCAPE_HOME" value="C:/Program Files/cytoscape-v2.6.1" />
-	<property name="CYTOSCAPE_HOME" value="C:/Program Files/Cytoscape-v2.6.2" />
-	-->
+	  Apple:
+		CYTOSCAPE_HOME=/Applications/Cytoscape_v2.6.2
+	  Linux:
+		CYTOSCAPE_HOME=/usr/local/Cytoscape_v2.6.2
+	  Windows:
+		CYTOSCAPE_HOME=C:/Program Files/Cytoscape-v2.6.2
+	
+	(cytoscape.jar and lib/*jar are needed for compiling the plugin) 
+    -->
 
-	<property file="enrichment_map.properties"/>
+	<property file="enrichment_map.properties" />
+
+	<property environment="env" />
+	<condition property="CYTOSCAPE_HOME" value="${env.CYTOSCAPE_HOME}" else="C:/Program Files/Cytoscape-v2.6.1" >
+		<available file="${env.CYTOSCAPE_HOME}/cytoscape.jar" />
+	</condition>
+
+	<echo message="Using Cytoscape in ${CYTOSCAPE_HOME}" />
+
 	<!-- Uncomment the following property if no tests compilation is needed -->
 	<!-- 
 	<property name="skip.tests" value="true"/>
@@ -48,17 +62,13 @@
 		<include name="**/?*.tld"/>
 	</patternset>
 
-
 	<!-- Application Server Libraries -->
 
 	<!-- Modules -->
 
-
 	<!-- Module enrichment_map -->
 
 	<dirname property="module.enrichment_map.basedir" file="${ant.file}"/>
-
-
 
 	<property name="compiler.args.enrichment_map" value="${compiler.args}"/>
 
@@ -103,7 +113,7 @@
 			<src refid="enrichment_map.module.sourcepath"/>
 		</javac>
 
-		<copy todir="${enrichment_map.output.dir}/enrichment_map">
+		<copy todir="${enrichment_map.output.dir}">
 			<fileset dir="${module.enrichment_map.basedir}/src">
 				<patternset refid="compiler.resources"/>
 				<type type="file"/>
