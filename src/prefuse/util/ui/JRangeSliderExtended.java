@@ -35,6 +35,7 @@
 */
 
 //package csplugins.widgets.slider;
+package prefuse.util.ui;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -49,6 +50,7 @@ import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import prefuse.data.query.*;
 
 /**
  * Extension of the Prefuse JRangeSlider.
