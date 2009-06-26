@@ -8,7 +8,7 @@ pluginName=EnrichmentMap
 
 # Description used to give users information about the plugin such as what it does.  
 # Html tags are encouraged for formatting purposes.
-#pluginDescription=
+pluginDescription=A Plugin to create Enrichment Maps
 #TODO: Write Description
 
 # Plugin version number, this must be two numbers separated by a decimlal.  Ex. 0.2, 14.03
