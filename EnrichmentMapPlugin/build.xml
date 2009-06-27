@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <project name="enrichment_map" default="all">
-
+<!-- $Id$ -->
+	
     <!-- 
 	********************************
 	* TO DEFINE PATH TO CYTOSCAPE: *
@@ -100,7 +101,6 @@
 			<include name="src"/>
 		</dirset>
 	</path>
-
 
 	<target name="compile.module.enrichment_map" depends="compile.module.enrichment_map.production,compile.module.enrichment_map.tests" description="Compile module enrichment_map"/>
 

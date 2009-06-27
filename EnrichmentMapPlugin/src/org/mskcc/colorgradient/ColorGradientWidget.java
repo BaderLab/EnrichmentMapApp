@@ -1,4 +1,4 @@
-// $Id: ColorGradientWidget.java,v 1.1 2008/06/06 15:30:13 grossb Exp $
+// $Id$
 //------------------------------------------------------------------------------
 /** Copyright (c) 2008 Memorial Sloan-Kettering Cancer Center.
  **
