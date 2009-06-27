@@ -37,7 +37,7 @@
 
 // $Id$
 // $LastChangedDate$
-// $LasrChangedRevision$
+// $LastChangedRevision$
 // $LastChangedBy$
 // $HeadURL$
 
