@@ -1,4 +1,4 @@
-// $Id: ColorGradientRange.java,v 1.3 2008/06/16 14:18:55 grossb Exp $
+// $Id$
 //------------------------------------------------------------------------------
 /** Copyright (c) 2008 Memorial Sloan-Kettering Cancer Center.
  **
