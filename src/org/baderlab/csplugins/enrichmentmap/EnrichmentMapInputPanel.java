@@ -1107,6 +1107,7 @@ public class EnrichmentMapInputPanel extends JPanel {
                     GCTFileName1TextField.setForeground(checkFile(data));
                     GCTFileName1TextField.setText(data);
                     params.setGCTFileName1(data);
+                    params.setData(true);
                     GCTFileName1TextField.setToolTipText(data);
 
                     Dataset1RankFileTextField.setForeground(checkFile(ranks));
@@ -1134,6 +1135,7 @@ public class EnrichmentMapInputPanel extends JPanel {
                 GCTFileName2TextField.setForeground(checkFile(data));
                 GCTFileName2TextField.setText(data);
                 params.setGCTFileName2(data);
+                params.setData2(true);
                 GCTFileName2TextField.setToolTipText(data);
 
                 Dataset2RankFileTextField.setForeground(checkFile(ranks));
@@ -1355,6 +1357,7 @@ public class EnrichmentMapInputPanel extends JPanel {
                     params.setGCTFileName1(file.getAbsolutePath());
                     GCTFileName1TextField.setToolTipText(file.getAbsolutePath());
                }
+               params.setData(true);
 
            }
        }

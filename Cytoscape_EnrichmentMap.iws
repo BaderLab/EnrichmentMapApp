@@ -80,7 +80,7 @@
   </component>
   <component name="DebuggerManager">
     <line_breakpoints>
-      <breakpoint url="file://$PROJECT_DIR$/src/InitializeGenesetsOfInterestTask.java" line="81" class="InitializeGenesetsOfInterestTask" package="">
+      <breakpoint url="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/BuildGSEAEnrichmentMapTask.java" line="50" class="org.baderlab.csplugins.enrichmentmap.BuildGSEAEnrichmentMapTask" package="org.baderlab.csplugins.enrichmentmap">
         <option name="ENABLED" value="true" />
         <option name="SUSPEND_POLICY" value="SuspendAll" />
         <option name="LOG_ENABLED" value="false" />
@@ -93,7 +93,7 @@
         <option name="CONDITION" value="" />
         <option name="LOG_MESSAGE" value="" />
       </breakpoint>
-      <breakpoint url="file://$PROJECT_DIR$/src/InitializeGenesetsOfInterestTask.java" line="159" class="InitializeGenesetsOfInterestTask" package="">
+      <breakpoint url="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/BuildGSEAEnrichmentMapTask.java" line="40" class="org.baderlab.csplugins.enrichmentmap.BuildGSEAEnrichmentMapTask" package="org.baderlab.csplugins.enrichmentmap">
         <option name="ENABLED" value="true" />
         <option name="SUSPEND_POLICY" value="SuspendAll" />
         <option name="LOG_ENABLED" value="false" />
@@ -106,85 +106,7 @@
         <option name="CONDITION" value="" />
         <option name="LOG_MESSAGE" value="" />
       </breakpoint>
-      <breakpoint url="file://$PROJECT_DIR$/src/GenericInputFilesPanel.java" line="882" class="GenericInputFilesPanel" package="">
-        <option name="ENABLED" value="true" />
-        <option name="SUSPEND_POLICY" value="SuspendAll" />
-        <option name="LOG_ENABLED" value="false" />
-        <option name="LOG_EXPRESSION_ENABLED" value="false" />
-        <option name="COUNT_FILTER_ENABLED" value="false" />
-        <option name="COUNT_FILTER" value="0" />
-        <option name="CONDITION_ENABLED" value="false" />
-        <option name="CLASS_FILTERS_ENABLED" value="false" />
-        <option name="INSTANCE_FILTERS_ENABLED" value="false" />
-        <option name="CONDITION" value="" />
-        <option name="LOG_MESSAGE" value="" />
-      </breakpoint>
-      <breakpoint url="file://$PROJECT_DIR$/src/BuildGenericEnrichmentMapTask.java" line="37" class="BuildGenericEnrichmentMapTask" package="">
-        <option name="ENABLED" value="true" />
-        <option name="SUSPEND_POLICY" value="SuspendAll" />
-        <option name="LOG_ENABLED" value="false" />
-        <option name="LOG_EXPRESSION_ENABLED" value="false" />
-        <option name="COUNT_FILTER_ENABLED" value="false" />
-        <option name="COUNT_FILTER" value="0" />
-        <option name="CONDITION_ENABLED" value="false" />
-        <option name="CLASS_FILTERS_ENABLED" value="false" />
-        <option name="INSTANCE_FILTERS_ENABLED" value="false" />
-        <option name="CONDITION" value="" />
-        <option name="LOG_MESSAGE" value="" />
-      </breakpoint>
-      <breakpoint url="file://$PROJECT_DIR$/src/InitializeGenesetsOfInterestTask.java" line="95" class="InitializeGenesetsOfInterestTask" package="">
-        <option name="ENABLED" value="true" />
-        <option name="SUSPEND_POLICY" value="SuspendAll" />
-        <option name="LOG_ENABLED" value="false" />
-        <option name="LOG_EXPRESSION_ENABLED" value="false" />
-        <option name="COUNT_FILTER_ENABLED" value="false" />
-        <option name="COUNT_FILTER" value="0" />
-        <option name="CONDITION_ENABLED" value="false" />
-        <option name="CLASS_FILTERS_ENABLED" value="false" />
-        <option name="INSTANCE_FILTERS_ENABLED" value="false" />
-        <option name="CONDITION" value="" />
-        <option name="LOG_MESSAGE" value="" />
-      </breakpoint>
-      <breakpoint url="file://$PROJECT_DIR$/src/EnrichmentMapParameters.java" line="143" class="EnrichmentMapParameters" package="">
-        <option name="ENABLED" value="true" />
-        <option name="SUSPEND_POLICY" value="SuspendAll" />
-        <option name="LOG_ENABLED" value="false" />
-        <option name="LOG_EXPRESSION_ENABLED" value="false" />
-        <option name="COUNT_FILTER_ENABLED" value="false" />
-        <option name="COUNT_FILTER" value="0" />
-        <option name="CONDITION_ENABLED" value="false" />
-        <option name="CLASS_FILTERS_ENABLED" value="false" />
-        <option name="INSTANCE_FILTERS_ENABLED" value="false" />
-        <option name="CONDITION" value="" />
-        <option name="LOG_MESSAGE" value="" />
-      </breakpoint>
-      <breakpoint url="file://$PROJECT_DIR$/src/OverlappingGenesPanel.java" line="234" class="OverlappingGenesPanel" package="">
-        <option name="ENABLED" value="true" />
-        <option name="SUSPEND_POLICY" value="SuspendAll" />
-        <option name="LOG_ENABLED" value="false" />
-        <option name="LOG_EXPRESSION_ENABLED" value="false" />
-        <option name="COUNT_FILTER_ENABLED" value="false" />
-        <option name="COUNT_FILTER" value="0" />
-        <option name="CONDITION_ENABLED" value="false" />
-        <option name="CLASS_FILTERS_ENABLED" value="false" />
-        <option name="INSTANCE_FILTERS_ENABLED" value="false" />
-        <option name="CONDITION" value="" />
-        <option name="LOG_MESSAGE" value="" />
-      </breakpoint>
-      <breakpoint url="file://$PROJECT_DIR$/src/OverlappingGenesPanel.java" line="270" class="OverlappingGenesPanel" package="">
-        <option name="ENABLED" value="true" />
-        <option name="SUSPEND_POLICY" value="SuspendAll" />
-        <option name="LOG_ENABLED" value="false" />
-        <option name="LOG_EXPRESSION_ENABLED" value="false" />
-        <option name="COUNT_FILTER_ENABLED" value="false" />
-        <option name="COUNT_FILTER" value="0" />
-        <option name="CONDITION_ENABLED" value="false" />
-        <option name="CLASS_FILTERS_ENABLED" value="false" />
-        <option name="INSTANCE_FILTERS_ENABLED" value="false" />
-        <option name="CONDITION" value="" />
-        <option name="LOG_MESSAGE" value="" />
-      </breakpoint>
-      <breakpoint url="file://$PROJECT_DIR$/src/GenericInputFilesPanel.java" line="705" class="GenericInputFilesPanel" package="">
+      <breakpoint url="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/BuildGenericEnrichmentMapTask.java" line="40" class="org.baderlab.csplugins.enrichmentmap.BuildGenericEnrichmentMapTask" package="org.baderlab.csplugins.enrichmentmap">
         <option name="ENABLED" value="true" />
         <option name="SUSPEND_POLICY" value="SuspendAll" />
         <option name="LOG_ENABLED" value="false" />
@@ -252,98 +174,47 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="ParametersPanel.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/ParametersPanel.java">
+      <file leaf-file-name="EnrichmentMapInputPanel.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/EnrichmentMapInputPanel.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="206" column="24" selection-start="7736" selection-end="7736" vertical-scroll-proportion="1.2930328">
+            <state line="897" column="61" selection-start="39030" selection-end="39062" vertical-scroll-proportion="0.43888888">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="EnrichmentMapVisualStyle.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/EnrichmentMapVisualStyle.java">
+      <file leaf-file-name="BuildEnrichmentMapActionListener.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/BuildEnrichmentMapActionListener.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="130" column="8" selection-start="5978" selection-end="5978" vertical-scroll-proportion="0.034836065">
+            <state line="37" column="28" selection-start="920" selection-end="946" vertical-scroll-proportion="1.2693334">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="EnrichmentMapParameters.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/EnrichmentMapParameters.java">
+      <file leaf-file-name="BuildGSEAEnrichmentMapTask.java" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/BuildGSEAEnrichmentMapTask.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
-              <folding>
-                <element signature="imports" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="GenericInputFilesPanel.java" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/GenericInputFilesPanel.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="617" column="17" selection-start="21600" selection-end="21600" vertical-scroll-proportion="-2.182377">
+            <state line="56" column="0" selection-start="1581" selection-end="1581" vertical-scroll-proportion="0.33333334">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="RanksFileReaderTask.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/RanksFileReaderTask.java">
+      <file leaf-file-name="BuildGenericEnrichmentMapTask.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/BuildGenericEnrichmentMapTask.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="138" column="34" selection-start="4519" selection-end="4519" vertical-scroll-proportion="0.42213115">
-              <folding>
-                <element signature="imports" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="GenericResultFileReaderTask.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/GenericResultFileReaderTask.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="8" column="25" selection-start="169" selection-end="169" vertical-scroll-proportion="0.1045082">
+            <state line="40" column="0" selection-start="1128" selection-end="1128" vertical-scroll-proportion="0.375">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="ColorGradientTheme.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/ColorGradient/ColorGradientTheme.java">
+      <file leaf-file-name="enrichmentmap.xml" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/enrichmentmap.xml">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="51" column="86" selection-start="2235" selection-end="2235" vertical-scroll-proportion="0.73155737">
+            <state line="140" column="73" selection-start="4891" selection-end="4891" vertical-scroll-proportion="0.375">
               <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="GSEAInputFilesPanel.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/GSEAInputFilesPanel.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="188" column="45" selection-start="6591" selection-end="6591" vertical-scroll-proportion="0.034836065">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="GSEAInputFilesPanelMac.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/GSEAInputFilesPanelMac.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="276" column="78" selection-start="10466" selection-end="10466" vertical-scroll-proportion="0.034836065">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="OverlappingGenesPanel.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/OverlappingGenesPanel.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="666" column="0" selection-start="25212" selection-end="25212" vertical-scroll-proportion="0.5614754">
-              <folding>
-                <element signature="imports" expanded="true" />
-              </folding>
             </state>
           </provider>
         </entry>
@@ -380,7 +251,7 @@
   </component>
   <component name="ModuleEditorState">
     <option name="LAST_EDITED_MODULE_NAME" value="Cytoscape_EnrichmentMap" />
-    <option name="LAST_EDITED_TAB_NAME" value="Libraries (Classpath)" />
+    <option name="LAST_EDITED_TAB_NAME" value="Paths" />
   </component>
   <component name="NamedScopeManager" />
   <component name="PackagesPane">
@@ -460,25 +331,7 @@
         <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
       </PATH_ELEMENT>
       <PATH_ELEMENT>
-        <option name="myItemId" value="PsiDirectory:C:\EmililabSVNTreeCO\Mouse_Heart_Analysis\Cytoscape_EnrichmentMap" />
-        <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-      </PATH_ELEMENT>
-    </PATH>
-    <PATH>
-      <PATH_ELEMENT>
-        <option name="myItemId" value="Cytoscape_EnrichmentMap.ipr" />
-        <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-      </PATH_ELEMENT>
-      <PATH_ELEMENT>
-        <option name="myItemId" value="Cytoscape_EnrichmentMap" />
-        <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
-      </PATH_ELEMENT>
-      <PATH_ELEMENT>
-        <option name="myItemId" value="PsiDirectory:C:\EmililabSVNTreeCO\Mouse_Heart_Analysis\Cytoscape_EnrichmentMap" />
-        <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-      </PATH_ELEMENT>
-      <PATH_ELEMENT>
-        <option name="myItemId" value="PsiDirectory:C:\EmililabSVNTreeCO\Mouse_Heart_Analysis\Cytoscape_EnrichmentMap\src" />
+        <option name="myItemId" value="PsiDirectory:C:\BaderlabSvn\EnrichmentMapPlugin\src" />
         <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
       </PATH_ELEMENT>
     </PATH>
@@ -494,7 +347,7 @@
       <showLibraryContents />
       <hideEmptyPackages />
       <abbreviatePackageNames />
-      <showStructure ProjectPane="false" />
+      <showStructure PackagesPane="false" ProjectPane="false" />
       <autoscrollToSource />
       <autoscrollFromSource />
       <sortByType />
@@ -507,6 +360,7 @@
     <property name="MemberChooser.sorted" value="false" />
     <property name="RunManagerConfig.compileBeforeRunning" value="true" />
     <property name="GoToFile.includeJavaFiles" value="false" />
+    <property name="last_opened_file_path" value="C:\BaderlabSvn\EnrichmentMapPlugin" />
     <property name="GoToClass.toSaveIncludeLibraries" value="false" />
     <property name="RunManagerConfig.showSettingsBeforeRunnig" value="false" />
   </component>
@@ -563,20 +417,20 @@
     </configuration>
     <configuration selected="true" default="false" name="EnrichmentMapPlugin" type="Application" factoryName="Application">
       <option name="MAIN_CLASS_NAME" value="cytoscape.CyMain" />
-      <option name="VM_PARAMETERS" value="-Xmx1512M" />
-      <option name="PROGRAM_PARAMETERS" value="-p &quot;C:\Program Files\cytoscape-v2.5.2\plugins&quot;" />
+      <option name="VM_PARAMETERS" value="-Xmx512M" />
+      <option name="PROGRAM_PARAMETERS" value="-p &quot;C:\Program Files\cytoscape-v2.6.1\plugins&quot;" />
       <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$/classes" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" value="" />
       <module name="Cytoscape_EnrichmentMap" />
-      <RunnerSettings RunnerId="Run" />
       <RunnerSettings RunnerId="Debug">
         <option name="DEBUG_PORT" value="3746" />
         <option name="TRANSPORT" value="0" />
         <option name="LOCAL" value="true" />
       </RunnerSettings>
-      <ConfigurationWrapper RunnerId="Run" />
+      <RunnerSettings RunnerId="Run" />
       <ConfigurationWrapper RunnerId="Debug" />
+      <ConfigurationWrapper RunnerId="Run" />
     </configuration>
   </component>
   <component name="SelectInManager" />
@@ -624,24 +478,24 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="-4" y="-4" width="1032" height="742" extended-state="6" />
-    <editor active="true" />
+    <frame x="-4" y="-4" width="1288" height="998" extended-state="7" />
+    <editor active="false" />
     <layout>
       <window_info id="CVS" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.33" order="8" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.33" order="7" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="docked" type="docked" visible="true" weight="0.30408162" order="0" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.45114008" order="1" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="docked" type="docked" visible="true" weight="0.31391585" order="0" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.44827586" order="1" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.25" order="1" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.19310345" order="8" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.18892509" order="8" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.4" order="6" />
       <window_info id="Module Dependencies" active="false" anchor="right" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.33" order="3" />
       <window_info id="Dependency Viewer" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.33" order="8" />
       <window_info id="Favorites" active="false" anchor="right" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.32959184" order="3" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.25" order="1" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="true" weight="0.01791531" order="2" />
-      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.24858299" order="2" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.254023" order="2" />
+      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.24775876" order="2" />
       <window_info id="File View" active="false" anchor="right" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.33" order="3" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.5" order="4" />
+      <window_info id="Debug" active="true" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="true" weight="0.5" order="4" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="sliding" type="sliding" visible="false" weight="0.4" order="0" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.33" order="8" />
       <window_info id="Web" active="false" anchor="left" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.25" order="2" />
@@ -715,113 +569,53 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/Ranking.java">
+    <entry file="file://$PROJECT_DIR$/src/GenericResult.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="20" column="61" selection-start="348" selection-end="348" vertical-scroll-proportion="0.6640625">
+        <state line="19" column="34" selection-start="507" selection-end="507" vertical-scroll-proportion="0.20731707">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/selectDataViewActionListener.java">
+    <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/EnrichmentMapManager.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="55" column="41" selection-start="1903" selection-end="1903" vertical-scroll-proportion="1.3002833">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/BuildEnrichmentMapActionListener.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="70" column="28" selection-start="2011" selection-end="2037" vertical-scroll-proportion="1.2880435">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/HeatMapParameters.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="97" column="57" selection-start="3202" selection-end="3202" vertical-scroll-proportion="0.37728193">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/InitializeGenesetsOfInterestTask.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="81" column="28" selection-start="3454" selection-end="3454" vertical-scroll-proportion="0.07981221">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/ParametersPanel.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="206" column="24" selection-start="7736" selection-end="7736" vertical-scroll-proportion="1.2930328">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/GSEAInputFilesPanel.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="188" column="45" selection-start="6591" selection-end="6591" vertical-scroll-proportion="0.034836065">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/GSEAInputFilesPanelMac.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="276" column="78" selection-start="10466" selection-end="10466" vertical-scroll-proportion="0.034836065">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/OverlappingGenesPanel.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="666" column="0" selection-start="25212" selection-end="25212" vertical-scroll-proportion="0.5614754">
+        <state line="82" column="92" selection-start="2604" selection-end="2604" vertical-scroll-proportion="0.16256158">
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/RanksFileReaderTask.java">
+    <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/BuildEnrichmentMapActionListener.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="138" column="34" selection-start="4519" selection-end="4519" vertical-scroll-proportion="0.42213115">
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/GenericResultFileReaderTask.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="8" column="25" selection-start="169" selection-end="169" vertical-scroll-proportion="0.1045082">
+        <state line="37" column="28" selection-start="920" selection-end="946" vertical-scroll-proportion="1.2693334">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/ColorGradient/ColorGradientTheme.java">
+    <entry file="file://$PROJECT_DIR$/enrichmentmap.xml">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="51" column="86" selection-start="2235" selection-end="2235" vertical-scroll-proportion="0.73155737">
+        <state line="140" column="73" selection-start="4891" selection-end="4891" vertical-scroll-proportion="0.375">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/EnrichmentMapVisualStyle.java">
+    <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/EnrichmentMapInputPanel.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="130" column="8" selection-start="5978" selection-end="5978" vertical-scroll-proportion="0.034836065">
+        <state line="897" column="61" selection-start="39030" selection-end="39062" vertical-scroll-proportion="0.43888888">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/EnrichmentMapParameters.java">
+    <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/BuildGenericEnrichmentMapTask.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
+        <state line="40" column="0" selection-start="1128" selection-end="1128" vertical-scroll-proportion="0.375">
+          <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/GenericInputFilesPanel.java">
+    <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/BuildGSEAEnrichmentMapTask.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="617" column="17" selection-start="21600" selection-end="21600" vertical-scroll-proportion="-2.182377">
+        <state line="56" column="0" selection-start="1581" selection-end="1581" vertical-scroll-proportion="0.33333334">
           <folding />
         </state>
       </provider>
