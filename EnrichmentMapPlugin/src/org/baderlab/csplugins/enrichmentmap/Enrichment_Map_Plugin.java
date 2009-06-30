@@ -70,7 +70,6 @@ import java.util.Properties;
 public class Enrichment_Map_Plugin extends CytoscapePlugin {
     static Properties build_props = new Properties();
     static Properties plugin_props = new Properties();
-    static Properties cyto_prop ;
     static String buildId ;
 
     /*--------------------------------------------------------------
@@ -98,9 +97,6 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
         submenu.add(item);
 
         menu.add(submenu);
-
-        //load Cytoscape properties
-        Enrichment_Map_Plugin.cyto_prop = CytoscapeInit.getProperties() ;
 
         // read buildId properties:
         try {

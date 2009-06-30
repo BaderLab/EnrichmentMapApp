@@ -82,9 +82,6 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
 
     private final CytoPanel cytoPanel;
     private final CytoPanel cytoSidePanel;
-    
-    public static String disable_heatmap_autofocus = Enrichment_Map_Plugin.cyto_prop.getProperty("EnrichmentMap.disable_heatmap_autofocus", "false");
-    public static String disable_genesetSummary_autofocus = Enrichment_Map_Plugin.cyto_prop.getProperty("EnrichmentMap.disable_genesetSummary_autofocus", "false");
 
 
     public EnrichmentMapActionListener(EnrichmentMapParameters params) {
@@ -180,13 +177,13 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
   public void createEdgesData(){
 
       summaryPanel.updateEdgeInfo(Edges.toArray());
-      if ( ! disable_genesetSummary_autofocus.equalsIgnoreCase("TRUE") )
+      if ( ! params.isDisableGenesetSummaryAutofocus() )
     	  cytoSidePanel.setSelectedIndex(cytoSidePanel.indexOfComponent(summaryPanel));
       summaryPanel.revalidate();
 
       if(params.isData()){
         edgeOverlapPanel.updatePanel(params);
-        if ( ! disable_heatmap_autofocus.equalsIgnoreCase("TRUE") ) {
+        if ( ! params.isDisableHeatmapAutofocus() ) {
         	cytoPanel.setSelectedIndex(cytoPanel.indexOfComponent(edgeOverlapPanel));
         }
         edgeOverlapPanel.revalidate();
@@ -198,13 +195,13 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
   private void createNodesData(){
 
         summaryPanel.updateNodeInfo(Nodes.toArray());
-        if ( ! disable_genesetSummary_autofocus.equalsIgnoreCase("TRUE") ) 
+        if ( ! params.isDisableGenesetSummaryAutofocus() ) 
         	cytoSidePanel.setSelectedIndex(cytoSidePanel.indexOfComponent(summaryPanel));
         summaryPanel.revalidate();
 
         if(params.isData()){
             nodeOverlapPanel.updatePanel(params);
-            if ( ! disable_heatmap_autofocus.equalsIgnoreCase("TRUE") ) {
+            if ( ! params.isDisableHeatmapAutofocus() ) {
             	cytoPanel.setSelectedIndex(cytoPanel.indexOfComponent(nodeOverlapPanel));
             }
             nodeOverlapPanel.revalidate();
@@ -217,7 +214,7 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
         if(params.isData()){
             nodeOverlapPanel.clearPanel();
             edgeOverlapPanel.clearPanel();
-            if ( ! disable_heatmap_autofocus.equalsIgnoreCase("TRUE") ) {
+            if ( ! params.isDisableHeatmapAutofocus() ) {
 	            cytoPanel.setSelectedIndex(cytoPanel.indexOfComponent(nodeOverlapPanel));
 	            cytoPanel.setSelectedIndex(cytoPanel.indexOfComponent(edgeOverlapPanel));
             }
