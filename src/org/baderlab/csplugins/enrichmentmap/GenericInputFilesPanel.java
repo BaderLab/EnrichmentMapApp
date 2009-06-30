@@ -100,11 +100,11 @@ public class GenericInputFilesPanel extends JDialog {
     public static String pvalue_instruction = "P-value cut-off (Only genesets with p-value less than this value will be included)";
     public static String qvalue_instruction = "FDR Q-value cut-off (Only genesets with fdr q-value less than this value will be included)";
 
-    public static String pvalue_default  = Enrichment_Map_Plugin.cyto_prop.getProperty("EnrichmentMap.default_pvalue",  "0.05");
-    public static String qvalue_default  = Enrichment_Map_Plugin.cyto_prop.getProperty("EnrichmentMap.default_qvalue",  "0.25");
-    public static String jaccard_default = Enrichment_Map_Plugin.cyto_prop.getProperty("EnrichmentMap.default_jaccard", "0.25");
-    public static String overlap_default = Enrichment_Map_Plugin.cyto_prop.getProperty("EnrichmentMap.default_overlap", "0.50");
-    public static String overlap_metric_default = Enrichment_Map_Plugin.cyto_prop.getProperty("EnrichmentMap.default_overlap_metric", "jaccard");
+//    public static String pvalue_default  = Enrichment_Map_Plugin.cyto_prop.getProperty("EnrichmentMap.default_pvalue",  "0.05");
+//    public static String qvalue_default  = Enrichment_Map_Plugin.cyto_prop.getProperty("EnrichmentMap.default_qvalue",  "0.25");
+//    public static String jaccard_default = Enrichment_Map_Plugin.cyto_prop.getProperty("EnrichmentMap.default_jaccard", "0.25");
+//    public static String overlap_default = Enrichment_Map_Plugin.cyto_prop.getProperty("EnrichmentMap.default_overlap", "0.50");
+//    public static String overlap_metric_default = Enrichment_Map_Plugin.cyto_prop.getProperty("EnrichmentMap.default_overlap_metric", "jaccard");
 
 
     public GenericInputFilesPanel(java.awt.Frame parent, boolean modal) {
@@ -382,7 +382,7 @@ public class GenericInputFilesPanel extends JDialog {
         jaccard.setActionCommand("jaccard");
         overlap = new javax.swing.JRadioButton("Overlap Coeffecient");
         overlap.setActionCommand("overlap");
-        if ( overlap_metric_default.equalsIgnoreCase("overlap") ){
+        if ( ! params.isJaccard() ){
         	//select overlap
         	overlap.setSelected(true);
         	jaccard.setSelected(false);
@@ -416,7 +416,7 @@ public class GenericInputFilesPanel extends JDialog {
         c.gridy = current_row;
         pvalueLabel.setFont(new java.awt.Font("Dialog", 1, 10));
         pvalueLabel.setText(pvalue_instruction);
-        pvalueTextField.setText(pvalue_default);
+        pvalueTextField.setText(Double.toString( params.getPvalue() ));
         gridbag.setConstraints(pvalueLabel, c);
         add(pvalueLabel);
         c.gridx = 3;
@@ -430,7 +430,7 @@ public class GenericInputFilesPanel extends JDialog {
         c.gridy = current_row;
         qvalueLabel.setFont(new java.awt.Font("Dialog", 1, 10));
         qvalueLabel.setText(qvalue_instruction);
-        qvalueTextField.setText(qvalue_default);
+        qvalueTextField.setText(Double.toString( params.getQvalue() ));
         gridbag.setConstraints(qvalueLabel, c);
         add(qvalueLabel);
         c.gridx = 3;
@@ -445,13 +445,7 @@ public class GenericInputFilesPanel extends JDialog {
         c.gridy = current_row;
         jaccardLabel.setFont(new java.awt.Font("Dialog", 1, 10));
         jaccardLabel.setText("Cut-off");
-        if ( overlap_metric_default.equalsIgnoreCase("overlap") ){
-        	// use overlap_default
-        	jaccardTextField.setText(overlap_default);
-        } else {
-        	// use jaccard_default
-        	jaccardTextField.setText(jaccard_default);
-        }        
+        jaccardTextField.setText(  Double.toString( params.getJaccardCutOff() )  );
         
         gridbag.setConstraints(jaccard,c);
         add(jaccard);

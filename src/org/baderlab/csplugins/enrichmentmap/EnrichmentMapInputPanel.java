@@ -110,7 +110,6 @@ public class EnrichmentMapInputPanel extends JPanel {
     private JRadioButton overlap;
     private JRadioButton jaccard;
 
-
     private int defaultColumns = 15;
 
     public static String gct_instruction = "Please select the expression file (.gct), (.rpt)...";
@@ -742,6 +741,13 @@ public class EnrichmentMapInputPanel extends JPanel {
            jaccard.setSelected(true);
            overlap = new JRadioButton("Overlap Coeffecient");
            overlap.setActionCommand("overlap");
+           if ( params.isJaccard() ) {
+               jaccard.setSelected(true);
+               overlap.setSelected(false);
+           } else {
+               jaccard.setSelected(false);
+               overlap.setSelected(true);
+           }
            jaccardOrOverlap = new javax.swing.ButtonGroup();
            jaccardOrOverlap.add(jaccard);
            jaccardOrOverlap.add(overlap);
@@ -827,6 +833,7 @@ public class EnrichmentMapInputPanel extends JPanel {
                 Number value = (Number) coeffecientTextField.getValue();
                 if ((value != null) && (value.doubleValue() >= 0.0) && (value.doubleValue() <= 1.0)) {
                     params.setJaccardCutOff(value.doubleValue());
+                    params.setJaccardCutOffChanged(true);
                 } else {
                     source.setValue(params.getJaccardCutOff());
                     message += "The Overlap/Jaccard Coeffecient cutoff must be between 0 and 100.";
@@ -1298,9 +1305,17 @@ public class EnrichmentMapInputPanel extends JPanel {
   private void selectJaccardOrOverlapActionPerformed(java.awt.event.ActionEvent evt) {
         if(evt.getActionCommand().equalsIgnoreCase("jaccard")){
             params.setJaccard(true);
+            if ( ! params.isJaccardCutOffChanged() ) {
+                params.setJaccardCutOff( params.getDefaultJaccardCutOff() );
+                coeffecientTextField.setText( Double.toString(params.getJaccardCutOff()) );
+            }
         }
      else if(evt.getActionCommand().equalsIgnoreCase("overlap")){
             params.setJaccard(false);
+            if ( ! params.isJaccardCutOffChanged() ) {
+                params.setJaccardCutOff(params.getDefaultOverlapCutOff());
+                coeffecientTextField.setText( Double.toString(params.getJaccardCutOff()) );
+          }
         }
      else{
             JOptionPane.showMessageDialog(this,"Invalid Jaccard Radio Button action command");

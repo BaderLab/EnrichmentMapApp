@@ -47,6 +47,8 @@ import giny.model.Edge;
 
 import java.util.*;
 
+import cytoscape.CytoscapeInit;
+
 /**
  * Created by
  * User: risserlin
@@ -77,20 +79,23 @@ public class EnrichmentMapParameters {
 
     private boolean twoDatasets = false;
 
+    // DEFAULT VALUES for pvalue, qvalue, jaccardCutOff and jaccard 
+    // will be assigned in the constructor
     //p-value cutoff
-    private double pvalue = 0.05;
+    private double pvalue;
     //pvalue slider bar
     private SliderBarPanel pvalueSlider;
 
      //flag to indicate if there are FDR Q-values
     private boolean FDR = false;
     //fdr q-value cutoff
-    private double qvalue = 0.25;
+    private double qvalue;
     //qvalue slider bar
     private SliderBarPanel qvalueSlider;
 
-    private double jaccardCutOff = 0.5;
-    private boolean jaccard = true;
+    private double jaccardCutOff;
+    private boolean jaccard;
+    private boolean jaccardCutOffChanged = false;
 
     //flag to indicate if the results are from GSEA or generic
     private boolean GSEA = true;
@@ -138,7 +143,14 @@ public class EnrichmentMapParameters {
     private HashMap<Integer, Ranking> dataset1Rankings;
     private HashMap<Integer, Ranking> dataset2Rankings;
 
-
+    private Properties cyto_prop;
+    private double defaultPvalueCutOff;
+    private double defaultQvalueCutOff;
+    private double defaultJaccardCutOff;
+    private double defaultOverlapCutOff;
+    private String default_overlap_metric;
+    private Boolean disable_heatmap_autofocus;
+    private Boolean disable_genesetSummary_autofocus;
 
     public EnrichmentMapParameters() {
         this.enrichmentResults1 = new HashMap();
@@ -150,10 +162,32 @@ public class EnrichmentMapParameters {
         this.enrichmentResults1OfInterest = new HashMap();
         this.enrichmentResults2OfInterest = new HashMap();
         this.genesetsOfInterest = new HashMap();
-        jaccard = true;
         this.selectedNodes = new ArrayList<Node>();
         this.selectedEdges = new ArrayList<Edge>();
 
+        this.jaccardCutOffChanged = false;
+        //default Values from Cytoscape properties
+        this.cyto_prop = CytoscapeInit.getProperties() ;
+        this.defaultPvalueCutOff  = Double.parseDouble( this.cyto_prop.getProperty("EnrichmentMap.default_pvalue",  "0.05") );
+        this.defaultQvalueCutOff  = Double.parseDouble( this.cyto_prop.getProperty("EnrichmentMap.default_qvalue",  "0.25") );
+        this.defaultJaccardCutOff = Double.parseDouble( this.cyto_prop.getProperty("EnrichmentMap.default_jaccard", "0.25") );
+        this.defaultOverlapCutOff = Double.parseDouble( this.cyto_prop.getProperty("EnrichmentMap.default_overlap", "0.50") );
+        this.default_overlap_metric = this.cyto_prop.getProperty("EnrichmentMap.default_overlap_metric", "jaccard");
+        this.disable_heatmap_autofocus = Boolean.parseBoolean( this.cyto_prop.getProperty("EnrichmentMap.disable_heatmap_autofocus", "false") );
+        this.disable_genesetSummary_autofocus = Boolean.parseBoolean( this.cyto_prop.getProperty("EnrichmentMap.disable_genesetSummary_autofocus", "false") );
+        
+        //assign the defaults:
+        this.pvalue = this.defaultPvalueCutOff;
+        this.qvalue = this.defaultQvalueCutOff;
+
+        //choose Jaccard or Overlap as default
+        if ( getOverlapMetricDefault().equalsIgnoreCase("overlap") ){
+            this.jaccardCutOff = this.defaultOverlapCutOff;
+            this.jaccard = false;
+        } else {
+            this.jaccardCutOff = this.defaultJaccardCutOff;
+            this.jaccard = true;
+        }
     }
 
     public EnrichmentMapParameters(String propFile){
@@ -219,7 +253,7 @@ public class EnrichmentMapParameters {
         setPvalue(Double.parseDouble((String)props.get("pvalue")));
         setQvalue(Double.parseDouble((String)props.get("qvalue")));
         this. jaccardCutOff = Double.parseDouble((String)props.get("jaccardCutOff"));
-
+        this.jaccardCutOffChanged = true;
     }
 
     //Constructor for Enrichment Map Parameters that take another instance of enrichment map parameters
@@ -261,6 +295,7 @@ public class EnrichmentMapParameters {
         this.twoDatasets = copy.isTwoDatasets();
         this.GSEA = copy.isGSEA();
         this.jaccard = copy.isJaccard();
+        this.jaccardCutOffChanged = copy.jaccardCutOffChanged;
     }
 
     public EnrichmentMapParameters(String GMTFileName,  double pvalue, double qvalue) {
@@ -778,9 +813,41 @@ public class EnrichmentMapParameters {
     return newMap;
     }
 
+    public String getOverlapMetricDefault() {
+        return this.default_overlap_metric;
+        
+    }
 
+    public void setDefaultJaccardCutOff(double defaultJaccardCutOff) {
+        this.defaultJaccardCutOff = defaultJaccardCutOff;
+    }
 
+    public double getDefaultJaccardCutOff() {
+        return defaultJaccardCutOff;
+    }
 
+    public void setDefaultOverlapCutOff(double defaultOverlapCutOff) {
+        this.defaultOverlapCutOff = defaultOverlapCutOff;
+    }
 
+    public double getDefaultOverlapCutOff() {
+        return defaultOverlapCutOff;
+    }
+
+    public boolean isDisableHeatmapAutofocus() {
+        return this.disable_heatmap_autofocus ;
+    }
+    
+    public boolean isDisableGenesetSummaryAutofocus() {
+        return this.disable_genesetSummary_autofocus ;
+    }
+
+    public void setJaccardCutOffChanged(boolean jaccardCutOffChanged) {
+        this.jaccardCutOffChanged = jaccardCutOffChanged;
+    }
+
+    public boolean isJaccardCutOffChanged() {
+        return jaccardCutOffChanged;
+    }
 
 }
