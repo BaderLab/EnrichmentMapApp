@@ -377,6 +377,18 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
                 if(!j.hasNext()){
                     Cytoscape.setCurrentNetwork(currentNetwork);
                     ParametersPanel paramPanel = manager.getParameterPanel();
+
+                    //FIXME Workaround for Bug #29
+                	if (params.getPvalueSlider() == null){
+                        //create the slider for this pvalue
+                        params.setPvalueSlider(new SliderBarPanel(0,params.getPvalue(),"P-value Cutoff",params, EnrichmentMapVisualStyle.PVALUE_DATASET1, EnrichmentMapVisualStyle.PVALUE_DATASET2,ParametersPanel.summaryPanelWidth));
+                	}
+                	if (params.getQvalueSlider() == null){
+                        //create the slider for the qvalue
+                		params.setQvalueSlider(new SliderBarPanel(0,params.getQvalue(),"Q-value Cutoff",params, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2,ParametersPanel.summaryPanelWidth));
+                	}
+                	//FIXME Workaround for Bug #29
+                    
                     paramPanel.updatePanel(params);
                     paramPanel.revalidate();
                 }

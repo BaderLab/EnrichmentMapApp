@@ -658,11 +658,19 @@ public class EnrichmentMapParameters {
         return pvalueSlider;
     }
 
-    public SliderBarPanel getQvalueSlider() {
-        return qvalueSlider;
+    public void setPvalueSlider(SliderBarPanel pvalueSlider) {
+		this.pvalueSlider = pvalueSlider;
+	}
+
+	public SliderBarPanel getQvalueSlider() {
+    	return qvalueSlider;
     }
 
-    public ArrayList<Node> getSelectedNodes() {
+    public void setQvalueSlider(SliderBarPanel qvalueSlider) {
+		this.qvalueSlider = qvalueSlider;
+	}
+
+	public ArrayList<Node> getSelectedNodes() {
         return selectedNodes;
     }
 
