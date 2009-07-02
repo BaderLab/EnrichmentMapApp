@@ -73,7 +73,7 @@ public class AboutPanel extends JDialog {
 
 
         editorPane.setText(
-                "<html><body><p align=center><b>Enrichment Map v" + pluginVersion + " </b><BR>" +
+                "<html><body><p align=center><b>Enrichment Map v" + pluginVersion + " (beta)</b><BR>" + //TODO: remove "beta" on release
                 "A Cytoscape Plugin<BR>" +
                 "<BR>" +
                 "by Gary Bader, Daniele Merico, Ruth Isserlin and Oliver Stueker<BR>" +
