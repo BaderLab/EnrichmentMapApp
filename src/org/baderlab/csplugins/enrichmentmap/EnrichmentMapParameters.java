@@ -1,7 +1,7 @@
 /**
  **                       EnrichmentMap Cytoscape Plugin
  **
- ** Copyright (c) 2008-2009 Bader Lab, Donnelly Centre for Cellular and Biomolecular 
+ ** Copyright (c) 2008-2009 Bader Lab, Donnelly Centre for Cellular and Biomolecular
  ** Research, University of Toronto
  **
  ** Contact: http://www.baderlab.org
@@ -19,14 +19,14 @@
  ** MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.  The software and
  ** documentation provided hereunder is on an "as is" basis, and
  ** University of Toronto
- ** has no obligations to provide maintenance, support, updates, 
+ ** has no obligations to provide maintenance, support, updates,
  ** enhancements or modifications.  In no event shall the
  ** University of Toronto
  ** be liable to any party for direct, indirect, special,
  ** incidental or consequential damages, including lost profits, arising
  ** out of the use of this software and its documentation, even if
  ** University of Toronto
- ** has been advised of the possibility of such damage.  
+ ** has been advised of the possibility of such damage.
  ** See the GNU Lesser General Public License for more details.
  **
  ** You should have received a copy of the GNU Lesser General Public License
@@ -79,7 +79,7 @@ public class EnrichmentMapParameters {
 
     private boolean twoDatasets = false;
 
-    // DEFAULT VALUES for pvalue, qvalue, jaccardCutOff and jaccard 
+    // DEFAULT VALUES for pvalue, qvalue, jaccardCutOff and jaccard
     // will be assigned in the constructor
     //p-value cutoff
     private double pvalue;
@@ -175,7 +175,7 @@ public class EnrichmentMapParameters {
         this.default_overlap_metric = this.cyto_prop.getProperty("EnrichmentMap.default_overlap_metric", "jaccard");
         this.disable_heatmap_autofocus = Boolean.parseBoolean( this.cyto_prop.getProperty("EnrichmentMap.disable_heatmap_autofocus", "false") );
         this.disable_genesetSummary_autofocus = Boolean.parseBoolean( this.cyto_prop.getProperty("EnrichmentMap.disable_genesetSummary_autofocus", "false") );
-        
+
         //assign the defaults:
         this.pvalue = this.defaultPvalueCutOff;
         this.qvalue = this.defaultQvalueCutOff;
@@ -254,6 +254,13 @@ public class EnrichmentMapParameters {
         setQvalue(Double.parseDouble((String)props.get("qvalue")));
         this. jaccardCutOff = Double.parseDouble((String)props.get("jaccardCutOff"));
         this.jaccardCutOffChanged = true;
+
+        //create the slider for this pvalue
+        pvalueSlider = new SliderBarPanel(0,this.pvalue,"P-value Cutoff",this, EnrichmentMapVisualStyle.PVALUE_DATASET1, EnrichmentMapVisualStyle.PVALUE_DATASET2,ParametersPanel.summaryPanelWidth);
+
+        //create the slider for the qvalue
+        qvalueSlider = new SliderBarPanel(0,this.qvalue,"Q-value Cutoff",this, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2,ParametersPanel.summaryPanelWidth);
+
     }
 
     //Constructor for Enrichment Map Parameters that take another instance of enrichment map parameters
@@ -794,7 +801,8 @@ public class EnrichmentMapParameters {
 
             //Genesets
             if(type == 1)
-                newMap.put(tokens[0], new GeneSet(tokens));
+                if(tokens.length>=3)
+                    newMap.put(tokens[0], new GeneSet(tokens));
 
             //Genes
             if(type == 2)
@@ -815,7 +823,7 @@ public class EnrichmentMapParameters {
 
     public String getOverlapMetricDefault() {
         return this.default_overlap_metric;
-        
+
     }
 
     public void setDefaultJaccardCutOff(double defaultJaccardCutOff) {
@@ -837,7 +845,7 @@ public class EnrichmentMapParameters {
     public boolean isDisableHeatmapAutofocus() {
         return this.disable_heatmap_autofocus ;
     }
-    
+
     public boolean isDisableGenesetSummaryAutofocus() {
         return this.disable_genesetSummary_autofocus ;
     }

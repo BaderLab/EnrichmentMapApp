@@ -95,6 +95,20 @@ public class GCTFileReaderTask implements Task {
 
     }
       public void parse() {
+
+          //Need to check if the file specified as an expression file is actually a rank file
+          //If it is a rank file it can either be 5 or 2 columns but it is important that the rank
+          //value is extracted from the right column and placed in the expression matrix as if it
+          //was an expression value in order for other features to work.
+
+          //Also a problem with old session files that imported a rank file so it also
+          //important to check if the file only has two columns.  If it only has two columns,
+          //check to see if the second column is a double.  If it is then consider that column
+          //expression
+
+          boolean twoColumns = false;
+
+
         TextFileReader reader = new TextFileReader(GCTFileName);
         reader.read();
         fullText = reader.getText();
@@ -125,6 +139,14 @@ public class GCTFileReaderTask implements Task {
                     line = lines[0];
                 }
                 tokens = line.split("\t");
+
+                //check to see how many columns there are
+                //if there are only 2 columns then we could be dealing with a ranked file
+                //check to see if the second column contains expression values.
+                if(tokens.length == 2){
+                    twoColumns = true;
+                }
+
                 expressionMatrix = new GeneExpressionMatrix(tokens);
                 expressionMatrix.setExpressionMatrix(expression);
                 continue;
@@ -138,7 +160,18 @@ public class GCTFileReaderTask implements Task {
                 //easier to compare.
                 datasetGenes.add(genes.get(Name));
 
-                String description = tokens[1];
+                String description = "";
+                //check to see if the second column is parseable
+                if(twoColumns){
+                    try{
+                        Double.parseDouble(tokens[1]);
+                    }catch(NumberFormatException e){
+                        description = tokens[1];
+                    }
+                }
+                else
+                    description = tokens[1];
+                    
                 GeneExpression expres = new GeneExpression(Name, description);
                 expres.setExpression(tokens);
 
