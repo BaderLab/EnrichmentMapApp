@@ -75,6 +75,29 @@ public class GeneExpressionMatrix {
     public GeneExpressionMatrix(String[] columnNames) {
         numConditions = columnNames.length;
         this.columnNames = columnNames;
+
+        if(numConditions == 2){
+            numConditions = 3;
+            String[] newNames = new String[3];
+
+            //the first column is the name and the second column is description
+            //then add a third column with no data
+            //otherwise assume this is a rank file and it is missing the description files
+
+            if(columnNames[1].equalsIgnoreCase("description")){
+                newNames[0] = columnNames[0];
+                newNames[1] = columnNames[1];
+                newNames[2] = "NO DATA";
+            }
+            else{
+                newNames[0] = columnNames[0];
+                newNames[1] = "description";
+                newNames[2] = columnNames[1];
+            }
+            this.columnNames = newNames;
+
+        }
+
     }
 
     public String[] getColumnNames() {
