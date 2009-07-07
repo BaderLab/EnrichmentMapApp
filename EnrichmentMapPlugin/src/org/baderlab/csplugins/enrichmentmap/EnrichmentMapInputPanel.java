@@ -836,12 +836,14 @@ public class EnrichmentMapInputPanel extends JPanel {
                     params.setJaccardCutOffChanged(true);
                 } else {
                     source.setValue(params.getJaccardCutOff());
-                    message += "The Overlap/Jaccard Coeffecient cutoff must be between 0 and 100.";
+                    message += "The Overlap/Jaccard Coeffecient cutoff must be between 0 and 1.";
                     invalid = true;
                 }
             }else if (source == GMTFileNameTextField) {
                 String value = GMTFileNameTextField.getText();
-                if(checkFile(value).equals(Color.RED)){
+                if(value.equalsIgnoreCase("") )
+                    params.setGMTFileName(value);
+                else if(checkFile(value).equals(Color.RED)){
                     JOptionPane.showMessageDialog(Cytoscape.getDesktop(),message,"File name change entered is not a valid file name",JOptionPane.WARNING_MESSAGE);
                     GMTFileNameTextField.setForeground(checkFile(value));
                 }
@@ -849,7 +851,9 @@ public class EnrichmentMapInputPanel extends JPanel {
                     params.setGMTFileName(value);
             }else if (source == GCTFileName1TextField) {
                 String value = GCTFileName1TextField.getText();
-                if(checkFile(value).equals(Color.RED)){
+                if(value.equalsIgnoreCase("") )
+                    params.setGCTFileName1(value);
+                else if(checkFile(value).equals(Color.RED)){
                     JOptionPane.showMessageDialog(Cytoscape.getDesktop(),message,"File name change entered is not a valid file name",JOptionPane.WARNING_MESSAGE);
                     GCTFileName1TextField.setForeground(checkFile(value));
                 }
@@ -857,7 +861,9 @@ public class EnrichmentMapInputPanel extends JPanel {
                     params.setGCTFileName1(value);
             }else if (source == GCTFileName2TextField) {
                 String value = GCTFileName2TextField.getText();
-                if(checkFile(value).equals(Color.RED)){
+                if(value.equalsIgnoreCase("") )
+                    params.setGCTFileName2(value);
+                else if(checkFile(value).equals(Color.RED)){
                     JOptionPane.showMessageDialog(Cytoscape.getDesktop(),message,"File name change entered is not a valid file name",JOptionPane.WARNING_MESSAGE);
                     GCTFileName2TextField.setForeground(checkFile(value));
                 }
@@ -865,7 +871,9 @@ public class EnrichmentMapInputPanel extends JPanel {
                     params.setGCTFileName2(value);
             }else if (source == Dataset1FileNameTextField) {
                 String value = Dataset1FileNameTextField.getText();
-                if(checkFile(value).equals(Color.RED)){
+                if(value.equalsIgnoreCase("") )
+                    params.setEnrichmentDataset1FileName1(value);
+                else if(checkFile(value).equals(Color.RED)){
                     JOptionPane.showMessageDialog(Cytoscape.getDesktop(),message,"File name change entered is not a valid file name",JOptionPane.WARNING_MESSAGE);
                     Dataset1FileNameTextField.setForeground(checkFile(value));
                 }
@@ -873,7 +881,9 @@ public class EnrichmentMapInputPanel extends JPanel {
                     params.setEnrichmentDataset1FileName1(value);
             }else if (source == Dataset1FileName2TextField) {
                 String value = Dataset1FileName2TextField.getText();
-                if(checkFile(value).equals(Color.RED)){
+                if(value.equalsIgnoreCase("") )
+                    params.setEnrichmentDataset1FileName2(value);
+                else if(checkFile(value).equals(Color.RED)){
                     JOptionPane.showMessageDialog(Cytoscape.getDesktop(),message,"File name change entered is not a valid file name",JOptionPane.WARNING_MESSAGE);
                     Dataset1FileName2TextField.setForeground(checkFile(value));
                 }
@@ -881,7 +891,9 @@ public class EnrichmentMapInputPanel extends JPanel {
                     params.setEnrichmentDataset1FileName2(value);
             }else if (source == Dataset2FileNameTextField) {
                 String value = Dataset2FileNameTextField.getText();
-                if(checkFile(value).equals(Color.RED)){
+                if(value.equalsIgnoreCase("") )
+                    params.setEnrichmentDataset2FileName1(value);
+                else if(checkFile(value).equals(Color.RED)){
                     JOptionPane.showMessageDialog(Cytoscape.getDesktop(),message,"File name change entered is not a valid file name",JOptionPane.WARNING_MESSAGE);
                     Dataset2FileNameTextField.setForeground(checkFile(value));
                 }
@@ -889,7 +901,9 @@ public class EnrichmentMapInputPanel extends JPanel {
                     params.setEnrichmentDataset2FileName1(value);
             }else if (source == Dataset2FileName2TextField) {
                 String value = Dataset2FileName2TextField.getText();
-                if(checkFile(value).equals(Color.RED)){
+                if(value.equalsIgnoreCase("") )
+                    params.setEnrichmentDataset2FileName2(value);
+                else if(checkFile(value).equals(Color.RED)){
                     JOptionPane.showMessageDialog(Cytoscape.getDesktop(),message,"File name change entered is not a valid file name",JOptionPane.WARNING_MESSAGE);
                     Dataset2FileName2TextField.setForeground(checkFile(value));
                 }
@@ -1100,7 +1114,7 @@ public class EnrichmentMapInputPanel extends JPanel {
 
                 //check to see the file exists and can be read
                 //check to see if the gmt file has already been set
-                if(params.getGMTFileName() == null){
+                if(params.getGMTFileName() == null || params.getGMTFileName().equalsIgnoreCase("")){
                     GMTFileNameTextField.setForeground(checkFile(gmt));
                     GMTFileNameTextField.setText(gmt);
                     params.setGMTFileName(gmt);
@@ -1129,7 +1143,7 @@ public class EnrichmentMapInputPanel extends JPanel {
                 }
         }
         else{
-           if(params.getGMTFileName() == null){
+           if(params.getGMTFileName() == null || params.getGMTFileName().equalsIgnoreCase("")){
                 GMTFileNameTextField.setForeground(checkFile(gmt));
                 GMTFileNameTextField.setText(gmt);
                 params.setGMTFileName(gmt);
