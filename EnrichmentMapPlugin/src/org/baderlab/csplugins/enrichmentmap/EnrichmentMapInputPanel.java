@@ -974,6 +974,10 @@ public class EnrichmentMapInputPanel extends JPanel {
           CytoscapeDesktop desktop = Cytoscape.getDesktop();
 
           CytoPanel cytoPanel = desktop.getCytoPanel(SwingConstants.WEST);
+
+          //set the input window to null in the instance
+          EnrichmentMapManager.getInstance().setInputWindow(null);
+
           cytoPanel.remove(this);
 
        }
@@ -983,6 +987,10 @@ public class EnrichmentMapInputPanel extends JPanel {
             CytoscapeDesktop desktop = Cytoscape.getDesktop();
 
           CytoPanel cytoPanel = desktop.getCytoPanel(SwingConstants.WEST);
+
+        //set the input window to null in the instance
+          EnrichmentMapManager.getInstance().setInputWindow(null);
+
           cytoPanel.remove(this);
         }
 

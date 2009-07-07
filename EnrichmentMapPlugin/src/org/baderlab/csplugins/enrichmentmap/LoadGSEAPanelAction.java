@@ -77,20 +77,33 @@ public class LoadGSEAPanelAction extends CytoscapeAction {
                 EnrichmentMapManager.getInstance();
                 initialized = true;
 
-             EnrichmentMapInputPanel inputwindow = new EnrichmentMapInputPanel();
+                EnrichmentMapInputPanel inputwindow = new EnrichmentMapInputPanel();
 
-              //set the input window in the instance so we can udate the instance window
-              //on network focus
-              EnrichmentMapManager.getInstance().setInputWindow(inputwindow);
+                //set the input window in the instance so we can udate the instance window
+                //on network focus
+                EnrichmentMapManager.getInstance().setInputWindow(inputwindow);
 
-              cytoPanel.add("Enrichment Map", inputwindow);
-              index =  cytoPanel.indexOfComponent(inputwindow);
+                cytoPanel.add("Enrichment Map", inputwindow);
+                index =  cytoPanel.indexOfComponent(inputwindow);
 
-              cytoPanel.setSelectedIndex(index);
+                cytoPanel.setSelectedIndex(index);
           }
           else{
 
-              cytoPanel.setSelectedIndex(index);
+                //check to see that the input window hasn't been closed
+
+                EnrichmentMapInputPanel inputwindow  = EnrichmentMapManager.getInstance().getInputWindow();
+                if(inputwindow == null){
+                  inputwindow = new EnrichmentMapInputPanel();
+                  EnrichmentMapManager.getInstance().setInputWindow(inputwindow);  
+                  cytoPanel.add("Enrichment Map", inputwindow);
+                  index =  cytoPanel.indexOfComponent(inputwindow);
+                }
+                else{
+                   index =  cytoPanel.indexOfComponent(inputwindow);
+                }
+
+                cytoPanel.setSelectedIndex(index);
 
           }
 
