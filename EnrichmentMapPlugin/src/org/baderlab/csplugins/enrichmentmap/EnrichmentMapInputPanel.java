@@ -1,7 +1,7 @@
 /**
  **                       EnrichmentMap Cytoscape Plugin
  **
- ** Copyright (c) 2008-2009 Bader Lab, Donnelly Centre for Cellular and Biomolecular 
+ ** Copyright (c) 2008-2009 Bader Lab, Donnelly Centre for Cellular and Biomolecular
  ** Research, University of Toronto
  **
  ** Contact: http://www.baderlab.org
@@ -19,14 +19,14 @@
  ** MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.  The software and
  ** documentation provided hereunder is on an "as is" basis, and
  ** University of Toronto
- ** has no obligations to provide maintenance, support, updates, 
+ ** has no obligations to provide maintenance, support, updates,
  ** enhancements or modifications.  In no event shall the
  ** University of Toronto
  ** be liable to any party for direct, indirect, special,
  ** incidental or consequential damages, including lost profits, arising
  ** out of the use of this software and its documentation, even if
  ** University of Toronto
- ** has been advised of the possibility of such damage.  
+ ** has been advised of the possibility of such damage.
  ** See the GNU Lesser General Public License for more details.
  **
  ** You should have received a copy of the GNU Lesser General Public License
@@ -1396,7 +1396,6 @@ public class EnrichmentMapInputPanel extends JPanel {
              if(file.getPath().contains(".rpt")){
                       //The file loaded is an rpt file --> populate the fields based on the
                       populateFieldsFromRpt(file,false);
-                      params.setTwoDatasets(true);
                   }
              else{
                GCTFileName2TextField.setForeground(checkFile(file.getAbsolutePath()));
@@ -1404,6 +1403,7 @@ public class EnrichmentMapInputPanel extends JPanel {
                params.setGCTFileName2(file.getAbsolutePath());
                GCTFileName2TextField.setToolTipText(file.getAbsolutePath());
              }
+             params.setTwoDatasets(true);
              params.setData2(true);
          }
      }
@@ -1488,7 +1488,6 @@ public class EnrichmentMapInputPanel extends JPanel {
            if(file.getPath().contains(".rpt")){
                       //The file loaded is an rpt file --> populate the fields based on the
                       populateFieldsFromRpt(file,false);
-                      params.setTwoDatasets(true);
                   }
              else{
               Dataset2FileNameTextField.setForeground(checkFile(file.getAbsolutePath()));
@@ -1496,7 +1495,7 @@ public class EnrichmentMapInputPanel extends JPanel {
               params.setEnrichmentDataset2FileName1(file.getAbsolutePath());
               Dataset2FileNameTextField.setToolTipText(file.getAbsolutePath() );
            }
-
+           params.setTwoDatasets(true);
       }
   }
 
@@ -1519,7 +1518,7 @@ public class EnrichmentMapInputPanel extends JPanel {
            if(file.getPath().contains(".rpt")){
                       //The file loaded is an rpt file --> populate the fields based on the
                       populateFieldsFromRpt(file,false);
-                      params.setTwoDatasets(true);
+
                   }
              else{
               Dataset2FileName2TextField.setForeground(checkFile(file.getAbsolutePath()));
@@ -1527,7 +1526,7 @@ public class EnrichmentMapInputPanel extends JPanel {
               params.setEnrichmentDataset2FileName2(file.getAbsolutePath());
               Dataset2FileName2TextField.setToolTipText(file.getAbsolutePath() );
            }
-
+           params.setTwoDatasets(true);
       }
   }
 
