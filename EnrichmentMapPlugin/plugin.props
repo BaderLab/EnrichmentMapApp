@@ -13,7 +13,7 @@ pluginDescription=A Plugin to create Enrichment Maps
 #TODO: Write Description
 
 # Plugin version number, this must be two numbers separated by a decimlal.  Ex. 0.2, 14.03
-pluginVersion=0.5
+pluginVersion=0.6
 
 # Compatible Cytoscape version
 cytoscapeVersion=2.6
