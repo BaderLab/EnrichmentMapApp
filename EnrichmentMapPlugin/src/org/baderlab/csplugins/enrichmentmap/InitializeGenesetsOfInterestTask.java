@@ -77,7 +77,6 @@ public class InitializeGenesetsOfInterestTask implements Task {
         if(taskMonitor == null){
             throw new IllegalStateException("Task Monitor is not set");
         }
-        try{
             //create subset of genesets that contains only the genesets of interest with pvalue and qbalue less than values
             //specified by the user.
             HashMap enrichmentResults1 = params.getEnrichmentResults1();
@@ -124,7 +123,7 @@ public class InitializeGenesetsOfInterestTask implements Task {
                         }
                         else{
                             System.out.println(current_name);
-                            //throw new IllegalThreadStateException("GMT file and GSEA Results file Do not match up.");
+                            throw new IllegalThreadStateException("GMT file and GSEA Results file Do not match up.");
                         }
                     }
                 }
@@ -143,7 +142,7 @@ public class InitializeGenesetsOfInterestTask implements Task {
                         }
                         else{
                             System.out.println(current_name);
-                            //throw new IllegalThreadStateException("GMT file and Results file Do not match up.");
+                            throw new IllegalThreadStateException("GMT file and Results file Do not match up.");
                         }
                     }
                 }
@@ -183,7 +182,7 @@ public class InitializeGenesetsOfInterestTask implements Task {
                            }
                            else{
                                System.out.println(current_name);
-                               //throw new IllegalThreadStateException("GMT file and GSEA Results file Do not match up.");
+                               throw new IllegalThreadStateException("GMT file and GSEA Results file Do not match up.");
                            }
                        }
                     }
@@ -202,7 +201,8 @@ public class InitializeGenesetsOfInterestTask implements Task {
                            }
                            else{
                                System.out.println(current_name);
-                               //throw new IllegalThreadStateException("GMT file and Results file Do not match up.");
+                               //taskMonitor.setException(new IllegalThreadStateException("GMT file and Results file Do not match up."),"wrong GMT");
+                               throw new IllegalThreadStateException("GMT file and Results file Do not match up.");
                            }
                        }
                    }
@@ -214,10 +214,7 @@ public class InitializeGenesetsOfInterestTask implements Task {
             //once we have limited our analysis get rid of the initial genesets list
             genesets.clear();
 
-        } catch(IllegalThreadStateException e){
-            taskMonitor.setException(e, "Unable to match one of the Results to the GMT file provided.  Please make sure you supplied the correct gmt file");
-            return false;
-        }
+
 
        return true;
     }
