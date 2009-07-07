@@ -85,8 +85,7 @@ public class BuildGSEAEnrichmentMapTask implements Task {
             //boolean success = TaskManager.executeTask(gmtFile, config);
 
         } catch(Exception e){
-            JOptionPane.showMessageDialog(Cytoscape.getDesktop(),"unable to load GMT file");
-
+            taskMonitor.setException(e,"unable to load GMT file");
         }
 
         //Load the Data if the user has supplied the data file.
@@ -106,7 +105,7 @@ public class BuildGSEAEnrichmentMapTask implements Task {
                 params.filterGenesets();
 
             } catch(Exception e){
-                JOptionPane.showMessageDialog(Cytoscape.getDesktop(),"unable to load GSEA DATA (.GCT) file");
+                taskMonitor.setException(e,"unable to load GSEA DATA (.GCT) file");
 
             }
         }
@@ -149,12 +148,23 @@ public class BuildGSEAEnrichmentMapTask implements Task {
                 }
 
             }
+             } catch(Exception e){
 
+                taskMonitor.setException(e,"unable to load enrichment results files");
+        }
+
+        try{
             //Initialize the set of genesets and GSEA results that we want to compute over
             InitializeGenesetsOfInterestTask genesets_init = new InitializeGenesetsOfInterestTask(params,taskMonitor);
             genesets_init.run();
             //boolean success4 = TaskManager.executeTask(genesets_init,config);
+       } catch(IllegalThreadStateException e){
+            taskMonitor.setException(e,"Genesets defined in the results \nfile are not found in  gene set file (GMT).\n  Please make sure you are using the correct GMT file.");
+            //JOptionPane.showMessageDialog(Cytoscape.getDesktop(),"Genesets defined in the results file are not found in \n gene set file (GMT).\n  Please make sure you are using the correct GMT file.");
+            return;
+        }
 
+        try{
             //compute the geneset similarities
             ComputeSimilarityTask similarities = new ComputeSimilarityTask(params,taskMonitor);
             similarities.run();
@@ -167,13 +177,11 @@ public class BuildGSEAEnrichmentMapTask implements Task {
             VisualizeEnrichmentMapTask map = new VisualizeEnrichmentMapTask(params,taskMonitor);
             map.run();
             //boolean success3 =TaskManager.executeTask(map,config);
-
-
-        } catch(Exception e){
-
-            JOptionPane.showMessageDialog(Cytoscape.getDesktop(),"unable to build map");
-
+          } catch(Exception e){
+                taskMonitor.setException(e,"unable to build/visualize map");
         }
+
+
 
     }
 

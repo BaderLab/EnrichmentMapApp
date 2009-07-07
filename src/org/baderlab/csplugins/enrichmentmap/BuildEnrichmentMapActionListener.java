@@ -46,6 +46,7 @@ import cytoscape.task.ui.JTaskConfig;
 import cytoscape.task.util.TaskManager;
 import cytoscape.task.TaskMonitor;
 import cytoscape.task.Task;
+import cytoscape.Cytoscape;
 
 
 import javax.swing.*;
@@ -77,10 +78,18 @@ public class BuildEnrichmentMapActionListener implements ActionListener {
         config.displayCloseButton(true);
         config.displayStatus(true);
 
-       //if(params.isGSEA()){
-            BuildGSEAEnrichmentMapTask new_map = new BuildGSEAEnrichmentMapTask(inputPanel.getParams());
+       //make sure that the minimum information is set in the current set of parameters
+       EnrichmentMapParameters params = inputPanel.getParams();
+
+       String errors = params.checkMinimalRequirements();
+
+       if(errors.equalsIgnoreCase("")){
+            BuildGSEAEnrichmentMapTask new_map = new BuildGSEAEnrichmentMapTask(params);
             boolean success = TaskManager.executeTask(new_map,config);
-       //}
+       }
+       else{
+           JOptionPane.showMessageDialog(Cytoscape.getDesktop(),errors,"Invalid Input",JOptionPane.WARNING_MESSAGE);
+       }
        //else{
            //BuildGenericEnrichmentMapTask new_map = new BuildGenericEnrichmentMapTask(inputPanel, params);
            //boolean success = TaskManager.executeTask(new_map, config);

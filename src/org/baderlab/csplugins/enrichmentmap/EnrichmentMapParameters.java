@@ -46,6 +46,7 @@ import giny.model.Node;
 import giny.model.Edge;
 
 import java.util.*;
+import java.io.File;
 
 import cytoscape.CytoscapeInit;
 
@@ -304,6 +305,58 @@ public class EnrichmentMapParameters {
         this.jaccard = copy.isJaccard();
         this.jaccardCutOffChanged = copy.jaccardCutOffChanged;
     }
+
+
+    //Check to see if the current set of enrichment map parameters has the minimal amount
+    //of information to run enrichment maps.
+    //If it is a GSEA run then gmt,gct,2 enrichment files are needed
+    //If it is a generic run then gmt and 1 enrichment file is needed
+    //if there are two datasets then depending on type it requires the same as above.
+    //returns a string specifying the files that are missing and and empty string if
+    //everything is ok
+    public String checkMinimalRequirements(){
+        String errors = "";
+
+        //minimal for either analysis
+        if(this.GMTFileName.equalsIgnoreCase("") || !checkFile(this.GMTFileName))
+            errors = errors + "GMT file can not be found \n";
+        if(this.enrichmentDataset1FileName1.equalsIgnoreCase("") || !checkFile(this.enrichmentDataset1FileName1))
+            errors = errors + "Dataset 1, enrichment file 1 can not be found\n";
+        if(this.twoDatasets){
+            if(this.enrichmentDataset2FileName1.equalsIgnoreCase("") || !checkFile(this.enrichmentDataset2FileName1))
+                errors = errors + "Dataset 2, enrichment file 1 can not be found\n";
+        }
+        //GSEA inputs
+        if(this.GSEA){
+            if(this.enrichmentDataset1FileName2.equalsIgnoreCase("") || !checkFile(this.enrichmentDataset1FileName2))
+                errors = errors + "Dataset 1, enrichment file 2 can not be found\n";
+            if(this.twoDatasets){
+                if(this.enrichmentDataset2FileName2.equalsIgnoreCase("") || !checkFile(this.enrichmentDataset2FileName2))
+                    errors = errors + "Dataset 2, enrichment file 2 can not be found\n";
+            }
+        }
+
+        //check to see if there are two datasets if the two gct files are the same
+        if((this.twoDatasets) && (this.GCTFileName1.equalsIgnoreCase(this.GCTFileName2))){
+            this.Data2 = false;
+            this.GCTFileName2 = "";
+        }
+
+
+        return errors;
+    }
+
+    private boolean checkFile(String filename){
+           //check to see if the files exist and are readable.
+           //if the file is unreadable change the color of the font to red
+           //otherwise the font should be black.
+           if(filename != null){
+               File tempfile = new File(filename);
+               if(!tempfile.canRead())
+                   return false;
+           }
+           return true;
+       }
 
     public EnrichmentMapParameters(String GMTFileName,  double pvalue, double qvalue) {
         this();
