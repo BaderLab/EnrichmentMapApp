@@ -207,7 +207,9 @@ public class EnrichmentMapManager implements PropertyChangeListener {
                     parameterPanel.updatePanel(currentNetworkParams);
 
                     //update the input window to contain the parameters of the selected network
-                    inputWindow.updateContents(currentNetworkParams);
+                    //only if there is a input window
+                    if(inputWindow!=null)
+                        inputWindow.updateContents(currentNetworkParams);
 
                     summaryPanel.updateNodeInfo(currentNetworkParams.getSelectedNodes().toArray());
 
