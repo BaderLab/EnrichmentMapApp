@@ -24,7 +24,8 @@
     -->
 
 	<property file="enrichment_map.properties" />
-
+	<property file="plugin.props" />
+	
 	<property environment="env" />
 	<condition property="CYTOSCAPE_HOME" value="${env.CYTOSCAPE_HOME}" else="C:/Program Files/Cytoscape-v2.6.1" >
 		<available file="${env.CYTOSCAPE_HOME}/cytoscape.jar" />
@@ -76,6 +77,8 @@
 	<property name="enrichment_map.output.dir" value="${module.enrichment_map.basedir}/classes"/>
 	<property name="enrichment_map.jars.dir" value="${module.enrichment_map.basedir}/jars"/>
 	<property name="enrichment_map.testoutput.dir" value="${module.enrichment_map.basedir}/classes"/>
+	<property name="enrichment_map.bin_release.dir" value="${module.enrichment_map.basedir}/release_bin"/>
+	<property name="enrichment_map.src_release_root.dir" value="${module.enrichment_map.basedir}/release_src"/>
 
 	<path id="enrichment_map.module.bootclasspath">
 		<!-- Paths to be included in compilation bootclasspath -->
@@ -102,6 +105,22 @@
 		</dirset>
 	</path>
 
+	<!--	Targets:
+		all ~~~~~~~~+ init
+					+ clean	~~~~~~~~~~~~~~~~+ clean.module.enrichment_map
+					|						
+					+ compile ~~~~~~~~~~~~~~+ compile.module.enrichment_map	~~~~+ compile.module.enrichment_map.production
+					|															|
+					|															+ compile.module.enrichment_map.tests
+					+ buildID
+					|
+					+ jars
+				
+		release ~~~~+ binary_release (jars)
+					|
+					+ source_release
+		-->
+	
 	<target name="compile.module.enrichment_map" depends="compile.module.enrichment_map.production,compile.module.enrichment_map.tests" description="Compile module enrichment_map"/>
 
 	<target name="compile.module.enrichment_map.production" description="Compile module enrichment_map; production classes">
@@ -127,6 +146,8 @@
 		<delete dir="${enrichment_map.output.dir}"/>
 		<delete dir="${enrichment_map.jars.dir}"/>
 		<delete dir="${enrichment_map.testoutput.dir}"/>
+		<delete dir="${enrichment_map.bin_release.dir}"/>
+		<delete dir="${enrichment_map.src_release_root.dir}"/>
 	</target>
 
 	<target name="init" description="Build initialization">
@@ -174,6 +195,48 @@
 			<entry  key="build.timestamp"	type="date"	value="now"	pattern="yyyy/MM/dd HH:mm:ss Z (z)"/>
 		</propertyfile>
 	</target>
+
+	<target name="release_source"                description="Make a source-code release">
+		<property name="enrichment_map.src_release.dir" value="${enrichment_map.src_release_root.dir}/enrichment_map_v${pluginVersion}"/>
+		<mkdir dir="${enrichment_map.src_release_root.dir}"/>
+		<mkdir dir="${enrichment_map.src_release.dir}"/>
+		<mkdir dir="${enrichment_map.src_release.dir}/src"/>
+		<copy todir="${enrichment_map.src_release.dir}/src">
+			<fileset dir="${module.enrichment_map.basedir}/src">
+				<patternset refid="ignored.files"/>
+				<type type="file"/>
+			</fileset>
+		</copy>
+		
+		<mkdir dir="${enrichment_map.src_release.dir}/resources"/>
+		<copy todir="${enrichment_map.src_release.dir}/resources">
+			<fileset dir="${module.enrichment_map.basedir}/resources">
+				<patternset refid="ignored.files"/>
+				<type type="file"/>
+			</fileset>
+		</copy>
+		
+		<copy file="build.xml"                 todir="${enrichment_map.src_release.dir}" />
+ 		<copy file="plugin.props"              todir="${enrichment_map.src_release.dir}" />
+		<copy file="doc/LGPL_2.1_LICENSE.txt"  tofile="${enrichment_map.src_release.dir}/LICENSE.TXT" />
+<!--	<copy file="doc/README.TXT"            todir="${enrichment_map.src_release.dir}" /> -->
+		<copy file="enrichment_map.properties" todir="${enrichment_map.src_release.dir}" />
+		<tar destfile="enrichment_map_v${pluginVersion}_src.tar.gz" basedir="${enrichment_map.src_release_root.dir}" 
+			 compression="gzip" longfile="gnu" />
+		<zip destfile="enrichment_map_v${pluginVersion}_src.zip" basedir="${enrichment_map.src_release_root.dir}" />
+	</target>
+	
+	<target name="release_binary" depends="jars" description="Make a binary-release">
+		<mkdir dir="${enrichment_map.bin_release.dir}"/>
+		<copy file="${enrichment_map.jars.dir}/EnrichmentMap.jar" todir="${enrichment_map.bin_release.dir}" />
+		<copy file="doc/LGPL_2.1_LICENSE.txt"  tofile="${enrichment_map.src_release.dir}/LICENSE.TXT" />
+<!--	<copy file="doc/README.TXT"            todir="${enrichment_map.src_release.dir}" /> -->
+		<zip destfile="enrichment_map_v${pluginVersion}.zip" basedir="${enrichment_map.bin_release.dir}" />
+	</target>
+		
+	<target name="release" depends="release_binary, release_source" description="Make a release"/>
+
+	<target name="compile" depends="compile.module.enrichment_map" description="Compile all"/>
 
 	<target name="clean" depends="clean.module.enrichment_map" description="cleanup all"/>
 
