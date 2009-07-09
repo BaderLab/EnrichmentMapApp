@@ -256,7 +256,7 @@ public class EnrichmentMapInputPanel extends JPanel {
        }
 
        /**
-        * Creates a collapsable panel that holds collapsable user inputs
+        * Creates a collapsible panel that holds collapsible user inputs
         *
         * @return collapsablePanel
         */
@@ -732,7 +732,7 @@ public class EnrichmentMapInputPanel extends JPanel {
            qvalueCutOffPanel.add(qvalueCutOffLabel, BorderLayout.WEST);
            qvalueCutOffPanel.add(qvalueTextField, BorderLayout.EAST);
 
-           //coeffecient cutoff input
+           //coefficient cutoff input
 
            ButtonGroup jaccardOrOverlap;
 
@@ -1628,18 +1628,27 @@ public class EnrichmentMapInputPanel extends JPanel {
         this.params = new EnrichmentMapParameters();
 
         GMTFileNameTextField.setText("");
+        GMTFileNameTextField.setToolTipText(null);
 
         GCTFileName1TextField.setText("");
+        GCTFileName1TextField.setToolTipText(null);
         GCTFileName2TextField.setText("");
+        GCTFileName2TextField.setToolTipText(null);
 
         Dataset1FileNameTextField.setText("");
+        Dataset1FileNameTextField.setToolTipText(null);
         Dataset1FileName2TextField.setText("");
+        Dataset1FileName2TextField.setToolTipText(null);
 
         Dataset2FileNameTextField.setText("");
+        Dataset2FileNameTextField.setToolTipText(null);
         Dataset2FileName2TextField.setText("");
+        Dataset2FileName2TextField.setToolTipText(null);
 
         Dataset1RankFileTextField.setText("");
+        Dataset1RankFileTextField.setToolTipText(null);
         Dataset2RankFileTextField.setText("");
+        Dataset2RankFileTextField.setToolTipText(null);
 
         Dataset1Phenotype1TextField.setText(params.getDataset1Phenotype1());
         Dataset1Phenotype2TextField.setText(params.getDataset1Phenotype2());
