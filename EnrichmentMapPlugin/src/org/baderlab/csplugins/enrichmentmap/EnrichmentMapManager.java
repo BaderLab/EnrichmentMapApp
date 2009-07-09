@@ -67,8 +67,7 @@ public class EnrichmentMapManager implements PropertyChangeListener {
 
     private HashMap<String,EnrichmentMapParameters> cyNetworkList;
 
-    //create only one instance of the summary and parameter panel.
-    private SummaryPanel summaryPanel;
+    //create only one instance of the  parameter and expression panels.
     private ParametersPanel parameterPanel;
     private OverlappingGenesPanel nodesOverlapPanel;
     private OverlappingGenesPanel edgesOverlapPanel;
@@ -132,8 +131,6 @@ public class EnrichmentMapManager implements PropertyChangeListener {
         CytoPanel cytoPanel = desktop.getCytoPanel(SwingConstants.SOUTH);
         CytoPanel cytoSidePanel = desktop.getCytoPanel(SwingConstants.EAST);
 
-        summaryPanel = new SummaryPanel();
-        cytoSidePanel.add("Geneset Summary", summaryPanel);
 
         parameterPanel = new ParametersPanel();
         cytoSidePanel.add("Parameters", parameterPanel);
@@ -198,7 +195,6 @@ public class EnrichmentMapManager implements PropertyChangeListener {
             if (!sessionLoaded) {
                 if (cyNetworkList.containsKey(networkId)) {
                     //clear the panels before re-initializing them
-                    summaryPanel.clearInfo();
                     nodesOverlapPanel.clearPanel();
                     edgesOverlapPanel.clearPanel();
 
@@ -211,8 +207,6 @@ public class EnrichmentMapManager implements PropertyChangeListener {
                     if(inputWindow!=null)
                         inputWindow.updateContents(currentNetworkParams);
 
-                    summaryPanel.updateNodeInfo(currentNetworkParams.getSelectedNodes().toArray());
-
                     nodesOverlapPanel.updatePanel(currentNetworkParams);
                     edgesOverlapPanel.updatePanel(currentNetworkParams);
 
@@ -223,7 +217,7 @@ public class EnrichmentMapManager implements PropertyChangeListener {
                 } else {
                     //if the new network has just been created make sure the panels have been cleared
                     if(event.getPropertyName().equals(CytoscapeDesktop.NETWORK_VIEW_CREATED)){
-                        summaryPanel.clearInfo();
+
                         nodesOverlapPanel.clearPanel();
                         edgesOverlapPanel.clearPanel();
 
@@ -284,10 +278,6 @@ public class EnrichmentMapManager implements PropertyChangeListener {
 
     }
 
-
-    public SummaryPanel getSummaryPanel() {
-        return summaryPanel;
-    }
 
     public ParametersPanel getParameterPanel() {
         return parameterPanel;

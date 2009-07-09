@@ -75,13 +75,11 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
     private EnrichmentMapParameters params;
     private OverlappingGenesPanel edgeOverlapPanel;
     private OverlappingGenesPanel nodeOverlapPanel;
-    private SummaryPanel summaryPanel;
 
     private List<Node> Nodes;
     private List<Edge> Edges;
 
     private final CytoPanel cytoPanel;
-    private final CytoPanel cytoSidePanel;
 
 
     public EnrichmentMapActionListener(EnrichmentMapParameters params) {
@@ -92,7 +90,6 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
         //initialize the cyto panel to have the expression viewing.
         final CytoscapeDesktop desktop = Cytoscape.getDesktop();
         cytoPanel = desktop.getCytoPanel(SwingConstants.SOUTH);
-        cytoSidePanel = desktop.getCytoPanel(SwingConstants.EAST);
         //final URL url = new URL("http","www.baderlab.org","/wiki/common/network_bader_website_icon.gif");
         //final Icon icon = new ImageIcon(url);
         if(params.isData()){
@@ -103,9 +100,7 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
             hmParams.initColorGradients(params.getExpression());
             params.setHmParams(hmParams);
         }
-
-        summaryPanel = (EnrichmentMapManager.getInstance()).getSummaryPanel();
-
+        
         Nodes = params.getSelectedNodes();
         Edges = params.getSelectedEdges();
      
@@ -176,10 +171,6 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
 
   public void createEdgesData(){
 
-      summaryPanel.updateEdgeInfo(Edges.toArray());
-      if ( ! params.isDisableGenesetSummaryAutofocus() )
-    	  cytoSidePanel.setSelectedIndex(cytoSidePanel.indexOfComponent(summaryPanel));
-      summaryPanel.revalidate();
 
       if(params.isData()){
         edgeOverlapPanel.updatePanel(params);
@@ -194,11 +185,6 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
 
   private void createNodesData(){
 
-        summaryPanel.updateNodeInfo(Nodes.toArray());
-        if ( ! params.isDisableGenesetSummaryAutofocus() ) 
-        	cytoSidePanel.setSelectedIndex(cytoSidePanel.indexOfComponent(summaryPanel));
-        summaryPanel.revalidate();
-
         if(params.isData()){
             nodeOverlapPanel.updatePanel(params);
             if ( ! params.isDisableHeatmapAutofocus() ) {
@@ -210,7 +196,6 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
   }
 
     public void clearPanels(){
-        summaryPanel.clearInfo();
         if(params.isData()){
             nodeOverlapPanel.clearPanel();
             edgeOverlapPanel.clearPanel();
