@@ -597,6 +597,29 @@ public class EnrichmentMapParameters {
         genesets.clear();
     }
 
+    //Check to see that there are genes in the filtered  genesets
+    //If the ids do not match up, after a filtering there will be no genes in any of the
+    //genesets
+    //Return true if Genesets have genes, return false if all the genesets are empty
+    public boolean checkGenesets(){
+
+        for(Iterator j = filteredGenesets.keySet().iterator(); j.hasNext(); ){
+             String geneset2_name = j.next().toString();
+             GeneSet current_set = (GeneSet) filteredGenesets.get(geneset2_name);
+
+             //get the genes in the geneset
+             HashSet<Integer> geneset_genes = current_set.getGenes();
+
+            //if there is at least one gene in any of the genesets then the ids match.
+            if(!geneset_genes.isEmpty())
+                return true;
+
+        }
+
+        return false;
+
+    }
+
     public void dispose(){
         genesets.clear();
         genesetsOfInterest.clear();

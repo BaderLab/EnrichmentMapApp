@@ -86,6 +86,7 @@ public class BuildGSEAEnrichmentMapTask implements Task {
 
         } catch(Exception e){
             taskMonitor.setException(e,"unable to load GMT file");
+            return;
         }
 
         //Load the Data if the user has supplied the data file.
@@ -104,14 +105,25 @@ public class BuildGSEAEnrichmentMapTask implements Task {
                 //trim the genesets to only contain the genes that are in the data file.
                 params.filterGenesets();
 
-            } catch(Exception e){
-                taskMonitor.setException(e,"unable to load GSEA DATA (.GCT) file");
+                //checkt to make sure that after filtering there are still genes in the genesets
+                //if there aren't any genes it could mean that the ids don't match or it could mean none
+                //of the genes in the expression file are in the specified genesets.
+                if(!params.checkGenesets())
+                    throw new IllegalThreadStateException("No genes in the expression file are found in the GMT file ");
 
+            } catch(IllegalThreadStateException e){
+                taskMonitor.setException(e,"Either no genes in the expression file are found in the GMT file \n OR the identifiers in the Expression and GMT do not match up.", "Expression and GMT file do not match");
+                return;
+            }catch(Exception e){
+                taskMonitor.setException(e,"unable to load GSEA DATA (.GCT) file");
+                return;
             }
         }
         else{
             params.noFilter();
         }
+
+
 
 
         try{
@@ -151,6 +163,7 @@ public class BuildGSEAEnrichmentMapTask implements Task {
              } catch(Exception e){
 
                 taskMonitor.setException(e,"unable to load enrichment results files");
+                return;
         }
 
         try{
