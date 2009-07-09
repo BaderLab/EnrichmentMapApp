@@ -84,7 +84,10 @@ public class BuildGSEAEnrichmentMapTask implements Task {
             gmtFile.run();
             //boolean success = TaskManager.executeTask(gmtFile, config);
 
-        } catch(Exception e){
+        } catch (OutOfMemoryError e) {
+            taskMonitor.setException(e,"Out of Memory. Please increase memory allotement for cytoscape.");
+            return;
+        }  catch(Exception e){
             taskMonitor.setException(e,"unable to load GMT file");
             return;
         }
@@ -113,6 +116,9 @@ public class BuildGSEAEnrichmentMapTask implements Task {
 
             } catch(IllegalThreadStateException e){
                 taskMonitor.setException(e,"Either no genes in the expression file are found in the GMT file \n OR the identifiers in the Expression and GMT do not match up.", "Expression and GMT file do not match");
+                return;
+            }catch (OutOfMemoryError e) {
+                taskMonitor.setException(e,"Out of Memory. Please increase memory allotement for cytoscape.");
                 return;
             }catch(Exception e){
                 taskMonitor.setException(e,"unable to load GSEA DATA (.GCT) file");
@@ -160,7 +166,10 @@ public class BuildGSEAEnrichmentMapTask implements Task {
                 }
 
             }
-             } catch(Exception e){
+             } catch (OutOfMemoryError e) {
+                taskMonitor.setException(e,"Out of Memory. Please increase memory allotement for cytoscape.");
+                return;
+            }   catch(Exception e){
 
                 taskMonitor.setException(e,"unable to load enrichment results files");
                 return;
@@ -171,7 +180,10 @@ public class BuildGSEAEnrichmentMapTask implements Task {
             InitializeGenesetsOfInterestTask genesets_init = new InitializeGenesetsOfInterestTask(params,taskMonitor);
             genesets_init.run();
             //boolean success4 = TaskManager.executeTask(genesets_init,config);
-       } catch(IllegalThreadStateException e){
+       } catch (OutOfMemoryError e) {
+            taskMonitor.setException(e,"Out of Memory. Please increase memory allotement for cytoscape.");
+            return;
+        }catch(IllegalThreadStateException e){
             taskMonitor.setException(e,"Genesets defined in the results \nfile are not found in  gene set file (GMT).\n  Please make sure you are using the correct GMT file.");
             //JOptionPane.showMessageDialog(Cytoscape.getDesktop(),"Genesets defined in the results file are not found in \n gene set file (GMT).\n  Please make sure you are using the correct GMT file.");
             return;
@@ -190,8 +202,11 @@ public class BuildGSEAEnrichmentMapTask implements Task {
             VisualizeEnrichmentMapTask map = new VisualizeEnrichmentMapTask(params,taskMonitor);
             map.run();
             //boolean success3 =TaskManager.executeTask(map,config);
-          } catch(Exception e){
-                taskMonitor.setException(e,"unable to build/visualize map");
+        } catch (OutOfMemoryError e) {
+            taskMonitor.setException(e,"Out of Memory. Please increase memory allotement for cytoscape.");
+
+        }catch(Exception e){
+            taskMonitor.setException(e,"unable to build/visualize map");
         }
 
 
