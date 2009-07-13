@@ -66,6 +66,7 @@ public class GMTFileReaderTask implements Task {
 
     private String GMTFileName;
     private HashMap genes;
+    private HashMap hashkey2gene;
 
     private String fullText;
     private String [] lines;
@@ -88,6 +89,7 @@ public class GMTFileReaderTask implements Task {
 
         this.GMTFileName = params.getGMTFileName();
         this.genes = params.getGenes();
+        this.hashkey2gene = params.getHashkey2gene();
 
         this.genesets = params.getGenesets();
 
@@ -145,6 +147,7 @@ public class GMTFileReaderTask implements Task {
                   //add the gene to the master list of genes
                   int value = params.getNumberOfGenes();
                   genes.put(tokens[j], value);
+                  hashkey2gene.put(value,tokens[j]);
                   params.setNumberOfGenes(value+1);
 
                   //add the gene to the genelist

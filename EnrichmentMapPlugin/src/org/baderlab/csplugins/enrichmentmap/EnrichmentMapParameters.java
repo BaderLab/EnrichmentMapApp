@@ -103,6 +103,11 @@ public class EnrichmentMapParameters {
 
     //Hashmap stores the unique set of genes used in the gmt file
     private HashMap<String,Integer> genes;
+
+    //when translating visual attribute of the gene list we need to be able to translate
+    //the gene hash key into the gene name without tracing from the entire hash.
+    //create the opposite of the gene hashmap so we can do this.
+    private HashMap<Integer, String> hashkey2gene;
     private HashSet datasetGenes;
     private int NumberOfGenes = 0;
 
@@ -157,6 +162,7 @@ public class EnrichmentMapParameters {
         this.enrichmentResults1 = new HashMap();
         this.enrichmentResults2 = new HashMap();
         this.genes = new HashMap();
+        this.hashkey2gene = new HashMap();
         this.datasetGenes = new HashSet();
         this.genesets = new HashMap();
         this.filteredGenesets = new HashMap();
@@ -891,6 +897,9 @@ public class EnrichmentMapParameters {
             if(type == 4)
                 newMap.put(tokens[0], new GenericResult(tokens));
 
+            //HashMap Key 2 Genes
+            if(type == 5)
+                newMap.put(tokens[0],tokens[1]);
 
         }
 
@@ -932,6 +941,23 @@ public class EnrichmentMapParameters {
 
     public boolean isJaccardCutOffChanged() {
         return jaccardCutOffChanged;
+    }
+
+    public HashMap<Integer, String> getHashkey2gene() {
+        return hashkey2gene;
+    }
+
+    public void setHashkey2gene(HashMap<Integer, String> hashkey2gene) {
+        this.hashkey2gene = hashkey2gene;
+    }
+
+    //given the hash key representing a gene return the gene
+    public String getGeneFromHashKey(Integer hash){
+        String gene = null;
+        if(hashkey2gene != null || !hashkey2gene.isEmpty())
+            gene =  hashkey2gene.get(hash);
+        return gene;
+
     }
 
 }

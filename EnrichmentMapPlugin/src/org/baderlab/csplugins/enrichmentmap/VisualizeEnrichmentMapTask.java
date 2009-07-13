@@ -164,6 +164,20 @@ public class VisualizeEnrichmentMapTask implements Task {
                 CyAttributes nodeAttrs = Cytoscape.getNodeAttributes();
                 nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.GS_DESCR, gs.getDescription());
 
+                //create an attribute that stores the genes that are associted with this node as an attribute list
+                //only create the list if the hashkey 2 genes is not null Otherwise it take too much time to populate the list
+                if(params.getHashkey2gene() != null){
+                        List gene_list = new ArrayList();
+                        HashSet genes_hash = gs.getGenes();
+                        for(Iterator j=genes_hash.iterator(); j.hasNext();){
+                            Integer current = (Integer)j.next();
+                            String gene = params.getGeneFromHashKey(current);
+                            if(gene_list != null)
+                                gene_list.add(gene);
+                        }
+
+                        nodeAttrs.setListAttribute(node.getIdentifier(), prefix+EnrichmentMapVisualStyle.GENES, gene_list);
+                    }
 
                 if(params.isGSEA()){
                     GSEAResult current_result = (GSEAResult) enrichmentResults1OfInterest.get(current_name);
@@ -269,6 +283,20 @@ public class VisualizeEnrichmentMapTask implements Task {
                     edgeAttrs.setAttribute(edge.getIdentifier(), prefix+EnrichmentMapVisualStyle.JACCARD_COEFFECIENT, current_result.getJaccard_coeffecient());
                     edgeAttrs.setAttribute(edge.getIdentifier(), prefix+ EnrichmentMapVisualStyle.OVERLAP_SIZE, current_result.getSizeOfOverlap());
 
+                    //create an attribute that stores the genes that are associted with this edge as an attribute list
+                    //only create the list if the hashkey 2 genes is not null Otherwise it take too mush time to populate the list
+                    if(params.getHashkey2gene() != null){
+                        List gene_list = new ArrayList();
+                        HashSet genes_hash = current_result.getOverlapping_genes();
+                        for(Iterator i=genes_hash.iterator(); i.hasNext();){
+                            Integer current = (Integer)i.next();
+                            String gene = params.getGeneFromHashKey(current);
+                            if(gene_list != null)
+                                gene_list.add(gene);
+                        }
+
+                        edgeAttrs.setListAttribute(edge.getIdentifier(), prefix+EnrichmentMapVisualStyle.OVERALP_GENES, gene_list);
+                    }
 
                 }
             }
@@ -328,7 +356,8 @@ public class VisualizeEnrichmentMapTask implements Task {
             //add the click on edge listener
             view.addGraphViewChangeListener(new EnrichmentMapActionListener(params));
 
-
+            //make sure the network is registered so that Quickfind works
+            Cytoscape.firePropertyChange(cytoscape.view.CytoscapeDesktop.NETWORK_VIEW_CREATED, network, view);
 
 
         } catch(IllegalThreadStateException e){
