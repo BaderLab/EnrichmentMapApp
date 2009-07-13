@@ -158,6 +158,7 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
             File session_prop_file = new File(tmpDir, name+".props");
             File gmt = new File(tmpDir, name+".gmt");
             File genes = new File(tmpDir, name+".genes.txt");
+            File hkgenes = new File(tmpDir, name+".hashkey2genes.txt");
 
             File enrichmentresults1 = new File(tmpDir, name+".ENR1.txt");
             File enrichmentresults1Ofinterest = new File(tmpDir, name+".SubENR1.txt");
@@ -181,6 +182,11 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
                 geneswriter.write(params.printHashmap(params.getGenes()));
                 geneswriter.close();
                 pFileList.add(genes);
+
+                BufferedWriter hashkey2geneswriter = new BufferedWriter(new FileWriter(hkgenes));
+                hashkey2geneswriter.write(params.printHashmap(params.getHashkey2gene()));
+                hashkey2geneswriter.close();
+                pFileList.add(hkgenes);
 
                 BufferedWriter enr1writer = new BufferedWriter(new FileWriter(enrichmentresults1));
                 enr1writer.write(params.printHashmap(params.getEnrichmentResults1()));
@@ -287,6 +293,12 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
                     if(prop_file.getName().contains(".genes.txt")){
                         params.setGenes(params.repopulateHashmap(fullText,2));
                     }
+                    if(prop_file.getName().contains(".hashkey2genes.txt")){
+                        params.setHashkey2gene(params.repopulateHashmap(fullText,5));
+                    }
+
+
+
                     if(prop_file.getName().contains(".ENR1.txt")){
                         if(params.isGSEA())
                             params.setEnrichmentResults1(params.repopulateHashmap(fullText,3));

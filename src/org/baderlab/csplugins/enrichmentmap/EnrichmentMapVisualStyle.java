@@ -67,6 +67,7 @@ public class EnrichmentMapVisualStyle {
     public static String NAME = "Name";
     public static String GS_DESCR = "GS_DESCR";
     public static String FORMATTED_NAME = "Formatted_name";
+    public static String GENES = "Genes";
 
     public static String ES_DATASET1 = "ES_dataset1";
     public static String NES_DATASET1 = "NES_dataset1";
@@ -86,6 +87,7 @@ public class EnrichmentMapVisualStyle {
 
     public static String OVERLAP_SIZE = "Overlap_size";
     public static String JACCARD_COEFFECIENT= "jaccard_coeffecient";
+    public static String OVERALP_GENES = "Overlap_genes";
 
     public static Color max_phenotype1 = new Color(255,0,0);
    public static Color lighter_phenotype1 = new Color(255,102,102);
