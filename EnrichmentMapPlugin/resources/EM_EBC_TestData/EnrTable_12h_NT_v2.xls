@@ -1,0 +1,1378 @@
+NAME	GS.br..follow.link.to.MSigDB	GS.DETAILS	SIZE	ES	NES	NOM.p.val	FDR.q.val	FWER.p.val	RANK.AT.MAX	LEADING.EDGE
+dystrophin-associated glycoprotein complex	GO:0016010	GO:0016010	17	-0.7536881	-2.055222	0	0.07109405	0.065	1765	tags=35%, list=9%, signal=39%
+myosin complex	GO:0016459	GO:0016459	61	-0.55661476	-2.0280726	0	0.06158146	0.1085	3582	tags=38%, list=18%, signal=46%
+sialyltransferase activity	GO:0008373	GO:0008373	19	-0.7153615	-2.0155995	0.0010266941	0.05176703	0.1345	2222	tags=42%, list=11%, signal=47%
+positive regulation of osteoblast differentiation	GO:0045669	GO:0045669	13	-0.795495	-2.008222	0.0010162601	0.043734826	0.149	1957	tags=54%, list=10%, signal=60%
+lipid transport	GO:0006869	GO:0006869	105	-0.48860106	-1.9810003	0	0.053564284	0.2205	2767	tags=33%, list=14%, signal=38%
+low-density lipoprotein binding	GO:0030169	GO:0030169	18	-0.7183243	-1.9794863	0	0.04535688	0.223	1654	tags=39%, list=8%, signal=42%
+phospholipid transporter activity	GO:0005548	GO:0005548	28	-0.6427886	-1.9601513	0.0010515247	0.05300247	0.2905	1158	tags=36%, list=6%, signal=38%
+positive regulation of bone remodeling	GO:0046852	GO:0046852	16	-0.7122967	-1.9495895	0.0010080645	0.055270635	0.3335	1957	tags=38%, list=10%, signal=41%
+positive regulation of ossification	GO:0045778	GO:0045778	14	-0.7499744	-1.9262199	0	0.07115503	0.442	1957	tags=43%, list=10%, signal=47%
+positive regulation of tissue remodeling	GO:0034105	GO:0034105	16	-0.7122967	-1.9244564	0	0.06599657	0.4525	1957	tags=38%, list=10%, signal=41%
+SH3/SH2 adaptor activity	GO:0005070	GO:0005070	47	-0.5588693	-1.9188242	0	0.06497483	0.4835	2081	tags=23%, list=10%, signal=26%
+phospholipid transport	GO:0015914	GO:0015914	26	-0.6296008	-1.9156362	0	0.06272755	0.5	521	tags=31%, list=3%, signal=32%
+regulation of osteoblast differentiation	GO:0045667	GO:0045667	18	-0.69071376	-1.9128722	0	0.0601164	0.512	2876	tags=50%, list=14%, signal=58%
+apical junction complex	GO:0043296	GO:0043296	82	-0.49507222	-1.9049437	0	0.06295636	0.5555	3563	tags=35%, list=18%, signal=43%
+apicolateral plasma membrane	GO:0016327	GO:0016327	84	-0.4870943	-1.8966415	0	0.06581739	0.591	3563	tags=35%, list=18%, signal=42%
+positive regulation of bone mineralization	GO:0030501	GO:0030501	13	-0.7523093	-1.8953525	0.0010266941	0.06265489	0.598	1957	tags=46%, list=10%, signal=51%
+molecular adaptor activity	GO:0060090	GO:0060090	59	-0.524867	-1.8895383	0	0.06390118	0.6305	3761	tags=32%, list=19%, signal=39%
+negative regulation of phosphorylation	GO:0042326	GO:0042326	19	-0.664283	-1.8650762	0	0.08555716	0.75	2745	tags=32%, list=14%, signal=36%
+visual behavior	GO:0007632	GO:0007632	12	-0.73583204	-1.8424267	0.0030674846	0.105613574	0.825	1582	tags=33%, list=8%, signal=36%
+negative regulation of phosphorus metabolic process	GO:0010563	GO:0010563	20	-0.6398738	-1.8351506	0.004145078	0.11001657	0.854	2745	tags=30%, list=14%, signal=35%
+negative regulation of phosphate metabolic process	GO:0045936	GO:0045936	20	-0.6398738	-1.8275845	0.0041237115	0.11432876	0.878	2745	tags=30%, list=14%, signal=35%
+adult locomotory behavior	GO:0008344	GO:0008344	16	-0.67660165	-1.8088877	0.0010660981	0.13665096	0.9305	1858	tags=38%, list=9%, signal=41%
+integral to Golgi membrane	GO:0030173	GO:0030173	39	-0.54290813	-1.8015326	0.0021030493	0.14228763	0.9455	3743	tags=41%, list=18%, signal=50%
+negative regulation of T cell proliferation	GO:0042130	GO:0042130	10	-0.758848	-1.7851416	0.004036327	0.16483907	0.9725	2289	tags=50%, list=11%, signal=56%
+tight junction	GO:0005923	GO:0005923	68	-0.4803496	-1.7838951	0	0.16015688	0.9725	3563	tags=34%, list=18%, signal=41%
+regulation of cell-matrix adhesion	GO:0001952	GO:0001952	13	-0.7100047	-1.779419	0.003988036	0.16098316	0.975	2847	tags=46%, list=14%, signal=54%
+cell junction	GO:0030054	GO:0030054	414	-0.37210292	-1.7790895	0	0.15554547	0.975	3722	tags=29%, list=18%, signal=34%
+regulation of Wnt receptor signaling pathway	GO:0030111	GO:0030111	24	-0.59484255	-1.7785141	0.0031282585	0.15107477	0.9755	3776	tags=38%, list=19%, signal=46%
+gamma-aminobutyric acid signaling pathway	GO:0007214	GO:0007214	15	-0.66985244	-1.7760977	0.0030487804	0.14950433	0.977	2923	tags=47%, list=14%, signal=54%
+basement membrane	GO:0005604	GO:0005604	50	-0.5063757	-1.775783	0.0021668472	0.14499085	0.9775	2143	tags=30%, list=11%, signal=33%
+vacuolar part	GO:0044437	GO:0044437	73	-0.46801043	-1.7750258	0	0.1413749	0.9785	6319	tags=51%, list=31%, signal=73%
+osteoblast differentiation	GO:0001649	GO:0001649	32	-0.5466357	-1.7661215	0.0020639836	0.15072463	0.986	2876	tags=34%, list=14%, signal=40%
+lipid transporter activity	GO:0005319	GO:0005319	74	-0.46411058	-1.762009	0	0.15345557	0.9885	1861	tags=24%, list=9%, signal=27%
+cell-cell adherens junction	GO:0005913	GO:0005913	13	-0.6754585	-1.7611096	0.007201646	0.15043296	0.9895	4691	tags=62%, list=23%, signal=80%
+vacuolar membrane	GO:0005774	GO:0005774	69	-0.46639803	-1.7543252	0.0021905806	0.15655439	0.9915	3674	tags=32%, list=18%, signal=39%
+morphogenesis of a branching structure	GO:0001763	GO:0001763	32	-0.5459274	-1.7535805	0.003218884	0.15336786	0.9915	2255	tags=34%, list=11%, signal=39%
+MHC class II receptor activity	GO:0032395	GO:0032395	11	-0.7078413	-1.7464823	0.0067763794	0.16053249	0.994	3977	tags=64%, list=20%, signal=79%
+phospholipid-translocating ATPase activity	GO:0004012	GO:0004012	15	-0.6511226	-1.737236	0.009211873	0.17263748	0.9955	521	tags=40%, list=3%, signal=41%
+negative regulation of T cell activation	GO:0050868	GO:0050868	16	-0.64037746	-1.7355332	0.0092783505	0.17132911	0.9965	2289	tags=38%, list=11%, signal=42%
+basolateral plasma membrane	GO:0016323	GO:0016323	100	-0.43297887	-1.7313502	0	0.17426957	0.997	2595	tags=28%, list=13%, signal=32%
+erythrocyte homeostasis	GO:0034101	GO:0034101	36	-0.5351915	-1.7304677	0.0021390375	0.17150322	0.997	3716	tags=42%, list=18%, signal=51%
+regulation of transforming growth factor beta receptor signaling pathway	GO:0017015	GO:0017015	20	-0.60950416	-1.7290357	0.005393743	0.16979852	0.997	3161	tags=40%, list=16%, signal=47%
+ARF guanyl-nucleotide exchange factor activity	GO:0005086	GO:0005086	17	-0.63887656	-1.7256985	0.0062111802	0.17148244	0.9985	2048	tags=41%, list=10%, signal=46%
+embryonic skeletal development	GO:0048706	GO:0048706	14	-0.6598201	-1.72105	0.008255934	0.17523429	0.9985	2951	tags=43%, list=15%, signal=50%
+activation of phospholipase C activity	GO:0007202	GO:0007202	15	-0.6562205	-1.7195911	0.010235415	0.1740193	0.9985	5779	tags=73%, list=28%, signal=102%
+aminophospholipid transporter activity	GO:0015247	GO:0015247	15	-0.6511226	-1.7094918	0.011258956	0.1880604	1	521	tags=40%, list=3%, signal=41%
+branching morphogenesis of a tube	GO:0048754	GO:0048754	28	-0.54844517	-1.7051318	0.0065146578	0.19233046	1	2971	tags=39%, list=15%, signal=46%
+ARF protein signal transduction	GO:0032011	GO:0032011	46	-0.49110505	-1.7026845	0.0031545742	0.19266856	1	6049	tags=57%, list=30%, signal=80%
+erythrocyte differentiation	GO:0030218	GO:0030218	35	-0.52313566	-1.701858	0.007743363	0.19006638	1	3716	tags=40%, list=18%, signal=49%
+negative regulation of Wnt receptor signaling pathway	GO:0030178	GO:0030178	15	-0.6500949	-1.7017717	0.00996016	0.1863953	1	3535	tags=40%, list=17%, signal=48%
+glycogen biosynthetic process	GO:0005978	GO:0005978	14	-0.66093254	-1.6991936	0.0101936795	0.18725014	1	382	tags=21%, list=2%, signal=22%
+lysosomal membrane	GO:0005765	GO:0005765	56	-0.47023743	-1.6985552	0.0031813362	0.18480839	1	6307	tags=52%, list=31%, signal=75%
+intercellular junction	GO:0005911	GO:0005911	137	-0.40281326	-1.6971649	0	0.18361662	1	3576	tags=26%, list=18%, signal=32%
+sex determination	GO:0007530	GO:0007530	20	-0.5981008	-1.6964753	0.007201646	0.18136099	1	3317	tags=45%, list=16%, signal=54%
+glucan biosynthetic process	GO:0009250	GO:0009250	14	-0.66093254	-1.695992	0.00844773	0.17899317	1	382	tags=21%, list=2%, signal=22%
+protein serine/threonine kinase inhibitor activity	GO:0030291	GO:0030291	14	-0.6628842	-1.6871709	0.011689692	0.1911961	1	2745	tags=57%, list=14%, signal=66%
+regulation of lipase activity	GO:0060191	GO:0060191	14	-0.64960206	-1.6832576	0.0093361	0.19484925	1	4491	tags=57%, list=22%, signal=73%
+actin cytoskeleton	GO:0015629	GO:0015629	214	-0.37838697	-1.6773293	0	0.20249088	1	3670	tags=28%, list=18%, signal=33%
+regulation of cell morphogenesis	GO:0022604	GO:0022604	43	-0.49231455	-1.6741822	0.0065146578	0.20462479	1	3344	tags=37%, list=16%, signal=44%
+C-acyltransferase activity	GO:0016408	GO:0016408	12	-0.6715167	-1.6698053	0.021920668	0.20950288	1	3183	tags=50%, list=16%, signal=59%
+GTP-dependent protein binding	GO:0030742	GO:0030742	10	-0.69787425	-1.6644942	0.015810277	0.21614699	1	1656	tags=50%, list=8%, signal=54%
+protein binding. bridging	GO:0030674	GO:0030674	82	-0.42879075	-1.6629423	0.0022172949	0.21579674	1	2225	tags=18%, list=11%, signal=20%
+regulation of ossification	GO:0030278	GO:0030278	25	-0.5427992	-1.6596833	0.014130435	0.21903707	1	1957	tags=32%, list=10%, signal=35%
+regulation of ARF protein signal transduction	GO:0032012	GO:0032012	45	-0.49202222	-1.6590388	0.004464286	0.21696585	1	6049	tags=58%, list=30%, signal=82%
+prostaglandin receptor activity	GO:0004955	GO:0004955	10	-0.6984328	-1.6555971	0.013039118	0.22002321	1	2170	tags=40%, list=11%, signal=45%
+body fluid secretion	GO:0007589	GO:0007589	16	-0.6163742	-1.6534092	0.01910828	0.22064325	1	2239	tags=38%, list=11%, signal=42%
+regulation of cell shape	GO:0008360	GO:0008360	42	-0.479779	-1.6531261	0.0066298344	0.2178844	1	3344	tags=36%, list=16%, signal=43%
+homeostasis of number of cells	GO:0048872	GO:0048872	48	-0.47984293	-1.6485409	0.007534984	0.2239665	1	3716	tags=35%, list=18%, signal=43%
+enzyme linked receptor protein signaling pathway	GO:0007167	GO:0007167	301	-0.354241	-1.6428909	0	0.23136479	1	3900	tags=29%, list=19%, signal=36%
+negative regulation of protein amino acid phosphorylation	GO:0001933	GO:0001933	10	-0.69560295	-1.6406896	0.018018018	0.23275056	1	176	tags=20%, list=1%, signal=20%
+metalloendopeptidase inhibitor activity	GO:0008191	GO:0008191	10	-0.6940095	-1.639862	0.026859503	0.23118022	1	676	tags=30%, list=3%, signal=31%
+receptor signaling protein activity	GO:0005057	GO:0005057	137	-0.39188287	-1.6361785	0	0.235227	1	4091	tags=35%, list=20%, signal=44%
+insulin-like growth factor receptor signaling pathway	GO:0048009	GO:0048009	11	-0.66944224	-1.6345725	0.02047083	0.23526217	1	2359	tags=45%, list=12%, signal=51%
+transmembrane receptor protein tyrosine kinase signaling pathway	GO:0007169	GO:0007169	206	-0.37062895	-1.6334931	0.0011820331	0.23436113	1	3604	tags=28%, list=18%, signal=34%
+actin binding	GO:0003779	GO:0003779	294	-0.35243395	-1.6302754	0	0.23759487	1	3775	tags=26%, list=19%, signal=31%
+regulation of small GTPase mediated signal transduction	GO:0051056	GO:0051056	228	-0.3588123	-1.6225741	0	0.24993406	1	4639	tags=36%, list=23%, signal=46%
+antigen processing and presentation of peptide or polysaccharide antigen via MHC class II	GO:0002504	GO:0002504	14	-0.6300572	-1.6220791	0.021428572	0.24765311	1	5769	tags=64%, list=28%, signal=90%
+regulation of Ras protein signal transduction	GO:0046578	GO:0046578	183	-0.36924613	-1.6209654	0	0.2469149	1	4639	tags=36%, list=23%, signal=46%
+ureteric bud branching	GO:0001658	GO:0001658	10	-0.68591017	-1.616381	0.021649485	0.25334552	1	2255	tags=60%, list=11%, signal=67%
+protein kinase inhibitor activity	GO:0004860	GO:0004860	30	-0.5156466	-1.6150999	0.02096436	0.25273952	1	3058	tags=37%, list=15%, signal=43%
+small conjugating protein binding	GO:0032182	GO:0032182	14	-0.62978244	-1.6148429	0.023182297	0.25013623	1	3432	tags=57%, list=17%, signal=69%
+focal adhesion formation	GO:0048041	GO:0048041	13	-0.63221353	-1.6145386	0.026449643	0.24770811	1	2847	tags=54%, list=14%, signal=63%
+G1/S transition checkpoint	GO:0031575	GO:0031575	11	-0.6572802	-1.6137644	0.02535497	0.24625157	1	1726	tags=36%, list=8%, signal=40%
+cytosolic calcium ion homeostasis	GO:0051480	GO:0051480	66	-0.43523085	-1.6115546	0.005518764	0.24791817	1	3398	tags=26%, list=17%, signal=31%
+Rab GTPase activator activity	GO:0005097	GO:0005097	46	-0.47074795	-1.6100817	0.004305705	0.24780492	1	4611	tags=43%, list=23%, signal=56%
+ER-Golgi intermediate compartment membrane	GO:0033116	GO:0033116	14	-0.6155464	-1.6083899	0.023809524	0.24850006	1	3929	tags=43%, list=19%, signal=53%
+regulation of Rab GTPase activity	GO:0032313	GO:0032313	46	-0.46257257	-1.607756	0.009202454	0.24686627	1	5593	tags=50%, list=28%, signal=69%
+hydrogen peroxide catabolic process	GO:0042744	GO:0042744	16	-0.6045501	-1.6075685	0.018386109	0.24439913	1	2200	tags=31%, list=11%, signal=35%
+cellular response to nutrient levels	GO:0031669	GO:0031669	24	-0.55139995	-1.6064235	0.019668737	0.24388732	1	1856	tags=25%, list=9%, signal=27%
+ATPase activity. coupled to transmembrane movement of ions, phosphorylative mechanism	GO:0015662	GO:0015662	50	-0.45982826	-1.605633	0.0074468087	0.24290845	1	2172	tags=26%, list=11%, signal=29%
+elevation of cytosolic calcium ion concentration	GO:0007204	GO:0007204	66	-0.43523085	-1.6053451	0.0077951	0.24083671	1	3398	tags=26%, list=17%, signal=31%
+negative regulation of leukocyte activation	GO:0002695	GO:0002695	25	-0.53108287	-1.6046461	0.018126888	0.23971117	1	2877	tags=32%, list=14%, signal=37%
+macroautophagy	GO:0016236	GO:0016236	10	-0.673045	-1.5993519	0.025614753	0.24765404	1	5345	tags=60%, list=26%, signal=81%
+cell-matrix adhesion	GO:0007160	GO:0007160	77	-0.4174905	-1.5985708	0.0032608695	0.24669108	1	3344	tags=27%, list=16%, signal=33%
+regulation of tissue remodeling	GO:0034103	GO:0034103	30	-0.50376517	-1.5977021	0.01650165	0.24594238	1	1957	tags=27%, list=10%, signal=29%
+vesicle targeting. to, from or within Golgi	GO:0048199	GO:0048199	12	-0.6405736	-1.5959563	0.027054109	0.24687065	1	5306	tags=50%, list=26%, signal=68%
+ATPase activity. coupled to transmembrane movement of substances	GO:0042626	GO:0042626	112	-0.38992268	-1.5952231	0.0022075055	0.2458431	1	2371	tags=20%, list=12%, signal=22%
+energy reserve metabolic process	GO:0006112	GO:0006112	45	-0.46595842	-1.5945716	0.012591816	0.2445499	1	3681	tags=29%, list=18%, signal=35%
+negative regulation of mononuclear cell proliferation	GO:0032945	GO:0032945	13	-0.6219531	-1.5943731	0.029288704	0.24246259	1	2289	tags=38%, list=11%, signal=43%
+dopamine metabolic process	GO:0042417	GO:0042417	13	-0.62156224	-1.5934657	0.032943677	0.24182837	1	1361	tags=38%, list=7%, signal=41%
+kinase regulator activity	GO:0019207	GO:0019207	82	-0.40966457	-1.5930254	0.0022172949	0.24031854	1	2289	tags=26%, list=11%, signal=29%
+biogenic amine catabolic process	GO:0042402	GO:0042402	11	-0.6582255	-1.5927858	0.021119324	0.23843637	1	1361	tags=27%, list=7%, signal=29%
+stress fiber	GO:0001725	GO:0001725	14	-0.6144241	-1.5924544	0.028154327	0.2368118	1	3545	tags=57%, list=17%, signal=69%
+actin filament bundle	GO:0032432	GO:0032432	14	-0.6144241	-1.5910101	0.028955532	0.23723401	1	3545	tags=57%, list=17%, signal=69%
+negative regulation of DNA binding	GO:0043392	GO:0043392	21	-0.5514714	-1.5906273	0.029220778	0.23573487	1	4044	tags=48%, list=20%, signal=59%
+kinase inhibitor activity	GO:0019210	GO:0019210	32	-0.49976715	-1.5858216	0.021231422	0.24224056	1	3058	tags=34%, list=15%, signal=40%
+hydrolase activity. acting on acid anhydrides, catalyzing transmembrane movement of substances	GO:0016820	GO:0016820	114	-0.38970315	-1.5853908	0.003550296	0.24081136	1	2371	tags=20%, list=12%, signal=23%
+glycoprotein catabolic process	GO:0006516	GO:0006516	15	-0.59812725	-1.5841515	0.026970955	0.2408465	1	3825	tags=53%, list=19%, signal=66%
+cytoskeletal protein binding	GO:0008092	GO:0008092	423	-0.33092406	-1.5817968	0	0.2431846	1	3722	tags=26%, list=18%, signal=31%
+Rab protein signal transduction	GO:0032482	GO:0032482	46	-0.46257257	-1.5808761	0.015283843	0.24273445	1	5593	tags=50%, list=28%, signal=69%
+regulation of Rab protein signal transduction	GO:0032483	GO:0032483	46	-0.46257257	-1.5805285	0.009615385	0.24122334	1	5593	tags=50%, list=28%, signal=69%
+positive regulation of small GTPase mediated signal transduction	GO:0051057	GO:0051057	10	-0.6652897	-1.5794543	0.037328094	0.24107352	1	6513	tags=80%, list=32%, signal=118%
+regulation of bone remodeling	GO:0046850	GO:0046850	30	-0.50376517	-1.5793334	0.020768432	0.23913722	1	1957	tags=27%, list=10%, signal=29%
+ATPase activity. coupled to movement of substances	GO:0043492	GO:0043492	113	-0.3892166	-1.5792166	0	0.23725405	1	2371	tags=19%, list=12%, signal=22%
+muscle fiber development	GO:0048747	GO:0048747	48	-0.44878334	-1.5784647	0.010405827	0.23667523	1	4014	tags=33%, list=20%, signal=41%
+pancreas development	GO:0031016	GO:0031016	11	-0.6543003	-1.5699146	0.031023785	0.25140604	1	4045	tags=55%, list=20%, signal=68%
+transport vesicle	GO:0030133	GO:0030133	51	-0.44161913	-1.569071	0.0088495575	0.25082213	1	4433	tags=39%, list=22%, signal=50%
+bone mineralization	GO:0030282	GO:0030282	29	-0.5086084	-1.5637035	0.021621622	0.25949743	1	1957	tags=31%, list=10%, signal=34%
+negative regulation of lymphocyte proliferation	GO:0050672	GO:0050672	13	-0.6219531	-1.5636317	0.036231883	0.25747976	1	2289	tags=38%, list=11%, signal=43%
+negative regulation of cyclin-dependent protein kinase activity	GO:0045736	GO:0045736	10	-0.6640693	-1.5628664	0.03952569	0.25688842	1	2745	tags=60%, list=14%, signal=69%
+MHC class II protein complex	GO:0042613	GO:0042613	12	-0.62123144	-1.5613801	0.035823952	0.25754666	1	3977	tags=50%, list=20%, signal=62%
+cholesterol efflux	GO:0033344	GO:0033344	11	-0.6392131	-1.5594759	0.037411526	0.25910133	1	619	tags=27%, list=3%, signal=28%
+transmembrane receptor protein serine/threonine kinase activity	GO:0004675	GO:0004675	14	-0.60067415	-1.5580409	0.036572624	0.2598066	1	4424	tags=57%, list=22%, signal=73%
+epidermal growth factor receptor signaling pathway	GO:0007173	GO:0007173	30	-0.49299088	-1.5579058	0.024494143	0.25796017	1	3505	tags=37%, list=17%, signal=44%
+ATPase activity. coupled to transmembrane movement of ions	GO:0042625	GO:0042625	76	-0.40876526	-1.5578223	0.010169491	0.25609583	1	2183	tags=20%, list=11%, signal=22%
+negative regulation of smooth muscle cell proliferation	GO:0048662	GO:0048662	10	-0.66583604	-1.556485	0.034136545	0.25665668	1	1525	tags=40%, list=8%, signal=43%
+transmembrane receptor protein kinase activity	GO:0019199	GO:0019199	82	-0.39963776	-1.556403	0.005428882	0.25476828	1	3870	tags=34%, list=19%, signal=42%
+smooth muscle cell proliferation	GO:0048659	GO:0048659	24	-0.52190113	-1.5562912	0.027777778	0.25300688	1	2060	tags=25%, list=10%, signal=28%
+odontogenesis	GO:0042476	GO:0042476	21	-0.5401546	-1.5518515	0.028125	0.2594207	1	2113	tags=33%, list=10%, signal=37%
+transforming growth factor beta receptor activity	GO:0005024	GO:0005024	14	-0.60067415	-1.5492702	0.03723404	0.26242355	1	4424	tags=57%, list=22%, signal=73%
+icosanoid receptor activity	GO:0004953	GO:0004953	12	-0.62057656	-1.5485569	0.040774718	0.26197678	1	2170	tags=33%, list=11%, signal=37%
+beta-catenin binding	GO:0008013	GO:0008013	11	-0.63306916	-1.5484219	0.04453441	0.26025113	1	1262	tags=36%, list=6%, signal=39%
+heart development	GO:0007507	GO:0007507	106	-0.3872123	-1.5457977	0.008274232	0.26349598	1	2951	tags=27%, list=15%, signal=32%
+learning	GO:0007612	GO:0007612	19	-0.54867214	-1.5446428	0.03461919	0.2638313	1	3077	tags=32%, list=15%, signal=37%
+glucan metabolic process	GO:0006073	GO:0006073	40	-0.46393058	-1.5432264	0.022364218	0.2645503	1	3681	tags=33%, list=18%, signal=40%
+late endosome	GO:0005770	GO:0005770	53	-0.43829682	-1.5420362	0.014973262	0.26487696	1	6307	tags=53%, list=31%, signal=76%
+regulation of smooth muscle cell proliferation	GO:0048660	GO:0048660	22	-0.53198075	-1.5419865	0.022494888	0.2630347	1	2060	tags=27%, list=10%, signal=30%
+intrinsic to Golgi membrane	GO:0031228	GO:0031228	49	-0.43706194	-1.5378053	0.018888889	0.26930612	1	3743	tags=35%, list=18%, signal=42%
+regulation of bone mineralization	GO:0030500	GO:0030500	20	-0.5301134	-1.5377996	0.026104419	0.26738784	1	1957	tags=35%, list=10%, signal=39%
+glutathione transferase activity	GO:0004364	GO:0004364	21	-0.53350204	-1.536143	0.030526316	0.26887208	1	4355	tags=48%, list=21%, signal=61%
+phosphoinositide phospholipase C activity	GO:0004435	GO:0004435	25	-0.51151	-1.5358195	0.035908595	0.26761144	1	2912	tags=44%, list=14%, signal=51%
+epithelial cell differentiation	GO:0030855	GO:0030855	38	-0.4569391	-1.5355862	0.021040974	0.26619023	1	2949	tags=34%, list=15%, signal=40%
+regulation of Ras GTPase activity	GO:0032318	GO:0032318	94	-0.3861579	-1.5341707	0.005793743	0.2671285	1	6049	tags=49%, list=30%, signal=69%
+inositol or phosphatidylinositol phosphodiesterase activity	GO:0004434	GO:0004434	25	-0.51151	-1.5341347	0.028659161	0.2653493	1	2912	tags=44%, list=14%, signal=51%
+autophagy	GO:0006914	GO:0006914	28	-0.49698016	-1.5321791	0.027310925	0.267184	1	6128	tags=61%, list=30%, signal=87%
+extracellular matrix part	GO:0044420	GO:0044420	83	-0.39470717	-1.5318812	0.008928572	0.2658962	1	2922	tags=28%, list=14%, signal=32%
+phospholipase C activity	GO:0004629	GO:0004629	30	-0.48185906	-1.5304885	0.016243655	0.2667148	1	2912	tags=37%, list=14%, signal=43%
+actin filament binding	GO:0051015	GO:0051015	38	-0.46001542	-1.5273623	0.019693654	0.27105883	1	3563	tags=34%, list=18%, signal=41%
+Golgi vesicle budding	GO:0048194	GO:0048194	11	-0.6217636	-1.5265841	0.055220883	0.27076825	1	6455	tags=55%, list=32%, signal=80%
+COPI coating of Golgi vesicle	GO:0048205	GO:0048205	10	-0.6414443	-1.525061	0.056862745	0.27204952	1	6455	tags=60%, list=32%, signal=88%
+prostanoid receptor activity	GO:0004954	GO:0004954	12	-0.62057656	-1.5244346	0.046558704	0.2715052	1	2170	tags=33%, list=11%, signal=37%
+Golgi transport vesicle coating	GO:0048200	GO:0048200	10	-0.6414443	-1.5233887	0.048403706	0.27160317	1	6455	tags=60%, list=32%, signal=88%
+regulation of exocytosis	GO:0017157	GO:0017157	14	-0.5826598	-1.5217135	0.048087433	0.2733086	1	1593	tags=36%, list=8%, signal=39%
+intercalated disc	GO:0014704	GO:0014704	38	-0.4569316	-1.5210235	0.022869023	0.27282295	1	931	tags=13%, list=5%, signal=14%
+vesicle targeting. cis-Golgi to rough ER	GO:0048206	GO:0048206	10	-0.6414443	-1.5197067	0.04396728	0.27365598	1	6455	tags=60%, list=32%, signal=88%
+negative regulation of cell adhesion	GO:0007162	GO:0007162	39	-0.45638886	-1.5179045	0.017857144	0.27525547	1	2847	tags=36%, list=14%, signal=42%
+axoneme part	GO:0044447	GO:0044447	15	-0.57365155	-1.5167444	0.04637097	0.2758856	1	3908	tags=53%, list=19%, signal=66%
+actin filament bundle formation	GO:0051017	GO:0051017	20	-0.5331586	-1.5166354	0.04338395	0.27433574	1	2293	tags=30%, list=11%, signal=34%
+regulation of GTPase activity	GO:0043087	GO:0043087	107	-0.3754241	-1.513331	0.0057803467	0.2788342	1	6049	tags=49%, list=30%, signal=69%
+glycogen metabolic process	GO:0005977	GO:0005977	39	-0.4535642	-1.5125942	0.03243848	0.27865052	1	3681	tags=31%, list=18%, signal=38%
+amyloid precursor protein metabolic process	GO:0042982	GO:0042982	12	-0.59923655	-1.5125523	0.052904565	0.2769977	1	3531	tags=50%, list=17%, signal=60%
+vesicle targeting. inter-Golgi cisterna	GO:0048204	GO:0048204	10	-0.6414443	-1.512313	0.05489022	0.27575582	1	6455	tags=60%, list=32%, signal=88%
+negative regulation of epithelial cell proliferation	GO:0050680	GO:0050680	12	-0.6047807	-1.5111358	0.054564532	0.27627262	1	2949	tags=42%, list=15%, signal=49%
+cis-Golgi to rough ER vesicle-mediated transport	GO:0048220	GO:0048220	10	-0.6414443	-1.5107902	0.061636556	0.27524495	1	6455	tags=60%, list=32%, signal=88%
+positive regulation of cell adhesion	GO:0045785	GO:0045785	14	-0.5789365	-1.509339	0.048155736	0.27641177	1	3335	tags=43%, list=16%, signal=51%
+skeletal muscle fiber development	GO:0048741	GO:0048741	47	-0.43237683	-1.5072352	0.02079002	0.2787174	1	4014	tags=32%, list=20%, signal=40%
+cell-substrate adhesion	GO:0031589	GO:0031589	82	-0.3919978	-1.5066279	0.008018328	0.27832022	1	3344	tags=27%, list=16%, signal=32%
+inter-Golgi cisterna vesicle-mediated transport	GO:0048219	GO:0048219	10	-0.6414443	-1.5060612	0.0668693	0.27774325	1	6455	tags=60%, list=32%, signal=88%
+ubiquitin binding	GO:0043130	GO:0043130	13	-0.60188496	-1.5042832	0.04568528	0.27963978	1	3432	tags=54%, list=17%, signal=65%
+branched chain family amino acid metabolic process	GO:0009081	GO:0009081	12	-0.6040683	-1.502292	0.06400839	0.28188044	1	2731	tags=33%, list=13%, signal=38%
+adherens junction	GO:0005912	GO:0005912	50	-0.4293763	-1.5017371	0.02364865	0.2812409	1	3563	tags=38%, list=18%, signal=46%
+CD4-positive. alpha-beta T cell differentiation during immune response	GO:0002294	GO:0002294	11	-0.6106363	-1.4979929	0.061728396	0.28705418	1	2546	tags=36%, list=13%, signal=42%
+small GTPase regulator activity	GO:0005083	GO:0005083	248	-0.33147386	-1.4977086	0.0024420025	0.2859252	1	5303	tags=41%, list=26%, signal=54%
+low-density lipoprotein receptor activity	GO:0005041	GO:0005041	12	-0.6023608	-1.4969882	0.053465348	0.28572214	1	1654	tags=33%, list=8%, signal=36%
+T cell differentiation during immune response	GO:0002292	GO:0002292	11	-0.6106363	-1.4969074	0.051177073	0.28422278	1	2546	tags=36%, list=13%, signal=42%
+trans-Golgi network	GO:0005802	GO:0005802	27	-0.48587197	-1.4946811	0.043343652	0.286892	1	3898	tags=41%, list=19%, signal=50%
+learning and/or memory	GO:0007611	GO:0007611	45	-0.4363158	-1.4927949	0.026709402	0.28898993	1	4540	tags=31%, list=22%, signal=40%
+negative regulation of lymphocyte activation	GO:0051250	GO:0051250	23	-0.51196176	-1.4908925	0.04239917	0.29103088	1	2289	tags=26%, list=11%, signal=29%
+muscle cell differentiation	GO:0042692	GO:0042692	53	-0.41863403	-1.4901755	0.024096385	0.29078224	1	4209	tags=36%, list=21%, signal=45%
+alpha-beta T cell differentiation during immune response	GO:0002293	GO:0002293	11	-0.6106363	-1.4895898	0.06069959	0.29024038	1	2546	tags=36%, list=13%, signal=42%
+regulation of epithelial cell proliferation	GO:0050678	GO:0050678	30	-0.4775661	-1.4893926	0.031958763	0.28898767	1	1448	tags=17%, list=7%, signal=18%
+bone remodeling	GO:0046849	GO:0046849	36	-0.45335174	-1.4893525	0.043112513	0.28747162	1	1957	tags=22%, list=10%, signal=25%
+cyclin-dependent protein kinase regulator activity	GO:0016538	GO:0016538	15	-0.5727036	-1.4852135	0.053007137	0.29420024	1	2745	tags=53%, list=14%, signal=62%
+insulin receptor signaling pathway	GO:0008286	GO:0008286	33	-0.4584337	-1.4849722	0.03672613	0.29310322	1	3870	tags=33%, list=19%, signal=41%
+antigen processing and presentation of peptide antigen	GO:0048002	GO:0048002	19	-0.52628064	-1.4826616	0.055036344	0.2961303	1	4959	tags=63%, list=24%, signal=83%
+calmodulin-dependent protein kinase activity	GO:0004683	GO:0004683	18	-0.5431871	-1.4824657	0.058885384	0.29495504	1	4152	tags=33%, list=20%, signal=42%
+NF-kappaB binding	GO:0051059	GO:0051059	18	-0.5299137	-1.4815882	0.062628336	0.29526788	1	2504	tags=44%, list=12%, signal=51%
+lymphocyte activation during immune response	GO:0002285	GO:0002285	11	-0.6106363	-1.4797188	0.064785786	0.2972736	1	2546	tags=36%, list=13%, signal=42%
+vacuole	GO:0005773	GO:0005773	217	-0.3351356	-1.4784421	0	0.2983668	1	4008	tags=29%, list=20%, signal=36%
+cAMP metabolic process	GO:0046058	GO:0046058	22	-0.503479	-1.477036	0.056584362	0.29943097	1	1009	tags=23%, list=5%, signal=24%
+water transporter activity	GO:0005372	GO:0005372	12	-0.5968187	-1.4762187	0.07042254	0.29954472	1	3065	tags=42%, list=15%, signal=49%
+polysaccharide metabolic process	GO:0005976	GO:0005976	65	-0.39543915	-1.4761784	0.022128556	0.29804662	1	4748	tags=32%, list=23%, signal=42%
+T-helper cell differentiation	GO:0042093	GO:0042093	11	-0.6106363	-1.4756483	0.06784969	0.2974683	1	2546	tags=36%, list=13%, signal=42%
+positive regulation of transcription from RNA polymerase II promoter	GO:0045944	GO:0045944	155	-0.34550008	-1.4748974	0.004634994	0.297412	1	2387	tags=23%, list=12%, signal=26%
+Ras GTPase activator activity	GO:0005099	GO:0005099	84	-0.37837067	-1.4739008	0.013937282	0.29791245	1	5593	tags=44%, list=28%, signal=61%
+T cell activation during immune response	GO:0002286	GO:0002286	11	-0.6106363	-1.4727964	0.066198595	0.29857644	1	2546	tags=36%, list=13%, signal=42%
+steroid catabolic process	GO:0006706	GO:0006706	17	-0.5477602	-1.4726328	0.05442903	0.2974329	1	2239	tags=24%, list=11%, signal=26%
+urogenital system development	GO:0001655	GO:0001655	45	-0.42152563	-1.4710308	0.03275109	0.29921362	1	2283	tags=29%, list=11%, signal=32%
+response to xenobiotic stimulus	GO:0009410	GO:0009410	30	-0.4723397	-1.4701293	0.051557466	0.29948947	1	3945	tags=53%, list=19%, signal=66%
+embryonic pattern specification	GO:0009880	GO:0009880	28	-0.47548655	-1.4674149	0.039173014	0.30335653	1	4046	tags=36%, list=20%, signal=45%
+membrane protein ectodomain proteolysis	GO:0006509	GO:0006509	12	-0.58514094	-1.4666959	0.08316832	0.30314803	1	6401	tags=75%, list=31%, signal=109%
+response to nutrient levels	GO:0031667	GO:0031667	78	-0.37900913	-1.4656094	0.014380531	0.30394122	1	1856	tags=23%, list=9%, signal=25%
+tetrapyrrole metabolic process	GO:0033013	GO:0033013	21	-0.5038217	-1.4647601	0.04949495	0.30411533	1	1120	tags=24%, list=6%, signal=25%
+epithelial cell proliferation	GO:0050673	GO:0050673	33	-0.45821536	-1.4636971	0.04550379	0.3048116	1	1448	tags=15%, list=7%, signal=16%
+response to hydrogen peroxide	GO:0042542	GO:0042542	25	-0.48240173	-1.4634277	0.049723756	0.3038967	1	2200	tags=28%, list=11%, signal=31%
+negative regulation of transcription factor activity	GO:0043433	GO:0043433	17	-0.52662474	-1.4631984	0.057471264	0.3028769	1	3041	tags=41%, list=15%, signal=48%
+response to insulin stimulus	GO:0032868	GO:0032868	11	-0.6074691	-1.4629651	0.067067064	0.30184096	1	3249	tags=45%, list=16%, signal=54%
+porphyrin metabolic process	GO:0006778	GO:0006778	21	-0.5038217	-1.4592443	0.06545821	0.30802447	1	1120	tags=24%, list=6%, signal=25%
+protein kinase binding	GO:0019901	GO:0019901	69	-0.38490307	-1.4583396	0.019823788	0.30840534	1	3554	tags=29%, list=17%, signal=35%
+Golgi organization and biogenesis	GO:0007030	GO:0007030	11	-0.5999364	-1.458113	0.070264764	0.30739698	1	6066	tags=73%, list=30%, signal=104%
+anchored to plasma membrane	GO:0046658	GO:0046658	14	-0.5570128	-1.455735	0.07732497	0.31063294	1	6132	tags=71%, list=30%, signal=102%
+antigen processing and presentation of peptide antigen via MHC class I	GO:0002474	GO:0002474	16	-0.53954184	-1.4552709	0.08669355	0.31019327	1	3112	tags=56%, list=15%, signal=66%
+post-Golgi vesicle-mediated transport	GO:0006892	GO:0006892	21	-0.49924448	-1.4547648	0.06339468	0.30969873	1	3348	tags=48%, list=16%, signal=57%
+cellular response to extracellular stimulus	GO:0031668	GO:0031668	28	-0.4693807	-1.4545106	0.051557466	0.30882215	1	1856	tags=21%, list=9%, signal=24%
+response to extracellular stimulus	GO:0009991	GO:0009991	84	-0.3723477	-1.4542644	0.01543943	0.3078638	1	1856	tags=23%, list=9%, signal=25%
+GTPase regulator activity	GO:0030695	GO:0030695	376	-0.30672383	-1.4539444	0	0.30714586	1	4639	tags=34%, list=23%, signal=43%
+GTPase activator activity	GO:0005096	GO:0005096	208	-0.32879686	-1.4519639	0.0024937657	0.30957282	1	4830	tags=33%, list=24%, signal=43%
+regulation of nucleotide metabolic process	GO:0006140	GO:0006140	10	-0.6147834	-1.4510746	0.07926829	0.31003374	1	676	tags=30%, list=3%, signal=31%
+aldehyde metabolic process	GO:0006081	GO:0006081	17	-0.5357648	-1.4509155	0.080882356	0.30891272	1	6410	tags=65%, list=32%, signal=94%
+protein tyrosine phosphatase activity	GO:0004725	GO:0004725	99	-0.362259	-1.4470928	0.019562716	0.3152701	1	2625	tags=27%, list=13%, signal=31%
+lytic vacuole	GO:0000323	GO:0000323	194	-0.33021262	-1.4456304	0.0073349634	0.31687954	1	4008	tags=29%, list=20%, signal=36%
+membrane protein proteolysis	GO:0033619	GO:0033619	12	-0.58514094	-1.442771	0.073498964	0.32127488	1	6401	tags=75%, list=31%, signal=109%
+transmembrane receptor protein phosphatase activity	GO:0019198	GO:0019198	18	-0.5230704	-1.4425125	0.05995935	0.32035214	1	3642	tags=39%, list=18%, signal=47%
+NAD metabolic process	GO:0019674	GO:0019674	14	-0.55556214	-1.4421003	0.09631147	0.3197662	1	204	tags=14%, list=1%, signal=14%
+receptor complex	GO:0043235	GO:0043235	85	-0.37219667	-1.4409226	0.025316456	0.3206633	1	3344	tags=25%, list=16%, signal=29%
+positive regulation of I-kappaB kinase/NF-kappaB cascade	GO:0043123	GO:0043123	92	-0.367064	-1.4406161	0.022222223	0.31991524	1	4151	tags=30%, list=20%, signal=38%
+biomineral formation	GO:0031214	GO:0031214	95	-0.36157653	-1.4400114	0.016930023	0.31975445	1	2946	tags=24%, list=14%, signal=28%
+ureteric bud development	GO:0001657	GO:0001657	19	-0.51330036	-1.4400028	0.06387435	0.31837586	1	2255	tags=37%, list=11%, signal=41%
+ossification	GO:0001503	GO:0001503	95	-0.36157653	-1.4380082	0.018867925	0.32100964	1	2946	tags=24%, list=14%, signal=28%
+hemopoiesis	GO:0030097	GO:0030097	167	-0.3311944	-1.437695	0.0045045046	0.32031652	1	3059	tags=24%, list=15%, signal=28%
+steroid dehydrogenase activity	GO:0016229	GO:0016229	29	-0.46282336	-1.4375683	0.06189968	0.3191972	1	2383	tags=31%, list=12%, signal=35%
+actin filament organization	GO:0007015	GO:0007015	38	-0.4290496	-1.4360447	0.042207792	0.32078955	1	4166	tags=32%, list=20%, signal=40%
+transforming growth factor beta receptor signaling pathway	GO:0007179	GO:0007179	50	-0.41253692	-1.4360113	0.0412595	0.3194848	1	5697	tags=44%, list=28%, signal=61%
+response to nutrient	GO:0007584	GO:0007584	49	-0.41213113	-1.4354123	0.045016076	0.31920734	1	1689	tags=29%, list=8%, signal=31%
+regulation of I-kappaB kinase/NF-kappaB cascade	GO:0043122	GO:0043122	99	-0.3610991	-1.4344709	0.017221585	0.31977633	1	3095	tags=26%, list=15%, signal=31%
+lysosome	GO:0005764	GO:0005764	194	-0.33021262	-1.4343789	0.0033783785	0.31865555	1	4008	tags=29%, list=20%, signal=36%
+polysaccharide biosynthetic process	GO:0000271	GO:0000271	28	-0.4575569	-1.4324139	0.06269926	0.32132185	1	4748	tags=36%, list=23%, signal=47%
+lipoprotein binding	GO:0008034	GO:0008034	27	-0.4667906	-1.4308175	0.06468717	0.3230981	1	1847	tags=30%, list=9%, signal=33%
+transmembrane receptor protein tyrosine phosphatase activity	GO:0005001	GO:0005001	18	-0.5230704	-1.4290289	0.07707911	0.32546434	1	3642	tags=39%, list=18%, signal=47%
+GABA-A receptor activity	GO:0004890	GO:0004890	22	-0.48660696	-1.4279437	0.07556936	0.3262032	1	2923	tags=32%, list=14%, signal=37%
+guanyl-nucleotide exchange factor activity	GO:0005085	GO:0005085	145	-0.33889955	-1.4273741	0.0056369784	0.3259487	1	4639	tags=36%, list=23%, signal=46%
+steroid dehydrogenase activity. acting on the CH-OH group of donors, NAD or NADP as acceptor	GO:0033764	GO:0033764	25	-0.47645104	-1.4244142	0.059436914	0.33059403	1	2383	tags=32%, list=12%, signal=36%
+P-P-bond-hydrolysis-driven transmembrane transporter activity	GO:0015405	GO:0015405	123	-0.34293243	-1.4226159	0.0125284735	0.332948	1	2371	tags=18%, list=12%, signal=20%
+protein kinase regulator activity	GO:0019887	GO:0019887	68	-0.38170674	-1.4212018	0.033732317	0.33451986	1	2289	tags=24%, list=11%, signal=26%
+cellular polysaccharide biosynthetic process	GO:0033692	GO:0033692	28	-0.4575569	-1.4210039	0.061555076	0.33358324	1	4748	tags=36%, list=23%, signal=47%
+xenobiotic metabolic process	GO:0006805	GO:0006805	27	-0.46375158	-1.4204965	0.06488156	0.3332512	1	1668	tags=33%, list=8%, signal=36%
+lipid catabolic process	GO:0016042	GO:0016042	151	-0.33327043	-1.4193637	0.012429379	0.33414182	1	4766	tags=36%, list=23%, signal=46%
+G-protein signaling. coupled to IP3 second messenger (phospholipase C activating)	GO:0007200	GO:0007200	73	-0.3777018	-1.4179971	0.028153153	0.3355411	1	3293	tags=32%, list=16%, signal=37%
+ARF GTPase activator activity	GO:0008060	GO:0008060	30	-0.44727355	-1.417996	0.056410257	0.3341957	1	6049	tags=57%, list=30%, signal=81%
+GABA receptor activity	GO:0016917	GO:0016917	26	-0.46965832	-1.4173334	0.06608884	0.33418798	1	2923	tags=31%, list=14%, signal=36%
+primary active transmembrane transporter activity	GO:0015399	GO:0015399	123	-0.34293243	-1.417127	0.0067340066	0.33327073	1	2371	tags=18%, list=12%, signal=20%
+Ras guanyl-nucleotide exchange factor activity	GO:0005088	GO:0005088	80	-0.36656156	-1.4156606	0.02420242	0.3350215	1	4576	tags=34%, list=23%, signal=43%
+cellular polysaccharide metabolic process	GO:0044264	GO:0044264	63	-0.38426015	-1.4148962	0.029545454	0.33529046	1	4748	tags=32%, list=23%, signal=41%
+ADP binding	GO:0043531	GO:0043531	12	-0.57043207	-1.4120466	0.10465116	0.33990175	1	3188	tags=42%, list=16%, signal=49%
+axonemal dynein complex	GO:0005858	GO:0005858	14	-0.5504123	-1.4107372	0.09891197	0.34126326	1	3908	tags=50%, list=19%, signal=62%
+kidney development	GO:0001822	GO:0001822	41	-0.419887	-1.4107182	0.057142857	0.3399728	1	2283	tags=29%, list=11%, signal=33%
+regulation of muscle cell differentiation	GO:0051147	GO:0051147	10	-0.59102446	-1.4090215	0.09647303	0.34206146	1	628	tags=30%, list=3%, signal=31%
+sarcolemma	GO:0042383	GO:0042383	18	-0.5118099	-1.4075404	0.090322584	0.34386662	1	1765	tags=22%, list=9%, signal=24%
+endothelial cell differentiation	GO:0045446	GO:0045446	11	-0.57949966	-1.405344	0.10070494	0.34725127	1	4046	tags=36%, list=20%, signal=45%
+transmembrane receptor protein tyrosine kinase activity	GO:0004714	GO:0004714	68	-0.37668717	-1.4052174	0.049717516	0.34617257	1	3604	tags=29%, list=18%, signal=36%
+mating	GO:0007618	GO:0007618	12	-0.5596165	-1.4050539	0.1	0.34518975	1	1494	tags=33%, list=7%, signal=36%
+negative regulation of binding	GO:0051100	GO:0051100	22	-0.4746533	-1.4025203	0.08773784	0.34907296	1	4044	tags=45%, list=20%, signal=57%
+cholesterol transporter activity	GO:0017127	GO:0017127	10	-0.59774494	-1.401626	0.102642275	0.34970102	1	93	tags=20%, list=0%, signal=20%
+negative regulation of cell activation	GO:0050866	GO:0050866	28	-0.45267808	-1.4009124	0.078	0.34983554	1	2877	tags=29%, list=14%, signal=33%
+digestive system process	GO:0022600	GO:0022600	18	-0.49866098	-1.4001986	0.08708709	0.3499795	1	2403	tags=28%, list=12%, signal=31%
+negative regulation of signal transduction	GO:0009968	GO:0009968	119	-0.3442198	-1.3999038	0.018669778	0.3493224	1	3644	tags=29%, list=18%, signal=36%
+transmembrane receptor protein serine/threonine kinase signaling pathway	GO:0007178	GO:0007178	82	-0.36668625	-1.3984989	0.025698325	0.35096842	1	3989	tags=29%, list=20%, signal=36%
+positive regulation of hormone secretion	GO:0046887	GO:0046887	13	-0.55164593	-1.3942176	0.09854772	0.35855934	1	498	tags=15%, list=2%, signal=16%
+cyclic nucleotide metabolic process	GO:0009187	GO:0009187	40	-0.41546628	-1.3930289	0.05645161	0.3597439	1	6120	tags=52%, list=30%, signal=75%
+response to hypoxia	GO:0001666	GO:0001666	55	-0.3915114	-1.3923064	0.04746494	0.3599623	1	1927	tags=29%, list=9%, signal=32%
+glycoprotein metabolic process	GO:0009100	GO:0009100	148	-0.32747832	-1.3913496	0.013110846	0.36072665	1	3625	tags=24%, list=18%, signal=29%
+myeloid cell differentiation	GO:0030099	GO:0030099	81	-0.3577091	-1.3881978	0.03930131	0.36603633	1	3470	tags=32%, list=17%, signal=39%
+hemopoietic or lymphoid organ development	GO:0048534	GO:0048534	180	-0.3185004	-1.3858628	0.0073439414	0.36941803	1	3059	tags=23%, list=15%, signal=27%
+regulation of ARF GTPase activity	GO:0032312	GO:0032312	29	-0.44749394	-1.3851961	0.07871397	0.36952633	1	6049	tags=59%, list=30%, signal=83%
+endosome transport	GO:0016197	GO:0016197	46	-0.39964798	-1.3842196	0.062159214	0.37024376	1	2125	tags=24%, list=10%, signal=27%
+CD4-positive. alpha beta T cell differentiation	GO:0043367	GO:0043367	12	-0.5404082	-1.3821536	0.10935961	0.37353727	1	2546	tags=33%, list=13%, signal=38%
+microfilament motor activity	GO:0000146	GO:0000146	15	-0.51882637	-1.3804275	0.10676533	0.375947	1	1377	tags=27%, list=7%, signal=29%
+regulation of vasoconstriction	GO:0019229	GO:0019229	14	-0.53238636	-1.3803132	0.10481283	0.37485686	1	646	tags=21%, list=3%, signal=22%
+lipid homeostasis	GO:0055088	GO:0055088	29	-0.4427881	-1.380087	0.08972973	0.3739863	1	1419	tags=17%, list=7%, signal=19%
+hydrogen peroxide metabolic process	GO:0042743	GO:0042743	22	-0.47368237	-1.3800665	0.08790072	0.3727009	1	2200	tags=23%, list=11%, signal=25%
+vacuole organization and biogenesis	GO:0007033	GO:0007033	19	-0.49693093	-1.379317	0.09205021	0.37289253	1	1693	tags=26%, list=8%, signal=29%
+cAMP biosynthetic process	GO:0006171	GO:0006171	19	-0.49398828	-1.3787713	0.09896907	0.37274158	1	1009	tags=21%, list=5%, signal=22%
+Wnt receptor signaling pathway	GO:0016055	GO:0016055	124	-0.33486253	-1.3770483	0.024532711	0.37533963	1	3550	tags=27%, list=17%, signal=33%
+memory	GO:0007613	GO:0007613	11	-0.5794337	-1.3757704	0.10204082	0.37680167	1	1564	tags=27%, list=8%, signal=30%
+lipid modification	GO:0030258	GO:0030258	69	-0.36690855	-1.375726	0.05399325	0.37557656	1	4031	tags=36%, list=20%, signal=45%
+phosphoric diester hydrolase activity	GO:0008081	GO:0008081	82	-0.36041224	-1.3753234	0.030552292	0.3752209	1	3622	tags=34%, list=18%, signal=41%
+calmodulin binding	GO:0005516	GO:0005516	134	-0.32977727	-1.3732796	0.020432692	0.37851486	1	3255	tags=26%, list=16%, signal=31%
+Ras protein signal transduction	GO:0007265	GO:0007265	266	-0.30160382	-1.372339	0.0012738854	0.3792732	1	4639	tags=32%, list=23%, signal=41%
+NADP binding	GO:0050661	GO:0050661	26	-0.4469046	-1.3714206	0.07642627	0.37996987	1	3132	tags=31%, list=15%, signal=36%
+oxygen binding	GO:0019825	GO:0019825	33	-0.4252323	-1.3706212	0.085963	0.38054287	1	6471	tags=45%, list=32%, signal=67%
+cellular structure morphogenesis	GO:0032989	GO:0032989	277	-0.29878658	-1.3705074	0.0076824585	0.3795112	1	2530	tags=19%, list=12%, signal=21%
+vesicle localization	GO:0051648	GO:0051648	25	-0.4608523	-1.3703555	0.103521876	0.3784977	1	4418	tags=44%, list=22%, signal=56%
+lipase activity	GO:0016298	GO:0016298	96	-0.3400477	-1.3700902	0.028184893	0.37777644	1	3278	tags=27%, list=16%, signal=32%
+regulation of hydrolase activity	GO:0051336	GO:0051336	211	-0.30650765	-1.3697696	0.006265664	0.37716824	1	5454	tags=42%, list=27%, signal=56%
+coated vesicle	GO:0030135	GO:0030135	104	-0.3412746	-1.3689368	0.037988827	0.3777049	1	4631	tags=36%, list=23%, signal=46%
+vesicle-mediated transport	GO:0016192	GO:0016192	484	-0.2839423	-1.3684645	0.0013736264	0.37743822	1	3943	tags=27%, list=19%, signal=33%
+glucose homeostasis	GO:0042593	GO:0042593	25	-0.45062044	-1.3676375	0.089207046	0.37796655	1	989	tags=16%, list=5%, signal=17%
+carbohydrate homeostasis	GO:0033500	GO:0033500	25	-0.45062044	-1.3668504	0.083937824	0.37851194	1	989	tags=16%, list=5%, signal=17%
+cell morphogenesis	GO:0000902	GO:0000902	277	-0.29878658	-1.3655465	0.005063291	0.38012964	1	2530	tags=19%, list=12%, signal=21%
+B cell differentiation	GO:0030183	GO:0030183	32	-0.42437384	-1.3643644	0.07960741	0.3813122	1	1093	tags=16%, list=5%, signal=16%
+water transport	GO:0006833	GO:0006833	14	-0.52750784	-1.3616457	0.1119403	0.386156	1	3065	tags=36%, list=15%, signal=42%
+fluid transport	GO:0042044	GO:0042044	14	-0.52750784	-1.3594954	0.12124463	0.3894881	1	3065	tags=36%, list=15%, signal=42%
+regulation of erythrocyte differentiation	GO:0045646	GO:0045646	13	-0.52707857	-1.3571683	0.12086777	0.3932549	1	3716	tags=46%, list=18%, signal=56%
+cell-substrate adherens junction	GO:0005924	GO:0005924	36	-0.41080981	-1.3561583	0.0787321	0.39420667	1	2800	tags=33%, list=14%, signal=39%
+basal lamina	GO:0005605	GO:0005605	12	-0.53420705	-1.3544701	0.124087594	0.39666903	1	1561	tags=42%, list=8%, signal=45%
+negative regulation of cell proliferation	GO:0008285	GO:0008285	236	-0.29867345	-1.3542027	0.0086100865	0.39594072	1	2868	tags=23%, list=14%, signal=27%
+catecholamine metabolic process	GO:0006584	GO:0006584	25	-0.44727212	-1.353919	0.10259067	0.39535126	1	2123	tags=32%, list=10%, signal=36%
+phosphoric ester hydrolase activity	GO:0042578	GO:0042578	314	-0.29142094	-1.3530747	0.002503129	0.39602605	1	3278	tags=25%, list=16%, signal=30%
+phosphoprotein phosphatase activity	GO:0004721	GO:0004721	157	-0.3179443	-1.3517787	0.023489933	0.39768606	1	2625	tags=24%, list=13%, signal=27%
+myoblast differentiation	GO:0045445	GO:0045445	32	-0.42888325	-1.3510991	0.084690556	0.39791602	1	714	tags=16%, list=4%, signal=16%
+membrane invagination	GO:0010324	GO:0010324	188	-0.3076548	-1.3499594	0.020910209	0.3991242	1	3071	tags=26%, list=15%, signal=30%
+endocytosis	GO:0006897	GO:0006897	188	-0.3076548	-1.3487259	0.018226003	0.40054408	1	3071	tags=26%, list=15%, signal=30%
+regulation of protein kinase cascade	GO:0010627	GO:0010627	157	-0.3166994	-1.348396	0.03151515	0.40005717	1	3095	tags=26%, list=15%, signal=31%
+phosphoinositide 3-kinase complex	GO:0005942	GO:0005942	14	-0.5256913	-1.3471692	0.13249211	0.40163958	1	1633	tags=29%, list=8%, signal=31%
+axoneme	GO:0005930	GO:0005930	20	-0.46780506	-1.3466959	0.11157456	0.40143394	1	3908	tags=50%, list=19%, signal=62%
+Golgi apparatus part	GO:0044431	GO:0044431	409	-0.2825287	-1.3458445	0.004016064	0.4020906	1	3778	tags=27%, list=19%, signal=32%
+cell development	GO:0048468	GO:0048468	402	-0.28254086	-1.345424	0.0039893617	0.40176615	1	2730	tags=18%, list=13%, signal=20%
+fatty acid transport	GO:0015908	GO:0015908	10	-0.5792384	-1.3427155	0.13850997	0.40661576	1	2119	tags=50%, list=10%, signal=56%
+glycolipid biosynthetic process	GO:0009247	GO:0009247	13	-0.53069234	-1.3420471	0.13488844	0.40692994	1	425	tags=15%, list=2%, signal=16%
+immune system development	GO:0002520	GO:0002520	191	-0.30420968	-1.3411365	0.017985612	0.40769592	1	3059	tags=23%, list=15%, signal=26%
+phosphoinositide-mediated signaling	GO:0048015	GO:0048015	101	-0.33181703	-1.3408186	0.029036004	0.40713418	1	3293	tags=28%, list=16%, signal=33%
+morphogenesis of an epithelium	GO:0002009	GO:0002009	68	-0.36032322	-1.3399395	0.060840707	0.4078501	1	2949	tags=31%, list=15%, signal=36%
+regulation of glucose import	GO:0046324	GO:0046324	11	-0.5492167	-1.33697	0.1670061	0.41339225	1	176	tags=9%, list=1%, signal=9%
+negative regulation of protein modification process	GO:0031400	GO:0031400	16	-0.49731952	-1.3363262	0.13455658	0.41349253	1	176	tags=13%, list=1%, signal=13%
+protein kinase cascade	GO:0007243	GO:0007243	403	-0.2814337	-1.3341436	0.0055478504	0.4170819	1	4194	tags=28%, list=21%, signal=35%
+hormone metabolic process	GO:0042445	GO:0042445	87	-0.33939275	-1.3337647	0.03837953	0.41670927	1	2383	tags=20%, list=12%, signal=22%
+regulation of cell adhesion	GO:0030155	GO:0030155	76	-0.3548313	-1.3321033	0.050632913	0.4192212	1	3496	tags=33%, list=17%, signal=40%
+cytokine and chemokine mediated signaling pathway	GO:0019221	GO:0019221	43	-0.39342627	-1.3319863	0.07900208	0.41821316	1	5556	tags=40%, list=27%, signal=54%
+response to starvation	GO:0042594	GO:0042594	24	-0.4445497	-1.3312327	0.113513514	0.4186897	1	1856	tags=21%, list=9%, signal=23%
+phospholipase activity	GO:0004620	GO:0004620	81	-0.34970778	-1.3304977	0.06938326	0.41914853	1	3278	tags=28%, list=16%, signal=34%
+phosphatase activity	GO:0016791	GO:0016791	231	-0.2965881	-1.3291081	0.014527845	0.42111373	1	2625	tags=22%, list=13%, signal=25%
+cell-substrate junction	GO:0030055	GO:0030055	38	-0.3990835	-1.3290155	0.1019979	0.42004356	1	2800	tags=32%, list=14%, signal=37%
+cholesterol homeostasis	GO:0042632	GO:0042632	23	-0.44964036	-1.3289698	0.12912913	0.41885817	1	1419	tags=17%, list=7%, signal=19%
+ephrin receptor activity	GO:0005003	GO:0005003	17	-0.48979384	-1.3274027	0.14078675	0.42112374	1	2057	tags=29%, list=10%, signal=33%
+neurogenesis	GO:0022008	GO:0022008	263	-0.28967148	-1.32552	0.017287234	0.42427686	1	2475	tags=16%, list=12%, signal=18%
+negative regulation of angiogenesis	GO:0016525	GO:0016525	18	-0.48828328	-1.3241159	0.12296748	0.4262548	1	5424	tags=44%, list=27%, signal=61%
+tube morphogenesis	GO:0035239	GO:0035239	92	-0.33691177	-1.3232727	0.051903114	0.42701712	1	2397	tags=23%, list=12%, signal=26%
+sterol homeostasis	GO:0055092	GO:0055092	23	-0.44964036	-1.3230667	0.11691023	0.42622474	1	1419	tags=17%, list=7%, signal=19%
+integrin-mediated signaling pathway	GO:0007229	GO:0007229	56	-0.36947826	-1.321542	0.08466819	0.42840043	1	3490	tags=29%, list=17%, signal=34%
+I-kappaB kinase/NF-kappaB cascade	GO:0007249	GO:0007249	140	-0.31642857	-1.3215219	0.04840614	0.427174	1	3095	tags=24%, list=15%, signal=28%
+Golgi vesicle transport	GO:0048193	GO:0048193	89	-0.3378111	-1.3213633	0.053140096	0.42631066	1	5377	tags=38%, list=26%, signal=52%
+phenol metabolic process	GO:0018958	GO:0018958	26	-0.4361374	-1.3210661	0.110749185	0.42571777	1	2123	tags=31%, list=10%, signal=34%
+enzyme activator activity	GO:0008047	GO:0008047	307	-0.2844901	-1.3203303	0.014492754	0.42614564	1	4134	tags=29%, list=20%, signal=35%
+steroid binding	GO:0005496	GO:0005496	61	-0.358343	-1.3202515	0.069078945	0.42507872	1	2159	tags=21%, list=11%, signal=24%
+vasoconstriction	GO:0042310	GO:0042310	20	-0.46799016	-1.3189309	0.12487412	0.42681068	1	646	tags=15%, list=3%, signal=15%
+cell activation during immune response	GO:0002263	GO:0002263	12	-0.5304761	-1.3175446	0.13926701	0.42894867	1	2546	tags=33%, list=13%, signal=38%
+establishment of vesicle localization	GO:0051650	GO:0051650	24	-0.44344673	-1.3171968	0.13130252	0.42849496	1	4418	tags=42%, list=22%, signal=53%
+kinesin complex	GO:0005871	GO:0005871	17	-0.48611796	-1.31559	0.1388601	0.43095732	1	2699	tags=35%, list=13%, signal=41%
+NAD+ ADP-ribosyltransferase activity	GO:0003950	GO:0003950	23	-0.4425111	-1.3141634	0.11734694	0.43309033	1	796	tags=22%, list=4%, signal=23%
+phosphatidylinositol binding	GO:0005545	GO:0005545	15	-0.49815643	-1.3134896	0.14871795	0.43336764	1	4639	tags=47%, list=23%, signal=60%
+negative regulation of cytokine production	GO:0001818	GO:0001818	13	-0.51098883	-1.3133277	0.15497382	0.43249828	1	1358	tags=31%, list=7%, signal=33%
+presynaptic membrane	GO:0042734	GO:0042734	12	-0.528944	-1.3093925	0.15904573	0.44064155	1	3808	tags=42%, list=19%, signal=51%
+cornified envelope	GO:0001533	GO:0001533	16	-0.4864798	-1.3091042	0.15975104	0.4400387	1	5360	tags=44%, list=26%, signal=59%
+response to organic substance	GO:0010033	GO:0010033	74	-0.3422061	-1.3090818	0.077790305	0.43884623	1	1725	tags=16%, list=8%, signal=18%
+regulation of cell motility	GO:0051270	GO:0051270	81	-0.33944646	-1.3087723	0.06710671	0.43831423	1	3914	tags=33%, list=19%, signal=41%
+sterol transporter activity	GO:0015248	GO:0015248	12	-0.5295199	-1.3070571	0.1555783	0.4410152	1	93	tags=17%, list=0%, signal=17%
+leukocyte activation during immune response	GO:0002366	GO:0002366	12	-0.5304761	-1.3064449	0.14198162	0.44123355	1	2546	tags=33%, list=13%, signal=38%
+synaptic vesicle	GO:0008021	GO:0008021	46	-0.38043946	-1.305824	0.09758657	0.44150007	1	2033	tags=24%, list=10%, signal=27%
+hormone binding	GO:0042562	GO:0042562	27	-0.42430174	-1.3034804	0.11776859	0.44568118	1	5821	tags=48%, list=29%, signal=67%
+glucose import	GO:0046323	GO:0046323	12	-0.5257291	-1.3029467	0.15005036	0.4457044	1	4144	tags=25%, list=20%, signal=31%
+leukocyte differentiation	GO:0002521	GO:0002521	99	-0.32822102	-1.3014992	0.06549708	0.4478498	1	3054	tags=22%, list=15%, signal=26%
+regulation of pH	GO:0006885	GO:0006885	30	-0.40702933	-1.3012782	0.12314225	0.44715002	1	1693	tags=23%, list=8%, signal=25%
+neuron differentiation	GO:0030182	GO:0030182	210	-0.29140696	-1.3010793	0.03524804	0.4463633	1	2475	tags=17%, list=12%, signal=19%
+unspecific monooxygenase activity	GO:0050381	GO:0050381	25	-0.4256668	-1.300935	0.14016737	0.445493	1	1982	tags=20%, list=10%, signal=22%
+integrin binding	GO:0005178	GO:0005178	43	-0.38017312	-1.3007855	0.10799136	0.44458646	1	5027	tags=37%, list=25%, signal=49%
+clathrin-coated vesicle	GO:0030136	GO:0030136	83	-0.33196548	-1.2997302	0.07599119	0.44587594	1	3489	tags=29%, list=17%, signal=35%
+regulation of transcription from RNA polymerase II promoter	GO:0006357	GO:0006357	436	-0.27207553	-1.2979928	0.005610098	0.4487996	1	2321	tags=19%, list=11%, signal=21%
+mechanoreceptor differentiation	GO:0042490	GO:0042490	16	-0.48091668	-1.2978542	0.15392457	0.447925	1	4273	tags=38%, list=21%, signal=47%
+amino acid derivative catabolic process	GO:0042219	GO:0042219	14	-0.4980503	-1.2963367	0.16185567	0.4502648	1	1361	tags=21%, list=7%, signal=23%
+postsynaptic membrane	GO:0045211	GO:0045211	112	-0.31997287	-1.295984	0.066433564	0.44985545	1	3058	tags=26%, list=15%, signal=30%
+fatty acid oxidation	GO:0019395	GO:0019395	36	-0.39636302	-1.2940943	0.1098081	0.45309705	1	5361	tags=50%, list=26%, signal=68%
+lipid oxidation	GO:0034440	GO:0034440	36	-0.39636302	-1.2937785	0.112299465	0.45264316	1	5361	tags=50%, list=26%, signal=68%
+leading edge	GO:0031252	GO:0031252	71	-0.34320924	-1.2937533	0.08035714	0.45148608	1	2553	tags=24%, list=13%, signal=27%
+signal complex assembly	GO:0007172	GO:0007172	11	-0.52248377	-1.2928214	0.16752313	0.4524877	1	5528	tags=64%, list=27%, signal=87%
+heme metabolic process	GO:0042168	GO:0042168	17	-0.47510856	-1.2911274	0.13641025	0.45534068	1	1120	tags=24%, list=6%, signal=25%
+kinase binding	GO:0019900	GO:0019900	86	-0.33133703	-1.2899902	0.06931818	0.45678696	1	3554	tags=26%, list=17%, signal=31%
+negative regulation of cellular protein metabolic process	GO:0032269	GO:0032269	84	-0.3298132	-1.2885479	0.07233065	0.45905074	1	3887	tags=24%, list=19%, signal=29%
+positive regulation of signal transduction	GO:0009967	GO:0009967	175	-0.29830793	-1.2876675	0.055350553	0.45993897	1	4151	tags=31%, list=20%, signal=38%
+selenium binding	GO:0008430	GO:0008430	27	-0.4167402	-1.286337	0.13090129	0.4619375	1	2294	tags=19%, list=11%, signal=21%
+cholesterol binding	GO:0015485	GO:0015485	16	-0.4763017	-1.2861831	0.15142277	0.461111	1	485	tags=19%, list=2%, signal=19%
+vesicle organization and biogenesis	GO:0016050	GO:0016050	38	-0.38816187	-1.2860571	0.12799168	0.46018627	1	5447	tags=45%, list=27%, signal=61%
+axon guidance	GO:0007411	GO:0007411	53	-0.3568581	-1.2858413	0.11037528	0.45948404	1	2316	tags=21%, list=11%, signal=23%
+cholesterol transport	GO:0030301	GO:0030301	23	-0.43213895	-1.2839729	0.1427094	0.4627462	1	4509	tags=39%, list=22%, signal=50%
+humoral immune response	GO:0006959	GO:0006959	68	-0.3458821	-1.2831666	0.08888889	0.4634188	1	3866	tags=25%, list=19%, signal=31%
+negative regulation of macromolecule metabolic process	GO:0010605	GO:0010605	378	-0.27193245	-1.2830282	0.011826544	0.46252897	1	2342	tags=18%, list=12%, signal=20%
+Golgi membrane	GO:0000139	GO:0000139	357	-0.27044332	-1.2827216	0.013661202	0.46211755	1	3460	tags=24%, list=17%, signal=29%
+secretion	GO:0046903	GO:0046903	259	-0.28516912	-1.2823993	0.03082614	0.46167737	1	3808	tags=24%, list=19%, signal=29%
+negative regulation of translation	GO:0017148	GO:0017148	17	-0.4680854	-1.2817602	0.15970773	0.46200028	1	3250	tags=29%, list=16%, signal=35%
+regulation of anatomical structure morphogenesis	GO:0022603	GO:0022603	75	-0.33231968	-1.2799069	0.083877996	0.46529505	1	2530	tags=23%, list=12%, signal=26%
+dorsal/ventral pattern formation	GO:0009953	GO:0009953	29	-0.40467334	-1.2790557	0.15417106	0.46615356	1	2113	tags=24%, list=10%, signal=27%
+actomyosin structure organization and biogenesis	GO:0031032	GO:0031032	17	-0.4586679	-1.2787201	0.16546018	0.4657913	1	714	tags=18%, list=4%, signal=18%
+glucose transport	GO:0015758	GO:0015758	35	-0.3960023	-1.2783084	0.13945946	0.46554902	1	3270	tags=26%, list=16%, signal=31%
+development of primary male sexual characteristics	GO:0046546	GO:0046546	28	-0.41404128	-1.277781	0.13312693	0.46567088	1	3317	tags=29%, list=16%, signal=34%
+negative regulation of transcription. DNA-dependent	GO:0045892	GO:0045892	197	-0.29067108	-1.2775253	0.033898305	0.46506965	1	2342	tags=21%, list=12%, signal=23%
+proteinaceous extracellular matrix	GO:0005578	GO:0005578	280	-0.27835745	-1.2769482	0.025094103	0.46523693	1	5096	tags=31%, list=25%, signal=40%
+hexose transport	GO:0008645	GO:0008645	36	-0.3870332	-1.276627	0.13467656	0.46480787	1	3270	tags=25%, list=16%, signal=30%
+cation-transporting ATPase activity	GO:0019829	GO:0019829	42	-0.37073687	-1.2764177	0.12111111	0.4641446	1	2183	tags=14%, list=11%, signal=16%
+generation of neurons	GO:0048699	GO:0048699	246	-0.28164306	-1.2742335	0.021039603	0.4681154	1	2475	tags=17%, list=12%, signal=19%
+negative regulation of macromolecule biosynthetic process	GO:0010558	GO:0010558	315	-0.27468753	-1.2736783	0.02141901	0.4683125	1	2342	tags=19%, list=12%, signal=21%
+auditory receptor cell differentiation	GO:0042491	GO:0042491	13	-0.4992906	-1.2734891	0.19242902	0.46760845	1	4273	tags=38%, list=21%, signal=49%
+synaptosome	GO:0019717	GO:0019717	43	-0.37356278	-1.273382	0.12670156	0.46670452	1	3933	tags=33%, list=19%, signal=40%
+regulation of cell migration	GO:0030334	GO:0030334	72	-0.3402687	-1.2725822	0.09576838	0.4674384	1	3363	tags=31%, list=17%, signal=36%
+inner ear receptor cell differentiation	GO:0060113	GO:0060113	16	-0.48091668	-1.2725384	0.15899582	0.46637264	1	4273	tags=38%, list=21%, signal=47%
+adult behavior	GO:0030534	GO:0030534	34	-0.39265692	-1.2719445	0.13553895	0.46661362	1	2462	tags=24%, list=12%, signal=27%
+cell cycle arrest	GO:0007050	GO:0007050	87	-0.32396376	-1.2717383	0.09299781	0.4659521	1	1448	tags=16%, list=7%, signal=17%
+lipid binding	GO:0008289	GO:0008289	363	-0.26795128	-1.2711017	0.019206146	0.4663071	1	5523	tags=39%, list=27%, signal=52%
+muscle cell proliferation	GO:0033002	GO:0033002	30	-0.4031534	-1.2706344	0.14541623	0.46628085	1	2060	tags=20%, list=10%, signal=22%
+acid-thiol ligase activity	GO:0016878	GO:0016878	15	-0.48371434	-1.2694091	0.1694215	0.4680124	1	4529	tags=53%, list=22%, signal=69%
+protein maturation via proteolysis	GO:0051605	GO:0051605	15	-0.47452614	-1.269298	0.16699801	0.46711105	1	3531	tags=33%, list=17%, signal=40%
+hematopoietin/interferon-class (D200-domain) cytokine receptor binding	GO:0005126	GO:0005126	45	-0.36791956	-1.2679905	0.12078346	0.46917745	1	2591	tags=20%, list=13%, signal=23%
+metanephros development	GO:0001656	GO:0001656	24	-0.42306942	-1.2678337	0.15837564	0.46842077	1	2255	tags=29%, list=11%, signal=33%
+synapse part	GO:0044456	GO:0044456	124	-0.30788055	-1.2671125	0.073405534	0.46903682	1	3058	tags=25%, list=15%, signal=29%
+monosaccharide transport	GO:0015749	GO:0015749	36	-0.3870332	-1.266616	0.1419285	0.46910182	1	3270	tags=25%, list=16%, signal=30%
+cell fate commitment	GO:0045165	GO:0045165	68	-0.337722	-1.2658232	0.106681034	0.469855	1	4970	tags=37%, list=24%, signal=49%
+enzyme inhibitor activity	GO:0004857	GO:0004857	238	-0.2798583	-1.2652172	0.032902468	0.47022974	1	5019	tags=30%, list=25%, signal=40%
+organic anion transmembrane transporter activity	GO:0008514	GO:0008514	10	-0.5358549	-1.2651868	0.1978022	0.4691773	1	3354	tags=30%, list=17%, signal=36%
+extracellular matrix	GO:0031012	GO:0031012	286	-0.2756289	-1.2648783	0.025094103	0.46882376	1	5096	tags=31%, list=25%, signal=41%
+negative regulation of cell cycle	GO:0045786	GO:0045786	149	-0.29567918	-1.2644094	0.05944056	0.46877548	1	3136	tags=20%, list=15%, signal=24%
+heme biosynthetic process	GO:0006783	GO:0006783	13	-0.49872127	-1.2636468	0.16914894	0.46944505	1	1046	tags=23%, list=5%, signal=24%
+biopolymer glycosylation	GO:0043413	GO:0043413	118	-0.3050641	-1.2631123	0.069714285	0.46954423	1	2753	tags=18%, list=14%, signal=20%
+transcription factor binding	GO:0008134	GO:0008134	397	-0.26638147	-1.2606925	0.016414141	0.4742187	1	3899	tags=28%, list=19%, signal=34%
+regulation of cell proliferation	GO:0042127	GO:0042127	480	-0.2594688	-1.2604071	0.009562842	0.47376543	1	3116	tags=23%, list=15%, signal=26%
+vascular endothelial growth factor receptor activity	GO:0005021	GO:0005021	12	-0.5085201	-1.260334	0.20317146	0.47280645	1	1678	tags=25%, list=8%, signal=27%
+response to endogenous stimulus	GO:0009719	GO:0009719	114	-0.3078013	-1.2594783	0.09378531	0.473784	1	3249	tags=25%, list=16%, signal=30%
+chemical homeostasis	GO:0048878	GO:0048878	311	-0.2717924	-1.259238	0.027667984	0.4732368	1	1892	tags=14%, list=9%, signal=16%
+negative regulation of cell motility	GO:0051271	GO:0051271	30	-0.39995015	-1.2590588	0.14923747	0.47256136	1	3069	tags=37%, list=15%, signal=43%
+endosome membrane	GO:0010008	GO:0010008	115	-0.30519757	-1.2568498	0.067351595	0.47665223	1	4057	tags=28%, list=20%, signal=35%
+oxidoreductase activity. acting on the aldehyde or oxo group of donors, NAD or NADP as acceptor	GO:0016620	GO:0016620	21	-0.43142578	-1.2564404	0.1714876	0.47651842	1	5440	tags=48%, list=27%, signal=65%
+glycoprotein biosynthetic process	GO:0009101	GO:0009101	124	-0.30475265	-1.2563691	0.088201605	0.47559848	1	2905	tags=19%, list=14%, signal=22%
+striated muscle development	GO:0014706	GO:0014706	97	-0.31292284	-1.2562442	0.08971553	0.4747804	1	4014	tags=27%, list=20%, signal=33%
+endothelial cell migration	GO:0043542	GO:0043542	18	-0.45125175	-1.2535831	0.18848167	0.48014712	1	5731	tags=50%, list=28%, signal=70%
+sterol transport	GO:0015918	GO:0015918	23	-0.43213895	-1.2519201	0.1702564	0.48295555	1	4509	tags=39%, list=22%, signal=50%
+tissue remodeling	GO:0048771	GO:0048771	55	-0.35127878	-1.2512127	0.1299886	0.48349825	1	1340	tags=16%, list=7%, signal=17%
+negative regulation of RNA metabolic process	GO:0051253	GO:0051253	200	-0.28338215	-1.2488769	0.054021608	0.48805976	1	2342	tags=21%, list=12%, signal=23%
+response to hormone stimulus	GO:0009725	GO:0009725	112	-0.31044933	-1.2487952	0.081656806	0.4871287	1	3249	tags=26%, list=16%, signal=31%
+lymphocyte differentiation	GO:0030098	GO:0030098	71	-0.3315092	-1.2485254	0.11809318	0.4866884	1	2546	tags=17%, list=13%, signal=19%
+lipid phosphatase activity	GO:0042577	GO:0042577	11	-0.51633257	-1.2481936	0.2045221	0.4863924	1	7212	tags=82%, list=35%, signal=127%
+lysosome organization and biogenesis	GO:0007040	GO:0007040	18	-0.44924763	-1.2462693	0.19410568	0.48983523	1	2767	tags=28%, list=14%, signal=32%
+cyclic nucleotide biosynthetic process	GO:0009190	GO:0009190	31	-0.39428282	-1.2449291	0.16772152	0.49206233	1	1009	tags=13%, list=5%, signal=14%
+protein amino acid glycosylation	GO:0006486	GO:0006486	118	-0.3050641	-1.2445974	0.09018265	0.49174652	1	2753	tags=18%, list=14%, signal=20%
+histone modification	GO:0016570	GO:0016570	40	-0.3699393	-1.244131	0.1487779	0.4917782	1	4899	tags=40%, list=24%, signal=53%
+soluble fraction	GO:0005625	GO:0005625	195	-0.28120503	-1.2422405	0.052071005	0.49521762	1	1609	tags=13%, list=8%, signal=14%
+neuromuscular process	GO:0050905	GO:0050905	25	-0.41186675	-1.2420206	0.18839104	0.49458513	1	1603	tags=16%, list=8%, signal=17%
+monovalent inorganic cation homeostasis	GO:0055067	GO:0055067	33	-0.3867427	-1.2413589	0.16899893	0.49502596	1	1693	tags=27%, list=8%, signal=30%
+negative regulation of protein metabolic process	GO:0051248	GO:0051248	87	-0.31671932	-1.2388445	0.104829215	0.5000369	1	3887	tags=24%, list=19%, signal=30%
+positive regulation of gene expression	GO:0010628	GO:0010628	308	-0.26723668	-1.2387538	0.035131745	0.49914077	1	2292	tags=18%, list=11%, signal=20%
+actin filament	GO:0005884	GO:0005884	25	-0.4129003	-1.2379555	0.17002012	0.4999699	1	2440	tags=28%, list=12%, signal=32%
+actin filament depolymerization	GO:0030042	GO:0030042	23	-0.41651225	-1.2377626	0.20146137	0.49934825	1	6358	tags=48%, list=31%, signal=70%
+endosome	GO:0005768	GO:0005768	227	-0.2751217	-1.2354661	0.052184466	0.5037697	1	4057	tags=27%, list=20%, signal=33%
+negative regulation of gene expression	GO:0010629	GO:0010629	284	-0.26799482	-1.234786	0.045077104	0.504276	1	2342	tags=19%, list=12%, signal=21%
+endosomal part	GO:0044440	GO:0044440	116	-0.30251017	-1.2345178	0.09276018	0.5038048	1	4057	tags=28%, list=20%, signal=34%
+positive regulation of Rho GTPase activity	GO:0032321	GO:0032321	10	-0.51985157	-1.2317917	0.24070248	0.5093706	1	6348	tags=60%, list=31%, signal=87%
+negative regulation of cell migration	GO:0030336	GO:0030336	26	-0.40617797	-1.231486	0.1828074	0.50898975	1	3069	tags=38%, list=15%, signal=45%
+perinuclear region of cytoplasm	GO:0048471	GO:0048471	80	-0.31947964	-1.2295032	0.11283186	0.5128213	1	2125	tags=19%, list=10%, signal=21%
+positive regulation of cell motility	GO:0051272	GO:0051272	28	-0.3965304	-1.2286158	0.18064517	0.51396865	1	2359	tags=25%, list=12%, signal=28%
+oligosaccharide metabolic process	GO:0009311	GO:0009311	20	-0.44143763	-1.2267576	0.20340788	0.51762503	1	2717	tags=25%, list=13%, signal=29%
+integrin complex	GO:0008305	GO:0008305	29	-0.39452142	-1.2256757	0.196986	0.51916444	1	3344	tags=28%, list=16%, signal=33%
+positive regulation of transcription. DNA-dependent	GO:0045893	GO:0045893	244	-0.2718336	-1.2254359	0.05603985	0.5186291	1	2387	tags=20%, list=12%, signal=22%
+regulation of phosphorylation	GO:0042325	GO:0042325	89	-0.31224403	-1.2247176	0.12184413	0.5193069	1	2971	tags=21%, list=15%, signal=25%
+vesicle targeting	GO:0006903	GO:0006903	21	-0.4215803	-1.2242311	0.1991342	0.51932865	1	4418	tags=38%, list=22%, signal=49%
+neuron development	GO:0048666	GO:0048666	156	-0.28653786	-1.2238348	0.07934656	0.519199	1	1767	tags=15%, list=9%, signal=17%
+positive regulation of biosynthetic process	GO:0009891	GO:0009891	362	-0.25885135	-1.2234659	0.03963012	0.5189555	1	2404	tags=17%, list=12%, signal=19%
+negative regulation of transcription	GO:0016481	GO:0016481	280	-0.2657297	-1.223055	0.043422733	0.5188483	1	2342	tags=19%, list=12%, signal=21%
+secretory granule membrane	GO:0030667	GO:0030667	16	-0.45706776	-1.2223616	0.2185904	0.51940835	1	5246	tags=44%, list=26%, signal=59%
+response to virus	GO:0009615	GO:0009615	106	-0.30610278	-1.2204982	0.12954545	0.5230418	1	3066	tags=24%, list=15%, signal=28%
+regulation of actin filament depolymerization	GO:0030834	GO:0030834	23	-0.41651225	-1.2204037	0.19764957	0.5221231	1	6358	tags=48%, list=31%, signal=70%
+positive regulation of transcription	GO:0045941	GO:0045941	301	-0.26251027	-1.2197555	0.041612484	0.5225977	1	2292	tags=18%, list=11%, signal=20%
+chloride transport	GO:0006821	GO:0006821	52	-0.34460095	-1.2195909	0.15005599	0.52185756	1	2171	tags=17%, list=11%, signal=19%
+negative regulation of cell differentiation	GO:0045596	GO:0045596	72	-0.32504585	-1.2195153	0.14394766	0.5209274	1	4801	tags=35%, list=24%, signal=45%
+innate immune response	GO:0045087	GO:0045087	118	-0.29649612	-1.2193735	0.11059908	0.5201763	1	5384	tags=39%, list=26%, signal=53%
+positive regulation of RNA metabolic process	GO:0051254	GO:0051254	246	-0.26918724	-1.2191274	0.05875153	0.5197204	1	2292	tags=19%, list=11%, signal=21%
+response to reactive oxygen species	GO:0000302	GO:0000302	31	-0.38562036	-1.2190756	0.18585005	0.5187661	1	2294	tags=26%, list=11%, signal=29%
+regulation of fatty acid oxidation	GO:0046320	GO:0046320	12	-0.48894778	-1.2188017	0.2079832	0.51832557	1	2119	tags=33%, list=10%, signal=37%
+transmembrane ion transport	GO:0034220	GO:0034220	20	-0.42011026	-1.2185736	0.20855615	0.51779544	1	1107	tags=15%, list=5%, signal=16%
+regulation of survival gene product expression	GO:0045884	GO:0045884	14	-0.4690158	-1.2181687	0.22122122	0.51770586	1	530	tags=14%, list=3%, signal=15%
+regulation of myeloid cell differentiation	GO:0045637	GO:0045637	37	-0.36787507	-1.2160803	0.18093175	0.52178705	1	3716	tags=32%, list=18%, signal=40%
+autophagic vacuole	GO:0005776	GO:0005776	11	-0.50394094	-1.2144456	0.22361547	0.52472895	1	2522	tags=45%, list=12%, signal=52%
+hair cell differentiation	GO:0035315	GO:0035315	19	-0.43268415	-1.2142277	0.21161826	0.5241614	1	4273	tags=32%, list=21%, signal=40%
+macrophage differentiation	GO:0030225	GO:0030225	12	-0.4909192	-1.2129716	0.23681378	0.5261824	1	2880	tags=33%, list=14%, signal=39%
+microvillus	GO:0005902	GO:0005902	19	-0.43455616	-1.211797	0.22346368	0.5281365	1	4608	tags=42%, list=23%, signal=54%
+positive regulation of nucleobase. nucleoside, nucleotide and nucleic acid metabolic process	GO:0045935	GO:0045935	322	-0.26011282	-1.2112519	0.04579208	0.5284251	1	2387	tags=18%, list=12%, signal=20%
+vitamin A metabolic process	GO:0006776	GO:0006776	15	-0.46096703	-1.2098327	0.24870466	0.5308541	1	2811	tags=27%, list=14%, signal=31%
+interspecies interaction between organisms	GO:0044419	GO:0044419	231	-0.270381	-1.2084788	0.079503104	0.53319085	1	3424	tags=22%, list=17%, signal=26%
+regulation of DNA binding	GO:0051101	GO:0051101	61	-0.33285058	-1.2081413	0.16475496	0.5329134	1	5550	tags=39%, list=27%, signal=54%
+late endosome membrane	GO:0031902	GO:0031902	34	-0.3766587	-1.2056509	0.19635193	0.5381247	1	6307	tags=53%, list=31%, signal=77%
+excretion	GO:0007588	GO:0007588	43	-0.35398892	-1.2050403	0.18171926	0.5385525	1	2851	tags=21%, list=14%, signal=24%
+amine catabolic process	GO:0009310	GO:0009310	67	-0.31987408	-1.2043931	0.15436241	0.5390238	1	4139	tags=30%, list=20%, signal=37%
+negative regulation of developmental process	GO:0051093	GO:0051093	325	-0.25839585	-1.2035956	0.050742574	0.53993315	1	3450	tags=22%, list=17%, signal=26%
+regulation of angiogenesis	GO:0045765	GO:0045765	42	-0.35146692	-1.2034649	0.16398714	0.53912276	1	1650	tags=19%, list=8%, signal=21%
+response to metal ion	GO:0010038	GO:0010038	38	-0.36348993	-1.2024187	0.18123667	0.5407118	1	1914	tags=24%, list=9%, signal=26%
+T cell differentiation in the thymus	GO:0033077	GO:0033077	13	-0.4733083	-1.1988213	0.23595506	0.54883367	1	2289	tags=15%, list=11%, signal=17%
+carbohydrate transport	GO:0008643	GO:0008643	64	-0.3193526	-1.1966356	0.17318435	0.55327207	1	4777	tags=34%, list=24%, signal=45%
+negative regulation of biosynthetic process	GO:0009890	GO:0009890	328	-0.25660145	-1.1947367	0.055766795	0.55709666	1	2342	tags=18%, list=12%, signal=20%
+tyrosine metabolic process	GO:0006570	GO:0006570	12	-0.48733592	-1.1942601	0.252588	0.5572099	1	4781	tags=42%, list=24%, signal=54%
+microsome	GO:0005792	GO:0005792	152	-0.28136107	-1.1939557	0.11851016	0.5568703	1	2382	tags=19%, list=12%, signal=21%
+calcium-independent cell-cell adhesion	GO:0016338	GO:0016338	21	-0.4109398	-1.1924655	0.234375	0.5596466	1	2027	tags=24%, list=10%, signal=26%
+regulation of endocytosis	GO:0030100	GO:0030100	35	-0.36698914	-1.1923461	0.20086393	0.5588457	1	2493	tags=29%, list=12%, signal=33%
+ligase activity. forming carbon-sulfur bonds	GO:0016877	GO:0016877	24	-0.40421936	-1.1917331	0.22176166	0.5593213	1	4791	tags=42%, list=24%, signal=54%
+positive regulation of cell differentiation	GO:0045597	GO:0045597	71	-0.3148537	-1.1888037	0.16888888	0.56588155	1	2113	tags=23%, list=10%, signal=25%
+neurite development	GO:0031175	GO:0031175	138	-0.27969843	-1.1854135	0.11630559	0.57361054	1	2450	tags=17%, list=12%, signal=20%
+regulation of interleukin-2 biosynthetic process	GO:0045076	GO:0045076	13	-0.46523973	-1.1823521	0.25653923	0.58074397	1	5556	tags=38%, list=27%, signal=53%
+protein kinase C activity	GO:0004697	GO:0004697	15	-0.4468754	-1.1821079	0.25411522	0.58020747	1	2454	tags=33%, list=12%, signal=38%
+oxidoreductase activity. acting on the aldehyde or oxo group of donors	GO:0016903	GO:0016903	30	-0.37979564	-1.1818805	0.2211329	0.57969314	1	2584	tags=27%, list=13%, signal=31%
+cell soma	GO:0043025	GO:0043025	38	-0.35685778	-1.1813818	0.20898642	0.57979566	1	1525	tags=16%, list=8%, signal=17%
+negative regulation of actin filament depolymerization	GO:0030835	GO:0030835	22	-0.4084383	-1.1813586	0.23350786	0.5787053	1	6358	tags=45%, list=31%, signal=66%
+cell projection morphogenesis	GO:0048858	GO:0048858	208	-0.26511925	-1.18129	0.096584216	0.5777396	1	2462	tags=17%, list=12%, signal=19%
+membrane organization and biogenesis	GO:0016044	GO:0016044	293	-0.25641766	-1.1807826	0.07741117	0.57797295	1	2493	tags=19%, list=12%, signal=22%
+embryonic development ending in birth or egg hatching	GO:0009792	GO:0009792	100	-0.29522678	-1.1804978	0.15649278	0.5775357	1	2482	tags=22%, list=12%, signal=25%
+cGMP biosynthetic process	GO:0006182	GO:0006182	12	-0.4807244	-1.1799282	0.2601036	0.57790923	1	7807	tags=67%, list=38%, signal=108%
+second-messenger-mediated signaling	GO:0019932	GO:0019932	214	-0.26628903	-1.1791503	0.106097564	0.57888407	1	3302	tags=22%, list=16%, signal=26%
+C21-steroid hormone biosynthetic process	GO:0006700	GO:0006700	12	-0.4761348	-1.1775855	0.27191234	0.58186436	1	4582	tags=33%, list=23%, signal=43%
+regulation of peptide secretion	GO:0002791	GO:0002791	14	-0.45210397	-1.1766555	0.2517912	0.58328456	1	6271	tags=57%, list=31%, signal=83%
+protein kinase activator activity	GO:0030295	GO:0030295	13	-0.46873873	-1.1763723	0.27157894	0.58294654	1	860	tags=23%, list=4%, signal=24%
+cell projection organization and biogenesis	GO:0030030	GO:0030030	208	-0.26511925	-1.1756399	0.103535354	0.5838393	1	2462	tags=17%, list=12%, signal=19%
+metabotropic glutamate. GABA-B-like receptor activity	GO:0008067	GO:0008067	12	-0.46680918	-1.1755894	0.2694672	0.5828663	1	2972	tags=33%, list=15%, signal=39%
+intra-Golgi vesicle-mediated transport	GO:0006891	GO:0006891	18	-0.42095652	-1.1754806	0.25793245	0.58203495	1	5306	tags=39%, list=26%, signal=53%
+SMAD binding	GO:0046332	GO:0046332	17	-0.4290873	-1.1754304	0.2623274	0.5810474	1	3716	tags=41%, list=18%, signal=50%
+nucleoside triphosphate metabolic process	GO:0009141	GO:0009141	53	-0.32552412	-1.1749829	0.20412596	0.58110714	1	740	tags=11%, list=4%, signal=12%
+chordate embryonic development	GO:0043009	GO:0043009	100	-0.29522678	-1.1748953	0.15113637	0.58023936	1	2482	tags=22%, list=12%, signal=25%
+focal adhesion	GO:0005925	GO:0005925	32	-0.37109634	-1.1740952	0.21199143	0.5812948	1	3273	tags=31%, list=16%, signal=37%
+cGMP metabolic process	GO:0046068	GO:0046068	12	-0.4807244	-1.1738448	0.27137178	0.58087873	1	7807	tags=67%, list=38%, signal=108%
+di-. tri-valent inorganic cation transmembrane transporter activity	GO:0015082	GO:0015082	39	-0.34984317	-1.1733419	0.22672509	0.58111686	1	2604	tags=26%, list=13%, signal=29%
+dopamine receptor signaling pathway	GO:0007212	GO:0007212	13	-0.45897266	-1.1729579	0.26077813	0.5810733	1	44	tags=8%, list=0%, signal=8%
+negative regulation of hydrolase activity	GO:0051346	GO:0051346	21	-0.40031806	-1.1729047	0.24703558	0.5800917	1	5376	tags=43%, list=26%, signal=58%
+positive regulation of lipid metabolic process	GO:0045834	GO:0045834	13	-0.46781605	-1.1728845	0.26509723	0.57904595	1	1899	tags=15%, list=9%, signal=17%
+cell part morphogenesis	GO:0032990	GO:0032990	208	-0.26511925	-1.1727759	0.10774818	0.5782665	1	2462	tags=17%, list=12%, signal=19%
+cell cortex	GO:0005938	GO:0005938	67	-0.315764	-1.1707741	0.18060201	0.5824656	1	3563	tags=22%, list=18%, signal=27%
+inorganic anion transport	GO:0015698	GO:0015698	151	-0.27629423	-1.1707478	0.14415437	0.58143866	1	2922	tags=21%, list=14%, signal=24%
+cytoplasmic vesicle	GO:0031410	GO:0031410	446	-0.24364427	-1.1706496	0.062865496	0.58059293	1	3949	tags=25%, list=19%, signal=30%
+sugar binding	GO:0005529	GO:0005529	157	-0.27482468	-1.170627	0.14135514	0.5795702	1	5580	tags=31%, list=27%, signal=42%
+sterol binding	GO:0032934	GO:0032934	23	-0.40045235	-1.1700892	0.2494759	0.57984906	1	2703	tags=26%, list=13%, signal=30%
+vesicular fraction	GO:0042598	GO:0042598	156	-0.2734673	-1.1689771	0.13973269	0.5816905	1	2382	tags=19%, list=12%, signal=21%
+actin filament-based process	GO:0030029	GO:0030029	231	-0.26046038	-1.1686475	0.09673367	0.58148426	1	4030	tags=26%, list=20%, signal=32%
+negative regulation of cellular metabolic process	GO:0031324	GO:0031324	419	-0.24502578	-1.1685883	0.060333762	0.580553	1	2342	tags=17%, list=12%, signal=19%
+regulation of neuron apoptosis	GO:0043523	GO:0043523	27	-0.38043904	-1.1684698	0.23915344	0.5798041	1	1918	tags=30%, list=9%, signal=33%
+microbody	GO:0042579	GO:0042579	95	-0.29426253	-1.1681528	0.17904994	0.57958806	1	1364	tags=13%, list=7%, signal=13%
+motor activity	GO:0003774	GO:0003774	142	-0.2774586	-1.1678683	0.15165336	0.57926416	1	3582	tags=27%, list=18%, signal=33%
+estradiol 17-beta-dehydrogenase activity	GO:0004303	GO:0004303	10	-0.4822816	-1.167769	0.26818675	0.57844794	1	2383	tags=40%, list=12%, signal=45%
+patterning of blood vessels	GO:0001569	GO:0001569	11	-0.4796552	-1.1667055	0.27983105	0.58016104	1	2113	tags=36%, list=10%, signal=41%
+tube development	GO:0035295	GO:0035295	127	-0.28129435	-1.1663113	0.15332581	0.58013207	1	2971	tags=23%, list=15%, signal=27%
+energy derivation by oxidation of organic compounds	GO:0015980	GO:0015980	91	-0.2978852	-1.1660955	0.16685331	0.57961386	1	3709	tags=22%, list=18%, signal=27%
+sensory organ development	GO:0007423	GO:0007423	82	-0.304897	-1.1652914	0.17752808	0.5806477	1	4002	tags=26%, list=20%, signal=32%
+extracellular matrix structural constituent	GO:0005201	GO:0005201	80	-0.30217922	-1.1641111	0.18681319	0.5826092	1	5078	tags=34%, list=25%, signal=45%
+acid phosphatase activity	GO:0003993	GO:0003993	10	-0.4899121	-1.1637751	0.29518718	0.5824625	1	6398	tags=70%, list=31%, signal=102%
+secretion by cell	GO:0032940	GO:0032940	161	-0.27188945	-1.1626223	0.15274464	0.5844827	1	3808	tags=25%, list=19%, signal=30%
+peroxisome	GO:0005777	GO:0005777	95	-0.29426253	-1.162339	0.17170626	0.5841998	1	1364	tags=13%, list=7%, signal=13%
+antigen processing and presentation	GO:0019882	GO:0019882	54	-0.3209729	-1.1621689	0.21064553	0.5835849	1	4959	tags=43%, list=24%, signal=56%
+nicotinamide metabolic process	GO:0006769	GO:0006769	26	-0.3792054	-1.160951	0.23769633	0.58574235	1	1096	tags=12%, list=5%, signal=12%
+regionalization	GO:0003002	GO:0003002	90	-0.29729232	-1.1605985	0.18912797	0.5855833	1	2113	tags=16%, list=10%, signal=17%
+UTP biosynthetic process	GO:0006228	GO:0006228	10	-0.48452455	-1.1595976	0.2716175	0.5870772	1	740	tags=20%, list=4%, signal=21%
+nucleoside diphosphate kinase activity	GO:0004550	GO:0004550	10	-0.48452455	-1.1588728	0.28194296	0.587989	1	740	tags=20%, list=4%, signal=21%
+smoothened signaling pathway	GO:0007224	GO:0007224	14	-0.44886202	-1.1585381	0.2747934	0.58788556	1	4896	tags=29%, list=24%, signal=38%
+peptide secretion	GO:0002790	GO:0002790	27	-0.3736908	-1.1579684	0.25702393	0.5882998	1	1793	tags=19%, list=9%, signal=20%
+membrane raft	GO:0045121	GO:0045121	59	-0.3173391	-1.1559888	0.21995708	0.59257895	1	2113	tags=22%, list=10%, signal=25%
+induction of apoptosis by intracellular signals	GO:0008629	GO:0008629	34	-0.35579088	-1.1544318	0.23854166	0.5957527	1	3030	tags=32%, list=15%, signal=38%
+synapse organization and biogenesis	GO:0050808	GO:0050808	40	-0.34250352	-1.1543816	0.23586957	0.5948211	1	4110	tags=25%, list=20%, signal=31%
+positive regulation of macromolecule biosynthetic process	GO:0010557	GO:0010557	343	-0.24817081	-1.1539263	0.09823678	0.5950118	1	3151	tags=21%, list=16%, signal=25%
+symbiosis. encompassing mutualism through parasitism	GO:0044403	GO:0044403	27	-0.3763668	-1.153905	0.25672877	0.59402007	1	3870	tags=30%, list=19%, signal=37%
+cholesterol metabolic process	GO:0008203	GO:0008203	81	-0.301742	-1.1527985	0.19125684	0.5960096	1	2457	tags=19%, list=12%, signal=21%
+actin cytoskeleton organization and biogenesis	GO:0030036	GO:0030036	212	-0.25825566	-1.1519121	0.13768116	0.5973124	1	4030	tags=26%, list=20%, signal=33%
+skeletal muscle development	GO:0007519	GO:0007519	76	-0.30623302	-1.1517122	0.20556745	0.59682935	1	4014	tags=26%, list=20%, signal=33%
+protein amino acid dephosphorylation	GO:0006470	GO:0006470	123	-0.28023776	-1.1508576	0.18390805	0.5980556	1	2625	tags=24%, list=13%, signal=27%
+inositol or phosphatidylinositol phosphatase activity	GO:0004437	GO:0004437	33	-0.35293958	-1.1493026	0.25053304	0.6013326	1	2450	tags=24%, list=12%, signal=28%
+cAMP-dependent protein kinase complex	GO:0005952	GO:0005952	11	-0.46828508	-1.147527	0.2983015	0.6050955	1	2798	tags=36%, list=14%, signal=42%
+regulation of phosphorus metabolic process	GO:0051174	GO:0051174	95	-0.29003575	-1.1469454	0.20818713	0.6055912	1	2971	tags=20%, list=15%, signal=23%
+Golgi-associated vesicle	GO:0005798	GO:0005798	53	-0.3237834	-1.1467088	0.23218143	0.6051867	1	5551	tags=45%, list=27%, signal=62%
+MHC protein binding	GO:0042287	GO:0042287	17	-0.42559615	-1.1466113	0.29162133	0.60440713	1	3823	tags=29%, list=19%, signal=36%
+negative regulation of metabolic process	GO:0009892	GO:0009892	424	-0.24032582	-1.145937	0.078431375	0.6051281	1	2342	tags=17%, list=12%, signal=19%
+insulin-like growth factor receptor binding	GO:0005159	GO:0005159	12	-0.4596428	-1.1458001	0.28909466	0.60443056	1	1084	tags=17%, list=5%, signal=18%
+diterpenoid metabolic process	GO:0016101	GO:0016101	13	-0.44477484	-1.1455287	0.31216362	0.6041523	1	2621	tags=23%, list=13%, signal=26%
+monosaccharide binding	GO:0048029	GO:0048029	18	-0.41831008	-1.1453488	0.28020832	0.60355544	1	2312	tags=17%, list=11%, signal=19%
+porphyrin biosynthetic process	GO:0006779	GO:0006779	16	-0.4256662	-1.1450955	0.28747433	0.6031777	1	1046	tags=19%, list=5%, signal=20%
+tetrapyrrole biosynthetic process	GO:0033014	GO:0033014	16	-0.4256662	-1.1441553	0.28484848	0.60470945	1	1046	tags=19%, list=5%, signal=20%
+negative regulation of transcription from RNA polymerase II promoter	GO:0000122	GO:0000122	132	-0.27587798	-1.1440651	0.18793504	0.60393363	1	2293	tags=20%, list=11%, signal=22%
+intrinsic to organelle membrane	GO:0031300	GO:0031300	112	-0.28215098	-1.1440396	0.20069605	0.6029561	1	2382	tags=19%, list=12%, signal=21%
+response to inorganic substance	GO:0010035	GO:0010035	44	-0.33565903	-1.1434679	0.2508108	0.60343796	1	1914	tags=20%, list=9%, signal=23%
+carboxypeptidase activity	GO:0004180	GO:0004180	29	-0.36341572	-1.1430169	0.27707008	0.60355353	1	3287	tags=28%, list=16%, signal=33%
+positive regulation of cell migration	GO:0030335	GO:0030335	24	-0.38016057	-1.1409038	0.27675676	0.6082134	1	2359	tags=25%, list=12%, signal=28%
+MAPKKK cascade	GO:0000165	GO:0000165	162	-0.26259762	-1.1399472	0.17082295	0.6097796	1	3927	tags=27%, list=19%, signal=33%
+phospholipid binding	GO:0005543	GO:0005543	138	-0.27386516	-1.1396995	0.1887456	0.60939395	1	4895	tags=36%, list=24%, signal=46%
+pancreatic ribonuclease activity	GO:0004522	GO:0004522	10	-0.48471013	-1.1375018	0.31714877	0.61425227	1	4552	tags=50%, list=22%, signal=64%
+positive regulation of cell proliferation	GO:0008284	GO:0008284	233	-0.2523433	-1.1370791	0.13953489	0.6143344	1	3116	tags=23%, list=15%, signal=27%
+phosphate transport	GO:0006817	GO:0006817	83	-0.29219535	-1.136942	0.21436465	0.6136762	1	2922	tags=23%, list=14%, signal=27%
+nitrogen compound catabolic process	GO:0044270	GO:0044270	69	-0.30416077	-1.1358535	0.21758242	0.6155037	1	4139	tags=29%, list=20%, signal=36%
+palmitoyltransferase activity	GO:0016409	GO:0016409	12	-0.46062237	-1.1357837	0.30426165	0.61462677	1	4766	tags=42%, list=23%, signal=54%
+positive regulation of protein transport	GO:0051222	GO:0051222	12	-0.44894233	-1.1349813	0.30358973	0.6158713	1	4968	tags=42%, list=24%, signal=55%
+regulation of phosphate metabolic process	GO:0019220	GO:0019220	95	-0.29003575	-1.134953	0.21372329	0.6148827	1	2971	tags=20%, list=15%, signal=23%
+retinoid metabolic process	GO:0001523	GO:0001523	13	-0.44477484	-1.134718	0.30178759	0.61445904	1	2621	tags=23%, list=13%, signal=26%
+transition metal ion transmembrane transporter activity	GO:0046915	GO:0046915	25	-0.3784585	-1.134318	0.28030303	0.6145109	1	1107	tags=20%, list=5%, signal=21%
+endocytic vesicle	GO:0030139	GO:0030139	27	-0.3620097	-1.134267	0.26187962	0.6135855	1	619	tags=15%, list=3%, signal=15%
+protease inhibitor activity	GO:0030414	GO:0030414	137	-0.27128088	-1.1339691	0.18757193	0.6133095	1	4773	tags=29%, list=23%, signal=38%
+UTP metabolic process	GO:0046051	GO:0046051	10	-0.48452455	-1.1337534	0.30138445	0.6128814	1	740	tags=20%, list=4%, signal=21%
+vesicle	GO:0031982	GO:0031982	454	-0.23593447	-1.133024	0.1	0.61379606	1	3949	tags=24%, list=19%, signal=29%
+specific transcriptional repressor activity	GO:0016566	GO:0016566	15	-0.42623165	-1.1316694	0.312566	0.61649865	1	2026	tags=33%, list=10%, signal=37%
+cysteine protease inhibitor activity	GO:0004869	GO:0004869	25	-0.37693077	-1.1315515	0.2921466	0.6158229	1	4547	tags=28%, list=22%, signal=36%
+respiratory burst	GO:0045730	GO:0045730	10	-0.47441235	-1.1314871	0.3160569	0.61496913	1	1060	tags=20%, list=5%, signal=21%
+GTP biosynthetic process	GO:0006183	GO:0006183	10	-0.48452455	-1.1311955	0.3227459	0.614727	1	740	tags=20%, list=4%, signal=21%
+sulfuric ester hydrolase activity	GO:0008484	GO:0008484	18	-0.40170836	-1.1307867	0.28879753	0.6147808	1	3813	tags=33%, list=19%, signal=41%
+positive regulation of cellular metabolic process	GO:0031325	GO:0031325	429	-0.23595789	-1.1294734	0.11158192	0.6172824	1	2404	tags=17%, list=12%, signal=19%
+calcium ion transmembrane transporter activity	GO:0015085	GO:0015085	13	-0.43387124	-1.1290714	0.308779	0.6173459	1	4360	tags=46%, list=21%, signal=59%
+ubiquitin ligase complex	GO:0000151	GO:0000151	69	-0.29904637	-1.128864	0.24228571	0.61689883	1	3177	tags=23%, list=16%, signal=27%
+protein amino acid alkylation	GO:0008213	GO:0008213	20	-0.39909288	-1.1285741	0.28499496	0.616673	1	3907	tags=35%, list=19%, signal=43%
+fatty acid beta-oxidation	GO:0006635	GO:0006635	20	-0.39771196	-1.1283504	0.28234085	0.6162697	1	4031	tags=50%, list=20%, signal=62%
+placenta development	GO:0001890	GO:0001890	16	-0.42498106	-1.1277052	0.31281033	0.6169949	1	2028	tags=31%, list=10%, signal=35%
+positive regulation of MAP kinase activity	GO:0043406	GO:0043406	72	-0.296818	-1.1274394	0.23793103	0.6166786	1	3927	tags=31%, list=19%, signal=38%
+anion transport	GO:0006820	GO:0006820	180	-0.25870216	-1.126895	0.17434621	0.61707026	1	3925	tags=26%, list=19%, signal=31%
+ion homeostasis	GO:0050801	GO:0050801	257	-0.24865846	-1.126424	0.16100629	0.61735195	1	1892	tags=14%, list=9%, signal=16%
+endopeptidase inhibitor activity	GO:0004866	GO:0004866	133	-0.27195898	-1.1264127	0.21662763	0.6163639	1	4773	tags=29%, list=23%, signal=38%
+peptide hormone secretion	GO:0030072	GO:0030072	27	-0.3736908	-1.1263853	0.29778248	0.61540794	1	1793	tags=19%, list=9%, signal=20%
+mesoderm morphogenesis	GO:0048332	GO:0048332	16	-0.41517532	-1.1257454	0.29614604	0.61614186	1	1957	tags=25%, list=10%, signal=28%
+synapse	GO:0045202	GO:0045202	223	-0.25199646	-1.1254354	0.16531792	0.6159883	1	3686	tags=24%, list=18%, signal=29%
+dephosphorylation	GO:0016311	GO:0016311	140	-0.2690817	-1.1250956	0.18951133	0.6159011	1	2625	tags=22%, list=13%, signal=25%
+regulation of transcription factor activity	GO:0051090	GO:0051090	53	-0.3125688	-1.1247433	0.25349087	0.61589134	1	5550	tags=40%, list=27%, signal=54%
+protein amino acid methylation	GO:0006479	GO:0006479	20	-0.39909288	-1.1214032	0.3040404	0.6239045	1	3907	tags=35%, list=19%, signal=43%
+MAP kinase phosphatase activity	GO:0033549	GO:0033549	10	-0.46130255	-1.1210889	0.31501472	0.6237501	1	1279	tags=30%, list=6%, signal=32%
+antioxidant activity	GO:0016209	GO:0016209	46	-0.3218651	-1.1202643	0.27012128	0.6250972	1	6266	tags=37%, list=31%, signal=53%
+GTP metabolic process	GO:0046039	GO:0046039	10	-0.48452455	-1.1202463	0.335041	0.624137	1	740	tags=20%, list=4%, signal=21%
+sterol metabolic process	GO:0016125	GO:0016125	89	-0.28537017	-1.1181599	0.23853211	0.62890154	1	2457	tags=18%, list=12%, signal=20%
+negative regulation of response to external stimulus	GO:0032102	GO:0032102	15	-0.4216316	-1.1180825	0.31460676	0.6281018	1	44	tags=7%, list=0%, signal=7%
+oxidoreductase activity. acting on the CH-CH group of donors, NAD or NADP as acceptor	GO:0016628	GO:0016628	18	-0.40275633	-1.1179837	0.3045226	0.6273584	1	3891	tags=44%, list=19%, signal=55%
+gliogenesis	GO:0042063	GO:0042063	36	-0.33671358	-1.1149412	0.30558482	0.63460255	1	2730	tags=25%, list=13%, signal=29%
+response to biotic stimulus	GO:0009607	GO:0009607	265	-0.24503648	-1.1147642	0.1833953	0.6340595	1	2515	tags=19%, list=12%, signal=22%
+microbody part	GO:0044438	GO:0044438	46	-0.32054853	-1.1133994	0.27700534	0.636732	1	5056	tags=33%, list=25%, signal=43%
+ruffle	GO:0001726	GO:0001726	41	-0.3280282	-1.1130984	0.2858757	0.6365214	1	2483	tags=22%, list=12%, signal=25%
+GTPase activity	GO:0003924	GO:0003924	185	-0.25293255	-1.1122268	0.19736843	0.63784826	1	2836	tags=20%, list=14%, signal=23%
+cell projection	GO:0042995	GO:0042995	360	-0.234877	-1.1112511	0.14496644	0.6395992	1	4748	tags=28%, list=23%, signal=36%
+regulation of insulin secretion	GO:0050796	GO:0050796	13	-0.43966118	-1.110489	0.33575884	0.64070815	1	6271	tags=54%, list=31%, signal=78%
+DNA bending activity	GO:0008301	GO:0008301	11	-0.45935434	-1.1100388	0.3421859	0.64099765	1	1387	tags=18%, list=7%, signal=20%
+peroxisomal part	GO:0044439	GO:0044439	46	-0.32054853	-1.1098899	0.27693966	0.64037496	1	5056	tags=33%, list=25%, signal=43%
+regulation of Rho protein signal transduction	GO:0035023	GO:0035023	83	-0.2858761	-1.1098533	0.26203808	0.6394643	1	4576	tags=31%, list=23%, signal=40%
+male gonad development	GO:0008584	GO:0008584	21	-0.37906146	-1.1093023	0.31287128	0.6399654	1	3317	tags=24%, list=16%, signal=28%
+acetylglucosaminyltransferase activity	GO:0008375	GO:0008375	37	-0.33604822	-1.107949	0.30827886	0.64260334	1	6124	tags=46%, list=30%, signal=66%
+myeloid leukocyte differentiation	GO:0002573	GO:0002573	32	-0.34507146	-1.1060902	0.31880978	0.6467912	1	3054	tags=31%, list=15%, signal=37%
+extracellular space	GO:0005615	GO:0005615	457	-0.22984283	-1.1034501	0.15384616	0.65305257	1	4010	tags=23%, list=20%, signal=27%
+interleukin-2 biosynthetic process	GO:0042094	GO:0042094	14	-0.42261276	-1.102822	0.3517034	0.653797	1	5556	tags=36%, list=27%, signal=49%
+oxidoreductase activity. acting on paired donors, with incorporation or reduction of molecular oxygen, reduced flavin or flavoprotein as one donor, and incorporation of one atom of oxygen	GO:0016712	GO:0016712	30	-0.35265237	-1.1023823	0.31157896	0.65395516	1	1982	tags=17%, list=10%, signal=18%
+amino acid catabolic process	GO:0009063	GO:0009063	60	-0.3034443	-1.1022831	0.27878103	0.65319717	1	4139	tags=30%, list=20%, signal=38%
+negative regulation of cell size	GO:0045792	GO:0045792	59	-0.30229673	-1.1021367	0.2993421	0.6526052	1	3900	tags=34%, list=19%, signal=42%
+platelet alpha granule membrane	GO:0031092	GO:0031092	10	-0.46253073	-1.1007528	0.35779816	0.65537405	1	5246	tags=50%, list=26%, signal=67%
+cellular response to starvation	GO:0009267	GO:0009267	19	-0.39405516	-1.1004589	0.33369684	0.65516007	1	5345	tags=42%, list=26%, signal=57%
+response to other organism	GO:0051707	GO:0051707	193	-0.251586	-1.0980599	0.21909425	0.6608294	1	3945	tags=27%, list=19%, signal=33%
+locomotory behavior	GO:0007626	GO:0007626	185	-0.2514664	-1.0978742	0.23241955	0.6603396	1	2723	tags=18%, list=13%, signal=20%
+protein dimerization activity	GO:0046983	GO:0046983	354	-0.2343657	-1.0969845	0.17374006	0.66188085	1	3396	tags=23%, list=17%, signal=27%
+odontogenesis of dentine-containing tooth	GO:0042475	GO:0042475	16	-0.4086924	-1.0968747	0.3439425	0.66113746	1	2113	tags=25%, list=10%, signal=28%
+establishment and/or maintenance of chromatin architecture	GO:0006325	GO:0006325	287	-0.23938075	-1.0962191	0.2064277	0.6619165	1	4394	tags=27%, list=22%, signal=34%
+B cell activation	GO:0042113	GO:0042113	66	-0.29039904	-1.0961576	0.27764976	0.6610532	1	2916	tags=20%, list=14%, signal=23%
+filamentous actin	GO:0031941	GO:0031941	10	-0.46678346	-1.0952649	0.36114043	0.6626119	1	3545	tags=40%, list=17%, signal=48%
+regulation of B cell proliferation	GO:0030888	GO:0030888	11	-0.45260763	-1.0950955	0.35619244	0.6620489	1	5180	tags=45%, list=25%, signal=61%
+MAP kinase tyrosine/serine/threonine phosphatase activity	GO:0017017	GO:0017017	10	-0.46130255	-1.0947096	0.34355178	0.66207534	1	1279	tags=30%, list=6%, signal=32%
+cellular lipid catabolic process	GO:0044242	GO:0044242	73	-0.28747055	-1.0941672	0.27783903	0.6625911	1	4522	tags=34%, list=22%, signal=44%
+behavior	GO:0007610	GO:0007610	302	-0.23680556	-1.0937165	0.19791667	0.6628315	1	3077	tags=18%, list=15%, signal=21%
+negative regulation of mitotic cell cycle	GO:0045930	GO:0045930	12	-0.4339137	-1.0931069	0.36438075	0.66353184	1	1718	tags=33%, list=8%, signal=36%
+regulation of transport	GO:0051049	GO:0051049	152	-0.25559086	-1.092651	0.25748503	0.66383064	1	3062	tags=19%, list=15%, signal=22%
+T cell differentiation	GO:0030217	GO:0030217	45	-0.3170988	-1.0920284	0.31277534	0.6646249	1	2546	tags=18%, list=13%, signal=20%
+growth factor binding	GO:0019838	GO:0019838	78	-0.2844081	-1.0918505	0.28156424	0.664116	1	3870	tags=31%, list=19%, signal=38%
+smooth muscle contraction	GO:0006939	GO:0006939	31	-0.3432534	-1.0915847	0.31362197	0.6638503	1	1506	tags=16%, list=7%, signal=17%
+cytoplasmic membrane-bounded vesicle	GO:0016023	GO:0016023	357	-0.23074596	-1.090631	0.19054054	0.6654847	1	3933	tags=24%, list=19%, signal=29%
+negative regulation of programmed cell death	GO:0043069	GO:0043069	226	-0.24369021	-1.0903579	0.22695035	0.66521627	1	4748	tags=29%, list=23%, signal=37%
+positive regulation of hydrolase activity	GO:0051345	GO:0051345	88	-0.27807003	-1.0887096	0.29204544	0.66885114	1	4971	tags=40%, list=24%, signal=52%
+regulation of multicellular organismal process	GO:0051239	GO:0051239	230	-0.24209069	-1.0882233	0.22881356	0.6691747	1	2060	tags=14%, list=10%, signal=16%
+striated muscle cell differentiation	GO:0051146	GO:0051146	20	-0.38209918	-1.087339	0.32885212	0.67068374	1	4014	tags=35%, list=20%, signal=44%
+heparan sulfate proteoglycan metabolic process	GO:0030201	GO:0030201	13	-0.4316652	-1.0870113	0.36458334	0.6705567	1	5079	tags=54%, list=25%, signal=72%
+peroxidase activity	GO:0004601	GO:0004601	33	-0.33587256	-1.0862653	0.33367768	0.6716394	1	6266	tags=39%, list=31%, signal=57%
+ciliary or flagellar motility	GO:0001539	GO:0001539	12	-0.4355552	-1.0855161	0.361167	0.67269295	1	4447	tags=42%, list=22%, signal=53%
+histone acetylation	GO:0016573	GO:0016573	11	-0.45806703	-1.085377	0.35926306	0.6720299	1	4252	tags=36%, list=21%, signal=46%
+regulation of secretion	GO:0051046	GO:0051046	81	-0.2838057	-1.08524	0.29919448	0.67139876	1	1525	tags=14%, list=8%, signal=15%
+protein-chromophore linkage	GO:0018298	GO:0018298	15	-0.41106504	-1.0837426	0.35630965	0.6746257	1	708	tags=13%, list=3%, signal=14%
+oxidoreductase activity. acting on peroxide as acceptor	GO:0016684	GO:0016684	33	-0.33587256	-1.0835894	0.3206522	0.67406774	1	6266	tags=39%, list=31%, signal=57%
+integral to organelle membrane	GO:0031301	GO:0031301	100	-0.27187088	-1.083068	0.29804373	0.6744691	1	2382	tags=18%, list=12%, signal=20%
+cortical actin cytoskeleton	GO:0030864	GO:0030864	16	-0.40339187	-1.0821602	0.35440415	0.67601585	1	4030	tags=38%, list=20%, signal=47%
+kinase activator activity	GO:0019209	GO:0019209	19	-0.3811182	-1.0805157	0.3747433	0.6796574	1	1617	tags=21%, list=8%, signal=23%
+positive regulation of metabolic process	GO:0009893	GO:0009893	438	-0.22645654	-1.0803274	0.19568151	0.6791553	1	2404	tags=16%, list=12%, signal=18%
+cellular metal ion homeostasis	GO:0006875	GO:0006875	119	-0.26136228	-1.080295	0.28794643	0.678241	1	1506	tags=14%, list=7%, signal=15%
+cell cortex part	GO:0044448	GO:0044448	47	-0.30868697	-1.0792122	0.31425598	0.680233	1	4030	tags=23%, list=20%, signal=29%
+delamination	GO:0060232	GO:0060232	12	-0.4346227	-1.0791278	0.37298387	0.67945546	1	2514	tags=33%, list=12%, signal=38%
+response to oxidative stress	GO:0006979	GO:0006979	98	-0.27371958	-1.0789274	0.2993197	0.6790195	1	5462	tags=36%, list=27%, signal=49%
+tumor necrosis factor production	GO:0032640	GO:0032640	14	-0.42144415	-1.0786971	0.37268993	0.6786458	1	960	tags=14%, list=5%, signal=15%
+cell migration	GO:0016477	GO:0016477	246	-0.23719192	-1.0772616	0.2595326	0.68171364	1	2450	tags=16%, list=12%, signal=18%
+steroid metabolic process	GO:0008202	GO:0008202	178	-0.24514517	-1.0765755	0.26773456	0.6826598	1	2797	tags=20%, list=14%, signal=23%
+male sex differentiation	GO:0046661	GO:0046661	34	-0.3312343	-1.0764043	0.33751306	0.6821195	1	3317	tags=26%, list=16%, signal=32%
+regulation of localization	GO:0032879	GO:0032879	154	-0.2509917	-1.075959	0.27010804	0.6823983	1	3062	tags=19%, list=15%, signal=22%
+insulin secretion	GO:0030073	GO:0030073	21	-0.36480463	-1.0756282	0.35306555	0.68234104	1	1793	tags=19%, list=9%, signal=21%
+axon ensheathment	GO:0008366	GO:0008366	30	-0.33955112	-1.0733861	0.34170306	0.68774736	1	3269	tags=23%, list=16%, signal=28%
+oxygen transporter activity	GO:0005344	GO:0005344	13	-0.4261489	-1.0732328	0.37166324	0.6871726	1	3995	tags=31%, list=20%, signal=38%
+extracellular structure organization and biogenesis	GO:0043062	GO:0043062	83	-0.27575403	-1.0731727	0.31690928	0.6863446	1	4110	tags=22%, list=20%, signal=27%
+protein-hormone receptor activity	GO:0016500	GO:0016500	12	-0.43494105	-1.0731715	0.3834901	0.68534726	1	2998	tags=33%, list=15%, signal=39%
+anchored to membrane	GO:0031225	GO:0031225	125	-0.25952417	-1.0730147	0.30704898	0.6847963	1	4980	tags=31%, list=25%, signal=41%
+phosphotransferase activity. phosphate group as acceptor	GO:0016776	GO:0016776	34	-0.3279863	-1.0729532	0.34557235	0.6839832	1	740	tags=12%, list=4%, signal=12%
+cell projection part	GO:0044463	GO:0044463	53	-0.30481768	-1.072952	0.33521444	0.6829928	1	5447	tags=43%, list=27%, signal=59%
+1-phosphatidylinositol-3-kinase activity	GO:0016303	GO:0016303	11	-0.43998092	-1.072264	0.37487125	0.68384653	1	4878	tags=45%, list=24%, signal=60%
+organic cation transport	GO:0015695	GO:0015695	10	-0.4554891	-1.0717143	0.38872403	0.68436843	1	1606	tags=20%, list=8%, signal=22%
+ensheathment of neurons	GO:0007272	GO:0007272	30	-0.33955112	-1.0708368	0.3546326	0.68580294	1	3269	tags=23%, list=16%, signal=28%
+negative regulation of apoptosis	GO:0043066	GO:0043066	223	-0.23978195	-1.0707703	0.2659176	0.6849996	1	3441	tags=21%, list=17%, signal=25%
+metal ion homeostasis	GO:0055065	GO:0055065	120	-0.2595691	-1.0704615	0.2895981	0.68490344	1	1506	tags=14%, list=7%, signal=15%
+transcription repressor activity	GO:0016564	GO:0016564	207	-0.24143241	-1.0699385	0.26978418	0.685391	1	3811	tags=27%, list=19%, signal=32%
+neural tube development	GO:0021915	GO:0021915	21	-0.375604	-1.068114	0.37279335	0.6894814	1	2283	tags=29%, list=11%, signal=32%
+cyclin-dependent protein kinase activity	GO:0004693	GO:0004693	27	-0.34702113	-1.06772	0.35373443	0.6896103	1	2434	tags=22%, list=12%, signal=25%
+voltage-gated calcium channel complex	GO:0005891	GO:0005891	21	-0.3665826	-1.067639	0.3587866	0.68884957	1	7759	tags=62%, list=38%, signal=100%
+epithelial to mesenchymal transition	GO:0001837	GO:0001837	12	-0.4346227	-1.067374	0.38074866	0.6885618	1	2514	tags=33%, list=12%, signal=38%
+oxygen transport	GO:0015671	GO:0015671	13	-0.4261489	-1.067192	0.39180672	0.68807024	1	3995	tags=31%, list=20%, signal=38%
+BMP signaling pathway	GO:0030509	GO:0030509	40	-0.31897134	-1.0670476	0.36566332	0.68749076	1	3989	tags=33%, list=20%, signal=40%
+coated pit	GO:0005905	GO:0005905	38	-0.32105947	-1.0639937	0.35230935	0.6951851	1	1132	tags=11%, list=6%, signal=11%
+regulation of transcription factor import into nucleus	GO:0042990	GO:0042990	22	-0.36730227	-1.0638447	0.36550307	0.69463253	1	3695	tags=27%, list=18%, signal=33%
+skeletal morphogenesis	GO:0048705	GO:0048705	15	-0.40220413	-1.0631804	0.37682673	0.6955103	1	2951	tags=27%, list=15%, signal=31%
+protein secretion	GO:0009306	GO:0009306	48	-0.3055329	-1.0622346	0.3445652	0.697296	1	3646	tags=23%, list=18%, signal=28%
+steroid biosynthetic process	GO:0006694	GO:0006694	79	-0.27635175	-1.0617348	0.33643773	0.6976903	1	1864	tags=14%, list=9%, signal=15%
+positive regulation of macromolecule metabolic process	GO:0010604	GO:0010604	400	-0.22331509	-1.0616316	0.246996	0.69698507	1	2404	tags=17%, list=12%, signal=19%
+retrograde vesicle-mediated transport. Golgi to ER	GO:0006890	GO:0006890	18	-0.3827275	-1.0614699	0.39544514	0.69647425	1	5306	tags=44%, list=26%, signal=60%
+neuron apoptosis	GO:0051402	GO:0051402	32	-0.33068123	-1.0611712	0.36167923	0.6963085	1	1918	tags=25%, list=9%, signal=28%
+MHC protein complex	GO:0042611	GO:0042611	32	-0.33728808	-1.0611569	0.36612022	0.69535464	1	5769	tags=56%, list=28%, signal=78%
+phosphoinositide 3-kinase activity	GO:0035004	GO:0035004	12	-0.42583588	-1.0610763	0.3928205	0.6946101	1	4878	tags=42%, list=24%, signal=55%
+response to light stimulus	GO:0009416	GO:0009416	82	-0.27694422	-1.0606538	0.34260288	0.6947753	1	2018	tags=16%, list=10%, signal=18%
+mesenchymal cell differentiation	GO:0048762	GO:0048762	25	-0.34787658	-1.0602357	0.37631026	0.69495994	1	2514	tags=28%, list=12%, signal=32%
+glycolipid metabolic process	GO:0006664	GO:0006664	26	-0.34801945	-1.0597134	0.35470086	0.69548315	1	1454	tags=15%, list=7%, signal=17%
+protein serine/threonine kinase activity	GO:0004674	GO:0004674	403	-0.22318423	-1.0595129	0.25848565	0.69509375	1	2893	tags=21%, list=14%, signal=24%
+lipoprotein receptor activity	GO:0030228	GO:0030228	13	-0.41186228	-1.0571872	0.3911672	0.700649	1	1654	tags=31%, list=8%, signal=33%
+cellular response to stimulus	GO:0051716	GO:0051716	59	-0.29373646	-1.0571417	0.3627343	0.699798	1	1927	tags=17%, list=9%, signal=19%
+behavioral interaction between organisms	GO:0051705	GO:0051705	15	-0.39744565	-1.0556408	0.398	0.70303094	1	44	tags=7%, list=0%, signal=7%
+transcription factor import into nucleus	GO:0042991	GO:0042991	22	-0.36730227	-1.055037	0.371672	0.7037906	1	3695	tags=27%, list=18%, signal=33%
+cell-cell adhesion	GO:0016337	GO:0016337	257	-0.2330266	-1.0546583	0.3108108	0.7039102	1	3184	tags=20%, list=16%, signal=23%
+voltage-gated calcium channel activity	GO:0005245	GO:0005245	23	-0.36134565	-1.0545638	0.37577003	0.7032073	1	7945	tags=61%, list=39%, signal=100%
+covalent chromatin modification	GO:0016569	GO:0016569	42	-0.3086728	-1.0543244	0.36293858	0.702931	1	4899	tags=38%, list=24%, signal=50%
+membrane-bounded vesicle	GO:0031988	GO:0031988	362	-0.22424495	-1.054228	0.2748756	0.7022117	1	4521	tags=27%, list=22%, signal=34%
+muscle development	GO:0007517	GO:0007517	174	-0.24341072	-1.0541534	0.3253012	0.7014412	1	3450	tags=21%, list=17%, signal=25%
+extrinsic to membrane	GO:0019898	GO:0019898	70	-0.2816608	-1.0540808	0.36491227	0.70068467	1	1592	tags=16%, list=8%, signal=17%
+cellular ion homeostasis	GO:0006873	GO:0006873	237	-0.23245685	-1.0536686	0.29784536	0.7008701	1	1892	tags=14%, list=9%, signal=15%
+neurotransmitter receptor activity	GO:0030594	GO:0030594	93	-0.26597747	-1.0533577	0.33442265	0.70077866	1	4245	tags=33%, list=21%, signal=42%
+protein homodimerization activity	GO:0042803	GO:0042803	197	-0.23948282	-1.0512164	0.32600734	0.70580095	1	3396	tags=24%, list=17%, signal=29%
+calcium-mediated signaling	GO:0019722	GO:0019722	36	-0.32506633	-1.0508096	0.37820512	0.705993	1	3490	tags=25%, list=17%, signal=30%
+positive regulation of GTPase activity	GO:0043547	GO:0043547	14	-0.40862715	-1.0494833	0.40455532	0.7088085	1	3914	tags=36%, list=19%, signal=44%
+eye development	GO:0001654	GO:0001654	43	-0.30544466	-1.0492195	0.36970338	0.7085895	1	4002	tags=28%, list=20%, signal=35%
+multicellular organismal catabolic process	GO:0044243	GO:0044243	24	-0.35294282	-1.049214	0.3911638	0.70763266	1	5043	tags=42%, list=25%, signal=55%
+negative regulation of nucleobase. nucleoside, nucleotide and nucleic acid metabolic process	GO:0045934	GO:0045934	309	-0.22644326	-1.048228	0.2979798	0.70942396	1	2477	tags=18%, list=12%, signal=20%
+negative regulation of multicellular organismal process	GO:0051241	GO:0051241	66	-0.28341335	-1.048045	0.3618635	0.70897114	1	1416	tags=14%, list=7%, signal=15%
+coated vesicle membrane	GO:0030662	GO:0030662	42	-0.31118718	-1.0468534	0.34823284	0.7113652	1	5551	tags=40%, list=27%, signal=56%
+negative regulation of cell growth	GO:0030308	GO:0030308	57	-0.29412028	-1.0468216	0.39130434	0.71049774	1	3900	tags=33%, list=19%, signal=41%
+carboxylic acid catabolic process	GO:0046395	GO:0046395	33	-0.32128853	-1.046273	0.35497382	0.7110804	1	5614	tags=48%, list=28%, signal=67%
+glucosidase activity	GO:0015926	GO:0015926	10	-0.44706538	-1.0460467	0.38445807	0.7107379	1	2964	tags=20%, list=15%, signal=23%
+mesenchymal cell development	GO:0014031	GO:0014031	25	-0.34787658	-1.0452684	0.42032087	0.71199733	1	2514	tags=28%, list=12%, signal=32%
+aldo-keto reductase activity	GO:0004033	GO:0004033	14	-0.40425652	-1.0440335	0.40243903	0.71455747	1	6410	tags=57%, list=32%, signal=83%
+hydrolase activity. hydrolyzing O-glycosyl compounds	GO:0004553	GO:0004553	92	-0.2658064	-1.0438508	0.3650273	0.71412677	1	5869	tags=40%, list=29%, signal=56%
+organic acid catabolic process	GO:0016054	GO:0016054	33	-0.32128853	-1.0424781	0.38820913	0.7171686	1	5614	tags=48%, list=28%, signal=67%
+angiogenesis	GO:0001525	GO:0001525	133	-0.25048685	-1.0421722	0.33679354	0.71710354	1	3605	tags=24%, list=18%, signal=29%
+positive regulation of smooth muscle cell proliferation	GO:0048661	GO:0048661	12	-0.41502306	-1.0408177	0.41869918	0.7200042	1	3095	tags=25%, list=15%, signal=29%
+peptide antigen binding	GO:0042605	GO:0042605	10	-0.4375969	-1.0405415	0.41117764	0.7198313	1	1446	tags=30%, list=7%, signal=32%
+positive regulation of transcription factor import into nucleus	GO:0042993	GO:0042993	10	-0.44017297	-1.0403235	0.41139898	0.71952987	1	4968	tags=40%, list=24%, signal=53%
+establishment and/or maintenance of cell polarity	GO:0007163	GO:0007163	31	-0.3284258	-1.040172	0.39403293	0.7190065	1	3238	tags=23%, list=16%, signal=27%
+transcription coactivator activity	GO:0003713	GO:0003713	172	-0.24151991	-1.0399183	0.35665137	0.71876335	1	3899	tags=26%, list=19%, signal=32%
+oxygen and reactive oxygen species metabolic process	GO:0006800	GO:0006800	52	-0.29639092	-1.0398366	0.40494937	0.7180428	1	2200	tags=15%, list=11%, signal=17%
+lipase inhibitor activity	GO:0055102	GO:0055102	10	-0.43789038	-1.0397531	0.41912514	0.7173266	1	162	tags=10%, list=1%, signal=10%
+trans-Golgi network transport vesicle	GO:0030140	GO:0030140	23	-0.35247877	-1.0389755	0.4099896	0.7185085	1	5551	tags=52%, list=27%, signal=72%
+protein depolymerization	GO:0051261	GO:0051261	37	-0.31345558	-1.0388998	0.39289558	0.71776664	1	1737	tags=14%, list=9%, signal=15%
+T cell proliferation	GO:0042098	GO:0042098	40	-0.31070772	-1.0370817	0.38952878	0.7219241	1	2404	tags=20%, list=12%, signal=23%
+regulation of striated muscle development	GO:0016202	GO:0016202	15	-0.3900487	-1.0350791	0.40352696	0.72651047	1	5247	tags=47%, list=26%, signal=63%
+mesoderm development	GO:0007498	GO:0007498	43	-0.30653024	-1.0347896	0.40021345	0.72638595	1	2255	tags=21%, list=11%, signal=23%
+COPI-coated vesicle	GO:0030137	GO:0030137	12	-0.4148341	-1.0347459	0.4279919	0.72555804	1	5306	tags=50%, list=26%, signal=68%
+heparan sulfate proteoglycan biosynthetic process	GO:0015012	GO:0015012	10	-0.43573335	-1.0345747	0.43048403	0.7251093	1	4703	tags=50%, list=23%, signal=65%
+cation homeostasis	GO:0055080	GO:0055080	183	-0.23588027	-1.0344764	0.3587963	0.72445256	1	1821	tags=15%, list=9%, signal=16%
+embryonic epithelial tube formation	GO:0001838	GO:0001838	19	-0.36697334	-1.034139	0.40759754	0.7244433	1	2397	tags=32%, list=12%, signal=36%
+central nervous system development	GO:0007417	GO:0007417	230	-0.2291373	-1.0341318	0.354717	0.7235116	1	2776	tags=19%, list=14%, signal=22%
+positive regulation of endocytosis	GO:0045807	GO:0045807	18	-0.3739281	-1.0331873	0.3949749	0.7252859	1	1894	tags=28%, list=9%, signal=31%
+digestion	GO:0007586	GO:0007586	90	-0.26233146	-1.0328499	0.37767756	0.7252912	1	3624	tags=20%, list=18%, signal=24%
+regulation of action potential in neuron	GO:0019228	GO:0019228	35	-0.3151085	-1.0323954	0.40086207	0.7255749	1	3269	tags=23%, list=16%, signal=27%
+embryonic development	GO:0009790	GO:0009790	235	-0.22911431	-1.0320902	0.37149817	0.7254875	1	2482	tags=17%, list=12%, signal=20%
+positive regulation of protein import into nucleus	GO:0042307	GO:0042307	10	-0.44017297	-1.031074	0.4246988	0.72737646	1	4968	tags=40%, list=24%, signal=53%
+vesicle coating	GO:0006901	GO:0006901	15	-0.39202422	-1.0308158	0.43362832	0.7271505	1	5306	tags=40%, list=26%, signal=54%
+protein amino acid autophosphorylation	GO:0046777	GO:0046777	49	-0.29315558	-1.030121	0.38356164	0.72817457	1	2605	tags=20%, list=13%, signal=23%
+acyl-CoA binding	GO:0000062	GO:0000062	11	-0.43064663	-1.0289817	0.43012884	0.73047274	1	6848	tags=73%, list=34%, signal=110%
+DNA damage response. signal transduction by p53 class mediator	GO:0030330	GO:0030330	17	-0.37585273	-1.0288972	0.412731	0.7297557	1	1877	tags=35%, list=9%, signal=39%
+lipid kinase activity	GO:0001727	GO:0001727	24	-0.34639695	-1.0288326	0.42088607	0.7289838	1	2280	tags=21%, list=11%, signal=23%
+response to bacterium	GO:0009617	GO:0009617	87	-0.26265398	-1.0282385	0.39096916	0.729651	1	5117	tags=40%, list=25%, signal=54%
+regulation of cell size	GO:0008361	GO:0008361	197	-0.23354076	-1.0276209	0.36081243	0.73045456	1	1747	tags=15%, list=9%, signal=16%
+anterior/posterior axis specification	GO:0009948	GO:0009948	11	-0.428109	-1.0276204	0.42828283	0.72951025	1	4209	tags=27%, list=21%, signal=34%
+peptide transport	GO:0015833	GO:0015833	37	-0.31057915	-1.0273426	0.40262583	0.7293446	1	5479	tags=38%, list=27%, signal=52%
+receptor signaling protein serine/threonine kinase activity	GO:0004702	GO:0004702	51	-0.29431626	-1.0267297	0.42686892	0.7301459	1	4428	tags=35%, list=22%, signal=45%
+regulation of cell differentiation	GO:0045595	GO:0045595	173	-0.23652835	-1.0262425	0.38190365	0.73053235	1	2113	tags=16%, list=10%, signal=18%
+cytokine production during immune response	GO:0002367	GO:0002367	14	-0.3891144	-1.0258541	0.43030304	0.7307398	1	1358	tags=29%, list=7%, signal=31%
+pyrimidine nucleoside triphosphate metabolic process	GO:0009147	GO:0009147	14	-0.39257208	-1.025686	0.43411645	0.73025745	1	740	tags=21%, list=4%, signal=22%
+cellular chemical homeostasis	GO:0055082	GO:0055082	241	-0.23070702	-1.0256265	0.3790932	0.7294842	1	1892	tags=13%, list=9%, signal=14%
+peroxisomal membrane	GO:0005778	GO:0005778	42	-0.30117494	-1.025482	0.4008439	0.7289637	1	1117	tags=12%, list=5%, signal=13%
+membrane budding	GO:0006900	GO:0006900	16	-0.3832939	-1.0253359	0.42857143	0.72845495	1	5306	tags=38%, list=26%, signal=51%
+negative regulation of growth	GO:0045926	GO:0045926	66	-0.27538404	-1.0234967	0.4027927	0.73286545	1	3900	tags=35%, list=19%, signal=43%
+peptide cross-linking	GO:0018149	GO:0018149	18	-0.36382625	-1.0230079	0.4287223	0.7333124	1	5360	tags=39%, list=26%, signal=53%
+positive regulation of Ras GTPase activity	GO:0032320	GO:0032320	12	-0.41045776	-1.022747	0.4281184	0.7331029	1	6348	tags=50%, list=31%, signal=73%
+inositol or phosphatidylinositol kinase activity	GO:0004428	GO:0004428	38	-0.3047251	-1.0220417	0.41747573	0.73415804	1	5421	tags=42%, list=27%, signal=57%
+Rho guanyl-nucleotide exchange factor activity	GO:0005089	GO:0005089	69	-0.2716122	-1.0218328	0.39411098	0.73380184	1	4576	tags=29%, list=23%, signal=37%
+transcription cofactor activity	GO:0003712	GO:0003712	285	-0.22374701	-1.0199202	0.3773585	0.73822737	1	3899	tags=25%, list=19%, signal=30%
+blood vessel morphogenesis	GO:0048514	GO:0048514	156	-0.2398605	-1.0194883	0.39362913	0.7385531	1	4046	tags=26%, list=20%, signal=32%
+regulation of muscle development	GO:0048634	GO:0048634	16	-0.3805915	-1.0194383	0.42752102	0.73777246	1	5247	tags=44%, list=26%, signal=59%
+regulation of intracellular protein transport	GO:0033157	GO:0033157	28	-0.33151653	-1.0181731	0.43548387	0.7404324	1	3695	tags=29%, list=18%, signal=35%
+cellular homeostasis	GO:0019725	GO:0019725	297	-0.21991801	-1.0177981	0.39559016	0.74059385	1	1892	tags=12%, list=9%, signal=14%
+structural constituent of epidermis	GO:0030280	GO:0030280	10	-0.43137208	-1.0172957	0.42627883	0.7410827	1	3854	tags=30%, list=19%, signal=37%
+regulation of mononuclear cell proliferation	GO:0032944	GO:0032944	42	-0.30118036	-1.016849	0.42381975	0.74142045	1	3116	tags=24%, list=15%, signal=28%
+diacylglycerol binding	GO:0019992	GO:0019992	62	-0.27982125	-1.0165825	0.42762432	0.7412221	1	3248	tags=29%, list=16%, signal=34%
+regulation of lymphocyte proliferation	GO:0050670	GO:0050670	42	-0.30118036	-1.0150373	0.42219803	0.7446546	1	3116	tags=24%, list=15%, signal=28%
+microbody membrane	GO:0031903	GO:0031903	42	-0.30117494	-1.0144943	0.41993636	0.74524903	1	1117	tags=12%, list=5%, signal=13%
+glutamine family amino acid biosynthetic process	GO:0009084	GO:0009084	17	-0.370671	-1.0144593	0.44340602	0.74441487	1	480	tags=12%, list=2%, signal=12%
+anatomical structure formation	GO:0048646	GO:0048646	160	-0.2364709	-1.0142131	0.4207459	0.7441473	1	2279	tags=17%, list=11%, signal=19%
+transferase activity. transferring glycosyl groups	GO:0016757	GO:0016757	243	-0.22566658	-1.0135659	0.42676768	0.7450578	1	796	tags=8%, list=4%, signal=8%
+germ cell development	GO:0007281	GO:0007281	18	-0.36777088	-1.0130692	0.4446764	0.7455475	1	1957	tags=28%, list=10%, signal=31%
+positive regulation of secretion	GO:0051047	GO:0051047	41	-0.30225614	-1.012597	0.41748634	0.74594176	1	1525	tags=12%, list=8%, signal=13%
+cellular calcium ion homeostasis	GO:0006874	GO:0006874	112	-0.24803396	-1.0123262	0.43064877	0.745791	1	2776	tags=18%, list=14%, signal=21%
+Rac protein signal transduction	GO:0016601	GO:0016601	12	-0.41082153	-1.0119543	0.44311377	0.7459218	1	2214	tags=33%, list=11%, signal=37%
+GTP binding	GO:0005525	GO:0005525	347	-0.21514691	-1.0118673	0.40712467	0.74523985	1	1867	tags=13%, list=9%, signal=14%
+heme binding	GO:0020037	GO:0020037	118	-0.24444625	-1.0114557	0.40494937	0.74551564	1	5122	tags=29%, list=25%, signal=38%
+negative regulation of cell-cell adhesion	GO:0022408	GO:0022408	16	-0.37384	-1.010919	0.4384537	0.7461344	1	2514	tags=31%, list=12%, signal=36%
+biogenic amine metabolic process	GO:0006576	GO:0006576	61	-0.2774773	-1.0101708	0.43792325	0.74728817	1	3104	tags=21%, list=15%, signal=25%
+regulation of steroid metabolic process	GO:0019218	GO:0019218	12	-0.4049485	-1.0093186	0.4336373	0.7488227	1	1416	tags=17%, list=7%, signal=18%
+positive regulation of myeloid cell differentiation	GO:0045639	GO:0045639	17	-0.3745982	-1.0087343	0.44621938	0.7495604	1	3716	tags=41%, list=18%, signal=50%
+early endosome membrane	GO:0031901	GO:0031901	21	-0.34978312	-1.0086242	0.4255102	0.7489574	1	3348	tags=29%, list=16%, signal=34%
+regulation of ATPase activity	GO:0043462	GO:0043462	10	-0.4256968	-1.0076277	0.44051132	0.750827	1	7808	tags=60%, list=38%, signal=97%
+humoral immune response mediated by circulating immunoglobulin	GO:0002455	GO:0002455	32	-0.3159344	-1.0073575	0.43153527	0.75066817	1	5335	tags=41%, list=26%, signal=55%
+phospholipid dephosphorylation	GO:0046839	GO:0046839	14	-0.3866778	-1.0073552	0.46010363	0.74975145	1	3269	tags=36%, list=16%, signal=43%
+regulation of cytokine production	GO:0001817	GO:0001817	49	-0.2877846	-1.0072798	0.43776825	0.7490647	1	1927	tags=20%, list=9%, signal=22%
+maintenance of protein location	GO:0045185	GO:0045185	35	-0.30813482	-1.0072289	0.44169247	0.74828094	1	3884	tags=23%, list=19%, signal=28%
+neurotransmitter binding	GO:0042165	GO:0042165	97	-0.2538489	-1.0065671	0.43816254	0.74928933	1	4245	tags=32%, list=21%, signal=40%
+calcium-dependent cysteine-type endopeptidase activity	GO:0004198	GO:0004198	15	-0.38196003	-1.0065541	0.4553661	0.74840665	1	2643	tags=27%, list=13%, signal=31%
+transmembrane transport	GO:0055085	GO:0055085	33	-0.31172505	-1.0059032	0.46219382	0.7492643	1	3413	tags=24%, list=17%, signal=29%
+camera-type eye development	GO:0043010	GO:0043010	32	-0.31634018	-1.0054828	0.4375	0.749575	1	4002	tags=28%, list=20%, signal=35%
+carbohydrate binding	GO:0030246	GO:0030246	268	-0.21966407	-1.0050458	0.43625	0.7498875	1	6059	tags=35%, list=30%, signal=49%
+cell fate determination	GO:0001709	GO:0001709	27	-0.32380107	-1.0049214	0.4430245	0.7493142	1	4062	tags=41%, list=20%, signal=51%
+neuron morphogenesis during differentiation	GO:0048667	GO:0048667	120	-0.24497887	-1.0043449	0.4543379	0.75004774	1	2316	tags=16%, list=11%, signal=18%
+axonogenesis	GO:0007409	GO:0007409	111	-0.24653322	-1.0040164	0.4369847	0.75004613	1	2316	tags=15%, list=11%, signal=17%
+photoreceptor cell maintenance	GO:0045494	GO:0045494	17	-0.36586377	-1.0018753	0.4473953	0.75516653	1	2462	tags=24%, list=12%, signal=27%
+regulated secretory pathway	GO:0045055	GO:0045055	13	-0.3975768	-1.0014282	0.47310758	0.7555036	1	3490	tags=31%, list=17%, signal=37%
+lipid digestion	GO:0044241	GO:0044241	10	-0.4257215	-1.0012363	0.45392823	0.7551312	1	2239	tags=20%, list=11%, signal=22%
+tetrapyrrole binding	GO:0046906	GO:0046906	118	-0.24444625	-1.0008321	0.4494382	0.7553856	1	5122	tags=29%, list=25%, signal=38%
+insulin receptor binding	GO:0005158	GO:0005158	23	-0.34281334	-1.0005572	0.45127118	0.75522196	1	3505	tags=35%, list=17%, signal=42%
+intramolecular transferase activity. phosphotransferases	GO:0016868	GO:0016868	11	-0.41668963	-1.0005015	0.47105005	0.7544752	1	21	tags=9%, list=0%, signal=9%
+solute:hydrogen antiporter activity	GO:0015299	GO:0015299	18	-0.36138064	-1.0001355	0.45789474	0.7545768	1	3200	tags=28%, list=16%, signal=33%
+regulation of MAP kinase activity	GO:0043405	GO:0043405	102	-0.25119022	-1.0001283	0.46	0.7536935	1	5468	tags=38%, list=27%, signal=52%
+UDP-glycosyltransferase activity	GO:0008194	GO:0008194	108	-0.2478873	-1.0000116	0.4662857	0.75309956	1	648	tags=8%, list=3%, signal=9%
+regulation of membrane potential	GO:0042391	GO:0042391	72	-0.26678044	-0.99974835	0.46103182	0.75296116	1	1892	tags=14%, list=9%, signal=15%
+Rho protein signal transduction	GO:0007266	GO:0007266	113	-0.24529175	-0.9983084	0.4650113	0.75606036	1	4576	tags=28%, list=23%, signal=36%
+neurite morphogenesis	GO:0048812	GO:0048812	120	-0.24497887	-0.9982352	0.43483412	0.7553552	1	2316	tags=16%, list=11%, signal=18%
+collagen	GO:0005581	GO:0005581	35	-0.30843824	-0.99798	0.4578442	0.75519955	1	3425	tags=31%, list=17%, signal=38%
+protein tyrosine/serine/threonine phosphatase activity	GO:0008138	GO:0008138	40	-0.29676574	-0.99794567	0.44480875	0.7544091	1	2450	tags=20%, list=12%, signal=23%
+regulation of neurotransmitter levels	GO:0001505	GO:0001505	71	-0.2658683	-0.99791247	0.44868997	0.7536079	1	3824	tags=27%, list=19%, signal=33%
+organ morphogenesis	GO:0009887	GO:0009887	366	-0.21220674	-0.9966238	0.45781636	0.7563002	1	2482	tags=16%, list=12%, signal=18%
+NLS-bearing substrate import into nucleus	GO:0006607	GO:0006607	13	-0.38827828	-0.9959688	0.4593453	0.7572527	1	1189	tags=23%, list=6%, signal=24%
+cartilage development	GO:0051216	GO:0051216	34	-0.30894917	-0.995139	0.47065338	0.7586653	1	2737	tags=26%, list=13%, signal=31%
+immunological synapse	GO:0001772	GO:0001772	18	-0.3577851	-0.9950117	0.45948717	0.7581174	1	4920	tags=33%, list=24%, signal=44%
+hexosaminidase activity	GO:0015929	GO:0015929	12	-0.39726743	-0.99465996	0.47585514	0.75819826	1	7546	tags=75%, list=37%, signal=119%
+tissue development	GO:0009888	GO:0009888	299	-0.21580558	-0.9945837	0.48659003	0.75752735	1	2400	tags=15%, list=12%, signal=16%
+calcium ion homeostasis	GO:0055074	GO:0055074	113	-0.24567722	-0.993864	0.4665885	0.75866526	1	2776	tags=18%, list=14%, signal=20%
+negative regulation of cytokine biosynthetic process	GO:0042036	GO:0042036	17	-0.360743	-0.99313116	0.4678801	0.7598008	1	5424	tags=41%, list=27%, signal=56%
+vasculature development	GO:0001944	GO:0001944	176	-0.22802569	-0.9920127	0.4730392	0.76202047	1	3605	tags=22%, list=18%, signal=27%
+secondary metabolic process	GO:0019748	GO:0019748	48	-0.28235072	-0.9915245	0.46072188	0.76248854	1	1261	tags=15%, list=6%, signal=16%
+fatty acid catabolic process	GO:0009062	GO:0009062	28	-0.32464978	-0.9913188	0.47407407	0.76217854	1	5361	tags=50%, list=26%, signal=68%
+MHC class I receptor activity	GO:0032393	GO:0032393	18	-0.3557669	-0.99076736	0.47603834	0.7628775	1	4235	tags=50%, list=21%, signal=63%
+positive regulation of epithelial cell proliferation	GO:0050679	GO:0050679	18	-0.35194016	-0.990723	0.46318036	0.76209134	1	719	tags=11%, list=4%, signal=12%
+fibrinolysis	GO:0042730	GO:0042730	11	-0.40636218	-0.99057823	0.48380566	0.7615814	1	3897	tags=36%, list=19%, signal=45%
+lysophospholipase activity	GO:0004622	GO:0004622	11	-0.41188723	-0.9898806	0.49520767	0.7626057	1	7424	tags=55%, list=37%, signal=86%
+sulfur metabolic process	GO:0006790	GO:0006790	78	-0.25728938	-0.9895632	0.4683406	0.7625808	1	2803	tags=19%, list=14%, signal=22%
+SNAP receptor activity	GO:0005484	GO:0005484	20	-0.34063306	-0.9894517	0.46878308	0.76199275	1	6717	tags=50%, list=33%, signal=75%
+multicellular organismal protein metabolic process	GO:0044268	GO:0044268	21	-0.338111	-0.9887291	0.45195353	0.76313186	1	5043	tags=43%, list=25%, signal=57%
+neuromuscular process controlling balance	GO:0050885	GO:0050885	20	-0.34663168	-0.98852605	0.47692308	0.7628105	1	6973	tags=50%, list=34%, signal=76%
+response to fungus	GO:0009620	GO:0009620	18	-0.3563967	-0.9885219	0.4751553	0.76193094	1	7453	tags=61%, list=37%, signal=96%
+regulation of protein transport	GO:0051223	GO:0051223	30	-0.31186134	-0.9875662	0.48370138	0.76364464	1	3695	tags=27%, list=18%, signal=33%
+guanyl nucleotide binding	GO:0019001	GO:0019001	356	-0.2105295	-0.9873831	0.4908854	0.7632592	1	1867	tags=13%, list=9%, signal=14%
+blood vessel development	GO:0001568	GO:0001568	173	-0.2283308	-0.9869388	0.49507388	0.7635622	1	3605	tags=23%, list=18%, signal=27%
+guanyl ribonucleotide binding	GO:0032561	GO:0032561	356	-0.2105295	-0.9868476	0.51329786	0.7629334	1	1867	tags=13%, list=9%, signal=14%
+solute:hydrogen symporter activity	GO:0015295	GO:0015295	44	-0.2859989	-0.98672265	0.49001053	0.7624027	1	4836	tags=39%, list=24%, signal=51%
+regulation of body fluid levels	GO:0050878	GO:0050878	114	-0.24155945	-0.9867174	0.4533947	0.7615317	1	5246	tags=34%, list=26%, signal=46%
+defense response to fungus	GO:0050832	GO:0050832	11	-0.40395698	-0.9866211	0.47446808	0.7609247	1	6390	tags=64%, list=31%, signal=93%
+clathrin coat of coated pit	GO:0030132	GO:0030132	10	-0.41786137	-0.9862655	0.47936508	0.7610063	1	7974	tags=60%, list=39%, signal=99%
+lung development	GO:0030324	GO:0030324	44	-0.28531587	-0.98607016	0.466457	0.760649	1	729	tags=9%, list=4%, signal=9%
+C-X-C chemokine receptor activity	GO:0016494	GO:0016494	10	-0.42122614	-0.9858486	0.48933902	0.76039654	1	1904	tags=20%, list=9%, signal=22%
+fat cell differentiation	GO:0045444	GO:0045444	19	-0.352432	-0.9853978	0.46848738	0.76076776	1	1775	tags=26%, list=9%, signal=29%
+receptor signaling protein tyrosine kinase activity	GO:0004716	GO:0004716	12	-0.4012039	-0.9848242	0.49377593	0.7614258	1	136	tags=17%, list=1%, signal=17%
+calcium-dependent phospholipid binding	GO:0005544	GO:0005544	22	-0.33896804	-0.9842403	0.47183847	0.76213646	1	6095	tags=41%, list=30%, signal=58%
+transmission of nerve impulse	GO:0019226	GO:0019226	300	-0.21385108	-0.9842053	0.49352178	0.7613471	1	4694	tags=26%, list=23%, signal=33%
+FAD binding	GO:0050660	GO:0050660	65	-0.26586193	-0.98222095	0.48139796	0.7658772	1	2294	tags=18%, list=11%, signal=21%
+positive regulation of nucleocytoplasmic transport	GO:0046824	GO:0046824	12	-0.39826807	-0.9816431	0.48027614	0.766571	1	4968	tags=42%, list=24%, signal=55%
+protein complex binding	GO:0032403	GO:0032403	103	-0.2460159	-0.9803192	0.49887893	0.7693619	1	3244	tags=19%, list=16%, signal=23%
+collagen catabolic process	GO:0030574	GO:0030574	20	-0.34454274	-0.9802439	0.49949032	0.76870495	1	5043	tags=45%, list=25%, signal=60%
+cellular morphogenesis during differentiation	GO:0000904	GO:0000904	126	-0.23626474	-0.98012865	0.4981862	0.7681438	1	2316	tags=15%, list=11%, signal=17%
+establishment of organelle localization	GO:0051656	GO:0051656	37	-0.29790238	-0.97981304	0.47741273	0.768152	1	2094	tags=22%, list=10%, signal=24%
+multicellular organismal macromolecule metabolic process	GO:0044259	GO:0044259	21	-0.338111	-0.97933507	0.4735234	0.7685873	1	5043	tags=43%, list=25%, signal=57%
+protein autoprocessing	GO:0016540	GO:0016540	51	-0.27602	-0.9784391	0.48412699	0.77018166	1	2605	tags=20%, list=13%, signal=22%
+lamellipodium	GO:0030027	GO:0030027	39	-0.2935501	-0.9784308	0.49111807	0.76932776	1	3661	tags=28%, list=18%, signal=34%
+negative regulation of blood coagulation	GO:0030195	GO:0030195	18	-0.3471523	-0.9783042	0.47473684	0.7688171	1	4509	tags=33%, list=22%, signal=43%
+activation of protein kinase C activity	GO:0007205	GO:0007205	25	-0.32995513	-0.97802585	0.50656456	0.7687272	1	646	tags=20%, list=3%, signal=21%
+anterior/posterior pattern formation	GO:0009952	GO:0009952	57	-0.2727393	-0.97755384	0.50869566	0.76913303	1	4714	tags=26%, list=23%, signal=34%
+intestinal absorption	GO:0050892	GO:0050892	10	-0.40948358	-0.9774511	0.4878049	0.76854116	1	2239	tags=20%, list=11%, signal=22%
+multicellular organismal macromolecule catabolic process	GO:0044266	GO:0044266	21	-0.338111	-0.9770865	0.47897437	0.76867926	1	5043	tags=43%, list=25%, signal=57%
+chromatin remodeling	GO:0006338	GO:0006338	49	-0.27727777	-0.977066	0.5053996	0.76787645	1	1436	tags=14%, list=7%, signal=15%
+serine-type endopeptidase inhibitor activity	GO:0004867	GO:0004867	85	-0.25108787	-0.97658837	0.4739229	0.7682865	1	2926	tags=19%, list=14%, signal=22%
+protein amino acid N-linked glycosylation	GO:0006487	GO:0006487	41	-0.29083735	-0.97535247	0.5038168	0.7708763	1	4456	tags=24%, list=22%, signal=31%
+regulation of T cell proliferation	GO:0042129	GO:0042129	34	-0.3025426	-0.97517127	0.47272727	0.770492	1	2404	tags=21%, list=12%, signal=23%
+NAD binding	GO:0051287	GO:0051287	33	-0.30338553	-0.9745385	0.5130152	0.77138174	1	5444	tags=42%, list=27%, signal=58%
+chloride channel activity	GO:0005254	GO:0005254	58	-0.26969796	-0.97419226	0.489154	0.77147543	1	3925	tags=24%, list=19%, signal=30%
+response to ethanol	GO:0045471	GO:0045471	12	-0.39130434	-0.9741081	0.48024315	0.7708093	1	1261	tags=17%, list=6%, signal=18%
+protein self-association	GO:0043621	GO:0043621	10	-0.41468754	-0.97405136	0.48911917	0.77010775	1	1340	tags=20%, list=7%, signal=21%
+retrograde transport. endosome to Golgi	GO:0042147	GO:0042147	10	-0.41473472	-0.97351235	0.4827586	0.770699	1	2094	tags=20%, list=10%, signal=22%
+protein tyrosine kinase activity	GO:0004713	GO:0004713	175	-0.22267431	-0.97319895	0.5443787	0.7707108	1	2359	tags=15%, list=12%, signal=17%
+negative regulation of neuron apoptosis	GO:0043524	GO:0043524	14	-0.37934124	-0.9722869	0.491353	0.77233255	1	1875	tags=29%, list=9%, signal=31%
+hormone biosynthetic process	GO:0042446	GO:0042446	38	-0.29353476	-0.97210985	0.5016077	0.77194655	1	2383	tags=16%, list=12%, signal=18%
+phosphoinositide binding	GO:0035091	GO:0035091	81	-0.25400716	-0.97173816	0.50500554	0.77208513	1	4895	tags=40%, list=24%, signal=52%
+ear development	GO:0043583	GO:0043583	42	-0.28340793	-0.9716282	0.5039459	0.7715199	1	4273	tags=26%, list=21%, signal=33%
+muscle system process	GO:0003012	GO:0003012	154	-0.22765788	-0.9713293	0.5203252	0.7715171	1	2968	tags=17%, list=15%, signal=20%
+cyclic-nucleotide phosphodiesterase activity	GO:0004112	GO:0004112	25	-0.319269	-0.97024745	0.50883	0.7735781	1	6036	tags=52%, list=30%, signal=74%
+positive regulation of B cell activation	GO:0050871	GO:0050871	18	-0.34835863	-0.96726406	0.4953846	0.7808764	1	5556	tags=44%, list=27%, signal=61%
+positive regulation of intracellular transport	GO:0032388	GO:0032388	13	-0.38228455	-0.96726257	0.5133745	0.780015	1	4968	tags=38%, list=24%, signal=51%
+phosphoinositide phosphorylation	GO:0046854	GO:0046854	14	-0.3758673	-0.966446	0.49638802	0.78137237	1	5421	tags=50%, list=27%, signal=68%
+chromatin modification	GO:0016568	GO:0016568	199	-0.22126351	-0.9664326	0.5421965	0.7805458	1	4761	tags=29%, list=23%, signal=37%
+wound healing	GO:0042060	GO:0042060	124	-0.23355104	-0.96577275	0.54018915	0.7814201	1	5246	tags=33%, list=26%, signal=44%
+positive regulation of cellular biosynthetic process	GO:0031328	GO:0031328	39	-0.2877855	-0.96481603	0.516129	0.78314066	1	4922	tags=28%, list=24%, signal=37%
+brush border	GO:0005903	GO:0005903	20	-0.33600837	-0.9640845	0.51354164	0.7842511	1	7004	tags=50%, list=34%, signal=76%
+multicellular organismal protein catabolic process	GO:0044254	GO:0044254	21	-0.338111	-0.96398497	0.5106157	0.78367627	1	5043	tags=43%, list=25%, signal=57%
+negative regulation of immune system process	GO:0002683	GO:0002683	37	-0.29523715	-0.96391207	0.50912994	0.7830006	1	2877	tags=22%, list=14%, signal=25%
+regulation of binding	GO:0051098	GO:0051098	80	-0.24799676	-0.96313816	0.5292135	0.78424996	1	5550	tags=36%, list=27%, signal=50%
+protein homooligomerization	GO:0051260	GO:0051260	37	-0.29407865	-0.9631221	0.5154321	0.78343505	1	1824	tags=19%, list=9%, signal=21%
+oxidoreductase activity. acting on the CH-OH group of donors, NAD or NADP as acceptor	GO:0016616	GO:0016616	101	-0.2382683	-0.96276075	0.52418447	0.78356093	1	3714	tags=22%, list=18%, signal=27%
+calcium channel regulator activity	GO:0005246	GO:0005246	10	-0.40092257	-0.9609297	0.5042463	0.787612	1	5532	tags=30%, list=27%, signal=41%
+protein processing	GO:0016485	GO:0016485	88	-0.24289666	-0.96071243	0.5323111	0.7873245	1	4102	tags=26%, list=20%, signal=33%
+cofactor catabolic process	GO:0051187	GO:0051187	32	-0.2982543	-0.95965576	0.51789474	0.78928006	1	4073	tags=31%, list=20%, signal=39%
+ER-Golgi intermediate compartment	GO:0005793	GO:0005793	43	-0.2825602	-0.9593144	0.5131868	0.7893547	1	4099	tags=26%, list=20%, signal=32%
+cellular response to stress	GO:0033554	GO:0033554	33	-0.29698476	-0.9583495	0.51602566	0.79111665	1	5345	tags=45%, list=26%, signal=62%
+visual perception	GO:0007601	GO:0007601	206	-0.21602683	-0.9580327	0.5903614	0.79113114	1	3427	tags=18%, list=17%, signal=22%
+protein digestion	GO:0044256	GO:0044256	21	-0.338111	-0.9579236	0.50767654	0.7905486	1	5043	tags=43%, list=25%, signal=57%
+sensory perception of light stimulus	GO:0050953	GO:0050953	206	-0.21602683	-0.95784533	0.57457215	0.7899024	1	3427	tags=18%, list=17%, signal=22%
+histone deacetylase binding	GO:0042826	GO:0042826	12	-0.38907287	-0.95763	0.51626444	0.7896372	1	3432	tags=50%, list=17%, signal=60%
+taxis	GO:0042330	GO:0042330	145	-0.22692382	-0.95712566	0.56148493	0.79019105	1	2723	tags=17%, list=13%, signal=19%
+cation:cation antiporter activity	GO:0015491	GO:0015491	14	-0.36780345	-0.9567025	0.52670157	0.79040176	1	3200	tags=36%, list=16%, signal=42%
+chemotaxis	GO:0006935	GO:0006935	145	-0.22692382	-0.9566397	0.54215455	0.7897234	1	2723	tags=17%, list=13%, signal=19%
+leukocyte adhesion	GO:0007159	GO:0007159	18	-0.34231153	-0.9561427	0.52008456	0.7902208	1	4914	tags=39%, list=24%, signal=51%
+maintenance of protein location in cell	GO:0032507	GO:0032507	30	-0.3073398	-0.95551753	0.52615064	0.79103154	1	3884	tags=23%, list=19%, signal=29%
+extracellular matrix organization and biogenesis	GO:0030198	GO:0030198	44	-0.28263578	-0.95541054	0.5327511	0.79048836	1	729	tags=9%, list=4%, signal=9%
+vitamin metabolic process	GO:0006766	GO:0006766	69	-0.25281698	-0.95324755	0.55187637	0.7954787	1	1096	tags=12%, list=5%, signal=12%
+phospholipase A2 activity	GO:0004623	GO:0004623	27	-0.30933285	-0.95268685	0.5385451	0.79610735	1	1657	tags=15%, list=8%, signal=16%
+cell surface	GO:0009986	GO:0009986	173	-0.21975347	-0.9523214	0.5795053	0.79621553	1	4105	tags=27%, list=20%, signal=34%
+tumor necrosis factor receptor binding	GO:0005164	GO:0005164	20	-0.3348224	-0.9521171	0.52636915	0.7959048	1	3265	tags=25%, list=16%, signal=30%
+brain development	GO:0007420	GO:0007420	138	-0.22497728	-0.95140547	0.5833333	0.79690236	1	2387	tags=18%, list=12%, signal=20%
+beta-tubulin binding	GO:0048487	GO:0048487	11	-0.39325082	-0.95081156	0.52169424	0.79761285	1	7589	tags=55%, list=37%, signal=87%
+regulation of action potential	GO:0001508	GO:0001508	42	-0.27798405	-0.9506376	0.5314465	0.79723513	1	5532	tags=33%, list=27%, signal=46%
+determination of symmetry	GO:0009799	GO:0009799	18	-0.34028745	-0.9505075	0.5252317	0.7967495	1	2699	tags=28%, list=13%, signal=32%
+muscle contraction	GO:0006936	GO:0006936	151	-0.22256097	-0.9503023	0.59307873	0.79643625	1	2968	tags=17%, list=15%, signal=19%
+regulation of synaptic transmission	GO:0050804	GO:0050804	27	-0.30812457	-0.94951624	0.52740437	0.79770166	1	2507	tags=15%, list=12%, signal=17%
+ceramide metabolic process	GO:0006672	GO:0006672	29	-0.301242	-0.9491616	0.5427975	0.797801	1	1454	tags=17%, list=7%, signal=19%
+alpha-beta T cell differentiation	GO:0046632	GO:0046632	18	-0.3412019	-0.94861656	0.5323974	0.79837507	1	2546	tags=28%, list=13%, signal=32%
+monocarboxylic acid metabolic process	GO:0032787	GO:0032787	229	-0.21225038	-0.9463496	0.6065163	0.8036561	1	5016	tags=32%, list=25%, signal=42%
+receptor-mediated endocytosis	GO:0006898	GO:0006898	41	-0.27960974	-0.9461817	0.5511811	0.8032466	1	3203	tags=27%, list=16%, signal=32%
+pyridine nucleotide metabolic process	GO:0019362	GO:0019362	29	-0.30192894	-0.94560665	0.5537689	0.80392045	1	1096	tags=10%, list=5%, signal=11%
+oxidoreductase activity. acting on the CH-CH group of donors	GO:0016627	GO:0016627	52	-0.2647343	-0.9447492	0.56289977	0.805296	1	4073	tags=35%, list=20%, signal=43%
+fatty acid metabolic process	GO:0006631	GO:0006631	168	-0.21741362	-0.94461185	0.6149218	0.80481625	1	5016	tags=34%, list=25%, signal=45%
+synaptic transmission	GO:0007268	GO:0007268	263	-0.20914535	-0.9444859	0.6423358	0.804291	1	4292	tags=23%, list=21%, signal=29%
+cell motility	GO:0006928	GO:0006928	360	-0.20063256	-0.94447803	0.68285716	0.80346745	1	5027	tags=28%, list=25%, signal=36%
+G2/M transition of mitotic cell cycle	GO:0000086	GO:0000086	17	-0.34399724	-0.94440746	0.5222337	0.8028207	1	2745	tags=29%, list=14%, signal=34%
+muscle myosin complex	GO:0005859	GO:0005859	25	-0.3120973	-0.9441046	0.53579175	0.80278635	1	7111	tags=52%, list=35%, signal=80%
+localization of cell	GO:0051674	GO:0051674	360	-0.20063256	-0.94365734	0.66088116	0.8031375	1	5027	tags=28%, list=25%, signal=36%
+cell maturation	GO:0048469	GO:0048469	50	-0.26376644	-0.9430998	0.57427937	0.8037461	1	2567	tags=20%, list=13%, signal=23%
+activation of MAPK activity	GO:0000187	GO:0000187	60	-0.25973257	-0.9421876	0.5831461	0.80534416	1	5468	tags=40%, list=27%, signal=55%
+maintenance of location	GO:0051235	GO:0051235	50	-0.26952785	-0.9419264	0.5622933	0.805191	1	1291	tags=10%, list=6%, signal=11%
+amino sugar metabolic process	GO:0006040	GO:0006040	30	-0.30016255	-0.9401177	0.5450734	0.80898094	1	2382	tags=17%, list=12%, signal=19%
+regulation of nitrogen compound metabolic process	GO:0051171	GO:0051171	21	-0.3236726	-0.93993807	0.55042917	0.80859506	1	228	tags=10%, list=1%, signal=10%
+regulation of vasodilation	GO:0042312	GO:0042312	12	-0.37981758	-0.93937784	0.5422315	0.8092281	1	1120	tags=17%, list=6%, signal=18%
+neural plate morphogenesis	GO:0001839	GO:0001839	18	-0.33487117	-0.93906873	0.53549695	0.80921906	1	2283	tags=28%, list=11%, signal=31%
+response to wounding	GO:0009611	GO:0009611	412	-0.19582598	-0.9389171	0.7002652	0.80878305	1	2491	tags=13%, list=12%, signal=14%
+respiratory tube development	GO:0030323	GO:0030323	46	-0.27265453	-0.93721026	0.5554382	0.8124622	1	729	tags=9%, list=4%, signal=9%
+negative regulation of lyase activity	GO:0051350	GO:0051350	15	-0.35335726	-0.93709165	0.54141414	0.8119267	1	2972	tags=27%, list=15%, signal=31%
+myosin binding	GO:0017022	GO:0017022	13	-0.3717094	-0.9364846	0.5366357	0.812698	1	2968	tags=23%, list=15%, signal=27%
+determination of left/right symmetry	GO:0007368	GO:0007368	18	-0.34028745	-0.93618155	0.55020493	0.81266636	1	2699	tags=28%, list=13%, signal=32%
+nucleoside triphosphate biosynthetic process	GO:0009142	GO:0009142	39	-0.2789665	-0.9359888	0.5446898	0.81232536	1	740	tags=10%, list=4%, signal=11%
+aromatic amino acid family metabolic process	GO:0009072	GO:0009072	24	-0.3149685	-0.9354296	0.54479915	0.81294054	1	729	tags=13%, list=4%, signal=13%
+maintenance of location in cell	GO:0051651	GO:0051651	34	-0.2865963	-0.93436724	0.55567336	0.81490874	1	3884	tags=21%, list=19%, signal=25%
+negative regulation of cyclase activity	GO:0031280	GO:0031280	15	-0.35335726	-0.9336889	0.55172414	0.81585383	1	2972	tags=27%, list=15%, signal=31%
+embryonic morphogenesis	GO:0048598	GO:0048598	97	-0.23272441	-0.9323213	0.6312969	0.8186057	1	2482	tags=19%, list=12%, signal=21%
+determination of bilateral symmetry	GO:0009855	GO:0009855	18	-0.34028745	-0.932213	0.554664	0.81804967	1	2699	tags=28%, list=13%, signal=32%
+nucleobase. nucleoside, nucleotide kinase activity	GO:0019205	GO:0019205	42	-0.27709943	-0.9304824	0.57172996	0.82174975	1	740	tags=10%, list=4%, signal=10%
+sugar:hydrogen symporter activity	GO:0005351	GO:0005351	41	-0.2738859	-0.9303123	0.5974304	0.82133925	1	4777	tags=37%, list=24%, signal=48%
+proton-transporting two-sector ATPase complex	GO:0016469	GO:0016469	41	-0.27506876	-0.92979515	0.57462686	0.8218216	1	7392	tags=44%, list=36%, signal=69%
+nucleosome	GO:0000786	GO:0000786	53	-0.2618257	-0.92945695	0.5722161	0.821862	1	3698	tags=23%, list=18%, signal=28%
+neural tube formation	GO:0001841	GO:0001841	18	-0.33487117	-0.9293145	0.57272726	0.82138133	1	2283	tags=28%, list=11%, signal=31%
+regulation of nucleocytoplasmic transport	GO:0046822	GO:0046822	31	-0.29599383	-0.92855865	0.56354165	0.8224962	1	3695	tags=26%, list=18%, signal=31%
+negative regulation of adenylate cyclase activity	GO:0007194	GO:0007194	15	-0.35335726	-0.9279658	0.5524109	0.8232198	1	2972	tags=27%, list=15%, signal=31%
+mesoderm formation	GO:0001707	GO:0001707	14	-0.35328975	-0.92791814	0.5619919	0.8224966	1	1957	tags=21%, list=10%, signal=24%
+pattern specification process	GO:0007389	GO:0007389	130	-0.22241461	-0.92780995	0.6446188	0.8219212	1	2113	tags=14%, list=10%, signal=15%
+lymphocyte activation	GO:0046649	GO:0046649	165	-0.21549618	-0.92654514	0.65795726	0.8242569	1	2764	tags=16%, list=14%, signal=18%
+lipid phosphorylation	GO:0046834	GO:0046834	15	-0.35046834	-0.92608476	0.56404734	0.82461065	1	5421	tags=47%, list=27%, signal=64%
+cation:sugar symporter activity	GO:0005402	GO:0005402	41	-0.2738859	-0.9260109	0.5704918	0.82399213	1	4777	tags=37%, list=24%, signal=48%
+regulation of transmission of nerve impulse	GO:0051969	GO:0051969	29	-0.2945536	-0.92596656	0.56593406	0.8232768	1	2507	tags=14%, list=12%, signal=16%
+endonuclease activity. active with either ribo- or deoxyribonucleic acids and producing 3'-phosphomonoesters	GO:0016894	GO:0016894	14	-0.36065277	-0.9259067	0.56439793	0.8226015	1	4552	tags=43%, list=22%, signal=55%
+hydrogen transport	GO:0006818	GO:0006818	65	-0.24761498	-0.925808	0.60339344	0.8220355	1	2645	tags=14%, list=13%, signal=16%
+cytoplasmic vesicle membrane	GO:0030659	GO:0030659	115	-0.22664462	-0.92569405	0.6494845	0.82148916	1	5882	tags=34%, list=29%, signal=47%
+leukocyte activation	GO:0045321	GO:0045321	192	-0.21192835	-0.92559993	0.684466	0.82089156	1	2916	tags=17%, list=14%, signal=19%
+actin filament capping	GO:0051693	GO:0051693	21	-0.3169685	-0.9249549	0.5621735	0.8217224	1	6358	tags=43%, list=31%, signal=62%
+proton transport	GO:0015992	GO:0015992	63	-0.25420123	-0.9246132	0.5970149	0.8217489	1	2645	tags=14%, list=13%, signal=16%
+cellular carbohydrate metabolic process	GO:0044262	GO:0044262	282	-0.20001245	-0.92444026	0.7207872	0.8213592	1	5365	tags=30%, list=26%, signal=40%
+T cell activation	GO:0042110	GO:0042110	106	-0.22900446	-0.92364436	0.6170704	0.82257295	1	2546	tags=15%, list=13%, signal=17%
+interleukin-8 biosynthetic process	GO:0042228	GO:0042228	10	-0.3993884	-0.92294884	0.574359	0.82360566	1	250	tags=10%, list=1%, signal=10%
+extracellular ligand-gated ion channel activity	GO:0005230	GO:0005230	69	-0.24507368	-0.922544	0.61152613	0.82380265	1	3686	tags=25%, list=18%, signal=30%
+hormone-mediated signaling	GO:0009755	GO:0009755	37	-0.28180447	-0.92225397	0.5828092	0.82369536	1	3144	tags=27%, list=15%, signal=32%
+cellular defense response	GO:0006968	GO:0006968	59	-0.25471556	-0.92199147	0.6121547	0.82358015	1	6388	tags=47%, list=31%, signal=69%
+negative regulation of coagulation	GO:0050819	GO:0050819	20	-0.32481924	-0.92189276	0.5584551	0.82299733	1	4728	tags=35%, list=23%, signal=46%
+embryonic organ development	GO:0048568	GO:0048568	23	-0.30893728	-0.9217589	0.5747614	0.82252604	1	2113	tags=22%, list=10%, signal=24%
+cell junction assembly and maintenance	GO:0034330	GO:0034330	23	-0.31357336	-0.9216937	0.58278865	0.8218593	1	7776	tags=65%, list=38%, signal=106%
+neutrophil chemotaxis	GO:0030593	GO:0030593	12	-0.37075332	-0.92123926	0.57566464	0.8221759	1	4914	tags=33%, list=24%, signal=44%
+cell recognition	GO:0008037	GO:0008037	35	-0.28308657	-0.9208235	0.57566136	0.8223916	1	1767	tags=11%, list=9%, signal=12%
+regulation of smooth muscle contraction	GO:0006940	GO:0006940	18	-0.33345482	-0.92057663	0.5862423	0.82219154	1	1506	tags=22%, list=7%, signal=24%
+cortical cytoskeleton	GO:0030863	GO:0030863	25	-0.31002134	-0.92033714	0.56283	0.8219547	1	4030	tags=24%, list=20%, signal=30%
+response to peptide hormone stimulus	GO:0043434	GO:0043434	29	-0.29314882	-0.9197425	0.57708335	0.8226465	1	2283	tags=17%, list=11%, signal=19%
+anion transmembrane transporter activity	GO:0008509	GO:0008509	124	-0.22402783	-0.9192685	0.6454545	0.8229802	1	3925	tags=23%, list=19%, signal=28%
+mammary gland development	GO:0030879	GO:0030879	14	-0.35802886	-0.9187969	0.5753425	0.8233559	1	505	tags=14%, list=2%, signal=15%
+chromatin assembly or disassembly	GO:0006333	GO:0006333	120	-0.22287661	-0.91873384	0.65497077	0.8226914	1	4362	tags=26%, list=21%, signal=33%
+leukotriene metabolic process	GO:0006691	GO:0006691	23	-0.3070671	-0.9186982	0.5671039	0.8219648	1	6030	tags=39%, list=30%, signal=56%
+respiratory gaseous exchange	GO:0007585	GO:0007585	24	-0.30591372	-0.9172953	0.5861027	0.82463133	1	6404	tags=42%, list=32%, signal=61%
+developmental maturation	GO:0021700	GO:0021700	59	-0.2520303	-0.9159991	0.6161396	0.8270658	1	2567	tags=19%, list=13%, signal=21%
+glutamate receptor activity	GO:0008066	GO:0008066	30	-0.2889141	-0.9147675	0.5753138	0.8292689	1	2972	tags=20%, list=15%, signal=23%
+galactosyltransferase activity	GO:0008378	GO:0008378	29	-0.2924017	-0.9146916	0.60190076	0.82863635	1	298	tags=7%, list=1%, signal=7%
+cytokine binding	GO:0019955	GO:0019955	86	-0.23306233	-0.913792	0.65005535	0.83005863	1	2879	tags=17%, list=14%, signal=20%
+barbed-end actin filament capping	GO:0051016	GO:0051016	21	-0.3169685	-0.9136618	0.5940803	0.82955074	1	6358	tags=43%, list=31%, signal=62%
+cell fate specification	GO:0001708	GO:0001708	15	-0.3457592	-0.91323054	0.55987394	0.8298145	1	4494	tags=33%, list=22%, signal=43%
+C-X-C chemokine binding	GO:0019958	GO:0019958	11	-0.37998396	-0.9130405	0.5737374	0.82950056	1	1904	tags=18%, list=9%, signal=20%
+protein maturation	GO:0051604	GO:0051604	18	-0.32508186	-0.91232806	0.5774499	0.830423	1	3531	tags=33%, list=17%, signal=40%
+response to corticosteroid stimulus	GO:0031960	GO:0031960	18	-0.3285081	-0.9123155	0.5702393	0.82963854	1	1909	tags=11%, list=9%, signal=12%
+tumor necrosis factor receptor superfamily binding	GO:0032813	GO:0032813	21	-0.3181097	-0.91220176	0.5986985	0.82910216	1	3265	tags=24%, list=16%, signal=28%
+Golgi stack	GO:0005795	GO:0005795	21	-0.31552342	-0.9113538	0.5829042	0.8303694	1	2905	tags=29%, list=14%, signal=33%
+complement activation	GO:0006956	GO:0006956	36	-0.2777813	-0.91123533	0.59914255	0.829857	1	5335	tags=36%, list=26%, signal=49%
+alkene metabolic process	GO:0043449	GO:0043449	23	-0.3070671	-0.909552	0.593914	0.8332355	1	6030	tags=39%, list=30%, signal=56%
+acetylcholine binding	GO:0042166	GO:0042166	20	-0.31853914	-0.909121	0.59615386	0.83349305	1	2669	tags=30%, list=13%, signal=35%
+myosin II complex	GO:0016460	GO:0016460	26	-0.29788476	-0.9088167	0.601686	0.83344597	1	7111	tags=50%, list=35%, signal=77%
+positive regulation of oxidoreductase activity	GO:0051353	GO:0051353	10	-0.3861617	-0.9085093	0.59095687	0.8333589	1	2189	tags=20%, list=11%, signal=22%
+tubulin-tyrosine ligase activity	GO:0004835	GO:0004835	13	-0.3609131	-0.90834445	0.573922	0.83295155	1	4848	tags=38%, list=24%, signal=50%
+cellular polysaccharide catabolic process	GO:0044247	GO:0044247	13	-0.35844782	-0.907412	0.5812757	0.83442926	1	4461	tags=23%, list=22%, signal=30%
+regulation of protein import into nucleus	GO:0042306	GO:0042306	24	-0.30429825	-0.9054914	0.60584676	0.8383639	1	3695	tags=25%, list=18%, signal=31%
+histone acetyltransferase activity	GO:0004402	GO:0004402	26	-0.29676482	-0.9049029	0.59384614	0.8389863	1	4252	tags=35%, list=21%, signal=44%
+regulation of MAPKKK cascade	GO:0043408	GO:0043408	42	-0.2626294	-0.90378094	0.62637365	0.84092355	1	3759	tags=29%, list=18%, signal=35%
+syntaxin binding	GO:0019905	GO:0019905	18	-0.32515633	-0.9035838	0.60082304	0.8405813	1	93	tags=6%, list=0%, signal=6%
+activation of plasma proteins during acute inflammatory response	GO:0002541	GO:0002541	36	-0.2777813	-0.9022708	0.61447084	0.8429506	1	5335	tags=36%, list=26%, signal=49%
+forebrain development	GO:0030900	GO:0030900	51	-0.2534914	-0.90173197	0.6226415	0.8434595	1	2283	tags=20%, list=11%, signal=22%
+polysaccharide catabolic process	GO:0000272	GO:0000272	13	-0.35844782	-0.9014008	0.5832482	0.8434428	1	4461	tags=23%, list=22%, signal=30%
+early endosome	GO:0005769	GO:0005769	59	-0.24694726	-0.90016204	0.66168624	0.8455832	1	2808	tags=24%, list=14%, signal=27%
+fat-soluble vitamin metabolic process	GO:0006775	GO:0006775	18	-0.32973585	-0.89845556	0.6020833	0.84884685	1	2811	tags=22%, list=14%, signal=26%
+receptor metabolic process	GO:0043112	GO:0043112	16	-0.3320457	-0.89837885	0.579918	0.84819895	1	7082	tags=56%, list=35%, signal=86%
+DNA damage response. signal transduction resulting in induction of apoptosis	GO:0008630	GO:0008630	19	-0.32121184	-0.89835876	0.5958763	0.8474296	1	3030	tags=32%, list=15%, signal=37%
+protein ubiquitination	GO:0016567	GO:0016567	74	-0.23489605	-0.89818597	0.67522323	0.84703374	1	2503	tags=16%, list=12%, signal=18%
+lysine N-acetyltransferase activity	GO:0004468	GO:0004468	26	-0.29676482	-0.8976019	0.59589744	0.8475804	1	4252	tags=35%, list=21%, signal=44%
+myofibril	GO:0030016	GO:0030016	68	-0.23969693	-0.8973187	0.6611296	0.84744453	1	1033	tags=9%, list=5%, signal=9%
+aromatic amino acid family catabolic process	GO:0009074	GO:0009074	13	-0.3505952	-0.89660454	0.6149789	0.84833497	1	4781	tags=31%, list=24%, signal=40%
+blood coagulation	GO:0007596	GO:0007596	92	-0.22953983	-0.8960378	0.6873614	0.84884685	1	5246	tags=35%, list=26%, signal=47%
+vesicle coat	GO:0030120	GO:0030120	35	-0.27363226	-0.8948259	0.64012736	0.8509597	1	5504	tags=40%, list=27%, signal=55%
+regulation of lipid biosynthetic process	GO:0046890	GO:0046890	14	-0.35176295	-0.8932243	0.61786866	0.85400635	1	30	tags=7%, list=0%, signal=7%
+amine binding	GO:0043176	GO:0043176	36	-0.27196482	-0.89251196	0.6315789	0.85488176	1	2669	tags=19%, list=13%, signal=22%
+coagulation	GO:0050817	GO:0050817	93	-0.22416465	-0.8911084	0.7181208	0.8573269	1	5246	tags=34%, list=26%, signal=46%
+regulation of lipid metabolic process	GO:0019216	GO:0019216	44	-0.26103735	-0.8907812	0.6576577	0.8572774	1	2119	tags=16%, list=10%, signal=18%
+aromatic compound catabolic process	GO:0019439	GO:0019439	17	-0.3319099	-0.8901403	0.61727077	0.85796654	1	618	tags=12%, list=3%, signal=12%
+sphingomyelin metabolic process	GO:0006684	GO:0006684	11	-0.3632215	-0.8885947	0.615465	0.86079705	1	3278	tags=36%, list=16%, signal=43%
+alpha-beta T cell activation	GO:0046631	GO:0046631	21	-0.3107515	-0.88823754	0.61491317	0.8608141	1	2546	tags=24%, list=13%, signal=27%
+copper ion transport	GO:0006825	GO:0006825	12	-0.35776547	-0.8881732	0.6131687	0.86014336	1	1107	tags=25%, list=5%, signal=26%
+defense response to bacterium	GO:0042742	GO:0042742	75	-0.2350075	-0.88782865	0.687974	0.8601293	1	5117	tags=40%, list=25%, signal=53%
+detection of stimulus involved in sensory perception	GO:0050906	GO:0050906	38	-0.2665495	-0.8866958	0.6507073	0.8618895	1	3359	tags=21%, list=17%, signal=25%
+proteasome core complex	GO:0005839	GO:0005839	19	-0.31330752	-0.8863641	0.61329305	0.861806	1	2122	tags=11%, list=10%, signal=12%
+detection of abiotic stimulus	GO:0009582	GO:0009582	40	-0.2653394	-0.88634366	0.64553016	0.86103946	1	3398	tags=23%, list=17%, signal=27%
+response to glucocorticoid stimulus	GO:0051384	GO:0051384	17	-0.3332538	-0.8861974	0.6046278	0.86055326	1	1909	tags=12%, list=9%, signal=13%
+carbohydrate transmembrane transporter activity	GO:0015144	GO:0015144	43	-0.25982502	-0.8856357	0.6666667	0.8609748	1	4777	tags=35%, list=24%, signal=46%
+sarcoplasmic reticulum	GO:0016529	GO:0016529	20	-0.30782482	-0.8855709	0.61675394	0.86031425	1	5337	tags=50%, list=26%, signal=68%
+NF-kappaB import into nucleus	GO:0042348	GO:0042348	13	-0.34737518	-0.8853678	0.6326109	0.85995924	1	4968	tags=31%, list=24%, signal=41%
+sugar transmembrane transporter activity	GO:0051119	GO:0051119	43	-0.25982502	-0.8842635	0.6547368	0.8616561	1	4777	tags=35%, list=24%, signal=46%
+nucleotide kinase activity	GO:0019201	GO:0019201	22	-0.30501354	-0.8834421	0.6226994	0.86271596	1	462	tags=9%, list=2%, signal=9%
+electron carrier activity	GO:0009055	GO:0009055	232	-0.19582467	-0.88311917	0.81161135	0.862641	1	3268	tags=16%, list=16%, signal=19%
+regulation of NF-kappaB import into nucleus	GO:0042345	GO:0042345	13	-0.34737518	-0.8826809	0.6073926	0.86281335	1	4968	tags=31%, list=24%, signal=41%
+sarcoplasm	GO:0016528	GO:0016528	20	-0.30782482	-0.88219273	0.6379127	0.86314803	1	5337	tags=50%, list=26%, signal=68%
+regulation of immune system process	GO:0002682	GO:0002682	174	-0.20135504	-0.8818222	0.79334915	0.86315686	1	5556	tags=29%, list=27%, signal=40%
+cyclic-nucleotide-mediated signaling	GO:0019935	GO:0019935	95	-0.22098555	-0.88076305	0.73195875	0.86469	1	5989	tags=39%, list=29%, signal=55%
+interaction with host	GO:0051701	GO:0051701	21	-0.307531	-0.87950397	0.61105317	0.86671346	1	3870	tags=29%, list=19%, signal=35%
+serotonin receptor activity	GO:0004993	GO:0004993	12	-0.35999906	-0.879202	0.6137787	0.86657995	1	4771	tags=42%, list=23%, signal=54%
+hemostasis	GO:0007599	GO:0007599	97	-0.22354677	-0.8778571	0.7157773	0.8687985	1	5246	tags=33%, list=26%, signal=44%
+positive regulation of fibroblast proliferation	GO:0048146	GO:0048146	15	-0.3265336	-0.8765072	0.6191889	0.8710222	1	57	tags=7%, list=0%, signal=7%
+chylomicron	GO:0042627	GO:0042627	11	-0.3620671	-0.8761757	0.6270492	0.8709777	1	7966	tags=64%, list=39%, signal=105%
+anion channel activity	GO:0005253	GO:0005253	64	-0.23717757	-0.87605804	0.73085105	0.87042993	1	3925	tags=23%, list=19%, signal=29%
+exopeptidase activity	GO:0008238	GO:0008238	62	-0.23794197	-0.87528867	0.68675995	0.8713924	1	3287	tags=19%, list=16%, signal=23%
+nitric oxide mediated signal transduction	GO:0007263	GO:0007263	11	-0.35893044	-0.87493575	0.61944157	0.8713778	1	6076	tags=55%, list=30%, signal=78%
+biopolymer methylation	GO:0043414	GO:0043414	37	-0.26237783	-0.8746484	0.67030567	0.8712204	1	3907	tags=32%, list=19%, signal=40%
+3'.5'-cyclic-nucleotide phosphodiesterase activity	GO:0004114	GO:0004114	24	-0.29650652	-0.8737747	0.6513089	0.8723984	1	6036	tags=50%, list=30%, signal=71%
+exocytosis	GO:0006887	GO:0006887	83	-0.22306849	-0.87277853	0.75570774	0.8738294	1	3765	tags=23%, list=19%, signal=28%
+generation of a signal involved in cell-cell signaling	GO:0003001	GO:0003001	75	-0.23023555	-0.87252206	0.72559655	0.87355244	1	6326	tags=40%, list=31%, signal=58%
+bacterial binding	GO:0008367	GO:0008367	10	-0.3671528	-0.87243193	0.6260246	0.8729352	1	1730	tags=20%, list=9%, signal=22%
+neurotransmitter secretion	GO:0007269	GO:0007269	38	-0.26259223	-0.8718875	0.68710357	0.87332267	1	3808	tags=26%, list=19%, signal=32%
+arylsulfatase activity	GO:0004065	GO:0004065	11	-0.35494125	-0.8717343	0.62474644	0.87286204	1	5079	tags=36%, list=25%, signal=48%
+hemoglobin complex	GO:0005833	GO:0005833	12	-0.3454045	-0.87075573	0.6333333	0.8742396	1	7402	tags=50%, list=36%, signal=79%
+cell junction assembly	GO:0034329	GO:0034329	18	-0.31393257	-0.8696048	0.6506276	0.87592256	1	7776	tags=72%, list=38%, signal=117%
+intramolecular transferase activity	GO:0016866	GO:0016866	19	-0.3108769	-0.8691301	0.6582809	0.8761384	1	1868	tags=16%, list=9%, signal=17%
+cell activation	GO:0001775	GO:0001775	223	-0.1936765	-0.8670688	0.83866996	0.879773	1	2916	tags=15%, list=14%, signal=17%
+sensory perception of chemical stimulus	GO:0007606	GO:0007606	131	-0.20809826	-0.8669904	0.77641827	0.8791327	1	5145	tags=25%, list=25%, signal=34%
+negative regulation of kinase activity	GO:0033673	GO:0033673	57	-0.23807508	-0.86651933	0.7126316	0.87935007	1	2289	tags=19%, list=11%, signal=22%
+primary neural tube formation	GO:0014020	GO:0014020	14	-0.3353538	-0.8656374	0.63081694	0.88037705	1	2283	tags=29%, list=11%, signal=32%
+negative regulation of protein kinase activity	GO:0006469	GO:0006469	57	-0.23807508	-0.8649238	0.7237687	0.8810871	1	2289	tags=19%, list=11%, signal=22%
+inner ear development	GO:0048839	GO:0048839	38	-0.25998923	-0.8646682	0.6794055	0.8808209	1	2100	tags=16%, list=10%, signal=18%
+negative regulation of myeloid cell differentiation	GO:0045638	GO:0045638	18	-0.310623	-0.8635333	0.6519916	0.8825069	1	2991	tags=22%, list=15%, signal=26%
+vesicle membrane	GO:0012506	GO:0012506	121	-0.20953958	-0.8633046	0.7963595	0.8822019	1	5882	tags=34%, list=29%, signal=47%
+interleukin-1 receptor binding	GO:0005149	GO:0005149	13	-0.3405029	-0.8632724	0.6493776	0.88146067	1	2200	tags=23%, list=11%, signal=26%
+hydrolase activity. acting on glycosyl bonds	GO:0016798	GO:0016798	116	-0.21108922	-0.86240196	0.7914253	0.8824801	1	4326	tags=28%, list=21%, signal=35%
+microspike biogenesis	GO:0030035	GO:0030035	14	-0.3307787	-0.8622345	0.64693666	0.8820383	1	1481	tags=21%, list=7%, signal=23%
+neural tube closure	GO:0001843	GO:0001843	14	-0.3353538	-0.86135983	0.61967546	0.88309985	1	2283	tags=29%, list=11%, signal=32%
+regulation of protein catabolic process	GO:0042176	GO:0042176	20	-0.2984441	-0.8601945	0.6728586	0.88482887	1	3401	tags=20%, list=17%, signal=24%
+regulation of carbohydrate metabolic process	GO:0006109	GO:0006109	18	-0.3152838	-0.85945773	0.65554357	0.8856037	1	1927	tags=11%, list=9%, signal=12%
+alkene biosynthetic process	GO:0043450	GO:0043450	19	-0.30573475	-0.8594029	0.6465257	0.8849141	1	6030	tags=42%, list=30%, signal=60%
+sphingoid metabolic process	GO:0046519	GO:0046519	32	-0.2711914	-0.8591948	0.6906019	0.88455516	1	1454	tags=16%, list=7%, signal=17%
+positive regulation of JNK cascade	GO:0046330	GO:0046330	13	-0.34478083	-0.8591461	0.66496426	0.8838551	1	3759	tags=46%, list=18%, signal=57%
+purine nucleoside triphosphate biosynthetic process	GO:0009145	GO:0009145	36	-0.26237983	-0.8581225	0.7064846	0.8852141	1	740	tags=8%, list=4%, signal=9%
+genitalia development	GO:0048806	GO:0048806	12	-0.34820923	-0.8573032	0.6513369	0.886134	1	2113	tags=25%, list=10%, signal=28%
+negative regulation of transferase activity	GO:0051348	GO:0051348	59	-0.23649442	-0.8558947	0.72925764	0.8882861	1	2289	tags=19%, list=11%, signal=21%
+cellular component assembly	GO:0022607	GO:0022607	128	-0.20569979	-0.8554502	0.8133803	0.8884183	1	5429	tags=32%, list=27%, signal=43%
+chromatin remodeling complex	GO:0016585	GO:0016585	29	-0.2771514	-0.85507876	0.6713062	0.88838047	1	4982	tags=28%, list=25%, signal=36%
+non-G-protein coupled 7TM receptor activity	GO:0004926	GO:0004926	11	-0.3477154	-0.85455	0.6384065	0.88867784	1	817	tags=18%, list=4%, signal=19%
+regulation of fibroblast proliferation	GO:0048145	GO:0048145	17	-0.31368524	-0.8544861	0.6574359	0.88800055	1	57	tags=6%, list=0%, signal=6%
+purine ribonucleoside triphosphate biosynthetic process	GO:0009206	GO:0009206	36	-0.26237983	-0.8542495	0.68608415	0.88767666	1	740	tags=8%, list=4%, signal=9%
+segmentation	GO:0035282	GO:0035282	26	-0.27826142	-0.8536406	0.6802139	0.88812387	1	4252	tags=23%, list=21%, signal=29%
+fibroblast proliferation	GO:0048144	GO:0048144	17	-0.31368524	-0.853627	0.66358024	0.8873502	1	57	tags=6%, list=0%, signal=6%
+detection of stimulus	GO:0051606	GO:0051606	73	-0.22501707	-0.85267323	0.74732333	0.8885497	1	3863	tags=22%, list=19%, signal=27%
+oxidoreductase activity. acting on CH-OH group of donors	GO:0016614	GO:0016614	112	-0.2101859	-0.84928966	0.8041715	0.8946355	1	3714	tags=21%, list=18%, signal=25%
+regulation of adenylate cyclase activity	GO:0045761	GO:0045761	43	-0.24762669	-0.84872097	0.7362288	0.8949607	1	2972	tags=19%, list=15%, signal=22%
+G-protein chemoattractant receptor activity	GO:0001637	GO:0001637	27	-0.27808902	-0.84859043	0.67922604	0.8944003	1	1904	tags=15%, list=9%, signal=16%
+Cdc42 protein signal transduction	GO:0032488	GO:0032488	13	-0.32963267	-0.84798265	0.6766529	0.8947956	1	4509	tags=38%, list=22%, signal=49%
+leukotriene biosynthetic process	GO:0019370	GO:0019370	19	-0.30573475	-0.8476733	0.6903024	0.8945861	1	6030	tags=42%, list=30%, signal=60%
+COPI vesicle coat	GO:0030126	GO:0030126	10	-0.3576451	-0.8476179	0.6471774	0.8938874	1	5306	tags=50%, list=26%, signal=68%
+heterotrimeric G-protein complex	GO:0005834	GO:0005834	24	-0.28448904	-0.84703594	0.6918172	0.89429104	1	3109	tags=21%, list=15%, signal=25%
+endocrine system development	GO:0035270	GO:0035270	34	-0.26116723	-0.84648645	0.71858215	0.8945818	1	4516	tags=32%, list=22%, signal=42%
+regulation of cyclase activity	GO:0031279	GO:0031279	44	-0.24455462	-0.8459071	0.73284054	0.8949526	1	2972	tags=18%, list=15%, signal=21%
+COPI coated vesicle membrane	GO:0030663	GO:0030663	10	-0.3576451	-0.84572715	0.6794462	0.89450663	1	5306	tags=50%, list=26%, signal=68%
+response to mechanical stimulus	GO:0009612	GO:0009612	17	-0.31333497	-0.8456078	0.68154156	0.89394236	1	1508	tags=12%, list=7%, signal=13%
+chemokine receptor activity	GO:0004950	GO:0004950	27	-0.27808902	-0.84535354	0.67884	0.8936588	1	1904	tags=15%, list=9%, signal=16%
+positive regulation of behavior	GO:0048520	GO:0048520	12	-0.3331135	-0.8451067	0.63836163	0.8933465	1	279	tags=8%, list=1%, signal=8%
+regulation of lyase activity	GO:0051339	GO:0051339	44	-0.24455462	-0.84495544	0.7399151	0.89284873	1	2972	tags=18%, list=15%, signal=21%
+inorganic cation transmembrane transporter activity	GO:0022890	GO:0022890	148	-0.19856317	-0.84414214	0.8639535	0.8936188	1	2815	tags=12%, list=14%, signal=14%
+embryonic appendage morphogenesis	GO:0035113	GO:0035113	34	-0.25904492	-0.8441163	0.71457905	0.8928874	1	4255	tags=26%, list=21%, signal=33%
+T-helper 2 type immune response	GO:0042092	GO:0042092	10	-0.35309458	-0.8426795	0.677686	0.89490324	1	1093	tags=20%, list=5%, signal=21%
+regulation of G-protein coupled receptor protein signaling pathway	GO:0008277	GO:0008277	38	-0.2533565	-0.8394174	0.73462784	0.90055054	1	632	tags=11%, list=3%, signal=11%
+acetylcholine receptor activity	GO:0015464	GO:0015464	18	-0.30145463	-0.8391198	0.66702586	0.9003223	1	5782	tags=50%, list=28%, signal=70%
+cilium	GO:0005929	GO:0005929	77	-0.22062898	-0.83888716	0.7884187	0.8999913	1	3493	tags=22%, list=17%, signal=27%
+embryonic limb morphogenesis	GO:0030326	GO:0030326	34	-0.25904492	-0.8381782	0.7251082	0.90059185	1	4255	tags=26%, list=21%, signal=33%
+limb morphogenesis	GO:0035108	GO:0035108	39	-0.24673188	-0.83587474	0.75248617	0.9042285	1	1376	tags=13%, list=7%, signal=14%
+peptide hormone binding	GO:0017046	GO:0017046	10	-0.35937798	-0.83551073	0.6697819	0.9041421	1	4971	tags=50%, list=24%, signal=66%
+G1 phase of mitotic cell cycle	GO:0000080	GO:0000080	13	-0.33236888	-0.8337469	0.69336146	0.90667266	1	1434	tags=15%, list=7%, signal=17%
+interleukin-1 secretion	GO:0050701	GO:0050701	13	-0.32712346	-0.8331938	0.6697531	0.90697324	1	93	tags=8%, list=0%, signal=8%
+coenzyme binding	GO:0050662	GO:0050662	141	-0.1983374	-0.8318966	0.8704784	0.90865856	1	5552	tags=33%, list=27%, signal=45%
+sensory perception of taste	GO:0050909	GO:0050909	28	-0.2693735	-0.83186185	0.73311895	0.9079276	1	2104	tags=14%, list=10%, signal=16%
+appendage morphogenesis	GO:0035107	GO:0035107	39	-0.24673188	-0.83170635	0.7420765	0.90741634	1	1376	tags=13%, list=7%, signal=14%
+positive regulation of transport	GO:0051050	GO:0051050	58	-0.22849913	-0.83089143	0.7852273	0.90815496	1	5504	tags=36%, list=27%, signal=50%
+regulation of catabolic process	GO:0009894	GO:0009894	37	-0.25209138	-0.8308106	0.7529794	0.9075161	1	3870	tags=22%, list=19%, signal=27%
+protein targeting to membrane	GO:0006612	GO:0006612	23	-0.2798488	-0.8303231	0.7285862	0.90768707	1	2104	tags=22%, list=10%, signal=24%
+interleukin-1 beta secretion	GO:0050702	GO:0050702	13	-0.32712346	-0.8301376	0.68304914	0.90722525	1	93	tags=8%, list=0%, signal=8%
+positive regulation of chemotaxis	GO:0050921	GO:0050921	12	-0.3331135	-0.8294074	0.69175255	0.9077433	1	279	tags=8%, list=1%, signal=8%
+limb development	GO:0060173	GO:0060173	39	-0.24673188	-0.8290703	0.76431715	0.9075724	1	1376	tags=13%, list=7%, signal=14%
+nucleotide catabolic process	GO:0009166	GO:0009166	27	-0.2688884	-0.8285025	0.7186478	0.90782815	1	2887	tags=22%, list=14%, signal=26%
+coreceptor activity	GO:0015026	GO:0015026	15	-0.31202537	-0.8284622	0.71458334	0.907113	1	3823	tags=20%, list=19%, signal=25%
+chemokine binding	GO:0019956	GO:0019956	29	-0.26526198	-0.8282631	0.7257384	0.90670085	1	1904	tags=14%, list=9%, signal=15%
+intermediate filament cytoskeleton	GO:0045111	GO:0045111	119	-0.20024702	-0.82585526	0.87266356	0.9102898	1	5860	tags=37%, list=29%, signal=52%
+interleukin-8 production	GO:0032637	GO:0032637	13	-0.3285081	-0.82562715	0.7011145	0.90991473	1	250	tags=8%, list=1%, signal=8%
+SNARE binding	GO:0000149	GO:0000149	22	-0.2799628	-0.8251823	0.71770835	0.9099366	1	3615	tags=18%, list=18%, signal=22%
+regulation of JNK cascade	GO:0046328	GO:0046328	21	-0.28690526	-0.82491636	0.72595656	0.9096641	1	5403	tags=48%, list=27%, signal=65%
+inflammatory response	GO:0006954	GO:0006954	292	-0.17812976	-0.8248041	0.97279793	0.9090694	1	2491	tags=13%, list=12%, signal=14%
+sodium ion transport	GO:0006814	GO:0006814	124	-0.1991669	-0.8233878	0.8619102	0.91086143	1	2815	tags=15%, list=14%, signal=18%
+cytolysis	GO:0019835	GO:0019835	20	-0.28728387	-0.819883	0.72757477	0.91629106	1	3638	tags=30%, list=18%, signal=37%
+mononuclear cell proliferation	GO:0032943	GO:0032943	56	-0.22616298	-0.81955504	0.7896951	0.9160908	1	3116	tags=20%, list=15%, signal=23%
+regulation of intracellular transport	GO:0032386	GO:0032386	39	-0.24025394	-0.81800026	0.7730647	0.9179987	1	3695	tags=21%, list=18%, signal=25%
+intermediate filament	GO:0005882	GO:0005882	119	-0.20024702	-0.8172771	0.86471254	0.9184563	1	5860	tags=37%, list=29%, signal=52%
+glutathione metabolic process	GO:0006749	GO:0006749	19	-0.28944233	-0.8170334	0.7352941	0.9180979	1	5533	tags=32%, list=27%, signal=43%
+neurotransmitter transport	GO:0006836	GO:0006836	86	-0.20897692	-0.81651247	0.84556407	0.9182159	1	4731	tags=28%, list=23%, signal=36%
+response to carbohydrate stimulus	GO:0009743	GO:0009743	18	-0.29465976	-0.8142474	0.72736734	0.92139167	1	1608	tags=11%, list=8%, signal=12%
+formation of primary germ layer	GO:0001704	GO:0001704	16	-0.30674523	-0.8140394	0.7248104	0.9209561	1	1957	tags=19%, list=10%, signal=21%
+heterophilic cell adhesion	GO:0007157	GO:0007157	11	-0.3379643	-0.81178755	0.7112245	0.924075	1	2415	tags=18%, list=12%, signal=21%
+MAP kinase activity	GO:0004707	GO:0004707	14	-0.313244	-0.8112115	0.7100712	0.92424643	1	7524	tags=64%, list=37%, signal=102%
+appendage development	GO:0048736	GO:0048736	39	-0.24673188	-0.8108184	0.77661794	0.92413396	1	1376	tags=13%, list=7%, signal=14%
+macromolecular complex disassembly	GO:0032984	GO:0032984	61	-0.22199582	-0.8096904	0.8312571	0.9253123	1	1863	tags=11%, list=9%, signal=13%
+chloride ion binding	GO:0031404	GO:0031404	61	-0.21967626	-0.8094223	0.8267717	0.9249782	1	3096	tags=18%, list=15%, signal=21%
+regulation of cellular catabolic process	GO:0031329	GO:0031329	17	-0.29544073	-0.8081349	0.73755187	0.92635316	1	3870	tags=29%, list=19%, signal=36%
+C-C chemokine binding	GO:0019957	GO:0019957	17	-0.29444534	-0.808083	0.72289157	0.9256494	1	1050	tags=12%, list=5%, signal=12%
+contractile fiber	GO:0043292	GO:0043292	74	-0.20967682	-0.8078087	0.85	0.92532635	1	1033	tags=8%, list=5%, signal=9%
+lymphocyte proliferation	GO:0046651	GO:0046651	55	-0.22729607	-0.80779153	0.8344086	0.9245622	1	3116	tags=20%, list=15%, signal=24%
+protein tetramerization	GO:0051262	GO:0051262	21	-0.2831309	-0.8077908	0.73311895	0.9237757	1	4509	tags=38%, list=22%, signal=49%
+low-density lipoprotein receptor binding	GO:0050750	GO:0050750	11	-0.33010805	-0.8076805	0.698	0.92316675	1	349	tags=9%, list=2%, signal=9%
+regulation of Rho GTPase activity	GO:0032319	GO:0032319	19	-0.28633255	-0.8072013	0.72867423	0.92315465	1	3914	tags=32%, list=19%, signal=39%
+hormone secretion	GO:0046879	GO:0046879	42	-0.23266472	-0.80475724	0.7964135	0.9264447	1	989	tags=10%, list=5%, signal=10%
+reproductive process	GO:0022414	GO:0022414	279	-0.17443441	-0.79994583	0.9717097	0.93344903	1	3401	tags=18%, list=17%, signal=21%
+triacylglycerol lipase activity	GO:0004806	GO:0004806	15	-0.30311263	-0.7980939	0.7241379	0.935624	1	4587	tags=33%, list=23%, signal=43%
+C-C chemokine receptor activity	GO:0016493	GO:0016493	17	-0.29444534	-0.79628855	0.753	0.9377503	1	1050	tags=12%, list=5%, signal=12%
+guanylate kinase activity	GO:0004385	GO:0004385	10	-0.33659816	-0.7955032	0.7081081	0.93816966	1	462	tags=10%, list=2%, signal=10%
+fatty-acid ligase activity	GO:0015645	GO:0015645	10	-0.33708248	-0.7949099	0.71820956	0.93832254	1	255	tags=10%, list=1%, signal=10%
+homophilic cell adhesion	GO:0007156	GO:0007156	119	-0.19626385	-0.7947352	0.9170507	0.9378068	1	3184	tags=17%, list=16%, signal=20%
+anion binding	GO:0043168	GO:0043168	61	-0.21967626	-0.79463303	0.8333333	0.9371675	1	3096	tags=18%, list=15%, signal=21%
+long-chain-fatty-acid-CoA ligase activity	GO:0004467	GO:0004467	10	-0.33708248	-0.7946274	0.7409639	0.9363826	1	255	tags=10%, list=1%, signal=10%
+carboxylesterase activity	GO:0004091	GO:0004091	84	-0.20419207	-0.7934505	0.8786127	0.9373861	1	5148	tags=29%, list=25%, signal=38%
+positive regulation of translation	GO:0045727	GO:0045727	14	-0.3056593	-0.79211074	0.73259336	0.9387551	1	2915	tags=29%, list=14%, signal=33%
+oxidoreductase activity. acting on paired donors, with incorporation or reduction of molecular oxygen, NADH or NADPH as one donor, and incorporation of one atom of oxygen	GO:0016709	GO:0016709	25	-0.25741392	-0.7909494	0.785558	0.9397983	1	1668	tags=12%, list=8%, signal=13%
+cardiac muscle contraction	GO:0060048	GO:0060048	12	-0.31935987	-0.7908689	0.74233127	0.939125	1	8678	tags=67%, list=43%, signal=116%
+sensory perception of smell	GO:0007608	GO:0007608	102	-0.19811203	-0.79053813	0.89491916	0.9388204	1	5989	tags=30%, list=29%, signal=43%
+lysosphingolipid and lysophosphatidic acid receptor activity	GO:0001619	GO:0001619	10	-0.3361246	-0.78845775	0.74217117	0.94125813	1	157	tags=10%, list=1%, signal=10%
+response to molecule of bacterial origin	GO:0002237	GO:0002237	11	-0.32818267	-0.7860681	0.7346491	0.94410914	1	2250	tags=27%, list=11%, signal=31%
+bioactive lipid receptor activity	GO:0045125	GO:0045125	10	-0.3361246	-0.78437084	0.74823767	0.9458326	1	157	tags=10%, list=1%, signal=10%
+regulation of neurological system process	GO:0031644	GO:0031644	35	-0.24136557	-0.78435504	0.79849136	0.94506186	1	2507	tags=11%, list=12%, signal=13%
+T-helper 1 type immune response	GO:0042088	GO:0042088	12	-0.31813657	-0.78346026	0.74925375	0.9456084	1	2546	tags=25%, list=13%, signal=29%
+regulation of S phase of mitotic cell cycle	GO:0007090	GO:0007090	10	-0.33161938	-0.7826322	0.73101264	0.9460523	1	1718	tags=30%, list=8%, signal=33%
+protein catabolic process	GO:0030163	GO:0030163	256	-0.17202328	-0.78011113	0.98194945	0.94898224	1	3640	tags=16%, list=18%, signal=19%
+antigen binding	GO:0003823	GO:0003823	37	-0.23418668	-0.7800891	0.8076063	0.94821304	1	5135	tags=35%, list=25%, signal=47%
+virus-host interaction	GO:0019048	GO:0019048	11	-0.3219261	-0.77843654	0.7603735	0.9497985	1	3870	tags=27%, list=19%, signal=34%
+regulation of hormone secretion	GO:0046883	GO:0046883	30	-0.24819675	-0.77837497	0.80505794	0.9490869	1	989	tags=10%, list=5%, signal=10%
+nucleosome assembly	GO:0006334	GO:0006334	70	-0.207734	-0.7775052	0.8859358	0.94956946	1	5429	tags=30%, list=27%, signal=41%
+complement activation. classical pathway	GO:0006958	GO:0006958	29	-0.2511571	-0.7746398	0.8192771	0.9528918	1	5335	tags=38%, list=26%, signal=51%
+sodium ion binding	GO:0031402	GO:0031402	109	-0.19086932	-0.77455485	0.9282561	0.952219	1	4937	tags=25%, list=24%, signal=33%
+immunoglobulin mediated immune response	GO:0016064	GO:0016064	54	-0.2147177	-0.7726417	0.855914	0.9541576	1	5384	tags=41%, list=26%, signal=55%
+contractile fiber part	GO:0044449	GO:0044449	71	-0.20537935	-0.7716752	0.9060023	0.95468515	1	1033	tags=7%, list=5%, signal=7%
+keratinization	GO:0031424	GO:0031424	22	-0.26281074	-0.7712558	0.79074657	0.95450133	1	3376	tags=18%, list=17%, signal=22%
+cytokine secretion	GO:0050663	GO:0050663	25	-0.2534766	-0.76967865	0.8363832	0.95592725	1	1358	tags=8%, list=7%, signal=9%
+Z disc	GO:0030018	GO:0030018	17	-0.28384918	-0.7688683	0.7860798	0.95626295	1	1033	tags=18%, list=5%, signal=19%
+leukocyte mediated immunity	GO:0002443	GO:0002443	83	-0.20126733	-0.7683136	0.91944146	0.95622444	1	5384	tags=35%, list=26%, signal=47%
+cellular protein localization	GO:0034613	GO:0034613	12	-0.30593115	-0.76800656	0.75159913	0.9558617	1	5583	tags=50%, list=27%, signal=69%
+solute:cation antiporter activity	GO:0015298	GO:0015298	24	-0.2575755	-0.766454	0.8024072	0.95719856	1	3200	tags=25%, list=16%, signal=30%
+calcium channel activity	GO:0005262	GO:0005262	66	-0.20568709	-0.7662888	0.90759075	0.956632	1	7175	tags=44%, list=35%, signal=68%
+GTPase inhibitor activity	GO:0005095	GO:0005095	10	-0.3247085	-0.766131	0.76283365	0.9560492	1	2185	tags=20%, list=11%, signal=22%
+G1 phase	GO:0051318	GO:0051318	15	-0.2950744	-0.7659518	0.7863777	0.95551765	1	1434	tags=13%, list=7%, signal=14%
+positive regulation of MAPKKK cascade	GO:0043410	GO:0043410	25	-0.25946808	-0.76560694	0.8231768	0.9551602	1	3759	tags=32%, list=18%, signal=39%
+protein amino acid O-linked glycosylation	GO:0006493	GO:0006493	22	-0.26085308	-0.7645005	0.8079332	0.9558842	1	6025	tags=41%, list=30%, signal=58%
+threonine endopeptidase activity	GO:0004298	GO:0004298	19	-0.27091447	-0.76360273	0.790224	0.9563266	1	2122	tags=11%, list=10%, signal=12%
+leukocyte homeostasis	GO:0001776	GO:0001776	13	-0.3029457	-0.76313984	0.7665647	0.9561553	1	1358	tags=15%, list=7%, signal=16%
+clathrin coated vesicle membrane	GO:0030665	GO:0030665	25	-0.25546294	-0.76288456	0.81010103	0.9557222	1	5551	tags=36%, list=27%, signal=49%
+regulation of cytokine biosynthetic process	GO:0042035	GO:0042035	64	-0.2075671	-0.7594201	0.8917127	0.959551	1	5556	tags=28%, list=27%, signal=39%
+superoxide metabolic process	GO:0006801	GO:0006801	17	-0.27802217	-0.7592695	0.796576	0.9589652	1	9003	tags=47%, list=44%, signal=84%
+CoA hydrolase activity	GO:0016289	GO:0016289	12	-0.30593866	-0.75901556	0.78790987	0.9585053	1	4967	tags=50%, list=24%, signal=66%
+cytokine metabolic process	GO:0042107	GO:0042107	73	-0.20059592	-0.7586011	0.9089888	0.9582529	1	5556	tags=30%, list=27%, signal=41%
+dynein complex	GO:0030286	GO:0030286	36	-0.23235963	-0.7583545	0.8415133	0.95777094	1	5736	tags=47%, list=28%, signal=66%
+dicarboxylic acid metabolic process	GO:0043648	GO:0043648	16	-0.2864956	-0.75815	0.79141104	0.95724773	1	3659	tags=25%, list=18%, signal=30%
+cell projection membrane	GO:0031253	GO:0031253	12	-0.30201295	-0.75654614	0.7837838	0.9585237	1	284	tags=8%, list=1%, signal=8%
+vesicle docking during exocytosis	GO:0006904	GO:0006904	19	-0.26699147	-0.756481	0.82024795	0.9578294	1	5709	tags=42%, list=28%, signal=58%
+cytoplasmic vesicle part	GO:0044433	GO:0044433	150	-0.17811418	-0.75647926	0.970852	0.9570507	1	5780	tags=32%, list=28%, signal=44%
+olfactory receptor activity	GO:0004984	GO:0004984	91	-0.19228259	-0.7550321	0.9325084	0.9581042	1	5949	tags=30%, list=29%, signal=42%
+gas transport	GO:0015669	GO:0015669	15	-0.28134212	-0.7549017	0.78247094	0.95749027	1	3995	tags=27%, list=20%, signal=33%
+myelination	GO:0042552	GO:0042552	24	-0.25218046	-0.7545129	0.82978725	0.9572159	1	2283	tags=13%, list=11%, signal=14%
+positive regulation of cytokine biosynthetic process	GO:0042108	GO:0042108	41	-0.22399977	-0.75311965	0.8581933	0.95822024	1	2991	tags=15%, list=15%, signal=17%
+polypeptide N-acetylgalactosaminyltransferase activity	GO:0004653	GO:0004653	19	-0.26380417	-0.75286347	0.79470897	0.95775634	1	3226	tags=26%, list=16%, signal=31%
+structural constituent of eye lens	GO:0005212	GO:0005212	17	-0.2726921	-0.74999064	0.8022541	0.96048516	1	4603	tags=29%, list=23%, signal=38%
+connexon complex	GO:0005922	GO:0005922	19	-0.26621848	-0.7495518	0.81061393	0.96022487	1	252	tags=5%, list=1%, signal=5%
+terpenoid metabolic process	GO:0006721	GO:0006721	15	-0.28586146	-0.7471801	0.8152284	0.96235496	1	2621	tags=20%, list=13%, signal=23%
+neuron maturation	GO:0042551	GO:0042551	10	-0.3157882	-0.74716556	0.79048586	0.9615949	1	6300	tags=50%, list=31%, signal=72%
+B cell mediated immunity	GO:0019724	GO:0019724	55	-0.21078463	-0.74693024	0.8950969	0.96109945	1	5384	tags=40%, list=26%, signal=54%
+regulation of chemotaxis	GO:0050920	GO:0050920	13	-0.28978866	-0.74586266	0.80349797	0.9616193	1	279	tags=8%, list=1%, signal=8%
+SH3 domain binding	GO:0017124	GO:0017124	19	-0.26482013	-0.745745	0.83966243	0.96098334	1	4537	tags=37%, list=22%, signal=47%
+muscle cell development	GO:0055001	GO:0055001	12	-0.29443008	-0.7454849	0.793	0.9605449	1	4014	tags=33%, list=20%, signal=42%
+proteoglycan biosynthetic process	GO:0030166	GO:0030166	23	-0.25577638	-0.74524176	0.83831674	0.9600413	1	2803	tags=26%, list=14%, signal=30%
+myofibril assembly	GO:0030239	GO:0030239	11	-0.304805	-0.740494	0.8157068	0.9649024	1	4014	tags=36%, list=20%, signal=45%
+cyclic nucleotide binding	GO:0030551	GO:0030551	21	-0.2604523	-0.7394261	0.83453983	0.9653481	1	6036	tags=38%, list=30%, signal=54%
+regulation of leukocyte activation	GO:0002694	GO:0002694	93	-0.1868644	-0.73601407	0.9529675	0.96847636	1	5180	tags=27%, list=25%, signal=36%
+striated muscle cell development	GO:0055002	GO:0055002	11	-0.304805	-0.73570186	0.81684625	0.9680469	1	4014	tags=36%, list=20%, signal=45%
+deacetylase activity	GO:0019213	GO:0019213	22	-0.25405538	-0.7347757	0.8597046	0.96830785	1	6367	tags=50%, list=31%, signal=73%
+tricarboxylic acid cycle	GO:0006099	GO:0006099	24	-0.24758475	-0.73466223	0.87826085	0.96765476	1	4073	tags=29%, list=20%, signal=36%
+membrane docking	GO:0022406	GO:0022406	26	-0.24571143	-0.73447603	0.8625	0.96708244	1	5709	tags=42%, list=28%, signal=59%
+filopodium	GO:0030175	GO:0030175	13	-0.28837213	-0.72954494	0.8206687	0.9717448	1	1466	tags=15%, list=7%, signal=17%
+regulation of T cell activation	GO:0050863	GO:0050863	68	-0.19474427	-0.72884214	0.94285715	0.9717465	1	5702	tags=29%, list=28%, signal=41%
+ribonucleoside triphosphate biosynthetic process	GO:0009201	GO:0009201	37	-0.21953876	-0.7261883	0.8945652	0.97380036	1	740	tags=8%, list=4%, signal=8%
+purine nucleoside triphosphate metabolic process	GO:0009144	GO:0009144	46	-0.21006101	-0.72618294	0.90705484	0.97302455	1	740	tags=7%, list=4%, signal=7%
+purine ribonucleoside triphosphate metabolic process	GO:0009205	GO:0009205	46	-0.21006101	-0.72594154	0.8956229	0.97250473	1	740	tags=7%, list=4%, signal=7%
+acetyl-CoA catabolic process	GO:0046356	GO:0046356	24	-0.24758475	-0.7258566	0.8751369	0.97182214	1	4073	tags=29%, list=20%, signal=36%
+positive regulation of DNA replication	GO:0045740	GO:0045740	15	-0.27504677	-0.7222286	0.83599573	0.9747764	1	3870	tags=27%, list=19%, signal=33%
+glucosamine metabolic process	GO:0006041	GO:0006041	24	-0.2423978	-0.71949565	0.8652263	0.9767897	1	3318	tags=21%, list=16%, signal=25%
+aging	GO:0007568	GO:0007568	24	-0.24012291	-0.71813893	0.86576486	0.9773671	1	2342	tags=17%, list=12%, signal=19%
+histone deacetylase activity	GO:0004407	GO:0004407	18	-0.2600508	-0.718059	0.84156376	0.9766562	1	5981	tags=50%, list=29%, signal=71%
+icosanoid biosynthetic process	GO:0046456	GO:0046456	29	-0.2286216	-0.71802294	0.8905908	0.97591645	1	6030	tags=45%, list=30%, signal=64%
+amino acid binding	GO:0016597	GO:0016597	14	-0.271679	-0.71690893	0.8532902	0.9762787	1	819	tags=7%, list=4%, signal=7%
+regulation of cell activation	GO:0050865	GO:0050865	96	-0.17985135	-0.71607065	0.97837836	0.97635615	1	5180	tags=27%, list=25%, signal=36%
+collagen metabolic process	GO:0032963	GO:0032963	26	-0.23817348	-0.71542466	0.8627451	0.9762103	1	5043	tags=38%, list=25%, signal=51%
+protein deacetylase activity	GO:0033558	GO:0033558	19	-0.25576422	-0.7148661	0.85729057	0.9759844	1	6367	tags=53%, list=31%, signal=77%
+cytokine biosynthetic process	GO:0042089	GO:0042089	72	-0.19068235	-0.71321934	0.96190476	0.976843	1	5556	tags=29%, list=27%, signal=40%
+membrane coat	GO:0030117	GO:0030117	60	-0.1932775	-0.70765054	0.94209355	0.98142093	1	5570	tags=35%, list=27%, signal=48%
+endoribonuclease activity. producing 3'-phosphomonoesters	GO:0016892	GO:0016892	12	-0.2852024	-0.70563686	0.84418356	0.9825166	1	4552	tags=42%, list=22%, signal=54%
+gap junction	GO:0005921	GO:0005921	24	-0.23372468	-0.705483	0.8760246	0.9818813	1	252	tags=4%, list=1%, signal=4%
+regulation of anti-apoptosis	GO:0045767	GO:0045767	12	-0.28520685	-0.7049317	0.8424305	0.9816113	1	1633	tags=17%, list=8%, signal=18%
+regulation of synaptic plasticity	GO:0048167	GO:0048167	15	-0.26922828	-0.7032527	0.85642064	0.98239034	1	2507	tags=13%, list=12%, signal=15%
+coated membrane	GO:0048475	GO:0048475	60	-0.1932775	-0.7000002	0.9577308	0.98459053	1	5570	tags=35%, list=27%, signal=48%
+transport vesicle membrane	GO:0030658	GO:0030658	21	-0.24494314	-0.6999917	0.88128775	0.9838221	1	5551	tags=43%, list=27%, signal=59%
+sodium:potassium-exchanging ATPase activity	GO:0005391	GO:0005391	10	-0.29276434	-0.6981935	0.8370952	0.9846733	1	581	tags=10%, list=3%, signal=10%
+extrinsic to plasma membrane	GO:0019897	GO:0019897	36	-0.21051665	-0.69665736	0.9196035	0.98524576	1	1069	tags=11%, list=5%, signal=12%
+striated muscle thick filament	GO:0005863	GO:0005863	18	-0.24648425	-0.69386584	0.8736842	0.98691654	1	6879	tags=44%, list=34%, signal=67%
+cysteine-type endopeptidase activity	GO:0004197	GO:0004197	46	-0.20032205	-0.69209164	0.9453552	0.9876857	1	3662	tags=20%, list=18%, signal=24%
+regulation of protein secretion	GO:0050708	GO:0050708	31	-0.21611305	-0.6901026	0.9287257	0.98858285	1	3646	tags=23%, list=18%, signal=27%
+interleukin-2 production	GO:0032623	GO:0032623	19	-0.24497423	-0.6899984	0.8870293	0.9878948	1	5556	tags=26%, list=27%, signal=36%
+extracellular-glutamate-gated ion channel activity	GO:0005234	GO:0005234	19	-0.24735463	-0.689992	0.88287294	0.9871289	1	6795	tags=53%, list=33%, signal=79%
+asymmetric protein localization	GO:0008105	GO:0008105	10	-0.28985474	-0.68933576	0.8428428	0.98689425	1	518	tags=10%, list=3%, signal=10%
+ubiquitin protein ligase binding	GO:0031625	GO:0031625	12	-0.27275178	-0.6878294	0.8411215	0.9873845	1	3993	tags=33%, list=20%, signal=41%
+actin filament-based movement	GO:0030048	GO:0030048	23	-0.23561604	-0.6877321	0.9062159	0.9866889	1	3188	tags=22%, list=16%, signal=26%
+taste receptor activity	GO:0008527	GO:0008527	13	-0.267458	-0.68712986	0.8668122	0.98639953	1	692	tags=8%, list=3%, signal=8%
+myosin filament	GO:0032982	GO:0032982	18	-0.24648425	-0.68612933	0.9008351	0.986421	1	6879	tags=44%, list=34%, signal=67%
+regulation of myeloid leukocyte differentiation	GO:0002761	GO:0002761	16	-0.2601113	-0.6860275	0.87927353	0.98572373	1	160	tags=6%, list=1%, signal=6%
+coenzyme catabolic process	GO:0009109	GO:0009109	27	-0.22474506	-0.6853851	0.90973634	0.9854568	1	4073	tags=30%, list=20%, signal=37%
+ligand-gated ion channel activity	GO:0015276	GO:0015276	94	-0.17362942	-0.6850138	0.99004424	0.9849722	1	3686	tags=20%, list=18%, signal=25%
+phosphate transmembrane transporter activity	GO:0015114	GO:0015114	13	-0.2660123	-0.68454397	0.87066245	0.9846149	1	409	tags=8%, list=2%, signal=8%
+negative regulation of transport	GO:0051051	GO:0051051	34	-0.20948721	-0.68100446	0.9324474	0.9866578	1	2324	tags=12%, list=11%, signal=13%
+plasma membrane organization and biogenesis	GO:0007009	GO:0007009	11	-0.27526167	-0.6799331	0.8691983	0.98671013	1	2678	tags=18%, list=13%, signal=21%
+ligand-gated channel activity	GO:0022834	GO:0022834	94	-0.17362942	-0.67991465	0.98888886	0.9859597	1	3686	tags=20%, list=18%, signal=25%
+mannosidase activity	GO:0015923	GO:0015923	15	-0.2571477	-0.6797287	0.8887734	0.985331	1	4202	tags=40%, list=21%, signal=50%
+retinol dehydrogenase activity	GO:0004745	GO:0004745	10	-0.28893214	-0.678769	0.86585367	0.98527914	1	2383	tags=20%, list=12%, signal=23%
+ER to Golgi vesicle-mediated transport	GO:0006888	GO:0006888	36	-0.20665643	-0.67545635	0.9388412	0.9870265	1	4757	tags=28%, list=23%, signal=36%
+plasma membrane fusion	GO:0045026	GO:0045026	12	-0.26656988	-0.67433727	0.87355113	0.9871215	1	5246	tags=42%, list=26%, signal=56%
+protein phosphatase binding	GO:0019903	GO:0019903	14	-0.25955215	-0.67372024	0.8878101	0.98681915	1	4234	tags=29%, list=21%, signal=36%
+keratin filament	GO:0045095	GO:0045095	31	-0.21057266	-0.6661015	0.94050103	0.9915526	1	5859	tags=35%, list=29%, signal=50%
+transferase activity. transferring amino-acyl groups	GO:0016755	GO:0016755	17	-0.24474435	-0.66282684	0.898167	0.9930491	1	5496	tags=35%, list=27%, signal=48%
+nerve-nerve synaptic transmission	GO:0007270	GO:0007270	20	-0.23154452	-0.6616472	0.9171039	0.99308264	1	6193	tags=35%, list=30%, signal=50%
+positive regulation of cellular catabolic process	GO:0031331	GO:0031331	11	-0.27417043	-0.66102993	0.8751259	0.9927317	1	5018	tags=36%, list=25%, signal=48%
+mannose binding	GO:0005537	GO:0005537	12	-0.26385745	-0.6596021	0.88416576	0.9929771	1	14967	tags=100%, list=74%, signal=379%
+proteoglycan metabolic process	GO:0006029	GO:0006029	32	-0.20581788	-0.6585195	0.9335512	0.9929201	1	2803	tags=22%, list=14%, signal=25%
+striated muscle contraction	GO:0006941	GO:0006941	48	-0.18791735	-0.65840584	0.97945946	0.9922244	1	6932	tags=40%, list=34%, signal=60%
+viral reproduction	GO:0016032	GO:0016032	67	-0.1732383	-0.6570262	0.9831081	0.9924114	1	3401	tags=18%, list=17%, signal=21%
+detection of light stimulus	GO:0009583	GO:0009583	28	-0.21447663	-0.6563682	0.9470199	0.99209106	1	3359	tags=21%, list=17%, signal=26%
+receptor antagonist activity	GO:0048019	GO:0048019	10	-0.27328974	-0.6563159	0.88386434	0.99136615	1	2200	tags=20%, list=11%, signal=22%
+receptor inhibitor activity	GO:0030547	GO:0030547	10	-0.27328974	-0.65471524	0.8799172	0.9916737	1	2200	tags=20%, list=11%, signal=22%
+nicotinic acetylcholine-activated cation-selective channel activity	GO:0004889	GO:0004889	16	-0.24423234	-0.6508608	0.9069069	0.99336505	1	5782	tags=44%, list=28%, signal=61%
+metallopeptidase activity	GO:0008237	GO:0008237	152	-0.15346077	-0.6502595	1	0.9929867	1	5354	tags=24%, list=26%, signal=32%
+synaptic transmission. cholinergic	GO:0007271	GO:0007271	14	-0.25289983	-0.6488031	0.90119433	0.9931253	1	7138	tags=43%, list=35%, signal=66%
+generation of precursor metabolites and energy	GO:0006091	GO:0006091	237	-0.14475328	-0.6481474	1	0.9927571	1	5314	tags=20%, list=26%, signal=27%
+flagellum	GO:0019861	GO:0019861	31	-0.20696133	-0.64807034	0.94882727	0.9920436	1	8466	tags=55%, list=42%, signal=94%
+intrinsic to peroxisomal membrane	GO:0031231	GO:0031231	12	-0.26017934	-0.6480273	0.8981481	0.99131316	1	5056	tags=42%, list=25%, signal=55%
+acetyl-CoA metabolic process	GO:0006084	GO:0006084	27	-0.21087477	-0.63862246	0.9530055	0.99603593	1	4713	tags=30%, list=23%, signal=39%
+cullin-RING ubiquitin ligase complex	GO:0031461	GO:0031461	12	-0.25561884	-0.6384454	0.9032922	0.9953763	1	3993	tags=33%, list=20%, signal=41%
+positive regulation of NF-kappaB transcription factor activity	GO:0051092	GO:0051092	24	-0.2165844	-0.6368805	0.9390642	0.99548346	1	6175	tags=42%, list=30%, signal=60%
+integral to peroxisomal membrane	GO:0005779	GO:0005779	12	-0.26017934	-0.6359082	0.9123343	0.99525535	1	5056	tags=42%, list=25%, signal=55%
+AMP binding	GO:0016208	GO:0016208	16	-0.23343854	-0.6345551	0.92124355	0.99523455	1	4383	tags=25%, list=22%, signal=32%
+transcription elongation regulator activity	GO:0003711	GO:0003711	20	-0.22421023	-0.6319058	0.94827586	0.99589103	1	3421	tags=25%, list=17%, signal=30%
+positive regulation of catabolic process	GO:0009896	GO:0009896	16	-0.23414136	-0.6318935	0.92454726	0.9951407	1	5018	tags=31%, list=25%, signal=41%
+hyaluronic acid binding	GO:0005540	GO:0005540	17	-0.23049873	-0.6302871	0.9190871	0.9952403	1	4902	tags=35%, list=24%, signal=46%
+ATP synthesis coupled proton transport	GO:0015986	GO:0015986	18	-0.22663733	-0.629373	0.9255102	0.9949772	1	556	tags=6%, list=3%, signal=6%
+regulation of neurotransmitter secretion	GO:0046928	GO:0046928	14	-0.24240705	-0.6291193	0.92773646	0.99435955	1	5782	tags=36%, list=28%, signal=50%
+ion gated channel activity	GO:0022839	GO:0022839	13	-0.24713117	-0.6280109	0.92894465	0.99416035	1	1506	tags=15%, list=7%, signal=17%
+voltage-gated chloride channel activity	GO:0005247	GO:0005247	16	-0.23367694	-0.62789977	0.9294478	0.99346906	1	6628	tags=38%, list=33%, signal=56%
+T cell receptor complex	GO:0042101	GO:0042101	12	-0.25318322	-0.62665004	0.91468257	0.9933692	1	4914	tags=25%, list=24%, signal=33%
+voltage-gated sodium channel activity	GO:0005248	GO:0005248	15	-0.23867716	-0.6261866	0.9231579	0.9928741	1	8722	tags=60%, list=43%, signal=105%
+receptor signaling complex scaffold activity	GO:0030159	GO:0030159	17	-0.22750472	-0.6259275	0.94105893	0.99225515	1	6174	tags=53%, list=30%, signal=76%
+gluconeogenesis	GO:0006094	GO:0006094	23	-0.20937248	-0.6230057	0.95253503	0.9929754	1	3729	tags=22%, list=18%, signal=27%
+cAMP-dependent protein kinase regulator activity	GO:0008603	GO:0008603	13	-0.24329329	-0.6218907	0.9185336	0.9927833	1	3742	tags=23%, list=18%, signal=28%
+gastrulation	GO:0007369	GO:0007369	24	-0.21242785	-0.6216212	0.95310795	0.99217254	1	628	tags=8%, list=3%, signal=9%
+energy coupled proton transport. down electrochemical gradient	GO:0015985	GO:0015985	18	-0.22663733	-0.6211979	0.9290188	0.9916395	1	556	tags=6%, list=3%, signal=6%
+regulation of specific transcription from RNA polymerase II promoter	GO:0010551	GO:0010551	11	-0.25412214	-0.620676	0.91343284	0.99114776	1	1894	tags=18%, list=9%, signal=20%
+pituitary gland development	GO:0021983	GO:0021983	12	-0.24487442	-0.61743397	0.9166667	0.99195576	1	1894	tags=17%, list=9%, signal=18%
+hydrogen ion transmembrane transporter activity	GO:0015078	GO:0015078	95	-0.15637149	-0.6170323	1	0.9913904	1	3220	tags=11%, list=16%, signal=12%
+aerobic respiration	GO:0009060	GO:0009060	34	-0.18893312	-0.61375153	0.9674134	0.992174	1	4073	tags=21%, list=20%, signal=26%
+specific transcription from RNA polymerase II promoter	GO:0032569	GO:0032569	11	-0.25412214	-0.61024076	0.9283489	0.9929789	1	1894	tags=18%, list=9%, signal=20%
+multicellular organismal homeostasis	GO:0048871	GO:0048871	23	-0.20318756	-0.6096464	0.9627715	0.99248797	1	3882	tags=17%, list=19%, signal=21%
+tissue homeostasis	GO:0001894	GO:0001894	23	-0.20318756	-0.6095514	0.95496416	0.9917987	1	3882	tags=17%, list=19%, signal=21%
+histidine metabolic process	GO:0006547	GO:0006547	11	-0.250369	-0.6093431	0.92436975	0.99115103	1	3104	tags=18%, list=15%, signal=21%
+histidine family amino acid metabolic process	GO:0009075	GO:0009075	11	-0.250369	-0.60902387	0.9286475	0.99055386	1	3104	tags=18%, list=15%, signal=21%
+complement activation. alternative pathway	GO:0006957	GO:0006957	14	-0.23760404	-0.6073676	0.9597938	0.990519	1	3424	tags=21%, list=17%, signal=26%
+diencephalon development	GO:0021536	GO:0021536	14	-0.23553532	-0.6054488	0.93636364	0.9906238	1	1894	tags=14%, list=9%, signal=16%
+positive regulation of multicellular organism growth	GO:0040018	GO:0040018	12	-0.24044892	-0.5927153	0.9384164	0.99490243	1	8549	tags=75%, list=42%, signal=129%
+protein complex scaffold	GO:0032947	GO:0032947	19	-0.21241553	-0.5925663	0.95920503	0.99422437	1	6174	tags=47%, list=30%, signal=68%
+tropomyosin binding	GO:0005523	GO:0005523	13	-0.23039433	-0.58509284	0.94885176	0.9962238	1	15647	tags=100%, list=77%, signal=434%
+regulation of chemokine biosynthetic process	GO:0045073	GO:0045073	10	-0.24473852	-0.57799834	0.9405352	0.99787307	1	5384	tags=40%, list=26%, signal=54%
+lysine N-methyltransferase activity	GO:0016278	GO:0016278	26	-0.18905182	-0.5772921	0.9714889	0.997376	1	4704	tags=27%, list=23%, signal=35%
+eye morphogenesis	GO:0048592	GO:0048592	22	-0.19832152	-0.5765037	0.9710145	0.99690306	1	3936	tags=18%, list=19%, signal=23%
+protein-lysine N-methyltransferase activity	GO:0016279	GO:0016279	26	-0.18905182	-0.57219213	0.9718457	0.9975543	1	4704	tags=27%, list=23%, signal=35%
+positive regulation of transcription factor activity	GO:0051091	GO:0051091	32	-0.17928782	-0.57042015	0.98911864	0.99735326	1	6175	tags=41%, list=30%, signal=58%
+histone-lysine N-methyltransferase activity	GO:0018024	GO:0018024	26	-0.18905182	-0.56917614	0.9832461	0.9969838	1	4704	tags=27%, list=23%, signal=35%
+camera-type eye morphogenesis	GO:0048593	GO:0048593	11	-0.2331552	-0.5624856	0.9608247	0.99819523	1	3563	tags=18%, list=18%, signal=22%
+cell-cell junction assembly and maintenance	GO:0045216	GO:0045216	19	-0.20175573	-0.5584015	0.9816216	0.9985971	1	7776	tags=58%, list=38%, signal=94%
+regulation of lymphocyte differentiation	GO:0045619	GO:0045619	28	-0.17569028	-0.54880875	0.99176955	1	1	7373	tags=43%, list=36%, signal=67%
+hydrogen ion transporting ATPase activity. rotational mechanism	GO:0046961	GO:0046961	30	-0.17333746	-0.5434418	0.9925532	1	1	8555	tags=43%, list=42%, signal=75%
+voltage-gated sodium channel complex	GO:0001518	GO:0001518	12	-0.21860069	-0.54207295	0.96825397	1	1	6844	tags=42%, list=34%, signal=63%
+monovalent inorganic cation transmembrane transporter activity	GO:0015077	GO:0015077	106	-0.13155642	-0.529276	1	1	1	1236	tags=5%, list=6%, signal=5%
+osteoclast differentiation	GO:0030316	GO:0030316	10	-0.22270761	-0.5292087	0.9608434	1	1	5351	tags=30%, list=26%, signal=41%
+chemokine metabolic process	GO:0050755	GO:0050755	11	-0.22016372	-0.5287805	0.9717624	1	1	5384	tags=36%, list=26%, signal=49%
+sperm-egg recognition	GO:0035036	GO:0035036	13	-0.20549908	-0.5285462	0.9651282	1	1	4175	tags=23%, list=21%, signal=29%
+chemokine biosynthetic process	GO:0042033	GO:0042033	11	-0.22016372	-0.52433145	0.9780439	1	1	5384	tags=36%, list=26%, signal=49%
+binding of sperm to zona pellucida	GO:0007339	GO:0007339	13	-0.20549908	-0.52354157	0.9786553	0.9998734	1	4175	tags=23%, list=21%, signal=29%
+pyruvate metabolic process	GO:0006090	GO:0006090	26	-0.17233574	-0.5206714	0.99234974	0.9996613	1	3729	tags=19%, list=18%, signal=24%
+aminopeptidase activity	GO:0004177	GO:0004177	20	-0.18273303	-0.51708543	0.9850587	0.99955416	1	3251	tags=15%, list=16%, signal=18%
+oxidoreductase activity. acting on NADH or NADPH	GO:0016651	GO:0016651	67	-0.13995458	-0.51518613	1	0.99913925	1	2294	tags=7%, list=11%, signal=8%
+cell wall catabolic process	GO:0016998	GO:0016998	14	-0.19683461	-0.5137959	0.9755058	0.9986447	1	6983	tags=43%, list=34%, signal=65%
+external encapsulating structure organization and biogenesis	GO:0045229	GO:0045229	17	-0.18345977	-0.5014617	0.98704106	0.9998355	1	6983	tags=41%, list=34%, signal=63%
+cell-cell recognition	GO:0009988	GO:0009988	15	-0.19047345	-0.501168	0.97724813	0.9991504	1	4175	tags=20%, list=21%, signal=25%
+cell wall metabolic process	GO:0010382	GO:0010382	15	-0.18619214	-0.49295875	0.98024946	0.99951625	1	6983	tags=40%, list=34%, signal=61%
+cell wall organization and biogenesis	GO:0007047	GO:0007047	15	-0.18619214	-0.48722628	0.98476607	0.9995146	1	6983	tags=40%, list=34%, signal=61%
+positive regulation of nitric oxide biosynthetic process	GO:0045429	GO:0045429	11	-0.1988186	-0.48471838	0.975435	0.9990901	1	16288	tags=100%, list=80%, signal=503%
+synaptogenesis	GO:0007416	GO:0007416	25	-0.15861988	-0.47075313	0.9989035	0.99983233	1	1661	tags=8%, list=8%, signal=9%
+vacuolar transport	GO:0007034	GO:0007034	22	-0.15995362	-0.46654835	0.9938208	0.9994951	1	7845	tags=45%, list=39%, signal=74%
+intermediate filament-based process	GO:0045103	GO:0045103	13	-0.17839774	-0.4555014	0.9917611	0.9996456	1	7801	tags=54%, list=38%, signal=87%
+calcium ion-dependent exocytosis	GO:0017156	GO:0017156	13	-0.17461725	-0.4449745	0.99486125	0.9996445	1	16780	tags=100%, list=83%, signal=573%
+delayed rectifier potassium channel activity	GO:0005251	GO:0005251	12	-0.16995662	-0.41969907	0.9969325	1	1	4814	tags=25%, list=24%, signal=33%
+muscle filament sliding	GO:0030049	GO:0030049	11	-0.15269679	-0.36591688	0.9989827	1	1	8350	tags=64%, list=41%, signal=108%
+actin-myosin filament sliding	GO:0033275	GO:0033275	11	-0.15269679	-0.36337855	1	0.99984556	1	8350	tags=64%, list=41%, signal=108%
