@@ -164,7 +164,7 @@ public class VisualizeEnrichmentMapTask implements Task {
                 CyAttributes nodeAttrs = Cytoscape.getNodeAttributes();
                 nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.GS_DESCR, gs.getDescription());
 
-                //create an attribute that stores the genes that are associted with this node as an attribute list
+                //create an attribute that stores the genes that are associated with this node as an attribute list
                 //only create the list if the hashkey 2 genes is not null Otherwise it take too much time to populate the list
                 if(params.getHashkey2gene() != null){
                         List gene_list = new ArrayList();
@@ -264,12 +264,12 @@ public class VisualizeEnrichmentMapTask implements Task {
                 }
             }
             int k = 0;
-            //iterate through the similiarities to create the edges
+            //iterate through the similarities to create the edges
             for(Iterator j = geneset_similarities.keySet().iterator(); j.hasNext(); ){
               String current_name =j.next().toString();
               GenesetSimilarity current_result = (GenesetSimilarity) geneset_similarities.get(current_name);
 
-              //only create edges where the jaccard coeffecient to great than
+              //only create edges where the jaccard coefficient to great than
                 if(current_result.getJaccard_coeffecient()>params.getJaccardCutOff()){
                     Node node1 = Cytoscape.getCyNode(current_result.getGeneset1_Name(),false);
                     Node node2 = Cytoscape.getCyNode(current_result.getGeneset2_Name(),false);
@@ -283,8 +283,8 @@ public class VisualizeEnrichmentMapTask implements Task {
                     edgeAttrs.setAttribute(edge.getIdentifier(), prefix+EnrichmentMapVisualStyle.JACCARD_COEFFECIENT, current_result.getJaccard_coeffecient());
                     edgeAttrs.setAttribute(edge.getIdentifier(), prefix+ EnrichmentMapVisualStyle.OVERLAP_SIZE, current_result.getSizeOfOverlap());
 
-                    //create an attribute that stores the genes that are associted with this edge as an attribute list
-                    //only create the list if the hashkey 2 genes is not null Otherwise it take too mush time to populate the list
+                    //create an attribute that stores the genes that are associated with this edge as an attribute list
+                    //only create the list if the hashkey 2 genes is not null Otherwise it take too much time to populate the list
                     if(params.getHashkey2gene() != null){
                         List gene_list = new ArrayList();
                         HashSet genes_hash = current_result.getOverlapping_genes();
@@ -295,7 +295,7 @@ public class VisualizeEnrichmentMapTask implements Task {
                                 gene_list.add(gene);
                         }
 
-                        edgeAttrs.setListAttribute(edge.getIdentifier(), prefix+EnrichmentMapVisualStyle.OVERALP_GENES, gene_list);
+                        edgeAttrs.setListAttribute(edge.getIdentifier(), prefix+EnrichmentMapVisualStyle.OVERLAP_GENES, gene_list);
                     }
 
                 }
@@ -454,7 +454,7 @@ public class VisualizeEnrichmentMapTask implements Task {
    }
 
 
-    private String formatLabel(String label){
+    static String formatLabel(String label){
        String formattedLabel = "";
 
        int i = 0;

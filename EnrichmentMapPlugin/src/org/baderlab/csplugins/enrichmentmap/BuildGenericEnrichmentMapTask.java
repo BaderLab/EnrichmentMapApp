@@ -56,6 +56,8 @@ import java.util.HashMap;
  * Time: 9:45:04 AM
  */
 public class BuildGenericEnrichmentMapTask implements Task {
+    //TODO: check if obsolete after moving to new UI (in SidePanel)
+    
     // Keep track of progress for monitoring:
     private int maxValue;
     private TaskMonitor taskMonitor = null;

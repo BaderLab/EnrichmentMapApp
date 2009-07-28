@@ -60,7 +60,7 @@ public class ComputeSimilarityTask implements Task {
 
     private EnrichmentMapParameters params;
 
-    private HashMap geneset_similarities;
+    private HashMap<String, GenesetSimilarity> geneset_similarities;
 
     // Keep track of progress for monitoring:
     private TaskMonitor taskMonitor = null;
@@ -74,7 +74,7 @@ public class ComputeSimilarityTask implements Task {
 
     public ComputeSimilarityTask(EnrichmentMapParameters params) {
         this.params = params;
-        geneset_similarities = new HashMap();
+        geneset_similarities = new HashMap<String, GenesetSimilarity>();
     }
 
     public boolean computeMap(){
@@ -126,8 +126,8 @@ public class ComputeSimilarityTask implements Task {
                          GeneSet geneset1 = (GeneSet)genesetsOfInterest.get(geneset1_name);
                          GeneSet geneset2 = (GeneSet)genesetsOfInterest.get(geneset2_name);
 
-                         HashSet genes1 = geneset1.getGenes();
-                         HashSet genes2 = geneset2.getGenes();
+                         HashSet<Integer> genes1 = geneset1.getGenes();
+                         HashSet<Integer> genes2 = geneset2.getGenes();
 
                         //Get the intersection
                          Set<Integer> intersection = new HashSet<Integer>(genes1);
@@ -182,7 +182,7 @@ public class ComputeSimilarityTask implements Task {
        return true;
     }
 
-    public HashMap getGeneset_similarities() {
+    public HashMap<String, GenesetSimilarity> getGeneset_similarities() {
         return geneset_similarities;
     }
 

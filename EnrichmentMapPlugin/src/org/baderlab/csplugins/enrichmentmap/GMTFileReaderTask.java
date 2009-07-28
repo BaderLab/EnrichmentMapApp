@@ -58,28 +58,32 @@ import java.io.IOException;
  */
 
 /* GMTFileReader
-*  given a GMT file name this class creates a set of genesets as generated from the GMT file.
-*/
+ *  given a GMT file name this class creates a set of genesets as generated from the GMT file.
+ */
 public class GMTFileReaderTask implements Task {
 
     private EnrichmentMapParameters params;
 
     private String GMTFileName;
-    private HashMap genes;
+    private HashMap<String, Integer> genes;
     private HashMap hashkey2gene;
 
     private String fullText;
     private String [] lines;
 
-    private HashMap genesets ;
+    private HashMap<String,GeneSet> genesets ;
 
     // Keep track of progress for monitoring:
     private int maxValue;
     private TaskMonitor taskMonitor = null;
     private boolean interrupted = false;
 
-
-     public GMTFileReaderTask(EnrichmentMapParameters params, TaskMonitor taskMonitor) {
+    /**
+     * constructor
+     * @param params
+     * @param taskMonitor
+     */
+    public GMTFileReaderTask(EnrichmentMapParameters params, TaskMonitor taskMonitor) {
         this(params);
         this.taskMonitor = taskMonitor;
     }
@@ -95,70 +99,107 @@ public class GMTFileReaderTask implements Task {
 
         //open GMT file
 
-         TextFileReader reader = new TextFileReader(GMTFileName);
-         reader.read();
-         fullText = reader.getText();
+        TextFileReader reader = new TextFileReader(GMTFileName);
+        reader.read();
+        fullText = reader.getText();
 
+        lines = fullText.split("\n");
+    }
+
+    // for BuildDiseaseSignatureTask
+    public GMTFileReaderTask(PostAnalysisParameters params, TaskMonitor taskMonitor, int genesets_file) {
+        this(params, genesets_file);
+        this.taskMonitor = taskMonitor;
+    }
+    
+    public GMTFileReaderTask(PostAnalysisParameters params, int genesets_file)   {
+        this.params = params;
+        this.genes = params.getGenes();
+        this.hashkey2gene = params.getHashkey2gene();
+        
+        if (genesets_file == 1) {
+            //open signature-GMT file
+            this.GMTFileName = params.getGMTFileName();
+            this.genesets = params.getGenesets();
+        }
+        else {
+            //open signature-GMT file
+            this.GMTFileName = params.getSignatureGMTFileName();
+            this.genesets = params.getSignatureGenesets();
+        }
+		
+        TextFileReader reader = new TextFileReader(GMTFileName);
+        reader.read();
+		fullText = reader.getText();
 
         lines = fullText.split("\n");
 
     }
 
+    //invoked by run() 
     public void parse() {
         int currentProgress = 0;
         maxValue = lines.length;
-        for (int i = 0; i < lines.length; i++) {
-            String line = lines[i];
+        try {
+            for (int i = 0; i < lines.length; i++) {
+                if (interrupted)
+                    throw new InterruptedException();
+                
+                String line = lines[i];
 
-            String [] tokens = line.split("\t");
+                String[] tokens = line.split("\t");
 
-            //The first column of the file is the name of the geneset
-            String Name = tokens[0].toUpperCase().trim();
+                //The first column of the file is the name of the geneset
+                String Name = tokens[0].toUpperCase().trim();
 
-            //The second column of the file is the description of the geneset
-            String description = tokens[1].trim();
+                //The second column of the file is the description of the geneset
+                String description = tokens[1].trim();
 
-            //create an object of type Geneset with the above Name and description
-            GeneSet gs = new GeneSet(Name, description);
+                //create an object of type Geneset with the above Name and description
+                GeneSet gs = new GeneSet(Name, description);
 
-            // Calculate Percentage.  This must be a value between 0..100.
-            int percentComplete = (int) (((double) currentProgress / maxValue) * 100);
-            //  Estimate Time Remaining
-            long timeRemaining = maxValue - currentProgress;
-            if (taskMonitor != null) {
+                // Calculate Percentage.  This must be a value between 0..100.
+                int percentComplete = (int) (((double) currentProgress / maxValue) * 100);
+                //  Estimate Time Remaining
+                long timeRemaining = maxValue - currentProgress;
+                if (taskMonitor != null) {
                     taskMonitor.setPercentCompleted(percentComplete);
-                    taskMonitor.setStatus("Parsing GMT file " + currentProgress + " of " + maxValue);
+                    taskMonitor.setStatus("Parsing GMT file " + currentProgress
+                            + " of " + maxValue);
                     taskMonitor.setEstimatedTimeRemaining(timeRemaining);
                 }
-            currentProgress++;
+                currentProgress++;
 
-            //All subsequent fields in the list are the geneset associated with this geneset.
-            for(int j = 2; j < tokens.length ; j++){
+                //All subsequent fields in the list are the geneset associated with this geneset.
+                for (int j = 2; j < tokens.length; j++) {
 
-                //Check to see if the gene is already in the hashmap of genes
-                //if it is already in the hash then get its associated key and put it
-                //into the set of genes
-                if(genes.containsKey(tokens[j])){
-                   gs.addGene((Integer)genes.get(tokens[j]));
+                    //Check to see if the gene is already in the hashmap of genes
+                    //if it is already in the hash then get its associated key and put it
+                    //into the set of genes
+                    if (genes.containsKey(tokens[j])) {
+                        gs.addGene((Integer) genes.get(tokens[j]));
+                    }
+
+                    //If the gene is not in the list then get the next value to be used and put it in the list
+                    else{
+                        //add the gene to the master list of genes
+                        int value = params.getNumberOfGenes();
+                        genes.put(tokens[j], value);
+                        hashkey2gene.put(value,tokens[j]);
+                        params.setNumberOfGenes(value+1);
+
+                        //add the gene to the genelist
+                        gs.addGene((Integer) genes.get(tokens[j]));
+                    }
                 }
 
-                //If the gene is not in the list then get the next value to be used and put it in the list
-                else{
-                  //add the gene to the master list of genes
-                  int value = params.getNumberOfGenes();
-                  genes.put(tokens[j], value);
-                  hashkey2gene.put(value,tokens[j]);
-                  params.setNumberOfGenes(value+1);
+                //finished parsing that geneset
+                //add the current geneset to the hashmap of genesets
+                genesets.put(Name, gs);
 
-                  //add the gene to the genelist
-                  gs.addGene((Integer)genes.get(tokens[j]));
-                }
             }
-
-            //finished parsing that geneset
-            //add the current geneset to the hashmap of genesets
-            genesets.put(Name, gs);
-
+        } catch (InterruptedException e) {
+            taskMonitor.setException(e, "Loading of GMT file cancelled");
         }
 
 
@@ -166,7 +207,7 @@ public class GMTFileReaderTask implements Task {
 
 
 
- /**
+    /**
      * Run the Task.
      */
     public void run() {

@@ -65,6 +65,7 @@ import java.awt.*;
  * */
 
 public class GSEAInputFilesPanelMac extends GenericInputFilesPanel {
+    //TODO: check if obsolete after moving to new UI (in SidePanel)
 
 
     /*--------------------------------------------------------------
