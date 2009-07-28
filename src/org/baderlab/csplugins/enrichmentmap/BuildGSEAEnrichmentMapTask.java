@@ -69,7 +69,7 @@ public class BuildGSEAEnrichmentMapTask implements Task {
 
     public BuildGSEAEnrichmentMapTask( EnrichmentMapParameters params) {
 
-        //create a new instance of the paramaters and copy the version received from the input
+        //create a new instance of the parameters and copy the version received from the input
         //window into this new instance.
         this.params = new EnrichmentMapParameters(params);
 
@@ -108,8 +108,8 @@ public class BuildGSEAEnrichmentMapTask implements Task {
                 //trim the genesets to only contain the genes that are in the data file.
                 params.filterGenesets();
 
-                //checkt to make sure that after filtering there are still genes in the genesets
-                //if there aren't any genes it could mean that the ids don't match or it could mean none
+                //check to make sure that after filtering there are still genes in the genesets
+                //if there aren't any genes it could mean that the IDs don't match or it could mean none
                 //of the genes in the expression file are in the specified genesets.
                 if(!params.checkGenesets())
                     throw new IllegalThreadStateException("No genes in the expression file are found in the GMT file ");

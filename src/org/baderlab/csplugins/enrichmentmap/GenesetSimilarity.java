@@ -56,18 +56,37 @@ public class GenesetSimilarity {
 
     private String geneset1_Name;
     private String geneset2_Name;
+    
+    private String interaction_type;
 
     private double jaccard_coeffecient;
+    private double hypergeom_pvalue;
 
     private HashSet<Integer> overlapping_genes;
+
+    public GenesetSimilarity(String geneset1_Name, String geneset2_Name, double jaccard_coeffecient,double hypergeom_pvalue, String interaction_type, HashSet<Integer> overlapping_genes) {
+        this.geneset1_Name = geneset1_Name;
+        this.geneset2_Name = geneset2_Name;
+        this.jaccard_coeffecient = jaccard_coeffecient;
+        this.hypergeom_pvalue = hypergeom_pvalue;
+        
+        this.overlapping_genes = overlapping_genes;
+        this.interaction_type = interaction_type;
+    }
 
     public GenesetSimilarity(String geneset1_Name, String geneset2_Name, double jaccard_coeffecient, HashSet<Integer> overlapping_genes) {
         this.geneset1_Name = geneset1_Name;
         this.geneset2_Name = geneset2_Name;
         this.jaccard_coeffecient = jaccard_coeffecient;
         this.overlapping_genes = overlapping_genes;
+        //use defaults:
+        this.hypergeom_pvalue = -1.0;
+        this.interaction_type = EnrichmentMapParameters.ENRICHMENT_INTERACTION_TYPE;
     }
 
+    /*TODO: Check if this constructor can be deleted.
+     * => since revision [214] GenesetSimilarities are no longer stored in the Session File. 
+     */
     //create a new object from an array of strings extracted from a file
     public GenesetSimilarity(String[] tokens){
         //make sure there is sufficient number of items in the row.
@@ -102,12 +121,40 @@ public class GenesetSimilarity {
         this.geneset2_Name = geneset2_Name;
     }
 
+    /**
+     * @param set the Interaction Type
+     */
+    public void setInteractionType(String interaction_type) {
+        this.interaction_type = interaction_type;
+    }
+
+    /**
+     * @return the Interaction Type
+     */
+    public String getInteractionType() {
+        return interaction_type;
+    }
+
     public double getJaccard_coeffecient() {
         return jaccard_coeffecient;
     }
 
     public void setJaccard_coeffecient(double jaccard_coeffecient) {
         this.jaccard_coeffecient = jaccard_coeffecient;
+    }
+
+    /**
+     * @param hypergeometric_pvalue the hypergeometric_pvalue to set
+     */
+    public void setHypergeom_pvalue(double hypergeometric_pvalue) {
+        this.hypergeom_pvalue = hypergeometric_pvalue;
+    }
+
+    /**
+     * @return the hypergeometric_pvalue
+     */
+    public double getHypergeom_pvalue() {
+        return hypergeom_pvalue;
     }
 
     public HashSet<Integer> getOverlapping_genes() {
@@ -122,6 +169,9 @@ public class GenesetSimilarity {
         return overlapping_genes.size();
     }
 
+    /*TODO: Check if this toString-Function can be deleted.
+     * => since revision [214] GenesetSimilarities are no longer stored in the Session File. 
+     */
     public String toString(){
         String similarity = "";
 

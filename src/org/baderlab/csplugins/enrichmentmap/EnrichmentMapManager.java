@@ -66,6 +66,7 @@ public class EnrichmentMapManager implements PropertyChangeListener {
     private static EnrichmentMapManager manager = null;
 
     private HashMap<String,EnrichmentMapParameters> cyNetworkList;
+    private HashMap<String,PostAnalysisParameters> cyNetworkListPostAnalysis;
 
     //create only one instance of the  parameter and expression panels.
     private ParametersPanel parameterPanel;
@@ -73,6 +74,7 @@ public class EnrichmentMapManager implements PropertyChangeListener {
     private OverlappingGenesPanel edgesOverlapPanel;
 
     private EnrichmentMapInputPanel inputWindow;
+    private PostAnalysisInputPanel analysisWindow;
 
     /**
      * Method to get instance of EnrichmentMapManager.
@@ -119,6 +121,7 @@ public class EnrichmentMapManager implements PropertyChangeListener {
      */
     private EnrichmentMapManager() {
         this.cyNetworkList = new HashMap<String,EnrichmentMapParameters>();
+        this.cyNetworkListPostAnalysis = new HashMap<String,PostAnalysisParameters>();
 
         // to catch network creation / destruction events
         Cytoscape.getSwingPropertyChangeSupport().addPropertyChangeListener(this);
@@ -154,6 +157,13 @@ public class EnrichmentMapManager implements PropertyChangeListener {
 
         if(!cyNetworkList.containsKey(cyNetwork.getIdentifier()))
             cyNetworkList.put(cyNetwork.getIdentifier(),params);
+
+    }
+
+    public void registerNetwork(CyNetwork cyNetwork, PostAnalysisParameters paParams) {
+
+        if(!cyNetworkListPostAnalysis.containsKey(cyNetwork.getIdentifier()))
+            cyNetworkListPostAnalysis.put(cyNetwork.getIdentifier(),paParams);
 
     }
 
@@ -199,6 +209,7 @@ public class EnrichmentMapManager implements PropertyChangeListener {
                     edgesOverlapPanel.clearPanel();
 
                      EnrichmentMapParameters currentNetworkParams = cyNetworkList.get(networkId);
+                     PostAnalysisParameters  currentPaParams  = cyNetworkListPostAnalysis.get(networkId);
                     //update the parameters panel
                     parameterPanel.updatePanel(currentNetworkParams);
 
@@ -206,6 +217,9 @@ public class EnrichmentMapManager implements PropertyChangeListener {
                     //only if there is a input window
                     if(inputWindow!=null)
                         inputWindow.updateContents(currentNetworkParams);
+                    
+                    if(analysisWindow!=null)
+                        analysisWindow.updateContents(currentPaParams);
 
                     nodesOverlapPanel.updatePanel(currentNetworkParams);
                     edgesOverlapPanel.updatePanel(currentNetworkParams);
@@ -247,6 +261,11 @@ public class EnrichmentMapManager implements PropertyChangeListener {
 
             cyNetworkList.remove(networkId);
         }
+        if (cyNetworkListPostAnalysis.containsKey(networkId)) {
+            PostAnalysisParameters currentPaParams = cyNetworkListPostAnalysis.get(networkId);
+
+            cyNetworkListPostAnalysis.remove(networkId);
+        }
     }
 
     /*
@@ -256,7 +275,7 @@ public class EnrichmentMapManager implements PropertyChangeListener {
      */
     private boolean networkViewsRemain() {
 
-        // interate through our network list checking if their views exists
+        // iterate through our network list checking if their views exists
         for (String id : cyNetworkList.keySet()) {
 
             // get the network view via id
@@ -308,5 +327,13 @@ public class EnrichmentMapManager implements PropertyChangeListener {
 
     public void setInputWindow(EnrichmentMapInputPanel inputWindow) {
         this.inputWindow = inputWindow;
+    }
+
+    public PostAnalysisInputPanel getAnalysisWindow() {
+        return analysisWindow;
+    }
+
+    public void setAnalysisWindow(PostAnalysisInputPanel analysisWindow) {
+        this.analysisWindow = analysisWindow;
     }
 }

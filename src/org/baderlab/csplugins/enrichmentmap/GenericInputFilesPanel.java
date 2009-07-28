@@ -59,6 +59,8 @@ import java.util.HashMap;
  * Time: 1:12:45 PM
  */
 public class GenericInputFilesPanel extends JDialog {
+    //TODO: check if obsolete after moving to new UI (in SidePanel)
+
     /*--------------------------------------------------------------
        FIELDS.
        --------------------------------------------------------------*/

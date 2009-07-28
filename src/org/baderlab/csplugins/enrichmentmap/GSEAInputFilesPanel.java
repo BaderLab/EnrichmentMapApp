@@ -67,6 +67,7 @@ import java.util.HashMap;
  * */
 
 public class GSEAInputFilesPanel extends GenericInputFilesPanel {
+    //TODO: check if obsolete after moving to new UI (in SidePanel)
 
 
     /*--------------------------------------------------------------

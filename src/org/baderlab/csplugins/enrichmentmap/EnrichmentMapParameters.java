@@ -135,7 +135,7 @@ public class EnrichmentMapParameters {
     private String classFile1;
     private String classFile2;
 
-    private HashMap<String, GenesetSimilarity> genesetSimilarity;
+    private HashMap<String, GenesetSimilarity> genesetSimilarity = null;
 
     private ArrayList<Node> selectedNodes;
     private ArrayList<Edge> selectedEdges;
@@ -157,6 +157,8 @@ public class EnrichmentMapParameters {
     private String default_overlap_metric;
     private Boolean disable_heatmap_autofocus;
     private Boolean disable_genesetSummary_autofocus;
+    
+    final public static String ENRICHMENT_INTERACTION_TYPE = "pp"; //TODO: change to enr ?!?
 
     public EnrichmentMapParameters() {
         this.enrichmentResults1 = new HashMap();
@@ -272,7 +274,7 @@ public class EnrichmentMapParameters {
 
     //Constructor for Enrichment Map Parameters that take another instance of enrichment map parameters
     //And copies its contents.
-    //The assumptionis that these parameters were populated by the input window and therefore only  contain
+    //The assumption is that these parameters were populated by the input window and therefore only  contain
     //info for file names, cutoffs, and phenotypes.
     public EnrichmentMapParameters(EnrichmentMapParameters copy){
         this();

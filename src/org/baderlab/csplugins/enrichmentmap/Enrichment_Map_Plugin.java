@@ -89,6 +89,10 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
         item.addActionListener(new LoadGSEAPanelAction());
         submenu.add(item);
 
+        //Post Analysis panel
+        item = new JMenuItem("Post Analysis");
+        item.addActionListener(new LoadPostAnalysisPanelAction());
+        submenu.add(item);
 
 
         //About Box
@@ -150,7 +154,7 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
         HashMap<String, EnrichmentMapParameters> networks = EnrichmentMapManager.getInstance().getCyNetworkList();
 
         //create a props file for each network
-        for(Iterator i = networks.keySet().iterator(); i.hasNext();){
+        for(Iterator<String> i = networks.keySet().iterator(); i.hasNext();){
             String networkId = i.next().toString();
             EnrichmentMapParameters params = networks.get(networkId);
             String name = Cytoscape.getNetwork(networkId).getTitle();

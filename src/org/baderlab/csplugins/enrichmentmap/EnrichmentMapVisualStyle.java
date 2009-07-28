@@ -87,10 +87,11 @@ public class EnrichmentMapVisualStyle {
 
     public static String OVERLAP_SIZE = "Overlap_size";
     public static String JACCARD_COEFFECIENT= "jaccard_coeffecient";
-    public static String OVERALP_GENES = "Overlap_genes";
-
+    public static String OVERLAP_GENES = "Overlap_genes"; //TODO: fix Typo
+    public static String HYPERGEOM_PVALUE = "Overlap_Hypergeom_pVal";
+    
     public static Color max_phenotype1 = new Color(255,0,0);
-   public static Color lighter_phenotype1 = new Color(255,102,102);
+    public static Color lighter_phenotype1 = new Color(255,102,102);
     public static Color lightest_phenotype1 = new Color(255,179,179);
     public static Color max_phenotype2 = new Color(0,100,255);
     public static Color lighter_phenotype2 = new Color(102,162,255);
