@@ -60,11 +60,11 @@ public class LegendPanel extends JPanel {
     /**
      * the height of the panel
      */
-    private final int DIM_HEIGHT = 75;
+    private final int DIM_HEIGHT = 45;
     /**
      * the width of the panel
      */
-    private final int DIM_WIDTH = 350;
+    private final int DIM_WIDTH = 150;
 
     /*--------------------------------------------------------------
     Fields.
@@ -73,17 +73,21 @@ public class LegendPanel extends JPanel {
     private static Double max;
     private static Color mincolor;
     private static Color maxcolor;
+    private String phenotype1;
+    private String phenotype2;
 
     /*--------------------------------------------------------------
      Constructor.
     --------------------------------------------------------------*/
 
-    public LegendPanel(Double min, Double max, Color mincolor, Color maxcolor) {
+    public LegendPanel(Double min, Double max, Color mincolor, Color maxcolor,String phenotype1,String phenotype2) {
         super();
         this.min = min;
         this.max = max;
         this.mincolor = mincolor;
         this.maxcolor = maxcolor;
+        this.phenotype1 = phenotype1;
+        this.phenotype2 = phenotype2;
         setPreferredSize(new Dimension(DIM_WIDTH, DIM_HEIGHT));
         setOpaque(false);
         //setBackground(Color.WHITE);
@@ -95,21 +99,31 @@ public class LegendPanel extends JPanel {
     PAINT.
     ----------------------------------------------------------------*/
 
-
-    public void paint(Graphics g) {
+  public void paint(Graphics g) {
 
         Graphics2D g2D = (Graphics2D) g;
-        Point2D.Float p1 = new Point2D.Float(75.f, 30.f);  //Gradient line start
-        Point2D.Float p2 = new Point2D.Float(175.f, 30.f);  //Gradient line end
-        Point2D.Float p3 = new Point2D.Float(175.f, 30.f);  //Gradient line start
-        Point2D.Float p4 = new Point2D.Float(275.f, 30.f);  //Gradient line end
-        float width = 100;
-        float height = 25;
+        Point2D.Float p1 = new Point2D.Float(00.f, 0.f);  //Gradient line start
+        Point2D.Float p2 = new Point2D.Float(30.f, 0.f);  //Gradient line end
+
+        //empty white box
+        Point2D.Float p3 = new Point2D.Float(30.f, 0.f);  //Gradient line start
+        Point2D.Float p4 = new Point2D.Float(60.f, 0.f);  //Gradient line end
+
+        Point2D.Float p5 = new Point2D.Float(60.f, 0.f);  //Gradient line start
+        Point2D.Float p6 = new Point2D.Float(90.f, 0.f);  //Gradient line end
+
+        Point2D.Float p7 = new Point2D.Float(90.f, 0.f);  //Gradient line start
+        Point2D.Float p8 = new Point2D.Float(120.f, 0.f);  //Gradient line end
+        float width1 = 30;
+        float width2 = 30;
+        float height = 15;
         //Need to create two gradients, one one for the max and one for the min
         GradientPaint g1 = new GradientPaint(p1, mincolor, p2, Color.WHITE, false); //Acyclic gradient
-        GradientPaint g2 = new GradientPaint(p3, Color.WHITE, p4, maxcolor, false); //Acyclic gradient
-        Rectangle2D.Float rect1 = new Rectangle2D.Float(p1.x , p1.y, width, height);
-        Rectangle2D.Float rect2 = new Rectangle2D.Float(p3.x , p3.y, width, height);
+        GradientPaint g2 = new GradientPaint(p7, Color.WHITE, p8, maxcolor, false); //Acyclic gradient
+        Rectangle2D.Float rect1 = new Rectangle2D.Float(p1.x , p1.y, width1, height);
+        Rectangle2D.Float rect2 = new Rectangle2D.Float(p3.x , p3.y, width2, height);
+        Rectangle2D.Float rect3 = new Rectangle2D.Float(p5.x , p5.y, width2, height);
+        Rectangle2D.Float rect4 = new Rectangle2D.Float(p7.x , p7.y, width1, height);
 
         if(mincolor != Color.WHITE){
 
@@ -118,20 +132,35 @@ public class LegendPanel extends JPanel {
             g2D.setPaint(Color.WHITE);
             g2D.draw(rect1);
 
+            //make a white block
+            g2D.setPaint(Color.WHITE);
+            g2D.fill(rect2);
+            g2D.draw(rect2);
+
             g2D.setPaint(Color.BLACK);
-            g2D.drawString(""+min, p1.x - 50, p1.y - 12);
+            //g2D.drawString(""+min, p1.x , p1.y - 5);
+            g2D.drawString(phenotype1,p1.x, p1.y+height+10);
+
+
         }
         else{
             g2D.setPaint(Color.BLACK);
-            g2D.drawString(""+min, p3.x - 50, p3.y - 12);
+            //g2D.drawString(""+min, p5.x , p5.y - 5);
+            g2D.drawString(phenotype1,p5.x, p5.y+height+10);
         }
 
-        g2D.setPaint(g2);
-        g2D.fill(rect2);
+        //make a white block
         g2D.setPaint(Color.WHITE);
-        g2D.draw(rect2);
+        g2D.fill(rect3);
+        g2D.draw(rect3);
+
+        g2D.setPaint(g2);
+        g2D.fill(rect4);
+        g2D.setPaint(Color.WHITE);
+        g2D.draw(rect4);
 
         g2D.setPaint(Color.BLACK);
-        g2D.drawString("< " + max, p4.x - 10, p4.y - 12);
+        //g2D.drawString("< " + max, p7.x , p8.y - 5);
+        g2D.drawString(phenotype2,p7.x, p7.y+ height +10);
     }
 }
