@@ -48,7 +48,6 @@ import cytoscape.visual.calculators.Calculator;
 import cytoscape.visual.calculators.BasicCalculator;
 import cytoscape.visual.mappings.*;
 import cytoscape.CyNetwork;
-import cytoscape.Cytoscape;
 
 import java.awt.*;
 
@@ -86,7 +85,7 @@ public class EnrichmentMapVisualStyle {
     public static String COLOURING_DATASET2 = "Colouring_dataset2";
 
     public static String OVERLAP_SIZE = "Overlap_size";
-    public static String JACCARD_COEFFECIENT= "jaccard_coeffecient";
+    public static String SIMILARITY_COEFFECIENT = "similarity_coeffecient";
     public static String OVERLAP_GENES = "Overlap_genes";
     public static String HYPERGEOM_PVALUE = "Overlap_Hypergeom_pVal";
     
@@ -129,7 +128,7 @@ public class EnrichmentMapVisualStyle {
 
         //Continous Mapping - set edge line thickness based on the number of genes in the overlap
         ContinuousMapping continuousMapping_edgewidth = new ContinuousMapping(1, ObjectMapping.EDGE_MAPPING);
-        continuousMapping_edgewidth.setControllingAttributeName(prefix + EnrichmentMapVisualStyle.JACCARD_COEFFECIENT, network, false);
+        continuousMapping_edgewidth.setControllingAttributeName(prefix + EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT, network, false);
         Interpolator numTonum2 = new LinearNumberToNumberInterpolator();
         continuousMapping_edgewidth.setInterpolator(numTonum2);
 
@@ -141,7 +140,7 @@ public class EnrichmentMapVisualStyle {
         // Create boundary conditions                  less than,   equals,  greater than
         BoundaryRangeValues bv4 = new BoundaryRangeValues(under_width, min_width, min_width);
         BoundaryRangeValues bv5 = new BoundaryRangeValues(max_width, max_width, over_width);
-        continuousMapping_edgewidth.addPoint(params.getJaccardCutOff(), bv4);
+        continuousMapping_edgewidth.addPoint(params.getSimilarityCutOff(), bv4);
         continuousMapping_edgewidth.addPoint(1.0, bv5);
         Calculator edgeWidthCalculator = new BasicCalculator(prefix + "edgesize", continuousMapping_edgewidth, VisualPropertyType.EDGE_LINE_WIDTH);
         edgeAppCalc.setCalculator(edgeWidthCalculator);

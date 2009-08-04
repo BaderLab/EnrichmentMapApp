@@ -59,25 +59,25 @@ public class GenesetSimilarity {
     
     private String interaction_type;
 
-    private double jaccard_coeffecient;
+    private double similarity_coeffecient;
     private double hypergeom_pvalue;
 
     private HashSet<Integer> overlapping_genes;
 
-    public GenesetSimilarity(String geneset1_Name, String geneset2_Name, double jaccard_coeffecient,double hypergeom_pvalue, String interaction_type, HashSet<Integer> overlapping_genes) {
+    public GenesetSimilarity(String geneset1_Name, String geneset2_Name, double similarity_coeffecient,double hypergeom_pvalue, String interaction_type, HashSet<Integer> overlapping_genes) {
         this.geneset1_Name = geneset1_Name;
         this.geneset2_Name = geneset2_Name;
-        this.jaccard_coeffecient = jaccard_coeffecient;
+        this.similarity_coeffecient = similarity_coeffecient;
         this.hypergeom_pvalue = hypergeom_pvalue;
         
         this.overlapping_genes = overlapping_genes;
         this.interaction_type = interaction_type;
     }
 
-    public GenesetSimilarity(String geneset1_Name, String geneset2_Name, double jaccard_coeffecient, HashSet<Integer> overlapping_genes) {
+    public GenesetSimilarity(String geneset1_Name, String geneset2_Name, double similarity_coeffecient, HashSet<Integer> overlapping_genes) {
         this.geneset1_Name = geneset1_Name;
         this.geneset2_Name = geneset2_Name;
-        this.jaccard_coeffecient = jaccard_coeffecient;
+        this.similarity_coeffecient = similarity_coeffecient;
         this.overlapping_genes = overlapping_genes;
         //use defaults:
         this.hypergeom_pvalue = -1.0;
@@ -96,7 +96,7 @@ public class GenesetSimilarity {
         //the first token is the hash key, don't need it in the object
         this.geneset1_Name = tokens[1];
         this.geneset2_Name = tokens[2];
-        this.jaccard_coeffecient = Double.parseDouble(tokens[3]);
+        this.similarity_coeffecient = Double.parseDouble(tokens[3]);
 
         this.overlapping_genes = new HashSet<Integer>();
 
@@ -135,12 +135,12 @@ public class GenesetSimilarity {
         return interaction_type;
     }
 
-    public double getJaccard_coeffecient() {
-        return jaccard_coeffecient;
+    public double getSimilarity_coeffecient() {
+        return similarity_coeffecient;
     }
 
-    public void setJaccard_coeffecient(double jaccard_coeffecient) {
-        this.jaccard_coeffecient = jaccard_coeffecient;
+    public void setSimilarity_coeffecient(double similarity_coeffecient) {
+        this.similarity_coeffecient = similarity_coeffecient;
     }
 
     /**
@@ -175,7 +175,7 @@ public class GenesetSimilarity {
     public String toString(){
         String similarity = "";
 
-        similarity += geneset1_Name + "\t" + geneset2_Name + "\t" + jaccard_coeffecient + "\t";
+        similarity += geneset1_Name + "\t" + geneset2_Name + "\t" + similarity_coeffecient + "\t";
 
         for(Iterator i = overlapping_genes.iterator();i.hasNext();)
             similarity += i.next().toString() + "\t";

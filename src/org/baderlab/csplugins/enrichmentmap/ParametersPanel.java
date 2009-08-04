@@ -42,17 +42,10 @@
 // $HeadURL$
 
 package org.baderlab.csplugins.enrichmentmap;
-import cytoscape.visual.mappings.*;
-import cytoscape.visual.VisualPropertyType;
-import cytoscape.Cytoscape;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.geom.Ellipse2D;
 import java.io.File;
-
-import org.mskcc.colorgradient.*;
 
 /**
  * Created by
@@ -107,11 +100,11 @@ public class ParametersPanel extends JPanel {
            runInfoText = runInfoText + "<b>FDR Q-value Cut-off:</b>" + params.getQvalue() + "<br>";
 
            if(params.isJaccard()){
-               runInfoText = runInfoText + "<b>Jaccard Cut-off:</b>" + params.getJaccardCutOff() + "<br>";
+               runInfoText = runInfoText + "<b>Jaccard Cut-off:</b>" + params.getSimilarityCutOff() + "<br>";
                runInfoText = runInfoText + "<b>Test used:</b>  Jaccard Index<br>";
            }
            else{
-               runInfoText = runInfoText + "<b>Overlap Cut-off:</b>" + params.getJaccardCutOff() + "<br>";
+               runInfoText = runInfoText + "<b>Overlap Cut-off:</b>" + params.getSimilarityCutOff() + "<br>";
                runInfoText = runInfoText + "<b>Test used:</b>  Overlap Index<br>";
            }
            runInfoText = runInfoText + "<font size=-1><b>Genesets File:</b>" + shortenPathname(params.getGMTFileName()) + "<br>";
@@ -127,7 +120,7 @@ public class ParametersPanel extends JPanel {
            }
 
            runInfoText = runInfoText + "</font></html>";
-           return runInfoText;          
+           return runInfoText;
        }
 
     private JPanel createLegend(EnrichmentMapParameters params){

@@ -810,7 +810,7 @@ public class PostAnalysisInputPanel extends JPanel {
                           "only edges with a Jaccard or Overlap coffecient less than \n"+
                            "the cutoff will be added.";
        coeffecientTextField.setToolTipText(coeffecientCutOffTip);
-       coeffecientTextField.setText(Double.toString(params.getJaccardCutOff()));
+       coeffecientTextField.setText(Double.toString(params.getSimilarityCutOff()));
 
        JPanel coeffecientCutOffPanel = new JPanel();
        coeffecientCutOffPanel.setLayout(new BorderLayout());

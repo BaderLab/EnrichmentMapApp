@@ -778,7 +778,7 @@ public class EnrichmentMapInputPanel extends JPanel {
                              "only edges with a Jaccard or Overlap coffecient less than \n"+
                               "the cutoff will be added.";
           coeffecientTextField.setToolTipText(coeffecientCutOffTip);
-          coeffecientTextField.setText(Double.toString(params.getJaccardCutOff()));
+          coeffecientTextField.setText(Double.toString(params.getSimilarityCutOff()));
 
           JPanel coeffecientCutOffPanel = new JPanel();
           coeffecientCutOffPanel.setLayout(new BorderLayout());
@@ -832,10 +832,10 @@ public class EnrichmentMapInputPanel extends JPanel {
             }else if (source == coeffecientTextField) {
                 Number value = (Number) coeffecientTextField.getValue();
                 if ((value != null) && (value.doubleValue() >= 0.0) && (value.doubleValue() <= 1.0)) {
-                    params.setJaccardCutOff(value.doubleValue());
-                    params.setJaccardCutOffChanged(true);
+                    params.setSimilarityCutOff(value.doubleValue());
+                    params.setSimilarityCutOffChanged(true);
                 } else {
-                    source.setValue(params.getJaccardCutOff());
+                    source.setValue(params.getSimilarityCutOff());
                     message += "The Overlap/Jaccard Coeffecient cutoff must be between 0 and 1.";
                     invalid = true;
                 }
@@ -1348,16 +1348,16 @@ public class EnrichmentMapInputPanel extends JPanel {
   private void selectJaccardOrOverlapActionPerformed(java.awt.event.ActionEvent evt) {
         if(evt.getActionCommand().equalsIgnoreCase("jaccard")){
             params.setJaccard(true);
-            if ( ! params.isJaccardCutOffChanged() ) {
-                params.setJaccardCutOff( params.getDefaultJaccardCutOff() );
-                coeffecientTextField.setText( Double.toString(params.getJaccardCutOff()) );
+            if ( ! params.isSimilarityCutOffChanged() ) {
+                params.setSimilarityCutOff( params.getDefaultJaccardCutOff() );
+                coeffecientTextField.setText( Double.toString(params.getSimilarityCutOff()) );
             }
         }
      else if(evt.getActionCommand().equalsIgnoreCase("overlap")){
             params.setJaccard(false);
-            if ( ! params.isJaccardCutOffChanged() ) {
-                params.setJaccardCutOff(params.getDefaultOverlapCutOff());
-                coeffecientTextField.setText( Double.toString(params.getJaccardCutOff()) );
+            if ( ! params.isSimilarityCutOffChanged() ) {
+                params.setSimilarityCutOff(params.getDefaultOverlapCutOff());
+                coeffecientTextField.setText( Double.toString(params.getSimilarityCutOff()) );
           }
         }
      else{
@@ -1657,7 +1657,7 @@ public class EnrichmentMapInputPanel extends JPanel {
 
         pvalueTextField.setText(Double.toString(params.getPvalue()));
         qvalueTextField.setText(Double.toString(params.getQvalue()));
-        coeffecientTextField.setText(Double.toString(params.getJaccardCutOff()));
+        coeffecientTextField.setText(Double.toString(params.getSimilarityCutOff()));
 
         gsea.setSelected(params.isGSEA());
         generic.setSelected(!params.isGSEA());
@@ -1690,7 +1690,7 @@ public class EnrichmentMapInputPanel extends JPanel {
 
         pvalueTextField.setText(Double.toString(current_params.getPvalue()));
         qvalueTextField.setText(Double.toString(current_params.getQvalue()));
-        coeffecientTextField.setText(Double.toString(current_params.getJaccardCutOff()));
+        coeffecientTextField.setText(Double.toString(current_params.getSimilarityCutOff()));
 
         gsea.setSelected(current_params.isGSEA());
         generic.setSelected(!current_params.isGSEA());

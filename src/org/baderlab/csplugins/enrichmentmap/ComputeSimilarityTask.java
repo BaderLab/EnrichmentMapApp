@@ -166,7 +166,7 @@ public class ComputeSimilarityTask implements Task {
                 GenesetSimilarity temp = (GenesetSimilarity)geneset_similarities.get(a.next().toString());
                 System.out.println(temp.getGeneset1_Name());
                 System.out.println(temp.getGeneset2_Name());
-                System.out.println(temp.getJaccard_coeffecient());
+                System.out.println(temp.getSimilarity_coeffecient());
                 System.out.println(temp.getOvarlapping_genes().size());
                 System.out.println(temp.getOvarlapping_genes().toString());
 
@@ -175,7 +175,7 @@ public class ComputeSimilarityTask implements Task {
         */
 
         } catch(IllegalThreadStateException e){
-            taskMonitor.setException(e, "Unable to compute jaccard coeffecients");
+            taskMonitor.setException(e, "Unable to compute similarity coeffecients");
             return false;
         }
 
