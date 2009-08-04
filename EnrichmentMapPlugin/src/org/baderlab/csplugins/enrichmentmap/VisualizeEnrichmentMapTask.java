@@ -241,6 +241,21 @@ public class VisualizeEnrichmentMapTask implements Task {
                         CyAttributes nodeAttrs = Cytoscape.getNodeAttributes();
                         nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.GS_DESCR, gs.getDescription());
 
+                        //create an attribute that stores the genes that are associated with this node as an attribute list
+                        //only create the list if the hashkey 2 genes is not null Otherwise it take too much time to populate the list
+                        if(params.getHashkey2gene() != null){
+                            List gene_list = new ArrayList();
+                            HashSet genes_hash = gs.getGenes();
+                            for(Iterator j=genes_hash.iterator(); j.hasNext();){
+                                Integer current = (Integer)j.next();
+                                String gene = params.getGeneFromHashKey(current);
+                                if(gene_list != null)
+                                    gene_list.add(gene);
+                            }
+
+                            nodeAttrs.setListAttribute(node.getIdentifier(), prefix+EnrichmentMapVisualStyle.GENES, gene_list);
+                        }
+
                         if(params.isGSEA()){
                             if(enrichmentResults1.containsKey(current_name)){
                                 GSEAResult result = (GSEAResult) enrichmentResults1.get(current_name);
