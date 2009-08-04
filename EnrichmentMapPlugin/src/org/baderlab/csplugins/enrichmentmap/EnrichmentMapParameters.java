@@ -80,7 +80,7 @@ public class EnrichmentMapParameters {
 
     private boolean twoDatasets = false;
 
-    // DEFAULT VALUES for pvalue, qvalue, jaccardCutOff and jaccard
+    // DEFAULT VALUES for pvalue, qvalue, similarityCutOff and jaccard
     // will be assigned in the constructor
     //p-value cutoff
     private double pvalue;
@@ -94,9 +94,9 @@ public class EnrichmentMapParameters {
     //qvalue slider bar
     private SliderBarPanel qvalueSlider;
 
-    private double jaccardCutOff;
+    private double similarityCutOff;
     private boolean jaccard;
-    private boolean jaccardCutOffChanged = false;
+    private boolean similarityCutOffChanged = false;
 
     //flag to indicate if the results are from GSEA or generic
     private boolean GSEA = true;
@@ -174,7 +174,7 @@ public class EnrichmentMapParameters {
         this.selectedNodes = new ArrayList<Node>();
         this.selectedEdges = new ArrayList<Edge>();
 
-        this.jaccardCutOffChanged = false;
+        this.similarityCutOffChanged = false;
         //default Values from Cytoscape properties
         this.cyto_prop = CytoscapeInit.getProperties() ;
         this.defaultPvalueCutOff  = Double.parseDouble( this.cyto_prop.getProperty("EnrichmentMap.default_pvalue",  "0.05") );
@@ -191,10 +191,10 @@ public class EnrichmentMapParameters {
 
         //choose Jaccard or Overlap as default
         if ( getOverlapMetricDefault().equalsIgnoreCase("overlap") ){
-            this.jaccardCutOff = this.defaultOverlapCutOff;
+            this.similarityCutOff = this.defaultOverlapCutOff;
             this.jaccard = false;
         } else {
-            this.jaccardCutOff = this.defaultJaccardCutOff;
+            this.similarityCutOff = this.defaultJaccardCutOff;
             this.jaccard = true;
         }
     }
@@ -261,9 +261,19 @@ public class EnrichmentMapParameters {
         //cutoffs
         setPvalue(Double.parseDouble((String)props.get("pvalue")));
         setQvalue(Double.parseDouble((String)props.get("qvalue")));
-        this. jaccardCutOff = Double.parseDouble((String)props.get("jaccardCutOff"));
-        this.jaccardCutOffChanged = true;
 
+        //older version had the similarityCutOff specified as jaccardCutOff.
+        //need to check if this is an old session file
+        String cutoff = null;
+        if(props.get("jaccardCutOff") != null)
+            cutoff = (String)props.get("jaccardCutOff");
+        else
+            cutoff = (String)props.get("similarityCutOff");
+
+        if(cutoff != null){
+            this.similarityCutOff = Double.parseDouble(cutoff);
+            this.similarityCutOffChanged = true;
+        }
         //create the slider for this pvalue
         pvalueSlider = new SliderBarPanel(0,this.pvalue,"P-value Cutoff",this, EnrichmentMapVisualStyle.PVALUE_DATASET1, EnrichmentMapVisualStyle.PVALUE_DATASET2,ParametersPanel.summaryPanelWidth);
 
@@ -304,14 +314,14 @@ public class EnrichmentMapParameters {
         //create the slider for the qvalue
         qvalueSlider = new SliderBarPanel(0,this.qvalue,"Q-value Cutoff",this, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2,ParametersPanel.summaryPanelWidth);
 
-        this.jaccardCutOff = copy.getJaccardCutOff();
+        this.similarityCutOff = copy.getSimilarityCutOff();
 
         this.Data = copy.isData();
         this.Data2 = copy.isData2();
         this.twoDatasets = copy.isTwoDatasets();
         this.GSEA = copy.isGSEA();
         this.jaccard = copy.isJaccard();
-        this.jaccardCutOffChanged = copy.jaccardCutOffChanged;
+        this.similarityCutOffChanged = copy.similarityCutOffChanged;
     }
 
 
@@ -542,12 +552,12 @@ public class EnrichmentMapParameters {
         NumberOfGenes = numberOfGenes;
     }
 
-    public double getJaccardCutOff() {
-        return jaccardCutOff;
+    public double getSimilarityCutOff() {
+        return similarityCutOff;
     }
 
-    public void setJaccardCutOff(double jaccardCutOff) {
-        this.jaccardCutOff = jaccardCutOff;
+    public void setSimilarityCutOff(double similarityCutOff) {
+        this.similarityCutOff = similarityCutOff;
     }
 
     public String getNetworkName() {
@@ -845,7 +855,7 @@ public class EnrichmentMapParameters {
         //cutoffs
         paramVariables += "pvalue\t" + pvalue + "\n";
         paramVariables += "qvalue\t" + qvalue + "\n";
-        paramVariables += "jaccardCutOff\t" + jaccardCutOff + "\n";
+        paramVariables += "similarityCutOff\t" + similarityCutOff + "\n";
 
 
         return paramVariables;
@@ -937,12 +947,12 @@ public class EnrichmentMapParameters {
         return this.disable_genesetSummary_autofocus ;
     }
 
-    public void setJaccardCutOffChanged(boolean jaccardCutOffChanged) {
-        this.jaccardCutOffChanged = jaccardCutOffChanged;
+    public void setSimilarityCutOffChanged(boolean similarityCutOffChanged) {
+        this.similarityCutOffChanged = similarityCutOffChanged;
     }
 
-    public boolean isJaccardCutOffChanged() {
-        return jaccardCutOffChanged;
+    public boolean isSimilarityCutOffChanged() {
+        return similarityCutOffChanged;
     }
 
     public HashMap<Integer, String> getHashkey2gene() {

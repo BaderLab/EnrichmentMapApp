@@ -90,10 +90,7 @@ public class BuildEnrichmentMapActionListener implements ActionListener {
        else{
            JOptionPane.showMessageDialog(Cytoscape.getDesktop(),errors,"Invalid Input",JOptionPane.WARNING_MESSAGE);
        }
-       //else{
-           //BuildGenericEnrichmentMapTask new_map = new BuildGenericEnrichmentMapTask(inputPanel, params);
-           //boolean success = TaskManager.executeTask(new_map, config);
-       //}
+
 
    }
 

@@ -53,7 +53,6 @@ import cytoscape.data.CyAttributes;
 import cytoscape.data.Semantics;
 import cytoscape.view.CyNetworkView;
 import cytoscape.view.CytoscapeDesktop;
-import cytoscape.view.cytopanels.CytoPanelState;
 import cytoscape.view.cytopanels.CytoPanel;
 
 import java.util.*;
@@ -270,7 +269,7 @@ public class VisualizeEnrichmentMapTask implements Task {
               GenesetSimilarity current_result = (GenesetSimilarity) geneset_similarities.get(current_name);
 
               //only create edges where the jaccard coefficient to great than
-                if(current_result.getJaccard_coeffecient()>params.getJaccardCutOff()){
+                if(current_result.getSimilarity_coeffecient()>params.getSimilarityCutOff()){
                     Node node1 = Cytoscape.getCyNode(current_result.getGeneset1_Name(),false);
                     Node node2 = Cytoscape.getCyNode(current_result.getGeneset2_Name(),false);
                     Edge edge = (Edge) Cytoscape.getCyEdge(node1, node2, Semantics.INTERACTION, "pp", true);
@@ -280,7 +279,7 @@ public class VisualizeEnrichmentMapTask implements Task {
                     //Cytoscape.getNetworkView(network.getIdentifier()).addEdgeContextMenuListener(getEMEdgeContextMenuListener(current_result));
 
                     CyAttributes edgeAttrs = Cytoscape.getEdgeAttributes();
-                    edgeAttrs.setAttribute(edge.getIdentifier(), prefix+EnrichmentMapVisualStyle.JACCARD_COEFFECIENT, current_result.getJaccard_coeffecient());
+                    edgeAttrs.setAttribute(edge.getIdentifier(), prefix+EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT, current_result.getSimilarity_coeffecient());
                     edgeAttrs.setAttribute(edge.getIdentifier(), prefix+ EnrichmentMapVisualStyle.OVERLAP_SIZE, current_result.getSizeOfOverlap());
 
                     //create an attribute that stores the genes that are associated with this edge as an attribute list
@@ -361,7 +360,7 @@ public class VisualizeEnrichmentMapTask implements Task {
 
 
         } catch(IllegalThreadStateException e){
-            taskMonitor.setException(e, "Unable to compute jaccard coeffecients");
+            taskMonitor.setException(e, "Unable to compute similarity coeffecients");
             return false;
         }
 

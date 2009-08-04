@@ -45,7 +45,6 @@ package org.baderlab.csplugins.enrichmentmap;
 
 import giny.view.NodeView;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -340,10 +339,10 @@ public class BuildDiseaseSignatureTask implements Task {
                      (geneset_similarities.get(edge_name).getSizeOfOverlap() >= paParams.getSignature_absNumber_Cutoff() ) )
                     passed_cutoff = true;
                 else if ( (paParams.getSignature_CutoffMetric() == PostAnalysisParameters.JACCARD) && 
-                          (geneset_similarities.get(edge_name).getJaccard_coeffecient() >= paParams.getSignature_Jaccard_Cutoff() ) )
+                          (geneset_similarities.get(edge_name).getSimilarity_coeffecient() >= paParams.getSignature_Jaccard_Cutoff() ) )
                     passed_cutoff = true;
                 else if ( (paParams.getSignature_CutoffMetric() == PostAnalysisParameters.OVERLAP) && 
-                        (geneset_similarities.get(edge_name).getJaccard_coeffecient() >= paParams.getSignature_Overlap_Cutoff() ) )
+                        (geneset_similarities.get(edge_name).getSimilarity_coeffecient() >= paParams.getSignature_Overlap_Cutoff() ) )
                     passed_cutoff = true;
                 else if ( (paParams.getSignature_CutoffMetric() == PostAnalysisParameters.HYPERGEOM) && 
                           (geneset_similarities.get(edge_name).getHypergeom_pvalue() != -1.0) &&
@@ -378,7 +377,7 @@ public class BuildDiseaseSignatureTask implements Task {
                  */                    
 
                     cyEdgeAttrs.setAttribute(edge.getIdentifier(), prefix + EnrichmentMapVisualStyle.OVERLAP_SIZE       , geneset_similarities.get(edge_name).getSizeOfOverlap());
-                    cyEdgeAttrs.setAttribute(edge.getIdentifier(), prefix + EnrichmentMapVisualStyle.JACCARD_COEFFECIENT, geneset_similarities.get(edge_name).getJaccard_coeffecient());
+                    cyEdgeAttrs.setAttribute(edge.getIdentifier(), prefix + EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT, geneset_similarities.get(edge_name).getSimilarity_coeffecient());
                     cyEdgeAttrs.setAttribute(edge.getIdentifier(), prefix + EnrichmentMapVisualStyle.HYPERGEOM_PVALUE   , geneset_similarities.get(edge_name).getHypergeom_pvalue());
                     cyEdgeAttrs.setAttribute(edge.getIdentifier(), "edge.color", paParams.getSignatureHub_edgeColor());
                     //change "edge.lineWidth" based on Hypergeometric Value 
