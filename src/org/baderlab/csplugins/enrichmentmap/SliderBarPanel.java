@@ -66,6 +66,15 @@ import prefuse.data.query.NumberRangeModel;
  */
 public class SliderBarPanel extends JPanel {
 
+    /**
+     * the height of the panel
+     */
+    private final int DIM_HEIGHT = 75;
+    /**
+     * the width of the panel
+     */
+    private final int DIM_WIDTH = 150;
+
     private String sliderLabel;
 
     private int min;
@@ -77,6 +86,9 @@ public class SliderBarPanel extends JPanel {
     private JLabel label;
 
     public SliderBarPanel(double min, double max, String sliderLabel, EnrichmentMapParameters params,String attrib1, String attrib2, int desired_width) {
+        setPreferredSize(new Dimension(DIM_WIDTH, DIM_HEIGHT));
+        setOpaque(false);
+
         if((min <= 1) && (max <= 1)){
             this.min = (int)(min*precision);
             this.max = (int)(max*precision);
