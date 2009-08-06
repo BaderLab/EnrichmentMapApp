@@ -66,7 +66,7 @@ public class GMTFileReaderTask implements Task {
 
     private String GMTFileName;
     private HashMap<String, Integer> genes;
-    private HashMap hashkey2gene;
+    private HashMap<Integer, String> hashkey2gene;
 
     private String fullText;
     private String [] lines;
@@ -118,7 +118,7 @@ public class GMTFileReaderTask implements Task {
         this.hashkey2gene = params.getHashkey2gene();
         
         if (genesets_file == 1) {
-            //open signature-GMT file
+            //open GMT file
             this.GMTFileName = params.getGMTFileName();
             this.genesets = params.getGenesets();
         }
@@ -177,7 +177,7 @@ public class GMTFileReaderTask implements Task {
                     //if it is already in the hash then get its associated key and put it
                     //into the set of genes
                     if (genes.containsKey(tokens[j])) {
-                        gs.addGene((Integer) genes.get(tokens[j]));
+                        gs.addGene(genes.get(tokens[j]));
                     }
 
                     //If the gene is not in the list then get the next value to be used and put it in the list
@@ -189,7 +189,7 @@ public class GMTFileReaderTask implements Task {
                         params.setNumberOfGenes(value+1);
 
                         //add the gene to the genelist
-                        gs.addGene((Integer) genes.get(tokens[j]));
+                        gs.addGene(genes.get(tokens[j]));
                     }
                 }
 

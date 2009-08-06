@@ -45,6 +45,7 @@ package org.baderlab.csplugins.enrichmentmap;
 
 import giny.view.NodeView;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -293,22 +294,25 @@ public class BuildDiseaseSignatureTask implements Task {
                 String formatted_label =  VisualizeEnrichmentMapTask.formatLabel(hub_node.getIdentifier());
                 cyNodeAttrs.setAttribute(hub_node.getIdentifier(), prefix + EnrichmentMapVisualStyle.FORMATTED_NAME, formatted_label);
 
-            /*TODO: Add gene list to Node                
                 //create an attribute that stores the genes that are associated with this node as an attribute list
                 //only create the list if the hashkey 2 genes is not null Otherwise it take too much time to populate the list
+                GeneSet sigGeneSet = SelectedSignatureGenesets.get(hub_name);
                 if(paParams.getHashkey2gene() != null){
                     List<String> gene_list = new ArrayList<String>();
-                    HashSet genes_hash = SelectedSignatureGenesets.get(hub_name).getGenes();
+                    HashSet genes_hash = sigGeneSet.getGenes();
                     for(Iterator j=genes_hash.iterator(); j.hasNext();){
                         Integer current = (Integer)j.next();
                         String gene = paParams.getGeneFromHashKey(current);
                         if(gene_list != null)
                             gene_list.add(gene);
                     }
-    
                     cyNodeAttrs.setListAttribute(hub_node.getIdentifier(), prefix+EnrichmentMapVisualStyle.GENES, gene_list);
                 }
-             */
+
+                // add the geneset of the signature node to the GenesetsOfInterest,
+                // as the Heatmap will grep it's data from there.
+                sigGeneSet.getGenes().retainAll(paParams.getDatasetGenes());
+                paParams.getGenesetsOfInterest().put(hub_name, sigGeneSet);
                 
                 // set Visual Style bypass
                 cyNodeAttrs.setAttribute(hub_node.getIdentifier(), "node.shape", paParams.getSignatureHub_nodeShape());
@@ -360,7 +364,6 @@ public class BuildDiseaseSignatureTask implements Task {
                     CyEdge edge = Cytoscape.getCyEdge(hub_node, gene_set, "interaction", PostAnalysisParameters.SIGNATURE_INTERACTION_TYPE, true);
                     current_network.addEdge(edge);
                     
-                /* TODO: Add gene list to Edges
                     //create an attribute that stores the genes that are associated with this edge as an attribute list
                     //only create the list if the hashkey 2 genes is not null Otherwise it take too much time to populate the list
                     if(paParams.getHashkey2gene() != null){
@@ -374,18 +377,17 @@ public class BuildDiseaseSignatureTask implements Task {
                         }
                         cyEdgeAttrs.setListAttribute(edge.getIdentifier(), prefix+EnrichmentMapVisualStyle.OVERLAP_GENES, gene_list);
                     }
-                 */                    
-
+ 
                     cyEdgeAttrs.setAttribute(edge.getIdentifier(), prefix + EnrichmentMapVisualStyle.OVERLAP_SIZE       , geneset_similarities.get(edge_name).getSizeOfOverlap());
                     cyEdgeAttrs.setAttribute(edge.getIdentifier(), prefix + EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT, geneset_similarities.get(edge_name).getSimilarity_coeffecient());
                     cyEdgeAttrs.setAttribute(edge.getIdentifier(), prefix + EnrichmentMapVisualStyle.HYPERGEOM_PVALUE   , geneset_similarities.get(edge_name).getHypergeom_pvalue());
                     cyEdgeAttrs.setAttribute(edge.getIdentifier(), "edge.color", paParams.getSignatureHub_edgeColor());
                     //change "edge.lineWidth" based on Hypergeometric Value 
                     if (geneset_similarities.get(edge_name).getHypergeom_pvalue() <= (paParams.getSignature_Hypergeom_Cutoff()/100) )
-                        cyEdgeAttrs.setAttribute(edge.getIdentifier(), "edge.lineWidth", "7.5");
+                        cyEdgeAttrs.setAttribute(edge.getIdentifier(), "edge.lineWidth", "8.0");
                     else 
                     if (geneset_similarities.get(edge_name).getHypergeom_pvalue() <= (paParams.getSignature_Hypergeom_Cutoff()/10) )
-                        cyEdgeAttrs.setAttribute(edge.getIdentifier(), "edge.lineWidth", "5.0");
+                        cyEdgeAttrs.setAttribute(edge.getIdentifier(), "edge.lineWidth", "4.5");
                     else
                         cyEdgeAttrs.setAttribute(edge.getIdentifier(), "edge.lineWidth", "1.0");
                     
@@ -438,7 +440,7 @@ public class BuildDiseaseSignatureTask implements Task {
      * @param m successes in population (enrichment geneset)
      * @param k successes in sample     (intersection of both genesets)
      * 
-     * @return the p-Value of the Hypergeometric Distribution
+     * @return the p-Value of the Hypergeometric Distribution for P(X=k)
      */
     public static double hyperGeomPvalue(int N, int n, int m, int k) {
         //calculating in logarithmic scale as we are dealing with large numbers. 

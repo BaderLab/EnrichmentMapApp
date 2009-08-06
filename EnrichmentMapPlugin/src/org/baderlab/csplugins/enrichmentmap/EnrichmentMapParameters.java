@@ -286,6 +286,7 @@ public class EnrichmentMapParameters {
     //And copies its contents.
     //The assumption is that these parameters were populated by the input window and therefore only  contain
     //info for file names, cutoffs, and phenotypes.
+    //TODO: we should be able to make a complete copy of a parameters instance.
     public EnrichmentMapParameters(EnrichmentMapParameters copy){
         this();
 
@@ -322,6 +323,13 @@ public class EnrichmentMapParameters {
         this.GSEA = copy.isGSEA();
         this.jaccard = copy.isJaccard();
         this.similarityCutOffChanged = copy.similarityCutOffChanged;
+        
+        //copy HashMaps genes and hash2genes
+        this.genes = copy.getGenes();
+        this.hashkey2gene = copy.getHashkey2gene();
+        this.genesetsOfInterest = copy.getGenesetsOfInterest();
+        this.datasetGenes = copy.getDatasetGenes();
+        
     }
 
 
@@ -528,7 +536,7 @@ public class EnrichmentMapParameters {
 
     }
 
-    public HashMap getGenes() {
+    public HashMap<String, Integer> getGenes() {
         return genes;
     }
 
@@ -876,6 +884,7 @@ public class EnrichmentMapParameters {
 
     //repopulate hashmap,
     public HashMap repopulateHashmap(String fileInput, int type ){
+        //TODO: for Type-safety we should generate and return individual HashMaps specifying the correct Types 
 
         //Create a hashmap to contain all the values in the rpt file.
         HashMap newMap = new HashMap();
@@ -899,8 +908,14 @@ public class EnrichmentMapParameters {
                     newMap.put(tokens[0], new GeneSet(tokens));
 
             //Genes
-            if(type == 2)
-                newMap.put(tokens[0],Integer.parseInt(tokens[1]));
+            if(type == 2) {
+            // need to control the Type of the Objects inside the HashMap, otherwise
+            // we can't store the List of Genes to new Nodes and Edges in a restored Session
+            // e.g. in in the Signature-Post-Analysis
+                HashMap<String,Integer> newGeneMap = new HashMap<String,Integer>();
+                newGeneMap.put(tokens[0], Integer.parseInt(tokens[1]));
+                return newGeneMap;
+            }
 
             //GseaResult
             if(type == 3)
@@ -910,8 +925,14 @@ public class EnrichmentMapParameters {
                 newMap.put(tokens[0], new GenericResult(tokens));
 
             //HashMap Key 2 Genes
-            if(type == 5)
-                newMap.put(tokens[0],tokens[1]);
+            if(type == 5) {
+            // need to control the Type of the Objects inside the HashMap, otherwise
+            // we can't store the List of Genes to new Nodes and Edges in a restored Session
+            // e.g. in in the Signature-Post-Analysis
+                HashMap<Integer,String> newHash2geneMap = new HashMap<Integer, String>();
+                newHash2geneMap.put(Integer.parseInt(tokens[0]),tokens[1]);
+                return newHash2geneMap;
+            }
 
         }
 
