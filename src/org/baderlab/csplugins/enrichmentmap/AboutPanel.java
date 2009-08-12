@@ -76,6 +76,9 @@ public class AboutPanel extends JDialog {
                 "<html><body><p align=center><b>Enrichment Map v" + pluginVersion + " (beta)</b><BR>" + //TODO: remove "beta" on release
                 "A Cytoscape Plugin<BR>" +
                 "<BR>" +
+                "Enrichment Map is a network-based method to visualize<BR>"+
+                "and interpret gene-set enrichment results.<BR>" +
+                "<BR>" +
                 "by Gary Bader, Daniele Merico, Ruth Isserlin and Oliver Stueker<BR>" +
                 "(<a href='http://www.baderlab.org/'>Bader Lab</a>, University of Toronto)<BR>" +
                 "<BR>" +
