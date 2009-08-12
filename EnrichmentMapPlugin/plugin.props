@@ -9,8 +9,7 @@ pluginName=EnrichmentMap
 
 # Description used to give users information about the plugin such as what it does.  
 # Html tags are encouraged for formatting purposes.
-pluginDescription=A Plugin to create Enrichment Maps
-#TODO: Write Description
+pluginDescription=Enrichment Map is a network-based method to visualize and interpret gene-set enrichment results.
 
 # Plugin version number, this must be two numbers separated by a decimlal.  Ex. 0.2, 14.03
 pluginVersion=0.8
@@ -29,7 +28,7 @@ pluginAuthorsIntsitutions=Gary Bader, Daniele Merico, Ruth Isserlin, Oliver Stue
 
 
 # URL to a website that gives more information about your plugin, Ex. http://my-lab-site.org
-#projectURL=http://www.baderlab.org/Software/EnrichmentMap
+projectURL=http://www.baderlab.org/Software/EnrichmentMap
 
 # Date this plugin/plugin version was released
 #releaseDate=July 1, 2009
