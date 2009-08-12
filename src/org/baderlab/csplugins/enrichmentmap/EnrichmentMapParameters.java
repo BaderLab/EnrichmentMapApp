@@ -112,6 +112,8 @@ public class EnrichmentMapParameters {
     private int NumberOfGenes = 0;
 
     //Hashmap of the GSEA Results, It is is a hash of the GSEAResults objects
+    //Can't enforce a type on this hashmap because the enrichment results could to generic or GSEA results
+
     private HashMap enrichmentResults1;
     private HashMap enrichmentResults2;
     private HashMap<String, GeneSet> genesets;
@@ -119,6 +121,7 @@ public class EnrichmentMapParameters {
 
     //The GSEA results that pass the thresholds.
     //If there are two datasets these list can be different.
+    //Can't enforce a type on this hashmap because the enrichment results could to generic or GSEA results
     private HashMap enrichmentResults1OfInterest;
     private HashMap enrichmentResults2OfInterest;
 
@@ -163,14 +166,14 @@ public class EnrichmentMapParameters {
     public EnrichmentMapParameters() {
         this.enrichmentResults1 = new HashMap();
         this.enrichmentResults2 = new HashMap();
-        this.genes = new HashMap();
-        this.hashkey2gene = new HashMap();
+        this.genes = new HashMap<String, Integer>();
+        this.hashkey2gene = new HashMap<Integer, String>();
         this.datasetGenes = new HashSet();
-        this.genesets = new HashMap();
-        this.filteredGenesets = new HashMap();
+        this.genesets = new HashMap<String, GeneSet>();
+        this.filteredGenesets = new HashMap<String, GeneSet>();
         this.enrichmentResults1OfInterest = new HashMap();
         this.enrichmentResults2OfInterest = new HashMap();
-        this.genesetsOfInterest = new HashMap();
+        this.genesetsOfInterest = new HashMap<String, GeneSet>();
         this.selectedNodes = new ArrayList<Node>();
         this.selectedEdges = new ArrayList<Edge>();
 
@@ -203,7 +206,7 @@ public class EnrichmentMapParameters {
         this();
 
         //Create a hashmap to contain all the values in the rpt file.
-        HashMap props = new HashMap();
+        HashMap<String, String> props = new HashMap<String, String>();
 
         String [] lines = propFile.split("\n");
 
@@ -215,60 +218,60 @@ public class EnrichmentMapParameters {
                 props.put(tokens[0] ,tokens[1]);
         }
 
-        this.NetworkName = (String)props.get("NetworkName");
-        this.attributePrefix = (String)props.get("attributePrefix");
+        this.NetworkName = props.get("NetworkName");
+        this.attributePrefix = props.get("attributePrefix");
 
-        this.GMTFileName = (String)props.get("GMTFileName");
-        this.GCTFileName1 = (String)props.get("GCTFileName1");
+        this.GMTFileName = props.get("GMTFileName");
+        this.GCTFileName1 = props.get("GCTFileName1");
 
-        this.enrichmentDataset1FileName1 = (String)props.get("enerichmentDataset1FileName1");
-        this.enrichmentDataset1FileName2 = (String)props.get("enrichmentDataset1FileName2");
+        this.enrichmentDataset1FileName1 = props.get("enerichmentDataset1FileName1");
+        this.enrichmentDataset1FileName2 = props.get("enrichmentDataset1FileName2");
 
-        this.dataset1Phenotype1 = (String)props.get("dataset1Phenotype1");
-        this.dataset1Phenotype2 = (String)props.get("dataset1Phenotype2");
-        this.dataset2Phenotype1 = (String)props.get("dataset2Phenotype1");
-        this.dataset2Phenotype2 = (String)props.get("dataset2Phenotype2");
+        this.dataset1Phenotype1 = props.get("dataset1Phenotype1");
+        this.dataset1Phenotype2 = props.get("dataset1Phenotype2");
+        this.dataset2Phenotype1 = props.get("dataset2Phenotype1");
+        this.dataset2Phenotype2 = props.get("dataset2Phenotype2");
 
-        if(((String)props.get("classFile1")).equalsIgnoreCase("null") )
+        if((props.get("classFile1")).equalsIgnoreCase("null") )
             this.classFile1 = null;
         else
-            this.classFile1 = (String)props.get("classFile1");
-        if(((String)props.get("classFile2")).equalsIgnoreCase("null"))
+            this.classFile1 = props.get("classFile1");
+        if((props.get("classFile2")).equalsIgnoreCase("null"))
             this.classFile2 = null;
         else
-            this.classFile2 = (String)props.get("classFile2");
+            this.classFile2 = props.get("classFile2");
 
         //boolean flags
-        if(((String)props.get("twoDatasets")).equalsIgnoreCase("true"))
+        if((props.get("twoDatasets")).equalsIgnoreCase("true"))
             this.twoDatasets = true;
-        if(((String)props.get("jaccard")).equalsIgnoreCase("false"))
+        if((props.get("jaccard")).equalsIgnoreCase("false"))
             this.jaccard = false;
-         if(((String)props.get("GSEA")).equalsIgnoreCase("false"))
+         if((props.get("GSEA")).equalsIgnoreCase("false"))
             this.GSEA = false;
-        if(((String)props.get("Data")).equalsIgnoreCase("true"))
+        if((props.get("Data")).equalsIgnoreCase("true"))
             this.Data = true;
-        if(((String)props.get("Data2")).equalsIgnoreCase("true"))
+        if((props.get("Data2")).equalsIgnoreCase("true"))
             this.Data2 = true;
-        if(((String)props.get("FDR")).equalsIgnoreCase("true"))
+        if((props.get("FDR")).equalsIgnoreCase("true"))
             this.FDR = true;
 
         if(twoDatasets){
             if(Data2)
-                this.GCTFileName2 = (String)props.get("GCTFileName2");
-            this.enrichmentDataset2FileName1 = (String)props.get("enerichmentDataset2FileName1");
-            this.enrichmentDataset2FileName2 = (String)props.get("enrichmentDataset2FileName2");
+                this.GCTFileName2 = props.get("GCTFileName2");
+            this.enrichmentDataset2FileName1 = props.get("enerichmentDataset2FileName1");
+            this.enrichmentDataset2FileName2 = props.get("enrichmentDataset2FileName2");
         }
         //cutoffs
-        setPvalue(Double.parseDouble((String)props.get("pvalue")));
-        setQvalue(Double.parseDouble((String)props.get("qvalue")));
+        setPvalue(Double.parseDouble(props.get("pvalue")));
+        setQvalue(Double.parseDouble(props.get("qvalue")));
 
         //older version had the similarityCutOff specified as jaccardCutOff.
         //need to check if this is an old session file
         String cutoff = null;
         if(props.get("jaccardCutOff") != null)
-            cutoff = (String)props.get("jaccardCutOff");
+            cutoff = props.get("jaccardCutOff");
         else
-            cutoff = (String)props.get("similarityCutOff");
+            cutoff = props.get("similarityCutOff");
 
         if(cutoff != null){
             this.similarityCutOff = Double.parseDouble(cutoff);
@@ -330,6 +333,8 @@ public class EnrichmentMapParameters {
         this.genesetsOfInterest = copy.getGenesetsOfInterest();
         this.datasetGenes = copy.getDatasetGenes();
         
+
+
     }
 
 
@@ -432,31 +437,31 @@ public class EnrichmentMapParameters {
         this.enrichmentResults2OfInterest = enrichmentResults2OfInterest;
     }
 
-    public HashMap getGenesetsOfInterest() {
+    public HashMap<String, GeneSet> getGenesetsOfInterest() {
 
         return genesetsOfInterest;
     }
 
-    public void setGenesetsOfInterest(HashMap genesetsOfInterest) {
+    public void setGenesetsOfInterest(HashMap<String, GeneSet> genesetsOfInterest) {
         this.genesetsOfInterest = genesetsOfInterest;
 
 
 
     }
 
-    public HashMap getGenesets() {
+    public HashMap<String, GeneSet> getGenesets() {
         return genesets;
     }
 
-    public void setGenesets(HashMap genesets) {
+    public void setGenesets(HashMap<String, GeneSet> genesets) {
         this.genesets = genesets;
     }
 
-    public HashMap getFilteredGenesets() {
+    public HashMap<String, GeneSet> getFilteredGenesets() {
         return filteredGenesets;
     }
 
-    public void setFilteredGenesets(HashMap filteredGenesets) {
+    public void setFilteredGenesets(HashMap<String, GeneSet> filteredGenesets) {
         this.filteredGenesets = filteredGenesets;
     }
 
@@ -540,7 +545,7 @@ public class EnrichmentMapParameters {
         return genes;
     }
 
-    public void setGenes(HashMap genes) {
+    public void setGenes(HashMap<String, Integer> genes) {
         this.genes = genes;
     }
 
@@ -601,7 +606,7 @@ public class EnrichmentMapParameters {
          for(Iterator j = genesets.keySet().iterator(); j.hasNext(); ){
 
              String geneset2_name = j.next().toString();
-             GeneSet current_set = (GeneSet) genesets.get(geneset2_name);
+             GeneSet current_set =  genesets.get(geneset2_name);
 
              //compare the HashSet of dataset genes to the HashSet of the current Geneset
              //only keep the genes from the geneset that are in the dataset genes
@@ -631,7 +636,7 @@ public class EnrichmentMapParameters {
 
         for(Iterator j = filteredGenesets.keySet().iterator(); j.hasNext(); ){
              String geneset2_name = j.next().toString();
-             GeneSet current_set = (GeneSet) filteredGenesets.get(geneset2_name);
+             GeneSet current_set = filteredGenesets.get(geneset2_name);
 
              //get the genes in the geneset
              HashSet<Integer> geneset_genes = current_set.getGenes();
@@ -887,7 +892,28 @@ public class EnrichmentMapParameters {
         //TODO: for Type-safety we should generate and return individual HashMaps specifying the correct Types 
 
         //Create a hashmap to contain all the values in the rpt file.
-        HashMap newMap = new HashMap();
+        HashMap newMap;
+
+        //GenesetSimilarity
+        if(type == 0)
+            newMap = new HashMap<String, GenesetSimilarity>();
+        //GeneSet
+        else if(type == 1)
+            newMap = new HashMap<String, GeneSet>();
+        //Genes
+        else if(type == 2)
+            newMap = new HashMap<String, Integer>();
+         //GSEAResults
+        else if(type == 3)
+            newMap = new HashMap<String, GSEAResult>();
+        //GenericResults
+        else if(type == 4)
+            newMap = new HashMap<String, GenericResult>();
+        //Hashmap key to gene
+        else if(type == 5)
+            newMap = new HashMap<Integer, String>();
+        else
+            newMap = new HashMap();
 
         String [] lines = fileInput.split("\n");
 
@@ -908,14 +934,13 @@ public class EnrichmentMapParameters {
                     newMap.put(tokens[0], new GeneSet(tokens));
 
             //Genes
-            if(type == 2) {
+            if(type == 2)
             // need to control the Type of the Objects inside the HashMap, otherwise
             // we can't store the List of Genes to new Nodes and Edges in a restored Session
             // e.g. in in the Signature-Post-Analysis
-                HashMap<String,Integer> newGeneMap = new HashMap<String,Integer>();
-                newGeneMap.put(tokens[0], Integer.parseInt(tokens[1]));
-                return newGeneMap;
-            }
+                newMap.put(tokens[0], Integer.parseInt(tokens[1]));
+
+
 
             //GseaResult
             if(type == 3)
@@ -929,9 +954,8 @@ public class EnrichmentMapParameters {
             // need to control the Type of the Objects inside the HashMap, otherwise
             // we can't store the List of Genes to new Nodes and Edges in a restored Session
             // e.g. in in the Signature-Post-Analysis
-                HashMap<Integer,String> newHash2geneMap = new HashMap<Integer, String>();
-                newHash2geneMap.put(Integer.parseInt(tokens[0]),tokens[1]);
-                return newHash2geneMap;
+                newMap.put(Integer.parseInt(tokens[0]),tokens[1]);
+
             }
 
         }
