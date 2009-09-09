@@ -109,7 +109,12 @@ public class EnrichmentMapManager implements PropertyChangeListener {
         else if (event.getPropertyName().equals(CytoscapeDesktop.NETWORK_VIEW_FOCUSED)) {
             networkFocusEvent(event, false);
         }
-
+        else if(event.getPropertyName().equals(Cytoscape.NETWORK_TITLE_MODIFIED)){
+            CyNetwork cyNetwork = Cytoscape.getCurrentNetwork();
+            String networkId = cyNetwork.getIdentifier();
+            EnrichmentMapParameters currentNetworkParams = cyNetworkList.get(networkId);
+            currentNetworkParams.setNetworkName(cyNetwork.getTitle());
+        }
         if (relevantEventFlag && !networkViewsRemain()) {
             onZeroNetworkViewsRemain();
         }

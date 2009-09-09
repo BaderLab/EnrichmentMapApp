@@ -159,6 +159,14 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
             EnrichmentMapParameters params = networks.get(networkId);
             String name = Cytoscape.getNetwork(networkId).getTitle();
 
+            //get the network name specified in the parameters
+            String param_name = params.getNetworkName();
+
+            //check to see if the name of the network matches the one specified in it parameters
+            //if the two names differ then use the network name specified by the user
+            if(!name.equalsIgnoreCase(param_name))
+                params.setNetworkName(name);
+
             File session_prop_file = new File(tmpDir, name+".props");
             File gmt = new File(tmpDir, name+".gmt");
             File genes = new File(tmpDir, name+".genes.txt");
@@ -263,7 +271,21 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
                     EnrichmentMapParameters params = new EnrichmentMapParameters(fullText);
 
                     //get the network name
-                    String name = params.getNetworkName();
+                    String param_name = params.getNetworkName();
+
+                    //get the network name from the file name
+                    String[] fullname = prop_file.getName().split("Enrichment_Map_Plugin_");
+                    String  props_name = (fullname[1].split("\\."))[0];
+                    String name = param_name;
+
+                    //check to see if the network name matches the name of the file
+                    //the network name specified in the props file is different from the name of the props
+                    //file then assume the name in the props file is wrong and set it to the file name (legacy issue)
+                    //related to bug ticket #49
+                    if(!props_name.equalsIgnoreCase(param_name)){
+                        name = props_name;
+                        params.setNetworkName(name);
+                    }
 
                     //register network and parameters
                     EnrichmentMapManager.getInstance().registerNetwork(Cytoscape.getNetwork(name),params);
