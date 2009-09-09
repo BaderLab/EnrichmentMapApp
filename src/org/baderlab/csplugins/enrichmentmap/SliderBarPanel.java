@@ -69,7 +69,7 @@ public class SliderBarPanel extends JPanel {
     /**
      * the height of the panel
      */
-    private final int DIM_HEIGHT = 75;
+    private final int DIM_HEIGHT = 72;
     /**
      * the width of the panel
      */
@@ -86,8 +86,9 @@ public class SliderBarPanel extends JPanel {
     private JLabel label;
 
     public SliderBarPanel(double min, double max, String sliderLabel, EnrichmentMapParameters params,String attrib1, String attrib2, int desired_width) {
-        setPreferredSize(new Dimension(DIM_WIDTH, DIM_HEIGHT));
-        setOpaque(false);
+        this.setPreferredSize(new Dimension(DIM_WIDTH, DIM_HEIGHT));
+        this.setLayout(new BorderLayout(0,0));
+        this.setOpaque(false);
 
         if((min <= 1) && (max <= 1)){
             this.min = (int)(min*precision);
@@ -100,16 +101,14 @@ public class SliderBarPanel extends JPanel {
         this.sliderLabel = sliderLabel;
 
         label = new JLabel(sliderLabel);
+
+        Dimension currentsize = label.getPreferredSize();
+        currentsize.height = DIM_HEIGHT/12;
+        label.setPreferredSize(currentsize);
         initPanel(params, attrib1, attrib2,desired_width);
     }
 
     public void initPanel(EnrichmentMapParameters params,String attrib1, String attrib2, int desired_width){
-
-
-
-        //rangeModel = new NumberRangeModel(min, max, min, max);
-        //JRangeSliderExtended slider = new JRangeSliderExtended(rangeModel,JRangeSlider.HORIZONTAL,
-        //                                                       JRangeSlider.LEFTRIGHT_TOPBOTTOM);
 
         JSlider slider = new JSlider(JSlider.HORIZONTAL,
                                       min, max, max);
@@ -131,15 +130,16 @@ public class SliderBarPanel extends JPanel {
 
         Dimension currentsize = slider.getPreferredSize();
         currentsize.width = desired_width;
+        currentsize.height = (DIM_HEIGHT/12) * 11;
         slider.setPreferredSize(currentsize);
 
         //JLabel label = new JLabel(sliderLabel);
 
         this.setLayout(new GridLayout(2,1));
 
-        this.add(label);
+        this.add(label, BorderLayout.NORTH);
 
-        this.add(slider);
+        this.add(slider,  BorderLayout.SOUTH);
 
         this.revalidate();
     }

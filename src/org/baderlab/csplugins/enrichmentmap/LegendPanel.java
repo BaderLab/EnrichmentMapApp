@@ -60,7 +60,7 @@ public class LegendPanel extends JPanel {
     /**
      * the height of the panel
      */
-    private final int DIM_HEIGHT = 45;
+    private final int DIM_HEIGHT = 35;
     /**
      * the width of the panel
      */
