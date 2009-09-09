@@ -46,6 +46,7 @@ package org.baderlab.csplugins.enrichmentmap;
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
+import java.net.URL;
 
 /**
  * Created by
@@ -79,7 +80,7 @@ public class ParametersPanel extends JPanel {
            runInfo.setEditable(false);
            runInfo.setContentType("text/html");
            runInfo.setText(getRunInfo(params));
-           runInfo.setPreferredSize(new Dimension(summaryPanelWidth,summaryPanelHeight));
+           runInfo.setPreferredSize(new Dimension(summaryPanelWidth,summaryPanelHeight/2));
            main.add(runInfo, BorderLayout.SOUTH);
 
             JScrollPane jScrollPane = new javax.swing.JScrollPane(main);
@@ -126,126 +127,91 @@ public class ParametersPanel extends JPanel {
     private JPanel createLegend(EnrichmentMapParameters params){
 
         JPanel legends = new JPanel();
+        setPreferredSize(new Dimension(summaryPanelWidth,summaryPanelHeight/2));
 
-        //legends.setPreferredSize(new Dimension(summaryPanelWidth,summaryPanelHeight/4));
         GridBagLayout gridbag = new GridBagLayout();
         GridBagConstraints c = new GridBagConstraints();
         legends.setLayout(gridbag);
 
         c.weighty = 1;
         c.weightx = 1;
-        c.fill = GridBagConstraints.HORIZONTAL;
+        c.fill = GridBagConstraints.NONE;
+        c.gridheight = 1;
+        c.anchor = GridBagConstraints.LINE_START;
+        c.insets = new Insets(5,30,5,2);
+        c.gridwidth = GridBagConstraints.REMAINDER;
 
-        //create a legend based on the colours of the nodes but use the mondrian gradients and rendering
 
-        //ColorGradientRange range = ColorGradientRange.getInstance(-1,0, 0,1, -1,0,0,1);
-        //ColorGradientTheme theme = ColorGradientTheme.ENRICHMENTMAP_NODE_THEME;
-        //ColorGradientWidget node_legend = ColorGradientWidget.getInstance("Node Colour Legend",summaryPanelWidth,60,5,5,theme,range,true,ColorGradientWidget.LEGEND_POSITION.TOP);
-
-        //first column - circle
+        //first row - circle
         c.gridx = 0;
         c.gridy = 0;
-        c.gridheight = 1;
-        NodeAndBorder node = new NodeAndBorder(20, Color.WHITE, Color.GRAY, "Node Color");
-        gridbag.setConstraints(node, c);
-        legends.add(node);
+
+        //represent the node color as an png/gif instead of using java to generate the representation
+        URL nodeIconURL = Enrichment_Map_Plugin.class.getResource("resources/node_color_small.png");
+        if (nodeIconURL != null) {
+            ImageIcon nodeIcon;
+             nodeIcon = new ImageIcon(nodeIconURL);
+            JLabel nodeColorLabel = new JLabel(nodeIcon);
+            gridbag.setConstraints(nodeColorLabel, c);
+            legends.add(nodeColorLabel);
+        }
 
         LegendPanel node_legend = new LegendPanel(-1.0,1.0,EnrichmentMapVisualStyle.max_phenotype1,EnrichmentMapVisualStyle.max_phenotype2, params.getDataset1Phenotype1(), params.getDataset1Phenotype2());
         node_legend.setToolTipText("Phenotype * (1-P_value)");
 
-        //first row - legend 1
+        //second row - legend 1
         c.gridx = 0;
-        c.gridy = 3;
-        c.gridheight = 1;
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.gridwidth = GridBagConstraints.REMAINDER;
-        //c.gridwidth = 10;
+        c.gridy = 1;
+        c.insets = new Insets(0,0,0,0);
         gridbag.setConstraints(node_legend, c);
         legends.add(node_legend);
 
-        //second row - phenotype labels
-       /* JLabel minlabel = new JLabel(params.getDataset1Phenotype2());
-        c.gridx = 1;
-        c.gridy = 1;
-        c.gridwidth = 1;
-        c.anchor = GridBagConstraints.LINE_START;
-        c.fill = GridBagConstraints.NONE;
-        gridbag.setConstraints(minlabel, c);
-        legends.add(minlabel);
-
-        JLabel maxlabel = new JLabel(params.getDataset1Phenotype1());
-        c.gridx = 10;
-        c.fill = GridBagConstraints.NONE;
-        c.anchor = GridBagConstraints.LINE_END;
-        c.gridy = 1;
-        c.gridwidth = GridBagConstraints.REMAINDER;
-        gridbag.setConstraints(maxlabel, c);
-        legends.add(maxlabel);
-         */
-
+        //If there are two datasets then we need to define the node border legend as well.
         if(params.isTwoDatasets()){
 
-            //first column - circle
+            //third row - circle
             c.gridx = 0;
-            c.gridy = 4;
+            c.gridy = 2;
+            c.insets = new Insets(5,30,5,2);
 
-            NodeAndBorder nodeborder = new NodeAndBorder(20, Color.GRAY, Color.WHITE, "Node Border Color");
-            gridbag.setConstraints(nodeborder, c);
-            legends.add(nodeborder);
+            //represent the node border color as an png/gif instead of using java to generate the representation
+            URL nodeborderIconURL = Enrichment_Map_Plugin.class.getResource("resources/node_border_color_small.png");
+            if (nodeborderIconURL != null) {
+                ImageIcon nodeborderIcon = new ImageIcon(nodeborderIconURL);
+                JLabel nodeborderColorLabel = new JLabel(nodeborderIcon);
+                gridbag.setConstraints(nodeborderColorLabel, c);
+                legends.add(nodeborderColorLabel);
+            }
 
-            //ColorGradientWidget node_legend2 = ColorGradientWidget.getInstance("Node Border Colour Legend",summaryPanelWidth,60,5,5,theme,range,true,ColorGradientWidget.LEGEND_POSITION.TOP);
             LegendPanel node_legend2 = new LegendPanel(-1.0,1.0,EnrichmentMapVisualStyle.max_phenotype1,EnrichmentMapVisualStyle.max_phenotype2, params.getDataset2Phenotype1(),params.getDataset2Phenotype2());
             node_legend2.setToolTipText("Phenotype * (1-P_value)");
 
-            //third row - legend 2
+            //fourth row - legend 2
             c.gridx = 0;
-            c.gridy = 5;
-            c.fill = GridBagConstraints.HORIZONTAL;
-            c.gridwidth = GridBagConstraints.REMAINDER;
+            c.gridy = 3;
+            c.insets = new Insets(0,0,0,0);
             gridbag.setConstraints(node_legend2, c);
             legends.add(node_legend2);
 
-            //fourth row - phenotypes
-           /* JLabel minlabel2 = new JLabel(params.getDataset2Phenotype2());
-            c.gridx = 1;
-            c.gridy = 3;
-            c.gridwidth = 1;
-            c.anchor = GridBagConstraints.LINE_START;
-            c.fill = GridBagConstraints.NONE;
-            gridbag.setConstraints(minlabel2, c);
-            legends.add(minlabel2);
-
-            JLabel maxlabel2 = new JLabel(params.getDataset2Phenotype1());
-            c.gridx = 10;
-            c.fill = GridBagConstraints.NONE;
-            c.anchor = GridBagConstraints.LINE_END;
-            c.gridwidth = GridBagConstraints.REMAINDER;
-            c.gridy = 3;
-            gridbag.setConstraints(maxlabel2, c);
-            legends.add(maxlabel2);  */
         }
 
 
             c.gridx = 0;
-            c.gridy = 6;
-            c.insets = new Insets(5,0,5,0);
+            c.gridy = 4;
+            c.insets = new Insets(0,0,0,0);
             c.fill = GridBagConstraints.NONE;
             c.gridwidth = GridBagConstraints.REMAINDER;
             c.anchor = GridBagConstraints.LINE_START;
             SliderBarPanel pvalueSlider = params.getPvalueSlider();
-            //pvalueSlider.setPreferredSize(new Dimension(summaryPanelWidth, 20));
 
             gridbag.setConstraints(pvalueSlider,c);
             legends.add(pvalueSlider);
 
             if(params.isFDR()){
-                SliderBarPanel qvalueSlider =params.getQvalueSlider();
+                SliderBarPanel qvalueSlider = params.getQvalueSlider();
 
                 c.gridx = 0;
-                c.gridy = 7;
-                c.insets = new Insets(5,0,5,0);
-                c.gridwidth = GridBagConstraints.REMAINDER;
-                c.anchor = GridBagConstraints.LINE_START;
+                c.gridy = 5;
                 //qvalueSlider.setPreferredSize(new Dimension(summaryPanelWidth, 20));
 
                 gridbag.setConstraints(qvalueSlider,c);
@@ -277,53 +243,5 @@ public class ParametersPanel extends JPanel {
 
     }
 
-    private class NodeAndBorder extends JPanel{
-
-          /**
-        * the height of the panel
-        */
-        private final int DIM_HEIGHT = 35;
-        /**
-        * the width of the panel
-        */
-        private final int DIM_WIDTH = 150;
-
-        Color color1;
-        Color color2;
-        int diameter;
-        String label;
-
-        //r indicates the diameter of the large circle
-        public NodeAndBorder(int r, Color c1,Color c2, String label){
-            this.diameter = r;
-            this.color1 = c1;
-            this.color2 = c2;
-            this.label = label;
-            setPreferredSize(new Dimension(DIM_WIDTH, DIM_HEIGHT));
-            setOpaque(false);
-        }
-
-        public void paint(Graphics g) {
-            Graphics2D ga = (Graphics2D)g;
-
-            //points to use for positioning
-            int x = 50;
-            int y = 12;
-
-            ga.setPaint(color1);
-            ga.fillOval(x, y, diameter, diameter);
-            ga.setPaint(Color.BLACK);
-            ga.drawOval(x, y, diameter, diameter);
-            ga.setPaint(color2);
-            ga.fillOval(x +(diameter/4),y +(diameter/4),(diameter/2),(diameter/2));
-            ga.setPaint(Color.BLACK);
-            ga.drawOval(x +(diameter/4),y +(diameter/4),(diameter/2),(diameter/2));
-            ga.setPaint(Color.BLACK);
-            ga.drawString(label,x-(label.length()), 10);
-
-
-
-        }
-    }
 
 }
