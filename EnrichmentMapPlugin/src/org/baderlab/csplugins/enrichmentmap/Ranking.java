@@ -68,6 +68,18 @@ public class Ranking {
         this.Rank = rank;
     }
 
+    public Ranking(String[] tokens){
+
+        //make sure that there are 4 tokens (hashkey, name, score, rank)
+        if(tokens.length != 4)
+            return;
+        
+        this.Name = tokens[1];
+        this.Score = Double.parseDouble(tokens[2]);
+        this.Rank = Integer.parseInt(tokens[3]);
+
+    }
+
     public String getName() {
         return Name;
     }
@@ -90,5 +102,9 @@ public class Ranking {
 
     public void setRank(Integer rank) {
         this.Rank = rank;
+    }
+
+    public String toString(){
+        return Name + "\t" + Score + "\t" + Rank ;
     }
 }

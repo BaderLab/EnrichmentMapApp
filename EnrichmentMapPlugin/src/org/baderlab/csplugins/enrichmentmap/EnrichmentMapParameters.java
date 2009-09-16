@@ -232,6 +232,14 @@ public class EnrichmentMapParameters {
         this.dataset2Phenotype1 = props.get("dataset2Phenotype1");
         this.dataset2Phenotype2 = props.get("dataset2Phenotype2");
 
+        //rank files 1
+        if(props.get("rankFile1")!= null){
+            if((props.get("rankFile1")).equalsIgnoreCase("null") )
+                this.dataset1RankedFile = null;
+            else
+                this.dataset1RankedFile = props.get("rankFile1");
+        }
+
         if((props.get("classFile1")).equalsIgnoreCase("null") )
             this.classFile1 = null;
         else
@@ -260,6 +268,13 @@ public class EnrichmentMapParameters {
                 this.GCTFileName2 = props.get("GCTFileName2");
             this.enrichmentDataset2FileName1 = props.get("enerichmentDataset2FileName1");
             this.enrichmentDataset2FileName2 = props.get("enrichmentDataset2FileName2");
+            //rankfile 2
+            if(props.get("rankFile2") != null){
+                if((props.get("rankFile2")).equalsIgnoreCase("null") )
+                    this.dataset2RankedFile = null;
+                 else
+                    this.dataset2RankedFile = props.get("rankFile2");
+            }
         }
         //cutoffs
         setPvalue(Double.parseDouble(props.get("pvalue")));
@@ -857,6 +872,10 @@ public class EnrichmentMapParameters {
         paramVariables += "classFile1\t" + classFile1  + "\n";
         paramVariables += "classFile2\t" + classFile2  + "\n";
 
+        //rank files
+        paramVariables += "rankFile1\t" + dataset1RankedFile + "\n";
+        paramVariables += "rankFile2\t" + dataset2RankedFile + "\n";
+
         //boolean flags
         paramVariables += "twoDatasets\t" + twoDatasets + "\n";
         paramVariables += "jaccard\t" + jaccard + "\n";
@@ -912,6 +931,9 @@ public class EnrichmentMapParameters {
         //Hashmap key to gene
         else if(type == 5)
             newMap = new HashMap<Integer, String>();
+        //Hashmap gene key to ranking
+        else if(type == 6)
+            newMap = new HashMap<Integer, Ranking>();
         else
             newMap = new HashMap();
 
@@ -957,6 +979,10 @@ public class EnrichmentMapParameters {
                 newMap.put(Integer.parseInt(tokens[0]),tokens[1]);
 
             }
+
+            //Rankings
+            if(type == 6)
+                newMap.put(Integer.parseInt(tokens[0]),new Ranking(tokens));
 
         }
 
