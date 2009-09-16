@@ -858,14 +858,10 @@ public class OverlappingGenesPanel extends JPanel {
        
         addComponent(northPanel,hmParams.createHeatMapOptionsPanel(), 2, 0, 1, 1,
                 GridBagConstraints.CENTER, GridBagConstraints.NONE);
-        
-       // northPanel.add(createLegendPanel());
-        if(hmParams.getNum_ranks() > 0){
-        	addComponent(northPanel,hmParams.createRankOptionsPanel(), 3, 0, 1, 1,
+
+        addComponent(northPanel,hmParams.createRankOptionsPanel(), 3, 0, 1, 1,
                     GridBagConstraints.CENTER, GridBagConstraints.NONE);
-        	//northPanel.add(hmParams.createRankOptionsPanel());
-        }
-        
+
         addComponent(northPanel,buttonPanel, 4, 0, 1, 1,
                 GridBagConstraints.CENTER, GridBagConstraints.NONE);
     	
