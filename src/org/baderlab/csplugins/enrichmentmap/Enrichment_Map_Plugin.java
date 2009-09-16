@@ -210,6 +210,15 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
                 subenr1writer.close();
                 pFileList.add(enrichmentresults1Ofinterest);
 
+                if(params.getDataset1RankedFile()!=null){
+                     File ranks1 = new File(tmpDir, name+".RANKS1.txt");
+                    BufferedWriter subrank1writer = new BufferedWriter(new FileWriter(ranks1));
+                    subrank1writer.write(params.printHashmap(params.getDataset1Rankings()));
+                    subrank1writer.close();
+                    pFileList.add(ranks1);
+
+                }
+
                 if(params.isTwoDatasets()){
                     enrichmentresults2 = new File(tmpDir, name+".ENR2.txt");
                     BufferedWriter enr2writer = new BufferedWriter(new FileWriter(enrichmentresults2));
@@ -222,6 +231,15 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
                     subenr2writer.write(params.printHashmap(params.getEnrichmentResults1OfInterest()));
                     subenr2writer.close();
                     pFileList.add(enrichmentresults2Ofinterest);
+
+                    if(params.getDataset2RankedFile()!=null){
+                        File ranks2 = new File(tmpDir, name+".RANKS2.txt");
+                        BufferedWriter subrank2writer = new BufferedWriter(new FileWriter(ranks2));
+                        subrank2writer.write(params.printHashmap(params.getDataset2Rankings()));
+                        subrank2writer.close();
+                        pFileList.add(ranks2);
+
+                    }
                 }
 
                 if(params.isData()){
@@ -338,6 +356,10 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
                         else
                             params.setEnrichmentResults1OfInterest(params.repopulateHashmap(fullText,4));
                     }
+                    if(prop_file.getName().contains(".RANKS1.txt")){
+                        params.setDataset1Rankings(params.repopulateHashmap(fullText,6));
+                    }
+
 
                     if(params.isTwoDatasets()){
                         if(prop_file.getName().contains(".ENR2.txt")){
@@ -352,6 +374,9 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
                             else
                                 params.setEnrichmentResults2OfInterest(params.repopulateHashmap(fullText,4));
                         }
+                    }
+                    if(prop_file.getName().contains(".RANKS2.txt")){
+                        params.setDataset2Rankings(params.repopulateHashmap(fullText,6));
                     }
                 }
 
