@@ -43,7 +43,14 @@
 
 package org.baderlab.csplugins.enrichmentmap;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Vector;
+
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableModel;
 
 /**
  * Created by
@@ -51,19 +58,23 @@ import javax.swing.table.AbstractTableModel;
  * Date: Jan 30, 2009
  * Time: 10:56:40 AM
  */
-public class OverlappingGenesTableModel  extends AbstractTableModel {
-
+public class OverlappingGenesTableModel  extends AbstractTableModel implements TableModelListener  {
+				
+				
                 private Object[] columnNames;
                 private Object[][] data;
+                private Object[][] expValue;
 
-
-                public OverlappingGenesTableModel(Object[] columnNames,Object[][] data){
+                public OverlappingGenesTableModel() {
+					// TODO Auto-generated constructor stub
+				}
+                public OverlappingGenesTableModel(Object[] columnNames,Object[][] data,Object[][] expValue){
                     super();
                     this.columnNames = columnNames;
                     this.data=data;
-
-                }
-
+                    this.expValue=expValue;
+                    }
+                
                 public int getColumnCount() {
                     return columnNames.length;
 
@@ -74,18 +85,11 @@ public class OverlappingGenesTableModel  extends AbstractTableModel {
                 }
 
                 public String getColumnName(int col) {
-
-
                      return (String)columnNames[col];
-
-
                 }
 
                 public Object getValueAt(int row, int col) {
-
-
-
-                    return data[row][col];
+                	  return data[row][col];
                 }
 
                 /*
@@ -93,10 +97,10 @@ public class OverlappingGenesTableModel  extends AbstractTableModel {
                  * editor for each cell.  If we didn't implement this method,
                  * then the last column would contain text ("true"/"false"),
                  * rather than a check box.
+                 * 
+                 * Used in TableSort to identify the class of the column
                  */
                 public Class getColumnClass(int c) {
-
-
                     return getValueAt(0, c).getClass();
                 }
 
@@ -108,22 +112,29 @@ public class OverlappingGenesTableModel  extends AbstractTableModel {
                     return false;
 
                 }
-
-
-                /*
+                
+               /*
                 * Don't need to implement this method unless your table's
                 * data can change.
                 */
                 public void setValueAt(Object value, int row, int col) {
-
-
                     data[row][col] = value;
-
-
                     fireTableCellUpdated(row, col);
-
-
                 }
 
+				public void setExpValueAt(Object value, int row, int col) {
+					expValue [row][col]= value;
+				}
+
+				public Object getExpValueAt(int row, int col) {
+				return expValue[row][col];
+				}
+
+
+				public void tableChanged(TableModelEvent e) {
+					// TODO Auto-generated method stub
+					fireTableChanged(e);
+				}
+				
     }
 

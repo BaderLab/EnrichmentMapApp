@@ -44,10 +44,20 @@
 package org.baderlab.csplugins.enrichmentmap;
 
 import javax.swing.*;
+import javax.swing.border.TitledBorder;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+
 import prefuse.data.query.NumberRangeModel;
 import org.mskcc.colorgradient.* ;
+
+import cytoscape.Cytoscape;
+import cytoscape.view.CytoscapeDesktop;
+import cytoscape.view.cytopanels.CytoPanel;
 
 /**
  * Created by
@@ -60,23 +70,52 @@ public class HeatMapParameters {
       private org.mskcc.colorgradient.ColorGradientTheme theme;
 
       private boolean rowNorm = false;
+      private boolean asIS= false;
       private boolean logtransform = false;
 
       private int num_ranks = 0;
-      private boolean rank_dataset1 = false;
-      private boolean rank_dataset2 = false;
+      private boolean noSort=false;
+
+     //there are two sorting type, either by rank file or by a specific column
+     private boolean sortbyrank = false;
+     private boolean sortbycolumn = false;
+
+     private String sortbycolumnName;
+
+    //tag to indicate if this was a column click or if this was a normalization click.
+     private boolean sortbycolumn_event_triggered = false;
+
+     //store the index of the rank file or the column that we are sorting by
+     private int sortIndex = 0;
 
       private double minExpression;
       private double maxExpression;
       private double minExpression_rownorm;
       private double maxExpression_rownorm;
+     
+      private JPanel heatmapOptions;
+      private JPanel RankOptions;
+      private JComboBox hmOptionComboBox;
+      private JComboBox rankOptionComboBox;
 
      private OverlappingGenesPanel edgeOverlapPanel;
      private OverlappingGenesPanel nodeOverlapPanel;
-
+     private boolean dataset1=false;
+     private boolean dataset2=false;
+     
+  
     public HeatMapParameters(OverlappingGenesPanel edgeOverlapPanel, OverlappingGenesPanel nodeOverlapPanel) {
         this.edgeOverlapPanel = edgeOverlapPanel;
         this.nodeOverlapPanel = nodeOverlapPanel;
+    }
+    
+    public OverlappingGenesPanel getEdgeOverlapPanel(){
+    	
+    	return edgeOverlapPanel;
+    }
+public OverlappingGenesPanel getNodeOverlapPanel(){
+    	
+    	return nodeOverlapPanel;
     }
 
     public void initColorGradients(GeneExpressionMatrix expression){
@@ -136,98 +175,81 @@ public class HeatMapParameters {
           }
 
       }
-
+// method to create Rank combo box
     public JPanel createRankOptionsPanel(){
-       JPanel RankOptions = new JPanel();
-        RankOptions.setLayout(new GridLayout(3,1));
-
-        JRadioButton noSort;
-        JRadioButton RankDataset1;
-        JRadioButton RankDataset2;
-        ButtonGroup rankView;
-
-        noSort = new JRadioButton("No Sorting");
-        noSort.setActionCommand("noSort");
-        RankDataset1 = new JRadioButton("Sort by Dataset1 Rank");
-        RankDataset1.setActionCommand("dataset1");
-        RankDataset2 = new JRadioButton("Sort by Dataset2 Rank");
-        RankDataset2.setActionCommand("dataset2");
-
-        if(rank_dataset1)
-            RankDataset1.setSelected(true);
-        else if(rank_dataset2)
-             RankDataset2.setSelected(true);
-        else
-            noSort.setSelected(true);
-
-         rankView = new javax.swing.ButtonGroup();
-         rankView.add(noSort);
-         rankView.add(RankDataset1);
-
-
-        noSort.addActionListener(new selectDataViewActionListener(edgeOverlapPanel, nodeOverlapPanel,this));
-        RankDataset1.addActionListener(new selectDataViewActionListener(edgeOverlapPanel, nodeOverlapPanel,this));
-
-        RankOptions.add(noSort);
-        RankOptions.add(RankDataset1);
-
-        if(num_ranks == 2){
-            rankView.add(RankDataset2);
-            RankDataset2.addActionListener(new selectDataViewActionListener(edgeOverlapPanel, nodeOverlapPanel,this));
-            RankOptions.add(RankDataset2);
+    	 TitledBorder RankBorder = BorderFactory.createTitledBorder("Sorting");
+    	 RankBorder.setTitleJustification(TitledBorder.LEFT);
+    	RankOptions 		= new JPanel();
+    	rankOptionComboBox	= new JComboBox();
+    	rankOptionComboBox.addItem("No Sort");
+        
+      // set the appropriate choices in rank combo box
+    	if(num_ranks==1){   
+    		if(isDataset1()){
+            rankOptionComboBox.addItem("Sort By Rank File Dataset 1");                    
+          }
+    		else if(isDataset2()){
+            rankOptionComboBox.addItem("Sort By Rank File Dataset 2");                    
+          }
+	}
+        if ( num_ranks==2){     
+        	rankOptionComboBox.addItem("Sort By Rank File Dataset 1");
+            rankOptionComboBox.addItem("Sort By Rank File Dataset 2");        	
         }
-
+        
+        
+        
+        // set the selection in the rank combo box
+        if(this.noSort){
+    		rankOptionComboBox.setSelectedItem("No Sort");            	
+        }
+    	else if(this.sortbyrank){
+            if(this.sortIndex == 1)
+                rankOptionComboBox.setSelectedItem("Sort By Rank File Dataset 1");
+            else if (this.sortIndex == 2)
+                rankOptionComboBox.setSelectedItem("Sort By Rank File Dataset 2");
+         }
+    	 else if(this.sortbycolumn){
+            //int columnNumber = this.sortIndex + 1;
+            rankOptionComboBox.addItem("Column: " + sortbycolumnName);
+            rankOptionComboBox.setSelectedItem("Column: " + sortbycolumnName);
+         }
+        
+        rankOptionComboBox.addActionListener(new selectDataViewActionListener(edgeOverlapPanel, nodeOverlapPanel,rankOptionComboBox,this));
+        RankOptions.add(rankOptionComboBox);
+        RankOptions.setBorder(RankBorder);
         return RankOptions;
     }
+    
 
+   // creates heat map combobox
     public JPanel createHeatMapOptionsPanel(){
-
-        JPanel heatmapOptions = new JPanel();
-        heatmapOptions.setPreferredSize(new Dimension(200,75));
-        heatmapOptions.setLayout(new GridLayout(3,1));
-
-        JRadioButton asIs;
-        JRadioButton rowNormalized;
-        JRadioButton logTransform;
-        ButtonGroup dataView;
-
-         asIs = new JRadioButton("Data As Is");
-         asIs.setActionCommand("asis");
-
-         rowNormalized = new JRadioButton("Row Normalize Data");
-         rowNormalized.setActionCommand("rownorm");
-
-        logTransform = new JRadioButton("Log Transform Data");
-        logTransform.setActionCommand("logtransform");
-
-         if(rowNorm)
-             rowNormalized.setSelected(true);
-         else if(logtransform)
-            logTransform.setSelected(true);
-         else
-             asIs.setSelected(true);
-
-         dataView = new javax.swing.ButtonGroup();
-         dataView.add(asIs);
-         dataView.add(rowNormalized);
-         dataView.add(logTransform);
-
-        asIs.addActionListener(new selectDataViewActionListener(edgeOverlapPanel, nodeOverlapPanel,this));
-
-        rowNormalized.addActionListener(new selectDataViewActionListener(edgeOverlapPanel, nodeOverlapPanel,this));
-
-        logTransform.addActionListener(new selectDataViewActionListener(edgeOverlapPanel, nodeOverlapPanel,this));
-
-        heatmapOptions.add(asIs);
-        heatmapOptions.add(rowNormalized);
-        heatmapOptions.add(logTransform);
-
+    	 TitledBorder HMBorder = BorderFactory.createTitledBorder("Normalization");
+    	 HMBorder.setTitleJustification(TitledBorder.LEFT);
+    	heatmapOptions   = new JPanel();
+    	hmOptionComboBox = new JComboBox();
+        hmOptionComboBox.addItem("Data As Is");
+        hmOptionComboBox.addItem("Row Normalize Data");
+        hmOptionComboBox.addItem("Log Transform Data"); 
+        
+        // set the selection in the heatmap combobox
+        if(this.isAsIS()){
+        	hmOptionComboBox.setSelectedItem("Data As Is");
+        }
+        else if(this.isRowNorm()){
+        	hmOptionComboBox.setSelectedItem("Row Normalize Data");
+        }
+        else if(this.isLogtransform()){
+        	hmOptionComboBox.setSelectedItem("Log Transform Data");
+        }
+        
+        hmOptionComboBox.addActionListener(new selectDataViewActionListener(edgeOverlapPanel, nodeOverlapPanel,hmOptionComboBox,this));
+        heatmapOptions.add(hmOptionComboBox);
+        heatmapOptions.setBorder(HMBorder);
         return heatmapOptions;
-
     }
-
-
-    public ColorGradientRange getRange() {
+    
+	public ColorGradientRange getRange() {
         return range;
     }
 
@@ -259,27 +281,88 @@ public class HeatMapParameters {
         this.logtransform = logtransform;
     }
 
-    public boolean isRank_dataset1() {
-        return rank_dataset1;
-    }
-
-    public void setRank_dataset1(boolean rank_dataset1) {
-        this.rank_dataset1 = rank_dataset1;
-    }
-
-    public boolean isRank_dataset2() {
-        return rank_dataset2;
-    }
-
-    public void setRank_dataset2(boolean rank_dataset2) {
-        this.rank_dataset2 = rank_dataset2;
-    }
-
     public int getNum_ranks() {
         return num_ranks;
     }
 
     public void setNum_ranks(int num_ranks) {
         this.num_ranks = num_ranks;
+    }
+
+	public void setAsIS(boolean asIS) {
+		this.asIS = asIS;
+	}
+
+	public boolean isAsIS() {
+		return asIS;
+	}
+	public boolean isDataset1() {
+		return dataset1;
+	}
+
+	public void setDataset1(boolean dataset1) {
+		this.dataset1 = dataset1;
+	}
+
+	public boolean isDataset2() {
+		return dataset2;
+	}
+
+	public void setDataset2(boolean dataset2) {
+		this.dataset2 = dataset2;
+	}
+
+	public boolean isNoSort() {
+		return noSort;
+	}
+	public void setNoSort(boolean nosort) {
+		this.noSort=nosort;
+	}
+
+    public boolean isSortbyrank() {
+        return sortbyrank;
+    }
+
+    public void setSortbyrank(boolean sortbyrank) {
+        this.sortbyrank = sortbyrank;
+    }
+
+    public boolean isSortbycolumn() {
+        return sortbycolumn;
+    }
+
+    public void setSortbycolumn(boolean sortbycolumn) {
+        this.sortbycolumn = sortbycolumn;
+    }
+
+    public int getSortIndex() {
+        return sortIndex;
+    }
+
+    public void setSortIndex(int sortIndex) {
+        this.sortIndex = sortIndex;
+    }
+
+    public void changeRankComboBoxToColumnSorted(){
+        int columnNumber = this.sortIndex + 1;
+        rankOptionComboBox.addItem("Column: " + sortbycolumnName);
+        rankOptionComboBox.setSelectedItem("Column: " + sortbycolumnName);
+
+    }
+
+    public boolean isSortbycolumn_event_triggered() {
+        return sortbycolumn_event_triggered;
+    }
+
+    public void setSortbycolumn_event_triggered(boolean sortbycolumn_event_triggered) {
+        this.sortbycolumn_event_triggered = sortbycolumn_event_triggered;
+    }
+
+    public String getSortbycolumnName() {
+        return sortbycolumnName;
+    }
+
+    public void setSortbycolumnName(String sortbycolumnName) {
+        this.sortbycolumnName = sortbycolumnName;
     }
 }
