@@ -73,7 +73,7 @@ public class AboutPanel extends JDialog {
 
 
         editorPane.setText(
-                "<html><body><p align=center><b>Enrichment Map v" + pluginVersion + 
+                "<html><body><p align=center><b>Enrichment Map v" + pluginVersion + " (beta)</b><BR>" + //TODO: remove "beta" on release  
                 "A Cytoscape Plugin<BR>" +
                 "<BR>" +
                 "Enrichment Map is a network-based method to visualize<BR>"+
