@@ -43,21 +43,20 @@
 
 package org.baderlab.csplugins.enrichmentmap;
 
+
 import cytoscape.util.FileUtil;
 
 import javax.swing.*;
+import javax.swing.border.TitledBorder;
 import javax.swing.table.TableColumnModel;
-import javax.swing.table.TableColumn;
+import javax.swing.table.JTableHeader;
 import java.awt.*;
-import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.util.*;
-import java.util.List;
 import java.io.*;
 
 import giny.model.Node;
 import giny.model.Edge;
-
 import org.mskcc.colorgradient.*;
 
 /**
@@ -73,10 +72,29 @@ public class OverlappingGenesPanel extends JPanel {
     private Object[] columnNames2;
     private String[] phenotypes;
     private String[] phenotypes2;
-
-    private int numConditions;
+    private Object[][] data;
+    private Object[][] expValue;
+    
+	private int numConditions;
     private int numConditions2;
-
+    
+    private String[] hRow1;   
+	private String[] hRow2;
+	private String[] rowGeneName;
+	private int[] rowLength;
+	private ColorGradientTheme [] rowTheme;
+	private ColorGradientRange [] rowRange;
+	
+	private int[] halfRow1Length;   
+	private int[] halfRow2Length;
+	private ColorGradientTheme [] themeHalfRow1;
+	private ColorGradientTheme [] themeHalfRow2;
+	private ColorGradientRange [] rangeHalfRow1;
+	private ColorGradientRange [] rangeHalfRow2;
+	private boolean[] isHalfRow1;
+	private boolean[] isHalfRow2;
+	private  final Insets insets = new Insets(0,0,0,0);
+    
     private HashMap currentExpressionSet;
     private HashMap currentExpressionSet2;
 
@@ -88,8 +106,13 @@ public class OverlappingGenesPanel extends JPanel {
     private String Dataset2phenotype2;
 
     private HeatMapParameters hmParams;
-
     private EnrichmentMapParameters params;
+    private OverlappingGenesTableModel OGT;
+
+    //boolean indicating which direction the column was last sorted by
+    private boolean[] column1_ascending;
+    private boolean[] column2_ascending;
+
 
     /**
      * Creates a new instance of OverlappingGenesPanel
@@ -98,7 +121,7 @@ public class OverlappingGenesPanel extends JPanel {
     public OverlappingGenesPanel(boolean node){
        this.node = node;
        this.setLayout(new java.awt.BorderLayout());
-
+     
 
     }
 
@@ -106,24 +129,30 @@ public class OverlappingGenesPanel extends JPanel {
         this.params = params;
 
         GeneExpressionMatrix expression = params.getExpression();
-
         numConditions = expression.getNumConditions();
         columnNames = expression.getColumnNames();
+        column1_ascending = new boolean[columnNames.length];
         phenotypes = expression.getPhenotypes();
 
         this.Dataset1phenotype1 = params.getDataset1Phenotype1();
         this.Dataset1phenotype2 = params.getDataset1Phenotype2();
 
         hmParams = params.getHmParams();
-
+        
+        if(params.getDataset1RankedFile() != null){
+        	hmParams.setDataset1(true);
+        }
+        if(params.getDataset2RankedFile() != null){
+        	hmParams.setDataset2(true);
+        }
         //specify how many rank files we have
         if(params.getDataset1RankedFile() != null && params.getDataset2RankedFile() != null){
             hmParams.setNum_ranks(2);
         }
-        else if(params.getDataset1RankedFile() != null || params.getDataset2RankedFile() != null){
+        else if(params.getDataset1RankedFile() != null || params.getDataset2RankedFile()!= null){
             hmParams.setNum_ranks(1);
         }
-
+        
         //get the current expressionSet
         if(node)
            currentExpressionSet = getNodeExpressionSet(params, expression);
@@ -136,6 +165,7 @@ public class OverlappingGenesPanel extends JPanel {
 
             numConditions2 = expression2.getNumConditions();
             columnNames2 = expression2.getColumnNames();
+            column2_ascending = new boolean[columnNames2.length-2]; //we don't have to repeat the name and description columns
             phenotypes2 = expression2.getPhenotypes();
 
             this.Dataset2phenotype1 = params.getDataset2Phenotype1();
@@ -156,42 +186,87 @@ public class OverlappingGenesPanel extends JPanel {
         updatePanel();
     }
 
-    public void updatePanel(){
-
-
+	public void updatePanel(){
         if(currentExpressionSet != null){
-            Object[][] data;
+
             JTable jTable1;
+            JTable rowTable;
             String[] mergedcolumnNames = null;
 
             JPanel mainPanel = new JPanel();
             mainPanel.setLayout(new BorderLayout());
-
-            mainPanel.add(createLegendPanel(), java.awt.BorderLayout.WEST);
-
-            //if there are rank files loaded allow the user to sort the data
-            if(hmParams.getNum_ranks() > 0)
-                mainPanel.add(hmParams.createRankOptionsPanel(),java.awt.BorderLayout.EAST );
+            TableSort sort;
 
             //create data subset
             if(params.isData2()){
-               data = createSortedMergedTableData();
+            	
+            	// used exp[][] value to store all the expression values needed to create data[][]
+            	expValue	= createSortedMergedTableData();
+            	data		= createSortedMergedTableData(getExpValue());
+            	          
                mergedcolumnNames = new String[columnNames.length + columnNames2.length - 2];
+               
                System.arraycopy(columnNames,0,mergedcolumnNames,0,columnNames.length);
                System.arraycopy(columnNames2,2, mergedcolumnNames,columnNames.length,columnNames2.length-2);
-               jTable1 = new JTable(new OverlappingGenesTableModel(mergedcolumnNames,data));
+               
+               //used OGT to minimize call of new JTable
+               OGT		=	new OverlappingGenesTableModel(mergedcolumnNames,data,expValue);
+               
             }
             else{
-               data = createSortedTableData();
-               jTable1 = new JTable(new OverlappingGenesTableModel(columnNames,data));
+            	// used exp[][] value to store all the expression values needed to create data[][]
+        	    expValue	=	createSortedTableData();
+                data 		=	createSortedTableData(getExpValue());
+            	
+                OGT			=	new OverlappingGenesTableModel(columnNames,data,expValue);
+               
             }
-            //Set up renderer and editor for the Color column.
-            jTable1.setDefaultRenderer(Color.class,new ColorRenderer());
 
+            sort = new TableSort(OGT);
+            jTable1 = new JTable(sort);
+            
+            // used for listening to columns when clicked
+            TableHeader header = new TableHeader(sort, jTable1, hmParams);
+
+            JTableHeader tableHdr= jTable1.getTableHeader();
+		    tableHdr.addMouseListener(header);
+
+            //check to see if there is already a sort been defined for this table
+            if(hmParams.isSortbycolumn()){
+                boolean ascending;
+
+                if(hmParams.getSortIndex()>=columnNames.length){
+                    ascending = column2_ascending[hmParams.getSortIndex()-columnNames.length];
+                    hmParams.setSortbycolumnName((String)columnNames2[hmParams.getSortIndex()-columnNames.length+2]);
+                }
+                else{
+                    ascending = column1_ascending[hmParams.getSortIndex()];
+                    hmParams.setSortbycolumnName((String)columnNames[hmParams.getSortIndex()]);
+                }
+                //only swap the direction of the sort if a column sort action was triggered
+                if(hmParams.isSortbycolumn_event_triggered()){
+                    //reset sort column trigger
+                    hmParams.setSortbycolumn_event_triggered(false);
+
+                    //change the ascending boolean flag for the column we are about to sort by
+                    //if the index is larger than column name 1 then it is from the second dataset
+                    if(hmParams.getSortIndex()>=columnNames.length){
+                        column2_ascending[hmParams.getSortIndex()-columnNames.length] = !column2_ascending[hmParams.getSortIndex()-columnNames.length];
+                        ascending = column2_ascending[hmParams.getSortIndex()-columnNames.length];
+                    }
+                    else{
+                        column1_ascending[hmParams.getSortIndex()] = !column1_ascending[hmParams.getSortIndex()];
+                        ascending = column1_ascending[hmParams.getSortIndex()];
+                    }
+                }
+                header.sortByColumn(hmParams.getSortIndex(), ascending);
+            }
+            
+          //Set up renderer and editor for the Color column.
+            jTable1.setDefaultRenderer(Color.class,new ColorRenderer());
             TableColumnModel tcModel = jTable1.getColumnModel();
             jTable1.setDragEnabled(false);
             jTable1.setCellSelectionEnabled(true);
-
 
             //set the table header renderer to the vertical renderer
             ColumnHeaderVerticalRenderer pheno1_renderer = new ColumnHeaderVerticalRenderer();
@@ -254,26 +329,95 @@ public class OverlappingGenesPanel extends JPanel {
 
                 }
             }
-
+            
+          
             jTable1.setColumnModel(tcModel);
+            JScrollPane jScrollPane = new javax.swing.JScrollPane(jTable1);
+            rowTable =new RowNumberTable(jTable1);
+            jScrollPane.setRowHeaderView(rowTable );
+            
             if(columnNames.length>20)
                 jTable1.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-
-            JScrollPane jScrollPane = new javax.swing.JScrollPane(jTable1);
 
             mainPanel.add(jScrollPane);
             mainPanel.revalidate();
 
-            this.add(mainPanel, java.awt.BorderLayout.CENTER);
+    		this.add(createNorthPanel(), java.awt.BorderLayout.NORTH);
+            this.add(jScrollPane, java.awt.BorderLayout.CENTER);
         }
         this.revalidate();
 
 
     }
 
-    private Object[][] createSortedTableData(){
-         Object[][] data = new Object[currentExpressionSet.size()][numConditions];
-        //Got through the hashmap and put all the values is
+    private Object[][] createSortedTableData(Object[][] expValue2) {
+    	this.expValue=expValue2;
+    	
+    	int[] HRow=this.getRowLength();    	
+    	ColorGradientTheme[] RowCRT=this.getRowTheme();
+    	ColorGradientRange[] RowCRR=this.getRowRange();
+    	String[] RowGene=this.getRowGeneName();
+    	  	
+    	int kValue=currentExpressionSet.size();
+    	data = new Object[currentExpressionSet.size()][numConditions];
+    	for(int k=0;k<kValue;k++){
+    		
+        	
+            data[k][0] =  expValue[k][0];        	        
+            data[k][1] = expValue[k][1];            
+    		
+    		for(int j=0;j<HRow[k];j++){
+    			data[k][j+2] = ColorGradientMapper.getColorGradient(RowCRT[k],RowCRR[k],RowGene[k],(Double)expValue[k][j+2]);
+    	     }
+      	    	
+    	}
+		// TODO Auto-generated method stub
+		return data;
+	}
+
+	private Object[][] createSortedMergedTableData(Object[][] expValue) {
+    	this.expValue=expValue;
+    	
+    	int[] HRow1						=this.getHalfRow1Length();
+    	int[] HRow2						=this.getHalfRow2Length();
+    	ColorGradientTheme[] Row1CRT	=this.getThemeHalfRow1();
+    	ColorGradientTheme[] Row2CRT	=this.getThemeHalfRow2();
+    	ColorGradientRange[] Row1CRR	=this.getRangeHalfRow1();
+    	ColorGradientRange[] Row2CRR	=this.getRangeHalfRow2();
+    	String[] Row1gene				=this.gethRow1();
+    	String[] Row2gene				=this.gethRow2();
+    	
+    	
+    	int kValue=Math.max(currentExpressionSet.size(), currentExpressionSet2.size());
+    	int totalConditions = (numConditions + numConditions2-2);
+    	data = new Object[Math.max(currentExpressionSet.size(), currentExpressionSet2.size())][totalConditions];
+    	for(int k=0;k<kValue;k++){
+    		
+        	       		 
+            data[k][0] = expValue[k][0];      
+            data[k][1] = expValue[k][1];            
+    		
+    		for(int j=0;j<HRow1[k];j++){
+    			data[k][j+2] = ColorGradientMapper.getColorGradient(Row1CRT[k],Row1CRR[k],Row1gene[k],(Double)expValue[k][j+2]);
+    	     }
+      	
+    		for(int j=HRow1[k];j<HRow2[k];j++){
+    			data[k][j+2] = ColorGradientMapper.getColorGradient(Row2CRT[k],Row2CRR[k],Row2gene[k],(Double)expValue[k][j+2]);
+    	     }
+        
+    	}
+		
+		return data;
+	}
+
+	private Object[][] createSortedTableData(){
+
+         expValue 		= new Object[currentExpressionSet.size()][numConditions];
+         rowLength		= new int[currentExpressionSet.size()];
+         rowTheme		= new ColorGradientTheme[currentExpressionSet.size()];
+         rowGeneName	= new String[currentExpressionSet.size()];
+         rowRange		= new ColorGradientRange[currentExpressionSet.size()];
+         //Got through the hashmap and put all the values is
 
         Integer[] ranks_subset = new Integer[currentExpressionSet.size()];
 
@@ -281,10 +425,16 @@ public class OverlappingGenesPanel extends JPanel {
 
         //Get the ranks for all the keys, if there is a ranking file
         HashMap<Integer,Ranking> ranks;
-        if(hmParams.isRank_dataset1())
-            ranks = params.getDataset1Rankings();
-        else if(hmParams.isRank_dataset2())
-            ranks = params.getDataset2Rankings();
+        if(hmParams.isSortbyrank()){
+            if(hmParams.getSortIndex() == 1)
+                ranks = params.getDataset1Rankings();
+            else if(hmParams.getSortIndex() == 2)
+                ranks = params.getDataset2Rankings();
+            else
+               throw new IllegalThreadStateException("invalid sort index for rank files.");
+                //invalid ranks file number
+        }
+
         else{
             //create default ranks
             int r = 1;
@@ -309,7 +459,6 @@ public class OverlappingGenesPanel extends JPanel {
             else{
                rank2keys.get(ranks_subset[n]).add(key);
             }
-
             n++;
         }
         //sort ranks
@@ -331,46 +480,75 @@ public class OverlappingGenesPanel extends JPanel {
                 Integer key = (Integer)p.next();
 
                 //Current expression row
-                GeneExpression row = (GeneExpression)currentExpressionSet.get(key);
+                GeneExpression row 		= (GeneExpression)currentExpressionSet.get(key);
                 Double[] expression_values;
                 if(hmParams.isRowNorm())
-                   expression_values = row.rowNormalize();
+                   expression_values 	= row.rowNormalize();
                 else if(hmParams.isLogtransform())
-                   expression_values = row.rowLogTransform();
+                   expression_values 	= row.rowLogTransform();
                 else
-                   expression_values   = row.getExpression();
-
-                data[k][0] = row.getName();
-                data[k][1] = row.getDescription();
-
-                for(int j = 0; j < row.getExpression().length;j++){
-
-                   data[k][j+2] = ColorGradientMapper.getColorGradient(hmParams.getTheme(),hmParams.getRange(),row.getName(),expression_values[j]);
-
+                   expression_values   	= row.getExpression();
+                // stores the gene names in column 0
+                try{ // stores file name if the file contains integer (inserted to aid sorting) 
+                	expValue[k][0]=Integer.parseInt(row.getName());
+                }
+                catch (NumberFormatException v){   // if not integer stores as string (inserted to aid sorting)            	
+                	expValue[k][0]=row.getName();
+                }
+                
+                expValue[k][1]=row.getDescription(); // stores the description
+               
+                rowLength[k]=row.getExpression().length;
+                rowTheme[k]=hmParams.getTheme();
+                rowRange[k]=hmParams.getRange();
+                rowGeneName[k]=row.getName();
+                
+                for(int j = 0; j < row.getExpression().length;j++){                
+                    expValue[k][j+2]=expression_values[j];
                 }
                 k++;
              }
          }
-        return data;
+
+        this.setRowTheme(rowTheme);
+        this.setRowGeneName(rowGeneName);
+        this.setRowRange(rowRange);
+        this.setExpValue(expValue);
+        return expValue;
     }
 
-     private Object[][] createSortedMergedTableData(){
+	private Object[][] createSortedMergedTableData(){
 
         int totalConditions = (numConditions + numConditions2-2);
 
-        Object[][] data = new Object[Math.max(currentExpressionSet.size(), currentExpressionSet2.size())][totalConditions];
-
-
+        int kValue=Math.max(currentExpressionSet.size(), currentExpressionSet2.size());
+        expValue = new Object[Math.max(currentExpressionSet.size(), currentExpressionSet2.size())][totalConditions];
+        hRow1= new String[kValue];
+        hRow2= new String[kValue];
+        halfRow1Length= new int[kValue];
+        halfRow2Length= new int[kValue];
+        isHalfRow1 = new boolean[kValue];
+        isHalfRow2 = new boolean[kValue];
+        rangeHalfRow1= new ColorGradientRange[kValue];
+        rangeHalfRow2= new ColorGradientRange[kValue];
+        themeHalfRow1= new ColorGradientTheme[kValue];
+        themeHalfRow2= new ColorGradientTheme[kValue];
+                       
         Integer[] ranks_subset = new Integer[currentExpressionSet.size()];
 
         HashMap<Integer, ArrayList<Integer>> rank2keys = new HashMap<Integer,ArrayList<Integer>>();
 
         //Get the ranks for all the keys, if there is a ranking file
          HashMap<Integer,Ranking> ranks;
-         if(hmParams.isRank_dataset1())
-             ranks = params.getDataset1Rankings();
-         else if(hmParams.isRank_dataset2())
-             ranks = params.getDataset2Rankings();
+         if(hmParams.isSortbyrank()){
+            if(hmParams.getSortIndex() == 1)
+                ranks = params.getDataset1Rankings();
+            else if(hmParams.getSortIndex() == 2)
+                ranks = params.getDataset2Rankings();
+            else
+               throw new IllegalThreadStateException("invalid sort index for rank files.");
+                //invalid ranks file number
+        }
          else{
              //create default ranks
              int r = 1;
@@ -421,13 +599,16 @@ public class OverlappingGenesPanel extends JPanel {
 
                 //get the corresponding row from the second dataset
                 GeneExpression halfRow2 = (GeneExpression)currentExpressionSet2.get(currentKey);
-
+                
                 Double[] expression_values1 = null;
                 Double[] expression_values2 = null;
+               
                 if(hmParams.isRowNorm()){
                     if(halfRow1 != null)
+                    	isHalfRow1[k]=true;
                         expression_values1 = halfRow1.rowNormalize();
                     if(halfRow2 != null)
+                    	isHalfRow2[k]=true;
                         expression_values2 = halfRow2.rowNormalize();
                 }
                 else if(hmParams.isLogtransform()){
@@ -444,12 +625,30 @@ public class OverlappingGenesPanel extends JPanel {
                 }
 
                 if(halfRow1 != null){
-                    data[k][0] = halfRow1.getName();
-                    data[k][1] = halfRow1.getDescription();
+                	try{
+                		
+                		expValue[k][0] = Integer.parseInt(halfRow1.getName());
+                        
+                	}
+                	catch (NumberFormatException e){
+                		
+                        expValue[k][0]= halfRow1.getName();
+                	}
+                    
+                    //data[k][1] = halfRow1.getDescription();
+                    expValue[k][1]= halfRow1.getDescription();
                 }
                 else if(halfRow2 != null){
-                    data[k][0] = halfRow2.getName();
-                    data[k][1] = halfRow2.getDescription();
+                	try{
+                		//data[k][0] = Integer.parseInt(halfRow2.getName());
+                        expValue[k][0]= Integer.parseInt(halfRow2.getName());
+                	}
+                	catch (NumberFormatException e){
+                		//data[k][0] = halfRow2.getName();
+                        expValue[k][0]= halfRow2.getName();
+                	}
+                    //data[k][1] = halfRow2.getDescription();
+                    expValue[k][1]= halfRow2.getDescription();
                 }
 
                //if either of the expression_values is null set the array to have no data
@@ -463,30 +662,47 @@ public class OverlappingGenesPanel extends JPanel {
                     for(int q = 0; m < expression_values2.length;q++)
                        expression_values2[q] = null;
                 }
-
-
-                for(int j = 0; j < halfRow1.getExpression().length;j++){
-
-                  data[k][j+2] = ColorGradientMapper.getColorGradient(hmParams.getTheme(),hmParams.getRange(),halfRow1.getName(),expression_values1[j]);
-
-                }
+                
+                halfRow1Length[k]=halfRow1.getExpression().length;
+                themeHalfRow1[k]=hmParams.getTheme();
+            	rangeHalfRow1[k]=hmParams.getRange();
+            	hRow1[k]=halfRow1.getName();
+                for(int j = 0; j < halfRow1.getExpression().length;j++){                	
+                	expValue[k][j+2]=expression_values1[j];      	
+                  }
+                halfRow2Length[k]=(halfRow1.getExpression().length + halfRow2.getExpression().length);
+                themeHalfRow2[k]=hmParams.getTheme();
+            	rangeHalfRow2[k]=hmParams.getRange();
+            	hRow2[k]=halfRow1.getName();
                 for(int j = halfRow1.getExpression().length; j < (halfRow1.getExpression().length + halfRow2.getExpression().length);j++){
-
-                   data[k][j+2] = ColorGradientMapper.getColorGradient(hmParams.getTheme(),hmParams.getRange(),halfRow2.getName(),expression_values2[j-halfRow1.getExpression().length]);
-
-                }
+                	      	expValue[k][j+2]=expression_values2[j-halfRow1.getExpression().length];                }
 
                 k++;
             }
+            
         }
-
-        return data;
+        this.setThemeHalfRow1(themeHalfRow1);            
+        this.setRangeHalfRow1(rangeHalfRow1);
+        this.setHalfRow1Length(halfRow1Length);
+        this.sethRow1(hRow1);
+        this.setIsHalfRow1(isHalfRow1);
+        
+        
+        this.setThemeHalfRow2(themeHalfRow2);
+        this.setRangeHalfRow2(rangeHalfRow2);
+        this.setHalfRow2Length(halfRow2Length);
+        this.sethRow2(hRow2);
+        this.setIsHalfRow2(isHalfRow2);
+        
+       this.setExpValue(expValue);
+        return expValue;
     }
 
 
     private Object[][] createTableData(){
 
-        Object[][] data = new Object[currentExpressionSet.size()][numConditions];
+        
+        expValue = new Object[currentExpressionSet.size()][numConditions];
         //Got through the hashmap and put all the values is
 
         int k = 0;
@@ -502,16 +718,18 @@ public class OverlappingGenesPanel extends JPanel {
                  expression_values   = row.getExpression();
 
             data[k][0] = row.getName();
+            expValue[k][0]=row.getName();
             data[k][1] = row.getDescription();
-
+            expValue[k][1]=row.getDescription();
             for(int j = 0; j < row.getExpression().length;j++){
-
-                data[k][j+2] = ColorGradientMapper.getColorGradient(hmParams.getTheme(),hmParams.getRange(),row.getName(),expression_values[j]);
+            	expValue[k][j+2]=expression_values[j];
+                data[k][j+2] = ColorGradientMapper.getColorGradient(hmParams.getTheme(),hmParams.getRange(),row.getName(),(Double)expValue[k][j+2]);
 
             }
             k++;
         }
-        return data;
+        this.setExpValue(expValue);
+        return expValue;
     }
 
 
@@ -519,8 +737,7 @@ public class OverlappingGenesPanel extends JPanel {
     private Object[][] createMergedTableData(){
 
         int totalConditions = (numConditions + numConditions2-2);
-
-        Object[][] data = new Object[Math.max(currentExpressionSet.size(), currentExpressionSet2.size())][totalConditions];
+        expValue = new Object[Math.max(currentExpressionSet.size(), currentExpressionSet2.size())][totalConditions];
 
         //Got through the hashmap and put all the values is
 
@@ -558,12 +775,16 @@ public class OverlappingGenesPanel extends JPanel {
 
             if(halfRow1 != null){
                 data[k][0] = halfRow1.getName();
+                expValue[k][0]=halfRow1.getName();
                 data[k][1] = halfRow1.getDescription();
+                expValue[k][0]=halfRow1.getDescription();
             }
             else if(halfRow2 != null){
-                data[k][0] = halfRow2.getName();
+            	data[k][0] = halfRow2.getName();
+                expValue[k][0]=halfRow2.getName();
                 data[k][1] = halfRow2.getDescription();
-            }
+                expValue[k][0]=halfRow2.getDescription();
+                }
 
             //if either of the expression_values is null set the array to have no data
             if(expression_values1 == null){
@@ -579,52 +800,87 @@ public class OverlappingGenesPanel extends JPanel {
 
 
             for(int j = 0; j < halfRow1.getExpression().length;j++){
-
-                data[k][j+2] = ColorGradientMapper.getColorGradient(hmParams.getTheme(),hmParams.getRange(),halfRow1.getName(),expression_values1[j]);
-
+            	expValue[k][j+2]=expression_values1[j];
+                //data[k][j+2] = ColorGradientMapper.getColorGradient(hmParams.getTheme(),hmParams.getRange(),halfRow1.getName(),(Double)expValue[k][j+2]);
+                
             }
             for(int j = halfRow1.getExpression().length; j < (halfRow1.getExpression().length + halfRow2.getExpression().length);j++){
-
-                data[k][j+2] = ColorGradientMapper.getColorGradient(hmParams.getTheme(),hmParams.getRange(),halfRow2.getName(),expression_values2[j-halfRow1.getExpression().length]);
-
-            }
+            	expValue[k][j+2]=expression_values2[j-halfRow1.getExpression().length];
+                //data[k][j+2] = ColorGradientMapper.getColorGradient(hmParams.getTheme(),hmParams.getRange(),halfRow2.getName(),(Double)expValue[k][j+2]);
+                }
 
             k++;
         }
-        return data;
+        this.setExpValue(expValue);
+        return expValue;
     }
-
-    private JPanel createLegendPanel(){
-
-        JPanel westPanel = new JPanel();
-        westPanel.setLayout(new BorderLayout());
-        JPanel topPanel = new JPanel();
-        JPanel buttonPanel = new JPanel();
-        topPanel.setLayout(new GridLayout(2,1));
-
-
-        ColorGradientWidget new_legend = ColorGradientWidget.getInstance("expression legend",150,60,5,5,hmParams.getTheme(),hmParams.getRange(),true,ColorGradientWidget.LEGEND_POSITION.TOP);
-
-        JButton SaveExpressionSet = new JButton("Save Expression Set");
-
+    // created new North panel to accommodate the expression legend, normalization options,sorting options, saving option
+   private JPanel emptyPanel(){
+	   JPanel empty= new JPanel() ;
+	   empty.setMaximumSize(new Dimension(50,50));
+	   empty.setMinimumSize(new Dimension(50,50));
+	   return empty;
+   }
+    private JPanel expressionLegendPanel(){
+    	JPanel expLegendPanel = new JPanel();
+    	
+    	 TitledBorder expBorder = BorderFactory.createTitledBorder("Expression legend");
+    	 expBorder.setTitleJustification(TitledBorder.LEFT);
+    	 expLegendPanel.setBorder(expBorder);
+    	   	 
+    	ColorGradientWidget new_legend = ColorGradientWidget.getInstance("",200,30,5,5,hmParams.getTheme(),hmParams.getRange(),true,ColorGradientWidget.LEGEND_POSITION.LEFT);
+    	
+    	expLegendPanel.add(new_legend);
+    	expLegendPanel.revalidate();
+    	return expLegendPanel;
+    }
+    private JPanel createNorthPanel(){
+    	
+    	JPanel northPanel = new JPanel();// new north panel
+    	JPanel buttonPanel = new JPanel();// brought button panel from westPanel
+    	//northPanel.setLayout(new GridLayout(1,4));
+    	northPanel.setLayout(new GridBagLayout());
+    	
+    	JButton SaveExpressionSet = new JButton("Save Expression Set");
         SaveExpressionSet.addActionListener(new java.awt.event.ActionListener() {
                public void actionPerformed(java.awt.event.ActionEvent evt) {
                       saveExpressionSetActionPerformed(evt);
                }
          });
+        
         buttonPanel.add(SaveExpressionSet);
-
-        topPanel.add(new_legend);
-        topPanel.add(buttonPanel);
-
-        westPanel.add(topPanel, BorderLayout.NORTH);
-
-        westPanel.add(hmParams.createHeatMapOptionsPanel(),BorderLayout.SOUTH);
-
-        westPanel.revalidate();
-        return westPanel;
+        addComponent(northPanel,expressionLegendPanel(), 0, 0, 1, 1,
+                GridBagConstraints.WEST, GridBagConstraints.NONE);
+        
+        addComponent(northPanel,emptyPanel(), 1, 0, 1, 1,
+                GridBagConstraints.WEST, GridBagConstraints.NONE);
+        
+       
+        addComponent(northPanel,hmParams.createHeatMapOptionsPanel(), 2, 0, 1, 1,
+                GridBagConstraints.CENTER, GridBagConstraints.NONE);
+        
+       // northPanel.add(createLegendPanel());
+        if(hmParams.getNum_ranks() > 0){
+        	addComponent(northPanel,hmParams.createRankOptionsPanel(), 3, 0, 1, 1,
+                    GridBagConstraints.CENTER, GridBagConstraints.NONE);
+        	//northPanel.add(hmParams.createRankOptionsPanel());
+        }
+        
+        addComponent(northPanel,buttonPanel, 4, 0, 1, 1,
+                GridBagConstraints.CENTER, GridBagConstraints.NONE);
+    	
+        //northPanel.add(buttonPanel);
+        northPanel.revalidate();
+    return northPanel;
     }
-
+    private  void addComponent(Container container, Component component,
+    	      int gridx, int gridy, int gridwidth, int gridheight, int anchor,
+    	      int fill) {
+    	    GridBagConstraints gbc = new GridBagConstraints(gridx, gridy,
+    	      gridwidth, gridheight, 1.0, 1.0, anchor, fill, insets, 0, 0);
+    	    container.add(component, gbc);
+    	  }
+   
    private void saveExpressionSetActionPerformed(ActionEvent evt){
         java.io.File file = FileUtil.getFile("Export Heatmap as txt File", FileUtil.SAVE);
         if (file != null && file.toString() != null) {
@@ -675,9 +931,7 @@ public class OverlappingGenesPanel extends JPanel {
 
                 Node current_node = (Node)nodes[i];
                 String nodename = current_node.getIdentifier();
-
                 GeneSet current_geneset = (GeneSet)params.getGenesetsOfInterest().get(nodename);
-
                 HashSet current_set = current_geneset.getGenes();
 
                 if( union == null){
@@ -723,14 +977,204 @@ public class OverlappingGenesPanel extends JPanel {
         }
         return null;
     }
+    Object[][] getExpValue() {
+		return expValue;
+	}
+    private Object getExpValue(int row, int col) {
+		return expValue[row][col];
+	}
+    private String[] gethRow1() {
+		return hRow1;
+	}
 
+	private void sethRow1(String[] hRow1) {
+		this.hRow1 = hRow1;
+	}
 
+	private String[] gethRow2() {
+		return hRow2;
+	}
+
+	private void sethRow2(String[] hRow2) {
+		this.hRow2 = hRow2;
+	}
+
+	private void setExpValue(int i,int j,Object expressionValues2) {
+		this.expValue[i][j] = expressionValues2;
+	}
+	void setExpValue(Object[][] expValue){
+		this.expValue=expValue;
+	}
 
     public void clearPanel(){
-
         this.removeAll();
         this.revalidate();
     }
+
+	/**
+	 * @param halfRow1Length the halfRow1Length to set
+	 */
+	public void setHalfRow1Length(int[] halfRow1Length) {
+		this.halfRow1Length = halfRow1Length;
+	}
+
+	/**
+	 * @return the halfRow1Length
+	 */
+	public int[] getHalfRow1Length() {
+		return halfRow1Length;
+	}
+
+	/**
+	 * @param hRow2Length the hRow2Length to set
+	 */
+	public void setHalfRow2Length(int[] hRow2Length) {
+		this.halfRow2Length = hRow2Length;
+	}
+
+	/**
+	 * @return the hRow2Length
+	 */
+	public int[] getHalfRow2Length() {
+		return halfRow2Length;
+	}
+
+	/**
+	 * @param themeHalfRow1 the themeHalfRow1 to set
+	 */
+	public void setThemeHalfRow1(ColorGradientTheme [] themeHalfRow1) {
+		this.themeHalfRow1 = themeHalfRow1;
+	}
+
+	/**
+	 * @return the themeHalfRow1
+	 */
+	public ColorGradientTheme [] getThemeHalfRow1() {
+		return themeHalfRow1;
+	}
+
+	/**
+	 * @param themeHalfRow2 the themeHalfRow2 to set
+	 */
+	public void setThemeHalfRow2(ColorGradientTheme [] themeHalfRow2) {
+		this.themeHalfRow2 = themeHalfRow2;
+	}
+
+	/**
+	 * @return the themeHalfRow2
+	 */
+	public ColorGradientTheme [] getThemeHalfRow2() {
+		return themeHalfRow2;
+	}
+
+	/**
+	 * @param rangeHalfRow1 the rangeHalfRow1 to set
+	 */
+	public void setRangeHalfRow1(ColorGradientRange [] rangeHalfRow1) {
+		this.rangeHalfRow1 = rangeHalfRow1;
+	}
+
+	/**
+	 * @return the rangeHalfRow1
+	 */
+	public ColorGradientRange [] getRangeHalfRow1() {
+		return rangeHalfRow1;
+	}
+
+	/**
+	 * @param rangeHalfRow2 the rangeHalfRow2 to set
+	 */
+	public void setRangeHalfRow2(ColorGradientRange [] rangeHalfRow2) {
+		this.rangeHalfRow2 = rangeHalfRow2;
+	}
+
+	/**
+	 * @return the rangeHalfRow2
+	 */
+	public ColorGradientRange [] getRangeHalfRow2() {
+		return rangeHalfRow2;
+	}
+
+	/**
+	 * @param isHalfRow1 the isHalfRow1 to set
+	 */
+	public void setIsHalfRow1(boolean[] isHalfRow1) {
+		this.isHalfRow1 = isHalfRow1;
+	}
+
+	/**
+	 * @return the isHalfRow1
+	 */
+	public boolean[] getIsHalfRow1() {
+		return isHalfRow1;
+	}
+
+	/**
+	 * @param isHalfRow2 the isHalfRow2 to set
+	 */
+	public void setIsHalfRow2(boolean[] isHalfRow2) {
+		this.isHalfRow2 = isHalfRow2;
+	}
+
+	/**
+	 * @return the isHalfRow2
+	 */
+	public boolean[] getIsHalfRow2() {
+		return isHalfRow2;
+	}
+
+	/**
+	 * @param rowGeneName the rowGeneName to set
+	 */
+	public void setRowGeneName(String[] rowGeneName) {
+		this.rowGeneName = rowGeneName;
+	}
+
+	/**
+	 * @return the rowGeneName
+	 */
+	public String[] getRowGeneName() {
+		return rowGeneName;
+	}
+
+	/**
+	 * @param rowLength the rowLength to set
+	 */
+	public void setRowLength(int[] rowLength) {
+		this.rowLength = rowLength;
+	}
+
+	/**
+	 * @return the rowLength
+	 */
+	public int[] getRowLength() {
+		return rowLength;
+	}
+
+	private ColorGradientRange[] getRowRange() {
+		return rowRange;
+	}
+
+	private void setRowRange(ColorGradientRange[] rowRange) {
+		this.rowRange = rowRange;
+	}
+
+	/**
+	 * @param rowTheme the rowTheme to set
+	 */
+	public void setRowTheme(ColorGradientTheme[] rowTheme) {
+		this.rowTheme = rowTheme;
+	}
+
+	/**
+	 * @return the rowTheme
+	 */
+	public ColorGradientTheme[] getRowTheme() {
+		return rowTheme;
+	}
+
+	
+	
 
 }
 

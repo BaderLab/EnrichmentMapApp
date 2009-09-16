@@ -58,14 +58,14 @@ public class Ranking {
     private Integer Rank;
 
     public Ranking(String name, Double score) {
-        Name = name;
-        Score = score;
+        this.Name = name;
+        this.Score = score;
     }
 
     public Ranking(String name, Double score, Integer rank) {
-        Name = name;
-        Score = score;
-        Rank = rank;
+        this.Name = name;
+        this.Score = score;
+        this.Rank = rank;
     }
 
     public String getName() {
@@ -89,6 +89,6 @@ public class Ranking {
     }
 
     public void setRank(Integer rank) {
-        Rank = rank;
+        this.Rank = rank;
     }
 }

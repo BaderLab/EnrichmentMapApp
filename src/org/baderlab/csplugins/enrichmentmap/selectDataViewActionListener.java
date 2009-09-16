@@ -63,42 +63,56 @@ public class selectDataViewActionListener implements ActionListener {
     private OverlappingGenesPanel nodeOverlapPanel;
 
     private HeatMapParameters hmParams;
+    private JComboBox box;
+    private String select;
 
-    public selectDataViewActionListener(OverlappingGenesPanel edgeOverlapPanel, OverlappingGenesPanel nodeOverlapPanel, HeatMapParameters hmParams) {
+    public selectDataViewActionListener(OverlappingGenesPanel edgeOverlapPanel, OverlappingGenesPanel nodeOverlapPanel,JComboBox box, HeatMapParameters hmParams) {
         this.edgeOverlapPanel = edgeOverlapPanel;
         this.nodeOverlapPanel = nodeOverlapPanel;
         this.hmParams = hmParams;
+        this.box= box;
     }
 
     public void actionPerformed(ActionEvent evt){
 
        edgeOverlapPanel.clearPanel();
        nodeOverlapPanel.clearPanel();
-
-       if(evt.getActionCommand().equalsIgnoreCase("asis")){
+       select=(String) box.getSelectedItem();
+       
+       if(select.equalsIgnoreCase("Data As Is")){
            hmParams.setRowNorm(false);
            hmParams.setLogtransform(false);
+           hmParams.setAsIS(true);
         }
-        else if(evt.getActionCommand().equalsIgnoreCase("rownorm")){
+        else if(select.equalsIgnoreCase("Row Normalize Data")){
            hmParams.setRowNorm(true);
            hmParams.setLogtransform(false);
+           hmParams.setAsIS(false);
         }
-        else if(evt.getActionCommand().equalsIgnoreCase("logtransform")){
+        else if(select.equalsIgnoreCase("Log Transform Data")){
            hmParams.setRowNorm(false);
            hmParams.setLogtransform(true);
+           hmParams.setAsIS(false);
         }
-        else if(evt.getActionCommand().equalsIgnoreCase("noSort")){
-           hmParams.setRank_dataset1(false);
-           hmParams.setRank_dataset2(false);
+        else if(select.equalsIgnoreCase("No Sort")){
+           hmParams.setSortbyrank(false);
+           hmParams.setSortbycolumn(false);
+           hmParams.setSortIndex(-1);
         }
-        else if(evt.getActionCommand().equalsIgnoreCase("dataset1")){
-           hmParams.setRank_dataset1(true);
-           hmParams.setRank_dataset2(false);
+        else if(select.equalsIgnoreCase("Sort By Rank File Dataset 1")){
+           hmParams.setSortbyrank(true);
+           hmParams.setSortbycolumn(false);
+           hmParams.setSortIndex(1);
         }
-        else if(evt.getActionCommand().equalsIgnoreCase("dataset2")){
-           hmParams.setRank_dataset1(false);
-           hmParams.setRank_dataset2(true);
+        else if(select.equalsIgnoreCase("Sort By Rank File Dataset 2")){
+           hmParams.setSortbyrank(true);
+           hmParams.setSortbycolumn(false);
+           hmParams.setSortIndex(2);
         }
+       //We don't want to reset the panel if we have just added a column sorting
+       //the action is fired by adding the item and selecting it by the sorter.
+       // else if(select.contains("Column #"))
+       //     return;
 
         hmParams.ResetColorGradient();
         edgeOverlapPanel.updatePanel();
@@ -109,6 +123,6 @@ public class selectDataViewActionListener implements ActionListener {
 
         int index  = cytoPanel.getSelectedIndex();
         cytoPanel.setSelectedIndex(index);
-
+        
     }
 }
