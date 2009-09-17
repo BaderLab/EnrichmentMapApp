@@ -138,21 +138,7 @@ public class OverlappingGenesPanel extends JPanel {
         this.Dataset1phenotype2 = params.getDataset1Phenotype2();
 
         hmParams = params.getHmParams();
-        
-        if(params.getDataset1RankedFile() != null){
-        	hmParams.setDataset1(true);
-        }
-        if(params.getDataset2RankedFile() != null){
-        	hmParams.setDataset2(true);
-        }
-        //specify how many rank files we have
-        if(params.getDataset1RankedFile() != null && params.getDataset2RankedFile() != null){
-            hmParams.setNum_ranks(2);
-        }
-        else if(params.getDataset1RankedFile() != null || params.getDataset2RankedFile()!= null){
-            hmParams.setNum_ranks(1);
-        }
-        
+
         //get the current expressionSet
         if(node)
            currentExpressionSet = getNodeExpressionSet(params, expression);
@@ -424,15 +410,19 @@ public class OverlappingGenesPanel extends JPanel {
         HashMap<Integer, ArrayList<Integer>> rank2keys = new HashMap<Integer,ArrayList<Integer>>();
 
         //Get the ranks for all the keys, if there is a ranking file
-        HashMap<Integer,Ranking> ranks;
+        HashMap<Integer,Ranking> ranks = null;
+
+        HashMap<String, HashMap<Integer, Ranking>> all_ranks = params.getRanks();
         if(hmParams.isSortbyrank()){
-            if(hmParams.getSortIndex() == 1)
-                ranks = params.getDataset1Rankings();
-            else if(hmParams.getSortIndex() == 2)
-                ranks = params.getDataset2Rankings();
-            else
+            for(Iterator j = all_ranks.keySet().iterator(); j.hasNext(); ){
+                String ranks_name = j.next().toString();
+                if(ranks_name.equalsIgnoreCase(hmParams.getRankFileIndex()))
+                    ranks = all_ranks.get(ranks_name);
+            }
+
+            if(ranks == null)
                throw new IllegalThreadStateException("invalid sort index for rank files.");
-                //invalid ranks file number
+
         }
 
         else{
@@ -539,15 +529,19 @@ public class OverlappingGenesPanel extends JPanel {
         HashMap<Integer, ArrayList<Integer>> rank2keys = new HashMap<Integer,ArrayList<Integer>>();
 
         //Get the ranks for all the keys, if there is a ranking file
-         HashMap<Integer,Ranking> ranks;
+         HashMap<String, HashMap<Integer, Ranking>> all_ranks = params.getRanks();
+
+         HashMap<Integer,Ranking> ranks = null;
          if(hmParams.isSortbyrank()){
-            if(hmParams.getSortIndex() == 1)
-                ranks = params.getDataset1Rankings();
-            else if(hmParams.getSortIndex() == 2)
-                ranks = params.getDataset2Rankings();
-            else
+            for(Iterator j = all_ranks.keySet().iterator(); j.hasNext(); ){
+                String ranks_name = j.next().toString();
+                if(ranks_name.equalsIgnoreCase(hmParams.getRankFileIndex()))
+                    ranks = all_ranks.get(ranks_name);
+            }
+
+            if(ranks == null)
                throw new IllegalThreadStateException("invalid sort index for rank files.");
-                //invalid ranks file number
+
         }
          else{
              //create default ranks
@@ -856,10 +850,10 @@ public class OverlappingGenesPanel extends JPanel {
                 GridBagConstraints.WEST, GridBagConstraints.NONE);
         
        
-        addComponent(northPanel,hmParams.createHeatMapOptionsPanel(), 2, 0, 1, 1,
+        addComponent(northPanel,hmParams.createHeatMapOptionsPanel(params), 2, 0, 1, 1,
                 GridBagConstraints.CENTER, GridBagConstraints.NONE);
 
-        addComponent(northPanel,hmParams.createRankOptionsPanel(), 3, 0, 1, 1,
+        addComponent(northPanel,hmParams.createRankOptionsPanel(params), 3, 0, 1, 1,
                     GridBagConstraints.CENTER, GridBagConstraints.NONE);
 
         addComponent(northPanel,buttonPanel, 4, 0, 1, 1,

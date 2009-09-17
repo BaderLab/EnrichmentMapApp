@@ -64,6 +64,7 @@ public class RanksFileReaderTask implements Task {
     private EnrichmentMapParameters params;
     private String RankFileName;
     private int dataset;
+    private String ranks_name;
 
     // Keep track of progress for monitoring:
     private int maxValue;
@@ -80,6 +81,13 @@ public class RanksFileReaderTask implements Task {
         this.params = params;
         RankFileName = rankFileName;
         this.dataset = dataset;
+        this.taskMonitor = taskMonitor;
+    }
+
+     public RanksFileReaderTask(EnrichmentMapParameters params, String rankFileName, String ranks_name) {
+        this.params = params;
+        RankFileName = rankFileName;
+        this.ranks_name = ranks_name;
         this.taskMonitor = taskMonitor;
     }
 
@@ -169,8 +177,11 @@ public class RanksFileReaderTask implements Task {
         if(dataset == 1){
             params.setDataset1Rankings(ranks);
         }
-        else{
+        else if(dataset == 2){
             params.setDataset2Rankings(ranks);
+        }
+        else{
+            params.addRanks(ranks_name, ranks);
         }
 
     }
