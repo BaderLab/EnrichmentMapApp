@@ -149,6 +149,13 @@ public OverlappingGenesPanel getNodeOverlapPanel(){
           if(rowNorm){
               min = minExpression_rownorm;
               max = maxExpression_rownorm;
+
+              //if both row normalization values are zero, can't perform row normalization
+              //issue warning
+              //This happens when there is only one data column in the dataset (or if it is rank file)
+              if((min == 0) && (max == 0)){
+                   JOptionPane.showMessageDialog(Cytoscape.getDesktop(),"Row normalization does not work with only one data column per dataset.","Row normalization error",JOptionPane.WARNING_MESSAGE);
+              }
               max = Math.max(Math.abs(min),max);
 
           }
