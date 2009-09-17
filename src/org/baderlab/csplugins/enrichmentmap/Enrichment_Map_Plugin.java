@@ -210,13 +210,19 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
                 subenr1writer.close();
                 pFileList.add(enrichmentresults1Ofinterest);
 
-                if(params.getDataset1RankedFile()!=null){
-                     File ranks1 = new File(tmpDir, name+".RANKS1.txt");
-                    BufferedWriter subrank1writer = new BufferedWriter(new FileWriter(ranks1));
-                    subrank1writer.write(params.printHashmap(params.getDataset1Rankings()));
-                    subrank1writer.close();
-                    pFileList.add(ranks1);
+                //save all the rank files
+                if(params.getRanks()!= null){
+                    HashMap<String, HashMap<Integer, Ranking>> all_ranks = params.getRanks();
 
+                    for(Iterator j = all_ranks.keySet().iterator(); j.hasNext(); ){
+                        String ranks_name = j.next().toString();
+
+                        File current_ranks = new File(tmpDir, name+"."+ranks_name+".RANKS.txt");
+                        BufferedWriter subrank1writer = new BufferedWriter(new FileWriter(current_ranks));
+                        subrank1writer.write(params.printHashmap(all_ranks.get(ranks_name)));
+                        subrank1writer.close();
+                        pFileList.add(current_ranks);
+                    }
                 }
 
                 if(params.isTwoDatasets()){
@@ -232,14 +238,6 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
                     subenr2writer.close();
                     pFileList.add(enrichmentresults2Ofinterest);
 
-                    if(params.getDataset2RankedFile()!=null){
-                        File ranks2 = new File(tmpDir, name+".RANKS2.txt");
-                        BufferedWriter subrank2writer = new BufferedWriter(new FileWriter(ranks2));
-                        subrank2writer.write(params.printHashmap(params.getDataset2Rankings()));
-                        subrank2writer.close();
-                        pFileList.add(ranks2);
-
-                    }
                 }
 
                 if(params.isData()){
@@ -356,8 +354,22 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
                         else
                             params.setEnrichmentResults1OfInterest(params.repopulateHashmap(fullText,4));
                     }
+                    //have to keep this method just in case old session files have ranks saved in this way
+                    //it would only happen for sessions saved with version 0.8
                     if(prop_file.getName().contains(".RANKS1.txt")){
                         params.setDataset1Rankings(params.repopulateHashmap(fullText,6));
+                    }
+                    if(prop_file.getName().contains(".RANKS.txt")){
+                        //we need to get the name of this set of rankings
+                        // network_name.ranking_name.ranks.txt --> split by "." and get 2
+                        String[] file_name_tokens = (prop_file.getName()).split("\\.");
+                        String ranks_name;
+                        if(file_name_tokens.length == 4)
+                            ranks_name = file_name_tokens[1];
+                        else
+                            //file name is not structured properly --> default to file name
+                            ranks_name = prop_file.getName();
+                        params.addRanks(ranks_name,params.repopulateHashmap(fullText,6));
                     }
 
 

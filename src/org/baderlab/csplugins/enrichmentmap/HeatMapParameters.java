@@ -51,6 +51,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.util.HashMap;
+import java.util.Iterator;
 
 import prefuse.data.query.NumberRangeModel;
 import org.mskcc.colorgradient.* ;
@@ -73,7 +75,6 @@ public class HeatMapParameters {
       private boolean asIS= false;
       private boolean logtransform = false;
 
-      private int num_ranks = 0;
       private boolean noSort=false;
 
      //there are two sorting type, either by rank file or by a specific column
@@ -85,8 +86,11 @@ public class HeatMapParameters {
     //tag to indicate if this was a column click or if this was a normalization click.
      private boolean sortbycolumn_event_triggered = false;
 
-     //store the index of the rank file or the column that we are sorting by
+     //store the index of the column that we are sorting by
      private int sortIndex = 0;
+
+    //store the name of the rank file sorted by
+    private String rankFileIndex;
 
       private double minExpression;
       private double maxExpression;
@@ -100,9 +104,7 @@ public class HeatMapParameters {
 
      private OverlappingGenesPanel edgeOverlapPanel;
      private OverlappingGenesPanel nodeOverlapPanel;
-     private boolean dataset1=false;
-     private boolean dataset2=false;
-     
+
   
     public HeatMapParameters(OverlappingGenesPanel edgeOverlapPanel, OverlappingGenesPanel nodeOverlapPanel) {
         this.edgeOverlapPanel = edgeOverlapPanel;
@@ -183,46 +185,44 @@ public OverlappingGenesPanel getNodeOverlapPanel(){
 
       }
 // method to create Rank combo box
-    public JPanel createRankOptionsPanel(){
+    public JPanel createRankOptionsPanel(EnrichmentMapParameters params){
     	 TitledBorder RankBorder = BorderFactory.createTitledBorder("Sorting");
-    	 RankBorder.setTitleJustification(TitledBorder.LEFT);
+        HashMap<String, HashMap<Integer, Ranking>> ranks = params.getRanks();
+         RankBorder.setTitleJustification(TitledBorder.LEFT);
     	RankOptions 		= new JPanel();
     	rankOptionComboBox	= new JComboBox();
     	rankOptionComboBox.addItem("No Sort");
-        
-      // set the appropriate choices in rank combo box
-    	if(num_ranks==1){   
-    		if(isDataset1()){
-            rankOptionComboBox.addItem("Sort By Rank File Dataset 1");                    
-          }
-    		else if(isDataset2()){
-            rankOptionComboBox.addItem("Sort By Rank File Dataset 2");                    
-          }
-	}
-        if ( num_ranks==2){     
-        	rankOptionComboBox.addItem("Sort By Rank File Dataset 1");
-            rankOptionComboBox.addItem("Sort By Rank File Dataset 2");        	
+
+        //create the rank options based on what we have in the set of ranks
+        //Go through the ranks hashmap and insert each ranking as an option
+        if(ranks != null){
+            for(Iterator j = ranks.keySet().iterator(); j.hasNext(); ){
+                String ranks_name = j.next().toString();
+                rankOptionComboBox.addItem(ranks_name);
+            }
         }
-        
-        
-        
+
         // set the selection in the rank combo box
         if(this.noSort){
     		rankOptionComboBox.setSelectedItem("No Sort");            	
         }
     	else if(this.sortbyrank){
-            if(this.sortIndex == 1)
-                rankOptionComboBox.setSelectedItem("Sort By Rank File Dataset 1");
-            else if (this.sortIndex == 2)
-                rankOptionComboBox.setSelectedItem("Sort By Rank File Dataset 2");
+             for(Iterator j = ranks.keySet().iterator(); j.hasNext(); ){
+                String ranks_name = j.next().toString();
+                if(ranks_name.equalsIgnoreCase(rankFileIndex))
+                    rankOptionComboBox.setSelectedItem(ranks_name);
+            }
          }
     	 else if(this.sortbycolumn){
             //int columnNumber = this.sortIndex + 1;
             rankOptionComboBox.addItem("Column: " + sortbycolumnName);
             rankOptionComboBox.setSelectedItem("Column: " + sortbycolumnName);
          }
-        
-        rankOptionComboBox.addActionListener(new selectDataViewActionListener(edgeOverlapPanel, nodeOverlapPanel,rankOptionComboBox,this));
+
+        //add the option to add another rank file
+        rankOptionComboBox.addItem("Add Rankings ... ");
+
+        rankOptionComboBox.addActionListener(new selectDataViewActionListener(edgeOverlapPanel, nodeOverlapPanel,rankOptionComboBox,this, params));
         RankOptions.add(rankOptionComboBox);
         RankOptions.setBorder(RankBorder);
         return RankOptions;
@@ -230,9 +230,9 @@ public OverlappingGenesPanel getNodeOverlapPanel(){
     
 
    // creates heat map combobox
-    public JPanel createHeatMapOptionsPanel(){
+    public JPanel createHeatMapOptionsPanel(EnrichmentMapParameters params){
     	 TitledBorder HMBorder = BorderFactory.createTitledBorder("Normalization");
-    	 HMBorder.setTitleJustification(TitledBorder.LEFT);
+         HMBorder.setTitleJustification(TitledBorder.LEFT);
     	heatmapOptions   = new JPanel();
     	hmOptionComboBox = new JComboBox();
         hmOptionComboBox.addItem("Data As Is");
@@ -250,7 +250,7 @@ public OverlappingGenesPanel getNodeOverlapPanel(){
         	hmOptionComboBox.setSelectedItem("Log Transform Data");
         }
         
-        hmOptionComboBox.addActionListener(new selectDataViewActionListener(edgeOverlapPanel, nodeOverlapPanel,hmOptionComboBox,this));
+        hmOptionComboBox.addActionListener(new selectDataViewActionListener(edgeOverlapPanel, nodeOverlapPanel,hmOptionComboBox,this, params));
         heatmapOptions.add(hmOptionComboBox);
         heatmapOptions.setBorder(HMBorder);
         return heatmapOptions;
@@ -288,13 +288,6 @@ public OverlappingGenesPanel getNodeOverlapPanel(){
         this.logtransform = logtransform;
     }
 
-    public int getNum_ranks() {
-        return num_ranks;
-    }
-
-    public void setNum_ranks(int num_ranks) {
-        this.num_ranks = num_ranks;
-    }
 
 	public void setAsIS(boolean asIS) {
 		this.asIS = asIS;
@@ -302,21 +295,6 @@ public OverlappingGenesPanel getNodeOverlapPanel(){
 
 	public boolean isAsIS() {
 		return asIS;
-	}
-	public boolean isDataset1() {
-		return dataset1;
-	}
-
-	public void setDataset1(boolean dataset1) {
-		this.dataset1 = dataset1;
-	}
-
-	public boolean isDataset2() {
-		return dataset2;
-	}
-
-	public void setDataset2(boolean dataset2) {
-		this.dataset2 = dataset2;
 	}
 
 	public boolean isNoSort() {
@@ -371,5 +349,13 @@ public OverlappingGenesPanel getNodeOverlapPanel(){
 
     public void setSortbycolumnName(String sortbycolumnName) {
         this.sortbycolumnName = sortbycolumnName;
+    }
+
+    public String getRankFileIndex() {
+        return rankFileIndex;
+    }
+
+    public void setRankFileIndex(String rankFileIndex) {
+        this.rankFileIndex = rankFileIndex;
     }
 }

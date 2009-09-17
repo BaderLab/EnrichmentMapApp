@@ -145,12 +145,17 @@ public class EnrichmentMapParameters {
 
     private HeatMapParameters hmParams;
 
-    //Rank files
+    //Dataset Rank files
     private String dataset1RankedFile = null;
     private String dataset2RankedFile = null;
 
     private HashMap<Integer, Ranking> dataset1Rankings;
     private HashMap<Integer, Ranking> dataset2Rankings;
+
+    //Set of Rankings - (HashMap of Hashmaps)
+    //Stores the dataset rank files if they were loaded on input but also has
+    //the capability of storing more rank files
+    private HashMap<String, HashMap<Integer, Ranking>> ranks;
 
     private Properties cyto_prop;
     private double defaultPvalueCutOff;
@@ -176,6 +181,7 @@ public class EnrichmentMapParameters {
         this.genesetsOfInterest = new HashMap<String, GeneSet>();
         this.selectedNodes = new ArrayList<Node>();
         this.selectedEdges = new ArrayList<Edge>();
+        this.ranks = new HashMap<String, HashMap<Integer, Ranking>>();
 
         this.similarityCutOffChanged = false;
         //default Values from Cytoscape properties
@@ -314,6 +320,7 @@ public class EnrichmentMapParameters {
 
         this.dataset1RankedFile = copy.getDataset1RankedFile();
         this.dataset2RankedFile = copy.getDataset2RankedFile();
+        this.ranks = copy.getRanks();
 
         this.enrichmentDataset1FileName1 = copy.getEnrichmentDataset1FileName1();
         this.enrichmentDataset1FileName2 = copy.getEnrichmentDataset1FileName2();
@@ -839,6 +846,10 @@ public class EnrichmentMapParameters {
 
     public void setDataset1Rankings(HashMap<Integer,Ranking> dataset1Rankings) {
         this.dataset1Rankings = dataset1Rankings;
+
+        //also add the ranking file to the set of ranks
+        if(this.ranks != null)
+            this.ranks.put("Dataset 1 Ranking", this.dataset1Rankings);
     }
 
     public HashMap getDataset2Rankings() {
@@ -847,6 +858,10 @@ public class EnrichmentMapParameters {
 
     public void setDataset2Rankings(HashMap<Integer,Ranking> dataset2Rankings) {
         this.dataset2Rankings = dataset2Rankings;
+
+        //also add the ranking file to the set of ranks
+        if(this.ranks != null)
+            this.ranks.put("Dataset 2 Ranking", this.dataset2Rankings);
     }
 
 
@@ -1045,4 +1060,25 @@ public class EnrichmentMapParameters {
 
     }
 
+    public HashMap<String, HashMap<Integer, Ranking>> getRanks() {
+        return ranks;
+    }
+
+    public void setRanks(HashMap<String, HashMap<Integer, Ranking>> ranks) {
+        this.ranks = ranks;
+    }
+
+    public void addRanks(String ranks_name, HashMap<Integer, Ranking> new_rank){
+        if(this.ranks != null)
+            this.ranks.put(ranks_name, new_rank);
+    }
+
+    public HashMap<Integer,Ranking> getRanksByName(String ranks_name){
+        if(this.ranks != null){
+            return this.ranks.get(ranks_name);
+        }
+        else{
+            return null;
+        }
+    }
 }

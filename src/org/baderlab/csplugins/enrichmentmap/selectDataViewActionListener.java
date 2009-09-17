@@ -46,10 +46,15 @@ package org.baderlab.csplugins.enrichmentmap;
 import cytoscape.view.CytoscapeDesktop;
 import cytoscape.view.cytopanels.CytoPanel;
 import cytoscape.Cytoscape;
+import cytoscape.util.FileUtil;
+import cytoscape.util.CyFileFilter;
 
 import javax.swing.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.io.File;
 
 /**
  * Created by
@@ -66,11 +71,15 @@ public class selectDataViewActionListener implements ActionListener {
     private JComboBox box;
     private String select;
 
-    public selectDataViewActionListener(OverlappingGenesPanel edgeOverlapPanel, OverlappingGenesPanel nodeOverlapPanel,JComboBox box, HeatMapParameters hmParams) {
+    //Need to add the enrichment map parameters here in order to add an additional ranks to the EM
+    private EnrichmentMapParameters params;
+
+    public selectDataViewActionListener(OverlappingGenesPanel edgeOverlapPanel, OverlappingGenesPanel nodeOverlapPanel,JComboBox box, HeatMapParameters hmParams, EnrichmentMapParameters params) {
         this.edgeOverlapPanel = edgeOverlapPanel;
         this.nodeOverlapPanel = nodeOverlapPanel;
         this.hmParams = hmParams;
         this.box= box;
+        this.params = params;
     }
 
     public void actionPerformed(ActionEvent evt){
@@ -78,7 +87,7 @@ public class selectDataViewActionListener implements ActionListener {
        edgeOverlapPanel.clearPanel();
        nodeOverlapPanel.clearPanel();
        select=(String) box.getSelectedItem();
-       
+
        if(select.equalsIgnoreCase("Data As Is")){
            hmParams.setRowNorm(false);
            hmParams.setLogtransform(false);
@@ -99,20 +108,55 @@ public class selectDataViewActionListener implements ActionListener {
            hmParams.setSortbycolumn(false);
            hmParams.setSortIndex(-1);
         }
-        else if(select.equalsIgnoreCase("Sort By Rank File Dataset 1")){
-           hmParams.setSortbyrank(true);
-           hmParams.setSortbycolumn(false);
-           hmParams.setSortIndex(1);
-        }
-        else if(select.equalsIgnoreCase("Sort By Rank File Dataset 2")){
-           hmParams.setSortbyrank(true);
-           hmParams.setSortbycolumn(false);
-           hmParams.setSortIndex(2);
-        }
-       //We don't want to reset the panel if we have just added a column sorting
-       //the action is fired by adding the item and selecting it by the sorter.
-       // else if(select.contains("Column #"))
-       //     return;
+        //Add a ranking file
+        else if(select.equalsIgnoreCase("Add Rankings ... ")){
+
+           HashMap<String, HashMap<Integer, Ranking>> all_ranks = params.getRanks();
+
+           CyFileFilter filter = new CyFileFilter();
+
+            // Add accepted File Extensions
+           filter.addExtension("txt");
+           filter.addExtension("xls");
+           filter.addExtension("rnk");
+
+           // Get the file name
+            File file = FileUtil.getFile("Import new Rank file", FileUtil.LOAD, new CyFileFilter[]{ filter });
+            if(file != null) {
+                //find out from the user what they want to name these ranking
+
+                String ranks_name = JOptionPane.showInputDialog(Cytoscape.getDesktop(),"What would you like to name these Rankings?", "My Rankings");
+                boolean noname = true;
+                while(noname){
+                    noname = false;
+                    //make sure the name is not already in the rankings
+                    for(Iterator j = all_ranks.keySet().iterator(); j.hasNext(); ){
+                        String current_name = j.next().toString();
+                        if(current_name.equalsIgnoreCase(ranks_name)){
+                            noname = true;
+                            ranks_name = JOptionPane.showInputDialog(Cytoscape.getDesktop(),"Sorry that name already exists.Please choose another name.");
+                        }
+                    }
+                }
+
+                //load the new ranks file
+                RanksFileReaderTask ranking1 = new RanksFileReaderTask(params,file.getAbsolutePath(),ranks_name);
+                ranking1.run();
+
+            }
+       }
+        else{
+           HashMap<String, HashMap<Integer, Ranking>> ranks = params.getRanks();
+           for(Iterator j = ranks.keySet().iterator(); j.hasNext(); ){
+                String ranks_name = j.next().toString();
+                if(ranks_name.equalsIgnoreCase(select)){
+                    hmParams.setSortbyrank(true);
+                    hmParams.setSortbycolumn(false);
+                    hmParams.setRankFileIndex(ranks_name);
+                    hmParams.setSortIndex(-1);
+                }
+            }
+       }
 
         hmParams.ResetColorGradient();
         edgeOverlapPanel.updatePanel();
@@ -123,6 +167,6 @@ public class selectDataViewActionListener implements ActionListener {
 
         int index  = cytoPanel.getSelectedIndex();
         cytoPanel.setSelectedIndex(index);
-        
+
     }
 }
