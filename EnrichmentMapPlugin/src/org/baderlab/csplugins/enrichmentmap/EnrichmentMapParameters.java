@@ -347,8 +347,10 @@ public class EnrichmentMapParameters {
         this.hashkey2gene = copy.getHashkey2gene();
         this.genesetsOfInterest = copy.getGenesetsOfInterest();
         this.datasetGenes = copy.getDatasetGenes();
-        
 
+        //missing the classfiles in the copy --> bug ticket #61
+        this.classFile1 = copy.getClassFile1();
+        this.classFile2 = copy.getClassFile2();
 
     }
 
