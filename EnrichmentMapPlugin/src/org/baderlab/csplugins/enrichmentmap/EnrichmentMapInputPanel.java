@@ -1065,11 +1065,17 @@ public class EnrichmentMapInputPanel extends JPanel {
                 params.setClassFile1(classes_split[0]);
                 params.setDataset1Phenotype1(phenotype1);
                 params.setDataset1Phenotype2(phenotype2);
+
+                Dataset1Phenotype1TextField.setText(phenotype1);
+                Dataset1Phenotype2TextField.setText(phenotype2);
             }
             else{
                 params.setClassFile2(classes_split[0]);
                 params.setDataset2Phenotype1(phenotype1);
                 params.setDataset2Phenotype2(phenotype2);
+
+                Dataset2Phenotype1TextField.setText(phenotype1);
+                Dataset2Phenotype2TextField.setText(phenotype2);
             }
         }
 
