@@ -192,7 +192,6 @@ public class EnrichmentMapParameters {
         this.defaultOverlapCutOff = Double.parseDouble( this.cyto_prop.getProperty("EnrichmentMap.default_overlap", "0.50") );
         this.default_overlap_metric = this.cyto_prop.getProperty("EnrichmentMap.default_overlap_metric", "jaccard");
         this.disable_heatmap_autofocus = Boolean.parseBoolean( this.cyto_prop.getProperty("EnrichmentMap.disable_heatmap_autofocus", "false") );
-        this.disable_genesetSummary_autofocus = Boolean.parseBoolean( this.cyto_prop.getProperty("EnrichmentMap.disable_genesetSummary_autofocus", "false") );
 
         //assign the defaults:
         this.pvalue = this.defaultPvalueCutOff;
@@ -1029,10 +1028,6 @@ public class EnrichmentMapParameters {
 
     public boolean isDisableHeatmapAutofocus() {
         return this.disable_heatmap_autofocus ;
-    }
-
-    public boolean isDisableGenesetSummaryAutofocus() {
-        return this.disable_genesetSummary_autofocus ;
     }
 
     public void setSimilarityCutOffChanged(boolean similarityCutOffChanged) {

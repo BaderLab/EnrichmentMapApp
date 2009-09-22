@@ -128,7 +128,8 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
     }
 
     public void onCytoscapeExit(){
-
+        //TODO: remove test code before release
+/*        
         //test to see if we can write anything to a file in the session file
         File propFile = CytoscapeInit.getConfigFile("enrichmentMap.props");
 
@@ -141,7 +142,7 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
         } catch(Exception ex){
             ex.printStackTrace();
         }
-
+*/
     }
 
     public void saveSessionStateFiles(List<File> pFileList){
