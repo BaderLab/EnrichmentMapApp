@@ -46,12 +46,11 @@ package org.baderlab.csplugins.enrichmentmap;
 import cytoscape.task.Task;
 import cytoscape.task.TaskMonitor;
 import cytoscape.data.readers.TextFileReader;
+import cytoscape.Cytoscape;
 
 import javax.swing.*;
 import java.io.File;
-import java.util.HashMap;
-import java.util.Arrays;
-import java.util.Iterator;
+import java.util.*;
 
 /**
  * Created by
@@ -144,6 +143,7 @@ public class RanksFileReaderTask implements Task {
                 ranks.put(genekey, current_ranking);
             }
 
+
             // Calculate Percentage.  This must be a value between 0..100.
             int percentComplete = (int) (((double) currentProgress / maxValue) * 100);
             //  Estimate Time Remaining
@@ -156,6 +156,11 @@ public class RanksFileReaderTask implements Task {
             currentProgress++;
 
         }
+
+        //the none of the genes are in the gene list
+         if(ranks.isEmpty()){
+             throw new IllegalThreadStateException("None of the genes in the rank file are found in the expression file.  Make sure the identifiers of the two files match.");
+         }
 
         //after we have loaded in all the scores, sort the score to compute ranks
         //create hash of scores to ranks.
@@ -174,6 +179,20 @@ public class RanksFileReaderTask implements Task {
             current_ranking.setRank(score2ranks.get(current_ranking.getScore()));
         }
 
+        //check to see if some of the dataset genes are not in this rank file
+        HashSet<Integer> current_genes = params.getDatasetGenes();
+
+        Set<Integer> current_ranks = ranks.keySet();
+
+        //intersect the genes with the ranks.  only retain the genes that have ranks.
+        Set<Integer> intersection = new HashSet<Integer>(current_genes);
+        intersection.retainAll(current_ranks);
+
+        //see if there more genes than there are ranks
+        if(!(intersection.size() == current_genes.size())){
+            JOptionPane.showMessageDialog(Cytoscape.getDesktop(),"Ranks for some of the genes/proteins listed in the expression file are missing. \n These genes/proteins will be excluded from ranked listing in the heat map.");
+
+        }
         if(dataset == 1){
             params.setDataset1Rankings(ranks);
         }

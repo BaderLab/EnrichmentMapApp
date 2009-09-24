@@ -409,45 +409,28 @@ public class OverlappingGenesPanel extends JPanel {
 
         HashMap<Integer, ArrayList<Integer>> rank2keys = new HashMap<Integer,ArrayList<Integer>>();
 
-        //Get the ranks for all the keys, if there is a ranking file
-        HashMap<Integer,Ranking> ranks = null;
-
-        HashMap<String, HashMap<Integer, Ranking>> all_ranks = params.getRanks();
-        if(hmParams.isSortbyrank()){
-            for(Iterator j = all_ranks.keySet().iterator(); j.hasNext(); ){
-                String ranks_name = j.next().toString();
-                if(ranks_name.equalsIgnoreCase(hmParams.getRankFileIndex()))
-                    ranks = all_ranks.get(ranks_name);
-            }
-
-            if(ranks == null)
-               throw new IllegalThreadStateException("invalid sort index for rank files.");
-
-        }
-
-        else{
-            //create default ranks
-            int r = 1;
-            ranks = new HashMap<Integer,Ranking>();
-            for(Iterator i = currentExpressionSet.keySet().iterator();i.hasNext();){
-                Integer key = (Integer)i.next();
-                Ranking temp = new Ranking(key.toString(),0.0,r++);
-                ranks.put(key,temp);
-            }
-        }
+        HashMap<Integer, Ranking> ranks = getRanks();
 
         int n = 0;
         for(Iterator i = currentExpressionSet.keySet().iterator();i.hasNext();){
             Integer key = (Integer)i.next();
-            ranks_subset[n] = ((Ranking)ranks.get(key)).getRank();
-            //check to see if the rank is already in the list.
-            if(!rank2keys.containsKey(ranks_subset[n])){
-               ArrayList<Integer> temp = new ArrayList<Integer>();
-               temp.add(key);
-               rank2keys.put(ranks_subset[n],temp);
+
+            //check to see the key is in the rank file.
+            //For new rank files it is possible that some of the genes/proteins won't be ranked
+            if(ranks.containsKey(key)){
+                ranks_subset[n] = ((Ranking)ranks.get(key)).getRank();
+                //check to see if the rank is already in the list.
             }
             else{
-               rank2keys.get(ranks_subset[n]).add(key);
+                ranks_subset[n] = -1;
+            }
+            if(!rank2keys.containsKey(ranks_subset[n])){
+                ArrayList<Integer> temp = new ArrayList<Integer>();
+                temp.add(key);
+                rank2keys.put(ranks_subset[n],temp);
+            }
+            else{
+                rank2keys.get(ranks_subset[n]).add(key);
             }
             n++;
         }
@@ -458,6 +441,9 @@ public class OverlappingGenesPanel extends JPanel {
         int previous = 0;
 
         for(int m = 0 ; m < ranks_subset.length;m++){
+             //if the current gene doesn't have a rank then don't show it
+            if(ranks_subset[m] == -1)
+                continue;
 
             if(ranks_subset[m] == previous)
                continue;
@@ -528,46 +514,28 @@ public class OverlappingGenesPanel extends JPanel {
 
         HashMap<Integer, ArrayList<Integer>> rank2keys = new HashMap<Integer,ArrayList<Integer>>();
 
-        //Get the ranks for all the keys, if there is a ranking file
-         HashMap<String, HashMap<Integer, Ranking>> all_ranks = params.getRanks();
-
-         HashMap<Integer,Ranking> ranks = null;
-         if(hmParams.isSortbyrank()){
-            for(Iterator j = all_ranks.keySet().iterator(); j.hasNext(); ){
-                String ranks_name = j.next().toString();
-                if(ranks_name.equalsIgnoreCase(hmParams.getRankFileIndex()))
-                    ranks = all_ranks.get(ranks_name);
-            }
-
-            if(ranks == null)
-               throw new IllegalThreadStateException("invalid sort index for rank files.");
-
-        }
-         else{
-             //create default ranks
-             int r = 1;
-             ranks = new HashMap<Integer,Ranking>();
-             for(Iterator i = currentExpressionSet.keySet().iterator();i.hasNext();){
-                 Integer key = (Integer)i.next();
-                 Ranking temp = new Ranking(key.toString(),0.0,r++);
-                 ranks.put(key,temp);
-             }
-         }
+        HashMap<Integer, Ranking> ranks = getRanks();
 
         int n = 0;
         for(Iterator i = currentExpressionSet.keySet().iterator();i.hasNext();){
             Integer key = (Integer)i.next();
-            ranks_subset[n] = ((Ranking)ranks.get(key)).getRank();
-            //check to see if the rank is already in the list.
-            if(!rank2keys.containsKey(ranks_subset[n])){
-               ArrayList<Integer> temp = new ArrayList<Integer>();
-               temp.add(key);
-               rank2keys.put(ranks_subset[n],temp);
+            //check to see the key is in the rank file.
+            //For new rank files it is possible that some of the genes/proteins won't be ranked
+            if(ranks.containsKey(key)){
+                ranks_subset[n] = ((Ranking)ranks.get(key)).getRank();
+                //check to see if the rank is already in the list.
             }
             else{
-               rank2keys.get(ranks_subset[n]).add(key);
+                ranks_subset[n] = -1;
             }
-
+            if(!rank2keys.containsKey(ranks_subset[n])){
+                ArrayList<Integer> temp = new ArrayList<Integer>();
+                temp.add(key);
+                rank2keys.put(ranks_subset[n],temp);
+            }
+            else{
+                rank2keys.get(ranks_subset[n]).add(key);
+            }
             n++;
          }
         //sort ranks
@@ -577,6 +545,9 @@ public class OverlappingGenesPanel extends JPanel {
         int previous = 0;
 
         for(int m = 0 ; m < ranks_subset.length;m++){
+            //if the current gene doesn't have a rank then don't show it
+            if(ranks_subset[m] == -1)
+                continue;
 
             if(ranks_subset[m] == previous)
                 continue;
@@ -693,121 +664,10 @@ public class OverlappingGenesPanel extends JPanel {
     }
 
 
-    private Object[][] createTableData(){
-
-        
-        expValue = new Object[currentExpressionSet.size()][numConditions];
-        //Got through the hashmap and put all the values is
-
-        int k = 0;
-        for(Iterator i = currentExpressionSet.keySet().iterator();i.hasNext();){
-            //Current expression row
-            GeneExpression row = (GeneExpression)currentExpressionSet.get(i.next());
-            Double[] expression_values;
-            if(hmParams.isRowNorm())
-                expression_values = row.rowNormalize();
-            else if(hmParams.isLogtransform())
-                expression_values = row.rowLogTransform();
-            else
-                 expression_values   = row.getExpression();
-
-            data[k][0] = row.getName();
-            expValue[k][0]=row.getName();
-            data[k][1] = row.getDescription();
-            expValue[k][1]=row.getDescription();
-            for(int j = 0; j < row.getExpression().length;j++){
-            	expValue[k][j+2]=expression_values[j];
-                data[k][j+2] = ColorGradientMapper.getColorGradient(hmParams.getTheme(),hmParams.getRange(),row.getName(),(Double)expValue[k][j+2]);
-
-            }
-            k++;
-        }
-        this.setExpValue(expValue);
-        return expValue;
-    }
 
 
 
-    private Object[][] createMergedTableData(){
 
-        int totalConditions = (numConditions + numConditions2-2);
-        expValue = new Object[Math.max(currentExpressionSet.size(), currentExpressionSet2.size())][totalConditions];
-
-        //Got through the hashmap and put all the values is
-
-        int k = 0;
-        for(Iterator i = currentExpressionSet.keySet().iterator();i.hasNext();){
-
-            Object currentKey = i.next();
-
-            //Current expression row
-            GeneExpression halfRow1 = (GeneExpression)currentExpressionSet.get(currentKey);
-
-            //get the corresponding row from the second dataset
-            GeneExpression halfRow2 = (GeneExpression)currentExpressionSet2.get(currentKey);
-
-            Double[] expression_values1 = null;
-            Double[] expression_values2 = null;
-            if(hmParams.isRowNorm()){
-                if(halfRow1 != null)
-                    expression_values1 = halfRow1.rowNormalize();
-                if(halfRow2 != null)
-                    expression_values2 = halfRow2.rowNormalize();
-            }
-            else if(hmParams.isLogtransform()){
-                if(halfRow1 != null)
-                    expression_values1 = halfRow1.rowLogTransform();
-                if(halfRow2 != null)
-                    expression_values2 = halfRow2.rowLogTransform();
-            }
-            else{
-                if(halfRow1 != null)
-                    expression_values1   = halfRow1.getExpression();
-                if(halfRow2 != null)
-                    expression_values2   = halfRow2.getExpression();
-            }
-
-            if(halfRow1 != null){
-                data[k][0] = halfRow1.getName();
-                expValue[k][0]=halfRow1.getName();
-                data[k][1] = halfRow1.getDescription();
-                expValue[k][0]=halfRow1.getDescription();
-            }
-            else if(halfRow2 != null){
-            	data[k][0] = halfRow2.getName();
-                expValue[k][0]=halfRow2.getName();
-                data[k][1] = halfRow2.getDescription();
-                expValue[k][0]=halfRow2.getDescription();
-                }
-
-            //if either of the expression_values is null set the array to have no data
-            if(expression_values1 == null){
-                expression_values1 = new Double[columnNames.length-2];
-                for(int m = 0; m < expression_values1.length;m++)
-                    expression_values1[m] = null;
-            }
-            if(expression_values2 == null){
-                expression_values2 = new Double[columnNames2.length-2];
-                for(int m = 0; m < expression_values2.length;m++)
-                    expression_values2[m] = null;
-            }
-
-
-            for(int j = 0; j < halfRow1.getExpression().length;j++){
-            	expValue[k][j+2]=expression_values1[j];
-                //data[k][j+2] = ColorGradientMapper.getColorGradient(hmParams.getTheme(),hmParams.getRange(),halfRow1.getName(),(Double)expValue[k][j+2]);
-                
-            }
-            for(int j = halfRow1.getExpression().length; j < (halfRow1.getExpression().length + halfRow2.getExpression().length);j++){
-            	expValue[k][j+2]=expression_values2[j-halfRow1.getExpression().length];
-                //data[k][j+2] = ColorGradientMapper.getColorGradient(hmParams.getTheme(),hmParams.getRange(),halfRow2.getName(),(Double)expValue[k][j+2]);
-                }
-
-            k++;
-        }
-        this.setExpValue(expValue);
-        return expValue;
-    }
     // created new North panel to accommodate the expression legend, normalization options,sorting options, saving option
    private JPanel emptyPanel(){
 	   JPanel empty= new JPanel() ;
@@ -1164,7 +1024,35 @@ public class OverlappingGenesPanel extends JPanel {
 	}
 
 	
-	
+	private HashMap<Integer,Ranking> getRanks(){
+        //Get the ranks for all the keys, if there is a ranking file
+        HashMap<Integer,Ranking> ranks = null;
+
+        HashMap<String, HashMap<Integer, Ranking>> all_ranks = params.getRanks();
+        if(hmParams.isSortbyrank()){
+            for(Iterator j = all_ranks.keySet().iterator(); j.hasNext(); ){
+                String ranks_name = j.next().toString();
+                if(ranks_name.equalsIgnoreCase(hmParams.getRankFileIndex()))
+                    ranks = all_ranks.get(ranks_name);
+            }
+
+            if(ranks == null)
+               throw new IllegalThreadStateException("invalid sort index for rank files.");
+
+        }
+
+        else{
+            //create default ranks
+            int r = 1;
+            ranks = new HashMap<Integer,Ranking>();
+            for(Iterator i = currentExpressionSet.keySet().iterator();i.hasNext();){
+                Integer key = (Integer)i.next();
+                Ranking temp = new Ranking(key.toString(),0.0,r++);
+                ranks.put(key,temp);
+            }
+        }
+        return ranks;
+    }
 
 }
 

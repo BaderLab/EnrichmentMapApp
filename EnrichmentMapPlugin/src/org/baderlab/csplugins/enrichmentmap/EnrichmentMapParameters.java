@@ -108,7 +108,7 @@ public class EnrichmentMapParameters {
     //the gene hash key into the gene name without tracing from the entire hash.
     //create the opposite of the gene hashmap so we can do this.
     private HashMap<Integer, String> hashkey2gene;
-    private HashSet datasetGenes;
+    private HashSet<Integer> datasetGenes;
     private int NumberOfGenes = 0;
 
     //Hashmap of the GSEA Results, It is is a hash of the GSEAResults objects
@@ -173,7 +173,7 @@ public class EnrichmentMapParameters {
         this.enrichmentResults2 = new HashMap();
         this.genes = new HashMap<String, Integer>();
         this.hashkey2gene = new HashMap<Integer, String>();
-        this.datasetGenes = new HashSet();
+        this.datasetGenes = new HashSet<Integer>();
         this.genesets = new HashMap<String, GeneSet>();
         this.filteredGenesets = new HashMap<String, GeneSet>();
         this.enrichmentResults1OfInterest = new HashMap();
@@ -572,11 +572,11 @@ public class EnrichmentMapParameters {
         this.genes = genes;
     }
 
-    public HashSet getDatasetGenes() {
+    public HashSet<Integer> getDatasetGenes() {
         return datasetGenes;
     }
 
-    public void setDatasetGenes(HashSet datasetGenes) {
+    public void setDatasetGenes(HashSet<Integer> datasetGenes) {
         this.datasetGenes = datasetGenes;
     }
 
