@@ -71,12 +71,21 @@ public class AboutPanel extends JDialog {
         editorPane.setEditorKit(new HTMLEditorKit());
         editorPane.addHyperlinkListener(new HyperlinkAction(editorPane));
 
+        URL logoURL = Enrichment_Map_Plugin.class.getResource("resources/enrichmentmap_logo.png");
 
         editorPane.setText(
-                "<html><body><p align=center><b>Enrichment Map v" + pluginVersion + " (beta)</b><BR>" + //TODO: remove "beta" on release  
+                "<html><body>"+
+//                "<div style=\"float:right;\"><img height=\"77\" width=\"125\" src=\""+ logoURL.toString() +"\" ></div>" +
+                "<table border='0'><tr>" +
+                "<td width='125'></td>"+
+                "<td width='200'>"+
+                "<p align=center><b>Enrichment Map v" + pluginVersion + " (beta)</b><BR>" + //TODO: remove "beta" on release  
                 "A Cytoscape Plugin<BR>" +
-                "<BR>" +
-                "Enrichment Map is a network-based method to visualize<BR>"+
+                "<BR></p>" +
+                "</td>"+
+                "<td width='125'><div align='right'><img height='77' width='125' src=\""+ logoURL.toString() +"\" ></div></td>"+
+                "</tr></table>" +
+                "<p align=center>Enrichment Map is a network-based method to visualize<BR>"+
                 "and interpret gene-set enrichment results.<BR>" +
                 "<BR>" +
                 "by Gary Bader, Daniele Merico, Ruth Isserlin and Oliver Stueker<BR>" +
