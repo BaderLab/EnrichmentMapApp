@@ -191,7 +191,7 @@ public OverlappingGenesPanel getNodeOverlapPanel(){
          RankBorder.setTitleJustification(TitledBorder.LEFT);
     	RankOptions 		= new JPanel();
     	rankOptionComboBox	= new JComboBox();
-    	rankOptionComboBox.addItem("No Sort");
+    	rankOptionComboBox.addItem("Hierarchical Cluster");
 
         //create the rank options based on what we have in the set of ranks
         //Go through the ranks hashmap and insert each ranking as an option
@@ -204,7 +204,7 @@ public OverlappingGenesPanel getNodeOverlapPanel(){
 
         // set the selection in the rank combo box
         if(this.noSort){
-    		rankOptionComboBox.setSelectedItem("No Sort");            	
+    		rankOptionComboBox.setSelectedItem("Hierarchical Cluster");            	
         }
     	else if(this.sortbyrank){
              for(Iterator j = ranks.keySet().iterator(); j.hasNext(); ){

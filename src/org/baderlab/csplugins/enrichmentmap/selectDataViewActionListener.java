@@ -103,7 +103,7 @@ public class selectDataViewActionListener implements ActionListener {
            hmParams.setLogtransform(true);
            hmParams.setAsIS(false);
         }
-        else if(select.equalsIgnoreCase("No Sort")){
+        else if(select.equalsIgnoreCase("Hierarchical Cluster")){
            hmParams.setSortbyrank(false);
            hmParams.setSortbycolumn(false);
            hmParams.setSortIndex(-1);
