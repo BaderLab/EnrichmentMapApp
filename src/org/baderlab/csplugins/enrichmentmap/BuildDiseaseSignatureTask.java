@@ -261,7 +261,7 @@ public class BuildDiseaseSignatureTask implements Task {
                         double hyperPval;
                         
                         if (k > 0) 
-                            hyperPval = hyperGeomPvalue(N, n, m, k);
+                            hyperPval = hyperGeomPvalue_sum(N, n, m, k, 0);
                         else // Correct p-value of empty intersections to 1 (i.e. not significant)
                             hyperPval = 1.0;
                         
@@ -450,6 +450,66 @@ public class BuildDiseaseSignatureTask implements Task {
     }
     
     /**
+     * Calculate sum over distinct p-Values of the Hypergeometric Distribution<p>
+     * 
+     * for 
+     * P(X &ge; k) : Probability to get k or more successes in the sample with a size of n<br>
+     * P(X &gt; k) : Probability to get more that k successes in the sample with a size of n<br>
+     * P(X &le; k) : Probability to get k or less successes in the sample with a size of n<br>
+     * P(X &lt; k) : Probability to get less than k successes in the sample with a size of n<p>
+     * 
+     * @param N size of the population  (Universe of genes)
+     * @param n size of the sample      (signature geneset) 
+     * @param m successes in population (enrichment geneset)
+     * @param k successes in sample     (intersection of both genesets)
+     * @param mode = 0 : P(X &ge; k) (default)<br>
+     *        mode = 1 : P(X &gt; k) (behavior of R with "lower.tail=FALSE")<br>  
+     *        mode = 2 : P(X &le; k) (behavior of R with "lower.tail=TRUE")<br>
+     *        mode = 3 : P(X &lt; k)<br>
+     * 
+     * @return the p-Value of the Hypergeometric Distribution for P(X>=k)
+     */
+    public static double hyperGeomPvalue_sum(int N, int n, int m, int k, int mode) {
+        // the number of successes in the sample (k) cannot be larger than the sample (n) or the number of total successes (m)
+        double sum = 0.0;
+        int kMax;
+        switch (mode) {
+        case 0:
+            kMax = Math.min(n,m);
+            for (int k_prime = k; k_prime <= kMax; k_prime++ ){
+                sum += hyperGeomPvalue(N, n, m, k_prime);
+            }
+            break;
+
+        case 1:
+            kMax = Math.min(n,m);
+            for (int k_prime = k+1; k_prime <= kMax; k_prime++ ){
+                sum += hyperGeomPvalue(N, n, m, k_prime);
+            }
+            break;
+
+        case 2:
+            for (int k_prime = k; k_prime >= 0; k_prime-- ){
+                sum += hyperGeomPvalue(N, n, m, k_prime);
+            }
+            break;
+
+        case 3:
+            for (int k_prime = k-1; k_prime >= 0; k_prime-- ){
+                sum += hyperGeomPvalue(N, n, m, k_prime);
+            }
+            break;
+            
+         default:
+             break;
+         }
+        return sum;
+    }
+    public static double hyperGeomPvalue_sum(int N, int n, int m, int k) {
+        return hyperGeomPvalue_sum(N, n, m, k, 0);
+    }
+    
+    /**
      * Calculate the log of Binomial coefficient "n over k" aka "n choose k"
      * 
      * adapted from http://code.google.com/p/beast-mcmc/source/browse/trunk/src/dr/math/Binomial.java?spec=svn1660&r=1660
@@ -470,95 +530,6 @@ public class BuildDiseaseSignatureTask implements Task {
      */
     public static double binomialLog(int n, int k) {
         return (Gamma.logGamma(n + 1.0) - Gamma.logGamma(k + 1.0) - Gamma.logGamma(n - k + 1.0));
-    }
-    
-    
-    /**
-     * Calculate the p-Value of the Hypergeometric Distribution<p>
-     * 
-     * Implementation from BiNGO ( http://www.psb.ugent.be/cbd/papers/BiNGO/ ):
-     * calculates the Hypergeometric probability P(x or more |X,N,n) for given x, X, n, N.<p>
-     *      
-     * P(x or more |X,N,n) = 1 - sum{[C(n,i)*C(N-n, X-i)] / C(N,X)}
-     * for i=0 ... x-1
-     * 
-     * 
-     * @param bigN size Universe                   number of genes in whole genome.                       
-     * @param bigX sample Size                     number of genes in cluster A.                          
-     * @param n    number of white balls.          number of genes with GO category B in the whole genome.
-     * @param x    number of white balls in Sample number of genes with GO category B in cluster A.       
-     *
-     * @return the p-Value of the Hypergeometric Distribution
-     * 
-     * @author BiNGO
-     */
-    public static double hyperGeomPvalue_BiNGO(int bigN, int bigX, int n, int x) {
-        if (bigN >= 2) {
-            double sum = 0;
-            // mode of distribution, integer division (returns integer <= double
-            // result)!
-            int mode = (bigX + 1) * (n + 1) / (bigN + 2);
-            if (x >= mode) {
-                int i = x;
-                while ((bigN - n >= bigX - i) && (i <= Math.min(bigX, n))) {
-                    double pdfi = Math.exp(Gamma.logGamma(n + 1)
-                            - Gamma.logGamma(i + 1) - Gamma.logGamma(n - i + 1)
-                            + Gamma.logGamma(bigN - n + 1)
-                            - Gamma.logGamma(bigX - i + 1)
-                            - Gamma.logGamma(bigN - n - bigX + i + 1)
-                            - Gamma.logGamma(bigN + 1)
-                            + Gamma.logGamma(bigX + 1)
-                            + Gamma.logGamma(bigN - bigX + 1));
-                    sum = sum + pdfi;
-                    i++;
-                }
-            } else {
-                int i = x - 1;
-                while ((bigN - n >= bigX - i) && (i >= 0)) {
-                    double pdfi = Math.exp(Gamma.logGamma(n + 1)
-                            - Gamma.logGamma(i + 1) - Gamma.logGamma(n - i + 1)
-                            + Gamma.logGamma(bigN - n + 1)
-                            - Gamma.logGamma(bigX - i + 1)
-                            - Gamma.logGamma(bigN - n - bigX + i + 1)
-                            - Gamma.logGamma(bigN + 1)
-                            + Gamma.logGamma(bigX + 1)
-                            + Gamma.logGamma(bigN - bigX + 1));
-                    sum = sum + pdfi;
-                    i--;
-                }
-                sum = 1 - sum;
-            }
-            return (new Double(sum));
-        } else {
-            return (new Double(1));
-        }
-    }
-    
-    
-    
-    /**
-     * Calculate the p-Value of the Hypergeometric Distribution<p>
-     * 
-     * Implementation from:  http://acs.lbl.gov/~hoschek/colt/api/cern/jet/random/HyperGeometric.html<p>
-     * 
-     * @param N size of the population  (Universe of genes)
-     * @param n size of the sample      (signature geneset) 
-     * @param m successes in population (enrichment geneset)
-     * @param k successes in sample     (intersection of both genesets)
-     * 
-     * @return the p-Value of the Hypergeometric Distribution
-     */
-    public static double hyperGeomPvalue_colt(int N, int n, int m, int k) {
-        //calculating in logarithmic scale as we are dealing with large numbers. 
-        
-        int colt_N = N;                 //number of total genes      (size of population / total number of balls)  
-        int colt_s = n;                 //size of signature geneset  (sample size / number of extracted balls)  
-        int colt_n = m;                 //size of enrichment geneset (success Items / number of white balls in population)  
-        int colt_k = k;                 //size of intersection       (successes /number of extracted white balls)  
-              
-        HyperGeometric hyperDist = new HyperGeometric(colt_N, colt_s, colt_n, dRand); // generate Hypergeometric Distribution  
-        return hyperDist.pdf(colt_k); // calculate p-value for k successes  
-
     }
 
     /* ***************************************
