@@ -281,6 +281,8 @@ public class OverlappingGenesPanel extends JPanel {
                                 tcModel.getColumn(i).setHeaderRenderer(pheno1_renderer);
                             else if(phenotypes[i-2].equalsIgnoreCase(Dataset1phenotype2))
                                 tcModel.getColumn(i).setHeaderRenderer(pheno2_renderer);
+                            else
+                                tcModel.getColumn(i).setHeaderRenderer(default_renderer);
                         }
                         else
                             tcModel.getColumn(i).setHeaderRenderer(default_renderer);
@@ -294,6 +296,8 @@ public class OverlappingGenesPanel extends JPanel {
                                 tcModel.getColumn(i).setHeaderRenderer(pheno1_renderer);
                             else if(phenotypes2[i-columnNames.length].equalsIgnoreCase(Dataset2phenotype2))
                                 tcModel.getColumn(i).setHeaderRenderer(pheno2_renderer);
+                            else
+                                tcModel.getColumn(i).setHeaderRenderer(default_renderer);
                         }
                         else
                             tcModel.getColumn(i).setHeaderRenderer(default_renderer);
@@ -313,6 +317,8 @@ public class OverlappingGenesPanel extends JPanel {
                                 tcModel.getColumn(i).setHeaderRenderer(pheno1_renderer);
                             else if(phenotypes[i-2].equalsIgnoreCase(Dataset1phenotype2))
                                 tcModel.getColumn(i).setHeaderRenderer(pheno2_renderer);
+                            else
+                                tcModel.getColumn(i).setHeaderRenderer(default_renderer);
                         }
                         else
                              tcModel.getColumn(i).setHeaderRenderer(default_renderer);
