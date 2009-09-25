@@ -138,6 +138,9 @@ public class EnrichmentMapParameters {
     private String classFile1;
     private String classFile2;
 
+    private String[] temp_class1 = null;
+    private String[] temp_class2 = null;
+
     private HashMap<String, GenesetSimilarity> genesetSimilarity = null;
 
     private ArrayList<Node> selectedNodes;
@@ -165,7 +168,7 @@ public class EnrichmentMapParameters {
     private String default_overlap_metric;
     private Boolean disable_heatmap_autofocus;
     private Boolean disable_genesetSummary_autofocus;
-    
+
     final public static String ENRICHMENT_INTERACTION_TYPE = "pp"; //TODO: change to enr ?!?
 
     public EnrichmentMapParameters() {
@@ -245,14 +248,49 @@ public class EnrichmentMapParameters {
                 this.dataset1RankedFile = props.get("rankFile1");
         }
 
-        if((props.get("classFile1")).equalsIgnoreCase("null") )
-            this.classFile1 = null;
-        else
-            this.classFile1 = props.get("classFile1");
-        if((props.get("classFile2")).equalsIgnoreCase("null"))
-            this.classFile2 = null;
-        else
-            this.classFile2 = props.get("classFile2");
+        if(props.get("classFile1") != null){
+            if((props.get("classFile1")).equalsIgnoreCase("null") )
+                this.classFile1 = null;
+            else
+                this.classFile1 = props.get("classFile1");
+        }
+        if(props.get("classFile2")!= null){
+            if((props.get("classFile2")).equalsIgnoreCase("null"))
+                this.classFile2 = null;
+            else
+                this.classFile2 = props.get("classFile2");
+        }
+
+        //Get the class one array from the prop file
+        if(props.get("class1")!= null){
+            if((props.get("class1")).equalsIgnoreCase("null") )
+                this.temp_class1 = null;
+            else{
+                String classes = props.get("class1");
+                String [] set = classes.split(",");
+
+                this.temp_class1 = new String[set.length];
+
+                for (int i = 0; i < set.length; i++) {
+                    this.temp_class1[i] = set[i];
+                }
+            }
+        }
+        //Get the class two array from the prop file
+        if(props.get("class2")!= null){
+            if((props.get("class2")).equalsIgnoreCase("null") )
+                this.temp_class2 = null;
+            else{
+                String classes = props.get("class2");
+                String [] set = classes.split(",");
+
+                this.temp_class2 = new String[set.length];
+
+                for (int i = 0; i < set.length; i++) {
+                    this.temp_class2[i] = set[i];
+                }
+            }
+        }
 
         //boolean flags
         if((props.get("twoDatasets")).equalsIgnoreCase("true"))
@@ -347,7 +385,7 @@ public class EnrichmentMapParameters {
         this.GSEA = copy.isGSEA();
         this.jaccard = copy.isJaccard();
         this.similarityCutOffChanged = copy.similarityCutOffChanged;
-        
+
         //copy HashMaps genes and hash2genes
         this.genes = copy.getGenes();
         this.hashkey2gene = copy.getHashkey2gene();
@@ -888,6 +926,22 @@ public class EnrichmentMapParameters {
         paramVariables += "classFile1\t" + classFile1  + "\n";
         paramVariables += "classFile2\t" + classFile2  + "\n";
 
+        //Write the classes/phenotypes as a comma separated list.
+        if(this.isData()){
+            String[] current_pheno = expression.getPhenotypes();
+            String output = "";
+            for(int j = 0; j < current_pheno.length;j++)
+                output += current_pheno[j] + ",";
+            paramVariables += "class1\t" + output + "\n";
+        }
+        if(this.isData2()){
+            String[] current_pheno = expression2.getPhenotypes();
+            String output = "";
+            for(int j = 0; j < current_pheno.length;j++)
+                output += current_pheno[j] + ",";
+            paramVariables += "class2\t" + output + "\n";
+        }
+
         //rank files
         paramVariables += "rankFile1\t" + dataset1RankedFile + "\n";
         paramVariables += "rankFile2\t" + dataset2RankedFile + "\n";
@@ -924,7 +978,7 @@ public class EnrichmentMapParameters {
 
     //repopulate hashmap,
     public HashMap repopulateHashmap(String fileInput, int type ){
-        //TODO: for Type-safety we should generate and return individual HashMaps specifying the correct Types 
+        //TODO: for Type-safety we should generate and return individual HashMaps specifying the correct Types
 
         //Create a hashmap to contain all the values in the rpt file.
         HashMap newMap;
@@ -1075,5 +1129,21 @@ public class EnrichmentMapParameters {
         else{
             return null;
         }
+    }
+
+    public String[] getTemp_class1() {
+        return temp_class1;
+    }
+
+    public void setTemp_class1(String[] temp_class1) {
+        this.temp_class1 = temp_class1;
+    }
+
+    public String[] getTemp_class2() {
+        return temp_class2;
+    }
+
+    public void setTemp_class2(String[] temp_class2) {
+        this.temp_class2 = temp_class2;
     }
 }
