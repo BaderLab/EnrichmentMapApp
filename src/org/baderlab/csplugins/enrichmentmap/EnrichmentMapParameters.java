@@ -929,17 +929,21 @@ public class EnrichmentMapParameters {
         //Write the classes/phenotypes as a comma separated list.
         if(this.isData()){
             String[] current_pheno = expression.getPhenotypes();
-            String output = "";
-            for(int j = 0; j < current_pheno.length;j++)
-                output += current_pheno[j] + ",";
-            paramVariables += "class1\t" + output + "\n";
+            if (current_pheno != null){
+                String output = "";
+                for(int j = 0; j < current_pheno.length;j++)
+                     output += current_pheno[j] + ",";
+                paramVariables += "class1\t" + output + "\n";
+            }
         }
         if(this.isData2()){
             String[] current_pheno = expression2.getPhenotypes();
-            String output = "";
-            for(int j = 0; j < current_pheno.length;j++)
-                output += current_pheno[j] + ",";
-            paramVariables += "class2\t" + output + "\n";
+            if (current_pheno != null){
+                String output = "";
+                for(int j = 0; j < current_pheno.length;j++)
+                     output += current_pheno[j] + ",";
+                paramVariables += "class2\t" + output + "\n";
+            }
         }
 
         //rank files
