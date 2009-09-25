@@ -49,6 +49,7 @@ import cytoscape.data.readers.TextFileReader;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.io.File;
 
 /**
  * Created by
@@ -171,7 +172,7 @@ public class GCTFileReaderTask implements Task {
                 }
                 else
                     description = tokens[1];
-                    
+
                 GeneExpression expres = new GeneExpression(Name, description);
                 expres.setExpression(tokens);
 
@@ -198,22 +199,38 @@ public class GCTFileReaderTask implements Task {
         }
         if(dataset == 1){
             //set up the classes definition if it is set.
+            //check to see if the phenotypes were already set in the params from a session load
+            if(params.getTemp_class1() != null)
+                expressionMatrix.setPhenotypes(params.getTemp_class1());
             if(params.getClassFile1() != null)
-                expressionMatrix.setPhenotypes(setClasses(expressionMatrix, params.getClassFile1()));
+                expressionMatrix.setPhenotypes(setClasses( params.getClassFile1()));
             params.setExpression(expressionMatrix);
         }
         else{
             //set up the classes definition if it is set.
-            if(params.getClassFile2() != null)
-                expressionMatrix.setPhenotypes(setClasses(expressionMatrix, params.getClassFile2()));
+
+            //check to see if the phenotypes were already set in the params from a session load
+            if(params.getTemp_class2() != null)
+                expressionMatrix.setPhenotypes(params.getTemp_class2());
+            else if(params.getClassFile2() != null)
+                expressionMatrix.setPhenotypes(setClasses( params.getClassFile2()));
             params.setExpression2(expressionMatrix);
         }
     }
 
-    private String[] setClasses(GeneExpressionMatrix expresson, String classFile){
+    private String[] setClasses(String classFile){
 
+        File f = new File(classFile);
+
+        //deal with legacy issue, if a session file has the class file set but
+        //it didn't actually save the classes yet.
+        if(!f.exists()){
+           return null;
+        }        
         //check to see if the file was opened successfully
-        if(!classFile.equalsIgnoreCase(null)){
+
+        if(!classFile.equalsIgnoreCase(null)) {
+
             TextFileReader reader2 = new TextFileReader(classFile);
 
             reader2.read();
