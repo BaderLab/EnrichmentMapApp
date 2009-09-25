@@ -266,6 +266,7 @@ public class OverlappingGenesPanel extends JPanel {
             pheno2_renderer.setBackground(EnrichmentMapVisualStyle.lightest_phenotype2);
 
             ColumnHeaderVerticalRenderer default_renderer = new ColumnHeaderVerticalRenderer();
+            default_renderer.setBackground(Color.white);
 
             if(params.isData2()){
                 //go through the first data set
