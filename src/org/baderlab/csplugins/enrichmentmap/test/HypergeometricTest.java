@@ -102,9 +102,9 @@ public class HypergeometricTest extends TestCase {
                 m = Integer.parseInt(tokens[2]);
                 k = Integer.parseInt(tokens[3]);
                 expected_pVal = Double.parseDouble(tokens[4]);
-                pValue = BuildDiseaseSignatureTask.hyperGeomPvalue(N, n, m, k);
+                pValue = BuildDiseaseSignatureTask.hyperGeomPvalue_sum(N, n, m, k, 1);
                 
-                assertEquals(expected_pVal, pValue, 0.001);
+                assertEquals(expected_pVal, pValue, 0.00000005);
             }
             
         }
