@@ -15,7 +15,7 @@ pluginDescription=Enrichment Map is a network-based method to visualize and inte
 pluginVersion=0.10
 
 # Compatible Cytoscape version
-cytoscapeVersion=2.6
+cytoscapeVersion=2.6,2.7
 
 # Category, use one of the categories listed on the website or create your own
 pluginCategory=Analysis
