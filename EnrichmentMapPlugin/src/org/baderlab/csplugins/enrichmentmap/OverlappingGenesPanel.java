@@ -1071,57 +1071,69 @@ public class OverlappingGenesPanel extends JPanel {
 
     private HashMap<Integer, Ranking> getRanksByClustering(){
 
-        HashMap<Integer, Ranking> ranks;
+        HashMap<Integer, Ranking> ranks = null;
 
-        //create an arraylist of the expression subset.
-          List clustering_expressionset = new ArrayList() ;
-          ArrayList labels = new ArrayList();
-          int j = 0;
+        //only create a ranking if there are genes in the expression set
+        if(currentExpressionSet.keySet().size() > 1){
 
-          //go through the expressionset hashmap and add the key to the labels and add the expression to the clustering set
-          for(Iterator i = currentExpressionSet.keySet().iterator();i.hasNext();){
-            Integer key = (Integer)i.next();
+            //create an arraylist of the expression subset.
+            List clustering_expressionset = new ArrayList() ;
+            ArrayList labels = new ArrayList();
+            int j = 0;
 
-              Double[] x = ((GeneExpression)currentExpressionSet.get(key)).getExpression();
-              Double[] z;
-              if(params.isData2()){
-                  Double[] y = ((GeneExpression)currentExpressionSet2.get(key)).getExpression();
-                  z = new Double[x.length + y.length];
-                  System.arraycopy(x,0,z,0,x.length);
-                  System.arraycopy(y,0,z,x.length,y.length);
+            //go through the expressionset hashmap and add the key to the labels and add the expression to the clustering set
+            for(Iterator i = currentExpressionSet.keySet().iterator();i.hasNext();){
+                Integer key = (Integer)i.next();
 
-              }
-              else{
-                  z = x;
-              }
+                Double[] x = ((GeneExpression)currentExpressionSet.get(key)).getExpression();
+                Double[] z;
+                if(params.isData2()){
+                    Double[] y = ((GeneExpression)currentExpressionSet2.get(key)).getExpression();
+                    z = new Double[x.length + y.length];
+                    System.arraycopy(x,0,z,0,x.length);
+                    System.arraycopy(y,0,z,x.length,y.length);
 
-            //add the expresionset
-            clustering_expressionset.add(j, z);
+                }
+                else{
+                    z = x;
+                }
 
-            //add the key to the labels
-            labels.add(j,key);
+                //add the expresionset
+                clustering_expressionset.add(j, z);
 
-             j++;
-          }
+                //add the key to the labels
+                labels.add(j,key);
 
-        //create a distance matrix the size of the expression set
-        DistanceMatrix distanceMatrix = new DistanceMatrix(currentExpressionSet.keySet().size());
-        distanceMatrix.calcDistances(clustering_expressionset, new AlignExpressionDataDistance());
+                j++;
+            }
 
-        distanceMatrix.setLabels(labels);
+            //create a distance matrix the size of the expression set
+            DistanceMatrix distanceMatrix = new DistanceMatrix(currentExpressionSet.keySet().size());
+            distanceMatrix.calcDistances(clustering_expressionset, new AlignExpressionDataDistance());
 
-        //cluster
-        AvgLinkHierarchicalClustering cluster = new AvgLinkHierarchicalClustering(distanceMatrix);
-        cluster.setOptimalLeafOrdering(true);
-        cluster.run();
+            distanceMatrix.setLabels(labels);
 
-        int[] order = cluster.getLeafOrder();
-        ranks = new HashMap<Integer,Ranking>();
-        for(int i =0;i< order.length;i++){
+            //cluster
+            AvgLinkHierarchicalClustering cluster = new AvgLinkHierarchicalClustering(distanceMatrix);
+            cluster.setOptimalLeafOrdering(true);
+            cluster.run();
+
+            int[] order = cluster.getLeafOrder();
+            ranks = new HashMap<Integer,Ranking>();
+            for(int i =0;i< order.length;i++){
                  //get the label
-             Integer label =  (Integer)labels.get(order[i]);
-             Ranking temp = new Ranking(((GeneExpression)currentExpressionSet.get(label)).getName(),0.0,i);
-             ranks.put(label,temp);
+                Integer label =  (Integer)labels.get(order[i]);
+                Ranking temp = new Ranking(((GeneExpression)currentExpressionSet.get(label)).getName(),0.0,i);
+                ranks.put(label,temp);
+            }
+        }
+        else if(currentExpressionSet.keySet().size() == 1){
+            ranks = new HashMap<Integer,Ranking>();
+            for(Iterator i = currentExpressionSet.keySet().iterator();i.hasNext();){
+                Integer key = (Integer)i.next();
+                Ranking temp = new Ranking(((GeneExpression)currentExpressionSet.get(key)).getName(),0.0,0);
+                ranks.put(key,temp);
+            }
         }
         return ranks;
     }
