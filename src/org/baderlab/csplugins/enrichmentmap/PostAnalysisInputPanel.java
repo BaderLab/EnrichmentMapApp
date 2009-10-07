@@ -110,19 +110,6 @@ public class PostAnalysisInputPanel extends JPanel {
     private JComboBox sigCutoffCombo;
     private JFormattedTextField sigCutoffTextField;
     
-    //TODO: remove obsolete Component declarations (Start)
-    private JRadioButton sigAbsNumber;
-    private JRadioButton sigJaccard;
-    private JRadioButton sigOverlap;
-    private JRadioButton sigHypergeom;
-    
-    private JFormattedTextField sigAbsNumberTextField;
-    private JFormattedTextField sigJaccardTextField;
-    private JFormattedTextField sigOverlapTextField;
-    private JFormattedTextField sigHypergeomTextField;
-    //TODO: remove obsolete Component declarations (End)
-
-    
     private int defaultColumns = 15;
 
     //
@@ -377,21 +364,6 @@ public class PostAnalysisInputPanel extends JPanel {
         });
         signature_genesets.getContentPane().add(signaturePanel, BorderLayout.NORTH);
         
-        //DEBUG: remove Debug Code
-//        JButton testButton = new JButton("Test Selection");
-//        testButton.addActionListener(new java.awt.event.ActionListener() {
-//            public void actionPerformed(java.awt.event.ActionEvent evt) {
-//                
-//                String message =  "Number of selected Sets: " + Integer.toString( avail_sig_sets_field.getSelectedIndices().length ) +"\n" ;
-//                for (int i = 0; i < avail_sig_sets_field.getSelectedValues().length; i++  )
-//                    message += avail_sig_sets_field.getSelectedValues()[i] + "\n";
-//
-//                JOptionPane.showMessageDialog(Cytoscape.getDesktop(),message,"Info",JOptionPane.INFORMATION_MESSAGE);
-//                                
-//            }
-//        });
-//        signature_genesets.add(testButton);
-        
         //Parameters collapsible panel
         CollapsiblePanel ParametersPanel = createParametersPanel();
         ParametersPanel.setCollapsed(false);
@@ -574,262 +546,6 @@ public class PostAnalysisInputPanel extends JPanel {
         return collapsiblePanel;
     }
     
-    /**
-     * Creates a collapsible panel that holds parameter inputs
-     *
-     * @return panel containing the parameter inputs
-     */
-    private CollapsiblePanel createParametersPanel_radio() {
-        CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Parameters");
-
-        // the panel:
-        JPanel panel = new JPanel();
-        GridBagLayout parametersGbl = new GridBagLayout();
-        panel.setLayout(parametersGbl);
-
-        /*
-         * +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+~~~~~~~+
-         * | Select Cutoff:                        |
-         * | O Number of common genes:     | _____ |
-         * | O Jaccard Coefficient:        | _____ |
-         * | O Overlap Coefficient:        | _____ |
-         * | O Hypergeometric Test:        | _____ |
-         * +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+~~~~~~~+
-         * 
-         * Parameters:
-         *  int     gridx The initial gridx value.
-         *  int     gridy The initial gridy value.
-         *  int     gridwidth The initial gridwidth value.
-         *  int     gridheight The initial gridheight value.
-         *  double  weightx The initial weightx value.
-         *  double  weighty The initial weighty value.
-         *  int     anchor The initial anchor value.
-         *  int     fill The initial fill value.
-         *  Insets  insets The initial insets value.
-         *  int     ipadx The initial ipadx value.
-         *  int     ipady The initial ipady value.
-         *
-         *  //                  x,  y, w, h,  wx,  wy,
-         *  GridBagConstraints(-1, -1, 2, 1, 0.0, 0.0,
-         *  //  anchor,                    fill,                    insets,            ipadx, ipady
-         *      GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0,0,0,0), 0,     0));
-         *      
-         */
-        
-        
-        JLabel cutoffLabel = new JLabel("Select Cutoff:");
-        panel.add(cutoffLabel);
-        
-        GridBagConstraints labelGbc = new GridBagConstraints();
-        labelGbc.gridwidth = 2;
-        parametersGbl.setConstraints(cutoffLabel, new GridBagConstraints(1, 1, 2, 1, 0.0, 0.0, 
-                    GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0,0,0,0), 0, 0)); 
-        
-        
-        // Cutoff based on number of common genes:
-        sigAbsNumber = new JRadioButton("Number of common genes: ");
-        sigAbsNumber.setActionCommand("sigAbsNumber");
-        sigAbsNumberTextField = new JFormattedTextField(decFormat);
-        sigAbsNumberTextField.setColumns(3);
-        sigAbsNumberTextField.setValue(paParams.getSignature_absNumber_Cutoff());
-        sigAbsNumberTextField.addPropertyChangeListener("value", new PostAnalysisInputPanel.FormattedTextFieldAction());
-        parametersGbl.setConstraints(sigAbsNumber, new GridBagConstraints(1, 2, 1, 1, 0.0, 0.0, 
-                GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,0,0,0), 0, 0));
-        parametersGbl.setConstraints(sigAbsNumberTextField, new GridBagConstraints(2, 2, 1, 1, 0.0, 0.0, 
-                GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL, new Insets(0,0,0,0), 0, 0));
-        panel.add(sigAbsNumber);
-        panel.add(sigAbsNumberTextField);
-        
-        
-        // Cutoff based on Jaccard Coefficient:
-        sigJaccard = new JRadioButton("Jaccard Coefficient: ");
-        sigJaccard.setActionCommand("sigJaccard");
-        sigJaccardTextField = new JFormattedTextField(decFormat);
-        sigJaccardTextField.setColumns(3);
-        sigJaccardTextField.setValue(paParams.getSignature_Jaccard_Cutoff());
-        sigJaccardTextField.addPropertyChangeListener("value", new PostAnalysisInputPanel.FormattedTextFieldAction());
-        parametersGbl.setConstraints(sigJaccard, new GridBagConstraints(1, 3, 1, 1, 0.0, 0.0, 
-                GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,0,0,0), 0, 0));
-        parametersGbl.setConstraints(sigJaccardTextField, new GridBagConstraints(2, 3, 1, 1, 0.0, 0.0, 
-                GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL, new Insets(0,0,0,0), 0, 0));
-        panel.add(sigJaccard);
-        panel.add(sigJaccardTextField);
-
-        // Cutoff based on Overlap Coefficient:
-        sigOverlap = new JRadioButton("Overlap Coefficient: ");
-        sigOverlap.setActionCommand("sigOverlap");
-        sigOverlapTextField = new JFormattedTextField(decFormat);
-        sigOverlapTextField.setColumns(3);
-        sigOverlapTextField.setValue(paParams.getSignature_Overlap_Cutoff());
-        sigOverlapTextField.addPropertyChangeListener("value", new PostAnalysisInputPanel.FormattedTextFieldAction());
-        parametersGbl.setConstraints(sigOverlap, new GridBagConstraints(1, 4, 1, 1, 0.0, 0.0, 
-                GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,0,0,0), 0, 0));
-        parametersGbl.setConstraints(sigOverlapTextField, new GridBagConstraints(2, 4, 1, 1, 0.0, 0.0, 
-                GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL, new Insets(0,0,0,0), 0, 0));
-        panel.add(sigOverlap);
-        panel.add(sigOverlapTextField);
-
-        // Cutoff based on Hypergeometric Test:
-        sigHypergeom = new JRadioButton("Hypergeometric p-Value: ");
-        sigHypergeom.setActionCommand("sigHypergeom");
-        sigHypergeomTextField = new JFormattedTextField(decFormat);
-        sigHypergeomTextField.setColumns(3);
-        sigHypergeomTextField.setValue(paParams.getSignature_Hypergeom_Cutoff());
-        sigHypergeomTextField.addPropertyChangeListener("value", new PostAnalysisInputPanel.FormattedTextFieldAction());
-        parametersGbl.setConstraints(sigHypergeom, new GridBagConstraints(1, 5, 1, 1, 0.0, 0.0, 
-                GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,0,0,0), 0, 0));
-        parametersGbl.setConstraints(sigHypergeomTextField, new GridBagConstraints(2, 5, 1, 1, 0.0, 0.0, 
-                GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL, new Insets(0,0,0,0), 0, 0));
-        panel.add(sigHypergeom);
-        panel.add(sigHypergeomTextField);
-
-        
-        // Join RadioButtons to group
-        ButtonGroup signatureCutoffMetric;
-        signatureCutoffMetric = new javax.swing.ButtonGroup();
-        signatureCutoffMetric.add(sigAbsNumber);
-        signatureCutoffMetric.add(sigJaccard);
-        signatureCutoffMetric.add(sigOverlap);
-        signatureCutoffMetric.add(sigHypergeom);
-        
-        // ActionListeners for RadioButtons
-        sigAbsNumber.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                signatureCutoffMetricActionPerformed(evt);
-            }
-        });
-        sigJaccard.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                signatureCutoffMetricActionPerformed(evt);
-            }
-        });
-        sigOverlap.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                signatureCutoffMetricActionPerformed(evt);
-            }
-        });
-        sigHypergeom.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                signatureCutoffMetricActionPerformed(evt);
-            }
-        });
-        
-        // select default RadioButton
-        sigAbsNumber.setSelected(paParams.getSignature_CutoffMetric() == PostAnalysisParameters.ABS_NUMBER);
-        sigJaccard.  setSelected(paParams.getSignature_CutoffMetric() == PostAnalysisParameters.JACCARD   );
-        sigOverlap.  setSelected(paParams.getSignature_CutoffMetric() == PostAnalysisParameters.OVERLAP   );
-        sigHypergeom.setSelected(paParams.getSignature_CutoffMetric() == PostAnalysisParameters.HYPERGEOM );
-        
-        // disable all non-default Text Fields
-        sigAbsNumberTextField.setEnabled(paParams.getSignature_CutoffMetric() == PostAnalysisParameters.ABS_NUMBER);
-        sigJaccardTextField  .setEnabled(paParams.getSignature_CutoffMetric() == PostAnalysisParameters.JACCARD   );
-        sigOverlapTextField  .setEnabled(paParams.getSignature_CutoffMetric() == PostAnalysisParameters.OVERLAP   );
-        sigHypergeomTextField.setEnabled(paParams.getSignature_CutoffMetric() == PostAnalysisParameters.HYPERGEOM );
-        
-/*      TODO: remove obsolete code  
-        //pvalue cutoff input
-        JLabel pvalueCutOffLabel = new JLabel("P-value Cutoff");
-        pvalueTextField = new JFormattedTextField(decFormat);
-        pvalueTextField.setColumns(3);
-        pvalueTextField.addPropertyChangeListener("value", new PostAnalysisInputPanel.FormattedTextFieldAction());
-        String pvalueCutOffTip = "Sets the p-value cutoff \n" +
-                "only genesets with a p-value less than \n"+
-                 "the cutoff will be included.";
-        pvalueTextField.setToolTipText(pvalueCutOffTip);
-        pvalueTextField.setText(Double.toString(params.getPvalue()));
-
-        JPanel pvalueCutOffPanel = new JPanel();
-        pvalueCutOffPanel.setLayout(new BorderLayout());
-        pvalueCutOffPanel.setToolTipText(pvalueCutOffTip);
-
-        pvalueCutOffPanel.add(pvalueCutOffLabel, BorderLayout.WEST);
-        pvalueCutOffPanel.add(pvalueTextField, BorderLayout.EAST);
-
-
-         //qvalue cutoff input
-        JLabel qvalueCutOffLabel = new JLabel("Q-value Cutoff");
-        qvalueTextField = new JFormattedTextField(decFormat);
-        qvalueTextField.setColumns(3);
-        qvalueTextField.addPropertyChangeListener("value", new PostAnalysisInputPanel.FormattedTextFieldAction());
-        String qvalueCutOffTip = "Sets the FDR q-value cutoff \n" +
-                "only genesets with a FDR q-value less than \n"+
-                 "the cutoff will be included.";
-        qvalueTextField.setToolTipText(qvalueCutOffTip);
-        qvalueTextField.setText(Double.toString(paParams.getQvalue()));
-
-        JPanel qvalueCutOffPanel = new JPanel();
-        qvalueCutOffPanel.setLayout(new BorderLayout());
-        qvalueCutOffPanel.setToolTipText(qvalueCutOffTip);
-
-        qvalueCutOffPanel.add(qvalueCutOffLabel, BorderLayout.WEST);
-        qvalueCutOffPanel.add(qvalueTextField, BorderLayout.EAST);
-
-        //coefficient cutoff input
-
-        ButtonGroup jaccardOrOverlap;
-
-        jaccard = new JRadioButton("Jaccard Coeffecient");
-        jaccard.setActionCommand("jaccard");
-        jaccard.setSelected(true);
-        overlap = new JRadioButton("Overlap Coeffecient");
-        overlap.setActionCommand("overlap");
-        if ( params.isJaccard() ) {
-            jaccard.setSelected(true);
-            overlap.setSelected(false);
-        } else {
-            jaccard.setSelected(false);
-            overlap.setSelected(true);
-        }
-        jaccardOrOverlap = new javax.swing.ButtonGroup();
-        jaccardOrOverlap.add(jaccard);
-        jaccardOrOverlap.add(overlap);
-
-        jaccard.addActionListener(new java.awt.event.ActionListener() {
-                     public void actionPerformed(java.awt.event.ActionEvent evt) {
-                            selectJaccardOrOverlapActionPerformed(evt);
-                     }
-               });
-
-        overlap.addActionListener(new java.awt.event.ActionListener() {
-                     public void actionPerformed(java.awt.event.ActionEvent evt) {
-                            selectJaccardOrOverlapActionPerformed(evt);
-                     }
-               });
-
-        //create a panel for the two buttons
-        JPanel index_buttons = new JPanel();
-        index_buttons.setLayout(new BorderLayout());
-        index_buttons.add(jaccard, BorderLayout.NORTH);
-        index_buttons.add(overlap, BorderLayout.SOUTH);
-
-        JLabel coeffecientCutOffLabel = new JLabel("Cutoff");
-        coeffecientTextField = new JFormattedTextField(decFormat);
-        coeffecientTextField.setColumns(3);
-        coeffecientTextField.addPropertyChangeListener("value", new PostAnalysisInputPanel.FormattedTextFieldAction());
-        String coeffecientCutOffTip = "Sets the Jaccard or Overlap coeffecient cutoff \n" +
-                          "only edges with a Jaccard or Overlap coffecient less than \n"+
-                           "the cutoff will be added.";
-       coeffecientTextField.setToolTipText(coeffecientCutOffTip);
-       coeffecientTextField.setText(Double.toString(params.getSimilarityCutOff()));
-
-       JPanel coeffecientCutOffPanel = new JPanel();
-       coeffecientCutOffPanel.setLayout(new BorderLayout());
-       coeffecientCutOffPanel.setToolTipText(coeffecientCutOffTip);
-
-       coeffecientCutOffPanel.add(index_buttons,BorderLayout.WEST);
-       coeffecientCutOffPanel.add(coeffecientCutOffLabel, BorderLayout.CENTER);
-       coeffecientCutOffPanel.add(coeffecientTextField, BorderLayout.EAST);
-
-        //add the components to the panel
-        panel.add(pvalueCutOffPanel);
-        panel.add(qvalueCutOffPanel);
-        //panel.add(coeffecientCutOffPanel);
-*/
-        collapsiblePanel.getContentPane().add(panel, BorderLayout.NORTH);
-//        collapsiblePanel.getContentPane().add(coeffecientCutOffPanel, BorderLayout.SOUTH);
-        return collapsiblePanel;
-    }
-
 
     private ImageIcon[] createArrowIcons () {
         ImageIcon[] iconArrow = new ImageIcon[4];
@@ -938,50 +654,6 @@ public class PostAnalysisInputPanel extends JPanel {
                 }
             } 
             
-            //TODO: remove obsolete Event-Handling (START)
-            else if (source == sigAbsNumberTextField) {
-                Number value = (Number) sigAbsNumberTextField.getValue();
-
-                if ((value != null) && (value.intValue() >= 0) ) {
-                    paParams.setSignature_absNumber_Cutoff(value.intValue());
-                } else {
-                    source.setValue(paParams.getSignature_absNumber_Cutoff());
-                    message += "The \"Number of common genes\" cutoff must be a non-negative Integer (0 or larger).";
-                    invalid = true;
-                }
-            } 
-            else if (source == sigJaccardTextField) {
-                Number value = (Number) sigJaccardTextField.getValue();
-                if ((value != null) && (value.doubleValue() > 0.0) && (value.doubleValue() <= 1.0)) {
-                    paParams.setSignature_Jaccard_Cutoff(value.doubleValue());
-                } else {
-                    source.setValue(paParams.getSignature_Jaccard_Cutoff());
-                    message += "The Jaccard Coefficient cutoff must be greater than 0.0 and less than or equal to 1.0.";
-                    invalid = true;
-                }
-            } 
-            else if (source == sigOverlapTextField) {
-                Number value = (Number) sigOverlapTextField.getValue();
-                if ((value != null) && (value.doubleValue() > 0.0) && (value.doubleValue() <= 1.0)) {
-                    paParams.setSignature_Overlap_Cutoff(value.doubleValue());
-                } else {
-                    source.setValue(paParams.getSignature_Overlap_Cutoff());
-                    message += "The Overlap Coefficient cutoff must be greater than 0.0 and less than or equal to 1.0.";
-                    invalid = true;
-                }
-            } 
-            else if (source == sigHypergeomTextField) {
-                Number value = (Number) sigHypergeomTextField.getValue();
-                if ((value != null) && (value.doubleValue() >= 0.0) && (value.doubleValue() <= 1.0)) {
-                    paParams.setSignature_Hypergeom_Cutoff(value.doubleValue());
-                } else {
-                    source.setValue(paParams.getSignature_Hypergeom_Cutoff());
-                    message += "The Hypergeometric-pValue cutoff must be greater or equal than 0.0 and less than or equal to 1.0.";
-                    invalid = true;
-                }
-            }
-          //TODO: remove obsolete Event-Handling (END)
-
             if (invalid) {
                 JOptionPane.showMessageDialog(Cytoscape.getDesktop(), message, "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
             }
@@ -1088,35 +760,6 @@ public class PostAnalysisInputPanel extends JPanel {
 
     }
     
-    //TODO: remove obsolete Event Handling (START)
-    protected void signatureCutoffMetricActionPerformed(ActionEvent evt) {
-        if (evt.getActionCommand().equalsIgnoreCase("sigAbsNumber")) {
-            sigAbsNumberTextField.setEnabled(true);
-            sigJaccardTextField.setEnabled(false);
-            sigOverlapTextField.setEnabled(false);
-            sigHypergeomTextField.setEnabled(false);
-            paParams.setSignature_CutoffMetric(PostAnalysisParameters.ABS_NUMBER);
-        } else if (evt.getActionCommand().equalsIgnoreCase("sigJaccard")) {
-            sigAbsNumberTextField.setEnabled(false);
-            sigJaccardTextField.setEnabled(true);
-            sigOverlapTextField.setEnabled(false);
-            sigHypergeomTextField.setEnabled(false);
-            paParams.setSignature_CutoffMetric(PostAnalysisParameters.JACCARD);
-        } else if (evt.getActionCommand().equalsIgnoreCase("sigOverlap")) {
-            sigAbsNumberTextField.setEnabled(false);
-            sigJaccardTextField.setEnabled(false);
-            sigOverlapTextField.setEnabled(true);
-            sigHypergeomTextField.setEnabled(false);
-            paParams.setSignature_CutoffMetric(PostAnalysisParameters.OVERLAP);
-        } else if (evt.getActionCommand().equalsIgnoreCase("sigHypergeom")) {
-            sigAbsNumberTextField.setEnabled(false);
-            sigJaccardTextField.setEnabled(false);
-            sigOverlapTextField.setEnabled(false);
-            sigHypergeomTextField.setEnabled(true);
-            paParams.setSignature_CutoffMetric(PostAnalysisParameters.HYPERGEOM);
-        } 
-    }
-    //TODO: remove obsolete Event Handling (END)
         
     /*Given a set of parameters, update the panel to contain the values that are
      * defined in this set of parameters
@@ -1248,24 +891,7 @@ public class PostAnalysisInputPanel extends JPanel {
             JOptionPane.showMessageDialog(Cytoscape.getDesktop(), message, "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
             break;
         }
-        
-        //TODO: remove obsolete code
-//        // select default RadioButton
-//        sigAbsNumber.setSelected(paParams.getSignature_CutoffMetric() == PostAnalysisParameters.ABS_NUMBER);
-//        sigJaccard.  setSelected(paParams.getSignature_CutoffMetric() == PostAnalysisParameters.JACCARD   );
-//        sigOverlap.  setSelected(paParams.getSignature_CutoffMetric() == PostAnalysisParameters.OVERLAP   );
-//        sigHypergeom.setSelected(paParams.getSignature_CutoffMetric() == PostAnalysisParameters.HYPERGEOM );
-//        // disable all non-default Text Fields
-//        sigAbsNumberTextField.setEnabled(paParams.getSignature_CutoffMetric() == PostAnalysisParameters.ABS_NUMBER);
-//        sigJaccardTextField  .setEnabled(paParams.getSignature_CutoffMetric() == PostAnalysisParameters.JACCARD   );
-//        sigOverlapTextField  .setEnabled(paParams.getSignature_CutoffMetric() == PostAnalysisParameters.OVERLAP   );
-//        sigHypergeomTextField.setEnabled(paParams.getSignature_CutoffMetric() == PostAnalysisParameters.HYPERGEOM );
-//        // reset all Text Fields
-//        sigAbsNumberTextField.setValue(paParams.getDefault_signature_absNumber_Cutoff());
-//        sigJaccardTextField  .setValue(paParams.getDefault_signature_Jaccard_Cutoff());
-//        sigOverlapTextField  .setValue(paParams.getDefault_signature_Overlap_Cutoff());
-//        sigHypergeomTextField.setValue(paParams.getDefault_signature_Hypergeom_Cutoff());
- 
+
     }
 
     public void updateContents(PostAnalysisParameters current_params){

@@ -265,12 +265,6 @@ public class BuildDiseaseSignatureTask implements Task {
                         else // Correct p-value of empty intersections to 1 (i.e. not significant)
                             hyperPval = 1.0;
                         
-                        //DEBUG:
-//                        System.out.printf("N=%4d;\tn=%3d;\ts=%4d;\tk=%2d;\t=>\tp-Value=%10.8f\t%s%n", N, n, m, k, hyperPval, geneset_name);
-//                        if (k > 0) 
-//                            System.out.printf("%-50.50s,%4d,%3d,%4d,%2d,%10.8f,%10.8f,%10.8f%n", geneset_name.replace("[;,\"'()]", "_"), N, n, m, k, hyperGeomPvalue_colt(N, n, m, k),hyperGeomPvalue(N, n, m, k), hyperGeomPvalue_BiNGO(N, n, m, k));
-                        //DEBUG END
-                        
                         comparison.setHypergeom_pvalue(hyperPval);
                         comparison.setInteractionType(PostAnalysisParameters.SIGNATURE_INTERACTION_TYPE);
                             
@@ -353,10 +347,6 @@ public class BuildDiseaseSignatureTask implements Task {
                           (geneset_similarities.get(edge_name).getHypergeom_pvalue() <= paParams.getSignature_Hypergeom_Cutoff() ) )
                     passed_cutoff = true;
 
-                //DEBUG: remove debug code:
-//                if (paParams.getSignature_CutoffMetric() == PostAnalysisParameters.HYPERGEOM)
-//                    System.out.println("HyperCutoff: "+paParams.getSignature_Hypergeom_Cutoff()+" (" + passed_cutoff + ")");
-                
                 if (passed_cutoff) {
                     CyNode hub_node = Cytoscape.getCyNode( geneset_similarities.get(edge_name).getGeneset1_Name() );
                     CyNode gene_set = Cytoscape.getCyNode( geneset_similarities.get(edge_name).getGeneset2_Name() );
@@ -394,32 +384,6 @@ public class BuildDiseaseSignatureTask implements Task {
 
                 } //if (geneset_similarities.get(edge_name).getSizeOfOverlap() > 0)
             } //for
-            //TODO: remove obsolete Code
-            /* 
-             * PYTHON IMPLEMENTATION          
-             * for geneset in dis_sig[hub_name].keys():
-             *     # generate new edges between hub-node and Gene sets
-             *     if (geneset in nodes.keys() ) :
-             *         edge = Cytoscape.getCyEdge(nodes[hub_name], nodes[geneset], "interaction", "-", True)
-             *         graph.addEdge(edge)
-             *         edges[edge.getIdentifier()] = edge
-             *         x = graph.setEdgeAttributeValue(edge, "EM1_Overlap_size", dis_sig[hub_name][geneset][0])
-             *         x = graph.setEdgeAttributeValue(edge, "EM1_Overlap_Prc",  dis_sig[hub_name][geneset][1])
-             *         x = graph.setEdgeAttributeValue(edge, "EM1_Overlap_Hpv",  dis_sig[hub_name][geneset][2])
-             *         if dis_sig[hub_name][geneset][2] < 0.0001 :
-             *             x = graph.setEdgeAttributeValue(edge, "EM1_jaccard_coeffecient",  1.0 )
-             *             # x = graph.setEdgeAttributeValue(edge, "edge.lineWidth", 5.0)
-             *         elif dis_sig[hub_name][geneset][2] < 0.05 :
-             *             x = graph.setEdgeAttributeValue(edge, "EM1_jaccard_coeffecient",  0.51 )
-             *             # x = graph.setEdgeAttributeValue(edge, "edge.lineWidth", 1.0)
-             *         else :
-             *             x = graph.setEdgeAttributeValue(edge, "EM1_jaccard_coeffecient",  0.0 )
-             *             # x = graph.setEdgeAttributeValue(edge, "edge.lineWidth", 0.0)
-             *             
-             *         # set Visual Style bypass
-             *         x = graph.setEdgeAttributeValue(edge, "edge.color", hub_edge_color)
-             *         
-             */
  
             Cytoscape.getCurrentNetworkView().redrawGraph(false, true);
         } catch (InterruptedException e) {
@@ -565,7 +529,6 @@ public class BuildDiseaseSignatureTask implements Task {
      * @see cytoscape.task.Task#getTitle()
      */
     public String getTitle() {
-        // TODO Auto-generated method stub
         return new String("Generating Signature Hubs");
     }
 
