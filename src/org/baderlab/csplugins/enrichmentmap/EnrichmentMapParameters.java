@@ -169,8 +169,11 @@ public class EnrichmentMapParameters {
     private Boolean disable_heatmap_autofocus;
     private Boolean disable_genesetSummary_autofocus;
 
-    final public static String ENRICHMENT_INTERACTION_TYPE = "pp"; //TODO: change to enr ?!?
+    final public static String ENRICHMENT_INTERACTION_TYPE = "pp"; //TODO: change to enr or ovlp ?!?
 
+    /**
+     * Default constructor to create a fresh instance.
+     */
     public EnrichmentMapParameters() {
         this.enrichmentResults1 = new HashMap();
         this.enrichmentResults2 = new HashMap();
@@ -217,10 +220,12 @@ public class EnrichmentMapParameters {
         }
     }
 
-    /* Constructor to create enrichment map parameters from a cytoscape property file (property files is created
-    *     when an enrichment map session is saved)
-    *
-    *  Given : the name of the property file
+
+    /** 
+     * Constructor to create enrichment map parameters from a cytoscape property file while restoring a Session
+     * (property files is created when an enrichment map session is saved)
+     *
+     *  @param propFile     the name of the property file as a String
      */
     public EnrichmentMapParameters(String propFile){
         this();
@@ -355,11 +360,17 @@ public class EnrichmentMapParameters {
 
     }
 
-     //Constructor for Enrichment Map Parameters that take another instance of enrichment map parameters
+        //Constructor for Enrichment Map Parameters that take another instance of enrichment map parameters
 	    //And copies its contents.
 	    //The assumption is that these parameters were populated by the input window and therefore only  contain
 	    //info for file names, cutoffs, and phenotypes.
 	    //TODO:get rid of this constructor, it is replaced by copyInputParameters and copy methods
+        /**
+         * Constructor for Enrichment Map Parameters that takes another instance of 
+         * EnrichmentMapParameters and copies its contents.
+         * 
+         * @param copy
+         */
 	    public EnrichmentMapParameters(EnrichmentMapParameters copy){
 	        this();
 
@@ -1036,7 +1047,12 @@ public class EnrichmentMapParameters {
             this.ranks.put("Dataset 2 Ranking", this.dataset2Rankings);
     }
 
-
+    /** 
+     * String representation of EnrichmentMapParameters.
+     * Is used to store the persistent Attributes as a property file in the Cytoscape Session file.
+     * 
+     * @see java.lang.Object#toString()
+     */
     public String toString(){
         String paramVariables = "";
 
