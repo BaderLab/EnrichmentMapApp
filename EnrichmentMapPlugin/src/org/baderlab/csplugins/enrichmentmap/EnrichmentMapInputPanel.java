@@ -1672,7 +1672,8 @@ public class EnrichmentMapInputPanel extends JPanel {
     }
 
     public void updateContents(EnrichmentMapParameters current_params){
-        this.params = new EnrichmentMapParameters(current_params);
+        this.params = new EnrichmentMapParameters();
+        this.params.copy(current_params);
 
 
         GMTFileNameTextField.setText(current_params.getGMTFileName());

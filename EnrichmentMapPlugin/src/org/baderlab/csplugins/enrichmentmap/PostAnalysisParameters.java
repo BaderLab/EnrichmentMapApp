@@ -108,8 +108,8 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
     public PostAnalysisParameters(EnrichmentMapParameters emParams) {
         // EnrichmentMapParameters
     	super(emParams);
-    	
-    	// Post Analysis Type:
+
+        // Post Analysis Type:
         this.isSignatureHub = true;
     	
     	// Disease Signature Parameters:
