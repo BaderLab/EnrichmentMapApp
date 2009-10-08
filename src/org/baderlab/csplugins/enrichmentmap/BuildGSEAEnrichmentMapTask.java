@@ -69,9 +69,11 @@ public class BuildGSEAEnrichmentMapTask implements Task {
 
     public BuildGSEAEnrichmentMapTask( EnrichmentMapParameters params) {
 
-        //create a new instance of the parameters and copy the version received from the input
-        //window into this new instance.
-        this.params = new EnrichmentMapParameters(params);
+        //create a new instance of the parameters
+        this.params = new EnrichmentMapParameters();
+
+        //copy the input variables into the new instance of the parameters
+        this.params.copyInputParameters(params);
 
     }
 

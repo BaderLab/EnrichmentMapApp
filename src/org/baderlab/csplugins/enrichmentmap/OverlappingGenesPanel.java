@@ -796,6 +796,8 @@ public class OverlappingGenesPanel extends JPanel {
                 Node current_node = (Node)nodes[i];
                 String nodename = current_node.getIdentifier();
                 GeneSet current_geneset = (GeneSet)params.getGenesetsOfInterest().get(nodename);
+                if(current_geneset == null)
+                    continue;
                 HashSet current_set = current_geneset.getGenes();
 
                 if( union == null){
@@ -827,6 +829,9 @@ public class OverlappingGenesPanel extends JPanel {
 
 
                 GenesetSimilarity similarity = params.getGenesetSimilarity().get(edgename);
+                if(similarity == null)
+                    continue;
+
                 HashSet current_set = similarity.getOverlapping_genes();
 
                 if(intersect == null && union == null){
@@ -836,6 +841,7 @@ public class OverlappingGenesPanel extends JPanel {
                     intersect.retainAll(current_set);
                     union.addAll(current_set);
                 }
+
             }
             return expressionSet.getExpressionMatrix(intersect);
         }
