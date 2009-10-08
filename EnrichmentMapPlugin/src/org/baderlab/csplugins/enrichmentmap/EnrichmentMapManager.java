@@ -226,7 +226,7 @@ public class EnrichmentMapManager implements PropertyChangeListener {
                         inputWindow.updateContents(currentNetworkParams);
                     
                     if(analysisWindow!=null)
-                        analysisWindow.updateContents(currentPaParams);
+                        analysisWindow.updateContents(currentNetworkParams);
 
                     nodesOverlapPanel.updatePanel(currentNetworkParams);
                     edgesOverlapPanel.updatePanel(currentNetworkParams);

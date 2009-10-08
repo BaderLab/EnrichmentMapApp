@@ -139,7 +139,7 @@ public class PostAnalysisInputPanel extends JPanel {
         }
         
         // create instance of PostAnalysisParameters an initialize with EnrichmentMapParameters
-        paParams = new PostAnalysisParameters(emParams);
+        paParams = emParams.getPaParams();
 
         //create the three main panels: scope, advanced options, and bottom
         JPanel AnalysisTypePanel = createAnalysisTypePanel();
@@ -894,35 +894,35 @@ public class PostAnalysisInputPanel extends JPanel {
 
     }
 
-    public void updateContents(PostAnalysisParameters current_params){
+    public void updateContents(EnrichmentMapParameters current_params){
         //TODO: modify for PostAnalysis
-        this.paParams = new PostAnalysisParameters(current_params);
+        this.paParams = current_params.getPaParams();
         
         // Gene-Set Files:
-        GMTFileNameTextField.setText(current_params.getGMTFileName());
-        signatureGMTFileNameTextField.setText(current_params.getSignatureGMTFileName());
+        GMTFileNameTextField.setText(this.paParams.getGMTFileName());
+        signatureGMTFileNameTextField.setText(this.paParams.getSignatureGMTFileName());
         
         // Gene-Set Selection:
-        this.avail_sig_sets    = current_params.getSignatureSetNames();
+        this.avail_sig_sets    = this.paParams.getSignatureSetNames();
         this.avail_sig_sets_field.setModel(this.avail_sig_sets);
-        this.selected_sig_sets = current_params.getSelectedSignatureSetNames();
+        this.selected_sig_sets = this.paParams.getSelectedSignatureSetNames();
         this.selected_sig_sets_field.setModel(this.selected_sig_sets);
         
         //Parameters:
-        this.sigCutoffCombo.setSelectedIndex(current_params.getSignature_CutoffMetric());
+        this.sigCutoffCombo.setSelectedIndex(this.paParams.getSignature_CutoffMetric());
         
-        switch (current_params.getSignature_CutoffMetric()) {
+        switch (this.paParams.getSignature_CutoffMetric()) {
         case PostAnalysisParameters.HYPERGEOM:
-            sigCutoffTextField.setValue(current_params.getSignature_Hypergeom_Cutoff());
+            sigCutoffTextField.setValue(this.paParams.getSignature_Hypergeom_Cutoff());
             break;
         case PostAnalysisParameters.ABS_NUMBER:
-            sigCutoffTextField.setValue(current_params.getSignature_absNumber_Cutoff());
+            sigCutoffTextField.setValue(this.paParams.getSignature_absNumber_Cutoff());
             break;
         case PostAnalysisParameters.JACCARD:
-            sigCutoffTextField.setValue(current_params.getSignature_Jaccard_Cutoff());
+            sigCutoffTextField.setValue(this.paParams.getSignature_Jaccard_Cutoff());
             break;
         case PostAnalysisParameters.OVERLAP:
-            sigCutoffTextField.setValue(current_params.getSignature_Overlap_Cutoff());
+            sigCutoffTextField.setValue(this.paParams.getSignature_Overlap_Cutoff());
             break;
 
         default:

@@ -170,6 +170,7 @@ public class EnrichmentMapParameters {
     private Boolean disable_genesetSummary_autofocus;
 
     final public static String ENRICHMENT_INTERACTION_TYPE = "pp"; //TODO: change to enr or ovlp ?!?
+    private PostAnalysisParameters paParams;
 
     /**
      * Default constructor to create a fresh instance.
@@ -360,67 +361,6 @@ public class EnrichmentMapParameters {
 
     }
 
-        //Constructor for Enrichment Map Parameters that take another instance of enrichment map parameters
-	    //And copies its contents.
-	    //The assumption is that these parameters were populated by the input window and therefore only  contain
-	    //info for file names, cutoffs, and phenotypes.
-	    //TODO:get rid of this constructor, it is replaced by copyInputParameters and copy methods
-        /**
-         * Constructor for Enrichment Map Parameters that takes another instance of 
-         * EnrichmentMapParameters and copies its contents.
-         * 
-         * @param copy
-         */
-	    public EnrichmentMapParameters(EnrichmentMapParameters copy){
-	        this();
-
-            this.GMTFileName = copy.getGMTFileName();
-	        this.GCTFileName1 = copy.getGCTFileName1();
-	        this.GCTFileName2 = copy.getGCTFileName2();
-
-            this.dataset1RankedFile = copy.getDataset1RankedFile();
-            this.dataset2RankedFile = copy.getDataset2RankedFile();
-	        this.ranks = copy.getRanks();
-
-            this.enrichmentDataset1FileName1 = copy.getEnrichmentDataset1FileName1();
-	        this.enrichmentDataset1FileName2 = copy.getEnrichmentDataset1FileName2();
-            this.enrichmentDataset2FileName1 = copy.getEnrichmentDataset2FileName1();
-	        this.enrichmentDataset2FileName2 = copy.getEnrichmentDataset2FileName2();
-
-            this.dataset1Phenotype1 = copy.getDataset1Phenotype1();
-	        this.dataset1Phenotype2 = copy.getDataset1Phenotype2();
-	        this.dataset2Phenotype1 = copy.getDataset2Phenotype1();
-            this.dataset2Phenotype2 = copy.getDataset2Phenotype2();
-
-	        this.pvalue = copy.getPvalue();
-            //create the slider for this pvalue
-            pvalueSlider = new SliderBarPanel(0,this.pvalue,"P-value Cutoff",this, EnrichmentMapVisualStyle.PVALUE_DATASET1, EnrichmentMapVisualStyle.PVALUE_DATASET2,ParametersPanel.summaryPanelWidth);
-
-	        this.qvalue = copy.getQvalue();
-	        //create the slider for the qvalue
-	        qvalueSlider = new SliderBarPanel(0,this.qvalue,"Q-value Cutoff",this, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2,ParametersPanel.summaryPanelWidth);
-
-            this.similarityCutOff = copy.getSimilarityCutOff();
-
-	        this.Data = copy.isData();
-	        this.Data2 = copy.isData2();
-            this.twoDatasets = copy.isTwoDatasets();
-	        this.GSEA = copy.isGSEA();
-	        this.jaccard = copy.isJaccard();
-	        this.similarityCutOffChanged = copy.similarityCutOffChanged;
-
-	        //copy HashMaps genes and hash2genes
-            this.genes = copy.getGenes();
-            this.hashkey2gene = copy.getHashkey2gene();
-	        this.genesetsOfInterest = copy.getGenesetsOfInterest();
-	        this.datasetGenes = copy.getDatasetGenes();
-
-	        //missing the classfiles in the copy --> bug ticket #61
-	        this.classFile1 = copy.getClassFile1();
-	        this.classFile2 = copy.getClassFile2();
-
-	    }
-
 
    /* Method to copy the input contents of an enrichment map paremeter set
     * Only copy parameters specified in the input window
@@ -469,10 +409,11 @@ public class EnrichmentMapParameters {
    }
 
 
-   /* Method to copy the contents of one set of parameters into another instance
-   *
-   * Given - the parameters to copy from.
-   */
+   /** 
+    * Method to copy the contents of one set of parameters into another instance
+    *
+    * @param copy the parameters to copy from.
+    */
    public void copy(EnrichmentMapParameters copy){
 
        this.NetworkName = copy.getNetworkName();
@@ -1300,6 +1241,24 @@ public class EnrichmentMapParameters {
 
     public void setTemp_class2(String[] temp_class2) {
         this.temp_class2 = temp_class2;
+    }
+
+
+    /**
+     * @param paParams store reference to PostAnalysisParameters instance associated with this Enrichment Map
+     */
+    public void setPaParams(PostAnalysisParameters paParams) {
+        this.paParams = paParams;
+    }
+
+    /**
+     * @return reference to PostAnalysisParameters instance associated with this Enrichment Map.<BR>
+     *         If no instance exists, a new one will be created.
+     */
+    public PostAnalysisParameters getPaParams() {
+        if (this.paParams == null)
+            this.paParams = new PostAnalysisParameters(this);
+        return this.paParams;
     }
 
 

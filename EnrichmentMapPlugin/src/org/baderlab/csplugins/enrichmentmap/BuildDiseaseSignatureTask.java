@@ -98,7 +98,9 @@ public class BuildDiseaseSignatureTask implements Task {
     public BuildDiseaseSignatureTask(PostAnalysisParameters paParams) {
         //create a new instance of the parameters and copy the version received from the input
         //window into this new instance.
-        this.setPaParams(new PostAnalysisParameters(paParams));
+        this.paParams = new PostAnalysisParameters();
+        this.paParams.copyFrom(paParams);
+        
         this.EnrichmentGenesets   = this.getPaParams().getGenesets();
         this.SignatureGenesets    = this.getPaParams().getSignatureGenesets();
 
@@ -108,6 +110,7 @@ public class BuildDiseaseSignatureTask implements Task {
             this.geneset_similarities = this.paParams.getGenesetSimilarity();
             
         this.SelectedSignatureGenesets = new HashMap<String, GeneSet>();
+        //DEBUG: #44
         for (int i = 0; i < paParams.getSelectedSignatureSetNames().getSize(); i++){
             this.SelectedSignatureGenesets.put(paParams.getSelectedSignatureSetNames().get(i).toString(),
                     this.SignatureGenesets.get(paParams.getSelectedSignatureSetNames().get(i)));
@@ -168,6 +171,7 @@ public class BuildDiseaseSignatureTask implements Task {
             int universeSize = geneUniverse.size();
             
             //iterate over selected Signature genesets
+            //DEBUG: #44
             for (Iterator<String> i = SelectedSignatureGenesets.keySet().iterator(); i.hasNext(); ){
                 String hub_name = i.next().toString();
                 
@@ -275,6 +279,7 @@ public class BuildDiseaseSignatureTask implements Task {
                 /* ***************************
                  * Create Signature Hub Node *
                  *****************************/
+                //DEBUG: #44
                 CyNode hub_node = Cytoscape.getCyNode(hub_name, true);
                 current_network.addNode(hub_node);
                 

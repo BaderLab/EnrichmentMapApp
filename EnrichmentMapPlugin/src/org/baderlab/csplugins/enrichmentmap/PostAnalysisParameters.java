@@ -103,11 +103,12 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
     
     /**
      * default constructor
-     * @param instance of EnrichmentMapParameters with parameters of the current EnrichmentMap
+     * 
+     * @param emParams instance of EnrichmentMapParameters with parameters of the current EnrichmentMap
      */
     public PostAnalysisParameters(EnrichmentMapParameters emParams) {
         // EnrichmentMapParameters
-    	super(emParams);
+    	super.copy(emParams);
 
         // Post Analysis Type:
         this.isSignatureHub = true;
@@ -125,10 +126,13 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
         this.signatureSetNames         = new DefaultListModel();
         this.selectedSignatureSetNames = new DefaultListModel();
         
-        this.setGenesetSimilarity( emParams.getGenesetSimilarity() );
+//        this.setGenesetSimilarity( emParams.getGenesetSimilarity() );
         
         // Disease Signature State variables:
         this.currentNodePlacementY_Offset = 0.0;
+        
+        // register this instance in emParams
+        emParams.setPaParams(this);
     }
 
     /**
@@ -159,40 +163,39 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
         this.currentNodePlacementY_Offset = 0.0;
     }
     
-    
-    /**
-     * copy constructor
-     * @param instance if PostAnalysisParameters to copy
-     */
-    public PostAnalysisParameters(PostAnalysisParameters copy) {
-        // EnrichmentMapParameters
-        super(copy);
 
+    /**
+     * copies all attributes from another instance of PostAnalysisParameters
+     * 
+     * @param source  the original instance of PostAnalysisParameters
+     */
+    public void copyFrom(PostAnalysisParameters source) {
+        super.copy(source);
+        
         // Post Analysis Type:
-        this.isSignatureHub = copy.isSignatureHub();
+        this.isSignatureHub = source.isSignatureHub();
 
         // Disease Signature Parameters:
-        this.signatureGMTFileName       = copy.getSignatureGMTFileName();
-        this.signature_absNumber_Cutoff = copy.getSignature_absNumber_Cutoff();
-        this.signature_Jaccard_Cutoff   = copy.getSignature_Jaccard_Cutoff();
-        this.signature_Overlap_Cutoff   = copy.getSignature_Overlap_Cutoff();
-        this.signature_Hypergeom_Cutoff = copy.getSignature_Hypergeom_Cutoff();
-        this.signature_CutoffMetric     = copy.getSignature_CutoffMetric();
+        this.signatureGMTFileName       = source.getSignatureGMTFileName();
+        this.signature_absNumber_Cutoff = source.getSignature_absNumber_Cutoff();
+        this.signature_Jaccard_Cutoff   = source.getSignature_Jaccard_Cutoff();
+        this.signature_Overlap_Cutoff   = source.getSignature_Overlap_Cutoff();
+        this.signature_Hypergeom_Cutoff = source.getSignature_Hypergeom_Cutoff();
+        this.signature_CutoffMetric     = source.getSignature_CutoffMetric();
 
         // Disease Signature Data Structures:
-        this.signatureGenesets         = copy.getSignatureGenesets();
-        this.signatureSetNames         = copy.getSignatureSetNames();
-        this.selectedSignatureSetNames = copy.getSelectedSignatureSetNames();
+        this.signatureGenesets         = source.getSignatureGenesets();
+        this.signatureSetNames         = source.getSignatureSetNames();
+        this.selectedSignatureSetNames = source.getSelectedSignatureSetNames();
 
-        // needed because EnrichmentMapParameters copy constructor assumes that it is only called from within the InputPanel:
-        this.setGenesets( copy.getGenesets() ); 
-        this.setGenesetSimilarity( copy.getGenesetSimilarity() );
+// now EnrichmentMapParameters.copy creates a complete copy         
+//        // needed because EnrichmentMapParameters copy constructor assumes that it is only called from within the InputPanel:
+//        this.setGenesets( copy.getGenesets() ); 
+//        this.setGenesetSimilarity( copy.getGenesetSimilarity() );
         
         // Disease Signature State variables:
-        this.currentNodePlacementY_Offset = copy.getCurrentNodePlacementY_Offset();
-
+        this.currentNodePlacementY_Offset = source.getCurrentNodePlacementY_Offset();
     }
-
     
     public String checkMinimalRequirements() {
     	String errors = "";
