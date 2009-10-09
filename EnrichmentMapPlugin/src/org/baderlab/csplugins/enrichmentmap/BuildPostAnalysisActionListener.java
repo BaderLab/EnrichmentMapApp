@@ -71,33 +71,28 @@ public class BuildPostAnalysisActionListener implements ActionListener {
 
     public void actionPerformed(ActionEvent event) {
 
-        config = new JTaskConfig();
-        config.displayCancelButton(true);
-        config.displayCloseButton(true);
-        config.displayStatus(true);
-
         //make sure that the minimum information is set in the current set of parameters
         PostAnalysisParameters paParams = inputPanel.getPaParams();
 
-        String errors = ""; //TODO: checkMinimalRequirements()  
-//        String errors = paParams.checkMinimalRequirements();
+        String errors = paParams.checkMinimalRequirements();
 
-        if(errors.equalsIgnoreCase("")){
+        if(errors.equalsIgnoreCase("")) {
             if ( paParams.isSignatureHub() ) {
+                config = new JTaskConfig();
+                config.displayCancelButton(true);
+                config.displayCloseButton(true);
+                config.displayStatus(true);
+
                 BuildDiseaseSignatureTask new_signature = new BuildDiseaseSignatureTask(paParams);
                 boolean success = TaskManager.executeTask(new_signature, config);
             } 
             else {
                 JOptionPane.showMessageDialog(Cytoscape.getDesktop(),errors,"No such Post-Analysis",JOptionPane.WARNING_MESSAGE);
-
             }
-            
-        }
-        else{
+        } 
+        else {
             JOptionPane.showMessageDialog(Cytoscape.getDesktop(),errors,"Invalid Input",JOptionPane.WARNING_MESSAGE);
         }
-
     }
-
 
 }
