@@ -73,6 +73,12 @@ import java.net.URL;
  * 
  * Based on: EnrichmentMapInputPanel.java (302) by risserlin
  */
+/**
+ * @author revilo
+ * @date   Oct 9, 2009
+ * @time   5:51:48 PM
+ *
+ */
 public class PostAnalysisInputPanel extends JPanel {
     final static int RIGHT = 0, DOWN = 1, UP = 2, LEFT = 3; // image States
     
@@ -252,9 +258,7 @@ public class PostAnalysisInputPanel extends JPanel {
      * ************************************************* */
 
     /**
-     * Creates a collapsible panel that holds collapsible user inputs
-     *
-     * @return collapsiblePanel
+     * @return collapsiblePanel to select Signature Genesets for Signature Analysis
      */
     private CollapsiblePanel createOptionsPanel() {
         CollapsiblePanel collapsiblePanel = new CollapsiblePanel("User Input");
@@ -376,6 +380,9 @@ public class PostAnalysisInputPanel extends JPanel {
         return collapsiblePanel;
     }
 
+    /**
+     * @return CollapsiblePanel for choosing and loading GMT and SignatureGMT Geneset-Files 
+     */
     private CollapsiblePanel createGMTPanel() {
         CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Gene-Sets");
 
@@ -478,6 +485,9 @@ public class PostAnalysisInputPanel extends JPanel {
 
     }
 
+    /**
+     * @return CollapsiblePanel to set PostAnalysisParameters 
+     */
     private CollapsiblePanel createParametersPanel() {
         CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Parameters");
         
@@ -547,6 +557,9 @@ public class PostAnalysisInputPanel extends JPanel {
     }
     
 
+    /**
+     * @return Array with arrows UP, DOWN, LEFT and RIGHT
+     */
     private ImageIcon[] createArrowIcons () {
         ImageIcon[] iconArrow = new ImageIcon[4];
         URL iconURL;
@@ -711,7 +724,6 @@ public class PostAnalysisInputPanel extends JPanel {
     }
 
     public void close() {
-        // TODO probably unused:
         CytoscapeDesktop desktop = Cytoscape.getDesktop();
 
         CytoPanel cytoPanel = desktop.getCytoPanel(SwingConstants.WEST);
@@ -790,6 +802,12 @@ public class PostAnalysisInputPanel extends JPanel {
         }
     }
 
+    /**
+     * Event Handler for selectGMTFileButton.<p>
+     * Opens a file browser dialog to select the GMTFile.
+     * 
+     * @param evt
+     */
     private void selectGMTFileButtonActionPerformed(
             java.awt.event.ActionEvent evt) {
 
@@ -811,6 +829,12 @@ public class PostAnalysisInputPanel extends JPanel {
         }
     }
     
+    /**
+     * Event Handler for selectSignatureGMTFileButton.<p>
+     * Opens a file browser dialog to select the SignatureGMTFile.
+     * 
+     * @param evt
+     */
     private void selectSignatureGMTFileButtonActionPerformed(
             java.awt.event.ActionEvent evt) {
 
@@ -832,6 +856,11 @@ public class PostAnalysisInputPanel extends JPanel {
         }
     }
     
+    /**
+     * Event handler for "Load Genesets" Button.
+     * 
+     * @param evt
+     */
     private void loadGenesetsButtonActionPerformed(java.awt.event.ActionEvent evt) {
         //Load in the GMT file
         JTaskConfig config = new JTaskConfig();
@@ -849,7 +878,9 @@ public class PostAnalysisInputPanel extends JPanel {
 
     }
     
-    //Clear the current panel and clear the paParams associated with this panel
+    /**
+     * Clear the current panel and clear the paParams associated with this panel
+     */
     private void resetPanel(){
         this.paParams = new PostAnalysisParameters();
         
@@ -899,8 +930,12 @@ public class PostAnalysisInputPanel extends JPanel {
 
     }
 
+    /**
+     * Refresh content of PostAnalysisInputPanel when Network is changed or Panel is re-opend.
+     * 
+     * @param current_params
+     */
     public void updateContents(EnrichmentMapParameters current_params){
-        //TODO: modify for PostAnalysis
         this.paParams = current_params.getPaParams();
         
         // Gene-Set Files:

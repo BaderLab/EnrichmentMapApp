@@ -486,13 +486,17 @@ public class EnrichmentMapParameters {
 
        }
 
-    //Check to see if the current set of enrichment map parameters has the minimal amount
-    //of information to run enrichment maps.
-    //If it is a GSEA run then gmt,gct,2 enrichment files are needed
-    //If it is a generic run then gmt and 1 enrichment file is needed
-    //if there are two datasets then depending on type it requires the same as above.
-    //returns a string specifying the files that are missing and and empty string if
-    //everything is ok
+   /** 
+    * Checks all values of the EnrichmentMapInputPanel 
+    * to see if the current set of enrichment map parameters has the minimal amount
+    * of information to run enrichment maps.
+    * 
+    * If it is a GSEA run then gmt,gct,2 enrichment files are needed
+    * If it is a generic run then gmt and 1 enrichment file is needed
+    * if there are two datasets then depending on type it requires the same as above.
+    * 
+    * @return A String with error messages (one error per line) or empty String if everything is okay.
+    */
     public String checkMinimalRequirements(){
         String errors = "";
 

@@ -43,7 +43,6 @@
 
 package org.baderlab.csplugins.enrichmentmap;
 
-import java.io.File;
 import java.util.HashMap;
 
 import javax.swing.DefaultListModel;
@@ -189,18 +188,18 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
         this.signatureSetNames         = source.getSignatureSetNames();
         this.selectedSignatureSetNames = source.getSelectedSignatureSetNames();
 
-// now EnrichmentMapParameters.copy creates a complete copy         
-//        // needed because EnrichmentMapParameters copy constructor assumes that it is only called from within the InputPanel:
-//        this.setGenesets( copy.getGenesets() ); 
-//        this.setGenesetSimilarity( copy.getGenesetSimilarity() );
-        
         // Disease Signature State variables:
         this.currentNodePlacementY_Offset = source.getCurrentNodePlacementY_Offset();
     }
     
+    /** 
+     * Checks all values of the PostAnalysisInputPanel 
+     * 
+     * @return String with error messages (one error per line) or empty String if everything is okay.
+     * @see org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters#checkMinimalRequirements()
+     */
     public String checkMinimalRequirements() {
         String errors = "";
-        // TODO: checkMinimalRequirements for PostAnalysis
         errors += checkGMTfiles();
         if(this.selectedSignatureSetNames.isEmpty())
             errors += "No Signature Genesets selected \n";
@@ -222,6 +221,11 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
         return errors;
     }
 
+    /**
+     * Checks if GMTFileName and SignatureGMTFileName are provided and if the files can be read.
+     * 
+     * @return String with error messages (one error per line) or empty String if everything is okay.
+     */
     public String checkGMTfiles() {
         String errors = "";
         if(this.getGMTFileName().equalsIgnoreCase("") || ! checkFile(this.getGMTFileName()))
