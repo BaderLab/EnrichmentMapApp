@@ -57,7 +57,7 @@ import cytoscape.util.*;
  *
  */
 public class AboutPanel extends JDialog {
-    String pluginUrl = "http://www.baderlab.org/Software/EnrichmentMaps/";
+    String pluginUrl = Enrichment_Map_Plugin.pluginUrl;
     String pluginVersion = Enrichment_Map_Plugin.plugin_props.getProperty("pluginVersion", "0.1");
 
     public AboutPanel() {
@@ -92,7 +92,7 @@ public class AboutPanel extends JDialog {
                 "(<a href='http://www.baderlab.org/'>Bader Lab</a>, University of Toronto)<BR>" +
                 "<BR>" +
                 "Plugin Homepage:<BR>" +
-                "<a href='http://www.baderlab.org/Software/EnrichmentMap'>http://www.baderlab.org/Software/EnrichmentMap</a><BR>" +
+                "<a href='" + pluginUrl + "'>" + pluginUrl + "</a><BR>" +
                 "<BR>" +
 //                "If you use this plugin in your research, please cite:<BR>" +
 //                "Merico D, Isserlin R, Stueker O, Emili A, Bader GD<BR>" +
