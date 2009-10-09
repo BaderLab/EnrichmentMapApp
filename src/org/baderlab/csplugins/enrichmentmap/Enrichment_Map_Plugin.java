@@ -71,6 +71,8 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
     static Properties build_props = new Properties();
     static Properties plugin_props = new Properties();
     static String buildId ;
+    static String pluginUrl;
+    static String userManualUrl;
 
     /*--------------------------------------------------------------
       CONSTRUCTOR.
@@ -124,6 +126,9 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
         } catch (IOException e) {
             // TODO: write Warning "Could not load 'plugin.props' - using default settings"
         }
+        
+        pluginUrl = Enrichment_Map_Plugin.plugin_props.getProperty("pluginURL", "http://www.baderlab.org/Software/EnrichmentMap");
+        userManualUrl = pluginUrl + "/UserManual";
 
     }
 

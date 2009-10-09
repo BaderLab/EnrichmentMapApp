@@ -180,7 +180,7 @@ public class EnrichmentMapInputPanel extends JPanel {
            JButton help = new JButton("Online Manual");
            help.addActionListener(new java.awt.event.ActionListener() {
                                       public void actionPerformed(java.awt.event.ActionEvent evt) {
-                                          OpenBrowser.openURL("http://www.baderlab.org/Software/EnrichmentMap");
+                                          OpenBrowser.openURL(Enrichment_Map_Plugin.userManualUrl);
                                       }
                   });
 
