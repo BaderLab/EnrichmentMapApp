@@ -110,7 +110,7 @@ public class BuildDiseaseSignatureTask implements Task {
             this.geneset_similarities = this.paParams.getGenesetSimilarity();
             
         this.SelectedSignatureGenesets = new HashMap<String, GeneSet>();
-        //DEBUG: #44
+
         for (int i = 0; i < paParams.getSelectedSignatureSetNames().getSize(); i++){
             this.SelectedSignatureGenesets.put(paParams.getSelectedSignatureSetNames().get(i).toString(),
                     this.SignatureGenesets.get(paParams.getSelectedSignatureSetNames().get(i)));
@@ -171,7 +171,6 @@ public class BuildDiseaseSignatureTask implements Task {
             int universeSize = geneUniverse.size();
             
             //iterate over selected Signature genesets
-            //DEBUG: #44
             for (Iterator<String> i = SelectedSignatureGenesets.keySet().iterator(); i.hasNext(); ){
                 String hub_name = i.next().toString();
                 
@@ -279,7 +278,6 @@ public class BuildDiseaseSignatureTask implements Task {
                 /* ***************************
                  * Create Signature Hub Node *
                  *****************************/
-                //DEBUG: #44
                 CyNode hub_node = Cytoscape.getCyNode(hub_name, true);
                 current_network.addNode(hub_node);
                 
@@ -334,6 +332,10 @@ public class BuildDiseaseSignatureTask implements Task {
                 
                 if (! geneset_similarities.get(edge_name).getInteractionType().equals(PostAnalysisParameters.SIGNATURE_INTERACTION_TYPE))
                     // skip if it's not a signature edge
+                    continue;
+                if (!   (   this.SelectedSignatureGenesets.containsKey(geneset_similarities.get(edge_name).getGeneset1_Name()) 
+                         || this.SelectedSignatureGenesets.containsKey(geneset_similarities.get(edge_name).getGeneset2_Name()) ) )   
+                    // skip if not either of the adjacent nodes is a SelectedSignatureGenesets of the current analysis (fixes Bug #44)
                     continue;
 
                 // check if combination passes Cut-Off:
