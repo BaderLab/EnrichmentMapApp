@@ -43,6 +43,7 @@
 
 package org.baderlab.csplugins.enrichmentmap;
 
+import java.io.File;
 import java.util.HashMap;
 
 import javax.swing.DefaultListModel;
@@ -198,11 +199,38 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
     }
     
     public String checkMinimalRequirements() {
-    	String errors = "";
-    	// TODO: checkMinimalRequirements for PostAnalysis
-    	return errors;
-    	
+        String errors = "";
+        // TODO: checkMinimalRequirements for PostAnalysis
+        errors += checkGMTfiles();
+        if(this.selectedSignatureSetNames.isEmpty())
+            errors += "No Signature Genesets selected \n";
+        if (this.signature_CutoffMetric == PostAnalysisParameters.ABS_NUMBER) {
+            if (! (this.signature_absNumber_Cutoff > 0))
+                errors += "Number of Genes Cutoff must be a positive, non-zero integer \n";
+        } else if (this.signature_CutoffMetric == PostAnalysisParameters.HYPERGEOM) {
+            if (! (this.signature_Hypergeom_Cutoff >= 0.0 && this.signature_Hypergeom_Cutoff <= 1.0))
+                errors += "Hypergeometric Cutoff must be a decimal Number between 0.0 and 1.0 \n";
+        } else if (this.signature_CutoffMetric == PostAnalysisParameters.OVERLAP) {
+            if (! (this.signature_Overlap_Cutoff >= 0.0 && this.signature_Overlap_Cutoff <= 1.0))
+                errors += "Overlap Cutoff must be a decimal Number between 0.0 and 1.0 \n";
+        } else if (this.signature_CutoffMetric == PostAnalysisParameters.JACCARD) {
+            if (! (this.signature_Jaccard_Cutoff >= 0.0 && this.signature_Jaccard_Cutoff <= 1.0))
+                errors += "Jaccard Cutoff must be a decimal Number between 0.0 and 1.0 \n";
+        } else
+            errors += "Invalid Cutoff metric \n";
+        
+        return errors;
     }
+
+    public String checkGMTfiles() {
+        String errors = "";
+        if(this.getGMTFileName().equalsIgnoreCase("") || ! checkFile(this.getGMTFileName()))
+            errors += "GMT file can not be found \n";
+        if(this.getSignatureGMTFileName() .equalsIgnoreCase("") || ! checkFile(this.getSignatureGMTFileName()))
+            errors += "Signature GMT file can not be found \n";
+        return errors;
+    }
+
     
     // ***************************************
     // getters and setters

@@ -525,7 +525,7 @@ public class EnrichmentMapParameters {
         return errors;
     }
 
-    private boolean checkFile(String filename){
+    protected boolean checkFile(String filename){
            //check to see if the files exist and are readable.
            //if the file is unreadable change the color of the font to red
            //otherwise the font should be black.

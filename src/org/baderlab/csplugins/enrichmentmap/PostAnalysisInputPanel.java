@@ -839,8 +839,13 @@ public class PostAnalysisInputPanel extends JPanel {
         config.displayCloseButton(true);
         config.displayStatus(true);
         
-        LoadGmtFilesTask load_GMTs = new LoadGmtFilesTask(this.paParams);
-        boolean success = TaskManager.executeTask(load_GMTs, config);
+        String errors = paParams.checkGMTfiles();
+        if (errors.equalsIgnoreCase("")) {
+            LoadGmtFilesTask load_GMTs = new LoadGmtFilesTask(this.paParams);
+            boolean success = TaskManager.executeTask(load_GMTs, config);
+        } else {
+            JOptionPane.showMessageDialog(Cytoscape.getDesktop(),errors,"Invalid Input",JOptionPane.WARNING_MESSAGE);
+        }
 
     }
     
@@ -997,7 +1002,7 @@ public class PostAnalysisInputPanel extends JPanel {
 
         }
 
-        /* (non-Javadoc)
+        /**
          * @see cytoscape.task.Task#run()
          */
         public void run() {
