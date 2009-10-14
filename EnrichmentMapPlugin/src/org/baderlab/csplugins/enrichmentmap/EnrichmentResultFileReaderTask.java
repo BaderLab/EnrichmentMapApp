@@ -53,25 +53,49 @@ import java.util.HashMap;
  * User: risserlin
  * Date: Jun 25, 2009
  * Time: 2:40:14 PM
+ * <p>
+ * Read a set of enrichment results.  Results can be specific to a Gene set enrichment analysis or to
+ * a generic enrichment analysis.
+ * <p>
+ * The two different results files are distinguished based on the number of columns, a GSEA results file
+ * has exactly eleven columns.  Any other number of is assumed to be a generic results file.  (It is possible
+ * that a generic file also has exactly 11 column so if the file has 11 column the 5 and 6 column headers are
+ * checked.  If columns 5 and 6 are specified as ES and NES the file is for sure a GSEA result file.)
  */
 public class EnrichmentResultFileReaderTask implements Task {
 
     private EnrichmentMapParameters params;
 
+    //enrichment results file name
     private String EnrichmentResultFileName;
 
-    private HashMap results ;
+    //Stores the enrichment results
+    private HashMap<String, EnrichmentResult> results ;
 
     // Keep track of progress for monitoring:
-
     private TaskMonitor taskMonitor = null;
     private boolean interrupted = false;
 
+    /**
+     * Class constructor specifying a task monitor currently using.
+     *
+     * @param params -  enrichment map parameters for current map
+     * @param taskMonitor - current monitor
+     * @param FileName - enrichment results file name
+     * @param dataset - dataset enrichment results are from
+     */
     public EnrichmentResultFileReaderTask(EnrichmentMapParameters params, TaskMonitor taskMonitor, String FileName, int dataset) {
         this(params, FileName, dataset);
         this.taskMonitor = taskMonitor;
     }
 
+    /**
+     * Class constructor
+     *
+     * @param params -  enrichment map parameters for current map
+     * @param FileName - enrichment results file name
+     * @param dataset  - dataset enrichment results are from
+     */
     public EnrichmentResultFileReaderTask(EnrichmentMapParameters params, String FileName, int dataset) {
         this.params = params;
         EnrichmentResultFileName = FileName;
@@ -83,6 +107,9 @@ public class EnrichmentResultFileReaderTask implements Task {
 
     }
 
+    /**
+     * Parse enrichment results file
+     */
     public void parse() {
 
          //open Enrichment Result file
@@ -122,7 +149,11 @@ public class EnrichmentResultFileReaderTask implements Task {
 
     }
 
-
+    /**
+     * Parse GSEA enrichment results file.
+     *
+     * @param lines - contents of results file
+     */
     public void parseGSEAFile(String[] lines){
         //skip the first line which just has the field names (start i=1)
 
@@ -202,6 +233,11 @@ public class EnrichmentResultFileReaderTask implements Task {
             }
     }
 
+    /**
+     * Parse generic enrichment results file
+     *
+     * @param lines - contents of results file
+     */
     public void parseGenericFile(String [] lines){
 
         //Get the current genesets so we can check that all the results are in the geneset list

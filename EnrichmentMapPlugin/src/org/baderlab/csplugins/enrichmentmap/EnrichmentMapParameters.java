@@ -55,30 +55,52 @@ import cytoscape.CytoscapeInit;
  * User: risserlin
  * Date: Jan 8, 2009
  * Time: 12:04:28 PM
+ * <p>
+ * Enrichment map Parameters define all the variables that are needed to create, manipulate, explore
+ * and save an individual Enrichment map.  It stores the parsed files used to create it, all genes in the network,
+ * all enrichment results, cuts-offs, expression files, and ranks
  */
 public class EnrichmentMapParameters {
 
     private String NetworkName;
     private String attributePrefix;
 
-    //GMT and GSEA output files
+    //Input File names
+    //GMT - gene set definition file
     private String GMTFileName;
-
-    //flag to indicate if the user has supplied a data file
-    private boolean Data = false;
-    private String GCTFileName1;
-
-    //flag to indicate if the user has supplied a data file
-    private boolean Data2 = false;
-    private String GCTFileName2;
-
+    //Expression files
+    private String expressionFileName1;
+    private String expressionFileName2;
+    //Enrichment results files - data set 1
     private String enrichmentDataset1FileName1;
     private String enrichmentDataset1FileName2;
-
+    //Enrichment results files - data set 2
     private String enrichmentDataset2FileName1;
     private String enrichmentDataset2FileName2;
+    //Dataset Rank files
+    private String dataset1RankedFile = null;
+    private String dataset2RankedFile = null;
+    //Class files - can only be specified when loading in GSEA results with an rpt
+    //class files are a specific type of file used in an GSEA analysis indicating which class
+    //each column of the expression file belongs to.  It is used in the application to
+    //colour the heading on the columns accroding to class or phenotype they belong to.
+    private String classFile1;
+    private String classFile2;
 
+    //FLAGS used in the analysis.
+    //flag to indicate if the user has supplied a data/expression file
+    private boolean Data = false;
+    //flag to indicate if the user has supplied a second data/expression file
+    private boolean Data2 = false;
+    //flag to indicate there are two datasets.
     private boolean twoDatasets = false;
+    //flag to indicate if there are FDR Q-values
+    private boolean FDR = false;
+    //flag to indicate if the results are from GSEA or generic
+    private boolean GSEA = true;
+    //flag to indicate if the similarity cut off is jaccard or overlap
+    private boolean jaccard;
+    private boolean similarityCutOffChanged = false;
 
     // DEFAULT VALUES for pvalue, qvalue, similarityCutOff and jaccard
     // will be assigned in the constructor
@@ -86,21 +108,14 @@ public class EnrichmentMapParameters {
     private double pvalue;
     //pvalue slider bar
     private SliderBarPanel pvalueSlider;
-
-     //flag to indicate if there are FDR Q-values
-    private boolean FDR = false;
     //fdr q-value cutoff
     private double qvalue;
     //qvalue slider bar
     private SliderBarPanel qvalueSlider;
-
+    //similarity cutoff
     private double similarityCutOff;
-    private boolean jaccard;
-    private boolean similarityCutOffChanged = false;
 
-    //flag to indicate if the results are from GSEA or generic
-    private boolean GSEA = true;
-
+    //DATA need to specify the Enrichment map
     //Hashmap stores the unique set of genes used in the gmt file
     private HashMap<String,Integer> genes;
 
@@ -111,47 +126,53 @@ public class EnrichmentMapParameters {
     private HashSet<Integer> datasetGenes;
     private int NumberOfGenes = 0;
 
-    //Hashmap of the GSEA Results, It is is a hash of the GSEAResults objects
-    //Can't enforce a type on this hashmap because the enrichment results could to generic or GSEA results
-
-    private HashMap enrichmentResults1;
-    private HashMap enrichmentResults2;
+    //Hashmap of the enrichment Results, It is is a hash of the GSEAResults or GenericResults objects
+    private HashMap<String, EnrichmentResult> enrichmentResults1;
+    private HashMap<String, EnrichmentResult> enrichmentResults2;
+    //Hashmap of all genesets in the geneset file (gmt file)
     private HashMap<String, GeneSet> genesets;
+    //Hashmap of the filtered Genesets.  After loading in the expression file the genesets are restricted
+    //to contain only the proteins specified in the expression file.
     private HashMap<String, GeneSet> filteredGenesets;
 
-    //The GSEA results that pass the thresholds.
+    //The enrichment results that pass the thresholds.
     //If there are two datasets these list can be different.
     //Can't enforce a type on this hashmap because the enrichment results could to generic or GSEA results
-    private HashMap enrichmentResults1OfInterest;
-    private HashMap enrichmentResults2OfInterest;
+    private HashMap<String, EnrichmentResult> enrichmentResults1OfInterest;
+    private HashMap<String, EnrichmentResult> enrichmentResults2OfInterest;
 
     private HashMap<String, GeneSet> genesetsOfInterest;
 
+    //Gene expression data used for the analysis.  There can be two distinct files
+    //for each dataset.
     private GeneExpressionMatrix expression;
     private GeneExpressionMatrix expression2;
 
+    //default phenotype values.  These values can be set in the advanced features of
+    //the input panel.
     private String dataset1Phenotype1 = "UP";
     private String dataset1Phenotype2 = "DOWN";
     private String dataset2Phenotype1 = "UP";
     private String dataset2Phenotype2 = "DOWN";
 
-    private String classFile1;
-    private String classFile2;
-
+    //class file designations taht were loaded in from a session file.
+    //need a temporary place for these class definition as
     private String[] temp_class1 = null;
     private String[] temp_class2 = null;
 
     private HashMap<String, GenesetSimilarity> genesetSimilarity = null;
 
+    //list associated with slider bars.  As the slider bar is moved the removed nodes
+    //and edges are stored in these lists
+    //TODO: currently this is not stored in the session file.  So if the user moves the slider bar and saves a session the nodes or edges stored are lost.
     private ArrayList<Node> selectedNodes;
     private ArrayList<Edge> selectedEdges;
 
+    //Heat map parameters for this enrichment map - user specified current normalization, and sorting.
     private HeatMapParameters hmParams;
 
-    //Dataset Rank files
-    private String dataset1RankedFile = null;
-    private String dataset2RankedFile = null;
-
+    //Rankings for Dataset1 and Dataset2.
+    //Also stored in the set of ranking and specified as "Dataset 1 Ranking" and "Dataset 2 Ranking"
     private HashMap<Integer, Ranking> dataset1Rankings;
     private HashMap<Integer, Ranking> dataset2Rankings;
 
@@ -176,15 +197,15 @@ public class EnrichmentMapParameters {
      * Default constructor to create a fresh instance.
      */
     public EnrichmentMapParameters() {
-        this.enrichmentResults1 = new HashMap();
-        this.enrichmentResults2 = new HashMap();
+        this.enrichmentResults1 = new HashMap<String, EnrichmentResult>();
+        this.enrichmentResults2 = new HashMap<String, EnrichmentResult>();
         this.genes = new HashMap<String, Integer>();
         this.hashkey2gene = new HashMap<Integer, String>();
         this.datasetGenes = new HashSet<Integer>();
         this.genesets = new HashMap<String, GeneSet>();
         this.filteredGenesets = new HashMap<String, GeneSet>();
-        this.enrichmentResults1OfInterest = new HashMap();
-        this.enrichmentResults2OfInterest = new HashMap();
+        this.enrichmentResults1OfInterest = new HashMap<String, EnrichmentResult>();
+        this.enrichmentResults2OfInterest = new HashMap<String, EnrichmentResult>();
         this.genesetsOfInterest = new HashMap<String, GeneSet>();
         this.selectedNodes = new ArrayList<Node>();
         this.selectedEdges = new ArrayList<Edge>();
@@ -222,9 +243,9 @@ public class EnrichmentMapParameters {
     }
 
 
-    /** 
+    /**
      * Constructor to create enrichment map parameters from a cytoscape property file while restoring a Session
-     * (property files is created when an enrichment map session is saved)
+     * (property file is created when an enrichment map session is saved)
      *
      *  @param propFile     the name of the property file as a String
      */
@@ -248,7 +269,12 @@ public class EnrichmentMapParameters {
         this.attributePrefix = props.get("attributePrefix");
 
         this.GMTFileName = props.get("GMTFileName");
-        this.GCTFileName1 = props.get("GCTFileName1");
+
+        if(props.get("expressionFileName1")!= null)
+            this.expressionFileName1 = props.get("expressionFileName1");
+        //account for legacy issue with rename of parameter
+        else
+            this.expressionFileName1 = props.get("GCTFileName1");
 
         this.enrichmentDataset1FileName1 = props.get("enerichmentDataset1FileName1");
         this.enrichmentDataset1FileName2 = props.get("enrichmentDataset1FileName2");
@@ -325,8 +351,13 @@ public class EnrichmentMapParameters {
             this.FDR = true;
 
         if(twoDatasets){
-            if(Data2)
-                this.GCTFileName2 = props.get("GCTFileName2");
+            if(Data2){
+                if(props.get("expressionFileName2")!= null)
+                    this.expressionFileName2 = props.get("expressionFileName2");
+                //account for legacy issue with rename of parameter
+                else
+                    this.expressionFileName2 = props.get("GCTFileName2");
+            }
             this.enrichmentDataset2FileName1 = props.get("enerichmentDataset2FileName1");
             this.enrichmentDataset2FileName2 = props.get("enrichmentDataset2FileName2");
             //rankfile 2
@@ -343,7 +374,7 @@ public class EnrichmentMapParameters {
 
         //older version had the similarityCutOff specified as jaccardCutOff.
         //need to check if this is an old session file
-        String cutoff = null;
+        String cutoff;
         if(props.get("jaccardCutOff") != null)
             cutoff = props.get("jaccardCutOff");
         else
@@ -365,13 +396,20 @@ public class EnrichmentMapParameters {
    /* Method to copy the input contents of an enrichment map paremeter set
     * Only copy parameters specified in the input window
     *
-    * Given - a parameters set to copy from.
+    * Given -
     */
+
+    /**
+     * Method to copy the input contents of an enrichment map paremeter set
+     * Only copy parameters specified in the input window
+     *
+     * @param copy -  a parameters set to copy from.
+     */
     public void copyInputParameters(EnrichmentMapParameters copy){
 
         this.GMTFileName = copy.getGMTFileName();
-        this.GCTFileName1 = copy.getGCTFileName1();
-        this.GCTFileName2 = copy.getGCTFileName2();
+        this.expressionFileName1 = copy.getExpressionFileName1();
+        this.expressionFileName2 = copy.getExpressionFileName2();
 
         this.dataset1RankedFile = copy.getDataset1RankedFile();
         this.dataset2RankedFile = copy.getDataset2RankedFile();
@@ -409,7 +447,7 @@ public class EnrichmentMapParameters {
    }
 
 
-   /** 
+   /**
     * Method to copy the contents of one set of parameters into another instance
     *
     * @param copy the parameters to copy from.
@@ -419,8 +457,8 @@ public class EnrichmentMapParameters {
        this.NetworkName = copy.getNetworkName();
 
         this.GMTFileName = copy.getGMTFileName();
-        this.GCTFileName1 = copy.getGCTFileName1();
-        this.GCTFileName2 = copy.getGCTFileName2();
+        this.expressionFileName1 = copy.getExpressionFileName1();
+        this.expressionFileName2 = copy.getExpressionFileName2();
 
         this.dataset1RankedFile = copy.getDataset1RankedFile();
         this.dataset2RankedFile = copy.getDataset2RankedFile();
@@ -486,15 +524,15 @@ public class EnrichmentMapParameters {
 
        }
 
-   /** 
-    * Checks all values of the EnrichmentMapInputPanel 
+   /**
+    * Checks all values of the EnrichmentMapInputPanel
     * to see if the current set of enrichment map parameters has the minimal amount
     * of information to run enrichment maps.
-    * 
+    *
     * If it is a GSEA run then gmt,gct,2 enrichment files are needed
     * If it is a generic run then gmt and 1 enrichment file is needed
     * if there are two datasets then depending on type it requires the same as above.
-    * 
+    *
     * @return A String with error messages (one error per line) or empty String if everything is okay.
     */
     public String checkMinimalRequirements(){
@@ -520,15 +558,21 @@ public class EnrichmentMapParameters {
         }
 
         //check to see if there are two datasets if the two gct files are the same
-        if((this.twoDatasets) && (this.GCTFileName1.equalsIgnoreCase(this.GCTFileName2))){
+        if((this.twoDatasets) && (this.expressionFileName1.equalsIgnoreCase(this.expressionFileName2))){
             this.Data2 = false;
-            this.GCTFileName2 = "";
+            this.expressionFileName2 = "";
         }
 
 
         return errors;
     }
 
+    /**
+     * Check to see if the file is readable.
+     *
+     * @param filename - name of file to be checked
+     * @return boolean - true if file is readable, false if it is not.
+     */
     protected boolean checkFile(String filename){
            //check to see if the files exist and are readable.
            //if the file is unreadable change the color of the font to red
@@ -541,13 +585,253 @@ public class EnrichmentMapParameters {
            return true;
        }
 
-    public EnrichmentMapParameters(String GMTFileName,  double pvalue, double qvalue) {
-        this();
-        this.GMTFileName = GMTFileName;
-        this.pvalue = pvalue;
-        this.qvalue = qvalue;
+    /**
+         * FilterGenesets - restrict the genes contained in each gene set to only
+         * the genes found in the expression file.
+         */
+        public void filterGenesets(){
+            //iterate through each geneset and filter each one
+             for(Iterator j = genesets.keySet().iterator(); j.hasNext(); ){
+
+                 String geneset2_name = j.next().toString();
+                 GeneSet current_set =  genesets.get(geneset2_name);
+
+                 //compare the HashSet of dataset genes to the HashSet of the current Geneset
+                 //only keep the genes from the geneset that are in the dataset genes
+                 HashSet<Integer> geneset_genes = current_set.getGenes();
+
+                 //Get the intersection between current geneset and dataset genes
+                 Set<Integer> intersection = new HashSet<Integer>(geneset_genes);
+                 intersection.retainAll(datasetGenes);
+
+                 //Add new geneset to the filtered set of genesets
+                 HashSet<Integer> new_geneset = new HashSet<Integer>(intersection);
+                 GeneSet new_set = new GeneSet(geneset2_name,current_set.getDescription());
+                 new_set.setGenes(new_geneset);
+
+                 this.filteredGenesets.put(geneset2_name,new_set);
+
+             }
+            //once we have filtered the genesets clear the original genesets object
+            genesets.clear();
+        }
+
+        /**
+         * Check to see that there are genes in the filtered  genesets
+         * If the ids do not match up, after a filtering there will be no genes in any of the genesets
+         * @return true if Genesets have genes, return false if all the genesets are empty
+         */
+        public boolean checkGenesets(){
+
+            for(Iterator j = filteredGenesets.keySet().iterator(); j.hasNext(); ){
+                 String geneset2_name = j.next().toString();
+                 GeneSet current_set = filteredGenesets.get(geneset2_name);
+
+                 //get the genes in the geneset
+                 HashSet<Integer> geneset_genes = current_set.getGenes();
+
+                //if there is at least one gene in any of the genesets then the ids match.
+                if(!geneset_genes.isEmpty())
+                    return true;
+
+            }
+
+            return false;
+
+        }
+     /**
+     * String representation of EnrichmentMapParameters.
+     * Is used to store the persistent Attributes as a property file in the Cytoscape Session file.
+     *
+     * @see java.lang.Object#toString()
+     */
+    public String toString(){
+        String paramVariables = "";
+
+        paramVariables += "NetworkName\t" + NetworkName + "\n";
+        paramVariables += "attributePrefix\t" + attributePrefix + "\n";
+
+        //file names
+        paramVariables += "GMTFileName\t" + GMTFileName + "\n";
+        paramVariables += "expressionFileName1\t" + expressionFileName1 + "\n";
+        paramVariables += "expressionFileName2\t" + expressionFileName2 + "\n";
+        paramVariables += "enerichmentDataset1FileName1\t" + enrichmentDataset1FileName1 + "\n";
+        paramVariables += "enrichmentDataset1FileName2\t" + enrichmentDataset1FileName2 + "\n";
+
+        paramVariables += "enerichmentDataset2FileName1\t" + enrichmentDataset2FileName1 + "\n";
+        paramVariables += "enrichmentDataset2FileName2\t" + enrichmentDataset2FileName2 + "\n";
+
+        paramVariables += "dataset1Phenotype1\t" + dataset1Phenotype1  + "\n";
+        paramVariables += "dataset1Phenotype2\t" + dataset1Phenotype2   + "\n";
+        paramVariables += "dataset2Phenotype1\t" + dataset2Phenotype1  + "\n";
+        paramVariables += "dataset2Phenotype2\t" + dataset2Phenotype2  + "\n";
+
+        paramVariables += "classFile1\t" + classFile1  + "\n";
+        paramVariables += "classFile2\t" + classFile2  + "\n";
+
+        //Write the classes/phenotypes as a comma separated list.
+        if(this.isData()){
+            String[] current_pheno = expression.getPhenotypes();
+            if (current_pheno != null){
+                String output = "";
+                for(int j = 0; j < current_pheno.length;j++)
+                     output += current_pheno[j] + ",";
+                paramVariables += "class1\t" + output + "\n";
+            }
+        }
+        if(this.isData2()){
+            String[] current_pheno = expression2.getPhenotypes();
+            if (current_pheno != null){
+                String output = "";
+                for(int j = 0; j < current_pheno.length;j++)
+                     output += current_pheno[j] + ",";
+                paramVariables += "class2\t" + output + "\n";
+            }
+        }
+
+        //rank files
+        paramVariables += "rankFile1\t" + dataset1RankedFile + "\n";
+        paramVariables += "rankFile2\t" + dataset2RankedFile + "\n";
+
+        //boolean flags
+        paramVariables += "twoDatasets\t" + twoDatasets + "\n";
+        paramVariables += "jaccard\t" + jaccard + "\n";
+        paramVariables += "GSEA\t" + GSEA + "\n";
+        paramVariables += "Data\t" + Data + "\n";
+        paramVariables += "Data2\t" + Data2 + "\n";
+        paramVariables += "FDR\t" + FDR + "\n";
+
+        //cutoffs
+        paramVariables += "pvalue\t" + pvalue + "\n";
+        paramVariables += "qvalue\t" + qvalue + "\n";
+        paramVariables += "similarityCutOff\t" + similarityCutOff + "\n";
+
+
+        return paramVariables;
+    }
+
+    /**
+     * go through Hashmap and print all the objects
+     * @param map - any type of hashmap
+     * @return string representation of the hash with the "key tab object newline" representation.
+     */
+    public String printHashmap(HashMap map ){
+       String result = "";
+
+       for(Iterator i = map.keySet().iterator();i.hasNext();){
+           Object key = i.next();
+           result += key.toString() + "\t" + map.get(key).toString() + "\n";
+       }
+       return result;
+
+   }
+
+    /**
+     * This method repopulates a properly specified Hashmap from the given file and type.
+     *
+     * @param fileInput - file name where the hash map is stored.
+     * @param type - the type of hashmap in the file.  The hashes are repopulated
+     * based on the property file stored in the session file.  The property file
+     * specifies the type of objects contained in each file and this is needed in order
+     * to create the proper hash in the current set of parameters.
+     * types are Genesetsimilarity(0), GeneSet(1), Genes(2), GSEAResult(3), GenericResult(4), Int to String (5), Ranking (6)
+     * @return  properly constructed Hashmap repopulated from the specified file.
+     */
+    public HashMap repopulateHashmap(String fileInput, int type ){
+        //TODO: for Type-safety we should generate and return individual HashMaps specifying the correct Types
+
+        //Create a hashmap to contain all the values in the rpt file.
+        HashMap newMap;
+
+        //GenesetSimilarity
+        if(type == 0)
+            newMap = new HashMap<String, GenesetSimilarity>();
+        //GeneSet
+        else if(type == 1)
+            newMap = new HashMap<String, GeneSet>();
+        //Genes
+        else if(type == 2)
+            newMap = new HashMap<String, Integer>();
+         //GSEAResults
+        else if(type == 3)
+            newMap = new HashMap<String, GSEAResult>();
+        //GenericResults
+        else if(type == 4)
+            newMap = new HashMap<String, GenericResult>();
+        //Hashmap key to gene
+        else if(type == 5)
+            newMap = new HashMap<Integer, String>();
+        //Hashmap gene key to ranking
+        else if(type == 6)
+            newMap = new HashMap<Integer, Ranking>();
+        else
+            newMap = new HashMap();
+
+        String [] lines = fileInput.split("\n");
+
+        for (int i = 0; i < lines.length; i++) {
+            String line = lines[i];
+            String[] tokens = line.split("\t");
+
+            //the first token is the key and the rest of the line is the object
+            //depending on the type there is different data
+
+            //GenesetSimilarity
+            if(type == 0)
+                newMap.put(tokens[0] ,new GenesetSimilarity(tokens));
+
+            //Genesets
+            if(type == 1)
+                if(tokens.length>=3)
+                    newMap.put(tokens[0], new GeneSet(tokens));
+
+            //Genes
+            if(type == 2)
+            // need to control the Type of the Objects inside the HashMap, otherwise
+            // we can't store the List of Genes to new Nodes and Edges in a restored Session
+            // e.g. in in the Signature-Post-Analysis
+                newMap.put(tokens[0], Integer.parseInt(tokens[1]));
+
+            //GseaResult
+            if(type == 3)
+                newMap.put(tokens[0], new GSEAResult(tokens));
+
+            if(type == 4)
+                newMap.put(tokens[0], new GenericResult(tokens));
+
+            //HashMap Key 2 Genes
+            if(type == 5) {
+            // need to control the Type of the Objects inside the HashMap, otherwise
+            // we can't store the List of Genes to new Nodes and Edges in a restored Session
+            // e.g. in in the Signature-Post-Analysis
+                newMap.put(Integer.parseInt(tokens[0]),tokens[1]);
+
+            }
+
+            //Rankings
+            if(type == 6)
+                newMap.put(Integer.parseInt(tokens[0]),new Ranking(tokens));
+
+        }
+
+        return newMap;
+    }
+    
+    /**
+     *  given the hash key representing a gene return the gene name
+     *
+     * @param hash - the hash key representing a gene
+     * @return String - gene name
+     */
+    public String getGeneFromHashKey(Integer hash){
+        String gene = null;
+        if(hashkey2gene != null || !hashkey2gene.isEmpty())
+            gene =  hashkey2gene.get(hash);
+        return gene;
 
     }
+
+    // Class Getters and Setters
 
     public boolean isJaccard() {
         return jaccard;
@@ -557,35 +841,35 @@ public class EnrichmentMapParameters {
         this.jaccard = jaccard;
     }
 
-    public HashMap getEnrichmentResults1() {
+    public HashMap<String, EnrichmentResult> getEnrichmentResults1() {
         return enrichmentResults1;
     }
 
-    public void setEnrichmentResults1(HashMap enrichmentResults1) {
+    public void setEnrichmentResults1(HashMap<String, EnrichmentResult> enrichmentResults1) {
         this.enrichmentResults1 = enrichmentResults1;
     }
 
-    public HashMap getEnrichmentResults2() {
+    public HashMap<String, EnrichmentResult> getEnrichmentResults2() {
         return enrichmentResults2;
     }
 
-    public void setEnrichmentResults2(HashMap enrichmentResults2) {
+    public void setEnrichmentResults2(HashMap<String, EnrichmentResult> enrichmentResults2) {
         this.enrichmentResults2 = enrichmentResults2;
     }
 
-    public HashMap getEnrichmentResults1OfInterest() {
+    public HashMap<String, EnrichmentResult> getEnrichmentResults1OfInterest() {
         return enrichmentResults1OfInterest;
     }
 
-    public void setEnrichmentResults1OfInterest(HashMap enrichmentResults1OfInterest) {
+    public void setEnrichmentResults1OfInterest(HashMap<String, EnrichmentResult> enrichmentResults1OfInterest) {
         this.enrichmentResults1OfInterest = enrichmentResults1OfInterest;
     }
 
-    public HashMap getEnrichmentResults2OfInterest() {
+    public HashMap<String, EnrichmentResult> getEnrichmentResults2OfInterest() {
         return enrichmentResults2OfInterest;
     }
 
-    public void setEnrichmentResults2OfInterest(HashMap enrichmentResults2OfInterest) {
+    public void setEnrichmentResults2OfInterest(HashMap<String, EnrichmentResult> enrichmentResults2OfInterest) {
         this.enrichmentResults2OfInterest = enrichmentResults2OfInterest;
     }
 
@@ -596,8 +880,6 @@ public class EnrichmentMapParameters {
 
     public void setGenesetsOfInterest(HashMap<String, GeneSet> genesetsOfInterest) {
         this.genesetsOfInterest = genesetsOfInterest;
-
-
 
     }
 
@@ -626,21 +908,21 @@ public class EnrichmentMapParameters {
         this.GMTFileName = GMTFileName;
     }
 
-    public String getGCTFileName1() {
-        return GCTFileName1;
+    public String getExpressionFileName1() {
+        return expressionFileName1;
     }
 
-    public void setGCTFileName1(String GCTFileName) {
-        this.GCTFileName1 = GCTFileName;
+    public void setExpressionFileName1(String GCTFileName) {
+        this.expressionFileName1 = GCTFileName;
     }
 
 
-    public String getGCTFileName2() {
-        return GCTFileName2;
+    public String getExpressionFileName2() {
+        return expressionFileName2;
     }
 
-    public void setGCTFileName2(String GCTFileName) {
-        this.GCTFileName2 = GCTFileName;
+    public void setExpressionFileName2(String GCTFileName) {
+        this.expressionFileName2 = GCTFileName;
     }
 
     public String getEnrichmentDataset1FileName1() {
@@ -753,68 +1035,6 @@ public class EnrichmentMapParameters {
         this.filteredGenesets = genesets;
     }
 
-    public void filterGenesets(){
-        //iterate through each geneset and filter each one
-         for(Iterator j = genesets.keySet().iterator(); j.hasNext(); ){
-
-             String geneset2_name = j.next().toString();
-             GeneSet current_set =  genesets.get(geneset2_name);
-
-             //compare the HashSet of dataset genes to the HashSet of the current Geneset
-             //only keep the genes from the geneset that are in the dataset genes
-             HashSet<Integer> geneset_genes = current_set.getGenes();
-
-             //Get the intersection between current geneset and dataset genes
-             Set<Integer> intersection = new HashSet<Integer>(geneset_genes);
-             intersection.retainAll(datasetGenes);
-
-             //Add new geneset to the filtered set of genesets
-             HashSet<Integer> new_geneset = new HashSet<Integer>(intersection);
-             GeneSet new_set = new GeneSet(geneset2_name,current_set.getDescription());
-             new_set.setGenes(new_geneset);
-
-             this.filteredGenesets.put(geneset2_name,new_set);
-
-         }
-        //once we have filtered the genesets clear the original genesets object
-        genesets.clear();
-    }
-
-    //Check to see that there are genes in the filtered  genesets
-    //If the ids do not match up, after a filtering there will be no genes in any of the
-    //genesets
-    //Return true if Genesets have genes, return false if all the genesets are empty
-    public boolean checkGenesets(){
-
-        for(Iterator j = filteredGenesets.keySet().iterator(); j.hasNext(); ){
-             String geneset2_name = j.next().toString();
-             GeneSet current_set = filteredGenesets.get(geneset2_name);
-
-             //get the genes in the geneset
-             HashSet<Integer> geneset_genes = current_set.getGenes();
-
-            //if there is at least one gene in any of the genesets then the ids match.
-            if(!geneset_genes.isEmpty())
-                return true;
-
-        }
-
-        return false;
-
-    }
-
-    public void dispose(){
-        genesets.clear();
-        genesetsOfInterest.clear();
-        enrichmentResults1.clear();
-        enrichmentResults2.clear();
-        genes.clear();
-        datasetGenes.clear();
-        filteredGenesets.clear();
-        enrichmentResults1OfInterest.clear();
-        enrichmentResults2OfInterest.clear();
-
-    }
 
     public boolean isGSEA() {
         return GSEA;
@@ -992,173 +1212,6 @@ public class EnrichmentMapParameters {
             this.ranks.put("Dataset 2 Ranking", this.dataset2Rankings);
     }
 
-    /** 
-     * String representation of EnrichmentMapParameters.
-     * Is used to store the persistent Attributes as a property file in the Cytoscape Session file.
-     * 
-     * @see java.lang.Object#toString()
-     */
-    public String toString(){
-        String paramVariables = "";
-
-        paramVariables += "NetworkName\t" + NetworkName + "\n";
-        paramVariables += "attributePrefix\t" + attributePrefix + "\n";
-
-        //file names
-        paramVariables += "GMTFileName\t" + GMTFileName + "\n";
-        paramVariables += "GCTFileName1\t" + GCTFileName1 + "\n";
-        paramVariables += "GCTFileName2\t" + GCTFileName2 + "\n";
-        paramVariables += "enerichmentDataset1FileName1\t" + enrichmentDataset1FileName1 + "\n";
-        paramVariables += "enrichmentDataset1FileName2\t" + enrichmentDataset1FileName2 + "\n";
-
-        paramVariables += "enerichmentDataset2FileName1\t" + enrichmentDataset2FileName1 + "\n";
-        paramVariables += "enrichmentDataset2FileName2\t" + enrichmentDataset2FileName2 + "\n";
-
-        paramVariables += "dataset1Phenotype1\t" + dataset1Phenotype1  + "\n";
-        paramVariables += "dataset1Phenotype2\t" + dataset1Phenotype2   + "\n";
-        paramVariables += "dataset2Phenotype1\t" + dataset2Phenotype1  + "\n";
-        paramVariables += "dataset2Phenotype2\t" + dataset2Phenotype2  + "\n";
-
-        paramVariables += "classFile1\t" + classFile1  + "\n";
-        paramVariables += "classFile2\t" + classFile2  + "\n";
-
-        //Write the classes/phenotypes as a comma separated list.
-        if(this.isData()){
-            String[] current_pheno = expression.getPhenotypes();
-            if (current_pheno != null){
-                String output = "";
-                for(int j = 0; j < current_pheno.length;j++)
-                     output += current_pheno[j] + ",";
-                paramVariables += "class1\t" + output + "\n";
-            }
-        }
-        if(this.isData2()){
-            String[] current_pheno = expression2.getPhenotypes();
-            if (current_pheno != null){
-                String output = "";
-                for(int j = 0; j < current_pheno.length;j++)
-                     output += current_pheno[j] + ",";
-                paramVariables += "class2\t" + output + "\n";
-            }
-        }
-
-        //rank files
-        paramVariables += "rankFile1\t" + dataset1RankedFile + "\n";
-        paramVariables += "rankFile2\t" + dataset2RankedFile + "\n";
-
-        //boolean flags
-        paramVariables += "twoDatasets\t" + twoDatasets + "\n";
-        paramVariables += "jaccard\t" + jaccard + "\n";
-        paramVariables += "GSEA\t" + GSEA + "\n";
-        paramVariables += "Data\t" + Data + "\n";
-        paramVariables += "Data2\t" + Data2 + "\n";
-        paramVariables += "FDR\t" + FDR + "\n";
-
-        //cutoffs
-        paramVariables += "pvalue\t" + pvalue + "\n";
-        paramVariables += "qvalue\t" + qvalue + "\n";
-        paramVariables += "similarityCutOff\t" + similarityCutOff + "\n";
-
-
-        return paramVariables;
-    }
-
-
-   //Given a hashmap, go through it and print all the objects(not the keys)
-    public String printHashmap(HashMap map ){
-       String result = "";
-
-       for(Iterator i = map.keySet().iterator();i.hasNext();){
-           Object key = i.next();
-           result += key.toString() + "\t" + map.get(key).toString() + "\n";
-       }
-       return result;
-
-   }
-
-    //repopulate hashmap,
-    public HashMap repopulateHashmap(String fileInput, int type ){
-        //TODO: for Type-safety we should generate and return individual HashMaps specifying the correct Types
-
-        //Create a hashmap to contain all the values in the rpt file.
-        HashMap newMap;
-
-        //GenesetSimilarity
-        if(type == 0)
-            newMap = new HashMap<String, GenesetSimilarity>();
-        //GeneSet
-        else if(type == 1)
-            newMap = new HashMap<String, GeneSet>();
-        //Genes
-        else if(type == 2)
-            newMap = new HashMap<String, Integer>();
-         //GSEAResults
-        else if(type == 3)
-            newMap = new HashMap<String, GSEAResult>();
-        //GenericResults
-        else if(type == 4)
-            newMap = new HashMap<String, GenericResult>();
-        //Hashmap key to gene
-        else if(type == 5)
-            newMap = new HashMap<Integer, String>();
-        //Hashmap gene key to ranking
-        else if(type == 6)
-            newMap = new HashMap<Integer, Ranking>();
-        else
-            newMap = new HashMap();
-
-        String [] lines = fileInput.split("\n");
-
-        for (int i = 0; i < lines.length; i++) {
-            String line = lines[i];
-            String[] tokens = line.split("\t");
-
-            //the first token is the key and the rest of the line is the object
-            //depending on the type there is different data
-
-            //GenesetSimilarity
-            if(type == 0)
-                newMap.put(tokens[0] ,new GenesetSimilarity(tokens));
-
-            //Genesets
-            if(type == 1)
-                if(tokens.length>=3)
-                    newMap.put(tokens[0], new GeneSet(tokens));
-
-            //Genes
-            if(type == 2)
-            // need to control the Type of the Objects inside the HashMap, otherwise
-            // we can't store the List of Genes to new Nodes and Edges in a restored Session
-            // e.g. in in the Signature-Post-Analysis
-                newMap.put(tokens[0], Integer.parseInt(tokens[1]));
-
-
-
-            //GseaResult
-            if(type == 3)
-                newMap.put(tokens[0], new GSEAResult(tokens));
-
-            if(type == 4)
-                newMap.put(tokens[0], new GenericResult(tokens));
-
-            //HashMap Key 2 Genes
-            if(type == 5) {
-            // need to control the Type of the Objects inside the HashMap, otherwise
-            // we can't store the List of Genes to new Nodes and Edges in a restored Session
-            // e.g. in in the Signature-Post-Analysis
-                newMap.put(Integer.parseInt(tokens[0]),tokens[1]);
-
-            }
-
-            //Rankings
-            if(type == 6)
-                newMap.put(Integer.parseInt(tokens[0]),new Ranking(tokens));
-
-        }
-
-    return newMap;
-    }
-
     public String getOverlapMetricDefault() {
         return this.default_overlap_metric;
 
@@ -1198,15 +1251,6 @@ public class EnrichmentMapParameters {
 
     public void setHashkey2gene(HashMap<Integer, String> hashkey2gene) {
         this.hashkey2gene = hashkey2gene;
-    }
-
-    //given the hash key representing a gene return the gene
-    public String getGeneFromHashKey(Integer hash){
-        String gene = null;
-        if(hashkey2gene != null || !hashkey2gene.isEmpty())
-            gene =  hashkey2gene.get(hash);
-        return gene;
-
     }
 
     public HashMap<String, HashMap<Integer, Ranking>> getRanks() {

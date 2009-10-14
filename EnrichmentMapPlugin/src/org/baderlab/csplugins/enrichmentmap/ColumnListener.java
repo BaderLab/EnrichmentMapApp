@@ -1,15 +1,17 @@
 package org.baderlab.csplugins.enrichmentmap;
 
-
-
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.Collections;
 
 import javax.swing.JTable;
-import javax.swing.event.TableModelEvent;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
+
+/**
+ * Created by
+ * User: Vinod Vasavan
+ * Date: June, 2009
+ */
 
 public class ColumnListener extends MouseAdapter {
     protected JTable table;
@@ -17,6 +19,7 @@ public class ColumnListener extends MouseAdapter {
     protected boolean isSortAsc = true;
     protected int m_result = 0;
     protected int columnsCount = 1;
+
     public ColumnListener(JTable t) {
       table = t;
     }
@@ -40,7 +43,6 @@ public class ColumnListener extends MouseAdapter {
       }
       table.getTableHeader().repaint();
 
-    //  Collections.sort(vector,new MyComparator(isSortAsc));
-    //  table.tableChanged(new TableModelEvent(OverlappingGenesTableModel.this));
       table.repaint();
-    }}
+    }
+}

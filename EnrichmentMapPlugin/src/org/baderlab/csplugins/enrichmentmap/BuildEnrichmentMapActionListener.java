@@ -44,21 +44,21 @@
 package org.baderlab.csplugins.enrichmentmap;
 import cytoscape.task.ui.JTaskConfig;
 import cytoscape.task.util.TaskManager;
-import cytoscape.task.TaskMonitor;
-import cytoscape.task.Task;
 import cytoscape.Cytoscape;
 
 
 import javax.swing.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-import java.util.HashMap;
 
 /**
  * Created by
  * User: risserlin
  * Date: Jan 8, 2009
  * Time: 1:35:40 PM
+ * <p>
+ * Action associated with the Build map button on the input panel
+ * Checks minimum information is supplied before launching main build Enrichment map task
  */
 public class BuildEnrichmentMapActionListener implements ActionListener {
 
@@ -66,12 +66,20 @@ public class BuildEnrichmentMapActionListener implements ActionListener {
 
     private EnrichmentMapInputPanel inputPanel;
 
+    /**
+     * @param panel - Enrichment map input panel
+     */
     public BuildEnrichmentMapActionListener (EnrichmentMapInputPanel panel) {
         this.inputPanel = panel;
 
     }
 
-   public void actionPerformed(ActionEvent event) {
+    /**
+     * Creates a new task, checks the info in the parameters for the minimum amount of information
+     *
+     * @param event
+     */
+    public void actionPerformed(ActionEvent event) {
 
         config = new JTaskConfig();
         config.displayCancelButton(true);
@@ -84,7 +92,7 @@ public class BuildEnrichmentMapActionListener implements ActionListener {
        String errors = params.checkMinimalRequirements();
 
        if(errors.equalsIgnoreCase("")){
-            BuildGSEAEnrichmentMapTask new_map = new BuildGSEAEnrichmentMapTask(params);
+            BuildEnrichmentMapTask new_map = new BuildEnrichmentMapTask(params);
             boolean success = TaskManager.executeTask(new_map,config);
        }
        else{

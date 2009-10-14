@@ -60,6 +60,9 @@ import java.util.HashMap;
  * User: risserlin
  * Date: Mar 3, 2009
  * Time: 1:48:31 PM
+ * <p>
+ * Main class managing all instances of enrichment map as well as singular instances
+ * of heatmap, paramters panel and input panel.  (implemented as singular class)
  */
 public class EnrichmentMapManager implements PropertyChangeListener {
 
@@ -224,7 +227,7 @@ public class EnrichmentMapManager implements PropertyChangeListener {
                     //only if there is a input window
                     if(inputWindow!=null)
                         inputWindow.updateContents(currentNetworkParams);
-                    
+
                     if(analysisWindow!=null)
                         analysisWindow.updateContents(currentNetworkParams);
 

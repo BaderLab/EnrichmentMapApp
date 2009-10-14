@@ -56,6 +56,8 @@ import java.awt.*;
  * User: risserlin
  * Date: Jan 26, 2009
  * Time: 3:23:52 PM
+ * <p>
+ * Class defining all the attributes of the Enrichment map Visual style
  */
 public class EnrichmentMapVisualStyle {
 
@@ -63,6 +65,9 @@ public class EnrichmentMapVisualStyle {
 
     public static final int maxNodeLabelLength = 15;
 
+    //Attribute Names - prefix is appended to each one of these names in order to associated these
+    //attributes to a particular enrichment map.  This allows for multiple enrichment maps in an
+    //individual session.
     public static String NAME = "Name";
     public static String GS_DESCR = "GS_DESCR";
     public static String FORMATTED_NAME = "Formatted_name";
@@ -88,7 +93,8 @@ public class EnrichmentMapVisualStyle {
     public static String SIMILARITY_COEFFECIENT = "similarity_coeffecient";
     public static String OVERLAP_GENES = "Overlap_genes";
     public static String HYPERGEOM_PVALUE = "Overlap_Hypergeom_pVal";
-    
+
+    //default colours
     public static Color max_phenotype1 = new Color(255,0,0);
     public static Color lighter_phenotype1 = new Color(255,102,102);
     public static Color lightest_phenotype1 = new Color(255,179,179);
@@ -99,11 +105,24 @@ public class EnrichmentMapVisualStyle {
 
     private VisualStyle vs;
 
+    /**
+     * Constructor
+     *
+     * @param string - name of visual style
+     * @param params - enrichment map parameters associated with this visual style.
+     */
     public EnrichmentMapVisualStyle(String string, EnrichmentMapParameters params) {
         this.params = params;
         vs = new VisualStyle(string);
     }
 
+    /**
+     * Create visual style for this enrichment map
+     *
+     * @param network - network to apply this visual style
+     * @param prefix - prefix to be appended to each of the attribute names
+     * @return visual style
+     */
     public VisualStyle createVisualStyle(CyNetwork network, String prefix){
 
         GlobalAppearanceCalculator globalAppCalc = new GlobalAppearanceCalculator();
@@ -117,7 +136,13 @@ public class EnrichmentMapVisualStyle {
         return vs;
     }
 
-
+    /**
+     * Create edge appearances for this enrichment map, specify the edge thicknes mapped to the number of genes
+     * in the overlap, and default colour
+     *
+     * @param network - network to apply this visual style
+     * @param prefix - prefix to be appended to each of the attribute names
+     */
     private void createEdgeAppearance(CyNetwork network, String prefix){
         EdgeAppearanceCalculator edgeAppCalc = new EdgeAppearanceCalculator();
 
@@ -150,9 +175,15 @@ public class EnrichmentMapVisualStyle {
 
     }
 
-
+    /**
+     * Create node appearances for this enrichment map, set node label based of gene set name,
+     * set node size based on number of genes in gene set, set node colour based on enrichment of gene set
+     * in dataset 1, set node border colour based on enrichment of gene set in dataset 2
+     *
+     * @param network - network to apply this visual style
+     * @param prefix - prefix to be appended to each of the attribute names
+     */
     private void createNodeAppearance(CyNetwork network,String prefix){
-
 
         // Create boundary conditions                  less than,   equals,  greater than
         BoundaryRangeValues bv3a = new BoundaryRangeValues(max_phenotype2,max_phenotype2,max_phenotype2);

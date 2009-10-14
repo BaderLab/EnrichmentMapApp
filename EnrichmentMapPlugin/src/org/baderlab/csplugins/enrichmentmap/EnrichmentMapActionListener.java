@@ -69,6 +69,9 @@ import javax.swing.*;
  * User: risserlin
  * Date: Feb 2, 2009
  * Time: 1:25:36 PM
+ * <p>
+ * Class listener for node and edge selections.  For each enrichment map there is a separate instance of this
+ * class specifying the enrichment map parameters, selected nodes, selected edges and heatmap panels
  */
 public class EnrichmentMapActionListener implements  GraphViewChangeListener {
 
@@ -81,23 +84,32 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
 
     private final CytoPanel cytoPanel;
 
-
+    /**
+     * Constructor for network action listener.
+     *
+     * @param params  - enrichment map parameters associated with this actionlistener
+     */
     public EnrichmentMapActionListener(EnrichmentMapParameters params) {
         this.params = params;
 
+        //get the static enrichment map manager.
         EnrichmentMapManager manager = EnrichmentMapManager.getInstance();
 
         //initialize the cyto panel to have the expression viewing.
         final CytoscapeDesktop desktop = Cytoscape.getDesktop();
         cytoPanel = desktop.getCytoPanel(SwingConstants.SOUTH);
+        //TODO add logo to any panel asociated with Enrichment maps
         //final URL url = new URL("http","www.baderlab.org","/wiki/common/network_bader_website_icon.gif");
         //final Icon icon = new ImageIcon(url);
         if(params.isData()){
+            //get the only instance of the overlap and union heat map panels.
             edgeOverlapPanel = manager.getEdgesOverlapPanel();
             nodeOverlapPanel = manager.getNodesOverlapPanel();
 
+            //create a heatmap parameters instance for this action listener
             HeatMapParameters hmParams = new HeatMapParameters(edgeOverlapPanel, nodeOverlapPanel);
             hmParams.initColorGradients(params.getExpression());
+            //associate the newly created heatmap parameters with the current enrichment map paramters
             params.setHmParams(hmParams);
         }
         
@@ -106,6 +118,11 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
      
     }
 
+    /**
+     * Handle network action.  This method handles edge or node selection or unselections.
+     *
+     * @param event
+     */
     public void graphViewChanged(GraphViewChangeEvent event){
         if(event.isEdgesSelectedType()){
 

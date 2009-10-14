@@ -55,17 +55,29 @@ import java.util.Set;
  * User: risserlin
  * Date: Jan 9, 2009
  * Time: 2:14:52 PM
+ * <p>
+ * Goes through all the gene sets and computes the jaccard or overlap coeffecient
+ * (depends on what the user specified in the input panel) for each
+ * pair of gene sets.  (all pairwise comparisons are performed but only those passing
+ * the user specified are stored in the hash map of gene set similarityes)
 */
 public class ComputeSimilarityTask implements Task {
 
     private EnrichmentMapParameters params;
 
+    //Hash map of the geneset_similarities computed that pass the cutoff.
     private HashMap<String, GenesetSimilarity> geneset_similarities;
 
     // Keep track of progress for monitoring:
     private TaskMonitor taskMonitor = null;
     private boolean interrupted = false;
 
+    /**
+     * Constructor for Compute Similarity task
+     *
+     * @param params - enrichment map parameters for current map
+     * @param taskMonitor - task monitor if it has already been set.
+     */
     public ComputeSimilarityTask(EnrichmentMapParameters params, TaskMonitor taskMonitor) {
           this(params);
           this.taskMonitor = taskMonitor;
@@ -77,9 +89,8 @@ public class ComputeSimilarityTask implements Task {
         geneset_similarities = new HashMap<String, GenesetSimilarity>();
     }
 
-    public boolean computeMap(){
+    public boolean computeGenesetSimilarities(){
         try{
-
 
             HashMap genesetsOfInterest = params.getGenesetsOfInterest();
 
@@ -154,25 +165,8 @@ public class ComputeSimilarityTask implements Task {
 
 
                      }
-
                  }
-
-
-
             }
-
-      /*      System.out.println(geneset_similarities.keySet().toString());
-            for(Iterator a = geneset_similarities.keySet().iterator(); a.hasNext();){
-                GenesetSimilarity temp = (GenesetSimilarity)geneset_similarities.get(a.next().toString());
-                System.out.println(temp.getGeneset1_Name());
-                System.out.println(temp.getGeneset2_Name());
-                System.out.println(temp.getSimilarity_coeffecient());
-                System.out.println(temp.getOvarlapping_genes().size());
-                System.out.println(temp.getOvarlapping_genes().toString());
-
-            }
-            System.out.println(geneset_similarities.size());
-        */
 
         } catch(IllegalThreadStateException e){
             taskMonitor.setException(e, "Unable to compute similarity coeffecients");
@@ -190,7 +184,7 @@ public class ComputeSimilarityTask implements Task {
        * Run the Task.
        */
       public void run() {
-         computeMap();
+         computeGenesetSimilarities();
       }
 
       /**

@@ -44,10 +44,6 @@
 package org.baderlab.csplugins.enrichmentmap;
 import cytoscape.plugin.CytoscapePlugin;
 import cytoscape.Cytoscape;
-import cytoscape.CytoscapeInit;
-import cytoscape.task.ui.JTaskConfig;
-import cytoscape.task.util.TaskManager;
-import cytoscape.task.TaskMonitor;
 import cytoscape.view.CyNetworkView;
 import cytoscape.data.readers.TextFileReader;
 
@@ -58,7 +54,6 @@ import java.io.File;
 import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -74,9 +69,9 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
     static String pluginUrl;
     static String userManualUrl;
 
-    /*--------------------------------------------------------------
-      CONSTRUCTOR.
-      --------------------------------------------------------------*/
+    /**
+     * Constructor
+     */
     public Enrichment_Map_Plugin(){
 
         //set-up menu options in plugins menu
@@ -86,7 +81,7 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
         //Enrichment map submenu
         JMenu submenu = new JMenu("Enrichment Map");
 
-        //GSEA results panel panel
+        //Enrichment map input  panel
         item = new JMenuItem("Load Enrichment Results");
         item.addActionListener(new LoadGSEAPanelAction());
         submenu.add(item);
@@ -126,30 +121,25 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
         } catch (IOException e) {
             // TODO: write Warning "Could not load 'plugin.props' - using default settings"
         }
-        
+
         pluginUrl = Enrichment_Map_Plugin.plugin_props.getProperty("pluginURL", "http://www.baderlab.org/Software/EnrichmentMap");
         userManualUrl = pluginUrl + "/UserManual";
 
     }
 
     public void onCytoscapeExit(){
-        //TODO: remove test code before release
-/*        
-        //test to see if we can write anything to a file in the session file
-        File propFile = CytoscapeInit.getConfigFile("enrichmentMap.props");
 
-        try{
-            BufferedWriter writer = new BufferedWriter(new FileWriter(propFile));
-            writer.write("line 1:");
-            writer.newLine();
-            writer.write("line2:");
-            writer.close();
-        } catch(Exception ex){
-            ex.printStackTrace();
-        }
-*/
     }
 
+    /**
+     * SaveSessionStateFiles collects all the data stored in the Enrichment maps
+     * and creates property files for each network listing the variables needed to rebuild the map.
+     * All data(Hashmaps) collections needed for the Enrichment map are stored in separate files specified by the name
+     * of the network with specific file endings to indicate what type of data is stored in the files (i.e. ENR for enrichment,
+     * genes for genes...).
+     *
+     * @param pFileList - pointer to the set of files to be added to the session
+     */
     public void saveSessionStateFiles(List<File> pFileList){
         // Create an empty file on system temp directory
 
@@ -173,19 +163,27 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
             if(!name.equalsIgnoreCase(param_name))
                 params.setNetworkName(name);
 
+            //property file
             File session_prop_file = new File(tmpDir, name+".props");
+
+            //gene set file - contains filtered gene sets so it is not a replica of the initial file loaded
+            //this conserves time and space.
             File gmt = new File(tmpDir, name+".gmt");
+            //genes involved in the analysis
             File genes = new File(tmpDir, name+".genes.txt");
             File hkgenes = new File(tmpDir, name+".hashkey2genes.txt");
 
+            //enrichment results 1 file
             File enrichmentresults1 = new File(tmpDir, name+".ENR1.txt");
             File enrichmentresults1Ofinterest = new File(tmpDir, name+".SubENR1.txt");
 
+            //enrichment results 2 file - only initialized if they are part of the analysis.
             File enrichmentresults2;
             File enrichmentresults2Ofinterest;
             File expression1;
             File expression2;
 
+            //write out files.
             try {
                 BufferedWriter writer = new BufferedWriter(new FileWriter(session_prop_file));
                 writer.write(params.toString());
@@ -269,6 +267,11 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
         }
     }
 
+    /**
+     * Restore Enrichment maps
+     *
+     * @param pStateFileList - list of files associated with thie session
+     */
     public void restoreSessionState(List<File> pStateFileList) {
 
         if ((pStateFileList == null) || (pStateFileList.size() == 0)) {
@@ -413,8 +416,8 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
                     EnrichmentMapParameters params = EnrichmentMapManager.getInstance().getParameters(name);
 
                     //Load the GCT file
-                    GCTFileReaderTask gctFile1 = new GCTFileReaderTask(params,prop_file.getAbsolutePath(),1);
-                    gctFile1.run();
+                    ExpressionFileReaderTask expressionFile1 = new ExpressionFileReaderTask(params,prop_file.getAbsolutePath(),1);
+                    expressionFile1.run();
                     params.getExpression().rowNormalizeMatrix();
                 }
                 if(prop_file.getName().contains("expression2.txt")){
@@ -426,8 +429,8 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
                     EnrichmentMapParameters params = EnrichmentMapManager.getInstance().getParameters(name);
 
 
-                    GCTFileReaderTask gctFile2 = new GCTFileReaderTask(params,prop_file.getAbsolutePath(),2);
-                    gctFile2.run();
+                    ExpressionFileReaderTask expressionFile2 = new ExpressionFileReaderTask(params,prop_file.getAbsolutePath(),2);
+                    expressionFile2.run();
                     params.getExpression2().rowNormalizeMatrix();
                 }
 

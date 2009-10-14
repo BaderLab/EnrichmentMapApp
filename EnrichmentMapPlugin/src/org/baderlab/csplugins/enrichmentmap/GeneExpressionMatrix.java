@@ -55,6 +55,8 @@ import java.util.ArrayList;
  * User: risserlin
  * Date: Jan 30, 2009
  * Time: 9:32:17 AM
+ * <p>
+ * Class representing a set of genes/proteins expresion profile
  */
 public class GeneExpressionMatrix {
 
@@ -69,6 +71,7 @@ public class GeneExpressionMatrix {
     private double maxExpression = 0;
     private double minExpression = 0;
 
+    //phenotype designation of each column
     private String[] phenotypes;
 
 

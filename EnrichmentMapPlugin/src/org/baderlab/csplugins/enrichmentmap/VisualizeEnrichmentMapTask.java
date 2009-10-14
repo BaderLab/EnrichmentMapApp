@@ -343,7 +343,7 @@ public class VisualizeEnrichmentMapTask implements Task {
                manager.setVisualStyle(vs);
                view.redrawGraph(true,true);
 
-                  //view.applyLayout(CyLayouts.getDefaultLayout());
+          
                view.applyLayout(CyLayouts.getLayout("force-directed"));
 
 
@@ -358,16 +358,8 @@ public class VisualizeEnrichmentMapTask implements Task {
             final CytoPanel cytoSidePanel = desktop.getCytoPanel(SwingConstants.EAST);
             cytoSidePanel.setSelectedIndex(cytoSidePanel.indexOfComponent(parametersPanel));
 
-            //Add the parameters summary panel
 
-            //ParametersPanel parametersPanel = new ParametersPanel(params);
-            //final CytoscapeDesktop desktop = Cytoscape.getDesktop();
-            //final CytoPanel cytoSidePanel = desktop.getCytoPanel(SwingConstants.EAST);
-            //cytoSidePanel.add("Parameters Used", parametersPanel);
-            //cytoSidePanel.setSelectedIndex(cytoSidePanel.indexOfComponent(parametersPanel));
-            //cytoSidePanel.setState(CytoPanelState.DOCK);
-
-            //add the click on edge listener
+            //add the click on node/edge listener
             view.addGraphViewChangeListener(new EnrichmentMapActionListener(params));
 
             //make sure the network is registered so that Quickfind works
@@ -431,7 +423,7 @@ public class VisualizeEnrichmentMapTask implements Task {
        nodeAttrs.setAttribute(node.getIdentifier(), prefix+EnrichmentMapVisualStyle.PVALUE_DATASET1, result.getPvalue());
        nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1, result.getFdrqvalue());
        nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.FWER_QVALUE_DATASET1, result.getFwerqvalue());
-       nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.GS_SIZE_DATASET1, result.getSize());
+       nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.GS_SIZE_DATASET1, result.getGsSize());
        nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.ES_DATASET1, result.getES());
        nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.NES_DATASET1, result.getNES());
        if(result.getNES()>=0){
@@ -455,7 +447,7 @@ public class VisualizeEnrichmentMapTask implements Task {
        nodeAttrs.setAttribute(node.getIdentifier(), prefix+EnrichmentMapVisualStyle.PVALUE_DATASET2, result.getPvalue());
        nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2, result.getFdrqvalue());
        nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.FWER_QVALUE_DATASET2, result.getFwerqvalue());
-       nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.GS_SIZE_DATASET2, result.getSize());
+       nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.GS_SIZE_DATASET2, result.getGsSize());
        nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.ES_DATASET2, result.getES());
        nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.NES_DATASET2, result.getNES());
        if(result.getNES()>=0){
