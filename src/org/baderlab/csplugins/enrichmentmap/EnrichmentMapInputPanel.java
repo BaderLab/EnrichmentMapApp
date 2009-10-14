@@ -65,9 +65,10 @@ import java.util.HashMap;
  * User: risserlin
  * Date: Jun 16, 2009
  * Time: 11:13:12 AM
+ * <p>
+ * Enrichment map User input Panel
  */
 public class EnrichmentMapInputPanel extends JPanel {
-
 
     CollapsiblePanel Parameters;
     CollapsiblePanel datasets;
@@ -82,6 +83,7 @@ public class EnrichmentMapInputPanel extends JPanel {
     private EnrichmentMapParameters params;
 
     //Genesets file related components
+    //user specified file names
     private JFormattedTextField GMTFileNameTextField;
 
     private JFormattedTextField GCTFileName1TextField;
@@ -96,6 +98,7 @@ public class EnrichmentMapInputPanel extends JPanel {
     private JFormattedTextField Dataset1RankFileTextField;
     private JFormattedTextField Dataset2RankFileTextField;
 
+    //user specified terms and cut offs
     private JFormattedTextField Dataset1Phenotype1TextField;
     private JFormattedTextField Dataset1Phenotype2TextField;
     private JFormattedTextField Dataset2Phenotype1TextField;
@@ -105,6 +108,7 @@ public class EnrichmentMapInputPanel extends JPanel {
     private JFormattedTextField qvalueTextField;
     private JFormattedTextField coeffecientTextField;
 
+    //flags
     private JRadioButton gsea;
     private JRadioButton generic;
     private JRadioButton overlap;
@@ -112,6 +116,7 @@ public class EnrichmentMapInputPanel extends JPanel {
 
     private int defaultColumns = 15;
 
+    //instruction text
     public static String gct_instruction = "Please select the expression file (.gct), (.rpt)...";
     public static String gmt_instruction = "Please select the Gene Set file (.gmt)...";
     public static String dataset_instruction = "Please select the GSEA Result file (.txt)...";
@@ -123,7 +128,9 @@ public class EnrichmentMapInputPanel extends JPanel {
     private static String datasetTip = "File specifying enrichment results.\n";
     private static String rankTip = "File specifying ranked genes.\n" + "Format: gene <tab> score or statistic";
 
-
+    /**
+     * Constructor
+     */
     public EnrichmentMapInputPanel() {
 
         decFormat = new DecimalFormat();
@@ -165,9 +172,9 @@ public class EnrichmentMapInputPanel extends JPanel {
     }
 
     /**
-        * Creates a JPanel containing scope radio buttons
+        * Creates a JPanel containing analysis type (GSEA or generic)  radio buttons and links to additional information
         *
-        * @return panel containing the scope option buttons
+        * @return panel containing the analysis type (GSEA or generic) option buttons
         */
        private JPanel createAnalysisTypePanel() {
 
@@ -256,9 +263,9 @@ public class EnrichmentMapInputPanel extends JPanel {
        }
 
        /**
-        * Creates a collapsible panel that holds collapsible user inputs
+        * Creates a collapsible panel that holds main user inputs geneset files, datasets and parameters
         *
-        * @return collapsablePanel
+        * @return collapsablePanel - main analysis panel
         */
        private CollapsiblePanel createOptionsPanel() {
            CollapsiblePanel collapsiblePanel = new CollapsiblePanel("User Input");
@@ -294,14 +301,17 @@ public class EnrichmentMapInputPanel extends JPanel {
 
            panel.add(GMTPanel);
            panel.add(datasets);
-           //panel.add(dataset1);
-           //panel.add(dataset2);
            panel.add(ParametersPanel);
 
            collapsiblePanel.getContentPane().add(panel, BorderLayout.NORTH);
            return collapsiblePanel;
        }
 
+    /**
+     * Creates a collapsible panel that holds gene set file specification
+     *
+     * @return collapsible panel - gmt gene set file specification interface
+     */
         private CollapsiblePanel createGMTPanel() {
             CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Gene Sets");
 
@@ -350,6 +360,11 @@ public class EnrichmentMapInputPanel extends JPanel {
 
         }
 
+    /**
+     * Creates a collapsible panel that holds dataset 1 file specifications
+     *
+     * @return  Collapsible panel with dataset 1 file specification interface
+     */
        private CollapsiblePanel createDataset1Panel() {
            CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Dataset 1");
 
@@ -467,7 +482,12 @@ public class EnrichmentMapInputPanel extends JPanel {
 
        }
 
-    private CollapsiblePanel createDataset2Panel() {
+    /**
+     * Creates a collapsible panel that holds dataset 2 file specification
+     *
+     * @return Collapsible panel that holds dataset2 file specification interface
+     */
+        private CollapsiblePanel createDataset2Panel() {
            CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Dataset 2");
 
            JPanel panel = new JPanel();
@@ -581,6 +601,12 @@ public class EnrichmentMapInputPanel extends JPanel {
 
        }
 
+    /**
+     * Creates a collapsible panel that holds the advanced options specifications (rank file, phenotypes)
+     *
+     * @param dataset - whether this collapsible advanced panel is for dataset 1 or dataset 2
+     * @return Collapsible panel that holds the advanced options specification interface
+     */
     private CollapsiblePanel createAdvancedDatasetOptions(int dataset){
            //create a panel for advanced options
             CollapsiblePanel Advanced = new CollapsiblePanel("Advanced");
@@ -687,7 +713,7 @@ public class EnrichmentMapInputPanel extends JPanel {
        /**
         * Creates a collapsable panel that holds parameter inputs
         *
-        * @return panel containing the parameter inputs
+        * @return panel containing the parameter specification interface
         */
        private CollapsiblePanel createParametersPanel() {
            CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Parameters");
@@ -855,7 +881,7 @@ public class EnrichmentMapInputPanel extends JPanel {
             }else if (source == GCTFileName1TextField) {
                 String value = GCTFileName1TextField.getText();
                 if(value.equalsIgnoreCase("") ){
-                    params.setGCTFileName1(value);
+                    params.setExpressionFileName1(value);
                     params.setData(false);
                 }
                 else if(GCTFileName1TextField.getText().equalsIgnoreCase((String)e.getOldValue())){
@@ -866,11 +892,11 @@ public class EnrichmentMapInputPanel extends JPanel {
                     GCTFileName1TextField.setForeground(checkFile(value));
                 }
                else
-                    params.setGCTFileName1(value);
+                    params.setExpressionFileName1(value);
             }else if (source == GCTFileName2TextField) {
                 String value = GCTFileName2TextField.getText();
                 if(value.equalsIgnoreCase("") ){
-                    params.setGCTFileName2(value);
+                    params.setExpressionFileName2(value);
                     params.setData2(false);
                 }
                 else if(GCTFileName2TextField.getText().equalsIgnoreCase((String)e.getOldValue())){
@@ -881,7 +907,7 @@ public class EnrichmentMapInputPanel extends JPanel {
                     GCTFileName2TextField.setForeground(checkFile(value));
                 }
                else
-                    params.setGCTFileName2(value);
+                    params.setExpressionFileName2(value);
             }else if (source == Dataset1FileNameTextField) {
                 String value = Dataset1FileNameTextField.getText();
                 if(value.equalsIgnoreCase("") )
@@ -1015,7 +1041,14 @@ public class EnrichmentMapInputPanel extends JPanel {
           cytoPanel.remove(this);
         }
 
-
+    /**
+     * An rpt file can be entered instead of a GCT/expression file, or any of the enrichment results files
+     * If an rpt file is specified all the fields in the dataset (expression file, enrichment results files, rank files,
+     * phenotypes and class files) are populated.
+     *
+     * @param rptFile - rpt (GSEA analysis parameters file) file name
+     * @param dataset1 - which dataset rpt was specified for.
+     */
    private void populateFieldsFromRpt(File rptFile, boolean dataset1){
 
 
@@ -1110,12 +1143,9 @@ public class EnrichmentMapInputPanel extends JPanel {
         //rpt file.
         //if it isn't then assume that the rpt file has the right file names but if the files specified in the rpt
         //don't exist then use the path for the rpt to change the file paths.
-
         String results1 = "";
          String results2 = "";
         String ranks = "";
-
-
 
         //files built directly from the rpt specification
         //try these files first
@@ -1146,7 +1176,6 @@ public class EnrichmentMapInputPanel extends JPanel {
         }
 
         if(dataset1){
-
                 //check to see the file exists and can be read
                 //check to see if the gmt file has already been set
                 if(params.getGMTFileName() == null || params.getGMTFileName().equalsIgnoreCase("")){
@@ -1162,7 +1191,7 @@ public class EnrichmentMapInputPanel extends JPanel {
                 else{
                     GCTFileName1TextField.setForeground(checkFile(data));
                     GCTFileName1TextField.setText(data);
-                    params.setGCTFileName1(data);
+                    params.setExpressionFileName1(data);
                     params.setData(true);
                     GCTFileName1TextField.setToolTipText(data);
 
@@ -1190,7 +1219,7 @@ public class EnrichmentMapInputPanel extends JPanel {
            else{
                 GCTFileName2TextField.setForeground(checkFile(data));
                 GCTFileName2TextField.setText(data);
-                params.setGCTFileName2(data);
+                params.setExpressionFileName2(data);
                 params.setData2(true);
                 GCTFileName2TextField.setToolTipText(data);
 
@@ -1207,6 +1236,13 @@ public class EnrichmentMapInputPanel extends JPanel {
         }
     }
 
+    /**
+     * Sets the textfields for results file 1 and 2 for specified dataset
+     *
+     * @param file1 - enrichment results file 1 name
+     * @param file2 - enrichment results file 2 name
+     * @param dataset1 - which dataset (1 or 2) the files are specific for.
+     */
     protected void setDatasetnames(String file1, String file2, boolean dataset1){
 
            if(dataset1){
@@ -1229,6 +1265,13 @@ public class EnrichmentMapInputPanel extends JPanel {
            }
        }
 
+    /**
+     * Check to see if the file is readable.  returns a color indicating whether the file is readable.  Color is red
+     * if the file is not readable so we can set the font color to red to show the user the file name was invalid.
+     *
+     * @param filename - name of file to checked
+     * @return Color, red if the file is not readable and black if it is.
+     */
        public Color checkFile(String filename){
            //check to see if the files exist and are readable.
            //if the file is unreadable change the color of the font to red
@@ -1241,7 +1284,12 @@ public class EnrichmentMapInputPanel extends JPanel {
            return Color.BLACK;
        }
 
-
+    /**
+     * Change the analysis type (either GSEA or Generic)
+     * When the analysis type is changed the interface needs to be cleared and updated.
+     *
+     * @param evt
+     */
   private void selectAnalysisTypeActionPerformed(ActionEvent evt){
       String analysisType = evt.getActionCommand();
 
@@ -1275,9 +1323,15 @@ public class EnrichmentMapInputPanel extends JPanel {
       UpdatePanel(this.params);
 
   }
-  /*Given a set of parameters, update the panel to contain the values that are
-  * defined in this set of parameters
-  */
+
+    /**
+     * Given a set of parameters, update the panel to contain the values that are
+     * defined in this set of parameters.  This methos is used when the type of analysis is
+     * changed (gsea to generic or vice versa).  The user wants what ever info they have already
+     * entered to transfered over even though they changed the type of analysis
+     *
+     * @param params - enrichment map paramters to use to update the panel
+     */
   private void UpdatePanel(EnrichmentMapParameters params){
 
       //check to see if the user had already entered anything into the newly created Dataset Frame
@@ -1289,13 +1343,13 @@ public class EnrichmentMapInputPanel extends JPanel {
         Dataset2FileNameTextField.setText(params.getEnrichmentDataset2FileName1());
         Dataset2FileNameTextField.setToolTipText(params.getEnrichmentDataset2FileName1());
       }
-      if(params.getGCTFileName1() != null){
-          GCTFileName1TextField.setText(params.getGCTFileName1());
-          GCTFileName1TextField.setToolTipText(params.getGCTFileName1());
+      if(params.getExpressionFileName1() != null){
+          GCTFileName1TextField.setText(params.getExpressionFileName1());
+          GCTFileName1TextField.setToolTipText(params.getExpressionFileName1());
       }
-      if(params.getGCTFileName2() != null){
-          GCTFileName2TextField.setText(params.getGCTFileName2());
-          GCTFileName2TextField.setToolTipText(params.getGCTFileName2());
+      if(params.getExpressionFileName2() != null){
+          GCTFileName2TextField.setText(params.getExpressionFileName2());
+          GCTFileName2TextField.setToolTipText(params.getExpressionFileName2());
       }
       if(params.getDataset1RankedFile() != null){
           Dataset1RankFileTextField.setText(params.getDataset1RankedFile());
@@ -1351,7 +1405,14 @@ public class EnrichmentMapInputPanel extends JPanel {
       }
   }
 
-  private void selectJaccardOrOverlapActionPerformed(java.awt.event.ActionEvent evt) {
+    //Action listeners for buttons in input panel
+
+    /**
+     * jaccard or overlap radio button action listener
+     *
+     * @param evt
+     */
+    private void selectJaccardOrOverlapActionPerformed(java.awt.event.ActionEvent evt) {
         if(evt.getActionCommand().equalsIgnoreCase("jaccard")){
             params.setJaccard(true);
             if ( ! params.isSimilarityCutOffChanged() ) {
@@ -1369,12 +1430,17 @@ public class EnrichmentMapInputPanel extends JPanel {
      else{
             JOptionPane.showMessageDialog(this,"Invalid Jaccard Radio Button action command");
         }
- }
+    }
 
-       private void selectGMTFileButtonActionPerformed(
+    /**
+     * gene set (gmt) file selector action listener
+     *
+     * @param evt
+     */
+     private void selectGMTFileButtonActionPerformed(
                java.awt.event.ActionEvent evt) {
 
-//         Create FileFilter
+            // Create FileFilter
            CyFileFilter filter = new CyFileFilter();
 
            // Add accepted File Extensions
@@ -1392,10 +1458,15 @@ public class EnrichmentMapInputPanel extends JPanel {
            }
        }
 
-         private void selectGCTFileButtonActionPerformed(
+    /**
+     * gct/expression 1 file selector action listener
+     *
+     * @param evt
+     */
+      private void selectGCTFileButtonActionPerformed(
                java.awt.event.ActionEvent evt) {
 
-//         Create FileFilter
+        //Create FileFilter
            CyFileFilter filter = new CyFileFilter();
 
            // Add accepted File Extensions
@@ -1418,17 +1489,23 @@ public class EnrichmentMapInputPanel extends JPanel {
                else{
                     GCTFileName1TextField.setForeground(checkFile(file.getAbsolutePath()));
                     GCTFileName1TextField.setText(file.getAbsolutePath());
-                    params.setGCTFileName1(file.getAbsolutePath());
+                    params.setExpressionFileName1(file.getAbsolutePath());
                     GCTFileName1TextField.setToolTipText(file.getAbsolutePath());
                }
                params.setData(true);
 
            }
        }
+
+    /**
+     * gct/expression 2 file selector action listener
+     *
+     * @param evt
+     */
     private void selectGCTFileButton2ActionPerformed(
              java.awt.event.ActionEvent evt) {
 
-//         Create FileFilter
+        //Create FileFilter
          CyFileFilter filter = new CyFileFilter();
 
          // Add accepted File Extensions
@@ -1449,7 +1526,7 @@ public class EnrichmentMapInputPanel extends JPanel {
              else{
                GCTFileName2TextField.setForeground(checkFile(file.getAbsolutePath()));
                GCTFileName2TextField.setText(file.getAbsolutePath());
-               params.setGCTFileName2(file.getAbsolutePath());
+               params.setExpressionFileName2(file.getAbsolutePath());
                GCTFileName2TextField.setToolTipText(file.getAbsolutePath());
              }
              params.setTwoDatasets(true);
@@ -1457,10 +1534,15 @@ public class EnrichmentMapInputPanel extends JPanel {
          }
      }
 
-       private void selectDataset1FileButtonActionPerformed(
+    /**
+     * enrichment results 1 file selector action listener
+     *
+     * @param evt
+     */
+     private void selectDataset1FileButtonActionPerformed(
                java.awt.event.ActionEvent evt) {
 
-//         Create FileFilter
+    //Create FileFilter
         CyFileFilter filter = new CyFileFilter();
 
         // Add accepted File Extensions
@@ -1488,10 +1570,15 @@ public class EnrichmentMapInputPanel extends JPanel {
         }
     }
 
-       private void selectDataset1File2ButtonActionPerformed(
+    /**
+     * enrichment results 2 file selector action listener
+     *
+     * @param evt
+     */
+    private void selectDataset1File2ButtonActionPerformed(
                java.awt.event.ActionEvent evt) {
 
-//         Create FileFilter
+        //Create FileFilter
         CyFileFilter filter = new CyFileFilter();
 
         // Add accepted File Extensions
@@ -1518,10 +1605,15 @@ public class EnrichmentMapInputPanel extends JPanel {
         }
     }
 
+    /**
+     * enrichment results 1 file selector action listener
+     *
+     * @param evt
+     */
     private void selectDataset2FileButtonActionPerformed(
              java.awt.event.ActionEvent evt) {
 
-//         Create FileFilter
+        //Create FileFilter
       CyFileFilter filter = new CyFileFilter();
 
       // Add accepted File Extensions
@@ -1547,11 +1639,15 @@ public class EnrichmentMapInputPanel extends JPanel {
            params.setTwoDatasets(true);
       }
   }
-
+    /**
+     * enrichment results 2 file selector action listener
+     *
+     * @param evt
+     */
      private void selectDataset2File2ButtonActionPerformed(
              java.awt.event.ActionEvent evt) {
 
-//         Create FileFilter
+        //Create FileFilter
       CyFileFilter filter = new CyFileFilter();
 
       // Add accepted File Extensions
@@ -1579,7 +1675,11 @@ public class EnrichmentMapInputPanel extends JPanel {
       }
   }
 
-
+     /**
+     * ranks 1 file selector action listener
+     *
+     * @param evt
+     */
      private void selectRank1FileButtonActionPerformed(
                java.awt.event.ActionEvent evt) {
 
@@ -1604,10 +1704,15 @@ public class EnrichmentMapInputPanel extends JPanel {
         }
     }
 
+    /**
+     * ranks 2 file selector action listener
+     *
+     * @param evt
+     */
      private void selectRank2FileButtonActionPerformed(
                java.awt.event.ActionEvent evt) {
 
-//         Create FileFilter
+        //Create FileFilter
         CyFileFilter filter = new CyFileFilter();
 
         // Add accepted File Extensions
@@ -1628,7 +1733,9 @@ public class EnrichmentMapInputPanel extends JPanel {
         }
     }
 
-    //Clear the current panel and clear the params associated with this panel
+    /**
+     *  Clear the current panel and clear the params associated with this panel
+     */
     private void resetPanel(){
 
         this.params = new EnrichmentMapParameters();
@@ -1671,6 +1778,12 @@ public class EnrichmentMapInputPanel extends JPanel {
         overlap.setSelected(!params.isJaccard());
     }
 
+    /**
+     * Given a set of parameters, update the panel to contain the values that are
+     * defined in this set of parameters.  
+     *
+     * @param current_params - enrichment map paramters to use to update the panel
+     */
     public void updateContents(EnrichmentMapParameters current_params){
         this.params = new EnrichmentMapParameters();
         this.params.copy(current_params);
@@ -1678,8 +1791,8 @@ public class EnrichmentMapInputPanel extends JPanel {
 
         GMTFileNameTextField.setText(current_params.getGMTFileName());
 
-        GCTFileName1TextField.setText(current_params.getGCTFileName1());
-        GCTFileName2TextField.setText(current_params.getGCTFileName2());
+        GCTFileName1TextField.setText(current_params.getExpressionFileName1());
+        GCTFileName2TextField.setText(current_params.getExpressionFileName2());
 
         Dataset1FileNameTextField.setText(current_params.getEnrichmentDataset1FileName1());
         Dataset1FileName2TextField.setText(current_params.getEnrichmentDataset1FileName2());

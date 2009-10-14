@@ -35,19 +35,17 @@
  **
  **/
 
-// $Id$
-// $LastChangedDate$
-// $LastChangedRevision$
-// $LastChangedBy$
-// $HeadURL$
+// $Id: BuildEnrichmentMapTask.java 383 2009-10-08 20:06:35Z risserlin $
+// $LastChangedDate: 2009-10-08 16:06:35 -0400 (Thu, 08 Oct 2009) $
+// $LastChangedRevision: 383 $
+// $LastChangedBy: risserlin $
+// $HeadURL: svn+ssh://risserlin@server1.baderlab.med.utoronto.ca/svn/EnrichmentMap/trunk/EnrichmentMapPlugin/src/org/baderlab/csplugins/enrichmentmap/BuildEnrichmentMapTask.java $
 
 package org.baderlab.csplugins.enrichmentmap;
 
 import cytoscape.task.Task;
 import cytoscape.task.TaskMonitor;
-import cytoscape.Cytoscape;
 
-import javax.swing.*;
 import java.util.HashMap;
 
 /**
@@ -55,8 +53,16 @@ import java.util.HashMap;
  * User: risserlin
  * Date: Jan 28, 2009
  * Time: 11:44:46 AM
+ * <p>
+ * This class builds an Enrichment map from GSEA (Gene set Enrichment analysis) or Generic input.  There are two distinct ways
+ * to build an enrichment map, from generic input or from GSEA input.  GSEA input has
+ * specific files that were created by a run of GSEA, including two files specifying the enriched
+ * results (one file for phenotype 1 and one file for phenotype 2) - the generic version
+ * the enrichment results can be specified in one file.  The files also contain
+ * additional parameters that would not be available to a generic enrichment analysis including
+ * an Enrichment score (ES), normalized Enrichment score(NES).
  */
-public class BuildGSEAEnrichmentMapTask implements Task {
+public class BuildEnrichmentMapTask implements Task {
 
 
     private EnrichmentMapParameters params;
@@ -67,7 +73,14 @@ public class BuildGSEAEnrichmentMapTask implements Task {
     private boolean interrupted = false;
 
 
-    public BuildGSEAEnrichmentMapTask( EnrichmentMapParameters params) {
+    /**
+     * Constructor for Build enrichment map task - copies the parameters from
+     * the passed instance of parameters into a new instance of parameters
+     * which will be associated with the created map.
+     *
+     * @param params - the current specification of this run
+     */
+    public BuildEnrichmentMapTask( EnrichmentMapParameters params) {
 
         //create a new instance of the parameters
         this.params = new EnrichmentMapParameters();
@@ -77,14 +90,16 @@ public class BuildGSEAEnrichmentMapTask implements Task {
 
     }
 
-    public void buildGSEAMap(){
+    /**
+     * buildEnrichmentMap - parses all GSEA input files and creates an enrichment map
+     */
+    public void buildEnrichmentMap(){
 
         //Load in the GMT file
         try{
-            //Load the GSEA geneset file
+            //Load the geneset file
             GMTFileReaderTask gmtFile = new GMTFileReaderTask(params, taskMonitor);
             gmtFile.run();
-            //boolean success = TaskManager.executeTask(gmtFile, config);
 
         } catch (OutOfMemoryError e) {
             taskMonitor.setException(e,"Out of Memory. Please increase memory allotement for cytoscape.");
@@ -94,17 +109,17 @@ public class BuildGSEAEnrichmentMapTask implements Task {
             return;
         }
 
-        //Load the Data if the user has supplied the data file.
+        //Load the Data (expression or rank file) if the user has supplied the data file.
         if(params.isData()){
-            //Load in the GCT file
+            //Load in the expression or rank file
             try{
-                //Load the GCT file
-                GCTFileReaderTask gctFile1 = new GCTFileReaderTask(params,params.getGCTFileName1(),1,taskMonitor);
-                gctFile1.run();
+                //Load the expression or rank file
+                ExpressionFileReaderTask expressionFile1 = new ExpressionFileReaderTask(params,params.getExpressionFileName1(),1,taskMonitor);
+                expressionFile1.run();
                 params.getExpression().rowNormalizeMatrix();
                 if(params.isData2()){
-                    GCTFileReaderTask gctFile2 = new GCTFileReaderTask(params,params.getGCTFileName2(),2,taskMonitor);
-                    gctFile2.run();
+                    ExpressionFileReaderTask expressionFile2 = new ExpressionFileReaderTask(params,params.getExpressionFileName2(),2,taskMonitor);
+                    expressionFile2.run();
                     params.getExpression2().rowNormalizeMatrix();
                 }
                 //trim the genesets to only contain the genes that are in the data file.
@@ -181,13 +196,12 @@ public class BuildGSEAEnrichmentMapTask implements Task {
             //Initialize the set of genesets and GSEA results that we want to compute over
             InitializeGenesetsOfInterestTask genesets_init = new InitializeGenesetsOfInterestTask(params,taskMonitor);
             genesets_init.run();
-            //boolean success4 = TaskManager.executeTask(genesets_init,config);
+
        } catch (OutOfMemoryError e) {
             taskMonitor.setException(e,"Out of Memory. Please increase memory allotement for cytoscape.");
             return;
         }catch(IllegalThreadStateException e){
             taskMonitor.setException(e,"Genesets defined in the results \nfile are not found in  gene set file (GMT).\n  Please make sure you are using the correct GMT file.");
-            //JOptionPane.showMessageDialog(Cytoscape.getDesktop(),"Genesets defined in the results file are not found in \n gene set file (GMT).\n  Please make sure you are using the correct GMT file.");
             return;
         }
 
@@ -195,7 +209,7 @@ public class BuildGSEAEnrichmentMapTask implements Task {
             //compute the geneset similarities
             ComputeSimilarityTask similarities = new ComputeSimilarityTask(params,taskMonitor);
             similarities.run();
-            //boolean success5 = TaskManager.executeTask(similarities,config);
+
             HashMap<String, GenesetSimilarity> similarity_results = similarities.getGeneset_similarities();
 
             params.setGenesetSimilarity(similarity_results);
@@ -203,7 +217,7 @@ public class BuildGSEAEnrichmentMapTask implements Task {
             //build the resulting map
             VisualizeEnrichmentMapTask map = new VisualizeEnrichmentMapTask(params,taskMonitor);
             map.run();
-            //boolean success3 =TaskManager.executeTask(map,config);
+
         } catch (OutOfMemoryError e) {
             taskMonitor.setException(e,"Out of Memory. Please increase memory allotement for cytoscape.");
 
@@ -220,7 +234,7 @@ public class BuildGSEAEnrichmentMapTask implements Task {
      * Run the Task.
      */
     public void run() {
-        buildGSEAMap();
+        buildEnrichmentMap();
     }
 
     /**

@@ -35,11 +35,11 @@
  **
  **/
 
-// $Id$
-// $LastChangedDate$
-// $LastChangedRevision$
-// $LastChangedBy$
-// $HeadURL$
+// $Id: ExpressionFileReaderTask.java 371 2009-09-25 20:24:18Z risserlin $
+// $LastChangedDate: 2009-09-25 16:24:18 -0400 (Fri, 25 Sep 2009) $
+// $LastChangedRevision: 371 $
+// $LastChangedBy: risserlin $
+// $HeadURL: svn+ssh://risserlin@server1.baderlab.med.utoronto.ca/svn/EnrichmentMap/trunk/EnrichmentMapPlugin/src/org/baderlab/csplugins/enrichmentmap/ExpressionFileReaderTask.java $
 
 package org.baderlab.csplugins.enrichmentmap;
 
@@ -56,46 +56,59 @@ import java.io.File;
  * User: risserlin
  * Date: Jan 21, 2009
  * Time: 9:07:34 AM
+ * <p>
+ * Parse expression file.  The user can also use a rank file instead of an expression file so this class
+ * also handles reading of rank files.
  */
-public class GCTFileReaderTask implements Task {
+public class ExpressionFileReaderTask implements Task {
 
     private EnrichmentMapParameters params;
 
-    private String GCTFileName;
+    //expression file name
+    private String expressionFileName;
 
+    //which dataset is this expression file associated with
     private int dataset;
-
-    private String fullText;
-    private String [] lines;
-
-    private HashSet datasetGenes;
-    private HashMap genes;
 
     // Keep track of progress for monitoring:
     private int maxValue;
     private TaskMonitor taskMonitor = null;
     private boolean interrupted = false;
 
-
-     public GCTFileReaderTask(EnrichmentMapParameters params,String fileName, int dataset, TaskMonitor taskMonitor) {
+    /**
+     * Class constructor specifying current task
+     *
+     * @param params- enrichment map parameters associated with current map
+     * @param fileName - expression (or rank) file name
+     * @param dataset - dataset expression file is associated with
+     * @param taskMonitor - current task monitor
+     */
+     public ExpressionFileReaderTask(EnrichmentMapParameters params,String fileName, int dataset, TaskMonitor taskMonitor) {
         this(params,fileName,dataset);
         this.taskMonitor = taskMonitor;
     }
 
-    public GCTFileReaderTask(EnrichmentMapParameters params,String fileName, int dataset )   {
+    /**
+     * Class constructor
+     *
+     * @param params - enrichment map parameters associated with current map
+     * @param fileName - expression (or rank) file name
+     * @param dataset  - dataset expression file is associated with
+     */
+    public ExpressionFileReaderTask(EnrichmentMapParameters params,String fileName, int dataset )   {
         this.params = params;
 
-        this.genes = params.getGenes();
-        this.datasetGenes = params.getDatasetGenes();
-
-        //open GCT file
-        this.GCTFileName = fileName;
+        //expression file
+        this.expressionFileName = fileName;
+        //dataset the expression file is associated
         this.dataset = dataset;
 
-
-
     }
-      public void parse() {
+
+    /**
+     * Parse expression/rank file
+     */
+    public void parse() {
 
           //Need to check if the file specified as an expression file is actually a rank file
           //If it is a rank file it can either be 5 or 2 columns but it is important that the rank
@@ -110,15 +123,18 @@ public class GCTFileReaderTask implements Task {
           boolean twoColumns = false;
 
 
-        TextFileReader reader = new TextFileReader(GCTFileName);
-        reader.read();
-        fullText = reader.getText();
+        HashSet datasetGenes= params.getDatasetGenes();
+        HashMap genes = params.getGenes();
 
-        lines = fullText.split("\n");
+        TextFileReader reader = new TextFileReader(expressionFileName);
+        reader.read();
+        String fullText = reader.getText();
+
+        String[] lines = fullText.split("\n");
         int currentProgress = 0;
         maxValue = lines.length;
         GeneExpressionMatrix expressionMatrix = new GeneExpressionMatrix(lines[0].split("\t"));
-        HashMap<Integer,GeneExpression> expression = new HashMap();
+        HashMap<Integer,GeneExpression> expression = new HashMap<Integer, GeneExpression>();
 
         for (int i = 0; i < lines.length; i++) {
             Integer genekey ;
@@ -218,6 +234,14 @@ public class GCTFileReaderTask implements Task {
         }
     }
 
+    /**
+     * Parse class file (The class file is a GSEA specific file that specifyies which phenotype
+     * each column of the expression file belongs to.)  The class file can only be associated with
+     * an analysis when dataset specifications are specified initially using an rpt file.
+     *
+     * @param classFile - name of class file
+     * @return String array of the phenotypes of each column in the expression array
+     */
     private String[] setClasses(String classFile){
 
         File f = new File(classFile);

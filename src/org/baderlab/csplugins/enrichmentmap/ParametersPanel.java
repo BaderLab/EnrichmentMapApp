@@ -114,10 +114,10 @@ public class ParametersPanel extends JPanel {
                runInfoText = runInfoText + "<b>Dataset 2 Data Files:</b> " + shortenPathname(params.getEnrichmentDataset2FileName1()) + ",<br>" + shortenPathname(params.getEnrichmentDataset2FileName2()) + "<br>";
            }
            if(params.isData()){
-               runInfoText = runInfoText + "<b>Data file:</b>" + shortenPathname(params.getGCTFileName1()) + "<br>";
+               runInfoText = runInfoText + "<b>Data file:</b>" + shortenPathname(params.getExpressionFileName1()) + "<br>";
            }
            if(params.isData2()){
-               runInfoText = runInfoText + "<b>Data file 2:</b>" + shortenPathname(params.getGCTFileName2()) + "<br>";
+               runInfoText = runInfoText + "<b>Data file 2:</b>" + shortenPathname(params.getExpressionFileName2()) + "<br>";
            }
 
            runInfoText = runInfoText + "</font></html>";

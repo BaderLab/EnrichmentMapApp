@@ -48,10 +48,10 @@ package org.baderlab.csplugins.enrichmentmap;
  * Date: Jan 8, 2009
  * Time: 3:01:22 PM
  */
-public class GSEAResult {
+public class GSEAResult extends EnrichmentResult{
 
     private String Name;
-    private int size;
+    private int gsSize;
     private double ES;
     private double NES;
     private double pvalue;
@@ -60,7 +60,7 @@ public class GSEAResult {
 
     public GSEAResult(String name, int size, double ES, double NES, double pvalue, double fdrqvalue, double fwerqvalue) {
         Name = name;
-        this.size = size;
+        this.gsSize = size;
         this.ES = ES;
         this.NES = NES;
         this.pvalue = pvalue;
@@ -73,7 +73,7 @@ public class GSEAResult {
         return;
 
         this.Name = tokens[1];
-        this.size = Integer.parseInt(tokens[2]);
+        this.gsSize = Integer.parseInt(tokens[2]);
         this.ES = Double.parseDouble(tokens[3]);
         this.NES = Double.parseDouble(tokens[4]);
         this.pvalue = Double.parseDouble(tokens[5]);
@@ -97,12 +97,12 @@ public class GSEAResult {
         Name = name;
     }
 
-    public int getSize() {
-        return size;
+    public int getGsSize() {
+        return gsSize;
     }
 
-    public void setSize(int size) {
-        this.size = size;
+    public void setGsSize(int gsSize) {
+        this.gsSize = gsSize;
     }
 
     public double getES() {
@@ -147,6 +147,6 @@ public class GSEAResult {
 
     public String toString(){
 
-        return Name + "\t" + size + "\t" + ES + "\t" + NES +"\t"+pvalue + "\t" + fdrqvalue + "\t" + fwerqvalue;
+        return Name + "\t" + gsSize + "\t" + ES + "\t" + NES +"\t"+pvalue + "\t" + fdrqvalue + "\t" + fwerqvalue;
     }
 }

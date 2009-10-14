@@ -48,7 +48,7 @@ package org.baderlab.csplugins.enrichmentmap;
  * Date: Jan 28, 2009
  * Time: 3:25:51 PM
  */
-public class GenericResult {
+public class GenericResult extends EnrichmentResult{
 
     private String name = "";
     private String description = "";
@@ -75,11 +75,11 @@ public class GenericResult {
         }
 
 
-    public GenericResult(String name, String description, double pvalue, int gs_size) {
+    public GenericResult(String name, String description, double pvalue, int gssize) {
         this.name = name;
         this.description = description;
         this.pvalue = pvalue;
-        this.gsSize = gs_size;
+        this.gsSize = gssize;
     }
 
     public GenericResult(String name, String description, double pvalue, int gs_size, double fdrqvalue) {

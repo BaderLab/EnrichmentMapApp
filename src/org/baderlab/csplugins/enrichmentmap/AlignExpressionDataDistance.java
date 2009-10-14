@@ -50,6 +50,9 @@ import org.baderlab.csplugins.brainlib.DistanceMetric;
  * User: risserlin
  * Date: Sep 24, 2009
  * Time: 3:29:24 PM
+ *
+ * Calculate the distance between two protein/gene expression sets using
+ * pearson correlation
  */
 public class AlignExpressionDataDistance  extends DistanceMetric {
 
@@ -73,12 +76,17 @@ public class AlignExpressionDataDistance  extends DistanceMetric {
         //calculate the means of the data.
         for(int i = 0; i<x.length;i++){
               //calculate all the values need for the pearson correlation
+              //sum of protein/gene 1 expression values
               sum_x += x[i];
+            //sum of protein/gene 2 expression values
               sum_y += y[i];
 
+            //sum of protein/gene 1 * protein/gene 2 expression values
               sum_xy += x[i] * y[i];
 
+            //sum of protein/gene 1 squared expression values
               sum_sq_x += x[i] * x[i];
+            //sum of protein/gene 2 squared expression values
               sum_sq_y += y[i] * y[i];
         }
         // make all variables means instead of sums.

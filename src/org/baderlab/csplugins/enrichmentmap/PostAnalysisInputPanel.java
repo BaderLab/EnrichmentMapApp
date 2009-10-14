@@ -779,13 +779,13 @@ public class PostAnalysisInputPanel extends JPanel {
     private void UpdatePanel(EnrichmentMapParameters paParams){
         //TODO: Check if needed
         //check to see if the user had already entered anything into the newly created Dataset Frame
-        if(paParams.getGCTFileName1() != null){
-            GCTFileName1TextField.setText(paParams.getGCTFileName1());
-            GCTFileName1TextField.setToolTipText(paParams.getGCTFileName1());
+        if(paParams.getExpressionFileName1() != null){
+            GCTFileName1TextField.setText(paParams.getExpressionFileName1());
+            GCTFileName1TextField.setToolTipText(paParams.getExpressionFileName1());
         }
-        if(paParams.getGCTFileName2() != null){
-            GCTFileName2TextField.setText(paParams.getGCTFileName2());
-            GCTFileName2TextField.setToolTipText(paParams.getGCTFileName2());
+        if(paParams.getExpressionFileName2() != null){
+            GCTFileName2TextField.setText(paParams.getExpressionFileName2());
+            GCTFileName2TextField.setToolTipText(paParams.getExpressionFileName2());
         }
 
         else{
