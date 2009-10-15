@@ -51,6 +51,7 @@ import cytoscape.Cytoscape;
 import javax.swing.*;
 import java.io.File;
 import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * Created by
@@ -121,9 +122,16 @@ public class RanksFileReaderTask implements Task {
 
             String line = lines[i];
 
-            if ( line.startsWith("#") )
+            if ( line.startsWith("#") ) {
+                // look for ranks_name in comment line e.g.: "# Ranks Name : My Ranks"
+                if (Pattern.matches("^# *Ranks[ _-]?Name *:.+", line) ) {
+                    this.ranks_name = line.split(":", 2)[1];
+                    while (this.ranks_name.startsWith(" "))
+                        this.ranks_name = this.ranks_name.substring(1);
+                }
                 //ignore comment line
                 continue;
+            }
 
             String [] tokens = line.split("\t");
 
