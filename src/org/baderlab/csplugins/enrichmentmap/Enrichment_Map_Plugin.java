@@ -83,7 +83,7 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
 
         //Enrichment map input  panel
         item = new JMenuItem("Load Enrichment Results");
-        item.addActionListener(new LoadGSEAPanelAction());
+        item.addActionListener(new LoadEnrichmentsPanelAction());
         submenu.add(item);
 
         //Post Analysis panel

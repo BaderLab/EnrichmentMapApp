@@ -53,16 +53,26 @@ import java.net.URL;
  * User: risserlin
  * Date: Feb 9, 2009
  * Time: 2:41:48 PM
+ * <p>
+ * Right hand information Panel containing files uploaded, legends and p-value,q-value sliders.
  */
 public class ParametersPanel extends JPanel {
 
     public static int summaryPanelWidth = 150;
     public static int summaryPanelHeight = 1000;
 
+    /**
+     * Class constructor
+     */
     public ParametersPanel() {
 
        }
 
+    /**
+     * Update parameters panel based on given enrichment map parameters
+     *
+     * @param params - enrichment map parameters to update panel according to
+     */
     public void updatePanel(EnrichmentMapParameters params){
 
             this.removeAll();
@@ -93,7 +103,13 @@ public class ParametersPanel extends JPanel {
 
     }
 
-       private String getRunInfo(EnrichmentMapParameters params){
+    /**
+     * Get the files and parameters corresponding to the current enrichment map
+     *
+     * @param params  - enrichment map parameters to get the info from
+     * @return html string of all the current files and parameters of the enrichment map
+     */
+    private String getRunInfo(EnrichmentMapParameters params){
 
            String runInfoText = "<html> <h1>Parameters:</h1>";
 
@@ -124,6 +140,12 @@ public class ParametersPanel extends JPanel {
            return runInfoText;
        }
 
+    /**
+     * Create the legend - contains the enrichment score colour mapper and diagram where the colours are
+     *
+     * @param params - enrichment map parameters of current map
+     * @return panel with legend
+     */
     private JPanel createLegend(EnrichmentMapParameters params){
 
         JPanel legends = new JPanel();
@@ -141,7 +163,6 @@ public class ParametersPanel extends JPanel {
         c.insets = new Insets(5,30,5,2);
         c.gridwidth = GridBagConstraints.REMAINDER;
 
-
         //first row - circle
         c.gridx = 0;
         c.gridy = 0;
@@ -156,7 +177,7 @@ public class ParametersPanel extends JPanel {
             legends.add(nodeColorLabel);
         }
 
-        LegendPanel node_legend = new LegendPanel(-1.0,1.0,EnrichmentMapVisualStyle.max_phenotype1,EnrichmentMapVisualStyle.max_phenotype2, params.getDataset1Phenotype1(), params.getDataset1Phenotype2());
+        LegendPanel node_legend = new LegendPanel(EnrichmentMapVisualStyle.max_phenotype1,EnrichmentMapVisualStyle.max_phenotype2, params.getDataset1Phenotype1(), params.getDataset1Phenotype2());
         node_legend.setToolTipText("Phenotype * (1-P_value)");
 
         //second row - legend 1
@@ -183,7 +204,7 @@ public class ParametersPanel extends JPanel {
                 legends.add(nodeborderColorLabel);
             }
 
-            LegendPanel node_legend2 = new LegendPanel(-1.0,1.0,EnrichmentMapVisualStyle.max_phenotype1,EnrichmentMapVisualStyle.max_phenotype2, params.getDataset2Phenotype1(),params.getDataset2Phenotype2());
+            LegendPanel node_legend2 = new LegendPanel(EnrichmentMapVisualStyle.max_phenotype1,EnrichmentMapVisualStyle.max_phenotype2, params.getDataset2Phenotype1(),params.getDataset2Phenotype2());
             node_legend2.setToolTipText("Phenotype * (1-P_value)");
 
             //fourth row - legend 2
@@ -225,6 +246,12 @@ public class ParametersPanel extends JPanel {
 
     }
 
+    /**
+     * Shorten path name to only contain the parent directory
+     *
+     * @param pathname - pathname to shorten
+     * @return shortened pathname
+     */
     private String shortenPathname (String pathname){
         if(pathname != null){
             String[] tokens = pathname.split("\\"+File.separator);

@@ -47,9 +47,12 @@ package org.baderlab.csplugins.enrichmentmap;
  * User: risserlin
  * Date: Jan 28, 2009
  * Time: 3:25:51 PM
+ * <p>
+ * Class representing a generic enrichment result.
  */
 public class GenericResult extends EnrichmentResult{
 
+    //minimum requirement of a generic enrichment results
     private String name = "";
     private String description = "";
     private double pvalue = 1.0;
@@ -63,6 +66,11 @@ public class GenericResult extends EnrichmentResult{
     //the phenotype.
     private double NES = 1.0;
 
+    /**
+     * Class constructor
+     *
+     * @param tokens - string tokenized line from a generic result file
+     */
     public GenericResult(String[] tokens){
             //ignore the first token as it is from the hash
             this.name = tokens[1];
@@ -72,9 +80,16 @@ public class GenericResult extends EnrichmentResult{
             this.fdrqvalue = Double.parseDouble(tokens[5]);
             this.NES = Double.parseDouble(tokens[6]);
 
-        }
+    }
 
-
+    /**
+     * Class constructor - minimal requirements
+     *
+     * @param name - gene set name (enrichment result)
+     * @param description - gene set description
+     * @param pvalue - enrichment p-value
+     * @param gssize - gene set size
+     */
     public GenericResult(String name, String description, double pvalue, int gssize) {
         this.name = name;
         this.description = description;
@@ -82,23 +97,52 @@ public class GenericResult extends EnrichmentResult{
         this.gsSize = gssize;
     }
 
-    public GenericResult(String name, String description, double pvalue, int gs_size, double fdrqvalue) {
+    /**
+     * Class constructor - minimal requirement with addition of fdr qvalue
+     *
+     * @param name - gene set name (enrichment result)
+     * @param description - gene set description
+     * @param pvalue - enrichment p-value
+     * @param gssize - gene set size
+     * @param fdrqvalue - enrichment fdr q-value
+     */
+    public GenericResult(String name, String description, double pvalue, int gssize, double fdrqvalue) {
         this.name = name;
         this.description = description;
         this.pvalue = pvalue;
-        this.gsSize = gs_size;
+        this.gsSize = gssize;
         this.fdrqvalue = fdrqvalue;
     }
 
-    public GenericResult(String name, String description, double pvalue, int gs_size, double fdrqvalue, double phenotype) {
+    /**
+     * Class constructor - minimal requirements with addition of fdr qvalue and phenotype
+     *
+     * @param name - gene set name (enrichment result)
+     * @param description - gene set description
+     * @param pvalue - enrichment p-value
+     * @param gssize - gene set size
+     * @param fdrqvalue - enrichment fdr q-value
+     * @param phenotype - which phenotype or class is this enrichment results associated with
+     */
+    public GenericResult(String name, String description, double pvalue, int gssize, double fdrqvalue, double phenotype) {
          this.name = name;
         this.description = description;
-        this.gsSize = gs_size;
+        this.gsSize = gssize;
         this.pvalue = pvalue;
         this.fdrqvalue = fdrqvalue;
         this.NES = phenotype;
     }
 
+    /**
+     * Is this a gene set of interest, does its enrichment score pass the p-value threshold
+     * (and optionallly does it also pass the fdr 1-value threshold)
+     *
+     * @param pvalue - pvalue of current gene set enrichment
+     * @param fdrqvalue  - fdr q-value of current gene set enrichment
+     * @param useFDR - is there a fdr q-value threshold set
+     * @return whether these p-value and fdr q-value for the specified gene set enrichment fall into our gene sets of interest
+     * category (i.e. do these values pass the specified thresholds)
+     */
     public boolean geneSetOfInterest(double pvalue, double fdrqvalue, boolean useFDR){
         if(useFDR){
             if((this.pvalue <= pvalue) && (this.fdrqvalue <= fdrqvalue)){
@@ -116,6 +160,7 @@ public class GenericResult extends EnrichmentResult{
         }
     }
 
+    //Getters and Setters
 
     public String getName() {
         return name;

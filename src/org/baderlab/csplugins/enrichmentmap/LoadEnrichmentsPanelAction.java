@@ -35,11 +35,11 @@
  **
  **/
 
-// $Id$
-// $LastChangedDate$
-// $LastChangedRevision$
-// $LastChangedBy$
-// $HeadURL$
+// $Id: LoadEnrichmentsPanelAction.java 286 2009-07-07 15:27:16Z risserlin $
+// $LastChangedDate: 2009-07-07 11:27:16 -0400 (Tue, 07 Jul 2009) $
+// $LastChangedRevision: 286 $
+// $LastChangedBy: risserlin $
+// $HeadURL: svn+ssh://risserlin@server1.baderlab.med.utoronto.ca/svn/EnrichmentMap/trunk/EnrichmentMapPlugin/src/org/baderlab/csplugins/enrichmentmap/LoadEnrichmentsPanelAction.java $
 
 package org.baderlab.csplugins.enrichmentmap;
 
@@ -50,23 +50,28 @@ import cytoscape.util.CytoscapeAction;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
+import java.net.URL;
 
 /**
  * Created by
  * User: risserlin
  * Date: Jan 28, 2009
  * Time: 12:30:13 PM
+ *
+ * Click on Build Enrichment Map Action handler
  */
-public class LoadGSEAPanelAction extends CytoscapeAction {
+public class LoadEnrichmentsPanelAction extends CytoscapeAction {
 
     //variable to track initialization of network event listener
     private boolean initialized = false;
-    private int index = 0;
-    public LoadGSEAPanelAction(){
+
+    public LoadEnrichmentsPanelAction(){
          super("Load GSEA Files");
     }
 
-      public void actionPerformed(ActionEvent event) {
+    public void actionPerformed(ActionEvent event) {
+
+          int index = 0;
 
           String os = System.getProperty("os.name");
 
@@ -83,7 +88,17 @@ public class LoadGSEAPanelAction extends CytoscapeAction {
                 //on network focus
                 EnrichmentMapManager.getInstance().setInputWindow(inputwindow);
 
-                cytoPanel.add("Enrichment Map", inputwindow);
+               //create an icon for the enrichment map panels
+                URL EMIconURL = Enrichment_Map_Plugin.class.getResource("resources/enrichmentmap_logo_notext_small.png");
+                ImageIcon EMIcon = null;
+                if (EMIconURL != null) {
+                    EMIcon = new ImageIcon(EMIconURL);
+                }
+
+                if(EMIcon != null)
+                    cytoPanel.add("Enrichment Map",EMIcon, inputwindow);
+                else
+                     cytoPanel.add("Enrichment Map", inputwindow);
                 index =  cytoPanel.indexOfComponent(inputwindow);
 
                 cytoPanel.setSelectedIndex(index);
@@ -95,8 +110,20 @@ public class LoadGSEAPanelAction extends CytoscapeAction {
                 EnrichmentMapInputPanel inputwindow  = EnrichmentMapManager.getInstance().getInputWindow();
                 if(inputwindow == null){
                   inputwindow = new EnrichmentMapInputPanel();
-                  EnrichmentMapManager.getInstance().setInputWindow(inputwindow);  
-                  cytoPanel.add("Enrichment Map", inputwindow);
+                  EnrichmentMapManager.getInstance().setInputWindow(inputwindow);
+
+                    //create an icon for the enrichment map panels
+                    URL EMIconURL = Enrichment_Map_Plugin.class.getResource("resources/enrichmentmap_logo_notext_small.png");
+                    ImageIcon EMIcon = null;
+                    if (EMIconURL != null) {
+                        EMIcon = new ImageIcon(EMIconURL);
+                    }
+
+                    if(EMIcon != null)
+                        cytoPanel.add("Enrichment Map",EMIcon, inputwindow);
+                    else
+                        cytoPanel.add("Enrichment Map", inputwindow);
+
                   index =  cytoPanel.indexOfComponent(inputwindow);
                 }
                 else{

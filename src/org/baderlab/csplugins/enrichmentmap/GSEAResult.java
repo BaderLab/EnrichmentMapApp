@@ -47,17 +47,39 @@ package org.baderlab.csplugins.enrichmentmap;
  * User: risserlin
  * Date: Jan 8, 2009
  * Time: 3:01:22 PM
+ * <p>
+ * Class representing a specialized enrichment result generated from Gene set enrichment Analysis(GSEa)
+ * GSEA enrichment result contain additional information (as compared to a generic result) including
+ * Enrichment score(ES), normalized Enrichment Score (NES), Family-wise error rate (FWER)
  */
 public class GSEAResult extends EnrichmentResult{
 
+    //gene set name
     private String Name;
+    //gene set size
     private int gsSize;
+    //enrichment score
     private double ES;
+    //normalized enrichment score
     private double NES;
+    //p-value
     private double pvalue;
+    //false discovery rate q-value
     private double fdrqvalue;
+    //family wise error rate (fwer) q-value
     private double fwerqvalue;
 
+    /**
+     * Class Constructor
+     *
+     * @param name - gene set name
+     * @param size - gene set size
+     * @param ES - enrichment score
+     * @param NES - normalized enrichment score
+     * @param pvalue
+     * @param fdrqvalue
+     * @param fwerqvalue
+     */
     public GSEAResult(String name, int size, double ES, double NES, double pvalue, double fdrqvalue, double fwerqvalue) {
         Name = name;
         this.gsSize = size;
@@ -68,6 +90,11 @@ public class GSEAResult extends EnrichmentResult{
         this.fwerqvalue = fwerqvalue;
     }
 
+    /**
+     * Class constructor - build GSEA result from tokenized line from a GSEA results file
+     *
+     * @param tokens - tokenized line from a GSEA results file
+     */
     public GSEAResult(String[] tokens){
        if(tokens.length != 8)
         return;
@@ -81,6 +108,14 @@ public class GSEAResult extends EnrichmentResult{
         this.fwerqvalue = Double.parseDouble(tokens[7]);
     }
 
+    /**
+     * Is this a gene set of interest, does its enrichment score pass the p-value threshold and fdr threshold
+     *
+     * @param pvalue - pvalue of current gene set enrichment
+     * @param fdrqvalue  - fdr q-value of current gene set enrichment
+     * @return whether these p-value and fdr q-value for the specified gene set enrichment fall into our gene sets of interest
+     * category (i.e. do these values pass the specified thresholds)
+     */
     public boolean geneSetOfInterest(double pvalue, double fdrqvalue){
         if((this.pvalue <= pvalue) && (this.fdrqvalue <= fdrqvalue)){
             return true;
@@ -88,6 +123,8 @@ public class GSEAResult extends EnrichmentResult{
             return false;
         }
     }
+
+    //Getters and Settters
 
     public String getName() {
         return Name;

@@ -48,19 +48,11 @@ import giny.model.Node;
 import giny.view.GraphViewChangeListener;
 import giny.view.GraphViewChangeEvent;
 
-import java.util.HashSet;
-import java.util.HashMap;
 import java.util.List;
-import java.util.ArrayList;
-import java.net.URL;
-import java.awt.event.ActionListener;
 
 import cytoscape.view.CytoscapeDesktop;
-import cytoscape.view.CyMenus;
 import cytoscape.view.cytopanels.CytoPanel;
-import cytoscape.view.cytopanels.CytoPanelState;
 import cytoscape.Cytoscape;
-import cytoscape.util.CytoscapeToolBar;
 
 import javax.swing.*;
 
@@ -76,8 +68,8 @@ import javax.swing.*;
 public class EnrichmentMapActionListener implements  GraphViewChangeListener {
 
     private EnrichmentMapParameters params;
-    private OverlappingGenesPanel edgeOverlapPanel;
-    private OverlappingGenesPanel nodeOverlapPanel;
+    private HeatMapPanel edgeOverlapPanel;
+    private HeatMapPanel nodeOverlapPanel;
 
     private List<Node> Nodes;
     private List<Edge> Edges;

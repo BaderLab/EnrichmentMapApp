@@ -48,26 +48,50 @@ package org.baderlab.csplugins.enrichmentmap;
  * User: risserlin
  * Date: May 1, 2009
  * Time: 10:42:44 AM
+ * <p>
+ * Object representing the rank of an individual gene or protein
  */
 public class Ranking {
 
+    //gene/protein name
     private String Name;
 
+    //score given in the ranking file
     private Double Score;
 
+    //rank computed based on sorting the given scores.  (if the score given are actually ranks then
+    //the two will be synonmous)
     private Integer Rank;
 
+    /**
+     * Class constructor
+     *
+     * @param name - gene/protein name
+     * @param score - score supplied by user
+     */
     public Ranking(String name, Double score) {
         this.Name = name;
         this.Score = score;
     }
 
+    /**
+     * Class constructor
+     *
+     * @param name - gene/protein name
+     * @param score - score supplied by user
+     * @param rank - rank computed based on scores.
+     */
     public Ranking(String name, Double score, Integer rank) {
         this.Name = name;
         this.Score = score;
         this.Rank = rank;
     }
 
+    /**
+     * Class constructor - for reconstruction from session saved rank files.
+     *
+     * @param tokens - tokenized version of rank file as saved in a session file
+     */
     public Ranking(String[] tokens){
 
         //make sure that there are 4 tokens (hashkey, name, score, rank)
@@ -79,6 +103,8 @@ public class Ranking {
         this.Rank = Integer.parseInt(tokens[3]);
 
     }
+
+    //Getters and Setters
 
     public String getName() {
         return Name;

@@ -63,28 +63,38 @@ import prefuse.data.query.NumberRangeModel;
  * User: risserlin
  * Date: Feb 24, 2009
  * Time: 10:58:55 AM
+ * <p>
+ * Slider bar panel
  */
 public class SliderBarPanel extends JPanel {
 
-    /**
-     * the height of the panel
-     */
+    //height of panel
     private final int DIM_HEIGHT = 72;
-    /**
-     * the width of the panel
-     */
+    //width of panel
     private final int DIM_WIDTH = 150;
 
-    private String sliderLabel;
-
+    //min and max values for the slider
     private int min;
     private int max;
     private NumberRangeModel rangeModel;
 
+    //precision that the slider can be adjusted to
     private double precision = 1000.0;
 
     private JLabel label;
+    private String sliderLabel;
 
+    /**
+     * Class constructor
+     *
+     * @param min - slider mininmum value
+     * @param max - slider maximum value
+     * @param sliderLabel
+     * @param params - enrichment map parameters for current map
+     * @param attrib1 - attribute for dataset 1 that the slider bar is specific to (i.e. p-value or q-value)
+     * @param attrib2 - attribute for dataset 2 that the slider bar is specific to (i.e. p-value or q-value)
+     * @param desired_width
+     */
     public SliderBarPanel(double min, double max, String sliderLabel, EnrichmentMapParameters params,String attrib1, String attrib2, int desired_width) {
         this.setPreferredSize(new Dimension(DIM_WIDTH, DIM_HEIGHT));
         this.setLayout(new BorderLayout(0,0));
@@ -108,11 +118,18 @@ public class SliderBarPanel extends JPanel {
         initPanel(params, attrib1, attrib2,desired_width);
     }
 
+    /**
+     * Initialize panel based on enrichment map parameters and desired attributes
+     *
+     * @param params - enrichment map parameters for current map
+     * @param attrib1 - attribute for dataset 1 that the slider bar is specific to (i.e. p-value or q-value)
+     * @param attrib2 - attribute for dataset 2 that the slider bar is specific to (i.e. p-value or q-value)
+     * @param desired_width
+     */
     public void initPanel(EnrichmentMapParameters params,String attrib1, String attrib2, int desired_width){
 
         JSlider slider = new JSlider(JSlider.HORIZONTAL,
                                       min, max, max);
-
 
         slider.addChangeListener(new SliderBarActionListener(this,params, attrib1,attrib2));
 
@@ -127,13 +144,10 @@ public class SliderBarPanel extends JPanel {
 
         slider.setPaintLabels(true);
 
-
         Dimension currentsize = slider.getPreferredSize();
         currentsize.width = desired_width;
         currentsize.height = (DIM_HEIGHT/12) * 11;
         slider.setPreferredSize(currentsize);
-
-        //JLabel label = new JLabel(sliderLabel);
 
         this.setLayout(new GridLayout(2,1));
 
@@ -143,6 +157,8 @@ public class SliderBarPanel extends JPanel {
 
         this.revalidate();
     }
+
+    //Getters and Setters
 
     public void setLabel(int current_value) {
         label.setText(sliderLabel + " --> " + current_value/precision);

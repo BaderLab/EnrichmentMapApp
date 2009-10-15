@@ -46,80 +46,81 @@ package org.baderlab.csplugins.enrichmentmap;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.util.HashMap;
 import java.util.Iterator;
 
-import prefuse.data.query.NumberRangeModel;
 import org.mskcc.colorgradient.* ;
 
 import cytoscape.Cytoscape;
-import cytoscape.view.CytoscapeDesktop;
-import cytoscape.view.cytopanels.CytoPanel;
+
 
 /**
  * Created by
  * User: risserlin
  * Date: Feb 11, 2009
  * Time: 12:23:01 PM
+ * <p>
+ * Parameters specific to the heat map functioning
  */
 public class HeatMapParameters {
-      private org.mskcc.colorgradient.ColorGradientRange range;
-      private org.mskcc.colorgradient.ColorGradientTheme theme;
 
-      private boolean rowNorm = false;
-      private boolean asIS= false;
-      private boolean logtransform = false;
+    private org.mskcc.colorgradient.ColorGradientRange range;
+    private org.mskcc.colorgradient.ColorGradientTheme theme;
 
-      private boolean noSort=false;
+    //data transformation options (row normalized, as if or log transformed)
+    private boolean rowNorm = false;
+    private boolean asIS= false;
+    private boolean logtransform = false;
 
-     //there are two sorting type, either by rank file or by a specific column
-     private boolean sortbyrank = false;
-     private boolean sortbycolumn = false;
+    //there are two sorting type, either by rank file or by a specific column
+    private boolean sortbyrank = false;
+    private boolean sortbycolumn = false;
+    private boolean noSort=false;
 
-     private String sortbycolumnName;
+    //name of column currently sorted by
+    private String sortbycolumnName;
 
     //tag to indicate if this was a column click or if this was a normalization click.
-     private boolean sortbycolumn_event_triggered = false;
+    private boolean sortbycolumn_event_triggered = false;
 
-     //store the index of the column that we are sorting by
-     private int sortIndex = 0;
+    //store the index of the column that we are sorting by
+    private int sortIndex = 0;
 
     //store the name of the rank file sorted by
     private String rankFileIndex;
 
-      private double minExpression;
-      private double maxExpression;
-      private double minExpression_rownorm;
-      private double maxExpression_rownorm;
+    //minimum and maximum expression values used to create colour mapper
+    private double minExpression;
+    private double maxExpression;
+    private double minExpression_rownorm;
+    private double maxExpression_rownorm;
      
-      private JPanel heatmapOptions;
-      private JPanel RankOptions;
-      private JComboBox hmOptionComboBox;
-      private JComboBox rankOptionComboBox;
+    private JPanel heatmapOptions;
+    private JPanel RankOptions;
+    private JComboBox hmOptionComboBox;
+    private JComboBox rankOptionComboBox;
 
-     private OverlappingGenesPanel edgeOverlapPanel;
-     private OverlappingGenesPanel nodeOverlapPanel;
+    //pointer to panels containing the heatmaps.
+    private HeatMapPanel edgeOverlapPanel;
+    private HeatMapPanel nodeOverlapPanel;
 
-  
-    public HeatMapParameters(OverlappingGenesPanel edgeOverlapPanel, OverlappingGenesPanel nodeOverlapPanel) {
+    /**
+     * Class constructor -
+     *
+     * @param edgeOverlapPanel - heatmap for edge genes overlaps
+     * @param nodeOverlapPanel - heatmap for node genes unions
+     */
+    public HeatMapParameters(HeatMapPanel edgeOverlapPanel, HeatMapPanel nodeOverlapPanel) {
         this.edgeOverlapPanel = edgeOverlapPanel;
         this.nodeOverlapPanel = nodeOverlapPanel;
     }
-    
-    public OverlappingGenesPanel getEdgeOverlapPanel(){
-    	
-    	return edgeOverlapPanel;
-    }
-public OverlappingGenesPanel getNodeOverlapPanel(){
-    	
-    	return nodeOverlapPanel;
-    }
 
+    /**
+     * Initialize the the color gradients based on the expression matrix
+     * associated with this set of heatmap panels (ie. both node and edge heatmap panels)
+     *
+     * @param expression - expression matrix used for this heatmap set
+     */
     public void initColorGradients(GeneExpressionMatrix expression){
 
         minExpression = expression.getMinExpression();
@@ -143,6 +144,9 @@ public OverlappingGenesPanel getNodeOverlapPanel(){
 
     }
 
+    /**
+     * Reset color gradients based on a change in the data transformation.
+     */
     public void ResetColorGradient(){
           double min;
           double max;
@@ -184,8 +188,14 @@ public OverlappingGenesPanel getNodeOverlapPanel(){
           }
 
       }
-// method to create Rank combo box
-    public JPanel createRankOptionsPanel(EnrichmentMapParameters params){
+
+    /**
+     * method to create Sort by combo box
+     *
+     * @param params - enrichment map parameters of current map
+     * @return - panel with the sort by combo box
+     */
+    public JPanel createSortOptionsPanel(EnrichmentMapParameters params){
     	 TitledBorder RankBorder = BorderFactory.createTitledBorder("Sorting");
         HashMap<String, HashMap<Integer, Ranking>> ranks = params.getRanks();
          RankBorder.setTitleJustification(TitledBorder.LEFT);
@@ -222,15 +232,20 @@ public OverlappingGenesPanel getNodeOverlapPanel(){
         //add the option to add another rank file
         rankOptionComboBox.addItem("Add Rankings ... ");
 
-        rankOptionComboBox.addActionListener(new selectDataViewActionListener(edgeOverlapPanel, nodeOverlapPanel,rankOptionComboBox,this, params));
+        rankOptionComboBox.addActionListener(new HeatMapActionListener(edgeOverlapPanel, nodeOverlapPanel,rankOptionComboBox,this, params));
         RankOptions.add(rankOptionComboBox);
         RankOptions.setBorder(RankBorder);
         return RankOptions;
     }
     
 
-   // creates heat map combobox
-    public JPanel createHeatMapOptionsPanel(EnrichmentMapParameters params){
+   /**
+     * method to create Data Transformations Options combo box
+     *
+     * @param params - enrichment map parameters of current map
+     * @return - panel with the Data Transformations Options combo box
+     */
+    public JPanel createDataTransformationOptionsPanel(EnrichmentMapParameters params){
     	 TitledBorder HMBorder = BorderFactory.createTitledBorder("Normalization");
          HMBorder.setTitleJustification(TitledBorder.LEFT);
     	heatmapOptions   = new JPanel();
@@ -250,13 +265,33 @@ public OverlappingGenesPanel getNodeOverlapPanel(){
         	hmOptionComboBox.setSelectedItem("Log Transform Data");
         }
         
-        hmOptionComboBox.addActionListener(new selectDataViewActionListener(edgeOverlapPanel, nodeOverlapPanel,hmOptionComboBox,this, params));
+        hmOptionComboBox.addActionListener(new HeatMapActionListener(edgeOverlapPanel, nodeOverlapPanel,hmOptionComboBox,this, params));
         heatmapOptions.add(hmOptionComboBox);
         heatmapOptions.setBorder(HMBorder);
         return heatmapOptions;
     }
-    
-	public ColorGradientRange getRange() {
+
+    /**
+     * If data is sorted by a column update the sort by combo box to contain the column name sorted by
+     */
+    public void changeSortComboBoxToColumnSorted(){
+          int columnNumber = this.sortIndex + 1;
+          rankOptionComboBox.addItem("Column: " + sortbycolumnName);
+          rankOptionComboBox.setSelectedItem("Column: " + sortbycolumnName);
+
+      }
+
+    //Getters and Setters.
+
+     public HeatMapPanel getEdgeOverlapPanel(){
+    	return edgeOverlapPanel;
+    }
+
+    public HeatMapPanel getNodeOverlapPanel(){
+    	return nodeOverlapPanel;
+    }
+
+    public ColorGradientRange getRange() {
         return range;
     }
 
@@ -326,13 +361,6 @@ public OverlappingGenesPanel getNodeOverlapPanel(){
 
     public void setSortIndex(int sortIndex) {
         this.sortIndex = sortIndex;
-    }
-
-    public void changeRankComboBoxToColumnSorted(){
-        int columnNumber = this.sortIndex + 1;
-        rankOptionComboBox.addItem("Column: " + sortbycolumnName);
-        rankOptionComboBox.setSelectedItem("Column: " + sortbycolumnName);
-
     }
 
     public boolean isSortbycolumn_event_triggered() {

@@ -61,7 +61,7 @@ public class ColorRenderer extends JLabel
 	Border unselectedBorder = null;
     Border selectedBorder = null;
     boolean isBordered = true;
-    OverlappingGenesTableModel ogt= new OverlappingGenesTableModel();
+    HeatMapTableModel ogt= new HeatMapTableModel();
 
     public ColorRenderer() {
     	this.isBordered = isBordered;
