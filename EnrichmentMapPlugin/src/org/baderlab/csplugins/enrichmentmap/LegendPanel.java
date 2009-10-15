@@ -53,6 +53,8 @@ import java.awt.geom.Rectangle2D;
  * User: risserlin
  * Date: Feb 5, 2009
  * Time: 3:55:52 PM
+ * <p>
+ * enrichment map legend panel
  */
 
 public class LegendPanel extends JPanel {
@@ -69,21 +71,22 @@ public class LegendPanel extends JPanel {
     /*--------------------------------------------------------------
     Fields.
     --------------------------------------------------------------*/
-    private static Double min;
-    private static Double max;
     private static Color mincolor;
     private static Color maxcolor;
     private String phenotype1;
     private String phenotype2;
 
-    /*--------------------------------------------------------------
-     Constructor.
-    --------------------------------------------------------------*/
 
-    public LegendPanel(Double min, Double max, Color mincolor, Color maxcolor,String phenotype1,String phenotype2) {
+    /**
+     * Class constructor
+     *
+     * @param mincolor
+     * @param maxcolor
+     * @param phenotype1
+     * @param phenotype2
+     */
+    public LegendPanel(Color mincolor, Color maxcolor,String phenotype1,String phenotype2) {
         super();
-        this.min = min;
-        this.max = max;
         this.mincolor = mincolor;
         this.maxcolor = maxcolor;
         this.phenotype1 = phenotype1;
@@ -99,6 +102,11 @@ public class LegendPanel extends JPanel {
     PAINT.
     ----------------------------------------------------------------*/
 
+    /**
+     * Paint legend
+     *
+     * @param g
+     */
   public void paint(Graphics g) {
 
         Graphics2D g2D = (Graphics2D) g;

@@ -51,22 +51,32 @@ import java.util.Iterator;
  * User: risserlin
  * Date: Jan 8, 2009
  * Time: 11:32:40 AM
- */
-
-/* Geneset
- * Each Geneset consists of:
- * Name
- * Description
- * A list of genes in the geneset (represented using a HashSet)
+ * <p>
+ * Class representing Geneset Object <br>
+ * Each Geneset consists of: <br>
+ * Name <br>
+ * Description <br>
+ * A list of genes in the geneset (represented using a HashSet) - as genes are read in they are
+ * converted into an integer and stored in global unique hashmap in the enrichment map paramters.  any subsequent
+ * use of the gene is stored as its integer hashkey.
  */
 
 public class GeneSet {
 
+    //Gene set name
     private String Name;
+    //Gene set description
     private String Description;
-
+    //genes associated with this gene set
     private HashSet<Integer> genes = null;
 
+    /**
+     * Class Constructor - creates gene set with a specified name and description with an empty
+     * list of genes.
+     *
+     * @param name - gene set name
+     * @param descrip - gene set description
+     */
     public GeneSet(String name, String descrip) {
         this.Name = name;
         this.Description = descrip;
@@ -75,6 +85,13 @@ public class GeneSet {
 
     }
 
+    /**
+     * Class constructor - parse the string tokenized line of a session file representation of a GMT
+     * file into a gene set object.  (in the original gmt file the gene set is specified followed by
+     * the list of genes, in a session file the genes are converted to their hash keys.)
+     *
+     * @param tokens - string tokenized line for an GMT file.
+     */
     public GeneSet(String[] tokens){
         this(tokens[1],tokens[2]);
 
@@ -87,8 +104,15 @@ public class GeneSet {
     }
 
     /* Given a Hashkey
-    * Add the gene hashkey to the set of genes
+    *
     */
+
+    /**
+     * Add the gene hashkey to the set of genes
+     *
+     * @param gene_hashkey - a new gene hashkey to add to current geneset
+     * @return true if it was successfully added, false otherwise.
+     */
     public boolean addGene(int gene_hashkey){
         if(genes != null){
             return genes.add(gene_hashkey);
@@ -98,6 +122,7 @@ public class GeneSet {
         }
     }
 
+    //Getters and Setters
 
     public String getName() {
         return Name;

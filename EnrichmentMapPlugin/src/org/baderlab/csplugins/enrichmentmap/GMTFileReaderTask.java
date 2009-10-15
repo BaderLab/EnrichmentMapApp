@@ -46,31 +46,28 @@ import cytoscape.data.readers.TextFileReader;
 import cytoscape.task.Task;
 import cytoscape.task.TaskMonitor;
 
-import java.util.HashSet;
 import java.util.HashMap;
-import java.io.IOException;
+
 
 /**
  * Created by
  * User: risserlin
  * Date: Jan 8, 2009
  * Time: 11:59:17 AM
- */
-
-/* GMTFileReader
- *  given a GMT file name this class creates a set of genesets as generated from the GMT file.
+ * <p>
+ *  This class parses a GMT (gene set) file and  creates a set of genesets
  */
 public class GMTFileReaderTask implements Task {
 
     private EnrichmentMapParameters params;
 
+    //gene set file name
     private String GMTFileName;
+    // gene hash (and inverse hash)
     private HashMap<String, Integer> genes;
     private HashMap<Integer, String> hashkey2gene;
 
-    private String fullText;
-    private String [] lines;
-
+    //gene sets
     private HashMap<String,GeneSet> genesets ;
 
     // Keep track of progress for monitoring:
@@ -79,7 +76,8 @@ public class GMTFileReaderTask implements Task {
     private boolean interrupted = false;
 
     /**
-     * constructor
+     * Class constructor  - also given current task monitor
+     *
      * @param params
      * @param taskMonitor
      */
@@ -88,6 +86,11 @@ public class GMTFileReaderTask implements Task {
         this.taskMonitor = taskMonitor;
     }
 
+    /**
+     * Class constructor
+     *
+     * @param params - enrichment map parameters of current map
+     */
     public GMTFileReaderTask(EnrichmentMapParameters params)   {
         this.params = params;
 
@@ -97,21 +100,26 @@ public class GMTFileReaderTask implements Task {
 
         this.genesets = params.getGenesets();
 
-        //open GMT file
-
-        TextFileReader reader = new TextFileReader(GMTFileName);
-        reader.read();
-        fullText = reader.getText();
-
-        lines = fullText.split("\n");
     }
 
-    // for BuildDiseaseSignatureTask
+    /**
+     * for BuildDiseaseSignatureTask
+     *
+     * @param params
+     * @param taskMonitor
+     * @param genesets_file
+     */
     public GMTFileReaderTask(PostAnalysisParameters params, TaskMonitor taskMonitor, int genesets_file) {
         this(params, genesets_file);
         this.taskMonitor = taskMonitor;
     }
-    
+
+    /**
+     * for BuildDiseaseSignatureTask
+     *
+     * @param params
+     * @param genesets_file
+     */
     public GMTFileReaderTask(PostAnalysisParameters params, int genesets_file)   {
         this.params = params;
         this.genes = params.getGenes();
@@ -127,17 +135,20 @@ public class GMTFileReaderTask implements Task {
             this.GMTFileName = params.getSignatureGMTFileName();
             this.genesets = params.getSignatureGenesets();
         }
-		
-        TextFileReader reader = new TextFileReader(GMTFileName);
-        reader.read();
-		fullText = reader.getText();
-
-        lines = fullText.split("\n");
-
     }
 
-    //invoked by run() 
+    /**
+     * parse GMT (gene set) file
+     */
     public void parse() {
+
+        //open GMT file
+        TextFileReader reader = new TextFileReader(GMTFileName);
+        reader.read();
+        String fullText = reader.getText();
+
+        String []lines = fullText.split("\n");
+
         int currentProgress = 0;
         maxValue = lines.length;
         try {

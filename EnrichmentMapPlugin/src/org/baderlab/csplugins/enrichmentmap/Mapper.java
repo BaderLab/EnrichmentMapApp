@@ -24,14 +24,14 @@ import javax.swing.event.TableModelListener;
 import javax.swing.event.TableModelEvent;
 
 public class Mapper extends AbstractTableModel implements TableModelListener {
-    protected OverlappingGenesTableModel model;
+    protected HeatMapTableModel model;
 
     public TableModel getModel() {
         return model;
     }
 
     public void setModel(TableModel model) {
-        this.model =  (OverlappingGenesTableModel)model;
+        this.model =  (HeatMapTableModel)model;
         model.addTableModelListener(this);
     }
     

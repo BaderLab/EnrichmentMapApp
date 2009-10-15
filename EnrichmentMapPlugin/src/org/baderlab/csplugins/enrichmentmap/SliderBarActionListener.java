@@ -65,26 +65,33 @@ import javax.swing.*;
  * User: risserlin
  * Date: Feb 24, 2009
  * Time: 3:29:39 PM
+ * <p>
+ * slider bar move action
  */
 public class SliderBarActionListener implements ChangeListener {
 
-
     private SliderBarPanel panel;
-   // private NumberRangeModel rangeModel;
     private EnrichmentMapParameters params;
-    //private CyNetwork network;
-    //private int[] nodes;
+
     private ArrayList<HiddenNodes> hiddenNodes;
     private ArrayList<Edge> hiddenEdges;
 
+    //attribute for dataset 1 that the slider bar is specific to
     private String attrib_dataset1;
+    //attribute for dataset 2 that the slider bar is specific to
     private String attrib_dataset2;
 
-
+    /**
+     * Class constructor
+     *
+     * @param panel
+     * @param params - enchrichment map parameters for current map
+     * @param attrib1 - attribute for dataset 1 that the slider bar is specific to (i.e. p-value or q-value)
+     * @param attrib2 - attribute for dataset 2 that the slider bar is specific to (i.e. p-value or q-value)
+     */
     public SliderBarActionListener(SliderBarPanel panel, EnrichmentMapParameters params, String attrib1, String attrib2) {
         this.panel = panel;
         this.params = params;
-        //rangeModel = panel.getRangeModel();
         hiddenNodes = new ArrayList();
         hiddenEdges = new ArrayList();
 
@@ -93,6 +100,11 @@ public class SliderBarActionListener implements ChangeListener {
 
     }
 
+    /**
+     * Go through the current map and hide or unhide any nodes or edges associated with the threshold change.
+     *
+     * @param e
+     */
     public void stateChanged(ChangeEvent e){
 
         JSlider source = (JSlider)e.getSource();
@@ -101,8 +113,6 @@ public class SliderBarActionListener implements ChangeListener {
 
         panel.setLabel(source.getValue());
 
-        //Double max_cutoff = (Double) rangeModel.getHighValue();
-        //Double min_cutoff = (Double) rangeModel.getLowValue();
         CyNetwork network = Cytoscape.getCurrentNetwork();
         CyNetworkView view = Cytoscape.getCurrentNetworkView();
         CyAttributes attributes = Cytoscape.getNodeAttributes();

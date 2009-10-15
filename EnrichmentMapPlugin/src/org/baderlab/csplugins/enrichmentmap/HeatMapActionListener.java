@@ -35,11 +35,11 @@
  **
  **/
 
-// $Id$
-// $LastChangedDate$
-// $LastChangedRevision$
-// $LastChangedBy$
-// $HeadURL$
+// $Id: HeatMapActionListener.java 368 2009-09-25 14:49:59Z risserlin $
+// $LastChangedDate: 2009-09-25 10:49:59 -0400 (Fri, 25 Sep 2009) $
+// $LastChangedRevision: 368 $
+// $LastChangedBy: risserlin $
+// $HeadURL: svn+ssh://risserlin@server1.baderlab.med.utoronto.ca/svn/EnrichmentMap/trunk/EnrichmentMapPlugin/src/org/baderlab/csplugins/enrichmentmap/HeatMapActionListener.java $
 
 package org.baderlab.csplugins.enrichmentmap;
 
@@ -61,20 +61,30 @@ import java.io.File;
  * User: risserlin
  * Date: Feb 12, 2009
  * Time: 10:04:33 AM
+ * <p>
+ * Heat map action listener
  */
-public class selectDataViewActionListener implements ActionListener {
+public class HeatMapActionListener implements ActionListener {
 
-    private OverlappingGenesPanel edgeOverlapPanel;
-    private OverlappingGenesPanel nodeOverlapPanel;
+    private HeatMapPanel edgeOverlapPanel;
+    private HeatMapPanel nodeOverlapPanel;
 
     private HeatMapParameters hmParams;
     private JComboBox box;
-    private String select;
 
     //Need to add the enrichment map parameters here in order to add an additional ranks to the EM
     private EnrichmentMapParameters params;
 
-    public selectDataViewActionListener(OverlappingGenesPanel edgeOverlapPanel, OverlappingGenesPanel nodeOverlapPanel,JComboBox box, HeatMapParameters hmParams, EnrichmentMapParameters params) {
+    /**
+     * Class constructor
+     *
+     * @param edgeOverlapPanel
+     * @param nodeOverlapPanel
+     * @param box
+     * @param hmParams
+     * @param params
+     */
+    public HeatMapActionListener(HeatMapPanel edgeOverlapPanel, HeatMapPanel nodeOverlapPanel,JComboBox box, HeatMapParameters hmParams, EnrichmentMapParameters params) {
         this.edgeOverlapPanel = edgeOverlapPanel;
         this.nodeOverlapPanel = nodeOverlapPanel;
         this.hmParams = hmParams;
@@ -82,11 +92,16 @@ public class selectDataViewActionListener implements ActionListener {
         this.params = params;
     }
 
+    /**
+     * Update heat map according to action selection
+     *
+     * @param evt
+     */
     public void actionPerformed(ActionEvent evt){
 
        edgeOverlapPanel.clearPanel();
        nodeOverlapPanel.clearPanel();
-       select=(String) box.getSelectedItem();
+       String select=(String) box.getSelectedItem();
 
        if(select.equalsIgnoreCase("Data As Is")){
            hmParams.setRowNorm(false);

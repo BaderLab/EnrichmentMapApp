@@ -42,7 +42,7 @@
 // $HeadURL$
 
 package org.baderlab.csplugins.enrichmentmap;
-import java.awt.*;
+
 import java.awt.event.*;
 import javax.swing.*;
 import cytoscape.Cytoscape;

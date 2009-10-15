@@ -44,26 +44,61 @@
 package org.baderlab.csplugins.enrichmentmap;
 
 import java.util.HashSet;
-import java.util.Iterator;
 
 /**
  * Created by
  * User: risserlin
  * Date: Jan 9, 2009
  * Time: 10:49:55 AM
+ * <p>
+ * Class representing a compraison of two gene sets (represents an edge in the network)
+ *
  */
 public class GenesetSimilarity {
 
     private String geneset1_Name;
     private String geneset2_Name;
     
+    //currently the intereaction type is pp which actually means a protein protein interaction
+    ///but there is no specification of an enrichment interaction in cytoscape.
     private String interaction_type;
 
+    //either jaccard or overlap coeffecient, depends on statistic user specified.
     private double similarity_coeffecient;
     private double hypergeom_pvalue;
 
+    //set of genes in common to both gene sets.
     private HashSet<Integer> overlapping_genes;
 
+    /**
+     * Class constructor
+     *
+     * @param geneset1_Name - gene set 1 name
+     * @param geneset2_Name - gene set 2 name
+     * @param similarity_coeffecient - jaccard or overlap coeffecient for geneset 1 and geneset 2
+     * @param overlapping_genes - set of genes in common to gene set 1 and gene set 2
+     */
+     public GenesetSimilarity(String geneset1_Name, String geneset2_Name, double similarity_coeffecient, HashSet<Integer> overlapping_genes) {
+        this.geneset1_Name = geneset1_Name;
+        this.geneset2_Name = geneset2_Name;
+        this.similarity_coeffecient = similarity_coeffecient;
+        this.overlapping_genes = overlapping_genes;
+        //use defaults:
+        this.hypergeom_pvalue = -1.0;
+        this.interaction_type = EnrichmentMapParameters.ENRICHMENT_INTERACTION_TYPE;
+     }
+
+
+    /**
+     * Class constructor - additional parameters for post analysis edge
+     *
+     * @param geneset1_Name - gene set 1 name
+     * @param geneset2_Name - gene set 2 name
+     * @param similarity_coeffecient - jaccard or overlap coeffecient for geneset 1 and geneset 2
+     * @param hypergeom_pvalue
+     * @param interaction_type - default to pp currrently
+     * @param overlapping_genes - set of genes in common to gene set 1 and gene set 2
+     */
     public GenesetSimilarity(String geneset1_Name, String geneset2_Name, double similarity_coeffecient,double hypergeom_pvalue, String interaction_type, HashSet<Integer> overlapping_genes) {
         this.geneset1_Name = geneset1_Name;
         this.geneset2_Name = geneset2_Name;
@@ -74,36 +109,8 @@ public class GenesetSimilarity {
         this.interaction_type = interaction_type;
     }
 
-    public GenesetSimilarity(String geneset1_Name, String geneset2_Name, double similarity_coeffecient, HashSet<Integer> overlapping_genes) {
-        this.geneset1_Name = geneset1_Name;
-        this.geneset2_Name = geneset2_Name;
-        this.similarity_coeffecient = similarity_coeffecient;
-        this.overlapping_genes = overlapping_genes;
-        //use defaults:
-        this.hypergeom_pvalue = -1.0;
-        this.interaction_type = EnrichmentMapParameters.ENRICHMENT_INTERACTION_TYPE;
-    }
 
-    /*TODO: Check if this constructor can be deleted.
-     * => since revision [214] GenesetSimilarities are no longer stored in the Session File. 
-     */
-    //create a new object from an array of strings extracted from a file
-    public GenesetSimilarity(String[] tokens){
-        //make sure there is sufficient number of items in the row.
-        if(tokens.length<4)
-                return;
-
-        //the first token is the hash key, don't need it in the object
-        this.geneset1_Name = tokens[1];
-        this.geneset2_Name = tokens[2];
-        this.similarity_coeffecient = Double.parseDouble(tokens[3]);
-
-        this.overlapping_genes = new HashSet<Integer>();
-
-        for(int i = 4; i<tokens.length;i++){
-               this.overlapping_genes.add(Integer.parseInt(tokens[i]));
-        }
-    }
+    //Getters and Setters
 
     public String getGeneset1_Name() {
         return geneset1_Name;
@@ -122,7 +129,7 @@ public class GenesetSimilarity {
     }
 
     /**
-     * @param set the Interaction Type
+     * @param interaction_type - set the Interaction Type
      */
     public void setInteractionType(String interaction_type) {
         this.interaction_type = interaction_type;
@@ -169,17 +176,4 @@ public class GenesetSimilarity {
         return overlapping_genes.size();
     }
 
-    /*TODO: Check if this toString-Function can be deleted.
-     * => since revision [214] GenesetSimilarities are no longer stored in the Session File. 
-     */
-    public String toString(){
-        String similarity = "";
-
-        similarity += geneset1_Name + "\t" + geneset2_Name + "\t" + similarity_coeffecient + "\t";
-
-        for(Iterator i = overlapping_genes.iterator();i.hasNext();)
-            similarity += i.next().toString() + "\t";
-
-        return similarity;
-    }
 }

@@ -55,7 +55,7 @@ import java.awt.event.ActionEvent;
  * Created by
  * User: revilo
  * Date: July 9, 2009
- * Based on: LoadGSEAPanel by risserlin 
+ * Based on: LoadEnrichmentsPanel by risserlin
  */
 public class LoadPostAnalysisPanelAction extends CytoscapeAction {
 

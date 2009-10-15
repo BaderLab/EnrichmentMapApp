@@ -734,7 +734,7 @@ public class EnrichmentMapParameters {
      * based on the property file stored in the session file.  The property file
      * specifies the type of objects contained in each file and this is needed in order
      * to create the proper hash in the current set of parameters.
-     * types are Genesetsimilarity(0), GeneSet(1), Genes(2), GSEAResult(3), GenericResult(4), Int to String (5), Ranking (6)
+     * types are GeneSet(1), Genes(2), GSEAResult(3), GenericResult(4), Int to String (5), Ranking (6)
      * @return  properly constructed Hashmap repopulated from the specified file.
      */
     public HashMap repopulateHashmap(String fileInput, int type ){
@@ -743,11 +743,8 @@ public class EnrichmentMapParameters {
         //Create a hashmap to contain all the values in the rpt file.
         HashMap newMap;
 
-        //GenesetSimilarity
-        if(type == 0)
-            newMap = new HashMap<String, GenesetSimilarity>();
         //GeneSet
-        else if(type == 1)
+        if(type == 1)
             newMap = new HashMap<String, GeneSet>();
         //Genes
         else if(type == 2)
@@ -775,10 +772,6 @@ public class EnrichmentMapParameters {
 
             //the first token is the key and the rest of the line is the object
             //depending on the type there is different data
-
-            //GenesetSimilarity
-            if(type == 0)
-                newMap.put(tokens[0] ,new GenesetSimilarity(tokens));
 
             //Genesets
             if(type == 1)

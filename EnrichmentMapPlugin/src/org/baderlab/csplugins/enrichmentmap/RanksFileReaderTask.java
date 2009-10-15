@@ -58,6 +58,14 @@ import java.util.regex.Pattern;
  * User: risserlin
  * Date: May 1, 2009
  * Time: 9:10:22 AM
+ * <p>
+ * Task to parse ranks file <br>
+ * There are multiple potential rank file formats: <br>
+ * GSEA input rnk file - a two column file with genes and their specified rank represented as a double, commented lines
+ * have a # at the line start.
+ * GSEA output rank files (xls file) - a five column file with genes and specified rank but also have three bland
+ * columns.
+ *
  */
 public class RanksFileReaderTask implements Task {
 
@@ -71,12 +79,27 @@ public class RanksFileReaderTask implements Task {
     private TaskMonitor taskMonitor = null;
     private boolean interrupted = false;
 
+    /**
+     * Class constructor
+     *
+     * @param params - enrichment map parameters for current map
+     * @param rankFileName - file name of ranks file
+     * @param dataset - which dataset is this rank file related to (dataset 1 or dataset 2)
+     */
     public RanksFileReaderTask(EnrichmentMapParameters params, String rankFileName, int dataset) {
         this.params = params;
         RankFileName = rankFileName;
         this.dataset = dataset;
     }
 
+    /**
+     *  Class constructor - curent task monitor specified.
+     *
+     * @param params - enrichment map parameters for current map
+     * @param rankFileName - file name of ranks file
+     * @param dataset - which dataset is this rank file related to (dataset 1 or dataset 2)
+     * @param taskMonitor - current task monitor
+     */
     public RanksFileReaderTask(EnrichmentMapParameters params, String rankFileName, int dataset, TaskMonitor taskMonitor) {
         this.params = params;
         RankFileName = rankFileName;
@@ -84,18 +107,28 @@ public class RanksFileReaderTask implements Task {
         this.taskMonitor = taskMonitor;
     }
 
+    /**
+     * Class constructor - for late loaded rank file that aren't specific to a dataset.
+     *
+     * @param params - enrichment map parameters for current map
+     * @param rankFileName - file name of ranks file
+     * @param ranks_name - name of rankings to be used in heat map drop down to refer to it.
+     */
      public RanksFileReaderTask(EnrichmentMapParameters params, String rankFileName, String ranks_name) {
         this.params = params;
         RankFileName = rankFileName;
         this.ranks_name = ranks_name;
-        this.taskMonitor = taskMonitor;
     }
 
+    /**
+     * parse the rank file
+     */
     public void parse(){
 
         TextFileReader reader = new TextFileReader(RankFileName);
         reader.read();
         String fullText = reader.getText();
+        int lineNumber = 0;
 
         String[] lines = fullText.split("\n");
         int currentProgress = 0;
@@ -113,7 +146,7 @@ public class RanksFileReaderTask implements Task {
          * If the user loaded it through the generic of specifying advanced options
          * then it will 2 columns (name,score).
          * The score in either case should be a double and the name a string so
-         * check for either option. 
+         * check for either option.
          */
 
         int nScores = 0;    //number of found scores
@@ -122,6 +155,7 @@ public class RanksFileReaderTask implements Task {
 
             String line = lines[i];
 
+            //check to see if the line is commented out and should be ignored.
             if ( line.startsWith("#") ) {
                 // look for ranks_name in comment line e.g.: "# Ranks Name : My Ranks"
                 if (Pattern.matches("^# *Ranks[ _-]?Name *:.+", line) ) {
@@ -135,15 +169,38 @@ public class RanksFileReaderTask implements Task {
 
             String [] tokens = line.split("\t");
 
+
+
             String name = tokens[0];
             double score = 0;
 
+            //if there are 5 columns in the data then the rank is the last column
             if(tokens.length == 5 ){
-                score = Double.parseDouble(tokens[4]);
+                //ignore rows where the expected rank value is not a valid double
+                try{
+                    score = Double.parseDouble(tokens[4]);
+                } catch (NumberFormatException nfe){
+                    if(lineNumber == 0){
+                        lineNumber++;
+                        continue;
+                    }
+                    else
+                        throw new IllegalThreadStateException("rank value for"+ tokens[0]+ "is not a valid number");
+                }
                 nScores++;
             }
+            //if there are 2 columns in the data then the rank is the 2 column
             else if(tokens.length == 2){
-                score = Double.parseDouble(tokens[1]);
+                try{
+                    score = Double.parseDouble(tokens[1]);
+                }catch (NumberFormatException nfe){
+                    if(lineNumber == 0){
+                        lineNumber++;
+                        continue;
+                    }
+                    else
+                        throw new IllegalThreadStateException("rank value for"+ tokens[0]+ "is not a valid number");
+                }
                 nScores++;
             }
             else{

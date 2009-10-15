@@ -68,6 +68,8 @@ import javax.swing.*;
  * User: risserlin
  * Date: Jan 8, 2009
  * Time: 4:11:11 PM
+ * <p>
+ * Create visual representation of enrichment map in cytoscape
  */
 public class VisualizeEnrichmentMapTask implements Task {
 
@@ -75,25 +77,41 @@ public class VisualizeEnrichmentMapTask implements Task {
 
     private HashMap<String, GenesetSimilarity> geneset_similarities;
 
-    private String clustername;
+    //enrichment map name
+    private String mapName;
 
     // Keep track of progress for monitoring:
     private TaskMonitor taskMonitor = null;
     private boolean interrupted = false;
 
+    /**
+     * Class constructor - current task monitor
+     *
+     * @param params - enrichment map parameters for current map
+     * @param taskMonitor - current task monitor
+     */
     public VisualizeEnrichmentMapTask(EnrichmentMapParameters params, TaskMonitor taskMonitor) {
           this(params);
           this.taskMonitor = taskMonitor;
       }
 
-
+    /**
+     * Class constructor
+     *
+     * @param params - enrichment map parameters for current map
+     */
     public VisualizeEnrichmentMapTask(EnrichmentMapParameters params) {
         this.params = params;
         this.geneset_similarities = params.getGenesetSimilarity();
-        clustername = "Enrichment Map";
+        mapName = "Enrichment Map";
 
     }
 
+    /**
+     * Compute, and create cytoscape enrichment map
+     *
+     * @return  true if successful
+     */
     public boolean computeMap(){
         if(taskMonitor == null){
             throw new IllegalStateException("Task Monitor is not set");
@@ -113,8 +131,8 @@ public class VisualizeEnrichmentMapTask implements Task {
 
                 prefix = "EM1_";
                 params.setAttributePrefix(prefix);
-                params.setNetworkName(prefix+clustername);
-                network = Cytoscape.createNetwork(prefix + clustername);
+                params.setNetworkName(prefix+mapName);
+                network = Cytoscape.createNetwork(prefix + mapName);
             }
             else{
                 //how many enrichment maps are there?
@@ -126,8 +144,8 @@ public class VisualizeEnrichmentMapTask implements Task {
                 }
                 prefix = "EM" + num_networks + "_";
                 params.setAttributePrefix(prefix);
-                params.setNetworkName(prefix+clustername);
-                network = Cytoscape.createNetwork(prefix + clustername);
+                params.setNetworkName(prefix+mapName);
+                network = Cytoscape.createNetwork(prefix + mapName);
             }
 
 
@@ -374,6 +392,13 @@ public class VisualizeEnrichmentMapTask implements Task {
        return true;
     }
 
+    /**
+     * set node attributes for dataset1 generic results
+     *
+     * @param node - node to associated attributes to
+     * @param result - generic results object to get values of the attributes from
+     * @param prefix - attribute prefix
+     */
     private void setGenericResultDataset1Attributes(Node node, GenericResult result, String prefix){
 
         CyAttributes nodeAttrs = Cytoscape.getNodeAttributes();
@@ -392,7 +417,13 @@ public class VisualizeEnrichmentMapTask implements Task {
             nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.COLOURING_DATASET1,  ((-1) * (1-result.getPvalue())));
       }
     }
-
+    /**
+     * set node attributes for dataset 2 generic results
+     *
+     * @param node - node to associated attributes to
+     * @param result - generic results object to get values of the attributes from
+     * @param prefix - attribute prefix
+     */
     private void setGenericResultDataset2Attributes(Node node, GenericResult result, String prefix){
 
         CyAttributes nodeAttrs = Cytoscape.getNodeAttributes();
@@ -412,7 +443,14 @@ public class VisualizeEnrichmentMapTask implements Task {
       }
     }
 
-   private void setGSEAResultDataset1Attributes(Node node, GSEAResult result, String prefix){
+    /**
+     * set node attributes for dataset 1 gsea results
+     *
+     * @param node - node to associated attributes to
+     * @param result - gsea results object to get values of the attributes from
+     * @param prefix - attribute prefix
+     */
+    private void setGSEAResultDataset1Attributes(Node node, GSEAResult result, String prefix){
 
        CyAttributes nodeAttrs = Cytoscape.getNodeAttributes();
         //format the node name
@@ -435,7 +473,14 @@ public class VisualizeEnrichmentMapTask implements Task {
 
    }
 
-  private void setGSEAResultDataset2Attributes(Node node, GSEAResult result, String prefix){
+  /**
+     * set node attributes for dataset 2 gsea results
+     *
+     * @param node - node to associated attributes to
+     * @param result - gsea results object to get values of the attributes from
+     * @param prefix - attribute prefix
+     */
+    private void setGSEAResultDataset2Attributes(Node node, GSEAResult result, String prefix){
 
        CyAttributes nodeAttrs = Cytoscape.getNodeAttributes();
 
@@ -459,7 +504,12 @@ public class VisualizeEnrichmentMapTask implements Task {
 
    }
 
-
+    /**
+     * Wrap label
+     *
+     * @param label - current one line representation of label
+     * @return formatted, wrapped label
+     */
     static String formatLabel(String label){
        String formattedLabel = "";
 

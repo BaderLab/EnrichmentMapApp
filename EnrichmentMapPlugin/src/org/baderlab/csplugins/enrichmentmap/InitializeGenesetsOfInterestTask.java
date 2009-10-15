@@ -53,6 +53,9 @@ import java.util.Iterator;
  * User: risserlin
  * Date: Jan 9, 2009
  * Time: 10:59:05 AM
+ * <p>
+ * Task to create a subset of the geneset in the total gmt file that contains only the genesets with pvalue and q-value
+ * less than threshold values specified by the user.
  */
 
 public class InitializeGenesetsOfInterestTask implements Task {
@@ -63,16 +66,30 @@ public class InitializeGenesetsOfInterestTask implements Task {
     private TaskMonitor taskMonitor = null;
     private boolean interrupted = false;
 
+    /**
+     * Class constructor - specifying the current task monitor
+     *
+     * @param params - enrichment map parameters of current map
+     * @param taskMonitor - current task monitor
+     */
     public InitializeGenesetsOfInterestTask(EnrichmentMapParameters params, TaskMonitor taskMonitor) {
           this(params);
           this.taskMonitor = taskMonitor;
       }
 
-
+    /**
+     * Class constructor
+     *
+     * @param params - enrichment map parameters of current map
+     */
     public InitializeGenesetsOfInterestTask(EnrichmentMapParameters params) {
         this.params = params;
     }
 
+    /**
+     * filter the genesets, restricting them to only those passing the user specified thresholds.
+     * @return  true if successful and false otherwise.
+     */
     public boolean initializeSets(){
         if(taskMonitor == null){
             throw new IllegalStateException("Task Monitor is not set");

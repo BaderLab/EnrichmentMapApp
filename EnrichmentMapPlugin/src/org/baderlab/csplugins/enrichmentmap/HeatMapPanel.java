@@ -35,11 +35,11 @@
  **
  **/
 
-// $Id$
-// $LastChangedDate$
-// $LastChangedRevision$
-// $LastChangedBy$
-// $HeadURL$
+// $Id: HeatMapPanel.java 383 2009-10-08 20:06:35Z risserlin $
+// $LastChangedDate: 2009-10-08 16:06:35 -0400 (Thu, 08 Oct 2009) $
+// $LastChangedRevision: 383 $
+// $LastChangedBy: risserlin $
+// $HeadURL: svn+ssh://risserlin@server1.baderlab.med.utoronto.ca/svn/EnrichmentMap/trunk/EnrichmentMapPlugin/src/org/baderlab/csplugins/enrichmentmap/HeatMapPanel.java $
 
 package org.baderlab.csplugins.enrichmentmap;
 
@@ -60,24 +60,31 @@ import giny.model.Node;
 import giny.model.Edge;
 import org.mskcc.colorgradient.*;
 import org.baderlab.csplugins.brainlib.DistanceMatrix;
-import org.baderlab.csplugins.brainlib.DistanceMetric;
 import org.baderlab.csplugins.brainlib.AvgLinkHierarchicalClustering;
-import org.baderlab.csplugins.brainlib.HierarchicalClusteringResultTree;
 
 /**
  * Created by
  * User: risserlin
  * Date: Jan 30, 2009
  * Time: 9:15:32 AM
+ * <p>
+ * Creates a Heat map Panel - (heat map can consists of either one or two expression files depending on what
+ * was supplied by the user)
  */
-public class OverlappingGenesPanel extends JPanel {
+public class HeatMapPanel extends JPanel {
 
-
+    //Column names for expression set for data set 1
     private Object[] columnNames;
+      //Column names for expression set for data set 1
     private Object[] columnNames2;
+
+    //Phenotypes for expression set for data set 1 - index number indicates which column the phenotype is specific to
     private String[] phenotypes;
+    //Phenotypes for expression set for data set 1 - index number indicates which column the phenotype is specific to
     private String[] phenotypes2;
-    private Object[][] data;
+
+    //expression data
+    //private Object[][] data;
     private Object[][] expValue;
 
     private int numConditions;
@@ -100,36 +107,47 @@ public class OverlappingGenesPanel extends JPanel {
     private boolean[] isHalfRow2;
     private  final Insets insets = new Insets(0,0,0,0);
 
+    //current subset of expression data from dataset 1 expression set
     private HashMap currentExpressionSet;
+     //current subset of expression data from dataset 2 expression set
     private HashMap currentExpressionSet2;
 
     private boolean node=true;
 
+    //phenotypes specified by the user (if correspond to the class file definition the colour of the column can
+    //be changed to indicate its phenotype.
     private String Dataset1phenotype1;
     private String Dataset1phenotype2;
     private String Dataset2phenotype1;
     private String Dataset2phenotype2;
 
+    //heat map parameters for heat map
     private HeatMapParameters hmParams;
+    //enrichment map parameters for heat map
     private EnrichmentMapParameters params;
-    private OverlappingGenesTableModel OGT;
 
     //boolean indicating which direction the column was last sorted by
     private boolean[] column1_ascending;
     private boolean[] column2_ascending;
 
-
     /**
-     * Creates a new instance of OverlappingGenesPanel
+     * Class constructor - creates new instance of a Heat map panel
+     *
+     * @param node - boolean indicating with this is a heat map for node unions or edge overlaps.
+     * if true it is a node heatmap, else it is an edge heatmap
      */
-
-    public OverlappingGenesPanel(boolean node){
+    public HeatMapPanel(boolean node){
        this.node = node;
        this.setLayout(new java.awt.BorderLayout());
 
 
     }
 
+    /**
+     * Set the Heat map Panel to the variables in the given enrichment map parameters set
+     *
+     * @param params - enrichment map parameters to reset the heat map to.
+     */
     public void resetVariables(EnrichmentMapParameters params){
         this.params = params;
 
@@ -171,12 +189,20 @@ public class OverlappingGenesPanel extends JPanel {
 
     }
 
+    /**
+     * Update the panel base on given enrichment parameters
+     *
+     * @param params - enrichment map parameters to update the heat map to.
+     */
     public void updatePanel(EnrichmentMapParameters params){
 
         resetVariables(params);
         updatePanel();
     }
 
+    /**
+     * Update the heat map panel
+     */
     public void updatePanel(){
         if(currentExpressionSet != null){
 
@@ -187,6 +213,9 @@ public class OverlappingGenesPanel extends JPanel {
             JPanel mainPanel = new JPanel();
             mainPanel.setLayout(new BorderLayout());
             TableSort sort;
+
+            HeatMapTableModel OGT;
+            Object[][] data;
 
             //create data subset
             if(params.isData2()){
@@ -201,7 +230,7 @@ public class OverlappingGenesPanel extends JPanel {
                System.arraycopy(columnNames2,2, mergedcolumnNames,columnNames.length,columnNames2.length-2);
 
                //used OGT to minimize call of new JTable
-               OGT		=	new OverlappingGenesTableModel(mergedcolumnNames,data,expValue);
+               OGT		=	new HeatMapTableModel(mergedcolumnNames,data,expValue);
 
             }
             else{
@@ -209,7 +238,7 @@ public class OverlappingGenesPanel extends JPanel {
                 expValue	=	createSortedTableData();
                 data 		=	createSortedTableData(getExpValue());
 
-                OGT			=	new OverlappingGenesTableModel(columnNames,data,expValue);
+                OGT			=	new HeatMapTableModel(columnNames,data,expValue);
 
             }
 
@@ -350,6 +379,7 @@ public class OverlappingGenesPanel extends JPanel {
 
     private Object[][] createSortedTableData(Object[][] expValue2) {
         this.expValue=expValue2;
+        Object[][] data;
 
         int[] HRow=this.getRowLength();
         ColorGradientTheme[] RowCRT=this.getRowTheme();
@@ -375,6 +405,7 @@ public class OverlappingGenesPanel extends JPanel {
 
     private Object[][] createSortedMergedTableData(Object[][] expValue) {
         this.expValue=expValue;
+        Object[][] data;
 
         int[] HRow1						=this.getHalfRow1Length();
         int[] HRow2						=this.getHalfRow2Length();
@@ -684,7 +715,10 @@ public class OverlappingGenesPanel extends JPanel {
        return empty;
    }
 
-
+    /**
+     * create legend panel
+     * @return legend panel
+     */
     private JPanel expressionLegendPanel(){
         JPanel expLegendPanel = new JPanel();
 
@@ -699,7 +733,12 @@ public class OverlappingGenesPanel extends JPanel {
         return expLegendPanel;
     }
 
-
+    /**
+     * Creates north panel containing panels for
+     * legend, sort by combo box, data tranformation combo box, save expression set button
+     *
+     * @return panel
+     */
     private JPanel createNorthPanel(){
 
         JPanel northPanel = new JPanel();// new north panel
@@ -722,10 +761,10 @@ public class OverlappingGenesPanel extends JPanel {
                 GridBagConstraints.WEST, GridBagConstraints.NONE);
 
 
-        addComponent(northPanel,hmParams.createHeatMapOptionsPanel(params), 2, 0, 1, 1,
+        addComponent(northPanel,hmParams.createDataTransformationOptionsPanel(params), 2, 0, 1, 1,
                 GridBagConstraints.CENTER, GridBagConstraints.NONE);
 
-        addComponent(northPanel,hmParams.createRankOptionsPanel(params), 3, 0, 1, 1,
+        addComponent(northPanel,hmParams.createSortOptionsPanel(params), 3, 0, 1, 1,
                     GridBagConstraints.CENTER, GridBagConstraints.NONE);
 
         addComponent(northPanel,buttonPanel, 4, 0, 1, 1,
@@ -733,7 +772,7 @@ public class OverlappingGenesPanel extends JPanel {
 
         //northPanel.add(buttonPanel);
         northPanel.revalidate();
-    return northPanel;
+        return northPanel;
     }
 
 
@@ -745,7 +784,7 @@ public class OverlappingGenesPanel extends JPanel {
             container.add(component, gbc);
           }
 
-   private void saveExpressionSetActionPerformed(ActionEvent evt){
+    private void saveExpressionSetActionPerformed(ActionEvent evt){
         java.io.File file = FileUtil.getFile("Export Heatmap as txt File", FileUtil.SAVE);
         if (file != null && file.toString() != null) {
             String fileName = file.toString();
@@ -783,6 +822,14 @@ public class OverlappingGenesPanel extends JPanel {
         }
     }
 
+     /**
+     * Collates the current selected nodes genes to represent the expression of the genes that
+     * are in all the selected nodes.
+     *
+     * @param params - enrichment map parameters of the current map
+     * @param expressionSet - can be from dataset 1 or dataset 2
+     * @return expression set for the overlap of the genes in the selected edges.
+     */
     private HashMap getNodeExpressionSet(EnrichmentMapParameters params, GeneExpressionMatrix expressionSet){
 
         Object[] nodes = params.getSelectedNodes().toArray();
@@ -814,6 +861,14 @@ public class OverlappingGenesPanel extends JPanel {
 
     }
 
+    /**
+     * Collates the current selected edges genes to represent the expression of the genes that
+     * are in all the selected edges.
+     *
+     * @param params - enrichment map parameters of the current map
+     * @param expressionSet - can be from dataset 1 or dataset 2
+     * @return expression set for the overlap of the genes in the selected edges.
+     */
     private HashMap getEdgeExpressionSet(EnrichmentMapParameters params, GeneExpressionMatrix expressionSet){
 
         Object[] edges = params.getSelectedEdges().toArray();
@@ -847,6 +902,112 @@ public class OverlappingGenesPanel extends JPanel {
         }
         return null;
     }
+
+    /**
+     * Get the current specified rank file.
+     *
+     * @return current ranking specified by sort by combo box
+     */
+    private HashMap<Integer,Ranking> getRanks(){
+        //Get the ranks for all the keys, if there is a ranking file
+        HashMap<Integer,Ranking> ranks = null;
+
+        HashMap<String, HashMap<Integer, Ranking>> all_ranks = params.getRanks();
+        if(hmParams.isSortbyrank()){
+            for(Iterator j = all_ranks.keySet().iterator(); j.hasNext(); ){
+                String ranks_name = j.next().toString();
+                if(ranks_name.equalsIgnoreCase(hmParams.getRankFileIndex()))
+                    ranks = all_ranks.get(ranks_name);
+            }
+
+            if(ranks == null)
+               throw new IllegalThreadStateException("invalid sort index for rank files.");
+
+        }
+
+        else{
+            ranks = getRanksByClustering();
+        }
+        return ranks;
+    }
+
+    /**
+     * Hierarchical clusters the current expression set using pearson correlation and generates ranks
+     * based on the the clutering output.
+     *
+     * @return set of ranks based on the hierarchical clustering of the current expression set.
+     */
+    private HashMap<Integer, Ranking> getRanksByClustering(){
+
+        HashMap<Integer, Ranking> ranks = null;
+
+        //only create a ranking if there are genes in the expression set
+        if(currentExpressionSet.keySet().size() > 1){
+
+            //create an arraylist of the expression subset.
+            List clustering_expressionset = new ArrayList() ;
+            ArrayList labels = new ArrayList();
+            int j = 0;
+
+            //go through the expressionset hashmap and add the key to the labels and add the expression to the clustering set
+            for(Iterator i = currentExpressionSet.keySet().iterator();i.hasNext();){
+                Integer key = (Integer)i.next();
+
+                Double[] x = ((GeneExpression)currentExpressionSet.get(key)).getExpression();
+                Double[] z;
+                if(params.isData2()){
+                    Double[] y = ((GeneExpression)currentExpressionSet2.get(key)).getExpression();
+                    z = new Double[x.length + y.length];
+                    System.arraycopy(x,0,z,0,x.length);
+                    System.arraycopy(y,0,z,x.length,y.length);
+
+                }
+                else{
+                    z = x;
+                }
+
+                //add the expresionset
+                clustering_expressionset.add(j, z);
+
+                //add the key to the labels
+                labels.add(j,key);
+
+                j++;
+            }
+
+            //create a distance matrix the size of the expression set
+            DistanceMatrix distanceMatrix = new DistanceMatrix(currentExpressionSet.keySet().size());
+            distanceMatrix.calcDistances(clustering_expressionset, new AlignExpressionDataDistance());
+
+            distanceMatrix.setLabels(labels);
+
+            //cluster
+            AvgLinkHierarchicalClustering cluster = new AvgLinkHierarchicalClustering(distanceMatrix);
+            cluster.setOptimalLeafOrdering(true);
+            cluster.run();
+
+            int[] order = cluster.getLeafOrder();
+            ranks = new HashMap<Integer,Ranking>();
+            for(int i =0;i< order.length;i++){
+                 //get the label
+                Integer label =  (Integer)labels.get(order[i]);
+                Ranking temp = new Ranking(((GeneExpression)currentExpressionSet.get(label)).getName(),0.0,i);
+                ranks.put(label,temp);
+            }
+        }
+        else if(currentExpressionSet.keySet().size() == 1){
+            ranks = new HashMap<Integer,Ranking>();
+            for(Iterator i = currentExpressionSet.keySet().iterator();i.hasNext();){
+                Integer key = (Integer)i.next();
+                Ranking temp = new Ranking(((GeneExpression)currentExpressionSet.get(key)).getName(),0.0,0);
+                ranks.put(key,temp);
+            }
+        }
+        return ranks;
+    }
+
+    //Getters and Setters
+
     Object[][] getExpValue() {
         return expValue;
     }
@@ -1043,106 +1204,6 @@ public class OverlappingGenesPanel extends JPanel {
         return rowTheme;
     }
 
-
-	private HashMap<Integer,Ranking> getRanks(){
-        //Get the ranks for all the keys, if there is a ranking file
-        HashMap<Integer,Ranking> ranks = null;
-
-        HashMap<String, HashMap<Integer, Ranking>> all_ranks = params.getRanks();
-        if(hmParams.isSortbyrank()){
-            for(Iterator j = all_ranks.keySet().iterator(); j.hasNext(); ){
-                String ranks_name = j.next().toString();
-                if(ranks_name.equalsIgnoreCase(hmParams.getRankFileIndex()))
-                    ranks = all_ranks.get(ranks_name);
-            }
-
-            if(ranks == null)
-               throw new IllegalThreadStateException("invalid sort index for rank files.");
-
-        }
-
-        else{
-            //create default ranks
-            /*int r = 1;
-            ranks = new HashMap<Integer,Ranking>();
-            for(Iterator i = currentExpressionSet.keySet().iterator();i.hasNext();){
-                Integer key = (Integer)i.next();
-                Ranking temp = new Ranking(key.toString(),0.0,r++);
-                ranks.put(key,temp);
-            } */
-            ranks = getRanksByClustering();
-        }
-        return ranks;
-    }
-
-    private HashMap<Integer, Ranking> getRanksByClustering(){
-
-        HashMap<Integer, Ranking> ranks = null;
-
-        //only create a ranking if there are genes in the expression set
-        if(currentExpressionSet.keySet().size() > 1){
-
-            //create an arraylist of the expression subset.
-            List clustering_expressionset = new ArrayList() ;
-            ArrayList labels = new ArrayList();
-            int j = 0;
-
-            //go through the expressionset hashmap and add the key to the labels and add the expression to the clustering set
-            for(Iterator i = currentExpressionSet.keySet().iterator();i.hasNext();){
-                Integer key = (Integer)i.next();
-
-                Double[] x = ((GeneExpression)currentExpressionSet.get(key)).getExpression();
-                Double[] z;
-                if(params.isData2()){
-                    Double[] y = ((GeneExpression)currentExpressionSet2.get(key)).getExpression();
-                    z = new Double[x.length + y.length];
-                    System.arraycopy(x,0,z,0,x.length);
-                    System.arraycopy(y,0,z,x.length,y.length);
-
-                }
-                else{
-                    z = x;
-                }
-
-                //add the expresionset
-                clustering_expressionset.add(j, z);
-
-                //add the key to the labels
-                labels.add(j,key);
-
-                j++;
-            }
-
-            //create a distance matrix the size of the expression set
-            DistanceMatrix distanceMatrix = new DistanceMatrix(currentExpressionSet.keySet().size());
-            distanceMatrix.calcDistances(clustering_expressionset, new AlignExpressionDataDistance());
-
-            distanceMatrix.setLabels(labels);
-
-            //cluster
-            AvgLinkHierarchicalClustering cluster = new AvgLinkHierarchicalClustering(distanceMatrix);
-            cluster.setOptimalLeafOrdering(true);
-            cluster.run();
-
-            int[] order = cluster.getLeafOrder();
-            ranks = new HashMap<Integer,Ranking>();
-            for(int i =0;i< order.length;i++){
-                 //get the label
-                Integer label =  (Integer)labels.get(order[i]);
-                Ranking temp = new Ranking(((GeneExpression)currentExpressionSet.get(label)).getName(),0.0,i);
-                ranks.put(label,temp);
-            }
-        }
-        else if(currentExpressionSet.keySet().size() == 1){
-            ranks = new HashMap<Integer,Ranking>();
-            for(Iterator i = currentExpressionSet.keySet().iterator();i.hasNext();){
-                Integer key = (Integer)i.next();
-                Ranking temp = new Ranking(((GeneExpression)currentExpressionSet.get(key)).getName(),0.0,0);
-                ranks.put(key,temp);
-            }
-        }
-        return ranks;
-    }
 
 
 }

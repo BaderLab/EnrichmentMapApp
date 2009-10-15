@@ -53,6 +53,8 @@ import java.awt.image.BufferedImage;
  * User: risserlin
  * Date: Feb 12, 2009
  * Time: 12:22:50 PM
+ * <p>
+ * Flips column headers to vertical position
  */
 public class ColumnHeaderVerticalRenderer extends DefaultTableCellRenderer {
 

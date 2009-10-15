@@ -54,6 +54,7 @@ import javax.swing.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.util.HashMap;
+import java.net.URL;
 
 /**
  * Created by
@@ -73,8 +74,8 @@ public class EnrichmentMapManager implements PropertyChangeListener {
 
     //create only one instance of the  parameter and expression panels.
     private ParametersPanel parameterPanel;
-    private OverlappingGenesPanel nodesOverlapPanel;
-    private OverlappingGenesPanel edgesOverlapPanel;
+    private HeatMapPanel nodesOverlapPanel;
+    private HeatMapPanel edgesOverlapPanel;
 
     private EnrichmentMapInputPanel inputWindow;
     private PostAnalysisInputPanel analysisWindow;
@@ -151,11 +152,24 @@ public class EnrichmentMapManager implements PropertyChangeListener {
         cytoSidePanel.setSelectedIndex(cytoSidePanel.indexOfComponent(parameterPanel));
         cytoSidePanel.setState(CytoPanelState.DOCK);
 
-        nodesOverlapPanel = new OverlappingGenesPanel(true);
-        edgesOverlapPanel = new OverlappingGenesPanel(false);
+        nodesOverlapPanel = new HeatMapPanel(true);
+        edgesOverlapPanel = new HeatMapPanel(false);
 
-        cytoPanel.add("EM Overlap Expression viewer",edgesOverlapPanel);
-        cytoPanel.add("EM Geneset Expression viewer",nodesOverlapPanel);
+        //create an icon for the enrichment map panels
+        URL EMIconURL = Enrichment_Map_Plugin.class.getResource("resources/enrichmentmap_logo_notext_small.png");
+        ImageIcon EMIcon = null;
+        if (EMIconURL != null) {
+             EMIcon = new ImageIcon(EMIconURL);
+        }
+
+        if(EMIcon != null){
+            cytoPanel.add("EM Overlap Expression viewer",EMIcon,edgesOverlapPanel);
+            cytoPanel.add("EM Geneset Expression viewer",EMIcon,nodesOverlapPanel);
+        }else{
+            cytoPanel.add("EM Overlap Expression viewer",edgesOverlapPanel);
+            cytoPanel.add("EM Geneset Expression viewer",nodesOverlapPanel);
+        }
+
     }
 
     /**
@@ -312,11 +326,11 @@ public class EnrichmentMapManager implements PropertyChangeListener {
         return parameterPanel;
     }
 
-    public OverlappingGenesPanel getNodesOverlapPanel() {
+    public HeatMapPanel getNodesOverlapPanel() {
         return nodesOverlapPanel;
     }
 
-    public OverlappingGenesPanel getEdgesOverlapPanel() {
+    public HeatMapPanel getEdgesOverlapPanel() {
         return edgesOverlapPanel;
     }
 
