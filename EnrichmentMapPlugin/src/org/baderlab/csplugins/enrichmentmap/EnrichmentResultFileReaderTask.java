@@ -45,7 +45,9 @@ package org.baderlab.csplugins.enrichmentmap;
 import cytoscape.task.Task;
 import cytoscape.task.TaskMonitor;
 import cytoscape.data.readers.TextFileReader;
+import cytoscape.Cytoscape;
 
+import javax.swing.*;
 import java.util.HashMap;
 
 /**
@@ -71,6 +73,11 @@ public class EnrichmentResultFileReaderTask implements Task {
 
     //Stores the enrichment results
     private HashMap<String, EnrichmentResult> results ;
+
+    //phenotypes defined by user - used to classify phenotype specifications
+    //in the generic enrichment results file
+    private String upPhenotype;
+    private String downPhenotype;
 
     // Keep track of progress for monitoring:
     private TaskMonitor taskMonitor = null;
@@ -99,11 +106,16 @@ public class EnrichmentResultFileReaderTask implements Task {
     public EnrichmentResultFileReaderTask(EnrichmentMapParameters params, String FileName, int dataset) {
         this.params = params;
         EnrichmentResultFileName = FileName;
-        if(dataset == 1)
+        if(dataset == 1){
             results = params.getEnrichmentResults1();
-        else if(dataset == 2)
+            upPhenotype = params.getDataset1Phenotype1();
+            downPhenotype = params.getDataset1Phenotype2();
+        }
+        else if(dataset == 2){
             results = params.getEnrichmentResults2();
-
+            upPhenotype = params.getDataset2Phenotype1();
+            downPhenotype = params.getDataset2Phenotype2();
+        }
 
     }
 
@@ -247,6 +259,7 @@ public class EnrichmentResultFileReaderTask implements Task {
         int currentProgress = 0;
         int maxValue = lines.length;
         boolean FDR = false;
+        boolean ignore_phenotype = false;
 
          //skip the first line which just has the field names (start i=1)
         //check to see how many columns the data has
@@ -292,13 +305,34 @@ public class EnrichmentResultFileReaderTask implements Task {
                     FDRqvalue = Double.parseDouble(tokens[3]);
                     FDR = true;
                 }
-                //the fifth column is the phenotype and it should be an integer but the only important
-                //part is the sign
-                if(length > 4){
+                //the fifth column is the phenotype.
+                //it can either be a signed number or it can be text specifying the phenotype
+                //in order for it to be parseable the text has to match the user specified phenotypes
+                // and if it is a number the only important part is the sign
+                if((length > 4) && !ignore_phenotype){
+
                     if(tokens[4].equalsIgnoreCase("")){
 
                     }else{
-                        NES = Double.parseDouble(tokens[4]);
+
+                        //check to see if the string matches the specified phenotypes
+                        if(tokens[4].equalsIgnoreCase(upPhenotype))
+                            NES = 1.0;
+                        else if(tokens[4].equalsIgnoreCase(downPhenotype))
+                            NES = -1.0;
+                        //try and see if the user has specified the phenotype as a number
+                        else{
+                            try{
+                                NES = Double.parseDouble(tokens[4]);
+                            }catch (NumberFormatException nfe){
+                                //would like to give user the option but it won't let me interupt the task using Joptionpane
+                                /*int answer = JOptionPane.showConfirmDialog(Cytoscape.getDesktop(),"One or more of the enrichment results have a phenotype of unknown type specified.  Would you like me to ignore the phenotype Column?","Unrecognizable Phenotype.", JOptionPane.YES_NO_OPTION);
+                                if(answer == JOptionPane.YES_OPTION)
+                                    ignore_phenotype = true;
+                                else*/
+                                    throw new IllegalThreadStateException(tokens[4]+ " is not a valid phenotype.  Phenotype specified in generic enrichment results file must have the same phenotype as specified in advanced options or must be a positive or negative number.");
+                            }
+                        }
                     }
                     result = new GenericResult(name,description,pvalue,gs_size,FDRqvalue,NES);
                 }

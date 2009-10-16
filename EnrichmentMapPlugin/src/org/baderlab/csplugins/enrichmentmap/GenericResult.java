@@ -65,11 +65,12 @@ public class GenericResult extends EnrichmentResult{
     //the phenotype is deduced from the sign of the ES score so create a variable to store
     //the phenotype.
     private double NES = 1.0;
+    
 
     /**
      * Class constructor
      *
-     * @param tokens - string tokenized line from a generic result file
+     * @param tokens - string tokenized line from a generic result file as stored in the session file
      */
     public GenericResult(String[] tokens){
             //ignore the first token as it is from the hash
