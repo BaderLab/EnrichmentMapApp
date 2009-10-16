@@ -87,8 +87,8 @@ public class HeatMapPanel extends JPanel {
     //private Object[][] data;
     private Object[][] expValue;
 
-    private int numConditions;
-    private int numConditions2;
+    private int numConditions = 0;
+    private int numConditions2 = 0;
 
     private String[] hRow1;
     private String[] hRow2;
@@ -941,8 +941,22 @@ public class HeatMapPanel extends JPanel {
 
         HashMap<Integer, Ranking> ranks = null;
 
-        //only create a ranking if there are genes in the expression set
-        if(currentExpressionSet.keySet().size() > 1){
+        //The number of conditions includes the name and description
+        //compute the number of data columns we have.  If there is only one data
+        //column we can not cluster data
+        int numdatacolumns = 0;
+        int numdatacolumns2 = 0;
+
+        if(numConditions > 0){
+            numdatacolumns = numConditions - 2;
+        }
+
+        if(numConditions2 > 0){
+            numdatacolumns2 = numConditions2 - 2;
+        }
+        //only create a ranking if there are genes in the expression set and there
+        //is more than one column of data
+        if((currentExpressionSet.keySet().size() > 1) && ((numdatacolumns + numdatacolumns2) > 1)){
 
             //create an arraylist of the expression subset.
             List clustering_expressionset = new ArrayList() ;
@@ -995,7 +1009,7 @@ public class HeatMapPanel extends JPanel {
                 ranks.put(label,temp);
             }
         }
-        else if(currentExpressionSet.keySet().size() == 1){
+        else if((currentExpressionSet.keySet().size() == 1) || ((numdatacolumns + numdatacolumns2) <= 1)){
             ranks = new HashMap<Integer,Ranking>();
             for(Iterator i = currentExpressionSet.keySet().iterator();i.hasNext();){
                 Integer key = (Integer)i.next();
