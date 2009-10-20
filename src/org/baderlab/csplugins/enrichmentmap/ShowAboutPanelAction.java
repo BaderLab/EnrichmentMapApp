@@ -51,12 +51,18 @@ import cytoscape.util.*;
 /**
  * Created by:
  * @author revilo
- * @date   Jun 12, 2009
- * @time   5:53:54 PM
+ * <p>
+ * Date   Jun 12, 2009<br>
+ * Time   5:53:54 PM<br>
  */
 public class ShowAboutPanelAction extends CytoscapeAction {
 
-	public ShowAboutPanelAction() {
+	/**
+     * 
+     */
+    private static final long serialVersionUID = 1341062331014243704L;
+
+    public ShowAboutPanelAction() {
 		super("Show About Box");
 	}
 	

@@ -49,8 +49,9 @@ import junit.framework.TestSuite;
 
 /**
  * @author revilo
- * @date   Jul 24, 2009
- * @time   12:09:09 PM
+ * <p>
+ * Date   Jul 24, 2009<br>
+ * Time   12:09:09 PM<br>
  *
  */
 public class AllTests {

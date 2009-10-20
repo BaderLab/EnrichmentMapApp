@@ -43,20 +43,25 @@
 
 package org.baderlab.csplugins.enrichmentmap;
 import java.awt.*;
-import java.awt.event.*;
 import java.net.URL;
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.text.html.HTMLEditorKit;
 import cytoscape.*;
-import cytoscape.util.*;
 
 /**
  * @author revilo
- *
+ * <p>
+ * Date   June 6, 2009<br>
+ * Time   6:03:00 PM<br>
  */
 public class AboutPanel extends JDialog {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 7233557042420194604L;
+    
     String pluginUrl = Enrichment_Map_Plugin.pluginUrl;
     String pluginVersion = Enrichment_Map_Plugin.plugin_props.getProperty("pluginVersion", "0.1");
 
@@ -107,6 +112,7 @@ public class AboutPanel extends JDialog {
     }
 
     private class HyperlinkAction implements HyperlinkListener {
+        @SuppressWarnings("unused")
         JEditorPane pane;
 
         public HyperlinkAction(JEditorPane pane) {

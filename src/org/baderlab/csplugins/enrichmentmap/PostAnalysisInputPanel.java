@@ -69,17 +69,18 @@ import java.net.URL;
 /**
  * Created by
  * @author revilo
- * @date July 9, 2009
+ * <p>
+ * Date July 9, 2009
  * 
  * Based on: EnrichmentMapInputPanel.java (302) by risserlin
  */
-/**
- * @author revilo
- * @date   Oct 9, 2009
- * @time   5:51:48 PM
- *
- */
+
 public class PostAnalysisInputPanel extends JPanel {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 5472169142720323583L;
+
     final static int RIGHT = 0, DOWN = 1, UP = 2, LEFT = 3; // image States
     
     CollapsiblePanel Parameters;
@@ -133,10 +134,6 @@ public class PostAnalysisInputPanel extends JPanel {
         decFormat.setParseIntegerOnly(false);
 
         setLayout(new BorderLayout());
-
-        CytoscapeDesktop desktop = Cytoscape.getDesktop();
-        CytoPanel cytoPanel = desktop.getCytoPanel(SwingConstants.EAST);
-        //cytoPanel.addCytoPanelListener();
 
         //get the current enrichment map parameters
         EnrichmentMapParameters emParams = EnrichmentMapManager.getInstance().getParameters(Cytoscape.getCurrentNetwork().getIdentifier());
@@ -391,6 +388,11 @@ public class PostAnalysisInputPanel extends JPanel {
 
         //add GMT file
         JLabel GMTLabel = new JLabel("GMT:"){
+            /**
+             * 
+             */
+            private static final long serialVersionUID = 5799024396588991328L;
+
             public JToolTip createToolTip() {
                 return new JMultiLineToolTip();
             }
@@ -432,6 +434,11 @@ public class PostAnalysisInputPanel extends JPanel {
 
         //add SigGMT file
         JLabel SigGMTLabel = new JLabel("SigGMT:"){
+            /**
+             * 
+             */
+            private static final long serialVersionUID = 8826340546360207691L;
+
             public JToolTip createToolTip() {
                 return new JMultiLineToolTip();
             }
@@ -871,7 +878,7 @@ public class PostAnalysisInputPanel extends JPanel {
         String errors = paParams.checkGMTfiles();
         if (errors.equalsIgnoreCase("")) {
             LoadGmtFilesTask load_GMTs = new LoadGmtFilesTask(this.paParams);
-            boolean success = TaskManager.executeTask(load_GMTs, config);
+            /*boolean success =*/ TaskManager.executeTask(load_GMTs, config);
         } else {
             JOptionPane.showMessageDialog(Cytoscape.getDesktop(),errors,"Invalid Input",JOptionPane.WARNING_MESSAGE);
         }
@@ -994,21 +1001,21 @@ public class PostAnalysisInputPanel extends JPanel {
     
     /**
      * @author revilo
-     * @date   Jul 16, 2009
-     * @time   5:50:59 PM
+     * <p>
+     * Date   Jul 16, 2009<br>
+     * Time   5:50:59 PM<br>
      *
      */
     private class LoadGmtFilesTask implements Task {
         private PostAnalysisParameters paParams = null;
         private TaskMonitor taskMonitor = null;
         private boolean interrupted = false;
-        private boolean success = false;
-        
         /**
          * constructor w/ TaskMonitor
          * @param paParams
          * @param taskMonitor
          */
+        @SuppressWarnings("unused")
         public LoadGmtFilesTask( PostAnalysisParameters paParams, TaskMonitor taskMonitor ){
             this( paParams );
             this.taskMonitor = taskMonitor;

@@ -49,8 +49,9 @@ import javax.swing.DefaultListModel;
 
 /**
  * @author revilo
- * @date   Jul 9, 2009
- * @time   6:01:53 PM
+ * <p>
+ * Date   Jul 9, 2009<br>
+ * Time   6:01:53 PM<br>
  *
  */
 public class PostAnalysisParameters extends EnrichmentMapParameters {

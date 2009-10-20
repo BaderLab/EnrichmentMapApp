@@ -53,8 +53,9 @@ import cytoscape.data.readers.TextFileReader;
 
 /**
  * @author revilo
- * @date   Jul 24, 2009
- * @time   11:50:07 AM
+ * <p>
+ * Date   Jul 24, 2009<br>
+ * Time   11:50:07 AM<br>
  *
  */
 public class HypergeometricTest extends TestCase {

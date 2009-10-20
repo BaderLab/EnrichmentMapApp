@@ -51,10 +51,11 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
 /**
- * Created by
+ * Created by:
  * @author revilo
- * @date Jul 10, 2009
- * @time 2:35:40 PM
+ * <p>
+ * Date Jul 10, 2009<br>
+ * Time 2:35:40 PM<br>
  * 
  * Based on: BuildEnrichmentMapActionListener.java (288) by risserlin
  */
@@ -84,7 +85,7 @@ public class BuildPostAnalysisActionListener implements ActionListener {
                 config.displayStatus(true);
 
                 BuildDiseaseSignatureTask new_signature = new BuildDiseaseSignatureTask(paParams);
-                boolean success = TaskManager.executeTask(new_signature, config);
+                /*boolean success =*/ TaskManager.executeTask(new_signature, config);
             } 
             else {
                 JOptionPane.showMessageDialog(Cytoscape.getDesktop(),errors,"No such Post-Analysis",JOptionPane.WARNING_MESSAGE);
