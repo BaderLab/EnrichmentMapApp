@@ -61,14 +61,15 @@ import cytoscape.task.Task;
 import cytoscape.task.TaskMonitor;
 import cytoscape.view.CyNetworkView;
 
-import cern.jet.random.HyperGeometric;
-import cern.jet.random.engine.*;
 import cern.jet.stat.Gamma;
 
 /**
+ * Cytoscape-Task to perform  Disease-Signature Post-Analysis
+ * 
  * @author revilo
- * @date   July 10, 2009
- * @time   3:58:24 PM
+ * <p>
+ * Date   July 10, 2009<br>
+ * Time   3:58:24 PM<br>
  *
  */
 public class BuildDiseaseSignatureTask implements Task {
@@ -88,8 +89,6 @@ public class BuildDiseaseSignatureTask implements Task {
     private HashSet<Integer> SignatureGenes;
         
     private HashMap<String,GenesetSimilarity> geneset_similarities;
-    
-    private static RandomEngine dRand = new DRand(); 
     
     /**
      * default constructor
