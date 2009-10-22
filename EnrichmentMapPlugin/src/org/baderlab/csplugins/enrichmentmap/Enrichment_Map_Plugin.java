@@ -50,6 +50,7 @@ import cytoscape.data.readers.TextFileReader;
 
 import javax.swing.*;
 
+import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
@@ -68,6 +69,9 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
     static String buildId ;
     static String pluginUrl;
     static String userManualUrl;
+    
+    private static boolean overrideHeatmapRevalidation = false;
+    static JCheckBoxMenuItem overrideHeatmapRevalidationItem;
 
     /**
      * Constructor
@@ -96,7 +100,35 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
         item = new JMenuItem("About");
         item.addActionListener(new ShowAboutPanelAction());
         submenu.add(item);
-
+        
+        //Begin of Code to toggle "Override Heatmap update" (for performance)
+        overrideHeatmapRevalidationItem = new JCheckBoxMenuItem(new AbstractAction("Override Heatmap Update") {
+            public void actionPerformed(ActionEvent e) {
+                // Do this in the GUI Event Dispatch thread...
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        // toggle state of overrideHeatmapRevalidation
+                        if (Enrichment_Map_Plugin.isOverrideHeatmapRevalidation()) {
+                            Enrichment_Map_Plugin.setOverrideHeatmapRevalidation(false);
+                        } else {
+                            Enrichment_Map_Plugin.setOverrideHeatmapRevalidation(true);
+                        }
+                        overrideHeatmapRevalidationItem.setSelected(isOverrideHeatmapRevalidation() );
+                    }
+                });
+            }
+        });
+        overrideHeatmapRevalidationItem.setSelected(isOverrideHeatmapRevalidation() );
+        submenu.addSeparator();
+        submenu.add(overrideHeatmapRevalidationItem);
+        /* 
+         * related code:
+         * - definitions of "overrideHeatmapRevalidation" & "overrideHeatmapRevalidationItem"
+         * - setter and getter for "overrideHeatmapRevalidation"
+         * - use of the flag in "EnrichmentMapActionListener.graphViewChanged()"
+         */
+        //End of Code to toggle "Override Heatmap update" (for performance)
+        
         menu.add(submenu);
 
         // read buildId properties:
@@ -485,6 +517,21 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
 
         props.load(inputStream);
         return props;
+    }
+
+    /**
+     * @param overrideHeatmapRevalidation the overrideHeatmapRevalidation to set
+     */
+    public static void setOverrideHeatmapRevalidation(
+            boolean overrideHeatmapRevalidation) {
+        Enrichment_Map_Plugin.overrideHeatmapRevalidation = overrideHeatmapRevalidation;
+    }
+
+    /**
+     * @return the overrideHeatmapRevalidation
+     */
+    public static boolean isOverrideHeatmapRevalidation() {
+        return overrideHeatmapRevalidation;
     }
 
 
