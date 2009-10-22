@@ -53,6 +53,7 @@ import java.util.List;
 import cytoscape.view.CytoscapeDesktop;
 import cytoscape.view.cytopanels.CytoPanel;
 import cytoscape.Cytoscape;
+import cytoscape.CytoscapeInit;
 
 import javax.swing.*;
 
@@ -116,7 +117,10 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
      * @param event
      */
     public void graphViewChanged(GraphViewChangeEvent event){
-        if(event.isEdgesSelectedType()){
+        //TODO: improve performance of calculating the Union of genesets (Nodes) and intersection of overlaps (Edges)
+        // Meanwhile we have a flag to skip the updating of the Heatmap, which can be toggled by a check-mark in the EM-Menu
+        boolean override_revalidate_heatmap = Enrichment_Map_Plugin.isOverrideHeatmapRevalidation();
+        if(event.isEdgesSelectedType() && ! override_revalidate_heatmap ) {
 
             Edge[] selectedEdges = event.getSelectedEdges();
 
@@ -130,7 +134,7 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
             createEdgesData();
 
         }
-        if(event.isNodesSelectedType()){
+        if(event.isNodesSelectedType() && ! override_revalidate_heatmap ){
 
             Node[] selectedNodes = event.getSelectedNodes();
 
