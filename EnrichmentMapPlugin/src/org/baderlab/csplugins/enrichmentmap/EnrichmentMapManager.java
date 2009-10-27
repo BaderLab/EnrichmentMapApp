@@ -360,4 +360,19 @@ public class EnrichmentMapManager implements PropertyChangeListener {
     public void setAnalysisWindow(PostAnalysisInputPanel analysisWindow) {
         this.analysisWindow = analysisWindow;
     }
+    
+    /**
+     * Returns true if networkTitle is the Title of an EnrichmentMap.<br>
+     * (and therefore an instance EnrichmentMapParameters is present) 
+     * 
+     * @param networkTitle
+     * @return true or false
+     */
+    public boolean isEnrichmentMap(String networkTitle){
+        if (cyNetworkList.containsKey(networkTitle))
+            return true;
+        else
+            return false;
+    }
+    
 }
