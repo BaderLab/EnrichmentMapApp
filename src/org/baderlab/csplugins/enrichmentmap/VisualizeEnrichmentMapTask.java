@@ -137,12 +137,23 @@ public class VisualizeEnrichmentMapTask implements Task {
             else{
                 //how many enrichment maps are there?
                 int num_networks = 1;
+                int max_prefix = 0;
+                EnrichmentMapManager manager = EnrichmentMapManager.getInstance();
                 for(Iterator i = networks.iterator(); i.hasNext();){
                     CyNetwork current_network = (CyNetwork)i.next();
-                    if( current_network.getTitle().startsWith("EM") )
+                    String name = current_network.getTitle();
+                    if( manager.isEnrichmentMap(name) ) {
                         num_networks++;
+                        EnrichmentMapParameters tmpParams = manager.getParameters(name);
+                        String tmpPrefix = tmpParams.getAttributePrefix();
+                        tmpPrefix = tmpPrefix.replace("EM", "");
+                        tmpPrefix = tmpPrefix.replace("_", "");
+                        int tmpNum = Integer.parseInt(tmpPrefix);
+                        if (tmpNum > max_prefix)
+                            max_prefix = tmpNum;
+                    }
                 }
-                prefix = "EM" + num_networks + "_";
+                prefix = "EM" + (max_prefix + 1) + "_";
                 params.setAttributePrefix(prefix);
                 params.setNetworkName(prefix+mapName);
                 network = Cytoscape.createNetwork(prefix + mapName);
