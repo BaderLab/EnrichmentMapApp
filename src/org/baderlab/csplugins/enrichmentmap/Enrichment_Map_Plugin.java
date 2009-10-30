@@ -133,7 +133,7 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
 
         // read buildId properties:
         try {
-            Enrichment_Map_Plugin.build_props = getPropertiesFromClasspath("buildID.props");
+            Enrichment_Map_Plugin.build_props = getPropertiesFromClasspath("org/baderlab/csplugins/enrichmentmap/buildID.props");
         } catch (IOException e) {
             // TODO: write Warning "Could not load 'buildID.props' - using default settings"
             Enrichment_Map_Plugin.build_props.setProperty("build.number", "0");

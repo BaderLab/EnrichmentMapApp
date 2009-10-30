@@ -155,8 +155,8 @@
 	</target>
 
 	<target name="jars" depends="compile.module.enrichment_map.production, buildID" description="Creates jar file for enrichment_map">
-		<copy file="${module.enrichment_map.basedir}/plugin.props" todir="${enrichment_map.output.dir}/org/baderlab/csplugins/enrichmentmap" />
-		<property file="${enrichment_map.output.dir}/buildID.props" />
+		<copy file="${module.enrichment_map.basedir}/plugin.props" todir="${enrichment_map.output.dir}/org/baderlab/csplugins/enrichmentmap/" />
+		<property file="${enrichment_map.output.dir}/org/baderlab/csplugins/enrichmentmap/buildID.props" />
 		<echo message="Build: ${build.number} from SVN: ${svn.revision} by: ${build.user}@${build.host} at: ${build.timestamp}" />
 
 		<mkdir dir="${enrichment_map.jars.dir}"/>
@@ -187,7 +187,7 @@
 		<property name="build.host" value="${env.COMPUTERNAME}"/>
 
 		<!-- write to property file -->
-		<propertyfile file="${enrichment_map.output.dir}/buildID.props"  comment="EnrichmentMapPlugin build ID">
+		<propertyfile file="${enrichment_map.output.dir}/org/baderlab/csplugins/enrichmentmap/buildID.props"  comment="EnrichmentMapPlugin build ID">
 			<entry  key="build.number"	value="${build.number}" />
 			<entry  key="svn.revision"	value="${svn.revision}"/>
 			<entry  key="build.user"  	value="${build.user}"/>
