@@ -80,6 +80,7 @@ public class SliderBarPanel extends JPanel {
 
     //precision that the slider can be adjusted to
     private double precision = 1000.0;
+    private int dec_precision = (int) Math.log10(precision);
 
     private JLabel label;
     private String sliderLabel;
@@ -161,7 +162,11 @@ public class SliderBarPanel extends JPanel {
     //Getters and Setters
 
     public void setLabel(int current_value) {
-        label.setText(sliderLabel + " --> " + current_value/precision);
+        label.setText(String.format( "<html>" + sliderLabel +                   // "P-value Cutoff" or "Q-value Cutoff"
+                " &#8594; " +                                                   // HTML entity right-arrow ( &rarr; )
+                "<font size=\"-2\"> %." + dec_precision + "f </font></html>",   // dec_precision is the number of decimals for given precision
+                (current_value/precision)                                       // the current P/Q-value cutoff
+                ) );
 
         this.revalidate();
     }
