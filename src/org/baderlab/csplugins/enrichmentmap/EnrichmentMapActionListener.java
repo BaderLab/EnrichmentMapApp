@@ -131,7 +131,8 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
                     Edges.add(selectedEdges[i]);
             }
 
-            createEdgesData();
+            if (Edges.size() <= Integer.parseInt(CytoscapeInit.getProperties().getProperty("EnrichmentMap.Heatmap_Edge_Limit",  "100") ) )
+                createEdgesData();
 
         }
         if(event.isNodesSelectedType() && ! override_revalidate_heatmap ){
@@ -145,7 +146,8 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
                     Nodes.add(selectedNodes[i]);
             }
 
-            createNodesData();
+            if (Nodes.size() <= Integer.parseInt(CytoscapeInit.getProperties().getProperty("EnrichmentMap.Heatmap_Node_Limit",  "50") ) )
+                createNodesData();
         }
         if(event.isNodesUnselectedType()){
             Node[] unselectedNodes = event.getUnselectedNodes();
