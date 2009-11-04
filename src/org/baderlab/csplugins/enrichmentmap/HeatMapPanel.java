@@ -45,6 +45,8 @@ package org.baderlab.csplugins.enrichmentmap;
 
 
 import cytoscape.util.FileUtil;
+import cytoscape.CytoscapeInit;
+import cytoscape.Cytoscape;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -130,6 +132,12 @@ public class HeatMapPanel extends JPanel {
     private boolean[] column1_ascending;
     private boolean[] column2_ascending;
 
+    //create a pop up menu for linkouts
+    private JPopupMenu rightClickPopupMenu;
+
+    //for the linkout properties that are loaded from cytoscape properties.
+    private Map<String, Map<String, String>> linkoutProps;
+
     /**
      * Class constructor - creates new instance of a Heat map panel
      *
@@ -140,7 +148,11 @@ public class HeatMapPanel extends JPanel {
        this.node = node;
        this.setLayout(new java.awt.BorderLayout());
 
+       //initialize the linkout props
+        initialize_linkouts();
 
+        //initialize pop up menu
+        rightClickPopupMenu = new JPopupMenu();
     }
 
     /**
@@ -244,6 +256,9 @@ public class HeatMapPanel extends JPanel {
 
             sort = new TableSort(OGT);
             jTable1 = new JTable(sort);
+
+            //add a listener to the table
+            jTable1.addMouseListener(new HeatMapTableActionListener(jTable1,OGT, rightClickPopupMenu,linkoutProps));
 
             // used for listening to columns when clicked
             TableHeader header = new TableHeader(sort, jTable1, hmParams);
@@ -1019,6 +1034,64 @@ public class HeatMapPanel extends JPanel {
         }
         return ranks;
     }
+
+    /**
+     * For each heat map there is a standard menu built from the linkouts which are stored in the Cytoscape
+     * Properties.  when the heat map is first built initialze this linkout list
+     *
+     * This code was pulled from the CyAttributeBrowserTable.java in cytoscape coreplugins
+     *
+     */
+     private void initialize_linkouts(){
+        // First, load existing property
+        Properties props = CytoscapeInit.getProperties();
+
+        // Use reflection to get resource
+        Class linkout = null;
+
+        try {
+            linkout = Class.forName("linkout.LinkOut");
+        } catch (ClassNotFoundException e1) {
+            JOptionPane.showMessageDialog(Cytoscape.getDesktop(),"Could't create LinkOut class","Could't create LinkOut class",JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        final ClassLoader cl = linkout.getClassLoader();
+
+        try {
+            props.load(cl.getResource("linkout.props").openStream());
+        } catch (IOException e1) {
+            JOptionPane.showMessageDialog(Cytoscape.getDesktop(),"Could't read LinkOut class","Could't read LinkOut class",JOptionPane.WARNING_MESSAGE);
+        }
+
+        linkoutProps = new HashMap<String, Map<String, String>>();
+
+		final String nodeLink = "nodelinkouturl";
+
+		String[] parts = null;
+
+		for (Map.Entry<Object, Object> entry : props.entrySet()) {
+			Map<String, String> pair = null;
+
+			if (entry.getKey().toString().startsWith(nodeLink)) {
+				parts = entry.getKey().toString().split("\\.");
+
+				if (parts.length == 3) {
+					pair = linkoutProps.get(parts[1]);
+
+					if (pair == null) {
+						pair = new HashMap<String, String>();
+						linkoutProps.put(parts[1], pair);
+					}
+
+					pair.put(parts[2], entry.getValue().toString());
+				}
+			}
+		}
+
+    }
+
+
 
     //Getters and Setters
 
