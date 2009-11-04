@@ -51,6 +51,7 @@ import cytoscape.view.cytopanels.CytoPanel;
 import cytoscape.view.cytopanels.CytoPanelState;
 
 import javax.swing.*;
+
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.util.HashMap;
@@ -147,7 +148,18 @@ public class EnrichmentMapManager implements PropertyChangeListener {
 
 
         parameterPanel = new ParametersPanel();
-        cytoSidePanel.add("Parameters", parameterPanel);
+        
+        //create an icon for the enrichment map panels
+        URL EMIconURL = Enrichment_Map_Plugin.class.getResource("resources/enrichmentmap_logo_notext_small.png");
+        ImageIcon EMIcon = null;
+        if (EMIconURL != null) {
+            EMIcon = new ImageIcon(EMIconURL);
+        }
+
+        if(EMIcon != null)
+            cytoSidePanel.add("Legend",EMIcon, parameterPanel);
+        else
+            cytoSidePanel.add("Legend", parameterPanel);
 
         cytoSidePanel.setSelectedIndex(cytoSidePanel.indexOfComponent(parameterPanel));
         cytoSidePanel.setState(CytoPanelState.DOCK);
@@ -155,13 +167,7 @@ public class EnrichmentMapManager implements PropertyChangeListener {
         nodesOverlapPanel = new HeatMapPanel(true);
         edgesOverlapPanel = new HeatMapPanel(false);
 
-        //create an icon for the enrichment map panels
-        URL EMIconURL = Enrichment_Map_Plugin.class.getResource("resources/enrichmentmap_logo_notext_small.png");
-        ImageIcon EMIcon = null;
-        if (EMIconURL != null) {
-             EMIcon = new ImageIcon(EMIconURL);
-        }
-
+        
         if(EMIcon != null){
             cytoPanel.add("EM Overlap Expression viewer",EMIcon,edgesOverlapPanel);
             cytoPanel.add("EM Geneset Expression viewer",EMIcon,nodesOverlapPanel);
