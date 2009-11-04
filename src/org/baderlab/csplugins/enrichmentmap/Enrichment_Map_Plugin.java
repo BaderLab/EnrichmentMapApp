@@ -71,7 +71,7 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
     static String userManualUrl;
     
     private static boolean overrideHeatmapRevalidation = false;
-    static JCheckBoxMenuItem overrideHeatmapRevalidationItem;
+//    static JCheckBoxMenuItem overrideHeatmapRevalidationItem;
 
     /**
      * Constructor
@@ -101,26 +101,27 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
         item.addActionListener(new ShowAboutPanelAction());
         submenu.add(item);
         
-        //Begin of Code to toggle "Override Heatmap update" (for performance)
-        overrideHeatmapRevalidationItem = new JCheckBoxMenuItem(new AbstractAction("Override Heatmap Update") {
-            public void actionPerformed(ActionEvent e) {
-                // Do this in the GUI Event Dispatch thread...
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        // toggle state of overrideHeatmapRevalidation
-                        if (Enrichment_Map_Plugin.isOverrideHeatmapRevalidation()) {
-                            Enrichment_Map_Plugin.setOverrideHeatmapRevalidation(false);
-                        } else {
-                            Enrichment_Map_Plugin.setOverrideHeatmapRevalidation(true);
-                        }
-                        overrideHeatmapRevalidationItem.setSelected(isOverrideHeatmapRevalidation() );
-                    }
-                });
-            }
-        });
-        overrideHeatmapRevalidationItem.setSelected(isOverrideHeatmapRevalidation() );
-        submenu.addSeparator();
-        submenu.add(overrideHeatmapRevalidationItem);
+//TODO: remove obsolete Code        
+//        //Begin of Code to toggle "Override Heatmap update" (for performance)
+//        overrideHeatmapRevalidationItem = new JCheckBoxMenuItem(new AbstractAction("Override Heatmap Update") {
+//            public void actionPerformed(ActionEvent e) {
+//                // Do this in the GUI Event Dispatch thread...
+//                SwingUtilities.invokeLater(new Runnable() {
+//                    public void run() {
+//                        // toggle state of overrideHeatmapRevalidation
+//                        if (Enrichment_Map_Plugin.isOverrideHeatmapRevalidation()) {
+//                            Enrichment_Map_Plugin.setOverrideHeatmapRevalidation(false);
+//                        } else {
+//                            Enrichment_Map_Plugin.setOverrideHeatmapRevalidation(true);
+//                        }
+//                        overrideHeatmapRevalidationItem.setSelected(isOverrideHeatmapRevalidation() );
+//                    }
+//                });
+//            }
+//        });
+//        overrideHeatmapRevalidationItem.setSelected(isOverrideHeatmapRevalidation() );
+//        submenu.addSeparator();
+//        submenu.add(overrideHeatmapRevalidationItem);
         /* 
          * related code:
          * - definitions of "overrideHeatmapRevalidation" & "overrideHeatmapRevalidationItem"
