@@ -44,7 +44,9 @@
 package org.baderlab.csplugins.enrichmentmap;
 
 import javax.swing.*;
+
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.io.File;
 import java.net.URL;
 
@@ -60,6 +62,7 @@ public class ParametersPanel extends JPanel {
 
     public static int summaryPanelWidth = 150;
     public static int summaryPanelHeight = 1000;
+    private JCheckBox overrideHeatmapRevalidationItem;
 
     /**
      * Class constructor
@@ -75,28 +78,62 @@ public class ParametersPanel extends JPanel {
      */
     public void updatePanel(EnrichmentMapParameters params){
 
-            this.removeAll();
-            this.revalidate();
-            this.setLayout(new java.awt.BorderLayout());
+        this.removeAll();
+        this.revalidate();
+        this.setLayout(new java.awt.BorderLayout());
 
-            JPanel main = new JPanel(new BorderLayout());
+        JPanel main = new JPanel(new BorderLayout());
 
-           JPanel legends = createLegend(params);
-           main.add(legends, BorderLayout.NORTH);
+        JPanel legends = createLegend(params);
+        main.add(legends, BorderLayout.NORTH);
+        
 
-           JTextPane runInfo;
+        JTextPane runInfo;
         //information about the current analysis
-           runInfo = new JTextPane();
-           runInfo.setEditable(false);
-           runInfo.setContentType("text/html");
-           runInfo.setText(getRunInfo(params));
-           runInfo.setPreferredSize(new Dimension(summaryPanelWidth,summaryPanelHeight/2));
-           main.add(runInfo, BorderLayout.SOUTH);
+        runInfo = new JTextPane();
+        runInfo.setEditable(false);
+        runInfo.setContentType("text/html");
+        runInfo.setText(getRunInfo(params));
+//        runInfo.setPreferredSize(new Dimension(summaryPanelWidth,summaryPanelHeight/2));
 
-            JScrollPane jScrollPane = new javax.swing.JScrollPane(main);
+        // put Parameters into Collapsible Panel
+        CollapsiblePanel runInfoPanel = new CollapsiblePanel("current Parameters");
+        runInfoPanel.setCollapsed(true);
+        runInfoPanel.getContentPane().add(runInfo);
 
-          //jScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-          this.add(jScrollPane);
+        main.add(runInfoPanel, BorderLayout.CENTER);
+
+        CollapsiblePanel preferences = new CollapsiblePanel("advanced Preferences");
+        preferences.setCollapsed(true);
+        JPanel prefsPanel = new JPanel();
+        
+        //Begin of Code to toggle "Override Heatmap update" (for performance)
+        overrideHeatmapRevalidationItem = new JCheckBox(new AbstractAction("Override Heatmap Update") {
+            public void actionPerformed(ActionEvent e) {
+                // Do this in the GUI Event Dispatch thread...
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        // toggle state of overrideHeatmapRevalidation
+                        if (Enrichment_Map_Plugin.isOverrideHeatmapRevalidation()) {
+                            Enrichment_Map_Plugin.setOverrideHeatmapRevalidation(false);
+                        } else {
+                            Enrichment_Map_Plugin.setOverrideHeatmapRevalidation(true);
+                        }
+                        overrideHeatmapRevalidationItem.setSelected(Enrichment_Map_Plugin.isOverrideHeatmapRevalidation() );
+                    }
+                });
+            }
+        });
+        overrideHeatmapRevalidationItem.setSelected(Enrichment_Map_Plugin.isOverrideHeatmapRevalidation() );
+        prefsPanel.add(overrideHeatmapRevalidationItem);
+        
+        preferences.getContentPane().add(prefsPanel);
+        main.add(preferences, BorderLayout.SOUTH);
+        
+        JScrollPane jScrollPane = new javax.swing.JScrollPane(main);
+
+        //jScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        this.add(jScrollPane);
 
 
         this.revalidate();
@@ -111,7 +148,9 @@ public class ParametersPanel extends JPanel {
      */
     private String getRunInfo(EnrichmentMapParameters params){
 
-           String runInfoText = "<html> <h1>Parameters:</h1>";
+           String runInfoText = "<html>";
+           
+//           runInfoText = runInfoText + " <h1>Parameters:</h1>";
 
            runInfoText = runInfoText + "<b>P-value Cut-off:</b>" + params.getPvalue() + "<br>";
            runInfoText = runInfoText + "<b>FDR Q-value Cut-off:</b>" + params.getQvalue() + "<br>";
