@@ -49,7 +49,9 @@ import cytoscape.view.cytopanels.CytoPanel;
 import cytoscape.util.CytoscapeAction;
 
 import javax.swing.*;
+
 import java.awt.event.ActionEvent;
+import java.net.URL;
 
 /**
  * Created by
@@ -83,7 +85,18 @@ public class LoadPostAnalysisPanelAction extends CytoscapeAction {
             //on network focus
             EnrichmentMapManager.getInstance().setAnalysisWindow(analysisWindow);
 
-            cytoPanel.add("Post Analysis", analysisWindow);
+            //create an icon for the enrichment map panels
+            URL EMIconURL = Enrichment_Map_Plugin.class.getResource("resources/enrichmentmap_logo_notext_small.png");
+            ImageIcon EMIcon = null;
+            if (EMIconURL != null) {
+                EMIcon = new ImageIcon(EMIconURL);
+            }
+
+            if(EMIcon != null)
+                cytoPanel.add("Post Analysis",EMIcon, analysisWindow);
+            else
+                cytoPanel.add("Post Analysis", analysisWindow);
+            
             index =  cytoPanel.indexOfComponent(analysisWindow);
 
             cytoPanel.setSelectedIndex(index);
@@ -96,7 +109,19 @@ public class LoadPostAnalysisPanelAction extends CytoscapeAction {
             if(analysisWindow == null){
                 analysisWindow = new PostAnalysisInputPanel();
                 EnrichmentMapManager.getInstance().setAnalysisWindow(analysisWindow);  
-                cytoPanel.add("Post Analysis", analysisWindow);
+
+                //create an icon for the enrichment map panels
+                URL EMIconURL = Enrichment_Map_Plugin.class.getResource("resources/enrichmentmap_logo_notext_small.png");
+                ImageIcon EMIcon = null;
+                if (EMIconURL != null) {
+                    EMIcon = new ImageIcon(EMIconURL);
+                }
+
+                if(EMIcon != null)
+                    cytoPanel.add("Post Analysis",EMIcon, analysisWindow);
+                else
+                    cytoPanel.add("Post Analysis", analysisWindow);
+                
                 index =  cytoPanel.indexOfComponent(analysisWindow);
             }
             else{
