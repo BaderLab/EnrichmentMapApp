@@ -61,6 +61,8 @@ public class HeatMapTableModel  extends AbstractTableModel implements TableModel
     private Object[][] data;
     private Object[][] expValue;
 
+
+
     public HeatMapTableModel() {
         // TODO Auto-generated constructor stub
     }
