@@ -176,9 +176,9 @@ public class HeatMapPanel extends JPanel {
 
         //get the current expressionSet
         if(node)
-           currentExpressionSet = getNodeExpressionSet(params, expression);
+            setNodeExpressionSet(params);
        else
-           currentExpressionSet = getEdgeExpressionSet(params, expression);
+            setEdgeExpressionSet(params);
 
         if(params.isData2()){
 
@@ -192,10 +192,6 @@ public class HeatMapPanel extends JPanel {
             this.Dataset2phenotype1 = params.getDataset2Phenotype1();
             this.Dataset2phenotype2 = params.getDataset2Phenotype2();
 
-            if(node)
-               currentExpressionSet2 = getNodeExpressionSet(params, expression2);
-            else
-               currentExpressionSet2 = getEdgeExpressionSet(params, expression2);
         }
 
 
@@ -839,39 +835,70 @@ public class HeatMapPanel extends JPanel {
 
      /**
      * Collates the current selected nodes genes to represent the expression of the genes that
-     * are in all the selected nodes.
+     * are in all the selected nodes.  and sets the expression sets (both if there are two datasets)
      *
      * @param params - enrichment map parameters of the current map
-     * @param expressionSet - can be from dataset 1 or dataset 2
-     * @return expression set for the overlap of the genes in the selected edges.
+     *
      */
-    private HashMap getNodeExpressionSet(EnrichmentMapParameters params, GeneExpressionMatrix expressionSet){
+    private void setNodeExpressionSet(EnrichmentMapParameters params){
 
         Object[] nodes = params.getSelectedNodes().toArray();
+         HashMap<String,GeneSet> genesets = params.getGenesetsOfInterest();
 
         //go through the nodes only if there are some
         if(nodes.length > 0){
-            HashSet union = null;
+            HashSet<Integer> union = new HashSet<Integer>();
+            //BitSet union = new BitSet(params.getEnrichmentMapGenes().size());
 
-            for(int i = 0; i< nodes.length;i++){
+            for (Object node1 : nodes) {
 
-                Node current_node = (Node)nodes[i];
+                Node current_node = (Node) node1;
                 String nodename = current_node.getIdentifier();
-                GeneSet current_geneset = (GeneSet)params.getGenesetsOfInterest().get(nodename);
-                if(current_geneset == null)
+                GeneSet current_geneset = genesets.get(nodename);
+                if (current_geneset == null)
                     continue;
-                HashSet current_set = current_geneset.getGenes();
+                //BitSet current_set = current_geneset.getGeneBits();
+                HashSet<Integer> current_set = current_geneset.getGenes();
 
-                if( union == null){
-                    union = new HashSet(current_set);
-                 }else{
+                //perform a union with current union set and current gene set
+                //because this is represented as bits it is actually the logical OR operator
+                //union.or(current_set);
+
+                if (union == null) {
+                    union = new HashSet<Integer>(current_set);
+
+                } else {
                     union.addAll(current_set);
-                }
-            }
-            return expressionSet.getExpressionMatrix(union);
-        }
+                    //go through each object in the hashset and add it to the union if it isn't
+                    //already in the set
+                   /* Object[] list = current_set.toArray();
+                    for (Object aList : list) {
+                        if (union.contains(aList)) {
+                            continue;
+                        }
 
-        return null;
+                        union.add((Integer) aList);
+                    }*/
+                }
+
+                //check to see if the union contains all the genes
+                if (union.size() == params.getEnrichmentMapGenes().size())
+                //if(union.cardinality() >= params.getEnrichmentMapGenes().size())
+                    break;
+
+            }
+
+            //HashSet<Integer> genes = params.translateBitSet(union);
+            HashSet<Integer> genes = union;
+            currentExpressionSet = params.getExpression().getExpressionMatrix(genes);
+            if(params.isData2())
+                currentExpressionSet2 =params.getExpression2().getExpressionMatrix(genes);
+
+        }
+        else{
+            currentExpressionSet = null;
+            currentExpressionSet2 = null;
+        }
 
 
     }
@@ -881,16 +908,15 @@ public class HeatMapPanel extends JPanel {
      * are in all the selected edges.
      *
      * @param params - enrichment map parameters of the current map
-     * @param expressionSet - can be from dataset 1 or dataset 2
-     * @return expression set for the overlap of the genes in the selected edges.
+     *
      */
-    private HashMap getEdgeExpressionSet(EnrichmentMapParameters params, GeneExpressionMatrix expressionSet){
+    private void setEdgeExpressionSet(EnrichmentMapParameters params){
 
         Object[] edges = params.getSelectedEdges().toArray();
 
         if(edges.length>0){
-            HashSet intersect = null;
-            HashSet union = null;
+            HashSet<Integer> intersect = null;
+            //HashSet union = null;
 
             for(int i = 0; i< edges.length;i++){
 
@@ -902,20 +928,29 @@ public class HeatMapPanel extends JPanel {
                 if(similarity == null)
                     continue;
 
-                HashSet current_set = similarity.getOverlapping_genes();
+                HashSet<Integer> current_set = similarity.getOverlapping_genes();
 
-                if(intersect == null && union == null){
-                    intersect = new HashSet(current_set);
-                    union = new HashSet(current_set);
+                //if(intersect == null && union == null){
+                if(intersect == null){
+                    intersect = new HashSet<Integer>(current_set);
+                    //union = new HashSet(current_set);
                 }else{
                     intersect.retainAll(current_set);
-                    union.addAll(current_set);
+                    //union.addAll(current_set);
                 }
 
+                if(intersect.size() < 1)
+                    break;
+
             }
-            return expressionSet.getExpressionMatrix(intersect);
+            currentExpressionSet = params.getExpression().getExpressionMatrix(intersect);
+            if(params.isData2())
+                currentExpressionSet2 = params.getExpression2().getExpressionMatrix(intersect);
         }
-        return null;
+        else{
+            currentExpressionSet = null;
+            currentExpressionSet2 = null;
+        }
     }
 
     /**

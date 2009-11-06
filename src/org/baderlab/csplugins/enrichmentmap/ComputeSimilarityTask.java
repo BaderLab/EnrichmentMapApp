@@ -45,10 +45,7 @@ package org.baderlab.csplugins.enrichmentmap;
 import cytoscape.task.Task;
 import cytoscape.task.TaskMonitor;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by

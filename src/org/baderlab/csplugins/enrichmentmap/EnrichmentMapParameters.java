@@ -119,12 +119,23 @@ public class EnrichmentMapParameters {
     //Hashmap stores the unique set of genes used in the gmt file
     private HashMap<String,Integer> genes;
 
+    private HashMap<Integer, Integer> hashkey2bitindex;
+    private HashMap<Integer, Integer> bitindex2hashkey;
+    private int bitIndex = 0;
+
     //when translating visual attribute of the gene list we need to be able to translate
     //the gene hash key into the gene name without tracing from the entire hash.
     //create the opposite of the gene hashmap so we can do this.
     private HashMap<Integer, String> hashkey2gene;
     private HashSet<Integer> datasetGenes;
     private int NumberOfGenes = 0;
+
+    //In order to speed up union and intersections of nodes and edges in the network
+    //store the genes that are present in the network.
+    //get the intersection between the genes in the gene set file (gmt) and the genes in
+    //expression file (dataset genes)
+    //TODO: recompute enrcihmentmap genes on session re-load.
+    private HashSet<Integer> enrichmentMapGenes;
 
     //Hashmap of the enrichment Results, It is is a hash of the GSEAResults or GenericResults objects
     private HashMap<String, EnrichmentResult> enrichmentResults1;
@@ -202,6 +213,9 @@ public class EnrichmentMapParameters {
         this.genes = new HashMap<String, Integer>();
         this.hashkey2gene = new HashMap<Integer, String>();
         this.datasetGenes = new HashSet<Integer>();
+        this.hashkey2bitindex = new HashMap<Integer, Integer>();
+        this.bitindex2hashkey = new HashMap<Integer, Integer>();
+        this.enrichmentMapGenes = new HashSet<Integer>();
         this.genesets = new HashMap<String, GeneSet>();
         this.filteredGenesets = new HashMap<String, GeneSet>();
         this.enrichmentResults1OfInterest = new HashMap<String, EnrichmentResult>();
@@ -590,6 +604,7 @@ public class EnrichmentMapParameters {
          * the genes found in the expression file.
          */
         public void filterGenesets(){
+
             //iterate through each geneset and filter each one
              for(Iterator j = genesets.keySet().iterator(); j.hasNext(); ){
 
@@ -604,6 +619,9 @@ public class EnrichmentMapParameters {
                  Set<Integer> intersection = new HashSet<Integer>(geneset_genes);
                  intersection.retainAll(datasetGenes);
 
+                 //add the intersection to the set of genes in the network
+                 //enrichmentMapGenes.addAll(intersection);
+
                  //Add new geneset to the filtered set of genesets
                  HashSet<Integer> new_geneset = new HashSet<Integer>(intersection);
                  GeneSet new_set = new GeneSet(geneset2_name,current_set.getDescription());
@@ -614,8 +632,82 @@ public class EnrichmentMapParameters {
              }
             //once we have filtered the genesets clear the original genesets object
             genesets.clear();
+
         }
 
+    /**
+     * Go through the filtered genesets of interest and create a bitset the size of enrichment
+     * map genes with flags indicating the presence or absence of every potential gene.
+     */
+        public void initializeBitsets(){
+              //iterate through each geneset and filter each one
+             for(Iterator j = genesetsOfInterest.keySet().iterator(); j.hasNext(); ){
+
+                 String geneset2_name = j.next().toString();
+                 GeneSet current_set =  genesetsOfInterest.get(geneset2_name);
+
+                 //for this current geneset create a new bitset
+                 BitSet new_bitset = new BitSet(enrichmentMapGenes.size());
+                 //make sure that the bitset is all falses
+                 new_bitset.clear();
+
+                 //compare the HashSet of dataset genes to the HashSet of the current Geneset
+                 //only keep the genes from the geneset that are in the dataset genes
+                 HashSet<Integer> geneset_genes = current_set.getGenes();
+
+                 //go through each gene in the geneset.
+
+                 for(Integer gene : geneset_genes){
+                    //check to see if it already has an index in the bitset array
+                    //if it has one then use that index to set the bitset
+                    if(hashkey2bitindex.containsKey(gene)){
+                        Integer index = hashkey2bitindex.get(gene);
+                        new_bitset.set(index);
+                    }
+                    //if it isn't in the hash then get an index for this gene and add it.
+                    else{
+                        hashkey2bitindex.put(gene,bitIndex);
+                        bitindex2hashkey.put(bitIndex,gene);
+                        new_bitset.set(bitIndex);
+                        bitIndex++;
+                    }
+                 }
+
+                 current_set.setGeneBits(new_bitset);
+             }
+        }
+
+
+    /**
+     * Given an bitSet (which can be a union or intersection of a group of bitsets)
+     * translate the bitset into the Hashset which is used in the rest of the analysis.
+     *
+     * @param bitset - the bitset for a union or intersection
+     * @return  translation of the bitset to a hashset of the genes represented as integers
+     */
+    public HashSet<Integer> translateBitSet(BitSet bitset){
+        HashSet<Integer> genes = new HashSet<Integer>();
+
+        for(int k = 0; k < bitset.length(); k++){
+            //if the bit is true then add the gene that is specified by this index to the set
+            if(bitset.get(k))
+                genes.add(bitindex2hashkey.get(k));
+        }
+
+        return genes;
+
+    }
+    /**
+     * Compute the enrichment genes
+     *
+     */
+    public void computeEnrichmentMapGenes(){
+        enrichmentMapGenes = new HashSet<Integer>();
+        for (Iterator<String> i = genesetsOfInterest.keySet().iterator(); i.hasNext(); ){
+            String setName = i.next();
+            enrichmentMapGenes.addAll(genesetsOfInterest.get(setName).getGenes());
+        }
+    }
         /**
          * Check to see that there are genes in the filtered  genesets
          * If the ids do not match up, after a filtering there will be no genes in any of the genesets
@@ -1284,6 +1376,13 @@ public class EnrichmentMapParameters {
         this.temp_class2 = temp_class2;
     }
 
+    public HashSet<Integer> getEnrichmentMapGenes() {
+        return enrichmentMapGenes;
+    }
+
+    public void setEnrichmentMapGenes(HashSet<Integer> enrichmentMapGenes) {
+        this.enrichmentMapGenes = enrichmentMapGenes;
+    }
 
     /**
      * @param paParams store reference to PostAnalysisParameters instance associated with this Enrichment Map

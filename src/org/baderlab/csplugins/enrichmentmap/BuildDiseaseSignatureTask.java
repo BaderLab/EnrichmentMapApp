@@ -45,12 +45,7 @@ package org.baderlab.csplugins.enrichmentmap;
 
 import giny.view.NodeView;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import cytoscape.CyEdge;
 import cytoscape.CyNetwork;
@@ -115,6 +110,7 @@ public class BuildDiseaseSignatureTask implements Task {
                     this.SignatureGenesets.get(paParams.getSelectedSignatureSetNames().get(i)));
         }
         // EnrichmentGenes: pool of all genes in Enrichment Gene Sets
+        //TODO: get enrichment map genes from enrichment map parameters now that they are computed there.
         EnrichmentGenes = new HashSet<Integer>();
         for (Iterator<String> i = EnrichmentGenesets.keySet().iterator(); i.hasNext(); ){
             String setName = i.next();
