@@ -44,6 +44,7 @@
 package org.baderlab.csplugins.enrichmentmap;
 import cytoscape.plugin.CytoscapePlugin;
 import cytoscape.Cytoscape;
+import cytoscape.CytoscapeInit;
 import cytoscape.view.CyNetworkView;
 import cytoscape.data.readers.TextFileReader;
 
@@ -131,6 +132,14 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
         //End of Code to toggle "Override Heatmap update" (for performance)
         
         menu.add(submenu);
+        
+        // add LinkOut for MSigDb GSEA gene sets
+        Properties cyto_props = CytoscapeInit.getProperties();
+        if ( ! cyto_props.containsKey("nodelinkouturl.MSigDb.GSEA Gene sets"))
+            cyto_props.put("nodelinkouturl.MSigDb.GSEA Gene sets", "http://www.broad.mit.edu/gsea/msigdb/cards/%ID%.html");
+        // remove old nodelinkouturl (for legacy issues)
+        if (cyto_props.containsKey("nodelinkouturl.MSigDb"))
+            cyto_props.remove("nodelinkouturl.MSigDb");
 
         // read buildId properties:
         try {
@@ -503,6 +512,11 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
         } catch (Exception ee) {
             ee.printStackTrace();
         }
+        
+        // remove old nodelinkouturl (for legacy issues)
+        Properties cyto_props = CytoscapeInit.getProperties();
+        if (cyto_props.containsKey("nodelinkouturl.MSigDb"))
+            cyto_props.remove("nodelinkouturl.MSigDb");
 
     }
 
