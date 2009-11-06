@@ -262,7 +262,10 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
 
                     for(Iterator j = all_ranks.keySet().iterator(); j.hasNext(); ){
                         String ranks_name = j.next().toString();
-
+                        // as ranks names that contain dots make problems, when restoring a session,
+                        // we'll replace them by underscores:
+                        if (ranks_name.contains("."))
+                            ranks_name.replace('.', '_');
                         File current_ranks = new File(tmpDir, name+"."+ranks_name+".RANKS.txt");
                         BufferedWriter subrank1writer = new BufferedWriter(new FileWriter(current_ranks));
                         subrank1writer.write(params.printHashmap(all_ranks.get(ranks_name)));
