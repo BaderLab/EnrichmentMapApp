@@ -45,6 +45,7 @@ package org.baderlab.csplugins.enrichmentmap;
 
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.BitSet;
 
 /**
  * Created by
@@ -69,6 +70,9 @@ public class GeneSet {
     private String Description;
     //genes associated with this gene set
     private HashSet<Integer> genes = null;
+
+    //genes represented as a Bit array
+    private BitSet geneBits = null;
 
     /**
      * Class Constructor - creates gene set with a specified name and description with an empty
@@ -100,7 +104,7 @@ public class GeneSet {
 
         for(int i = 3; i < tokens.length;i++)
             this.genes.add(Integer.parseInt(tokens[i]));
-      
+
     }
 
     /* Given a Hashkey
@@ -146,6 +150,14 @@ public class GeneSet {
 
     public void setGenes(HashSet<Integer> genes) {
         this.genes = genes;
+    }
+
+    public BitSet getGeneBits() {
+        return geneBits;
+    }
+
+    public void setGeneBits(BitSet geneBits) {
+        this.geneBits = geneBits;
     }
 
     public String toString(){

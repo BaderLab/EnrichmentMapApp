@@ -45,6 +45,7 @@ package org.baderlab.csplugins.enrichmentmap;
 
 import java.util.HashSet;
 
+
 /**
  * Created by
  * User: risserlin
@@ -58,7 +59,7 @@ public class GenesetSimilarity {
 
     private String geneset1_Name;
     private String geneset2_Name;
-    
+
     //currently the intereaction type is pp which actually means a protein protein interaction
     ///but there is no specification of an enrichment interaction in cytoscape.
     private String interaction_type;
@@ -104,7 +105,7 @@ public class GenesetSimilarity {
         this.geneset2_Name = geneset2_Name;
         this.similarity_coeffecient = similarity_coeffecient;
         this.hypergeom_pvalue = hypergeom_pvalue;
-        
+
         this.overlapping_genes = overlapping_genes;
         this.interaction_type = interaction_type;
     }

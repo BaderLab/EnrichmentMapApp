@@ -197,6 +197,11 @@ public class BuildEnrichmentMapTask implements Task {
             InitializeGenesetsOfInterestTask genesets_init = new InitializeGenesetsOfInterestTask(params,taskMonitor);
             genesets_init.run();
 
+            //initialize bitsets for the genesets once the genesets have been filtered
+            params.computeEnrichmentMapGenes();
+            //once we have filtered the genesets we need to initialize the bitsets for each geneset
+            params.initializeBitsets();
+
        } catch (OutOfMemoryError e) {
             taskMonitor.setException(e,"Out of Memory. Please increase memory allotement for cytoscape.");
             return;
