@@ -619,9 +619,6 @@ public class EnrichmentMapParameters {
                  Set<Integer> intersection = new HashSet<Integer>(geneset_genes);
                  intersection.retainAll(datasetGenes);
 
-                 //add the intersection to the set of genes in the network
-                 //enrichmentMapGenes.addAll(intersection);
-
                  //Add new geneset to the filtered set of genesets
                  HashSet<Integer> new_geneset = new HashSet<Integer>(intersection);
                  GeneSet new_set = new GeneSet(geneset2_name,current_set.getDescription());
@@ -635,68 +632,6 @@ public class EnrichmentMapParameters {
 
         }
 
-    /**
-     * Go through the filtered genesets of interest and create a bitset the size of enrichment
-     * map genes with flags indicating the presence or absence of every potential gene.
-     */
-        public void initializeBitsets(){
-              //iterate through each geneset and filter each one
-             for(Iterator j = genesetsOfInterest.keySet().iterator(); j.hasNext(); ){
-
-                 String geneset2_name = j.next().toString();
-                 GeneSet current_set =  genesetsOfInterest.get(geneset2_name);
-
-                 //for this current geneset create a new bitset
-                 BitSet new_bitset = new BitSet(enrichmentMapGenes.size());
-                 //make sure that the bitset is all falses
-                 new_bitset.clear();
-
-                 //compare the HashSet of dataset genes to the HashSet of the current Geneset
-                 //only keep the genes from the geneset that are in the dataset genes
-                 HashSet<Integer> geneset_genes = current_set.getGenes();
-
-                 //go through each gene in the geneset.
-
-                 for(Integer gene : geneset_genes){
-                    //check to see if it already has an index in the bitset array
-                    //if it has one then use that index to set the bitset
-                    if(hashkey2bitindex.containsKey(gene)){
-                        Integer index = hashkey2bitindex.get(gene);
-                        new_bitset.set(index);
-                    }
-                    //if it isn't in the hash then get an index for this gene and add it.
-                    else{
-                        hashkey2bitindex.put(gene,bitIndex);
-                        bitindex2hashkey.put(bitIndex,gene);
-                        new_bitset.set(bitIndex);
-                        bitIndex++;
-                    }
-                 }
-
-                 current_set.setGeneBits(new_bitset);
-             }
-        }
-
-
-    /**
-     * Given an bitSet (which can be a union or intersection of a group of bitsets)
-     * translate the bitset into the Hashset which is used in the rest of the analysis.
-     *
-     * @param bitset - the bitset for a union or intersection
-     * @return  translation of the bitset to a hashset of the genes represented as integers
-     */
-    public HashSet<Integer> translateBitSet(BitSet bitset){
-        HashSet<Integer> genes = new HashSet<Integer>();
-
-        for(int k = 0; k < bitset.length(); k++){
-            //if the bit is true then add the gene that is specified by this index to the set
-            if(bitset.get(k))
-                genes.add(bitindex2hashkey.get(k));
-        }
-
-        return genes;
-
-    }
     /**
      * Compute the enrichment genes
      *

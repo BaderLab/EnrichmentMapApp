@@ -847,8 +847,7 @@ public class HeatMapPanel extends JPanel {
 
         //go through the nodes only if there are some
         if(nodes.length > 0){
-            //HashSet<Integer> union = new HashSet<Integer>();
-            BitSet union = new BitSet(params.getEnrichmentMapGenes().size());
+            HashSet<Integer> union = new HashSet<Integer>();
 
             for (Object node1 : nodes) {
 
@@ -857,39 +856,21 @@ public class HeatMapPanel extends JPanel {
                 GeneSet current_geneset = genesets.get(nodename);
                 if (current_geneset == null)
                     continue;
-                BitSet current_set = current_geneset.getGeneBits();
-                //HashSet<Integer> current_set = current_geneset.getGenes();
 
-                //perform a union with current union set and current gene set
-                //because this is represented as bits it is actually the logical OR operator
-                union.or(current_set);
+                HashSet<Integer> current_set = current_geneset.getGenes();
 
-                //if (union == null) {
-                    //union = new HashSet<Integer>(current_set);
+                if (union == null) {
+                    union = new HashSet<Integer>(current_set);
 
-                //} else {
-                    //union.addAll(current_set);
-                    //go through each object in the hashset and add it to the union if it isn't
-                    //already in the set
-                   /* Object[] list = current_set.toArray();
-                    for (Object aList : list) {
-                        if (union.contains(aList)) {
-                            continue;
-                        }
+                } else {
+                    union.addAll(current_set);
 
-                        union.add((Integer) aList);
-                    }*/
-                //}
+                }
 
-                //check to see if the union contains all the genes
-                //if (union.size() == params.getEnrichmentMapGenes().size())
-                if(union.cardinality() >= params.getEnrichmentMapGenes().size())
-                    break;
 
             }
 
-            HashSet<Integer> genes = params.translateBitSet(union);
-            //HashSet<Integer> genes = union;
+            HashSet<Integer> genes = union;
             currentExpressionSet = params.getExpression().getExpressionMatrix(genes);
             if(params.isData2())
                 currentExpressionSet2 =params.getExpression2().getExpressionMatrix(genes);
