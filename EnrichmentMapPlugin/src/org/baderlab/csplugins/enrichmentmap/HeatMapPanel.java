@@ -1043,7 +1043,8 @@ public class HeatMapPanel extends JPanel {
 
             //check to see how many genes there are, if there are more than 1000 issue warning that
             //clustering will take a long time and give the user the option to abandon the clustering
-            if(currentExpressionSet.keySet().size() > 1000){
+            int hieracical_clusteting_theshold = Integer.parseInt(CytoscapeInit.getProperties().getProperty("EnrichmentMap.hieracical_clusteting_theshold", "1000"));
+            if(currentExpressionSet.keySet().size() > hieracical_clusteting_theshold){
                 int answer = JOptionPane.showConfirmDialog(Cytoscape.getDesktop(),
 			                                      " The combination of these gene sets contain "
                                                   + currentExpressionSet.keySet().size()
