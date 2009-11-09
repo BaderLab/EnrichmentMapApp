@@ -813,16 +813,35 @@ public class HeatMapPanel extends JPanel {
             else if(response == JOptionPane.YES_OPTION || response == JOptionPane.OK_OPTION){
                     try{
                         BufferedWriter output = new BufferedWriter(new FileWriter(file));
-                        for(int j = 0; j < columnNames.length;j++)
-                            if(j == (columnNames.length-1))
-                                output.write(columnNames[j] + "\n");
-                            else
-                                output.write(columnNames[j] + "\t");
+                        String[] currentColumns;
+                        if(params.isData2()){
+                            currentColumns = new String[columnNames.length + columnNames2.length - 2];
 
-                        for(Iterator i = currentExpressionSet.keySet().iterator(); i.hasNext();){
-                            GeneExpression row = (GeneExpression)currentExpressionSet.get(i.next());
-                            output.write(row.toString());
+                            System.arraycopy(columnNames,0,currentColumns,0,columnNames.length);
+                            System.arraycopy(columnNames2,2, currentColumns,columnNames.length,columnNames2.length-2);
                         }
+                        else
+                            currentColumns = (String[])columnNames;
+
+                        for(int j = 0; j < currentColumns.length;j++)
+                            if(j == (currentColumns.length-1))
+                                output.write(currentColumns[j] + "\n");
+                            else
+                                output.write(currentColumns[j] + "\t");
+
+                        //get the sorted expression set
+                        Object[][] sortedExpression;
+                        if(params.isData2())
+                            sortedExpression = createSortedMergedTableData();
+                        else
+                            sortedExpression = createSortedTableData();
+
+                        for(int k = 0; k < sortedExpression.length; k++){
+                            for(int l = 0; l< sortedExpression[k].length; l++)
+                                output.write(sortedExpression[k][l].toString() + "\t");
+                            output.write("\n");
+                        }
+
                         output.flush();
                         output.close();
                         JOptionPane.showMessageDialog(this, "File " + fileName + " saved.");
