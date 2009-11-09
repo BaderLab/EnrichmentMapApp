@@ -75,6 +75,7 @@ public class HeatMapParameters {
     //there are two sorting type, either by rank file or by a specific column
     private boolean sortbyrank = false;
     private boolean sortbycolumn = false;
+    private boolean sortbyHC = false;
     private boolean noSort=false;
 
     //name of column currently sorted by
@@ -103,6 +104,11 @@ public class HeatMapParameters {
     //pointer to panels containing the heatmaps.
     private HeatMapPanel edgeOverlapPanel;
     private HeatMapPanel nodeOverlapPanel;
+
+    public static String sort_hierarchical_cluster = "Hierarchical Cluster";
+    public static String sort_rank = "Ranks";
+    public static String sort_column = "Columns";
+    public static String sort_none = "No Sort";
 
     /**
      * Class constructor -
@@ -201,7 +207,7 @@ public class HeatMapParameters {
          RankBorder.setTitleJustification(TitledBorder.LEFT);
     	RankOptions 		= new JPanel();
     	rankOptionComboBox	= new JComboBox();
-    	rankOptionComboBox.addItem("Hierarchical Cluster");
+    	rankOptionComboBox.addItem(sort_hierarchical_cluster);
 
         //create the rank options based on what we have in the set of ranks
         //Go through the ranks hashmap and insert each ranking as an option
@@ -212,11 +218,34 @@ public class HeatMapParameters {
             }
         }
 
+        rankOptionComboBox.addItem(sort_none);
+
         // set the selection in the rank combo box
-        if(this.noSort){
-    		rankOptionComboBox.setSelectedItem("Hierarchical Cluster");            	
+        //if this is the initial creation then set the rank to the default
+        if(!sortbyHC && !noSort && !sortbyrank && !sortbycolumn){
+            rankOptionComboBox.setSelectedItem(params.getDefaultSortMethod());
+            if(params.getDefaultSortMethod().equalsIgnoreCase(sort_rank)){
+                sortbyrank = true;
+                if(ranks != null)
+                    rankFileIndex = ranks.keySet().iterator().next();
+                else{
+                    rankOptionComboBox.setSelectedItem(sort_none);
+                    sortbyrank = false;
+                    noSort = true;
+                }
+            }
+            else if(params.getDefaultSortMethod().equalsIgnoreCase(sort_none))
+                noSort = true;
+            else if(params.getDefaultSortMethod().equalsIgnoreCase(sort_hierarchical_cluster))
+                sortbyHC = true;
         }
-    	else if(this.sortbyrank){
+        else if(this.sortbyHC){
+    		rankOptionComboBox.setSelectedItem(sort_hierarchical_cluster);
+        }
+        else if(this.noSort){
+            rankOptionComboBox.setSelectedItem(sort_none);
+        }
+        else if(this.sortbyrank){
              for(Iterator j = ranks.keySet().iterator(); j.hasNext(); ){
                 String ranks_name = j.next().toString();
                 if(ranks_name.equalsIgnoreCase(rankFileIndex))
@@ -225,8 +254,8 @@ public class HeatMapParameters {
          }
     	 else if(this.sortbycolumn){
             //int columnNumber = this.sortIndex + 1;
-            rankOptionComboBox.addItem("Column: " + sortbycolumnName);
-            rankOptionComboBox.setSelectedItem("Column: " + sortbycolumnName);
+            rankOptionComboBox.addItem(sort_column + ":" + sortbycolumnName);
+            rankOptionComboBox.setSelectedItem(sort_column + ":" + sortbycolumnName);
          }
 
         //add the option to add another rank file
@@ -276,8 +305,8 @@ public class HeatMapParameters {
      */
     public void changeSortComboBoxToColumnSorted(){
           int columnNumber = this.sortIndex + 1;
-          rankOptionComboBox.addItem("Column: " + sortbycolumnName);
-          rankOptionComboBox.setSelectedItem("Column: " + sortbycolumnName);
+          rankOptionComboBox.addItem(sort_column + ":" + sortbycolumnName);
+          rankOptionComboBox.setSelectedItem(sort_column + ":" + sortbycolumnName);
 
       }
 
@@ -385,5 +414,13 @@ public class HeatMapParameters {
 
     public void setRankFileIndex(String rankFileIndex) {
         this.rankFileIndex = rankFileIndex;
+    }
+
+    public boolean isSortbyHC() {
+        return sortbyHC;
+    }
+
+    public void setSortbyHC(boolean sortbyHC) {
+        this.sortbyHC = sortbyHC;
     }
 }

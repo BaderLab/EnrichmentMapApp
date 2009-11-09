@@ -47,6 +47,7 @@ import giny.model.Edge;
 
 import java.util.*;
 import java.io.File;
+import java.io.FileOutputStream;
 
 import cytoscape.CytoscapeInit;
 
@@ -200,6 +201,7 @@ public class EnrichmentMapParameters {
     private String default_overlap_metric;
     private Boolean disable_heatmap_autofocus;
     private Boolean disable_genesetSummary_autofocus;
+    private String defaultSortMethod;
 
     final public static String ENRICHMENT_INTERACTION_TYPE = "pp"; //TODO: change to enr or ovlp ?!?
     private PostAnalysisParameters paParams;
@@ -236,6 +238,9 @@ public class EnrichmentMapParameters {
         this.defaultOverlapCutOff = Double.parseDouble( this.cyto_prop.getProperty("EnrichmentMap.default_overlap", "0.50") );
         this.default_overlap_metric = this.cyto_prop.getProperty("EnrichmentMap.default_overlap_metric", "jaccard");
         this.disable_heatmap_autofocus = Boolean.parseBoolean( this.cyto_prop.getProperty("EnrichmentMap.disable_heatmap_autofocus", "false") );
+
+        //get the default heatmap sort algorithm
+        this.defaultSortMethod = this.cyto_prop.getProperty("EnrichmentMap.default_sort_method", HeatMapParameters.sort_hierarchical_cluster);
 
         //assign the defaults:
         this.pvalue = this.defaultPvalueCutOff;
@@ -1255,6 +1260,27 @@ public class EnrichmentMapParameters {
 
     public boolean isDisableHeatmapAutofocus() {
         return this.disable_heatmap_autofocus ;
+    }
+
+    public String getDefaultSortMethod() {
+        return defaultSortMethod;
+    }
+
+    public void setDefaultSortMethod(String defaultSortMethod) {
+        this.defaultSortMethod = defaultSortMethod;
+
+        //also update the property in the cytoscape property file
+        this.cyto_prop = CytoscapeInit.getProperties() ;
+        cyto_prop.setProperty("EnrichmentMap.default_sort_method",defaultSortMethod);
+
+        //write the updated properties to the default properties file
+        try{
+            File file = CytoscapeInit.getConfigFile("cytoscape.props");
+		    FileOutputStream output = new FileOutputStream(file);
+	        CytoscapeInit.getProperties().store(output, "Cytoscape Property File");
+         } catch (Exception ex) {
+			//if we can't write the new properties then don't set them.
+		}
     }
 
     public void setSimilarityCutOffChanged(boolean similarityCutOffChanged) {

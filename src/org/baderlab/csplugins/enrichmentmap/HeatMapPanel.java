@@ -943,6 +943,28 @@ public class HeatMapPanel extends JPanel {
         //Get the ranks for all the keys, if there is a ranking file
         HashMap<Integer,Ranking> ranks = null;
 
+        //check to see if any of the ordering have been initialized
+        if(!hmParams.isNoSort() && !hmParams.isSortbyHC() && !hmParams.isSortbyrank() && !hmParams.isSortbycolumn()){
+            //initialize the default value
+            if(params.getDefaultSortMethod().equalsIgnoreCase(HeatMapParameters.sort_hierarchical_cluster))
+                hmParams.setSortbyHC(true);
+            if(params.getDefaultSortMethod().equalsIgnoreCase(HeatMapParameters.sort_rank)){
+                hmParams.setSortbyrank(true);
+                if(params.getRanks() != null)
+                    hmParams.setRankFileIndex(params.getRanks().keySet().iterator().next());
+                else{
+                    hmParams.setSortbyrank(false);
+                    hmParams.setNoSort(true);
+                }
+            }
+            if(params.getDefaultSortMethod().equalsIgnoreCase(HeatMapParameters.sort_none))
+                hmParams.setNoSort(true);
+            if(params.getDefaultSortMethod().equalsIgnoreCase(HeatMapParameters.sort_column)){
+                hmParams.setSortbycolumn(true);
+                hmParams.setSortIndex(0);
+            }
+        }
+
         HashMap<String, HashMap<Integer, Ranking>> all_ranks = params.getRanks();
         if(hmParams.isSortbyrank()){
             for(Iterator j = all_ranks.keySet().iterator(); j.hasNext(); ){
@@ -955,8 +977,17 @@ public class HeatMapPanel extends JPanel {
                throw new IllegalThreadStateException("invalid sort index for rank files.");
 
         }
-
-        else{
+        else if(hmParams.isNoSort() || (hmParams.isSortbycolumn())){
+            ranks = new HashMap<Integer,Ranking>();
+            for(Iterator i = currentExpressionSet.keySet().iterator();i.hasNext();){
+                Integer key = (Integer)i.next();
+                Ranking temp = new Ranking(((GeneExpression)currentExpressionSet.get(key)).getName(),0.0,0);
+                ranks.put(key,temp);
+            }
+            if(hmParams.isSortbycolumn())
+                hmParams.setSortbycolumn_event_triggered(true);
+        }
+        else if(hmParams.isSortbyHC()){
             ranks = getRanksByClustering();
         }
         return ranks;
@@ -978,6 +1009,8 @@ public class HeatMapPanel extends JPanel {
         int numdatacolumns = 0;
         int numdatacolumns2 = 0;
 
+        boolean cluster = true;
+
         if(numConditions > 0){
             numdatacolumns = numConditions - 2;
         }
@@ -989,59 +1022,93 @@ public class HeatMapPanel extends JPanel {
         //is more than one column of data
         if((currentExpressionSet.keySet().size() > 1) && ((numdatacolumns + numdatacolumns2) > 1)){
 
-            //create an arraylist of the expression subset.
-            List clustering_expressionset = new ArrayList() ;
-            ArrayList labels = new ArrayList();
-            int j = 0;
-
-            //go through the expressionset hashmap and add the key to the labels and add the expression to the clustering set
-            for(Iterator i = currentExpressionSet.keySet().iterator();i.hasNext();){
-                Integer key = (Integer)i.next();
-
-                Double[] x = ((GeneExpression)currentExpressionSet.get(key)).getExpression();
-                Double[] z;
-                if(params.isData2()){
-                    Double[] y = ((GeneExpression)currentExpressionSet2.get(key)).getExpression();
-                    z = new Double[x.length + y.length];
-                    System.arraycopy(x,0,z,0,x.length);
-                    System.arraycopy(y,0,z,x.length,y.length);
-
-                }
-                else{
-                    z = x;
-                }
-
-                //add the expresionset
-                clustering_expressionset.add(j, z);
-
-                //add the key to the labels
-                labels.add(j,key);
-
-                j++;
+            //check to see how many genes there are, if there are more than 1000 issue warning that
+            //clustering will take a long time and give the user the option to abandon the clustering
+            if(currentExpressionSet.keySet().size() > 1000){
+                int answer = JOptionPane.showConfirmDialog(Cytoscape.getDesktop(),
+			                                      " The combination of these gene sets contain "
+                                                  + currentExpressionSet.keySet().size()
+			                                      + " genes and "
+			                                      + "\nClustering a set this size may take several "
+			                                      + "minutes.\n" + "Do you wish to proceed?",
+			                                      "Cluster large set of genes",
+			                                      JOptionPane.YES_NO_OPTION);
+                if(answer == JOptionPane.NO_OPTION)
+                    cluster = false;
             }
 
-            //create a distance matrix the size of the expression set
-            DistanceMatrix distanceMatrix = new DistanceMatrix(currentExpressionSet.keySet().size());
-            distanceMatrix.calcDistances(clustering_expressionset, new AlignExpressionDataDistance());
 
-            distanceMatrix.setLabels(labels);
+            if(cluster){
 
-            //cluster
-            AvgLinkHierarchicalClustering cluster = new AvgLinkHierarchicalClustering(distanceMatrix);
-            cluster.setOptimalLeafOrdering(true);
-            cluster.run();
+                try{
+                    hmParams.setSortbyHC(true);
 
-            int[] order = cluster.getLeafOrder();
-            ranks = new HashMap<Integer,Ranking>();
-            for(int i =0;i< order.length;i++){
-                 //get the label
-                Integer label =  (Integer)labels.get(order[i]);
-                Ranking temp = new Ranking(((GeneExpression)currentExpressionSet.get(label)).getName(),0.0,i);
-                ranks.put(label,temp);
+                    //create an arraylist of the expression subset.
+                    List clustering_expressionset = new ArrayList() ;
+                    ArrayList labels = new ArrayList();
+                    int j = 0;
+
+                    //go through the expressionset hashmap and add the key to the labels and add the expression to the clustering set
+                    for(Iterator i = currentExpressionSet.keySet().iterator();i.hasNext();){
+                        Integer key = (Integer)i.next();
+
+                        Double[] x = ((GeneExpression)currentExpressionSet.get(key)).getExpression();
+                        Double[] z;
+                        if(params.isData2()){
+                            Double[] y = ((GeneExpression)currentExpressionSet2.get(key)).getExpression();
+                            z = new Double[x.length + y.length];
+                            System.arraycopy(x,0,z,0,x.length);
+                            System.arraycopy(y,0,z,x.length,y.length);
+
+                        }
+                        else{
+                            z = x;
+                        }
+
+                        //add the expresionset
+                        clustering_expressionset.add(j, z);
+
+                        //add the key to the labels
+                        labels.add(j,key);
+
+                        j++;
+                    }
+
+                    //create a distance matrix the size of the expression set
+                    DistanceMatrix distanceMatrix = new DistanceMatrix(currentExpressionSet.keySet().size());
+                    distanceMatrix.calcDistances(clustering_expressionset, new AlignExpressionDataDistance());
+
+                    distanceMatrix.setLabels(labels);
+
+                    //cluster
+                    AvgLinkHierarchicalClustering cluster_result = new AvgLinkHierarchicalClustering(distanceMatrix);
+
+                    //check to see if there more than 1000 genes, if there are use eisen ordering otherwise use bar-joseph
+                    if(currentExpressionSet.keySet().size() > 1000)
+                        cluster_result.setOptimalLeafOrdering(false);
+                    else
+                        cluster_result.setOptimalLeafOrdering(true);
+                    cluster_result.run();
+
+                    int[] order = cluster_result.getLeafOrder();
+                    ranks = new HashMap<Integer,Ranking>();
+                    for(int i =0;i< order.length;i++){
+                        //get the label
+                        Integer label =  (Integer)labels.get(order[i]);
+                        Ranking temp = new Ranking(((GeneExpression)currentExpressionSet.get(label)).getName(),0.0,i);
+                        ranks.put(label,temp);
+                    }
+                }catch(OutOfMemoryError e){
+                    JOptionPane.showMessageDialog(Cytoscape.getDesktop(), "Unable to complete clustering of genes due to insufficient memory.","Out of memory",JOptionPane.INFORMATION_MESSAGE);
+                    cluster = false;
+                }
             }
         }
-        else if((currentExpressionSet.keySet().size() == 1) || ((numdatacolumns + numdatacolumns2) <= 1)){
-            ranks = new HashMap<Integer,Ranking>();
+
+
+       if((currentExpressionSet.keySet().size() == 1) || ((numdatacolumns + numdatacolumns2) <= 1) || !(cluster)){
+           hmParams.setNoSort(true);
+           ranks = new HashMap<Integer,Ranking>();
             for(Iterator i = currentExpressionSet.keySet().iterator();i.hasNext();){
                 Integer key = (Integer)i.next();
                 Ranking temp = new Ranking(((GeneExpression)currentExpressionSet.get(key)).getName(),0.0,0);

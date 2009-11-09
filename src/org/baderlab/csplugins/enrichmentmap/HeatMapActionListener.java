@@ -118,7 +118,9 @@ public class HeatMapActionListener implements ActionListener {
            hmParams.setLogtransform(true);
            hmParams.setAsIS(false);
         }
-        else if(select.equalsIgnoreCase("Hierarchical Cluster")){
+        else if(select.equalsIgnoreCase(HeatMapParameters.sort_hierarchical_cluster)){
+           hmParams.setSortbyHC(true);
+           hmParams.setNoSort(false);
            hmParams.setSortbyrank(false);
            hmParams.setSortbycolumn(false);
            hmParams.setSortIndex(-1);
@@ -160,13 +162,23 @@ public class HeatMapActionListener implements ActionListener {
 
             }
        }
-        else{
+       else if(select.equalsIgnoreCase(HeatMapParameters.sort_none)){
+           hmParams.setSortbyHC(false);
+           hmParams.setNoSort(true);
+           hmParams.setSortbyrank(false);
+           hmParams.setSortbycolumn(false);
+           hmParams.setSortIndex(-1);
+       }
+
+       else{
            HashMap<String, HashMap<Integer, Ranking>> ranks = params.getRanks();
            for(Iterator j = ranks.keySet().iterator(); j.hasNext(); ){
                 String ranks_name = j.next().toString();
                 if(ranks_name.equalsIgnoreCase(select)){
                     hmParams.setSortbyrank(true);
+                    hmParams.setSortbyHC(false);
                     hmParams.setSortbycolumn(false);
+                    hmParams.setNoSort(false);
                     hmParams.setRankFileIndex(ranks_name);
                     hmParams.setSortIndex(-1);
                 }
