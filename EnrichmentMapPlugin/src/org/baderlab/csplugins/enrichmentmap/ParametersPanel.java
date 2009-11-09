@@ -105,7 +105,7 @@ public class ParametersPanel extends JPanel {
 
         CollapsiblePanel preferences = new CollapsiblePanel("advanced Preferences");
         preferences.setCollapsed(true);
-        JPanel prefsPanel = new JPanel();
+        JPanel prefsPanel = new JPanel(new BorderLayout());
         
         //Begin of Code to toggle "Override Heatmap update" (for performance)
         overrideHeatmapRevalidationItem = new JCheckBox(new AbstractAction("Override Heatmap Update") {
@@ -126,8 +126,54 @@ public class ParametersPanel extends JPanel {
         });
         overrideHeatmapRevalidationItem.setSelected(Enrichment_Map_Plugin.isOverrideHeatmapRevalidation() );
         prefsPanel.add(overrideHeatmapRevalidationItem);
-        
-        preferences.getContentPane().add(prefsPanel);
+
+        //add a radio button to set dafault sort method for the heat map
+        ButtonGroup sorting_methods = new ButtonGroup();
+        JPanel sortingPanel = new JPanel();
+        sortingPanel.setLayout(new BoxLayout(sortingPanel,BoxLayout.Y_AXIS));
+
+        JRadioButton hc = new JRadioButton(HeatMapParameters.sort_hierarchical_cluster);
+        hc.setActionCommand(HeatMapParameters.sort_hierarchical_cluster);
+        hc.setSelected(false);
+
+        JRadioButton nosort = new JRadioButton(HeatMapParameters.sort_none);
+        nosort.setActionCommand(HeatMapParameters.sort_none);
+        nosort.setSelected(false);
+
+        JRadioButton ranks = new JRadioButton(HeatMapParameters.sort_rank);
+        ranks.setActionCommand(HeatMapParameters.sort_rank);
+        ranks.setSelected(false);
+
+        JRadioButton columns = new JRadioButton(HeatMapParameters.sort_column);
+        columns.setActionCommand(HeatMapParameters.sort_column);
+        columns.setSelected(false);
+
+        if(params.getDefaultSortMethod().equalsIgnoreCase(HeatMapParameters.sort_hierarchical_cluster))
+            hc.setSelected(true);
+        if(params.getDefaultSortMethod().equalsIgnoreCase(HeatMapParameters.sort_none))
+            nosort.setSelected(true);
+        if(params.getDefaultSortMethod().equalsIgnoreCase(HeatMapParameters.sort_rank))
+            ranks.setSelected(true);
+        if(params.getDefaultSortMethod().equalsIgnoreCase(HeatMapParameters.sort_column))
+            columns.setSelected(true);
+
+        hc.addActionListener(new ParametersPanelActionListener(params));
+        sorting_methods.add(hc);
+        nosort.addActionListener(new ParametersPanelActionListener(params));
+        sorting_methods.add(nosort);
+        ranks.addActionListener(new ParametersPanelActionListener(params));
+        sorting_methods.add(ranks);
+        columns.addActionListener(new ParametersPanelActionListener(params));
+        sorting_methods.add(columns);
+
+        sortingPanel.add(new JLabel("Default Sorting Order:"));
+        sortingPanel.add(hc);
+        sortingPanel.add(ranks);
+        sortingPanel.add(columns);
+        sortingPanel.add(nosort);
+
+        preferences.getContentPane().add(sortingPanel, BorderLayout.SOUTH);
+        preferences.getContentPane().add(prefsPanel, BorderLayout.NORTH);
         main.add(preferences, BorderLayout.SOUTH);
         
         JScrollPane jScrollPane = new javax.swing.JScrollPane(main);
