@@ -71,8 +71,6 @@ public class GeneSet {
     //genes associated with this gene set
     private HashSet<Integer> genes = null;
 
-    //genes represented as a Bit array
-    private BitSet geneBits = null;
 
     /**
      * Class Constructor - creates gene set with a specified name and description with an empty
@@ -152,13 +150,6 @@ public class GeneSet {
         this.genes = genes;
     }
 
-    public BitSet getGeneBits() {
-        return geneBits;
-    }
-
-    public void setGeneBits(BitSet geneBits) {
-        this.geneBits = geneBits;
-    }
 
     public String toString(){
         String geneset = "";
