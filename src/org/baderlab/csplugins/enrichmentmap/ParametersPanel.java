@@ -109,6 +109,11 @@ public class ParametersPanel extends JPanel {
         
         //Begin of Code to toggle "Override Heatmap update" (for performance)
         overrideHeatmapRevalidationItem = new JCheckBox(new AbstractAction("Override Heatmap Update") {
+            /**
+             * TODO: DOCUMENT ME!
+             */
+            private static final long serialVersionUID = -1991964268189861889L;
+
             public void actionPerformed(ActionEvent e) {
                 // Do this in the GUI Event Dispatch thread...
                 SwingUtilities.invokeLater(new Runnable() {

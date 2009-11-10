@@ -1053,8 +1053,10 @@ public class HeatMapPanel extends JPanel {
 			                                      + "minutes.\n" + "Do you wish to proceed?",
 			                                      "Cluster large set of genes",
 			                                      JOptionPane.YES_NO_OPTION);
-                if(answer == JOptionPane.NO_OPTION)
+                if(answer == JOptionPane.NO_OPTION) {
                     cluster = false;
+                    hmParams.changeSortComboBoxToNoSort();
+                }
             }
 
 

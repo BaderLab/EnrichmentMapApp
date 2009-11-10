@@ -1272,15 +1272,6 @@ public class EnrichmentMapParameters {
         //also update the property in the cytoscape property file
         this.cyto_prop = CytoscapeInit.getProperties() ;
         cyto_prop.setProperty("EnrichmentMap.default_sort_method",defaultSortMethod);
-
-        //write the updated properties to the default properties file
-        try{
-            File file = CytoscapeInit.getConfigFile("cytoscape.props");
-		    FileOutputStream output = new FileOutputStream(file);
-	        CytoscapeInit.getProperties().store(output, "Cytoscape Property File");
-         } catch (Exception ex) {
-			//if we can't write the new properties then don't set them.
-		}
     }
 
     public void setSimilarityCutOffChanged(boolean similarityCutOffChanged) {
