@@ -309,6 +309,14 @@ public class HeatMapParameters {
           rankOptionComboBox.setSelectedItem(sort_column + ":" + sortbycolumnName);
 
       }
+    
+    /**
+     * Set the Sort Option ComboBox back to "No Sort".
+     * e.g. if too many genes are selected and the user chooses to abort the hieracical clustering.
+     */
+    public void changeSortComboBoxToNoSort(){
+        rankOptionComboBox.setSelectedItem(HeatMapParameters.sort_none);
+    }
 
     //Getters and Setters.
 
