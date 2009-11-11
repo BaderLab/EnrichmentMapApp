@@ -141,10 +141,10 @@ public class VisualizeEnrichmentMapTask implements Task {
                 EnrichmentMapManager manager = EnrichmentMapManager.getInstance();
                 for(Iterator i = networks.iterator(); i.hasNext();){
                     CyNetwork current_network = (CyNetwork)i.next();
-                    String name = current_network.getTitle();
-                    if( manager.isEnrichmentMap(name) ) {
+                    String networkId = current_network.getIdentifier();
+                    if( manager.isEnrichmentMap(networkId) ) {//fails
                         num_networks++;
-                        EnrichmentMapParameters tmpParams = manager.getParameters(name);
+                        EnrichmentMapParameters tmpParams = manager.getParameters(networkId);
                         String tmpPrefix = tmpParams.getAttributePrefix();
                         tmpPrefix = tmpPrefix.replace("EM", "");
                         tmpPrefix = tmpPrefix.replace("_", "");
