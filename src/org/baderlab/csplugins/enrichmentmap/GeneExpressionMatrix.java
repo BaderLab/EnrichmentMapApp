@@ -293,18 +293,18 @@ public class GeneExpressionMatrix {
      */
     public String toString(){
 
-        String expressionString = "";
+        StringBuffer expressionSb = new StringBuffer();
 
         for(int i = 0; i<columnNames.length; i++)
-            expressionString += columnNames[i] + "\t" ;
+            expressionSb.append(columnNames[i] + "\t") ;
 
-        expressionString += "\n";
+        expressionSb.append( "\n");
 
         for(Iterator i = expressionMatrix.keySet().iterator(); i.hasNext();){
-                expressionString += ((GeneExpression)expressionMatrix.get(i.next())).toString() ;
+            expressionSb.append( ((GeneExpression)expressionMatrix.get(i.next())).toString() );
            }
 
-        return expressionString;
+        return expressionSb.toString();
     }
 
 }

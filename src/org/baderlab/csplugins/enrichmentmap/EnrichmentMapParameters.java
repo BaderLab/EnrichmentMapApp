@@ -748,13 +748,13 @@ public class EnrichmentMapParameters {
      * @return string representation of the hash with the "key tab object newline" representation.
      */
     public String printHashmap(HashMap map ){
-       String result = "";
+       StringBuffer result = new StringBuffer();
 
        for(Iterator i = map.keySet().iterator();i.hasNext();){
            Object key = i.next();
-           result += key.toString() + "\t" + map.get(key).toString() + "\n";
+           result.append( key.toString() + "\t" + map.get(key).toString() + "\n");
        }
-       return result;
+       return result.toString();
 
    }
 

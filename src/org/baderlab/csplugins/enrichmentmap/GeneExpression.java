@@ -82,18 +82,21 @@ public class GeneExpression {
      * @return String representation of object as tab separate items followed by newline.
      */
     public String toString(){
-        String GE_string;
+        StringBuffer GE_StrBuff = new StringBuffer();
 
-        GE_string = name + separator + description;
+        GE_StrBuff.append(name);
+        GE_StrBuff.append(separator);
+        GE_StrBuff.append(description);
 
         for(int i =0;i<expression.length;i++){
 
-                GE_string = GE_string + separator + expression[i];
+            GE_StrBuff.append(separator);
+            GE_StrBuff.append(expression[i]);
         }
 
-        GE_string = GE_string + "\n";
+        GE_StrBuff.append("\n");
 
-        return GE_string;
+        return GE_StrBuff.toString();
     }
 
 
