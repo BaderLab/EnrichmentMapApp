@@ -368,14 +368,14 @@ public class EnrichmentMapManager implements PropertyChangeListener {
     }
     
     /**
-     * Returns true if networkTitle is the Title of an EnrichmentMap.<br>
+     * Returns true if the network with the identifier networkID an EnrichmentMap.<br>
      * (and therefore an instance EnrichmentMapParameters is present) 
      * 
-     * @param networkTitle
+     * @param networkID
      * @return true or false
      */
-    public boolean isEnrichmentMap(String networkTitle){
-        if (cyNetworkList.containsKey(networkTitle))
+    public boolean isEnrichmentMap(String networkID){
+        if (cyNetworkList.containsKey(networkID))
             return true;
         else
             return false;
