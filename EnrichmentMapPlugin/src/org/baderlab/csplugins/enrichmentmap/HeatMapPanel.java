@@ -105,8 +105,8 @@ public class HeatMapPanel extends JPanel {
     private ColorGradientTheme [] themeHalfRow2;
     private ColorGradientRange [] rangeHalfRow1;
     private ColorGradientRange [] rangeHalfRow2;
-    private boolean[] isHalfRow1;
-    private boolean[] isHalfRow2;
+    //private boolean[] isHalfRow1;
+    //private boolean[] isHalfRow2;
     private  final Insets insets = new Insets(0,0,0,0);
 
     //current subset of expression data from dataset 1 expression set
@@ -127,10 +127,6 @@ public class HeatMapPanel extends JPanel {
     private HeatMapParameters hmParams;
     //enrichment map parameters for heat map
     private EnrichmentMapParameters params;
-
-    //boolean indicating which direction the column was last sorted by
-    private boolean[] column1_ascending;
-    private boolean[] column2_ascending;
 
     //create a pop up menu for linkouts
     private JPopupMenu rightClickPopupMenu;
@@ -166,13 +162,16 @@ public class HeatMapPanel extends JPanel {
         GeneExpressionMatrix expression = params.getExpression();
         numConditions = expression.getNumConditions();
         columnNames = expression.getColumnNames();
-        column1_ascending = new boolean[columnNames.length];
+
         phenotypes = expression.getPhenotypes();
 
         this.Dataset1phenotype1 = params.getDataset1Phenotype1();
         this.Dataset1phenotype2 = params.getDataset1Phenotype2();
 
         hmParams = params.getHmParams();
+
+        //boolean[] temp = new boolean[columnNames.length + params.getRanks().size()];
+        hmParams.setAscending(new boolean[columnNames.length + params.getRanks().size()]);
 
         //get the current expressionSet
         if(node)
@@ -186,7 +185,10 @@ public class HeatMapPanel extends JPanel {
 
             numConditions2 = expression2.getNumConditions();
             columnNames2 = expression2.getColumnNames();
-            column2_ascending = new boolean[columnNames2.length-2]; //we don't have to repeat the name and description columns
+
+            //temp = new boolean[columnNames.length + (columnNames2.length-2) +params.getRanks().size()];
+            hmParams.setAscending(new boolean[columnNames.length + (columnNames2.length-2) +params.getRanks().size()]);//we don't have to repeat the name and description columns
+            //column2_ascending = new boolean[columnNames2.length-2]; //we don't have to repeat the name and description columns
             phenotypes2 = expression2.getPhenotypes();
 
             this.Dataset2phenotype1 = params.getDataset2Phenotype1();
@@ -263,33 +265,17 @@ public class HeatMapPanel extends JPanel {
             tableHdr.addMouseListener(header);
 
             //check to see if there is already a sort been defined for this table
-            if(hmParams.isSortbycolumn()){
+            //if(hmParams.isSortbycolumn()){
+            if(hmParams.getSort() == HeatMapParameters.Sort.COLUMN){
                 boolean ascending;
+                ascending = hmParams.isAscending(hmParams.getSortIndex());
 
-                if(hmParams.getSortIndex()>=columnNames.length){
-                    ascending = column2_ascending[hmParams.getSortIndex()-columnNames.length];
+                if(hmParams.getSortIndex()>=columnNames.length)
                     hmParams.setSortbycolumnName((String)columnNames2[hmParams.getSortIndex()-columnNames.length+2]);
-                }
-                else{
-                    ascending = column1_ascending[hmParams.getSortIndex()];
-                    hmParams.setSortbycolumnName((String)columnNames[hmParams.getSortIndex()]);
-                }
-                //only swap the direction of the sort if a column sort action was triggered
-                if(hmParams.isSortbycolumn_event_triggered()){
-                    //reset sort column trigger
-                    hmParams.setSortbycolumn_event_triggered(false);
 
-                    //change the ascending boolean flag for the column we are about to sort by
-                    //if the index is larger than column name 1 then it is from the second dataset
-                    if(hmParams.getSortIndex()>=columnNames.length){
-                        column2_ascending[hmParams.getSortIndex()-columnNames.length] = !column2_ascending[hmParams.getSortIndex()-columnNames.length];
-                        ascending = column2_ascending[hmParams.getSortIndex()-columnNames.length];
-                    }
-                    else{
-                        column1_ascending[hmParams.getSortIndex()] = !column1_ascending[hmParams.getSortIndex()];
-                        ascending = column1_ascending[hmParams.getSortIndex()];
-                    }
-                }
+                else
+                    hmParams.setSortbycolumnName((String)columnNames[hmParams.getSortIndex()]);
+
                 header.sortByColumn(hmParams.getSortIndex(), ascending);
             }
 
@@ -488,8 +474,15 @@ public class HeatMapPanel extends JPanel {
             }
             n++;
         }
+
+        //sort the ranks according to the ascending flag
+        boolean ascending = hmParams.isAscending(hmParams.getSortIndex());
+
+        if(ascending)
         //sort ranks
-        Arrays.sort(ranks_subset);
+            Arrays.sort(ranks_subset);
+        else
+            Arrays.sort(ranks_subset,Collections.reverseOrder());
 
         int k = 0;
         int previous = -1;
@@ -511,13 +504,8 @@ public class HeatMapPanel extends JPanel {
 
                 //Current expression row
                 GeneExpression row 		= (GeneExpression)currentExpressionSet.get(key);
-                Double[] expression_values;
-                if(hmParams.isRowNorm())
-                   expression_values 	= row.rowNormalize();
-                else if(hmParams.isLogtransform())
-                   expression_values 	= row.rowLogTransform();
-                else
-                   expression_values   	= row.getExpression();
+                Double[] expression_values = getExpression(row);
+
                 // stores the gene names in column 0
                 try{ // stores file name if the file contains integer (inserted to aid sorting)
                     expValue[k][0]=Integer.parseInt(row.getName());
@@ -557,8 +545,6 @@ public class HeatMapPanel extends JPanel {
         hRow2= new String[kValue];
         halfRow1Length= new int[kValue];
         halfRow2Length= new int[kValue];
-        isHalfRow1 = new boolean[kValue];
-        isHalfRow2 = new boolean[kValue];
         rangeHalfRow1= new ColorGradientRange[kValue];
         rangeHalfRow2= new ColorGradientRange[kValue];
         themeHalfRow1= new ColorGradientTheme[kValue];
@@ -592,8 +578,19 @@ public class HeatMapPanel extends JPanel {
             }
             n++;
          }
-        //sort ranks
-        Arrays.sort(ranks_subset);
+
+
+        //depending on the set value of ascending dictates which direction the ranks are
+        //outputed.  if ascending then output the ranks as is, if not ascending (descending) inverse
+        //the order of the ranks.
+        boolean ascending = hmParams.isAscending(hmParams.getSortIndex());
+
+       if(ascending)
+            //sort ranks
+             Arrays.sort(ranks_subset);
+       else
+             Arrays.sort(ranks_subset,Collections.reverseOrder());
+
 
         int k = 0;
         int previous = -1;
@@ -619,67 +616,27 @@ public class HeatMapPanel extends JPanel {
                 //get the corresponding row from the second dataset
                 GeneExpression halfRow2 = (GeneExpression)currentExpressionSet2.get(currentKey);
 
-                Double[] expression_values1 = null;
-                Double[] expression_values2 = null;
+                Double[] expression_values1 = getExpression(halfRow1);
+                Double[] expression_values2 = getExpression(halfRow2);
 
-                if(hmParams.isRowNorm()){
-                    if(halfRow1 != null)
-                        isHalfRow1[k]=true;
-                        expression_values1 = halfRow1.rowNormalize();
-                    if(halfRow2 != null)
-                        isHalfRow2[k]=true;
-                        expression_values2 = halfRow2.rowNormalize();
-                }
-                else if(hmParams.isLogtransform()){
-                    if(halfRow1 != null)
-                        expression_values1 = halfRow1.rowLogTransform();
-                    if(halfRow2 != null)
-                        expression_values2 = halfRow2.rowLogTransform();
-                }
-                else{
-                    if(halfRow1 != null)
-                        expression_values1   = halfRow1.getExpression();
-                    if(halfRow2 != null)
-                        expression_values2   = halfRow2.getExpression();
-                }
-
+                //Get the name and the description of the row
                 if(halfRow1 != null){
                     try{
-
                         expValue[k][0] = Integer.parseInt(halfRow1.getName());
-
                     }
                     catch (NumberFormatException e){
-
                         expValue[k][0]= halfRow1.getName();
                     }
-
-                    //data[k][1] = halfRow1.getDescription();
                     expValue[k][1]= halfRow1.getDescription();
                 }
                 else if(halfRow2 != null){
                     try{
-                        //data[k][0] = Integer.parseInt(halfRow2.getName());
                         expValue[k][0]= Integer.parseInt(halfRow2.getName());
                     }
                     catch (NumberFormatException e){
-                        //data[k][0] = halfRow2.getName();
                         expValue[k][0]= halfRow2.getName();
                     }
-                    //data[k][1] = halfRow2.getDescription();
                     expValue[k][1]= halfRow2.getDescription();
-                }
-
-               //if either of the expression_values is null set the array to have no data
-                if(expression_values1 == null){
-                    expression_values1 = new Double[columnNames.length-2];
-                    for(int q = 0; m < expression_values1.length;q++)
-                        expression_values1[q] = null;
-                }
-                if(expression_values2 == null){
-                    expression_values2 = new Double[columnNames2.length-2];
-                    for(int q = 0; m < expression_values2.length;q++)
-                       expression_values2[q] = null;
                 }
 
                 halfRow1Length[k]=halfRow1.getExpression().length;
@@ -689,6 +646,7 @@ public class HeatMapPanel extends JPanel {
                 for(int j = 0; j < halfRow1.getExpression().length;j++){
                     expValue[k][j+2]=expression_values1[j];
                   }
+
                 halfRow2Length[k]=(halfRow1.getExpression().length + halfRow2.getExpression().length);
                 themeHalfRow2[k]=hmParams.getTheme();
                 rangeHalfRow2[k]=hmParams.getRange();
@@ -704,20 +662,48 @@ public class HeatMapPanel extends JPanel {
         this.setRangeHalfRow1(rangeHalfRow1);
         this.setHalfRow1Length(halfRow1Length);
         this.sethRow1(hRow1);
-        this.setIsHalfRow1(isHalfRow1);
 
 
         this.setThemeHalfRow2(themeHalfRow2);
         this.setRangeHalfRow2(rangeHalfRow2);
         this.setHalfRow2Length(halfRow2Length);
         this.sethRow2(hRow2);
-        this.setIsHalfRow2(isHalfRow2);
 
        this.setExpValue(expValue);
         return expValue;
     }
 
+    /**
+     *  Given the gene expression row
+     * @return The expression set, transformed according the user specified transformation.
+     */
+    private Double[] getExpression(GeneExpression row){
 
+        Double[] expression_values1 = null;
+
+        if(hmParams.getTransformation() == HeatMapParameters.Transformation.ROWNORM){
+            if(row != null)
+                expression_values1 = row.rowNormalize();
+        }
+        else if(hmParams.getTransformation() == HeatMapParameters.Transformation.LOGTRANSFORM){
+            if(row != null)
+                expression_values1 = row.rowLogTransform();
+        }
+        else{
+            if(row != null)
+                expression_values1   = row.getExpression();
+       }
+
+        //if either of the expression_values is null set the array to have no data
+      if(expression_values1 == null){
+        expression_values1 = new Double[columnNames.length-2];
+        for(int q = 0; q < expression_values1.length;q++)
+            expression_values1[q] = null;
+        }
+
+
+      return expression_values1;
+    }
     // created new North panel to accommodate the expression legend, normalization options,sorting options, saving option
    private JPanel emptyPanel(){
        JPanel empty= new JPanel() ;
@@ -754,7 +740,6 @@ public class HeatMapPanel extends JPanel {
 
         JPanel northPanel = new JPanel();// new north panel
         JPanel buttonPanel = new JPanel();// brought button panel from westPanel
-        //northPanel.setLayout(new GridLayout(1,4));
         northPanel.setLayout(new GridBagLayout());
 
         JButton SaveExpressionSet = new JButton("Save Expression Set");
@@ -775,13 +760,12 @@ public class HeatMapPanel extends JPanel {
         addComponent(northPanel,hmParams.createDataTransformationOptionsPanel(params), 2, 0, 1, 1,
                 GridBagConstraints.CENTER, GridBagConstraints.NONE);
 
-        addComponent(northPanel,hmParams.createSortOptionsPanel(params), 3, 0, 1, 1,
+        addComponent(northPanel,hmParams.createSortOptionsPanel(params), 3, 0, 2, 1,
                     GridBagConstraints.CENTER, GridBagConstraints.NONE);
 
-        addComponent(northPanel,buttonPanel, 4, 0, 1, 1,
+        addComponent(northPanel,buttonPanel, 5, 0, 1, 1,
                 GridBagConstraints.CENTER, GridBagConstraints.NONE);
 
-        //northPanel.add(buttonPanel);
         northPanel.revalidate();
         return northPanel;
     }
@@ -885,8 +869,6 @@ public class HeatMapPanel extends JPanel {
                     union.addAll(current_set);
 
                 }
-
-
             }
 
             HashSet<Integer> genes = union;
@@ -933,10 +915,8 @@ public class HeatMapPanel extends JPanel {
                 //if(intersect == null && union == null){
                 if(intersect == null){
                     intersect = new HashSet<Integer>(current_set);
-                    //union = new HashSet(current_set);
                 }else{
                     intersect.retainAll(current_set);
-                    //union.addAll(current_set);
                 }
 
                 if(intersect.size() < 1)
@@ -963,29 +943,28 @@ public class HeatMapPanel extends JPanel {
         HashMap<Integer,Ranking> ranks = null;
 
         //check to see if any of the ordering have been initialized
-        if(!hmParams.isNoSort() && !hmParams.isSortbyHC() && !hmParams.isSortbyrank() && !hmParams.isSortbycolumn()){
+        if(hmParams.getSort() == HeatMapParameters.Sort.DEFAULT){
             //initialize the default value
             if(params.getDefaultSortMethod().equalsIgnoreCase(HeatMapParameters.sort_hierarchical_cluster))
-                hmParams.setSortbyHC(true);
+                hmParams.setSort(HeatMapParameters.Sort.CLUSTER);
             if(params.getDefaultSortMethod().equalsIgnoreCase(HeatMapParameters.sort_rank)){
-                hmParams.setSortbyrank(true);
+                hmParams.setSort(HeatMapParameters.Sort.RANK);
                 if(params.getRanks() != null)
                     hmParams.setRankFileIndex(params.getRanks().keySet().iterator().next());
                 else{
-                    hmParams.setSortbyrank(false);
-                    hmParams.setNoSort(true);
+                    hmParams.setSort(HeatMapParameters.Sort.NONE);
                 }
             }
             if(params.getDefaultSortMethod().equalsIgnoreCase(HeatMapParameters.sort_none))
-                hmParams.setNoSort(true);
+                hmParams.setSort(HeatMapParameters.Sort.NONE);
             if(params.getDefaultSortMethod().equalsIgnoreCase(HeatMapParameters.sort_column)){
-                hmParams.setSortbycolumn(true);
+                hmParams.setSort(HeatMapParameters.Sort.COLUMN);
                 hmParams.setSortIndex(0);
             }
         }
 
         HashMap<String, HashMap<Integer, Ranking>> all_ranks = params.getRanks();
-        if(hmParams.isSortbyrank()){
+        if(hmParams.getSort() == HeatMapParameters.Sort.RANK){
             for(Iterator j = all_ranks.keySet().iterator(); j.hasNext(); ){
                 String ranks_name = j.next().toString();
                 if(ranks_name.equalsIgnoreCase(hmParams.getRankFileIndex()))
@@ -996,17 +975,17 @@ public class HeatMapPanel extends JPanel {
                throw new IllegalThreadStateException("invalid sort index for rank files.");
 
         }
-        else if(hmParams.isNoSort() || (hmParams.isSortbycolumn())){
+        else if((hmParams.getSort() == HeatMapParameters.Sort.COLUMN) || (hmParams.getSort() == HeatMapParameters.Sort.NONE) ){
             ranks = new HashMap<Integer,Ranking>();
             for(Iterator i = currentExpressionSet.keySet().iterator();i.hasNext();){
                 Integer key = (Integer)i.next();
                 Ranking temp = new Ranking(((GeneExpression)currentExpressionSet.get(key)).getName(),0.0,0);
                 ranks.put(key,temp);
             }
-            if(hmParams.isSortbycolumn())
+            if(hmParams.getSort() == HeatMapParameters.Sort.COLUMN)
                 hmParams.setSortbycolumn_event_triggered(true);
         }
-        else if(hmParams.isSortbyHC()){
+        else if(hmParams.getSort() == HeatMapParameters.Sort.CLUSTER){
             ranks = getRanksByClustering();
         }
         return ranks;
@@ -1063,7 +1042,8 @@ public class HeatMapPanel extends JPanel {
             if(cluster){
 
                 try{
-                    hmParams.setSortbyHC(true);
+                    //hmParams.setSortbyHC(true);
+                    hmParams.setSort(HeatMapParameters.Sort.CLUSTER);
 
                     //create an arraylist of the expression subset.
                     List clustering_expressionset = new ArrayList() ;
@@ -1129,7 +1109,8 @@ public class HeatMapPanel extends JPanel {
 
 
        if((currentExpressionSet.keySet().size() == 1) || ((numdatacolumns + numdatacolumns2) <= 1) || !(cluster)){
-           hmParams.setNoSort(true);
+           //hmParams.setNoSort(true);
+           hmParams.setSort(HeatMapParameters.Sort.NONE);
            ranks = new HashMap<Integer,Ranking>();
             for(Iterator i = currentExpressionSet.keySet().iterator();i.hasNext();){
                 Integer key = (Integer)i.next();
@@ -1196,16 +1177,11 @@ public class HeatMapPanel extends JPanel {
 
     }
 
-
-
     //Getters and Setters
-
     Object[][] getExpValue() {
         return expValue;
     }
-    private Object getExpValue(int row, int col) {
-        return expValue[row][col];
-    }
+
     private String[] gethRow1() {
         return hRow1;
     }
@@ -1222,10 +1198,8 @@ public class HeatMapPanel extends JPanel {
         this.hRow2 = hRow2;
     }
 
-    private void setExpValue(int i,int j,Object expressionValues2) {
-        this.expValue[i][j] = expressionValues2;
-    }
-    void setExpValue(Object[][] expValue){
+
+    private void setExpValue(Object[][] expValue){
         this.expValue=expValue;
     }
 
@@ -1316,34 +1290,6 @@ public class HeatMapPanel extends JPanel {
      */
     public ColorGradientRange [] getRangeHalfRow2() {
         return rangeHalfRow2;
-    }
-
-    /**
-     * @param isHalfRow1 the isHalfRow1 to set
-     */
-    public void setIsHalfRow1(boolean[] isHalfRow1) {
-        this.isHalfRow1 = isHalfRow1;
-    }
-
-    /**
-     * @return the isHalfRow1
-     */
-    public boolean[] getIsHalfRow1() {
-        return isHalfRow1;
-    }
-
-    /**
-     * @param isHalfRow2 the isHalfRow2 to set
-     */
-    public void setIsHalfRow2(boolean[] isHalfRow2) {
-        this.isHalfRow2 = isHalfRow2;
-    }
-
-    /**
-     * @return the isHalfRow2
-     */
-    public boolean[] getIsHalfRow2() {
-        return isHalfRow2;
     }
 
     /**

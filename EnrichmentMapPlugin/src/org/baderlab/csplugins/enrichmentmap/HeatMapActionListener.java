@@ -99,30 +99,23 @@ public class HeatMapActionListener implements ActionListener {
      */
     public void actionPerformed(ActionEvent evt){
 
+       //boolean updateAscendingButton = false;
+
        edgeOverlapPanel.clearPanel();
        nodeOverlapPanel.clearPanel();
        String select=(String) box.getSelectedItem();
 
        if(select.equalsIgnoreCase("Data As Is")){
-           hmParams.setRowNorm(false);
-           hmParams.setLogtransform(false);
-           hmParams.setAsIS(true);
+           hmParams.setTransformation(HeatMapParameters.Transformation.ASIS);
         }
         else if(select.equalsIgnoreCase("Row Normalize Data")){
-           hmParams.setRowNorm(true);
-           hmParams.setLogtransform(false);
-           hmParams.setAsIS(false);
+           hmParams.setTransformation(HeatMapParameters.Transformation.ROWNORM);
         }
         else if(select.equalsIgnoreCase("Log Transform Data")){
-           hmParams.setRowNorm(false);
-           hmParams.setLogtransform(true);
-           hmParams.setAsIS(false);
+           hmParams.setTransformation(HeatMapParameters.Transformation.LOGTRANSFORM);
         }
         else if(select.equalsIgnoreCase(HeatMapParameters.sort_hierarchical_cluster)){
-           hmParams.setSortbyHC(true);
-           hmParams.setNoSort(false);
-           hmParams.setSortbyrank(false);
-           hmParams.setSortbycolumn(false);
+           hmParams.setSort(HeatMapParameters.Sort.CLUSTER);
            hmParams.setSortIndex(-1);
         }
         //Add a ranking file
@@ -160,30 +153,74 @@ public class HeatMapActionListener implements ActionListener {
                 RanksFileReaderTask ranking1 = new RanksFileReaderTask(params,file.getAbsolutePath(),ranks_name);
                 ranking1.run();
 
+                //add an index to the ascending array for the new rank file.
+                boolean[] ascending = hmParams.getAscending();
+                boolean[] new_ascending = new boolean[ascending.length + 1];
+
+                //copy old ascending in to the new ascending array
+                System.arraycopy(ascending,0,new_ascending,0,ascending.length);
+
+                hmParams.setAscending(new_ascending);
             }
        }
        else if(select.equalsIgnoreCase(HeatMapParameters.sort_none)){
-           hmParams.setSortbyHC(false);
-           hmParams.setNoSort(true);
-           hmParams.setSortbyrank(false);
-           hmParams.setSortbycolumn(false);
+           hmParams.setSort(HeatMapParameters.Sort.NONE);
            hmParams.setSortIndex(-1);
        }
+       else if(select.contains(HeatMapParameters.sort_column)){
+           hmParams.setSort(HeatMapParameters.Sort.COLUMN);
+           if(hmParams.isSortbycolumn_event_triggered()){
+                    //reset sort column trigger
+                    hmParams.setSortbycolumn_event_triggered(false);
 
+                    //change the ascending boolean flag for the column we are about to sort by
+                    hmParams.flipAscending(hmParams.getSortIndex());
+          }
+       }
        else{
            HashMap<String, HashMap<Integer, Ranking>> ranks = params.getRanks();
+
+           //iterate through all the rank files.
+           //the order should always be the same get a counter to find which index to
+           //associate this rank file for the ascending and descending order
+           int i = 0;
+           int columns = 0;
+           //calculate the number of indexes used for the column names
+           if(params.isData2())
+             columns = params.getExpression().getColumnNames().length + params.getExpression2().getColumnNames().length - 2;
+           else
+            columns = params.getExpression().getColumnNames().length;
+
            for(Iterator j = ranks.keySet().iterator(); j.hasNext(); ){
                 String ranks_name = j.next().toString();
                 if(ranks_name.equalsIgnoreCase(select)){
-                    hmParams.setSortbyrank(true);
-                    hmParams.setSortbyHC(false);
-                    hmParams.setSortbycolumn(false);
-                    hmParams.setNoSort(false);
+                    hmParams.setSort(HeatMapParameters.Sort.RANK);
                     hmParams.setRankFileIndex(ranks_name);
-                    hmParams.setSortIndex(-1);
+                    hmParams.setSortIndex(columns + i);
+                    //updateAscendingButton = true;
                 }
+                i++;
             }
        }
+
+        //if the object selected is associated with a sorting order update the sort direction button
+        /*if(updateAscendingButton){
+            //the two types that can be associated with a direction as columns and ranks
+           /* if(hmParams.getSort() == HeatMapParameters.Sort.COLUMN)
+                hmParams.setCurrent_ascending(hmParams.isAscending(hmParams.getSortIndex()));
+            else if(hmParams.getSort() == HeatMapParameters.Sort.RANK)
+                hmParams.setCurrent_ascending(hmParams.isAscending(1));
+                //TODO: need to specify column for rank files.
+             */
+            //only swap the direction of the sort if a column sort action was triggered
+          /*  if(hmParams.isSortbycolumn_event_triggered()){
+                    //reset sort column trigger
+                    hmParams.setSortbycolumn_event_triggered(false);
+
+                    //change the ascending boolean flag for the column we are about to sort by
+                    hmParams.flipAscending(hmParams.getSortIndex());
+                }
+        }*/
 
         hmParams.ResetColorGradient();
         edgeOverlapPanel.updatePanel();
