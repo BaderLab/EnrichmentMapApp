@@ -64,6 +64,7 @@ public class AboutPanel extends JDialog {
     
     String pluginUrl = Enrichment_Map_Plugin.pluginUrl;
     String pluginVersion = Enrichment_Map_Plugin.plugin_props.getProperty("pluginVersion", "0.1");
+    String pluginReleaseSuffix = Enrichment_Map_Plugin.plugin_props.getProperty("pluginReleaseSuffix", "");
 
     public AboutPanel() {
         super(Cytoscape.getDesktop(), "About Enrichment Map", false);
@@ -77,14 +78,15 @@ public class AboutPanel extends JDialog {
         editorPane.addHyperlinkListener(new HyperlinkAction(editorPane));
 
         URL logoURL = Enrichment_Map_Plugin.class.getResource("resources/enrichmentmap_logo.png");
-
+        if ( ! pluginReleaseSuffix.contentEquals(""))
+            pluginReleaseSuffix = " (" + pluginReleaseSuffix + ")";
         editorPane.setText(
                 "<html><body>"+
 //                "<div style=\"float:right;\"><img height=\"77\" width=\"125\" src=\""+ logoURL.toString() +"\" ></div>" +
                 "<table border='0'><tr>" +
                 "<td width='125'></td>"+
                 "<td width='200'>"+
-                "<p align=center><b>Enrichment Map v" + pluginVersion + " (beta)</b><BR>" + //TODO: remove "beta" on release  
+                "<p align=center><b>Enrichment Map v" + pluginVersion + pluginReleaseSuffix + "</b><BR>" + 
                 "A Cytoscape Plugin<BR>" +
                 "<BR></p>" +
                 "</td>"+

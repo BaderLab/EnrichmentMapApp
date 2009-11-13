@@ -30,7 +30,16 @@
 	<condition property="CYTOSCAPE_HOME" value="${env.CYTOSCAPE_HOME}" else="C:/Program Files/Cytoscape-v2.6.1" >
 		<available file="${env.CYTOSCAPE_HOME}/cytoscape.jar" />
 	</condition>
-
+	
+	<condition property="releaseSuffix" value="-${pluginReleaseSuffix}"  else="">
+		<and>
+			<isset property="pluginReleaseSuffix" />
+			<not>
+				<equals arg1="${pluginReleaseSuffix}" arg2="" trim="true"/>
+			</not>
+		</and>
+	</condition>
+	
 	<echo message="Using Cytoscape in ${CYTOSCAPE_HOME}" />
 
 	<!-- Uncomment the following property if no tests compilation is needed -->
@@ -221,9 +230,9 @@
 		<copy file="doc/LGPL_2.1_LICENSE.txt"  tofile="${enrichment_map.src_release.dir}/LICENSE.TXT" />
 		<copy file="doc/README.TXT"            todir ="${enrichment_map.src_release.dir}" />
 <!--	<copy file="enrichment_map.properties" todir ="${enrichment_map.src_release.dir}" />	-->
-		<tar destfile="EnrichmentMapPlugin_v${pluginVersion}_src.tar.gz" basedir="${enrichment_map.src_release_root.dir}" 
+		<tar destfile="EnrichmentMapPlugin_v${pluginVersion}${releaseSuffix}_src.tar.gz" basedir="${enrichment_map.src_release_root.dir}" 
 			 compression="gzip" longfile="gnu" />
-		<zip destfile="EnrichmentMapPlugin_v${pluginVersion}_src.zip"    basedir="${enrichment_map.src_release_root.dir}" />
+		<zip destfile="EnrichmentMapPlugin_v${pluginVersion}${releaseSuffix}_src.zip"    basedir="${enrichment_map.src_release_root.dir}" />
 	</target>
 	
 	<target name="release_binary" depends="jars" description="Make a binary-release">
@@ -231,7 +240,7 @@
 		<copy file="${enrichment_map.jars.dir}/EnrichmentMap.jar" todir  ="${enrichment_map.bin_release.dir}" />
 		<copy file="doc/LGPL_2.1_LICENSE.txt"                     tofile ="${enrichment_map.bin_release.dir}/LICENSE.TXT" />
 		<copy file="doc/README.TXT"                               todir  ="${enrichment_map.bin_release.dir}" />
-		<zip destfile="EnrichmentMapPlugin_v${pluginVersion}.zip" basedir="${enrichment_map.bin_release.dir}" />
+		<zip destfile="EnrichmentMapPlugin_v${pluginVersion}${releaseSuffix}.zip" basedir="${enrichment_map.bin_release.dir}" />
 	</target>
 		
 	<target name="release" depends="release_binary, release_source" description="Make a release"/>
