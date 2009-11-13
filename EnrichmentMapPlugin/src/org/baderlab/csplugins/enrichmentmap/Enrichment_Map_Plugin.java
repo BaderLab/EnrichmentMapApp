@@ -42,6 +42,7 @@
 // $HeadURL$
 
 package org.baderlab.csplugins.enrichmentmap;
+import cytoscape.logger.CyLogger;
 import cytoscape.plugin.CytoscapePlugin;
 import cytoscape.Cytoscape;
 import cytoscape.CytoscapeInit;
@@ -101,35 +102,6 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
         item = new JMenuItem("About");
         item.addActionListener(new ShowAboutPanelAction());
         submenu.add(item);
-        
-//TODO: remove obsolete Code        
-//        //Begin of Code to toggle "Override Heatmap update" (for performance)
-//        overrideHeatmapRevalidationItem = new JCheckBoxMenuItem(new AbstractAction("Override Heatmap Update") {
-//            public void actionPerformed(ActionEvent e) {
-//                // Do this in the GUI Event Dispatch thread...
-//                SwingUtilities.invokeLater(new Runnable() {
-//                    public void run() {
-//                        // toggle state of overrideHeatmapRevalidation
-//                        if (Enrichment_Map_Plugin.isOverrideHeatmapRevalidation()) {
-//                            Enrichment_Map_Plugin.setOverrideHeatmapRevalidation(false);
-//                        } else {
-//                            Enrichment_Map_Plugin.setOverrideHeatmapRevalidation(true);
-//                        }
-//                        overrideHeatmapRevalidationItem.setSelected(isOverrideHeatmapRevalidation() );
-//                    }
-//                });
-//            }
-//        });
-//        overrideHeatmapRevalidationItem.setSelected(isOverrideHeatmapRevalidation() );
-//        submenu.addSeparator();
-//        submenu.add(overrideHeatmapRevalidationItem);
-        /* 
-         * related code:
-         * - definitions of "overrideHeatmapRevalidation" & "overrideHeatmapRevalidationItem"
-         * - setter and getter for "overrideHeatmapRevalidation"
-         * - use of the flag in "EnrichmentMapActionListener.graphViewChanged()"
-         */
-        //End of Code to toggle "Override Heatmap update" (for performance)
         
         menu.add(submenu);
         
