@@ -71,6 +71,7 @@
 		<include name="**/?*.html"/>
 		<include name="**/?*.dtd"/>
 		<include name="**/?*.tld"/>
+		<exclude name="**/?*.ai"/>
 	</patternset>
 
 	<!-- Application Server Libraries -->
