@@ -94,9 +94,7 @@ public class TableHeader extends MouseAdapter{
 	    int column = table.convertColumnIndexToModel(viewColumn);
 	    int evt=mouseEvent.getClickCount();
 	    if (evt == 1 && column != -1) {
-	    	this.isSort=!isSort;
-            hmparams.setSortbycolumn(true);
-            hmparams.setSortbyrank(false);
+            hmparams.setSort(HeatMapParameters.Sort.COLUMN);
             hmparams.setSortIndex(column);
             hmparams.setSortbycolumn_event_triggered(true);
             hmparams.changeSortComboBoxToColumnSorted();
@@ -107,24 +105,7 @@ public class TableHeader extends MouseAdapter{
 
     public void sortByColumn(int column, boolean ascending){
          sort.sortByColumn(column, ascending);
-         //hmparams.changeSortComboBoxToColumnSorted();
 
     }
 
-    public void setSort(boolean isSort) {
-		this.isSort = isSort;
-	}
-	
-	public boolean isSort() {
-		return isSort;
-	}
-	private JTable getTable() {
-		return table;
-	}
-	
-	private void setTable(JTable table) {
-		this.table = table;
-	}
-	
-	
 }
