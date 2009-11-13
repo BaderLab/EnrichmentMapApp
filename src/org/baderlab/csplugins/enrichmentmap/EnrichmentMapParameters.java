@@ -678,68 +678,68 @@ public class EnrichmentMapParameters {
      * @see java.lang.Object#toString()
      */
     public String toString(){
-        String paramVariables = "";
+        StringBuffer paramVariables = new StringBuffer();
 
-        paramVariables += "NetworkName\t" + NetworkName + "\n";
-        paramVariables += "attributePrefix\t" + attributePrefix + "\n";
+        paramVariables.append( "NetworkName\t" + NetworkName + "\n");
+        paramVariables.append("attributePrefix\t" + attributePrefix + "\n");
 
         //file names
-        paramVariables += "GMTFileName\t" + GMTFileName + "\n";
-        paramVariables += "expressionFileName1\t" + expressionFileName1 + "\n";
-        paramVariables += "expressionFileName2\t" + expressionFileName2 + "\n";
-        paramVariables += "enerichmentDataset1FileName1\t" + enrichmentDataset1FileName1 + "\n";
-        paramVariables += "enrichmentDataset1FileName2\t" + enrichmentDataset1FileName2 + "\n";
+        paramVariables.append("GMTFileName\t" + GMTFileName + "\n");
+        paramVariables.append("expressionFileName1\t" + expressionFileName1 + "\n");
+        paramVariables.append("expressionFileName2\t" + expressionFileName2 + "\n");
+        paramVariables.append("enerichmentDataset1FileName1\t" + enrichmentDataset1FileName1 + "\n");
+        paramVariables.append("enrichmentDataset1FileName2\t" + enrichmentDataset1FileName2 + "\n");
 
-        paramVariables += "enerichmentDataset2FileName1\t" + enrichmentDataset2FileName1 + "\n";
-        paramVariables += "enrichmentDataset2FileName2\t" + enrichmentDataset2FileName2 + "\n";
+        paramVariables.append("enerichmentDataset2FileName1\t" + enrichmentDataset2FileName1 + "\n");
+        paramVariables.append("enrichmentDataset2FileName2\t" + enrichmentDataset2FileName2 + "\n");
 
-        paramVariables += "dataset1Phenotype1\t" + dataset1Phenotype1  + "\n";
-        paramVariables += "dataset1Phenotype2\t" + dataset1Phenotype2   + "\n";
-        paramVariables += "dataset2Phenotype1\t" + dataset2Phenotype1  + "\n";
-        paramVariables += "dataset2Phenotype2\t" + dataset2Phenotype2  + "\n";
+        paramVariables.append("dataset1Phenotype1\t" + dataset1Phenotype1  + "\n");
+        paramVariables.append("dataset1Phenotype2\t" + dataset1Phenotype2   + "\n");
+        paramVariables.append("dataset2Phenotype1\t" + dataset2Phenotype1  + "\n");
+        paramVariables.append("dataset2Phenotype2\t" + dataset2Phenotype2  + "\n");
 
-        paramVariables += "classFile1\t" + classFile1  + "\n";
-        paramVariables += "classFile2\t" + classFile2  + "\n";
+        paramVariables.append("classFile1\t" + classFile1  + "\n");
+        paramVariables.append("classFile2\t" + classFile2  + "\n");
 
         //Write the classes/phenotypes as a comma separated list.
         if(this.isData()){
             String[] current_pheno = expression.getPhenotypes();
             if (current_pheno != null){
-                String output = "";
+                StringBuffer output = new StringBuffer();
                 for(int j = 0; j < current_pheno.length;j++)
-                     output += current_pheno[j] + ",";
-                paramVariables += "class1\t" + output + "\n";
+                     output.append(current_pheno[j] + ",");
+                paramVariables.append("class1\t" + output.toString() + "\n");
             }
         }
         if(this.isData2()){
             String[] current_pheno = expression2.getPhenotypes();
             if (current_pheno != null){
-                String output = "";
+                StringBuffer output = new StringBuffer();
                 for(int j = 0; j < current_pheno.length;j++)
-                     output += current_pheno[j] + ",";
-                paramVariables += "class2\t" + output + "\n";
+                     output.append(current_pheno[j] + ",");
+                paramVariables.append("class2\t" + output.toString() + "\n");
             }
         }
 
         //rank files
-        paramVariables += "rankFile1\t" + dataset1RankedFile + "\n";
-        paramVariables += "rankFile2\t" + dataset2RankedFile + "\n";
+        paramVariables.append("rankFile1\t" + dataset1RankedFile + "\n");
+        paramVariables.append("rankFile2\t" + dataset2RankedFile + "\n");
 
         //boolean flags
-        paramVariables += "twoDatasets\t" + twoDatasets + "\n";
-        paramVariables += "jaccard\t" + jaccard + "\n";
-        paramVariables += "GSEA\t" + GSEA + "\n";
-        paramVariables += "Data\t" + Data + "\n";
-        paramVariables += "Data2\t" + Data2 + "\n";
-        paramVariables += "FDR\t" + FDR + "\n";
+        paramVariables.append("twoDatasets\t" + twoDatasets + "\n");
+        paramVariables.append("jaccard\t" + jaccard + "\n");
+        paramVariables.append("GSEA\t" + GSEA + "\n");
+        paramVariables.append("Data\t" + Data + "\n");
+        paramVariables.append("Data2\t" + Data2 + "\n");
+        paramVariables.append("FDR\t" + FDR + "\n");
 
         //cutoffs
-        paramVariables += "pvalue\t" + pvalue + "\n";
-        paramVariables += "qvalue\t" + qvalue + "\n";
-        paramVariables += "similarityCutOff\t" + similarityCutOff + "\n";
+        paramVariables.append("pvalue\t" + pvalue + "\n");
+        paramVariables.append("qvalue\t" + qvalue + "\n");
+        paramVariables.append("similarityCutOff\t" + similarityCutOff + "\n");
 
 
-        return paramVariables;
+        return paramVariables.toString();
     }
 
     /**
@@ -750,7 +750,7 @@ public class EnrichmentMapParameters {
     public String printHashmap(HashMap map ){
        StringBuffer result = new StringBuffer();
 
-       for(Iterator i = map.keySet().iterator();i.hasNext();){
+       for(Iterator i = map.keySet().iterator(); i.hasNext(); ){
            Object key = i.next();
            result.append( key.toString() + "\t" + map.get(key).toString() + "\n");
        }

@@ -152,14 +152,14 @@ public class GeneSet {
 
 
     public String toString(){
-        String geneset = "";
+        StringBuffer geneset = new StringBuffer();
 
-        geneset += Name + "\t" + Description + "\t";
+        geneset.append(Name + "\t" + Description + "\t");
 
         for(Iterator i = genes.iterator(); i.hasNext();)
-            geneset += i.next().toString() + "\t";
+            geneset.append( i.next().toString() + "\t");
 
-        return geneset;
+        return geneset.toString();
     }
 
 
