@@ -66,13 +66,6 @@ import java.net.URL;
  * Main class managing all instances of enrichment map as well as singular instances
  * of heatmap panel, parameters panel and input panel.  (implemented as singular class)
  */
-/**
- * @author revilo
- * <p>
- * Date:   Nov 18, 2009<br>
- * Time:   1:35:55 PM<br>
- *
- */
 public class EnrichmentMapManager implements PropertyChangeListener {
 
     private static EnrichmentMapManager manager = null;
