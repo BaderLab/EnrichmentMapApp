@@ -64,7 +64,14 @@ import java.net.URL;
  * Time: 1:48:31 PM
  * <p>
  * Main class managing all instances of enrichment map as well as singular instances
- * of heatmap, paramters panel and input panel.  (implemented as singular class)
+ * of heatmap panel, parameters panel and input panel.  (implemented as singular class)
+ */
+/**
+ * @author revilo
+ * <p>
+ * Date:   Nov 18, 2009<br>
+ * Time:   1:35:55 PM<br>
+ *
  */
 public class EnrichmentMapManager implements PropertyChangeListener {
 
@@ -277,7 +284,7 @@ public class EnrichmentMapManager implements PropertyChangeListener {
         }
     }
 
-    /*
+    /**
      * Removes CyNetwork from our list if it has just been destroyed.
      *
      * @param networkID the ID of the CyNetwork just destroyed.
@@ -298,10 +305,10 @@ public class EnrichmentMapManager implements PropertyChangeListener {
         }
     }
 
-    /*
+    /**
      * Determines if any network views we have created remains.
      *
-      * @return boolean if any network views that we have created remain.
+     * @return boolean if any network views that we have created remain.
      */
     private boolean networkViewsRemain() {
 
@@ -327,23 +334,41 @@ public class EnrichmentMapManager implements PropertyChangeListener {
 
     }
 
-
+    /**
+     * @return reference to the EM Legend Panel (EAST)
+     */
     public ParametersPanel getParameterPanel() {
         return parameterPanel;
     }
 
+    /**
+     * @return reference to the EM Geneset Expression Viewer Panel (SOUTH)
+     */
     public HeatMapPanel getNodesOverlapPanel() {
         return nodesOverlapPanel;
     }
 
+    /**
+     * @return reference to the EM Overlap Expression Viewer Panel (SOUTH)
+     */
     public HeatMapPanel getEdgesOverlapPanel() {
         return edgesOverlapPanel;
     }
 
+    /**
+     * @return hashmap with instances of EnrichmentMapParameters referenced by network Identifiers. (eg.: CyNetwork.getIdentifier() or CyNetworkView.getIdentifier() )
+     */
     public HashMap<String, EnrichmentMapParameters> getCyNetworkList() {
         return cyNetworkList;
     }
 
+    /**
+     * Returns the instance of EnrichmentMapParameters for the CyNetwork with the Identifier "name",<br>
+     * or null if the CyNetwork is not an EnrichmentMap. 
+     * 
+     * @param name the Identifier of a network <br>(eg.: CyNetwork.getIdentifier() or CyNetworkView.getIdentifier() )
+     * @return EnrichmentMapParameters
+     */
     public EnrichmentMapParameters getParameters(String name){
         if(cyNetworkList.containsKey(name))
             return cyNetworkList.get(name);
@@ -351,18 +376,30 @@ public class EnrichmentMapManager implements PropertyChangeListener {
             return null;
     }
 
+    /**
+     * @return reference to the Enrichment Map Input Panel (WEST) 
+     */
     public EnrichmentMapInputPanel getInputWindow() {
         return inputWindow;
     }
 
+    /**
+     * @param reference to the Enrichment Map Input Panel (WEST) 
+     */
     public void setInputWindow(EnrichmentMapInputPanel inputWindow) {
         this.inputWindow = inputWindow;
     }
 
+    /**
+     * @return reference to the Post Analysis Input Panel (WEST) 
+     */
     public PostAnalysisInputPanel getAnalysisWindow() {
         return analysisWindow;
     }
 
+    /**
+     * @param reference to the Post Analysis Input Panel (WEST) 
+     */
     public void setAnalysisWindow(PostAnalysisInputPanel analysisWindow) {
         this.analysisWindow = analysisWindow;
     }
