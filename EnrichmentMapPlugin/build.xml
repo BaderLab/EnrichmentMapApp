@@ -135,7 +135,13 @@
 
 	<target name="compile.module.enrichment_map.production" description="Compile module enrichment_map; production classes">
 		<mkdir dir="${enrichment_map.output.dir}"/>
-		<javac destdir="${enrichment_map.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memoryMaximumSize="${compiler.max.memory}" fork="true">
+		<javac 	destdir="${enrichment_map.output.dir}" 
+				debug="${compiler.debug}" 
+				nowarn="${compiler.generate.no.warnings}" 
+				memoryMaximumSize="${compiler.max.memory}" 
+				source="1.5" 
+				target="1.5" 
+				fork="true">
 			<compilerarg line="${compiler.args.enrichment_map}"/>
 			<bootclasspath refid="enrichment_map.module.bootclasspath"/>
 			<classpath refid="enrichment_map.module.classpath"/>
