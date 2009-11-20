@@ -47,8 +47,6 @@ import giny.model.Edge;
 
 import java.util.*;
 import java.io.File;
-import java.io.FileOutputStream;
-
 import cytoscape.CytoscapeInit;
 
 /**
@@ -119,10 +117,6 @@ public class EnrichmentMapParameters {
     //DATA need to specify the Enrichment map
     //Hashmap stores the unique set of genes used in the gmt file
     private HashMap<String,Integer> genes;
-
-    private HashMap<Integer, Integer> hashkey2bitindex;
-    private HashMap<Integer, Integer> bitindex2hashkey;
-    private int bitIndex = 0;
 
     //when translating visual attribute of the gene list we need to be able to translate
     //the gene hash key into the gene name without tracing from the entire hash.
@@ -200,7 +194,6 @@ public class EnrichmentMapParameters {
     private double defaultOverlapCutOff;
     private String default_overlap_metric;
     private Boolean disable_heatmap_autofocus;
-    private Boolean disable_genesetSummary_autofocus;
     private String defaultSortMethod;
 
     final public static String ENRICHMENT_INTERACTION_TYPE = "pp"; //TODO: change to enr or ovlp ?!?
@@ -215,8 +208,8 @@ public class EnrichmentMapParameters {
         this.genes = new HashMap<String, Integer>();
         this.hashkey2gene = new HashMap<Integer, String>();
         this.datasetGenes = new HashSet<Integer>();
-        this.hashkey2bitindex = new HashMap<Integer, Integer>();
-        this.bitindex2hashkey = new HashMap<Integer, Integer>();
+//        this.hashkey2bitindex = new HashMap<Integer, Integer>();
+//        this.bitindex2hashkey = new HashMap<Integer, Integer>();
         this.enrichmentMapGenes = new HashSet<Integer>();
         this.genesets = new HashMap<String, GeneSet>();
         this.filteredGenesets = new HashMap<String, GeneSet>();
@@ -1262,6 +1255,10 @@ public class EnrichmentMapParameters {
         return this.disable_heatmap_autofocus ;
     }
 
+    public void setDisableHeatmapAutofocus(boolean disable_heatmap_autofocus) {
+        this.disable_heatmap_autofocus = disable_heatmap_autofocus;
+    }
+    
     public String getDefaultSortMethod() {
         return defaultSortMethod;
     }
