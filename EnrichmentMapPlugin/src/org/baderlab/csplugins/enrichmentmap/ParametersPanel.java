@@ -60,9 +60,16 @@ import java.net.URL;
  */
 public class ParametersPanel extends JPanel {
 
+    /**
+     * TODO: DOCUMENT ME!
+     */
+    private static final long serialVersionUID = 2230165793903119571L;
+    
     public static int summaryPanelWidth = 150;
     public static int summaryPanelHeight = 1000;
-    private JCheckBox overrideHeatmapRevalidationItem;
+    private JCheckBox updateHeatmapCheckbox;
+    private JCheckBox heatmapAutofocusCheckbox;
+    private EnrichmentMapParameters emParams;
 
     /**
      * Class constructor
@@ -77,6 +84,7 @@ public class ParametersPanel extends JPanel {
      * @param params - enrichment map parameters to update panel according to
      */
     public void updatePanel(EnrichmentMapParameters params){
+        this.emParams = params;
 
         this.removeAll();
         this.revalidate();
@@ -105,10 +113,12 @@ public class ParametersPanel extends JPanel {
 
         CollapsiblePanel preferences = new CollapsiblePanel("advanced Preferences");
         preferences.setCollapsed(true);
-        JPanel prefsPanel = new JPanel(new BorderLayout());
+        JPanel prefsPanel = new JPanel();
+        prefsPanel.setLayout(new BoxLayout(prefsPanel, BoxLayout.Y_AXIS));
         
         //Begin of Code to toggle "Override Heatmap update" (for performance)
-        overrideHeatmapRevalidationItem = new JCheckBox(new AbstractAction("Override Heatmap Update") {
+        //TODO: remove before release?
+        updateHeatmapCheckbox = new JCheckBox(new AbstractAction("update Heatmap") {
             /**
              * TODO: DOCUMENT ME!
              */
@@ -124,15 +134,44 @@ public class ParametersPanel extends JPanel {
                         } else {
                             Enrichment_Map_Plugin.setOverrideHeatmapRevalidation(true);
                         }
-                        overrideHeatmapRevalidationItem.setSelected(Enrichment_Map_Plugin.isOverrideHeatmapRevalidation() );
+                        updateHeatmapCheckbox.setSelected( ! Enrichment_Map_Plugin.isOverrideHeatmapRevalidation() );
                     }
                 });
             }
         });
-        overrideHeatmapRevalidationItem.setSelected(Enrichment_Map_Plugin.isOverrideHeatmapRevalidation() );
-        prefsPanel.add(overrideHeatmapRevalidationItem);
+        updateHeatmapCheckbox.setSelected( ! Enrichment_Map_Plugin.isOverrideHeatmapRevalidation() );
+        prefsPanel.add(updateHeatmapCheckbox);
+        //END of Code to toggle "Override Heatmap update" (for performance)
 
-        //add a radio button to set dafault sort method for the heat map
+        
+        //Begin of Code to toggle "Disable Heatmap autofocus"
+        heatmapAutofocusCheckbox = new JCheckBox(new AbstractAction("Heatmap autofocus") {
+
+            /**
+             * TODO: DOCUMENT ME!
+             */
+            private static final long serialVersionUID = 6964856044019118837L;
+
+            public void actionPerformed(ActionEvent e) {
+                // Do this in the GUI Event Dispatch thread...
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        // toggle state of overrideHeatmapRevalidation
+                        if (emParams.isDisableHeatmapAutofocus() ) {
+                            emParams.setDisableHeatmapAutofocus(false);
+                        } else {
+                            emParams.setDisableHeatmapAutofocus(true);
+                        }
+                        heatmapAutofocusCheckbox.setSelected( ! emParams.isDisableHeatmapAutofocus() );
+                    }
+                });
+            }
+        });
+        heatmapAutofocusCheckbox.setSelected( ! params.isDisableHeatmapAutofocus() );
+        prefsPanel.add(heatmapAutofocusCheckbox);
+
+        
+        //add a radio button to set default sort method for the heat map
         ButtonGroup sorting_methods = new ButtonGroup();
         JPanel sortingPanel = new JPanel();
         sortingPanel.setLayout(new BoxLayout(sortingPanel,BoxLayout.Y_AXIS));
