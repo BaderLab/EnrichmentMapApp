@@ -74,6 +74,9 @@ public class AllTests {
      * @param args
      */
     public static void main(String args[]) {
-        junit.textui.TestRunner.run(suite());
+    	String url = "http://www.ebi.ac.uk/ebisearch/search.ebi?query=ATP10A (ATPase, class V, type 10A)&db=allebi";
+    	System.out.print(url);
+    	cytoscape.util.OpenBrowser.openURL(url);
+        //junit.textui.TestRunner.run(suite());
     }
 }

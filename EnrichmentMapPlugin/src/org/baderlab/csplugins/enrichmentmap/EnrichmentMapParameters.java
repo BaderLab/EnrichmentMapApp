@@ -135,7 +135,7 @@ public class EnrichmentMapParameters {
     //store the genes that are present in the network.
     //get the intersection between the genes in the gene set file (gmt) and the genes in
     //expression file (dataset genes)
-    //TODO: recompute enrcihmentmap genes on session re-load.
+    //TODO: recompute enrichmentmap genes on session re-load.
     private HashSet<Integer> enrichmentMapGenes;
 
     //Hashmap of the enrichment Results, It is is a hash of the GSEAResults or GenericResults objects

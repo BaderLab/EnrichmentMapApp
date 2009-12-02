@@ -43,12 +43,13 @@
 
 package org.baderlab.csplugins.enrichmentmap;
 
-import cytoscape.Cytoscape;
-import cytoscape.CyNetwork;
+import cytoscape.*;
+import cytoscape.plugin.*;
 import cytoscape.view.CytoscapeDesktop;
 import cytoscape.view.CyNetworkView;
 import cytoscape.view.cytopanels.CytoPanel;
 import cytoscape.view.cytopanels.CytoPanelState;
+import ding.view.*;
 
 import javax.swing.*;
 
@@ -56,7 +57,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.util.HashMap;
 import java.net.URL;
-
 /**
  * Created by
  * User: risserlin
@@ -185,19 +185,24 @@ public class EnrichmentMapManager implements PropertyChangeListener {
      */
     public void registerNetwork(CyNetwork cyNetwork, EnrichmentMapParameters params) {
 
-        if(!cyNetworkList.containsKey(cyNetwork.getIdentifier()))
+        if(!cyNetworkList.containsKey(cyNetwork.getIdentifier())) {
             cyNetworkList.put(cyNetwork.getIdentifier(),params);
-
+        	addNodeContextMenu(cyNetwork);
+        }
     }
 
     public void registerNetwork(CyNetwork cyNetwork, PostAnalysisParameters paParams) {
 
-        if(!cyNetworkListPostAnalysis.containsKey(cyNetwork.getIdentifier()))
+        if(!cyNetworkListPostAnalysis.containsKey(cyNetwork.getIdentifier())) {
             cyNetworkListPostAnalysis.put(cyNetwork.getIdentifier(),paParams);
-
+            addNodeContextMenu(cyNetwork);
+        }
     }
 
-
+    private void addNodeContextMenu(CyNetwork cyNetwork) {
+    	PathwayCommonsNodeContextMenuListener nodeMenuListener = new PathwayCommonsNodeContextMenuListener();
+    	((DGraphView) Cytoscape.getNetworkView(cyNetwork.getIdentifier())).addNodeContextMenuListener(nodeMenuListener);
+    }
 
     /**
      * Network Focus Event.
