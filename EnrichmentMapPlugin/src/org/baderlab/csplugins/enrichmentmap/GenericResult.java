@@ -213,6 +213,6 @@ public class GenericResult extends EnrichmentResult{
 
     public String toString(){
 
-        return name + "\t" + description + "\t" + pvalue + "\t" + gsSize + "\t" + fdrqvalue + "\t" + NES +"\n";
+        return name + "\t" + description + "\t" + pvalue + "\t" + gsSize + "\t" + fdrqvalue + "\t" + NES;
     }
 }

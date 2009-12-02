@@ -949,7 +949,7 @@ public class HeatMapPanel extends JPanel {
                 hmParams.setSort(HeatMapParameters.Sort.CLUSTER);
             if(params.getDefaultSortMethod().equalsIgnoreCase(HeatMapParameters.sort_rank)){
                 hmParams.setSort(HeatMapParameters.Sort.RANK);
-                if(params.getRanks() != null)
+                if(!params.getRanks().isEmpty())
                     hmParams.setRankFileIndex(params.getRanks().keySet().iterator().next());
                 else{
                     hmParams.setSort(HeatMapParameters.Sort.NONE);

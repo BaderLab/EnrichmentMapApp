@@ -229,7 +229,7 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
                 pFileList.add(enrichmentresults1Ofinterest);
 
                 //save all the rank files
-                if(params.getRanks()!= null){
+                if(!params.getRanks().isEmpty()){
                     HashMap<String, HashMap<Integer, Ranking>> all_ranks = params.getRanks();
 
                     for(Iterator j = all_ranks.keySet().iterator(); j.hasNext(); ){
