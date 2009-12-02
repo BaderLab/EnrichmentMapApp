@@ -815,7 +815,11 @@ public class EnrichmentMapParameters {
                 newMap.put(tokens[0], new GSEAResult(tokens));
 
             if(type == 4)
-                newMap.put(tokens[0], new GenericResult(tokens));
+                     //legacy issue, check to see if the line has enough items
+                    //Generic results were being printed with blank lines between the results
+                    //ignore blanks lines
+                    if(tokens.length > 3)
+                        newMap.put(tokens[0], new GenericResult(tokens));
 
             //HashMap Key 2 Genes
             if(type == 5) {
