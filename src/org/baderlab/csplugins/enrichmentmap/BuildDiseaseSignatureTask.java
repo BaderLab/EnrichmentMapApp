@@ -162,7 +162,12 @@ public class BuildDiseaseSignatureTask implements Task {
             // Common gene universe: Intersection of EnrichmentGenes and SignatureGenes
             HashSet<Integer> geneUniverse = new HashSet<Integer>();
             geneUniverse.addAll(EnrichmentGenes);
-            geneUniverse.retainAll(SignatureGenes);
+
+            /* bug: #97: Post-analysis: thresholding not working with overlap 
+             * Don't restrict Universe to Intersection of Enrichment- and Signature Genes 
+             * but rather the Universe of all Enrichment Genes.  
+             */
+            // geneUniverse.retainAll(SignatureGenes); 
             int universeSize = geneUniverse.size();
             
             //iterate over selected Signature genesets
