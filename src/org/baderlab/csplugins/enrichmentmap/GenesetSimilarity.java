@@ -79,14 +79,14 @@ public class GenesetSimilarity {
      * @param similarity_coeffecient - jaccard or overlap coeffecient for geneset 1 and geneset 2
      * @param overlapping_genes - set of genes in common to gene set 1 and gene set 2
      */
-     public GenesetSimilarity(String geneset1_Name, String geneset2_Name, double similarity_coeffecient, HashSet<Integer> overlapping_genes) {
+     public GenesetSimilarity(String geneset1_Name, String geneset2_Name, double similarity_coeffecient, String interaction_type, HashSet<Integer> overlapping_genes) {
         this.geneset1_Name = geneset1_Name;
         this.geneset2_Name = geneset2_Name;
         this.similarity_coeffecient = similarity_coeffecient;
         this.overlapping_genes = overlapping_genes;
         //use defaults:
         this.hypergeom_pvalue = -1.0;
-        this.interaction_type = EnrichmentMapParameters.ENRICHMENT_INTERACTION_TYPE;
+        this.interaction_type = interaction_type;
      }
 
 

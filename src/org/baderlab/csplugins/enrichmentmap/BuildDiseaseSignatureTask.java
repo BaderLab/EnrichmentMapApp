@@ -267,7 +267,7 @@ public class BuildDiseaseSignatureTask implements Task {
                         }
                         
                         //create Geneset similarity object
-                        GenesetSimilarity comparison = new GenesetSimilarity(hub_name,geneset_name, coeffecient, (HashSet<Integer>)intersection);
+                        GenesetSimilarity comparison = new GenesetSimilarity(hub_name,geneset_name, coeffecient, PostAnalysisParameters.SIGNATURE_INTERACTION_TYPE, (HashSet<Integer>)intersection);
                         
                         // Calculate Hypergeometric pValue for Overlap
                         int N = universeSize;           //number of total genes      (size of population / total number of balls)
@@ -282,7 +282,6 @@ public class BuildDiseaseSignatureTask implements Task {
                             hyperPval = 1.0;
                         
                         comparison.setHypergeom_pvalue(hyperPval);
-                        comparison.setInteractionType(PostAnalysisParameters.SIGNATURE_INTERACTION_TYPE);
                             
                         geneset_similarities.put(similarity_key1,comparison);
                     }

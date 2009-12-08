@@ -197,8 +197,10 @@ public class EnrichmentMapParameters {
     private Boolean disable_heatmap_autofocus;
     private String defaultSortMethod;
 
-    final public static String ENRICHMENT_INTERACTION_TYPE = "pp"; //TODO: change to enr or ovlp ?!?
+    final public static String ENRICHMENT_INTERACTION_TYPE = "pp"; //TODO: change to "Geneset_Overlap"
     private PostAnalysisParameters paParams;
+    
+    private String enrichment_edge_type;
 
     /**
      * Default constructor to create a fresh instance.
@@ -254,6 +256,7 @@ public class EnrichmentMapParameters {
             this.similarityCutOff = this.defaultJaccardCutOff;
             this.jaccard = true;
         }
+        this.enrichment_edge_type = ENRICHMENT_INTERACTION_TYPE;
     }
 
 
@@ -282,6 +285,11 @@ public class EnrichmentMapParameters {
         this.NetworkName = props.get("NetworkName");
         this.attributePrefix = props.get("attributePrefix");
 
+        if ( props.containsKey("enrichment_edge_type") )
+            this.enrichment_edge_type = props.get("enrichment_edge_type");
+        else
+            this.enrichment_edge_type = "pp"; // legacy setting: assume it's "pp" if it's not specified in the props file 
+        
         this.GMTFileName = props.get("GMTFileName");
 
         if(props.get("expressionFileName1")!= null)
@@ -536,7 +544,7 @@ public class EnrichmentMapParameters {
         this.genesetSimilarity = copy.getGenesetSimilarity();
         this.hmParams = copy.getHmParams();
         this.attributePrefix = copy.getAttributePrefix();
-
+        this.enrichment_edge_type = copy.getEnrichment_edge_type();
        }
 
    /**
@@ -678,6 +686,7 @@ public class EnrichmentMapParameters {
 
         paramVariables.append( "NetworkName\t" + NetworkName + "\n");
         paramVariables.append("attributePrefix\t" + attributePrefix + "\n");
+        paramVariables.append("enrichment_edge_type\t" + enrichment_edge_type + "\n");
 
         //file names
         paramVariables.append("GMTFileName\t" + GMTFileName + "\n");
@@ -1371,6 +1380,22 @@ public class EnrichmentMapParameters {
      */
     public HashMap<String, GeneSet> getSignatureGenesets() {
         return signatureGenesets;
+    }
+
+
+    /**
+     * @param enrichment_edge_type the enrichment_edge_type to set
+     */
+    public void setEnrichment_edge_type(String enrichment_edge_type) {
+        this.enrichment_edge_type = enrichment_edge_type;
+    }
+
+
+    /**
+     * @return the enrichment_edge_type
+     */
+    public String getEnrichment_edge_type() {
+        return enrichment_edge_type;
     }
 
 
