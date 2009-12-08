@@ -148,6 +148,7 @@ public class EnrichmentMapParameters {
     private HashMap<String, EnrichmentResult> enrichmentResults2OfInterest;
 
     private HashMap<String, GeneSet> genesetsOfInterest;
+    private HashMap<String, GeneSet> signatureGenesets;
 
     //Gene expression data used for the analysis.  There can be two distinct files
     //for each dataset.
@@ -216,6 +217,7 @@ public class EnrichmentMapParameters {
         this.enrichmentResults1OfInterest = new HashMap<String, EnrichmentResult>();
         this.enrichmentResults2OfInterest = new HashMap<String, EnrichmentResult>();
         this.genesetsOfInterest = new HashMap<String, GeneSet>();
+        this.signatureGenesets = new HashMap<String, GeneSet>();
         this.selectedNodes = new ArrayList<Node>();
         this.selectedEdges = new ArrayList<Edge>();
         this.ranks = new HashMap<String, HashMap<Integer, Ranking>>();
@@ -511,6 +513,7 @@ public class EnrichmentMapParameters {
 
         this.genesets = copy.getGenesets();
         this.genesetsOfInterest = copy.getGenesetsOfInterest();
+        this.signatureGenesets = copy.getSignatureGenesets();
         this.filteredGenesets = copy.getFilteredGenesets();
         this.enrichmentResults1 = copy.getEnrichmentResults1();
         this.enrichmentResults2 = copy.getEnrichmentResults2();
@@ -1352,6 +1355,22 @@ public class EnrichmentMapParameters {
         if (this.paParams == null)
             this.paParams = new PostAnalysisParameters(this);
         return this.paParams;
+    }
+
+
+    /**
+     * @param signatureGenesets the signatureGenesets to set
+     */
+    public void setSignatureGenesets(HashMap<String, GeneSet> signatureGenesets) {
+        this.signatureGenesets = signatureGenesets;
+    }
+
+
+    /**
+     * @return the signatureGenesets
+     */
+    public HashMap<String, GeneSet> getSignatureGenesets() {
+        return signatureGenesets;
     }
 
 

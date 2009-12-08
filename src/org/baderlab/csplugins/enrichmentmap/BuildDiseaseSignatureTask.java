@@ -78,6 +78,7 @@ public class BuildDiseaseSignatureTask implements Task {
     private HashMap<String,GeneSet> EnrichmentGenesets;
     private HashMap<String,GeneSet> SignatureGenesets;
     private HashMap<String,GeneSet> SelectedSignatureGenesets;
+    private HashMap<String,GeneSet> signatureGenesets;
     
     // Gene Populations:
     private HashSet<Integer> EnrichmentGenes;
@@ -102,6 +103,13 @@ public class BuildDiseaseSignatureTask implements Task {
             this.geneset_similarities = new HashMap<String, GenesetSimilarity>();
         else
             this.geneset_similarities = this.paParams.getGenesetSimilarity();
+
+        if (this.paParams.getSignatureGenesets() == null) {
+            //this shouldn't be null ever
+            this.signatureGenesets = new HashMap<String,GeneSet>();
+        }
+        else
+            this.signatureGenesets = this.paParams.getGenesetsOfInterest();
             
         this.SelectedSignatureGenesets = new HashMap<String, GeneSet>();
 
@@ -174,6 +182,14 @@ public class BuildDiseaseSignatureTask implements Task {
             for (Iterator<String> i = SelectedSignatureGenesets.keySet().iterator(); i.hasNext(); ){
                 String hub_name = i.next().toString();
                 
+                // get the Signature Genes, restrict them to the Gene-Universe and add them to the Parameters
+                GeneSet sigGeneset = SelectedSignatureGenesets.get(hub_name);
+                HashSet<Integer> sigGenes = sigGeneset.getGenes();
+                sigGenes.retainAll(geneUniverse);
+                sigGeneset.setGenes(sigGenes);
+                
+                EnrichmentMapManager.getInstance().getParameters(current_network.getIdentifier()).getSignatureGenesets().put(hub_name, sigGeneset);
+                
                 // iterate over Enrichment Genesets
                 for (Iterator<String> j = EnrichmentGenesets.keySet().iterator(); j.hasNext();) {
                     String geneset_name = j.next().toString();
@@ -213,24 +229,21 @@ public class BuildDiseaseSignatureTask implements Task {
                         //skip this geneset comparison.  It has already been done.
                     }
                     else{
-                        //get the two genesets
-                        GeneSet geneset1 = SelectedSignatureGenesets.get(hub_name);
-                        GeneSet geneset2 = EnrichmentGenesets.get(geneset_name);
+                        //get the Enrichment geneset
+                        GeneSet enrGeneset = EnrichmentGenesets.get(geneset_name);
 
-                        HashSet<Integer> genes1 = geneset1.getGenes();
-                        HashSet<Integer> genes2 = geneset2.getGenes();
+                        HashSet<Integer> enrGenes = enrGeneset.getGenes();
 
                         // restrict to a common gene universe
-                        genes1.retainAll(geneUniverse);
-                        genes2.retainAll(geneUniverse);
+                        enrGenes.retainAll(geneUniverse);
 
                        //Get the intersection
-                        Set<Integer> intersection = new HashSet<Integer>(genes1);
-                        intersection.retainAll(genes2);
+                        Set<Integer> intersection = new HashSet<Integer>(sigGenes);
+                        intersection.retainAll(enrGenes);
 
                         //Get the union of the two sets
-                        Set<Integer> union = new HashSet<Integer>(genes1);
-                        union.addAll(genes2);
+                        Set<Integer> union = new HashSet<Integer>(sigGenes);
+                        union.addAll(enrGenes);
 
                         double coeffecient;
 
@@ -241,7 +254,7 @@ public class BuildDiseaseSignatureTask implements Task {
                         }
                         else if(paParams.getSignature_CutoffMetric() == PostAnalysisParameters.OVERLAP){
                             //compute Overlap similarity
-                            coeffecient = (double)intersection.size() / Math.min((double)genes1.size(), (double)genes2.size());
+                            coeffecient = (double)intersection.size() / Math.min((double)sigGenes.size(), (double)enrGenes.size());
                         } else {
                             // use setting from Enrichment Analysis
                             if (paParams.isJaccard() ) {
@@ -249,7 +262,7 @@ public class BuildDiseaseSignatureTask implements Task {
                                 coeffecient = (double)intersection.size() / (double)union.size();
                             } else {
                                 //compute Overlap similarity
-                                coeffecient = (double)intersection.size() / Math.min((double)genes1.size(), (double)genes2.size());
+                                coeffecient = (double)intersection.size() / Math.min((double)sigGenes.size(), (double)enrGenes.size());
                             }
                         }
                         
@@ -258,8 +271,8 @@ public class BuildDiseaseSignatureTask implements Task {
                         
                         // Calculate Hypergeometric pValue for Overlap
                         int N = universeSize;           //number of total genes      (size of population / total number of balls)
-                        int n = genes1.size();          //size of signature geneset  (sample size / number of extracted balls)
-                        int m = genes2.size();          //size of enrichment geneset (success Items / number of white balls in population)
+                        int n = sigGenes.size();        //size of signature geneset  (sample size / number of extracted balls)
+                        int m = enrGenes.size();        //size of enrichment geneset (success Items / number of white balls in population)
                         int k = intersection.size();    //size of intersection       (successes /number of extracted white balls)
                         double hyperPval;
                         

@@ -42,6 +42,8 @@
 // $HeadURL$
 
 package org.baderlab.csplugins.enrichmentmap;
+import cytoscape.Cytoscape;
+import cytoscape.logger.CyLogger;
 import cytoscape.task.Task;
 import cytoscape.task.TaskMonitor;
 
@@ -59,8 +61,10 @@ import java.util.*;
  * the user specified are stored in the hash map of gene set similarityes)
 */
 public class ComputeSimilarityTask implements Task {
+    static final int ENRICHMENT = 0, SIGNATURE = 1;
 
     private EnrichmentMapParameters params;
+    private int type;
 
     //Hash map of the geneset_similarities computed that pass the cutoff.
     private HashMap<String, GenesetSimilarity> geneset_similarities;
@@ -68,6 +72,8 @@ public class ComputeSimilarityTask implements Task {
     // Keep track of progress for monitoring:
     private TaskMonitor taskMonitor = null;
     private boolean interrupted = false;
+    
+    private CyLogger logger = CyLogger.getLogger(ComputeSimilarityTask.class);
 
     /**
      * Constructor for Compute Similarity task
@@ -83,14 +89,37 @@ public class ComputeSimilarityTask implements Task {
 
     public ComputeSimilarityTask(EnrichmentMapParameters params) {
         this.params = params;
-        geneset_similarities = new HashMap<String, GenesetSimilarity>();
+        this.geneset_similarities = new HashMap<String, GenesetSimilarity>();
+        this.type = 0;
     }
 
+    public ComputeSimilarityTask(EnrichmentMapParameters params, int type) {
+        this.params = params;
+        this.geneset_similarities = new HashMap<String, GenesetSimilarity>();
+        this.type = type;
+    }    
+    
     public boolean computeGenesetSimilarities(){
         try{
 
             HashMap genesetsOfInterest = params.getGenesetsOfInterest();
-
+            HashMap genesetsInnerLoop;
+            String edgeType = "pp";
+            
+            if (type == ENRICHMENT ){
+                genesetsInnerLoop = genesetsOfInterest;
+                edgeType = EnrichmentMapParameters.ENRICHMENT_INTERACTION_TYPE;
+            }
+            else if (type == SIGNATURE ){
+                genesetsInnerLoop = params.getSignatureGenesets();
+                edgeType = PostAnalysisParameters.SIGNATURE_INTERACTION_TYPE;
+            }
+            else {
+                genesetsInnerLoop = genesetsOfInterest;
+                this.logger.error("Invalid type argument: " + type);
+            }
+            
+            
             int currentProgress = 0;
             int maxValue = genesetsOfInterest.size();
 
@@ -109,9 +138,8 @@ public class ComputeSimilarityTask implements Task {
                 currentProgress++;
 
                 String geneset1_name = i.next().toString();
-
                 //for each individual geneset compute its jaccard index with all other genesets
-                 for(Iterator j = genesetsOfInterest.keySet().iterator(); j.hasNext(); ){
+                 for(Iterator j = genesetsInnerLoop.keySet().iterator(); j.hasNext(); ){
 
                     String geneset2_name = j.next().toString();
 
@@ -119,8 +147,8 @@ public class ComputeSimilarityTask implements Task {
                      //The key for the set of geneset similarities is the
                      //combination of the two names.  Check for either variation name1_name2
                      //or name2_name1
-                     String similarity_key1 = geneset1_name + " (pp) " + geneset2_name;
-                     String similarity_key2 = geneset2_name + " (pp) " + geneset1_name;
+                     String similarity_key1 = geneset1_name + " ("+ edgeType  + ") " + geneset2_name;
+                     String similarity_key2 = geneset2_name + " ("+ edgeType  + ") " + geneset1_name;
 
                      //first check to see if the terms are the same
                      if(geneset1_name.equalsIgnoreCase(geneset2_name)){
@@ -158,7 +186,10 @@ public class ComputeSimilarityTask implements Task {
                          //create Geneset similarity object
                          GenesetSimilarity comparison = new GenesetSimilarity(geneset1_name,geneset2_name, coeffecient,(HashSet<Integer>)intersection);
 
-                         geneset_similarities.put(similarity_key1,comparison);
+                         if (type == SIGNATURE) // as we iterate over the signature nodes in the inner loop, we have to switch the nodes in the edge name
+                             geneset_similarities.put(similarity_key2,comparison);
+                         else
+                             geneset_similarities.put(similarity_key1,comparison);
 
 
                      }
