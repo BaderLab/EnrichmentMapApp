@@ -108,7 +108,7 @@ public class ComputeSimilarityTask implements Task {
             
             if (type == ENRICHMENT ){
                 genesetsInnerLoop = genesetsOfInterest;
-                edgeType = EnrichmentMapParameters.ENRICHMENT_INTERACTION_TYPE;
+                edgeType = params.getEnrichment_edge_type();
             }
             else if (type == SIGNATURE ){
                 genesetsInnerLoop = params.getSignatureGenesets();
@@ -184,7 +184,7 @@ public class ComputeSimilarityTask implements Task {
                              coeffecient = (double)intersection.size() / Math.min((double)genes1.size(), (double)genes2.size());
                          }
                          //create Geneset similarity object
-                         GenesetSimilarity comparison = new GenesetSimilarity(geneset1_name,geneset2_name, coeffecient,(HashSet<Integer>)intersection);
+                         GenesetSimilarity comparison = new GenesetSimilarity(geneset1_name,geneset2_name, coeffecient, params.getEnrichment_edge_type() ,(HashSet<Integer>)intersection);
 
                          if (type == SIGNATURE) // as we iterate over the signature nodes in the inner loop, we have to switch the nodes in the edge name
                              geneset_similarities.put(similarity_key2,comparison);
