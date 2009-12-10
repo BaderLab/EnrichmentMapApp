@@ -7,6 +7,10 @@
  ** Contact: http://www.baderlab.org
  **
  ** Code written by: Carl Song
+ ** 	This class is a simplified implementation of the following packages:
+ **		 	org.cytoscape.coreplugin.cpath2.web_service
+ **			org.cytoscape.coreplugin.cpath2.http
+ **
  ** Authors: Carl Song, Daniele Merico, Ruth Isserlin, Oliver Stueker, Gary D. Bader
  **
  ** This library is free software; you can redistribute it and/or modify it
@@ -37,29 +41,46 @@
 
 package org.baderlab.csplugins.enrichmentmap;
 
-import giny.model.Node;
-import giny.view.NodeView;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
-import javax.swing.*;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpMethodBase;
+import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.util.URIUtil;
 
-import ding.view.NodeContextMenuListener;
-
-public class PathwayCommonsNodeContextMenuListener implements
-		NodeContextMenuListener {
-	public PathwayCommonsNodeContextMenuListener() {}
+/**
+ * @author carlsong
+ *	adapted from org.cytoscape.coreplugin.cpath2.web_service.CPathWebServiceImpl
+ */
+public class PathwayCommonsWebAPI {
+	HttpClient client = new HttpClient();
+	String liveUrl = "http://www.pathwaycommons.org/pc/webservice.do";
+	HttpMethodBase method = new GetMethod(liveUrl);
+	
 	/**
-	 * @param nodeView The clicked NodeView
-	 * @param menu popup menu to add the PathwayCommons menu
+	 * @param queryString
+	 * @return HTTPResponse in String format
+	 * @throws IOException
+	 * @throws InterruptedException
 	 */
-	public void addNodeContextMenuItems(NodeView nodeView, JPopupMenu menu) {
-		if (menu == null) {
-			menu = new JPopupMenu();
-		}
-		Node node = nodeView.getNode();
-		JMenu pcmenu = new JMenu("Retrieve PathwayCommons Network");
-		pcmenu.add(new JMenuItem(new PathwayCommonsQueryAction(node, false, "SIF")));
-		pcmenu.add(new JMenuItem(new PathwayCommonsQueryAction(node, true, "BioPAX")));
-		menu.add(pcmenu);
-		menu.add(new JSeparator());
-	}
+	public String query(String queryString) throws IOException, InterruptedException {
+		method.setQueryString(URIUtil.encodeQuery(queryString));
+	    int statusCode = client.executeMethod(method);
+	    if (statusCode != 200) {
+	    	throw new InterruptedException("HTTP Status Code:  " + statusCode + ":  " + HttpStatus.getStatusText(statusCode) + ".");
+	    }
+	    //  Read in Content
+	    InputStream instream = method.getResponseBodyAsStream();
+	    ByteArrayOutputStream outstream = new ByteArrayOutputStream(4096);
+	    byte[] buffer = new byte[4096];
+	    int len;
+	    while ((len = instream.read(buffer)) > 0) {
+	    	outstream.write(buffer, 0, len);
+	    }
+	    instream.close();
+	    return new String(outstream.toByteArray());
+	}	
 }
