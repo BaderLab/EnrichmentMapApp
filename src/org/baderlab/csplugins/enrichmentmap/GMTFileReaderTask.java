@@ -74,6 +74,8 @@ public class GMTFileReaderTask implements Task {
     private int maxValue;
     private TaskMonitor taskMonitor = null;
     private boolean interrupted = false;
+    
+    final static int ENRICHMENT_GMT = 1, SIGNATURE_GMT = 2; 
 
     /**
      * Class constructor  - also given current task monitor
@@ -125,16 +127,18 @@ public class GMTFileReaderTask implements Task {
         this.genes = params.getGenes();
         this.hashkey2gene = params.getHashkey2gene();
         
-        if (genesets_file == 1) {
+        if (genesets_file == ENRICHMENT_GMT) {
             //open GMT file
             this.GMTFileName = params.getGMTFileName();
             this.genesets = params.getGenesets();
         }
-        else {
+        else if ( genesets_file == SIGNATURE_GMT) {
             //open signature-GMT file
             this.GMTFileName = params.getSignatureGMTFileName();
             this.genesets = params.getSignatureGenesets();
         }
+        else 
+            throw new IllegalArgumentException("argument not allowed:" + genesets_file);
     }
 
     /**

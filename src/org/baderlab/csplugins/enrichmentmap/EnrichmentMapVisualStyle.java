@@ -89,6 +89,8 @@ public class EnrichmentMapVisualStyle {
     public static String FWER_QVALUE_DATASET2 = "fwer_qvalue_dataset2";
     public static String COLOURING_DATASET2 = "Colouring_dataset2";
 
+    public static String GS_SIZE_SIGNATURE = "gs_size_signature";
+    
     public static String OVERLAP_SIZE = "Overlap_size";
     public static String SIMILARITY_COEFFECIENT = "similarity_coeffecient";
     public static String OVERLAP_GENES = "Overlap_genes";
