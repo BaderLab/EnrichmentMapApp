@@ -408,7 +408,7 @@ public class PostAnalysisInputPanel extends JPanel {
         //GMTFileNameTextField.setText(gmt_instruction);
         GMTFileNameTextField.addPropertyChangeListener("value",new PostAnalysisInputPanel.FormattedTextFieldAction());
 
-        GMTFileNameTextField.setText( paParams.getGMTFileName() );
+//        GMTFileNameTextField.setText( paParams.getGMTFileName() );
         if (! (GMTFileNameTextField.getText().equals("") ) ) {
             GMTFileNameTextField.setToolTipText(GMTFileNameTextField.getText());
         }
@@ -1052,11 +1052,11 @@ public class PostAnalysisInputPanel extends JPanel {
             try {
                 try{
                     //Load the GSEA geneset file
-                    GMTFileReaderTask gmtFile_1 = new GMTFileReaderTask(paParams, taskMonitor, 1);
+                    GMTFileReaderTask gmtFile_1 = new GMTFileReaderTask(paParams, taskMonitor, GMTFileReaderTask.ENRICHMENT_GMT);
                     gmtFile_1.run();
     
                     //Load the Disease Signature geneset file
-                    GMTFileReaderTask gmtFile_2 = new GMTFileReaderTask(paParams, taskMonitor, 2);
+                    GMTFileReaderTask gmtFile_2 = new GMTFileReaderTask(paParams, taskMonitor, GMTFileReaderTask.SIGNATURE_GMT);
                     gmtFile_2.run();
     
                 } catch (OutOfMemoryError e) {
@@ -1069,6 +1069,8 @@ public class PostAnalysisInputPanel extends JPanel {
                 
                 //Sort the Genesets:
                 DefaultListModel signatureSetNames = paParams.getSignatureSetNames();
+                signatureSetNames.clear(); // clear, that we don't have duplicates afterwards - Bug #103 a
+                
                 Object[] setNamesArray = paParams.getSignatureGenesets().keySet().toArray();
                 Arrays.sort( setNamesArray );
                 

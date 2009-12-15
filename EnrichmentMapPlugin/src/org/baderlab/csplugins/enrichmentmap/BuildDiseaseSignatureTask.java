@@ -78,8 +78,6 @@ public class BuildDiseaseSignatureTask implements Task {
     private HashMap<String,GeneSet> EnrichmentGenesets;
     private HashMap<String,GeneSet> SignatureGenesets;
     private HashMap<String,GeneSet> SelectedSignatureGenesets;
-    private HashMap<String,GeneSet> signatureGenesets;
-    
     // Gene Populations:
     private HashSet<Integer> EnrichmentGenes;
     private HashSet<Integer> SignatureGenes;
@@ -105,11 +103,9 @@ public class BuildDiseaseSignatureTask implements Task {
             this.geneset_similarities = this.paParams.getGenesetSimilarity();
 
         if (this.paParams.getSignatureGenesets() == null) {
-            //this shouldn't be null ever
-            this.signatureGenesets = new HashMap<String,GeneSet>();
-        }
-        else
-            this.signatureGenesets = this.paParams.getGenesetsOfInterest();
+            new HashMap<String,GeneSet>();
+        } else
+            this.paParams.getGenesetsOfInterest();
             
         this.SelectedSignatureGenesets = new HashMap<String, GeneSet>();
 
@@ -183,12 +179,12 @@ public class BuildDiseaseSignatureTask implements Task {
                 String hub_name = i.next().toString();
                 
                 // get the Signature Genes, restrict them to the Gene-Universe and add them to the Parameters
-                GeneSet sigGeneset = SelectedSignatureGenesets.get(hub_name);
-                HashSet<Integer> sigGenes = sigGeneset.getGenes();
+                GeneSet sigGeneSet = SelectedSignatureGenesets.get(hub_name);
+                HashSet<Integer> sigGenes = sigGeneSet.getGenes();
                 sigGenes.retainAll(geneUniverse);
-                sigGeneset.setGenes(sigGenes);
+                sigGeneSet.setGenes(sigGenes);
                 
-                EnrichmentMapManager.getInstance().getParameters(current_network.getIdentifier()).getSignatureGenesets().put(hub_name, sigGeneset);
+                EnrichmentMapManager.getInstance().getParameters(current_network.getIdentifier()).getSignatureGenesets().put(hub_name, sigGeneSet);
                 
                 // iterate over Enrichment Genesets
                 for (Iterator<String> j = EnrichmentGenesets.keySet().iterator(); j.hasNext();) {
@@ -305,7 +301,7 @@ public class BuildDiseaseSignatureTask implements Task {
 
                 //create an attribute that stores the genes that are associated with this node as an attribute list
                 //only create the list if the hashkey 2 genes is not null Otherwise it take too much time to populate the list
-                GeneSet sigGeneSet = SelectedSignatureGenesets.get(hub_name);
+//                GeneSet sigGeneSet = SelectedSignatureGenesets.get(hub_name);
                 if(paParams.getHashkey2gene() != null){
                     List<String> gene_list = new ArrayList<String>();
                     HashSet genes_hash = sigGeneSet.getGenes();
@@ -316,6 +312,9 @@ public class BuildDiseaseSignatureTask implements Task {
                             gene_list.add(gene);
                     }
                     cyNodeAttrs.setListAttribute(hub_node.getIdentifier(), prefix+EnrichmentMapVisualStyle.GENES, gene_list);
+                    cyNodeAttrs.setAttribute(hub_node.getIdentifier(), prefix+EnrichmentMapVisualStyle.GS_DESCR , sigGeneSet.getDescription() );
+                    cyNodeAttrs.setAttribute(hub_node.getIdentifier(), prefix+EnrichmentMapVisualStyle.NAME , sigGeneSet.getName() );
+                    cyNodeAttrs.setAttribute(hub_node.getIdentifier(), prefix+EnrichmentMapVisualStyle.GS_SIZE_SIGNATURE , sigGeneSet.getGenes().size() );
                 }
 
                 // add the geneset of the signature node to the GenesetsOfInterest,
