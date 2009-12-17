@@ -72,6 +72,7 @@ public class EnrichmentMapVisualStyle {
     public static String GS_DESCR = "GS_DESCR";
     public static String FORMATTED_NAME = "Formatted_name";
     public static String GENES = "Genes";
+    public static String ENR_GENES = "Enrichment_Genes";
 
     public static String ES_DATASET1 = "ES_dataset1";
     public static String NES_DATASET1 = "NES_dataset1";
@@ -96,6 +97,8 @@ public class EnrichmentMapVisualStyle {
     public static String OVERLAP_GENES = "Overlap_genes";
     public static String HYPERGEOM_PVALUE = "Overlap_Hypergeom_pVal";
 
+    public static String NUMBER_OF_ENRICHMENT_GENES = "# of Enrichment Genes";
+    
     //default colours
     public static Color max_phenotype1 = new Color(255,0,0);
     public static Color lighter_phenotype1 = new Color(255,102,102);
