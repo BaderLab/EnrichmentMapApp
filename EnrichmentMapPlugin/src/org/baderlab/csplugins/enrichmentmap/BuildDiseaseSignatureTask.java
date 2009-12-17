@@ -146,7 +146,8 @@ public class BuildDiseaseSignatureTask implements Task {
             CyNetworkView currentNetworkView = Cytoscape.getCurrentNetworkView();
             CyAttributes cyNodeAttrs = Cytoscape.getNodeAttributes();
             CyAttributes cyEdgeAttrs = Cytoscape.getEdgeAttributes();
-
+            CyAttributes cyNetworkAttrs = Cytoscape.getNetworkAttributes();
+            
             String prefix = paParams.getAttributePrefix();
             if (prefix == null) {
                 prefix = "EM1_";
@@ -180,9 +181,19 @@ public class BuildDiseaseSignatureTask implements Task {
                 
                 // get the Signature Genes, restrict them to the Gene-Universe and add them to the Parameters
                 GeneSet sigGeneSet = SelectedSignatureGenesets.get(hub_name);
+
+                /** 
+                 * the signature genes in this signature gene set 
+                 */
                 HashSet<Integer> sigGenes = sigGeneSet.getGenes();
-                sigGenes.retainAll(geneUniverse);
-                sigGeneSet.setGenes(sigGenes);
+
+                /** 
+                 * the genes that are in this signature gene set 
+                 * as well as in the Universe of Enrichment-GMT Genes.    
+                 */
+                HashSet<Integer> sigGenesInUniverse = new HashSet<Integer>(sigGenes);
+                sigGenesInUniverse.retainAll(geneUniverse);
+//                sigGeneSet.setGenes(sigGenes);
                 
                 EnrichmentMapManager.getInstance().getParameters(current_network.getIdentifier()).getSignatureGenesets().put(hub_name, sigGeneSet);
                 
@@ -233,7 +244,7 @@ public class BuildDiseaseSignatureTask implements Task {
                         // restrict to a common gene universe
                         enrGenes.retainAll(geneUniverse);
 
-                       //Get the intersection
+                        //Get the intersection
                         Set<Integer> intersection = new HashSet<Integer>(sigGenes);
                         intersection.retainAll(enrGenes);
 
@@ -244,7 +255,10 @@ public class BuildDiseaseSignatureTask implements Task {
                         double coeffecient;
 
                         // if  either Jaccard or Overlap similarity are requested:
-                        if(paParams.getSignature_CutoffMetric() == PostAnalysisParameters.JACCARD){
+                        if (paParams.getSignature_CutoffMetric() == PostAnalysisParameters.DIR_OVERLAP) {
+                            coeffecient = (double)intersection.size() /  (double) enrGenes.size();
+                        } 
+                        else if (paParams.getSignature_CutoffMetric() == PostAnalysisParameters.JACCARD){
                             //compute Jaccard similarity
                             coeffecient = (double)intersection.size() / (double)union.size();
                         }
@@ -252,24 +266,28 @@ public class BuildDiseaseSignatureTask implements Task {
                             //compute Overlap similarity
                             coeffecient = (double)intersection.size() / Math.min((double)sigGenes.size(), (double)enrGenes.size());
                         } else {
-                            // use setting from Enrichment Analysis
-                            if (paParams.isJaccard() ) {
-                                //compute Jaccard similarity
-                                coeffecient = (double)intersection.size() / (double)union.size();
-                            } else {
-                                //compute Overlap similarity
-                                coeffecient = (double)intersection.size() / Math.min((double)sigGenes.size(), (double)enrGenes.size());
-                            }
+                            // use Directed Overlap
+                            coeffecient = (double)intersection.size() /  (double) enrGenes.size();
+//                            // use setting from Enrichment Analysis
+//                            if (paParams.isJaccard() ) {
+//                                //compute Jaccard similarity
+//                                coeffecient = (double)intersection.size() / (double)union.size();
+//                            } else {
+//                                //compute Overlap similarity
+//                                coeffecient = (double)intersection.size() / Math.min((double)sigGenes.size(), (double)enrGenes.size());
+//                            }
                         }
                         
+                        
+                        
                         //create Geneset similarity object
-                        GenesetSimilarity comparison = new GenesetSimilarity(hub_name,geneset_name, coeffecient, PostAnalysisParameters.SIGNATURE_INTERACTION_TYPE, (HashSet<Integer>)intersection);
+                        GenesetSimilarity comparison = new GenesetSimilarity(hub_name, geneset_name, coeffecient, PostAnalysisParameters.SIGNATURE_INTERACTION_TYPE, (HashSet<Integer>)intersection);
                         
                         // Calculate Hypergeometric pValue for Overlap
-                        int N = universeSize;           //number of total genes      (size of population / total number of balls)
-                        int n = sigGenes.size();        //size of signature geneset  (sample size / number of extracted balls)
-                        int m = enrGenes.size();        //size of enrichment geneset (success Items / number of white balls in population)
-                        int k = intersection.size();    //size of intersection       (successes /number of extracted white balls)
+                        int N = universeSize;               //number of total genes      (size of population / total number of balls)
+                        int n = sigGenesInUniverse.size();  //size of signature geneset  (sample size / number of extracted balls)
+                        int m = enrGenes.size();            //size of enrichment geneset (success Items / number of white balls in population)
+                        int k = intersection.size();        //size of intersection       (successes /number of extracted white balls)
                         double hyperPval;
                         
                         if (k > 0) 
@@ -303,15 +321,31 @@ public class BuildDiseaseSignatureTask implements Task {
                 //only create the list if the hashkey 2 genes is not null Otherwise it take too much time to populate the list
 //                GeneSet sigGeneSet = SelectedSignatureGenesets.get(hub_name);
                 if(paParams.getHashkey2gene() != null){
+                    // HashSet to List:
                     List<String> gene_list = new ArrayList<String>();
-                    HashSet genes_hash = sigGeneSet.getGenes();
+                    HashSet<Integer> genes_hash = sigGeneSet.getGenes();
                     for(Iterator j=genes_hash.iterator(); j.hasNext();){
                         Integer current = (Integer)j.next();
                         String gene = paParams.getGeneFromHashKey(current);
                         if(gene_list != null)
                             gene_list.add(gene);
                     }
+                    Collections.sort(gene_list);
+
+                    List<String> enr_gene_list = new ArrayList<String>();
+                    HashSet<Integer> enr_genes_hash = sigGeneSet.getGenes();
+                    enr_genes_hash.retainAll(geneUniverse);
+                    for(Iterator j=enr_genes_hash.iterator(); j.hasNext();){
+                        Integer current = (Integer)j.next();
+                        String gene = paParams.getGeneFromHashKey(current);
+                        if(enr_gene_list != null)
+                            enr_gene_list.add(gene);
+                    }
+                    Collections.sort(enr_gene_list);
+                    
                     cyNodeAttrs.setListAttribute(hub_node.getIdentifier(), prefix+EnrichmentMapVisualStyle.GENES, gene_list);
+                    cyNodeAttrs.setListAttribute(hub_node.getIdentifier(), prefix+EnrichmentMapVisualStyle.ENR_GENES, enr_gene_list);
+                   
                     cyNodeAttrs.setAttribute(hub_node.getIdentifier(), prefix+EnrichmentMapVisualStyle.GS_DESCR , sigGeneSet.getDescription() );
                     cyNodeAttrs.setAttribute(hub_node.getIdentifier(), prefix+EnrichmentMapVisualStyle.NAME , sigGeneSet.getName() );
                     cyNodeAttrs.setAttribute(hub_node.getIdentifier(), prefix+EnrichmentMapVisualStyle.GS_SIZE_SIGNATURE , sigGeneSet.getGenes().size() );
@@ -360,6 +394,9 @@ public class BuildDiseaseSignatureTask implements Task {
                 else if ( (paParams.getSignature_CutoffMetric() == PostAnalysisParameters.OVERLAP) && 
                         (geneset_similarities.get(edge_name).getSimilarity_coeffecient() >= paParams.getSignature_Overlap_Cutoff() ) )
                     passed_cutoff = true;
+                else if ( (paParams.getSignature_CutoffMetric() == PostAnalysisParameters.DIR_OVERLAP) && 
+                        (geneset_similarities.get(edge_name).getSimilarity_coeffecient() >= paParams.getSignature_DirOverlap_Cutoff() ) )
+                    passed_cutoff = true;
                 else if ( (paParams.getSignature_CutoffMetric() == PostAnalysisParameters.HYPERGEOM) && 
                           (geneset_similarities.get(edge_name).getHypergeom_pvalue() != -1.0) &&
                           (geneset_similarities.get(edge_name).getHypergeom_pvalue() <= paParams.getSignature_Hypergeom_Cutoff() ) )
@@ -376,14 +413,16 @@ public class BuildDiseaseSignatureTask implements Task {
                     //only create the list if the hashkey 2 genes is not null Otherwise it take too much time to populate the list
                     if(paParams.getHashkey2gene() != null){
                         List<String> gene_list = new ArrayList<String>();
-                        HashSet genes_hash = geneset_similarities.get(edge_name).getOverlapping_genes();
+                        HashSet<Integer> genes_hash = geneset_similarities.get(edge_name).getOverlapping_genes();
                         for(Iterator k=genes_hash.iterator(); k.hasNext();){
                             Integer current = (Integer)k.next();
                             String gene = paParams.getGeneFromHashKey(current);
                             if(gene_list != null)
                                 gene_list.add(gene);
                         }
-                        cyEdgeAttrs.setListAttribute(edge.getIdentifier(), prefix+EnrichmentMapVisualStyle.OVERLAP_GENES, gene_list);
+                        Collections.sort(gene_list);
+                        
+                        cyEdgeAttrs.setListAttribute(edge.getIdentifier(), prefix+EnrichmentMapVisualStyle.OVERLAP_GENES, gene_list);                        
                     }
  
                     cyEdgeAttrs.setAttribute(edge.getIdentifier(), prefix + EnrichmentMapVisualStyle.OVERLAP_SIZE       , geneset_similarities.get(edge_name).getSizeOfOverlap());
@@ -403,7 +442,8 @@ public class BuildDiseaseSignatureTask implements Task {
                 } //if (geneset_similarities.get(edge_name).getSizeOfOverlap() > 0)
             } //for
  
-            Cytoscape.getCurrentNetworkView().redrawGraph(false, true);
+            currentNetworkView.redrawGraph(false, true);
+            cyNetworkAttrs.setAttribute(currentNetworkView.getIdentifier(), EnrichmentMapVisualStyle.NUMBER_OF_ENRICHMENT_GENES, geneUniverse.size());
         } catch (InterruptedException e) {
             taskMonitor.setException(e, "Generation of Signature Hubs cancelled");
         }

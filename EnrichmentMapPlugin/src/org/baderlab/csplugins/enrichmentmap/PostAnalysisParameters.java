@@ -62,12 +62,29 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
     // Disease Signature Constants
     /**
      * Enum for Signature-Hub cut-off metric:
-     * HYPERGEOM  = 0
-     * ABS_NUMBER = 1
-     * JACCARD    = 2
-     * OVERLAP    = 3
+     * HYPERGEOM   = 0
+     * ABS_NUMBER  = 1
+     * JACCARD     = 2
+     * OVERLAP     = 3
+     * DIR_OVERLAP = 4
      */
-    final public static int HYPERGEOM = 0, ABS_NUMBER = 1, JACCARD = 2, OVERLAP = 3; 
+    final public static int HYPERGEOM = 0, ABS_NUMBER = 1, JACCARD = 2, OVERLAP = 3, DIR_OVERLAP = 4; 
+ 
+    /**
+     * Strings for Signature-Hub cut-off metric:
+     * HYPERGEOM   (0) : "Hypergeometric Test"
+     * ABS_NUMBER  (1) : "Number of common genes"
+     * JACCARD     (2) : "Jaccard Coefficient"
+     * OVERLAP     (3) : "Overlap Coefficient"
+     * DIR_OVERLAP (4) : "Directed Overlap"
+     */
+    final static String[] sigCutoffItems = {"Hypergeometric Test", 
+                                            "Number of common genes",
+                                            "Jaccard Coefficient", 
+                                            "Overlap Coefficient",
+                                            "Directed Overlap" 
+                                           };
+    
     final public static String SIGNATURE_INTERACTION_TYPE = "sig";
     
     private String signatureHub_nodeShape   = "TRIANGLE";
@@ -82,6 +99,7 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
     private int    signature_absNumber_Cutoff;
     private double signature_Jaccard_Cutoff;
     private double signature_Overlap_Cutoff;
+    private double signature_DirOverlap_Cutoff;
     private double signature_Hypergeom_Cutoff;   
 
     private int    signature_CutoffMetric;
@@ -90,6 +108,7 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
     private int    default_signature_absNumber_Cutoff = 5;
     private double default_signature_Jaccard_Cutoff   = 0.125;  
     private double default_signature_Overlap_Cutoff   = 0.25;  
+    private double default_signature_DirOverlap_Cutoff= 0.25;  
     private double default_signature_Hypergeom_Cutoff = 0.05;
     
     private int    default_signature_CutoffMetric      = HYPERGEOM;
@@ -119,6 +138,7 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
         this.signature_absNumber_Cutoff = default_signature_absNumber_Cutoff;
         this.signature_Jaccard_Cutoff   = default_signature_Jaccard_Cutoff;
         this.signature_Overlap_Cutoff   = default_signature_Overlap_Cutoff;
+        this.signature_DirOverlap_Cutoff= default_signature_DirOverlap_Cutoff;
         this.signature_Hypergeom_Cutoff = default_signature_Hypergeom_Cutoff;
         this.signature_CutoffMetric     = default_signature_CutoffMetric;
         
@@ -152,6 +172,7 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
         this.signature_absNumber_Cutoff = default_signature_absNumber_Cutoff;
         this.signature_Jaccard_Cutoff   = default_signature_Jaccard_Cutoff;
         this.signature_Overlap_Cutoff   = default_signature_Overlap_Cutoff;
+        this.signature_DirOverlap_Cutoff= default_signature_DirOverlap_Cutoff;
         this.signature_Hypergeom_Cutoff = default_signature_Hypergeom_Cutoff;
         this.signature_CutoffMetric     = default_signature_CutoffMetric;
         
@@ -181,6 +202,7 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
         this.signature_absNumber_Cutoff = source.getSignature_absNumber_Cutoff();
         this.signature_Jaccard_Cutoff   = source.getSignature_Jaccard_Cutoff();
         this.signature_Overlap_Cutoff   = source.getSignature_Overlap_Cutoff();
+        this.signature_DirOverlap_Cutoff= source.getSignature_DirOverlap_Cutoff();
         this.signature_Hypergeom_Cutoff = source.getSignature_Hypergeom_Cutoff();
         this.signature_CutoffMetric     = source.getSignature_CutoffMetric();
 
@@ -216,6 +238,9 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
         } else if (this.signature_CutoffMetric == PostAnalysisParameters.JACCARD) {
             if (! (this.signature_Jaccard_Cutoff >= 0.0 && this.signature_Jaccard_Cutoff <= 1.0))
                 errors += "Jaccard Cutoff must be a decimal Number between 0.0 and 1.0 \n";
+        } else if (this.signature_CutoffMetric == PostAnalysisParameters.DIR_OVERLAP) {
+            if (! (this.signature_DirOverlap_Cutoff >= 0.0 && this.signature_DirOverlap_Cutoff <= 1.0))
+                errors += "Directed Overlap Cutoff must be a decimal Number between 0.0 and 1.0 \n";
         } else
             errors += "Invalid Cutoff metric \n";
         
@@ -298,6 +323,20 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
     }
 
     /**
+     * @param signature_DirOverlap_Cutoff the signature_DirOverlap_Cutoff to set
+     */
+    public void setSignature_DirOverlap_Cutoff(double signature_DirOverlap_Cutoff) {
+        this.signature_DirOverlap_Cutoff = signature_DirOverlap_Cutoff;
+    }
+
+    /**
+     * @return the signature_DirOverlap_Cutoff
+     */
+    public double getSignature_DirOverlap_Cutoff() {
+        return signature_DirOverlap_Cutoff;
+    }
+
+    /**
      * @param signature_Hypergeom_Cutoff the signature_Hypergeom_Cutoff to set
      */
     public void setSignature_Hypergeom_Cutoff(double signature_Hypergeom_Cutoff) {
@@ -333,46 +372,18 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
     }
 
     /**
-     * @return the default_signature_absNumber_Cutoff
-     */
-    public int getDefault_signature_absNumber_Cutoff() {
-        return default_signature_absNumber_Cutoff;
-    }
-
-    /**
-     * @return the default_signature_Jaccard_Cutoff
-     */
-    public double getDefault_signature_Jaccard_Cutoff() {
-        return default_signature_Jaccard_Cutoff;
-    }
-
-    /**
-     * @return the default_signature_Overlap_Cutoff
-     */
-    public double getDefault_signature_Overlap_Cutoff() {
-        return default_signature_Overlap_Cutoff;
-    }
-
-    /**
-     * @return the default_signature_Hypergeom_Cutoff
-     */
-    public double getDefault_signature_Hypergeom_Cutoff() {
-        return default_signature_Hypergeom_Cutoff;
-    }
-
-    /**
-     * @return the default_signature_CutoffMetric
-     */
-    public int getDefault_signature_CutoffMetric() {
-        return default_signature_CutoffMetric;
-    }
-
-    /**
      * @param defaultSignatureAbsNumberCutoff the default_signature_absNumber_Cutoff to set
      */
     public void setDefault_signature_absNumber_Cutoff(
             int defaultSignatureAbsNumberCutoff) {
         default_signature_absNumber_Cutoff = defaultSignatureAbsNumberCutoff;
+    }
+
+    /**
+     * @return the default_signature_absNumber_Cutoff
+     */
+    public int getDefault_signature_absNumber_Cutoff() {
+        return default_signature_absNumber_Cutoff;
     }
 
     /**
@@ -384,11 +395,25 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
     }
 
     /**
+     * @return the default_signature_Jaccard_Cutoff
+     */
+    public double getDefault_signature_Jaccard_Cutoff() {
+        return default_signature_Jaccard_Cutoff;
+    }
+
+    /**
      * @param defaultSignatureOverlapCutoff the default_signature_Overlap_Cutoff to set
      */
     public void setDefault_signature_Overlap_Cutoff(
             double defaultSignatureOverlapCutoff) {
         default_signature_Overlap_Cutoff = defaultSignatureOverlapCutoff;
+    }
+
+    /**
+     * @return the default_signature_Overlap_Cutoff
+     */
+    public double getDefault_signature_Overlap_Cutoff() {
+        return default_signature_Overlap_Cutoff;
     }
 
     /**
@@ -400,10 +425,39 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
     }
 
     /**
+     * @return the default_signature_Hypergeom_Cutoff
+     */
+    public double getDefault_signature_Hypergeom_Cutoff() {
+        return default_signature_Hypergeom_Cutoff;
+    }
+
+    /**
+     * @param default_signature_DirOverlap_Cutoff the default_signature_DirOverlap_Cutoff to set
+     */
+    public void setDefault_signature_DirOverlap_Cutoff(
+            double default_signature_DirOverlap_Cutoff) {
+        this.default_signature_DirOverlap_Cutoff = default_signature_DirOverlap_Cutoff;
+    }
+
+    /**
+     * @return the default_signature_DirOverlap_Cutoff
+     */
+    public double getDefault_signature_DirOverlap_Cutoff() {
+        return default_signature_DirOverlap_Cutoff;
+    }
+
+    /**
      * @param defaultSignatureCutoffMetric the default_signature_CutoffMetric to set
      */
     public void setDefault_signature_CutoffMetric(int defaultSignatureCutoffMetric) {
         default_signature_CutoffMetric = defaultSignatureCutoffMetric;
+    }
+
+    /**
+     * @return the default_signature_CutoffMetric
+     */
+    public int getDefault_signature_CutoffMetric() {
+        return default_signature_CutoffMetric;
     }
 
     /**

@@ -82,7 +82,7 @@ public class PostAnalysisInputPanel extends JPanel {
     private static final long serialVersionUID = 5472169142720323583L;
 
     final static int RIGHT = 0, DOWN = 1, UP = 2, LEFT = 3; // image States
-    
+
     CollapsiblePanel Parameters;
     CollapsiblePanel signature_genesets;
 
@@ -124,6 +124,7 @@ public class PostAnalysisInputPanel extends JPanel {
     //
     
     public static String gmt_instruction = "Please select the Gene Set file (.gmt)...";
+    public static String siggmt_instruction = "Please select the Signature Gene Set file (.gmt)...";
     //tool tips
     private static String gmtTip = "File specifying gene sets.\n" + "Format: geneset name <tab> description <tab> gene ...";
 
@@ -408,7 +409,7 @@ public class PostAnalysisInputPanel extends JPanel {
         //GMTFileNameTextField.setText(gmt_instruction);
         GMTFileNameTextField.addPropertyChangeListener("value",new PostAnalysisInputPanel.FormattedTextFieldAction());
 
-//        GMTFileNameTextField.setText( paParams.getGMTFileName() );
+        GMTFileNameTextField.setText( paParams.getGMTFileName() );
         if (! (GMTFileNameTextField.getText().equals("") ) ) {
             GMTFileNameTextField.setToolTipText(GMTFileNameTextField.getText());
         }
@@ -496,6 +497,7 @@ public class PostAnalysisInputPanel extends JPanel {
      * @return CollapsiblePanel to set PostAnalysisParameters 
      */
     private CollapsiblePanel createParametersPanel() {
+        String[] sigCutoffItems = PostAnalysisParameters.sigCutoffItems;
         CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Parameters");
         
         JPanel panel = new JPanel();
@@ -507,11 +509,12 @@ public class PostAnalysisInputPanel extends JPanel {
         JPanel cutoffPanel = new JPanel();
         cutoffPanel.setLayout(new BoxLayout(cutoffPanel, BoxLayout.X_AXIS));
         sigCutoffCombo = new JComboBox();
-        sigCutoffCombo.addItem("Hypergeometric Test");
-        sigCutoffCombo.addItem("Number of common genes");
-        sigCutoffCombo.addItem("Jaccard Coefficient");
-        sigCutoffCombo.addItem("Overlap Coefficient");
-        sigCutoffCombo.setSelectedIndex(paParams.getDefault_signature_CutoffMetric());
+        sigCutoffCombo.addItem(sigCutoffItems[PostAnalysisParameters.HYPERGEOM]);
+        sigCutoffCombo.addItem(sigCutoffItems[PostAnalysisParameters.ABS_NUMBER]);
+//        sigCutoffCombo.addItem(sigCutoffItems[PostAnalysisParameters.JACCARD]);
+//        sigCutoffCombo.addItem(sigCutoffItems[PostAnalysisParameters.OVERLAP]);
+        sigCutoffCombo.addItem(sigCutoffItems[PostAnalysisParameters.DIR_OVERLAP]);
+        sigCutoffCombo.setSelectedItem(sigCutoffItems[paParams.getDefault_signature_CutoffMetric()]);
 
 
         //JFormattedTextField
@@ -525,6 +528,8 @@ public class PostAnalysisInputPanel extends JPanel {
             sigCutoffTextField.setValue(paParams.getSignature_Jaccard_Cutoff());
         else if (paParams.getDefault_signature_CutoffMetric() == PostAnalysisParameters.OVERLAP)
             sigCutoffTextField.setValue(paParams.getSignature_Overlap_Cutoff());
+        else if (paParams.getDefault_signature_CutoffMetric() == PostAnalysisParameters.DIR_OVERLAP)
+            sigCutoffTextField.setValue(paParams.getSignature_DirOverlap_Cutoff());
         else {
             //Handle Unsupported Default_signature_CutoffMetric Error
             String message = "This Cutoff metric is not supported.";
@@ -534,21 +539,25 @@ public class PostAnalysisInputPanel extends JPanel {
         
         //Add Action Listeners
         sigCutoffCombo.addActionListener( new ActionListener() { 
+            String[] sigCutoffItems = PostAnalysisParameters.sigCutoffItems;
             public void actionPerformed( ActionEvent e ) 
             { 
               JComboBox selectedChoice = (JComboBox) e.getSource(); 
-              if ( "Hypergeometric Test".equals( selectedChoice.getSelectedItem() ) ) {
+              if ( sigCutoffItems[PostAnalysisParameters.HYPERGEOM].equals( selectedChoice.getSelectedItem() ) ) {
                   paParams.setSignature_CutoffMetric(PostAnalysisParameters.HYPERGEOM);
                   sigCutoffTextField.setValue(paParams.getSignature_Hypergeom_Cutoff());
-              } else if ( "Number of common genes".equals( selectedChoice.getSelectedItem() ) ) {
+              } else if ( sigCutoffItems[PostAnalysisParameters.ABS_NUMBER].equals( selectedChoice.getSelectedItem() ) ) {
                   paParams.setSignature_CutoffMetric(PostAnalysisParameters.ABS_NUMBER);
                   sigCutoffTextField.setValue(paParams.getSignature_absNumber_Cutoff());
-              } else if ( "Jaccard Coefficient".equals( selectedChoice.getSelectedItem() ) ) {
+              } else if ( sigCutoffItems[PostAnalysisParameters.JACCARD].equals( selectedChoice.getSelectedItem() ) ) {
                   paParams.setSignature_CutoffMetric(PostAnalysisParameters.JACCARD);
                   sigCutoffTextField.setValue(paParams.getSignature_Jaccard_Cutoff());
-              } else if ( "Overlap Coefficient".equals( selectedChoice.getSelectedItem() ) ) {
+              } else if ( sigCutoffItems[PostAnalysisParameters.OVERLAP].equals( selectedChoice.getSelectedItem() ) ) {
                   paParams.setSignature_CutoffMetric(PostAnalysisParameters.OVERLAP);
                   sigCutoffTextField.setValue(paParams.getSignature_Overlap_Cutoff());
+              } else if ( sigCutoffItems[PostAnalysisParameters.DIR_OVERLAP].equals( selectedChoice.getSelectedItem() ) ) {
+                  paParams.setSignature_CutoffMetric(PostAnalysisParameters.DIR_OVERLAP);
+                  sigCutoffTextField.setValue(paParams.getSignature_DirOverlap_Cutoff());
               }
                  
             } 
@@ -664,6 +673,15 @@ public class PostAnalysisInputPanel extends JPanel {
                         paParams.setSignature_Overlap_Cutoff(value.doubleValue());
                     } else {
                         source.setValue(paParams.getSignature_Overlap_Cutoff());
+                        message += "The Overlap Coefficient cutoff must be greater than 0.0 and less than or equal to 1.0.";
+                        invalid = true;
+                    }
+                }
+                else if (paParams.getSignature_CutoffMetric() == PostAnalysisParameters.DIR_OVERLAP) {
+                    if ((value != null) && (value.doubleValue() > 0.0) && (value.doubleValue() <= 1.0)) {
+                        paParams.setSignature_DirOverlap_Cutoff(value.doubleValue());
+                    } else {
+                        source.setValue(paParams.getSignature_DirOverlap_Cutoff());
                         message += "The Overlap Coefficient cutoff must be greater than 0.0 and less than or equal to 1.0.";
                         invalid = true;
                     }
@@ -1069,6 +1087,7 @@ public class PostAnalysisInputPanel extends JPanel {
                 
                 //Sort the Genesets:
                 DefaultListModel signatureSetNames = paParams.getSignatureSetNames();
+                DefaultListModel selectedSignatureSetNames = paParams.getSelectedSignatureSetNames();
                 signatureSetNames.clear(); // clear, that we don't have duplicates afterwards - Bug #103 a
                 
                 Object[] setNamesArray = paParams.getSignatureGenesets().keySet().toArray();
@@ -1077,7 +1096,8 @@ public class PostAnalysisInputPanel extends JPanel {
                 for (int i = 0; i < setNamesArray.length; i++) {
                     if (interrupted)
                         throw new InterruptedException();
-                    signatureSetNames.addElement(setNamesArray[i] );
+                    if (! selectedSignatureSetNames.contains(setNamesArray[i]))
+                        signatureSetNames.addElement(setNamesArray[i] );
                 }
             
             } catch (InterruptedException e) {
