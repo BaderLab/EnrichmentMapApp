@@ -59,6 +59,7 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -372,10 +373,16 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
                             params.setGenesetsOfInterest(params.repopulateHashmap(fullText,1));
                     }
                     if(prop_file.getName().contains(".genes.txt")){
-                        params.setGenes(params.repopulateHashmap(fullText,2));
+                        HashMap<String, Integer> genes = params.repopulateHashmap(fullText,2);
+                        params.setGenes(genes);
+                        // Ticket #107 : restore also gene count (needed to determine the next free hash in case we do PostAnalysis with a restored session)
+                        params.setNumberOfGenes( Math.max( params.getNumberOfGenes(), Collections.max(genes.values())+1 ));
                     }
                     if(prop_file.getName().contains(".hashkey2genes.txt")){
-                        params.setHashkey2gene(params.repopulateHashmap(fullText,5));
+                        HashMap<Integer,String> hashkey2gene = params.repopulateHashmap(fullText,5);
+                        params.setHashkey2gene(hashkey2gene);
+                        // Ticket #107 : restore also gene count (needed to determine the next free hash in case we do PostAnalysis with a restored session)
+                        params.setNumberOfGenes( Math.max( params.getNumberOfGenes(), Collections.max(hashkey2gene.keySet())+1 ));
                     }
 
 
