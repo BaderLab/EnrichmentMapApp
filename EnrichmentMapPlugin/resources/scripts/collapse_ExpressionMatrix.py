@@ -46,14 +46,12 @@
                         CANDADA
                         http://baderlab.org
 
-    $Id$
+    $Id: collapse_ExpressionMatrix.py 81 2010-02-18 23:03:12Z revilo $
 """
 #from __future__ import with_statement
-__author__ = '$Author$'[9:-2]
-__version__ = '0.' + '$Revision$'[11:-2]
-__date__ = '$Date$'[7:17]
-verbose = False
-fix_session = False
+__author__ = '$Author: revilo $'[9:-2]
+__version__ = '0.' + '$Revision: 81 $'[11:-2]
+__date__ = '$Date: 2010-02-18 18:03:12 -0500 (Thu, 18 Feb 2010) $'[7:17]
 
 from Tkinter import *
 import tkFileDialog, tkSimpleDialog, tkMessageBox
@@ -249,271 +247,281 @@ class ReplaceCollapseGui(Frame):
                 print "Chip File:   %s" % self.chipFileName.get()
                 print "Do Collapse: %i" % self.doCollapse.get()
                 print "Do Replace:  %i" % self.doIdReplace.get()
-            main(inputFileName=self.inputFileName.get(),
-                 outputFileName=self.outputFileName.get(),
-                 chipFileName=self.chipFileName.get(),
-                 doCollapse=(self.doCollapse.get() == 1),
-                 collapseMode='max_probe',
-                 verbose=True,
-                 fix_session=False)
+            collapser = CollapseExpressionMatrix(inputFileName=self.inputFileName.get(),
+                                                 outputFileName=self.outputFileName.get(),
+                                                 chipFileName=self.chipFileName.get(),
+                                                 doCollapse=(self.doCollapse.get() == 1),
+                                                 collapseMode='max_probe',
+                                                 verbose=True,
+                                                 fix_session=False)
+            collapser.main()
             
             self.quit()
 
-
-def read_chipfile(chipfileName):
-    """
-    reads a GSEA chip annotation file (CHIP) 
-    and returns a dict that maps the probeset ID's to their corresponding gene symbols.
-    
-    Format:
-    see    http://www.broadinstitute.org/cancer/software/gsea/wiki/index.php/Data_formats#CHIP:_Chip_file_format_.28.2A.chip.29
-    
-    @return idSymbolMap
-    """
-    import re
-    
-    id_symbol_map = {}
-    re_chip = re.compile("^(\W+)\w+(\W+)\w+.*")
-    re_chip_header = re.compile("^Probe Set ID\tGene Symbol\tGene Title.*")
-    passedHeader = 0
-    
-    # read chip file into dict (mapping object)
-    if verbose :
-        print "reading Chip file..."
-    
-    try:
-        chipfile = file(chipfileName, "r")
-        for line in chipfile:
-            if not passedHeader or re_chip_header.match(line):
-                passedHeader = 1
-                continue
-            probe = line.split("\t")
-            id_symbol_map[probe[0]] = probe[1]
-    except IOError, text:
-            raise IOError, text        
-    finally:
-        chipfile.close()
-
-    return id_symbol_map
-
-
-def read_inputFile(inputFileName):
-    """
-    Reads an input file and determines the type.
-    
-    Supported file Types:
-        - Expression file "GCT"   - three header lines, first line is always: "#1.2"
-        - Expression file "TXT"   - one header line, Header always starts with "NAME\tDESCRIPTION\t"
-        - Ranked gene list "RNK"  - two column: ID{tab}SCORE, score being numerical, 
-                                    comment lines (starting with #) are ignored. 
-                                    
-    @return: (inputFileLines, type)
-    """
-    import re
-    type = ''
-    try:
-        # read expression data
-        if verbose :
-            print "reading expression file..."
-
-        infile = file(inputFileName, "r")
-        inputFileLines = infile.readlines()
+class CollapseExpressionMatrix:
+    def __init__(self, inputFileName, outputFileName, chipFileName, doCollapse=False, collapseMode="max_probe", verbose=True, fix_session=False):
+        self.inputFileName = inputFileName
+        self.outputFileName = outputFileName
+        self.chipFileName = chipFileName
+        self.doCollapse = doCollapse
+        self.collapseMode = collapseMode
+        self.verbose = verbose
+        self.fix_session = fix_session
         
-        ## Guess the type of file:
-        if re.search("^#1.2\s*", inputFileLines[0]):
-            type = "GCT"
-            if verbose :
-                print "...think it's GCT"
-        elif re.search("^NAME\tDESCRIPTION\t", inputFileLines[0], re.IGNORECASE):
-            type = "TXT"
-            if verbose :
-                print "...think it's TXT"
-        else:
-            invalid = False
-            re_comment = re.compile("^#")
-            re_ranks = re.compile("^[^\t]+\t-?\d*\.?\d+")
-            for i in range(len(inputFileLines)):
-                if not (re_ranks.search(inputFileLines[i]) or re_comment.search(inputFileLines[i])):
-                    invalid = True
-                    break
-            if not invalid:
-                type = "RNK"
-                if verbose :
-                    print "...think it's RNK"
-            else:
-                error_text = "Error in line %i\n" % i
-                error_text += "Invalid Input File: '%s' \n" % inputFileName
-                error_text += "\tIt seems it's neither an expression file (GCT or TXT) or Ranked Gene list\n"
-                error_text += "\tRefer to http://www.broadinstitute.org/cancer/software/gsea/wiki/index.php/Data_formats for specifications\n"
-                raise IOError, error_text
-                
-    except IOError, text:
-        raise IOError, text
-    finally:
-        infile.close()
-    
-    return inputFileLines, type
-
-
-def replace_IDs(dataLines, id_symbol_map):
-    """
-    replaces the IDs in the first column by symbols (based on idSymbolMap)
-    
-    @return: dataLines
-    """
-    # replace Probeset IDs with Gene Symbols
-    if verbose :
-        print "replacing Probeset IDs with Gene Symbols..."
-
-    id_symbol_map_keys = id_symbol_map.keys()
-   
-    for line_nr in range(len(dataLines)):
-        line = dataLines[line_nr]
-        newline = ""
-        tokens = line.split("\t", 1)
-        if tokens[0] in id_symbol_map_keys:
-            tokens[0] = id_symbol_map[tokens[0]]
-            newline = "\t".join(tokens)
-        else:
-            newline = line
-        dataLines[line_nr] = newline
-    return dataLines
-
-
-def collapse_data(data_lines, type, mode='max_probe'):
-    """
-    collapses multiple expression values (or scores) per gene symbol
-    
-    Modes:
-      - max_probe (default): for each sample, use the maximum expression value for the probe set. 
-        For example:
-
-        Probeset_A         10     20     15    200
-        Probeset_B        100    105    110     95
-        ------------------------------------------
-        gene_symbol_AB    100    105    110    200
-         
-    @return: data_lines - list with complete expression table or ranked gene list
-    """
-    import re
-    re_comment = re.compile("^#")
-    
-    if verbose :
-        print "collapsing Probe-Sets..."
-    
-    # save header
-    if type == "GCT":
-        data_header = data_lines[:3]
-        data_lines = data_lines[3:]
-    elif type == "TXT":
-        data_header = data_lines[:1]
-        data_lines = data_lines[1:]
-    else:
-        data_header = []
-
-    # collapse
-    data_map = {}
-    for line in data_lines:
-        if type == "RNK" and re_comment.search(line):
-            # don't process comment lines in RANK files
-            # but rather append them to the header
-            data_header.append(line)
-            continue
+    def read_chipfile(self, chipfileName):
+        """
+        reads a GSEA chip annotation file (CHIP) 
+        and returns a dict that maps the probeset ID's to their corresponding gene symbols.
         
-        tokens = line.split("\t")
+        Format:
+        see    http://www.broadinstitute.org/cancer/software/gsea/wiki/index.php/Data_formats#CHIP:_Chip_file_format_.28.2A.chip.29
         
-        ##### BEGIN FIX SESSION CODE #####
-        if fix_session and (tokens[0] not in genes_of_interest) :
-            # restrict to genes_of_interest
-            continue
-        ##### END   FIX SESSION CODE #####
+        @return idSymbolMap
+        """
+        import re
         
-        if not data_map.has_key(tokens[0]): 
-            # if we hadn't had this gene before: take it
-            data_map[tokens[0]] = tokens[1:]
-        else:
-            # if we had:
-            if type == "GCT" or type == "TXT":
-                # case expression Table:    take highest value!
-                for i in range(len(tokens[2:])):
-                    if tokens[i + 2] > data_map[tokens[0]][i + 1]:
-                        data_map[tokens[0]][i + 1] = tokens[i + 2]
-                data_map[tokens[0]][0] = data_map[tokens[0]][0] + " " + tokens[1]
-            else:
-                # case rank file:            take value (Score) with highest magnitude
-                if abs(float(tokens[1])) > abs(float(data_map[tokens[0]][0])):
-                    data_map[tokens[0]][0] = tokens[1]
-                    
-    # assemble new output data
-    data_lines = data_header
-    
-    # restore header
-    if type == "GCT":
-        # calculate new dimensions of collapsed expression table
-        data_lines[1] = "\t".join([str(len(data_map.keys())), data_lines[1].split("\t")[1] ])
-
-    # restore expression table / ranked gene list
-    for gene in data_map.keys():
-        newline = gene + "\t" + "\t".join(data_map[gene])
-        data_lines.append(newline)
-
-    ##### BEGIN FIX SESSION CODE #####
-    if fix_session and type == "GCT" :
-        # expression tables in Session files have only one header line
-        del data_lines[1:2]
-    ##### END   FIX SESSION CODE #####
-    
-    return data_lines
-
-def main(inputFileName, outputFileName, chipFileName, doCollapse, collapseMode, verbose, fix_session):
-    "Main program function"
-    try:
-        if not chipFileName == "":
-            idSymbolMap = read_chipfile(chipFileName)
+        id_symbol_map = {}
+        re_chip = re.compile("^(\W+)\w+(\W+)\w+.*")
+        re_chip_header = re.compile("^Probe Set ID\tGene Symbol\tGene Title.*")
+        passedHeader = 0
         
-        ##### BEGIN FIX SESSION CODE #####
-        if fix_session :
-            # collect genes of interest
-            genes_of_interest = []
-            
-            try:
-                expr_file = file(outputFileName, "r")
-                for line in expr_file:
-                    data = line.split("\t", 1)
-                    if not data[0] == "NAME":
-                        genes_of_interest.append(data[0])
-            except IOError, text:
-                raise IOError, text
-            finally:
-                expr_file.close()
-            # make backup of the expression file
-            os.rename(outputFileName, outputFileName + ".BAK")
-        ##### END   FIX SESSION CODE #####
-            
-        (expr_file_lines, type) = read_inputFile(inputFileName)
+        # read chip file into dict (mapping object)
+        if self.verbose :
+            print "reading Chip file..."
         
-        
-        if not chipFileName == "":
-            expr_file_lines = replace_IDs(expr_file_lines, idSymbolMap)
-        
-        if doCollapse == True:
-            expr_file_lines = collapse_data(expr_file_lines, type, mode=collapseMode)
-                
-                
-        # write expression data in output file
         try:
-            outfile = file(outputFileName, "w")
-            outfile.writelines(expr_file_lines)
+            chipfile = file(chipfileName, "rU")
+            for line in chipfile:
+                if not passedHeader or re_chip_header.match(line):
+                    passedHeader = 1
+                    continue
+                probe = line.split("\t")
+                id_symbol_map[probe[0]] = probe[1]
+        except IOError, text:
+                raise IOError, text        
+        finally:
+            chipfile.close()
+    
+        return id_symbol_map
+    
+    
+    def read_inputFile(self, inputFileName):
+        """
+        Reads an input file and determines the type.
+        
+        Supported file Types:
+            - Expression file "GCT"   - three header lines, first line is always: "#1.2"
+            - Expression file "TXT"   - one header line, Header always starts with "NAME\tDESCRIPTION\t"
+            - Ranked gene list "RNK"  - two column: ID{tab}SCORE, score being numerical, 
+                                        comment lines (starting with #) are ignored. 
+                                        
+        @return: (inputFileLines, type)
+        """
+        import re
+        type = ''
+        try:
+            # read expression data
+            if self.verbose :
+                print "reading expression file..."
+    
+            infile = file(inputFileName, "rU")
+            inputFileLines = infile.readlines()
+            
+            ## Guess the type of file:
+            if re.search("^#1.2\s*", inputFileLines[0]):
+                type = "GCT"
+                if self.verbose :
+                    print "...think it's GCT"
+            elif re.search("^NAME\tDESCRIPTION\t", inputFileLines[0], re.IGNORECASE):
+                type = "TXT"
+                if self.verbose :
+                    print "...think it's TXT"
+            else:
+                invalid = False
+                re_comment = re.compile("^#")
+                re_ranks = re.compile("^[^\t]+\t-?\d*\.?\d+")
+                for i in range(len(inputFileLines)):
+                    if not (re_ranks.search(inputFileLines[i]) or re_comment.search(inputFileLines[i])):
+                        invalid = True
+                        break
+                if not invalid:
+                    type = "RNK"
+                    if self.verbose :
+                        print "...think it's RNK"
+                else:
+                    error_text = "Error in line %i\n" % i
+                    error_text += "Invalid Input File: '%s' \n" % inputFileName
+                    error_text += "\tIt seems it's neither an expression file (GCT or TXT) or Ranked Gene list\n"
+                    error_text += "\tRefer to http://www.broadinstitute.org/cancer/software/gsea/wiki/index.php/Data_formats for specifications\n"
+                    raise IOError, error_text
+                    
         except IOError, text:
             raise IOError, text
         finally:
-            outfile.close()
+            infile.close()
+        
+        return inputFileLines, type
+    
+    
+    def replace_IDs(self, dataLines, id_symbol_map):
+        """
+        replaces the IDs in the first column by symbols (based on idSymbolMap)
+        
+        @return: dataLines
+        """
+        # replace Probeset IDs with Gene Symbols
+        if self.verbose :
+            print "replacing Probeset IDs with Gene Symbols..."
+    
+        id_symbol_map_keys = id_symbol_map.keys()
+       
+        for line_nr in range(len(dataLines)):
+            line = dataLines[line_nr]
+            newline = ""
+            tokens = line.split("\t", 1)
+            if tokens[0] in id_symbol_map_keys:
+                tokens[0] = id_symbol_map[tokens[0]]
+                newline = "\t".join(tokens)
+            else:
+                newline = line
+            dataLines[line_nr] = newline
+        return dataLines
+    
+    
+    def collapse_data(self, data_lines, type, mode='max_probe'):
+        """
+        collapses multiple expression values (or scores) per gene symbol
+        
+        Modes:
+          - max_probe (default): for each sample, use the maximum expression value for the probe set. 
+            For example:
+    
+            Probeset_A         10     20     15    200
+            Probeset_B        100    105    110     95
+            ------------------------------------------
+            gene_symbol_AB    100    105    110    200
+             
+        @return: data_lines - list with complete expression table or ranked gene list
+        """
+        import re
+        re_comment = re.compile("^#")
+        
+        if self.verbose :
+            print "collapsing Probe-Sets..."
+        
+        # save header
+        if type == "GCT":
+            data_header = data_lines[:3]
+            data_lines = data_lines[3:]
+        elif type == "TXT":
+            data_header = data_lines[:1]
+            data_lines = data_lines[1:]
+        else:
+            data_header = []
+    
+        # collapse
+        data_map = {}
+        for line in data_lines:
+            if type == "RNK" and re_comment.search(line):
+                # don't process comment lines in RANK files
+                # but rather append them to the header
+                data_header.append(line)
+                continue
             
-    except IOError, text:
-        print parser.get_usage()
-        print text
-        print "exiting"
-        sys.exit(1)
+            tokens = line.split("\t")
+            
+            ##### BEGIN FIX SESSION CODE #####
+            if self.fix_session and (tokens[0] not in genes_of_interest) :
+                # restrict to genes_of_interest
+                continue
+            ##### END   FIX SESSION CODE #####
+            
+            if not data_map.has_key(tokens[0]): 
+                # if we hadn't had this gene before: take it
+                data_map[tokens[0]] = tokens[1:]
+            else:
+                # if we had:
+                if type == "GCT" or type == "TXT":
+                    # case expression Table:    take highest value!
+                    for i in range(len(tokens[2:])):
+                        if tokens[i + 2] > data_map[tokens[0]][i + 1]:
+                            data_map[tokens[0]][i + 1] = tokens[i + 2]
+                    data_map[tokens[0]][0] = data_map[tokens[0]][0] + " " + tokens[1]
+                else:
+                    # case rank file:            take value (Score) with highest magnitude
+                    if abs(float(tokens[1])) > abs(float(data_map[tokens[0]][0])):
+                        data_map[tokens[0]][0] = tokens[1]
+                        
+        # assemble new output data
+        data_lines = data_header
+        
+        # restore header
+        if type == "GCT":
+            # calculate new dimensions of collapsed expression table
+            data_lines[1] = "\t".join([str(len(data_map.keys())), data_lines[1].split("\t")[1] ])
+    
+        # restore expression table / ranked gene list
+        for gene in data_map.keys():
+            newline = gene + "\t" + "\t".join(data_map[gene])
+            data_lines.append(newline)
+    
+        ##### BEGIN FIX SESSION CODE #####
+        if self.fix_session and type == "GCT" :
+            # expression tables in Session files have only one header line
+            del data_lines[1:2]
+        ##### END   FIX SESSION CODE #####
+        
+        return data_lines
+    
+    def main(self):
+        "Main program function"
+        try:
+            if not self.chipFileName == "":
+                idSymbolMap = self.read_chipfile(self.chipFileName)
+            
+            ##### BEGIN FIX SESSION CODE #####
+            if self.fix_session :
+                # collect genes of interest
+                genes_of_interest = []
+                
+                try:
+                    expr_file = file(self.outputFileName, "rU")
+                    for line in expr_file:
+                        data = line.split("\t", 1)
+                        if not data[0] == "NAME":
+                            genes_of_interest.append(data[0])
+                except IOError, text:
+                    raise IOError, text
+                finally:
+                    expr_file.close()
+                # make backup of the expression file
+                os.rename(self.outputFileName, self.outputFileName + ".BAK")
+            ##### END   FIX SESSION CODE #####
+                
+            (expr_file_lines, type) = self.read_inputFile(self.inputFileName)
+            
+            
+            if not self.chipFileName == "":
+                expr_file_lines = self.replace_IDs(expr_file_lines, idSymbolMap)
+            
+            if self.doCollapse == True:
+                expr_file_lines = self.collapse_data(expr_file_lines, type, mode=self.collapseMode)
+                    
+                    
+            # write expression data in output file
+            try:
+                outfile = file(self.outputFileName, "w")
+                outfile.writelines(expr_file_lines)
+            except IOError, text:
+                raise IOError, text
+            finally:
+                outfile.close()
+                
+        except IOError, text:
+            print parser.get_usage()
+            print text
+            print "exiting"
+            sys.exit(1)
 
 
 if __name__ == "__main__":
@@ -614,12 +622,15 @@ if __name__ == "__main__":
     #        parser.error("chip-file required")
         if not options.chipfile == "" and not os.path.isfile(options.chipfile):
             parser.error("chip-file does not exist")
-    
-        main(inputFileName=options.infile,
-             outputFileName=options.outfile,
-             chipFileName=options.chipfile,
-             doCollapse=options.collapse,
-             collapseMode=options.mode,
-             verbose=options.verbose,
-             fix_session=options.fix_session)
-
+        
+        
+        collapser = CollapseExpressionMatrix(inputFileName=options.infile,
+                                             outputFileName=options.outfile,
+                                             chipFileName=options.chipfile,
+                                             doCollapse=options.collapse,
+                                             collapseMode=options.mode,
+                                             verbose=options.verbose,
+                                             fix_session=options.fix_session)
+        collapser.main()
+        
+        
