@@ -281,7 +281,7 @@ public class EnrichmentResultFileReaderTask implements Task {
             double NES = 1.0;
 
             //The first column of the file is the name of the geneset
-            String name = tokens[0].toUpperCase();
+            String name = tokens[0].toUpperCase().trim();
 
             if(genesets.containsKey(name)){
                 GeneSet current_set = (GeneSet)genesets.get(name);
