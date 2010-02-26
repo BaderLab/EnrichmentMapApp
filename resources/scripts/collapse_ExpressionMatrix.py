@@ -46,12 +46,12 @@
                         CANDADA
                         http://baderlab.org
 
-    $Id: collapse_ExpressionMatrix.py 81 2010-02-18 23:03:12Z revilo $
+    $Id: collapse_ExpressionMatrix.py 84 2010-02-26 20:23:31Z revilo $
 """
 #from __future__ import with_statement
 __author__ = '$Author: revilo $'[9:-2]
-__version__ = '0.' + '$Revision: 81 $'[11:-2]
-__date__ = '$Date: 2010-02-18 18:03:12 -0500 (Thu, 18 Feb 2010) $'[7:17]
+__version__ = '0.' + '$Revision: 84 $'[11:-2]
+__date__ = '$Date: 2010-02-26 15:23:31 -0500 (Fri, 26 Feb 2010) $'[7:17]
 
 from Tkinter import *
 import tkFileDialog, tkSimpleDialog, tkMessageBox
@@ -69,6 +69,9 @@ class ReplaceCollapseGui(Frame):
         self.chipFileName = StringVar()
         self.doCollapse = IntVar()
         self.doIdReplace = IntVar()
+        self.messages = StringVar()
+        
+        self.messages.set("Messages:" + " " * 90 + "\n")
         self.debug = False
         
         top = self.winfo_toplevel()
@@ -129,19 +132,34 @@ class ReplaceCollapseGui(Frame):
 
         # Control Buttons
         currentRow += 1
-        controlButonFrame = Frame(self)
-        controlButonFrame.grid(row=currentRow, columnspan=3, sticky=E + W)
-        self.quitButton = Button (controlButonFrame, text='Quit', command=self.quit)
+        controlButtonFrame = Frame(self)
+        controlButtonFrame.grid(row=currentRow, columnspan=3, sticky=E + W)
+        self.quitButton = Button (controlButtonFrame, text='Quit', command=self.quit)
         self.quitButton.grid(row=0, column=0, padx=10, sticky=W)
 
-        self.clearButton = Button (controlButonFrame, text='Clear', command=self.clear)
+        self.clearButton = Button (controlButtonFrame, text='Clear', command=self.clear)
         self.clearButton.grid(row=0, column=1, padx=10)
 
-
-        self.runButton = Button(controlButonFrame, text="Run", command=self.run)
+        self.runButton = Button(controlButtonFrame, text="Run", command=self.run)
         self.runButton.grid(row=0, column=2, padx=10, sticky=E)
+        
+        # Message Box
+        currentRow += 1
+        self.messageBox = Message(self, textvariable=self.messages, width=425, relief=RIDGE, justify=LEFT)
+        self.messageBox.grid(row=currentRow, column=0, columnspan=3, sticky=N + S + E + W, padx=5, pady=5)
+        self.rowconfigure(currentRow, minsize=115)
+        
+    def writeMessage(self, messageText):
+        textLines = self.messages.get().splitlines()
+        textLines.append(messageText)
+        if len(textLines) > 5:
+            textLines = textLines[-5:]
+        
+        newText = "\n".join(textLines) 
+        self.messages.set(newText)
+        self.messageBox.update()
 
-    def center_window(self, w=450, h=200):
+    def center_window(self, w=450, h=250):
         root = self.winfo_toplevel()
         
         # get screen width and height
@@ -168,7 +186,7 @@ class ReplaceCollapseGui(Frame):
         self.inputFileName.set(filename)
         
         if self.debug:
-            print "selected Input File Name: %s " % filename
+            self.writeMessage("selected Input File Name: %s " % filename)
 
     def chooseOutputFile(self):
         def_file = ""
@@ -191,7 +209,7 @@ class ReplaceCollapseGui(Frame):
                                                   initialdir=inputFileDir)
         self.outputFileName.set(filename)
         if self.debug:
-            print "selected Output File Name: %s " % filename
+            self.writeMessage("selected Output File Name: %s " % filename)
 
     def chooseChipFile(self):
         filename = tkFileDialog.askopenfilename(title="Choose Chip Annotation file",
@@ -199,7 +217,7 @@ class ReplaceCollapseGui(Frame):
                                                            ("Chip Annotation file (CHIP)", "*.CHIP")])
         self.chipFileName.set(filename)
         if self.debug:
-            print "selected Output File Name: %s " % filename
+            self.writeMessage("selected Output File Name: %s " % filename)
 
     def doReplaceButtonPressed(self):
         if self.doIdReplace.get() == 1:
@@ -212,26 +230,26 @@ class ReplaceCollapseGui(Frame):
     def checkInput(self):
         self.inputOK = True
         if self.inputFileName.get() == "":
-            inputOK = False
+            self.inputOK = False
             tkMessageBox.showerror(title="Input Error", message="Input-file required", icon=tkMessageBox.ERROR)
         elif not os.path.isfile(self.inputFileName.get()):
-            inputOK = False
+            self.inputOK = False
             tkMessageBox.showerror(title="Input Error", message="Input-file does not exist", icon=tkMessageBox.ERROR)
         else:
             inputFileName = self.inputFileName.get() 
 
         if self.outputFileName.get() == "":
-            inputOK = False
+            self.inputOK = False
             tkMessageBox.showerror(title="Input Error", message="Output-file required", icon=tkMessageBox.ERROR)
         else:
             outputFileName = self.outputFileName.get()
 
         if self.doIdReplace == 1:
             if self.chipFileName.get() == "":
-                inputOK = False
+                self.inputOK = False
                 tkMessageBox.showerror(title="Input Error", message="Chip-file required", icon=tkMessageBox.ERROR)
             elif not os.path.isfile(chipFileName.get()):
-                inputOK = False
+                self.inputOK = False
                 tkMessageBox.showerror(title="Input Error", message="Chip-file does not exist", icon=tkMessageBox.ERROR)
             else:
                 chipFileName = self.chipFileName.get()
@@ -239,7 +257,10 @@ class ReplaceCollapseGui(Frame):
         return self.inputOK
 
     def run(self):
-        if self.checkInput():
+        self.writeMessage("Testing Input...")
+        inputOK = self.checkInput()
+        if inputOK:
+            self.writeMessage("Starting....")
             if self.debug:
                 print "Running..."
                 print "Input File:  %s" % self.inputFileName.get()
@@ -253,13 +274,14 @@ class ReplaceCollapseGui(Frame):
                                                  doCollapse=(self.doCollapse.get() == 1),
                                                  collapseMode='max_probe',
                                                  verbose=True,
-                                                 fix_session=False)
+                                                 fix_session=False,
+                                                 gui=self)
             collapser.main()
-            
+            tkMessageBox.showinfo(title="Done", message="Done. Check Message-Box for status.")
             self.quit()
 
 class CollapseExpressionMatrix:
-    def __init__(self, inputFileName, outputFileName, chipFileName, doCollapse=False, collapseMode="max_probe", verbose=True, fix_session=False):
+    def __init__(self, inputFileName, outputFileName, chipFileName, doCollapse=False, collapseMode="max_probe", verbose=True, fix_session=False, gui=None):
         self.inputFileName = inputFileName
         self.outputFileName = outputFileName
         self.chipFileName = chipFileName
@@ -267,7 +289,14 @@ class CollapseExpressionMatrix:
         self.collapseMode = collapseMode
         self.verbose = verbose
         self.fix_session = fix_session
-        
+        self.gui = gui
+
+    def printMessage(self, text):
+        if self.gui == None:
+            sys.stdout.write(text)
+        else:
+            self.gui.writeMessage(text)
+            
     def read_chipfile(self, chipfileName):
         """
         reads a GSEA chip annotation file (CHIP) 
@@ -287,20 +316,21 @@ class CollapseExpressionMatrix:
         
         # read chip file into dict (mapping object)
         if self.verbose :
-            print "reading Chip file..."
+            self.printMessage("reading Chip file...\n")
         
         try:
-            chipfile = file(chipfileName, "rU")
-            for line in chipfile:
-                if not passedHeader or re_chip_header.match(line):
-                    passedHeader = 1
-                    continue
-                probe = line.split("\t")
-                id_symbol_map[probe[0]] = probe[1]
+            try:
+                chipfile = file(chipfileName, "rU")
+                for line in chipfile:
+                    if not passedHeader or re_chip_header.match(line):
+                        passedHeader = 1
+                        continue
+                    probe = line.split("\t")
+                    id_symbol_map[probe[0]] = probe[1]
+            finally:
+                chipfile.close()
         except IOError, text:
-                raise IOError, text        
-        finally:
-            chipfile.close()
+            raise IOError, text
     
         return id_symbol_map
     
@@ -322,7 +352,7 @@ class CollapseExpressionMatrix:
         try:
             # read expression data
             if self.verbose :
-                print "reading expression file..."
+                self.printMessage("reading expression file...\n")
     
             infile = file(inputFileName, "rU")
             inputFileLines = infile.readlines()
@@ -331,11 +361,11 @@ class CollapseExpressionMatrix:
             if re.search("^#1.2\s*", inputFileLines[0]):
                 type = "GCT"
                 if self.verbose :
-                    print "...think it's GCT"
+                    self.printMessage("...think it's GCT\n")
             elif re.search("^NAME\tDESCRIPTION\t", inputFileLines[0], re.IGNORECASE):
                 type = "TXT"
                 if self.verbose :
-                    print "...think it's TXT"
+                    self.printMessage("...think it's TXT\n")
             else:
                 invalid = False
                 re_comment = re.compile("^#")
@@ -347,7 +377,7 @@ class CollapseExpressionMatrix:
                 if not invalid:
                     type = "RNK"
                     if self.verbose :
-                        print "...think it's RNK"
+                        self.printMessage("...think it's RNK\n")
                 else:
                     error_text = "Error in line %i\n" % i
                     error_text += "Invalid Input File: '%s' \n" % inputFileName
@@ -371,7 +401,7 @@ class CollapseExpressionMatrix:
         """
         # replace Probeset IDs with Gene Symbols
         if self.verbose :
-            print "replacing Probeset IDs with Gene Symbols..."
+            self.printMessage("replacing Probeset IDs with Gene Symbols...\n")
     
         id_symbol_map_keys = id_symbol_map.keys()
        
@@ -407,7 +437,7 @@ class CollapseExpressionMatrix:
         re_comment = re.compile("^#")
         
         if self.verbose :
-            print "collapsing Probe-Sets..."
+            self.printMessage("collapsing Probe-Sets...\n")
         
         # save header
         if type == "GCT":
@@ -490,8 +520,6 @@ class CollapseExpressionMatrix:
                         data = line.split("\t", 1)
                         if not data[0] == "NAME":
                             genes_of_interest.append(data[0])
-                except IOError, text:
-                    raise IOError, text
                 finally:
                     expr_file.close()
                 # make backup of the expression file
@@ -512,21 +540,22 @@ class CollapseExpressionMatrix:
             try:
                 outfile = file(self.outputFileName, "w")
                 outfile.writelines(expr_file_lines)
-            except IOError, text:
-                raise IOError, text
             finally:
                 outfile.close()
+            self.printMessage("Done!")
                 
         except IOError, text:
             print parser.get_usage()
-            print text
-            print "exiting"
+            self.printMessage(text)
+            self.printMessage("exiting")
             sys.exit(1)
 
 
 if __name__ == "__main__":
     from optparse import OptionParser, SUPPRESS_HELP
     import sys, os
+    
+
     
     # Configure parser for command line options:
     __usage = "%prog [options] -i input.gct -o output.gct [-c platform.chip] [--collapse]"
@@ -603,9 +632,10 @@ if __name__ == "__main__":
     if useGui:
         theGui = ReplaceCollapseGui()
 #        theGui.master.title("Sample application")
-        theGui.master.minsize(width=450, height=150)
-        theGui.master.focus_set()
-        theGui.center_window(w=450, h=150)
+        theGui.master.minsize(width=450, height=255)
+        theGui.master.lift()
+        theGui.center_window(w=450, h=255)
+        
         theGui.mainloop()
 
     else:
