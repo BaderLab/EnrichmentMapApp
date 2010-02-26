@@ -46,12 +46,12 @@
                         CANDADA
                         http://baderlab.org
 
-    $Id: collapse_ExpressionMatrix.py 84 2010-02-26 20:23:31Z revilo $
+    $Id$
 """
 #from __future__ import with_statement
-__author__ = '$Author: revilo $'[9:-2]
-__version__ = '0.' + '$Revision: 84 $'[11:-2]
-__date__ = '$Date: 2010-02-26 15:23:31 -0500 (Fri, 26 Feb 2010) $'[7:17]
+__author__ = '$Author$'[9:-2]
+__version__ = '0.' + '$Revision$'[11:-2]
+__date__ = '$Date$'[7:17]
 
 from Tkinter import *
 import tkFileDialog, tkSimpleDialog, tkMessageBox
