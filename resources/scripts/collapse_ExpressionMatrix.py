@@ -59,7 +59,7 @@ class ReplaceCollapseGui(Frame):
     
     def __init__(self, master=None):
         Frame.__init__(self, master)
-        self.master.title("Replace Probeset IDs")
+        self.master.title("collapse Expression Matrix")
         self.grid(sticky=N + S + E + W)
         self.createWidgets()
         
@@ -385,8 +385,6 @@ class CollapseExpressionMatrix:
                     error_text += "\tRefer to http://www.broadinstitute.org/cancer/software/gsea/wiki/index.php/Data_formats for specifications\n"
                     raise IOError, error_text
                     
-        except IOError, text:
-            raise IOError, text
         finally:
             infile.close()
         
