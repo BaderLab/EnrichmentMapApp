@@ -36,7 +36,7 @@ EnrichmentMap.default_sort_method=Hierarchical Cluster
 	Tickets:	#84
 
 EnrichmentMap.hieracical_clusteting_theshold=1000
-	Descr:		Threshold for the maximium number of Genes before a dialog
+	Descr:		Threshold for the maximum number of Genes before a dialog
 				opens to confirm if clustering should be performed.
 	Values:		Integer
 	Versions:	since [415]
