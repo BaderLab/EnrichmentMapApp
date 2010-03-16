@@ -731,6 +731,7 @@ public class EnrichmentMapInputPanel extends JPanel {
                     "the cutoff will be included.";
            pvalueTextField.setToolTipText(pvalueCutOffTip);
            pvalueTextField.setText(Double.toString(params.getPvalue()));
+           pvalueTextField.setValue(params.getPvalue());
 
            JPanel pvalueCutOffPanel = new JPanel();
            pvalueCutOffPanel.setLayout(new BorderLayout());
@@ -750,6 +751,7 @@ public class EnrichmentMapInputPanel extends JPanel {
                     "the cutoff will be included.";
            qvalueTextField.setToolTipText(qvalueCutOffTip);
            qvalueTextField.setText(Double.toString(params.getQvalue()));
+           qvalueTextField.setValue(params.getQvalue());
 
            JPanel qvalueCutOffPanel = new JPanel();
            qvalueCutOffPanel.setLayout(new BorderLayout());
@@ -805,6 +807,7 @@ public class EnrichmentMapInputPanel extends JPanel {
                               "the cutoff will be added.";
           coeffecientTextField.setToolTipText(coeffecientCutOffTip);
           coeffecientTextField.setText(Double.toString(params.getSimilarityCutOff()));
+          coeffecientTextField.setValue(params.getSimilarityCutOff());
 
           JPanel coeffecientCutOffPanel = new JPanel();
           coeffecientCutOffPanel.setLayout(new BorderLayout());
@@ -1100,7 +1103,9 @@ public class EnrichmentMapInputPanel extends JPanel {
                 params.setDataset1Phenotype2(phenotype2);
 
                 Dataset1Phenotype1TextField.setText(phenotype1);
+                Dataset1Phenotype1TextField.setValue(phenotype1);
                 Dataset1Phenotype2TextField.setText(phenotype2);
+                Dataset1Phenotype2TextField.setValue(phenotype2);
             }
             else{
                 params.setClassFile2(classes_split[0]);
@@ -1109,6 +1114,8 @@ public class EnrichmentMapInputPanel extends JPanel {
 
                 Dataset2Phenotype1TextField.setText(phenotype1);
                 Dataset2Phenotype2TextField.setText(phenotype2);
+                Dataset2Phenotype1TextField.setValue(phenotype1);
+                Dataset2Phenotype2TextField.setValue(phenotype2);
             }
         }
 
@@ -1125,6 +1132,8 @@ public class EnrichmentMapInputPanel extends JPanel {
 
                 Dataset1Phenotype1TextField.setText(phenotype1);
                 Dataset1Phenotype2TextField.setText(phenotype2);
+                Dataset1Phenotype1TextField.setValue(phenotype1);
+                Dataset1Phenotype2TextField.setValue(phenotype2);
             }
             else{
                 params.setDataset2Phenotype1(phenotype1);
@@ -1132,6 +1141,8 @@ public class EnrichmentMapInputPanel extends JPanel {
 
                 Dataset2Phenotype1TextField.setText(phenotype1);
                 Dataset2Phenotype2TextField.setText(phenotype2);
+                Dataset2Phenotype1TextField.setValue(phenotype1);
+                Dataset2Phenotype2TextField.setValue(phenotype2);
             }
         }
 
@@ -1363,18 +1374,22 @@ public class EnrichmentMapInputPanel extends JPanel {
       //update the phenotypes
       if(params.getDataset1Phenotype1() != null){
           Dataset1Phenotype1TextField.setText(params.getDataset1Phenotype1());
+          Dataset1Phenotype1TextField.setValue(params.getDataset1Phenotype1());
           Dataset1Phenotype1TextField.setToolTipText(params.getDataset1Phenotype1());
       }
       if(params.getDataset1Phenotype2() != null){
           Dataset1Phenotype2TextField.setText(params.getDataset1Phenotype2());
+          Dataset1Phenotype2TextField.setValue(params.getDataset1Phenotype2());
           Dataset1Phenotype2TextField.setToolTipText(params.getDataset1Phenotype2());
       }
       if(params.getDataset2Phenotype1() != null){
           Dataset2Phenotype1TextField.setText(params.getDataset2Phenotype1());
+          Dataset2Phenotype1TextField.setValue(params.getDataset2Phenotype1());
           Dataset2Phenotype1TextField.setToolTipText(params.getDataset2Phenotype1());
       }
       if(params.getDataset2Phenotype2() != null){
           Dataset2Phenotype2TextField.setText(params.getDataset2Phenotype2());
+          Dataset2Phenotype2TextField.setValue(params.getDataset2Phenotype2());
           Dataset2Phenotype2TextField.setToolTipText(params.getDataset2Phenotype2());
       }
 
@@ -1418,6 +1433,7 @@ public class EnrichmentMapInputPanel extends JPanel {
             if ( ! params.isSimilarityCutOffChanged() ) {
                 params.setSimilarityCutOff( params.getDefaultJaccardCutOff() );
                 coeffecientTextField.setText( Double.toString(params.getSimilarityCutOff()) );
+                coeffecientTextField.setValue( params.getSimilarityCutOff() );
             }
         }
      else if(evt.getActionCommand().equalsIgnoreCase("overlap")){
@@ -1425,6 +1441,7 @@ public class EnrichmentMapInputPanel extends JPanel {
             if ( ! params.isSimilarityCutOffChanged() ) {
                 params.setSimilarityCutOff(params.getDefaultOverlapCutOff());
                 coeffecientTextField.setText( Double.toString(params.getSimilarityCutOff()) );
+                coeffecientTextField.setValue( params.getSimilarityCutOff() );
           }
         }
      else{
@@ -1768,9 +1785,18 @@ public class EnrichmentMapInputPanel extends JPanel {
         Dataset2Phenotype1TextField.setText(params.getDataset2Phenotype1());
         Dataset2Phenotype2TextField.setText(params.getDataset2Phenotype2());
 
+        Dataset1Phenotype1TextField.setValue(params.getDataset1Phenotype1());
+        Dataset1Phenotype2TextField.setValue(params.getDataset1Phenotype2());
+        Dataset2Phenotype1TextField.setValue(params.getDataset2Phenotype1());
+        Dataset2Phenotype2TextField.setValue(params.getDataset2Phenotype2());
+
         pvalueTextField.setText(Double.toString(params.getPvalue()));
         qvalueTextField.setText(Double.toString(params.getQvalue()));
         coeffecientTextField.setText(Double.toString(params.getSimilarityCutOff()));
+
+        pvalueTextField.setValue(params.getPvalue());
+        qvalueTextField.setValue(params.getQvalue());
+        coeffecientTextField.setValue(params.getSimilarityCutOff());
 
         gsea.setSelected(params.isGSEA());
         generic.setSelected(!params.isGSEA());
@@ -1808,9 +1834,18 @@ public class EnrichmentMapInputPanel extends JPanel {
         Dataset2Phenotype1TextField.setText(current_params.getDataset2Phenotype1());
         Dataset2Phenotype2TextField.setText(current_params.getDataset2Phenotype2());
 
+        Dataset1Phenotype1TextField.setValue(current_params.getDataset1Phenotype1());
+        Dataset1Phenotype2TextField.setValue(current_params.getDataset1Phenotype2());
+        Dataset2Phenotype1TextField.setValue(current_params.getDataset2Phenotype1());
+        Dataset2Phenotype2TextField.setValue(current_params.getDataset2Phenotype2());
+
         pvalueTextField.setText(Double.toString(current_params.getPvalue()));
         qvalueTextField.setText(Double.toString(current_params.getQvalue()));
         coeffecientTextField.setText(Double.toString(current_params.getSimilarityCutOff()));
+
+        pvalueTextField.setValue(current_params.getPvalue());
+        qvalueTextField.setValue(current_params.getQvalue());
+        coeffecientTextField.setValue(current_params.getSimilarityCutOff());
 
         gsea.setSelected(current_params.isGSEA());
         generic.setSelected(!current_params.isGSEA());
