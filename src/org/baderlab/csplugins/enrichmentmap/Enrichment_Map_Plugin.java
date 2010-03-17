@@ -97,9 +97,10 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
         item.addActionListener(new LoadPostAnalysisPanelAction());
         submenu.add(item);
 
-        item = new JMenuItem("Compute Potential Annotation");
-        item.addActionListener(new ComputeAnnotationAction());
-        submenu.add(item);
+        //TODO: Ruth's automatic Enrichment Map Annotaion.
+//        item = new JMenuItem("Compute Potential Annotation");
+//        item.addActionListener(new ComputeAnnotationAction());
+//        submenu.add(item);
 
 
         //About Box
@@ -200,6 +201,9 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
             File enrichmentresults2Ofinterest;
             File expression1;
             File expression2;
+            
+            //geneset file for PostAnalysis Signature Genesets
+            File siggmt = new File(tmpDir, name+".signature.gmt"); 
 
             //write out files.
             try {
@@ -212,6 +216,13 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
                 gmtwriter.close();
                 pFileList.add(gmt);
 
+                if (!params.getSignatureGenesets().isEmpty() ) {
+                    BufferedWriter sigGmtwriter = new BufferedWriter(new FileWriter(siggmt));
+                    sigGmtwriter.write(params.printHashmap(params.getSignatureGenesets()));
+                    sigGmtwriter.close();
+                    pFileList.add(siggmt);
+                }
+                
                 BufferedWriter geneswriter = new BufferedWriter(new FileWriter(genes));
                 geneswriter.write(params.printHashmap(params.getGenes()));
                 geneswriter.close();
@@ -360,13 +371,22 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
                     String fullText = reader.getText();
 
                     if(prop_file.getName().contains(".gmt")){
-                        params.setGenesetsOfInterest(params.repopulateHashmap(fullText,1));
+                        if (prop_file.getName().contains(".signature.gmt"))
+                            params.setSignatureGenesets(params.repopulateHashmap(fullText, 1));
+                        else
+                            params.setGenesetsOfInterest(params.repopulateHashmap(fullText,1));
                     }
                     if(prop_file.getName().contains(".genes.txt")){
-                        params.setGenes(params.repopulateHashmap(fullText,2));
+                        HashMap<String, Integer> genes = params.repopulateHashmap(fullText,2);
+                        params.setGenes(genes);
+                        // Ticket #107 : restore also gene count (needed to determine the next free hash in case we do PostAnalysis with a restored session)
+                        params.setNumberOfGenes( Math.max( params.getNumberOfGenes(), Collections.max(genes.values())+1 ));
                     }
                     if(prop_file.getName().contains(".hashkey2genes.txt")){
-                        params.setHashkey2gene(params.repopulateHashmap(fullText,5));
+                        HashMap<Integer,String> hashkey2gene = params.repopulateHashmap(fullText,5);
+                        params.setHashkey2gene(hashkey2gene);
+                        // Ticket #107 : restore also gene count (needed to determine the next free hash in case we do PostAnalysis with a restored session)
+                        params.setNumberOfGenes( Math.max( params.getNumberOfGenes(), Collections.max(hashkey2gene.keySet())+1 ));
                     }
 
 
@@ -461,7 +481,7 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
             EnrichmentMapManager manager = EnrichmentMapManager.getInstance();
             HashMap networks = manager.getCyNetworkList();
 
-            //interate over the networks
+            //iterate over the networks
             for(Iterator j = networks.keySet().iterator();j.hasNext();){
                 String currentNetwork = (String)j.next();
                 CyNetworkView view = Cytoscape.getNetworkView(currentNetwork);
@@ -469,10 +489,19 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
 
                 //for each map compute the similarity matrix, (easier than storing it)
                 //compute the geneset similarities
-                ComputeSimilarityTask similarities = new ComputeSimilarityTask(params);
+                ComputeSimilarityTask similarities = new ComputeSimilarityTask(params, ComputeSimilarityTask.ENRICHMENT);
                 similarities.run();
                 HashMap<String, GenesetSimilarity> similarity_results = similarities.getGeneset_similarities();
                 params.setGenesetSimilarity(similarity_results);
+                
+                // also compute geneset similarities between Enrichment- and Signature Genesets (if any)
+                if (! params.getSignatureGenesets().isEmpty()){
+                    ComputeSimilarityTask sigSimilarities = new ComputeSimilarityTask(params, ComputeSimilarityTask.SIGNATURE);
+                    sigSimilarities.run();
+                    HashMap<String, GenesetSimilarity> sig_similarity_results = sigSimilarities.getGeneset_similarities();
+                    
+                    params.getGenesetSimilarity().putAll(sig_similarity_results);
+                }
 
                 //add the click on edge listener
                 view.addGraphViewChangeListener(new EnrichmentMapActionListener(params));
