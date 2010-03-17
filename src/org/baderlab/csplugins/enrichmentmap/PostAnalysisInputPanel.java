@@ -104,9 +104,6 @@ public class PostAnalysisInputPanel extends JPanel {
     private JFormattedTextField GMTFileNameTextField;
     private JFormattedTextField signatureGMTFileNameTextField;
 
-    private JFormattedTextField GCTFileName1TextField;
-    private JFormattedTextField GCTFileName2TextField;
-
     private JList avail_sig_sets_field;
     private JList selected_sig_sets_field;
     private DefaultListModel avail_sig_sets;
@@ -410,6 +407,7 @@ public class PostAnalysisInputPanel extends JPanel {
         GMTFileNameTextField.addPropertyChangeListener("value",new PostAnalysisInputPanel.FormattedTextFieldAction());
 
         GMTFileNameTextField.setText( paParams.getGMTFileName() );
+        GMTFileNameTextField.setValue( paParams.getGMTFileName() );
         if (! (GMTFileNameTextField.getText().equals("") ) ) {
             GMTFileNameTextField.setToolTipText(GMTFileNameTextField.getText());
         }
@@ -793,40 +791,9 @@ public class PostAnalysisInputPanel extends JPanel {
         signature_genesets.setCollapsed(datasets_collapsed);
         signature_genesets.revalidate();
 
-        UpdatePanel(this.paParams);
-
     }
     
         
-    /*Given a set of parameters, update the panel to contain the values that are
-     * defined in this set of parameters
-     */
-    private void UpdatePanel(EnrichmentMapParameters paParams){
-        //TODO: Check if needed
-        //check to see if the user had already entered anything into the newly created Dataset Frame
-        if(paParams.getExpressionFileName1() != null){
-            GCTFileName1TextField.setText(paParams.getExpressionFileName1());
-            GCTFileName1TextField.setToolTipText(paParams.getExpressionFileName1());
-        }
-        if(paParams.getExpressionFileName2() != null){
-            GCTFileName2TextField.setText(paParams.getExpressionFileName2());
-            GCTFileName2TextField.setToolTipText(paParams.getExpressionFileName2());
-        }
-
-        else{
-            if((paParams.getEnrichmentDataset1FileName2()!=null) || (paParams.getEnrichmentDataset2FileName2()!=null)){
-                JOptionPane.showMessageDialog(this,"Running Enrichment Map with Generic input " +
-                "allows for only one enrichment results file.\n  The second file specified has been removed.");
-                if(paParams.getEnrichmentDataset1FileName2()!=null)
-                    paParams.setEnrichmentDataset1FileName2(null);
-
-                if(paParams.getEnrichmentDataset2FileName2()!=null)
-                    paParams.setEnrichmentDataset2FileName2(null);
-
-            }
-        }
-    }
-
     /**
      * Event Handler for selectGMTFileButton.<p>
      * Opens a file browser dialog to select the GMTFile.
@@ -849,6 +816,7 @@ public class PostAnalysisInputPanel extends JPanel {
         if(file != null) {
             GMTFileNameTextField.setForeground(checkFile(file.getAbsolutePath()));
             GMTFileNameTextField.setText(file.getAbsolutePath());
+            GMTFileNameTextField.setValue(file.getAbsolutePath());
             paParams.setGMTFileName(file.getAbsolutePath());
             GMTFileNameTextField.setToolTipText(file.getAbsolutePath());
         }
@@ -876,6 +844,7 @@ public class PostAnalysisInputPanel extends JPanel {
         if(file != null) {
             signatureGMTFileNameTextField.setForeground(checkFile(file.getAbsolutePath()));
             signatureGMTFileNameTextField.setText(file.getAbsolutePath());
+            signatureGMTFileNameTextField.setValue(file.getAbsolutePath());
             paParams.setSignatureGMTFileName(file.getAbsolutePath());
             signatureGMTFileNameTextField.setToolTipText(file.getAbsolutePath());
         }
@@ -914,8 +883,10 @@ public class PostAnalysisInputPanel extends JPanel {
         
         //Gene-Sets Panel
         this.GMTFileNameTextField.setText("");
+        this.GMTFileNameTextField.setValue("");
         this.GMTFileNameTextField.setToolTipText(null);
         this.signatureGMTFileNameTextField.setText("");
+        this.signatureGMTFileNameTextField.setValue("");
         this.signatureGMTFileNameTextField.setToolTipText(null);
 
         // reset the List fields:
@@ -965,7 +936,9 @@ public class PostAnalysisInputPanel extends JPanel {
         
         // Gene-Set Files:
         GMTFileNameTextField.setText(this.paParams.getGMTFileName());
+        GMTFileNameTextField.setValue(this.paParams.getGMTFileName());
         signatureGMTFileNameTextField.setText(this.paParams.getSignatureGMTFileName());
+        signatureGMTFileNameTextField.setValue(this.paParams.getSignatureGMTFileName());
         
         // Gene-Set Selection:
         this.avail_sig_sets    = this.paParams.getSignatureSetNames();
