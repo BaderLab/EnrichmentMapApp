@@ -343,12 +343,13 @@ public class BuildDiseaseSignatureTask implements Task {
                     }
                     Collections.sort(enr_gene_list);
                     
-                    cyNodeAttrs.setListAttribute(hub_node.getIdentifier(), prefix+EnrichmentMapVisualStyle.GENES, gene_list);
-                    cyNodeAttrs.setListAttribute(hub_node.getIdentifier(), prefix+EnrichmentMapVisualStyle.ENR_GENES, enr_gene_list);
+                    cyNodeAttrs.setListAttribute(hub_node.getIdentifier(), prefix + EnrichmentMapVisualStyle.GENES, gene_list);
+                    cyNodeAttrs.setListAttribute(hub_node.getIdentifier(), prefix + EnrichmentMapVisualStyle.ENR_GENES, enr_gene_list);
                    
-                    cyNodeAttrs.setAttribute(hub_node.getIdentifier(), prefix+EnrichmentMapVisualStyle.GS_DESCR , sigGeneSet.getDescription() );
-                    cyNodeAttrs.setAttribute(hub_node.getIdentifier(), prefix+EnrichmentMapVisualStyle.NAME , sigGeneSet.getName() );
-                    cyNodeAttrs.setAttribute(hub_node.getIdentifier(), prefix+EnrichmentMapVisualStyle.GS_SIZE_SIGNATURE , sigGeneSet.getGenes().size() );
+                    cyNodeAttrs.setAttribute(hub_node.getIdentifier(), prefix + EnrichmentMapVisualStyle.GS_DESCR, sigGeneSet.getDescription() );
+                    cyNodeAttrs.setAttribute(hub_node.getIdentifier(), prefix + EnrichmentMapVisualStyle.GS_TYPE, EnrichmentMapVisualStyle.GS_TYPE_SIGNATURE);
+                    cyNodeAttrs.setAttribute(hub_node.getIdentifier(), prefix + EnrichmentMapVisualStyle.NAME, sigGeneSet.getName() );
+                    cyNodeAttrs.setAttribute(hub_node.getIdentifier(), prefix + EnrichmentMapVisualStyle.GS_SIZE_SIGNATURE , sigGeneSet.getGenes().size() );
                 }
 
                 // add the geneset of the signature node to the GenesetsOfInterest,

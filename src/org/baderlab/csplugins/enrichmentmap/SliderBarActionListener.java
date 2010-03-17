@@ -177,6 +177,13 @@ public class SliderBarActionListener implements ChangeListener {
        for(int i = 0; i< nodes.length; i++){
            Node currentNode = network.getNode(nodes[i]);
            NodeView currentView = view.getNodeView(currentNode);
+           
+           // skip Node if it's not an Enrichment-Geneset (but e.g. a Signature-Hub)
+           if( attributes.hasAttribute(currentNode.getIdentifier(), prefix + EnrichmentMapVisualStyle.GS_TYPE)
+               && ! EnrichmentMapVisualStyle.GS_TYPE_ENRICHMENT.equalsIgnoreCase(attributes.getStringAttribute(currentNode.getIdentifier(), prefix + EnrichmentMapVisualStyle.GS_TYPE)) )
+               continue;
+           
+           
            Double pvalue_dataset1 = attributes.getDoubleAttribute(currentNode.getIdentifier(), prefix + attrib_dataset1);
 
            if((pvalue_dataset1 > max_cutoff) || (pvalue_dataset1 < min_cutoff)){

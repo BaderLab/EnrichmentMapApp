@@ -91,9 +91,9 @@ public class VisualizeEnrichmentMapTask implements Task {
      * @param taskMonitor - current task monitor
      */
     public VisualizeEnrichmentMapTask(EnrichmentMapParameters params, TaskMonitor taskMonitor) {
-          this(params);
-          this.taskMonitor = taskMonitor;
-      }
+        this(params);
+        this.taskMonitor = taskMonitor;
+    }
 
     /**
      * Class constructor
@@ -195,55 +195,55 @@ public class VisualizeEnrichmentMapTask implements Task {
                 //create an attribute that stores the genes that are associated with this node as an attribute list
                 //only create the list if the hashkey 2 genes is not null Otherwise it take too much time to populate the list
                 if(params.getHashkey2gene() != null){
-                        List gene_list = new ArrayList();
-                        HashSet genes_hash = gs.getGenes();
-                        for(Iterator j=genes_hash.iterator(); j.hasNext();){
-                            Integer current = (Integer)j.next();
-                            String gene = params.getGeneFromHashKey(current);
-                            if(gene_list != null)
-                                gene_list.add(gene);
-                        }
-
-                        nodeAttrs.setListAttribute(node.getIdentifier(), prefix+EnrichmentMapVisualStyle.GENES, gene_list);
+                    List gene_list = new ArrayList();
+                    HashSet genes_hash = gs.getGenes();
+                    for(Iterator j=genes_hash.iterator(); j.hasNext();){
+                        Integer current = (Integer)j.next();
+                        String gene = params.getGeneFromHashKey(current);
+                        if(gene_list != null)
+                            gene_list.add(gene);
                     }
+
+                    nodeAttrs.setListAttribute(node.getIdentifier(), prefix+EnrichmentMapVisualStyle.GENES, gene_list);
+                }
 
                 if(params.isGSEA()){
                     GSEAResult current_result = (GSEAResult) enrichmentResults1OfInterest.get(current_name);
                     setGSEAResultDataset1Attributes(node, current_result,prefix);
                 }
                 else{
-                   GenericResult current_result = (GenericResult) enrichmentResults1OfInterest.get(current_name);
-                   setGenericResultDataset1Attributes(node, current_result, prefix);
+                    GenericResult current_result = (GenericResult) enrichmentResults1OfInterest.get(current_name);
+                    setGenericResultDataset1Attributes(node, current_result, prefix);
                 }
 
                 //if we are using two datasets check to see if there is data for this node
                 if(params.isTwoDatasets()){
                     if(params.isGSEA()){
-                       if(enrichmentResults2.containsKey(current_name)){
-                           GSEAResult second_result = (GSEAResult) enrichmentResults2.get(current_name);
-                           setGSEAResultDataset2Attributes(node, second_result,prefix);
+                        if(enrichmentResults2.containsKey(current_name)){
+                            GSEAResult second_result = (GSEAResult) enrichmentResults2.get(current_name);
+                            setGSEAResultDataset2Attributes(node, second_result,prefix);
 
-                       }
+                        }
 
                     }
                     else{
-                       if(enrichmentResults2.containsKey(current_name)){
-                           GenericResult second_result = (GenericResult) enrichmentResults2.get(current_name);
-                           setGenericResultDataset2Attributes(node, second_result,prefix);
+                        if(enrichmentResults2.containsKey(current_name)){
+                            GenericResult second_result = (GenericResult) enrichmentResults2.get(current_name);
+                            setGenericResultDataset2Attributes(node, second_result,prefix);
 
-                       }
+                        }
 
                     }
                 }
 
-                 // Calculate Percentage.  This must be a value between 0..100.
+                // Calculate Percentage.  This must be a value between 0..100.
                 int percentComplete = (int) (((double) currentProgress / maxValue) * 100);
                 //  Estimate Time Remaining
                 long timeRemaining = maxValue - currentProgress;
                 if (taskMonitor != null) {
-                   taskMonitor.setPercentCompleted(percentComplete);
-                   taskMonitor.setStatus("Building Enrichment Map " + currentProgress + " of " + maxValue);
-                   taskMonitor.setEstimatedTimeRemaining(timeRemaining);
+                    taskMonitor.setPercentCompleted(percentComplete);
+                    taskMonitor.setStatus("Building Enrichment Map " + currentProgress + " of " + maxValue);
+                    taskMonitor.setEstimatedTimeRemaining(timeRemaining);
                 }
                 currentProgress++;
 
@@ -290,7 +290,7 @@ public class VisualizeEnrichmentMapTask implements Task {
                                 GSEAResult result = (GSEAResult) enrichmentResults1.get(current_name);
                                 setGSEAResultDataset1Attributes(node,result, prefix);
                             }
-                            
+
                             GSEAResult second_result = (GSEAResult) enrichmentResults2OfInterest.get(current_name);
                             setGSEAResultDataset2Attributes(node, second_result,prefix);
                         }
@@ -309,10 +309,10 @@ public class VisualizeEnrichmentMapTask implements Task {
             int k = 0;
             //iterate through the similarities to create the edges
             for(Iterator j = geneset_similarities.keySet().iterator(); j.hasNext(); ){
-              String current_name =j.next().toString();
-              GenesetSimilarity current_result = (GenesetSimilarity) geneset_similarities.get(current_name);
+                String current_name =j.next().toString();
+                GenesetSimilarity current_result = (GenesetSimilarity) geneset_similarities.get(current_name);
 
-              //only create edges where the jaccard coefficient to great than
+                //only create edges where the jaccard coefficient to great than
                 if(current_result.getSimilarity_coeffecient()>params.getSimilarityCutOff()){
                     Node node1 = Cytoscape.getCyNode(current_result.getGeneset1_Name(),false);
                     Node node2 = Cytoscape.getCyNode(current_result.getGeneset2_Name(),false);
@@ -351,29 +351,29 @@ public class VisualizeEnrichmentMapTask implements Task {
             CalculatorCatalog catalog = manager.getCalculatorCatalog();
 
 
-             String vs_name = prefix + "Enrichment_map_style";
-             // check to see if a visual style with this name already exists
-                 VisualStyle vs = catalog.getVisualStyle(vs_name);
+            String vs_name = prefix + "Enrichment_map_style";
+            // check to see if a visual style with this name already exists
+            VisualStyle vs = catalog.getVisualStyle(vs_name);
 
-                 if (vs == null) {
-                     // if not, create it and add it to the catalog
-                    // Create the visual style
-                     EnrichmentMapVisualStyle em_vs = new EnrichmentMapVisualStyle(vs_name,params);
+            if (vs == null) {
+                // if not, create it and add it to the catalog
+                // Create the visual style
+                EnrichmentMapVisualStyle em_vs = new EnrichmentMapVisualStyle(vs_name,params);
 
-                     vs = em_vs.createVisualStyle(network, prefix);
-                     //vs = createVisualStyle(network,prefix);
+                vs = em_vs.createVisualStyle(network, prefix);
+                //vs = createVisualStyle(network,prefix);
 
-                     catalog.addVisualStyle(vs);
-                }
+                catalog.addVisualStyle(vs);
+            }
 
-               view.setVisualStyle(vs.getName()); // not strictly necessary
+            view.setVisualStyle(vs.getName()); // not strictly necessary
 
-               // actually apply the visual style
-               manager.setVisualStyle(vs);
-               view.redrawGraph(true,true);
+            // actually apply the visual style
+            manager.setVisualStyle(vs);
+            view.redrawGraph(true,true);
 
-          
-               view.applyLayout(CyLayouts.getLayout("force-directed"));
+
+            view.applyLayout(CyLayouts.getLayout("force-directed"));
 
 
             //register the new Network
@@ -400,7 +400,7 @@ public class VisualizeEnrichmentMapTask implements Task {
             return false;
         }
 
-       return true;
+        return true;
     }
 
     /**
@@ -414,20 +414,22 @@ public class VisualizeEnrichmentMapTask implements Task {
 
         CyAttributes nodeAttrs = Cytoscape.getNodeAttributes();
         //format the node name
-       String formattedName = formatLabel(result.getName());
+        String formattedName = formatLabel(result.getName());
 
-        nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.FORMATTED_NAME, formattedName);
-        nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.NAME, result.getName());
+        nodeAttrs.setAttribute(node.getIdentifier(), prefix + EnrichmentMapVisualStyle.FORMATTED_NAME, formattedName);
+        nodeAttrs.setAttribute(node.getIdentifier(), prefix + EnrichmentMapVisualStyle.NAME, result.getName());
         nodeAttrs.setAttribute(node.getIdentifier(), prefix + EnrichmentMapVisualStyle.PVALUE_DATASET1, result.getPvalue());
-        nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1, result.getFdrqvalue());
-        nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.GS_SIZE_DATASET1, result.getGsSize());
+        nodeAttrs.setAttribute(node.getIdentifier(), prefix + EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1, result.getFdrqvalue());
+        nodeAttrs.setAttribute(node.getIdentifier(), prefix + EnrichmentMapVisualStyle.GS_SIZE_DATASET1, result.getGsSize());
+        nodeAttrs.setAttribute(node.getIdentifier(), prefix + EnrichmentMapVisualStyle.GS_TYPE, EnrichmentMapVisualStyle.GS_TYPE_ENRICHMENT);
         if(result.getNES()>=0){
             nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.COLOURING_DATASET1,  (1-result.getPvalue()));
-       }
-      else{
+        }
+        else{
             nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.COLOURING_DATASET1,  ((-1) * (1-result.getPvalue())));
-      }
+        }
     }
+
     /**
      * set node attributes for dataset 2 generic results
      *
@@ -439,19 +441,20 @@ public class VisualizeEnrichmentMapTask implements Task {
 
         CyAttributes nodeAttrs = Cytoscape.getNodeAttributes();
         //format the node name
-       String formattedName = formatLabel(result.getName());
+        String formattedName = formatLabel(result.getName());
 
-        nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.FORMATTED_NAME, formattedName);
-        nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.NAME, result.getName());
+        nodeAttrs.setAttribute(node.getIdentifier(), prefix + EnrichmentMapVisualStyle.FORMATTED_NAME, formattedName);
+        nodeAttrs.setAttribute(node.getIdentifier(), prefix + EnrichmentMapVisualStyle.NAME, result.getName());
         nodeAttrs.setAttribute(node.getIdentifier(), prefix + EnrichmentMapVisualStyle.PVALUE_DATASET2, result.getPvalue());
-        nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2, result.getFdrqvalue());
-        nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.GS_SIZE_DATASET2, result.getGsSize());
+        nodeAttrs.setAttribute(node.getIdentifier(), prefix + EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2, result.getFdrqvalue());
+        nodeAttrs.setAttribute(node.getIdentifier(), prefix + EnrichmentMapVisualStyle.GS_SIZE_DATASET2, result.getGsSize());
+        nodeAttrs.setAttribute(node.getIdentifier(), prefix + EnrichmentMapVisualStyle.GS_TYPE, EnrichmentMapVisualStyle.GS_TYPE_ENRICHMENT);
         if(result.getNES()>=0){
             nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.COLOURING_DATASET2,  (1-result.getPvalue()));
-       }
-       else{
+        }
+        else{
             nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.COLOURING_DATASET2,  ((-1) * (1-result.getPvalue())));
-      }
+        }
     }
 
     /**
@@ -463,28 +466,28 @@ public class VisualizeEnrichmentMapTask implements Task {
      */
     private void setGSEAResultDataset1Attributes(Node node, GSEAResult result, String prefix){
 
-       CyAttributes nodeAttrs = Cytoscape.getNodeAttributes();
+        CyAttributes nodeAttrs = Cytoscape.getNodeAttributes();
         //format the node name
-       String formattedName = formatLabel(result.getName());
+        String formattedName = formatLabel(result.getName());
 
-       nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.FORMATTED_NAME, formattedName);
-       nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.NAME, result.getName());
-       nodeAttrs.setAttribute(node.getIdentifier(), prefix+EnrichmentMapVisualStyle.PVALUE_DATASET1, result.getPvalue());
-       nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1, result.getFdrqvalue());
-       nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.FWER_QVALUE_DATASET1, result.getFwerqvalue());
-       nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.GS_SIZE_DATASET1, result.getGsSize());
-       nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.ES_DATASET1, result.getES());
-       nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.NES_DATASET1, result.getNES());
-       if(result.getNES()>=0){
+        nodeAttrs.setAttribute(node.getIdentifier(), prefix + EnrichmentMapVisualStyle.FORMATTED_NAME, formattedName);
+        nodeAttrs.setAttribute(node.getIdentifier(), prefix + EnrichmentMapVisualStyle.NAME, result.getName());
+        nodeAttrs.setAttribute(node.getIdentifier(), prefix + EnrichmentMapVisualStyle.PVALUE_DATASET1, result.getPvalue());
+        nodeAttrs.setAttribute(node.getIdentifier(), prefix + EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1, result.getFdrqvalue());
+        nodeAttrs.setAttribute(node.getIdentifier(), prefix + EnrichmentMapVisualStyle.FWER_QVALUE_DATASET1, result.getFwerqvalue());
+        nodeAttrs.setAttribute(node.getIdentifier(), prefix + EnrichmentMapVisualStyle.GS_SIZE_DATASET1, result.getGsSize());
+        nodeAttrs.setAttribute(node.getIdentifier(), prefix + EnrichmentMapVisualStyle.ES_DATASET1, result.getES());
+        nodeAttrs.setAttribute(node.getIdentifier(), prefix + EnrichmentMapVisualStyle.NES_DATASET1, result.getNES());
+        nodeAttrs.setAttribute(node.getIdentifier(), prefix + EnrichmentMapVisualStyle.GS_TYPE, EnrichmentMapVisualStyle.GS_TYPE_ENRICHMENT);
+        if(result.getNES()>=0){
             nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.COLOURING_DATASET1,  (1-result.getPvalue()));
-       }
-      else{
+        }
+        else{
             nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.COLOURING_DATASET1,  ((-1) * (1-result.getPvalue())));
-      }
+        }
+    }
 
-   }
-
-  /**
+    /**
      * set node attributes for dataset 2 gsea results
      *
      * @param node - node to associated attributes to
@@ -493,27 +496,28 @@ public class VisualizeEnrichmentMapTask implements Task {
      */
     private void setGSEAResultDataset2Attributes(Node node, GSEAResult result, String prefix){
 
-       CyAttributes nodeAttrs = Cytoscape.getNodeAttributes();
+        CyAttributes nodeAttrs = Cytoscape.getNodeAttributes();
 
-      //format the node name
-      String formattedName = formatLabel(result.getName());
+        //format the node name
+        String formattedName = formatLabel(result.getName());
 
-      nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.FORMATTED_NAME, formattedName);
-       nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.NAME, result.getName());
-       nodeAttrs.setAttribute(node.getIdentifier(), prefix+EnrichmentMapVisualStyle.PVALUE_DATASET2, result.getPvalue());
-       nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2, result.getFdrqvalue());
-       nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.FWER_QVALUE_DATASET2, result.getFwerqvalue());
-       nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.GS_SIZE_DATASET2, result.getGsSize());
-       nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.ES_DATASET2, result.getES());
-       nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.NES_DATASET2, result.getNES());
-       if(result.getNES()>=0){
+        nodeAttrs.setAttribute(node.getIdentifier(), prefix + EnrichmentMapVisualStyle.FORMATTED_NAME, formattedName);
+        nodeAttrs.setAttribute(node.getIdentifier(), prefix + EnrichmentMapVisualStyle.NAME, result.getName());
+        nodeAttrs.setAttribute(node.getIdentifier(), prefix + EnrichmentMapVisualStyle.PVALUE_DATASET2, result.getPvalue());
+        nodeAttrs.setAttribute(node.getIdentifier(), prefix + EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2, result.getFdrqvalue());
+        nodeAttrs.setAttribute(node.getIdentifier(), prefix + EnrichmentMapVisualStyle.FWER_QVALUE_DATASET2, result.getFwerqvalue());
+        nodeAttrs.setAttribute(node.getIdentifier(), prefix + EnrichmentMapVisualStyle.GS_SIZE_DATASET2, result.getGsSize());
+        nodeAttrs.setAttribute(node.getIdentifier(), prefix + EnrichmentMapVisualStyle.ES_DATASET2, result.getES());
+        nodeAttrs.setAttribute(node.getIdentifier(), prefix + EnrichmentMapVisualStyle.NES_DATASET2, result.getNES());
+        nodeAttrs.setAttribute(node.getIdentifier(), prefix + EnrichmentMapVisualStyle.GS_TYPE, EnrichmentMapVisualStyle.GS_TYPE_ENRICHMENT);
+        if(result.getNES()>=0){
             nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.COLOURING_DATASET2,  (1-result.getPvalue()));
-       }
-      else{
+        }
+        else{
             nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.COLOURING_DATASET2,  ((-1) * (1-result.getPvalue())));
-      }
+        }
 
-   }
+    }
 
     /**
      * Wrap label
@@ -522,10 +526,10 @@ public class VisualizeEnrichmentMapTask implements Task {
      * @return formatted, wrapped label
      */
     static String formatLabel(String label){
-       String formattedLabel = "";
+        String formattedLabel = "";
 
-       int i = 0;
-       int k = 1;
+        int i = 0;
+        int k = 1;
 
         //only wrap at spaces
         String[] tokens = label.split(" ");
@@ -544,13 +548,13 @@ public class VisualizeEnrichmentMapTask implements Task {
             }
         }
         else{
-           tokens = label.split("_");
+            tokens = label.split("_");
 
-           if(tokens.length > 1){
+            if(tokens.length > 1){
                 int current_count = 0;
                 for(int j = 0; j< tokens.length;j++){
                     if(j != 0)
-                      formattedLabel = formattedLabel +  "_";
+                        formattedLabel = formattedLabel +  "_";
                     if(current_count + tokens[j].length() <= EnrichmentMapVisualStyle.maxNodeLabelLength){
                         formattedLabel = formattedLabel + tokens[j] ;
                         current_count = current_count + tokens[j].length();
@@ -581,38 +585,38 @@ public class VisualizeEnrichmentMapTask implements Task {
 
 
     /**
-       * Run the Task.
-       */
-      public void run() {
-         computeMap();
-      }
+     * Run the Task.
+     */
+    public void run() {
+        computeMap();
+    }
 
-      /**
-       * Non-blocking call to interrupt the task.
-       */
-      public void halt() {
-          this.interrupted = true;
-      }
+    /**
+     * Non-blocking call to interrupt the task.
+     */
+    public void halt() {
+        this.interrupted = true;
+    }
 
-       /**
-       * Sets the Task Monitor.
-       *
-       * @param taskMonitor TaskMonitor Object.
-       */
-      public void setTaskMonitor(TaskMonitor taskMonitor) {
-          if (this.taskMonitor != null) {
-              throw new IllegalStateException("Task Monitor is already set.");
-          }
-          this.taskMonitor = taskMonitor;
-      }
+    /**
+     * Sets the Task Monitor.
+     *
+     * @param taskMonitor TaskMonitor Object.
+     */
+    public void setTaskMonitor(TaskMonitor taskMonitor) {
+        if (this.taskMonitor != null) {
+            throw new IllegalStateException("Task Monitor is already set.");
+        }
+        this.taskMonitor = taskMonitor;
+    }
 
-      /**
-       * Gets the Task Title.
-       *
-       * @return human readable task title.
-       */
-      public String getTitle() {
-          return new String("Building Enrichment Map");
-      }
+    /**
+     * Gets the Task Title.
+     *
+     * @return human readable task title.
+     */
+    public String getTitle() {
+        return new String("Building Enrichment Map");
+    }
 
 }

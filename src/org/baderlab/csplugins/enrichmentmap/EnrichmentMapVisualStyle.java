@@ -73,6 +73,7 @@ public class EnrichmentMapVisualStyle {
     public static String FORMATTED_NAME = "Formatted_name";
     public static String GENES = "Genes";
     public static String ENR_GENES = "Enrichment_Genes";
+    public static String GS_TYPE = "GS_Type";
 
     public static String ES_DATASET1 = "ES_dataset1";
     public static String NES_DATASET1 = "NES_dataset1";
@@ -91,6 +92,9 @@ public class EnrichmentMapVisualStyle {
     public static String COLOURING_DATASET2 = "Colouring_dataset2";
 
     public static String GS_SIZE_SIGNATURE = "gs_size_signature";
+    
+    public static String GS_TYPE_ENRICHMENT = "ENR";
+    public static String GS_TYPE_SIGNATURE = "SIG";
     
     public static String OVERLAP_SIZE = "Overlap_size";
     public static String SIMILARITY_COEFFECIENT = "similarity_coeffecient";
