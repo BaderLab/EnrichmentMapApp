@@ -86,6 +86,9 @@ public class EnrichmentMapParameters {
     private String classFile1;
     private String classFile2;
 
+    private String gseaHtmlReportFileDataset1 = null;
+    private String gseaHtmlReportFileDataset2 = null;
+
     //FLAGS used in the analysis.
     //flag to indicate if the user has supplied a data/expression file
     private boolean Data = false;
@@ -298,8 +301,11 @@ public class EnrichmentMapParameters {
         else
             this.expressionFileName1 = props.get("GCTFileName1");
 
-        this.enrichmentDataset1FileName1 = props.get("enerichmentDataset1FileName1");
+        this.enrichmentDataset1FileName1 = props.get("enerichmentDataset1FileName1");//TODO: fix Typo and take care of legacy issue!
         this.enrichmentDataset1FileName2 = props.get("enrichmentDataset1FileName2");
+
+        this.gseaHtmlReportFileDataset1 = props.get("gseaHtmlReportFileDataset1");
+        this.gseaHtmlReportFileDataset2 = props.get("gseaHtmlReportFileDataset2");
 
         this.dataset1Phenotype1 = props.get("dataset1Phenotype1");
         this.dataset1Phenotype2 = props.get("dataset1Phenotype2");
@@ -441,6 +447,9 @@ public class EnrichmentMapParameters {
         this.enrichmentDataset2FileName1 = copy.getEnrichmentDataset2FileName1();
         this.enrichmentDataset2FileName2 = copy.getEnrichmentDataset2FileName2();
 
+        this.gseaHtmlReportFileDataset1 = copy.getGseaHtmlReportFileDataset1();
+        this.gseaHtmlReportFileDataset2 = copy.getGseaHtmlReportFileDataset2();
+
         this.dataset1Phenotype1 = copy.getDataset1Phenotype1();
         this.dataset1Phenotype2 = copy.getDataset1Phenotype2();
         this.dataset2Phenotype1 = copy.getDataset2Phenotype1();
@@ -490,6 +499,9 @@ public class EnrichmentMapParameters {
         this.enrichmentDataset1FileName2 = copy.getEnrichmentDataset1FileName2();
         this.enrichmentDataset2FileName1 = copy.getEnrichmentDataset2FileName1();
         this.enrichmentDataset2FileName2 = copy.getEnrichmentDataset2FileName2();
+
+        this.gseaHtmlReportFileDataset1 = copy.getGseaHtmlReportFileDataset1();
+        this.gseaHtmlReportFileDataset2 = copy.getGseaHtmlReportFileDataset2();
 
         this.dataset1Phenotype1 = copy.getDataset1Phenotype1();
         this.dataset1Phenotype2 = copy.getDataset1Phenotype2();
@@ -692,11 +704,14 @@ public class EnrichmentMapParameters {
         paramVariables.append("GMTFileName\t" + GMTFileName + "\n");
         paramVariables.append("expressionFileName1\t" + expressionFileName1 + "\n");
         paramVariables.append("expressionFileName2\t" + expressionFileName2 + "\n");
-        paramVariables.append("enerichmentDataset1FileName1\t" + enrichmentDataset1FileName1 + "\n");
+        paramVariables.append("enerichmentDataset1FileName1\t" + enrichmentDataset1FileName1 + "\n");//TODO: fix Typo and take care of legacy issue!
         paramVariables.append("enrichmentDataset1FileName2\t" + enrichmentDataset1FileName2 + "\n");
 
         paramVariables.append("enerichmentDataset2FileName1\t" + enrichmentDataset2FileName1 + "\n");
         paramVariables.append("enrichmentDataset2FileName2\t" + enrichmentDataset2FileName2 + "\n");
+
+        paramVariables.append("gseaHtmlReportFileDataset1\t" + gseaHtmlReportFileDataset1 + "\n");
+        paramVariables.append("gseaHtmlReportFileDataset2\t" + gseaHtmlReportFileDataset2 + "\n");
 
         paramVariables.append("dataset1Phenotype1\t" + dataset1Phenotype1  + "\n");
         paramVariables.append("dataset1Phenotype2\t" + dataset1Phenotype2   + "\n");
@@ -1141,6 +1156,38 @@ public class EnrichmentMapParameters {
     public void setClassFile2(String classFile2) {
         this.classFile2 = classFile2;
     }
+
+    /**
+     * @param gseaHtmlReportFileDataset1 the gseaHtmlReportFileDataset1 to set
+     */
+    public void setGseaHtmlReportFileDataset1(String gseaHtmlReportFileDataset1) {
+        this.gseaHtmlReportFileDataset1 = gseaHtmlReportFileDataset1;
+    }
+
+
+    /**
+     * @return the gseaHtmlReportFileDataset1
+     */
+    public String getGseaHtmlReportFileDataset1() {
+        return gseaHtmlReportFileDataset1;
+    }
+
+
+    /**
+     * @param gseaHtmlReportFileDataset2 the gseaHtmlReportFileDataset2 to set
+     */
+    public void setGseaHtmlReportFileDataset2(String gseaHtmlReportFileDataset2) {
+        this.gseaHtmlReportFileDataset2 = gseaHtmlReportFileDataset2;
+    }
+
+
+    /**
+     * @return the gseaHtmlReportFileDataset2
+     */
+    public String getGseaHtmlReportFileDataset2() {
+        return gseaHtmlReportFileDataset2;
+    }
+
 
     public String getDataset1Phenotype1() {
         return dataset1Phenotype1;
