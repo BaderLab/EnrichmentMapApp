@@ -116,32 +116,32 @@ public class ParametersPanel extends JPanel {
         JPanel prefsPanel = new JPanel();
         prefsPanel.setLayout(new BoxLayout(prefsPanel, BoxLayout.Y_AXIS));
         
-        //Begin of Code to toggle "Override Heatmap update" (for performance)
-        //TODO: remove before release?
-        updateHeatmapCheckbox = new JCheckBox(new AbstractAction("update Heatmap") {
-            /**
-             * TODO: DOCUMENT ME!
-             */
-            private static final long serialVersionUID = -1991964268189861889L;
-
-            public void actionPerformed(ActionEvent e) {
-                // Do this in the GUI Event Dispatch thread...
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        // toggle state of overrideHeatmapRevalidation
-                        if (Enrichment_Map_Plugin.isOverrideHeatmapRevalidation()) {
-                            Enrichment_Map_Plugin.setOverrideHeatmapRevalidation(false);
-                        } else {
-                            Enrichment_Map_Plugin.setOverrideHeatmapRevalidation(true);
-                        }
-                        updateHeatmapCheckbox.setSelected( ! Enrichment_Map_Plugin.isOverrideHeatmapRevalidation() );
-                    }
-                });
-            }
-        });
-        updateHeatmapCheckbox.setSelected( ! Enrichment_Map_Plugin.isOverrideHeatmapRevalidation() );
-        prefsPanel.add(updateHeatmapCheckbox);
-        //END of Code to toggle "Override Heatmap update" (for performance)
+//        //Begin of Code to toggle "Override Heatmap update" (for performance)
+//        //TODO: remove before release?
+//        updateHeatmapCheckbox = new JCheckBox(new AbstractAction("update Heatmap") {
+//            /**
+//             * TODO: DOCUMENT ME!
+//             */
+//            private static final long serialVersionUID = -1991964268189861889L;
+//
+//            public void actionPerformed(ActionEvent e) {
+//                // Do this in the GUI Event Dispatch thread...
+//                SwingUtilities.invokeLater(new Runnable() {
+//                    public void run() {
+//                        // toggle state of overrideHeatmapRevalidation
+//                        if (Enrichment_Map_Plugin.isOverrideHeatmapRevalidation()) {
+//                            Enrichment_Map_Plugin.setOverrideHeatmapRevalidation(false);
+//                        } else {
+//                            Enrichment_Map_Plugin.setOverrideHeatmapRevalidation(true);
+//                        }
+//                        updateHeatmapCheckbox.setSelected( ! Enrichment_Map_Plugin.isOverrideHeatmapRevalidation() );
+//                    }
+//                });
+//            }
+//        });
+//        updateHeatmapCheckbox.setSelected( ! Enrichment_Map_Plugin.isOverrideHeatmapRevalidation() );
+//        prefsPanel.add(updateHeatmapCheckbox);
+//        //END of Code to toggle "Override Heatmap update" (for performance)
 
         
         //Begin of Code to toggle "Disable Heatmap autofocus"
@@ -263,6 +263,12 @@ public class ParametersPanel extends JPanel {
            }
            if(params.isData2()){
                runInfoText = runInfoText + "<b>Data file 2:</b>" + shortenPathname(params.getExpressionFileName2()) + "<br>";
+           }
+           if( ! (params.getGseaHtmlReportFileDataset1() == null) ){
+               runInfoText = runInfoText + "<b>GSEA Report 1:</b>" + shortenPathname(params.getGseaHtmlReportFileDataset1()) + "<br>";
+           }
+           if( ! (params.getGseaHtmlReportFileDataset2() == null) ){
+               runInfoText = runInfoText + "<b>GSEA Report 2:</b>" + shortenPathname(params.getGseaHtmlReportFileDataset2()) + "<br>";
            }
 
            runInfoText = runInfoText + "</font></html>";

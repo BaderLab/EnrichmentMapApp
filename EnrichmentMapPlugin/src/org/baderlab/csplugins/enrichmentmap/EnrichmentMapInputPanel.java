@@ -1076,16 +1076,18 @@ public class EnrichmentMapInputPanel extends JPanel {
 
          //set all the variables based on the parameters in the rpt file
         //parameters needed
-        String timestamp = (String)rpt.get("producer_timestamp");
-        String method = (String)rpt.get("producer_class");
-        method = method.split("\\p{Punct}")[2];
-        String out_dir = (String)rpt.get("param out");
+        String timestamp = (String)rpt.get("producer_timestamp");               // timestamp produced by GSEA
+        String method = (String)rpt.get("producer_class");                      
+        method = method.split("\\p{Punct}")[2];                                 // Gsea or GseaPreranked
+        String out_dir = (String)rpt.get("param out");                          // output dir in which the GSEA-Jobdirs are supposed to be created
+        String job_dir_name = null;                                             // name of the GSEA Job dir (excluding  out_dir + File.separator )
         String data = (String)rpt.get("param res");
         String label = (String)rpt.get("param rpt_label");
         String classes = (String)rpt.get("param cls");
         String gmt = (String)rpt.get("param gmx");
         String gmt_nopath =  gmt.substring(gmt.lastIndexOf(File.separator)+1, gmt.length()-1);
-
+        String gseaHtmlReportFile = (String)rpt.get("file");
+        
         String phenotype1 = "na";
         String phenotype2 = "na";
         //phenotypes are specified after # in the parameter cls and are separated by _versus_
@@ -1119,7 +1121,7 @@ public class EnrichmentMapInputPanel extends JPanel {
             }
         }
 
-       //check to see if the method is normal or pre-ranked GSEA.
+        //check to see if the method is normal or pre-ranked GSEA.
         //If it is pre-ranked the data file is contained in a different field
         else if(method.equalsIgnoreCase("GseaPreranked")){
             data = (String)rpt.get("param rnk");
@@ -1144,6 +1146,33 @@ public class EnrichmentMapInputPanel extends JPanel {
                 Dataset2Phenotype1TextField.setValue(phenotype1);
                 Dataset2Phenotype2TextField.setValue(phenotype2);
             }
+
+            /*XXX: BEGIN optional parameters for phenotypes and expression matrix in rpt file from pre-ranked GSEA:
+             * 
+             * To do less manual work while creating Enrichment Maps from pre-ranked GSEA, I add the following optional parameters:
+             * 
+             * param{tab}phenotypes{tab}{phenotype1}_versus_{phenotype2}
+             * param{tab}expressionMatrix{tab}{path_to_GCT_or_TXT_formated_expression_matrix}
+             * 
+             * added by revilo 2010-03-18:
+             */
+            if (rpt.containsKey("param phenotypes")){
+                String phenotypes = (String)rpt.get("param phenotypes");
+                String[] phenotypes_split = phenotypes.split("_versus_");
+                if (dataset1){
+                    Dataset1Phenotype1TextField.setValue(phenotypes_split[0]);
+                    Dataset1Phenotype2TextField.setValue(phenotypes_split[1]);
+                }
+                else{
+                    Dataset2Phenotype1TextField.setValue(phenotypes_split[0]);
+                    Dataset2Phenotype2TextField.setValue(phenotypes_split[1]);
+                }
+            }
+            if (rpt.containsKey("param expressionMatrix")){
+                data = (String)rpt.get("param expressionMatrix");
+            }
+            /*XXX: END optional parameters for phenotypes and expression matrix in rpt file from pre-ranked GSEA */
+
         }
 
         else{
@@ -1155,32 +1184,38 @@ public class EnrichmentMapInputPanel extends JPanel {
         //if it isn't then assume that the rpt file has the right file names but if the files specified in the rpt
         //don't exist then use the path for the rpt to change the file paths.
         String results1 = "";
-         String results2 = "";
+        String results2 = "";
         String ranks = "";
 
         //files built directly from the rpt specification
         //try these files first
-        results1 = "" + out_dir + File.separator + label + "."+ method + "." + timestamp + File.separator + "gsea_report_for_" + phenotype1 + "_" + timestamp + ".xls";
-        results2 = "" + out_dir + File.separator + label + "."+ method + "." + timestamp + File.separator + "gsea_report_for_" + phenotype2 + "_" + timestamp + ".xls";
-        ranks = "" + out_dir + File.separator + label + "."+ method + "." + timestamp + File.separator + "ranked_gene_list_" + phenotype1 + "_versus_" + phenotype2 +"_" + timestamp + ".xls";
+        job_dir_name = label + "."+ method + "." + timestamp;
+        results1 = "" + out_dir + File.separator + job_dir_name + File.separator + "gsea_report_for_" + phenotype1 + "_" + timestamp + ".xls";
+        results2 = "" + out_dir + File.separator + job_dir_name + File.separator + "gsea_report_for_" + phenotype2 + "_" + timestamp + ".xls";
+        ranks = "" + out_dir + File.separator + job_dir_name + File.separator + "ranked_gene_list_" + phenotype1 + "_versus_" + phenotype2 +"_" + timestamp + ".xls";
         if(!((checkFile(results1) == Color.BLACK) && (checkFile(results2) == Color.BLACK) && (checkFile(ranks) == Color.BLACK))){
-            if(!(rptFile.getAbsolutePath().substring(0,(rptFile.getAbsolutePath()).lastIndexOf(File.separator))).equalsIgnoreCase(out_dir)){
+            String out_dir_new = rptFile.getAbsolutePath();
+            out_dir_new = out_dir_new.substring(0, out_dir_new.lastIndexOf(File.separator)); // drop rpt-filename
+            out_dir_new = out_dir_new.substring(0, out_dir_new.lastIndexOf(File.separator)); // drop gsea report folder
+            
+            if( !(out_dir_new.equalsIgnoreCase(out_dir)) ){
 
-                    //trim the last File Separator
-                    String new_dir = rptFile.getAbsolutePath().substring(0,rptFile.getAbsolutePath().lastIndexOf(File.separator));
-                    results1 = new_dir + File.separator + "gsea_report_for_" + phenotype1 + "_" + timestamp + ".xls";
-                    results2 = new_dir + File.separator + "gsea_report_for_" + phenotype2 + "_" + timestamp + ".xls";
-                    ranks = new_dir + File.separator + "ranked_gene_list_" + phenotype1 + "_versus_" + phenotype2 +"_" + timestamp + ".xls";
+//                    //trim the last File Separator
+//                    String new_dir = rptFile.getAbsolutePath().substring(0,rptFile.getAbsolutePath().lastIndexOf(File.separator));
+                    results1 = out_dir_new + File.separator + job_dir_name + File.separator + "gsea_report_for_" + phenotype1 + "_" + timestamp + ".xls";
+                    results2 = out_dir_new + File.separator + job_dir_name + File.separator + "gsea_report_for_" + phenotype2 + "_" + timestamp + ".xls";
+                    ranks = out_dir_new + File.separator + job_dir_name + File.separator + "ranked_gene_list_" + phenotype1 + "_versus_" + phenotype2 +"_" + timestamp + ".xls";
 
                     //If after trying the directory that the rpt file is in doesn't produce valid file names, revert to what
                     //is specified in the rpt.
                     if(!((checkFile(results1) == Color.BLACK) && (checkFile(results2) == Color.BLACK) && (checkFile(ranks) == Color.BLACK))){
-                        results1 = "" + out_dir + File.separator + label + "."+ method + "." + timestamp + File.separator + "gsea_report_for_" + phenotype1 + "_" + timestamp + ".xls";
-                        results2 = "" + out_dir + File.separator + label + "."+ method + "." + timestamp + File.separator + "gsea_report_for_" + phenotype2 + "_" + timestamp + ".xls";
-                        ranks = "" + out_dir + File.separator + label + "."+ method + "." + timestamp + File.separator + "ranked_gene_list_" + phenotype1 + "_versus_" + phenotype2 +"_" + timestamp + ".xls";
+                        results1 = "" + out_dir + File.separator + job_dir_name + File.separator + label + "."+ method + "." + timestamp + File.separator + "gsea_report_for_" + phenotype1 + "_" + timestamp + ".xls";
+                        results2 = "" + out_dir + File.separator + job_dir_name + File.separator + label + "."+ method + "." + timestamp + File.separator + "gsea_report_for_" + phenotype2 + "_" + timestamp + ".xls";
+                        ranks = "" + out_dir + File.separator + job_dir_name + File.separator + label + "."+ method + "." + timestamp + File.separator + "ranked_gene_list_" + phenotype1 + "_versus_" + phenotype2 +"_" + timestamp + ".xls";
                     }
                     else{
-                        out_dir = new_dir;
+                        out_dir = out_dir_new;
+                        gseaHtmlReportFile = "" + out_dir + File.separator + job_dir_name + File.separator + "index.html";
                     }
             }
 
@@ -1213,7 +1248,7 @@ public class EnrichmentMapInputPanel extends JPanel {
 
                     params.setEnrichmentDataset1FileName1(results1);
                     params.setEnrichmentDataset1FileName2(results2);
-
+                    params.setGseaHtmlReportFileDataset1(gseaHtmlReportFile);
                     this.setDatasetnames(results1,results2,dataset1);
                 }
         }
@@ -1241,7 +1276,8 @@ public class EnrichmentMapInputPanel extends JPanel {
 
                 params.setEnrichmentDataset2FileName1(results1);
                 params.setEnrichmentDataset2FileName2(results2);
-                params.setDataset2RankedFile(ranks);
+                params.setGseaHtmlReportFileDataset2(gseaHtmlReportFile);
+//                params.setDataset2RankedFile(ranks);
                 this.setDatasetnames(results1,results2,dataset1);
            }
         }
