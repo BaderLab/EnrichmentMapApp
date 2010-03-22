@@ -45,6 +45,8 @@ package org.baderlab.csplugins.enrichmentmap;
 
 import javax.swing.*;
 
+import cytoscape.util.OpenBrowser;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
@@ -90,12 +92,50 @@ public class ParametersPanel extends JPanel {
         this.revalidate();
         this.setLayout(new java.awt.BorderLayout());
 
-        JPanel main = new JPanel(new BorderLayout());
+        JPanel main = new JPanel(new BorderLayout(0,3));
 
         JPanel legends = createLegend(params);
+//        legends.setBorder(BorderFactory.createEtchedBorder());
         main.add(legends, BorderLayout.NORTH);
         
-
+        JPanel centerPanel = new JPanel();
+        centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
+//        centerPanel.setBorder(BorderFactory.createEtchedBorder());
+        centerPanel.setAlignmentX(LEFT_ALIGNMENT);
+        
+        final String reportFileDataset1 = params.getGseaHtmlReportFileDataset1();
+        final String reportFileDataset2 = params.getGseaHtmlReportFileDataset2();        
+        if (! (reportFileDataset1 == null || reportFileDataset1.equalsIgnoreCase("null")) ){
+        	JButton openReport1Button = new JButton("Open GSEA report Dataset 1");
+        	openReport1Button.setAlignmentX(LEFT_ALIGNMENT);
+        	openReport1Button.addActionListener(new java.awt.event.ActionListener() {
+                public void actionPerformed(java.awt.event.ActionEvent evt) {
+                    OpenBrowser.openURL("file://" +  reportFileDataset1);
+                }
+            });
+        	if (! (new File(reportFileDataset1)).canRead() ) {
+        		openReport1Button.setEnabled(false);
+        		openReport1Button.setToolTipText("Report file not found: " + reportFileDataset1);
+        	}
+        	
+        	centerPanel.add(openReport1Button);
+        	
+        }
+        if (! (reportFileDataset2 == null || reportFileDataset2.equalsIgnoreCase("null")) ){
+        	JButton openReport2Button = new JButton("Open GSEA-report Dataset 2");
+        	openReport2Button.setAlignmentX(LEFT_ALIGNMENT);
+        	openReport2Button.addActionListener(new java.awt.event.ActionListener() {
+                public void actionPerformed(java.awt.event.ActionEvent evt) {
+                    OpenBrowser.openURL("file://" +  reportFileDataset2);
+                }
+            });
+        	if (! (new File(reportFileDataset1)).canRead() ) {
+        		openReport2Button.setEnabled(false);
+        		openReport2Button.setToolTipText("Report file not found: " + reportFileDataset2);
+        	}        	
+        	centerPanel.add(openReport2Button);
+        }
+        
         JTextPane runInfo;
         //information about the current analysis
         runInfo = new JTextPane();
@@ -109,7 +149,8 @@ public class ParametersPanel extends JPanel {
         runInfoPanel.setCollapsed(true);
         runInfoPanel.getContentPane().add(runInfo);
 
-        main.add(runInfoPanel, BorderLayout.CENTER);
+        centerPanel.add(runInfoPanel);
+        main.add(centerPanel, BorderLayout.CENTER);
 
         CollapsiblePanel preferences = new CollapsiblePanel("advanced Preferences");
         preferences.setCollapsed(true);
