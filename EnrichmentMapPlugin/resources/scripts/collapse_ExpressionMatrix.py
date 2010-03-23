@@ -281,10 +281,14 @@ class ReplaceCollapseGui(Frame):
             self.quit()
 
 class CollapseExpressionMatrix:
-    def __init__(self, inputFileName, outputFileName, chipFileName, doCollapse=False, collapseMode="max_probe", verbose=True, fix_session=False, gui=None):
+    def __init__(self,
+                 inputFileName, outputFileName, chipFileName, extra_expr_in="", extra_expr_out="",
+                 doCollapse=False, collapseMode="max_probe", verbose=True, fix_session=False, gui=None):
         self.inputFileName = inputFileName
         self.outputFileName = outputFileName
         self.chipFileName = chipFileName
+        self.extra_expr_in = extra_expr_in
+        self.extra_expr_out = extra_expr_out
         self.doCollapse = doCollapse
         self.collapseMode = collapseMode
         self.verbose = verbose
@@ -352,7 +356,7 @@ class CollapseExpressionMatrix:
         try:
             # read expression data
             if self.verbose :
-                self.printMessage("reading expression file...\n")
+                self.printMessage("reading input file...\n")
     
             infile = file(inputFileName, "rU")
             inputFileLines = infile.readlines()
@@ -501,6 +505,110 @@ class CollapseExpressionMatrix:
         
         return data_lines
     
+    def collapse_rank_and_expr(self, rank_data, expr_data, expr_type, idSymbolMap, mode="max_probe"):
+        import re
+        re_comment = re.compile("^#")
+        # 1) First pass though ranks: create map: 
+        ranks_map = {}
+        """  
+        ranks_map =  { "Symbol_A" :{ "probeID_A1": 'score_A1', 
+                                     "probeID_A2": 'score_A2'  }, 
+                       "Symbol_B" :{ "probeID_B1": 'score_B1'  }, 
+                        ... 
+                     }
+        """
+        rank_header_lines = []
+        
+        self.printMessage('processing rank file...\n')
+        for rank_line in rank_data:
+            if re_comment.search(rank_line):
+                rank_header_lines.append(rank_line)
+            else:
+                (probeID, score) = rank_line.split("\t", 1) # we already made sure that it's 2 column when in read_inputFile()
+                if idSymbolMap.has_key(probeID):
+                    symbol = idSymbolMap[probeID]
+                    if not ranks_map.has_key(symbol):
+                        ranks_map[symbol] = {probeID: score}
+                    else:
+                        if not ranks_map[symbol].has_key(probeID):
+                            ranks_map[symbol][probeID] = score
+                        else:
+                            self.printMessage("WARNING: Duplicate Identifier '%s' in rank file '%s'\n Check your Input!!!!\n" % (probeID, self.inputFileName))
+                else:
+                    self.printMessage("WARNING: Identifier '%s' not found in annotation file '%s'\n" % (probeID, self.chipFileName))
+                        
+        
+        # 2) make map from expressions: 
+        #    exprs_map = { "probeID_A1": "rest of line A1", 
+        #                  "probeID_A2": "rest of line A2", 
+        #                    ...
+        #                }
+        exprs_map = {}
+        exprs_header_lines = []
+
+        if expr_type == "GCT":
+            exprs_header_lines = expr_data[:3]
+            expr_data = expr_data[3:]
+        elif expr_type == "TXT":
+            exprs_header_lines = expr_data[:1]
+            expr_data = expr_data[1:]
+            
+        self.printMessage('processing expressions file...\n')
+        for expr_line in expr_data:
+            (probeID, descr, data) = expr_line.split("\t", 2)
+            if idSymbolMap.has_key(probeID):
+                if not exprs_map.has_key(probeID):
+                    exprs_map[probeID] = data
+                else:
+                    self.printMessage("WARNING: Duplicate Identifier '%s' in expressions file '%s'\n Check your Input!!!!\n" % (probeID, self.extra_expr_in))
+            else:
+                self.printMessage("WARNING: Identifier '%s' not found in annotations file '%s'\n" % (probeID, self.chipFileName))
+            
+            
+        
+        # 3) iterate over all symbols in ranks_map, 
+        #        iterate over probeID's
+        #            pick probeID with highest score
+        #            collect this probeID for rank file (and replace ID to symbol)
+        #            collect this probeID for expr file, replace ID to symbol, keep selected ID (and others) in descr. col.  
+        rank_data_lines = []
+        expr_data_lines = []
+        
+        for symbol in ranks_map.keys():
+            best_probeID = ""
+            best_score = 0.0
+
+            if len(ranks_map[symbol].keys()) > 1:
+                for probeID in ranks_map[symbol].keys():
+                    if abs(float(ranks_map[symbol][probeID])) > abs(best_score):
+                        best_probeID = probeID
+                        best_score = float(ranks_map[symbol][best_probeID])
+
+                rank_data_line = "\t".join([ symbol, ranks_map[symbol][probeID] ])
+                
+                probeIDs = ranks_map[symbol].keys()
+                probeIDs.remove(best_probeID)
+                probeIDs = best_probeID + " " + "(" + ", ".join(probeIDs) + ")"
+                expr_data_line = "\t".join([ symbol, probeIDs, exprs_map[best_probeID] ])
+            else:
+                probeID = ranks_map[symbol].keys()[0]
+                rank_data_line = "\t".join([ symbol, ranks_map[symbol][probeID] ])
+                expr_data_line = "\t".join([ symbol, probeID, exprs_map[probeID] ])
+                
+            rank_data_lines.append(rank_data_line)
+            expr_data_lines.append(expr_data_line)
+        
+        # restore header
+        rank_data_lines[:0] = rank_header_lines
+        if expr_type == "GCT":
+            # calculate new dimensions of collapsed expression table
+            exprs_header_lines[1] = "\t".join([str(len(expr_data_lines)), exprs_header_lines[1].split("\t")[1] ]) + '\n'
+        expr_data_lines[:0] = exprs_header_lines
+        print exprs_header_lines
+        
+        return (rank_data_lines, expr_data_lines)
+    
+    
     def main(self):
         "Main program function"
         try:
@@ -524,28 +632,57 @@ class CollapseExpressionMatrix:
                 os.rename(self.outputFileName, self.outputFileName + ".BAK")
             ##### END   FIX SESSION CODE #####
                 
-            (expr_file_lines, type) = self.read_inputFile(self.inputFileName)
-            
-            
-            if not self.chipFileName == "":
-                expr_file_lines = self.replace_IDs(expr_file_lines, idSymbolMap)
-            
-            if self.doCollapse == True:
-                expr_file_lines = self.collapse_data(expr_file_lines, type, mode=self.collapseMode)
+           
+            if self.extra_expr_in != '' and self.extra_expr_out != '' and self.chipFileName != '' and self.doCollapse :
+                # if all data is available collapse a rank and expression file together
+                (rank_data, rnk_type) = self.read_inputFile(self.inputFileName)
+                (expr_data, expr_type) = self.read_inputFile(self.extra_expr_in)
+
+                if not rnk_type == 'RNK':
+                    raise IOError, "ERROR: Wrong file type!\nInput file %s needs to be a ranked list (RNK) in this mode." % self.inputFileName
+                if not (expr_type == "GCT" or expr_type == "TXT"):
+                    raise IOError,  "ERROR: Wrong file type!\n" + \
+                                    "Additional input Expression-table %s needs to of type GCT or TXT but was identified as '%s'" % (self.extra_expr_in, expr_type)
                     
+
+                (rank_file_lines, expr_file_lines) = self.collapse_rank_and_expr( rank_data=rank_data, 
+                                                                                  expr_data=expr_data, 
+                                                                                  expr_type=expr_type, 
+                                                                                  idSymbolMap=idSymbolMap, 
+                                                                                  mode=self.collapseMode)
+                try:
+                    expr_outfile = file(self.extra_expr_out, "w")
+                    expr_outfile.writelines(expr_file_lines)
                     
-            # write expression data in output file
-            try:
-                outfile = file(self.outputFileName, "w")
-                outfile.writelines(expr_file_lines)
-            finally:
-                outfile.close()
-            self.printMessage("Done!")
+                    rank_outfile = file(self.outputFileName, "w")
+                    rank_outfile.writelines(rank_file_lines)
+                finally:
+                    expr_outfile.close()
+                    rank_outfile.close()
+            
+            else:
+                # Do it the old fashioned way
+                (expr_file_lines, type) = self.read_inputFile(self.inputFileName)
+                
+                if not self.chipFileName == "":
+                    expr_file_lines = self.replace_IDs(expr_file_lines, idSymbolMap)
+                
+                if self.doCollapse == True:
+                    expr_file_lines = self.collapse_data(expr_file_lines, type, mode=self.collapseMode)
+                   
+                # write expression data in output file
+                try:
+                    outfile = file(self.outputFileName, "w")
+                    outfile.writelines(expr_file_lines)
+                finally:
+                    outfile.close()
+
+            self.printMessage("Done!\n")
                 
         except IOError, text:
             print parser.get_usage()
             self.printMessage(text)
-            self.printMessage("exiting")
+            self.printMessage("exiting\n")
             sys.exit(1)
 
 
@@ -553,75 +690,92 @@ if __name__ == "__main__":
     from optparse import OptionParser, SUPPRESS_HELP
     import sys, os
     
-
     
     # Configure parser for command line options:
     __usage = "%prog [options] -i input.gct -o output.gct [-c platform.chip] [--collapse]"
     __description = "This tool can process a gene expression matrix (in GCT or TXT format) or ranked list (RNK format)\n" + \
                     "and either replace the Identifier based on a Chip Annotation file (e.g. AffyID -> Gene Symbol),\n" + \
                     "or collapse the expression values or rank-scores for Genes from more than one probe set.\n" + \
-                    "Both can be done in one step by using both '-c platform.chip' and '--collapse' at the same time." + \
+                    "Both can be done in one step by using both '-c platform.chip' and '--collapse' at the same time.\n" + \
+                    "If a ranked list is to be collapsed, an additional expression matrix can be supplied by the -e/-x parameters\n" + \
+                    "and will be filtered to contain the same probe-sets as selected from the RNK file.\n" + \
+                    "If however the file supplied by -i is not recognized as a RNK file, these options have no effect.\n" + \
+                    "\n" + \
                     "For detailed descriptions of the file formats, please refer to: http://www.broadinstitute.org/cancer/software/gsea/wiki/index.php/Data_formats \n\n" + \
                     "Call without any parameters to select the files and options with a GUI (Graphical User Interface)"
     parser = OptionParser(usage=__usage, description=__description, version="%prog " + __version__)
     parser.add_option("-i", "--input",
-                        dest="infile",
-    #                   default="",
-                        help="input expression table or ranked list\n",
-                        metavar="FILE")
+                      dest="infile",
+    #                 default="",
+                      help="input expression table or ranked list\n",
+                      metavar="FILE")
     parser.add_option("-o", "--output",
-                        dest="outfile",
-    #                   default="output.gct",
-                        help="output expression table or ranked list\n",
-                        metavar="FILE")
+                      dest="outfile",
+    #                 default="output.gct",
+                      help="output expression table or ranked list\n",
+                      metavar="FILE")
     parser.add_option("-c", "--chip",
-                        dest="chipfile",
-                        default='',
-                        help="Chip File\nThis implies that the Identifiers are to be replaced.",
-                        metavar="FILE")
+                      dest="chipfile",
+                      default='',
+                      help="Chip File\nThis implies that the Identifiers are to be replaced.",
+                      metavar="FILE")
+    
+    parser.add_option("-e", "--ei",
+                      dest="expr_in",
+                      default='',
+                      help="(optional) additional input Expression-table, to be restricted to the same probe-sets as the RNK file",
+                      metavar="FILE"
+                      )
+    parser.add_option("-x", "--xo",
+                      dest="expr_out",
+                      default='',
+                      help="(optional) corresponding output file for -i/--ei option",
+                      metavar="FILE"
+                      )
     
     parser.add_option("--collapse",
-                        dest="collapse",
-                        default=False,
-                        help="Collapse multiple probe sets for the same gene symbol (max_probe)\n",
-                        action="store_true",
-                        )
+                      dest="collapse",
+                      default=False,
+                      help="Collapse multiple probe sets for the same gene symbol (max_probe)\n",
+                      action="store_true",
+                      )
     parser.add_option("--no-collapse",
-                        dest="collapse",
-                        help="Don't collapse multiple probesets\n[default]\n",
-                        action="store_false",
-                        )
+                      dest="collapse",
+                      help="Don't collapse multiple probesets\n[default]\n",
+                      action="store_false",
+                      )
     parser.add_option("-m", "--collapse-mode",
-                        dest="mode",
-                        default="max_probe",
-                        type="choice",
-                        choices=("max_probe", "median_of_probes"),
-#                        help="Mode for collapsing data from multiple probe sets for the same gene symbol. Currently only 'max_probe' is supported.",
-                        help=SUPPRESS_HELP
-                        )
+                      dest="mode",
+                      default="max_probe",
+                      type="choice",
+                      choices=("max_probe", "median_of_probes"),
+#                     help="Mode for collapsing data from multiple probe sets for the same gene symbol. Currently only 'max_probe' is supported.",
+                      help=SUPPRESS_HELP
+                      )
     
     parser.add_option("-g", "--gui",
-                        dest="useGui",
-                        action="store_true",
-                        default=False,
-                        help="Open a Window to choose the files and options.",
-                        )
+                      dest="useGui",
+                      action="store_true",
+                      default=False,
+                      help="Open a Window to choose the files and options.",
+                      )
     parser.add_option("-q", "--quiet",
-                        dest="verbose",
-                        default=True,
-                        help="be quiet\n",
-                        action="store_false",
-                        )
+                      dest="verbose",
+                      default=True,
+                      help="be quiet\n",
+                      action="store_false",
+                      )
     parser.add_option("--cys",
-                        dest="fix_session",
-                        default=False,
-                        help=SUPPRESS_HELP, #"write out shorter GCT format (only one header line)\n",
-                        action="store_true",
-                        )
+                      dest="fix_session",
+                      default=False,
+                      help=SUPPRESS_HELP, #"write out shorter GCT format (only one header line)\n",
+                      action="store_true",
+                      )
     
     
     (options, args) = parser.parse_args()
 
+    # decide if we start the GUI or use the command line
     useGui = (not options.infile and
               not options.outfile and 
               not options.chipfile and 
@@ -649,12 +803,19 @@ if __name__ == "__main__":
     #    if not (options.chipfile or options.fix_session):
     #        parser.error("chip-file required")
         if not options.chipfile == "" and not os.path.isfile(options.chipfile):
-            parser.error("chip-file does not exist")
-        
+            parser.error("Chip-file does not exist.")
+        if not options.expr_in == "" and not os.path.isfile(options.expr_in):
+            parser.error("Expression-file (--ei) does not exist.")
+        if not options.expr_in == "" and options.expr_out == "":
+            parser.error("If additional expression input file (--ei) is given, a corresponding output file (--xo) is required, too.")
+        if (options.expr_in != "" and options.expr_out != "") and not (options.chipfile != "" and options.collapse == True):
+            parser.error("Filtering of additional expression table (--ei/--xo) requires specifying both --chip and --collapse")
         
         collapser = CollapseExpressionMatrix(inputFileName=options.infile,
                                              outputFileName=options.outfile,
                                              chipFileName=options.chipfile,
+                                             extra_expr_in=options.expr_in,
+                                             extra_expr_out=options.expr_out,
                                              doCollapse=options.collapse,
                                              collapseMode=options.mode,
                                              verbose=options.verbose,
