@@ -191,7 +191,7 @@
 		<property file="build.number" />
 
 		<!-- get svn version -->
-		<exec executable="svnversion" outputproperty="svn.revision" failifexecutionfails="false">
+		<exec executable="svnversion" outputproperty="svn.revision" failifexecutionfails="false" errorproperty="">
 			<arg value="${module.enrichment_map.basedir}" />
 		</exec>
 
