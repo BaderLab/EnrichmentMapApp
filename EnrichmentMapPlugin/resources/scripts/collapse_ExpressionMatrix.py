@@ -57,21 +57,27 @@ from Tkinter import *
 import tkFileDialog, tkSimpleDialog, tkMessageBox
 class ReplaceCollapseGui(Frame):
     
-    def __init__(self, master=None):
+    def __init__(self, master=None, version="0.001"):
         Frame.__init__(self, master)
-        self.master.title("collapse Expression Matrix")
+        self.master.title("collapse Expression Matrix" + " v" + version)
         self.grid(sticky=N + S + E + W)
+        self.version = version
         self.createWidgets()
         
+        
     def createWidgets(self):
+        self.exprOrRankFileSelectorFrameText = StringVar(value="Expression Matrix or Ranked List:")
         self.inputFileName = StringVar()
         self.outputFileName = StringVar()
         self.chipFileName = StringVar()
         self.doCollapse = IntVar()
         self.doIdReplace = IntVar()
         self.messages = StringVar()
+        self.addExprInFileName = StringVar()
+        self.addExprOutFileName = StringVar()
+        self.collapseRankAndExpr = IntVar()
         
-        self.messages.set("Messages:" + " " * 90 + "\n")
+        self.messages.set("")
         self.debug = False
         
         top = self.winfo_toplevel()
@@ -86,74 +92,137 @@ class ReplaceCollapseGui(Frame):
 
         self.config(relief=GROOVE)
 
-        # File selector: Input File
+        # Basic Mode selectors (RadioButtons)
         currentRow = 0
-        infileLabel = Label(self, text='Input File:')
-        infileLabel.grid(row=currentRow, column=0, sticky=W)
+        radioBoxFrame = LabelFrame(self, text="Mode:")
+        radioBoxFrame.columnconfigure(0, weight=0)
+        radioBoxFrame.columnconfigure(1, weight=6)
+        radioBoxFrame.columnconfigure(2, weight=0)
+        radioBoxFrame.grid(row=currentRow, columnspan=3, sticky=E + W, ipadx=2, ipady=1, padx=2, pady=2)
         
-        infileBox = Entry(self, textvariable=self.inputFileName, width=40)
-        infileBox.grid(row=currentRow, column=1, sticky=E + W)
+        radioRankOrEpr = Radiobutton(radioBoxFrame, text="ExpressionMatrix or Ranked List", variable=self.collapseRankAndExpr, value=0, command=self.modeRadioButtonPressed)
+        radioRankOrEpr.grid(row=0, column=0, sticky=W)
+        radioRankAndEpr = Radiobutton(radioBoxFrame, text="Ranked List with Expression Matrix", variable=self.collapseRankAndExpr, value=1, command=self.modeRadioButtonPressed)
+        radioRankAndEpr.grid(row=1, column=0, sticky=W)
 
-        infileButton = Button(self, text="Browse", command=self.chooseInputFile)
-        infileButton.grid(row=currentRow, column=2, sticky=E)
+        # primary File Selectors Frame:
+        currentRow += 1
+        primaryFileSelectorsFrame = LabelFrame(self, relief=GROOVE, labelwidget=Label(self, textvariable=self.exprOrRankFileSelectorFrameText))
+        primaryFileSelectorsFrame.columnconfigure(0, weight=0)
+        primaryFileSelectorsFrame.columnconfigure(1, weight=6)
+        primaryFileSelectorsFrame.columnconfigure(2, weight=0)
+        primaryFileSelectorsFrame.grid(row=currentRow, columnspan=3, sticky=E + W, ipadx=2, ipady=1, padx=2, pady=2)
+        
+        # File selector: Input File
+        infileLabel = Label(primaryFileSelectorsFrame, text='Input File:')
+        infileLabel.grid(row=0, column=0, sticky=W)
+        infileBox = Entry(primaryFileSelectorsFrame, textvariable=self.inputFileName, width=40)
+        infileBox.grid(row=0, column=1, sticky=E + W)
+        infileButton = Button(primaryFileSelectorsFrame, text="Browse", command=self.chooseInputFile)
+        infileButton.grid(row=0, column=2, sticky=E)
 
         # File selector: Output File
         currentRow += 1
-        outfileLabel = Label(self, text='Output File:')
-        outfileLabel.grid(row=currentRow, column=0, sticky=W)
-        
-        outfileBox = Entry(self, textvariable=self.outputFileName, width=40)
-        outfileBox.grid(row=currentRow, column=1, sticky=E + W)
+        outfileLabel = Label(primaryFileSelectorsFrame, text='Output File:')
+        outfileLabel.grid(row=1, column=0, sticky=W)
+        outfileBox = Entry(primaryFileSelectorsFrame, textvariable=self.outputFileName, width=40)
+        outfileBox.grid(row=1, column=1, sticky=E + W)
+        outfileButton = Button(primaryFileSelectorsFrame, text="Browse", command=self.chooseOutputFile)
+        outfileButton.grid(row=1, column=2, sticky=E)
 
-        outfileButton = Button(self, text="Browse", command=self.chooseOutputFile)
-        outfileButton.grid(row=currentRow, column=2, sticky=E)
 
         #The Checkbuttons
         currentRow += 1
-        checkbuttonFrame = Frame(self)
-        checkbuttonFrame.grid(row=currentRow, columnspan=3, sticky=E + W)
-        doCollapseCheck = Checkbutton(checkbuttonFrame, text='Collapse Probesets', variable=self.doCollapse)
-        doCollapseCheck.grid(row=0, column=0, sticky=E)
 
-        doReplaceCheck = Checkbutton(checkbuttonFrame, text='Translate IDs', variable=self.doIdReplace, command=self.doReplaceButtonPressed)
-        doReplaceCheck.grid(row=0, column=1, sticky=W)
+        checkbuttonFrame = LabelFrame(self, relief=GROOVE, labelanchor='nw', text="Modes for single file:")
+        checkbuttonFrame.grid(row=currentRow, column=0, columnspan=3, sticky=E + W, padx=2, pady=2)
+        self.doCollapseCheck = Checkbutton(checkbuttonFrame, text='Collapse Probesets', variable=self.doCollapse)
+        self.doCollapseCheck.select()
+        self.doCollapseCheck.grid(row=0, column=0, sticky=E)
+
+        self.doReplaceCheck = Checkbutton(checkbuttonFrame, text='Translate IDs', variable=self.doIdReplace, command=self.doReplaceButtonPressed)
+        self.doReplaceCheck.select()
+        self.doReplaceCheck.grid(row=0, column=1, sticky=W)
+
+        # Additional file selectors:
+        currentRow += 1
+        secondaryFileSelectorsFrame = LabelFrame(self, relief=GROOVE, labelanchor='nw', text="Expression-file to be collapsed by probesets:")
+        secondaryFileSelectorsFrame.columnconfigure(0, weight=0)
+        secondaryFileSelectorsFrame.columnconfigure(1, weight=6)
+        secondaryFileSelectorsFrame.columnconfigure(2, weight=0)
+        secondaryFileSelectorsFrame.grid(row=currentRow, columnspan=3, sticky=E + W, ipadx=2, ipady=1, padx=2, pady=2)
+         
+        #File Selector: additional Expression Input File
+        addExprInFileLabel = Label(secondaryFileSelectorsFrame, text='Input File:')
+        addExprInFileLabel.grid(row=0, column=0, sticky=W)
+        self.addExprInFileBox = Entry(secondaryFileSelectorsFrame, textvariable=self.addExprInFileName, width=40, disabledbackground='#CCCCCC', state=DISABLED) 
+        self.addExprInFileBox.grid(row=0, column=1, sticky=E + W)
+        self.addExprInFileButton = Button(secondaryFileSelectorsFrame, text="Browse", state=DISABLED, command=self.chooseAddExprInputFile)
+        self.addExprInFileButton.grid(row=0, column=3, sticky=E)
         
+        #File Selector: additional Expression Output File
+        addExprOutFileLabel = Label(secondaryFileSelectorsFrame, text='Output File:')
+        addExprOutFileLabel.grid(row=1, column=0, sticky=W)
+        self.addExprOutFileBox = Entry(secondaryFileSelectorsFrame, textvariable=self.addExprOutFileName, width=40, disabledbackground='#CCCCCC', state=DISABLED) 
+        self.addExprOutFileBox.grid(row=1, column=1, sticky=E + W)
+        self.addExprOutFileButton = Button(secondaryFileSelectorsFrame, text="Browse", state=DISABLED, command=self.chooseAddExprOutputFile)
+        self.addExprOutFileButton.grid(row=1, column=3, sticky=E)
+
 
         # File selector: Chip-Annotation File
         currentRow += 1
         chipfileLabel = Label(self, text='Chip File:')
         chipfileLabel.grid(row=currentRow, column=0, sticky=W)
         
-        self.chipfileBox = Entry(self, textvariable=self.chipFileName, width=40, disabledbackground='#CCCCCC', state=DISABLED)
+        self.chipfileBox = Entry(self, textvariable=self.chipFileName, width=40, disabledbackground='#CCCCCC')
         self.chipfileBox.grid(row=currentRow, column=1, sticky=E + W)
 
         self.chipfileButton = Button(self, text="Browse", command=self.chooseChipFile, state=DISABLED)
         self.chipfileButton.grid(row=currentRow, column=2, sticky=E)
+        if self.doIdReplace.get() == 0:
+            self.chipfileBox.configure(state=DISABLED)
+            self.chipfileButton.configure(state=DISABLED)
+        else:
+            self.chipfileBox.configure(state=NORMAL)
+            self.chipfileButton.configure(state=NORMAL)
+        
 
         # Control Buttons
         currentRow += 1
         controlButtonFrame = Frame(self)
         controlButtonFrame.grid(row=currentRow, columnspan=3, sticky=E + W)
+        versionLabel = Label(controlButtonFrame, text="Version: " + self.version)
+        versionLabel.grid(row=0, column=0, padx=10, sticky=W)
+
         self.quitButton = Button (controlButtonFrame, text='Quit', command=self.quit)
-        self.quitButton.grid(row=0, column=0, padx=10, sticky=W)
+        self.quitButton.grid(row=0, column=1, padx=10, sticky=W)
 
         self.clearButton = Button (controlButtonFrame, text='Clear', command=self.clear)
-        self.clearButton.grid(row=0, column=1, padx=10)
+        self.clearButton.grid(row=0, column=2, padx=10, sticky=E)
 
         self.runButton = Button(controlButtonFrame, text="Run", command=self.run)
-        self.runButton.grid(row=0, column=2, padx=10, sticky=E)
+        self.runButton.grid(row=0, column=3, padx=10, sticky=E)
         
         # Message Box
         currentRow += 1
-        self.messageBox = Message(self, textvariable=self.messages, width=425, relief=RIDGE, justify=LEFT)
-        self.messageBox.grid(row=currentRow, column=0, columnspan=3, sticky=N + S + E + W, padx=5, pady=5)
-        self.rowconfigure(currentRow, minsize=115)
+        self.rowconfigure(currentRow, minsize=200)
+        messageBoxBorder = LabelFrame(self, relief=RIDGE, height=150, width=425, text="Messages:")
+        messageBoxBorder.columnconfigure(0, weight=0)
+        messageBoxBorder.columnconfigure(1, weight=6)
+        messageBoxBorder.columnconfigure(2, weight=0)
+        messageBoxBorder.grid(row=currentRow, column=0, columnspan=3, sticky=N + S + E + W, padx=5, pady=5)
+        self.messageBox = Message(messageBoxBorder, textvariable=self.messages, justify=LEFT, width=415, aspect=150)
+        self.messageBox.rowconfigure(0, minsize=200)
+        self.messageBox.columnconfigure(0, weight=0)
+        self.messageBox.columnconfigure(1, weight=6)
+        self.messageBox.columnconfigure(2, weight=0)
+        self.messageBox.grid(row=0, columnspan=3, sticky=NW)
         
     def writeMessage(self, messageText):
         textLines = self.messages.get().splitlines()
         textLines.append(messageText)
-        if len(textLines) > 5:
-            textLines = textLines[-5:]
+        if len(textLines) > 10:
+            textLines = textLines[-10:]
         
         newText = "\n".join(textLines) 
         self.messages.set(newText)
@@ -168,27 +237,48 @@ class ReplaceCollapseGui(Frame):
         # calculate position x, y
         x = (ws / 2) - (w / 2)
         y = (hs / 2) - (h / 2)
+        x = 50
+        y = 50
         root.geometry('%dx%d+%d+%d' % (w, h, x, y))
         
     def clear(self):
         self.inputFileName.set("")
         self.outputFileName.set("")
         self.chipFileName.set("")
+        self.addExprInFileName.set("")
+        self.addExprOutFileName.set("")
+        self.collapseRankAndExpr.set(0)
+        self.modeRadioButtonPressed()
         
     def chooseInputFile(self):
+        if self.collapseRankAndExpr.get() == 0:
+            filetypes = [("Supported Files (GCT, TXT, RNK)", "*.gct"),
+                         ("Supported Files (GCT, TXT, RNK)", "*.txt"),
+                         ("Supported Files (GCT, TXT, RNK)", "*.rnk"),
+                         ("Supported Files (GCT, TXT, RNK)", "*.GCT"),
+                         ("Supported Files (GCT, TXT, RNK)", "*.TXT"),
+                         ("Supported Files (GCT, TXT, RNK)", "*.RNK")]
+        else:
+            filetypes = [("Ranked List (RNK)", "*.rnk"),
+                         ("Ranked List (RNK)", "*.RNK")]
         filename = tkFileDialog.askopenfilename(title="Choose Input Expression Matrix or Rank file",
-                                                filetypes=[("Supported Files (GCT, TXT, RNK)", "*.gct"),
-                                                           ("Supported Files (GCT, TXT, RNK)", "*.txt"),
-                                                           ("Supported Files (GCT, TXT, RNK)", "*.rnk"),
-                                                           ("Supported Files (GCT, TXT, RNK)", "*.GCT"),
-                                                           ("Supported Files (GCT, TXT, RNK)", "*.TXT"),
-                                                           ("Supported Files (GCT, TXT, RNK)", "*.RNK")])
+                                                filetypes=filetypes)
         self.inputFileName.set(filename)
         
         if self.debug:
             self.writeMessage("selected Input File Name: %s " % filename)
 
     def chooseOutputFile(self):
+        if self.collapseRankAndExpr.get() == 0:
+            filetypes = [("Supported Files (GCT, TXT, RNK)", "*.gct"),
+                         ("Supported Files (GCT, TXT, RNK)", "*.txt"),
+                         ("Supported Files (GCT, TXT, RNK)", "*.rnk"),
+                         ("Supported Files (GCT, TXT, RNK)", "*.GCT"),
+                         ("Supported Files (GCT, TXT, RNK)", "*.TXT"),
+                         ("Supported Files (GCT, TXT, RNK)", "*.RNK")]
+        else:
+            filetypes = [("Ranked List (RNK)", "*.rnk"),
+                         ("Ranked List (RNK)", "*.RNK")]
         def_file = ""
         def_ext = ".TXT"
         if not self.inputFileName.get() == "":
@@ -198,18 +288,45 @@ class ReplaceCollapseGui(Frame):
             def_file = tokens[0] + "_collapsed" + "." + tokens[-1]
         
         filename = tkFileDialog.asksaveasfilename(title="Choose Output File",
-                                                  filetypes=[("Supported Files (GCT, TXT, RNK)", "*.gct"),
-                                                           ("Supported Files (GCT, TXT, RNK)", "*.txt"),
-                                                           ("Supported Files (GCT, TXT, RNK)", "*.rnk"),
-                                                           ("Supported Files (GCT, TXT, RNK)", "*.GCT"),
-                                                           ("Supported Files (GCT, TXT, RNK)", "*.TXT"),
-                                                           ("Supported Files (GCT, TXT, RNK)", "*.RNK")],
+                                                  filetypes=filetypes,
                                                   defaultextension=def_ext,
                                                   initialfile=def_file,
                                                   initialdir=inputFileDir)
         self.outputFileName.set(filename)
         if self.debug:
             self.writeMessage("selected Output File Name: %s " % filename)
+
+    def chooseAddExprInputFile(self):
+        filename = tkFileDialog.askopenfilename(title="Choose Additional Input Expression Matrix file",
+                                                filetypes=[("Supported Files (GCT, TXT)", "*.gct"),
+                                                           ("Supported Files (GCT, TXT)", "*.txt"),
+                                                           ("Supported Files (GCT, TXT)", "*.GCT"),
+                                                           ("Supported Files (GCT, TXT)", "*.TXT") ])
+        self.addExprInFileName.set(filename)
+        
+        if self.debug:
+            self.writeMessage("selected Input Expression File Name: %s " % filename)
+
+    def chooseAddExprOutputFile(self):
+        def_file = ""
+        def_ext = ".TXT"
+        if not self.addExprInFileName.get() == "":
+            (inputFileDir, addExprInFileName) = os.path.split(self.addExprInFileName.get())
+            tokens = addExprInFileName.rsplit(".", 1)
+            def_ext = "." + tokens[-1]
+            def_file = tokens[0] + "_collapsed" + "." + tokens[-1]
+        
+        filename = tkFileDialog.asksaveasfilename(title="Choose Output Expression Marix File",
+                                                  filetypes=[("Supported Files (GCT, TXT)", "*.gct"),
+                                                           ("Supported Files (GCT, TXT)", "*.txt"),
+                                                           ("Supported Files (GCT, TXT)", "*.GCT"),
+                                                           ("Supported Files (GCT, TXT)", "*.TXT")],
+                                                  defaultextension=def_ext,
+                                                  initialfile=def_file,
+                                                  initialdir=inputFileDir)
+        self.addExprOutFileName.set(filename)
+        if self.debug:
+            self.writeMessage("selected Output Expression File Name: %s " % filename)
 
     def chooseChipFile(self):
         filename = tkFileDialog.askopenfilename(title="Choose Chip Annotation file",
@@ -226,9 +343,44 @@ class ReplaceCollapseGui(Frame):
         else:
             self.chipfileBox.configure(state=DISABLED)
             self.chipfileButton.configure(state=DISABLED)
+            
+    def modeRadioButtonPressed(self):
+        if self.collapseRankAndExpr.get() == 1:
+            #Change some text:
+            self.exprOrRankFileSelectorFrameText.set('Ranked List:')
+            #Enable some widgets
+            self.addExprInFileBox.configure(state=NORMAL)
+            self.addExprInFileButton.configure(state=NORMAL)
+            self.addExprOutFileBox.configure(state=NORMAL)
+            self.addExprOutFileButton.configure(state=NORMAL)
+            self.chipfileBox.configure(state=NORMAL)
+            self.chipfileButton.configure(state=NORMAL)
+            #Disable some other widgets
+            self.doCollapseCheck.configure(state=DISABLED)
+            self.doReplaceCheck.configure(state=DISABLED)
+            pass
+        else:
+            #Change some text:
+            self.exprOrRankFileSelectorFrameText.set('Expression Matrix or Ranked List:')
+            #Disable some widgets
+            self.addExprInFileBox.configure(state=DISABLED)
+            self.addExprInFileButton.configure(state=DISABLED)
+            self.addExprOutFileBox.configure(state=DISABLED)
+            self.addExprOutFileButton.configure(state=DISABLED)
+            #Enable some other widgets
+            self.doCollapseCheck.configure(state=NORMAL)
+            self.doReplaceCheck.configure(state=NORMAL)
+            #revert state of widgets to previous state
+            if self.doIdReplace.get() == 1:
+                self.chipfileBox.configure(state=NORMAL)
+                self.chipfileButton.configure(state=NORMAL)
+            else:
+                self.chipfileBox.configure(state=DISABLED)
+                self.chipfileButton.configure(state=DISABLED)
 
     def checkInput(self):
         self.inputOK = True
+        
         if self.inputFileName.get() == "":
             self.inputOK = False
             tkMessageBox.showerror(title="Input Error", message="Input-file required", icon=tkMessageBox.ERROR)
@@ -244,15 +396,28 @@ class ReplaceCollapseGui(Frame):
         else:
             outputFileName = self.outputFileName.get()
 
-        if self.doIdReplace == 1:
+        if self.doIdReplace.get() == 1 or self.collapseRankAndExpr.get() == 1:
             if self.chipFileName.get() == "":
                 self.inputOK = False
                 tkMessageBox.showerror(title="Input Error", message="Chip-file required", icon=tkMessageBox.ERROR)
-            elif not os.path.isfile(chipFileName.get()):
+            elif not os.path.isfile(self.chipFileName.get()):
                 self.inputOK = False
                 tkMessageBox.showerror(title="Input Error", message="Chip-file does not exist", icon=tkMessageBox.ERROR)
             else:
                 chipFileName = self.chipFileName.get()
+
+        if self.collapseRankAndExpr.get() == 1:
+            if self.addExprInFileName.get() == "":
+                self.inputOK = False
+                tkMessageBox.showerror(title="Input Error", message="Expression Matrix Input-file required", icon=tkMessageBox.ERROR)
+            elif not os.path.isfile(self.addExprInFileName.get()):
+                self.inputOK = False
+                tkMessageBox.showerror(title="Input Error", message="Expression Matrix Input-file does not exist", icon=tkMessageBox.ERROR)
+            
+            if self.addExprOutFileName.get() == "":
+                self.inputOK = False
+                tkMessageBox.showerror(title="Input Error", message="Expression Matrix Output-file required", icon=tkMessageBox.ERROR)
+                
 
         return self.inputOK
 
@@ -268,17 +433,31 @@ class ReplaceCollapseGui(Frame):
                 print "Chip File:   %s" % self.chipFileName.get()
                 print "Do Collapse: %i" % self.doCollapse.get()
                 print "Do Replace:  %i" % self.doIdReplace.get()
-            collapser = CollapseExpressionMatrix(inputFileName=self.inputFileName.get(),
-                                                 outputFileName=self.outputFileName.get(),
-                                                 chipFileName=self.chipFileName.get(),
-                                                 doCollapse=(self.doCollapse.get() == 1),
-                                                 collapseMode='max_probe',
-                                                 verbose=True,
-                                                 fix_session=False,
-                                                 gui=self)
+                
+            if self.collapseRankAndExpr.get() == 0:
+                collapser = CollapseExpressionMatrix(inputFileName=self.inputFileName.get(),
+                                                     outputFileName=self.outputFileName.get(),
+                                                     chipFileName=self.chipFileName.get(),
+                                                     doCollapse=(self.doCollapse.get() == 1),
+                                                     collapseMode='max_probe',
+                                                     verbose=True,
+                                                     fix_session=False,
+                                                     gui=self)
+            else:
+                collapser = CollapseExpressionMatrix(inputFileName=self.inputFileName.get(),
+                                                     outputFileName=self.outputFileName.get(),
+                                                     chipFileName=self.chipFileName.get(),
+                                                     extra_expr_in=self.addExprInFileName.get(),
+                                                     extra_expr_out=self.addExprOutFileName.get(),
+                                                     doCollapse=True,
+                                                     collapseMode='max_probe',
+                                                     verbose=True,
+                                                     fix_session=False,
+                                                     gui=self)
+                
             collapser.main()
             tkMessageBox.showinfo(title="Done", message="Done. Check Message-Box for status.")
-            self.quit()
+#            self.quit()
 
 class CollapseExpressionMatrix:
     def __init__(self,
@@ -604,7 +783,6 @@ class CollapseExpressionMatrix:
             # calculate new dimensions of collapsed expression table
             exprs_header_lines[1] = "\t".join([str(len(expr_data_lines)), exprs_header_lines[1].split("\t")[1] ]) + '\n'
         expr_data_lines[:0] = exprs_header_lines
-        print exprs_header_lines
         
         return (rank_data_lines, expr_data_lines)
     
@@ -641,14 +819,14 @@ class CollapseExpressionMatrix:
                 if not rnk_type == 'RNK':
                     raise IOError, "ERROR: Wrong file type!\nInput file %s needs to be a ranked list (RNK) in this mode." % self.inputFileName
                 if not (expr_type == "GCT" or expr_type == "TXT"):
-                    raise IOError,  "ERROR: Wrong file type!\n" + \
+                    raise IOError, "ERROR: Wrong file type!\n" + \
                                     "Additional input Expression-table %s needs to of type GCT or TXT but was identified as '%s'" % (self.extra_expr_in, expr_type)
                     
 
-                (rank_file_lines, expr_file_lines) = self.collapse_rank_and_expr( rank_data=rank_data, 
-                                                                                  expr_data=expr_data, 
-                                                                                  expr_type=expr_type, 
-                                                                                  idSymbolMap=idSymbolMap, 
+                (rank_file_lines, expr_file_lines) = self.collapse_rank_and_expr(rank_data=rank_data,
+                                                                                  expr_data=expr_data,
+                                                                                  expr_type=expr_type,
+                                                                                  idSymbolMap=idSymbolMap,
                                                                                   mode=self.collapseMode)
                 try:
                     expr_outfile = file(self.extra_expr_out, "w")
@@ -782,11 +960,11 @@ if __name__ == "__main__":
               not options.collapse) or options.useGui
     
     if useGui:
-        theGui = ReplaceCollapseGui()
+        theGui = ReplaceCollapseGui(version=__version__)
 #        theGui.master.title("Sample application")
-        theGui.master.minsize(width=450, height=255)
+        theGui.master.minsize(width=450, height=550)
         theGui.master.lift()
-        theGui.center_window(w=450, h=255)
+        theGui.center_window(w=450, h=550)
         
         theGui.mainloop()
 
