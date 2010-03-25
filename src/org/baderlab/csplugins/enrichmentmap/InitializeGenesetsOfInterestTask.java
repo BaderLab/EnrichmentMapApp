@@ -196,10 +196,8 @@ public class InitializeGenesetsOfInterestTask implements Task {
                                 GeneSet current_set = (GeneSet)genesets.get(current_name);
                                 genesetsOfInterest.put(current_name, current_set);
                             }
-                            else{
-                                System.out.println(current_name);
-                                throw new IllegalThreadStateException("GMT file and GSEA Results file Do not match up.");
-                            }
+                            else
+                                throw new IllegalThreadStateException("The Geneset: " + current_name + " is not found in the GMT file.");
                         }
                     }
                 }
@@ -216,10 +214,8 @@ public class InitializeGenesetsOfInterestTask implements Task {
                             GeneSet current_set = (GeneSet)genesets.get(current_name);
                             genesetsOfInterest.put(current_name, current_set);
                         }
-                        else{
-                            System.out.println(current_name);
-                            throw new IllegalThreadStateException("GMT file and Results file Do not match up.");
-                        }
+                        else
+                            throw new IllegalThreadStateException("The Geneset: " + current_name + " is not found in the GMT file.");
 
                     }
                 }
@@ -258,8 +254,7 @@ public class InitializeGenesetsOfInterestTask implements Task {
                                  genesetsOfInterest.put(current_name, current_set);
                            }
                            else{
-                               System.out.println(current_name);
-                               throw new IllegalThreadStateException("GMT file and GSEA Results file Do not match up.");
+                               throw new IllegalThreadStateException("The Geneset: " + current_name + " is not found in the GMT file.");
                            }
                         }
                             //update the current geneset to reflect score at max
@@ -326,11 +321,8 @@ public class InitializeGenesetsOfInterestTask implements Task {
                                 GeneSet current_set = (GeneSet)genesets.get(current_name);
                                 genesetsOfInterest.put(current_name, current_set);
                            }
-                           else{
-                               System.out.println(current_name);
-                               //taskMonitor.setException(new IllegalThreadStateException("GMT file and Results file Do not match up."),"wrong GMT");
-                               throw new IllegalThreadStateException("GMT file and Results file Do not match up.");
-                           }
+                           else
+                               throw new IllegalThreadStateException("The Geneset: " + current_name + " is not found in the GMT file.");
                        }
                    }
 

@@ -204,7 +204,7 @@ public class BuildEnrichmentMapTask implements Task {
             taskMonitor.setException(e,"Out of Memory. Please increase memory allotement for cytoscape.");
             return;
         }catch(IllegalThreadStateException e){
-            taskMonitor.setException(e,"Genesets defined in the results \nfile are not found in  gene set file (GMT).\n  Please make sure you are using the correct GMT file.");
+            taskMonitor.setException(e,"Genesets defined in the Enrichment results file are not found in  gene set file (GMT).  (Click \"Show Error details\" to see which genesets is not found)Please make sure you are using the correct GMT file.");
             return;
         }
 
