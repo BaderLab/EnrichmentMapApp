@@ -206,6 +206,9 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
             //geneset file for PostAnalysis Signature Genesets
             File siggmt = new File(tmpDir, name+".signature.gmt"); 
 
+            File ranks1geneids;
+            File ranks2geneids;
+
             //write out files.
             try {
                 BufferedWriter writer = new BufferedWriter(new FileWriter(session_prop_file));
@@ -244,6 +247,13 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
                 subenr1writer.close();
                 pFileList.add(enrichmentresults1Ofinterest);
 
+                //output the ranks specific to GSEA for leading edge analysis rank to gene conversion file
+                ranks1geneids = new File(tmpDir, name+".RANKS1Genes.txt");
+                BufferedWriter r2g12writer = new BufferedWriter(new FileWriter(ranks1geneids));
+                r2g12writer.write(params.printHashmap(params.getRank2geneDataset1()));
+                r2g12writer.close();
+                pFileList.add(ranks1geneids);
+
                 //save all the rank files
                 if(!params.getRanks().isEmpty()){
                     HashMap<String, HashMap<Integer, Ranking>> all_ranks = params.getRanks();
@@ -275,6 +285,12 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
                     subenr2writer.close();
                     pFileList.add(enrichmentresults2Ofinterest);
 
+                    //output the ranks specific to GSEA for leading edge analysis rank to gene conversion file
+                    ranks2geneids = new File(tmpDir, name+".RANKS2Genes.txt");
+                    BufferedWriter r2g22writer = new BufferedWriter(new FileWriter(ranks2geneids));
+                    r2g22writer.write(params.printHashmap(params.getRank2geneDataset2()));
+                    r2g22writer.close();
+                    pFileList.add(ranks2geneids);
                 }
 
                 if(params.isData()){
@@ -410,6 +426,10 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
                     if(prop_file.getName().contains(".RANKS1.txt")){
                         params.setDataset1Rankings(params.repopulateHashmap(fullText,6));
                     }
+                    //create file to deal with GSEA ranks for leading edge analysis.
+                    if(prop_file.getName().contains(".RANKS1Genes.txt")){
+                        params.setRank2geneDataset1(params.repopulateHashmap(fullText,7));
+                    }
                     if(prop_file.getName().contains(".RANKS.txt")){
                         //we need to get the name of this set of rankings
                         // network_name.ranking_name.ranks.txt --> split by "." and get 2
@@ -437,10 +457,17 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
                             else
                                 params.setEnrichmentResults2OfInterest(params.repopulateHashmap(fullText,4));
                         }
+                        //create file to deal with GSEA ranks for leading edge analysis.
+                        if(prop_file.getName().contains(".RANKS2Genes.txt")){
+                            params.setRank2geneDataset2(params.repopulateHashmap(fullText,7));
+                        }
+                        //have to keep this method just in case old session files have ranks saved in this way
+                        //it would only happen for sessions saved with version 0.8
+                        if(prop_file.getName().contains(".RANKS2.txt")){
+                            params.setDataset2Rankings(params.repopulateHashmap(fullText,6));
+                        }
                     }
-                    if(prop_file.getName().contains(".RANKS2.txt")){
-                        params.setDataset2Rankings(params.repopulateHashmap(fullText,6));
-                    }
+
                 }
 
             }
