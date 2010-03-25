@@ -378,6 +378,9 @@ public class HeatMapParameters {
              else
                 arrow.setIcon(iconArrow[Descending]);
 
+            edgeOverlapPanel.clearPanel();
+            nodeOverlapPanel.clearPanel();
+
             edgeOverlapPanel.updatePanel();
             nodeOverlapPanel.updatePanel();
 
@@ -523,6 +526,10 @@ public class HeatMapParameters {
 
     public void flipAscending(int index){
         ascending[index] = !ascending[index];
+
+        //reset the panel
+        edgeOverlapPanel.updatePanel();
+        nodeOverlapPanel.updatePanel();
     }
 
 }

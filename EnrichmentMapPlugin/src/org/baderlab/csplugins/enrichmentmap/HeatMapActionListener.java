@@ -166,8 +166,10 @@ public class HeatMapActionListener implements ActionListener {
        else if(select.equalsIgnoreCase(HeatMapParameters.sort_none)){
            hmParams.setSort(HeatMapParameters.Sort.NONE);
            hmParams.setSortIndex(-1);
+           hmParams.setRankFileIndex("");
        }
        else if(select.contains(HeatMapParameters.sort_column)){
+           hmParams.setRankFileIndex("");
            hmParams.setSort(HeatMapParameters.Sort.COLUMN);
            if(hmParams.isSortbycolumn_event_triggered()){
                     //reset sort column trigger

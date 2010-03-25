@@ -183,6 +183,8 @@ public class EnrichmentResultFileReaderTask implements Task {
                 double pvalue = 1.0;
                 double FDRqvalue = 1.0;
                 double FWERqvalue = 1.0;
+                int rankAtMax = -1;
+                double scoreAtMax = -1;
 
                 //The first column of the file is the name of the geneset
                 String Name = tokens[0].toUpperCase().trim();
@@ -227,7 +229,13 @@ public class EnrichmentResultFileReaderTask implements Task {
                 }else{
                     FWERqvalue = Double.parseDouble(tokens[8]);
                 }
-                GSEAResult result = new GSEAResult(Name, size, ES, NES,pvalue,FDRqvalue,FWERqvalue);
+                //the tenth column is the rankatmax
+                if(tokens[8].equalsIgnoreCase("")){
+                    //do nothing
+                }else{
+                    rankAtMax = Integer.parseInt(tokens[9]);
+                }
+                GSEAResult result = new GSEAResult(Name, size, ES, NES,pvalue,FDRqvalue,FWERqvalue,rankAtMax,scoreAtMax);
 
 
                 // Calculate Percentage.  This must be a value between 0..100.

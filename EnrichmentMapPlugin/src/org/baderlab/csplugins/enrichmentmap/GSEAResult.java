@@ -68,6 +68,10 @@ public class GSEAResult extends EnrichmentResult{
     private double fdrqvalue;
     //family wise error rate (fwer) q-value
     private double fwerqvalue;
+    //the rank (off by two) of the gene that is at the apex of ES score calculation
+    private int rankAtMax;
+    //translate the rank at max to the corresponding score at the max
+    private double scoreAtMax;
 
     /**
      * Class Constructor
@@ -80,7 +84,7 @@ public class GSEAResult extends EnrichmentResult{
      * @param fdrqvalue
      * @param fwerqvalue
      */
-    public GSEAResult(String name, int size, double ES, double NES, double pvalue, double fdrqvalue, double fwerqvalue) {
+    public GSEAResult(String name, int size, double ES, double NES, double pvalue, double fdrqvalue, double fwerqvalue, int rankAtMax, double scoreAtMax) {
         Name = name;
         this.gsSize = size;
         this.ES = ES;
@@ -88,6 +92,8 @@ public class GSEAResult extends EnrichmentResult{
         this.pvalue = pvalue;
         this.fdrqvalue = fdrqvalue;
         this.fwerqvalue = fwerqvalue;
+        this.rankAtMax = rankAtMax;
+        this.scoreAtMax = scoreAtMax;
     }
 
     /**
@@ -96,8 +102,11 @@ public class GSEAResult extends EnrichmentResult{
      * @param tokens - tokenized line from a GSEA results file
      */
     public GSEAResult(String[] tokens){
-       if(tokens.length != 8)
-        return;
+
+        //old session files will be missing rankatmax and scoreatmax
+        if(tokens.length != 8)
+            if(tokens.length != 10)
+                return;
 
         this.Name = tokens[1];
         this.gsSize = Integer.parseInt(tokens[2]);
@@ -106,6 +115,15 @@ public class GSEAResult extends EnrichmentResult{
         this.pvalue = Double.parseDouble(tokens[5]);
         this.fdrqvalue = Double.parseDouble(tokens[6]);
         this.fwerqvalue = Double.parseDouble(tokens[7]);
+
+        if(tokens.length == 10){
+            this.rankAtMax = Integer.parseInt(tokens[8]);
+            this.scoreAtMax = Double.parseDouble(tokens[9]);
+        }
+        else{
+            this.rankAtMax = -1;
+            this.scoreAtMax = -1;
+        }
     }
 
     /**
@@ -182,8 +200,25 @@ public class GSEAResult extends EnrichmentResult{
         this.fwerqvalue = fwerqvalue;
     }
 
+    public int getRankAtMax() {
+        return rankAtMax;
+    }
+
+    public void setRankAtMax(int rankAtMax) {
+        this.rankAtMax = rankAtMax;
+    }
+
+    public double getScoreAtMax() {
+        return scoreAtMax;
+    }
+
+    public void setScoreAtMax(double scoreAtMax) {
+        this.scoreAtMax = scoreAtMax;
+    }
+
     public String toString(){
 
-        return Name + "\t" + gsSize + "\t" + ES + "\t" + NES +"\t"+pvalue + "\t" + fdrqvalue + "\t" + fwerqvalue;
+        return Name + "\t" + gsSize + "\t" + ES + "\t" + NES +"\t"+pvalue + "\t" + fdrqvalue + "\t" + fwerqvalue + "\t"
+                + rankAtMax + "\t" + scoreAtMax ;
     }
 }
