@@ -186,6 +186,9 @@ public class EnrichmentMapParameters {
     private HashMap<Integer, Ranking> dataset1Rankings;
     private HashMap<Integer, Ranking> dataset2Rankings;
 
+     private HashMap<Integer, Integer> rank2geneDataset1;
+    private HashMap<Integer, Integer> rank2geneDataset2;
+
     //Set of Rankings - (HashMap of Hashmaps)
     //Stores the dataset rank files if they were loaded on input but also has
     //the capability of storing more rank files
@@ -557,6 +560,9 @@ public class EnrichmentMapParameters {
         this.hmParams = copy.getHmParams();
         this.attributePrefix = copy.getAttributePrefix();
         this.enrichment_edge_type = copy.getEnrichment_edge_type();
+
+       this.rank2geneDataset1 = copy.getRank2geneDataset1();
+       this.rank2geneDataset2 = copy.getRank2geneDataset2();
        }
 
    /**
@@ -813,6 +819,9 @@ public class EnrichmentMapParameters {
         //Hashmap gene key to ranking
         else if(type == 6)
             newMap = new HashMap<Integer, Ranking>();
+        //Hashmap rank to genekey
+        else if(type ==7)
+            newMap = new HashMap<Integer, Integer>();
         else
             newMap = new HashMap();
 
@@ -860,6 +869,10 @@ public class EnrichmentMapParameters {
             //Rankings
             if(type == 6)
                 newMap.put(Integer.parseInt(tokens[0]),new Ranking(tokens));
+
+            //rank to gene id
+            if(type == 7)
+                newMap.put(Integer.parseInt(tokens[0]), Integer.parseInt(tokens[1]));
 
         }
 
@@ -1291,6 +1304,22 @@ public class EnrichmentMapParameters {
         //also add the ranking file to the set of ranks
         if(this.ranks != null)
             this.ranks.put("Dataset 2 Ranking", this.dataset2Rankings);
+    }
+
+    public HashMap<Integer, Integer> getRank2geneDataset1() {
+        return rank2geneDataset1;
+    }
+
+    public void setRank2geneDataset1(HashMap<Integer, Integer> rank2geneDataset1) {
+        this.rank2geneDataset1 = rank2geneDataset1;
+    }
+
+    public HashMap<Integer, Integer> getRank2geneDataset2() {
+        return rank2geneDataset2;
+    }
+
+    public void setRank2geneDataset2(HashMap<Integer, Integer> rank2geneDataset2) {
+        this.rank2geneDataset2 = rank2geneDataset2;
     }
 
     public String getOverlapMetricDefault() {

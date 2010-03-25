@@ -50,8 +50,7 @@ import cytoscape.Cytoscape;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
-import javax.swing.table.TableColumnModel;
-import javax.swing.table.JTableHeader;
+import javax.swing.table.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.*;
@@ -134,6 +133,13 @@ public class HeatMapPanel extends JPanel {
     //for the linkout properties that are loaded from cytoscape properties.
     private Map<String, Map<String, String>> linkoutProps;
 
+    //for displaying leading edge
+    private boolean displayLeadingEdge = false;
+    private double leadingEdgeScoreAtMax1 = 0;
+    private double leadingEdgeScoreAtMax2 = 0;
+    private int leadingEdgeRankAtMax1 = 0;
+    private int leadingEdgeRankAtMax2 = 0;
+
     /**
      * Class constructor - creates new instance of a Heat map panel
      *
@@ -172,6 +178,12 @@ public class HeatMapPanel extends JPanel {
 
         //boolean[] temp = new boolean[columnNames.length + params.getRanks().size()];
         hmParams.setAscending(new boolean[columnNames.length + params.getRanks().size()]);
+
+        displayLeadingEdge = false;
+        leadingEdgeScoreAtMax1 = 0.0;
+        leadingEdgeScoreAtMax2 = 0.0;
+        leadingEdgeRankAtMax1 = 0;
+        leadingEdgeRankAtMax2 = 0;
 
         //get the current expressionSet
         if(node)
@@ -252,6 +264,8 @@ public class HeatMapPanel extends JPanel {
 
             }
 
+            CellHighlightRenderer highlightCellRenderer = new CellHighlightRenderer();
+
             sort = new TableSort(OGT);
             jTable1 = new JTable(sort);
 
@@ -281,9 +295,18 @@ public class HeatMapPanel extends JPanel {
 
           //Set up renderer and editor for the Color column.
             jTable1.setDefaultRenderer(Color.class,new ColorRenderer());
+            jTable1.setDefaultRenderer(String.class, highlightCellRenderer);
+
+            //even though the renderer takes into account what to do with significantGene type
+            //it is very important to define the renderer for the type specifically as the JTable
+            //makes the assumption that the type of the first object in the table is the same for the rest
+            //of the column and if it is a Significant gene it will default a general object renderer to the
+            //whole column
+            jTable1.setDefaultRenderer(SignificantGene.class, highlightCellRenderer);
             TableColumnModel tcModel = jTable1.getColumnModel();
             jTable1.setDragEnabled(false);
             jTable1.setCellSelectionEnabled(true);
+
 
             //set the table header renderer to the vertical renderer
             ColumnHeaderVerticalRenderer pheno1_renderer = new ColumnHeaderVerticalRenderer();
@@ -358,7 +381,7 @@ public class HeatMapPanel extends JPanel {
             jTable1.setColumnModel(tcModel);
             JScrollPane jScrollPane = new javax.swing.JScrollPane(jTable1);
             rowTable =new RowNumberTable(jTable1);
-            jScrollPane.setRowHeaderView(rowTable );
+            jScrollPane.setRowHeaderView(rowTable);
 
             if(columnNames.length>20)
                 jTable1.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
@@ -451,6 +474,15 @@ public class HeatMapPanel extends JPanel {
 
         HashMap<Integer, Ranking> ranks = getRanks();
 
+        //if the ranks are the GSEA ranks and the leading edge is activated then we need to highlight
+        //genes in the leading edge
+        int topRank = getTopRank();
+        boolean isNegative = false;
+        if(hmParams.getRankFileIndex().equalsIgnoreCase("Dataset 1 Ranking"))
+            isNegative = isNegativeGS(1);
+        else if(hmParams.getRankFileIndex().equalsIgnoreCase("Dataset 2 Ranking"))
+            isNegative = isNegativeGS(2);
+
         int n = 0;
         for(Iterator i = currentExpressionSet.keySet().iterator();i.hasNext();){
             Integer key = (Integer)i.next();
@@ -486,6 +518,7 @@ public class HeatMapPanel extends JPanel {
 
         int k = 0;
         int previous = -1;
+        boolean significant_gene = false;
 
         for(int m = 0 ; m < ranks_subset.length;m++){
              //if the current gene doesn't have a rank then don't show it
@@ -496,6 +529,13 @@ public class HeatMapPanel extends JPanel {
                continue;
 
             previous = ranks_subset[m];
+
+            significant_gene = false;
+
+            if(ranks_subset[m] <= topRank && !isNegative && topRank != 0 && topRank != -1)
+                significant_gene = true;
+            else if(ranks_subset[m] >= topRank && isNegative && topRank != 0 && topRank != -1)
+                significant_gene = true;
 
             ArrayList keys = rank2keys.get(ranks_subset[m]);
 
@@ -508,13 +548,26 @@ public class HeatMapPanel extends JPanel {
 
                 // stores the gene names in column 0
                 try{ // stores file name if the file contains integer (inserted to aid sorting)
-                    expValue[k][0]=Integer.parseInt(row.getName());
+                    if(significant_gene)
+                        //cast the gene name as Significant gene type significant gene list
+                        //significantGenes.add(row.getName());
+                        expValue[k][0]= new SignificantGene(Integer.parseInt(row.getName()));
+                    else
+                        expValue[k][0]=Integer.parseInt(row.getName());
                 }
                 catch (NumberFormatException v){   // if not integer stores as string (inserted to aid sorting)
-                    expValue[k][0]=row.getName();
+                    if(significant_gene)
+                        //cast the gene name as Significant gene type significant gene list
+                        //significantGenes.add(row.getName());
+                        expValue[k][0]= new SignificantGene(row.getName());
+                    else
+                        expValue[k][0]=row.getName();
+
+
                 }
 
-                expValue[k][1]=row.getDescription(); // stores the description
+
+                expValue[k][1]=row.getDescription();
 
                 rowLength[k]=row.getExpression().length;
                 rowTheme[k]=hmParams.getTheme();
@@ -556,6 +609,16 @@ public class HeatMapPanel extends JPanel {
 
         HashMap<Integer, Ranking> ranks = getRanks();
 
+        //if the ranks are the GSEA ranks and the leading edge is activated then we need to highlight
+        //genes in the leading edge
+        int topRank = getTopRank();
+        boolean isNegative = false;
+        if(hmParams.getRankFileIndex().equalsIgnoreCase("Dataset 1 Ranking"))
+            isNegative = isNegativeGS(1);
+        else if(hmParams.getRankFileIndex().equalsIgnoreCase("Dataset 2 Ranking"))
+            isNegative = isNegativeGS(2);
+
+
         int n = 0;
         for(Iterator i = currentExpressionSet.keySet().iterator();i.hasNext();){
             Integer key = (Integer)i.next();
@@ -594,6 +657,7 @@ public class HeatMapPanel extends JPanel {
 
         int k = 0;
         int previous = -1;
+         boolean significant_gene = false;
 
         for(int m = 0 ; m < ranks_subset.length;m++){
             //if the current gene doesn't have a rank then don't show it
@@ -604,6 +668,13 @@ public class HeatMapPanel extends JPanel {
                 continue;
 
             previous = ranks_subset[m];
+
+            significant_gene = false;
+
+            if(ranks_subset[m] <= topRank && !isNegative && topRank != 0 && topRank != -1)
+                significant_gene = true;
+            else if(ranks_subset[m] >= topRank && isNegative && topRank != 0 && topRank != -1)
+                significant_gene = true;
 
             ArrayList keys = rank2keys.get(ranks_subset[m]);
 
@@ -621,20 +692,44 @@ public class HeatMapPanel extends JPanel {
 
                 //Get the name and the description of the row
                 if(halfRow1 != null){
-                    try{
-                        expValue[k][0] = Integer.parseInt(halfRow1.getName());
+                     // stores the gene names in column 0
+                    try{ // stores file name if the file contains integer (inserted to aid sorting)
+                        if(significant_gene)
+                            //cast the gene name as Significant gene type significant gene list
+                            //significantGenes.add(row.getName());
+                            expValue[k][0]= new SignificantGene(Integer.parseInt(halfRow1.getName()));
+
+                        else
+                            expValue[k][0]=Integer.parseInt(halfRow1.getName());
                     }
-                    catch (NumberFormatException e){
-                        expValue[k][0]= halfRow1.getName();
+                    catch (NumberFormatException v){   // if not integer stores as string (inserted to aid sorting)
+                        if(significant_gene)
+                            //cast the gene name as Significant gene type significant gene list
+                            //significantGenes.add(row.getName());
+                            expValue[k][0]= new SignificantGene(halfRow1.getName());
+                        else
+                            expValue[k][0]=halfRow1.getName();
                     }
                     expValue[k][1]= halfRow1.getDescription();
                 }
                 else if(halfRow2 != null){
-                    try{
-                        expValue[k][0]= Integer.parseInt(halfRow2.getName());
+                        // stores the gene names in column 0
+                    try{ // stores file name if the file contains integer (inserted to aid sorting)
+                        if(significant_gene)
+                            //cast the gene name as Significant gene type significant gene list
+                            //significantGenes.add(row.getName());
+                            expValue[k][0]= new SignificantGene(Integer.parseInt(halfRow2.getName()));
+
+                        else
+                            expValue[k][0]=Integer.parseInt(halfRow2.getName());
                     }
-                    catch (NumberFormatException e){
-                        expValue[k][0]= halfRow2.getName();
+                    catch (NumberFormatException v){   // if not integer stores as string (inserted to aid sorting)
+                        if(significant_gene)
+                            //cast the gene name as Significant gene type significant gene list
+                            //significantGenes.add(row.getName());
+                            expValue[k][0]= new SignificantGene(halfRow2.getName());
+                        else
+                            expValue[k][0]=halfRow2.getName();
                     }
                     expValue[k][1]= halfRow2.getDescription();
                 }
@@ -850,6 +945,7 @@ public class HeatMapPanel extends JPanel {
 
         //go through the nodes only if there are some
         if(nodes.length > 0){
+
             HashSet<Integer> union = new HashSet<Integer>();
 
             for (Object node1 : nodes) {
@@ -857,6 +953,26 @@ public class HeatMapPanel extends JPanel {
                 Node current_node = (Node) node1;
                 String nodename = current_node.getIdentifier();
                 GeneSet current_geneset = genesets.get(nodename);
+
+                //if only one node is selected activate leading edge potential
+                if(nodes.length == 1){
+                    displayLeadingEdge = true;
+                    if(params.isGSEA()){
+
+                        HashMap<String, EnrichmentResult> results1 = params.getEnrichmentResults1();
+                        if(results1.containsKey(nodename)){
+                            GSEAResult current_result = (GSEAResult) results1.get(nodename);
+                            leadingEdgeScoreAtMax1 = current_result.getScoreAtMax();
+                            leadingEdgeRankAtMax1 = current_result.getRankAtMax();
+                        }
+                        HashMap<String, EnrichmentResult> results2 = params.getEnrichmentResults2();
+                        if(results2.containsKey(nodename)){
+                            GSEAResult current_result = (GSEAResult) results2.get(nodename);
+                            leadingEdgeScoreAtMax2 = current_result.getScoreAtMax();
+                            leadingEdgeRankAtMax2 = current_result.getRankAtMax();
+                        }
+                    }
+                }
                 if (current_geneset == null)
                     continue;
 
@@ -1175,6 +1291,45 @@ public class HeatMapPanel extends JPanel {
 			}
 		}
 
+    }
+
+    private int getTopRank(){
+        int topRank = 0;
+        if(displayLeadingEdge){
+            //get the rank under (or over) which everything should be higlighted
+            if(hmParams.getRankFileIndex().equalsIgnoreCase("Dataset 1 Ranking")){
+                topRank = leadingEdgeRankAtMax1;
+                if(leadingEdgeScoreAtMax1 > 0)
+                    //because of the GSEA ranks are off slightly buffer the cutoff depending on whether the geneset
+                    //is up or down regulated in order to get all genes in leading edge
+                    topRank = topRank + 3;
+            }
+            else if(hmParams.getRankFileIndex().equalsIgnoreCase("Dataset 2 Ranking")){
+                topRank = leadingEdgeRankAtMax2;
+                if(leadingEdgeScoreAtMax2 > 0)
+                    //because of the GSEA ranks are off slightly buffer the cutoff depending on whether the geneset
+                    //is up or down regulated in order to get all genes in leading edge
+                    topRank = topRank + 3;
+            }
+        }
+        return topRank;
+    }
+
+    private boolean isNegativeGS(int dataset){
+        boolean isNegative = false;
+
+        if(dataset == 1){
+                if(leadingEdgeScoreAtMax1 < 0)
+                    isNegative = true;
+                else
+                    isNegative = false;
+        }else if (dataset == 2){
+                if(leadingEdgeScoreAtMax2 < 0)
+                    isNegative = true;
+                else
+                    isNegative = false;
+        }
+        return isNegative;
     }
 
     //Getters and Setters

@@ -47,6 +47,8 @@ import cytoscape.task.TaskMonitor;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Set;
+import java.util.Collections;
 
 /**
  * Created by
@@ -104,6 +106,12 @@ public class InitializeGenesetsOfInterestTask implements Task {
             HashMap enrichmentResults2OfInterest = params.getEnrichmentResults2OfInterest();
             HashMap genesetsOfInterest = params.getGenesetsOfInterest();
 
+            //get the rank files so we can translate ranks to scores for GSEA leading edge analysis
+            HashMap<Integer, Ranking> dataset1ranks = params.getRanksByName("Dataset 1 Ranking");
+            HashMap<Integer, Ranking> dataset2ranks = params.getRanksByName("Dataset 2 Ranking");
+            HashMap<Integer, Integer> rank2geneDataset1 = params.getRank2geneDataset1();
+            HashMap<Integer, Integer> rank2geneDataset2 = params.getRank2geneDataset2();
+
 
             int currentProgress = 0;
             int maxValue = enrichmentResults1.size() + enrichmentResults2.size();
@@ -129,18 +137,69 @@ public class InitializeGenesetsOfInterestTask implements Task {
                 if(params.isGSEA()){
                     GSEAResult current_result = (GSEAResult)enrichmentResults1.get(current_name);
 
-                    if(current_result.geneSetOfInterest(params.getPvalue(),params.getQvalue())){
-                        enrichmentResults1OfInterest.put(current_name,current_result);
+                    //update the current geneset to reflect score at max
+                    if((dataset1ranks != null) && (rank2geneDataset1 != null)){
+                    //get the max at rank for this geneset
+                    int currentRankAtMax = current_result.getRankAtMax();
+                    if(currentRankAtMax != -1){
+                        //check the ES score.  If it is negative we need to adjust the
+                        //rank to count from the end of the list
+                        double NES = current_result.getNES();
+                        int genekey = -1;
+                        //what gene corresponds to that rank
+                        if(NES < 0 ){
+                            //it is possible that some of the proteins in the rank list won't be rank 2gene
+                            //conversion because some of the genes might not be in the genesets
+                            //so the size of the list can't be used to trace up from the bottaom of the
+                            //ranks.  Instead we need to get the max rank used.
+                            Set<Integer> allranks = rank2geneDataset1.keySet();
+                            Integer largestRank = Collections.max(allranks);
+                            currentRankAtMax = largestRank - currentRankAtMax;
 
-                        //check to see that the geneset in the results file is in the geneset talbe
-                        //if it isn't then the user has given two files that don't match up
-                        if(genesets.containsKey(current_name)){
-                            GeneSet current_set = (GeneSet)genesets.get(current_name);
-                            genesetsOfInterest.put(current_name, current_set);
-                        }
-                        else{
-                            System.out.println(current_name);
-                            throw new IllegalThreadStateException("GMT file and GSEA Results file Do not match up.");
+                            //reset the rank at max to reflect that it is counted from the bottom of the list.
+                            current_result.setRankAtMax(currentRankAtMax);
+                        }//check to see if this rank is in the conversion map
+                         if(rank2geneDataset1.containsKey(currentRankAtMax))
+                            genekey = rank2geneDataset1.get(currentRankAtMax);
+                         else{
+                            //if is possible that the gene associated with the max is not found in
+                            //our gene 2 rank conversions because the rank by GSEA are off by 1 or two
+                            //indexes (maybe a bug on their side).
+                            //so depending on the NES score we need to fiddle with the rank to find the
+                            //next protein that is the actual gene they are referring to
+
+                            while (genekey == -1 && (currentRankAtMax <= rank2geneDataset1.keySet().size() && currentRankAtMax > 0)){
+                                if(NES < 0 )
+                                    currentRankAtMax = currentRankAtMax + 1;
+                                else
+                                    currentRankAtMax = currentRankAtMax - 1;
+                                if(rank2geneDataset1.containsKey(currentRankAtMax))
+                                    genekey = rank2geneDataset1.get(currentRankAtMax);
+                            }
+                         }
+
+                         if(genekey > -1){
+                            //what is the score for that gene
+                            double scoreAtMax = dataset1ranks.get(genekey).getScore();
+
+                            current_result.setScoreAtMax(scoreAtMax);
+
+                            //update the score At max in the EnrichmentResults as welle
+                         }
+                     }
+                    if(current_result.geneSetOfInterest(params.getPvalue(),params.getQvalue())){
+                            enrichmentResults1OfInterest.put(current_name,current_result);
+
+                            //check to see that the geneset in the results file is in the geneset talbe
+                            //if it isn't then the user has given two files that don't match up
+                            if(genesets.containsKey(current_name)){
+                                GeneSet current_set = (GeneSet)genesets.get(current_name);
+                                genesetsOfInterest.put(current_name, current_set);
+                            }
+                            else{
+                                System.out.println(current_name);
+                                throw new IllegalThreadStateException("GMT file and GSEA Results file Do not match up.");
+                            }
                         }
                     }
                 }
@@ -161,6 +220,7 @@ public class InitializeGenesetsOfInterestTask implements Task {
                             System.out.println(current_name);
                             throw new IllegalThreadStateException("GMT file and Results file Do not match up.");
                         }
+
                     }
                 }
 
@@ -201,6 +261,56 @@ public class InitializeGenesetsOfInterestTask implements Task {
                                System.out.println(current_name);
                                throw new IllegalThreadStateException("GMT file and GSEA Results file Do not match up.");
                            }
+                        }
+                            //update the current geneset to reflect score at max
+                            if((dataset2ranks != null) && (rank2geneDataset2 != null)){
+                                //get the max at rank for this geneset
+                                int currentRankAtMax = current_result.getRankAtMax();
+                                if(currentRankAtMax != -1){
+                                    //check the ES score.  If it is negative we need to adjust the
+                                    //rank to count from the end of the list
+                                    double NES = current_result.getNES();
+                                    int genekey = -1;
+                                    //what gene corresponds to that rank
+                                    if(NES < 0 ){
+                                        //it is possible that some of the proteins in the rank list won't be rank 2gene
+                                        //conversion because some of the genes might not be in the genesets
+                                        //so the size of the list can't be used to trace up from the bottaom of the
+                                        //ranks.  Instead we need to get the max rank used.
+                                        Set<Integer> allranks = rank2geneDataset2.keySet();
+                                        Integer largestRank = Collections.max(allranks);
+                                        currentRankAtMax = largestRank - currentRankAtMax;
+                                        //reset the rank at max to reflect that it is counted from the bottom of the list.
+                                        current_result.setRankAtMax(currentRankAtMax);
+                                    }
+                                    //check to see if this rank is in the conversion map
+                                    if(rank2geneDataset2.containsKey(currentRankAtMax))
+                                        genekey = rank2geneDataset2.get(currentRankAtMax);
+                                    else{                                        //if is possible that the gene associated with the max is not found in
+                                        //our gene 2 rank conversions because the rank by GSEA are off by 1 or two
+                                        //indexes (maybe a bug on their side).
+                                        //so depending on the NES score we need to fiddle with the rank to find the
+                                        //next protein that is the actual gene they are referring to
+
+                                        while (genekey == -1 && (currentRankAtMax <= rank2geneDataset2.keySet().size() && currentRankAtMax > 0)){
+                                            if(NES < 0 )
+                                                currentRankAtMax = currentRankAtMax + 1;
+                                            else
+                                                currentRankAtMax = currentRankAtMax - 1;
+                                            if(rank2geneDataset2.containsKey(currentRankAtMax))
+                                                genekey = rank2geneDataset2.get(currentRankAtMax);
+                                        }
+                                    }
+
+                                     if(genekey > -1){
+                                        //what is the score for that gene
+                                        double scoreAtMax = dataset2ranks.get(genekey).getScore();
+
+                                        current_result.setScoreAtMax(scoreAtMax);
+                                    }
+                                }
+
+
                        }
                     }
                     //otherwise it is a generic enrichment set
