@@ -103,6 +103,9 @@ public class EnrichmentMapVisualStyle {
 
     public static String NUMBER_OF_ENRICHMENT_GENES = "# of Enrichment Genes";
     
+    public static String NETW_REPORT1_DIR = "GSEA_Report_Dataset1_folder";
+    public static String NETW_REPORT2_DIR = "GSEA_Report_Dataset2_folder";
+    
     //default colours
     public static Color max_phenotype1 = new Color(255,0,0);
     public static Color lighter_phenotype1 = new Color(255,102,102);

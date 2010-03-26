@@ -55,6 +55,7 @@ import cytoscape.view.CyNetworkView;
 import cytoscape.view.CytoscapeDesktop;
 import cytoscape.view.cytopanels.CytoPanel;
 
+import java.io.File;
 import java.util.*;
 
 import giny.model.Node;
@@ -139,8 +140,8 @@ public class VisualizeEnrichmentMapTask implements Task {
                 int num_networks = 1;
                 int max_prefix = 0;
                 EnrichmentMapManager manager = EnrichmentMapManager.getInstance();
-                for(Iterator i = networks.iterator(); i.hasNext();){
-                    CyNetwork current_network = (CyNetwork)i.next();
+                for(Iterator<CyNetwork> i = networks.iterator(); i.hasNext();){
+                    CyNetwork current_network = i.next();
                     String networkId = current_network.getIdentifier();
                     if( manager.isEnrichmentMap(networkId) ) {//fails
                         num_networks++;
@@ -159,13 +160,44 @@ public class VisualizeEnrichmentMapTask implements Task {
                 network = Cytoscape.createNetwork(prefix + mapName);
             }
 
+            // store path to GSEA report in Network Attribute
+            if (params.isGSEA()) {
+                CyAttributes networkAttributes = Cytoscape
+                        .getNetworkAttributes();
+                if (params.getGseaHtmlReportFileDataset1() != null) {
+                    String report1Path = params.getGseaHtmlReportFileDataset1();
+                    // On Windows we need to replace the Back-Slashes by forward-Slashes.
+                    // Otherwise we might produce special characters (\r, \n, \t, ...) 
+                    // when editing the attribute in Cytoscape.
+                    // Anyway Windows supports slashes as separator in all NT based versions 
+                    // (NT4, 2000, XP, Vista and newer)
+                    report1Path = report1Path.replaceAll("\\", "/"); 
+                    report1Path = report1Path.substring(0, report1Path.lastIndexOf('/') );
+                    networkAttributes.setAttribute(network.getIdentifier(),
+                            EnrichmentMapVisualStyle.NETW_REPORT1_DIR,
+                            report1Path);
+                }
+                if (params.getGseaHtmlReportFileDataset2() != null) {
+                    String report2Path = params.getGseaHtmlReportFileDataset1();
+                    // On Windows we need to replace the Back-Slashes by forward-Slashes.
+                    // Otherwise we might produce special characters (\r, \n, \t, ...) 
+                    // when editing the attribute in Cytoscape.
+                    // Anyway Windows supports slashes as separator in all NT based versions 
+                    // (NT4, 2000, XP, Vista and newer)
+                    report2Path = report2Path.replaceAll("\\", "/");
+                    report2Path = report2Path.substring(0, report2Path.lastIndexOf('/') );
+                    networkAttributes.setAttribute(network.getIdentifier(),
+                            EnrichmentMapVisualStyle.NETW_REPORT2_DIR,
+                            report2Path);
+                }
+            }
 
-            HashMap enrichmentResults1OfInterest = params.getEnrichmentResults1OfInterest();
-            HashMap enrichmentResults2OfInterest = params.getEnrichmentResults2OfInterest();
-            HashMap enrichmentResults1 = params.getEnrichmentResults1();
-            HashMap enrichmentResults2 = params.getEnrichmentResults2();
+            HashMap<String, EnrichmentResult> enrichmentResults1OfInterest = params.getEnrichmentResults1OfInterest();
+            HashMap<String, EnrichmentResult> enrichmentResults2OfInterest = params.getEnrichmentResults2OfInterest();
+            HashMap<String, EnrichmentResult> enrichmentResults1 = params.getEnrichmentResults1();
+            HashMap<String, EnrichmentResult> enrichmentResults2 = params.getEnrichmentResults2();
 
-            HashMap genesetsOfInterest = params.getGenesetsOfInterest();
+            HashMap<String, GeneSet> genesetsOfInterest = params.getGenesetsOfInterest();
 
             int currentProgress = 0;
             int maxValue = enrichmentResults1OfInterest.size();
@@ -179,8 +211,8 @@ public class VisualizeEnrichmentMapTask implements Task {
             //we resolve this?
 
             //iterate through the each of the GSEA Results of interest
-            for(Iterator i = enrichmentResults1OfInterest.keySet().iterator(); i.hasNext(); ){
-                String current_name =i.next().toString();
+            for(Iterator<String> i = enrichmentResults1OfInterest.keySet().iterator(); i.hasNext(); ){
+                String current_name =i.next();
 
 
                 Node node = Cytoscape.getCyNode(current_name,true);
@@ -195,10 +227,10 @@ public class VisualizeEnrichmentMapTask implements Task {
                 //create an attribute that stores the genes that are associated with this node as an attribute list
                 //only create the list if the hashkey 2 genes is not null Otherwise it take too much time to populate the list
                 if(params.getHashkey2gene() != null){
-                    List gene_list = new ArrayList();
-                    HashSet genes_hash = gs.getGenes();
-                    for(Iterator j=genes_hash.iterator(); j.hasNext();){
-                        Integer current = (Integer)j.next();
+                    List<String> gene_list = new ArrayList<String>();
+                    HashSet<Integer> genes_hash = gs.getGenes();
+                    for(Iterator<Integer> j=genes_hash.iterator(); j.hasNext();){
+                        Integer current = j.next();
                         String gene = params.getGeneFromHashKey(current);
                         if(gene_list != null)
                             gene_list.add(gene);
@@ -253,8 +285,8 @@ public class VisualizeEnrichmentMapTask implements Task {
 
             //Add any additional nodes from the second dataset that haven't been added yet
             if(params.isTwoDatasets()){
-                for(Iterator i = enrichmentResults2OfInterest.keySet().iterator(); i.hasNext(); ){
-                    String current_name =i.next().toString();
+                for(Iterator<String> i = enrichmentResults2OfInterest.keySet().iterator(); i.hasNext(); ){
+                    String current_name =i.next();
 
                     //is this already a node from the first subset
                     if(enrichmentResults1OfInterest.containsKey(current_name)){
@@ -273,10 +305,10 @@ public class VisualizeEnrichmentMapTask implements Task {
                         //create an attribute that stores the genes that are associated with this node as an attribute list
                         //only create the list if the hashkey 2 genes is not null Otherwise it take too much time to populate the list
                         if(params.getHashkey2gene() != null){
-                            List gene_list = new ArrayList();
-                            HashSet genes_hash = gs.getGenes();
-                            for(Iterator j=genes_hash.iterator(); j.hasNext();){
-                                Integer current = (Integer)j.next();
+                            List<String> gene_list = new ArrayList<String>();
+                            HashSet<Integer> genes_hash = gs.getGenes();
+                            for(Iterator<Integer> j=genes_hash.iterator(); j.hasNext();){
+                                Integer current = j.next();
                                 String gene = params.getGeneFromHashKey(current);
                                 if(gene_list != null)
                                     gene_list.add(gene);
@@ -308,9 +340,9 @@ public class VisualizeEnrichmentMapTask implements Task {
             }
             int k = 0;
             //iterate through the similarities to create the edges
-            for(Iterator j = geneset_similarities.keySet().iterator(); j.hasNext(); ){
+            for(Iterator<String> j = geneset_similarities.keySet().iterator(); j.hasNext(); ){
                 String current_name =j.next().toString();
-                GenesetSimilarity current_result = (GenesetSimilarity) geneset_similarities.get(current_name);
+                GenesetSimilarity current_result = geneset_similarities.get(current_name);
 
                 //only create edges where the jaccard coefficient to great than
                 if(current_result.getSimilarity_coeffecient()>params.getSimilarityCutOff()){
@@ -329,10 +361,10 @@ public class VisualizeEnrichmentMapTask implements Task {
                     //create an attribute that stores the genes that are associated with this edge as an attribute list
                     //only create the list if the hashkey 2 genes is not null Otherwise it take too much time to populate the list
                     if(params.getHashkey2gene() != null){
-                        List gene_list = new ArrayList();
-                        HashSet genes_hash = current_result.getOverlapping_genes();
-                        for(Iterator i=genes_hash.iterator(); i.hasNext();){
-                            Integer current = (Integer)i.next();
+                        List<String> gene_list = new ArrayList<String>();
+                        HashSet<Integer> genes_hash = current_result.getOverlapping_genes();
+                        for(Iterator<Integer> i=genes_hash.iterator(); i.hasNext();){
+                            Integer current = i.next();
                             String gene = params.getGeneFromHashKey(current);
                             if(gene_list != null)
                                 gene_list.add(gene);
@@ -387,6 +419,10 @@ public class VisualizeEnrichmentMapTask implements Task {
             final CytoPanel cytoSidePanel = desktop.getCytoPanel(SwingConstants.EAST);
             cytoSidePanel.setSelectedIndex(cytoSidePanel.indexOfComponent(parametersPanel));
 
+            //set focus to EnrichmentMapInputPanel (otherwise it is reverted to the Editor)
+            EnrichmentMapInputPanel emInputPanel = EMmanager.getInputWindow();
+            final CytoPanel cytoControlPanel = desktop.getCytoPanel(SwingConstants.WEST);
+            cytoControlPanel.setSelectedIndex(cytoControlPanel.indexOfComponent(emInputPanel));
 
             //add the click on node/edge listener
             view.addGraphViewChangeListener(new EnrichmentMapActionListener(params));
