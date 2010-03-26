@@ -765,7 +765,7 @@ class CollapseExpressionMatrix:
                         best_probeID = probeID
                         best_score = float(ranks_map[symbol][best_probeID])
 
-                rank_data_line = "\t".join([ symbol, ranks_map[symbol][probeID] ])
+                rank_data_line = "\t".join([ symbol, ranks_map[symbol][best_probeID] ])
                 
                 probeIDs = ranks_map[symbol].keys()
                 probeIDs.remove(best_probeID)
