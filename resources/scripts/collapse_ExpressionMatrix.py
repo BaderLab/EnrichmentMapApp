@@ -502,8 +502,8 @@ class CollapseExpressionMatrix:
             self.printMessage("reading Chip file...\n")
         
         try:
+            chipfile = file(chipfileName, "rU")
             try:
-                chipfile = file(chipfileName, "rU")
                 for line in chipfile:
                     if not passedHeader or re_chip_header.match(line):
                         passedHeader = 1
@@ -512,8 +512,8 @@ class CollapseExpressionMatrix:
                     id_symbol_map[probe[0]] = probe[1]
             finally:
                 chipfile.close()
-        except IOError, text:
-            raise IOError, text
+        except IOError, (errorNo, text):
+            raise IOError, (errorNo, text)
     
         return id_symbol_map
     
@@ -532,12 +532,12 @@ class CollapseExpressionMatrix:
         """
         import re
         type = ''
+        # read expression data
+        if self.verbose :
+            self.printMessage("reading input file...\n")
+
+        infile = file(inputFileName, "rU")
         try:
-            # read expression data
-            if self.verbose :
-                self.printMessage("reading input file...\n")
-    
-            infile = file(inputFileName, "rU")
             inputFileLines = infile.readlines()
             
             ## Guess the type of file:
@@ -566,7 +566,7 @@ class CollapseExpressionMatrix:
                     error_text += "Invalid Input File: '%s' \n" % inputFileName
                     error_text += "\tIt seems it's neither an expression file (GCT or TXT) or Ranked Gene list\n"
                     error_text += "\tRefer to http://www.broadinstitute.org/cancer/software/gsea/wiki/index.php/Data_formats for specifications\n"
-                    raise IOError, error_text
+                    raise IOError, (1, error_text)
                     
         finally:
             infile.close()
@@ -698,7 +698,8 @@ class CollapseExpressionMatrix:
         """
         rank_header_lines = []
         
-        self.printMessage('processing rank file...\n')
+        if self.verbose:
+            self.printMessage('processing rank file...\n')
         for rank_line in rank_data:
             if re_comment.search(rank_line):
                 rank_header_lines.append(rank_line)
@@ -732,7 +733,8 @@ class CollapseExpressionMatrix:
             exprs_header_lines = expr_data[:1]
             expr_data = expr_data[1:]
             
-        self.printMessage('processing expressions file...\n')
+        if self.verbose:
+            self.printMessage('processing expressions file...\n')
         for expr_line in expr_data:
             (probeID, descr, data) = expr_line.split("\t", 2)
             if idSymbolMap.has_key(probeID):
@@ -798,8 +800,8 @@ class CollapseExpressionMatrix:
                 # collect genes of interest
                 genes_of_interest = []
                 
+                expr_file = file(self.outputFileName, "rU")
                 try:
-                    expr_file = file(self.outputFileName, "rU")
                     for line in expr_file:
                         data = line.split("\t", 1)
                         if not data[0] == "NAME":
@@ -817,10 +819,10 @@ class CollapseExpressionMatrix:
                 (expr_data, expr_type) = self.read_inputFile(self.extra_expr_in)
 
                 if not rnk_type == 'RNK':
-                    raise IOError, "ERROR: Wrong file type!\nInput file %s needs to be a ranked list (RNK) in this mode." % self.inputFileName
+                    raise IOError, (1, "ERROR: Wrong file type!\nInput file %s needs to be a ranked list (RNK) in this mode." % self.inputFileName)
                 if not (expr_type == "GCT" or expr_type == "TXT"):
-                    raise IOError, "ERROR: Wrong file type!\n" + \
-                                    "Additional input Expression-table %s needs to of type GCT or TXT but was identified as '%s'" % (self.extra_expr_in, expr_type)
+                    raise IOError, (1, "ERROR: Wrong file type!\n" + \
+                                    "Additional input Expression-table %s needs to of type GCT or TXT but was identified as '%s'" % (self.extra_expr_in, expr_type))
                     
 
                 (rank_file_lines, expr_file_lines) = self.collapse_rank_and_expr(rank_data=rank_data,
@@ -828,15 +830,27 @@ class CollapseExpressionMatrix:
                                                                                   expr_type=expr_type,
                                                                                   idSymbolMap=idSymbolMap,
                                                                                   mode=self.collapseMode)
+                if self.verbose:
+                    self.printMessage("writing RNK file...\n")
                 try:
-                    expr_outfile = file(self.extra_expr_out, "w")
-                    expr_outfile.writelines(expr_file_lines)
-                    
                     rank_outfile = file(self.outputFileName, "w")
+                except IOError, (errorNo, text):
+                    raise IOError, (errorNo, text + " : " + self.outputFileName)
+                try:
                     rank_outfile.writelines(rank_file_lines)
                 finally:
-                    expr_outfile.close()
                     rank_outfile.close()
+                
+                try:
+                    expr_outfile = file(self.extra_expr_out, "w")
+                except IOError, (errorNo, text):
+                    raise IOError, (errorNo, text + " : " + self.extra_expr_out)
+                try:
+                    if self.verbose:
+                        self.printMessage("writing Expression file...\n")
+                    expr_outfile.writelines(expr_file_lines)
+                finally:
+                    expr_outfile.close()
             
             else:
                 # Do it the old fashioned way
@@ -849,17 +863,17 @@ class CollapseExpressionMatrix:
                     expr_file_lines = self.collapse_data(expr_file_lines, type, mode=self.collapseMode)
                    
                 # write expression data in output file
+                outfile = file(self.outputFileName, "w")
                 try:
-                    outfile = file(self.outputFileName, "w")
                     outfile.writelines(expr_file_lines)
                 finally:
                     outfile.close()
 
             self.printMessage("Done!\n")
                 
-        except IOError, text:
+        except IOError, (errorNo, text):
             print parser.get_usage()
-            self.printMessage(text)
+            self.printMessage(text + '\n')
             self.printMessage("exiting\n")
             sys.exit(1)
 
