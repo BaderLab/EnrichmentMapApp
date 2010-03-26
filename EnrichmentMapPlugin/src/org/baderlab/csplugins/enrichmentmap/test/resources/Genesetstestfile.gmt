@@ -7,3 +7,4 @@ growth hormone receptor activity	GO:0004903	GHR
 interferon receptor activity	GO:0004904	IFNAR1	IFNAR2	
 type I interferon receptor activity	GO:0004905	IFNAR2	
 INOH_[Negative regulation of (G alpha s GDP-GTP exchange signaling)	INOH	RGS9	RGS17	RGS1	RGS20	RGS3	RGS6	RGS4	RGS19	RGS8	RGS10	RGS13	RGS5	RGS14	RGS2	RGS11	RGS18	RGS16	RGS7	GNAQ
+Test-Geneset with mixed cases	TEST	zp1	C19orf2

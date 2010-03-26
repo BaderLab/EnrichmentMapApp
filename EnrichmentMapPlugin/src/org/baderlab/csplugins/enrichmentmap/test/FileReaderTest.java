@@ -33,9 +33,9 @@ public class FileReaderTest extends TestCase {
         //read in file
         task.run();
 
-        //test to make sure that the file loaded in 9 genesets with a total of 72 genes
-        assertEquals(9, params.getGenesets().size());
-        assertEquals(73, params.getGenes().size());
+        //test to make sure that the file loaded in 10 genesets with a total of 75 genes
+        assertEquals(10, params.getGenesets().size());
+        assertEquals(75, params.getGenes().size());
 
     }
 
