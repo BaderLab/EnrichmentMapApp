@@ -199,8 +199,8 @@ public class GMTFileReaderTask implements Task {
                     else{
                         //add the gene to the master list of genes
                         int value = params.getNumberOfGenes();
-                        genes.put(tokens[j], value);
-                        hashkey2gene.put(value,tokens[j]);
+                        genes.put(tokens[j].toUpperCase(), value);
+                        hashkey2gene.put(value,tokens[j].toUpperCase());
                         params.setNumberOfGenes(value+1);
 
                         //add the gene to the genelist
