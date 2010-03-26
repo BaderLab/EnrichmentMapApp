@@ -132,7 +132,8 @@ public class ExpressionFileReaderTask implements Task {
         String[] lines = fullText.split("\n");
         int currentProgress = 0;
         maxValue = lines.length;
-        GeneExpressionMatrix expressionMatrix = new GeneExpressionMatrix(lines[0].split("\t"));
+        GeneExpressionMatrix expressionMatrix = null;
+        //GeneExpressionMatrix expressionMatrix = new GeneExpressionMatrix(lines[0].split("\t"));
         HashMap<Integer,GeneExpression> expression = new HashMap<Integer, GeneExpression>();
 
         for (int i = 0; i < lines.length; i++) {
@@ -143,9 +144,9 @@ public class ExpressionFileReaderTask implements Task {
             String [] tokens = line.split("\t");
 
             //The first column of the file is the name of the geneset
-            String Name = tokens[0];
+            String Name = tokens[0].toUpperCase();
 
-            if(i==0){
+            if(i==0 && expressionMatrix == null){
                 //otherwise the first line is the header
                 if(Name.equalsIgnoreCase("#1.2")){
                    line = lines[2];
@@ -153,6 +154,13 @@ public class ExpressionFileReaderTask implements Task {
                 }
                 else{
                     line = lines[0];
+                    //ignore all comment lines
+                    int k = 0;
+                    while (line.startsWith("#")){
+                        k++;
+                        line = lines[k];
+                    }
+                    i = k;
                 }
                 tokens = line.split("\t");
 
@@ -161,11 +169,30 @@ public class ExpressionFileReaderTask implements Task {
                 //check to see if the second column contains expression values.
                 if(tokens.length == 2){
                     twoColumns = true;
+                    //the assumption is the first line is the column names but
+                    //if we are loading a GSEA edb rnk file then their might not be column names
+                    try{
+                        int temp = Integer.parseInt(tokens[1]);
+                        i = -1;
+                        tokens[0] = "Name";
+                        tokens[1] = "Rank/Score";
+                    } catch (NumberFormatException v){
+                        try{
+                            double temp2 = Double.parseDouble(tokens[1]);
+                            i = -1;
+                            tokens[0] = "Name";
+                            tokens[1] = "Rank/Score";
+
+                        }  catch (NumberFormatException v2){
+                            //if it isn't a double or int then we have a title line.
+                        }
+                    }
                 }
 
                 expressionMatrix = new GeneExpressionMatrix(tokens);
                 expressionMatrix.setExpressionMatrix(expression);
                 continue;
+
             }
 
 
@@ -192,9 +219,11 @@ public class ExpressionFileReaderTask implements Task {
                 expres.setExpression(tokens);
 
                 double newMax = expres.newMax(expressionMatrix.getMaxExpression());
-                if(newMax != -100) expressionMatrix.setMaxExpression(newMax);
+                if(newMax != -100)
+                    expressionMatrix.setMaxExpression(newMax);
                 double newMin = expres.newMin(expressionMatrix.getMinExpression());
-                if (newMin != -100) expressionMatrix.setMinExpression(newMin);
+                if (newMin != -100)
+                    expressionMatrix.setMinExpression(newMin);
 
                 expression.put(genekey,expres);
 
@@ -212,6 +241,10 @@ public class ExpressionFileReaderTask implements Task {
             currentProgress++;
 
         }
+
+        //set the number of genes
+        expressionMatrix.setNumGenes(expressionMatrix.getExpressionMatrix().size());
+
         if(dataset == 1){
             //set up the classes definition if it is set.
             //check to see if the phenotypes were already set in the params from a session load

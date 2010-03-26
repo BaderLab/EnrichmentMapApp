@@ -71,11 +71,11 @@ public class GeneExpressionMatrix {
 
     //maximum expression value of all expression values in the array - computed as matrix is
     //loaded in.
-    private double maxExpression = 0;
+    private double maxExpression = -1000000;
 
     //minimun expression value of all expresssion values in the array - computed as matrix
     //is loaded in.
-    private double minExpression = 0;
+    private double minExpression = 10000000;
 
     //phenotype designation of each column
     private String[] phenotypes;
