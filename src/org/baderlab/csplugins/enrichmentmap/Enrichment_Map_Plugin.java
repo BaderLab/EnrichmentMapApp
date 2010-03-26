@@ -72,7 +72,7 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
     static String buildId ;
     static String pluginUrl;
     static String userManualUrl;
-    
+
     private static boolean overrideHeatmapRevalidation = false;
 //    static JCheckBoxMenuItem overrideHeatmapRevalidationItem;
 
@@ -108,9 +108,9 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
         item = new JMenuItem("About");
         item.addActionListener(new ShowAboutPanelAction());
         submenu.add(item);
-        
+
         menu.add(submenu);
-        
+
         // add LinkOut for MSigDb GSEA gene sets
         Properties cyto_props = CytoscapeInit.getProperties();
         if ( ! cyto_props.containsKey("nodelinkouturl.MSigDb.GSEA Gene sets"))
@@ -202,9 +202,9 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
             File enrichmentresults2Ofinterest;
             File expression1;
             File expression2;
-            
+
             //geneset file for PostAnalysis Signature Genesets
-            File siggmt = new File(tmpDir, name+".signature.gmt"); 
+            File siggmt = new File(tmpDir, name+".signature.gmt");
 
             File ranks1geneids;
             File ranks2geneids;
@@ -226,7 +226,7 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
                     sigGmtwriter.close();
                     pFileList.add(siggmt);
                 }
-                
+
                 BufferedWriter geneswriter = new BufferedWriter(new FileWriter(genes));
                 geneswriter.write(params.printHashmap(params.getGenes()));
                 geneswriter.close();
@@ -485,7 +485,8 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
                     EnrichmentMapParameters params = EnrichmentMapManager.getInstance().getParameters(name);
 
                     //Load the GCT file
-                    ExpressionFileReaderTask expressionFile1 = new ExpressionFileReaderTask(params,prop_file.getAbsolutePath(),1);
+                    params.setExpressionFileName1(prop_file.getAbsolutePath());
+                    ExpressionFileReaderTask expressionFile1 = new ExpressionFileReaderTask(params,1);
                     expressionFile1.run();
                     params.getExpression().rowNormalizeMatrix();
                 }
@@ -497,8 +498,8 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
 
                     EnrichmentMapParameters params = EnrichmentMapManager.getInstance().getParameters(name);
 
-
-                    ExpressionFileReaderTask expressionFile2 = new ExpressionFileReaderTask(params,prop_file.getAbsolutePath(),2);
+                    params.setExpressionFileName2(prop_file.getAbsolutePath());
+                    ExpressionFileReaderTask expressionFile2 = new ExpressionFileReaderTask(params,2);
                     expressionFile2.run();
                     params.getExpression2().rowNormalizeMatrix();
                 }
@@ -521,13 +522,13 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
                 similarities.run();
                 HashMap<String, GenesetSimilarity> similarity_results = similarities.getGeneset_similarities();
                 params.setGenesetSimilarity(similarity_results);
-                
+
                 // also compute geneset similarities between Enrichment- and Signature Genesets (if any)
                 if (! params.getSignatureGenesets().isEmpty()){
                     ComputeSimilarityTask sigSimilarities = new ComputeSimilarityTask(params, ComputeSimilarityTask.SIGNATURE);
                     sigSimilarities.run();
                     HashMap<String, GenesetSimilarity> sig_similarity_results = sigSimilarities.getGeneset_similarities();
-                    
+
                     params.getGenesetSimilarity().putAll(sig_similarity_results);
                 }
 
