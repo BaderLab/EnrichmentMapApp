@@ -171,7 +171,7 @@ public class VisualizeEnrichmentMapTask implements Task {
                     // when editing the attribute in Cytoscape.
                     // Anyway Windows supports slashes as separator in all NT based versions 
                     // (NT4, 2000, XP, Vista and newer)
-                    report1Path = report1Path.replaceAll("\\", "/"); 
+                    report1Path = report1Path.replaceAll("\\\\", "/"); 
                     report1Path = report1Path.substring(0, report1Path.lastIndexOf('/') );
                     networkAttributes.setAttribute(network.getIdentifier(),
                             EnrichmentMapVisualStyle.NETW_REPORT1_DIR,
@@ -184,7 +184,7 @@ public class VisualizeEnrichmentMapTask implements Task {
                     // when editing the attribute in Cytoscape.
                     // Anyway Windows supports slashes as separator in all NT based versions 
                     // (NT4, 2000, XP, Vista and newer)
-                    report2Path = report2Path.replaceAll("\\", "/");
+                    report2Path = report2Path.replaceAll("\\\\", "/");
                     report2Path = report2Path.substring(0, report2Path.lastIndexOf('/') );
                     networkAttributes.setAttribute(network.getIdentifier(),
                             EnrichmentMapVisualStyle.NETW_REPORT2_DIR,
