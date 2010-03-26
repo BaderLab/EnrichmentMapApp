@@ -79,12 +79,11 @@ public class ExpressionFileReaderTask implements Task {
      * Class constructor specifying current task
      *
      * @param params- enrichment map parameters associated with current map
-     * @param fileName - expression (or rank) file name
      * @param dataset - dataset expression file is associated with
      * @param taskMonitor - current task monitor
      */
-     public ExpressionFileReaderTask(EnrichmentMapParameters params,String fileName, int dataset, TaskMonitor taskMonitor) {
-        this(params,fileName,dataset);
+     public ExpressionFileReaderTask(EnrichmentMapParameters params, int dataset, TaskMonitor taskMonitor) {
+        this(params,dataset);
         this.taskMonitor = taskMonitor;
     }
 
@@ -92,17 +91,17 @@ public class ExpressionFileReaderTask implements Task {
      * Class constructor
      *
      * @param params - enrichment map parameters associated with current map
-     * @param fileName - expression (or rank) file name
      * @param dataset  - dataset expression file is associated with
      */
-    public ExpressionFileReaderTask(EnrichmentMapParameters params,String fileName, int dataset )   {
+    public ExpressionFileReaderTask(EnrichmentMapParameters params, int dataset )   {
         this.params = params;
-
-        //expression file
-        this.expressionFileName = fileName;
         //dataset the expression file is associated
         this.dataset = dataset;
-
+        //expression file
+        if(this.dataset == 1)
+            this.expressionFileName = params.getExpressionFileName1();
+        else if(this.dataset == 2)
+            this.expressionFileName = params.getExpressionFileName2();
     }
 
     /**

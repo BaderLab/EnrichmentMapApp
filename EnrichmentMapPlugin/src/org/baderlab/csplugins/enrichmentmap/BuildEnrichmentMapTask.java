@@ -114,11 +114,11 @@ public class BuildEnrichmentMapTask implements Task {
             //Load in the expression or rank file
             try{
                 //Load the expression or rank file
-                ExpressionFileReaderTask expressionFile1 = new ExpressionFileReaderTask(params,params.getExpressionFileName1(),1,taskMonitor);
+                ExpressionFileReaderTask expressionFile1 = new ExpressionFileReaderTask(params,1,taskMonitor);
                 expressionFile1.run();
                 params.getExpression().rowNormalizeMatrix();
                 if(params.isData2()){
-                    ExpressionFileReaderTask expressionFile2 = new ExpressionFileReaderTask(params,params.getExpressionFileName2(),2,taskMonitor);
+                    ExpressionFileReaderTask expressionFile2 = new ExpressionFileReaderTask(params,2,taskMonitor);
                     expressionFile2.run();
                     params.getExpression2().rowNormalizeMatrix();
                 }

@@ -63,6 +63,10 @@ public class AllTests {
 
         TestSuite suite = new TestSuite();
         suite.addTestSuite(HypergeometricTest.class);
+
+        //add file reader tests
+        suite.addTestSuite(FileReaderTest.class);
+        
         suite.setName("EnrichmentMapPlugin Tests");
 
         return suite;
