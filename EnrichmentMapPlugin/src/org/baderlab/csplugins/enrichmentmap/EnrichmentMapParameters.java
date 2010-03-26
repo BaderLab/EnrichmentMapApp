@@ -1085,6 +1085,9 @@ public class EnrichmentMapParameters {
         this.attributePrefix = attributePrefix;
     }
 
+    /**
+     * @return flag to indicate there are two datasets
+     */
     public boolean isTwoDatasets() {
         return twoDatasets;
     }
@@ -1098,6 +1101,9 @@ public class EnrichmentMapParameters {
     }
 
 
+    /**
+     * @return flag to indicate if the results are from GSEA or generic
+     */
     public boolean isGSEA() {
         return GSEA;
     }
@@ -1106,6 +1112,9 @@ public class EnrichmentMapParameters {
         this.GSEA = GSEA;
     }
 
+    /**
+     * @return flag to indicate if the user has supplied a data/expression file
+     */
     public boolean isData() {
         return Data;
     }
@@ -1114,6 +1123,9 @@ public class EnrichmentMapParameters {
         Data = data;
     }
 
+    /**
+     * @return flag to indicate if the user has supplied a second data/expression file
+     */
     public boolean isData2() {
         return Data2;
     }

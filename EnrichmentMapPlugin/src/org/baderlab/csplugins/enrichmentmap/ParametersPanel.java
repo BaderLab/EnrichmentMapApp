@@ -45,6 +45,8 @@ package org.baderlab.csplugins.enrichmentmap;
 
 import javax.swing.*;
 
+import cytoscape.Cytoscape;
+import cytoscape.data.CyAttributes;
 import cytoscape.util.OpenBrowser;
 
 import java.awt.*;
@@ -69,7 +71,6 @@ public class ParametersPanel extends JPanel {
     
     public static int summaryPanelWidth = 150;
     public static int summaryPanelHeight = 1000;
-    private JCheckBox updateHeatmapCheckbox;
     private JCheckBox heatmapAutofocusCheckbox;
     private EnrichmentMapParameters emParams;
 
@@ -102,40 +103,43 @@ public class ParametersPanel extends JPanel {
         centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
 //        centerPanel.setBorder(BorderFactory.createEtchedBorder());
         centerPanel.setAlignmentX(LEFT_ALIGNMENT);
-        
-        final String reportFileDataset1 = params.getGseaHtmlReportFileDataset1();
-        final String reportFileDataset2 = params.getGseaHtmlReportFileDataset2();        
-        if (! (reportFileDataset1 == null || reportFileDataset1.equalsIgnoreCase("null")) ){
-        	JButton openReport1Button = new JButton("Open GSEA report Dataset 1");
-        	openReport1Button.setAlignmentX(LEFT_ALIGNMENT);
-        	openReport1Button.addActionListener(new java.awt.event.ActionListener() {
-                public void actionPerformed(java.awt.event.ActionEvent evt) {
-                    OpenBrowser.openURL("file://" +  reportFileDataset1);
+
+        if (params.isGSEA()) {
+            final String reportFileDataset1 = resolveGseaReportFilePath(params, 1);
+            final String reportFileDataset2 = resolveGseaReportFilePath(params, 2);
+            
+            if (! (reportFileDataset1 == null) ){
+                JButton openReport1Button = new JButton("Open GSEA report Dataset 1");
+                openReport1Button.setAlignmentX(LEFT_ALIGNMENT);
+                openReport1Button.addActionListener(new java.awt.event.ActionListener() {
+                    public void actionPerformed(java.awt.event.ActionEvent evt) {
+                        OpenBrowser.openURL("file://" +  reportFileDataset1);
+                    }
+                });
+                // Disable button if we can't read the file:
+                if (! new File(reportFileDataset1).canRead() ) {
+                    openReport1Button.setEnabled(false);
+                    openReport1Button.setToolTipText("Report file not found: " + reportFileDataset1);
                 }
-            });
-        	if (! (new File(reportFileDataset1)).canRead() ) {
-        		openReport1Button.setEnabled(false);
-        		openReport1Button.setToolTipText("Report file not found: " + reportFileDataset1);
-        	}
-        	
-        	centerPanel.add(openReport1Button);
-        	
+                centerPanel.add(openReport1Button);
+                
+            }
+            if (! (reportFileDataset2 == null ) ){
+            	JButton openReport2Button = new JButton("Open GSEA-report Dataset 2");
+            	openReport2Button.setAlignmentX(LEFT_ALIGNMENT);
+            	openReport2Button.addActionListener(new java.awt.event.ActionListener() {
+                    public void actionPerformed(java.awt.event.ActionEvent evt) {
+                        OpenBrowser.openURL("file://" +  reportFileDataset2);
+                    }
+                });
+            	// Disable button if we can't read the file:
+            	if (! (new File(reportFileDataset2)).canRead() ) {
+            		openReport2Button.setEnabled(false);
+            		openReport2Button.setToolTipText("Report file not found: " + reportFileDataset2);
+            	}        	
+            	centerPanel.add(openReport2Button);
+            }
         }
-        if (! (reportFileDataset2 == null || reportFileDataset2.equalsIgnoreCase("null")) ){
-        	JButton openReport2Button = new JButton("Open GSEA-report Dataset 2");
-        	openReport2Button.setAlignmentX(LEFT_ALIGNMENT);
-        	openReport2Button.addActionListener(new java.awt.event.ActionListener() {
-                public void actionPerformed(java.awt.event.ActionEvent evt) {
-                    OpenBrowser.openURL("file://" +  reportFileDataset2);
-                }
-            });
-        	if (! (new File(reportFileDataset1)).canRead() ) {
-        		openReport2Button.setEnabled(false);
-        		openReport2Button.setToolTipText("Report file not found: " + reportFileDataset2);
-        	}        	
-        	centerPanel.add(openReport2Button);
-        }
-        
         JTextPane runInfo;
         //information about the current analysis
         runInfo = new JTextPane();
@@ -157,33 +161,6 @@ public class ParametersPanel extends JPanel {
         JPanel prefsPanel = new JPanel();
         prefsPanel.setLayout(new BoxLayout(prefsPanel, BoxLayout.Y_AXIS));
         
-//        //Begin of Code to toggle "Override Heatmap update" (for performance)
-//        //TODO: remove before release?
-//        updateHeatmapCheckbox = new JCheckBox(new AbstractAction("update Heatmap") {
-//            /**
-//             * TODO: DOCUMENT ME!
-//             */
-//            private static final long serialVersionUID = -1991964268189861889L;
-//
-//            public void actionPerformed(ActionEvent e) {
-//                // Do this in the GUI Event Dispatch thread...
-//                SwingUtilities.invokeLater(new Runnable() {
-//                    public void run() {
-//                        // toggle state of overrideHeatmapRevalidation
-//                        if (Enrichment_Map_Plugin.isOverrideHeatmapRevalidation()) {
-//                            Enrichment_Map_Plugin.setOverrideHeatmapRevalidation(false);
-//                        } else {
-//                            Enrichment_Map_Plugin.setOverrideHeatmapRevalidation(true);
-//                        }
-//                        updateHeatmapCheckbox.setSelected( ! Enrichment_Map_Plugin.isOverrideHeatmapRevalidation() );
-//                    }
-//                });
-//            }
-//        });
-//        updateHeatmapCheckbox.setSelected( ! Enrichment_Map_Plugin.isOverrideHeatmapRevalidation() );
-//        prefsPanel.add(updateHeatmapCheckbox);
-//        //END of Code to toggle "Override Heatmap update" (for performance)
-
         
         //Begin of Code to toggle "Disable Heatmap autofocus"
         heatmapAutofocusCheckbox = new JCheckBox(new AbstractAction("Heatmap autofocus") {
@@ -446,5 +423,34 @@ public class ParametersPanel extends JPanel {
 
     }
 
+    private String resolveGseaReportFilePath (EnrichmentMapParameters params, int dataset){
+        String reportFile;
+        String netwAttrName;
+        if (dataset == 1) {
+            reportFile = params.getGseaHtmlReportFileDataset1();
+            netwAttrName = EnrichmentMapVisualStyle.NETW_REPORT1_DIR;
+        } else {
+            reportFile = params.getGseaHtmlReportFileDataset2();
+            netwAttrName = EnrichmentMapVisualStyle.NETW_REPORT2_DIR;
+        }
 
+        // Try the path that is stored in the params:
+        if ( reportFile != null && new File(reportFile).canRead() ) {
+            return reportFile;
+        } else { // if not: try from Network attributes:
+            CyAttributes networkAttributes = Cytoscape.getNetworkAttributes();
+            String tryPath = networkAttributes.getStringAttribute( 
+                    Cytoscape.getCurrentNetwork().getIdentifier(), 
+                    netwAttrName);
+            String tryReportFile = tryPath + File.separator + "index.html";
+            if (new File(tryReportFile).canRead()) {
+                return tryReportFile;
+            } else { // we found nothing
+                if (reportFile == null || reportFile.equalsIgnoreCase("null"))
+                    return null;
+                else
+                    return reportFile;
+            }
+        }
+    }
 }

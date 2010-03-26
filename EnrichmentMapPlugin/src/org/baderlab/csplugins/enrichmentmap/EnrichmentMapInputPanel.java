@@ -69,7 +69,10 @@ import java.util.HashMap;
  * Enrichment map User input Panel
  */
 public class EnrichmentMapInputPanel extends JPanel {
-
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -7837369382106745874L;
     CollapsiblePanel Parameters;
     CollapsiblePanel datasets;
 
@@ -164,7 +167,7 @@ public class EnrichmentMapInputPanel extends JPanel {
         JPanel advancedOptionsContainer = new JPanel(new BorderLayout());
         advancedOptionsContainer.add(scroll, BorderLayout.CENTER);
 
-        //Add all the vertically alligned components to the main panel
+        //Add all the vertically aligned components to the main panel
         add(AnalysisTypePanel,BorderLayout.NORTH);
         add(advancedOptionsContainer,BorderLayout.CENTER);
         add(bottomPanel,BorderLayout.SOUTH);
@@ -320,7 +323,12 @@ public class EnrichmentMapInputPanel extends JPanel {
 
             //add GMT file
             JLabel GMTLabel = new JLabel("GMT:"){
-                 public JToolTip createToolTip() {
+                 /**
+                 * 
+                 */
+                private static final long serialVersionUID = -122741876830022713L;
+
+                public JToolTip createToolTip() {
                       return new JMultiLineToolTip();
                  }
             };
@@ -373,6 +381,11 @@ public class EnrichmentMapInputPanel extends JPanel {
 
            //add GCT file
            JLabel GCTLabel = new JLabel("Expression:"){
+            /**
+             * 
+             */
+            private static final long serialVersionUID = -1021506153608619217L;
+
             public JToolTip createToolTip() {
                 return new JMultiLineToolTip();
                 }
@@ -405,6 +418,11 @@ public class EnrichmentMapInputPanel extends JPanel {
 
            //add Results1 file
            JLabel Results1Label = new JLabel("Enrichments 1:"){
+            /**
+             * 
+             */
+            private static final long serialVersionUID = 4890287742836119482L;
+
             public JToolTip createToolTip() {
                 return new JMultiLineToolTip();
                 }
@@ -440,6 +458,11 @@ public class EnrichmentMapInputPanel extends JPanel {
 
             //add Results2 file
            JLabel Results2Label = new JLabel("Enrichments 2:"){
+            /**
+             * 
+             */
+            private static final long serialVersionUID = 8462720651589188103L;
+
             public JToolTip createToolTip() {
                 return new JMultiLineToolTip();
                 }
@@ -495,6 +518,11 @@ public class EnrichmentMapInputPanel extends JPanel {
 
            //add GCT file
            JLabel GCTLabel = new JLabel("Expression:"){
+            /**
+             * 
+             */
+            private static final long serialVersionUID = 2369686770191667604L;
+
             public JToolTip createToolTip() {
                 return new JMultiLineToolTip();
                 }
@@ -526,6 +554,11 @@ public class EnrichmentMapInputPanel extends JPanel {
            //add Results1 file
 
            JLabel Results1Label = new JLabel("Enrichments 1:"){
+            /**
+             * 
+             */
+            private static final long serialVersionUID = -1405865291417154L;
+
             public JToolTip createToolTip() {
                 return new JMultiLineToolTip();
                 }
@@ -561,6 +594,11 @@ public class EnrichmentMapInputPanel extends JPanel {
 
             //add Results2 file
            JLabel Results2Label = new JLabel("Enrichments 2:"){
+            /**
+             * 
+             */
+            private static final long serialVersionUID = -5178668573493553453L;
+
             public JToolTip createToolTip() {
                 return new JMultiLineToolTip();
                 }
@@ -616,6 +654,11 @@ public class EnrichmentMapInputPanel extends JPanel {
 
             //add Ranks file
            JLabel RanksLabel = new JLabel("Ranks:"){
+           /**
+             * 
+             */
+            private static final long serialVersionUID = 4549754054012943869L;
+
                     public JToolTip createToolTip() {
                         return new JMultiLineToolTip();
                     }
@@ -1019,30 +1062,21 @@ public class EnrichmentMapInputPanel extends JPanel {
         return panel;
     }
 
-      private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {
-           // TODO add your handling code here:
-          CytoscapeDesktop desktop = Cytoscape.getDesktop();
-
-          CytoPanel cytoPanel = desktop.getCytoPanel(SwingConstants.WEST);
-
-          //set the input window to null in the instance
-          EnrichmentMapManager.getInstance().setInputWindow(null);
-
-          cytoPanel.remove(this);
-
-       }
+    private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {
+        CytoscapeDesktop desktop = Cytoscape.getDesktop();
+        CytoPanel cytoPanel = desktop.getCytoPanel(SwingConstants.WEST);
+        // set the input window to null in the instance
+        EnrichmentMapManager.getInstance().setInputWindow(null);
+        cytoPanel.remove(this);
+    }
 
     public void close() {
-            // TODO add your handling code here:
-            CytoscapeDesktop desktop = Cytoscape.getDesktop();
-
-          CytoPanel cytoPanel = desktop.getCytoPanel(SwingConstants.WEST);
-
-        //set the input window to null in the instance
-          EnrichmentMapManager.getInstance().setInputWindow(null);
-
-          cytoPanel.remove(this);
-        }
+        CytoscapeDesktop desktop = Cytoscape.getDesktop();
+        CytoPanel cytoPanel = desktop.getCytoPanel(SwingConstants.WEST);
+        // set the input window to null in the instance
+        EnrichmentMapManager.getInstance().setInputWindow(null);
+        cytoPanel.remove(this);
+    }
 
     /**
      * An rpt file can be entered instead of a GCT/expression file, or any of the enrichment results files
@@ -1054,13 +1088,12 @@ public class EnrichmentMapInputPanel extends JPanel {
      */
    private void populateFieldsFromRpt(File rptFile, boolean dataset1){
 
-
         TextFileReader reader = new TextFileReader(rptFile.getAbsolutePath());
         reader.read();
         String fullText = reader.getText();
 
         //Create a hashmap to contain all the values in the rpt file.
-        HashMap rpt = new HashMap();
+        HashMap<String, String> rpt = new HashMap<String, String>();
 
         String [] lines = fullText.split("\n");
 
