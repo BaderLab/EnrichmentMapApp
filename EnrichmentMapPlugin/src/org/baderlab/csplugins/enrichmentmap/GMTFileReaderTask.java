@@ -204,7 +204,7 @@ public class GMTFileReaderTask implements Task {
                         params.setNumberOfGenes(value+1);
 
                         //add the gene to the genelist
-                        gs.addGene(genes.get(tokens[j]));
+                        gs.addGene(genes.get(tokens[j].toUpperCase()));
                     }
                 }
 
