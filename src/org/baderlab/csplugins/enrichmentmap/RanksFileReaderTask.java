@@ -262,7 +262,14 @@ public class RanksFileReaderTask implements Task {
          //after we have loaded in all the scores, sort the score to compute ranks
          //create hash of scores to ranks.
          HashMap<Double,Integer> score2ranks = new HashMap<Double,Integer> ();
-         Arrays.sort(sort_scores);
+        //sorts the array in descending order
+        Arrays.sort(sort_scores, Collections.reverseOrder());
+
+        //check to see if they are p-values (if the values are between -1 and 1 , for a signed pvalue)
+        //this will actually give a weird sorting behaviour if the scores are actually not p-values and
+        //just signed statistics for instance as it will sort them in the opposite direction.
+        if(sort_scores[0] <= 1 && sort_scores[sort_scores.length-1] >= -1)
+            Arrays.sort(sort_scores);
 
         for(int j = 0; j<sort_scores.length;j++){
             //check to see if this score is already enter

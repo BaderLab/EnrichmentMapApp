@@ -94,7 +94,7 @@ public class HeatMapParameters {
     private boolean sortbycolumn_event_triggered = false;
 
     //store the index of the column that we are sorting by
-    private int sortIndex = 0;
+    private int sortIndex = -1;
 
     //store the name of the rank file sorted by
     private String rankFileIndex;
@@ -254,9 +254,10 @@ public class HeatMapParameters {
                 rankOptionComboBox.setSelectedItem(params.getDefaultSortMethod());
                 if(params.getDefaultSortMethod().equalsIgnoreCase(sort_rank)){
                     sort = Sort.RANK;
-                    if(ranks != null)
+                    if(ranks != null){
                         rankFileIndex = ranks.keySet().iterator().next();
-                    else{
+                        sortIndex = ascending.length - ranks.size();
+                    }else{
                         rankOptionComboBox.setSelectedItem(sort_none);
                         sort = Sort.NONE;
                     }

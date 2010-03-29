@@ -176,8 +176,13 @@ public class HeatMapPanel extends JPanel {
 
         hmParams = params.getHmParams();
 
-        //boolean[] temp = new boolean[columnNames.length + params.getRanks().size()];
-        hmParams.setAscending(new boolean[columnNames.length + params.getRanks().size()]);
+        boolean[] ascending = new boolean[columnNames.length + params.getRanks().size()];
+        //set the rank files to ascending
+        for(int k = ascending.length ;  k > (ascending.length - params.getRanks().size()); k--)
+            ascending[k-1] = true;
+        hmParams.setAscending(ascending);
+        //hmParams.setAscending(new boolean[columnNames.length + params.getRanks().size()]);
+
 
         displayLeadingEdge = false;
         leadingEdgeScoreAtMax1 = 0.0;
@@ -198,9 +203,15 @@ public class HeatMapPanel extends JPanel {
             numConditions2 = expression2.getNumConditions();
             columnNames2 = expression2.getColumnNames();
 
-            //temp = new boolean[columnNames.length + (columnNames2.length-2) +params.getRanks().size()];
-            hmParams.setAscending(new boolean[columnNames.length + (columnNames2.length-2) +params.getRanks().size()]);//we don't have to repeat the name and description columns
+            boolean[] ascending2 = new boolean[columnNames.length + (columnNames2.length-2) +params.getRanks().size()];
+            for(int k = ascending2.length ;  k > ascending2.length - params.getRanks().size(); k--)
+                ascending2[k-1] = true;
+            hmParams.setAscending(ascending2);//we don't have to repeat the name and description columns
+
+
+            //hmParams.setAscending(new boolean[columnNames.length + (columnNames2.length-2) +params.getRanks().size()]);//we don't have to repeat the name and description columns
             //column2_ascending = new boolean[columnNames2.length-2]; //we don't have to repeat the name and description columns
+
             phenotypes2 = expression2.getPhenotypes();
 
             this.Dataset2phenotype1 = params.getDataset2Phenotype1();
