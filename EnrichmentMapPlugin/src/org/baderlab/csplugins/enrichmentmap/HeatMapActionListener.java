@@ -160,6 +160,9 @@ public class HeatMapActionListener implements ActionListener {
                 //copy old ascending in to the new ascending array
                 System.arraycopy(ascending,0,new_ascending,0,ascending.length);
 
+                //set ordering for rank fall to ascending
+                new_ascending[new_ascending.length-1] = true;
+
                 hmParams.setAscending(new_ascending);
             }
        }
@@ -199,6 +202,7 @@ public class HeatMapActionListener implements ActionListener {
                     hmParams.setSort(HeatMapParameters.Sort.RANK);
                     hmParams.setRankFileIndex(ranks_name);
                     hmParams.setSortIndex(columns + i);
+                    
                     //updateAscendingButton = true;
                 }
                 i++;
