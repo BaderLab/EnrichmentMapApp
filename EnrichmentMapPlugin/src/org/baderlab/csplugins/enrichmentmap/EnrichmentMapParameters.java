@@ -203,7 +203,7 @@ public class EnrichmentMapParameters {
     private Boolean disable_heatmap_autofocus;
     private String defaultSortMethod;
 
-    final public static String ENRICHMENT_INTERACTION_TYPE = "pp"; //TODO: change to "Geneset_Overlap"
+    final public static String ENRICHMENT_INTERACTION_TYPE = "Geneset_Overlap"; //TODO: change to "Geneset_Overlap"
     private PostAnalysisParameters paParams;
     
     private String enrichment_edge_type;
