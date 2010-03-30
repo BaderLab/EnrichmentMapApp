@@ -348,7 +348,7 @@ public class VisualizeEnrichmentMapTask implements Task {
                 if(current_result.getSimilarity_coeffecient()>params.getSimilarityCutOff()){
                     Node node1 = Cytoscape.getCyNode(current_result.getGeneset1_Name(),false);
                     Node node2 = Cytoscape.getCyNode(current_result.getGeneset2_Name(),false);
-                    Edge edge = (Edge) Cytoscape.getCyEdge(node1, node2, Semantics.INTERACTION, "pp", true);
+                    Edge edge = (Edge) Cytoscape.getCyEdge(node1, node2, Semantics.INTERACTION, EnrichmentMapParameters.ENRICHMENT_INTERACTION_TYPE, true);
 
                     network.addEdge(edge);
 
