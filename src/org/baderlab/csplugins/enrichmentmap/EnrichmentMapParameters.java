@@ -165,7 +165,7 @@ public class EnrichmentMapParameters {
     private String dataset2Phenotype1 = "UP";
     private String dataset2Phenotype2 = "DOWN";
 
-    //class file designations taht were loaded in from a session file.
+    //class file designations that were loaded in from a session file.
     //need a temporary place for these class definition as
     private String[] temp_class1 = null;
     private String[] temp_class2 = null;
@@ -186,7 +186,7 @@ public class EnrichmentMapParameters {
     private HashMap<Integer, Ranking> dataset1Rankings;
     private HashMap<Integer, Ranking> dataset2Rankings;
 
-     private HashMap<Integer, Integer> rank2geneDataset1;
+    private HashMap<Integer, Integer> rank2geneDataset1;
     private HashMap<Integer, Integer> rank2geneDataset2;
 
     //Set of Rankings - (HashMap of Hashmaps)
@@ -878,6 +878,19 @@ public class EnrichmentMapParameters {
 
         return newMap;
     }
+    
+    
+    /**
+     * @return true if we have at least one list of gene ranks
+     */
+    public boolean haveRanks() {
+        if (this.ranks.size() > 0)
+            return true;
+        else
+            return false;
+    }
+    
+    
     
     /**
      *  given the hash key representing a gene return the gene name

@@ -304,7 +304,7 @@ public class HeatMapPanel extends JPanel {
                 header.sortByColumn(hmParams.getSortIndex(), ascending);
             }
 
-          //Set up renderer and editor for the Color column.
+            //Set up renderer and editor for the Color column.
             jTable1.setDefaultRenderer(Color.class,new ColorRenderer());
             jTable1.setDefaultRenderer(String.class, highlightCellRenderer);
 
@@ -487,13 +487,16 @@ public class HeatMapPanel extends JPanel {
 
         //if the ranks are the GSEA ranks and the leading edge is activated then we need to highlight
         //genes in the leading edge
-        int topRank = getTopRank();
+        int topRank = -1;
         boolean isNegative = false;
-        if(hmParams.getRankFileIndex().equalsIgnoreCase("Dataset 1 Ranking"))
-            isNegative = isNegativeGS(1);
-        else if(hmParams.getRankFileIndex().equalsIgnoreCase("Dataset 2 Ranking"))
-            isNegative = isNegativeGS(2);
-
+        if (this.displayLeadingEdge){
+            topRank = getTopRank();
+            if(hmParams.getRankFileIndex().equalsIgnoreCase("Dataset 1 Ranking"))
+                isNegative = isNegativeGS(1);
+            else if(hmParams.getRankFileIndex().equalsIgnoreCase("Dataset 2 Ranking"))
+                isNegative = isNegativeGS(2);
+        }
+        
         int n = 0;
         for(Iterator i = currentExpressionSet.keySet().iterator();i.hasNext();){
             Integer key = (Integer)i.next();
@@ -543,9 +546,9 @@ public class HeatMapPanel extends JPanel {
 
             significant_gene = false;
 
-            if(ranks_subset[m] <= topRank && !isNegative && topRank != 0 && topRank != -1)
+            if(topRank != -1 && ranks_subset[m] <= topRank && !isNegative && topRank != 0 )
                 significant_gene = true;
-            else if(ranks_subset[m] >= topRank && isNegative && topRank != 0 && topRank != -1)
+            else if(topRank != -1 && ranks_subset[m] >= topRank && isNegative && topRank != 0)
                 significant_gene = true;
 
             ArrayList keys = rank2keys.get(ranks_subset[m]);
@@ -966,7 +969,9 @@ public class HeatMapPanel extends JPanel {
                 GeneSet current_geneset = genesets.get(nodename);
 
                 //if only one node is selected activate leading edge potential
-                if(nodes.length == 1){
+                //and if at least one rankfile is present
+                //TODO: we probably have to catch cases where we have only a rank file for one of the datasets
+                if(nodes.length == 1 && params.haveRanks()){
                     displayLeadingEdge = true;
                     if(params.isGSEA()){
 
