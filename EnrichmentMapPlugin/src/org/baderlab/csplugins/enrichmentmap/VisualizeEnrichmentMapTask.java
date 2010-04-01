@@ -204,7 +204,7 @@ public class VisualizeEnrichmentMapTask implements Task {
 
             //create the nodes
             //Each geneset of interest is a node
-            //its size is dependant on the size of the geneset
+            //its size is dependent on the size of the geneset
 
             //on multiple runs of the program some of the nodes or all of them might already
             //be created but it is possible that they have different values for the attributes.  How do
