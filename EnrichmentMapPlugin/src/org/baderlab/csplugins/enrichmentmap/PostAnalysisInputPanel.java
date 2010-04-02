@@ -626,7 +626,7 @@ public class PostAnalysisInputPanel extends JPanel {
             else if (source == signatureGMTFileNameTextField) {
                 String value = signatureGMTFileNameTextField.getText();
                 if(value.equalsIgnoreCase("") )
-                    paParams.setGMTFileName(value);
+                    paParams.setSignatureGMTFileName(value);
                 else if(signatureGMTFileNameTextField.getText().equalsIgnoreCase((String)e.getOldValue())){
                     //do nothing
                 }
@@ -635,7 +635,7 @@ public class PostAnalysisInputPanel extends JPanel {
                     signatureGMTFileNameTextField.setForeground(checkFile(value));
                 }
                 else
-                    paParams.setGMTFileName(value);
+                    paParams.setSignatureGMTFileName(value);
             } 
             else if (source == sigCutoffTextField) {
                 Number value = (Number) sigCutoffTextField.getValue();
