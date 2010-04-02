@@ -231,6 +231,11 @@ public class BuildDiseaseSignatureTask implements Task {
                     }
                     else if (! nodesMap.containsKey(geneset_name)) {
                         // skip if the Geneset is not in the Network
+                    } 
+                    else if (cyNodeAttrs.getStringAttribute(nodesMap.get(geneset_name).getIdentifier(),
+                            prefix + EnrichmentMapVisualStyle.GS_TYPE).equalsIgnoreCase(
+                            EnrichmentMapVisualStyle.GS_TYPE_SIGNATURE)) {
+                        // skip if the Geneset is a Signature Node from a previous analysis
                     }
                     else if(geneset_similarities.containsKey(similarity_key1) || geneset_similarities.containsKey(similarity_key2)){
                         //skip this geneset comparison.  It has already been done.
@@ -324,8 +329,8 @@ public class BuildDiseaseSignatureTask implements Task {
                     // HashSet to List:
                     List<String> gene_list = new ArrayList<String>();
                     HashSet<Integer> genes_hash = sigGeneSet.getGenes();
-                    for(Iterator j=genes_hash.iterator(); j.hasNext();){
-                        Integer current = (Integer)j.next();
+                    for(Iterator<Integer> j=genes_hash.iterator(); j.hasNext();){
+                        Integer current = j.next();
                         String gene = paParams.getGeneFromHashKey(current);
                         if(gene_list != null)
                             gene_list.add(gene);
@@ -335,8 +340,8 @@ public class BuildDiseaseSignatureTask implements Task {
                     List<String> enr_gene_list = new ArrayList<String>();
                     HashSet<Integer> enr_genes_hash = sigGeneSet.getGenes();
                     enr_genes_hash.retainAll(geneUniverse);
-                    for(Iterator j=enr_genes_hash.iterator(); j.hasNext();){
-                        Integer current = (Integer)j.next();
+                    for(Iterator<Integer> j=enr_genes_hash.iterator(); j.hasNext();){
+                        Integer current = j.next();
                         String gene = paParams.getGeneFromHashKey(current);
                         if(enr_gene_list != null)
                             enr_gene_list.add(gene);
@@ -415,8 +420,8 @@ public class BuildDiseaseSignatureTask implements Task {
                     if(paParams.getHashkey2gene() != null){
                         List<String> gene_list = new ArrayList<String>();
                         HashSet<Integer> genes_hash = geneset_similarities.get(edge_name).getOverlapping_genes();
-                        for(Iterator k=genes_hash.iterator(); k.hasNext();){
-                            Integer current = (Integer)k.next();
+                        for(Iterator<Integer> k=genes_hash.iterator(); k.hasNext();){
+                            Integer current = k.next();
                             String gene = paParams.getGeneFromHashKey(current);
                             if(gene_list != null)
                                 gene_list.add(gene);
