@@ -849,9 +849,10 @@ public class EnrichmentMapInputPanel extends JPanel {
                              "only edges with a Jaccard or Overlap coffecient less than \n"+
                               "the cutoff will be added.";
           coeffecientTextField.setToolTipText(coeffecientCutOffTip);
-          coeffecientTextField.setText(Double.toString(params.getSimilarityCutOff()));
+//          coeffecientTextField.setText(Double.toString(params.getSimilarityCutOff()));
           coeffecientTextField.setValue(params.getSimilarityCutOff());
-
+          params.setSimilarityCutOffChanged(false); //reset for new Panel after .setValue(...) wrongly changed it to "true"
+          
           JPanel coeffecientCutOffPanel = new JPanel();
           coeffecientCutOffPanel.setLayout(new BorderLayout());
           coeffecientCutOffPanel.setToolTipText(coeffecientCutOffTip);
@@ -1501,16 +1502,18 @@ public class EnrichmentMapInputPanel extends JPanel {
             params.setJaccard(true);
             if ( ! params.isSimilarityCutOffChanged() ) {
                 params.setSimilarityCutOff( params.getDefaultJaccardCutOff() );
-                coeffecientTextField.setText( Double.toString(params.getSimilarityCutOff()) );
+//                coeffecientTextField.setText( Double.toString(params.getSimilarityCutOff()) );
                 coeffecientTextField.setValue( params.getSimilarityCutOff() );
+                params.setSimilarityCutOffChanged(false); //reset after .setValue(...) wrongly changed it to "true"
             }
         }
      else if(evt.getActionCommand().equalsIgnoreCase("overlap")){
             params.setJaccard(false);
             if ( ! params.isSimilarityCutOffChanged() ) {
                 params.setSimilarityCutOff(params.getDefaultOverlapCutOff());
-                coeffecientTextField.setText( Double.toString(params.getSimilarityCutOff()) );
+//                coeffecientTextField.setText( Double.toString(params.getSimilarityCutOff()) );
                 coeffecientTextField.setValue( params.getSimilarityCutOff() );
+                params.setSimilarityCutOffChanged(false); //reset after .setValue(...) wrongly changed it to "true"
           }
         }
      else{
@@ -1866,6 +1869,8 @@ public class EnrichmentMapInputPanel extends JPanel {
         pvalueTextField.setValue(params.getPvalue());
         qvalueTextField.setValue(params.getQvalue());
         coeffecientTextField.setValue(params.getSimilarityCutOff());
+        //reset for cleared Panel after .setValue(...) wrongly changed it to "true"
+        params.setSimilarityCutOffChanged(false);
 
         gsea.setSelected(params.isGSEA());
         generic.setSelected(!params.isGSEA());
