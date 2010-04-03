@@ -1,0 +1,5 @@
+GO.ID   	Description     	p.Val	FDR 	Phenotype
+GO:0000346	export complex  	0.01	0.02	+1
+GO:0030904	retromer complex	0.05	0.10	+1
+GO:0008623	chromatin complex	0.05	0.12	-1
+GO:0046540	tri-snRNP complex	5.60E-42	0.03	-1
