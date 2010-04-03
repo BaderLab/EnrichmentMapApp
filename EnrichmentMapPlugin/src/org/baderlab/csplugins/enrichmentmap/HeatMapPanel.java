@@ -74,6 +74,11 @@ import org.baderlab.csplugins.brainlib.AvgLinkHierarchicalClustering;
  */
 public class HeatMapPanel extends JPanel {
 
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1903063204304411983L;
+    
     //Column names for expression set for data set 1
     private Object[] columnNames;
       //Column names for expression set for data set 1
@@ -109,9 +114,9 @@ public class HeatMapPanel extends JPanel {
     private  final Insets insets = new Insets(0,0,0,0);
 
     //current subset of expression data from dataset 1 expression set
-    private HashMap currentExpressionSet;
+    private HashMap<Integer, GeneExpression> currentExpressionSet;
      //current subset of expression data from dataset 2 expression set
-    private HashMap currentExpressionSet2;
+    private HashMap<Integer, GeneExpression> currentExpressionSet2;
 
     private boolean node=true;
 
@@ -498,8 +503,8 @@ public class HeatMapPanel extends JPanel {
         }
         
         int n = 0;
-        for(Iterator i = currentExpressionSet.keySet().iterator();i.hasNext();){
-            Integer key = (Integer)i.next();
+        for(Iterator<Integer> i = currentExpressionSet.keySet().iterator();i.hasNext();){
+            Integer key = i.next();
 
             //check to see the key is in the rank file.
             //For new rank files it is possible that some of the genes/proteins won't be ranked
@@ -551,9 +556,9 @@ public class HeatMapPanel extends JPanel {
             else if(topRank != -1 && ranks_subset[m] >= topRank && isNegative && topRank != 0)
                 significant_gene = true;
 
-            ArrayList keys = rank2keys.get(ranks_subset[m]);
+            ArrayList<Integer> keys = rank2keys.get(ranks_subset[m]);
 
-            for(Iterator p = keys.iterator();p.hasNext();){
+            for(Iterator<Integer> p = keys.iterator();p.hasNext();){
                 Integer key = (Integer)p.next();
 
                 //Current expression row
@@ -634,8 +639,8 @@ public class HeatMapPanel extends JPanel {
 
 
         int n = 0;
-        for(Iterator i = currentExpressionSet.keySet().iterator();i.hasNext();){
-            Integer key = (Integer)i.next();
+        for(Iterator<Integer> i = currentExpressionSet.keySet().iterator();i.hasNext();){
+            Integer key = i.next();
             //check to see the key is in the rank file.
             //For new rank files it is possible that some of the genes/proteins won't be ranked
             if(ranks.containsKey(key)){
@@ -690,10 +695,10 @@ public class HeatMapPanel extends JPanel {
             else if(ranks_subset[m] >= topRank && isNegative && topRank != 0 && topRank != -1)
                 significant_gene = true;
 
-            ArrayList keys = rank2keys.get(ranks_subset[m]);
+            ArrayList<Integer> keys = rank2keys.get(ranks_subset[m]);
 
-            for(Iterator p = keys.iterator();p.hasNext();){
-                Integer currentKey = (Integer)p.next();
+            for(Iterator<Integer> p = keys.iterator();p.hasNext();){
+                Integer currentKey = p.next();
 
                 //Current expression row
                 GeneExpression halfRow1 = (GeneExpression)currentExpressionSet.get(currentKey);
@@ -1097,7 +1102,7 @@ public class HeatMapPanel extends JPanel {
 
         HashMap<String, HashMap<Integer, Ranking>> all_ranks = params.getRanks();
         if(hmParams.getSort() == HeatMapParameters.Sort.RANK){
-            for(Iterator j = all_ranks.keySet().iterator(); j.hasNext(); ){
+            for(Iterator<String> j = all_ranks.keySet().iterator(); j.hasNext(); ){
                 String ranks_name = j.next().toString();
                 if(ranks_name.equalsIgnoreCase(hmParams.getRankFileIndex()))
                     ranks = all_ranks.get(ranks_name);
@@ -1109,8 +1114,8 @@ public class HeatMapPanel extends JPanel {
         }
         else if((hmParams.getSort() == HeatMapParameters.Sort.COLUMN) || (hmParams.getSort() == HeatMapParameters.Sort.NONE) ){
             ranks = new HashMap<Integer,Ranking>();
-            for(Iterator i = currentExpressionSet.keySet().iterator();i.hasNext();){
-                Integer key = (Integer)i.next();
+            for(Iterator<Integer> i = currentExpressionSet.keySet().iterator();i.hasNext();){
+                Integer key = i.next();
                 Ranking temp = new Ranking(((GeneExpression)currentExpressionSet.get(key)).getName(),0.0,0);
                 ranks.put(key,temp);
             }
@@ -1125,7 +1130,7 @@ public class HeatMapPanel extends JPanel {
 
     /**
      * Hierarchical clusters the current expression set using pearson correlation and generates ranks
-     * based on the the clutering output.
+     * based on the the clustering output.
      *
      * @return set of ranks based on the hierarchical clustering of the current expression set.
      */
@@ -1154,14 +1159,15 @@ public class HeatMapPanel extends JPanel {
 
             //check to see how many genes there are, if there are more than 1000 issue warning that
             //clustering will take a long time and give the user the option to abandon the clustering
-            int hieracical_clusteting_theshold = Integer.parseInt(CytoscapeInit.getProperties().getProperty("EnrichmentMap.hieracical_clusteting_theshold", "1000"));
-            if(currentExpressionSet.keySet().size() > hieracical_clusteting_theshold){
+            int hieracical_clustering_theshold = Integer.parseInt(CytoscapeInit.getProperties().getProperty("EnrichmentMap.hieracical_clustering_theshold", "1000"));
+            if(currentExpressionSet.keySet().size() > hieracical_clustering_theshold){
                 int answer = JOptionPane.showConfirmDialog(Cytoscape.getDesktop(),
 			                                      " The combination of these gene sets contain "
                                                   + currentExpressionSet.keySet().size()
 			                                      + " genes and "
 			                                      + "\nClustering a set this size may take several "
-			                                      + "minutes.\n" + "Do you wish to proceed?",
+			                                      + "minutes.\n" + "Do you wish to proceed with the clustering?"
+			                                      + "\n\n(Choosing 'No' will switch the heatmap-sorting to 'No sort'.)",
 			                                      "Cluster large set of genes",
 			                                      JOptionPane.YES_NO_OPTION);
                 if(answer == JOptionPane.NO_OPTION) {
@@ -1177,14 +1183,14 @@ public class HeatMapPanel extends JPanel {
                     //hmParams.setSortbyHC(true);
                     hmParams.setSort(HeatMapParameters.Sort.CLUSTER);
 
-                    //create an arraylist of the expression subset.
-                    List clustering_expressionset = new ArrayList() ;
-                    ArrayList labels = new ArrayList();
+                    //create an array-list of the expression subset.
+                    List<Double[]> clustering_expressionset = new ArrayList<Double[]>() ;
+                    ArrayList<Integer> labels = new ArrayList<Integer>();
                     int j = 0;
 
-                    //go through the expressionset hashmap and add the key to the labels and add the expression to the clustering set
-                    for(Iterator i = currentExpressionSet.keySet().iterator();i.hasNext();){
-                        Integer key = (Integer)i.next();
+                    //go through the expression-set hashmap and add the key to the labels and add the expression to the clustering set
+                    for(Iterator<Integer> i = currentExpressionSet.keySet().iterator();i.hasNext();){
+                        Integer key = i.next();
 
                         Double[] x = ((GeneExpression)currentExpressionSet.get(key)).getExpression();
                         Double[] z;
@@ -1199,7 +1205,7 @@ public class HeatMapPanel extends JPanel {
                             z = x;
                         }
 
-                        //add the expresionset
+                        //add the expression-set
                         clustering_expressionset.add(j, z);
 
                         //add the key to the labels
@@ -1244,8 +1250,8 @@ public class HeatMapPanel extends JPanel {
            //hmParams.setNoSort(true);
            hmParams.setSort(HeatMapParameters.Sort.NONE);
            ranks = new HashMap<Integer,Ranking>();
-            for(Iterator i = currentExpressionSet.keySet().iterator();i.hasNext();){
-                Integer key = (Integer)i.next();
+            for(Iterator<Integer> i = currentExpressionSet.keySet().iterator();i.hasNext();){
+                Integer key = i.next();
                 Ranking temp = new Ranking(((GeneExpression)currentExpressionSet.get(key)).getName(),0.0,0);
                 ranks.put(key,temp);
             }
