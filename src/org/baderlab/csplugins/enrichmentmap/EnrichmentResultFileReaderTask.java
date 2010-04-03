@@ -45,9 +45,6 @@ package org.baderlab.csplugins.enrichmentmap;
 import cytoscape.task.Task;
 import cytoscape.task.TaskMonitor;
 import cytoscape.data.readers.TextFileReader;
-import cytoscape.Cytoscape;
-
-import javax.swing.*;
 import java.util.HashMap;
 
 /**
@@ -262,7 +259,7 @@ public class EnrichmentResultFileReaderTask implements Task {
 
         //Get the current genesets so we can check that all the results are in the geneset list
         //and put the size of the genesets into the visual style
-        HashMap genesets = params.getFilteredGenesets();
+        HashMap<String, GeneSet> genesets = params.getFilteredGenesets();
 
         int currentProgress = 0;
         int maxValue = lines.length;
@@ -279,7 +276,6 @@ public class EnrichmentResultFileReaderTask implements Task {
 
         for (int i = 1; i < lines.length; i++) {
             line = lines[i];
-
             tokens = line.split("\t");
 
             double pvalue = 1.0;

@@ -203,6 +203,9 @@ public class GenericResult extends EnrichmentResult{
         this.gsSize = gs_size;
     }
 
+    /**
+     * @return 1.0 for Phenotype A or -1.0 for Phenotype B 
+     */
     public double getNES() {
         return NES;
     }

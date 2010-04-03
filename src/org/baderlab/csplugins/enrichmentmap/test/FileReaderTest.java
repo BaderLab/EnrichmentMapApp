@@ -2,8 +2,11 @@ package org.baderlab.csplugins.enrichmentmap.test;
 
 import junit.framework.TestCase;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
+import org.baderlab.csplugins.enrichmentmap.EnrichmentResult;
+import org.baderlab.csplugins.enrichmentmap.EnrichmentResultFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.GMTFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.ExpressionFileReaderTask;
+import org.baderlab.csplugins.enrichmentmap.GenericResult;
 
 import java.util.HashMap;
 
@@ -253,5 +256,45 @@ public class FileReaderTest extends TestCase {
         assertEquals(0.47536945, params.getExpression().getMinExpression());
         assertEquals(0.5418719, params.getExpression().getMaxExpression());
 
+    }
+    
+    public void testGenericFileReader_5columns(){
+        //load the test expression file
+        String testDataFileName = "src/org/baderlab/csplugins/enrichmentmap/test/resources/generic_enr_5col.txt";
+        
+        // create parameters
+        EnrichmentMapParameters params = new EnrichmentMapParameters();
+        params.setEnrichmentDataset1FileName1(testDataFileName);
+        
+        // check if empty
+        assertEquals(0, params.getEnrichmentResults1().size());
+        
+        // read
+        EnrichmentResultFileReaderTask task = new EnrichmentResultFileReaderTask(params, testDataFileName, 1);
+        task.run();
+
+        HashMap<String, EnrichmentResult> results = params.getEnrichmentResults1();
+        // check we have 4 results
+        assertEquals(4, results.size() );
+        
+        // check pValues
+        assertEquals(0.01,     ((GenericResult)results.get("GO:0000346")).getPvalue());
+        assertEquals(0.05,     ((GenericResult)results.get("GO:0030904")).getPvalue());
+        assertEquals(0.05,     ((GenericResult)results.get("GO:0008623")).getPvalue());
+        assertEquals(5.60E-42, ((GenericResult)results.get("GO:0046540")).getPvalue());
+
+        // check getFdrqvalues
+        assertEquals(0.02, ((GenericResult)results.get("GO:0000346")).getFdrqvalue());
+        assertEquals(0.10, ((GenericResult)results.get("GO:0030904")).getFdrqvalue());
+        assertEquals(0.12, ((GenericResult)results.get("GO:0008623")).getFdrqvalue());
+        assertEquals(0.03, ((GenericResult)results.get("GO:0046540")).getFdrqvalue());
+
+        // check phenotypes
+        assertEquals( 1.0, ((GenericResult)results.get("GO:0000346")).getNES());
+        assertEquals( 1.0, ((GenericResult)results.get("GO:0030904")).getNES());
+        assertEquals(-1.0, ((GenericResult)results.get("GO:0008623")).getNES());
+        assertEquals(-1.0, ((GenericResult)results.get("GO:0046540")).getNES());
+        
+        return;
     }
 }
