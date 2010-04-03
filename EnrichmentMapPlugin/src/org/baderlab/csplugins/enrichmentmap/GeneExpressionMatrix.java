@@ -43,8 +43,6 @@
 
 package org.baderlab.csplugins.enrichmentmap;
 
-import giny.model.Node;
-
 import java.util.*;
 
 /**
@@ -127,8 +125,8 @@ public class GeneExpressionMatrix {
 
         //go through the expression matrix and get the subset of
         //genes of interest
-        for(Iterator i = subset.iterator(); i.hasNext();){
-            Integer k = (Integer)i.next();
+        for(Iterator<Integer> i = subset.iterator(); i.hasNext();){
+            Integer k = i.next();
             if(expressionMatrix.containsKey(k)){
                 expression_subset.put(k,expressionMatrix.get(k));
             }
@@ -152,7 +150,7 @@ public class GeneExpressionMatrix {
         double max = 0.0;
           if(currentMatrix != null){
             //go through the expression matrix
-            for(Iterator i = currentMatrix.keySet().iterator(); i.hasNext();){
+            for(Iterator<Integer> i = currentMatrix.keySet().iterator(); i.hasNext();){
                 Double[] currentRow = ((GeneExpression)currentMatrix.get(i.next())).getExpression();
                 for(int j = 0; j< currentRow.length;j++){
                     if(max < currentRow[j])
@@ -175,7 +173,7 @@ public class GeneExpressionMatrix {
         double min = 0.0;
         //go through the expression matrix
         if(currentMatrix != null){
-            for(Iterator i = currentMatrix.keySet().iterator(); i.hasNext();){
+            for(Iterator<Integer> i = currentMatrix.keySet().iterator(); i.hasNext();){
                 Double[] currentRow = ((GeneExpression)currentMatrix.get(i.next())).getExpression();
                 for(int j = 0; j< currentRow.length;j++){
                     if(min > currentRow[j])
@@ -206,8 +204,8 @@ public class GeneExpressionMatrix {
 
          int k= 0;
         //go through the expression matrix
-        for(Iterator i = expressionMatrix.keySet().iterator(); i.hasNext();){
-            Integer key = (Integer)i.next();
+        for(Iterator<Integer> i = expressionMatrix.keySet().iterator(); i.hasNext();){
+            Integer key = i.next();
             GeneExpression currentexpression = ((GeneExpression)expressionMatrix.get(key));
             String Name = currentexpression.getName();
             String description = currentexpression.getDescription();
@@ -246,19 +244,19 @@ public class GeneExpressionMatrix {
         this.numGenes = numGenes;
     }
 
-    public HashMap getExpressionMatrix() {
+    public HashMap<Integer, GeneExpression> getExpressionMatrix() {
         return expressionMatrix;
     }
 
-    public void setExpressionMatrix(HashMap expressionMatrix) {
+    public void setExpressionMatrix(HashMap<Integer, GeneExpression> expressionMatrix) {
         this.expressionMatrix = expressionMatrix;
     }
 
-    public HashMap getExpressionMatrix_rowNormalized() {
+    public HashMap<Integer, GeneExpression> getExpressionMatrix_rowNormalized() {
         return expressionMatrix_rowNormalized;
     }
 
-    public void setExpressionMatrix_rowNormalized(HashMap expressionMatrix_rowNormalized) {
+    public void setExpressionMatrix_rowNormalized(HashMap<Integer, GeneExpression> expressionMatrix_rowNormalized) {
         this.expressionMatrix_rowNormalized = expressionMatrix_rowNormalized;
     }
 
@@ -300,7 +298,7 @@ public class GeneExpressionMatrix {
 
         expressionSb.append( "\n");
 
-        for(Iterator i = expressionMatrix.keySet().iterator(); i.hasNext();){
+        for(Iterator<Integer> i = expressionMatrix.keySet().iterator(); i.hasNext();){
             expressionSb.append( ((GeneExpression)expressionMatrix.get(i.next())).toString() );
            }
 
