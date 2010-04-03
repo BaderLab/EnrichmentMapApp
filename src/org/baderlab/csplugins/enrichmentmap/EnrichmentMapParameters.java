@@ -199,7 +199,7 @@ public class EnrichmentMapParameters {
     private double defaultQvalueCutOff;
     private double defaultJaccardCutOff;
     private double defaultOverlapCutOff;
-    private String default_overlap_metric;
+    private String defaultSimilarityMetric;
     private Boolean disable_heatmap_autofocus;
     private String defaultSortMethod;
 
@@ -235,11 +235,12 @@ public class EnrichmentMapParameters {
         this.similarityCutOffChanged = false;
         //default Values from Cytoscape properties
         this.cyto_prop = CytoscapeInit.getProperties() ;
-        this.defaultPvalueCutOff  = Double.parseDouble( this.cyto_prop.getProperty("EnrichmentMap.default_pvalue",  "0.05") );
-        this.defaultQvalueCutOff  = Double.parseDouble( this.cyto_prop.getProperty("EnrichmentMap.default_qvalue",  "0.25") );
-        this.defaultJaccardCutOff = Double.parseDouble( this.cyto_prop.getProperty("EnrichmentMap.default_jaccard", "0.25") );
-        this.defaultOverlapCutOff = Double.parseDouble( this.cyto_prop.getProperty("EnrichmentMap.default_overlap", "0.50") );
-        this.default_overlap_metric = this.cyto_prop.getProperty("EnrichmentMap.default_overlap_metric", "jaccard");
+        this.defaultPvalueCutOff       = Double.parseDouble( this.cyto_prop.getProperty("EnrichmentMap.default_pvalue",  "0.05") );
+        this.defaultQvalueCutOff       = Double.parseDouble( this.cyto_prop.getProperty("EnrichmentMap.default_qvalue",  "0.25") );
+        this.defaultJaccardCutOff      = Double.parseDouble( this.cyto_prop.getProperty("EnrichmentMap.default_jaccard", "0.25") );
+        this.defaultOverlapCutOff      = Double.parseDouble( this.cyto_prop.getProperty("EnrichmentMap.default_overlap", "0.50") );
+        this.defaultSimilarityMetric   = this.cyto_prop.getProperty("EnrichmentMap.default_similarity_metric",
+                this.cyto_prop.getProperty("EnrichmentMap.default_overlap_metric", "overlap")); // looking for Property "EnrichmentMap.default_overlap_metric" for legacy reasons
         this.disable_heatmap_autofocus = Boolean.parseBoolean( this.cyto_prop.getProperty("EnrichmentMap.disable_heatmap_autofocus", "false") );
 
         //get the default heatmap sort algorithm
@@ -1348,7 +1349,7 @@ public class EnrichmentMapParameters {
     }
 
     public String getOverlapMetricDefault() {
-        return this.default_overlap_metric;
+        return this.defaultSimilarityMetric;
 
     }
 
