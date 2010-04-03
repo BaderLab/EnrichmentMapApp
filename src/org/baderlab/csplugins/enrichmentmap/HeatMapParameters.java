@@ -239,9 +239,9 @@ public class HeatMapParameters {
         //Go through the ranks hashmap and insert each ranking as an option
         if(ranks != null){
             //convert the ranks into a treeset so that they are ordered
-            TreeMap ranks_ordered = new TreeMap();
+            TreeMap<String, HashMap<Integer, Ranking>> ranks_ordered = new TreeMap<String, HashMap<Integer, Ranking>>();
             ranks_ordered.putAll(ranks);
-            for(Iterator j = ranks_ordered.keySet().iterator(); j.hasNext(); ){
+            for(Iterator<String> j = ranks_ordered.keySet().iterator(); j.hasNext(); ){
                 String ranks_name = j.next().toString();
                 rankOptionComboBox.addItem(ranks_name);
             }
@@ -277,7 +277,7 @@ public class HeatMapParameters {
                 break;
 
             case RANK:
-                for(Iterator j = ranks.keySet().iterator(); j.hasNext(); ){
+                for(Iterator<String> j = ranks.keySet().iterator(); j.hasNext(); ){
                     String ranks_name = j.next().toString();
                     if(ranks_name.equalsIgnoreCase(rankFileIndex))
                         rankOptionComboBox.setSelectedItem(ranks_name);
@@ -364,6 +364,10 @@ public class HeatMapParameters {
      * Handles expanding and collapsing of extra content on the user's click of the titledBorder component.
      */
     private class ChangeSortAction extends AbstractAction implements ActionListener, ItemListener {
+        /**
+         * 
+         */
+        private static final long serialVersionUID = -8951978251258210440L;
         private JButton arrow;
 
         private ChangeSortAction(JButton arrow){
