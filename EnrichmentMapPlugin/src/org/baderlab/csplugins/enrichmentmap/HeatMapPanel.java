@@ -62,6 +62,7 @@ import giny.model.Edge;
 import org.mskcc.colorgradient.*;
 import org.baderlab.csplugins.brainlib.DistanceMatrix;
 import org.baderlab.csplugins.brainlib.AvgLinkHierarchicalClustering;
+import org.baderlab.csplugins.enrichmentmap.HeatMapParameters.Sort;
 
 /**
  * Created by
@@ -976,7 +977,7 @@ public class HeatMapPanel extends JPanel {
                 //if only one node is selected activate leading edge potential
                 //and if at least one rankfile is present
                 //TODO: we probably have to catch cases where we have only a rank file for one of the datasets
-                if(nodes.length == 1 && params.haveRanks()){
+                if(nodes.length == 1 && params.haveRanks() && hmParams.getSort() == Sort.RANK){
                     displayLeadingEdge = true;
                     if(params.isGSEA()){
 
