@@ -45,6 +45,9 @@ package org.baderlab.csplugins.enrichmentmap;
 import cytoscape.task.Task;
 import cytoscape.task.TaskMonitor;
 import cytoscape.data.readers.TextFileReader;
+import cytoscape.Cytoscape;
+
+import javax.swing.*;
 import java.util.HashMap;
 
 /**
@@ -62,6 +65,9 @@ import java.util.HashMap;
  * checked.  If columns 5 and 6 are specified as ES and NES the file is for sure a GSEA result file.)
  */
 public class EnrichmentResultFileReaderTask implements Task {
+
+    //default Score at Max value
+     public static Double DefaultScoreAtMax = -1000000.0;
 
     private EnrichmentMapParameters params;
 
@@ -181,7 +187,7 @@ public class EnrichmentResultFileReaderTask implements Task {
                 double FDRqvalue = 1.0;
                 double FWERqvalue = 1.0;
                 int rankAtMax = -1;
-                double scoreAtMax = -1;
+                double scoreAtMax = DefaultScoreAtMax;
 
                 //The first column of the file is the name of the geneset
                 String Name = tokens[0].toUpperCase().trim();
@@ -259,7 +265,7 @@ public class EnrichmentResultFileReaderTask implements Task {
 
         //Get the current genesets so we can check that all the results are in the geneset list
         //and put the size of the genesets into the visual style
-        HashMap<String, GeneSet> genesets = params.getFilteredGenesets();
+        HashMap genesets = params.getFilteredGenesets();
 
         int currentProgress = 0;
         int maxValue = lines.length;
@@ -276,6 +282,7 @@ public class EnrichmentResultFileReaderTask implements Task {
 
         for (int i = 1; i < lines.length; i++) {
             line = lines[i];
+
             tokens = line.split("\t");
 
             double pvalue = 1.0;
