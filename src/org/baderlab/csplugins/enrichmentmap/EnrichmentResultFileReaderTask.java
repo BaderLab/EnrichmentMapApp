@@ -65,9 +65,8 @@ import java.util.HashMap;
  * checked.  If columns 5 and 6 are specified as ES and NES the file is for sure a GSEA result file.)
  */
 public class EnrichmentResultFileReaderTask implements Task {
-
     //default Score at Max value
-     public static Double DefaultScoreAtMax = -1000000.0;
+    public static Double DefaultScoreAtMax = -1000000.0;
 
     private EnrichmentMapParameters params;
 
