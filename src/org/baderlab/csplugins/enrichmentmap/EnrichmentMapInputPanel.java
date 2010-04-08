@@ -1646,7 +1646,7 @@ public class EnrichmentMapInputPanel extends JPanel {
         if(file != null) {
              if(file.getPath().contains(".rpt")){
                       //The file loaded is an rpt file --> populate the fields based on the
-                      populateFieldsFromRpt(file,false);
+                      populateFieldsFromRpt(file,true);
 
                   }
              else{
@@ -1682,7 +1682,7 @@ public class EnrichmentMapInputPanel extends JPanel {
         if(file != null) {
              if(file.getPath().contains(".rpt")){
                       //The file loaded is an rpt file --> populate the fields based on the
-                      populateFieldsFromRpt(file,false);
+                      populateFieldsFromRpt(file,true);
                   }
              else{
                 Dataset1FileName2TextField.setForeground(checkFile(file.getAbsolutePath()));
