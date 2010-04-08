@@ -1,14 +1,14 @@
 === Current properties === 
 
-EnrichmentMap.default_pvalue=0.05
-EnrichmentMap.default_qvalue=0.25
+EnrichmentMap.default_pvalue=0.005
+EnrichmentMap.default_qvalue=0.10
 EnrichmentMap.default_overlap=0.50
 EnrichmentMap.default_jaccard=0.25
 	Descr:		Default values to populate the EnrichmentMapInputPanel
 	Values:		float >0.0, <1.0
 	Versions:	since [274]
 	Status:		active
-	Tickets:	#2
+	Tickets:	#2, #124
 
 EnrichmentMap.default_similarity_metric=overlap
 	Descr:		Default values to populate the EnrichmentMapInputPanel
@@ -33,15 +33,15 @@ EnrichmentMap.default_sort_method=Hierarchical Cluster
 	Values:		Hierarchical Cluster, Ranks, Columns, No Sort
 	Versions:	since [413]
 	Status:		active
-	Tickets:	#84
+	Tickets:	#84, #124
 
-EnrichmentMap.hieracical_clustering_theshold=1000
+EnrichmentMap.hieracical_clustering_threshold=1000
 	Descr:		Threshold for the maximum number of Genes before a dialog
 				opens to confirm if clustering should be performed.
 	Values:		Integer
-	Versions:	since [496]
+	Versions:	since [504]
 	Status:		active
-	Tickets:	#84
+	Tickets:	#84, #124
 	
 nodelinkouturl.MSigDb.GSEA\ Gene\ sets=http\://www.broad.mit.edu/gsea/msigdb/cards/%ID%.html
 	Descr:		LinkOut URL for MSigDb.GESA Gene sets
@@ -52,12 +52,12 @@ nodelinkouturl.MSigDb.GSEA\ Gene\ sets=http\://www.broad.mit.edu/gsea/msigdb/car
 
 === deprecated properties (but still evaluated) ===
 
-EnrichmentMap.default_overlap_metric=jaccard
+EnrichmentMap.default_overlap_metric=overlap
 	Descr:		Default values to populate the EnrichmentMapInputPanel
 	Values:		overlap, jaccard
 	Versions:	from [274] to [498], since then overruled by EnrichmentMap.default_similarity_metric=overlap
 	Status:		deprecated since [498]
-	Tickets:	#2
+	Tickets:	#2, #124
 
 === old properties (no more active) === 
 
@@ -91,5 +91,5 @@ EnrichmentMap.hieracical_clusteting_theshold=1000
 				opens to confirm if clustering should be performed.
 	Values:		Integer
 	Versions:	between [415] and [496]
-	Status:		removed because of Typo
+	Status:		removed because of Typo(s)
 	Tickets:	#84

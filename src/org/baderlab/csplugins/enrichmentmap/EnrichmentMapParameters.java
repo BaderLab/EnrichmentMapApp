@@ -235,8 +235,8 @@ public class EnrichmentMapParameters {
         this.similarityCutOffChanged = false;
         //default Values from Cytoscape properties
         this.cyto_prop = CytoscapeInit.getProperties() ;
-        this.defaultPvalueCutOff       = Double.parseDouble( this.cyto_prop.getProperty("EnrichmentMap.default_pvalue",  "0.05") );
-        this.defaultQvalueCutOff       = Double.parseDouble( this.cyto_prop.getProperty("EnrichmentMap.default_qvalue",  "0.25") );
+        this.defaultPvalueCutOff       = Double.parseDouble( this.cyto_prop.getProperty("EnrichmentMap.default_pvalue",  "0.005") );
+        this.defaultQvalueCutOff       = Double.parseDouble( this.cyto_prop.getProperty("EnrichmentMap.default_qvalue",  "0.1") );
         this.defaultJaccardCutOff      = Double.parseDouble( this.cyto_prop.getProperty("EnrichmentMap.default_jaccard", "0.25") );
         this.defaultOverlapCutOff      = Double.parseDouble( this.cyto_prop.getProperty("EnrichmentMap.default_overlap", "0.50") );
         this.defaultSimilarityMetric   = this.cyto_prop.getProperty("EnrichmentMap.default_similarity_metric",

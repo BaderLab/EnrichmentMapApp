@@ -785,7 +785,7 @@ public class EnrichmentMapInputPanel extends JPanel {
 
 
             //qvalue cutoff input
-           JLabel qvalueCutOffLabel = new JLabel("Q-value Cutoff");
+           JLabel qvalueCutOffLabel = new JLabel("FDR Q-value Cutoff");
            qvalueTextField = new JFormattedTextField(decFormat);
            qvalueTextField.setColumns(3);
            qvalueTextField.addPropertyChangeListener("value", new EnrichmentMapInputPanel.FormattedTextFieldAction());
@@ -1052,7 +1052,7 @@ public class EnrichmentMapInputPanel extends JPanel {
             }
         });
 
-        importButton.setText("Build Enrichment Map");
+        importButton.setText("Build");
         importButton.addActionListener(new BuildEnrichmentMapActionListener(this));
         importButton.setEnabled(true);
 
