@@ -72,6 +72,7 @@ class ReplaceCollapseGui(Frame):
         self.chipFileName = StringVar()
         self.doCollapse = IntVar()
         self.doIdReplace = IntVar()
+        self.suppress_null = IntVar()
         self.messages = StringVar()
         self.addExprInFileName = StringVar()
         self.addExprOutFileName = StringVar()
@@ -135,7 +136,7 @@ class ReplaceCollapseGui(Frame):
         currentRow += 1
 
         checkbuttonFrame = LabelFrame(self, relief=GROOVE, labelanchor='nw', text="Modes for single file:")
-        checkbuttonFrame.grid(row=currentRow, column=0, columnspan=3, sticky=E + W, padx=2, pady=2)
+        checkbuttonFrame.grid(row=currentRow, column=0, columnspan=2, sticky=E + W, padx=2, pady=2)
         self.doCollapseCheck = Checkbutton(checkbuttonFrame, text='Collapse Probesets', variable=self.doCollapse)
         self.doCollapseCheck.select()
         self.doCollapseCheck.grid(row=0, column=0, sticky=E)
@@ -143,6 +144,11 @@ class ReplaceCollapseGui(Frame):
         self.doReplaceCheck = Checkbutton(checkbuttonFrame, text='Translate IDs', variable=self.doIdReplace, command=self.doReplaceButtonPressed)
         self.doReplaceCheck.select()
         self.doReplaceCheck.grid(row=0, column=1, sticky=W)
+
+        optionFrame = LabelFrame(self, relief=GROOVE, labelanchor='nw', text="Options:")
+        optionFrame.grid(row=currentRow, column=2, sticky=E + W, padx=2, pady=2)
+        self.suppressNullCheck = Checkbutton(optionFrame, text='Suppress Gene "NULL"', variable=self.suppress_null)
+        self.suppressNullCheck.grid(row=0, column=0, sticky=W)
 
         # Additional file selectors:
         currentRow += 1
@@ -442,6 +448,7 @@ class ReplaceCollapseGui(Frame):
                                                      collapseMode='max_probe',
                                                      verbose=True,
                                                      fix_session=False,
+                                                     suppress_null=(self.suppress_null.get() == 1),
                                                      gui=self)
             else:
                 collapser = CollapseExpressionMatrix(inputFileName=self.inputFileName.get(),
@@ -453,6 +460,7 @@ class ReplaceCollapseGui(Frame):
                                                      collapseMode='max_probe',
                                                      verbose=True,
                                                      fix_session=False,
+                                                     suppress_null=(self.suppress_null.get() == 1),
                                                      gui=self)
                 
             collapser.main()
@@ -462,7 +470,7 @@ class ReplaceCollapseGui(Frame):
 class CollapseExpressionMatrix:
     def __init__(self,
                  inputFileName, outputFileName, chipFileName, extra_expr_in="", extra_expr_out="",
-                 doCollapse=False, collapseMode="max_probe", verbose=True, fix_session=False, gui=None):
+                 doCollapse=False, collapseMode="max_probe", verbose=True, fix_session=False, suppress_null=False, gui=None):
         self.inputFileName = inputFileName
         self.outputFileName = outputFileName
         self.chipFileName = chipFileName
@@ -472,6 +480,7 @@ class CollapseExpressionMatrix:
         self.collapseMode = collapseMode
         self.verbose = verbose
         self.fix_session = fix_session
+        self.suppress_null = suppress_null
         self.gui = gui
 
     def printMessage(self, text):
@@ -640,9 +649,14 @@ class CollapseExpressionMatrix:
                 continue
             
             tokens = line.split("\t")
-            
+
+            if self.suppress_null and tokens[0].strip().upper() == 'NULL':
+                if self.verbose :
+                    self.printMessage("dropping Gene 'NULL'...\n")
+                continue
+
             ##### BEGIN FIX SESSION CODE #####
-            if self.fix_session and (tokens[0] not in genes_of_interest) :
+            if self.fix_session and (tokens[0] not in self.genes_of_interest) :
                 # restrict to genes_of_interest
                 continue
             ##### END   FIX SESSION CODE #####
@@ -759,6 +773,11 @@ class CollapseExpressionMatrix:
             best_probeID = ""
             best_score = 0.0
 
+            if self.suppress_null and symbol.strip().upper() == 'NULL':
+                if self.verbose :
+                    self.printMessage("dropping Gene 'NULL'...\n")
+                continue
+
             if len(ranks_map[symbol].keys()) > 1:
                 for probeID in ranks_map[symbol].keys():
                     if abs(float(ranks_map[symbol][probeID])) > abs(best_score):
@@ -798,14 +817,14 @@ class CollapseExpressionMatrix:
             ##### BEGIN FIX SESSION CODE #####
             if self.fix_session :
                 # collect genes of interest
-                genes_of_interest = []
+                self.genes_of_interest = []
                 
                 expr_file = file(self.outputFileName, "rU")
                 try:
                     for line in expr_file:
                         data = line.split("\t", 1)
                         if not data[0] == "NAME":
-                            genes_of_interest.append(data[0])
+                            self.genes_of_interest.append(data[0])
                 finally:
                     expr_file.close()
                 # make backup of the expression file
@@ -944,6 +963,12 @@ if __name__ == "__main__":
 #                     help="Mode for collapsing data from multiple probe sets for the same gene symbol. Currently only 'max_probe' is supported.",
                       help=SUPPRESS_HELP
                       )
+    parser.add_option("--null",
+                      dest="suppress_null",
+                      default=False,
+                      help="suppress Gene with Symbol NULL\n",
+                      action="store_true",
+                      )
     
     parser.add_option("-g", "--gui",
                       dest="useGui",
@@ -963,7 +988,7 @@ if __name__ == "__main__":
                       help=SUPPRESS_HELP, #"write out shorter GCT format (only one header line)\n",
                       action="store_true",
                       )
-    
+
     
     (options, args) = parser.parse_args()
 
@@ -1011,7 +1036,8 @@ if __name__ == "__main__":
                                              doCollapse=options.collapse,
                                              collapseMode=options.mode,
                                              verbose=options.verbose,
-                                             fix_session=options.fix_session)
+                                             fix_session=options.fix_session,
+                                             suppress_null=options.suppress_null)
         collapser.main()
         
         
