@@ -137,11 +137,13 @@ public class InitializeGenesetsOfInterestTask implements Task {
             if(params.isGSEA()){
                 GSEAResult current_result = (GSEAResult)enrichmentResults1.get(current_name);
 
-                Set<Integer> allranks = rank2geneDataset1.keySet();
-                Integer largestRank = Collections.max(allranks);
 
                 //update the current geneset to reflect score at max
                 if((dataset1ranks != null) && (rank2geneDataset1 != null)){
+
+                    Set<Integer> allranks = rank2geneDataset1.keySet();
+                    Integer largestRank = Collections.max(allranks);
+
                     //get the max at rank for this geneset
                     int currentRankAtMax = current_result.getRankAtMax();
 
@@ -246,9 +248,6 @@ public class InitializeGenesetsOfInterestTask implements Task {
                 if(params.isGSEA()){
                     GSEAResult current_result = (GSEAResult)enrichmentResults2.get(current_name);
 
-                    Set<Integer> allranks = rank2geneDataset2.keySet();
-                    Integer largestRank = Collections.max(allranks);
-
                     if(current_result.geneSetOfInterest(params.getPvalue(),params.getQvalue())){
                         enrichmentResults2OfInterest.put(current_name,current_result);
 
@@ -264,6 +263,10 @@ public class InitializeGenesetsOfInterestTask implements Task {
                     }
                     //update the current geneset to reflect score at max
                     if((dataset2ranks != null) && (rank2geneDataset2 != null)){
+
+                        Set<Integer> allranks = rank2geneDataset2.keySet();
+                        Integer largestRank = Collections.max(allranks);
+
                         //get the max at rank for this geneset
                         int currentRankAtMax = current_result.getRankAtMax();
                         if(currentRankAtMax != -1){
