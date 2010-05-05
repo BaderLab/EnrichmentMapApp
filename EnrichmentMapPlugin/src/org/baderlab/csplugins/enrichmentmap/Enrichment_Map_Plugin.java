@@ -378,7 +378,11 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
                 //get the network name and network and parameters
                 //for this file
                 String[] fullname = prop_file.getName().split("Enrichment_Map_Plugin_");
-                String  name = (fullname[1].split("\\."))[0];
+                String name;
+                if(fullname.length > 1)
+                    name = (fullname[1].split("\\."))[0];
+                else
+                    continue;
 
                 EnrichmentMapParameters params = EnrichmentMapManager.getInstance().getParameters(name);
 
