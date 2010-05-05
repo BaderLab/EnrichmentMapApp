@@ -778,8 +778,8 @@ public class EnrichmentMapParameters {
        StringBuffer result = new StringBuffer();
 
        for(Iterator i = map.keySet().iterator(); i.hasNext(); ){
-           Object key = i.next();
-           result.append( key.toString() + "\t" + map.get(key).toString() + "\n");
+            Object key = i.next();
+            result.append( key.toString() + "\t" + map.get(key).toString() + "\n");
        }
        return result.toString();
 
