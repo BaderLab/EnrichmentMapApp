@@ -248,11 +248,13 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
                 pFileList.add(enrichmentresults1Ofinterest);
 
                 //output the ranks specific to GSEA for leading edge analysis rank to gene conversion file
-                ranks1geneids = new File(tmpDir, name+".RANKS1Genes.txt");
-                BufferedWriter r2g12writer = new BufferedWriter(new FileWriter(ranks1geneids));
-                r2g12writer.write(params.printHashmap(params.getRank2geneDataset1()));
-                r2g12writer.close();
-                pFileList.add(ranks1geneids);
+                if(params.getRank2geneDataset1() != null){
+                    ranks1geneids = new File(tmpDir, name+".RANKS1Genes.txt");
+                    BufferedWriter r2g12writer = new BufferedWriter(new FileWriter(ranks1geneids));
+                    r2g12writer.write(params.printHashmap(params.getRank2geneDataset1()));
+                    r2g12writer.close();
+                    pFileList.add(ranks1geneids);
+                }
 
                 //save all the rank files
                 if(!params.getRanks().isEmpty()){
@@ -286,11 +288,14 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
                     pFileList.add(enrichmentresults2Ofinterest);
 
                     //output the ranks specific to GSEA for leading edge analysis rank to gene conversion file
-                    ranks2geneids = new File(tmpDir, name+".RANKS2Genes.txt");
-                    BufferedWriter r2g22writer = new BufferedWriter(new FileWriter(ranks2geneids));
-                    r2g22writer.write(params.printHashmap(params.getRank2geneDataset2()));
-                    r2g22writer.close();
-                    pFileList.add(ranks2geneids);
+                    if(params.getRank2geneDataset2() != null){
+
+                        ranks2geneids = new File(tmpDir, name+".RANKS2Genes.txt");
+                        BufferedWriter r2g22writer = new BufferedWriter(new FileWriter(ranks2geneids));
+                        r2g22writer.write(params.printHashmap(params.getRank2geneDataset2()));
+                        r2g22writer.close();
+                        pFileList.add(ranks2geneids);
+                    }
                 }
 
                 if(params.isData()){
