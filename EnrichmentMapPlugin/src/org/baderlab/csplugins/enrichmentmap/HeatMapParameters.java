@@ -191,9 +191,32 @@ public class HeatMapParameters {
                 break;
 
                case LOGTRANSFORM:
-                    min = Math.log1p(minExpression);
-                    max = Math.log1p(maxExpression) ;
-                    max = Math.max(Math.abs(min),max);
+
+                    //can't take a log of a negative number
+                   //if both the max and min are negative then log tranform won't work.
+                   //issue a warning.
+                    if((minExpression <= 0) && (maxExpression <= 0) ){
+                        //both the max and min are probably negative values
+                        JOptionPane.showMessageDialog(Cytoscape.getDesktop(),"Both the max and min expression are negative, log of negative numbers is not valid", "log normalization error", JOptionPane.WARNING_MESSAGE);
+                        min = 0;
+                        max = 0;
+                    }
+                    //if min expression is negative then use the max expression as the max
+                    else if(minExpression <= 0){
+                        min = 0;
+                        max = Math.log1p(maxExpression);
+                    }
+                    //if the max expression is negative then use the min expression as the max (should never happen!)
+                    else if(maxExpression <= 0){
+                        min = 0;
+                        max = Math.log1p(minExpression);
+                    }
+                   else{
+                        min = Math.log1p(minExpression);
+                        max = Math.log1p(maxExpression) ;
+                        max = Math.max(Math.abs(min),max);
+                   }
+
                    break;
 
                case ASIS:
