@@ -1265,10 +1265,25 @@ public class EnrichmentMapInputPanel extends JPanel {
                     GMTFileNameTextField.setToolTipText(gmt);
                 }
 
+
+                boolean AutoPopulate = true;
                 if(!params.getGMTFileName().equalsIgnoreCase(gmt)){
-                    JOptionPane.showMessageDialog(this,"This analysis GMT file does not match the previous dataset loaded.");
+                    //maybe the files are the same but they are in different directories
+                    File currentGMTFilename = new File(params.getGMTFileName());
+                    File newGMTFilename = new File(gmt);
+                    if(!currentGMTFilename.getName().equalsIgnoreCase(newGMTFilename.getName())){
+                        int answer = JOptionPane.showConfirmDialog(this,"This analysis GMT file does not match the previous dataset loaded.\n If you want to use the current GMT file but still use the new rpt file to populated fields press YES,\n If you want to change the GMT file to the one in this rpt file and populate the fields with the rpt file press NO,\n to choose a different rpt file press CANCEL\n","GMT files name mismatch", JOptionPane.YES_NO_CANCEL_OPTION);
+                        if(answer == JOptionPane.NO_OPTION){
+                            GMTFileNameTextField.setForeground(checkFile(gmt));
+                            GMTFileNameTextField.setText(gmt);
+                            params.setGMTFileName(gmt);
+                            GMTFileNameTextField.setToolTipText(gmt);
+                        }
+                        else if(answer == JOptionPane.CANCEL_OPTION)
+                            AutoPopulate = false;
+                    }
                 }
-                else{
+                if(AutoPopulate){
                     GCTFileName1TextField.setForeground(checkFile(data));
                     GCTFileName1TextField.setText(data);
                     params.setExpressionFileName1(data);
@@ -1293,10 +1308,25 @@ public class EnrichmentMapInputPanel extends JPanel {
                 params.setGMTFileName(gmt);
                 GMTFileNameTextField.setToolTipText(gmt);
            }
+
+            boolean AutoPopulate = true;
            if(!params.getGMTFileName().equalsIgnoreCase(gmt)){
-                JOptionPane.showMessageDialog(this,"This analysis GMT file does not match the previous dataset loaded.");
+              //maybe the files are the same but they are in different directories
+              File currentGMTFilename = new File(params.getGMTFileName());
+              File newGMTFilename = new File(gmt);
+              if(!currentGMTFilename.getName().equalsIgnoreCase(newGMTFilename.getName())){
+                  int answer = JOptionPane.showConfirmDialog(this,"This analysis GMT file does not match the previous dataset loaded.\n If you want to use the current GMT file but still use the new rpt file to populated fields press YES,\n If you want to change the GMT file to the one in this rpt file and populate the fields with the rpt file press NO,\n to choose a different rpt file press CANCEL\n","GMT files name mismatch", JOptionPane.YES_NO_CANCEL_OPTION);
+                  if(answer == JOptionPane.NO_OPTION){
+                    GMTFileNameTextField.setForeground(checkFile(gmt));
+                    GMTFileNameTextField.setText(gmt);
+                    params.setGMTFileName(gmt);
+                    GMTFileNameTextField.setToolTipText(gmt);
+                  }
+                  else if(answer == JOptionPane.CANCEL_OPTION)
+                            AutoPopulate = false;
+               }
            }
-           else{
+           if(AutoPopulate){
                 GCTFileName2TextField.setForeground(checkFile(data));
                 GCTFileName2TextField.setText(data);
                 params.setExpressionFileName2(data);
