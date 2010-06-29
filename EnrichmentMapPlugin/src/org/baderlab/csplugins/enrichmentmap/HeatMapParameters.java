@@ -300,10 +300,20 @@ public class HeatMapParameters {
                 break;
 
             case RANK:
+                int k = 0;
+                int columns = 0;
+                if(params.isData2())
+                    columns = params.getExpression().getColumnNames().length + params.getExpression2().getColumnNames().length - 2;
+                else
+                    columns = params.getExpression().getColumnNames().length;
+
                 for(Iterator<String> j = ranks.keySet().iterator(); j.hasNext(); ){
                     String ranks_name = j.next().toString();
-                    if(ranks_name.equalsIgnoreCase(rankFileIndex))
+                    if(ranks_name.equalsIgnoreCase(rankFileIndex)){
                         rankOptionComboBox.setSelectedItem(ranks_name);
+                        sortIndex = columns + k;
+                    }
+                    k++;
                 }
                 break;
 
@@ -558,6 +568,11 @@ public class HeatMapParameters {
         //reset the panel
         edgeOverlapPanel.updatePanel();
         nodeOverlapPanel.updatePanel();
+    }
+
+    public void changeAscendingValue(int index){
+        if(index != -1)
+            ascending[index] = !ascending[index];
     }
 
 }

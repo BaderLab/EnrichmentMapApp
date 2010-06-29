@@ -535,6 +535,20 @@ public class HeatMapPanel extends JPanel {
         //sort the ranks according to the ascending flag
         boolean ascending = hmParams.isAscending(hmParams.getSortIndex());
 
+        //Doctor the sorting to always have the leading edge at the top
+        //if it is supposed to be ascending and the gene set isNegative then reverse
+        //the sorting
+        //if is supposed to be descending and the gene set is not negative then revese
+        //the sorting
+        if(ascending && isNegative && this.displayLeadingEdge){
+            hmParams.changeAscendingValue(hmParams.getSortIndex());
+            ascending = false;
+        }
+        else if(!ascending  && !isNegative && this.displayLeadingEdge){
+            hmParams.changeAscendingValue(hmParams.getSortIndex());
+            ascending = true;
+        }
+
         if(ascending)
         //sort ranks
             Arrays.sort(ranks_subset);
