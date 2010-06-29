@@ -14,11 +14,11 @@
 	  actual installation directory and the version you are using):
 
 	  Apple:
-		CYTOSCAPE_HOME=/Applications/Cytoscape_v2.6.2
+		CYTOSCAPE_HOME=/Applications/Cytoscape_v2.7.0
 	  Linux:
-		CYTOSCAPE_HOME=/usr/local/Cytoscape_v2.6.2
+		CYTOSCAPE_HOME=/usr/local/Cytoscape_v2.7.0
 	  Windows:
-		CYTOSCAPE_HOME=C:/Program Files/Cytoscape-v2.6.2
+		CYTOSCAPE_HOME=C:/Program Files/Cytoscape-v2.7.0
 	
 	(cytoscape.jar and lib/*jar are needed for compiling the plugin) 
     -->
