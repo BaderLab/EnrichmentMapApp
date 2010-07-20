@@ -171,61 +171,62 @@ public class HeatMapPanel extends JPanel {
     public void resetVariables(EnrichmentMapParameters params){
         this.params = params;
 
-        GeneExpressionMatrix expression = params.getExpression();
-        numConditions = expression.getNumConditions();
-        columnNames = expression.getColumnNames();
+        if(params.isData() || params.isData2()){
+            GeneExpressionMatrix expression = params.getExpression();
+            numConditions = expression.getNumConditions();
+            columnNames = expression.getColumnNames();
 
-        phenotypes = expression.getPhenotypes();
+            phenotypes = expression.getPhenotypes();
 
-        this.Dataset1phenotype1 = params.getDataset1Phenotype1();
-        this.Dataset1phenotype2 = params.getDataset1Phenotype2();
+            this.Dataset1phenotype1 = params.getDataset1Phenotype1();
+            this.Dataset1phenotype2 = params.getDataset1Phenotype2();
 
-        hmParams = params.getHmParams();
+            hmParams = params.getHmParams();
 
-        boolean[] ascending = new boolean[columnNames.length + params.getRanks().size()];
-        //set the rank files to ascending
-        for(int k = ascending.length ;  k > (ascending.length - params.getRanks().size()); k--)
-            ascending[k-1] = true;
-        hmParams.setAscending(ascending);
-        //hmParams.setAscending(new boolean[columnNames.length + params.getRanks().size()]);
-
-
-        displayLeadingEdge = false;
-        leadingEdgeScoreAtMax1 = 0.0;
-        leadingEdgeScoreAtMax2 = 0.0;
-        leadingEdgeRankAtMax1 = 0;
-        leadingEdgeRankAtMax2 = 0;
-
-        //get the current expressionSet
-        if(node)
-            setNodeExpressionSet(params);
-       else
-            setEdgeExpressionSet(params);
-
-        if(params.isData2()){
-
-            GeneExpressionMatrix expression2 = params.getExpression2();
-
-            numConditions2 = expression2.getNumConditions();
-            columnNames2 = expression2.getColumnNames();
-
-            boolean[] ascending2 = new boolean[columnNames.length + (columnNames2.length-2) +params.getRanks().size()];
-            for(int k = ascending2.length ;  k > ascending2.length - params.getRanks().size(); k--)
-                ascending2[k-1] = true;
-            hmParams.setAscending(ascending2);//we don't have to repeat the name and description columns
+            boolean[] ascending = new boolean[columnNames.length + params.getRanks().size()];
+            //set the rank files to ascending
+            for(int k = ascending.length ;  k > (ascending.length - params.getRanks().size()); k--)
+                ascending[k-1] = true;
+            hmParams.setAscending(ascending);
+            //hmParams.setAscending(new boolean[columnNames.length + params.getRanks().size()]);
 
 
-            //hmParams.setAscending(new boolean[columnNames.length + (columnNames2.length-2) +params.getRanks().size()]);//we don't have to repeat the name and description columns
-            //column2_ascending = new boolean[columnNames2.length-2]; //we don't have to repeat the name and description columns
+            displayLeadingEdge = false;
+            leadingEdgeScoreAtMax1 = 0.0;
+            leadingEdgeScoreAtMax2 = 0.0;
+            leadingEdgeRankAtMax1 = 0;
+            leadingEdgeRankAtMax2 = 0;
 
-            phenotypes2 = expression2.getPhenotypes();
+            //get the current expressionSet
+            if(node)
+                setNodeExpressionSet(params);
+            else
+                setEdgeExpressionSet(params);
 
-            this.Dataset2phenotype1 = params.getDataset2Phenotype1();
-            this.Dataset2phenotype2 = params.getDataset2Phenotype2();
+            if(params.isData2()){
+
+                GeneExpressionMatrix expression2 = params.getExpression2();
+
+                numConditions2 = expression2.getNumConditions();
+                columnNames2 = expression2.getColumnNames();
+
+                boolean[] ascending2 = new boolean[columnNames.length + (columnNames2.length-2) +params.getRanks().size()];
+                for(int k = ascending2.length ;  k > ascending2.length - params.getRanks().size(); k--)
+                    ascending2[k-1] = true;
+                hmParams.setAscending(ascending2);//we don't have to repeat the name and description columns
+
+
+                //hmParams.setAscending(new boolean[columnNames.length + (columnNames2.length-2) +params.getRanks().size()]);//we don't have to repeat the name and description columns
+                //column2_ascending = new boolean[columnNames2.length-2]; //we don't have to repeat the name and description columns
+
+                phenotypes2 = expression2.getPhenotypes();
+
+                this.Dataset2phenotype1 = params.getDataset2Phenotype1();
+                this.Dataset2phenotype2 = params.getDataset2Phenotype2();
+
+            }
 
         }
-
-
     }
 
     /**
