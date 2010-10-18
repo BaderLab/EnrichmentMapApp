@@ -344,6 +344,7 @@ public class EnrichmentResultFileReaderTask implements Task {
                             }
                         }
                     }
+
                     result = new GenericResult(name,description,pvalue,gs_size,FDRqvalue,NES);
                 }
                 else
@@ -365,7 +366,19 @@ public class EnrichmentResultFileReaderTask implements Task {
                 }
             currentProgress++;
 
-            results.put(name, result);
+             //check to see if the gene set has already been entered in the results
+             //it is possible that one geneset will be in both phenotypes.
+             //if it is already exists then we want to make sure the one retained is the result with the
+             //lower p-value.
+             //ticket #149
+           GenericResult temp = (GenericResult)results.get(name);
+             if(temp == null)
+                results.put(name, result);
+            else{
+                 if(result.getPvalue() < temp.getPvalue())
+                    results.put(name, result);
+             }
+
         }
         if(FDR)
             params.setFDR(FDR);
