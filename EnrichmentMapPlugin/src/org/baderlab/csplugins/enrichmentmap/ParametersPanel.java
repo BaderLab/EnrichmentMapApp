@@ -391,6 +391,25 @@ public class ParametersPanel extends JPanel {
                 gridbag.setConstraints(qvalueSlider,c);
                 legends.add(qvalueSlider);
 
+                SliderBarPanel similaritySlider = params.getSimilaritySlider();
+
+                c.gridx = 0;
+                c.gridy = 6;
+                //qvalueSlider.setPreferredSize(new Dimension(summaryPanelWidth, 20));
+
+                gridbag.setConstraints(similaritySlider,c);
+                legends.add(similaritySlider);
+
+            }
+            else{
+                SliderBarPanel similaritySlider = params.getSimilaritySlider();
+
+                c.gridx = 0;
+                c.gridy = 5;
+                //qvalueSlider.setPreferredSize(new Dimension(summaryPanelWidth, 20));
+
+                gridbag.setConstraints(similaritySlider,c);
+                legends.add(similaritySlider);
             }
 
 

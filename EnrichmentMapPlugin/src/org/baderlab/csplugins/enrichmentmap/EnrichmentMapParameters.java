@@ -116,6 +116,8 @@ public class EnrichmentMapParameters {
     private SliderBarPanel qvalueSlider;
     //similarity cutoff
     private double similarityCutOff;
+    //similarity cutoff slider bar
+    private SliderBarPanel similaritySlider;
 
     //DATA need to specify the Enrichment map
     //Hashmap stores the unique set of genes used in the gmt file
@@ -249,11 +251,11 @@ public class EnrichmentMapParameters {
         //assign the defaults:
         this.pvalue = this.defaultPvalueCutOff;
         //create the slider for this pvalue
-        pvalueSlider = new SliderBarPanel(0,this.pvalue,"P-value Cutoff",this, EnrichmentMapVisualStyle.PVALUE_DATASET1, EnrichmentMapVisualStyle.PVALUE_DATASET2,ParametersPanel.summaryPanelWidth);
+        pvalueSlider = new SliderBarPanel(0,this.pvalue,"P-value Cutoff",this, EnrichmentMapVisualStyle.PVALUE_DATASET1, EnrichmentMapVisualStyle.PVALUE_DATASET2,ParametersPanel.summaryPanelWidth, false, this.pvalue);
 
         this.qvalue = this.defaultQvalueCutOff;
         //create the slider for the qvalue
-        qvalueSlider = new SliderBarPanel(0,this.qvalue,"Q-value Cutoff",this, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2,ParametersPanel.summaryPanelWidth);
+        qvalueSlider = new SliderBarPanel(0,this.qvalue,"Q-value Cutoff",this, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2,ParametersPanel.summaryPanelWidth, false, this.qvalue);
 
         //choose Jaccard or Overlap as default
         if ( getOverlapMetricDefault().equalsIgnoreCase("overlap") ){
@@ -264,6 +266,9 @@ public class EnrichmentMapParameters {
             this.jaccard = true;
         }
         this.enrichment_edge_type = ENRICHMENT_INTERACTION_TYPE;
+
+        //create the slider for the similarity cutoff
+        similaritySlider = new SliderBarPanel(this.similarityCutOff,1,"Similarity Cutoff",this, EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT, EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT,ParametersPanel.summaryPanelWidth, true, this.similarityCutOff);
     }
 
 
@@ -417,10 +422,13 @@ public class EnrichmentMapParameters {
             this.similarityCutOffChanged = true;
         }
         //create the slider for this pvalue
-        pvalueSlider = new SliderBarPanel(0,this.pvalue,"P-value Cutoff",this, EnrichmentMapVisualStyle.PVALUE_DATASET1, EnrichmentMapVisualStyle.PVALUE_DATASET2,ParametersPanel.summaryPanelWidth);
+        pvalueSlider = new SliderBarPanel(0,this.pvalue,"P-value Cutoff",this, EnrichmentMapVisualStyle.PVALUE_DATASET1, EnrichmentMapVisualStyle.PVALUE_DATASET2,ParametersPanel.summaryPanelWidth, false, this.pvalue);
 
         //create the slider for the qvalue
-        qvalueSlider = new SliderBarPanel(0,this.qvalue,"Q-value Cutoff",this, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2,ParametersPanel.summaryPanelWidth);
+        qvalueSlider = new SliderBarPanel(0,this.qvalue,"Q-value Cutoff",this, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2,ParametersPanel.summaryPanelWidth, false, this.pvalue);
+
+        //create the slider for the similarity cutoff
+        similaritySlider = new SliderBarPanel(this.similarityCutOff,1,"Similarity Cutoff",this, EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT, EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT,ParametersPanel.summaryPanelWidth, true, this.similarityCutOff);
 
     }
 
@@ -461,13 +469,16 @@ public class EnrichmentMapParameters {
 
         this.pvalue = copy.getPvalue();
         //create the slider for this pvalue
-        pvalueSlider = new SliderBarPanel(0,this.pvalue,"P-value Cutoff",this, EnrichmentMapVisualStyle.PVALUE_DATASET1, EnrichmentMapVisualStyle.PVALUE_DATASET2,ParametersPanel.summaryPanelWidth);
+        pvalueSlider = new SliderBarPanel(0,this.pvalue,"P-value Cutoff",this, EnrichmentMapVisualStyle.PVALUE_DATASET1, EnrichmentMapVisualStyle.PVALUE_DATASET2,ParametersPanel.summaryPanelWidth, false, this.pvalue);
 
         this.qvalue = copy.getQvalue();
         //create the slider for the qvalue
-        qvalueSlider = new SliderBarPanel(0,this.qvalue,"Q-value Cutoff",this, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2,ParametersPanel.summaryPanelWidth);
+        qvalueSlider = new SliderBarPanel(0,this.qvalue,"Q-value Cutoff",this, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2,ParametersPanel.summaryPanelWidth, false, this.qvalue);
 
         this.similarityCutOff = copy.getSimilarityCutOff();
+        //create the slider for the similarity cutoff
+        similaritySlider = new SliderBarPanel(this.similarityCutOff,1,"Similarity Cutoff",this, EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT, EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT,ParametersPanel.summaryPanelWidth,true, this.similarityCutOff);
+
 
         this.Data = copy.isData();
         this.Data2 = copy.isData2();
@@ -519,6 +530,7 @@ public class EnrichmentMapParameters {
         qvalueSlider = copy.getQvalueSlider();
 
         this.similarityCutOff = copy.getSimilarityCutOff();
+        this.similaritySlider = copy.getSimilaritySlider();
 
         this.Data = copy.isData();
         this.Data2 = copy.isData2();
@@ -1266,6 +1278,10 @@ public class EnrichmentMapParameters {
 
     public SliderBarPanel getQvalueSlider() {
         return qvalueSlider;
+    }
+
+    public SliderBarPanel getSimilaritySlider() {
+        return similaritySlider;
     }
 
     public ArrayList<Node> getSelectedNodes() {

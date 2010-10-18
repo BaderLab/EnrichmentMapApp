@@ -85,6 +85,9 @@ public class SliderBarPanel extends JPanel {
     private JLabel label;
     private String sliderLabel;
 
+    private boolean edgesOnly;
+    private int initial_value;
+
     /**
      * Class constructor
      *
@@ -96,7 +99,7 @@ public class SliderBarPanel extends JPanel {
      * @param attrib2 - attribute for dataset 2 that the slider bar is specific to (i.e. p-value or q-value)
      * @param desired_width
      */
-    public SliderBarPanel(double min, double max, String sliderLabel, EnrichmentMapParameters params,String attrib1, String attrib2, int desired_width) {
+    public SliderBarPanel(double min, double max, String sliderLabel, EnrichmentMapParameters params,String attrib1, String attrib2, int desired_width, boolean edgesOnly, double initial_value) {
         this.setPreferredSize(new Dimension(DIM_WIDTH, DIM_HEIGHT));
         this.setLayout(new BorderLayout(0,0));
         this.setOpaque(false);
@@ -104,10 +107,12 @@ public class SliderBarPanel extends JPanel {
         if((min <= 1) && (max <= 1)){
             this.min = (int)(min*precision);
             this.max = (int)(max*precision);
+            this.initial_value = (int)(initial_value*precision);
         }
         else{
            this.min = (int)min;
            this.max = (int)max;
+           this.initial_value = (int)initial_value;
         }
         this.sliderLabel = sliderLabel;
 
@@ -116,6 +121,9 @@ public class SliderBarPanel extends JPanel {
         Dimension currentsize = label.getPreferredSize();
         currentsize.height = DIM_HEIGHT/12;
         label.setPreferredSize(currentsize);
+
+        this.edgesOnly = edgesOnly;
+
         initPanel(params, attrib1, attrib2,desired_width);
     }
 
@@ -130,9 +138,9 @@ public class SliderBarPanel extends JPanel {
     public void initPanel(EnrichmentMapParameters params,String attrib1, String attrib2, int desired_width){
 
         JSlider slider = new JSlider(JSlider.HORIZONTAL,
-                                      min, max, max);
+                                      min, max, initial_value);
 
-        slider.addChangeListener(new SliderBarActionListener(this,params, attrib1,attrib2));
+        slider.addChangeListener(new SliderBarActionListener(this,params, attrib1,attrib2,edgesOnly));
 
         slider.setMajorTickSpacing((max-min)/5);
         slider.setPaintTicks(true);

@@ -81,6 +81,8 @@ public class SliderBarActionListener implements ChangeListener {
     //attribute for dataset 2 that the slider bar is specific to
     private String attrib_dataset2;
 
+    private boolean onlyEdges = false;
+
     /**
      * Class constructor
      *
@@ -89,7 +91,7 @@ public class SliderBarActionListener implements ChangeListener {
      * @param attrib1 - attribute for dataset 1 that the slider bar is specific to (i.e. p-value or q-value)
      * @param attrib2 - attribute for dataset 2 that the slider bar is specific to (i.e. p-value or q-value)
      */
-    public SliderBarActionListener(SliderBarPanel panel, EnrichmentMapParameters params, String attrib1, String attrib2) {
+    public SliderBarActionListener(SliderBarPanel panel, EnrichmentMapParameters params, String attrib1, String attrib2, boolean onlyEdges) {
         this.panel = panel;
         this.params = params;
         hiddenNodes = new ArrayList();
@@ -97,6 +99,8 @@ public class SliderBarActionListener implements ChangeListener {
 
         attrib_dataset1 = attrib1;
         attrib_dataset2 = attrib2;
+
+        this.onlyEdges = onlyEdges;
 
     }
 
@@ -106,6 +110,12 @@ public class SliderBarActionListener implements ChangeListener {
      * @param e
      */
     public void stateChanged(ChangeEvent e){
+
+        //check to see if the event is associated with only edges
+        if(onlyEdges){
+            hideEdgesOnly(e);
+            return;
+        }
 
         JSlider source = (JSlider)e.getSource();
         Double max_cutoff = source.getValue()/panel.getPrecision();
@@ -186,9 +196,17 @@ public class SliderBarActionListener implements ChangeListener {
            
            Double pvalue_dataset1 = attributes.getDoubleAttribute(currentNode.getIdentifier(), prefix + attrib_dataset1);
 
+           //possible that there isn't a p-value for this geneset
+           if(pvalue_dataset1 == null)
+            pvalue_dataset1 = 0.99;
+
            if((pvalue_dataset1 > max_cutoff) || (pvalue_dataset1 < min_cutoff)){
                if(params.isTwoDatasets()){
                    Double pvalue_dataset2 = attributes.getDoubleAttribute(currentNode.getIdentifier(), prefix + attrib_dataset2);
+
+                   if(pvalue_dataset2 == null)
+                        pvalue_dataset2 = 0.99;
+
                   if((pvalue_dataset2 > max_cutoff) || (pvalue_dataset2 < min_cutoff)){
 
                         int edges[] = network.getAdjacentEdgeIndicesArray(currentNode.getRootGraphIndex(),true,true,true);
@@ -219,6 +237,10 @@ public class SliderBarActionListener implements ChangeListener {
             Node currentNode = currentHN.getNode();
             Double pvalue_dataset1 = attributes.getDoubleAttribute(currentNode.getIdentifier(), prefix + attrib_dataset1);
 
+            //possible that there isn't a p-value for this geneset
+           if(pvalue_dataset1 == null)
+            pvalue_dataset1 = 0.99;
+
             if((pvalue_dataset1 <= max_cutoff) && (pvalue_dataset1 >= min_cutoff)){
 
                 network.restoreNode(currentNode);
@@ -233,7 +255,11 @@ public class SliderBarActionListener implements ChangeListener {
             }
             if(params.isTwoDatasets()){
                    Double pvalue_dataset2 = attributes.getDoubleAttribute(currentNode.getIdentifier(), prefix + attrib_dataset2);
-                  if((pvalue_dataset2 <= max_cutoff) && (pvalue_dataset2 >= min_cutoff)){
+
+                 if(pvalue_dataset2 == null)
+                        pvalue_dataset2 = 0.99;
+
+                if((pvalue_dataset2 <= max_cutoff) && (pvalue_dataset2 >= min_cutoff)){
                         network.restoreNode(currentNode);
                         NodeView currentNodeView = view.getNodeView(currentNode);
                         currentNodeView.setXPosition(currentHN.getX());
@@ -270,6 +296,71 @@ public class SliderBarActionListener implements ChangeListener {
 
    }
 
+    public void hideEdgesOnly(ChangeEvent e){
+        JSlider source = (JSlider)e.getSource();
+        Double min_cutoff = source.getValue()/panel.getPrecision();
+        Double max_cutoff = source.getMaximum()/panel.getPrecision();
+
+        panel.setLabel(source.getValue());
+
+        CyNetwork network = Cytoscape.getCurrentNetwork();
+        CyNetworkView view = Cytoscape.getCurrentNetworkView();
+        CyAttributes attributes = Cytoscape.getEdgeAttributes();
+
+        int[] edges = network.getEdgeIndicesArray();
+
+        //get the prefix of the current network
+        String prefix = params.getAttributePrefix();
+        //go through all the existing nodes to see if we need to hide any new nodes.
+
+
+        for(int i = 0; i< edges.length; i++){
+            Edge currentEdge = network.getEdge(edges[i]);
+
+            // skip Node if it's not an Enrichment-Geneset (but e.g. a Signature-Hub)
+            if( attributes.hasAttribute(currentEdge.getIdentifier(), prefix + EnrichmentMapVisualStyle.GS_TYPE)
+                && ! EnrichmentMapVisualStyle.GS_TYPE_ENRICHMENT.equalsIgnoreCase(attributes.getStringAttribute(currentEdge.getIdentifier(), prefix + EnrichmentMapVisualStyle.GS_TYPE)) )
+                continue;
+
+            Double similarity_cutoff = attributes.getDoubleAttribute(currentEdge.getIdentifier(), prefix + attrib_dataset1);
+
+            //possible that there isn't a p-value for this geneset
+            if(similarity_cutoff == null)
+             similarity_cutoff = 0.1;
+
+            if((similarity_cutoff > max_cutoff) || (similarity_cutoff < min_cutoff)){
+                hiddenEdges.add(currentEdge);
+                network.hideEdge(currentEdge);
+            }
+        }
+
+        //go through all the hidden edges to see if we need to restore any of them
+        ArrayList<Edge> unhiddenEdges = new ArrayList<Edge>();
+
+        for(Iterator j = hiddenEdges.iterator();j.hasNext();){
+            Edge currentEdge = (Edge)j.next();
+            Double similarity_curoff = attributes.getDoubleAttribute(currentEdge.getIdentifier(), prefix + attrib_dataset1);
+
+            //possible that there isn't a p-value for this geneset
+            if(similarity_curoff == null)
+                similarity_curoff = 0.1;
+
+
+            if((similarity_curoff <= max_cutoff) && (similarity_curoff >= min_cutoff)){
+                network.restoreEdge(currentEdge);
+                unhiddenEdges.add(currentEdge);
+
+            }
+        }
+
+        //remove the unhidden edges from the list of hiddenEdges.
+        for(Iterator k = unhiddenEdges.iterator();k.hasNext();)
+            hiddenEdges.remove(k.next());
+
+        view.redrawGraph(true,true);
+        view.updateView();
+
+    }
 
     private class HiddenNodes{
            Node node;
