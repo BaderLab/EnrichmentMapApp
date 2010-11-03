@@ -1247,7 +1247,27 @@ public class HeatMapPanel extends JPanel {
 
                     //create a distance matrix the size of the expression set
                     DistanceMatrix distanceMatrix = new DistanceMatrix(currentExpressionSet.keySet().size());
-                    distanceMatrix.calcDistances(clustering_expressionset, new AlignExpressionDataDistance());
+                    //calculate the distance metric based on the user choice of distance metric
+                    if(params.getDefaultDistanceMetric().equalsIgnoreCase(HeatMapParameters.pearson_correlation)){
+                        //if the user choice is pearson still have to check to make sure
+                        //there are no errors with pearson calculation.  If can't calculate pearson
+                        //then it calculates the cosine.
+                        try{
+                            distanceMatrix.calcDistances(clustering_expressionset, new PearsonCorrelation());
+                        }catch(RuntimeException e){
+                            try{
+                                JOptionPane.showMessageDialog(Cytoscape.getDesktop(),"Unable to compute Pearson Correlation for this expression Set.\n  Cosine distance used for this set instead.\n To switch distance metric used for all hierarchical clustering \nPlease change setting under Advance Preferences in the Results Panel.");
+                                distanceMatrix.calcDistances(clustering_expressionset, new CosineDistance());
+                            }catch(RuntimeException ex){
+                                distanceMatrix.calcDistances(clustering_expressionset, new EuclideanDistance());
+                            }
+                        }
+                    }
+                    else if (params.getDefaultDistanceMetric().equalsIgnoreCase(HeatMapParameters.cosine))
+                             distanceMatrix.calcDistances(clustering_expressionset, new CosineDistance());
+                    else if (params.getDefaultDistanceMetric().equalsIgnoreCase(HeatMapParameters.euclidean))
+                             distanceMatrix.calcDistances(clustering_expressionset, new EuclideanDistance());
+
 
                     distanceMatrix.setLabels(labels);
 

@@ -204,6 +204,7 @@ public class EnrichmentMapParameters {
     private String defaultSimilarityMetric;
     private Boolean disable_heatmap_autofocus;
     private String defaultSortMethod;
+    private String defaultDistanceMetric;
 
     final public static String ENRICHMENT_INTERACTION_TYPE = "Geneset_Overlap"; //TODO: change to "Geneset_Overlap"
     private PostAnalysisParameters paParams;
@@ -247,6 +248,9 @@ public class EnrichmentMapParameters {
 
         //get the default heatmap sort algorithm
         this.defaultSortMethod = this.cyto_prop.getProperty("EnrichmentMap.default_sort_method", HeatMapParameters.sort_hierarchical_cluster);
+
+        //get the default distance metric algorithm
+        this.defaultDistanceMetric = this.cyto_prop.getProperty("EnrichmentMap.default_distance_metric", HeatMapParameters.pearson_correlation);
 
         //assign the defaults:
         this.pvalue = this.defaultPvalueCutOff;
@@ -814,6 +818,10 @@ public class EnrichmentMapParameters {
         //Create a hashmap to contain all the values in the rpt file.
         HashMap newMap;
 
+        boolean incrementRank = false;
+
+        String [] lines = fileInput.split("\n");
+
         //GeneSet
         if(type == 1)
             newMap = new HashMap<String, GeneSet>();
@@ -830,15 +838,29 @@ public class EnrichmentMapParameters {
         else if(type == 5)
             newMap = new HashMap<Integer, String>();
         //Hashmap gene key to ranking
-        else if(type == 6)
+        else if(type == 6){
             newMap = new HashMap<Integer, Ranking>();
+
+            //issue with ranks from old session files where if there is a rank of -1
+            // any heatmap that has that gene will be missing it.
+            //ticket #152
+            //scan the rank file to see if there is a negative rank
+            for (int i = 0; i < lines.length; i++) {
+                String line = lines[i];
+                String[] tokens = line.split("\t");
+
+                if(Integer.parseInt(tokens[3]) < 0)
+                    incrementRank = true;
+            }
+
+        }
         //Hashmap rank to genekey
         else if(type ==7)
             newMap = new HashMap<Integer, Integer>();
         else
             newMap = new HashMap();
 
-        String [] lines = fileInput.split("\n");
+
 
         for (int i = 0; i < lines.length; i++) {
             String line = lines[i];
@@ -880,9 +902,13 @@ public class EnrichmentMapParameters {
             }
 
             //Rankings
-            if(type == 6)
+            if(type == 6){
+                if(incrementRank){
+                    Integer newRank = (Integer.parseInt(tokens[3]) + 1);
+                    tokens[3] = newRank.toString();
+                }
                 newMap.put(Integer.parseInt(tokens[0]),new Ranking(tokens));
-
+            }
             //rank to gene id
             if(type == 7)
                 newMap.put(Integer.parseInt(tokens[0]), Integer.parseInt(tokens[1]));
@@ -1516,5 +1542,11 @@ public class EnrichmentMapParameters {
         return enrichment_edge_type;
     }
 
+    public String getDefaultDistanceMetric() {
+        return defaultDistanceMetric;
+    }
 
+    public void setDefaultDistanceMetric(String defaultDistanceMetric) {
+        this.defaultDistanceMetric = defaultDistanceMetric;
+    }
 }

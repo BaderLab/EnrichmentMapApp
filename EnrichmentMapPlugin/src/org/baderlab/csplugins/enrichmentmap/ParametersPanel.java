@@ -234,16 +234,52 @@ public class ParametersPanel extends JPanel {
         sortingPanel.add(columns);
         sortingPanel.add(nosort);
 
-        preferences.getContentPane().add(sortingPanel, BorderLayout.SOUTH);
+        preferences.getContentPane().add(sortingPanel, BorderLayout.CENTER);
         preferences.getContentPane().add(prefsPanel, BorderLayout.NORTH);
+
+        //add a radio button to set default distance metric for the hierarchical cluster
+        ButtonGroup distance_metric = new ButtonGroup();
+        JPanel dm_Panel = new JPanel();
+        dm_Panel.setLayout(new BoxLayout(dm_Panel,BoxLayout.Y_AXIS));
+
+        JRadioButton pearson = new JRadioButton(HeatMapParameters.pearson_correlation);
+        pearson.setActionCommand(HeatMapParameters.pearson_correlation);
+        pearson.setSelected(false);
+
+        JRadioButton cosine = new JRadioButton(HeatMapParameters.cosine);
+        cosine.setActionCommand(HeatMapParameters.cosine);
+        cosine.setSelected(false);
+
+        JRadioButton euclidean = new JRadioButton(HeatMapParameters.euclidean);
+        euclidean.setActionCommand(HeatMapParameters.euclidean);
+        euclidean.setSelected(false);
+
+        if(params.getDefaultDistanceMetric().equalsIgnoreCase(HeatMapParameters.pearson_correlation))
+           pearson.setSelected(true);
+        if(params.getDefaultDistanceMetric().equalsIgnoreCase(HeatMapParameters.cosine))
+            cosine.setSelected(true);
+        if(params.getDefaultDistanceMetric().equalsIgnoreCase(HeatMapParameters.euclidean))
+            euclidean.setSelected(true);
+
+        pearson.addActionListener(new ParametersPanelActionListener(params));
+        distance_metric.add(pearson);
+        cosine.addActionListener(new ParametersPanelActionListener(params));
+        distance_metric.add(cosine);
+        euclidean.addActionListener(new ParametersPanelActionListener(params));
+        distance_metric.add(euclidean);
+
+        dm_Panel.add(new JLabel("Default Distance Metric:"));
+        dm_Panel.add(pearson);
+        dm_Panel.add(cosine);
+        dm_Panel.add(euclidean);
+
+        preferences.getContentPane().add(dm_Panel, BorderLayout.SOUTH);
         main.add(preferences, BorderLayout.SOUTH);
-        
+
         JScrollPane jScrollPane = new javax.swing.JScrollPane(main);
 
         //jScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         this.add(jScrollPane);
-
-
         this.revalidate();
 
     }

@@ -274,7 +274,7 @@ public class RanksFileReaderTask implements Task {
         for(int j = 0; j<sort_scores.length;j++){
             //check to see if this score is already enter
             if(!score2ranks.containsKey(sort_scores[j]))
-                    score2ranks.put(sort_scores[j],j-1);
+                    score2ranks.put(sort_scores[j],j);
         }
 
         //update scores Hash to contain the ranks as well.

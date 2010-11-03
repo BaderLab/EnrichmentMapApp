@@ -27,8 +27,26 @@ public class ParametersPanelActionListener implements ActionListener {
             params.setDefaultSortMethod(HeatMapParameters.sort_rank);
         }
         else if(evt.getActionCommand().equalsIgnoreCase(HeatMapParameters.sort_column)){
-                    params.setDefaultSortMethod(HeatMapParameters.sort_column);
-                }
+            params.setDefaultSortMethod(HeatMapParameters.sort_column);
+        }
+        else if(evt.getActionCommand().equalsIgnoreCase(HeatMapParameters.pearson_correlation)){
+            params.setDefaultDistanceMetric(HeatMapParameters.pearson_correlation);
+            //update the heatmap to reflect this change.
+            params.getHmParams().getEdgeOverlapPanel().updatePanel(params);
+            params.getHmParams().getNodeOverlapPanel().updatePanel(params);
+        }
+        else if (evt.getActionCommand().equalsIgnoreCase(HeatMapParameters.cosine)){
+            params.setDefaultDistanceMetric(HeatMapParameters.cosine);
+            //update the heatmap to reflect this change.
+            params.getHmParams().getEdgeOverlapPanel().updatePanel(params);
+            params.getHmParams().getNodeOverlapPanel().updatePanel(params);
+        }
+        else if(evt.getActionCommand().equalsIgnoreCase(HeatMapParameters.euclidean)){
+            params.setDefaultDistanceMetric(HeatMapParameters.euclidean);
+            //update the heatmap to reflect this change.
+            params.getHmParams().getEdgeOverlapPanel().updatePanel(params);
+            params.getHmParams().getNodeOverlapPanel().updatePanel(params);
+        }
 
     }
 

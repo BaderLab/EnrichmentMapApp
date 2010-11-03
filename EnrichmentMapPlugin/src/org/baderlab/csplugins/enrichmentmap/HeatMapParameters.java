@@ -126,6 +126,10 @@ public class HeatMapParameters {
     public static String sort_column = "Columns";
     public static String sort_none = "No Sort";
 
+    public static String pearson_correlation = "Pearson Correlation";
+    public static String cosine = "Cosine Distance";
+    public static String euclidean = "Euclidean Distance";
+
     /**
      * Class constructor -
      *
