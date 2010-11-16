@@ -101,12 +101,12 @@ public class AboutPanel extends JDialog {
                 "Plugin Homepage:<BR>" +
                 "<a href='" + pluginUrl + "'>" + pluginUrl + "</a><BR>" +
                 "<BR>" +
-//                "If you use this plugin in your research, please cite:<BR>" +
-//                "Merico D, Isserlin R, Stueker O, Emili A, Bader GD<BR>" +
-//                "Enrichment Map: a network-based method for <BR>" +
-//                "gene-set enrichment visualization and interpretation<BR>" +
-//                "<i>in preparation</i><BR>" +
-//                "<BR>" +
+                "If you use this plugin in your research, please cite:<BR>" +
+                "Merico D, Isserlin R, Stueker O, Emili A, Bader GD<BR>" +
+                "Enrichment Map: A Network-Based Method for <BR>" +
+                "Gene-Set Enrichment Visualization and Interpretation<BR>" +
+                "<i>PLoS One. 2010 Nov 15;5(11)</i><BR>" +
+                "<BR>" +
                 "<font size='-1'>" + Enrichment_Map_Plugin.buildId + "</font>" +
                 "</p></body></html>"
             );
