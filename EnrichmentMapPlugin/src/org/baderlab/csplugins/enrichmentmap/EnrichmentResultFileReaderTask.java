@@ -141,11 +141,15 @@ public class EnrichmentResultFileReaderTask implements Task {
         // NAME <tab> GS<br> follow link to MSigDB <tab> GS DETAILS <tab> SIZE <tab> ES <tab> NES <tab> NOM p-val <tab> FDR q-val <tab> FWER p-val <tab> RANK AT MAX <tab> LEADING EDGE
         // There are eleven headings.
 
+        //DAVID results have 13 columns
+        //Category <tab> Term <tab> Count <tab> % <tab> PValue <tab> Genes <tab> List <tab> Total <tab> Pop Hits <tab> Pop Total <tab> Fold Enrichment <tab> Bonferroni <tab> Benjamini <tab> FDR
+
+
         //ES and NES columns are specific to the GSEA format
         String header_line = lines[0];
         String [] tokens = header_line.split("\t");
 
-        //check to see if there are exactly 11 columns
+        //check to see if there are exactly 11 columns - = GSEA results
         if(tokens.length == 11){
             //check to see if the ES is the 5th column and that NES is the 6th column
             if((tokens[4].equalsIgnoreCase("ES")) && (tokens[5].equalsIgnoreCase("NES")))
@@ -154,6 +158,15 @@ public class EnrichmentResultFileReaderTask implements Task {
             //if it doesn't specify ES and NES in the 5 and 6th columns
             else
               parseGenericFile(lines);
+        }
+        //check to see if there are exactly 13 columns - = DAVID results
+        else if (tokens.length == 13){
+            //check to see that the 6th column is called Genes and that the 12th column is called "Benjamini"
+            if((tokens[5].equalsIgnoreCase("Genes")) && tokens[11].equalsIgnoreCase("Benjamini"))
+                parseDavidFile(lines);
+            else
+                parseGenericFile(lines);
+
         }
         else{
              parseGenericFile(lines);
@@ -383,6 +396,154 @@ public class EnrichmentResultFileReaderTask implements Task {
         if(FDR)
             params.setFDR(FDR);
     }
+
+    /**
+         * Parse david enrichment results file
+         *
+         * @param lines - contents of results file
+         */
+        public void parseDavidFile(String [] lines){
+
+            //with David results there are no genesets defined.  first pass through the file
+            // needs to parse the genesets
+
+            //parameters that can be extracted from David files:
+            //Category	Term	Count	%	PValue	Genes	List Total	Pop Hits	Pop Total	Fold Enrichment	Bonferroni	Benjamini	FDR
+            // Count = number of genes in the geneset that came from the input list, number of genes in the genelist mapping toa specific term.
+            // List Total - number of genes in the gene list mapping to the category (ie. GO Cellular component)
+            // Pop Hits - number of genes in the background gene list mapping to a specific term
+            // Pop total - number of gene s in the background gene list mapping to the category (i.e. Go Cellular Component)
+
+
+            // Column 2 is the geneset name
+            // Column 1 is the category (and can be used for the description)
+            // Column 6 is the list of genes (from the loaded list) in this geneset -- therefore pre-filtered.
+            HashMap<String, GeneSet> genesets = params.getGenesets();
+
+            //get the genes (which should also be empty
+            HashMap<String, Integer> genes = params.getGenes();
+            HashMap<Integer, String> key2gene = params.getHashkey2gene();
+
+            int currentProgress = 0;
+            int maxValue = lines.length;
+            boolean FDR = true;
+
+             //skip the first line which just has the field names (start i=1)
+            //check to see how many columns the data has
+            String line = lines[0];
+            String [] tokens = line.split("\t");
+            int length = tokens.length;
+            if (length != 13)
+                throw new IllegalThreadStateException("David results file is missing data.");
+                //not enough data in the file!!
+
+            for (int i = 1; i < lines.length; i++) {
+                line = lines[i];
+
+                tokens = line.split("\t");
+
+                double pvalue = 1.0;
+                double FDRqvalue = 1.0;
+                GenericResult result;
+                int gs_size = 0;
+                double NES = 1.0;
+
+                //The second column of the file is the name of the geneset
+                String name = tokens[1].toUpperCase().trim();
+
+                //the first column of the file is the description
+                String description = tokens[0].toUpperCase();
+
+
+                //load the geneset and the genes to their respective data structures.
+                //create an object of type Geneset with the above Name and description
+                GeneSet gs = new GeneSet(name, description);
+
+                String[] gene_tokens = tokens[5].split(", ");
+
+                //All subsequent fields in the list are the geneset associated with this geneset.
+                for (int j = 0; j < gene_tokens.length; j++) {
+
+                    String gene = gene_tokens[j].toUpperCase();
+                        //Check to see if the gene is already in the hashmap of genes
+                        //if it is already in the hash then get its associated key and put it
+                        //into the set of genes
+                    if (genes.containsKey(gene)) {
+                            gs.addGene(genes.get(gene));
+                    }
+
+                    //If the gene is not in the list then get the next value to be used and put it in the list
+                    else{
+                        //add the gene to the master list of genes
+                        int value = params.getNumberOfGenes();
+                        genes.put(gene, value);
+                        key2gene.put(value,gene);
+                        params.setNumberOfGenes(value+1);
+
+                            //add the gene to the genelist
+                            gs.addGene(genes.get(gene));
+                        }
+                }
+
+                //finished parsing that geneset
+                //add the current geneset to the hashmap of genesets
+                genesets.put(name, gs);
+
+
+                //The 5th column is the nominal p-value
+                if(tokens[4].equalsIgnoreCase("")){
+                    //do nothing
+                }else{
+                    pvalue = Double.parseDouble(tokens[4]);
+                }
+
+                //the Pop hits is the size of the geneset
+                //the Count is the size of the geneset (restricted by the gene list)
+                if(tokens[2].equalsIgnoreCase("")){
+                    //do nothing
+                }else{
+                    gs_size = Integer.parseInt(tokens[2]);
+                }
+
+                //Use the Benjamini value for the fdr
+                if(tokens[11].equalsIgnoreCase("")){
+                    //do nothing
+                }else{
+                    FDRqvalue = Double.parseDouble(tokens[11]);
+                }
+
+                result = new GenericResult(name,description,pvalue,gs_size,FDRqvalue);
+
+
+
+                // Calculate Percentage.  This must be a value between 0..100.
+                int percentComplete = (int) (((double) currentProgress / maxValue) * 100);
+                //  Estimate Time Remaining
+                long timeRemaining = maxValue - currentProgress;
+                if (taskMonitor != null) {
+                        taskMonitor.setPercentCompleted(percentComplete);
+                        taskMonitor.setStatus("Parsing Generic Results file " + currentProgress + " of " + maxValue);
+                        taskMonitor.setEstimatedTimeRemaining(timeRemaining);
+                    }
+                currentProgress++;
+
+                 //check to see if the gene set has already been entered in the results
+                 //it is possible that one geneset will be in both phenotypes.
+                 //if it is already exists then we want to make sure the one retained is the result with the
+                 //lower p-value.
+                 //ticket #149
+              GenericResult temp = (GenericResult)results.get(name);
+                 if(temp == null)
+                    results.put(name, result);
+                else{
+                     if(result.getPvalue() < temp.getPvalue())
+                        results.put(name, result);
+                 }
+
+            }
+            if(FDR)
+                params.setFDR(FDR);
+        }
 
     /**
      * Run the Task.

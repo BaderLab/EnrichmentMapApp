@@ -999,7 +999,7 @@ public class HeatMapPanel extends JPanel {
                 //TODO: we probably have to catch cases where we have only a rank file for one of the datasets
                 if(nodes.length == 1 ){
                     displayLeadingEdge = true;
-                    if(params.isGSEA()){
+                    if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)){
 
                         HashMap<String, EnrichmentResult> results1 = params.getEnrichmentResults1();
                         if(results1.containsKey(nodename)){

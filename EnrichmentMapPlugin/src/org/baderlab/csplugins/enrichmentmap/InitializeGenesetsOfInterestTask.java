@@ -134,7 +134,7 @@ public class InitializeGenesetsOfInterestTask implements Task {
             //check geneset result to see if it meets the required cutoffs
 
             //if it is a GSEA Result then
-            if(params.isGSEA()){
+            if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)){
                 GSEAResult current_result = (GSEAResult)enrichmentResults1.get(current_name);
 
                 //update the current geneset to reflect score at max
@@ -204,8 +204,8 @@ public class InitializeGenesetsOfInterestTask implements Task {
                         throw new IllegalThreadStateException("The Geneset: " + current_name + " is not found in the GMT file.");
                 }
             }
-            //otherwise it is a generic enrichment set
-            else{
+            //otherwise it is a generic or David enrichment set
+            else {
                 GenericResult current_result = (GenericResult)enrichmentResults1.get(current_name);
 
                 if(current_result.geneSetOfInterest(params.getPvalue(),params.getQvalue(), params.isFDR())){
@@ -244,7 +244,7 @@ public class InitializeGenesetsOfInterestTask implements Task {
 
                 String current_name = j.next().toString();
                 //if it is a GSEA Result then
-                if(params.isGSEA()){
+                if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)){
                     GSEAResult current_result = (GSEAResult)enrichmentResults2.get(current_name);
 
                     if(current_result.geneSetOfInterest(params.getPvalue(),params.getQvalue())){
@@ -315,8 +315,8 @@ public class InitializeGenesetsOfInterestTask implements Task {
 
                     }
                 }
-                //otherwise it is a generic enrichment set
-                else{
+                //otherwise it is a generic or David enrichment set
+                else {
                     GenericResult current_result = (GenericResult)enrichmentResults2.get(current_name);
 
                     if(current_result.geneSetOfInterest(params.getPvalue(),params.getQvalue(), params.isFDR())){
@@ -332,6 +332,7 @@ public class InitializeGenesetsOfInterestTask implements Task {
                             throw new IllegalThreadStateException("The Geneset: " + current_name + " is not found in the GMT file.");
                     }
                 }
+
 
             }
         }

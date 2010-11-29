@@ -95,42 +95,34 @@ public class BuildEnrichmentMapTask implements Task {
      */
     public void buildEnrichmentMap(){
 
-        //Load in the GMT file
-        try{
-            //Load the geneset file
-            GMTFileReaderTask gmtFile = new GMTFileReaderTask(params, taskMonitor);
-            gmtFile.run();
+        //no GMT file is required for DAVID processing
+        if(!params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_DAVID)){
 
-        } catch (OutOfMemoryError e) {
-            taskMonitor.setException(e,"Out of Memory. Please increase memory allotement for cytoscape.");
-            return;
-        }  catch(Exception e){
-            taskMonitor.setException(e,"unable to load GMT file");
-            return;
+            //Load in the GMT file
+            try{
+                //Load the geneset file
+                GMTFileReaderTask gmtFile = new GMTFileReaderTask(params, taskMonitor);
+                gmtFile.run();
+
+            } catch (OutOfMemoryError e) {
+                taskMonitor.setException(e,"Out of Memory. Please increase memory allotement for cytoscape.");
+                return;
+            }  catch(Exception e){
+                taskMonitor.setException(e,"unable to load GMT file");
+                return;
+            }
         }
+        //if these are DAVID results we need to load the enrichment results before we load the expression files
+        else{
+            LoadEnrichmentFiles();
+        }
+
 
         //Load the Data (expression or rank file) if the user has supplied the data file.
         if(params.isData()){
             //Load in the expression or rank file
             try{
-                //Load the expression or rank file
-                ExpressionFileReaderTask expressionFile1 = new ExpressionFileReaderTask(params,1,taskMonitor);
-                expressionFile1.run();
-                params.getExpression().rowNormalizeMatrix();
-                if(params.isData2()){
-                    ExpressionFileReaderTask expressionFile2 = new ExpressionFileReaderTask(params,2,taskMonitor);
-                    expressionFile2.run();
-                    params.getExpression2().rowNormalizeMatrix();
-                }
-                //trim the genesets to only contain the genes that are in the data file.
-                params.filterGenesets();
-
-                //check to make sure that after filtering there are still genes in the genesets
-                //if there aren't any genes it could mean that the IDs don't match or it could mean none
-                //of the genes in the expression file are in the specified genesets.
-                if(!params.checkGenesets())
-                    throw new IllegalThreadStateException("No genes in the expression file are found in the GMT file ");
-
+                   LoadExpressionFiles();
             } catch(IllegalThreadStateException e){
                 taskMonitor.setException(e,"Either no genes in the expression file are found in the GMT file \n OR the identifiers in the Expression and GMT do not match up.", "Expression and GMT file do not match");
                 return;
@@ -150,39 +142,9 @@ public class BuildEnrichmentMapTask implements Task {
 
 
         try{
+            if(!params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_DAVID))
+                LoadEnrichmentFiles();
 
-            //Load the GSEA result files
-            //Dataset1 (each dataset should have two files.)
-            EnrichmentResultFileReaderTask enrichmentResultsFilesDataset1File1 = new EnrichmentResultFileReaderTask(params,taskMonitor,  params.getEnrichmentDataset1FileName1(), 1);
-            enrichmentResultsFilesDataset1File1.run();
-            if(params.isGSEA()){
-                EnrichmentResultFileReaderTask enrichmentResultsFilesDataset1File2 = new EnrichmentResultFileReaderTask(params,taskMonitor,  params.getEnrichmentDataset1FileName2(), 1);
-                enrichmentResultsFilesDataset1File2.run();
-            }
-
-            //check to see if we have ranking files
-            if(params.getDataset1RankedFile() != null){
-                RanksFileReaderTask ranking1 = new RanksFileReaderTask(params,params.getDataset1RankedFile(),1,taskMonitor);
-                ranking1.run();
-            }
-
-            //Load the second dataset only if there is a second dataset to load
-            if (params.isTwoDatasets()){
-                //Dataset2
-                EnrichmentResultFileReaderTask enrichmentResultsFilesDataset2File1 = new EnrichmentResultFileReaderTask(params,taskMonitor,  params.getEnrichmentDataset2FileName1(), 2);
-                enrichmentResultsFilesDataset2File1.run();
-
-                if(params.isGSEA()){
-                    EnrichmentResultFileReaderTask enrichmentResultsFilesDataset2File2 = new EnrichmentResultFileReaderTask(params,taskMonitor,  params.getEnrichmentDataset2FileName2(), 2);
-                    enrichmentResultsFilesDataset2File2.run();
-                }
-                //check to see if we have ranking files
-                if(params.getDataset2RankedFile() != null){
-                    RanksFileReaderTask ranking2 = new RanksFileReaderTask(params,params.getDataset2RankedFile(),2,taskMonitor);
-                    ranking2.run();
-                }
-
-            }
              } catch (OutOfMemoryError e) {
                 taskMonitor.setException(e,"Out of Memory. Please increase memory allotement for cytoscape.");
                 return;
@@ -230,6 +192,66 @@ public class BuildEnrichmentMapTask implements Task {
 
 
 
+    }
+
+    //load GMT Files
+
+    //load expression Files
+    private void LoadExpressionFiles(){
+        //Load the expression or rank file
+        ExpressionFileReaderTask expressionFile1 = new ExpressionFileReaderTask(params,1,taskMonitor);
+        expressionFile1.run();
+        params.getExpression().rowNormalizeMatrix();
+        if(params.isData2()){
+            ExpressionFileReaderTask expressionFile2 = new ExpressionFileReaderTask(params,2,taskMonitor);
+            expressionFile2.run();
+            params.getExpression2().rowNormalizeMatrix();
+        }
+        //trim the genesets to only contain the genes that are in the data file.
+        params.filterGenesets();
+
+        //check to make sure that after filtering there are still genes in the genesets
+        //if there aren't any genes it could mean that the IDs don't match or it could mean none
+        //of the genes in the expression file are in the specified genesets.
+        if(!params.checkGenesets())
+            throw new IllegalThreadStateException("No genes in the expression file are found in the GMT file ");
+
+    }
+
+    //Load enrichment Files
+    private void LoadEnrichmentFiles(){
+               //Load the GSEA result files
+            //Dataset1 (each dataset should have two files.)
+            EnrichmentResultFileReaderTask enrichmentResultsFilesDataset1File1 = new EnrichmentResultFileReaderTask(params,taskMonitor,  params.getEnrichmentDataset1FileName1(), 1);
+            enrichmentResultsFilesDataset1File1.run();
+            if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)){
+                EnrichmentResultFileReaderTask enrichmentResultsFilesDataset1File2 = new EnrichmentResultFileReaderTask(params,taskMonitor,  params.getEnrichmentDataset1FileName2(), 1);
+                enrichmentResultsFilesDataset1File2.run();
+            }
+
+            //check to see if we have ranking files
+            if(params.getDataset1RankedFile() != null){
+                RanksFileReaderTask ranking1 = new RanksFileReaderTask(params,params.getDataset1RankedFile(),1,taskMonitor);
+                ranking1.run();
+            }
+
+            //Load the second dataset only if there is a second dataset to load
+            if (params.isTwoDatasets()){
+                //Dataset2
+                EnrichmentResultFileReaderTask enrichmentResultsFilesDataset2File1 = new EnrichmentResultFileReaderTask(params,taskMonitor,  params.getEnrichmentDataset2FileName1(), 2);
+                enrichmentResultsFilesDataset2File1.run();
+
+                if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)){
+                    EnrichmentResultFileReaderTask enrichmentResultsFilesDataset2File2 = new EnrichmentResultFileReaderTask(params,taskMonitor,  params.getEnrichmentDataset2FileName2(), 2);
+                    enrichmentResultsFilesDataset2File2.run();
+                }
+                //check to see if we have ranking files
+                if(params.getDataset2RankedFile() != null){
+                    RanksFileReaderTask ranking2 = new RanksFileReaderTask(params,params.getDataset2RankedFile(),2,taskMonitor);
+                    ranking2.run();
+                }
+
+            }
     }
 
 

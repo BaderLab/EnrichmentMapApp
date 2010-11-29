@@ -161,7 +161,7 @@ public class VisualizeEnrichmentMapTask implements Task {
             }
 
             // store path to GSEA report in Network Attribute
-            if (params.isGSEA()) {
+            if (params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)) {
                 CyAttributes networkAttributes = Cytoscape
                         .getNetworkAttributes();
                 if (params.getGseaHtmlReportFileDataset1() != null) {
@@ -239,7 +239,7 @@ public class VisualizeEnrichmentMapTask implements Task {
                     nodeAttrs.setListAttribute(node.getIdentifier(), prefix+EnrichmentMapVisualStyle.GENES, gene_list);
                 }
 
-                if(params.isGSEA()){
+                if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)){
                     GSEAResult current_result = (GSEAResult) enrichmentResults1OfInterest.get(current_name);
                     setGSEAResultDataset1Attributes(node, current_result,prefix);
                 }
@@ -250,7 +250,7 @@ public class VisualizeEnrichmentMapTask implements Task {
 
                 //if we are using two datasets check to see if there is data for this node
                 if(params.isTwoDatasets()){
-                    if(params.isGSEA()){
+                    if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)){
                         if(enrichmentResults2.containsKey(current_name)){
                             GSEAResult second_result = (GSEAResult) enrichmentResults2.get(current_name);
                             setGSEAResultDataset2Attributes(node, second_result,prefix);
@@ -317,7 +317,7 @@ public class VisualizeEnrichmentMapTask implements Task {
                             nodeAttrs.setListAttribute(node.getIdentifier(), prefix+EnrichmentMapVisualStyle.GENES, gene_list);
                         }
 
-                        if(params.isGSEA()){
+                        if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)){
                             if(enrichmentResults1.containsKey(current_name)){
                                 GSEAResult result = (GSEAResult) enrichmentResults1.get(current_name);
                                 setGSEAResultDataset1Attributes(node,result, prefix);

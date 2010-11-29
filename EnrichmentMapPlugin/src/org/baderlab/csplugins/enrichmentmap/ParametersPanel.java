@@ -104,7 +104,7 @@ public class ParametersPanel extends JPanel {
 //        centerPanel.setBorder(BorderFactory.createEtchedBorder());
         centerPanel.setAlignmentX(LEFT_ALIGNMENT);
 
-        if (params.isGSEA()) {
+        if (params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)) {
             final String reportFileDataset1 = resolveGseaReportFilePath(params, 1);
             final String reportFileDataset2 = resolveGseaReportFilePath(params, 2);
             

@@ -73,6 +73,7 @@ public class EnrichmentMapInputPanel extends JPanel {
      * 
      */
     private static final long serialVersionUID = -7837369382106745874L;
+
     CollapsiblePanel Parameters;
     CollapsiblePanel datasets;
 
@@ -114,6 +115,7 @@ public class EnrichmentMapInputPanel extends JPanel {
     //flags
     private JRadioButton gsea;
     private JRadioButton generic;
+    private JRadioButton david;
     private JRadioButton overlap;
     private JRadioButton jaccard;
 
@@ -226,11 +228,23 @@ public class EnrichmentMapInputPanel extends JPanel {
            c.fill = GridBagConstraints.HORIZONTAL;
            panel.setBorder(BorderFactory.createTitledBorder("Analysis Type"));
 
-           gsea = new JRadioButton("GSEA", params.isGSEA());
-           generic = new JRadioButton("Generic", !params.isGSEA());
+           if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)){
+                gsea = new JRadioButton(EnrichmentMapParameters.method_GSEA, true);
+                generic = new JRadioButton(EnrichmentMapParameters.method_generic, false);
+                david = new JRadioButton(EnrichmentMapParameters.method_DAVID, false);
+           }else if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_generic)){
+                gsea = new JRadioButton(EnrichmentMapParameters.method_GSEA, false);
+                generic = new JRadioButton(EnrichmentMapParameters.method_generic, true);
+                david = new JRadioButton(EnrichmentMapParameters.method_DAVID, false);
+           }else if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_DAVID)){
+                gsea = new JRadioButton(EnrichmentMapParameters.method_GSEA, false);
+                generic = new JRadioButton(EnrichmentMapParameters.method_generic, false);
+                david = new JRadioButton(EnrichmentMapParameters.method_DAVID, true);
+           }
 
-           gsea.setActionCommand("GSEA");
-           generic.setActionCommand("Generic");
+           gsea.setActionCommand(EnrichmentMapParameters.method_GSEA);
+           generic.setActionCommand(EnrichmentMapParameters.method_generic);
+           david.setActionCommand(EnrichmentMapParameters.method_DAVID);
 
            gsea.addActionListener(new java.awt.event.ActionListener() {
                                public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -242,9 +256,15 @@ public class EnrichmentMapInputPanel extends JPanel {
                                    selectAnalysisTypeActionPerformed(evt);
                                }
            });
+           david.addActionListener(new java.awt.event.ActionListener() {
+                               public void actionPerformed(java.awt.event.ActionEvent evt) {
+                                   selectAnalysisTypeActionPerformed(evt);
+                               }
+           });
            ButtonGroup analysisOptions = new ButtonGroup();
            analysisOptions.add(gsea);
            analysisOptions.add(generic);
+           analysisOptions.add(david);
 
 
            c.gridx = 0;
@@ -255,7 +275,9 @@ public class EnrichmentMapInputPanel extends JPanel {
            c.gridy = 1;
            gridbag.setConstraints(generic, c);
            panel.add(generic);
-
+           c.gridy = 2;
+           gridbag.setConstraints(david, c);
+           panel.add(david);
 
           JPanel topPanel = new JPanel();
           topPanel.setLayout(new BorderLayout());
@@ -277,8 +299,8 @@ public class EnrichmentMapInputPanel extends JPanel {
            panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
            //Gene set file panel
-           CollapsiblePanel GMTPanel = createGMTPanel();
-           GMTPanel.setCollapsed(false);
+           CollapsiblePanel GMTcollapsiblePanel = createGMTPanel();
+           GMTcollapsiblePanel.setCollapsed(false);
 
            //Dataset1 collapsible panel
            DatasetsPanel = new JPanel();
@@ -302,7 +324,7 @@ public class EnrichmentMapInputPanel extends JPanel {
            CollapsiblePanel ParametersPanel = createParametersPanel();
            ParametersPanel.setCollapsed(false);
 
-           panel.add(GMTPanel);
+           panel.add(GMTcollapsiblePanel);
            panel.add(datasets);
            panel.add(ParametersPanel);
 
@@ -353,15 +375,16 @@ public class EnrichmentMapInputPanel extends JPanel {
                                }
            });
 
-           JPanel GMTPanel = new JPanel();
-           GMTPanel.setLayout(new BorderLayout());
+           JPanel newGMTPanel = new JPanel();
+           newGMTPanel.setLayout(new BorderLayout());
 
-           GMTPanel.add(GMTLabel,BorderLayout.WEST);
-           GMTPanel.add( GMTFileNameTextField, BorderLayout.CENTER);
-           GMTPanel.add( selectGMTFileButton, BorderLayout.EAST);
+           newGMTPanel.add(GMTLabel,BorderLayout.WEST);
+           newGMTPanel.add( GMTFileNameTextField, BorderLayout.CENTER);
+           newGMTPanel.add( selectGMTFileButton, BorderLayout.EAST);
 
            //add the components to the panel
-           panel.add(GMTPanel);
+           if(!params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_DAVID))
+                panel.add(newGMTPanel);
 
            collapsiblePanel.getContentPane().add(panel, BorderLayout.NORTH);
            return collapsiblePanel;
@@ -428,7 +451,7 @@ public class EnrichmentMapInputPanel extends JPanel {
                 }
             };
            Results1Label.setToolTipText(datasetTip);
-           if(!params.isGSEA())
+           if(!params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA))
                 Results1Label.setText("Enrichments:");
 
            JButton selectResults1FileButton = new JButton();
@@ -494,13 +517,16 @@ public class EnrichmentMapInputPanel extends JPanel {
            Results2Panel.add( selectResults2FileButton, BorderLayout.EAST);
 
            //add the components to the panel
-           panel.add(GCTPanel);
+            //don't add the expression file to the David  results.
+           //if(!params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_DAVID))
+                panel.add(GCTPanel);
            panel.add(Results1Panel);
-           if(params.isGSEA())
+           if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA))
                 panel.add(Results2Panel);
 
            collapsiblePanel.getContentPane().add(panel, BorderLayout.NORTH);
-           collapsiblePanel.getContentPane().add(createAdvancedDatasetOptions(1),BorderLayout.SOUTH);
+           if(!params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_DAVID))
+                collapsiblePanel.getContentPane().add(createAdvancedDatasetOptions(1),BorderLayout.SOUTH);
            return collapsiblePanel;
 
        }
@@ -564,7 +590,7 @@ public class EnrichmentMapInputPanel extends JPanel {
                 }
             };
 
-            if(!params.isGSEA())
+            if(!params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA))
                 Results1Label.setText("Enrichments:");
             Results1Label.setToolTipText(datasetTip);
 
@@ -628,13 +654,16 @@ public class EnrichmentMapInputPanel extends JPanel {
            Results2Panel.add( selectResults2FileButton, BorderLayout.EAST);
 
            //add the components to the panel
-           panel.add(GCTPanel);
+            //don't add the expression file to the David  results.
+           //if(!params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_DAVID))
+                panel.add(GCTPanel);
            panel.add(Results1Panel);
-           if(params.isGSEA())
+           if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA))
                 panel.add(Results2Panel);
 
            collapsiblePanel.getContentPane().add(panel, BorderLayout.NORTH);
-           collapsiblePanel.getContentPane().add(createAdvancedDatasetOptions(2),BorderLayout.SOUTH);
+           if(!params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_DAVID))
+                collapsiblePanel.getContentPane().add(createAdvancedDatasetOptions(2),BorderLayout.SOUTH);
            return collapsiblePanel;
 
        }
@@ -1404,10 +1433,12 @@ public class EnrichmentMapInputPanel extends JPanel {
   private void selectAnalysisTypeActionPerformed(ActionEvent evt){
       String analysisType = evt.getActionCommand();
 
-      if(analysisType.equalsIgnoreCase("GSEA"))
-          params.setGSEA(true);
-      else
-          params.setGSEA(false);
+      if(analysisType.equalsIgnoreCase(EnrichmentMapParameters.method_GSEA))
+          params.setMethod(EnrichmentMapParameters.method_GSEA);
+      else if(analysisType.equalsIgnoreCase(EnrichmentMapParameters.method_generic))
+          params.setMethod(EnrichmentMapParameters.method_generic);
+      else if(analysisType.equalsIgnoreCase(EnrichmentMapParameters.method_DAVID))
+          params.setMethod(EnrichmentMapParameters.method_DAVID);
 
       //before clearing the panel find out which panels where collapsed so we maintain its current state.
       boolean datasets_collapsed = datasets.isCollapsed();
@@ -1496,7 +1527,7 @@ public class EnrichmentMapInputPanel extends JPanel {
       //Special case with Enrichment results file 2 (there should only be two enrichment
       //Files if the analysis specified is GSEA.  If the user has loaded from an RPT and
       //then changes the type of analysis there shouldn't be an extra file
-      if(params.isGSEA()){
+      if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)){
            if(params.getEnrichmentDataset1FileName2()!=null){
                 Dataset1FileName2TextField.setText(params.getEnrichmentDataset1FileName2());
                 Dataset1FileName2TextField.setToolTipText(params.getEnrichmentDataset1FileName2());
@@ -1902,8 +1933,22 @@ public class EnrichmentMapInputPanel extends JPanel {
         //reset for cleared Panel after .setValue(...) wrongly changed it to "true"
         params.setSimilarityCutOffChanged(false);
 
-        gsea.setSelected(params.isGSEA());
-        generic.setSelected(!params.isGSEA());
+        if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)){
+            gsea.setSelected(true);
+            generic.setSelected(false);
+            david.setSelected(false);
+        }
+        else if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_generic)){
+            gsea.setSelected(false);
+            generic.setSelected(true);
+            david.setSelected(false);
+        }
+        else if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_DAVID)){
+            gsea.setSelected(false);
+            generic.setSelected(false);
+            david.setSelected(true);
+        }
+
         jaccard.setSelected(params.isJaccard());
         overlap.setSelected(!params.isJaccard());
     }
@@ -1951,8 +1996,23 @@ public class EnrichmentMapInputPanel extends JPanel {
         qvalueTextField.setValue(current_params.getQvalue());
         coeffecientTextField.setValue(current_params.getSimilarityCutOff());
 
-        gsea.setSelected(current_params.isGSEA());
-        generic.setSelected(!current_params.isGSEA());
+
+        if(current_params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)){
+            gsea.setSelected(true);
+            generic.setSelected(false);
+            david.setSelected(false);
+        }
+        else if(current_params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_generic)){
+            gsea.setSelected(false);
+            generic.setSelected(true);
+            david.setSelected(false);
+        }
+        else if(current_params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_DAVID)){
+            gsea.setSelected(false);
+            generic.setSelected(false);
+            david.setSelected(true);
+        }
+
         jaccard.setSelected(current_params.isJaccard());
         overlap.setSelected(!current_params.isJaccard());
     }

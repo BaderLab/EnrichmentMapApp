@@ -418,14 +418,14 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
 
 
                     if(prop_file.getName().contains(".ENR1.txt")){
-                        if(params.isGSEA())
+                        if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA))
                             params.setEnrichmentResults1(params.repopulateHashmap(fullText,3));
                         else
                             params.setEnrichmentResults1(params.repopulateHashmap(fullText,4));
 
                     }
                     if(prop_file.getName().contains(".SubENR1.txt")){
-                        if(params.isGSEA())
+                        if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA))
                             params.setEnrichmentResults1OfInterest(params.repopulateHashmap(fullText,3));
                         else
                             params.setEnrichmentResults1OfInterest(params.repopulateHashmap(fullText,4));
@@ -455,13 +455,13 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
 
                     if(params.isTwoDatasets()){
                         if(prop_file.getName().contains(".ENR2.txt")){
-                            if(params.isGSEA())
+                            if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA))
                                 params.setEnrichmentResults2(params.repopulateHashmap(fullText,3));
                             else
                                 params.setEnrichmentResults2(params.repopulateHashmap(fullText,4));
                         }
                         if(prop_file.getName().contains(".SubENR2.txt")){
-                            if(params.isGSEA())
+                            if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA))
                                 params.setEnrichmentResults2OfInterest(params.repopulateHashmap(fullText,3));
                             else
                                 params.setEnrichmentResults2OfInterest(params.repopulateHashmap(fullText,4));

@@ -98,8 +98,9 @@ public class EnrichmentMapParameters {
     private boolean twoDatasets = false;
     //flag to indicate if there are FDR Q-values
     private boolean FDR = false;
-    //flag to indicate if the results are from GSEA or generic
-    private boolean GSEA = true;
+    //flag to indicate if the results are from GSEA or generic or DAVID or other method
+    private String method;
+    //private boolean GSEA = true;
     //flag to indicate if the similarity cut off is jaccard or overlap
     private boolean jaccard;
     private boolean similarityCutOffChanged = false;
@@ -206,7 +207,13 @@ public class EnrichmentMapParameters {
     private String defaultSortMethod;
     private String defaultDistanceMetric;
 
-    final public static String ENRICHMENT_INTERACTION_TYPE = "Geneset_Overlap"; //TODO: change to "Geneset_Overlap"
+    final public static String ENRICHMENT_INTERACTION_TYPE = "Geneset_Overlap";
+
+    //with more methods to support can't just have generic or gsea
+    final public static String method_GSEA = "GSEA";
+    final public static String method_generic = "generic";
+    final public static String method_DAVID = "DAVID";
+
     private PostAnalysisParameters paParams;
     
     private String enrichment_edge_type;
@@ -234,6 +241,9 @@ public class EnrichmentMapParameters {
         this.ranks = new HashMap<String, HashMap<Integer, Ranking>>();
         this.dataset1Rankings = new HashMap<Integer, Ranking>();
         this.dataset2Rankings = new HashMap<Integer, Ranking>();
+
+        //by default GSEA is the method.
+        this.method = EnrichmentMapParameters.method_GSEA;
 
         this.similarityCutOffChanged = false;
         //default Values from Cytoscape properties
@@ -382,14 +392,22 @@ public class EnrichmentMapParameters {
             this.twoDatasets = true;
         if((props.get("jaccard")).equalsIgnoreCase("false"))
             this.jaccard = false;
+        //have to deal with legacy issue by switching from two methods to multiple
+        if(props.get("GSEA") != null){
          if((props.get("GSEA")).equalsIgnoreCase("false"))
-            this.GSEA = false;
+            this.method = EnrichmentMapParameters.method_generic;
+         else
+            this.method = EnrichmentMapParameters.method_GSEA;
+        }
         if((props.get("Data")).equalsIgnoreCase("true"))
             this.Data = true;
         if((props.get("Data2")).equalsIgnoreCase("true"))
             this.Data2 = true;
         if((props.get("FDR")).equalsIgnoreCase("true"))
             this.FDR = true;
+
+        if(props.get("method") != null)
+            this.method = props.get("method");
 
         if(twoDatasets){
             if(Data2){
@@ -487,7 +505,7 @@ public class EnrichmentMapParameters {
         this.Data = copy.isData();
         this.Data2 = copy.isData2();
         this.twoDatasets = copy.isTwoDatasets();
-        this.GSEA = copy.isGSEA();
+        this.method = copy.getMethod();
         this.jaccard = copy.isJaccard();
         this.similarityCutOffChanged = copy.similarityCutOffChanged;
 
@@ -539,7 +557,7 @@ public class EnrichmentMapParameters {
         this.Data = copy.isData();
         this.Data2 = copy.isData2();
         this.twoDatasets = copy.isTwoDatasets();
-        this.GSEA = copy.isGSEA();
+        this.method = copy.getMethod();
         this.FDR = copy.isFDR();
         this.jaccard = copy.isJaccard();
 
@@ -597,16 +615,21 @@ public class EnrichmentMapParameters {
         String errors = "";
 
         //minimal for either analysis
-        if(this.GMTFileName.equalsIgnoreCase("") || !checkFile(this.GMTFileName))
-            errors = errors + "GMT file can not be found \n";
+
         if(this.enrichmentDataset1FileName1.equalsIgnoreCase("") || !checkFile(this.enrichmentDataset1FileName1))
             errors = errors + "Dataset 1, enrichment file 1 can not be found\n";
         if(this.twoDatasets){
             if(this.enrichmentDataset2FileName1.equalsIgnoreCase("") || !checkFile(this.enrichmentDataset2FileName1))
                 errors = errors + "Dataset 2, enrichment file 1 can not be found\n";
         }
-        //GSEA inputs
-        if(this.GSEA){
+
+       //GMT file is not required for David analysis
+       if(!this.method.equalsIgnoreCase(EnrichmentMapParameters.method_DAVID))
+            if(this.GMTFileName.equalsIgnoreCase("") || !checkFile(this.GMTFileName))
+                errors = errors + "GMT file can not be found \n";
+
+       // /GSEA inputs
+        if(this.method.equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)){
             if(this.enrichmentDataset1FileName2.equalsIgnoreCase("") || !checkFile(this.enrichmentDataset1FileName2))
                 errors = errors + "Dataset 1, enrichment file 2 can not be found\n";
             if(this.twoDatasets){
@@ -764,6 +787,9 @@ public class EnrichmentMapParameters {
             }
         }
 
+        //enrichment method.
+        paramVariables.append("method\t" + this.method + "\n");
+
         //rank files
         paramVariables.append("rankFile1\t" + dataset1RankedFile + "\n");
         paramVariables.append("rankFile2\t" + dataset2RankedFile + "\n");
@@ -771,7 +797,7 @@ public class EnrichmentMapParameters {
         //boolean flags
         paramVariables.append("twoDatasets\t" + twoDatasets + "\n");
         paramVariables.append("jaccard\t" + jaccard + "\n");
-        paramVariables.append("GSEA\t" + GSEA + "\n");
+
         paramVariables.append("Data\t" + Data + "\n");
         paramVariables.append("Data2\t" + Data2 + "\n");
         paramVariables.append("FDR\t" + FDR + "\n");
@@ -1150,18 +1176,6 @@ public class EnrichmentMapParameters {
 
     public void noFilter(){
         this.filteredGenesets = genesets;
-    }
-
-
-    /**
-     * @return flag to indicate if the results are from GSEA or generic
-     */
-    public boolean isGSEA() {
-        return GSEA;
-    }
-
-    public void setGSEA(boolean GSEA) {
-        this.GSEA = GSEA;
     }
 
     /**
@@ -1549,4 +1563,14 @@ public class EnrichmentMapParameters {
     public void setDefaultDistanceMetric(String defaultDistanceMetric) {
         this.defaultDistanceMetric = defaultDistanceMetric;
     }
+
+    public String getMethod() {
+        return method;
+    }
+
+    public void setMethod(String method) {
+        this.method = method;
+    }
+
+
 }
