@@ -84,7 +84,9 @@ public class ColorGradientMapper {
         // sanity check
         if (colorGradientTheme == null || colorGradientRange == null) return null;
 
-        ContinuousMapping continuousMapping = new ContinuousMapping(Color.WHITE, ObjectMapping.NODE_MAPPING);
+        //ContinuousMapping continuousMapping = new ContinuousMapping(Color.WHITE, ObjectMapping.NODE_MAPPING);
+        ContinuousMapping continuousMapping = new ContinuousMapping(Color.WHITE.getClass(), "temp");
+
         continuousMapping.setInterpolator(new LinearNumberToColorInterpolator());
 
         final Color minColor = colorGradientTheme.getMinColor();

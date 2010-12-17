@@ -156,16 +156,26 @@ public class EnrichmentMapVisualStyle {
      * @param prefix - prefix to be appended to each of the attribute names
      */
     private void createEdgeAppearance(CyNetwork network, String prefix){
-        EdgeAppearanceCalculator edgeAppCalc = new EdgeAppearanceCalculator();
+        EdgeAppearanceCalculator edgeAppCalc = new EdgeAppearanceCalculator(vs.getDependency());
 
         //set the default edge appearance
         EdgeAppearance edgeAppear = new EdgeAppearance();
         edgeAppear.set(VisualPropertyType.EDGE_COLOR, new Color(100,200,000) );
         edgeAppCalc.setDefaultAppearance(edgeAppear);
 
+        ContinuousMapping continuousMapping_edgewidth;
+        try{
+            continuousMapping_edgewidth = new ContinuousMapping(1, ObjectMapping.EDGE_MAPPING);
+            continuousMapping_edgewidth.setControllingAttributeName(prefix + EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT, network, false);
+
+         } catch (RuntimeException e){
+            continuousMapping_edgewidth = new ContinuousMapping((new Integer(1)).getClass(),prefix + EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT);
+        }
+
         //Continous Mapping - set edge line thickness based on the number of genes in the overlap
-        ContinuousMapping continuousMapping_edgewidth = new ContinuousMapping(1, ObjectMapping.EDGE_MAPPING);
-        continuousMapping_edgewidth.setControllingAttributeName(prefix + EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT, network, false);
+        //ContinuousMapping continuousMapping_edgewidth = new ContinuousMapping((new Integer(1)).getClass(),prefix + EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT);
+        //ContinuousMapping continuousMapping_edgewidth = new ContinuousMapping(1, ObjectMapping.EDGE_MAPPING);
+        //continuousMapping_edgewidth.setControllingAttributeName(prefix + EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT, network, false);
         Interpolator numTonum2 = new LinearNumberToNumberInterpolator();
         continuousMapping_edgewidth.setInterpolator(numTonum2);
 
@@ -209,7 +219,7 @@ public class EnrichmentMapVisualStyle {
         BoundaryRangeValues bv3i = new BoundaryRangeValues(max_phenotype1, max_phenotype1, max_phenotype1);
 
 
-        NodeAppearanceCalculator nodeAppCalc = new NodeAppearanceCalculator();
+        NodeAppearanceCalculator nodeAppCalc = new NodeAppearanceCalculator(vs.getDependency());
 
         //set the default node appearance
         NodeAppearance nodeAppear = new NodeAppearance();
@@ -221,15 +231,31 @@ public class EnrichmentMapVisualStyle {
         nodeAppCalc.setDefaultAppearance(nodeAppear);
         
         // Passthrough Mapping - set node label
-        PassThroughMapping pm = new PassThroughMapping(new String(), prefix + EnrichmentMapVisualStyle.FORMATTED_NAME);
+        PassThroughMapping pm;
+        try{
+           pm = new PassThroughMapping(new String(), prefix + EnrichmentMapVisualStyle.FORMATTED_NAME); 
+        } catch (RuntimeException e){
+            pm = new PassThroughMapping(new String("label").getClass(), prefix + EnrichmentMapVisualStyle.FORMATTED_NAME);
+        }
+
+
         Calculator nlc = new BasicCalculator(prefix +"nodeLabel",
                                                           pm, VisualPropertyType.NODE_LABEL);
                nodeAppCalc.setCalculator(nlc);
 
 
+        ContinuousMapping continuousMapping_size;
+        try{
+            continuousMapping_size = new ContinuousMapping(1, ObjectMapping.EDGE_MAPPING);
+            continuousMapping_size.setControllingAttributeName(prefix+ EnrichmentMapVisualStyle.GS_SIZE_DATASET1, network, false);
+         } catch (RuntimeException e){
+            continuousMapping_size = new ContinuousMapping(new Integer(1).getClass(),prefix+ EnrichmentMapVisualStyle.GS_SIZE_DATASET1);
+         }
+
+
         //Continuous Mapping - set node size based on the size of the geneset
-        ContinuousMapping continuousMapping_size = new ContinuousMapping(35, ObjectMapping.NODE_MAPPING);
-        continuousMapping_size.setControllingAttributeName(prefix+ EnrichmentMapVisualStyle.GS_SIZE_DATASET1, network, false);
+        //ContinuousMapping continuousMapping_size = new ContinuousMapping(new Integer(1).getClass(),prefix+ EnrichmentMapVisualStyle.GS_SIZE_DATASET1);
+        //continuousMapping_size.setControllingAttributeName(prefix+ EnrichmentMapVisualStyle.GS_SIZE_DATASET1, network, false);
         Interpolator numTonum = new LinearNumberToNumberInterpolator();
         continuousMapping_size.setInterpolator(numTonum);
 
@@ -246,9 +272,17 @@ public class EnrichmentMapVisualStyle {
 
         if(params.isTwoDatasets()){
 
+            ContinuousMapping continuousMapping_size_dataset2;
+            try{
+                continuousMapping_size_dataset2 = new ContinuousMapping(1, ObjectMapping.EDGE_MAPPING);
+                continuousMapping_size_dataset2.setControllingAttributeName(prefix + EnrichmentMapVisualStyle.GS_SIZE_DATASET2, network, false);
+            } catch (RuntimeException e){
+                continuousMapping_size_dataset2 = new ContinuousMapping(new Integer(1).getClass(),prefix + EnrichmentMapVisualStyle.GS_SIZE_DATASET2);         }
+
+
             //Continuous Mapping - set node size based on the size of the geneset
-            ContinuousMapping continuousMapping_size_dataset2 = new ContinuousMapping(35, ObjectMapping.NODE_MAPPING);
-            continuousMapping_size_dataset2.setControllingAttributeName(prefix + EnrichmentMapVisualStyle.GS_SIZE_DATASET2, network, false);
+            //ContinuousMapping continuousMapping_size_dataset2 = new ContinuousMapping(new Integer(1).getClass(),prefix + EnrichmentMapVisualStyle.GS_SIZE_DATASET2);
+            //continuousMapping_size_dataset2.setControllingAttributeName(prefix + EnrichmentMapVisualStyle.GS_SIZE_DATASET2, network, false);
             Interpolator numTonum3 = new LinearNumberToNumberInterpolator();
             continuousMapping_size_dataset2.setInterpolator(numTonum3);
 
@@ -262,10 +296,21 @@ public class EnrichmentMapVisualStyle {
             Calculator nodelineSizeCalculator = new BasicCalculator(prefix + "size2size", continuousMapping_size_dataset2, VisualPropertyType.NODE_LINE_WIDTH);
              nodeAppCalc.setCalculator(nodelineSizeCalculator);
 
+
+            ContinuousMapping continuousMapping_width_col;
+            try{
+                continuousMapping_width_col = new ContinuousMapping(Color.WHITE, ObjectMapping.EDGE_MAPPING);
+                continuousMapping_width_col.setControllingAttributeName(prefix+ EnrichmentMapVisualStyle.COLOURING_DATASET2, network, false);
+            } catch (RuntimeException e){
+                continuousMapping_width_col = new ContinuousMapping(Color.WHITE.getClass(),prefix+ EnrichmentMapVisualStyle.COLOURING_DATASET2);
+            }
+
+
+
             //Continuous Mapping - set node line colour based on the sign of the ES score of second dataset
             //Color scale and mapper used by node colour and node line colour
-            ContinuousMapping continuousMapping_width_col = new ContinuousMapping(Color.WHITE, ObjectMapping.NODE_MAPPING);
-            continuousMapping_width_col.setControllingAttributeName(prefix+ EnrichmentMapVisualStyle.COLOURING_DATASET2, network, false);
+            //ContinuousMapping continuousMapping_width_col = new ContinuousMapping(Color.WHITE.getClass(),prefix+ EnrichmentMapVisualStyle.COLOURING_DATASET2);
+            //continuousMapping_width_col.setControllingAttributeName(prefix+ EnrichmentMapVisualStyle.COLOURING_DATASET2, network, false);
             Interpolator numToColor2 = new LinearNumberToColorInterpolator();
             continuousMapping_width_col.setInterpolator(numToColor2);
 
@@ -287,8 +332,15 @@ public class EnrichmentMapVisualStyle {
         }
 
         //Continuous Mapping - set node colour based on the sign of the ES score of first dataset
-        ContinuousMapping continuousMapping = new ContinuousMapping(Color.WHITE, ObjectMapping.NODE_MAPPING);
-        continuousMapping.setControllingAttributeName(prefix+ EnrichmentMapVisualStyle.COLOURING_DATASET1, network, false);
+        ContinuousMapping continuousMapping;
+        try{
+            continuousMapping = new ContinuousMapping(Color.WHITE,ContinuousMapping.NODE_MAPPING);
+            continuousMapping.setControllingAttributeName(prefix+ EnrichmentMapVisualStyle.COLOURING_DATASET1, network, false);            
+
+         } catch (RuntimeException e){
+            continuousMapping = new ContinuousMapping(Color.WHITE.getClass(),prefix+ EnrichmentMapVisualStyle.COLOURING_DATASET1);
+        }
+
         Interpolator numToColor = new LinearNumberToColorInterpolator();
         continuousMapping.setInterpolator(numToColor);
 
