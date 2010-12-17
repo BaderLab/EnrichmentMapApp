@@ -12,7 +12,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://C:/Program Files/cytoscape-v2.6.3/cytoscape-v2.6.3/cytoscape.jar!/" />
+          <root url="jar://C:/Program Files/Cytoscape_v2.7.0/lib/junit.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -21,43 +21,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://C:/Program Files/cytoscape-v2.6.3/cytoscape-v2.6.3/lib/junit.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="jar://C:/Program Files/cytoscape-v2.6.3/cytoscape-v2.6.3/lib/giny.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="jar://C:/Program Files/cytoscape-v2.6.3/cytoscape-v2.6.3/lib/colt.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="jar://C:/Program Files/cytoscape-v2.6.3/cytoscape-v2.6.3/lib/ding.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="jar://C:/Program Files/cytoscape-v2.6.3/cytoscape-v2.6.3/lib/cytoscape-task.jar!/" />
+          <root url="jar://C:/Program Files/Cytoscape_v2.8.0/cytoscape.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />

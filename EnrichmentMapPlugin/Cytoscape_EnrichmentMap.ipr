@@ -181,7 +181,7 @@
       <module fileurl="file://$PROJECT_DIR$/Cytoscape_EnrichmentMap.iml" filepath="$PROJECT_DIR$/Cytoscape_EnrichmentMap.iml" />
     </modules>
   </component>
-  <component name="ProjectRootManager" version="2" assert-keyword="true" jdk-15="true" project-jdk-name="1.5" />
+  <component name="ProjectRootManager" version="2" assert-keyword="true" jdk-15="true" project-jdk-name="1.6 (1)" />
   <component name="RmicSettings">
     <option name="IS_EANABLED" value="false" />
     <option name="DEBUGGING_INFO" value="true" />
