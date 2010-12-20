@@ -21,7 +21,25 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
+          <root url="file://C:/Program Files/Cytoscape_v2.7.0/lib" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
           <root url="jar://C:/Program Files/Cytoscape_v2.8.0/cytoscape.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://C:/Program Files/Cytoscape_v2.7.0/cytoscape.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />

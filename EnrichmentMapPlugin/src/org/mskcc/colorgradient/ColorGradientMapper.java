@@ -33,8 +33,11 @@ import cytoscape.visual.mappings.ContinuousMapping;
 import cytoscape.visual.mappings.ObjectMapping;
 import cytoscape.visual.mappings.LinearNumberToColorInterpolator;
 import cytoscape.visual.mappings.BoundaryRangeValues;
+import cytoscape.visual.mappings.continuous.ContinuousMappingPoint;
 
 import java.awt.Color;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Maps color gradient onto network views.
@@ -43,38 +46,39 @@ import java.awt.Color;
  */
 public class ColorGradientMapper {
 
-	/**
-	 * Method to get instance of ColorGradientMapper.
-	 *
-	 * @return ColorGradientMapper
-	 */
-	public static ColorGradientMapper getInstance() {
-		return new ColorGradientMapper();
-	}
+    /**
+     * Method to get instance of ColorGradientMapper.
+     *
+     * @return ColorGradientMapper
+     */
+    public static ColorGradientMapper getInstance() {
+        return new ColorGradientMapper();
+    }
 
 
-	/**
-	 * Gets color gradient (as hex string) for given gene/sample/data type
-	 * @param gene String
-	 * @param measurement Double
-	 * @return Color
-	 */
-	public static Color getColorGradient(ColorGradientTheme theme, ColorGradientRange range, String gene, Double measurement) {
+    /**
+     * Gets color gradient (as hex string) for given gene/sample/data type
+     * @param gene String
+     * @param measurement Double
+     * @return Color
+     */
+    public static Color getColorGradient(ColorGradientTheme theme, ColorGradientRange range, String gene, Double measurement) {
 
-		// sparse matrix files will contain NaN value when no data is available
-		if (measurement.equals(Double.NaN)) return theme.getNoDataColor();
+        // sparse matrix files will contain NaN value when no data is available
+        if (measurement.equals(Double.NaN)) return theme.getNoDataColor();
 
-		// sanity check
-		final cytoscape.visual.mappings.ContinuousMapping continuousMapping = getContinuousMapping(theme,range);
-		if (continuousMapping == null) return theme.getNoDataColor();
-		final java.util.Map<String, Double> attrBundle = new java.util.HashMap<String, Double>();
-		attrBundle.put(gene, measurement);
-		final cytoscape.visual.mappings.continuous.ContinuousRangeCalculator calculator =
-			new cytoscape.visual.mappings.continuous.ContinuousRangeCalculator(continuousMapping.getAllPoints(),
-																			   continuousMapping.getInterpolator(),
-																			   attrBundle);
-		return (Color)calculator.calculateRangeValue(gene);
-	}
+        // sanity check
+        final cytoscape.visual.mappings.ContinuousMapping continuousMapping = getContinuousMapping(theme,range);
+        if (continuousMapping == null) return theme.getNoDataColor();
+        final java.util.Map<String, Double> attrBundle = new java.util.HashMap<String, Double>();
+        attrBundle.put(gene, measurement);
+
+        cytoscape.visual.mappings.continuous.ContinuousRangeCalculator  calculator = new cytoscape.visual.mappings.continuous.ContinuousRangeCalculator(continuousMapping.getAllPoints(),
+                                                            continuousMapping.getInterpolator(), attrBundle);
+
+        return (Color)calculator.calculateRangeValue(gene);
+
+    }
 
 
 
@@ -85,7 +89,15 @@ public class ColorGradientMapper {
         if (colorGradientTheme == null || colorGradientRange == null) return null;
 
         //ContinuousMapping continuousMapping = new ContinuousMapping(Color.WHITE, ObjectMapping.NODE_MAPPING);
-        ContinuousMapping continuousMapping = new ContinuousMapping(Color.WHITE.getClass(), "temp");
+        ContinuousMapping continuousMapping;
+        try{
+            continuousMapping= new ContinuousMapping(Color.WHITE.getClass(),"temp");
+
+         } catch (java.lang.NoSuchMethodError nsme ){
+            continuousMapping = new ContinuousMapping(Color.WHITE, ObjectMapping.NODE_MAPPING);
+            //continuousMapping.setControllingAttributeName("temp",null,false);
+        }
+
 
         continuousMapping.setInterpolator(new LinearNumberToColorInterpolator());
 
@@ -110,28 +122,28 @@ public class ColorGradientMapper {
 
 
     /**
-	 * Gets color gradient (as hex string) for given gene/sample/data type.
-	 *
-	 * @param gene String
-	 * @param measurement Double
-	 * @return String
-	 */
-	public static String getColorGradientAsString(ColorGradientTheme theme, ColorGradientRange range, String gene, Double measurement) {
+     * Gets color gradient (as hex string) for given gene/sample/data type.
+     *
+     * @param gene String
+     * @param measurement Double
+     * @return String
+     */
+    public static String getColorGradientAsString(ColorGradientTheme theme, ColorGradientRange range, String gene, Double measurement) {
 
-		final Color color = getColorGradient(theme,range, gene, measurement);
-		final int red  = color.getRed();
-		String redColor = Integer.toHexString(red);
-		if (red <= 9) redColor = "0" + redColor;
-		final int green = color.getGreen();
-		String greenColor = Integer.toHexString(green);
-		if (green <= 9) greenColor = "0" + greenColor;
-		final int blue = color.getBlue();
-		String blueColor = Integer.toHexString(blue);
-		if (blue <= 9) blueColor = "0" + blueColor;
+        final Color color = getColorGradient(theme,range, gene, measurement);
+        final int red  = color.getRed();
+        String redColor = Integer.toHexString(red);
+        if (red <= 9) redColor = "0" + redColor;
+        final int green = color.getGreen();
+        String greenColor = Integer.toHexString(green);
+        if (green <= 9) greenColor = "0" + greenColor;
+        final int blue = color.getBlue();
+        String blueColor = Integer.toHexString(blue);
+        if (blue <= 9) blueColor = "0" + blueColor;
 
-		// outta here
-		return (redColor + greenColor + blueColor);
-	}
+        // outta here
+        return (redColor + greenColor + blueColor);
+    }
 
     /**
      * Constructor (private).
