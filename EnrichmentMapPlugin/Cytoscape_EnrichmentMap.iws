@@ -216,7 +216,7 @@
       <file leaf-file-name="FileReaderTest.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/test/FileReaderTest.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="87" column="0" selection-start="2786" selection-end="2786" vertical-scroll-proportion="-4.811947">
+            <state line="87" column="0" selection-start="2807" selection-end="2807" vertical-scroll-proportion="0.021197008">
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -236,25 +236,25 @@
       <file leaf-file-name="HeatMapPanel.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/HeatMapPanel.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="181" column="0" selection-start="6739" selection-end="6739" vertical-scroll-proportion="0.3020595">
+            <state line="181" column="0" selection-start="6689" selection-end="6689" vertical-scroll-proportion="0.021197008">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="EnrichmentMapParameters.java" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="EnrichmentMapParameters.java" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/EnrichmentMapParameters.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="184" column="58" selection-start="8224" selection-end="8224" vertical-scroll-proportion="0.32036614">
+            <state line="133" column="56" selection-start="5615" selection-end="5615" vertical-scroll-proportion="-4.938903">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="RanksFileReaderTask.java" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="RanksFileReaderTask.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/RanksFileReaderTask.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="269" column="93" selection-start="10919" selection-end="10919" vertical-scroll-proportion="0.6498856">
+            <state line="269" column="93" selection-start="10924" selection-end="10924" vertical-scroll-proportion="0.2755611">
               <folding />
             </state>
           </provider>
@@ -272,7 +272,7 @@
       <file leaf-file-name="SliderBarPanel.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/SliderBarPanel.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="-1.2837529">
+            <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -281,7 +281,7 @@
       <file leaf-file-name="HeatMapParameters.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/HeatMapParameters.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="259" column="74" selection-start="9903" selection-end="9903" vertical-scroll-proportion="1.1578947">
+            <state line="259" column="74" selection-start="10149" selection-end="10149" vertical-scroll-proportion="0.021197008">
               <folding />
             </state>
           </provider>
@@ -290,7 +290,7 @@
       <file leaf-file-name="HeatMapActionListener.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/HeatMapActionListener.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="203" column="34" selection-start="8388" selection-end="8400" vertical-scroll-proportion="0.67048055">
+            <state line="203" column="34" selection-start="8388" selection-end="8400" vertical-scroll-proportion="0.07356609">
               <folding />
             </state>
           </provider>
@@ -299,7 +299,7 @@
       <file leaf-file-name="BuildEnrichmentMapTask.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/BuildEnrichmentMapTask.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="95" column="16" selection-start="3871" selection-end="3871" vertical-scroll-proportion="0.32036614">
+            <state line="95" column="16" selection-start="3871" selection-end="3871" vertical-scroll-proportion="0.021197008">
               <folding />
             </state>
           </provider>
@@ -420,78 +420,12 @@
         <option name="myItemId" value="PsiDirectory:C:\BaderlabSvn\EnrichmentMapPlugin\src" />
         <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
       </PATH_ELEMENT>
-    </PATH>
-    <PATH>
-      <PATH_ELEMENT>
-        <option name="myItemId" value="Cytoscape_EnrichmentMap.ipr" />
-        <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-      </PATH_ELEMENT>
-      <PATH_ELEMENT>
-        <option name="myItemId" value="Cytoscape_EnrichmentMap" />
-        <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
-      </PATH_ELEMENT>
-      <PATH_ELEMENT>
-        <option name="myItemId" value="PsiDirectory:C:\BaderlabSvn\EnrichmentMapPlugin\src" />
-        <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-      </PATH_ELEMENT>
-      <PATH_ELEMENT>
-        <option name="myItemId" value="PsiDirectory:C:\BaderlabSvn\EnrichmentMapPlugin\src\org" />
-        <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-      </PATH_ELEMENT>
-    </PATH>
-    <PATH>
-      <PATH_ELEMENT>
-        <option name="myItemId" value="Cytoscape_EnrichmentMap.ipr" />
-        <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-      </PATH_ELEMENT>
-      <PATH_ELEMENT>
-        <option name="myItemId" value="Cytoscape_EnrichmentMap" />
-        <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
-      </PATH_ELEMENT>
-      <PATH_ELEMENT>
-        <option name="myItemId" value="PsiDirectory:C:\BaderlabSvn\EnrichmentMapPlugin\src" />
-        <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-      </PATH_ELEMENT>
       <PATH_ELEMENT>
         <option name="myItemId" value="PsiDirectory:C:\BaderlabSvn\EnrichmentMapPlugin\src\org" />
         <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
       </PATH_ELEMENT>
       <PATH_ELEMENT>
         <option name="myItemId" value="PsiDirectory:C:\BaderlabSvn\EnrichmentMapPlugin\src\org\baderlab\csplugins" />
-        <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-      </PATH_ELEMENT>
-      <PATH_ELEMENT>
-        <option name="myItemId" value="PsiDirectory:C:\BaderlabSvn\EnrichmentMapPlugin\src\org\baderlab\csplugins\enrichmentmap" />
-        <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-      </PATH_ELEMENT>
-    </PATH>
-    <PATH>
-      <PATH_ELEMENT>
-        <option name="myItemId" value="Cytoscape_EnrichmentMap.ipr" />
-        <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-      </PATH_ELEMENT>
-      <PATH_ELEMENT>
-        <option name="myItemId" value="Cytoscape_EnrichmentMap" />
-        <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewModuleNode" />
-      </PATH_ELEMENT>
-      <PATH_ELEMENT>
-        <option name="myItemId" value="PsiDirectory:C:\BaderlabSvn\EnrichmentMapPlugin\src" />
-        <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-      </PATH_ELEMENT>
-      <PATH_ELEMENT>
-        <option name="myItemId" value="PsiDirectory:C:\BaderlabSvn\EnrichmentMapPlugin\src\org" />
-        <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-      </PATH_ELEMENT>
-      <PATH_ELEMENT>
-        <option name="myItemId" value="PsiDirectory:C:\BaderlabSvn\EnrichmentMapPlugin\src\org\baderlab\csplugins" />
-        <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-      </PATH_ELEMENT>
-      <PATH_ELEMENT>
-        <option name="myItemId" value="PsiDirectory:C:\BaderlabSvn\EnrichmentMapPlugin\src\org\baderlab\csplugins\enrichmentmap" />
-        <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-      </PATH_ELEMENT>
-      <PATH_ELEMENT>
-        <option name="myItemId" value="PsiDirectory:C:\BaderlabSvn\EnrichmentMapPlugin\src\org\baderlab\csplugins\enrichmentmap\test" />
         <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
       </PATH_ELEMENT>
     </PATH>
@@ -560,27 +494,6 @@
       <option name="HOST" value="localhost" />
       <option name="PORT" value="5005" />
     </configuration>
-    <configuration selected="false" default="true" type="Application" factoryName="Application">
-      <option name="MAIN_CLASS_NAME" />
-      <option name="VM_PARAMETERS" />
-      <option name="PROGRAM_PARAMETERS" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" />
-      <module name="" />
-    </configuration>
-    <configuration selected="false" default="true" type="Applet" factoryName="Applet">
-      <module name="" />
-      <option name="MAIN_CLASS_NAME" />
-      <option name="HTML_FILE_NAME" />
-      <option name="HTML_USED" value="false" />
-      <option name="WIDTH" value="400" />
-      <option name="HEIGHT" value="300" />
-      <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
-      <option name="VM_PARAMETERS" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" />
-    </configuration>
     <configuration selected="false" default="true" type="JUnit" factoryName="JUnit">
       <module name="" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
@@ -597,6 +510,18 @@
         <value defaultName="wholeProject" />
       </option>
     </configuration>
+    <configuration selected="false" default="true" type="Applet" factoryName="Applet">
+      <module name="" />
+      <option name="MAIN_CLASS_NAME" />
+      <option name="HTML_FILE_NAME" />
+      <option name="HTML_USED" value="false" />
+      <option name="WIDTH" value="400" />
+      <option name="HEIGHT" value="300" />
+      <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
+      <option name="VM_PARAMETERS" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+    </configuration>
     <configuration selected="true" default="false" name="EnrichmentMapTestSuite" type="JUnit" factoryName="JUnit">
       <module name="Cytoscape_EnrichmentMap" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
@@ -612,19 +537,19 @@
       <option name="TEST_SEARCH_SCOPE">
         <value defaultName="wholeProject" />
       </option>
+      <RunnerSettings RunnerId="Debug">
+        <option name="DEBUG_PORT" value="2217" />
+        <option name="TRANSPORT" value="0" />
+        <option name="LOCAL" value="true" />
+      </RunnerSettings>
       <RunnerSettings RunnerId="JProfiler">
         <option name="WINDOW" value="false" />
         <option name="JVMPI" value="false" />
         <option name="INTERPRETED" value="false" />
       </RunnerSettings>
       <RunnerSettings RunnerId="Run" />
-      <RunnerSettings RunnerId="Debug">
-        <option name="DEBUG_PORT" value="2217" />
-        <option name="TRANSPORT" value="0" />
-        <option name="LOCAL" value="true" />
-      </RunnerSettings>
-      <ConfigurationWrapper RunnerId="Run" />
       <ConfigurationWrapper RunnerId="Debug" />
+      <ConfigurationWrapper RunnerId="Run" />
     </configuration>
     <configuration selected="true" default="false" name="EnrichmentMapPlugin" type="Application" factoryName="Application">
       <option name="MAIN_CLASS_NAME" value="cytoscape.CyMain" />
@@ -634,20 +559,20 @@
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" value="" />
       <module name="Cytoscape_EnrichmentMap" />
+      <RunnerSettings RunnerId="Debug">
+        <option name="DEBUG_PORT" value="3746" />
+        <option name="TRANSPORT" value="0" />
+        <option name="LOCAL" value="true" />
+      </RunnerSettings>
       <RunnerSettings RunnerId="JProfiler">
         <option name="WINDOW" value="false" />
         <option name="JVMPI" value="false" />
         <option name="INTERPRETED" value="false" />
       </RunnerSettings>
       <RunnerSettings RunnerId="Run" />
-      <RunnerSettings RunnerId="Debug">
-        <option name="DEBUG_PORT" value="3746" />
-        <option name="TRANSPORT" value="0" />
-        <option name="LOCAL" value="true" />
-      </RunnerSettings>
+      <ConfigurationWrapper RunnerId="Debug" />
       <ConfigurationWrapper RunnerId="JProfiler" />
       <ConfigurationWrapper RunnerId="Run" />
-      <ConfigurationWrapper RunnerId="Debug" />
     </configuration>
   </component>
   <component name="SelectInManager" />
@@ -700,7 +625,7 @@
     <layout>
       <window_info id="CVS" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.33" order="8" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.030944625" order="7" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="docked" type="docked" visible="true" weight="0.21521036" order="0" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="docked" type="docked" visible="true" weight="0.2184466" order="0" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.42988506" order="1" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.25" order="1" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.37241378" order="12" />
@@ -709,7 +634,7 @@
       <window_info id="Dependency Viewer" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.33" order="9" />
       <window_info id="Favorites" active="false" anchor="right" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.32959184" order="5" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.25" order="1" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="true" weight="0.41149426" order="2" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.41149426" order="2" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.24719101" order="2" />
       <window_info id="File View" active="false" anchor="right" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.33" order="4" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.4586207" order="4" />
@@ -822,25 +747,9 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/test/FileReaderTest.java">
+    <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/HeatMapPanel.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="87" column="0" selection-start="2786" selection-end="2786" vertical-scroll-proportion="-4.811947">
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/BuildEnrichmentMapTask.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="95" column="16" selection-start="3871" selection-end="3871" vertical-scroll-proportion="0.32036614">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/SliderBarPanel.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="-1.2837529">
+        <state line="181" column="0" selection-start="6689" selection-end="6689" vertical-scroll-proportion="0.021197008">
           <folding />
         </state>
       </provider>
@@ -852,6 +761,41 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/SliderBarPanel.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/HeatMapParameters.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="259" column="74" selection-start="10149" selection-end="10149" vertical-scroll-proportion="0.021197008">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/HeatMapActionListener.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="203" column="34" selection-start="8388" selection-end="8400" vertical-scroll-proportion="0.07356609">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/BuildEnrichmentMapTask.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="95" column="16" selection-start="3871" selection-end="3871" vertical-scroll-proportion="0.021197008">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/RanksFileReaderTask.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="269" column="93" selection-start="10924" selection-end="10924" vertical-scroll-proportion="0.2755611">
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/VisualizeEnrichmentMapTask.java">
       <provider selected="true" editor-type-id="text-editor">
         <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
@@ -859,37 +803,18 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/EnrichmentMapParameters.java">
+    <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/test/FileReaderTest.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="184" column="58" selection-start="8224" selection-end="8224" vertical-scroll-proportion="0.32036614">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/HeatMapActionListener.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="203" column="34" selection-start="8388" selection-end="8400" vertical-scroll-proportion="0.67048055">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/HeatMapPanel.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="181" column="0" selection-start="6739" selection-end="6739" vertical-scroll-proportion="0.3020595">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/HeatMapParameters.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="259" column="74" selection-start="9903" selection-end="9903" vertical-scroll-proportion="1.1578947">
-          <folding />
+        <state line="87" column="0" selection-start="2807" selection-end="2807" vertical-scroll-proportion="0.021197008">
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/RanksFileReaderTask.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="269" column="93" selection-start="10919" selection-end="10919" vertical-scroll-proportion="0.6498856">
+        <state line="133" column="56" selection-start="5615" selection-end="5615" vertical-scroll-proportion="-4.938903">
           <folding />
         </state>
       </provider>
