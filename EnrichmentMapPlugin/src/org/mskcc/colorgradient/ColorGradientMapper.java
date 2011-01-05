@@ -88,17 +88,8 @@ public class ColorGradientMapper {
         // sanity check
         if (colorGradientTheme == null || colorGradientRange == null) return null;
 
-        //ContinuousMapping continuousMapping = new ContinuousMapping(Color.WHITE, ObjectMapping.NODE_MAPPING);
-        ContinuousMapping continuousMapping;
-        try{
-            continuousMapping= new ContinuousMapping(Color.WHITE.getClass(),"temp");
-
-         } catch (java.lang.NoSuchMethodError nsme ){
-            continuousMapping = new ContinuousMapping(Color.WHITE, ObjectMapping.NODE_MAPPING);
-            //continuousMapping.setControllingAttributeName("temp",null,false);
-        }
-
-
+        ContinuousMapping continuousMapping = new ContinuousMapping(Color.WHITE, ObjectMapping.NODE_MAPPING);
+        
         continuousMapping.setInterpolator(new LinearNumberToColorInterpolator());
 
         final Color minColor = colorGradientTheme.getMinColor();

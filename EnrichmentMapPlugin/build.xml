@@ -14,11 +14,11 @@
 	  actual installation directory and the version you are using):
 
 	  Apple:
-		CYTOSCAPE_HOME=/Applications/Cytoscape_v2.8.0
+		CYTOSCAPE_HOME=/Applications/Cytoscape_v2.7.0
 	  Linux:
-		CYTOSCAPE_HOME=/usr/local/Cytoscape_v2.8.0
+		CYTOSCAPE_HOME=/usr/local/Cytoscape_v2.7.0
 	  Windows:
-		CYTOSCAPE_HOME=C:/Program Files/Cytoscape_v2.8.0
+		CYTOSCAPE_HOME=C:/Program Files/Cytoscape_v2.7.0
 	
 	(cytoscape.jar and lib/*jar are needed for compiling the plugin) 
     -->
@@ -27,7 +27,7 @@
 	<property file="plugin.props" />
 	
 	<property environment="env" />
-	<condition property="CYTOSCAPE_HOME" value="${env.CYTOSCAPE_HOME}" else="C:/Program Files/Cytoscape-v2.6.1" >
+	<condition property="CYTOSCAPE_HOME" value="${env.CYTOSCAPE_HOME}" else="C:/Program Files/Cytoscape_v2.7.0" >
 		<available file="${env.CYTOSCAPE_HOME}/cytoscape.jar" />
 	</condition>
 	
@@ -97,7 +97,7 @@
 
 	<path id="enrichment_map.module.classpath">
 		<pathelement location="${CYTOSCAPE_HOME}/cytoscape.jar" />
-		<fileset dir="${module.enrichment_map.basedir}/lib">
+		<fileset dir="${CYTOSCAPE_HOME}/lib">
 			<include name="**/*.jar" />
 		</fileset>
 	</path>
