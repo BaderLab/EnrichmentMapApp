@@ -29,15 +29,21 @@
 
 package org.mskcc.colorgradient;
 
-import cytoscape.visual.mappings.ContinuousMapping;
-import cytoscape.visual.mappings.ObjectMapping;
-import cytoscape.visual.mappings.LinearNumberToColorInterpolator;
-import cytoscape.visual.mappings.BoundaryRangeValues;
-import cytoscape.visual.mappings.continuous.ContinuousMappingPoint;
-
 import java.awt.Color;
-import java.util.List;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import cytoscape.visual.mappings.BoundaryRangeValues;
+import cytoscape.visual.mappings.ContinuousMapping;
+import cytoscape.visual.mappings.Interpolator;
+import cytoscape.visual.mappings.LinearNumberToColorInterpolator;
+import cytoscape.visual.mappings.ObjectMapping;
+import cytoscape.visual.mappings.continuous.ContinuousRangeCalculator;
 
 /**
  * Maps color gradient onto network views.
@@ -68,13 +74,13 @@ public class ColorGradientMapper {
         if (measurement.equals(Double.NaN)) return theme.getNoDataColor();
 
         // sanity check
-        final cytoscape.visual.mappings.ContinuousMapping continuousMapping = getContinuousMapping(theme,range);
+        final ContinuousMapping continuousMapping = getContinuousMapping(theme,range);
         if (continuousMapping == null) return theme.getNoDataColor();
-        final java.util.Map<String, Double> attrBundle = new java.util.HashMap<String, Double>();
+        final Map<String, Double> attrBundle = new HashMap<String, Double>();
         attrBundle.put(gene, measurement);
 
-        cytoscape.visual.mappings.continuous.ContinuousRangeCalculator  calculator = new cytoscape.visual.mappings.continuous.ContinuousRangeCalculator(continuousMapping.getAllPoints(),
-                                                            continuousMapping.getInterpolator(), attrBundle);
+        ContinuousRangeCalculator  calculator = createContinuousRangeCalculatorHack(getAllPointsHack(continuousMapping),
+                                                             continuousMapping.getInterpolator(), attrBundle);
 
         return (Color)calculator.calculateRangeValue(gene);
 
@@ -110,6 +116,66 @@ public class ColorGradientMapper {
         // outta here
         return continuousMapping;
     }
+
+    	/*
+     * This hack is a workaround for the API change in Cytoscape 2.8.0.
+     * The issue involves a change in the signature of the constructor for
+     * ContinuousRangeCalculator from ArrayList to List.  This workaround uses
+     * late binding to construct a new instance so the bytecode verifier
+     * doesn't get confused when the constructor signature isn't what it
+     * expects.
+     */
+    private static ContinuousRangeCalculator createContinuousRangeCalculatorHack(ArrayList<?> points, Interpolator interpolator, Map<String, Double> attributes) {
+		Constructor<ContinuousRangeCalculator> constructor = null;
+		for (Class<?> type : new Class[] { ArrayList.class, List.class }) {
+	    	try {
+				constructor = ContinuousRangeCalculator.class.getConstructor(type, Interpolator.class, Map.class);
+			} catch (SecurityException e) {
+				throw new RuntimeException(e);
+			} catch (NoSuchMethodException e) {
+				continue;
+			}
+		}
+		if (constructor == null) {
+			throw new RuntimeException();
+		}
+		try {
+			return constructor.newInstance(points, interpolator, attributes);
+		} catch (IllegalArgumentException e) {
+			throw new RuntimeException(e);
+		} catch (InstantiationException e) {
+			throw new RuntimeException(e);
+		} catch (IllegalAccessException e) {
+			throw new RuntimeException(e);
+		} catch (InvocationTargetException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	/*
+     * This hack is a workaround for the API change in Cytoscape 2.8.0.
+     * The issue involves a change in the return type of
+     * ContinuousMapping.getAllPoints() from ArrayList to
+     * List<ContinuousMappingPoint>.  This workaround uses late binding to
+     * invoke getAllPoints() so the bytecode verifier doesn't get confused
+     * when the return type isn't what it expects.
+     */
+    private static ArrayList<?> getAllPointsHack(ContinuousMapping mapping) {
+    	try {
+			Method method = ContinuousMapping.class.getMethod("getAllPoints");
+			return (ArrayList<?>) method.invoke(mapping);
+		} catch (SecurityException e) {
+			throw new RuntimeException(e);
+		} catch (NoSuchMethodException e) {
+			throw new RuntimeException(e);
+		} catch (IllegalArgumentException e) {
+			throw new RuntimeException(e);
+		} catch (IllegalAccessException e) {
+			throw new RuntimeException(e);
+		} catch (InvocationTargetException e) {
+			throw new RuntimeException(e);
+		}
+	}
 
 
     /**
