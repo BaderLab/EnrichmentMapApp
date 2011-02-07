@@ -12,7 +12,7 @@ pluginName=EnrichmentMap
 pluginDescription=Enrichment Map is a network-based method to visualize and interpret gene-set enrichment results.
 
 # Plugin version number, this must be two numbers separated by a decimlal.  Ex. 0.2, 14.03
-pluginVersion=1.0
+pluginVersion=1.1
 
 # Compatible Cytoscape version
 cytoscapeVersion=2.6,2.7,2.8
@@ -31,7 +31,7 @@ pluginAuthorsIntsitutions=Gary Bader, Daniele Merico, Ruth Isserlin, Oliver Stue
 projectURL=http://www.baderlab.org/Software/EnrichmentMap
 
 # Date this plugin/plugin version was released
-releaseDate=November 16, 2010
+releaseDate=February 7, 2011
 
 # If this plugin is never meant to be downloaded except as part of a plugin (not common) add this property.  Default is "no"
 #themeOnly=no
