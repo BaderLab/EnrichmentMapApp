@@ -638,16 +638,11 @@ public class EnrichmentMapParameters {
             }
         }
 
-       //check to see if there are two datasets if the two gct files are the same
-          if(this.twoDatasets){
-              if((this.expressionFileName1 != null) && (this.expressionFileName2 != null)){
-                  if(this.expressionFileName1.equalsIgnoreCase(this.expressionFileName2)){
-                      this.Data2 = false;
-                      this.expressionFileName2 = "";
-                  }
-              }
-          }
-       
+        //check to see if there are two datasets if the two gct files are the same
+        if((this.twoDatasets) && (this.expressionFileName1.equalsIgnoreCase(this.expressionFileName2))){
+            this.Data2 = false;
+            this.expressionFileName2 = "";
+        }
 
 
         return errors;
