@@ -199,6 +199,10 @@ public class EnrichmentMapInputPanel extends JPanel {
            JButton about = new JButton("About");
            about.addActionListener(new ShowAboutPanelAction());
 
+           //add button to do bulk EM Creation
+           JButton bulk = new JButton("Bulk EM");
+           bulk.addActionListener(new BulkEMCreationAction());
+
             c_buttons.weighty = 1;
             c_buttons.weightx = 1;
             c_buttons.insets = new Insets(0,0,0,0);
@@ -214,6 +218,10 @@ public class EnrichmentMapInputPanel extends JPanel {
             c_buttons.gridy = 1;
             gridbag_buttons.setConstraints(help, c_buttons);
             buttonsPanel.add(help);
+
+           c_buttons.gridy = 2;
+            gridbag_buttons.setConstraints(bulk, c_buttons);
+            buttonsPanel.add(bulk);
 
 
            JPanel panel = new JPanel();
@@ -287,50 +295,50 @@ public class EnrichmentMapInputPanel extends JPanel {
            return topPanel;
        }
 
-       /**
-        * Creates a collapsible panel that holds main user inputs geneset files, datasets and parameters
-        *
-        * @return collapsablePanel - main analysis panel
-        */
-       private CollapsiblePanel createOptionsPanel() {
-           CollapsiblePanel collapsiblePanel = new CollapsiblePanel("User Input");
+           /**
+            * Creates a collapsible panel that holds main user inputs geneset files, datasets and parameters
+            *
+            * @return collapsablePanel - main analysis panel
+            */
+           private CollapsiblePanel createOptionsPanel() {
+               CollapsiblePanel collapsiblePanel = new CollapsiblePanel("User Input");
 
-           JPanel panel = new JPanel();
-           panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+               JPanel panel = new JPanel();
+               panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
-           //Gene set file panel
-           CollapsiblePanel GMTcollapsiblePanel = createGMTPanel();
-           GMTcollapsiblePanel.setCollapsed(false);
+               //Gene set file panel
+               CollapsiblePanel GMTcollapsiblePanel = createGMTPanel();
+               GMTcollapsiblePanel.setCollapsed(false);
 
-           //Dataset1 collapsible panel
-           DatasetsPanel = new JPanel();
-           DatasetsPanel.setLayout(new BoxLayout(DatasetsPanel, BoxLayout.Y_AXIS));
+               //Dataset1 collapsible panel
+               DatasetsPanel = new JPanel();
+               DatasetsPanel.setLayout(new BoxLayout(DatasetsPanel, BoxLayout.Y_AXIS));
 
-           datasets = new CollapsiblePanel("Datasets");
-           datasets.setLayout(new BorderLayout());
+               datasets = new CollapsiblePanel("Datasets");
+               datasets.setLayout(new BorderLayout());
 
-           dataset1 = createDataset1Panel();
-           dataset1.setCollapsed(false);
+               dataset1 = createDataset1Panel();
+               dataset1.setCollapsed(false);
 
-           dataset2 = createDataset2Panel();
-           datasets.setCollapsed(false);
+               dataset2 = createDataset2Panel();
+               datasets.setCollapsed(false);
 
-           DatasetsPanel.add(dataset1);
-           DatasetsPanel.add(dataset2);
+               DatasetsPanel.add(dataset1);
+               DatasetsPanel.add(dataset2);
 
-           datasets.getContentPane().add(DatasetsPanel, BorderLayout.NORTH);
+               datasets.getContentPane().add(DatasetsPanel, BorderLayout.NORTH);
 
-           //Parameters collapsible panel
-           CollapsiblePanel ParametersPanel = createParametersPanel();
-           ParametersPanel.setCollapsed(false);
+               //Parameters collapsible panel
+               CollapsiblePanel ParametersPanel = createParametersPanel();
+               ParametersPanel.setCollapsed(false);
 
-           panel.add(GMTcollapsiblePanel);
-           panel.add(datasets);
-           panel.add(ParametersPanel);
+               panel.add(GMTcollapsiblePanel);
+               panel.add(datasets);
+               panel.add(ParametersPanel);
 
-           collapsiblePanel.getContentPane().add(panel, BorderLayout.NORTH);
-           return collapsiblePanel;
-       }
+               collapsiblePanel.getContentPane().add(panel, BorderLayout.NORTH);
+               return collapsiblePanel;
+           }
 
     /**
      * Creates a collapsible panel that holds gene set file specification

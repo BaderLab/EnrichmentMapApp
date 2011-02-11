@@ -126,40 +126,72 @@ public class VisualizeEnrichmentMapTask implements Task {
             CyNetwork network;
             String prefix;
 
-            //There are no networks then create a new one.
-            if(networks == null){
-                //create the network
+            //Check to see if there is already a name specifed for the network
+            //We still need to calculate the number of networks so that we can specify the paramters for
+            //each network.
+            if(params.getNetworkName() != null){
+               network = Cytoscape.createNetwork(params.getNetworkName());
+               if(networks == null)
+                    prefix = "EM1";
+               else{
+                //how many enrichment maps are there?
+                    int num_networks = 1;
+                    int max_prefix = 0;
+                    EnrichmentMapManager manager = EnrichmentMapManager.getInstance();
+                    for(Iterator<CyNetwork> i = networks.iterator(); i.hasNext();){
+                        CyNetwork current_network = i.next();
+                        String networkId = current_network.getIdentifier();
+                        if( manager.isEnrichmentMap(networkId) ) {//fails
+                            num_networks++;
+                            EnrichmentMapParameters tmpParams = manager.getParameters(networkId);
+                            String tmpPrefix = tmpParams.getAttributePrefix();
+                            tmpPrefix = tmpPrefix.replace("EM", "");
+                            tmpPrefix = tmpPrefix.replace("_", "");
+                            int tmpNum = Integer.parseInt(tmpPrefix);
+                            if (tmpNum > max_prefix)
+                                max_prefix = tmpNum;
+                        }
+                    }
+                    prefix = "EM" + (max_prefix + 1) + "_";
+               }
+               params.setAttributePrefix(prefix);
 
-                prefix = "EM1_";
-                params.setAttributePrefix(prefix);
-                params.setNetworkName(prefix+mapName);
-                network = Cytoscape.createNetwork(prefix + mapName);
             }
             else{
-                //how many enrichment maps are there?
-                int num_networks = 1;
-                int max_prefix = 0;
-                EnrichmentMapManager manager = EnrichmentMapManager.getInstance();
-                for(Iterator<CyNetwork> i = networks.iterator(); i.hasNext();){
-                    CyNetwork current_network = i.next();
-                    String networkId = current_network.getIdentifier();
-                    if( manager.isEnrichmentMap(networkId) ) {//fails
-                        num_networks++;
-                        EnrichmentMapParameters tmpParams = manager.getParameters(networkId);
-                        String tmpPrefix = tmpParams.getAttributePrefix();
-                        tmpPrefix = tmpPrefix.replace("EM", "");
-                        tmpPrefix = tmpPrefix.replace("_", "");
-                        int tmpNum = Integer.parseInt(tmpPrefix);
-                        if (tmpNum > max_prefix)
-                            max_prefix = tmpNum;
-                    }
-                }
-                prefix = "EM" + (max_prefix + 1) + "_";
-                params.setAttributePrefix(prefix);
-                params.setNetworkName(prefix+mapName);
-                network = Cytoscape.createNetwork(prefix + mapName);
-            }
+                //There are no networks then create a new one.
+                if(networks == null){
+                    //create the network
 
+                    prefix = "EM1_";
+                    params.setAttributePrefix(prefix);
+                    params.setNetworkName(prefix+mapName);
+                    network = Cytoscape.createNetwork(prefix + mapName);
+                }
+                else{
+                    //how many enrichment maps are there?
+                    int num_networks = 1;
+                    int max_prefix = 0;
+                    EnrichmentMapManager manager = EnrichmentMapManager.getInstance();
+                    for(Iterator<CyNetwork> i = networks.iterator(); i.hasNext();){
+                        CyNetwork current_network = i.next();
+                        String networkId = current_network.getIdentifier();
+                        if( manager.isEnrichmentMap(networkId) ) {//fails
+                            num_networks++;
+                            EnrichmentMapParameters tmpParams = manager.getParameters(networkId);
+                            String tmpPrefix = tmpParams.getAttributePrefix();
+                            tmpPrefix = tmpPrefix.replace("EM", "");
+                            tmpPrefix = tmpPrefix.replace("_", "");
+                            int tmpNum = Integer.parseInt(tmpPrefix);
+                            if (tmpNum > max_prefix)
+                                max_prefix = tmpNum;
+                        }
+                    }
+                    prefix = "EM" + (max_prefix + 1) + "_";
+                    params.setAttributePrefix(prefix);
+                    params.setNetworkName(prefix+mapName);
+                    network = Cytoscape.createNetwork(prefix + mapName);
+                }
+            }
             // store path to GSEA report in Network Attribute
             if (params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)) {
                 CyAttributes networkAttributes = Cytoscape

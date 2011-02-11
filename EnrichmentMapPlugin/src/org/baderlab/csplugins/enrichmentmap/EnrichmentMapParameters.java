@@ -61,12 +61,23 @@ import cytoscape.CytoscapeInit;
  */
 public class EnrichmentMapParameters {
 
-    private String NetworkName;
+    private String NetworkName = null;
     private String attributePrefix;
 
     //Input File names
     //GMT - gene set definition file
     private String GMTFileName;
+
+    //directory where the GMT and GCT(expression) files are found
+    //needed for Bulk EM creation when the user has moved their files
+    //around and they are not in the same directories that GSEA used.
+    private String GMTDirName = null;
+    private String GCTDirName = null;
+    private String GSEAResultsDirName = null;
+    private int lowerlimit = 1;
+    private int upperlimit = 1;
+
+
     //Expression files
     private String expressionFileName1;
     private String expressionFileName2;
@@ -469,6 +480,8 @@ public class EnrichmentMapParameters {
      */
     public void copyInputParameters(EnrichmentMapParameters copy){
 
+        this.NetworkName = copy.getNetworkName();
+
         this.GMTFileName = copy.getGMTFileName();
         this.expressionFileName1 = copy.getExpressionFileName1();
         this.expressionFileName2 = copy.getExpressionFileName2();
@@ -512,6 +525,15 @@ public class EnrichmentMapParameters {
        //missing the classfiles in the copy --> bug ticket #61
         this.classFile1 = copy.getClassFile1();
         this.classFile2 = copy.getClassFile2();
+
+        //field needed when calculating bulk enrichment maps.
+        this.GMTDirName = copy.getGMTDirName();
+        this.GCTDirName = copy.getGCTDirName();
+        this.GSEAResultsDirName = copy.getGSEAResultsDirName();
+        this.upperlimit = copy.getUpperlimit();
+        this.lowerlimit = copy.getLowerlimit();
+
+
    }
 
 
@@ -598,6 +620,13 @@ public class EnrichmentMapParameters {
 
        this.rank2geneDataset1 = copy.getRank2geneDataset1();
        this.rank2geneDataset2 = copy.getRank2geneDataset2();
+
+       //field needed when calculating bulk enrichment maps.
+        this.GMTDirName = copy.getGMTDirName();
+        this.GCTDirName = copy.getGCTDirName();
+        this.GSEAResultsDirName = copy.getGSEAResultsDirName();
+        this.upperlimit = copy.getUpperlimit();
+        this.lowerlimit = copy.getLowerlimit();
        }
 
    /**
@@ -769,21 +798,25 @@ public class EnrichmentMapParameters {
 
         //Write the classes/phenotypes as a comma separated list.
         if(this.isData()){
-            String[] current_pheno = expression.getPhenotypes();
-            if (current_pheno != null){
-                StringBuffer output = new StringBuffer();
-                for(int j = 0; j < current_pheno.length;j++)
-                     output.append(current_pheno[j] + ",");
-                paramVariables.append("class1\t" + output.toString() + "\n");
+            if(expression != null){
+                String[] current_pheno = expression.getPhenotypes();
+                if (current_pheno != null){
+                    StringBuffer output = new StringBuffer();
+                    for(int j = 0; j < current_pheno.length;j++)
+                        output.append(current_pheno[j] + ",");
+                    paramVariables.append("class1\t" + output.toString() + "\n");
+                }
             }
         }
         if(this.isData2()){
-            String[] current_pheno = expression2.getPhenotypes();
-            if (current_pheno != null){
-                StringBuffer output = new StringBuffer();
-                for(int j = 0; j < current_pheno.length;j++)
-                     output.append(current_pheno[j] + ",");
-                paramVariables.append("class2\t" + output.toString() + "\n");
+            if(expression2 != null){
+                String[] current_pheno = expression2.getPhenotypes();
+                if (current_pheno != null){
+                    StringBuffer output = new StringBuffer();
+                    for(int j = 0; j < current_pheno.length;j++)
+                        output.append(current_pheno[j] + ",");
+                    paramVariables.append("class2\t" + output.toString() + "\n");
+                }
             }
         }
 
@@ -1572,5 +1605,44 @@ public class EnrichmentMapParameters {
         this.method = method;
     }
 
+    public String getGMTDirName() {
+        return GMTDirName;
+    }
+
+    public void setGMTDirName(String GMTDirName) {
+        this.GMTDirName = GMTDirName;
+    }
+
+    public String getGCTDirName() {
+        return GCTDirName;
+    }
+
+    public void setGCTDirName(String GCTDirName) {
+        this.GCTDirName = GCTDirName;
+    }
+
+    public int getLowerlimit() {
+        return lowerlimit;
+    }
+
+    public void setLowerlimit(int lowerlimit) {
+        this.lowerlimit = lowerlimit;
+    }
+
+    public int getUpperlimit() {
+        return upperlimit;
+    }
+
+    public void setUpperlimit(int upperlimit) {
+        this.upperlimit = upperlimit;
+    }
+
+    public String getGSEAResultsDirName() {
+        return GSEAResultsDirName;
+    }
+
+    public void setGSEAResultsDirName(String GSEAResultsDirName) {
+        this.GSEAResultsDirName = GSEAResultsDirName;
+    }
 
 }
