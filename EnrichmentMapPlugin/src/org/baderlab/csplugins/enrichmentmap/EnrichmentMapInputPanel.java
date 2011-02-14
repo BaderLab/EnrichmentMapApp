@@ -111,6 +111,7 @@ public class EnrichmentMapInputPanel extends JPanel {
     private JFormattedTextField pvalueTextField;
     private JFormattedTextField qvalueTextField;
     private JFormattedTextField coeffecientTextField;
+    private JFormattedTextField combinedConstantTextField;
 
     //flags
     private JRadioButton gsea;
@@ -118,6 +119,7 @@ public class EnrichmentMapInputPanel extends JPanel {
     private JRadioButton david;
     private JRadioButton overlap;
     private JRadioButton jaccard;
+    private JRadioButton combined;
 
     private int defaultColumns = 15;
 
@@ -849,16 +851,26 @@ public class EnrichmentMapInputPanel extends JPanel {
            jaccard.setSelected(true);
            overlap = new JRadioButton("Overlap Coeffecient");
            overlap.setActionCommand("overlap");
-           if ( params.isJaccard() ) {
+           combined = new JRadioButton("Jaccard+Overlap Combined");
+           combined.setActionCommand("combined");
+           if ( params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_JACCARD) ) {
                jaccard.setSelected(true);
                overlap.setSelected(false);
-           } else {
+               combined.setSelected(false);
+           } else if ( params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_OVERLAP)){
                jaccard.setSelected(false);
                overlap.setSelected(true);
+               combined.setSelected(false);
+           }
+           else if ( params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_COMBINED)){
+               jaccard.setSelected(false);
+               overlap.setSelected(false);
+               combined.setSelected(true);
            }
            jaccardOrOverlap = new javax.swing.ButtonGroup();
            jaccardOrOverlap.add(jaccard);
            jaccardOrOverlap.add(overlap);
+           jaccardOrOverlap.add(combined);
 
            jaccard.addActionListener(new java.awt.event.ActionListener() {
                         public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -871,12 +883,18 @@ public class EnrichmentMapInputPanel extends JPanel {
                                selectJaccardOrOverlapActionPerformed(evt);
                         }
                   });
+           combined.addActionListener(new java.awt.event.ActionListener() {
+               public void actionPerformed(java.awt.event.ActionEvent evt) {
+                   selectJaccardOrOverlapActionPerformed(evt);
+               }
+           });
 
            //create a panel for the two buttons
            JPanel index_buttons = new JPanel();
            index_buttons.setLayout(new BorderLayout());
            index_buttons.add(jaccard, BorderLayout.NORTH);
-           index_buttons.add(overlap, BorderLayout.SOUTH);
+           index_buttons.add(overlap, BorderLayout.CENTER);
+           index_buttons.add(combined, BorderLayout.SOUTH);
 
            JLabel coeffecientCutOffLabel = new JLabel("Cutoff");
            coeffecientTextField = new JFormattedTextField(decFormat);
@@ -889,7 +907,19 @@ public class EnrichmentMapInputPanel extends JPanel {
 //          coeffecientTextField.setText(Double.toString(params.getSimilarityCutOff()));
           coeffecientTextField.setValue(params.getSimilarityCutOff());
           params.setSimilarityCutOffChanged(false); //reset for new Panel after .setValue(...) wrongly changed it to "true"
-          
+
+          //Add a box to specify the constant used in created the combined value
+           JLabel combinedCutoff = new JLabel("Combined Constant");
+           combinedConstantTextField =new JFormattedTextField(decFormat);
+           combinedConstantTextField.setColumns(3);
+           combinedConstantTextField.addPropertyChangeListener("value", new FormattedTextFieldAction());
+           combinedConstantTextField.setValue(0.5);
+
+           JPanel kconstantPanel = new JPanel();
+           kconstantPanel.setLayout(new BorderLayout());
+           kconstantPanel.add(combinedCutoff, BorderLayout.WEST);
+           kconstantPanel.add(combinedConstantTextField, BorderLayout.EAST);
+
           JPanel coeffecientCutOffPanel = new JPanel();
           coeffecientCutOffPanel.setLayout(new BorderLayout());
           coeffecientCutOffPanel.setToolTipText(coeffecientCutOffTip);
@@ -897,6 +927,7 @@ public class EnrichmentMapInputPanel extends JPanel {
           coeffecientCutOffPanel.add(index_buttons,BorderLayout.WEST);
           coeffecientCutOffPanel.add(coeffecientCutOffLabel, BorderLayout.CENTER);
           coeffecientCutOffPanel.add(coeffecientTextField, BorderLayout.EAST);
+           coeffecientCutOffPanel.add(kconstantPanel, BorderLayout.SOUTH);
 
            //add the components to the panel
            panel.add(pvalueCutOffPanel);
@@ -949,7 +980,23 @@ public class EnrichmentMapInputPanel extends JPanel {
                     message += "The Overlap/Jaccard Coeffecient cutoff must be between 0 and 1.";
                     invalid = true;
                 }
-            }else if (source == GMTFileNameTextField) {
+            }else if (source == combinedConstantTextField) {
+                Number value = (Number) combinedConstantTextField.getValue();
+                if ((value != null) && (value.doubleValue() >= 0.0) && (value.doubleValue() <= 1.0)) {
+                    params.setCombinedConstant(value.doubleValue());
+
+                    //if the similarity cutoff is equal to the default then updated it to reflect what it should be given the value of k
+                    if(!params.isSimilarityCutOffChanged())
+                        params.setSimilarityCutOff( (params.getDefaultOverlapCutOff() * value.doubleValue()) + ((1-value.doubleValue()) * params.getDefaultJaccardCutOff()) );
+
+                    //params.setCombinedConstantCutOffChanged(true);
+                } else {
+                    source.setValue(0.5);
+                    message += "The combined Overlap/Jaccard Coeffecient constant must be between 0 and 1.";
+                    invalid = true;
+                }
+            }
+            else if (source == GMTFileNameTextField) {
                 String value = GMTFileNameTextField.getText();
                 if(value.equalsIgnoreCase("") )
                     params.setGMTFileName(value);
@@ -1568,7 +1615,7 @@ public class EnrichmentMapInputPanel extends JPanel {
      */
     private void selectJaccardOrOverlapActionPerformed(java.awt.event.ActionEvent evt) {
         if(evt.getActionCommand().equalsIgnoreCase("jaccard")){
-            params.setJaccard(true);
+            params.setSimilarityMetric(EnrichmentMapParameters.SM_JACCARD);
             if ( ! params.isSimilarityCutOffChanged() ) {
                 params.setSimilarityCutOff( params.getDefaultJaccardCutOff() );
 //                coeffecientTextField.setText( Double.toString(params.getSimilarityCutOff()) );
@@ -1577,9 +1624,18 @@ public class EnrichmentMapInputPanel extends JPanel {
             }
         }
      else if(evt.getActionCommand().equalsIgnoreCase("overlap")){
-            params.setJaccard(false);
+            params.setSimilarityMetric(EnrichmentMapParameters.SM_OVERLAP);
             if ( ! params.isSimilarityCutOffChanged() ) {
                 params.setSimilarityCutOff(params.getDefaultOverlapCutOff());
+//                coeffecientTextField.setText( Double.toString(params.getSimilarityCutOff()) );
+                coeffecientTextField.setValue( params.getSimilarityCutOff() );
+                params.setSimilarityCutOffChanged(false); //reset after .setValue(...) wrongly changed it to "true"
+          }
+        }
+        else if(evt.getActionCommand().equalsIgnoreCase("combined")){
+            params.setSimilarityMetric(EnrichmentMapParameters.SM_COMBINED);
+            if ( ! params.isSimilarityCutOffChanged() ) {
+                params.setSimilarityCutOff((params.getDefaultOverlapCutOff() * params.getCombinedConstant()) + ((1-params.getCombinedConstant()) * params.getDefaultJaccardCutOff()) );
 //                coeffecientTextField.setText( Double.toString(params.getSimilarityCutOff()) );
                 coeffecientTextField.setValue( params.getSimilarityCutOff() );
                 params.setSimilarityCutOffChanged(false); //reset after .setValue(...) wrongly changed it to "true"
@@ -1957,8 +2013,21 @@ public class EnrichmentMapInputPanel extends JPanel {
             david.setSelected(true);
         }
 
-        jaccard.setSelected(params.isJaccard());
-        overlap.setSelected(!params.isJaccard());
+        if(params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_JACCARD)){
+            jaccard.setSelected(true);
+            overlap.setSelected(false);
+            combined.setSelected(false);
+        }
+        else if(params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_OVERLAP)){
+            jaccard.setSelected(false);
+            overlap.setSelected(true);
+            combined.setSelected(false);
+        }  else if(params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_COMBINED)){
+            jaccard.setSelected(false);
+            overlap.setSelected(false);
+            combined.setSelected(true);
+        }
+
     }
 
     /**
@@ -2021,8 +2090,20 @@ public class EnrichmentMapInputPanel extends JPanel {
             david.setSelected(true);
         }
 
-        jaccard.setSelected(current_params.isJaccard());
-        overlap.setSelected(!current_params.isJaccard());
+        if(params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_JACCARD)){
+            jaccard.setSelected(true);
+            overlap.setSelected(false);
+            combined.setSelected(false);
+        }
+        else if(params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_OVERLAP)){
+            jaccard.setSelected(false);
+            overlap.setSelected(true);
+            combined.setSelected(false);
+        }  else if(params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_COMBINED)){
+            jaccard.setSelected(false);
+            overlap.setSelected(false);
+            combined.setSelected(true);
+        }
     }
 
     public EnrichmentMapParameters getParams() {

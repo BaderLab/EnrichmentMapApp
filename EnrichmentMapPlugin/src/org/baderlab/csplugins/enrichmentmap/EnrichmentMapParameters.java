@@ -113,8 +113,16 @@ public class EnrichmentMapParameters {
     private String method;
     //private boolean GSEA = true;
     //flag to indicate if the similarity cut off is jaccard or overlap
-    private boolean jaccard;
+    private String similarityMetric;
+
+    public static String SM_JACCARD = "JACCARD";
+    public static String SM_OVERLAP = "OVERLAP";
+    public static String SM_COMBINED = "COMBINED";
+
     private boolean similarityCutOffChanged = false;
+
+    //value to store the constant needed for constructing the combined similarity metric
+    private double combinedConstant;
 
     // DEFAULT VALUES for pvalue, qvalue, similarityCutOff and jaccard
     // will be assigned in the constructor
@@ -298,12 +306,15 @@ public class EnrichmentMapParameters {
         qvalueSlider = new SliderBarPanel(0,this.qvalue,"Q-value Cutoff",this, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2,ParametersPanel.summaryPanelWidth, false, this.qvalue);
 
         //choose Jaccard or Overlap as default
-        if ( getOverlapMetricDefault().equalsIgnoreCase("overlap") ){
+        if ( getOverlapMetricDefault().equalsIgnoreCase(SM_OVERLAP) ){
             this.similarityCutOff = this.defaultOverlapCutOff;
-            this.jaccard = false;
-        } else {
+            this.similarityMetric = SM_OVERLAP;
+        } else if( getOverlapMetricDefault().equalsIgnoreCase(SM_JACCARD)) {
             this.similarityCutOff = this.defaultJaccardCutOff;
-            this.jaccard = true;
+            this.similarityMetric = SM_JACCARD;
+        } else if( getOverlapMetricDefault().equalsIgnoreCase(SM_COMBINED)) {
+            this.similarityCutOff = this.defaultJaccardCutOff;
+            this.similarityMetric = SM_COMBINED;
         }
         this.enrichment_edge_type = ENRICHMENT_INTERACTION_TYPE;
 
@@ -423,8 +434,17 @@ public class EnrichmentMapParameters {
         //boolean flags
         if((props.get("twoDatasets")).equalsIgnoreCase("true"))
             this.twoDatasets = true;
+        //first two take care of old session files that only had JAccard or overlap metrics
         if((props.get("jaccard")).equalsIgnoreCase("false"))
-            this.jaccard = false;
+            this.similarityMetric = SM_JACCARD;
+        else if((props.get("jaccard")).equalsIgnoreCase("true"))
+            this.similarityMetric = SM_OVERLAP;
+        else if ((props.get("jaccard")).equalsIgnoreCase(SM_JACCARD))
+            this.similarityMetric = SM_JACCARD;
+        else if ((props.get("jaccard")).equalsIgnoreCase(SM_OVERLAP))
+            this.similarityMetric = SM_OVERLAP;
+        else if ((props.get("jaccard")).equalsIgnoreCase(SM_COMBINED))
+            this.similarityMetric = SM_COMBINED;
         //have to deal with legacy issue by switching from two methods to multiple
         if(props.get("GSEA") != null){
          if((props.get("GSEA")).equalsIgnoreCase("false"))
@@ -541,7 +561,7 @@ public class EnrichmentMapParameters {
         this.Data2 = copy.isData2();
         this.twoDatasets = copy.isTwoDatasets();
         this.method = copy.getMethod();
-        this.jaccard = copy.isJaccard();
+        this.similarityMetric = copy.getSimilarityMetric();
         this.similarityCutOffChanged = copy.similarityCutOffChanged;
 
        //missing the classfiles in the copy --> bug ticket #61
@@ -603,7 +623,7 @@ public class EnrichmentMapParameters {
         this.twoDatasets = copy.isTwoDatasets();
         this.method = copy.getMethod();
         this.FDR = copy.isFDR();
-        this.jaccard = copy.isJaccard();
+        this.similarityMetric = copy.getSimilarityMetric();
 
         this.similarityCutOffChanged = copy.similarityCutOffChanged;
 
@@ -913,7 +933,7 @@ public class EnrichmentMapParameters {
 
         //boolean flags
         paramVariables.append("twoDatasets\t" + twoDatasets + "\n");
-        paramVariables.append("jaccard\t" + jaccard + "\n");
+        paramVariables.append("jaccard\t" + similarityMetric + "\n");
 
         paramVariables.append("Data\t" + Data + "\n");
         paramVariables.append("Data2\t" + Data2 + "\n");
@@ -1090,12 +1110,12 @@ public class EnrichmentMapParameters {
 
     // Class Getters and Setters
 
-    public boolean isJaccard() {
-        return jaccard;
+    public String getSimilarityMetric() {
+        return similarityMetric;
     }
 
-    public void setJaccard(boolean jaccard) {
-        this.jaccard = jaccard;
+    public void setSimilarityMetric(String similarityMetric) {
+        this.similarityMetric = similarityMetric;
     }
 
     public HashMap<String, EnrichmentResult> getEnrichmentResults1() {
@@ -1769,5 +1789,11 @@ public class EnrichmentMapParameters {
         this.GSEAResultsDirName = GSEAResultsDirName;
     }
 
+    public double getCombinedConstant() {
+        return combinedConstant;
+    }
 
+    public void setCombinedConstant(double combinedConstant) {
+        this.combinedConstant = combinedConstant;
+    }
 }

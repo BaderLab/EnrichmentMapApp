@@ -42,7 +42,6 @@
 // $HeadURL$
 
 package org.baderlab.csplugins.enrichmentmap;
-import cytoscape.Cytoscape;
 import cytoscape.logger.CyLogger;
 import cytoscape.task.Task;
 import cytoscape.task.TaskMonitor;
@@ -189,13 +188,24 @@ public class ComputeSimilarityTask implements Task {
 
                          double coeffecient;
 
-                         if(params.isJaccard()){
+                         if(params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_JACCARD)){
 
                             //compute Jaccard similarity
                             coeffecient = (double)intersection.size() / (double)union.size();
                          }
-                         else{
+                         else if(params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_OVERLAP)){
                              coeffecient = (double)intersection.size() / Math.min((double)genes1.size(), (double)genes2.size());
+                         }
+                         else { //else it must be combined
+                             //Compute a combination of the overlap and jaccard coefecient
+                             //we need both the Jaccard and the Overlap
+                             double jaccard = (double)intersection.size() / (double)union.size();
+                             double overlap = (double)intersection.size() / Math.min((double)genes1.size(), (double)genes2.size());
+
+                             double k = params.getCombinedConstant();
+
+                             coeffecient = (k * overlap) + ((1-k) * jaccard);
+
                          }
                          //create Geneset similarity object
                          GenesetSimilarity comparison = new GenesetSimilarity(geneset1_name,geneset2_name, coeffecient, params.getEnrichment_edge_type() ,(HashSet<Integer>)intersection,enrichment_set);
@@ -270,14 +280,25 @@ public class ComputeSimilarityTask implements Task {
 
                             double coeffecient;
 
-                            if(params.isJaccard()){
+                            if(params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_JACCARD)){
 
-                                //compute Jaccard similarity
-                                coeffecient = (double)intersection.size() / (double)union.size();
-                            }
-                            else{
-                                coeffecient = (double)intersection.size() / Math.min((double)genes1.size(), (double)genes2.size());
-                            }
+                            //compute Jaccard similarity
+                            coeffecient = (double)intersection.size() / (double)union.size();
+                         }
+                         else if(params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_OVERLAP)){
+                             coeffecient = (double)intersection.size() / Math.min((double)genes1.size(), (double)genes2.size());
+                         }
+                         else { //else it must be combined
+                             //Compute a combination of the overlap and jaccard coefecient
+                             //we need both the Jaccard and the Overlap
+                             double jaccard = (double)intersection.size() / (double)union.size();
+                             double overlap = (double)intersection.size() / Math.min((double)genes1.size(), (double)genes2.size());
+
+                             double k = params.getCombinedConstant();
+
+                             coeffecient = (k * overlap) + ((1-k) * jaccard);
+
+                         }
                             //create Geneset similarity object
                             GenesetSimilarity comparison = new GenesetSimilarity(geneset1_name,geneset2_name, coeffecient, params.getEnrichment_edge_type() ,(HashSet<Integer>)intersection,enrichment_set);
 
@@ -361,13 +382,24 @@ public class ComputeSimilarityTask implements Task {
 
                                 double coeffecient;
 
-                                if(params.isJaccard()){
+                                if(params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_JACCARD)){
 
                                     //compute Jaccard similarity
                                     coeffecient = (double)intersection.size() / (double)union.size();
                                 }
-                                else{
+                                else if(params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_OVERLAP)){
                                     coeffecient = (double)intersection.size() / Math.min((double)genes1.size(), (double)genes2.size());
+                                }
+                                else { //else it must be combined
+                                    //Compute a combination of the overlap and jaccard coefecient
+                                    //we need both the Jaccard and the Overlap
+                                    double jaccard = (double)intersection.size() / (double)union.size();
+                                    double overlap = (double)intersection.size() / Math.min((double)genes1.size(), (double)genes2.size());
+
+                                    double k = params.getCombinedConstant();
+
+                                    coeffecient = (k * overlap) + ((1-k) * jaccard);
+
                                 }
                                 //create Geneset similarity object
                                 GenesetSimilarity comparison = new GenesetSimilarity(geneset1_name,geneset2_name, coeffecient, params.getEnrichment_edge_type() ,(HashSet<Integer>)intersection,enrichment_set);
@@ -447,13 +479,24 @@ public class ComputeSimilarityTask implements Task {
 
                                 double coeffecient;
 
-                                if(params.isJaccard()){
+                                if(params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_JACCARD)){
 
                                     //compute Jaccard similarity
                                     coeffecient = (double)intersection.size() / (double)union.size();
-                                }
-                                else{
+                                 }
+                                else if(params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_OVERLAP)){
                                     coeffecient = (double)intersection.size() / Math.min((double)genes1.size(), (double)genes2.size());
+                                }
+                                else { //else it must be combined
+                                    //Compute a combination of the overlap and jaccard coefecient
+                                    //we need both the Jaccard and the Overlap
+                                    double jaccard = (double)intersection.size() / (double)union.size();
+                                    double overlap = (double)intersection.size() / Math.min((double)genes1.size(), (double)genes2.size());
+
+                                    double k = params.getCombinedConstant();
+
+                                     coeffecient = (k * overlap) + ((1-k) * jaccard);
+
                                 }
                                 //create Geneset similarity object
                                 GenesetSimilarity comparison = new GenesetSimilarity(geneset1_name,geneset2_name, coeffecient, params.getEnrichment_edge_type() ,(HashSet<Integer>)intersection,enrichment_set);

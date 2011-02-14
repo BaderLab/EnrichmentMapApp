@@ -299,13 +299,17 @@ public class ParametersPanel extends JPanel {
            runInfoText = runInfoText + "<b>P-value Cut-off:</b>" + params.getPvalue() + "<br>";
            runInfoText = runInfoText + "<b>FDR Q-value Cut-off:</b>" + params.getQvalue() + "<br>";
 
-           if(params.isJaccard()){
+           if(params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_JACCARD)){
                runInfoText = runInfoText + "<b>Jaccard Cut-off:</b>" + params.getSimilarityCutOff() + "<br>";
                runInfoText = runInfoText + "<b>Test used:</b>  Jaccard Index<br>";
            }
-           else{
+           else if(params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_OVERLAP)){
                runInfoText = runInfoText + "<b>Overlap Cut-off:</b>" + params.getSimilarityCutOff() + "<br>";
                runInfoText = runInfoText + "<b>Test used:</b>  Overlap Index<br>";
+           }
+            else if(params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_COMBINED)){
+               runInfoText = runInfoText + "<b>Jaccard Overlap Combined Cut-off:</b>" + params.getSimilarityCutOff() + "<br>";
+               runInfoText = runInfoText + "<b>Test used:</b>  Jaccard Overlap Combined Index<br>";
            }
            runInfoText = runInfoText + "<font size=-1><b>Genesets File:</b>" + shortenPathname(params.getGMTFileName()) + "<br>";
            runInfoText = runInfoText + "<b>Dataset 1 Data Files:</b> " + shortenPathname(params.getEnrichmentDataset1FileName1()) + ",<br>" + shortenPathname(params.getEnrichmentDataset1FileName2()) + "<br>";

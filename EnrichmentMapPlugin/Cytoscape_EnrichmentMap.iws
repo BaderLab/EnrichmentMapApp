@@ -16,23 +16,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" readonly="true" id="948d73f0-2815-4c3f-bddd-1d3af6ad7cb7" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/plugin.props" afterPath="$PROJECT_DIR$/plugin.props" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Cytoscape_EnrichmentMap.iml" afterPath="$PROJECT_DIR$/Cytoscape_EnrichmentMap.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Cytoscape_EnrichmentMap.ipr" afterPath="$PROJECT_DIR$/Cytoscape_EnrichmentMap.ipr" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Cytoscape_EnrichmentMap.iws" afterPath="$PROJECT_DIR$/Cytoscape_EnrichmentMap.iws" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/BuildDiseaseSignatureTask.java" afterPath="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/BuildDiseaseSignatureTask.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/BuildEnrichmentMapTask.java" afterPath="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/BuildEnrichmentMapTask.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/BulkEMCreationPanel.java" afterPath="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/BulkEMCreationPanel.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/ComputeSimilarityTask.java" afterPath="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/ComputeSimilarityTask.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/EnrichmentMapInputPanel.java" afterPath="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/EnrichmentMapInputPanel.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/EnrichmentMapParameters.java" afterPath="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/EnrichmentMapParameters.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/EnrichmentMapVisualStyle.java" afterPath="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/EnrichmentMapVisualStyle.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/EnrichmentResultFileReaderTask.java" afterPath="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/EnrichmentResultFileReaderTask.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/Enrichment_Map_Plugin.java" afterPath="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/Enrichment_Map_Plugin.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/GeneExpressionMatrix.java" afterPath="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/GeneExpressionMatrix.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/GenesetSimilarity.java" afterPath="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/GenesetSimilarity.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/HeatMapPanel.java" afterPath="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/HeatMapPanel.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/HeatMapParameters.java" afterPath="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/HeatMapParameters.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/InitializeGenesetsOfInterestTask.java" afterPath="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/InitializeGenesetsOfInterestTask.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/VisualizeEnrichmentMapTask.java" afterPath="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/VisualizeEnrichmentMapTask.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/ParametersPanel.java" afterPath="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/ParametersPanel.java" />
     </list>
     <list id="b269f43a-7176-47d6-be51-f2115736e4de" name="Merge from trunk" comment="" />
     <ignored path="Cytoscape_EnrichmentMap.iws" />
@@ -279,55 +267,64 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="EnrichmentMapVisualStyle.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/EnrichmentMapVisualStyle.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="334" column="12" selection-start="16756" selection-end="16756" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="VisualizeEnrichmentMapTask.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/VisualizeEnrichmentMapTask.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="411" column="0" selection-start="20210" selection-end="20210" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="ColorGradientMapper.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/org/mskcc/colorgradient/ColorGradientMapper.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="49" column="53" selection-start="2208" selection-end="2208" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="BuildEnrichmentMapTask.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/BuildEnrichmentMapTask.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="100" column="0" selection-start="3997" selection-end="3997" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="HeatMapPanel.java" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="HeatMapPanel.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/HeatMapPanel.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="1467" column="64" selection-start="64524" selection-end="64524" vertical-scroll-proportion="0.04112554">
+            <state line="1350" column="71" selection-start="58049" selection-end="58049" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="DistanceMatrix.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/brainlib/DistanceMatrix.java">
+      <file leaf-file-name="GenesetSimilarity.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/GenesetSimilarity.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="60" column="0" selection-start="2357" selection-end="2357" vertical-scroll-proportion="0.0">
+            <state line="87" column="23" selection-start="3549" selection-end="3549" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="ComputeSimilarityTask.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/ComputeSimilarityTask.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="499" column="32" selection-start="28143" selection-end="28143" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="EnrichmentMapParameters.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/EnrichmentMapParameters.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="1282" column="30" selection-start="53973" selection-end="53992" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="ParametersPanel.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/ParametersPanel.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="311" column="87" selection-start="13765" selection-end="13765" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="BulkEMCreationPanel.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/BulkEMCreationPanel.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="477" column="27" selection-start="21045" selection-end="21045" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="EnrichmentMapInputPanel.java" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/EnrichmentMapInputPanel.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="975" column="27" selection-start="42473" selection-end="42473" vertical-scroll-proportion="0.7621247">
               <folding />
             </state>
           </provider>
@@ -379,6 +376,11 @@
       <list>
         <option value="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/EnrichmentMapVisualStyle.java" />
         <option value="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/HeatMapPanel.java" />
+        <option value="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/ParametersPanel.java" />
+        <option value="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/EnrichmentMapParameters.java" />
+        <option value="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/ComputeSimilarityTask.java" />
+        <option value="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/BulkEMCreationPanel.java" />
+        <option value="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/EnrichmentMapInputPanel.java" />
       </list>
     </option>
   </component>
@@ -598,6 +600,46 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="org" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Cytoscape_EnrichmentMap" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="org" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="csplugins" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="enrichmentmap" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Cytoscape_EnrichmentMap" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="org" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="csplugins" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -890,11 +932,12 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="22" width="1855" height="1087" extended-state="1" />
-    <editor active="false" />
+    <frame x="0" y="22" width="1920" height="1087" extended-state="0" />
+    <editor active="true" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32988626" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.2957601" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4550155" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
@@ -903,21 +946,20 @@
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.3366556" sideWeight="0.5418821" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.212186" sideWeight="0.53877974" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Dependency Viewer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.4581179" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3991727" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.46122026" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="File View" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.24719101" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.2957601" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32959184" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Web" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="EJB" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="JProfiler" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32873562" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Module Dependencies" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="CVS" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
-      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
     </layout>
   </component>
   <component name="VCS.FileViewConfiguration">
@@ -1000,38 +1042,6 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/ComputeSimilarityTask.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="317" column="24" selection-start="15904" selection-end="15904" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/EnrichmentResultFileReaderTask.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="558" column="10" selection-start="23463" selection-end="23463" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/EnrichmentMapParameters.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="688" column="71" selection-start="31894" selection-end="31894" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/EnrichmentMapInputPanel.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="45" column="21" selection-start="2108" selection-end="2108" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/BuildDiseaseSignatureTask.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="436" column="100" selection-start="24605" selection-end="24605" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="jar:///Applications/Cytoscape_v2.7.0/cytoscape.jar!/cytoscape/layout/CyLayouts.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="16" column="53" selection-start="800" selection-end="800" vertical-scroll-proportion="-7.92" />
-      </provider>
-    </entry>
     <entry file="jar:///System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/classes.jar!/java/awt/EventDispatchThread.class">
       <provider selected="true" editor-type-id="text-editor">
         <state line="44" column="12" selection-start="2024" selection-end="2024" vertical-scroll-proportion="0.33263597" />
@@ -1039,7 +1049,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/EnrichmentMapVisualStyle.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="334" column="12" selection-start="16756" selection-end="16756" vertical-scroll-proportion="0.0">
+        <state line="334" column="1" selection-start="16756" selection-end="16756" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
@@ -1065,13 +1075,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/HeatMapPanel.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="1467" column="64" selection-start="64524" selection-end="64524" vertical-scroll-proportion="0.04112554">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/brainlib/DistanceMatrix.java">
       <provider selected="true" editor-type-id="text-editor">
         <state line="60" column="0" selection-start="2357" selection-end="2357" vertical-scroll-proportion="0.0" />
@@ -1092,6 +1095,55 @@
     <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/Enrichment_Map_Plugin.java">
       <provider selected="true" editor-type-id="text-editor">
         <state line="199" column="42" selection-start="8905" selection-end="8905" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/HeatMapPanel.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="1350" column="71" selection-start="58049" selection-end="58049" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/GenesetSimilarity.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="87" column="23" selection-start="3549" selection-end="3549" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/ParametersPanel.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="311" column="87" selection-start="13765" selection-end="13765" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/ComputeSimilarityTask.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="499" column="32" selection-start="28143" selection-end="28143" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/EnrichmentMapParameters.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="1282" column="30" selection-start="53973" selection-end="53992" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/BulkEMCreationPanel.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="477" column="27" selection-start="21045" selection-end="21045" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/EnrichmentMapInputPanel.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="975" column="27" selection-start="42473" selection-end="42473" vertical-scroll-proportion="0.7621247">
           <folding />
         </state>
       </provider>

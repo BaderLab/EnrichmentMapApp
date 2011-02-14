@@ -2,7 +2,6 @@ package org.baderlab.csplugins.enrichmentmap;
 
 import cytoscape.Cytoscape;
 import cytoscape.data.readers.TextFileReader;
-import cytoscape.util.CyFileFilter;
 import cytoscape.util.FileUtil;
 import cytoscape.view.CytoscapeDesktop;
 import cytoscape.view.cytopanels.CytoPanel;
@@ -46,6 +45,7 @@ public class BulkEMCreationPanel extends JPanel{
 
     private JRadioButton overlap;
     private JRadioButton jaccard;
+    private JRadioButton combined;
 
     DecimalFormat decFormat; // used in the formatted text fields
     NumberFormat numFormat;
@@ -369,28 +369,43 @@ public class BulkEMCreationPanel extends JPanel{
               jaccard.setSelected(true);
               overlap = new JRadioButton("Overlap Coeffecient");
               overlap.setActionCommand("overlap");
-              if ( params.isJaccard() ) {
-                  jaccard.setSelected(true);
-                  overlap.setSelected(false);
-              } else {
-                  jaccard.setSelected(false);
-                  overlap.setSelected(true);
-              }
+              combined = new JRadioButton("Jaccard+Overlap Combined");
+              combined.setActionCommand("combined");
+               if ( params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_JACCARD) ) {
+               jaccard.setSelected(true);
+               overlap.setSelected(false);
+               combined.setSelected(false);
+           } else if ( params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_OVERLAP)){
+               jaccard.setSelected(false);
+               overlap.setSelected(true);
+               combined.setSelected(false);
+           }
+           else if ( params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_COMBINED)){
+               jaccard.setSelected(false);
+               overlap.setSelected(false);
+               combined.setSelected(true);
+           }
               jaccardOrOverlap = new javax.swing.ButtonGroup();
               jaccardOrOverlap.add(jaccard);
-              jaccardOrOverlap.add(overlap);
+           jaccardOrOverlap.add(overlap);
+           jaccardOrOverlap.add(combined);
 
-              jaccard.addActionListener(new java.awt.event.ActionListener() {
-                           public void actionPerformed(java.awt.event.ActionEvent evt) {
-                                  selectJaccardOrOverlapActionPerformed(evt);
-                           }
-                     });
+           jaccard.addActionListener(new java.awt.event.ActionListener() {
+                        public void actionPerformed(java.awt.event.ActionEvent evt) {
+                               selectJaccardOrOverlapActionPerformed(evt);
+                        }
+                  });
 
-              overlap.addActionListener(new java.awt.event.ActionListener() {
-                           public void actionPerformed(java.awt.event.ActionEvent evt) {
-                                  selectJaccardOrOverlapActionPerformed(evt);
-                           }
-                     });
+           overlap.addActionListener(new java.awt.event.ActionListener() {
+                        public void actionPerformed(java.awt.event.ActionEvent evt) {
+                               selectJaccardOrOverlapActionPerformed(evt);
+                        }
+                  });
+           combined.addActionListener(new java.awt.event.ActionListener() {
+                        public void actionPerformed(java.awt.event.ActionEvent evt) {
+                               selectJaccardOrOverlapActionPerformed(evt);
+                        }
+                  });
 
               //create a panel for the two buttons
               JPanel index_buttons = new JPanel();
@@ -706,7 +721,7 @@ public class BulkEMCreationPanel extends JPanel{
      */
     private void selectJaccardOrOverlapActionPerformed(java.awt.event.ActionEvent evt) {
         if(evt.getActionCommand().equalsIgnoreCase("jaccard")){
-            params.setJaccard(true);
+            params.setSimilarityMetric(EnrichmentMapParameters.SM_JACCARD);
             if ( ! params.isSimilarityCutOffChanged() ) {
                 params.setSimilarityCutOff( params.getDefaultJaccardCutOff() );
 //                coeffecientTextField.setText( Double.toString(params.getSimilarityCutOff()) );
@@ -715,9 +730,18 @@ public class BulkEMCreationPanel extends JPanel{
             }
         }
      else if(evt.getActionCommand().equalsIgnoreCase("overlap")){
-            params.setJaccard(false);
+            params.setSimilarityMetric(EnrichmentMapParameters.SM_OVERLAP);
             if ( ! params.isSimilarityCutOffChanged() ) {
                 params.setSimilarityCutOff(params.getDefaultOverlapCutOff());
+//                coeffecientTextField.setText( Double.toString(params.getSimilarityCutOff()) );
+                coeffecientTextField.setValue( params.getSimilarityCutOff() );
+                params.setSimilarityCutOffChanged(false); //reset after .setValue(...) wrongly changed it to "true"
+          }
+        }
+        else if(evt.getActionCommand().equalsIgnoreCase("combined")){
+            params.setSimilarityMetric(EnrichmentMapParameters.SM_COMBINED);
+            if ( ! params.isSimilarityCutOffChanged() ) {
+                params.setSimilarityCutOff((params.getDefaultOverlapCutOff() * params.getCombinedConstant()) + ((1-params.getCombinedConstant()) * params.getDefaultJaccardCutOff()) );
 //                coeffecientTextField.setText( Double.toString(params.getSimilarityCutOff()) );
                 coeffecientTextField.setValue( params.getSimilarityCutOff() );
                 params.setSimilarityCutOffChanged(false); //reset after .setValue(...) wrongly changed it to "true"
@@ -849,8 +873,20 @@ public class BulkEMCreationPanel extends JPanel{
             //reset for cleared Panel after .setValue(...) wrongly changed it to "true"
             params.setSimilarityCutOffChanged(false);
 
-            jaccard.setSelected(params.isJaccard());
-            overlap.setSelected(!params.isJaccard());
+             if(params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_JACCARD)){
+            jaccard.setSelected(true);
+            overlap.setSelected(false);
+            combined.setSelected(false);
+        }
+        else if(params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_OVERLAP)){
+            jaccard.setSelected(false);
+            overlap.setSelected(true);
+            combined.setSelected(false);
+        }  else if(params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_COMBINED)){
+            jaccard.setSelected(false);
+            overlap.setSelected(false);
+            combined.setSelected(true);
+        }
         }
 
     public EnrichmentMapParameters getParams() {
