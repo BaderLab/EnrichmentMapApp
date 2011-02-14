@@ -230,6 +230,7 @@ public class VisualizeEnrichmentMapTask implements Task {
             HashMap<String, EnrichmentResult> enrichmentResults2 = params.getEnrichmentResults2();
 
             HashMap<String, GeneSet> genesetsOfInterest = params.getGenesetsOfInterest();
+            HashMap<String, GeneSet> genesetsOfInterest_set2 = params.getGenesetsOfInterest_set2();
 
             int currentProgress = 0;
             int maxValue = enrichmentResults1OfInterest.size();
@@ -252,7 +253,17 @@ public class VisualizeEnrichmentMapTask implements Task {
                 network.addNode(node);
 
                 //Add the description to the node
-                GeneSet gs = (GeneSet)genesetsOfInterest.get(current_name);
+                GeneSet gs;
+                if(!params.isTwoDistinctExpressionSets())
+                    gs = (GeneSet)genesetsOfInterest.get(current_name);
+                else{
+                    if(genesetsOfInterest.containsKey(current_name))
+                        gs = (GeneSet)genesetsOfInterest.get(current_name);
+                    else if(genesetsOfInterest_set2.containsKey(current_name))
+                        gs = (GeneSet)genesetsOfInterest_set2.get(current_name);
+                    else
+                        gs = null;
+                }
                 CyAttributes nodeAttrs = Cytoscape.getNodeAttributes();
                 nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.GS_DESCR, gs.getDescription());
 
@@ -330,7 +341,17 @@ public class VisualizeEnrichmentMapTask implements Task {
                         network.addNode(node);
 
                         //Add the description to the node
-                        GeneSet gs = (GeneSet)genesetsOfInterest.get(current_name);
+                        GeneSet gs;
+                        if(!params.isTwoDistinctExpressionSets())
+                            gs = (GeneSet)genesetsOfInterest.get(current_name);
+                        else{
+                            if(genesetsOfInterest.containsKey(current_name))
+                                gs = (GeneSet)genesetsOfInterest.get(current_name);
+                            else if(genesetsOfInterest_set2.containsKey(current_name))
+                                gs = (GeneSet)genesetsOfInterest_set2.get(current_name);
+                            else
+                                gs = null;
+                        }
                         CyAttributes nodeAttrs = Cytoscape.getNodeAttributes();
                         nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.GS_DESCR, gs.getDescription());
 
@@ -376,11 +397,22 @@ public class VisualizeEnrichmentMapTask implements Task {
                 String current_name =j.next().toString();
                 GenesetSimilarity current_result = geneset_similarities.get(current_name);
 
+
                 //only create edges where the jaccard coefficient to great than
-                if(current_result.getSimilarity_coeffecient()>params.getSimilarityCutOff()){
+                if(current_result.getSimilarity_coeffecient()>=params.getSimilarityCutOff()){
                     Node node1 = Cytoscape.getCyNode(current_result.getGeneset1_Name(),false);
                     Node node2 = Cytoscape.getCyNode(current_result.getGeneset2_Name(),false);
-                    Edge edge = (Edge) Cytoscape.getCyEdge(node1, node2, Semantics.INTERACTION, EnrichmentMapParameters.ENRICHMENT_INTERACTION_TYPE, true);
+
+                    Edge edge;
+
+                    //in order to create multiple edges we need to create different edge types between the same two nodes
+                    if(current_result.getEnrichment_set() == 1)
+                        edge = (Edge) Cytoscape.getCyEdge(node1,  node2, Semantics.INTERACTION,EnrichmentMapParameters.ENRICHMENT_INTERACTION_TYPE_SET1, true);
+                    else if(current_result.getEnrichment_set() == 2)
+                        edge = (Edge) Cytoscape.getCyEdge(node1,  node2, Semantics.INTERACTION,EnrichmentMapParameters.ENRICHMENT_INTERACTION_TYPE_SET2,true);
+                    else
+                        edge = (Edge) Cytoscape.getCyEdge(node1,  node2, Semantics.INTERACTION,EnrichmentMapParameters.ENRICHMENT_INTERACTION_TYPE,true);
+
 
                     network.addEdge(edge);
 
@@ -389,6 +421,7 @@ public class VisualizeEnrichmentMapTask implements Task {
                     CyAttributes edgeAttrs = Cytoscape.getEdgeAttributes();
                     edgeAttrs.setAttribute(edge.getIdentifier(), prefix+EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT, current_result.getSimilarity_coeffecient());
                     edgeAttrs.setAttribute(edge.getIdentifier(), prefix+ EnrichmentMapVisualStyle.OVERLAP_SIZE, current_result.getSizeOfOverlap());
+                    edgeAttrs.setAttribute(edge.getIdentifier(), prefix + EnrichmentMapVisualStyle.ENRICHMENT_SET  , current_result.getEnrichment_set());
 
                     //create an attribute that stores the genes that are associated with this edge as an attribute list
                     //only create the list if the hashkey 2 genes is not null Otherwise it take too much time to populate the list

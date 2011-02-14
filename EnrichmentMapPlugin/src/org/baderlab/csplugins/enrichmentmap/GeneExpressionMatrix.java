@@ -121,6 +121,10 @@ public class GeneExpressionMatrix {
      * @return Hashmap of gene Hashkeys and there gene expression set for the specified gene hashkeys
      */
     public HashMap<Integer, GeneExpression> getExpressionMatrix(HashSet<Integer> subset){
+
+        if((subset == null) || (subset.size() == 0))
+            return null;
+
         HashMap<Integer, GeneExpression> expression_subset = new HashMap<Integer, GeneExpression>();
 
         //go through the expression matrix and get the subset of
@@ -131,7 +135,9 @@ public class GeneExpressionMatrix {
                 expression_subset.put(k,expressionMatrix.get(k));
             }
             else{
-                System.out.println("how is this key not in the hashmap?");
+                //With the implementation of Two distinct expression files it is possible that an expression
+                //set will not contain a gene 
+                //System.out.println("how is this key not in the hashmap?");
             }
 
         }
@@ -303,6 +309,10 @@ public class GeneExpressionMatrix {
            }
 
         return expressionSb.toString();
+    }
+
+    public Set<Integer> getGeneIds(){
+        return expressionMatrix.keySet();
     }
 
 }

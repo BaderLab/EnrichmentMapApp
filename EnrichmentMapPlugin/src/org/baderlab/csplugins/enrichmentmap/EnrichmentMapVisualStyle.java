@@ -100,6 +100,7 @@ public class EnrichmentMapVisualStyle {
     public static String SIMILARITY_COEFFECIENT = "similarity_coeffecient";
     public static String OVERLAP_GENES = "Overlap_genes";
     public static String HYPERGEOM_PVALUE = "Overlap_Hypergeom_pVal";
+    public static String ENRICHMENT_SET = "ENRICHMENT_SET";
 
     public static String NUMBER_OF_ENRICHMENT_GENES = "# of Enrichment Genes";
     
@@ -162,6 +163,18 @@ public class EnrichmentMapVisualStyle {
         EdgeAppearance edgeAppear = new EdgeAppearance();
         edgeAppear.set(VisualPropertyType.EDGE_COLOR, new Color(100,200,000) );
         edgeAppCalc.setDefaultAppearance(edgeAppear);
+
+
+        //create a discrete mapper to map the colour of the edge based on the enrichment set
+        DiscreteMapping disMapping = new DiscreteMapping(new Color(100,200,000) , ObjectMapping.EDGE_MAPPING);
+        disMapping.setControllingAttributeName(prefix + EnrichmentMapVisualStyle.ENRICHMENT_SET,network,false);
+        disMapping.putMapValue(new Integer(0),new Color(100,200,000));
+        disMapping.putMapValue(new Integer(1),new Color(100,200,000));
+        disMapping.putMapValue(new Integer(2),new Color(100,149,237));
+
+        Calculator colourCalculator = new BasicCalculator(prefix + "edgecolor", disMapping,VisualPropertyType.EDGE_COLOR);
+        edgeAppCalc.setCalculator(colourCalculator);
+
 
         //Continous Mapping - set edge line thickness based on the number of genes in the overlap
         //ContinuousMapping continuousMapping_edgewidth = new ContinuousMapping((new Integer(1)).getClass(),prefix + EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT);
@@ -249,6 +262,7 @@ public class EnrichmentMapVisualStyle {
 
         if(params.isTwoDatasets()){
 
+
             //Continuous Mapping - set node size based on the size of the geneset
             ContinuousMapping continuousMapping_size_dataset2 = new ContinuousMapping(35, ObjectMapping.NODE_MAPPING);
 		continuousMapping_size_dataset2.setControllingAttributeName(prefix + EnrichmentMapVisualStyle.GS_SIZE_DATASET2, network, false);
@@ -264,6 +278,7 @@ public class EnrichmentMapVisualStyle {
             continuousMapping_size_dataset2.addPoint(474.0, bv1a);
             Calculator nodelineSizeCalculator = new BasicCalculator(prefix + "size2size", continuousMapping_size_dataset2, VisualPropertyType.NODE_LINE_WIDTH);
              nodeAppCalc.setCalculator(nodelineSizeCalculator);
+
 
 
             //Continuous Mapping - set node line colour based on the sign of the ES score of second dataset
@@ -291,10 +306,12 @@ public class EnrichmentMapVisualStyle {
         }
 
         //Continuous Mapping - set node colour based on the sign of the ES score of first dataset
+
         ContinuousMapping continuousMapping = new ContinuousMapping(Color.WHITE, ObjectMapping.NODE_MAPPING);  
-	  continuousMapping.setControllingAttributeName(prefix+ EnrichmentMapVisualStyle.COLOURING_DATASET1, network, false);
+	   continuousMapping.setControllingAttributeName(prefix+ EnrichmentMapVisualStyle.COLOURING_DATASET1, network, false);
         
-Interpolator numToColor = new LinearNumberToColorInterpolator();
+        Interpolator numToColor = new LinearNumberToColorInterpolator();
+
         continuousMapping.setInterpolator(numToColor);
 
          // Set the attribute point values associated with the boundary values

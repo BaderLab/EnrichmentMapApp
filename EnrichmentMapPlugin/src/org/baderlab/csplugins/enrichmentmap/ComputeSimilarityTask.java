@@ -101,7 +101,6 @@ public class ComputeSimilarityTask implements Task {
     
     public boolean computeGenesetSimilarities(){
         try{
-
             HashMap genesetsOfInterest = params.getGenesetsOfInterest();
             HashMap genesetsInnerLoop;
             String edgeType = "pp";
@@ -122,6 +121,13 @@ public class ComputeSimilarityTask implements Task {
             
             int currentProgress = 0;
             int maxValue = genesetsOfInterest.size();
+
+            //figure out if we need to compute edges for two different expression sets or one.
+            int enrichment_set =0;
+            if(params.isTwoDistinctExpressionSets()){
+                enrichment_set = 1;
+                maxValue = genesetsOfInterest.size() + params.getGenesetsOfInterest_set2().size();
+            }
 
             //iterate through the each of the GSEA Results of interest
             for(Iterator i = genesetsOfInterest.keySet().iterator(); i.hasNext(); ){
@@ -147,8 +153,16 @@ public class ComputeSimilarityTask implements Task {
                      //The key for the set of geneset similarities is the
                      //combination of the two names.  Check for either variation name1_name2
                      //or name2_name1
-                     String similarity_key1 = geneset1_name + " ("+ edgeType  + ") " + geneset2_name;
-                     String similarity_key2 = geneset2_name + " ("+ edgeType  + ") " + geneset1_name;
+                     String similarity_key1;
+                     String similarity_key2;
+                     if(enrichment_set == 0 ){
+                        similarity_key1 = geneset1_name + " ("+ edgeType  + ") " + geneset2_name;
+                        similarity_key2 = geneset2_name + " ("+ edgeType  + ") " + geneset1_name;
+                     }
+                     else{
+                        similarity_key1 = geneset1_name + " ("+ EnrichmentMapParameters.ENRICHMENT_INTERACTION_TYPE_SET1  + ") " + geneset2_name ;
+                        similarity_key2 = geneset2_name + " ("+ EnrichmentMapParameters.ENRICHMENT_INTERACTION_TYPE_SET1  + ") " + geneset1_name;
+                     }
 
                      //first check to see if the terms are the same
                      if(geneset1_name.equalsIgnoreCase(geneset2_name)){
@@ -184,7 +198,7 @@ public class ComputeSimilarityTask implements Task {
                              coeffecient = (double)intersection.size() / Math.min((double)genes1.size(), (double)genes2.size());
                          }
                          //create Geneset similarity object
-                         GenesetSimilarity comparison = new GenesetSimilarity(geneset1_name,geneset2_name, coeffecient, params.getEnrichment_edge_type() ,(HashSet<Integer>)intersection);
+                         GenesetSimilarity comparison = new GenesetSimilarity(geneset1_name,geneset2_name, coeffecient, params.getEnrichment_edge_type() ,(HashSet<Integer>)intersection,enrichment_set);
 
                          if (type == SIGNATURE) // as we iterate over the signature nodes in the inner loop, we have to switch the nodes in the edge name
                              geneset_similarities.put(similarity_key2,comparison);
@@ -194,6 +208,265 @@ public class ComputeSimilarityTask implements Task {
 
                      }
                  }
+
+
+
+            }
+            //need to go through the second set of genesets in order to calculate the additional similarities
+           if(params.isTwoDistinctExpressionSets()){
+                enrichment_set = 2;
+                HashMap<String, GeneSet> genesetsOfInterest_set2 = params.getGenesetsOfInterest_set2();
+                genesetsInnerLoop = genesetsOfInterest_set2;
+
+               //iterate through the each of the GSEA Results of interest - for the second set.
+                for(Iterator i = genesetsOfInterest_set2.keySet().iterator(); i.hasNext(); ){
+
+                    // Calculate Percentage.  This must be a value between 0..100.
+                    int percentComplete = (int) (((double) currentProgress / maxValue) * 100);
+                    //  Estimate Time Remaining
+                    long timeRemaining = maxValue - currentProgress;
+                    if (taskMonitor != null) {
+                        taskMonitor.setPercentCompleted(percentComplete);
+                        taskMonitor.setStatus("Computing Geneset similirity " + currentProgress + " of " + maxValue);
+                        taskMonitor.setEstimatedTimeRemaining(timeRemaining);
+                    }
+                    currentProgress++;
+
+                    String geneset1_name = i.next().toString();
+                    //for each individual geneset compute its jaccard index with all other genesets
+                    for(Iterator j = genesetsInnerLoop.keySet().iterator(); j.hasNext(); ){
+
+                        String geneset2_name = j.next().toString();
+
+                        //Check to see if this comparison has been done
+                        //The key for the set of geneset similarities is the
+                        //combination of the two names.  Check for either variation name1_name2
+                        //or name2_name1
+                        String similarity_key1 = geneset1_name + " ("+ EnrichmentMapParameters.ENRICHMENT_INTERACTION_TYPE_SET2  + ") " + geneset2_name;
+                        String similarity_key2 = geneset2_name + " ("+ EnrichmentMapParameters.ENRICHMENT_INTERACTION_TYPE_SET2  + ") " + geneset1_name;
+
+                        //first check to see if the terms are the same
+                        if(geneset1_name.equalsIgnoreCase(geneset2_name)){
+                            //don't compare two identical genesets
+                        }
+                        else if(geneset_similarities.containsKey(similarity_key1) || geneset_similarities.containsKey(similarity_key2)){
+                         //skip this geneset comparison.  It has already been done.
+                        }
+                        else{
+                            //get the two genesets
+                            GeneSet geneset1 = (GeneSet)genesetsOfInterest_set2.get(geneset1_name);
+                            GeneSet geneset2 = (GeneSet)genesetsOfInterest_set2.get(geneset2_name);
+
+                            HashSet<Integer> genes1 = geneset1.getGenes();
+                            HashSet<Integer> genes2 = geneset2.getGenes();
+
+                            //Get the intersection
+                            Set<Integer> intersection = new HashSet<Integer>(genes1);
+                            intersection.retainAll(genes2);
+
+                            //Get the union of the two sets
+                            Set<Integer> union = new HashSet<Integer>(genes1);
+                            union.addAll(genes2);
+
+                            double coeffecient;
+
+                            if(params.isJaccard()){
+
+                                //compute Jaccard similarity
+                                coeffecient = (double)intersection.size() / (double)union.size();
+                            }
+                            else{
+                                coeffecient = (double)intersection.size() / Math.min((double)genes1.size(), (double)genes2.size());
+                            }
+                            //create Geneset similarity object
+                            GenesetSimilarity comparison = new GenesetSimilarity(geneset1_name,geneset2_name, coeffecient, params.getEnrichment_edge_type() ,(HashSet<Integer>)intersection,enrichment_set);
+
+                            if (type == SIGNATURE) // as we iterate over the signature nodes in the inner loop, we have to switch the nodes in the edge name
+                                geneset_similarities.put(similarity_key2,comparison);
+                            else
+                                geneset_similarities.put(similarity_key1,comparison);
+
+
+                        }
+                    }
+                }
+               //Ticket #160 - there are missing edges between the two groups.
+                //We need to also compute the edges between the two different groups.
+                //Compute similarity for nodes that are in dataset1 or dataset2 (not necessarily significant in both)
+               //Do dataset1
+               HashMap<String, GeneSet> sig_genesets_set1 = params.getGenesetsOfInterest();
+               HashMap<String, GeneSet> sig_genesets_set2 = params.getGenesetsOfInterest_set2();
+
+                HashMap<String, GeneSet> genesetsInnerLoop_missingedges = params.getGenesets();
+                HashMap<String, GeneSet> genesetsOfInterest_missingedges = params.getGenesets();
+               HashMap<String, EnrichmentResult> dataset1_results = params.getEnrichmentResults1();
+
+                 //iterate through the each of the GSEA Results of interest - for the second set on the outer loop
+               //and the first set on the inner loop
+                for(Iterator i = genesetsOfInterest_missingedges.keySet().iterator(); i.hasNext(); ){
+                    enrichment_set = 1;
+                    String geneset1_name = i.next().toString();
+
+                    //only look at this geneset if it is in dataset1
+                    if(!dataset1_results.containsKey(geneset1_name))
+                        continue;
+
+                    //for each individual geneset compute its jaccard index with all other genesets
+                    for(Iterator j = genesetsInnerLoop_missingedges.keySet().iterator(); j.hasNext(); ){
+
+                        String geneset2_name = j.next().toString();
+                        
+                        //only look at this geneset if it is in dataset1
+                        if(!dataset1_results.containsKey(geneset2_name))
+                            continue;
+
+                        //Check to see if this comparison has been done
+                        //The key for the set of geneset similarities is the
+                        //combination of the two names.  Check for either variation name1_name2
+                        //or name2_name1
+                        String similarity_key1 = geneset1_name + " ("+ EnrichmentMapParameters.ENRICHMENT_INTERACTION_TYPE_SET1  + ") " + geneset2_name;
+                        String similarity_key2 = geneset2_name + " ("+ EnrichmentMapParameters.ENRICHMENT_INTERACTION_TYPE_SET1  + ") " + geneset1_name;
+
+                        //first check to see if the terms are the same
+                        if(geneset1_name.equalsIgnoreCase(geneset2_name)){
+                            //don't compare two identical genesets
+                        }
+                        else if(geneset_similarities.containsKey(similarity_key1) || geneset_similarities.containsKey(similarity_key2)){
+                         //skip this geneset comparison.  It has already been done.
+                        }
+                        else{
+
+                            //only compute the similarity is geneset1_name is in either in dataset1 or dataset2 significant genesets
+                            //  AND geneset2_name is in either dataset1 or dataset2 significant genesets
+                            if( ((sig_genesets_set1.containsKey(geneset1_name) && !sig_genesets_set2.containsKey(geneset1_name))
+                               &&  (!sig_genesets_set1.containsKey(geneset2_name) && sig_genesets_set2.containsKey(geneset2_name)))
+                               || ((!sig_genesets_set1.containsKey(geneset1_name) && sig_genesets_set2.containsKey(geneset1_name))
+                               &&  (sig_genesets_set1.containsKey(geneset2_name) && !sig_genesets_set2.containsKey(geneset2_name)))
+                               || (sig_genesets_set2.containsKey(geneset1_name) && sig_genesets_set2.containsKey(geneset2_name))
+                                    ){
+                                //get the two genesets
+                                GeneSet geneset1 = (GeneSet)genesetsOfInterest_missingedges.get(geneset1_name);
+                                GeneSet geneset2 = (GeneSet)genesetsOfInterest_missingedges.get(geneset2_name);
+
+                                HashSet<Integer> genes1 = geneset1.getGenes();
+                                HashSet<Integer> genes2 = geneset2.getGenes();
+
+                                //Get the intersection
+                                Set<Integer> intersection = new HashSet<Integer>(genes1);
+                                intersection.retainAll(genes2);
+
+                                //Get the union of the two sets
+                                Set<Integer> union = new HashSet<Integer>(genes1);
+                                union.addAll(genes2);
+
+                                double coeffecient;
+
+                                if(params.isJaccard()){
+
+                                    //compute Jaccard similarity
+                                    coeffecient = (double)intersection.size() / (double)union.size();
+                                }
+                                else{
+                                    coeffecient = (double)intersection.size() / Math.min((double)genes1.size(), (double)genes2.size());
+                                }
+                                //create Geneset similarity object
+                                GenesetSimilarity comparison = new GenesetSimilarity(geneset1_name,geneset2_name, coeffecient, params.getEnrichment_edge_type() ,(HashSet<Integer>)intersection,enrichment_set);
+
+                                if (type == SIGNATURE) // as we iterate over the signature nodes in the inner loop, we have to switch the nodes in the edge name
+                                    geneset_similarities.put(similarity_key2,comparison);
+                                else
+                                    geneset_similarities.put(similarity_key1,comparison);
+
+                            }
+                        }
+                    }
+                }
+
+               //Do dataset2
+               HashMap<String, GeneSet> genesetsInnerLoop_missingedges_d2 = params.getGenesets_set2();
+               HashMap<String, GeneSet> genesetsOfInterest_missingedges_d2 = params.getGenesets_set2();
+               HashMap<String, EnrichmentResult> dataset2_results = params.getEnrichmentResults2();
+                 //iterate through the each of the GSEA Results of interest - for the second set on the outer loop
+               //and the first set on the inner loop
+                for(Iterator i = genesetsOfInterest_missingedges_d2.keySet().iterator(); i.hasNext(); ){
+                    enrichment_set = 2;
+                    String geneset1_name = i.next().toString();
+
+                    //only look at this geneset if it is in dataset2
+                    if(!dataset2_results.containsKey(geneset1_name))
+                        continue;
+
+                    //for each individual geneset compute its jaccard index with all other genesets
+                    for(Iterator j = genesetsInnerLoop_missingedges_d2.keySet().iterator(); j.hasNext(); ){
+
+                        String geneset2_name = j.next().toString();
+
+                        if(!dataset2_results.containsKey(geneset2_name))
+                            continue;
+
+                        //Check to see if this comparison has been done
+                        //The key for the set of geneset similarities is the
+                        //combination of the two names.  Check for either variation name1_name2
+                        //or name2_name1
+                        String similarity_key1 = geneset1_name + " ("+ EnrichmentMapParameters.ENRICHMENT_INTERACTION_TYPE_SET2  + ") " + geneset2_name;
+                        String similarity_key2 = geneset2_name + " ("+ EnrichmentMapParameters.ENRICHMENT_INTERACTION_TYPE_SET2  + ") " + geneset1_name;
+
+                        //first check to see if the terms are the same
+                        if(geneset1_name.equalsIgnoreCase(geneset2_name)){
+                            //don't compare two identical genesets
+                        }
+                        else if(geneset_similarities.containsKey(similarity_key1) || geneset_similarities.containsKey(similarity_key2)){
+                         //skip this geneset comparison.  It has already been done.
+                        }
+                        else{
+
+                            //only compute the similarity is geneset1_name is in either in dataset1 or dataset2 significant genesets
+                            //  AND geneset2_name is in either dataset1 or dataset2 significant genesets
+                            if( ( ((sig_genesets_set1.containsKey(geneset1_name) && !sig_genesets_set2.containsKey(geneset1_name))
+                               &&  (!sig_genesets_set1.containsKey(geneset2_name) && sig_genesets_set2.containsKey(geneset2_name)))
+                               || ((!sig_genesets_set1.containsKey(geneset1_name) && sig_genesets_set2.containsKey(geneset1_name))
+                               &&  (sig_genesets_set1.containsKey(geneset2_name) && !sig_genesets_set2.containsKey(geneset2_name)))
+                               || (sig_genesets_set1.containsKey(geneset1_name) && sig_genesets_set1.containsKey(geneset2_name))
+                                    )
+                                    ){
+
+                                //get the two genesets
+                                GeneSet geneset1 = (GeneSet)genesetsOfInterest_missingedges_d2.get(geneset1_name);
+                                GeneSet geneset2 = (GeneSet)genesetsOfInterest_missingedges_d2.get(geneset2_name);
+
+                                HashSet<Integer> genes1 = geneset1.getGenes();
+                                HashSet<Integer> genes2 = geneset2.getGenes();
+
+                                //Get the intersection
+                                Set<Integer> intersection = new HashSet<Integer>(genes1);
+                                intersection.retainAll(genes2);
+
+                                //Get the union of the two sets
+                                Set<Integer> union = new HashSet<Integer>(genes1);
+                                union.addAll(genes2);
+
+                                double coeffecient;
+
+                                if(params.isJaccard()){
+
+                                    //compute Jaccard similarity
+                                    coeffecient = (double)intersection.size() / (double)union.size();
+                                }
+                                else{
+                                    coeffecient = (double)intersection.size() / Math.min((double)genes1.size(), (double)genes2.size());
+                                }
+                                //create Geneset similarity object
+                                GenesetSimilarity comparison = new GenesetSimilarity(geneset1_name,geneset2_name, coeffecient, params.getEnrichment_edge_type() ,(HashSet<Integer>)intersection,enrichment_set);
+
+                                if (type == SIGNATURE) // as we iterate over the signature nodes in the inner loop, we have to switch the nodes in the edge name
+                                    geneset_similarities.put(similarity_key2,comparison);
+                                else
+                                    geneset_similarities.put(similarity_key1,comparison);
+
+                            }
+                        }
+                    }
+                }
             }
 
         } catch(IllegalThreadStateException e){

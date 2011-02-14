@@ -59,11 +59,7 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collections;
-import java.util.List;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Properties;
+import java.util.*;
 
 
 public class Enrichment_Map_Plugin extends CytoscapePlugin {
@@ -189,6 +185,7 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
             //gene set file - contains filtered gene sets so it is not a replica of the initial file loaded
             //this conserves time and space.
             File gmt = new File(tmpDir, name+".gmt");
+            File gmt_set2 = new File(tmpDir, name+".set2.gmt");
             //genes involved in the analysis
             File genes = new File(tmpDir, name+".genes.txt");
             File hkgenes = new File(tmpDir, name+".hashkey2genes.txt");
@@ -216,9 +213,18 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
                 writer.close();
 
                 BufferedWriter gmtwriter = new BufferedWriter(new FileWriter(gmt));
-                gmtwriter.write(params.printHashmap(params.getGenesetsOfInterest()));
+                gmtwriter.write(params.printHashmap(params.getGenesets()));
                 gmtwriter.close();
                 pFileList.add(gmt);
+
+                //if there are two distinct expression files we also need to output the second set of genesetsof interest
+                if(params.isTwoDistinctExpressionSets()){
+                    BufferedWriter gmtwriter_set2 = new BufferedWriter(new FileWriter(gmt_set2));
+                    gmtwriter_set2.write(params.printHashmap(params.getGenesets_set2()));
+                    gmtwriter_set2.close();
+                    pFileList.add(gmt_set2);
+                }
+
 
                 if (!params.getSignatureGenesets().isEmpty() ) {
                     BufferedWriter sigGmtwriter = new BufferedWriter(new FileWriter(siggmt));
@@ -399,6 +405,8 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
                     if(prop_file.getName().contains(".gmt")){
                         if (prop_file.getName().contains(".signature.gmt"))
                             params.setSignatureGenesets(params.repopulateHashmap(fullText, 1));
+                        else if(prop_file.getName().contains(".set2.gmt"))
+                            params.setGenesetsOfInterest_set2(params.repopulateHashmap(fullText,1));
                         else
                             params.setGenesetsOfInterest(params.repopulateHashmap(fullText,1));
                     }
@@ -511,6 +519,15 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
                     ExpressionFileReaderTask expressionFile2 = new ExpressionFileReaderTask(params,2);
                     expressionFile2.run();
                     params.getExpression2().rowNormalizeMatrix();
+
+                    //if there are two expression sets and there is a second set of genesets of interest then we
+                    //are dealing with two distinct expression files.
+                    if(!params.getGenesetsOfInterest_set2().isEmpty()){
+                        params.setTwoDistinctExpressionSets(true);
+                        params.setDatasetGenes(new HashSet<Integer>((Set<Integer>)params.getExpression().getGeneIds()));
+                        params.setDatasetGenes_set2(new HashSet<Integer>((Set<Integer>)params.getExpression2().getGeneIds()));
+                    }
+
                 }
 
             }
@@ -558,7 +575,7 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
         } catch (Exception ee) {
             ee.printStackTrace();
         }
-        
+
         // remove old nodelinkouturl (for legacy issues)
         Properties cyto_props = CytoscapeInit.getProperties();
         if (cyto_props.containsKey("nodelinkouturl.MSigDb"))

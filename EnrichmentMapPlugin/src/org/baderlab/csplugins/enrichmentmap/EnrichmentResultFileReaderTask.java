@@ -420,6 +420,11 @@ public class EnrichmentResultFileReaderTask implements Task {
             // Column 6 is the list of genes (from the loaded list) in this geneset -- therefore pre-filtered.
             HashMap<String, GeneSet> genesets = params.getGenesets();
 
+            //it is possible that there are two different geneset sets if the two david files
+            //are from multiple species
+            if(genesets.size() > 0)
+                    genesets = params.getGenesets_set2();
+
             //get the genes (which should also be empty
             HashMap<String, Integer> genes = params.getGenes();
             HashMap<Integer, String> key2gene = params.getHashkey2gene();
@@ -454,10 +459,17 @@ public class EnrichmentResultFileReaderTask implements Task {
                 //the first column of the file is the description
                 String description = tokens[0].toUpperCase();
 
+                //when there are two different species it is possible that the gene set could
+                //already exist in the set of genesets.  if it does exist then add the genes
+                //in this set to the geneset
+                GeneSet gs;
+                if(genesets.containsKey(name))
+                    gs = genesets.get(name);
 
                 //load the geneset and the genes to their respective data structures.
                 //create an object of type Geneset with the above Name and description
-                GeneSet gs = new GeneSet(name, description);
+                else
+                    gs = new GeneSet(name, description);
 
                 String[] gene_tokens = tokens[5].split(", ");
 

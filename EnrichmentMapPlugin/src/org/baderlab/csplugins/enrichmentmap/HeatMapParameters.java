@@ -97,7 +97,7 @@ public class HeatMapParameters {
     private int sortIndex = -1;
 
     //store the name of the rank file sorted by
-    private String rankFileIndex;
+    private String rankFileIndex = "none";
 
     //store the state (ascending or descending) of each column in the table as well as each of the rank files.
     private boolean[] ascending;

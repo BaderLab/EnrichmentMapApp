@@ -142,6 +142,12 @@ public class EnrichmentMapParameters {
     private HashSet<Integer> datasetGenes;
     private int NumberOfGenes = 0;
 
+    //only used when there are two distinct expression sets.
+    private HashSet<Integer> datasetGenes_set2;
+    private HashMap<String, GeneSet> filteredGenesets_set2;
+    private HashMap<String, GeneSet> genesets_set2;
+    private HashMap<String, GeneSet> genesetsOfInterest_set2;
+
     //In order to speed up union and intersections of nodes and edges in the network
     //store the genes that are present in the network.
     //get the intersection between the genes in the gene set file (gmt) and the genes in
@@ -171,6 +177,9 @@ public class EnrichmentMapParameters {
     //for each dataset.
     private GeneExpressionMatrix expression;
     private GeneExpressionMatrix expression2;
+
+    //a flag to indicate if the two expression files have the exact same set of genes
+    private boolean twoDistinctExpressionSets = false;
 
     //default phenotype values.  These values can be set in the advanced features of
     //the input panel.
@@ -220,6 +229,9 @@ public class EnrichmentMapParameters {
 
     final public static String ENRICHMENT_INTERACTION_TYPE = "Geneset_Overlap";
 
+    final public static String ENRICHMENT_INTERACTION_TYPE_SET1 = "Geneset_Overlap_set1";
+    final public static String ENRICHMENT_INTERACTION_TYPE_SET2 = "Geneset_Overlap_set2";
+
     //with more methods to support can't just have generic or gsea
     final public static String method_GSEA = "GSEA";
     final public static String method_generic = "generic";
@@ -238,6 +250,9 @@ public class EnrichmentMapParameters {
         this.genes = new HashMap<String, Integer>();
         this.hashkey2gene = new HashMap<Integer, String>();
         this.datasetGenes = new HashSet<Integer>();
+
+
+
 //        this.hashkey2bitindex = new HashMap<Integer, Integer>();
 //        this.bitindex2hashkey = new HashMap<Integer, Integer>();
         this.enrichmentMapGenes = new HashSet<Integer>();
@@ -294,6 +309,13 @@ public class EnrichmentMapParameters {
 
         //create the slider for the similarity cutoff
         similaritySlider = new SliderBarPanel(this.similarityCutOff,1,"Similarity Cutoff",this, EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT, EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT,ParametersPanel.summaryPanelWidth, true, this.similarityCutOff);
+
+       //if there are two distinct expression sets we are going to need to instances of few of the variables
+        this.datasetGenes_set2 = new HashSet<Integer>();
+        this.genesets_set2 = new HashMap<String, GeneSet>();
+        this.filteredGenesets_set2 = new HashMap<String, GeneSet>();
+        this.genesetsOfInterest_set2 = new HashMap<String, GeneSet>();
+
     }
 
 
@@ -602,6 +624,7 @@ public class EnrichmentMapParameters {
 
         this.expression = copy.getExpression();
         this.expression2 = copy.getExpression2();
+        this.twoDistinctExpressionSets =  copy.isTwoDistinctExpressionSets();
 
         //missing the classfiles in the copy --> bug ticket #61
         this.classFile1 = copy.getClassFile1();
@@ -621,12 +644,22 @@ public class EnrichmentMapParameters {
        this.rank2geneDataset1 = copy.getRank2geneDataset1();
        this.rank2geneDataset2 = copy.getRank2geneDataset2();
 
+
+       //if there are two distinct expression sets we are going to need to instances of few of the variables
+        this.datasetGenes_set2 = copy.getDatasetGenes_set2();
+        this.genesets_set2 = copy.getGenesets_set2();
+        this.filteredGenesets_set2 = copy.getFilteredGenesets_set2();
+        this.genesetsOfInterest_set2 = copy.getGenesetsOfInterest_set2();
+
+
+
        //field needed when calculating bulk enrichment maps.
         this.GMTDirName = copy.getGMTDirName();
         this.GCTDirName = copy.getGCTDirName();
         this.GSEAResultsDirName = copy.getGSEAResultsDirName();
         this.upperlimit = copy.getUpperlimit();
         this.lowerlimit = copy.getLowerlimit();
+
        }
 
    /**
@@ -701,6 +734,54 @@ public class EnrichmentMapParameters {
          */
         public void filterGenesets(){
 
+            //check to see if we are dealing with two distinct gene expression files
+            if(this.isTwoDistinctExpressionSets()){
+                //iterate through each geneset and filter each one
+                //have to do it separately for each gene expression set.
+                for(Iterator j = genesets.keySet().iterator(); j.hasNext(); ){
+
+                    String geneset2_name = j.next().toString();
+                    GeneSet current_set =  genesets.get(geneset2_name);
+
+
+                    //compare the HashSet of dataset genes to the HashSet of the current Geneset
+                    //only keep the genes from the geneset that are in the dataset genes
+                    HashSet<Integer> geneset_genes = current_set.getGenes();
+
+                    //Get the intersection between current geneset and dataset genes
+                    Set<Integer> intersection = new HashSet<Integer>(geneset_genes);
+                    intersection.retainAll(datasetGenes);
+
+                    //Add new geneset to the filtered set of genesets
+                    HashSet<Integer> new_geneset = new HashSet<Integer>(intersection);
+                    GeneSet new_set = new GeneSet(geneset2_name,current_set.getDescription());
+                    new_set.setGenes(new_geneset);
+
+                    this.filteredGenesets.put(geneset2_name,new_set);
+                }
+
+                for(Iterator j = genesets_set2.keySet().iterator(); j.hasNext(); ){
+
+                    String geneset2_name = j.next().toString();
+                    GeneSet current_set =  genesets_set2.get(geneset2_name);
+
+                    //compare the HashSet of dataset genes to the HashSet of the current Geneset
+                    //only keep the genes from the geneset that are in the dataset genes
+                    HashSet<Integer> geneset_genes = current_set.getGenes();
+
+                    //Get the intersection between current geneset and dataset genes
+                    Set<Integer> intersection = new HashSet<Integer>(geneset_genes);
+                    intersection.retainAll(datasetGenes_set2);
+
+                    //Add new geneset to the filtered set of genesets
+                    HashSet<Integer> new_geneset = new HashSet<Integer>(intersection);
+                    GeneSet new_set = new GeneSet(geneset2_name,current_set.getDescription());
+                    new_set.setGenes(new_geneset);
+
+                    this.filteredGenesets_set2.put(geneset2_name,new_set);
+                }
+            }
+            else{
             //iterate through each geneset and filter each one
              for(Iterator j = genesets.keySet().iterator(); j.hasNext(); ){
 
@@ -725,6 +806,7 @@ public class EnrichmentMapParameters {
              }
             //once we have filtered the genesets clear the original genesets object
             genesets.clear();
+            }
 
         }
 
@@ -759,6 +841,8 @@ public class EnrichmentMapParameters {
 
             }
 
+            if(this.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_DAVID))
+                return true;
             return false;
 
         }
@@ -1605,8 +1689,48 @@ public class EnrichmentMapParameters {
         this.method = method;
     }
 
+    public boolean isTwoDistinctExpressionSets() {
+        return twoDistinctExpressionSets;
+    }
+
     public String getGMTDirName() {
         return GMTDirName;
+    }
+
+    public void setTwoDistinctExpressionSets(boolean twoDistinctExpressionSets) {
+        this.twoDistinctExpressionSets = twoDistinctExpressionSets;
+    }
+
+    public HashSet<Integer> getDatasetGenes_set2() {
+        return datasetGenes_set2;
+    }
+
+    public void setDatasetGenes_set2(HashSet<Integer> datasetGenes_set2) {
+        this.datasetGenes_set2 = datasetGenes_set2;
+    }
+
+    public HashMap<String, GeneSet> getFilteredGenesets_set2() {
+        return filteredGenesets_set2;
+    }
+
+    public void setFilteredGenesets_set2(HashMap<String, GeneSet> filteredGenesets_set2) {
+        this.filteredGenesets_set2 = filteredGenesets_set2;
+    }
+
+    public HashMap<String, GeneSet> getGenesets_set2() {
+        return genesets_set2;
+    }
+
+    public void setGenesets_set2(HashMap<String, GeneSet> genesets_set2) {
+        this.genesets_set2 = genesets_set2;
+    }
+
+    public HashMap<String, GeneSet> getGenesetsOfInterest_set2() {
+        return genesetsOfInterest_set2;
+    }
+
+    public void setGenesetsOfInterest_set2(HashMap<String, GeneSet> genesetsOfInterest_set2) {
+        this.genesetsOfInterest_set2 = genesetsOfInterest_set2;
     }
 
     public void setGMTDirName(String GMTDirName) {
@@ -1644,5 +1768,6 @@ public class EnrichmentMapParameters {
     public void setGSEAResultsDirName(String GSEAResultsDirName) {
         this.GSEAResultsDirName = GSEAResultsDirName;
     }
+
 
 }

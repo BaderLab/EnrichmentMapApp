@@ -47,6 +47,8 @@ import cytoscape.task.Task;
 import cytoscape.task.TaskMonitor;
 
 import java.util.HashMap;
+import java.util.Set;
+import java.util.HashSet;
 
 /**
  * Created by
@@ -155,11 +157,13 @@ public class BuildEnrichmentMapTask implements Task {
         }
 
         try{
+
             //Initialize the set of genesets and GSEA results that we want to compute over
             InitializeGenesetsOfInterestTask genesets_init = new InitializeGenesetsOfInterestTask(params,taskMonitor);
             genesets_init.run();
 
             //initialize bitsets for the genesets once the genesets have been filtered
+            //TODO: remove, implemented for different purpose but never turned out to be useful.
             params.computeEnrichmentMapGenes();
 
        } catch (OutOfMemoryError e) {
@@ -207,6 +211,40 @@ public class BuildEnrichmentMapTask implements Task {
             expressionFile2.run();
             params.getExpression2().rowNormalizeMatrix();
         }
+        //if there are two expression sets check to see that they have the same gene ids.
+        if(params.isData2()){
+            Set<Integer> expression_1_genes = params.getExpression().getGeneIds();
+
+            Set<Integer> expression_2_genes = params.getExpression2().getGeneIds();
+            if((expression_2_genes != null) && (expression_2_genes.size()>0)){
+                expression_1_genes.removeAll(expression_2_genes);
+
+                //if expression_1_genes is empty then all genes in 2 are in 1.
+                //and if expression_1 genes are not empty then the two sets don't match and we have conflicting expression sets
+
+                if(expression_1_genes.size() != 0){
+                    params.setTwoDistinctExpressionSets(true);
+                    params.setDatasetGenes(new HashSet<Integer>((Set<Integer>)params.getExpression().getGeneIds()));
+                    params.setDatasetGenes_set2(new HashSet<Integer>((Set<Integer>)params.getExpression2().getGeneIds()));
+
+                    //only set genesets_set2 to the first if it is null
+                    if(params.getGenesets_set2().size() == 0){
+                        params.setGenesets_set2(new HashMap<String,GeneSet>(params.getGenesets()));
+                        params.setFilteredGenesets_set2(new HashMap<String, GeneSet>(params.getFilteredGenesets()));
+                    }
+                    else{
+                        params.setFilteredGenesets_set2(new HashMap<String, GeneSet>(params.getGenesets_set2()));
+                    }
+                }
+                else{
+                    //if there were two david files but they are from the same species we want to merge the results
+                    if(params.getGenesets_set2().size() > 0)
+                        params.getGenesets().putAll(params.getGenesets_set2());
+                }
+                //System.out.println("the expression files don't have the exact same number of entities.");
+            }
+        }
+
         //trim the genesets to only contain the genes that are in the data file.
         params.filterGenesets();
 

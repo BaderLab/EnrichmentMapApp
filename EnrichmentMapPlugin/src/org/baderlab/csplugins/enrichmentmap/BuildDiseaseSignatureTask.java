@@ -434,6 +434,8 @@ public class BuildDiseaseSignatureTask implements Task {
                     cyEdgeAttrs.setAttribute(edge.getIdentifier(), prefix + EnrichmentMapVisualStyle.OVERLAP_SIZE       , geneset_similarities.get(edge_name).getSizeOfOverlap());
                     cyEdgeAttrs.setAttribute(edge.getIdentifier(), prefix + EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT, geneset_similarities.get(edge_name).getSimilarity_coeffecient());
                     cyEdgeAttrs.setAttribute(edge.getIdentifier(), prefix + EnrichmentMapVisualStyle.HYPERGEOM_PVALUE   , geneset_similarities.get(edge_name).getHypergeom_pvalue());
+                    cyEdgeAttrs.setAttribute(edge.getIdentifier(), prefix + EnrichmentMapVisualStyle.ENRICHMENT_SET  , geneset_similarities.get(edge_name).getEnrichment_set());
+                    
                     cyEdgeAttrs.setAttribute(edge.getIdentifier(), "edge.color", paParams.getSignatureHub_edgeColor());
                     //change "edge.lineWidth" based on Hypergeometric Value 
                     if (geneset_similarities.get(edge_name).getHypergeom_pvalue() <= (paParams.getSignature_Hypergeom_Cutoff()/100) )

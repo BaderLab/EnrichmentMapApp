@@ -121,6 +121,8 @@ public class HeatMapPanel extends JPanel {
 
     private boolean node=true;
 
+    private boolean shownPearsonErrorMsg = false;
+
     //phenotypes specified by the user (if correspond to the class file definition the colour of the column can
     //be changed to indicate its phenotype.
     private String Dataset1phenotype1;
@@ -244,7 +246,7 @@ public class HeatMapPanel extends JPanel {
      * Update the heat map panel
      */
     public void updatePanel(){
-        if(currentExpressionSet != null){
+        if((currentExpressionSet != null) || (currentExpressionSet2 != null)){
 
             JTable jTable1;
             JTable rowTable;
@@ -455,9 +457,15 @@ public class HeatMapPanel extends JPanel {
         String[] Row2gene				=this.gethRow2();
 
 
-        int kValue=Math.max(currentExpressionSet.size(), currentExpressionSet2.size());
+        int kValue;
+
+        if(params.isTwoDistinctExpressionSets())
+            kValue = currentExpressionSet.size() + currentExpressionSet2.size();
+        else
+            kValue=Math.max(currentExpressionSet.size(), currentExpressionSet2.size());
+
         int totalConditions = (numConditions + numConditions2-2);
-        data = new Object[Math.max(currentExpressionSet.size(), currentExpressionSet2.size())][totalConditions];
+        data = new Object[kValue][totalConditions];
         for(int k=0;k<kValue;k++){
 
 
@@ -490,7 +498,7 @@ public class HeatMapPanel extends JPanel {
 
         HashMap<Integer, ArrayList<Integer>> rank2keys = new HashMap<Integer,ArrayList<Integer>>();
 
-        HashMap<Integer, Ranking> ranks = getRanks();
+        HashMap<Integer, Ranking> ranks = getRanks(currentExpressionSet);
 
         //if the ranks are the GSEA ranks and the leading edge is activated then we need to highlight
         //genes in the leading edge
@@ -632,8 +640,13 @@ public class HeatMapPanel extends JPanel {
 
         int totalConditions = (numConditions + numConditions2-2);
 
-        int kValue=Math.max(currentExpressionSet.size(), currentExpressionSet2.size());
-        expValue = new Object[Math.max(currentExpressionSet.size(), currentExpressionSet2.size())][totalConditions];
+        int kValue;
+
+        if(params.isTwoDistinctExpressionSets())
+            kValue = currentExpressionSet.size() + currentExpressionSet2.size();
+        else
+            kValue=Math.max(currentExpressionSet.size(), currentExpressionSet2.size());
+        expValue = new Object[kValue][totalConditions];
         hRow1= new String[kValue];
         hRow2= new String[kValue];
         halfRow1Length= new int[kValue];
@@ -643,11 +656,25 @@ public class HeatMapPanel extends JPanel {
         themeHalfRow1= new ColorGradientTheme[kValue];
         themeHalfRow2= new ColorGradientTheme[kValue];
 
-        Integer[] ranks_subset = new Integer[currentExpressionSet.size()];
+        Integer[] ranks_subset = new Integer[kValue];
+
+        //when constructing a heatmap and the expression matrices do not contain the exact same set of
+        //gene we have to use an expression set consisting of a merged set from the two expression sets.
+        HashMap<Integer, GeneExpression> expressionUsing;
+        if (currentExpressionSet.size() == 0)
+            expressionUsing = currentExpressionSet2;
+        else if(currentExpressionSet2.size() == 0)
+            expressionUsing = currentExpressionSet;
+        else{
+            HashMap<Integer, GeneExpression> mergedExpression = new HashMap<Integer, GeneExpression>();
+            mergedExpression.putAll(currentExpressionSet);
+            mergedExpression.putAll(currentExpressionSet2);
+            expressionUsing = mergedExpression;
+        }
 
         HashMap<Integer, ArrayList<Integer>> rank2keys = new HashMap<Integer,ArrayList<Integer>>();
 
-        HashMap<Integer, Ranking> ranks = getRanks();
+        HashMap<Integer, Ranking> ranks = getRanks(expressionUsing);
 
         //if the ranks are the GSEA ranks and the leading edge is activated then we need to highlight
         //genes in the leading edge
@@ -660,7 +687,7 @@ public class HeatMapPanel extends JPanel {
 
 
         int n = 0;
-        for(Iterator<Integer> i = currentExpressionSet.keySet().iterator();i.hasNext();){
+        for(Iterator<Integer> i = expressionUsing.keySet().iterator();i.hasNext();){
             Integer key = i.next();
             //check to see the key is in the rank file.
             //For new rank files it is possible that some of the genes/proteins won't be ranked
@@ -774,20 +801,53 @@ public class HeatMapPanel extends JPanel {
                     expValue[k][1]= halfRow2.getDescription();
                 }
 
-                halfRow1Length[k]=halfRow1.getExpression().length;
+               /* if(halfRow1 != null){
+                    halfRow1Length[k]=halfRow1.getExpression().length;
+                    themeHalfRow1[k]=hmParams.getTheme();
+                    rangeHalfRow1[k]=hmParams.getRange();
+                    hRow1[k]=halfRow1.getName();
+                    for(int j = 0; j < halfRow1.getExpression().length;j++){
+                        expValue[k][j+2]=expression_values1[j];
+                  }
+                }
+
+                if(halfRow2 != null){
+                    if(halfRow1 == null)
+                        halfRow2Length[k]=(halfRow2.getExpression().length);
+                    else
+                        halfRow2Length[k]=(halfRow1.getExpression().length + halfRow2.getExpression().length);
+                    themeHalfRow2[k]=hmParams.getTheme();
+                    rangeHalfRow2[k]=hmParams.getRange();
+                    hRow2[k]=halfRow1.getName();
+                    for(int j = halfRow1.getExpression().length; j < (halfRow1.getExpression().length + halfRow2.getExpression().length);j++){
+                              expValue[k][j+2]=expression_values2[j-halfRow1.getExpression().length];                }
+                } */
+
+
+                halfRow1Length[k]=expression_values1.length;
                 themeHalfRow1[k]=hmParams.getTheme();
                 rangeHalfRow1[k]=hmParams.getRange();
-                hRow1[k]=halfRow1.getName();
-                for(int j = 0; j < halfRow1.getExpression().length;j++){
-                    expValue[k][j+2]=expression_values1[j];
-                  }
 
-                halfRow2Length[k]=(halfRow1.getExpression().length + halfRow2.getExpression().length);
-                themeHalfRow2[k]=hmParams.getTheme();
-                rangeHalfRow2[k]=hmParams.getRange();
-                hRow2[k]=halfRow1.getName();
-                for(int j = halfRow1.getExpression().length; j < (halfRow1.getExpression().length + halfRow2.getExpression().length);j++){
-                              expValue[k][j+2]=expression_values2[j-halfRow1.getExpression().length];                }
+                if(halfRow1 != null)
+                    hRow1[k]=halfRow1.getName();
+                else
+                    hRow1[k]=halfRow2.getName();
+
+                for(int j = 0; j < expression_values1.length;j++){
+                        expValue[k][j+2]=expression_values1[j];
+                }
+
+
+
+               halfRow2Length[k]=(expression_values1.length + expression_values2.length);
+               themeHalfRow2[k]=hmParams.getTheme();
+               rangeHalfRow2[k]=hmParams.getRange();
+               if(halfRow1 != null)
+                    hRow2[k]=halfRow1.getName();
+                else
+                    hRow2[k]=halfRow2.getName();
+               for(int j = expression_values1.length; j < (expression_values1.length + expression_values2.length);j++){
+                    expValue[k][j+2]=expression_values2[j-expression_values1.length];                }
 
                 k++;
             }
@@ -833,7 +893,7 @@ public class HeatMapPanel extends JPanel {
       if(expression_values1 == null){
         expression_values1 = new Double[columnNames.length-2];
         for(int q = 0; q < expression_values1.length;q++)
-            expression_values1[q] = null;
+            expression_values1[q] = Double.NaN/*null*/;
         }
 
 
@@ -981,7 +1041,7 @@ public class HeatMapPanel extends JPanel {
     private void setNodeExpressionSet(EnrichmentMapParameters params){
 
         Object[] nodes = params.getSelectedNodes().toArray();
-         HashMap<String,GeneSet> genesets = params.getGenesetsOfInterest();
+         HashMap<String,GeneSet> genesets = params.getGenesets();
 
         //go through the nodes only if there are some
         if(nodes.length > 0){
@@ -993,6 +1053,18 @@ public class HeatMapPanel extends JPanel {
                 Node current_node = (Node) node1;
                 String nodename = current_node.getIdentifier();
                 GeneSet current_geneset = genesets.get(nodename);
+                HashSet<Integer> additional_set = null;
+
+
+                //if we can't find the geneset and we are dealing with a two-distinct expression sets, check for the gene set in the second set
+                if(params.isTwoDistinctExpressionSets()){
+                    HashMap<String, GeneSet> genesets_set2 = params.getGenesets_set2();
+                    GeneSet current_geneset_set2 = genesets_set2.get(nodename);
+                    if(current_geneset == null)
+                        current_geneset = current_geneset_set2;
+                    if(current_geneset_set2 != null)
+                        additional_set = current_geneset_set2.getGenes();
+                }
 
                 //if only one node is selected activate leading edge potential
                 //and if at least one rankfile is present
@@ -1037,6 +1109,9 @@ public class HeatMapPanel extends JPanel {
                     union.addAll(current_set);
 
                 }
+
+                if(additional_set != null)
+                    union.addAll(additional_set);
             }
 
             HashSet<Integer> genes = union;
@@ -1106,7 +1181,7 @@ public class HeatMapPanel extends JPanel {
      *
      * @return current ranking specified by sort by combo box
      */
-    private HashMap<Integer,Ranking> getRanks(){
+    private HashMap<Integer,Ranking> getRanks(HashMap<Integer, GeneExpression> expressionSet){
         //Get the ranks for all the keys, if there is a ranking file
         HashMap<Integer,Ranking> ranks = null;
 
@@ -1145,11 +1220,13 @@ public class HeatMapPanel extends JPanel {
         }
         else if((hmParams.getSort() == HeatMapParameters.Sort.COLUMN) || (hmParams.getSort() == HeatMapParameters.Sort.NONE) ){
             ranks = new HashMap<Integer,Ranking>();
-            for(Iterator<Integer> i = currentExpressionSet.keySet().iterator();i.hasNext();){
-                Integer key = i.next();
-                Ranking temp = new Ranking(((GeneExpression)currentExpressionSet.get(key)).getName(),0.0,0);
-                ranks.put(key,temp);
+
+            for(Iterator<Integer> i = expressionSet.keySet().iterator();i.hasNext();){
+                    Integer key = i.next();
+                    Ranking temp = new Ranking(((GeneExpression)expressionSet.get(key)).getName(),0.0,0);
+                    ranks.put(key,temp);
             }
+
             if(hmParams.getSort() == HeatMapParameters.Sort.COLUMN)
                 hmParams.setSortbycolumn_event_triggered(true);
         }
@@ -1186,15 +1263,15 @@ public class HeatMapPanel extends JPanel {
         }
         //only create a ranking if there are genes in the expression set and there
         //is more than one column of data
-        if((currentExpressionSet.keySet().size() > 1) && ((numdatacolumns + numdatacolumns2) > 1)){
+        if(((currentExpressionSet.keySet().size() > 0) || (currentExpressionSet2.keySet().size() >0)) && ((numdatacolumns + numdatacolumns2) > 1)){
 
             //check to see how many genes there are, if there are more than 1000 issue warning that
             //clustering will take a long time and give the user the option to abandon the clustering
             int hieracical_clustering_threshold = Integer.parseInt(CytoscapeInit.getProperties().getProperty("EnrichmentMap.hieracical_clustering_threshold", "1000"));
-            if(currentExpressionSet.keySet().size() > hieracical_clustering_threshold){
+            if((currentExpressionSet.keySet().size() > hieracical_clustering_threshold) || (currentExpressionSet2.keySet().size() > hieracical_clustering_threshold)) {
                 int answer = JOptionPane.showConfirmDialog(Cytoscape.getDesktop(),
 			                                      " The combination of these gene sets contain "
-                                                  + currentExpressionSet.keySet().size()
+                                                  + currentExpressionSet.keySet().size() + " And " + currentExpressionSet2.keySet().size()
 			                                      + " genes and "
 			                                      + "\nClustering a set this size may take several "
 			                                      + "minutes.\n" + "Do you wish to proceed with the clustering?"
@@ -1219,34 +1296,164 @@ public class HeatMapPanel extends JPanel {
                     ArrayList<Integer> labels = new ArrayList<Integer>();
                     int j = 0;
 
-                    //go through the expression-set hashmap and add the key to the labels and add the expression to the clustering set
-                    for(Iterator<Integer> i = currentExpressionSet.keySet().iterator();i.hasNext();){
-                        Integer key = i.next();
+                    /* Need to take into account all the different combinations of data when we are dealing with 2
+                    expression files that don't match (as created with two different species, but can also happen if two
+                     different platforms are used)
+                     */
 
-                        Double[] x = ((GeneExpression)currentExpressionSet.get(key)).getExpression();
-                        Double[] z;
-                        if(params.isData2()){
-                            Double[] y = ((GeneExpression)currentExpressionSet2.get(key)).getExpression();
-                            z = new Double[x.length + y.length];
-                            System.arraycopy(x,0,z,0,x.length);
-                            System.arraycopy(y,0,z,x.length,y.length);
 
+                    //if the two data sets have the same number genes we can cluster them together
+                    if(currentExpressionSet.keySet().size() == currentExpressionSet2.keySet().size()){
+
+                        //go through the expression-set hashmap and add the key to the labels and add the expression to the clustering set
+                        for(Iterator<Integer> i = currentExpressionSet.keySet().iterator();i.hasNext();){
+                            Integer key = i.next();
+
+                            Double[] x = ((GeneExpression)currentExpressionSet.get(key)).getExpression();
+                            Double[] z;
+                            if(params.isData2() && currentExpressionSet2.containsKey(key)){
+                                Double[] y = ((GeneExpression)currentExpressionSet2.get(key)).getExpression();
+                                z = new Double[x.length + y.length];
+                                System.arraycopy(x,0,z,0,x.length);
+                                System.arraycopy(y,0,z,x.length,y.length);
+
+                            }
+                            else{
+                                z = x;
+                            }
+
+                            //add the expression-set
+                            clustering_expressionset.add(j, z);
+
+                            //add the key to the labels
+                            labels.add(j,key);
+
+                            j++;
                         }
-                        else{
-                            z = x;
+                    }
+                    //if they are both non zero we need to make sure to include all the genes
+                    else if(currentExpressionSet.keySet().size()> 0 && currentExpressionSet2.keySet().size()> 0){
+
+                        //go through the expression-set hashmap and add the key to the labels and add the expression to the clustering set
+                        for(Iterator<Integer> i = currentExpressionSet.keySet().iterator();i.hasNext();){
+                            Integer key = i.next();
+
+                            Double[] x = ((GeneExpression)currentExpressionSet.get(key)).getExpression();
+                            Double[] z;
+                            if(params.isData2() && currentExpressionSet2.containsKey(key)){
+                                Double[] y = ((GeneExpression)currentExpressionSet2.get(key)).getExpression();
+                                z = new Double[x.length + y.length];
+                                System.arraycopy(x,0,z,0,x.length);
+                                System.arraycopy(y,0,z,x.length,y.length);
+
+                            }
+                            else{
+                                z = x;
+                            }
+
+                            //add the expression-set
+                            clustering_expressionset.add(j, z);
+
+                            //add the key to the labels
+                            labels.add(j,key);
+
+                            j++;
+                        }
+                        //go through the expression-set hashmap and add the key to the labels and add the expression to the clustering set
+                        for(Iterator<Integer> i = currentExpressionSet2.keySet().iterator();i.hasNext();){
+                            Integer key = i.next();
+
+                            Double[] x = ((GeneExpression)currentExpressionSet2.get(key)).getExpression();
+                            Double[] z;
+                            if(params.isData2() && currentExpressionSet.containsKey(key)){
+                                Double[] y = ((GeneExpression)currentExpressionSet.get(key)).getExpression();
+                                z = new Double[x.length + y.length];
+                                System.arraycopy(x,0,z,0,x.length);
+                                System.arraycopy(y,0,z,x.length,y.length);
+
+                            }
+                            else{
+                                z = x;
+                            }
+
+                            //add the expression-set
+                            clustering_expressionset.add(j, z);
+
+                            //add the key to the labels
+                            labels.add(j,key);
+
+                            j++;
                         }
 
-                        //add the expression-set
-                        clustering_expressionset.add(j, z);
+                    }
+                    //if one of the sets is zero
+                    else if((currentExpressionSet.keySet().size()> 0) && (currentExpressionSet2.keySet().size() == 0)){
 
-                        //add the key to the labels
-                        labels.add(j,key);
+                        //go through the expression-set hashmap and add the key to the labels and add the expression to the clustering set
+                        for(Iterator<Integer> i = currentExpressionSet.keySet().iterator();i.hasNext();){
+                            Integer key = i.next();
 
-                        j++;
+                            Double[] x = ((GeneExpression)currentExpressionSet.get(key)).getExpression();
+                            Double[] z;
+                            if(params.isData2() && currentExpressionSet2.containsKey(key)){
+                                Double[] y = ((GeneExpression)currentExpressionSet2.get(key)).getExpression();
+                                z = new Double[x.length + y.length];
+                                System.arraycopy(x,0,z,0,x.length);
+                                System.arraycopy(y,0,z,x.length,y.length);
+
+                            }
+                            else{
+                                z = x;
+                            }
+
+                            //add the expression-set
+                            clustering_expressionset.add(j, z);
+
+                            //add the key to the labels
+                            labels.add(j,key);
+
+                            j++;
+                        }
+                    }
+                    else if((currentExpressionSet2.keySet().size()> 0)&& (currentExpressionSet.keySet().size() == 0)){
+
+                        //go through the expression-set hashmap and add the key to the labels and add the expression to the clustering set
+                        for(Iterator<Integer> i = currentExpressionSet2.keySet().iterator();i.hasNext();){
+                            Integer key = i.next();
+
+                            Double[] x = ((GeneExpression)currentExpressionSet2.get(key)).getExpression();
+                            Double[] z;
+                            if(params.isData2() && currentExpressionSet.containsKey(key)){
+                                Double[] y = ((GeneExpression)currentExpressionSet.get(key)).getExpression();
+                                z = new Double[x.length + y.length];
+                                System.arraycopy(x,0,z,0,x.length);
+                                System.arraycopy(y,0,z,x.length,y.length);
+
+                            }
+                            else{
+                                z = x;
+                            }
+
+                            //add the expression-set
+                            clustering_expressionset.add(j, z);
+
+                            //add the key to the labels
+                            labels.add(j,key);
+
+                            j++;
+                        }
                     }
 
                     //create a distance matrix the size of the expression set
-                    DistanceMatrix distanceMatrix = new DistanceMatrix(currentExpressionSet.keySet().size());
+                    DistanceMatrix distanceMatrix;
+                    if(currentExpressionSet.keySet().size() == currentExpressionSet2.keySet().size())
+                        distanceMatrix = new DistanceMatrix(currentExpressionSet.keySet().size());
+                    else if(currentExpressionSet.keySet().size() == 0)
+                        distanceMatrix = new DistanceMatrix(currentExpressionSet2.keySet().size());
+                    else if(currentExpressionSet2.keySet().size() == 0)
+                        distanceMatrix = new DistanceMatrix(currentExpressionSet.keySet().size());
+                    else
+                        distanceMatrix = new DistanceMatrix(currentExpressionSet2.keySet().size() + currentExpressionSet.keySet().size());
                     //calculate the distance metric based on the user choice of distance metric
                     if(params.getDefaultDistanceMetric().equalsIgnoreCase(HeatMapParameters.pearson_correlation)){
                         //if the user choice is pearson still have to check to make sure
@@ -1256,7 +1463,10 @@ public class HeatMapPanel extends JPanel {
                             distanceMatrix.calcDistances(clustering_expressionset, new PearsonCorrelation());
                         }catch(RuntimeException e){
                             try{
-                                JOptionPane.showMessageDialog(Cytoscape.getDesktop(),"Unable to compute Pearson Correlation for this expression Set.\n  Cosine distance used for this set instead.\n To switch distance metric used for all hierarchical clustering \nPlease change setting under Advance Preferences in the Results Panel.");
+                                if(!shownPearsonErrorMsg){
+                                    JOptionPane.showMessageDialog(Cytoscape.getDesktop(),"Unable to compute Pearson Correlation for this expression Set.\n  Cosine distance used for this set instead.\n To switch distance metric used for all hierarchical clustering \nPlease change setting under Advance Preferences in the Results Panel.");
+                                    shownPearsonErrorMsg = true;
+                                }
                                 distanceMatrix.calcDistances(clustering_expressionset, new CosineDistance());
                             }catch(RuntimeException ex){
                                 distanceMatrix.calcDistances(clustering_expressionset, new EuclideanDistance());
@@ -1286,7 +1496,17 @@ public class HeatMapPanel extends JPanel {
                     for(int i =0;i< order.length;i++){
                         //get the label
                         Integer label =  (Integer)labels.get(order[i]);
-                        Ranking temp = new Ranking(((GeneExpression)currentExpressionSet.get(label)).getName(),0.0,i);
+
+                        GeneExpression exp;
+                        //check for the expression in expression set 1
+                        if(currentExpressionSet.containsKey(label))
+                            exp = (GeneExpression)currentExpressionSet.get(label);
+                        else if(currentExpressionSet2.containsKey(label))
+                            exp = (GeneExpression)currentExpressionSet2.get(label);
+                        else
+                            exp = null;
+
+                        Ranking temp = new Ranking(exp.getName(),0.0,i);
                         ranks.put(label,temp);
                     }
                 }catch(OutOfMemoryError e){
