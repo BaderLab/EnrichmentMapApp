@@ -105,6 +105,8 @@ public class InitializeGenesetsOfInterestTask implements Task {
         HashMap<String, EnrichmentResult> enrichmentResults1OfInterest = params.getEnrichmentResults1OfInterest();
         HashMap<String, EnrichmentResult> enrichmentResults2OfInterest = params.getEnrichmentResults2OfInterest();
         HashMap<String, GeneSet> genesetsOfInterest = params.getGenesetsOfInterest();
+        HashMap<String, GeneSet> genesetsOfInterest_set2 = params.getGenesetsOfInterest_set2();
+        HashMap genesets_set2 = params.getFilteredGenesets_set2();
 
         //get the rank files so we can translate ranks to scores for GSEA leading edge analysis
         HashMap<Integer, Ranking> dataset1ranks = params.getRanksByName("Dataset 1 Ranking");
@@ -202,6 +204,17 @@ public class InitializeGenesetsOfInterestTask implements Task {
                     }
                     else
                         throw new IllegalThreadStateException("The Geneset: " + current_name + " is not found in the GMT file.");
+
+                    if(params.isTwoDatasets()) {
+                        //if this geneset is also in the first set make sure the results is
+                        //also put into the first set
+                        if(enrichmentResults2.get(current_name) != null){
+                            GSEAResult extra = (GSEAResult)enrichmentResults2.get(current_name);
+                            enrichmentResults2OfInterest.put(current_name, extra);
+                            GeneSet extra_set = (GeneSet)genesets_set2.get(current_name);
+                            genesetsOfInterest_set2.put(current_name,extra_set);
+                        }
+                    }
                 }
             }
             //otherwise it is a generic or David enrichment set
@@ -228,8 +241,7 @@ public class InitializeGenesetsOfInterestTask implements Task {
         //Do the same for the second dataset if there is a second dataset
         if(params.isTwoDatasets()){
 
-             HashMap<String, GeneSet> genesetsOfInterest_set2 = params.getGenesetsOfInterest_set2();
-             HashMap genesets_set2 = params.getFilteredGenesets_set2();
+
 
                 //iterate through the GSEA Results to figure out which genesets we want to use
                 for(Iterator j = enrichmentResults2.keySet().iterator(); j.hasNext(); ){
@@ -259,9 +271,18 @@ public class InitializeGenesetsOfInterestTask implements Task {
                                 GeneSet current_set = (GeneSet)genesets_set2.get(current_name);
                                 //if we have two distinct expression sets we need to use the filtered genesets from the second
                                 //expression set for the second set of enrichments.
-                                if(params.isTwoDistinctExpressionSets())
+                                if(params.isTwoDistinctExpressionSets()){
                                    genesetsOfInterest_set2.put(current_name, current_set);
-                                else
+
+                                   //if this geneset is also in the first set make sure the results is
+                                    //also put into the first set
+                                    if(enrichmentResults1.get(current_name) != null){
+                                        GSEAResult extra = (GSEAResult)enrichmentResults1.get(current_name);
+                                        enrichmentResults1OfInterest.put(current_name, extra);
+                                        GeneSet extra_set = (GeneSet)genesets.get(current_name);
+                                        genesetsOfInterest.put(current_name,extra_set);
+                                    }
+                                }else
                                     genesetsOfInterest.put(current_name, current_set);
                             }
                             else{
@@ -334,9 +355,17 @@ public class InitializeGenesetsOfInterestTask implements Task {
                             //if it isn't then the user has given two files that don't match up
                             if(genesets_set2.containsKey(current_name)){
                                 GeneSet current_set = (GeneSet)genesets_set2.get(current_name);
-                                if(params.isTwoDistinctExpressionSets())
+                                if(params.isTwoDistinctExpressionSets()){
                                    genesetsOfInterest_set2.put(current_name, current_set);
-                                else
+                                    //if this geneset is also in the first set make sure the results is
+                                    //also put into the first set
+                                    if(enrichmentResults1.get(current_name) != null){
+                                        GenericResult extra = (GenericResult)enrichmentResults1.get(current_name);
+                                        enrichmentResults1OfInterest.put(current_name, extra);
+                                        GeneSet extra_set = (GeneSet)genesets.get(current_name);
+                                        genesetsOfInterest.put(current_name,extra_set);
+                                    }
+                                }else
                                     genesetsOfInterest.put(current_name, current_set);
                             }
                             else

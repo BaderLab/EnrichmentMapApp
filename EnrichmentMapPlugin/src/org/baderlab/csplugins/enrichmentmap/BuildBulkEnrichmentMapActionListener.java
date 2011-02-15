@@ -51,6 +51,9 @@ public class BuildBulkEnrichmentMapActionListener implements ActionListener{
        //make sure that the minimum information is set in the current set of parameters
        EnrichmentMapParameters params = inputPanel.getParams();
 
+        //set the bulk em flag
+        params.setBulkEM(true);
+
        //The Enrichment Map parameters contains only some of the info as in this
         //version a directory is given with the GSEA results and an EM needs to be generated for each
         //GSEA result

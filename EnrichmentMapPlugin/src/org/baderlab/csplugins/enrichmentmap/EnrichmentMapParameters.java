@@ -115,10 +115,6 @@ public class EnrichmentMapParameters {
     //flag to indicate if the similarity cut off is jaccard or overlap
     private String similarityMetric;
 
-    public static String SM_JACCARD = "JACCARD";
-    public static String SM_OVERLAP = "OVERLAP";
-    public static String SM_COMBINED = "COMBINED";
-
     private boolean similarityCutOffChanged = false;
 
     //value to store the constant needed for constructing the combined similarity metric
@@ -225,6 +221,9 @@ public class EnrichmentMapParameters {
     //the capability of storing more rank files
     private HashMap<String, HashMap<Integer, Ranking>> ranks;
 
+    //value specifying whether bulk EM is being used (needed to transfer file name to the network names)
+    private boolean BulkEM = false;
+
     private Properties cyto_prop;
     private double defaultPvalueCutOff;
     private double defaultQvalueCutOff;
@@ -235,6 +234,7 @@ public class EnrichmentMapParameters {
     private String defaultSortMethod;
     private String defaultDistanceMetric;
 
+    //Constants
     final public static String ENRICHMENT_INTERACTION_TYPE = "Geneset_Overlap";
 
     final public static String ENRICHMENT_INTERACTION_TYPE_SET1 = "Geneset_Overlap_set1";
@@ -244,6 +244,11 @@ public class EnrichmentMapParameters {
     final public static String method_GSEA = "GSEA";
     final public static String method_generic = "generic";
     final public static String method_DAVID = "DAVID";
+
+    //with more similarity metric can't use a boolean to reprensent them.
+    final public static String SM_JACCARD = "JACCARD";
+    final public static String SM_OVERLAP = "OVERLAP";
+    final public static String SM_COMBINED = "COMBINED";
 
     private PostAnalysisParameters paParams;
     
@@ -258,7 +263,7 @@ public class EnrichmentMapParameters {
         this.genes = new HashMap<String, Integer>();
         this.hashkey2gene = new HashMap<Integer, String>();
         this.datasetGenes = new HashSet<Integer>();
-
+        this.NetworkName = null;
 
 
 //        this.hashkey2bitindex = new HashMap<Integer, Integer>();
@@ -445,6 +450,13 @@ public class EnrichmentMapParameters {
             this.similarityMetric = SM_OVERLAP;
         else if ((props.get("jaccard")).equalsIgnoreCase(SM_COMBINED))
             this.similarityMetric = SM_COMBINED;
+
+        //get the combined constant
+        if(props.get("CombinedConstant") != null)
+            setCombinedConstant(Double.parseDouble(props.get("CombinedConstant")));
+        else
+            setCombinedConstant(0.5);
+
         //have to deal with legacy issue by switching from two methods to multiple
         if(props.get("GSEA") != null){
          if((props.get("GSEA")).equalsIgnoreCase("false"))
@@ -522,7 +534,10 @@ public class EnrichmentMapParameters {
      */
     public void copyInputParameters(EnrichmentMapParameters copy){
 
-        this.NetworkName = copy.getNetworkName();
+        //We can only transfer the Network name if it is needed
+        //for instance for Bulk EM creation.
+        if(isBulkEM())
+            this.NetworkName = copy.getNetworkName();
 
         this.GMTFileName = copy.getGMTFileName();
         this.expressionFileName1 = copy.getExpressionFileName1();
@@ -826,6 +841,10 @@ public class EnrichmentMapParameters {
              }
             //once we have filtered the genesets clear the original genesets object
             genesets.clear();
+            genesets_set2.clear();
+
+
+
             }
 
         }
@@ -883,6 +902,7 @@ public class EnrichmentMapParameters {
         paramVariables.append("GMTFileName\t" + GMTFileName + "\n");
         paramVariables.append("expressionFileName1\t" + expressionFileName1 + "\n");
         paramVariables.append("expressionFileName2\t" + expressionFileName2 + "\n");
+        //TODO fix typo in field
         paramVariables.append("enerichmentDataset1FileName1\t" + enrichmentDataset1FileName1 + "\n");//TODO: fix Typo and take care of legacy issue!
         paramVariables.append("enrichmentDataset1FileName2\t" + enrichmentDataset1FileName2 + "\n");
 
@@ -934,6 +954,9 @@ public class EnrichmentMapParameters {
         //boolean flags
         paramVariables.append("twoDatasets\t" + twoDatasets + "\n");
         paramVariables.append("jaccard\t" + similarityMetric + "\n");
+
+        //add the combined constant
+        paramVariables.append("CombinedConstant" + combinedConstant + "\n");
 
         paramVariables.append("Data\t" + Data + "\n");
         paramVariables.append("Data2\t" + Data2 + "\n");
@@ -1795,5 +1818,13 @@ public class EnrichmentMapParameters {
 
     public void setCombinedConstant(double combinedConstant) {
         this.combinedConstant = combinedConstant;
+    }
+
+    public boolean isBulkEM() {
+        return BulkEM;
+    }
+
+    public void setBulkEM(boolean bulkEM) {
+        BulkEM = bulkEM;
     }
 }

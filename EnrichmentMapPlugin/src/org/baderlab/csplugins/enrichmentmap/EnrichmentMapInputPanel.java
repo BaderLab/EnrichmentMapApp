@@ -986,7 +986,7 @@ public class EnrichmentMapInputPanel extends JPanel {
                     params.setCombinedConstant(value.doubleValue());
 
                     //if the similarity cutoff is equal to the default then updated it to reflect what it should be given the value of k
-                    if(!params.isSimilarityCutOffChanged())
+                    if(!params.isSimilarityCutOffChanged() && params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_COMBINED))
                         params.setSimilarityCutOff( (params.getDefaultOverlapCutOff() * value.doubleValue()) + ((1-value.doubleValue()) * params.getDefaultJaccardCutOff()) );
 
                     //params.setCombinedConstantCutOffChanged(true);
@@ -2072,7 +2072,7 @@ public class EnrichmentMapInputPanel extends JPanel {
         pvalueTextField.setValue(current_params.getPvalue());
         qvalueTextField.setValue(current_params.getQvalue());
         coeffecientTextField.setValue(current_params.getSimilarityCutOff());
-
+        combinedConstantTextField.setValue(current_params.getCombinedConstant());
 
         if(current_params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)){
             gsea.setSelected(true);

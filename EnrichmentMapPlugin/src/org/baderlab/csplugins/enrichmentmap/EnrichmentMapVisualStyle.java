@@ -227,11 +227,11 @@ public class EnrichmentMapVisualStyle {
 
         //set the default node appearance
         NodeAppearance nodeAppear = new NodeAppearance();
-        nodeAppear.set(VisualPropertyType.NODE_FILL_COLOR, Color.GRAY);
-        nodeAppear.set(VisualPropertyType.NODE_BORDER_COLOR, Color.GRAY);
+        nodeAppear.set(VisualPropertyType.NODE_FILL_COLOR, new Color(190,190,190) /* a lighter grey*/);
+        nodeAppear.set(VisualPropertyType.NODE_BORDER_COLOR,new Color(190,190,190) /* a lighter grey*/);
         nodeAppear.set(VisualPropertyType.NODE_SHAPE, NodeShape.ELLIPSE);
-        nodeAppear.set(VisualPropertyType.NODE_SIZE, new Double(35.0));
-        nodeAppear.set(VisualPropertyType.NODE_LINE_WIDTH, new Double(4.0));
+        nodeAppear.set(VisualPropertyType.NODE_SIZE, new Double(15.0));
+        nodeAppear.set(VisualPropertyType.NODE_LINE_WIDTH, new Double(15.0));
         nodeAppCalc.setDefaultAppearance(nodeAppear);
         
         // Passthrough Mapping - set node label

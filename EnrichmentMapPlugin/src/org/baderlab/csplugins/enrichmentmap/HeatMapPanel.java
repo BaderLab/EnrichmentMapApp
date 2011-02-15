@@ -1041,7 +1041,7 @@ public class HeatMapPanel extends JPanel {
     private void setNodeExpressionSet(EnrichmentMapParameters params){
 
         Object[] nodes = params.getSelectedNodes().toArray();
-         HashMap<String,GeneSet> genesets = params.getGenesets();
+         HashMap<String,GeneSet> genesets = params.getGenesetsOfInterest();
 
         //go through the nodes only if there are some
         if(nodes.length > 0){
@@ -1058,7 +1058,7 @@ public class HeatMapPanel extends JPanel {
 
                 //if we can't find the geneset and we are dealing with a two-distinct expression sets, check for the gene set in the second set
                 if(params.isTwoDistinctExpressionSets()){
-                    HashMap<String, GeneSet> genesets_set2 = params.getGenesets_set2();
+                    HashMap<String, GeneSet> genesets_set2 = params.getGenesetsOfInterest_set2();
                     GeneSet current_geneset_set2 = genesets_set2.get(nodename);
                     if(current_geneset == null)
                         current_geneset = current_geneset_set2;
@@ -1252,6 +1252,14 @@ public class HeatMapPanel extends JPanel {
         int numdatacolumns = 0;
         int numdatacolumns2 = 0;
 
+        int set1_size = 0;
+        int set2_size = 0;
+        if(currentExpressionSet != null)
+            set1_size = currentExpressionSet.keySet().size();
+        if(currentExpressionSet2 != null)
+            set2_size = currentExpressionSet2.keySet().size();
+
+
         boolean cluster = true;
 
         if(numConditions > 0){
@@ -1263,12 +1271,13 @@ public class HeatMapPanel extends JPanel {
         }
         //only create a ranking if there are genes in the expression set and there
         //is more than one column of data
-        if(((currentExpressionSet.keySet().size() > 0) || (currentExpressionSet2.keySet().size() >0)) && ((numdatacolumns + numdatacolumns2) > 1)){
+        if(((set1_size > 0) || (set2_size >0)) && ((numdatacolumns + numdatacolumns2) > 1)){
 
             //check to see how many genes there are, if there are more than 1000 issue warning that
             //clustering will take a long time and give the user the option to abandon the clustering
             int hieracical_clustering_threshold = Integer.parseInt(CytoscapeInit.getProperties().getProperty("EnrichmentMap.hieracical_clustering_threshold", "1000"));
-            if((currentExpressionSet.keySet().size() > hieracical_clustering_threshold) || (currentExpressionSet2.keySet().size() > hieracical_clustering_threshold)) {
+            if((set1_size > hieracical_clustering_threshold)
+            || (set2_size > hieracical_clustering_threshold)) {
                 int answer = JOptionPane.showConfirmDialog(Cytoscape.getDesktop(),
 			                                      " The combination of these gene sets contain "
                                                   + currentExpressionSet.keySet().size() + " And " + currentExpressionSet2.keySet().size()
@@ -1301,9 +1310,8 @@ public class HeatMapPanel extends JPanel {
                      different platforms are used)
                      */
 
-
                     //if the two data sets have the same number genes we can cluster them together
-                    if(currentExpressionSet.keySet().size() == currentExpressionSet2.keySet().size()){
+                    if( set1_size == set2_size && set1_size != 0){
 
                         //go through the expression-set hashmap and add the key to the labels and add the expression to the clustering set
                         for(Iterator<Integer> i = currentExpressionSet.keySet().iterator();i.hasNext();){
@@ -1332,7 +1340,7 @@ public class HeatMapPanel extends JPanel {
                         }
                     }
                     //if they are both non zero we need to make sure to include all the genes
-                    else if(currentExpressionSet.keySet().size()> 0 && currentExpressionSet2.keySet().size()> 0){
+                    else if( set1_size> 0 && set2_size> 0){
 
                         //go through the expression-set hashmap and add the key to the labels and add the expression to the clustering set
                         for(Iterator<Integer> i = currentExpressionSet.keySet().iterator();i.hasNext();){
@@ -1387,7 +1395,7 @@ public class HeatMapPanel extends JPanel {
 
                     }
                     //if one of the sets is zero
-                    else if((currentExpressionSet.keySet().size()> 0) && (currentExpressionSet2.keySet().size() == 0)){
+                    else if((set1_size> 0) && (set2_size == 0)){
 
                         //go through the expression-set hashmap and add the key to the labels and add the expression to the clustering set
                         for(Iterator<Integer> i = currentExpressionSet.keySet().iterator();i.hasNext();){
@@ -1415,7 +1423,7 @@ public class HeatMapPanel extends JPanel {
                             j++;
                         }
                     }
-                    else if((currentExpressionSet2.keySet().size()> 0)&& (currentExpressionSet.keySet().size() == 0)){
+                    else if((set2_size> 0)&& (set1_size == 0)){
 
                         //go through the expression-set hashmap and add the key to the labels and add the expression to the clustering set
                         for(Iterator<Integer> i = currentExpressionSet2.keySet().iterator();i.hasNext();){
@@ -1446,11 +1454,11 @@ public class HeatMapPanel extends JPanel {
 
                     //create a distance matrix the size of the expression set
                     DistanceMatrix distanceMatrix;
-                    if(currentExpressionSet.keySet().size() == currentExpressionSet2.keySet().size())
+                    if(set1_size == set2_size)
                         distanceMatrix = new DistanceMatrix(currentExpressionSet.keySet().size());
-                    else if(currentExpressionSet.keySet().size() == 0)
+                    else if(set1_size == 0)
                         distanceMatrix = new DistanceMatrix(currentExpressionSet2.keySet().size());
-                    else if(currentExpressionSet2.keySet().size() == 0)
+                    else if(set2_size == 0)
                         distanceMatrix = new DistanceMatrix(currentExpressionSet.keySet().size());
                     else
                         distanceMatrix = new DistanceMatrix(currentExpressionSet2.keySet().size() + currentExpressionSet.keySet().size());
@@ -1485,7 +1493,7 @@ public class HeatMapPanel extends JPanel {
                     AvgLinkHierarchicalClustering cluster_result = new AvgLinkHierarchicalClustering(distanceMatrix);
 
                     //check to see if there more than 1000 genes, if there are use eisen ordering otherwise use bar-joseph
-                    if(currentExpressionSet.keySet().size() > 1000)
+                    if((set1_size + set2_size) > 1000)
                         cluster_result.setOptimalLeafOrdering(false);
                     else
                         cluster_result.setOptimalLeafOrdering(true);

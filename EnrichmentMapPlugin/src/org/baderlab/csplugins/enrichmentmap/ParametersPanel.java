@@ -309,7 +309,7 @@ public class ParametersPanel extends JPanel {
            }
             else if(params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_COMBINED)){
                runInfoText = runInfoText + "<b>Jaccard Overlap Combined Cut-off:</b>" + params.getSimilarityCutOff() + "<br>";
-               runInfoText = runInfoText + "<b>Test used:</b>  Jaccard Overlap Combined Index<br>";
+               runInfoText = runInfoText + "<b>Test used:</b>  Jaccard Overlap Combined Index (k constant = " + params.getCombinedConstant() + ")<br>";
            }
            runInfoText = runInfoText + "<font size=-1><b>Genesets File:</b>" + shortenPathname(params.getGMTFileName()) + "<br>";
            runInfoText = runInfoText + "<b>Dataset 1 Data Files:</b> " + shortenPathname(params.getEnrichmentDataset1FileName1()) + ",<br>" + shortenPathname(params.getEnrichmentDataset1FileName2()) + "<br>";

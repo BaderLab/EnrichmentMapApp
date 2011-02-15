@@ -48,6 +48,9 @@ import cytoscape.Cytoscape;
 import cytoscape.CytoscapeInit;
 import cytoscape.view.CyNetworkView;
 import cytoscape.data.readers.TextFileReader;
+import cytoscape.visual.CalculatorCatalog;
+import cytoscape.visual.VisualMappingManager;
+import cytoscape.visual.VisualStyle;
 
 
 import javax.swing.*;
@@ -213,14 +216,14 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
                 writer.close();
 
                 BufferedWriter gmtwriter = new BufferedWriter(new FileWriter(gmt));
-                gmtwriter.write(params.printHashmap(params.getGenesets()));
+                gmtwriter.write(params.printHashmap(params.getGenesetsOfInterest()));
                 gmtwriter.close();
                 pFileList.add(gmt);
 
                 //if there are two distinct expression files we also need to output the second set of genesetsof interest
                 if(params.isTwoDistinctExpressionSets()){
                     BufferedWriter gmtwriter_set2 = new BufferedWriter(new FileWriter(gmt_set2));
-                    gmtwriter_set2.write(params.printHashmap(params.getGenesets_set2()));
+                    gmtwriter_set2.write(params.printHashmap(params.getGenesetsOfInterest_set2()));
                     gmtwriter_set2.close();
                     pFileList.add(gmt_set2);
                 }
@@ -569,6 +572,16 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
                     paramPanel.updatePanel(params);
                     paramPanel.revalidate();
                 }
+
+                //make sure the visual style is set to the right on for this network
+                String vs_name = params.getAttributePrefix() + "_Enrichment_map_style";
+
+                // get the VisualMappingManager and CalculatorCatalog
+            VisualMappingManager manager_vs = Cytoscape.getVisualMappingManager();
+            CalculatorCatalog catalog = manager_vs.getCalculatorCatalog();
+            VisualStyle vs = catalog.getVisualStyle(vs_name);
+
+            view.setVisualStyle(vs.getName()); // not strictly necessary
 
             }
 
