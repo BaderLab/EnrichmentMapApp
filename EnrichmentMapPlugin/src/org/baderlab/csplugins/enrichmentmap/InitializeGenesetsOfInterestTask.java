@@ -229,6 +229,17 @@ public class InitializeGenesetsOfInterestTask implements Task {
                     if(genesets.containsKey(current_name)){
                         GeneSet current_set = (GeneSet)genesets.get(current_name);
                         genesetsOfInterest.put(current_name, current_set);
+
+                        if(params.isTwoDatasets()) {
+                        //if this geneset is also in the first set make sure the results is
+                        //also put into the first set
+                        if(enrichmentResults2.get(current_name) != null){
+                            GenericResult extra = (GenericResult)enrichmentResults2.get(current_name);
+                            enrichmentResults2OfInterest.put(current_name, extra);
+                            GeneSet extra_set = (GeneSet)genesets_set2.get(current_name);
+                            genesetsOfInterest_set2.put(current_name,extra_set);
+                        }
+                    }
                     }
                     else
                         throw new IllegalThreadStateException("The Geneset: " + current_name + " is not found in the GMT file.");

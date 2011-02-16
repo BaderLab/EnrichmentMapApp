@@ -564,6 +564,16 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
                 //add the click on edge listener
                 view.addGraphViewChangeListener(new EnrichmentMapActionListener(params));
 
+                //make sure the visual style is set to the right on for this network
+                String vs_name = params.getAttributePrefix() + "Enrichment_map_style";
+
+                // get the VisualMappingManager and CalculatorCatalog
+                VisualMappingManager manager_vs = Cytoscape.getVisualMappingManager();
+                CalculatorCatalog catalog = manager_vs.getCalculatorCatalog();
+                VisualStyle vs = catalog.getVisualStyle(vs_name);
+
+                view.setVisualStyle(vs.getName()); // not strictly necessary
+
                 //set the last network to be the one viewed
                 //and initialize the parameters panel
                 if(!j.hasNext()){
@@ -573,15 +583,7 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
                     paramPanel.revalidate();
                 }
 
-                //make sure the visual style is set to the right on for this network
-                String vs_name = params.getAttributePrefix() + "_Enrichment_map_style";
 
-                // get the VisualMappingManager and CalculatorCatalog
-            VisualMappingManager manager_vs = Cytoscape.getVisualMappingManager();
-            CalculatorCatalog catalog = manager_vs.getCalculatorCatalog();
-            VisualStyle vs = catalog.getVisualStyle(vs_name);
-
-            view.setVisualStyle(vs.getName()); // not strictly necessary
 
             }
 

@@ -229,6 +229,7 @@ public class EnrichmentMapParameters {
     private double defaultQvalueCutOff;
     private double defaultJaccardCutOff;
     private double defaultOverlapCutOff;
+    private double defaultCombinedConstant;
     private String defaultSimilarityMetric;
     private Boolean disable_heatmap_autofocus;
     private String defaultSortMethod;
@@ -291,13 +292,16 @@ public class EnrichmentMapParameters {
         this.defaultQvalueCutOff       = Double.parseDouble( this.cyto_prop.getProperty("EnrichmentMap.default_qvalue",  "0.1") );
         this.defaultJaccardCutOff      = Double.parseDouble( this.cyto_prop.getProperty("EnrichmentMap.default_jaccard", "0.25") );
         this.defaultOverlapCutOff      = Double.parseDouble( this.cyto_prop.getProperty("EnrichmentMap.default_overlap", "0.50") );
+        this.defaultCombinedConstant     = Double.parseDouble( this.cyto_prop.getProperty("EnrichmentMap.default_combinedConstant", "0.50") );
+
         this.defaultSimilarityMetric   = this.cyto_prop.getProperty("EnrichmentMap.default_similarity_metric",
                 this.cyto_prop.getProperty("EnrichmentMap.default_overlap_metric", "overlap")); // looking for Property "EnrichmentMap.default_overlap_metric" for legacy reasons
         this.disable_heatmap_autofocus = Boolean.parseBoolean( this.cyto_prop.getProperty("EnrichmentMap.disable_heatmap_autofocus", "false") );
 
         //get the default heatmap sort algorithm
         this.defaultSortMethod = this.cyto_prop.getProperty("EnrichmentMap.default_sort_method", HeatMapParameters.sort_hierarchical_cluster);
-
+        //get the default combined metric constant
+        this.combinedConstant = this.defaultCombinedConstant;
         //get the default distance metric algorithm
         this.defaultDistanceMetric = this.cyto_prop.getProperty("EnrichmentMap.default_distance_metric", HeatMapParameters.pearson_correlation);
 
@@ -536,9 +540,10 @@ public class EnrichmentMapParameters {
 
         //We can only transfer the Network name if it is needed
         //for instance for Bulk EM creation.
-        if(isBulkEM())
+        if(copy.isBulkEM()){
             this.NetworkName = copy.getNetworkName();
-
+            this.BulkEM = copy.isBulkEM();
+        }
         this.GMTFileName = copy.getGMTFileName();
         this.expressionFileName1 = copy.getExpressionFileName1();
         this.expressionFileName2 = copy.getExpressionFileName2();
@@ -639,7 +644,7 @@ public class EnrichmentMapParameters {
         this.method = copy.getMethod();
         this.FDR = copy.isFDR();
         this.similarityMetric = copy.getSimilarityMetric();
-
+        this.combinedConstant = copy.getCombinedConstant();
         this.similarityCutOffChanged = copy.similarityCutOffChanged;
 
         //copy HashMaps genes and hash2genes

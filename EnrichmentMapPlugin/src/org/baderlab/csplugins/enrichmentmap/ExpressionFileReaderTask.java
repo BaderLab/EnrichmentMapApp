@@ -294,8 +294,12 @@ public class ExpressionFileReaderTask implements Task {
 
             String[] lines2 = fullText2.split("\n");
 
+            //the class file can be split by a space or a tab
+            String[] classes = lines2[2].split("\\s");
+
+
             //the third line of the class file defines the classes
-            return lines2[2].split(" ");
+            return classes;
         }
         else{
             String[] def_pheno = {"Na_pos","NA_neg"};

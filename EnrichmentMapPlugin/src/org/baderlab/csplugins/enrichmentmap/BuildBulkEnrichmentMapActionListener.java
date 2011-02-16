@@ -1,6 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap;
 
 import cytoscape.Cytoscape;
+import cytoscape.data.writers.CytoscapeSessionWriter;
 import cytoscape.view.CyNetworkView;
 import cytoscape.util.export.PDFExporter;
 import cytoscape.task.ui.JTaskConfig;
@@ -9,10 +10,7 @@ import cytoscape.task.util.TaskManager;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -106,6 +104,8 @@ public class BuildBulkEnrichmentMapActionListener implements ActionListener{
                             BuildEnrichmentMapTask new_map = new BuildEnrichmentMapTask(params);
                             boolean success = TaskManager.executeTask(new_map, config);
 
+                            Cytoscape.getCurrentNetworkView().fitContent();
+
                             //export the network to a pdf file in the main directory by the name of
                             // of the rpt file
                             try{
@@ -116,10 +116,22 @@ public class BuildBulkEnrichmentMapActionListener implements ActionListener{
                                 PDFExporter exporter = new PDFExporter();
                                 exporter.export(view, outputstream);
 
-                            }catch (FileNotFoundException e){
+                                //output the session
+                                CytoscapeSessionWriter session = new CytoscapeSessionWriter(mainDirectory + File.separator + name + ".cys");
+                                System.out.println(mainDirectory + File.separator + name + ".cys");
+                                session.writeSessionToDisk();
 
+                                //create a new session for the next network
+                                Cytoscape.createNewSession();
+
+
+                            }
+                            catch (FileNotFoundException e){
+                                System.out.println("Can't export network " + name + " .");
                             }catch (IOException e2){
                                 System.out.println("Can't export network " + name + " to pdf.");
+                            }catch (Exception e3){
+                                System.out.println("Can't export network " + name + ".cys");
                             }
 
                         }
