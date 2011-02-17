@@ -336,6 +336,17 @@ public class EnrichmentMapParameters {
         this.filteredGenesets_set2 = new HashMap<String, GeneSet>();
         this.genesetsOfInterest_set2 = new HashMap<String, GeneSet>();
 
+        //reset expression variables
+        this.expression = null;
+        this.expression2 = null;
+
+        //reset all boolean values
+        this.setFDR(false);
+        this.setData(false);
+        this.setData2(false);
+        this.setTwoDatasets(false);
+        this.setTwoDistinctExpressionSets(false);
+
     }
 
 
@@ -717,33 +728,43 @@ public class EnrichmentMapParameters {
         String errors = "";
 
         //minimal for either analysis
+        //check to see if GMT is not null but everything else is
+        if(this.enrichmentDataset1FileName1 == null && this.enrichmentDataset1FileName2 == null
+                && this.enrichmentDataset2FileName1 == null && this.enrichmentDataset2FileName2 == null &&
+                this.GMTFileName != null && !this.GMTFileName.equalsIgnoreCase(""))
+            errors = "GMTONLY";
+        else{
 
-        if(this.enrichmentDataset1FileName1.equalsIgnoreCase("") || !checkFile(this.enrichmentDataset1FileName1))
-            errors = errors + "Dataset 1, enrichment file 1 can not be found\n";
-        if(this.twoDatasets){
-            if(this.enrichmentDataset2FileName1.equalsIgnoreCase("") || !checkFile(this.enrichmentDataset2FileName1))
-                errors = errors + "Dataset 2, enrichment file 1 can not be found\n";
-        }
 
-       //GMT file is not required for David analysis
-       if(!this.method.equalsIgnoreCase(EnrichmentMapParameters.method_DAVID))
-            if(this.GMTFileName.equalsIgnoreCase("") || !checkFile(this.GMTFileName))
-                errors = errors + "GMT file can not be found \n";
+            if(this.enrichmentDataset1FileName1 != null && (this.enrichmentDataset1FileName1.equalsIgnoreCase("") || !checkFile(this.enrichmentDataset1FileName1)))
+                errors = errors + "Dataset 1, enrichment file 1 can not be found\n";
 
-       // /GSEA inputs
-        if(this.method.equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)){
-            if(this.enrichmentDataset1FileName2.equalsIgnoreCase("") || !checkFile(this.enrichmentDataset1FileName2))
-                errors = errors + "Dataset 1, enrichment file 2 can not be found\n";
+
             if(this.twoDatasets){
-                if(this.enrichmentDataset2FileName2.equalsIgnoreCase("") || !checkFile(this.enrichmentDataset2FileName2))
-                    errors = errors + "Dataset 2, enrichment file 2 can not be found\n";
+                if(this.enrichmentDataset2FileName1 != null && (this.enrichmentDataset2FileName1.equalsIgnoreCase("") || !checkFile(this.enrichmentDataset2FileName1)))
+                    errors = errors + "Dataset 2, enrichment file 1 can not be found\n";
             }
-        }
 
-        //check to see if there are two datasets if the two gct files are the same
-        if((this.twoDatasets) && (this.expressionFileName1.equalsIgnoreCase(this.expressionFileName2))){
-            this.Data2 = false;
-            this.expressionFileName2 = "";
+            //GMT file is not required for David analysis
+            if(!this.method.equalsIgnoreCase(EnrichmentMapParameters.method_DAVID))
+                if(this.GMTFileName.equalsIgnoreCase("") || !checkFile(this.GMTFileName))
+                    errors = errors + "GMT file can not be found \n";
+
+            // /GSEA inputs
+            if(this.method.equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)){
+                if(this.enrichmentDataset1FileName2 != null && (this.enrichmentDataset1FileName2.equalsIgnoreCase("") || !checkFile(this.enrichmentDataset1FileName2)))
+                    errors = errors + "Dataset 1, enrichment file 2 can not be found\n";
+                if(this.twoDatasets){
+                    if(this.enrichmentDataset2FileName2 != null && (this.enrichmentDataset2FileName2.equalsIgnoreCase("") || !checkFile(this.enrichmentDataset2FileName2)))
+                        errors = errors + "Dataset 2, enrichment file 2 can not be found\n";
+                }
+            }
+
+            //check to see if there are two datasets if the two gct files are the same
+            if((this.twoDatasets) && (this.expressionFileName1.equalsIgnoreCase(this.expressionFileName2))){
+                this.Data2 = false;
+                this.expressionFileName2 = "";
+            }
         }
 
 

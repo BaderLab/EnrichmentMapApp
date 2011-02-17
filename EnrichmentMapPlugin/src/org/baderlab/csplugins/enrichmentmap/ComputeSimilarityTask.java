@@ -207,6 +207,7 @@ public class ComputeSimilarityTask implements Task {
                              coeffecient = (k * overlap) + ((1-k) * jaccard);
 
                          }
+
                          //create Geneset similarity object
                          GenesetSimilarity comparison = new GenesetSimilarity(geneset1_name,geneset2_name, coeffecient, params.getEnrichment_edge_type() ,(HashSet<Integer>)intersection,enrichment_set);
 

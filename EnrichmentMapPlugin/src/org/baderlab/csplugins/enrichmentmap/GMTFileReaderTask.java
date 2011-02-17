@@ -193,8 +193,8 @@ public class GMTFileReaderTask implements Task {
                         //Check to see if the gene is already in the hashmap of genes
                         //if it is already in the hash then get its associated key and put it
                         //into the set of genes
-                        if (genes.containsKey(tokens[j])) {
-                            gs.addGene(genes.get(tokens[j]));
+                        if (genes.containsKey(tokens[j].toUpperCase())) {
+                            gs.addGene(genes.get(tokens[j].toUpperCase()));
                         }
 
                         //If the gene is not in the list then get the next value to be used and put it in the list

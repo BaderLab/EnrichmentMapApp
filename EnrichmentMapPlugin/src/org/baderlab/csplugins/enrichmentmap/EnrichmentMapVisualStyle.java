@@ -230,8 +230,16 @@ public class EnrichmentMapVisualStyle {
         nodeAppear.set(VisualPropertyType.NODE_FILL_COLOR, new Color(190,190,190) /* a lighter grey*/);
         nodeAppear.set(VisualPropertyType.NODE_BORDER_COLOR,new Color(190,190,190) /* a lighter grey*/);
         nodeAppear.set(VisualPropertyType.NODE_SHAPE, NodeShape.ELLIPSE);
-        nodeAppear.set(VisualPropertyType.NODE_SIZE, new Double(15.0));
-        nodeAppear.set(VisualPropertyType.NODE_LINE_WIDTH, new Double(15.0));
+
+        //change the default node and border size only when using two distinct dataset to be more equal.
+        if(params.isTwoDistinctExpressionSets()){
+            nodeAppear.set(VisualPropertyType.NODE_SIZE, new Double(15.0));
+            nodeAppear.set(VisualPropertyType.NODE_LINE_WIDTH, new Double(15.0));
+        }
+        else{
+            nodeAppear.set(VisualPropertyType.NODE_SIZE, new Double(20.0));
+            nodeAppear.set(VisualPropertyType.NODE_LINE_WIDTH, new Double(4.0));
+        }
         nodeAppCalc.setDefaultAppearance(nodeAppear);
         
         // Passthrough Mapping - set node label

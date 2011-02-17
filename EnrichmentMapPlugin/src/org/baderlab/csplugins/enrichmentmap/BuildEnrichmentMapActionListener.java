@@ -42,6 +42,7 @@
 // $HeadURL$
 
 package org.baderlab.csplugins.enrichmentmap;
+import cytoscape.task.TaskMonitor;
 import cytoscape.task.ui.JTaskConfig;
 import cytoscape.task.util.TaskManager;
 import cytoscape.Cytoscape;
@@ -50,6 +51,7 @@ import cytoscape.Cytoscape;
 import javax.swing.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.util.HashMap;
 
 /**
  * Created by
@@ -94,6 +96,11 @@ public class BuildEnrichmentMapActionListener implements ActionListener {
        if(errors.equalsIgnoreCase("")){
             BuildEnrichmentMapTask new_map = new BuildEnrichmentMapTask(params);
             boolean success = TaskManager.executeTask(new_map,config);
+       }
+       else if(errors.equalsIgnoreCase("GMTONLY")){
+           BuildGMTEnrichmentMapTask new_map = new BuildGMTEnrichmentMapTask(params);
+           boolean success = TaskManager.executeTask(new_map,config);
+
        }
        else{
            JOptionPane.showMessageDialog(Cytoscape.getDesktop(),errors,"Invalid Input",JOptionPane.WARNING_MESSAGE);

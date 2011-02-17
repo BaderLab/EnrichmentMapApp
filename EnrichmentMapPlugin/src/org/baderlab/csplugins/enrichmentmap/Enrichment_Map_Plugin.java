@@ -42,7 +42,6 @@
 // $HeadURL$
 
 package org.baderlab.csplugins.enrichmentmap;
-import cytoscape.logger.CyLogger;
 import cytoscape.plugin.CytoscapePlugin;
 import cytoscape.Cytoscape;
 import cytoscape.CytoscapeInit;
@@ -55,7 +54,6 @@ import cytoscape.visual.VisualStyle;
 
 import javax.swing.*;
 
-import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
