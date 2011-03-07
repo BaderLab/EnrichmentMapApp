@@ -101,12 +101,15 @@ public class InitializeGenesetsOfInterestTask implements Task {
         HashMap enrichmentResults1 = params.getEnrichmentResults1();
         HashMap enrichmentResults2 = params.getEnrichmentResults2();
         HashMap genesets = params.getFilteredGenesets();
+        HashMap genesets_set2 = params.getFilteredGenesets_set2();
+
+        if(genesets_set2.isEmpty())
+            genesets_set2 = genesets;
 
         HashMap<String, EnrichmentResult> enrichmentResults1OfInterest = params.getEnrichmentResults1OfInterest();
         HashMap<String, EnrichmentResult> enrichmentResults2OfInterest = params.getEnrichmentResults2OfInterest();
         HashMap<String, GeneSet> genesetsOfInterest = params.getGenesetsOfInterest();
         HashMap<String, GeneSet> genesetsOfInterest_set2 = params.getGenesetsOfInterest_set2();
-        HashMap genesets_set2 = params.getFilteredGenesets_set2();
 
         //get the rank files so we can translate ranks to scores for GSEA leading edge analysis
         HashMap<Integer, Ranking> dataset1ranks = params.getRanksByName("Dataset 1 Ranking");

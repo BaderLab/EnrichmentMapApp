@@ -199,14 +199,18 @@ public class GMTFileReaderTask implements Task {
 
                         //If the gene is not in the list then get the next value to be used and put it in the list
                         else{
-                            //add the gene to the master list of genes
-                            int value = params.getNumberOfGenes();
-                            genes.put(tokens[j].toUpperCase(), value);
-                            hashkey2gene.put(value,tokens[j].toUpperCase());
-                            params.setNumberOfGenes(value+1);
+                            //only add the gene if it isn't a blank
+                            if(!tokens[j].equalsIgnoreCase("")){
 
-                            //add the gene to the genelist
-                            gs.addGene(genes.get(tokens[j].toUpperCase()));
+                                //add the gene to the master list of genes
+                                int value = params.getNumberOfGenes();
+                                genes.put(tokens[j].toUpperCase(), value);
+                                hashkey2gene.put(value,tokens[j].toUpperCase());
+                                params.setNumberOfGenes(value+1);
+
+                                //add the gene to the genelist
+                                gs.addGene(genes.get(tokens[j].toUpperCase()));
+                            }
                         }
                     }
 

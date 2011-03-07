@@ -1087,11 +1087,15 @@ public class EnrichmentMapParameters {
                     newMap.put(tokens[0], new GeneSet(tokens));
 
             //Genes
-            if(type == 2)
+            if(type == 2){
             // need to control the Type of the Objects inside the HashMap, otherwise
             // we can't store the List of Genes to new Nodes and Edges in a restored Session
             // e.g. in in the Signature-Post-Analysis
-                newMap.put(tokens[0], Integer.parseInt(tokens[1]));
+                if(tokens.length > 1)
+                    newMap.put(tokens[0], Integer.parseInt(tokens[1]));
+                else
+                    System.out.println(tokens.toString());
+            }
 
             //GseaResult
             if(type == 3)
@@ -1109,8 +1113,10 @@ public class EnrichmentMapParameters {
             // need to control the Type of the Objects inside the HashMap, otherwise
             // we can't store the List of Genes to new Nodes and Edges in a restored Session
             // e.g. in in the Signature-Post-Analysis
-                newMap.put(Integer.parseInt(tokens[0]),tokens[1]);
-
+                if(tokens.length > 1)
+                    newMap.put(Integer.parseInt(tokens[0]),tokens[1]);
+                else
+                    System.out.println(tokens.toString());
             }
 
             //Rankings

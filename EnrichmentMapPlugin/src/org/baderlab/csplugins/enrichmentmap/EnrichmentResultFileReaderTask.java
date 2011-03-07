@@ -486,15 +486,18 @@ public class EnrichmentResultFileReaderTask implements Task {
 
                     //If the gene is not in the list then get the next value to be used and put it in the list
                     else{
-                        //add the gene to the master list of genes
-                        int value = params.getNumberOfGenes();
-                        genes.put(gene, value);
-                        key2gene.put(value,gene);
-                        params.setNumberOfGenes(value+1);
+                        if(!tokens[j].equalsIgnoreCase("")){
+
+                            //add the gene to the master list of genes
+                            int value = params.getNumberOfGenes();
+                            genes.put(gene, value);
+                            key2gene.put(value,gene);
+                            params.setNumberOfGenes(value+1);
 
                             //add the gene to the genelist
                             gs.addGene(genes.get(gene));
                         }
+                    }
                 }
 
                 //finished parsing that geneset

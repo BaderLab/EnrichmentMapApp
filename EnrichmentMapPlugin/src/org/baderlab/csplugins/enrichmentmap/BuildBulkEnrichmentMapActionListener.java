@@ -6,11 +6,14 @@ import cytoscape.view.CyNetworkView;
 import cytoscape.util.export.PDFExporter;
 import cytoscape.task.ui.JTaskConfig;
 import cytoscape.task.util.TaskManager;
+import giny.view.NodeView;
 
 import javax.swing.*;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
+import java.util.Iterator;
 
 /**
  * Created by IntelliJ IDEA.
@@ -104,7 +107,13 @@ public class BuildBulkEnrichmentMapActionListener implements ActionListener{
                             BuildEnrichmentMapTask new_map = new BuildEnrichmentMapTask(params);
                             boolean success = TaskManager.executeTask(new_map, config);
 
-                            Cytoscape.getCurrentNetworkView().fitContent();
+                            //Cytoscape.getCurrentNetworkView().fitContent();
+
+                            //reduce height and width by 50%
+                            Cytoscape.getCurrentNetworkView().setZoom(0.5);
+                            Cytoscape.getCurrentNetworkView().updateView();
+
+                            //Cytoscape.getCurrentNetworkView().redrawGraph(true,true);
 
                             //export the network to a pdf file in the main directory by the name of
                             // of the rpt file
@@ -121,9 +130,11 @@ public class BuildBulkEnrichmentMapActionListener implements ActionListener{
                                 System.out.println(mainDirectory + File.separator + name + ".cys");
                                 session.writeSessionToDisk();
 
+                                //make sure to empty the Enrichment map parameters
+                                Cytoscape.destroyNetwork(name);
+
                                 //create a new session for the next network
                                 Cytoscape.createNewSession();
-
 
                             }
                             catch (FileNotFoundException e){

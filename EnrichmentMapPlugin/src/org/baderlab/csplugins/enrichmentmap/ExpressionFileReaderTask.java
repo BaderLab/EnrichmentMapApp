@@ -144,7 +144,7 @@ public class ExpressionFileReaderTask implements Task {
             String [] tokens = line.split("\t");
 
             //The first column of the file is the name of the geneset
-            String Name = tokens[0].toUpperCase();
+            String Name = tokens[0].toUpperCase().trim();
 
             if(i==0 && expressionMatrix == null){
                 //otherwise the first line is the header

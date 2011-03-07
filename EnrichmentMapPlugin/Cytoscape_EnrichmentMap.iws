@@ -15,16 +15,15 @@
     <option name="USER" value="" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" readonly="true" id="948d73f0-2815-4c3f-bddd-1d3af6ad7cb7" name="Default" comment="">
+    <list default="true" readonly="true" id="948d73f0-2815-4c3f-bddd-1d3af6ad7cb7" name="Default" comment="Implemented new feature --&gt; ability to create EM from just a gmt file.  To use this feature enter just a GMT file and nothing else.  It also creates a dummy expression file so it is easy to examine your genesets and their overlap using the expression viewer.&#10;ticket #146&#10;&#10;(Also, changed default node size and border size back to the original settings prior to changing it for Two distinct data set feature implementation as it doesn't look good when there is only one dataset.  Kept the default change only for networks with two distinct sets.)">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/plugin.props" afterPath="$PROJECT_DIR$/plugin.props" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Cytoscape_EnrichmentMap.iws" afterPath="$PROJECT_DIR$/Cytoscape_EnrichmentMap.iws" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/BuildBulkEnrichmentMapActionListener.java" afterPath="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/BuildBulkEnrichmentMapActionListener.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/EnrichmentMapInputPanel.java" afterPath="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/EnrichmentMapInputPanel.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/EnrichmentMapParameters.java" afterPath="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/EnrichmentMapParameters.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/EnrichmentMapVisualStyle.java" afterPath="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/EnrichmentMapVisualStyle.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/Enrichment_Map_Plugin.java" afterPath="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/Enrichment_Map_Plugin.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/HeatMapPanel.java" afterPath="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/HeatMapPanel.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/EnrichmentResultFileReaderTask.java" afterPath="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/EnrichmentResultFileReaderTask.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/ExpressionFileReaderTask.java" afterPath="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/ExpressionFileReaderTask.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/GMTFileReaderTask.java" afterPath="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/GMTFileReaderTask.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/InitializeGenesetsOfInterestTask.java" afterPath="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/InitializeGenesetsOfInterestTask.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/ParametersPanel.java" afterPath="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/ParametersPanel.java" />
     </list>
     <list id="b269f43a-7176-47d6-be51-f2115736e4de" name="Merge from trunk" comment="" />
     <ignored path="Cytoscape_EnrichmentMap.iws" />
@@ -165,7 +164,7 @@
         <option name="CONDITION" value="" />
         <option name="LOG_MESSAGE" value="" />
       </breakpoint>
-      <breakpoint url="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/InitializeGenesetsOfInterestTask.java" line="347" class="org.baderlab.csplugins.enrichmentmap.InitializeGenesetsOfInterestTask" package="org.baderlab.csplugins.enrichmentmap">
+      <breakpoint url="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/InitializeGenesetsOfInterestTask.java" line="329" class="org.baderlab.csplugins.enrichmentmap.InitializeGenesetsOfInterestTask" package="org.baderlab.csplugins.enrichmentmap">
         <option name="ENABLED" value="true" />
         <option name="LOG_ENABLED" value="false" />
         <option name="LOG_EXPRESSION_ENABLED" value="false" />
@@ -204,7 +203,7 @@
         <option name="CONDITION" value="" />
         <option name="LOG_MESSAGE" value="" />
       </breakpoint>
-      <breakpoint url="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/EnrichmentMapParameters.java" line="842" class="org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters" package="org.baderlab.csplugins.enrichmentmap">
+      <breakpoint url="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/BuildGMTEnrichmentMapTask.java" line="70" class="org.baderlab.csplugins.enrichmentmap.BuildGMTEnrichmentMapTask" package="org.baderlab.csplugins.enrichmentmap">
         <option name="ENABLED" value="true" />
         <option name="LOG_ENABLED" value="false" />
         <option name="LOG_EXPRESSION_ENABLED" value="false" />
@@ -217,7 +216,7 @@
         <option name="CONDITION" value="" />
         <option name="LOG_MESSAGE" value="" />
       </breakpoint>
-      <breakpoint url="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/Enrichment_Map_Plugin.java" line="411" class="org.baderlab.csplugins.enrichmentmap.Enrichment_Map_Plugin" package="org.baderlab.csplugins.enrichmentmap">
+      <breakpoint url="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/BuildGMTEnrichmentMapTask.java" line="107" class="org.baderlab.csplugins.enrichmentmap.BuildGMTEnrichmentMapTask" package="org.baderlab.csplugins.enrichmentmap">
         <option name="ENABLED" value="true" />
         <option name="LOG_ENABLED" value="false" />
         <option name="LOG_EXPRESSION_ENABLED" value="false" />
@@ -230,7 +229,7 @@
         <option name="CONDITION" value="" />
         <option name="LOG_MESSAGE" value="" />
       </breakpoint>
-      <breakpoint url="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/EnrichmentMapActionListener.java" line="139" class="org.baderlab.csplugins.enrichmentmap.EnrichmentMapActionListener" package="org.baderlab.csplugins.enrichmentmap">
+      <breakpoint url="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/CellHighlightRenderer.java" line="22" class="org.baderlab.csplugins.enrichmentmap.CellHighlightRenderer" package="org.baderlab.csplugins.enrichmentmap">
         <option name="ENABLED" value="true" />
         <option name="LOG_ENABLED" value="false" />
         <option name="LOG_EXPRESSION_ENABLED" value="false" />
@@ -243,7 +242,111 @@
         <option name="CONDITION" value="" />
         <option name="LOG_MESSAGE" value="" />
       </breakpoint>
-      <breakpoint url="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/HeatMapPanel.java" line="1048" class="org.baderlab.csplugins.enrichmentmap.HeatMapPanel" package="org.baderlab.csplugins.enrichmentmap">
+      <breakpoint url="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/BuildGMTEnrichmentMapTask.java" line="130" class="org.baderlab.csplugins.enrichmentmap.BuildGMTEnrichmentMapTask" package="org.baderlab.csplugins.enrichmentmap">
+        <option name="ENABLED" value="true" />
+        <option name="LOG_ENABLED" value="false" />
+        <option name="LOG_EXPRESSION_ENABLED" value="false" />
+        <option name="SUSPEND_POLICY" value="SuspendAll" />
+        <option name="COUNT_FILTER_ENABLED" value="false" />
+        <option name="COUNT_FILTER" value="0" />
+        <option name="CONDITION_ENABLED" value="false" />
+        <option name="CLASS_FILTERS_ENABLED" value="false" />
+        <option name="INSTANCE_FILTERS_ENABLED" value="false" />
+        <option name="CONDITION" value="" />
+        <option name="LOG_MESSAGE" value="" />
+      </breakpoint>
+      <breakpoint url="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/Enrichment_Map_Plugin.java" line="414" class="org.baderlab.csplugins.enrichmentmap.Enrichment_Map_Plugin" package="org.baderlab.csplugins.enrichmentmap">
+        <option name="ENABLED" value="true" />
+        <option name="LOG_ENABLED" value="false" />
+        <option name="LOG_EXPRESSION_ENABLED" value="false" />
+        <option name="SUSPEND_POLICY" value="SuspendAll" />
+        <option name="COUNT_FILTER_ENABLED" value="false" />
+        <option name="COUNT_FILTER" value="0" />
+        <option name="CONDITION_ENABLED" value="false" />
+        <option name="CLASS_FILTERS_ENABLED" value="false" />
+        <option name="INSTANCE_FILTERS_ENABLED" value="false" />
+        <option name="CONDITION" value="" />
+        <option name="LOG_MESSAGE" value="" />
+      </breakpoint>
+      <breakpoint url="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/Enrichment_Map_Plugin.java" line="420" class="org.baderlab.csplugins.enrichmentmap.Enrichment_Map_Plugin" package="org.baderlab.csplugins.enrichmentmap">
+        <option name="ENABLED" value="true" />
+        <option name="LOG_ENABLED" value="false" />
+        <option name="LOG_EXPRESSION_ENABLED" value="false" />
+        <option name="SUSPEND_POLICY" value="SuspendAll" />
+        <option name="COUNT_FILTER_ENABLED" value="false" />
+        <option name="COUNT_FILTER" value="0" />
+        <option name="CONDITION_ENABLED" value="false" />
+        <option name="CLASS_FILTERS_ENABLED" value="false" />
+        <option name="INSTANCE_FILTERS_ENABLED" value="false" />
+        <option name="CONDITION" value="" />
+        <option name="LOG_MESSAGE" value="" />
+      </breakpoint>
+      <breakpoint url="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/EnrichmentMapParameters.java" line="1118" class="org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters" package="org.baderlab.csplugins.enrichmentmap">
+        <option name="ENABLED" value="true" />
+        <option name="LOG_ENABLED" value="false" />
+        <option name="LOG_EXPRESSION_ENABLED" value="false" />
+        <option name="SUSPEND_POLICY" value="SuspendAll" />
+        <option name="COUNT_FILTER_ENABLED" value="false" />
+        <option name="COUNT_FILTER" value="0" />
+        <option name="CONDITION_ENABLED" value="false" />
+        <option name="CLASS_FILTERS_ENABLED" value="false" />
+        <option name="INSTANCE_FILTERS_ENABLED" value="false" />
+        <option name="CONDITION" value="" />
+        <option name="LOG_MESSAGE" value="" />
+      </breakpoint>
+      <breakpoint url="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/Enrichment_Map_Plugin.java" line="505" class="org.baderlab.csplugins.enrichmentmap.Enrichment_Map_Plugin" package="org.baderlab.csplugins.enrichmentmap">
+        <option name="ENABLED" value="true" />
+        <option name="LOG_ENABLED" value="false" />
+        <option name="LOG_EXPRESSION_ENABLED" value="false" />
+        <option name="SUSPEND_POLICY" value="SuspendAll" />
+        <option name="COUNT_FILTER_ENABLED" value="false" />
+        <option name="COUNT_FILTER" value="0" />
+        <option name="CONDITION_ENABLED" value="false" />
+        <option name="CLASS_FILTERS_ENABLED" value="false" />
+        <option name="INSTANCE_FILTERS_ENABLED" value="false" />
+        <option name="CONDITION" value="" />
+        <option name="LOG_MESSAGE" value="" />
+      </breakpoint>
+      <breakpoint url="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/BuildEnrichmentMapTask.java" line="161" class="org.baderlab.csplugins.enrichmentmap.BuildEnrichmentMapTask" package="org.baderlab.csplugins.enrichmentmap">
+        <option name="ENABLED" value="true" />
+        <option name="LOG_ENABLED" value="false" />
+        <option name="LOG_EXPRESSION_ENABLED" value="false" />
+        <option name="SUSPEND_POLICY" value="SuspendAll" />
+        <option name="COUNT_FILTER_ENABLED" value="false" />
+        <option name="COUNT_FILTER" value="0" />
+        <option name="CONDITION_ENABLED" value="false" />
+        <option name="CLASS_FILTERS_ENABLED" value="false" />
+        <option name="INSTANCE_FILTERS_ENABLED" value="false" />
+        <option name="CONDITION" value="" />
+        <option name="LOG_MESSAGE" value="" />
+      </breakpoint>
+      <breakpoint url="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/InitializeGenesetsOfInterestTask.java" line="208" class="org.baderlab.csplugins.enrichmentmap.InitializeGenesetsOfInterestTask" package="org.baderlab.csplugins.enrichmentmap">
+        <option name="ENABLED" value="true" />
+        <option name="LOG_ENABLED" value="false" />
+        <option name="LOG_EXPRESSION_ENABLED" value="false" />
+        <option name="SUSPEND_POLICY" value="SuspendAll" />
+        <option name="COUNT_FILTER_ENABLED" value="false" />
+        <option name="COUNT_FILTER" value="0" />
+        <option name="CONDITION_ENABLED" value="false" />
+        <option name="CLASS_FILTERS_ENABLED" value="false" />
+        <option name="INSTANCE_FILTERS_ENABLED" value="false" />
+        <option name="CONDITION" value="" />
+        <option name="LOG_MESSAGE" value="" />
+      </breakpoint>
+      <breakpoint url="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/InitializeGenesetsOfInterestTask.java" line="302" class="org.baderlab.csplugins.enrichmentmap.InitializeGenesetsOfInterestTask" package="org.baderlab.csplugins.enrichmentmap">
+        <option name="ENABLED" value="true" />
+        <option name="LOG_ENABLED" value="false" />
+        <option name="LOG_EXPRESSION_ENABLED" value="false" />
+        <option name="SUSPEND_POLICY" value="SuspendAll" />
+        <option name="COUNT_FILTER_ENABLED" value="false" />
+        <option name="COUNT_FILTER" value="0" />
+        <option name="CONDITION_ENABLED" value="false" />
+        <option name="CLASS_FILTERS_ENABLED" value="false" />
+        <option name="INSTANCE_FILTERS_ENABLED" value="false" />
+        <option name="CONDITION" value="" />
+        <option name="LOG_MESSAGE" value="" />
+      </breakpoint>
+      <breakpoint url="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/InitializeGenesetsOfInterestTask.java" line="283" class="org.baderlab.csplugins.enrichmentmap.InitializeGenesetsOfInterestTask" package="org.baderlab.csplugins.enrichmentmap">
         <option name="ENABLED" value="true" />
         <option name="LOG_ENABLED" value="false" />
         <option name="LOG_EXPRESSION_ENABLED" value="false" />
@@ -310,10 +413,66 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
+      <file leaf-file-name="ExpressionFileReaderTask.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/ExpressionFileReaderTask.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="146" column="56" selection-start="5667" selection-end="5667" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="BulkEMCreationAction.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/BulkEMCreationAction.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="17" column="13" selection-start="420" selection-end="420" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="BuildBulkEnrichmentMapActionListener.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/BuildBulkEnrichmentMapActionListener.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="113" column="75" selection-start="4202" selection-end="4202" vertical-scroll-proportion="0.0">
+              <folding>
+                <element signature="imports" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="EnrichmentMapManager.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/EnrichmentMapManager.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="68" column="13" selection-start="2709" selection-end="2709" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
       <file leaf-file-name="EnrichmentMapParameters.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/EnrichmentMapParameters.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="1103" column="0" selection-start="49438" selection-end="49438" vertical-scroll-proportion="0.0">
+            <state line="1191" column="45" selection-start="52608" selection-end="52608" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="BuildGMTEnrichmentMapTask.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/BuildGMTEnrichmentMapTask.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="66" column="22" selection-start="2489" selection-end="2489" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="BuildEnrichmentMapTask.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/BuildEnrichmentMapTask.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="161" column="0" selection-start="6312" selection-end="6312" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -322,79 +481,25 @@
       <file leaf-file-name="InitializeGenesetsOfInterestTask.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/InitializeGenesetsOfInterestTask.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="282" column="58" selection-start="14728" selection-end="14728" vertical-scroll-proportion="0.0">
+            <state line="111" column="95" selection-start="4580" selection-end="4580" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="EnrichmentMapVisualStyle.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/EnrichmentMapVisualStyle.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="232" column="90" selection-start="11212" selection-end="11212" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="EnrichmentMapInputPanel.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/EnrichmentMapInputPanel.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="988" column="108" selection-start="43368" selection-end="43368" vertical-scroll-proportion="-8.36">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Enrichment_Map_Plugin.java" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/Enrichment_Map_Plugin.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="577" column="12" selection-start="29193" selection-end="29193" vertical-scroll-proportion="0.6241135">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="VisualizeEnrichmentMapTask.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/VisualizeEnrichmentMapTask.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="131" column="0" selection-start="4577" selection-end="4577" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="HeatMapPanel.java" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="HeatMapPanel.java" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/HeatMapPanel.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="1060" column="89" selection-start="44337" selection-end="44337" vertical-scroll-proportion="0.0">
+            <state line="1461" column="0" selection-start="62993" selection-end="62993" vertical-scroll-proportion="0.664488">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="EnrichmentMapActionListener.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/EnrichmentMapActionListener.java">
+      <file leaf-file-name="Enrichment_Map_Plugin.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/Enrichment_Map_Plugin.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="139" column="0" selection-start="5791" selection-end="5791" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="HeatMapActionListener.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/HeatMapActionListener.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="232" column="25" selection-start="9730" selection-end="9730" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="ComputeSimilarityTask.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/ComputeSimilarityTask.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="249" column="0" selection-start="11893" selection-end="11893" vertical-scroll-proportion="0.0">
+            <state line="505" column="0" selection-start="25140" selection-end="25140" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -419,16 +524,21 @@
   <component name="IdeDocumentHistory">
     <option name="changedFiles">
       <list>
-        <option value="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/BulkEMCreationPanel.java" />
-        <option value="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/ParametersPanel.java" />
-        <option value="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/BuildBulkEnrichmentMapActionListener.java" />
-        <option value="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/EnrichmentMapParameters.java" />
-        <option value="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/EnrichmentMapVisualStyle.java" />
-        <option value="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/EnrichmentMapInputPanel.java" />
-        <option value="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/InitializeGenesetsOfInterestTask.java" />
-        <option value="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/ComputeSimilarityTask.java" />
         <option value="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/HeatMapPanel.java" />
-        <option value="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/Enrichment_Map_Plugin.java" />
+        <option value="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/ParametersPanel.java" />
+        <option value="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/BulkEMCreationPanel.java" />
+        <option value="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/EnrichmentMapInputPanel.java" />
+        <option value="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/BuildEnrichmentMapActionListener.java" />
+        <option value="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/EnrichmentMapVisualStyle.java" />
+        <option value="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/ComputeSimilarityTask.java" />
+        <option value="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/BuildGMTEnrichmentMapTask.java" />
+        <option value="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/CellHighlightRenderer.java" />
+        <option value="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/GMTFileReaderTask.java" />
+        <option value="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/EnrichmentResultFileReaderTask.java" />
+        <option value="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/EnrichmentMapParameters.java" />
+        <option value="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/ExpressionFileReaderTask.java" />
+        <option value="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/BuildBulkEnrichmentMapActionListener.java" />
+        <option value="$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/InitializeGenesetsOfInterestTask.java" />
       </list>
     </option>
   </component>
@@ -618,6 +728,8 @@
       <sortByType />
     </navigator>
     <panes>
+      <pane id="Scope" />
+      <pane id="PackagesPane" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -692,14 +804,12 @@
           </PATH>
         </subPane>
       </pane>
-      <pane id="Scope" />
-      <pane id="PackagesPane" />
       <pane id="Favorites" />
     </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="GoToFile.includeJavaFiles" value="false" />
-    <property name="project.structure.last.edited" value="Libraries" />
+    <property name="project.structure.last.edited" value="Project" />
     <property name="project.structure.proportion" value="0.15" />
     <property name="options.splitter.main.proportions" value="0.3" />
     <property name="RunManagerConfig.showSettingsBeforeRunnig" value="false" />
@@ -713,9 +823,9 @@
     <property name="GoToClass.toSaveIncludeLibraries" value="false" />
     <property name="MemberChooser.showClasses" value="true" />
     <property name="GoToClass.includeLibraries" value="false" />
-    <property name="options.splitter.details.proportions" value="0.2" />
-    <property name="options.searchVisible" value="true" />
     <property name="dynamic.classpath" value="false" />
+    <property name="options.searchVisible" value="true" />
+    <property name="options.splitter.details.proportions" value="0.2" />
   </component>
   <component name="RunManager" selected="Application.EnrichmentMapPlugin">
     <configuration default="true" type="Remote" factoryName="Remote">
@@ -727,24 +837,6 @@
       <method>
         <option name="AntTarget" enabled="false" />
         <option name="BuildArtifacts" enabled="false" />
-        <option name="Maven.BeforeRunTask" enabled="false" />
-      </method>
-    </configuration>
-    <configuration default="true" type="Applet" factoryName="Applet">
-      <module name="" />
-      <option name="MAIN_CLASS_NAME" />
-      <option name="HTML_FILE_NAME" />
-      <option name="HTML_USED" value="false" />
-      <option name="WIDTH" value="400" />
-      <option name="HEIGHT" value="300" />
-      <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
-      <option name="VM_PARAMETERS" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" />
-      <method>
-        <option name="AntTarget" enabled="false" />
-        <option name="BuildArtifacts" enabled="false" />
-        <option name="Make" enabled="true" />
         <option name="Maven.BeforeRunTask" enabled="false" />
       </method>
     </configuration>
@@ -773,6 +865,24 @@
       <envs />
       <properties />
       <listeners />
+      <method>
+        <option name="AntTarget" enabled="false" />
+        <option name="BuildArtifacts" enabled="false" />
+        <option name="Make" enabled="true" />
+        <option name="Maven.BeforeRunTask" enabled="false" />
+      </method>
+    </configuration>
+    <configuration default="true" type="Applet" factoryName="Applet">
+      <module name="" />
+      <option name="MAIN_CLASS_NAME" />
+      <option name="HTML_FILE_NAME" />
+      <option name="HTML_USED" value="false" />
+      <option name="WIDTH" value="400" />
+      <option name="HEIGHT" value="300" />
+      <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
+      <option name="VM_PARAMETERS" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
       <method>
         <option name="AntTarget" enabled="false" />
         <option name="BuildArtifacts" enabled="false" />
@@ -826,8 +936,8 @@
     </configuration>
     <configuration default="false" name="EnrichmentMapPlugin" type="Application" factoryName="Application">
       <option name="MAIN_CLASS_NAME" value="cytoscape.CyMain" />
-      <option name="VM_PARAMETERS" value="" />
-      <option name="PROGRAM_PARAMETERS" value="-p &quot;C:\\Program Files\\Cytoscape_v2.7.0\plugins&quot;" />
+      <option name="VM_PARAMETERS" value="-Xmx1515M" />
+      <option name="PROGRAM_PARAMETERS" value="-p &quot;/Applications/cytoscape_v2.8.0/plugins&quot;" />
       <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$/classes" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" value="/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/bin" />
@@ -925,7 +1035,7 @@
     <option name="IGNORE_SPACES_IN_ANNOTATE" value="true" />
     <option name="SHOW_MERGE_SOURCES_IN_ANNOTATE" value="true" />
     <option name="FORCE_UPDATE" value="false" />
-    <configuration useDefault="true">C:\Documents and Settings\User\Application Data\Subversion</configuration>
+    <configuration useDefault="true">$USER_HOME$/.subversion_IDEA</configuration>
     <myIsUseDefaultProxy>false</myIsUseDefaultProxy>
     <supportedVersion>125</supportedVersion>
   </component>
@@ -933,20 +1043,20 @@
     <option name="myMappingRoots">
       <list>
         <SvnCopyRootSimple>
-          <option name="myVcsRoot" value="C:\Documents and Settings\User\Desktop\Lab work\EM\trunk\EnrichmentMapPlugin\src" />
-          <option name="myCopyRoot" value="C:\Documents and Settings\User\Desktop\Lab work\EM\trunk\EnrichmentMapPlugin\src" />
+          <option name="myVcsRoot" value="$PROJECT_DIR$/src" />
+          <option name="myCopyRoot" value="$PROJECT_DIR$/src" />
         </SvnCopyRootSimple>
         <SvnCopyRootSimple>
-          <option name="myVcsRoot" value="C:\Documents and Settings\User\Desktop\Lab work\EM\trunk\EnrichmentMapPlugin" />
-          <option name="myCopyRoot" value="C:\Documents and Settings\User\Desktop\Lab work\EM\trunk\EnrichmentMapPlugin" />
+          <option name="myVcsRoot" value="$PROJECT_DIR$" />
+          <option name="myCopyRoot" value="$PROJECT_DIR$" />
         </SvnCopyRootSimple>
       </list>
     </option>
     <option name="myMoreRealMappingRoots">
       <list>
         <SvnCopyRootSimple>
-          <option name="myVcsRoot" value="C:\Documents and Settings\User\Desktop\Lab work\EM\trunk\EnrichmentMapPlugin" />
-          <option name="myCopyRoot" value="C:\Documents and Settings\User\Desktop\Lab work\EM\trunk\EnrichmentMapPlugin" />
+          <option name="myVcsRoot" value="$PROJECT_DIR$" />
+          <option name="myCopyRoot" value="$PROJECT_DIR$" />
         </SvnCopyRootSimple>
       </list>
     </option>
@@ -978,25 +1088,31 @@
       <flatten-packages value="false" />
       <is-autoscroll-to-source value="true" />
     </todo-panel>
+    <todo-panel id="default-changelist">
+      <are-packages-shown value="false" />
+      <are-modules-shown value="false" />
+      <flatten-packages value="false" />
+      <is-autoscroll-to-source value="false" />
+    </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="-4" y="-4" width="1032" height="742" extended-state="6" />
-    <editor active="false" />
+    <frame x="0" y="22" width="1920" height="1087" extended-state="0" />
+    <editor active="true" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32988626" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.2951096" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.2957601" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4856661" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4550155" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.36593592" sideWeight="0.5" order="12" side_tool="false" content_ui="tabs" />
-      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.030944625" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.36711478" sideWeight="0.5" order="12" side_tool="false" content_ui="tabs" />
+      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.029989658" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.35619244" sideWeight="0.6340641" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.212186" sideWeight="0.53877974" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Dependency Viewer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.45868465" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.46122026" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="File View" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.24719101" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
@@ -1032,7 +1148,7 @@
     <option name="SHOW_ONLY_CHANGED_IN_SELECTION_DIFF" value="true" />
     <option name="CHECK_COMMIT_MESSAGE_SPELLING" value="true" />
     <option name="FORCE_NON_EMPTY_COMMENT" value="false" />
-    <option name="LAST_COMMIT_MESSAGE" value="Worked through all issues that came up because of the merge of the three branches.  Conflicts with regards to the two different genesets being tracked because of the two different species allowed, network names being defined by the file name for bulk EM creation, missing files one re-load for two species analyses, re-did the two species geneset overlaps to avoid storing the origianl genesets in entirety and instead if one geneset is significant in one dataset make sure to include the other enrichment result from the second dataset even if the result is not significant. &#10;&#10;Incorporated new similarity metric - combined version of overlap and jaccard using a constant to control the amount of each used. tickey #162&#10; &#10; Still need to tweak constant definition in input panel." />
+    <option name="LAST_COMMIT_MESSAGE" value="Implemented new feature --&gt; ability to create EM from just a gmt file.  To use this feature enter just a GMT file and nothing else.  It also creates a dummy expression file so it is easy to examine your genesets and their overlap using the expression viewer.&#10;ticket #146&#10;&#10;(Also, changed default node size and border size back to the original settings prior to changing it for Two distinct data set feature implementation as it doesn't look good when there is only one dataset.  Kept the default change only for networks with two distinct sets.)" />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="true" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_FILES_UP_TO_DATE_BEFORE_COMMIT" value="false" />
@@ -1047,7 +1163,7 @@
     <option name="FILE_HISTORY_SPLITTER_PROPORTION" value="0.6" />
     <MESSAGE value="Forgot to comment previous [562] revision.&#10;&#10;Merged the trunk into the Two species branch&#10;Fixed bug relating to heat map not showing up for two species when set to hierarchical clustering." />
     <MESSAGE value="limited pearson/cosine/euclidian distance warning message to only appear once." />
-    <MESSAGE value="Worked through all issues that came up because of the merge of the three branches.  Conflicts with regards to the two different genesets being tracked because of the two different species allowed, network names being defined by the file name for bulk EM creation, missing files one re-load for two species analyses, re-did the two species geneset overlaps to avoid storing the origianl genesets in entirety and instead if one geneset is significant in one dataset make sure to include the other enrichment result from the second dataset even if the result is not significant. &#10;&#10;Incorporated new similarity metric - combined version of overlap and jaccard using a constant to control the amount of each used. tickey #162&#10; &#10; Still need to tweak constant definition in input panel." />
+    <MESSAGE value="Implemented new feature --&gt; ability to create EM from just a gmt file.  To use this feature enter just a GMT file and nothing else.  It also creates a dummy expression file so it is easy to examine your genesets and their overlap using the expression viewer.&#10;ticket #146&#10;&#10;(Also, changed default node size and border size back to the original settings prior to changing it for Two distinct data set feature implementation as it doesn't look good when there is only one dataset.  Kept the default change only for networks with two distinct sets.)" />
   </component>
   <component name="VssConfiguration">
     <option name="CLIENT_PATH" value="" />
@@ -1091,9 +1207,51 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/ParametersPanel.java">
+    <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/ComputeSimilarityTask.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="311" column="145" selection-start="13814" selection-end="13814" vertical-scroll-proportion="0.0" />
+        <state line="61" column="7" selection-start="2587" selection-end="2587" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/HeatMapParameters.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="153" column="0" selection-start="5564" selection-end="5564" vertical-scroll-proportion="0.0" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/GMTFileReaderTask.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="126" column="28" selection-start="4200" selection-end="4200" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/EnrichmentResultFileReaderTask.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="503" column="57" selection-start="21204" selection-end="21204" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/RanksFileReaderTask.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="250" column="50" selection-start="9824" selection-end="9824" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/Enrichment_Map_Plugin.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="505" column="0" selection-start="25140" selection-end="25140" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/ExpressionFileReaderTask.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="146" column="56" selection-start="5667" selection-end="5667" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/BulkEMCreationAction.java">
@@ -1101,92 +1259,60 @@
         <state line="17" column="13" selection-start="420" selection-end="420" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/EnrichmentMapManager.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="68" column="13" selection-start="2709" selection-end="2709" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/BuildBulkEnrichmentMapActionListener.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="53" column="62" selection-start="1476" selection-end="1476" vertical-scroll-proportion="0.0" />
+        <state line="113" column="75" selection-start="4202" selection-end="4202" vertical-scroll-proportion="0.0">
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/RowNumberTable.java">
+    <entry file="jar:///Applications/Cytoscape_v2.7.0/lib/cytoscape-task.jar!/cytoscape/task/util/TaskWrapper.class">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="58" column="0" selection-start="2055" selection-end="2055" vertical-scroll-proportion="0.0" />
+        <state line="11" column="16" selection-start="393" selection-end="393" vertical-scroll-proportion="0.24189815">
+          <folding />
+        </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/BuildEnrichmentMapActionListener.java">
+    <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/BuildGMTEnrichmentMapTask.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="89" column="0" selection-start="3305" selection-end="3305" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/BuildEnrichmentMapTask.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="241" column="31" selection-start="10320" selection-end="10320" vertical-scroll-proportion="0.0" />
+        <state line="66" column="22" selection-start="2489" selection-end="2489" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/EnrichmentMapParameters.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="1103" column="0" selection-start="49438" selection-end="49438" vertical-scroll-proportion="0.0">
+        <state line="1191" column="45" selection-start="52608" selection-end="52608" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/EnrichmentMapVisualStyle.java">
+    <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/BuildEnrichmentMapTask.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="232" column="90" selection-start="11212" selection-end="11212" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/EnrichmentMapInputPanel.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="988" column="108" selection-start="43368" selection-end="43368" vertical-scroll-proportion="-8.36">
+        <state line="161" column="0" selection-start="6312" selection-end="6312" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/InitializeGenesetsOfInterestTask.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="282" column="58" selection-start="14728" selection-end="14728" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/ComputeSimilarityTask.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="249" column="0" selection-start="11893" selection-end="11893" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/HeatMapActionListener.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="232" column="25" selection-start="9730" selection-end="9730" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/EnrichmentMapActionListener.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="139" column="0" selection-start="5791" selection-end="5791" vertical-scroll-proportion="0.0">
+        <state line="111" column="95" selection-start="4580" selection-end="4580" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/HeatMapPanel.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="1060" column="89" selection-start="44337" selection-end="44337" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/VisualizeEnrichmentMapTask.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="131" column="0" selection-start="4577" selection-end="4577" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/baderlab/csplugins/enrichmentmap/Enrichment_Map_Plugin.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="577" column="12" selection-start="29193" selection-end="29193" vertical-scroll-proportion="0.6241135">
+        <state line="1461" column="0" selection-start="62993" selection-end="62993" vertical-scroll-proportion="0.664488">
           <folding />
         </state>
       </provider>
@@ -1204,11 +1330,6 @@
               </list>
             </option>
           </splitter-proportions>
-        </settings>
-      </state>
-      <state key="Copyright.UI">
-        <settings>
-          <splitter-proportions />
         </settings>
       </state>
       <state key="FacetStructureConfigurable.UI">
@@ -1269,11 +1390,6 @@
               </list>
             </option>
           </splitter-proportions>
-        </settings>
-      </state>
-      <state key="ScopeChooserConfigurable.UI">
-        <settings>
-          <splitter-proportions />
         </settings>
       </state>
     </states>
