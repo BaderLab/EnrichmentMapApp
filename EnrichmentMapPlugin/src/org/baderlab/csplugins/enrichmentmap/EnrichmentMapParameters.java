@@ -761,9 +761,13 @@ public class EnrichmentMapParameters {
             }
 
             //check to see if there are two datasets if the two gct files are the same
-            if((this.twoDatasets) && (this.expressionFileName1.equalsIgnoreCase(this.expressionFileName2))){
+            if((this.twoDatasets) && (this.expressionFileName1 != null) && (this.expressionFileName1.equalsIgnoreCase(this.expressionFileName2))){
                 this.Data2 = false;
                 this.expressionFileName2 = "";
+            }
+            //if there are no expression files and this is a david analysis there is no way of telling if they are from the same gmt file so use different one
+            else if((this.expressionFileName1 != null) && (this.expressionFileName2 != null) && this.method.equalsIgnoreCase(EnrichmentMapParameters.method_DAVID)){
+                this.setTwoDistinctExpressionSets(true);
             }
         }
 
@@ -1368,6 +1372,7 @@ public class EnrichmentMapParameters {
 
     public void noFilter(){
         this.filteredGenesets = genesets;
+        this.filteredGenesets_set2 = genesets_set2;
     }
 
     /**
