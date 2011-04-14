@@ -175,6 +175,16 @@ public class ComputeSimilarityTask implements Task {
                          GeneSet geneset1 = (GeneSet)genesetsOfInterest.get(geneset1_name);
                          GeneSet geneset2 = (GeneSet)genesetsOfInterest.get(geneset2_name);
 
+                         //if the geneset1 is null, check to see if it is post analysis node
+                         if(geneset1 == null){
+                             geneset1 = (GeneSet)genesetsInnerLoop.get(geneset1_name);
+                         }
+                         //if the geneset1 is null, check to see if it is post analysis node
+                         if(geneset2 == null){
+                             geneset2 = (GeneSet)genesetsInnerLoop.get(geneset2_name);
+                         }
+
+
                          HashSet<Integer> genes1 = geneset1.getGenes();
                          HashSet<Integer> genes2 = geneset2.getGenes();
 
