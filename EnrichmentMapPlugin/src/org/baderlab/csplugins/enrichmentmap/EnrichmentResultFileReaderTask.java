@@ -486,7 +486,7 @@ public class EnrichmentResultFileReaderTask implements Task {
 
                     //If the gene is not in the list then get the next value to be used and put it in the list
                     else{
-                        if(!tokens[j].equalsIgnoreCase("")){
+                        if(!gene.equalsIgnoreCase("")){
 
                             //add the gene to the master list of genes
                             int value = params.getNumberOfGenes();
