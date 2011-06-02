@@ -244,7 +244,7 @@ public class EnrichmentMapParameters {
     //with more methods to support can't just have generic or gsea
     final public static String method_GSEA = "GSEA";
     final public static String method_generic = "generic";
-    final public static String method_DAVID = "DAVID";
+    final public static String method_DAVID = "DAVID/BiNGO";
 
     //with more similarity metric can't use a boolean to reprensent them.
     final public static String SM_JACCARD = "JACCARD";
@@ -747,7 +747,7 @@ public class EnrichmentMapParameters {
 
             //GMT file is not required for David analysis
             if(!this.method.equalsIgnoreCase(EnrichmentMapParameters.method_DAVID))
-                if(this.GMTFileName.equalsIgnoreCase("") || !checkFile(this.GMTFileName))
+                if(this.GMTFileName == null || this.GMTFileName.equalsIgnoreCase("") || !checkFile(this.GMTFileName))
                     errors = errors + "GMT file can not be found \n";
 
             // /GSEA inputs
@@ -1308,6 +1308,33 @@ public class EnrichmentMapParameters {
 
     public void setQvalue(double qvalue) {
         this.qvalue = qvalue;
+
+    }
+
+    public HashMap<String,Integer> getGenesetsGenes(HashMap<String, GeneSet> current_genesets){
+
+        HashMap<String, Integer> genesetGenes = new HashMap<String, Integer>();
+
+        for(Iterator j = current_genesets.keySet().iterator(); j.hasNext(); ){
+
+            String geneset_name = j.next().toString();
+            GeneSet current_set =  current_genesets.get(geneset_name);
+
+            //compare the HashSet of dataset genes to the HashSet of the current Geneset
+            //only keep the genes from the geneset that are in the dataset genes
+            HashSet<Integer> geneset_genes = current_set.getGenes();
+
+            for(Iterator k = geneset_genes.iterator();k.hasNext(); ){
+                Integer current_genekey = (Integer)k.next();
+                //get the current geneName
+                if(hashkey2gene.containsKey(current_genekey)){
+                    String name = hashkey2gene.get(current_genekey);
+                    genesetGenes.put(name, current_genekey);
+                }
+
+            }
+        }
+        return genesetGenes;
 
     }
 

@@ -296,7 +296,7 @@ public class RanksFileReaderTask implements Task {
 
         //see if there more genes than there are ranks
         if(!(intersection.size() == current_genes.size())){
-            JOptionPane.showMessageDialog(Cytoscape.getDesktop(),"Ranks for some of the genes/proteins listed in the expression file are missing. \n These genes/proteins will be excluded from ranked listing in the heat map.");
+            //JOptionPane.showMessageDialog(Cytoscape.getDesktop(),"Ranks for some of the genes/proteins listed in the expression file are missing. \n These genes/proteins will be excluded from ranked listing in the heat map.");
 
         }
         if(dataset == 1){

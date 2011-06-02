@@ -47,6 +47,7 @@ import cytoscape.task.Task;
 import cytoscape.task.TaskMonitor;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.HashSet;
 
@@ -121,7 +122,7 @@ public class BuildEnrichmentMapTask implements Task {
 
 
         //Load the Data (expression or rank file) if the user has supplied the data file.
-        if(params.isData()){
+        if(params.isData() && params.getExpressionFileName1() != null && !params.getExpressionFileName1().equalsIgnoreCase("")){
             //Load in the expression or rank file
             try{
                    LoadExpressionFiles();
@@ -138,6 +139,12 @@ public class BuildEnrichmentMapTask implements Task {
         }
         else{
             params.noFilter();
+            createDummyExpressionFile(1);
+            if(params.isTwoDatasets()){
+                createDummyExpressionFile(2);
+                //check to see if the datasets are distinct
+                params.setTwoDistinctExpressionSets(isDistinctDatasets());
+            }
         }
 
 
@@ -213,7 +220,8 @@ public class BuildEnrichmentMapTask implements Task {
         }
         //if there are two expression sets check to see that they have the same gene ids.
         if(params.isData2()){
-            Set<Integer> expression_1_genes = params.getExpression().getGeneIds();
+            params.setTwoDistinctExpressionSets(isDistinctDatasets());
+         /*   Set<Integer> expression_1_genes = params.getExpression().getGeneIds();
 
             Set<Integer> expression_2_genes = params.getExpression2().getGeneIds();
             if((expression_2_genes != null) && (expression_2_genes.size()>0)){
@@ -242,7 +250,7 @@ public class BuildEnrichmentMapTask implements Task {
                         params.getGenesets().putAll(params.getGenesets_set2());
                 }
                 //System.out.println("the expression files don't have the exact same number of entities.");
-            }
+            } */
         }
 
         //trim the genesets to only contain the genes that are in the data file.
@@ -292,6 +300,111 @@ public class BuildEnrichmentMapTask implements Task {
             }
     }
 
+    //Create a dummy expression file so that when no expression files are loaded you can still
+    //use the intersect and union viewers.
+    private void createDummyExpressionFile(int dataset){
+        //in order to see the gene in the expression viewer we also need a dummy expression file
+        //get all the genes
+        HashMap<String, Integer> genes= params.getGenes();
+        HashSet datasetGenes;
+        if(dataset ==1 ){
+            genes = params.getGenesetsGenes(params.getGenesets());
+            datasetGenes= params.getDatasetGenes();
+        }else{
+            genes = params.getGenesetsGenes(params.getGenesets_set2());
+            datasetGenes= params.getDatasetGenes_set2();
+        }
+
+        String[] titletokens = new String[3];
+        titletokens[0] = "Name";
+        titletokens[1] = "Description";
+        titletokens[2] = "Dummy Expression";
+
+        GeneExpressionMatrix expressionMatrix = new GeneExpressionMatrix(titletokens);
+        HashMap<Integer,GeneExpression> expression = new HashMap<Integer, GeneExpression>();
+        expressionMatrix.setExpressionMatrix(expression);
+
+        String[] tokens = new String[3];
+        tokens[0] = "tmp";
+        tokens[1] = "tmp";
+        tokens[2] = "0.25";
+
+        for (Iterator i = genes.keySet().iterator(); i.hasNext();) {
+             String currentGene = (String)i.next();
+
+             int genekey = genes.get(currentGene);
+             if(datasetGenes != null)
+                datasetGenes.add(genekey);
+
+                GeneExpression expres = new GeneExpression(currentGene, currentGene);
+                expres.setExpression(tokens);
+
+
+                double newMax = expres.newMax(expressionMatrix.getMaxExpression());
+                if(newMax != -100)
+                    expressionMatrix.setMaxExpression(newMax);
+                double newMin = expres.newMin(expressionMatrix.getMinExpression());
+                if (newMin != -100)
+                    expressionMatrix.setMinExpression(newMin);
+
+                expression.put(genekey,expres);
+
+        }
+
+        //set the number of genes
+        expressionMatrix.setNumGenes(expressionMatrix.getExpressionMatrix().size());
+
+        //make sure that params is set to show there is data
+        if(dataset == 1){
+            params.setData(true);
+            params.setExpression(expressionMatrix);
+        }else{
+            params.setExpression2(expressionMatrix);
+            params.setData2(true);
+        }
+
+    }
+
+  //Check to see if we are dealing with two distinct Data sets (i.e. two different species, or two different
+  // expression platforms).  If the dataset are distinct then we need to separate the genesets
+  private boolean isDistinctDatasets(){
+
+      Set<Integer> expression_1_genes = new HashSet<Integer>();
+              expression_1_genes.addAll(params.getExpression().getGeneIds());
+      Set<Integer> expression_2_genes = new HashSet<Integer>();
+              expression_2_genes.addAll(params.getExpression2().getGeneIds());
+
+      if((expression_2_genes != null) && (expression_2_genes.size()>0)){
+
+            expression_1_genes.removeAll(expression_2_genes);
+
+            //if expression_1_genes is empty then all genes in 2 are in 1.
+            //and if expression_1 genes are not empty then the two sets don't match and we have conflicting expression sets
+
+            if(expression_1_genes.size() != 0){
+                //params.setTwoDistinctExpressionSets(true);
+                params.setDatasetGenes(new HashSet<Integer>((Set<Integer>)params.getExpression().getGeneIds()));
+                params.setDatasetGenes_set2(new HashSet<Integer>((Set<Integer>)params.getExpression2().getGeneIds()));
+
+                //only set genesets_set2 to the first if it is null
+                if(params.getGenesets_set2().size() == 0){
+                    params.setGenesets_set2(new HashMap<String,GeneSet>(params.getGenesets()));
+                    params.setFilteredGenesets_set2(new HashMap<String, GeneSet>(params.getFilteredGenesets()));
+                }
+                else{
+                    params.setFilteredGenesets_set2(new HashMap<String, GeneSet>(params.getGenesets_set2()));
+                }
+                return true;
+            }
+            else{
+                //if there were two david files but they are from the same species we want to merge the results
+                if(params.getGenesets_set2().size() > 0)
+                    params.getGenesets().putAll(params.getGenesets_set2());
+            }
+                //System.out.println("the expression files don't have the exact same number of entities.");
+      }
+      return false;
+  }
 
  /**
      * Run the Task.

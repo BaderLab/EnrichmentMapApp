@@ -107,7 +107,7 @@ public class BuildBulkEnrichmentMapActionListener implements ActionListener{
                             BuildEnrichmentMapTask new_map = new BuildEnrichmentMapTask(params);
                             boolean success = TaskManager.executeTask(new_map, config);
 
-                            //Cytoscape.getCurrentNetworkView().fitContent();
+                            Cytoscape.getCurrentNetworkView().fitContent();
 
                             //reduce height and width by 50%
                             Cytoscape.getCurrentNetworkView().setZoom(0.5);

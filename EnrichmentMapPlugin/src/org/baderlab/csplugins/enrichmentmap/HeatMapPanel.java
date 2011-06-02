@@ -49,6 +49,7 @@ import cytoscape.CytoscapeInit;
 import cytoscape.Cytoscape;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.*;
 import java.awt.*;
@@ -147,6 +148,12 @@ public class HeatMapPanel extends JPanel {
     private double leadingEdgeScoreAtMax2 = 0;
     private int leadingEdgeRankAtMax1 = 0;
     private int leadingEdgeRankAtMax2 = 0;
+
+    //objects needed access to in order to print to pdf
+    //private JScrollPane jScrollPane;
+    private JTable jTable1;
+    private JTableHeader tableHdr;
+    private JPanel northPanel;
 
     /**
      * Class constructor - creates new instance of a Heat map panel
@@ -248,7 +255,7 @@ public class HeatMapPanel extends JPanel {
     public void updatePanel(){
         if((currentExpressionSet != null) || (currentExpressionSet2 != null)){
 
-            JTable jTable1;
+
             JTable rowTable;
             String[] mergedcolumnNames = null;
 
@@ -295,7 +302,7 @@ public class HeatMapPanel extends JPanel {
             // used for listening to columns when clicked
             TableHeader header = new TableHeader(sort, jTable1, hmParams);
 
-            JTableHeader tableHdr= jTable1.getTableHeader();
+            tableHdr= jTable1.getTableHeader();
             tableHdr.addMouseListener(header);
 
             //check to see if there is already a sort been defined for this table
@@ -397,9 +404,9 @@ public class HeatMapPanel extends JPanel {
                 }
             }
 
-
+            JScrollPane jScrollPane;
             jTable1.setColumnModel(tcModel);
-            JScrollPane jScrollPane = new javax.swing.JScrollPane(jTable1);
+            jScrollPane = new javax.swing.JScrollPane(jTable1);
             rowTable =new RowNumberTable(jTable1);
             jScrollPane.setRowHeaderView(rowTable);
 
@@ -411,6 +418,7 @@ public class HeatMapPanel extends JPanel {
 
             this.add(createNorthPanel(), java.awt.BorderLayout.NORTH);
             this.add(jScrollPane, java.awt.BorderLayout.CENTER);
+
         }
         this.revalidate();
 
@@ -933,7 +941,7 @@ public class HeatMapPanel extends JPanel {
      */
     private JPanel createNorthPanel(){
 
-        JPanel northPanel = new JPanel();// new north panel
+        northPanel = new JPanel();// new north panel
         JPanel buttonPanel = new JPanel();// brought button panel from westPanel
         northPanel.setLayout(new GridBagLayout());
 
@@ -944,8 +952,17 @@ public class HeatMapPanel extends JPanel {
                }
          });
 
+        JButton exportExpressionSet = new JButton("Export Expression Set (PDF)");
+        exportExpressionSet.addActionListener(new java.awt.event.ActionListener() {
+               public void actionPerformed(java.awt.event.ActionEvent evt) {
+                      exportExpressionSetActionPerformed(evt);
+               }
+         });
+
         buttonPanel.add(SaveExpressionSet);
-        addComponent(northPanel,expressionLegendPanel(), 0, 0, 1, 1,
+        buttonPanel.add(exportExpressionSet);
+
+        addComponent(northPanel, expressionLegendPanel(), 0, 0, 1, 1,
                 GridBagConstraints.WEST, GridBagConstraints.NONE);
 
         addComponent(northPanel,emptyPanel(), 1, 0, 1, 1,
@@ -1030,6 +1047,38 @@ public class HeatMapPanel extends JPanel {
             }
         }
     }
+
+    private void exportExpressionSetActionPerformed(ActionEvent evt){
+            java.io.File file = FileUtil.getFile("Export Heatmap as pdf File", FileUtil.SAVE);
+            if (file != null && file.toString() != null) {
+                String fileName = file.toString();
+                if (!fileName.endsWith(".pdf")) {
+                    fileName += ".pdf";
+                    file = new File(fileName);
+                }
+
+                int response = JOptionPane.OK_OPTION;
+                if(file.exists())
+                        response = JOptionPane.showConfirmDialog(this, "The file already exists.  Would you like to overwrite it?");
+                if(response == JOptionPane.NO_OPTION || response == JOptionPane.CANCEL_OPTION ){
+
+                }
+                else if(response == JOptionPane.YES_OPTION || response == JOptionPane.OK_OPTION){
+                        try{
+                            FileOutputStream output = new FileOutputStream(file);
+                            HeatMapExporter exporter = new HeatMapExporter();
+                            exporter.export(this.getNorthPanel(),this.getjTable1(),this.getTableHeader(), output) ;
+                            output.flush();
+                            output.close();
+                            JOptionPane.showMessageDialog(this, "File " + fileName + " saved.");
+
+                        }catch(IOException e){
+                            JOptionPane.showMessageDialog(this, "unable to write to file " + fileName);
+                    }
+                }
+            }
+        }
+
 
      /**
      * Collates the current selected nodes genes to represent the expression of the genes that
@@ -1802,7 +1851,17 @@ public class HeatMapPanel extends JPanel {
         return rowTheme;
     }
 
+    public JTableHeader getTableHeader(){
+        return tableHdr;
+    }
 
+    public JTable getjTable1() {
+        return jTable1;
+    }
+
+    public JPanel getNorthPanel(){
+        return northPanel;
+    }
 
 }
 

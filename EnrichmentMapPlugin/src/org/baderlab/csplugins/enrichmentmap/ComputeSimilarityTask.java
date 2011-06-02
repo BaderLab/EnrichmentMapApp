@@ -137,7 +137,7 @@ public class ComputeSimilarityTask implements Task {
                 long timeRemaining = maxValue - currentProgress;
                 if (taskMonitor != null) {
                    taskMonitor.setPercentCompleted(percentComplete);
-                   taskMonitor.setStatus("Computing Geneset similirity " + currentProgress + " of " + maxValue);
+                   taskMonitor.setStatus("Computing Geneset similarity " + currentProgress + " of " + maxValue);
                    taskMonitor.setEstimatedTimeRemaining(timeRemaining);
                 }
                 currentProgress++;
@@ -248,7 +248,7 @@ public class ComputeSimilarityTask implements Task {
                     long timeRemaining = maxValue - currentProgress;
                     if (taskMonitor != null) {
                         taskMonitor.setPercentCompleted(percentComplete);
-                        taskMonitor.setStatus("Computing Geneset similirity " + currentProgress + " of " + maxValue);
+                        taskMonitor.setStatus("Computing Geneset similarity " + currentProgress + " of " + maxValue);
                         taskMonitor.setEstimatedTimeRemaining(timeRemaining);
                     }
                     currentProgress++;

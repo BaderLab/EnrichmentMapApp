@@ -1763,6 +1763,7 @@ public class EnrichmentMapInputPanel extends JPanel {
         filter.addExtension("txt");
         filter.addExtension("rpt");
         filter.addExtension("xls");
+        filter.addExtension("bgo");
         filter.setDescription("All result files");
 
         // Get the file name
@@ -1799,6 +1800,7 @@ public class EnrichmentMapInputPanel extends JPanel {
         filter.addExtension("txt");
         filter.addExtension("rpt");
         filter.addExtension("xls");
+        filter.addExtension("bgo");
         filter.setDescription("All result files");
 
         // Get the file name
@@ -1834,6 +1836,7 @@ public class EnrichmentMapInputPanel extends JPanel {
       filter.addExtension("txt");
       filter.addExtension("xls");
       filter.addExtension("rpt");
+      filter.addExtension("bgo");
       filter.setDescription("All result files");
 
       // Get the file name
@@ -1868,6 +1871,7 @@ public class EnrichmentMapInputPanel extends JPanel {
       filter.addExtension("txt");
       filter.addExtension("xls");
       filter.addExtension("rpt");
+      filter.addExtension("bgo");
       filter.setDescription("All result files");
 
       // Get the file name
