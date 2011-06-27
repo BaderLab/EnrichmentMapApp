@@ -468,7 +468,8 @@ public class HeatMapPanel extends JPanel {
         int kValue;
 
         if(params.isTwoDistinctExpressionSets())
-            kValue = currentExpressionSet.size() + currentExpressionSet2.size();
+            kValue = expValue.length;
+            //kValue = currentExpressionSet.size() + currentExpressionSet2.size();
         else
             kValue=Math.max(currentExpressionSet.size(), currentExpressionSet2.size());
 
@@ -648,24 +649,6 @@ public class HeatMapPanel extends JPanel {
 
         int totalConditions = (numConditions + numConditions2-2);
 
-        int kValue;
-
-        if(params.isTwoDistinctExpressionSets())
-            kValue = currentExpressionSet.size() + currentExpressionSet2.size();
-        else
-            kValue=Math.max(currentExpressionSet.size(), currentExpressionSet2.size());
-        expValue = new Object[kValue][totalConditions];
-        hRow1= new String[kValue];
-        hRow2= new String[kValue];
-        halfRow1Length= new int[kValue];
-        halfRow2Length= new int[kValue];
-        rangeHalfRow1= new ColorGradientRange[kValue];
-        rangeHalfRow2= new ColorGradientRange[kValue];
-        themeHalfRow1= new ColorGradientTheme[kValue];
-        themeHalfRow2= new ColorGradientTheme[kValue];
-
-        Integer[] ranks_subset = new Integer[kValue];
-
         //when constructing a heatmap and the expression matrices do not contain the exact same set of
         //gene we have to use an expression set consisting of a merged set from the two expression sets.
         HashMap<Integer, GeneExpression> expressionUsing;
@@ -679,6 +662,25 @@ public class HeatMapPanel extends JPanel {
             mergedExpression.putAll(currentExpressionSet2);
             expressionUsing = mergedExpression;
         }
+
+
+        int kValue;
+
+        if(params.isTwoDistinctExpressionSets())
+            kValue = expressionUsing.size();
+        else
+            kValue=Math.max(currentExpressionSet.size(), currentExpressionSet2.size());
+        expValue = new Object[kValue][totalConditions];
+        hRow1= new String[kValue];
+        hRow2= new String[kValue];
+        halfRow1Length= new int[kValue];
+        halfRow2Length= new int[kValue];
+        rangeHalfRow1= new ColorGradientRange[kValue];
+        rangeHalfRow2= new ColorGradientRange[kValue];
+        themeHalfRow1= new ColorGradientTheme[kValue];
+        themeHalfRow2= new ColorGradientTheme[kValue];
+
+        Integer[] ranks_subset = new Integer[kValue];
 
         HashMap<Integer, ArrayList<Integer>> rank2keys = new HashMap<Integer,ArrayList<Integer>>();
 
@@ -695,16 +697,22 @@ public class HeatMapPanel extends JPanel {
 
 
         int n = 0;
+        int maxRank = 0;
+        int missingRanksCount = 0;
         for(Iterator<Integer> i = expressionUsing.keySet().iterator();i.hasNext();){
             Integer key = i.next();
             //check to see the key is in the rank file.
             //For new rank files it is possible that some of the genes/proteins won't be ranked
             if(ranks.containsKey(key)){
                 ranks_subset[n] = ((Ranking)ranks.get(key)).getRank();
+
+                if(ranks_subset[n] > maxRank)
+                    maxRank = ranks_subset[n];
                 //check to see if the rank is already in the list.
             }
             else{
                 ranks_subset[n] = -1;
+                missingRanksCount++;
             }
             if(!rank2keys.containsKey(ranks_subset[n])){
                 ArrayList<Integer> temp = new ArrayList<Integer>();
@@ -717,6 +725,19 @@ public class HeatMapPanel extends JPanel {
             n++;
          }
 
+
+        //A rank of -1 can indicate a missing rank which is expected when you have two distinct datasets
+        //We want to make sure the -1 are at the bottom of the list with two distinct data sets
+        if(params.isTwoDistinctExpressionSets() && missingRanksCount > 0 ){
+            for(int s = 0 ; s < ranks_subset.length;s++){
+                //if the current gene doesn't have a rank then don't show it
+                if(ranks_subset[s] == -1)
+                    ranks_subset[s] = maxRank + 100;
+
+                //update the ranks2keys subset
+                rank2keys.put(maxRank + 100, rank2keys.get(-1));
+            }
+        }
 
         //depending on the set value of ascending dictates which direction the ranks are
         //outputed.  if ascending then output the ranks as is, if not ascending (descending) inverse
@@ -733,6 +754,7 @@ public class HeatMapPanel extends JPanel {
         int k = 0;
         int previous = -1;
          boolean significant_gene = false;
+
 
         for(int m = 0 ; m < ranks_subset.length;m++){
             //if the current gene doesn't have a rank then don't show it
@@ -1343,7 +1365,7 @@ public class HeatMapPanel extends JPanel {
             }
 
 
-            if(cluster){
+            if((cluster)&&(!params.isTwoDistinctExpressionSets())){
 
                 try{
                     //hmParams.setSortbyHC(true);
@@ -1570,6 +1592,10 @@ public class HeatMapPanel extends JPanel {
                     JOptionPane.showMessageDialog(Cytoscape.getDesktop(), "Unable to complete clustering of genes due to insufficient memory.","Out of memory",JOptionPane.INFORMATION_MESSAGE);
                     cluster = false;
                 }
+            }
+            else if(cluster && params.isTwoDistinctExpressionSets()){
+             cluster = false;
+               hmParams.setSort(HeatMapParameters.Sort.NONE);
             }
         }
 
