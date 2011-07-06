@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<project name="enrichment_map" default="all">
+<!-- $Id$ -->
+	
+    <!-- 
+	********************************
+	* TO DEFINE PATH TO CYTOSCAPE: *
+	********************************
+	- Either set an environment variable called CYTOSCAPE_HOME 
+	  pointing to your Cytoscape 2.6 installation
+	
+	- or place a file called "enrichment_map.properties" in the same directory as this build.xml 
+	  file that contains a line like this (choose one depending on your platform and adjust to the 
+	  actual installation directory and the version you are using):
+
+	  Apple:
+		CYTOSCAPE_HOME=/Applications/Cytoscape_v2.7.0
+	  Linux:
+		CYTOSCAPE_HOME=/usr/local/Cytoscape_v2.7.0
+	  Windows:
+		CYTOSCAPE_HOME=C:/Program Files/Cytoscape_v2.7.0
+	
+	(cytoscape.jar and lib/*jar are needed for compiling the plugin) 
+    -->
+
+	<property file="enrichment_map.properties" />
+	<property file="plugin.props" />
+	
+	<property environment="env" />
+	<condition property="CYTOSCAPE_HOME" value="${env.CYTOSCAPE_HOME}" else="C:/Program Files/Cytoscape_v2.7.0" >
+		<available file="${env.CYTOSCAPE_HOME}/cytoscape.jar" />
+	</condition>
+	
+	<condition property="releaseSuffix" value="-${pluginReleaseSuffix}"  else="">
+		<and>
+			<isset property="pluginReleaseSuffix" />
+			<not>
+				<equals arg1="${pluginReleaseSuffix}" arg2="" trim="true"/>
+			</not>
+		</and>
+	</condition>
+	
+	<echo message="Using Cytoscape in ${CYTOSCAPE_HOME}" />
+
+	<!-- Uncomment the following property if no tests compilation is needed -->
+	<!-- 
+	<property name="skip.tests" value="true"/>
+	-->
+
+	<!-- Compiler options -->
+
+	<property name="compiler.debug" value="on"/>
+	<property name="compiler.generate.no.warnings" value="off"/>
+	<property name="compiler.args" value=""/>
+	<property name="compiler.max.memory" value="128m"/>
+	<patternset id="ignored.files">
+		<exclude name="**/CVS/**"/>
+		<exclude name="**/SCCS/**"/>
+		<exclude name="**/RCS/**"/>
+		<exclude name="**/rcs/**"/>
+		<exclude name="**/.DS_Store/**"/>
+		<exclude name="**/.svn/**"/>
+	</patternset>
+	<patternset id="compiler.resources">
+		<include name="**/?*.properties"/>
+		<include name="**/?*.xml"/>
+		<include name="**/?*.gif"/>
+		<include name="**/?*.png"/>
+		<include name="**/?*.jpeg"/>
+		<include name="**/?*.jpg"/>
+		<include name="**/?*.html"/>
+		<include name="**/?*.dtd"/>
+		<include name="**/?*.tld"/>
+		<exclude name="**/?*.ai"/>
+		<exclude name="**/?*.AI"/>
+	</patternset>
+
+	<!-- Application Server Libraries -->
+
+	<!-- Modules -->
+
+	<!-- Module enrichment_map -->
+
+	<dirname property="module.enrichment_map.basedir" file="${ant.file}"/>
+
+	<property name="compiler.args.enrichment_map" value="${compiler.args}"/>
+
+	<property name="enrichment_map.output.dir" value="${module.enrichment_map.basedir}/classes"/>
+	<property name="enrichment_map.jars.dir" value="${module.enrichment_map.basedir}/jars"/>
+	<property name="enrichment_map.testoutput.dir" value="${module.enrichment_map.basedir}/classes"/>
+	<property name="enrichment_map.bin_release.dir" value="${module.enrichment_map.basedir}/release_bin"/>
+	<property name="enrichment_map.src_release_root.dir" value="${module.enrichment_map.basedir}/release_src"/>
+
+	<path id="enrichment_map.module.bootclasspath">
+		<!-- Paths to be included in compilation bootclasspath -->
+	</path>
+
+	<path id="enrichment_map.module.classpath">
+		<pathelement location="${CYTOSCAPE_HOME}/cytoscape.jar" />
+		<fileset dir="${CYTOSCAPE_HOME}/lib">
+			<include name="**/*.jar" />
+		</fileset>
+	</path>
+
+	<patternset id="excluded.from.module.enrichment_map">
+		<patternset refid="ignored.files"/>
+	</patternset>
+
+	<patternset id="excluded.from.compilation.enrichment_map">
+		<patternset refid="excluded.from.module.enrichment_map"/>
+	</patternset>
+
+	<path id="enrichment_map.module.sourcepath">
+		<dirset dir="${module.enrichment_map.basedir}">
+			<include name="src"/>
+		</dirset>
+	</path>
+
+	<!--	Targets:
+		all ~~~~~~~~+ init
+					+ clean	~~~~~~~~~~~~~~~~+ clean.module.enrichment_map
+					|						
+					+ compile ~~~~~~~~~~~~~~+ compile.module.enrichment_map	~~~~+ compile.module.enrichment_map.production
+					|															|
+					|															+ compile.module.enrichment_map.tests
+					+ buildID
+					|
+					+ jars
+				
+		release ~~~~+ binary_release (jars)
+					|
+					+ source_release
+		-->
+	
+	<target name="compile.module.enrichment_map" depends="compile.module.enrichment_map.production,compile.module.enrichment_map.tests" description="Compile module enrichment_map"/>
+
+	<target name="compile.module.enrichment_map.production" description="Compile module enrichment_map; production classes">
+		<mkdir dir="${enrichment_map.output.dir}"/>
+		<javac 	destdir="${enrichment_map.output.dir}" 
+				debug="${compiler.debug}" 
+				nowarn="${compiler.generate.no.warnings}" 
+				memoryMaximumSize="${compiler.max.memory}" 
+				source="1.5" 
+				target="1.5" 
+				fork="true">
+			<compilerarg line="${compiler.args.enrichment_map}"/>
+			<bootclasspath refid="enrichment_map.module.bootclasspath"/>
+			<classpath refid="enrichment_map.module.classpath"/>
+			<src refid="enrichment_map.module.sourcepath"/>
+		</javac>
+
+		<copy todir="${enrichment_map.output.dir}">
+			<fileset dir="${module.enrichment_map.basedir}/src">
+				<patternset refid="compiler.resources"/>
+				<type type="file"/>
+			</fileset>
+		</copy>
+	</target>
+
+	<target name="compile.module.enrichment_map.tests" depends="compile.module.enrichment_map.production" description="compile module enrichment_map; test classes" unless="skip.tests"/>
+
+	<target name="clean.module.enrichment_map" description="cleanup module">
+		<delete dir="${enrichment_map.output.dir}"/>
+		<delete dir="${enrichment_map.jars.dir}"/>
+		<delete dir="${enrichment_map.testoutput.dir}"/>
+		<delete dir="${enrichment_map.bin_release.dir}"/>
+		<delete dir="${enrichment_map.src_release_root.dir}"/>
+	</target>
+
+	<target name="init" description="Build initialization">
+		<!-- Perform any build initialization in this target -->
+	</target>
+
+	<target name="jars" depends="compile.module.enrichment_map.production, buildID" description="Creates jar file for enrichment_map">
+		<copy file="${module.enrichment_map.basedir}/plugin.props" todir="${enrichment_map.output.dir}/org/baderlab/csplugins/enrichmentmap/" />
+		<property file="${enrichment_map.output.dir}/org/baderlab/csplugins/enrichmentmap/buildID.props" />
+		<echo message="Build: ${build.number} from SVN: ${svn.revision} by: ${build.user}@${build.host} at: ${build.timestamp}" />
+
+		<mkdir dir="${enrichment_map.jars.dir}"/>
+		<jar jarfile="${enrichment_map.jars.dir}/EnrichmentMap.jar" basedir="${enrichment_map.output.dir}" >
+			<manifest>
+				<attribute name="Cytoscape-Plugin" value="org.baderlab.csplugins.enrichmentmap.Enrichment_Map_Plugin"/>
+			</manifest>
+		</jar>
+	</target>
+
+	<target name="buildID" description="write to buildID.props">
+		<!-- increment build number -->
+		<buildnumber />
+
+		<!-- read build number -->
+		<property file="build.number" />
+
+		<!-- get svn version -->
+		<exec executable="svnversion" outputproperty="svn.revision" failifexecutionfails="false" errorproperty="">
+			<arg value="${module.enrichment_map.basedir}" />
+		</exec>
+
+		<!-- get ${USER} and ${HOSTNAME} depending on OS -->
+		<property environment="env" />
+		<exec executable="whoami"   osfamily="unix" failifexecutionfails="false" outputproperty="env.USERNAME"/>
+		<property name="build.user" value="${env.USERNAME}" />
+		<exec executable="hostname" osfamily="unix" failifexecutionfails="false" outputproperty="env.COMPUTERNAME"/>
+		<property name="build.host" value="${env.COMPUTERNAME}"/>
+
+		<!-- write to property file -->
+		<propertyfile file="${enrichment_map.output.dir}/org/baderlab/csplugins/enrichmentmap/buildID.props"  comment="EnrichmentMapPlugin build ID">
+			<entry  key="build.number"	value="${build.number}" />
+			<entry  key="svn.revision"	value="${svn.revision}"/>
+			<entry  key="build.user"  	value="${build.user}"/>
+			<entry  key="build.host"  	value="${build.host}"/>
+			<entry  key="build.timestamp"	type="date"	value="now"	pattern="yyyy/MM/dd HH:mm:ss Z (z)"/>
+		</propertyfile>
+	</target>
+
+	<target name="release_source"                description="Make a source-code release">
+		<property name="enrichment_map.src_release.dir" value="${enrichment_map.src_release_root.dir}/EnrichmentMapPlugin_v${pluginVersion}"/>
+		<mkdir dir="${enrichment_map.src_release_root.dir}"/>
+		<mkdir dir="${enrichment_map.src_release.dir}"/>
+		<mkdir dir="${enrichment_map.src_release.dir}/src"/>
+		<copy todir="${enrichment_map.src_release.dir}/src">
+			<fileset dir="${module.enrichment_map.basedir}/src">
+				<patternset refid="ignored.files"/>
+				<type type="file"/>
+			</fileset>
+		</copy>
+		
+		<mkdir dir="${enrichment_map.src_release.dir}/resources"/>
+		<copy todir="${enrichment_map.src_release.dir}/resources">
+			<fileset dir="${module.enrichment_map.basedir}/resources">
+				<patternset refid="ignored.files"/>
+				<type type="file"/>
+			</fileset>
+		</copy>
+		
+		<copy file="build.xml"                 todir ="${enrichment_map.src_release.dir}" />
+ 		<copy file="plugin.props"              todir ="${enrichment_map.src_release.dir}" />
+		<copy file="doc/LGPL_2.1_LICENSE.txt"  tofile="${enrichment_map.src_release.dir}/LICENSE.TXT" />
+		<copy file="doc/README.TXT"            todir ="${enrichment_map.src_release.dir}" />
+<!--	<copy file="enrichment_map.properties" todir ="${enrichment_map.src_release.dir}" />	-->
+		<tar destfile="EnrichmentMapPlugin_v${pluginVersion}${releaseSuffix}_src.tar.gz" basedir="${enrichment_map.src_release_root.dir}" 
+			 compression="gzip" longfile="gnu" />
+		<zip destfile="EnrichmentMapPlugin_v${pluginVersion}${releaseSuffix}_src.zip"    basedir="${enrichment_map.src_release_root.dir}" />
+	</target>
+	
+	<target name="release_binary" depends="jars" description="Make a binary-release">
+		<mkdir dir="${enrichment_map.bin_release.dir}"/>
+		<copy file="${enrichment_map.jars.dir}/EnrichmentMap.jar" todir  ="${enrichment_map.bin_release.dir}" />
+		<copy file="doc/LGPL_2.1_LICENSE.txt"                     tofile ="${enrichment_map.bin_release.dir}/LICENSE.TXT" />
+		<copy file="doc/README.TXT"                               todir  ="${enrichment_map.bin_release.dir}" />
+		<zip destfile="EnrichmentMapPlugin_v${pluginVersion}${releaseSuffix}.zip" basedir="${enrichment_map.bin_release.dir}" />
+	</target>
+		
+	<target name="release" depends="release_binary, release_source" description="Make a release"/>
+
+	<target name="compile" depends="compile.module.enrichment_map" description="Compile all"/>
+
+	<target name="clean" depends="clean.module.enrichment_map" description="cleanup all"/>
+
+	<target name="all" depends="init, clean, compile.module.enrichment_map, buildID, jars" description="build all"/>
+
+</project>
