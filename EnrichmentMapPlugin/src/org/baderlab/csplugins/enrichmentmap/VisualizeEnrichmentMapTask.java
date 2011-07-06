@@ -253,16 +253,18 @@ public class VisualizeEnrichmentMapTask implements Task {
                 network.addNode(node);
 
                 //Add the description to the node
-                GeneSet gs;
+                GeneSet gs = null;
+                GeneSet gs2 = null;
                 if(!params.isTwoDistinctExpressionSets())
                     gs = (GeneSet)genesetsOfInterest.get(current_name);
                 else{
                     if(genesetsOfInterest.containsKey(current_name))
                         gs = (GeneSet)genesetsOfInterest.get(current_name);
-                    else if(genesetsOfInterest_set2.containsKey(current_name))
-                        gs = (GeneSet)genesetsOfInterest_set2.get(current_name);
-                    else
-                        gs = null;
+                    if(genesetsOfInterest_set2.containsKey(current_name))
+                        gs2 = (GeneSet)genesetsOfInterest_set2.get(current_name);
+
+                    if(gs == null && gs2 != null)
+                        gs = gs2;
                 }
                 CyAttributes nodeAttrs = Cytoscape.getNodeAttributes();
                 nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.GS_DESCR, gs.getDescription());
@@ -271,7 +273,13 @@ public class VisualizeEnrichmentMapTask implements Task {
                 //only create the list if the hashkey 2 genes is not null Otherwise it take too much time to populate the list
                 if(params.getHashkey2gene() != null){
                     List<String> gene_list = new ArrayList<String>();
-                    HashSet<Integer> genes_hash = gs.getGenes();
+                    HashSet<Integer> genes_hash = new HashSet<Integer>();
+
+                    genes_hash.addAll(gs.getGenes());
+
+                    if(gs2 != null)
+                        genes_hash.addAll(gs2.getGenes());
+
                     for(Iterator<Integer> j=genes_hash.iterator(); j.hasNext();){
                         Integer current = j.next();
                         String gene = params.getGeneFromHashKey(current);
@@ -341,16 +349,18 @@ public class VisualizeEnrichmentMapTask implements Task {
                         network.addNode(node);
 
                         //Add the description to the node
-                        GeneSet gs;
+                        GeneSet gs =null;
+                        GeneSet gs2 = null;
                         if(!params.isTwoDistinctExpressionSets())
                             gs = (GeneSet)genesetsOfInterest.get(current_name);
                         else{
                             if(genesetsOfInterest.containsKey(current_name))
                                 gs = (GeneSet)genesetsOfInterest.get(current_name);
-                            else if(genesetsOfInterest_set2.containsKey(current_name))
-                                gs = (GeneSet)genesetsOfInterest_set2.get(current_name);
-                            else
-                                gs = null;
+                            if(genesetsOfInterest_set2.containsKey(current_name))
+                                gs2 = (GeneSet)genesetsOfInterest_set2.get(current_name);
+
+                            if(gs == null && gs2 != null)
+                                gs = gs2;
                         }
                         CyAttributes nodeAttrs = Cytoscape.getNodeAttributes();
                         nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.GS_DESCR, gs.getDescription());
@@ -359,7 +369,12 @@ public class VisualizeEnrichmentMapTask implements Task {
                         //only create the list if the hashkey 2 genes is not null Otherwise it take too much time to populate the list
                         if(params.getHashkey2gene() != null){
                             List<String> gene_list = new ArrayList<String>();
-                            HashSet<Integer> genes_hash = gs.getGenes();
+                            HashSet<Integer> genes_hash = new HashSet<Integer>();
+                            genes_hash.addAll(gs.getGenes());
+
+                            if(gs2 != null)
+                                genes_hash.addAll(gs2.getGenes());
+
                             for(Iterator<Integer> j=genes_hash.iterator(); j.hasNext();){
                                 Integer current = j.next();
                                 String gene = params.getGeneFromHashKey(current);
