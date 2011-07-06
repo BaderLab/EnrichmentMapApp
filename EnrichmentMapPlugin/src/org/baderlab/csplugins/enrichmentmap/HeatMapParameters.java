@@ -306,7 +306,7 @@ public class HeatMapParameters {
             case RANK:
                 int k = 0;
                 int columns = 0;
-                if(params.isData2())
+                if(params.isData2() && params.getExpression2() != null)
                     columns = params.getExpression().getColumnNames().length + params.getExpression2().getColumnNames().length - 2;
                 else
                     columns = params.getExpression().getColumnNames().length;

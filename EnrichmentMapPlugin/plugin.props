@@ -31,7 +31,7 @@ pluginAuthorsIntsitutions=Gary Bader, Daniele Merico, Ruth Isserlin, Oliver Stue
 projectURL=http://www.baderlab.org/Software/EnrichmentMap
 
 # Date this plugin/plugin version was released
-releaseDate=February 7, 2011
+releaseDate=April 14, 2011
 
 # If this plugin is never meant to be downloaded except as part of a plugin (not common) add this property.  Default is "no"
 #themeOnly=no

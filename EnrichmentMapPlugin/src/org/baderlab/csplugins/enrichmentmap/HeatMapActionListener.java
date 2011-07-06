@@ -191,7 +191,7 @@ public class HeatMapActionListener implements ActionListener {
            int i = 0;
            int columns = 0;
            //calculate the number of indexes used for the column names
-           if(params.isData2())
+           if(params.isData2() && params.getExpression2() != null)
              columns = params.getExpression().getColumnNames().length + params.getExpression2().getColumnNames().length - 2;
            else
             columns = params.getExpression().getColumnNames().length;

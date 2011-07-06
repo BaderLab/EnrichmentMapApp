@@ -319,7 +319,7 @@ public class ParametersPanel extends JPanel {
            if(params.isData()){
                runInfoText = runInfoText + "<b>Data file:</b>" + shortenPathname(params.getExpressionFileName1()) + "<br>";
            }
-           if(params.isData2()){
+           if(params.isData2() && params.getExpression2() != null){
                runInfoText = runInfoText + "<b>Data file 2:</b>" + shortenPathname(params.getExpressionFileName2()) + "<br>";
            }
            if( ! (params.getGseaHtmlReportFileDataset1() == null) ){

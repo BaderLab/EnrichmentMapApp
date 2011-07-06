@@ -312,7 +312,7 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
                     expression1writer.close();
                     pFileList.add(expression1);
                 }
-                if(params.isData2()){
+                if(params.isData2() && params.getExpression2() != null){
                     expression2 = new File(tmpDir, name+".expression2.txt");
                     BufferedWriter expression2writer = new BufferedWriter(new FileWriter(expression2));
                     expression2writer.write(params.getExpression2().toString());

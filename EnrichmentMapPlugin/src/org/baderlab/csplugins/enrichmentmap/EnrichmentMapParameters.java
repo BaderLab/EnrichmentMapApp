@@ -736,12 +736,12 @@ public class EnrichmentMapParameters {
         else{
 
 
-            if(this.enrichmentDataset1FileName1 != null && (this.enrichmentDataset1FileName1.equalsIgnoreCase("") || !checkFile(this.enrichmentDataset1FileName1)))
+            if(this.enrichmentDataset1FileName1 == null || (this.enrichmentDataset1FileName1.equalsIgnoreCase("") || !checkFile(this.enrichmentDataset1FileName1)))
                 errors = errors + "Dataset 1, enrichment file 1 can not be found\n";
 
 
             if(this.twoDatasets){
-                if(this.enrichmentDataset2FileName1 != null && (this.enrichmentDataset2FileName1.equalsIgnoreCase("") || !checkFile(this.enrichmentDataset2FileName1)))
+                if(this.enrichmentDataset2FileName1 == null || (this.enrichmentDataset2FileName1.equalsIgnoreCase("") || !checkFile(this.enrichmentDataset2FileName1)))
                     errors = errors + "Dataset 2, enrichment file 1 can not be found\n";
             }
 

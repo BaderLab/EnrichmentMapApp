@@ -213,13 +213,13 @@ public class BuildEnrichmentMapTask implements Task {
         ExpressionFileReaderTask expressionFile1 = new ExpressionFileReaderTask(params,1,taskMonitor);
         expressionFile1.run();
         params.getExpression().rowNormalizeMatrix();
-        if(params.isData2()){
+        if(params.isData2() && params.getExpressionFileName2() != null && !params.getExpressionFileName2().equalsIgnoreCase("")){
             ExpressionFileReaderTask expressionFile2 = new ExpressionFileReaderTask(params,2,taskMonitor);
             expressionFile2.run();
             params.getExpression2().rowNormalizeMatrix();
         }
         //if there are two expression sets check to see that they have the same gene ids.
-        if(params.isData2()){
+        //if(params.isData2()){
             params.setTwoDistinctExpressionSets(isDistinctDatasets());
          /*   Set<Integer> expression_1_genes = params.getExpression().getGeneIds();
 
@@ -251,7 +251,7 @@ public class BuildEnrichmentMapTask implements Task {
                 }
                 //System.out.println("the expression files don't have the exact same number of entities.");
             } */
-        }
+        //}
 
         //trim the genesets to only contain the genes that are in the data file.
         params.filterGenesets();
@@ -372,7 +372,19 @@ public class BuildEnrichmentMapTask implements Task {
       Set<Integer> expression_1_genes = new HashSet<Integer>();
               expression_1_genes.addAll(params.getExpression().getGeneIds());
       Set<Integer> expression_2_genes = new HashSet<Integer>();
+      //if there is expression set then grab the genes from the expression set
+      if(params.getExpression2() != null)
               expression_2_genes.addAll(params.getExpression2().getGeneIds());
+      //if there is no expression set then grab the genes from the defined genesetset2
+      else{
+          HashMap<String, GeneSet> geneset_set2 = params.getGenesets_set2();
+          if(geneset_set2 != null && geneset_set2.size()>0){
+            for (Iterator i = geneset_set2.keySet().iterator(); i.hasNext();) {
+                String currentGeneSet = (String)i.next();
+                expression_2_genes.addAll(geneset_set2.get(currentGeneSet).getGenes());
+            }
+          }
+      }
 
       if((expression_2_genes != null) && (expression_2_genes.size()>0)){
 
@@ -383,8 +395,8 @@ public class BuildEnrichmentMapTask implements Task {
 
             if(expression_1_genes.size() != 0){
                 //params.setTwoDistinctExpressionSets(true);
-                params.setDatasetGenes(new HashSet<Integer>((Set<Integer>)params.getExpression().getGeneIds()));
-                params.setDatasetGenes_set2(new HashSet<Integer>((Set<Integer>)params.getExpression2().getGeneIds()));
+                params.setDatasetGenes(new HashSet<Integer>(expression_1_genes));
+                params.setDatasetGenes_set2(new HashSet<Integer>(expression_2_genes));
 
                 //only set genesets_set2 to the first if it is null
                 if(params.getGenesets_set2().size() == 0){

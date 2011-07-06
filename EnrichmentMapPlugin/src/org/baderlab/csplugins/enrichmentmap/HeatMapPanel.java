@@ -212,7 +212,7 @@ public class HeatMapPanel extends JPanel {
             else
                 setEdgeExpressionSet(params);
 
-            if(params.isData2()){
+            if(params.isData2() && params.getExpression2() != null){
 
                 GeneExpressionMatrix expression2 = params.getExpression2();
 
@@ -267,7 +267,7 @@ public class HeatMapPanel extends JPanel {
             Object[][] data;
 
             //create data subset
-            if(params.isData2()){
+            if(params.isData2() && params.getExpression2() != null){
 
                 // used exp[][] value to store all the expression values needed to create data[][]
                 expValue	= createSortedMergedTableData();
@@ -344,7 +344,7 @@ public class HeatMapPanel extends JPanel {
             ColumnHeaderVerticalRenderer default_renderer = new ColumnHeaderVerticalRenderer();
             default_renderer.setBackground(Color.white);
 
-            if(params.isData2()){
+            if(params.isData2() && params.getExpression2() != null){
                 //go through the first data set
                 for (int i=0;i<columnNames.length;i++){
                     if (i==0 || columnNames[i].equals("Name"))
@@ -601,7 +601,7 @@ public class HeatMapPanel extends JPanel {
 
                 //Current expression row
                 GeneExpression row 		= (GeneExpression)currentExpressionSet.get(key);
-                Double[] expression_values = getExpression(row);
+                Double[] expression_values = getExpression(row,1);
 
                 // stores the gene names in column 0
                 try{ // stores file name if the file contains integer (inserted to aid sorting)
@@ -784,8 +784,8 @@ public class HeatMapPanel extends JPanel {
                 //get the corresponding row from the second dataset
                 GeneExpression halfRow2 = (GeneExpression)currentExpressionSet2.get(currentKey);
 
-                Double[] expression_values1 = getExpression(halfRow1);
-                Double[] expression_values2 = getExpression(halfRow2);
+                Double[] expression_values1 = getExpression(halfRow1,1);
+                Double[] expression_values2 = getExpression(halfRow2,2);
 
                 //Get the name and the description of the row
                 if(halfRow1 != null){
@@ -902,7 +902,7 @@ public class HeatMapPanel extends JPanel {
      *  Given the gene expression row
      * @return The expression set, transformed according the user specified transformation.
      */
-    private Double[] getExpression(GeneExpression row){
+    private Double[] getExpression(GeneExpression row, int dataset){
 
         Double[] expression_values1 = null;
 
@@ -920,12 +920,16 @@ public class HeatMapPanel extends JPanel {
        }
 
         //if either of the expression_values is null set the array to have no data
-      if(expression_values1 == null){
+      if(expression_values1 == null && dataset == 1){
         expression_values1 = new Double[columnNames.length-2];
         for(int q = 0; q < expression_values1.length;q++)
             expression_values1[q] = Double.NaN/*null*/;
         }
-
+      else if(expression_values1 == null && dataset == 2){
+        expression_values1 = new Double[columnNames2.length-2];
+        for(int q = 0; q < expression_values1.length;q++)
+            expression_values1[q] = Double.NaN/*null*/;
+        }
 
       return expression_values1;
     }
@@ -1032,7 +1036,7 @@ public class HeatMapPanel extends JPanel {
                     try{
                         BufferedWriter output = new BufferedWriter(new FileWriter(file));
                         String[] currentColumns;
-                        if(params.isData2()){
+                        if(params.isData2() && params.getExpression2() != null){
                             currentColumns = new String[columnNames.length + columnNames2.length - 2];
 
                             System.arraycopy(columnNames,0,currentColumns,0,columnNames.length);
@@ -1049,7 +1053,7 @@ public class HeatMapPanel extends JPanel {
 
                         //get the sorted expression set
                         Object[][] sortedExpression;
-                        if(params.isData2())
+                        if(params.isData2() && params.getExpression2() != null)
                             sortedExpression = createSortedMergedTableData();
                         else
                             sortedExpression = createSortedTableData();
@@ -1187,7 +1191,7 @@ public class HeatMapPanel extends JPanel {
 
             HashSet<Integer> genes = union;
             currentExpressionSet = params.getExpression().getExpressionMatrix(genes);
-            if(params.isData2())
+            if(params.isData2() && params.getExpression2() != null)
                 currentExpressionSet2 =params.getExpression2().getExpressionMatrix(genes);
 
         }
@@ -1238,7 +1242,7 @@ public class HeatMapPanel extends JPanel {
 
             }
             currentExpressionSet = params.getExpression().getExpressionMatrix(intersect);
-            if(params.isData2())
+            if(params.isData2() && params.getExpression2() != null)
                 currentExpressionSet2 = params.getExpression2().getExpressionMatrix(intersect);
         }
         else{
@@ -1365,7 +1369,7 @@ public class HeatMapPanel extends JPanel {
             }
 
 
-            if((cluster)&&(!params.isTwoDistinctExpressionSets())){
+            if((cluster)/*&&(!params.isTwoDistinctExpressionSets())*/){
 
                 try{
                     //hmParams.setSortbyHC(true);
@@ -1390,7 +1394,7 @@ public class HeatMapPanel extends JPanel {
 
                             Double[] x = ((GeneExpression)currentExpressionSet.get(key)).getExpression();
                             Double[] z;
-                            if(params.isData2() && currentExpressionSet2.containsKey(key)){
+                            if(params.isData2() && params.getExpression2() != null && currentExpressionSet2.containsKey(key)){
                                 Double[] y = ((GeneExpression)currentExpressionSet2.get(key)).getExpression();
                                 z = new Double[x.length + y.length];
                                 System.arraycopy(x,0,z,0,x.length);
@@ -1413,13 +1417,21 @@ public class HeatMapPanel extends JPanel {
                     //if they are both non zero we need to make sure to include all the genes
                     else if( set1_size> 0 && set2_size> 0){
 
+                         Double[] dummyexpression1 = new Double[numdatacolumns];
+                         Double[] dummyexpression2 = new Double[numdatacolumns2];
+
+                         for(int k = 0;k<numdatacolumns;k++)
+                             dummyexpression1[k] = /*Double.NaN*/0.0;
+                        for(int k = 0;k<numdatacolumns2;k++)
+                             dummyexpression2[k] = /*Double.NaN*/0.0;
+
                         //go through the expression-set hashmap and add the key to the labels and add the expression to the clustering set
                         for(Iterator<Integer> i = currentExpressionSet.keySet().iterator();i.hasNext();){
                             Integer key = i.next();
 
                             Double[] x = ((GeneExpression)currentExpressionSet.get(key)).getExpression();
                             Double[] z;
-                            if(params.isData2() && currentExpressionSet2.containsKey(key)){
+                            if(params.isData2() && params.getExpression2() != null && currentExpressionSet2.containsKey(key)){
                                 Double[] y = ((GeneExpression)currentExpressionSet2.get(key)).getExpression();
                                 z = new Double[x.length + y.length];
                                 System.arraycopy(x,0,z,0,x.length);
@@ -1427,7 +1439,11 @@ public class HeatMapPanel extends JPanel {
 
                             }
                             else{
-                                z = x;
+
+                                //add a dummy value for the missing data
+                                z = new Double[x.length + dummyexpression2.length];
+                                System.arraycopy(x,0,z,0,x.length);
+                                System.arraycopy(dummyexpression2,0,z,x.length,dummyexpression2.length);
                             }
 
                             //add the expression-set
@@ -1442,17 +1458,21 @@ public class HeatMapPanel extends JPanel {
                         for(Iterator<Integer> i = currentExpressionSet2.keySet().iterator();i.hasNext();){
                             Integer key = i.next();
 
-                            Double[] x = ((GeneExpression)currentExpressionSet2.get(key)).getExpression();
+                            Double[] y = ((GeneExpression)currentExpressionSet2.get(key)).getExpression();
                             Double[] z;
-                            if(params.isData2() && currentExpressionSet.containsKey(key)){
-                                Double[] y = ((GeneExpression)currentExpressionSet.get(key)).getExpression();
+                            if(currentExpressionSet.containsKey(key)){
+                                Double[] x = ((GeneExpression)currentExpressionSet.get(key)).getExpression();
                                 z = new Double[x.length + y.length];
                                 System.arraycopy(x,0,z,0,x.length);
                                 System.arraycopy(y,0,z,x.length,y.length);
 
                             }
                             else{
-                                z = x;
+
+                                //add a dummy value for the missing data
+                                z = new Double[y.length + dummyexpression1.length];
+                                System.arraycopy(dummyexpression1,0,z,0,dummyexpression1.length);
+                                System.arraycopy(y,0,z,dummyexpression1.length,y.length);
                             }
 
                             //add the expression-set
@@ -1468,13 +1488,21 @@ public class HeatMapPanel extends JPanel {
                     //if one of the sets is zero
                     else if((set1_size> 0) && (set2_size == 0)){
 
+                        Double[] dummyexpression1 = new Double[numdatacolumns];
+                         Double[] dummyexpression2 = new Double[numdatacolumns2];
+
+                         for(int k = 0;k<numdatacolumns;k++)
+                             dummyexpression1[k] = /*Double.NaN*/0.0;
+                        for(int k = 0;k<numdatacolumns2;k++)
+                             dummyexpression2[k] = /*Double.NaN*/0.0;
+
                         //go through the expression-set hashmap and add the key to the labels and add the expression to the clustering set
                         for(Iterator<Integer> i = currentExpressionSet.keySet().iterator();i.hasNext();){
                             Integer key = i.next();
 
                             Double[] x = ((GeneExpression)currentExpressionSet.get(key)).getExpression();
                             Double[] z;
-                            if(params.isData2() && currentExpressionSet2.containsKey(key)){
+                            if(params.isData2() && params.getExpression2() != null && currentExpressionSet2.containsKey(key)){
                                 Double[] y = ((GeneExpression)currentExpressionSet2.get(key)).getExpression();
                                 z = new Double[x.length + y.length];
                                 System.arraycopy(x,0,z,0,x.length);
@@ -1482,7 +1510,10 @@ public class HeatMapPanel extends JPanel {
 
                             }
                             else{
-                                z = x;
+                                //add a dummy value for the missing data
+                                z = new Double[x.length + dummyexpression2.length];
+                                System.arraycopy(x,0,z,0,x.length);
+                                System.arraycopy(dummyexpression2,0,z,x.length,dummyexpression2.length);
                             }
 
                             //add the expression-set
@@ -1496,21 +1527,32 @@ public class HeatMapPanel extends JPanel {
                     }
                     else if((set2_size> 0)&& (set1_size == 0)){
 
+                        Double[] dummyexpression1 = new Double[numdatacolumns];
+                         Double[] dummyexpression2 = new Double[numdatacolumns2];
+
+                         for(int k = 0;k<numdatacolumns;k++)
+                             dummyexpression1[k] = /*Double.NaN*/0.0;
+                        for(int k = 0;k<numdatacolumns2;k++)
+                             dummyexpression2[k] = /*Double.NaN*/0.0;
+
                         //go through the expression-set hashmap and add the key to the labels and add the expression to the clustering set
                         for(Iterator<Integer> i = currentExpressionSet2.keySet().iterator();i.hasNext();){
                             Integer key = i.next();
 
-                            Double[] x = ((GeneExpression)currentExpressionSet2.get(key)).getExpression();
+                            Double[] y = ((GeneExpression)currentExpressionSet2.get(key)).getExpression();
                             Double[] z;
-                            if(params.isData2() && currentExpressionSet.containsKey(key)){
-                                Double[] y = ((GeneExpression)currentExpressionSet.get(key)).getExpression();
+                            if(currentExpressionSet.containsKey(key)){
+                                Double[] x = ((GeneExpression)currentExpressionSet.get(key)).getExpression();
                                 z = new Double[x.length + y.length];
                                 System.arraycopy(x,0,z,0,x.length);
                                 System.arraycopy(y,0,z,x.length,y.length);
 
                             }
                             else{
-                                z = x;
+                                //add a dummy value for the missing data
+                                z = new Double[y.length + dummyexpression1.length];
+                                System.arraycopy(dummyexpression1,0,z,0,dummyexpression1.length);
+                                System.arraycopy(y,0,z,dummyexpression1.length,y.length);
                             }
 
                             //add the expression-set

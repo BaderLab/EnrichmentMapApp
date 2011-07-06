@@ -260,13 +260,11 @@
     <library name="Unnamed">
       <CLASSES>
         <root url="file://$PROJECT_DIR$/lib" />
-        <root url="file:///Applications/Cytoscape_v2.7.0" />
-        <root url="file:///Applications/Cytoscape_v2.7.0/lib" />
+        <root url="file:///Applications/Cytoscape_v2.8.1" />
+        <root url="jar:///Applications/Cytoscape_v2.8.1/cytoscape.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />
-      <jarDirectory url="file:///Applications/Cytoscape_v2.7.0" recursive="false" />
-      <jarDirectory url="file:///Applications/Cytoscape_v2.7.0/lib" recursive="false" />
       <jarDirectory url="file://$PROJECT_DIR$/lib" recursive="false" />
     </library>
   </component>
