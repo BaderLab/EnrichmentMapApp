@@ -842,14 +842,14 @@ public class EnrichmentMapInputPanel extends JPanel {
            qvalueCutOffPanel.add(qvalueCutOffLabel, BorderLayout.WEST);
            qvalueCutOffPanel.add(qvalueTextField, BorderLayout.EAST);
 
-           //coefficient cutoff input
+           //Coeffecient cutoff input
 
            ButtonGroup jaccardOrOverlap;
 
-           jaccard = new JRadioButton("Jaccard Coeffecient");
+           jaccard = new JRadioButton("Jaccard Coefficient");
            jaccard.setActionCommand("jaccard");
            jaccard.setSelected(true);
-           overlap = new JRadioButton("Overlap Coeffecient");
+           overlap = new JRadioButton("Overlap Coefficient");
            overlap.setActionCommand("overlap");
            combined = new JRadioButton("Jaccard+Overlap Combined");
            combined.setActionCommand("combined");
@@ -900,8 +900,8 @@ public class EnrichmentMapInputPanel extends JPanel {
            coeffecientTextField = new JFormattedTextField(decFormat);
            coeffecientTextField.setColumns(3);
            coeffecientTextField.addPropertyChangeListener("value", new EnrichmentMapInputPanel.FormattedTextFieldAction());
-           String coeffecientCutOffTip = "Sets the Jaccard or Overlap coeffecient cutoff \n" +
-                             "only edges with a Jaccard or Overlap coffecient less than \n"+
+           String coeffecientCutOffTip = "Sets the Jaccard or Overlap coefficient cutoff \n" +
+                             "only edges with a Jaccard or Overlap coefficient less than \n"+
                               "the cutoff will be added.";
           coeffecientTextField.setToolTipText(coeffecientCutOffTip);
 //          coeffecientTextField.setText(Double.toString(params.getSimilarityCutOff()));
@@ -977,7 +977,7 @@ public class EnrichmentMapInputPanel extends JPanel {
                     params.setSimilarityCutOffChanged(true);
                 } else {
                     source.setValue(params.getSimilarityCutOff());
-                    message += "The Overlap/Jaccard Coeffecient cutoff must be between 0 and 1.";
+                    message += "The Overlap/Jaccard Coefficient cutoff must be between 0 and 1.";
                     invalid = true;
                 }
             }else if (source == combinedConstantTextField) {
@@ -992,7 +992,7 @@ public class EnrichmentMapInputPanel extends JPanel {
                     //params.setCombinedConstantCutOffChanged(true);
                 } else {
                     source.setValue(0.5);
-                    message += "The combined Overlap/Jaccard Coeffecient constant must be between 0 and 1.";
+                    message += "The combined Overlap/Jaccard Coefficient constant must be between 0 and 1.";
                     invalid = true;
                 }
             }

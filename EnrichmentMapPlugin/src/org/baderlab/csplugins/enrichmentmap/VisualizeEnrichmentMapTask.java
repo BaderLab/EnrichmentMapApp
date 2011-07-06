@@ -512,7 +512,7 @@ public class VisualizeEnrichmentMapTask implements Task {
 
 
         } catch(IllegalThreadStateException e){
-            taskMonitor.setException(e, "Unable to compute similarity coeffecients");
+            taskMonitor.setException(e, "Unable to compute similarity coefficients");
             return false;
         }
 

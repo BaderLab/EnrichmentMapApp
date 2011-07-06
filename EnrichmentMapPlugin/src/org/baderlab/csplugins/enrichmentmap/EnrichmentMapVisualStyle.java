@@ -97,7 +97,7 @@ public class EnrichmentMapVisualStyle {
     public static String GS_TYPE_SIGNATURE = "SIG";
     
     public static String OVERLAP_SIZE = "Overlap_size";
-    public static String SIMILARITY_COEFFECIENT = "similarity_coeffecient";
+    public static String SIMILARITY_COEFFECIENT = "similarity_coefficient";
     public static String OVERLAP_GENES = "Overlap_genes";
     public static String HYPERGEOM_PVALUE = "Overlap_Hypergeom_pVal";
     public static String ENRICHMENT_SET = "ENRICHMENT_SET";
