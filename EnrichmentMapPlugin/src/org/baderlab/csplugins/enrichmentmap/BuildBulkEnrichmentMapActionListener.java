@@ -1,7 +1,9 @@
 package org.baderlab.csplugins.enrichmentmap;
 
+import cytoscape.CyNetwork;
 import cytoscape.Cytoscape;
 import cytoscape.data.writers.CytoscapeSessionWriter;
+import cytoscape.data.writers.XGMMLWriter;
 import cytoscape.view.CyNetworkView;
 import cytoscape.util.export.PDFExporter;
 import cytoscape.task.ui.JTaskConfig;
@@ -9,10 +11,12 @@ import cytoscape.task.util.TaskManager;
 import giny.view.NodeView;
 
 import javax.swing.*;
+import javax.xml.bind.JAXBException;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
+import java.net.URISyntaxException;
 import java.util.Iterator;
 
 /**
@@ -81,8 +85,11 @@ public class BuildBulkEnrichmentMapActionListener implements ActionListener{
             //if this is a directory - go into it and get the .rpt file
             if(current.isDirectory()){
                 String[] children = current.list();
+                boolean foundRpt = false;
                 for(int k=0;k<children.length;k++){
-                    if(children[k].contains(".rpt")){
+                     if(children[k].endsWith(".rpt")){ // AL
+
+		                foundRpt = true; // AL
 
                         //only count the directories that are GSEA results files
                         counter++;
@@ -118,12 +125,21 @@ public class BuildBulkEnrichmentMapActionListener implements ActionListener{
                             //export the network to a pdf file in the main directory by the name of
                             // of the rpt file
                             try{
-                                File outputFile = new File(mainDirectory, name + ".pdf" );
-                                FileOutputStream outputstream = new FileOutputStream(outputFile);
+                                File outputFile = new File(mainDirectory, name + ".xgmml" );
+                                //FileOutputStream outputstream = new FileOutputStream(outputFile);
                                 CyNetworkView view  = Cytoscape.getCurrentNetworkView();
+                                CyNetwork nw = Cytoscape.getCurrentNetwork(); // AL
 
-                                PDFExporter exporter = new PDFExporter();
-                                exporter.export(view, outputstream);
+                                //PDFExporter exporter = new PDFExporter();
+                                //exporter.export(view, outputstream);
+
+                                // AL start
+				                FileWriter writer = new FileWriter(outputFile);
+
+				                XGMMLWriter exporter = new XGMMLWriter(nw, view);
+				                exporter.write(writer);
+				                writer.close();
+				                // AL end
 
                                 //output the session
                                 CytoscapeSessionWriter session = new CytoscapeSessionWriter(mainDirectory + File.separator + name + ".cys");
@@ -133,6 +149,9 @@ public class BuildBulkEnrichmentMapActionListener implements ActionListener{
                                 //make sure to empty the Enrichment map parameters
                                 Cytoscape.destroyNetwork(name);
 
+                                // AL
+				                System.gc();
+
                                 //create a new session for the next network
                                 Cytoscape.createNewSession();
 
@@ -140,10 +159,17 @@ public class BuildBulkEnrichmentMapActionListener implements ActionListener{
                             catch (FileNotFoundException e){
                                 System.out.println("Can't export network " + name + " .");
                             }catch (IOException e2){
-                                System.out.println("Can't export network " + name + " to pdf.");
-                            }catch (Exception e3){
+                               // AL start
+                                System.out.println("Can't export network " + name + " to xgmml.");
+                            }catch (URISyntaxException e3) {
+                                System.out.println("Can't export network " + name + " to xgmml.");
+			                }catch (JAXBException e4) {
+                                System.out.println("Can't export network " + name + " to xgmml.");
+                            //}catch (Exception e3){
+                            }catch (Exception eRest){ // AL end
                                 System.out.println("Can't export network " + name + ".cys");
                             }
+
 
                         }
 
