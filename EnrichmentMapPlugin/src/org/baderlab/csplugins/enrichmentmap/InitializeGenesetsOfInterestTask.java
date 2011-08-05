@@ -93,9 +93,9 @@ public class InitializeGenesetsOfInterestTask implements Task {
      * @return  true if successful and false otherwise.
      */
     public boolean initializeSets(){
-        if(taskMonitor == null){
+        /*if(taskMonitor == null){
             throw new IllegalStateException("Task Monitor is not set");
-        }
+        } */
         //create subset of genesets that contains only the genesets of interest with pvalue and qbalue less than values
         //specified by the user.
         HashMap enrichmentResults1 = params.getEnrichmentResults1();
@@ -205,6 +205,9 @@ public class InitializeGenesetsOfInterestTask implements Task {
                         GeneSet current_set = (GeneSet)genesets.get(current_name);
                         genesetsOfInterest.put(current_name, current_set);
                     }
+                    else if(genesetsOfInterest.containsKey(current_name)){
+                        //already found in genesets of interest - loading from session
+                    }
                     else
                         throw new IllegalThreadStateException("The Geneset: " + current_name + " is not found in the GMT file.");
 
@@ -243,6 +246,9 @@ public class InitializeGenesetsOfInterestTask implements Task {
                             genesetsOfInterest_set2.put(current_name,extra_set);
                         }
                     }
+                    }
+                    else if(genesetsOfInterest.containsKey(current_name) || genesetsOfInterest_set2.containsKey(current_name)){
+                        //this geneset is already in the set of interest - loaded in from session
                     }
                     else
                         throw new IllegalThreadStateException("The Geneset: " + current_name + " is not found in the GMT file.");
@@ -298,6 +304,9 @@ public class InitializeGenesetsOfInterestTask implements Task {
                                     }
                                 }else
                                     genesetsOfInterest.put(current_name, current_set);
+                            }
+                            else if(genesetsOfInterest.containsKey(current_name) || genesetsOfInterest_set2.containsKey(current_name)){
+                                //this geneset is already in the set of interest - loaded in from session
                             }
                             else{
                                 throw new IllegalThreadStateException("The Geneset: " + current_name + " is not found in the GMT file.");
@@ -381,6 +390,9 @@ public class InitializeGenesetsOfInterestTask implements Task {
                                     }
                                 }else
                                     genesetsOfInterest.put(current_name, current_set);
+                            }
+                            else if(genesetsOfInterest.containsKey(current_name) || genesetsOfInterest_set2.containsKey(current_name)){
+                                //this geneset is already in the set of interest - loaded in from session
                             }
                             else
                                 throw new IllegalThreadStateException("The Geneset: " + current_name + " is not found in the GMT file.");

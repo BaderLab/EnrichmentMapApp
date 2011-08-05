@@ -475,15 +475,19 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
                             else
                                 params.setEnrichmentResults2OfInterest(params.repopulateHashmap(fullText,4));
                         }
-                        //create file to deal with GSEA ranks for leading edge analysis.
-                        if(prop_file.getName().contains(".RANKS2Genes.txt")){
-                            params.setRank2geneDataset2(params.repopulateHashmap(fullText,7));
-                        }
+
                         //have to keep this method just in case old session files have ranks saved in this way
                         //it would only happen for sessions saved with version 0.8
                         if(prop_file.getName().contains(".RANKS2.txt")){
                             params.setDataset2Rankings(params.repopulateHashmap(fullText,6));
                         }
+                        //create file to deal with GSEA ranks for leading edge analysis.
+                        if(prop_file.getName().contains(".RANKS2Genes.txt")){
+                            params.setRank2geneDataset2(params.repopulateHashmap(fullText,7));
+                        }
+                        else if(params.getDataset1Rankings() != null){
+                         params.setRank2geneDataset1(params.getRank2geneDataset(params.getDataset1Rankings()));
+                    }
                     }
 
                 }
@@ -542,6 +546,20 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
                 String currentNetwork = (String)j.next();
                 CyNetworkView view = Cytoscape.getNetworkView(currentNetwork);
                 EnrichmentMapParameters params = (EnrichmentMapParameters)networks.get(currentNetwork);
+
+                //make sure both rank 2 gene and gene 2 rank exists if there are rank files
+                //if the file is missing then repopulate it from the Ranks
+                if(params.getRanksByName("Dataset 1 Ranking") != null && params.getRanksByName("Dataset 1 Ranking").size() > 0 && (params.getRank2geneDataset1() == null || params.getRank2geneDataset1().size() == 0 )){
+                         params.setRank2geneDataset1(params.getRank2geneDataset(params.getRanksByName("Dataset 1 Ranking")));
+                }
+                if(params.getRanksByName("Dataset 2 Ranking") != null && params.getRanksByName("Dataset 2 Ranking").size() > 0 && (params.getRank2geneDataset2() == null || params.getRank2geneDataset2().size() == 0 )){
+                         params.setRank2geneDataset2(params.getRank2geneDataset(params.getRanksByName("Dataset 2 Ranking")));
+                }
+
+                //initialize the Genesets (makes sure the leading edge is set correctly)
+                //Initialize the set of genesets and GSEA results that we want to compute over
+                InitializeGenesetsOfInterestTask genesets_init = new InitializeGenesetsOfInterestTask(params);
+                genesets_init.run();
 
                 //for each map compute the similarity matrix, (easier than storing it)
                 //compute the geneset similarities

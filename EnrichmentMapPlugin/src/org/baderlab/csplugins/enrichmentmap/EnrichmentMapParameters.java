@@ -1616,6 +1616,17 @@ public class EnrichmentMapParameters {
         return rank2geneDataset1;
     }
 
+    /*create a method to re-create rank to gene given the gene to rank*/
+    public HashMap<Integer, Integer> getRank2geneDataset(HashMap<Integer,Ranking> gene2rank){
+        HashMap<Integer,Integer> rank2gene = new HashMap<Integer, Integer>();
+
+        for(Iterator i = gene2rank.keySet().iterator();i.hasNext();){
+            Integer cur = (Integer)i.next();
+            rank2gene.put(gene2rank.get(cur).getRank(), cur);
+        }
+        return rank2gene;
+    }
+
     public void setRank2geneDataset1(HashMap<Integer, Integer> rank2geneDataset1) {
         this.rank2geneDataset1 = rank2geneDataset1;
     }
