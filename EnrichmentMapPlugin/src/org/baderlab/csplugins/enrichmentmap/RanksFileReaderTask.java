@@ -175,7 +175,7 @@ public class RanksFileReaderTask implements Task {
 
 
 
-            String name = tokens[0];
+            String name = tokens[0].toUpperCase();
             double score = 0;
 
             //if there are 5 columns in the data then the rank is the last column
