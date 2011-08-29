@@ -2,12 +2,15 @@ package org.baderlab.csplugins.enrichmentmap;
 
 import cytoscape.Cytoscape;
 import cytoscape.data.readers.TextFileReader;
+import cytoscape.generated.SessionState;
 import cytoscape.util.FileUtil;
+import cytoscape.util.OpenBrowser;
 import cytoscape.view.CytoscapeDesktop;
 import cytoscape.view.cytopanels.CytoPanel;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -43,9 +46,16 @@ public class BulkEMCreationPanel extends JPanel{
     private JFormattedTextField lowerLimitField;
     private JFormattedTextField upperLimitField;
 
+    private JRadioButton gsea;
+    private JRadioButton generic;
+    private JRadioButton david;
     private JRadioButton overlap;
     private JRadioButton jaccard;
     private JRadioButton combined;
+
+    private JRadioButton onesession;
+    private JRadioButton multisession;
+    private boolean sessions = true;
 
     DecimalFormat decFormat; // used in the formatted text fields
     NumberFormat numFormat;
@@ -54,6 +64,9 @@ public class BulkEMCreationPanel extends JPanel{
 
     public BulkEMCreationPanel() {
           params = new EnrichmentMapParameters();
+
+        //create the three main panels: scope, advanced options, and bottom
+        JPanel AnalysisTypePanel = createAnalysisTypePanel();
 
         //Put the options panel into a scroll pain
 
@@ -70,6 +83,8 @@ public class BulkEMCreationPanel extends JPanel{
         JPanel bottomPanel = createBottomPanel();
 
         //Add all the vertically aligned components to the main panel
+        //Add all the vertically aligned components to the main panel
+        add(AnalysisTypePanel,BorderLayout.NORTH);
         add(advancedOptionsContainer,BorderLayout.CENTER);
         add(bottomPanel,BorderLayout.SOUTH);
 
@@ -247,7 +262,42 @@ public class BulkEMCreationPanel extends JPanel{
            panel.add(lowerLimitPanel);
            panel.add(upperLimitPanel);
 
+            //add check box to indicate if you want to create one session or multiple sessions
+           ButtonGroup sessionsgroup;
 
+          onesession = new JRadioButton("One session File");
+          onesession.setActionCommand("onesession");
+          onesession.setSelected(true);
+          multisession = new JRadioButton("Multiple session files");
+          multisession.setActionCommand("multisession");
+
+           multisession.setSelected(true);
+           onesession.setSelected(false);
+
+          sessionsgroup = new javax.swing.ButtonGroup();
+          sessionsgroup.add(onesession);
+          sessionsgroup.add(multisession);
+
+
+          onesession.addActionListener(new java.awt.event.ActionListener() {
+                    public void actionPerformed(java.awt.event.ActionEvent evt) {
+                           selectOneMultiSessionActionPerformed(evt);
+                    }
+              });
+
+          multisession.addActionListener(new java.awt.event.ActionListener() {
+                    public void actionPerformed(java.awt.event.ActionEvent evt) {
+                           selectOneMultiSessionActionPerformed(evt);
+                    }
+              });
+
+        //create a panel for the two buttons
+              JPanel session_buttons = new JPanel();
+              session_buttons.setLayout(new BorderLayout());
+              session_buttons.add(onesession, BorderLayout.NORTH);
+              session_buttons.add(multisession, BorderLayout.SOUTH);
+
+           panel.add(session_buttons);
            collapsiblePanel.getContentPane().add(panel, BorderLayout.NORTH);
            return collapsiblePanel;
     }
@@ -714,6 +764,17 @@ public class BulkEMCreationPanel extends JPanel{
 
 //Action listeners for buttons in input panel
 
+    private void selectOneMultiSessionActionPerformed(java.awt.event.ActionEvent evt) {
+        if(evt.getActionCommand().equalsIgnoreCase("onesession")){
+            sessions = false;
+
+        }
+     else if(evt.getActionCommand().equalsIgnoreCase("multisession")){
+            sessions = true;
+        }
+    }
+
+
     /**
      * jaccard or overlap radio button action listener
      *
@@ -895,5 +956,100 @@ public class BulkEMCreationPanel extends JPanel{
 
     public void setParams(EnrichmentMapParameters params) {
         this.params = params;
+    }
+
+    private JPanel createAnalysisTypePanel() {
+
+
+        JPanel panel = new JPanel();
+
+        GridBagLayout gridbag = new GridBagLayout();
+        GridBagConstraints c = new GridBagConstraints();
+        panel.setLayout(gridbag);
+
+        c.weighty = 1;
+        c.weightx = 1;
+        c.insets = new Insets(0,0,0,0);
+        c.fill = GridBagConstraints.HORIZONTAL;
+        panel.setBorder(BorderFactory.createTitledBorder("Analysis Type"));
+
+        if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)){
+             gsea = new JRadioButton(EnrichmentMapParameters.method_GSEA, true);
+             generic = new JRadioButton(EnrichmentMapParameters.method_generic, false);
+             //david = new JRadioButton(EnrichmentMapParameters.method_DAVID, false);
+        }else if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_generic)){
+             gsea = new JRadioButton(EnrichmentMapParameters.method_GSEA, false);
+             generic = new JRadioButton(EnrichmentMapParameters.method_generic, true);
+             //david = new JRadioButton(EnrichmentMapParameters.method_DAVID, false);
+        }else if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_DAVID)){
+             gsea = new JRadioButton(EnrichmentMapParameters.method_GSEA, false);
+             generic = new JRadioButton(EnrichmentMapParameters.method_generic, false);
+             //david = new JRadioButton(EnrichmentMapParameters.method_DAVID, true);
+        }
+
+        gsea.setActionCommand(EnrichmentMapParameters.method_GSEA);
+        generic.setActionCommand(EnrichmentMapParameters.method_generic);
+        //david.setActionCommand(EnrichmentMapParameters.method_DAVID);
+
+        gsea.addActionListener(new java.awt.event.ActionListener() {
+                            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                                selectAnalysisTypeActionPerformed(evt);
+                            }
+        });
+        generic.addActionListener(new java.awt.event.ActionListener() {
+                            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                                selectAnalysisTypeActionPerformed(evt);
+                            }
+        });
+        /*david.addActionListener(new java.awt.event.ActionListener() {
+                            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                                selectAnalysisTypeActionPerformed(evt);
+                            }
+        });*/
+        ButtonGroup analysisOptions = new ButtonGroup();
+        analysisOptions.add(gsea);
+        analysisOptions.add(generic);
+        //analysisOptions.add(david);
+
+
+        c.gridx = 0;
+        c.gridwidth = 3;
+        c.gridy = 0;
+        gridbag.setConstraints(gsea, c);
+        panel.add(gsea);
+        c.gridy = 1;
+        gridbag.setConstraints(generic, c);
+        panel.add(generic);
+        /*c.gridy = 2;
+        gridbag.setConstraints(david, c);
+        panel.add(david);
+        */
+       JPanel topPanel = new JPanel();
+       topPanel.setLayout(new BorderLayout());
+       topPanel.add(panel, BorderLayout.CENTER);
+
+        return topPanel;
+    }
+
+     /**
+     * Change the analysis type (either GSEA or Generic)
+     * When the analysis type is changed the interface needs to be cleared and updated.
+     *
+     * @param evt
+     */
+  private void selectAnalysisTypeActionPerformed(ActionEvent evt){
+      String analysisType = evt.getActionCommand();
+
+      if(analysisType.equalsIgnoreCase(EnrichmentMapParameters.method_GSEA))
+          params.setMethod(EnrichmentMapParameters.method_GSEA);
+      else if(analysisType.equalsIgnoreCase(EnrichmentMapParameters.method_generic))
+          params.setMethod(EnrichmentMapParameters.method_generic);
+      /*else if(analysisType.equalsIgnoreCase(EnrichmentMapParameters.method_DAVID))
+          params.setMethod(EnrichmentMapParameters.method_DAVID);
+      */
+  }
+
+    public boolean isSessions() {
+        return sessions;
     }
 }

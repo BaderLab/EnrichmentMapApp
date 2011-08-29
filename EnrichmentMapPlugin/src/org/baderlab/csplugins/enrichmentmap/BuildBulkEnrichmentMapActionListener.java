@@ -80,104 +80,220 @@ public class BuildBulkEnrichmentMapActionListener implements ActionListener{
         int counter = 0;
 
 
-        for(int i=0;i<gsea_results.length;i++){
-            File current = new File(mainDirectory, gsea_results[i]);
-            //if this is a directory - go into it and get the .rpt file
-            if(current.isDirectory()){
-                String[] children = current.list();
-                boolean foundRpt = false;
-                for(int k=0;k<children.length;k++){
-                     if(children[k].endsWith(".rpt")){ // AL
+        //if the bulk results are for GSEA
+        if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)){
 
-		                foundRpt = true; // AL
+            for(int i=0;i<gsea_results.length;i++){
+                File current = new File(mainDirectory, gsea_results[i]);
+                //if this is a directory - go into it and get the .rpt file
+                if(current.isDirectory()){
+                    String[] children = current.list();
+                    boolean foundRpt = false;
+                    for(int k=0;k<children.length;k++){
+                         if(children[k].endsWith(".rpt")){ // AL
 
-                        //only count the directories that are GSEA results files
-                        counter++;
+		                    foundRpt = true; // AL
 
-                        if(counter >= lower && counter < upper){
-                            File rpt_file = new File(current, children[k]);
+                            //only count the directories that are GSEA results files
+                            counter++;
 
-                            //populate the fields based on this rpt file
-                            inputPanel.populateFieldsFromRpt(rpt_file);
-                            //make sure we have the up to date parameters.
-                            params = inputPanel.getParams();
+                            if(counter >= lower && counter < upper){
+                                File rpt_file = new File(current, children[k]);
 
-                            //Get the name of the RPT file
-                            String rpt_name = rpt_file.getName();
-                            //toeknize by "." and only use the first part (which should be the name of gsea run)
-                            String[] tokens = rpt_name.split("\\.");
-                            String name = tokens[0];
+                                //populate the fields based on this rpt file
+                                inputPanel.populateFieldsFromRpt(rpt_file);
+                                //make sure we have the up to date parameters.
+                                params = inputPanel.getParams();
 
-                            params.setNetworkName(name);
+                                //Get the name of the RPT file
+                                String rpt_name = rpt_file.getName();
+                                //toeknize by "." and only use the first part (which should be the name of gsea run)
+                                String[] tokens = rpt_name.split("\\.");
+                                String name = tokens[0];
 
-                            //build an enrichment map
-                            BuildEnrichmentMapTask new_map = new BuildEnrichmentMapTask(params);
-                            boolean success = TaskManager.executeTask(new_map, config);
+                                params.setNetworkName(name);
 
-                            Cytoscape.getCurrentNetworkView().fitContent();
+                                //build an enrichment map
+                                BuildEnrichmentMapTask new_map = new BuildEnrichmentMapTask(params);
+                                boolean success = TaskManager.executeTask(new_map, config);
 
-                            //reduce height and width by 50%
-                            Cytoscape.getCurrentNetworkView().setZoom(0.5);
-                            Cytoscape.getCurrentNetworkView().updateView();
+                                Cytoscape.getCurrentNetworkView().fitContent();
 
-                            //Cytoscape.getCurrentNetworkView().redrawGraph(true,true);
+                                //reduce height and width by 50%
+                                Cytoscape.getCurrentNetworkView().setZoom(0.5);
+                                Cytoscape.getCurrentNetworkView().updateView();
 
-                            //export the network to a pdf file in the main directory by the name of
-                            // of the rpt file
-                            try{
-                                File outputFile = new File(mainDirectory, name + ".xgmml" );
-                                //FileOutputStream outputstream = new FileOutputStream(outputFile);
-                                CyNetworkView view  = Cytoscape.getCurrentNetworkView();
-                                CyNetwork nw = Cytoscape.getCurrentNetwork(); // AL
+                                //Cytoscape.getCurrentNetworkView().redrawGraph(true,true);
 
-                                //PDFExporter exporter = new PDFExporter();
-                                //exporter.export(view, outputstream);
+                                //export the network to a pdf file in the main directory by the name of
+                                // of the rpt file
+                                try{
+                                    File outputFile = new File(mainDirectory, name + ".xgmml" );
+                                    //FileOutputStream outputstream = new FileOutputStream(outputFile);
+                                    CyNetworkView view  = Cytoscape.getCurrentNetworkView();
+                                    CyNetwork nw = Cytoscape.getCurrentNetwork(); // AL
 
-                                // AL start
-				                FileWriter writer = new FileWriter(outputFile);
+                                    //PDFExporter exporter = new PDFExporter();
+                                    //exporter.export(view, outputstream);
 
-				                XGMMLWriter exporter = new XGMMLWriter(nw, view);
-				                exporter.write(writer);
-				                writer.close();
-				                // AL end
+                                    // AL start
+		    		                FileWriter writer = new FileWriter(outputFile);
 
-                                //output the session
-                                CytoscapeSessionWriter session = new CytoscapeSessionWriter(mainDirectory + File.separator + name + ".cys");
-                                System.out.println(mainDirectory + File.separator + name + ".cys");
-                                session.writeSessionToDisk();
+		    		                XGMMLWriter exporter = new XGMMLWriter(nw, view);
+		    		                exporter.write(writer);
+		    		                writer.close();
+		    		                // AL end
 
-                                //make sure to empty the Enrichment map parameters
-                                Cytoscape.destroyNetwork(name);
+                                    //output the session
+                                    CytoscapeSessionWriter session = new CytoscapeSessionWriter(mainDirectory + File.separator + name + ".cys");
+                                    System.out.println(mainDirectory + File.separator + name + ".cys");
+                                    session.writeSessionToDisk();
 
-                                // AL
-				                System.gc();
+                                    //make sure to empty the Enrichment map parameters
+                                    Cytoscape.destroyNetwork(name);
 
-                                //create a new session for the next network
-                                Cytoscape.createNewSession();
+                                    // AL
+		    		                System.gc();
+
+                                    //create a new session for the next network
+                                    Cytoscape.createNewSession();
+
+                                }
+                                catch (FileNotFoundException e){
+                                    System.out.println("Can't export network " + name + " .");
+                                }catch (IOException e2){
+                                   // AL start
+                                    System.out.println("Can't export network " + name + " to xgmml.");
+                                }catch (URISyntaxException e3) {
+                                    System.out.println("Can't export network " + name + " to xgmml.");
+		    	                }catch (JAXBException e4) {
+                                    System.out.println("Can't export network " + name + " to xgmml.");
+                                //}catch (Exception e3){
+                                }catch (Exception eRest){ // AL end
+                                    System.out.println("Can't export network " + name + ".cys");
+                                }
+
 
                             }
-                            catch (FileNotFoundException e){
-                                System.out.println("Can't export network " + name + " .");
-                            }catch (IOException e2){
-                               // AL start
-                                System.out.println("Can't export network " + name + " to xgmml.");
-                            }catch (URISyntaxException e3) {
-                                System.out.println("Can't export network " + name + " to xgmml.");
-			                }catch (JAXBException e4) {
-                                System.out.println("Can't export network " + name + " to xgmml.");
-                            //}catch (Exception e3){
-                            }catch (Exception eRest){ // AL end
-                                System.out.println("Can't export network " + name + ".cys");
-                            }
-
 
                         }
+                    }
+                }
 
+            }
+        }
+        else if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_generic)){
+
+            //get the gmt file from the directory
+            String gmtfile="";
+            for(int i=0;i<gsea_results.length;i++){
+                //if this is a directory - go into it and get the .rpt file
+                if(gsea_results[i].endsWith("gmt")){
+                    if(gmtfile.equalsIgnoreCase("")){
+                        File current = new File(mainDirectory, gsea_results[i]);
+                        gmtfile = current.getAbsolutePath();
+                        params.setGMTFileName(gmtfile);
+                    }
+                    else{
+                        JOptionPane.showMessageDialog(Cytoscape.getDesktop(), "There are multiple gmt files defined." + gsea_results + ", " + gmtfile, "Too many gmt files", JOptionPane.WARNING_MESSAGE);
                     }
                 }
             }
 
+            if(gmtfile.equalsIgnoreCase(""))
+                JOptionPane.showMessageDialog(Cytoscape.getDesktop(), "There are no gmt files defined.  In order to run bulk EM with generic outputs a gmt file needs to be in the same directory with all the enrichment results" , "No gmt file found", JOptionPane.WARNING_MESSAGE);
+
+            //go through all the files in the directory
+            //for each txt file create an enrichment map.
+            for(int i=0;i<gsea_results.length;i++){
+                File current = new File(mainDirectory, gsea_results[i]);
+                //if this is a directory - go into it and get the .rpt file
+
+                if(gsea_results[i].endsWith(".txt")){
+
+                    params.setEnrichmentDataset1FileName1(current.getAbsolutePath());
+
+                    //make sure we have the up to date parameters.
+                    params = inputPanel.getParams();
+
+                    //Get the name of the RPT file
+                    String run_name = current.getName();
+                    //toeknize by "." and only use the first part (which should be the name of gsea run)
+                    //String[] tokens = run_name.split("\\.");
+                    //String name = tokens[0];
+
+                    String name = run_name;
+                    params.setNetworkName(name);
+
+                    //build an enrichment map
+                    BuildEnrichmentMapTask new_map = new BuildEnrichmentMapTask(params);
+                    boolean success = TaskManager.executeTask(new_map, config);
+
+                    Cytoscape.getCurrentNetworkView().fitContent();
+
+                    //reduce height and width by 50%
+                    Cytoscape.getCurrentNetworkView().setZoom(0.5);
+                    Cytoscape.getCurrentNetworkView().updateView();
+
+                    //Cytoscape.getCurrentNetworkView().redrawGraph(true,true);
+
+                    //export the network to a pdf file in the main directory by the name of
+                    // of the rpt file
+                    if(inputPanel.isSessions()){
+                        try{
+                            File outputFile = new File(mainDirectory, name + ".xgmml" );
+                            //FileOutputStream outputstream = new FileOutputStream(outputFile);
+                            CyNetworkView view  = Cytoscape.getCurrentNetworkView();
+                            CyNetwork nw = Cytoscape.getCurrentNetwork(); // AL
+
+                            //PDFExporter exporter = new PDFExporter();
+                            //exporter.export(view, outputstream);
+
+                            // AL start
+		                     FileWriter writer = new FileWriter(outputFile);
+
+		                     XGMMLWriter exporter = new XGMMLWriter(nw, view);
+		                     exporter.write(writer);
+		                     writer.close();
+		                     // AL end
+
+                            //output the session
+                            CytoscapeSessionWriter session = new CytoscapeSessionWriter(mainDirectory + File.separator + name + ".cys");
+                            System.out.println(mainDirectory + File.separator + name + ".cys");
+                            session.writeSessionToDisk();
+
+                            //make sure to empty the Enrichment map parameters
+                            Cytoscape.destroyNetwork(name);
+
+                            // AL
+		                     System.gc();
+
+                            //create a new session for the next network
+                            Cytoscape.createNewSession();
+
+                        }
+                        catch (FileNotFoundException e){
+                            System.out.println("Can't export network " + name + " .");
+                        }catch (IOException e2){
+                           // AL start
+                            System.out.println("Can't export network " + name + " to xgmml.");
+                        }catch (URISyntaxException e3) {
+                            System.out.println("Can't export network " + name + " to xgmml.");
+		                 }catch (JAXBException e4) {
+                            System.out.println("Can't export network " + name + " to xgmml.");
+                        //}catch (Exception e3){
+                        }catch (Exception eRest){ // AL end
+                            System.out.println("Can't export network " + name + ".cys");
+                        }
+
+                    }
+
+
+
+                }
+            }
         }
+
 
        /*String errors = params.checkMinimalRequirements();
 
