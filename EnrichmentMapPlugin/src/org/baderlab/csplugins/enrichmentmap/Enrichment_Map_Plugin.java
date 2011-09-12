@@ -414,14 +414,18 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
                     if(prop_file.getName().contains(".genes.txt")){
                         HashMap<String, Integer> genes = params.repopulateHashmap(fullText,2);
                         params.setGenes(genes);
-                        // Ticket #107 : restore also gene count (needed to determine the next free hash in case we do PostAnalysis with a restored session)
-                        params.setNumberOfGenes( Math.max( params.getNumberOfGenes(), Collections.max(genes.values())+1 ));
+                        //ticket #188 - unable to open session files that have empty enrichment maps.
+                        if(genes != null && !genes.isEmpty())
+                            // Ticket #107 : restore also gene count (needed to determine the next free hash in case we do PostAnalysis with a restored session)
+                            params.setNumberOfGenes( Math.max( params.getNumberOfGenes(), Collections.max(genes.values())+1 ));
                     }
                     if(prop_file.getName().contains(".hashkey2genes.txt")){
                         HashMap<Integer,String> hashkey2gene = params.repopulateHashmap(fullText,5);
                         params.setHashkey2gene(hashkey2gene);
-                        // Ticket #107 : restore also gene count (needed to determine the next free hash in case we do PostAnalysis with a restored session)
-                        params.setNumberOfGenes( Math.max( params.getNumberOfGenes(), Collections.max(hashkey2gene.keySet())+1 ));
+                        //ticket #188 - unable to open session files that have empty enrichment maps.
+                        if(hashkey2gene != null && !hashkey2gene.isEmpty() )
+                            // Ticket #107 : restore also gene count (needed to determine the next free hash in case we do PostAnalysis with a restored session)
+                            params.setNumberOfGenes( Math.max( params.getNumberOfGenes(), Collections.max(hashkey2gene.keySet())+1 ));
                     }
 
 
