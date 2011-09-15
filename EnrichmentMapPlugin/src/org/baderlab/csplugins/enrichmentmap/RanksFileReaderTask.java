@@ -79,6 +79,9 @@ public class RanksFileReaderTask implements Task {
     private TaskMonitor taskMonitor = null;
     private boolean interrupted = false;
 
+    //distinguish between load from enrichment map input panel and heatmap interface
+    private boolean loadFromHeatmap = false;
+
     /**
      * Class constructor
      *
@@ -86,10 +89,11 @@ public class RanksFileReaderTask implements Task {
      * @param rankFileName - file name of ranks file
      * @param dataset - which dataset is this rank file related to (dataset 1 or dataset 2)
      */
-    public RanksFileReaderTask(EnrichmentMapParameters params, String rankFileName, int dataset) {
+    public RanksFileReaderTask(EnrichmentMapParameters params, String rankFileName, int dataset, boolean loadFromHeatmap) {
         this.params = params;
         RankFileName = rankFileName;
         this.dataset = dataset;
+        this.loadFromHeatmap = loadFromHeatmap;
     }
 
     /**
@@ -100,11 +104,12 @@ public class RanksFileReaderTask implements Task {
      * @param dataset - which dataset is this rank file related to (dataset 1 or dataset 2)
      * @param taskMonitor - current task monitor
      */
-    public RanksFileReaderTask(EnrichmentMapParameters params, String rankFileName, int dataset, TaskMonitor taskMonitor) {
+    public RanksFileReaderTask(EnrichmentMapParameters params, String rankFileName, int dataset, TaskMonitor taskMonitor, boolean loadFromHeatmap) {
         this.params = params;
         RankFileName = rankFileName;
         this.dataset = dataset;
         this.taskMonitor = taskMonitor;
+        this.loadFromHeatmap = loadFromHeatmap;
     }
 
     /**
@@ -114,10 +119,11 @@ public class RanksFileReaderTask implements Task {
      * @param rankFileName - file name of ranks file
      * @param ranks_name - name of rankings to be used in heat map drop down to refer to it.
      */
-     public RanksFileReaderTask(EnrichmentMapParameters params, String rankFileName, String ranks_name) {
+     public RanksFileReaderTask(EnrichmentMapParameters params, String rankFileName, String ranks_name, boolean loadFromHeatmap) {
         this.params = params;
         RankFileName = rankFileName;
         this.ranks_name = ranks_name;
+         this.loadFromHeatmap = loadFromHeatmap;
     }
 
     /**
@@ -182,7 +188,7 @@ public class RanksFileReaderTask implements Task {
             if(tokens.length == 5 ){
                 //ignore rows where the expected rank value is not a valid double
                 try{
-                    gseaDefinedRanks = true;
+                    //gseaDefinedRanks = true;
                     score = Double.parseDouble(tokens[4]);
                 } catch (NumberFormatException nfe){
                     if(lineNumber == 0){
@@ -214,6 +220,9 @@ public class RanksFileReaderTask implements Task {
                 continue;
             }
 
+             if((tokens.length == 5 ) || (params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA) && !loadFromHeatmap))
+                 gseaDefinedRanks = true;
+
             //add score to array of scores
             score_collector[nScores-1] = score;
 
@@ -225,7 +234,13 @@ public class RanksFileReaderTask implements Task {
                 //is that this is a GSEA rank file and the order of the scores
                 //is indicative of the rank
                 //TODO: need a better way of defining GSEA or user defined rank files.
-                 if(tokens.length == 5 ){
+                //Ticket #189 if the user uses the rnk file from the of the edb directory insteaad of 5 column
+                // rank file from the main directory (as entered by rpt load) the leading edge
+                // is calculated wrong because it only has 2 columns but still needs to have the ranks defined
+                // based on the order of the scores.
+                // Making the assumption that all rank files loaded for GSEA results from EM input panel are leading
+                // edge compatible files.
+                 if((tokens.length == 5 ) || (params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA) && !loadFromHeatmap)){
                    current_ranking = new Ranking(name,score,nScores);
                    rank2gene.put(nScores,genekey);
                  }

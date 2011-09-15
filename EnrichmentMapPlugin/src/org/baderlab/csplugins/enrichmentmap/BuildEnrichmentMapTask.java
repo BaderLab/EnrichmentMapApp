@@ -277,7 +277,7 @@ public class BuildEnrichmentMapTask implements Task {
 
             //check to see if we have ranking files
             if(params.getDataset1RankedFile() != null){
-                RanksFileReaderTask ranking1 = new RanksFileReaderTask(params,params.getDataset1RankedFile(),1,taskMonitor);
+                RanksFileReaderTask ranking1 = new RanksFileReaderTask(params,params.getDataset1RankedFile(),1,taskMonitor,false);
                 ranking1.run();
             }
 
@@ -293,7 +293,7 @@ public class BuildEnrichmentMapTask implements Task {
                 }
                 //check to see if we have ranking files
                 if(params.getDataset2RankedFile() != null){
-                    RanksFileReaderTask ranking2 = new RanksFileReaderTask(params,params.getDataset2RankedFile(),2,taskMonitor);
+                    RanksFileReaderTask ranking2 = new RanksFileReaderTask(params,params.getDataset2RankedFile(),2,taskMonitor,false);
                     ranking2.run();
                 }
 

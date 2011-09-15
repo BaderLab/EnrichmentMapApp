@@ -1173,6 +1173,11 @@ public class EnrichmentMapInputPanel extends JPanel {
      */
    private void populateFieldsFromRpt(File rptFile, boolean dataset1){
 
+       if(dataset1)
+           params.setLoadedFromRpt_dataset1(true);
+       else
+           params.setLoadedFromRpt_dataset2(true);
+
         TextFileReader reader = new TextFileReader(rptFile.getAbsolutePath());
         reader.read();
         String fullText = reader.getText();
@@ -1901,6 +1906,11 @@ public class EnrichmentMapInputPanel extends JPanel {
      private void selectRank1FileButtonActionPerformed(
                java.awt.event.ActionEvent evt) {
 
+         //For GSEA input, Check to see if there is already a rank file defined and if it was from the rpt
+         if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA) &&
+                 params.isLoadedFromRpt_dataset1() && !Dataset1RankFileTextField.getText().equalsIgnoreCase(""))
+             JOptionPane.showMessageDialog(Cytoscape.getDesktop(),"GSEA defined rank file is in a specific order and is used to calculate the leading edge.  \n If you change this file the leading edges will be calculated incorrectly.","Trying to change pre-defined GSEA rank file",JOptionPane.WARNING_MESSAGE);
+
 //         Create FileFilter
         CyFileFilter filter = new CyFileFilter();
 
@@ -1929,6 +1939,12 @@ public class EnrichmentMapInputPanel extends JPanel {
      */
      private void selectRank2FileButtonActionPerformed(
                java.awt.event.ActionEvent evt) {
+
+        //For GSEA input, Check to see if there is already a rank file defined and if it was from the rpt
+         if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA) &&
+                 params.isLoadedFromRpt_dataset2() && !Dataset2RankFileTextField.getText().equalsIgnoreCase(""))
+             JOptionPane.showMessageDialog(Cytoscape.getDesktop(),"GSEA defined rank file is in a specific order and is used to calculate the leading edge.  \n If you change this file the leading edges will be calculated incorrectly.","Trying to change pre-defined GSEA rank file",JOptionPane.WARNING_MESSAGE);
+
 
         //Create FileFilter
         CyFileFilter filter = new CyFileFilter();

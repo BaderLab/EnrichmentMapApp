@@ -150,7 +150,7 @@ public class HeatMapActionListener implements ActionListener {
                 }
 
                 //load the new ranks file
-                RanksFileReaderTask ranking1 = new RanksFileReaderTask(params,file.getAbsolutePath(),ranks_name);
+                RanksFileReaderTask ranking1 = new RanksFileReaderTask(params,file.getAbsolutePath(),ranks_name,true);
                 ranking1.run();
 
                 //add an index to the ascending array for the new rank file.

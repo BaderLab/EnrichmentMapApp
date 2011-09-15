@@ -117,6 +117,10 @@ public class EnrichmentMapParameters {
 
     private boolean similarityCutOffChanged = false;
 
+    private boolean loadedFromRpt_dataset1 = false;
+    private boolean loadedFromRpt_dataset2 = false;
+
+
     //value to store the constant needed for constructing the combined similarity metric
     private double combinedConstant;
 
@@ -1902,4 +1906,19 @@ public class EnrichmentMapParameters {
     public void setBulkEM(boolean bulkEM) {
         BulkEM = bulkEM;
     }
+
+    public void setLoadedFromRpt_dataset1(boolean loaded){
+        loadedFromRpt_dataset1 = loaded;
+    }
+    public void setLoadedFromRpt_dataset2(boolean loaded){
+        loadedFromRpt_dataset2 = loaded;
+    }
+
+    public boolean isLoadedFromRpt_dataset1(){
+        return loadedFromRpt_dataset1;
+    }
+    public boolean isLoadedFromRpt_dataset2(){
+        return loadedFromRpt_dataset2;
+    }
+
 }
