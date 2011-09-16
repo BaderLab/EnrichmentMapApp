@@ -164,6 +164,10 @@ public class GMTFileReaderTask implements Task {
 
                 String[] tokens = line.split("\t");
 
+                //check for EM specific header.
+                if(i==0  && tokens[0].equalsIgnoreCase("Enrichment Map compatible Geneset File"))
+                    params.setEMgmt(true);
+
                 //only go through the lines that have at least a gene set name and description.
                 if(tokens.length >= 2){
                     //The first column of the file is the name of the geneset
@@ -217,6 +221,9 @@ public class GMTFileReaderTask implements Task {
                     //finished parsing that geneset
                     //add the current geneset to the hashmap of genesets
                     genesets.put(Name, gs);
+
+                    //add the geneset type to the list of types
+                    params.addGenesetType(gs.getType());
                  }
 
             }

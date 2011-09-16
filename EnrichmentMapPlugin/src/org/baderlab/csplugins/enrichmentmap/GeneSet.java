@@ -70,6 +70,8 @@ public class GeneSet {
     private String Description;
     //genes associated with this gene set
     private HashSet<Integer> genes = null;
+    //add type of geneset - specific to Enrichment Map gene set files
+    private String type = "none";
 
 
     /**
@@ -84,6 +86,11 @@ public class GeneSet {
         this.Description = descrip;
 
         genes = new HashSet<Integer>();
+
+        //if you can split the name using '|', take the first token to be the gene set type
+        String[] name_tokens = name.split("|");
+        if(name_tokens.length > 1)
+            this.type = name_tokens[0];
 
     }
 
@@ -150,6 +157,13 @@ public class GeneSet {
         this.genes = genes;
     }
 
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
 
     public String toString(){
         StringBuffer geneset = new StringBuffer();

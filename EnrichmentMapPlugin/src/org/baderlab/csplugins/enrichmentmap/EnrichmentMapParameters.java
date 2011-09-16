@@ -150,6 +150,14 @@ public class EnrichmentMapParameters {
     private HashSet<Integer> datasetGenes;
     private int NumberOfGenes = 0;
 
+    //add a hash to store the different types of genesets (to be used for visual style)
+    private HashSet<String> GenesetTypes = new HashSet<String>();
+
+    //add boolean to indicate whether the geneset files are EM specific gmt files
+    //if they are the visual style changes slightly
+    private boolean EMgmt = false;
+
+
     //only used when there are two distinct expression sets.
     private HashSet<Integer> datasetGenes_set2;
     private HashMap<String, GeneSet> filteredGenesets_set2;
@@ -714,6 +722,12 @@ public class EnrichmentMapParameters {
         this.GSEAResultsDirName = copy.getGSEAResultsDirName();
         this.upperlimit = copy.getUpperlimit();
         this.lowerlimit = copy.getLowerlimit();
+
+        //copy loadRpt, EGgmt and genesettypes
+        this.loadedFromRpt_dataset1 = copy.isLoadedFromRpt_dataset1();
+       this.loadedFromRpt_dataset2 = copy.isLoadedFromRpt_dataset2();
+       this.EMgmt = copy.isEMgmt();
+       this.GenesetTypes = copy.getGenesetTypes();
 
        }
 
@@ -1921,4 +1935,26 @@ public class EnrichmentMapParameters {
         return loadedFromRpt_dataset2;
     }
 
+    public void setGenesetTypes(HashSet<String> types){
+        this.GenesetTypes = types;
+    }
+
+    public HashSet<String> getGenesetTypes(){
+       return this.GenesetTypes;
+    }
+
+    public void addGenesetType(String type){
+        if(!GenesetTypes.contains(type)){
+            GenesetTypes.add(type);
+
+        }
+    }
+
+    public boolean isEMgmt(){
+        return EMgmt;
+    }
+
+    public void setEMgmt(boolean flag){
+        this.EMgmt = flag;
+    }
 }

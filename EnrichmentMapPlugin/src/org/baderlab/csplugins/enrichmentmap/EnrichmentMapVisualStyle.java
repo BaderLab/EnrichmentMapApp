@@ -71,6 +71,7 @@ public class EnrichmentMapVisualStyle {
     public static String NAME = "Name";
     public static String GS_DESCR = "GS_DESCR";
     public static String FORMATTED_NAME = "Formatted_name";
+    public static String GS_SOURCE = "GS_Source";
     public static String GENES = "Genes";
     public static String ENR_GENES = "Enrichment_Genes";
     public static String GS_TYPE = "GS_Type";
@@ -245,6 +246,10 @@ public class EnrichmentMapVisualStyle {
         // Passthrough Mapping - set node label
         PassThroughMapping pm = new PassThroughMapping(new String(), prefix + EnrichmentMapVisualStyle.FORMATTED_NAME);
 
+        //if it is an EMgmt then we want the node label to be the description.
+        if(params.isEMgmt()){
+            pm = new PassThroughMapping(new String(), prefix + EnrichmentMapVisualStyle.GS_DESCR);
+        }
 
         Calculator nlc = new BasicCalculator(prefix +"nodeLabel",
                                                           pm, VisualPropertyType.NODE_LABEL);
@@ -336,6 +341,15 @@ public class EnrichmentMapVisualStyle {
 
         Calculator nodeColorCalculator = new BasicCalculator(prefix + "ES2Colour", continuousMapping, VisualPropertyType.NODE_FILL_COLOR);
          nodeAppCalc.setCalculator(nodeColorCalculator);
+
+
+        //if it is an EM geneset file and there are more than one Geneset type, map the types to shapes.
+        if(params.isEMgmt() && params.getGenesetTypes().size() > 1){
+            DiscreteMapping disMapping = new DiscreteMapping( new NodeShape, ObjectMapping.NODE_MAPPING);
+            disMapping.setControllingAttributeName(prefix + EnrichmentMapVisualStyle.);
+        }
+
+
        vs.setNodeAppearanceCalculator(nodeAppCalc);
 
 
