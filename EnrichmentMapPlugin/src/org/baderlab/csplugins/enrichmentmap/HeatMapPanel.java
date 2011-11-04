@@ -1346,7 +1346,7 @@ public class HeatMapPanel extends JPanel {
         }
         //only create a ranking if there are genes in the expression set and there
         //is more than one column of data
-        if(((set1_size > 0) || (set2_size >0)) && ((numdatacolumns + numdatacolumns2) > 1)){
+        if(((set1_size > 1) || (set2_size >1)) && ((numdatacolumns + numdatacolumns2) > 1)){
 
             //check to see how many genes there are, if there are more than 1000 issue warning that
             //clustering will take a long time and give the user the option to abandon the clustering
