@@ -65,6 +65,9 @@ public class GenericResult extends EnrichmentResult{
     //the phenotype is deduced from the sign of the ES score so create a variable to store
     //the phenotype.
     private double NES = 1.0;
+
+     //add type of geneset - specific to Enrichment Map gene set files
+    private String source = "none";
     
 
     /**
@@ -81,6 +84,8 @@ public class GenericResult extends EnrichmentResult{
             this.fdrqvalue = Double.parseDouble(tokens[5]);
             this.NES = Double.parseDouble(tokens[6]);
 
+        setSource();
+
     }
 
     /**
@@ -96,6 +101,8 @@ public class GenericResult extends EnrichmentResult{
         this.description = description;
         this.pvalue = pvalue;
         this.gsSize = gssize;
+
+        setSource();
     }
 
     /**
@@ -113,6 +120,7 @@ public class GenericResult extends EnrichmentResult{
         this.pvalue = pvalue;
         this.gsSize = gssize;
         this.fdrqvalue = fdrqvalue;
+        setSource();
     }
 
     /**
@@ -132,6 +140,7 @@ public class GenericResult extends EnrichmentResult{
         this.pvalue = pvalue;
         this.fdrqvalue = fdrqvalue;
         this.NES = phenotype;
+        setSource();
     }
 
     /**
@@ -217,5 +226,21 @@ public class GenericResult extends EnrichmentResult{
     public String toString(){
 
         return name + "\t" + description + "\t" + pvalue + "\t" + gsSize + "\t" + fdrqvalue + "\t" + NES;
+    }
+
+     public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        source = source;
+    }
+
+    private void setSource(){
+        //if we can tokenize the name by "%" then set the source to the second item in the name
+        //if you can split the name using '|', take the second token to be the gene set type
+        String[] name_tokens = name.split("%");
+        if(name_tokens.length > 1)
+            this.source = name_tokens[1];
     }
 }

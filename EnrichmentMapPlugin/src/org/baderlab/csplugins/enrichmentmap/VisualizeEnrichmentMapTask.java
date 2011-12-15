@@ -538,6 +538,7 @@ public class VisualizeEnrichmentMapTask implements Task {
         nodeAttrs.setAttribute(node.getIdentifier(), prefix + EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1, result.getFdrqvalue());
         nodeAttrs.setAttribute(node.getIdentifier(), prefix + EnrichmentMapVisualStyle.GS_SIZE_DATASET1, result.getGsSize());
         nodeAttrs.setAttribute(node.getIdentifier(), prefix + EnrichmentMapVisualStyle.GS_TYPE, EnrichmentMapVisualStyle.GS_TYPE_ENRICHMENT);
+        nodeAttrs.setAttribute(node.getIdentifier(), prefix + EnrichmentMapVisualStyle.GS_SOURCE, result.getSource());
         if(result.getNES()>=0){
             nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.COLOURING_DATASET1,  (1-result.getPvalue()));
         }
@@ -565,6 +566,7 @@ public class VisualizeEnrichmentMapTask implements Task {
         nodeAttrs.setAttribute(node.getIdentifier(), prefix + EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2, result.getFdrqvalue());
         nodeAttrs.setAttribute(node.getIdentifier(), prefix + EnrichmentMapVisualStyle.GS_SIZE_DATASET2, result.getGsSize());
         nodeAttrs.setAttribute(node.getIdentifier(), prefix + EnrichmentMapVisualStyle.GS_TYPE, EnrichmentMapVisualStyle.GS_TYPE_ENRICHMENT);
+        nodeAttrs.setAttribute(node.getIdentifier(), prefix + EnrichmentMapVisualStyle.GS_SOURCE, result.getSource());
         if(result.getNES()>=0){
             nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.COLOURING_DATASET2,  (1-result.getPvalue()));
         }
@@ -595,6 +597,7 @@ public class VisualizeEnrichmentMapTask implements Task {
         nodeAttrs.setAttribute(node.getIdentifier(), prefix + EnrichmentMapVisualStyle.ES_DATASET1, result.getES());
         nodeAttrs.setAttribute(node.getIdentifier(), prefix + EnrichmentMapVisualStyle.NES_DATASET1, result.getNES());
         nodeAttrs.setAttribute(node.getIdentifier(), prefix + EnrichmentMapVisualStyle.GS_TYPE, EnrichmentMapVisualStyle.GS_TYPE_ENRICHMENT);
+        nodeAttrs.setAttribute(node.getIdentifier(), prefix + EnrichmentMapVisualStyle.GS_SOURCE, result.getSource());
         if(result.getNES()>=0){
             nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.COLOURING_DATASET1,  (1-result.getPvalue()));
         }
@@ -626,6 +629,7 @@ public class VisualizeEnrichmentMapTask implements Task {
         nodeAttrs.setAttribute(node.getIdentifier(), prefix + EnrichmentMapVisualStyle.ES_DATASET2, result.getES());
         nodeAttrs.setAttribute(node.getIdentifier(), prefix + EnrichmentMapVisualStyle.NES_DATASET2, result.getNES());
         nodeAttrs.setAttribute(node.getIdentifier(), prefix + EnrichmentMapVisualStyle.GS_TYPE, EnrichmentMapVisualStyle.GS_TYPE_ENRICHMENT);
+        nodeAttrs.setAttribute(node.getIdentifier(), prefix + EnrichmentMapVisualStyle.GS_SOURCE, result.getSource());
         if(result.getNES()>=0){
             nodeAttrs.setAttribute(node.getIdentifier(), prefix+ EnrichmentMapVisualStyle.COLOURING_DATASET2,  (1-result.getPvalue()));
         }

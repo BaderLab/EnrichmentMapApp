@@ -73,6 +73,8 @@ public class GSEAResult extends EnrichmentResult{
     //translate the rank at max to the corresponding score at the max
     private double scoreAtMax;
 
+    private String Source = "none";
+
     /**
      * Class Constructor
      *
@@ -94,6 +96,8 @@ public class GSEAResult extends EnrichmentResult{
         this.fwerqvalue = fwerqvalue;
         this.rankAtMax = rankAtMax;
         this.scoreAtMax = scoreAtMax;
+
+        setSource();
     }
 
     /**
@@ -124,6 +128,7 @@ public class GSEAResult extends EnrichmentResult{
             this.rankAtMax = -1;
             this.scoreAtMax = -1;
         }
+        setSource();
     }
 
     /**
@@ -220,5 +225,21 @@ public class GSEAResult extends EnrichmentResult{
 
         return Name + "\t" + gsSize + "\t" + ES + "\t" + NES +"\t"+pvalue + "\t" + fdrqvalue + "\t" + fwerqvalue + "\t"
                 + rankAtMax + "\t" + scoreAtMax ;
+    }
+
+    public String getSource() {
+        return Source;
+    }
+
+    public void setSource(String source) {
+        Source = source;
+    }
+
+    private void setSource(){
+        //if we can tokenize the name by "%" then set the source to the second item in the name
+        //if you can split the name using '|', take the second token to be the gene set type
+        String[] name_tokens = Name.split("%");
+        if(name_tokens.length > 1)
+            this.Source = name_tokens[1];
     }
 }

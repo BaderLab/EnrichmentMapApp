@@ -403,6 +403,10 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
                     reader.read();
                     String fullText = reader.getText();
 
+                    //if the file is empty then skip it
+                    if(fullText == null || fullText.equalsIgnoreCase(""))
+                        continue;
+
                     if(prop_file.getName().contains(".gmt")){
                         if (prop_file.getName().contains(".signature.gmt"))
                             params.setSignatureGenesets(params.repopulateHashmap(fullText, 1));

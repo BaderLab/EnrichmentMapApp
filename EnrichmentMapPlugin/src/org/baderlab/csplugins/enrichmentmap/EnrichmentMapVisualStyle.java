@@ -50,6 +50,8 @@ import cytoscape.visual.mappings.*;
 import cytoscape.CyNetwork;
 
 import java.awt.*;
+import java.util.HashSet;
+import java.util.Iterator;
 
 /**
  * Created by
@@ -344,9 +346,40 @@ public class EnrichmentMapVisualStyle {
 
 
         //if it is an EM geneset file and there are more than one Geneset type, map the types to shapes.
-        if(params.isEMgmt() && params.getGenesetTypes().size() > 1){
-            DiscreteMapping disMapping = new DiscreteMapping( new NodeShape, ObjectMapping.NODE_MAPPING);
-            disMapping.setControllingAttributeName(prefix + EnrichmentMapVisualStyle.);
+        if(params.getGenesetTypes().size() > 1){
+            DiscreteMapping disMapping = new DiscreteMapping( NodeShape.ELLIPSE, ObjectMapping.NODE_MAPPING);
+            disMapping.setControllingAttributeName(prefix + EnrichmentMapVisualStyle.GS_SOURCE);
+
+            HashSet<String> genesetTypes = params.getGenesetTypes();
+            String[] shapes = NodeShape.valuesAsString();
+            //make sure we only use the number of shapes there are
+            int count = 0;
+            String previousShape = "none";
+            for(Iterator i= genesetTypes.iterator(); i.hasNext(); ){
+                String current_Set = (String) i.next();
+
+                //if the previous shape is similar to this shape skip it
+                if(shapes[count].contains(previousShape)){
+                    count++;
+                    //because there are multiple rectangle make sure the next shape isn't another one
+                    //3D rectangle is actually mis-spelt so we need to hack this.
+                    if(shapes[count].contains(previousShape.substring(0,4)))
+                        count++;
+                }
+
+
+                if(count >= shapes.length)
+                    count = 0;
+
+                disMapping.putMapValue(current_Set,NodeShape.parseNodeShapeText(shapes[count]));
+                previousShape = shapes[count];
+                count++;
+
+            }
+
+            Calculator shapeCalculator = new BasicCalculator(prefix + "nodeshape", disMapping,VisualPropertyType.NODE_SHAPE);
+            nodeAppCalc.setCalculator(shapeCalculator);
+
         }
 
 

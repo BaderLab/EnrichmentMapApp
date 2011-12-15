@@ -223,7 +223,7 @@ public class GMTFileReaderTask implements Task {
                     genesets.put(Name, gs);
 
                     //add the geneset type to the list of types
-                    params.addGenesetType(gs.getType());
+                    params.addGenesetType(gs.getSource());
                  }
 
             }
