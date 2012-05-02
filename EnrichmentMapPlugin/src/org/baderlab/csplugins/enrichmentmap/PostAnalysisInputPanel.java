@@ -65,6 +65,8 @@ import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.io.File;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.HashSet;
 
 /**
  * Created by
@@ -85,6 +87,12 @@ public class PostAnalysisInputPanel extends JPanel {
 
     CollapsiblePanel Parameters;
     CollapsiblePanel signature_genesets;
+
+    CollapsiblePanel filters;
+    private JRadioButton filter;
+    private JRadioButton nofilter;
+    private JFormattedTextField filterTextField;
+    private JComboBox filterTypeCombo;
 
     CollapsiblePanel dataset1;
     CollapsiblePanel dataset2;
@@ -472,6 +480,7 @@ public class PostAnalysisInputPanel extends JPanel {
         //add the components to the panel
         panel.add(SigGMTPanel);
 
+        panel.add(createFilterPanel());
 
         //TODO: Maybe move loading SigGMT to File-selection Event
         //add load button
@@ -490,7 +499,105 @@ public class PostAnalysisInputPanel extends JPanel {
         return collapsiblePanel;
 
     }
+    /**
+     *  Create a sub-panel so the user can specify filters so when loading in Signature gene set files
+     *  they can limit the genesets loaded in based on the how many genes overlap with the current EM analyzing.
+     *
+     *  @return CollapsiblePanel to set Filter on Postanalysis genesets
+     */
+    private CollapsiblePanel createFilterPanel(){
+        CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Filters");
+        JPanel panel = new JPanel();
+        panel.setLayout(new GridLayout(2,1));
+        //create radio button
+        ButtonGroup filters;
 
+        //radio button for filter or no-filter.  Defaults to no-filter
+        filter = new JRadioButton("Filter By");
+        filter.setActionCommand("filter");
+        filter.setSelected(false);
+        nofilter = new JRadioButton("No filter");
+        nofilter.setActionCommand("nofilter");
+        nofilter.setSelected(true);
+
+        filters = new ButtonGroup();
+        filters.add(filter);
+        filters.add(nofilter);
+
+        //action listener for filter radio button.
+        filter.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                selectFilterActionPerformed(evt);
+            }
+        });
+        nofilter.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                selectFilterActionPerformed(evt);
+            }
+        });
+
+        JPanel filtersPanel = new JPanel();
+        filtersPanel.setLayout(new BoxLayout(filtersPanel, BoxLayout.Y_AXIS));
+
+        filtersPanel.add(nofilter);
+
+        String[] filterItems = PostAnalysisParameters.filterItems;
+
+        //Two types of filters:
+        // 1. filter by percent, i.e. the overlap between the signature geneset and EM geneset
+        // has to be X percentage of the EM set it overlaps with for at least one geneset in the enrichment map
+        // 2. filter by number, i.e. the overlap between the signature geneset and EM geneset
+        // has to be X genes of the EM set it overlaps with for at least one geneset in the enrichment map
+        JPanel filterTypePanel = new JPanel();
+        filterTypePanel.setLayout(new BorderLayout());
+        filterTypeCombo = new JComboBox();
+        filterTypeCombo.addItem(filterItems[PostAnalysisParameters.PERCENT]);
+        filterTypeCombo.addItem(filterItems[PostAnalysisParameters.NUMBER]);
+        filterTypeCombo.setSelectedItem(paParams.getDefault_signature_filterMetric());
+
+        //Add Action listener for filter type drop down menu
+        filterTypeCombo.addActionListener( new ActionListener() {
+            String[] filterItems = PostAnalysisParameters.filterItems;
+            public void actionPerformed( ActionEvent e )
+            {
+                JComboBox selectedChoice = (JComboBox) e.getSource();
+                if ( filterItems[PostAnalysisParameters.PERCENT].equals( selectedChoice.getSelectedItem() ) ) {
+                    paParams.setSignature_filterMetric(PostAnalysisParameters.PERCENT);
+
+                } else if ( filterItems[PostAnalysisParameters.NUMBER].equals( selectedChoice.getSelectedItem() ) ) {
+                    paParams.setSignature_filterMetric(PostAnalysisParameters.NUMBER);
+
+                }
+            }
+        });
+
+        filterTextField = new JFormattedTextField() ;
+        filterTextField.setColumns(4);
+        filterTextField.setValue(paParams.getFilterValue());
+        filterTextField.addPropertyChangeListener("value", new PostAnalysisInputPanel.FormattedTextFieldAction());
+
+        filterTypePanel.add(filter,BorderLayout.WEST);
+        filterTypePanel.add(filterTypeCombo, BorderLayout.CENTER);
+        filterTypePanel.add(filterTextField, BorderLayout.EAST);
+        panel.add(filterTypePanel);
+        panel.add(filtersPanel);
+
+        collapsiblePanel.getContentPane().add(panel);
+        return collapsiblePanel;
+    }
+    /**
+     * jaccard or overlap radio button action listener
+     *
+     * @param evt
+     */
+    private void selectFilterActionPerformed(java.awt.event.ActionEvent evt) {
+        if(evt.getActionCommand().equalsIgnoreCase("filter")){
+            paParams.setFilter(true);
+        }
+        else if(evt.getActionCommand().equalsIgnoreCase("nofilter")){
+            paParams.setFilter(false);
+        }
+    }
     /**
      * @return CollapsiblePanel to set PostAnalysisParameters 
      */
@@ -688,7 +795,30 @@ public class PostAnalysisInputPanel extends JPanel {
                     message = "This Cutoff metric is not supported.";
                     invalid = true;
                 }
-            } 
+            }
+            else if (source == filterTextField) {
+                Number value = (Number) filterTextField.getValue();
+                //if the filter type is percent then make sure the number entered is between 0 and 100
+                if(paParams.getSignature_filterMetric() == paParams.PERCENT){
+                    if ((value != null) && (value.intValue() >= 0) && (value.intValue() <= 100)) {
+                        paParams.setFilterValue(value.intValue());
+                    } else {
+                        source.setValue(paParams.getFilterValue());
+                        message += "The filter cutoff must be greater than or equal 0 and less than or equal to 100.";
+                        invalid = true;
+                    }
+                }
+                //if the filter type is NUMBER then it can be any number, zero or greater.
+                else if(paParams.getSignature_filterMetric() == paParams.NUMBER){
+                    if ((value != null) && (value.intValue() >= 0)) {
+                        paParams.setFilterValue(value.intValue());
+                    } else {
+                        source.setValue(paParams.getFilterValue());
+                        message += "The filter cutoff must be greater than or equal 0.";
+                        invalid = true;
+                    }
+                }
+            }
             
             if (invalid) {
                 JOptionPane.showMessageDialog(Cytoscape.getDesktop(), message, "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
@@ -876,8 +1006,9 @@ public class PostAnalysisInputPanel extends JPanel {
      * Clear the current panel and clear the paParams associated with this panel
      */
     private void resetPanel(){
-        this.paParams = new PostAnalysisParameters();
-        
+
+        this.paParams = new PostAnalysisParameters(paParams);
+
         //Post Analysis Type:
         signatureHub.setSelected(true);
         
@@ -897,7 +1028,7 @@ public class PostAnalysisInputPanel extends JPanel {
         this.selected_sig_sets = this.paParams.getSelectedSignatureSetNames();
         this.selected_sig_sets_field.setModel(selected_sig_sets);
         this.selected_sig_sets_field.clearSelection();
-        
+
         //Parameters Panel:
         // select default metric in ComboBox
         paParams.setSignature_CutoffMetric(paParams.getDefault_signature_CutoffMetric());
@@ -923,6 +1054,14 @@ public class PostAnalysisInputPanel extends JPanel {
             JOptionPane.showMessageDialog(Cytoscape.getDesktop(), message, "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
             break;
         }
+
+        filter.setSelected(false);
+        nofilter.setSelected(true);
+        paParams.setFilter(false);
+        this.filterTextField.setValue(paParams.getFilterValue());
+
+        paParams.setSignature_filterMetric(paParams.getDefault_signature_filterMetric());
+        this.filterTypeCombo.setSelectedItem(paParams.getSignature_filterMetric());
 
     }
 
@@ -1062,15 +1201,56 @@ public class PostAnalysisInputPanel extends JPanel {
                 DefaultListModel signatureSetNames = paParams.getSignatureSetNames();
                 DefaultListModel selectedSignatureSetNames = paParams.getSelectedSignatureSetNames();
                 signatureSetNames.clear(); // clear, that we don't have duplicates afterwards - Bug #103 a
-                
+
+                //filter the signature genesets to only include genesets that overlap with the genesets
+                //in our current map.
+                HashMap<String, GeneSet> genesets_in_map = paParams.getGenesetsOfInterest();
+                Object[] setsOfInterest = genesets_in_map.keySet().toArray();
+                //get the value to be filtered by if there is a filter
+
+
                 Object[] setNamesArray = paParams.getSignatureGenesets().keySet().toArray();
                 Arrays.sort( setNamesArray );
                 
                 for (int i = 0; i < setNamesArray.length; i++) {
                     if (interrupted)
                         throw new InterruptedException();
-                    if (! selectedSignatureSetNames.contains(setNamesArray[i]))
-                        signatureSetNames.addElement(setNamesArray[i] );
+                    if (! selectedSignatureSetNames.contains(setNamesArray[i])){
+
+                        if(paParams.isFilter()){
+                            //only add the name if it overlaps with the sets in the map.
+                            boolean matchfound = false;
+                            for(int j = 0; j < setsOfInterest.length ; j++){
+                                //check if this set overlaps with current geneset
+                                HashSet <Integer> mapset = new HashSet<Integer>(genesets_in_map.get(setsOfInterest[j]).getGenes());
+                                Integer original_size = mapset.size();
+                                HashSet <Integer> paset = new HashSet<Integer>(paParams.getSignatureGenesets().get(setNamesArray[i]).getGenes());
+                                mapset.retainAll(paset);
+
+                                //if we are looking for percentage do:
+                                if(paParams.getSignature_filterMetric() == paParams.PERCENT){
+                                    Double relative_per =  mapset.size()/original_size.doubleValue();
+                                    if(relative_per >= (Double)(paParams.getFilterValue()/100.0) ){
+                                        matchfound = true;
+                                        break;
+                                    }
+                                }
+                                //if we are looking for number in the overlap
+                                else if(paParams.getSignature_filterMetric() == paParams.NUMBER){
+                                    if(mapset.size() >= paParams.getFilterValue()){
+                                        matchfound = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            if(matchfound)
+                                signatureSetNames.addElement(setNamesArray[i] );
+                        }
+                        else{
+                            signatureSetNames.addElement(setNamesArray[i] );
+                        }
+                    }
+
                 }
             
             } catch (InterruptedException e) {
@@ -1078,7 +1258,6 @@ public class PostAnalysisInputPanel extends JPanel {
             }
 
         }
-
         /* (non-Javadoc)
          * @see cytoscape.task.Task#setTaskMonitor(cytoscape.task.TaskMonitor)
          */

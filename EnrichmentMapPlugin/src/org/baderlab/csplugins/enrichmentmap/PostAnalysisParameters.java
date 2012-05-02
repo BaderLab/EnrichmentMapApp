@@ -69,7 +69,21 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
      * DIR_OVERLAP = 4
      */
     final public static int HYPERGEOM = 0, ABS_NUMBER = 1, JACCARD = 2, OVERLAP = 3, DIR_OVERLAP = 4; 
- 
+
+    //Gene Set Filtering Constants
+    /**
+     * Enum for Signature geneset filtering
+     * Percent overlap = 0
+     * Number in overlap = 1
+     */
+    final public static int PERCENT = 0, NUMBER = 1;
+
+    /**
+     * String for Filtering options
+     * PERCENT (0) : "Contains at least X percent"
+     * NUMBER (1) : "Contains at least X genes"
+     */
+      final static String[] filterItems = {"Contains at least X percent","Contains at least X genes" };
     /**
      * Strings for Signature-Hub cut-off metric:
      * HYPERGEOM   (0) : "Hypergeometric Test"
@@ -120,7 +134,14 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
     
     // Disease Signature State variables:
     private double currentNodePlacementY_Offset;
-    
+
+    //Disease Signature filter
+    private boolean filter = false;
+    private int filterValue;
+    private int default_filter_value = 50;
+    private int default_signature_filterMetric = PERCENT;
+    private int signature_filterMetric;
+
     /**
      * default constructor
      * 
@@ -151,6 +172,11 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
         
         // Disease Signature State variables:
         this.currentNodePlacementY_Offset = 0.0;
+
+        //set the default filter
+        this.filterValue = default_filter_value;
+
+        this.signature_filterMetric = default_signature_filterMetric;
         
         // register this instance in emParams
         emParams.setPaParams(this);
@@ -183,6 +209,11 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
         
         // Disease Signature State variables:
         this.currentNodePlacementY_Offset = 0.0;
+
+        //set the default filter
+        this.filterValue = default_filter_value;
+
+        this.signature_filterMetric = default_signature_filterMetric;
     }
     
 
@@ -213,6 +244,8 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
 
         // Disease Signature State variables:
         this.currentNodePlacementY_Offset = source.getCurrentNodePlacementY_Offset();
+
+        this.filterValue = source.getFilterValue();
     }
     
     /** 
@@ -579,5 +612,31 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
         return currentNodePlacementY_Offset;
     }
 
+    public boolean isFilter() {
+        return filter;
+    }
 
+    public void setFilter(boolean filter) {
+        this.filter = filter;
+    }
+
+    public int getFilterValue() {
+        return filterValue;
+    }
+
+    public void setFilterValue(int filterValue) {
+        this.filterValue = filterValue;
+    }
+
+    public int getSignature_filterMetric() {
+        return signature_filterMetric;
+    }
+
+    public void setSignature_filterMetric(int signature_filterMetric) {
+        this.signature_filterMetric = signature_filterMetric;
+    }
+
+    public int getDefault_signature_filterMetric() {
+        return default_signature_filterMetric;
+    }
 }
