@@ -76,14 +76,14 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
      * Percent overlap = 0
      * Number in overlap = 1
      */
-    final public static int PERCENT = 0, NUMBER = 1;
+    final public static int PERCENT = 0, NUMBER = 1,SPECIFIC = 2;
 
     /**
      * String for Filtering options
      * PERCENT (0) : "Contains at least X percent"
      * NUMBER (1) : "Contains at least X genes"
      */
-      final static String[] filterItems = {"Contains at least X percent","Contains at least X genes" };
+      final static String[] filterItems = {"Overlap X percent of EM gs","Overlap has at least X genes","Overlap X percent of Signature gs" };
     /**
      * Strings for Signature-Hub cut-off metric:
      * HYPERGEOM   (0) : "Hypergeometric Test"

@@ -548,11 +548,14 @@ public class PostAnalysisInputPanel extends JPanel {
         // has to be X percentage of the EM set it overlaps with for at least one geneset in the enrichment map
         // 2. filter by number, i.e. the overlap between the signature geneset and EM geneset
         // has to be X genes of the EM set it overlaps with for at least one geneset in the enrichment map
+        // 3. filter by specificity, i.e looking for the signature genesets that are more specific than other genesets
+        // for instance a drug A that targets only X and Y as opposed to drug B that targets X,y,L,M,N,O,P
         JPanel filterTypePanel = new JPanel();
         filterTypePanel.setLayout(new BorderLayout());
         filterTypeCombo = new JComboBox();
         filterTypeCombo.addItem(filterItems[PostAnalysisParameters.PERCENT]);
         filterTypeCombo.addItem(filterItems[PostAnalysisParameters.NUMBER]);
+        filterTypeCombo.addItem(filterItems[PostAnalysisParameters.SPECIFIC]);
         filterTypeCombo.setSelectedItem(paParams.getDefault_signature_filterMetric());
 
         //Add Action listener for filter type drop down menu
@@ -566,6 +569,9 @@ public class PostAnalysisInputPanel extends JPanel {
 
                 } else if ( filterItems[PostAnalysisParameters.NUMBER].equals( selectedChoice.getSelectedItem() ) ) {
                     paParams.setSignature_filterMetric(PostAnalysisParameters.NUMBER);
+
+                }else if ( filterItems[PostAnalysisParameters.SPECIFIC].equals( selectedChoice.getSelectedItem() ) ) {
+                    paParams.setSignature_filterMetric(PostAnalysisParameters.SPECIFIC);
 
                 }
             }
@@ -1242,9 +1248,18 @@ public class PostAnalysisInputPanel extends JPanel {
                                         break;
                                     }
                                 }
+                                else if(paParams.getSignature_filterMetric() == paParams.SPECIFIC){
+                                    Double relative_per =  mapset.size()/((Integer)(paset.size())).doubleValue();
+                                    if(relative_per >= (Double)(paParams.getFilterValue()/100.0) ){
+                                        matchfound = true;
+                                        break;
+                                    }
+                                }
                             }
-                            if(matchfound)
-                                signatureSetNames.addElement(setNamesArray[i] );
+                            if(matchfound){
+                                if (! signatureSetNames.contains(setNamesArray[i]))
+                                    signatureSetNames.addElement(setNamesArray[i] );
+                            }
                         }
                         else{
                             signatureSetNames.addElement(setNamesArray[i] );
