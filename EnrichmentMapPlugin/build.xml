@@ -2,7 +2,12 @@
 <project name="enrichment_map" default="all">
 <!-- $Id$ -->
 	
-    <!-- 
+    <!--
+        *******************************
+        * ONLY use ant build file for code prior to svn revision - 603 *
+        * all subsequent builds should use maven *
+        *******************************
+ 
 	********************************
 	* TO DEFINE PATH TO CYTOSCAPE: *
 	********************************
