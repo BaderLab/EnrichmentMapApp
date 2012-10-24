@@ -41,7 +41,7 @@
 // $LastChangedBy$
 // $HeadURL$
 
-package org.baderlab.csplugins.enrichmentmap.test;
+package org.baderlab.csplugins.enrichmentmap;
 
 import java.io.Reader;
 
@@ -83,7 +83,7 @@ public class HypergeometricTest extends TestCase {
     }
     
     public void testHyperGeomPvalueBig() {
-        String testDataFileName = "src/org/baderlab/csplugins/enrichmentmap/test/resources/HypergeometricTest_pvalues.csv";
+        String testDataFileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/HypergeometricTest_pvalues.csv";
         String fullText;
         String[] lines;
 

@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap.test;
+package org.baderlab.csplugins.enrichmentmap;
 
 import junit.framework.TestCase;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
@@ -24,7 +24,7 @@ public class FileReaderTest extends TestCase {
 
     public void testGMTFileReader(){
 
-        String testDataFileName = "src/org/baderlab/csplugins/enrichmentmap/test/resources/Genesetstestfile.gmt";
+        String testDataFileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/Genesetstestfile.gmt";
 
         EnrichmentMapParameters params = new EnrichmentMapParameters();
 
@@ -45,7 +45,7 @@ public class FileReaderTest extends TestCase {
     public void testExpression1ReaderNormal(){
 
         //load the test expression file
-        String testDataFileName = "src/org/baderlab/csplugins/enrichmentmap/test/resources/Expressiontestfile.gct";
+        String testDataFileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/Expressiontestfile.gct";
 
         EnrichmentMapParameters params = new EnrichmentMapParameters();
 
@@ -98,7 +98,7 @@ public class FileReaderTest extends TestCase {
     public void testExpression1ReaderCommentLines(){
 
         //load the test expression file
-        String testDataFileName = "src/org/baderlab/csplugins/enrichmentmap/test/resources/Expressiontestfile_comments.gct";
+        String testDataFileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/Expressiontestfile_comments.gct";
 
         EnrichmentMapParameters params = new EnrichmentMapParameters();
 
@@ -153,7 +153,7 @@ public class FileReaderTest extends TestCase {
     public void testExpression1ReaderRnk(){
 
         //load the test expression file
-        String testDataFileName = "src/org/baderlab/csplugins/enrichmentmap/test/resources/ExpressionTestFile.rnk";
+        String testDataFileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/ExpressionTestFile.rnk";
 
         EnrichmentMapParameters params = new EnrichmentMapParameters();
 
@@ -207,7 +207,7 @@ public class FileReaderTest extends TestCase {
     public void testExpression1ReaderEDBRnk(){
 
         //load the test expression file
-        String testDataFileName = "src/org/baderlab/csplugins/enrichmentmap/test/resources/ExpressionTestFile_edbrnk.rnk";
+        String testDataFileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/ExpressionTestFile_edbrnk.rnk";
 
         EnrichmentMapParameters params = new EnrichmentMapParameters();
 
@@ -260,7 +260,7 @@ public class FileReaderTest extends TestCase {
     
     public void testGenericFileReader_5columns(){
         //load the test expression file
-        String testDataFileName = "src/org/baderlab/csplugins/enrichmentmap/test/resources/generic_enr_5col.txt";
+        String testDataFileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/generic_enr_5col.txt";
         
         // create parameters
         EnrichmentMapParameters params = new EnrichmentMapParameters();

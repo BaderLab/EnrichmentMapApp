@@ -41,7 +41,7 @@
 // $LastChangedBy$
 // $HeadURL$/**
  
-package org.baderlab.csplugins.enrichmentmap.test;
+package org.baderlab.csplugins.enrichmentmap;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
