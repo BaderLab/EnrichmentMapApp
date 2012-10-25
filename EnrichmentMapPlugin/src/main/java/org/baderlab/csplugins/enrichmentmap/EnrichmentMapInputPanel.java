@@ -1208,7 +1208,16 @@ public class EnrichmentMapInputPanel extends JPanel {
         String label = (String)rpt.get("param rpt_label");
         String classes = (String)rpt.get("param cls");
         String gmt = (String)rpt.get("param gmx");
-        String gmt_nopath =  gmt.substring(gmt.lastIndexOf(File.separator)+1, gmt.length()-1);
+        
+        //instead of using the original gmt file use the gmt file that is stored in
+        // in the edb directory.  The edb directory should be in the same directory 
+        // as the rpt file.  If it isn't use the original mechanism of finding gmt file
+        String currentDir = rptFile.getParent();
+        File temp = new File(currentDir, "edb/gene_sets.gmt");
+        if(temp.exists())
+        		gmt = temp.getAbsolutePath();
+        
+        //String gmt_nopath =  gmt.substring(gmt.lastIndexOf(File.separator)+1, gmt.length()-1);
         String gseaHtmlReportFile = (String)rpt.get("file");
         
         String phenotype1 = "na";
@@ -1217,30 +1226,37 @@ public class EnrichmentMapInputPanel extends JPanel {
         //but phenotypes are only specified for classic GSEA, not PreRanked.
         if(classes != null && method.equalsIgnoreCase("Gsea")){
             String[] classes_split = classes.split("#");
-            String phenotypes = classes_split[1];
-            String[] phenotypes_split = phenotypes.split("_versus_");
-            phenotype1 = phenotypes_split[0];
-            phenotype2 = phenotypes_split[1];
+            
+            //only and try parse classes out of label if they are there
+            if(classes_split.length >= 2 ){
+            
+            		String phenotypes = classes_split[1];
+            		String[] phenotypes_split = phenotypes.split("_versus_");
+            		if(phenotypes_split.length >= 2){
+            			phenotype1 = phenotypes_split[0];
+            			phenotype2 = phenotypes_split[1];
 
-            if(dataset1){
-                params.setClassFile1(classes_split[0]);
-                params.setDataset1Phenotype1(phenotype1);
-                params.setDataset1Phenotype2(phenotype2);
+            			if(dataset1){
+            				params.setClassFile1(classes_split[0]);
+            				params.setDataset1Phenotype1(phenotype1);
+            				params.setDataset1Phenotype2(phenotype2);
 
-                Dataset1Phenotype1TextField.setText(phenotype1);
-                Dataset1Phenotype1TextField.setValue(phenotype1);
-                Dataset1Phenotype2TextField.setText(phenotype2);
-                Dataset1Phenotype2TextField.setValue(phenotype2);
-            }
-            else{
-                params.setClassFile2(classes_split[0]);
-                params.setDataset2Phenotype1(phenotype1);
-                params.setDataset2Phenotype2(phenotype2);
+            				Dataset1Phenotype1TextField.setText(phenotype1);
+            				Dataset1Phenotype1TextField.setValue(phenotype1);
+            				Dataset1Phenotype2TextField.setText(phenotype2);
+            				Dataset1Phenotype2TextField.setValue(phenotype2);
+            			}
+            			else{
+            				params.setClassFile2(classes_split[0]);
+            				params.setDataset2Phenotype1(phenotype1);
+            				params.setDataset2Phenotype2(phenotype2);
 
-                Dataset2Phenotype1TextField.setText(phenotype1);
-                Dataset2Phenotype2TextField.setText(phenotype2);
-                Dataset2Phenotype1TextField.setValue(phenotype1);
-                Dataset2Phenotype2TextField.setValue(phenotype2);
+            				Dataset2Phenotype1TextField.setText(phenotype1);
+            				Dataset2Phenotype2TextField.setText(phenotype2);
+            				Dataset2Phenotype1TextField.setValue(phenotype1);
+            				Dataset2Phenotype2TextField.setValue(phenotype2);
+            			}
+            		}
             }
         }
 
