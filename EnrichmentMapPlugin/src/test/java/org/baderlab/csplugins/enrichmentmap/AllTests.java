@@ -43,6 +43,8 @@
  
 package org.baderlab.csplugins.enrichmentmap;
 
+import org.baderlab.csplugins.enrichmentmap.task.TaskTest;
+
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
@@ -66,6 +68,9 @@ public class AllTests {
 
         //add file reader tests
         suite.addTestSuite(FileReaderTest.class);
+        
+        //add task tests
+        suite.addTestSuite(TaskTest.class);
         
         suite.setName("EnrichmentMapPlugin Tests");
 

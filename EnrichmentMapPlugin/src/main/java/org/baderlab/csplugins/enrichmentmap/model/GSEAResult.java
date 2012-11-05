@@ -62,8 +62,6 @@ public class GSEAResult extends EnrichmentResult{
     private double ES;
     //normalized enrichment score
     private double NES;
-    //p-value
-    private double pvalue;
     //false discovery rate q-value
     private double fdrqvalue;
     //family wise error rate (fwer) q-value

@@ -2,6 +2,7 @@ package org.baderlab.csplugins.enrichmentmap.task;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.parsers.EnrichmentResultFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.parsers.ExpressionFileReaderTask;
@@ -103,8 +104,12 @@ public class LoadDataSetTask implements Task{
             }
     		}
     		else{
-    			if(dataset.getExpressionSets().getRanksByName(Ranking.RankingLOADED) != null){
-                    RanksFileReaderTask ranking1 = new RanksFileReaderTask(dataset.getExpressionSets().getRanksByName(Ranking.GSEARanking).getFilename(),dataset,taskMonitor,false);
+    			if(dataset.getExpressionSets().getRanksByName(EnrichmentMap.DATASET1) != null){
+                    RanksFileReaderTask ranking1 = new RanksFileReaderTask(dataset.getExpressionSets().getRanksByName(EnrichmentMap.DATASET1).getFilename(),dataset,taskMonitor,false);
+                    ranking1.run();
+                }
+    			if(dataset.getExpressionSets().getRanksByName(EnrichmentMap.DATASET2) != null){
+                    RanksFileReaderTask ranking1 = new RanksFileReaderTask(dataset.getExpressionSets().getRanksByName(EnrichmentMap.DATASET2).getFilename(),dataset,taskMonitor,false);
                     ranking1.run();
                 }
     		}

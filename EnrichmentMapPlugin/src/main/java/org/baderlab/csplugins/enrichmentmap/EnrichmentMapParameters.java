@@ -174,9 +174,6 @@ public class EnrichmentMapParameters {
     //Heat map parameters for this enrichment map - user specified current normalization, and sorting.
     private HeatMapParameters hmParams;
 
-    private HashMap<Integer, Integer> rank2geneDataset1;
-    private HashMap<Integer, Integer> rank2geneDataset2;  
-
     //value specifying whether bulk EM is being used (needed to transfer file name to the network names)
     private boolean BulkEM = false;
 
@@ -601,9 +598,6 @@ public class EnrichmentMapParameters {
         this.hmParams = copy.getHmParams();
         //this.attributePrefix = copy.getAttributePrefix();
         this.enrichment_edge_type = copy.getEnrichment_edge_type();
-
-       this.rank2geneDataset1 = copy.getRank2geneDataset1();
-       this.rank2geneDataset2 = copy.getRank2geneDataset2();
 
        //field needed when calculating bulk enrichment maps.
         this.GMTDirName = copy.getGMTDirName();
@@ -1201,11 +1195,7 @@ public class EnrichmentMapParameters {
         this.dataset2RankedFile = dataset2RankedFile;
     }
 
-
-    public HashMap<Integer, Integer> getRank2geneDataset1() {
-        return rank2geneDataset1;
-    }
-
+   
     /*create a method to re-create rank to gene given the gene to rank*/
     public HashMap<Integer, Integer> getRank2geneDataset(HashMap<Integer,Rank> gene2rank){
         HashMap<Integer,Integer> rank2gene = new HashMap<Integer, Integer>();
@@ -1217,17 +1207,6 @@ public class EnrichmentMapParameters {
         return rank2gene;
     }
     
-    public void setRank2geneDataset1(HashMap<Integer, Integer> rank2geneDataset1) {
-        this.rank2geneDataset1 = rank2geneDataset1;
-    }
-
-    public HashMap<Integer, Integer> getRank2geneDataset2() {
-        return rank2geneDataset2;
-    }
-
-    public void setRank2geneDataset2(HashMap<Integer, Integer> rank2geneDataset2) {
-        this.rank2geneDataset2 = rank2geneDataset2;
-    }
 
     public String getOverlapMetricDefault() {
         return this.defaultSimilarityMetric;
@@ -1448,16 +1427,6 @@ public class EnrichmentMapParameters {
         this.EMgmt = flag;
     }
 
-
-	/*public EnrichmentMap getEM() {
-		return EM;
-	}
-
-
-	public void setEM(EnrichmentMap eM) {
-		EM = eM;
-	}
-*/
 
 	public String getDataset1Phenotype1() {
 		return Dataset1Phenotype1;

@@ -148,8 +148,12 @@ public class ExpressionFileReaderTask implements Task {
 
     				//The first column of the file is the name of the geneset
     				String Name = tokens[0].toUpperCase().trim();
-
-    				if(i==0 && (expressionMatrix == null || expressionMatrix.getExpressionMatrix().isEmpty())){
+    				
+    				//if this is the first line and the expression matrix if still empty and the column names are empty
+    				//Added column names empty for GSEA rank files that have no heading but after going through the loop
+    				//the first time we have given them default headings
+    				if(i==0 && (expressionMatrix == null || expressionMatrix.getExpressionMatrix().isEmpty())
+    						&& expressionMatrix.getColumnNames() == null){
     					//otherwise the first line is the header
     					if(Name.equalsIgnoreCase("#1.2")){
     						line = lines[2];

@@ -75,7 +75,9 @@ public class EnrichmentMap {
     		this.genes = new HashMap<String, Integer>();
     		this.hashkey2gene = new HashMap<Integer, String>();
     		
-    		this.genesetSimilarity = new HashMap<String, GenesetSimilarity>();    		 
+    		this.genesetSimilarity = new HashMap<String, GenesetSimilarity>();
+    		
+    		initialize_files();
 		
     }
     
@@ -103,7 +105,56 @@ public class EnrichmentMap {
     		this.datasets = copy.getDatasets();
     		
     }
-        
+    /**
+     * Method to transfer files specified in the parameters to the objects they correspond to
+     */
+    
+    private void initialize_files(){
+    		if(params.getGMTFileName() != null && !params.getGMTFileName().isEmpty())
+			this	.getDataset(DATASET1).getSetofgenesets().setFilename(params.getGMTFileName());
+		
+    		//expression files
+    		if(params.getExpressionFileName1() != null && !params.getExpressionFileName1().isEmpty())
+			this	.getDataset(DATASET1).getExpressionSets().setFilename(params.getExpressionFileName1());
+		if(params.getExpressionFileName2() != null && !params.getExpressionFileName2().isEmpty())
+			this	.getDataset(DATASET2).getExpressionSets().setFilename(params.getExpressionFileName2());
+		
+		//enrichment results files
+    		if(params.getEnrichmentDataset1FileName1() != null && !params.getEnrichmentDataset1FileName1().isEmpty())
+    			this.getDataset(DATASET1).getEnrichments().setFilename1(params.getEnrichmentDataset1FileName1());
+    		if(params.getEnrichmentDataset1FileName2() != null && !params.getEnrichmentDataset1FileName2().isEmpty())
+    			this.getDataset(DATASET1).getEnrichments().setFilename2(params.getEnrichmentDataset1FileName2());
+    		if(params.getEnrichmentDataset2FileName1() != null && !params.getEnrichmentDataset2FileName1().isEmpty())
+    			this.getDataset(DATASET2).getEnrichments().setFilename1(params.getEnrichmentDataset2FileName1());
+    		if(params.getEnrichmentDataset2FileName2() != null && !params.getEnrichmentDataset2FileName2().isEmpty())
+    			this.getDataset(DATASET2).getEnrichments().setFilename2(params.getEnrichmentDataset2FileName2());
+    		
+    		//rank files - dataset1 
+    		if(params.getDataset1RankedFile() != null && !params.getDataset1RankedFile().isEmpty())
+    			if(params.getMethod().equals(EnrichmentMapParameters.method_GSEA)){
+    				this.getDataset(DATASET1).getExpressionSets().createNewRanking(Ranking.GSEARanking);
+    				this.getDataset(DATASET1).getExpressionSets().getRanksByName(Ranking.GSEARanking).setFilename(params.getDataset1RankedFile());
+    			}
+    			else{
+    				this.getDataset(DATASET1).getExpressionSets().createNewRanking(DATASET1);
+    				this.getDataset(DATASET1).getExpressionSets().getRanksByName(DATASET1).setFilename(params.getDataset1RankedFile());
+    			
+    			}
+    		//rank files - dataset 2
+    		if(params.getDataset2RankedFile() != null && !params.getDataset2RankedFile().isEmpty())
+    			if(params.getMethod().equals(EnrichmentMapParameters.method_GSEA)){
+    				this.getDataset(DATASET2).getExpressionSets().createNewRanking(Ranking.GSEARanking);
+    				this.getDataset(DATASET2).getExpressionSets().getRanksByName(Ranking.GSEARanking).setFilename(params.getDataset2RankedFile());
+    			}
+    			else{
+    				this.getDataset(DATASET2).getExpressionSets().createNewRanking(DATASET2);
+    				this.getDataset(DATASET2).getExpressionSets().getRanksByName(DATASET2).setFilename(params.getDataset2RankedFile());
+    			
+    			}
+    }
+    
+    
+    
     /**
      * Check to see that there are genes in the filtered  genesets
      * If the ids do not match up, after a filtering there will be no genes in any of the genesets
