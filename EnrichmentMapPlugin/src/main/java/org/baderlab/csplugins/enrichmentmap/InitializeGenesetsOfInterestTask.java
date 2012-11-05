@@ -62,7 +62,7 @@ import java.util.Collections;
 
 public class InitializeGenesetsOfInterestTask implements Task {
 
-    EnrichmentMapParameters params;
+    private EnrichmentMap map;
 
     // Keep track of progress for monitoring:
     private TaskMonitor taskMonitor = null;
@@ -74,8 +74,8 @@ public class InitializeGenesetsOfInterestTask implements Task {
      * @param params - enrichment map parameters of current map
      * @param taskMonitor - current task monitor
      */
-    public InitializeGenesetsOfInterestTask(EnrichmentMapParameters params, TaskMonitor taskMonitor) {
-          this(params);
+    public InitializeGenesetsOfInterestTask(EnrichmentMap map, TaskMonitor taskMonitor) {
+          this(map);
           this.taskMonitor = taskMonitor;
       }
 
@@ -84,8 +84,8 @@ public class InitializeGenesetsOfInterestTask implements Task {
      *
      * @param params - enrichment map parameters of current map
      */
-    public InitializeGenesetsOfInterestTask(EnrichmentMapParameters params) {
-        this.params = params;
+    public InitializeGenesetsOfInterestTask(EnrichmentMap map) {
+        this.map = map;
     }
 
     /**
@@ -98,156 +98,158 @@ public class InitializeGenesetsOfInterestTask implements Task {
         } */
         //create subset of genesets that contains only the genesets of interest with pvalue and qbalue less than values
         //specified by the user.
-        HashMap enrichmentResults1 = params.getEnrichmentResults1();
-        HashMap enrichmentResults2 = params.getEnrichmentResults2();
-        HashMap genesets = params.getFilteredGenesets();
-        HashMap genesets_set2 = params.getFilteredGenesets_set2();
+               
+        //Go through each Dataset populating the Gene set of interest in each dataset object
+        HashMap<String,DataSet> datasets = map.getDatasets();
+        for(Iterator<String> j = datasets.keySet().iterator();j.hasNext();){
+        		String current_dataset_name = j.next();
+        		DataSet current_dataset = datasets.get(current_dataset_name);
+        		
+        		HashMap<String,EnrichmentResult> enrichmentResults = current_dataset.getEnrichments().getEnrichments();       		
+        		HashMap<String,GeneSet> genesets = current_dataset.getSetofgenesets().getGenesets();       		
+        		HashMap<String, GeneSet> genesetsOfInterest = current_dataset.getGenesetsOfInterest().getGenesets();
+        		
+        		//get ranking files.
+        		Ranking ranks = current_dataset.getExpressionSets().getRanksByName(current_dataset_name);
 
-        if(genesets_set2.isEmpty())
-            genesets_set2 = genesets;
+        		HashMap<Integer,Integer> rank2gene = null;
+        		HashMap<Integer,Rank> gene2rank = null;
+        		if(ranks != null){
+            		rank2gene = ranks.getRank2gene();
+            		gene2rank = ranks.getRanking();
+        		}
+        		int currentProgress = 0;
+        		int maxValue = enrichmentResults.size() ;
 
-        HashMap<String, EnrichmentResult> enrichmentResults1OfInterest = params.getEnrichmentResults1OfInterest();
-        HashMap<String, EnrichmentResult> enrichmentResults2OfInterest = params.getEnrichmentResults2OfInterest();
-        HashMap<String, GeneSet> genesetsOfInterest = params.getGenesetsOfInterest();
-        HashMap<String, GeneSet> genesetsOfInterest_set2 = params.getGenesetsOfInterest_set2();
+        		//iterate through the GSEA Results to figure out which genesets we want to use
+        		for(Iterator i = enrichmentResults.keySet().iterator(); i.hasNext(); ){
 
-        //get the rank files so we can translate ranks to scores for GSEA leading edge analysis
-        HashMap<Integer, Ranking> dataset1ranks = params.getRanksByName("Dataset 1 Ranking");
-        HashMap<Integer, Ranking> dataset2ranks = params.getRanksByName("Dataset 2 Ranking");
-        HashMap<Integer, Integer> rank2geneDataset1 = params.getRank2geneDataset1();
-        HashMap<Integer, Integer> rank2geneDataset2 = params.getRank2geneDataset2();
+        			// Calculate Percentage.  This must be a value between 0..100.
+        			int percentComplete = (int) (((double) currentProgress / maxValue) * 100);
+        			//  Estimate Time Remaining
+        			long timeRemaining = maxValue - currentProgress;
+        			if (taskMonitor != null) {
+        				taskMonitor.setPercentCompleted(percentComplete);
+        				taskMonitor.setStatus("Parsing GMT file " + currentProgress + " of " + maxValue);
+        				taskMonitor.setEstimatedTimeRemaining(timeRemaining);
+        			}
+        			currentProgress++;
 
+        			String current_name = i.next().toString();
+        			//check geneset result to see if it meets the required cutoffs
 
-        int currentProgress = 0;
-        int maxValue = enrichmentResults1.size() + enrichmentResults2.size();
+        			//if it is a GSEA Result then
+        			if(map.getParams().getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)){
+        				GSEAResult current_result = (GSEAResult)enrichmentResults.get(current_name);
 
-        //iterate through the GSEA Results to figure out which genesets we want to use
-        for(Iterator i = enrichmentResults1.keySet().iterator(); i.hasNext(); ){
+        				//update the current geneset to reflect score at max
+        				if((gene2rank != null) && (rank2gene != null)){
 
-            // Calculate Percentage.  This must be a value between 0..100.
-            int percentComplete = (int) (((double) currentProgress / maxValue) * 100);
-            //  Estimate Time Remaining
-            long timeRemaining = maxValue - currentProgress;
-            if (taskMonitor != null) {
-                taskMonitor.setPercentCompleted(percentComplete);
-                taskMonitor.setStatus("Parsing GMT file " + currentProgress + " of " + maxValue);
-                taskMonitor.setEstimatedTimeRemaining(timeRemaining);
-            }
-            currentProgress++;
+        					Set<Integer> allranks = rank2gene.keySet();
+        					Integer largestRank = Collections.max(allranks);
 
-            String current_name = i.next().toString();
-            //check geneset result to see if it meets the required cutoffs
+        					//get the max at rank for this geneset
+        					int currentRankAtMax = current_result.getRankAtMax();
 
-            //if it is a GSEA Result then
-            if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)){
-                GSEAResult current_result = (GSEAResult)enrichmentResults1.get(current_name);
+        					if(currentRankAtMax != -1){
+        						//check the ES score.  If it is negative we need to adjust the
+        						//rank to count from the end of the list
+        						double NES = current_result.getNES();
+        						int genekey = -1;
+        						//what gene corresponds to that rank
+        						if(NES < 0 ){
+        							//it is possible that some of the proteins in the rank list won't be rank 2gene
+        							//conversion because some of the genes might not be in the genesets
+        							//so the size of the list can't be used to trace up from the bottom of the
+        							//ranks.  Instead we need to get the max rank used.
+        							currentRankAtMax = largestRank - currentRankAtMax;
 
-                //update the current geneset to reflect score at max
-                if((dataset1ranks != null) && (rank2geneDataset1 != null)){
+        							//reset the rank at max to reflect that it is counted from the bottom of the list.
+        							current_result.setRankAtMax(currentRankAtMax);
+        						}//check to see if this rank is in the conversion map
+        						if(rank2gene.containsKey(currentRankAtMax))
+        							genekey = rank2gene.get(currentRankAtMax);
+        						else{
+        							//if is possible that the gene associated with the max is not found in
+        							//our gene 2 rank conversions because the rank by GSEA are off by 1 or two
+        							//indexes (maybe a bug on their side).
+        							//so depending on the NES score we need to fiddle with the rank to find the
+        							//next protein that is the actual gene they are referring to
 
-                    Set<Integer> allranks = rank2geneDataset1.keySet();
-                    Integer largestRank = Collections.max(allranks);
+        							while (genekey == -1 && (currentRankAtMax <= largestRank && currentRankAtMax > 0)){
+        								if(NES < 0 )
+        									currentRankAtMax = currentRankAtMax + 1;
+        								else
+        									currentRankAtMax = currentRankAtMax - 1;
+        								if(rank2gene.containsKey(currentRankAtMax))
+        									genekey = rank2gene.get(currentRankAtMax);
+        							}
+        						}
 
-                    //get the max at rank for this geneset
-                    int currentRankAtMax = current_result.getRankAtMax();
+        						if(genekey > -1){
+        							//what is the score for that gene
+        							double scoreAtMax = gene2rank.get(genekey).getScore();
 
-                    if(currentRankAtMax != -1){
-                        //check the ES score.  If it is negative we need to adjust the
-                        //rank to count from the end of the list
-                        double NES = current_result.getNES();
-                        int genekey = -1;
-                        //what gene corresponds to that rank
-                        if(NES < 0 ){
-                            //it is possible that some of the proteins in the rank list won't be rank 2gene
-                            //conversion because some of the genes might not be in the genesets
-                            //so the size of the list can't be used to trace up from the bottom of the
-                            //ranks.  Instead we need to get the max rank used.
-                            currentRankAtMax = largestRank - currentRankAtMax;
+        							current_result.setScoreAtMax(scoreAtMax);
 
-                            //reset the rank at max to reflect that it is counted from the bottom of the list.
-                            current_result.setRankAtMax(currentRankAtMax);
-                        }//check to see if this rank is in the conversion map
-                        if(rank2geneDataset1.containsKey(currentRankAtMax))
-                            genekey = rank2geneDataset1.get(currentRankAtMax);
-                        else{
-                            //if is possible that the gene associated with the max is not found in
-                            //our gene 2 rank conversions because the rank by GSEA are off by 1 or two
-                            //indexes (maybe a bug on their side).
-                            //so depending on the NES score we need to fiddle with the rank to find the
-                            //next protein that is the actual gene they are referring to
+        							//update the score At max in the EnrichmentResults as well
+        						}
+        					}
+        				}// end of determining the leading edge
+        				if(current_result.geneSetOfInterest(map.getParams().getPvalue(),map.getParams().getQvalue())){
+        					//enrichmentResults1OfInterest.put(current_name,current_result);
 
-                            while (genekey == -1 && (currentRankAtMax <= largestRank && currentRankAtMax > 0)){
-                                if(NES < 0 )
-                                    currentRankAtMax = currentRankAtMax + 1;
-                                else
-                                    currentRankAtMax = currentRankAtMax - 1;
-                                if(rank2geneDataset1.containsKey(currentRankAtMax))
-                                    genekey = rank2geneDataset1.get(currentRankAtMax);
-                            }
-                        }
-
-                        if(genekey > -1){
-                            //what is the score for that gene
-                            double scoreAtMax = dataset1ranks.get(genekey).getScore();
-
-                            current_result.setScoreAtMax(scoreAtMax);
-
-                            //update the score At max in the EnrichmentResults as well
-                        }
-                    }
-                }// end of determining the leading edge
-                if(current_result.geneSetOfInterest(params.getPvalue(),params.getQvalue())){
-                    enrichmentResults1OfInterest.put(current_name,current_result);
-
-                    //check to see that the geneset in the results file is in the geneset table
-                    //if it isn't then the user has given two files that don't match up
-                    if(genesets.containsKey(current_name)){
-                        GeneSet current_set = (GeneSet)genesets.get(current_name);
-                        genesetsOfInterest.put(current_name, current_set);
-                    }
-                    else if(genesetsOfInterest.containsKey(current_name)){
-                        //already found in genesets of interest - loading from session
-                    }
-                    else
-                        throw new IllegalThreadStateException("The Geneset: " + current_name + " is not found in the GMT file.");
-
-                    if(params.isTwoDatasets()) {
-                        //if this geneset is also in the first set make sure the results is
-                        //also put into the first set
-                        if(enrichmentResults2.get(current_name) != null){
-                            GSEAResult extra = (GSEAResult)enrichmentResults2.get(current_name);
-                            enrichmentResults2OfInterest.put(current_name, extra);
-                            GeneSet extra_set = (GeneSet)genesets_set2.get(current_name);
-                            genesetsOfInterest_set2.put(current_name,extra_set);
-                        }
-                    }
-                }
-            }
+        					//check to see that the geneset in the results file is in the geneset table
+        					//if it isn't then the user has given two files that don't match up
+        					if(genesets.containsKey(current_name)){
+        						GeneSet current_set = (GeneSet)genesets.get(current_name);
+        						genesetsOfInterest.put(current_name, current_set);
+        					}
+        					else if(genesetsOfInterest.containsKey(current_name)){
+        						//already found in genesets of interest - loading from session
+        					}
+        					else
+        						throw new IllegalThreadStateException("The Geneset: " + current_name + " is not found in the GMT file.");
+        					
+        					//TODO:check in multi species still needs this catch.
+        					/*if(map.getParams().isTwoDatasets()) {
+        						//if this geneset is also in the first set make sure the results is
+        						//also put into the first set
+        						if(enrichmentResults2.get(current_name) != null && genesets_set2 != null){
+        							GSEAResult extra = (GSEAResult)enrichmentResults2.get(current_name);
+        							enrichmentResults2OfInterest.put(current_name, extra);
+        							GeneSet extra_set = (GeneSet)genesets_set2.get(current_name);
+        							genesetsOfInterest_set2.put(current_name,extra_set);
+        						}
+        					}*/
+        				}
+        			}
             //otherwise it is a generic or David enrichment set
             else {
-                GenericResult current_result = (GenericResult)enrichmentResults1.get(current_name);
+                GenericResult current_result = (GenericResult)enrichmentResults.get(current_name);
 
-                if(current_result.geneSetOfInterest(params.getPvalue(),params.getQvalue(), params.isFDR())){
-                    enrichmentResults1OfInterest.put(current_name,current_result);
+                if(current_result.geneSetOfInterest(map.getParams().getPvalue(),map.getParams().getQvalue(), map.getParams().isFDR())){
+                    //enrichmentResults1OfInterest.put(current_name,current_result);
 
                     //check to see that the geneset in the results file is in the geneset talbe
                     //if it isn't then the user has given two files that don't match up
                     if(genesets.containsKey(current_name)){
                         GeneSet current_set = (GeneSet)genesets.get(current_name);
                         genesetsOfInterest.put(current_name, current_set);
-
-                        if(params.isTwoDatasets()) {
-                        //if this geneset is also in the first set make sure the results is
-                        //also put into the first set
-                        if(enrichmentResults2.get(current_name) != null){
-                            GenericResult extra = (GenericResult)enrichmentResults2.get(current_name);
-                            enrichmentResults2OfInterest.put(current_name, extra);
-                            GeneSet extra_set = (GeneSet)genesets_set2.get(current_name);
-                            genesetsOfInterest_set2.put(current_name,extra_set);
-                        }
+                        
+                      //TODO:check in multi species still needs this catch.
+                        /*if(params.isTwoDatasets()) {
+                        		//if this geneset is also in the first set make sure the results is
+                        		//also put into the first set
+                        		if(enrichmentResults2.get(current_name) != null){
+                            		GenericResult extra = (GenericResult)enrichmentResults2.get(current_name);
+                            		enrichmentResults2OfInterest.put(current_name, extra);
+                            		GeneSet extra_set = (GeneSet)genesets_set2.get(current_name);
+                            		genesetsOfInterest_set2.put(current_name,extra_set);
+                        		}
+                    		}*/
                     }
-                    }
-                    else if(genesetsOfInterest.containsKey(current_name) || genesetsOfInterest_set2.containsKey(current_name)){
+                    else if(genesetsOfInterest.containsKey(current_name) ){
                         //this geneset is already in the set of interest - loaded in from session
                     }
                     else
@@ -257,9 +259,10 @@ public class InitializeGenesetsOfInterestTask implements Task {
             }
 
         }
+        }// end of current dataset.  If more than one dataset repeat process.
 
         //Do the same for the second dataset if there is a second dataset
-        if(params.isTwoDatasets()){
+ /*       if(params.isTwoDatasets()){
 
 
 
@@ -402,10 +405,13 @@ public class InitializeGenesetsOfInterestTask implements Task {
 
                 }
 
-        }
+        }*/
+  
+        
         //after successfully made subsets of interest
         //once we have limited our analysis get rid of the initial genesets list
-        genesets.clear();
+        //TODO - make sure that the clear is no longer needed
+//        genesets.clear();
 
 
 

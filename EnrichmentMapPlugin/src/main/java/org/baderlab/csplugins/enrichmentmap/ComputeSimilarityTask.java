@@ -61,8 +61,9 @@ import java.util.*;
 */
 public class ComputeSimilarityTask implements Task {
     static final int ENRICHMENT = 0, SIGNATURE = 1;
-
-    private EnrichmentMapParameters params;
+    
+    private EnrichmentMap map;
+    
     private int type;
 
     //Hash map of the geneset_similarities computed that pass the cutoff.
@@ -77,39 +78,40 @@ public class ComputeSimilarityTask implements Task {
     /**
      * Constructor for Compute Similarity task
      *
-     * @param params - enrichment map parameters for current map
+     * @param map - current enrichment map 
      * @param taskMonitor - task monitor if it has already been set.
      */
-    public ComputeSimilarityTask(EnrichmentMapParameters params, TaskMonitor taskMonitor) {
-          this(params);
+    public ComputeSimilarityTask(EnrichmentMap map, TaskMonitor taskMonitor) {
+          this(map);
           this.taskMonitor = taskMonitor;
       }
 
 
-    public ComputeSimilarityTask(EnrichmentMapParameters params) {
-        this.params = params;
-        this.geneset_similarities = new HashMap<String, GenesetSimilarity>();
+    public ComputeSimilarityTask(EnrichmentMap map) {
+        this.map = map;
+        this.geneset_similarities = map.getGenesetSimilarity();
         this.type = 0;
     }
 
-    public ComputeSimilarityTask(EnrichmentMapParameters params, int type) {
-        this.params = params;
-        this.geneset_similarities = new HashMap<String, GenesetSimilarity>();
+    public ComputeSimilarityTask(EnrichmentMap map, int type) {
+        this.map = map;
+        this.geneset_similarities = map.getGenesetSimilarity();
         this.type = type;
     }    
     
     public boolean computeGenesetSimilarities(){
         try{
-            HashMap genesetsOfInterest = params.getGenesetsOfInterest();
+            HashMap genesetsOfInterest = map.getAllGenesetsOfInterest();
             HashMap genesetsInnerLoop;
             String edgeType = "pp";
             
             if (type == ENRICHMENT ){
                 genesetsInnerLoop = genesetsOfInterest;
-                edgeType = params.getEnrichment_edge_type();
+                edgeType = map.getParams().getEnrichment_edge_type();
             }
             else if (type == SIGNATURE ){
-                genesetsInnerLoop = params.getSignatureGenesets();
+            		//TODO refactor signature sets.
+                genesetsInnerLoop = map.getParams().getSignatureGenesets();
                 edgeType = PostAnalysisParameters.SIGNATURE_INTERACTION_TYPE;
             }
             else {
@@ -123,9 +125,11 @@ public class ComputeSimilarityTask implements Task {
 
             //figure out if we need to compute edges for two different expression sets or one.
             int enrichment_set =0;
-            if(params.isTwoDistinctExpressionSets()){
+            if(map.getParams().isTwoDistinctExpressionSets()){
+            		//TODO if there are multiple species or different expression we need to loop through the datasets
+            		//instead of treating all genesets as the same.
                 enrichment_set = 1;
-                maxValue = genesetsOfInterest.size() + params.getGenesetsOfInterest_set2().size();
+                //maxValue = genesetsOfInterest.size() + ((EnrichmentMap_multispecies)params.getEM()).getGenesetsOfInterest_set2().size();
             }
 
             //iterate through the each of the GSEA Results of interest
@@ -198,12 +202,12 @@ public class ComputeSimilarityTask implements Task {
 
                          double coeffecient;
 
-                         if(params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_JACCARD)){
+                         if(map.getParams().getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_JACCARD)){
 
                             //compute Jaccard similarity
                             coeffecient = (double)intersection.size() / (double)union.size();
                          }
-                         else if(params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_OVERLAP)){
+                         else if(map.getParams().getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_OVERLAP)){
                              coeffecient = (double)intersection.size() / Math.min((double)genes1.size(), (double)genes2.size());
                          }
                          else { //else it must be combined
@@ -212,14 +216,14 @@ public class ComputeSimilarityTask implements Task {
                              double jaccard = (double)intersection.size() / (double)union.size();
                              double overlap = (double)intersection.size() / Math.min((double)genes1.size(), (double)genes2.size());
 
-                             double k = params.getCombinedConstant();
+                             double k = map.getParams().getCombinedConstant();
 
                              coeffecient = (k * overlap) + ((1-k) * jaccard);
 
                          }
 
                          //create Geneset similarity object
-                         GenesetSimilarity comparison = new GenesetSimilarity(geneset1_name,geneset2_name, coeffecient, params.getEnrichment_edge_type() ,(HashSet<Integer>)intersection,enrichment_set);
+                         GenesetSimilarity comparison = new GenesetSimilarity(geneset1_name,geneset2_name, coeffecient, map.getParams().getEnrichment_edge_type() ,(HashSet<Integer>)intersection,enrichment_set);
 
                          if (type == SIGNATURE) // as we iterate over the signature nodes in the inner loop, we have to switch the nodes in the edge name
                              geneset_similarities.put(similarity_key2,comparison);
@@ -234,9 +238,10 @@ public class ComputeSimilarityTask implements Task {
 
             }
             //need to go through the second set of genesets in order to calculate the additional similarities
-           if(params.isTwoDistinctExpressionSets()){
+            //TODO:add two species support
+ /*          if(map.getParams().isTwoDistinctExpressionSets()){
                 enrichment_set = 2;
-                HashMap<String, GeneSet> genesetsOfInterest_set2 = params.getGenesetsOfInterest_set2();
+                HashMap<String, GeneSet> genesetsOfInterest_set2 = ((EnrichmentMap_multispecies)params.getEM()).getGenesetsOfInterest_set2();
                 genesetsInnerLoop = genesetsOfInterest_set2;
 
                //iterate through the each of the GSEA Results of interest - for the second set.
@@ -291,12 +296,12 @@ public class ComputeSimilarityTask implements Task {
 
                             double coeffecient;
 
-                            if(params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_JACCARD)){
+                            if(map.getParams().getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_JACCARD)){
 
                             //compute Jaccard similarity
                             coeffecient = (double)intersection.size() / (double)union.size();
                          }
-                         else if(params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_OVERLAP)){
+                         else if(map.getParams().getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_OVERLAP)){
                              coeffecient = (double)intersection.size() / Math.min((double)genes1.size(), (double)genes2.size());
                          }
                          else { //else it must be combined
@@ -305,13 +310,13 @@ public class ComputeSimilarityTask implements Task {
                              double jaccard = (double)intersection.size() / (double)union.size();
                              double overlap = (double)intersection.size() / Math.min((double)genes1.size(), (double)genes2.size());
 
-                             double k = params.getCombinedConstant();
+                             double k = map.getParams().getCombinedConstant();
 
                              coeffecient = (k * overlap) + ((1-k) * jaccard);
 
                          }
                             //create Geneset similarity object
-                            GenesetSimilarity comparison = new GenesetSimilarity(geneset1_name,geneset2_name, coeffecient, params.getEnrichment_edge_type() ,(HashSet<Integer>)intersection,enrichment_set);
+                            GenesetSimilarity comparison = new GenesetSimilarity(geneset1_name,geneset2_name, coeffecient, map.getParams().getEnrichment_edge_type() ,(HashSet<Integer>)intersection,enrichment_set);
 
                             if (type == SIGNATURE) // as we iterate over the signature nodes in the inner loop, we have to switch the nodes in the edge name
                                 geneset_similarities.put(similarity_key2,comparison);
@@ -326,12 +331,12 @@ public class ComputeSimilarityTask implements Task {
                 //We need to also compute the edges between the two different groups.
                 //Compute similarity for nodes that are in dataset1 or dataset2 (not necessarily significant in both)
                //Do dataset1
-               HashMap<String, GeneSet> sig_genesets_set1 = params.getGenesetsOfInterest();
-               HashMap<String, GeneSet> sig_genesets_set2 = params.getGenesetsOfInterest_set2();
+               HashMap<String, GeneSet> sig_genesets_set1 = params.getEM().getGenesetsOfInterest();
+               HashMap<String, GeneSet> sig_genesets_set2 = ((EnrichmentMap_multispecies)params.getEM()).getGenesetsOfInterest_set2();
 
-                HashMap<String, GeneSet> genesetsInnerLoop_missingedges = params.getGenesets();
-                HashMap<String, GeneSet> genesetsOfInterest_missingedges = params.getGenesets();
-               HashMap<String, EnrichmentResult> dataset1_results = params.getEnrichmentResults1();
+                HashMap<String, GeneSet> genesetsInnerLoop_missingedges = params.getEM().getGenesets();
+                HashMap<String, GeneSet> genesetsOfInterest_missingedges = params.getEM().getGenesets();
+               HashMap<String, EnrichmentResult> dataset1_results = params.getEM().getEnrichment(EnrichmentMap.DATASET1).getEnrichments();
 
                  //iterate through the each of the GSEA Results of interest - for the second set on the outer loop
                //and the first set on the inner loop
@@ -393,12 +398,12 @@ public class ComputeSimilarityTask implements Task {
 
                                 double coeffecient;
 
-                                if(params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_JACCARD)){
+                                if(map.getParams().getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_JACCARD)){
 
                                     //compute Jaccard similarity
                                     coeffecient = (double)intersection.size() / (double)union.size();
                                 }
-                                else if(params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_OVERLAP)){
+                                else if(map.getParams().getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_OVERLAP)){
                                     coeffecient = (double)intersection.size() / Math.min((double)genes1.size(), (double)genes2.size());
                                 }
                                 else { //else it must be combined
@@ -407,13 +412,13 @@ public class ComputeSimilarityTask implements Task {
                                     double jaccard = (double)intersection.size() / (double)union.size();
                                     double overlap = (double)intersection.size() / Math.min((double)genes1.size(), (double)genes2.size());
 
-                                    double k = params.getCombinedConstant();
+                                    double k = map.getParams().getCombinedConstant();
 
                                     coeffecient = (k * overlap) + ((1-k) * jaccard);
 
                                 }
                                 //create Geneset similarity object
-                                GenesetSimilarity comparison = new GenesetSimilarity(geneset1_name,geneset2_name, coeffecient, params.getEnrichment_edge_type() ,(HashSet<Integer>)intersection,enrichment_set);
+                                GenesetSimilarity comparison = new GenesetSimilarity(geneset1_name,geneset2_name, coeffecient, map.getParams().getEnrichment_edge_type() ,(HashSet<Integer>)intersection,enrichment_set);
 
                                 if (type == SIGNATURE) // as we iterate over the signature nodes in the inner loop, we have to switch the nodes in the edge name
                                     geneset_similarities.put(similarity_key2,comparison);
@@ -426,9 +431,9 @@ public class ComputeSimilarityTask implements Task {
                 }
 
                //Do dataset2
-               HashMap<String, GeneSet> genesetsInnerLoop_missingedges_d2 = params.getGenesets_set2();
-               HashMap<String, GeneSet> genesetsOfInterest_missingedges_d2 = params.getGenesets_set2();
-               HashMap<String, EnrichmentResult> dataset2_results = params.getEnrichmentResults2();
+               HashMap<String, GeneSet> genesetsInnerLoop_missingedges_d2 = ((EnrichmentMap_multispecies)params.getEM()).getGenesets_set2();
+               HashMap<String, GeneSet> genesetsOfInterest_missingedges_d2 = ((EnrichmentMap_multispecies)params.getEM()).getGenesets_set2();
+               HashMap<String, EnrichmentResult> dataset2_results = params.getEM().getEnrichment(EnrichmentMap.DATASET2).getEnrichments();
                  //iterate through the each of the GSEA Results of interest - for the second set on the outer loop
                //and the first set on the inner loop
                 for(Iterator i = genesetsOfInterest_missingedges_d2.keySet().iterator(); i.hasNext(); ){
@@ -490,12 +495,12 @@ public class ComputeSimilarityTask implements Task {
 
                                 double coeffecient;
 
-                                if(params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_JACCARD)){
+                                if(map.getParams().getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_JACCARD)){
 
                                     //compute Jaccard similarity
                                     coeffecient = (double)intersection.size() / (double)union.size();
                                  }
-                                else if(params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_OVERLAP)){
+                                else if(map.getParams().getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_OVERLAP)){
                                     coeffecient = (double)intersection.size() / Math.min((double)genes1.size(), (double)genes2.size());
                                 }
                                 else { //else it must be combined
@@ -504,13 +509,13 @@ public class ComputeSimilarityTask implements Task {
                                     double jaccard = (double)intersection.size() / (double)union.size();
                                     double overlap = (double)intersection.size() / Math.min((double)genes1.size(), (double)genes2.size());
 
-                                    double k = params.getCombinedConstant();
+                                    double k = map.getParams().getCombinedConstant();
 
                                      coeffecient = (k * overlap) + ((1-k) * jaccard);
 
                                 }
                                 //create Geneset similarity object
-                                GenesetSimilarity comparison = new GenesetSimilarity(geneset1_name,geneset2_name, coeffecient, params.getEnrichment_edge_type() ,(HashSet<Integer>)intersection,enrichment_set);
+                                GenesetSimilarity comparison = new GenesetSimilarity(geneset1_name,geneset2_name, coeffecient, map.getParams().getEnrichment_edge_type() ,(HashSet<Integer>)intersection,enrichment_set);
 
                                 if (type == SIGNATURE) // as we iterate over the signature nodes in the inner loop, we have to switch the nodes in the edge name
                                     geneset_similarities.put(similarity_key2,comparison);
@@ -522,7 +527,7 @@ public class ComputeSimilarityTask implements Task {
                     }
                 }
             }
-
+*/
         } catch(IllegalThreadStateException e){
             taskMonitor.setException(e, "Unable to compute similarity coeffecients");
             return false;

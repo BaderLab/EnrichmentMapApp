@@ -69,6 +69,8 @@ public class BuildEnrichmentMapTask implements Task {
 
 
     private EnrichmentMapParameters params;
+    
+    private String name = null;
 
     // Keep track of progress for monitoring:
     private int maxValue;
@@ -94,17 +96,103 @@ public class BuildEnrichmentMapTask implements Task {
     }
 
     /**
+     * Constructor for Build enrichment map task - copies the parameters from
+     * the passed instance of parameters into a new instance of parameters
+     * which will be associated with the created map.
+     *
+     * @param params - the current specification of this run
+     * @params name - the name of the current 
+     */
+    public BuildEnrichmentMapTask( EnrichmentMapParameters params, String name) {
+   		this(params);
+    		this.name = name;
+
+
+    }
+    
+    /**
      * buildEnrichmentMap - parses all GSEA input files and creates an enrichment map
      */
     public void buildEnrichmentMap(){
+    		
+    	
+    		//create a new enrichment map
+    		EnrichmentMap map = new EnrichmentMap(params,name);
+    		
+    		//Load in the first dataset
+    		//call it Dataset 1.
+    		DataSet dataset = map.getDataset(EnrichmentMap.DATASET1);    		
+    		
+    		//Get all user parameters
+    		
+    		//Load Dataset
+    		try{
+    			LoadDataSetTask loaddata = new LoadDataSetTask(dataset, taskMonitor);
+    			loaddata.run();
+    		} catch (OutOfMemoryError e) {
+            taskMonitor.setException(e,"Out of Memory. Please increase memory allotement for cytoscape.");
+            return;
+        }  catch(Exception e){
+            taskMonitor.setException(e,"unable to load DataSet");
+            return;
+        }
+    	
+    		//trim the genesets to only contain the genes that are in the data file.
+        map.filterGenesets();
 
+        //check to make sure that after filtering there are still genes in the genesets
+        //if there aren't any genes it could mean that the IDs don't match or it could mean none
+        //of the genes in the expression file are in the specified genesets.
+        if(!map.checkGenesets())
+                throw new IllegalThreadStateException("No genes in the expression file are found in the GMT file ");
+
+        try{
+
+            //Initialize the set of genesets and GSEA results that we want to compute over
+            InitializeGenesetsOfInterestTask genesets_init = new InitializeGenesetsOfInterestTask(map,taskMonitor);
+            genesets_init.run();
+
+            //initialize bitsets for the genesets once the genesets have been filtered
+            //TODO: remove, implemented for different purpose but never turned out to be useful.
+            //params.computeEnrichmentMapGenes();
+
+       } catch (OutOfMemoryError e) {
+            taskMonitor.setException(e,"Out of Memory. Please increase memory allotement for cytoscape.");
+            return;
+        }catch(IllegalThreadStateException e){
+            taskMonitor.setException(e,"Genesets defined in the Enrichment results file are not found in  gene set file (GMT).  (Click \"Show Error details\" to see which genesets is not found)Please make sure you are using the correct GMT file.");
+            return;
+        }
+
+        try{
+            //compute the geneset similarities
+            ComputeSimilarityTask similarities = new ComputeSimilarityTask(map,taskMonitor);
+            similarities.run();
+
+            HashMap<String, GenesetSimilarity> similarity_results = similarities.getGeneset_similarities();
+
+            map.setGenesetSimilarity(similarity_results);
+
+            //build the resulting map
+            VisualizeEnrichmentMapTask map_viz = new VisualizeEnrichmentMapTask(map,taskMonitor);
+            map_viz.run();
+
+        } catch (OutOfMemoryError e) {
+            taskMonitor.setException(e,"Out of Memory. Please increase memory allotement for cytoscape.");
+
+        }catch(Exception e){
+            taskMonitor.setException(e,"unable to build/visualize map");
+        }
+
+
+    		
         //no GMT file is required for DAVID processing
-        if(!params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_DAVID)){
+ /*       if(!params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_DAVID)){
 
             //Load in the GMT file
             try{
                 //Load the geneset file
-                GMTFileReaderTask gmtFile = new GMTFileReaderTask(params, taskMonitor);
+                GMTFileReaderTask gmtFile = new GMTFileReaderTask(, taskMonitor);
                 gmtFile.run();
 
             } catch (OutOfMemoryError e) {
@@ -138,7 +226,6 @@ public class BuildEnrichmentMapTask implements Task {
             }
         }
         else{
-            params.noFilter();
             createDummyExpressionFile(1);
             if(params.isTwoDatasets()){
                 createDummyExpressionFile(2);
@@ -171,7 +258,7 @@ public class BuildEnrichmentMapTask implements Task {
 
             //initialize bitsets for the genesets once the genesets have been filtered
             //TODO: remove, implemented for different purpose but never turned out to be useful.
-            params.computeEnrichmentMapGenes();
+            //params.computeEnrichmentMapGenes();
 
        } catch (OutOfMemoryError e) {
             taskMonitor.setException(e,"Out of Memory. Please increase memory allotement for cytoscape.");
@@ -188,7 +275,7 @@ public class BuildEnrichmentMapTask implements Task {
 
             HashMap<String, GenesetSimilarity> similarity_results = similarities.getGeneset_similarities();
 
-            params.setGenesetSimilarity(similarity_results);
+            params.getEM().setGenesetSimilarity(similarity_results);
 
             //build the resulting map
             VisualizeEnrichmentMapTask map = new VisualizeEnrichmentMapTask(params,taskMonitor);
@@ -201,27 +288,27 @@ public class BuildEnrichmentMapTask implements Task {
             taskMonitor.setException(e,"unable to build/visualize map");
         }
 
-
+*/
 
     }
 
     //load GMT Files
 
     //load expression Files
-    private void LoadExpressionFiles(){
+/*    private void LoadExpressionFiles(){
         //Load the expression or rank file
         ExpressionFileReaderTask expressionFile1 = new ExpressionFileReaderTask(params,1,taskMonitor);
         expressionFile1.run();
-        params.getExpression().rowNormalizeMatrix();
+        params.getEM().getExpression(EnrichmentMap.DATASET1).rowNormalizeMatrix();
         if(params.isData2() && params.getExpressionFileName2() != null && !params.getExpressionFileName2().equalsIgnoreCase("")){
             ExpressionFileReaderTask expressionFile2 = new ExpressionFileReaderTask(params,2,taskMonitor);
             expressionFile2.run();
-            params.getExpression2().rowNormalizeMatrix();
+            params.getEM().getExpression(EnrichmentMap.DATASET2).rowNormalizeMatrix();
         }
         //if there are two expression sets check to see that they have the same gene ids.
         //if(params.isData2()){
             params.setTwoDistinctExpressionSets(isDistinctDatasets());
-         /*   Set<Integer> expression_1_genes = params.getExpression().getGeneIds();
+ */        /*   Set<Integer> expression_1_genes = params.getExpression().getGeneIds();
 
             Set<Integer> expression_2_genes = params.getExpression2().getGeneIds();
             if((expression_2_genes != null) && (expression_2_genes.size()>0)){
@@ -254,12 +341,12 @@ public class BuildEnrichmentMapTask implements Task {
         //}
 
         //trim the genesets to only contain the genes that are in the data file.
-        params.filterGenesets();
+ /*       params.getEM().filterGenesets();
 
         //check to make sure that after filtering there are still genes in the genesets
         //if there aren't any genes it could mean that the IDs don't match or it could mean none
         //of the genes in the expression file are in the specified genesets.
-        if(!params.checkGenesets())
+        if(!params.getEM().checkGenesets())
             throw new IllegalThreadStateException("No genes in the expression file are found in the GMT file ");
 
     }
@@ -305,14 +392,14 @@ public class BuildEnrichmentMapTask implements Task {
     private void createDummyExpressionFile(int dataset){
         //in order to see the gene in the expression viewer we also need a dummy expression file
         //get all the genes
-        HashMap<String, Integer> genes= params.getGenes();
+        HashMap<String, Integer> genes= params.getEM().getGenes();
         HashSet datasetGenes;
         if(dataset ==1 ){
-            genes = params.getGenesetsGenes(params.getGenesets());
-            datasetGenes= params.getDatasetGenes();
+            genes = params.getEM().getGenesetsGenes(params.getEM().getGenesets());
+            datasetGenes= params.getEM().getDatasetGenes();
         }else{
-            genes = params.getGenesetsGenes(params.getGenesets_set2());
-            datasetGenes= params.getDatasetGenes_set2();
+            genes = params.getEM().getGenesetsGenes(((EnrichmentMap_multispecies)params.getEM()).getGenesets_set2());
+            datasetGenes= ((EnrichmentMap_multispecies)params.getEM()).getDatasetGenes_set2();
         }
 
         String[] titletokens = new String[3];
@@ -357,9 +444,9 @@ public class BuildEnrichmentMapTask implements Task {
         //make sure that params is set to show there is data
         if(dataset == 1){
             params.setData(true);
-            params.setExpression(expressionMatrix);
+            params.getEM().addExpression(EnrichmentMap.DATASET1, expressionMatrix);
         }else{
-            params.setExpression2(expressionMatrix);
+            params.getEM().addExpression(EnrichmentMap.DATASET2,expressionMatrix);
             params.setData2(true);
         }
 
@@ -370,14 +457,14 @@ public class BuildEnrichmentMapTask implements Task {
   private boolean isDistinctDatasets(){
 
       Set<Integer> expression_1_genes = new HashSet<Integer>();
-              expression_1_genes.addAll(params.getExpression().getGeneIds());
+      expression_1_genes.addAll(params.getEM().getExpression(EnrichmentMap.DATASET1).getGeneIds());
       Set<Integer> expression_2_genes = new HashSet<Integer>();
       //if there is expression set then grab the genes from the expression set
-      if(params.getExpression2() != null)
-              expression_2_genes.addAll(params.getExpression2().getGeneIds());
+      if(params.getEM().getExpression(EnrichmentMap.DATASET2) != null)
+              expression_2_genes.addAll(params.getEM().getExpression(EnrichmentMap.DATASET2).getGeneIds());
       //if there is no expression set then grab the genes from the defined genesetset2
       else{
-          HashMap<String, GeneSet> geneset_set2 = params.getGenesets_set2();
+          HashMap<String, GeneSet> geneset_set2 = ((EnrichmentMap_multispecies)params.getEM()).getGenesets_set2();
           if(geneset_set2 != null && geneset_set2.size()>0){
             for (Iterator i = geneset_set2.keySet().iterator(); i.hasNext();) {
                 String currentGeneSet = (String)i.next();
@@ -395,29 +482,26 @@ public class BuildEnrichmentMapTask implements Task {
 
             if(expression_1_genes.size() != 0){
                 //params.setTwoDistinctExpressionSets(true);
-                params.setDatasetGenes(new HashSet<Integer>(expression_1_genes));
-                params.setDatasetGenes_set2(new HashSet<Integer>(expression_2_genes));
+                params.getEM().setDatasetGenes(new HashSet<Integer>(expression_1_genes));
+                ((EnrichmentMap_multispecies)params.getEM()).setDatasetGenes_set2(new HashSet<Integer>(expression_2_genes));
 
                 //only set genesets_set2 to the first if it is null
-                if(params.getGenesets_set2().size() == 0){
-                    params.setGenesets_set2(new HashMap<String,GeneSet>(params.getGenesets()));
-                    params.setFilteredGenesets_set2(new HashMap<String, GeneSet>(params.getFilteredGenesets()));
-                }
-                else{
-                    params.setFilteredGenesets_set2(new HashMap<String, GeneSet>(params.getGenesets_set2()));
+                if(((EnrichmentMap_multispecies)params.getEM()).getGenesets_set2().size() == 0){
+                		((EnrichmentMap_multispecies)params.getEM()).setGenesets_set2(new HashMap<String,GeneSet>(params.getEM().getGenesets()));
+                    
                 }
                 return true;
             }
             else{
                 //if there were two david files but they are from the same species we want to merge the results
-                if(params.getGenesets_set2().size() > 0)
-                    params.getGenesets().putAll(params.getGenesets_set2());
+                if(((EnrichmentMap_multispecies)params.getEM()).getGenesets_set2().size() > 0)
+                    params.getEM().getGenesets().putAll(((EnrichmentMap_multispecies)params.getEM()).getGenesets_set2());
             }
                 //System.out.println("the expression files don't have the exact same number of entities.");
       }
       return false;
   }
-
+*/
  /**
      * Run the Task.
      */

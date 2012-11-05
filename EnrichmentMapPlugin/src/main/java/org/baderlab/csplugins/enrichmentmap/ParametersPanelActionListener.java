@@ -10,10 +10,12 @@ import java.awt.event.ActionListener;
  */
 public class ParametersPanelActionListener implements ActionListener {
 
-    EnrichmentMapParameters params;
+    private EnrichmentMap map;
+    private EnrichmentMapParameters params;
 
-    public ParametersPanelActionListener(EnrichmentMapParameters params) {
-        this.params = params;
+    public ParametersPanelActionListener(EnrichmentMap map) {
+        this.map = map;
+        this.params = map.getParams();
     }
 
     public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -32,20 +34,20 @@ public class ParametersPanelActionListener implements ActionListener {
         else if(evt.getActionCommand().equalsIgnoreCase(HeatMapParameters.pearson_correlation)){
             params.setDefaultDistanceMetric(HeatMapParameters.pearson_correlation);
             //update the heatmap to reflect this change.
-            params.getHmParams().getEdgeOverlapPanel().updatePanel(params);
-            params.getHmParams().getNodeOverlapPanel().updatePanel(params);
+            params.getHmParams().getEdgeOverlapPanel().updatePanel(map);
+            params.getHmParams().getNodeOverlapPanel().updatePanel(map);
         }
         else if (evt.getActionCommand().equalsIgnoreCase(HeatMapParameters.cosine)){
             params.setDefaultDistanceMetric(HeatMapParameters.cosine);
             //update the heatmap to reflect this change.
-            params.getHmParams().getEdgeOverlapPanel().updatePanel(params);
-            params.getHmParams().getNodeOverlapPanel().updatePanel(params);
+            params.getHmParams().getEdgeOverlapPanel().updatePanel(map);
+            params.getHmParams().getNodeOverlapPanel().updatePanel(map);
         }
         else if(evt.getActionCommand().equalsIgnoreCase(HeatMapParameters.euclidean)){
             params.setDefaultDistanceMetric(HeatMapParameters.euclidean);
             //update the heatmap to reflect this change.
-            params.getHmParams().getEdgeOverlapPanel().updatePanel(params);
-            params.getHmParams().getNodeOverlapPanel().updatePanel(params);
+            params.getHmParams().getEdgeOverlapPanel().updatePanel(map);
+            params.getHmParams().getNodeOverlapPanel().updatePanel(map);
         }
 
     }

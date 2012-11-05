@@ -47,6 +47,7 @@ import javax.swing.*;
 import javax.swing.border.TitledBorder;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.TreeMap;
 import java.net.URL;
@@ -250,9 +251,9 @@ public class HeatMapParameters {
      * @param params - enrichment map parameters of current map
      * @return - panel with the sort by combo box
      */
-    public JPanel createSortOptionsPanel(EnrichmentMapParameters params){
+    public JPanel createSortOptionsPanel(EnrichmentMap map){
     	 TitledBorder RankBorder = BorderFactory.createTitledBorder("Sorting");
-        HashMap<String, HashMap<Integer, Ranking>> ranks = params.getRanks();
+        HashSet<String> ranks = map.getAllRankNames();
          RankBorder.setTitleJustification(TitledBorder.LEFT);
     	RankOptions 		= new JPanel();
     	rankOptionComboBox	= new JComboBox();
@@ -266,9 +267,8 @@ public class HeatMapParameters {
         //Go through the ranks hashmap and insert each ranking as an option
         if(ranks != null){
             //convert the ranks into a treeset so that they are ordered
-            TreeMap<String, HashMap<Integer, Ranking>> ranks_ordered = new TreeMap<String, HashMap<Integer, Ranking>>();
-            ranks_ordered.putAll(ranks);
-            for(Iterator<String> j = ranks_ordered.keySet().iterator(); j.hasNext(); ){
+        	
+            for(Iterator<String> j = ranks.iterator(); j.hasNext(); ){
                 String ranks_name = j.next().toString();
                 rankOptionComboBox.addItem(ranks_name);
             }
@@ -278,20 +278,20 @@ public class HeatMapParameters {
 
         switch(sort){
             case DEFAULT:
-                rankOptionComboBox.setSelectedItem(params.getDefaultSortMethod());
-                if(params.getDefaultSortMethod().equalsIgnoreCase(sort_rank)){
+                rankOptionComboBox.setSelectedItem(map.getParams().getDefaultSortMethod());
+                if(map.getParams().getDefaultSortMethod().equalsIgnoreCase(sort_rank)){
                     sort = Sort.RANK;
                     if(ranks != null){
-                        rankFileIndex = ranks.keySet().iterator().next();
+                        rankFileIndex = ranks.iterator().next();
                         sortIndex = ascending.length - ranks.size();
                     }else{
                         rankOptionComboBox.setSelectedItem(sort_none);
                         sort = Sort.NONE;
                     }
                 }
-                else if(params.getDefaultSortMethod().equalsIgnoreCase(sort_none))
+                else if(map.getParams().getDefaultSortMethod().equalsIgnoreCase(sort_none))
                     sort = Sort.NONE;
-                else if(params.getDefaultSortMethod().equalsIgnoreCase(sort_hierarchical_cluster))
+                else if(map.getParams().getDefaultSortMethod().equalsIgnoreCase(sort_hierarchical_cluster))
                     sort = Sort.CLUSTER;
                 break;
 
@@ -306,12 +306,12 @@ public class HeatMapParameters {
             case RANK:
                 int k = 0;
                 int columns = 0;
-                if(params.isData2() && params.getExpression2() != null)
-                    columns = params.getExpression().getColumnNames().length + params.getExpression2().getColumnNames().length - 2;
+                if(map.getParams().isData2() && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null)
+                    columns = map.getDataset(EnrichmentMap.DATASET1).getExpressionSets() .getColumnNames().length + map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() .getColumnNames().length - 2;
                 else
-                    columns = params.getExpression().getColumnNames().length;
+                    columns = map.getDataset(EnrichmentMap.DATASET1).getExpressionSets() .getColumnNames().length;
 
-                for(Iterator<String> j = ranks.keySet().iterator(); j.hasNext(); ){
+                for(Iterator<String> j = ranks.iterator(); j.hasNext(); ){
                     String ranks_name = j.next().toString();
                     if(ranks_name.equalsIgnoreCase(rankFileIndex)){
                         rankOptionComboBox.setSelectedItem(ranks_name);
@@ -346,7 +346,7 @@ public class HeatMapParameters {
             arrow.addActionListener(new ChangeSortAction(arrow));
         }
 
-        rankOptionComboBox.addActionListener(new HeatMapActionListener(edgeOverlapPanel, nodeOverlapPanel,rankOptionComboBox,this, params));
+        rankOptionComboBox.addActionListener(new HeatMapActionListener(edgeOverlapPanel, nodeOverlapPanel,rankOptionComboBox,this, map));
 
         ComboButton.revalidate();
 
@@ -438,7 +438,7 @@ public class HeatMapParameters {
      * @param params - enrichment map parameters of current map
      * @return - panel with the Data Transformations Options combo box
      */
-    public JPanel createDataTransformationOptionsPanel(EnrichmentMapParameters params){
+    public JPanel createDataTransformationOptionsPanel(EnrichmentMap map){
     	 TitledBorder HMBorder = BorderFactory.createTitledBorder("Normalization");
          HMBorder.setTitleJustification(TitledBorder.LEFT);
     	heatmapOptions   = new JPanel();
@@ -456,7 +456,7 @@ public class HeatMapParameters {
                break;
        }
 
-        hmOptionComboBox.addActionListener(new HeatMapActionListener(edgeOverlapPanel, nodeOverlapPanel,hmOptionComboBox,this, params));
+        hmOptionComboBox.addActionListener(new HeatMapActionListener(edgeOverlapPanel, nodeOverlapPanel,hmOptionComboBox,this, map));
         heatmapOptions.add(hmOptionComboBox);
         heatmapOptions.setBorder(HMBorder);
         return heatmapOptions;

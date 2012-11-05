@@ -142,7 +142,7 @@ public class PostAnalysisInputPanel extends JPanel {
         setLayout(new BorderLayout());
 
         //get the current enrichment map parameters
-        EnrichmentMapParameters emParams = EnrichmentMapManager.getInstance().getParameters(Cytoscape.getCurrentNetwork().getIdentifier());
+        EnrichmentMapParameters emParams = EnrichmentMapManager.getInstance().getMap(Cytoscape.getCurrentNetwork().getIdentifier()).getParams();
         if (emParams == null){
             emParams = new EnrichmentMapParameters();
         }
@@ -1185,8 +1185,9 @@ public class PostAnalysisInputPanel extends JPanel {
          */
         public void run() {
             //now a Cytoscape Task (LoadSignatureGenesetsTask)
-            try {
+/*            try {
                 try{
+                	//TODO:Add signature support
                     //Load the GSEA geneset file
                     GMTFileReaderTask gmtFile_1 = new GMTFileReaderTask(paParams, taskMonitor, GMTFileReaderTask.ENRICHMENT_GMT);
                     gmtFile_1.run();
@@ -1210,7 +1211,7 @@ public class PostAnalysisInputPanel extends JPanel {
 
                 //filter the signature genesets to only include genesets that overlap with the genesets
                 //in our current map.
-                HashMap<String, GeneSet> genesets_in_map = paParams.getGenesetsOfInterest();
+                HashMap<String, GeneSet> genesets_in_map = paParams.getEM().getGenesetsOfInterest();
                 Object[] setsOfInterest = genesets_in_map.keySet().toArray();
                 //get the value to be filtered by if there is a filter
 
@@ -1270,7 +1271,7 @@ public class PostAnalysisInputPanel extends JPanel {
             
             } catch (InterruptedException e) {
                 taskMonitor.setException(e, "loading of GMT files cancelled");
-            }
+            }*/
 
         }
         /* (non-Javadoc)

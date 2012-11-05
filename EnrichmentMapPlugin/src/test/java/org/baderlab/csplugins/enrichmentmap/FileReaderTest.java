@@ -25,20 +25,27 @@ public class FileReaderTest extends TestCase {
     public void testGMTFileReader(){
 
         String testDataFileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/Genesetstestfile.gmt";
-
-        EnrichmentMapParameters params = new EnrichmentMapParameters();
-
+        
+        //create a new instance of the parameters
+        EnrichmentMapParameters params = new EnrichmentMapParameters();        
+        //set gmt file name 
         params.setGMTFileName(testDataFileName);
+        
+        //Create a new Enrichment map
+        EnrichmentMap map = new EnrichmentMap(params);
+                
+        //get the default dataset
+        DataSet dataset = map.getDataset(EnrichmentMap.DATASET1);
 
         //set up task
-        GMTFileReaderTask task = new GMTFileReaderTask(params);
+        GMTFileReaderTask task = new GMTFileReaderTask(dataset);
 
         //read in file
         task.run();
 
         //test to make sure that the file loaded in 10 genesets with a total of 75 genes
-        assertEquals(10, params.getGenesets().size());
-        assertEquals(75, params.getGenes().size());
+        assertEquals(10, map.getAllGenesets().size());
+        assertEquals(75, map.getGenes().size());
 
     }
 
@@ -47,52 +54,59 @@ public class FileReaderTest extends TestCase {
         //load the test expression file
         String testDataFileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/Expressiontestfile.gct";
 
-        EnrichmentMapParameters params = new EnrichmentMapParameters();
-
+        //create a new instance of the parameters
+        EnrichmentMapParameters params = new EnrichmentMapParameters();        
+        //set expression file name 
         params.setExpressionFileName1(testDataFileName);
+        
+        //Create a new Enrichment map
+        EnrichmentMap map = new EnrichmentMap(params);
+                
+        //get the default dataset
+        DataSet dataset = map.getDataset(EnrichmentMap.DATASET1);
 
         //in order to load expression data the genes have to be registered with the application
-        HashMap<String, Integer> genes = params.getGenes();
-        HashMap<Integer, String> hash2genes = params.getHashkey2gene();
+        HashMap<String, Integer> genes = map.getGenes();
+        HashMap<Integer, String> hash2genes = map.getHashkey2gene();
 
         //make sure that the genes are empty
         assertEquals(0,genes.size());
 
         //add the gene to the master list of genes
-        int value = params.getNumberOfGenes();
+        int value = map.getNumberOfGenes();
         genes.put("GLS", value);
         hash2genes.put(value,"GLS");
-        params.setNumberOfGenes(value++);
+        map.setNumberOfGenes(value++);
 
         genes.put("PSMA1", value);
         hash2genes.put(value,"PSMA1");
-        params.setNumberOfGenes(value++);
+        map.setNumberOfGenes(value++);
 
         //different case to the one in the expression file
         genes.put("ZP1", value);
         hash2genes.put(value,"ZP1");
-        params.setNumberOfGenes(value++);
+        map.setNumberOfGenes(value++);
 
         genes.put("ZYX", value);
         hash2genes.put(value,"ZYX");
-        params.setNumberOfGenes(value++);
+        map.setNumberOfGenes(value++);
 
         //make sure all four genes have been associated
-        assertEquals(4,params.getGenes().size());
+        assertEquals(4,map.getGenes().size());
 
         //load expression file
-        ExpressionFileReaderTask task = new ExpressionFileReaderTask(params,1);
+        ExpressionFileReaderTask task = new ExpressionFileReaderTask(dataset);
 
         task.run();
 
         //There was one more gene in the expression file that wasn't in the set of genes
         //make sure it was was added
-        assertEquals(4,params.getGenes().size());
-
-        assertEquals(4, params.getExpression().getNumGenes());
-        assertEquals(59, params.getExpression().getNumConditions());
-        assertEquals(0.008720342, params.getExpression().getMinExpression());
-        assertEquals(5.131481026, params.getExpression().getMaxExpression());
+        assertEquals(4,map.getGenes().size());
+        
+        assertEquals(4, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getNumGenes());
+        assertEquals(59, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getNumConditions());
+        assertEquals(0.008720342, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getMinExpression());
+        assertEquals(5.131481026, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getMaxExpression());
 
     }
     public void testExpression1ReaderCommentLines(){
@@ -100,52 +114,59 @@ public class FileReaderTest extends TestCase {
         //load the test expression file
         String testDataFileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/Expressiontestfile_comments.gct";
 
-        EnrichmentMapParameters params = new EnrichmentMapParameters();
-
+        //create a new instance of the parameters
+        EnrichmentMapParameters params = new EnrichmentMapParameters();        
+        //set gmt file name 
         params.setExpressionFileName1(testDataFileName);
+        
+        //Create a new Enrichment map
+        EnrichmentMap map = new EnrichmentMap(params);
+                
+        //get the default dataset
+        DataSet dataset = map.getDataset(EnrichmentMap.DATASET1);
 
         //in order to load expression data the genes have to be registered with the application
-        HashMap<String, Integer> genes = params.getGenes();
-        HashMap<Integer, String> hash2genes = params.getHashkey2gene();
+        HashMap<String, Integer> genes = map.getGenes();
+        HashMap<Integer, String> hash2genes = map.getHashkey2gene();
 
         //make sure that the genes are empty
         assertEquals(0,genes.size());
 
         //add the gene to the master list of genes
-        int value = params.getNumberOfGenes();
+        int value = map.getNumberOfGenes();
         genes.put("GLS", value);
         hash2genes.put(value,"GLS");
-        params.setNumberOfGenes(value++);
+        map.setNumberOfGenes(value++);
 
         genes.put("PSMA1", value);
         hash2genes.put(value,"PSMA1");
-        params.setNumberOfGenes(value++);
+        map.setNumberOfGenes(value++);
 
         //different case to the one in the expression file
         genes.put("ZP1", value);
         hash2genes.put(value,"ZP1");
-        params.setNumberOfGenes(value++);
+        map.setNumberOfGenes(value++);
 
         genes.put("ZYX", value);
         hash2genes.put(value,"ZYX");
-        params.setNumberOfGenes(value++);
+        map.setNumberOfGenes(value++);
 
         //make sure all four genes have been associated
-        assertEquals(4,params.getGenes().size());
+        assertEquals(4,map.getGenes().size());
 
         //load expression file
-        ExpressionFileReaderTask task = new ExpressionFileReaderTask(params,1);
+        ExpressionFileReaderTask task = new ExpressionFileReaderTask(dataset);
 
         task.run();
 
         //There was one more gene in the expression file that wasn't in the set of genes
         //make sure it was was added
-        assertEquals(4,params.getGenes().size());
-        assertEquals(5.131481026, params.getExpression().getMaxExpression());
+        assertEquals(4,map.getGenes().size());
+        assertEquals(5.131481026, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getMaxExpression());
 
-        assertEquals(4, params.getExpression().getNumGenes());
-        assertEquals(59, params.getExpression().getNumConditions());
-        assertEquals(0.008720342, params.getExpression().getMinExpression());
+        assertEquals(4, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getNumGenes());
+        assertEquals(59, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getNumConditions());
+        assertEquals(0.008720342, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getMinExpression());
 
 
     }
@@ -155,125 +176,88 @@ public class FileReaderTest extends TestCase {
         //load the test expression file
         String testDataFileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/ExpressionTestFile.rnk";
 
-        EnrichmentMapParameters params = new EnrichmentMapParameters();
-
+      //create a new instance of the parameters
+        EnrichmentMapParameters params = new EnrichmentMapParameters();        
+        //set expression file name 
         params.setExpressionFileName1(testDataFileName);
+        
+        //Create a new Enrichment map
+        EnrichmentMap map = new EnrichmentMap(params);
+                
+        //get the default dataset
+        DataSet dataset = map.getDataset(EnrichmentMap.DATASET1);
 
         //in order to load expression data the genes have to be registered with the application
-        HashMap<String, Integer> genes = params.getGenes();
-        HashMap<Integer, String> hash2genes = params.getHashkey2gene();
+        HashMap<String, Integer> genes = map.getGenes();
+        HashMap<Integer, String> hash2genes = map.getHashkey2gene();
 
         //make sure that the genes are empty
         assertEquals(0,genes.size());
 
         //add the gene to the master list of genes
-        int value = params.getNumberOfGenes();
+        int value = map.getNumberOfGenes();
         genes.put("GLS", value);
         hash2genes.put(value,"GLS");
-        params.setNumberOfGenes(value++);
+        map.setNumberOfGenes(value++);
 
         genes.put("PSMA1", value);
         hash2genes.put(value,"PSMA1");
-        params.setNumberOfGenes(value++);
+        map.setNumberOfGenes(value++);
 
         //different case to the one in the expression file
         genes.put("ZP1", value);
         hash2genes.put(value,"ZP1");
-        params.setNumberOfGenes(value++);
+        map.setNumberOfGenes(value++);
 
         genes.put("ZYX", value);
         hash2genes.put(value,"ZYX");
-        params.setNumberOfGenes(value++);
+        map.setNumberOfGenes(value++);
 
         //make sure all four genes have been associated
-        assertEquals(4,params.getGenes().size());
+        assertEquals(4,map.getGenes().size());
 
         //load expression file
-        ExpressionFileReaderTask task = new ExpressionFileReaderTask(params,1);
+        ExpressionFileReaderTask task = new ExpressionFileReaderTask(dataset);
 
         task.run();
 
         //There was one more gene in the expression file that wasn't in the set of genes
         //make sure it was was added
-        assertEquals(4,params.getGenes().size());
+        assertEquals(4,map.getGenes().size());
 
-        assertEquals(4, params.getExpression().getNumGenes());
-        assertEquals(3, params.getExpression().getNumConditions());
-        assertEquals(0.47536945, params.getExpression().getMinExpression());
-        assertEquals(0.5418719, params.getExpression().getMaxExpression());
-
-    }
-
-    public void testExpression1ReaderEDBRnk(){
-
-        //load the test expression file
-        String testDataFileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/ExpressionTestFile_edbrnk.rnk";
-
-        EnrichmentMapParameters params = new EnrichmentMapParameters();
-
-        params.setExpressionFileName1(testDataFileName);
-
-        //in order to load expression data the genes have to be registered with the application
-        HashMap<String, Integer> genes = params.getGenes();
-        HashMap<Integer, String> hash2genes = params.getHashkey2gene();
-
-        //make sure that the genes are empty
-        assertEquals(0,genes.size());
-
-        //add the gene to the master list of genes
-        int value = params.getNumberOfGenes();
-        genes.put("GLS", value);
-        hash2genes.put(value,"GLS");
-        params.setNumberOfGenes(value++);
-
-        genes.put("PSMA1", value);
-        hash2genes.put(value,"PSMA1");
-        params.setNumberOfGenes(value++);
-
-        //different case to the one in the expression file
-        genes.put("ZP1", value);
-        hash2genes.put(value,"ZP1");
-        params.setNumberOfGenes(value++);
-
-        genes.put("ZYX", value);
-        hash2genes.put(value,"ZYX");
-        params.setNumberOfGenes(value++);
-
-        //make sure all four genes have been associated
-        assertEquals(4,params.getGenes().size());
-
-        //load expression file
-        ExpressionFileReaderTask task = new ExpressionFileReaderTask(params,1);
-
-        task.run();
-
-        //There was one more gene in the expression file that wasn't in the set of genes
-        //make sure it was was added
-        assertEquals(4,params.getGenes().size());
-
-        assertEquals(4, params.getExpression().getNumGenes());
-        assertEquals(3, params.getExpression().getNumConditions());
-        assertEquals(0.47536945, params.getExpression().getMinExpression());
-        assertEquals(0.5418719, params.getExpression().getMaxExpression());
+        assertEquals(4, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getNumGenes());
+        assertEquals(2, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getNumConditions());
+        assertEquals(0.47536945, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getMinExpression());
+        assertEquals(0.5418719, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getMaxExpression());
 
     }
+
+    
     
     public void testGenericFileReader_5columns(){
         //load the test expression file
         String testDataFileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/generic_enr_5col.txt";
         
-        // create parameters
-        EnrichmentMapParameters params = new EnrichmentMapParameters();
+      //create a new instance of the parameters
+        EnrichmentMapParameters params = new EnrichmentMapParameters();        
+        //set enrichment results file name
         params.setEnrichmentDataset1FileName1(testDataFileName);
         
+        //Create a new Enrichment map
+        EnrichmentMap map = new EnrichmentMap(params);
+                
+        //get the default dataset
+        DataSet dataset = map.getDataset(EnrichmentMap.DATASET1);
+
+        
         // check if empty
-        assertEquals(0, params.getEnrichmentResults1().size());
+        assertEquals(0, map.getDataset(EnrichmentMap.DATASET1).getEnrichments().getEnrichments().size());
         
         // read
-        EnrichmentResultFileReaderTask task = new EnrichmentResultFileReaderTask(params, testDataFileName, 1);
+        EnrichmentResultFileReaderTask task = new EnrichmentResultFileReaderTask(dataset);
         task.run();
 
-        HashMap<String, EnrichmentResult> results = params.getEnrichmentResults1();
+        HashMap<String, EnrichmentResult> results = map.getDataset(EnrichmentMap.DATASET1).getEnrichments().getEnrichments();
         // check we have 4 results
         assertEquals(4, results.size() );
         
@@ -296,5 +280,66 @@ public class FileReaderTest extends TestCase {
         assertEquals(-1.0, ((GenericResult)results.get("GO:0046540")).getNES());
         
         return;
+    }
+    
+    public void testExpression1ReaderEDBRnk(){
+
+        //load the test expression file
+        String testDataFileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/ExpressionTestFile_edbrnk.rnk";
+
+      //create a new instance of the parameters
+        EnrichmentMapParameters params = new EnrichmentMapParameters();        
+        //set gmt file name 
+        params.setExpressionFileName1(testDataFileName);
+        
+        //Create a new Enrichment map
+        EnrichmentMap map = new EnrichmentMap(params);
+                
+        //get the default dataset
+        DataSet dataset = map.getDataset(EnrichmentMap.DATASET1);
+
+        //in order to load expression data the genes have to be registered with the application
+        HashMap<String, Integer> genes = map.getGenes();
+        HashMap<Integer, String> hash2genes = map.getHashkey2gene();
+
+        //make sure that the genes are empty
+        assertEquals(0,genes.size());
+
+        //add the gene to the master list of genes
+        int value = map.getNumberOfGenes();
+        genes.put("GLS", value);
+        hash2genes.put(value,"GLS");
+        map.setNumberOfGenes(value++);
+
+        genes.put("PSMA1", value);
+        hash2genes.put(value,"PSMA1");
+        map.setNumberOfGenes(value++);
+
+        //different case to the one in the expression file
+        genes.put("ZP1", value);
+        hash2genes.put(value,"ZP1");
+        map.setNumberOfGenes(value++);
+
+        genes.put("ZYX", value);
+        hash2genes.put(value,"ZYX");
+        map.setNumberOfGenes(value++);
+
+        //make sure all four genes have been associated
+        assertEquals(4,map.getGenes().size());
+
+        //load expression file
+        ExpressionFileReaderTask task = new ExpressionFileReaderTask(dataset);
+
+        task.run();
+
+        //There was one more gene in the expression file that wasn't in the set of genes
+        //make sure it was was added
+        assertEquals(4,map.getGenes().size());
+
+        assertEquals(4, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getNumGenes());
+        assertEquals(3, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getNumConditions());
+        assertEquals(0.47536945, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getMinExpression());
+        assertEquals(0.5418719, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getMaxExpression());
+
     }
 }

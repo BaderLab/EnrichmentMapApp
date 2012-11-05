@@ -68,7 +68,7 @@ import javax.swing.*;
  */
 public class EnrichmentMapActionListener implements  GraphViewChangeListener {
 
-    private EnrichmentMapParameters params;
+    private EnrichmentMap map;
     private HeatMapPanel edgeOverlapPanel;
     private HeatMapPanel nodeOverlapPanel;
 
@@ -82,8 +82,8 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
      *
      * @param params  - enrichment map parameters associated with this actionlistener
      */
-    public EnrichmentMapActionListener(EnrichmentMapParameters params) {
-        this.params = params;
+    public EnrichmentMapActionListener(EnrichmentMap map) {
+        this.map = map;
 
         //get the static enrichment map manager.
         EnrichmentMapManager manager = EnrichmentMapManager.getInstance();
@@ -94,20 +94,20 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
         //TODO add logo to any panel asociated with Enrichment maps
         //final URL url = new URL("http","www.baderlab.org","/wiki/common/network_bader_website_icon.gif");
         //final Icon icon = new ImageIcon(url);
-        if(params.isData()){
+        if(map.getParams().isData()){
             //get the only instance of the overlap and union heat map panels.
             edgeOverlapPanel = manager.getEdgesOverlapPanel();
             nodeOverlapPanel = manager.getNodesOverlapPanel();
 
             //create a heatmap parameters instance for this action listener
             HeatMapParameters hmParams = new HeatMapParameters(edgeOverlapPanel, nodeOverlapPanel);
-            hmParams.initColorGradients(params.getExpression());
+            hmParams.initColorGradients(map.getDataset(EnrichmentMap.DATASET1).getExpressionSets());
             //associate the newly created heatmap parameters with the current enrichment map paramters
-            params.setHmParams(hmParams);
+            map.getParams().setHmParams(hmParams);
         }
         
-        Nodes = params.getSelectedNodes();
-        Edges = params.getSelectedEdges();
+        Nodes = map.getParams().getSelectedNodes();
+        Edges = map.getParams().getSelectedEdges();
      
     }
 
@@ -187,9 +187,9 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
   public void createEdgesData(){
 
 
-      if(params.isData()){
-        edgeOverlapPanel.updatePanel(params);
-        if ( ! params.isDisableHeatmapAutofocus() ) {
+      if(map.getParams().isData()){
+        edgeOverlapPanel.updatePanel(map);
+        if ( ! map.getParams().isDisableHeatmapAutofocus() ) {
         	cytoPanel.setSelectedIndex(cytoPanel.indexOfComponent(edgeOverlapPanel));
         }
         edgeOverlapPanel.revalidate();
@@ -200,9 +200,9 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
 
   private void createNodesData(){
 
-        if(params.isData()){
-            nodeOverlapPanel.updatePanel(params);
-            if ( ! params.isDisableHeatmapAutofocus() ) {
+        if(map.getParams().isData()){
+            nodeOverlapPanel.updatePanel(map);
+            if ( ! map.getParams().isDisableHeatmapAutofocus() ) {
             	cytoPanel.setSelectedIndex(cytoPanel.indexOfComponent(nodeOverlapPanel));
             }
             nodeOverlapPanel.revalidate();
@@ -211,10 +211,10 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
   }
 
     public void clearPanels(){
-        if(params.isData()){
+        if(map.getParams().isData()){
             nodeOverlapPanel.clearPanel();
             edgeOverlapPanel.clearPanel();
-            if ( ! params.isDisableHeatmapAutofocus() ) {
+            if ( ! map.getParams().isDisableHeatmapAutofocus() ) {
 	            cytoPanel.setSelectedIndex(cytoPanel.indexOfComponent(nodeOverlapPanel));
 	            cytoPanel.setSelectedIndex(cytoPanel.indexOfComponent(edgeOverlapPanel));
             }

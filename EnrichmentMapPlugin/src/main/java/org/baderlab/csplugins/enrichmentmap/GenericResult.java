@@ -53,9 +53,6 @@ package org.baderlab.csplugins.enrichmentmap;
 public class GenericResult extends EnrichmentResult{
 
     //minimum requirement of a generic enrichment results
-    private String name = "";
-    private String description = "";
-    private double pvalue = 1.0;
     private int gsSize = 0;
 
     //optional parameters
@@ -78,7 +75,7 @@ public class GenericResult extends EnrichmentResult{
     public GenericResult(String[] tokens){
             //ignore the first token as it is from the hash
             this.name = tokens[1];
-            this.description = tokens[2];
+            this.desc = tokens[2];
             this.pvalue = Double.parseDouble(tokens[3]);
             this.gsSize = Integer.parseInt(tokens[4]);
             this.fdrqvalue = Double.parseDouble(tokens[5]);
@@ -98,7 +95,7 @@ public class GenericResult extends EnrichmentResult{
      */
     public GenericResult(String name, String description, double pvalue, int gssize) {
         this.name = name;
-        this.description = description;
+        this.desc = description;
         this.pvalue = pvalue;
         this.gsSize = gssize;
 
@@ -116,7 +113,7 @@ public class GenericResult extends EnrichmentResult{
      */
     public GenericResult(String name, String description, double pvalue, int gssize, double fdrqvalue) {
         this.name = name;
-        this.description = description;
+        this.desc = description;
         this.pvalue = pvalue;
         this.gsSize = gssize;
         this.fdrqvalue = fdrqvalue;
@@ -135,7 +132,7 @@ public class GenericResult extends EnrichmentResult{
      */
     public GenericResult(String name, String description, double pvalue, int gssize, double fdrqvalue, double phenotype) {
          this.name = name;
-        this.description = description;
+        this.desc = description;
         this.gsSize = gssize;
         this.pvalue = pvalue;
         this.fdrqvalue = fdrqvalue;
@@ -171,31 +168,6 @@ public class GenericResult extends EnrichmentResult{
     }
 
     //Getters and Setters
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public double getPvalue() {
-        return pvalue;
-    }
-
-    public void setPvalue(double pvalue) {
-        this.pvalue = pvalue;
-    }
-
     public double getFdrqvalue() {
         return fdrqvalue;
     }
@@ -225,22 +197,8 @@ public class GenericResult extends EnrichmentResult{
 
     public String toString(){
 
-        return name + "\t" + description + "\t" + pvalue + "\t" + gsSize + "\t" + fdrqvalue + "\t" + NES;
+        return name + "\t" + desc + "\t" + pvalue + "\t" + gsSize + "\t" + fdrqvalue + "\t" + NES;
     }
 
-     public String getSource() {
-        return source;
-    }
-
-    public void setSource(String source) {
-        source = source;
-    }
-
-    private void setSource(){
-        //if we can tokenize the name by "%" then set the source to the second item in the name
-        //if you can split the name using '|', take the second token to be the gene set type
-        String[] name_tokens = name.split("%");
-        if(name_tokens.length > 1)
-            this.source = name_tokens[1];
-    }
+     
 }

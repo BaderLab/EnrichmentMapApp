@@ -68,12 +68,14 @@ public class EnrichmentResultFileReaderTask implements Task {
     //default Score at Max value
     public static Double DefaultScoreAtMax = -1000000.0;
 
-    private EnrichmentMapParameters params;
-
+    //private EnrichmentMapParameters params;
+    private DataSet dataset;
     //enrichment results file name
-    private String EnrichmentResultFileName;
-
+    private String EnrichmentResultFileName1;
+    private String EnrichmentResultFileName2;
+    
     //Stores the enrichment results
+    private SetOfEnrichmentResults enrichments;
     private HashMap<String, EnrichmentResult> results ;
 
     //phenotypes defined by user - used to classify phenotype specifications
@@ -88,27 +90,26 @@ public class EnrichmentResultFileReaderTask implements Task {
     /**
      * Class constructor specifying a task monitor currently using.
      *
-     * @param params -  enrichment map parameters for current map
      * @param taskMonitor - current monitor
-     * @param FileName - enrichment results file name
      * @param dataset - dataset enrichment results are from
      */
-    public EnrichmentResultFileReaderTask(EnrichmentMapParameters params, TaskMonitor taskMonitor, String FileName, int dataset) {
-        this(params, FileName, dataset);
+    public EnrichmentResultFileReaderTask( DataSet dataset, TaskMonitor taskMonitor) {
+        this(dataset);
         this.taskMonitor = taskMonitor;
     }
 
     /**
      * Class constructor
      *
-     * @param params -  enrichment map parameters for current map
-     * @param FileName - enrichment results file name
      * @param dataset  - dataset enrichment results are from
      */
-    public EnrichmentResultFileReaderTask(EnrichmentMapParameters params, String FileName, int dataset) {
-        this.params = params;
-        EnrichmentResultFileName = FileName;
-        if(dataset == 1){
+    public EnrichmentResultFileReaderTask(DataSet dataset) {
+        
+    		this.dataset = dataset;
+    	
+        this.EnrichmentResultFileName1 = dataset.getEnrichments().getFilename1();
+        this.EnrichmentResultFileName2 = dataset.getEnrichments().getFilename2();
+        /*if(dataset == 1){
             results = params.getEnrichmentResults1();
             upPhenotype = params.getDataset1Phenotype1();
             downPhenotype = params.getDataset1Phenotype2();
@@ -117,68 +118,84 @@ public class EnrichmentResultFileReaderTask implements Task {
             results = params.getEnrichmentResults2();
             upPhenotype = params.getDataset2Phenotype1();
             downPhenotype = params.getDataset2Phenotype2();
-        }
-
+        }*/
+        //create a new enrichment results set
+        enrichments = dataset.getEnrichments();
+        results = enrichments.getEnrichments();
+        upPhenotype = enrichments.getPhenotype1(); 
+        downPhenotype = enrichments.getPhenotype2();
+        
     }
 
     /**
      * Parse enrichment results file
      */
     public void parse() {
+    	
+    		if(this.EnrichmentResultFileName1 != null && !this.EnrichmentResultFileName1.isEmpty())
+    			readFile(this.EnrichmentResultFileName1);
+    		if(this.EnrichmentResultFileName2 != null && !this.EnrichmentResultFileName2.isEmpty())
+    			readFile(this.EnrichmentResultFileName2);
+         
 
-         //open Enrichment Result file
+    }
+    
+    /*
+     * Read file
+     */
+    public void readFile(String EnrichmentResultFileName){
+    		//open Enrichment Result file
+    	
+        TextFileReader reader = new TextFileReader(EnrichmentResultFileName);
+        reader.read();
+        String fullText = reader.getText();
 
-         TextFileReader reader = new TextFileReader(EnrichmentResultFileName);
-         reader.read();
-         String fullText = reader.getText();
-
-         String [] lines = fullText.split("\n");
-
-
-         //figure out what type of enrichment results file.  Either it is a GSEA result
-        //file or it is a generic result file.
-        // Currently the headings in the GSEA Results file are:
-        // NAME <tab> GS<br> follow link to MSigDB <tab> GS DETAILS <tab> SIZE <tab> ES <tab> NES <tab> NOM p-val <tab> FDR q-val <tab> FWER p-val <tab> RANK AT MAX <tab> LEADING EDGE
-        // There are eleven headings.
-
-        //DAVID results have 13 columns
-        //Category <tab> Term <tab> Count <tab> % <tab> PValue <tab> Genes <tab> List <tab> Total <tab> Pop Hits <tab> Pop Total <tab> Fold Enrichment <tab> Bonferroni <tab> Benjamini <tab> FDR
+        String [] lines = fullText.split("\n");
 
 
-        //ES and NES columns are specific to the GSEA format
-        String header_line = lines[0];
-        String [] tokens = header_line.split("\t");
+        //figure out what type of enrichment results file.  Either it is a GSEA result
+       //file or it is a generic result file.
+       // Currently the headings in the GSEA Results file are:
+       // NAME <tab> GS<br> follow link to MSigDB <tab> GS DETAILS <tab> SIZE <tab> ES <tab> NES <tab> NOM p-val <tab> FDR q-val <tab> FWER p-val <tab> RANK AT MAX <tab> LEADING EDGE
+       // There are eleven headings.
 
-        //check to see if there are exactly 11 columns - = GSEA results
-        if(tokens.length == 11){
-            //check to see if the ES is the 5th column and that NES is the 6th column
-            if((tokens[4].equalsIgnoreCase("ES")) && (tokens[5].equalsIgnoreCase("NES")))
-                parseGSEAFile(lines);
-            //it is possible that the file can have 11 columns but that it is still a generic file
-            //if it doesn't specify ES and NES in the 5 and 6th columns
-            else
-              parseGenericFile(lines);
-        }
-        //check to see if there are exactly 13 columns - = DAVID results
-        else if (tokens.length == 13){
-            //check to see that the 6th column is called Genes and that the 12th column is called "Benjamini"
-            if((tokens[5].equalsIgnoreCase("Genes")) && tokens[11].equalsIgnoreCase("Benjamini"))
-                parseDavidFile(lines);
-            else
-                parseGenericFile(lines);
+       //DAVID results have 13 columns
+       //Category <tab> Term <tab> Count <tab> % <tab> PValue <tab> Genes <tab> List <tab> Total <tab> Pop Hits <tab> Pop Total <tab> Fold Enrichment <tab> Bonferroni <tab> Benjamini <tab> FDR
 
-        }
-        else if (header_line.contains("File created with BiNGO")){
-            parseBingoFile(lines);
-        }
-        else{
+
+       //ES and NES columns are specific to the GSEA format
+       String header_line = lines[0];
+       String [] tokens = header_line.split("\t");
+
+       //check to see if there are exactly 11 columns - = GSEA results
+       if(tokens.length == 11){
+           //check to see if the ES is the 5th column and that NES is the 6th column
+           if((tokens[4].equalsIgnoreCase("ES")) && (tokens[5].equalsIgnoreCase("NES")))
+               parseGSEAFile(lines);
+           //it is possible that the file can have 11 columns but that it is still a generic file
+           //if it doesn't specify ES and NES in the 5 and 6th columns
+           else
              parseGenericFile(lines);
-        }
+       }
+       //check to see if there are exactly 13 columns - = DAVID results
+       else if (tokens.length == 13){
+           //check to see that the 6th column is called Genes and that the 12th column is called "Benjamini"
+           if((tokens[5].equalsIgnoreCase("Genes")) && tokens[11].equalsIgnoreCase("Benjamini"))
+               parseDavidFile(lines);
+           else
+               parseGenericFile(lines);
 
+       }
+       else if (header_line.contains("File created with BiNGO")){
+           parseBingoFile(lines);
+       }
+       else{
+            parseGenericFile(lines);
+       }
 
 
     }
-
+    
     /**
      * Parse GSEA enrichment results file.
      *
@@ -187,7 +204,7 @@ public class EnrichmentResultFileReaderTask implements Task {
     public void parseGSEAFile(String[] lines){
         //skip the first line which just has the field names (start i=1)
 
-        params.setFDR(true);
+    	dataset.getMap().getParams().setFDR(true);
 
          int currentProgress = 0;
          int maxValue = lines.length;
@@ -280,7 +297,7 @@ public class EnrichmentResultFileReaderTask implements Task {
 
         //Get the current genesets so we can check that all the results are in the geneset list
         //and put the size of the genesets into the visual style
-        HashMap genesets = params.getFilteredGenesets();
+        HashMap genesets = dataset.getMap().getAllGenesets();
 
         int currentProgress = 0;
         int maxValue = lines.length;
@@ -397,7 +414,7 @@ public class EnrichmentResultFileReaderTask implements Task {
 
         }
         if(FDR)
-            params.setFDR(FDR);
+            dataset.getMap().getParams().setFDR(FDR);
     }
 
     /**
@@ -421,16 +438,16 @@ public class EnrichmentResultFileReaderTask implements Task {
             // Column 2 is the geneset name
             // Column 1 is the category (and can be used for the description)
             // Column 6 is the list of genes (from the loaded list) in this geneset -- therefore pre-filtered.
-            HashMap<String, GeneSet> genesets = params.getGenesets();
+            HashMap<String, GeneSet> genesets = dataset.getMap().getAllGenesets();
 
             //it is possible that there are two different geneset sets if the two david files
             //are from multiple species
-            if(genesets.size() > 0)
-                    genesets = params.getGenesets_set2();
-
+          /*  if(genesets.size() > 0)
+                    genesets = ((EnrichmentMap_multispecies)params.getEM()).getGenesets_set2();
+*/
             //get the genes (which should also be empty
-            HashMap<String, Integer> genes = params.getGenes();
-            HashMap<Integer, String> key2gene = params.getHashkey2gene();
+            HashMap<String, Integer> genes = dataset.getMap().getGenes();
+            HashMap<Integer, String> key2gene = dataset.getMap().getHashkey2gene();
 
             int currentProgress = 0;
             int maxValue = lines.length;
@@ -492,10 +509,10 @@ public class EnrichmentResultFileReaderTask implements Task {
                         if(!gene.equalsIgnoreCase("")){
 
                             //add the gene to the master list of genes
-                            int value = params.getNumberOfGenes();
+                            int value = dataset.getMap().getNumberOfGenes();
                             genes.put(gene, value);
                             key2gene.put(value,gene);
-                            params.setNumberOfGenes(value+1);
+                            dataset.getMap().setNumberOfGenes(value+1);
 
                             //add the gene to the genelist
                             gs.addGene(genes.get(gene));
@@ -560,7 +577,7 @@ public class EnrichmentResultFileReaderTask implements Task {
 
             }
             if(FDR)
-                params.setFDR(FDR);
+            	dataset.getMap().getParams().setFDR(FDR);
         }
 
     /**
@@ -589,16 +606,16 @@ public class EnrichmentResultFileReaderTask implements Task {
 
             // Column 8 is the geneset name
             // Column 9 is the list of genes in this geneset -- therefore pre-filtered.
-            HashMap<String, GeneSet> genesets = params.getGenesets();
+            HashMap<String, GeneSet> genesets = dataset.getMap().getAllGenesets();
 
             //it is possible that there are two different geneset sets if the two david files
             //are from multiple species
-            if(genesets.size() > 0)
-                    genesets = params.getGenesets_set2();
-
+           /* if(genesets.size() > 0)           
+                    genesets =((EnrichmentMap_multispecies)params.getEM()).getGenesets_set2();
+*/
             //get the genes (which should also be empty
-            HashMap<String, Integer> genes = params.getGenes();
-            HashMap<Integer, String> key2gene = params.getHashkey2gene();
+            HashMap<String, Integer> genes = dataset.getMap().getGenes();
+            HashMap<Integer, String> key2gene = dataset.getMap().getHashkey2gene();
 
             int currentProgress = 0;
             int maxValue = lines.length;
@@ -673,10 +690,10 @@ public class EnrichmentResultFileReaderTask implements Task {
                         if(!gene.equalsIgnoreCase("")){
 
                             //add the gene to the master list of genes
-                            int value = params.getNumberOfGenes();
+                            int value = dataset.getMap().getNumberOfGenes();
                             genes.put(gene, value);
                             key2gene.put(value,gene);
-                            params.setNumberOfGenes(value+1);
+                            dataset.getMap().setNumberOfGenes(value+1);
 
                             //add the gene to the genelist
                             gs.addGene(genes.get(gene));
@@ -741,7 +758,7 @@ public class EnrichmentResultFileReaderTask implements Task {
 
             }
             if(FDR)
-                params.setFDR(FDR);
+            	dataset.getMap().getParams().setFDR(FDR);
         }
 
     /**

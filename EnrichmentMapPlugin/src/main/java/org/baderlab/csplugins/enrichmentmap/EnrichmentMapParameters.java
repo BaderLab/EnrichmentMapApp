@@ -47,6 +47,9 @@ import giny.model.Edge;
 
 import java.util.*;
 import java.io.File;
+
+import cytoscape.CyNetwork;
+import cytoscape.Cytoscape;
 import cytoscape.CytoscapeInit;
 
 /**
@@ -61,9 +64,10 @@ import cytoscape.CytoscapeInit;
  */
 public class EnrichmentMapParameters {
 
-    private String NetworkName = null;
-    private String attributePrefix;
-
+    
+	//attribute prefix associated with this map
+	private String attributePrefix = null;
+	
     //Input File names
     //GMT - gene set definition file
     private String GMTFileName;
@@ -120,7 +124,6 @@ public class EnrichmentMapParameters {
     private boolean loadedFromRpt_dataset1 = false;
     private boolean loadedFromRpt_dataset2 = false;
 
-
     //value to store the constant needed for constructing the combined similarity metric
     private double combinedConstant;
 
@@ -139,77 +142,19 @@ public class EnrichmentMapParameters {
     //similarity cutoff slider bar
     private SliderBarPanel similaritySlider;
 
-    //DATA need to specify the Enrichment map
-    //Hashmap stores the unique set of genes used in the gmt file
-    private HashMap<String,Integer> genes;
-
-    //when translating visual attribute of the gene list we need to be able to translate
-    //the gene hash key into the gene name without tracing from the entire hash.
-    //create the opposite of the gene hashmap so we can do this.
-    private HashMap<Integer, String> hashkey2gene;
-    private HashSet<Integer> datasetGenes;
-    private int NumberOfGenes = 0;
-
-    //add a hash to store the different types of genesets (to be used for visual style)
-    private HashSet<String> GenesetTypes = new HashSet<String>();
-
     //add boolean to indicate whether the geneset files are EM specific gmt files
     //if they are the visual style changes slightly
     private boolean EMgmt = false;
 
-
-    //only used when there are two distinct expression sets.
-    private HashSet<Integer> datasetGenes_set2;
-    private HashMap<String, GeneSet> filteredGenesets_set2;
-    private HashMap<String, GeneSet> genesets_set2;
-    private HashMap<String, GeneSet> genesetsOfInterest_set2;
-
-    //In order to speed up union and intersections of nodes and edges in the network
-    //store the genes that are present in the network.
-    //get the intersection between the genes in the gene set file (gmt) and the genes in
-    //expression file (dataset genes)
-    //TODO: recompute enrcihmentmap genes on session re-load.
-    private HashSet<Integer> enrichmentMapGenes;
-
-    //Hashmap of the enrichment Results, It is is a hash of the GSEAResults or GenericResults objects
-    private HashMap<String, EnrichmentResult> enrichmentResults1;
-    private HashMap<String, EnrichmentResult> enrichmentResults2;
-    //Hashmap of all genesets in the geneset file (gmt file)
-    private HashMap<String, GeneSet> genesets;
-    //Hashmap of the filtered Genesets.  After loading in the expression file the genesets are restricted
-    //to contain only the proteins specified in the expression file.
-    private HashMap<String, GeneSet> filteredGenesets;
-
-    //The enrichment results that pass the thresholds.
-    //If there are two datasets these list can be different.
-    //Can't enforce a type on this hashmap because the enrichment results could to generic or GSEA results
-    private HashMap<String, EnrichmentResult> enrichmentResults1OfInterest;
-    private HashMap<String, EnrichmentResult> enrichmentResults2OfInterest;
-
-    private HashMap<String, GeneSet> genesetsOfInterest;
     private HashMap<String, GeneSet> signatureGenesets;
-
-    //Gene expression data used for the analysis.  There can be two distinct files
-    //for each dataset.
-    private GeneExpressionMatrix expression;
-    private GeneExpressionMatrix expression2;
 
     //a flag to indicate if the two expression files have the exact same set of genes
     private boolean twoDistinctExpressionSets = false;
-
-    //default phenotype values.  These values can be set in the advanced features of
-    //the input panel.
-    private String dataset1Phenotype1 = "UP";
-    private String dataset1Phenotype2 = "DOWN";
-    private String dataset2Phenotype1 = "UP";
-    private String dataset2Phenotype2 = "DOWN";
-
+    
     //class file designations that were loaded in from a session file.
     //need a temporary place for these class definition as
     private String[] temp_class1 = null;
     private String[] temp_class2 = null;
-
-    private HashMap<String, GenesetSimilarity> genesetSimilarity = null;
 
     //list associated with slider bars.  As the slider bar is moved the removed nodes
     //and edges are stored in these lists
@@ -220,18 +165,8 @@ public class EnrichmentMapParameters {
     //Heat map parameters for this enrichment map - user specified current normalization, and sorting.
     private HeatMapParameters hmParams;
 
-    //Rankings for Dataset1 and Dataset2.
-    //Also stored in the set of ranking and specified as "Dataset 1 Ranking" and "Dataset 2 Ranking"
-    private HashMap<Integer, Ranking> dataset1Rankings;
-    private HashMap<Integer, Ranking> dataset2Rankings;
-
     private HashMap<Integer, Integer> rank2geneDataset1;
-    private HashMap<Integer, Integer> rank2geneDataset2;
-
-    //Set of Rankings - (HashMap of Hashmaps)
-    //Stores the dataset rank files if they were loaded on input but also has
-    //the capability of storing more rank files
-    private HashMap<String, HashMap<Integer, Ranking>> ranks;
+    private HashMap<Integer, Integer> rank2geneDataset2;  
 
     //value specifying whether bulk EM is being used (needed to transfer file name to the network names)
     private boolean BulkEM = false;
@@ -265,34 +200,25 @@ public class EnrichmentMapParameters {
 
     private PostAnalysisParameters paParams;
     
+    //Dataset phenotypes that are loaded in from the input panel
+    private String Dataset1Phenotype1 = "UP";
+    private String Dataset1Phenotype2 = "DOWN";
+    private String Dataset2Phenotype1 = "UP";
+    private String Dataset2Phenotype2 = "DOWN";
+    
     private String enrichment_edge_type;
 
     /**
      * Default constructor to create a fresh instance.
      */
     public EnrichmentMapParameters() {
-        this.enrichmentResults1 = new HashMap<String, EnrichmentResult>();
-        this.enrichmentResults2 = new HashMap<String, EnrichmentResult>();
-        this.genes = new HashMap<String, Integer>();
-        this.hashkey2gene = new HashMap<Integer, String>();
-        this.datasetGenes = new HashSet<Integer>();
-        this.NetworkName = null;
-
-
-//        this.hashkey2bitindex = new HashMap<Integer, Integer>();
-//        this.bitindex2hashkey = new HashMap<Integer, Integer>();
-        this.enrichmentMapGenes = new HashSet<Integer>();
-        this.genesets = new HashMap<String, GeneSet>();
-        this.filteredGenesets = new HashMap<String, GeneSet>();
-        this.enrichmentResults1OfInterest = new HashMap<String, EnrichmentResult>();
-        this.enrichmentResults2OfInterest = new HashMap<String, EnrichmentResult>();
-        this.genesetsOfInterest = new HashMap<String, GeneSet>();
+    		
+    		//this.EM = new EnrichmentMap(this);
+    		//this.setAttributePrefix();
+    	
         this.signatureGenesets = new HashMap<String, GeneSet>();
         this.selectedNodes = new ArrayList<Node>();
         this.selectedEdges = new ArrayList<Edge>();
-        this.ranks = new HashMap<String, HashMap<Integer, Ranking>>();
-        this.dataset1Rankings = new HashMap<Integer, Ranking>();
-        this.dataset2Rankings = new HashMap<Integer, Ranking>();
 
         //by default GSEA is the method.
         this.method = EnrichmentMapParameters.method_GSEA;
@@ -342,16 +268,6 @@ public class EnrichmentMapParameters {
         //create the slider for the similarity cutoff
         similaritySlider = new SliderBarPanel(this.similarityCutOff,1,"Similarity Cutoff",this, EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT, EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT,ParametersPanel.summaryPanelWidth, true, this.similarityCutOff);
 
-       //if there are two distinct expression sets we are going to need to instances of few of the variables
-        this.datasetGenes_set2 = new HashSet<Integer>();
-        this.genesets_set2 = new HashMap<String, GeneSet>();
-        this.filteredGenesets_set2 = new HashMap<String, GeneSet>();
-        this.genesetsOfInterest_set2 = new HashMap<String, GeneSet>();
-
-        //reset expression variables
-        this.expression = null;
-        this.expression2 = null;
-
         //reset all boolean values
         this.setFDR(false);
         this.setData(false);
@@ -370,7 +286,7 @@ public class EnrichmentMapParameters {
      */
     public EnrichmentMapParameters(String propFile){
         this();
-
+/*
         //Create a hashmap to contain all the values in the rpt file.
         HashMap<String, String> props = new HashMap<String, String>();
 
@@ -384,8 +300,8 @@ public class EnrichmentMapParameters {
                 props.put(tokens[0] ,tokens[1]);
         }
 
-        this.NetworkName = props.get("NetworkName");
-        this.attributePrefix = props.get("attributePrefix");
+        //this.NetworkName = props.get("NetworkName");
+        //this.attributePrefix = props.get("attributePrefix");
 
         if ( props.containsKey("enrichment_edge_type") )
             this.enrichment_edge_type = props.get("enrichment_edge_type");
@@ -406,13 +322,13 @@ public class EnrichmentMapParameters {
         this.gseaHtmlReportFileDataset1 = props.get("gseaHtmlReportFileDataset1");
         this.gseaHtmlReportFileDataset2 = props.get("gseaHtmlReportFileDataset2");
 
-        this.dataset1Phenotype1 = props.get("dataset1Phenotype1");
+        /*this.dataset1Phenotype1 = props.get("dataset1Phenotype1");
         this.dataset1Phenotype2 = props.get("dataset1Phenotype2");
         this.dataset2Phenotype1 = props.get("dataset2Phenotype1");
         this.dataset2Phenotype2 = props.get("dataset2Phenotype2");
-
+         */
         //rank files 1
-        if(props.get("rankFile1")!= null){
+/*        if(props.get("rankFile1")!= null){
             if((props.get("rankFile1")).equalsIgnoreCase("null") )
                 this.dataset1RankedFile = null;
             else
@@ -543,7 +459,7 @@ public class EnrichmentMapParameters {
 
         //create the slider for the similarity cutoff
         similaritySlider = new SliderBarPanel(this.similarityCutOff,1,"Similarity Cutoff",this, EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT, EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT,ParametersPanel.summaryPanelWidth, true, this.similarityCutOff);
-
+*/
     }
 
 
@@ -564,7 +480,7 @@ public class EnrichmentMapParameters {
         //We can only transfer the Network name if it is needed
         //for instance for Bulk EM creation.
         if(copy.isBulkEM()){
-            this.NetworkName = copy.getNetworkName();
+            //this.NetworkName = copy.getNetworkName();
             this.BulkEM = copy.isBulkEM();
         }
         this.GMTFileName = copy.getGMTFileName();
@@ -581,11 +497,6 @@ public class EnrichmentMapParameters {
 
         this.gseaHtmlReportFileDataset1 = copy.getGseaHtmlReportFileDataset1();
         this.gseaHtmlReportFileDataset2 = copy.getGseaHtmlReportFileDataset2();
-
-        this.dataset1Phenotype1 = copy.getDataset1Phenotype1();
-        this.dataset1Phenotype2 = copy.getDataset1Phenotype2();
-        this.dataset2Phenotype1 = copy.getDataset2Phenotype1();
-        this.dataset2Phenotype2 = copy.getDataset2Phenotype2();
 
         this.pvalue = copy.getPvalue();
         //create the slider for this pvalue
@@ -617,6 +528,8 @@ public class EnrichmentMapParameters {
         this.GSEAResultsDirName = copy.getGSEAResultsDirName();
         this.upperlimit = copy.getUpperlimit();
         this.lowerlimit = copy.getLowerlimit();
+        
+        //this.attributePrefix = copy.getAttributePrefix();
 
 
    }
@@ -629,7 +542,7 @@ public class EnrichmentMapParameters {
     */
    public void copy(EnrichmentMapParameters copy){
 
-       this.NetworkName = copy.getNetworkName();
+       //this.NetworkName = copy.getNetworkName();
 
         this.GMTFileName = copy.getGMTFileName();
         this.expressionFileName1 = copy.getExpressionFileName1();
@@ -637,7 +550,6 @@ public class EnrichmentMapParameters {
 
         this.dataset1RankedFile = copy.getDataset1RankedFile();
         this.dataset2RankedFile = copy.getDataset2RankedFile();
-        this.ranks = copy.getRanks();
 
         this.enrichmentDataset1FileName1 = copy.getEnrichmentDataset1FileName1();
         this.enrichmentDataset1FileName2 = copy.getEnrichmentDataset1FileName2();
@@ -647,10 +559,6 @@ public class EnrichmentMapParameters {
         this.gseaHtmlReportFileDataset1 = copy.getGseaHtmlReportFileDataset1();
         this.gseaHtmlReportFileDataset2 = copy.getGseaHtmlReportFileDataset2();
 
-        this.dataset1Phenotype1 = copy.getDataset1Phenotype1();
-        this.dataset1Phenotype2 = copy.getDataset1Phenotype2();
-        this.dataset2Phenotype1 = copy.getDataset2Phenotype1();
-        this.dataset2Phenotype2 = copy.getDataset2Phenotype2();
 
         this.pvalue = copy.getPvalue();
         this.pvalueSlider = copy.getPvalueSlider();
@@ -670,51 +578,23 @@ public class EnrichmentMapParameters {
         this.combinedConstant = copy.getCombinedConstant();
         this.similarityCutOffChanged = copy.similarityCutOffChanged;
 
-        //copy HashMaps genes and hash2genes
-        this.genes = copy.getGenes();
-        this.hashkey2gene = copy.getHashkey2gene();
-        this.NumberOfGenes = copy.getNumberOfGenes();
-        this.datasetGenes = copy.getDatasetGenes();
-
-        this.genesets = copy.getGenesets();
-        this.genesetsOfInterest = copy.getGenesetsOfInterest();
         this.signatureGenesets = copy.getSignatureGenesets();
-        this.filteredGenesets = copy.getFilteredGenesets();
-        this.enrichmentResults1 = copy.getEnrichmentResults1();
-        this.enrichmentResults2 = copy.getEnrichmentResults2();
-        this.enrichmentResults1OfInterest = copy.getEnrichmentResults1OfInterest();
-        this.enrichmentResults2OfInterest = copy.getEnrichmentResults2OfInterest();
-
-        this.expression = copy.getExpression();
-        this.expression2 = copy.getExpression2();
         this.twoDistinctExpressionSets =  copy.isTwoDistinctExpressionSets();
 
         //missing the classfiles in the copy --> bug ticket #61
         this.classFile1 = copy.getClassFile1();
         this.classFile2 = copy.getClassFile2();
         this.temp_class1 = copy.getTemp_class1();
-        this.temp_class2 = copy.getTemp_class2();
-        this.dataset1Rankings = copy.getDataset1Rankings();
-        this.dataset2Rankings = copy.getDataset2Rankings();
+        this.temp_class2 = copy.getTemp_class2();       
 
         this.selectedEdges = copy.getSelectedEdges();
         this.selectedNodes = copy.getSelectedNodes();
-        this.genesetSimilarity = copy.getGenesetSimilarity();
         this.hmParams = copy.getHmParams();
-        this.attributePrefix = copy.getAttributePrefix();
+        //this.attributePrefix = copy.getAttributePrefix();
         this.enrichment_edge_type = copy.getEnrichment_edge_type();
 
        this.rank2geneDataset1 = copy.getRank2geneDataset1();
        this.rank2geneDataset2 = copy.getRank2geneDataset2();
-
-
-       //if there are two distinct expression sets we are going to need to instances of few of the variables
-        this.datasetGenes_set2 = copy.getDatasetGenes_set2();
-        this.genesets_set2 = copy.getGenesets_set2();
-        this.filteredGenesets_set2 = copy.getFilteredGenesets_set2();
-        this.genesetsOfInterest_set2 = copy.getGenesetsOfInterest_set2();
-
-
 
        //field needed when calculating bulk enrichment maps.
         this.GMTDirName = copy.getGMTDirName();
@@ -727,7 +607,8 @@ public class EnrichmentMapParameters {
         this.loadedFromRpt_dataset1 = copy.isLoadedFromRpt_dataset1();
        this.loadedFromRpt_dataset2 = copy.isLoadedFromRpt_dataset2();
        this.EMgmt = copy.isEMgmt();
-       this.GenesetTypes = copy.getGenesetTypes();
+       
+       this.attributePrefix = copy.getAttributePrefix();
 
        }
 
@@ -811,128 +692,9 @@ public class EnrichmentMapParameters {
            return true;
        }
 
-    /**
-         * FilterGenesets - restrict the genes contained in each gene set to only
-         * the genes found in the expression file.
-         */
-        public void filterGenesets(){
-
-            //check to see if we are dealing with two distinct gene expression files
-            if(this.isTwoDistinctExpressionSets()){
-                //iterate through each geneset and filter each one
-                //have to do it separately for each gene expression set.
-                for(Iterator j = genesets.keySet().iterator(); j.hasNext(); ){
-
-                    String geneset2_name = j.next().toString();
-                    GeneSet current_set =  genesets.get(geneset2_name);
+    
 
 
-                    //compare the HashSet of dataset genes to the HashSet of the current Geneset
-                    //only keep the genes from the geneset that are in the dataset genes
-                    HashSet<Integer> geneset_genes = current_set.getGenes();
-
-                    //Get the intersection between current geneset and dataset genes
-                    Set<Integer> intersection = new HashSet<Integer>(geneset_genes);
-                    intersection.retainAll(datasetGenes);
-
-                    //Add new geneset to the filtered set of genesets
-                    HashSet<Integer> new_geneset = new HashSet<Integer>(intersection);
-                    GeneSet new_set = new GeneSet(geneset2_name,current_set.getDescription());
-                    new_set.setGenes(new_geneset);
-
-                    this.filteredGenesets.put(geneset2_name,new_set);
-                }
-
-                for(Iterator j = genesets_set2.keySet().iterator(); j.hasNext(); ){
-
-                    String geneset2_name = j.next().toString();
-                    GeneSet current_set =  genesets_set2.get(geneset2_name);
-
-                    //compare the HashSet of dataset genes to the HashSet of the current Geneset
-                    //only keep the genes from the geneset that are in the dataset genes
-                    HashSet<Integer> geneset_genes = current_set.getGenes();
-
-                    //Get the intersection between current geneset and dataset genes
-                    Set<Integer> intersection = new HashSet<Integer>(geneset_genes);
-                    intersection.retainAll(datasetGenes_set2);
-
-                    //Add new geneset to the filtered set of genesets
-                    HashSet<Integer> new_geneset = new HashSet<Integer>(intersection);
-                    GeneSet new_set = new GeneSet(geneset2_name,current_set.getDescription());
-                    new_set.setGenes(new_geneset);
-
-                    this.filteredGenesets_set2.put(geneset2_name,new_set);
-                }
-            }
-            else{
-            //iterate through each geneset and filter each one
-             for(Iterator j = genesets.keySet().iterator(); j.hasNext(); ){
-
-                 String geneset2_name = j.next().toString();
-                 GeneSet current_set =  genesets.get(geneset2_name);
-
-                 //compare the HashSet of dataset genes to the HashSet of the current Geneset
-                 //only keep the genes from the geneset that are in the dataset genes
-                 HashSet<Integer> geneset_genes = current_set.getGenes();
-
-                 //Get the intersection between current geneset and dataset genes
-                 Set<Integer> intersection = new HashSet<Integer>(geneset_genes);
-                 intersection.retainAll(datasetGenes);
-
-                 //Add new geneset to the filtered set of genesets
-                 HashSet<Integer> new_geneset = new HashSet<Integer>(intersection);
-                 GeneSet new_set = new GeneSet(geneset2_name,current_set.getDescription());
-                 new_set.setGenes(new_geneset);
-
-                 this.filteredGenesets.put(geneset2_name,new_set);
-
-             }
-            //once we have filtered the genesets clear the original genesets object
-            genesets.clear();
-            genesets_set2.clear();
-
-
-
-            }
-
-        }
-
-    /**
-     * Compute the enrichment genes
-     *
-     */
-    public void computeEnrichmentMapGenes(){
-        enrichmentMapGenes = new HashSet<Integer>();
-        for (Iterator<String> i = genesetsOfInterest.keySet().iterator(); i.hasNext(); ){
-            String setName = i.next();
-            enrichmentMapGenes.addAll(genesetsOfInterest.get(setName).getGenes());
-        }
-    }
-        /**
-         * Check to see that there are genes in the filtered  genesets
-         * If the ids do not match up, after a filtering there will be no genes in any of the genesets
-         * @return true if Genesets have genes, return false if all the genesets are empty
-         */
-        public boolean checkGenesets(){
-
-            for(Iterator j = filteredGenesets.keySet().iterator(); j.hasNext(); ){
-                 String geneset2_name = j.next().toString();
-                 GeneSet current_set = filteredGenesets.get(geneset2_name);
-
-                 //get the genes in the geneset
-                 HashSet<Integer> geneset_genes = current_set.getGenes();
-
-                //if there is at least one gene in any of the genesets then the ids match.
-                if(!geneset_genes.isEmpty())
-                    return true;
-
-            }
-
-            if(this.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_DAVID))
-                return true;
-            return false;
-
-        }
      /**
      * String representation of EnrichmentMapParameters.
      * Is used to store the persistent Attributes as a property file in the Cytoscape Session file.
@@ -942,8 +704,8 @@ public class EnrichmentMapParameters {
     public String toString(){
         StringBuffer paramVariables = new StringBuffer();
 
-        paramVariables.append( "NetworkName\t" + NetworkName + "\n");
-        paramVariables.append("attributePrefix\t" + attributePrefix + "\n");
+        //paramVariables.append( "NetworkName\t" + NetworkName + "\n");
+        //paramVariables.append("attributePrefix\t" + attributePrefix + "\n");
         paramVariables.append("enrichment_edge_type\t" + enrichment_edge_type + "\n");
 
         //file names
@@ -960,38 +722,28 @@ public class EnrichmentMapParameters {
         paramVariables.append("gseaHtmlReportFileDataset1\t" + gseaHtmlReportFileDataset1 + "\n");
         paramVariables.append("gseaHtmlReportFileDataset2\t" + gseaHtmlReportFileDataset2 + "\n");
 
-        paramVariables.append("dataset1Phenotype1\t" + dataset1Phenotype1  + "\n");
-        paramVariables.append("dataset1Phenotype2\t" + dataset1Phenotype2   + "\n");
-        paramVariables.append("dataset2Phenotype1\t" + dataset2Phenotype1  + "\n");
-        paramVariables.append("dataset2Phenotype2\t" + dataset2Phenotype2  + "\n");
-
         paramVariables.append("classFile1\t" + classFile1  + "\n");
         paramVariables.append("classFile2\t" + classFile2  + "\n");
 
         //Write the classes/phenotypes as a comma separated list.
-        if(this.isData()){
-            if(expression != null){
-                String[] current_pheno = expression.getPhenotypes();
-                if (current_pheno != null){
-                    StringBuffer output = new StringBuffer();
-                    for(int j = 0; j < current_pheno.length;j++)
-                        output.append(current_pheno[j] + ",");
-                    paramVariables.append("class1\t" + output.toString() + "\n");
-                }
+        //TODO:print classes out to prop file
+        /*       if(!EM.getExpressionSets().isEmpty()){
+            for(Iterator<String> k = EM.getExpressionSets().keySet().iterator();k.hasNext();){
+            		String current_expression = k.next().toString();
+            		GeneExpressionMatrix expression = EM.getExpression(current_expression);
+            		if(expression != null){
+                        String[] current_pheno = expression.getPhenotypes();
+                        if (current_pheno != null){
+                            StringBuffer output = new StringBuffer();
+                            for(int j = 0; j < current_pheno.length;j++)
+                                output.append(current_pheno[j] + ",");
+                            paramVariables.append("class%"+current_expression+"\t" + output.toString() + "\n");
+                        }
+                    }
             }
+        		
         }
-        if(this.isData2()){
-            if(expression2 != null){
-                String[] current_pheno = expression2.getPhenotypes();
-                if (current_pheno != null){
-                    StringBuffer output = new StringBuffer();
-                    for(int j = 0; j < current_pheno.length;j++)
-                        output.append(current_pheno[j] + ",");
-                    paramVariables.append("class2\t" + output.toString() + "\n");
-                }
-            }
-        }
-
+*/
         //enrichment method.
         paramVariables.append("method\t" + this.method + "\n");
 
@@ -1073,7 +825,7 @@ public class EnrichmentMapParameters {
             newMap = new HashMap<Integer, String>();
         //Hashmap gene key to ranking
         else if(type == 6){
-            newMap = new HashMap<Integer, Ranking>();
+            newMap = new HashMap<Integer, Rank>();
 
             //issue with ranks from old session files where if there is a rank of -1
             // any heatmap that has that gene will be missing it.
@@ -1147,7 +899,7 @@ public class EnrichmentMapParameters {
                     Integer newRank = (Integer.parseInt(tokens[3]) + 1);
                     tokens[3] = newRank.toString();
                 }
-                newMap.put(Integer.parseInt(tokens[0]),new Ranking(tokens));
+                newMap.put(Integer.parseInt(tokens[0]),new Rank(tokens));
             }
             //rank to gene id
             if(type == 7)
@@ -1158,100 +910,62 @@ public class EnrichmentMapParameters {
         return newMap;
     }
     
-    
-    /**
-     * @return true if we have at least one list of gene ranks
-     */
-    public boolean haveRanks() {
-        if (this.ranks.size() > 0)
-            return true;
-        else
-            return false;
-    }
-    
-    
-    
-    /**
-     *  given the hash key representing a gene return the gene name
-     *
-     * @param hash - the hash key representing a gene
-     * @return String - gene name
-     */
-    public String getGeneFromHashKey(Integer hash){
-        String gene = null;
-        if(hashkey2gene != null || !hashkey2gene.isEmpty())
-            gene =  hashkey2gene.get(hash);
-        return gene;
-
-    }
-
     // Class Getters and Setters
-
+    
+    
+    
     public String getSimilarityMetric() {
         return similarityMetric;
     }
 
-    public void setSimilarityMetric(String similarityMetric) {
+    public String getAttributePrefix() {
+		return attributePrefix;
+	}
+
+    //Set up the attributePrefix
+    //The attribute prefix is based on the number of nextworks in cytoscape.
+    //TODO:make attribute prefix independent on cytoscape
+    public void setAttributePrefix(){
+    		Set<CyNetwork> networks = Cytoscape.getNetworkSet();
+        CyNetwork network;
+
+        if(networks == null || networks.isEmpty())
+        		this.attributePrefix = "EM1_";
+        else{
+        		//how many enrichment maps are there?
+            int num_networks = 1;
+            int max_prefix = 0;
+            EnrichmentMapManager manager = EnrichmentMapManager.getInstance();
+            //go through all the networks, check to see if they are enrichment maps
+            //if they are then calculate the max EM_# and use the max number + 1 for the 
+            // current attributes
+            for(Iterator<CyNetwork> i = networks.iterator(); i.hasNext();){
+            		CyNetwork current_network = i.next();
+                String networkId = current_network.getIdentifier();
+                if( manager.isEnrichmentMap(networkId) ) {//fails
+                		num_networks++;
+                    EnrichmentMap tmpMap = manager.getMap(networkId);
+                    String tmpPrefix = tmpMap.getParams().getAttributePrefix();
+                    tmpPrefix = tmpPrefix.replace("EM", "");
+                    tmpPrefix = tmpPrefix.replace("_", "");
+                    int tmpNum = Integer.parseInt(tmpPrefix);
+                    if (tmpNum > max_prefix)
+                    		max_prefix = tmpNum;
+                     }
+             }
+            this.attributePrefix = "EM" + (max_prefix + 1) + "_";
+           }
+    }
+    
+	public void setAttributePrefix(String attributePrefix) {
+		this.attributePrefix = attributePrefix;
+	}
+
+
+	public void setSimilarityMetric(String similarityMetric) {
         this.similarityMetric = similarityMetric;
     }
 
-    public HashMap<String, EnrichmentResult> getEnrichmentResults1() {
-        return enrichmentResults1;
-    }
-
-    public void setEnrichmentResults1(HashMap<String, EnrichmentResult> enrichmentResults1) {
-        this.enrichmentResults1 = enrichmentResults1;
-    }
-
-    public HashMap<String, EnrichmentResult> getEnrichmentResults2() {
-        return enrichmentResults2;
-    }
-
-    public void setEnrichmentResults2(HashMap<String, EnrichmentResult> enrichmentResults2) {
-        this.enrichmentResults2 = enrichmentResults2;
-    }
-
-    public HashMap<String, EnrichmentResult> getEnrichmentResults1OfInterest() {
-        return enrichmentResults1OfInterest;
-    }
-
-    public void setEnrichmentResults1OfInterest(HashMap<String, EnrichmentResult> enrichmentResults1OfInterest) {
-        this.enrichmentResults1OfInterest = enrichmentResults1OfInterest;
-    }
-
-    public HashMap<String, EnrichmentResult> getEnrichmentResults2OfInterest() {
-        return enrichmentResults2OfInterest;
-    }
-
-    public void setEnrichmentResults2OfInterest(HashMap<String, EnrichmentResult> enrichmentResults2OfInterest) {
-        this.enrichmentResults2OfInterest = enrichmentResults2OfInterest;
-    }
-
-    public HashMap<String, GeneSet> getGenesetsOfInterest() {
-
-        return genesetsOfInterest;
-    }
-
-    public void setGenesetsOfInterest(HashMap<String, GeneSet> genesetsOfInterest) {
-        this.genesetsOfInterest = genesetsOfInterest;
-
-    }
-
-    public HashMap<String, GeneSet> getGenesets() {
-        return genesets;
-    }
-
-    public void setGenesets(HashMap<String, GeneSet> genesets) {
-        this.genesets = genesets;
-    }
-
-    public HashMap<String, GeneSet> getFilteredGenesets() {
-        return filteredGenesets;
-    }
-
-    public void setFilteredGenesets(HashMap<String, GeneSet> filteredGenesets) {
-        this.filteredGenesets = filteredGenesets;
-    }
 
     public String getGMTFileName() {
 
@@ -1329,57 +1043,6 @@ public class EnrichmentMapParameters {
 
     }
 
-    public HashMap<String,Integer> getGenesetsGenes(HashMap<String, GeneSet> current_genesets){
-
-        HashMap<String, Integer> genesetGenes = new HashMap<String, Integer>();
-
-        for(Iterator j = current_genesets.keySet().iterator(); j.hasNext(); ){
-
-            String geneset_name = j.next().toString();
-            GeneSet current_set =  current_genesets.get(geneset_name);
-
-            //compare the HashSet of dataset genes to the HashSet of the current Geneset
-            //only keep the genes from the geneset that are in the dataset genes
-            HashSet<Integer> geneset_genes = current_set.getGenes();
-
-            for(Iterator k = geneset_genes.iterator();k.hasNext(); ){
-                Integer current_genekey = (Integer)k.next();
-                //get the current geneName
-                if(hashkey2gene.containsKey(current_genekey)){
-                    String name = hashkey2gene.get(current_genekey);
-                    genesetGenes.put(name, current_genekey);
-                }
-
-            }
-        }
-        return genesetGenes;
-
-    }
-
-    public HashMap<String, Integer> getGenes() {
-        return genes;
-    }
-
-    public void setGenes(HashMap<String, Integer> genes) {
-        this.genes = genes;
-    }
-
-    public HashSet<Integer> getDatasetGenes() {
-        return datasetGenes;
-    }
-
-    public void setDatasetGenes(HashSet<Integer> datasetGenes) {
-        this.datasetGenes = datasetGenes;
-    }
-
-    public int getNumberOfGenes() {
-        return NumberOfGenes;
-    }
-
-    public void setNumberOfGenes(int numberOfGenes) {
-        NumberOfGenes = numberOfGenes;
-    }
-
     public double getSimilarityCutOff() {
         return similarityCutOff;
     }
@@ -1387,22 +1050,7 @@ public class EnrichmentMapParameters {
     public void setSimilarityCutOff(double similarityCutOff) {
         this.similarityCutOff = similarityCutOff;
     }
-
-    public String getNetworkName() {
-        return NetworkName;
-    }
-
-    public void setNetworkName(String networkName) {
-        NetworkName = networkName;
-    }
-
-    public String getAttributePrefix() {
-        return attributePrefix;
-    }
-
-    public void setAttributePrefix(String attributePrefix) {
-        this.attributePrefix = attributePrefix;
-    }
+   
 
     /**
      * @return flag to indicate there are two datasets
@@ -1413,11 +1061,6 @@ public class EnrichmentMapParameters {
 
     public void setTwoDatasets(boolean twoDatasets) {
         this.twoDatasets = twoDatasets;
-    }
-
-    public void noFilter(){
-        this.filteredGenesets = genesets;
-        this.filteredGenesets_set2 = genesets_set2;
     }
 
     /**
@@ -1448,30 +1091,6 @@ public class EnrichmentMapParameters {
 
     public void setFDR(boolean FDR) {
         this.FDR = FDR;
-    }
-
-    public GeneExpressionMatrix getExpression() {
-        return expression;
-    }
-
-    public void setExpression(GeneExpressionMatrix expression) {
-        this.expression = expression;
-    }
-
-    public GeneExpressionMatrix getExpression2() {
-        return expression2;
-    }
-
-    public void setExpression2(GeneExpressionMatrix expression2) {
-        this.expression2 = expression2;
-    }
-
-    public HashMap<String, GenesetSimilarity> getGenesetSimilarity() {
-        return genesetSimilarity;
-    }
-
-    public void setGenesetSimilarity(HashMap<String, GenesetSimilarity> genesetSimilarity) {
-        this.genesetSimilarity = genesetSimilarity;
     }
 
     public String getClassFile1() {
@@ -1519,39 +1138,6 @@ public class EnrichmentMapParameters {
      */
     public String getGseaHtmlReportFileDataset2() {
         return gseaHtmlReportFileDataset2;
-    }
-
-
-    public String getDataset1Phenotype1() {
-        return dataset1Phenotype1;
-    }
-
-    public void setDataset1Phenotype1(String dataset1Phenotype1) {
-        this.dataset1Phenotype1 = dataset1Phenotype1;
-    }
-
-    public String getDataset1Phenotype2() {
-        return dataset1Phenotype2;
-    }
-
-    public void setDataset1Phenotype2(String dataset1Phenotype2) {
-        this.dataset1Phenotype2 = dataset1Phenotype2;
-    }
-
-    public String getDataset2Phenotype1() {
-        return dataset2Phenotype1;
-    }
-
-    public void setDataset2Phenotype1(String dataset2Phenotype1) {
-        this.dataset2Phenotype1 = dataset2Phenotype1;
-    }
-
-    public String getDataset2Phenotype2() {
-        return dataset2Phenotype2;
-    }
-
-    public void setDataset2Phenotype2(String dataset2Phenotype2) {
-        this.dataset2Phenotype2 = dataset2Phenotype2;
     }
 
     public SliderBarPanel getPvalueSlider() {
@@ -1606,36 +1192,13 @@ public class EnrichmentMapParameters {
         this.dataset2RankedFile = dataset2RankedFile;
     }
 
-    public HashMap<Integer, Ranking> getDataset1Rankings() {
-        return dataset1Rankings;
-    }
-
-    public void setDataset1Rankings(HashMap<Integer,Ranking> dataset1Rankings) {
-        this.dataset1Rankings = dataset1Rankings;
-
-        //also add the ranking file to the set of ranks
-        if(this.ranks != null)
-            this.ranks.put("Dataset 1 Ranking", this.dataset1Rankings);
-    }
-
-    public HashMap<Integer, Ranking> getDataset2Rankings() {
-        return dataset2Rankings;
-    }
-
-    public void setDataset2Rankings(HashMap<Integer,Ranking> dataset2Rankings) {
-        this.dataset2Rankings = dataset2Rankings;
-
-        //also add the ranking file to the set of ranks
-        if(this.ranks != null)
-            this.ranks.put("Dataset 2 Ranking", this.dataset2Rankings);
-    }
 
     public HashMap<Integer, Integer> getRank2geneDataset1() {
         return rank2geneDataset1;
     }
 
     /*create a method to re-create rank to gene given the gene to rank*/
-    public HashMap<Integer, Integer> getRank2geneDataset(HashMap<Integer,Ranking> gene2rank){
+    public HashMap<Integer, Integer> getRank2geneDataset(HashMap<Integer,Rank> gene2rank){
         HashMap<Integer,Integer> rank2gene = new HashMap<Integer, Integer>();
 
         for(Iterator i = gene2rank.keySet().iterator();i.hasNext();){
@@ -1644,7 +1207,7 @@ public class EnrichmentMapParameters {
         }
         return rank2gene;
     }
-
+    
     public void setRank2geneDataset1(HashMap<Integer, Integer> rank2geneDataset1) {
         this.rank2geneDataset1 = rank2geneDataset1;
     }
@@ -1706,35 +1269,6 @@ public class EnrichmentMapParameters {
         return similarityCutOffChanged;
     }
 
-    public HashMap<Integer, String> getHashkey2gene() {
-        return hashkey2gene;
-    }
-
-    public void setHashkey2gene(HashMap<Integer, String> hashkey2gene) {
-        this.hashkey2gene = hashkey2gene;
-    }
-
-    public HashMap<String, HashMap<Integer, Ranking>> getRanks() {
-        return ranks;
-    }
-
-    public void setRanks(HashMap<String, HashMap<Integer, Ranking>> ranks) {
-        this.ranks = ranks;
-    }
-
-    public void addRanks(String ranks_name, HashMap<Integer, Ranking> new_rank){
-        if(this.ranks != null)
-            this.ranks.put(ranks_name, new_rank);
-    }
-
-    public HashMap<Integer,Ranking> getRanksByName(String ranks_name){
-        if(this.ranks != null){
-            return this.ranks.get(ranks_name);
-        }
-        else{
-            return null;
-        }
-    }
 
     public String[] getTemp_class1() {
         return temp_class1;
@@ -1750,14 +1284,6 @@ public class EnrichmentMapParameters {
 
     public void setTemp_class2(String[] temp_class2) {
         this.temp_class2 = temp_class2;
-    }
-
-    public HashSet<Integer> getEnrichmentMapGenes() {
-        return enrichmentMapGenes;
-    }
-
-    public void setEnrichmentMapGenes(HashSet<Integer> enrichmentMapGenes) {
-        this.enrichmentMapGenes = enrichmentMapGenes;
     }
 
     /**
@@ -1837,37 +1363,7 @@ public class EnrichmentMapParameters {
         this.twoDistinctExpressionSets = twoDistinctExpressionSets;
     }
 
-    public HashSet<Integer> getDatasetGenes_set2() {
-        return datasetGenes_set2;
-    }
-
-    public void setDatasetGenes_set2(HashSet<Integer> datasetGenes_set2) {
-        this.datasetGenes_set2 = datasetGenes_set2;
-    }
-
-    public HashMap<String, GeneSet> getFilteredGenesets_set2() {
-        return filteredGenesets_set2;
-    }
-
-    public void setFilteredGenesets_set2(HashMap<String, GeneSet> filteredGenesets_set2) {
-        this.filteredGenesets_set2 = filteredGenesets_set2;
-    }
-
-    public HashMap<String, GeneSet> getGenesets_set2() {
-        return genesets_set2;
-    }
-
-    public void setGenesets_set2(HashMap<String, GeneSet> genesets_set2) {
-        this.genesets_set2 = genesets_set2;
-    }
-
-    public HashMap<String, GeneSet> getGenesetsOfInterest_set2() {
-        return genesetsOfInterest_set2;
-    }
-
-    public void setGenesetsOfInterest_set2(HashMap<String, GeneSet> genesetsOfInterest_set2) {
-        this.genesetsOfInterest_set2 = genesetsOfInterest_set2;
-    }
+    
 
     public void setGMTDirName(String GMTDirName) {
         this.GMTDirName = GMTDirName;
@@ -1935,21 +1431,6 @@ public class EnrichmentMapParameters {
         return loadedFromRpt_dataset2;
     }
 
-    public void setGenesetTypes(HashSet<String> types){
-        this.GenesetTypes = types;
-    }
-
-    public HashSet<String> getGenesetTypes(){
-       return this.GenesetTypes;
-    }
-
-    public void addGenesetType(String type){
-        if(!GenesetTypes.contains(type)){
-            GenesetTypes.add(type);
-
-        }
-    }
-
     public boolean isEMgmt(){
         return EMgmt;
     }
@@ -1957,4 +1438,56 @@ public class EnrichmentMapParameters {
     public void setEMgmt(boolean flag){
         this.EMgmt = flag;
     }
+
+
+	/*public EnrichmentMap getEM() {
+		return EM;
+	}
+
+
+	public void setEM(EnrichmentMap eM) {
+		EM = eM;
+	}
+*/
+
+	public String getDataset1Phenotype1() {
+		return Dataset1Phenotype1;
+	}
+
+
+	public void setDataset1Phenotype1(String dataset1Phenotype1) {
+		Dataset1Phenotype1 = dataset1Phenotype1;
+	}
+
+
+	public String getDataset1Phenotype2() {
+		return Dataset1Phenotype2;
+	}
+
+
+	public void setDataset1Phenotype2(String dataset1Phenotype2) {
+		Dataset1Phenotype2 = dataset1Phenotype2;
+	}
+
+
+	public String getDataset2Phenotype1() {
+		return Dataset2Phenotype1;
+	}
+
+
+	public void setDataset2Phenotype1(String dataset2Phenotype1) {
+		Dataset2Phenotype1 = dataset2Phenotype1;
+	}
+
+
+	public String getDataset2Phenotype2() {
+		return Dataset2Phenotype2;
+	}
+
+
+	public void setDataset2Phenotype2(String dataset2Phenotype2) {
+		Dataset2Phenotype2 = dataset2Phenotype2;
+	}
+    
+    
 }

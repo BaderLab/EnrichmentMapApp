@@ -49,6 +49,7 @@ import cytoscape.data.readers.TextFileReader;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.io.File;
 
 /**
@@ -62,208 +63,212 @@ import java.io.File;
  */
 public class ExpressionFileReaderTask implements Task {
 
-    private EnrichmentMapParameters params;
+    //private EnrichmentMapParameters params;
 
     //expression file name
     private String expressionFileName;
 
     //which dataset is this expression file associated with
-    private int dataset;
+    private DataSet dataset;
 
     // Keep track of progress for monitoring:
     private int maxValue;
     private TaskMonitor taskMonitor = null;
     private boolean interrupted = false;
-
+    
     /**
      * Class constructor specifying current task
      *
-     * @param params- enrichment map parameters associated with current map
      * @param dataset - dataset expression file is associated with
      * @param taskMonitor - current task monitor
      */
-     public ExpressionFileReaderTask(EnrichmentMapParameters params, int dataset, TaskMonitor taskMonitor) {
-        this(params,dataset);
-        this.taskMonitor = taskMonitor;
+    public ExpressionFileReaderTask(DataSet dataset, TaskMonitor taskMonitor){
+    	this(dataset);
+    	this.taskMonitor = taskMonitor;
     }
-
+    
     /**
      * Class constructor
      *
-     * @param params - enrichment map parameters associated with current map
      * @param dataset  - dataset expression file is associated with
      */
-    public ExpressionFileReaderTask(EnrichmentMapParameters params, int dataset )   {
-        this.params = params;
-        //dataset the expression file is associated
-        this.dataset = dataset;
-        //expression file
-        if(this.dataset == 1)
-            this.expressionFileName = params.getExpressionFileName1();
-        else if(this.dataset == 2)
-            this.expressionFileName = params.getExpressionFileName2();
+    public ExpressionFileReaderTask(DataSet dataset){
+    		this.dataset = dataset;
+    		if(dataset.getExpressionSets() != null)
+    			this.expressionFileName = dataset.getExpressionSets().getFilename();
     }
-
+    
     /**
      * Parse expression/rank file
      */
     public void parse() {
+    	
+    		if(this.expressionFileName == null || this.expressionFileName.isEmpty())
+    			this.createDummyExpressionFile();
+    		else{
+    	
+    			//Need to check if the file specified as an expression file is actually a rank file
+    			//If it is a rank file it can either be 5 or 2 columns but it is important that the rank
+    			//value is extracted from the right column and placed in the expression matrix as if it
+    			//was an expression value in order for other features to work.
 
-          //Need to check if the file specified as an expression file is actually a rank file
-          //If it is a rank file it can either be 5 or 2 columns but it is important that the rank
-          //value is extracted from the right column and placed in the expression matrix as if it
-          //was an expression value in order for other features to work.
+    			//Also a problem with old session files that imported a rank file so it also
+    			//important to check if the file only has two columns.  If it only has two columns,
+    			//check to see if the second column is a double.  If it is then consider that column
+    			//expression
 
-          //Also a problem with old session files that imported a rank file so it also
-          //important to check if the file only has two columns.  If it only has two columns,
-          //check to see if the second column is a double.  If it is then consider that column
-          //expression
-
-          boolean twoColumns = false;
-
-
-        HashSet datasetGenes= params.getDatasetGenes();
-        HashMap genes = params.getGenes();
-
-        TextFileReader reader = new TextFileReader(expressionFileName);
-        reader.read();
-        String fullText = reader.getText();
-
-        String[] lines = fullText.split("\n");
-        int currentProgress = 0;
-        maxValue = lines.length;
-        GeneExpressionMatrix expressionMatrix = null;
-        //GeneExpressionMatrix expressionMatrix = new GeneExpressionMatrix(lines[0].split("\t"));
-        HashMap<Integer,GeneExpression> expression = new HashMap<Integer, GeneExpression>();
-
-        for (int i = 0; i < lines.length; i++) {
-            Integer genekey ;
-
-            String line = lines[i];
-
-            String [] tokens = line.split("\t");
-
-            //The first column of the file is the name of the geneset
-            String Name = tokens[0].toUpperCase().trim();
-
-            if(i==0 && expressionMatrix == null){
-                //otherwise the first line is the header
-                if(Name.equalsIgnoreCase("#1.2")){
-                   line = lines[2];
-                   i=2;
-                }
-                else{
-                    line = lines[0];
-                    //ignore all comment lines
-                    int k = 0;
-                    while (line.startsWith("#")){
-                        k++;
-                        line = lines[k];
-                    }
-                    i = k;
-                }
-                tokens = line.split("\t");
-
-                //check to see how many columns there are
-                //if there are only 2 columns then we could be dealing with a ranked file
-                //check to see if the second column contains expression values.
-                if(tokens.length == 2){
-                    twoColumns = true;
-                    //the assumption is the first line is the column names but
-                    //if we are loading a GSEA edb rnk file then their might not be column names
-                    try{
-                        int temp = Integer.parseInt(tokens[1]);
-                        i = -1;
-                        tokens[0] = "Name";
-                        tokens[1] = "Rank/Score";
-                    } catch (NumberFormatException v){
-                        try{
-                            double temp2 = Double.parseDouble(tokens[1]);
-                            i = -1;
-                            tokens[0] = "Name";
-                            tokens[1] = "Rank/Score";
-
-                        }  catch (NumberFormatException v2){
-                            //if it isn't a double or int then we have a title line.
-                        }
-                    }
-                }
-
-                expressionMatrix = new GeneExpressionMatrix(tokens);
-                expressionMatrix.setExpressionMatrix(expression);
-                continue;
-
-            }
+    			boolean twoColumns = false;
 
 
-            //Check to see if this gene is in the genes list
-            if(genes.containsKey(Name)){
-                genekey = (Integer)genes.get(Name);
-                //we want the genes hashmap and dataset genes hashmap to have the same keys so it is
-                //easier to compare.
-                datasetGenes.add(genes.get(Name));
+    			HashSet<Integer> datasetGenes = dataset.getDatasetGenes();
+    			HashMap genes = dataset.getMap().getGenes();
 
-                String description = "";
-                //check to see if the second column is parseable
-                if(twoColumns){
-                    try{
-                        Double.parseDouble(tokens[1]);
-                    }catch(NumberFormatException e){
-                        description = tokens[1];
-                    }
-                }
-                else
-                    description = tokens[1];
+    			TextFileReader reader = new TextFileReader(expressionFileName);
+    			reader.read();
+    			String fullText = reader.getText();
 
-                GeneExpression expres = new GeneExpression(Name, description);
-                expres.setExpression(tokens);
+    			String[] lines = fullText.split("\n");
+    			int currentProgress = 0;
+    			maxValue = lines.length;
+    			GeneExpressionMatrix expressionMatrix = dataset.getExpressionSets();
+    			//GeneExpressionMatrix expressionMatrix = new GeneExpressionMatrix(lines[0].split("\t"));
+    			//HashMap<Integer,GeneExpression> expression = new HashMap<Integer, GeneExpression>();
+    			HashMap<Integer,GeneExpression> expression = expressionMatrix.getExpressionMatrix();
+        
+    			for (int i = 0; i < lines.length; i++) {
+    				Integer genekey ;
 
-                double newMax = expres.newMax(expressionMatrix.getMaxExpression());
-                if(newMax != -100)
-                    expressionMatrix.setMaxExpression(newMax);
-                double newMin = expres.newMin(expressionMatrix.getMinExpression());
-                if (newMin != -100)
-                    expressionMatrix.setMinExpression(newMin);
+    				String line = lines[i];
 
-                expression.put(genekey,expres);
+    				String [] tokens = line.split("\t");
 
-            }
+    				//The first column of the file is the name of the geneset
+    				String Name = tokens[0].toUpperCase().trim();
 
-            // Calculate Percentage.  This must be a value between 0..100.
-            int percentComplete = (int) (((double) currentProgress / maxValue) * 100);
-            //  Estimate Time Remaining
-            long timeRemaining = maxValue - currentProgress;
-            if (taskMonitor != null) {
+    				if(i==0 && (expressionMatrix == null || expressionMatrix.getExpressionMatrix().isEmpty())){
+    					//otherwise the first line is the header
+    					if(Name.equalsIgnoreCase("#1.2")){
+    						line = lines[2];
+    						i=2;
+    					}
+    					else{
+    						line = lines[0];
+    						//ignore all comment lines
+    						int k = 0;
+    						while (line.startsWith("#")){
+    							k++;
+    							line = lines[k];
+    						}
+    						i = k;
+    					}
+    					tokens = line.split("\t");
+
+    					//check to see how many columns there are
+    					//if there are only 2 columns then we could be dealing with a ranked file
+    					//check to see if the second column contains expression values.
+    					if(tokens.length == 2){
+    						twoColumns = true;
+    						//the assumption is the first line is the column names but
+    						//if we are loading a GSEA edb rnk file then their might not be column names
+    						try{
+    							int temp = Integer.parseInt(tokens[1]);
+    							i = -1;
+    							tokens[0] = "Name";
+    							tokens[1] = "Rank/Score";
+    						} catch (NumberFormatException v){
+    							try{
+    								double temp2 = Double.parseDouble(tokens[1]);
+    								i = -1;
+    								tokens[0] = "Name";
+    								tokens[1] = "Rank/Score";
+
+    							}  catch (NumberFormatException v2){
+    								//if it isn't a double or int then we have a title line.
+    							}
+    						}
+    					}
+
+    					//expressionMatrix = new GeneExpressionMatrix(tokens);
+    					expressionMatrix.setColumnNames(tokens);
+    					expressionMatrix.setNumConditions(tokens.length);
+    					expressionMatrix.setExpressionMatrix(expression);
+    					continue;
+
+    				}
+
+
+    				//Check to see if this gene is in the genes list
+    				if(genes.containsKey(Name)){
+    					genekey = (Integer)genes.get(Name);
+    					//we want the genes hashmap and dataset genes hashmap to have the same keys so it is
+    					//easier to compare.
+    					datasetGenes.add((Integer)genes.get(Name));
+
+    					String description = "";
+    					//check to see if the second column is parseable
+    					if(twoColumns){
+    						try{
+    							Double.parseDouble(tokens[1]);
+    						}catch(NumberFormatException e){
+    							description = tokens[1];
+    						}
+    					}
+    					else
+    						description = tokens[1];
+
+    					GeneExpression expres = new GeneExpression(Name, description);
+    					expres.setExpression(tokens);
+
+    					double newMax = expres.newMax(expressionMatrix.getMaxExpression());
+    					if(newMax != -100)
+    						expressionMatrix.setMaxExpression(newMax);
+    					double newMin = expres.newMin(expressionMatrix.getMinExpression());
+    					if (newMin != -100)
+    						expressionMatrix.setMinExpression(newMin);
+
+    					expression.put(genekey,expres);
+
+    				}
+
+    				// Calculate Percentage.  This must be a value between 0..100.
+    				int percentComplete = (int) (((double) currentProgress / maxValue) * 100);
+    				//  Estimate Time Remaining
+    				long timeRemaining = maxValue - currentProgress;
+    				if (taskMonitor != null) {
                     taskMonitor.setPercentCompleted(percentComplete);
                     taskMonitor.setStatus("Parsing GCT file " + currentProgress + " of " + maxValue);
                     taskMonitor.setEstimatedTimeRemaining(timeRemaining);
                 }
-            currentProgress++;
+    				currentProgress++;
 
-        }
+    			}
 
-        //set the number of genes
-        expressionMatrix.setNumGenes(expressionMatrix.getExpressionMatrix().size());
+    			//set the number of genes
+    			expressionMatrix.setNumGenes(expressionMatrix.getExpressionMatrix().size());
+        
+        
+    			//TODO: intialize phenotypes associated with class files from expression file load
+  /*      	if(dataset == 1){
+            		//set up the classes definition if it is set.
+            		//check to see if the phenotypes were already set in the params from a session load
+            		if(params.getTemp_class1() != null)
+                		expressionMatrix.setPhenotypes(params.getTemp_class1());
+            		if(params.getClassFile1() != null)
+                		expressionMatrix.setPhenotypes(setClasses( params.getClassFile1()));
+            		//params.getEM().addExpression(EnrichmentMap.DATASET1,expressionMatrix);
+        		}
+        		else{
+            		//set up the classes definition if it is set.
 
-        if(dataset == 1){
-            //set up the classes definition if it is set.
-            //check to see if the phenotypes were already set in the params from a session load
-            if(params.getTemp_class1() != null)
-                expressionMatrix.setPhenotypes(params.getTemp_class1());
-            if(params.getClassFile1() != null)
-                expressionMatrix.setPhenotypes(setClasses( params.getClassFile1()));
-            params.setExpression(expressionMatrix);
-        }
-        else{
-            //set up the classes definition if it is set.
-
-            //check to see if the phenotypes were already set in the params from a session load
-            if(params.getTemp_class2() != null)
-                expressionMatrix.setPhenotypes(params.getTemp_class2());
-            else if(params.getClassFile2() != null)
-                expressionMatrix.setPhenotypes(setClasses( params.getClassFile2()));
-            params.setExpression2(expressionMatrix);
-        }
+            		//check to see if the phenotypes were already set in the params from a session load
+            		if(params.getTemp_class2() != null)
+                		expressionMatrix.setPhenotypes(params.getTemp_class2());
+            		else if(params.getClassFile2() != null)
+                		expressionMatrix.setPhenotypes(setClasses( params.getClassFile2()));
+            		//params.getEM().addExpression(EnrichmentMap.DATASET2,expressionMatrix);
+        		}
+        */
+    		}
     }
 
     /**
@@ -308,6 +313,59 @@ public class ExpressionFileReaderTask implements Task {
     }
 
 
+  //Create a dummy expression file so that when no expression files are loaded you can still
+    //use the intersect and union viewers.
+    private void createDummyExpressionFile(){
+        //in order to see the gene in the expression viewer we also need a dummy expression file
+        //get all the genes
+        HashMap<String, Integer> genes= dataset.getMap().getGenes();
+        HashSet<Integer> datasetGenes;
+        
+        genes = dataset.getMap().getGenesetsGenes(dataset.getSetofgenesets().getGenesets());
+        datasetGenes= dataset.getDatasetGenes();        
+
+        String[] titletokens = new String[3];
+        titletokens[0] = "Name";
+        titletokens[1] = "Description";
+        titletokens[2] = "Dummy Expression";
+
+        GeneExpressionMatrix expressionMatrix = dataset.getExpressionSets();
+        expressionMatrix.setColumnNames(titletokens);
+        HashMap<Integer,GeneExpression> expression = expressionMatrix.getExpressionMatrix();
+        expressionMatrix.setExpressionMatrix(expression);
+
+        String[] tokens = new String[3];
+        tokens[0] = "tmp";
+        tokens[1] = "tmp";
+        tokens[2] = "0.25";
+
+        for (Iterator i = genes.keySet().iterator(); i.hasNext();) {
+             String currentGene = (String)i.next();
+
+             int genekey = genes.get(currentGene);
+             if(datasetGenes != null)
+                datasetGenes.add(genekey);
+
+                GeneExpression expres = new GeneExpression(currentGene, currentGene);
+                expres.setExpression(tokens);
+
+
+                double newMax = expres.newMax(expressionMatrix.getMaxExpression());
+                if(newMax != -100)
+                    expressionMatrix.setMaxExpression(newMax);
+                double newMin = expres.newMin(expressionMatrix.getMinExpression());
+                if (newMin != -100)
+                    expressionMatrix.setMinExpression(newMin);
+
+                expression.put(genekey,expres);
+
+        }
+
+        //set the number of genes
+        expressionMatrix.setNumGenes(expressionMatrix.getExpressionMatrix().size());
+		expressionMatrix.setNumConditions(3);
+    }
+    
  /**
      * Run the Task.
      */

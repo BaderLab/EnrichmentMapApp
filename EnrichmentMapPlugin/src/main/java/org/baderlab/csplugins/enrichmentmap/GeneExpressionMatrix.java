@@ -77,14 +77,43 @@ public class GeneExpressionMatrix {
 
     //phenotype designation of each column
     private String[] phenotypes;
-
+    
+    //Set of Rankings
+    //Set of Rankings - (HashMap of Hashmaps)
+    //Stores the dataset rank files if they were loaded on input but also has
+    //the capability of storing more rank files
+    private HashMap<String, Ranking> ranks;
+    
+    //File associated with this expression set
+    private String filename;
+    
+    public GeneExpressionMatrix(){
+    		this.expressionMatrix = new HashMap<Integer, GeneExpression>();
+    		this.expressionMatrix_rowNormalized = new HashMap<Integer, GeneExpression>();
+    		this.ranks = new HashMap<String, Ranking>();
+    		
+    }
+    
+    public GeneExpressionMatrix(String filename){
+    		this();
+    		this.filename = filename;
+    }
+    
     /**
      * Class Constructor
      *
      * @param columnNames - String array of the column names of gene/protein expression matrix
      */
     public GeneExpressionMatrix(String[] columnNames) {
-        numConditions = columnNames.length;
+        setColumnNames(columnNames);
+
+    }
+    
+    /*
+     * Given an array of strings set the column names up from given string
+     */
+    public void SetColumnNames(){
+    	numConditions = columnNames.length;
         this.columnNames = columnNames;
 
         //As a bypass for people who want to run Enrichment map without expression data
@@ -111,9 +140,8 @@ public class GeneExpressionMatrix {
             this.columnNames = newNames;
 
         }
-
     }
-
+    
     /**
      * Get a subset of the expression matrix containing only the set of given genes
      *
@@ -290,7 +318,15 @@ public class GeneExpressionMatrix {
         this.phenotypes = phenotypes;
     }
 
-    /**
+    public String getFilename() {
+		return filename;
+	}
+
+	public void setFilename(String filename) {
+		this.filename = filename;
+	}
+
+	/**
      * Converts gene expression into a string representation
      *
      * @return String representation of the gene expression matrix
@@ -313,6 +349,50 @@ public class GeneExpressionMatrix {
 
     public Set<Integer> getGeneIds(){
         return expressionMatrix.keySet();
+    }
+    
+    public HashMap<String, Ranking> getRanks() {
+		return ranks;
+	}
+
+	public void setRanks(HashMap<String, Ranking> ranks) {
+		this.ranks = ranks;
+	}
+    
+	public void addRanks(String ranks_name, Ranking new_rank){
+        if(this.ranks != null)
+            this.ranks.put(ranks_name, new_rank);
+	}
+
+    public Ranking getRanksByName(String ranks_name){
+        if(this.ranks != null){
+            return this.ranks.get(ranks_name);
+        }
+        else{
+            return null;
+        }
+    }
+    
+    public HashSet<String> getAllRanksNames(){
+    		HashSet<String> allnames = new HashSet<String>();
+    		for(Iterator<String> i = ranks.keySet().iterator();i.hasNext();)
+    			allnames.add((String)i.next());
+    		return allnames;
+    }
+    
+    /**
+     * @return true if we have at least one list of gene ranks
+     */
+    public boolean haveRanks() {
+        if (this.ranks.size() > 0)
+            return true;
+        else
+            return false;
+    }
+    
+    public void createNewRanking(String name){
+    		Ranking new_ranking = new Ranking();
+		this.ranks.put(name, new_ranking);
     }
 
 }

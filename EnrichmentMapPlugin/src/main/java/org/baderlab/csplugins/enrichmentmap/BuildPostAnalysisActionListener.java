@@ -74,6 +74,8 @@ public class BuildPostAnalysisActionListener implements ActionListener {
 
         //make sure that the minimum information is set in the current set of parameters
         PostAnalysisParameters paParams = inputPanel.getPaParams();
+        
+        EnrichmentMap current_map = EnrichmentMapManager.getInstance().getMap(Cytoscape.getCurrentNetwork().getIdentifier());
 
         String errors = paParams.checkMinimalRequirements();
 
@@ -84,7 +86,7 @@ public class BuildPostAnalysisActionListener implements ActionListener {
                 config.displayCloseButton(true);
                 config.displayStatus(true);
 
-                BuildDiseaseSignatureTask new_signature = new BuildDiseaseSignatureTask(paParams);
+                BuildDiseaseSignatureTask new_signature = new BuildDiseaseSignatureTask(current_map, paParams);
                 /*boolean success =*/ TaskManager.executeTask(new_signature, config);
             } 
             else {

@@ -69,6 +69,7 @@ import cern.jet.stat.Gamma;
  */
 public class BuildDiseaseSignatureTask implements Task {
     private PostAnalysisParameters paParams;
+    private EnrichmentMap map;
 //    private EnrichmentMapParameters emParams;
     
     // Keep track of progress for monitoring:
@@ -88,26 +89,29 @@ public class BuildDiseaseSignatureTask implements Task {
      * default constructor
      * @param paParams
      */
-    public BuildDiseaseSignatureTask(PostAnalysisParameters paParams) {
-        //create a new instance of the parameters and copy the version received from the input
+    public BuildDiseaseSignatureTask(EnrichmentMap map, PostAnalysisParameters paParams) {
+        
+    		this.map = map;
+
+    		//create a new instance of the parameters and copy the version received from the input
         //window into this new instance.
-        this.paParams = new PostAnalysisParameters();
+    		this.paParams = new PostAnalysisParameters();
         this.paParams.copyFrom(paParams);
         
-        this.EnrichmentGenesets   = this.getPaParams().getGenesets();
+        this.EnrichmentGenesets   = map.getAllGenesets();
         this.SignatureGenesets    = this.getPaParams().getSignatureGenesets();
 
-        if (this.paParams.getGenesetSimilarity() == null)
+        if (map.getGenesetSimilarity() == null)
             this.geneset_similarities = new HashMap<String, GenesetSimilarity>();
         else
-            this.geneset_similarities = this.paParams.getGenesetSimilarity();
+            this.geneset_similarities = map.getGenesetSimilarity();
 
         if (this.paParams.getSignatureGenesets() == null) {
             new HashMap<String,GeneSet>();
         } else
-            this.paParams.getGenesetsOfInterest();
+            map.getAllGenesetsOfInterest();
             
-        this.SelectedSignatureGenesets = new HashMap<String, GeneSet>();
+        		this.SelectedSignatureGenesets = new HashMap<String, GeneSet>();
 
         for (int i = 0; i < paParams.getSelectedSignatureSetNames().getSize(); i++){
             this.SelectedSignatureGenesets.put(paParams.getSelectedSignatureSetNames().get(i).toString(),
@@ -195,7 +199,7 @@ public class BuildDiseaseSignatureTask implements Task {
                 sigGenesInUniverse.retainAll(geneUniverse);
 //                sigGeneSet.setGenes(sigGenes);
                 
-                EnrichmentMapManager.getInstance().getParameters(current_network.getIdentifier()).getSignatureGenesets().put(hub_name, sigGeneSet);
+                EnrichmentMapManager.getInstance().getMap(current_network.getIdentifier()).getParams().getSignatureGenesets().put(hub_name, sigGeneSet);
                 
                 // iterate over Enrichment Genesets
                 for (Iterator<String> j = EnrichmentGenesets.keySet().iterator(); j.hasNext();) {
@@ -325,13 +329,13 @@ public class BuildDiseaseSignatureTask implements Task {
                 //create an attribute that stores the genes that are associated with this node as an attribute list
                 //only create the list if the hashkey 2 genes is not null Otherwise it take too much time to populate the list
 //                GeneSet sigGeneSet = SelectedSignatureGenesets.get(hub_name);
-                if(paParams.getHashkey2gene() != null){
+                if(map.getHashkey2gene() != null){
                     // HashSet to List:
                     List<String> gene_list = new ArrayList<String>();
                     HashSet<Integer> genes_hash = sigGeneSet.getGenes();
                     for(Iterator<Integer> j=genes_hash.iterator(); j.hasNext();){
                         Integer current = j.next();
-                        String gene = paParams.getGeneFromHashKey(current);
+                        String gene = map.getGeneFromHashKey(current);
                         if(gene_list != null)
                             gene_list.add(gene);
                     }
@@ -342,7 +346,7 @@ public class BuildDiseaseSignatureTask implements Task {
                     enr_genes_hash.retainAll(geneUniverse);
                     for(Iterator<Integer> j=enr_genes_hash.iterator(); j.hasNext();){
                         Integer current = j.next();
-                        String gene = paParams.getGeneFromHashKey(current);
+                        String gene = map.getGeneFromHashKey(current);
                         if(enr_gene_list != null)
                             enr_gene_list.add(gene);
                     }
@@ -359,8 +363,11 @@ public class BuildDiseaseSignatureTask implements Task {
 
                 // add the geneset of the signature node to the GenesetsOfInterest,
                 // as the Heatmap will grep it's data from there.
-                sigGeneSet.getGenes().retainAll(paParams.getDatasetGenes());
-                paParams.getGenesetsOfInterest().put(hub_name, sigGeneSet);
+                //TODO: Currently only supports one dataset
+                //TODO:Enable signature dataset with multiple dataset
+                
+                sigGeneSet.getGenes().retainAll(map.getDataset(EnrichmentMap.DATASET1).getDatasetGenes());
+                map.getDataset(EnrichmentMap.DATASET1).getGenesetsOfInterest().getGenesets().put(hub_name, sigGeneSet);
                 
                 // set Visual Style bypass
                 cyNodeAttrs.setAttribute(hub_node.getIdentifier(), "node.shape", paParams.getSignatureHub_nodeShape());
@@ -417,12 +424,12 @@ public class BuildDiseaseSignatureTask implements Task {
                     
                     //create an attribute that stores the genes that are associated with this edge as an attribute list
                     //only create the list if the hashkey 2 genes is not null Otherwise it take too much time to populate the list
-                    if(paParams.getHashkey2gene() != null){
+                    if(map.getHashkey2gene() != null){
                         List<String> gene_list = new ArrayList<String>();
                         HashSet<Integer> genes_hash = geneset_similarities.get(edge_name).getOverlapping_genes();
                         for(Iterator<Integer> k=genes_hash.iterator(); k.hasNext();){
                             Integer current = k.next();
-                            String gene = paParams.getGeneFromHashKey(current);
+                            String gene = map.getGeneFromHashKey(current);
                             if(gene_list != null)
                                 gene_list.add(gene);
                         }

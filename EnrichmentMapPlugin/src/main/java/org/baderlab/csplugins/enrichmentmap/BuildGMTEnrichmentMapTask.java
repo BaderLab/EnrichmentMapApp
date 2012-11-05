@@ -33,25 +33,40 @@ public class BuildGMTEnrichmentMapTask implements Task{
     public void buildEnrichmentMap(){
     //Load in the GMT file
            try{
+        	   		
+        	   		//create a new Enrichment Map
+        	   		EnrichmentMap map = new EnrichmentMap(params);
 
-               //Load the geneset file
-               GMTFileReaderTask gmtFile = new GMTFileReaderTask(params, taskMonitor);
-               gmtFile.run();
+        	   		//data is loaded into a dataset.
+        	   		//Since we are building an enrichment map from only the gmt file default to put info into 
+        	   		//dataset 1.
+        	   		DataSet current_dataset = map.getDataset(EnrichmentMap.DATASET1);
+        	   		
+               //Load the geneset file as a dataset
+        	   		LoadDataSetTask dataset = new LoadDataSetTask(current_dataset,taskMonitor);
+        	   		dataset.run();
+        	   		//GMTFileReaderTask gmtFile = new GMTFileReaderTask(map, taskMonitor);
+               //gmtFile.run();
 
                //in this case all the genesets are of interest
-               params.setGenesetsOfInterest(params.getGenesets());
                params.setMethod(EnrichmentMapParameters.method_generic);
-
-
+               current_dataset.setGenesetsOfInterest(current_dataset.getSetofgenesets());
+              
                //compute the geneset similarities
-                ComputeSimilarityTask similarities = new ComputeSimilarityTask(params,taskMonitor);
+                ComputeSimilarityTask similarities = new ComputeSimilarityTask(map,taskMonitor);
                 similarities.run();
 
                 HashMap<String, GenesetSimilarity> similarity_results = similarities.getGeneset_similarities();
 
-                params.setGenesetSimilarity(similarity_results);
-                HashMap<String, GeneSet> current_sets = params.getGenesets();
-                HashMap<String,EnrichmentResult> currentEnrichments = params.getEnrichmentResults1();
+                map.setGenesetSimilarity(similarity_results);
+                
+                HashMap<String, GeneSet> current_sets = current_dataset.getSetofgenesets().getGenesets();
+                
+                //create an new Set of Enrichment Results
+                SetOfEnrichmentResults setofenrichments = new SetOfEnrichmentResults();
+                
+                HashMap<String,EnrichmentResult> currentEnrichments = setofenrichments.getEnrichments();
+                
                 //need also to put all genesets into enrichment results
                 for(Iterator i = current_sets.keySet().iterator(); i.hasNext();){
                     String geneset1_name = i.next().toString();
@@ -63,14 +78,13 @@ public class BuildGMTEnrichmentMapTask implements Task{
                     currentEnrichments.put(current.getName(), temp_result);
 
                 }
-               params.setEnrichmentResults1(currentEnrichments);
-               params.setEnrichmentResults1OfInterest(currentEnrichments);
+               current_dataset.setEnrichments(setofenrichments);               
 
                //in order to see the gene in the expression viewer we also need a dummy expression file
                //get all the genes
-               HashMap<String, Integer> genes = params.getGenes();
+               HashMap<String, Integer> genes = map.getGenes();
 
-               HashSet datasetGenes= params.getDatasetGenes();
+               HashSet<Integer> datasetGenes= current_dataset.getDatasetGenes();
 
                String[] tokens = new String[3];
                tokens[0] = "Name";
@@ -109,12 +123,12 @@ public class BuildGMTEnrichmentMapTask implements Task{
 
                //make sure that params is set to show there is data
                params.setData(true);
-               params.setExpression(expressionMatrix);
+               current_dataset.setExpressionSets(expressionMatrix);
 
 
                 //build the resulting map
-                VisualizeEnrichmentMapTask map = new VisualizeEnrichmentMapTask(params,taskMonitor);
-                map.run();
+                VisualizeEnrichmentMapTask viz_map = new VisualizeEnrichmentMapTask(map,taskMonitor);
+                viz_map.run();
 
        } catch (OutOfMemoryError e) {
            taskMonitor.setException(e,"Out of Memory. Please increase memory allotement for cytoscape.");

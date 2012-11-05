@@ -111,10 +111,10 @@ public class BuildBulkEnrichmentMapActionListener implements ActionListener{
                                 String[] tokens = rpt_name.split("\\.");
                                 String name = tokens[0];
 
-                                params.setNetworkName(name);
+                                //params.setNetworkName(name);
 
                                 //build an enrichment map
-                                BuildEnrichmentMapTask new_map = new BuildEnrichmentMapTask(params);
+                                BuildEnrichmentMapTask new_map = new BuildEnrichmentMapTask(params,name);
                                 boolean success = TaskManager.executeTask(new_map, config);
 
                                 Cytoscape.getCurrentNetworkView().fitContent();
@@ -223,10 +223,10 @@ public class BuildBulkEnrichmentMapActionListener implements ActionListener{
                     //String name = tokens[0];
 
                     String name = run_name;
-                    params.setNetworkName(name);
+                    //params.setNetworkName(name);
 
                     //build an enrichment map
-                    BuildEnrichmentMapTask new_map = new BuildEnrichmentMapTask(params);
+                    BuildEnrichmentMapTask new_map = new BuildEnrichmentMapTask(params,name);
                     boolean success = TaskManager.executeTask(new_map, config);
 
                     Cytoscape.getCurrentNetworkView().fitContent();

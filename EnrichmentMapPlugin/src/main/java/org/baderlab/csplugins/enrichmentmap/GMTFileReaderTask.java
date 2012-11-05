@@ -59,7 +59,7 @@ import java.util.HashMap;
  */
 public class GMTFileReaderTask implements Task {
 
-    private EnrichmentMapParameters params;
+    private EnrichmentMap map;
 
     //gene set file name
     private String GMTFileName;
@@ -68,7 +68,7 @@ public class GMTFileReaderTask implements Task {
     private HashMap<Integer, String> hashkey2gene;
 
     //gene sets
-    private HashMap<String,GeneSet> genesets ;
+    private SetOfGeneSets setOfgenesets;
 
     // Keep track of progress for monitoring:
     private int maxValue;
@@ -78,30 +78,28 @@ public class GMTFileReaderTask implements Task {
     final static int ENRICHMENT_GMT = 1, SIGNATURE_GMT = 2; 
 
     /**
-     * Class constructor  - also given current task monitor
-     *
-     * @param params
-     * @param taskMonitor
+     * Class Constructor - also given current task monitor
+     * @param DataSet - a gmt file is associated with a dataset
+     * @param taskMonitor 
      */
-    public GMTFileReaderTask(EnrichmentMapParameters params, TaskMonitor taskMonitor) {
-        this(params);
-        this.taskMonitor = taskMonitor;
+    public GMTFileReaderTask(DataSet dataset, TaskMonitor taskMonitor){
+    		this(dataset);
+    		this.taskMonitor = taskMonitor;
     }
-
+    
     /**
-     * Class constructor
-     *
-     * @param params - enrichment map parameters of current map
+     * Class Constructor - also given current task monitor
+     * @param DataSet - a gmt file is associated with a dataset
      */
-    public GMTFileReaderTask(EnrichmentMapParameters params)   {
-        this.params = params;
-
-        this.GMTFileName = params.getGMTFileName();
-        this.genes = params.getGenes();
-        this.hashkey2gene = params.getHashkey2gene();
-
-        this.genesets = params.getGenesets();
-
+    public GMTFileReaderTask(DataSet dataset){
+    	
+    		this.GMTFileName = dataset.getSetofgenesets().getFilename();
+    		this.genes = dataset.getMap().getGenes();
+    		this.hashkey2gene = dataset.getMap().getHashkey2gene();
+   
+    		this.setOfgenesets = dataset.getSetofgenesets();
+    		
+    		this.map = dataset.getMap();
     }
 
     /**
@@ -111,26 +109,26 @@ public class GMTFileReaderTask implements Task {
      * @param taskMonitor
      * @param genesets_file
      */
-    public GMTFileReaderTask(PostAnalysisParameters params, TaskMonitor taskMonitor, int genesets_file) {
+  /*  public GMTFileReaderTask(PostAnalysisParameters params, TaskMonitor taskMonitor, int genesets_file) {
         this(params, genesets_file);
         this.taskMonitor = taskMonitor;
     }
-
+*/
     /**
      * for BuildDiseaseSignatureTask
      *
      * @param params
      * @param genesets_file
      */
-    public GMTFileReaderTask(PostAnalysisParameters params, int genesets_file)   {
+ /*   public GMTFileReaderTask(PostAnalysisParameters params, int genesets_file)   {
         this.params = params;
-        this.genes = params.getGenes();
-        this.hashkey2gene = params.getHashkey2gene();
+        this.genes = params.getEM().getGenes();
+        this.hashkey2gene = params.getEM().getHashkey2gene();
         
         if (genesets_file == ENRICHMENT_GMT) {
             //open GMT file
             this.GMTFileName = params.getGMTFileName();
-            this.genesets = params.getGenesets();
+            this.genesets = params.getEM().getGenesets();
         }
         else if ( genesets_file == SIGNATURE_GMT) {
             //open signature-GMT file
@@ -140,12 +138,14 @@ public class GMTFileReaderTask implements Task {
         else 
             throw new IllegalArgumentException("argument not allowed:" + genesets_file);
     }
-
+*/
     /**
      * parse GMT (gene set) file
      */
     public void parse() {
-
+    		
+    		HashMap<String, GeneSet> genesets = setOfgenesets.getGenesets();
+    	
         //open GMT file
         TextFileReader reader = new TextFileReader(GMTFileName);
         reader.read();
@@ -163,10 +163,6 @@ public class GMTFileReaderTask implements Task {
                 String line = lines[i];
 
                 String[] tokens = line.split("\t");
-
-                //check for EM specific header.
-                if(i==0  && tokens[0].equalsIgnoreCase("Enrichment Map compatible Geneset File"))
-                    params.setEMgmt(true);
 
                 //only go through the lines that have at least a gene set name and description.
                 if(tokens.length >= 2){
@@ -207,10 +203,10 @@ public class GMTFileReaderTask implements Task {
                             if(!tokens[j].equalsIgnoreCase("")){
 
                                 //add the gene to the master list of genes
-                                int value = params.getNumberOfGenes();
+                                int value = map.getNumberOfGenes();
                                 genes.put(tokens[j].toUpperCase(), value);
                                 hashkey2gene.put(value,tokens[j].toUpperCase());
-                                params.setNumberOfGenes(value+1);
+                                map.setNumberOfGenes(value+1);
 
                                 //add the gene to the genelist
                                 gs.addGene(genes.get(tokens[j].toUpperCase()));
@@ -223,7 +219,7 @@ public class GMTFileReaderTask implements Task {
                     genesets.put(Name, gs);
 
                     //add the geneset type to the list of types
-                    params.addGenesetType(gs.getSource());
+                    setOfgenesets.addGenesetType(gs.getSource());
                  }
 
             }

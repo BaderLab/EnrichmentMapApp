@@ -86,8 +86,9 @@ public class ParametersPanel extends JPanel {
      *
      * @param params - enrichment map parameters to update panel according to
      */
-    public void updatePanel(EnrichmentMapParameters params){
-        this.emParams = params;
+    public void updatePanel(EnrichmentMap map){
+        this.emParams = map.getParams();
+        EnrichmentMapParameters params = map.getParams();
 
         this.removeAll();
         this.revalidate();
@@ -95,7 +96,7 @@ public class ParametersPanel extends JPanel {
 
         JPanel main = new JPanel(new BorderLayout(0,3));
 
-        JPanel legends = createLegend(params);
+        JPanel legends = createLegend(params,map);
 //        legends.setBorder(BorderFactory.createEtchedBorder());
         main.add(legends, BorderLayout.NORTH);
         
@@ -219,13 +220,13 @@ public class ParametersPanel extends JPanel {
         if(params.getDefaultSortMethod().equalsIgnoreCase(HeatMapParameters.sort_column))
             columns.setSelected(true);
 
-        hc.addActionListener(new ParametersPanelActionListener(params));
+        hc.addActionListener(new ParametersPanelActionListener(map));
         sorting_methods.add(hc);
-        nosort.addActionListener(new ParametersPanelActionListener(params));
+        nosort.addActionListener(new ParametersPanelActionListener(map));
         sorting_methods.add(nosort);
-        ranks.addActionListener(new ParametersPanelActionListener(params));
+        ranks.addActionListener(new ParametersPanelActionListener(map));
         sorting_methods.add(ranks);
-        columns.addActionListener(new ParametersPanelActionListener(params));
+        columns.addActionListener(new ParametersPanelActionListener(map));
         sorting_methods.add(columns);
 
         sortingPanel.add(new JLabel("Default Sorting Order:"));
@@ -261,11 +262,11 @@ public class ParametersPanel extends JPanel {
         if(params.getDefaultDistanceMetric().equalsIgnoreCase(HeatMapParameters.euclidean))
             euclidean.setSelected(true);
 
-        pearson.addActionListener(new ParametersPanelActionListener(params));
+        pearson.addActionListener(new ParametersPanelActionListener(map));
         distance_metric.add(pearson);
-        cosine.addActionListener(new ParametersPanelActionListener(params));
+        cosine.addActionListener(new ParametersPanelActionListener(map));
         distance_metric.add(cosine);
-        euclidean.addActionListener(new ParametersPanelActionListener(params));
+        euclidean.addActionListener(new ParametersPanelActionListener(map));
         distance_metric.add(euclidean);
 
         dm_Panel.add(new JLabel("Default Distance Metric:"));
@@ -319,9 +320,10 @@ public class ParametersPanel extends JPanel {
            if(params.isData()){
                runInfoText = runInfoText + "<b>Data file:</b>" + shortenPathname(params.getExpressionFileName1()) + "<br>";
            }
-           if(params.isData2() && params.getExpression2() != null){
+           //TODO:fix second dataset viewing.
+          /* if(params.isData2() && params.getEM().getExpression(EnrichmentMap.DATASET2) != null){
                runInfoText = runInfoText + "<b>Data file 2:</b>" + shortenPathname(params.getExpressionFileName2()) + "<br>";
-           }
+           }*/
            if( ! (params.getGseaHtmlReportFileDataset1() == null) ){
                runInfoText = runInfoText + "<b>GSEA Report 1:</b>" + shortenPathname(params.getGseaHtmlReportFileDataset1()) + "<br>";
            }
@@ -339,7 +341,7 @@ public class ParametersPanel extends JPanel {
      * @param params - enrichment map parameters of current map
      * @return panel with legend
      */
-    private JPanel createLegend(EnrichmentMapParameters params){
+    private JPanel createLegend(EnrichmentMapParameters params, EnrichmentMap map){
 
         JPanel legends = new JPanel();
         setPreferredSize(new Dimension(summaryPanelWidth,summaryPanelHeight/2));
@@ -370,7 +372,7 @@ public class ParametersPanel extends JPanel {
             legends.add(nodeColorLabel);
         }
 
-        LegendPanel node_legend = new LegendPanel(EnrichmentMapVisualStyle.max_phenotype1,EnrichmentMapVisualStyle.max_phenotype2, params.getDataset1Phenotype1(), params.getDataset1Phenotype2());
+        LegendPanel node_legend = new LegendPanel(EnrichmentMapVisualStyle.max_phenotype1,EnrichmentMapVisualStyle.max_phenotype2, map.getDataset(EnrichmentMap.DATASET1).getEnrichments().getPhenotype1(), map.getDataset(EnrichmentMap.DATASET1).getEnrichments().getPhenotype2());
         node_legend.setToolTipText("Phenotype * (1-P_value)");
 
         //second row - legend 1
@@ -397,7 +399,7 @@ public class ParametersPanel extends JPanel {
                 legends.add(nodeborderColorLabel);
             }
 
-            LegendPanel node_legend2 = new LegendPanel(EnrichmentMapVisualStyle.max_phenotype1,EnrichmentMapVisualStyle.max_phenotype2, params.getDataset2Phenotype1(),params.getDataset2Phenotype2());
+            LegendPanel node_legend2 = new LegendPanel(EnrichmentMapVisualStyle.max_phenotype1,EnrichmentMapVisualStyle.max_phenotype2, map.getDataset(EnrichmentMap.DATASET2).getEnrichments().getPhenotype1(),map.getDataset(EnrichmentMap.DATASET2).getEnrichments().getPhenotype2());
             node_legend2.setToolTipText("Phenotype * (1-P_value)");
 
             //fourth row - legend 2

@@ -69,9 +69,8 @@ import java.util.regex.Pattern;
  */
 public class RanksFileReaderTask implements Task {
 
-    private EnrichmentMapParameters params;
     private String RankFileName;
-    private int dataset;
+    private DataSet dataset;
     private String ranks_name;
 
     // Keep track of progress for monitoring:
@@ -89,8 +88,7 @@ public class RanksFileReaderTask implements Task {
      * @param rankFileName - file name of ranks file
      * @param dataset - which dataset is this rank file related to (dataset 1 or dataset 2)
      */
-    public RanksFileReaderTask(EnrichmentMapParameters params, String rankFileName, int dataset, boolean loadFromHeatmap) {
-        this.params = params;
+    public RanksFileReaderTask(String rankFileName, DataSet dataset, boolean loadFromHeatmap) {
         RankFileName = rankFileName;
         this.dataset = dataset;
         this.loadFromHeatmap = loadFromHeatmap;
@@ -104,11 +102,40 @@ public class RanksFileReaderTask implements Task {
      * @param dataset - which dataset is this rank file related to (dataset 1 or dataset 2)
      * @param taskMonitor - current task monitor
      */
-    public RanksFileReaderTask(EnrichmentMapParameters params, String rankFileName, int dataset, TaskMonitor taskMonitor, boolean loadFromHeatmap) {
-        this.params = params;
+    public RanksFileReaderTask(String rankFileName, DataSet dataset, TaskMonitor taskMonitor, boolean loadFromHeatmap) {
         RankFileName = rankFileName;
         this.dataset = dataset;
         this.taskMonitor = taskMonitor;
+        this.loadFromHeatmap = loadFromHeatmap;
+    }
+    
+    /**
+     *  Class constructor - curent task monitor specified.
+     *
+     * @param params - enrichment map parameters for current map
+     * @param rankFileName - file name of ranks file
+     * @param dataset - which dataset is this rank file related to (dataset 1 or dataset 2)
+     * @param taskMonitor - current task monitor
+     */
+    public RanksFileReaderTask(String rankFileName, DataSet dataset, String ranks_name, TaskMonitor taskMonitor, boolean loadFromHeatmap) {
+        RankFileName = rankFileName;
+        this.ranks_name = ranks_name;
+        this.dataset = dataset;
+        this.taskMonitor = taskMonitor;
+        this.loadFromHeatmap = loadFromHeatmap;
+    }
+    /**
+     *  Class constructor - curent task monitor specified.
+     *
+     * @param params - enrichment map parameters for current map
+     * @param rankFileName - file name of ranks file
+     * @param dataset - which dataset is this rank file related to (dataset 1 or dataset 2)
+     * @param taskMonitor - current task monitor
+     */
+    public RanksFileReaderTask(String rankFileName, DataSet dataset, String ranks_name, boolean loadFromHeatmap) {
+        RankFileName = rankFileName;
+        this.ranks_name = ranks_name;
+        this.dataset = dataset;
         this.loadFromHeatmap = loadFromHeatmap;
     }
 
@@ -119,8 +146,7 @@ public class RanksFileReaderTask implements Task {
      * @param rankFileName - file name of ranks file
      * @param ranks_name - name of rankings to be used in heat map drop down to refer to it.
      */
-     public RanksFileReaderTask(EnrichmentMapParameters params, String rankFileName, String ranks_name, boolean loadFromHeatmap) {
-        this.params = params;
+     public RanksFileReaderTask( String rankFileName, String ranks_name, boolean loadFromHeatmap) {
         RankFileName = rankFileName;
         this.ranks_name = ranks_name;
          this.loadFromHeatmap = loadFromHeatmap;
@@ -140,13 +166,13 @@ public class RanksFileReaderTask implements Task {
         int currentProgress = 0;
         maxValue = lines.length;
 
-        HashMap genes = params.getGenes();
+        HashMap genes = dataset.getMap().getGenes();
         // we don't know the number of scores in the rank file yet, but it can't be more than the number of lines.
         Double[] score_collector = new Double[lines.length];
 
         boolean gseaDefinedRanks = false;
 
-        HashMap<Integer,Ranking> ranks = new HashMap<Integer,Ranking>();
+        HashMap<Integer,Rank> ranks = new HashMap<Integer,Rank>();
 
         HashMap<Integer,Integer> rank2gene = new HashMap<Integer, Integer>();
 
@@ -220,7 +246,7 @@ public class RanksFileReaderTask implements Task {
                 continue;
             }
 
-             if((tokens.length == 5 ) || (params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA) && !loadFromHeatmap))
+             if((tokens.length == 5 ) || (dataset.getMap().getParams().getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA) && !loadFromHeatmap))
                  gseaDefinedRanks = true;
 
             //add score to array of scores
@@ -229,7 +255,7 @@ public class RanksFileReaderTask implements Task {
             //check to see if the gene is in the genelist
             if(genes.containsKey(name)){
                 genekey = (Integer)genes.get(name);
-                Ranking current_ranking ;
+                Rank current_ranking ;
                  //if their were 5 tokens in the rank file then the assumption
                 //is that this is a GSEA rank file and the order of the scores
                 //is indicative of the rank
@@ -240,12 +266,12 @@ public class RanksFileReaderTask implements Task {
                 // based on the order of the scores.
                 // Making the assumption that all rank files loaded for GSEA results from EM input panel are leading
                 // edge compatible files.
-                 if((tokens.length == 5 ) || (params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA) && !loadFromHeatmap)){
-                   current_ranking = new Ranking(name,score,nScores);
+                 if((tokens.length == 5 ) || (dataset.getMap().getParams().getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA) && !loadFromHeatmap)){
+                   current_ranking = new Rank(name,score,nScores);
                    rank2gene.put(nScores,genekey);
                  }
                  else
-                    current_ranking = new Ranking(name,score);
+                    current_ranking = new Rank(name,score);
                 ranks.put(genekey, current_ranking);
             }
             
@@ -296,12 +322,12 @@ public class RanksFileReaderTask implements Task {
         //only update the ranks if we haven't already defined them using order of scores in file
         if(!gseaDefinedRanks){
             for(Iterator k = ranks.keySet().iterator(); k.hasNext();){
-                Ranking current_ranking = ranks.get(k.next());
+                Rank current_ranking = ranks.get(k.next());
                 current_ranking.setRank(score2ranks.get(current_ranking.getScore()));
             }
         }
         //check to see if some of the dataset genes are not in this rank file
-        HashSet<Integer> current_genes = params.getDatasetGenes();
+        HashSet<Integer> current_genes = dataset.getDatasetGenes();
 
         Set<Integer> current_ranks = ranks.keySet();
 
@@ -314,19 +340,15 @@ public class RanksFileReaderTask implements Task {
             //JOptionPane.showMessageDialog(Cytoscape.getDesktop(),"Ranks for some of the genes/proteins listed in the expression file are missing. \n These genes/proteins will be excluded from ranked listing in the heat map.");
 
         }
-        if(dataset == 1){
-            params.setDataset1Rankings(ranks);
-                if(gseaDefinedRanks)
-                    params.setRank2geneDataset1(rank2gene);
-        }
-        else if(dataset == 2){
-            params.setDataset2Rankings(ranks);
-                 if(gseaDefinedRanks)
-                    params.setRank2geneDataset2(rank2gene);
-        }
-        else{
-            params.addRanks(ranks_name, ranks);
-        }
+        
+        
+        //create a new Ranking
+        Ranking new_ranking = new Ranking();
+        new_ranking.setRanking(ranks);
+        new_ranking.setRank2gene(rank2gene);
+        
+        //add the Ranks to the expression file ranking
+        dataset.getExpressionSets().addRanks(ranks_name, new_ranking);
 
     }
 

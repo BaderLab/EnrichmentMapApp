@@ -54,8 +54,6 @@ package org.baderlab.csplugins.enrichmentmap;
  */
 public class GSEAResult extends EnrichmentResult{
 
-    //gene set name
-    private String Name;
     //gene set size
     private int gsSize;
     //enrichment score
@@ -73,8 +71,6 @@ public class GSEAResult extends EnrichmentResult{
     //translate the rank at max to the corresponding score at the max
     private double scoreAtMax;
 
-    private String Source = "none";
-
     /**
      * Class Constructor
      *
@@ -87,7 +83,7 @@ public class GSEAResult extends EnrichmentResult{
      * @param fwerqvalue
      */
     public GSEAResult(String name, int size, double ES, double NES, double pvalue, double fdrqvalue, double fwerqvalue, int rankAtMax, double scoreAtMax) {
-        Name = name;
+        this.name = name;
         this.gsSize = size;
         this.ES = ES;
         this.NES = NES;
@@ -112,7 +108,7 @@ public class GSEAResult extends EnrichmentResult{
             if(tokens.length != 10)
                 return;
 
-        this.Name = tokens[1];
+        this.name = tokens[1];
         this.gsSize = Integer.parseInt(tokens[2]);
         this.ES = Double.parseDouble(tokens[3]);
         this.NES = Double.parseDouble(tokens[4]);
@@ -131,31 +127,20 @@ public class GSEAResult extends EnrichmentResult{
         setSource();
     }
 
-    /**
-     * Is this a gene set of interest, does its enrichment score pass the p-value threshold and fdr threshold
-     *
-     * @param pvalue - pvalue of current gene set enrichment
-     * @param fdrqvalue  - fdr q-value of current gene set enrichment
-     * @return whether these p-value and fdr q-value for the specified gene set enrichment fall into our gene sets of interest
-     * category (i.e. do these values pass the specified thresholds)
-     */
-    public boolean geneSetOfInterest(double pvalue, double fdrqvalue){
-        if((this.pvalue <= pvalue) && (this.fdrqvalue <= fdrqvalue)){
-            return true;
-       }else{
-            return false;
-        }
-    }
-
+  //Each Enrichment Result must implement a method to determine
+  	//if the current enrichment result is of interest to the analysis or not
+  	//returns true if the enrichment passes both pvalue and qvalue cut-offs 
+  	//returns false if it doesn't pass one or both the pvalue or qvalue cut-offs
+  	public boolean geneSetOfInterest(double pvalue, double fdrqvalue){
+  		 if((this.pvalue <= pvalue) && (this.fdrqvalue <= fdrqvalue)){
+  	            return true;
+  	       }else{
+  	            return false;
+  	        }
+  	}
+    
+    
     //Getters and Settters
-
-    public String getName() {
-        return Name;
-    }
-
-    public void setName(String name) {
-        Name = name;
-    }
 
     public int getGsSize() {
         return gsSize;
@@ -181,13 +166,6 @@ public class GSEAResult extends EnrichmentResult{
         this.NES = NES;
     }
 
-    public double getPvalue() {
-        return pvalue;
-    }
-
-    public void setPvalue(double pvalue) {
-        this.pvalue = pvalue;
-    }
 
     public double getFdrqvalue() {
         return fdrqvalue;
@@ -223,23 +201,8 @@ public class GSEAResult extends EnrichmentResult{
 
     public String toString(){
 
-        return Name + "\t" + gsSize + "\t" + ES + "\t" + NES +"\t"+pvalue + "\t" + fdrqvalue + "\t" + fwerqvalue + "\t"
+        return name + "\t" + gsSize + "\t" + ES + "\t" + NES +"\t"+pvalue + "\t" + fdrqvalue + "\t" + fwerqvalue + "\t"
                 + rankAtMax + "\t" + scoreAtMax ;
     }
-
-    public String getSource() {
-        return Source;
-    }
-
-    public void setSource(String source) {
-        Source = source;
-    }
-
-    private void setSource(){
-        //if we can tokenize the name by "%" then set the source to the second item in the name
-        //if you can split the name using '|', take the second token to be the gene set type
-        String[] name_tokens = Name.split("%");
-        if(name_tokens.length > 1)
-            this.Source = name_tokens[1];
-    }
+    
 }

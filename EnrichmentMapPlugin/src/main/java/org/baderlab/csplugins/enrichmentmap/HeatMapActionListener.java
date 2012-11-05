@@ -74,6 +74,7 @@ public class HeatMapActionListener implements ActionListener {
 
     //Need to add the enrichment map parameters here in order to add an additional ranks to the EM
     private EnrichmentMapParameters params;
+    private EnrichmentMap map;
 
     /**
      * Class constructor
@@ -84,12 +85,13 @@ public class HeatMapActionListener implements ActionListener {
      * @param hmParams
      * @param params
      */
-    public HeatMapActionListener(HeatMapPanel edgeOverlapPanel, HeatMapPanel nodeOverlapPanel,JComboBox box, HeatMapParameters hmParams, EnrichmentMapParameters params) {
+    public HeatMapActionListener(HeatMapPanel edgeOverlapPanel, HeatMapPanel nodeOverlapPanel,JComboBox box, HeatMapParameters hmParams, EnrichmentMap map) {
         this.edgeOverlapPanel = edgeOverlapPanel;
         this.nodeOverlapPanel = nodeOverlapPanel;
         this.hmParams = hmParams;
         this.box= box;
-        this.params = params;
+        this.params = map.getParams();
+        this.map = map;
     }
 
     /**
@@ -121,7 +123,7 @@ public class HeatMapActionListener implements ActionListener {
         //Add a ranking file
         else if(select.equalsIgnoreCase("Add Rankings ... ")){
 
-           HashMap<String, HashMap<Integer, Ranking>> all_ranks = params.getRanks();
+           HashMap<String, Ranking> all_ranks = map.getAllRanks();
 
            CyFileFilter filter = new CyFileFilter();
 
@@ -150,7 +152,9 @@ public class HeatMapActionListener implements ActionListener {
                 }
 
                 //load the new ranks file
-                RanksFileReaderTask ranking1 = new RanksFileReaderTask(params,file.getAbsolutePath(),ranks_name,true);
+                //the new rank file is not associated with a dataset.
+                //simply add it to Dataset 1
+                RanksFileReaderTask ranking1 = new RanksFileReaderTask(file.getAbsolutePath(),map.getDataset(EnrichmentMap.DATASET1),ranks_name,true);
                 ranking1.run();
 
                 //add an index to the ascending array for the new rank file.
@@ -183,7 +187,7 @@ public class HeatMapActionListener implements ActionListener {
           }
        }
        else{
-           HashMap<String, HashMap<Integer, Ranking>> ranks = params.getRanks();
+           HashMap<String, Ranking> ranks = map.getAllRanks();
 
            //iterate through all the rank files.
            //the order should always be the same get a counter to find which index to
@@ -191,10 +195,10 @@ public class HeatMapActionListener implements ActionListener {
            int i = 0;
            int columns = 0;
            //calculate the number of indexes used for the column names
-           if(params.isData2() && params.getExpression2() != null)
-             columns = params.getExpression().getColumnNames().length + params.getExpression2().getColumnNames().length - 2;
+           if(params.isData2() && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null)
+             columns = map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getColumnNames().length + map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getColumnNames().length - 2;
            else
-            columns = params.getExpression().getColumnNames().length;
+            columns = map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getColumnNames().length;
 
            for(Iterator j = ranks.keySet().iterator(); j.hasNext(); ){
                 String ranks_name = j.next().toString();
