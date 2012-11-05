@@ -47,7 +47,7 @@ import java.io.Reader;
 
 import junit.framework.TestCase;
 
-import org.baderlab.csplugins.enrichmentmap.BuildDiseaseSignatureTask;
+import org.baderlab.csplugins.enrichmentmap.task.BuildDiseaseSignatureTask;
 
 import cytoscape.data.readers.TextFileReader;
 

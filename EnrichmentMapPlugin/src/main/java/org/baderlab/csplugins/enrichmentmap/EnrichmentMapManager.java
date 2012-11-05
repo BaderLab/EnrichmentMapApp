@@ -52,6 +52,12 @@ import cytoscape.view.cytopanels.CytoPanelState;
 
 import javax.swing.*;
 
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.view.EnrichmentMapInputPanel;
+import org.baderlab.csplugins.enrichmentmap.view.HeatMapPanel;
+import org.baderlab.csplugins.enrichmentmap.view.ParametersPanel;
+import org.baderlab.csplugins.enrichmentmap.view.PostAnalysisInputPanel;
+
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.util.HashMap;

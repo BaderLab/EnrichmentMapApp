@@ -54,6 +54,10 @@ import cytoscape.visual.VisualStyle;
 
 import javax.swing.*;
 
+import org.baderlab.csplugins.enrichmentmap.actions.LoadEnrichmentsPanelAction;
+import org.baderlab.csplugins.enrichmentmap.actions.LoadPostAnalysisPanelAction;
+import org.baderlab.csplugins.enrichmentmap.actions.ShowAboutPanelAction;
+
 import java.io.File;
 import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
@@ -64,11 +68,11 @@ import java.util.*;
 
 
 public class Enrichment_Map_Plugin extends CytoscapePlugin {
-    static Properties build_props = new Properties();
-    static Properties plugin_props = new Properties();
-    static String buildId ;
-    static String pluginUrl;
-    static String userManualUrl;
+    public static Properties build_props = new Properties();
+    public static Properties plugin_props = new Properties();
+    public static String buildId ;
+    public static String pluginUrl;
+    public static String userManualUrl;
 
     private static boolean overrideHeatmapRevalidation = false;
 //    static JCheckBoxMenuItem overrideHeatmapRevalidationItem;

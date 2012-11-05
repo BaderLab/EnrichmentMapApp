@@ -2,11 +2,13 @@ package org.baderlab.csplugins.enrichmentmap;
 
 import junit.framework.TestCase;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
-import org.baderlab.csplugins.enrichmentmap.EnrichmentResult;
-import org.baderlab.csplugins.enrichmentmap.EnrichmentResultFileReaderTask;
-import org.baderlab.csplugins.enrichmentmap.GMTFileReaderTask;
-import org.baderlab.csplugins.enrichmentmap.ExpressionFileReaderTask;
-import org.baderlab.csplugins.enrichmentmap.GenericResult;
+import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
+import org.baderlab.csplugins.enrichmentmap.model.GenericResult;
+import org.baderlab.csplugins.enrichmentmap.parsers.EnrichmentResultFileReaderTask;
+import org.baderlab.csplugins.enrichmentmap.parsers.ExpressionFileReaderTask;
+import org.baderlab.csplugins.enrichmentmap.parsers.GMTFileReaderTask;
 
 import java.util.HashMap;
 

@@ -47,6 +47,8 @@ import java.util.HashMap;
 
 import javax.swing.DefaultListModel;
 
+import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
+
 /**
  * @author revilo
  * <p>
@@ -83,7 +85,7 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
      * PERCENT (0) : "Contains at least X percent"
      * NUMBER (1) : "Contains at least X genes"
      */
-      final static String[] filterItems = {"Overlap X percent of EM gs","Overlap has at least X genes","Overlap X percent of Signature gs" };
+      final public static String[] filterItems = {"Overlap X percent of EM gs","Overlap has at least X genes","Overlap X percent of Signature gs" };
     /**
      * Strings for Signature-Hub cut-off metric:
      * HYPERGEOM   (0) : "Hypergeometric Test"
@@ -92,7 +94,7 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
      * OVERLAP     (3) : "Overlap Coefficient"
      * DIR_OVERLAP (4) : "Directed Overlap"
      */
-    final static String[] sigCutoffItems = {"Hypergeometric Test", 
+    final public static String[] sigCutoffItems = {"Hypergeometric Test", 
                                             "Number of common genes",
                                             "Jaccard Coefficient", 
                                             "Overlap Coefficient",

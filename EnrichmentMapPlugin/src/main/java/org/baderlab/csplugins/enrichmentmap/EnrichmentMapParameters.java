@@ -48,6 +48,15 @@ import giny.model.Edge;
 import java.util.*;
 import java.io.File;
 
+import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.model.GSEAResult;
+import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
+import org.baderlab.csplugins.enrichmentmap.model.GenericResult;
+import org.baderlab.csplugins.enrichmentmap.model.Rank;
+import org.baderlab.csplugins.enrichmentmap.view.ParametersPanel;
+import org.baderlab.csplugins.enrichmentmap.view.SliderBarPanel;
+
 import cytoscape.CyNetwork;
 import cytoscape.Cytoscape;
 import cytoscape.CytoscapeInit;
