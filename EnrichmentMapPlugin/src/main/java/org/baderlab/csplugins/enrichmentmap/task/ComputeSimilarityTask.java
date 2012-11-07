@@ -107,7 +107,14 @@ public class ComputeSimilarityTask implements Task {
     
     public boolean computeGenesetSimilarities(){
         try{
-            HashMap genesetsOfInterest = map.getAllGenesetsOfInterest();
+            HashMap<String, GeneSet> genesetsOfInterest = map.getAllGenesetsOfInterest();
+            
+            //if there are no gene sets of interest check to see if there are any genesets to use
+            if(genesetsOfInterest == null || genesetsOfInterest.isEmpty())
+            		genesetsOfInterest = map.getAllGenesets();
+            if((genesetsOfInterest == null || genesetsOfInterest.isEmpty()))
+            		this.logger.error("There are no genesets to compute similarity between");
+            
             HashMap genesetsInnerLoop;
             String edgeType = "pp";
             
@@ -232,9 +239,9 @@ public class ComputeSimilarityTask implements Task {
                          GenesetSimilarity comparison = new GenesetSimilarity(geneset1_name,geneset2_name, coeffecient, map.getParams().getEnrichment_edge_type() ,(HashSet<Integer>)intersection,enrichment_set);
 
                          if (type == SIGNATURE) // as we iterate over the signature nodes in the inner loop, we have to switch the nodes in the edge name
-                             geneset_similarities.put(similarity_key2,comparison);
+                             this.geneset_similarities.put(similarity_key2,comparison);
                          else
-                             geneset_similarities.put(similarity_key1,comparison);
+                             this.geneset_similarities.put(similarity_key1,comparison);
 
 
                      }
