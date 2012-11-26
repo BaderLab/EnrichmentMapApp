@@ -206,7 +206,7 @@ public class BuildDiseaseSignatureTask implements Task {
                 sigGenesInUniverse.retainAll(geneUniverse);
 //                sigGeneSet.setGenes(sigGenes);
                 
-                EnrichmentMapManager.getInstance().getMap(current_network.getIdentifier()).getParams().getSignatureGenesets().put(hub_name, sigGeneSet);
+                EnrichmentMapManager.getInstance().getMap(current_network.getIdentifier()).getSignatureGenesets().put(hub_name, sigGeneSet);
                 
                 // iterate over Enrichment Genesets
                 for (Iterator<String> j = EnrichmentGenesets.keySet().iterator(); j.hasNext();) {

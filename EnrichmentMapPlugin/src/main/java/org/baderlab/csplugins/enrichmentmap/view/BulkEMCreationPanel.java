@@ -67,7 +67,9 @@ public class BulkEMCreationPanel extends JPanel{
     NumberFormat numFormat;
 
     private int defaultColumns = 15;
-
+    
+    private boolean similarityCutOffChanged = false;
+    
     public BulkEMCreationPanel() {
           params = new EnrichmentMapParameters();
 
@@ -479,7 +481,7 @@ public class BulkEMCreationPanel extends JPanel{
              coeffecientTextField.setToolTipText(coeffecientCutOffTip);
 //          coeffecientTextField.setText(Double.toString(params.getSimilarityCutOff()));
              coeffecientTextField.setValue(params.getSimilarityCutOff());
-             params.setSimilarityCutOffChanged(false); //reset for new Panel after .setValue(...) wrongly changed it to "true"
+             similarityCutOffChanged = false; //reset for new Panel after .setValue(...) wrongly changed it to "true"
 
              JPanel coeffecientCutOffPanel = new JPanel();
              coeffecientCutOffPanel.setLayout(new BorderLayout());
@@ -532,7 +534,7 @@ public class BulkEMCreationPanel extends JPanel{
                 Number value = (Number) coeffecientTextField.getValue();
                 if ((value != null) && (value.doubleValue() >= 0.0) && (value.doubleValue() <= 1.0)) {
                     params.setSimilarityCutOff(value.doubleValue());
-                    params.setSimilarityCutOffChanged(true);
+                    similarityCutOffChanged = true;
                 } else {
                     source.setValue(params.getSimilarityCutOff());
                     message += "The Overlap/Jaccard Coeffecient cutoff must be between 0 and 1.";
@@ -789,29 +791,29 @@ public class BulkEMCreationPanel extends JPanel{
     private void selectJaccardOrOverlapActionPerformed(java.awt.event.ActionEvent evt) {
         if(evt.getActionCommand().equalsIgnoreCase("jaccard")){
             params.setSimilarityMetric(EnrichmentMapParameters.SM_JACCARD);
-            if ( ! params.isSimilarityCutOffChanged() ) {
+            if ( ! similarityCutOffChanged ) {
                 params.setSimilarityCutOff( params.getDefaultJaccardCutOff() );
 //                coeffecientTextField.setText( Double.toString(params.getSimilarityCutOff()) );
                 coeffecientTextField.setValue( params.getSimilarityCutOff() );
-                params.setSimilarityCutOffChanged(false); //reset after .setValue(...) wrongly changed it to "true"
+                similarityCutOffChanged = false; //reset after .setValue(...) wrongly changed it to "true"
             }
         }
      else if(evt.getActionCommand().equalsIgnoreCase("overlap")){
             params.setSimilarityMetric(EnrichmentMapParameters.SM_OVERLAP);
-            if ( ! params.isSimilarityCutOffChanged() ) {
+            if ( ! similarityCutOffChanged  ) {
                 params.setSimilarityCutOff(params.getDefaultOverlapCutOff());
 //                coeffecientTextField.setText( Double.toString(params.getSimilarityCutOff()) );
                 coeffecientTextField.setValue( params.getSimilarityCutOff() );
-                params.setSimilarityCutOffChanged(false); //reset after .setValue(...) wrongly changed it to "true"
+                similarityCutOffChanged = false; //reset after .setValue(...) wrongly changed it to "true"
           }
         }
         else if(evt.getActionCommand().equalsIgnoreCase("combined")){
             params.setSimilarityMetric(EnrichmentMapParameters.SM_COMBINED);
-            if ( ! params.isSimilarityCutOffChanged() ) {
+            if ( ! similarityCutOffChanged ) {
                 params.setSimilarityCutOff((params.getDefaultOverlapCutOff() * params.getCombinedConstant()) + ((1-params.getCombinedConstant()) * params.getDefaultJaccardCutOff()) );
 //                coeffecientTextField.setText( Double.toString(params.getSimilarityCutOff()) );
                 coeffecientTextField.setValue( params.getSimilarityCutOff() );
-                params.setSimilarityCutOffChanged(false); //reset after .setValue(...) wrongly changed it to "true"
+                similarityCutOffChanged = false; //reset after .setValue(...) wrongly changed it to "true"
           }
         }
      else{
@@ -938,7 +940,7 @@ public class BulkEMCreationPanel extends JPanel{
             qvalueTextField.setValue(params.getQvalue());
             coeffecientTextField.setValue(params.getSimilarityCutOff());
             //reset for cleared Panel after .setValue(...) wrongly changed it to "true"
-            params.setSimilarityCutOffChanged(false);
+            similarityCutOffChanged = false;
 
              if(params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_JACCARD)){
             jaccard.setSelected(true);

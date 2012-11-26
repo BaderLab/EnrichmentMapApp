@@ -156,7 +156,7 @@ public class PostAnalysisInputPanel extends JPanel {
         }
         
         // create instance of PostAnalysisParameters an initialize with EnrichmentMapParameters
-        paParams = emParams.getPaParams();
+        paParams = EnrichmentMapManager.getInstance().getMap(Cytoscape.getCurrentNetwork().getIdentifier()).getPaParams();
 
         //create the three main panels: scope, advanced options, and bottom
         JPanel AnalysisTypePanel = createAnalysisTypePanel();
@@ -1085,8 +1085,8 @@ public class PostAnalysisInputPanel extends JPanel {
      * @param current_params
      */
     public void updateContents(EnrichmentMapParameters current_params){
-        this.paParams = current_params.getPaParams();
-        
+        this.paParams = EnrichmentMapManager.getInstance().getMap(Cytoscape.getCurrentNetwork().getIdentifier()).getPaParams();
+       
         // Gene-Set Files:
         GMTFileNameTextField.setText(this.paParams.getGMTFileName());
         GMTFileNameTextField.setValue(this.paParams.getGMTFileName());

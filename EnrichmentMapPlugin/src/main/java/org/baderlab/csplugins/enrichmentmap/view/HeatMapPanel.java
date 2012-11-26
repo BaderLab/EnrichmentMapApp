@@ -1757,14 +1757,14 @@ public class HeatMapPanel extends JPanel {
         if(displayLeadingEdge && (map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().haveRanks() || map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().haveRanks())  
         		&& (hmParams.getSort() == Sort.RANK || params.getDefaultSortMethod().equalsIgnoreCase(hmParams.getSort().toString()))){
             //get the rank under (or over) which everything should be higlighted
-            if(hmParams.getRankFileIndex().equalsIgnoreCase("Dataset 1 Ranking")){
+            if(hmParams.getRankFileIndex().equalsIgnoreCase("Dataset 1 Ranking") || hmParams.getRankFileIndex().equalsIgnoreCase("GSEARanking")){
                 topRank = leadingEdgeRankAtMax1;
                 if(leadingEdgeScoreAtMax1 > 0)
                     //because of the GSEA ranks are off slightly buffer the cutoff depending on whether the geneset
                     //is up or down regulated in order to get all genes in leading edge
                     topRank = topRank + 3;
             }
-            else if(hmParams.getRankFileIndex().equalsIgnoreCase("Dataset 2 Ranking")){
+            else if(hmParams.getRankFileIndex().equalsIgnoreCase("Dataset 2 Ranking") || hmParams.getRankFileIndex().equalsIgnoreCase("GSEARanking")){
                 topRank = leadingEdgeRankAtMax2;
                 if(leadingEdgeScoreAtMax2 > 0)
                     //because of the GSEA ranks are off slightly buffer the cutoff depending on whether the geneset

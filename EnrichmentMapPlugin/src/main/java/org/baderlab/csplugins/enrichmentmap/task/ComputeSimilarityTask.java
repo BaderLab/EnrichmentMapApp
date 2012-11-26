@@ -124,7 +124,7 @@ public class ComputeSimilarityTask implements Task {
             }
             else if (type == SIGNATURE ){
             		//TODO refactor signature sets.
-                genesetsInnerLoop = map.getParams().getSignatureGenesets();
+                genesetsInnerLoop = map.getSignatureGenesets();
                 edgeType = PostAnalysisParameters.SIGNATURE_INTERACTION_TYPE;
             }
             else {

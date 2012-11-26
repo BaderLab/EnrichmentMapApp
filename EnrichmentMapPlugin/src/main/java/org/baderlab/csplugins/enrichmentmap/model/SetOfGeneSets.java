@@ -96,20 +96,36 @@ public class SetOfGeneSets {
 			this.filename = filename;
 		}
 		
-		  public void setGenesetTypes(HashSet<String> types){
-		        this.GenesetTypes = types;
-		    }
+		public void setGenesetTypes(HashSet<String> types){
+			this.GenesetTypes = types;
+		}
 
-		    public HashSet<String> getGenesetTypes(){
-		       return this.GenesetTypes;
-		    }
+		public HashSet<String> getGenesetTypes(){
+			return this.GenesetTypes;
+		}
 
-		    public void addGenesetType(String type){
-		        if(!GenesetTypes.contains(type)){
-		            GenesetTypes.add(type);
+		public void addGenesetType(String type){
+			if(!GenesetTypes.contains(type)){
+				GenesetTypes.add(type);
 
-		        }
 		    }
+		}
+		
+		public GeneSet getGeneSetByName(String name){
+			if(genesets != null){
+				if(genesets.containsKey(name))
+					return genesets.get(name);
+			}
+			return null;
+		}
+		
+		public String toString(String ds){
+			StringBuffer paramVariables = new StringBuffer();
+			paramVariables.append(ds + "%Name\t" + name + "\n");
+			paramVariables.append(ds + "%GMTFilename\t" +filename + "\n");
+			paramVariables.append(ds + "%GenesetTypes\t" +GenesetTypes.toString() + "\n");
+			return paramVariables.toString();
+		}
 
 
 }

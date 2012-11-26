@@ -25,8 +25,11 @@ public class EnrichmentResult {
 	// * geneset is encoded in the geneset name.  Track that source for displaying on the 
 	// * network
 	String source = "none";
-	
-	
+		
+	public EnrichmentResult() {
+		
+	}
+
 	//Method to print out into the session file for future loads.
 	//tab delimited string with all the variables of the enrichment.
 	public String toString(){
@@ -49,6 +52,7 @@ public class EnrichmentResult {
 
     public void setName(String name) {
         this.name = name;
+        this.setSource();
     }
     public double getPvalue() {
         return pvalue;

@@ -143,7 +143,11 @@ public class EnrichmentMapInputPanel extends JPanel {
     private static String gctTip = "File with gene expression values.\n" + "Format: gene <tab> description <tab> expression value <tab> ...";
     private static String datasetTip = "File specifying enrichment results.\n";
     private static String rankTip = "File specifying ranked genes.\n" + "Format: gene <tab> score or statistic";
-
+    
+    private boolean similarityCutOffChanged = false;
+    private boolean LoadedFromRpt_dataset1 = false;
+    private boolean LoadedFromRpt_dataset2 = false;
+    
     /**
      * Constructor
      */
@@ -915,7 +919,7 @@ public class EnrichmentMapInputPanel extends JPanel {
           coeffecientTextField.setToolTipText(coeffecientCutOffTip);
 //          coeffecientTextField.setText(Double.toString(params.getSimilarityCutOff()));
           coeffecientTextField.setValue(params.getSimilarityCutOff());
-          params.setSimilarityCutOffChanged(false); //reset for new Panel after .setValue(...) wrongly changed it to "true"
+          similarityCutOffChanged = false; //reset for new Panel after .setValue(...) wrongly changed it to "true"
 
           //Add a box to specify the constant used in created the combined value
            JLabel combinedCutoff = new JLabel("Combined Constant");
@@ -983,7 +987,7 @@ public class EnrichmentMapInputPanel extends JPanel {
                 Number value = (Number) coeffecientTextField.getValue();
                 if ((value != null) && (value.doubleValue() >= 0.0) && (value.doubleValue() <= 1.0)) {
                     params.setSimilarityCutOff(value.doubleValue());
-                    params.setSimilarityCutOffChanged(true);
+                    similarityCutOffChanged = true;
                 } else {
                     source.setValue(params.getSimilarityCutOff());
                     message += "The Overlap/Jaccard Coefficient cutoff must be between 0 and 1.";
@@ -995,7 +999,7 @@ public class EnrichmentMapInputPanel extends JPanel {
                     params.setCombinedConstant(value.doubleValue());
 
                     //if the similarity cutoff is equal to the default then updated it to reflect what it should be given the value of k
-                    if(!params.isSimilarityCutOffChanged() && params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_COMBINED))
+                    if(!similarityCutOffChanged && params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_COMBINED))
                         params.setSimilarityCutOff( (params.getDefaultOverlapCutOff() * value.doubleValue()) + ((1-value.doubleValue()) * params.getDefaultJaccardCutOff()) );
 
                     //params.setCombinedConstantCutOffChanged(true);
@@ -1183,9 +1187,9 @@ public class EnrichmentMapInputPanel extends JPanel {
    private void populateFieldsFromRpt(File rptFile, boolean dataset1){
 
        if(dataset1)
-           params.setLoadedFromRpt_dataset1(true);
+    	   		LoadedFromRpt_dataset1 = true;
        else
-           params.setLoadedFromRpt_dataset2(true);
+    	   		LoadedFromRpt_dataset2 = true;
 
         TextFileReader reader = new TextFileReader(rptFile.getAbsolutePath());
         reader.read();
@@ -1646,29 +1650,29 @@ public class EnrichmentMapInputPanel extends JPanel {
     private void selectJaccardOrOverlapActionPerformed(java.awt.event.ActionEvent evt) {
         if(evt.getActionCommand().equalsIgnoreCase("jaccard")){
             params.setSimilarityMetric(EnrichmentMapParameters.SM_JACCARD);
-            if ( ! params.isSimilarityCutOffChanged() ) {
+            if ( ! similarityCutOffChanged ) {
                 params.setSimilarityCutOff( params.getDefaultJaccardCutOff() );
 //                coeffecientTextField.setText( Double.toString(params.getSimilarityCutOff()) );
                 coeffecientTextField.setValue( params.getSimilarityCutOff() );
-                params.setSimilarityCutOffChanged(false); //reset after .setValue(...) wrongly changed it to "true"
+                similarityCutOffChanged = false;; //reset after .setValue(...) wrongly changed it to "true"
             }
         }
      else if(evt.getActionCommand().equalsIgnoreCase("overlap")){
             params.setSimilarityMetric(EnrichmentMapParameters.SM_OVERLAP);
-            if ( ! params.isSimilarityCutOffChanged() ) {
+            if ( ! similarityCutOffChanged ) {
                 params.setSimilarityCutOff(params.getDefaultOverlapCutOff());
 //                coeffecientTextField.setText( Double.toString(params.getSimilarityCutOff()) );
                 coeffecientTextField.setValue( params.getSimilarityCutOff() );
-                params.setSimilarityCutOffChanged(false); //reset after .setValue(...) wrongly changed it to "true"
+                similarityCutOffChanged = false;; //reset after .setValue(...) wrongly changed it to "true"
           }
         }
         else if(evt.getActionCommand().equalsIgnoreCase("combined")){
             params.setSimilarityMetric(EnrichmentMapParameters.SM_COMBINED);
-            if ( ! params.isSimilarityCutOffChanged() ) {
+            if ( ! similarityCutOffChanged ) {
                 params.setSimilarityCutOff((params.getDefaultOverlapCutOff() * params.getCombinedConstant()) + ((1-params.getCombinedConstant()) * params.getDefaultJaccardCutOff()) );
 //                coeffecientTextField.setText( Double.toString(params.getSimilarityCutOff()) );
                 coeffecientTextField.setValue( params.getSimilarityCutOff() );
-                params.setSimilarityCutOffChanged(false); //reset after .setValue(...) wrongly changed it to "true"
+                similarityCutOffChanged = false;; //reset after .setValue(...) wrongly changed it to "true"
           }
         }
      else{
@@ -1933,7 +1937,7 @@ public class EnrichmentMapInputPanel extends JPanel {
 
          //For GSEA input, Check to see if there is already a rank file defined and if it was from the rpt
          if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA) &&
-                 params.isLoadedFromRpt_dataset1() && !Dataset1RankFileTextField.getText().equalsIgnoreCase(""))
+        		 	LoadedFromRpt_dataset1 && !Dataset1RankFileTextField.getText().equalsIgnoreCase(""))
              JOptionPane.showMessageDialog(Cytoscape.getDesktop(),"GSEA defined rank file is in a specific order and is used to calculate the leading edge.  \n If you change this file the leading edges will be calculated incorrectly.","Trying to change pre-defined GSEA rank file",JOptionPane.WARNING_MESSAGE);
 
 //         Create FileFilter
@@ -1967,7 +1971,7 @@ public class EnrichmentMapInputPanel extends JPanel {
 
         //For GSEA input, Check to see if there is already a rank file defined and if it was from the rpt
          if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA) &&
-                 params.isLoadedFromRpt_dataset2() && !Dataset2RankFileTextField.getText().equalsIgnoreCase(""))
+        		 	LoadedFromRpt_dataset2 && !Dataset2RankFileTextField.getText().equalsIgnoreCase(""))
              JOptionPane.showMessageDialog(Cytoscape.getDesktop(),"GSEA defined rank file is in a specific order and is used to calculate the leading edge.  \n If you change this file the leading edges will be calculated incorrectly.","Trying to change pre-defined GSEA rank file",JOptionPane.WARNING_MESSAGE);
 
 
@@ -2040,7 +2044,7 @@ public class EnrichmentMapInputPanel extends JPanel {
         qvalueTextField.setValue(params.getQvalue());
         coeffecientTextField.setValue(params.getSimilarityCutOff());
         //reset for cleared Panel after .setValue(...) wrongly changed it to "true"
-        params.setSimilarityCutOffChanged(false);
+        similarityCutOffChanged = false;
 
         if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)){
             gsea.setSelected(true);

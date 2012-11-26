@@ -97,13 +97,13 @@ public class SetOfEnrichmentResults {
 		this.filename2 = copy.getFilename2();
 	}
 	
-	public String toString(){
+	public String toString(String ds){
 		StringBuffer paramVariables = new StringBuffer();
-		paramVariables.append(name + "%Name\t" + name + "\n");
-		paramVariables.append(name + "%Filename1\t" + filename1 + "\n");
-		paramVariables.append(name + "%Filename2\t" + filename2 + "\n");
-		paramVariables.append(name + "%Phenotype1\t" + phenotype1  + "\n");
-        paramVariables.append(name + "%Phenotype2\t" + phenotype2   + "\n");
+		paramVariables.append(ds + "%Name\t" + name + "\n");
+		paramVariables.append(ds + "%ENRFilename1\t" + filename1 + "\n");
+		paramVariables.append(ds + "%ENRFilename2\t" + filename2 + "\n");
+		paramVariables.append(ds + "%Phenotype1\t" + phenotype1  + "\n");
+        paramVariables.append(ds + "%Phenotype2\t" + phenotype2   + "\n");
         
         return paramVariables.toString();
         

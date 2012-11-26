@@ -78,6 +78,8 @@ public class GeneExpressionMatrix {
 
     //phenotype designation of each column
     private String[] phenotypes;
+    private String phenotype1;
+    private String phenotype2;
     
     //Set of Rankings
     //Set of Rankings - (HashMap of Hashmaps)
@@ -318,8 +320,24 @@ public class GeneExpressionMatrix {
     public void setPhenotypes(String[] phenotypes) {
         this.phenotypes = phenotypes;
     }
+    
+    public String getPhenotype1() {
+		return phenotype1;
+	}
 
-    public String getFilename() {
+	public void setPhenotype1(String phenotype1) {
+		this.phenotype1 = phenotype1;
+	}
+
+	public String getPhenotype2() {
+		return phenotype2;
+	}
+
+	public void setPhenotype2(String phenotype2) {
+		this.phenotype2 = phenotype2;
+	}
+
+	public String getFilename() {
 		return filename;
 	}
 
@@ -361,7 +379,7 @@ public class GeneExpressionMatrix {
 	}
     
 	public void addRanks(String ranks_name, Ranking new_rank){
-        if(this.ranks != null)
+        if(this.ranks != null && ranks_name != null && new_rank != null)
             this.ranks.put(ranks_name, new_rank);
 	}
 
@@ -376,8 +394,11 @@ public class GeneExpressionMatrix {
     
     public HashSet<String> getAllRanksNames(){
     		HashSet<String> allnames = new HashSet<String>();
-    		for(Iterator<String> i = ranks.keySet().iterator();i.hasNext();)
-    			allnames.add((String)i.next());
+    		for(Iterator<String> i = ranks.keySet().iterator();i.hasNext();){
+    			String current_name = (String)i.next();
+    			if(current_name != null)
+    				allnames.add(current_name);
+    		}
     		return allnames;
     }
     

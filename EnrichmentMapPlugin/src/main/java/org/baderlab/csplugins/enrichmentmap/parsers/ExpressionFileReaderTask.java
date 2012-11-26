@@ -206,6 +206,8 @@ public class ExpressionFileReaderTask implements Task {
 
 
     				//Check to see if this gene is in the genes list
+    				//Currently we only load gene expression data for genes that are already in the gene list (i.e. are listed in at least one geneset)
+    				//TODO:is there the possibility that we need all the expression genes?  Currently this great decreases space when saving sessions
     				if(genes.containsKey(Name)){
     					genekey = (Integer)genes.get(Name);
     					//we want the genes hashmap and dataset genes hashmap to have the same keys so it is

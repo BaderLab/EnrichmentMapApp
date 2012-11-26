@@ -66,4 +66,13 @@ public class Ranking {
 		gene2rank.put(gene, rank.getRank());
 		rank2gene.put(rank.getRank(), gene);
 	}
+	
+	public String toString(){
+		StringBuffer paramVariables = new StringBuffer();
+		paramVariables.append(filename + "%fileName\t" + filename + "\n");
+		
+		return paramVariables.toString();
+		
+		
+	}
 }

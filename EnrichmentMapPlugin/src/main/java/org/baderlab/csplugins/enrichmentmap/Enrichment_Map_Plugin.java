@@ -57,6 +57,10 @@ import javax.swing.*;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadEnrichmentsPanelAction;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadPostAnalysisPanelAction;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowAboutPanelAction;
+import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.model.Rank;
+import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 
 import java.io.File;
 import java.io.BufferedWriter;
@@ -164,187 +168,144 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
     public void saveSessionStateFiles(List<File> pFileList){
         // Create an empty file on system temp directory
 
-/*        String tmpDir = System.getProperty("java.io.tmpdir");
+        String tmpDir = System.getProperty("java.io.tmpdir");
         System.out.println("java.io.tmpdir: [" + tmpDir + "]");
 
+        String prop_file_content = "";
+        
         //get the networks
-        HashMap<String, EnrichmentMapParameters> networks = EnrichmentMapManager.getInstance().getCyNetworkList();
-
-        //create a props file for each network
+        HashMap<String, EnrichmentMap> networks = EnrichmentMapManager.getInstance().getCyNetworkList();
+        
+        //go through each network
         for(Iterator<String> i = networks.keySet().iterator(); i.hasNext();){
-            String networkId = i.next().toString();
-            EnrichmentMapParameters params = networks.get(networkId);
+        		String networkId = i.next().toString();
+            EnrichmentMap em = networks.get(networkId);
+            EnrichmentMapParameters params = networks.get(networkId).getParams();
             String name = Cytoscape.getNetwork(networkId).getTitle();
 
             //get the network name specified in the parameters
-            String param_name = params.getNetworkName();
+            String param_name = em.getName();
 
             //check to see if the name of the network matches the one specified in it parameters
             //if the two names differ then use the network name specified by the user
             if(!name.equalsIgnoreCase(param_name))
-                params.setNetworkName(name);
+                em.setName(name);
 
             //property file
             File session_prop_file = new File(tmpDir, name+".props");
-
-            //gene set file - contains filtered gene sets so it is not a replica of the initial file loaded
-            //this conserves time and space.
-            File gmt = new File(tmpDir, name+".gmt");
-            File gmt_set2 = new File(tmpDir, name+".set2.gmt");
+                       
+            //get the properties to be saved that are associated with the map
             //genes involved in the analysis
-            File genes = new File(tmpDir, name+".genes.txt");
-            File hkgenes = new File(tmpDir, name+".hashkey2genes.txt");
-
-            //enrichment results 1 file
-            File enrichmentresults1 = new File(tmpDir, name+".ENR1.txt");
-            File enrichmentresults1Ofinterest = new File(tmpDir, name+".SubENR1.txt");
-
-            //enrichment results 2 file - only initialized if they are part of the analysis.
-            File enrichmentresults2;
-            File enrichmentresults2Ofinterest;
-            File expression1;
-            File expression2;
-
+            //do not need to store the similarities because they are recomputed on reload
             //geneset file for PostAnalysis Signature Genesets
             File siggmt = new File(tmpDir, name+".signature.gmt");
+            
+            prop_file_content = prop_file_content + "Version\t2.0\n";
+            prop_file_content = prop_file_content + params.toString();
+            try{
+            		if (!em.getSignatureGenesets().isEmpty() ) {
+            			BufferedWriter sigGmtwriter = new BufferedWriter(new FileWriter(siggmt));
+            			sigGmtwriter.write(params.printHashmap(em.getSignatureGenesets()));
+            			sigGmtwriter.close();
+            			pFileList.add(siggmt);
+            		}
+            
+            		File genes = new File(tmpDir, name+".genes.txt");
+            		BufferedWriter geneswriter = new BufferedWriter(new FileWriter(genes));
+            		geneswriter.write(params.printHashmap(em.getGenes()));
+            		geneswriter.close();
+            		pFileList.add(genes);
 
-            File ranks1geneids;
-            File ranks2geneids;
+            		File hkgenes = new File(tmpDir, name+".hashkey2genes.txt");
+            		BufferedWriter hashkey2geneswriter = new BufferedWriter(new FileWriter(hkgenes));
+            		hashkey2geneswriter.write(params.printHashmap(em.getHashkey2gene()));
+            		hashkey2geneswriter.close();
+            		pFileList.add(hkgenes);
+            
+            		//get the properties associated with each Dataset
+            		if(!em.getDatasets().isEmpty()){
+            			HashMap<String, DataSet> all_datasets = em.getDatasets();
+            			for(Iterator<String> k  = all_datasets.keySet().iterator(); k.hasNext();){
+            				String dataset_name = k.next().toString();
+            				String current = dataset_name ;
+            				if(dataset_name .contains("."))
+            					dataset_name .replace('.', '_');
+        			
+            				//genesets
+            				File gmt = new File(tmpDir, name+ "." + dataset_name +".gmt");
+            				BufferedWriter gmtwriter = new BufferedWriter(new FileWriter(gmt));
+            				gmtwriter.write(params.printHashmap(em.getDataset(current).getSetofgenesets().getGenesets()));
+            				gmtwriter.close();
+            				pFileList.add(gmt);        			
+        			
+            				prop_file_content = prop_file_content + em.getDataset(current).getSetofgenesets().toString(current);
+                 
+            				//enrichments
+            				File enrichmentresults = new File(tmpDir, name+"." + dataset_name +".ENR.txt");
+            				File enrichmentresultsOfinterest = new File(tmpDir, name+ "." + dataset_name +".SubENR.txt");
+ 
+            				BufferedWriter enr1writer = new BufferedWriter(new FileWriter(enrichmentresults));
+            				enr1writer.write(params.printHashmap(em.getDataset(current).getEnrichments().getEnrichments()));
+            				enr1writer.close();
+            				pFileList.add(enrichmentresults);
+        			
+            				prop_file_content = prop_file_content + em.getDataset(current).getEnrichments().toString(current);
+        			
+            				//expression
+            				if(em.getDataset(current).getExpressionSets() != null){
+            					File expression = new File(tmpDir, name+"." + dataset_name +".expression.txt");
+            					BufferedWriter expression1writer = new BufferedWriter(new FileWriter(expression));
+            					expression1writer.write(em.getDataset(current).getExpressionSets().toString());
+            					expression1writer.close();
+            					pFileList.add(expression);
+            					//save all the rank files
+            					if(!em.getDataset(current).getExpressionSets().getRanks().isEmpty()){
+            						HashMap<String, Ranking> all_ranks = em.getDataset(current).getExpressionSets().getRanks();
 
-            //write out files.
-            try {
-                BufferedWriter writer = new BufferedWriter(new FileWriter(session_prop_file));
-                writer.write(params.toString());
-                writer.close();
-
-                BufferedWriter gmtwriter = new BufferedWriter(new FileWriter(gmt));
-                gmtwriter.write(params.printHashmap(params.getEM().getGenesetsOfInterest()));
-                gmtwriter.close();
-                pFileList.add(gmt);
-
-                //if there are two distinct expression files we also need to output the second set of genesetsof interest
-                if(params.isTwoDistinctExpressionSets()){
-                    BufferedWriter gmtwriter_set2 = new BufferedWriter(new FileWriter(gmt_set2));
-                    gmtwriter_set2.write(params.printHashmap(((EnrichmentMap_multispecies)params.getEM()).getGenesetsOfInterest_set2()));
-                    gmtwriter_set2.close();
-                    pFileList.add(gmt_set2);
-                }
-
-
-                if (!params.getSignatureGenesets().isEmpty() ) {
-                    BufferedWriter sigGmtwriter = new BufferedWriter(new FileWriter(siggmt));
-                    sigGmtwriter.write(params.printHashmap(params.getSignatureGenesets()));
-                    sigGmtwriter.close();
-                    pFileList.add(siggmt);
-                }
-
-                BufferedWriter geneswriter = new BufferedWriter(new FileWriter(genes));
-                geneswriter.write(params.printHashmap(params.getEM().getGenes()));
-                geneswriter.close();
-                pFileList.add(genes);
-
-                BufferedWriter hashkey2geneswriter = new BufferedWriter(new FileWriter(hkgenes));
-                hashkey2geneswriter.write(params.printHashmap(params.getEM().getHashkey2gene()));
-                hashkey2geneswriter.close();
-                pFileList.add(hkgenes);
-                	
-                if(!params.getEM().getEnrichments().isEmpty()){
-                		HashMap<String, SetOfEnrichmentResults> all_enr = params.getEM().getEnrichments();
-                		for(Iterator<String> k  = all_enr.keySet().iterator(); k.hasNext();){
-                			String enr_name = k.next().toString();
-                			String current = enr_name;
-                			if(enr_name.contains("."))
-                				enr_name.replace('.', '_');
-                			File current_enr = new File(tmpDir, name+"."+enr_name+".ENR.txt");
-                		
-                			BufferedWriter enr1writer = new BufferedWriter(new FileWriter(enrichmentresults1));
-                			enr1writer.write(params.printHashmap(params.getEM().getEnrichment(current).getEnrichments()));
-                			enr1writer.close();
-                			pFileList.add(enrichmentresults1);
-                		}
-                }
-               
-             
-
-                //output the ranks specific to GSEA for leading edge analysis rank to gene conversion file
-                if(params.getRank2geneDataset1() != null){
-                    ranks1geneids = new File(tmpDir, name+".RANKS1Genes.txt");
-                    BufferedWriter r2g12writer = new BufferedWriter(new FileWriter(ranks1geneids));
-                    r2g12writer.write(params.printHashmap(params.getRank2geneDataset1()));
-                    r2g12writer.close();
-                    pFileList.add(ranks1geneids);
-                }
-
-                //save all the rank files
-                if(!params.getEM().getRanks().isEmpty()){
-                    HashMap<String, HashMap<Integer, Rank>> all_ranks = params.getEM().getRanks();
-
-                    for(Iterator j = all_ranks.keySet().iterator(); j.hasNext(); ){
-                        String ranks_name = j.next().toString();
-                        // as ranks names that contain dots make problems, when restoring a session,
-                        // we'll replace them by underscores:
-                        if (ranks_name.contains("."))
-                            ranks_name.replace('.', '_');
-                        File current_ranks = new File(tmpDir, name+"."+ranks_name+".RANKS.txt");
-                        BufferedWriter subrank1writer = new BufferedWriter(new FileWriter(current_ranks));
-                        subrank1writer.write(params.printHashmap(all_ranks.get(ranks_name)));
-                        subrank1writer.close();
-                        pFileList.add(current_ranks);
-                    }
-                }
-
-                if(params.isTwoDatasets()){                  
-
-                    //output the ranks specific to GSEA for leading edge analysis rank to gene conversion file
-                    if(params.getRank2geneDataset2() != null){
-
-                        ranks2geneids = new File(tmpDir, name+".RANKS2Genes.txt");
-                        BufferedWriter r2g22writer = new BufferedWriter(new FileWriter(ranks2geneids));
-                        r2g22writer.write(params.printHashmap(params.getRank2geneDataset2()));
-                        r2g22writer.close();
-                        pFileList.add(ranks2geneids);
-                    }
-                }
-
-                if(params.isData()){
-                    expression1 = new File(tmpDir, name+".expression1.txt");
-                    BufferedWriter expression1writer = new BufferedWriter(new FileWriter(expression1));
-                    expression1writer.write(params.getEM().getExpression(EnrichmentMap.DATASET1).toString());
-                    expression1writer.close();
-                    pFileList.add(expression1);
-                }
-                if(params.isData2() && params.getEM().getExpression(EnrichmentMap.DATASET2) != null){
-                    expression2 = new File(tmpDir, name+".expression2.txt");
-                    BufferedWriter expression2writer = new BufferedWriter(new FileWriter(expression2));
-                    expression2writer.write(params.getEM().getExpression(EnrichmentMap.DATASET2).toString());
-                    expression2writer.close();
-                    pFileList.add(expression2);
-                }
-
+            						for(Iterator j = all_ranks.keySet().iterator(); j.hasNext(); ){
+            							String ranks_name = j.next().toString();
+            							String current_ranks_name = ranks_name;
+            							// as ranks names that contain dots make problems, when restoring a session,
+            							// we'll replace them by underscores:
+            							if (ranks_name.contains("."))
+            								ranks_name.replace('.', '_');
+            								File current_ranks = new File(tmpDir, name+"." + dataset_name + "."+ranks_name+".RANKS.txt");
+            								BufferedWriter subrank1writer = new BufferedWriter(new FileWriter(current_ranks));
+            								subrank1writer.write(params.printHashmap(all_ranks.get(current_ranks_name).getRanking()));
+            								subrank1writer.close();
+            								pFileList.add(current_ranks);
+            							}
+            						}
+            					}        			        			
+            				}
+            			BufferedWriter writer = new BufferedWriter(new FileWriter(session_prop_file));
+            			writer.write(prop_file_content);
+            			writer.close();
+            		}  
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
 
             pFileList.add(session_prop_file);
         }
-*/    }
+    }
 
     /**
      * Restore Enrichment maps
      *
      * @param pStateFileList - list of files associated with thie session
      */
-/*    public void restoreSessionState(List<File> pStateFileList) {
+    public void restoreSessionState(List<File> pStateFileList) {
 
        if ((pStateFileList == null) || (pStateFileList.size() == 0)) {
             //No previous state to restore
             return;
         }
 
-        try {
+ /*       try {
             //go through the prop files first to create the correct objects to be able
             //to add other files to.
-            for(int i = 0; i < pStateFileList.size(); i++){
+           for(int i = 0; i < pStateFileList.size(); i++){
 
                 File prop_file = pStateFileList.get(i);
 
@@ -356,9 +317,10 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
 
                     //Given the file with all the parameters create a new parameter
                     EnrichmentMapParameters params = new EnrichmentMapParameters(fullText);
+                    EnrichmentMap em = new EnrichmentMap(params);
 
                     //get the network name
-                    String param_name = params.getNetworkName();
+                    String param_name = em.getName();
 
                     //get the network name from the file name
                     String[] fullname = prop_file.getName().split("Enrichment_Map_Plugin_");
@@ -371,11 +333,11 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
                     //related to bug ticket #49
                     if(!props_name.equalsIgnoreCase(param_name)){
                         name = props_name;
-                        params.setNetworkName(name);
+                        em.setName(name);
                     }
 
                     //register network and parameters
-                    EnrichmentMapManager.getInstance().registerNetwork(Cytoscape.getNetwork(name),params);
+                    EnrichmentMapManager.getInstance().registerNetwork(Cytoscape.getNetwork(name),em);
                 }
             }
             //go through the rest of the files
@@ -392,13 +354,15 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
                 else
                     continue;
 
-                EnrichmentMapParameters params = EnrichmentMapManager.getInstance().getParameters(name);
-
-                if(params == null)
+                EnrichmentMap em = EnrichmentMapManager.getInstance().getMap(name);
+                
+                
+                if(em == null)
                     System.out.println("network for file" + prop_file.getName() + " does not exist.");
                 else if((!prop_file.getName().contains(".props"))
                         && (!prop_file.getName().contains(".expression1.txt"))
                         && (!prop_file.getName().contains(".expression2.txt"))){
+                		EnrichmentMapParameters params = em.getParams();
                     //read the file
                     TextFileReader reader = new TextFileReader(prop_file.getAbsolutePath());
                     reader.read();
@@ -410,15 +374,15 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
 
                     if(prop_file.getName().contains(".gmt")){
                         if (prop_file.getName().contains(".signature.gmt"))
-                            params.setSignatureGenesets(params.repopulateHashmap(fullText, 1));
+                            em.setSignatureGenesets(params.repopulateHashmap(fullText, 1));
                         else if(prop_file.getName().contains(".set2.gmt"))
                             ((EnrichmentMap_multispecies)params.getEM()).setGenesetsOfInterest_set2(params.repopulateHashmap(fullText,1));
                         else
-                            params.getEM().setGenesetsOfInterest(params.repopulateHashmap(fullText,1));
+                            em.setGenesetsOfInterest(params.repopulateHashmap(fullText,1));
                     }
                     if(prop_file.getName().contains(".genes.txt")){
                         HashMap<String, Integer> genes = params.repopulateHashmap(fullText,2);
-                        params.getEM().setGenes(genes);
+                        em.setGenes(genes);
                         //ticket #188 - unable to open session files that have empty enrichment maps.
                         if(genes != null && !genes.isEmpty())
                             // Ticket #107 : restore also gene count (needed to determine the next free hash in case we do PostAnalysis with a restored session)
@@ -426,11 +390,11 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
                     }
                     if(prop_file.getName().contains(".hashkey2genes.txt")){
                         HashMap<Integer,String> hashkey2gene = params.repopulateHashmap(fullText,5);
-                        params.getEM().setHashkey2gene(hashkey2gene);
+                        em.setHashkey2gene(hashkey2gene);
                         //ticket #188 - unable to open session files that have empty enrichment maps.
                         if(hashkey2gene != null && !hashkey2gene.isEmpty() )
                             // Ticket #107 : restore also gene count (needed to determine the next free hash in case we do PostAnalysis with a restored session)
-                            params.setNumberOfGenes( Math.max( params.getNumberOfGenes(), Collections.max(hashkey2gene.keySet())+1 ));
+                            em.setNumberOfGenes( Math.max( em.getNumberOfGenes(), Collections.max(hashkey2gene.keySet())+1 ));
                     }
 
 
@@ -620,9 +584,9 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
         Properties cyto_props = CytoscapeInit.getProperties();
         if (cyto_props.containsKey("nodelinkouturl.MSigDb"))
             cyto_props.remove("nodelinkouturl.MSigDb");
-
-    }
 */
+    }
+
     private Properties getPropertiesFromClasspath(String propFileName) throws IOException {
         // loading properties file from the classpath
         Properties props = new Properties();

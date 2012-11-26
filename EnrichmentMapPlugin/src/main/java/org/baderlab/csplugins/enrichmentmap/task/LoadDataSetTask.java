@@ -99,17 +99,17 @@ public class LoadDataSetTask implements Task{
     		//check to see if we have ranking files
     		if(dataset.getMap().getParams().getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)){
     			if(dataset.getExpressionSets().getRanksByName(Ranking.GSEARanking) != null){
-                RanksFileReaderTask ranking1 = new RanksFileReaderTask(dataset.getExpressionSets().getRanksByName(Ranking.GSEARanking).getFilename(),dataset,taskMonitor,false);
+                RanksFileReaderTask ranking1 = new RanksFileReaderTask(dataset.getExpressionSets().getRanksByName(Ranking.GSEARanking).getFilename(),dataset,Ranking.GSEARanking,taskMonitor,false);
                 ranking1.run();
             }
     		}
     		else{
     			if(dataset.getExpressionSets().getRanksByName(EnrichmentMap.DATASET1) != null){
-                    RanksFileReaderTask ranking1 = new RanksFileReaderTask(dataset.getExpressionSets().getRanksByName(EnrichmentMap.DATASET1).getFilename(),dataset,taskMonitor,false);
+                    RanksFileReaderTask ranking1 = new RanksFileReaderTask(dataset.getExpressionSets().getRanksByName(EnrichmentMap.DATASET1).getFilename(),dataset,EnrichmentMap.DATASET1,taskMonitor,false);
                     ranking1.run();
                 }
     			if(dataset.getExpressionSets().getRanksByName(EnrichmentMap.DATASET2) != null){
-                    RanksFileReaderTask ranking1 = new RanksFileReaderTask(dataset.getExpressionSets().getRanksByName(EnrichmentMap.DATASET2).getFilename(),dataset,taskMonitor,false);
+                    RanksFileReaderTask ranking1 = new RanksFileReaderTask(dataset.getExpressionSets().getRanksByName(EnrichmentMap.DATASET2).getFilename(),dataset,EnrichmentMap.DATASET2,taskMonitor,false);
                     ranking1.run();
                 }
     		}

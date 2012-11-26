@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap;
+package org.baderlab.csplugins.enrichmentmap.parsers;
 
 import junit.framework.TestCase;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;

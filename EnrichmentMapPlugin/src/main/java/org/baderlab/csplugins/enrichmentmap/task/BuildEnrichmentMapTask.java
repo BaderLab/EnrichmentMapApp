@@ -174,9 +174,9 @@ public class BuildEnrichmentMapTask implements Task {
             ComputeSimilarityTask similarities = new ComputeSimilarityTask(map,taskMonitor);
             similarities.run();
 
-            HashMap<String, GenesetSimilarity> similarity_results = similarities.getGeneset_similarities();
+            //HashMap<String, GenesetSimilarity> similarity_results = similarities.getGeneset_similarities();
 
-            map.setGenesetSimilarity(similarity_results);
+            //map.setGenesetSimilarity(similarity_results);
 
             //build the resulting map
             VisualizeEnrichmentMapTask map_viz = new VisualizeEnrichmentMapTask(map,taskMonitor);

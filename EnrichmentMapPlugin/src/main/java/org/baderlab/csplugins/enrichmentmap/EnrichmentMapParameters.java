@@ -72,15 +72,11 @@ import cytoscape.CytoscapeInit;
  * all enrichment results, cuts-offs, expression files, and ranks
  */
 public class EnrichmentMapParameters {
-
     
 	//attribute prefix associated with this map
 	private String attributePrefix = null;
-	
-    //Input File names
-    //GMT - gene set definition file
-    private String GMTFileName;
-
+	   
+    //BULK EM required parameters
     //directory where the GMT and GCT(expression) files are found
     //needed for Bulk EM creation when the user has moved their files
     //around and they are not in the same directories that GSEA used.
@@ -88,9 +84,13 @@ public class EnrichmentMapParameters {
     private String GCTDirName = null;
     private String GSEAResultsDirName = null;
     private int lowerlimit = 1;
-    private int upperlimit = 1;
+    private int upperlimit = 1;    
+    //value specifying whether bulk EM is being used (needed to transfer file name to the network names)
+    private boolean BulkEM = false;
 
-
+    //Input File names
+    //GMT - gene set definition file
+    private String GMTFileName;
     //Expression files
     private String expressionFileName1;
     private String expressionFileName2;
@@ -109,7 +109,11 @@ public class EnrichmentMapParameters {
     //colour the heading on the columns accroding to class or phenotype they belong to.
     private String classFile1;
     private String classFile2;
-
+    //class file designations that were loaded in from a session file.
+    //need a temporary place for these class definition as
+    private String[] temp_class1 = null;
+    private String[] temp_class2 = null;
+    
     private String gseaHtmlReportFileDataset1 = null;
     private String gseaHtmlReportFileDataset2 = null;
 
@@ -122,67 +126,48 @@ public class EnrichmentMapParameters {
     private boolean twoDatasets = false;
     //flag to indicate if there are FDR Q-values
     private boolean FDR = false;
+    //add boolean to indicate whether the geneset files are EM specific gmt files
+    //if they are the visual style changes slightly
+    private boolean EMgmt = false;
+    //a flag to indicate if the two expression files have the exact same set of genes
+    private boolean twoDistinctExpressionSets = false;
     //flag to indicate if the results are from GSEA or generic or DAVID or other method
     private String method;
     //private boolean GSEA = true;
     //flag to indicate if the similarity cut off is jaccard or overlap
     private String similarityMetric;
-
-    private boolean similarityCutOffChanged = false;
-
-    private boolean loadedFromRpt_dataset1 = false;
-    private boolean loadedFromRpt_dataset2 = false;
-
-    //value to store the constant needed for constructing the combined similarity metric
-    private double combinedConstant;
-
+    //edge type
+    private String enrichment_edge_type;
+    
     // DEFAULT VALUES for pvalue, qvalue, similarityCutOff and jaccard
     // will be assigned in the constructor
     //p-value cutoff
     private double pvalue;
-    //pvalue slider bar
-    private SliderBarPanel pvalueSlider;
     //fdr q-value cutoff
     private double qvalue;
-    //qvalue slider bar
-    private SliderBarPanel qvalueSlider;
     //similarity cutoff
     private double similarityCutOff;
+    //value to store the constant needed for constructing the combined similarity metric
+    private double combinedConstant;
+    
+    //pvalue slider bar
+    private SliderBarPanel pvalueSlider;    
+    //qvalue slider bar
+    private SliderBarPanel qvalueSlider;    
     //similarity cutoff slider bar
     private SliderBarPanel similaritySlider;
-
-    //add boolean to indicate whether the geneset files are EM specific gmt files
-    //if they are the visual style changes slightly
-    private boolean EMgmt = false;
-
-    private HashMap<String, GeneSet> signatureGenesets;
-
-    //a flag to indicate if the two expression files have the exact same set of genes
-    private boolean twoDistinctExpressionSets = false;
-    
-    //class file designations that were loaded in from a session file.
-    //need a temporary place for these class definition as
-    private String[] temp_class1 = null;
-    private String[] temp_class2 = null;
-
     //list associated with slider bars.  As the slider bar is moved the removed nodes
     //and edges are stored in these lists
     //TODO: currently this is not stored in the session file.  So if the user moves the slider bar and saves a session the nodes or edges stored are lost.
     private ArrayList<Node> selectedNodes;
     private ArrayList<Edge> selectedEdges;
-
+        
     //Heat map parameters for this enrichment map - user specified current normalization, and sorting.
     private HeatMapParameters hmParams;
 
-    //value specifying whether bulk EM is being used (needed to transfer file name to the network names)
-    private boolean BulkEM = false;
-
     private Properties cyto_prop;
-    private double defaultPvalueCutOff;
-    private double defaultQvalueCutOff;
     private double defaultJaccardCutOff;
     private double defaultOverlapCutOff;
-    private double defaultCombinedConstant;
     private String defaultSimilarityMetric;
     private Boolean disable_heatmap_autofocus;
     private String defaultSortMethod;
@@ -190,96 +175,82 @@ public class EnrichmentMapParameters {
 
     //Constants
     final public static String ENRICHMENT_INTERACTION_TYPE = "Geneset_Overlap";
-
     final public static String ENRICHMENT_INTERACTION_TYPE_SET1 = "Geneset_Overlap_set1";
     final public static String ENRICHMENT_INTERACTION_TYPE_SET2 = "Geneset_Overlap_set2";
-
     //with more methods to support can't just have generic or gsea
     final public static String method_GSEA = "GSEA";
     final public static String method_generic = "generic";
     final public static String method_DAVID = "DAVID/BiNGO";
-
     //with more similarity metric can't use a boolean to reprensent them.
     final public static String SM_JACCARD = "JACCARD";
     final public static String SM_OVERLAP = "OVERLAP";
-    final public static String SM_COMBINED = "COMBINED";
-
-    private PostAnalysisParameters paParams;
-    
+    final public static String SM_COMBINED = "COMBINED";    
     //Dataset phenotypes that are loaded in from the input panel
     private String Dataset1Phenotype1 = "UP";
     private String Dataset1Phenotype2 = "DOWN";
     private String Dataset2Phenotype1 = "UP";
     private String Dataset2Phenotype2 = "DOWN";
-    
-    private String enrichment_edge_type;
 
+    private Double version = 1.0;
+    
     /**
      * Default constructor to create a fresh instance.
      */
     public EnrichmentMapParameters() {
-    		
-    		//this.EM = new EnrichmentMap(this);
-    		//this.setAttributePrefix();
-    	
-        this.signatureGenesets = new HashMap<String, GeneSet>();
-        this.selectedNodes = new ArrayList<Node>();
-        this.selectedEdges = new ArrayList<Edge>();
-
+    		   
         //by default GSEA is the method.
         this.method = EnrichmentMapParameters.method_GSEA;
 
-        this.similarityCutOffChanged = false;
         //default Values from Cytoscape properties
-        this.cyto_prop = CytoscapeInit.getProperties() ;
-        this.defaultPvalueCutOff       = Double.parseDouble( this.cyto_prop.getProperty("EnrichmentMap.default_pvalue",  "0.005") );
-        this.defaultQvalueCutOff       = Double.parseDouble( this.cyto_prop.getProperty("EnrichmentMap.default_qvalue",  "0.1") );
+        this.cyto_prop = CytoscapeInit.getProperties() ;      
         this.defaultJaccardCutOff      = Double.parseDouble( this.cyto_prop.getProperty("EnrichmentMap.default_jaccard", "0.25") );
         this.defaultOverlapCutOff      = Double.parseDouble( this.cyto_prop.getProperty("EnrichmentMap.default_overlap", "0.50") );
-        this.defaultCombinedConstant     = Double.parseDouble( this.cyto_prop.getProperty("EnrichmentMap.default_combinedConstant", "0.50") );
-
         this.defaultSimilarityMetric   = this.cyto_prop.getProperty("EnrichmentMap.default_similarity_metric",
                 this.cyto_prop.getProperty("EnrichmentMap.default_overlap_metric", "overlap")); // looking for Property "EnrichmentMap.default_overlap_metric" for legacy reasons
         this.disable_heatmap_autofocus = Boolean.parseBoolean( this.cyto_prop.getProperty("EnrichmentMap.disable_heatmap_autofocus", "false") );
 
         //get the default heatmap sort algorithm
         this.defaultSortMethod = this.cyto_prop.getProperty("EnrichmentMap.default_sort_method", HeatMapParameters.sort_hierarchical_cluster);
-        //get the default combined metric constant
-        this.combinedConstant = this.defaultCombinedConstant;
+        
         //get the default distance metric algorithm
         this.defaultDistanceMetric = this.cyto_prop.getProperty("EnrichmentMap.default_distance_metric", HeatMapParameters.pearson_correlation);
 
         //assign the defaults:
-        this.pvalue = this.defaultPvalueCutOff;
-        //create the slider for this pvalue
-        pvalueSlider = new SliderBarPanel(0,this.pvalue,"P-value Cutoff",this, EnrichmentMapVisualStyle.PVALUE_DATASET1, EnrichmentMapVisualStyle.PVALUE_DATASET2,ParametersPanel.summaryPanelWidth, false, this.pvalue);
-
-        this.qvalue = this.defaultQvalueCutOff;
-        //create the slider for the qvalue
-        qvalueSlider = new SliderBarPanel(0,this.qvalue,"Q-value Cutoff",this, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2,ParametersPanel.summaryPanelWidth, false, this.qvalue);
-
+        this.pvalue = Double.parseDouble( this.cyto_prop.getProperty("EnrichmentMap.default_pvalue",  "0.005") );      
+        this.qvalue = Double.parseDouble( this.cyto_prop.getProperty("EnrichmentMap.default_qvalue",  "0.1") );
+       //get the default combined metric constant
+        this.combinedConstant = Double.parseDouble( this.cyto_prop.getProperty("EnrichmentMap.default_combinedConstant", "0.50") );
+        
         //choose Jaccard or Overlap as default
-        if ( getOverlapMetricDefault().equalsIgnoreCase(SM_OVERLAP) ){
+        if ( this.defaultSimilarityMetric .equalsIgnoreCase(SM_OVERLAP) ){
             this.similarityCutOff = this.defaultOverlapCutOff;
             this.similarityMetric = SM_OVERLAP;
-        } else if( getOverlapMetricDefault().equalsIgnoreCase(SM_JACCARD)) {
+        } else if( this.defaultSimilarityMetric .equalsIgnoreCase(SM_JACCARD)) {
             this.similarityCutOff = this.defaultJaccardCutOff;
             this.similarityMetric = SM_JACCARD;
-        } else if( getOverlapMetricDefault().equalsIgnoreCase(SM_COMBINED)) {
+        } else if( this.defaultSimilarityMetric .equalsIgnoreCase(SM_COMBINED)) {
             this.similarityCutOff = this.defaultJaccardCutOff;
             this.similarityMetric = SM_COMBINED;
         }
         this.enrichment_edge_type = ENRICHMENT_INTERACTION_TYPE;
-
-        //create the slider for the similarity cutoff
-        similaritySlider = new SliderBarPanel(this.similarityCutOff,1,"Similarity Cutoff",this, EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT, EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT,ParametersPanel.summaryPanelWidth, true, this.similarityCutOff);
-
+        
         //reset all boolean values
         this.setFDR(false);
         this.setData(false);
         this.setData2(false);
         this.setTwoDatasets(false);
         this.setTwoDistinctExpressionSets(false);
+
+        this.selectedNodes = new ArrayList<Node>();
+        this.selectedEdges = new ArrayList<Edge>();
+
+        //create the slider for this pvalue
+        pvalueSlider = new SliderBarPanel(0,this.pvalue,"P-value Cutoff",this, EnrichmentMapVisualStyle.PVALUE_DATASET1, EnrichmentMapVisualStyle.PVALUE_DATASET2,ParametersPanel.summaryPanelWidth, false, this.pvalue);
+        //create the slider for the qvalue
+        qvalueSlider = new SliderBarPanel(0,this.qvalue,"Q-value Cutoff",this, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2,ParametersPanel.summaryPanelWidth, false, this.qvalue);
+        //create the slider for the similarity cutoff
+        similaritySlider = new SliderBarPanel(this.similarityCutOff,1,"Similarity Cutoff",this, EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT, EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT,ParametersPanel.summaryPanelWidth, true, this.similarityCutOff);
+
 
     }
 
@@ -292,7 +263,7 @@ public class EnrichmentMapParameters {
      */
     public EnrichmentMapParameters(String propFile){
         this();
-/*
+
         //Create a hashmap to contain all the values in the rpt file.
         HashMap<String, String> props = new HashMap<String, String>();
 
@@ -306,14 +277,90 @@ public class EnrichmentMapParameters {
                 props.put(tokens[0] ,tokens[1]);
         }
 
-        //this.NetworkName = props.get("NetworkName");
-        //this.attributePrefix = props.get("attributePrefix");
+        this.version = Double.parseDouble(props.get("Version"));
+        
+        if(version > 1.0)
+        		reconstruct_ver1(props);
+        else
+        		reconstruct_ver2(props);
+        
+        this.attributePrefix = props.get("attributePrefix");
 
         if ( props.containsKey("enrichment_edge_type") )
             this.enrichment_edge_type = props.get("enrichment_edge_type");
         else
             this.enrichment_edge_type = "pp"; // legacy setting: assume it's "pp" if it's not specified in the props file 
+
+      //boolean flags
+        if((props.get("twoDatasets")).equalsIgnoreCase("true"))
+            this.twoDatasets = true;
+        //first two take care of old session files that only had JAccard or overlap metrics
+        if((props.get("jaccard")).equalsIgnoreCase("false"))
+            this.similarityMetric = SM_JACCARD;
+        else if((props.get("jaccard")).equalsIgnoreCase("true"))
+            this.similarityMetric = SM_OVERLAP;
+        else if ((props.get("jaccard")).equalsIgnoreCase(SM_JACCARD))
+            this.similarityMetric = SM_JACCARD;
+        else if ((props.get("jaccard")).equalsIgnoreCase(SM_OVERLAP))
+            this.similarityMetric = SM_OVERLAP;
+        else if ((props.get("jaccard")).equalsIgnoreCase(SM_COMBINED))
+            this.similarityMetric = SM_COMBINED;
+
+        //get the combined constant
+        if(props.get("CombinedConstant") != null)
+            setCombinedConstant(Double.parseDouble(props.get("CombinedConstant")));
+        else
+            setCombinedConstant(0.5);
+
+        //have to deal with legacy issue by switching from two methods to multiple
+        if(props.get("GSEA") != null){
+         if((props.get("GSEA")).equalsIgnoreCase("false"))
+            this.method = EnrichmentMapParameters.method_generic;
+         else
+            this.method = EnrichmentMapParameters.method_GSEA;
+        }
+        if((props.get("Data")).equalsIgnoreCase("true"))
+            this.Data = true;
+        if((props.get("Data2")).equalsIgnoreCase("true"))
+            this.Data2 = true;
+        if((props.get("FDR")).equalsIgnoreCase("true"))
+            this.FDR = true;
+
+        if(props.get("method") != null)
+            this.method = props.get("method");
         
+      //cutoffs
+        setPvalue(Double.parseDouble(props.get("pvalue")));
+        setQvalue(Double.parseDouble(props.get("qvalue")));
+
+        //older version had the similarityCutOff specified as jaccardCutOff.
+        //need to check if this is an old session file
+        String cutoff;
+        if(props.get("jaccardCutOff") != null)
+            cutoff = props.get("jaccardCutOff");
+        else
+            cutoff = props.get("similarityCutOff");
+
+        if(cutoff != null){
+            this.similarityCutOff = Double.parseDouble(cutoff);
+        }
+        
+        //create the slider for this pvalue
+        pvalueSlider = new SliderBarPanel(0,this.pvalue,"P-value Cutoff",this, EnrichmentMapVisualStyle.PVALUE_DATASET1, EnrichmentMapVisualStyle.PVALUE_DATASET2,ParametersPanel.summaryPanelWidth, false, this.pvalue);
+
+        //create the slider for the qvalue
+        qvalueSlider = new SliderBarPanel(0,this.qvalue,"Q-value Cutoff",this, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2,ParametersPanel.summaryPanelWidth, false, this.pvalue);
+
+        //create the slider for the similarity cutoff
+        similaritySlider = new SliderBarPanel(this.similarityCutOff,1,"Similarity Cutoff",this, EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT, EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT,ParametersPanel.summaryPanelWidth, true, this.similarityCutOff);
+
+    }
+    
+    /* 
+     * Restore old session file
+     */
+    private void reconstruct_ver1(HashMap<String,String> props){
+    		                
         this.GMTFileName = props.get("GMTFileName");
 
         if(props.get("expressionFileName1")!= null)
@@ -328,13 +375,13 @@ public class EnrichmentMapParameters {
         this.gseaHtmlReportFileDataset1 = props.get("gseaHtmlReportFileDataset1");
         this.gseaHtmlReportFileDataset2 = props.get("gseaHtmlReportFileDataset2");
 
-        /*this.dataset1Phenotype1 = props.get("dataset1Phenotype1");
-        this.dataset1Phenotype2 = props.get("dataset1Phenotype2");
-        this.dataset2Phenotype1 = props.get("dataset2Phenotype1");
-        this.dataset2Phenotype2 = props.get("dataset2Phenotype2");
-         */
+        this.Dataset1Phenotype1 = props.get("dataset1Phenotype1");
+        this.Dataset1Phenotype2 = props.get("dataset1Phenotype2");
+        this.Dataset2Phenotype1 = props.get("dataset2Phenotype1");
+        this.Dataset2Phenotype2 = props.get("dataset2Phenotype2");
+        
         //rank files 1
-/*        if(props.get("rankFile1")!= null){
+        if(props.get("rankFile1")!= null){
             if((props.get("rankFile1")).equalsIgnoreCase("null") )
                 this.dataset1RankedFile = null;
             else
@@ -385,43 +432,7 @@ public class EnrichmentMapParameters {
             }
         }
 
-        //boolean flags
-        if((props.get("twoDatasets")).equalsIgnoreCase("true"))
-            this.twoDatasets = true;
-        //first two take care of old session files that only had JAccard or overlap metrics
-        if((props.get("jaccard")).equalsIgnoreCase("false"))
-            this.similarityMetric = SM_JACCARD;
-        else if((props.get("jaccard")).equalsIgnoreCase("true"))
-            this.similarityMetric = SM_OVERLAP;
-        else if ((props.get("jaccard")).equalsIgnoreCase(SM_JACCARD))
-            this.similarityMetric = SM_JACCARD;
-        else if ((props.get("jaccard")).equalsIgnoreCase(SM_OVERLAP))
-            this.similarityMetric = SM_OVERLAP;
-        else if ((props.get("jaccard")).equalsIgnoreCase(SM_COMBINED))
-            this.similarityMetric = SM_COMBINED;
-
-        //get the combined constant
-        if(props.get("CombinedConstant") != null)
-            setCombinedConstant(Double.parseDouble(props.get("CombinedConstant")));
-        else
-            setCombinedConstant(0.5);
-
-        //have to deal with legacy issue by switching from two methods to multiple
-        if(props.get("GSEA") != null){
-         if((props.get("GSEA")).equalsIgnoreCase("false"))
-            this.method = EnrichmentMapParameters.method_generic;
-         else
-            this.method = EnrichmentMapParameters.method_GSEA;
-        }
-        if((props.get("Data")).equalsIgnoreCase("true"))
-            this.Data = true;
-        if((props.get("Data2")).equalsIgnoreCase("true"))
-            this.Data2 = true;
-        if((props.get("FDR")).equalsIgnoreCase("true"))
-            this.FDR = true;
-
-        if(props.get("method") != null)
-            this.method = props.get("method");
+        
 
         if(twoDatasets){
             if(Data2){
@@ -441,34 +452,16 @@ public class EnrichmentMapParameters {
                     this.dataset2RankedFile = props.get("rankFile2");
             }
         }
-        //cutoffs
-        setPvalue(Double.parseDouble(props.get("pvalue")));
-        setQvalue(Double.parseDouble(props.get("qvalue")));
-
-        //older version had the similarityCutOff specified as jaccardCutOff.
-        //need to check if this is an old session file
-        String cutoff;
-        if(props.get("jaccardCutOff") != null)
-            cutoff = props.get("jaccardCutOff");
-        else
-            cutoff = props.get("similarityCutOff");
-
-        if(cutoff != null){
-            this.similarityCutOff = Double.parseDouble(cutoff);
-            this.similarityCutOffChanged = true;
-        }
-        //create the slider for this pvalue
-        pvalueSlider = new SliderBarPanel(0,this.pvalue,"P-value Cutoff",this, EnrichmentMapVisualStyle.PVALUE_DATASET1, EnrichmentMapVisualStyle.PVALUE_DATASET2,ParametersPanel.summaryPanelWidth, false, this.pvalue);
-
-        //create the slider for the qvalue
-        qvalueSlider = new SliderBarPanel(0,this.qvalue,"Q-value Cutoff",this, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2,ParametersPanel.summaryPanelWidth, false, this.pvalue);
-
-        //create the slider for the similarity cutoff
-        similaritySlider = new SliderBarPanel(this.similarityCutOff,1,"Similarity Cutoff",this, EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT, EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT,ParametersPanel.summaryPanelWidth, true, this.similarityCutOff);
-*/
+        
     }
-
-
+    
+    /*
+     * Restore session file for version 2.0 and up
+     */
+    private void reconstruct_ver2(HashMap<String,String> props){
+    	
+    }
+    
    /* Method to copy the input contents of an enrichment map paremeter set
     * Only copy parameters specified in the input window
     *
@@ -522,7 +515,6 @@ public class EnrichmentMapParameters {
         this.twoDatasets = copy.isTwoDatasets();
         this.method = copy.getMethod();
         this.similarityMetric = copy.getSimilarityMetric();
-        this.similarityCutOffChanged = copy.similarityCutOffChanged;
 
        //missing the classfiles in the copy --> bug ticket #61
         this.classFile1 = copy.getClassFile1();
@@ -582,9 +574,6 @@ public class EnrichmentMapParameters {
         this.FDR = copy.isFDR();
         this.similarityMetric = copy.getSimilarityMetric();
         this.combinedConstant = copy.getCombinedConstant();
-        this.similarityCutOffChanged = copy.similarityCutOffChanged;
-
-        this.signatureGenesets = copy.getSignatureGenesets();
         this.twoDistinctExpressionSets =  copy.isTwoDistinctExpressionSets();
 
         //missing the classfiles in the copy --> bug ticket #61
@@ -596,7 +585,6 @@ public class EnrichmentMapParameters {
         this.selectedEdges = copy.getSelectedEdges();
         this.selectedNodes = copy.getSelectedNodes();
         this.hmParams = copy.getHmParams();
-        //this.attributePrefix = copy.getAttributePrefix();
         this.enrichment_edge_type = copy.getEnrichment_edge_type();
 
        //field needed when calculating bulk enrichment maps.
@@ -607,8 +595,6 @@ public class EnrichmentMapParameters {
         this.lowerlimit = copy.getLowerlimit();
 
         //copy loadRpt, EGgmt and genesettypes
-        this.loadedFromRpt_dataset1 = copy.isLoadedFromRpt_dataset1();
-       this.loadedFromRpt_dataset2 = copy.isLoadedFromRpt_dataset2();
        this.EMgmt = copy.isEMgmt();
        
        this.attributePrefix = copy.getAttributePrefix();
@@ -707,8 +693,6 @@ public class EnrichmentMapParameters {
     public String toString(){
         StringBuffer paramVariables = new StringBuffer();
 
-        //paramVariables.append( "NetworkName\t" + NetworkName + "\n");
-        //paramVariables.append("attributePrefix\t" + attributePrefix + "\n");
         paramVariables.append("enrichment_edge_type\t" + enrichment_edge_type + "\n");
 
         //file names
@@ -1207,12 +1191,6 @@ public class EnrichmentMapParameters {
         return rank2gene;
     }
     
-
-    public String getOverlapMetricDefault() {
-        return this.defaultSimilarityMetric;
-
-    }
-
     public void setDefaultJaccardCutOff(double defaultJaccardCutOff) {
         this.defaultJaccardCutOff = defaultJaccardCutOff;
     }
@@ -1249,15 +1227,6 @@ public class EnrichmentMapParameters {
         cyto_prop.setProperty("EnrichmentMap.default_sort_method",defaultSortMethod);
     }
 
-    public void setSimilarityCutOffChanged(boolean similarityCutOffChanged) {
-        this.similarityCutOffChanged = similarityCutOffChanged;
-    }
-
-    public boolean isSimilarityCutOffChanged() {
-        return similarityCutOffChanged;
-    }
-
-
     public String[] getTemp_class1() {
         return temp_class1;
     }
@@ -1274,39 +1243,7 @@ public class EnrichmentMapParameters {
         this.temp_class2 = temp_class2;
     }
 
-    /**
-     * @param paParams store reference to PostAnalysisParameters instance associated with this Enrichment Map
-     */
-    public void setPaParams(PostAnalysisParameters paParams) {
-        this.paParams = paParams;
-    }
-
-    /**
-     * @return reference to PostAnalysisParameters instance associated with this Enrichment Map.<BR>
-     *         If no instance exists, a new one will be created.
-     */
-    public PostAnalysisParameters getPaParams() {
-        if (this.paParams == null)
-            this.paParams = new PostAnalysisParameters(this);
-        return this.paParams;
-    }
-
-
-    /**
-     * @param signatureGenesets the signatureGenesets to set
-     */
-    public void setSignatureGenesets(HashMap<String, GeneSet> signatureGenesets) {
-        this.signatureGenesets = signatureGenesets;
-    }
-
-
-    /**
-     * @return the signatureGenesets
-     */
-    public HashMap<String, GeneSet> getSignatureGenesets() {
-        return signatureGenesets;
-    }
-
+    
 
     /**
      * @param enrichment_edge_type the enrichment_edge_type to set
@@ -1405,20 +1342,6 @@ public class EnrichmentMapParameters {
         BulkEM = bulkEM;
     }
 
-    public void setLoadedFromRpt_dataset1(boolean loaded){
-        loadedFromRpt_dataset1 = loaded;
-    }
-    public void setLoadedFromRpt_dataset2(boolean loaded){
-        loadedFromRpt_dataset2 = loaded;
-    }
-
-    public boolean isLoadedFromRpt_dataset1(){
-        return loadedFromRpt_dataset1;
-    }
-    public boolean isLoadedFromRpt_dataset2(){
-        return loadedFromRpt_dataset2;
-    }
-
     public boolean isEMgmt(){
         return EMgmt;
     }
@@ -1466,6 +1389,5 @@ public class EnrichmentMapParameters {
 	public void setDataset2Phenotype2(String dataset2Phenotype2) {
 		Dataset2Phenotype2 = dataset2Phenotype2;
 	}
-    
-    
+       
 }

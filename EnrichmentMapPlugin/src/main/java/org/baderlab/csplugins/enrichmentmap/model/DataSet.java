@@ -15,7 +15,7 @@ import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 
 public class DataSet {
 		//name of Dataset
-		private String name = null;
+		private String name;
 		
 		// The set of enrichments
 		//An enrichment result can either be an Generic or GSEA result.

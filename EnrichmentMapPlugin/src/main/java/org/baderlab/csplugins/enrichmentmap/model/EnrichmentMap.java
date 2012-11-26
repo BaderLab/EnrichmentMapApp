@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
+import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
 
 /***
  *  An Enrichment Map object contains the minimal information needed to build an 
@@ -45,6 +46,10 @@ public class EnrichmentMap {
     
     private int NumberOfGenes = 0;
     
+    //post analysis signature genesets associated with this map.
+    private HashMap<String, GeneSet> signatureGenesets;
+    private PostAnalysisParameters paParams;
+    
     /*
      * Class Constructor
      * Given - EnrichmentnMapParameters 
@@ -77,6 +82,8 @@ public class EnrichmentMap {
     		
     		this.genesetSimilarity = new HashMap<String, GenesetSimilarity>();
     		
+        this.signatureGenesets = new HashMap<String, GeneSet>();
+    		
     		initialize_files();
 		
     }
@@ -103,6 +110,8 @@ public class EnrichmentMap {
     		this.params = copy.getParams();
     		
     		this.datasets = copy.getDatasets();
+    		
+        this.signatureGenesets = copy.getSignatureGenesets();
     		
     }
     /**
@@ -388,4 +397,35 @@ public class EnrichmentMap {
 		}
 		return all_genesetTypes;
 	}
+	
+	/**
+     * @param signatureGenesets the signatureGenesets to set
+     */
+    public void setSignatureGenesets(HashMap<String, GeneSet> signatureGenesets) {
+        this.signatureGenesets = signatureGenesets;
+    }
+
+
+    /**
+     * @return the signatureGenesets
+     */
+    public HashMap<String, GeneSet> getSignatureGenesets() {
+        return signatureGenesets;
+    }
+    /**
+     * @param paParams store reference to PostAnalysisParameters instance associated with this Enrichment Map
+     */
+    public void setPaParams(PostAnalysisParameters paParams) {
+        this.paParams = paParams;
+    }
+
+    /**
+     * @return reference to PostAnalysisParameters instance associated with this Enrichment Map.<BR>
+     *         If no instance exists, a new one will be created.
+     */
+    public PostAnalysisParameters getPaParams() {
+        if (this.paParams == null)
+            this.paParams = new PostAnalysisParameters(params);
+        return this.paParams;
+    }
 }
