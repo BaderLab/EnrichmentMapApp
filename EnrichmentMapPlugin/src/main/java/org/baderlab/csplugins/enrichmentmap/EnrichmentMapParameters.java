@@ -49,6 +49,7 @@ import java.util.*;
 import java.io.File;
 
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters;
+import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GSEAResult;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
@@ -87,36 +88,10 @@ public class EnrichmentMapParameters {
     private int upperlimit = 1;    
     //value specifying whether bulk EM is being used (needed to transfer file name to the network names)
     private boolean BulkEM = false;
-
-    //Input File names
-    //GMT - gene set definition file
-    private String GMTFileName;
-    //Expression files
-    private String expressionFileName1;
-    private String expressionFileName2;
-    //Enrichment results files - data set 1
-    private String enrichmentDataset1FileName1;
-    private String enrichmentDataset1FileName2;
-    //Enrichment results files - data set 2
-    private String enrichmentDataset2FileName1;
-    private String enrichmentDataset2FileName2;
-    //Dataset Rank files
-    private String dataset1RankedFile = null;
-    private String dataset2RankedFile = null;
-    //Class files - can only be specified when loading in GSEA results with an rpt
-    //class files are a specific type of file used in an GSEA analysis indicating which class
-    //each column of the expression file belongs to.  It is used in the application to
-    //colour the heading on the columns accroding to class or phenotype they belong to.
-    private String classFile1;
-    private String classFile2;
-    //class file designations that were loaded in from a session file.
-    //need a temporary place for these class definition as
-    private String[] temp_class1 = null;
-    private String[] temp_class2 = null;
     
-    private String gseaHtmlReportFileDataset1 = null;
-    private String gseaHtmlReportFileDataset2 = null;
-
+    //store all dataset Files in one construct
+    private HashMap<String, DataSetFiles> datasetFiles;
+    
     //FLAGS used in the analysis.
     //flag to indicate if the user has supplied a data/expression file
     private boolean Data = false;
@@ -190,8 +165,6 @@ public class EnrichmentMapParameters {
     private String Dataset1Phenotype2 = "DOWN";
     private String Dataset2Phenotype1 = "UP";
     private String Dataset2Phenotype2 = "DOWN";
-
-    private Double version = 1.0;
     
     /**
      * Default constructor to create a fresh instance.
@@ -251,7 +224,10 @@ public class EnrichmentMapParameters {
         //create the slider for the similarity cutoff
         similaritySlider = new SliderBarPanel(this.similarityCutOff,1,"Similarity Cutoff",this, EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT, EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT,ParametersPanel.summaryPanelWidth, true, this.similarityCutOff);
 
-
+        //an enrichment map minimally needs to have one dataset
+        datasetFiles = new HashMap<String, DataSetFiles>();
+        
+        datasetFiles.put(EnrichmentMap.DATASET1, new DataSetFiles());
     }
 
 
@@ -276,12 +252,10 @@ public class EnrichmentMapParameters {
             if(tokens.length == 2 )
                 props.put(tokens[0] ,tokens[1]);
         }
-
-        this.version = Double.parseDouble(props.get("Version"));
         
-        if(version > 1.0)
+        if(!props.containsKey("Version"))
         		reconstruct_ver1(props);
-        else
+        else if(Double.parseDouble(props.get("Version")) >= 2.0)
         		reconstruct_ver2(props);
         
         this.attributePrefix = props.get("attributePrefix");
@@ -361,20 +335,18 @@ public class EnrichmentMapParameters {
      */
     private void reconstruct_ver1(HashMap<String,String> props){
     		                
-        this.GMTFileName = props.get("GMTFileName");
+        this.datasetFiles.get(EnrichmentMap.DATASET1).setGMTFileName(props.get("GMTFileName"));
 
         if(props.get("expressionFileName1")!= null)
-            this.expressionFileName1 = props.get("expressionFileName1");
+        	this.datasetFiles.get(EnrichmentMap.DATASET1).setExpressionFileName(props.get("expressionFileName1"));
         //account for legacy issue with rename of parameter
         else
-            this.expressionFileName1 = props.get("GCTFileName1");
+        	this.datasetFiles.get(EnrichmentMap.DATASET1).setExpressionFileName(props.get("GCTFileName1"));
 
-        this.enrichmentDataset1FileName1 = props.get("enerichmentDataset1FileName1");//TODO: fix Typo and take care of legacy issue!
-        this.enrichmentDataset1FileName2 = props.get("enrichmentDataset1FileName2");
-
-        this.gseaHtmlReportFileDataset1 = props.get("gseaHtmlReportFileDataset1");
-        this.gseaHtmlReportFileDataset2 = props.get("gseaHtmlReportFileDataset2");
-
+        this.datasetFiles.get(EnrichmentMap.DATASET1).setEnrichmentFileName1(props.get("enerichmentDataset1FileName1"));//TODO: fix Typo and take care of legacy issue!
+        this.datasetFiles.get(EnrichmentMap.DATASET1).setEnrichmentFileName2(props.get("enrichmentDataset1FileName2"));
+        this.datasetFiles.get(EnrichmentMap.DATASET1).setGseaHtmlReportFile(props.get("gseaHtmlReportFileDataset1"));
+        
         this.Dataset1Phenotype1 = props.get("dataset1Phenotype1");
         this.Dataset1Phenotype2 = props.get("dataset1Phenotype2");
         this.Dataset2Phenotype1 = props.get("dataset2Phenotype1");
@@ -383,26 +355,19 @@ public class EnrichmentMapParameters {
         //rank files 1
         if(props.get("rankFile1")!= null){
             if((props.get("rankFile1")).equalsIgnoreCase("null") )
-                this.dataset1RankedFile = null;
+            	this.datasetFiles.get(EnrichmentMap.DATASET1).setRankedFile(null);
             else
-                this.dataset1RankedFile = props.get("rankFile1");
+            	this.datasetFiles.get(EnrichmentMap.DATASET1).setRankedFile(props.get("rankFile1"));
         }
 
         if(props.get("classFile1") != null){
             if((props.get("classFile1")).equalsIgnoreCase("null") )
-                this.classFile1 = null;
+            	this.datasetFiles.get(EnrichmentMap.DATASET1).setClassFile(null);
             else
-                this.classFile1 = props.get("classFile1");
+            	this.datasetFiles.get(EnrichmentMap.DATASET1).setClassFile(props.get("classFile1"));
         }
-        if(props.get("classFile2")!= null){
-            if((props.get("classFile2")).equalsIgnoreCase("null"))
-                this.classFile2 = null;
-            else
-                this.classFile2 = props.get("classFile2");
-        }
-
         //Get the class one array from the prop file
-        if(props.get("class1")!= null){
+/*        if(props.get("class1")!= null){
             if((props.get("class1")).equalsIgnoreCase("null") )
                 this.temp_class1 = null;
             else{
@@ -415,42 +380,54 @@ public class EnrichmentMapParameters {
                     this.temp_class1[i] = set[i];
                 }
             }
-        }
-        //Get the class two array from the prop file
-        if(props.get("class2")!= null){
-            if((props.get("class2")).equalsIgnoreCase("null") )
-                this.temp_class2 = null;
-            else{
-                String classes = props.get("class2");
-                String [] set = classes.split(",");
-
-                this.temp_class2 = new String[set.length];
-
-                for (int i = 0; i < set.length; i++) {
-                    this.temp_class2[i] = set[i];
-                }
-            }
-        }
-
-        
-
+        }*/
         if(twoDatasets){
+        	
+        	//make sure there is a second dataset
+        	if(!this.datasetFiles.containsKey(EnrichmentMap.DATASET2))
+        		this.addnewDataset(EnrichmentMap.DATASET2);
+        	
             if(Data2){
                 if(props.get("expressionFileName2")!= null)
-                    this.expressionFileName2 = props.get("expressionFileName2");
+                	this.datasetFiles.get(EnrichmentMap.DATASET2).setExpressionFileName(props.get("expressionFileName2"));
                 //account for legacy issue with rename of parameter
                 else
-                    this.expressionFileName2 = props.get("GCTFileName2");
+                	this.datasetFiles.get(EnrichmentMap.DATASET2).setExpressionFileName(props.get("GCTFileName2"));
             }
-            this.enrichmentDataset2FileName1 = props.get("enerichmentDataset2FileName1");
-            this.enrichmentDataset2FileName2 = props.get("enrichmentDataset2FileName2");
+            this.datasetFiles.get(EnrichmentMap.DATASET2).setEnrichmentFileName1(props.get("enerichmentDataset2FileName1"));
+            this.datasetFiles.get(EnrichmentMap.DATASET2).setEnrichmentFileName2(props.get("enrichmentDataset2FileName2"));
             //rankfile 2
             if(props.get("rankFile2") != null){
                 if((props.get("rankFile2")).equalsIgnoreCase("null") )
-                    this.dataset2RankedFile = null;
+                	this.datasetFiles.get(EnrichmentMap.DATASET2).setRankedFile(null);
                  else
-                    this.dataset2RankedFile = props.get("rankFile2");
+                	 this.datasetFiles.get(EnrichmentMap.DATASET2).setRankedFile(props.get("rankFile2"));
             }
+            
+            this.datasetFiles.get(EnrichmentMap.DATASET2).setGseaHtmlReportFile(props.get("gseaHtmlReportFileDataset2"));
+            if(props.get("classFile2")!= null){
+                if((props.get("classFile2")).equalsIgnoreCase("null"))
+                	this.datasetFiles.get(EnrichmentMap.DATASET2).setClassFile(null);
+                else
+                	this.datasetFiles.get(EnrichmentMap.DATASET2).setClassFile(props.get("classFile2"));
+            }
+
+           
+            //Get the class two array from the prop file
+/*            if(props.get("class2")!= null){
+                if((props.get("class2")).equalsIgnoreCase("null") )
+                	this.datasetFiles.get(EnrichmentMap.DATASET2).setTemp_class1(null);
+                else{
+                    String classes = props.get("class2");
+                    String [] set = classes.split(",");
+
+                    this.temp_class2 = new String[set.length];
+
+                    for (int i = 0; i < set.length; i++) {
+                        this.temp_class2[i] = set[i];
+                    }
+                }
+            }*/
         }
         
     }
@@ -459,7 +436,11 @@ public class EnrichmentMapParameters {
      * Restore session file for version 2.0 and up
      */
     private void reconstruct_ver2(HashMap<String,String> props){
-    	
+    	//Get the list of Datasets
+    	if(props.containsKey("Datasets")){
+    		String list_ds = props.get("Datasets");
+    		String[] datasets = list_ds.split(",");
+    	}
     }
     
    /* Method to copy the input contents of an enrichment map paremeter set
@@ -482,21 +463,18 @@ public class EnrichmentMapParameters {
             //this.NetworkName = copy.getNetworkName();
             this.BulkEM = copy.isBulkEM();
         }
-        this.GMTFileName = copy.getGMTFileName();
-        this.expressionFileName1 = copy.getExpressionFileName1();
-        this.expressionFileName2 = copy.getExpressionFileName2();
-
-        this.dataset1RankedFile = copy.getDataset1RankedFile();
-        this.dataset2RankedFile = copy.getDataset2RankedFile();
-
-        this.enrichmentDataset1FileName1 = copy.getEnrichmentDataset1FileName1();
-        this.enrichmentDataset1FileName2 = copy.getEnrichmentDataset1FileName2();
-        this.enrichmentDataset2FileName1 = copy.getEnrichmentDataset2FileName1();
-        this.enrichmentDataset2FileName2 = copy.getEnrichmentDataset2FileName2();
-
-        this.gseaHtmlReportFileDataset1 = copy.getGseaHtmlReportFileDataset1();
-        this.gseaHtmlReportFileDataset2 = copy.getGseaHtmlReportFileDataset2();
-
+        
+        //go through each dataset and copy it into the current em
+        for(Iterator i = copy.getDatasetFiles().keySet().iterator();i.hasNext();){
+          	String ds = (String)i.next();
+          	DataSetFiles new_ds = new DataSetFiles();
+          	new_ds.copy(copy.getDatasetFiles().get(ds));
+          	
+          	//put the new dataset in
+          	this.datasetFiles.put(ds, new_ds);
+        	
+        }
+        
         this.pvalue = copy.getPvalue();
         //create the slider for this pvalue
         pvalueSlider = new SliderBarPanel(0,this.pvalue,"P-value Cutoff",this, EnrichmentMapVisualStyle.PVALUE_DATASET1, EnrichmentMapVisualStyle.PVALUE_DATASET2,ParametersPanel.summaryPanelWidth, false, this.pvalue);
@@ -516,9 +494,7 @@ public class EnrichmentMapParameters {
         this.method = copy.getMethod();
         this.similarityMetric = copy.getSimilarityMetric();
 
-       //missing the classfiles in the copy --> bug ticket #61
-        this.classFile1 = copy.getClassFile1();
-        this.classFile2 = copy.getClassFile2();
+       
 
         //field needed when calculating bulk enrichment maps.
         this.GMTDirName = copy.getGMTDirName();
@@ -542,21 +518,16 @@ public class EnrichmentMapParameters {
 
        //this.NetworkName = copy.getNetworkName();
 
-        this.GMTFileName = copy.getGMTFileName();
-        this.expressionFileName1 = copy.getExpressionFileName1();
-        this.expressionFileName2 = copy.getExpressionFileName2();
-
-        this.dataset1RankedFile = copy.getDataset1RankedFile();
-        this.dataset2RankedFile = copy.getDataset2RankedFile();
-
-        this.enrichmentDataset1FileName1 = copy.getEnrichmentDataset1FileName1();
-        this.enrichmentDataset1FileName2 = copy.getEnrichmentDataset1FileName2();
-        this.enrichmentDataset2FileName1 = copy.getEnrichmentDataset2FileName1();
-        this.enrichmentDataset2FileName2 = copy.getEnrichmentDataset2FileName2();
-
-        this.gseaHtmlReportFileDataset1 = copy.getGseaHtmlReportFileDataset1();
-        this.gseaHtmlReportFileDataset2 = copy.getGseaHtmlReportFileDataset2();
-
+	 //go through each dataset and copy it into the current em
+       for(Iterator i = copy.getDatasetFiles().keySet().iterator();i.hasNext();){
+         	String ds = (String)i.next();
+         	DataSetFiles new_ds = new DataSetFiles();
+         	new_ds.copy(copy.getDatasetFiles().get(ds));
+         	
+         	//put the new dataset in
+         	this.datasetFiles.put(ds, new_ds);
+       	
+       }
 
         this.pvalue = copy.getPvalue();
         this.pvalueSlider = copy.getPvalueSlider();
@@ -575,12 +546,6 @@ public class EnrichmentMapParameters {
         this.similarityMetric = copy.getSimilarityMetric();
         this.combinedConstant = copy.getCombinedConstant();
         this.twoDistinctExpressionSets =  copy.isTwoDistinctExpressionSets();
-
-        //missing the classfiles in the copy --> bug ticket #61
-        this.classFile1 = copy.getClassFile1();
-        this.classFile2 = copy.getClassFile2();
-        this.temp_class1 = copy.getTemp_class1();
-        this.temp_class2 = copy.getTemp_class2();       
 
         this.selectedEdges = copy.getSelectedEdges();
         this.selectedNodes = copy.getSelectedNodes();
@@ -614,50 +579,48 @@ public class EnrichmentMapParameters {
     */
     public String checkMinimalRequirements(){
         String errors = "";
+        
+        //Go through each Dataset
+        for(Iterator i = this.getDatasetFiles().keySet().iterator();i.hasNext();){
+         	String ds = (String)i.next();
+         	DataSetFiles dsFiles = this.getDatasetFiles().get(ds);
+        
+         	//minimal for either analysis
+         	//check to see if GMT is not null but everything else is
+         	if((dsFiles.getEnrichmentFileName1() == null || dsFiles.getEnrichmentFileName1().equalsIgnoreCase(""))
+                && (dsFiles.getEnrichmentFileName2() == null || dsFiles.getEnrichmentFileName2().equalsIgnoreCase("")) &&
+                dsFiles.getGMTFileName() != null && !dsFiles.getGMTFileName().equalsIgnoreCase(""))
+         		errors = "GMTONLY";
+         	else{
 
-        //minimal for either analysis
-        //check to see if GMT is not null but everything else is
-        if(this.enrichmentDataset1FileName1 == null && this.enrichmentDataset1FileName2 == null
-                && this.enrichmentDataset2FileName1 == null && this.enrichmentDataset2FileName2 == null &&
-                this.GMTFileName != null && !this.GMTFileName.equalsIgnoreCase(""))
-            errors = "GMTONLY";
-        else{
+
+         		if(dsFiles.getEnrichmentFileName1() == null || (dsFiles.getEnrichmentFileName1().equalsIgnoreCase("") || !checkFile(dsFiles.getEnrichmentFileName1())))
+         			errors = errors + "Dataset 1, enrichment file 1 can not be found\n";
 
 
-            if(this.enrichmentDataset1FileName1 == null || (this.enrichmentDataset1FileName1.equalsIgnoreCase("") || !checkFile(this.enrichmentDataset1FileName1)))
-                errors = errors + "Dataset 1, enrichment file 1 can not be found\n";
+         		//GMT file is not required for David analysis
+         		if(!this.method.equalsIgnoreCase(EnrichmentMapParameters.method_DAVID))
+         			if(dsFiles.getGMTFileName() == null || dsFiles.getGMTFileName().equalsIgnoreCase("") || !checkFile(dsFiles.getGMTFileName()))
+         				errors = errors + "GMT file can not be found \n";
 
-
-            if(this.twoDatasets){
-                if(this.enrichmentDataset2FileName1 == null || (this.enrichmentDataset2FileName1.equalsIgnoreCase("") || !checkFile(this.enrichmentDataset2FileName1)))
-                    errors = errors + "Dataset 2, enrichment file 1 can not be found\n";
-            }
-
-            //GMT file is not required for David analysis
-            if(!this.method.equalsIgnoreCase(EnrichmentMapParameters.method_DAVID))
-                if(this.GMTFileName == null || this.GMTFileName.equalsIgnoreCase("") || !checkFile(this.GMTFileName))
-                    errors = errors + "GMT file can not be found \n";
-
-            // /GSEA inputs
-            if(this.method.equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)){
-                if(this.enrichmentDataset1FileName2 != null && (this.enrichmentDataset1FileName2.equalsIgnoreCase("") || !checkFile(this.enrichmentDataset1FileName2)))
-                    errors = errors + "Dataset 1, enrichment file 2 can not be found\n";
-                if(this.twoDatasets){
-                    if(this.enrichmentDataset2FileName2 != null && (this.enrichmentDataset2FileName2.equalsIgnoreCase("") || !checkFile(this.enrichmentDataset2FileName2)))
-                        errors = errors + "Dataset 2, enrichment file 2 can not be found\n";
-                }
-            }
-
-            //check to see if there are two datasets if the two gct files are the same
-            if((this.twoDatasets) && (this.expressionFileName1 != null) && (this.expressionFileName1.equalsIgnoreCase(this.expressionFileName2))){
-                this.Data2 = false;
-                this.expressionFileName2 = "";
-            }
-            //if there are no expression files and this is a david analysis there is no way of telling if they are from the same gmt file so use different one
-            else if((this.expressionFileName1 != null) && (this.expressionFileName2 != null) && this.method.equalsIgnoreCase(EnrichmentMapParameters.method_DAVID)){
-                this.setTwoDistinctExpressionSets(true);
-            }
+         		// /GSEA inputs
+         		if(this.method.equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)){
+         			if(dsFiles.getEnrichmentFileName2() != null && (dsFiles.getEnrichmentFileName2().equalsIgnoreCase("") || !checkFile(dsFiles.getEnrichmentFileName2())))
+         				errors = errors + "Dataset 1, enrichment file 2 can not be found\n";         			
+         		}       		
+         	}
         }
+        
+        //if there is more than one dataset
+        //check to see if there are two datasets if the two gct files are the same
+ 		if((this.twoDatasets) && (this.datasetFiles.get(EnrichmentMap.DATASET1).getExpressionFileName() != null) && (this.datasetFiles.get(EnrichmentMap.DATASET1).getExpressionFileName().equalsIgnoreCase(this.datasetFiles.get(EnrichmentMap.DATASET2).getExpressionFileName()))){
+ 			this.Data2 = false;
+ 			this.datasetFiles.get(EnrichmentMap.DATASET2).setExpressionFileName("");
+ 		}
+ 		//if there are no expression files and this is a david analysis there is no way of telling if they are from the same gmt file so use different one
+ 		else if((this.datasetFiles.get(EnrichmentMap.DATASET1).getExpressionFileName() != null) && (this.datasetFiles.get(EnrichmentMap.DATASET2).getExpressionFileName() != null) && this.method.equalsIgnoreCase(EnrichmentMapParameters.method_DAVID)){
+ 			this.setTwoDistinctExpressionSets(true);
+ 		}
 
 
         return errors;
@@ -694,24 +657,14 @@ public class EnrichmentMapParameters {
         StringBuffer paramVariables = new StringBuffer();
 
         paramVariables.append("enrichment_edge_type\t" + enrichment_edge_type + "\n");
-
-        //file names
-        paramVariables.append("GMTFileName\t" + GMTFileName + "\n");
-        paramVariables.append("expressionFileName1\t" + expressionFileName1 + "\n");
-        paramVariables.append("expressionFileName2\t" + expressionFileName2 + "\n");
-        //TODO fix typo in field
-        paramVariables.append("enerichmentDataset1FileName1\t" + enrichmentDataset1FileName1 + "\n");//TODO: fix Typo and take care of legacy issue!
-        paramVariables.append("enrichmentDataset1FileName2\t" + enrichmentDataset1FileName2 + "\n");
-
-        paramVariables.append("enerichmentDataset2FileName1\t" + enrichmentDataset2FileName1 + "\n");
-        paramVariables.append("enrichmentDataset2FileName2\t" + enrichmentDataset2FileName2 + "\n");
-
-        paramVariables.append("gseaHtmlReportFileDataset1\t" + gseaHtmlReportFileDataset1 + "\n");
-        paramVariables.append("gseaHtmlReportFileDataset2\t" + gseaHtmlReportFileDataset2 + "\n");
-
-        paramVariables.append("classFile1\t" + classFile1  + "\n");
-        paramVariables.append("classFile2\t" + classFile2  + "\n");
-
+        
+      //go through each dataset and copy it into the current em
+        for(Iterator i = this.datasetFiles.keySet().iterator();i.hasNext();){
+        	String ds = (String)i.next();
+        	paramVariables.append(this.datasetFiles.get(ds).toString(ds));
+        	
+        }
+        
         //Write the classes/phenotypes as a comma separated list.
         //TODO:print classes out to prop file
         /*       if(!EM.getExpressionSets().isEmpty()){
@@ -733,10 +686,6 @@ public class EnrichmentMapParameters {
 */
         //enrichment method.
         paramVariables.append("method\t" + this.method + "\n");
-
-        //rank files
-        paramVariables.append("rankFile1\t" + dataset1RankedFile + "\n");
-        paramVariables.append("rankFile2\t" + dataset2RankedFile + "\n");
 
         //boolean flags
         paramVariables.append("twoDatasets\t" + twoDatasets + "\n");
@@ -954,7 +903,7 @@ public class EnrichmentMapParameters {
     }
 
 
-    public String getGMTFileName() {
+ /*   public String getGMTFileName() {
 
         return GMTFileName;
     }
@@ -1011,7 +960,7 @@ public class EnrichmentMapParameters {
     public void setEnrichmentDataset2FileName2(String enrichmentDataset2FileName2) {
         this.enrichmentDataset2FileName2 = enrichmentDataset2FileName2;
     }
-
+*/
     public double getPvalue() {
         return pvalue;
     }
@@ -1080,7 +1029,7 @@ public class EnrichmentMapParameters {
         this.FDR = FDR;
     }
 
-    public String getClassFile1() {
+ /*   public String getClassFile1() {
         return classFile1;
     }
 
@@ -1095,11 +1044,11 @@ public class EnrichmentMapParameters {
     public void setClassFile2(String classFile2) {
         this.classFile2 = classFile2;
     }
-
+*/
     /**
      * @param gseaHtmlReportFileDataset1 the gseaHtmlReportFileDataset1 to set
      */
-    public void setGseaHtmlReportFileDataset1(String gseaHtmlReportFileDataset1) {
+/*    public void setGseaHtmlReportFileDataset1(String gseaHtmlReportFileDataset1) {
         this.gseaHtmlReportFileDataset1 = gseaHtmlReportFileDataset1;
     }
 
@@ -1107,7 +1056,7 @@ public class EnrichmentMapParameters {
     /**
      * @return the gseaHtmlReportFileDataset1
      */
-    public String getGseaHtmlReportFileDataset1() {
+ /*   public String getGseaHtmlReportFileDataset1() {
         return gseaHtmlReportFileDataset1;
     }
 
@@ -1115,7 +1064,7 @@ public class EnrichmentMapParameters {
     /**
      * @param gseaHtmlReportFileDataset2 the gseaHtmlReportFileDataset2 to set
      */
-    public void setGseaHtmlReportFileDataset2(String gseaHtmlReportFileDataset2) {
+/*    public void setGseaHtmlReportFileDataset2(String gseaHtmlReportFileDataset2) {
         this.gseaHtmlReportFileDataset2 = gseaHtmlReportFileDataset2;
     }
 
@@ -1123,10 +1072,10 @@ public class EnrichmentMapParameters {
     /**
      * @return the gseaHtmlReportFileDataset2
      */
-    public String getGseaHtmlReportFileDataset2() {
+ /*   public String getGseaHtmlReportFileDataset2() {
         return gseaHtmlReportFileDataset2;
     }
-
+*/
     public SliderBarPanel getPvalueSlider() {
         return pvalueSlider;
     }
@@ -1163,7 +1112,7 @@ public class EnrichmentMapParameters {
         this.hmParams = hmParams;
     }
 
-    public String getDataset1RankedFile() {
+/*    public String getDataset1RankedFile() {
         return dataset1RankedFile;
     }
 
@@ -1178,7 +1127,7 @@ public class EnrichmentMapParameters {
     public void setDataset2RankedFile(String dataset2RankedFile) {
         this.dataset2RankedFile = dataset2RankedFile;
     }
-
+*/
    
     /*create a method to re-create rank to gene given the gene to rank*/
     public HashMap<Integer, Integer> getRank2geneDataset(HashMap<Integer,Rank> gene2rank){
@@ -1227,7 +1176,7 @@ public class EnrichmentMapParameters {
         cyto_prop.setProperty("EnrichmentMap.default_sort_method",defaultSortMethod);
     }
 
-    public String[] getTemp_class1() {
+/*    public String[] getTemp_class1() {
         return temp_class1;
     }
 
@@ -1242,7 +1191,7 @@ public class EnrichmentMapParameters {
     public void setTemp_class2(String[] temp_class2) {
         this.temp_class2 = temp_class2;
     }
-
+*/
     
 
     /**
@@ -1389,5 +1338,49 @@ public class EnrichmentMapParameters {
 	public void setDataset2Phenotype2(String dataset2Phenotype2) {
 		Dataset2Phenotype2 = dataset2Phenotype2;
 	}
-       
+
+
+	public HashMap<String, DataSetFiles> getDatasetFiles() {
+		return datasetFiles;
+	}
+
+
+	public void setDatasetFiles(HashMap<String, DataSetFiles> datasetFiles) {
+		this.datasetFiles = datasetFiles;
+	}
+    
+	public void addnewDataset(String name){
+		if(!this.datasetFiles.containsKey(name))
+			this.datasetFiles.put(name, new DataSetFiles());
+		else
+			System.out.println("datasetsFiles already contains a dataset by the name:"+name);
+	}
+	
+	/*
+	 * Get the GMT file
+	 * If there are multiple dataset first check to see if the GMT files are the same
+	 * If all the gmt files are the same then it returns the file name.
+	 * If they are not the same then returns null
+	 */
+	public String getGMTFileName(){
+		String gmt = "";
+		for(Iterator i = this.datasetFiles.keySet().iterator();i.hasNext();){
+			String current = (String)i.next();
+			if(gmt.equalsIgnoreCase(""))
+				gmt = this.datasetFiles.get(current).getGMTFileName();
+			else if(!gmt.equalsIgnoreCase(this.datasetFiles.get(current).getGMTFileName()))
+				gmt = null;
+		}
+		return gmt;
+	}
+	
+	/*
+	 * Method for Post Analysis
+	 * Currently the post analysis assumes that there is only one GMT file
+	 * It has to be assoicated with Dataset 1
+	 * TODO:Get rid of this dependancy
+	 */
+	public void setGMTFileName(String name){
+		this.datasetFiles.get(EnrichmentMap.DATASET1).setGMTFileName(name);
+	}
 }

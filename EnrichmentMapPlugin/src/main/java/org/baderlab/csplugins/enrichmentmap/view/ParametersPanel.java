@@ -80,6 +80,7 @@ public class ParametersPanel extends JPanel {
     public static int summaryPanelHeight = 1000;
     private JCheckBox heatmapAutofocusCheckbox;
     private EnrichmentMapParameters emParams;
+    private EnrichmentMap map;
 
     /**
      * Class constructor
@@ -94,7 +95,8 @@ public class ParametersPanel extends JPanel {
      * @param params - enrichment map parameters to update panel according to
      */
     public void updatePanel(EnrichmentMap map){
-        this.emParams = map.getParams();
+        this.map = map;
+    	this.emParams = map.getParams();
         EnrichmentMapParameters params = map.getParams();
 
         this.removeAll();
@@ -319,23 +321,23 @@ public class ParametersPanel extends JPanel {
                runInfoText = runInfoText + "<b>Jaccard Overlap Combined Cut-off:</b>" + params.getSimilarityCutOff() + "<br>";
                runInfoText = runInfoText + "<b>Test used:</b>  Jaccard Overlap Combined Index (k constant = " + params.getCombinedConstant() + ")<br>";
            }
-           runInfoText = runInfoText + "<font size=-1><b>Genesets File:</b>" + shortenPathname(params.getGMTFileName()) + "<br>";
-           runInfoText = runInfoText + "<b>Dataset 1 Data Files:</b> " + shortenPathname(params.getEnrichmentDataset1FileName1()) + ",<br>" + shortenPathname(params.getEnrichmentDataset1FileName2()) + "<br>";
+           runInfoText = runInfoText + "<font size=-1><b>Genesets File:</b>" + shortenPathname(map.getParams().getDatasetFiles().get(EnrichmentMap.DATASET1).getGMTFileName()) + "<br>";
+           runInfoText = runInfoText + "<b>Dataset 1 Data Files:</b> " + shortenPathname(map.getParams().getDatasetFiles().get(EnrichmentMap.DATASET1).getEnrichmentFileName1()) + ",<br>" + shortenPathname(map.getParams().getDatasetFiles().get(EnrichmentMap.DATASET1).getEnrichmentFileName2()) + "<br>";
            if(params.isTwoDatasets()){
-               runInfoText = runInfoText + "<b>Dataset 2 Data Files:</b> " + shortenPathname(params.getEnrichmentDataset2FileName1()) + ",<br>" + shortenPathname(params.getEnrichmentDataset2FileName2()) + "<br>";
+               runInfoText = runInfoText + "<b>Dataset 2 Data Files:</b> " + shortenPathname(map.getParams().getDatasetFiles().get(EnrichmentMap.DATASET2).getEnrichmentFileName1()) + ",<br>" + shortenPathname(map.getParams().getDatasetFiles().get(EnrichmentMap.DATASET2).getEnrichmentFileName2()) + "<br>";
            }
            if(params.isData()){
-               runInfoText = runInfoText + "<b>Data file:</b>" + shortenPathname(params.getExpressionFileName1()) + "<br>";
+               runInfoText = runInfoText + "<b>Data file:</b>" + shortenPathname(map.getParams().getDatasetFiles().get(EnrichmentMap.DATASET1).getExpressionFileName()) + "<br>";
            }
            //TODO:fix second dataset viewing.
           /* if(params.isData2() && params.getEM().getExpression(EnrichmentMap.DATASET2) != null){
                runInfoText = runInfoText + "<b>Data file 2:</b>" + shortenPathname(params.getExpressionFileName2()) + "<br>";
            }*/
-           if( ! (params.getGseaHtmlReportFileDataset1() == null) ){
-               runInfoText = runInfoText + "<b>GSEA Report 1:</b>" + shortenPathname(params.getGseaHtmlReportFileDataset1()) + "<br>";
+           if( ! (map.getParams().getDatasetFiles().containsKey(EnrichmentMap.DATASET1) && map.getParams().getDatasetFiles().get(EnrichmentMap.DATASET1).getGseaHtmlReportFile() != null) ){
+               runInfoText = runInfoText + "<b>GSEA Report 1:</b>" + shortenPathname(map.getParams().getDatasetFiles().get(EnrichmentMap.DATASET1).getGseaHtmlReportFile()) + "<br>";
            }
-           if( ! (params.getGseaHtmlReportFileDataset2() == null) ){
-               runInfoText = runInfoText + "<b>GSEA Report 2:</b>" + shortenPathname(params.getGseaHtmlReportFileDataset2()) + "<br>";
+           if( ! (map.getParams().getDatasetFiles().containsKey(EnrichmentMap.DATASET2) && map.getParams().getDatasetFiles().get(EnrichmentMap.DATASET2).getGseaHtmlReportFile() != null) ){
+               runInfoText = runInfoText + "<b>GSEA Report 2:</b>" + shortenPathname(map.getParams().getDatasetFiles().get(EnrichmentMap.DATASET2).getGseaHtmlReportFile()) + "<br>";
            }
 
            runInfoText = runInfoText + "</font></html>";
@@ -495,10 +497,10 @@ public class ParametersPanel extends JPanel {
         String reportFile;
         String netwAttrName;
         if (dataset == 1) {
-            reportFile = params.getGseaHtmlReportFileDataset1();
+            reportFile = map.getParams().getDatasetFiles().get(EnrichmentMap.DATASET1).getGseaHtmlReportFile();
             netwAttrName = EnrichmentMapVisualStyle.NETW_REPORT1_DIR;
         } else {
-            reportFile = params.getGseaHtmlReportFileDataset2();
+            reportFile = map.getParams().getDatasetFiles().get(EnrichmentMap.DATASET2).getGseaHtmlReportFile();
             netwAttrName = EnrichmentMapVisualStyle.NETW_REPORT2_DIR;
         }
 

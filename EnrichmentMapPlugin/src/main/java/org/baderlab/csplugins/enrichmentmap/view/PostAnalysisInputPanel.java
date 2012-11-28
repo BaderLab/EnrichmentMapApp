@@ -62,6 +62,7 @@ import org.baderlab.csplugins.enrichmentmap.Enrichment_Map_Plugin;
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.actions.BuildPostAnalysisActionListener;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowAboutPanelAction;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.JMultiLineToolTip;
 
 import java.awt.*;
@@ -150,7 +151,8 @@ public class PostAnalysisInputPanel extends JPanel {
         setLayout(new BorderLayout());
 
         //get the current enrichment map parameters
-        EnrichmentMapParameters emParams = EnrichmentMapManager.getInstance().getMap(Cytoscape.getCurrentNetwork().getIdentifier()).getParams();
+        EnrichmentMap map = EnrichmentMapManager.getInstance().getMap(Cytoscape.getCurrentNetwork().getIdentifier());
+        EnrichmentMapParameters emParams = map.getParams();
         if (emParams == null){
             emParams = new EnrichmentMapParameters();
         }
@@ -1021,7 +1023,7 @@ public class PostAnalysisInputPanel extends JPanel {
      */
     private void resetPanel(){
 
-        this.paParams = new PostAnalysisParameters(paParams);
+        this.paParams = new PostAnalysisParameters(EnrichmentMapManager.getInstance().getMap(Cytoscape.getCurrentNetwork().getIdentifier()));
 
         //Post Analysis Type:
         signatureHub.setSelected(true);

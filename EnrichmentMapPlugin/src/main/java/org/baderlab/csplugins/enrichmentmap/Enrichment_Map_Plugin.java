@@ -203,29 +203,33 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
             prop_file_content = prop_file_content + "Version\t2.0\n";
             prop_file_content = prop_file_content + params.toString();
             try{
-            		if (!em.getSignatureGenesets().isEmpty() ) {
-            			BufferedWriter sigGmtwriter = new BufferedWriter(new FileWriter(siggmt));
-            			sigGmtwriter.write(params.printHashmap(em.getSignatureGenesets()));
-            			sigGmtwriter.close();
-            			pFileList.add(siggmt);
-            		}
+            	if (!em.getSignatureGenesets().isEmpty() ) {
+            		BufferedWriter sigGmtwriter = new BufferedWriter(new FileWriter(siggmt));
+            		sigGmtwriter.write(params.printHashmap(em.getSignatureGenesets()));
+            		sigGmtwriter.close();
+            		pFileList.add(siggmt);
+            	}
             
-            		File genes = new File(tmpDir, name+".genes.txt");
-            		BufferedWriter geneswriter = new BufferedWriter(new FileWriter(genes));
-            		geneswriter.write(params.printHashmap(em.getGenes()));
-            		geneswriter.close();
-            		pFileList.add(genes);
+            	File genes = new File(tmpDir, name+".genes.txt");
+            	BufferedWriter geneswriter = new BufferedWriter(new FileWriter(genes));
+            	geneswriter.write(params.printHashmap(em.getGenes()));
+            	geneswriter.close();
+            	pFileList.add(genes);
 
-            		File hkgenes = new File(tmpDir, name+".hashkey2genes.txt");
-            		BufferedWriter hashkey2geneswriter = new BufferedWriter(new FileWriter(hkgenes));
-            		hashkey2geneswriter.write(params.printHashmap(em.getHashkey2gene()));
-            		hashkey2geneswriter.close();
-            		pFileList.add(hkgenes);
+            	File hkgenes = new File(tmpDir, name+".hashkey2genes.txt");
+            	BufferedWriter hashkey2geneswriter = new BufferedWriter(new FileWriter(hkgenes));
+            	hashkey2geneswriter.write(params.printHashmap(em.getHashkey2gene()));
+            	hashkey2geneswriter.close();
+            	pFileList.add(hkgenes);
             
-            		//get the properties associated with each Dataset
-            		if(!em.getDatasets().isEmpty()){
-            			HashMap<String, DataSet> all_datasets = em.getDatasets();
-            			for(Iterator<String> k  = all_datasets.keySet().iterator(); k.hasNext();){
+            	//get the properties associated with each Dataset
+            	if(!em.getDatasets().isEmpty()){
+              		HashMap<String, DataSet> all_datasets = em.getDatasets();
+              		
+              		//output to the property file how many datasets we have (so we know on reload)
+            		prop_file_content = prop_file_content + "Datasets\t"+  all_datasets.keySet().toString() +"\n";
+
+              		for(Iterator<String> k  = all_datasets.keySet().iterator(); k.hasNext();){
             				String dataset_name = k.next().toString();
             				String current = dataset_name ;
             				if(dataset_name .contains("."))

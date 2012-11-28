@@ -21,16 +21,16 @@ public class LoadDatasetTaskTest extends TestCase {
 		String testGSEAResults1FileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/task/LoadDataset/GSEA_enrichments1.xls";
 		String testGSEAResults2FileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/task/LoadDataset/GSEA_enrichments2.xls";
   	           
-		params.setGMTFileName(testGMTFileName);
-		params.setExpressionFileName1(testExpressionFileName);
-		params.setEnrichmentDataset1FileName1(testGSEAResults1FileName);
-		params.setEnrichmentDataset1FileName2(testGSEAResults2FileName);
+		params.getDatasetFiles().get(EnrichmentMap.DATASET1).setGMTFileName(testGMTFileName);
+		params.getDatasetFiles().get(EnrichmentMap.DATASET1).setExpressionFileName(testExpressionFileName);
+		params.getDatasetFiles().get(EnrichmentMap.DATASET1).setEnrichmentFileName1(testGSEAResults1FileName);
+		params.getDatasetFiles().get(EnrichmentMap.DATASET1).setEnrichmentFileName2(testGSEAResults2FileName);
 		
 		//create an new enrichment Map
 		EnrichmentMap em = new EnrichmentMap(params);
 		
 		//create a dataset
-		DataSet dataset = new DataSet(em);
+		DataSet dataset = new DataSet(em, EnrichmentMap.DATASET1);
 		
 		//create a DatasetTask
 		LoadDataSetTask task = new LoadDataSetTask(dataset);

@@ -154,8 +154,8 @@ public class VisualizeEnrichmentMapTask implements Task {
             if (map.getParams().getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)) {
                 CyAttributes networkAttributes = Cytoscape
                         .getNetworkAttributes();
-                if (map.getParams().getGseaHtmlReportFileDataset1() != null) {
-                    String report1Path = map.getParams().getGseaHtmlReportFileDataset1();
+                if (map.getParams().getDatasetFiles().containsKey(EnrichmentMap.DATASET1) && map.getParams().getDatasetFiles().get(EnrichmentMap.DATASET1).getGseaHtmlReportFile() != null) {
+                    String report1Path = map.getParams().getDatasetFiles().get(EnrichmentMap.DATASET1).getGseaHtmlReportFile();
                     // On Windows we need to replace the Back-Slashes by forward-Slashes.
                     // Otherwise we might produce special characters (\r, \n, \t, ...) 
                     // when editing the attribute in Cytoscape.
@@ -167,8 +167,8 @@ public class VisualizeEnrichmentMapTask implements Task {
                             EnrichmentMapVisualStyle.NETW_REPORT1_DIR,
                             report1Path);
                 }
-                if (map.getParams().getGseaHtmlReportFileDataset2() != null) {
-                    String report2Path = map.getParams().getGseaHtmlReportFileDataset1();
+                if (map.getParams().getDatasetFiles().containsKey(EnrichmentMap.DATASET2) && map.getParams().getDatasetFiles().get(EnrichmentMap.DATASET2).getGseaHtmlReportFile() != null) {
+                    String report2Path = map.getParams().getDatasetFiles().get(EnrichmentMap.DATASET2).getGseaHtmlReportFile();
                     // On Windows we need to replace the Back-Slashes by forward-Slashes.
                     // Otherwise we might produce special characters (\r, \n, \t, ...) 
                     // when editing the attribute in Cytoscape.

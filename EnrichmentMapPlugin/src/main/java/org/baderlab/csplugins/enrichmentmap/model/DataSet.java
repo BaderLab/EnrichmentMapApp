@@ -37,7 +37,7 @@ public class DataSet {
 	    //TODO: Can a dataset be associated to multiple Enrichment maps?
 	    private EnrichmentMap map;
 	    
-	    public DataSet(EnrichmentMap map){
+	    public DataSet(EnrichmentMap map, String name){
 	    		this.map = map;
 	    	
 	    		this.datasetGenes = new HashSet<Integer>();
@@ -51,24 +51,24 @@ public class DataSet {
 	    		//get the file name parameters for this map
 	    		EnrichmentMapParameters params = map.getParams();
 	    		//initialize all the filenames from the parameters for this dataset
-	    		this.setofgenesets.setFilename(params.getGMTFileName());
-	    		if(name == null || name == EnrichmentMap.DATASET1){
-	    			this.enrichments.setFilename1(params.getEnrichmentDataset1FileName1());
-	    			this.enrichments.setFilename2(params.getEnrichmentDataset1FileName2());
-	    			this.expressionSets.setFilename(params.getExpressionFileName1());
-	    		}
-	    		else if(name == EnrichmentMap.DATASET2){
-	    			this.enrichments.setFilename1(params.getEnrichmentDataset2FileName1());
-	    			this.enrichments.setFilename2(params.getEnrichmentDataset2FileName2());
-	    			this.expressionSets.setFilename(params.getExpressionFileName2());
+	    		if(name != null && params.getDatasetFiles().containsKey(name)){
+	    			DataSetFiles files = params.getDatasetFiles().get(name);
+	    			this.setofgenesets.setFilename(files.getGMTFileName());
+	    			this.enrichments.setFilename1(files.getEnrichmentFileName1());
+	    			this.enrichments.setFilename2(files.getEnrichmentFileName2());
+	    			this.expressionSets.setFilename(files.getExpressionFileName());
+	    		}	    		
+	    		else {
+	    			System.out.println("There are no files initialized for this Dataset, named:"+name+"\n");
 	    		}
 	    			
 	    }
 	    
-	    public DataSet(EnrichmentMap map, String name){
-	    		this(map);
-	    		this.name = name;
-	    }
+	   /* public DataSet(EnrichmentMap map, String name){
+	    	this.name = name;	
+	    	this(map);
+	    		
+	    }*/
 	    
 	    
 	    public void copy(DataSet copy){

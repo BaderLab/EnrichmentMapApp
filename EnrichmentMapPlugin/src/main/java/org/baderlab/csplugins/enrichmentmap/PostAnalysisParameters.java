@@ -47,6 +47,7 @@ import java.util.HashMap;
 
 import javax.swing.DefaultListModel;
 
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 
 /**
@@ -149,9 +150,9 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
      * 
      * @param emParams instance of EnrichmentMapParameters with parameters of the current EnrichmentMap
      */
-    public PostAnalysisParameters(EnrichmentMapParameters emParams) {
+    public PostAnalysisParameters(EnrichmentMap map) {
         // EnrichmentMapParameters
-    	super.copy(emParams);
+    	super.copy(map.getParams());
 
         // Post Analysis Type:
         this.isSignatureHub = true;
@@ -181,7 +182,7 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
         this.signature_filterMetric = default_signature_filterMetric;
         
         // register this instance in emParams
-        emParams.setPaParams(this);
+        map.setPaParams(this);
     }
 
     /**
