@@ -37,9 +37,12 @@ public class DataSet {
 	    //TODO: Can a dataset be associated to multiple Enrichment maps?
 	    private EnrichmentMap map;
 	    
-	    public DataSet(EnrichmentMap map, String name){
+	    //The list of files associated with this Dataset
+	    private DataSetFiles datasetFiles;
+	    
+	    public DataSet(EnrichmentMap map, String name, DataSetFiles files){
 	    		this.map = map;
-	    	
+	    		this.name = name;
 	    		this.datasetGenes = new HashSet<Integer>();
 	        
 	    		this.setofgenesets = new SetOfGeneSets();
@@ -51,8 +54,8 @@ public class DataSet {
 	    		//get the file name parameters for this map
 	    		EnrichmentMapParameters params = map.getParams();
 	    		//initialize all the filenames from the parameters for this dataset
-	    		if(name != null && params.getDatasetFiles().containsKey(name)){
-	    			DataSetFiles files = params.getDatasetFiles().get(name);
+	    		if(name != null){
+	    			this.datasetFiles = files;
 	    			this.setofgenesets.setFilename(files.getGMTFileName());
 	    			this.enrichments.setFilename1(files.getEnrichmentFileName1());
 	    			this.enrichments.setFilename2(files.getEnrichmentFileName2());
@@ -63,13 +66,7 @@ public class DataSet {
 	    		}
 	    			
 	    }
-	    
-	   /* public DataSet(EnrichmentMap map, String name){
-	    	this.name = name;	
-	    	this(map);
-	    		
-	    }*/
-	    
+	   	    
 	    
 	    public void copy(DataSet copy){
 	    	
@@ -148,6 +145,14 @@ public class DataSet {
 			this.datasetGenes = datasetGenes;
 		}
 
-		
 
+		public DataSetFiles getDatasetFiles() {
+			return datasetFiles;
+		}
+
+
+		public void setDatasetFiles(DataSetFiles datasetFiles) {
+			this.datasetFiles = datasetFiles;
+		}
+	
 }

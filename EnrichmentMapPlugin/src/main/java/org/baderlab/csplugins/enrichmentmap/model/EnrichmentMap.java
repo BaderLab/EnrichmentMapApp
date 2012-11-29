@@ -63,19 +63,21 @@ public class EnrichmentMap {
     		
     		this.datasets = new HashMap<String, DataSet>();
     		//initialize a new Dataset if the params have enrichment result or a GMT file
-    		if(params.getDatasetFiles().containsKey(EnrichmentMap.DATASET1)){
-    			if((params.getDatasetFiles().get(EnrichmentMap.DATASET1).getEnrichmentFileName1() != null && !params.getDatasetFiles().get(EnrichmentMap.DATASET1).getEnrichmentFileName1().isEmpty())
-    					|| (params.getDatasetFiles().get(EnrichmentMap.DATASET1).getGMTFileName() != null && !params.getDatasetFiles().get(EnrichmentMap.DATASET1).getGMTFileName().isEmpty())
-    					|| (params.getDatasetFiles().get(EnrichmentMap.DATASET1).getExpressionFileName() != null && !params.getDatasetFiles().get(EnrichmentMap.DATASET1).getExpressionFileName().isEmpty())){
-    				DataSet dataset1 = new DataSet(this,EnrichmentMap.DATASET1);
+    		if(params.getFiles().containsKey(EnrichmentMap.DATASET1)){
+    			DataSetFiles dataset1files = params.getFiles().get(EnrichmentMap.DATASET1);
+    			if((dataset1files.getEnrichmentFileName1() != null && !dataset1files.getEnrichmentFileName1().isEmpty())
+    					|| (dataset1files.getGMTFileName() != null && !dataset1files.getGMTFileName().isEmpty())
+    					|| (dataset1files.getExpressionFileName() != null && !dataset1files.getExpressionFileName().isEmpty())){
+    				DataSet dataset1 = new DataSet(this,EnrichmentMap.DATASET1,dataset1files);
     				this.datasets.put(EnrichmentMap.DATASET1, dataset1);
     			}
     		}
     		//intialize a new Dataset 2 if the params have enrichment results for a second dataset.
-    		if(params.getDatasetFiles().containsKey(EnrichmentMap.DATASET2)){
-    			if((params.getDatasetFiles().get(EnrichmentMap.DATASET2).getEnrichmentFileName1() != null && !params.getDatasetFiles().get(EnrichmentMap.DATASET2).getEnrichmentFileName1().isEmpty())
-    				|| (params.getDatasetFiles().get(EnrichmentMap.DATASET2).getExpressionFileName() != null && !params.getDatasetFiles().get(EnrichmentMap.DATASET2).getExpressionFileName().isEmpty())){
-    				DataSet dataset2 = new DataSet(this,EnrichmentMap.DATASET2);
+    		if(params.getFiles().containsKey(EnrichmentMap.DATASET2)){
+    			DataSetFiles dataset2files = params.getFiles().get(EnrichmentMap.DATASET2);
+    			if((dataset2files.getEnrichmentFileName1() != null && !dataset2files.getEnrichmentFileName1().isEmpty())
+    				|| (dataset2files.getExpressionFileName() != null && !dataset2files.getExpressionFileName().isEmpty())){
+    				DataSet dataset2 = new DataSet(this,EnrichmentMap.DATASET2,dataset2files);
     				this.datasets.put(EnrichmentMap.DATASET2, dataset2);
     			}
     		}
@@ -123,50 +125,52 @@ public class EnrichmentMap {
      */
     
     private void initialize_files(){
-    		if(params.getDatasetFiles().get(EnrichmentMap.DATASET1).getGMTFileName() != null && !params.getDatasetFiles().get(EnrichmentMap.DATASET1).getGMTFileName().isEmpty())
-    			this.getDataset(DATASET1).getSetofgenesets().setFilename(params.getDatasetFiles().get(EnrichmentMap.DATASET1).getGMTFileName());
+    		DataSetFiles dataset1files = params.getFiles().get(EnrichmentMap.DATASET1);
+    		if(dataset1files.getGMTFileName() != null && !dataset1files.getGMTFileName().isEmpty())
+    			this.getDataset(DATASET1).getSetofgenesets().setFilename(dataset1files.getGMTFileName());
 		
     		//expression files
-    		if(params.getDatasetFiles().get(EnrichmentMap.DATASET1).getExpressionFileName() != null && !params.getDatasetFiles().get(EnrichmentMap.DATASET1).getExpressionFileName().isEmpty())
-    			this.getDataset(DATASET1).getExpressionSets().setFilename(params.getDatasetFiles().get(EnrichmentMap.DATASET1).getExpressionFileName());
+    		if(dataset1files.getExpressionFileName() != null && !dataset1files.getExpressionFileName().isEmpty())
+    			this.getDataset(DATASET1).getExpressionSets().setFilename(dataset1files.getExpressionFileName());
     		
     		//enrichment results files
-    		if(params.getDatasetFiles().get(EnrichmentMap.DATASET1).getEnrichmentFileName1() != null && !params.getDatasetFiles().get(EnrichmentMap.DATASET1).getEnrichmentFileName1().isEmpty())
-    			this.getDataset(DATASET1).getEnrichments().setFilename1(params.getDatasetFiles().get(EnrichmentMap.DATASET1).getEnrichmentFileName1());
-    		if(params.getDatasetFiles().get(EnrichmentMap.DATASET1).getEnrichmentFileName2() != null && !params.getDatasetFiles().get(EnrichmentMap.DATASET1).getEnrichmentFileName2().isEmpty())
-    			this.getDataset(DATASET1).getEnrichments().setFilename2(params.getDatasetFiles().get(EnrichmentMap.DATASET1).getEnrichmentFileName2());
+    		if(dataset1files.getEnrichmentFileName1() != null && !dataset1files.getEnrichmentFileName1().isEmpty())
+    			this.getDataset(DATASET1).getEnrichments().setFilename1(dataset1files.getEnrichmentFileName1());
+    		if(dataset1files.getEnrichmentFileName2() != null && !dataset1files.getEnrichmentFileName2().isEmpty())
+    			this.getDataset(DATASET1).getEnrichments().setFilename2(dataset1files.getEnrichmentFileName2());
     		
     		//rank files - dataset1 
-    		if(params.getDatasetFiles().get(EnrichmentMap.DATASET1).getRankedFile() != null && !params.getDatasetFiles().get(EnrichmentMap.DATASET1).getRankedFile().isEmpty())
+    		if(dataset1files.getRankedFile() != null && !dataset1files.getRankedFile().isEmpty())
     			if(params.getMethod().equals(EnrichmentMapParameters.method_GSEA)){
     				this.getDataset(DATASET1).getExpressionSets().createNewRanking(Ranking.GSEARanking);
-    				this.getDataset(DATASET1).getExpressionSets().getRanksByName(Ranking.GSEARanking).setFilename(params.getDatasetFiles().get(EnrichmentMap.DATASET1).getRankedFile());
+    				this.getDataset(DATASET1).getExpressionSets().getRanksByName(Ranking.GSEARanking).setFilename(dataset1files.getRankedFile());
     			}
     			else{
     				this.getDataset(DATASET1).getExpressionSets().createNewRanking(DATASET1);
-    				this.getDataset(DATASET1).getExpressionSets().getRanksByName(DATASET1).setFilename(params.getDatasetFiles().get(EnrichmentMap.DATASET1).getRankedFile());
+    				this.getDataset(DATASET1).getExpressionSets().getRanksByName(DATASET1).setFilename(dataset1files.getRankedFile());
     			
     			}
     		
-    		if(params.getDatasetFiles().containsKey(EnrichmentMap.DATASET2)){
-    			if(params.getDatasetFiles().get(EnrichmentMap.DATASET2).getExpressionFileName() != null && !params.getDatasetFiles().get(EnrichmentMap.DATASET2).getExpressionFileName().isEmpty())
-    				this.getDataset(DATASET2).getExpressionSets().setFilename(params.getDatasetFiles().get(EnrichmentMap.DATASET2).getExpressionFileName());
+    		if(params.getFiles().containsKey(EnrichmentMap.DATASET2)){
+    			DataSetFiles dataset2files = params.getFiles().get(EnrichmentMap.DATASET2);
+    			if(dataset2files.getExpressionFileName() != null && !dataset2files.getExpressionFileName().isEmpty())
+    				this.getDataset(DATASET2).getExpressionSets().setFilename(dataset2files.getExpressionFileName());
 		
     		
-    			if(params.getDatasetFiles().get(EnrichmentMap.DATASET2).getEnrichmentFileName1() != null && !params.getDatasetFiles().get(EnrichmentMap.DATASET2).getEnrichmentFileName1().isEmpty())
-    				this.getDataset(DATASET2).getEnrichments().setFilename1(params.getDatasetFiles().get(EnrichmentMap.DATASET2).getEnrichmentFileName1());
-    			if(params.getDatasetFiles().get(EnrichmentMap.DATASET2).getEnrichmentFileName2() != null && !params.getDatasetFiles().get(EnrichmentMap.DATASET2).getEnrichmentFileName2().isEmpty())
-    				this.getDataset(DATASET2).getEnrichments().setFilename2(params.getDatasetFiles().get(EnrichmentMap.DATASET2).getEnrichmentFileName2());
+    			if(dataset2files.getEnrichmentFileName1() != null && !dataset2files.getEnrichmentFileName1().isEmpty())
+    				this.getDataset(DATASET2).getEnrichments().setFilename1(dataset2files.getEnrichmentFileName1());
+    			if(dataset2files.getEnrichmentFileName2() != null && !dataset2files.getEnrichmentFileName2().isEmpty())
+    				this.getDataset(DATASET2).getEnrichments().setFilename2(dataset2files.getEnrichmentFileName2());
     		
     			//rank files - dataset 2
-    			if(params.getDatasetFiles().get(EnrichmentMap.DATASET2).getRankedFile() != null && !params.getDatasetFiles().get(EnrichmentMap.DATASET2).getRankedFile().isEmpty()){
+    			if(dataset2files.getRankedFile() != null && !dataset2files.getRankedFile().isEmpty()){
     				if(params.getMethod().equals(EnrichmentMapParameters.method_GSEA)){
     					this.getDataset(DATASET2).getExpressionSets().createNewRanking(Ranking.GSEARanking);
-    					this.getDataset(DATASET2).getExpressionSets().getRanksByName(Ranking.GSEARanking).setFilename(params.getDatasetFiles().get(EnrichmentMap.DATASET2).getRankedFile());
+    					this.getDataset(DATASET2).getExpressionSets().getRanksByName(Ranking.GSEARanking).setFilename(dataset2files.getRankedFile());
     				}
     				else{
     					this.getDataset(DATASET2).getExpressionSets().createNewRanking(DATASET2);
-    					this.getDataset(DATASET2).getExpressionSets().getRanksByName(DATASET2).setFilename(params.getDatasetFiles().get(EnrichmentMap.DATASET2).getRankedFile());
+    					this.getDataset(DATASET2).getExpressionSets().getRanksByName(DATASET2).setFilename(dataset2files.getRankedFile());
     			
     				}
     			}
@@ -338,9 +342,14 @@ public class EnrichmentMap {
 		this.datasets = datasets;
 	}
 	
+	/* 
+	 * Adds a new dataset of name datasetName.  If dataset is null, it creates a new dataset
+	 */
 	public void addDataset(String datasetName, DataSet dataset){
 		if(this.datasets != null)
 			this.datasets.put(datasetName, dataset);
+		if(dataset == null)
+			this.datasets.put(datasetName, new DataSet(this, datasetName, new DataSetFiles()));
 	}
 	
 	public DataSet getDataset(String datasetname){

@@ -25,7 +25,7 @@ public class SetOfGenesetsTest extends TestCase {
 	        //create a new instance of the parameters
 	        EnrichmentMapParameters params = new EnrichmentMapParameters();        
 	        //set gmt file name 
-	        params.getDatasetFiles().get(EnrichmentMap.DATASET1).setGMTFileName(testDataFileName);
+	        params.getFiles().get(EnrichmentMap.DATASET1).setGMTFileName(testDataFileName);
 	        
 	        //Create a new Enrichment map
 	        map = new EnrichmentMap(params);

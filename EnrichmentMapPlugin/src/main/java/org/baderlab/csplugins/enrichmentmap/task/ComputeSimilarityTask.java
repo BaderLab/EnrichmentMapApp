@@ -66,7 +66,7 @@ import org.baderlab.csplugins.enrichmentmap.model.GenesetSimilarity;
  * the user specified are stored in the hash map of gene set similarityes)
 */
 public class ComputeSimilarityTask implements Task {
-    static final int ENRICHMENT = 0, SIGNATURE = 1;
+    public static final int ENRICHMENT = 0, SIGNATURE = 1;
     
     private EnrichmentMap map;
     

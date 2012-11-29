@@ -33,14 +33,34 @@ public class SetOfGeneSets {
 			genesets = new HashMap<String, GeneSet>();
 		}
 		
+		/*
+		 * Create a set of Genesets on re-load
+		 * Given - the dataset these genesets are associated with and the loaded in EM property file
+		 */
+		public SetOfGeneSets(String ds, HashMap<String,String> props){
+			this();
+			if(props.containsKey(ds + "%" + this.getClass().getSimpleName() + "%name"))
+				this.name = props.get(ds + "%" + this.getClass().getSimpleName() + "%name");
+			if(props.containsKey(ds + "%" + this.getClass().getSimpleName() + "%filename"))
+				this.filename = props.get(ds + "%" + this.getClass().getSimpleName() + "%filename");
+			if(props.containsKey(ds + "%" + this.getClass().getSimpleName() + "%genesets")){
+				String genesettypes_set = props.get(ds + "%" + this.getClass().getSimpleName() + "%GenesetTypes");
+				genesettypes_set.replace("[", "");
+				genesettypes_set.replace("]", "");
+				String[] tokens = genesettypes_set.split("\\,");
+				for(int i = 0; i<tokens.length;i++)
+					this.GenesetTypes.add(tokens[i]);
+			}
+		}
+		
 		/**
 	     * FilterGenesets - restrict the genes contained in each gene set to only
 	     * the genes found in the expression file.
 	     */
 	    public void filterGenesets(HashSet<Integer> datasetGenes){
 	    		
-	    	//create a new hashmap to store the filtered geneset
-	    	HashMap<String, GeneSet> filteredGenesets = new HashMap<String,GeneSet>(); 
+	    		//create a new hashmap to store the filtered geneset
+	    		HashMap<String, GeneSet> filteredGenesets = new HashMap<String,GeneSet>(); 
 	    		
 	        //iterate through each geneset and filter each one
 	         for(Iterator j = genesets.keySet().iterator(); j.hasNext(); ){
@@ -121,9 +141,10 @@ public class SetOfGeneSets {
 		
 		public String toString(String ds){
 			StringBuffer paramVariables = new StringBuffer();
-			paramVariables.append(ds + "%Name\t" + name + "\n");
-			paramVariables.append(ds + "%GMTFilename\t" +filename + "\n");
-			paramVariables.append(ds + "%GenesetTypes\t" +GenesetTypes.toString() + "\n");
+						
+			paramVariables.append(ds + "%" + this.getClass().getSimpleName() + "%name\t" + name + "\n");
+			paramVariables.append(ds + "%" + this.getClass().getSimpleName() + "%filename\t" +filename + "\n");
+			paramVariables.append(ds + "%" + this.getClass().getSimpleName() + "%GenesetTypes\t" +GenesetTypes.toString() + "\n");
 			return paramVariables.toString();
 		}
 

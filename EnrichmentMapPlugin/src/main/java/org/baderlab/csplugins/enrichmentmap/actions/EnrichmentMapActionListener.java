@@ -53,7 +53,6 @@ import java.util.List;
 import cytoscape.view.CytoscapeDesktop;
 import cytoscape.view.cytopanels.CytoPanel;
 import cytoscape.Cytoscape;
-import cytoscape.CytoscapeInit;
 
 import javax.swing.*;
 

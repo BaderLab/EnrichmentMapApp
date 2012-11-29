@@ -321,23 +321,23 @@ public class ParametersPanel extends JPanel {
                runInfoText = runInfoText + "<b>Jaccard Overlap Combined Cut-off:</b>" + params.getSimilarityCutOff() + "<br>";
                runInfoText = runInfoText + "<b>Test used:</b>  Jaccard Overlap Combined Index (k constant = " + params.getCombinedConstant() + ")<br>";
            }
-           runInfoText = runInfoText + "<font size=-1><b>Genesets File:</b>" + shortenPathname(map.getParams().getDatasetFiles().get(EnrichmentMap.DATASET1).getGMTFileName()) + "<br>";
-           runInfoText = runInfoText + "<b>Dataset 1 Data Files:</b> " + shortenPathname(map.getParams().getDatasetFiles().get(EnrichmentMap.DATASET1).getEnrichmentFileName1()) + ",<br>" + shortenPathname(map.getParams().getDatasetFiles().get(EnrichmentMap.DATASET1).getEnrichmentFileName2()) + "<br>";
+           runInfoText = runInfoText + "<font size=-1><b>Genesets File:</b>" + shortenPathname(map.getParams().getFiles().get(EnrichmentMap.DATASET1).getGMTFileName()) + "<br>";
+           runInfoText = runInfoText + "<b>Dataset 1 Data Files:</b> " + shortenPathname(map.getParams().getFiles().get(EnrichmentMap.DATASET1).getEnrichmentFileName1()) + ",<br>" + shortenPathname(map.getParams().getFiles().get(EnrichmentMap.DATASET1).getEnrichmentFileName2()) + "<br>";
            if(params.isTwoDatasets()){
-               runInfoText = runInfoText + "<b>Dataset 2 Data Files:</b> " + shortenPathname(map.getParams().getDatasetFiles().get(EnrichmentMap.DATASET2).getEnrichmentFileName1()) + ",<br>" + shortenPathname(map.getParams().getDatasetFiles().get(EnrichmentMap.DATASET2).getEnrichmentFileName2()) + "<br>";
+               runInfoText = runInfoText + "<b>Dataset 2 Data Files:</b> " + shortenPathname(map.getParams().getFiles().get(EnrichmentMap.DATASET2).getEnrichmentFileName1()) + ",<br>" + shortenPathname(map.getParams().getFiles().get(EnrichmentMap.DATASET2).getEnrichmentFileName2()) + "<br>";
            }
            if(params.isData()){
-               runInfoText = runInfoText + "<b>Data file:</b>" + shortenPathname(map.getParams().getDatasetFiles().get(EnrichmentMap.DATASET1).getExpressionFileName()) + "<br>";
+               runInfoText = runInfoText + "<b>Data file:</b>" + shortenPathname(map.getParams().getFiles().get(EnrichmentMap.DATASET1).getExpressionFileName()) + "<br>";
            }
            //TODO:fix second dataset viewing.
           /* if(params.isData2() && params.getEM().getExpression(EnrichmentMap.DATASET2) != null){
                runInfoText = runInfoText + "<b>Data file 2:</b>" + shortenPathname(params.getExpressionFileName2()) + "<br>";
            }*/
-           if( ! (map.getParams().getDatasetFiles().containsKey(EnrichmentMap.DATASET1) && map.getParams().getDatasetFiles().get(EnrichmentMap.DATASET1).getGseaHtmlReportFile() != null) ){
-               runInfoText = runInfoText + "<b>GSEA Report 1:</b>" + shortenPathname(map.getParams().getDatasetFiles().get(EnrichmentMap.DATASET1).getGseaHtmlReportFile()) + "<br>";
+           if( (map.getParams().getFiles().containsKey(EnrichmentMap.DATASET1) && map.getParams().getFiles().get(EnrichmentMap.DATASET1).getGseaHtmlReportFile() != null) ){
+               runInfoText = runInfoText + "<b>GSEA Report 1:</b>" + shortenPathname(map.getParams().getFiles().get(EnrichmentMap.DATASET1).getGseaHtmlReportFile()) + "<br>";
            }
-           if( ! (map.getParams().getDatasetFiles().containsKey(EnrichmentMap.DATASET2) && map.getParams().getDatasetFiles().get(EnrichmentMap.DATASET2).getGseaHtmlReportFile() != null) ){
-               runInfoText = runInfoText + "<b>GSEA Report 2:</b>" + shortenPathname(map.getParams().getDatasetFiles().get(EnrichmentMap.DATASET2).getGseaHtmlReportFile()) + "<br>";
+           if( (map.getParams().getFiles().containsKey(EnrichmentMap.DATASET2) && map.getParams().getFiles().get(EnrichmentMap.DATASET2).getGseaHtmlReportFile() != null) ){
+               runInfoText = runInfoText + "<b>GSEA Report 2:</b>" + shortenPathname(map.getParams().getFiles().get(EnrichmentMap.DATASET2).getGseaHtmlReportFile()) + "<br>";
            }
 
            runInfoText = runInfoText + "</font></html>";
@@ -494,20 +494,24 @@ public class ParametersPanel extends JPanel {
     }
 
     private String resolveGseaReportFilePath (EnrichmentMapParameters params, int dataset){
-        String reportFile;
-        String netwAttrName;
+        String reportFile = null;
+        String netwAttrName = null;
         if (dataset == 1) {
-            reportFile = map.getParams().getDatasetFiles().get(EnrichmentMap.DATASET1).getGseaHtmlReportFile();
-            netwAttrName = EnrichmentMapVisualStyle.NETW_REPORT1_DIR;
+        		if(map.getParams().getFiles().containsKey(EnrichmentMap.DATASET1)){
+        			reportFile = map.getParams().getFiles().get(EnrichmentMap.DATASET1).getGseaHtmlReportFile();
+        			netwAttrName = EnrichmentMapVisualStyle.NETW_REPORT1_DIR;
+        		}
         } else {
-            reportFile = map.getParams().getDatasetFiles().get(EnrichmentMap.DATASET2).getGseaHtmlReportFile();
-            netwAttrName = EnrichmentMapVisualStyle.NETW_REPORT2_DIR;
+        		if(map.getParams().getFiles().containsKey(EnrichmentMap.DATASET2)){
+        			reportFile = map.getParams().getFiles().get(EnrichmentMap.DATASET2).getGseaHtmlReportFile();
+        			netwAttrName = EnrichmentMapVisualStyle.NETW_REPORT2_DIR;
+        		}
         }
 
         // Try the path that is stored in the params:
         if ( reportFile != null && new File(reportFile).canRead() ) {
             return reportFile;
-        } else { // if not: try from Network attributes:
+        } else if(netwAttrName != null){ // if not: try from Network attributes:
             CyAttributes networkAttributes = Cytoscape.getNetworkAttributes();
             String tryPath = networkAttributes.getStringAttribute( 
                     Cytoscape.getCurrentNetwork().getIdentifier(), 
@@ -522,5 +526,7 @@ public class ParametersPanel extends JPanel {
                     return reportFile;
             }
         }
+        else
+        		return null;
     }
 }

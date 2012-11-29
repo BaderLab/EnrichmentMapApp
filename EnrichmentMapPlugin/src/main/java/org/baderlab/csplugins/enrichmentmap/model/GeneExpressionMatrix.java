@@ -116,8 +116,7 @@ public class GeneExpressionMatrix {
      * Given an array of strings set the column names up from given string
      */
     public void SetColumnNames(){
-    	numConditions = columnNames.length;
-        this.columnNames = columnNames;
+    		numConditions = columnNames.length;
 
         //As a bypass for people who want to run Enrichment map without expression data
         //if the expression file only contains 2 columns (name and description) then make a dummy
@@ -239,7 +238,6 @@ public class GeneExpressionMatrix {
         //create new matrix
         expressionMatrix_rowNormalized = new HashMap<Integer, GeneExpression>();
 
-         int k= 0;
         //go through the expression matrix
         for(Iterator<Integer> i = expressionMatrix.keySet().iterator(); i.hasNext();){
             Integer key = i.next();
@@ -364,6 +362,28 @@ public class GeneExpressionMatrix {
            }
 
         return expressionSb.toString();
+    }
+    
+    /*
+     * Prints out just the parameters associated with this expression set
+     */
+    public String toString(String ds){
+    		StringBuffer paramVariables = new StringBuffer();
+
+		paramVariables.append(ds + "%" + this.getClass().getSimpleName() + "%filename\t" + filename + "\n");
+		paramVariables.append(ds + "%" + this.getClass().getSimpleName() + "%phenotype1\t" + phenotype1  + "\n");
+        paramVariables.append(ds + "%" + this.getClass().getSimpleName() + "%phenotype2\t" + phenotype2   + "\n");
+
+		paramVariables.append(ds + "%" + this.getClass().getSimpleName() + "%numConditions\t" + numConditions + "\n");
+		paramVariables.append(ds + "%" + this.getClass().getSimpleName() + "%numGenes\t" + numGenes + "\n");
+        paramVariables.append(ds + "%" + this.getClass().getSimpleName() + "%minExpression\t" + minExpression   + "\n");
+        paramVariables.append(ds + "%" + this.getClass().getSimpleName() + "%maxExpression\t" + maxExpression   + "\n");
+        
+        if(phenotypes != null)
+            paramVariables.append(ds + "%" + this.getClass().getSimpleName() + "%phenotypes\t" + phenotypes.toString()   + "\n");
+        
+        return paramVariables.toString();
+        
     }
 
     public Set<Integer> getGeneIds(){

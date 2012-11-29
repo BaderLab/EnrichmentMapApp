@@ -51,6 +51,7 @@ import cytoscape.Cytoscape;
 import javax.swing.*;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.task.BuildEnrichmentMapTask;
 import org.baderlab.csplugins.enrichmentmap.task.BuildGMTEnrichmentMapTask;
 import org.baderlab.csplugins.enrichmentmap.view.EnrichmentMapInputPanel;
@@ -96,7 +97,11 @@ public class BuildEnrichmentMapActionListener implements ActionListener {
 
        //make sure that the minimum information is set in the current set of parameters
        EnrichmentMapParameters params = inputPanel.getParams();
-
+       
+       //add the two datasets from the panel to the parameters
+       params.addFiles(EnrichmentMap.DATASET1, inputPanel.getDataset1files());
+       if(!inputPanel.getDataset2files().isEmpty())
+    	   		params.addFiles(EnrichmentMap.DATASET2, inputPanel.getDataset2files());
        String errors = params.checkMinimalRequirements();
 
        if(errors.equalsIgnoreCase("")){

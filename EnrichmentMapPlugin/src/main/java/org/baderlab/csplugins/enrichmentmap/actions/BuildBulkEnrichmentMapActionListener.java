@@ -198,7 +198,7 @@ public class BuildBulkEnrichmentMapActionListener implements ActionListener{
                     if(gmtfile.equalsIgnoreCase("")){
                         File current = new File(mainDirectory, gsea_results[i]);
                         gmtfile = current.getAbsolutePath();
-                        params.getDatasetFiles().get(EnrichmentMap.DATASET1).setGMTFileName(gmtfile);
+                        params.getFiles().get(EnrichmentMap.DATASET1).setGMTFileName(gmtfile);
                     }
                     else{
                         JOptionPane.showMessageDialog(Cytoscape.getDesktop(), "There are multiple gmt files defined." + gsea_results + ", " + gmtfile, "Too many gmt files", JOptionPane.WARNING_MESSAGE);
@@ -217,7 +217,7 @@ public class BuildBulkEnrichmentMapActionListener implements ActionListener{
 
                 if(gsea_results[i].endsWith(".txt")){
 
-                	params.getDatasetFiles().get(EnrichmentMap.DATASET1).setEnrichmentFileName1(current.getAbsolutePath());
+                	params.getFiles().get(EnrichmentMap.DATASET1).setEnrichmentFileName1(current.getAbsolutePath());
 
                     //make sure we have the up to date parameters.
                     params = inputPanel.getParams();

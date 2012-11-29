@@ -32,7 +32,7 @@ public class FileReaderTest extends TestCase {
         //create a new instance of the parameters
         EnrichmentMapParameters params = new EnrichmentMapParameters();        
         //set gmt file name 
-        params.getDatasetFiles().get(EnrichmentMap.DATASET1).setGMTFileName(testDataFileName);
+        params.getFiles().get(EnrichmentMap.DATASET1).setGMTFileName(testDataFileName);
         
         //Create a new Enrichment map
         EnrichmentMap map = new EnrichmentMap(params);
@@ -60,7 +60,7 @@ public class FileReaderTest extends TestCase {
         //create a new instance of the parameters
         EnrichmentMapParameters params = new EnrichmentMapParameters();        
         //set expression file name 
-        params.getDatasetFiles().get(EnrichmentMap.DATASET1).setExpressionFileName(testDataFileName);
+        params.getFiles().get(EnrichmentMap.DATASET1).setExpressionFileName(testDataFileName);
         
         //Create a new Enrichment map
         EnrichmentMap map = new EnrichmentMap(params);
@@ -120,7 +120,7 @@ public class FileReaderTest extends TestCase {
         //create a new instance of the parameters
         EnrichmentMapParameters params = new EnrichmentMapParameters();        
         //set gmt file name 
-        params.getDatasetFiles().get(EnrichmentMap.DATASET1).setExpressionFileName(testDataFileName);
+        params.getFiles().get(EnrichmentMap.DATASET1).setExpressionFileName(testDataFileName);
         
         //Create a new Enrichment map
         EnrichmentMap map = new EnrichmentMap(params);
@@ -182,7 +182,7 @@ public class FileReaderTest extends TestCase {
       //create a new instance of the parameters
         EnrichmentMapParameters params = new EnrichmentMapParameters();        
         //set expression file name 
-        params.getDatasetFiles().get(EnrichmentMap.DATASET1).setExpressionFileName(testDataFileName);
+        params.getFiles().get(EnrichmentMap.DATASET1).setExpressionFileName(testDataFileName);
         
         //Create a new Enrichment map
         EnrichmentMap map = new EnrichmentMap(params);
@@ -243,7 +243,7 @@ public class FileReaderTest extends TestCase {
       //create a new instance of the parameters
         EnrichmentMapParameters params = new EnrichmentMapParameters();        
         //set gmt file name 
-        params.getDatasetFiles().get(EnrichmentMap.DATASET1).setExpressionFileName(testDataFileName);
+        params.getFiles().get(EnrichmentMap.DATASET1).setExpressionFileName(testDataFileName);
         
         //Create a new Enrichment map
         EnrichmentMap map = new EnrichmentMap(params);
@@ -304,7 +304,7 @@ public class FileReaderTest extends TestCase {
       //create a new instance of the parameters
         EnrichmentMapParameters params = new EnrichmentMapParameters();        
         //set enrichment results file name
-        params.getDatasetFiles().get(EnrichmentMap.DATASET1).setEnrichmentFileName1(testDataFileName);
+        params.getFiles().get(EnrichmentMap.DATASET1).setEnrichmentFileName1(testDataFileName);
         
         //Create a new Enrichment map
         EnrichmentMap map = new EnrichmentMap(params);
@@ -355,8 +355,8 @@ public class FileReaderTest extends TestCase {
       //create a new instance of the parameters
         EnrichmentMapParameters params = new EnrichmentMapParameters();        
         //set enrichment file name 
-        params.getDatasetFiles().get(EnrichmentMap.DATASET1).setEnrichmentFileName1(testDataFileName);
-        params.getDatasetFiles().get(EnrichmentMap.DATASET1).setEnrichmentFileName2(testDataFileName2);
+        params.getFiles().get(EnrichmentMap.DATASET1).setEnrichmentFileName1(testDataFileName);
+        params.getFiles().get(EnrichmentMap.DATASET1).setEnrichmentFileName2(testDataFileName2);
         //Create a new Enrichment map
         EnrichmentMap map = new EnrichmentMap(params);
                 
@@ -416,7 +416,7 @@ public class FileReaderTest extends TestCase {
       //create a new instance of the parameters
         EnrichmentMapParameters params = new EnrichmentMapParameters();        
         //set enrichment file name 
-        params.getDatasetFiles().get(EnrichmentMap.DATASET1).setEnrichmentFileName1(testDataFileName);
+        params.getFiles().get(EnrichmentMap.DATASET1).setEnrichmentFileName1(testDataFileName);
 
         //Create a new Enrichment map
         EnrichmentMap map = new EnrichmentMap(params);
@@ -460,7 +460,7 @@ public class FileReaderTest extends TestCase {
       //create a new instance of the parameters
         EnrichmentMapParameters params = new EnrichmentMapParameters();        
         //set enrichment file name 
-        params.getDatasetFiles().get(EnrichmentMap.DATASET1).setEnrichmentFileName1(testDataFileName);
+        params.getFiles().get(EnrichmentMap.DATASET1).setEnrichmentFileName1(testDataFileName);
 
         //Create a new Enrichment map
         EnrichmentMap map = new EnrichmentMap(params);

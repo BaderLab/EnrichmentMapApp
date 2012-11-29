@@ -571,7 +571,7 @@ public class BulkEMCreationPanel extends JPanel{
                     GSEAResultsDirTextField.setForeground(checkFile(value));
                 }
                else
-            	   params.getDatasetFiles().get(EnrichmentMap.DATASET1).setGMTFileName(value);
+            	   params.getFiles().get(EnrichmentMap.DATASET1).setGMTFileName(value);
             }else if (source == GMTDirectoryTextField) {
                 String value = GMTDirectoryTextField.getText();
                 if(value.equalsIgnoreCase("") )
@@ -584,7 +584,7 @@ public class BulkEMCreationPanel extends JPanel{
                     GMTDirectoryTextField.setForeground(checkFile(value));
                 }
                else
-            	   params.getDatasetFiles().get(EnrichmentMap.DATASET1).setGMTFileName(value);
+            	   params.getFiles().get(EnrichmentMap.DATASET1).setGMTFileName(value);
             }else if (source == GCTDirectoryTextField) {
                 String value = GCTDirectoryTextField.getText();
                 if(value.equalsIgnoreCase("") )
@@ -597,7 +597,7 @@ public class BulkEMCreationPanel extends JPanel{
                     GCTDirectoryTextField.setForeground(checkFile(value));
                 }
                else
-            	   params.getDatasetFiles().get(EnrichmentMap.DATASET1).setGMTFileName(value);
+            	   params.getFiles().get(EnrichmentMap.DATASET1).setGMTFileName(value);
             }
 
             if (invalid) {
@@ -679,7 +679,7 @@ public class BulkEMCreationPanel extends JPanel{
                phenotype1 = phenotypes_split[0];
                phenotype2 = phenotypes_split[1];
 
-               params.getDatasetFiles().get(EnrichmentMap.DATASET1).setClassFile(classes_split[0]);
+               params.getFiles().get(EnrichmentMap.DATASET1).setClassFile(classes_split[0]);
                params.setDataset1Phenotype1(phenotype1);
                params.setDataset1Phenotype2(phenotype2);
 
@@ -760,14 +760,14 @@ public class BulkEMCreationPanel extends JPanel{
            //ranks, results file will be in the same directory as the rpt file
           //it is possible that the data and the gmt file are in different directories
           //than the one specified in the rpt file if the user has moved their results and files around
-           params.getDatasetFiles().get(EnrichmentMap.DATASET1).setGMTFileName(gmt);
-           params.getDatasetFiles().get(EnrichmentMap.DATASET1).setExpressionFileName(data);
+           params.getFiles().get(EnrichmentMap.DATASET1).setGMTFileName(gmt);
+           params.getFiles().get(EnrichmentMap.DATASET1).setExpressionFileName(data);
            params.setData(true);
-           params.getDatasetFiles().get(EnrichmentMap.DATASET1).setRankedFile(ranks);
+           params.getFiles().get(EnrichmentMap.DATASET1).setRankedFile(ranks);
 
-           params.getDatasetFiles().get(EnrichmentMap.DATASET1).setEnrichmentFileName1(results1);
-           params.getDatasetFiles().get(EnrichmentMap.DATASET1).setEnrichmentFileName2(results2);
-           params.getDatasetFiles().get(EnrichmentMap.DATASET1).setGseaHtmlReportFile(gseaHtmlReportFile);
+           params.getFiles().get(EnrichmentMap.DATASET1).setEnrichmentFileName1(results1);
+           params.getFiles().get(EnrichmentMap.DATASET1).setEnrichmentFileName2(results2);
+           params.getFiles().get(EnrichmentMap.DATASET1).setGseaHtmlReportFile(gseaHtmlReportFile);
 
        }
 

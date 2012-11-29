@@ -2,6 +2,7 @@ package org.baderlab.csplugins.enrichmentmap.task;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 
 import junit.framework.TestCase;
@@ -20,17 +21,19 @@ public class LoadDatasetTaskTest extends TestCase {
 		String testExpressionFileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/task/LoadDataset/Expressiontestfile.gct";
 		String testGSEAResults1FileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/task/LoadDataset/GSEA_enrichments1.xls";
 		String testGSEAResults2FileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/task/LoadDataset/GSEA_enrichments2.xls";
-  	           
-		params.getDatasetFiles().get(EnrichmentMap.DATASET1).setGMTFileName(testGMTFileName);
-		params.getDatasetFiles().get(EnrichmentMap.DATASET1).setExpressionFileName(testExpressionFileName);
-		params.getDatasetFiles().get(EnrichmentMap.DATASET1).setEnrichmentFileName1(testGSEAResults1FileName);
-		params.getDatasetFiles().get(EnrichmentMap.DATASET1).setEnrichmentFileName2(testGSEAResults2FileName);
+  	    
+		DataSetFiles files = new DataSetFiles();
+		files.setGMTFileName(testGMTFileName);
+		files.setExpressionFileName(testExpressionFileName);
+		files.setEnrichmentFileName1(testGSEAResults1FileName);
+		files.setEnrichmentFileName2(testGSEAResults2FileName);
+		params.addFiles(EnrichmentMap.DATASET1, files);
 		
 		//create an new enrichment Map
 		EnrichmentMap em = new EnrichmentMap(params);
 		
 		//create a dataset
-		DataSet dataset = new DataSet(em, EnrichmentMap.DATASET1);
+		DataSet dataset = new DataSet(em, EnrichmentMap.DATASET1,files);
 		
 		//create a DatasetTask
 		LoadDataSetTask task = new LoadDataSetTask(dataset);

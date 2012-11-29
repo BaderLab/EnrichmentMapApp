@@ -18,8 +18,6 @@ public class SetOfEnrichmentResults {
 	// Hash Key = name of enriched set
 	// Hash Value = the entire enrichment results containing: name, description, pvalue, fdr...
 	private HashMap<String, EnrichmentResult> enrichments;
-	
-	private HashMap<String, EnrichmentResult> filteredenrichments;
 
 	//method
 	
@@ -38,6 +36,25 @@ public class SetOfEnrichmentResults {
 	
 	public SetOfEnrichmentResults(HashMap<String, EnrichmentResult> enrichments) {
 		this.enrichments = enrichments;
+	}
+	
+	/*
+	 * Create a set of Enrichment results on re-load
+	 * Given - the dataset these enrichment results are associated with and the loaded in EM property file
+	 */
+	public SetOfEnrichmentResults(String ds, HashMap<String,String> props){
+		this();
+		if(props.containsKey(ds + "%" + this.getClass().getSimpleName() + "%name"))
+			this.name = props.get(ds + "%" + this.getClass().getSimpleName() + "%name");
+		if(props.containsKey(ds + "%" + this.getClass().getSimpleName() + "%filename1"))
+			this.filename1 = props.get(ds + "%" + this.getClass().getSimpleName() + "%filename1");
+		if(props.containsKey(ds + "%" + this.getClass().getSimpleName() + "%filename2"))
+			this.filename2 = props.get(ds + "%" + this.getClass().getSimpleName() + "%filename2");
+		if(props.containsKey(ds + "%" + this.getClass().getSimpleName() + "%phenotype1"))
+			this.phenotype1 = props.get(ds + "%" + this.getClass().getSimpleName() + "%phenotype1");
+		if(props.containsKey(ds + "%" + this.getClass().getSimpleName() + "%phenotype2"))
+			this.phenotype2 = props.get(ds + "%" + this.getClass().getSimpleName() + "%phenotype2");
+		
 	}
 
 	public HashMap<String, EnrichmentResult> getEnrichments() {
@@ -99,23 +116,14 @@ public class SetOfEnrichmentResults {
 	
 	public String toString(String ds){
 		StringBuffer paramVariables = new StringBuffer();
-		paramVariables.append(ds + "%Name\t" + name + "\n");
-		paramVariables.append(ds + "%ENRFilename1\t" + filename1 + "\n");
-		paramVariables.append(ds + "%ENRFilename2\t" + filename2 + "\n");
-		paramVariables.append(ds + "%Phenotype1\t" + phenotype1  + "\n");
-        paramVariables.append(ds + "%Phenotype2\t" + phenotype2   + "\n");
+		paramVariables.append(ds + "%" + this.getClass().getSimpleName() + "%name\t" + name + "\n");
+		paramVariables.append(ds + "%" + this.getClass().getSimpleName() + "%filename1\t" + filename1 + "\n");
+		paramVariables.append(ds + "%" + this.getClass().getSimpleName() + "%filename2\t" + filename2 + "\n");
+		paramVariables.append(ds + "%" + this.getClass().getSimpleName() + "%phenotype1\t" + phenotype1  + "\n");
+        paramVariables.append(ds + "%" + this.getClass().getSimpleName() + "%phenotype2\t" + phenotype2   + "\n");
         
         return paramVariables.toString();
         
-	}
-
-	public HashMap<String, EnrichmentResult> getFilteredenrichments() {
-		return filteredenrichments;
-	}
-
-	public void setFilteredenrichments(
-			HashMap<String, EnrichmentResult> filteredenrichments) {
-		this.filteredenrichments = filteredenrichments;
 	}
 	
 	

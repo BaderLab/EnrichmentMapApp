@@ -59,6 +59,7 @@ import org.baderlab.csplugins.enrichmentmap.Enrichment_Map_Plugin;
 import org.baderlab.csplugins.enrichmentmap.actions.BuildEnrichmentMapActionListener;
 import org.baderlab.csplugins.enrichmentmap.actions.BulkEMCreationAction;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowAboutPanelAction;
+import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.JMultiLineToolTip;
 
@@ -95,6 +96,9 @@ public class EnrichmentMapInputPanel extends JPanel {
     DecimalFormat decFormat; // used in the formatted text fields
 
     private EnrichmentMapParameters params;
+    
+    private DataSetFiles dataset1files = new DataSetFiles();
+    private DataSetFiles dataset2files = new DataSetFiles();
 
     //Genesets file related components
     //user specified file names
@@ -1013,7 +1017,7 @@ public class EnrichmentMapInputPanel extends JPanel {
             else if (source == GMTFileNameTextField) {
                 String value = GMTFileNameTextField.getText();
                 if(value.equalsIgnoreCase("") )
-                	params.getDatasetFiles().get(EnrichmentMap.DATASET1).setGMTFileName(value);
+                		dataset1files.setGMTFileName(value);
                 else if(GMTFileNameTextField.getText().equalsIgnoreCase((String)e.getOldValue())){
                    //do nothing
                 }
@@ -1022,11 +1026,11 @@ public class EnrichmentMapInputPanel extends JPanel {
                     GMTFileNameTextField.setForeground(checkFile(value));
                 }
                else
-                    params.getDatasetFiles().get(EnrichmentMap.DATASET1).setGMTFileName(value);
+            	   		dataset1files.setGMTFileName(value);
             }else if (source == GCTFileName1TextField) {
                 String value = GCTFileName1TextField.getText();
                 if(value.equalsIgnoreCase("") ){
-                	params.getDatasetFiles().get(EnrichmentMap.DATASET1).setExpressionFileName(value);
+                		dataset1files.setExpressionFileName(value);
                     params.setData(false);
                 }
                 else if(GCTFileName1TextField.getText().equalsIgnoreCase((String)e.getOldValue())){
@@ -1037,16 +1041,11 @@ public class EnrichmentMapInputPanel extends JPanel {
                     GCTFileName1TextField.setForeground(checkFile(value));
                 }
                else
-            	   params.getDatasetFiles().get(EnrichmentMap.DATASET1).setExpressionFileName(value);
+            	   		dataset1files.setExpressionFileName(value);
             }else if (source == GCTFileName2TextField) {
                 String value = GCTFileName2TextField.getText();
                 if(value.equalsIgnoreCase("") ){
-                	if(params.getDatasetFiles().containsKey(EnrichmentMap.DATASET2))
-                		params.getDatasetFiles().get(EnrichmentMap.DATASET2).setExpressionFileName(value);
-                	else{
-                		params.addnewDataset(EnrichmentMap.DATASET2);
-                		params.getDatasetFiles().get(EnrichmentMap.DATASET2).setExpressionFileName(value);
-                	}
+                		dataset2files.setExpressionFileName(value);                	
                     params.setData2(false);
                 }
                 else if(GCTFileName2TextField.getText().equalsIgnoreCase((String)e.getOldValue())){
@@ -1056,18 +1055,13 @@ public class EnrichmentMapInputPanel extends JPanel {
                     JOptionPane.showMessageDialog(Cytoscape.getDesktop(),message,"File name change entered is not a valid file name",JOptionPane.WARNING_MESSAGE);
                     GCTFileName2TextField.setForeground(checkFile(value));
                 }
-               else{
-            	   if(params.getDatasetFiles().containsKey(EnrichmentMap.DATASET2))
-            		   params.getDatasetFiles().get(EnrichmentMap.DATASET2).setExpressionFileName(value);
-               		else{
-               			params.addnewDataset(EnrichmentMap.DATASET2);
-               			params.getDatasetFiles().get(EnrichmentMap.DATASET2).setExpressionFileName(value);
-               		}
+               else{           	   
+            		   dataset2files.setExpressionFileName(value);               		
                }   
             }else if (source == Dataset1FileNameTextField) {
                 String value = Dataset1FileNameTextField.getText();
                 if(value.equalsIgnoreCase("") )
-                	params.getDatasetFiles().get(EnrichmentMap.DATASET1).setEnrichmentFileName1(value);
+                		dataset1files.setEnrichmentFileName1(value);
                  else if(Dataset1FileNameTextField.getText().equalsIgnoreCase((String)e.getOldValue())){
                    //do nothing
                 }else if(checkFile(value).equals(Color.RED)){
@@ -1075,11 +1069,11 @@ public class EnrichmentMapInputPanel extends JPanel {
                     Dataset1FileNameTextField.setForeground(checkFile(value));
                 }
                else
-            	   params.getDatasetFiles().get(EnrichmentMap.DATASET1).setEnrichmentFileName1(value);
+            	   		dataset1files.setEnrichmentFileName1(value);
             }else if (source == Dataset1FileName2TextField) {
                 String value = Dataset1FileName2TextField.getText();
                 if(value.equalsIgnoreCase("") )
-                	params.getDatasetFiles().get(EnrichmentMap.DATASET1).setEnrichmentFileName2(value);
+                		dataset1files.setEnrichmentFileName2(value);
                 else if(Dataset1FileName2TextField.getText().equalsIgnoreCase((String)e.getOldValue())){
                    //do nothing
                 }else if(checkFile(value).equals(Color.RED)){
@@ -1087,16 +1081,13 @@ public class EnrichmentMapInputPanel extends JPanel {
                     Dataset1FileName2TextField.setForeground(checkFile(value));
                 }
                else
-            	   params.getDatasetFiles().get(EnrichmentMap.DATASET1).setEnrichmentFileName2(value);
+            	   		dataset1files.setEnrichmentFileName2(value);
             }else if (source == Dataset2FileNameTextField) {
                 String value = Dataset2FileNameTextField.getText();
                 if(value.equalsIgnoreCase("") ){
-                	if(params.getDatasetFiles().containsKey(EnrichmentMap.DATASET2))
-               			params.getDatasetFiles().get(EnrichmentMap.DATASET2).setEnrichmentFileName1(value);
-               		else{
-               			params.addnewDataset(EnrichmentMap.DATASET2);
-               			params.getDatasetFiles().get(EnrichmentMap.DATASET2).setEnrichmentFileName1(value);
-               		}
+                
+                		dataset2files.setEnrichmentFileName1(value);
+               		
                 }
                 else if(Dataset2FileNameTextField.getText().equalsIgnoreCase((String)e.getOldValue())){
                    //do nothing
@@ -1105,22 +1096,15 @@ public class EnrichmentMapInputPanel extends JPanel {
                     Dataset2FileNameTextField.setForeground(checkFile(value));
                 }
                else{
-            	   if(params.getDatasetFiles().containsKey(EnrichmentMap.DATASET2))
-               			params.getDatasetFiles().get(EnrichmentMap.DATASET2).setEnrichmentFileName1(value);
-               		else{
-               			params.addnewDataset(EnrichmentMap.DATASET2);
-               			params.getDatasetFiles().get(EnrichmentMap.DATASET2).setEnrichmentFileName1(value);
-               		}
+            	   
+            	   		dataset2files.setEnrichmentFileName1(value);
+               		
                }
             }else if (source == Dataset2FileName2TextField) {
                 String value = Dataset2FileName2TextField.getText();
-                if(value.equalsIgnoreCase("") ){
-                	if(params.getDatasetFiles().containsKey(EnrichmentMap.DATASET2))
-               			params.getDatasetFiles().get(EnrichmentMap.DATASET2).setEnrichmentFileName2(value);
-               		else{
-               			params.addnewDataset(EnrichmentMap.DATASET2);
-               			params.getDatasetFiles().get(EnrichmentMap.DATASET2).setEnrichmentFileName2(value);
-               		}
+                if(value.equalsIgnoreCase("") ){                	
+                		dataset2files.setEnrichmentFileName2(value);
+               		
                 }
                 else if(Dataset2FileName2TextField.getText().equalsIgnoreCase((String)e.getOldValue())){
                    //do nothing
@@ -1128,13 +1112,8 @@ public class EnrichmentMapInputPanel extends JPanel {
                     JOptionPane.showMessageDialog(Cytoscape.getDesktop(),message,"File name change entered is not a valid file name",JOptionPane.WARNING_MESSAGE);
                     Dataset2FileName2TextField.setForeground(checkFile(value));
                 }
-               else{
-            	   if(params.getDatasetFiles().containsKey(EnrichmentMap.DATASET2))
-              			params.getDatasetFiles().get(EnrichmentMap.DATASET2).setEnrichmentFileName2(value);
-              		else{
-              			params.addnewDataset(EnrichmentMap.DATASET2);
-              			params.getDatasetFiles().get(EnrichmentMap.DATASET2).setEnrichmentFileName2(value);
-              		}
+               else{            	   
+            		   dataset2files.setEnrichmentFileName2(value);             		
                }
             }else if (source == Dataset1Phenotype1TextField) {
                 String value = Dataset1Phenotype1TextField.getText();
@@ -1286,7 +1265,7 @@ public class EnrichmentMapInputPanel extends JPanel {
             			phenotype2 = phenotypes_split[1];
 
             			if(dataset1){
-            				params.getDatasetFiles().get(EnrichmentMap.DATASET1).setClassFile(classes_split[0]);
+            				dataset1files.setClassFile(classes_split[0]);
             				params.setDataset1Phenotype1(phenotype1);
             				params.setDataset1Phenotype2(phenotype2);
 
@@ -1296,7 +1275,7 @@ public class EnrichmentMapInputPanel extends JPanel {
             				Dataset1Phenotype2TextField.setValue(phenotype2);
             			}
             			else{
-            				params.getDatasetFiles().get(EnrichmentMap.DATASET2).setClassFile(classes_split[0]);
+            				dataset2files.setClassFile(classes_split[0]);
             				params.setDataset2Phenotype1(phenotype1);
             				params.setDataset2Phenotype2(phenotype2);
 
@@ -1412,25 +1391,25 @@ public class EnrichmentMapInputPanel extends JPanel {
         if(dataset1){
                 //check to see the file exists and can be read
                 //check to see if the gmt file has already been set
-                if(params.getDatasetFiles().get(EnrichmentMap.DATASET1).getGMTFileName() == null || params.getDatasetFiles().get(EnrichmentMap.DATASET1).getGMTFileName().equalsIgnoreCase("")){
+                if(dataset1files.getGMTFileName() == null || dataset1files.getGMTFileName().equalsIgnoreCase("")){
                     GMTFileNameTextField.setForeground(checkFile(gmt));
                     GMTFileNameTextField.setText(gmt);
-                    params.getDatasetFiles().get(EnrichmentMap.DATASET1).setGMTFileName(gmt);
+                    dataset1files.setGMTFileName(gmt);
                     GMTFileNameTextField.setToolTipText(gmt);
                 }
 
 
                 boolean AutoPopulate = true;
-                if(!params.getDatasetFiles().get(EnrichmentMap.DATASET1).getGMTFileName().equalsIgnoreCase(gmt)){
+                if(!dataset1files.getGMTFileName().equalsIgnoreCase(gmt)){
                     //maybe the files are the same but they are in different directories
-                    File currentGMTFilename = new File(params.getDatasetFiles().get(EnrichmentMap.DATASET1).getGMTFileName());
+                    File currentGMTFilename = new File(dataset1files.getGMTFileName());
                     File newGMTFilename = new File(gmt);
                     if(!currentGMTFilename.getName().equalsIgnoreCase(newGMTFilename.getName())){
                         int answer = JOptionPane.showConfirmDialog(this,"This analysis GMT file does not match the previous dataset loaded.\n If you want to use the current GMT file but still use the new rpt file to populated fields press YES,\n If you want to change the GMT file to the one in this rpt file and populate the fields with the rpt file press NO,\n to choose a different rpt file press CANCEL\n","GMT files name mismatch", JOptionPane.YES_NO_CANCEL_OPTION);
                         if(answer == JOptionPane.NO_OPTION){
                             GMTFileNameTextField.setForeground(checkFile(gmt));
                             GMTFileNameTextField.setText(gmt);
-                            params.getDatasetFiles().get(EnrichmentMap.DATASET1).setGMTFileName(gmt);
+                            dataset1files.setGMTFileName(gmt);
                             GMTFileNameTextField.setToolTipText(gmt);
                         }
                         else if(answer == JOptionPane.CANCEL_OPTION)
@@ -1440,40 +1419,40 @@ public class EnrichmentMapInputPanel extends JPanel {
                 if(AutoPopulate){
                     GCTFileName1TextField.setForeground(checkFile(data));
                     GCTFileName1TextField.setText(data);
-                    params.getDatasetFiles().get(EnrichmentMap.DATASET1).setExpressionFileName(data);
+                    dataset1files.setExpressionFileName(data);
                     params.setData(true);
                     GCTFileName1TextField.setToolTipText(data);
 
                     Dataset1RankFileTextField.setForeground(checkFile(ranks));
                     Dataset1RankFileTextField.setText(ranks);
-                    params.getDatasetFiles().get(EnrichmentMap.DATASET1).setRankedFile(ranks);
+                    dataset1files.setRankedFile(ranks);
                     Dataset1RankFileTextField.setToolTipText(ranks);
 
-                    params.getDatasetFiles().get(EnrichmentMap.DATASET1).setEnrichmentFileName1(results1);
-                    params.getDatasetFiles().get(EnrichmentMap.DATASET1).setEnrichmentFileName2(results2);
-                    params.getDatasetFiles().get(EnrichmentMap.DATASET1).setGseaHtmlReportFile(gseaHtmlReportFile);
+                    dataset1files.setEnrichmentFileName1(results1);
+                    dataset1files.setEnrichmentFileName2(results2);
+                    dataset1files.setGseaHtmlReportFile(gseaHtmlReportFile);
                     this.setDatasetnames(results1,results2,dataset1);
                 }
         }
         else{
-           if(params.getDatasetFiles().get(EnrichmentMap.DATASET1).getGMTFileName() == null || params.getDatasetFiles().get(EnrichmentMap.DATASET1).getGMTFileName().equalsIgnoreCase("")){
+           if(dataset1files.getGMTFileName() == null || dataset1files.getGMTFileName().equalsIgnoreCase("")){
                 GMTFileNameTextField.setForeground(checkFile(gmt));
                 GMTFileNameTextField.setText(gmt);
-                params.getDatasetFiles().get(EnrichmentMap.DATASET1).setGMTFileName(gmt);
+                dataset1files.setGMTFileName(gmt);
                 GMTFileNameTextField.setToolTipText(gmt);
            }
 
             boolean AutoPopulate = true;
-           if(!params.getDatasetFiles().get(EnrichmentMap.DATASET1).getGMTFileName().equalsIgnoreCase(gmt)){
+           if(!dataset1files.getGMTFileName().equalsIgnoreCase(gmt)){
               //maybe the files are the same but they are in different directories
-              File currentGMTFilename = new File(params.getDatasetFiles().get(EnrichmentMap.DATASET1).getGMTFileName());
+              File currentGMTFilename = new File(dataset1files.getGMTFileName());
               File newGMTFilename = new File(gmt);
               if(!currentGMTFilename.getName().equalsIgnoreCase(newGMTFilename.getName())){
                   int answer = JOptionPane.showConfirmDialog(this,"This analysis GMT file does not match the previous dataset loaded.\n If you want to use the current GMT file but still use the new rpt file to populated fields press YES,\n If you want to change the GMT file to the one in this rpt file and populate the fields with the rpt file press NO,\n to choose a different rpt file press CANCEL\n","GMT files name mismatch", JOptionPane.YES_NO_CANCEL_OPTION);
                   if(answer == JOptionPane.NO_OPTION){
                     GMTFileNameTextField.setForeground(checkFile(gmt));
                     GMTFileNameTextField.setText(gmt);
-                    params.getDatasetFiles().get(EnrichmentMap.DATASET1).setGMTFileName(gmt);
+                    dataset1files.setGMTFileName(gmt);
                     GMTFileNameTextField.setToolTipText(gmt);
                   }
                   else if(answer == JOptionPane.CANCEL_OPTION)
@@ -1481,23 +1460,22 @@ public class EnrichmentMapInputPanel extends JPanel {
                }
            }
            if(AutoPopulate){
-        	   if(!params.getDatasetFiles().containsKey(EnrichmentMap.DATASET2))
-        		   params.addnewDataset(EnrichmentMap.DATASET2);
+        	   
         	   
                 GCTFileName2TextField.setForeground(checkFile(data));
                 GCTFileName2TextField.setText(data);
-                params.getDatasetFiles().get(EnrichmentMap.DATASET2).setExpressionFileName(data);
+                dataset2files.setExpressionFileName(data);
                 params.setData2(true);
                 GCTFileName2TextField.setToolTipText(data);
 
                 Dataset2RankFileTextField.setForeground(checkFile(ranks));
                 Dataset2RankFileTextField.setText(ranks);
-                params.getDatasetFiles().get(EnrichmentMap.DATASET2).setRankedFile(ranks);
+                dataset2files.setRankedFile(ranks);
                 Dataset2RankFileTextField.setToolTipText(ranks);
 
-                params.getDatasetFiles().get(EnrichmentMap.DATASET2).setEnrichmentFileName1(results1);
-                params.getDatasetFiles().get(EnrichmentMap.DATASET2).setEnrichmentFileName2(results2);
-                params.getDatasetFiles().get(EnrichmentMap.DATASET2).setGseaHtmlReportFile(gseaHtmlReportFile);
+                dataset2files.setEnrichmentFileName1(results1);
+                dataset2files.setEnrichmentFileName2(results2);
+                dataset2files.setGseaHtmlReportFile(gseaHtmlReportFile);
 //                params.setDataset2RankedFile(ranks);
                 this.setDatasetnames(results1,results2,dataset1);
            }
@@ -1603,54 +1581,57 @@ public class EnrichmentMapInputPanel extends JPanel {
      * @param params - enrichment map paramters to use to update the panel
      */
   private void UpdatePanel(EnrichmentMapParameters params){
-
+	  if(params.getFiles().containsKey(EnrichmentMap.DATASET1))
+		  this.dataset1files = params.getFiles().get(EnrichmentMap.DATASET1);
+	  if(params.getFiles().containsKey(EnrichmentMap.DATASET2))
+		  this.dataset2files = params.getFiles().get(EnrichmentMap.DATASET2);
       //check to see if the user had already entered anything into the newly created Dataset Frame
-      if(params.getDatasetFiles().get(EnrichmentMap.DATASET1).getEnrichmentFileName1()!=null){
-        Dataset1FileNameTextField.setText(params.getDatasetFiles().get(EnrichmentMap.DATASET1).getEnrichmentFileName1());
-        Dataset1FileNameTextField.setToolTipText(params.getDatasetFiles().get(EnrichmentMap.DATASET1).getEnrichmentFileName1());
+      if(dataset1files.getEnrichmentFileName1()!=null){
+        Dataset1FileNameTextField.setText(dataset1files.getEnrichmentFileName1());
+        Dataset1FileNameTextField.setToolTipText(dataset1files.getEnrichmentFileName1());
       }
       
-      if(params.getDatasetFiles().get(EnrichmentMap.DATASET1).getExpressionFileName() != null){
-          GCTFileName1TextField.setText(params.getDatasetFiles().get(EnrichmentMap.DATASET1).getExpressionFileName());
-          GCTFileName1TextField.setToolTipText(params.getDatasetFiles().get(EnrichmentMap.DATASET1).getExpressionFileName());
+      if(dataset1files.getExpressionFileName() != null){
+          GCTFileName1TextField.setText(dataset1files.getExpressionFileName());
+          GCTFileName1TextField.setToolTipText(dataset1files.getExpressionFileName());
       }
       
-      if(params.getDatasetFiles().get(EnrichmentMap.DATASET1).getRankedFile() != null){
-          Dataset1RankFileTextField.setText(params.getDatasetFiles().get(EnrichmentMap.DATASET1).getRankedFile());
-          Dataset1RankFileTextField.setToolTipText(params.getDatasetFiles().get(EnrichmentMap.DATASET1).getRankedFile());
+      if(dataset1files.getRankedFile() != null){
+          Dataset1RankFileTextField.setText(dataset1files.getRankedFile());
+          Dataset1RankFileTextField.setToolTipText(dataset1files.getRankedFile());
       }
       
-      if(params.getDatasetFiles().containsKey(EnrichmentMap.DATASET2)){
-    	  if(params.getDatasetFiles().get(EnrichmentMap.DATASET2).getEnrichmentFileName1()!=null){
-    		  Dataset2FileNameTextField.setText(params.getDatasetFiles().get(EnrichmentMap.DATASET2).getEnrichmentFileName1());
-    		  Dataset2FileNameTextField.setToolTipText(params.getDatasetFiles().get(EnrichmentMap.DATASET2).getEnrichmentFileName1());
+     
+    	  if(dataset2files.getEnrichmentFileName1()!=null){
+    		  Dataset2FileNameTextField.setText(dataset2files.getEnrichmentFileName1());
+    		  Dataset2FileNameTextField.setToolTipText(dataset2files.getEnrichmentFileName1());
     	  }
-    	  if(params.getDatasetFiles().get(EnrichmentMap.DATASET2).getExpressionFileName() != null){
-    		  GCTFileName2TextField.setText(params.getDatasetFiles().get(EnrichmentMap.DATASET2).getExpressionFileName());
-    		  GCTFileName2TextField.setToolTipText(params.getDatasetFiles().get(EnrichmentMap.DATASET2).getExpressionFileName());
+    	  if(dataset2files.getExpressionFileName() != null){
+    		  GCTFileName2TextField.setText(dataset2files.getExpressionFileName());
+    		  GCTFileName2TextField.setToolTipText(dataset2files.getExpressionFileName());
     	  }  
-    	  if(params.getDatasetFiles().get(EnrichmentMap.DATASET2).getRankedFile() != null){
-    		  Dataset2RankFileTextField.setText(params.getDatasetFiles().get(EnrichmentMap.DATASET2).getRankedFile());
-    		  Dataset2RankFileTextField.setToolTipText(params.getDatasetFiles().get(EnrichmentMap.DATASET2).getRankedFile());
+    	  if(dataset2files.getRankedFile() != null){
+    		  Dataset2RankFileTextField.setText(dataset2files.getRankedFile());
+    		  Dataset2RankFileTextField.setToolTipText(dataset2files.getRankedFile());
     	  }
     	  
     	//Special case with Enrichment results file 2 (there should only be two enrichment
           //Files if the analysis specified is GSEA.  If the user has loaded from an RPT and
           //then changes the type of analysis there shouldn't be an extra file
           if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)){
-                if(params.getDatasetFiles().get(EnrichmentMap.DATASET2).getEnrichmentFileName2()!=null){
-                    Dataset2FileName2TextField.setText(params.getDatasetFiles().get(EnrichmentMap.DATASET2).getEnrichmentFileName2());
-                    Dataset2FileName2TextField.setToolTipText(params.getDatasetFiles().get(EnrichmentMap.DATASET2).getEnrichmentFileName2());
+                if(dataset2files.getEnrichmentFileName2()!=null){
+                    Dataset2FileName2TextField.setText(dataset2files.getEnrichmentFileName2());
+                    Dataset2FileName2TextField.setToolTipText(dataset2files.getEnrichmentFileName2());
                 }
           }
           else{
-                if( (params.getDatasetFiles().get(EnrichmentMap.DATASET2).getEnrichmentFileName2()!=null)){                    
-                    if(params.getDatasetFiles().get(EnrichmentMap.DATASET2).getEnrichmentFileName2()!=null)
-                    	params.getDatasetFiles().get(EnrichmentMap.DATASET2).setEnrichmentFileName2(null);
+                if( (dataset2files.getEnrichmentFileName2()!=null)){                    
+                    if(dataset2files.getEnrichmentFileName2()!=null)
+                    		dataset2files.setEnrichmentFileName2(null);
 
                 }
           }
-      }
+      
 
       //update the phenotypes
       if(params.getDataset1Phenotype1() != null){
@@ -1678,17 +1659,17 @@ public class EnrichmentMapInputPanel extends JPanel {
       //Files if the analysis specified is GSEA.  If the user has loaded from an RPT and
       //then changes the type of analysis there shouldn't be an extra file
       if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)){
-           if(params.getDatasetFiles().get(EnrichmentMap.DATASET1).getEnrichmentFileName2()!=null){
-                Dataset1FileName2TextField.setText(params.getDatasetFiles().get(EnrichmentMap.DATASET1).getEnrichmentFileName2());
-                Dataset1FileName2TextField.setToolTipText(params.getDatasetFiles().get(EnrichmentMap.DATASET1).getEnrichmentFileName2());
+           if(dataset1files.getEnrichmentFileName2()!=null){
+                Dataset1FileName2TextField.setText(dataset1files.getEnrichmentFileName2());
+                Dataset1FileName2TextField.setToolTipText(dataset1files.getEnrichmentFileName2());
             }            
       }
       else{
-            if((params.getDatasetFiles().get(EnrichmentMap.DATASET1).getEnrichmentFileName2()!=null) ){
+            if((dataset1files.getEnrichmentFileName2()!=null) ){
                 JOptionPane.showMessageDialog(this,"Running Enrichment Map with Generic input " +
                         "allows for only one enrichment results file.\n  The second file specified has been removed.");
-                if(params.getDatasetFiles().get(EnrichmentMap.DATASET1).getEnrichmentFileName2()!=null)
-                	params.getDatasetFiles().get(EnrichmentMap.DATASET1).setEnrichmentFileName2(null);
+                if(dataset1files.getEnrichmentFileName2()!=null)
+                		dataset1files.setEnrichmentFileName2(null);
 
             }
       }
@@ -1755,7 +1736,7 @@ public class EnrichmentMapInputPanel extends JPanel {
            if(file != null) {
                GMTFileNameTextField.setForeground(checkFile(file.getAbsolutePath()));
                GMTFileNameTextField.setText(file.getAbsolutePath());
-               params.getDatasetFiles().get(EnrichmentMap.DATASET1).setGMTFileName(file.getAbsolutePath());
+               dataset1files.setGMTFileName(file.getAbsolutePath());
                GMTFileNameTextField.setToolTipText(file.getAbsolutePath());
            }
        }
@@ -1791,7 +1772,7 @@ public class EnrichmentMapInputPanel extends JPanel {
                else{
                     GCTFileName1TextField.setForeground(checkFile(file.getAbsolutePath()));
                     GCTFileName1TextField.setText(file.getAbsolutePath());
-                    params.getDatasetFiles().get(EnrichmentMap.DATASET1).setExpressionFileName(file.getAbsolutePath());
+                    dataset1files.setExpressionFileName(file.getAbsolutePath());
                     GCTFileName1TextField.setToolTipText(file.getAbsolutePath());
                }
                params.setData(true);
@@ -1829,12 +1810,9 @@ public class EnrichmentMapInputPanel extends JPanel {
                GCTFileName2TextField.setForeground(checkFile(file.getAbsolutePath()));
                GCTFileName2TextField.setText(file.getAbsolutePath());
                //check to see that there is a dataset2
-               if(params.getDatasetFiles().containsKey(EnrichmentMap.DATASET2))
-            	   params.getDatasetFiles().get(EnrichmentMap.DATASET2).setExpressionFileName(file.getAbsolutePath());
-               else{
-            	   params.addnewDataset(EnrichmentMap.DATASET2);
-            	   params.getDatasetFiles().get(EnrichmentMap.DATASET2).setExpressionFileName(file.getAbsolutePath());
-               }
+               
+               dataset2files.setExpressionFileName(file.getAbsolutePath());
+               
                GCTFileName2TextField.setToolTipText(file.getAbsolutePath());
              }
              params.setTwoDatasets(true);
@@ -1872,7 +1850,7 @@ public class EnrichmentMapInputPanel extends JPanel {
              else{
                 Dataset1FileNameTextField.setForeground(checkFile(file.getAbsolutePath()));
                 Dataset1FileNameTextField.setText(file.getAbsolutePath() );
-                params.getDatasetFiles().get(EnrichmentMap.DATASET1).setEnrichmentFileName1(file.getAbsolutePath());
+                dataset1files.setEnrichmentFileName1(file.getAbsolutePath());
                 Dataset1FileNameTextField.setToolTipText(file.getAbsolutePath() );
              }
 
@@ -1908,7 +1886,7 @@ public class EnrichmentMapInputPanel extends JPanel {
              else{
                 Dataset1FileName2TextField.setForeground(checkFile(file.getAbsolutePath()));
                 Dataset1FileName2TextField.setText(file.getAbsolutePath() );
-                params.getDatasetFiles().get(EnrichmentMap.DATASET1).setEnrichmentFileName2(file.getAbsolutePath());
+                dataset1files.setEnrichmentFileName2(file.getAbsolutePath());
                 Dataset1FileName2TextField.setToolTipText(file.getAbsolutePath() );
              }
 
@@ -1944,12 +1922,9 @@ public class EnrichmentMapInputPanel extends JPanel {
              else{
               Dataset2FileNameTextField.setForeground(checkFile(file.getAbsolutePath()));
               Dataset2FileNameTextField.setText(file.getAbsolutePath() );
-              if(params.getDatasetFiles().containsKey(EnrichmentMap.DATASET2))
-           	   		params.getDatasetFiles().get(EnrichmentMap.DATASET2).setEnrichmentFileName1(file.getAbsolutePath());
-              else{
-           	   params.addnewDataset(EnrichmentMap.DATASET2);
-           	   params.getDatasetFiles().get(EnrichmentMap.DATASET2).setEnrichmentFileName1(file.getAbsolutePath());
-              }
+              
+              dataset2files.setEnrichmentFileName1(file.getAbsolutePath());
+              
               Dataset2FileNameTextField.setToolTipText(file.getAbsolutePath() );
            }
            params.setTwoDatasets(true);
@@ -1985,12 +1960,9 @@ public class EnrichmentMapInputPanel extends JPanel {
              else{
               Dataset2FileName2TextField.setForeground(checkFile(file.getAbsolutePath()));
               Dataset2FileName2TextField.setText(file.getAbsolutePath() );
-              if(params.getDatasetFiles().containsKey(EnrichmentMap.DATASET2))
-         	   		params.getDatasetFiles().get(EnrichmentMap.DATASET2).setEnrichmentFileName2(file.getAbsolutePath());
-            else{
-         	   params.addnewDataset(EnrichmentMap.DATASET2);
-         	   params.getDatasetFiles().get(EnrichmentMap.DATASET2).setEnrichmentFileName2(file.getAbsolutePath());
-            }
+              
+              dataset2files.setEnrichmentFileName2(file.getAbsolutePath());
+            
               Dataset2FileName2TextField.setToolTipText(file.getAbsolutePath() );
            }
            params.setTwoDatasets(true);
@@ -2024,7 +1996,7 @@ public class EnrichmentMapInputPanel extends JPanel {
         if(file != null) {
                 Dataset1RankFileTextField.setForeground(checkFile(file.getAbsolutePath()));
                 Dataset1RankFileTextField.setText(file.getAbsolutePath() );
-                params.getDatasetFiles().get(EnrichmentMap.DATASET1).setRankedFile(file.getAbsolutePath());
+                dataset1files.setRankedFile(file.getAbsolutePath());
                 Dataset1RankFileTextField.setToolTipText(file.getAbsolutePath() );
 
 
@@ -2059,12 +2031,9 @@ public class EnrichmentMapInputPanel extends JPanel {
         if(file != null) {
                 Dataset2RankFileTextField.setForeground(checkFile(file.getAbsolutePath()));
                 Dataset2RankFileTextField.setText(file.getAbsolutePath() );
-                if(params.getDatasetFiles().containsKey(EnrichmentMap.DATASET2))
-           	   		params.getDatasetFiles().get(EnrichmentMap.DATASET2).setRankedFile(file.getAbsolutePath());
-                else{
-                	params.addnewDataset(EnrichmentMap.DATASET2);
-                	params.getDatasetFiles().get(EnrichmentMap.DATASET2).setRankedFile(file.getAbsolutePath());
-                }
+
+                	dataset2files.setRankedFile(file.getAbsolutePath());
+                
                 Dataset2RankFileTextField.setToolTipText(file.getAbsolutePath() );
 
 
@@ -2163,20 +2132,24 @@ public class EnrichmentMapInputPanel extends JPanel {
     public void updateContents(EnrichmentMapParameters current_params){
         this.params = new EnrichmentMapParameters();
         this.params.copy(current_params);
+        
+        if(params.getFiles().containsKey(EnrichmentMap.DATASET1))
+  		  	this.dataset1files = params.getFiles().get(EnrichmentMap.DATASET1);
+  	  	if(params.getFiles().containsKey(EnrichmentMap.DATASET2))
+  	  		this.dataset2files = params.getFiles().get(EnrichmentMap.DATASET2);
 
+        GMTFileNameTextField.setText(dataset1files.getGMTFileName());
+        GCTFileName1TextField.setText(dataset1files.getExpressionFileName());
+        Dataset1FileNameTextField.setText(dataset1files.getEnrichmentFileName1());
+        Dataset1FileName2TextField.setText(dataset1files.getEnrichmentFileName2());
+        Dataset1RankFileTextField.setText(dataset1files.getRankedFile());
 
-        GMTFileNameTextField.setText(current_params.getDatasetFiles().get(EnrichmentMap.DATASET1).getGMTFileName());
-        GCTFileName1TextField.setText(current_params.getDatasetFiles().get(EnrichmentMap.DATASET1).getExpressionFileName());
-        Dataset1FileNameTextField.setText(current_params.getDatasetFiles().get(EnrichmentMap.DATASET1).getEnrichmentFileName1());
-        Dataset1FileName2TextField.setText(current_params.getDatasetFiles().get(EnrichmentMap.DATASET1).getEnrichmentFileName2());
-        Dataset1RankFileTextField.setText(current_params.getDatasetFiles().get(EnrichmentMap.DATASET1).getRankedFile());
-
-        if(current_params.getDatasetFiles().containsKey(EnrichmentMap.DATASET2)){
-        	GCTFileName2TextField.setText(current_params.getDatasetFiles().get(EnrichmentMap.DATASET2).getExpressionFileName());
-        	Dataset2FileNameTextField.setText(current_params.getDatasetFiles().get(EnrichmentMap.DATASET2).getEnrichmentFileName1());
-        	Dataset2FileName2TextField.setText(current_params.getDatasetFiles().get(EnrichmentMap.DATASET2).getEnrichmentFileName2());
-        	Dataset2RankFileTextField.setText(current_params.getDatasetFiles().get(EnrichmentMap.DATASET2).getRankedFile());
-        }
+        
+        	GCTFileName2TextField.setText(dataset2files.getExpressionFileName());
+        	Dataset2FileNameTextField.setText(dataset2files.getEnrichmentFileName1());
+        	Dataset2FileName2TextField.setText(dataset2files.getEnrichmentFileName2());
+        	Dataset2RankFileTextField.setText(dataset2files.getRankedFile());
+        
 
         Dataset1Phenotype1TextField.setText(current_params.getDataset1Phenotype1());
         Dataset1Phenotype2TextField.setText(current_params.getDataset1Phenotype2());
@@ -2236,4 +2209,22 @@ public class EnrichmentMapInputPanel extends JPanel {
     public void setParams(EnrichmentMapParameters params) {
         this.params = params;
     }
+
+	public DataSetFiles getDataset1files() {
+		return dataset1files;
+	}
+
+	public void setDataset1files(DataSetFiles dataset1files) {
+		this.dataset1files = dataset1files;
+	}
+
+	public DataSetFiles getDataset2files() {
+		return dataset2files;
+	}
+
+	public void setDataset2files(DataSetFiles dataset2files) {
+		this.dataset2files = dataset2files;
+	}
+    
+    
 }

@@ -1,6 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap.model;
 
 import java.util.HashMap;
+import java.util.Iterator;
 
 
 public class Ranking {
@@ -33,6 +34,11 @@ public class Ranking {
 
 	public void setRanking(HashMap<Integer, Rank> ranking) {
 		this.ranking = ranking;
+		for(Iterator<Integer> i = ranking.keySet().iterator();i.hasNext();){
+			Integer cur = (Integer)i.next();
+			gene2rank.put(cur,ranking.get(cur).getRank());
+			rank2gene.put(ranking.get(cur).getRank(), cur);
+        }
 	}
 
 	public HashMap<Integer, Integer> getGene2rank() {
@@ -41,6 +47,12 @@ public class Ranking {
 
 	public void setGene2rank(HashMap<Integer, Integer> gene2rank) {
 		this.gene2rank = gene2rank;
+		if(this.rank2gene == null || this.rank2gene.isEmpty()){
+			for(Iterator<Integer> i = gene2rank.keySet().iterator();i.hasNext();){
+				Integer cur = (Integer)i.next();
+				rank2gene.put(gene2rank.get(cur), cur);
+	        }
+		}
 	}
 
 	public HashMap<Integer, Integer> getRank2gene() {
@@ -49,6 +61,12 @@ public class Ranking {
 
 	public void setRank2gene(HashMap<Integer, Integer> rank2gene) {
 		this.rank2gene = rank2gene;
+		if(this.gene2rank == null || this.rank2gene.isEmpty()){
+			for(Iterator<Integer> i = rank2gene.keySet().iterator();i.hasNext();){
+				Integer cur = (Integer)i.next();
+				gene2rank.put(rank2gene.get(cur), cur);
+	        }
+		}
 	}
 
 	public String getFilename() {

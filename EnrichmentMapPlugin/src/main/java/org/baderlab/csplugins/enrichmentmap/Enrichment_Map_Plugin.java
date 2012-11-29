@@ -54,13 +54,23 @@ import cytoscape.visual.VisualStyle;
 
 import javax.swing.*;
 
+import org.baderlab.csplugins.enrichmentmap.actions.EnrichmentMapActionListener;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadEnrichmentsPanelAction;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadPostAnalysisPanelAction;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowAboutPanelAction;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
+import org.baderlab.csplugins.enrichmentmap.model.GenesetSimilarity;
 import org.baderlab.csplugins.enrichmentmap.model.Rank;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
+import org.baderlab.csplugins.enrichmentmap.model.SetOfEnrichmentResults;
+import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
+import org.baderlab.csplugins.enrichmentmap.parsers.ExpressionFileReaderTask;
+import org.baderlab.csplugins.enrichmentmap.task.ComputeSimilarityTask;
+import org.baderlab.csplugins.enrichmentmap.task.InitializeGenesetsOfInterestTask;
+import org.baderlab.csplugins.enrichmentmap.view.ParametersPanel;
 
 import java.io.File;
 import java.io.BufferedWriter;
@@ -227,7 +237,7 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
               		HashMap<String, DataSet> all_datasets = em.getDatasets();
               		
               		//output to the property file how many datasets we have (so we know on reload)
-            		prop_file_content = prop_file_content + "Datasets\t"+  all_datasets.keySet().toString() +"\n";
+              		prop_file_content = prop_file_content + "Datasets\t"+  all_datasets.keySet().toString() +"\n";
 
               		for(Iterator<String> k  = all_datasets.keySet().iterator(); k.hasNext();){
             				String dataset_name = k.next().toString();
@@ -246,13 +256,12 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
                  
             				//enrichments
             				File enrichmentresults = new File(tmpDir, name+"." + dataset_name +".ENR.txt");
-            				File enrichmentresultsOfinterest = new File(tmpDir, name+ "." + dataset_name +".SubENR.txt");
  
             				BufferedWriter enr1writer = new BufferedWriter(new FileWriter(enrichmentresults));
             				enr1writer.write(params.printHashmap(em.getDataset(current).getEnrichments().getEnrichments()));
             				enr1writer.close();
-            				pFileList.add(enrichmentresults);
-        			
+            				pFileList.add(enrichmentresults);            				
+            				
             				prop_file_content = prop_file_content + em.getDataset(current).getEnrichments().toString(current);
         			
             				//expression
@@ -262,6 +271,10 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
             					expression1writer.write(em.getDataset(current).getExpressionSets().toString());
             					expression1writer.close();
             					pFileList.add(expression);
+            					
+            					//print out the information about the expression files
+            					prop_file_content = prop_file_content + em.getDataset(current).getExpressionSets().toString(current);
+            					
             					//save all the rank files
             					if(!em.getDataset(current).getExpressionSets().getRanks().isEmpty()){
             						HashMap<String, Ranking> all_ranks = em.getDataset(current).getExpressionSets().getRanks();
@@ -306,7 +319,7 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
             return;
         }
 
- /*       try {
+        try {
             //go through the prop files first to create the correct objects to be able
             //to add other files to.
            for(int i = 0; i < pStateFileList.size(); i++){
@@ -339,7 +352,15 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
                         name = props_name;
                         em.setName(name);
                     }
-
+                    
+                    //after associated the properties with the network
+                    //initialized each Dataset that we have files for
+                    HashMap<String, DataSetFiles> files = params.getFiles();
+                    for(Iterator<String> j = params.getFiles().keySet().iterator();j.hasNext();){
+                    		String current_dataset = j.next();
+                    		em.addDataset(current_dataset, new DataSet(em,current_dataset,files.get(current_dataset)));                    		
+                    }
+                    
                     //register network and parameters
                     EnrichmentMapManager.getInstance().registerNetwork(Cytoscape.getNetwork(name),em);
                 }
@@ -349,24 +370,27 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
 
                 File prop_file = pStateFileList.get(i);
 
-                //get the network name and network and parameters
-                //for this file
-                String[] fullname = prop_file.getName().split("Enrichment_Map_Plugin_");
-                String name;
-                if(fullname.length > 1)
-                    name = (fullname[1].split("\\."))[0];
-                else
-                    continue;
-
-                EnrichmentMap em = EnrichmentMapManager.getInstance().getMap(name);
+                FileNameParts parts = ParseFileName(prop_file.getName());
+                if(parts == null || prop_file.getName().contains(".props"))
+                		continue;
+                
+                EnrichmentMap em = EnrichmentMapManager.getInstance().getMap(parts.name);
                 
                 
                 if(em == null)
                     System.out.println("network for file" + prop_file.getName() + " does not exist.");
                 else if((!prop_file.getName().contains(".props"))
                         && (!prop_file.getName().contains(".expression1.txt"))
-                        && (!prop_file.getName().contains(".expression2.txt"))){
+                        && (!prop_file.getName().contains(".expression2.txt"))
+                        ){
                 		EnrichmentMapParameters params = em.getParams();
+                		HashMap<String,String> props = params.getProps();
+                		//if this a dataset specific file make sure there is a dataset object for it
+                		if(!(parts.dataset == null) && em.getDataset(parts.dataset) == null)
+                			em.addDataset(parts.dataset, new DataSet(em,parts.name,params.getFiles().get(parts.dataset)));
+                		if(parts.type == null)
+                			System.out.println("Sorry, unable to determine the type of the file: "+ prop_file.getName());
+                		
                     //read the file
                     TextFileReader reader = new TextFileReader(prop_file.getAbsolutePath());
                     reader.read();
@@ -378,11 +402,18 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
 
                     if(prop_file.getName().contains(".gmt")){
                         if (prop_file.getName().contains(".signature.gmt"))
-                            em.setSignatureGenesets(params.repopulateHashmap(fullText, 1));
-                        else if(prop_file.getName().contains(".set2.gmt"))
-                            ((EnrichmentMap_multispecies)params.getEM()).setGenesetsOfInterest_set2(params.repopulateHashmap(fullText,1));
-                        else
-                            em.setGenesetsOfInterest(params.repopulateHashmap(fullText,1));
+                            em.setSignatureGenesets((HashMap<String, GeneSet>)params.repopulateHashmap(fullText, 1));
+                        //account for legacy session files
+                        else if(prop_file.getName().contains(".set2.gmt")){
+                        		if(em.getAllGenesets().containsKey(EnrichmentMap.DATASET2)){
+                        			SetOfGeneSets gs = new SetOfGeneSets(EnrichmentMap.DATASET2,props);
+                            		gs.setGenesets((HashMap<String, GeneSet>) params.repopulateHashmap(fullText,1));
+                        			}
+                        }else{
+                        		SetOfGeneSets gs = new SetOfGeneSets(parts.dataset,props);
+                        		gs.setGenesets((HashMap<String, GeneSet>)params.repopulateHashmap(fullText,1));
+                        		em.getDatasets().get(parts.dataset).setGenesetsOfInterest(gs);
+                        }
                     }
                     if(prop_file.getName().contains(".genes.txt")){
                         HashMap<String, Integer> genes = params.repopulateHashmap(fullText,2);
@@ -390,7 +421,7 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
                         //ticket #188 - unable to open session files that have empty enrichment maps.
                         if(genes != null && !genes.isEmpty())
                             // Ticket #107 : restore also gene count (needed to determine the next free hash in case we do PostAnalysis with a restored session)
-                            params.setNumberOfGenes( Math.max( params.getNumberOfGenes(), Collections.max(genes.values())+1 ));
+                            em.setNumberOfGenes( Math.max( em.getNumberOfGenes(), Collections.max(genes.values())+1 ));
                     }
                     if(prop_file.getName().contains(".hashkey2genes.txt")){
                         HashMap<Integer,String> hashkey2gene = params.repopulateHashmap(fullText,5);
@@ -403,68 +434,107 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
 
 
 
-                    if(prop_file.getName().contains(".ENR1.txt")){
-                        if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA))
-                            params.getEM().addEnrichments(EnrichmentMap.DATASET1,new SetOfEnrichmentResults(params.repopulateHashmap(fullText,3)));
-                        else
-                            params.setEnrichmentResults1(params.repopulateHashmap(fullText,4));
-
+                    if((parts.type != null && (parts.type.equalsIgnoreCase("ENR") || (parts.type.equalsIgnoreCase("SubENR")))) 
+                    			|| prop_file.getName().contains(".ENR1.txt") || prop_file.getName().contains(".SubENR1.txt")){
+                    		SetOfEnrichmentResults enrichments;
+                    		int temp = 1;
+                    		//check to see if this dataset has enrichment results already
+                    		if(parts.dataset != null && em.getDataset(parts.dataset).getEnrichments() != null)
+                    			enrichments = em.getDataset(parts.dataset).getEnrichments();
+                    		else	 if (parts.dataset == null){
+                    			enrichments = em.getDataset(EnrichmentMap.DATASET1).getEnrichments();
+                    			/*enrichments = new SetOfEnrichmentResults(EnrichmentMap.DATASET1,props);
+                    			em.getDataset(EnrichmentMap.DATASET1).setEnrichments(enrichments);*/
+                    		}
+                    		else	{
+                    			enrichments = new SetOfEnrichmentResults(parts.dataset,props);
+                    			em.getDataset(parts.dataset).setEnrichments(enrichments);
+                    		}
+                    		if(parts.type.equalsIgnoreCase("ENR") || prop_file.getName().contains(".ENR1.txt")){
+                    			if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA))
+                    				enrichments.setEnrichments(params.repopulateHashmap(fullText,3));
+                    			else
+                    				enrichments.setEnrichments(params.repopulateHashmap(fullText,4));
+                    			}
+                    
                     }
-                    if(prop_file.getName().contains(".SubENR1.txt")){
-                        if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA))
-                            params.setEnrichmentResults1OfInterest(params.repopulateHashmap(fullText,3));
-                        else
-                            params.setEnrichmentResults1OfInterest(params.repopulateHashmap(fullText,4));
-                    }
-                    //have to keep this method just in case old session files have ranks saved in this way
+                    
+                  //have to keep this method just in case old session files have ranks saved in this way
                     //it would only happen for sessions saved with version 0.8
-                    if(prop_file.getName().contains(".RANKS1.txt")){
-                        params.setDataset1Rankings(params.repopulateHashmap(fullText,6));
+                    if(prop_file.getName().contains(".RANKS1.txt") || prop_file.getName().contains(".RANKS1Genes.txt")){
+                    		Ranking new_ranking;
+                    		//Check to see if there is already GSEARanking
+                    		if(em.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getAllRanksNames().contains(Ranking.GSEARanking))
+                    			new_ranking = em.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getRanksByName(Ranking.GSEARanking);
+                    		else{
+                    			new_ranking = new Ranking();
+                    			em.getDataset(EnrichmentMap.DATASET1).getExpressionSets().addRanks(Ranking.GSEARanking, new_ranking);                			
+                    		}
+                    		if(prop_file.getName().contains(".RANKS1Genes.txt"))
+                    			new_ranking.setRank2gene(em.getParams().repopulateHashmap(fullText,7));
+                    		if(prop_file.getName().contains(".RANKS1.txt"))
+                    			new_ranking.setRanking(em.getParams().repopulateHashmap(fullText,6));
                     }
-                    //create file to deal with GSEA ranks for leading edge analysis.
-                    if(prop_file.getName().contains(".RANKS1Genes.txt")){
-                        params.setRank2geneDataset1(params.repopulateHashmap(fullText,7));
-                    }
+
                     if(prop_file.getName().contains(".RANKS.txt")){
-                        //we need to get the name of this set of rankings
-                        // network_name.ranking_name.ranks.txt --> split by "." and get 2
-                        String[] file_name_tokens = (prop_file.getName()).split("\\.");
-                        String ranks_name;
-                        if(file_name_tokens.length == 4)
-                            ranks_name = file_name_tokens[1];
-                        else
-                            //file name is not structured properly --> default to file name
-                            ranks_name = prop_file.getName();
-                        params.addRanks(ranks_name,params.repopulateHashmap(fullText,6));
+                			if(parts.ranks_name == null){
+                				//we need to get the name of this set of rankings
+                				// network_name.ranking_name.ranks.txt --> split by "." and get 2
+                			
+                				String[] file_name_tokens = (prop_file.getName()).split("\\.");
+                				
+                				if((file_name_tokens.length == 4) && (file_name_tokens[1].equals("Dataset 1 Ranking") || file_name_tokens[1].equals("Dataset 2 Ranking")))
+                					parts.ranks_name = Ranking.GSEARanking ;
+                				else
+                					//file name is not structured properly --> default to file name
+                					parts.ranks_name = prop_file.getName();
+                			}
+                			Ranking new_ranking = new Ranking();
+                			new_ranking.setRanking(em.getParams().repopulateHashmap(fullText,6));
+                			
+                			if(parts.dataset != null)
+                				em.getDataset(parts.dataset).getExpressionSets().addRanks(parts.ranks_name,new_ranking);
+                			else
+                				em.getDataset(EnrichmentMap.DATASET1).getExpressionSets().addRanks(parts.ranks_name,new_ranking);
                     }
-
-
+                    //Deal with legacy issues                    
                     if(params.isTwoDatasets()){
-                        if(prop_file.getName().contains(".ENR2.txt")){
-                            if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA))
-                                params.setEnrichmentResults2(params.repopulateHashmap(fullText,3));
-                            else
-                                params.setEnrichmentResults2(params.repopulateHashmap(fullText,4));
-                        }
-                        if(prop_file.getName().contains(".SubENR2.txt")){
-                            if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA))
-                                params.setEnrichmentResults2OfInterest(params.repopulateHashmap(fullText,3));
-                            else
-                                params.setEnrichmentResults2OfInterest(params.repopulateHashmap(fullText,4));
-                        }
+                    		//make sure there is a Dataset2
+                    		if(!em.getDatasets().containsKey(EnrichmentMap.DATASET2))
+                        			em.addDataset(EnrichmentMap.DATASET2, null);
+                    		if( prop_file.getName().contains(".ENR2.txt") || prop_file.getName().contains(".SubENR2.txt")){
+                    			SetOfEnrichmentResults enrichments;
+                    			//check to see if this dataset has enrichment results already
+                    			if(em.getDataset(EnrichmentMap.DATASET2).getEnrichments() != null)
+                    				enrichments = em.getDataset(EnrichmentMap.DATASET2).getEnrichments();
+                    			else	{
+                    				enrichments = new SetOfEnrichmentResults(EnrichmentMap.DATASET2,props);
+                    				em.getDataset(EnrichmentMap.DATASET2).setEnrichments(enrichments);
+                    			}
+                    			if(prop_file.getName().contains(".ENR2.txt")){
+                    				if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA))
+                    					enrichments.setEnrichments(params.repopulateHashmap(fullText,3));
+                    				else
+                    					enrichments.setEnrichments(params.repopulateHashmap(fullText,4));
+                    			}  			
+                    		}                        
+                    		//have to keep this method just in case old session files have ranks saved in this way
+                            //it would only happen for sessions saved with version 0.8
+                            if(prop_file.getName().contains(".RANKS2.txt") || prop_file.getName().contains(".RANKS2Genes.txt")){
+                            		Ranking new_ranking;
+                            		//Check to see if there is already GSEARanking
+                            		if(em.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getAllRanksNames().contains(Ranking.GSEARanking))
+                            			new_ranking = em.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getRanksByName(Ranking.GSEARanking);
+                            		else{
+                            			new_ranking = new Ranking();
+                            			em.getDataset(EnrichmentMap.DATASET2).getExpressionSets().addRanks(Ranking.GSEARanking, new_ranking);                			
+                            		}
+                            		if(prop_file.getName().contains(".RANKS2Genes.txt"))
+                            			new_ranking.setRank2gene(em.getParams().repopulateHashmap(fullText,7));
+                            		if(prop_file.getName().contains(".RANKS2.txt"))
+                            			new_ranking.setGene2rank(em.getParams().repopulateHashmap(fullText,6));
+                            }
 
-                        //have to keep this method just in case old session files have ranks saved in this way
-                        //it would only happen for sessions saved with version 0.8
-                        if(prop_file.getName().contains(".RANKS2.txt")){
-                            params.setDataset2Rankings(params.repopulateHashmap(fullText,6));
-                        }
-                        //create file to deal with GSEA ranks for leading edge analysis.
-                        if(prop_file.getName().contains(".RANKS2Genes.txt")){
-                            params.setRank2geneDataset2(params.repopulateHashmap(fullText,7));
-                        }
-                        else if(params.getDataset1Rankings() != null){
-                         params.setRank2geneDataset1(params.getRank2geneDataset(params.getDataset1Rankings()));
-                    }
                     }
 
                 }
@@ -476,89 +546,89 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
             for(int i = 0; i < pStateFileList.size(); i++){
 
                 File prop_file = pStateFileList.get(i);
+                FileNameParts parts_exp = ParseFileName(prop_file.getName());
 
-                if(prop_file.getName().contains("expression1.txt")){
-                    String[] fullname = prop_file.getName().split("Enrichment_Map_Plugin_");
-                    String  name = (fullname[1].split("\\."))[0];
-
-                    EnrichmentMapParameters params = EnrichmentMapManager.getInstance().getParameters(name);
-
-                    //Load the GCT file
-                    params.setExpressionFileName1(prop_file.getAbsolutePath());
-                    ExpressionFileReaderTask expressionFile1 = new ExpressionFileReaderTask(params,1);
-                    expressionFile1.run();
-                    params.getExpression().rowNormalizeMatrix();
+                EnrichmentMap map = EnrichmentMapManager.getInstance().getMap(parts_exp.name);
+                
+                if(parts_exp.type != null && parts_exp.type.equalsIgnoreCase("expression")){
+                		if(map.getDatasets().containsKey(parts_exp.dataset)){
+                			DataSet ds = map.getDataset(parts_exp.dataset);
+                         ds.getDatasetFiles().setExpressionFileName(prop_file.getAbsolutePath());
+                         ds.getExpressionSets().setFilename(prop_file.getAbsolutePath());
+                         ExpressionFileReaderTask expressionFile1 = new ExpressionFileReaderTask(ds);
+                         expressionFile1.run();
+                		}
                 }
-                if(prop_file.getName().contains("expression2.txt")){
-                    //get the network name and network and parameters
-                    //for this file
-                    String[] fullname = prop_file.getName().split("Enrichment_Map_Plugin_");
-                    String  name = (fullname[1].split("\\."))[0];
+                //Deal with legacy session files.
+                if(prop_file.getName().contains("expression1.txt")){                  
+                    //Load the GCT file
+                    //get Dataset1
+                    DataSet ds1 = map.getDataset(EnrichmentMap.DATASET1);
+                    ds1.getDatasetFiles().setExpressionFileName(prop_file.getAbsolutePath());
+                    ds1.getExpressionSets().setFilename(prop_file.getAbsolutePath());
+                    ExpressionFileReaderTask expressionFile1 = new ExpressionFileReaderTask(ds1);
+                    expressionFile1.run();
 
-                    EnrichmentMapParameters params = EnrichmentMapManager.getInstance().getParameters(name);
-
-                    params.setExpressionFileName2(prop_file.getAbsolutePath());
-                    ExpressionFileReaderTask expressionFile2 = new ExpressionFileReaderTask(params,2);
+                }
+                if(prop_file.getName().contains("expression2.txt")){                    
+                    DataSet ds2 = map.getDataset(EnrichmentMap.DATASET2);
+                    ds2.getDatasetFiles().setExpressionFileName(prop_file.getAbsolutePath());
+                    ds2.getExpressionSets().setFilename(prop_file.getAbsolutePath());
+                    ExpressionFileReaderTask expressionFile2 = new ExpressionFileReaderTask(ds2);
                     expressionFile2.run();
-                    params.getExpression2().rowNormalizeMatrix();
 
                     //if there are two expression sets and there is a second set of genesets of interest then we
                     //are dealing with two distinct expression files.
-                    if(!params.getGenesetsOfInterest_set2().isEmpty()){
-                        params.setTwoDistinctExpressionSets(true);
-                        params.setDatasetGenes(new HashSet<Integer>((Set<Integer>)params.getExpression().getGeneIds()));
-                        params.setDatasetGenes_set2(new HashSet<Integer>((Set<Integer>)params.getExpression2().getGeneIds()));
+                    if( map.getDataset(EnrichmentMap.DATASET2) != null && map.getDataset(EnrichmentMap.DATASET2).getGenesetsOfInterest() != null && !map.getDataset(EnrichmentMap.DATASET2).getGenesetsOfInterest().getGenesets().isEmpty() ){
+                        map.getParams().setTwoDistinctExpressionSets(true);
+                        map.getDataset(EnrichmentMap.DATASET1).setDatasetGenes(new HashSet<Integer>((Set<Integer>)map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getGeneIds()));
+                        map.getDataset(EnrichmentMap.DATASET2).setDatasetGenes(new HashSet<Integer>((Set<Integer>)map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getGeneIds()));
                     }
 
                 }
 
             }
-
+       
+               /* else if(params.getDataset1Rankings() != null){
+                		params.setRank2geneDataset1(params.getRank2geneDataset(params.getDataset1Rankings()));
+             */
+                
             //register the action listeners for all the networks.
             EnrichmentMapManager manager = EnrichmentMapManager.getInstance();
-            HashMap networks = manager.getCyNetworkList();
+            HashMap<String, EnrichmentMap> networks = manager.getCyNetworkList();
 
             //iterate over the networks
             for(Iterator j = networks.keySet().iterator();j.hasNext();){
                 String currentNetwork = (String)j.next();
                 CyNetworkView view = Cytoscape.getNetworkView(currentNetwork);
-                EnrichmentMapParameters params = (EnrichmentMapParameters)networks.get(currentNetwork);
-
-                //make sure both rank 2 gene and gene 2 rank exists if there are rank files
-                //if the file is missing then repopulate it from the Ranks
-                if(params.getRanksByName("Dataset 1 Ranking") != null && params.getRanksByName("Dataset 1 Ranking").size() > 0 && (params.getRank2geneDataset1() == null || params.getRank2geneDataset1().size() == 0 )){
-                         params.setRank2geneDataset1(params.getRank2geneDataset(params.getRanksByName("Dataset 1 Ranking")));
-                }
-                if(params.getRanksByName("Dataset 2 Ranking") != null && params.getRanksByName("Dataset 2 Ranking").size() > 0 && (params.getRank2geneDataset2() == null || params.getRank2geneDataset2().size() == 0 )){
-                         params.setRank2geneDataset2(params.getRank2geneDataset(params.getRanksByName("Dataset 2 Ranking")));
-                }
+                EnrichmentMap map = (EnrichmentMap)networks.get(currentNetwork);
 
                 //initialize the Genesets (makes sure the leading edge is set correctly)
                 //Initialize the set of genesets and GSEA results that we want to compute over
-                InitializeGenesetsOfInterestTask genesets_init = new InitializeGenesetsOfInterestTask(params);
+                InitializeGenesetsOfInterestTask genesets_init = new InitializeGenesetsOfInterestTask(map);
                 genesets_init.run();
 
                 //for each map compute the similarity matrix, (easier than storing it)
                 //compute the geneset similarities
-                ComputeSimilarityTask similarities = new ComputeSimilarityTask(params, ComputeSimilarityTask.ENRICHMENT);
+                ComputeSimilarityTask similarities = new ComputeSimilarityTask(map, ComputeSimilarityTask.ENRICHMENT);
                 similarities.run();
                 HashMap<String, GenesetSimilarity> similarity_results = similarities.getGeneset_similarities();
-                params.setGenesetSimilarity(similarity_results);
+                map.setGenesetSimilarity(similarity_results);
 
                 // also compute geneset similarities between Enrichment- and Signature Genesets (if any)
-                if (! params.getSignatureGenesets().isEmpty()){
-                    ComputeSimilarityTask sigSimilarities = new ComputeSimilarityTask(params, ComputeSimilarityTask.SIGNATURE);
+                if (! map.getSignatureGenesets().isEmpty()){
+                    ComputeSimilarityTask sigSimilarities = new ComputeSimilarityTask(map, ComputeSimilarityTask.SIGNATURE);
                     sigSimilarities.run();
                     HashMap<String, GenesetSimilarity> sig_similarity_results = sigSimilarities.getGeneset_similarities();
 
-                    params.getGenesetSimilarity().putAll(sig_similarity_results);
+                    map.getGenesetSimilarity().putAll(sig_similarity_results);
                 }
 
                 //add the click on edge listener
-                view.addGraphViewChangeListener(new EnrichmentMapActionListener(params));
+                view.addGraphViewChangeListener(new EnrichmentMapActionListener(map));
 
                 //make sure the visual style is set to the right on for this network
-                String vs_name = params.getAttributePrefix() + "Enrichment_map_style";
+                String vs_name = map.getParams().getAttributePrefix() + "Enrichment_map_style";
 
                 // get the VisualMappingManager and CalculatorCatalog
                 VisualMappingManager manager_vs = Cytoscape.getVisualMappingManager();
@@ -572,7 +642,7 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
                 if(!j.hasNext()){
                     Cytoscape.setCurrentNetwork(currentNetwork);
                     ParametersPanel paramPanel = manager.getParameterPanel();
-                    paramPanel.updatePanel(params);
+                    paramPanel.updatePanel(map);
                     paramPanel.revalidate();
                 }
 
@@ -588,7 +658,7 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
         Properties cyto_props = CytoscapeInit.getProperties();
         if (cyto_props.containsKey("nodelinkouturl.MSigDb"))
             cyto_props.remove("nodelinkouturl.MSigDb");
-*/
+
     }
 
     private Properties getPropertiesFromClasspath(String propFileName) throws IOException {
@@ -620,6 +690,63 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
         return overrideHeatmapRevalidation;
     }
 
-
+    private FileNameParts ParseFileName(String filename){
+    		String[] fullname = filename.split("Enrichment_Map_Plugin_");
+        String name=null,type=null,dataset=null,ranks_name= null;
+        if(fullname.length > 1){                    
+            String[] tokens = fullname[1].split("\\.");
+            if((tokens.length ==2) && (tokens[1].equals("gmt"))){
+            		name = tokens[0];
+            		dataset = EnrichmentMap.DATASET1;
+            		type = "gmt";
+            }
+            //if the length is three then the file is associated with whole map
+            if((tokens.length == 3) && (!tokens[2].equals("gmt"))){
+            		name = tokens[0];
+            		type = tokens[1];
+            }
+            if((tokens.length == 3) && (tokens[2].equals("gmt"))){
+        			name = tokens[0];
+        			dataset = tokens[1];
+        			type = "gmt";
+            }
+            //if the length is four or more then it is associated with a specific dataset
+            if((tokens.length == 4) && !tokens[2].equals("RANKS")){
+        			name = tokens[0];
+        			dataset = tokens[1];
+        			type = tokens[tokens.length-2];
+            }
+            //legacy issue with old session files.
+            if((tokens.length == 4) && tokens[2].equals("RANKS")){
+    				name = tokens[0];
+    				dataset = null;
+    				type = tokens[tokens.length-2];
+            }
+            if(tokens.length > 4){
+            		name = tokens[0];
+            		dataset = tokens[1];
+            		ranks_name = tokens[tokens.length-3];
+            		type = tokens[tokens.length-2];
+            }
+            FileNameParts parts = new FileNameParts(name,type,dataset,ranks_name);
+            return parts;
+        }
+        return null;
+    }
+    
+    //internal class to hold the parts of the file name
+    public class FileNameParts{
+    		public String name;
+    		public String type;
+    		public String ranks_name;
+    		public String dataset;
+  
+    		public FileNameParts(String name, String type, String dataset, String ranks_name){
+    			this.name = name;
+    			this.type = type;
+    			this.dataset = dataset;
+    			this.ranks_name = ranks_name;
+    		}
+    }
 }
 

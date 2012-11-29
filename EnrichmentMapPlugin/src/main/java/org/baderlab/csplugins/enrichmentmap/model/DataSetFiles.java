@@ -105,18 +105,28 @@ public class DataSetFiles {
 	public String toString(String dataset){
 		StringBuffer paramVariables = new StringBuffer();
 		//file names
-        paramVariables.append(dataset +"%GMTFileName\t" + GMTFileName + "\n");
-        paramVariables.append(dataset +"%expressionFileName1\t" + expressionFileName + "\n");
+        paramVariables.append(dataset+ "%" + this.getClass().getSimpleName() + "%GMTFileName\t" + GMTFileName + "\n");
+        paramVariables.append(dataset+ "%" +this.getClass().getSimpleName() + "%expressionFileName\t" + expressionFileName + "\n");
 
         //TODO fix typo in field
-        paramVariables.append(dataset +"%enerichmentDataset1FileName1\t" + enrichmentFileName1 + "\n");//TODO: fix Typo and take care of legacy issue!
-        paramVariables.append(dataset +"%enrichmentDataset1FileName2\t" + enrichmentFileName2 + "\n");
+        paramVariables.append(dataset+ "%" +this.getClass().getSimpleName() + "%enrichmentFileName1\t" + enrichmentFileName1 + "\n");//TODO: fix Typo and take care of legacy issue!
+        paramVariables.append(dataset+ "%" +this.getClass().getSimpleName() + "%enrichmentFileName2\t" + enrichmentFileName2 + "\n");
 
-        paramVariables.append(dataset +"%gseaHtmlReportFileDataset1\t" + gseaHtmlReportFile + "\n");        
-        paramVariables.append(dataset +"%classFile1\t" + classFile  + "\n");
-        paramVariables.append(dataset +"%rankFile1\t" + RankedFile + "\n");
+        paramVariables.append(dataset+ "%" +this.getClass().getSimpleName() + "%gseaHtmlReportFileDataset\t" + gseaHtmlReportFile + "\n");        
+        paramVariables.append(dataset+ "%" +this.getClass().getSimpleName() + "%classFile\t" + classFile  + "\n");
+        paramVariables.append(dataset+ "%" +this.getClass().getSimpleName() + "%RankedFile\t" + RankedFile + "\n");
 		return paramVariables.toString();
 	}
 	
-	
+	public boolean isEmpty(){
+		if(this.GMTFileName != null && !this.GMTFileName.equalsIgnoreCase(""))
+			return false;
+		if(this.expressionFileName != null && !this.expressionFileName.equalsIgnoreCase(""))
+			return false;
+		if(this.enrichmentFileName1!= null && ! this.enrichmentFileName1.equalsIgnoreCase(""))
+			return false;
+		if(this.enrichmentFileName2!= null && ! this.enrichmentFileName2.equalsIgnoreCase(""))
+			return false;
+		return true;
+	}
 }

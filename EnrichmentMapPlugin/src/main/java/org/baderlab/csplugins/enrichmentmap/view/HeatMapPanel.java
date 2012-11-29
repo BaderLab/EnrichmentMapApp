@@ -282,7 +282,7 @@ public class HeatMapPanel extends JPanel {
      * Update the heat map panel
      */
     public void updatePanel(){
-    		EnrichmentMapParameters params = map.getParams();
+    		//EnrichmentMapParameters params = map.getParams();
         if((currentExpressionSet != null) || (currentExpressionSet2 != null)){
 
 
@@ -550,9 +550,9 @@ public class HeatMapPanel extends JPanel {
         //selection.
         if (this.displayLeadingEdge &&  map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().haveRanks() && (hmParams.getSort() == Sort.RANK || params.getDefaultSortMethod().equalsIgnoreCase(hmParams.getSort().toString()))){
             topRank = getTopRank();
-            if(hmParams.getRankFileIndex().equalsIgnoreCase("Dataset 1 Ranking"))
+            if(hmParams.getRankFileIndex().equalsIgnoreCase("Dataset 1 Ranking")|| hmParams.getRankFileIndex().equalsIgnoreCase(Ranking.GSEARanking))
                 isNegative = isNegativeGS(1);
-            else if(hmParams.getRankFileIndex().equalsIgnoreCase("Dataset 2 Ranking"))
+            else if(hmParams.getRankFileIndex().equalsIgnoreCase("Dataset 2 Ranking")|| hmParams.getRankFileIndex().equalsIgnoreCase(Ranking.GSEARanking))
                 isNegative = isNegativeGS(2);
         }
         
@@ -721,9 +721,9 @@ public class HeatMapPanel extends JPanel {
         //genes in the leading edge
         int topRank = getTopRank();
         boolean isNegative = false;
-        if(hmParams.getRankFileIndex().equalsIgnoreCase("Dataset 1 Ranking"))
+        if(hmParams.getRankFileIndex().equalsIgnoreCase("Dataset 1 Ranking") || hmParams.getRankFileIndex().equalsIgnoreCase(Ranking.GSEARanking))
             isNegative = isNegativeGS(1);
-        else if(hmParams.getRankFileIndex().equalsIgnoreCase("Dataset 2 Ranking"))
+        else if(hmParams.getRankFileIndex().equalsIgnoreCase("Dataset 2 Ranking") || hmParams.getRankFileIndex().equalsIgnoreCase(Ranking.GSEARanking))
             isNegative = isNegativeGS(2);
 
 
