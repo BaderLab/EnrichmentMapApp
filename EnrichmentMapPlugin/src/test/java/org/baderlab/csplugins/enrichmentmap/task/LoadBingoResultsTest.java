@@ -57,7 +57,17 @@ public class LoadBingoResultsTest extends TestCase{
 		assertEquals(74, dataset.getEnrichments().getEnrichments().size());
 		//there should be 11 genesets in the enrichments of interest
 		assertEquals(5, dataset.getGenesetsOfInterest().getGenesets().size());
-		//there should be 5 edges
+		//there should be 6 edges
+		assertEquals(10,em.getGenesetSimilarity().size());
+		//there should be a total of 366 genes
+		assertEquals(446, em.getGenes().size());
+		//there should be 43 genes in the geneset "nucleolus"
+		assertEquals(43, em.getAllGenesets().get("NUCLEOLUS").getGenes().size());
+
+		//make sure the dummy expression has values for all the genes
+		assertEquals(446, dataset.getExpressionSets().getNumGenes());
+		assertEquals(446,dataset.getDatasetGenes().size()); 
+
 		
 		
 	}

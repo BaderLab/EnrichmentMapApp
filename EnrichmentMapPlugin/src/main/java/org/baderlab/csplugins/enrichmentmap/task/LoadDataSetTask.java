@@ -64,8 +64,20 @@ public class LoadDataSetTask implements Task{
     			return;
     		}
     	
-    
-    		//second step: load expression file if specified in the dataset.
+    		//second step: load the enrichments 
+    		try{
+             EnrichmentResultFileReaderTask enrichmentResultsFiles = new EnrichmentResultFileReaderTask(dataset,taskMonitor);
+             enrichmentResultsFiles.run();            
+
+        } catch (OutOfMemoryError e) {
+             taskMonitor.setException(e,"Out of Memory. Please increase memory allotement for cytoscape.");
+             return;
+        }   catch(Exception e){
+             taskMonitor.setException(e,"unable to load enrichment results files");
+             return;
+         }
+    		
+    		//third step: load expression file if specified in the dataset.
     		//if there is no expression file then create a dummy file to associate with 
     		//this dataset so we can still use the expression viewer
     		try{
@@ -82,18 +94,7 @@ public class LoadDataSetTask implements Task{
     			return;
     		}
     	
-    		//third step: load the enrichments 
-    		try{
-             EnrichmentResultFileReaderTask enrichmentResultsFiles = new EnrichmentResultFileReaderTask(dataset,taskMonitor);
-             enrichmentResultsFiles.run();            
-
-        } catch (OutOfMemoryError e) {
-             taskMonitor.setException(e,"Out of Memory. Please increase memory allotement for cytoscape.");
-             return;
-        }   catch(Exception e){
-             taskMonitor.setException(e,"unable to load enrichment results files");
-             return;
-         }
+    		
     	
     		//fourth step: Load ranks
     		//check to see if we have ranking files

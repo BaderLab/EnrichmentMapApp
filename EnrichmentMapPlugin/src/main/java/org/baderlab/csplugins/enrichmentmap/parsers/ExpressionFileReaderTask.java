@@ -331,9 +331,9 @@ public class ExpressionFileReaderTask implements Task {
         HashMap<String, Integer> genes= dataset.getMap().getGenes();
         HashSet<Integer> datasetGenes;
         
-        genes = dataset.getMap().getGenesetsGenes(dataset.getSetofgenesets().getGenesets());
-        datasetGenes= dataset.getDatasetGenes();        
-
+        //genes = dataset.getMap().getGenesetsGenes(dataset.getSetofgenesets().getGenesets());
+        datasetGenes= dataset.getDatasetGenes();
+        
         String[] titletokens = new String[3];
         titletokens[0] = "Name";
         titletokens[1] = "Description";
