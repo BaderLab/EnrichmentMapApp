@@ -51,7 +51,7 @@ public class LoadDataSetTask implements Task{
     	
     		//first step: load GMT file if a file is specified in this dataset
     		try{
-    			if(!dataset.getSetofgenesets().getFilename().isEmpty()){
+    			if(dataset.getSetofgenesets().getFilename() != null && !dataset.getSetofgenesets().getFilename().isEmpty()){
     				//Load the geneset file
     				GMTFileReaderTask gmtFile = new GMTFileReaderTask(dataset, taskMonitor);
     				gmtFile.run();

@@ -206,9 +206,7 @@ public class InitializeGenesetsOfInterestTask implements Task {
         						}
         					}
         				}// end of determining the leading edge
-        				if(current_result.geneSetOfInterest(map.getParams().getPvalue(),map.getParams().getQvalue())){
-        					//enrichmentResults1OfInterest.put(current_name,current_result);
-
+        				if(current_result.geneSetOfInterest(map.getParams().getPvalue(),map.getParams().getQvalue())){        			
         					//check to see that the geneset in the results file is in the geneset table
         					//if it isn't then the user has given two files that don't match up
         					if(genesets.containsKey(current_name)){
@@ -239,7 +237,6 @@ public class InitializeGenesetsOfInterestTask implements Task {
                 GenericResult current_result = (GenericResult)enrichmentResults.get(current_name);
 
                 if(current_result.geneSetOfInterest(map.getParams().getPvalue(),map.getParams().getQvalue(), map.getParams().isFDR())){
-                    //enrichmentResults1OfInterest.put(current_name,current_result);
 
                     //check to see that the geneset in the results file is in the geneset talbe
                     //if it isn't then the user has given two files that don't match up

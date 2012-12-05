@@ -446,7 +446,7 @@ public class EnrichmentResultFileReaderTask implements Task {
             // Column 2 is the geneset name
             // Column 1 is the category (and can be used for the description)
             // Column 6 is the list of genes (from the loaded list) in this geneset -- therefore pre-filtered.
-            HashMap<String, GeneSet> genesets = dataset.getMap().getAllGenesets();
+            HashMap<String, GeneSet> genesets = dataset.getSetofgenesets().getGenesets();
 
             //it is possible that there are two different geneset sets if the two david files
             //are from multiple species
@@ -614,7 +614,7 @@ public class EnrichmentResultFileReaderTask implements Task {
 
             // Column 8 is the geneset name
             // Column 9 is the list of genes in this geneset -- therefore pre-filtered.
-            HashMap<String, GeneSet> genesets = dataset.getMap().getAllGenesets();
+            HashMap<String, GeneSet> genesets = dataset.getSetofgenesets().getGenesets();
 
             //it is possible that there are two different geneset sets if the two david files
             //are from multiple species

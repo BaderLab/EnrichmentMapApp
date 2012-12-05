@@ -264,7 +264,9 @@ public class EnrichmentMap {
     public void filterGenesets(){
     	for(Iterator<String> k = datasets.keySet().iterator(); k.hasNext();){
         	DataSet current_set = datasets.get(k.next());
-          	current_set.getSetofgenesets().filterGenesets(current_set.getDatasetGenes());
+        	//only filter the genesets if dataset genes are not null or empty
+        	if(current_set.getDatasetGenes() != null && !current_set.getDatasetGenes().isEmpty())
+        		current_set.getSetofgenesets().filterGenesets(current_set.getDatasetGenes());
         	
     	}
     }
