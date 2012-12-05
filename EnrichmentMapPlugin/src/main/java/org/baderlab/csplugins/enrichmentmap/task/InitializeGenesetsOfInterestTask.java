@@ -130,6 +130,10 @@ public class InitializeGenesetsOfInterestTask implements Task {
         		}
         		int currentProgress = 0;
         		int maxValue = enrichmentResults.size() ;
+        		
+        		//if there are no enrichment Results then do nothing
+        		if(enrichmentResults == null || enrichmentResults.isEmpty())
+        			return false;
 
         		//iterate through the GSEA Results to figure out which genesets we want to use
         		for(Iterator i = enrichmentResults.keySet().iterator(); i.hasNext(); ){

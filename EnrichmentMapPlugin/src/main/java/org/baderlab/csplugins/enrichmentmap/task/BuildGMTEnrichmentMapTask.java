@@ -56,9 +56,7 @@ public class BuildGMTEnrichmentMapTask implements Task{
                //Load the geneset file as a dataset
         	   		LoadDataSetTask dataset = new LoadDataSetTask(current_dataset,taskMonitor);
         	   		dataset.run();
-        	   		//GMTFileReaderTask gmtFile = new GMTFileReaderTask(map, taskMonitor);
-               //gmtFile.run();
-
+        	   		
                //in this case all the genesets are of interest
                params.setMethod(EnrichmentMapParameters.method_generic);
                current_dataset.setGenesetsOfInterest(current_dataset.getSetofgenesets());
@@ -90,52 +88,6 @@ public class BuildGMTEnrichmentMapTask implements Task{
 
                 }
                current_dataset.setEnrichments(setofenrichments);               
-
-               //in order to see the gene in the expression viewer we also need a dummy expression file
-               //get all the genes
-               HashMap<String, Integer> genes = map.getGenes();
-
-               HashSet<Integer> datasetGenes= current_dataset.getDatasetGenes();
-
-               String[] tokens = new String[3];
-               tokens[0] = "Name";
-               tokens[1] = "Description";
-               tokens[2] = "Fake Expression";
-
-               GeneExpressionMatrix expressionMatrix = new GeneExpressionMatrix(tokens);
-               HashMap<Integer,GeneExpression> expression = new HashMap<Integer, GeneExpression>();
-               expressionMatrix.setExpressionMatrix(expression);
-               tokens[2] = "1.0";
-
-               for (Iterator i = genes.keySet().iterator(); i.hasNext();) {
-                   String currentGene = (String)i.next();
-
-                   int genekey = genes.get(currentGene);
-                   if(datasetGenes != null)
-                        datasetGenes.add(genekey);
-
-                   GeneExpression expres = new GeneExpression(currentGene, currentGene);
-                   expres.setExpression(tokens);
-
-
-                    double newMax = expres.newMax(expressionMatrix.getMaxExpression());
-                    if(newMax != -100)
-                        expressionMatrix.setMaxExpression(newMax);
-                    double newMin = expres.newMin(expressionMatrix.getMinExpression());
-                    if (newMin != -100)
-                        expressionMatrix.setMinExpression(newMin);
-
-                   expression.put(genekey,expres);
-
-                   }
-
-               //set the number of genes
-               expressionMatrix.setNumGenes(expressionMatrix.getExpressionMatrix().size());
-
-               //make sure that params is set to show there is data
-               params.setData(true);
-               current_dataset.setExpressionSets(expressionMatrix);
-
 
                 //build the resulting map
                 VisualizeEnrichmentMapTask viz_map = new VisualizeEnrichmentMapTask(map,taskMonitor);

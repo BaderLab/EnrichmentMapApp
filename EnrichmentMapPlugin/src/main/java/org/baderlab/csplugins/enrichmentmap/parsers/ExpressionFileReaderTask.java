@@ -374,6 +374,9 @@ public class ExpressionFileReaderTask implements Task {
         //set the number of genes
         expressionMatrix.setNumGenes(expressionMatrix.getExpressionMatrix().size());
 		expressionMatrix.setNumConditions(3);
+		
+		//set that there is data for the expression viewer
+		dataset.getMap().getParams().setData(true);
     }
     
  /**

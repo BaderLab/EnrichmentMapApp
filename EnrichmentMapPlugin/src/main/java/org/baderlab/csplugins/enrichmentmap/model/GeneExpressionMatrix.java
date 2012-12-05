@@ -414,10 +414,12 @@ public class GeneExpressionMatrix {
     
     public HashSet<String> getAllRanksNames(){
     		HashSet<String> allnames = new HashSet<String>();
-    		for(Iterator<String> i = ranks.keySet().iterator();i.hasNext();){
-    			String current_name = (String)i.next();
-    			if(current_name != null)
-    				allnames.add(current_name);
+    		if(ranks != null && !ranks.isEmpty()){
+    			for(Iterator<String> i = ranks.keySet().iterator();i.hasNext();){
+    				String current_name = (String)i.next();
+    				if(current_name != null)
+    					allnames.add(current_name);
+    			}
     		}
     		return allnames;
     }
@@ -426,7 +428,7 @@ public class GeneExpressionMatrix {
      * @return true if we have at least one list of gene ranks
      */
     public boolean haveRanks() {
-        if (this.ranks.size() > 0)
+        if (this.ranks != null && this.ranks.size() > 0)
             return true;
         else
             return false;

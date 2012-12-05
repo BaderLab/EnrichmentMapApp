@@ -220,14 +220,17 @@ public class HeatMapPanel extends JPanel {
             this.Dataset1phenotype2 = params.getDataset1Phenotype2();
 
             hmParams = params.getHmParams();
-
-            boolean[] ascending = new boolean[columnNames.length + expression.getRanks().size()];
-            //set the rank files to ascending
-            for(int k = ascending.length ;  k > (ascending.length - expression.getRanks().size()); k--)
-                ascending[k-1] = true;
-            hmParams.setAscending(ascending);
-            //hmParams.setAscending(new boolean[columnNames.length + params.getRanks().size()]);
-
+            boolean[] ascending;
+            if(expression.getRanks() != null){
+            		ascending = new boolean[columnNames.length + expression.getRanks().size()];
+            		//set the rank files to ascending
+            		for(int k = ascending.length ;  k > (ascending.length - expression.getRanks().size()); k--)
+            			ascending[k-1] = true;
+            }
+            else
+            		ascending = new boolean[columnNames.length];
+            
+            hmParams.setAscending(ascending);            
 
             displayLeadingEdge = false;
             leadingEdgeScoreAtMax1 = 0.0;
