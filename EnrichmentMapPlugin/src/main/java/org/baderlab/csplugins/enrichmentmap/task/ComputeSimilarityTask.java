@@ -51,6 +51,7 @@ import java.util.*;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.GenesetSimilarity;
 
@@ -252,11 +253,14 @@ public class ComputeSimilarityTask implements Task {
             }
             //need to go through the second set of genesets in order to calculate the additional similarities
             //TODO:add two species support
- /*          if(map.getParams().isTwoDistinctExpressionSets()){
-                enrichment_set = 2;
-                HashMap<String, GeneSet> genesetsOfInterest_set2 = ((EnrichmentMap_multispecies)params.getEM()).getGenesetsOfInterest_set2();
+           if(map.getParams().isTwoDistinctExpressionSets()){
+                
+        	   		enrichment_set = 2;
+                HashMap<String, GeneSet> genesetsOfInterest_set2 = map.getDataset(EnrichmentMap.DATASET2).getGenesetsOfInterest().getGenesets();
                 genesetsInnerLoop = genesetsOfInterest_set2;
-
+                
+                maxValue = genesetsOfInterest.size() + genesetsOfInterest_set2.size();
+                
                //iterate through the each of the GSEA Results of interest - for the second set.
                 for(Iterator i = genesetsOfInterest_set2.keySet().iterator(); i.hasNext(); ){
 
@@ -344,12 +348,12 @@ public class ComputeSimilarityTask implements Task {
                 //We need to also compute the edges between the two different groups.
                 //Compute similarity for nodes that are in dataset1 or dataset2 (not necessarily significant in both)
                //Do dataset1
-               HashMap<String, GeneSet> sig_genesets_set1 = params.getEM().getGenesetsOfInterest();
-               HashMap<String, GeneSet> sig_genesets_set2 = ((EnrichmentMap_multispecies)params.getEM()).getGenesetsOfInterest_set2();
+               HashMap<String, GeneSet> sig_genesets_set1 = map.getDataset(EnrichmentMap.DATASET1).getGenesetsOfInterest().getGenesets();
+               HashMap<String, GeneSet> sig_genesets_set2 = map.getDataset(EnrichmentMap.DATASET2).getGenesetsOfInterest().getGenesets();
 
-                HashMap<String, GeneSet> genesetsInnerLoop_missingedges = params.getEM().getGenesets();
-                HashMap<String, GeneSet> genesetsOfInterest_missingedges = params.getEM().getGenesets();
-               HashMap<String, EnrichmentResult> dataset1_results = params.getEM().getEnrichment(EnrichmentMap.DATASET1).getEnrichments();
+                HashMap<String, GeneSet> genesetsInnerLoop_missingedges = map.getAllGenesets();
+                HashMap<String, GeneSet> genesetsOfInterest_missingedges = map.getAllGenesets();
+               HashMap<String, EnrichmentResult> dataset1_results = map.getDataset(EnrichmentMap.DATASET1).getEnrichments().getEnrichments();
 
                  //iterate through the each of the GSEA Results of interest - for the second set on the outer loop
                //and the first set on the inner loop
@@ -444,9 +448,9 @@ public class ComputeSimilarityTask implements Task {
                 }
 
                //Do dataset2
-               HashMap<String, GeneSet> genesetsInnerLoop_missingedges_d2 = ((EnrichmentMap_multispecies)params.getEM()).getGenesets_set2();
-               HashMap<String, GeneSet> genesetsOfInterest_missingedges_d2 = ((EnrichmentMap_multispecies)params.getEM()).getGenesets_set2();
-               HashMap<String, EnrichmentResult> dataset2_results = params.getEM().getEnrichment(EnrichmentMap.DATASET2).getEnrichments();
+               HashMap<String, GeneSet> genesetsInnerLoop_missingedges_d2 = map.getDataset(EnrichmentMap.DATASET2).getSetofgenesets().getGenesets();
+               HashMap<String, GeneSet> genesetsOfInterest_missingedges_d2 = map.getDataset(EnrichmentMap.DATASET2).getSetofgenesets().getGenesets();
+               HashMap<String, EnrichmentResult> dataset2_results = map.getDataset(EnrichmentMap.DATASET2).getEnrichments().getEnrichments();
                  //iterate through the each of the GSEA Results of interest - for the second set on the outer loop
                //and the first set on the inner loop
                 for(Iterator i = genesetsOfInterest_missingedges_d2.keySet().iterator(); i.hasNext(); ){
@@ -540,7 +544,6 @@ public class ComputeSimilarityTask implements Task {
                     }
                 }
             }
-*/
         } catch(IllegalThreadStateException e){
             taskMonitor.setException(e, "Unable to compute similarity coeffecients");
             return false;

@@ -132,6 +132,24 @@ public class BuildEnrichmentMapTask implements Task {
     		try{
     			LoadDataSetTask loaddata = new LoadDataSetTask(dataset, taskMonitor);
     			loaddata.run();
+    			
+    			if(map.getParams().isTwoDatasets() && map.getDatasets().containsKey(EnrichmentMap.DATASET2)){
+    				DataSet dataset2 = map.getDataset(EnrichmentMap.DATASET2);
+    				
+    				LoadDataSetTask loaddataset2 = new LoadDataSetTask(dataset2, taskMonitor);
+        			loaddataset2.run();
+        			params.setData2(true);
+        			
+        			//check to see if the two datasets are distinct
+        			if(!(
+        					(dataset.getDatasetGenes().containsAll(dataset2.getDatasetGenes())) && 
+        					(dataset2.getDatasetGenes().containsAll(dataset.getDatasetGenes()))
+        					))
+        				params.setTwoDistinctExpressionSets(true);
+        				
+    				
+    			}
+    			
     		} catch (OutOfMemoryError e) {
             taskMonitor.setException(e,"Out of Memory. Please increase memory allotement for cytoscape.");
             return;

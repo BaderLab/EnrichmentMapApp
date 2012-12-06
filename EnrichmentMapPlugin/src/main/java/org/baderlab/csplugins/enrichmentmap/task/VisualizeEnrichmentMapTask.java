@@ -202,11 +202,11 @@ public class VisualizeEnrichmentMapTask implements Task {
             		count++;
             }
                        
-            HashMap<String, GeneSet> genesetsOfInterest = map.getAllGenesetsOfInterest();
+            HashMap<String, GeneSet> genesetsOfInterest = map.getDataset(EnrichmentMap.DATASET1).getGenesetsOfInterest().getGenesets();
             HashMap<String, GeneSet> genesetsOfInterest_set2 = null;
-            /*if(params.isTwoDistinctExpressionSets())
-            		genesetsOfInterest_set2 = ((EnrichmentMap_multispecies)params.getEM()).getGenesetsOfInterest_set2();
-             */
+            if(map.getParams().isTwoDatasets())
+            		genesetsOfInterest_set2 = map.getDataset(EnrichmentMap.DATASET2).getGenesetsOfInterest().getGenesets();
+             
             int currentProgress = 0;
             int maxValue = genesetsOfInterest.size();
 
@@ -230,7 +230,7 @@ public class VisualizeEnrichmentMapTask implements Task {
                 //Add the description to the node
                 GeneSet gs = null;
                 GeneSet gs2 = null;
-                if(!map.getParams().isTwoDistinctExpressionSets())
+                if(!map.getParams().isTwoDatasets())
                     gs = (GeneSet)genesetsOfInterest.get(current_name);
                 else{
                     if(genesetsOfInterest.containsKey(current_name))
@@ -310,12 +310,12 @@ public class VisualizeEnrichmentMapTask implements Task {
             }
 
             //Add any additional nodes from the second dataset that haven't been added yet
-/*            if(params.isTwoDatasets()){
-                for(Iterator<String> i = enrichmentResults2OfInterest.keySet().iterator(); i.hasNext(); ){
+            if(map.getParams().isTwoDatasets()){
+                for(Iterator<String> i = genesetsOfInterest_set2.keySet().iterator(); i.hasNext(); ){
                     String current_name =i.next();
 
                     //is this already a node from the first subset
-                    if(enrichmentResults1OfInterest.containsKey(current_name)){
+                    if(genesetsOfInterest.containsKey(current_name)){
                         //Don't need to add it
                     }
                     else{
@@ -326,7 +326,7 @@ public class VisualizeEnrichmentMapTask implements Task {
                         //Add the description to the node
                         GeneSet gs =null;
                         GeneSet gs2 = null;
-                        if(!params.isTwoDistinctExpressionSets())
+                        if(!map.getParams().isTwoDatasets())
                             gs = (GeneSet)genesetsOfInterest.get(current_name);
                         else{
                             if(genesetsOfInterest.containsKey(current_name))
@@ -342,7 +342,7 @@ public class VisualizeEnrichmentMapTask implements Task {
 
                         //create an attribute that stores the genes that are associated with this node as an attribute list
                         //only create the list if the hashkey 2 genes is not null Otherwise it take too much time to populate the list
-                        if(params.getEM().getHashkey2gene() != null){
+                        if(map.getHashkey2gene() != null){
                             List<String> gene_list = new ArrayList<String>();
                             HashSet<Integer> genes_hash = new HashSet<Integer>();
                             genes_hash.addAll(gs.getGenes());
@@ -352,7 +352,7 @@ public class VisualizeEnrichmentMapTask implements Task {
 
                             for(Iterator<Integer> j=genes_hash.iterator(); j.hasNext();){
                                 Integer current = j.next();
-                                String gene = params.getEM().getGeneFromHashKey(current);
+                                String gene = map.getGeneFromHashKey(current);
                                 if(gene_list != null)
                                     gene_list.add(gene);
                             }
@@ -360,13 +360,13 @@ public class VisualizeEnrichmentMapTask implements Task {
                             nodeAttrs.setListAttribute(node.getIdentifier(), prefix+EnrichmentMapVisualStyle.GENES, gene_list);
                         }
 
-                        if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)){
+                        if(map.getParams().getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)){
                             if(enrichmentResults1.containsKey(current_name)){
                                 GSEAResult result = (GSEAResult) enrichmentResults1.get(current_name);
                                 setGSEAResultDataset1Attributes(node,result, prefix);
                             }
 
-                            GSEAResult second_result = (GSEAResult) enrichmentResults2OfInterest.get(current_name);
+                            GSEAResult second_result = (GSEAResult) enrichmentResults2.get(current_name);
                             setGSEAResultDataset2Attributes(node, second_result,prefix);
                         }
                         else{
@@ -375,12 +375,12 @@ public class VisualizeEnrichmentMapTask implements Task {
                                 setGenericResultDataset1Attributes(node,result, prefix);
                             }
 
-                            GenericResult second_result = (GenericResult) enrichmentResults2OfInterest.get(current_name);
+                            GenericResult second_result = (GenericResult) enrichmentResults2.get(current_name);
                             setGenericResultDataset2Attributes(node, second_result,prefix);
                         }
                     }
                 }
-            }*/
+            }
             int k = 0;
             //iterate through the similarities to create the edges
             for(Iterator<String> j = geneset_similarities.keySet().iterator(); j.hasNext(); ){

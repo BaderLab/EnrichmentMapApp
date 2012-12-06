@@ -654,11 +654,11 @@ public class EnrichmentMapParameters {
  			this.files.get(EnrichmentMap.DATASET2).setExpressionFileName("");
  		}
  		//if there are no expression files and this is a david analysis there is no way of telling if they are from the same gmt file so use different one
- 		else if(this.method.equalsIgnoreCase(EnrichmentMapParameters.method_DAVID) && (this.files.get(EnrichmentMap.DATASET1).getExpressionFileName() != null) && (this.files.get(EnrichmentMap.DATASET2).getExpressionFileName() != null)){
+ 		else if(this.method.equalsIgnoreCase(EnrichmentMapParameters.method_DAVID) 
+ 				&& (this.files.get(EnrichmentMap.DATASET1).getExpressionFileName() != null) && (this.files.get(EnrichmentMap.DATASET2).getExpressionFileName() != null)){
  			this.setTwoDistinctExpressionSets(true);
  		}
-
-
+ 		
         return errors;
     }
 
@@ -1066,53 +1066,6 @@ public class EnrichmentMapParameters {
         this.FDR = FDR;
     }
 
- /*   public String getClassFile1() {
-        return classFile1;
-    }
-
-    public void setClassFile1(String classFile1) {
-        this.classFile1 = classFile1;
-    }
-
-    public String getClassFile2() {
-        return classFile2;
-    }
-
-    public void setClassFile2(String classFile2) {
-        this.classFile2 = classFile2;
-    }
-*/
-    /**
-     * @param gseaHtmlReportFileDataset1 the gseaHtmlReportFileDataset1 to set
-     */
-/*    public void setGseaHtmlReportFileDataset1(String gseaHtmlReportFileDataset1) {
-        this.gseaHtmlReportFileDataset1 = gseaHtmlReportFileDataset1;
-    }
-
-
-    /**
-     * @return the gseaHtmlReportFileDataset1
-     */
- /*   public String getGseaHtmlReportFileDataset1() {
-        return gseaHtmlReportFileDataset1;
-    }
-
-
-    /**
-     * @param gseaHtmlReportFileDataset2 the gseaHtmlReportFileDataset2 to set
-     */
-/*    public void setGseaHtmlReportFileDataset2(String gseaHtmlReportFileDataset2) {
-        this.gseaHtmlReportFileDataset2 = gseaHtmlReportFileDataset2;
-    }
-
-
-    /**
-     * @return the gseaHtmlReportFileDataset2
-     */
- /*   public String getGseaHtmlReportFileDataset2() {
-        return gseaHtmlReportFileDataset2;
-    }
-*/
     public SliderBarPanel getPvalueSlider() {
         return pvalueSlider;
     }
@@ -1148,24 +1101,7 @@ public class EnrichmentMapParameters {
     public void setHmParams(HeatMapParameters hmParams) {
         this.hmParams = hmParams;
     }
-
-/*    public String getDataset1RankedFile() {
-        return dataset1RankedFile;
-    }
-
-    public void setDataset1RankedFile(String dataset1RankedFile) {
-        this.dataset1RankedFile = dataset1RankedFile;
-    }
-
-    public String getDataset2RankedFile() {
-        return dataset2RankedFile;
-    }
-
-    public void setDataset2RankedFile(String dataset2RankedFile) {
-        this.dataset2RankedFile = dataset2RankedFile;
-    }
-*/
-   
+  
     /*create a method to re-create rank to gene given the gene to rank*/
     public HashMap<Integer, Integer> getRank2geneDataset(HashMap<Integer,Rank> gene2rank){
         HashMap<Integer,Integer> rank2gene = new HashMap<Integer, Integer>();
@@ -1211,25 +1147,7 @@ public class EnrichmentMapParameters {
         //also update the property in the cytoscape property file
         this.cyto_prop = CytoscapeInit.getProperties() ;
         cyto_prop.setProperty("EnrichmentMap.default_sort_method",defaultSortMethod);
-    }
-
-/*    public String[] getTemp_class1() {
-        return temp_class1;
-    }
-
-    public void setTemp_class1(String[] temp_class1) {
-        this.temp_class1 = temp_class1;
-    }
-
-    public String[] getTemp_class2() {
-        return temp_class2;
-    }
-
-    public void setTemp_class2(String[] temp_class2) {
-        this.temp_class2 = temp_class2;
-    }
-*/
-    
+    }  
 
     /**
      * @param enrichment_edge_type the enrichment_edge_type to set

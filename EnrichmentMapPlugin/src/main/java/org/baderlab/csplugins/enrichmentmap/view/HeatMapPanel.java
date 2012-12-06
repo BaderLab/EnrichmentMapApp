@@ -1151,8 +1151,13 @@ public class HeatMapPanel extends JPanel {
     private void setNodeExpressionSet(EnrichmentMapParameters params){
 
         Object[] nodes = params.getSelectedNodes().toArray();
-         HashMap<String,GeneSet> genesets = map.getAllGenesetsOfInterest();
-
+        //all unique genesets - if there are two identical genesets in the two sets then 
+        //one of them will get over written in the hash.
+        //when using two distinct genesets we need to pull the gene info from each set separately.
+        	HashMap<String,GeneSet> genesets = map.getAllGenesetsOfInterest();
+        	HashMap<String, GeneSet> genesets_set1 = map.getDataset(EnrichmentMap.DATASET1).getSetofgenesets().getGenesets();            
+        	HashMap<String, GeneSet> genesets_set2 = map.getDataset(EnrichmentMap.DATASET2).getSetofgenesets().getGenesets();
+         
         //go through the nodes only if there are some
         if(nodes.length > 0){
 
@@ -1169,12 +1174,13 @@ public class HeatMapPanel extends JPanel {
                 //if we can't find the geneset and we are dealing with a two-distinct expression sets, check for the gene set in the second set
                 //TODO:Add multi species support
                 if(params.isTwoDistinctExpressionSets()){
-  /*                  HashMap<String, GeneSet> genesets_set2 = ((EnrichmentMap_multispecies)params.getEM()).getGenesetsOfInterest_set2();
+                    GeneSet current_geneset_set1 = genesets_set1.get(nodename);
                     GeneSet current_geneset_set2 = genesets_set2.get(nodename);
-                    if(current_geneset == null)
-                        current_geneset = current_geneset_set2;
-                    if(current_geneset_set2 != null)
-                        additional_set = current_geneset_set2.getGenes();*/
+                    if(current_geneset.equals(current_geneset_set1) && current_geneset_set2 != null)
+                        additional_set = current_geneset_set2.getGenes();
+                    if(current_geneset.equals(current_geneset_set2) && current_geneset_set1 != null)
+                        additional_set = current_geneset_set1.getGenes();
+
                 }
 
                 //if only one node is selected activate leading edge potential

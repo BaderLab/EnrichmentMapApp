@@ -58,6 +58,18 @@ public class GeneSetTest extends TestCase {
 		
 		assertEquals(4, gs.getGenes().size());
 		assertEquals("Gene Set 1\tfake geneset\t0\t10\t12\t-1\t", gs.toString());
+		
+		//test equals function
+		GeneSet gs2 = new GeneSet("Gene Set 1", "fake geneset");
+		
+		gs2.addGene(10);
+		gs2.addGene(12);
+		gs2.addGene(-1);
+		
+		assertEquals(false, gs.equals(gs2));
+		
+		gs2.addGene(0);
+		assertEquals(true, gs.equals(gs2));
 	}
 	
 	public void testImbeddedSource(){

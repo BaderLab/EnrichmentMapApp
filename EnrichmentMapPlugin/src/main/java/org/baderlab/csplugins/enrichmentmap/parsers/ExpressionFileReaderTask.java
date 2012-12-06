@@ -328,10 +328,10 @@ public class ExpressionFileReaderTask implements Task {
     private void createDummyExpressionFile(){
         //in order to see the gene in the expression viewer we also need a dummy expression file
         //get all the genes
-        HashMap<String, Integer> genes= dataset.getMap().getGenes();
+        //HashMap<String, Integer> genes= dataset.getMap().getGenes();
         HashSet<Integer> datasetGenes;
         
-        //genes = dataset.getMap().getGenesetsGenes(dataset.getSetofgenesets().getGenesets());
+        HashMap<String, Integer> genes = dataset.getMap().getGenesetsGenes(dataset.getSetofgenesets().getGenesets());
         datasetGenes= dataset.getDatasetGenes();
         
         String[] titletokens = new String[3];

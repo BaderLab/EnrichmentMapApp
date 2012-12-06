@@ -175,6 +175,15 @@ public class GeneSet {
 
         return geneset.toString();
     }
-
+    
+    public boolean equals(GeneSet current){
+    		if(this.Name.equals(current.getName()) &&
+    				this.source.equals(current.getSource()) &&
+    				this.Description.equals(current.getDescription()) &&
+    				this.genes.equals(current.getGenes()))
+    			return true;
+    		else
+    			return false;
+    }
 
 }
