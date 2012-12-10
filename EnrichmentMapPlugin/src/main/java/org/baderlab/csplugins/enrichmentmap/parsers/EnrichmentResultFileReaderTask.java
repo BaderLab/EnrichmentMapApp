@@ -56,6 +56,7 @@ import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.GenericResult;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfEnrichmentResults;
 
+import java.io.File;
 import java.util.HashMap;
 
 /**
@@ -152,57 +153,65 @@ public class EnrichmentResultFileReaderTask implements Task {
      * Read file
      */
     public void readFile(String EnrichmentResultFileName){
-    		//open Enrichment Result file
+    		//check to see if the enrichment file is an edb file
+    		if(EnrichmentResultFileName.endsWith(".edb")){    			
+    			ParseEDBEnrichmentResults edbparser = new ParseEDBEnrichmentResults(new File(EnrichmentResultFileName));    			
+    			this.results = edbparser.parseDocument();
+    			
+    			//make sure the results are set in the dataset
+    			dataset.getEnrichments().setEnrichments(this.results);
+    		}    				
     	
-        TextFileReader reader = new TextFileReader(EnrichmentResultFileName);
-        reader.read();
-        String fullText = reader.getText();
+    		else{
+    			//open Enrichment Result file    	
+    			TextFileReader reader = new TextFileReader(EnrichmentResultFileName);
+    			reader.read();
+    			String fullText = reader.getText();
 
-        String [] lines = fullText.split("\n");
-
-
-        //figure out what type of enrichment results file.  Either it is a GSEA result
-       //file or it is a generic result file.
-       // Currently the headings in the GSEA Results file are:
-       // NAME <tab> GS<br> follow link to MSigDB <tab> GS DETAILS <tab> SIZE <tab> ES <tab> NES <tab> NOM p-val <tab> FDR q-val <tab> FWER p-val <tab> RANK AT MAX <tab> LEADING EDGE
-       // There are eleven headings.
-
-       //DAVID results have 13 columns
-       //Category <tab> Term <tab> Count <tab> % <tab> PValue <tab> Genes <tab> List <tab> Total <tab> Pop Hits <tab> Pop Total <tab> Fold Enrichment <tab> Bonferroni <tab> Benjamini <tab> FDR
+    			String [] lines = fullText.split("\n");
 
 
-       //ES and NES columns are specific to the GSEA format
-       String header_line = lines[0];
-       String [] tokens = header_line.split("\t");
+    			//figure out what type of enrichment results file.  Either it is a GSEA result
+    			//file or it is a generic result file.
+    			// Currently the headings in the GSEA Results file are:
+    			// NAME <tab> GS<br> follow link to MSigDB <tab> GS DETAILS <tab> SIZE <tab> ES <tab> NES <tab> NOM p-val <tab> FDR q-val <tab> FWER p-val <tab> RANK AT MAX <tab> LEADING EDGE
+    			// There are eleven headings.
 
-       //check to see if there are exactly 11 columns - = GSEA results
-       if(tokens.length == 11){
-           //check to see if the ES is the 5th column and that NES is the 6th column
-           if((tokens[4].equalsIgnoreCase("ES")) && (tokens[5].equalsIgnoreCase("NES")))
-               parseGSEAFile(lines);
-           //it is possible that the file can have 11 columns but that it is still a generic file
-           //if it doesn't specify ES and NES in the 5 and 6th columns
-           else
-             parseGenericFile(lines);
-       }
-       //check to see if there are exactly 13 columns - = DAVID results
-       else if (tokens.length == 13){
-           //check to see that the 6th column is called Genes and that the 12th column is called "Benjamini"
-           if((tokens[5].equalsIgnoreCase("Genes")) && tokens[11].equalsIgnoreCase("Benjamini"))
-               parseDavidFile(lines);
-           else
-               parseGenericFile(lines);
-
-       }
-       else if (header_line.contains("File created with BiNGO")){
-           parseBingoFile(lines);
-       }
-       else{
-            parseGenericFile(lines);
-       }
+    			//DAVID results have 13 columns
+    			//Category <tab> Term <tab> Count <tab> % <tab> PValue <tab> Genes <tab> List <tab> Total <tab> Pop Hits <tab> Pop Total <tab> Fold Enrichment <tab> Bonferroni <tab> Benjamini <tab> FDR
 
 
-    }
+    			//ES and NES columns are specific to the GSEA format
+    			String header_line = lines[0];
+    			String [] tokens = header_line.split("\t");
+
+    			//check to see if there are exactly 11 columns - = GSEA results
+    			if(tokens.length == 11){
+    				//check to see if the ES is the 5th column and that NES is the 6th column
+    				if((tokens[4].equalsIgnoreCase("ES")) && (tokens[5].equalsIgnoreCase("NES")))
+    					parseGSEAFile(lines);
+    				//it is possible that the file can have 11 columns but that it is still a generic file
+    				//if it doesn't specify ES and NES in the 5 and 6th columns
+    				else
+    					parseGenericFile(lines);
+    			}
+    			//check to see if there are exactly 13 columns - = DAVID results
+    			else if (tokens.length == 13){
+    				//check to see that the 6th column is called Genes and that the 12th column is called "Benjamini"
+    				if((tokens[5].equalsIgnoreCase("Genes")) && tokens[11].equalsIgnoreCase("Benjamini"))
+    					parseDavidFile(lines);
+    				else
+    					parseGenericFile(lines);
+
+    			}
+    			else if (header_line.contains("File created with BiNGO")){
+    				parseBingoFile(lines);
+    			}
+    			else{
+    				parseGenericFile(lines);
+    			}
+    		} //end of else (not edb file)
+    }//end of method
     
     /**
      * Parse GSEA enrichment results file.
@@ -448,11 +457,6 @@ public class EnrichmentResultFileReaderTask implements Task {
             // Column 6 is the list of genes (from the loaded list) in this geneset -- therefore pre-filtered.
             HashMap<String, GeneSet> genesets = dataset.getSetofgenesets().getGenesets();
 
-            //it is possible that there are two different geneset sets if the two david files
-            //are from multiple species
-          /*  if(genesets.size() > 0)
-                    genesets = ((EnrichmentMap_multispecies)params.getEM()).getGenesets_set2();
-*/
             //get the genes (which should also be empty
             HashMap<String, Integer> genes = dataset.getMap().getGenes();
             HashMap<Integer, String> key2gene = dataset.getMap().getHashkey2gene();
@@ -616,11 +620,6 @@ public class EnrichmentResultFileReaderTask implements Task {
             // Column 9 is the list of genes in this geneset -- therefore pre-filtered.
             HashMap<String, GeneSet> genesets = dataset.getSetofgenesets().getGenesets();
 
-            //it is possible that there are two different geneset sets if the two david files
-            //are from multiple species
-           /* if(genesets.size() > 0)           
-                    genesets =((EnrichmentMap_multispecies)params.getEM()).getGenesets_set2();
-*/
             //get the genes (which should also be empty
             HashMap<String, Integer> genes = dataset.getMap().getGenes();
             HashMap<Integer, String> key2gene = dataset.getMap().getHashkey2gene();

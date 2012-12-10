@@ -404,7 +404,67 @@ public class FileReaderTest extends TestCase {
         
     }
 
-    
+  //test GSEA enrichment results reader
+    public void testGSEAEDBEnrichmentsReader(){
+
+        //load the test enrichment files - GSEA creates two enrichment results files.
+        String testDataFileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/task/LoadDataset/GSEA_example_results/edb/results.edb";
+       
+      //create a new instance of the parameters
+        EnrichmentMapParameters params = new EnrichmentMapParameters();        
+        //set enrichment file name 
+        params.getFiles().get(EnrichmentMap.DATASET1).setEnrichmentFileName1(testDataFileName);
+ 
+        //Create a new Enrichment map
+        EnrichmentMap map = new EnrichmentMap(params);
+                
+        //get the default dataset
+        DataSet dataset = map.getDataset(EnrichmentMap.DATASET1);
+        
+        EnrichmentResultFileReaderTask task = new EnrichmentResultFileReaderTask(dataset);
+        
+        task.run();
+        
+        //Get the enrichment
+        HashMap<String, EnrichmentResult> enrichments = map.getDataset(EnrichmentMap.DATASET1).getEnrichments().getEnrichments();
+        
+        assertEquals(14,enrichments.size());
+        
+        //Check the contents of some of the genesets
+        // example from file 1 (ANTIGEN PROCESSING AND PRESENTATION%KEGG%HSA04612)
+        //check p-values
+        assertEquals(0.2271,((GSEAResult)enrichments.get("PROTEASOME ACTIVATOR COMPLEX%GO%GO:0008537")).getPvalue());
+        //check fdr value
+        assertEquals(0.2447,((GSEAResult)enrichments.get("PROTEASOME ACTIVATOR COMPLEX%GO%GO:0008537")).getFdrqvalue());
+        //check ES value
+        assertEquals(0.7852,((GSEAResult)enrichments.get("PROTEASOME ACTIVATOR COMPLEX%GO%GO:0008537")).getES());       
+        //check NES
+        assertEquals(1.1793,((GSEAResult)enrichments.get("PROTEASOME ACTIVATOR COMPLEX%GO%GO:0008537")).getNES());
+        //check ranks at max
+        assertEquals(6,((GSEAResult)enrichments.get("PROTEASOME ACTIVATOR COMPLEX%GO%GO:0008537")).getRankAtMax());        
+        //check size
+        assertEquals(2,((GSEAResult)enrichments.get("PROTEASOME ACTIVATOR COMPLEX%GO%GO:0008537")).getGsSize());
+        
+        // example from file 2 (EMBRYONIC HEART TUBE MORPHOGENESIS%GO%GO:0003143)
+        //check p-values
+        assertEquals(0.4545,((GSEAResult)enrichments.get("PROTEASOME COMPLEX%GO%GO:0000502")).getPvalue());
+        //check fdr value
+        assertEquals(0.8650,((GSEAResult)enrichments.get("PROTEASOME COMPLEX%GO%GO:0000502")).getFdrqvalue());
+        //check ES value
+        assertEquals(-0.4707,((GSEAResult)enrichments.get("PROTEASOME COMPLEX%GO%GO:0000502")).getES());       
+        //check NES
+        assertEquals(-0.9696,((GSEAResult)enrichments.get("PROTEASOME COMPLEX%GO%GO:0000502")).getNES());
+ 
+        //check ranks at max
+        //The Rank at max in the edb file is different from the excel files.  In the excel file that we have been
+        //  using up until now they convert the rank as if you are counting from the bottom of the list but in the 
+        //edb file they count from the top of the ranked list (going from positive to negative ES scores)
+        assertEquals(15,((GSEAResult)enrichments.get("PROTEASOME COMPLEX%GO%GO:0000502")).getRankAtMax());        
+        //check size
+        assertEquals(39,((GSEAResult)enrichments.get("PROTEASOME COMPLEX%GO%GO:0000502")).getGsSize());
+        
+        
+    }
     
    
     //test Bingo enrichment results
