@@ -1155,8 +1155,8 @@ public class HeatMapPanel extends JPanel {
         //one of them will get over written in the hash.
         //when using two distinct genesets we need to pull the gene info from each set separately.
         	HashMap<String,GeneSet> genesets = map.getAllGenesetsOfInterest();
-        	HashMap<String, GeneSet> genesets_set1 = map.getDataset(EnrichmentMap.DATASET1).getSetofgenesets().getGenesets();            
-        	HashMap<String, GeneSet> genesets_set2 = map.getDataset(EnrichmentMap.DATASET2).getSetofgenesets().getGenesets();
+        	HashMap<String, GeneSet> genesets_set1 = (map.getDatasets().containsKey(EnrichmentMap.DATASET1)) ? map.getDataset(EnrichmentMap.DATASET1).getSetofgenesets().getGenesets() : null;            
+        	HashMap<String, GeneSet> genesets_set2 = (map.getDatasets().containsKey(EnrichmentMap.DATASET2)) ? map.getDataset(EnrichmentMap.DATASET2).getSetofgenesets().getGenesets() : null;
          
         //go through the nodes only if there are some
         if(nodes.length > 0){

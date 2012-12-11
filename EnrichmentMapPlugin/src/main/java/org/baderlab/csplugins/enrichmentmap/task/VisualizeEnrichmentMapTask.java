@@ -389,7 +389,10 @@ public class VisualizeEnrichmentMapTask implements Task {
 
 
                 //only create edges where the jaccard coefficient to great than
-                if(current_result.getSimilarity_coeffecient()>=map.getParams().getSimilarityCutOff()){
+                //and if both nodes exist
+                if(current_result.getSimilarity_coeffecient()>=map.getParams().getSimilarityCutOff() &&
+                		Cytoscape.getCyNode(current_result.getGeneset1_Name(),false) != null &&
+                		Cytoscape.getCyNode(current_result.getGeneset2_Name(),false) != null){
                     Node node1 = Cytoscape.getCyNode(current_result.getGeneset1_Name(),false);
                     Node node2 = Cytoscape.getCyNode(current_result.getGeneset2_Name(),false);
 

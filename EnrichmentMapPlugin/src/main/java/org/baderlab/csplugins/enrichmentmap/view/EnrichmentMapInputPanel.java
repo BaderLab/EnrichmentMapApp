@@ -1191,6 +1191,111 @@ public class EnrichmentMapInputPanel extends JPanel {
         cytoPanel.remove(this);
     }
 
+    /*
+     * Populate fields based on edb directory.
+     * From an edb directory we can get gene_sets.gmt, results.edb, .rnk file, .cls file
+     * To trigger this auto populate users need to select the results.edb from the edb directory
+     * 
+     * @param edbFile - the results.edb File
+     * @param dataset1 - which dataset edb is specified for
+     */
+    private void populateFieldsFromEdb(File edbFile, boolean dataset1){
+    	
+    	String gmt = "";
+    	String cls = "";
+    	String rnk = "";
+    	
+    	String currentDir = edbFile.getParent();
+        File temp = new File(currentDir, "gene_sets.gmt");
+        if(temp.exists())
+        		gmt = temp.getAbsolutePath();
+        
+        //get the cls file
+        File[] filenames = edbFile.getParentFile().listFiles();
+        for(int i = 0; i< filenames.length;i++){
+        	if(filenames[i].getName().endsWith(".cls"))
+        		cls = filenames[i].getAbsolutePath();
+        	if(filenames[i].getName().endsWith(".rnk"))
+        		rnk = filenames[i].getAbsolutePath();
+        }
+        
+        if(dataset1){
+            //check to see the file exists and can be read
+            //check to see if the gmt file has already been set
+            if(dataset1files.getGMTFileName() == null || dataset1files.getGMTFileName().equalsIgnoreCase("")){
+                GMTFileNameTextField.setForeground(checkFile(gmt));
+                GMTFileNameTextField.setText(gmt);
+                dataset1files.setGMTFileName(gmt);
+                GMTFileNameTextField.setToolTipText(gmt);
+            }
+
+
+            boolean AutoPopulate = true;
+            if(!dataset1files.getGMTFileName().equalsIgnoreCase(gmt)){
+                //maybe the files are the same but they are in different directories
+                File currentGMTFilename = new File(dataset1files.getGMTFileName());
+                File newGMTFilename = new File(gmt);
+                if(!currentGMTFilename.getName().equalsIgnoreCase(newGMTFilename.getName())){
+                    int answer = JOptionPane.showConfirmDialog(this,"This analysis GMT file does not match the previous dataset loaded.\n If you want to use the current GMT file but still use the new rpt file to populated fields press YES,\n If you want to change the GMT file to the one in this rpt file and populate the fields with the rpt file press NO,\n to choose a different rpt file press CANCEL\n","GMT files name mismatch", JOptionPane.YES_NO_CANCEL_OPTION);
+                    if(answer == JOptionPane.NO_OPTION){
+                        GMTFileNameTextField.setForeground(checkFile(gmt));
+                        GMTFileNameTextField.setText(gmt);
+                        dataset1files.setGMTFileName(gmt);
+                        GMTFileNameTextField.setToolTipText(gmt);
+                    }
+                    else if(answer == JOptionPane.CANCEL_OPTION)
+                        AutoPopulate = false;
+                }
+            }
+            if(AutoPopulate){
+                
+                Dataset1RankFileTextField.setForeground(checkFile(rnk));
+                Dataset1RankFileTextField.setText(rnk);
+                dataset1files.setRankedFile(rnk);
+                Dataset1RankFileTextField.setToolTipText(rnk);
+
+                dataset1files.setEnrichmentFileName1(edbFile.getAbsolutePath());
+                this.setDatasetnames(edbFile.getAbsolutePath(),"",dataset1);
+            }
+    }
+    else{
+       if(dataset1files.getGMTFileName() == null || dataset1files.getGMTFileName().equalsIgnoreCase("")){
+            GMTFileNameTextField.setForeground(checkFile(gmt));
+            GMTFileNameTextField.setText(gmt);
+            dataset1files.setGMTFileName(gmt);
+            GMTFileNameTextField.setToolTipText(gmt);
+       }
+
+        boolean AutoPopulate = true;
+       if(!dataset1files.getGMTFileName().equalsIgnoreCase(gmt)){
+          //maybe the files are the same but they are in different directories
+          File currentGMTFilename = new File(dataset1files.getGMTFileName());
+          File newGMTFilename = new File(gmt);
+          if(!currentGMTFilename.getName().equalsIgnoreCase(newGMTFilename.getName())){
+              int answer = JOptionPane.showConfirmDialog(this,"This analysis GMT file does not match the previous dataset loaded.\n If you want to use the current GMT file but still use the new rpt file to populated fields press YES,\n If you want to change the GMT file to the one in this rpt file and populate the fields with the rpt file press NO,\n to choose a different rpt file press CANCEL\n","GMT files name mismatch", JOptionPane.YES_NO_CANCEL_OPTION);
+              if(answer == JOptionPane.NO_OPTION){
+                GMTFileNameTextField.setForeground(checkFile(gmt));
+                GMTFileNameTextField.setText(gmt);
+                dataset1files.setGMTFileName(gmt);
+                GMTFileNameTextField.setToolTipText(gmt);
+              }
+              else if(answer == JOptionPane.CANCEL_OPTION)
+                        AutoPopulate = false;
+           }
+       }
+       if(AutoPopulate){
+
+            Dataset2RankFileTextField.setForeground(checkFile(rnk));
+            Dataset2RankFileTextField.setText(rnk);
+            dataset2files.setRankedFile(rnk);
+            Dataset2RankFileTextField.setToolTipText(rnk);
+
+            dataset2files.setEnrichmentFileName1(edbFile.getAbsolutePath());
+            this.setDatasetnames(edbFile.getAbsolutePath(),"",dataset1);
+       }
+    }
+  }
+    
     /**
      * An rpt file can be entered instead of a GCT/expression file, or any of the enrichment results files
      * If an rpt file is specified all the fields in the dataset (expression file, enrichment results files, rank files,
@@ -1769,6 +1874,10 @@ public class EnrichmentMapInputPanel extends JPanel {
                    populateFieldsFromRpt(file,true);
 
                }
+               else if(file.getPath().endsWith(".edb")){
+                   //The file loaded is an rpt file --> populate the fields based on the
+                   populateFieldsFromEdb(file,true);
+               }
                else{
                     GCTFileName1TextField.setForeground(checkFile(file.getAbsolutePath()));
                     GCTFileName1TextField.setText(file.getAbsolutePath());
@@ -1806,6 +1915,10 @@ public class EnrichmentMapInputPanel extends JPanel {
                       //The file loaded is an rpt file --> populate the fields based on the
                       populateFieldsFromRpt(file,false);
                   }
+             else if(file.getPath().endsWith(".edb")){
+                 //The file loaded is an rpt file --> populate the fields based on the
+                 populateFieldsFromEdb(file,false);
+             }
              else{
                GCTFileName2TextField.setForeground(checkFile(file.getAbsolutePath()));
                GCTFileName2TextField.setText(file.getAbsolutePath());
@@ -1847,6 +1960,10 @@ public class EnrichmentMapInputPanel extends JPanel {
                       populateFieldsFromRpt(file,true);
 
                   }
+             else if(file.getPath().endsWith(".edb")){
+                 //The file loaded is an rpt file --> populate the fields based on the
+                 populateFieldsFromEdb(file,true);
+             }
              else{
                 Dataset1FileNameTextField.setForeground(checkFile(file.getAbsolutePath()));
                 Dataset1FileNameTextField.setText(file.getAbsolutePath() );
@@ -1883,6 +2000,10 @@ public class EnrichmentMapInputPanel extends JPanel {
                       //The file loaded is an rpt file --> populate the fields based on the
                       populateFieldsFromRpt(file,true);
                   }
+             else if(file.getPath().endsWith(".edb")){
+                 //The file loaded is an rpt file --> populate the fields based on the
+                 populateFieldsFromEdb(file,true);
+             }
              else{
                 Dataset1FileName2TextField.setForeground(checkFile(file.getAbsolutePath()));
                 Dataset1FileName2TextField.setText(file.getAbsolutePath() );
@@ -1919,6 +2040,10 @@ public class EnrichmentMapInputPanel extends JPanel {
                       //The file loaded is an rpt file --> populate the fields based on the
                       populateFieldsFromRpt(file,false);
                   }
+           else if(file.getPath().endsWith(".edb")){
+               //The file loaded is an rpt file --> populate the fields based on the
+               populateFieldsFromEdb(file,false);
+           }
              else{
               Dataset2FileNameTextField.setForeground(checkFile(file.getAbsolutePath()));
               Dataset2FileNameTextField.setText(file.getAbsolutePath() );
@@ -1957,6 +2082,10 @@ public class EnrichmentMapInputPanel extends JPanel {
                       populateFieldsFromRpt(file,false);
 
                   }
+           else if(file.getPath().endsWith(".edb")){
+               //The file loaded is an rpt file --> populate the fields based on the
+               populateFieldsFromEdb(file,false);
+           }
              else{
               Dataset2FileName2TextField.setForeground(checkFile(file.getAbsolutePath()));
               Dataset2FileName2TextField.setText(file.getAbsolutePath() );

@@ -87,8 +87,9 @@ public class ParseEDBEnrichmentResults {
 		double FWER = (el.getAttribute("FWER") != null) ? Double.parseDouble(el.getAttribute("FWER")) : 1.0;
 		//rank_at_max - RANK_AT_ES
 		double rank_at_max = (el.getAttribute("RANK_AT_ES") != null) ? Double.parseDouble(el.getAttribute("RANK_AT_ES")) : 0.0;
-		//score_at_max - RANK_SCORE_AT_ES
-		double score_at_max = (el.getAttribute("RANK_SCORE_AT_ES") != null) ? Double.parseDouble(el.getAttribute("RANK_SCORE_AT_ES")) : 0.0;
+			
+		//score_at_max - not in the edb file but it is just the NES
+		double score_at_max = NES;
 		
 		GSEAResult result = new GSEAResult(name, gsSize,ES,NES,pvalue,FDR,FWER,(int)rank_at_max,score_at_max);
 		
