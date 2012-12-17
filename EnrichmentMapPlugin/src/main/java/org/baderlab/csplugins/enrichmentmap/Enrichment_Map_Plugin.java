@@ -46,6 +46,8 @@ import cytoscape.plugin.CytoscapePlugin;
 import cytoscape.Cytoscape;
 import cytoscape.CytoscapeInit;
 import cytoscape.view.CyNetworkView;
+import cytoscape.command.CyCommandManager;
+import cytoscape.command.CyCommandNamespace;
 import cytoscape.data.readers.TextFileReader;
 import cytoscape.visual.CalculatorCatalog;
 import cytoscape.visual.VisualMappingManager;
@@ -58,6 +60,7 @@ import org.baderlab.csplugins.enrichmentmap.actions.EnrichmentMapActionListener;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadEnrichmentsPanelAction;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadPostAnalysisPanelAction;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowAboutPanelAction;
+import org.baderlab.csplugins.enrichmentmap.commands.EnrichmentMapCommandHandler;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
@@ -118,6 +121,9 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
 //        item.addActionListener(new ComputeAnnotationAction());
 //        submenu.add(item);
 
+        	//Register CyCommand for enrichment maps.
+        EnrichmentMapCommandHandler handlre = new EnrichmentMapCommandHandler("enrichmentmap");
+       
 
         //About Box
         item = new JMenuItem("About");
