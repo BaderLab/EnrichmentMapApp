@@ -19,14 +19,19 @@ import cytoscape.task.util.TaskManager;
 public class EnrichmentMapCommandHandler extends AbstractCommandHandler {
 		
 		private static String command = "build";
-		private static String arglist1 = "edbdir";
+		private static String edbdir = "edbdir";
+		private static String pvalue = "pvalue";
+		private static String qvalue = "qvalue";
+		private static String overlap = "overlap";
 	
 		public EnrichmentMapCommandHandler(String namespace) {
 			super(CyCommandManager.reserveNamespace(namespace));
 			
 			addDescription(command,"Build an enrichmentmap from GSEA results (in an edb directory)");
-			addArgument(command, arglist1);
-			
+			addArgument(command, edbdir);
+			addArgument(command, pvalue);
+			addArgument(command, qvalue);
+			addArgument(command, overlap);
 			
 		}
 		
@@ -36,9 +41,44 @@ public class EnrichmentMapCommandHandler extends AbstractCommandHandler {
 			//create a results object
 			CyCommandResult results = new CyCommandResult();
 			String file = "";
+			Double pvalue_loaded = 0.05;
+			Double qvalue_loaded = 0.25;
+			Double overlap_loaded = 0.5;
+			
 			//get the edb file to run enrichment maps on
-			if(arg1.containsKey(arglist1))
-				file = (String)arg1.get(arglist1);
+			//If working on windows and user cuts and copies path there is 
+			//no way to correct forward slashes.  User needs to use double forward slashes
+			//or backward slashes.
+			if(arg1.containsKey(edbdir))
+				file = (String)arg1.get(edbdir);
+				
+			//get other parameters if they are present:
+			if(arg1.containsKey(pvalue)){
+				try{
+					pvalue_loaded = Double.parseDouble((String)arg1.get(pvalue));
+				}catch(NumberFormatException e){
+					System.out.println("the pvalue can only be a number (i.e. pvalue=0.05).  Ignored pvalue setting by user and using default.");
+					pvalue_loaded = 0.05;
+				}
+			}
+			
+			if(arg1.containsKey(qvalue)){
+				try{
+					qvalue_loaded = Double.parseDouble((String)arg1.get(qvalue));
+				}catch(NumberFormatException e){
+					System.out.println("the qvalue can only be a number (i.e. qvalue=0.25).  Ignored qvalue setting by user and using default.");
+					qvalue_loaded = 0.25;
+				}
+			}
+			
+			if(arg1.containsKey(overlap)){
+				try{
+					overlap_loaded = Double.parseDouble((String)arg1.get(overlap));
+				}catch(NumberFormatException e){
+					System.out.println("the overlap can only be a number (i.e. overlap=0.50).  Ignored overlap setting by user and using default.");
+					overlap_loaded = 0.50;
+				}
+			}
 			
 			EnrichmentMapParameters params = new EnrichmentMapParameters();
 			
@@ -55,10 +95,10 @@ public class EnrichmentMapCommandHandler extends AbstractCommandHandler {
 			
 			//set the method to gsea
 			params.setMethod(EnrichmentMapParameters.method_GSEA);
-			params.setSimilarityMetric(EnrichmentMapParameters.SM_JACCARD);
-			params.setSimilarityCutOff(0.5);
-			params.setPvalue(1.0);
-			params.setQvalue(1.0); 
+			params.setSimilarityMetric(EnrichmentMapParameters.SM_OVERLAP);
+			params.setSimilarityCutOff(overlap_loaded);
+			params.setPvalue(pvalue_loaded);
+			params.setQvalue(qvalue_loaded); 
 			
 			JTaskConfig config = new JTaskConfig();
 	        config.displayCancelButton(true);
