@@ -83,9 +83,10 @@ public class EnrichmentMapCommandHandler extends AbstractCommandHandler {
 			EnrichmentMapParameters params = new EnrichmentMapParameters();
 			
 			//for a dataset we require genesets, an expression file (optional), enrichment results
-			String testEdbResultsFileName = file + "/results.edb";
-			String testgmtFileName = file + "/gene_sets.gmt";
-			String testrnkFileName = file + "/Expressiontestfile.rnk";		
+			String file_sep = System.getProperty("file.separator");
+			String testEdbResultsFileName = file + file_sep + "results.edb";
+			String testgmtFileName = file + file_sep + "gene_sets.gmt";
+			String testrnkFileName = file + file_sep + "Expressiontestfile.rnk";		
 			
 			DataSetFiles files = new DataSetFiles();		
 			files.setEnrichmentFileName1(testEdbResultsFileName);
