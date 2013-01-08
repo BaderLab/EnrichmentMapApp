@@ -1,5 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.commands;
 
+import java.io.File;
 import java.util.Collection;
 import java.util.Map;
 
@@ -86,12 +87,26 @@ public class EnrichmentMapCommandHandler extends AbstractCommandHandler {
 			String file_sep = System.getProperty("file.separator");
 			String testEdbResultsFileName = file + file_sep + "results.edb";
 			String testgmtFileName = file + file_sep + "gene_sets.gmt";
-			String testrnkFileName = file + file_sep + "Expressiontestfile.rnk";		
+			
+			//the rank file does not have a set name.  We need to figure out the name
+			//of the rank file
+			String testrnkFileName = "";	
+			File directory = new File(file);
+			String[] dir_listing = directory.list();
+			if(dir_listing.length > 0){
+				for(int i = 0 ; i < dir_listing.length;i++){
+					if(dir_listing[i].endsWith("rnk") && testrnkFileName.equals(""))
+						testrnkFileName = file + file_sep + dir_listing[i];
+					else if(dir_listing[i].endsWith("rnk") && !testrnkFileName.equals(""))
+						System.out.println("There are two rnk files in the edb directory.  Using the first one found");
+				}
+			}
 			
 			DataSetFiles files = new DataSetFiles();		
 			files.setEnrichmentFileName1(testEdbResultsFileName);
 			files.setGMTFileName(testgmtFileName);
-			files.setRankedFile(testrnkFileName);
+			if(!testrnkFileName.equals(""))
+				files.setRankedFile(testrnkFileName);
 			params.addFiles(EnrichmentMap.DATASET1, files);
 			
 			//set the method to gsea
