@@ -392,7 +392,7 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
                 		EnrichmentMapParameters params = em.getParams();
                 		HashMap<String,String> props = params.getProps();
                 		//if this a dataset specific file make sure there is a dataset object for it
-                		if(!(parts.dataset == null) && em.getDataset(parts.dataset) == null)
+                		if(!(parts.dataset == null) && em.getDataset(parts.dataset) == null && !parts.dataset.equalsIgnoreCase("signature"))
                 			em.addDataset(parts.dataset, new DataSet(em,parts.name,params.getFiles().get(parts.dataset)));
                 		if(parts.type == null)
                 			System.out.println("Sorry, unable to determine the type of the file: "+ prop_file.getName());
@@ -418,7 +418,7 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
                         }else{
                         		SetOfGeneSets gs = new SetOfGeneSets(parts.dataset,props);
                         		gs.setGenesets((HashMap<String, GeneSet>)params.repopulateHashmap(fullText,1));
-                        		em.getDatasets().get(parts.dataset).setGenesetsOfInterest(gs);
+                        		em.getDatasets().get(parts.dataset).setSetofgenesets(gs);
                         }
                     }
                     if(prop_file.getName().contains(".genes.txt")){

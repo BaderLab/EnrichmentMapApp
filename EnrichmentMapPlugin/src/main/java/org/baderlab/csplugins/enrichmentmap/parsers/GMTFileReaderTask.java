@@ -48,6 +48,7 @@ import cytoscape.task.TaskMonitor;
 
 import java.util.HashMap;
 
+import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
@@ -80,7 +81,7 @@ public class GMTFileReaderTask implements Task {
     private TaskMonitor taskMonitor = null;
     private boolean interrupted = false;
     
-    final static int ENRICHMENT_GMT = 1, SIGNATURE_GMT = 2; 
+    public final static int ENRICHMENT_GMT = 1, SIGNATURE_GMT = 2; 
 
     /**
      * Class Constructor - also given current task monitor
@@ -114,36 +115,39 @@ public class GMTFileReaderTask implements Task {
      * @param taskMonitor
      * @param genesets_file
      */
-  /*  public GMTFileReaderTask(PostAnalysisParameters params, TaskMonitor taskMonitor, int genesets_file) {
-        this(params, genesets_file);
+    public GMTFileReaderTask(EnrichmentMap map, PostAnalysisParameters params, TaskMonitor taskMonitor, int genesets_file) {
+        this(map,params, genesets_file);
         this.taskMonitor = taskMonitor;
     }
-*/
+
     /**
      * for BuildDiseaseSignatureTask
      *
      * @param params
      * @param genesets_file
      */
- /*   public GMTFileReaderTask(PostAnalysisParameters params, int genesets_file)   {
-        this.params = params;
-        this.genes = params.getEM().getGenes();
-        this.hashkey2gene = params.getEM().getHashkey2gene();
+    public GMTFileReaderTask(EnrichmentMap map, PostAnalysisParameters params, int genesets_file)   {
+        
+    		this.map = map;
+    	
+        this.genes = map.getGenes();
+        this.hashkey2gene = map.getHashkey2gene();
         
         if (genesets_file == ENRICHMENT_GMT) {
             //open GMT file
-            this.GMTFileName = params.getGMTFileName();
-            this.genesets = params.getEM().getGenesets();
+            //this.GMTFileName = params.getGMTFileName();
+            //this.genesets = params.getEM().getGenesets();
+            //this.setOfgenesets = map.get
         }
         else if ( genesets_file == SIGNATURE_GMT) {
             //open signature-GMT file
             this.GMTFileName = params.getSignatureGMTFileName();
-            this.genesets = params.getSignatureGenesets();
+            this.setOfgenesets = params.getSignatureGenesets();
         }
         else 
             throw new IllegalArgumentException("argument not allowed:" + genesets_file);
     }
-*/
+
     /**
      * parse GMT (gene set) file
      */

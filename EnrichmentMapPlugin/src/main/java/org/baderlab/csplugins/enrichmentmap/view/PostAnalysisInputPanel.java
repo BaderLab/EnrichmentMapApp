@@ -64,6 +64,7 @@ import org.baderlab.csplugins.enrichmentmap.actions.BuildPostAnalysisActionListe
 import org.baderlab.csplugins.enrichmentmap.actions.ShowAboutPanelAction;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.JMultiLineToolTip;
+import org.baderlab.csplugins.enrichmentmap.task.LoadSignatureGMTFilesTask;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -142,7 +143,9 @@ public class PostAnalysisInputPanel extends JPanel {
     //tool tips
     private static String gmtTip = "File specifying gene sets.\n" + "Format: geneset name <tab> description <tab> gene ...";
 
-
+    
+    private EnrichmentMap map;
+    
     public PostAnalysisInputPanel() {
 
         decFormat = new DecimalFormat();
@@ -151,7 +154,7 @@ public class PostAnalysisInputPanel extends JPanel {
         setLayout(new BorderLayout());
 
         //get the current enrichment map parameters
-        EnrichmentMap map = EnrichmentMapManager.getInstance().getMap(Cytoscape.getCurrentNetwork().getIdentifier());
+        map = EnrichmentMapManager.getInstance().getMap(Cytoscape.getCurrentNetwork().getIdentifier());
         EnrichmentMapParameters emParams = map.getParams();
         if (emParams == null){
             emParams = new EnrichmentMapParameters();
@@ -1010,7 +1013,7 @@ public class PostAnalysisInputPanel extends JPanel {
         
         String errors = paParams.checkGMTfiles();
         if (errors.equalsIgnoreCase("")) {
-            LoadGmtFilesTask load_GMTs = new LoadGmtFilesTask(this.paParams);
+        		LoadSignatureGMTFilesTask load_GMTs = new LoadSignatureGMTFilesTask(map,this.paParams);
             /*boolean success =*/ TaskManager.executeTask(load_GMTs, config);
         } else {
             JOptionPane.showMessageDialog(Cytoscape.getDesktop(),errors,"Invalid Input",JOptionPane.WARNING_MESSAGE);
@@ -1152,147 +1155,5 @@ public class PostAnalysisInputPanel extends JPanel {
      * Time   5:50:59 PM<br>
      *
      */
-    private class LoadGmtFilesTask implements Task {
-        private PostAnalysisParameters paParams = null;
-        private TaskMonitor taskMonitor = null;
-        private boolean interrupted = false;
-        /**
-         * constructor w/ TaskMonitor
-         * @param paParams
-         * @param taskMonitor
-         */
-        @SuppressWarnings("unused")
-        public LoadGmtFilesTask( PostAnalysisParameters paParams, TaskMonitor taskMonitor ){
-            this( paParams );
-            this.taskMonitor = taskMonitor;
-        }
-        
-        /**
-         * constructor w/o TaskMonitor
-         * @param paParams
-         */
-        public LoadGmtFilesTask( PostAnalysisParameters paParams ){
-            this.paParams = paParams;
-        }
-
-        /* (non-Javadoc)
-         * @see cytoscape.task.Task#getTitle()
-         */
-        public String getTitle() {
-            return new String("Loading Geneset Files...");
-        }
-
-        /* (non-Javadoc)
-         * @see cytoscape.task.Task#halt()
-         */
-        public void halt() {
-            this.interrupted = true;
-
-        }
-
-        /**
-         * @see cytoscape.task.Task#run()
-         */
-        public void run() {
-            //now a Cytoscape Task (LoadSignatureGenesetsTask)
-/*            try {
-                try{
-                	//TODO:Add signature support
-                    //Load the GSEA geneset file
-                    GMTFileReaderTask gmtFile_1 = new GMTFileReaderTask(paParams, taskMonitor, GMTFileReaderTask.ENRICHMENT_GMT);
-                    gmtFile_1.run();
     
-                    //Load the Disease Signature geneset file
-                    GMTFileReaderTask gmtFile_2 = new GMTFileReaderTask(paParams, taskMonitor, GMTFileReaderTask.SIGNATURE_GMT);
-                    gmtFile_2.run();
-    
-                } catch (OutOfMemoryError e) {
-                    taskMonitor.setException(e,"Out of Memory. Please increase memory allotment for Cytoscape.");
-                    return;
-                }   catch(Exception e){
-                    taskMonitor.setException(e,"unable to load GMT files");
-                    return;
-                }
-                
-                //Sort the Genesets:
-                DefaultListModel signatureSetNames = paParams.getSignatureSetNames();
-                DefaultListModel selectedSignatureSetNames = paParams.getSelectedSignatureSetNames();
-                signatureSetNames.clear(); // clear, that we don't have duplicates afterwards - Bug #103 a
-
-                //filter the signature genesets to only include genesets that overlap with the genesets
-                //in our current map.
-                HashMap<String, GeneSet> genesets_in_map = paParams.getEM().getGenesetsOfInterest();
-                Object[] setsOfInterest = genesets_in_map.keySet().toArray();
-                //get the value to be filtered by if there is a filter
-
-
-                Object[] setNamesArray = paParams.getSignatureGenesets().keySet().toArray();
-                Arrays.sort( setNamesArray );
-                
-                for (int i = 0; i < setNamesArray.length; i++) {
-                    if (interrupted)
-                        throw new InterruptedException();
-                    if (! selectedSignatureSetNames.contains(setNamesArray[i])){
-
-                        if(paParams.isFilter()){
-                            //only add the name if it overlaps with the sets in the map.
-                            boolean matchfound = false;
-                            for(int j = 0; j < setsOfInterest.length ; j++){
-                                //check if this set overlaps with current geneset
-                                HashSet <Integer> mapset = new HashSet<Integer>(genesets_in_map.get(setsOfInterest[j]).getGenes());
-                                Integer original_size = mapset.size();
-                                HashSet <Integer> paset = new HashSet<Integer>(paParams.getSignatureGenesets().get(setNamesArray[i]).getGenes());
-                                mapset.retainAll(paset);
-
-                                //if we are looking for percentage do:
-                                if(paParams.getSignature_filterMetric() == paParams.PERCENT){
-                                    Double relative_per =  mapset.size()/original_size.doubleValue();
-                                    if(relative_per >= (Double)(paParams.getFilterValue()/100.0) ){
-                                        matchfound = true;
-                                        break;
-                                    }
-                                }
-                                //if we are looking for number in the overlap
-                                else if(paParams.getSignature_filterMetric() == paParams.NUMBER){
-                                    if(mapset.size() >= paParams.getFilterValue()){
-                                        matchfound = true;
-                                        break;
-                                    }
-                                }
-                                else if(paParams.getSignature_filterMetric() == paParams.SPECIFIC){
-                                    Double relative_per =  mapset.size()/((Integer)(paset.size())).doubleValue();
-                                    if(relative_per >= (Double)(paParams.getFilterValue()/100.0) ){
-                                        matchfound = true;
-                                        break;
-                                    }
-                                }
-                            }
-                            if(matchfound){
-                                if (! signatureSetNames.contains(setNamesArray[i]))
-                                    signatureSetNames.addElement(setNamesArray[i] );
-                            }
-                        }
-                        else{
-                            signatureSetNames.addElement(setNamesArray[i] );
-                        }
-                    }
-
-                }
-            
-            } catch (InterruptedException e) {
-                taskMonitor.setException(e, "loading of GMT files cancelled");
-            }*/
-
-        }
-        /* (non-Javadoc)
-         * @see cytoscape.task.Task#setTaskMonitor(cytoscape.task.TaskMonitor)
-         */
-        public void setTaskMonitor(TaskMonitor taskMonitor) {
-            if (this.taskMonitor != null) {
-                throw new IllegalStateException("Task Monitor is already set.");
-            }
-            this.taskMonitor = taskMonitor;
-        }
-
-    }
 }

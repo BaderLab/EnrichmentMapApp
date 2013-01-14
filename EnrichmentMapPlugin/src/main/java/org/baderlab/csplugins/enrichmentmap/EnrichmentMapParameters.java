@@ -448,9 +448,9 @@ public class EnrichmentMapParameters {
     		//Get the list of Datasets
     		if(props.containsKey("Datasets")){
     			String list_ds = props.get("Datasets");
-    			list_ds.replace("[", "");
-    			list_ds.replace("]", "");
-    			String[] datasets = list_ds.split(",");
+    			String list_db_replaced = list_ds.replaceAll("\\[", "");
+    			list_db_replaced = list_db_replaced.replaceAll("\\]", "");
+    			String[] datasets = list_db_replaced.split(",");
     			
     			//For Each Dataset populate the dataset files
     			for(int i = 0; i < datasets.length; i++){

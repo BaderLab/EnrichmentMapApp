@@ -2348,6 +2348,13 @@ public class EnrichmentMapInputPanel extends JPanel {
 	}
 
 	public DataSetFiles getDataset2files() {
+		//if there is a gmt file for dataset 1 then copy it into Dataset 2
+		//the current implementation of the interface only supports 2 datasets and the gmt file is
+		//currently only associated with dataset1
+		//only add the gmt file if there are other files defined for dataset2
+		if(!dataset2files.isEmpty())
+			if(dataset1files.getGMTFileName() != null && !dataset1files.getGMTFileName().equalsIgnoreCase(""))
+				dataset2files.setGMTFileName(dataset1files.getGMTFileName());
 		return dataset2files;
 	}
 

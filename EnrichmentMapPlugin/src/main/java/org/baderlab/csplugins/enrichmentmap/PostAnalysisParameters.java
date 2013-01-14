@@ -49,6 +49,7 @@ import javax.swing.DefaultListModel;
 
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
+import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
 
 /**
  * @author revilo
@@ -131,7 +132,7 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
     private int    default_signature_CutoffMetric      = HYPERGEOM;
     
     // Disease Signature Data Structures:
-    private HashMap<String,GeneSet> signatureGenesets;
+    private SetOfGeneSets signatureGenesets;
     private DefaultListModel signatureSetNames;
     private DefaultListModel selectedSignatureSetNames;
     
@@ -167,7 +168,7 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
         this.signature_CutoffMetric     = default_signature_CutoffMetric;
         
         // Disease Signature Data Structures:
-        this.signatureGenesets         = new HashMap<String,GeneSet>();
+        this.signatureGenesets         = new SetOfGeneSets();
         this.signatureSetNames         = new DefaultListModel();
         this.selectedSignatureSetNames = new DefaultListModel();
         
@@ -206,7 +207,7 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
         this.signature_CutoffMetric     = default_signature_CutoffMetric;
         
         // Disease Signature Data Structures:
-        this.signatureGenesets         = new HashMap<String,GeneSet>();
+        this.signatureGenesets         = new SetOfGeneSets();
         this.signatureSetNames         = new DefaultListModel();
         this.selectedSignatureSetNames = new DefaultListModel();
         
@@ -506,14 +507,14 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
     /**
      * @param signatureGenesets the signatureGenesets to set
      */
-    public void setSignatureGenesets(HashMap<String,GeneSet> signatureGenesets) {
+    public void setSignatureGenesets(SetOfGeneSets signatureGenesets) {
         this.signatureGenesets = signatureGenesets;
     }
 
     /**
      * @return the signatureGenesets
      */
-    public HashMap<String, GeneSet> getSignatureGenesets() {
+    public SetOfGeneSets getSignatureGenesets() {
         return signatureGenesets;
     }
 

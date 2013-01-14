@@ -106,7 +106,7 @@ public class BuildDiseaseSignatureTask implements Task {
         this.paParams.copyFrom(paParams);
         
         this.EnrichmentGenesets   = map.getAllGenesets();
-        this.SignatureGenesets    = this.getPaParams().getSignatureGenesets();
+        this.SignatureGenesets    = this.getPaParams().getSignatureGenesets().getGenesets();
 
         if (map.getGenesetSimilarity() == null)
             this.geneset_similarities = new HashMap<String, GenesetSimilarity>();
