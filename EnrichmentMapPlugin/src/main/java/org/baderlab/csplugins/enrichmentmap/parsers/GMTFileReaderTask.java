@@ -46,7 +46,9 @@ import cytoscape.data.readers.TextFileReader;
 import cytoscape.task.Task;
 import cytoscape.task.TaskMonitor;
 
+import java.text.Normalizer;
 import java.util.HashMap;
+import java.util.regex.Pattern;
 
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
@@ -148,6 +150,13 @@ public class GMTFileReaderTask implements Task {
             throw new IllegalArgumentException("argument not allowed:" + genesets_file);
     }
 
+    public String deAccent(String str) {
+        String nfdNormalizedString = Normalizer.normalize(str, Normalizer.Form.NFD); 
+        Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
+        return pattern.matcher(nfdNormalizedString).replaceAll("");
+    }
+    
+    
     /**
      * parse GMT (gene set) file
      */
@@ -176,7 +185,10 @@ public class GMTFileReaderTask implements Task {
                 //only go through the lines that have at least a gene set name and description.
                 if(tokens.length >= 2){
                     //The first column of the file is the name of the geneset
-                    String Name = tokens[0].toUpperCase().trim();
+                    String Name = deAccent(tokens[0].toUpperCase().trim());
+                    
+                    //issue with accents on some of the genesets - replace all the accents
+                    
 
                     //The second column of the file is the description of the geneset
                     String description = tokens[1].trim();

@@ -1,0 +1,13 @@
+repository=${svn.repository}
+path=${svn.path}
+svn.revision=${svn.revision}
+mixedRevisions=${svn.mixedRevisions}
+committedRevision=${svn.committedRevision}
+committedDate=${svn.committedDate}
+status=${svn.status}
+specialStatus=${svn.specialStatus}
+build.user=${user.name}
+build.timestamp=${timestamp}
+build.os=${os.name}
+build.java_version=${java.version}
+build.number=${buildNumber}

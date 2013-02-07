@@ -705,19 +705,19 @@ public class PostAnalysisInputPanel extends JPanel {
         URL iconURL;
         //                         Oliver at 26/06/2009:  relative path works for me,
         //                         maybe need to change to org/baderlab/csplugins/enrichmentmap/resources/arrow_collapsed.gif
-        iconURL = Enrichment_Map_Plugin.class.getResource("resources/arrow_up.gif");
+        iconURL = Thread.currentThread().getContextClassLoader().getResource("arrow_up.gif");
         if (iconURL != null) {
             iconArrow[UP] = new ImageIcon(iconURL);
         }
-        iconURL = Enrichment_Map_Plugin.class.getResource("resources/arrow_down.gif");
+        iconURL = Thread.currentThread().getContextClassLoader().getResource("arrow_down.gif");
         if (iconURL != null) {
             iconArrow[DOWN] = new ImageIcon(iconURL);
         }
-        iconURL = Enrichment_Map_Plugin.class.getResource("resources/arrow_left.gif");
+        iconURL = Thread.currentThread().getContextClassLoader().getResource("arrow_left.gif");
         if (iconURL != null) {
             iconArrow[LEFT] = new ImageIcon(iconURL);
         }
-        iconURL = Enrichment_Map_Plugin.class.getResource("resources/arrow_right.gif");
+        iconURL = Thread.currentThread().getContextClassLoader().getResource("arrow_right.gif");
         if (iconURL != null) {
             iconArrow[RIGHT] = new ImageIcon(iconURL);
         }

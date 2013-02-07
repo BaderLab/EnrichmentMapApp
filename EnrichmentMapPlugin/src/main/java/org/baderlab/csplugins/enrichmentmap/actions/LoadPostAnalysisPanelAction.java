@@ -90,7 +90,7 @@ public class LoadPostAnalysisPanelAction extends CytoscapeAction {
             EnrichmentMapManager.getInstance().setAnalysisWindow(analysisWindow);
 
             //create an icon for the enrichment map panels
-            URL EMIconURL = Enrichment_Map_Plugin.class.getResource("resources/enrichmentmap_logo_notext_small.png");
+            URL EMIconURL = Thread.currentThread().getContextClassLoader().getResource("enrichmentmap_logo_notext_small.png");
             ImageIcon EMIcon = null;
             if (EMIconURL != null) {
                 EMIcon = new ImageIcon(EMIconURL);

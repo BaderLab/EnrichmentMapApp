@@ -65,13 +65,14 @@ public class AboutPanel extends JDialog {
      */
     private static final long serialVersionUID = 7233557042420194604L;
     
-    String pluginUrl = Enrichment_Map_Plugin.pluginUrl;
-    String pluginVersion = Enrichment_Map_Plugin.plugin_props.getProperty("pluginVersion", "0.1");
-    String pluginReleaseSuffix = Enrichment_Map_Plugin.plugin_props.getProperty("pluginReleaseSuffix", "");
-
+   
     public AboutPanel() {
         super(Cytoscape.getDesktop(), "About Enrichment Map", false);
         setResizable(false);
+
+        String pluginUrl = Enrichment_Map_Plugin.pluginUrl;
+        String pluginVersion = Enrichment_Map_Plugin.plugin_props.getProperty("pluginVersion", "0.1");
+        String pluginReleaseSuffix = Enrichment_Map_Plugin.plugin_props.getProperty("pluginReleaseSuffix", "");
 
         //main panel for dialog box
         JEditorPane editorPane = new JEditorPane();
@@ -79,8 +80,9 @@ public class AboutPanel extends JDialog {
         editorPane.setEditable(false);
         editorPane.setEditorKit(new HTMLEditorKit());
         editorPane.addHyperlinkListener(new HyperlinkAction(editorPane));
-
-        URL logoURL = Enrichment_Map_Plugin.class.getResource("resources/enrichmentmap_logo.png");
+        //URL logoURL = Enrichment_Map_Plugin.class.getResource("enrichmentmap_logo.png");
+        URL logoURL = Thread.currentThread().getContextClassLoader().getResource("enrichmentmap_logo.png");
+        //URL logoURL = Enrichment_Map_Plugin.class.getResource("enrichmentmap_logo.png");
         if ( ! pluginReleaseSuffix.contentEquals(""))
             pluginReleaseSuffix = " (" + pluginReleaseSuffix + ")";
         editorPane.setText(

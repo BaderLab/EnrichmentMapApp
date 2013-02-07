@@ -372,7 +372,7 @@ public class ParametersPanel extends JPanel {
         c.gridy = 0;
 
         //represent the node color as an png/gif instead of using java to generate the representation
-        URL nodeIconURL = Enrichment_Map_Plugin.class.getResource("resources/node_color_small.png");
+        URL nodeIconURL = Thread.currentThread().getContextClassLoader().getResource("node_color_small.png");
         if (nodeIconURL != null) {
             ImageIcon nodeIcon;
              nodeIcon = new ImageIcon(nodeIconURL);

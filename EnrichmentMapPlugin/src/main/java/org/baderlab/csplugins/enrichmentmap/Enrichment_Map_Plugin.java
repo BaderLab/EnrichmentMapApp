@@ -84,6 +84,15 @@ import java.io.InputStream;
 import java.util.*;
 
 
+/*
+ * Main Enrichment Map Class
+ * 
+ * **************************************** VERY IMPORTANT
+ * When changes are made to this class need to also make them to Enrichment_Map_Plugin_GSEA
+ * Had to duplicate this class in order to handle case of launching EM from GSEA when the user already has EM installed
+ * (and the version potentially is an older version without the command interface)
+ */
+
 public class Enrichment_Map_Plugin extends CytoscapePlugin {
     public static Properties build_props = new Properties();
     public static Properties plugin_props = new Properties();
@@ -99,12 +108,29 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
      */
     public Enrichment_Map_Plugin(){
 
+    		//get the plugin properties from the plugin props file. properties available (pluginName, pluginDescription,
+    		//pluginVersion, cytoscapeVersion,pluginCategory) --> required in the file.
+    		try {
+            Enrichment_Map_Plugin.plugin_props = getPropertiesFromClasspath("plugin.props");
+        } catch (IOException e) {
+        		//if can't find plugin.props check to see if plugin_gsea.props is there instead
+        		try{
+        			Enrichment_Map_Plugin.plugin_props = getPropertiesFromClasspath("plugin_gsea.props");
+        		}catch(IOException ec){
+        			// TODO: write Warning "Could not load 'plugin.props' - using default settings"
+        		}
+        }
+
+        pluginUrl = Enrichment_Map_Plugin.plugin_props.getProperty("pluginURL", "http://www.baderlab.org/Software/EnrichmentMap");
+        userManualUrl = pluginUrl + "/UserManual";
+        String pluginName = Enrichment_Map_Plugin.plugin_props.getProperty("pluginName","EnrichmentMap");
+    	
         //set-up menu options in plugins menu
         JMenu menu = Cytoscape.getDesktop().getCyMenus().getOperationsMenu();
         JMenuItem item;
 
         //Enrichment map submenu
-        JMenu submenu = new JMenu("Enrichment Map");
+        JMenu submenu = new JMenu(pluginName);
 
         //Enrichment map input  panel
         item = new JMenuItem("Load Enrichment Results");
@@ -122,7 +148,7 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
 //        submenu.add(item);
 
         	//Register CyCommand for enrichment maps.
-        EnrichmentMapCommandHandler handlre = new EnrichmentMapCommandHandler("enrichmentmap");
+        EnrichmentMapCommandHandler handlre = new EnrichmentMapCommandHandler(pluginName);
        
 
         //About Box
@@ -141,30 +167,22 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
             cyto_props.remove("nodelinkouturl.MSigDb");
 
         // read buildId properties:
+        //properties available in revision.txt ( repository,path, svn.revision, mixedRevisions, committedRevision, 
+        //committedDate, status, specialStatus, build.user,build.timestamp, build.os, build.java_version, build.number)
         try {
-            Enrichment_Map_Plugin.build_props = getPropertiesFromClasspath("org/baderlab/csplugins/enrichmentmap/buildID.props");
+            Enrichment_Map_Plugin.build_props = getPropertiesFromClasspath("revision.txt");
         } catch (IOException e) {
             // TODO: write Warning "Could not load 'buildID.props' - using default settings"
             Enrichment_Map_Plugin.build_props.setProperty("build.number", "0");
             Enrichment_Map_Plugin.build_props.setProperty("svn.revision", "0");
             Enrichment_Map_Plugin.build_props.setProperty("build.user", "user");
-            Enrichment_Map_Plugin.build_props.setProperty("build.host", "host");
+            //Enrichment_Map_Plugin.build_props.setProperty("build.host", "host");-->can't access with maven implementaion
             Enrichment_Map_Plugin.build_props.setProperty("build.timestemp", "1900/01/01 00:00:00 +0000 (GMT)");
         }
 
         Enrichment_Map_Plugin.buildId = "Build: " + Enrichment_Map_Plugin.build_props.getProperty("build.number") +
                                         " from SVN: " + Enrichment_Map_Plugin.build_props.getProperty("svn.revision") +
-                                        " by: " + Enrichment_Map_Plugin.build_props.getProperty("build.user") + "@" + Enrichment_Map_Plugin.build_props.getProperty("build.host") +
-                                        " at: " + Enrichment_Map_Plugin.build_props.getProperty("build.timestamp") ;
-
-        try {
-            Enrichment_Map_Plugin.plugin_props = getPropertiesFromClasspath("org/baderlab/csplugins/enrichmentmap/plugin.props");
-        } catch (IOException e) {
-            // TODO: write Warning "Could not load 'plugin.props' - using default settings"
-        }
-
-        pluginUrl = Enrichment_Map_Plugin.plugin_props.getProperty("pluginURL", "http://www.baderlab.org/Software/EnrichmentMap");
-        userManualUrl = pluginUrl + "/UserManual";
+                                        " by: " + Enrichment_Map_Plugin.build_props.getProperty("build.user")  ;
 
     }
 

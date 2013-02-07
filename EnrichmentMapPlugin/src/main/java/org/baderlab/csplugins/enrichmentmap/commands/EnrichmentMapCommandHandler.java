@@ -24,6 +24,7 @@ public class EnrichmentMapCommandHandler extends AbstractCommandHandler {
 		private static String pvalue = "pvalue";
 		private static String qvalue = "qvalue";
 		private static String overlap = "overlap";
+		private static String expressionfile = "expressionfile";
 	
 		public EnrichmentMapCommandHandler(String namespace) {
 			super(CyCommandManager.reserveNamespace(namespace));
@@ -33,6 +34,7 @@ public class EnrichmentMapCommandHandler extends AbstractCommandHandler {
 			addArgument(command, pvalue);
 			addArgument(command, qvalue);
 			addArgument(command, overlap);
+			addArgument(command, expressionfile);
 			
 		}
 		
@@ -45,6 +47,7 @@ public class EnrichmentMapCommandHandler extends AbstractCommandHandler {
 			Double pvalue_loaded = 0.05;
 			Double qvalue_loaded = 0.25;
 			Double overlap_loaded = 0.5;
+			String expression_loaded = "";
 			
 			//get the edb file to run enrichment maps on
 			//If working on windows and user cuts and copies path there is 
@@ -53,6 +56,10 @@ public class EnrichmentMapCommandHandler extends AbstractCommandHandler {
 			if(arg1.containsKey(edbdir))
 				file = (String)arg1.get(edbdir);
 				
+			//get the expression file if it is specified
+			if(arg1.containsKey(expressionfile))
+				expression_loaded = (String)arg1.get(expressionfile);
+			
 			//get other parameters if they are present:
 			if(arg1.containsKey(pvalue)){
 				try{
@@ -107,6 +114,8 @@ public class EnrichmentMapCommandHandler extends AbstractCommandHandler {
 			files.setGMTFileName(testgmtFileName);
 			if(!testrnkFileName.equals(""))
 				files.setRankedFile(testrnkFileName);
+			if(!expression_loaded.equals(""))
+				files.setExpressionFileName(expression_loaded);
 			params.addFiles(EnrichmentMap.DATASET1, files);
 			
 			//set the method to gsea

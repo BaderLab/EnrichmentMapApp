@@ -1,11 +1,11 @@
-# $Id$
+# $Id: plugin.props 592 2011-09-16 12:54:04Z risserlin $
 # This props file would be filled out and included in the plugin jar file.  This props file will be used 
 # to put information into the Plugin Manager about the plugin 
 
 # -- The following properties are REQUIRED -- #
 
 # The plugin name that will be displayed to users
-pluginName=EnrichmentMap
+pluginName=EnrichmentMap_gsea
 
 # Description used to give users information about the plugin such as what it does.  
 # Html tags are encouraged for formatting purposes.
@@ -31,7 +31,7 @@ pluginAuthorsIntsitutions=Gary Bader, Daniele Merico, Ruth Isserlin, Oliver Stue
 projectURL=http://www.baderlab.org/Software/EnrichmentMap
 
 # Date this plugin/plugin version was released
-releaseDate=April 14, 2011
+releaseDate=February 6, 2013
 
 # If this plugin is never meant to be downloaded except as part of a plugin (not common) add this property.  Default is "no"
 #themeOnly=no
