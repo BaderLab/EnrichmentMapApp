@@ -114,8 +114,10 @@ public class EnrichmentMapCommandHandler extends AbstractCommandHandler {
 			files.setGMTFileName(testgmtFileName);
 			if(!testrnkFileName.equals(""))
 				files.setRankedFile(testrnkFileName);
-			if(!expression_loaded.equals(""))
+			if(!expression_loaded.equals("")){
 				files.setExpressionFileName(expression_loaded);
+				params.setData(true);
+			}
 			params.addFiles(EnrichmentMap.DATASET1, files);
 			
 			//set the method to gsea

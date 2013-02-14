@@ -57,6 +57,7 @@ import cytoscape.Cytoscape;
 import javax.swing.*;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
+import org.baderlab.csplugins.enrichmentmap.EnrichmentMapUtils;
 import org.baderlab.csplugins.enrichmentmap.Enrichment_Map_Plugin;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
@@ -124,7 +125,7 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
     public void graphViewChanged(GraphViewChangeEvent event){
         //TODO: improve performance of calculating the Union of genesets (Nodes) and intersection of overlaps (Edges)
         // Meanwhile we have a flag to skip the updating of the Heatmap, which can be toggled by a check-mark in the EM-Menu
-        boolean override_revalidate_heatmap = Enrichment_Map_Plugin.isOverrideHeatmapRevalidation();
+        boolean override_revalidate_heatmap = EnrichmentMapUtils.isOverrideHeatmapRevalidation();
         if(event.isEdgesSelectedType() && ! override_revalidate_heatmap ) {
 
             Edge[] selectedEdges = event.getSelectedEdges();

@@ -49,6 +49,7 @@ import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.text.html.HTMLEditorKit;
 
+import org.baderlab.csplugins.enrichmentmap.EnrichmentMapUtils;
 import org.baderlab.csplugins.enrichmentmap.Enrichment_Map_Plugin;
 
 import cytoscape.*;
@@ -70,9 +71,9 @@ public class AboutPanel extends JDialog {
         super(Cytoscape.getDesktop(), "About Enrichment Map", false);
         setResizable(false);
 
-        String pluginUrl = Enrichment_Map_Plugin.pluginUrl;
-        String pluginVersion = Enrichment_Map_Plugin.plugin_props.getProperty("pluginVersion", "0.1");
-        String pluginReleaseSuffix = Enrichment_Map_Plugin.plugin_props.getProperty("pluginReleaseSuffix", "");
+        String pluginUrl = EnrichmentMapUtils.pluginUrl;
+        String pluginVersion = EnrichmentMapUtils.plugin_props.getProperty("pluginVersion", "0.1");
+        String pluginReleaseSuffix = EnrichmentMapUtils.plugin_props.getProperty("pluginReleaseSuffix", "");
 
         //main panel for dialog box
         JEditorPane editorPane = new JEditorPane();
@@ -112,7 +113,7 @@ public class AboutPanel extends JDialog {
                 "Gene-Set Enrichment Visualization and Interpretation<BR>" +
                 "<i>PLoS One. 2010 Nov 15;5(11)</i><BR>" +
                 "<BR>" +
-                "<font size='-1'>" + Enrichment_Map_Plugin.buildId + "</font>" +
+                "<font size='-1'>" + EnrichmentMapUtils.buildId + "</font>" +
                 "</p></body></html>"
             );
         setContentPane(editorPane);

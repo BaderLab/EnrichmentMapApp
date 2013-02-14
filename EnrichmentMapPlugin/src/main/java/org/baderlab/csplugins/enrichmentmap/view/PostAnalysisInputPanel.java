@@ -58,6 +58,7 @@ import javax.swing.*;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
+import org.baderlab.csplugins.enrichmentmap.EnrichmentMapUtils;
 import org.baderlab.csplugins.enrichmentmap.Enrichment_Map_Plugin;
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.actions.BuildPostAnalysisActionListener;
@@ -204,7 +205,7 @@ public class PostAnalysisInputPanel extends JPanel {
         JButton help = new JButton("Online Manual");
         help.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                OpenBrowser.openURL(Enrichment_Map_Plugin.userManualUrl);
+                OpenBrowser.openURL(EnrichmentMapUtils.userManualUrl);
             }
         });
 
