@@ -3,7 +3,10 @@
   <groupId>EnrichmentMap_refactor</groupId>
   <version>1.3.0-SNAPSHOT</version>
   <artifactId>EnrichmentMap_refactor</artifactId>
-
+  <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    </properties>
   <dependencies>
   	<dependency>
   		<groupId>org.cytoscape</groupId>
