@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap;
+package org.baderlab.csplugins.enrichmentmap.gsea;
 import cytoscape.plugin.CytoscapePlugin;
 import cytoscape.Cytoscape;
 import cytoscape.CytoscapeInit;
@@ -7,6 +7,7 @@ import cytoscape.CytoscapeInit;
 import javax.swing.*;
 
 
+import org.baderlab.csplugins.enrichmentmap.EnrichmentMapUtils;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadEnrichmentsPanelAction;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadPostAnalysisPanelAction;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowAboutPanelAction;
@@ -35,14 +36,17 @@ public class Enrichment_Map_Plugin_GSEA extends CytoscapePlugin {
     public Enrichment_Map_Plugin_GSEA(){
 
     		//initialize plugin properties
-    		utils = new EnrichmentMapUtils();
+    		utils = new EnrichmentMapUtils("gsea");
     	
-        //set-up menu options in plugins menu
-        JMenu menu = Cytoscape.getDesktop().getCyMenus().getOperationsMenu();
+        //Do not put the Enrichment map GSEA version into main menu
+    		//allow for command tool access only.
+    		
+    		//set-up menu options in plugins menu
+        /*JMenu menu = Cytoscape.getDesktop().getCyMenus().getOperationsMenu();
         JMenuItem item;
 
         //Enrichment map submenu
-        JMenu submenu = new JMenu(EnrichmentMapUtils.pluginName);
+        JMenu submenu = new JMenu(utils.pluginName);
 
         //Enrichment map input  panel
         item = new JMenuItem("Load Enrichment Results");
@@ -58,26 +62,26 @@ public class Enrichment_Map_Plugin_GSEA extends CytoscapePlugin {
 //        item = new JMenuItem("Compute Potential Annotation");
 //        item.addActionListener(new ComputeAnnotationAction());
 //        submenu.add(item);
-
+*/
         	//Register CyCommand for enrichment maps.
-        EnrichmentMapCommandHandler handlre = new EnrichmentMapCommandHandler(EnrichmentMapUtils.pluginName);
+        EnrichmentMapCommandHandler handlre = new EnrichmentMapCommandHandler(utils.pluginName);
        
 
         //About Box
-        item = new JMenuItem("About");
+  /*      item = new JMenuItem("About");
         item.addActionListener(new ShowAboutPanelAction());
         submenu.add(item);
 
         menu.add(submenu);
-
+*/
         // add LinkOut for MSigDb GSEA gene sets
-        Properties cyto_props = CytoscapeInit.getProperties();
+  /*      Properties cyto_props = CytoscapeInit.getProperties();
         if ( ! cyto_props.containsKey("nodelinkouturl.MSigDb.GSEA Gene sets"))
             cyto_props.put("nodelinkouturl.MSigDb.GSEA Gene sets", "http://www.broad.mit.edu/gsea/msigdb/cards/%ID%.html");
         // remove old nodelinkouturl (for legacy issues)
         if (cyto_props.containsKey("nodelinkouturl.MSigDb"))
             cyto_props.remove("nodelinkouturl.MSigDb");
-        
+    */    
     }
 
     public void onCytoscapeExit(){

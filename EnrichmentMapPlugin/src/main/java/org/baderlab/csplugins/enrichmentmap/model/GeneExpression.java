@@ -275,6 +275,5 @@ public class GeneExpression {
     public void setExpression(Double[] expression) {
         this.expression = expression;
     }
-
-
+    
 }

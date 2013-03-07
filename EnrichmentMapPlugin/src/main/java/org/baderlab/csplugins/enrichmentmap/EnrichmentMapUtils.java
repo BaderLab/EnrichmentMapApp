@@ -39,33 +39,51 @@ import cytoscape.visual.VisualStyle;
 
 public class EnrichmentMapUtils {
 	
-	public static Properties build_props = new Properties();
-    public static Properties plugin_props = new Properties();
+	public Properties build_props = new Properties();
+	//by making these static when both gsea and normal plugins are installed, the about box will display only one of them.
+    public Properties plugin_props = new Properties();
     public static String buildId ;
     public static String pluginUrl;
     public static String userManualUrl;
-    public static String pluginName;
+    public static String pluginVersion;
+    public static String pluginReleaseSuffix;
+    
+    //the name can not be static
+    public String pluginName;
     
     private static boolean overrideHeatmapRevalidation = false;
     
-    public EnrichmentMapUtils(){
+    public EnrichmentMapUtils(String type){
     		//get the plugin properties from the plugin props file. properties available (pluginName, pluginDescription,
 		//pluginVersion, cytoscapeVersion,pluginCategory) --> required in the file.
-		try {
-			this.plugin_props = getPropertiesFromClasspath("plugin_gsea.props");
-		} catch (IOException e) {
+    		if(type.equals("gsea")){
+    			try {
+    				this.plugin_props = getPropertiesFromClasspath("gsea/plugin.props",false);
+    			} catch (IOException e) {
     			// TODO: write Warning "Could not load 'plugin.props' - using default settings"
-		}
+			
+    			}
+    		}
+    		else{
+    			try{
+    				this.plugin_props = getPropertiesFromClasspath("plugin.props", false);
+    			}
+    			catch(IOException ei){
+    				System.out.println("Neither of the configuration files could be found");
+    			}
+    		}
 
 		pluginUrl = this.plugin_props.getProperty("pluginURL", "http://www.baderlab.org/Software/EnrichmentMap");
 		userManualUrl = pluginUrl + "/UserManual";
-		pluginName = this.plugin_props.getProperty("pluginName","EnrichmentMap_gsea");
+		pluginVersion = this.plugin_props.getProperty("pluginVersion","0.1");
+		pluginReleaseSuffix = this.plugin_props.getProperty("pluginReleaseSuffix","");
+		pluginName = this.plugin_props.getProperty("pluginName","EnrichmentMap");
 		
 		// read buildId properties:
         //properties available in revision.txt ( repository,path, svn.revision, mixedRevisions, committedRevision, 
         //committedDate, status, specialStatus, build.user,build.timestamp, build.os, build.java_version, build.number)
         try {
-            this.build_props = getPropertiesFromClasspath("revision.txt");
+            this.build_props = getPropertiesFromClasspath("revision.txt",true);
         } catch (IOException e) {
             // TODO: write Warning "Could not load 'buildID.props' - using default settings"
             this.build_props.setProperty("build.number", "0");
@@ -82,14 +100,20 @@ public class EnrichmentMapUtils {
 		
     }
 
-    private Properties getPropertiesFromClasspath(String propFileName) throws IOException {
+    private Properties getPropertiesFromClasspath(String propFileName, boolean inMaindir) throws IOException {
         // loading properties file from the classpath
         Properties props = new Properties();
-        InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream(propFileName);
+        InputStream inputStream;
+        
+        if(inMaindir)
+        		inputStream = this.getClass().getClassLoader().getResourceAsStream(propFileName);
+        else
+        		inputStream = this.getClass().getResourceAsStream(propFileName);
 
         if (inputStream == null) {
             throw new FileNotFoundException("property file '" + propFileName
                     + "' not found in the classpath");
+            
         }
 
         props.load(inputStream);
@@ -606,7 +630,55 @@ public class EnrichmentMapUtils {
     }
     
 
-    private FileNameParts ParseFileName(String filename){
+    public Properties getBuild_props() {
+		return build_props;
+	}
+
+	public void setBuild_props(Properties build_props) {
+		this.build_props = build_props;
+	}
+
+	public Properties getPlugin_props() {
+		return plugin_props;
+	}
+
+	public void setPlugin_props(Properties plugin_props) {
+		this.plugin_props = plugin_props;
+	}
+
+	public String getBuildId() {
+		return buildId;
+	}
+
+	public void setBuildId(String buildId) {
+		this.buildId = buildId;
+	}
+
+	public String getPluginUrl() {
+		return pluginUrl;
+	}
+
+	public void setPluginUrl(String pluginUrl) {
+		this.pluginUrl = pluginUrl;
+	}
+
+	public String getUserManualUrl() {
+		return userManualUrl;
+	}
+
+	public void setUserManualUrl(String userManualUrl) {
+		this.userManualUrl = userManualUrl;
+	}
+
+	public String getPluginName() {
+		return pluginName;
+	}
+
+	public void setPluginName(String pluginName) {
+		this.pluginName = pluginName;
+	}
+
+	private FileNameParts ParseFileName(String filename){
     		//check to see if the name contains "GSEA", if it does then this session was created using GSEA version
     		//of EM plugin
     		String[] fullname;

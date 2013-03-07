@@ -72,8 +72,8 @@ public class AboutPanel extends JDialog {
         setResizable(false);
 
         String pluginUrl = EnrichmentMapUtils.pluginUrl;
-        String pluginVersion = EnrichmentMapUtils.plugin_props.getProperty("pluginVersion", "0.1");
-        String pluginReleaseSuffix = EnrichmentMapUtils.plugin_props.getProperty("pluginReleaseSuffix", "");
+        String pluginVersion = EnrichmentMapUtils.pluginVersion;
+        String pluginReleaseSuffix = EnrichmentMapUtils.pluginReleaseSuffix;
 
         //main panel for dialog box
         JEditorPane editorPane = new JEditorPane();

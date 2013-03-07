@@ -255,7 +255,8 @@ public class ExpressionFileReaderTask implements Task {
 
     			//set the number of genes
     			expressionMatrix.setNumGenes(expressionMatrix.getExpressionMatrix().size());
-        
+    			//row Normalize expressionset
+    			expressionMatrix.rowNormalizeMatrix();
         
     			//TODO: intialize phenotypes associated with class files from expression file load
   /*      	if(dataset == 1){

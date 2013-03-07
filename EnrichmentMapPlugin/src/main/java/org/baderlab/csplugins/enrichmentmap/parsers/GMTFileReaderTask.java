@@ -185,7 +185,8 @@ public class GMTFileReaderTask implements Task {
                 //only go through the lines that have at least a gene set name and description.
                 if(tokens.length >= 2){
                     //The first column of the file is the name of the geneset
-                    String Name = deAccent(tokens[0].toUpperCase().trim());
+                    //String Name = deAccent(tokens[0].toUpperCase().trim());
+                    String Name = tokens[0].toUpperCase().trim();
                     
                     //issue with accents on some of the genesets - replace all the accents
                     

@@ -71,14 +71,14 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
     public Enrichment_Map_Plugin(){
 
     		//initialize plugin properties
-    		utils = new EnrichmentMapUtils();
+    		utils = new EnrichmentMapUtils("");
     	
         //set-up menu options in plugins menu
         JMenu menu = Cytoscape.getDesktop().getCyMenus().getOperationsMenu();
         JMenuItem item;
 
         //Enrichment map submenu
-        JMenu submenu = new JMenu(EnrichmentMapUtils.pluginName);
+        JMenu submenu = new JMenu(utils.pluginName);
 
         //Enrichment map input  panel
         item = new JMenuItem("Load Enrichment Results");
@@ -96,7 +96,7 @@ public class Enrichment_Map_Plugin extends CytoscapePlugin {
 //        submenu.add(item);
 
         	//Register CyCommand for enrichment maps.
-        EnrichmentMapCommandHandler handlre = new EnrichmentMapCommandHandler(EnrichmentMapUtils.pluginName);
+        EnrichmentMapCommandHandler handlre = new EnrichmentMapCommandHandler(utils.pluginName);
        
 
         //About Box

@@ -506,7 +506,17 @@ public class HeatMapPanel extends JPanel {
         else
             kValue=Math.max(currentExpressionSet.size(), currentExpressionSet2.size());
 
-        int totalConditions = (numConditions + numConditions2-2);
+        int totalConditions;
+        //if either of the sets is a rank file instead of expression set then there is only one column
+        if(numConditions == 2 && numConditions2 ==2)
+        		totalConditions = 2 +1;
+        else if(numConditions==2)
+        		totalConditions = 1 + numConditions2 ;
+        else if(numConditions2==2)
+        		totalConditions = 1 + numConditions ;
+        else
+        		totalConditions= (numConditions + numConditions2-2);
+
         data = new Object[kValue][totalConditions];
         for(int k=0;k<kValue;k++){
 
@@ -681,7 +691,16 @@ public class HeatMapPanel extends JPanel {
 
     private Object[][] createSortedMergedTableData(){
 
-        int totalConditions = (numConditions + numConditions2-2);
+        int totalConditions;
+        //if either of the sets is a rank file instead of expression set then there is only one column
+        if(numConditions == 2 && numConditions2 ==2)
+        		totalConditions = 2 +1;
+        else if(numConditions==2)
+        		totalConditions = 1 + numConditions2 ;
+        else if(numConditions2==2)
+        		totalConditions = 1 + numConditions ;
+        else
+        		totalConditions= (numConditions + numConditions2-2);
 
         //when constructing a heatmap and the expression matrices do not contain the exact same set of
         //gene we have to use an expression set consisting of a merged set from the two expression sets.
@@ -692,8 +711,19 @@ public class HeatMapPanel extends JPanel {
             expressionUsing = currentExpressionSet;
         else{
             HashMap<Integer, GeneExpression> mergedExpression = new HashMap<Integer, GeneExpression>();
+            
             mergedExpression.putAll(currentExpressionSet);
-            mergedExpression.putAll(currentExpressionSet2);
+            	
+            //go through the second and only add the expression that isn't in the first set
+            for(Iterator<Integer> i = currentExpressionSet2.keySet().iterator();i.hasNext();){
+                Integer key = i.next();
+                GeneExpression exp2 = currentExpressionSet2.get(key);
+                if(!mergedExpression.containsKey(key)){
+            			//merge            			
+            			//add to mergedExpression Set
+            			mergedExpression.put(key,  exp2);
+            }
+            }
             expressionUsing = mergedExpression;
         }
 

@@ -1863,6 +1863,7 @@ public class EnrichmentMapInputPanel extends JPanel {
            filter.addExtension("rpt");
            filter.addExtension("rnk");
            filter.addExtension("txt");
+           filter.addExtension("edb");
            filter.setDescription("All GCT files");
 
            // Get the file name
@@ -1906,6 +1907,7 @@ public class EnrichmentMapInputPanel extends JPanel {
          filter.addExtension("txt");
          filter.addExtension("rnk");
          filter.addExtension("rpt");
+         filter.addExtension("edb");
          filter.setDescription("All GCT files");
 
          // Get the file name
@@ -1950,6 +1952,7 @@ public class EnrichmentMapInputPanel extends JPanel {
         filter.addExtension("rpt");
         filter.addExtension("xls");
         filter.addExtension("bgo");
+        filter.addExtension("edb");
         filter.setDescription("All result files");
 
         // Get the file name
@@ -1991,6 +1994,7 @@ public class EnrichmentMapInputPanel extends JPanel {
         filter.addExtension("rpt");
         filter.addExtension("xls");
         filter.addExtension("bgo");
+        filter.addExtension("edb");
         filter.setDescription("All result files");
 
         // Get the file name
@@ -2031,6 +2035,7 @@ public class EnrichmentMapInputPanel extends JPanel {
       filter.addExtension("xls");
       filter.addExtension("rpt");
       filter.addExtension("bgo");
+      filter.addExtension("edb");
       filter.setDescription("All result files");
 
       // Get the file name
@@ -2072,6 +2077,7 @@ public class EnrichmentMapInputPanel extends JPanel {
       filter.addExtension("xls");
       filter.addExtension("rpt");
       filter.addExtension("bgo");
+      filter.addExtension("edb");
       filter.setDescription("All result files");
 
       // Get the file name

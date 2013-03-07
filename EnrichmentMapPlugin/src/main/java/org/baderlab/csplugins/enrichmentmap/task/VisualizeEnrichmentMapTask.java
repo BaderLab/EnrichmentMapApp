@@ -505,7 +505,9 @@ public class VisualizeEnrichmentMapTask implements Task {
      * @param prefix - attribute prefix
      */
     private void setGenericResultDataset1Attributes(Node node, GenericResult result, String prefix){
-
+    		
+    		if(node == null || result == null)
+			return;
         CyAttributes nodeAttrs = Cytoscape.getNodeAttributes();
         //format the node name
         String formattedName = formatLabel(result.getName());
@@ -533,7 +535,10 @@ public class VisualizeEnrichmentMapTask implements Task {
      * @param prefix - attribute prefix
      */
     private void setGenericResultDataset2Attributes(Node node, GenericResult result, String prefix){
-
+    		
+    		if(node == null || result == null)
+    			return;
+    	
         CyAttributes nodeAttrs = Cytoscape.getNodeAttributes();
         //format the node name
         String formattedName = formatLabel(result.getName());
@@ -561,7 +566,10 @@ public class VisualizeEnrichmentMapTask implements Task {
      * @param prefix - attribute prefix
      */
     private void setGSEAResultDataset1Attributes(Node node, GSEAResult result, String prefix){
-
+    		
+    		if(node == null || result == null)
+			return;
+    	
         CyAttributes nodeAttrs = Cytoscape.getNodeAttributes();
         //format the node name
         String formattedName = formatLabel(result.getName());
@@ -593,7 +601,10 @@ public class VisualizeEnrichmentMapTask implements Task {
      * @param prefix - attribute prefix
      */
     private void setGSEAResultDataset2Attributes(Node node, GSEAResult result, String prefix){
-
+    	
+    		if(node == null || result == null)
+			return;
+    	
         CyAttributes nodeAttrs = Cytoscape.getNodeAttributes();
 
         //format the node name
