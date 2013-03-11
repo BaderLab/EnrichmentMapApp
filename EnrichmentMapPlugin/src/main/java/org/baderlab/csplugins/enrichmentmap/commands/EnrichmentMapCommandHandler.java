@@ -25,6 +25,8 @@ public class EnrichmentMapCommandHandler extends AbstractCommandHandler {
 		private static String qvalue = "qvalue";
 		private static String overlap = "overlap";
 		private static String expressionfile = "expressionfile";
+		private static String similaritymetric = "similaritymetric";
+		private static String combinedconstant = "combinedconstant";
 	
 		public EnrichmentMapCommandHandler(String namespace) {
 			super(CyCommandManager.reserveNamespace(namespace));
@@ -34,6 +36,8 @@ public class EnrichmentMapCommandHandler extends AbstractCommandHandler {
 			addArgument(command, pvalue);
 			addArgument(command, qvalue);
 			addArgument(command, overlap);
+			addArgument(command, similaritymetric);
+			addArgument(command, combinedconstant);
 			addArgument(command, expressionfile);
 			
 		}
@@ -48,6 +52,8 @@ public class EnrichmentMapCommandHandler extends AbstractCommandHandler {
 			Double qvalue_loaded = 0.25;
 			Double overlap_loaded = 0.5;
 			String expression_loaded = "";
+			Double combinedconstant_loaded = 0.5;
+			String similaritymetric_loaded = EnrichmentMapParameters.SM_OVERLAP;
 			
 			//get the edb file to run enrichment maps on
 			//If working on windows and user cuts and copies path there is 
@@ -88,6 +94,28 @@ public class EnrichmentMapCommandHandler extends AbstractCommandHandler {
 				}
 			}
 			
+			//get other parameters if they are present:
+			if(arg1.containsKey(combinedconstant)){
+				try{
+					combinedconstant_loaded = Double.parseDouble((String)arg1.get(combinedconstant));
+				}catch(NumberFormatException e){
+					System.out.println("the combinedconstant can only be a number (i.e. combinedconstant=0.5).  Ignored combinedconstant setting by user and using default.");
+					combinedconstant_loaded = 0.05;
+				}
+			}
+			//get the expression file if it is specified
+			if(arg1.containsKey(similaritymetric)){
+				similaritymetric_loaded = (String)arg1.get(similaritymetric);
+				if(similaritymetric_loaded.equalsIgnoreCase(EnrichmentMapParameters.SM_OVERLAP))
+					similaritymetric_loaded = EnrichmentMapParameters.SM_OVERLAP;
+				else if(similaritymetric_loaded.equalsIgnoreCase(EnrichmentMapParameters.SM_JACCARD))
+					similaritymetric_loaded = EnrichmentMapParameters.SM_JACCARD;
+				else if(similaritymetric_loaded.equalsIgnoreCase(EnrichmentMapParameters.SM_COMBINED))
+					similaritymetric_loaded = EnrichmentMapParameters.SM_COMBINED;
+				//if it doesn't match any of the presets then use the default
+				else 
+					similaritymetric_loaded = EnrichmentMapParameters.SM_OVERLAP;
+			}
 			EnrichmentMapParameters params = new EnrichmentMapParameters();
 			
 			//for a dataset we require genesets, an expression file (optional), enrichment results
@@ -122,10 +150,12 @@ public class EnrichmentMapCommandHandler extends AbstractCommandHandler {
 			
 			//set the method to gsea
 			params.setMethod(EnrichmentMapParameters.method_GSEA);
-			params.setSimilarityMetric(EnrichmentMapParameters.SM_OVERLAP);
+			params.setSimilarityMetric(similaritymetric_loaded);
 			params.setSimilarityCutOff(overlap_loaded);
 			params.setPvalue(pvalue_loaded);
-			params.setQvalue(qvalue_loaded); 
+			params.setQvalue(qvalue_loaded);
+			params.setFDR(true);
+			params.setCombinedConstant(combinedconstant_loaded);
 			
 			JTaskConfig config = new JTaskConfig();
 	        config.displayCancelButton(true);
