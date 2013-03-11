@@ -529,7 +529,7 @@ public class EnrichmentMapParameters {
         this.twoDatasets = copy.isTwoDatasets();
         this.method = copy.getMethod();
         this.similarityMetric = copy.getSimilarityMetric();
-
+        this.FDR = copy.isFDR();
        
 
         //field needed when calculating bulk enrichment maps.
