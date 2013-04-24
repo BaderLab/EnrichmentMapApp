@@ -24,11 +24,6 @@
   	</dependency>
   </dependencies>
 	<!--  repository settings are required for the build number maven plugin-->
-	<scm>
-		<connection>scm:svn:http://server1.baderlab.med.utoronto.ca/svn/EnrichmentMap</connection>
-		<tag>HEAD</tag>
-		<url>http://server1.baderlab.med.utoronto.ca/svn/EnrichmentMap</url>
-	</scm>
 
 	<profiles>
 	<!-- Create two profiles.  One for the base Enrichment Map jar and One for the Enrichment map jar integrated into GSEA
@@ -42,7 +37,7 @@
       		<activeByDefault>true</activeByDefault>
     		</activation>
   		<build>
-        		<finalName>${project.artifactId}-${project.version}-r${svn.revision}${svn.specialStatus}</finalName>
+        		<finalName>${project.artifactId}-${project.version}-r${git.commit.id.abbrev}_${buildNumber}_${git.branch}</finalName>
   			<plugins>
 				<plugin>
           			<artifactId>maven-jar-plugin</artifactId>
@@ -53,35 +48,7 @@
             				</excludes>
           				</configuration>
         			</plugin>
-      			  <plugin>
-        				<groupId>org.apache.maven.plugins</groupId>
-        				<artifactId>maven-compiler-plugin</artifactId>
-        				<version>3.0</version>
-        				<configuration>
-          				<source>1.5</source>
-          				<target>1.5</target>
-        				</configuration>
-      			  </plugin>
-      			  <plugin>
-                		<groupId>com.google.code.maven-svn-revision-number-plugin</groupId>
-                		<artifactId>svn-revision-number-maven-plugin</artifactId>
-                		<version>1.13</version> <!-- please use the latest version -->
-                		<executions>
-                    		<execution>
-                        	<goals>
-                        		<goal>revision</goal>
-                        </goals>
-                    		</execution>
-                		</executions>
-                		<configuration>
-                    	<entries>
-                        <entry>
-							<prefix>svn</prefix>
-                        </entry>
-                    </entries>
-                		</configuration>
-            		  </plugin>
-				  <plugin>
+        			<plugin>
         				<groupId>org.codehaus.mojo</groupId>
         				<artifactId>buildnumber-maven-plugin</artifactId>
         				<version>1.1</version>
@@ -103,6 +70,105 @@
           				</items>
         				</configuration>
       			  </plugin>
+      			  <plugin>
+        				<groupId>org.apache.maven.plugins</groupId>
+        				<artifactId>maven-compiler-plugin</artifactId>
+        				<version>3.0</version>
+        				<configuration>
+          				<source>1.5</source>
+          				<target>1.5</target>
+        				</configuration>
+      			  </plugin>
+      			  <plugin>
+                <groupId>pl.project13.maven</groupId>
+                <artifactId>git-commit-id-plugin</artifactId>
+                <version>2.0.4</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>revision</goal>
+                         </goals>
+                    </execution>
+                </executions>
+
+                <configuration>
+                    <!-- that's the default value, you don't have to set it -->
+                    <prefix>git</prefix>
+
+                    <!-- that's the default value -->
+                    <dateFormat>dd.MM.yyyy '@' HH:mm:ss z</dateFormat>
+
+                    <!-- true is default here, it prints some more information during the build -->
+                    <verbose>false</verbose>
+
+                    <!--
+                        If you'd like to tell the plugin where your .git directory is,
+                        use this setting, otherwise we'll perform a search trying to
+                        figure out the right directory. It's better to add it explicite IMHO.
+                    -->
+                    <dotGitDirectory>${project.basedir}/.git</dotGitDirectory>
+
+                    <!-- ALTERNATE SETUP - GENERATE FILE -->
+                    <!--
+                        If you want to keep git information, even in your WAR file etc,
+                        use this mode, which will generate a properties file (with filled out values)
+                        which you can then normally read using new Properties().load(/**/)
+                    -->
+
+                    <!--
+                        this is true by default; You may want to set this to false, if the plugin should run inside a
+                        <packaging>pom</packaging> project. Most projects won't need to override this property.
+
+                        For an use-case for this kind of behaviour see: https://github.com/ktoso/maven-git-commit-id-plugin/issues/21
+                    -->
+                    <skipPoms>true</skipPoms>
+
+                    <!-- this is false by default, forces the plugin to generate the git.properties file -->
+                    <generateGitPropertiesFile>false</generateGitPropertiesFile>
+
+                    <!-- The path for the to be generated properties file, it's relative to ${project.basedir} -->
+                    <generateGitPropertiesFilename>src/main/resources/revision.txt</generateGitPropertiesFilename>
+
+                    <!-- true by default, controls whether the plugin will fail when no .git directory is found, when set to false the plugin will just skip execution -->
+                    <!-- @since 2.0.4 -->
+                    <failOnNoGitDirectory>false</failOnNoGitDirectory>
+
+                    <!-- @since 2.1.0 -->
+                    <!-- 
+                        read up about git-describe on the in man, or it's homepage - it's a really powerful versioning helper 
+                        and the recommended way to use git-commit-id-plugin. The configuration bellow is optional, 
+                        by default describe will run "just like git-describe on the command line", even though it's a JGit reimplementation.
+                    -->
+                    <gitDescribe>
+
+                        <!-- don't generate the describe property -->
+                        <skip>false</skip>
+
+                        <!-- 
+                            if no tag was found "near" this commit, just print the commit's id instead, 
+                            helpful when you always expect this field to be not-empty 
+                        -->
+                        <always>false</always>
+                        <!--
+                             how many chars should be displayed as the commit object id? 
+                             7 is git's default, 
+                             0 has a special meaning (see end of this README.md), 
+                             and 40 is the maximum value here 
+                        -->
+                        <abbrev>7</abbrev>
+
+                        <!-- when the build is triggered while the repo is in "dirty state", append this suffix -->
+                        <dirty>-dirty</dirty>
+
+                        <!-- 
+                             always print using the "tag-commits_from_tag-g_commit_id-maybe_dirty" format, even if "on" a tag. 
+                             The distance will always be 0 if you're "on" the tag. 
+                        -->
+                        <forceLongFormat>false</forceLongFormat>
+                    </gitDescribe>
+                </configuration>
+
+            </plugin>     			  				  
     				</plugins>
     				<resources>
             			<resource>
@@ -126,7 +192,7 @@
 	<profile>
 		<id>EM_gsea</id>
   		<build>
-        		<finalName>${project.artifactId}-${project.version}-r${svn.revision}${svn.specialStatus}</finalName>
+        		<finalName>${project.artifactId}-${project.version}-r${git.commit.id.abbrev}_${buildNumber}_${git.branch}</finalName>
   			<plugins>
 				<plugin>
           			<artifactId>maven-jar-plugin</artifactId>
@@ -137,35 +203,7 @@
             				</excludes>
           				</configuration>
         			</plugin>
-            		  <plugin>
-        				<groupId>org.apache.maven.plugins</groupId>
-        				<artifactId>maven-compiler-plugin</artifactId>
-        				<version>3.0</version>
-        				<configuration>
-          				<source>1.5</source>
-          				<target>1.5</target>
-        				</configuration>
-      			  </plugin>
-      			  <plugin>
-                		<groupId>com.google.code.maven-svn-revision-number-plugin</groupId>
-                		<artifactId>svn-revision-number-maven-plugin</artifactId>
-                		<version>1.13</version> <!-- please use the latest version -->
-                		<executions>
-                    		<execution>
-                        	<goals>
-                        		<goal>revision</goal>
-                        </goals>
-                    		</execution>
-                		</executions>
-                		<configuration>
-                    	<entries>
-                        <entry>
-							<prefix>svn</prefix>
-                        </entry>
-                    </entries>
-                		</configuration>
-            		  </plugin>
-				  <plugin>
+        			<plugin>
         				<groupId>org.codehaus.mojo</groupId>
         				<artifactId>buildnumber-maven-plugin</artifactId>
         				<version>1.1</version>
@@ -178,7 +216,7 @@
           				</execution>
         				</executions>
         				<configuration>
-        					<doCheck>true</doCheck>
+          				<doCheck>true</doCheck>
           				<doUpdate>false</doUpdate>
           				<format>{0,number},{1,date,yyyy-MM-dd HH:mm:ss}</format>
           				<items>
@@ -187,6 +225,103 @@
           				</items>
         				</configuration>
       			  </plugin>
+            		  <plugin>
+        				<groupId>org.apache.maven.plugins</groupId>
+        				<artifactId>maven-compiler-plugin</artifactId>
+        				<version>3.0</version>
+        				<configuration>
+          				<source>1.5</source>
+          				<target>1.5</target>
+        				</configuration>
+      			  </plugin>      			  
+            		   <plugin>
+                <groupId>pl.project13.maven</groupId>
+                <artifactId>git-commit-id-plugin</artifactId>
+                <version>2.0.4</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>revision</goal>
+                         </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <!-- that's the default value, you don't have to set it -->
+                    <prefix>git</prefix>
+
+                    <!-- that's the default value -->
+                    <dateFormat>dd.MM.yyyy '@' HH:mm:ss z</dateFormat>
+
+                    <!-- true is default here, it prints some more information during the build -->
+                    <verbose>false</verbose>
+
+                    <!--
+                        If you'd like to tell the plugin where your .git directory is,
+                        use this setting, otherwise we'll perform a search trying to
+                        figure out the right directory. It's better to add it explicite IMHO.
+                    -->
+                    <dotGitDirectory>${project.basedir}/.git</dotGitDirectory>
+
+                    <!-- ALTERNATE SETUP - GENERATE FILE -->
+                    <!--
+                        If you want to keep git information, even in your WAR file etc,
+                        use this mode, which will generate a properties file (with filled out values)
+                        which you can then normally read using new Properties().load(/**/)
+                    -->
+
+                    <!--
+                        this is true by default; You may want to set this to false, if the plugin should run inside a
+                        <packaging>pom</packaging> project. Most projects won't need to override this property.
+
+                        For an use-case for this kind of behaviour see: https://github.com/ktoso/maven-git-commit-id-plugin/issues/21
+                    -->
+                    <skipPoms>true</skipPoms>
+
+                    <!-- this is false by default, forces the plugin to generate the git.properties file -->
+                    <generateGitPropertiesFile>false</generateGitPropertiesFile>
+
+                    <!-- The path for the to be generated properties file, it's relative to ${project.basedir} -->
+                    <generateGitPropertiesFilename>src/main/resources/revision.txt</generateGitPropertiesFilename>
+
+                    <!-- true by default, controls whether the plugin will fail when no .git directory is found, when set to false the plugin will just skip execution -->
+                    <!-- @since 2.0.4 -->
+                    <failOnNoGitDirectory>false</failOnNoGitDirectory>
+
+                    <!-- @since 2.1.0 -->
+                    <!-- 
+                        read up about git-describe on the in man, or it's homepage - it's a really powerful versioning helper 
+                        and the recommended way to use git-commit-id-plugin. The configuration bellow is optional, 
+                        by default describe will run "just like git-describe on the command line", even though it's a JGit reimplementation.
+                    -->
+                    <gitDescribe>
+
+                        <!-- don't generate the describe property -->
+                        <skip>false</skip>
+
+                        <!-- 
+                            if no tag was found "near" this commit, just print the commit's id instead, 
+                            helpful when you always expect this field to be not-empty 
+                        -->
+                        <always>false</always>
+                        <!--
+                             how many chars should be displayed as the commit object id? 
+                             7 is git's default, 
+                             0 has a special meaning (see end of this README.md), 
+                             and 40 is the maximum value here 
+                        -->
+                        <abbrev>7</abbrev>
+
+                        <!-- when the build is triggered while the repo is in "dirty state", append this suffix -->
+                        <dirty>-dirty</dirty>
+
+                        <!-- 
+                             always print using the "tag-commits_from_tag-g_commit_id-maybe_dirty" format, even if "on" a tag. 
+                             The distance will always be 0 if you're "on" the tag. 
+                        -->
+                        <forceLongFormat>false</forceLongFormat>
+                    </gitDescribe>
+                </configuration>
+            </plugin>				
     				</plugins>
     				<resources>
             			<resource>
@@ -208,4 +343,9 @@
 			</build>
 		</profile>
 	</profiles>
+	<scm>
+		<connection>scm:git:git://github.com/BaderLab/EnrichmentMapApp.git</connection>
+		<url>https://github.com/BaderLab/EnrichmentMapApp</url>
+		<developerConnection>scm:git:git@github.com:BaderLab/EnrichmentMapApp.git</developerConnection>
+	</scm>
 </project>

@@ -80,23 +80,25 @@ public class EnrichmentMapUtils {
 		pluginName = this.plugin_props.getProperty("pluginName","EnrichmentMap");
 		
 		// read buildId properties:
-        //properties available in revision.txt ( repository,path, svn.revision, mixedRevisions, committedRevision, 
-        //committedDate, status, specialStatus, build.user,build.timestamp, build.os, build.java_version, build.number)
+        //properties available in revision.txt ( git.branch,git.commit.id, git.build.user.name, 
+		//git.build.user.email, git.build.time, git.commit.id,git.commit.id.abbrev
+		//, build.user,build.timestamp, build.os, build.java_version, build.number)
         try {
             this.build_props = getPropertiesFromClasspath("revision.txt",true);
         } catch (IOException e) {
             // TODO: write Warning "Could not load 'buildID.props' - using default settings"
             this.build_props.setProperty("build.number", "0");
-            this.build_props.setProperty("svn.revision", "0");
+            this.build_props.setProperty("git.commit.id", "0");
             this.build_props.setProperty("build.user", "user");
             //Enrichment_Map_Plugin.build_props.setProperty("build.host", "host");-->can't access with maven implementaion
-            this.build_props.setProperty("build.timestemp", "1900/01/01 00:00:00 +0000 (GMT)");
+            this.build_props.setProperty("git.build.time", "1900/01/01 00:00:00 +0000 (GMT)");
         }
 
         this.buildId = "Build: " + this.build_props.getProperty("build.number") +
-                                        " from SVN: " + this.build_props.getProperty("svn.revision") +
+                                        " from GIT: " + this.build_props.getProperty("git.commit.id") +
                                         " by: " + this.build_props.getProperty("build.user")  ;
 
+		
 		
     }
 
