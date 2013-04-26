@@ -213,10 +213,28 @@ public class EnrichmentMapUtils {
             				//genesets
             				File gmt = new File(tmpDir, name+ "." + dataset_name +".gmt");
             				BufferedWriter gmtwriter = new BufferedWriter(new FileWriter(gmt));
-            				gmtwriter.write(params.printHashmap(em.getDataset(current).getSetofgenesets().getGenesets()));
+            				gmtwriter.write(params.printHashmap(em.getDataset(current).getGenesetsOfInterest().getGenesets()));
             				gmtwriter.close();
-            				pFileList.add(gmt);        			
-        			
+            				pFileList.add(gmt);
+
+            				//TODO: get rid of this!
+            				//For backwards compatability need to write out file with different names, without dataset_name
+            				File gmt_backcomp = new File(tmpDir, name +".gmt");
+            				BufferedWriter gmtwriter_backcomp = new BufferedWriter(new FileWriter(gmt_backcomp ));
+            				gmtwriter_backcomp.write(params.printHashmap(em.getDataset(current).getGenesetsOfInterest().getGenesets()));
+            				gmtwriter_backcomp.close();
+            				pFileList.add(gmt_backcomp);
+
+            				File enrichmentresults_backcomp = new File(tmpDir, name +".ENR1.txt");
+            				if(dataset_name.equals(EnrichmentMap.DATASET1))
+            					enrichmentresults_backcomp = new File(tmpDir, name +".ENR1.txt");
+            				if(dataset_name.equals(EnrichmentMap.DATASET2))
+            					enrichmentresults_backcomp = new File(tmpDir, name +".ENR2.txt");	
+            				BufferedWriter enr1writer_backcomp = new BufferedWriter(new FileWriter(enrichmentresults_backcomp));
+            				enr1writer_backcomp.write(params.printHashmap(em.getDataset(current).getEnrichments().getEnrichments()));
+            				enr1writer_backcomp.close();
+            				pFileList.add(enrichmentresults_backcomp);    
+            				
             				prop_file_content = prop_file_content + em.getDataset(current).getSetofgenesets().toString(current);
                  
             				//enrichments
@@ -231,6 +249,19 @@ public class EnrichmentMapUtils {
         			
             				//expression
             				if(em.getDataset(current).getExpressionSets() != null){
+            					
+            					//TODO: get rid of this!
+            					//backwards compatibility
+            					File expression_backcomp = new File(tmpDir, name+".expression1.txt");
+            					if(dataset_name.equals(EnrichmentMap.DATASET1))
+            						expression_backcomp = new File(tmpDir, name+".expression1.txt");
+            					else if(dataset_name.equals(EnrichmentMap.DATASET2))
+                						expression_backcomp = new File(tmpDir, name+".expression2.txt");
+            					BufferedWriter expression1writer_backcomp = new BufferedWriter(new FileWriter(expression_backcomp));
+            					expression1writer_backcomp.write(em.getDataset(current).getExpressionSets().toString());
+            					expression1writer_backcomp.close();
+            					pFileList.add(expression_backcomp);
+            					
             					File expression = new File(tmpDir, name+"." + dataset_name +".expression.txt");
             					BufferedWriter expression1writer = new BufferedWriter(new FileWriter(expression));
             					expression1writer.write(em.getDataset(current).getExpressionSets().toString());
@@ -256,6 +287,13 @@ public class EnrichmentMapUtils {
             								subrank1writer.write(params.printHashmap(all_ranks.get(current_ranks_name).getRanking()));
             								subrank1writer.close();
             								pFileList.add(current_ranks);
+            								
+            								//backwards compatibility: add the old file
+            								File current_ranks_backcomp = new File(tmpDir, name+"."+ranks_name+".RANKS.txt");
+            								BufferedWriter subrank1writer_backcomp = new BufferedWriter(new FileWriter(current_ranks_backcomp));
+            								subrank1writer_backcomp.write(params.printHashmap(all_ranks.get(current_ranks_name).getRanking()));
+            								subrank1writer_backcomp.close();
+            								pFileList.add(current_ranks_backcomp);
             							}
             						}
             					}        			        			
@@ -453,7 +491,8 @@ public class EnrichmentMapUtils {
                 			
                 				String[] file_name_tokens = (prop_file.getName()).split("\\.");
                 				
-                				if((file_name_tokens.length == 4) && (file_name_tokens[1].equals("Dataset 1 Ranking") || file_name_tokens[1].equals("Dataset 2 Ranking")))
+                				if((file_name_tokens.length == 4) && (file_name_tokens[1].equals("Dataset 1 Ranking") || file_name_tokens[1].equals("Dataset 2 Ranking"))
+                						|| (prop_file.getName().contains(Ranking.GSEARanking)))
                 					parts.ranks_name = Ranking.GSEARanking ;
                 				else
                 					//file name is not structured properly --> default to file name
@@ -517,8 +556,10 @@ public class EnrichmentMapUtils {
 
                 File prop_file = pStateFileList.get(i);
                 FileNameParts parts_exp = ParseFileName(prop_file.getName());
-
-                EnrichmentMap map = EnrichmentMapManager.getInstance().getMap(parts_exp.name);
+                //unrecognized file
+                if(parts_exp == null) continue;
+                
+                EnrichmentMap map  = EnrichmentMapManager.getInstance().getMap(parts_exp.name);
                 
                 if(parts_exp.type != null && parts_exp.type.equalsIgnoreCase("expression")){
                 		if(map.getDatasets().containsKey(parts_exp.dataset)){
@@ -684,7 +725,7 @@ public class EnrichmentMapUtils {
     		//check to see if the name contains "GSEA", if it does then this session was created using GSEA version
     		//of EM plugin
     		String[] fullname;
-    		if(filename.contains("GSEA"))
+    		if(filename.contains("Enrichment_Map_Plugin_GSEA_"))
     			fullname = filename.split("Enrichment_Map_Plugin_GSEA_");
     		else	
     			fullname = filename.split("Enrichment_Map_Plugin_");
