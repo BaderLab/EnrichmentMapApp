@@ -11,9 +11,9 @@
   	<dependency>
   		<groupId>org.cytoscape</groupId>
   		<artifactId>cytoscape</artifactId>
-  		<version>2.8.0</version>
+  		<version>2.8.3</version>
   		<scope>system</scope>
-  		<systemPath>/Applications/Cytoscape_v2.8.2/cytoscape.jar</systemPath>
+  		<systemPath>/Applications/Cytoscape_v2.8.3/cytoscape.jar</systemPath>
   		</dependency>
   	<dependency>
   		<groupId>org.junit</groupId>
@@ -63,14 +63,13 @@
         				<configuration>
           				<doCheck>true</doCheck>
           				<doUpdate>false</doUpdate>
-          				<format>{0,number},{1,date,yyyy-MM-dd HH:mm:ss}</format>
+          				<format>{0,number}</format>
           				<items>
             					<item>buildNumber</item>
-            					<item>timestamp</item>
           				</items>
         				</configuration>
-      			  </plugin>
-      			  <plugin>
+      			  		</plugin>
+      			  		<plugin>
         				<groupId>org.apache.maven.plugins</groupId>
         				<artifactId>maven-compiler-plugin</artifactId>
         				<version>3.0</version>
@@ -218,10 +217,9 @@
         				<configuration>
           				<doCheck>true</doCheck>
           				<doUpdate>false</doUpdate>
-          				<format>{0,number},{1,date,yyyy-MM-dd HH:mm:ss}</format>
+          				<format>{0,number}</format>
           				<items>
             					<item>buildNumber</item>
-            					<item>timestamp</item>
           				</items>
         				</configuration>
       			  </plugin>
