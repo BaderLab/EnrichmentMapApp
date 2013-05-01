@@ -61,6 +61,7 @@ import org.baderlab.csplugins.enrichmentmap.view.SliderBarPanel;
 import cytoscape.CyNetwork;
 import cytoscape.Cytoscape;
 import cytoscape.CytoscapeInit;
+import cytoscape.data.readers.TextFileReader;
 
 /**
  * Created by
@@ -88,6 +89,8 @@ public class EnrichmentMapParameters {
     private int upperlimit = 1;    
     //value specifying whether bulk EM is being used (needed to transfer file name to the network names)
     private boolean BulkEM = false;
+    //value specifying if during the bulk build if the user wants sessions created for each em
+    private boolean sessions = true;
     
     //DataSet Files
     private HashMap<String, DataSetFiles> files = new HashMap<String,DataSetFiles>();
@@ -478,6 +481,153 @@ public class EnrichmentMapParameters {
     			
     		}
     }
+    
+    /**
+     * An rpt file can be entered instead of a GCT/expression file, or any of the enrichment results files
+     * If an rpt file is specified all the fields in the dataset (expression file, enrichment results files, rank files,
+     * phenotypes and class files) are populated.
+     *
+     * @param rptFile - rpt (GSEA analysis parameters file) file name
+     *
+     */
+   public void populateFieldsFromRpt(File rptFile){
+
+        TextFileReader reader = new TextFileReader(rptFile.getAbsolutePath());
+        reader.read();
+        String fullText = reader.getText();
+
+        //Create a hashmap to contain all the values in the rpt file.
+        HashMap<String, String> rpt = new HashMap<String, String>();
+
+        String [] lines = fullText.split("\n");
+
+        for (int i = 0; i < lines.length; i++) {
+            String line = lines[i];
+            String[] tokens = line.split("\t");
+            //there should be two values on each line of the rpt file.
+            if(tokens.length == 2 )
+                rpt.put(tokens[0] ,tokens[1]);
+            else if (tokens.length == 3)
+                rpt.put(tokens[0] + " "+ tokens[1],tokens[2]);
+        }
+
+         //set all the variables based on the parameters in the rpt file
+        //parameters needed
+        String timestamp = (String)rpt.get("producer_timestamp");               // timestamp produced by GSEA
+        String method = (String)rpt.get("producer_class");
+        method = method.split("\\p{Punct}")[2];                                 // Gsea or GseaPreranked
+        String out_dir = (String)rpt.get("param out");                          // output dir in which the GSEA-Jobdirs are supposed to be created
+        String job_dir_name = null;                                             // name of the GSEA Job dir (excluding  out_dir + File.separator )
+        String data = (String)rpt.get("param res");
+        String label = (String)rpt.get("param rpt_label");
+        String classes = (String)rpt.get("param cls");
+        String gmt = (String)rpt.get("param gmx");
+        String gmt_nopath =  gmt.substring(gmt.lastIndexOf(File.separator)+1, gmt.length()-1);
+        String gseaHtmlReportFile = (String)rpt.get("file");
+
+        String phenotype1 = "na";
+        String phenotype2 = "na";
+        //phenotypes are specified after # in the parameter cls and are separated by _versus_
+        //but phenotypes are only specified for classic GSEA, not PreRanked.
+        if(classes != null && method.equalsIgnoreCase("Gsea")){
+            String[] classes_split = classes.split("#");
+            String phenotypes = classes_split[1];
+            String[] phenotypes_split = phenotypes.split("_versus_");
+            phenotype1 = phenotypes_split[0];
+            phenotype2 = phenotypes_split[1];
+
+            this.getFiles().get(EnrichmentMap.DATASET1).setClassFile(classes_split[0]);
+            this.setDataset1Phenotype1(phenotype1);
+            this.setDataset1Phenotype2(phenotype2);
+
+
+        }
+
+        //check to see if the method is normal or pre-ranked GSEA.
+        //If it is pre-ranked the data file is contained in a different field
+        else if(method.equalsIgnoreCase("GseaPreranked")){
+            data = (String)rpt.get("param rnk");
+            phenotype1 = "na_pos";
+            phenotype2 = "na_neg";
+            this.setDataset1Phenotype1(phenotype1);
+            this.setDataset1Phenotype2(phenotype2);
+
+        }
+
+        else{
+            System.out.println("The class field in the rpt file has been modified or doesn't specify a class file\n but the analysis is a classic GSEA not PreRanked.  ");
+        }
+
+        //check to see if the rpt file path is the same as the one specified in the
+        //rpt file.
+        //if it isn't then assume that the rpt file has the right file names but if the files specified in the rpt
+        //don't exist then use the path for the rpt to change the file paths.
+        String results1 = "";
+        String results2 = "";
+        String ranks = "";
+
+        //files built directly from the rpt specification
+        //try these files first
+        job_dir_name = label + "."+ method + "." + timestamp;
+        results1 = "" + out_dir + File.separator + job_dir_name + File.separator + "gsea_report_for_" + phenotype1 + "_" + timestamp + ".xls";
+        results2 = "" + out_dir + File.separator + job_dir_name + File.separator + "gsea_report_for_" + phenotype2 + "_" + timestamp + ".xls";
+        ranks = "" + out_dir + File.separator + job_dir_name + File.separator + "ranked_gene_list_" + phenotype1 + "_versus_" + phenotype2 +"_" + timestamp + ".xls";
+        if(!(((new File(results1)).exists()) && ((new File(results2)).exists()) && ((new File(ranks)).exists()))){
+            String out_dir_new = rptFile.getAbsolutePath();
+            out_dir_new = out_dir_new.substring(0, out_dir_new.lastIndexOf(File.separator)); // drop rpt-filename
+            out_dir_new = out_dir_new.substring(0, out_dir_new.lastIndexOf(File.separator)); // drop gsea report folder
+
+            if( !(out_dir_new.equalsIgnoreCase(out_dir)) ){
+
+//                 //trim the last File Separator
+//                 String new_dir = rptFile.getAbsolutePath().substring(0,rptFile.getAbsolutePath().lastIndexOf(File.separator));
+                    results1 = out_dir_new + File.separator + job_dir_name + File.separator + "gsea_report_for_" + phenotype1 + "_" + timestamp + ".xls";
+                    results2 = out_dir_new + File.separator + job_dir_name + File.separator + "gsea_report_for_" + phenotype2 + "_" + timestamp + ".xls";
+                    ranks = out_dir_new + File.separator + job_dir_name + File.separator + "ranked_gene_list_" + phenotype1 + "_versus_" + phenotype2 +"_" + timestamp + ".xls";
+
+                    //If after trying the directory that the rpt file is in doesn't produce valid file names, revert to what
+                    //is specified in the rpt.
+                    if(!(((new File(results1).exists()) && ((new File(results2)).exists()) && ((new File(ranks)).exists())))){
+                        results1 = "" + out_dir + File.separator + job_dir_name + File.separator + label + "."+ method + "." + timestamp + File.separator + "gsea_report_for_" + phenotype1 + "_" + timestamp + ".xls";
+                        results2 = "" + out_dir + File.separator + job_dir_name + File.separator + label + "."+ method + "." + timestamp + File.separator + "gsea_report_for_" + phenotype2 + "_" + timestamp + ".xls";
+                        ranks = "" + out_dir + File.separator + job_dir_name + File.separator + label + "."+ method + "." + timestamp + File.separator + "ranked_gene_list_" + phenotype1 + "_versus_" + phenotype2 +"_" + timestamp + ".xls";
+                    }
+                    else{
+                        out_dir = out_dir_new;
+                        gseaHtmlReportFile = "" + out_dir + File.separator + job_dir_name + File.separator + "index.html";
+                    }
+            }
+
+        }
+
+     //check to see if the user supplied a directory for the gmt file
+     if(this.getGMTDirName() != null){
+         File temp = new File(gmt);
+         //get the file name
+         String filename = temp.getName();
+         gmt = this.getGMTDirName() + File.separator + filename ;
+     }
+     if(this.getGCTDirName() != null){
+         File temp = new File(data);
+         //get the file name
+         String filename = temp.getName();
+         data = this.getGCTDirName() + File.separator + filename ;
+     }
+
+        //ranks, results file will be in the same directory as the rpt file
+       //it is possible that the data and the gmt file are in different directories
+       //than the one specified in the rpt file if the user has moved their results and files around
+        this.getFiles().get(EnrichmentMap.DATASET1).setGMTFileName(gmt);
+        this.getFiles().get(EnrichmentMap.DATASET1).setExpressionFileName(data);
+        this.setData(true);
+        this.getFiles().get(EnrichmentMap.DATASET1).setRankedFile(ranks);
+
+        this.getFiles().get(EnrichmentMap.DATASET1).setEnrichmentFileName1(results1);
+        this.getFiles().get(EnrichmentMap.DATASET1).setEnrichmentFileName2(results2);
+        this.getFiles().get(EnrichmentMap.DATASET1).setGseaHtmlReportFile(gseaHtmlReportFile);
+
+    }
+
     
    /* Method to copy the input contents of an enrichment map paremeter set
     * Only copy parameters specified in the input window
@@ -1344,6 +1494,16 @@ public class EnrichmentMapParameters {
 	
 	public void addFiles(String name, DataSetFiles files){
 		this.files.put(name, files);
+	}
+
+
+	public boolean isSessions() {
+		return sessions;
+	}
+
+
+	public void setSessions(boolean sessions) {
+		this.sessions = sessions;
 	}
 	
 }

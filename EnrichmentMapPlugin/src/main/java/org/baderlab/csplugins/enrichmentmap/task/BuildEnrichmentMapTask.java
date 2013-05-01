@@ -113,6 +113,14 @@ public class BuildEnrichmentMapTask implements Task {
 
     }
     
+    public BuildEnrichmentMapTask( EnrichmentMapParameters params, String name, TaskMonitor taskMonitor) {
+   		this(params);
+    		this.name = name;
+    		this.taskMonitor = taskMonitor;
+
+
+    }
+    
     /**
      * buildEnrichmentMap - parses all GSEA input files and creates an enrichment map
      */
