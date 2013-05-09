@@ -43,13 +43,16 @@
 
 package org.baderlab.csplugins.enrichmentmap;
 
+import static org.mockito.Mockito.mock;
+
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.Reader;
+import java.util.Scanner;
 
 import junit.framework.TestCase;
 
 import org.baderlab.csplugins.enrichmentmap.task.BuildDiseaseSignatureTask;
-
-import cytoscape.data.readers.TextFileReader;
 
 /**
  * @author revilo
@@ -62,6 +65,8 @@ public class HypergeometricTest extends TestCase {
     int N, n, m, k;
     double pValue, expected_pVal;
     Reader testData = null;
+ 
+    private StreamUtil streamUtil = new StreamUtil();
     
     public void setUp() throws Exception {
         //nothing to do here
@@ -82,16 +87,15 @@ public class HypergeometricTest extends TestCase {
         
     }
     
-    public void testHyperGeomPvalueBig() {
+    public void testHyperGeomPvalueBig() throws IOException{
         String testDataFileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/HypergeometricTest_pvalues.csv";
         String fullText;
         String[] lines;
-
-        TextFileReader reader = new TextFileReader(testDataFileName);
-        reader.read();
-        fullText = reader.getText();
-
-        lines = fullText.split("\n");
+        
+        InputStream reader = streamUtil.getInputStream(testDataFileName);
+        fullText = new Scanner(reader,"UTF-8").useDelimiter("\\A").next();
+        
+        lines = fullText.split("\r\n?|\n");         
         
         for (int i=0; i < lines.length ; i++ ) {
             if (i==0) {

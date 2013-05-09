@@ -43,19 +43,18 @@
 
 package org.baderlab.csplugins.enrichmentmap.actions;
 
-import cytoscape.Cytoscape;
-import cytoscape.view.CytoscapeDesktop;
-import cytoscape.view.cytopanels.CytoPanel;
-import cytoscape.util.CytoscapeAction;
-
-import javax.swing.*;
-
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
-import org.baderlab.csplugins.enrichmentmap.Enrichment_Map_Plugin;
 import org.baderlab.csplugins.enrichmentmap.view.PostAnalysisInputPanel;
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.swing.AbstractCyAction;
+import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.application.swing.CytoPanel;
+import org.cytoscape.application.swing.CytoPanelName;
+import org.cytoscape.application.swing.CytoPanelState;
+import org.cytoscape.view.model.CyNetworkViewManager;
 
 import java.awt.event.ActionEvent;
-import java.net.URL;
+import java.util.Map;
 
 /**
  * Created by
@@ -63,47 +62,50 @@ import java.net.URL;
  * Date: July 9, 2009
  * Based on: LoadEnrichmentsPanel by risserlin
  */
-public class LoadPostAnalysisPanelAction extends CytoscapeAction {
+public class LoadPostAnalysisPanelAction extends AbstractCyAction {
 
     //variable to track initialization of network event listener
     private boolean initialized = false;
     private int index = 0;
-    public LoadPostAnalysisPanelAction(){
-        super("Load Post Analysis Panel");
+        
+    private final CytoPanel cytoPanelWest;
+    private PostAnalysisInputPanel postEMinputPanel;
+    
+    public LoadPostAnalysisPanelAction(Map<String,String> configProps, CyApplicationManager applicationManager, 
+			CyNetworkViewManager networkViewManager,CySwingApplication application,  PostAnalysisInputPanel inputPanel){
+    super( configProps,  applicationManager,  networkViewManager);
+ 
+		putValue(NAME, "Load Post Analysis Panel");
+				
+		this.cytoPanelWest = application.getCytoPanel(CytoPanelName.WEST);
+		this.postEMinputPanel = inputPanel;
+
     }
 
     public void actionPerformed(ActionEvent event) {
 
-        String os = System.getProperty("os.name");
-
-        CytoscapeDesktop desktop = Cytoscape.getDesktop();
-        CytoPanel cytoPanel = desktop.getCytoPanel(SwingConstants.WEST);
+        String os = System.getProperty("os.name");     
 
         if(!initialized){
             EnrichmentMapManager.getInstance();
             initialized = true;
-
-            PostAnalysisInputPanel analysisWindow = new PostAnalysisInputPanel();
-
+            
             //set the input window in the instance so we can update the instance window
             //on network focus
-            EnrichmentMapManager.getInstance().setAnalysisWindow(analysisWindow);
+            EnrichmentMapManager.getInstance().setAnalysisWindow(this.postEMinputPanel);
 
-            //create an icon for the enrichment map panels
-            URL EMIconURL = Thread.currentThread().getContextClassLoader().getResource("enrichmentmap_logo_notext_small.png");
-            ImageIcon EMIcon = null;
-            if (EMIconURL != null) {
-                EMIcon = new ImageIcon(EMIconURL);
+         // If the state of the cytoPanelWest is HIDE, show it
+            if (cytoPanelWest.getState() == CytoPanelState.HIDE) {
+                    cytoPanelWest.setState(CytoPanelState.DOCK);
             }
 
-            if(EMIcon != null)
-                cytoPanel.add("Post Analysis",EMIcon, analysisWindow);
-            else
-                cytoPanel.add("Post Analysis", analysisWindow);
-            
-            index =  cytoPanel.indexOfComponent(analysisWindow);
-
-            cytoPanel.setSelectedIndex(index);
+            // Select my panel
+            int index = cytoPanelWest.indexOfComponent(this.postEMinputPanel);
+            if (index == -1) {
+                    return;
+            }
+            cytoPanelWest.setSelectedIndex(index);
+      
         }
         else{
 
@@ -111,30 +113,23 @@ public class LoadPostAnalysisPanelAction extends CytoscapeAction {
 
             PostAnalysisInputPanel analysisWindow  = EnrichmentMapManager.getInstance().getAnalysisWindow();
             if(analysisWindow == null){
-                analysisWindow = new PostAnalysisInputPanel();
+                /*analysisWindow = new PostAnalysisInputPanel();
                 EnrichmentMapManager.getInstance().setAnalysisWindow(analysisWindow);  
-
-                //create an icon for the enrichment map panels
-                URL EMIconURL = Enrichment_Map_Plugin.class.getResource("resources/enrichmentmap_logo_notext_small.png");
-                ImageIcon EMIcon = null;
-                if (EMIconURL != null) {
-                    EMIcon = new ImageIcon(EMIconURL);
+                
+             // If the state of the cytoPanelWest is HIDE, show it
+                if (cytoPanelWest.getState() == CytoPanelState.HIDE) {
+                        cytoPanelWest.setState(CytoPanelState.DOCK);
                 }
 
-                if(EMIcon != null)
-                    cytoPanel.add("Post Analysis",EMIcon, analysisWindow);
-                else
-                    cytoPanel.add("Post Analysis", analysisWindow);
-                
-                index =  cytoPanel.indexOfComponent(analysisWindow);
+                // Select my panel
+                int index = cytoPanelWest.indexOfComponent(this.postEMinputPanel);
+                if (index == -1) {
+                        return;
+                }
+                cytoPanelWest.setSelectedIndex(index);
+*/
             }
-            else{
-                index =  cytoPanel.indexOfComponent(analysisWindow);
-            }
-
-            cytoPanel.setSelectedIndex(index);
 
         }
-
     }
 }

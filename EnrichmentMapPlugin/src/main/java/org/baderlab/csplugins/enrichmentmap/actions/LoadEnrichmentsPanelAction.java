@@ -43,19 +43,24 @@
 
 package org.baderlab.csplugins.enrichmentmap.actions;
 
-import cytoscape.Cytoscape;
-import cytoscape.view.CytoscapeDesktop;
-import cytoscape.view.cytopanels.CytoPanel;
-import cytoscape.util.CytoscapeAction;
-
 import javax.swing.*;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
-import org.baderlab.csplugins.enrichmentmap.Enrichment_Map_Plugin;
 import org.baderlab.csplugins.enrichmentmap.view.EnrichmentMapInputPanel;
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.swing.AbstractCyAction;
+import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.application.swing.CytoPanel;
+import org.cytoscape.application.swing.CytoPanelName;
+import org.cytoscape.application.swing.CytoPanelState;
+import org.cytoscape.io.util.StreamUtil;
+import org.cytoscape.util.swing.FileChooserFilter;
+import org.cytoscape.util.swing.FileUtil;
+import org.cytoscape.util.swing.OpenBrowser;
+import org.cytoscape.view.model.CyNetworkViewManager;
 
 import java.awt.event.ActionEvent;
-import java.net.URL;
+import java.util.Map;
 
 /**
  * Created by
@@ -65,48 +70,62 @@ import java.net.URL;
  *
  * Click on Build Enrichment Map Action handler
  */
-public class LoadEnrichmentsPanelAction extends CytoscapeAction {
+public class LoadEnrichmentsPanelAction extends AbstractCyAction {
 
     //variable to track initialization of network event listener
     private boolean initialized = false;
+    private CySwingApplication application;
+    private OpenBrowser browser;
+    private FileUtil fileUtil;
+	private StreamUtil streamUtil;
+    
+    private final CytoPanel cytoPanelWest;
+    private EnrichmentMapInputPanel EMinputPanel;
+    
+    
+    public LoadEnrichmentsPanelAction(Map<String,String> configProps, CyApplicationManager applicationManager, 
+    			CyNetworkViewManager networkViewManager, CySwingApplication application,  
+    			OpenBrowser browser,FileUtil fileUtil,  StreamUtil streamUtil, EnrichmentMapInputPanel inputPanel){
+        super( configProps,  applicationManager,  networkViewManager);
+     
+ 		putValue(NAME, "Create Enrichment Map");
+ 		this.application = application;
+ 		this.browser = browser;
+ 		this.fileUtil = fileUtil;
+        this.streamUtil = streamUtil;
+ 		
+ 		
+ 		this.cytoPanelWest = application.getCytoPanel(CytoPanelName.WEST);
+ 		this.EMinputPanel = inputPanel;
+ 		
+ 		
 
-    public LoadEnrichmentsPanelAction(){
-         super("Load GSEA Files");
     }
 
     public void actionPerformed(ActionEvent event) {
-
-          int index = 0;
-
-          String os = System.getProperty("os.name");
-
-          CytoscapeDesktop desktop = Cytoscape.getDesktop();
-          CytoPanel cytoPanel = desktop.getCytoPanel(SwingConstants.WEST);
-
+                
           if(!initialized){
                 EnrichmentMapManager.getInstance();
                 initialized = true;
 
-                EnrichmentMapInputPanel inputwindow = new EnrichmentMapInputPanel();
+                //EnrichmentMapInputPanel inputwindow = new EnrichmentMapInputPanel(application,browser,streamUtilRef);
 
                 //set the input window in the instance so we can udate the instance window
                 //on network focus
-                EnrichmentMapManager.getInstance().setInputWindow(inputwindow);
-
-               //create an icon for the enrichment map panels
-                URL EMIconURL = Thread.currentThread().getContextClassLoader().getResource("enrichmentmap_logo_notext_small.png");
-                ImageIcon EMIcon = null;
-                if (EMIconURL != null) {
-                    EMIcon = new ImageIcon(EMIconURL);
+                EnrichmentMapManager.getInstance().setInputWindow(this.EMinputPanel);
+              
+                // If the state of the cytoPanelWest is HIDE, show it
+                if (cytoPanelWest.getState() == CytoPanelState.HIDE) {
+                        cytoPanelWest.setState(CytoPanelState.DOCK);
                 }
 
-                if(EMIcon != null)
-                    cytoPanel.add("Enrichment Map",EMIcon, inputwindow);
-                else
-                     cytoPanel.add("Enrichment Map", inputwindow);
-                index =  cytoPanel.indexOfComponent(inputwindow);
+                // Select my panel
+                int index = cytoPanelWest.indexOfComponent(this.EMinputPanel);
+                if (index == -1) {
+                        return;
+                }
+                cytoPanelWest.setSelectedIndex(index);
 
-                cytoPanel.setSelectedIndex(index);
           }
           else{
 
@@ -114,30 +133,24 @@ public class LoadEnrichmentsPanelAction extends CytoscapeAction {
 
                 EnrichmentMapInputPanel inputwindow  = EnrichmentMapManager.getInstance().getInputWindow();
                 if(inputwindow == null){
-                  inputwindow = new EnrichmentMapInputPanel();
+                  inputwindow = new EnrichmentMapInputPanel(application,browser,fileUtil,streamUtil);
                   EnrichmentMapManager.getInstance().setInputWindow(inputwindow);
 
-                    //create an icon for the enrichment map panels
-                    URL EMIconURL = Enrichment_Map_Plugin.class.getResource("resources/enrichmentmap_logo_notext_small.png");
-                    ImageIcon EMIcon = null;
-                    if (EMIconURL != null) {
-                        EMIcon = new ImageIcon(EMIconURL);
-                    }
+                  // If the state of the cytoPanelWest is HIDE, show it
+                  if (cytoPanelWest.getState() == CytoPanelState.HIDE) {
+                          cytoPanelWest.setState(CytoPanelState.DOCK);
+                  }
 
-                    if(EMIcon != null)
-                        cytoPanel.add("Enrichment Map",EMIcon, inputwindow);
-                    else
-                        cytoPanel.add("Enrichment Map", inputwindow);
+                  // Select my panel
+                  int index = cytoPanelWest.indexOfComponent(this.EMinputPanel);
+                  if (index == -1) {
+                          return;
+                  }
+                  cytoPanelWest.setSelectedIndex(index);
 
-                  index =  cytoPanel.indexOfComponent(inputwindow);
-                }
-                else{
-                   index =  cytoPanel.indexOfComponent(inputwindow);
-                }
-
-                cytoPanel.setSelectedIndex(index);
 
           }
 
         }
+    }
 }

@@ -43,22 +43,13 @@
 
 package org.baderlab.csplugins.enrichmentmap.view;
 
-import cytoscape.CyNetwork;
-import cytoscape.Cytoscape;
-import cytoscape.data.CyAttributes;
-
 import javax.swing.*;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.ChangeEvent;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
-import org.baderlab.csplugins.enrichmentmap.actions.SliderBarActionListener;
+//import org.baderlab.csplugins.enrichmentmap.actions.SliderBarActionListener;
 
-import java.util.Iterator;
 import java.util.Hashtable;
 import java.awt.*;
-
-import giny.model.Node;
 
 import prefuse.data.query.NumberRangeModel;
 
@@ -68,7 +59,7 @@ import prefuse.data.query.NumberRangeModel;
  * Date: Feb 24, 2009
  * Time: 10:58:55 AM
  * <p>
- * Slider bar panel
+ * Slider bar panel - it a panel contained within legend panel
  */
 public class SliderBarPanel extends JPanel {
 
@@ -143,8 +134,9 @@ public class SliderBarPanel extends JPanel {
 
         JSlider slider = new JSlider(JSlider.HORIZONTAL,
                                       min, max, initial_value);
-
-        slider.addChangeListener(new SliderBarActionListener(this,params, attrib1,attrib2,edgesOnly));
+        
+        //TODO:Add sliderBarAction listener
+        //slider.addChangeListener(new SliderBarActionListener(this,params, attrib1,attrib2,edgesOnly));
 
         slider.setMajorTickSpacing((max-min)/5);
         slider.setPaintTicks(true);

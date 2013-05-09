@@ -1,5 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap.model;
 
+import static org.mockito.Mockito.mock;
+
 import junit.framework.TestCase;
 
 /*

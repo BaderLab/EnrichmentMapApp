@@ -43,16 +43,6 @@
 
 package org.baderlab.csplugins.enrichmentmap.view;
 
-import cytoscape.view.CytoscapeDesktop;
-import cytoscape.view.cytopanels.CytoPanel;
-import cytoscape.Cytoscape;
-import cytoscape.task.Task;
-import cytoscape.task.TaskMonitor;
-import cytoscape.task.ui.JTaskConfig;
-import cytoscape.task.util.TaskManager;
-import cytoscape.util.CyFileFilter;
-import cytoscape.util.FileUtil;
-import cytoscape.util.OpenBrowser;
 
 import javax.swing.*;
 
@@ -61,11 +51,18 @@ import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapUtils;
 import org.baderlab.csplugins.enrichmentmap.Enrichment_Map_Plugin;
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
-import org.baderlab.csplugins.enrichmentmap.actions.BuildPostAnalysisActionListener;
+//import org.baderlab.csplugins.enrichmentmap.actions.BuildPostAnalysisActionListener;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowAboutPanelAction;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.JMultiLineToolTip;
-import org.baderlab.csplugins.enrichmentmap.task.LoadSignatureGMTFilesTask;
+//import org.baderlab.csplugins.enrichmentmap.task.LoadSignatureGMTFilesTask;
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.application.swing.CytoPanelComponent;
+import org.cytoscape.application.swing.CytoPanelName;
+import org.cytoscape.util.swing.FileChooserFilter;
+import org.cytoscape.util.swing.FileUtil;
+import org.cytoscape.util.swing.OpenBrowser;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -76,6 +73,7 @@ import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -88,12 +86,17 @@ import java.util.HashSet;
  * Based on: EnrichmentMapInputPanel.java (302) by risserlin
  */
 
-public class PostAnalysisInputPanel extends JPanel {
+public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent {
     /**
      * 
      */
     private static final long serialVersionUID = 5472169142720323583L;
-
+    
+    private CyApplicationManager cyApplicationManager;
+    private CySwingApplication application;
+	private OpenBrowser browser;
+	private FileUtil fileUtil;
+    
     final static int RIGHT = 0, DOWN = 1, UP = 2, LEFT = 3; // image States
 
     CollapsiblePanel Parameters;
@@ -147,22 +150,27 @@ public class PostAnalysisInputPanel extends JPanel {
     
     private EnrichmentMap map;
     
-    public PostAnalysisInputPanel() {
-
+    public PostAnalysisInputPanel(CyApplicationManager cyApplicationManager, CySwingApplication application, OpenBrowser browser,FileUtil fileUtil) {
+    	
+    	this.cyApplicationManager = cyApplicationManager;
+    	this.application = application;
+        this.browser = browser;
+        this.fileUtil = fileUtil;
+    	
         decFormat = new DecimalFormat();
         decFormat.setParseIntegerOnly(false);
 
         setLayout(new BorderLayout());
 
         //get the current enrichment map parameters
-        map = EnrichmentMapManager.getInstance().getMap(Cytoscape.getCurrentNetwork().getIdentifier());
+        map = EnrichmentMapManager.getInstance().getMap(cyApplicationManager.getCurrentNetwork().getSUID());
         EnrichmentMapParameters emParams = map.getParams();
         if (emParams == null){
             emParams = new EnrichmentMapParameters();
         }
         
         // create instance of PostAnalysisParameters an initialize with EnrichmentMapParameters
-        paParams = EnrichmentMapManager.getInstance().getMap(Cytoscape.getCurrentNetwork().getIdentifier()).getPaParams();
+        paParams = EnrichmentMapManager.getInstance().getMap(cyApplicationManager.getCurrentNetwork().getSUID()).getPaParams();
 
         //create the three main panels: scope, advanced options, and bottom
         JPanel AnalysisTypePanel = createAnalysisTypePanel();
@@ -205,12 +213,12 @@ public class PostAnalysisInputPanel extends JPanel {
         JButton help = new JButton("Online Manual");
         help.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                OpenBrowser.openURL(EnrichmentMapUtils.userManualUrl);
+                browser.openURL(EnrichmentMapUtils.userManualUrl);
             }
         });
 
         JButton about = new JButton("About");
-        about.addActionListener(new ShowAboutPanelAction());
+        about.addActionListener(new ShowAboutPanelAction(null, null, null, application, browser));
 
         c_buttons.weighty = 1;
         c_buttons.weightx = 1;
@@ -658,7 +666,7 @@ public class PostAnalysisInputPanel extends JPanel {
         else {
             //Handle Unsupported Default_signature_CutoffMetric Error
             String message = "This Cutoff metric is not supported.";
-            JOptionPane.showMessageDialog(Cytoscape.getDesktop(), message, "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(application.getJFrame(), message, "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
         }
 
         
@@ -744,7 +752,7 @@ public class PostAnalysisInputPanel extends JPanel {
                     //do nothing
                 }
                 else if(checkFile(value).equals(Color.RED)){
-                    JOptionPane.showMessageDialog(Cytoscape.getDesktop(),message,"File name change entered is not a valid file name",JOptionPane.WARNING_MESSAGE);
+                    JOptionPane.showMessageDialog(application.getJFrame(),message,"File name change entered is not a valid file name",JOptionPane.WARNING_MESSAGE);
                     GMTFileNameTextField.setForeground(checkFile(value));
                 }
                 else
@@ -758,7 +766,7 @@ public class PostAnalysisInputPanel extends JPanel {
                     //do nothing
                 }
                 else if(checkFile(value).equals(Color.RED)){
-                    JOptionPane.showMessageDialog(Cytoscape.getDesktop(),message,"File name change entered is not a valid file name",JOptionPane.WARNING_MESSAGE);
+                    JOptionPane.showMessageDialog(application.getJFrame(),message,"File name change entered is not a valid file name",JOptionPane.WARNING_MESSAGE);
                     signatureGMTFileNameTextField.setForeground(checkFile(value));
                 }
                 else
@@ -841,7 +849,7 @@ public class PostAnalysisInputPanel extends JPanel {
             }
             
             if (invalid) {
-                JOptionPane.showMessageDialog(Cytoscape.getDesktop(), message, "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(application.getJFrame(), message, "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
             }
         }
     }
@@ -874,7 +882,8 @@ public class PostAnalysisInputPanel extends JPanel {
         });
 
         importButton.setText("Run");
-        importButton.addActionListener(new BuildPostAnalysisActionListener(this));
+        //TODO add buildpost analysis actionlistener
+        //importButton.addActionListener(new BuildPostAnalysisActionListener(this));
         importButton.setEnabled(true);
 
         panel.add(resetButton);
@@ -883,9 +892,10 @@ public class PostAnalysisInputPanel extends JPanel {
 
         return panel;
     }
-
+    
+    //TODO implement close and cancel by unregistering the service
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {
-        CytoscapeDesktop desktop = Cytoscape.getDesktop();
+/*        CytoscapeDesktop desktop = Cytoscape.getDesktop();
 
         CytoPanel cytoPanel = desktop.getCytoPanel(SwingConstants.WEST);
 
@@ -893,11 +903,11 @@ public class PostAnalysisInputPanel extends JPanel {
         EnrichmentMapManager.getInstance().setAnalysisWindow(null);
 
         cytoPanel.remove(this);
-
+*/
     }
 
     public void close() {
-        CytoscapeDesktop desktop = Cytoscape.getDesktop();
+/*        CytoscapeDesktop desktop = Cytoscape.getDesktop();
 
         CytoPanel cytoPanel = desktop.getCytoPanel(SwingConstants.WEST);
 
@@ -905,7 +915,7 @@ public class PostAnalysisInputPanel extends JPanel {
         EnrichmentMapManager.getInstance().setAnalysisWindow(null);
 
         cytoPanel.remove(this);
-    }
+  */  }
 
 
     public Color checkFile(String filename){
@@ -952,17 +962,15 @@ public class PostAnalysisInputPanel extends JPanel {
      */
     private void selectGMTFileButtonActionPerformed(
             java.awt.event.ActionEvent evt) {
-
-        //         Create FileFilter
-        CyFileFilter filter = new CyFileFilter();
-
-        // Add accepted File Extensions
-        filter.addExtension("gmt");
-        filter.setDescription("All GMT files");
-
+    	// Create FileFilter
+        FileChooserFilter filter = new FileChooserFilter("All GMT Files","gmt" );          
+        
+        //the set of filter (required by the file util method
+        ArrayList<FileChooserFilter> all_filters = new ArrayList<FileChooserFilter>();
+        all_filters.add(filter);
         // Get the file name
-        File file = FileUtil.getFile("Import GMT File", FileUtil.LOAD,
-                new CyFileFilter[] { filter });
+        File file = fileUtil.getFile(this,"Import GMT File", FileUtil.LOAD,all_filters  );
+                
         if(file != null) {
             GMTFileNameTextField.setForeground(checkFile(file.getAbsolutePath()));
             GMTFileNameTextField.setText(file.getAbsolutePath());
@@ -981,16 +989,15 @@ public class PostAnalysisInputPanel extends JPanel {
     private void selectSignatureGMTFileButtonActionPerformed(
             java.awt.event.ActionEvent evt) {
 
-        //         Create FileFilter
-        CyFileFilter filter = new CyFileFilter();
-
-        // Add accepted File Extensions
-        filter.addExtension("gmt");
-        filter.setDescription("All GMT files");
-
+    	// Create FileFilter
+        FileChooserFilter filter = new FileChooserFilter("All GMT Files","gmt" );          
+        
+        //the set of filter (required by the file util method
+        ArrayList<FileChooserFilter> all_filters = new ArrayList<FileChooserFilter>();
+        all_filters.add(filter);
         // Get the file name
-        File file = FileUtil.getFile("Import SigGMT File", FileUtil.LOAD,
-                new CyFileFilter[] { filter });
+        File file = fileUtil.getFile(this,"Import Signature GMT File", FileUtil.LOAD,all_filters  );
+        
         if(file != null) {
             signatureGMTFileNameTextField.setForeground(checkFile(file.getAbsolutePath()));
             signatureGMTFileNameTextField.setText(file.getAbsolutePath());
@@ -1005,9 +1012,10 @@ public class PostAnalysisInputPanel extends JPanel {
      * 
      * @param evt
      */
+    //TODO:move this action to cyaction
     private void loadGenesetsButtonActionPerformed(java.awt.event.ActionEvent evt) {
         //Load in the GMT file
-        JTaskConfig config = new JTaskConfig();
+/*        JTaskConfig config = new JTaskConfig();
         config.displayCancelButton(true);
         config.displayCloseButton(true);
         config.displayStatus(true);
@@ -1015,19 +1023,21 @@ public class PostAnalysisInputPanel extends JPanel {
         String errors = paParams.checkGMTfiles();
         if (errors.equalsIgnoreCase("")) {
         		LoadSignatureGMTFilesTask load_GMTs = new LoadSignatureGMTFilesTask(map,this.paParams);
-            /*boolean success =*/ TaskManager.executeTask(load_GMTs, config);
+            /*boolean success =*//* TaskManager.executeTask(load_GMTs, config);
         } else {
-            JOptionPane.showMessageDialog(Cytoscape.getDesktop(),errors,"Invalid Input",JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(application.getJFrame(),errors,"Invalid Input",JOptionPane.WARNING_MESSAGE);
         }
-
+*/
     }
     
     /**
      * Clear the current panel and clear the paParams associated with this panel
      */
+    //TODO:create action for the resetPanel 
     private void resetPanel(){
-
-        this.paParams = new PostAnalysisParameters(EnrichmentMapManager.getInstance().getMap(Cytoscape.getCurrentNetwork().getIdentifier()));
+    	
+    	//TODO:create action for the resetPanel 
+        //this.paParams = new PostAnalysisParameters(EnrichmentMapManager.getInstance().getMap(Cytoscape.getCurrentNetwork().getIdentifier()));
 
         //Post Analysis Type:
         signatureHub.setSelected(true);
@@ -1071,7 +1081,7 @@ public class PostAnalysisInputPanel extends JPanel {
         default:
             //Handle Unsupported Default_signature_CutoffMetric Error
             String message = "This Cutoff metric is not supported.";
-            JOptionPane.showMessageDialog(Cytoscape.getDesktop(), message, "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(application.getJFrame(), message, "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
             break;
         }
 
@@ -1091,7 +1101,7 @@ public class PostAnalysisInputPanel extends JPanel {
      * @param current_params
      */
     public void updateContents(EnrichmentMapParameters current_params){
-        this.paParams = EnrichmentMapManager.getInstance().getMap(Cytoscape.getCurrentNetwork().getIdentifier()).getPaParams();
+        this.paParams = EnrichmentMapManager.getInstance().getMap(cyApplicationManager.getCurrentNetwork().getSUID()).getPaParams();
        
         // Gene-Set Files:
         GMTFileNameTextField.setText(this.paParams.getGMTFileName());
@@ -1125,7 +1135,7 @@ public class PostAnalysisInputPanel extends JPanel {
         default:
             //Handle Unsupported Default_signature_CutoffMetric Error
             String message = "This Cutoff metric is not supported.";
-            JOptionPane.showMessageDialog(Cytoscape.getDesktop(), message, "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(application.getJFrame(), message, "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
             break;
         }
 
@@ -1145,6 +1155,30 @@ public class PostAnalysisInputPanel extends JPanel {
     public void setPaParams(PostAnalysisParameters paParams) {
         this.paParams = paParams;
     }
+
+	public Component getComponent() {
+		// TODO Auto-generated method stub
+		return this;
+	}
+
+	public CytoPanelName getCytoPanelName() {
+		// TODO Auto-generated method stub
+		return CytoPanelName.WEST;
+	}
+
+	public Icon getIcon() {
+		URL EMIconURL = Thread.currentThread().getContextClassLoader().getResource("enrichmentmap_logo_notext_small.png");
+        ImageIcon EMIcon = null;
+        if (EMIconURL != null) {
+            EMIcon = new ImageIcon(EMIconURL);
+        }
+		return EMIcon;
+	}
+
+	public String getTitle() {
+		// TODO Auto-generated method stub
+		return "Post Analysis Input Panel";
+	}
     
     
     

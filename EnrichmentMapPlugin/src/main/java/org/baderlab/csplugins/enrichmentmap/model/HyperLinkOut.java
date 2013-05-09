@@ -41,7 +41,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import cytoscape.util.OpenBrowser;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import javax.swing.JMenu;
@@ -115,7 +114,8 @@ public class HyperLinkOut extends JMenu {
 				JMenuItem dbLink = new JMenuItem(name);
 				dbLink.addActionListener(new ActionListener() {
 						public void actionPerformed(ActionEvent e) {
-							openBrowser(structure.get(category).get(name).replace("%ID%", value));
+							//TODO: move to mouse click action.
+							//openBrowser(structure.get(category).get(name).replace("%ID%", value));
 						}
 					});
 				cat.add(dbLink);
@@ -124,9 +124,9 @@ public class HyperLinkOut extends JMenu {
 			this.add(cat);
 		}
 	}
-
-	private void openBrowser(String url) {
+	//TODO:move to mouse click action on the table.
+	/*private void openBrowser(String url) {
 		// System.out.println("URL ==== " + url);
 		OpenBrowser.openURL(url);
-	}
+	}*/
 }

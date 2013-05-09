@@ -29,14 +29,6 @@ import org.baderlab.csplugins.enrichmentmap.task.ComputeSimilarityTask;
 import org.baderlab.csplugins.enrichmentmap.task.InitializeGenesetsOfInterestTask;
 import org.baderlab.csplugins.enrichmentmap.view.ParametersPanel;
 
-import cytoscape.Cytoscape;
-import cytoscape.CytoscapeInit;
-import cytoscape.data.readers.TextFileReader;
-import cytoscape.view.CyNetworkView;
-import cytoscape.visual.CalculatorCatalog;
-import cytoscape.visual.VisualMappingManager;
-import cytoscape.visual.VisualStyle;
-
 public class EnrichmentMapUtils {
 	
 	public Properties build_props = new Properties();
@@ -140,10 +132,11 @@ public class EnrichmentMapUtils {
      *
      * @param pFileList - pointer to the set of files to be added to the session
      */
+	//TODO:add save session support
     public void saveSessionStateFiles(List<File> pFileList){
         // Create an empty file on system temp directory
 
-        String tmpDir = System.getProperty("java.io.tmpdir");
+ /*       String tmpDir = System.getProperty("java.io.tmpdir");
         System.out.println("java.io.tmpdir: [" + tmpDir + "]");
 
         String prop_file_content = "";
@@ -307,7 +300,7 @@ public class EnrichmentMapUtils {
             }
 
             pFileList.add(session_prop_file);
-        }
+        }*/
     }
 
     
@@ -316,9 +309,10 @@ public class EnrichmentMapUtils {
      *
      * @param pStateFileList - list of files associated with thie session
      */
+    //TODO:add restore session support
     public void restoreSessionState(List<File> pStateFileList) {
 
-       if ((pStateFileList == null) || (pStateFileList.size() == 0)) {
+ /*      if ((pStateFileList == null) || (pStateFileList.size() == 0)) {
             //No previous state to restore
             return;
         }
@@ -453,7 +447,7 @@ public class EnrichmentMapUtils {
                     			enrichments = em.getDataset(EnrichmentMap.DATASET1).getEnrichments();
                     			/*enrichments = new SetOfEnrichmentResults(EnrichmentMap.DATASET1,props);
                     			em.getDataset(EnrichmentMap.DATASET1).setEnrichments(enrichments);*/
-                    		}
+            /*        		}
                     		else	{
                     			enrichments = new SetOfEnrichmentResults(parts.dataset,props);
                     			em.getDataset(parts.dataset).setEnrichments(enrichments);
@@ -547,6 +541,7 @@ public class EnrichmentMapUtils {
                     }
 
                 }
+                
 
             }
 
@@ -605,7 +600,7 @@ public class EnrichmentMapUtils {
              */
                 
             //register the action listeners for all the networks.
-            EnrichmentMapManager manager = EnrichmentMapManager.getInstance();
+/*            EnrichmentMapManager manager = EnrichmentMapManager.getInstance();
             HashMap<String, EnrichmentMap> networks = manager.getCyNetworkList();
 
             //iterate over the networks
@@ -669,7 +664,7 @@ public class EnrichmentMapUtils {
         Properties cyto_props = CytoscapeInit.getProperties();
         if (cyto_props.containsKey("nodelinkouturl.MSigDb"))
             cyto_props.remove("nodelinkouturl.MSigDb");
-
+*/
     }
     
 

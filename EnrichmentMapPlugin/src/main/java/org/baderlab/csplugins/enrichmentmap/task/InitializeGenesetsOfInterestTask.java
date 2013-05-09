@@ -42,8 +42,6 @@
 // $HeadURL$
 
 package org.baderlab.csplugins.enrichmentmap.task;
-import cytoscape.task.Task;
-import cytoscape.task.TaskMonitor;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -59,6 +57,8 @@ import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.GenericResult;
 import org.baderlab.csplugins.enrichmentmap.model.Rank;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.TaskMonitor;
 
 /**
  * Created by
@@ -70,7 +70,7 @@ import org.baderlab.csplugins.enrichmentmap.model.Ranking;
  * less than threshold values specified by the user.
  */
 
-public class InitializeGenesetsOfInterestTask implements Task {
+public class InitializeGenesetsOfInterestTask extends AbstractTask {
 
     private EnrichmentMap map;
 
@@ -141,9 +141,9 @@ public class InitializeGenesetsOfInterestTask implements Task {
         			//  Estimate Time Remaining
         			long timeRemaining = maxValue - currentProgress;
         			if (taskMonitor != null) {
-        				taskMonitor.setPercentCompleted(percentComplete);
-        				taskMonitor.setStatus("Parsing GMT file " + currentProgress + " of " + maxValue);
-        				taskMonitor.setEstimatedTimeRemaining(timeRemaining);
+        				taskMonitor.setProgress(percentComplete);
+        				taskMonitor.setStatusMessage("Parsing GMT file " + currentProgress + " of " + maxValue);
+        				
         			}
         			currentProgress++;
 
@@ -252,12 +252,6 @@ public class InitializeGenesetsOfInterestTask implements Task {
         return true;
     }
 
-    /**
-       * Run the Task.
-       */
-      public void run() {
-         initializeSets();
-      }
 
       /**
        * Non-blocking call to interrupt the task.
@@ -278,13 +272,14 @@ public class InitializeGenesetsOfInterestTask implements Task {
           this.taskMonitor = taskMonitor;
       }
 
-      /**
-       * Gets the Task Title.
-       *
-       * @return human readable task title.
-       */
-      public String getTitle() {
-          return new String("Initializing subset of genesets and GSEA results of interest");
-      }
+     
+
+	@Override
+	public void run(TaskMonitor taskMonitor) throws Exception {
+		this.taskMonitor = taskMonitor;
+		this.taskMonitor.setTitle("Initializing subset of genesets and GSEA results of interest");
+		// TODO Auto-generated method stub
+		initializeSets();
+	}
 
 }

@@ -63,7 +63,6 @@ import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
 import org.baderlab.csplugins.enrichmentmap.view.HeatMapPanel;
 import org.mskcc.colorgradient.* ;
 
-import cytoscape.Cytoscape;
 
 
 /**
@@ -194,7 +193,7 @@ public class HeatMapParameters {
                 //issue warning
                 //This happens when there is only one data column in the dataset (or if it is rank file)
                 if((min == 0) && (max == 0)){
-                   JOptionPane.showMessageDialog(Cytoscape.getDesktop(),"Row normalization does not work with only one data column per dataset.","Row normalization error",JOptionPane.WARNING_MESSAGE);
+                   //JOptionPane.showMessageDialog(Cytoscape.getDesktop(),"Row normalization does not work with only one data column per dataset.","Row normalization error",JOptionPane.WARNING_MESSAGE);
                 }
                 max = Math.max(Math.abs(min),max);
                 break;
@@ -206,7 +205,7 @@ public class HeatMapParameters {
                    //issue a warning.
                     if((minExpression <= 0) && (maxExpression <= 0) ){
                         //both the max and min are probably negative values
-                        JOptionPane.showMessageDialog(Cytoscape.getDesktop(),"Both the max and min expression are negative, log of negative numbers is not valid", "log normalization error", JOptionPane.WARNING_MESSAGE);
+                        //JOptionPane.showMessageDialog(Cytoscape.getDesktop(),"Both the max and min expression are negative, log of negative numbers is not valid", "log normalization error", JOptionPane.WARNING_MESSAGE);
                         min = 0;
                         max = 0;
                     }
@@ -350,7 +349,8 @@ public class HeatMapParameters {
             arrow.addActionListener(new ChangeSortAction(arrow));
         }
 
-        rankOptionComboBox.addActionListener(new HeatMapActionListener(edgeOverlapPanel, nodeOverlapPanel,rankOptionComboBox,this, map));
+        //TODO:Heatmap actionlistener
+        //rankOptionComboBox.addActionListener(new HeatMapActionListener(edgeOverlapPanel, nodeOverlapPanel,rankOptionComboBox,this, map));
 
         ComboButton.revalidate();
 
@@ -460,7 +460,8 @@ public class HeatMapParameters {
                break;
        }
 
-        hmOptionComboBox.addActionListener(new HeatMapActionListener(edgeOverlapPanel, nodeOverlapPanel,hmOptionComboBox,this, map));
+       	//TODO:add heatmap action listener
+        //hmOptionComboBox.addActionListener(new HeatMapActionListener(edgeOverlapPanel, nodeOverlapPanel,hmOptionComboBox,this, map));
         heatmapOptions.add(hmOptionComboBox);
         heatmapOptions.setBorder(HMBorder);
         return heatmapOptions;

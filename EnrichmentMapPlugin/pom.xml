@@ -1,27 +1,104 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>EnrichmentMap_refactor</groupId>
-  <version>1.3.0-SNAPSHOT</version>
-  <artifactId>EnrichmentMap_refactor</artifactId>
+  <groupId>org.baderlab.csplugins</groupId>
+  <version>2.0.0-SNAPSHOT</version>
+  <artifactId>enrichmentmap</artifactId>
+  <packaging>bundle</packaging>
   <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <cy3.version>3.0.1</cy3.version>
+        <osgi.api.version>4.2.0</osgi.api.version>
+        <bundle.namespace>org.baderlab.csplugins.enrichmentmap</bundle.namespace>
+        <bundle.symbolicName>org.baderlab.csplugins.enrichmentmap</bundle.symbolicName>
     </properties>
+    <repositories>
+    <repository>
+			<id>cytoscape_thirdparty</id>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<name>Wrapped Third Party Libraries</name>
+            <url>http://code.cytoscape.org/nexus/content/repositories/thirdparty/</url>
+		</repository>
+		<repository>
+			<id>releases</id>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<name>Releases</name>
+            <url>http://code.cytoscape.org/nexus/content/repositories/releases/</url>
+		</repository>
+		<repository>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+			<id>snapshots</id>
+			<name>Snapshots</name>
+            <url>http://code.cytoscape.org/nexus/content/repositories/snapshots/</url>
+		</repository>
+    </repositories>
   <dependencies>
   	<dependency>
   		<groupId>org.cytoscape</groupId>
-  		<artifactId>cytoscape</artifactId>
-  		<version>2.8.3</version>
-  		<scope>system</scope>
-  		<systemPath>/Applications/Cytoscape_v2.8.3/cytoscape.jar</systemPath>
-  		</dependency>
-  	<dependency>
-  		<groupId>org.junit</groupId>
-  		<artifactId>junit</artifactId>
-  		<version>0.0.1</version>
-  		<scope>system</scope>
-  		<systemPath>${project.basedir}/lib/junit.jar</systemPath>
+  		<artifactId>work-api</artifactId>
+  		<version>${cy3.version}</version>
   	</dependency>
+  	<dependency>
+  		<groupId>junit</groupId>
+  		<artifactId>junit</artifactId>
+  		<version>4.8.2</version>
+  		<scope>test</scope>
+  	</dependency>
+  	<dependency>
+  		<groupId>org.cytoscape</groupId>
+  		<artifactId>application-api</artifactId>
+  		<version>${cy3.version}</version>
+  	</dependency>
+  	<dependency>
+  		<groupId>org.cytoscape</groupId>
+  		<artifactId>service-api</artifactId>
+  		<version>${cy3.version}</version>
+  	</dependency>
+  	<dependency>
+  		<groupId>org.cytoscape</groupId>
+  		<artifactId>swing-application-api</artifactId>
+  		<version>${cy3.version}</version>
+  	</dependency>
+  	<dependency>
+            <groupId>org.cytoscape</groupId>
+            <artifactId>model-api</artifactId>
+            <version>${cy3.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.cytoscape</groupId>
+            <artifactId>swing-util-api</artifactId>
+            <version>${cy3.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.cytoscape</groupId>
+            <artifactId>io-api</artifactId>
+            <version>${cy3.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.core</artifactId>
+            <version>${osgi.api.version}</version>
+        </dependency>
+        <dependency>
+        		<groupId>org.mockito</groupId>
+  			<artifactId>mockito-all</artifactId>
+  			<version>1.9.5</version>
+  			<scope>test</scope>
+  		</dependency>
+        <dependency>
+        	<groupId>colt</groupId>
+        	<artifactId>colt</artifactId>
+        	<version>1.0.3</version>
+        </dependency>
   </dependencies>
 	<!--  repository settings are required for the build number maven plugin-->
 
@@ -39,7 +116,39 @@
   		<build>
         		<finalName>${project.artifactId}-${project.version}-r${git.commit.id.abbrev}_${buildNumber}_${git.branch}</finalName>
   			<plugins>
+  			 <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+				<version>2.3.2</version>
+                <configuration>
+                    <source>1.6</source>
+                    <target>1.6</target>
+                </configuration>
+            </plugin>
+            <plugin>
+				<groupId>org.ops4j</groupId>
+				<artifactId>maven-pax-plugin</artifactId>
+				<version>1.5</version>
+				<extensions>true</extensions>
+			</plugin>
 				<plugin>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+				<version>2.3.5</version>
+				<configuration>
+					<instructions>
+						<Bundle-SymbolicName>${bundle.symbolicName}</Bundle-SymbolicName>
+						<Bundle-Version>3.2.1</Bundle-Version>
+						<Bundle-Activator>${bundle.namespace}.CyActivator</Bundle-Activator>
+						<Private-Package>${bundle.namespace}.*</Private-Package>
+						<Export-Package>!${bundle.namespace}.*;version="${project.version}"</Export-Package>
+						<Import-Package>*;resolution:=optional</Import-Package>
+						<_failok>true</_failok>
+					</instructions>
+				</configuration>
+			</plugin>
+        		
+			<!--  	<plugin>
           			<artifactId>maven-jar-plugin</artifactId>
           				<configuration>
             				<classifier></classifier>
@@ -48,7 +157,7 @@
             				</excludes>
           				</configuration>
         			</plugin>
-        			<plugin>
+        		-->	<plugin>
         				<groupId>org.codehaus.mojo</groupId>
         				<artifactId>buildnumber-maven-plugin</artifactId>
         				<version>1.1</version>
@@ -75,7 +184,7 @@
         				<version>3.0</version>
         				<configuration>
           				<source>1.5</source>
-          				<target>1.5</target>
+          				<target>1.5</target>       	
         				</configuration>
       			  </plugin>
       			  <plugin>
@@ -202,6 +311,24 @@
             				</excludes>
           				</configuration>
         			</plugin>
+        			<plugin>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+				<version>2.3.4</version>
+				<configuration>
+					<instructions>
+						<Bundle-SymbolicName>${bundle.symbolicName}</Bundle-SymbolicName>
+						<Bundle-Version>3.2.1</Bundle-Version>
+						<Bundle-Activator>${bundle.namespace}.CyActivator</Bundle-Activator>
+						<Embed-Dependency>plugin-distribution;inline=true</Embed-Dependency>
+						<Private-Package>${bundle.namespace}.*</Private-Package>
+						<Export-Package>!${bundle.namespace}.*;version="${project.version}"</Export-Package>
+						<Import-Package>*;resolution:=optional</Import-Package>
+						<_failok>true</_failok>
+					</instructions>
+				</configuration>
+			</plugin>
+        			
         			<plugin>
         				<groupId>org.codehaus.mojo</groupId>
         				<artifactId>buildnumber-maven-plugin</artifactId>

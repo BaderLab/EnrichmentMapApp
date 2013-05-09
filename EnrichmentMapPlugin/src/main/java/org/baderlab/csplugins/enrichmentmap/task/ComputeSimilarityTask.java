@@ -42,9 +42,7 @@
 // $HeadURL$
 
 package org.baderlab.csplugins.enrichmentmap.task;
-import cytoscape.logger.CyLogger;
-import cytoscape.task.Task;
-import cytoscape.task.TaskMonitor;
+
 
 import java.util.*;
 
@@ -54,6 +52,8 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.GenesetSimilarity;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.TaskMonitor;
 
 /**
  * Created by
@@ -66,7 +66,7 @@ import org.baderlab.csplugins.enrichmentmap.model.GenesetSimilarity;
  * pair of gene sets.  (all pairwise comparisons are performed but only those passing
  * the user specified are stored in the hash map of gene set similarityes)
 */
-public class ComputeSimilarityTask implements Task {
+public class ComputeSimilarityTask extends AbstractTask {
     public static final int ENRICHMENT = 0, SIGNATURE = 1;
     
     private EnrichmentMap map;
@@ -78,9 +78,7 @@ public class ComputeSimilarityTask implements Task {
 
     // Keep track of progress for monitoring:
     private TaskMonitor taskMonitor = null;
-    private boolean interrupted = false;
-    
-    private CyLogger logger = CyLogger.getLogger(ComputeSimilarityTask.class);
+    private boolean interrupted = false;   
 
     /**
      * Constructor for Compute Similarity task
@@ -107,14 +105,14 @@ public class ComputeSimilarityTask implements Task {
     }    
     
     public boolean computeGenesetSimilarities(){
-        try{
+        
             HashMap<String, GeneSet> genesetsOfInterest = map.getAllGenesetsOfInterest();
             
             //if there are no gene sets of interest check to see if there are any genesets to use
             if(genesetsOfInterest == null || genesetsOfInterest.isEmpty())
             		genesetsOfInterest = map.getAllGenesets();
-            if((genesetsOfInterest == null || genesetsOfInterest.isEmpty()))
-            		this.logger.error("There are no genesets to compute similarity between");
+            //if((genesetsOfInterest == null || genesetsOfInterest.isEmpty()))
+            		//this.logger.error("There are no genesets to compute similarity between");
             
             HashMap genesetsInnerLoop;
             String edgeType = "pp";
@@ -130,7 +128,7 @@ public class ComputeSimilarityTask implements Task {
             }
             else {
                 genesetsInnerLoop = genesetsOfInterest;
-                this.logger.error("Invalid type argument: " + type);
+                //this.logger.error("Invalid type argument: " + type);
             }
             
             
@@ -154,9 +152,8 @@ public class ComputeSimilarityTask implements Task {
                 //  Estimate Time Remaining
                 long timeRemaining = maxValue - currentProgress;
                 if (taskMonitor != null) {
-                   taskMonitor.setPercentCompleted(percentComplete);
-                   taskMonitor.setStatus("Computing Geneset similarity " + currentProgress + " of " + maxValue);
-                   taskMonitor.setEstimatedTimeRemaining(timeRemaining);
+                   taskMonitor.setProgress(percentComplete);
+                   taskMonitor.setStatusMessage("Computing Geneset similarity " + currentProgress + " of " + maxValue);                
                 }
                 currentProgress++;
 
@@ -269,9 +266,8 @@ public class ComputeSimilarityTask implements Task {
                     //  Estimate Time Remaining
                     long timeRemaining = maxValue - currentProgress;
                     if (taskMonitor != null) {
-                        taskMonitor.setPercentCompleted(percentComplete);
-                        taskMonitor.setStatus("Computing Geneset similarity " + currentProgress + " of " + maxValue);
-                        taskMonitor.setEstimatedTimeRemaining(timeRemaining);
+                        taskMonitor.setProgress(percentComplete);
+                        taskMonitor.setStatusMessage("Computing Geneset similarity " + currentProgress + " of " + maxValue);                       
                     }
                     currentProgress++;
 
@@ -544,11 +540,7 @@ public class ComputeSimilarityTask implements Task {
                     }
                 }
             }
-        } catch(IllegalThreadStateException e){
-            taskMonitor.setException(e, "Unable to compute similarity coeffecients");
-            return false;
-        }
-
+        
        return true;
     }
 
@@ -556,13 +548,7 @@ public class ComputeSimilarityTask implements Task {
         return geneset_similarities;
     }
 
-    /**
-       * Run the Task.
-       */
-      public void run() {
-         computeGenesetSimilarities();
-      }
-
+    
       /**
        * Non-blocking call to interrupt the task.
        */
@@ -590,5 +576,15 @@ public class ComputeSimilarityTask implements Task {
       public String getTitle() {
           return new String("Computing geneset similarities");
       }
+
+
+	@Override
+	public void run(TaskMonitor taskMonitor) throws Exception {
+		this.taskMonitor = taskMonitor;
+		this.taskMonitor.setTitle("Computing geneset similarities");
+		
+		computeGenesetSimilarities();
+		
+	}
 
 }

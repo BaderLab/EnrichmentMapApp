@@ -1,15 +1,15 @@
 package org.baderlab.csplugins.enrichmentmap.parsers;
 
+import static org.mockito.Mockito.mock;
 import junit.framework.TestCase;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
+import org.baderlab.csplugins.enrichmentmap.StreamUtil;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
 import org.baderlab.csplugins.enrichmentmap.model.GenericResult;
 import org.baderlab.csplugins.enrichmentmap.model.GSEAResult;
-import org.baderlab.csplugins.enrichmentmap.parsers.EnrichmentResultFileReaderTask;
-import org.baderlab.csplugins.enrichmentmap.parsers.ExpressionFileReaderTask;
-import org.baderlab.csplugins.enrichmentmap.parsers.GMTFileReaderTask;
+import org.cytoscape.work.TaskMonitor;
 
 import java.util.HashMap;
 
@@ -21,11 +21,14 @@ import java.util.HashMap;
  */
 public class FileReaderTest extends TestCase {
 
+	private TaskMonitor taskMonitor = mock(TaskMonitor.class);
+	private StreamUtil streamUtil = new StreamUtil();
+	
     public void setUp() throws Exception {
 
     }
 
-    public void testGMTFileReader(){
+    public void testGMTFileReader() throws Exception{
 
         String testDataFileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/Genesetstestfile.gmt";
         
@@ -40,11 +43,9 @@ public class FileReaderTest extends TestCase {
         //get the default dataset
         DataSet dataset = map.getDataset(EnrichmentMap.DATASET1);
 
-        //set up task
-        GMTFileReaderTask task = new GMTFileReaderTask(dataset);
-
-        //read in file
-        task.run();
+      //set up task
+        GMTFileReaderTask task = new GMTFileReaderTask(dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
+        	task.run(taskMonitor);
 
         //test to make sure that the file loaded in 10 genesets with a total of 75 genes
         assertEquals(10, map.getAllGenesets().size());
@@ -52,7 +53,7 @@ public class FileReaderTest extends TestCase {
 
     }
 
-    public void testExpression1ReaderNormal(){
+    public void testExpression1ReaderNormal() throws Exception{
 
         //load the test expression file
         String testDataFileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/Expressiontestfile.gct";
@@ -98,9 +99,8 @@ public class FileReaderTest extends TestCase {
         assertEquals(4,map.getGenes().size());
 
         //load expression file
-        ExpressionFileReaderTask task = new ExpressionFileReaderTask(dataset);
-
-        task.run();
+        ExpressionFileReaderTask task = new ExpressionFileReaderTask(dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
+        task.run(taskMonitor);
 
         //There was one more gene in the expression file that wasn't in the set of genes
         //make sure it was was added
@@ -112,7 +112,7 @@ public class FileReaderTest extends TestCase {
         assertEquals(5.131481026, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getMaxExpression());
 
     }
-    public void testExpression1ReaderCommentLines(){
+    public void testExpression1ReaderCommentLines() throws Exception{
 
         //load the test expression file
         String testDataFileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/Expressiontestfile_comments.gct";
@@ -158,9 +158,9 @@ public class FileReaderTest extends TestCase {
         assertEquals(4,map.getGenes().size());
 
         //load expression file
-        ExpressionFileReaderTask task = new ExpressionFileReaderTask(dataset);
+        ExpressionFileReaderTask task = new ExpressionFileReaderTask(dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
+        task.run(taskMonitor);
 
-        task.run();
 
         //There was one more gene in the expression file that wasn't in the set of genes
         //make sure it was was added
@@ -174,7 +174,7 @@ public class FileReaderTest extends TestCase {
 
     }
 
-    public void testExpression1ReaderRnk(){
+    public void testExpression1ReaderRnk() throws Exception{
 
         //load the test expression file
         String testDataFileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/ExpressionTestFile.rnk";
@@ -220,9 +220,9 @@ public class FileReaderTest extends TestCase {
         assertEquals(4,map.getGenes().size());
 
         //load expression file
-        ExpressionFileReaderTask task = new ExpressionFileReaderTask(dataset);
+        ExpressionFileReaderTask task = new ExpressionFileReaderTask(dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
+        task.run(taskMonitor);
 
-        task.run();
 
         //There was one more gene in the expression file that wasn't in the set of genes
         //make sure it was was added
@@ -235,7 +235,7 @@ public class FileReaderTest extends TestCase {
 
     }
 
-    public void testExpression1ReaderEDBRnk(){
+    public void testExpression1ReaderEDBRnk() throws Exception{
 
         //load the test expression file
         String testDataFileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/ExpressionTestFile_edbrnk.rnk";
@@ -281,9 +281,9 @@ public class FileReaderTest extends TestCase {
         assertEquals(4,map.getGenes().size());
 
         //load expression file
-        ExpressionFileReaderTask task = new ExpressionFileReaderTask(dataset);
+        ExpressionFileReaderTask task = new ExpressionFileReaderTask(dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
+        task.run(taskMonitor);
 
-        task.run();
 
         //There was one more gene in the expression file that wasn't in the set of genes
         //make sure it was was added
@@ -297,7 +297,7 @@ public class FileReaderTest extends TestCase {
     }
     
     
-    public void testGenericFileReader_5columns(){
+    public void testGenericFileReader_5columns() throws Exception{
         //load the test expression file
         String testDataFileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/generic_enr_5col.txt";
         
@@ -317,8 +317,9 @@ public class FileReaderTest extends TestCase {
         assertEquals(0, map.getDataset(EnrichmentMap.DATASET1).getEnrichments().getEnrichments().size());
         
         // read
-        EnrichmentResultFileReaderTask task = new EnrichmentResultFileReaderTask(dataset);
-        task.run();
+        EnrichmentResultFileReaderTask task = new EnrichmentResultFileReaderTask(dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
+        task.run(taskMonitor);
+
 
         HashMap<String, EnrichmentResult> results = map.getDataset(EnrichmentMap.DATASET1).getEnrichments().getEnrichments();
         // check we have 4 results
@@ -346,7 +347,7 @@ public class FileReaderTest extends TestCase {
     }
     
     //test GSEA enrichment results reader
-    public void testGSEAEnrichmentsReader(){
+    public void testGSEAEnrichmentsReader() throws Exception{
 
         //load the test enrichment files - GSEA creates two enrichment results files.
         String testDataFileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/GSEA_enrichments1.xls";
@@ -363,9 +364,8 @@ public class FileReaderTest extends TestCase {
         //get the default dataset
         DataSet dataset = map.getDataset(EnrichmentMap.DATASET1);
         
-        EnrichmentResultFileReaderTask task = new EnrichmentResultFileReaderTask(dataset);
-        
-        task.run();
+        EnrichmentResultFileReaderTask task = new EnrichmentResultFileReaderTask(dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
+        task.run(taskMonitor);
         
         //Get the enrichment
         HashMap<String, EnrichmentResult> enrichments = map.getDataset(EnrichmentMap.DATASET1).getEnrichments().getEnrichments();
@@ -405,7 +405,7 @@ public class FileReaderTest extends TestCase {
     }
 
   //test GSEA enrichment results reader
-    public void testGSEAEDBEnrichmentsReader(){
+    public void testGSEAEDBEnrichmentsReader() throws Exception{
 
         //load the test enrichment files - GSEA creates two enrichment results files.
         String testDataFileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/task/LoadDataset/GSEA_example_results/edb/results.edb";
@@ -421,9 +421,8 @@ public class FileReaderTest extends TestCase {
         //get the default dataset
         DataSet dataset = map.getDataset(EnrichmentMap.DATASET1);
         
-        EnrichmentResultFileReaderTask task = new EnrichmentResultFileReaderTask(dataset);
-        
-        task.run();
+        EnrichmentResultFileReaderTask task = new EnrichmentResultFileReaderTask(dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
+        task.run(taskMonitor);
         
         //Get the enrichment
         HashMap<String, EnrichmentResult> enrichments = map.getDataset(EnrichmentMap.DATASET1).getEnrichments().getEnrichments();
@@ -468,7 +467,7 @@ public class FileReaderTest extends TestCase {
     
    
     //test Bingo enrichment results
-    public void testBingoEnrichmentsReader(){
+    public void testBingoEnrichmentsReader() throws Exception{
 
         //load the test enrichment files - Bingo
         String testDataFileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/BingoResults.bgo";
@@ -485,9 +484,8 @@ public class FileReaderTest extends TestCase {
         DataSet dataset = map.getDataset(EnrichmentMap.DATASET1);
         
 
-        EnrichmentResultFileReaderTask task = new EnrichmentResultFileReaderTask(dataset);
-        
-        task.run();
+        EnrichmentResultFileReaderTask task = new EnrichmentResultFileReaderTask(dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
+        task.run(taskMonitor);
         
         //Get the enrichment
         HashMap<String, EnrichmentResult> enrichments = map.getDataset(EnrichmentMap.DATASET1).getEnrichments().getEnrichments();
@@ -512,7 +510,7 @@ public class FileReaderTest extends TestCase {
     }
     
     //test David enrichment results reader
-    public void testDavidEnrichmentsReader(){
+    public void testDavidEnrichmentsReader() throws Exception{
 
         //load the test enrichment files - Bingo
         String testDataFileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/DavidResults.txt";
@@ -529,9 +527,8 @@ public class FileReaderTest extends TestCase {
         DataSet dataset = map.getDataset(EnrichmentMap.DATASET1);
         
 
-        EnrichmentResultFileReaderTask task = new EnrichmentResultFileReaderTask(dataset);
-        
-        task.run();
+        EnrichmentResultFileReaderTask task = new EnrichmentResultFileReaderTask(dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
+        task.run(taskMonitor);
         
         //Get the enrichment
         HashMap<String, EnrichmentResult> enrichments = map.getDataset(EnrichmentMap.DATASET1).getEnrichments().getEnrichments();

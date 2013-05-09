@@ -45,9 +45,6 @@ package org.baderlab.csplugins.enrichmentmap.model;
 
 import org.baderlab.csplugins.brainlib.DistanceMetric;
 
-import javax.swing.*;
-
-import cytoscape.Cytoscape;
 
 /**
  * Created by

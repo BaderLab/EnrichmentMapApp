@@ -10,11 +10,11 @@ import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.parsers.GMTFileReaderTask;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.TaskMonitor;
 
-import cytoscape.task.Task;
-import cytoscape.task.TaskMonitor;
 
-public class LoadSignatureGMTFilesTask implements Task{
+public class LoadSignatureGMTFilesTask extends AbstractTask{
 
         private PostAnalysisParameters paParams = null;
         private EnrichmentMap map = null;
@@ -61,7 +61,7 @@ public class LoadSignatureGMTFilesTask implements Task{
         public void run() {
             //now a Cytoscape Task (LoadSignatureGenesetsTask)
             try {
-                try{
+/*                try{
                 	//TODO:Add signature support
                     //Load the GSEA geneset file
                     //GMTFileReaderTask gmtFile_1 = new GMTFileReaderTask(map,paParams, taskMonitor, GMTFileReaderTask.ENRICHMENT_GMT);
@@ -78,7 +78,7 @@ public class LoadSignatureGMTFilesTask implements Task{
                     taskMonitor.setException(e,"unable to load GMT files");
                     return;
                 }
-                
+  */              
                 //Sort the Genesets:
                 DefaultListModel signatureSetNames = paParams.getSignatureSetNames();
                 DefaultListModel selectedSignatureSetNames = paParams.getSelectedSignatureSetNames();
@@ -142,10 +142,10 @@ public class LoadSignatureGMTFilesTask implements Task{
                         }
                     }
 
-                }
+                     }
             
             } catch (InterruptedException e) {
-                taskMonitor.setException(e, "loading of GMT files cancelled");
+                //taskMonitor.setException(e, "loading of GMT files cancelled");
             }
 
         }
@@ -158,5 +158,11 @@ public class LoadSignatureGMTFilesTask implements Task{
             }
             this.taskMonitor = taskMonitor;
         }
+
+		@Override
+		public void run(TaskMonitor arg0) throws Exception {
+			// TODO Auto-generated method stub
+			
+		}
 
 }

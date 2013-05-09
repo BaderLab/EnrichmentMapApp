@@ -43,26 +43,21 @@
 
 package org.baderlab.csplugins.enrichmentmap.view;
 
-import cytoscape.view.CytoscapeDesktop;
-import cytoscape.view.cytopanels.CytoPanel;
-import cytoscape.Cytoscape;
-import cytoscape.data.readers.TextFileReader;
-import cytoscape.util.CyFileFilter;
-import cytoscape.util.FileUtil;
-import cytoscape.util.OpenBrowser;
-
 import javax.swing.*;
 
-import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapUtils;
-import org.baderlab.csplugins.enrichmentmap.Enrichment_Map_Plugin;
-import org.baderlab.csplugins.enrichmentmap.actions.BuildEnrichmentMapActionListener;
-import org.baderlab.csplugins.enrichmentmap.actions.BulkEMCreationAction;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowAboutPanelAction;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.JMultiLineToolTip;
+import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.application.swing.CytoPanelComponent;
+import org.cytoscape.application.swing.CytoPanelName;
+import org.cytoscape.io.util.StreamUtil;
+import org.cytoscape.util.swing.FileChooserFilter;
+import org.cytoscape.util.swing.FileUtil;
+import org.cytoscape.util.swing.OpenBrowser;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -70,7 +65,13 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.text.DecimalFormat;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Scanner;
 
 /**
  * Created by
@@ -80,10 +81,15 @@ import java.util.HashMap;
  * <p>
  * Enrichment map User input Panel
  */
-public class EnrichmentMapInputPanel extends JPanel {
+public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponent {
     /**
      * 
      */
+	private CySwingApplication application;
+	private OpenBrowser browser;
+	private FileUtil fileUtil;
+	private StreamUtil streamUtil;
+	
     private static final long serialVersionUID = -7837369382106745874L;
 
     CollapsiblePanel Parameters;
@@ -157,15 +163,18 @@ public class EnrichmentMapInputPanel extends JPanel {
     /**
      * Constructor
      */
-    public EnrichmentMapInputPanel() {
+    public EnrichmentMapInputPanel(CySwingApplication application, OpenBrowser browser,FileUtil fileUtil, StreamUtil streamUtil) {
 
         decFormat = new DecimalFormat();
         decFormat.setParseIntegerOnly(false);
-
+        this.application = application;
+        this.browser = browser;
+        this.fileUtil = fileUtil;
+        this.streamUtil = streamUtil;
         setLayout(new BorderLayout());
 
-        CytoscapeDesktop desktop = Cytoscape.getDesktop();
-        CytoPanel cytoPanel = desktop.getCytoPanel(SwingConstants.EAST);
+        
+        //CytoPanel cytoPanel = application.getCytoPanel(CytoPanelName.WEST);
         //cytoPanel.addCytoPanelListener();
 
         //get the current enrichment map parameters
@@ -213,17 +222,20 @@ public class EnrichmentMapInputPanel extends JPanel {
            JButton help = new JButton("Online Manual");
            help.addActionListener(new java.awt.event.ActionListener() {
                                       public void actionPerformed(java.awt.event.ActionEvent evt) {
-                                          OpenBrowser.openURL(EnrichmentMapUtils.userManualUrl);
+                                          browser.openURL(EnrichmentMapUtils.userManualUrl);
                                       }
                   });
 
            JButton about = new JButton("About");
-           about.addActionListener(new ShowAboutPanelAction());
+           
+           //TODO add about box action listener
+           //about.addActionListener(new ShowAboutPanelAction(null, null, null, application, browser));
 
            //add button to do bulk EM Creation
+           //TODO: button for bulk EM from main EM interface not implemented
            JButton bulk = new JButton("Bulk EM");
-           bulk.addActionListener(new BulkEMCreationAction());
-
+           /*bulk.addActionListener(new BulkEMCreationAction(null,null,null,application,fileUtil,fileFilterUtil));
+			*/
             c_buttons.weighty = 1;
             c_buttons.weightx = 1;
             c_buttons.insets = new Insets(0,0,0,0);
@@ -1023,7 +1035,7 @@ public class EnrichmentMapInputPanel extends JPanel {
                    //do nothing
                 }
                 else if(checkFile(value).equals(Color.RED)){
-                    JOptionPane.showMessageDialog(Cytoscape.getDesktop(),message,"File name change entered is not a valid file name",JOptionPane.WARNING_MESSAGE);
+                    JOptionPane.showMessageDialog(application.getJFrame(),message,"File name change entered is not a valid file name",JOptionPane.WARNING_MESSAGE);
                     GMTFileNameTextField.setForeground(checkFile(value));
                 }
                else
@@ -1038,7 +1050,7 @@ public class EnrichmentMapInputPanel extends JPanel {
                    //do nothing
                 }
                 else if(checkFile(value).equals(Color.RED)){
-                    JOptionPane.showMessageDialog(Cytoscape.getDesktop(),message,"File name change entered is not a valid file name",JOptionPane.WARNING_MESSAGE);
+                    JOptionPane.showMessageDialog(application.getJFrame(),message,"File name change entered is not a valid file name",JOptionPane.WARNING_MESSAGE);
                     GCTFileName1TextField.setForeground(checkFile(value));
                 }
                else
@@ -1053,7 +1065,7 @@ public class EnrichmentMapInputPanel extends JPanel {
                    //do nothing
                 }
                 else if(checkFile(value).equals(Color.RED)){
-                    JOptionPane.showMessageDialog(Cytoscape.getDesktop(),message,"File name change entered is not a valid file name",JOptionPane.WARNING_MESSAGE);
+                    JOptionPane.showMessageDialog(application.getJFrame(),message,"File name change entered is not a valid file name",JOptionPane.WARNING_MESSAGE);
                     GCTFileName2TextField.setForeground(checkFile(value));
                 }
                else{           	   
@@ -1066,7 +1078,7 @@ public class EnrichmentMapInputPanel extends JPanel {
                  else if(Dataset1FileNameTextField.getText().equalsIgnoreCase((String)e.getOldValue())){
                    //do nothing
                 }else if(checkFile(value).equals(Color.RED)){
-                    JOptionPane.showMessageDialog(Cytoscape.getDesktop(),message,"File name change entered is not a valid file name",JOptionPane.WARNING_MESSAGE);
+                    JOptionPane.showMessageDialog(application.getJFrame(),message,"File name change entered is not a valid file name",JOptionPane.WARNING_MESSAGE);
                     Dataset1FileNameTextField.setForeground(checkFile(value));
                 }
                else
@@ -1078,7 +1090,7 @@ public class EnrichmentMapInputPanel extends JPanel {
                 else if(Dataset1FileName2TextField.getText().equalsIgnoreCase((String)e.getOldValue())){
                    //do nothing
                 }else if(checkFile(value).equals(Color.RED)){
-                    JOptionPane.showMessageDialog(Cytoscape.getDesktop(),message,"File name change entered is not a valid file name",JOptionPane.WARNING_MESSAGE);
+                    JOptionPane.showMessageDialog(application.getJFrame(),message,"File name change entered is not a valid file name",JOptionPane.WARNING_MESSAGE);
                     Dataset1FileName2TextField.setForeground(checkFile(value));
                 }
                else
@@ -1093,7 +1105,7 @@ public class EnrichmentMapInputPanel extends JPanel {
                 else if(Dataset2FileNameTextField.getText().equalsIgnoreCase((String)e.getOldValue())){
                    //do nothing
                 }else if(checkFile(value).equals(Color.RED)){
-                    JOptionPane.showMessageDialog(Cytoscape.getDesktop(),message,"File name change entered is not a valid file name",JOptionPane.WARNING_MESSAGE);
+                    JOptionPane.showMessageDialog(application.getJFrame(),message,"File name change entered is not a valid file name",JOptionPane.WARNING_MESSAGE);
                     Dataset2FileNameTextField.setForeground(checkFile(value));
                 }
                else{
@@ -1110,7 +1122,7 @@ public class EnrichmentMapInputPanel extends JPanel {
                 else if(Dataset2FileName2TextField.getText().equalsIgnoreCase((String)e.getOldValue())){
                    //do nothing
                 }else if(checkFile(value).equals(Color.RED)){
-                    JOptionPane.showMessageDialog(Cytoscape.getDesktop(),message,"File name change entered is not a valid file name",JOptionPane.WARNING_MESSAGE);
+                    JOptionPane.showMessageDialog(application.getJFrame(),message,"File name change entered is not a valid file name",JOptionPane.WARNING_MESSAGE);
                     Dataset2FileName2TextField.setForeground(checkFile(value));
                 }
                else{            	   
@@ -1133,7 +1145,7 @@ public class EnrichmentMapInputPanel extends JPanel {
                 params.setDataset2Phenotype2(value);
             }
             if (invalid) {
-                JOptionPane.showMessageDialog(Cytoscape.getDesktop(), message, "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(application.getJFrame(), message, "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
             }
         }
     }
@@ -1166,7 +1178,8 @@ public class EnrichmentMapInputPanel extends JPanel {
         });
 
         importButton.setText("Build");
-        importButton.addActionListener(new BuildEnrichmentMapActionListener(this));
+        //TODO:Add action listern for build network
+        //importButton.addActionListener(new BuildEnrichmentMapActionListener(this));
         importButton.setEnabled(true);
 
         panel.add(resetButton);
@@ -1177,20 +1190,23 @@ public class EnrichmentMapInputPanel extends JPanel {
     }
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {
-        CytoscapeDesktop desktop = Cytoscape.getDesktop();
-        CytoPanel cytoPanel = desktop.getCytoPanel(SwingConstants.WEST);
+        //TODO:figure out how to unregister the service
+    	/* //CytoscapeDesktop desktop = Cytoscape.getDesktop();
+        //CytoPanel cytoPanel = desktop.getCytoPanel(SwingConstants.WEST);
         // set the input window to null in the instance
         EnrichmentMapManager.getInstance().setInputWindow(null);
-        cytoPanel.remove(this);
-    }
+        application.getCytoPanel(this.getCytoPanelName())..remove(this);
+    */}
 
     public void close() {
-        CytoscapeDesktop desktop = Cytoscape.getDesktop();
+    	 //TODO:figure out how to unregister the service
+    	/*CytoscapeDesktop desktop = Cytoscape.getDesktop();
         CytoPanel cytoPanel = desktop.getCytoPanel(SwingConstants.WEST);
         // set the input window to null in the instance
         EnrichmentMapManager.getInstance().setInputWindow(null);
         cytoPanel.remove(this);
-    }
+    */
+    	}
 
     /*
      * Populate fields based on edb directory.
@@ -1311,15 +1327,16 @@ public class EnrichmentMapInputPanel extends JPanel {
     	   		LoadedFromRpt_dataset1 = true;
        else
     	   		LoadedFromRpt_dataset2 = true;
-
-        TextFileReader reader = new TextFileReader(rptFile.getAbsolutePath());
-        reader.read();
-        String fullText = reader.getText();
+       try{
+    	   	InputStream reader = streamUtil.getInputStream(rptFile.getAbsolutePath());
+        String fullText = new Scanner(reader,"UTF-8").useDelimiter("\\A").next();
+        //reader.read();
+        //String fullText = reader.getText();
 
         //Create a hashmap to contain all the values in the rpt file.
         HashMap<String, String> rpt = new HashMap<String, String>();
 
-        String [] lines = fullText.split("\n");
+        String []lines = fullText.split("\r\n?|\n");
 
         for (int i = 0; i < lines.length; i++) {
             String line = lines[i];
@@ -1586,6 +1603,9 @@ public class EnrichmentMapInputPanel extends JPanel {
                 this.setDatasetnames(results1,results2,dataset1);
            }
         }
+       }catch (IOException ie){
+    	   		System.out.println("unable to open rpt file: " + rptFile);
+       }
     }
 
     /**
@@ -1830,15 +1850,13 @@ public class EnrichmentMapInputPanel extends JPanel {
                java.awt.event.ActionEvent evt) {
 
             // Create FileFilter
-           CyFileFilter filter = new CyFileFilter();
-
-           // Add accepted File Extensions
-           filter.addExtension("gmt");
-           filter.setDescription("All GMT files");
-
+           FileChooserFilter filter = new FileChooserFilter("All GMT Files","gmt" );          
+           
+           //the set of filter (required by the file util method
+           ArrayList<FileChooserFilter> all_filters = new ArrayList<FileChooserFilter>();
+           all_filters.add(filter);
            // Get the file name
-           File file = FileUtil.getFile("Import GMT File", FileUtil.LOAD,
-                        new CyFileFilter[] { filter });
+           File file = fileUtil.getFile(this,"Import GMT File", FileUtil.LOAD,all_filters  );
            if(file != null) {
                GMTFileNameTextField.setForeground(checkFile(file.getAbsolutePath()));
                GMTFileNameTextField.setText(file.getAbsolutePath());
@@ -1855,20 +1873,23 @@ public class EnrichmentMapInputPanel extends JPanel {
       private void selectGCTFileButtonActionPerformed(
                java.awt.event.ActionEvent evt) {
 
-        //Create FileFilter
-           CyFileFilter filter = new CyFileFilter();
-
-           // Add accepted File Extensions
-           filter.addExtension("gct");
-           filter.addExtension("rpt");
-           filter.addExtension("rnk");
-           filter.addExtension("txt");
-           filter.addExtension("edb");
-           filter.setDescription("All GCT files");
-
+    	  // Create FileFilter
+          FileChooserFilter filter_gct = new FileChooserFilter("gct Files","gct" );          
+          FileChooserFilter filter_rpt = new FileChooserFilter("rpt Files","rpt" );
+          FileChooserFilter filter_rnk = new FileChooserFilter("rnk Files","rnk" );
+          FileChooserFilter filter_txt = new FileChooserFilter("txt Files","txt" );
+          FileChooserFilter filter_edb = new FileChooserFilter("edb Files","edb" );
+          
+          //the set of filter (required by the file util method
+          ArrayList<FileChooserFilter> all_filters = new ArrayList<FileChooserFilter>();
+          all_filters.add(filter_gct);
+          all_filters.add(filter_rpt);
+          all_filters.add(filter_rnk);
+          all_filters.add(filter_txt);
+          all_filters.add(filter_edb);
+                     
            // Get the file name
-           File file = FileUtil.getFile("Import GCT File", FileUtil.LOAD,
-                        new CyFileFilter[] { filter });
+           File file = fileUtil.getFile(this,"Import GCT File", FileUtil.LOAD, all_filters);
            if(file != null) {
 
                if(file.getPath().contains(".rpt")){
@@ -1899,20 +1920,23 @@ public class EnrichmentMapInputPanel extends JPanel {
     private void selectGCTFileButton2ActionPerformed(
              java.awt.event.ActionEvent evt) {
 
-        //Create FileFilter
-         CyFileFilter filter = new CyFileFilter();
-
-         // Add accepted File Extensions
-         filter.addExtension("gct");
-         filter.addExtension("txt");
-         filter.addExtension("rnk");
-         filter.addExtension("rpt");
-         filter.addExtension("edb");
-         filter.setDescription("All GCT files");
-
+    	 // Create FileFilter
+        FileChooserFilter filter_gct = new FileChooserFilter("gct Files","gct" );          
+        FileChooserFilter filter_rpt = new FileChooserFilter("rpt Files","rpt" );
+        FileChooserFilter filter_rnk = new FileChooserFilter("rnk Files","rnk" );
+        FileChooserFilter filter_txt = new FileChooserFilter("txt Files","txt" );
+        FileChooserFilter filter_edb = new FileChooserFilter("edb Files","edb" );
+        
+        //the set of filter (required by the file util method
+        ArrayList<FileChooserFilter> all_filters = new ArrayList<FileChooserFilter>();
+        all_filters.add(filter_gct);
+        all_filters.add(filter_rpt);
+        all_filters.add(filter_rnk);
+        all_filters.add(filter_txt);
+        all_filters.add(filter_edb);
+                   
          // Get the file name
-         File file = FileUtil.getFile("Import GCT File", FileUtil.LOAD,
-                      new CyFileFilter[] { filter });
+         File file = fileUtil.getFile(this,"Import GCT File", FileUtil.LOAD, all_filters);
          if(file != null) {
              if(file.getPath().contains(".rpt")){
                       //The file loaded is an rpt file --> populate the fields based on the
@@ -1944,19 +1968,23 @@ public class EnrichmentMapInputPanel extends JPanel {
      private void selectDataset1FileButtonActionPerformed(
                java.awt.event.ActionEvent evt) {
 
-    //Create FileFilter
-        CyFileFilter filter = new CyFileFilter();
-
-        // Add accepted File Extensions
-        filter.addExtension("txt");
-        filter.addExtension("rpt");
-        filter.addExtension("xls");
-        filter.addExtension("bgo");
-        filter.addExtension("edb");
-        filter.setDescription("All result files");
-
-        // Get the file name
-         File file = FileUtil.getFile("import dataset result file", FileUtil.LOAD, new CyFileFilter[]{ filter });
+    	 // Create FileFilter
+         FileChooserFilter filter_xls = new FileChooserFilter("gct Files","xls" );          
+         FileChooserFilter filter_rpt = new FileChooserFilter("rpt Files","rpt" );
+         FileChooserFilter filter_bgo = new FileChooserFilter("rnk Files","bgo" );
+         FileChooserFilter filter_txt = new FileChooserFilter("txt Files","txt" );
+         FileChooserFilter filter_edb = new FileChooserFilter("edb Files","edb" );
+         
+         //the set of filter (required by the file util method
+         ArrayList<FileChooserFilter> all_filters = new ArrayList<FileChooserFilter>();
+         all_filters.add(filter_xls);
+         all_filters.add(filter_rpt);
+         all_filters.add(filter_bgo);
+         all_filters.add(filter_txt);
+         all_filters.add(filter_edb);
+                    
+          // Get the file name
+          File file = fileUtil.getFile(this,"Import dataset result File", FileUtil.LOAD, all_filters);
 
         if(file != null) {
              if(file.getPath().contains(".rpt")){
@@ -1986,19 +2014,23 @@ public class EnrichmentMapInputPanel extends JPanel {
     private void selectDataset1File2ButtonActionPerformed(
                java.awt.event.ActionEvent evt) {
 
-        //Create FileFilter
-        CyFileFilter filter = new CyFileFilter();
-
-        // Add accepted File Extensions
-        filter.addExtension("txt");
-        filter.addExtension("rpt");
-        filter.addExtension("xls");
-        filter.addExtension("bgo");
-        filter.addExtension("edb");
-        filter.setDescription("All result files");
-
-        // Get the file name
-         File file = FileUtil.getFile("import dataset result file", FileUtil.LOAD, new CyFileFilter[]{ filter });
+    	 // Create FileFilter
+        FileChooserFilter filter_xls = new FileChooserFilter("gct Files","xls" );          
+        FileChooserFilter filter_rpt = new FileChooserFilter("rpt Files","rpt" );
+        FileChooserFilter filter_bgo = new FileChooserFilter("rnk Files","bgo" );
+        FileChooserFilter filter_txt = new FileChooserFilter("txt Files","txt" );
+        FileChooserFilter filter_edb = new FileChooserFilter("edb Files","edb" );
+        
+        //the set of filter (required by the file util method
+        ArrayList<FileChooserFilter> all_filters = new ArrayList<FileChooserFilter>();
+        all_filters.add(filter_xls);
+        all_filters.add(filter_rpt);
+        all_filters.add(filter_bgo);
+        all_filters.add(filter_txt);
+        all_filters.add(filter_edb);
+                   
+         // Get the file name
+         File file = fileUtil.getFile(this,"Import dataset result File", FileUtil.LOAD, all_filters);
 
         if(file != null) {
              if(file.getPath().contains(".rpt")){
@@ -2027,19 +2059,23 @@ public class EnrichmentMapInputPanel extends JPanel {
     private void selectDataset2FileButtonActionPerformed(
              java.awt.event.ActionEvent evt) {
 
-        //Create FileFilter
-      CyFileFilter filter = new CyFileFilter();
-
-      // Add accepted File Extensions
-      filter.addExtension("txt");
-      filter.addExtension("xls");
-      filter.addExtension("rpt");
-      filter.addExtension("bgo");
-      filter.addExtension("edb");
-      filter.setDescription("All result files");
-
-      // Get the file name
-       File file = FileUtil.getFile("import dataset result file", FileUtil.LOAD, new CyFileFilter[]{ filter });
+    	 // Create FileFilter
+        FileChooserFilter filter_xls = new FileChooserFilter("gct Files","xls" );          
+        FileChooserFilter filter_rpt = new FileChooserFilter("rpt Files","rpt" );
+        FileChooserFilter filter_bgo = new FileChooserFilter("rnk Files","bgo" );
+        FileChooserFilter filter_txt = new FileChooserFilter("txt Files","txt" );
+        FileChooserFilter filter_edb = new FileChooserFilter("edb Files","edb" );
+        
+        //the set of filter (required by the file util method
+        ArrayList<FileChooserFilter> all_filters = new ArrayList<FileChooserFilter>();
+        all_filters.add(filter_xls);
+        all_filters.add(filter_rpt);
+        all_filters.add(filter_bgo);
+        all_filters.add(filter_txt);
+        all_filters.add(filter_edb);
+                   
+         // Get the file name
+         File file = fileUtil.getFile(this,"Import dataset result File", FileUtil.LOAD, all_filters);
 
       if(file != null) {
            if(file.getPath().contains(".rpt")){
@@ -2069,19 +2105,23 @@ public class EnrichmentMapInputPanel extends JPanel {
      private void selectDataset2File2ButtonActionPerformed(
              java.awt.event.ActionEvent evt) {
 
-        //Create FileFilter
-      CyFileFilter filter = new CyFileFilter();
-
-      // Add accepted File Extensions
-      filter.addExtension("txt");
-      filter.addExtension("xls");
-      filter.addExtension("rpt");
-      filter.addExtension("bgo");
-      filter.addExtension("edb");
-      filter.setDescription("All result files");
-
-      // Get the file name
-       File file = FileUtil.getFile("import dataset result file", FileUtil.LOAD, new CyFileFilter[]{ filter });
+    	 // Create FileFilter
+         FileChooserFilter filter_xls = new FileChooserFilter("gct Files","xls" );          
+         FileChooserFilter filter_rpt = new FileChooserFilter("rpt Files","rpt" );
+         FileChooserFilter filter_bgo = new FileChooserFilter("rnk Files","bgo" );
+         FileChooserFilter filter_txt = new FileChooserFilter("txt Files","txt" );
+         FileChooserFilter filter_edb = new FileChooserFilter("edb Files","edb" );
+         
+         //the set of filter (required by the file util method
+         ArrayList<FileChooserFilter> all_filters = new ArrayList<FileChooserFilter>();
+         all_filters.add(filter_xls);
+         all_filters.add(filter_rpt);
+         all_filters.add(filter_bgo);
+         all_filters.add(filter_txt);
+         all_filters.add(filter_edb);
+                    
+          // Get the file name
+          File file = fileUtil.getFile(this,"Import dataset result File", FileUtil.LOAD, all_filters);
 
       if(file != null) {
            if(file.getPath().contains(".rpt")){
@@ -2116,18 +2156,20 @@ public class EnrichmentMapInputPanel extends JPanel {
          //For GSEA input, Check to see if there is already a rank file defined and if it was from the rpt
          if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA) &&
         		 	LoadedFromRpt_dataset1 && !Dataset1RankFileTextField.getText().equalsIgnoreCase(""))
-             JOptionPane.showMessageDialog(Cytoscape.getDesktop(),"GSEA defined rank file is in a specific order and is used to calculate the leading edge.  \n If you change this file the leading edges will be calculated incorrectly.","Trying to change pre-defined GSEA rank file",JOptionPane.WARNING_MESSAGE);
+             JOptionPane.showMessageDialog(application.getJFrame(),"GSEA defined rank file is in a specific order and is used to calculate the leading edge.  \n If you change this file the leading edges will be calculated incorrectly.","Trying to change pre-defined GSEA rank file",JOptionPane.WARNING_MESSAGE);
 
-//         Create FileFilter
-        CyFileFilter filter = new CyFileFilter();
+         // Create FileFilter
+         FileChooserFilter filter_rnk = new FileChooserFilter("rnk Files","rnk" );          
+         FileChooserFilter filter_txt = new FileChooserFilter("txt Files","txt" );
+         
+         //the set of filter (required by the file util method
+         ArrayList<FileChooserFilter> all_filters = new ArrayList<FileChooserFilter>();
+         all_filters.add(filter_rnk);
+         all_filters.add(filter_txt);
 
-        // Add accepted File Extensions
-        filter.addExtension("txt");
-        filter.addExtension("rnk");
-        filter.setDescription("All result files");
-
-        // Get the file name
-         File file = FileUtil.getFile("import rank file", FileUtil.LOAD, new CyFileFilter[]{ filter });
+                    
+          // Get the file name
+          File file = fileUtil.getFile(this,"Import rank File", FileUtil.LOAD, all_filters);
 
         if(file != null) {
                 Dataset1RankFileTextField.setForeground(checkFile(file.getAbsolutePath()));
@@ -2150,19 +2192,21 @@ public class EnrichmentMapInputPanel extends JPanel {
         //For GSEA input, Check to see if there is already a rank file defined and if it was from the rpt
          if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA) &&
         		 	LoadedFromRpt_dataset2 && !Dataset2RankFileTextField.getText().equalsIgnoreCase(""))
-             JOptionPane.showMessageDialog(Cytoscape.getDesktop(),"GSEA defined rank file is in a specific order and is used to calculate the leading edge.  \n If you change this file the leading edges will be calculated incorrectly.","Trying to change pre-defined GSEA rank file",JOptionPane.WARNING_MESSAGE);
+             JOptionPane.showMessageDialog(application.getJFrame(),"GSEA defined rank file is in a specific order and is used to calculate the leading edge.  \n If you change this file the leading edges will be calculated incorrectly.","Trying to change pre-defined GSEA rank file",JOptionPane.WARNING_MESSAGE);
 
 
-        //Create FileFilter
-        CyFileFilter filter = new CyFileFilter();
+      // Create FileFilter
+         FileChooserFilter filter_rnk = new FileChooserFilter("rnk Files","rnk" );          
+         FileChooserFilter filter_txt = new FileChooserFilter("txt Files","txt" );
+         
+         //the set of filter (required by the file util method
+         ArrayList<FileChooserFilter> all_filters = new ArrayList<FileChooserFilter>();
+         all_filters.add(filter_rnk);
+         all_filters.add(filter_txt);
 
-        // Add accepted File Extensions
-        filter.addExtension("txt");
-        filter.addExtension("rnk");
-        filter.setDescription("All result files");
-
-        // Get the file name
-         File file = FileUtil.getFile("import rank file", FileUtil.LOAD, new CyFileFilter[]{ filter });
+                    
+          // Get the file name
+          File file = fileUtil.getFile(this,"Import rank File", FileUtil.LOAD, all_filters);
 
         if(file != null) {
                 Dataset2RankFileTextField.setForeground(checkFile(file.getAbsolutePath()));
@@ -2367,6 +2411,31 @@ public class EnrichmentMapInputPanel extends JPanel {
 
 	public void setDataset2files(DataSetFiles dataset2files) {
 		this.dataset2files = dataset2files;
+	}
+
+	public Component getComponent() {
+		// TODO Auto-generated method stub
+		return this;
+	}
+
+	public CytoPanelName getCytoPanelName() {
+		// TODO Auto-generated method stub
+		return CytoPanelName.WEST;
+	}
+
+	public Icon getIcon() {
+		//create an icon for the enrichment map panels
+        URL EMIconURL = Thread.currentThread().getContextClassLoader().getResource("enrichmentmap_logo_notext_small.png");
+        ImageIcon EMIcon = null;
+        if (EMIconURL != null) {
+            EMIcon = new ImageIcon(EMIconURL);
+        }
+		return EMIcon;
+	}
+
+	public String getTitle() {
+		// TODO Auto-generated method stub
+		return "Enrichment Map Input Panel";
 	}
     
     

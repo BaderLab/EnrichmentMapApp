@@ -43,13 +43,16 @@
 
 package org.baderlab.csplugins.enrichmentmap;
 
-import java.util.HashMap;
 
 import javax.swing.DefaultListModel;
 
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
+
+import org.cytoscape.io.util.StreamUtil;
+import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.session.CySessionManager;
 
 /**
  * @author revilo
@@ -190,9 +193,9 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
      * constructor to create a clean instance of PostAnalysisParameters
      * (used when using the Reset Button)
      */
-    public PostAnalysisParameters() {
+    public PostAnalysisParameters(  CySessionManager sessionManager,StreamUtil streamUtil) {
         // EnrichmentMapParameters
-        super();
+        super(sessionManager,streamUtil);
 
         // Post Analysis Type:
         this.isSignatureHub = true;

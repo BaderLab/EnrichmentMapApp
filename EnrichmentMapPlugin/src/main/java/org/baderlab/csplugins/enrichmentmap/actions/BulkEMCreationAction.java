@@ -1,15 +1,19 @@
 package org.baderlab.csplugins.enrichmentmap.actions;
 
-import cytoscape.Cytoscape;
-import cytoscape.util.CytoscapeAction;
-import cytoscape.view.CytoscapeDesktop;
-import cytoscape.view.cytopanels.CytoPanel;
 
 import javax.swing.*;
 
 import org.baderlab.csplugins.enrichmentmap.view.BulkEMCreationPanel;
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.swing.AbstractCyAction;
+import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.application.swing.CytoPanel;
+import org.cytoscape.application.swing.CytoPanelName;
+import org.cytoscape.application.swing.CytoPanelState;
+import org.cytoscape.view.model.CyNetworkViewManager;
 
 import java.awt.event.ActionEvent;
+import java.util.Map;
 
 /**
  * Created by IntelliJ IDEA.
@@ -18,23 +22,34 @@ import java.awt.event.ActionEvent;
  * Time: 9:13 AM
  * To change this template use File | Settings | File Templates.
  */
-public class BulkEMCreationAction extends CytoscapeAction {
+public class BulkEMCreationAction extends AbstractCyAction {
 
-    public BulkEMCreationAction() {
-        super("Bulk Enrichment Map Creation");
+	private CytoPanel cytoPanelWest;
+	private BulkEMCreationPanel bulkEmInput;
+	
+    public BulkEMCreationAction(Map<String,String> configProps, CyApplicationManager applicationManager, 
+    		CyNetworkViewManager networkViewManager,CySwingApplication application, BulkEMCreationPanel bulkEmInput) {
+
+        super( configProps,  applicationManager,  networkViewManager);
+		putValue(NAME, "Bulk Enrichment Map Creation");
+		
+		this.cytoPanelWest = application.getCytoPanel(CytoPanelName.WEST);
+		this.bulkEmInput = bulkEmInput;
     }
 
     public void actionPerformed(ActionEvent event) {
-       CytoscapeDesktop desktop = Cytoscape.getDesktop();
-       CytoPanel cytoPanel = desktop.getCytoPanel(SwingConstants.WEST);
+              
+     // If the state of the cytoPanelWest is HIDE, show it
+        if (cytoPanelWest.getState() == CytoPanelState.HIDE) {
+                cytoPanelWest.setState(CytoPanelState.DOCK);
+        }
 
-        //get a directory name where all of the GSEA results are stored
-       BulkEMCreationPanel bulkwindow = new BulkEMCreationPanel();
-
-        cytoPanel.add("Bulk EM Creation", bulkwindow);
-        int index =  cytoPanel.indexOfComponent(bulkwindow);
-
-        cytoPanel.setSelectedIndex(index);
+        // Select my panel
+        int index = cytoPanelWest.indexOfComponent(this.bulkEmInput);
+        if (index == -1) {
+                return;
+        }
+        cytoPanelWest.setSelectedIndex(index);
 
     }
 

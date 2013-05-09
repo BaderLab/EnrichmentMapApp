@@ -51,10 +51,7 @@ import org.baderlab.csplugins.enrichmentmap.Enrichment_Map_Plugin;
 import org.baderlab.csplugins.enrichmentmap.actions.ParametersPanelActionListener;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-
-import cytoscape.Cytoscape;
-import cytoscape.data.CyAttributes;
-import cytoscape.util.OpenBrowser;
+import org.cytoscape.util.swing.OpenBrowser;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -81,12 +78,14 @@ public class ParametersPanel extends JPanel {
     private JCheckBox heatmapAutofocusCheckbox;
     private EnrichmentMapParameters emParams;
     private EnrichmentMap map;
+    
+    private OpenBrowser browser;
 
     /**
      * Class constructor
      */
-    public ParametersPanel() {
-
+    public ParametersPanel(OpenBrowser browser) {
+    	this.browser = browser;
        }
 
     /**
@@ -123,7 +122,7 @@ public class ParametersPanel extends JPanel {
                 openReport1Button.setAlignmentX(LEFT_ALIGNMENT);
                 openReport1Button.addActionListener(new java.awt.event.ActionListener() {
                     public void actionPerformed(java.awt.event.ActionEvent evt) {
-                        OpenBrowser.openURL("file://" +  reportFileDataset1);
+                        browser.openURL("file://" +  reportFileDataset1);
                     }
                 });
                 // Disable button if we can't read the file:
@@ -139,7 +138,7 @@ public class ParametersPanel extends JPanel {
             	openReport2Button.setAlignmentX(LEFT_ALIGNMENT);
             	openReport2Button.addActionListener(new java.awt.event.ActionListener() {
                     public void actionPerformed(java.awt.event.ActionEvent evt) {
-                        OpenBrowser.openURL("file://" +  reportFileDataset2);
+                        browser.openURL("file://" +  reportFileDataset2);
                     }
                 });
             	// Disable button if we can't read the file:
@@ -511,7 +510,8 @@ public class ParametersPanel extends JPanel {
         // Try the path that is stored in the params:
         if ( reportFile != null && new File(reportFile).canRead() ) {
             return reportFile;
-        } else if(netwAttrName != null){ // if not: try from Network attributes:
+        } /*TODO: fix this option.  No access to attributes from here.
+        else if(netwAttrName != null){ // if not: try from Network attributes:
             CyAttributes networkAttributes = Cytoscape.getNetworkAttributes();
             String tryPath = networkAttributes.getStringAttribute( 
                     Cytoscape.getCurrentNetwork().getIdentifier(), 
@@ -525,7 +525,7 @@ public class ParametersPanel extends JPanel {
                 else
                     return reportFile;
             }
-        }
+        }*/
         else
         		return null;
     }

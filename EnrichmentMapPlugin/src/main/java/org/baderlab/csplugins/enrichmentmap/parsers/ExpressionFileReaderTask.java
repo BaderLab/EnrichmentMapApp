@@ -43,18 +43,21 @@
 
 package org.baderlab.csplugins.enrichmentmap.parsers;
 
-import cytoscape.task.Task;
-import cytoscape.task.TaskMonitor;
-import cytoscape.data.readers.TextFileReader;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Scanner;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpression;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
+import org.cytoscape.io.util.StreamUtil;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.TaskMonitor;
 
 /**
  * Created by
@@ -65,10 +68,10 @@ import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
  * Parse expression file.  The user can also use a rank file instead of an expression file so this class
  * also handles reading of rank files.
  */
-public class ExpressionFileReaderTask implements Task {
+public class ExpressionFileReaderTask extends AbstractTask {
 
     //private EnrichmentMapParameters params;
-
+	
     //expression file name
     private String expressionFileName;
 
@@ -80,23 +83,15 @@ public class ExpressionFileReaderTask implements Task {
     private TaskMonitor taskMonitor = null;
     private boolean interrupted = false;
     
-    /**
-     * Class constructor specifying current task
-     *
-     * @param dataset - dataset expression file is associated with
-     * @param taskMonitor - current task monitor
-     */
-    public ExpressionFileReaderTask(DataSet dataset, TaskMonitor taskMonitor){
-    	this(dataset);
-    	this.taskMonitor = taskMonitor;
-    }
+    private StreamUtil streamUtil;
     
     /**
      * Class constructor
      *
      * @param dataset  - dataset expression file is associated with
      */
-    public ExpressionFileReaderTask(DataSet dataset){
+    public ExpressionFileReaderTask(DataSet dataset,StreamUtil streamUtil){
+    		this.streamUtil = streamUtil;
     		this.dataset = dataset;
     		if(dataset.getExpressionSets() != null)
     			this.expressionFileName = dataset.getExpressionSets().getFilename();
@@ -105,12 +100,9 @@ public class ExpressionFileReaderTask implements Task {
     /**
      * Parse expression/rank file
      */
-    public void parse() {
+    public void parse() throws IOException {
     	
-    		if(this.expressionFileName == null || this.expressionFileName.isEmpty())
-    			this.createDummyExpressionFile();
-    		else{
-    	
+
     			//Need to check if the file specified as an expression file is actually a rank file
     			//If it is a rank file it can either be 5 or 2 columns but it is important that the rank
     			//value is extracted from the right column and placed in the expression matrix as if it
@@ -127,11 +119,11 @@ public class ExpressionFileReaderTask implements Task {
     			HashSet<Integer> datasetGenes = dataset.getDatasetGenes();
     			HashMap genes = dataset.getMap().getGenes();
 
-    			TextFileReader reader = new TextFileReader(expressionFileName);
-    			reader.read();
-    			String fullText = reader.getText();
+    			InputStream reader = streamUtil.getInputStream(expressionFileName);
+    	        String fullText = new Scanner(reader,"UTF-8").useDelimiter("\\A").next();
+    	        
 
-    			String[] lines = fullText.split("\n");
+    	        String []lines = fullText.split("\r\n?|\n");
     			int currentProgress = 0;
     			maxValue = lines.length;
     			GeneExpressionMatrix expressionMatrix = dataset.getExpressionSets();
@@ -245,9 +237,9 @@ public class ExpressionFileReaderTask implements Task {
     				//  Estimate Time Remaining
     				long timeRemaining = maxValue - currentProgress;
     				if (taskMonitor != null) {
-                    taskMonitor.setPercentCompleted(percentComplete);
-                    taskMonitor.setStatus("Parsing GCT file " + currentProgress + " of " + maxValue);
-                    taskMonitor.setEstimatedTimeRemaining(timeRemaining);
+                    taskMonitor.setProgress(percentComplete);
+                    taskMonitor.setStatusMessage("Parsing GCT file " + currentProgress + " of " + maxValue);
+                    
                 }
     				currentProgress++;
 
@@ -279,7 +271,7 @@ public class ExpressionFileReaderTask implements Task {
             		//params.getEM().addExpression(EnrichmentMap.DATASET2,expressionMatrix);
         		}
         */
-    		}
+    		
     }
 
     /**
@@ -290,7 +282,7 @@ public class ExpressionFileReaderTask implements Task {
      * @param classFile - name of class file
      * @return String array of the phenotypes of each column in the expression array
      */
-    private String[] setClasses(String classFile){
+    private String[] setClasses(String classFile) throws IOException{
 
         File f = new File(classFile);
 
@@ -302,13 +294,11 @@ public class ExpressionFileReaderTask implements Task {
         //check to see if the file was opened successfully
 
         if(!classFile.equalsIgnoreCase(null)) {
+        	
+        	InputStream reader = streamUtil.getInputStream(classFile);
+            String fullText2 = new Scanner(reader,"UTF-8").useDelimiter("\\A").next();                        
 
-            TextFileReader reader2 = new TextFileReader(classFile);
-
-            reader2.read();
-            String fullText2 = reader2.getText();
-
-            String[] lines2 = fullText2.split("\n");
+            String []lines2 = fullText2.split("\r\n?|\n");
 
             //the class file can be split by a space or a tab
             String[] classes = lines2[2].split("\\s");
@@ -324,69 +314,9 @@ public class ExpressionFileReaderTask implements Task {
     }
 
 
-  //Create a dummy expression file so that when no expression files are loaded you can still
-    //use the intersect and union viewers.
-    private void createDummyExpressionFile(){
-        //in order to see the gene in the expression viewer we also need a dummy expression file
-        //get all the genes
-        //HashMap<String, Integer> genes= dataset.getMap().getGenes();
-        HashSet<Integer> datasetGenes;
-        
-        HashMap<String, Integer> genes = dataset.getMap().getGenesetsGenes(dataset.getSetofgenesets().getGenesets());
-        datasetGenes= dataset.getDatasetGenes();
-        
-        String[] titletokens = new String[3];
-        titletokens[0] = "Name";
-        titletokens[1] = "Description";
-        titletokens[2] = "Dummy Expression";
-
-        GeneExpressionMatrix expressionMatrix = dataset.getExpressionSets();
-        expressionMatrix.setColumnNames(titletokens);
-        HashMap<Integer,GeneExpression> expression = expressionMatrix.getExpressionMatrix();
-        expressionMatrix.setExpressionMatrix(expression);
-
-        String[] tokens = new String[3];
-        tokens[0] = "tmp";
-        tokens[1] = "tmp";
-        tokens[2] = "0.25";
-
-        for (Iterator i = genes.keySet().iterator(); i.hasNext();) {
-             String currentGene = (String)i.next();
-
-             int genekey = genes.get(currentGene);
-             if(datasetGenes != null)
-                datasetGenes.add(genekey);
-
-                GeneExpression expres = new GeneExpression(currentGene, currentGene);
-                expres.setExpression(tokens);
-
-
-                double newMax = expres.newMax(expressionMatrix.getMaxExpression());
-                if(newMax != -100)
-                    expressionMatrix.setMaxExpression(newMax);
-                double newMin = expres.newMin(expressionMatrix.getMinExpression());
-                if (newMin != -100)
-                    expressionMatrix.setMinExpression(newMin);
-
-                expression.put(genekey,expres);
-
-        }
-
-        //set the number of genes
-        expressionMatrix.setNumGenes(expressionMatrix.getExpressionMatrix().size());
-		expressionMatrix.setNumConditions(3);
-		
-		//set that there is data for the expression viewer
-		dataset.getMap().getParams().setData(true);
-    }
+  
     
- /**
-     * Run the Task.
-     */
-    public void run() {
-        parse();
-    }
-
+ 
     /**
      * Non-blocking call to interrupt the task.
      */
@@ -406,12 +336,11 @@ public class ExpressionFileReaderTask implements Task {
         this.taskMonitor = taskMonitor;
     }
 
-    /**
-     * Gets the Task Title.
-     *
-     * @return human readable task title.
-     */
-    public String getTitle() {
-        return new String("Parsing GCT file");
-    }
+    
+	@Override
+	public void run(TaskMonitor taskMonitor) throws Exception {
+		this.taskMonitor = taskMonitor;
+		taskMonitor.setTitle("Parsing GCT file");
+		parse();
+	}
 }

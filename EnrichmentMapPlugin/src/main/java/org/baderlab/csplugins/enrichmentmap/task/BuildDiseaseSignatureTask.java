@@ -43,7 +43,6 @@
 
 package org.baderlab.csplugins.enrichmentmap.task;
 
-import giny.view.NodeView;
 
 import java.util.*;
 
@@ -53,15 +52,8 @@ import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.GenesetSimilarity;
-
-import cytoscape.CyEdge;
-import cytoscape.CyNetwork;
-import cytoscape.CyNode;
-import cytoscape.Cytoscape;
-import cytoscape.data.CyAttributes;
-import cytoscape.task.Task;
-import cytoscape.task.TaskMonitor;
-import cytoscape.view.CyNetworkView;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.TaskMonitor;
 
 import cern.jet.stat.Gamma;
 
@@ -74,7 +66,7 @@ import cern.jet.stat.Gamma;
  * Time   3:58:24 PM<br>
  *
  */
-public class BuildDiseaseSignatureTask implements Task {
+public class BuildDiseaseSignatureTask extends AbstractTask {
     private PostAnalysisParameters paParams;
     private EnrichmentMap map;
 //    private EnrichmentMapParameters emParams;
@@ -98,7 +90,7 @@ public class BuildDiseaseSignatureTask implements Task {
      */
     public BuildDiseaseSignatureTask(EnrichmentMap map, PostAnalysisParameters paParams) {
         
-    		this.map = map;
+ /*   		this.map = map;
 
     		//create a new instance of the parameters and copy the version received from the input
         //window into this new instance.
@@ -137,7 +129,7 @@ public class BuildDiseaseSignatureTask implements Task {
             String setName = i.next();
             SignatureGenes.addAll(SignatureGenesets.get(setName).getGenes());
         }
-        
+*/        
     }
 
 
@@ -147,7 +139,7 @@ public class BuildDiseaseSignatureTask implements Task {
          * Calculate Similarity between Signature Gene Sets *
          * and Enrichment Genesets.                         *
          ****************************************************/
-        int maxValue = SelectedSignatureGenesets.size() * EnrichmentGenesets.size();
+/*        int maxValue = SelectedSignatureGenesets.size() * EnrichmentGenesets.size();
         int currentProgress = 0;
         double currentNodeY_offset = paParams.getCurrentNodePlacementY_Offset();
         double currentNodeY_increment = 150.0;
@@ -184,7 +176,7 @@ public class BuildDiseaseSignatureTask implements Task {
              * but rather the Universe of all Enrichment Genes.  
              */
             // geneUniverse.retainAll(SignatureGenes); 
-            int universeSize = geneUniverse.size();
+/*            int universeSize = geneUniverse.size();
             
             //iterate over selected Signature genesets
             for (Iterator<String> i = SelectedSignatureGenesets.keySet().iterator(); i.hasNext(); ){
@@ -196,13 +188,13 @@ public class BuildDiseaseSignatureTask implements Task {
                 /** 
                  * the signature genes in this signature gene set 
                  */
-                HashSet<Integer> sigGenes = sigGeneSet.getGenes();
+ /*               HashSet<Integer> sigGenes = sigGeneSet.getGenes();
 
                 /** 
                  * the genes that are in this signature gene set 
                  * as well as in the Universe of Enrichment-GMT Genes.    
                  */
-                HashSet<Integer> sigGenesInUniverse = new HashSet<Integer>(sigGenes);
+ /*               HashSet<Integer> sigGenesInUniverse = new HashSet<Integer>(sigGenes);
                 sigGenesInUniverse.retainAll(geneUniverse);
 //                sigGeneSet.setGenes(sigGenes);
                 
@@ -320,7 +312,7 @@ public class BuildDiseaseSignatureTask implements Task {
                 /* ***************************
                  * Create Signature Hub Node *
                  *****************************/
-                CyNode hub_node = Cytoscape.getCyNode(hub_name, true);
+/*                CyNode hub_node = Cytoscape.getCyNode(hub_name, true);
                 current_network.addNode(hub_node);
                 
                 // add currentNodeY_offset to initial Y position of the Node
@@ -389,7 +381,7 @@ public class BuildDiseaseSignatureTask implements Task {
              * Create Signature Hub Edges *
              ******************************/
 
-            for (Iterator<String> i = geneset_similarities.keySet().iterator(); i.hasNext() ;) {
+/*            for (Iterator<String> i = geneset_similarities.keySet().iterator(); i.hasNext() ;) {
                 if (interrupted) {
                     throw new InterruptedException();
                 }
@@ -469,7 +461,7 @@ public class BuildDiseaseSignatureTask implements Task {
         } catch (InterruptedException e) {
             taskMonitor.setException(e, "Generation of Signature Hubs cancelled");
         }
-    }
+ */   }
     
     
     /**
@@ -631,5 +623,12 @@ public class BuildDiseaseSignatureTask implements Task {
         }
         this.taskMonitor = taskMonitor;
     }
+
+
+	@Override
+	public void run(TaskMonitor arg0) throws Exception {
+		// TODO Auto-generated method stub
+		
+	}
 
 }

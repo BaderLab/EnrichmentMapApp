@@ -42,9 +42,7 @@
 // $HeadURL$
 
 package org.baderlab.csplugins.enrichmentmap.actions;
-import cytoscape.task.ui.JTaskConfig;
-import cytoscape.task.util.TaskManager;
-import cytoscape.Cytoscape;
+
 
 import javax.swing.*;
 
@@ -68,8 +66,6 @@ import java.awt.event.ActionEvent;
  */
 public class BuildPostAnalysisActionListener implements ActionListener {
 
-    private JTaskConfig config;
-
     private PostAnalysisInputPanel inputPanel;
 
     public BuildPostAnalysisActionListener (PostAnalysisInputPanel panel) {
@@ -80,7 +76,7 @@ public class BuildPostAnalysisActionListener implements ActionListener {
     public void actionPerformed(ActionEvent event) {
 
         //make sure that the minimum information is set in the current set of parameters
-        PostAnalysisParameters paParams = inputPanel.getPaParams();
+    	/*        PostAnalysisParameters paParams = inputPanel.getPaParams();
         
         EnrichmentMap current_map = EnrichmentMapManager.getInstance().getMap(Cytoscape.getCurrentNetwork().getIdentifier());
 
@@ -88,13 +84,9 @@ public class BuildPostAnalysisActionListener implements ActionListener {
 
         if(errors.equalsIgnoreCase("")) {
             if ( paParams.isSignatureHub() ) {
-                config = new JTaskConfig();
-                config.displayCancelButton(true);
-                config.displayCloseButton(true);
-                config.displayStatus(true);
-
+                
                 BuildDiseaseSignatureTask new_signature = new BuildDiseaseSignatureTask(current_map, paParams);
-                /*boolean success =*/ TaskManager.executeTask(new_signature, config);
+                TaskManager.executeTask(new_signature, config);
             } 
             else {
                 JOptionPane.showMessageDialog(Cytoscape.getDesktop(),errors,"No such Post-Analysis",JOptionPane.WARNING_MESSAGE);
@@ -102,7 +94,7 @@ public class BuildPostAnalysisActionListener implements ActionListener {
         } 
         else {
             JOptionPane.showMessageDialog(Cytoscape.getDesktop(),errors,"Invalid Input",JOptionPane.WARNING_MESSAGE);
-        }
+        }*/
     }
 
 }

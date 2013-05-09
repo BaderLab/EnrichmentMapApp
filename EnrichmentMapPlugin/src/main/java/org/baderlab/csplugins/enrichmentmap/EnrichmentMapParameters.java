@@ -42,11 +42,11 @@
 // $HeadURL$
 
 package org.baderlab.csplugins.enrichmentmap;
-import giny.model.Node;
-import giny.model.Edge;
-
 import java.util.*;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
@@ -57,11 +57,13 @@ import org.baderlab.csplugins.enrichmentmap.model.GenericResult;
 import org.baderlab.csplugins.enrichmentmap.model.Rank;
 import org.baderlab.csplugins.enrichmentmap.view.ParametersPanel;
 import org.baderlab.csplugins.enrichmentmap.view.SliderBarPanel;
+import org.cytoscape.io.util.StreamUtil;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.property.CyProperty;
+import org.cytoscape.session.CySessionManager;
 
-import cytoscape.CyNetwork;
-import cytoscape.Cytoscape;
-import cytoscape.CytoscapeInit;
-import cytoscape.data.readers.TextFileReader;
 
 /**
  * Created by
@@ -75,8 +77,14 @@ import cytoscape.data.readers.TextFileReader;
  */
 public class EnrichmentMapParameters {
     
+	private CySessionManager sessionManager;
+	private StreamUtil streamUtil;
+	
 	//attribute prefix associated with this map
 	private String attributePrefix = null;
+	
+	//network suid 
+	private long networkID = 0;
 	   
     //BULK EM required parameters
     //directory where the GMT and GCT(expression) files are found
@@ -138,13 +146,13 @@ public class EnrichmentMapParameters {
     //list associated with slider bars.  As the slider bar is moved the removed nodes
     //and edges are stored in these lists
     //TODO: currently this is not stored in the session file.  So if the user moves the slider bar and saves a session the nodes or edges stored are lost.
-    private ArrayList<Node> selectedNodes;
-    private ArrayList<Edge> selectedEdges;
+    private ArrayList<CyNode> selectedNodes;
+    private ArrayList<CyEdge> selectedEdges;
         
     //Heat map parameters for this enrichment map - user specified current normalization, and sorting.
     private HeatMapParameters hmParams;
 
-    private Properties cyto_prop;
+    private Set<CyProperty<?>> cyto_prop;
     private double defaultJaccardCutOff;
     private double defaultOverlapCutOff;
     private String defaultSimilarityMetric;
@@ -170,36 +178,37 @@ public class EnrichmentMapParameters {
     private String Dataset2Phenotype1 = "UP";
     private String Dataset2Phenotype2 = "DOWN";
     
+    //Cytoscape default properties names
+    public static final String defaultJaccardCutOff_propname =  "EnrichmentMap.default_jaccard";    
+    public static final String defaultOverlapCutOff_propname      = "EnrichmentMap.default_overlap";
+    public static final String defaultSimilarityMetric_propname  = "EnrichmentMap.default_similarity_metric";    		
+    public static final String disable_heatmap_autofocus_propname = "EnrichmentMap.disable_heatmap_autofocus";
+
+    //get the default heatmap sort algorithm
+    public static final String defaultSortMethod_propname ="EnrichmentMap.default_sort_method";
+    
+    //get the default distance metric algorithm
+    public static final String defaultDistanceMetric_propname = "EnrichmentMap.default_distance_metric";
+
+    //assign the defaults:
+    public static final String defaultPvalue_propname = "EnrichmentMap.default_pvalue";      
+    public static final String defaultQvalue_propname = "EnrichmentMap.default_qvalue";
+   //get the default combined metric constant
+    public static final String defaultCombinedConstant_propname = "EnrichmentMap.default_combinedConstant";
+    
+    
     //Create a hashmap to contain all the values in the rpt file.
     HashMap<String, String> props;
     /**
      * Default constructor to create a fresh instance.
      */
-    public EnrichmentMapParameters() {
-    		   
-        //by default GSEA is the method.
+    public EnrichmentMapParameters(){
+    	//by default GSEA is the method.
         this.method = EnrichmentMapParameters.method_GSEA;
 
         //default Values from Cytoscape properties
-        this.cyto_prop = CytoscapeInit.getProperties() ;      
-        this.defaultJaccardCutOff      = Double.parseDouble( this.cyto_prop.getProperty("EnrichmentMap.default_jaccard", "0.25") );
-        this.defaultOverlapCutOff      = Double.parseDouble( this.cyto_prop.getProperty("EnrichmentMap.default_overlap", "0.50") );
-        this.defaultSimilarityMetric   = this.cyto_prop.getProperty("EnrichmentMap.default_similarity_metric",
-                this.cyto_prop.getProperty("EnrichmentMap.default_overlap_metric", "overlap")); // looking for Property "EnrichmentMap.default_overlap_metric" for legacy reasons
-        this.disable_heatmap_autofocus = Boolean.parseBoolean( this.cyto_prop.getProperty("EnrichmentMap.disable_heatmap_autofocus", "false") );
-
-        //get the default heatmap sort algorithm
-        this.defaultSortMethod = this.cyto_prop.getProperty("EnrichmentMap.default_sort_method", HeatMapParameters.sort_hierarchical_cluster);
-        
-        //get the default distance metric algorithm
-        this.defaultDistanceMetric = this.cyto_prop.getProperty("EnrichmentMap.default_distance_metric", HeatMapParameters.pearson_correlation);
-
-        //assign the defaults:
-        this.pvalue = Double.parseDouble( this.cyto_prop.getProperty("EnrichmentMap.default_pvalue",  "0.005") );      
-        this.qvalue = Double.parseDouble( this.cyto_prop.getProperty("EnrichmentMap.default_qvalue",  "0.1") );
-       //get the default combined metric constant
-        this.combinedConstant = Double.parseDouble( this.cyto_prop.getProperty("EnrichmentMap.default_combinedConstant", "0.50") );
-        
+        initializeDefaultParameters();
+       
         //choose Jaccard or Overlap as default
         if ( this.defaultSimilarityMetric .equalsIgnoreCase(SM_OVERLAP) ){
             this.similarityCutOff = this.defaultOverlapCutOff;
@@ -220,29 +229,119 @@ public class EnrichmentMapParameters {
         this.setTwoDatasets(false);
         this.setTwoDistinctExpressionSets(false);
 
-        this.selectedNodes = new ArrayList<Node>();
-        this.selectedEdges = new ArrayList<Edge>();
+        this.selectedNodes = new ArrayList<CyNode>();
+        this.selectedEdges = new ArrayList<CyEdge>();
 
         //create the slider for this pvalue
-        pvalueSlider = new SliderBarPanel(0,this.pvalue,"P-value Cutoff",this, EnrichmentMapVisualStyle.PVALUE_DATASET1, EnrichmentMapVisualStyle.PVALUE_DATASET2,ParametersPanel.summaryPanelWidth, false, this.pvalue);
+        //pvalueSlider = new SliderBarPanel(0,this.pvalue,"P-value Cutoff",this, EnrichmentMapVisualStyle.PVALUE_DATASET1, EnrichmentMapVisualStyle.PVALUE_DATASET2,ParametersPanel.summaryPanelWidth, false, this.pvalue);
         //create the slider for the qvalue
-        qvalueSlider = new SliderBarPanel(0,this.qvalue,"Q-value Cutoff",this, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2,ParametersPanel.summaryPanelWidth, false, this.qvalue);
+        //qvalueSlider = new SliderBarPanel(0,this.qvalue,"Q-value Cutoff",this, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2,ParametersPanel.summaryPanelWidth, false, this.qvalue);
         //create the slider for the similarity cutoff
-        similaritySlider = new SliderBarPanel(this.similarityCutOff,1,"Similarity Cutoff",this, EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT, EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT,ParametersPanel.summaryPanelWidth, true, this.similarityCutOff);
+        //similaritySlider = new SliderBarPanel(this.similarityCutOff,1,"Similarity Cutoff",this, EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT, EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT,ParametersPanel.summaryPanelWidth, true, this.similarityCutOff);
        
         //initialize first dataset
         this.files.put(EnrichmentMap.DATASET1, new DataSetFiles());
     }
+    
+    
+    public EnrichmentMapParameters(CySessionManager sessionManager,StreamUtil streamUtil) {
+    		this();	   
+    		this.sessionManager = sessionManager;
+    		this.streamUtil = streamUtil;
+    	
+        
+    }
+
+    public void initializeDefaultParameters(){
+ 
+    		//the set of default parameters we want to get 
+    		this.defaultJaccardCutOff = 0.25;
+    		this.defaultOverlapCutOff = 0.5;
+    		this.defaultSimilarityMetric = SM_OVERLAP;
+    		this.defaultSortMethod = HeatMapParameters.sort_hierarchical_cluster;
+    		this.defaultDistanceMetric = HeatMapParameters.pearson_correlation;
+    		
+    		this.pvalue = 0.005;
+    		this.qvalue = 0.1;
+    		this.combinedConstant = 0.5;
+    	    this.disable_heatmap_autofocus =false;
+    	
+    		CyProperty<Properties> defaultJaccardCutOff_prop;
+    		CyProperty<Properties> defaultOverlapCutOff_prop;
+    		CyProperty<Properties> defaultSimilarityMetric_prop;
+    		CyProperty<Properties> disable_heatmap_autofocus_prop;
+    		CyProperty<Properties> defaultSortMethod_prop;
+    		CyProperty<Properties> defaultDistanceMetric_prop;
+    		CyProperty<Properties> defaultPvalue_prop;      
+    		CyProperty<Properties> defaultQvalue_prop;
+    	   //get the default combined metric constant
+    		CyProperty<Properties> defaultCombinedConstant_prop;
+    	    
+    	//get the session properties
+    		//only get the sessionProperties if the sessionManager is not null
+    		if(sessionManager != null){
+    			this.cyto_prop = sessionManager.getCurrentSession().getProperties();
+    		
+    			//go through the session properties.
+    			//If the session property is there then get its value and put it in the default.
+    			for (CyProperty<?> prop : this.cyto_prop) {
+             if (prop.getName() != null){
+                 if (prop.getName().equals(defaultJaccardCutOff_propname)) {
+                	 	defaultJaccardCutOff_prop = (CyProperty<Properties>) prop;
+                	 	this.defaultJaccardCutOff = Double.valueOf((String)(defaultJaccardCutOff_prop.getProperties()).getProperty(defaultJaccardCutOff_propname));                	 	
+    			      }
+                 if (prop.getName().equals(defaultOverlapCutOff_propname)) {
+                	 	defaultOverlapCutOff_prop = (CyProperty<Properties>) prop;
+             	 	this.defaultOverlapCutOff = Double.valueOf((String)(defaultOverlapCutOff_prop.getProperties()).getProperty(defaultOverlapCutOff_propname));                	 	
+ 			      }
+                 if (prop.getName().equals(defaultOverlapCutOff_propname)) {
+             	 	defaultOverlapCutOff_prop = (CyProperty<Properties>) prop;
+             	 	this.defaultOverlapCutOff = Double.valueOf((String)(defaultOverlapCutOff_prop.getProperties()).getProperty(defaultOverlapCutOff_propname));                	 	
+			      }
+                 if (prop.getName().equals(defaultPvalue_propname)) {
+                	 	defaultPvalue_prop = (CyProperty<Properties>) prop;
+              	 	this.pvalue = Double.valueOf((String)(defaultPvalue_prop.getProperties()).getProperty(defaultPvalue_propname));                	 	
+ 			      }
+                 if (prop.getName().equals(defaultQvalue_propname)) {
+             	 	defaultQvalue_prop = (CyProperty<Properties>) prop;
+             	 	this.qvalue = Double.valueOf((String)(defaultQvalue_prop.getProperties()).getProperty(defaultQvalue_propname));                	 	
+			      }
+                 if (prop.getName().equals(defaultCombinedConstant_propname)) {
+                	 	defaultCombinedConstant_prop = (CyProperty<Properties>) prop;
+             	 	this.combinedConstant = Double.valueOf((String)(defaultCombinedConstant_prop.getProperties()).getProperty(defaultCombinedConstant_propname));                	 	
+			      }
+                 if (prop.getName().equals(defaultSimilarityMetric_propname)) {
+                	 	defaultSimilarityMetric_prop = (CyProperty<Properties>) prop;
+             	 	this.defaultSimilarityMetric = (String)(defaultSimilarityMetric_prop.getProperties()).getProperty(defaultSimilarityMetric_propname);                	 	
+			      }
+                 if (prop.getName().equals(defaultSortMethod_propname)) {
+                	 	defaultSortMethod_prop = (CyProperty<Properties>) prop;
+             	 	this.defaultSortMethod = (String)(defaultSortMethod_prop.getProperties()).getProperty(defaultSortMethod_propname);                	 	
+			      }
+                 if (prop.getName().equals(defaultDistanceMetric_propname)) {
+             	 	defaultDistanceMetric_prop = (CyProperty<Properties>) prop;
+             	 	this.defaultDistanceMetric = (String)(defaultDistanceMetric_prop.getProperties()).getProperty(defaultDistanceMetric_propname);                	 	
+			      }
+                 if (prop.getName().equals(disable_heatmap_autofocus_propname)) {
+                	 	disable_heatmap_autofocus_prop = (CyProperty<Properties>) prop;
+              	 	this.disable_heatmap_autofocus = Boolean.valueOf((String)(disable_heatmap_autofocus_prop.getProperties()).getProperty(disable_heatmap_autofocus_propname));                	 	
+ 			      }
+    				}
+    			}
+    		}
 
 
+    
+    
+    }
     /**
      * Constructor to create enrichment map parameters from a cytoscape property file while restoring a Session
      * (property file is created when an enrichment map session is saved)
      *
      *  @param propFile     the name of the property file as a String
      */
-    public EnrichmentMapParameters(String propFile){
-        this();
+    public EnrichmentMapParameters(String propFile,CySessionManager sessionManager,StreamUtil streamUtil){
+        this(sessionManager,streamUtil);
 
         //Create a hashmap to contain all the values in the rpt file.
         this.props = new HashMap<String, String>();
@@ -490,16 +589,15 @@ public class EnrichmentMapParameters {
      * @param rptFile - rpt (GSEA analysis parameters file) file name
      *
      */
-   public void populateFieldsFromRpt(File rptFile){
-
-        TextFileReader reader = new TextFileReader(rptFile.getAbsolutePath());
-        reader.read();
-        String fullText = reader.getText();
+   public void populateFieldsFromRpt(File rptFile) throws IOException{
+        
+	    InputStream reader = streamUtil.getInputStream(rptFile.getAbsolutePath());
+        String fullText = new Scanner(reader,"UTF-8").useDelimiter("\\A").next();
 
         //Create a hashmap to contain all the values in the rpt file.
         HashMap<String, String> rpt = new HashMap<String, String>();
 
-        String [] lines = fullText.split("\n");
+        String [] lines = fullText.split("\r\n?|\n");
 
         for (int i = 0; i < lines.length; i++) {
             String line = lines[i];
@@ -1047,10 +1145,9 @@ public class EnrichmentMapParameters {
 
     //Set up the attributePrefix
     //The attribute prefix is based on the number of nextworks in cytoscape.
-    //TODO:make attribute prefix independent on cytoscape
+    //TODO:make attribute prefix independent of cytoscape
     public void setAttributePrefix(){
-    		Set<CyNetwork> networks = Cytoscape.getNetworkSet();
-        CyNetwork network;
+    		Set<CyNetwork> networks = sessionManager.getCurrentSession().getNetworks();
 
         if(networks == null || networks.isEmpty())
         		this.attributePrefix = "EM1_";
@@ -1064,7 +1161,7 @@ public class EnrichmentMapParameters {
             // current attributes
             for(Iterator<CyNetwork> i = networks.iterator(); i.hasNext();){
             		CyNetwork current_network = i.next();
-                String networkId = current_network.getIdentifier();
+                Long networkId = current_network.getSUID();
                 if( manager.isEnrichmentMap(networkId) ) {//fails
                 		num_networks++;
                     EnrichmentMap tmpMap = manager.getMap(networkId);
@@ -1228,19 +1325,19 @@ public class EnrichmentMapParameters {
         return similaritySlider;
     }
 
-    public ArrayList<Node> getSelectedNodes() {
+    public ArrayList<CyNode> getSelectedNodes() {
         return selectedNodes;
     }
 
-    public ArrayList<Edge> getSelectedEdges() {
+    public ArrayList<CyEdge> getSelectedEdges() {
         return selectedEdges;
     }
 
-    public void setSelectedNodes(ArrayList<Node> selectedNodes) {
+    public void setSelectedNodes(ArrayList<CyNode> selectedNodes) {
         this.selectedNodes = selectedNodes;
     }
 
-    public void setSelectedEdges(ArrayList<Edge> selectedEdges) {
+    public void setSelectedEdges(ArrayList<CyEdge> selectedEdges) {
         this.selectedEdges = selectedEdges;
     }
 
@@ -1295,8 +1392,8 @@ public class EnrichmentMapParameters {
         this.defaultSortMethod = defaultSortMethod;
 
         //also update the property in the cytoscape property file
-        this.cyto_prop = CytoscapeInit.getProperties() ;
-        cyto_prop.setProperty("EnrichmentMap.default_sort_method",defaultSortMethod);
+        /*this.cyto_prop = CytoscapeInit.getProperties() ;
+        cyto_prop.setProperty("EnrichmentMap.default_sort_method",defaultSortMethod);*/
     }  
 
     /**
@@ -1505,5 +1602,17 @@ public class EnrichmentMapParameters {
 	public void setSessions(boolean sessions) {
 		this.sessions = sessions;
 	}
+
+
+	public long getNetworkID() {
+		return networkID;
+	}
+
+
+	public void setNetworkID(long networkID) {
+		this.networkID = networkID;
+	}
+	
+	
 	
 }

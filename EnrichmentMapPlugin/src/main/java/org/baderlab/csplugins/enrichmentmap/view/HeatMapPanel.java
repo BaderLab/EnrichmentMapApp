@@ -44,10 +44,6 @@
 package org.baderlab.csplugins.enrichmentmap.view;
 
 
-import cytoscape.util.FileUtil;
-import cytoscape.CytoscapeInit;
-import cytoscape.Cytoscape;
-
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
@@ -57,9 +53,8 @@ import java.awt.event.ActionEvent;
 import java.util.*;
 import java.util.List;
 import java.io.*;
+import java.net.URL;
 
-import giny.model.Node;
-import giny.model.Edge;
 import org.mskcc.colorgradient.*;
 import org.baderlab.csplugins.brainlib.DistanceMatrix;
 import org.baderlab.csplugins.brainlib.AvgLinkHierarchicalClustering;
@@ -68,7 +63,7 @@ import org.baderlab.csplugins.enrichmentmap.EnrichmentMapVisualStyle;
 import org.baderlab.csplugins.enrichmentmap.heatmap.CellHighlightRenderer;
 import org.baderlab.csplugins.enrichmentmap.heatmap.ColorRenderer;
 import org.baderlab.csplugins.enrichmentmap.heatmap.ColumnHeaderVerticalRenderer;
-import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapExporter;
+//import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapExporter;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapTableActionListener;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapTableModel;
@@ -91,6 +86,14 @@ import org.baderlab.csplugins.enrichmentmap.model.Rank;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.model.SignificantGene;
 import org.baderlab.csplugins.enrichmentmap.parsers.EnrichmentResultFileReaderTask;
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.application.swing.CytoPanelComponent;
+import org.cytoscape.application.swing.CytoPanelName;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.util.swing.FileUtil;
 
 /**
  * Created by
@@ -101,12 +104,16 @@ import org.baderlab.csplugins.enrichmentmap.parsers.EnrichmentResultFileReaderTa
  * Creates a Heat map Panel - (heat map can consists of either one or two expression files depending on what
  * was supplied by the user)
  */
-public class HeatMapPanel extends JPanel {
+public class HeatMapPanel extends JPanel implements CytoPanelComponent{
 
     /**
      * 
      */
-    private static final long serialVersionUID = 1903063204304411983L;
+	private CySwingApplication application;
+	private CyApplicationManager applicationManager;
+	private FileUtil fileUtil;
+	
+	private static final long serialVersionUID = 1903063204304411983L;
     
     //Column names for expression set for data set 1
     private Object[] columnNames;
@@ -189,7 +196,7 @@ public class HeatMapPanel extends JPanel {
      * @param node - boolean indicating with this is a heat map for node unions or edge overlaps.
      * if true it is a node heatmap, else it is an edge heatmap
      */
-    public HeatMapPanel(boolean node){
+    public HeatMapPanel(boolean node, CySwingApplication application, FileUtil fileUtil,CyApplicationManager applicationManager){
        this.node = node;
        this.setLayout(new java.awt.BorderLayout());
 
@@ -198,6 +205,9 @@ public class HeatMapPanel extends JPanel {
 
         //initialize pop up menu
         rightClickPopupMenu = new JPopupMenu();
+        
+        this.application = application;
+        this.applicationManager = applicationManager;
     }
 
     /**
@@ -525,11 +535,15 @@ public class HeatMapPanel extends JPanel {
             data[k][1] = expValue[k][1];
 
             for(int j=0;j<HRow1[k];j++){
-                data[k][j+2] = ColorGradientMapper.getColorGradient(Row1CRT[k],Row1CRR[k],Row1gene[k],(Double)expValue[k][j+2]);
+            	//set color to default for now.
+            	 data[k][j+2] = Color.red;
+                //data[k][j+2] = ColorGradientMapper.getColorGradient(Row1CRT[k],Row1CRR[k],Row1gene[k],(Double)expValue[k][j+2]);
              }
 
             for(int j=HRow1[k];j<HRow2[k];j++){
-                data[k][j+2] = ColorGradientMapper.getColorGradient(Row2CRT[k],Row2CRR[k],Row2gene[k],(Double)expValue[k][j+2]);
+            	//set color to default for now.
+            	data[k][j+2] = Color.green;
+                //data[k][j+2] = ColorGradientMapper.getColorGradient(Row2CRT[k],Row2CRR[k],Row2gene[k],(Double)expValue[k][j+2]);
              }
 
         }
@@ -1083,7 +1097,7 @@ public class HeatMapPanel extends JPanel {
           }
 
     private void saveExpressionSetActionPerformed(ActionEvent evt){
-        java.io.File file = FileUtil.getFile("Export Heatmap as txt File", FileUtil.SAVE);
+        java.io.File file = fileUtil.getFile(this, "Export Heatmap as txt File", FileUtil.SAVE,null);
         if (file != null && file.toString() != null) {
             String fileName = file.toString();
             if (!fileName.endsWith(".txt")) {
@@ -1140,7 +1154,7 @@ public class HeatMapPanel extends JPanel {
     }
 
     private void exportExpressionSetActionPerformed(ActionEvent evt){
-            java.io.File file = FileUtil.getFile("Export Heatmap as pdf File", FileUtil.SAVE);
+            java.io.File file = fileUtil.getFile(this,"Export Heatmap as pdf File", FileUtil.SAVE,null);
             if (file != null && file.toString() != null) {
                 String fileName = file.toString();
                 if (!fileName.endsWith(".pdf")) {
@@ -1157,12 +1171,14 @@ public class HeatMapPanel extends JPanel {
                 else if(response == JOptionPane.YES_OPTION || response == JOptionPane.OK_OPTION){
                         try{
                             FileOutputStream output = new FileOutputStream(file);
-                            HeatMapExporter exporter = new HeatMapExporter();
+                          
+                            //TODO:add heatmap exporter
+                            /*  HeatMapExporter exporter = new HeatMapExporter();
                             exporter.export(this.getNorthPanel(),this.getjTable1(),this.getTableHeader(), output) ;
                             output.flush();
                             output.close();
                             JOptionPane.showMessageDialog(this, "File " + fileName + " saved.");
-
+*/
                         }catch(IOException e){
                             JOptionPane.showMessageDialog(this, "unable to write to file " + fileName);
                     }
@@ -1188,6 +1204,9 @@ public class HeatMapPanel extends JPanel {
         	HashMap<String, GeneSet> genesets_set1 = (map.getDatasets().containsKey(EnrichmentMap.DATASET1)) ? map.getDataset(EnrichmentMap.DATASET1).getSetofgenesets().getGenesets() : null;            
         	HashMap<String, GeneSet> genesets_set2 = (map.getDatasets().containsKey(EnrichmentMap.DATASET2)) ? map.getDataset(EnrichmentMap.DATASET2).getSetofgenesets().getGenesets() : null;
          
+        //get the current Network
+        CyNetwork network = applicationManager.getCurrentNetwork();
+        	
         //go through the nodes only if there are some
         if(nodes.length > 0){
 
@@ -1195,8 +1214,10 @@ public class HeatMapPanel extends JPanel {
 
             for (Object node1 : nodes) {
 
-                Node current_node = (Node) node1;
-                String nodename = current_node.getIdentifier();
+                CyNode current_node = (CyNode) node1;
+                
+                
+                String nodename = network.getRow(current_node).get(CyNetwork.NAME,String.class);
                 GeneSet current_geneset = genesets.get(nodename);
                 HashSet<Integer> additional_set = null;
 
@@ -1288,14 +1309,17 @@ public class HeatMapPanel extends JPanel {
 
         Object[] edges = params.getSelectedEdges().toArray();
 
+      //get the current Network
+        CyNetwork network = applicationManager.getCurrentNetwork();
+        
         if(edges.length>0){
             HashSet<Integer> intersect = null;
             //HashSet union = null;
 
             for(int i = 0; i< edges.length;i++){
 
-                Edge current_edge = (Edge) edges[i];
-                String edgename = current_edge.getIdentifier();
+                CyEdge current_edge = (CyEdge) edges[i];
+                String edgename = network.getRow(current_edge).get(CyNetwork.NAME, String.class);
 
 
                 GenesetSimilarity similarity = map.getGenesetSimilarity().get(edgename);
@@ -1426,10 +1450,13 @@ public class HeatMapPanel extends JPanel {
 
             //check to see how many genes there are, if there are more than 1000 issue warning that
             //clustering will take a long time and give the user the option to abandon the clustering
-            int hieracical_clustering_threshold = Integer.parseInt(CytoscapeInit.getProperties().getProperty("EnrichmentMap.hieracical_clustering_threshold", "1000"));
+            
+        	//TODO:get default from poperties.
+        	int hieracical_clustering_threshold = 100;
+        	//int hieracical_clustering_threshold = Integer.parseInt(CytoscapeInit.getProperties().getProperty("EnrichmentMap.hieracical_clustering_threshold", "1000"));
             if((set1_size > hieracical_clustering_threshold)
             || (set2_size > hieracical_clustering_threshold)) {
-                int answer = JOptionPane.showConfirmDialog(Cytoscape.getDesktop(),
+                int answer = JOptionPane.showConfirmDialog(application.getJFrame(),
 			                                      " The combination of these gene sets contain "
                                                   + currentExpressionSet.keySet().size() + " And " + currentExpressionSet2.keySet().size()
 			                                      + " genes and "
@@ -1661,7 +1688,7 @@ public class HeatMapPanel extends JPanel {
                         }catch(RuntimeException e){
                             try{
                                 if(!shownPearsonErrorMsg){
-                                    JOptionPane.showMessageDialog(Cytoscape.getDesktop(),"Unable to compute Pearson Correlation for this expression Set.\n  Cosine distance used for this set instead.\n To switch distance metric used for all hierarchical clustering \nPlease change setting under Advance Preferences in the Results Panel.");
+                                    JOptionPane.showMessageDialog(this,"Unable to compute Pearson Correlation for this expression Set.\n  Cosine distance used for this set instead.\n To switch distance metric used for all hierarchical clustering \nPlease change setting under Advance Preferences in the Results Panel.");
                                     shownPearsonErrorMsg = true;
                                 }
                                 distanceMatrix.calcDistances(clustering_expressionset, new CosineDistance());
@@ -1707,7 +1734,7 @@ public class HeatMapPanel extends JPanel {
                         ranks.addRank(label,temp);
                     }
                 }catch(OutOfMemoryError e){
-                    JOptionPane.showMessageDialog(Cytoscape.getDesktop(), "Unable to complete clustering of genes due to insufficient memory.","Out of memory",JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "Unable to complete clustering of genes due to insufficient memory.","Out of memory",JOptionPane.INFORMATION_MESSAGE);
                     cluster = false;
                 }
             }
@@ -1738,9 +1765,10 @@ public class HeatMapPanel extends JPanel {
      * This code was pulled from the CyAttributeBrowserTable.java in cytoscape coreplugins
      *
      */
+    //TODO:initialize linkouts using cytoscape default properties
      private void initialize_linkouts(){
         // First, load existing property
-        Properties props = CytoscapeInit.getProperties();
+/*        Properties props = CytoscapeInit.getProperties();
 
         // Use reflection to get resource
         Class linkout = null;
@@ -1748,7 +1776,7 @@ public class HeatMapPanel extends JPanel {
         try {
             linkout = Class.forName("linkout.LinkOut");
         } catch (ClassNotFoundException e1) {
-            JOptionPane.showMessageDialog(Cytoscape.getDesktop(),"Could't create LinkOut class","Could't create LinkOut class",JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(application.getJFrame(),"Could't create LinkOut class","Could't create LinkOut class",JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -1757,7 +1785,7 @@ public class HeatMapPanel extends JPanel {
         try {
             props.load(cl.getResource("linkout.props").openStream());
         } catch (IOException e1) {
-            JOptionPane.showMessageDialog(Cytoscape.getDesktop(),"Could't read LinkOut class","Could't read LinkOut class",JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this,"Could't read LinkOut class","Could't read LinkOut class",JOptionPane.WARNING_MESSAGE);
         }
 
         linkoutProps = new HashMap<String, Map<String, String>>();
@@ -1783,7 +1811,7 @@ public class HeatMapPanel extends JPanel {
 					pair.put(parts[2], entry.getValue().toString());
 				}
 			}
-		}
+		}*/
 
     }
 
@@ -2007,6 +2035,30 @@ public class HeatMapPanel extends JPanel {
     public JPanel getNorthPanel(){
         return northPanel;
     }
+
+	public Component getComponent() {
+		// TODO Auto-generated method stub
+		return this;
+	}
+
+	public CytoPanelName getCytoPanelName() {
+		// TODO Auto-generated method stub
+		return CytoPanelName.SOUTH;
+	}
+
+	public Icon getIcon() {
+		URL EMIconURL = Thread.currentThread().getContextClassLoader().getResource("enrichmentmap_logo_notext_small.png");
+        ImageIcon EMIcon = null;
+        if (EMIconURL != null) {
+            EMIcon = new ImageIcon(EMIconURL);
+        }
+		return EMIcon;
+	}
+
+	public String getTitle() {
+		// TODO Auto-generated method stub
+		return "Heat Map Panel";
+	}
 
 }
 

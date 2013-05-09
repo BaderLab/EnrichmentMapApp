@@ -9,17 +9,12 @@ import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.task.BuildEnrichmentMapTask;
 
-import cytoscape.command.AbstractCommandHandler;
-import cytoscape.command.CyCommandException;
-import cytoscape.command.CyCommandManager;
-import cytoscape.command.CyCommandResult;
-import cytoscape.layout.Tunable;
-import cytoscape.task.ui.JTaskConfig;
-import cytoscape.task.util.TaskManager;
 
-public class EnrichmentMapCommandHandler extends AbstractCommandHandler {
+//TODO:Add command support
+
+public class EnrichmentMapCommandHandler /*extends AbstractCommandHandler*/ {
 		
-		private static String command = "build";
+/*		private static String command = "build";
 		private static String edbdir = "edbdir";
 		private static String pvalue = "pvalue";
 		private static String qvalue = "qvalue";
@@ -174,5 +169,5 @@ public class EnrichmentMapCommandHandler extends AbstractCommandHandler {
 			return execute(command, createKVMap(arg1));
 		}
 
-	
+	*/
 }

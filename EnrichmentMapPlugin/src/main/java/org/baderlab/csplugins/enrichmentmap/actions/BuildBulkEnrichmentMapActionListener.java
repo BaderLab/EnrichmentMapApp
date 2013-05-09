@@ -1,14 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.actions;
 
-import cytoscape.CyNetwork;
-import cytoscape.Cytoscape;
-import cytoscape.data.writers.CytoscapeSessionWriter;
-import cytoscape.data.writers.XGMMLWriter;
-import cytoscape.view.CyNetworkView;
-import cytoscape.util.export.PDFExporter;
-import cytoscape.task.ui.JTaskConfig;
-import cytoscape.task.util.TaskManager;
-import giny.view.NodeView;
+
 
 import javax.swing.*;
 import javax.xml.bind.JAXBException;
@@ -35,9 +27,6 @@ import java.util.Iterator;
  */
 public class BuildBulkEnrichmentMapActionListener implements ActionListener{
 
-
-    private JTaskConfig config;
-
     private BulkEMCreationPanel inputPanel;
 
     /**
@@ -55,11 +44,7 @@ public class BuildBulkEnrichmentMapActionListener implements ActionListener{
      */
     public void actionPerformed(ActionEvent event) {
 
-        config = new JTaskConfig();
-        config.displayCancelButton(true);
-        config.displayCloseButton(true);
-        config.displayStatus(true);
-
+        
        //make sure that the minimum information is set in the current set of parameters
        EnrichmentMapParameters params = inputPanel.getParams();
 
@@ -67,7 +52,7 @@ public class BuildBulkEnrichmentMapActionListener implements ActionListener{
         params.setBulkEM(true);
         
         BuildBulkEnrichmentMapTask new_map = new BuildBulkEnrichmentMapTask(params);
-        boolean success = TaskManager.executeTask(new_map,config);
+        //boolean success = TaskManager.executeTask(new_map,config);
 
     }
 

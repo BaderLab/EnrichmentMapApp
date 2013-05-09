@@ -1,20 +1,17 @@
 package org.baderlab.csplugins.enrichmentmap.view;
 
-import cytoscape.Cytoscape;
-import cytoscape.data.readers.TextFileReader;
-import cytoscape.generated.SessionState;
-import cytoscape.util.FileUtil;
-import cytoscape.util.OpenBrowser;
-import cytoscape.view.CytoscapeDesktop;
-import cytoscape.view.cytopanels.CytoPanel;
-
 import javax.swing.*;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
-import org.baderlab.csplugins.enrichmentmap.actions.BuildBulkEnrichmentMapActionListener;
+//import org.baderlab.csplugins.enrichmentmap.actions.BuildBulkEnrichmentMapActionListener;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.JMultiLineToolTip;
+import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.application.swing.CytoPanelComponent;
+import org.cytoscape.application.swing.CytoPanelName;
+import org.cytoscape.util.swing.FileChooserFilter;
+import org.cytoscape.util.swing.FileUtil;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -23,6 +20,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -32,10 +30,13 @@ import java.util.HashMap;
  * Time: 9:17 AM
  * To change this template use File | Settings | File Templates.
  */
-public class BulkEMCreationPanel extends JPanel{
+public class BulkEMCreationPanel extends JPanel implements CytoPanelComponent{
 
     private static final long serialVersionUID = 7233557042420194604L;
-
+    
+    private FileUtil fileUtil;
+    private CySwingApplication application;
+    
     private EnrichmentMapParameters params;
 
     //Genesets file related components
@@ -71,9 +72,11 @@ public class BulkEMCreationPanel extends JPanel{
     
     private boolean similarityCutOffChanged = false;
     
-    public BulkEMCreationPanel() {
+    public BulkEMCreationPanel(CySwingApplication application, FileUtil fileUtil) {
           params = new EnrichmentMapParameters();
-
+          this.application = application;
+          this.fileUtil = fileUtil;
+          
         //create the three main panels: scope, advanced options, and bottom
         JPanel AnalysisTypePanel = createAnalysisTypePanel();
 
@@ -567,7 +570,7 @@ public class BulkEMCreationPanel extends JPanel{
                    //do nothing
                 }
                 else if(checkFile(value).equals(Color.RED)){
-                    JOptionPane.showMessageDialog(Cytoscape.getDesktop(),message,"File name change entered is not a valid file name",JOptionPane.WARNING_MESSAGE);
+                    JOptionPane.showMessageDialog(application.getJFrame(),message,"File name change entered is not a valid file name",JOptionPane.WARNING_MESSAGE);
                     GSEAResultsDirTextField.setForeground(checkFile(value));
                 }
                else
@@ -580,7 +583,7 @@ public class BulkEMCreationPanel extends JPanel{
                    //do nothing
                 }
                 else if(checkFile(value).equals(Color.RED)){
-                    JOptionPane.showMessageDialog(Cytoscape.getDesktop(),message,"Directory name change entered is not a valid file name",JOptionPane.WARNING_MESSAGE);
+                    JOptionPane.showMessageDialog(application.getJFrame(),message,"Directory name change entered is not a valid file name",JOptionPane.WARNING_MESSAGE);
                     GMTDirectoryTextField.setForeground(checkFile(value));
                 }
                else
@@ -593,7 +596,7 @@ public class BulkEMCreationPanel extends JPanel{
                    //do nothing
                 }
                 else if(checkFile(value).equals(Color.RED)){
-                    JOptionPane.showMessageDialog(Cytoscape.getDesktop(),message,"Directory name change entered is not a valid file name",JOptionPane.WARNING_MESSAGE);
+                    JOptionPane.showMessageDialog(application.getJFrame(),message,"Directory name change entered is not a valid file name",JOptionPane.WARNING_MESSAGE);
                     GCTDirectoryTextField.setForeground(checkFile(value));
                 }
                else
@@ -601,7 +604,7 @@ public class BulkEMCreationPanel extends JPanel{
             }
 
             if (invalid) {
-                JOptionPane.showMessageDialog(Cytoscape.getDesktop(), message, "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(application.getJFrame(), message, "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
             }
         }
     }
@@ -684,8 +687,15 @@ public class BulkEMCreationPanel extends JPanel{
      private void selectGMTFileButtonActionPerformed(
                java.awt.event.ActionEvent evt) {
 
+    	 // Create FileFilter
+         FileChooserFilter filter = new FileChooserFilter("All GMT Files","gmt" );          
+         
+         //the set of filter (required by the file util method
+         ArrayList<FileChooserFilter> all_filters = new ArrayList<FileChooserFilter>();
+         all_filters.add(filter);
+    	 
            // Get the file name
-           File file = FileUtil.getFile("Import GSEA results directory", FileUtil.LOAD);
+           File file = fileUtil.getFile(this,"Import gmt file", FileUtil.LOAD,all_filters);
            if(file != null) {
                GSEAResultsDirTextField.setText(file.getParent());
                params.setGSEAResultsDirName(file.getParent());
@@ -699,9 +709,21 @@ public class BulkEMCreationPanel extends JPanel{
      */
      private void selectGMTDirButtonActionPerformed(
                java.awt.event.ActionEvent evt) {
-
+    	 // Create FileFilter
+         FileChooserFilter filter = new FileChooserFilter("All GMT Files","gmt" );          
+         FileChooserFilter filter_gct = new FileChooserFilter("All GMT Files","gct" );
+         FileChooserFilter filter_txt = new FileChooserFilter("All GMT Files","txt" );
+         FileChooserFilter filter_xls = new FileChooserFilter("All GMT Files","xls" );
+         
+         //the set of filter (required by the file util method
+         ArrayList<FileChooserFilter> all_filters = new ArrayList<FileChooserFilter>();
+         all_filters.add(filter);
+         all_filters.add(filter_gct);
+         all_filters.add(filter_txt);
+         all_filters.add(filter_xls);
+         
            // Get the file name
-           File file = FileUtil.getFile("GMT directory", FileUtil.LOAD);
+           File file = fileUtil.getFile(this, "GMT directory", FileUtil.LOAD,all_filters);
            if(file != null) {
                GMTDirectoryTextField.setText(file.getParent());
                params.setGMTDirName(file.getParent());
@@ -716,9 +738,21 @@ public class BulkEMCreationPanel extends JPanel{
      */
      private void selectGCTDirButtonActionPerformed(
                java.awt.event.ActionEvent evt) {
-
+    	// Create FileFilter
+         FileChooserFilter filter = new FileChooserFilter("All GMT Files","gmt" );          
+         FileChooserFilter filter_gct = new FileChooserFilter("All GMT Files","gct" );
+         FileChooserFilter filter_txt = new FileChooserFilter("All GMT Files","txt" );
+         FileChooserFilter filter_xls = new FileChooserFilter("All GMT Files","xls" );
+         
+         //the set of filter (required by the file util method
+         ArrayList<FileChooserFilter> all_filters = new ArrayList<FileChooserFilter>();
+         all_filters.add(filter);
+         all_filters.add(filter_gct);
+         all_filters.add(filter_txt);
+         all_filters.add(filter_xls);
+         
            // Get the file name
-           File file = FileUtil.getFile("GCT directory", FileUtil.LOAD);
+           File file = fileUtil.getFile(this,"GCT directory", FileUtil.LOAD,all_filters);
            if(file != null) {
                GCTDirectoryTextField.setText(file.getParent());
                params.setGCTDirName(file.getParent());
@@ -752,7 +786,8 @@ public class BulkEMCreationPanel extends JPanel{
             });
 
             importButton.setText("Build");
-            importButton.addActionListener(new BuildBulkEnrichmentMapActionListener(this));
+            //TODO:Add actionlistener
+            //importButton.addActionListener(new BuildBulkEnrichmentMapActionListener(this));
             importButton.setEnabled(true);
 
             panel.add(resetButton);
@@ -761,21 +796,24 @@ public class BulkEMCreationPanel extends JPanel{
 
             return panel;
         }
-
+        
+        //TODO: implement un-register service for this window
         private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {
-            CytoscapeDesktop desktop = Cytoscape.getDesktop();
+          /*  CytoscapeDesktop desktop = Cytoscape.getDesktop();
             CytoPanel cytoPanel = desktop.getCytoPanel(SwingConstants.WEST);
             // set the input window to null in the instance
             EnrichmentMapManager.getInstance().setInputWindow(null);
             cytoPanel.remove(this);
+       */
         }
 
         public void close() {
-            CytoscapeDesktop desktop = Cytoscape.getDesktop();
+         /*   CytoscapeDesktop desktop = Cytoscape.getDesktop();
             CytoPanel cytoPanel = desktop.getCytoPanel(SwingConstants.WEST);
             // set the input window to null in the instance
             EnrichmentMapManager.getInstance().setInputWindow(null);
             cytoPanel.remove(this);
+            */
         }
     /**
          *  Clear the current panel and clear the params associated with this panel
@@ -911,5 +949,25 @@ public class BulkEMCreationPanel extends JPanel{
           params.setMethod(EnrichmentMapParameters.method_DAVID);
       */
   }
+
+	public Component getComponent() {
+		// TODO Auto-generated method stub
+		return this;
+	}
+
+	public CytoPanelName getCytoPanelName() {
+		// TODO Auto-generated method stub
+		return CytoPanelName.WEST;
+	}
+
+	public Icon getIcon() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public String getTitle() {
+		// TODO Auto-generated method stub
+		return "Bulk Enrichment Map Input Panel";
+	}
    
 }

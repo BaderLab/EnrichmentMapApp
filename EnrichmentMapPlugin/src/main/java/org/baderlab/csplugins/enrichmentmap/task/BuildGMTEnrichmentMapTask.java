@@ -1,21 +1,33 @@
 package org.baderlab.csplugins.enrichmentmap.task;
 
-import cytoscape.task.*;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
-import org.baderlab.csplugins.enrichmentmap.model.GeneExpression;
-import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.GenericResult;
 import org.baderlab.csplugins.enrichmentmap.model.GenesetSimilarity;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfEnrichmentResults;
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.io.util.StreamUtil;
+import org.cytoscape.model.CyNetworkFactory;
+import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyTableFactory;
+import org.cytoscape.model.CyTableManager;
+import org.cytoscape.session.CySessionManager;
+import org.cytoscape.view.model.CyNetworkViewFactory;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
+import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualStyleFactory;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskMonitor;
 
 /**
  * Created by IntelliJ IDEA.
@@ -24,27 +36,68 @@ import org.baderlab.csplugins.enrichmentmap.model.SetOfEnrichmentResults;
  * Time: 4:27 PM
  * To change this template use File | Settings | File Templates.
  */
-public class BuildGMTEnrichmentMapTask implements Task{
+public class BuildGMTEnrichmentMapTask implements TaskFactory{
     // Keep track of progress for monitoring:
     private int maxValue;
     private TaskMonitor taskMonitor = null;
     private boolean interrupted = false;
 
+  //services required
+    private StreamUtil streamUtil;
+    private CyApplicationManager applicationManager;
+    private CyNetworkManager networkManager;
+    private CyNetworkViewManager networkViewManager;
+    private CyNetworkViewFactory networkViewFactory;
+    private CyNetworkFactory networkFactory;
+    private CyTableFactory tableFactory;
+    private CyTableManager tableManager;
+    
+    private VisualMappingManager visualMappingManager;
+    private VisualStyleFactory visualStyleFactory;
+    
+    //we will need all three mappers
+    private VisualMappingFunctionFactory vmfFactoryContinuous;
+    private VisualMappingFunctionFactory vmfFactoryDiscrete;
+    private VisualMappingFunctionFactory vmfFactoryPassthrough;
+    
+    
     private EnrichmentMapParameters params;
+    TaskIterator buildEMGMTTaskIterator;
 
-    public BuildGMTEnrichmentMapTask(EnrichmentMapParameters params) {
+    public BuildGMTEnrichmentMapTask(EnrichmentMapParameters params,
+    		CyNetworkFactory networkFactory, CyApplicationManager applicationManager, 
+    		CyNetworkManager networkManager, CyNetworkViewManager networkViewManager,
+    		CyTableFactory tableFactory,CyTableManager tableManager, CyNetworkViewFactory networkViewFactory,
+    		VisualMappingManager visualMappingManager,VisualStyleFactory visualStyleFactory,
+    		VisualMappingFunctionFactory vmfFactoryContinuous, VisualMappingFunctionFactory vmfFactoryDiscrete,
+    	     VisualMappingFunctionFactory vmfFactoryPassthrough, CySessionManager sessionManager,StreamUtil streamUtil) {
         //create a new instance of the parameters
-        this.params = new EnrichmentMapParameters();
+        this.params = new EnrichmentMapParameters(sessionManager,streamUtil);
 
         //copy the input variables into the new instance of the parameters
         this.params.copyInputParameters(params);
+        
+        this.networkFactory = networkFactory;
+        this.applicationManager = applicationManager;
+        this.networkManager = networkManager;
+        this.networkViewManager	= networkViewManager;
+        this.tableFactory = tableFactory;
+        this.tableManager = tableManager;
+        this.networkViewFactory = networkViewFactory;
+        this.streamUtil = streamUtil;
+        
+        this.visualMappingManager = visualMappingManager;
+        this.visualStyleFactory = visualStyleFactory;
+        
+        this.vmfFactoryContinuous = vmfFactoryContinuous;
+        this.vmfFactoryDiscrete = vmfFactoryDiscrete;
+        this.vmfFactoryPassthrough = vmfFactoryPassthrough;    
+
     }
 
 
     public void buildEnrichmentMap(){
-    //Load in the GMT file
-           try{
-        	   		
+
         	   		//create a new Enrichment Map
         	   		EnrichmentMap map = new EnrichmentMap(params);
 
@@ -53,17 +106,17 @@ public class BuildGMTEnrichmentMapTask implements Task{
         	   		//dataset 1.
         	   		DataSet current_dataset = map.getDataset(EnrichmentMap.DATASET1);
         	   		
-               //Load the geneset file as a dataset
-        	   		LoadDataSetTask dataset = new LoadDataSetTask(current_dataset,taskMonitor);
-        	   		dataset.run();
+        	   		//Load Dataset
+        			LoadDataSetTask loaddata = new LoadDataSetTask(current_dataset,streamUtil);
+        			buildEMGMTTaskIterator.append(loaddata.getIterator());
         	   		
                //in this case all the genesets are of interest
                params.setMethod(EnrichmentMapParameters.method_generic);
                current_dataset.setGenesetsOfInterest(current_dataset.getSetofgenesets());
               
-               //compute the geneset similarities
-                ComputeSimilarityTask similarities = new ComputeSimilarityTask(map,taskMonitor);
-                similarities.run();
+             //compute the geneset similarities
+               ComputeSimilarityTask similarities = new ComputeSimilarityTask(map);
+               buildEMGMTTaskIterator.append(similarities);
 
                 HashMap<String, GenesetSimilarity> similarity_results = similarities.getGeneset_similarities();
 
@@ -89,23 +142,15 @@ public class BuildGMTEnrichmentMapTask implements Task{
                 }
                current_dataset.setEnrichments(setofenrichments);               
 
-                //build the resulting map
-                VisualizeEnrichmentMapTask viz_map = new VisualizeEnrichmentMapTask(map,taskMonitor);
-                viz_map.run();
-
-       } catch (OutOfMemoryError e) {
-           taskMonitor.setException(e,"Out of Memory. Please increase memory allotement for cytoscape.");
-
-       }catch(Exception e){
-           taskMonitor.setException(e,"unable to build/visualize map");
-       }
-    }
-
-    /**
-     * Run the Task.
-     */
-    public void run() {
-        this.buildEnrichmentMap();
+             //build the resulting map
+               CreateEnrichmentMapNetworkTask create_map = new CreateEnrichmentMapNetworkTask(map,networkFactory, applicationManager,networkManager,tableFactory,tableManager);
+               buildEMGMTTaskIterator.append(create_map);
+               
+               VisualizeEnrichmentMapTask map_viz = new VisualizeEnrichmentMapTask(map,networkManager, networkViewManager,
+                  		networkViewFactory,visualMappingManager,visualStyleFactory,
+                		vmfFactoryContinuous, vmfFactoryDiscrete,vmfFactoryPassthrough);
+               buildEMGMTTaskIterator.append(map_viz);
+       
     }
 
     /**
@@ -127,13 +172,24 @@ public class BuildGMTEnrichmentMapTask implements Task{
         this.taskMonitor = taskMonitor;
     }
 
-    /**
-     * Gets the Task Title.
-     *
-     * @return human readable task title.
-     */
-    public String getTitle() {
-        return new String("Building Enrichment Map based on GMT File");
-    }
+
+	
+	public void run(TaskMonitor taskMonitor) throws Exception {
+		this.taskMonitor = taskMonitor;
+		taskMonitor.setTitle("Building Enrichment Map based on GMT File");
+		
+		this.buildEnrichmentMap();
+	}
+
+
+	 public TaskIterator createTaskIterator() {
+			this.buildEMGMTTaskIterator = new TaskIterator();
+			return buildEMGMTTaskIterator;
+		}
+
+		public boolean isReady() {
+			// TODO Auto-generated method stub
+			return false;
+		}
 
 }

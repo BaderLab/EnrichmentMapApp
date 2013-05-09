@@ -43,16 +43,10 @@
 
 package org.baderlab.csplugins.enrichmentmap.actions;
 
-import giny.model.Edge;
-import giny.model.Node;
-import giny.view.GraphViewChangeListener;
-import giny.view.GraphViewChangeEvent;
+
 
 import java.util.List;
 
-import cytoscape.view.CytoscapeDesktop;
-import cytoscape.view.cytopanels.CytoPanel;
-import cytoscape.Cytoscape;
 
 import javax.swing.*;
 
@@ -72,9 +66,9 @@ import org.baderlab.csplugins.enrichmentmap.view.HeatMapPanel;
  * Class listener for node and edge selections.  For each enrichment map there is a separate instance of this
  * class specifying the enrichment map parameters, selected nodes, selected edges and heatmap panels
  */
-public class EnrichmentMapActionListener implements  GraphViewChangeListener {
+public class EnrichmentMapActionListener {
 
-    private EnrichmentMap map;
+ /*   private EnrichmentMap map;
     private HeatMapPanel edgeOverlapPanel;
     private HeatMapPanel nodeOverlapPanel;
 
@@ -88,7 +82,7 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
      *
      * @param params  - enrichment map parameters associated with this actionlistener
      */
-    public EnrichmentMapActionListener(EnrichmentMap map) {
+/*    public EnrichmentMapActionListener(EnrichmentMap map) {
         this.map = map;
 
         //get the static enrichment map manager.
@@ -122,7 +116,7 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
      *
      * @param event
      */
-    public void graphViewChanged(GraphViewChangeEvent event){
+/*    public void graphViewChanged(GraphViewChangeEvent event){
         //TODO: improve performance of calculating the Union of genesets (Nodes) and intersection of overlaps (Edges)
         // Meanwhile we have a flag to skip the updating of the Heatmap, which can be toggled by a check-mark in the EM-Menu
         boolean override_revalidate_heatmap = EnrichmentMapUtils.isOverrideHeatmapRevalidation();
@@ -225,5 +219,5 @@ public class EnrichmentMapActionListener implements  GraphViewChangeListener {
 	            cytoPanel.setSelectedIndex(cytoPanel.indexOfComponent(edgeOverlapPanel));
             }
         }
-    }
+    }*/
 }

@@ -43,18 +43,8 @@
 
 package org.baderlab.csplugins.enrichmentmap.actions;
 
-import cytoscape.CyNetwork;
-import cytoscape.Cytoscape;
-import cytoscape.view.CyNetworkView;
-import cytoscape.data.CyAttributes;
-
 import java.util.Iterator;
 import java.util.ArrayList;
-
-import giny.model.Node;
-import giny.model.Edge;
-import giny.view.NodeView;
-import giny.view.EdgeView;
 
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
@@ -72,9 +62,9 @@ import org.baderlab.csplugins.enrichmentmap.view.SliderBarPanel;
  * <p>
  * slider bar move action
  */
-public class SliderBarActionListener implements ChangeListener {
+public class SliderBarActionListener {
 
-    private SliderBarPanel panel;
+/*    private SliderBarPanel panel;
     private EnrichmentMapParameters params;
 
     private ArrayList<HiddenNodes> hiddenNodes;
@@ -95,7 +85,7 @@ public class SliderBarActionListener implements ChangeListener {
      * @param attrib1 - attribute for dataset 1 that the slider bar is specific to (i.e. p-value or q-value)
      * @param attrib2 - attribute for dataset 2 that the slider bar is specific to (i.e. p-value or q-value)
      */
-    public SliderBarActionListener(SliderBarPanel panel, EnrichmentMapParameters params, String attrib1, String attrib2, boolean onlyEdges) {
+/*    public SliderBarActionListener(SliderBarPanel panel, EnrichmentMapParameters params, String attrib1, String attrib2, boolean onlyEdges) {
         this.panel = panel;
         this.params = params;
         hiddenNodes = new ArrayList();
@@ -113,7 +103,7 @@ public class SliderBarActionListener implements ChangeListener {
      *
      * @param e
      */
-    public void stateChanged(ChangeEvent e){
+/*    public void stateChanged(ChangeEvent e){
 
         //check to see if the event is associated with only edges
         if(onlyEdges){
@@ -188,7 +178,7 @@ public class SliderBarActionListener implements ChangeListener {
 */
 
        //go through all the existing nodes to see if we need to hide any new nodes.
-       for(int i = 0; i< nodes.length; i++){
+/*       for(int i = 0; i< nodes.length; i++){
            Node currentNode = network.getNode(nodes[i]);
            NodeView currentView = view.getNodeView(currentNode);
            
@@ -389,6 +379,6 @@ public class SliderBarActionListener implements ChangeListener {
             return y;
         }
 
-    }
+    }*/
 
 }

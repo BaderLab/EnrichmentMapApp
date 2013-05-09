@@ -51,8 +51,8 @@ import javax.swing.text.html.HTMLEditorKit;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapUtils;
 import org.baderlab.csplugins.enrichmentmap.Enrichment_Map_Plugin;
-
-import cytoscape.*;
+import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.util.swing.*;
 
 /**
  * @author revilo
@@ -66,9 +66,13 @@ public class AboutPanel extends JDialog {
      */
     private static final long serialVersionUID = 7233557042420194604L;
     
+    private CySwingApplication application;
+    private OpenBrowser browser;
    
-    public AboutPanel() {
-        super(Cytoscape.getDesktop(), "About Enrichment Map", false);
+    public AboutPanel(CySwingApplication application, OpenBrowser browser) {
+        super(application.getJFrame(), "About Enrichment Map", false);
+        this.application=application;
+        this.browser = browser;
         setResizable(false);
 
         String pluginUrl = EnrichmentMapUtils.pluginUrl;
@@ -129,7 +133,8 @@ public class AboutPanel extends JDialog {
 
         public void hyperlinkUpdate(HyperlinkEvent event) {
             if (event.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-                cytoscape.util.OpenBrowser.openURL(event.getURL().toString());
+                
+            		browser.openURL(event.getURL().toString());
             }
         }
     }	

@@ -38,12 +38,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import cytoscape.visual.mappings.BoundaryRangeValues;
-import cytoscape.visual.mappings.ContinuousMapping;
-import cytoscape.visual.mappings.Interpolator;
-import cytoscape.visual.mappings.LinearNumberToColorInterpolator;
-import cytoscape.visual.mappings.ObjectMapping;
-import cytoscape.visual.mappings.continuous.ContinuousRangeCalculator;
 
 /**
  * Maps color gradient onto network views.
@@ -70,7 +64,7 @@ public class ColorGradientMapper {
      */
     public static Color getColorGradient(ColorGradientTheme theme, ColorGradientRange range, String gene, Double measurement) {
 
-        // sparse matrix files will contain NaN value when no data is available
+ /*       // sparse matrix files will contain NaN value when no data is available
         if (measurement.equals(Double.NaN)) return theme.getNoDataColor();
 
         // sanity check
@@ -83,11 +77,12 @@ public class ColorGradientMapper {
                                                              continuousMapping.getInterpolator(), attrBundle);
 
         return (Color)calculator.calculateRangeValue(gene);
-
+*/
+    	return Color.red;
     }
 
 
-
+/*
     public static ContinuousMapping getContinuousMapping(ColorGradientTheme colorGradientTheme,
                                                          ColorGradientRange colorGradientRange) {
 
@@ -117,7 +112,7 @@ public class ColorGradientMapper {
         return continuousMapping;
     }
 
-    	/*
+*/    	/*
      * This hack is a workaround for the API change in Cytoscape 2.8.0.
      * The issue involves a change in the signature of the constructor for
      * ContinuousRangeCalculator from ArrayList to List.  This workaround uses
@@ -125,7 +120,7 @@ public class ColorGradientMapper {
      * doesn't get confused when the constructor signature isn't what it
      * expects.
      */
-    private static ContinuousRangeCalculator createContinuousRangeCalculatorHack(ArrayList<?> points, Interpolator interpolator, Map<String, Double> attributes) {
+/*    private static ContinuousRangeCalculator createContinuousRangeCalculatorHack(ArrayList<?> points, Interpolator interpolator, Map<String, Double> attributes) {
 		Constructor<ContinuousRangeCalculator> constructor = null;
 		for (Class<?> type : new Class[] { ArrayList.class, List.class }) {
 	    	try {
@@ -151,7 +146,7 @@ public class ColorGradientMapper {
 			throw new RuntimeException(e);
 		}
 	}
-
+*/
 	/*
      * This hack is a workaround for the API change in Cytoscape 2.8.0.
      * The issue involves a change in the return type of
@@ -160,7 +155,7 @@ public class ColorGradientMapper {
      * invoke getAllPoints() so the bytecode verifier doesn't get confused
      * when the return type isn't what it expects.
      */
-    private static ArrayList<?> getAllPointsHack(ContinuousMapping mapping) {
+ /*   private static ArrayList<?> getAllPointsHack(ContinuousMapping mapping) {
     	try {
 			Method method = ContinuousMapping.class.getMethod("getAllPoints");
 			return (ArrayList<?>) method.invoke(mapping);
@@ -177,7 +172,7 @@ public class ColorGradientMapper {
 		}
 	}
 
-
+*/
     /**
      * Gets color gradient (as hex string) for given gene/sample/data type.
      *

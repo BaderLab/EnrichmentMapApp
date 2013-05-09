@@ -5,17 +5,14 @@ import java.awt.*;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import com.lowagie.text.*;
+/*import com.lowagie.text.*;
 import com.lowagie.text.Image;
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfTemplate;
 import com.lowagie.text.pdf.PdfWriter;
 import com.lowagie.text.pdf.DefaultFontMapper;
-import cytoscape.Cytoscape;
-import cytoscape.ding.DingNetworkView;
-import cytoscape.view.CyNetworkView;
-import cytoscape.view.InternalFrameComponent;
+*/
 
 import javax.swing.*;
 import javax.swing.table.JTableHeader;
@@ -39,7 +36,7 @@ public void export(final JPanel legendpanel, final JTable jtable1, final JTableH
 		//final InternalFrameComponent ifc = Cytoscape.getDesktop()
 				//.getNetworkViewManager().getInternalFrameComponent(view);
 
-        Rectangle pageSize;
+/*        Rectangle pageSize;
         if(jtable1.getHeight() > PageSize.LETTER.getHeight())
 		    pageSize = new Rectangle(PageSize.LETTER.getWidth(), jtable1.getHeight());
         else
@@ -99,7 +96,7 @@ public void export(final JPanel legendpanel, final JTable jtable1, final JTableH
 			}
 		} catch (DocumentException exp) {
 			throw new IOException(exp.getMessage());
-		}
+		}*/
 	}
 
 

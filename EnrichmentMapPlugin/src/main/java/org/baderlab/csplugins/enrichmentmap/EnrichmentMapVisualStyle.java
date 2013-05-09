@@ -43,15 +43,16 @@
 
 package org.baderlab.csplugins.enrichmentmap;
 
-import cytoscape.visual.*;
-import cytoscape.visual.calculators.Calculator;
-import cytoscape.visual.calculators.BasicCalculator;
-import cytoscape.visual.mappings.*;
-import cytoscape.CyNetwork;
-
 import java.awt.*;
-import java.util.HashSet;
-import java.util.Iterator;
+
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
+import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
+import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.view.vizmap.mappings.BoundaryRangeValues;
+import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
+import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
+import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
 
 /**
  * Created by
@@ -63,8 +64,15 @@ import java.util.Iterator;
  */
 public class EnrichmentMapVisualStyle {
 
-    EnrichmentMapParameters params;
-
+	private EnrichmentMapParameters params;
+	
+	//services required for setting up visualStyle
+	//we will need all three mappers
+    private VisualMappingFunctionFactory vmfFactoryContinuous;
+    private VisualMappingFunctionFactory vmfFactoryDiscrete;
+    private VisualMappingFunctionFactory vmfFactoryPassthrough;
+       
+	
     public static final int maxNodeLabelLength = 15;
 
     //Attribute Names - prefix is appended to each one of these names in order to associated these
@@ -119,17 +127,19 @@ public class EnrichmentMapVisualStyle {
     public static Color lightest_phenotype2 = new Color(179,208,255);
     public static Color overColor = Color.WHITE;
 
-    private VisualStyle vs;
-
     /**
      * Constructor
      *
      * @param string - name of visual style
      * @param params - enrichment map parameters associated with this visual style.
      */
-    public EnrichmentMapVisualStyle(String string, EnrichmentMapParameters params) {
+    public EnrichmentMapVisualStyle(EnrichmentMapParameters params,VisualMappingFunctionFactory vmfFactoryContinuous, VisualMappingFunctionFactory vmfFactoryDiscrete,
+    	     VisualMappingFunctionFactory vmfFactoryPassthrough) {
         this.params = params;
-        vs = new VisualStyle(string);
+        
+        this.vmfFactoryContinuous = vmfFactoryContinuous;
+        this.vmfFactoryDiscrete = vmfFactoryDiscrete;
+        this.vmfFactoryPassthrough = vmfFactoryPassthrough;   
     }
 
     /**
@@ -139,15 +149,13 @@ public class EnrichmentMapVisualStyle {
      * @param prefix - prefix to be appended to each of the attribute names
      * @return visual style
      */
-    public VisualStyle createVisualStyle(CyNetwork network, String prefix){
+    public VisualStyle createVisualStyle(VisualStyle vs, String prefix){
+    	
+    	//set default background colour
+    	vs.setDefaultValue(BasicVisualLexicon.NETWORK_BACKGROUND_PAINT, new Color(205,205,235));    	        
 
-        GlobalAppearanceCalculator globalAppCalc = new GlobalAppearanceCalculator();
-        globalAppCalc.setDefaultBackgroundColor(new Color(205,205,235));
-
-        vs.setGlobalAppearanceCalculator(globalAppCalc);
-
-        createEdgeAppearance(network, prefix);
-        createNodeAppearance(network, prefix);
+        vs = createEdgeAppearance(vs, prefix);
+        vs = createNodeAppearance(vs, prefix);
 
         return vs;
     }
@@ -159,48 +167,33 @@ public class EnrichmentMapVisualStyle {
      * @param network - network to apply this visual style
      * @param prefix - prefix to be appended to each of the attribute names
      */
-    private void createEdgeAppearance(CyNetwork network, String prefix){
-        EdgeAppearanceCalculator edgeAppCalc = new EdgeAppearanceCalculator();
-
-        //set the default edge appearance
-        EdgeAppearance edgeAppear = new EdgeAppearance();
-        edgeAppear.set(VisualPropertyType.EDGE_COLOR, new Color(100,200,000) );
-        edgeAppCalc.setDefaultAppearance(edgeAppear);
-
-
-        //create a discrete mapper to map the colour of the edge based on the enrichment set
-        DiscreteMapping disMapping = new DiscreteMapping(new Color(100,200,000) , ObjectMapping.EDGE_MAPPING);
-        disMapping.setControllingAttributeName(prefix + EnrichmentMapVisualStyle.ENRICHMENT_SET,network,false);
+    private VisualStyle createEdgeAppearance(VisualStyle vs, String prefix){
+                      
+        //add the discrete mapper for edge colour:
+        DiscreteMapping<Integer,Paint> disMapping = (DiscreteMapping<Integer,Paint>)this.vmfFactoryDiscrete.createVisualMappingFunction(prefix + EnrichmentMapVisualStyle.ENRICHMENT_SET, Integer.class, BasicVisualLexicon.EDGE_PAINT);
         disMapping.putMapValue(new Integer(0),new Color(100,200,000));
         disMapping.putMapValue(new Integer(1),new Color(100,200,000));
         disMapping.putMapValue(new Integer(2),new Color(100,149,237));
-
-        Calculator colourCalculator = new BasicCalculator(prefix + "edgecolor", disMapping,VisualPropertyType.EDGE_COLOR);
-        edgeAppCalc.setCalculator(colourCalculator);
-
+        
+        vs.addVisualMappingFunction(disMapping);
 
         //Continous Mapping - set edge line thickness based on the number of genes in the overlap
-        //ContinuousMapping continuousMapping_edgewidth = new ContinuousMapping((new Integer(1)).getClass(),prefix + EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT);
-        ContinuousMapping continuousMapping_edgewidth = new ContinuousMapping(1, ObjectMapping.EDGE_MAPPING);
-        continuousMapping_edgewidth.setControllingAttributeName(prefix + EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT, network, false);
-        Interpolator numTonum2 = new LinearNumberToNumberInterpolator();
-        continuousMapping_edgewidth.setInterpolator(numTonum2);
-
+        ContinuousMapping<Double,Double> conmapping_edgewidth = (ContinuousMapping<Double,Double>) this.vmfFactoryContinuous.createVisualMappingFunction(prefix + EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT, Double.class, BasicVisualLexicon.EDGE_WIDTH);
+                
         Double under_width = 0.5;
         Double min_width = 1.0;
         Double max_width = 5.0;
         Double over_width = 6.0;
 
         // Create boundary conditions                  less than,   equals,  greater than
-        BoundaryRangeValues bv4 = new BoundaryRangeValues(under_width, min_width, min_width);
-        BoundaryRangeValues bv5 = new BoundaryRangeValues(max_width, max_width, over_width);
-        continuousMapping_edgewidth.addPoint(params.getSimilarityCutOff(), bv4);
-        continuousMapping_edgewidth.addPoint(1.0, bv5);
-        Calculator edgeWidthCalculator = new BasicCalculator(prefix + "edgesize", continuousMapping_edgewidth, VisualPropertyType.EDGE_LINE_WIDTH);
-        edgeAppCalc.setCalculator(edgeWidthCalculator);
-
-        vs.setEdgeAppearanceCalculator(edgeAppCalc);
-
+        BoundaryRangeValues<Double> bv4 = new BoundaryRangeValues<Double>(under_width, min_width, min_width);
+        BoundaryRangeValues<Double> bv5 = new BoundaryRangeValues<Double>(max_width, max_width, over_width);
+        conmapping_edgewidth.addPoint(params.getSimilarityCutOff(), bv4);
+        conmapping_edgewidth.addPoint(1.0, bv5);
+        
+        vs.addVisualMappingFunction(conmapping_edgewidth);
+        
+        return vs;
 
     }
 
@@ -212,97 +205,79 @@ public class EnrichmentMapVisualStyle {
      * @param network - network to apply this visual style
      * @param prefix - prefix to be appended to each of the attribute names
      */
-    private void createNodeAppearance(CyNetwork network,String prefix){
+    private VisualStyle createNodeAppearance(VisualStyle vs,String prefix){
 
         // Create boundary conditions                  less than,   equals,  greater than
-        BoundaryRangeValues bv3a = new BoundaryRangeValues(max_phenotype2,max_phenotype2,max_phenotype2);
-        BoundaryRangeValues bv3b = new BoundaryRangeValues(lighter_phenotype2, lighter_phenotype2, max_phenotype2);
-        BoundaryRangeValues bv3c = new BoundaryRangeValues(lightest_phenotype2, lightest_phenotype2,lighter_phenotype2);
-        BoundaryRangeValues bv3d = new BoundaryRangeValues(lightest_phenotype2, overColor, overColor);
-        BoundaryRangeValues bv3e = new BoundaryRangeValues(overColor, overColor,overColor);
-        BoundaryRangeValues bv3f = new BoundaryRangeValues(overColor, overColor, lightest_phenotype1);
-        BoundaryRangeValues bv3g = new BoundaryRangeValues(lightest_phenotype1, lightest_phenotype1, lighter_phenotype1);
-        BoundaryRangeValues bv3h = new BoundaryRangeValues(lighter_phenotype1, lighter_phenotype1, max_phenotype1);
-        BoundaryRangeValues bv3i = new BoundaryRangeValues(max_phenotype1, max_phenotype1, max_phenotype1);
+        BoundaryRangeValues<Paint> bv3a = new BoundaryRangeValues<Paint>(max_phenotype2,max_phenotype2,max_phenotype2);
+        BoundaryRangeValues<Paint> bv3b = new BoundaryRangeValues<Paint>(lighter_phenotype2, lighter_phenotype2, max_phenotype2);
+        BoundaryRangeValues<Paint> bv3c = new BoundaryRangeValues<Paint>(lightest_phenotype2, lightest_phenotype2,lighter_phenotype2);
+        BoundaryRangeValues<Paint> bv3d = new BoundaryRangeValues<Paint>(lightest_phenotype2, overColor, overColor);
+        BoundaryRangeValues<Paint> bv3e = new BoundaryRangeValues<Paint>(overColor, overColor,overColor);
+        BoundaryRangeValues<Paint> bv3f = new BoundaryRangeValues<Paint>(overColor, overColor, lightest_phenotype1);
+        BoundaryRangeValues<Paint> bv3g = new BoundaryRangeValues<Paint>(lightest_phenotype1, lightest_phenotype1, lighter_phenotype1);
+        BoundaryRangeValues<Paint> bv3h = new BoundaryRangeValues<Paint>(lighter_phenotype1, lighter_phenotype1, max_phenotype1);
+        BoundaryRangeValues<Paint> bv3i = new BoundaryRangeValues<Paint>(max_phenotype1, max_phenotype1, max_phenotype1);
 
-
-        NodeAppearanceCalculator nodeAppCalc = new NodeAppearanceCalculator();
 
         //set the default node appearance
-        NodeAppearance nodeAppear = new NodeAppearance();
-        nodeAppear.set(VisualPropertyType.NODE_FILL_COLOR, new Color(190,190,190) /* a lighter grey*/);
-        nodeAppear.set(VisualPropertyType.NODE_BORDER_COLOR,new Color(190,190,190) /* a lighter grey*/);
-        nodeAppear.set(VisualPropertyType.NODE_SHAPE, NodeShape.ELLIPSE);
+        vs.setDefaultValue(BasicVisualLexicon.NODE_FILL_COLOR, new Color(190,190,190) /* a lighter grey*/);
+        vs.setDefaultValue(BasicVisualLexicon.NODE_BORDER_PAINT, new Color(190,190,190) /* a lighter grey*/);
+        vs.setDefaultValue(BasicVisualLexicon.NODE_SHAPE,NodeShapeVisualProperty.ELLIPSE );
 
         //change the default node and border size only when using two distinct dataset to be more equal.
         if(params.isTwoDistinctExpressionSets()){
-            nodeAppear.set(VisualPropertyType.NODE_SIZE, new Double(15.0));
-            nodeAppear.set(VisualPropertyType.NODE_LINE_WIDTH, new Double(15.0));
+        	vs.setDefaultValue(BasicVisualLexicon.NODE_SIZE, new Double(15.0));
+        	vs.setDefaultValue(BasicVisualLexicon.NODE_BORDER_WIDTH, new Double(15.0));
         }
         else{
-            nodeAppear.set(VisualPropertyType.NODE_SIZE, new Double(20.0));
-            nodeAppear.set(VisualPropertyType.NODE_LINE_WIDTH, new Double(4.0));
-        }
-        nodeAppCalc.setDefaultAppearance(nodeAppear);
+        	vs.setDefaultValue(BasicVisualLexicon.NODE_SIZE, new Double(20.0));
+        	vs.setDefaultValue(BasicVisualLexicon.NODE_BORDER_WIDTH, new Double(4.0));
+        }        
         
         // Passthrough Mapping - set node label
-        PassThroughMapping pm = new PassThroughMapping(new String(), prefix + EnrichmentMapVisualStyle.FORMATTED_NAME);
+        PassthroughMapping<String,String> pm = (PassthroughMapping<String,String>)this.vmfFactoryPassthrough.createVisualMappingFunction(prefix + EnrichmentMapVisualStyle.FORMATTED_NAME,String.class,BasicVisualLexicon.NODE_LABEL);
 
         //if it is an EMgmt then we want the node label to be the description.
         if(params.isEMgmt()){
-            pm = new PassThroughMapping(new String(), prefix + EnrichmentMapVisualStyle.GS_DESCR);
+        	pm = (PassthroughMapping<String,String>)this.vmfFactoryPassthrough.createVisualMappingFunction(prefix + EnrichmentMapVisualStyle.GS_DESCR,String.class,BasicVisualLexicon.NODE_LABEL);            
         }
 
-        Calculator nlc = new BasicCalculator(prefix +"nodeLabel",
-                                                          pm, VisualPropertyType.NODE_LABEL);
-               nodeAppCalc.setCalculator(nlc);
+        vs.addVisualMappingFunction(pm);
 
 
         //Continuous Mapping - set node size based on the size of the geneset
-        ContinuousMapping continuousMapping_size = new ContinuousMapping(35, ObjectMapping.NODE_MAPPING);
-        continuousMapping_size.setControllingAttributeName(prefix+ EnrichmentMapVisualStyle.GS_SIZE_DATASET1, network, false);
-        Interpolator numTonum = new LinearNumberToNumberInterpolator();
-        continuousMapping_size.setInterpolator(numTonum);
-
-        Integer min = 20;
-        Integer max = 65;
+        ContinuousMapping<Integer,Double> continuousMapping_size = (ContinuousMapping<Integer,Double>)this.vmfFactoryContinuous.createVisualMappingFunction(prefix+ EnrichmentMapVisualStyle.GS_SIZE_DATASET1, Integer.class, BasicVisualLexicon.NODE_SIZE);
+        
+        Double min = 20.0;
+        Double max = 65.0;
 
            // Create boundary conditions                  less than,   equals,  greater than
-         BoundaryRangeValues bv0 = new BoundaryRangeValues(min, min, min);
-         BoundaryRangeValues bv1 = new BoundaryRangeValues(max, max, max);
-        continuousMapping_size.addPoint(10.0, bv0);
-        continuousMapping_size.addPoint(474.0, bv1);
-        Calculator nodeSizeCalculator = new BasicCalculator(prefix+"size2size", continuousMapping_size, VisualPropertyType.NODE_SIZE);
-         nodeAppCalc.setCalculator(nodeSizeCalculator);
+         BoundaryRangeValues<Double> bv0 = new BoundaryRangeValues<Double>(min, min, min);
+         BoundaryRangeValues<Double> bv1 = new BoundaryRangeValues<Double>(max, max, max);
+        continuousMapping_size.addPoint(10, bv0);
+        continuousMapping_size.addPoint(474, bv1);
+        
+        vs.addVisualMappingFunction(continuousMapping_size);
 
         if(params.isTwoDatasets()){
 
-
             //Continuous Mapping - set node size based on the size of the geneset
-            ContinuousMapping continuousMapping_size_dataset2 = new ContinuousMapping(35, ObjectMapping.NODE_MAPPING);
-		continuousMapping_size_dataset2.setControllingAttributeName(prefix + EnrichmentMapVisualStyle.GS_SIZE_DATASET2, network, false);
-            Interpolator numTonum3 = new LinearNumberToNumberInterpolator();
-            continuousMapping_size_dataset2.setInterpolator(numTonum3);
-
-            Integer min_line = 4;
-            Integer max_line = 15;
+        	ContinuousMapping<Integer,Double> continuousMapping_size_dataset2 = (ContinuousMapping<Integer,Double>)this.vmfFactoryContinuous.createVisualMappingFunction(prefix+ EnrichmentMapVisualStyle.GS_SIZE_DATASET2, Integer.class, BasicVisualLexicon.NODE_SIZE);
+                        
+            Double min_line = 4.0;
+            Double max_line = 15.0;
                // Create boundary conditions                  less than,   equals,  greater than
-             BoundaryRangeValues bv0a = new BoundaryRangeValues(min_line, min_line, min_line);
-             BoundaryRangeValues bv1a = new BoundaryRangeValues(max_line, max_line, max_line);
-            continuousMapping_size_dataset2.addPoint(10.0, bv0a);
-            continuousMapping_size_dataset2.addPoint(474.0, bv1a);
-            Calculator nodelineSizeCalculator = new BasicCalculator(prefix + "size2size", continuousMapping_size_dataset2, VisualPropertyType.NODE_LINE_WIDTH);
-             nodeAppCalc.setCalculator(nodelineSizeCalculator);
-
-
+             BoundaryRangeValues<Double> bv0a = new BoundaryRangeValues<Double>(min_line, min_line, min_line);
+             BoundaryRangeValues<Double> bv1a = new BoundaryRangeValues<Double>(max_line, max_line, max_line);
+            continuousMapping_size_dataset2.addPoint(10, bv0a);
+            continuousMapping_size_dataset2.addPoint(474, bv1a);
+            
+            vs.addVisualMappingFunction(continuousMapping_size_dataset2);
 
             //Continuous Mapping - set node line colour based on the sign of the ES score of second dataset
             //Color scale and mapper used by node colour and node line colour
-            ContinuousMapping continuousMapping_width_col = new ContinuousMapping(Color.WHITE, ObjectMapping.NODE_MAPPING);
-            continuousMapping_width_col.setControllingAttributeName(prefix+ EnrichmentMapVisualStyle.COLOURING_DATASET2, network, false);
-            Interpolator numToColor2 = new LinearNumberToColorInterpolator();
-            continuousMapping_width_col.setInterpolator(numToColor2);
-
+            ContinuousMapping<Double,Paint> continuousMapping_width_col = (ContinuousMapping<Double,Paint>)this.vmfFactoryContinuous.createVisualMappingFunction(prefix+ EnrichmentMapVisualStyle.COLOURING_DATASET2, Double.class, BasicVisualLexicon.NODE_BORDER_PAINT);
+            
             // Set the attribute point values associated with the boundary values
             continuousMapping_width_col.addPoint(-1.0, bv3a);
             continuousMapping_width_col.addPoint(-0.995, bv3b);
@@ -314,21 +289,14 @@ public class EnrichmentMapVisualStyle {
             continuousMapping_width_col.addPoint(0.995, bv3h);
             continuousMapping_width_col.addPoint(1.0, bv3i);
 
-            Calculator nodeColorCalculator_width_col = new BasicCalculator(prefix + "ES2Colour", continuousMapping_width_col, VisualPropertyType.NODE_BORDER_COLOR);
-             nodeAppCalc.setCalculator(nodeColorCalculator_width_col);
-
+            vs.addVisualMappingFunction(continuousMapping_width_col);
 
         }
 
         //Continuous Mapping - set node colour based on the sign of the ES score of first dataset
 
-        ContinuousMapping continuousMapping = new ContinuousMapping(Color.WHITE, ObjectMapping.NODE_MAPPING);  
-	   continuousMapping.setControllingAttributeName(prefix+ EnrichmentMapVisualStyle.COLOURING_DATASET1, network, false);
-        
-        Interpolator numToColor = new LinearNumberToColorInterpolator();
-
-        continuousMapping.setInterpolator(numToColor);
-
+        ContinuousMapping<Double,Paint> continuousMapping = (ContinuousMapping<Double,Paint>)this.vmfFactoryContinuous.createVisualMappingFunction(prefix+ EnrichmentMapVisualStyle.COLOURING_DATASET1, Double.class, BasicVisualLexicon.NODE_FILL_COLOR);
+        	         
          // Set the attribute point values associated with the boundary values
          // Set the attribute point values associated with the boundary values
         continuousMapping.addPoint(-1.0, bv3a);
@@ -341,9 +309,8 @@ public class EnrichmentMapVisualStyle {
         continuousMapping.addPoint(0.995, bv3h);
         continuousMapping.addPoint(1.0, bv3i);
 
-        Calculator nodeColorCalculator = new BasicCalculator(prefix + "ES2Colour", continuousMapping, VisualPropertyType.NODE_FILL_COLOR);
-         nodeAppCalc.setCalculator(nodeColorCalculator);
-
+        vs.addVisualMappingFunction(continuousMapping);
+        
          //TODO: Add visual style geneset type support
         //if it is an EM geneset file and there are more than one Geneset type, map the types to shapes.
 /*        if(.size() > 1){
@@ -382,9 +349,8 @@ public class EnrichmentMapVisualStyle {
 
         }
 
-*/
-       vs.setNodeAppearanceCalculator(nodeAppCalc);
-
+*/      
+       return vs;
 
     }
 }

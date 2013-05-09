@@ -1,18 +1,31 @@
 package org.baderlab.csplugins.enrichmentmap.task;
 
+import static org.mockito.Mockito.mock;
+
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
+import org.baderlab.csplugins.enrichmentmap.StreamUtil;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.parsers.EnrichmentResultFileReaderTask;
+import org.baderlab.csplugins.enrichmentmap.parsers.ExpressionFileReaderTask;
+import org.baderlab.csplugins.enrichmentmap.parsers.GMTFileReaderTask;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.swing.DialogTaskManager;
 
 import junit.framework.TestCase;
 
 public class LoadEdbDatasetTest extends TestCase {
+
+
+	private TaskMonitor taskMonitor = mock(TaskMonitor.class);
+	private StreamUtil streamUtil  = new StreamUtil();
+	
 	public void setUp() throws Exception {
 		
 	}
 	
-	public void testEdbLoad(){
+	public void testEdbLoad() throws Exception{
 		EnrichmentMapParameters params = new EnrichmentMapParameters();
 		
 		//for a dataset we require genesets, an expression file (optional), enrichment results
@@ -40,19 +53,28 @@ public class LoadEdbDatasetTest extends TestCase {
 		//create a dataset
 		DataSet dataset = new DataSet(em, EnrichmentMap.DATASET1,files);		
 		em.addDataset(EnrichmentMap.DATASET1, dataset);
-				
+
 		//create a DatasetTask
-		LoadDataSetTask load_task = new LoadDataSetTask(dataset);
+		//create a DatasetTask
+		//load Data
+				GMTFileReaderTask task = new GMTFileReaderTask(dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
+			    task.run(taskMonitor);
+		
+				EnrichmentResultFileReaderTask enrichmentResultsFilesTask = new EnrichmentResultFileReaderTask(dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
+		        enrichmentResultsFilesTask.run(taskMonitor); 
+		        
+		        //create dummy expression
+		        CreateDummyExpressionTask dummyExpressionTask = new CreateDummyExpressionTask(dataset);
+				dummyExpressionTask.run(taskMonitor);		        
 				
-		load_task.run();
+				em.filterGenesets();
+				
+				InitializeGenesetsOfInterestTask genesets_init = new InitializeGenesetsOfInterestTask(em);
+		        genesets_init.run(taskMonitor);
+		        
+		        ComputeSimilarityTask similarities = new ComputeSimilarityTask(em);
+		        similarities.run(taskMonitor);
 		
-		em.filterGenesets();
-		
-		InitializeGenesetsOfInterestTask genesets_init = new InitializeGenesetsOfInterestTask(em);
-        genesets_init.run();
-        
-        ComputeSimilarityTask similarities = new ComputeSimilarityTask(em);
-        similarities.run();
         
       //check to see if the dataset loaded
         //although the original analysis had 193 genesets because this is loaded from

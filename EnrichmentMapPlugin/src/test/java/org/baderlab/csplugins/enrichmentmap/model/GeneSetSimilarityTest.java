@@ -1,10 +1,14 @@
 package org.baderlab.csplugins.enrichmentmap.model;
 
+import static org.mockito.Mockito.mock;
+
 import java.util.HashMap;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
+import org.baderlab.csplugins.enrichmentmap.StreamUtil;
 import org.baderlab.csplugins.enrichmentmap.parsers.GMTFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.task.ComputeSimilarityTask;
+import org.cytoscape.work.TaskMonitor;
 
 import junit.framework.TestCase;
 
@@ -13,6 +17,9 @@ public class GeneSetSimilarityTest extends TestCase {
 	EnrichmentMap map;
 	DataSet dataset;
 
+	private TaskMonitor taskMonitor = mock(TaskMonitor.class);
+	private StreamUtil streamUtil = new StreamUtil();
+	
 	public void setUp() throws Exception {
 		//load Genesets from the gmt file associated with this test
 		String testDataFileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/model/Genesetstestfile.gmt";
@@ -28,23 +35,20 @@ public class GeneSetSimilarityTest extends TestCase {
         //get the default dataset
         dataset = map.getDataset(EnrichmentMap.DATASET1);
 
-        //set up task
-        GMTFileReaderTask task = new GMTFileReaderTask(dataset);
-
-        //read in file
-        task.run();
+      //set up task
+        GMTFileReaderTask task = new GMTFileReaderTask(dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
+        task.run(taskMonitor);
     }
 	
-	public void testJaccardCalculations(){
+	public void testJaccardCalculations() throws Exception{
 		
 		//set the parameters in the params to use jaccard coeffecient calculation
 		map.getParams().setSimilarityMetric(EnrichmentMapParameters.SM_JACCARD);
 		//set the cutoff to the max
 		map.getParams().setSimilarityCutOff(0);
 		
-		ComputeSimilarityTask sim_task = new ComputeSimilarityTask(map);
-		
-		sim_task.run();
+		ComputeSimilarityTask sim_task = new ComputeSimilarityTask(map);		
+		sim_task.run(taskMonitor);
 		
 		HashMap<String,GenesetSimilarity> similarities = map.getGenesetSimilarity();
 		
@@ -113,15 +117,14 @@ public class GeneSetSimilarityTest extends TestCase {
 				
 	}
 	
-	public void testOverlapCalculations(){
+	public void testOverlapCalculations() throws Exception{
 		//set the parameters in the params to use jaccard coeffecient calculation
 		map.getParams().setSimilarityMetric(EnrichmentMapParameters.SM_OVERLAP);
 		//set the cutoff to the max
 		map.getParams().setSimilarityCutOff(0);
 		
-		ComputeSimilarityTask sim_task = new ComputeSimilarityTask(map);
-		
-		sim_task.run();
+		ComputeSimilarityTask sim_task = new ComputeSimilarityTask(map);		
+		sim_task.run(taskMonitor);
 		
 		HashMap<String,GenesetSimilarity> similarities = map.getGenesetSimilarity();
 		
@@ -190,7 +193,7 @@ public class GeneSetSimilarityTest extends TestCase {
 		
 	}
 
-	public void testCombindCalculations(){
+	public void testCombindCalculations() throws Exception{
 		double combined_constant = 0.5;
 		
 		//set the parameters in the params to use jaccard coeffecient calculation
@@ -199,9 +202,8 @@ public class GeneSetSimilarityTest extends TestCase {
 		map.getParams().setSimilarityCutOff(0);
 		map.getParams().setCombinedConstant(combined_constant);
 		
-		ComputeSimilarityTask sim_task = new ComputeSimilarityTask(map);
-		
-		sim_task.run();
+		ComputeSimilarityTask sim_task = new ComputeSimilarityTask(map);		
+		sim_task.run(taskMonitor);
 		
 		HashMap<String,GenesetSimilarity> similarities = map.getGenesetSimilarity();
 		

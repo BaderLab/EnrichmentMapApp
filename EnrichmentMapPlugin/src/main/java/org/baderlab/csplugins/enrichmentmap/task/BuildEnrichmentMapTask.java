@@ -43,12 +43,23 @@
 
 package org.baderlab.csplugins.enrichmentmap.task;
 
-import cytoscape.task.Task;
-import cytoscape.task.TaskMonitor;
-
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.io.util.StreamUtil;
+import org.cytoscape.model.CyNetworkFactory;
+import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyTableFactory;
+import org.cytoscape.model.CyTableManager;
+import org.cytoscape.session.CySessionManager;
+import org.cytoscape.view.model.CyNetworkViewFactory;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
+import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualStyleFactory;
+import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.TaskIterator;
 
 /**
  * Created by
@@ -64,16 +75,32 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
  * additional parameters that would not be available to a generic enrichment analysis including
  * an Enrichment score (ES), normalized Enrichment score(NES).
  */
-public class BuildEnrichmentMapTask implements Task {
+public class BuildEnrichmentMapTask implements TaskFactory {
 
 
     private EnrichmentMapParameters params;
     
     private String name = null;
+    
+    private TaskIterator buildEMTaskIterator;
 
-    // Keep track of progress for monitoring:
-    private TaskMonitor taskMonitor = null;
-    private boolean interrupted = false;
+    //services required
+    private StreamUtil streamUtil;
+    private CyApplicationManager applicationManager;
+    private CyNetworkManager networkManager;
+    private CyNetworkViewManager networkViewManager;
+    private CyNetworkViewFactory networkViewFactory;
+    private CyNetworkFactory networkFactory;
+    private CyTableFactory tableFactory;
+    private CyTableManager tableManager;
+    
+    private VisualMappingManager visualMappingManager;
+    private VisualStyleFactory visualStyleFactory;
+    
+    //we will need all three mappers
+    private VisualMappingFunctionFactory vmfFactoryContinuous;
+    private VisualMappingFunctionFactory vmfFactoryDiscrete;
+    private VisualMappingFunctionFactory vmfFactoryPassthrough;
     
     //values to track progress
     //TODO - implement usage
@@ -88,13 +115,35 @@ public class BuildEnrichmentMapTask implements Task {
      *
      * @param params - the current specification of this run
      */
-    public BuildEnrichmentMapTask( EnrichmentMapParameters params) {
+    public BuildEnrichmentMapTask( EnrichmentMapParameters params,
+    		CyNetworkFactory networkFactory, CyApplicationManager applicationManager, 
+    		CyNetworkManager networkManager, CyNetworkViewManager networkViewManager,
+    		CyTableFactory tableFactory,CyTableManager tableManager,CyNetworkViewFactory networkViewFactory,
+    		VisualMappingManager visualMappingManager,VisualStyleFactory visualStyleFactory,
+    		VisualMappingFunctionFactory vmfFactoryContinuous, VisualMappingFunctionFactory vmfFactoryDiscrete,
+    	     VisualMappingFunctionFactory vmfFactoryPassthrough, CySessionManager sessionManager,StreamUtil streamUtil) {
 
         //create a new instance of the parameters
-        this.params = new EnrichmentMapParameters();
+        this.params = new EnrichmentMapParameters(sessionManager,streamUtil);
 
         //copy the input variables into the new instance of the parameters
         this.params.copyInputParameters(params);
+        
+        this.networkFactory = networkFactory;
+        this.applicationManager = applicationManager;
+        this.networkManager = networkManager;
+        this.networkViewManager	= networkViewManager;
+        this.tableFactory = tableFactory;
+        this.tableManager = tableManager;
+        this.networkViewFactory = networkViewFactory;
+        this.streamUtil = streamUtil;
+        
+        this.visualMappingManager = visualMappingManager;
+        this.visualStyleFactory = visualStyleFactory;
+        
+        this.vmfFactoryContinuous = vmfFactoryContinuous;
+        this.vmfFactoryDiscrete = vmfFactoryDiscrete;
+        this.vmfFactoryPassthrough = vmfFactoryPassthrough;    
 
     }
 
@@ -106,21 +155,21 @@ public class BuildEnrichmentMapTask implements Task {
      * @param params - the current specification of this run
      * @params name - the name of the current 
      */
-    public BuildEnrichmentMapTask( EnrichmentMapParameters params, String name) {
-   		this(params);
+    public BuildEnrichmentMapTask( EnrichmentMapParameters params, String name,
+    		CyNetworkFactory networkFactory, CyApplicationManager applicationManager, 
+    		CyNetworkManager networkManager, CyNetworkViewManager networkViewManager,
+    		CyTableFactory tableFactory,CyTableManager tableManager, CyNetworkViewFactory networkViewFactory,
+    		VisualMappingManager visualMappingManager,VisualStyleFactory visualStyleFactory,
+    		VisualMappingFunctionFactory vmfFactoryContinuous, VisualMappingFunctionFactory vmfFactoryDiscrete,
+   	     VisualMappingFunctionFactory vmfFactoryPassthrough, CySessionManager sessionManager,StreamUtil streamUtil) {
+   		this(params,networkFactory, applicationManager,networkManager,networkViewManager,tableFactory,tableManager,networkViewFactory,
+   				visualMappingManager,visualStyleFactory,
+   	    		vmfFactoryContinuous, vmfFactoryDiscrete,vmfFactoryPassthrough, sessionManager,streamUtil);
     		this.name = name;
 
 
     }
-    
-    public BuildEnrichmentMapTask( EnrichmentMapParameters params, String name, TaskMonitor taskMonitor) {
-   		this(params);
-    		this.name = name;
-    		this.taskMonitor = taskMonitor;
-
-
-    }
-    
+       
     /**
      * buildEnrichmentMap - parses all GSEA input files and creates an enrichment map
      */
@@ -137,15 +186,14 @@ public class BuildEnrichmentMapTask implements Task {
     		//Get all user parameters
     		
     		//Load Dataset
-    		try{
-    			LoadDataSetTask loaddata = new LoadDataSetTask(dataset, taskMonitor);
-    			loaddata.run();
+    			LoadDataSetTask loaddata = new LoadDataSetTask(dataset,streamUtil);
+    			buildEMTaskIterator.append(loaddata.getIterator());
     			
     			if(map.getParams().isTwoDatasets() && map.getDatasets().containsKey(EnrichmentMap.DATASET2)){
     				DataSet dataset2 = map.getDataset(EnrichmentMap.DATASET2);
     				
-    				LoadDataSetTask loaddataset2 = new LoadDataSetTask(dataset2, taskMonitor);
-        			loaddataset2.run();
+    				LoadDataSetTask loaddataset2 = new LoadDataSetTask(dataset2,streamUtil);
+        			buildEMTaskIterator.append(loaddataset2.getIterator());
         			params.setData2(true);
         			
         			//check to see if the two datasets are distinct
@@ -157,15 +205,7 @@ public class BuildEnrichmentMapTask implements Task {
         				
     				
     			}
-    			
-    		} catch (OutOfMemoryError e) {
-            taskMonitor.setException(e,"Out of Memory. Please increase memory allotement for cytoscape.");
-            return;
-        }  catch(Exception e){
-            taskMonitor.setException(e,"unable to load DataSet");
-            return;
-        }
-    	
+    			    		
     		//trim the genesets to only contain the genes that are in the data file.
         map.filterGenesets();
 
@@ -175,36 +215,28 @@ public class BuildEnrichmentMapTask implements Task {
         if(!map.checkGenesets())
                 throw new IllegalThreadStateException("No genes in the expression file are found in the GMT file ");
 
-        try{
-
             //Initialize the set of genesets and GSEA results that we want to compute over
-            InitializeGenesetsOfInterestTask genesets_init = new InitializeGenesetsOfInterestTask(map,taskMonitor);
-            genesets_init.run();
-
-       } catch (OutOfMemoryError e) {
-            taskMonitor.setException(e,"Out of Memory. Please increase memory allotement for cytoscape.");
-            return;
-        }catch(IllegalThreadStateException e){
-            taskMonitor.setException(e,"Genesets defined in the Enrichment results file are not found in  gene set file (GMT).  (Click \"Show Error details\" to see which genesets is not found)Please make sure you are using the correct GMT file.");
-            return;
-        }
-
-        try{
+            InitializeGenesetsOfInterestTask genesets_init = new InitializeGenesetsOfInterestTask(map);
+            buildEMTaskIterator.append(genesets_init);
+     
             //compute the geneset similarities
-            ComputeSimilarityTask similarities = new ComputeSimilarityTask(map,taskMonitor);
-            similarities.run();
+            ComputeSimilarityTask similarities = new ComputeSimilarityTask(map);
+            buildEMTaskIterator.append(similarities);
 
             //build the resulting map
-            VisualizeEnrichmentMapTask map_viz = new VisualizeEnrichmentMapTask(map,taskMonitor);
-            map_viz.run();
+            CreateEnrichmentMapNetworkTask create_map = new CreateEnrichmentMapNetworkTask(map,networkFactory, applicationManager,networkManager,tableFactory,tableManager);
+            buildEMTaskIterator.append(create_map);
+            
+            VisualizeEnrichmentMapTask map_viz = new VisualizeEnrichmentMapTask(map,networkManager, networkViewManager,
+            		networkViewFactory,visualMappingManager,visualStyleFactory,
+            		vmfFactoryContinuous, vmfFactoryDiscrete,vmfFactoryPassthrough);
+            buildEMTaskIterator.append(map_viz);
+            
+            //layout network
+            //LayoutEnrichmentMapTask layout_map = new LayoutEnrichmentMapTask(map);
+            //buildEMTaskIterator.append(layout_map);
 
-        } catch (OutOfMemoryError e) {
-            taskMonitor.setException(e,"Out of Memory. Please increase memory allotement for cytoscape.");
-
-        }catch(Exception e){
-            taskMonitor.setException(e,"unable to build/visualize map");
-        }
-
+       
     }
 
 /*
@@ -267,25 +299,6 @@ public class BuildEnrichmentMapTask implements Task {
     }
 
     /**
-     * Non-blocking call to interrupt the task.
-     */
-    public void halt() {
-        this.interrupted = true;
-    }
-
-     /**
-     * Sets the Task Monitor.
-     *
-     * @param taskMonitor TaskMonitor Object.
-     */
-    public void setTaskMonitor(TaskMonitor taskMonitor) {
-        if (this.taskMonitor != null) {
-            throw new IllegalStateException("Task Monitor is already set.");
-        }
-        this.taskMonitor = taskMonitor;
-    }
-
-    /**
      * Gets the Task Title.
      *
      * @return human readable task title.
@@ -293,4 +306,14 @@ public class BuildEnrichmentMapTask implements Task {
     public String getTitle() {
         return new String("Building Enrichment Map based on GSEA results");
     }
+
+    public TaskIterator createTaskIterator() {
+		this.buildEMTaskIterator = new TaskIterator();
+		return buildEMTaskIterator;
+	}
+
+	public boolean isReady() {
+		// TODO Auto-generated method stub
+		return false;
+	}
 }

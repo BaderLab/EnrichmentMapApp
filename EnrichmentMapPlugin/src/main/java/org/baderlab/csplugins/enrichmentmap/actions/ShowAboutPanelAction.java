@@ -44,12 +44,17 @@
 package org.baderlab.csplugins.enrichmentmap.actions;
 
 import java.awt.event.*;
+import java.util.Map;
+
 import javax.swing.*;
 
 import org.baderlab.csplugins.enrichmentmap.view.AboutPanel;
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.swing.AbstractCyAction;
+import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.util.swing.OpenBrowser;
+import org.cytoscape.view.model.CyNetworkViewManager;
 
-import cytoscape.Cytoscape;
-import cytoscape.util.*;
 
 /**
  * Created by:
@@ -58,24 +63,30 @@ import cytoscape.util.*;
  * Date   Jun 12, 2009<br>
  * Time   5:53:54 PM<br>
  */
-public class ShowAboutPanelAction extends CytoscapeAction {
-
+public class ShowAboutPanelAction extends AbstractCyAction {
+	
+	private CySwingApplication application;
+	private OpenBrowser browser;
 	/**
      * 
      */
     private static final long serialVersionUID = 1341062331014243704L;
 
-    public ShowAboutPanelAction() {
-		super("Show About Box");
+    public ShowAboutPanelAction(Map<String,String> configProps, CyApplicationManager applicationManager, 
+    		CyNetworkViewManager networkViewManager,CySwingApplication application, OpenBrowser openBrowserRef) {
+    		super( configProps,  applicationManager,  networkViewManager);
+		putValue(NAME, "About...");
+		this.application = application;
+		this.browser = openBrowserRef;
 	}
 	
 	public void actionPerformed(ActionEvent event) {
 
 		// open new dialog
-		AboutPanel aboutPanel = new AboutPanel( );
+		AboutPanel aboutPanel = new AboutPanel(application, browser);				
 		aboutPanel.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		aboutPanel.pack();
-		aboutPanel.setLocationRelativeTo(Cytoscape.getDesktop());
+		aboutPanel.setLocationRelativeTo(application.getJFrame());
 		aboutPanel.setVisible(true);
 
 	}

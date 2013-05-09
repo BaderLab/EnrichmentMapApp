@@ -1,18 +1,29 @@
 package org.baderlab.csplugins.enrichmentmap.task;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
+import org.baderlab.csplugins.enrichmentmap.StreamUtil;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.parsers.EnrichmentResultFileReaderTask;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskManager;
+import org.cytoscape.work.TaskMonitor;
 
 import junit.framework.TestCase;
 
+import static org.mockito.Mockito.mock;
+
 public class LoadBingoResultsTest extends TestCase{
+	
+	private TaskMonitor taskMonitor = mock(TaskMonitor.class);
+	private StreamUtil streamUtil = new StreamUtil();
+	
 	public void setUp() throws Exception {
 		
 	}
 
-	public void testLoadBingoResult_withoutexpression(){
+	public void testLoadBingoResult_withoutexpression() throws Exception{
 		EnrichmentMapParameters params = new EnrichmentMapParameters();
 	
 		//for a dataset we require genesets, an expression file (optional), enrichment results
@@ -35,20 +46,21 @@ public class LoadBingoResultsTest extends TestCase{
 		//Load data set
 		//create a dataset
 		DataSet dataset = new DataSet(em, EnrichmentMap.DATASET1,files);		
-		em.addDataset(EnrichmentMap.DATASET1, dataset);
-				
-		//create a DatasetTask
-		LoadDataSetTask load_task = new LoadDataSetTask(dataset);
-				
-		load_task.run();
+		em.addDataset(EnrichmentMap.DATASET1, dataset);				
 		
+		EnrichmentResultFileReaderTask enrichmentResultsFilesTask = new EnrichmentResultFileReaderTask(dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
+        enrichmentResultsFilesTask.run(taskMonitor); 
+        
+        CreateDummyExpressionTask dummyExpressionTask = new CreateDummyExpressionTask(dataset);
+		dummyExpressionTask.run(taskMonitor);
+        
 		em.filterGenesets();
 		
 		InitializeGenesetsOfInterestTask genesets_init = new InitializeGenesetsOfInterestTask(em);
-        genesets_init.run();
+		genesets_init.run(taskMonitor);  
         
         ComputeSimilarityTask similarities = new ComputeSimilarityTask(em);
-        similarities.run();
+        similarities.run(taskMonitor);
 
 				
 		//check to see if the dataset loaded - there should be 74 genesets
@@ -72,7 +84,7 @@ public class LoadBingoResultsTest extends TestCase{
 		
 	}
 	
-	public void testLoad2BingoResult_withoutexpression(){
+	public void testLoad2BingoResult_withoutexpression() throws Exception{
 		EnrichmentMapParameters params = new EnrichmentMapParameters();
 	
 		//for a dataset we require genesets, an expression file (optional), enrichment results
@@ -103,33 +115,36 @@ public class LoadBingoResultsTest extends TestCase{
 		//create a dataset
 		DataSet dataset = new DataSet(em, EnrichmentMap.DATASET1,files);		
 		em.addDataset(EnrichmentMap.DATASET1, dataset);
-				
-		//create a DatasetTask
-		LoadDataSetTask load_task = new LoadDataSetTask(dataset);				
-		load_task.run();
+
+		EnrichmentResultFileReaderTask enrichmentResultsFilesTask = new EnrichmentResultFileReaderTask(dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
+        enrichmentResultsFilesTask.run(taskMonitor); 
 		
 		//Load second dataset
 		//create a dataset
 		DataSet dataset2 = new DataSet(em, EnrichmentMap.DATASET2,files2);		
 		em.addDataset(EnrichmentMap.DATASET2, dataset2);						
 		//create a DatasetTask
-		LoadDataSetTask load_task2 = new LoadDataSetTask(dataset2);				
-		load_task2.run();
 		
+		EnrichmentResultFileReaderTask enrichmentResultsFiles2Task = new EnrichmentResultFileReaderTask(dataset2,(org.cytoscape.io.util.StreamUtil)streamUtil);
+        enrichmentResultsFiles2Task.run(taskMonitor); 
+		
+		CreateDummyExpressionTask dummyExpressionTask = new CreateDummyExpressionTask(dataset);
+		dummyExpressionTask.run(taskMonitor);
+			
+		CreateDummyExpressionTask dummyExpressionTask2 = new CreateDummyExpressionTask(dataset2);
+		dummyExpressionTask2.run(taskMonitor);
 		//check to see if the two datasets are distinct
-		if(!(
-				(dataset.getDatasetGenes().containsAll(dataset2.getDatasetGenes())) && 
-				(dataset2.getDatasetGenes().containsAll(dataset.getDatasetGenes()))
-				))
-			params.setTwoDistinctExpressionSets(true);		
-		
+		if(!((dataset.getDatasetGenes().containsAll(dataset2.getDatasetGenes())) && 
+					(dataset2.getDatasetGenes().containsAll(dataset.getDatasetGenes()))))
+				params.setTwoDistinctExpressionSets(true);	
+				
 		em.filterGenesets();
-		
+				
 		InitializeGenesetsOfInterestTask genesets_init = new InitializeGenesetsOfInterestTask(em);
-        genesets_init.run();
-        
-        ComputeSimilarityTask similarities = new ComputeSimilarityTask(em);
-        similarities.run();
+		genesets_init.run(taskMonitor);  
+		        
+		ComputeSimilarityTask similarities = new ComputeSimilarityTask(em);
+		similarities.run(taskMonitor);
 
         dataset = em.getDataset(EnrichmentMap.DATASET1);
 		//get the stats for the first dataset		

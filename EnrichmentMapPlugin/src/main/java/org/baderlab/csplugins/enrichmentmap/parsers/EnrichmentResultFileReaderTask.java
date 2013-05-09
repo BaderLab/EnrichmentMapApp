@@ -42,12 +42,6 @@
 // $HeadURL$
 
 package org.baderlab.csplugins.enrichmentmap.parsers;
-import cytoscape.task.Task;
-import cytoscape.task.TaskMonitor;
-import cytoscape.data.readers.TextFileReader;
-import cytoscape.Cytoscape;
-
-import javax.swing.*;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
@@ -55,9 +49,15 @@ import org.baderlab.csplugins.enrichmentmap.model.GSEAResult;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.GenericResult;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfEnrichmentResults;
+import org.cytoscape.io.util.StreamUtil;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.TaskMonitor;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
+import java.util.Scanner;
 
 /**
  * Created by
@@ -73,10 +73,11 @@ import java.util.HashMap;
  * that a generic file also has exactly 11 column so if the file has 11 column the 5 and 6 column headers are
  * checked.  If columns 5 and 6 are specified as ES and NES the file is for sure a GSEA result file.)
  */
-public class EnrichmentResultFileReaderTask implements Task {
-    //default Score at Max value
-    public static Double DefaultScoreAtMax = -1000000.0;
-
+public class EnrichmentResultFileReaderTask extends AbstractTask {
+	
+	//default Score at Max value
+    public static final Double DefaultScoreAtMax = -1000000.0;
+	
     //private EnrichmentMapParameters params;
     private DataSet dataset;
     //enrichment results file name
@@ -96,25 +97,19 @@ public class EnrichmentResultFileReaderTask implements Task {
     private TaskMonitor taskMonitor = null;
     private boolean interrupted = false;
 
-    /**
-     * Class constructor specifying a task monitor currently using.
-     *
-     * @param taskMonitor - current monitor
-     * @param dataset - dataset enrichment results are from
-     */
-    public EnrichmentResultFileReaderTask( DataSet dataset, TaskMonitor taskMonitor) {
-        this(dataset);
-        this.taskMonitor = taskMonitor;
-    }
 
+    //services needed
+    private StreamUtil streamUtil;
+    
     /**
      * Class constructor
      *
      * @param dataset  - dataset enrichment results are from
      */
-    public EnrichmentResultFileReaderTask(DataSet dataset) {
+    public EnrichmentResultFileReaderTask(DataSet dataset,StreamUtil streamUtil) {
         
     		this.dataset = dataset;
+    		this.streamUtil = streamUtil;
     	
         this.EnrichmentResultFileName1 = dataset.getEnrichments().getFilename1();
         this.EnrichmentResultFileName2 = dataset.getEnrichments().getFilename2();
@@ -133,13 +128,14 @@ public class EnrichmentResultFileReaderTask implements Task {
         results = enrichments.getEnrichments();
         upPhenotype = enrichments.getPhenotype1(); 
         downPhenotype = enrichments.getPhenotype2();
+       
         
     }
 
     /**
      * Parse enrichment results file
      */
-    public void parse() {
+    public void parse()  throws IOException{
     	
     		if(this.EnrichmentResultFileName1 != null && !this.EnrichmentResultFileName1.isEmpty())
     			readFile(this.EnrichmentResultFileName1);
@@ -152,7 +148,7 @@ public class EnrichmentResultFileReaderTask implements Task {
     /*
      * Read file
      */
-    public void readFile(String EnrichmentResultFileName){
+    public void readFile(String EnrichmentResultFileName) throws IOException{
     		//check to see if the enrichment file is an edb file
     		if(EnrichmentResultFileName.endsWith(".edb")){    			
     			ParseEDBEnrichmentResults edbparser = new ParseEDBEnrichmentResults(new File(EnrichmentResultFileName));    			
@@ -163,12 +159,13 @@ public class EnrichmentResultFileReaderTask implements Task {
     		}    				
     	
     		else{
-    			//open Enrichment Result file    	
-    			TextFileReader reader = new TextFileReader(EnrichmentResultFileName);
-    			reader.read();
-    			String fullText = reader.getText();
+    			//open Enrichment Result file
+    			InputStream reader = streamUtil.getInputStream(EnrichmentResultFileName);
+    			
+    			String fullText = new Scanner(reader,"UTF-8").useDelimiter("\\A").next();                        
 
-    			String [] lines = fullText.split("\n");
+    			
+    	        String []lines = fullText.split("\r\n?|\n");
 
 
     			//figure out what type of enrichment results file.  Either it is a GSEA result
@@ -295,9 +292,9 @@ public class EnrichmentResultFileReaderTask implements Task {
                 //  Estimate Time Remaining
                 long timeRemaining = maxValue - currentProgress;
                 if (taskMonitor != null) {
-                        taskMonitor.setPercentCompleted(percentComplete);
-                        taskMonitor.setStatus("Parsing Enrichment Results file " + currentProgress + " of " + maxValue);
-                        taskMonitor.setEstimatedTimeRemaining(timeRemaining);
+                        taskMonitor.setProgress(percentComplete);
+                        taskMonitor.setStatusMessage("Parsing Enrichment Results file " + currentProgress + " of " + maxValue);
+                        
                     }
                 currentProgress++;
 
@@ -410,9 +407,8 @@ public class EnrichmentResultFileReaderTask implements Task {
             //  Estimate Time Remaining
             long timeRemaining = maxValue - currentProgress;
             if (taskMonitor != null) {
-                    taskMonitor.setPercentCompleted(percentComplete);
-                    taskMonitor.setStatus("Parsing Generic Results file " + currentProgress + " of " + maxValue);
-                    taskMonitor.setEstimatedTimeRemaining(timeRemaining);
+                    taskMonitor.setProgress(percentComplete);
+                    taskMonitor.setStatusMessage("Parsing Generic Results file " + currentProgress + " of " + maxValue);
                 }
             currentProgress++;
 
@@ -568,9 +564,8 @@ public class EnrichmentResultFileReaderTask implements Task {
                 //  Estimate Time Remaining
                 long timeRemaining = maxValue - currentProgress;
                 if (taskMonitor != null) {
-                        taskMonitor.setPercentCompleted(percentComplete);
-                        taskMonitor.setStatus("Parsing Generic Results file " + currentProgress + " of " + maxValue);
-                        taskMonitor.setEstimatedTimeRemaining(timeRemaining);
+                        taskMonitor.setProgress(percentComplete);
+                        taskMonitor.setStatusMessage("Parsing Generic Results file " + currentProgress + " of " + maxValue);
                     }
                 currentProgress++;
 
@@ -744,9 +739,8 @@ public class EnrichmentResultFileReaderTask implements Task {
                 //  Estimate Time Remaining
                 long timeRemaining = maxValue - currentProgress;
                 if (taskMonitor != null) {
-                        taskMonitor.setPercentCompleted(percentComplete);
-                        taskMonitor.setStatus("Parsing Generic Results file " + currentProgress + " of " + maxValue);
-                        taskMonitor.setEstimatedTimeRemaining(timeRemaining);
+                        taskMonitor.setProgress(percentComplete);
+                        taskMonitor.setStatusMessage("Parsing Generic Results file " + currentProgress + " of " + maxValue);              
                     }
                 currentProgress++;
 
@@ -769,13 +763,6 @@ public class EnrichmentResultFileReaderTask implements Task {
         }
 
     /**
-     * Run the Task.
-     */
-    public void run() {
-        parse();
-    }
-
-    /**
      * Non-blocking call to interrupt the task.
      */
     public void halt() {
@@ -794,12 +781,12 @@ public class EnrichmentResultFileReaderTask implements Task {
         this.taskMonitor = taskMonitor;
     }
 
-    /**
-     * Gets the Task Title.
-     *
-     * @return human readable task title.
-     */
-    public String getTitle() {
-        return new String("Parsing Enrichment Result file");
-    }
+	@Override
+	public void run(TaskMonitor taskMonitor) throws Exception {
+		this.taskMonitor = taskMonitor;
+		this.taskMonitor.setTitle("Parsing Enrichment Result file");
+		
+		parse();
+		
+	}
 }

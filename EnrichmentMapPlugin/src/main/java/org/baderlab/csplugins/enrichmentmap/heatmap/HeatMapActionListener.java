@@ -43,12 +43,6 @@
 
 package org.baderlab.csplugins.enrichmentmap.heatmap;
 
-import cytoscape.view.CytoscapeDesktop;
-import cytoscape.view.cytopanels.CytoPanel;
-import cytoscape.Cytoscape;
-import cytoscape.util.FileUtil;
-import cytoscape.util.CyFileFilter;
-
 import javax.swing.*;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
@@ -134,7 +128,7 @@ public class HeatMapActionListener implements ActionListener {
 
            HashMap<String, Ranking> all_ranks = map.getAllRanks();
 
-           CyFileFilter filter = new CyFileFilter();
+/*           CyFileFilter filter = new CyFileFilter();
 
             // Add accepted File Extensions
            filter.addExtension("txt");
@@ -238,18 +232,18 @@ public class HeatMapActionListener implements ActionListener {
 
                     //change the ascending boolean flag for the column we are about to sort by
                     hmParams.flipAscending(hmParams.getSortIndex());
-                }
-        }*/
+                }*/
+        }
 
         hmParams.ResetColorGradient();
         edgeOverlapPanel.updatePanel();
         nodeOverlapPanel.updatePanel();
 
-        final CytoscapeDesktop desktop = Cytoscape.getDesktop();
+        /*final CytoscapeDesktop desktop = Cytoscape.getDesktop();
         CytoPanel cytoPanel = desktop.getCytoPanel(SwingConstants.SOUTH);
 
         int index  = cytoPanel.getSelectedIndex();
         cytoPanel.setSelectedIndex(index);
-
+*/
     }
 }

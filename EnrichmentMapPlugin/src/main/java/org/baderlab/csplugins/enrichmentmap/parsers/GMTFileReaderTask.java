@@ -42,12 +42,12 @@
 // $HeadURL$
 
 package org.baderlab.csplugins.enrichmentmap.parsers;
-import cytoscape.data.readers.TextFileReader;
-import cytoscape.task.Task;
-import cytoscape.task.TaskMonitor;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.Normalizer;
 import java.util.HashMap;
+import java.util.Scanner;
 import java.util.regex.Pattern;
 
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
@@ -55,6 +55,9 @@ import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
+import org.cytoscape.io.util.StreamUtil;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.TaskMonitor;
 
 
 /**
@@ -65,7 +68,7 @@ import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
  * <p>
  *  This class parses a GMT (gene set) file and  creates a set of genesets
  */
-public class GMTFileReaderTask implements Task {
+public class GMTFileReaderTask extends AbstractTask {
 
     private EnrichmentMap map;
 
@@ -85,21 +88,12 @@ public class GMTFileReaderTask implements Task {
     
     public final static int ENRICHMENT_GMT = 1, SIGNATURE_GMT = 2; 
 
-    /**
-     * Class Constructor - also given current task monitor
-     * @param DataSet - a gmt file is associated with a dataset
-     * @param taskMonitor 
-     */
-    public GMTFileReaderTask(DataSet dataset, TaskMonitor taskMonitor){
-    		this(dataset);
-    		this.taskMonitor = taskMonitor;
-    }
-    
+    private StreamUtil streamUtil;
     /**
      * Class Constructor - also given current task monitor
      * @param DataSet - a gmt file is associated with a dataset
      */
-    public GMTFileReaderTask(DataSet dataset){
+    public GMTFileReaderTask(DataSet dataset,StreamUtil streamUtil){
     	
     		this.GMTFileName = dataset.getSetofgenesets().getFilename();
     		this.genes = dataset.getMap().getGenes();
@@ -108,6 +102,9 @@ public class GMTFileReaderTask implements Task {
     		this.setOfgenesets = dataset.getSetofgenesets();
     		
     		this.map = dataset.getMap();
+    		
+    		this.streamUtil = streamUtil;
+    		
     }
 
     /**
@@ -160,16 +157,15 @@ public class GMTFileReaderTask implements Task {
     /**
      * parse GMT (gene set) file
      */
-    public void parse() {
+    public void parse()  throws IOException{
     		
     		HashMap<String, GeneSet> genesets = setOfgenesets.getGenesets();
     	
         //open GMT file
-        TextFileReader reader = new TextFileReader(GMTFileName);
-        reader.read();
-        String fullText = reader.getText();
-
-        String []lines = fullText.split("\n");
+    		InputStream reader = streamUtil.getInputStream(GMTFileName);
+        String fullText = new Scanner(reader,"UTF-8").useDelimiter("\\A").next();
+        
+        String []lines = fullText.split("\r\n?|\n");
 
         int currentProgress = 0;
         maxValue = lines.length;
@@ -202,10 +198,9 @@ public class GMTFileReaderTask implements Task {
                     //  Estimate Time Remaining
                     long timeRemaining = maxValue - currentProgress;
                     if (taskMonitor != null) {
-                        taskMonitor.setPercentCompleted(percentComplete);
-                        taskMonitor.setStatus("Parsing GMT file " + currentProgress
-                            + " of " + maxValue);
-                        taskMonitor.setEstimatedTimeRemaining(timeRemaining);
+                        taskMonitor.setProgress(percentComplete);
+                        taskMonitor.setStatusMessage("Parsing GMT file " + currentProgress
+                            + " of " + maxValue);                      
                     }
                     currentProgress++;
 
@@ -246,21 +241,13 @@ public class GMTFileReaderTask implements Task {
 
             }
         } catch (InterruptedException e) {
-            taskMonitor.setException(e, "Loading of GMT file cancelled");
+            taskMonitor.setStatusMessage("Loading of GMT file cancelled");
         }
 
 
     }
 
-
-
-    /**
-     * Run the Task.
-     */
-    public void run() {
-        parse();
-    }
-
+    
     /**
      * Non-blocking call to interrupt the task.
      */
@@ -280,13 +267,11 @@ public class GMTFileReaderTask implements Task {
         this.taskMonitor = taskMonitor;
     }
 
-
-    /**
-     * Gets the Task Title.
-     *
-     * @return human readable task title.
-     */
-    public String getTitle() {
-        return new String("Parsing GMT file");
-    }
+	@Override
+	public void run(TaskMonitor taskMonitor) throws Exception {
+		this.taskMonitor = taskMonitor;
+		taskMonitor.setTitle("parsing GMT file");
+		
+		parse();
+	}
 }

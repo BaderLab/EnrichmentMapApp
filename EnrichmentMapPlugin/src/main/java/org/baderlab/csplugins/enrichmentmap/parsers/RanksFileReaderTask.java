@@ -43,19 +43,20 @@
 
 package org.baderlab.csplugins.enrichmentmap.parsers;
 
-import cytoscape.task.Task;
-import cytoscape.task.TaskMonitor;
-import cytoscape.data.readers.TextFileReader;
-import cytoscape.Cytoscape;
-
 import javax.swing.*;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.Rank;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
+import org.cytoscape.io.util.StreamUtil;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.TaskMonitor;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -73,8 +74,9 @@ import java.util.regex.Pattern;
  * columns.
  *
  */
-public class RanksFileReaderTask implements Task {
+public class RanksFileReaderTask extends AbstractTask {
 
+	
     private String RankFileName;
     private DataSet dataset;
     private String ranks_name;
@@ -86,6 +88,8 @@ public class RanksFileReaderTask implements Task {
 
     //distinguish between load from enrichment map input panel and heatmap interface
     private boolean loadFromHeatmap = false;
+    
+    private StreamUtil streamUtil;
 
     /**
      * Class constructor
@@ -94,55 +98,32 @@ public class RanksFileReaderTask implements Task {
      * @param rankFileName - file name of ranks file
      * @param dataset - which dataset is this rank file related to (dataset 1 or dataset 2)
      */
-    public RanksFileReaderTask(String rankFileName, DataSet dataset, boolean loadFromHeatmap) {
+    public RanksFileReaderTask(String rankFileName, DataSet dataset, boolean loadFromHeatmap,StreamUtil streamUtil) {
         RankFileName = rankFileName;
         this.dataset = dataset;
         this.loadFromHeatmap = loadFromHeatmap;
+        
+        this.streamUtil = streamUtil;
+        
     }
 
-    /**
-     *  Class constructor - curent task monitor specified.
-     *
-     * @param params - enrichment map parameters for current map
-     * @param rankFileName - file name of ranks file
-     * @param dataset - which dataset is this rank file related to (dataset 1 or dataset 2)
-     * @param taskMonitor - current task monitor
-     */
-    public RanksFileReaderTask(String rankFileName, DataSet dataset, TaskMonitor taskMonitor, boolean loadFromHeatmap) {
-        RankFileName = rankFileName;
-        this.dataset = dataset;
-        this.taskMonitor = taskMonitor;
-        this.loadFromHeatmap = loadFromHeatmap;
-    }
     
+  
     /**
      *  Class constructor - curent task monitor specified.
      *
      * @param params - enrichment map parameters for current map
      * @param rankFileName - file name of ranks file
      * @param dataset - which dataset is this rank file related to (dataset 1 or dataset 2)
-     * @param taskMonitor - current task monitor
      */
-    public RanksFileReaderTask(String rankFileName, DataSet dataset, String ranks_name, TaskMonitor taskMonitor, boolean loadFromHeatmap) {
-        RankFileName = rankFileName;
-        this.ranks_name = ranks_name;
-        this.dataset = dataset;
-        this.taskMonitor = taskMonitor;
-        this.loadFromHeatmap = loadFromHeatmap;
-    }
-    /**
-     *  Class constructor - curent task monitor specified.
-     *
-     * @param params - enrichment map parameters for current map
-     * @param rankFileName - file name of ranks file
-     * @param dataset - which dataset is this rank file related to (dataset 1 or dataset 2)
-     * @param taskMonitor - current task monitor
-     */
-    public RanksFileReaderTask(String rankFileName, DataSet dataset, String ranks_name, boolean loadFromHeatmap) {
+    public RanksFileReaderTask(String rankFileName, DataSet dataset, String ranks_name, boolean loadFromHeatmap,StreamUtil streamUtil) {
         RankFileName = rankFileName;
         this.ranks_name = ranks_name;
         this.dataset = dataset;
         this.loadFromHeatmap = loadFromHeatmap;
+        
+        this.streamUtil = streamUtil;
+        
     }
 
     /**
@@ -161,14 +142,14 @@ public class RanksFileReaderTask implements Task {
     /**
      * parse the rank file
      */
-    public void parse(){
-
-        TextFileReader reader = new TextFileReader(RankFileName);
-        reader.read();
-        String fullText = reader.getText();
+    public void parse() throws IOException{
+    	
+    		InputStream reader = streamUtil.getInputStream(RankFileName);
+        String fullText = new Scanner(reader,"UTF-8").useDelimiter("\\A").next();                        
+       
         int lineNumber = 0;
 
-        String[] lines = fullText.split("\n");
+        String []lines = fullText.split("\r\n?|\n");
         int currentProgress = 0;
         maxValue = lines.length;
 
@@ -288,9 +269,8 @@ public class RanksFileReaderTask implements Task {
             //  Estimate Time Remaining
             long timeRemaining = maxValue - currentProgress;
             if (taskMonitor != null) {
-                    taskMonitor.setPercentCompleted(percentComplete);
-                    taskMonitor.setStatus("Parsing Rank file " + currentProgress + " of " + maxValue);
-                    taskMonitor.setEstimatedTimeRemaining(timeRemaining);
+                    taskMonitor.setProgress(percentComplete);
+                    taskMonitor.setStatusMessage("Parsing Rank file " + currentProgress + " of " + maxValue);                    
                 }
             currentProgress++;
 
@@ -357,14 +337,7 @@ public class RanksFileReaderTask implements Task {
         dataset.getExpressionSets().addRanks(ranks_name, new_ranking);
 
     }
-
-    /**
-     * Run the Task.
-     */
-    public void run() {
-        parse();
-    }
-
+   
     /**
      * Non-blocking call to interrupt the task.
      */
@@ -384,12 +357,13 @@ public class RanksFileReaderTask implements Task {
         this.taskMonitor = taskMonitor;
     }
 
-    /**
-     * Gets the Task Title.
-     *
-     * @return human readable task title.
-     */
-    public String getTitle() {
-        return new String("Parsing Ranks file");
-    }
+    
+
+	@Override
+	public void run(TaskMonitor taskMonitor) throws Exception {
+		this.taskMonitor = taskMonitor;
+		this.taskMonitor.setTitle("Parsing Ranks file");
+		
+		parse();
+	}
 }
