@@ -690,7 +690,10 @@ public class EnrichmentMapParameters {
         this.lowerlimit = copy.getLowerlimit();
         
         //this.attributePrefix = copy.getAttributePrefix();
-
+        this.Dataset1Phenotype1 = copy.getDataset1Phenotype1();
+        this.Dataset1Phenotype2 = copy.getDataset1Phenotype2();
+        this.Dataset2Phenotype1 = copy.getDataset2Phenotype1();
+        this.Dataset2Phenotype2 = copy.getDataset2Phenotype2();
 
    }
 
@@ -749,6 +752,11 @@ public class EnrichmentMapParameters {
        this.EMgmt = copy.isEMgmt();
        
        this.attributePrefix = copy.getAttributePrefix();
+       
+       this.Dataset1Phenotype1 = copy.getDataset1Phenotype1();
+       this.Dataset1Phenotype2 = copy.getDataset1Phenotype2();
+       this.Dataset2Phenotype1 = copy.getDataset2Phenotype1();
+       this.Dataset2Phenotype2 = copy.getDataset2Phenotype2();
 
        }
 

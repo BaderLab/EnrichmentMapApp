@@ -48,6 +48,8 @@ import cytoscape.task.TaskMonitor;
 
 import java.util.*;
 
+import javax.swing.JOptionPane;
+
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
@@ -111,10 +113,10 @@ public class ComputeSimilarityTask implements Task {
             HashMap<String, GeneSet> genesetsOfInterest = map.getAllGenesetsOfInterest();
             
             //if there are no gene sets of interest check to see if there are any genesets to use
-            if(genesetsOfInterest == null || genesetsOfInterest.isEmpty())
-            		genesetsOfInterest = map.getAllGenesets();
+            /*if(genesetsOfInterest == null || genesetsOfInterest.isEmpty())
+            		genesetsOfInterest = map.getAllGenesets();*/
             if((genesetsOfInterest == null || genesetsOfInterest.isEmpty()))
-            		this.logger.error("There are no genesets to compute similarity between");
+            		JOptionPane.showMessageDialog(null,"There are no genesets to compute similarity between.\nNone of the Genesets passes p-value and q-value filter", "No genesets", JOptionPane.INFORMATION_MESSAGE);
             
             HashMap genesetsInnerLoop;
             String edgeType = "pp";
