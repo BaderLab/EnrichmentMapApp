@@ -35,6 +35,9 @@ public class LoadGMTFileOnlyTest extends TestCase {
 				
 		load_task.run();
 		
+		//set the genesets of interest to the gmt file
+        em.getDataset(EnrichmentMap.DATASET1).setGenesetsOfInterest(em.getDataset(EnrichmentMap.DATASET1).getSetofgenesets());
+		
 		em.filterGenesets();
 		
 		InitializeGenesetsOfInterestTask genesets_init = new InitializeGenesetsOfInterestTask(em);

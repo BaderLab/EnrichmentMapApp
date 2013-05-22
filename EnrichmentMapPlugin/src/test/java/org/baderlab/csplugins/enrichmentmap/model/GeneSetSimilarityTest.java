@@ -33,6 +33,9 @@ public class GeneSetSimilarityTest extends TestCase {
 
         //read in file
         task.run();
+        
+        //set the genesets of interest to the gmt file
+        map.getDataset(EnrichmentMap.DATASET1).setGenesetsOfInterest(map.getDataset(EnrichmentMap.DATASET1).getSetofgenesets());
     }
 	
 	public void testJaccardCalculations(){
