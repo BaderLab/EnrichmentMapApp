@@ -75,7 +75,7 @@ import org.cytoscape.work.swing.DialogTaskManager;
  * Action associated with the Build map button on the input panel
  * Checks minimum information is supplied before launching main build Enrichment map task
  */
-public class BuildEnrichmentMapActionListener extends AbstractTask {
+public class EnrichmentMapParseInputTask extends AbstractTask {
     
 	//services required
 	private StreamUtil streamUtil;
@@ -105,7 +105,7 @@ public class BuildEnrichmentMapActionListener extends AbstractTask {
     /**
      * @param panel - Enrichment map input panel
      */
-    public BuildEnrichmentMapActionListener (EnrichmentMapInputPanel panel,
+    public EnrichmentMapParseInputTask (EnrichmentMapInputPanel panel,
     		CyNetworkFactory networkFactory, CyApplicationManager applicationManager, 
     		CyNetworkManager networkManager, CyNetworkViewManager networkViewManager,
     		CyTableFactory tableFactory,CyTableManager tableManager,CyNetworkViewFactory networkViewFactory,

@@ -100,7 +100,7 @@ public class AboutPanel extends JDialog {
                 "A Cytoscape Plugin<BR>" +
                 "<BR></p>" +
                 "</td>"+
-                "<td width='125'><div align='right'><img height='77' width='125' src=\""+ logoURL.toString() +"\" ></div></td>"+
+                //"<td width='125'><div align='right'><img height='77' width='125' src=\""+ logoURL.toString() +"\" ></div></td>"+
                 "</tr></table>" +
                 "<p align=center>Enrichment Map is a network-based method to visualize<BR>"+
                 "and interpret gene-set enrichment results.<BR>" +

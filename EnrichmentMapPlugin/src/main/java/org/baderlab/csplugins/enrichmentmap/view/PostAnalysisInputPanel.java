@@ -60,6 +60,8 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
+import org.cytoscape.io.util.StreamUtil;
+import org.cytoscape.session.CySessionManager;
 import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.util.swing.OpenBrowser;
@@ -146,32 +148,22 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
     public static String siggmt_instruction = "Please select the Signature Gene Set file (.gmt)...";
     //tool tips
     private static String gmtTip = "File specifying gene sets.\n" + "Format: geneset name <tab> description <tab> gene ...";
-
     
-    private EnrichmentMap map;
-    
-    public PostAnalysisInputPanel(CyApplicationManager cyApplicationManager, CySwingApplication application, OpenBrowser browser,FileUtil fileUtil) {
+    public PostAnalysisInputPanel(CyApplicationManager cyApplicationManager, CySwingApplication application, OpenBrowser browser,FileUtil fileUtil, CySessionManager sessionManager,StreamUtil streamUtil) {
     	
-    	this.cyApplicationManager = cyApplicationManager;
-    	this.application = application;
+    		this.cyApplicationManager = cyApplicationManager;
+    		this.application = application;
         this.browser = browser;
         this.fileUtil = fileUtil;
-    	
+    		
+        //initialize paParams
+        this.paParams = new PostAnalysisParameters(sessionManager,streamUtil);
+        
         decFormat = new DecimalFormat();
         decFormat.setParseIntegerOnly(false);
 
         setLayout(new BorderLayout());
-
-        //get the current enrichment map parameters
-        map = EnrichmentMapManager.getInstance().getMap(cyApplicationManager.getCurrentNetwork().getSUID());
-        EnrichmentMapParameters emParams = map.getParams();
-        if (emParams == null){
-            emParams = new EnrichmentMapParameters();
-        }
         
-        // create instance of PostAnalysisParameters an initialize with EnrichmentMapParameters
-        paParams = EnrichmentMapManager.getInstance().getMap(cyApplicationManager.getCurrentNetwork().getSUID()).getPaParams();
-
         //create the three main panels: scope, advanced options, and bottom
         JPanel AnalysisTypePanel = createAnalysisTypePanel();
 
@@ -218,7 +210,7 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
         });
 
         JButton about = new JButton("About");
-        about.addActionListener(new ShowAboutPanelAction(null, null, null, application, browser));
+        //about.addActionListener(new ShowAboutPanelAction(null, null, null, application, browser));
 
         c_buttons.weighty = 1;
         c_buttons.weightx = 1;
@@ -969,7 +961,7 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
         ArrayList<FileChooserFilter> all_filters = new ArrayList<FileChooserFilter>();
         all_filters.add(filter);
         // Get the file name
-        File file = fileUtil.getFile(this,"Import GMT File", FileUtil.LOAD,all_filters  );
+        File file = fileUtil.getFile(EnrichmentMapUtils.getWindowInstance(this),"Import GMT File", FileUtil.LOAD,all_filters  );
                 
         if(file != null) {
             GMTFileNameTextField.setForeground(checkFile(file.getAbsolutePath()));
@@ -996,7 +988,7 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
         ArrayList<FileChooserFilter> all_filters = new ArrayList<FileChooserFilter>();
         all_filters.add(filter);
         // Get the file name
-        File file = fileUtil.getFile(this,"Import Signature GMT File", FileUtil.LOAD,all_filters  );
+        File file = fileUtil.getFile(EnrichmentMapUtils.getWindowInstance(this),"Import Signature GMT File", FileUtil.LOAD,all_filters  );
         
         if(file != null) {
             signatureGMTFileNameTextField.setForeground(checkFile(file.getAbsolutePath()));
@@ -1037,7 +1029,7 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
     private void resetPanel(){
     	
     	//TODO:create action for the resetPanel 
-        //this.paParams = new PostAnalysisParameters(EnrichmentMapManager.getInstance().getMap(Cytoscape.getCurrentNetwork().getIdentifier()));
+        this.paParams = new PostAnalysisParameters(EnrichmentMapManager.getInstance().getMap(cyApplicationManager.getCurrentNetwork().getSUID()));
 
         //Post Analysis Type:
         signatureHub.setSelected(true);
@@ -1101,7 +1093,12 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
      * @param current_params
      */
     public void updateContents(EnrichmentMapParameters current_params){
-        this.paParams = EnrichmentMapManager.getInstance().getMap(cyApplicationManager.getCurrentNetwork().getSUID()).getPaParams();
+               
+        // create instance of PostAnalysisParameters an initialize with EnrichmentMapParameters
+        paParams = EnrichmentMapManager.getInstance().getMap(cyApplicationManager.getCurrentNetwork().getSUID()).getPaParams();
+
+    	
+    		this.paParams = EnrichmentMapManager.getInstance().getMap(cyApplicationManager.getCurrentNetwork().getSUID()).getPaParams();
        
         // Gene-Set Files:
         GMTFileNameTextField.setText(this.paParams.getGMTFileName());

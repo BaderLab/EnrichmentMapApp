@@ -4,12 +4,14 @@ import javax.swing.*;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
+import org.baderlab.csplugins.enrichmentmap.EnrichmentMapUtils;
 //import org.baderlab.csplugins.enrichmentmap.actions.BuildBulkEnrichmentMapActionListener;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.JMultiLineToolTip;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
 
@@ -36,6 +38,7 @@ public class BulkEMCreationPanel extends JPanel implements CytoPanelComponent{
     
     private FileUtil fileUtil;
     private CySwingApplication application;
+    private CyServiceRegistrar registrar;
     
     private EnrichmentMapParameters params;
 
@@ -72,10 +75,11 @@ public class BulkEMCreationPanel extends JPanel implements CytoPanelComponent{
     
     private boolean similarityCutOffChanged = false;
     
-    public BulkEMCreationPanel(CySwingApplication application, FileUtil fileUtil) {
+    public BulkEMCreationPanel(CySwingApplication application, FileUtil fileUtil, CyServiceRegistrar registrar) {
           params = new EnrichmentMapParameters();
           this.application = application;
           this.fileUtil = fileUtil;
+          this.registrar = registrar;
           
         //create the three main panels: scope, advanced options, and bottom
         JPanel AnalysisTypePanel = createAnalysisTypePanel();
@@ -695,7 +699,7 @@ public class BulkEMCreationPanel extends JPanel implements CytoPanelComponent{
          all_filters.add(filter);
     	 
            // Get the file name
-           File file = fileUtil.getFile(this,"Import gmt file", FileUtil.LOAD,all_filters);
+           File file = fileUtil.getFile(EnrichmentMapUtils.getWindowInstance(this),"Import gmt file", FileUtil.LOAD,all_filters);
            if(file != null) {
                GSEAResultsDirTextField.setText(file.getParent());
                params.setGSEAResultsDirName(file.getParent());
@@ -723,7 +727,7 @@ public class BulkEMCreationPanel extends JPanel implements CytoPanelComponent{
          all_filters.add(filter_xls);
          
            // Get the file name
-           File file = fileUtil.getFile(this, "GMT directory", FileUtil.LOAD,all_filters);
+           File file = fileUtil.getFile(EnrichmentMapUtils.getWindowInstance(this), "GMT directory", FileUtil.LOAD,all_filters);
            if(file != null) {
                GMTDirectoryTextField.setText(file.getParent());
                params.setGMTDirName(file.getParent());
@@ -752,7 +756,7 @@ public class BulkEMCreationPanel extends JPanel implements CytoPanelComponent{
          all_filters.add(filter_xls);
          
            // Get the file name
-           File file = fileUtil.getFile(this,"GCT directory", FileUtil.LOAD,all_filters);
+           File file = fileUtil.getFile(EnrichmentMapUtils.getWindowInstance(this),"GCT directory", FileUtil.LOAD,all_filters);
            if(file != null) {
                GCTDirectoryTextField.setText(file.getParent());
                params.setGCTDirName(file.getParent());
@@ -799,21 +803,11 @@ public class BulkEMCreationPanel extends JPanel implements CytoPanelComponent{
         
         //TODO: implement un-register service for this window
         private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {
-          /*  CytoscapeDesktop desktop = Cytoscape.getDesktop();
-            CytoPanel cytoPanel = desktop.getCytoPanel(SwingConstants.WEST);
-            // set the input window to null in the instance
-            EnrichmentMapManager.getInstance().setInputWindow(null);
-            cytoPanel.remove(this);
-       */
+        		this.registrar.unregisterService(this, CytoPanelComponent.class);
         }
 
         public void close() {
-         /*   CytoscapeDesktop desktop = Cytoscape.getDesktop();
-            CytoPanel cytoPanel = desktop.getCytoPanel(SwingConstants.WEST);
-            // set the input window to null in the instance
-            EnrichmentMapManager.getInstance().setInputWindow(null);
-            cytoPanel.remove(this);
-            */
+        		this.registrar.unregisterService(this, CytoPanelComponent.class);
         }
     /**
          *  Clear the current panel and clear the params associated with this panel

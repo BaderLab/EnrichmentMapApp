@@ -47,17 +47,31 @@ import javax.swing.*;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapUtils;
+import org.baderlab.csplugins.enrichmentmap.actions.EnrichmentMapParseInputTask;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowAboutPanelAction;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.JMultiLineToolTip;
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.io.util.StreamUtil;
+import org.cytoscape.model.CyNetworkFactory;
+import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyTableFactory;
+import org.cytoscape.model.CyTableManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.session.CySessionManager;
 import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.util.swing.OpenBrowser;
+import org.cytoscape.view.model.CyNetworkViewFactory;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
+import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualStyleFactory;
+import org.cytoscape.work.swing.DialogTaskManager;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -85,10 +99,34 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
     /**
      * 
      */
+	//services required
+		private StreamUtil streamUtil;
+	    private CyApplicationManager applicationManager;
+	    private CyNetworkManager networkManager;
+	    private CyNetworkViewManager networkViewManager;
+	    private CyNetworkViewFactory networkViewFactory;
+	    private CyNetworkFactory networkFactory;
+	    private CyTableFactory tableFactory;
+	    private CyTableManager tableManager;
+	    
+	    private VisualMappingManager visualMappingManager;
+	    private VisualStyleFactory visualStyleFactory;
+	    
+	    //we will need all three mappers
+	    private VisualMappingFunctionFactory vmfFactoryContinuous;
+	    private VisualMappingFunctionFactory vmfFactoryDiscrete;
+	    private VisualMappingFunctionFactory vmfFactoryPassthrough;
+	    
+	    //
+	    private DialogTaskManager dialog;
+	    private CySessionManager sessionManager;
+	
 	private CySwingApplication application;
 	private OpenBrowser browser;
 	private FileUtil fileUtil;
-	private StreamUtil streamUtil;
+    private CyServiceRegistrar registrar;
+    
+    private EnrichmentMapInputPanel empanel;
 	
     private static final long serialVersionUID = -7837369382106745874L;
 
@@ -163,23 +201,46 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
     /**
      * Constructor
      */
-    public EnrichmentMapInputPanel(CySwingApplication application, OpenBrowser browser,FileUtil fileUtil, StreamUtil streamUtil) {
+    public EnrichmentMapInputPanel(CyNetworkFactory networkFactory, CyApplicationManager applicationManager, 
+    		CyNetworkManager networkManager, CyNetworkViewManager networkViewManager,
+    		CyTableFactory tableFactory,CyTableManager tableManager,CyNetworkViewFactory networkViewFactory,
+    		VisualMappingManager visualMappingManager,VisualStyleFactory visualStyleFactory,
+    		VisualMappingFunctionFactory vmfFactoryContinuous, VisualMappingFunctionFactory vmfFactoryDiscrete,
+    	     VisualMappingFunctionFactory vmfFactoryPassthrough,DialogTaskManager dialog, CySessionManager sessionManager, 
+    	     CySwingApplication application, OpenBrowser browser,FileUtil fileUtil, StreamUtil streamUtil,CyServiceRegistrar registrar) {
 
+    		this.empanel = this;
         decFormat = new DecimalFormat();
         decFormat.setParseIntegerOnly(false);
+        this.networkFactory = networkFactory;
+        this.applicationManager = applicationManager;
+        this.networkManager = networkManager;
+        this.networkViewManager	= networkViewManager;
+        this.tableFactory = tableFactory;
+        this.tableManager = tableManager;
+        this.networkViewFactory = networkViewFactory;
+        this.streamUtil = streamUtil;
+        
+        this.visualMappingManager = visualMappingManager;
+        this.visualStyleFactory = visualStyleFactory;
+        
+        this.vmfFactoryContinuous = vmfFactoryContinuous;
+        this.vmfFactoryDiscrete = vmfFactoryDiscrete;
+        this.vmfFactoryPassthrough = vmfFactoryPassthrough;
+        
+        this.dialog = dialog;
+        
+        this.sessionManager = sessionManager;
         this.application = application;
         this.browser = browser;
         this.fileUtil = fileUtil;
         this.streamUtil = streamUtil;
-        setLayout(new BorderLayout());
-
-        
-        //CytoPanel cytoPanel = application.getCytoPanel(CytoPanelName.WEST);
-        //cytoPanel.addCytoPanelListener();
+        this.registrar = registrar;
+        setLayout(new BorderLayout());        
 
         //get the current enrichment map parameters
         //params = EnrichmentMapManager.getInstance().getParameters(Cytoscape.getCurrentNetwork().getIdentifier());
-         params = new EnrichmentMapParameters();
+         params = new EnrichmentMapParameters(sessionManager,streamUtil);
 
         //create the three main panels: scope, advanced options, and bottom
         JPanel AnalysisTypePanel = createAnalysisTypePanel();
@@ -1179,6 +1240,15 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 
         importButton.setText("Build");
         //TODO:Add action listern for build network
+        importButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                EnrichmentMapParseInputTask parseInput = new EnrichmentMapParseInputTask(empanel, networkFactory, 
+            		applicationManager,networkManager,networkViewManager,tableFactory,tableManager,networkViewFactory, 
+            		visualMappingManager,visualStyleFactory,
+            		vmfFactoryContinuous, vmfFactoryDiscrete,vmfFactoryPassthrough, dialog, sessionManager, streamUtil);
+                parseInput.build();
+            }
+        });
         //importButton.addActionListener(new BuildEnrichmentMapActionListener(this));
         importButton.setEnabled(true);
 
@@ -1190,22 +1260,11 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
     }
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {
-        //TODO:figure out how to unregister the service
-    	/* //CytoscapeDesktop desktop = Cytoscape.getDesktop();
-        //CytoPanel cytoPanel = desktop.getCytoPanel(SwingConstants.WEST);
-        // set the input window to null in the instance
-        EnrichmentMapManager.getInstance().setInputWindow(null);
-        application.getCytoPanel(this.getCytoPanelName())..remove(this);
-    */}
+    		this.registrar.unregisterService(this, CytoPanelComponent.class);
+    }
 
     public void close() {
-    	 //TODO:figure out how to unregister the service
-    	/*CytoscapeDesktop desktop = Cytoscape.getDesktop();
-        CytoPanel cytoPanel = desktop.getCytoPanel(SwingConstants.WEST);
-        // set the input window to null in the instance
-        EnrichmentMapManager.getInstance().setInputWindow(null);
-        cytoPanel.remove(this);
-    */
+    		this.registrar.unregisterService(this, CytoPanelComponent.class);
     	}
 
     /*
@@ -1856,7 +1915,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
            ArrayList<FileChooserFilter> all_filters = new ArrayList<FileChooserFilter>();
            all_filters.add(filter);
            // Get the file name
-           File file = fileUtil.getFile(this,"Import GMT File", FileUtil.LOAD,all_filters  );
+           File file = fileUtil.getFile(EnrichmentMapUtils.getWindowInstance(this),"Import GMT File", FileUtil.LOAD,all_filters  );
            if(file != null) {
                GMTFileNameTextField.setForeground(checkFile(file.getAbsolutePath()));
                GMTFileNameTextField.setText(file.getAbsolutePath());
@@ -1889,7 +1948,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
           all_filters.add(filter_edb);
                      
            // Get the file name
-           File file = fileUtil.getFile(this,"Import GCT File", FileUtil.LOAD, all_filters);
+           File file = fileUtil.getFile(EnrichmentMapUtils.getWindowInstance(this),"Import GCT File", FileUtil.LOAD, all_filters);
            if(file != null) {
 
                if(file.getPath().contains(".rpt")){
@@ -1936,7 +1995,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
         all_filters.add(filter_edb);
                    
          // Get the file name
-         File file = fileUtil.getFile(this,"Import GCT File", FileUtil.LOAD, all_filters);
+         File file = fileUtil.getFile(EnrichmentMapUtils.getWindowInstance(this),"Import GCT File", FileUtil.LOAD, all_filters);
          if(file != null) {
              if(file.getPath().contains(".rpt")){
                       //The file loaded is an rpt file --> populate the fields based on the
@@ -1984,7 +2043,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
          all_filters.add(filter_edb);
                     
           // Get the file name
-          File file = fileUtil.getFile(this,"Import dataset result File", FileUtil.LOAD, all_filters);
+          File file = fileUtil.getFile(EnrichmentMapUtils.getWindowInstance(this),"Import dataset result File", FileUtil.LOAD, all_filters);
 
         if(file != null) {
              if(file.getPath().contains(".rpt")){
@@ -2030,7 +2089,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
         all_filters.add(filter_edb);
                    
          // Get the file name
-         File file = fileUtil.getFile(this,"Import dataset result File", FileUtil.LOAD, all_filters);
+         File file = fileUtil.getFile(EnrichmentMapUtils.getWindowInstance(this),"Import dataset result File", FileUtil.LOAD, all_filters);
 
         if(file != null) {
              if(file.getPath().contains(".rpt")){
@@ -2075,7 +2134,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
         all_filters.add(filter_edb);
                    
          // Get the file name
-         File file = fileUtil.getFile(this,"Import dataset result File", FileUtil.LOAD, all_filters);
+         File file = fileUtil.getFile(EnrichmentMapUtils.getWindowInstance(this),"Import dataset result File", FileUtil.LOAD, all_filters);
 
       if(file != null) {
            if(file.getPath().contains(".rpt")){
@@ -2121,7 +2180,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
          all_filters.add(filter_edb);
                     
           // Get the file name
-          File file = fileUtil.getFile(this,"Import dataset result File", FileUtil.LOAD, all_filters);
+          File file = fileUtil.getFile(EnrichmentMapUtils.getWindowInstance(this),"Import dataset result File", FileUtil.LOAD, all_filters);
 
       if(file != null) {
            if(file.getPath().contains(".rpt")){
@@ -2169,7 +2228,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 
                     
           // Get the file name
-          File file = fileUtil.getFile(this,"Import rank File", FileUtil.LOAD, all_filters);
+          File file = fileUtil.getFile(EnrichmentMapUtils.getWindowInstance(this),"Import rank File", FileUtil.LOAD, all_filters);
 
         if(file != null) {
                 Dataset1RankFileTextField.setForeground(checkFile(file.getAbsolutePath()));
@@ -2206,7 +2265,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 
                     
           // Get the file name
-          File file = fileUtil.getFile(this,"Import rank File", FileUtil.LOAD, all_filters);
+          File file = fileUtil.getFile(EnrichmentMapUtils.getWindowInstance(this),"Import rank File", FileUtil.LOAD, all_filters);
 
         if(file != null) {
                 Dataset2RankFileTextField.setForeground(checkFile(file.getAbsolutePath()));
@@ -2437,6 +2496,5 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 		// TODO Auto-generated method stub
 		return "Enrichment Map Input Panel";
 	}
-    
     
 }

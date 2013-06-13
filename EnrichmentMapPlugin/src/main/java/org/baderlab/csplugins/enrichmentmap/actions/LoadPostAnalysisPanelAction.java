@@ -49,12 +49,15 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanel;
+import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.application.swing.CytoPanelState;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkViewManager;
 
 import java.awt.event.ActionEvent;
 import java.util.Map;
+import java.util.Properties;
 
 /**
  * Created by
@@ -70,66 +73,50 @@ public class LoadPostAnalysisPanelAction extends AbstractCyAction {
         
     private final CytoPanel cytoPanelWest;
     private PostAnalysisInputPanel postEMinputPanel;
+    private CyServiceRegistrar registrar;
     
     public LoadPostAnalysisPanelAction(Map<String,String> configProps, CyApplicationManager applicationManager, 
-			CyNetworkViewManager networkViewManager,CySwingApplication application,  PostAnalysisInputPanel inputPanel){
-    super( configProps,  applicationManager,  networkViewManager);
+			CyNetworkViewManager networkViewManager,CySwingApplication application,  PostAnalysisInputPanel inputPanel,
+			CyServiceRegistrar registrar){
+
+    		super( configProps,  applicationManager,  networkViewManager);
  
 		putValue(NAME, "Load Post Analysis Panel");
 				
 		this.cytoPanelWest = application.getCytoPanel(CytoPanelName.WEST);
 		this.postEMinputPanel = inputPanel;
+		this.registrar = registrar;
 
     }
 
     public void actionPerformed(ActionEvent event) {
 
         String os = System.getProperty("os.name");     
-
+        
+        //if the service has not been registered
         if(!initialized){
-            EnrichmentMapManager.getInstance();
+        		
             initialized = true;
-            
-            //set the input window in the instance so we can update the instance window
+          //EnrichmentMapInputPanel inputwindow = new EnrichmentMapInputPanel(application,browser,streamUtilRef);
+            registrar.registerService(this.postEMinputPanel,CytoPanelComponent.class,new Properties());
+      
+            //set the input window in the instance so we can udate the instance window
             //on network focus
             EnrichmentMapManager.getInstance().setAnalysisWindow(this.postEMinputPanel);
+        }
+            
+       // If the state of the cytoPanelWest is HIDE, show it
+      if (cytoPanelWest.getState() == CytoPanelState.HIDE) {
+    	  	cytoPanelWest.setState(CytoPanelState.DOCK);
+      }
 
-         // If the state of the cytoPanelWest is HIDE, show it
-            if (cytoPanelWest.getState() == CytoPanelState.HIDE) {
-                    cytoPanelWest.setState(CytoPanelState.DOCK);
-            }
-
-            // Select my panel
-            int index = cytoPanelWest.indexOfComponent(this.postEMinputPanel);
-            if (index == -1) {
-                    return;
-            }
-            cytoPanelWest.setSelectedIndex(index);
+      // Select my panel
+      int index = cytoPanelWest.indexOfComponent(this.postEMinputPanel);
+      if (index == -1) {
+    	  	return;
+       }
+       cytoPanelWest.setSelectedIndex(index);
       
-        }
-        else{
-
-            //check to see that the input window hasn't been closed
-
-            PostAnalysisInputPanel analysisWindow  = EnrichmentMapManager.getInstance().getAnalysisWindow();
-            if(analysisWindow == null){
-                /*analysisWindow = new PostAnalysisInputPanel();
-                EnrichmentMapManager.getInstance().setAnalysisWindow(analysisWindow);  
-                
-             // If the state of the cytoPanelWest is HIDE, show it
-                if (cytoPanelWest.getState() == CytoPanelState.HIDE) {
-                        cytoPanelWest.setState(CytoPanelState.DOCK);
-                }
-
-                // Select my panel
-                int index = cytoPanelWest.indexOfComponent(this.postEMinputPanel);
-                if (index == -1) {
-                        return;
-                }
-                cytoPanelWest.setSelectedIndex(index);
-*/
-            }
 
         }
-    }
 }

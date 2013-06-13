@@ -1,5 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap;
 
+import java.awt.Component;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -13,6 +14,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
 
 
 import org.baderlab.csplugins.enrichmentmap.actions.EnrichmentMapActionListener;
@@ -766,6 +771,22 @@ public class EnrichmentMapUtils {
         return null;
     }
     
+	public static Component getWindowInstance(JPanel panel){
+		//recurse up the parents until you find an instance of JFrame or JDialog
+		Component parent = panel.getParent();
+		Component current = panel;
+		while (parent != null){
+			//check to see if parent is an instance of JFrame of JDialog
+			if(parent instanceof JFrame || parent instanceof JDialog)
+				return parent;
+			current = parent;
+			parent = current.getParent();
+		}
+
+		return current;
+
+	}
+	
     //internal class to hold the parts of the file name
     public class FileNameParts{
     		public String name;

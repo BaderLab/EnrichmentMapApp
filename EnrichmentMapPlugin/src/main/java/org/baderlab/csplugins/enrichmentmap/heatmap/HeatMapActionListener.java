@@ -127,7 +127,7 @@ public class HeatMapActionListener implements ActionListener {
         else if(select.equalsIgnoreCase("Add Rankings ... ")){
 
            HashMap<String, Ranking> all_ranks = map.getAllRanks();
-
+           //TODO: add rank file loading from heatmap panel
 /*           CyFileFilter filter = new CyFileFilter();
 
             // Add accepted File Extensions

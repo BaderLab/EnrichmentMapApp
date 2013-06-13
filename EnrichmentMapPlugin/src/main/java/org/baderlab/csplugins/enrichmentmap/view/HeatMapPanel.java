@@ -59,6 +59,7 @@ import org.mskcc.colorgradient.*;
 import org.baderlab.csplugins.brainlib.DistanceMatrix;
 import org.baderlab.csplugins.brainlib.AvgLinkHierarchicalClustering;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
+import org.baderlab.csplugins.enrichmentmap.EnrichmentMapUtils;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapVisualStyle;
 import org.baderlab.csplugins.enrichmentmap.heatmap.CellHighlightRenderer;
 import org.baderlab.csplugins.enrichmentmap.heatmap.ColorRenderer;
@@ -1097,7 +1098,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
           }
 
     private void saveExpressionSetActionPerformed(ActionEvent evt){
-        java.io.File file = fileUtil.getFile(this, "Export Heatmap as txt File", FileUtil.SAVE,null);
+        java.io.File file = fileUtil.getFile(EnrichmentMapUtils.getWindowInstance(this), "Export Heatmap as txt File", FileUtil.SAVE,null);
         if (file != null && file.toString() != null) {
             String fileName = file.toString();
             if (!fileName.endsWith(".txt")) {
@@ -1154,7 +1155,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
     }
 
     private void exportExpressionSetActionPerformed(ActionEvent evt){
-            java.io.File file = fileUtil.getFile(this,"Export Heatmap as pdf File", FileUtil.SAVE,null);
+            java.io.File file = fileUtil.getFile(EnrichmentMapUtils.getWindowInstance(this),"Export Heatmap as pdf File", FileUtil.SAVE,null);
             if (file != null && file.toString() != null) {
                 String fileName = file.toString();
                 if (!fileName.endsWith(".pdf")) {

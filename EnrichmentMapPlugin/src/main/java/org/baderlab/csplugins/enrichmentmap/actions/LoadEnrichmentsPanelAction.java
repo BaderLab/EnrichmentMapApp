@@ -51,9 +51,11 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanel;
+import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.application.swing.CytoPanelState;
 import org.cytoscape.io.util.StreamUtil;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.util.swing.OpenBrowser;
@@ -61,6 +63,7 @@ import org.cytoscape.view.model.CyNetworkViewManager;
 
 import java.awt.event.ActionEvent;
 import java.util.Map;
+import java.util.Properties;
 
 /**
  * Created by
@@ -74,83 +77,55 @@ public class LoadEnrichmentsPanelAction extends AbstractCyAction {
 
     //variable to track initialization of network event listener
     private boolean initialized = false;
-    private CySwingApplication application;
-    private OpenBrowser browser;
-    private FileUtil fileUtil;
-	private StreamUtil streamUtil;
+
     
     private final CytoPanel cytoPanelWest;
     private EnrichmentMapInputPanel EMinputPanel;
+    private CyServiceRegistrar registrar;
     
     
     public LoadEnrichmentsPanelAction(Map<String,String> configProps, CyApplicationManager applicationManager, 
     			CyNetworkViewManager networkViewManager, CySwingApplication application,  
-    			OpenBrowser browser,FileUtil fileUtil,  StreamUtil streamUtil, EnrichmentMapInputPanel inputPanel){
+    			 EnrichmentMapInputPanel inputPanel, CyServiceRegistrar registrar){
         super( configProps,  applicationManager,  networkViewManager);
      
- 		putValue(NAME, "Create Enrichment Map");
- 		this.application = application;
- 		this.browser = browser;
- 		this.fileUtil = fileUtil;
-        this.streamUtil = streamUtil;
- 		
+ 		putValue(NAME, "Create Enrichment Map");		
  		
  		this.cytoPanelWest = application.getCytoPanel(CytoPanelName.WEST);
  		this.EMinputPanel = inputPanel;
- 		
+ 		this.registrar = registrar;
  		
 
     }
 
     public void actionPerformed(ActionEvent event) {
                 
-          if(!initialized){
-                EnrichmentMapManager.getInstance();
+          if(!initialized){      
                 initialized = true;
 
                 //EnrichmentMapInputPanel inputwindow = new EnrichmentMapInputPanel(application,browser,streamUtilRef);
-
+                registrar.registerService(this.EMinputPanel,CytoPanelComponent.class,new Properties());
+          
                 //set the input window in the instance so we can udate the instance window
                 //on network focus
                 EnrichmentMapManager.getInstance().setInputWindow(this.EMinputPanel);
-              
-                // If the state of the cytoPanelWest is HIDE, show it
-                if (cytoPanelWest.getState() == CytoPanelState.HIDE) {
-                        cytoPanelWest.setState(CytoPanelState.DOCK);
-                }
-
-                // Select my panel
-                int index = cytoPanelWest.indexOfComponent(this.EMinputPanel);
-                if (index == -1) {
-                        return;
-                }
-                cytoPanelWest.setSelectedIndex(index);
-
+          } 
+                  
+          // If the state of the cytoPanelWest is HIDE, show it
+          if (cytoPanelWest.getState() == CytoPanelState.HIDE) {
+        	  	cytoPanelWest.setState(CytoPanelState.DOCK);
           }
-          else{
 
-                //check to see that the input window hasn't been closed
+         // Select my panel
+        int index = cytoPanelWest.indexOfComponent(this.EMinputPanel);
+        if (index == -1) {
+        	 	return;
+        }
+       cytoPanelWest.setSelectedIndex(index);
 
-                EnrichmentMapInputPanel inputwindow  = EnrichmentMapManager.getInstance().getInputWindow();
-                if(inputwindow == null){
-                  inputwindow = new EnrichmentMapInputPanel(application,browser,fileUtil,streamUtil);
-                  EnrichmentMapManager.getInstance().setInputWindow(inputwindow);
-
-                  // If the state of the cytoPanelWest is HIDE, show it
-                  if (cytoPanelWest.getState() == CytoPanelState.HIDE) {
-                          cytoPanelWest.setState(CytoPanelState.DOCK);
-                  }
-
-                  // Select my panel
-                  int index = cytoPanelWest.indexOfComponent(this.EMinputPanel);
-                  if (index == -1) {
-                          return;
-                  }
-                  cytoPanelWest.setSelectedIndex(index);
-
-
-          }
+          
+         
 
         }
-    }
+    
 }
