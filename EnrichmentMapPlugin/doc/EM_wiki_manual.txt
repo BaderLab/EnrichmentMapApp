@@ -1,0 +1,417 @@
+## page was renamed from Software/EnrichmentMaps/UserManual
+#acl All:read
+{{attachment:enrichmentmap_logo3.png|Enrichment Map Logo|align="right"}}<<BR>>
+= Enrichment Map User Guide =
+<<TableOfContents(5)>>
+
+== Overview ==
+The Enrichment Map Cytoscape Plugin allows you to visualize the results of ''gene-set enrichment'' as a network.  It will operate on any generic enrichment results as well as specifically on [[https://www.broad.harvard.edu/gsea/|Gene Set Enrichment Analysis (GSEA)]] results.  Nodes represent gene-sets and edges represent mutual overlap; in this way, highly redundant gene-sets are grouped together as clusters, dramatically improving the capability to navigate and interpret enrichment results.
+
+Gene-set enrichment is a data analysis technique taking as input
+
+   1.  a (ranked) gene list, from a genomic experiment<<BR>>
+   1. gene-sets, grouping genes on the basis of a-priori knowledge (e.g. Gene Ontology) or experimental data (e.g. co-expression modules)
+
+and generating as output the list of enriched gene-sets, i.e. best sets that summarizing the gene-list.
+It is common to refer to gene-set enrichment as ''functional enrichment'' because functional categories (e.g. Gene Ontology) are commonly used as gene-sets. 
+
+{{attachment:EM_example_2.png}}
+
+-----
+
+== Installation ==
+The Enrichment Map Plugin requires Cytoscape Version 2.6.x. If you don't have Cytoscape or an older Version (2.5 or older), please download the latest Release from http://www.cytoscape.org/ and install it on your computer.
+
+ * Download the Enrichment Map plugin from [[Software/EnrichmentMap]] and manually place the file `EnrichmentMap.jar` in the `Cytoscape/plugins` folder.
+
+-----
+
+== Quick Start Guide ==
+=== Creating an Enrichment Map ===
+You have two main options:
+
+ * Load GSEA Results
+ * Load Generic Results
+
+The only difference between the two modes is the structure of the enrichment table(s). In either case, to use the plugin you will need the following files:
+
+ * file.gmt: gene-set to gene ID
+ * file.txt or .gct: expression matrix
+ * file.txt or .xls (*): enrichment table(s)
+
+~-(*) GSEA saves the enrichment table as a .xls file; however, these are not true Excel files, they are tab-separated text files with a modified extension; Enrichment Map does not work with "true" Excel .xls files.-~
+
+If your enrichment results were generated from GSEA, you will just have to pick the right files from your results folder. If you have generated the enrichment results using another method, you will have to go to the Full User Guide, File Format section, and make sure that the file format complies with Enrichment Map requirements.
+
+You can use the parameter defaults. For a more careful choice of the parameter settings, please go to the Full User Guide, Tips on Parameter Choice.
+
+=== Graphical Mapping of Enrichment ===
+ * Nodes represent gene-sets.
+ * Edges represent mutual overlap.
+ * Enrichment significance (p-value) is conveyed as node colour intensity.
+ * The enriched phenotype is conveyed by node colour hue.<<BR>>
+  . ~-Note: In standard two-class designs, where two phenotypes are compared (e.g. treated vs untreated) the colour hue conveys the enriched phenotype; this is equivalent to mapping enrichment in up- and down-regulated genes, if one of the two phenotypes is assumed as reference (e.g. untreated), and the other phenotype is the one of interest; in such a case, enriched in the phenotype of interest means up, and enrichment in the reference phenotype means down.-~
+ * Node size represents how many genes are in the gene-set.
+
+=== Exploring the Enrichment Map ===
+ * The "Parameters" tab in the "Results Panel" on the right side of the window contains a legend mapping the colours to the phenotypes and displaying the parameters used to create the map (cut-off values and data files).
+ * The "Network" tab in the "Control Panel" on the left lists all available networks in the current session and at the bottom has a overview of the current network which allows to easily navigate in a network even at higher zoom levels by dragging the blue rectangle (the current view) over the network.
+ * Clicking on a node (the circle that represents a gene set) will open the "EM Geneset Expression Viewer" tab in the "Data Panel" showing a heatmap of the expression values of all genes in the selected gene set.
+ * Clicking on an edge (the line between two nodes) will open the "EM Overlap Expression Viewer" tab in the "Data Panel" showing a heatmap of the expression values of all genes both gene sets that are connected by this edge have in common.
+ * If several nodes and edges are selected (e.g. by dragging a selection box around the desired gene sets) the "EM Geneset Expression Viewer" will show the union of all genes in the selected gene sets and the "EM Overlap Expression Viewer" will show only those genes that all selected gene sets have in common.
+
+=== Advanced tips ===
+ * With large networks and low zoom-levels Cytoscape automatically reduces the details (such as hiding the node labels and not showing the node borders). To override this mechanism click on "View / Show Graphics Details"
+ * The !VizMapper and the Node- and Edge Attribute Browser open up a lot more visualization options like linking the label size to Enrichment Scores or p-values. Refer to the Cytoscape manual at www.cytoscape.org for more information.
+ * If you have used Genesets from GSEAs MSigDb, you can access additional informations for each gene set, by adding the a new property: <<BR>>
+  . ''(Edit / Preferences / Properties... / Add -> enter property name: nodelinkouturl.MSigDb -> enter property value: `http://www.broad.mit.edu/gsea/msigdb/cards/%ID%.html` -> [ (./) ] Make Current Cytoscape Properties default -> (OK) )''. Now you can right-click on a node and choose LinkOut/MSigDb to open the Database entry of the Geneset represented by that node in your Browser.
+
+-----
+
+== Full User Guide ==
+=== File Formats ===
+<<Anchor(genesets)>>
+
+==== Gene sets file (GMT file) ====
+ * The gene set file describes the genesets used for the analysis. These files can be obtained
+  * directly downloading gene-sets collected in the [[http://www.broad.mit.edu/gsea/msigdb/index.jsp|MSigDB]]<<BR>>
+   . Note: if you use MSigDB Gene Ontology gene-sets, please consider that they do not include all annotations, as an evidence code filter is applied; if you are interested in achieving maximum coverage, download the original annotations
+  * converting gene annotations / pathways from public databases<<BR>>
+   . ~-Note: if you are a R user, [[http://www.bioconductor.org/|Bioconductor]] offers annotation packages such as `GO.db`, `org.Hs.eg.db`, `KEGG.db`-~
+ * Each row of the geneset file represents one geneset and consists of:
+  * geneset name (--tab--) description (--tab--) a list of tab-delimited genes that are part of that geneset.
+ * The geneset names must be unique.
+
+<<Anchor(expression)>>
+
+==== Expression Data file (GCT, TXT or RNK file) ====
+ * The expression data can be loaded in three different formats: gct, rnk or txt.
+  * '''Gct''' differs from txt only because two additional lines are required at the top part of the file.
+  * <<Anchor(rnk)>> '''Rnk''' file is completely different from the GCT or TXT file.  It represents a ranked list of genes containing only gene name and a rank or score.
+ * Each line of expression file contains a:
+  * name (--tab--) description (--tab--) followed by a list of tab delimited expression values.
+  * OR name (--tab--) rank or score
+ * The first line in the txt file and third line in the gct file consists of column headings.
+ * The GCT file contains two additional lines at the top of the file.
+  * The first line contains #1.2.
+  * The second line contains the number of data rows (tab) the number of data columns.
+ * If the GCT file contains Probeset ID's as primary keys (e.g. as you had GSEA collapse your data file to gene symbols) you need to convert the gct file to use the same primary key as used in the gene sets file (GMT file). You have the following options:
+   * Use the GSEA desktop application: GSEA / Tools / Collapse Dataset
+   * Run this Python script [[Software/EnrichmentMap/CollapseExpressionMatrix|collapse_ExpressionMatrix.py]] using the Chip platform file that was used by GSEA.
+
+<<Anchor(enrichments)>>
+
+==== Enrichment Results files ====
+===== GSEA result files =====
+ * For each analysis GSEA produces two output files. One representing the enriched genesets in phenotype A and the other representing the enriched genesets in phenotype B.
+ * These files are usually named "gsea_report_for_phenotypeA.Gsea.########.xls" and "gsea_report_for_phenotypeB.Gsea.########.xls"
+ * The files should be loaded in as is and require no pre-processing.
+ * There is no need to worry about which Enrichment Results Text box to put the two files.  The phenotype is specified by the sign of the ES score and is computed internally by the program.
+
+<<Anchor(generic)>>
+
+===== Generic results files =====
+ * The generic results file is a tab delimited file with enriched gene-sets and their corresponding p-values (and optionally, FDR corrections)
+ * The Generic Enrichment Results file needs:
+  * gene-set ID (must match the gene-set ID in the GMT file),
+  * gene-set name or description,
+  * p-value,
+  * FDR correction value
+  * Phenotype: +1 or -1, to identify enrichment in up- and down-regulation, or, more in general, in either of the two phenotypes being compared in the two-class analysis
+    * +1 maps to red
+    * -1 maps to blue
+Notes:
+ 1. description and FDR columns can have empty or NA values, but the column and the column header must exist
+ 1. if no value is provided under phenotype, Enrichment Map will assume there is only one phenotype, and will map enrichment p-values to red
+
+[[/GenericResultsFiles|See here for examples]]
+
+<<Anchor(DAVID)>>
+
+==== Data Required for Running Enrichment Analysis in David ====
+  1. List of Genes of interest - the list should consist of a list of genes of interest with every gene having the same identifier type (for example, a list of significantly differentially expressed genes from a microarray experiment with Entrez gene ids)
+  1. List of Genes to be used for Background set (Optional) - (for example, the list of genes present on the microarray chip with Entrez gene ids)
+
+==== Data Required for Running Enrichment Map with David Output ====
+  1. expression matrix (OPTIONAL) 
+  1. enrichment tables
+          * dataset-1
+                * DAVID functional Enrichment Condition 1 - functional Enrichment Chart             
+          * data-set 2             
+                * DAVID functional Enrichment Condition 2 - functional Enrichment Chart (OPTIONAL)  
+
+
+==== DAVID Enrichment Result File ====
+   * Available only in v1.0 or higher
+   * When using DAVID as the analysis type there is '''no requirement''' to enter either a gmt file or an expression file.  Both are options if the user wishes to add them to the analysis.
+   * The DAVID Enrichment Result File is a file generated by the DAVID Functional Annotation Chart Report and consists of the following fields: '''Important: Make sure you are using CHART Report and NOT a Clustered Report'''
+    * Category (DAVID category, i.e. Interpro, sp_pir_keywords, ...)
+    * Term - Gene set name
+    * Count - number of genes associated with this gene set
+    * Percentage (gene associated with this gene set/total number of query genes)
+    * P-value - modified Fisher Exact P-value
+    * Genes - the list of genes from your query set that are annotated to this gene set.
+    * List Total - number of genes in your query list mapped to any gene set in this ontology
+    * Pop Hits - number of genes annotated to this gene set on the background list
+    * Pop Total - number of genes on the background list mapped to any gene set in this ontology.
+    * Fold enrichment 
+    * Bonferroni
+    * Benjamini
+    * FDR
+Notes:
+   1. The DAVID option expects a file as generated by the DAVID web interface.
+   1. '''DISCLAIMER''' : In the absence of a gmt gene sets are constructed based on the field '''Genes''' in the DAVID output.  This only considers the genes entered in your query set and not the genes in your background set.  This will drastically affect the amount of overlap you see in the resulting Enrichment Map.    
+
+
+==== BiNGO Enrichment Result File ====
+   * Available only in v1.2 or higher
+   * When using BiNGO as the analysis type there is '''no requirement''' to enter either a gmt file or an expression file.  Both are options if the user wishes to add them to the analysis.
+   * The BiNGO Enrichment Result File is a file generated by the BiNGO cytoscape plugin and consists of the following fields: '''Important: When running BiNGO make sure to check off "Check Box for saving data"'''
+    * '''The first 20 lines of BiNGO output file list parameters used for the analysis and are ignored by the Enrichment map plugin'''
+    * GO-ID - Gene set name
+    * p-value - hypergeometric or binomial Exact P-value
+    * corr p-value - corrected p-value
+    * x - number of genes in your query list mapped to this gene-set
+    * n - number of genes in the background list mapped to this gene-set
+    * X - number of genes annotated to this gene set on the background list
+    * N - number of genes on the background list mapped to any gene set in this ontology.
+    * Description - gene list description
+    * Genes - the list of genes from your query set that are annotated to this gene set.
+
+Notes:
+   1. The BiNGO option expects a file as generated by the BiNGO Cytsocape Plugin.
+   1. '''DISCLAIMER''' : In the absence of a gmt gene sets are constructed based on the field '''Genes''' in the BiNGO output.  This only considers the genes entered in your query set and not the genes in your background set.  This will drastically affect the amount of overlap you see in the resulting Enrichment Map.    
+
+
+==== Additional Information on GSEA File Formats ====
+Additional Information on GSEA File Formats can be found [[http://www.broad.mit.edu/cancer/software/gsea/wiki/index.php/Data_formats|here]] <<Anchor(rpt)>>
+
+==== RPT files ====
+ * A special trick for GSEA results, in any GSEA analysis an rpt file is created that specifies the location of all files (including the gmt, gct, results files, phenotype specification, and rank files).
+ * Any of the Fields under the dataset tab (Expression, Enrichment Results 1 or Enrichment Results 2) will accept an rpt file and populate GMT, Expression, Enrichment Results 1, Enrichment Results 2, Phenotypes, and Ranks the values for that dataset.
+ * A second rpt file can be loaded for dataset 2.  It will fail if the GMT file specified is different than the one specified in dataset 1.
+
+<<Anchor(advanced)>>
+
+==== Advanced Settings ====
+ * For each dataset there are additional parameters that the user can set but are not required.
+ * The advanced parameters include:
+  * Phenotypes (phenotype1 versus phenotype2)
+  * Rank file - file specifying the ranks of the genes in the analysis
+   * This file has the format specified in the above section - gene (--tab--) rank or score.
+ * By default the phenotypes are set to Up and Down but in the advanced setting mode the user can change these to any desired text.
+ * Both of these fields are populated when the user loads the input files using the rpt option.
+
+<<Anchor(parameters)>>
+
+=== Tips on Parameter Choice ===
+==== P-value and FDR Thresholds ====
+GSEA can be used with two different significance estimation settings: gene-set permutation and phenotype permutation. Gene-set permutation was used for Enrichment Map application examples.
+
+__Gene-set Permutation__
+
+Here are different sets of thresholds you may consider for gene-set permutation:
+
+ * Very permissive:
+  * p-value < 0.05
+  * FDR < 0.25
+ * Moderately permissive:
+  * p-value < 0.01
+  * FDR < 0.1
+ * Moderately conservative:
+  * p-value < 0.005
+  * FDR < 0.075
+ * Conservative:
+  * p-value < 0.001
+  * FDR < 0.05
+
+For high quality, high coverage transcriptomic data, the number of enriched terms at the very conservative threshold is usually 100-250 when using gene-set permutation.
+
+__Phenotype Permutation__
+
+ * Recommended:
+  * p-value < 0.05
+  * FDR < 0.25
+
+In general, we recommend to use permissive thresholds only if your having a hard time finding any enriched terms.  
+==== Jaccard vs. Overlap Coefficient ====
+ * The Overlap Coefficient is recommended when relations are expected to occur between large-size and small-size gene-sets, as in the case of the Gene Ontology.
+ * The Jaccard Coefficient is recommended in the opposite case.
+ * When the gene-sets are about the same size, Jaccard is about the half of the Overlap Coefficient for gene-set pairs with a small intersection, whereas it is about the same as the Overlap Coefficient for gene-sets with large intersections.
+ * When using the Overlap Coefficient generates a the map with several large gene-sets overly connected to many other gene-sets, we recommend switching to the Jaccard Coefficient.
+
+==== Overlap Thresholds ====
+ * 0.5 is moderately conservative, and is recommended for most of the analyses.
+ * 0.3 is permissive, and might result in a messier map.
+
+==== Jaccard Thresholds ====
+ * 0.5 is very conservative
+ * 0.25 is moderately conservative
+
+=== The Input Panel ===
+{{attachment:EM_inputpanel_screenshot_v1.2beta.png|Screenshot EnrichmentMap InputPanel}}
+
+ 1. '''Analysis Type'''
+  * There are two distinct types of Enrichment map analyses, GSEA or Generic.
+   * '''GSEA''' - takes as inputs the output files created in a GSEA analysis.  File formats are specific to files created by GSEA.  The main difference between this and generic is the number and format of the Enrichment results files.  GSEA analysis always has two enrichment results files, one for each of the phenotypes compared.
+   * '''Generic''' - takes as inputs the same file formats as a GSEA analysis except the Enrichment results file is a different format and there is only one enrichment file. [[#generic|Generic File description]]
+   * '''DAVID''' - (implemented in v1.0 and higher)  has no gmt or expression file requirement and takes as input enrichment result file as produced by [[http://david.abcc.ncifcrf.gov/content.jsp?file=functional_annotation.html|DAVID]] [[#DAVID|David Enrichment Result File description]]
+ 1. '''Genesets''' - path to [[#genesets|gmt]] file describing genesets.  User can browse hard drive to find file by pressing '''...''' button.
+ 1. '''Dataset 1''' - User can specify [[#expression|expression]] and [[#enrichments|enrichment]] files or alternatively, an [[#rpt|rpt]] file which will populate all the fields in genesets,dataset # and advanced sections.
+ 1. '''Advanced''' - Initially collapsed (expand by clicking on arrow head directly next to ''Advanced''), users have the option of modifying the phenotype labels or loading gene [[#rnk|rank]] files.
+ 1. '''Parameters''' - User can specify p-value, fdr and overlap/jaccard cutoffs. [[#parameters|Choosing Optimal parameter values]]
+ 1. '''Actions''' - The user has three choices, Reset (clears input panel), Close (closes input panel), and Build Enrichment map (takes all parameters in panel and builds an Enrichment map)
+
+=== The Data Panel ===
+ * The bottom (south) panel.
+
+==== Expression Viewer ====
+ * There are two different types of Expression Viewers, each is represented as a separate tab in data panel:
+  * EM Overlap - shows the expression of genes in the overlap (intersection) of all the genesets selected
+  * EM Geneset - shows the expression of genes of the union of all the genesets selected.
+ * Features of the Expression Viewer include:
+  * Normalization
+   * Data as is - represents the data as it was loaded
+   * Row Normalize Data - for each value in a row of expression the mean of the row is subtracted followed by division by the row's standard deviation.
+   * Log Transform Data - takes the log of each expression value
+  * Sorting
+   * Hierarchical cluster - as computed using Pearson correlation of the entire expression set.
+   * If rank files for the data sets are provided at input they will show up as 'Dataset 1 Ranking' and 'Dataset 2 Ranking' and by selecting them the user will be able to sort the expression accordingly
+      * if an expression value does not have a corresponding rank in the ranking file its expression does not appear in the heatmap.
+   * Add Ranking ... - allows user to upload an additional rank file (in the appropriate format,as outlined in [[#expression|Rank file descriptions]]).  There is no limit on the number of rank files that are uploaded.  The user is required to give a name to the rank file.
+  * Save Expression Set
+   * The user can save the subset of expression values currently being viewed in the expression viewer as txt file.
+
+==== Node Attributes ====
+ * For each Enrichment map created the following attributes are created for each node:
+  * EM#_Name - the gene set name
+  * EM#_Formatted_name - a wrapped version of the gene set name so it is easy to visualize. <<BR>>
+   . ~-Note: This is the default label of the node but some users find it easier to arrange the network when the name is not wrapped.  If this is the case in the vizmapper the user can switch the label mapping from EM#_formatted_name to EM#_name.-~
+  * EM#_GS_DESCR - the gene set description (as specified in the second column of the gmt file)
+  * EM#_Genes - the list of genes that are part of this gene set.
+
+ * Additionally there are attributes created for each dataset (a different set for each dataset if using two dataset mode):
+  * EM#_pvalue_dataset(1 or 2) - Gene set p-value, as specified in GSEA enrichment result file.
+  * EM#_qvalue_dataset(1 or 2) - Gene set q-value, as specified in GSEA enrichment result file.
+  * EM#_Colouring_dataset(1 or 2) - Enrichment map parameter calculated using the formula 1-pvalue multiplied by the sign of the ES score (if using GSEA mode) or the phenotype (if using the Generic mode)
+
+  * GSEA specific attributes (these attributes are not populated when creating an enrichment map using the generic mode)
+   * EM#_ES_dataset(1 or 2) - Enrichment score, as specified in GSEA enrichment result file.
+   * EM#_NS_dataset(1 or 2) - Normalized Enrichment score, as specified in GSEA enrichment result file.
+   * EM#_fwer_dataset(1 or 2) - Family-wise error score, as specified in GSEA enrichment result file.
+
+==== Edge Attributes ====
+ * For each Enrichment map created the following attributes are created for each edge:
+  * EM#_Overlap_size - the number of genes associated with the overlap of the two genesets that this edge connects.
+  * EM#_Overlap_genes - the names of the genes that are associated with the overlap of the two genesets that this edge connects.
+  * EM#_similarity_coefficient -  the calculated coefficient for this edge. <<BR>>
+
+
+=== The Results Panel ===
+ * The right (east) panel
+
+==== Parameters pane ====
+ * Reference panel containing legends, slider bars for the user to modify p-value and q-value cut-offs, parameters used for the analysis
+
+=== PostAnalysis Input Panel ===
+To access the post-analysis, follow the path: Menu: Plugin / Enrichment Map / Post Analysis.
+
+{{attachment:PostAnalysis_InputPanel_SignatureHubs.png|Screenshot PostAnalysis InputPanel SignatureHubs|align="right"}}
+ 1. '''Post Analysis Type'''
+    * Currently there is only one Type of Post Analysis available:
+    * '''Signature Hubs''' - calculates the overlap between genesets of the current Enrichment Map and a number of selected external genesets.
+ 2. '''Gene Sets'''
+    * The user needs to supply two geneset-files (both in the gmt format):
+    * '''GMT''' - Enrichment Genesets; the same geneset gmt file as used to create the Enrichment Map (this field will be usually already populated)
+    * '''SigGMT''' - the gmt file with the Signature-Genesets
+ 3. '''Load Genesets''' should be pressed after the file with the Signature-Genesets has been selected. This will populate the list of available Signature Genesets.
+ 4. '''Available Signature Genesets''' – Once the genesets are loaded, this box will contain a list of all genesets defined in the SigGMT file. Click to highlight the desired geneset(s).<<BR>>
+     To highlight more than one geneset at a time, the user can click while pressing the [SHIFT]-, [COMMAND]- or [CTRL]-keys (depending on the Operating System).
+ 5. '''Selected Signature Genesets''' – The Signature Hub analysis will be performed with all genesets in this list. The user can use the down- and up-buttons to move highlighted genesets from one list to the other. 
+ 6. '''Parameters''' – The User can choose a method and a cutoff for generating an edge between a signature-geneset and an enrichment geneset. The following methods are available:
+    * '''Hypergeometric Test''' is the probability (p-value) to find an overlap of k or more genes between a signature geneset and an enrichment geneset by chance.<<BR>>
+        {{attachment:Hypergeometric_test_Formula.png|Formular Hypergeometric Test}}<<BR>>
+        with: <<BR>>
+        k (successes in the sample) : size of the Overlap, <<BR>>
+        n (size of the sample) : size of the Signature geneset<<BR>>
+        m (total number of successes) : size of the Enrichment Geneset<<BR>>
+        N (total number of elements) : size of the union of all Enrichment Genesets
+    * '''Number of common Genes'''
+    * '''directed Overlap''' is the fraction of the intersection of both genesets in respect to the Enrichment Geneset.
+ 7. '''Actions''' - The user has three choices, Reset (clears input panel), Close (closes input panel), and Run (takes all parameters in panel and performs the Post-Analysis)
+
+The post-analysis p-values can be accessed by: select the following attribute for display: "EM1_Overlap_Hypergeom_pVal" (Data Panel: Edge Attribute Browser tab, attribute selection icon)
+
+=== Customizing Defaults with Cytoscape Properties ===
+The Enrichment Map Plugin evaluates a number of Cytoscape Properties with which a user can define some customized default values.<<BR>>
+These can be added and changed with the Cytoscape Preferences Editor (Edit / Preferences / Properties...) or by directly editing the file `cytoscape.props` within the `.cytoscape` folder in the User's HOME directory.
+
+Supported Cytoscape Properties are:
+
+ EnrichmentMap.default_pvalue::
+   :: Default P-value cutoff for Building Enrichment Maps
+   :: Default Value: 0.05<<BR>>
+   :: ''valid Values'': float >0.0, <1.0
+
+ EnrichmentMap.default_qvalue::
+   :: Default Q-value cutoff for Building Enrichment Maps
+   :: Default Value: 0.25
+   :: valid Values: float >0.0, <1.0
+
+ EnrichmentMap.default_overlap::
+   :: Default Overlap coefficient cutoff for Building Enrichment Maps
+   :: Default Value: 0.50
+   :: valid Values: float >0.0, <1.0
+
+ EnrichmentMap.default_jaccard::
+   :: Default Jaccard coefficient cutoff for Building Enrichment Maps
+   :: Default Value: 0.25
+   :: valid Values: float >0.0, <1.0
+
+ EnrichmentMap.default_overlap_metric::
+   :: Default choice of similarity metric for Building Enrichment Maps
+   :: Default Value: `Jaccard`
+   :: valid Values: `Jaccard`, `Overlap`
+
+ EnrichmentMap.default_sort_method::
+   :: Set the default sorting in the legend/parameters panel to Hierarchical Clustering,
+      Ranks (default the first rank file, if no ranks then it is no sort),
+      Column (default is the first column) or no sort.
+   :: Default Value: `Hierarchical Cluster`
+   :: valid Values: `Hierarchical Cluster`, `Ranks`, `Columns`, `No Sort`
+
+ EnrichmentMap.hieracical_clusteting_theshold::
+   :: Threshold for the maximum number of Genes before a dialogue opens to confirm if clustering should be performed.
+   :: Default Value: 1000
+   :: valid Values: Integer
+
+ nodelinkouturl.MSigDb.GSEA Gene sets::
+   :: !LinkOut URL for MSigDb.GESA Gene sets.
+   :: Default Value: `http://www.broad.mit.edu/gsea/msigdb/cards/%ID%.html`
+   :: valid Values: URL
+
+ EnrichmentMap.disable_heatmap_autofocus::
+   :: Flag to override the automatic focus on the Heatmap once a Node or Edge is selected.
+   :: Default Value: `FALSE`
+   :: valid Values: `TRUE`, `FALSE`
+
+=== GSEA Leading Edge Functionality ===
+  * For every gene set that is tested for significance using GSEA there is a set of proteins in that gene set defined as the ''Leading Edge''.  According to GSEA the leading edge is:
+{{{
+"the subset of members that contribute most to the ES. For a positive ES, the leading edge subset is the set of members that appear in the ranked list prior to the peak score. For a negative ES, it is the set of members that appear subsequent to the peak score."
+}}}
+  * In essence, the leading edge is the set of genes that contribute most to the enrichment of the gene set.
+  * For Enrichment Map, leading edge information is extracted from the [[#enrichments|gsea enrichment results files]] from the column denoted as ''Rank at Max''.  Rank at max is the rank of the gene where the ES score has the maximal value, i.e. the peak ES score.  Everything with a better rank than the rank at max is part of the leading edge set.
+
+
+== FAQ ==
+ * '''Q''': One of my enrichment map clusters has so much overlapping, I'm having a hard time interpreting it. <<BR>>
+ '''A''': Quickest solutions:
+   a. Menu: Layout / Scale to expand the sub-network of interest (it will reduce clutter, but may take a lot of space)
+   a. Results Panel: reduce the Q-value cutoff (it will make the sub-network less crowded, at the expense of the less relevant gene-sets)
+   a. Clone the sub-network into a new network and use organic layout (organic layout has less clutter than force directed)
+   a. Use the [[word-cloud plugin|Software/WordCloudPlugin]] to summarize the node labels 
+   a. Make an enrichment map only of that sub-network using the Jaccard coefficient 
+     * this needs some scripting: you have to restrict the GMT to the gene-sets in the sub-network and make a new enrichment map selecting the Jaccard coefficient (instead of Overlap). 
+     * Jaccard usually works better with super-connected sub-networks, i.e. the ones arising when you have lots of GO-derived redundancy
+
