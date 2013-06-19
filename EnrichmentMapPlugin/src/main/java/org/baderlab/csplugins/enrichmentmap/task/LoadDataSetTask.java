@@ -91,6 +91,8 @@ public class LoadDataSetTask implements TaskFactory{
 	}
 	
 	public TaskIterator getIterator(){
+		if(loadDataTaskIterator == null)
+			createTaskIterator();
 		return loadDataTaskIterator;
 	}
 	

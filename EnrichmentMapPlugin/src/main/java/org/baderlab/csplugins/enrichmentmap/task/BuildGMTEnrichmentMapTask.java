@@ -19,6 +19,7 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.session.CySessionManager;
+import org.cytoscape.task.edit.MapTableToNetworkTablesTaskFactory;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
@@ -51,31 +52,18 @@ public class BuildGMTEnrichmentMapTask implements TaskFactory{
     private CyNetworkFactory networkFactory;
     private CyTableFactory tableFactory;
     private CyTableManager tableManager;
+    private  MapTableToNetworkTablesTaskFactory mapTableToNetworkTable;
     
-    private VisualMappingManager visualMappingManager;
-    private VisualStyleFactory visualStyleFactory;
-    
-    //we will need all three mappers
-    private VisualMappingFunctionFactory vmfFactoryContinuous;
-    private VisualMappingFunctionFactory vmfFactoryDiscrete;
-    private VisualMappingFunctionFactory vmfFactoryPassthrough;
-    
-    
-    private EnrichmentMapParameters params;
+      
+    private EnrichmentMap map;
     TaskIterator buildEMGMTTaskIterator;
 
-    public BuildGMTEnrichmentMapTask(EnrichmentMapParameters params,
+    public BuildGMTEnrichmentMapTask(EnrichmentMap map,
     		CyNetworkFactory networkFactory, CyApplicationManager applicationManager, 
     		CyNetworkManager networkManager, CyNetworkViewManager networkViewManager,
-    		CyTableFactory tableFactory,CyTableManager tableManager, CyNetworkViewFactory networkViewFactory,
-    		VisualMappingManager visualMappingManager,VisualStyleFactory visualStyleFactory,
-    		VisualMappingFunctionFactory vmfFactoryContinuous, VisualMappingFunctionFactory vmfFactoryDiscrete,
-    	     VisualMappingFunctionFactory vmfFactoryPassthrough, CySessionManager sessionManager,StreamUtil streamUtil) {
-        //create a new instance of the parameters
-        this.params = new EnrichmentMapParameters(sessionManager,streamUtil);
-
-        //copy the input variables into the new instance of the parameters
-        this.params.copyInputParameters(params);
+    		CyTableFactory tableFactory,CyTableManager tableManager, MapTableToNetworkTablesTaskFactory mapTableToNetworkTable) {
+        
+    		this.map = map;
         
         this.networkFactory = networkFactory;
         this.applicationManager = applicationManager;
@@ -83,35 +71,23 @@ public class BuildGMTEnrichmentMapTask implements TaskFactory{
         this.networkViewManager	= networkViewManager;
         this.tableFactory = tableFactory;
         this.tableManager = tableManager;
-        this.networkViewFactory = networkViewFactory;
-        this.streamUtil = streamUtil;
+        this.mapTableToNetworkTable = mapTableToNetworkTable;
         
-        this.visualMappingManager = visualMappingManager;
-        this.visualStyleFactory = visualStyleFactory;
-        
-        this.vmfFactoryContinuous = vmfFactoryContinuous;
-        this.vmfFactoryDiscrete = vmfFactoryDiscrete;
-        this.vmfFactoryPassthrough = vmfFactoryPassthrough;    
 
     }
 
 
     public void buildEnrichmentMap(){
 
-        	   		//create a new Enrichment Map
-        	   		EnrichmentMap map = new EnrichmentMap(params);
+
 
         	   		//data is loaded into a dataset.
         	   		//Since we are building an enrichment map from only the gmt file default to put info into 
         	   		//dataset 1.
         	   		DataSet current_dataset = map.getDataset(EnrichmentMap.DATASET1);
         	   		
-        	   		//Load Dataset
-        			LoadDataSetTask loaddata = new LoadDataSetTask(current_dataset,streamUtil);
-        			buildEMGMTTaskIterator.append(loaddata.getIterator());
-        	   		
                //in this case all the genesets are of interest
-               params.setMethod(EnrichmentMapParameters.method_generic);
+               map.getParams().setMethod(EnrichmentMapParameters.method_generic);
                current_dataset.setGenesetsOfInterest(current_dataset.getSetofgenesets());
               
              //compute the geneset similarities
@@ -143,13 +119,9 @@ public class BuildGMTEnrichmentMapTask implements TaskFactory{
                current_dataset.setEnrichments(setofenrichments);               
 
              //build the resulting map
-               CreateEnrichmentMapNetworkTask create_map = new CreateEnrichmentMapNetworkTask(map,networkFactory, applicationManager,networkManager,tableFactory,tableManager);
+               CreateEnrichmentMapNetworkTask create_map = new CreateEnrichmentMapNetworkTask(map,networkFactory, applicationManager,networkManager,tableFactory,tableManager,mapTableToNetworkTable);
                buildEMGMTTaskIterator.append(create_map);
-               
-               VisualizeEnrichmentMapTask map_viz = new VisualizeEnrichmentMapTask(map,networkManager, networkViewManager,
-                  		networkViewFactory,visualMappingManager,visualStyleFactory,
-                		vmfFactoryContinuous, vmfFactoryDiscrete,vmfFactoryPassthrough);
-               buildEMGMTTaskIterator.append(map_viz);
+                             
        
     }
 
@@ -184,6 +156,7 @@ public class BuildGMTEnrichmentMapTask implements TaskFactory{
 
 	 public TaskIterator createTaskIterator() {
 			this.buildEMGMTTaskIterator = new TaskIterator();
+			this.buildEnrichmentMap();
 			return buildEMGMTTaskIterator;
 		}
 

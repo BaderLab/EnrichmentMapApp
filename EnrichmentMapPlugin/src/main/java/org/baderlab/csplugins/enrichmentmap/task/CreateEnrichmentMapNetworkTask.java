@@ -72,6 +72,7 @@ import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
+import org.cytoscape.task.edit.MapTableToNetworkTablesTaskFactory;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
@@ -93,6 +94,7 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
     private CyNetworkFactory networkFactory;
     private CyTableFactory tableFactory;
     private CyTableManager tableManager;
+    private MapTableToNetworkTablesTaskFactory mapTableToNetworkTable;
     
     private HashMap<String, GenesetSimilarity> geneset_similarities;
 
@@ -112,13 +114,14 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
      * @param params - enrichment map parameters for current map
      * @param taskMonitor - current task monitor
      */
-    public CreateEnrichmentMapNetworkTask(EnrichmentMap map, CyNetworkFactory networkFactory, CyApplicationManager applicationManager, CyNetworkManager networkManager,CyTableFactory tableFactory,CyTableManager tableManager) {
+    public CreateEnrichmentMapNetworkTask(EnrichmentMap map, CyNetworkFactory networkFactory, CyApplicationManager applicationManager, CyNetworkManager networkManager,CyTableFactory tableFactory,CyTableManager tableManager,MapTableToNetworkTablesTaskFactory maptabletonetworktable) {
         this(map);
         this.networkFactory = networkFactory;
         this.applicationManager = applicationManager;
         this.networkManager = networkManager;
         this.tableFactory = tableFactory;
         this.tableManager = tableManager;
+        this.mapTableToNetworkTable = maptabletonetworktable;
     }
 
     /**
@@ -166,14 +169,14 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
             map.getParams().setNetworkID(network.getSUID());
             
           //create the Node attributes table
-			CyTable nodeTable = createNodeAttributes(map.getName(),prefix);
+			CyTable nodeTable = createNodeAttributes(map.getName().trim(),prefix);
 			//create the edge attributes table
-			CyTable edgeTable = createEdgeAttributes(map.getName(),prefix);
+			CyTable edgeTable = createEdgeAttributes(map.getName().trim(),prefix);
             
             // store path to GSEA report in Network Attribute
             if (map.getParams().getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)) {
-                
-                CyTable network_table = network.getDefaultNetworkTable();
+     //TODO:Add network attributes           
+               /* CyTable network_table = network.getDefaultNetworkTable();
                 network_table.createColumn(EnrichmentMapVisualStyle.NETW_REPORT1_DIR,String.class,false);
                 CyRow network_row = network_table.getRow(network);
                 if (map.getParams().getFiles().containsKey(EnrichmentMap.DATASET1) && map.getParams().getFiles().get(EnrichmentMap.DATASET1).getGseaHtmlReportFile() != null) {
@@ -198,7 +201,7 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
                     report2Path = report2Path.substring(0, report2Path.lastIndexOf('/') );
                     network_row.set(EnrichmentMapVisualStyle.NETW_REPORT2_DIR,
                             report2Path);
-                }
+                }*/
             }
 
            // HashMap<String, EnrichmentResult> enrichmentResults1OfInterest = params.getEM().getFilteredEnrichment(EnrichmentMap.DATASET1).getEnrichments();
@@ -259,7 +262,7 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
                     if(gs == null && gs2 != null)
                         gs = gs2;
                 }         
-               CyRow current_row = nodeTable.getRow(node);
+               CyRow current_row = nodeTable.getRow(node.getSUID());
                current_row.set( prefix+ EnrichmentMapVisualStyle.GS_DESCR, gs.getDescription());
                 
                 //create an attribute that stores the genes that are associated with this node as an attribute list
@@ -352,7 +355,7 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
                             if(gs == null && gs2 != null)
                                 gs = gs2;
                         }
-                        CyRow current_row = nodeTable.getRow(current_name);
+                        CyRow current_row = nodeTable.getRow(node.getSUID());
                         current_row.set( prefix+ EnrichmentMapVisualStyle.GS_DESCR, gs.getDescription());
                         
                         //create an attribute that stores the genes that are associated with this node as an attribute list
@@ -406,10 +409,10 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
                 //only create edges where the jaccard coefficient to great than
                 //and if both nodes exist
                 if(current_result.getSimilarity_coeffecient()>=map.getParams().getSimilarityCutOff() &&
-                		getNodesWithValue(network,nodeTable,"name", current_result.getGeneset1_Name()) != null &&
-                		getNodesWithValue(network,nodeTable,"name",current_result.getGeneset2_Name()) != null){
-                    CyNode node1 = getUniqueNodeWithValue(network,nodeTable,"name",current_result.getGeneset1_Name());
-                    CyNode node2 = getUniqueNodeWithValue(network,nodeTable,"name",current_result.getGeneset2_Name());
+                		!getNodesWithValue(network,nodeTable,prefix + EnrichmentMapVisualStyle.NAME, current_result.getGeneset1_Name()).isEmpty() &&
+                		!getNodesWithValue(network,nodeTable,prefix + EnrichmentMapVisualStyle.NAME,current_result.getGeneset2_Name()).isEmpty()){
+                    CyNode node1 = getUniqueNodeWithValue(network,nodeTable,prefix + EnrichmentMapVisualStyle.NAME,current_result.getGeneset1_Name());
+                    CyNode node2 = getUniqueNodeWithValue(network,nodeTable,prefix + EnrichmentMapVisualStyle.NAME,current_result.getGeneset2_Name());
                                                           
                     CyEdge edge = network.addEdge(node1, node2, false);
                     String edge_type;
@@ -423,7 +426,7 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
                     else
                         edge_type = EnrichmentMapParameters.ENRICHMENT_INTERACTION_TYPE;
                                                                             
-                    CyRow current_edgerow = edgeTable.getRow(edge);
+                    CyRow current_edgerow = edgeTable.getRow(edge.getSUID());
                     current_edgerow.set( prefix+EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT, current_result.getSimilarity_coeffecient());
                     current_edgerow.set( prefix+ EnrichmentMapVisualStyle.OVERLAP_SIZE, current_result.getSizeOfOverlap());
                     current_edgerow.set( prefix + EnrichmentMapVisualStyle.ENRICHMENT_SET  , current_result.getEnrichment_set());
@@ -446,19 +449,26 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
                 }
             }
             
-            //register the tables
+            //register the network and tables
+            this.networkManager.addNetwork(network);
             this.tableManager.addTable(nodeTable);
             this.tableManager.addTable(edgeTable);
             
-            //load all the attributes
-            /*Class<? extends CyTableEntry> node_type = CyNode.class;
-            Class<? extends CyTableEntry> edge_type = CyEdge.class;
+            ArrayList<CyNetwork> nets = new ArrayList<CyNetwork>();
+            nets.add(network);
+                       
+            //super.insertTasksAfterCurrentTask( this.mapTableToNetworkTable.createTaskIterator(nodeTable,true,nets,CyNode.class ));
+            super.insertTasksAfterCurrentTask( this.mapTableToNetworkTable.createTaskIterator(nodeTable));
             
-            super.insertTasksAfterCurrentTask( new MapNetworkAttrTask(node_type,nodeTable,netMgr,applicationManager,networkManager) );
-            */                       
-            //register the new Network
+            //super.insertTasksAfterCurrentTask( this.mapTableToNetworkTable.createTaskIterator(edgeTable,true,nets,CyEdge.class));
+                                   
+            //register the new Network with EM
             EnrichmentMapManager EMmanager = EnrichmentMapManager.getInstance();
             EMmanager.registerNetwork(network,map);
+            
+            map.getParams().setNetworkID(network.getSUID());
+
+            
            
         return true;
     }
@@ -657,13 +667,14 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
     
     //create the Nodes attribute table
     public CyTable createNodeAttributes(String name, String prefix){
-    		CyTable nodeTable = tableFactory.createTable(name + node_table_suffix, "name", String.class, true, true);
+    		CyTable nodeTable = tableFactory.createTable(/*name*/ prefix + "_" + node_table_suffix, CyNetwork.SUID, Long.class, true, true);
     		
     		nodeTable.createColumn(prefix+ EnrichmentMapVisualStyle.GS_DESCR, String.class, false); 
     		nodeTable.createColumn(prefix+ EnrichmentMapVisualStyle.FORMATTED_NAME, String.class, false);
+    		nodeTable.createColumn(prefix+ EnrichmentMapVisualStyle.NAME, String.class, false);
     		nodeTable.createColumn(prefix+ EnrichmentMapVisualStyle.GS_SOURCE, String.class, false);
     		nodeTable.createColumn(prefix+ EnrichmentMapVisualStyle.GS_TYPE, String.class, false);
-    		nodeTable.createColumn(prefix + EnrichmentMapVisualStyle.GENES, List.class, false);
+    		nodeTable.createListColumn(prefix + EnrichmentMapVisualStyle.GENES, String.class, false);
     		
     		nodeTable.createColumn(prefix+EnrichmentMapVisualStyle.PVALUE_DATASET1, Double.class, false);    		
     		nodeTable.createColumn(prefix+EnrichmentMapVisualStyle.COLOURING_DATASET1, Double.class, false);   		
@@ -686,11 +697,11 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
     
     //create the edge attribue table
     public CyTable createEdgeAttributes(String name, String prefix){
-    		CyTable edgeTable = tableFactory.createTable(name + edge_table_suffix, "name", String.class, true, true);
+    		CyTable edgeTable = tableFactory.createTable(/*name*/ prefix + "_" + edge_table_suffix, CyNetwork.SUID,Long.class, true, true);
 		
     		edgeTable.createColumn(prefix+EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT, Double.class, false);
     		edgeTable.createColumn(prefix+EnrichmentMapVisualStyle.OVERLAP_SIZE, Integer.class, false);
-    		edgeTable.createColumn(prefix+EnrichmentMapVisualStyle.OVERLAP_GENES, String.class, false);
+    		edgeTable.createListColumn(prefix+EnrichmentMapVisualStyle.OVERLAP_GENES, String.class, false);
     		edgeTable.createColumn(prefix+EnrichmentMapVisualStyle.ENRICHMENT_SET, Integer.class, false);
     		
     		return edgeTable;

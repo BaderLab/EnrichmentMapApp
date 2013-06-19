@@ -50,6 +50,7 @@ import org.baderlab.csplugins.enrichmentmap.EnrichmentMapVisualStyle;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 
 import org.cytoscape.view.model.CyNetworkView;
@@ -59,6 +60,8 @@ import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
+import org.cytoscape.view.layout.CyLayoutAlgorithm;
+import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
@@ -74,10 +77,10 @@ import org.cytoscape.work.TaskMonitor;
 public class VisualizeEnrichmentMapTask extends AbstractTask {
 
     private EnrichmentMap map;
-    private CyNetwork network;
     
+    private CyNetworkFactory networkFactory;
     private CyNetworkManager networkManager;
-    private CyNetworkViewManager networkViewManager;
+    private CyNetworkViewManager networkViewManager; 
     private CyNetworkViewFactory networkViewFactory;
     private VisualMappingManager visualMappingManager;
     private VisualStyleFactory visualStyleFactory;
@@ -86,10 +89,9 @@ public class VisualizeEnrichmentMapTask extends AbstractTask {
     private VisualMappingFunctionFactory vmfFactoryContinuous;
     private VisualMappingFunctionFactory vmfFactoryDiscrete;
     private VisualMappingFunctionFactory vmfFactoryPassthrough;
+    
+    private CyLayoutAlgorithmManager layoutManager;
        
-
-    //enrichment map name
-    private String mapName;
 
     // Keep track of progress for monitoring:
     private TaskMonitor taskMonitor = null;
@@ -100,13 +102,15 @@ public class VisualizeEnrichmentMapTask extends AbstractTask {
      * @param params - enrichment map parameters for current map
      * @param taskMonitor - current task monitor
      */
-    public VisualizeEnrichmentMapTask(EnrichmentMap map, 
+    public VisualizeEnrichmentMapTask(EnrichmentMap map, CyNetworkFactory networkFactory,
     		CyNetworkManager networkManager, CyNetworkViewManager networkViewManager,
     		CyNetworkViewFactory networkViewFactory,
     		VisualMappingManager visualMappingManager,VisualStyleFactory visualStyleFactory,
     		VisualMappingFunctionFactory vmfFactoryContinuous, VisualMappingFunctionFactory vmfFactoryDiscrete,
-     VisualMappingFunctionFactory vmfFactoryPassthrough) {
-        this(map);       
+     VisualMappingFunctionFactory vmfFactoryPassthrough, CyLayoutAlgorithmManager layoutManager) {
+        this(map);
+        this.networkFactory = networkFactory;
+        this.networkManager = networkManager;
         this.networkViewManager	= networkViewManager;
         this.networkViewFactory = networkViewFactory;
         this.visualMappingManager = visualMappingManager;
@@ -114,9 +118,10 @@ public class VisualizeEnrichmentMapTask extends AbstractTask {
         
         this.vmfFactoryContinuous = vmfFactoryContinuous;
         this.vmfFactoryDiscrete = vmfFactoryDiscrete;
-        this.vmfFactoryPassthrough = vmfFactoryPassthrough;        
+        this.vmfFactoryPassthrough = vmfFactoryPassthrough;
+        this.layoutManager = layoutManager;
+                        
         
-        this.network = this.networkManager.getNetwork(map.getParams().getNetworkID());
     }
 
     /**
@@ -126,7 +131,6 @@ public class VisualizeEnrichmentMapTask extends AbstractTask {
      */
     public VisualizeEnrichmentMapTask(EnrichmentMap map) {
         this.map = map;
-        mapName = "Enrichment Map";
 
     }
 
@@ -136,8 +140,8 @@ public class VisualizeEnrichmentMapTask extends AbstractTask {
      * @return  true if successful
      */
     public boolean visualizeMap(){
-            
-    	String prefix = map.getParams().getAttributePrefix();
+    		CyNetwork network = this.networkManager.getNetwork(map.getParams().getNetworkID());
+    		String prefix = map.getParams().getAttributePrefix();
     	
     		//create the network view
             CyNetworkView view = networkViewFactory.createNetworkView( network );
@@ -145,24 +149,25 @@ public class VisualizeEnrichmentMapTask extends AbstractTask {
             
             String vs_name = prefix + "Enrichment_map_style";
             // check to see if a visual style with this name already exists
-            VisualStyle vs = visualStyleFactory.createVisualStyle(vs_name);
+            //VisualStyle vs = visualStyleFactory.createVisualStyle(vs_name);
 
-            if (vs != null) {
+            //if (vs != null) {
                 // if not, create it and add it to the catalog
                 // Create the visual style
                 EnrichmentMapVisualStyle em_vs = new EnrichmentMapVisualStyle(map.getParams(),vmfFactoryContinuous,vmfFactoryDiscrete,vmfFactoryPassthrough);
-
-                vs = em_vs.createVisualStyle(vs, prefix);
-                
-            }
+                VisualStyle vs = visualStyleFactory.createVisualStyle(prefix);
+                em_vs.createVisualStyle(vs, prefix);                
+            //}
             
             this.visualMappingManager.addVisualStyle(vs);
             
             vs.apply(view);
             view.updateView();
             
-            //TODO:apply layouts
-            //view.applyLayout(CyLayouts.getLayout("force-directed"));
+            //apply force directed layout
+         	CyLayoutAlgorithm layout = layoutManager.getLayout("force-directed");
+         	String layoutAttribute = null;
+         	insertTasksAfterCurrentTask(layout.createTaskIterator(view, layout.createLayoutContext(), CyLayoutAlgorithm.ALL_NODE_VIEWS, layoutAttribute));
            
             //TODO: add listeners and panels.
             //initialize parameter panel with info for this network
@@ -210,6 +215,7 @@ public class VisualizeEnrichmentMapTask extends AbstractTask {
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		this.taskMonitor = taskMonitor;
+		this.taskMonitor.setTitle("Creating Network View");
 		visualizeMap();		
 		
 	}

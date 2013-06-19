@@ -51,7 +51,7 @@ import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import java.util.Hashtable;
 import java.awt.*;
 
-import prefuse.data.query.NumberRangeModel;
+//import prefuse.data.query.NumberRangeModel;
 
 /**
  * Created by
@@ -71,7 +71,7 @@ public class SliderBarPanel extends JPanel {
     //min and max values for the slider
     private int min;
     private int max;
-    private NumberRangeModel rangeModel;
+    //private NumberRangeModel rangeModel;
 
     //precision that the slider can be adjusted to
     private double precision = 1000.0;
@@ -195,11 +195,11 @@ public class SliderBarPanel extends JPanel {
         this.max = (int) (max*precision);
     }
 
-    public NumberRangeModel getRangeModel() {
+    /*public NumberRangeModel getRangeModel() {
         return rangeModel;
     }
 
     public void setRangeModel(NumberRangeModel rangeModel) {
         this.rangeModel = rangeModel;
-    }
+    }*/
 }

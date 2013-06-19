@@ -53,6 +53,7 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.session.CySessionManager;
+import org.cytoscape.task.edit.MapTableToNetworkTablesTaskFactory;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
@@ -78,29 +79,21 @@ import org.cytoscape.work.TaskIterator;
 public class BuildEnrichmentMapTask implements TaskFactory {
 
 
-    private EnrichmentMapParameters params;
+    private EnrichmentMap map;
     
     private String name = null;
     
     private TaskIterator buildEMTaskIterator;
 
     //services required
-    private StreamUtil streamUtil;
     private CyApplicationManager applicationManager;
     private CyNetworkManager networkManager;
-    private CyNetworkViewManager networkViewManager;
-    private CyNetworkViewFactory networkViewFactory;
     private CyNetworkFactory networkFactory;
     private CyTableFactory tableFactory;
     private CyTableManager tableManager;
+    private MapTableToNetworkTablesTaskFactory mapTableToNetworkTable;
     
-    private VisualMappingManager visualMappingManager;
-    private VisualStyleFactory visualStyleFactory;
-    
-    //we will need all three mappers
-    private VisualMappingFunctionFactory vmfFactoryContinuous;
-    private VisualMappingFunctionFactory vmfFactoryDiscrete;
-    private VisualMappingFunctionFactory vmfFactoryPassthrough;
+
     
     //values to track progress
     //TODO - implement usage
@@ -115,35 +108,20 @@ public class BuildEnrichmentMapTask implements TaskFactory {
      *
      * @param params - the current specification of this run
      */
-    public BuildEnrichmentMapTask( EnrichmentMapParameters params,
+    public BuildEnrichmentMapTask( EnrichmentMap map,
     		CyNetworkFactory networkFactory, CyApplicationManager applicationManager, 
     		CyNetworkManager networkManager, CyNetworkViewManager networkViewManager,
-    		CyTableFactory tableFactory,CyTableManager tableManager,CyNetworkViewFactory networkViewFactory,
-    		VisualMappingManager visualMappingManager,VisualStyleFactory visualStyleFactory,
-    		VisualMappingFunctionFactory vmfFactoryContinuous, VisualMappingFunctionFactory vmfFactoryDiscrete,
-    	     VisualMappingFunctionFactory vmfFactoryPassthrough, CySessionManager sessionManager,StreamUtil streamUtil) {
-
-        //create a new instance of the parameters
-        this.params = new EnrichmentMapParameters(sessionManager,streamUtil);
-
-        //copy the input variables into the new instance of the parameters
-        this.params.copyInputParameters(params);
+    		CyTableFactory tableFactory,CyTableManager tableManager, MapTableToNetworkTablesTaskFactory mapTableToNetworkTable) {
+        
+        this.map = map;
         
         this.networkFactory = networkFactory;
         this.applicationManager = applicationManager;
         this.networkManager = networkManager;
-        this.networkViewManager	= networkViewManager;
         this.tableFactory = tableFactory;
         this.tableManager = tableManager;
-        this.networkViewFactory = networkViewFactory;
-        this.streamUtil = streamUtil;
-        
-        this.visualMappingManager = visualMappingManager;
-        this.visualStyleFactory = visualStyleFactory;
-        
-        this.vmfFactoryContinuous = vmfFactoryContinuous;
-        this.vmfFactoryDiscrete = vmfFactoryDiscrete;
-        this.vmfFactoryPassthrough = vmfFactoryPassthrough;    
+        this.mapTableToNetworkTable = mapTableToNetworkTable;
+           
 
     }
 
@@ -155,16 +133,11 @@ public class BuildEnrichmentMapTask implements TaskFactory {
      * @param params - the current specification of this run
      * @params name - the name of the current 
      */
-    public BuildEnrichmentMapTask( EnrichmentMapParameters params, String name,
+    public BuildEnrichmentMapTask( EnrichmentMap map, String name,
     		CyNetworkFactory networkFactory, CyApplicationManager applicationManager, 
     		CyNetworkManager networkManager, CyNetworkViewManager networkViewManager,
-    		CyTableFactory tableFactory,CyTableManager tableManager, CyNetworkViewFactory networkViewFactory,
-    		VisualMappingManager visualMappingManager,VisualStyleFactory visualStyleFactory,
-    		VisualMappingFunctionFactory vmfFactoryContinuous, VisualMappingFunctionFactory vmfFactoryDiscrete,
-   	     VisualMappingFunctionFactory vmfFactoryPassthrough, CySessionManager sessionManager,StreamUtil streamUtil) {
-   		this(params,networkFactory, applicationManager,networkManager,networkViewManager,tableFactory,tableManager,networkViewFactory,
-   				visualMappingManager,visualStyleFactory,
-   	    		vmfFactoryContinuous, vmfFactoryDiscrete,vmfFactoryPassthrough, sessionManager,streamUtil);
+    		CyTableFactory tableFactory,CyTableManager tableManager, MapTableToNetworkTablesTaskFactory mapTableToNetworkTable) {
+   		this(map,networkFactory, applicationManager,networkManager,networkViewManager,tableFactory,tableManager,mapTableToNetworkTable);
     		this.name = name;
 
 
@@ -175,37 +148,7 @@ public class BuildEnrichmentMapTask implements TaskFactory {
      */
     public void buildEnrichmentMap(){
     		
-    	
-    		//create a new enrichment map
-    		EnrichmentMap map = new EnrichmentMap(params,name);
-    		
-    		//Load in the first dataset
-    		//call it Dataset 1.
-    		DataSet dataset = map.getDataset(EnrichmentMap.DATASET1);    		
-    		
-    		//Get all user parameters
-    		
-    		//Load Dataset
-    			LoadDataSetTask loaddata = new LoadDataSetTask(dataset,streamUtil);
-    			buildEMTaskIterator.append(loaddata.getIterator());
-    			
-    			if(map.getParams().isTwoDatasets() && map.getDatasets().containsKey(EnrichmentMap.DATASET2)){
-    				DataSet dataset2 = map.getDataset(EnrichmentMap.DATASET2);
-    				
-    				LoadDataSetTask loaddataset2 = new LoadDataSetTask(dataset2,streamUtil);
-        			buildEMTaskIterator.append(loaddataset2.getIterator());
-        			params.setData2(true);
-        			
-        			//check to see if the two datasets are distinct
-        			if(!(
-        					(dataset.getDatasetGenes().containsAll(dataset2.getDatasetGenes())) && 
-        					(dataset2.getDatasetGenes().containsAll(dataset.getDatasetGenes()))
-        					))
-        				params.setTwoDistinctExpressionSets(true);
-        				
-    				
-    			}
-    			    		
+    	   			    		
     		//trim the genesets to only contain the genes that are in the data file.
         map.filterGenesets();
 
@@ -215,27 +158,18 @@ public class BuildEnrichmentMapTask implements TaskFactory {
         if(!map.checkGenesets())
                 throw new IllegalThreadStateException("No genes in the expression file are found in the GMT file ");
 
-            //Initialize the set of genesets and GSEA results that we want to compute over
-            InitializeGenesetsOfInterestTask genesets_init = new InitializeGenesetsOfInterestTask(map);
-            buildEMTaskIterator.append(genesets_init);
+        //Initialize the set of genesets and GSEA results that we want to compute over
+        InitializeGenesetsOfInterestTask genesets_init = new InitializeGenesetsOfInterestTask(map);
+        buildEMTaskIterator.append(genesets_init);
      
-            //compute the geneset similarities
-            ComputeSimilarityTask similarities = new ComputeSimilarityTask(map);
-            buildEMTaskIterator.append(similarities);
+        //compute the geneset similarities
+        ComputeSimilarityTask similarities = new ComputeSimilarityTask(map);
+        buildEMTaskIterator.append(similarities);
 
-            //build the resulting map
-            CreateEnrichmentMapNetworkTask create_map = new CreateEnrichmentMapNetworkTask(map,networkFactory, applicationManager,networkManager,tableFactory,tableManager);
-            buildEMTaskIterator.append(create_map);
-            
-            VisualizeEnrichmentMapTask map_viz = new VisualizeEnrichmentMapTask(map,networkManager, networkViewManager,
-            		networkViewFactory,visualMappingManager,visualStyleFactory,
-            		vmfFactoryContinuous, vmfFactoryDiscrete,vmfFactoryPassthrough);
-            buildEMTaskIterator.append(map_viz);
-            
-            //layout network
-            //LayoutEnrichmentMapTask layout_map = new LayoutEnrichmentMapTask(map);
-            //buildEMTaskIterator.append(layout_map);
-
+        //build the resulting map
+        CreateEnrichmentMapNetworkTask create_map = new CreateEnrichmentMapNetworkTask(map,networkFactory, applicationManager,networkManager,tableFactory,tableManager,mapTableToNetworkTable);
+        buildEMTaskIterator.append(create_map);
+                                   
        
     }
 
@@ -309,11 +243,15 @@ public class BuildEnrichmentMapTask implements TaskFactory {
 
     public TaskIterator createTaskIterator() {
 		this.buildEMTaskIterator = new TaskIterator();
+		
+		//add all the steps to the iterator
+		buildEnrichmentMap();
+		
 		return buildEMTaskIterator;
 	}
 
 	public boolean isReady() {
 		// TODO Auto-generated method stub
-		return false;
+		return true;
 	}
 }

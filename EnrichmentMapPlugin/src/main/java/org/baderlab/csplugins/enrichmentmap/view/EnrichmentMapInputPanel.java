@@ -47,12 +47,15 @@ import javax.swing.*;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapUtils;
-import org.baderlab.csplugins.enrichmentmap.actions.EnrichmentMapParseInputTask;
+import org.baderlab.csplugins.enrichmentmap.actions.EnrichmentMapBuildMapEvent;
+import org.baderlab.csplugins.enrichmentmap.actions.EnrichmentMapParseInputEvent;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowAboutPanelAction;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.JMultiLineToolTip;
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.view.layout.CyLayoutAlgorithm;
+import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
@@ -63,6 +66,7 @@ import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CySessionManager;
+import org.cytoscape.task.edit.MapTableToNetworkTablesTaskFactory;
 import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.util.swing.OpenBrowser;
@@ -71,6 +75,7 @@ import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
+import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.swing.DialogTaskManager;
 
 import java.awt.*;
@@ -117,6 +122,8 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 	    private VisualMappingFunctionFactory vmfFactoryDiscrete;
 	    private VisualMappingFunctionFactory vmfFactoryPassthrough;
 	    
+	    private CyLayoutAlgorithmManager layoutManager;
+	    private  MapTableToNetworkTablesTaskFactory mapTableToNetworkTable;
 	    //
 	    private DialogTaskManager dialog;
 	    private CySessionManager sessionManager;
@@ -144,6 +151,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
     
     private DataSetFiles dataset1files = new DataSetFiles();
     private DataSetFiles dataset2files = new DataSetFiles();
+    
 
     //Genesets file related components
     //user specified file names
@@ -207,7 +215,8 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
     		VisualMappingManager visualMappingManager,VisualStyleFactory visualStyleFactory,
     		VisualMappingFunctionFactory vmfFactoryContinuous, VisualMappingFunctionFactory vmfFactoryDiscrete,
     	     VisualMappingFunctionFactory vmfFactoryPassthrough,DialogTaskManager dialog, CySessionManager sessionManager, 
-    	     CySwingApplication application, OpenBrowser browser,FileUtil fileUtil, StreamUtil streamUtil,CyServiceRegistrar registrar) {
+    	     CySwingApplication application, OpenBrowser browser,FileUtil fileUtil, StreamUtil streamUtil,CyServiceRegistrar registrar,
+    	     CyLayoutAlgorithmManager layoutManager, MapTableToNetworkTablesTaskFactory mapTableToNetworkTable) {
 
     		this.empanel = this;
         decFormat = new DecimalFormat();
@@ -227,6 +236,9 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
         this.vmfFactoryContinuous = vmfFactoryContinuous;
         this.vmfFactoryDiscrete = vmfFactoryDiscrete;
         this.vmfFactoryPassthrough = vmfFactoryPassthrough;
+        
+        this.layoutManager = layoutManager;
+        this.mapTableToNetworkTable = mapTableToNetworkTable;
         
         this.dialog = dialog;
         
@@ -1242,11 +1254,26 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
         //TODO:Add action listern for build network
         importButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                EnrichmentMapParseInputTask parseInput = new EnrichmentMapParseInputTask(empanel, networkFactory, 
-            		applicationManager,networkManager,networkViewManager,tableFactory,tableManager,networkViewFactory, 
-            		visualMappingManager,visualStyleFactory,
-            		vmfFactoryContinuous, vmfFactoryDiscrete,vmfFactoryPassthrough, dialog, sessionManager, streamUtil);
-                parseInput.build();
+            	//make sure that the minimum information is set in the current set of parameters
+               
+            		//create a new params for the new EM and add the dataset files to it
+            		EnrichmentMapParameters new_params = new EnrichmentMapParameters(sessionManager,streamUtil);
+            		new_params.copy(empanel.getParams());
+            		new_params.addFiles(EnrichmentMap.DATASET1, dataset1files);
+            		if(!dataset2files.isEmpty())
+            			new_params.addFiles(EnrichmentMap.DATASET2, dataset2files);
+            	
+                EnrichmentMap map = new EnrichmentMap(new_params);
+                
+                //EnrichmentMapParseInputEvent parseInput = new EnrichmentMapParseInputEvent(empanel,map , dialog,  streamUtil);
+                //parseInput.build();
+                                
+               	EnrichmentMapBuildMapEvent buildmap = new EnrichmentMapBuildMapEvent(map,  
+                    			applicationManager,networkManager,networkViewManager,networkViewFactory,networkFactory,tableFactory,tableManager, 
+                    			visualMappingManager,visualStyleFactory,
+                    			vmfFactoryContinuous, vmfFactoryDiscrete,vmfFactoryPassthrough, dialog,  streamUtil,layoutManager,mapTableToNetworkTable);
+                buildmap.build();
+                 
             }
         });
         //importButton.addActionListener(new BuildEnrichmentMapActionListener(this));

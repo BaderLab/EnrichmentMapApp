@@ -135,11 +135,11 @@ public class EnrichmentMapManager /*implements PropertyChangeListener*/ {
      *
      */
     private EnrichmentMapManager() {
-/*        this.cyNetworkList = new HashMap<Long,EnrichmentMap>();
+       this.cyNetworkList = new HashMap<Long,EnrichmentMap>();
         this.cyNetworkListPostAnalysis = new HashMap<Long,PostAnalysisParameters>();
 
         // to catch network creation / destruction events
-        Cytoscape.getSwingPropertyChangeSupport().addPropertyChangeListener(this);
+/*        Cytoscape.getSwingPropertyChangeSupport().addPropertyChangeListener(this);
 
         // to catch network selection / focus events
         Cytoscape.getDesktop().getNetworkViewManager().getSwingPropertyChangeSupport()
