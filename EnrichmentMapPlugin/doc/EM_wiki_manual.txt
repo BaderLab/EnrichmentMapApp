@@ -28,15 +28,17 @@ The Enrichment Map Plugin requires Cytoscape Version 2.6.x. If you don't have Cy
 
 == Quick Start Guide ==
 === Creating an Enrichment Map ===
-You have two main options:
+You have a few different options:
 
  * Load GSEA Results
  * Load Generic Results
+ * Load David Results
+ * Load Bingo Results
 
-The only difference between the two modes is the structure of the enrichment table(s). In either case, to use the plugin you will need the following files:
+The only difference between the above modes is the structure of the enrichment table(s). In either case, to use the plugin you will need the following files:
 
  * file.gmt: gene-set to gene ID
- * file.txt or .gct: expression matrix
+ * file.txt or .gct: expression matrix [OPTIONAL]
  * file.txt or .xls (*): enrichment table(s)
 
 ~-(*) GSEA saves the enrichment table as a .xls file; however, these are not true Excel files, they are tab-separated text files with a modified extension; Enrichment Map does not work with "true" Excel .xls files.-~
@@ -65,52 +67,80 @@ You can use the parameter defaults. For a more careful choice of the parameter s
  * The !VizMapper and the Node- and Edge Attribute Browser open up a lot more visualization options like linking the label size to Enrichment Scores or p-values. Refer to the Cytoscape manual at www.cytoscape.org for more information.
  * If you have used Genesets from GSEAs MSigDb, you can access additional informations for each gene set, by adding the a new property: <<BR>>
   . ''(Edit / Preferences / Properties... / Add -> enter property name: nodelinkouturl.MSigDb -> enter property value: `http://www.broad.mit.edu/gsea/msigdb/cards/%ID%.html` -> [ (./) ] Make Current Cytoscape Properties default -> (OK) )''. Now you can right-click on a node and choose LinkOut/MSigDb to open the Database entry of the Geneset represented by that node in your Browser.
+ * When loading GSEA results there is no need to specify each file.  Use the GSEA RPT file to auto-populate all the file fields in the EM interface.  Check out: [[#rpt| How to use RPT files]]  
+
 
 -----
 
-== Full User Guide ==
-=== File Formats ===
+= Full User Guide =
+== File Formats ==
 <<Anchor(genesets)>>
 
-==== Gene sets file (GMT file) ====
- * The gene set file describes the genesets used for the analysis. These files can be obtained
-  * directly downloading gene-sets collected in the [[http://www.broad.mit.edu/gsea/msigdb/index.jsp|MSigDB]]<<BR>>
-   . Note: if you use MSigDB Gene Ontology gene-sets, please consider that they do not include all annotations, as an evidence code filter is applied; if you are interested in achieving maximum coverage, download the original annotations
-  * converting gene annotations / pathways from public databases<<BR>>
+=== Gene sets file (GMT file) ===
+  * Each row of the geneset file represents one geneset and consists of:
+    * geneset name (--tab--) description (--tab--) a list of tab-delimited genes that are part of that geneset.
+  * The geneset names must be unique.
+  * The gene set file describes the genesets used for the analysis. These files can be obtained
+    1. directly downloading our monthly updated gene-set collections from [[http://download.baderlab.org/EM_Genesets/current_release/|Baderlab geneses collections]].  Description of sources and methods used to create collection can be found [[http://baderlab.org/GeneSets|here]]
+    1. directly downloading gene-sets collected in the [[http://www.broad.mit.edu/gsea/msigdb/index.jsp|MSigDB]]<<BR>>
+   . ~-Note: if you use MSigDB Gene Ontology gene-sets, please consider that they do not include all annotations, as an evidence code filter is applied; if you are interested in achieving maximum coverage, download the original annotations
+    1. converting gene annotations / pathways from public databases<<BR>>
    . ~-Note: if you are a R user, [[http://www.bioconductor.org/|Bioconductor]] offers annotation packages such as `GO.db`, `org.Hs.eg.db`, `KEGG.db`-~
- * Each row of the geneset file represents one geneset and consists of:
-  * geneset name (--tab--) description (--tab--) a list of tab-delimited genes that are part of that geneset.
- * The geneset names must be unique.
+
 
 <<Anchor(expression)>>
 
-==== Expression Data file (GCT, TXT or RNK file) ====
- * The expression data can be loaded in three different formats: gct, rnk or txt.
-  * '''Gct''' differs from txt only because two additional lines are required at the top part of the file.
-  * <<Anchor(rnk)>> '''Rnk''' file is completely different from the GCT or TXT file.  It represents a ranked list of genes containing only gene name and a rank or score.
- * Each line of expression file contains a:
-  * name (--tab--) description (--tab--) followed by a list of tab delimited expression values.
-  * OR name (--tab--) rank or score
- * The first line in the txt file and third line in the gct file consists of column headings.
- * The GCT file contains two additional lines at the top of the file.
-  * The first line contains #1.2.
-  * The second line contains the number of data rows (tab) the number of data columns.
- * If the GCT file contains Probeset ID's as primary keys (e.g. as you had GSEA collapse your data file to gene symbols) you need to convert the gct file to use the same primary key as used in the gene sets file (GMT file). You have the following options:
-   * Use the GSEA desktop application: GSEA / Tools / Collapse Dataset
-   * Run this Python script [[Software/EnrichmentMap/CollapseExpressionMatrix|collapse_ExpressionMatrix.py]] using the Chip platform file that was used by GSEA.
+=== Expression Data file (GCT, TXT or RNK file) [OPTIONAL] ===
+  * The expression data can be loaded in three different formats: gct (GSEA file type), rnk (GSEA file type) or txt.
+  * The expression data serves two purposes:
+    * Gene sets are filtered based on the genes present in the expression file.  For example, if Geneset X contains genes  
+  * Expression data is not required.  In the absence of an expression file Enrichment map will create a dummy expression file to associate with the data set.  The dummy expression gives an expression value of 1 for all the genes associated with the enriched genesets in the Enrichment map.
+
+==== GCT (GSEA file type) ====
+  * '''GCT''' differs from TXT only because of two additional lines that are required at the top of the file.
+  * The GCT file contains two additional lines at the top of the file.
+    * The first line contains #1.2.
+    * The second line contains the number of data rows (tab) the number of data columns.
+    * The third line consists of column headings.
+      * name (--tab--) description (--tab--) sample1 name (--tab--) sample2 name É 
+    * Each line of expression file contains a:
+      * name (--tab--) description (--tab--) followed by a list of tab delimited expression values.
+
+  * NOTE: If the GCT file contains Probeset ID's as primary keys (e.g. as you had GSEA collapse your data file to gene symbols) you need to convert the gct file to use the same primary key as used in the gene sets file (GMT file). You have the following options:
+    * Use the GSEA desktop application: GSEA / Tools / Collapse Dataset
+    * Run this Python script [[Software/EnrichmentMap/CollapseExpressionMatrix|collapse_ExpressionMatrix.py]] using the Chip platform file that was used by GSEA.
+
+<<Anchor(rnk)>>     
+==== RNK (GSEA file type) ====
+  * '''RNK''' file is completely different from the GCT or TXT file.  It represents a ranked list of genes containing only gene name and a rank or score.
+  * The first line contains column headings
+    * (For example:) Gene Name (--tab--) Rank Name
+  * Each line of RNK file contains a:
+    * name (--tab--) rank OR score
+
+Additional Information on GSEA File Formats can be found [[http://www.broad.mit.edu/cancer/software/gsea/wiki/index.php/Data_formats|here]]
+
+==== TXT ====
+  * Basic file representing expression values for an experiment.
+  * The first line consists of column headings.
+    * name (--tab--) description (--tab--) sample1 name (--tab--) sample2 name ... 
+  * Each line of the expression file contains a:
+    * name (--tab--) description (--tab--) followed by a list of tab delimited expression values.
 
 <<Anchor(enrichments)>>
 
-==== Enrichment Results files ====
-===== GSEA result files =====
+=== Enrichment Results files ===
+==== GSEA result files ====
  * For each analysis GSEA produces two output files. One representing the enriched genesets in phenotype A and the other representing the enriched genesets in phenotype B.
  * These files are usually named "gsea_report_for_phenotypeA.Gsea.########.xls" and "gsea_report_for_phenotypeB.Gsea.########.xls"
  * The files should be loaded in as is and require no pre-processing.
  * There is no need to worry about which Enrichment Results Text box to put the two files.  The phenotype is specified by the sign of the ES score and is computed internally by the program.
 
+Additional Information on GSEA File Formats can be found [[http://www.broad.mit.edu/cancer/software/gsea/wiki/index.php/Data_formats|here]]
+
 <<Anchor(generic)>>
 
-===== Generic results files =====
+==== Generic results files ====
  * The generic results file is a tab delimited file with enriched gene-sets and their corresponding p-values (and optionally, FDR corrections)
  * The Generic Enrichment Results file needs:
   * gene-set ID (must match the gene-set ID in the GMT file),
@@ -127,19 +157,6 @@ Notes:
 [[/GenericResultsFiles|See here for examples]]
 
 <<Anchor(DAVID)>>
-
-==== Data Required for Running Enrichment Analysis in David ====
-  1. List of Genes of interest - the list should consist of a list of genes of interest with every gene having the same identifier type (for example, a list of significantly differentially expressed genes from a microarray experiment with Entrez gene ids)
-  1. List of Genes to be used for Background set (Optional) - (for example, the list of genes present on the microarray chip with Entrez gene ids)
-
-==== Data Required for Running Enrichment Map with David Output ====
-  1. expression matrix (OPTIONAL) 
-  1. enrichment tables
-          * dataset-1
-                * DAVID functional Enrichment Condition 1 - functional Enrichment Chart             
-          * data-set 2             
-                * DAVID functional Enrichment Condition 2 - functional Enrichment Chart (OPTIONAL)  
-
 
 ==== DAVID Enrichment Result File ====
    * Available only in v1.0 or higher
@@ -162,6 +179,8 @@ Notes:
    1. The DAVID option expects a file as generated by the DAVID web interface.
    1. '''DISCLAIMER''' : In the absence of a gmt gene sets are constructed based on the field '''Genes''' in the DAVID output.  This only considers the genes entered in your query set and not the genes in your background set.  This will drastically affect the amount of overlap you see in the resulting Enrichment Map.    
 
+[[http://baderlab.org/Software/EnrichmentMap/DavidTutorial|See here for tutorial on how to generate David output files for Enrichment maps]]
+
 
 ==== BiNGO Enrichment Result File ====
    * Available only in v1.2 or higher
@@ -182,27 +201,154 @@ Notes:
    1. The BiNGO option expects a file as generated by the BiNGO Cytsocape Plugin.
    1. '''DISCLAIMER''' : In the absence of a gmt gene sets are constructed based on the field '''Genes''' in the BiNGO output.  This only considers the genes entered in your query set and not the genes in your background set.  This will drastically affect the amount of overlap you see in the resulting Enrichment Map.    
 
+[[http://baderlab.org/Software/EnrichmentMap/BingoTutorial|See here for tutorial on how to generate Bingo output files for Enrichment maps]]
 
-==== Additional Information on GSEA File Formats ====
-Additional Information on GSEA File Formats can be found [[http://www.broad.mit.edu/cancer/software/gsea/wiki/index.php/Data_formats|here]] <<Anchor(rpt)>>
+ <<Anchor(rpt)>>
 
-==== RPT files ====
+=== RPT files ===
  * A special trick for GSEA results, in any GSEA analysis an rpt file is created that specifies the location of all files (including the gmt, gct, results files, phenotype specification, and rank files).
  * Any of the Fields under the dataset tab (Expression, Enrichment Results 1 or Enrichment Results 2) will accept an rpt file and populate GMT, Expression, Enrichment Results 1, Enrichment Results 2, Phenotypes, and Ranks the values for that dataset.
- * A second rpt file can be loaded for dataset 2.  It will fail if the GMT file specified is different than the one specified in dataset 1.
+ * A second rpt file can be loaded for dataset 2.  It will give you a warning if the GMT file specified is different than the one specified in dataset 1.  You will have the choice to use the GMT for data set 1, data set 2 or abort the second rpt load.
+
+ * An rpt file is a text file with following information (parameters surrounded by " ' ' '" are those that EM uses):
+{{{{
+		'''producer_class'''	xtools.gsea.Gsea
+		'''producer_timestamp'''	1367261057110
+		param	collapse	false
+		param	'''cls'''	WHOLE_PATH_TO_FILE/EM_EstrogenMCF7_TestData/ES_NT.cls#ES24_versus_NT24
+		param	plot_top_x	20
+		param	norm	meandiv
+		param	save_rnd_lists	false
+		param	median	false
+		param	num	100
+		param	scoring_scheme	weighted
+		param	make_sets	true
+		param	mode	Max_probe
+		param	'''gmx'''	WHOLE_PATH_TO_FILE/EM_EstrogenMCF7_TestData/Human_GO_AllPathways_no_GO_iea_April_15_2013_symbol.gmt
+		param	gui	false
+		param	metric	Signal2Noise
+		param	'''rpt_label'''	ES24vsNT24
+		param	help	false
+		param	order	descending
+		param	'''out'''	WHOLE_PATH_TO_FILE/EM_EstrogenMCF7_TestData
+		param	permute	gene_set
+		param	rnd_type	no_balance
+		param	set_min	15
+		param	include_only_symbols	true
+		param	sort	real
+		param	rnd_seed	timestamp
+		param	nperm	1000
+		param	zip_report	false
+		param	set_max	500
+		param	'''res'''	WHOLE_PATH_TO_FILE/EM_EstrogenMCF7_TestData/MCF7_ExprMx_v2_names.gct
+
+		file	WHOLE_PATH_TO_FILE/EM_EstrogenMCF7_TestData/ES24vsNT24.Gsea.1367261057110/index.html
+
+}}}}
+
+ * Parameters used by EM and their meaning:
+  1. producer_class - can be '''xtools.gsea.Gsea''' or '''xtools.gsea.GseaPreranked'''
+   * if '''xtools.gsea.Gsea''':
+    * get expression file from res parameter in rpt
+    * get phenotype information from cls parameter in rot
+   * if '''xtools.gsea.GseaPreranked''':
+    * No expression file
+    * use rnk as the expression file from rnk parameter in rot
+    * set phenotypes to na_pos and na_neg.
+    * NOTE: if you want to make using an rpt file easier for GSEAPreranked there are two additional parameters you can add to your rpt file manually that the rpt function will recognize.
+		{{{{ 
+To do less manual work while creating Enrichment Maps from pre-ranked GSEA, add the following optional parameters to your rpt file:
+ 		param(--tab--)phenotypes(--tab--){phenotype1}_versus_{phenotype2}
+		param(--tab--)expressionMatrix(--tab--){path_to_GCT_or_TXT_formated_expression_matrix} 
+		}}}}
+  1. producer_timestamp - needed to find the directory with the results files
+  1. cls - path to class/phenotype file with information regarding the phenotypes:
+   * path/classfilename.cls#phenotype1_versus_phenotype2
+   * EM get the path to the class file and also pulls the phenotype1 and phenotype2 from the above field
+  1. gmx - path to gmt file
+  1. rpt_label - name of analysis and name of directory that GSEA creates to hold the results.  Used when constructing the path to the results directory.
+  1. out - path to directory where GSEA will put the output directory. Used when constructing the path to the results directory.
+  1. res - path to expression file.
+
+ * rpt Searches for the following results files:
+{{{{ 
+Enrichment File 1 --> {out}(--File.separator--){rpt_label} + "." + {producer_class} + "." + {producer_timestamp}(--File.separator--) "gsea_report_for_" + phenotype1 + "_" + timestamp + ".xls"
+Enrichment File 2 --> {out}(--File.separator--){rpt_label} + "." + {producer_class} + "." + {producer_timestamp}(--File.separator--) "gsea_report_for_" + phenotype2 + "_" + timestamp + ".xls"
+Ranks File --> {out}(--File.separator--){rpt_label} + "." + {producer_class} + "." + {producer_timestamp}(--File.separator--) "ranked_gene_list_" + phenotype1 + "_versus_" + phenotype2 +"_" + timestamp + ".xls";      
+}}}}
+
+ * If the enrichments and rank files are not found in the above path then EM replaces the out directory with the path to the given rpt file and tries again. 
+ * if you would like to create your own rpt file for your own analysis pipeline you can put your own values for the above used parameters.  
+ * If your analysis only creates one enrichment file you can make a copy of enrichment file 1 in the path of enrichment file 2 with no consequences for EM running. 
+  
+
+=== EDB File (GSEA file type) ===
+  * Contained in the GSEA results folder is an edb folder.  In the edb folder there are the following files:
+   1. results.edb
+   1. gene_sets.gmt 
+   1. classfile.cls  [Only in a GSEA analysis.  Not in a GSEAPreranked analysis]
+   1. rankfile.rnk
+  * If you specify the results.edb file in any of the Fields under the dataset tab (Expression, Enrichment Results 1 or Enrichment Results 2) the gmt and enrichment files fields will be automatically populated. 
+  * If you want to associate an expression file with the analysis it needs to be loaded manually as described [[#expression|here]].
+{{{{
+  * NOTE: The gene_sets.gmt file contained in the edb directory is filtered according to the expression file.  If you are doing a two dataset analysis where the expression files are from different platforms or contain different sets of genes the edb gene_sets.gmt file can not be used as genes found in one analysis might be lacking in the other.  In this case use the original gmt file (prior to GSEA filtering) and EM will filter each the gene sets separately according to each dataset.
+}}}}
 
 <<Anchor(advanced)>>
 
-==== Advanced Settings ====
+=== Advanced Settings - Additional Files ===
  * For each dataset there are additional parameters that the user can set but are not required.
  * The advanced parameters include:
-  * Phenotypes (phenotype1 versus phenotype2)
-  * Rank file - file specifying the ranks of the genes in the analysis
-   * This file has the format specified in the above section - gene (--tab--) rank or score.
- * By default the phenotypes are set to Up and Down but in the advanced setting mode the user can change these to any desired text.
- * Both of these fields are populated when the user loads the input files using the rpt option.
+  * '''Ranks file''' - file specifying the ranks of the genes in the analysis
+   * This file has the format specified in the above section - gene (--tab--) rank or score.  See[[#rnk| here]] for details.
+  * '''Phenotypes''' (phenotype1 versus phenotype2)
+   * By default the phenotypes are set to Up and Down but in the advanced setting mode the user can change these to any desired text.
+
+ * '''All of these fields are populated when the user loads the input files using the rpt option.'''
 
 <<Anchor(parameters)>>
+== Parameters ==
+=== Node (Gene Set inclusion) Parameters ===
+ * Node specific parameters filter the gene sets included in the enrichment map
+ * For a gene set to be included in the enrichment map it needs to pass both p-value and q-value thresholds.
+ 
+==== P-value ====
+ * All gene sets with a p-value with the specified threshold or below are included in the map.
+
+==== FDR Q-value ====
+ * All gene sets with a q-value with the specified threshold or below are included in the map.
+ * Depending on the type of analysis the FDR Q-value used for filtering genesets by EM is different
+  * For GSEA the FDR Q-value used is 8th column in the gsea_results file and is called "FDR q-val".
+  * For Generic the FDR Q-value used is 4th column in the generic results file.
+  * For David the FDR Q-value used is 12th column in the david results file and is called "Benjamini".
+  * For Bingo the FDR Q-value used is 3rd column in the Bingo results file and is called "core p-value"
+
+=== Edge (Gene Set relationship) Parameters ===
+ * An edge represents the degree of gene overlap that exists between two gene sets, A and B.
+ * Edge specific parameters control the number of edges that are created in the enrichment map.
+ * Only one coefficient type can be chosen to filter the edges
+==== Jaccard Coefficient ====
+{{{{
+		Jaccard Coefficient = [size of (A intersect B)] / [size of (A union B)]
+}}}}
+
+==== Overlap Coefficient ====
+{{{{
+		Overlap Coefficient = [size of (A intersect B)] / [size of (minimum( A , B))]
+}}}}
+==== Combined Coefficient ====
+ * the combined coefficient is a merged version of the jacquard and overlap coefficients.
+ * the combined constant allows the user to modulate reciprocally the weights associated with the jacquard and overlap coefficients.  
+ * When k = 0.5 the combined coefficient is the average between the jacquard and overlap.
+
+{{{{
+		Jaccard Coefficient = [size of (A intersect B)] / [size of (A union B)]
+		Overlap Coefficient = [size of (A intersect B)] / [size of (minimum( A , B))]
+		
+		Combined Constant = k
+
+		Combined Coefficient = (k * Overlap) + ((1-k) * Jaccard)
+}}}}
 
 === Tips on Parameter Choice ===
 ==== P-value and FDR Thresholds ====
@@ -238,7 +384,7 @@ In general, we recommend to use permissive thresholds only if your having a hard
  * The Overlap Coefficient is recommended when relations are expected to occur between large-size and small-size gene-sets, as in the case of the Gene Ontology.
  * The Jaccard Coefficient is recommended in the opposite case.
  * When the gene-sets are about the same size, Jaccard is about the half of the Overlap Coefficient for gene-set pairs with a small intersection, whereas it is about the same as the Overlap Coefficient for gene-sets with large intersections.
- * When using the Overlap Coefficient generates a the map with several large gene-sets overly connected to many other gene-sets, we recommend switching to the Jaccard Coefficient.
+ * When using the Overlap Coefficient and the generated map has several large gene-sets excessively connected to many other gene-sets, we recommend switching to the Jaccard Coefficient.
 
 ==== Overlap Thresholds ====
  * 0.5 is moderately conservative, and is recommended for most of the analyses.
@@ -248,6 +394,7 @@ In general, we recommend to use permissive thresholds only if your having a hard
  * 0.5 is very conservative
  * 0.25 is moderately conservative
 
+== Interfaces ==
 === The Input Panel ===
 {{attachment:EM_inputpanel_screenshot_v1.2beta.png|Screenshot EnrichmentMap InputPanel}}
 
@@ -342,6 +489,26 @@ To access the post-analysis, follow the path: Menu: Plugin / Enrichment Map / Po
 
 The post-analysis p-values can be accessed by: select the following attribute for display: "EM1_Overlap_Hypergeom_pVal" (Data Panel: Edge Attribute Browser tab, attribute selection icon)
 
+== Additional Features ==
+=== Launch Enrichment Map from the command line ===
+  * Requirements: 
+    1. Enrichment Map v1.3 or higher
+    1. Commandtool - available from Cytsocape App store 
+
+=== Distinct Species or Platform Analysis ===
+
+=== Bulk Enrichment Map Build ===
+
+=== Calculate Gene set relationships ===
+
+=== GSEA Leading Edge Functionality ===
+  * For every gene set that is tested for significance using GSEA there is a set of proteins in that gene set defined as the ''Leading Edge''.  According to GSEA the leading edge is:
+{{{
+"the subset of members that contribute most to the ES. For a positive ES, the leading edge subset is the set of members that appear in the ranked list prior to the peak score. For a negative ES, it is the set of members that appear subsequent to the peak score."
+}}}
+  * In essence, the leading edge is the set of genes that contribute most to the enrichment of the gene set.
+  * For Enrichment Map, leading edge information is extracted from the [[#enrichments|gsea enrichment results files]] from the column denoted as ''Rank at Max''.  Rank at max is the rank of the gene where the ES score has the maximal value, i.e. the peak ES score.  Everything with a better rank than the rank at max is part of the leading edge set.
+
 === Customizing Defaults with Cytoscape Properties ===
 The Enrichment Map Plugin evaluates a number of Cytoscape Properties with which a user can define some customized default values.<<BR>>
 These can be added and changed with the Cytoscape Preferences Editor (Edit / Preferences / Properties...) or by directly editing the file `cytoscape.props` within the `.cytoscape` folder in the User's HOME directory.
@@ -394,14 +561,6 @@ Supported Cytoscape Properties are:
    :: Flag to override the automatic focus on the Heatmap once a Node or Edge is selected.
    :: Default Value: `FALSE`
    :: valid Values: `TRUE`, `FALSE`
-
-=== GSEA Leading Edge Functionality ===
-  * For every gene set that is tested for significance using GSEA there is a set of proteins in that gene set defined as the ''Leading Edge''.  According to GSEA the leading edge is:
-{{{
-"the subset of members that contribute most to the ES. For a positive ES, the leading edge subset is the set of members that appear in the ranked list prior to the peak score. For a negative ES, it is the set of members that appear subsequent to the peak score."
-}}}
-  * In essence, the leading edge is the set of genes that contribute most to the enrichment of the gene set.
-  * For Enrichment Map, leading edge information is extracted from the [[#enrichments|gsea enrichment results files]] from the column denoted as ''Rank at Max''.  Rank at max is the rank of the gene where the ES score has the maximal value, i.e. the peak ES score.  Everything with a better rank than the rank at max is part of the leading edge set.
 
 
 == FAQ ==
