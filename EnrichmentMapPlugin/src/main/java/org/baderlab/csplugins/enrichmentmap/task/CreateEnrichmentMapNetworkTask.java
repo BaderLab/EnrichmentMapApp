@@ -169,9 +169,9 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
             map.getParams().setNetworkID(network.getSUID());
             
           //create the Node attributes table
-			CyTable nodeTable = createNodeAttributes(map.getName().trim(),prefix);
+			CyTable nodeTable = createNodeAttributes(network, map.getName().trim(),prefix);
 			//create the edge attributes table
-			CyTable edgeTable = createEdgeAttributes(map.getName().trim(),prefix);
+			CyTable edgeTable = createEdgeAttributes(network, map.getName().trim(),prefix);
             
             // store path to GSEA report in Network Attribute
             if (map.getParams().getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)) {
@@ -451,15 +451,14 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
             
             //register the network and tables
             this.networkManager.addNetwork(network);
-            this.tableManager.addTable(nodeTable);
-            this.tableManager.addTable(edgeTable);
-            
-            ArrayList<CyNetwork> nets = new ArrayList<CyNetwork>();
-            nets.add(network);
-                       
+
+            //TODO:change back to creating our own table.  Currently can only map to a string column.
+    	        //in mean time use the default node table
+            //this.tableManager.addTable(nodeTable);
+            //this.tableManager.addTable(edgeTable);
+                
             //super.insertTasksAfterCurrentTask( this.mapTableToNetworkTable.createTaskIterator(nodeTable,true,nets,CyNode.class ));
-            super.insertTasksAfterCurrentTask( this.mapTableToNetworkTable.createTaskIterator(nodeTable));
-            
+            //super.insertTasksAfterCurrentTask( this.mapTableToNetworkTable.createTaskIterator(nodeTable));            
             //super.insertTasksAfterCurrentTask( this.mapTableToNetworkTable.createTaskIterator(edgeTable,true,nets,CyEdge.class));
                                    
             //register the new Network with EM
@@ -666,9 +665,12 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 
     
     //create the Nodes attribute table
-    public CyTable createNodeAttributes(String name, String prefix){
-    		CyTable nodeTable = tableFactory.createTable(/*name*/ prefix + "_" + node_table_suffix, CyNetwork.SUID, Long.class, true, true);
+    public CyTable createNodeAttributes(CyNetwork network, String name, String prefix){
+    		//TODO:change back to creating our own table.  Currently can only map to a string column.
+    	    //in mean time use the default node table
+    		//CyTable nodeTable = tableFactory.createTable(/*name*/ prefix + "_" + node_table_suffix, CyNetwork.SUID, Long.class, true, true);
     		
+    		CyTable nodeTable = network.getDefaultNodeTable();
     		nodeTable.createColumn(prefix+ EnrichmentMapVisualStyle.GS_DESCR, String.class, false); 
     		nodeTable.createColumn(prefix+ EnrichmentMapVisualStyle.FORMATTED_NAME, String.class, false);
     		nodeTable.createColumn(prefix+ EnrichmentMapVisualStyle.NAME, String.class, false);
@@ -696,8 +698,11 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
     }
     
     //create the edge attribue table
-    public CyTable createEdgeAttributes(String name, String prefix){
-    		CyTable edgeTable = tableFactory.createTable(/*name*/ prefix + "_" + edge_table_suffix, CyNetwork.SUID,Long.class, true, true);
+    public CyTable createEdgeAttributes(CyNetwork network, String name, String prefix){
+    		//TODO:change back to creating our own table.  Currently can only map to a string column.
+	    //in mean time use the default edge table
+    		//CyTable edgeTable = tableFactory.createTable(/*name*/ prefix + "_" + edge_table_suffix, CyNetwork.SUID,Long.class, true, true);
+		CyTable edgeTable = network.getDefaultEdgeTable();
 		
     		edgeTable.createColumn(prefix+EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT, Double.class, false);
     		edgeTable.createColumn(prefix+EnrichmentMapVisualStyle.OVERLAP_SIZE, Integer.class, false);

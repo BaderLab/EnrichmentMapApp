@@ -169,13 +169,20 @@ public class EnrichmentMapVisualStyle {
      */
     private VisualStyle createEdgeAppearance(VisualStyle vs, String prefix){
                       
-        //add the discrete mapper for edge colour:
-        DiscreteMapping<Integer,Paint> disMapping = (DiscreteMapping<Integer,Paint>)this.vmfFactoryDiscrete.createVisualMappingFunction(prefix + EnrichmentMapVisualStyle.ENRICHMENT_SET, Integer.class, BasicVisualLexicon.EDGE_PAINT);
-        disMapping.putMapValue(new Integer(0),new Color(100,200,000));
-        disMapping.putMapValue(new Integer(1),new Color(100,200,000));
-        disMapping.putMapValue(new Integer(2),new Color(100,149,237));
+        //add the discrete mapper for edge colour:        
+        //can't just update edge_paint -- need to do the same for all the type of edge paints
+        DiscreteMapping<Integer,Paint> disMapping_edge2 = (DiscreteMapping<Integer,Paint>)this.vmfFactoryDiscrete.createVisualMappingFunction(prefix + EnrichmentMapVisualStyle.ENRICHMENT_SET, Integer.class, BasicVisualLexicon.EDGE_UNSELECTED_PAINT);
+        disMapping_edge2.putMapValue(new Integer(0),new Color(100,200,000));
+        disMapping_edge2.putMapValue(new Integer(1),new Color(100,200,000));
+        disMapping_edge2.putMapValue(new Integer(2),new Color(100,149,237));
+        vs.addVisualMappingFunction(disMapping_edge2);
         
-        vs.addVisualMappingFunction(disMapping);
+        DiscreteMapping<Integer,Paint> disMapping_edge4 = (DiscreteMapping<Integer,Paint>)this.vmfFactoryDiscrete.createVisualMappingFunction(prefix + EnrichmentMapVisualStyle.ENRICHMENT_SET, Integer.class, BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT);
+        disMapping_edge4.putMapValue(new Integer(0),new Color(100,200,000));
+        disMapping_edge4.putMapValue(new Integer(1),new Color(100,200,000));
+        disMapping_edge4.putMapValue(new Integer(2),new Color(100,149,237));
+        vs.addVisualMappingFunction(disMapping_edge4);
+
 
         //Continous Mapping - set edge line thickness based on the number of genes in the overlap
         ContinuousMapping<Double,Double> conmapping_edgewidth = (ContinuousMapping<Double,Double>) this.vmfFactoryContinuous.createVisualMappingFunction(prefix + EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT, Double.class, BasicVisualLexicon.EDGE_WIDTH);

@@ -155,7 +155,7 @@ public class VisualizeEnrichmentMapTask extends AbstractTask {
                 // if not, create it and add it to the catalog
                 // Create the visual style
                 EnrichmentMapVisualStyle em_vs = new EnrichmentMapVisualStyle(map.getParams(),vmfFactoryContinuous,vmfFactoryDiscrete,vmfFactoryPassthrough);
-                VisualStyle vs = visualStyleFactory.createVisualStyle(prefix);
+                VisualStyle vs = visualStyleFactory.createVisualStyle(vs_name);
                 em_vs.createVisualStyle(vs, prefix);                
             //}
             
