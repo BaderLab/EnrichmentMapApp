@@ -139,6 +139,12 @@ public class EnrichmentMap {
     		if(dataset1files.getEnrichmentFileName2() != null && !dataset1files.getEnrichmentFileName2().isEmpty())
     			this.getDataset(DATASET1).getEnrichments().setFilename2(dataset1files.getEnrichmentFileName2());
     		
+    		//phenotypes
+    		if(dataset1files.getPhenotype1() != null && !dataset1files.getPhenotype1().isEmpty())
+    			this.getDataset(DATASET1).getEnrichments().setPhenotype1(dataset1files.getPhenotype1());
+    		if(dataset1files.getPhenotype2() != null && !dataset1files.getPhenotype2().isEmpty())
+    			this.getDataset(DATASET1).getEnrichments().setPhenotype2(dataset1files.getPhenotype2());
+    		
     		//rank files - dataset1 
     		if(dataset1files.getRankedFile() != null && !dataset1files.getRankedFile().isEmpty())
     			if(params.getMethod().equals(EnrichmentMapParameters.method_GSEA)){
@@ -161,6 +167,13 @@ public class EnrichmentMap {
     				this.getDataset(DATASET2).getEnrichments().setFilename1(dataset2files.getEnrichmentFileName1());
     			if(dataset2files.getEnrichmentFileName2() != null && !dataset2files.getEnrichmentFileName2().isEmpty())
     				this.getDataset(DATASET2).getEnrichments().setFilename2(dataset2files.getEnrichmentFileName2());
+    			
+    			//phenotypes
+        		if(dataset2files.getPhenotype1() != null && !dataset2files.getPhenotype1().isEmpty())
+        			this.getDataset(DATASET2).getEnrichments().setPhenotype1(dataset2files.getPhenotype1());
+        		if(dataset2files.getPhenotype2() != null && !dataset2files.getPhenotype2().isEmpty())
+        			this.getDataset(DATASET2).getEnrichments().setPhenotype2(dataset2files.getPhenotype2());
+        		
     		
     			//rank files - dataset 2
     			if(dataset2files.getRankedFile() != null && !dataset2files.getRankedFile().isEmpty()){

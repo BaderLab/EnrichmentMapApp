@@ -59,6 +59,9 @@ public class DataSet {
 	    			this.setofgenesets.setFilename(files.getGMTFileName());
 	    			this.enrichments.setFilename1(files.getEnrichmentFileName1());
 	    			this.enrichments.setFilename2(files.getEnrichmentFileName2());
+	    			this.enrichments.setPhenotype1(files.getPhenotype1());
+	    			this.enrichments.setPhenotype2(files.getPhenotype2());
+	    			this.expressionSets.setPhenotypes(files.getTemp_class1());
 	    			this.expressionSets.setFilename(files.getExpressionFileName());
 	    		}	    		
 	    		else {

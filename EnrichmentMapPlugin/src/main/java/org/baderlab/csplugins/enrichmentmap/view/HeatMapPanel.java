@@ -68,10 +68,12 @@ import org.baderlab.csplugins.enrichmentmap.EnrichmentMapVisualStyle;
 import org.baderlab.csplugins.enrichmentmap.heatmap.CellHighlightRenderer;
 import org.baderlab.csplugins.enrichmentmap.heatmap.ColorRenderer;
 import org.baderlab.csplugins.enrichmentmap.heatmap.ColumnHeaderVerticalRenderer;
+import org.baderlab.csplugins.enrichmentmap.heatmap.ExpressionTableValue;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapExporter;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapTableActionListener;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapTableModel;
+import org.baderlab.csplugins.enrichmentmap.heatmap.RawExpressionValueRenderer;
 import org.baderlab.csplugins.enrichmentmap.heatmap.RowNumberTable;
 import org.baderlab.csplugins.enrichmentmap.heatmap.TableHeader;
 import org.baderlab.csplugins.enrichmentmap.heatmap.TableSort;
@@ -121,7 +123,10 @@ public class HeatMapPanel extends JPanel {
     //expression data
     //private Object[][] data;
     private Object[][] expValue;
-
+    
+    private JRadioButton colorOn;
+    private JRadioButton colorOff;
+    
     private int numConditions = 0;
     private int numConditions2 = 0;
 
@@ -216,8 +221,8 @@ public class HeatMapPanel extends JPanel {
 
             phenotypes = expression.getPhenotypes();
 
-            this.Dataset1phenotype1 = params.getDataset1Phenotype1();
-            this.Dataset1phenotype2 = params.getDataset1Phenotype2();
+            this.Dataset1phenotype1 = params.getFiles().get(EnrichmentMap.DATASET1).getPhenotype1();
+            this.Dataset1phenotype2 = params.getFiles().get(EnrichmentMap.DATASET1).getPhenotype2();
 
             hmParams = params.getHmParams();
             boolean[] ascending;
@@ -262,8 +267,8 @@ public class HeatMapPanel extends JPanel {
 
                 phenotypes2 = expression2.getPhenotypes();
 
-                this.Dataset2phenotype1 = params.getDataset2Phenotype1();
-                this.Dataset2phenotype2 = params.getDataset2Phenotype2();
+                this.Dataset2phenotype1 = params.getFiles().get(EnrichmentMap.DATASET2).getPhenotype1();
+                this.Dataset2phenotype2 = params.getFiles().get(EnrichmentMap.DATASET2).getPhenotype2();
 
             }
 
@@ -354,8 +359,16 @@ public class HeatMapPanel extends JPanel {
             }
 
             //Set up renderer and editor for the Color column.
-            jTable1.setDefaultRenderer(Color.class,new ColorRenderer());
+            //default column width.  If we are using coloring default should be 10.  If we are using values default should be 50
+            int defaultColumnwidth = 10;
+            if(this.hmParams.isColoroff()){
+            		jTable1.setDefaultRenderer(ExpressionTableValue.class, new RawExpressionValueRenderer());
+            		defaultColumnwidth = 50;
+            }
+            else
+            		jTable1.setDefaultRenderer(ExpressionTableValue.class,new ColorRenderer());
             jTable1.setDefaultRenderer(String.class, highlightCellRenderer);
+            
 
             //even though the renderer takes into account what to do with significantGene type
             //it is very important to define the renderer for the type specifically as the JTable
@@ -385,7 +398,7 @@ public class HeatMapPanel extends JPanel {
                     else if (i==1 || columnNames[i].equals("Description"))
                         tcModel.getColumn(i).setPreferredWidth(50);
                     else{
-                        tcModel.getColumn(i).setPreferredWidth(10);
+                        tcModel.getColumn(i).setPreferredWidth(defaultColumnwidth);
                         if(phenotypes != null){
                             if(phenotypes[i-2].equalsIgnoreCase(Dataset1phenotype1))
                                 tcModel.getColumn(i).setHeaderRenderer(pheno1_renderer);
@@ -400,7 +413,7 @@ public class HeatMapPanel extends JPanel {
                 }
                 //go through the second data set
                 for(int i = columnNames.length; i< (columnNames.length +columnNames2.length-2); i++){
-                        tcModel.getColumn(i).setPreferredWidth(10);
+                        tcModel.getColumn(i).setPreferredWidth(defaultColumnwidth);
                         if(phenotypes2 != null){
                             if(phenotypes2[i-columnNames.length].equalsIgnoreCase(Dataset2phenotype1))
                                 tcModel.getColumn(i).setHeaderRenderer(pheno1_renderer);
@@ -421,7 +434,7 @@ public class HeatMapPanel extends JPanel {
                     else if (i==1 || columnNames[i].equals("Description"))
                         tcModel.getColumn(i).setPreferredWidth(50);
                     else{
-                        tcModel.getColumn(i).setPreferredWidth(10);
+                        tcModel.getColumn(i).setPreferredWidth(defaultColumnwidth);
                         if(phenotypes != null){
                             if(phenotypes[i-2].equalsIgnoreCase(Dataset1phenotype1))
                                 tcModel.getColumn(i).setHeaderRenderer(pheno1_renderer);
@@ -473,11 +486,11 @@ public class HeatMapPanel extends JPanel {
 
 
             data[k][0] =  expValue[k][0];
-            data[k][1] = expValue[k][1];
+            data[k][1] = expValue[k][1];            
 
             for(int j=0;j<HRow[k];j++){
-                data[k][j+2] = ColorGradientMapper.getColorGradient(RowCRT[k],RowCRR[k],RowGene[k],(Double)expValue[k][j+2]);
-             }
+            			data[k][j+2] = new ExpressionTableValue((Double)expValue[k][j+2], ColorGradientMapper.getColorGradient(RowCRT[k],RowCRR[k],RowGene[k],(Double)expValue[k][j+2]));
+                }
 
         }
         // TODO Auto-generated method stub
@@ -525,11 +538,13 @@ public class HeatMapPanel extends JPanel {
             data[k][1] = expValue[k][1];
 
             for(int j=0;j<HRow1[k];j++){
-                data[k][j+2] = ColorGradientMapper.getColorGradient(Row1CRT[k],Row1CRR[k],Row1gene[k],(Double)expValue[k][j+2]);
-             }
+        				data[k][j+2] = new ExpressionTableValue((Double)expValue[k][j+2], ColorGradientMapper.getColorGradient(Row1CRT[k],Row1CRR[k],Row1gene[k],(Double)expValue[k][j+2]));
+           }
 
             for(int j=HRow1[k];j<HRow2[k];j++){
-                data[k][j+2] = ColorGradientMapper.getColorGradient(Row2CRT[k],Row2CRR[k],Row2gene[k],(Double)expValue[k][j+2]);
+            		
+        				data[k][j+2] = new ExpressionTableValue((Double)expValue[k][j+2], ColorGradientMapper.getColorGradient(Row2CRT[k],Row2CRR[k],Row2gene[k],(Double)expValue[k][j+2]));
+        			
              }
 
         }
@@ -999,11 +1014,57 @@ public class HeatMapPanel extends JPanel {
       return expression_values1;
     }
     // created new North panel to accommodate the expression legend, normalization options,sorting options, saving option
-   private JPanel emptyPanel(){
-       JPanel empty= new JPanel() ;
-       empty.setMaximumSize(new Dimension(50,50));
-       empty.setMinimumSize(new Dimension(50,50));
-       return empty;
+   private JPanel coloroffPanel(){
+       JPanel coloroffPanel= new JPanel() ;
+       coloroffPanel.setMaximumSize(new Dimension(50,100));
+       coloroffPanel.setMinimumSize(new Dimension(50,100));
+       
+       TitledBorder expBorder = BorderFactory.createTitledBorder("Expression Values");
+       expBorder.setTitleJustification(TitledBorder.LEFT);
+       coloroffPanel.setBorder(expBorder);
+       
+       //add a check box to turn off the color in the heat map.      
+       colorOn = new JRadioButton("Hide values");
+       colorOn.setActionCommand("on");
+       
+       colorOff = new JRadioButton("Show values");
+       colorOff.setActionCommand("off");
+       
+       if(this.hmParams.isColoroff()){
+   	   		colorOn.setSelected(false);
+   	   		colorOff.setSelected(true);
+       }
+       else{
+    	   		colorOn.setSelected(true);
+      	   	colorOff.setSelected(false);
+       }
+       
+       
+       ButtonGroup colorOnOff = new javax.swing.ButtonGroup();
+       colorOnOff.add(colorOn);
+       colorOnOff.add(colorOff);
+       
+
+       colorOn.addActionListener(new java.awt.event.ActionListener() {
+                    public void actionPerformed(java.awt.event.ActionEvent evt) {
+                           selectColorOnOffActionPerformed(evt);
+                    }
+              });
+
+       colorOff.addActionListener(new java.awt.event.ActionListener() {
+                    public void actionPerformed(java.awt.event.ActionEvent evt) {
+                    		selectColorOnOffActionPerformed(evt);
+                    }
+              });
+    
+
+       //create a panel for the two buttons;
+       coloroffPanel.setLayout(new BorderLayout());
+       coloroffPanel.add(colorOn, BorderLayout.NORTH);
+       coloroffPanel.add(colorOff, BorderLayout.SOUTH);
+       
+       
+       return coloroffPanel;
    }
 
     /**
@@ -1056,7 +1117,7 @@ public class HeatMapPanel extends JPanel {
         addComponent(northPanel, expressionLegendPanel(), 0, 0, 1, 1,
                 GridBagConstraints.WEST, GridBagConstraints.NONE);
 
-        addComponent(northPanel,emptyPanel(), 1, 0, 1, 1,
+        addComponent(northPanel,coloroffPanel(), 1, 0, 1, 1,
                 GridBagConstraints.WEST, GridBagConstraints.NONE);
 
 
@@ -1831,6 +1892,28 @@ public class HeatMapPanel extends JPanel {
         return isNegative;
     }
 
+    /**
+     * jaccard or overlap radio button action listener
+     *
+     * @param evt
+     */
+    private void selectColorOnOffActionPerformed(java.awt.event.ActionEvent evt) {
+        if(evt.getActionCommand().equalsIgnoreCase("on")){
+        		this.hmParams.setColoroff(false);
+        		colorOn.setSelected(true);
+        		colorOff.setSelected(false);
+        	}
+        if(evt.getActionCommand().equalsIgnoreCase("off")){
+    			this.hmParams.setColoroff(true);
+    			colorOn.setSelected(false);
+    			colorOff.setSelected(true);
+        }
+        
+        this.updatePanel();
+        this.revalidate();
+    }
+    
+    
     //Getters and Setters
     Object[][] getExpValue() {
         return expValue;

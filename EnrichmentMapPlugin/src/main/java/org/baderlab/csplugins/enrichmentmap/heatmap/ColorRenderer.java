@@ -50,6 +50,7 @@ import javax.swing.table.TableModel;
 
 
 import java.awt.*;
+import java.text.DecimalFormat;
 
 /**
  * Created by
@@ -70,11 +71,22 @@ public class ColorRenderer extends JLabel
     }
 
     public Component getTableCellRendererComponent(
-                            JTable table, Object color,
+                            JTable table, Object value,
                             boolean isSelected, boolean hasFocus,
                             int row, int column) {
 
-        Color newColor = (Color) color;
+        Color newColor = null;
+        Double numberValue = 0.0; 
+        
+        if (( value != null) && (value instanceof ExpressionTableValue)) {
+        		ExpressionTableValue avalue = (ExpressionTableValue)value;
+
+  		  numberValue = avalue.getExpression_value();
+  	      
+  	      
+  	      newColor = avalue.getExpression_color();
+        }
+        
         TableModel tc=table.getModel();
         
         
@@ -100,7 +112,7 @@ public class ColorRenderer extends JLabel
         }
         
        // setToolTipText("Exp Value: " + );
-        //setToolTipText("Exp value: " + (ogt.getExpValueAt(row,column)));                          
+        setToolTipText("Exp value: " + numberValue);                          
        
         return this;
     }

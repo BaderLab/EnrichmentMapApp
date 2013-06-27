@@ -164,11 +164,6 @@ public class EnrichmentMapParameters {
     final public static String SM_JACCARD = "JACCARD";
     final public static String SM_OVERLAP = "OVERLAP";
     final public static String SM_COMBINED = "COMBINED";    
-    //Dataset phenotypes that are loaded in from the input panel
-    private String Dataset1Phenotype1 = "UP";
-    private String Dataset1Phenotype2 = "DOWN";
-    private String Dataset2Phenotype1 = "UP";
-    private String Dataset2Phenotype2 = "DOWN";
     
     //Create a hashmap to contain all the values in the rpt file.
     HashMap<String, String> props;
@@ -355,10 +350,8 @@ public class EnrichmentMapParameters {
         files1.setEnrichmentFileName2(props.get("enrichmentDataset1FileName2"));
         files1.setGseaHtmlReportFile(props.get("gseaHtmlReportFileDataset1"));
         
-        this.Dataset1Phenotype1 = props.get("dataset1Phenotype1");
-        this.Dataset1Phenotype2 = props.get("dataset1Phenotype2");
-        this.Dataset2Phenotype1 = props.get("dataset2Phenotype1");
-        this.Dataset2Phenotype2 = props.get("dataset2Phenotype2");
+        files1.setPhenotype1(props.get("dataset1Phenotype1"));
+        files1.setPhenotype2(props.get("dataset1Phenotype2"));
         
         //rank files 1
         if(props.get("rankFile1")!= null){
@@ -420,7 +413,8 @@ public class EnrichmentMapParameters {
                 		files2.setClassFile(props.get("classFile2"));
             }
             
-           
+            files2.setPhenotype1(props.get("dataset2Phenotype1"));
+            files2.setPhenotype2(props.get("dataset2Phenotype2"));
             //Get the class two array from the prop file
 /*            if(props.get("class2")!= null){
                 if((props.get("class2")).equalsIgnoreCase("null") )
@@ -537,10 +531,9 @@ public class EnrichmentMapParameters {
             phenotype2 = phenotypes_split[1];
 
             this.getFiles().get(EnrichmentMap.DATASET1).setClassFile(classes_split[0]);
-            this.setDataset1Phenotype1(phenotype1);
-            this.setDataset1Phenotype2(phenotype2);
-
-
+            this.getFiles().get(EnrichmentMap.DATASET1).setPhenotype1(phenotype1);
+            this.getFiles().get(EnrichmentMap.DATASET1).setPhenotype2(phenotype2);
+           
         }
 
         //check to see if the method is normal or pre-ranked GSEA.
@@ -549,8 +542,8 @@ public class EnrichmentMapParameters {
             data = (String)rpt.get("param rnk");
             phenotype1 = "na_pos";
             phenotype2 = "na_neg";
-            this.setDataset1Phenotype1(phenotype1);
-            this.setDataset1Phenotype2(phenotype2);
+            this.getFiles().get(EnrichmentMap.DATASET1).setPhenotype1(phenotype1);
+            this.getFiles().get(EnrichmentMap.DATASET1).setPhenotype2(phenotype2);
 
         }
 
@@ -689,12 +682,6 @@ public class EnrichmentMapParameters {
         this.upperlimit = copy.getUpperlimit();
         this.lowerlimit = copy.getLowerlimit();
         
-        //this.attributePrefix = copy.getAttributePrefix();
-        this.Dataset1Phenotype1 = copy.getDataset1Phenotype1();
-        this.Dataset1Phenotype2 = copy.getDataset1Phenotype2();
-        this.Dataset2Phenotype1 = copy.getDataset2Phenotype1();
-        this.Dataset2Phenotype2 = copy.getDataset2Phenotype2();
-
    }
 
 
@@ -753,10 +740,6 @@ public class EnrichmentMapParameters {
        
        this.attributePrefix = copy.getAttributePrefix();
        
-       this.Dataset1Phenotype1 = copy.getDataset1Phenotype1();
-       this.Dataset1Phenotype2 = copy.getDataset1Phenotype2();
-       this.Dataset2Phenotype1 = copy.getDataset2Phenotype1();
-       this.Dataset2Phenotype2 = copy.getDataset2Phenotype2();
 
        }
 
@@ -1411,47 +1394,6 @@ public class EnrichmentMapParameters {
     public void setEMgmt(boolean flag){
         this.EMgmt = flag;
     }
-
-
-	public String getDataset1Phenotype1() {
-		return Dataset1Phenotype1;
-	}
-
-
-	public void setDataset1Phenotype1(String dataset1Phenotype1) {
-		Dataset1Phenotype1 = dataset1Phenotype1;
-	}
-
-
-	public String getDataset1Phenotype2() {
-		return Dataset1Phenotype2;
-	}
-
-
-	public void setDataset1Phenotype2(String dataset1Phenotype2) {
-		Dataset1Phenotype2 = dataset1Phenotype2;
-	}
-
-
-	public String getDataset2Phenotype1() {
-		return Dataset2Phenotype1;
-	}
-
-
-	public void setDataset2Phenotype1(String dataset2Phenotype1) {
-		Dataset2Phenotype1 = dataset2Phenotype1;
-	}
-
-
-	public String getDataset2Phenotype2() {
-		return Dataset2Phenotype2;
-	}
-
-
-	public void setDataset2Phenotype2(String dataset2Phenotype2) {
-		Dataset2Phenotype2 = dataset2Phenotype2;
-	}
-	
 	/*
 	 * Get the GMT file
 	 * If there are multiple dataset first check to see if the GMT files are the same

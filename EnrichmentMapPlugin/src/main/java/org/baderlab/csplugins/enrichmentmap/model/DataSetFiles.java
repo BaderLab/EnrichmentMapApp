@@ -25,6 +25,13 @@ public class DataSetFiles {
     //need a temporary place for these class definition as
     private String[] temp_class1 = null;
     
+    //phenotypes associated with this set of files
+    public static final String default_pheno1 = "UP";
+    public static final String default_pheno2 = "DOWN";
+    
+    private String phenotype1 = default_pheno1;
+    private String phenotype2 = default_pheno2;
+    
     private String gseaHtmlReportFile = null;
     
 	public String getGMTFileName() {
@@ -91,6 +98,22 @@ public class DataSetFiles {
 		this.gseaHtmlReportFile = gseaHtmlReportFile;
 	}
 
+	public String getPhenotype1() {
+		return phenotype1;
+	}
+
+	public void setPhenotype1(String phenotype1) {
+		this.phenotype1 = phenotype1;
+	}
+
+	public String getPhenotype2() {
+		return phenotype2;
+	}
+
+	public void setPhenotype2(String phenotype2) {
+		this.phenotype2 = phenotype2;
+	}
+
 	public void copy(DataSetFiles copy){
 		this.GMTFileName = copy.getGMTFileName();
 		this.expressionFileName = copy.getExpressionFileName();
@@ -100,6 +123,8 @@ public class DataSetFiles {
 		this.temp_class1 = copy.getTemp_class1();
 		this.gseaHtmlReportFile = copy.getGseaHtmlReportFile();
 		this.RankedFile = copy.getRankedFile();
+		this.phenotype1 = copy.getPhenotype1();
+		this.phenotype2 = copy.getPhenotype2();
 	}
 	
 	public String toString(String dataset){
@@ -115,7 +140,10 @@ public class DataSetFiles {
         paramVariables.append(dataset+ "%" +this.getClass().getSimpleName() + "%gseaHtmlReportFileDataset\t" + gseaHtmlReportFile + "\n");        
         paramVariables.append(dataset+ "%" +this.getClass().getSimpleName() + "%classFile\t" + classFile  + "\n");
         paramVariables.append(dataset+ "%" +this.getClass().getSimpleName() + "%RankedFile\t" + RankedFile + "\n");
-		
+        
+        paramVariables.append(dataset+ "%" +this.getClass().getSimpleName() + "%Phenotype1\t" + phenotype1 + "\n");
+        paramVariables.append(dataset+ "%" +this.getClass().getSimpleName() + "%Phenotype2\t" + phenotype2 + "\n");
+        
         //in order to backwards compatible we need to add variables that older version of cytoscape will recognize
         paramVariables.append("GMTFileName\t" + GMTFileName + "\n");
         if(dataset.equals(EnrichmentMap.DATASET1)){
@@ -123,8 +151,8 @@ public class DataSetFiles {
             paramVariables.append("enerichmentDataset1FileName1\t" + enrichmentFileName1 + "\n");//TODO: fix Typo and take care of legacy issue!
             paramVariables.append("enrichmentDataset1FileName2\t" + enrichmentFileName2 + "\n");            
             paramVariables.append("gseaHtmlReportFileDataset1\t" + gseaHtmlReportFile + "\n");
-            paramVariables.append("dataset1Phenotype1\t" + "Not defined"  + "\n");
-            paramVariables.append("dataset1Phenotype2\t" + "Not defined"   + "\n");
+            paramVariables.append("dataset1Phenotype1\t" + phenotype1  + "\n");
+            paramVariables.append("dataset1Phenotype2\t" + phenotype2   + "\n");
             paramVariables.append("rankFile1\t" + RankedFile + "\n");          
             paramVariables.append("classFile1\t" + classFile  + "\n");
             
@@ -134,8 +162,8 @@ public class DataSetFiles {
     			paramVariables.append("enerichmentDataset2FileName1\t" + enrichmentFileName1 + "\n");//TODO: fix Typo and take care of legacy issue!
     			paramVariables.append("enrichmentDataset2FileName2\t" + enrichmentFileName2 + "\n");            
     			paramVariables.append("gseaHtmlReportFileDataset2\t" + gseaHtmlReportFile + "\n");
-    			paramVariables.append("dataset2Phenotype1\t" + "Not defined"  + "\n");
-            paramVariables.append("dataset2Phenotype2\t" + "Not defined"   + "\n");
+    			paramVariables.append("dataset2Phenotype1\t" + phenotype1 + "\n");
+            paramVariables.append("dataset2Phenotype2\t" + phenotype2   + "\n");
     			paramVariables.append("rankFile2\t" + RankedFile + "\n");          
     			paramVariables.append("classFile2\t" + classFile  + "\n");
         

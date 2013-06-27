@@ -64,7 +64,8 @@ public class HeatMapTableActionListener implements MouseListener {
                 }
                 //otherwise put the value in a pop-up
                 else{
-                   rightClickPopupMenu.add(new JMenuItem(model.getExpValueAt(row,column).toString()));
+                		//added the right click directly to renderering of the column so don't need this anymore
+                   //rightClickPopupMenu.add(new JMenuItem(model.getExpValueAt(row,column).toString()));
                 }
                 rightClickPopupMenu.show(e.getComponent(), e.getX(), e.getY());
             }

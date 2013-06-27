@@ -110,6 +110,9 @@ public class HeatMapParameters {
     //Up and down sort button
     final static int Ascending = 0, Descending= 1; // image States
     private ImageIcon[] iconArrow = createExpandAndCollapseIcon();
+    
+    //switch to turn off the coloring of the heatmap
+    private boolean coloroff = false;
 
     //minimum and maximum expression values used to create colour mapper
     private double minExpression;
@@ -582,5 +585,13 @@ public class HeatMapParameters {
         if(index != -1)
             ascending[index] = !ascending[index];
     }
+
+	public boolean isColoroff() {
+		return coloroff;
+	}
+
+	public void setColoroff(boolean coloroff) {
+		this.coloroff = coloroff;
+	}
 
 }

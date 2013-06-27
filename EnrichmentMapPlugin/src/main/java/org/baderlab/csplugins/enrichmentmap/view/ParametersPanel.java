@@ -400,7 +400,7 @@ public class ParametersPanel extends JPanel {
             c.insets = new Insets(5,30,5,2);
 
             //represent the node border color as an png/gif instead of using java to generate the representation
-            URL nodeborderIconURL = Enrichment_Map_Plugin.class.getResource("resources/node_border_color_small.png");
+            URL nodeborderIconURL = Thread.currentThread().getContextClassLoader().getResource("node_border_color_small.png");
             if (nodeborderIconURL != null) {
                 ImageIcon nodeborderIcon = new ImageIcon(nodeborderIconURL);
                 JLabel nodeborderColorLabel = new JLabel(nodeborderIcon);

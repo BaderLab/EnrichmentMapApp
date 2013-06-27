@@ -1118,19 +1118,19 @@ public class EnrichmentMapInputPanel extends JPanel {
                }
             }else if (source == Dataset1Phenotype1TextField) {
                 String value = Dataset1Phenotype1TextField.getText();
-                params.setDataset1Phenotype1(value);
+                dataset1files.setPhenotype1(value);                
             }
             else if (source == Dataset1Phenotype2TextField) {
                 String value = Dataset1Phenotype2TextField.getText();
-                params.setDataset1Phenotype2(value);
+                dataset1files.setPhenotype2(value);
             }
             else if (source == Dataset2Phenotype1TextField) {
                 String value = Dataset2Phenotype1TextField.getText();
-                params.setDataset2Phenotype1(value);
+                dataset2files.setPhenotype1(value);
             }
             else if (source == Dataset2Phenotype2TextField) {
                 String value = Dataset2Phenotype2TextField.getText();
-                params.setDataset2Phenotype2(value);
+                dataset2files.setPhenotype2(value);
             }
             if (invalid) {
                 JOptionPane.showMessageDialog(Cytoscape.getDesktop(), message, "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
@@ -1343,14 +1343,15 @@ public class EnrichmentMapInputPanel extends JPanel {
         String classes = (String)rpt.get("param cls");
         String gmt = (String)rpt.get("param gmx");
         
-        //instead of using the original gmt file use the gmt file that is stored in
-        // in the edb directory.  The edb directory should be in the same directory 
-        // as the rpt file.  If it isn't use the original mechanism of finding gmt file
+        //use the original gmt if we can find it.  If we can't find it resort to using the the one from edb directory
+        //with two datasets this will be a problem as the gmt files are filtered by the expression file
+        // before being stored in the edb directory
         String currentDir = rptFile.getParent();
-        File temp = new File(currentDir, "edb/gene_sets.gmt");
-        if(temp.exists())
-        		gmt = temp.getAbsolutePath();
-        
+        if(!(new File(gmt)).exists()){
+        		File temp = new File(currentDir, "edb/gene_sets.gmt");
+        		if(temp.exists())
+        			gmt = temp.getAbsolutePath();
+        }
         //String gmt_nopath =  gmt.substring(gmt.lastIndexOf(File.separator)+1, gmt.length()-1);
         String gseaHtmlReportFile = (String)rpt.get("file");
         
@@ -1372,8 +1373,9 @@ public class EnrichmentMapInputPanel extends JPanel {
 
             			if(dataset1){
             				dataset1files.setClassFile(classes_split[0]);
-            				params.setDataset1Phenotype1(phenotype1);
-            				params.setDataset1Phenotype2(phenotype2);
+            				dataset1files.setTemp_class1(setClasses(classes_split[0]));
+            				dataset1files.setPhenotype1(phenotype1);
+            				dataset1files.setPhenotype2(phenotype2);
 
             				Dataset1Phenotype1TextField.setText(phenotype1);
             				Dataset1Phenotype1TextField.setValue(phenotype1);
@@ -1382,8 +1384,9 @@ public class EnrichmentMapInputPanel extends JPanel {
             			}
             			else{
             				dataset2files.setClassFile(classes_split[0]);
-            				params.setDataset2Phenotype1(phenotype1);
-            				params.setDataset2Phenotype2(phenotype2);
+            				dataset2files.setTemp_class1(setClasses(classes_split[0]));
+            				dataset2files.setPhenotype1(phenotype1);
+            				dataset2files.setPhenotype2(phenotype2);
 
             				Dataset2Phenotype1TextField.setText(phenotype1);
             				Dataset2Phenotype2TextField.setText(phenotype2);
@@ -1402,8 +1405,8 @@ public class EnrichmentMapInputPanel extends JPanel {
             phenotype2 = "na_neg";
 
             if(dataset1){
-                params.setDataset1Phenotype1(phenotype1);
-                params.setDataset1Phenotype2(phenotype2);
+            		dataset1files.setPhenotype1(phenotype1);
+            		dataset1files.setPhenotype2(phenotype2);
 
                 Dataset1Phenotype1TextField.setText(phenotype1);
                 Dataset1Phenotype2TextField.setText(phenotype2);
@@ -1411,8 +1414,8 @@ public class EnrichmentMapInputPanel extends JPanel {
                 Dataset1Phenotype2TextField.setValue(phenotype2);
             }
             else{
-                params.setDataset2Phenotype1(phenotype1);
-                params.setDataset2Phenotype2(phenotype2);
+            		dataset2files.setPhenotype1(phenotype1);
+            		dataset2files.setPhenotype2(phenotype2);
 
                 Dataset2Phenotype1TextField.setText(phenotype1);
                 Dataset2Phenotype2TextField.setText(phenotype2);
@@ -1618,6 +1621,49 @@ public class EnrichmentMapInputPanel extends JPanel {
        }
 
     /**
+     * Parse class file (The class file is a GSEA specific file that specifyies which phenotype
+     * each column of the expression file belongs to.)  The class file can only be associated with
+     * an analysis when dataset specifications are specified initially using an rpt file.
+     *
+     * @param classFile - name of class file
+     * @return String array of the phenotypes of each column in the expression array
+     */
+    private String[] setClasses(String classFile){
+
+        File f = new File(classFile);
+
+        //deal with legacy issue, if a session file has the class file set but
+        //it didn't actually save the classes yet.
+        if(!f.exists()){
+           return null;
+        }        
+        //check to see if the file was opened successfully
+
+        if(!classFile.equalsIgnoreCase(null)) {
+
+            TextFileReader reader2 = new TextFileReader(classFile);
+
+            reader2.read();
+            String fullText2 = reader2.getText();
+
+            String[] lines2 = fullText2.split("\n");
+
+            //the class file can be split by a space or a tab
+            String[] classes = lines2[2].split("\\s");
+
+
+            //the third line of the class file defines the classes
+            return classes;
+        }
+        else{
+            String[] def_pheno = {"Na_pos","NA_neg"};
+            return def_pheno;
+        }
+    }
+
+
+    
+    /**
      * Check to see if the file is readable.  returns a color indicating whether the file is readable.  Color is red
      * if the file is not readable so we can set the font color to red to show the user the file name was invalid.
      *
@@ -1740,25 +1786,25 @@ public class EnrichmentMapInputPanel extends JPanel {
       
 
       //update the phenotypes
-      if(params.getDataset1Phenotype1() != null){
-          Dataset1Phenotype1TextField.setText(params.getDataset1Phenotype1());
-          Dataset1Phenotype1TextField.setValue(params.getDataset1Phenotype1());
-          Dataset1Phenotype1TextField.setToolTipText(params.getDataset1Phenotype1());
+      if(dataset1files.getPhenotype1() != null){
+          Dataset1Phenotype1TextField.setText(dataset1files.getPhenotype1());
+          Dataset1Phenotype1TextField.setValue(dataset1files.getPhenotype1());
+          Dataset1Phenotype1TextField.setToolTipText(dataset1files.getPhenotype1());
       }
-      if(params.getDataset1Phenotype2() != null){
-          Dataset1Phenotype2TextField.setText(params.getDataset1Phenotype2());
-          Dataset1Phenotype2TextField.setValue(params.getDataset1Phenotype2());
-          Dataset1Phenotype2TextField.setToolTipText(params.getDataset1Phenotype2());
+      if(dataset1files.getPhenotype2() != null){
+          Dataset1Phenotype2TextField.setText(dataset1files.getPhenotype2());
+          Dataset1Phenotype2TextField.setValue(dataset1files.getPhenotype2());
+          Dataset1Phenotype2TextField.setToolTipText(dataset1files.getPhenotype2());
       }
-      if(params.getDataset2Phenotype1() != null){
-          Dataset2Phenotype1TextField.setText(params.getDataset2Phenotype1());
-          Dataset2Phenotype1TextField.setValue(params.getDataset2Phenotype1());
-          Dataset2Phenotype1TextField.setToolTipText(params.getDataset2Phenotype1());
+      if(dataset2files.getPhenotype1() != null){
+          Dataset2Phenotype1TextField.setText(dataset2files.getPhenotype1());
+          Dataset2Phenotype1TextField.setValue(dataset2files.getPhenotype1());
+          Dataset2Phenotype1TextField.setToolTipText(dataset2files.getPhenotype1());
       }
-      if(params.getDataset2Phenotype2() != null){
-          Dataset2Phenotype2TextField.setText(params.getDataset2Phenotype2());
-          Dataset2Phenotype2TextField.setValue(params.getDataset2Phenotype2());
-          Dataset2Phenotype2TextField.setToolTipText(params.getDataset2Phenotype2());
+      if(dataset2files.getPhenotype2() != null){
+          Dataset2Phenotype2TextField.setText(dataset2files.getPhenotype2());
+          Dataset2Phenotype2TextField.setValue(dataset2files.getPhenotype2());
+          Dataset2Phenotype2TextField.setToolTipText(dataset2files.getPhenotype2());
       }
 
       //Special case with Enrichment results file 2 (there should only be two enrichment
@@ -2206,15 +2252,15 @@ public class EnrichmentMapInputPanel extends JPanel {
         Dataset2RankFileTextField.setText("");
         Dataset2RankFileTextField.setToolTipText(null);
 
-        Dataset1Phenotype1TextField.setText(params.getDataset1Phenotype1());
-        Dataset1Phenotype2TextField.setText(params.getDataset1Phenotype2());
-        Dataset2Phenotype1TextField.setText(params.getDataset2Phenotype1());
-        Dataset2Phenotype2TextField.setText(params.getDataset2Phenotype2());
+        Dataset1Phenotype1TextField.setText(DataSetFiles.default_pheno1);
+        Dataset1Phenotype2TextField.setText(DataSetFiles.default_pheno2);
+        Dataset2Phenotype1TextField.setText(DataSetFiles.default_pheno1);
+        Dataset2Phenotype2TextField.setText(DataSetFiles.default_pheno2);
 
-        Dataset1Phenotype1TextField.setValue(params.getDataset1Phenotype1());
-        Dataset1Phenotype2TextField.setValue(params.getDataset1Phenotype2());
-        Dataset2Phenotype1TextField.setValue(params.getDataset2Phenotype1());
-        Dataset2Phenotype2TextField.setValue(params.getDataset2Phenotype2());
+        Dataset1Phenotype1TextField.setValue(DataSetFiles.default_pheno1);
+        Dataset1Phenotype2TextField.setValue(DataSetFiles.default_pheno2);
+        Dataset2Phenotype1TextField.setValue(DataSetFiles.default_pheno1);
+        Dataset2Phenotype2TextField.setValue(DataSetFiles.default_pheno2);
 
         pvalueTextField.setText(Double.toString(params.getPvalue()));
         qvalueTextField.setText(Double.toString(params.getQvalue()));
@@ -2287,15 +2333,15 @@ public class EnrichmentMapInputPanel extends JPanel {
         	Dataset2RankFileTextField.setText(dataset2files.getRankedFile());
         
 
-        Dataset1Phenotype1TextField.setText(current_params.getDataset1Phenotype1());
-        Dataset1Phenotype2TextField.setText(current_params.getDataset1Phenotype2());
-        Dataset2Phenotype1TextField.setText(current_params.getDataset2Phenotype1());
-        Dataset2Phenotype2TextField.setText(current_params.getDataset2Phenotype2());
+        Dataset1Phenotype1TextField.setText(dataset1files.getPhenotype1());
+        Dataset1Phenotype2TextField.setText(dataset1files.getPhenotype2());
+        Dataset2Phenotype1TextField.setText(dataset2files.getPhenotype1());
+        Dataset2Phenotype2TextField.setText(dataset2files.getPhenotype2());
 
-        Dataset1Phenotype1TextField.setValue(current_params.getDataset1Phenotype1());
-        Dataset1Phenotype2TextField.setValue(current_params.getDataset1Phenotype2());
-        Dataset2Phenotype1TextField.setValue(current_params.getDataset2Phenotype1());
-        Dataset2Phenotype2TextField.setValue(current_params.getDataset2Phenotype2());
+        Dataset1Phenotype1TextField.setValue(dataset1files.getPhenotype1());
+        Dataset1Phenotype2TextField.setValue(dataset1files.getPhenotype2());
+        Dataset2Phenotype1TextField.setValue(dataset2files.getPhenotype1());
+        Dataset2Phenotype2TextField.setValue(dataset2files.getPhenotype2());
 
         pvalueTextField.setText(Double.toString(current_params.getPvalue()));
         qvalueTextField.setText(Double.toString(current_params.getQvalue()));
