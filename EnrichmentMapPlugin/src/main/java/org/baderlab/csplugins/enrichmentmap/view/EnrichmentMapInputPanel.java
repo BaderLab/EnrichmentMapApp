@@ -116,6 +116,9 @@ public class EnrichmentMapInputPanel extends JPanel {
 
     private JFormattedTextField Dataset1RankFileTextField;
     private JFormattedTextField Dataset2RankFileTextField;
+    
+    private JFormattedTextField Dataset1ClassFileTextField;
+    private JFormattedTextField Dataset2ClassFileTextField;
 
     //user specified terms and cut offs
     private JFormattedTextField Dataset1Phenotype1TextField;
@@ -149,7 +152,8 @@ public class EnrichmentMapInputPanel extends JPanel {
     private static String gctTip = "File with gene expression values.\n" + "Format: gene <tab> description <tab> expression value <tab> ...";
     private static String datasetTip = "File specifying enrichment results.\n";
     private static String rankTip = "File specifying ranked genes.\n" + "Format: gene <tab> score or statistic";
-    
+    private static String classTip = "File specifying the classes of each sample in expression file.\n" + "format: see GSEA website";
+
     private boolean similarityCutOffChanged = false;
     private boolean LoadedFromRpt_dataset1 = false;
     private boolean LoadedFromRpt_dataset2 = false;
@@ -723,6 +727,20 @@ public class EnrichmentMapInputPanel extends JPanel {
                 };
            RanksLabel.setToolTipText(rankTip);
            JButton selectRanksFileButton = new JButton();
+           
+         //add class file
+           JLabel ClassLabel = new JLabel("Classes"){
+           /**
+             * 
+             */
+            private static final long serialVersionUID = 4549754054012943869L;
+
+                    public JToolTip createToolTip() {
+                        return new JMultiLineToolTip();
+                    }
+                };
+           ClassLabel.setToolTipText(classTip);
+           JButton selectClassFileButton = new JButton();
 
             if(dataset ==1 ){
                 Dataset1RankFileTextField = new JFormattedTextField();
@@ -735,6 +753,18 @@ public class EnrichmentMapInputPanel extends JPanel {
                 .addActionListener(new java.awt.event.ActionListener() {
                     public void actionPerformed(java.awt.event.ActionEvent evt) {
                         selectRank1FileButtonActionPerformed(evt);
+                    }
+                });
+                
+                Dataset1ClassFileTextField = new JFormattedTextField();
+                Dataset1ClassFileTextField.setColumns(defaultColumns);
+                Dataset1ClassFileTextField.setFont(new java.awt.Font("Dialog",1,10));               
+                 selectClassFileButton.setText("...");
+                selectClassFileButton.setMargin(new Insets(0,0,0,0));
+                selectClassFileButton
+                .addActionListener(new java.awt.event.ActionListener() {
+                    public void actionPerformed(java.awt.event.ActionEvent evt) {
+                        selectClass1FileButtonActionPerformed(evt);
                     }
                 });
             }
@@ -752,6 +782,18 @@ public class EnrichmentMapInputPanel extends JPanel {
                         selectRank2FileButtonActionPerformed(evt);
                     }
                 });
+               
+               Dataset2ClassFileTextField = new JFormattedTextField();
+               Dataset2ClassFileTextField.setColumns(defaultColumns);
+               Dataset2ClassFileTextField.setFont(new java.awt.Font("Dialog",1,10));               
+                selectClassFileButton.setText("...");
+               selectClassFileButton.setMargin(new Insets(0,0,0,0));
+               selectClassFileButton
+               .addActionListener(new java.awt.event.ActionListener() {
+                   public void actionPerformed(java.awt.event.ActionEvent evt) {
+                       selectClass2FileButtonActionPerformed(evt);
+                   }
+               });
 
             }
 
@@ -765,6 +807,16 @@ public class EnrichmentMapInputPanel extends JPanel {
            else
                 RanksPanel.add( Dataset2RankFileTextField, BorderLayout.CENTER);
            RanksPanel.add( selectRanksFileButton, BorderLayout.EAST);
+           
+           JPanel ClassPanel = new JPanel();
+           ClassPanel.setLayout(new BorderLayout());
+           
+           ClassPanel.add(ClassLabel,BorderLayout.WEST);
+           if(dataset ==1)
+        	   ClassPanel.add( Dataset1ClassFileTextField, BorderLayout.CENTER);
+           else
+        	   ClassPanel.add( Dataset2ClassFileTextField, BorderLayout.CENTER);
+           ClassPanel.add( selectClassFileButton, BorderLayout.EAST);
 
            //add Phenotypes
            JLabel PhenotypesLabel = new JLabel("Phenotypes:");
@@ -805,6 +857,7 @@ public class EnrichmentMapInputPanel extends JPanel {
             }
 
            advancedpanel.add(RanksPanel,BorderLayout.NORTH);
+           advancedpanel.add(ClassPanel, BorderLayout.CENTER);
            advancedpanel.add(PhenotypesPanel, BorderLayout.SOUTH);
            Advanced.getContentPane().add(advancedpanel,BorderLayout.NORTH);
 
@@ -1132,6 +1185,15 @@ public class EnrichmentMapInputPanel extends JPanel {
                 String value = Dataset2Phenotype2TextField.getText();
                 dataset2files.setPhenotype2(value);
             }
+            else if (source == Dataset1RankFileTextField){
+            	String value = Dataset1RankFileTextField.getText();
+            	dataset1files.setRankedFile(value);
+            }
+            else if (source == Dataset2RankFileTextField){
+            	String value = Dataset2RankFileTextField.getText();
+            	dataset2files.setRankedFile(value);
+            }
+            
             if (invalid) {
                 JOptionPane.showMessageDialog(Cytoscape.getDesktop(), message, "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
             }
@@ -1372,7 +1434,7 @@ public class EnrichmentMapInputPanel extends JPanel {
             			phenotype2 = phenotypes_split[1];
 
             			if(dataset1){
-            				dataset1files.setClassFile(classes_split[0]);
+            				dataset1files.setClassFile(classes_split[0]);           				
             				dataset1files.setTemp_class1(setClasses(classes_split[0]));
             				dataset1files.setPhenotype1(phenotype1);
             				dataset1files.setPhenotype2(phenotype2);
@@ -1381,6 +1443,8 @@ public class EnrichmentMapInputPanel extends JPanel {
             				Dataset1Phenotype1TextField.setValue(phenotype1);
             				Dataset1Phenotype2TextField.setText(phenotype2);
             				Dataset1Phenotype2TextField.setValue(phenotype2);
+            				Dataset1ClassFileTextField.setValue(classes_split[0]);
+            				Dataset1ClassFileTextField.setForeground(checkFile(classes_split[0]));
             			}
             			else{
             				dataset2files.setClassFile(classes_split[0]);
@@ -1392,6 +1456,9 @@ public class EnrichmentMapInputPanel extends JPanel {
             				Dataset2Phenotype2TextField.setText(phenotype2);
             				Dataset2Phenotype1TextField.setValue(phenotype1);
             				Dataset2Phenotype2TextField.setValue(phenotype2);
+            				Dataset2ClassFileTextField.setValue(classes_split[0]);
+            				Dataset2ClassFileTextField.setForeground(checkFile(classes_split[0]));
+                			
             			}
             		}
             }
@@ -1481,18 +1548,19 @@ public class EnrichmentMapInputPanel extends JPanel {
                     results1 = out_dir_new + File.separator + job_dir_name + File.separator + "gsea_report_for_" + phenotype1 + "_" + timestamp + ".xls";
                     results2 = out_dir_new + File.separator + job_dir_name + File.separator + "gsea_report_for_" + phenotype2 + "_" + timestamp + ".xls";
                     ranks = out_dir_new + File.separator + job_dir_name + File.separator + "ranked_gene_list_" + phenotype1 + "_versus_" + phenotype2 +"_" + timestamp + ".xls";
-
+                    gseaHtmlReportFile = "" + out_dir_new + File.separator + job_dir_name + File.separator + "index.html";
+                    
                     //If after trying the directory that the rpt file is in doesn't produce valid file names, revert to what
                     //is specified in the rpt.
-                    if(!((checkFile(results1) == Color.BLACK) && (checkFile(results2) == Color.BLACK) && (checkFile(ranks) == Color.BLACK))){
-                        results1 = "" + out_dir + File.separator + job_dir_name + File.separator + label + "."+ method + "." + timestamp + File.separator + "gsea_report_for_" + phenotype1 + "_" + timestamp + ".xls";
-                        results2 = "" + out_dir + File.separator + job_dir_name + File.separator + label + "."+ method + "." + timestamp + File.separator + "gsea_report_for_" + phenotype2 + "_" + timestamp + ".xls";
-                        ranks = "" + out_dir + File.separator + job_dir_name + File.separator + label + "."+ method + "." + timestamp + File.separator + "ranked_gene_list_" + phenotype1 + "_versus_" + phenotype2 +"_" + timestamp + ".xls";
-                    }
-                    else{
-                        out_dir = out_dir_new;
-                        gseaHtmlReportFile = "" + out_dir + File.separator + job_dir_name + File.separator + "index.html";
-                    }
+                    if(!(checkFile(results1) == Color.BLACK))
+                    	results1 = "" + out_dir + File.separator + job_dir_name + File.separator + label + "."+ method + "." + timestamp + File.separator + "gsea_report_for_" + phenotype1 + "_" + timestamp + ".xls";
+                    if(!(checkFile(results2) == Color.BLACK))
+                    	results2 = "" + out_dir + File.separator + job_dir_name + File.separator + label + "."+ method + "." + timestamp + File.separator + "gsea_report_for_" + phenotype2 + "_" + timestamp + ".xls";
+                    if(!(checkFile(ranks) == Color.BLACK))                   	               	
+                    	ranks = "" + out_dir + File.separator + job_dir_name + File.separator + label + "."+ method + "." + timestamp + File.separator + "ranked_gene_list_" + phenotype1 + "_versus_" + phenotype2 +"_" + timestamp + ".xls";                    
+                    if(!(checkFile(gseaHtmlReportFile) == Color.BLACK))                   	               	
+                    	gseaHtmlReportFile = "" + out_dir + File.separator + job_dir_name + File.separator + "index.html";
+                    
             }
 
         }
@@ -2185,6 +2253,67 @@ public class EnrichmentMapInputPanel extends JPanel {
         }
     }
 
+     /**
+      * class 1 file selector action listener
+      *
+      * @param evt
+      */
+      private void selectClass1FileButtonActionPerformed(
+                java.awt.event.ActionEvent evt) {
+          
+//          Create FileFilter
+         CyFileFilter filter = new CyFileFilter();
+
+         // Add accepted File Extensions
+         filter.addExtension("txt");
+         filter.addExtension("cls");
+         filter.setDescription("All class files");
+
+         // Get the file name
+          File file = FileUtil.getFile("import class file", FileUtil.LOAD, new CyFileFilter[]{ filter });
+
+         if(file != null) {
+                 Dataset1ClassFileTextField.setForeground(checkFile(file.getAbsolutePath()));
+                 Dataset1ClassFileTextField.setText(file.getAbsolutePath() );
+                 dataset1files.setClassFile(file.getAbsolutePath());
+ 				 dataset1files.setTemp_class1(setClasses(file.getAbsolutePath()));
+                 Dataset1ClassFileTextField.setToolTipText(file.getAbsolutePath() );
+
+
+         }
+     }
+     
+      /**
+       * class 1 file selector action listener
+       *
+       * @param evt
+       */
+       private void selectClass2FileButtonActionPerformed(
+                 java.awt.event.ActionEvent evt) {
+           
+//           Create FileFilter
+          CyFileFilter filter = new CyFileFilter();
+
+          // Add accepted File Extensions
+          filter.addExtension("txt");
+          filter.addExtension("cls");
+          filter.setDescription("All class files");
+
+          // Get the file name
+           File file = FileUtil.getFile("import class file", FileUtil.LOAD, new CyFileFilter[]{ filter });
+
+          if(file != null) {
+                  Dataset2ClassFileTextField.setForeground(checkFile(file.getAbsolutePath()));
+                  Dataset2ClassFileTextField.setText(file.getAbsolutePath() );
+                  dataset2files.setClassFile(file.getAbsolutePath());
+  				  dataset2files.setTemp_class1(setClasses(file.getAbsolutePath()));
+                  Dataset2ClassFileTextField.setToolTipText(file.getAbsolutePath() );
+
+
+          }
+      }
+      
+      
     /**
      * ranks 2 file selector action listener
      *
@@ -2228,6 +2357,10 @@ public class EnrichmentMapInputPanel extends JPanel {
     private void resetPanel(){
 
         this.params = new EnrichmentMapParameters();
+        
+        //reset the datafiles as well
+        this.dataset1files = new DataSetFiles();
+        this.dataset2files = new DataSetFiles();
 
         GMTFileNameTextField.setText("");
         GMTFileNameTextField.setToolTipText(null);

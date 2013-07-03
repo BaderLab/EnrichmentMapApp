@@ -790,12 +790,12 @@ public class EnrichmentMapParameters {
         
         //if there is more than one dataset
         //check to see if there are two datasets if the two gct files are the same
- 		if((this.twoDatasets) && (this.files.get(EnrichmentMap.DATASET1).getExpressionFileName() != null) && (this.files.get(EnrichmentMap.DATASET1).getExpressionFileName().equalsIgnoreCase(this.files.get(EnrichmentMap.DATASET2).getExpressionFileName()))){
+ 		/*if((this.twoDatasets) && (this.files.get(EnrichmentMap.DATASET1).getExpressionFileName() != null) && (this.files.get(EnrichmentMap.DATASET1).getExpressionFileName().equalsIgnoreCase(this.files.get(EnrichmentMap.DATASET2).getExpressionFileName()))){
  			this.Data2 = false;
  			this.files.get(EnrichmentMap.DATASET2).setExpressionFileName("");
- 		}
+ 		}*/
  		//if there are no expression files and this is a david analysis there is no way of telling if they are from the same gmt file so use different one
- 		else if(this.method.equalsIgnoreCase(EnrichmentMapParameters.method_DAVID) 
+ 		/*else*/ if(this.method.equalsIgnoreCase(EnrichmentMapParameters.method_DAVID) 
  				&& (this.files.get(EnrichmentMap.DATASET1).getExpressionFileName() != null) && (this.files.get(EnrichmentMap.DATASET2).getExpressionFileName() != null)){
  			this.setTwoDistinctExpressionSets(true);
  		}

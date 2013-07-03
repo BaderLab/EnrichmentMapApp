@@ -65,33 +65,8 @@ import org.baderlab.csplugins.brainlib.DistanceMatrix;
 import org.baderlab.csplugins.brainlib.AvgLinkHierarchicalClustering;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapVisualStyle;
-import org.baderlab.csplugins.enrichmentmap.heatmap.CellHighlightRenderer;
-import org.baderlab.csplugins.enrichmentmap.heatmap.ColorRenderer;
-import org.baderlab.csplugins.enrichmentmap.heatmap.ColumnHeaderVerticalRenderer;
-import org.baderlab.csplugins.enrichmentmap.heatmap.ExpressionTableValue;
-import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapExporter;
-import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters;
-import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapTableActionListener;
-import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapTableModel;
-import org.baderlab.csplugins.enrichmentmap.heatmap.RawExpressionValueRenderer;
-import org.baderlab.csplugins.enrichmentmap.heatmap.RowNumberTable;
-import org.baderlab.csplugins.enrichmentmap.heatmap.TableHeader;
-import org.baderlab.csplugins.enrichmentmap.heatmap.TableSort;
-import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters.Sort;
-import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters.Transformation;
-import org.baderlab.csplugins.enrichmentmap.model.CosineDistance;
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
-import org.baderlab.csplugins.enrichmentmap.model.EuclideanDistance;
-import org.baderlab.csplugins.enrichmentmap.model.GSEAResult;
-import org.baderlab.csplugins.enrichmentmap.model.GeneExpression;
-import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
-import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
-import org.baderlab.csplugins.enrichmentmap.model.GenesetSimilarity;
-import org.baderlab.csplugins.enrichmentmap.model.PearsonCorrelation;
-import org.baderlab.csplugins.enrichmentmap.model.Rank;
-import org.baderlab.csplugins.enrichmentmap.model.Ranking;
-import org.baderlab.csplugins.enrichmentmap.model.SignificantGene;
+import org.baderlab.csplugins.enrichmentmap.heatmap.*;
+import org.baderlab.csplugins.enrichmentmap.model.*;
 import org.baderlab.csplugins.enrichmentmap.parsers.EnrichmentResultFileReaderTask;
 
 /**
@@ -249,7 +224,7 @@ public class HeatMapPanel extends JPanel {
             else
                 setEdgeExpressionSet(params);
 
-            if(params.isData2() && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null){
+            if(params.isData2() && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null && !map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getFilename().equalsIgnoreCase(map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getFilename())){
 
                 GeneExpressionMatrix expression2 = map.getDataset(EnrichmentMap.DATASET2).getExpressionSets();
 
@@ -261,11 +236,12 @@ public class HeatMapPanel extends JPanel {
                     ascending2[k-1] = true;
                 hmParams.setAscending(ascending2);//we don't have to repeat the name and description columns
 
+            }
+            
+            //if there are two expression sets, regardless if they are the same get the phenotypes of the second file.
+            if(params.isData2() && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null){
 
-                //hmParams.setAscending(new boolean[columnNames.length + (columnNames2.length-2) +params.getRanks().size()]);//we don't have to repeat the name and description columns
-                //column2_ascending = new boolean[columnNames2.length-2]; //we don't have to repeat the name and description columns
-
-                phenotypes2 = expression2.getPhenotypes();
+                phenotypes2 = map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getPhenotypes();
 
                 this.Dataset2phenotype1 = params.getFiles().get(EnrichmentMap.DATASET2).getPhenotype1();
                 this.Dataset2phenotype2 = params.getFiles().get(EnrichmentMap.DATASET2).getPhenotype2();
@@ -305,7 +281,7 @@ public class HeatMapPanel extends JPanel {
             Object[][] data;
 
             //create data subset
-            if(params.isData2() && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null){
+            if(params.isData2() && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null && !map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getFilename().equalsIgnoreCase(map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getFilename())){
 
                 // used exp[][] value to store all the expression values needed to create data[][]
                 expValue	= createSortedMergedTableData();
@@ -363,10 +339,12 @@ public class HeatMapPanel extends JPanel {
             int defaultColumnwidth = 10;
             if(this.hmParams.isColoroff()){
             		jTable1.setDefaultRenderer(ExpressionTableValue.class, new RawExpressionValueRenderer());
-            		defaultColumnwidth = 50;
+            		defaultColumnwidth = 10;
             }
             else
             		jTable1.setDefaultRenderer(ExpressionTableValue.class,new ColorRenderer());
+
+            //renderer for leading edge
             jTable1.setDefaultRenderer(String.class, highlightCellRenderer);
             
 
@@ -390,7 +368,7 @@ public class HeatMapPanel extends JPanel {
             ColumnHeaderVerticalRenderer default_renderer = new ColumnHeaderVerticalRenderer();
             default_renderer.setBackground(Color.white);
 
-            if(params.isData2() && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null){
+            if(params.isData2() && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null && !map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getFilename().equalsIgnoreCase(map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getFilename())){
                 //go through the first data set
                 for (int i=0;i<columnNames.length;i++){
                     if (i==0 || columnNames[i].equals("Name"))
@@ -439,6 +417,11 @@ public class HeatMapPanel extends JPanel {
                             if(phenotypes[i-2].equalsIgnoreCase(Dataset1phenotype1))
                                 tcModel.getColumn(i).setHeaderRenderer(pheno1_renderer);
                             else if(phenotypes[i-2].equalsIgnoreCase(Dataset1phenotype2))
+                                tcModel.getColumn(i).setHeaderRenderer(pheno2_renderer);
+                            //Needed these extra lines when only have one expression file with both datasets.
+                            else if(phenotypes[i-2].equalsIgnoreCase(Dataset2phenotype1))
+                                tcModel.getColumn(i).setHeaderRenderer(pheno1_renderer);
+                            else if(phenotypes[i-2].equalsIgnoreCase(Dataset2phenotype2))
                                 tcModel.getColumn(i).setHeaderRenderer(pheno2_renderer);
                             else
                                 tcModel.getColumn(i).setHeaderRenderer(default_renderer);
@@ -576,7 +559,7 @@ public class HeatMapPanel extends JPanel {
         //The issue is that the expression subset is only updated on node selection and that is where we determine if it is
         //a selection qualified for leadingedge annotation but the user can change the sorting option without updating the
         //selection.
-        if (this.displayLeadingEdge &&  map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().haveRanks() && (hmParams.getSort() == Sort.RANK || params.getDefaultSortMethod().equalsIgnoreCase(hmParams.getSort().toString()))){
+        if (this.displayLeadingEdge &&  map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().haveRanks() && (hmParams.getSort() == HeatMapParameters.Sort.RANK|| params.getDefaultSortMethod().equalsIgnoreCase(hmParams.getSort().toString()))){
             topRank = getTopRank();
             if(hmParams.getRankFileIndex().equalsIgnoreCase("Dataset 1 Ranking")|| hmParams.getRankFileIndex().equalsIgnoreCase(Ranking.GSEARanking))
                 isNegative = isNegativeGS(1);
@@ -615,13 +598,14 @@ public class HeatMapPanel extends JPanel {
         //Doctor the sorting to always have the leading edge at the top
         //if it is supposed to be ascending and the gene set isNegative then reverse
         //the sorting
-        //if is supposed to be descending and the gene set is not negative then revese
-        //the sorting
-        if(ascending && isNegative && this.displayLeadingEdge){
+        //Displayleadingedge is specific for calculating the ranking for GSEA when one gene set is selected.
+        //to make sure the doctoring of the sorting only happens with the leading edge stuff make sure the sorting
+        //is by Rank.
+        if(ascending && isNegative && this.displayLeadingEdge && hmParams.getSort() == HeatMapParameters.Sort.RANK){
             hmParams.changeAscendingValue(hmParams.getSortIndex());
             ascending = false;
         }
-        else if(!ascending  && !isNegative && this.displayLeadingEdge){
+        else if(!ascending  && !isNegative && this.displayLeadingEdge && hmParams.getSort() == HeatMapParameters.Sort.RANK){
             hmParams.changeAscendingValue(hmParams.getSortIndex());
             ascending = true;
         }
@@ -1162,7 +1146,8 @@ public class HeatMapPanel extends JPanel {
                     try{
                         BufferedWriter output = new BufferedWriter(new FileWriter(file));
                         String[] currentColumns;
-                        if(params.isData2() &&  map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null){
+                        if(params.isData2() &&  map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null
+                        		&& !map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getFilename().equalsIgnoreCase(map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getFilename())){
                             currentColumns = new String[columnNames.length + columnNames2.length - 2];
 
                             System.arraycopy(columnNames,0,currentColumns,0,columnNames.length);
@@ -1179,7 +1164,7 @@ public class HeatMapPanel extends JPanel {
 
                         //get the sorted expression set
                         Object[][] sortedExpression;
-                        if(params.isData2() &&  map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null)
+                        if(params.isData2() &&  map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null && !map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getFilename().equalsIgnoreCase(map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getFilename()))
                             sortedExpression = createSortedMergedTableData();
                         else
                             sortedExpression = createSortedTableData();
@@ -1531,7 +1516,8 @@ public class HeatMapPanel extends JPanel {
 
                             Double[] x = ((GeneExpression)currentExpressionSet.get(key)).getExpression();
                             Double[] z;
-                            if(params.isData2() && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null && currentExpressionSet2.containsKey(key)){
+                            if(params.isData2() && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null && currentExpressionSet2.containsKey(key)
+                            		&& !map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getFilename().equalsIgnoreCase(map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getFilename())){
                                 Double[] y = ((GeneExpression)currentExpressionSet2.get(key)).getExpression();
                                 z = new Double[x.length + y.length];
                                 System.arraycopy(x,0,z,0,x.length);
@@ -1568,7 +1554,7 @@ public class HeatMapPanel extends JPanel {
 
                             Double[] x = ((GeneExpression)currentExpressionSet.get(key)).getExpression();
                             Double[] z;
-                            if(params.isData2() && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null && currentExpressionSet2.containsKey(key)){
+                            if(params.isData2() && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null && currentExpressionSet2.containsKey(key) && !map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getFilename().equalsIgnoreCase(map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getFilename())){
                                 Double[] y = ((GeneExpression)currentExpressionSet2.get(key)).getExpression();
                                 z = new Double[x.length + y.length];
                                 System.arraycopy(x,0,z,0,x.length);
@@ -1639,7 +1625,7 @@ public class HeatMapPanel extends JPanel {
 
                             Double[] x = ((GeneExpression)currentExpressionSet.get(key)).getExpression();
                             Double[] z;
-                            if(params.isData2() && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null && currentExpressionSet2.containsKey(key)){
+                            if(params.isData2() && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null && currentExpressionSet2.containsKey(key) && !map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getFilename().equalsIgnoreCase(map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getFilename())){
                                 Double[] y = ((GeneExpression)currentExpressionSet2.get(key)).getExpression();
                                 z = new Double[x.length + y.length];
                                 System.arraycopy(x,0,z,0,x.length);
@@ -1855,7 +1841,7 @@ public class HeatMapPanel extends JPanel {
         //a selection qualified for leadingedge annotation but the user can change the sorting option without updating the
         //selection.
         if(displayLeadingEdge && (map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().haveRanks() || map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().haveRanks())  
-        		&& (hmParams.getSort() == Sort.RANK || params.getDefaultSortMethod().equalsIgnoreCase(hmParams.getSort().toString()))){
+        		&& (hmParams.getSort() == HeatMapParameters.Sort.RANK || params.getDefaultSortMethod().equalsIgnoreCase(hmParams.getSort().toString()))){
             //get the rank under (or over) which everything should be higlighted
             if(hmParams.getRankFileIndex().equalsIgnoreCase("Dataset 1 Ranking") || hmParams.getRankFileIndex().equalsIgnoreCase("GSEARanking")){
                 topRank = leadingEdgeRankAtMax1;

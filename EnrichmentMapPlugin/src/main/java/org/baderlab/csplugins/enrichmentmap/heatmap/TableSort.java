@@ -128,7 +128,18 @@ public class TableSort extends Mapper
             return 0;
 	   
         }
-        
+       else if(type == ExpressionTableValue.class){
+    	   Double d1 = ((ExpressionTableValue)o1).getExpression_value();
+    	   Double d2 = ((ExpressionTableValue)o2).getExpression_value();
+
+    	   if (d1 < d2)
+               return -1;
+           else if (d1 > d2)
+               return 1;
+           else
+               return 0;
+    	   
+       }
         else if (type == String.class)
             {
                 String s1 = (String)data.getValueAt(row1, column);
