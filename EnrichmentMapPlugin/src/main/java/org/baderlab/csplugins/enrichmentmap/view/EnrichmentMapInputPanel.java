@@ -2394,6 +2394,9 @@ public class EnrichmentMapInputPanel extends JPanel {
         Dataset1Phenotype2TextField.setValue(DataSetFiles.default_pheno2);
         Dataset2Phenotype1TextField.setValue(DataSetFiles.default_pheno1);
         Dataset2Phenotype2TextField.setValue(DataSetFiles.default_pheno2);
+        
+        Dataset1ClassFileTextField.setText("");
+        Dataset2ClassFileTextField.setText("");
 
         pvalueTextField.setText(Double.toString(params.getPvalue()));
         qvalueTextField.setText(Double.toString(params.getQvalue()));
@@ -2445,6 +2448,8 @@ public class EnrichmentMapInputPanel extends JPanel {
      * @param current_params - enrichment map paramters to use to update the panel
      */
     public void updateContents(EnrichmentMapParameters current_params){
+    	resetPanel();
+    	
         this.params = new EnrichmentMapParameters();
         this.params.copy(current_params);
         
@@ -2475,6 +2480,9 @@ public class EnrichmentMapInputPanel extends JPanel {
         Dataset1Phenotype2TextField.setValue(dataset1files.getPhenotype2());
         Dataset2Phenotype1TextField.setValue(dataset2files.getPhenotype1());
         Dataset2Phenotype2TextField.setValue(dataset2files.getPhenotype2());
+        
+        Dataset1ClassFileTextField.setValue(dataset1files.getClassFile());
+        Dataset2ClassFileTextField.setValue(dataset2files.getClassFile());
 
         pvalueTextField.setText(Double.toString(current_params.getPvalue()));
         qvalueTextField.setText(Double.toString(current_params.getQvalue()));
