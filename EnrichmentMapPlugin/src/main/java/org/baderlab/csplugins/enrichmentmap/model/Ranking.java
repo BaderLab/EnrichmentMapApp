@@ -1,5 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.model;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -83,6 +84,11 @@ public class Ranking {
 		
 		gene2rank.put(gene, rank.getRank());
 		rank2gene.put(rank.getRank(), gene);
+	}
+	
+	public int getMaxRank(){
+		return Collections.max(rank2gene.keySet());
+				
 	}
 	
 	public String toString(){

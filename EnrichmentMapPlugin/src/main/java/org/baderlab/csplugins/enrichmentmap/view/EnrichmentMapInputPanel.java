@@ -710,6 +710,9 @@ public class EnrichmentMapInputPanel extends JPanel {
     private CollapsiblePanel createAdvancedDatasetOptions(int dataset){
            //create a panel for advanced options
             CollapsiblePanel Advanced = new CollapsiblePanel("Advanced");
+            
+            //expand it
+            Advanced.setCollapsed(false);
 
            JPanel advancedpanel = new JPanel();
            advancedpanel.setLayout(new BorderLayout());

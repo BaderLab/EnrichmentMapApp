@@ -1836,6 +1836,9 @@ public class HeatMapPanel extends JPanel {
 
     private int getTopRank(){
         int topRank = 0;
+        
+        
+        
         //just having one node is not suffiecient reason for dispalying the the leading edge make sure we are sorted by rank and that there is a rank file.
         //The issue is that the expression subset is only updated on node selection and that is where we determine if it is
         //a selection qualified for leadingedge annotation but the user can change the sorting option without updating the
@@ -1845,20 +1848,30 @@ public class HeatMapPanel extends JPanel {
             //get the rank under (or over) which everything should be higlighted
             if(hmParams.getRankFileIndex().equalsIgnoreCase("Dataset 1 Ranking") || hmParams.getRankFileIndex().equalsIgnoreCase("GSEARanking")){
                 topRank = leadingEdgeRankAtMax1;
-                if(leadingEdgeScoreAtMax1 > 0)
-                    //because of the GSEA ranks are off slightly buffer the cutoff depending on whether the geneset
-                    //is up or down regulated in order to get all genes in leading edge
-                    topRank = topRank + 3;
+                //the rank at max is counted starting as if the bottom of the list were at the top
+                //if this is a negative gene set then subtract it from the total number of ranks
+                //given out.  Even though the analysis might only use half the genes the rank at max
+                //is based on the entire expression file being ranked.
+                if(leadingEdgeScoreAtMax1 < 0){
+                	if(hmParams.getRankFileIndex().equalsIgnoreCase("Dataset 1 Ranking"))
+                		topRank = map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getRanksByName("Dataset 1 Ranking").getMaxRank() - topRank;
+                	else if(hmParams.getRankFileIndex().equalsIgnoreCase("GSEARanking"))
+                		topRank = map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getRanksByName("GSEARanking").getMaxRank() - topRank;
+                }
             }
             else if(hmParams.getRankFileIndex().equalsIgnoreCase("Dataset 2 Ranking") || hmParams.getRankFileIndex().equalsIgnoreCase("GSEARanking")){
                 topRank = leadingEdgeRankAtMax2;
-                if(leadingEdgeScoreAtMax2 > 0)
-                    //because of the GSEA ranks are off slightly buffer the cutoff depending on whether the geneset
-                    //is up or down regulated in order to get all genes in leading edge
-                    topRank = topRank + 3;
+                if(leadingEdgeScoreAtMax2 < 0){
+                	if(hmParams.getRankFileIndex().equalsIgnoreCase("Dataset 2 Ranking"))
+                		topRank = map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getRanksByName("Dataset 2 Ranking").getMaxRank() - topRank;
+                	else if(hmParams.getRankFileIndex().equalsIgnoreCase("GSEARanking"))
+                		topRank = map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getRanksByName("GSEARanking").getMaxRank() - topRank;
+                }
             }
         }
-        return topRank;
+      //because of the GSEA ranks are off slightly buffer the cutoff depending on whether the geneset
+        //is up or down regulated in order to get all genes in leading edge
+        return topRank +3;
     }
 
     private boolean isNegativeGS(int dataset){
