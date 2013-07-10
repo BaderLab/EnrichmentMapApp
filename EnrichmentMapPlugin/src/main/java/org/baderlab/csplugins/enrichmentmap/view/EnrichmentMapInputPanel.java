@@ -998,7 +998,11 @@ public class EnrichmentMapInputPanel extends JPanel {
           JPanel coeffecientCutOffPanel = new JPanel();
           coeffecientCutOffPanel.setLayout(new BorderLayout());
           coeffecientCutOffPanel.setToolTipText(coeffecientCutOffTip);
-
+          
+          //add a label to the similarity coeffecient section
+          JLabel similarityCutoff = new JLabel("Similarity Cutoff:");
+          coeffecientCutOffPanel.add(similarityCutoff,BorderLayout.NORTH);
+          
           coeffecientCutOffPanel.add(index_buttons,BorderLayout.WEST);
           coeffecientCutOffPanel.add(coeffecientCutOffLabel, BorderLayout.CENTER);
           coeffecientCutOffPanel.add(coeffecientTextField, BorderLayout.EAST);
@@ -2461,18 +2465,18 @@ public class EnrichmentMapInputPanel extends JPanel {
   	  	if(params.getFiles().containsKey(EnrichmentMap.DATASET2))
   	  		this.dataset2files = params.getFiles().get(EnrichmentMap.DATASET2);
 
-        GMTFileNameTextField.setText(dataset1files.getGMTFileName());
-        GCTFileName1TextField.setText(dataset1files.getExpressionFileName());
-        Dataset1FileNameTextField.setText(dataset1files.getEnrichmentFileName1());
-        Dataset1FileName2TextField.setText(dataset1files.getEnrichmentFileName2());
-        Dataset1RankFileTextField.setText(dataset1files.getRankedFile());
+  	    GMTFileNameTextField.setText((dataset1files.getGMTFileName() == null)? "" :dataset1files.getGMTFileName());
+        GCTFileName1TextField.setText((dataset1files.getExpressionFileName() == null)? "":dataset1files.getExpressionFileName());
+        Dataset1FileNameTextField.setText((dataset1files.getEnrichmentFileName1()==null)?"":dataset1files.getEnrichmentFileName1());
+        Dataset1FileName2TextField.setText((dataset1files.getEnrichmentFileName2()==null)?"":dataset1files.getEnrichmentFileName2());
+        Dataset1RankFileTextField.setText((dataset1files.getRankedFile()==null)?"":dataset1files.getRankedFile());
 
         
-        	GCTFileName2TextField.setText(dataset2files.getExpressionFileName());
-        	Dataset2FileNameTextField.setText(dataset2files.getEnrichmentFileName1());
-        	Dataset2FileName2TextField.setText(dataset2files.getEnrichmentFileName2());
-        	Dataset2RankFileTextField.setText(dataset2files.getRankedFile());
-        
+        GCTFileName2TextField.setText((dataset2files.getExpressionFileName() == null)? "":dataset2files.getExpressionFileName());
+        Dataset2FileNameTextField.setText((dataset2files.getEnrichmentFileName1()==null)?"":dataset2files.getEnrichmentFileName1());
+        Dataset2FileName2TextField.setText((dataset2files.getEnrichmentFileName2()==null)?"":dataset2files.getEnrichmentFileName2());
+        Dataset2RankFileTextField.setText((dataset2files.getRankedFile()==null)?"":dataset2files.getRankedFile());
+
 
         Dataset1Phenotype1TextField.setText(dataset1files.getPhenotype1());
         Dataset1Phenotype2TextField.setText(dataset1files.getPhenotype2());

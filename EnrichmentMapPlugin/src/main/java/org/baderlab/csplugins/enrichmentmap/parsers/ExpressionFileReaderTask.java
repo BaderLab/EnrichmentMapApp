@@ -134,6 +134,13 @@ public class ExpressionFileReaderTask implements Task {
     			String[] lines = fullText.split("\n");
     			int currentProgress = 0;
     			maxValue = lines.length;
+    			
+    			//if the file is empty create dummy expression
+    			if(lines.length <= 1){
+    				createDummyExpressionFile();
+    				lines = new String[0];
+    			}
+    			
     			GeneExpressionMatrix expressionMatrix = dataset.getExpressionSets();
     			//GeneExpressionMatrix expressionMatrix = new GeneExpressionMatrix(lines[0].split("\t"));
     			//HashMap<Integer,GeneExpression> expression = new HashMap<Integer, GeneExpression>();
@@ -200,6 +207,15 @@ public class ExpressionFileReaderTask implements Task {
     					expressionMatrix.setColumnNames(tokens);
     					expressionMatrix.setNumConditions(tokens.length);
     					expressionMatrix.setExpressionMatrix(expression);
+    					
+    					//check to see if one of the columns is dummy expression
+    					//if it is then don't load this file, re-create it as if 
+    					//it is from a stored session the format will be wrong
+    					if(tokens[tokens.length-1].equalsIgnoreCase("Dummy Expression")){
+    						createDummyExpressionFile();
+    						break;
+    					}
+    					
     					continue;
 
     				}

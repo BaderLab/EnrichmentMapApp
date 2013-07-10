@@ -338,50 +338,26 @@ public class EnrichmentMapParameters {
     		//create a new dataset Files
     		DataSetFiles files1 = new DataSetFiles();
     		
-        files1.setGMTFileName(props.get("GMTFileName"));
+        files1.setGMTFileName(checkForNull(props,"GMTFileName"));
 
         if(props.get("expressionFileName1")!= null)
-        		files1.setExpressionFileName(props.get("expressionFileName1"));
+        		files1.setExpressionFileName(checkForNull(props,"expressionFileName1"));
         //account for legacy issue with rename of parameter
         else
-        		files1.setExpressionFileName(props.get("GCTFileName1"));
+        		files1.setExpressionFileName(checkForNull(props,"GCTFileName1"));
 
-        files1.setEnrichmentFileName1(props.get("enerichmentDataset1FileName1"));
-        files1.setEnrichmentFileName2(props.get("enrichmentDataset1FileName2"));
-        files1.setGseaHtmlReportFile(props.get("gseaHtmlReportFileDataset1"));
+        files1.setEnrichmentFileName1(checkForNull(props,"enerichmentDataset1FileName1"));
+        files1.setEnrichmentFileName2(checkForNull(props,"enrichmentDataset1FileName2"));
+        files1.setGseaHtmlReportFile(checkForNull(props,"gseaHtmlReportFileDataset1"));
         
-        files1.setPhenotype1(props.get("dataset1Phenotype1"));
-        files1.setPhenotype2(props.get("dataset1Phenotype2"));
+        files1.setPhenotype1(checkForNull(props,"dataset1Phenotype1"));
+        files1.setPhenotype2(checkForNull(props,"dataset1Phenotype2"));
         
         //rank files 1
-        if(props.get("rankFile1")!= null){
-            if((props.get("rankFile1")).equalsIgnoreCase("null") )
-            		files1.setRankedFile(null);
-            else
-            		files1.setRankedFile(props.get("rankFile1"));
-        }
-
-        if(props.get("classFile1") != null){
-            if((props.get("classFile1")).equalsIgnoreCase("null") )
-            		files1.setClassFile(null);
-            else
-            		files1.setClassFile(props.get("classFile1"));
-        }
-        //Get the class one array from the prop file
-/*        if(props.get("class1")!= null){
-            if((props.get("class1")).equalsIgnoreCase("null") )
-                this.temp_class1 = null;
-            else{
-                String classes = props.get("class1");
-                String [] set = classes.split(",");
-
-                this.temp_class1 = new String[set.length];
-
-                for (int i = 0; i < set.length; i++) {
-                    this.temp_class1[i] = set[i];
-                }
-            }
-        }*/
+        files1.setRankedFile(checkForNull(props,"rankFile1"));
+        
+        files1.setClassFile(checkForNull(props,"classFile1"));
+               
         //add the first set of files
         this.files.put(EnrichmentMap.DATASET1, files1);
         
@@ -390,51 +366,41 @@ public class EnrichmentMapParameters {
         	
             if(Data2){
                 if(props.get("expressionFileName2")!= null)
-                		files2.setExpressionFileName(props.get("expressionFileName2"));
+                		files2.setExpressionFileName(checkForNull(props,"expressionFileName2"));
                 //account for legacy issue with rename of parameter
                 else
-                		files2.setExpressionFileName(props.get("GCTFileName2"));
+                		files2.setExpressionFileName(checkForNull(props,"GCTFileName2"));
             }
-            	files2.setEnrichmentFileName1(props.get("enerichmentDataset2FileName1"));
-            	files2.setEnrichmentFileName2(props.get("enrichmentDataset2FileName2"));
+            	files2.setEnrichmentFileName1(checkForNull(props,"enerichmentDataset2FileName1"));
+            	files2.setEnrichmentFileName2(checkForNull(props,"enrichmentDataset2FileName2"));
             //rankfile 2
-            if(props.get("rankFile2") != null){
-                if((props.get("rankFile2")).equalsIgnoreCase("null") )
-                		files2.setRankedFile(null);
-                 else
-                	 	files2.setRankedFile(props.get("rankFile2"));
-            }
+            	files2.setRankedFile(checkForNull(props,"rankFile2"));
             
-            files2.setGseaHtmlReportFile(props.get("gseaHtmlReportFileDataset2"));
-            if(props.get("classFile2")!= null){
-                if((props.get("classFile2")).equalsIgnoreCase("null"))
-                		files2.setClassFile(null);
-                else
-                		files2.setClassFile(props.get("classFile2"));
-            }
             
-            files2.setPhenotype1(props.get("dataset2Phenotype1"));
-            files2.setPhenotype2(props.get("dataset2Phenotype2"));
-            //Get the class two array from the prop file
-/*            if(props.get("class2")!= null){
-                if((props.get("class2")).equalsIgnoreCase("null") )
-                	this.datasetFiles.get(EnrichmentMap.DATASET2).setTemp_class1(null);
-                else{
-                    String classes = props.get("class2");
-                    String [] set = classes.split(",");
-
-                    this.temp_class2 = new String[set.length];
-
-                    for (int i = 0; i < set.length; i++) {
-                        this.temp_class2[i] = set[i];
-                    }
-                }
-            }*/
+            files2.setGseaHtmlReportFile(checkForNull(props,"gseaHtmlReportFileDataset2"));
+            files2.setClassFile(checkForNull(props,"classFile2"));
+            
+            
+            files2.setPhenotype1(checkForNull(props,"dataset2Phenotype1"));
+            files2.setPhenotype2(checkForNull(props,"dataset2Phenotype2"));
+            
             //Add Dataset 2 files
             if(!this.files.containsKey(EnrichmentMap.DATASET2))
     				this.files.put(EnrichmentMap.DATASET2, files2);
         }
         
+    }
+    
+    private String checkForNull(HashMap<String,String> props, String key){
+    	if(props.get(key)!= null){
+            if((props.get(key)).equalsIgnoreCase("null"))
+            		return null;
+            else
+            		return props.get(key);
+            
+        }
+    	else
+    		return null;
     }
     
     /*
@@ -455,19 +421,19 @@ public class EnrichmentMapParameters {
     				
     				DataSetFiles new_dsf = new DataSetFiles();
     				if(props.containsKey(current_ds + "%" + DataSetFiles.class.getSimpleName() + "%GMTFileName"))
-    					new_dsf.setGMTFileName(props.get(current_ds + "%" + DataSetFiles.class.getSimpleName() + "%GMTFileName"));
+    					new_dsf.setGMTFileName(checkForNull(props,current_ds + "%" + DataSetFiles.class.getSimpleName() + "%GMTFileName"));
     				if(props.containsKey(current_ds + "%" + DataSetFiles.class.getSimpleName() + "%expressionFileName"))
-    					new_dsf.setExpressionFileName(props.get(current_ds + "%" + DataSetFiles.class.getSimpleName() + "%expressionFileName"));
+    					new_dsf.setExpressionFileName(checkForNull(props,current_ds + "%" + DataSetFiles.class.getSimpleName() + "%expressionFileName"));
     				if(props.containsKey(current_ds + "%" + DataSetFiles.class.getSimpleName() + "%enrichmentFileName1"))
-    					new_dsf.setEnrichmentFileName1(props.get(current_ds + "%" + DataSetFiles.class.getSimpleName() + "%enrichmentFileName1"));
+    					new_dsf.setEnrichmentFileName1(checkForNull(props,current_ds + "%" + DataSetFiles.class.getSimpleName() + "%enrichmentFileName1"));
     				if(props.containsKey(current_ds + "%" + DataSetFiles.class.getSimpleName() + "%enrichmentFileName2"))
-    					new_dsf.setEnrichmentFileName2(props.get(current_ds + "%" + DataSetFiles.class.getSimpleName() + "%enrichmentFileName2"));
+    					new_dsf.setEnrichmentFileName2(checkForNull(props,current_ds + "%" + DataSetFiles.class.getSimpleName() + "%enrichmentFileName2"));
     				if(props.containsKey(current_ds + "%" + DataSetFiles.class.getSimpleName() + "%gseaHtmlReportFileDataset"))
-    					new_dsf.setGseaHtmlReportFile(props.get(current_ds + "%" + DataSetFiles.class.getSimpleName() + "%gseaHtmlReportFileDataset"));
+    					new_dsf.setGseaHtmlReportFile(checkForNull(props,current_ds + "%" + DataSetFiles.class.getSimpleName() + "%gseaHtmlReportFileDataset"));
     				if(props.containsKey(current_ds + "%" + DataSetFiles.class.getSimpleName() + "%classFile"))
-    					new_dsf.setClassFile(props.get(current_ds+ "%" + DataSetFiles.class.getSimpleName() + "%classFile"));
+    					new_dsf.setClassFile(checkForNull(props,current_ds+ "%" + DataSetFiles.class.getSimpleName() + "%classFile"));
     				if(props.containsKey(current_ds + "%" + DataSetFiles.class.getSimpleName() + "%RankedFile"))
-    					new_dsf.setRankedFile(props.get(current_ds + "%" + DataSetFiles.class.getSimpleName() + "%RankedFile"));
+    					new_dsf.setRankedFile(checkForNull(props,current_ds + "%" + DataSetFiles.class.getSimpleName() + "%RankedFile"));
     				
     				this.files.put(current_ds, new_dsf);
     				
@@ -795,7 +761,7 @@ public class EnrichmentMapParameters {
  			this.files.get(EnrichmentMap.DATASET2).setExpressionFileName("");
  		}*/
  		//if there are no expression files and this is a david analysis there is no way of telling if they are from the same gmt file so use different one
- 		/*else*/ if(this.method.equalsIgnoreCase(EnrichmentMapParameters.method_DAVID) 
+ 		/*else*/ if((this.twoDatasets) && this.method.equalsIgnoreCase(EnrichmentMapParameters.method_DAVID) 
  				&& (this.files.get(EnrichmentMap.DATASET1).getExpressionFileName() != null) && (this.files.get(EnrichmentMap.DATASET2).getExpressionFileName() != null)){
  			this.setTwoDistinctExpressionSets(true);
  		}

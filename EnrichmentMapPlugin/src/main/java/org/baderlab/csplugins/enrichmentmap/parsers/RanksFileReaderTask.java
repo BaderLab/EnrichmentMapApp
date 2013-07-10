@@ -162,7 +162,10 @@ public class RanksFileReaderTask implements Task {
      * parse the rank file
      */
     public void parse(){
-
+    	
+    	if(RankFileName == null || RankFileName.equalsIgnoreCase(""))
+    		return;
+    	
         TextFileReader reader = new TextFileReader(RankFileName);
         reader.read();
         String fullText = reader.getText();

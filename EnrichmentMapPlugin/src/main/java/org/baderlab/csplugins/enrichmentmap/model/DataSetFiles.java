@@ -4,13 +4,13 @@ public class DataSetFiles {
 
 	//Input File names for any DataSet
     //GMT - gene set definition file
-    private String GMTFileName;
+    private String GMTFileName = null;
     //Expression files
-    private String expressionFileName;
+    private String expressionFileName=null;
 
     //Enrichment results files - data set 1
-    private String enrichmentFileName1;
-    private String enrichmentFileName2;
+    private String enrichmentFileName1=null;
+    private String enrichmentFileName2=null;
 
     //Dataset Rank files
     private String RankedFile = null;
@@ -19,7 +19,7 @@ public class DataSetFiles {
     //class files are a specific type of file used in an GSEA analysis indicating which class
     //each column of the expression file belongs to.  It is used in the application to
     //colour the heading on the columns accroding to class or phenotype they belong to.
-    private String classFile;
+    private String classFile = null;
 
     //class file designations that were loaded in from a session file.
     //need a temporary place for these class definition as
