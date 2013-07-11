@@ -248,9 +248,9 @@ public class BuildDiseaseSignatureTask implements Task {
                             EnrichmentMapVisualStyle.GS_TYPE_SIGNATURE)) {
                         // skip if the Geneset is a Signature Node from a previous analysis
                     }
-                    else if(geneset_similarities.containsKey(similarity_key1) || geneset_similarities.containsKey(similarity_key2)){
+                   /* else if(geneset_similarities.containsKey(similarity_key1) || geneset_similarities.containsKey(similarity_key2)){
                         //skip this geneset comparison.  It has already been done.
-                    }
+                    }*/
                     else{
                         //get the Enrichment geneset
                         GeneSet enrGeneset = EnrichmentGenesets.get(geneset_name);

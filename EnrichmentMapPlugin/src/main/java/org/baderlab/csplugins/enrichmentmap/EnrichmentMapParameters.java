@@ -1370,7 +1370,7 @@ public class EnrichmentMapParameters {
 		String gmt = "";
 		for(Iterator<?> i = this.files.keySet().iterator();i.hasNext();){
 			String current = (String)i.next();
-			if(gmt.equalsIgnoreCase(""))
+			if(gmt==null || gmt.equalsIgnoreCase(""))
 				gmt = this.files.get(current).getGMTFileName();
 			else if(!gmt.equalsIgnoreCase(this.files.get(current).getGMTFileName()))
 				gmt = null;

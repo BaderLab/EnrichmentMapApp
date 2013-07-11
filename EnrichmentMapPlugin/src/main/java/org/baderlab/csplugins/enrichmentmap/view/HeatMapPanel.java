@@ -464,7 +464,8 @@ public class HeatMapPanel extends JPanel {
         String[] RowGene=this.getRowGeneName();
 
         int kValue=currentExpressionSet.size();
-        data = new Object[currentExpressionSet.size()][numConditions];
+               
+        	data = new Object[currentExpressionSet.size()][numConditions];
         for(int k=0;k<kValue;k++){
 
 
@@ -472,7 +473,11 @@ public class HeatMapPanel extends JPanel {
             data[k][1] = expValue[k][1];            
 
             for(int j=0;j<HRow[k];j++){
-            			data[k][j+2] = new ExpressionTableValue((Double)expValue[k][j+2], ColorGradientMapper.getColorGradient(RowCRT[k],RowCRR[k],RowGene[k],(Double)expValue[k][j+2]));
+            			if(numConditions == 2)
+            				data[k][j+1] = new ExpressionTableValue((Double)expValue[k][j+1], ColorGradientMapper.getColorGradient(RowCRT[k],RowCRR[k],RowGene[k],(Double)expValue[k][j+1]));
+            			else
+            				data[k][j+2] = new ExpressionTableValue((Double)expValue[k][j+2], ColorGradientMapper.getColorGradient(RowCRT[k],RowCRR[k],RowGene[k],(Double)expValue[k][j+2]));
+                        
                 }
 
         }
@@ -536,8 +541,8 @@ public class HeatMapPanel extends JPanel {
     }
 
     private Object[][] createSortedTableData(){
-
-         expValue 		= new Object[currentExpressionSet.size()][numConditions];
+    		    		
+    		expValue 		= new Object[currentExpressionSet.size()][numConditions];
          rowLength		= new int[currentExpressionSet.size()];
          rowTheme		= new ColorGradientTheme[currentExpressionSet.size()];
          rowGeneName	= new String[currentExpressionSet.size()];
@@ -675,7 +680,10 @@ public class HeatMapPanel extends JPanel {
                 rowGeneName[k]=row.getName();
 
                 for(int j = 0; j < row.getExpression().length;j++){
-                    expValue[k][j+2]=expression_values[j];
+                		if(numConditions == 2)
+                			expValue[k][j+1]=expression_values[j];
+                		else
+                			expValue[k][j+1]=expression_values[j];
                 }
                 k++;
              }
@@ -1847,7 +1855,7 @@ public class HeatMapPanel extends JPanel {
         		&& (hmParams.getSort() == HeatMapParameters.Sort.RANK || params.getDefaultSortMethod().equalsIgnoreCase(hmParams.getSort().toString()))){
             //get the rank under (or over) which everything should be higlighted
             if(hmParams.getRankFileIndex().equalsIgnoreCase("Dataset 1 Ranking") || hmParams.getRankFileIndex().equalsIgnoreCase("GSEARanking")){
-                topRank = leadingEdgeRankAtMax1;
+                topRank = leadingEdgeRankAtMax1+3 ;
                 //the rank at max is counted starting as if the bottom of the list were at the top
                 //if this is a negative gene set then subtract it from the total number of ranks
                 //given out.  Even though the analysis might only use half the genes the rank at max
@@ -1860,7 +1868,7 @@ public class HeatMapPanel extends JPanel {
                 }
             }
             else if(hmParams.getRankFileIndex().equalsIgnoreCase("Dataset 2 Ranking") || hmParams.getRankFileIndex().equalsIgnoreCase("GSEARanking")){
-                topRank = leadingEdgeRankAtMax2;
+                topRank = leadingEdgeRankAtMax2 +3;
                 if(leadingEdgeScoreAtMax2 < 0){
                 	if(hmParams.getRankFileIndex().equalsIgnoreCase("Dataset 2 Ranking"))
                 		topRank = map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getRanksByName("Dataset 2 Ranking").getMaxRank() - topRank;
@@ -1871,7 +1879,7 @@ public class HeatMapPanel extends JPanel {
         }
       //because of the GSEA ranks are off slightly buffer the cutoff depending on whether the geneset
         //is up or down regulated in order to get all genes in leading edge
-        return topRank +3;
+        return topRank;
     }
 
     private boolean isNegativeGS(int dataset){

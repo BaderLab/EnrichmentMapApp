@@ -599,7 +599,9 @@ public class EnrichmentMapUtils {
                 }
 
             }
-       
+            
+            
+            
                /* else if(params.getDataset1Rankings() != null){
                 		params.setRank2geneDataset1(params.getRank2geneDataset(params.getDataset1Rankings()));
              */
@@ -613,7 +615,17 @@ public class EnrichmentMapUtils {
                 String currentNetwork = (String)j.next();
                 CyNetworkView view = Cytoscape.getNetworkView(currentNetwork);
                 EnrichmentMap map = (EnrichmentMap)networks.get(currentNetwork);
-
+                
+                //check to see if the Dataset2 has genesets.  If the session was created prior to 
+                //refactor then there will only be one geneset file associated with the two datasets
+                if(map.getDatasets().containsKey(EnrichmentMap.DATASET2)){
+                		if(map.getDataset(EnrichmentMap.DATASET2).getSetofgenesets().getGenesets() == null || 
+                				map.getDataset(EnrichmentMap.DATASET2).getSetofgenesets().getGenesets().isEmpty()){                			
+                    		map.getDatasets().get(EnrichmentMap.DATASET2).setSetofgenesets(map.getDataset(EnrichmentMap.DATASET1).getSetofgenesets());
+                		}
+                			
+                }
+                
                 //initialize the Genesets (makes sure the leading edge is set correctly)
                 //Initialize the set of genesets and GSEA results that we want to compute over
                 InitializeGenesetsOfInterestTask genesets_init = new InitializeGenesetsOfInterestTask(map);
