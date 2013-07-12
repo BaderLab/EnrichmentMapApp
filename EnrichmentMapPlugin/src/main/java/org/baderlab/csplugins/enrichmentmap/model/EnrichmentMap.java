@@ -394,7 +394,11 @@ public class EnrichmentMap {
     		HashSet<String> allRankNames = new HashSet<String>();
     		//go through each Dataset
     		for(Iterator<String> k = datasets.keySet().iterator(); k.hasNext();){
-    			allRankNames.addAll((datasets.get(k.next())).getExpressionSets().getAllRanksNames());
+    			String current_ds = k.next();
+    			//there could be duplicate ranking names for two different datasets. Add the dataset to the ranks name
+    			HashSet<String> all_names = (datasets.get(current_ds)).getExpressionSets().getAllRanksNames();
+    			for(Iterator<String> l = all_names.iterator();l.hasNext();)
+    				allRankNames.add(l.next() + "-" + current_ds);
     			
     		}
     		return allRankNames;
@@ -411,9 +415,25 @@ public class EnrichmentMap {
     }
     
     public Ranking getRanksByName(String ranks_name){
+    	
+    		//break the ranks file up by "-"
+    		//check to see if the rank file is dataset specific
+    		//needed for encoding the same ranking file name from two different dataset in the interface
+    		String ds="";
+    		String rank="";
+    		if(ranks_name.split("-").length ==2){
+    			ds = ranks_name.split("-")[1];
+    			rank = ranks_name.split("-")[0];
+    		}
+    	
     		for(Iterator<String> k = datasets.keySet().iterator(); k.hasNext();){
     			String current_dataset = k.next();
-			if((datasets.get(current_dataset)).getExpressionSets().getAllRanksNames().contains(ranks_name)){
+    			if(!ds.equalsIgnoreCase("")&&!rank.equalsIgnoreCase("")){
+    				if((datasets.get(current_dataset)).getExpressionSets().getAllRanksNames().contains(rank)){
+    					return datasets.get(current_dataset).getExpressionSets().getRanksByName(rank);
+    				}
+    			}
+    			else if((datasets.get(current_dataset)).getExpressionSets().getAllRanksNames().contains(ranks_name)){
 				return datasets.get(current_dataset).getExpressionSets().getRanksByName(ranks_name);
 			}
     		}

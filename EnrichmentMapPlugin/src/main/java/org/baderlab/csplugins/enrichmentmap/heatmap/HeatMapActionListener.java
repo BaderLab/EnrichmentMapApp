@@ -62,6 +62,7 @@ import org.baderlab.csplugins.enrichmentmap.view.HeatMapPanel;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.io.File;
 
@@ -196,7 +197,7 @@ public class HeatMapActionListener implements ActionListener {
           }
        }
        else{
-           HashMap<String, Ranking> ranks = map.getAllRanks();
+           HashSet<String> ranks = map.getAllRankNames();
 
            //iterate through all the rank files.
            //the order should always be the same get a counter to find which index to
@@ -210,7 +211,7 @@ public class HeatMapActionListener implements ActionListener {
            else
             columns = map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getColumnNames().length;
 
-           for(Iterator j = ranks.keySet().iterator(); j.hasNext(); ){
+           for(Iterator j = ranks.iterator(); j.hasNext(); ){
                 String ranks_name = j.next().toString();
                 if(ranks_name.equalsIgnoreCase(select)){
                     hmParams.setSort(HeatMapParameters.Sort.RANK);

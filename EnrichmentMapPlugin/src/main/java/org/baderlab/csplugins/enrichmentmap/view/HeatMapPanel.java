@@ -566,9 +566,9 @@ public class HeatMapPanel extends JPanel {
         //selection.
         if (this.displayLeadingEdge &&  map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().haveRanks() && (hmParams.getSort() == HeatMapParameters.Sort.RANK|| params.getDefaultSortMethod().equalsIgnoreCase(hmParams.getSort().toString()))){
             topRank = getTopRank();
-            if(hmParams.getRankFileIndex().equalsIgnoreCase("Dataset 1 Ranking")|| hmParams.getRankFileIndex().equalsIgnoreCase(Ranking.GSEARanking))
+            if(hmParams.getRankFileIndex().equalsIgnoreCase("Dataset 1 Ranking")|| hmParams.getRankFileIndex().equalsIgnoreCase(Ranking.GSEARanking + "-" + EnrichmentMap.DATASET1))
                 isNegative = isNegativeGS(1);
-            else if(hmParams.getRankFileIndex().equalsIgnoreCase("Dataset 2 Ranking")|| hmParams.getRankFileIndex().equalsIgnoreCase(Ranking.GSEARanking))
+            else if(hmParams.getRankFileIndex().equalsIgnoreCase("Dataset 2 Ranking")|| hmParams.getRankFileIndex().equalsIgnoreCase(Ranking.GSEARanking+ "-" + EnrichmentMap.DATASET2))
                 isNegative = isNegativeGS(2);
         }
         
@@ -683,7 +683,7 @@ public class HeatMapPanel extends JPanel {
                 		if(numConditions == 2)
                 			expValue[k][j+1]=expression_values[j];
                 		else
-                			expValue[k][j+1]=expression_values[j];
+                			expValue[k][j+2]=expression_values[j];
                 }
                 k++;
              }
@@ -761,9 +761,9 @@ public class HeatMapPanel extends JPanel {
         //genes in the leading edge
         int topRank = getTopRank();
         boolean isNegative = false;
-        if(hmParams.getRankFileIndex().equalsIgnoreCase("Dataset 1 Ranking") || hmParams.getRankFileIndex().equalsIgnoreCase(Ranking.GSEARanking))
+        if(hmParams.getRankFileIndex().equalsIgnoreCase("Dataset 1 Ranking") || hmParams.getRankFileIndex().equalsIgnoreCase(Ranking.GSEARanking+ "-" + EnrichmentMap.DATASET1))
             isNegative = isNegativeGS(1);
-        else if(hmParams.getRankFileIndex().equalsIgnoreCase("Dataset 2 Ranking") || hmParams.getRankFileIndex().equalsIgnoreCase(Ranking.GSEARanking))
+        else if(hmParams.getRankFileIndex().equalsIgnoreCase("Dataset 2 Ranking") || hmParams.getRankFileIndex().equalsIgnoreCase(Ranking.GSEARanking+ "-" + EnrichmentMap.DATASET2))
             isNegative = isNegativeGS(2);
 
 
@@ -1854,7 +1854,7 @@ public class HeatMapPanel extends JPanel {
         if(displayLeadingEdge && (map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().haveRanks() || map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().haveRanks())  
         		&& (hmParams.getSort() == HeatMapParameters.Sort.RANK || params.getDefaultSortMethod().equalsIgnoreCase(hmParams.getSort().toString()))){
             //get the rank under (or over) which everything should be higlighted
-            if(hmParams.getRankFileIndex().equalsIgnoreCase("Dataset 1 Ranking") || hmParams.getRankFileIndex().equalsIgnoreCase("GSEARanking")){
+            if(hmParams.getRankFileIndex().equalsIgnoreCase("Dataset 1 Ranking") || hmParams.getRankFileIndex().equalsIgnoreCase(Ranking.GSEARanking+ "-" + EnrichmentMap.DATASET1)){
                 topRank = leadingEdgeRankAtMax1+3 ;
                 //the rank at max is counted starting as if the bottom of the list were at the top
                 //if this is a negative gene set then subtract it from the total number of ranks
@@ -1863,17 +1863,17 @@ public class HeatMapPanel extends JPanel {
                 if(leadingEdgeScoreAtMax1 < 0){
                 	if(hmParams.getRankFileIndex().equalsIgnoreCase("Dataset 1 Ranking"))
                 		topRank = map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getRanksByName("Dataset 1 Ranking").getMaxRank() - topRank;
-                	else if(hmParams.getRankFileIndex().equalsIgnoreCase("GSEARanking"))
-                		topRank = map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getRanksByName("GSEARanking").getMaxRank() - topRank;
+                	else if(hmParams.getRankFileIndex().equalsIgnoreCase(Ranking.GSEARanking+ "-" + EnrichmentMap.DATASET1))
+                		topRank = map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getRanksByName(Ranking.GSEARanking).getMaxRank() - topRank;
                 }
             }
-            else if(hmParams.getRankFileIndex().equalsIgnoreCase("Dataset 2 Ranking") || hmParams.getRankFileIndex().equalsIgnoreCase("GSEARanking")){
+            else if(hmParams.getRankFileIndex().equalsIgnoreCase("Dataset 2 Ranking") || hmParams.getRankFileIndex().equalsIgnoreCase(Ranking.GSEARanking+ "-" + EnrichmentMap.DATASET2)){
                 topRank = leadingEdgeRankAtMax2 +3;
                 if(leadingEdgeScoreAtMax2 < 0){
                 	if(hmParams.getRankFileIndex().equalsIgnoreCase("Dataset 2 Ranking"))
                 		topRank = map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getRanksByName("Dataset 2 Ranking").getMaxRank() - topRank;
-                	else if(hmParams.getRankFileIndex().equalsIgnoreCase("GSEARanking"))
-                		topRank = map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getRanksByName("GSEARanking").getMaxRank() - topRank;
+                	else if(hmParams.getRankFileIndex().equalsIgnoreCase(Ranking.GSEARanking+ "-" + EnrichmentMap.DATASET2))
+                		topRank = map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getRanksByName(Ranking.GSEARanking).getMaxRank() - topRank;
                 }
             }
         }
