@@ -202,9 +202,9 @@ public class HeatMapPanel extends JPanel {
             hmParams = params.getHmParams();
             boolean[] ascending;
             if(expression.getRanks() != null){
-            		ascending = new boolean[columnNames.length + expression.getRanks().size()];
+            		ascending = new boolean[columnNames.length + map.getAllRankNames().size()];
             		//set the rank files to ascending
-            		for(int k = ascending.length ;  k > (ascending.length - expression.getRanks().size()); k--)
+            		for(int k = ascending.length ;  k > (ascending.length - map.getAllRankNames().size()); k--)
             			ascending[k-1] = true;
             }
             else
@@ -230,9 +230,12 @@ public class HeatMapPanel extends JPanel {
 
                 numConditions2 = expression2.getNumConditions();
                 columnNames2 = expression2.getColumnNames();
-
-                boolean[] ascending2 = new boolean[columnNames.length + (columnNames2.length-2) +expression2.getRanks().size()];
-                for(int k = ascending2.length ;  k > ascending2.length - expression2.getRanks().size(); k--)
+                
+                //additional ranks
+                int additional_ranks = (map.getAllRankNames() != null) ? map.getAllRankNames().size() : 0;
+                
+                boolean[] ascending2 = new boolean[columnNames.length + (columnNames2.length-2) + additional_ranks];
+                for(int k = ascending2.length ;  k > ascending2.length - map.getAllRankNames().size(); k--)
                     ascending2[k-1] = true;
                 hmParams.setAscending(ascending2);//we don't have to repeat the name and description columns
 
@@ -529,10 +532,9 @@ public class HeatMapPanel extends JPanel {
         				data[k][j+2] = new ExpressionTableValue((Double)expValue[k][j+2], ColorGradientMapper.getColorGradient(Row1CRT[k],Row1CRR[k],Row1gene[k],(Double)expValue[k][j+2]));
            }
 
-            for(int j=HRow1[k];j<HRow2[k];j++){
+            for(int j=HRow1[k];j<HRow2[k];j++){            		
+            			data[k][j+2] = new ExpressionTableValue((Double)expValue[k][j+2], ColorGradientMapper.getColorGradient(Row2CRT[k],Row2CRR[k],Row2gene[k],(Double)expValue[k][j+2]));
             		
-        				data[k][j+2] = new ExpressionTableValue((Double)expValue[k][j+2], ColorGradientMapper.getColorGradient(Row2CRT[k],Row2CRR[k],Row2gene[k],(Double)expValue[k][j+2]));
-        			
              }
 
         }
@@ -801,13 +803,19 @@ public class HeatMapPanel extends JPanel {
         //A rank of -1 can indicate a missing rank which is expected when you have two distinct datasets
         //We want to make sure the -1 are at the bottom of the list with two distinct data sets
         if(params.isTwoDistinctExpressionSets() && missingRanksCount > 0 ){
+        	int fakeRank = 0;
+        	if(isNegative)
+        		fakeRank = 1;
+        	else
+        		fakeRank = maxRank +100;
+        	
             for(int s = 0 ; s < ranks_subset.length;s++){
-                //if the current gene doesn't have a rank then don't show it
+                
                 if(ranks_subset[s] == -1)
-                    ranks_subset[s] = maxRank + 100;
+                    ranks_subset[s] = fakeRank;
 
                 //update the ranks2keys subset
-                rank2keys.put(maxRank + 100, rank2keys.get(-1));
+                rank2keys.put(fakeRank, rank2keys.get(-1));
             }
         }
 
@@ -816,6 +824,22 @@ public class HeatMapPanel extends JPanel {
         //the order of the ranks.
         boolean ascending = hmParams.isAscending(hmParams.getSortIndex());
 
+      //Doctor the sorting to always have the leading edge at the top
+        //if it is supposed to be ascending and the gene set isNegative then reverse
+        //the sorting
+        //Displayleadingedge is specific for calculating the ranking for GSEA when one gene set is selected.
+        //to make sure the doctoring of the sorting only happens with the leading edge stuff make sure the sorting
+        //is by Rank.
+        if(ascending && isNegative && this.displayLeadingEdge && hmParams.getSort() == HeatMapParameters.Sort.RANK){
+            hmParams.changeAscendingValue(hmParams.getSortIndex());
+            ascending = false;
+        }
+        else if(!ascending  && !isNegative && this.displayLeadingEdge && hmParams.getSort() == HeatMapParameters.Sort.RANK){
+            hmParams.changeAscendingValue(hmParams.getSortIndex());
+            ascending = true;
+        }
+
+        
        if(ascending)
             //sort ranks
              Arrays.sort(ranks_subset);
@@ -948,8 +972,9 @@ public class HeatMapPanel extends JPanel {
                     hRow2[k]=halfRow1.getName();
                 else
                     hRow2[k]=halfRow2.getName();
-               for(int j = expression_values1.length; j < (expression_values1.length + expression_values2.length);j++){
-                    expValue[k][j+2]=expression_values2[j-expression_values1.length];                }
+               for(int j = expression_values1.length; j < (expression_values1.length + expression_values2.length);j++){                                        
+                    		expValue[k][j+2]=expression_values2[j-expression_values1.length];
+                    }
 
                 k++;
             }
@@ -1260,9 +1285,9 @@ public class HeatMapPanel extends JPanel {
                 if(params.isTwoDistinctExpressionSets()){
                     GeneSet current_geneset_set1 = genesets_set1.get(nodename);
                     GeneSet current_geneset_set2 = genesets_set2.get(nodename);
-                    if(current_geneset.equals(current_geneset_set1) && current_geneset_set2 != null)
+                    if(current_geneset_set1 != null && current_geneset.equals(current_geneset_set1) && current_geneset_set2 != null)
                         additional_set = current_geneset_set2.getGenes();
-                    if(current_geneset.equals(current_geneset_set2) && current_geneset_set1 != null)
+                    if(current_geneset_set2 != null && current_geneset.equals(current_geneset_set2) && current_geneset_set1 != null)
                         additional_set = current_geneset_set1.getGenes();
 
                 }

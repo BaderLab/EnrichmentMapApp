@@ -205,7 +205,7 @@ public class ExpressionFileReaderTask implements Task {
 
     					//expressionMatrix = new GeneExpressionMatrix(tokens);
     					expressionMatrix.setColumnNames(tokens);
-    					expressionMatrix.setNumConditions(tokens.length);
+    					expressionMatrix.setNumConditions(expressionMatrix.getColumnNames().length);
     					expressionMatrix.setExpressionMatrix(expression);
     					
     					//check to see if one of the columns is dummy expression
@@ -360,6 +360,7 @@ public class ExpressionFileReaderTask implements Task {
         expressionMatrix.setColumnNames(titletokens);
         HashMap<Integer,GeneExpression> expression = expressionMatrix.getExpressionMatrix();
         expressionMatrix.setExpressionMatrix(expression);
+        expressionMatrix.setFilename(dataset.getName() + "_DummyExpression.txt");
 
         String[] tokens = new String[3];
         tokens[0] = "tmp";

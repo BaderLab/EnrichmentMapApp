@@ -192,14 +192,15 @@ public class VisualizeEnrichmentMapTask implements Task {
             HashMap<String, EnrichmentResult> enrichmentResults1 = null;
             HashMap<String, EnrichmentResult> enrichmentResults2 = null;
             Set<String> dataset_names = map.getDatasets().keySet();
-            int count = 0;
             for(Iterator<String> m = dataset_names.iterator(); m.hasNext();){
-            		if(count == 0)
+            		String dataset_name = m.next();
+            		if(dataset_name.equalsIgnoreCase(EnrichmentMap.DATASET1))
             			//get the enrichment results from the first one and place it in enrichment results 1
-            			enrichmentResults1 = map.getDataset(m.next()).getEnrichments().getEnrichments();
+            			enrichmentResults1 = map.getDataset(dataset_name).getEnrichments().getEnrichments();
+            		else if(dataset_name.equalsIgnoreCase(EnrichmentMap.DATASET2))
+            			enrichmentResults2 = map.getDataset(dataset_name).getEnrichments().getEnrichments();
             		else
-            			enrichmentResults2 = map.getDataset(m.next()).getEnrichments().getEnrichments();
-            		count++;
+            			System.out.println("Data set unsupported in visualization");           		
             }
                        
             HashMap<String, GeneSet> genesetsOfInterest = map.getDataset(EnrichmentMap.DATASET1).getGenesetsOfInterest().getGenesets();

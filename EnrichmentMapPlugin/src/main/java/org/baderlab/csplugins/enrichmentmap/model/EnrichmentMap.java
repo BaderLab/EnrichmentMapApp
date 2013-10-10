@@ -429,7 +429,8 @@ public class EnrichmentMap {
     		for(Iterator<String> k = datasets.keySet().iterator(); k.hasNext();){
     			String current_dataset = k.next();
     			if(!ds.equalsIgnoreCase("")&&!rank.equalsIgnoreCase("")){
-    				if((datasets.get(current_dataset)).getExpressionSets().getAllRanksNames().contains(rank)){
+    				//check that this is the right dataset
+    				if(ds.equalsIgnoreCase(current_dataset) && (datasets.get(current_dataset)).getExpressionSets().getAllRanksNames().contains(rank)){
     					return datasets.get(current_dataset).getExpressionSets().getRanksByName(rank);
     				}
     			}

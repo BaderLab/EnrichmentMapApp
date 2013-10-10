@@ -43,12 +43,15 @@
 
 package org.baderlab.csplugins.enrichmentmap.task;
 
+import java.util.Iterator;
+
 import cytoscape.task.Task;
 import cytoscape.task.TaskMonitor;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+
 
 /**
  * Created by
@@ -153,7 +156,7 @@ public class BuildEnrichmentMapTask implements Task {
         					(dataset.getDatasetGenes().containsAll(dataset2.getDatasetGenes())) && 
         					(dataset2.getDatasetGenes().containsAll(dataset.getDatasetGenes()))
         					))
-        				params.setTwoDistinctExpressionSets(true);
+        				params.setTwoDistinctExpressionSets(true);		
         				
     				
     			}

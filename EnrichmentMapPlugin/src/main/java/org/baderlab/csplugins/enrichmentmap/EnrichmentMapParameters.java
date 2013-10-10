@@ -417,9 +417,11 @@ public class EnrichmentMapParameters {
     			
     			//For Each Dataset populate the dataset files
     			for(int i = 0; i < datasets.length; i++){
-    				String current_ds = datasets[i];
+    				String current_ds = datasets[i].trim();
     				
     				DataSetFiles new_dsf = new DataSetFiles();
+    				String temp = current_ds + "%" + DataSetFiles.class.getSimpleName() + "%GMTFileName";
+    				
     				if(props.containsKey(current_ds + "%" + DataSetFiles.class.getSimpleName() + "%GMTFileName"))
     					new_dsf.setGMTFileName(checkForNull(props,current_ds + "%" + DataSetFiles.class.getSimpleName() + "%GMTFileName"));
     				if(props.containsKey(current_ds + "%" + DataSetFiles.class.getSimpleName() + "%expressionFileName"))
@@ -511,6 +513,30 @@ public class EnrichmentMapParameters {
             this.getFiles().get(EnrichmentMap.DATASET1).setPhenotype1(phenotype1);
             this.getFiles().get(EnrichmentMap.DATASET1).setPhenotype2(phenotype2);
 
+            /*XXX: BEGIN optional parameters for phenotypes and expression matrix in rpt file from pre-ranked GSEA:
+             * 
+             * To do less manual work while creating Enrichment Maps from pre-ranked GSEA, I add the following optional parameters:
+             * 
+             * param{tab}phenotypes{tab}{phenotype1}_versus_{phenotype2}
+             * param{tab}expressionMatrix{tab}{path_to_GCT_or_TXT_formated_expression_matrix}
+             * 
+             * added by revilo 2010-03-18:
+             */
+            if (rpt.containsKey("param phenotypes")){
+                String phenotypes = (String)rpt.get("param phenotypes");
+                String[] phenotypes_split = phenotypes.split("_versus_");
+                
+                this.getFiles().get(EnrichmentMap.DATASET1).setPhenotype1(phenotypes_split[0]);
+                this.getFiles().get(EnrichmentMap.DATASET1).setPhenotype2(phenotypes_split[1]);
+                
+                
+            }
+            if (rpt.containsKey("param expressionMatrix")){
+                data = (String)rpt.get("param expressionMatrix");
+            }
+            /*XXX: END optional parameters for phenotypes and expression matrix in rpt file from pre-ranked GSEA */
+
+            
         }
 
         else{

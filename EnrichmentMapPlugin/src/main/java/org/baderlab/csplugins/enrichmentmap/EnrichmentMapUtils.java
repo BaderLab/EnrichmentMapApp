@@ -219,11 +219,14 @@ public class EnrichmentMapUtils {
 
             				//TODO: get rid of this!
             				//For backwards compatability need to write out file with different names, without dataset_name
-            				File gmt_backcomp = new File(tmpDir, name +".gmt");
-            				BufferedWriter gmtwriter_backcomp = new BufferedWriter(new FileWriter(gmt_backcomp ));
-            				gmtwriter_backcomp.write(params.printHashmap(em.getDataset(current).getGenesetsOfInterest().getGenesets()));
-            				gmtwriter_backcomp.close();
-            				pFileList.add(gmt_backcomp);
+            				//make sure to save only the first datasets gmt though (otherwise we will have duplicate files and cytoscape will barf
+            				if(dataset_name.equals(EnrichmentMap.DATASET1)){
+            					File gmt_backcomp = new File(tmpDir, name +".gmt");
+            					BufferedWriter gmtwriter_backcomp = new BufferedWriter(new FileWriter(gmt_backcomp ));
+            					gmtwriter_backcomp.write(params.printHashmap(em.getDataset(current).getGenesetsOfInterest().getGenesets()));
+            					gmtwriter_backcomp.close();
+            					pFileList.add(gmt_backcomp);
+            				}
 
             				File enrichmentresults_backcomp = new File(tmpDir, name +".ENR1.txt");
             				if(dataset_name.equals(EnrichmentMap.DATASET1))
@@ -288,12 +291,17 @@ public class EnrichmentMapUtils {
             								subrank1writer.close();
             								pFileList.add(current_ranks);
             								
-            								//backwards compatibility: add the old file
-            								File current_ranks_backcomp = new File(tmpDir, name+"."+ranks_name+".RANKS.txt");
-            								BufferedWriter subrank1writer_backcomp = new BufferedWriter(new FileWriter(current_ranks_backcomp));
-            								subrank1writer_backcomp.write(params.printHashmap(all_ranks.get(current_ranks_name).getRanking()));
-            								subrank1writer_backcomp.close();
-            								pFileList.add(current_ranks_backcomp);
+            								
+            								//TODO: get rid of this!
+            	            					//For backwards compatability need to write out file with different names, without dataset_name
+            	            					//make sure to save only the first set of ranks though (otherwise we will have duplicate files and cytoscape will barf
+            	            					if(dataset_name.equals(EnrichmentMap.DATASET1)){
+            	            						File current_ranks_backcomp = new File(tmpDir, name+"."+ranks_name+".RANKS.txt");
+            	            						BufferedWriter subrank1writer_backcomp = new BufferedWriter(new FileWriter(current_ranks_backcomp));
+            	            						subrank1writer_backcomp.write(params.printHashmap(all_ranks.get(current_ranks_name).getRanking()));
+            	            						subrank1writer_backcomp.close();
+            	            						pFileList.add(current_ranks_backcomp);
+            	            					}
             							}
             						}
             					}        			        			
