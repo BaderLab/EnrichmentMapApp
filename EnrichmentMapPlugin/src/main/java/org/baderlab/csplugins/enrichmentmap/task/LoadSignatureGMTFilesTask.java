@@ -10,6 +10,7 @@ import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.parsers.GMTFileReaderTask;
+import org.baderlab.csplugins.enrichmentmap.view.PostAnalysisInputPanel;
 
 import cytoscape.task.Task;
 import cytoscape.task.TaskMonitor;
@@ -17,9 +18,11 @@ import cytoscape.task.TaskMonitor;
 public class LoadSignatureGMTFilesTask implements Task{
 
         private PostAnalysisParameters paParams = null;
+        private PostAnalysisInputPanel paPanel = null;
         private EnrichmentMap map = null;
         private TaskMonitor taskMonitor = null;
         private boolean interrupted = false;
+        
         /**
          * constructor w/ TaskMonitor
          * @param paParams
@@ -39,7 +42,16 @@ public class LoadSignatureGMTFilesTask implements Task{
             this.paParams = paParams;
             this.map = map;
         }
-
+        
+        /**
+         * constructor w map, post-analysis parameters and post-analysis panel
+         * @param paParams
+         */
+        public LoadSignatureGMTFilesTask( EnrichmentMap map, PostAnalysisParameters paParams, PostAnalysisInputPanel paPanel ){
+            this.paParams = paParams;
+            this.map = map;
+            this.paPanel = paPanel;
+        }
         /* (non-Javadoc)
          * @see cytoscape.task.Task#getTitle()
          */
@@ -143,6 +155,8 @@ public class LoadSignatureGMTFilesTask implements Task{
                     }
 
                 }
+                
+                this.paPanel.setAvSigCount(signatureSetNames.size());
             
             } catch (InterruptedException e) {
                 taskMonitor.setException(e, "loading of GMT files cancelled");
