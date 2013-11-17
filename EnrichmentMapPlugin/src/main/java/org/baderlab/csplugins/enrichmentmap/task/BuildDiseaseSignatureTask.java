@@ -98,11 +98,11 @@ public class BuildDiseaseSignatureTask implements Task {
      */
     public BuildDiseaseSignatureTask(EnrichmentMap map, PostAnalysisParameters paParams) {
         
-    		this.map = map;
+    	this.map = map;
 
-    		//create a new instance of the parameters and copy the version received from the input
+    	//create a new instance of the parameters and copy the version received from the input
         //window into this new instance.
-    		this.paParams = new PostAnalysisParameters();
+    	this.paParams = new PostAnalysisParameters();
         this.paParams.copyFrom(paParams);
         
         this.EnrichmentGenesets   = map.getAllGenesets();
@@ -312,8 +312,12 @@ public class BuildDiseaseSignatureTask implements Task {
                             hyperPval = 1.0;
                         
                         comparison.setHypergeom_pvalue(hyperPval);
+                        comparison.setHypergeom_N(N);
+                        comparison.setHypergeom_n(n);
+                        comparison.setHypergeom_m(m);
+                        comparison.setHypergeom_k(k);
                             
-                        geneset_similarities.put(similarity_key1,comparison);
+                        geneset_similarities.put(similarity_key1, comparison);
                     }
                 } // End: iterate over Enrichment Genesets
                 
@@ -447,8 +451,14 @@ public class BuildDiseaseSignatureTask implements Task {
  
                     cyEdgeAttrs.setAttribute(edge.getIdentifier(), prefix + EnrichmentMapVisualStyle.OVERLAP_SIZE       , geneset_similarities.get(edge_name).getSizeOfOverlap());
                     cyEdgeAttrs.setAttribute(edge.getIdentifier(), prefix + EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT, geneset_similarities.get(edge_name).getSimilarity_coeffecient());
-                    cyEdgeAttrs.setAttribute(edge.getIdentifier(), prefix + EnrichmentMapVisualStyle.HYPERGEOM_PVALUE   , geneset_similarities.get(edge_name).getHypergeom_pvalue());
                     cyEdgeAttrs.setAttribute(edge.getIdentifier(), prefix + EnrichmentMapVisualStyle.ENRICHMENT_SET  , geneset_similarities.get(edge_name).getEnrichment_set());
+                    
+                    // Attributes related to the Hypergeometric Test
+                    cyEdgeAttrs.setAttribute(edge.getIdentifier(), prefix + EnrichmentMapVisualStyle.HYPERGEOM_PVALUE, geneset_similarities.get(edge_name).getHypergeom_pvalue());
+                    cyEdgeAttrs.setAttribute(edge.getIdentifier(), prefix + EnrichmentMapVisualStyle.HYPERGEOM_N, geneset_similarities.get(edge_name).getHypergeom_N());
+                    cyEdgeAttrs.setAttribute(edge.getIdentifier(), prefix + EnrichmentMapVisualStyle.HYPERGEOM_n, geneset_similarities.get(edge_name).getHypergeom_n());
+                    cyEdgeAttrs.setAttribute(edge.getIdentifier(), prefix + EnrichmentMapVisualStyle.HYPERGEOM_m, geneset_similarities.get(edge_name).getHypergeom_m());
+                    cyEdgeAttrs.setAttribute(edge.getIdentifier(), prefix + EnrichmentMapVisualStyle.HYPERGEOM_k, geneset_similarities.get(edge_name).getHypergeom_k());
                     
                     cyEdgeAttrs.setAttribute(edge.getIdentifier(), "edge.color", paParams.getSignatureHub_edgeColor());
                     //change "edge.lineWidth" based on Hypergeometric Value 
@@ -462,8 +472,8 @@ public class BuildDiseaseSignatureTask implements Task {
                     
 
                 } //if (geneset_similarities.get(edge_name).getSizeOfOverlap() > 0)
-            } //for
- 
+            } //for #iterate over selected Signature genesets
+  
             currentNetworkView.redrawGraph(false, true);
             cyNetworkAttrs.setAttribute(currentNetworkView.getIdentifier(), EnrichmentMapVisualStyle.NUMBER_OF_ENRICHMENT_GENES, geneUniverse.size());
         } catch (InterruptedException e) {

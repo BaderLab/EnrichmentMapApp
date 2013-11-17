@@ -52,7 +52,7 @@ import java.util.HashSet;
  * Date: Jan 9, 2009
  * Time: 10:49:55 AM
  * <p>
- * Class representing a compraison of two gene sets (represents an edge in the network)
+ * Class representing a comparison of two gene sets (represents an edge in the network)
  *
  */
 public class GenesetSimilarity {
@@ -67,6 +67,10 @@ public class GenesetSimilarity {
     //either jaccard or overlap coeffecient, depends on statistic user specified.
     private double similarity_coeffecient;
     private double hypergeom_pvalue;
+    private int hypergeom_N;
+    private int hypergeom_n;
+    private int hypergeom_k;
+    private int hypergeom_m;
 
     //set of genes in common to both gene sets.
     private HashSet<Integer> overlapping_genes;
@@ -212,5 +216,101 @@ public class GenesetSimilarity {
     public void setEnrichment_set(int enrichment_set) {
         this.enrichment_set = enrichment_set;
     }
+
+
+	/**
+	 * Get the N value used in the Hypergeometric test.
+	 * N denotes the size of the universe (i.e. the size
+	 * of the union of all gene sets)
+	 * @param null
+	 * @return int N
+	 */
+	public int getHypergeom_N() {
+		return hypergeom_N;
+	}
+
+
+	/**
+	 * Set the N value used in the Hypergeometric test.
+	 * N denotes the size of the universe (i.e. the size
+	 * of the union of all gene sets)
+	 * @param int N
+	 * @return null
+	 */
+	public void setHypergeom_N(int N) {
+		this.hypergeom_N = N;
+	}
+
+
+	/**
+	 * Get the n value used in the Hypergeometric test.
+	 * n denotes the size of the sample being taken from
+	 * the universe (i.e. the size of the signature gene set)
+	 * @param null
+	 * @return int n
+	 */
+	public int getHypergeom_n() {
+		return hypergeom_n;
+	}
+
+
+	/**
+	 * Set the n value used in the Hypergeometric test.
+	 * n denotes the size of the sample being taken from
+	 * the universe (i.e. the size of the signature gene set)
+	 * @param int n
+	 * @return null
+	 */
+	public void setHypergeom_n(int hypergeom_n) {
+		this.hypergeom_n = hypergeom_n;
+	}
+
+
+	/**
+	 * Get the k value used in the Hypergeometric test.
+	 * k denotes the number of successes in the sample
+	 * (i.e. the size of the overlap)
+	 * @param null
+	 * @return int k
+	 */
+	public int getHypergeom_k() {
+		return hypergeom_k;
+	}
+
+
+	/**
+	 * Set the k value used in the Hypergeometric test.
+	 * k denotes the number of successes in the sample
+	 * (i.e. the size of the overlap)
+	 * @param int k
+	 * @return null
+	 */
+	public void setHypergeom_k(int hypergeom_k) {
+		this.hypergeom_k = hypergeom_k;
+	}
+
+
+	/**
+	 * Get the m value used in the Hypergeometric test.
+	 * m denotes the total number of successes in the universe
+	 * (i.e. the size of the enriched gene set)
+	 * @param null
+	 * @return int m
+	 */
+	public int getHypergeom_m() {
+		return hypergeom_m;
+	}
+
+
+	/**
+	 * Set the m value used in the Hypergeometric test.
+	 * m denotes the total number of successes in the universe
+	 * (i.e. the size of the enriched gene set)
+	 * @param int m
+	 * @return null
+	 */
+	public void setHypergeom_m(int hypergeom_m) {
+		this.hypergeom_m = hypergeom_m;
+	}
 
 }

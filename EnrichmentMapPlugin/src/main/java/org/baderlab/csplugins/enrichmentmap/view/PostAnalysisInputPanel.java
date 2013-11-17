@@ -1102,7 +1102,6 @@ public class PostAnalysisInputPanel extends JPanel {
         case PostAnalysisParameters.OVERLAP:
             sigCutoffTextField.setValue(paParams.getSignature_Overlap_Cutoff());
             break;
-
         default:
             //Handle Unsupported Default_signature_CutoffMetric Error
             String message = "This Cutoff metric is not supported.";
