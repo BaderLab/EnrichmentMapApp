@@ -1,7 +1,9 @@
 package org.baderlab.csplugins.enrichmentmap.parsers;
 
 import java.io.File;
+
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.HashMap;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -27,7 +29,7 @@ public class ParseEDBEnrichmentResults {
 		
 	}
 	
-	private void parseFile(){
+	private void parseFile() throws ParseException{
 		try{
 			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 			DocumentBuilder db = dbf.newDocumentBuilder();
@@ -38,12 +40,14 @@ public class ParseEDBEnrichmentResults {
 			pce.printStackTrace();
 		}catch(SAXException se) {
 			se.printStackTrace();
+			throw new ParseException("Malformed EDB file: It looks like your EDB file was created by an older version of GSEA that Enrichment Map does not support. Please update your GSEA results files.", 0);	
 		}catch(IOException ioe) {
 			ioe.printStackTrace();
+			throw new ParseException("Malformed EDB file: It looks like your EDB file was created by an older version of GSEA that Enrichment Map does not support. Please update your GSEA results files.", 0);				
 		}
 	}
 	
-	public HashMap<String,EnrichmentResult> parseDocument(){
+	public HashMap<String,EnrichmentResult> parseDocument() throws ParseException{
 
 		parseFile();
 		
