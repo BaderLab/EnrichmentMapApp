@@ -46,8 +46,6 @@ package org.baderlab.csplugins.enrichmentmap.view;
 import cytoscape.view.CytoscapeDesktop;
 import cytoscape.view.cytopanels.CytoPanel;
 import cytoscape.Cytoscape;
-import cytoscape.task.Task;
-import cytoscape.task.TaskMonitor;
 import cytoscape.task.ui.JTaskConfig;
 import cytoscape.task.util.TaskManager;
 import cytoscape.util.CyFileFilter;
@@ -59,7 +57,6 @@ import javax.swing.*;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapUtils;
-import org.baderlab.csplugins.enrichmentmap.Enrichment_Map_Plugin;
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.actions.BuildPostAnalysisActionListener;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowAboutPanelAction;
@@ -76,8 +73,6 @@ import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.io.File;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.HashSet;
 
 /**
  * Created by
@@ -161,13 +156,20 @@ public class PostAnalysisInputPanel extends JPanel {
 
         //get the current enrichment map parameters
         map = EnrichmentMapManager.getInstance().getMap(Cytoscape.getCurrentNetwork().getIdentifier());
-        EnrichmentMapParameters emParams = map.getParams();
-        if (emParams == null){
+        EnrichmentMapParameters emParams = null;
+        if(map != null){
+        		emParams = map.getParams();
+        		// create instance of PostAnalysisParameters an initialize with EnrichmentMapParameters
+        		paParams = map.getPaParams();
+        }else
+        		JOptionPane.showMessageDialog(this, "No Enrichment map was detected.  \nCan only perform Post Analysis on existing Enrichment map.");
+
+        if (emParams == null)
             emParams = new EnrichmentMapParameters();
-        }
+        if(paParams == null)
+        		paParams = new PostAnalysisParameters();
         
-        // create instance of PostAnalysisParameters an initialize with EnrichmentMapParameters
-        paParams = EnrichmentMapManager.getInstance().getMap(Cytoscape.getCurrentNetwork().getIdentifier()).getPaParams();
+       
 
         //create the three main panels: scope, advanced options, and bottom
         JPanel AnalysisTypePanel = createAnalysisTypePanel();
@@ -1125,43 +1127,47 @@ public class PostAnalysisInputPanel extends JPanel {
      * @param current_params
      */
     public void updateContents(EnrichmentMapParameters current_params){
-        this.paParams = EnrichmentMapManager.getInstance().getMap(Cytoscape.getCurrentNetwork().getIdentifier()).getPaParams();
+    		EnrichmentMap currentMap = EnrichmentMapManager.getInstance().getMap(Cytoscape.getCurrentNetwork().getIdentifier());
+    		
+    		if(currentMap != null){
+    			this.paParams = currentMap.getPaParams();
        
-        // Gene-Set Files:
-        GMTFileNameTextField.setText(this.paParams.getGMTFileName());
-        GMTFileNameTextField.setValue(this.paParams.getGMTFileName());
-        signatureGMTFileNameTextField.setText(this.paParams.getSignatureGMTFileName());
-        signatureGMTFileNameTextField.setValue(this.paParams.getSignatureGMTFileName());
+    			// Gene-Set Files:
+    			GMTFileNameTextField.setText(this.paParams.getGMTFileName());
+    			GMTFileNameTextField.setValue(this.paParams.getGMTFileName());
+    			signatureGMTFileNameTextField.setText(this.paParams.getSignatureGMTFileName());
+    			signatureGMTFileNameTextField.setValue(this.paParams.getSignatureGMTFileName());
         
-        // Gene-Set Selection:
-        this.avail_sig_sets    = this.paParams.getSignatureSetNames();
-        this.avail_sig_sets_field.setModel(this.avail_sig_sets);
-        this.selected_sig_sets = this.paParams.getSelectedSignatureSetNames();
-        this.selected_sig_sets_field.setModel(this.selected_sig_sets);
+    			// Gene-Set Selection:
+    			this.avail_sig_sets    = this.paParams.getSignatureSetNames();
+    			this.avail_sig_sets_field.setModel(this.avail_sig_sets);
+    			this.selected_sig_sets = this.paParams.getSelectedSignatureSetNames();
+    			this.selected_sig_sets_field.setModel(this.selected_sig_sets);
         
-        //Parameters:
-        this.sigCutoffCombo.setSelectedIndex(this.paParams.getSignature_CutoffMetric());
+    			//Parameters:
+    			this.sigCutoffCombo.setSelectedIndex(this.paParams.getSignature_CutoffMetric());
         
-        switch (this.paParams.getSignature_CutoffMetric()) {
-        case PostAnalysisParameters.HYPERGEOM:
-            sigCutoffTextField.setValue(this.paParams.getSignature_Hypergeom_Cutoff());
-            break;
-        case PostAnalysisParameters.ABS_NUMBER:
-            sigCutoffTextField.setValue(this.paParams.getSignature_absNumber_Cutoff());
-            break;
-        case PostAnalysisParameters.JACCARD:
-            sigCutoffTextField.setValue(this.paParams.getSignature_Jaccard_Cutoff());
-            break;
-        case PostAnalysisParameters.OVERLAP:
-            sigCutoffTextField.setValue(this.paParams.getSignature_Overlap_Cutoff());
-            break;
+    			switch (this.paParams.getSignature_CutoffMetric()) {
+    			case PostAnalysisParameters.HYPERGEOM:
+    				sigCutoffTextField.setValue(this.paParams.getSignature_Hypergeom_Cutoff());
+    				break;
+    			case PostAnalysisParameters.ABS_NUMBER:
+    				sigCutoffTextField.setValue(this.paParams.getSignature_absNumber_Cutoff());
+    				break;
+    			case PostAnalysisParameters.JACCARD:
+    				sigCutoffTextField.setValue(this.paParams.getSignature_Jaccard_Cutoff());
+    				break;
+    			case PostAnalysisParameters.OVERLAP:
+    				sigCutoffTextField.setValue(this.paParams.getSignature_Overlap_Cutoff());
+    				break;
 
-        default:
-            //Handle Unsupported Default_signature_CutoffMetric Error
-            String message = "This Cutoff metric is not supported.";
-            JOptionPane.showMessageDialog(Cytoscape.getDesktop(), message, "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
-            break;
-        }
+    			default:
+    				//Handle Unsupported Default_signature_CutoffMetric Error
+    				String message = "This Cutoff metric is not supported.";
+    				JOptionPane.showMessageDialog(Cytoscape.getDesktop(), message, "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
+    				break;
+    			}
+    		}
         
     }
 
