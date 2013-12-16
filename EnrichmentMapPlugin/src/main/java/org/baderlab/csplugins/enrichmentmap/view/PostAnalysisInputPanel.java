@@ -116,7 +116,8 @@ public class PostAnalysisInputPanel extends JPanel {
     private PostAnalysisParameters paParams;
 
     // Analysis Type related components
-    private JRadioButton signatureHub;
+    private JRadioButton signatureDiscovery;
+    private JRadioButton knownSignature;
 
     
     //Genesets file related components
@@ -246,27 +247,39 @@ public class PostAnalysisInputPanel extends JPanel {
         c.fill = GridBagConstraints.HORIZONTAL;
         panel.setBorder(BorderFactory.createTitledBorder("Post Analysis Type"));
 
-        signatureHub = new JRadioButton("Signature Hubs", paParams.isSignatureHub());
-
-        signatureHub.setActionCommand("Signature Hubs");
-
-        signatureHub.addActionListener(new java.awt.event.ActionListener() {
+        // Signature Discovery
+        signatureDiscovery = new JRadioButton("Signature Discovery", paParams.isSignatureDiscovery());
+        signatureDiscovery.setActionCommand("Signature Discovery");
+        signatureDiscovery.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 selectAnalysisTypeActionPerformed(evt);
             }
         });
-        signatureHub.setSelected(true);
+        signatureDiscovery.setSelected(true);
+        
+        // Known Signature
+        knownSignature = new JRadioButton("Known Signature", paParams.isKnownSignature());
+        knownSignature.setActionCommand("Known Signature");
+        knownSignature.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                selectAnalysisTypeActionPerformed(evt);
+            }
+        });        
         
         ButtonGroup analysisOptions = new ButtonGroup();
-        analysisOptions.add(signatureHub);
-
+        analysisOptions.add(signatureDiscovery);
+        analysisOptions.add(knownSignature);
 
         c.gridx = 0;
         c.gridwidth = 3;
         c.gridy = 0;
-        gridbag.setConstraints(signatureHub, c);
-        panel.add(signatureHub);
-
+        gridbag.setConstraints(signatureDiscovery, c);
+        panel.add(signatureDiscovery);
+        
+        c.gridy = 1;
+        gridbag.setConstraints(knownSignature, c);
+        panel.add(knownSignature);
+        
         JPanel topPanel = new JPanel();
         topPanel.setLayout(new BorderLayout());
         topPanel.add(buttonsPanel, BorderLayout.EAST);
@@ -562,7 +575,7 @@ public class PostAnalysisInputPanel extends JPanel {
         filter = new JRadioButton("Filter By");
         filter.setActionCommand("filter");
         filter.setSelected(true);
-        nofilter = new JRadioButton("No filter");
+        nofilter = new JRadioButton("No Filter");
         nofilter.setActionCommand("nofilter");
         nofilter.setSelected(false);
 
@@ -655,7 +668,7 @@ public class PostAnalysisInputPanel extends JPanel {
      */
     private CollapsiblePanel createParametersPanel() {
         String[] sigCutoffItems = PostAnalysisParameters.sigCutoffItems;
-        CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Parameters");
+        CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Edge Weight Calculation Parameters");
         
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
@@ -671,6 +684,7 @@ public class PostAnalysisInputPanel extends JPanel {
 //        sigCutoffCombo.addItem(sigCutoffItems[PostAnalysisParameters.JACCARD]);
 //        sigCutoffCombo.addItem(sigCutoffItems[PostAnalysisParameters.OVERLAP]);
         sigCutoffCombo.addItem(sigCutoffItems[PostAnalysisParameters.DIR_OVERLAP]);
+        sigCutoffCombo.addItem(sigCutoffItems[PostAnalysisParameters.MANN_WHITNEY]);
         sigCutoffCombo.setSelectedItem(sigCutoffItems[paParams.getDefault_signature_CutoffMetric()]);
 
 
@@ -687,6 +701,8 @@ public class PostAnalysisInputPanel extends JPanel {
             sigCutoffTextField.setValue(paParams.getSignature_Overlap_Cutoff());
         else if (paParams.getDefault_signature_CutoffMetric() == PostAnalysisParameters.DIR_OVERLAP)
             sigCutoffTextField.setValue(paParams.getSignature_DirOverlap_Cutoff());
+        else if (paParams.getDefault_signature_CutoffMetric() == PostAnalysisParameters.MANN_WHITNEY)
+            sigCutoffTextField.setValue(paParams.getSignature_Mann_Whit_Cutoff());
         else {
             //Handle Unsupported Default_signature_CutoffMetric Error
             String message = "This Cutoff metric is not supported.";
@@ -715,6 +731,9 @@ public class PostAnalysisInputPanel extends JPanel {
               } else if ( sigCutoffItems[PostAnalysisParameters.DIR_OVERLAP].equals( selectedChoice.getSelectedItem() ) ) {
                   paParams.setSignature_CutoffMetric(PostAnalysisParameters.DIR_OVERLAP);
                   sigCutoffTextField.setValue(paParams.getSignature_DirOverlap_Cutoff());
+              } else if ( sigCutoffItems[PostAnalysisParameters.MANN_WHITNEY].equals( selectedChoice.getSelectedItem() ) ) {
+                  paParams.setSignature_CutoffMetric(PostAnalysisParameters.MANN_WHITNEY);
+                  sigCutoffTextField.setValue(paParams.getSignature_Mann_Whit_Cutoff());
               }
                  
             } 
@@ -812,7 +831,7 @@ public class PostAnalysisInputPanel extends JPanel {
                         paParams.setSignature_absNumber_Cutoff(value.intValue());
                     } else {
                         source.setValue(paParams.getSignature_absNumber_Cutoff());
-                        message += "The \"Number of common genes\" cutoff must be a non-negative Integer (0 or larger).";
+                        message += "The \"Number of Common Genes\" cutoff must be a non-negative Integer (0 or larger).";
                         invalid = true;
                     }
                 }
@@ -840,6 +859,15 @@ public class PostAnalysisInputPanel extends JPanel {
                     } else {
                         source.setValue(paParams.getSignature_DirOverlap_Cutoff());
                         message += "The Overlap Coefficient cutoff must be greater than 0.0 and less than or equal to 1.0.";
+                        invalid = true;
+                    }
+                }
+                else if (paParams.getSignature_CutoffMetric() == PostAnalysisParameters.MANN_WHITNEY) {
+                    if ((value != null) && (value.doubleValue() >= 0.0) && (value.doubleValue() <= 5.0)) {
+                        paParams.setSignature_Mann_Whit_Cutoff(value.doubleValue());
+                    } else {
+                        source.setValue(paParams.getSignature_Mann_Whit_Cutoff());
+                        message += "The Mann-Whitney U Z-score cutoff must be greater than or equal to 0.0 and less than or equal to 5.0.";
                         invalid = true;
                     }
                 }
@@ -1063,7 +1091,7 @@ public class PostAnalysisInputPanel extends JPanel {
         this.paParams = new PostAnalysisParameters(EnrichmentMapManager.getInstance().getMap(Cytoscape.getCurrentNetwork().getIdentifier()));
 
         //Post Analysis Type:
-        signatureHub.setSelected(true);
+        signatureDiscovery.setSelected(true);
         
         //Gene-Sets Panel
         this.GMTFileNameTextField.setText("");

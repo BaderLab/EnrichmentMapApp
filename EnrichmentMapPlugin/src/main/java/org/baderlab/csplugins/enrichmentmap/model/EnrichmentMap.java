@@ -174,7 +174,6 @@ public class EnrichmentMap {
         		if(dataset2files.getPhenotype2() != null && !dataset2files.getPhenotype2().isEmpty())
         			this.getDataset(DATASET2).getEnrichments().setPhenotype2(dataset2files.getPhenotype2());
         		
-    		
     			//rank files - dataset 2
     			if(dataset2files.getRankedFile() != null && !dataset2files.getRankedFile().isEmpty()){
     				if(params.getMethod().equals(EnrichmentMapParameters.method_GSEA)){
@@ -188,7 +187,7 @@ public class EnrichmentMap {
     				}
     			}
     		}
-}
+    }
 
     
     

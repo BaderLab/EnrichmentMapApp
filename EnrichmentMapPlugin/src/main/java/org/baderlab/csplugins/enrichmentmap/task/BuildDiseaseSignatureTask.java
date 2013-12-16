@@ -47,12 +47,18 @@ import giny.view.NodeView;
 
 import java.util.*;
 
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+
+import org.apache.commons.math3.stat.inference.MannWhitneyUTest;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapVisualStyle;
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
+import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.GenesetSimilarity;
+import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 
 import cytoscape.CyEdge;
 import cytoscape.CyNetwork;
@@ -86,9 +92,13 @@ public class BuildDiseaseSignatureTask implements Task {
     private HashMap<String,GeneSet> EnrichmentGenesets;
     private HashMap<String,GeneSet> SignatureGenesets;
     private HashMap<String,GeneSet> SelectedSignatureGenesets;
+    
     // Gene Populations:
     private HashSet<Integer> EnrichmentGenes;
     private HashSet<Integer> SignatureGenes;
+    
+    // Ranks
+    private Ranking ranks;
         
     private HashMap<String,GenesetSimilarity> geneset_similarities;
     
@@ -99,7 +109,10 @@ public class BuildDiseaseSignatureTask implements Task {
     public BuildDiseaseSignatureTask(EnrichmentMap map, PostAnalysisParameters paParams) {
         
     	this.map = map;
-
+    	HashMap<String, DataSet> data_sets = this.map.getDatasets();
+    	DataSet dataset = data_sets.get(paParams.getSignature_dataSet());
+    	this.ranks = dataset.getExpressionSets().getRanks().get(paParams.getSignature_rankFile());
+    	
     	//create a new instance of the parameters and copy the version received from the input
         //window into this new instance.
     	this.paParams = new PostAnalysisParameters();
@@ -197,6 +210,9 @@ public class BuildDiseaseSignatureTask implements Task {
                  * the signature genes in this signature gene set 
                  */
                 HashSet<Integer> sigGenes = sigGeneSet.getGenes();
+                Integer[] sig_gene_ids = (Integer[]) sigGenes.toArray();
+                double[] sig_gene_scores = new double[sigGenes.size()];
+                HashMap<Integer, Double> gene2score = this.ranks.getGene2Score();
 
                 /** 
                  * the genes that are in this signature gene set 
@@ -205,6 +221,11 @@ public class BuildDiseaseSignatureTask implements Task {
                 HashSet<Integer> sigGenesInUniverse = new HashSet<Integer>(sigGenes);
                 sigGenesInUniverse.retainAll(geneUniverse);
 //                sigGeneSet.setGenes(sigGenes);
+                
+                // Get the scores for signature genes
+                for (int j = 0; j < sig_gene_ids.length; j++) {
+                	sig_gene_scores[j] = gene2score.get(sig_gene_ids[j]);
+                }
                 
                 EnrichmentMapManager.getInstance().getMap(current_network.getIdentifier()).getSignatureGenesets().put(hub_name, sigGeneSet);
                 
@@ -294,8 +315,6 @@ public class BuildDiseaseSignatureTask implements Task {
 //                            }
                         }
                         
-                        
-                        
                         //create Geneset similarity object
                         GenesetSimilarity comparison = new GenesetSimilarity(hub_name, geneset_name, coeffecient, PostAnalysisParameters.SIGNATURE_INTERACTION_TYPE, (HashSet<Integer>)intersection);
                         
@@ -311,11 +330,19 @@ public class BuildDiseaseSignatureTask implements Task {
                         else // Correct p-value of empty intersections to 1 (i.e. not significant)
                             hyperPval = 1.0;
                         
+                        // Set Hypergeometric Parameters
                         comparison.setHypergeom_pvalue(hyperPval);
                         comparison.setHypergeom_N(N);
                         comparison.setHypergeom_n(n);
                         comparison.setHypergeom_m(m);
                         comparison.setHypergeom_k(k);
+                        
+                        // Calculate Mann-Whitney U pValue for Overlap
+                		MannWhitneyUTest mann_whit = new MannWhitneyUTest();
+                		double mannPval = mann_whit.mannWhitneyUTest(sig_gene_scores, this.ranks.getScores());
+                		
+                		// Set Mann-Whitney U Parameters
+                		comparison.setMannWhitney_pValue(mannPval);
                             
                         geneset_similarities.put(similarity_key1, comparison);
                     }
@@ -423,7 +450,8 @@ public class BuildDiseaseSignatureTask implements Task {
                     passed_cutoff = true;
                 else if ( (paParams.getSignature_CutoffMetric() == PostAnalysisParameters.HYPERGEOM) && 
                           (geneset_similarities.get(edge_name).getHypergeom_pvalue() != -1.0) &&
-                          (geneset_similarities.get(edge_name).getHypergeom_pvalue() <= paParams.getSignature_Hypergeom_Cutoff() ) )
+                          (geneset_similarities.get(edge_name).getHypergeom_pvalue() <= paParams.getSignature_Hypergeom_Cutoff() ) &&
+                          (geneset_similarities.get(edge_name).getMann_Whit_pValue() <= paParams.getSignature_Mann_Whit_Cutoff() ))
                     passed_cutoff = true;
 
                 if (passed_cutoff) {
@@ -441,8 +469,9 @@ public class BuildDiseaseSignatureTask implements Task {
                         for(Iterator<Integer> k=genes_hash.iterator(); k.hasNext();){
                             Integer current = k.next();
                             String gene = map.getGeneFromHashKey(current);
-                            if(gene_list != null)
+                            if(gene_list != null) {
                                 gene_list.add(gene);
+                            }
                         }
                         Collections.sort(gene_list);
                         
@@ -459,6 +488,9 @@ public class BuildDiseaseSignatureTask implements Task {
                     cyEdgeAttrs.setAttribute(edge.getIdentifier(), prefix + EnrichmentMapVisualStyle.HYPERGEOM_n, geneset_similarities.get(edge_name).getHypergeom_n());
                     cyEdgeAttrs.setAttribute(edge.getIdentifier(), prefix + EnrichmentMapVisualStyle.HYPERGEOM_m, geneset_similarities.get(edge_name).getHypergeom_m());
                     cyEdgeAttrs.setAttribute(edge.getIdentifier(), prefix + EnrichmentMapVisualStyle.HYPERGEOM_k, geneset_similarities.get(edge_name).getHypergeom_k());
+                    
+                    // Attributes related to the Mann-Whitney Test
+                    cyEdgeAttrs.setAttribute(edge.getIdentifier(), prefix + EnrichmentMapVisualStyle.MANN_WHIT_PVALUE, geneset_similarities.get(edge_name).getMann_Whit_pValue());
                     
                     cyEdgeAttrs.setAttribute(edge.getIdentifier(), "edge.color", paParams.getSignatureHub_edgeColor());
                     //change "edge.lineWidth" based on Hypergeometric Value 

@@ -61,7 +61,8 @@ import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
 public class PostAnalysisParameters extends EnrichmentMapParameters {
     
     // Post Analysis Type:
-    private boolean isSignatureHub;
+    private boolean isSignatureDiscovery;
+    private boolean isKnownSignature;
 
     // Disease Signature Constants
     /**
@@ -72,7 +73,7 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
      * OVERLAP     = 3
      * DIR_OVERLAP = 4
      */
-    final public static int HYPERGEOM = 0, ABS_NUMBER = 1, JACCARD = 2, OVERLAP = 3, DIR_OVERLAP = 4; 
+    final public static int HYPERGEOM = 0, ABS_NUMBER = 1, JACCARD = 2, OVERLAP = 3, DIR_OVERLAP = 4, MANN_WHITNEY = 5; 
 
     //Gene Set Filtering Constants
     /**
@@ -90,17 +91,19 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
       final public static String[] filterItems = {"Overlap X percent of EM gs","Overlap has at least X genes","Overlap X percent of Signature gs" };
     /**
      * Strings for Signature-Hub cut-off metric:
-     * HYPERGEOM   (0) : "Hypergeometric Test"
-     * ABS_NUMBER  (1) : "Number of common genes"
-     * JACCARD     (2) : "Jaccard Coefficient"
-     * OVERLAP     (3) : "Overlap Coefficient"
-     * DIR_OVERLAP (4) : "Directed Overlap"
+     * HYPERGEOM    (0) : "Hypergeometric Test"
+     * ABS_NUMBER   (1) : "Number of common genes"
+     * JACCARD      (2) : "Jaccard Coefficient"
+     * OVERLAP      (3) : "Overlap Coefficient"
+     * DIR_OVERLAP  (4) : "Directed Overlap"
+     * MANN_WHITNEY (5) : "Mann-Whitney U Test"
      */
     final public static String[] sigCutoffItems = {"Hypergeometric Test", 
-                                            "Number of common genes",
+                                            "Number of Common Genes",
                                             "Jaccard Coefficient", 
                                             "Overlap Coefficient",
-                                            "Directed Overlap" 
+                                            "Directed Overlap",
+                                            "Mann-Whitney U Test"
                                            };
     
     final public static String SIGNATURE_INTERACTION_TYPE = "sig";
@@ -119,6 +122,7 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
     private double signature_Overlap_Cutoff;
     private double signature_DirOverlap_Cutoff;
     private double signature_Hypergeom_Cutoff;   
+    private double signature_Mann_Whit_Cutoff;
 
     private int    signature_CutoffMetric;
     
@@ -128,6 +132,7 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
     private double default_signature_Overlap_Cutoff   = 0.25;  
     private double default_signature_DirOverlap_Cutoff= 0.25;  
     private double default_signature_Hypergeom_Cutoff = 0.05;
+    private double default_signature_Mann_Whit_Cutoff = 2.575;
     
     private int    default_signature_CutoffMetric      = HYPERGEOM;
     
@@ -145,6 +150,12 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
     private int default_filter_value = 50;
     private int default_signature_filterMetric = PERCENT;
     private int signature_filterMetric;
+    
+    // Rank file
+    private String signature_rankFile;
+    
+    // Disease Signature data-set
+    private String signature_dataSet;
 
     /**
      * default constructor
@@ -156,7 +167,7 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
     	super.copy(map.getParams());
 
         // Post Analysis Type:
-        this.isSignatureHub = true;
+        this.isSignatureDiscovery = true;
     	
     	// Disease Signature Parameters:
         this.signatureGMTFileName       = "";
@@ -166,6 +177,7 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
         this.signature_DirOverlap_Cutoff= default_signature_DirOverlap_Cutoff;
         this.signature_Hypergeom_Cutoff = default_signature_Hypergeom_Cutoff;
         this.signature_CutoffMetric     = default_signature_CutoffMetric;
+        this.signature_Mann_Whit_Cutoff = default_signature_Mann_Whit_Cutoff;
         
         // Disease Signature Data Structures:
         this.signatureGenesets         = new SetOfGeneSets();
@@ -195,7 +207,7 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
         super();
 
         // Post Analysis Type:
-        this.isSignatureHub = true;
+        this.isSignatureDiscovery = true;
         
         // Disease Signature Parameters:
         this.signatureGMTFileName       = "";
@@ -205,6 +217,7 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
         this.signature_DirOverlap_Cutoff= default_signature_DirOverlap_Cutoff;
         this.signature_Hypergeom_Cutoff = default_signature_Hypergeom_Cutoff;
         this.signature_CutoffMetric     = default_signature_CutoffMetric;
+        this.signature_Mann_Whit_Cutoff = default_signature_Mann_Whit_Cutoff;
         
         // Disease Signature Data Structures:
         this.signatureGenesets         = new SetOfGeneSets();
@@ -230,7 +243,7 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
         super.copy(source);
         
         // Post Analysis Type:
-        this.isSignatureHub = source.isSignatureHub();
+        this.isSignatureDiscovery = source.isSignatureDiscovery();
 
         // Disease Signature Parameters:
         this.signatureGMTFileName       = source.getSignatureGMTFileName();
@@ -239,6 +252,7 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
         this.signature_Overlap_Cutoff   = source.getSignature_Overlap_Cutoff();
         this.signature_DirOverlap_Cutoff= source.getSignature_DirOverlap_Cutoff();
         this.signature_Hypergeom_Cutoff = source.getSignature_Hypergeom_Cutoff();
+        this.signature_Mann_Whit_Cutoff = source.getSignature_Mann_Whit_Cutoff();
         this.signature_CutoffMetric     = source.getSignature_CutoffMetric();
 
         // Disease Signature Data Structures:
@@ -278,6 +292,9 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
         } else if (this.signature_CutoffMetric == PostAnalysisParameters.DIR_OVERLAP) {
             if (! (this.signature_DirOverlap_Cutoff >= 0.0 && this.signature_DirOverlap_Cutoff <= 1.0))
                 errors += "Directed Overlap Cutoff must be a decimal Number between 0.0 and 1.0 \n";
+        } else if (this.signature_CutoffMetric == PostAnalysisParameters.MANN_WHITNEY) {
+            if (! (this.signature_Mann_Whit_Cutoff >= 0.0 && this.signature_Mann_Whit_Cutoff <= 5.0))
+                errors += "Mann Whitney Cutoff must be a decimal Number between 0.0 and 5.0 \n";
         } else
             errors += "Invalid Cutoff metric \n";
         
@@ -402,10 +419,12 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
     }
 
     /**
-     * @param isSignatureHub the isSignatureHub to set
+     * Set post-analysis type (Signature Discovery)
+     * @param boolean isSignatureDiscovery
+     * @return null 
      */
-    public void setSignatureHub(boolean isSignatureHub) {
-        this.isSignatureHub = isSignatureHub;
+    public void setSignatureHub(boolean isSignatureDiscovery) {
+        this.isSignatureDiscovery = isSignatureDiscovery;
     }
 
     /**
@@ -498,10 +517,12 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
     }
 
     /**
-     * @return the isDiseaseSignature
+     * True iff Signature Discovery panel has been requested
+     * @param null
+     * @return boolean isSignatureDiscovery
      */
-    public boolean isSignatureHub() {
-        return isSignatureHub;
+    public boolean isSignatureDiscovery() {
+        return isSignatureDiscovery;
     }
 
     /**
@@ -643,4 +664,87 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
     public int getDefault_signature_filterMetric() {
         return default_signature_filterMetric;
     }
+
+	/**
+	 * @return the default_signature_Mann_Whit_Cutoff
+	 */
+	public double getDefault_signature_Mann_Whit_Cutoff() {
+		return default_signature_Mann_Whit_Cutoff;
+	}
+
+	/**
+	 * @param default_signature_Mann_Whit_Cutoff the default_signature_Mann_Whit_Cutoff to set
+	 */
+	public void setDefault_signature_Mann_Whit_Cutoff(
+			double default_signature_Mann_Whit_Cutoff) {
+		this.default_signature_Mann_Whit_Cutoff = default_signature_Mann_Whit_Cutoff;
+	}
+
+	/**
+	 * @return the signature_Mann_Whit_Cutoff
+	 */
+	public double getSignature_Mann_Whit_Cutoff() {
+		return signature_Mann_Whit_Cutoff;
+	}
+
+	/**
+	 * @param signature_Mann_Whit_Cutoff the signature_Mann_Whit_Cutoff to set
+	 */
+	public void setSignature_Mann_Whit_Cutoff(double signature_Mann_Whit_Cutoff) {
+		this.signature_Mann_Whit_Cutoff = signature_Mann_Whit_Cutoff;
+	}
+
+	/**
+	 * Get signature rank file
+	 * @param null
+	 * @return String signature_rankFile
+	 */
+	public String getSignature_rankFile() {
+		return signature_rankFile;
+	}
+
+	/**
+	 * Set signature rank file
+	 * @param String signature_rankFile 
+	 * @return null
+	 */
+	public void setSignature_rankFile(String signature_rankFile) {
+		this.signature_rankFile = signature_rankFile;
+	}
+
+	/**
+	 * Get signature data set
+	 * @param null
+	 * @return String signature_dataSet
+	 */
+	public String getSignature_dataSet() {
+		return signature_dataSet;
+	}
+
+	/**
+	 * Set signature data set
+	 * @param String signature_dataSet
+	 * @return null 
+	 */
+	public void setSignature_dataSet(String signature_dataSet) {
+		this.signature_dataSet = signature_dataSet;
+	}
+
+	/**
+	 * True iff KnownSignature Panel has been requested
+	 * @param null
+	 * @return boolean isKnownSignature
+	 */
+	public boolean isKnownSignature() {
+		return isKnownSignature;
+	}
+
+	/**
+	 * Set post-analysis type (KnownSignature)
+	 * @param boolean isKnownSignature 
+	 * @return null
+	 */
+	public void setKnownSignature(boolean isKnownSignature) {
+		this.isKnownSignature = isKnownSignature;
+	}
 }

@@ -87,7 +87,7 @@ public class BuildPostAnalysisActionListener implements ActionListener {
         String errors = paParams.checkMinimalRequirements();
 
         if(errors.equalsIgnoreCase("")) {
-            if ( paParams.isSignatureHub() ) {
+            if ( paParams.isSignatureDiscovery() ) {
                 config = new JTaskConfig();
                 config.displayCancelButton(true);
                 config.displayCloseButton(true);

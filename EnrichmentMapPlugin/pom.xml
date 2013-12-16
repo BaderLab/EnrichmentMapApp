@@ -13,9 +13,14 @@
   		<artifactId>cytoscape</artifactId>
   		<version>2.8.3</version>
   		<scope>system</scope>
-  		<systemPath>C:\Program Files\Cytoscape_v2.8.3\cytoscape.jar</systemPath>
-  		</dependency>
-  	<dependency>
+  		<systemPath>C:\Program Files\Cytoscape_v2.8.0\cytoscape.jar</systemPath>
+  	</dependency>
+	<dependency>
+		<groupId>org.apache.commons</groupId>
+		<artifactId>commons-math3</artifactId>
+		<version>3.2</version>
+	</dependency>
+    <dependency>
   		<groupId>org.junit</groupId>
   		<artifactId>junit</artifactId>
   		<version>0.0.1</version>
@@ -346,4 +351,41 @@
 		<url>https://github.com/BaderLab/EnrichmentMapApp</url>
 		<developerConnection>scm:git:git@github.com:BaderLab/EnrichmentMapApp.git</developerConnection>
 	</scm>
+	<build>
+		<pluginManagement>
+			<plugins>
+				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>
+											pl.project13.maven
+										</groupId>
+										<artifactId>
+											git-commit-id-plugin
+										</artifactId>
+										<versionRange>
+											[2.0.4,)
+										</versionRange>
+										<goals>
+											<goal>revision</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore></ignore>
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
 </project>

@@ -376,7 +376,7 @@ public class EnrichmentMapManager implements PropertyChangeListener {
     }
 
     /**
-     * @return reference to the Enrichment Map Input Panel (WEST) 
+     * @return reference to the Enrichment Map Input Panel (WEST)
      */
     public EnrichmentMapInputPanel getInputWindow() {
         return inputWindow;

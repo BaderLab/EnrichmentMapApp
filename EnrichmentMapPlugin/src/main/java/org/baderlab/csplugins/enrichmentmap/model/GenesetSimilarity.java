@@ -66,11 +66,16 @@ public class GenesetSimilarity {
 
     //either jaccard or overlap coeffecient, depends on statistic user specified.
     private double similarity_coeffecient;
+    
+    // Hypergeometric
     private double hypergeom_pvalue;
     private int hypergeom_N;
     private int hypergeom_n;
     private int hypergeom_k;
     private int hypergeom_m;
+    
+    // Mann-Whitney U
+    private double mann_whit_pvalue;
 
     //set of genes in common to both gene sets.
     private HashSet<Integer> overlapping_genes;
@@ -311,6 +316,26 @@ public class GenesetSimilarity {
 	 */
 	public void setHypergeom_m(int hypergeom_m) {
 		this.hypergeom_m = hypergeom_m;
+	}
+
+
+	/**
+	 * Get mann whitney p value
+	 * @param null
+	 * @return double mann_whit_pvalue
+	 */
+	public double getMann_Whit_pValue() {
+		return mann_whit_pvalue;
+	}
+
+
+	/**
+	 * Set mann whitney p value
+	 * @param double mann_whit_pvalue
+	 * @return null
+	 */
+	public void setMannWhitney_pValue(double mann_whit_pvalue) {
+		this.mann_whit_pvalue = mann_whit_pvalue;
 	}
 
 }
