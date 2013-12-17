@@ -52,6 +52,12 @@ import cytoscape.view.cytopanels.CytoPanelState;
 
 import javax.swing.*;
 
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.view.EnrichmentMapInputPanel;
+import org.baderlab.csplugins.enrichmentmap.view.HeatMapPanel;
+import org.baderlab.csplugins.enrichmentmap.view.ParametersPanel;
+import org.baderlab.csplugins.enrichmentmap.view.PostAnalysisInputPanel;
+
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.util.HashMap;
@@ -70,7 +76,7 @@ public class EnrichmentMapManager implements PropertyChangeListener {
 
     private static EnrichmentMapManager manager = null;
 
-    private HashMap<String,EnrichmentMapParameters> cyNetworkList;
+    private HashMap<String,EnrichmentMap> cyNetworkList;
     private HashMap<String,PostAnalysisParameters> cyNetworkListPostAnalysis;
 
     //create only one instance of the  parameter and expression panels.
@@ -118,8 +124,8 @@ public class EnrichmentMapManager implements PropertyChangeListener {
             CyNetwork cyNetwork = Cytoscape.getCurrentNetwork();
             String networkId = cyNetwork.getIdentifier();
             if ( cyNetworkList.containsKey(networkId) ) { // do we know that Network?
-                EnrichmentMapParameters currentNetworkParams = cyNetworkList.get(networkId);
-                currentNetworkParams.setNetworkName(cyNetwork.getTitle());
+                EnrichmentMap currentNetworkParams = cyNetworkList.get(networkId);
+                currentNetworkParams.setName(cyNetwork.getTitle());
             }
         }
         if (relevantEventFlag && !networkViewsRemain()) {
@@ -132,7 +138,7 @@ public class EnrichmentMapManager implements PropertyChangeListener {
      *
      */
     private EnrichmentMapManager() {
-        this.cyNetworkList = new HashMap<String,EnrichmentMapParameters>();
+        this.cyNetworkList = new HashMap<String,EnrichmentMap>();
         this.cyNetworkListPostAnalysis = new HashMap<String,PostAnalysisParameters>();
 
         // to catch network creation / destruction events
@@ -150,7 +156,7 @@ public class EnrichmentMapManager implements PropertyChangeListener {
         parameterPanel = new ParametersPanel();
         
         //create an icon for the enrichment map panels
-        URL EMIconURL = Enrichment_Map_Plugin.class.getResource("resources/enrichmentmap_logo_notext_small.png");
+        URL EMIconURL = Thread.currentThread().getContextClassLoader().getResource("enrichmentmap_logo_notext_small.png");
         ImageIcon EMIcon = null;
         if (EMIconURL != null) {
             EMIcon = new ImageIcon(EMIconURL);
@@ -183,10 +189,10 @@ public class EnrichmentMapManager implements PropertyChangeListener {
      *
      * @param cyNetwork Object.
      */
-    public void registerNetwork(CyNetwork cyNetwork, EnrichmentMapParameters params) {
+    public void registerNetwork(CyNetwork cyNetwork, EnrichmentMap map) {
 
         if(!cyNetworkList.containsKey(cyNetwork.getIdentifier()))
-            cyNetworkList.put(cyNetwork.getIdentifier(),params);
+            cyNetworkList.put(cyNetwork.getIdentifier(),map);
 
     }
 
@@ -238,21 +244,21 @@ public class EnrichmentMapManager implements PropertyChangeListener {
                     nodesOverlapPanel.clearPanel();
                     edgesOverlapPanel.clearPanel();
 
-                     EnrichmentMapParameters currentNetworkParams = cyNetworkList.get(networkId);
+                     EnrichmentMap currentNetwork= cyNetworkList.get(networkId);
                      PostAnalysisParameters  currentPaParams  = cyNetworkListPostAnalysis.get(networkId);
                     //update the parameters panel
-                    parameterPanel.updatePanel(currentNetworkParams);
+                    parameterPanel.updatePanel(currentNetwork);
 
                     //update the input window to contain the parameters of the selected network
                     //only if there is a input window
                     if(inputWindow!=null)
-                        inputWindow.updateContents(currentNetworkParams);
+                        inputWindow.updateContents(currentNetwork.getParams());
 
                     if(analysisWindow!=null)
-                        analysisWindow.updateContents(currentNetworkParams);
+                        analysisWindow.updateContents(currentNetwork.getParams());
 
-                    nodesOverlapPanel.updatePanel(currentNetworkParams);
-                    edgesOverlapPanel.updatePanel(currentNetworkParams);
+                    nodesOverlapPanel.updatePanel(currentNetwork);
+                    edgesOverlapPanel.updatePanel(currentNetwork);
 
                     nodesOverlapPanel.revalidate();
                     edgesOverlapPanel.revalidate();
@@ -287,7 +293,7 @@ public class EnrichmentMapManager implements PropertyChangeListener {
         // get the index (if it exists) of this network in our list
         // if it exists, remove it
         if (cyNetworkList.containsKey(networkId)) {
-            EnrichmentMapParameters currentNetworkParams = cyNetworkList.get(networkId);
+            EnrichmentMap currentNetworkParams = cyNetworkList.get(networkId);
 
             cyNetworkList.remove(networkId);
         }
@@ -349,9 +355,9 @@ public class EnrichmentMapManager implements PropertyChangeListener {
     }
 
     /**
-     * @return hashmap with instances of EnrichmentMapParameters referenced by network Identifiers. (eg.: CyNetwork.getIdentifier() or CyNetworkView.getIdentifier() )
+     * @return hashmap with instances of EnrichmentMap referenced by network Identifiers. (eg.: CyNetwork.getIdentifier() or CyNetworkView.getIdentifier() )
      */
-    public HashMap<String, EnrichmentMapParameters> getCyNetworkList() {
+    public HashMap<String, EnrichmentMap> getCyNetworkList() {
         return cyNetworkList;
     }
 
@@ -360,9 +366,9 @@ public class EnrichmentMapManager implements PropertyChangeListener {
      * or null if the CyNetwork is not an EnrichmentMap. 
      * 
      * @param name the Identifier of a network <br>(eg.: CyNetwork.getIdentifier() or CyNetworkView.getIdentifier() )
-     * @return EnrichmentMapParameters
+     * @return EnrichmentMap
      */
-    public EnrichmentMapParameters getParameters(String name){
+    public EnrichmentMap getMap(String name){
         if(cyNetworkList.containsKey(name))
             return cyNetworkList.get(name);
         else

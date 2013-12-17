@@ -71,7 +71,7 @@ public class ColorGradientMapper {
     public static Color getColorGradient(ColorGradientTheme theme, ColorGradientRange range, String gene, Double measurement) {
 
         // sparse matrix files will contain NaN value when no data is available
-        if (measurement.equals(Double.NaN)) return theme.getNoDataColor();
+        if (measurement == null || measurement.equals(Double.NaN)) return theme.getNoDataColor();
 
         // sanity check
         final ContinuousMapping continuousMapping = getContinuousMapping(theme,range);

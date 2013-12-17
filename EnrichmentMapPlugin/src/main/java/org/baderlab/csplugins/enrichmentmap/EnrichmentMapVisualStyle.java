@@ -104,7 +104,13 @@ public class EnrichmentMapVisualStyle {
     public static String OVERLAP_GENES = "Overlap_genes";
     public static String HYPERGEOM_PVALUE = "Overlap_Hypergeom_pVal";
     public static String ENRICHMENT_SET = "ENRICHMENT_SET";
-
+    
+    // Related to Hypergeometric distribution
+    public static String HYPERGEOM_N = "HyperGeom_N_Universe";
+    public static String HYPERGEOM_n = "HyperGeom_n_Sig_Universe";
+    public static String HYPERGEOM_k = "k_Intersection";
+    public static String HYPERGEOM_m = "m_Enr_Genes";
+    
     public static String NUMBER_OF_ENRICHMENT_GENES = "# of Enrichment Genes";
     
     public static String NETW_REPORT1_DIR = "GSEA_Report_Dataset1_folder";
@@ -344,9 +350,9 @@ public class EnrichmentMapVisualStyle {
         Calculator nodeColorCalculator = new BasicCalculator(prefix + "ES2Colour", continuousMapping, VisualPropertyType.NODE_FILL_COLOR);
          nodeAppCalc.setCalculator(nodeColorCalculator);
 
-
+         //TODO: Add visual style geneset type support
         //if it is an EM geneset file and there are more than one Geneset type, map the types to shapes.
-        if(params.getGenesetTypes().size() > 1){
+/*        if(.size() > 1){
             DiscreteMapping disMapping = new DiscreteMapping( NodeShape.ELLIPSE, ObjectMapping.NODE_MAPPING);
             disMapping.setControllingAttributeName(prefix + EnrichmentMapVisualStyle.GS_SOURCE);
 
@@ -382,7 +388,7 @@ public class EnrichmentMapVisualStyle {
 
         }
 
-
+*/
        vs.setNodeAppearanceCalculator(nodeAppCalc);
 
 

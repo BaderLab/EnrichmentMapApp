@@ -43,6 +43,10 @@
  
 package org.baderlab.csplugins.enrichmentmap;
 
+import org.baderlab.csplugins.enrichmentmap.model.*;
+import org.baderlab.csplugins.enrichmentmap.parsers.FileReaderTest;
+import org.baderlab.csplugins.enrichmentmap.task.*;
+
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
@@ -66,6 +70,15 @@ public class AllTests {
 
         //add file reader tests
         suite.addTestSuite(FileReaderTest.class);
+        
+        //add task tests
+        suite.addTestSuite(LoadDatasetTaskTest.class);
+        
+        //add GeneSet tests
+        suite.addTestSuite(GeneSetTest.class);
+        
+        //add set of Gene sets test
+        suite.addTestSuite(SetOfGenesetsTest.class);
         
         suite.setName("EnrichmentMapPlugin Tests");
 

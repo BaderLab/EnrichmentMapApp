@@ -1,0 +1,14 @@
+git.branch=${git.branch}
+git.commit.id.describe=${git.commit.id.describe}
+git.build.user.name=${git.build.user.name}
+git.build.user.email=${git.build.user.email}
+git.build.time=${git.build.time}
+git.commit.id=${git.commit.id}
+git.commit.id.abbrev=${git.commit.id.abbrev}
+git.commit.message.full=${git.commit.message.full}
+git.commit.message.short=${git.commit.message.short}
+build.user=${user.name}
+build.timestamp=${timestamp}
+build.os=${os.name}
+build.java_version=${java.version}
+build.number=${buildNumber}

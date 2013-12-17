@@ -1,0 +1,6 @@
+*.class
+
+.DS_Store
+
+#ignore anything in the compiled directory
+target/**/*
