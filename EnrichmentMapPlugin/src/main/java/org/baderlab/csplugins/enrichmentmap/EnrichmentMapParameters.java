@@ -740,7 +740,7 @@ public class EnrichmentMapParameters {
     * to see if the current set of enrichment map parameters has the minimal amount
     * of information to run enrichment maps.
     *
-    * If it is a GSEA run then gmt,gct,2 enrichment files are needed
+    * If it is a GSEA run then gmt,gct,2 enrichment files are needed OR gmt and edb file
     * If it is a generic run then gmt and 1 enrichment file is needed
     * if there are two datasets then depending on type it requires the same as above.
     *
@@ -774,7 +774,9 @@ public class EnrichmentMapParameters {
 
          		// /GSEA inputs
          		if(this.method.equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)){
-         			if(dsFiles.getEnrichmentFileName2() != null && (dsFiles.getEnrichmentFileName2().equalsIgnoreCase("") || !checkFile(dsFiles.getEnrichmentFileName2())))
+         			if(dsFiles.getEnrichmentFileName2() != null && 
+         					(dsFiles.getEnrichmentFileName2().equalsIgnoreCase("") || !checkFile(dsFiles.getEnrichmentFileName2())) &&
+         					!dsFiles.getEnrichmentFileName1().contains("results.edb"))
          				errors = errors + "Dataset 1, enrichment file 2 can not be found\n";         			
          		}       		
          	}
