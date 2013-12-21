@@ -73,38 +73,38 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
      * OVERLAP     = 3
      * DIR_OVERLAP = 4
      */
-    final public static int HYPERGEOM = 0, ABS_NUMBER = 1, JACCARD = 2, OVERLAP = 3, DIR_OVERLAP = 4, MANN_WHITNEY = 5; 
+    final public static int ABS_NUMBER = 0, JACCARD = 1, OVERLAP = 2, DIR_OVERLAP = 3; 
 
     //Gene Set Filtering Constants
     /**
      * Enum for Signature geneset filtering
-     * Percent overlap = 0
-     * Number in overlap = 1
+     * Hypergeometric Test = 0
+     * Percent overlap (percent of Enrichment Map geneset)  = 1
+     * Number in overlap = 2
+     * Percent overlap (percent of Signature geneset) = 3
      */
-    final public static int PERCENT = 0, NUMBER = 1,SPECIFIC = 2;
+    final public static int HYPERGEOM = 0, PERCENT = 1, NUMBER = 2, SPECIFIC = 3;
 
     /**
      * String for Filtering options
-     * PERCENT (0) : "Contains at least X percent"
-     * NUMBER (1) : "Contains at least X genes"
+     * HYPERGEOM (0): "Passed the Hypergeometric cut-off"
+     * PERCENT (1) : "Contains at least X percent (% of EM geneset)"
+     * NUMBER (2) : "Contains at least X genes"
+     * PERCENT (3): "Contains at least X percent (% of Signature geneset)"
      */
-      final public static String[] filterItems = {"Overlap X percent of EM gs","Overlap has at least X genes","Overlap X percent of Signature gs" };
+      final public static String[] filterItems = {"Hypergeometric Test", "Overlap X percent of EM gs", "Overlap has at least X genes", "Overlap X percent of Signature gs"};
     /**
      * Strings for Signature-Hub cut-off metric:
-     * HYPERGEOM    (0) : "Hypergeometric Test"
-     * ABS_NUMBER   (1) : "Number of common genes"
-     * JACCARD      (2) : "Jaccard Coefficient"
-     * OVERLAP      (3) : "Overlap Coefficient"
-     * DIR_OVERLAP  (4) : "Directed Overlap"
-     * MANN_WHITNEY (5) : "Mann-Whitney U Test"
+     * ABS_NUMBER   (0) : "Number of common genes"
+     * JACCARD      (1) : "Jaccard Coefficient"
+     * OVERLAP      (2) : "Overlap Coefficient"
+     * DIR_OVERLAP  (3) : "Directed Overlap"
      */
-    final public static String[] sigCutoffItems = {"Hypergeometric Test", 
-                                            "Number of Common Genes",
+    final public static String[] sigCutoffItems = {"Number of Common Genes",
                                             "Jaccard Coefficient", 
                                             "Overlap Coefficient",
                                             "Directed Overlap",
-                                            "Mann-Whitney U Test"
-                                           };
+                                            };
     
     final public static String SIGNATURE_INTERACTION_TYPE = "sig";
     
@@ -131,10 +131,10 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
     private double default_signature_Jaccard_Cutoff   = 0.125;  
     private double default_signature_Overlap_Cutoff   = 0.25;  
     private double default_signature_DirOverlap_Cutoff= 0.25;  
-    private double default_signature_Hypergeom_Cutoff = 0.05;
+    private double default_signature_Hypergeom_Cutoff = 0.25;
     private double default_signature_Mann_Whit_Cutoff = 2.575;
     
-    private int    default_signature_CutoffMetric      = HYPERGEOM;
+    private int    default_signature_CutoffMetric = ABS_NUMBER;
     
     // Disease Signature Data Structures:
     private SetOfGeneSets signatureGenesets;
@@ -148,7 +148,7 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
     private boolean filter = false;
     private int filterValue;
     private int default_filter_value = 50;
-    private int default_signature_filterMetric = PERCENT;
+    private int default_signature_filterMetric = HYPERGEOM;
     private int signature_filterMetric;
     
     // Rank file
@@ -280,9 +280,6 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
         if (this.signature_CutoffMetric == PostAnalysisParameters.ABS_NUMBER) {
             if (! (this.signature_absNumber_Cutoff > 0))
                 errors += "Number of Genes Cutoff must be a positive, non-zero integer \n";
-        } else if (this.signature_CutoffMetric == PostAnalysisParameters.HYPERGEOM) {
-            if (! (this.signature_Hypergeom_Cutoff >= 0.0 && this.signature_Hypergeom_Cutoff <= 1.0))
-                errors += "Hypergeometric Cutoff must be a decimal Number between 0.0 and 1.0 \n";
         } else if (this.signature_CutoffMetric == PostAnalysisParameters.OVERLAP) {
             if (! (this.signature_Overlap_Cutoff >= 0.0 && this.signature_Overlap_Cutoff <= 1.0))
                 errors += "Overlap Cutoff must be a decimal Number between 0.0 and 1.0 \n";
@@ -292,9 +289,6 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
         } else if (this.signature_CutoffMetric == PostAnalysisParameters.DIR_OVERLAP) {
             if (! (this.signature_DirOverlap_Cutoff >= 0.0 && this.signature_DirOverlap_Cutoff <= 1.0))
                 errors += "Directed Overlap Cutoff must be a decimal Number between 0.0 and 1.0 \n";
-        } else if (this.signature_CutoffMetric == PostAnalysisParameters.MANN_WHITNEY) {
-            if (! (this.signature_Mann_Whit_Cutoff >= 0.0 && this.signature_Mann_Whit_Cutoff <= 5.0))
-                errors += "Mann Whitney Cutoff must be a decimal Number between 0.0 and 5.0 \n";
         } else
             errors += "Invalid Cutoff metric \n";
         

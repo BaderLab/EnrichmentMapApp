@@ -601,6 +601,11 @@ public class PostAnalysisInputPanel extends JPanel {
         filtersPanel.add(nofilter);
 
         String[] filterItems = PostAnalysisParameters.filterItems;
+        
+        filterTextField = new JFormattedTextField() ;
+        filterTextField.setColumns(4);
+        filterTextField.setValue(paParams.getSignature_Hypergeom_Cutoff());
+        filterTextField.addPropertyChangeListener("value", new PostAnalysisInputPanel.FormattedTextFieldAction());
 
         //Two types of filters:
         // 1. filter by percent, i.e. the overlap between the signature geneset and EM geneset
@@ -612,6 +617,7 @@ public class PostAnalysisInputPanel extends JPanel {
         JPanel filterTypePanel = new JPanel();
         filterTypePanel.setLayout(new BorderLayout());
         filterTypeCombo = new JComboBox();
+        filterTypeCombo.addItem(filterItems[PostAnalysisParameters.HYPERGEOM]);
         filterTypeCombo.addItem(filterItems[PostAnalysisParameters.PERCENT]);
         filterTypeCombo.addItem(filterItems[PostAnalysisParameters.NUMBER]);
         filterTypeCombo.addItem(filterItems[PostAnalysisParameters.SPECIFIC]);
@@ -623,23 +629,21 @@ public class PostAnalysisInputPanel extends JPanel {
             public void actionPerformed( ActionEvent e )
             {
                 JComboBox selectedChoice = (JComboBox) e.getSource();
-                if ( filterItems[PostAnalysisParameters.PERCENT].equals( selectedChoice.getSelectedItem() ) ) {
+                if ( filterItems[PostAnalysisParameters.HYPERGEOM].equals( selectedChoice.getSelectedItem() ) ) {
+                    paParams.setSignature_filterMetric(PostAnalysisParameters.HYPERGEOM);
+                    filterTextField.setValue(paParams.getSignature_Hypergeom_Cutoff());
+                } else if ( filterItems[PostAnalysisParameters.PERCENT].equals( selectedChoice.getSelectedItem() ) ) {
                     paParams.setSignature_filterMetric(PostAnalysisParameters.PERCENT);
-
+                    filterTextField.setValue(paParams.getFilterValue());
                 } else if ( filterItems[PostAnalysisParameters.NUMBER].equals( selectedChoice.getSelectedItem() ) ) {
                     paParams.setSignature_filterMetric(PostAnalysisParameters.NUMBER);
-
+                    filterTextField.setValue(paParams.getFilterValue());
                 }else if ( filterItems[PostAnalysisParameters.SPECIFIC].equals( selectedChoice.getSelectedItem() ) ) {
                     paParams.setSignature_filterMetric(PostAnalysisParameters.SPECIFIC);
-
+                    filterTextField.setValue(paParams.getFilterValue());
                 }
             }
         });
-
-        filterTextField = new JFormattedTextField() ;
-        filterTextField.setColumns(4);
-        filterTextField.setValue(paParams.getFilterValue());
-        filterTextField.addPropertyChangeListener("value", new PostAnalysisInputPanel.FormattedTextFieldAction());
 
         filterTypePanel.add(filter,BorderLayout.WEST);
         filterTypePanel.add(filterTypeCombo, BorderLayout.CENTER);
@@ -679,21 +683,17 @@ public class PostAnalysisInputPanel extends JPanel {
         JPanel cutoffPanel = new JPanel();
         cutoffPanel.setLayout(new BoxLayout(cutoffPanel, BoxLayout.X_AXIS));
         sigCutoffCombo = new JComboBox();
-        sigCutoffCombo.addItem(sigCutoffItems[PostAnalysisParameters.HYPERGEOM]);
         sigCutoffCombo.addItem(sigCutoffItems[PostAnalysisParameters.ABS_NUMBER]);
-//        sigCutoffCombo.addItem(sigCutoffItems[PostAnalysisParameters.JACCARD]);
-//        sigCutoffCombo.addItem(sigCutoffItems[PostAnalysisParameters.OVERLAP]);
+        sigCutoffCombo.addItem(sigCutoffItems[PostAnalysisParameters.JACCARD]);
+        sigCutoffCombo.addItem(sigCutoffItems[PostAnalysisParameters.OVERLAP]);
         sigCutoffCombo.addItem(sigCutoffItems[PostAnalysisParameters.DIR_OVERLAP]);
-        sigCutoffCombo.addItem(sigCutoffItems[PostAnalysisParameters.MANN_WHITNEY]);
         sigCutoffCombo.setSelectedItem(sigCutoffItems[paParams.getDefault_signature_CutoffMetric()]);
 
 
         //JFormattedTextField
         sigCutoffTextField = new JFormattedTextField(decFormat);
         sigCutoffTextField.setColumns(3);
-        if (paParams.getDefault_signature_CutoffMetric() == PostAnalysisParameters.HYPERGEOM)
-            sigCutoffTextField.setValue(paParams.getSignature_Hypergeom_Cutoff());
-        else if (paParams.getDefault_signature_CutoffMetric() == PostAnalysisParameters.ABS_NUMBER)
+        if (paParams.getDefault_signature_CutoffMetric() == PostAnalysisParameters.ABS_NUMBER)
             sigCutoffTextField.setValue(paParams.getSignature_absNumber_Cutoff());
         else if (paParams.getDefault_signature_CutoffMetric() == PostAnalysisParameters.JACCARD)
             sigCutoffTextField.setValue(paParams.getSignature_Jaccard_Cutoff());
@@ -701,8 +701,6 @@ public class PostAnalysisInputPanel extends JPanel {
             sigCutoffTextField.setValue(paParams.getSignature_Overlap_Cutoff());
         else if (paParams.getDefault_signature_CutoffMetric() == PostAnalysisParameters.DIR_OVERLAP)
             sigCutoffTextField.setValue(paParams.getSignature_DirOverlap_Cutoff());
-        else if (paParams.getDefault_signature_CutoffMetric() == PostAnalysisParameters.MANN_WHITNEY)
-            sigCutoffTextField.setValue(paParams.getSignature_Mann_Whit_Cutoff());
         else {
             //Handle Unsupported Default_signature_CutoffMetric Error
             String message = "This Cutoff metric is not supported.";
@@ -716,10 +714,7 @@ public class PostAnalysisInputPanel extends JPanel {
             public void actionPerformed( ActionEvent e ) 
             { 
               JComboBox selectedChoice = (JComboBox) e.getSource(); 
-              if ( sigCutoffItems[PostAnalysisParameters.HYPERGEOM].equals( selectedChoice.getSelectedItem() ) ) {
-                  paParams.setSignature_CutoffMetric(PostAnalysisParameters.HYPERGEOM);
-                  sigCutoffTextField.setValue(paParams.getSignature_Hypergeom_Cutoff());
-              } else if ( sigCutoffItems[PostAnalysisParameters.ABS_NUMBER].equals( selectedChoice.getSelectedItem() ) ) {
+              if ( sigCutoffItems[PostAnalysisParameters.ABS_NUMBER].equals( selectedChoice.getSelectedItem() ) ) {
                   paParams.setSignature_CutoffMetric(PostAnalysisParameters.ABS_NUMBER);
                   sigCutoffTextField.setValue(paParams.getSignature_absNumber_Cutoff());
               } else if ( sigCutoffItems[PostAnalysisParameters.JACCARD].equals( selectedChoice.getSelectedItem() ) ) {
@@ -731,9 +726,6 @@ public class PostAnalysisInputPanel extends JPanel {
               } else if ( sigCutoffItems[PostAnalysisParameters.DIR_OVERLAP].equals( selectedChoice.getSelectedItem() ) ) {
                   paParams.setSignature_CutoffMetric(PostAnalysisParameters.DIR_OVERLAP);
                   sigCutoffTextField.setValue(paParams.getSignature_DirOverlap_Cutoff());
-              } else if ( sigCutoffItems[PostAnalysisParameters.MANN_WHITNEY].equals( selectedChoice.getSelectedItem() ) ) {
-                  paParams.setSignature_CutoffMetric(PostAnalysisParameters.MANN_WHITNEY);
-                  sigCutoffTextField.setValue(paParams.getSignature_Mann_Whit_Cutoff());
               }
                  
             } 
@@ -817,16 +809,7 @@ public class PostAnalysisInputPanel extends JPanel {
             } 
             else if (source == sigCutoffTextField) {
                 Number value = (Number) sigCutoffTextField.getValue();
-                if (paParams.getSignature_CutoffMetric() == PostAnalysisParameters.HYPERGEOM) {
-                    if ((value != null) && (value.doubleValue() >= 0.0) && (value.doubleValue() <= 1.0)) {
-                        paParams.setSignature_Hypergeom_Cutoff(value.doubleValue());
-                    } else {
-                        source.setValue(paParams.getSignature_Hypergeom_Cutoff());
-                        message += "The Hypergeometric-pValue cutoff must be greater or equal than 0.0 and less than or equal to 1.0.";
-                        invalid = true;
-                    }
-                }
-                else if (paParams.getSignature_CutoffMetric() == PostAnalysisParameters.ABS_NUMBER) {
+                if (paParams.getSignature_CutoffMetric() == PostAnalysisParameters.ABS_NUMBER) {
                     if ((value != null) && (value.intValue() >= 0) ) {
                         paParams.setSignature_absNumber_Cutoff(value.intValue());
                     } else {
@@ -859,15 +842,6 @@ public class PostAnalysisInputPanel extends JPanel {
                     } else {
                         source.setValue(paParams.getSignature_DirOverlap_Cutoff());
                         message += "The Overlap Coefficient cutoff must be greater than 0.0 and less than or equal to 1.0.";
-                        invalid = true;
-                    }
-                }
-                else if (paParams.getSignature_CutoffMetric() == PostAnalysisParameters.MANN_WHITNEY) {
-                    if ((value != null) && (value.doubleValue() >= 0.0) && (value.doubleValue() <= 5.0)) {
-                        paParams.setSignature_Mann_Whit_Cutoff(value.doubleValue());
-                    } else {
-                        source.setValue(paParams.getSignature_Mann_Whit_Cutoff());
-                        message += "The Mann-Whitney U Z-score cutoff must be greater than or equal to 0.0 and less than or equal to 5.0.";
                         invalid = true;
                     }
                 }
@@ -984,7 +958,7 @@ public class PostAnalysisInputPanel extends JPanel {
     private void selectAnalysisTypeActionPerformed(ActionEvent evt){
         String analysisType = evt.getActionCommand();
 
-        if(analysisType.equalsIgnoreCase("Signature Hubs"))
+        if(analysisType.equalsIgnoreCase("Signature Discovery"))
             paParams.setSignatureHub(true);
         else
             paParams.setSignatureHub(false);
@@ -1118,9 +1092,6 @@ public class PostAnalysisInputPanel extends JPanel {
         sigCutoffCombo.setSelectedIndex(paParams.getSignature_CutoffMetric());
         // reset Text Field
         switch (paParams.getSignature_CutoffMetric()) {
-        case PostAnalysisParameters.HYPERGEOM:
-            sigCutoffTextField.setValue(paParams.getSignature_Hypergeom_Cutoff());
-            break;
         case PostAnalysisParameters.ABS_NUMBER:
             sigCutoffTextField.setValue(paParams.getSignature_absNumber_Cutoff());
             break;
@@ -1171,9 +1142,6 @@ public class PostAnalysisInputPanel extends JPanel {
         this.sigCutoffCombo.setSelectedIndex(this.paParams.getSignature_CutoffMetric());
         
         switch (this.paParams.getSignature_CutoffMetric()) {
-        case PostAnalysisParameters.HYPERGEOM:
-            sigCutoffTextField.setValue(this.paParams.getSignature_Hypergeom_Cutoff());
-            break;
         case PostAnalysisParameters.ABS_NUMBER:
             sigCutoffTextField.setValue(this.paParams.getSignature_absNumber_Cutoff());
             break;

@@ -86,7 +86,7 @@ public class LoadSignatureGMTFilesTask implements Task{
                 } catch (OutOfMemoryError e) {
                     taskMonitor.setException(e,"Out of Memory. Please increase memory allotment for Cytoscape.");
                     return;
-                }   catch(Exception e){
+                } catch(Exception e){
                     taskMonitor.setException(e,"unable to load GMT files");
                     return;
                 }
@@ -102,7 +102,6 @@ public class LoadSignatureGMTFilesTask implements Task{
                 Object[] setsOfInterest = genesets_in_map.keySet().toArray();
                 //get the value to be filtered by if there is a filter
 
-
                 Object[] setNamesArray = paParams.getSignatureGenesets().getGenesets().keySet().toArray();
                 Arrays.sort( setNamesArray );
                 
@@ -110,7 +109,6 @@ public class LoadSignatureGMTFilesTask implements Task{
                     if (interrupted)
                         throw new InterruptedException();
                     if (! selectedSignatureSetNames.contains(setNamesArray[i])){
-
                         if(paParams.isFilter()){
                             //only add the name if it overlaps with the sets in the map.
                             boolean matchfound = false;
@@ -120,23 +118,25 @@ public class LoadSignatureGMTFilesTask implements Task{
                                 Integer original_size = mapset.size();
                                 HashSet <Integer> paset = new HashSet<Integer>(paParams.getSignatureGenesets().getGenesets().get(setNamesArray[i]).getGenes());
                                 mapset.retainAll(paset);
-
+                                
+                                //if we want to do the hypergeometric test do:
+                                if (paParams.getSignature_filterMetric() == paParams.HYPERGEOM) {
+                                	// ??
+                                	// ??
                                 //if we are looking for percentage do:
-                                if(paParams.getSignature_filterMetric() == paParams.PERCENT){
+                                } else if(paParams.getSignature_filterMetric() == paParams.PERCENT) {
                                     Double relative_per =  mapset.size()/original_size.doubleValue();
                                     if(relative_per >= (Double)(paParams.getFilterValue()/100.0) ){
                                         matchfound = true;
                                         break;
                                     }
-                                }
                                 //if we are looking for number in the overlap
-                                else if(paParams.getSignature_filterMetric() == paParams.NUMBER){
+                                } else if(paParams.getSignature_filterMetric() == paParams.NUMBER) {
                                     if(mapset.size() >= paParams.getFilterValue()){
                                         matchfound = true;
                                         break;
                                     }
-                                }
-                                else if(paParams.getSignature_filterMetric() == paParams.SPECIFIC){
+                                } else if(paParams.getSignature_filterMetric() == paParams.SPECIFIC) {
                                     Double relative_per =  mapset.size()/((Integer)(paset.size())).doubleValue();
                                     if(relative_per >= (Double)(paParams.getFilterValue()/100.0) ){
                                         matchfound = true;
@@ -148,12 +148,10 @@ public class LoadSignatureGMTFilesTask implements Task{
                                 if (! signatureSetNames.contains(setNamesArray[i]))
                                     signatureSetNames.addElement(setNamesArray[i] );
                             }
-                        }
-                        else{
+                        } else {
                             signatureSetNames.addElement(setNamesArray[i] );
                         }
                     }
-
                 }
                 
                 this.paPanel.setAvSigCount(signatureSetNames.size());
@@ -161,7 +159,6 @@ public class LoadSignatureGMTFilesTask implements Task{
             } catch (InterruptedException e) {
                 taskMonitor.setException(e, "loading of GMT files cancelled");
             }
-
         }
         /* (non-Javadoc)
          * @see cytoscape.task.Task#setTaskMonitor(cytoscape.task.TaskMonitor)

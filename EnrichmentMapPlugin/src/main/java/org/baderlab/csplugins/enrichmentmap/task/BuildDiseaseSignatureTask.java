@@ -448,11 +448,6 @@ public class BuildDiseaseSignatureTask implements Task {
                 else if ( (paParams.getSignature_CutoffMetric() == PostAnalysisParameters.DIR_OVERLAP) && 
                         (geneset_similarities.get(edge_name).getSimilarity_coeffecient() >= paParams.getSignature_DirOverlap_Cutoff() ) )
                     passed_cutoff = true;
-                else if ( (paParams.getSignature_CutoffMetric() == PostAnalysisParameters.HYPERGEOM) && 
-                          (geneset_similarities.get(edge_name).getHypergeom_pvalue() != -1.0) &&
-                          (geneset_similarities.get(edge_name).getHypergeom_pvalue() <= paParams.getSignature_Hypergeom_Cutoff() ) &&
-                          (geneset_similarities.get(edge_name).getMann_Whit_pValue() <= paParams.getSignature_Mann_Whit_Cutoff() ))
-                    passed_cutoff = true;
 
                 if (passed_cutoff) {
                     CyNode hub_node = Cytoscape.getCyNode( geneset_similarities.get(edge_name).getGeneset1_Name() );
