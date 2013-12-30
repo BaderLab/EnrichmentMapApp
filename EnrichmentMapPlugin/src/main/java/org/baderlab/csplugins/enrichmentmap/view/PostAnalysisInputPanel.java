@@ -65,6 +65,7 @@ import org.baderlab.csplugins.enrichmentmap.actions.BuildPostAnalysisActionListe
 import org.baderlab.csplugins.enrichmentmap.actions.ShowAboutPanelAction;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.JMultiLineToolTip;
+import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
 import org.baderlab.csplugins.enrichmentmap.task.LoadSignatureGMTFilesTask;
 
 import java.awt.*;
@@ -575,6 +576,7 @@ public class PostAnalysisInputPanel extends JPanel {
         filter = new JRadioButton("Filter By");
         filter.setActionCommand("filter");
         filter.setSelected(true);
+        paParams.setFilter(true);
         nofilter = new JRadioButton("No Filter");
         nofilter.setActionCommand("nofilter");
         nofilter.setSelected(false);
@@ -804,8 +806,10 @@ public class PostAnalysisInputPanel extends JPanel {
                     JOptionPane.showMessageDialog(Cytoscape.getDesktop(),message,"File name change entered is not a valid file name",JOptionPane.WARNING_MESSAGE);
                     signatureGMTFileNameTextField.setForeground(checkFile(value));
                 }
-                else
+                else {
                     paParams.setSignatureGMTFileName(value);
+                    paParams.setSignatureGenesets(new SetOfGeneSets());
+                }
             } 
             else if (source == sigCutoffTextField) {
                 Number value = (Number) sigCutoffTextField.getValue();
@@ -853,7 +857,15 @@ public class PostAnalysisInputPanel extends JPanel {
             else if (source == filterTextField) {
                 Number value = (Number) filterTextField.getValue();
                 //if the filter type is percent then make sure the number entered is between 0 and 100
-                if(paParams.getSignature_filterMetric() == paParams.PERCENT){
+                if(paParams.getSignature_filterMetric() == paParams.HYPERGEOM){
+                    if ((value != null) && (value.doubleValue() >= 0.0) && (value.intValue() <= 1.0)) {
+                        paParams.setSignature_Hypergeom_Cutoff(value.doubleValue());
+                    } else {
+                        source.setValue(paParams.getDefault_signature_Hypergeom_Cutoff());
+                        message += "The filter cutoff must be greater than or equal 0.0 and less than or equal to 1.0";
+                        invalid = true;
+                    }
+                } else if(paParams.getSignature_filterMetric() == paParams.PERCENT){
                     if ((value != null) && (value.intValue() >= 0) && (value.intValue() <= 100)) {
                         paParams.setFilterValue(value.intValue());
                     } else {
@@ -1244,7 +1256,6 @@ public class PostAnalysisInputPanel extends JPanel {
      * Time   5:50:59 PM<br>
      *
      */
-	
     private class PaPanelActionListener implements ActionListener {
     	protected PostAnalysisInputPanel paPanel = null;
     	

@@ -56,7 +56,6 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
 
-
 /**
  * Created by
  * User: risserlin
@@ -162,7 +161,7 @@ public class GMTFileReaderTask implements Task {
      */
     public void parse() {
     		
-    		HashMap<String, GeneSet> genesets = setOfgenesets.getGenesets();
+    	HashMap<String, GeneSet> genesets = setOfgenesets.getGenesets();
     	
         //open GMT file
         TextFileReader reader = new TextFileReader(GMTFileName);
@@ -251,8 +250,6 @@ public class GMTFileReaderTask implements Task {
 
 
     }
-
-
 
     /**
      * Run the Task.
