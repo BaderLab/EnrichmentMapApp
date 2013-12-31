@@ -152,7 +152,7 @@
                         <abbrev>7</abbrev>
 
                         <!-- when the build is triggered while the repo is in "dirty state", append this suffix -->
-                        <dirty>-dirty</dirty>
+                        <dirty>-dev</dirty>
 
                         <!-- 
                              always print using the "tag-commits_from_tag-g_commit_id-maybe_dirty" format, even if "on" a tag. 
@@ -312,7 +312,7 @@
                         <abbrev>7</abbrev>
 
                         <!-- when the build is triggered while the repo is in "dirty state", append this suffix -->
-                        <dirty>-dirty</dirty>
+                        <dirty>-dev</dirty>
 
                         <!-- 
                              always print using the "tag-commits_from_tag-g_commit_id-maybe_dirty" format, even if "on" a tag. 
