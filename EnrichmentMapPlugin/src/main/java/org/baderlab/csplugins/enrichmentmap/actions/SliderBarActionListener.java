@@ -321,8 +321,8 @@ public class SliderBarActionListener implements ChangeListener {
             Edge currentEdge = network.getEdge(edges[i]);
 
             // skip Node if it's not an Enrichment-Geneset (but e.g. a Signature-Hub)
-            if( attributes.hasAttribute(currentEdge.getIdentifier(), prefix + EnrichmentMapVisualStyle.GS_TYPE)
-                && ! EnrichmentMapVisualStyle.GS_TYPE_ENRICHMENT.equalsIgnoreCase(attributes.getStringAttribute(currentEdge.getIdentifier(), prefix + EnrichmentMapVisualStyle.GS_TYPE)) )
+            if( attributes.hasAttribute(currentEdge.getIdentifier(), "interaction")
+                && EnrichmentMapVisualStyle.GS_TYPE_SIGNATURE.equalsIgnoreCase(attributes.getStringAttribute(currentEdge.getIdentifier(), "interaction")) )
                 continue;
 
             Double similarity_cutoff = attributes.getDoubleAttribute(currentEdge.getIdentifier(), prefix + attrib_dataset1);
