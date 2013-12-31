@@ -436,6 +436,10 @@ public class EnrichmentMapParameters {
     					new_dsf.setClassFile(checkForNull(props,current_ds+ "%" + DataSetFiles.class.getSimpleName() + "%classFile"));
     				if(props.containsKey(current_ds + "%" + DataSetFiles.class.getSimpleName() + "%RankedFile"))
     					new_dsf.setRankedFile(checkForNull(props,current_ds + "%" + DataSetFiles.class.getSimpleName() + "%RankedFile"));
+    				if(props.containsKey(current_ds + "%" + DataSetFiles.class.getSimpleName() + "%Phenotype1"))
+    					new_dsf.setPhenotype1(checkForNull(props,current_ds + "%" + DataSetFiles.class.getSimpleName() + "%Phenotype1"));
+    				if(props.containsKey(current_ds + "%" + DataSetFiles.class.getSimpleName() + "%Phenotype2"))
+    					new_dsf.setPhenotype2(checkForNull(props,current_ds + "%" + DataSetFiles.class.getSimpleName() + "%Phenotype2"));
     				
     				this.files.put(current_ds, new_dsf);
     				
