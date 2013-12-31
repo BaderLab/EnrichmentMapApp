@@ -156,6 +156,7 @@ public class EnrichmentMapInputPanel extends JPanel {
     private boolean similarityCutOffChanged = false;
     private boolean LoadedFromRpt_dataset1 = false;
     private boolean LoadedFromRpt_dataset2 = false;
+    private boolean panelUpdate = false;
     
     /**
      * Constructor
@@ -1152,7 +1153,7 @@ public class EnrichmentMapInputPanel extends JPanel {
             	 	source.setForeground(found);
             		
             		//For all the files warn the user if the new file is still not found
-            		if(found.equals(Color.RED) && !LoadedFromRpt_dataset1 && !LoadedFromRpt_dataset2)
+            		if(found.equals(Color.RED) && !LoadedFromRpt_dataset1 && !LoadedFromRpt_dataset2 && !panelUpdate)
             			JOptionPane.showMessageDialog(Cytoscape.getDesktop(),message,"File name change entered is not a valid file name",JOptionPane.WARNING_MESSAGE);
                      
             	}//end of else for Text boxes that are text and files
@@ -2335,7 +2336,7 @@ public class EnrichmentMapInputPanel extends JPanel {
     private void resetPanel(){
 
         this.params = new EnrichmentMapParameters();
-        
+        this.panelUpdate = false;
         //reset the datafiles as well
         this.dataset1files = new DataSetFiles();
         this.dataset2files = new DataSetFiles();
@@ -2439,6 +2440,7 @@ public class EnrichmentMapInputPanel extends JPanel {
     	
         this.params = new EnrichmentMapParameters();
         this.params.copy(current_params);
+        this.panelUpdate = true;
         
         if(params.getFiles().containsKey(EnrichmentMap.DATASET1))
   		  	this.dataset1files = params.getFiles().get(EnrichmentMap.DATASET1);
@@ -2446,17 +2448,24 @@ public class EnrichmentMapInputPanel extends JPanel {
   	  		this.dataset2files = params.getFiles().get(EnrichmentMap.DATASET2);
 
   	    GMTFileNameTextField.setText((dataset1files.getGMTFileName() == null)? "" :dataset1files.getGMTFileName());
-        GCTFileName1TextField.setText((dataset1files.getExpressionFileName() == null)? "":dataset1files.getExpressionFileName());
-        Dataset1FileNameTextField.setText((dataset1files.getEnrichmentFileName1()==null)?"":dataset1files.getEnrichmentFileName1());
-        Dataset1FileName2TextField.setText((dataset1files.getEnrichmentFileName2()==null)?"":dataset1files.getEnrichmentFileName2());
-        Dataset1RankFileTextField.setText((dataset1files.getRankedFile()==null)?"":dataset1files.getRankedFile());
-
+  	    GMTFileNameTextField.setForeground(checkFile(GMTFileNameTextField.getText()));
+  	    GCTFileName1TextField.setText((dataset1files.getExpressionFileName() == null)? "":dataset1files.getExpressionFileName());
+  	    GCTFileName1TextField.setForeground(checkFile(GCTFileName1TextField.getText()));
+  	    Dataset1FileNameTextField.setText((dataset1files.getEnrichmentFileName1()==null)?"":dataset1files.getEnrichmentFileName1());
+  	    Dataset1FileNameTextField.setForeground(checkFile(Dataset1FileNameTextField.getText()));
+  	    Dataset1FileName2TextField.setText((dataset1files.getEnrichmentFileName2()==null)?"":dataset1files.getEnrichmentFileName2());
+  	    Dataset1FileName2TextField.setForeground(checkFile(Dataset1FileName2TextField.getText()));
+  	    Dataset1RankFileTextField.setText((dataset1files.getRankedFile()==null)?"":dataset1files.getRankedFile());
+  	    Dataset1RankFileTextField.setForeground(checkFile(Dataset1RankFileTextField.getText()));
         
         GCTFileName2TextField.setText((dataset2files.getExpressionFileName() == null)? "":dataset2files.getExpressionFileName());
+        GCTFileName2TextField.setForeground(checkFile(GCTFileName2TextField.getText()));
         Dataset2FileNameTextField.setText((dataset2files.getEnrichmentFileName1()==null)?"":dataset2files.getEnrichmentFileName1());
+        Dataset2FileNameTextField.setForeground(checkFile(Dataset2FileNameTextField.getText()));
         Dataset2FileName2TextField.setText((dataset2files.getEnrichmentFileName2()==null)?"":dataset2files.getEnrichmentFileName2());
+        Dataset2FileName2TextField.setForeground(checkFile(Dataset2FileName2TextField.getText()));
         Dataset2RankFileTextField.setText((dataset2files.getRankedFile()==null)?"":dataset2files.getRankedFile());
-
+        Dataset2RankFileTextField.setForeground(checkFile(Dataset2RankFileTextField.getText()));
 
         Dataset1Phenotype1TextField.setText(dataset1files.getPhenotype1());
         Dataset1Phenotype2TextField.setText(dataset1files.getPhenotype2());
