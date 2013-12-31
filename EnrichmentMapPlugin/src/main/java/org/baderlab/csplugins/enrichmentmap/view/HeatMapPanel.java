@@ -417,7 +417,15 @@ public class HeatMapPanel extends JPanel {
                         tcModel.getColumn(i).setPreferredWidth(50);
                     else{
                         tcModel.getColumn(i).setPreferredWidth(defaultColumnwidth);
-                        if(phenotypes != null){
+                        /*If the class file is made from within GSEA but the expression file
+                         * has more than one class defined in it there is no way to align
+                         * the class file to the expression file.
+                         * the phenotypes have two less positions because the phenotype file
+                         * doesn't define the name and description columns
+                         * In this case use the default renderer
+                         * Ticket #225
+                         */                  
+                        if(phenotypes != null && (phenotypes.length +2) == columnNames.length){
                             if(phenotypes[i-2].equalsIgnoreCase(Dataset1phenotype1))
                                 tcModel.getColumn(i).setHeaderRenderer(pheno1_renderer);
                             else if(phenotypes[i-2].equalsIgnoreCase(Dataset1phenotype2))
