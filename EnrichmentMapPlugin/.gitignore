@@ -1,0 +1,14 @@
+*.class
+.DS_Store
+
+# Package Files #
+*.jar
+*.war
+*.ear
+
+#ignore anything in the compiled directory
+target/**/*
+resources/
+temp_resources/
+.settings/
+
