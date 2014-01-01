@@ -302,7 +302,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
            JButton about = new JButton("About");
            
            //TODO add about box action listener
-           //about.addActionListener(new ShowAboutPanelAction(null, null, null, application, browser));
+//           about.addActionListener(new ShowAboutPanelAction(null, applicationManager, networkViewManager, application, browser));
 
            //add button to do bulk EM Creation
            //TODO: button for bulk EM from main EM interface not implemented
@@ -2511,7 +2511,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 
 	public Icon getIcon() {
 		//create an icon for the enrichment map panels
-        URL EMIconURL = Thread.currentThread().getContextClassLoader().getResource("enrichmentmap_logo_notext_small.png");
+        URL EMIconURL = this.getClass().getResource("enrichmentmap_logo_notext_small.png");
         ImageIcon EMIcon = null;
         if (EMIconURL != null) {
             EMIcon = new ImageIcon(EMIconURL);

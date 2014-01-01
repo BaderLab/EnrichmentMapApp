@@ -390,11 +390,11 @@ public class HeatMapParameters {
         URL iconURL;
         //                         Oliver at 26/06/2009:  relative path works for me,
         //                         maybe need to change to org/baderlab/csplugins/enrichmentmap/resources/arrow_collapsed.gif
-        iconURL = Thread.currentThread().getContextClassLoader().getResource("arrow_up.gif");
+        iconURL = this.getClass().getResource("arrow_up.gif");
         if (iconURL != null) {
             iconArrow[Ascending] = new ImageIcon(iconURL);
         }
-        iconURL = Thread.currentThread().getContextClassLoader().getResource("arrow_down.gif");
+        iconURL = this.getClass().getResource("arrow_down.gif");
         if (iconURL != null) {
             iconArrow[Descending] = new ImageIcon(iconURL);
         }

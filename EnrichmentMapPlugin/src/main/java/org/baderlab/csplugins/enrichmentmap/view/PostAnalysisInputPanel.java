@@ -706,19 +706,19 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
         URL iconURL;
         //                         Oliver at 26/06/2009:  relative path works for me,
         //                         maybe need to change to org/baderlab/csplugins/enrichmentmap/resources/arrow_collapsed.gif
-        iconURL = Thread.currentThread().getContextClassLoader().getResource("arrow_up.gif");
+        iconURL = this.getClass().getResource("arrow_up.gif");
         if (iconURL != null) {
             iconArrow[UP] = new ImageIcon(iconURL);
         }
-        iconURL = Thread.currentThread().getContextClassLoader().getResource("arrow_down.gif");
+        iconURL = this.getClass().getResource("arrow_down.gif");
         if (iconURL != null) {
             iconArrow[DOWN] = new ImageIcon(iconURL);
         }
-        iconURL = Thread.currentThread().getContextClassLoader().getResource("arrow_left.gif");
+        iconURL = this.getClass().getResource("arrow_left.gif");
         if (iconURL != null) {
             iconArrow[LEFT] = new ImageIcon(iconURL);
         }
-        iconURL = Thread.currentThread().getContextClassLoader().getResource("arrow_right.gif");
+        iconURL = this.getClass().getResource("arrow_right.gif");
         if (iconURL != null) {
             iconArrow[RIGHT] = new ImageIcon(iconURL);
         }
@@ -1164,7 +1164,7 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
 	}
 
 	public Icon getIcon() {
-		URL EMIconURL = Thread.currentThread().getContextClassLoader().getResource("enrichmentmap_logo_notext_small.png");
+		URL EMIconURL = this.getClass().getResource("enrichmentmap_logo_notext_small.png");
         ImageIcon EMIcon = null;
         if (EMIconURL != null) {
             EMIcon = new ImageIcon(EMIconURL);

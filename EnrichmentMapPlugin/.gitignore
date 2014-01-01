@@ -5,10 +5,18 @@
 *.jar
 *.war
 *.ear
+*.ai
+*.zip
+*.cys
 
 #ignore anything in the compiled directory
 target/**/*
-resources/
+resources/EM_EBC_TestData/
+resources/Graphics_for_Manual/
+resources/Graphics_for_wiki/
+resources/scripts/
+*.Gsea.*/
+*.GseaPreRanked.*/
 temp_resources/
 .settings/
 

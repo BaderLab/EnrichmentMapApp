@@ -2048,7 +2048,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
 	}
 
 	public Icon getIcon() {
-		URL EMIconURL = Thread.currentThread().getContextClassLoader().getResource("enrichmentmap_logo_notext_small.png");
+		URL EMIconURL = this.getClass().getResource("enrichmentmap_logo_notext_small.png");
         ImageIcon EMIcon = null;
         if (EMIconURL != null) {
             EMIcon = new ImageIcon(EMIconURL);

@@ -202,11 +202,11 @@ public class CollapsiblePanel extends JPanel {
         URL iconURL;
         //                         Oliver at 26/06/2009:  relative path works for me,
         //                         maybe need to change to org/baderlab/csplugins/enrichmentmap/resources/arrow_collapsed.gif
-        iconURL = Thread.currentThread().getContextClassLoader().getResource("arrow_collapsed.gif");
+        iconURL = this.getClass().getResource("arrow_collapsed.gif");
         if (iconURL != null) {
             iconArrow[COLLAPSED] = new ImageIcon(iconURL);
         }
-        iconURL = Thread.currentThread().getContextClassLoader().getResource("arrow_expanded.gif");
+        iconURL = this.getClass().getResource("arrow_expanded.gif");
         if (iconURL != null) {
             iconArrow[EXPANDED] = new ImageIcon(iconURL);
         }

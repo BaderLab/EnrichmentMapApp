@@ -153,7 +153,7 @@ public class EnrichmentMapManager /*implements PropertyChangeListener*/ {
         parameterPanel = new ParametersPanel();
         
         //create an icon for the enrichment map panels
-        URL EMIconURL = Thread.currentThread().getContextClassLoader().getResource("enrichmentmap_logo_notext_small.png");
+        URL EMIconURL = this.getClass().getResource("view/enrichmentmap_logo_notext_small.png");
         ImageIcon EMIcon = null;
         if (EMIconURL != null) {
             EMIcon = new ImageIcon(EMIconURL);
