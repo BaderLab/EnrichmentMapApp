@@ -45,23 +45,17 @@ package org.baderlab.csplugins.enrichmentmap.task;
 
 
 
-import java.io.File;
+
 import java.util.*;
-
-import javax.swing.*;
-
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapVisualStyle;
-import org.baderlab.csplugins.enrichmentmap.actions.EnrichmentMapActionListener;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
 import org.baderlab.csplugins.enrichmentmap.model.GSEAResult;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.GenericResult;
 import org.baderlab.csplugins.enrichmentmap.model.GenesetSimilarity;
-import org.baderlab.csplugins.enrichmentmap.view.EnrichmentMapInputPanel;
-import org.baderlab.csplugins.enrichmentmap.view.ParametersPanel;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -324,8 +318,6 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
                 }
                 currentProgress++;
 
-
-
             }
 
             //Add any additional nodes from the second dataset that haven't been added yet
@@ -427,6 +419,8 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
                         edge_type = EnrichmentMapParameters.ENRICHMENT_INTERACTION_TYPE;
                                                                             
                     CyRow current_edgerow = edgeTable.getRow(edge.getSUID());
+                    current_edgerow.set(CyNetwork.NAME,current_name);
+                    current_edgerow.set(CyEdge.INTERACTION, current_result.getInteractionType());
                     current_edgerow.set( prefix+EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT, current_result.getSimilarity_coeffecient());
                     current_edgerow.set( prefix+ EnrichmentMapVisualStyle.OVERLAP_SIZE, current_result.getSizeOfOverlap());
                     current_edgerow.set( prefix + EnrichmentMapVisualStyle.ENRICHMENT_SET  , current_result.getEnrichment_set());
@@ -686,14 +680,16 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
     		nodeTable.createColumn(prefix+EnrichmentMapVisualStyle.FWER_QVALUE_DATASET1, Double.class, false);		
     		nodeTable.createColumn(prefix+ EnrichmentMapVisualStyle.GS_SIZE_DATASET1, Integer.class, false);
     		
-    		nodeTable.createColumn(prefix+EnrichmentMapVisualStyle.PVALUE_DATASET2, Double.class, false);
-    		nodeTable.createColumn(prefix+EnrichmentMapVisualStyle.COLOURING_DATASET2, Double.class, false);
-    		nodeTable.createColumn(prefix+EnrichmentMapVisualStyle.ES_DATASET2, Double.class, false);
-    		nodeTable.createColumn(prefix+EnrichmentMapVisualStyle.NES_DATASET2, Double.class, false);
-    		nodeTable.createColumn(prefix+EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2, Double.class, false);
-    		nodeTable.createColumn(prefix+EnrichmentMapVisualStyle.FWER_QVALUE_DATASET2, Double.class, false);
-    		nodeTable.createColumn(prefix+ EnrichmentMapVisualStyle.GS_SIZE_DATASET2, Integer.class, false);
-    		
+    		//only create dataset2 if this map has two datasets
+    		if(map.getDatasets().size()>1){
+    			nodeTable.createColumn(prefix+EnrichmentMapVisualStyle.PVALUE_DATASET2, Double.class, false);
+    			nodeTable.createColumn(prefix+EnrichmentMapVisualStyle.COLOURING_DATASET2, Double.class, false);
+    			nodeTable.createColumn(prefix+EnrichmentMapVisualStyle.ES_DATASET2, Double.class, false);
+    			nodeTable.createColumn(prefix+EnrichmentMapVisualStyle.NES_DATASET2, Double.class, false);
+    			nodeTable.createColumn(prefix+EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2, Double.class, false);
+    			nodeTable.createColumn(prefix+EnrichmentMapVisualStyle.FWER_QVALUE_DATASET2, Double.class, false);
+    			nodeTable.createColumn(prefix+ EnrichmentMapVisualStyle.GS_SIZE_DATASET2, Integer.class, false);
+    		}
     		return nodeTable;
     }
     

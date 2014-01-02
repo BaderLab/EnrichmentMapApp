@@ -61,6 +61,8 @@ import org.baderlab.csplugins.enrichmentmap.Enrichment_Map_Plugin;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
 import org.baderlab.csplugins.enrichmentmap.view.HeatMapPanel;
+import org.cytoscape.io.util.StreamUtil;
+import org.cytoscape.util.swing.FileUtil;
 import org.mskcc.colorgradient.* ;
 
 
@@ -77,6 +79,9 @@ public class HeatMapParameters {
 
     private org.mskcc.colorgradient.ColorGradientRange range;
     private org.mskcc.colorgradient.ColorGradientTheme theme;
+    
+    private FileUtil fileUtil;
+    private StreamUtil streamUtil;
 
     //data transformation options (row normalized, as if or log transformed)
     public static enum Transformation{
@@ -140,9 +145,11 @@ public class HeatMapParameters {
      * @param edgeOverlapPanel - heatmap for edge genes overlaps
      * @param nodeOverlapPanel - heatmap for node genes unions
      */
-    public HeatMapParameters(HeatMapPanel edgeOverlapPanel, HeatMapPanel nodeOverlapPanel) {
+    public HeatMapParameters(HeatMapPanel edgeOverlapPanel, HeatMapPanel nodeOverlapPanel,FileUtil fileUtil, StreamUtil streamUtil) {
         this.edgeOverlapPanel = edgeOverlapPanel;
         this.nodeOverlapPanel = nodeOverlapPanel;
+        this.fileUtil = fileUtil;
+        this.streamUtil = streamUtil;
         sort = Sort.DEFAULT;
         transformation = Transformation.ASIS;
     }
@@ -349,8 +356,7 @@ public class HeatMapParameters {
             arrow.addActionListener(new ChangeSortAction(arrow));
         }
 
-        //TODO:Heatmap actionlistener
-        //rankOptionComboBox.addActionListener(new HeatMapActionListener(edgeOverlapPanel, nodeOverlapPanel,rankOptionComboBox,this, map));
+        rankOptionComboBox.addActionListener(new HeatMapActionListener(edgeOverlapPanel, nodeOverlapPanel,rankOptionComboBox,this, map,fileUtil,streamUtil));
 
         ComboButton.revalidate();
 
@@ -460,8 +466,7 @@ public class HeatMapParameters {
                break;
        }
 
-       	//TODO:add heatmap action listener
-        //hmOptionComboBox.addActionListener(new HeatMapActionListener(edgeOverlapPanel, nodeOverlapPanel,hmOptionComboBox,this, map));
+        hmOptionComboBox.addActionListener(new HeatMapActionListener(edgeOverlapPanel, nodeOverlapPanel,hmOptionComboBox,this, map,fileUtil,streamUtil));
         heatmapOptions.add(hmOptionComboBox);
         heatmapOptions.setBorder(HMBorder);
         return heatmapOptions;

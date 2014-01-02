@@ -45,19 +45,22 @@ package org.baderlab.csplugins.enrichmentmap.view;
 
 
 import javax.swing.*;
-import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.*;
 import java.awt.*;
+import java.awt.List;
 import java.awt.event.ActionEvent;
 import java.util.*;
-import java.util.List;
 import java.io.*;
 import java.net.URL;
 
 import org.mskcc.colorgradient.*;
 import org.baderlab.csplugins.brainlib.DistanceMatrix;
 import org.baderlab.csplugins.brainlib.AvgLinkHierarchicalClustering;
+import org.baderlab.csplugins.enrichmentmap.model.EuclideanDistance;
+import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters.Transformation;
+import org.baderlab.csplugins.enrichmentmap.model.CosineDistance;
+import org.baderlab.csplugins.enrichmentmap.model.PearsonCorrelation;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapUtils;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapVisualStyle;
@@ -72,17 +75,13 @@ import org.baderlab.csplugins.enrichmentmap.heatmap.RowNumberTable;
 import org.baderlab.csplugins.enrichmentmap.heatmap.TableHeader;
 import org.baderlab.csplugins.enrichmentmap.heatmap.TableSort;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters.Sort;
-import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters.Transformation;
-import org.baderlab.csplugins.enrichmentmap.model.CosineDistance;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
-import org.baderlab.csplugins.enrichmentmap.model.EuclideanDistance;
 import org.baderlab.csplugins.enrichmentmap.model.GSEAResult;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpression;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.GenesetSimilarity;
-import org.baderlab.csplugins.enrichmentmap.model.PearsonCorrelation;
 import org.baderlab.csplugins.enrichmentmap.model.Rank;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.model.SignificantGene;
@@ -487,14 +486,43 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
             data[k][1] = expValue[k][1];
 
             for(int j=0;j<HRow[k];j++){
-                data[k][j+2] = ColorGradientMapper.getColorGradient(RowCRT[k],RowCRR[k],RowGene[k],(Double)expValue[k][j+2]);
-             }
+            		data[k][j+2] = getColor(RowCRT[k],RowCRR[k],RowGene[k],(Double)expValue[k][j+2]);                
+            		}
 
         }
-        // TODO Auto-generated method stub
+
         return data;
     }
 
+    private Color getColor(ColorGradientTheme theme, ColorGradientRange range, String gene, Double measurement){
+    		float rLow = theme.getMinColor().getRed()/255, gLow = theme.getMinColor().getGreen()/255, bLow = theme.getMinColor().getBlue()/255;
+    		float rMid = theme.getCenterColor().getRed()/255,gMid = theme.getCenterColor().getGreen()/255,bMid = theme.getCenterColor().getBlue()/255;
+    		float rHigh = theme.getMaxColor().getRed()/255, gHigh = theme.getMaxColor().getGreen()/255, bHigh = theme.getMaxColor().getBlue()/255;
+    		
+    		double median;
+    		if(range.getMinValue() >= 0)
+                median = (range.getMaxValue() /2);
+        else
+        		median = 0.0;
+                	
+    		if(measurement <= median){
+    			float prop = (float) ((float)(measurement - range.getMinValue())/(median - range.getMinValue()));
+    			float rVal = rLow + prop * ( rMid - rLow );
+    			float gVal = gLow + prop * ( gMid - gLow );
+    			float bVal = bLow + prop * ( bMid - bLow );
+    		
+    			return new Color(rVal,gVal,bVal);
+    		}
+    		else{
+    			float prop = (float) ((float)(measurement - median)/(range.getMaxValue() - median));
+    			float rVal = rMid + prop * ( rHigh - rMid );
+    			float gVal = gMid + prop * ( gHigh - gMid );
+    			float bVal = bMid + prop * ( bHigh - bMid );
+    		
+    			return new Color(rVal,gVal,bVal);
+    		}
+    }
+    
     private Object[][] createSortedMergedTableData(Object[][] expValue) {
         this.expValue=expValue;
         Object[][] data;
@@ -536,15 +564,12 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
             data[k][1] = expValue[k][1];
 
             for(int j=0;j<HRow1[k];j++){
-            	//set color to default for now.
-            	 data[k][j+2] = Color.red;
-                //data[k][j+2] = ColorGradientMapper.getColorGradient(Row1CRT[k],Row1CRR[k],Row1gene[k],(Double)expValue[k][j+2]);
+            	 data[k][j+2] = getColor(Row1CRT[k],Row1CRR[k],Row1gene[k],(Double)expValue[k][j+2]);                
+
              }
 
             for(int j=HRow1[k];j<HRow2[k];j++){
-            	//set color to default for now.
-            	data[k][j+2] = Color.green;
-                //data[k][j+2] = ColorGradientMapper.getColorGradient(Row2CRT[k],Row2CRR[k],Row2gene[k],(Double)expValue[k][j+2]);
+            		data[k][j+2] = getColor(Row2CRT[k],Row2CRR[k],Row2gene[k],(Double)expValue[k][j+2]);                
              }
 
         }
@@ -1457,15 +1482,28 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
         	//int hieracical_clustering_threshold = Integer.parseInt(CytoscapeInit.getProperties().getProperty("EnrichmentMap.hieracical_clustering_threshold", "1000"));
             if((set1_size > hieracical_clustering_threshold)
             || (set2_size > hieracical_clustering_threshold)) {
-                int answer = JOptionPane.showConfirmDialog(application.getJFrame(),
+                int answer; 
+                if(set2_size>0)
+                		answer = JOptionPane.showConfirmDialog(application.getJFrame(),
 			                                      " The combination of these gene sets contain "
-                                                  + currentExpressionSet.keySet().size() + " And " + currentExpressionSet2.keySet().size()
+                                                  + set1_size + " And " + set2_size
 			                                      + " genes and "
 			                                      + "\nClustering a set this size may take several "
 			                                      + "minutes.\n" + "Do you wish to proceed with the clustering?"
 			                                      + "\n\n(Choosing 'No' will switch the heatmap-sorting to 'No sort'.)",
 			                                      "Cluster large set of genes",
 			                                      JOptionPane.YES_NO_OPTION);
+                else
+                		answer = JOptionPane.showConfirmDialog(application.getJFrame(),
+                            " The combination of these gene sets contain "
+                            + set1_size 
+                            + " genes and "
+                            + "\nClustering a set this size may take several "
+                            + "minutes.\n" + "Do you wish to proceed with the clustering?"
+                            + "\n\n(Choosing 'No' will switch the heatmap-sorting to 'No sort'.)",
+                            "Cluster large set of genes",
+                            JOptionPane.YES_NO_OPTION);
+                	
                 if(answer == JOptionPane.NO_OPTION) {
                     cluster = false;
                     hmParams.changeSortComboBoxToNoSort();
@@ -1473,14 +1511,15 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
             }
 
 
-            if((cluster)/*&&(!params.isTwoDistinctExpressionSets())*/){
+            if((cluster)/*&&(!params.isTwoDistinctExpressionSets())*/
+    ){ 
 
                 try{
                     //hmParams.setSortbyHC(true);
                     hmParams.setSort(HeatMapParameters.Sort.CLUSTER);
 
                     //create an array-list of the expression subset.
-                    List<Double[]> clustering_expressionset = new ArrayList<Double[]>() ;
+                    ArrayList<Double[]> clustering_expressionset = new ArrayList<Double[]>() ;
                     ArrayList<Integer> labels = new ArrayList<Integer>();
                     int j = 0;
 
@@ -1525,9 +1564,9 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
                          Double[] dummyexpression2 = new Double[numdatacolumns2];
 
                          for(int k = 0;k<numdatacolumns;k++)
-                             dummyexpression1[k] = /*Double.NaN*/0.0;
+                             dummyexpression1[k] = 0.0;/*Double.NaN*/
                         for(int k = 0;k<numdatacolumns2;k++)
-                             dummyexpression2[k] = /*Double.NaN*/0.0;
+                             dummyexpression2[k] = 0.0;/*Double.NaN*/
 
                         //go through the expression-set hashmap and add the key to the labels and add the expression to the clustering set
                         for(Iterator<Integer> i = currentExpressionSet.keySet().iterator();i.hasNext();){
@@ -1596,9 +1635,9 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
                          Double[] dummyexpression2 = new Double[numdatacolumns2];
 
                          for(int k = 0;k<numdatacolumns;k++)
-                             dummyexpression1[k] = /*Double.NaN*/0.0;
+                             dummyexpression1[k] = 0.0; /*Double.NaN*/
                         for(int k = 0;k<numdatacolumns2;k++)
-                             dummyexpression2[k] = /*Double.NaN*/0.0;
+                             dummyexpression2[k] = 0.0;/*Double.NaN*/
 
                         //go through the expression-set hashmap and add the key to the labels and add the expression to the clustering set
                         for(Iterator<Integer> i = currentExpressionSet.keySet().iterator();i.hasNext();){
@@ -1635,9 +1674,9 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
                          Double[] dummyexpression2 = new Double[numdatacolumns2];
 
                          for(int k = 0;k<numdatacolumns;k++)
-                             dummyexpression1[k] = /*Double.NaN*/0.0;
+                             dummyexpression1[k] = 0.0;/*Double.NaN*/
                         for(int k = 0;k<numdatacolumns2;k++)
-                             dummyexpression2[k] = /*Double.NaN*/0.0;
+                             dummyexpression2[k] = 0.0;/*Double.NaN*/
 
                         //go through the expression-set hashmap and add the key to the labels and add the expression to the clustering set
                         for(Iterator<Integer> i = currentExpressionSet2.keySet().iterator();i.hasNext();){
@@ -2038,12 +2077,11 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
     }
 
 	public Component getComponent() {
-		// TODO Auto-generated method stub
+		
 		return this;
 	}
 
 	public CytoPanelName getCytoPanelName() {
-		// TODO Auto-generated method stub
 		return CytoPanelName.SOUTH;
 	}
 
@@ -2057,8 +2095,10 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
 	}
 
 	public String getTitle() {
-		// TODO Auto-generated method stub
-		return "Heat Map Panel";
+		if(node)
+			return "Heat Map (nodes)";
+		else
+			return "Heat Map (edges)";
 	}
 
 }

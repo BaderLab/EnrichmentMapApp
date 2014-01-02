@@ -5,28 +5,29 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.baderlab.csplugins.enrichmentmap.actions.BulkEMCreationAction;
+import org.baderlab.csplugins.enrichmentmap.actions.EnrichmentMapActionListener;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadEnrichmentsPanelAction;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadPostAnalysisPanelAction;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowAboutPanelAction;
-import org.baderlab.csplugins.enrichmentmap.view.AboutPanel;
 import org.baderlab.csplugins.enrichmentmap.view.BulkEMCreationPanel;
 import org.baderlab.csplugins.enrichmentmap.view.EnrichmentMapInputPanel;
+import org.baderlab.csplugins.enrichmentmap.view.HeatMapPanel;
+import org.baderlab.csplugins.enrichmentmap.view.ParametersPanel;
 import org.baderlab.csplugins.enrichmentmap.view.PostAnalysisInputPanel;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
+import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.task.edit.MapTableToNetworkTablesTaskFactory;
-import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
@@ -89,15 +90,29 @@ public class CyActivator extends AbstractCyActivator {
 		
 		// Get a Cytoscape service 'DialogTaskManager' in CyActivator class
 		DialogTaskManager dialogTaskManager = getService(bc, DialogTaskManager.class);
-		
-		//create the Panels
-		EnrichmentMapInputPanel emPanel = new EnrichmentMapInputPanel(cyNetworkFactoryRef, cyApplicationManagerRef, cyNetworkManagerRef, cyNetworkViewManagerRef, tableFactory, tableManager, cyNetworkViewFactoryRef, visualMappingManagerRef, visualStyleFactoryRef,  continuousMappingFunctionFactoryRef,discreteMappingFunctionFactoryRef, passthroughMappingFunctionFactoryRef, dialogTaskManager, sessionManager, cySwingApplicationRef, openBrowserRef,fileUtil,streamUtil,registrar,layoutManager,mapTableToNetworkTable);				
-		BulkEMCreationPanel bulkEmPanel = new BulkEMCreationPanel(cySwingApplicationRef,fileUtil,registrar);		
-		PostAnalysisInputPanel postEMPanel = new PostAnalysisInputPanel(cyApplicationManagerRef,cySwingApplicationRef, openBrowserRef,fileUtil,sessionManager, streamUtil);
-		
-		//Create each Action within Enrichment map as a service		
+						
 		Map<String, String> serviceProperties;
 		
+		//create the Panels
+		BulkEMCreationPanel bulkEmPanel = new BulkEMCreationPanel(cySwingApplicationRef,fileUtil,registrar);		
+		EnrichmentMapInputPanel emPanel = new EnrichmentMapInputPanel(cyNetworkFactoryRef, cyApplicationManagerRef, cyNetworkManagerRef, cyNetworkViewManagerRef, tableFactory, tableManager, cyNetworkViewFactoryRef, visualMappingManagerRef, visualStyleFactoryRef,  continuousMappingFunctionFactoryRef,discreteMappingFunctionFactoryRef, passthroughMappingFunctionFactoryRef, dialogTaskManager, sessionManager, cySwingApplicationRef, openBrowserRef,fileUtil,streamUtil,registrar,layoutManager,mapTableToNetworkTable,bulkEmPanel);				
+		PostAnalysisInputPanel postEMPanel = new PostAnalysisInputPanel(cyApplicationManagerRef,cySwingApplicationRef, openBrowserRef,fileUtil,sessionManager, streamUtil);
+		
+		//create two instances of the heatmap panel
+		HeatMapPanel heatMapPanel_node = new HeatMapPanel(true, cySwingApplicationRef, fileUtil, cyApplicationManagerRef);
+		HeatMapPanel heatMapPanel_edge = new HeatMapPanel(false, cySwingApplicationRef, fileUtil, cyApplicationManagerRef);
+		ParametersPanel paramsPanel = new ParametersPanel(openBrowserRef);
+		
+		//Get an instance of EM manager
+		EnrichmentMapManager manager = EnrichmentMapManager.getInstance();
+		manager.initialize(paramsPanel, heatMapPanel_node, heatMapPanel_edge, registrar);		
+		
+		//assocaite them with the action listener
+		EnrichmentMapActionListener EMActionListener = new EnrichmentMapActionListener(heatMapPanel_node,heatMapPanel_edge, cyApplicationManagerRef, cySwingApplicationRef,fileUtil,streamUtil);
+		registerService(bc,EMActionListener, RowsSetListener.class, new Properties());		
+		
+		
+		//Create each Action within Enrichment map as a service
 		//Build Enrichment Map Action - opens EM panel
 		serviceProperties = new HashMap<String, String>();
 		serviceProperties.put("inMenuBar", "true");
@@ -122,11 +137,14 @@ public class CyActivator extends AbstractCyActivator {
 		serviceProperties.put("inMenuBar", "true");
 		serviceProperties.put("preferredMenu", "Apps.EnrichmentMap");
 		ShowAboutPanelAction aboutAction = new ShowAboutPanelAction(serviceProperties,cyApplicationManagerRef ,cyNetworkViewManagerRef, cySwingApplicationRef, openBrowserRef);		
-				
+		
+			
+		
 		//register the services
 		registerService(bc, aboutAction, CyAction.class,new Properties());
 		registerService(bc, LoadEnrichmentMapInputPanelAction, CyAction.class, new Properties());
 		registerService(bc, BulkEMInputPanelAction, CyAction.class, new Properties());
 		registerService(bc, loadPostAnalysisAction, CyAction.class, new Properties());
+
 	}
 }

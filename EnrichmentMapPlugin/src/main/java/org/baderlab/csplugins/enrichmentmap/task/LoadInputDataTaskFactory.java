@@ -51,14 +51,14 @@ public class LoadInputDataTaskFactory implements TaskFactory{
 	}
 	
 	public TaskIterator createTaskIterator() {
-		// TODO Auto-generated method stub
+
 		this.loadIterator = new TaskIterator();
 		load();
 		return this.loadIterator;
 	}
 
 	public boolean isReady() {
-		// TODO Auto-generated method stub
+		
 		return true;
 	}
 

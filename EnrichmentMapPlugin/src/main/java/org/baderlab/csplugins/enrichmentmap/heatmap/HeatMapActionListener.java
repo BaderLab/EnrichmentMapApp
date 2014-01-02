@@ -46,18 +46,24 @@ package org.baderlab.csplugins.enrichmentmap.heatmap;
 import javax.swing.*;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
+import org.baderlab.csplugins.enrichmentmap.EnrichmentMapUtils;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters.Sort;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters.Transformation;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.parsers.RanksFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.view.HeatMapPanel;
+import org.cytoscape.io.util.StreamUtil;
+import org.cytoscape.util.swing.FileChooserFilter;
+import org.cytoscape.util.swing.FileUtil;
 
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.io.File;
+import java.io.IOException;
 
 /**
  * Created by
@@ -71,6 +77,8 @@ public class HeatMapActionListener implements ActionListener {
 
     private HeatMapPanel edgeOverlapPanel;
     private HeatMapPanel nodeOverlapPanel;
+    private FileUtil fileUtil;
+    private StreamUtil streamUtil;
 
     private HeatMapParameters hmParams;
     private JComboBox box;
@@ -88,9 +96,12 @@ public class HeatMapActionListener implements ActionListener {
      * @param hmParams
      * @param params
      */
-    public HeatMapActionListener(HeatMapPanel edgeOverlapPanel, HeatMapPanel nodeOverlapPanel,JComboBox box, HeatMapParameters hmParams, EnrichmentMap map) {
+    public HeatMapActionListener(HeatMapPanel edgeOverlapPanel, HeatMapPanel nodeOverlapPanel,
+    		JComboBox box, HeatMapParameters hmParams, EnrichmentMap map,FileUtil fileUtil, StreamUtil streamUtil) {
         this.edgeOverlapPanel = edgeOverlapPanel;
         this.nodeOverlapPanel = nodeOverlapPanel;
+        this.fileUtil = fileUtil;
+        this.streamUtil = streamUtil;
         this.hmParams = hmParams;
         this.box= box;
         this.params = map.getParams();
@@ -104,7 +115,7 @@ public class HeatMapActionListener implements ActionListener {
      */
     public void actionPerformed(ActionEvent evt){
 
-       //boolean updateAscendingButton = false;
+       boolean updateAscendingButton = false;
 
        edgeOverlapPanel.clearPanel();
        nodeOverlapPanel.clearPanel();
@@ -127,20 +138,23 @@ public class HeatMapActionListener implements ActionListener {
         else if(select.equalsIgnoreCase("Add Rankings ... ")){
 
            HashMap<String, Ranking> all_ranks = map.getAllRanks();
-           //TODO: add rank file loading from heatmap panel
-/*           CyFileFilter filter = new CyFileFilter();
-
-            // Add accepted File Extensions
-           filter.addExtension("txt");
-           filter.addExtension("xls");
-           filter.addExtension("rnk");
+           FileChooserFilter filter_rnk = new FileChooserFilter("rnk Files","rnk" );          
+           FileChooserFilter filter_txt = new FileChooserFilter("txt Files","txt" );
+           FileChooserFilter filter_xls = new FileChooserFilter("xls Files","xls" );
+           
+           //the set of filter (required by the file util method
+           ArrayList<FileChooserFilter> all_filters = new ArrayList<FileChooserFilter>();
+           all_filters.add(filter_rnk);
+           all_filters.add(filter_txt);
+           all_filters.add(filter_xls);
 
            // Get the file name
-            File file = FileUtil.getFile("Import new Rank file", FileUtil.LOAD, new CyFileFilter[]{ filter });
+           File file = fileUtil.getFile(this.nodeOverlapPanel,"Import rank File", FileUtil.LOAD, all_filters);
+
             if(file != null) {
                 //find out from the user what they want to name these ranking
 
-                String ranks_name = JOptionPane.showInputDialog(Cytoscape.getDesktop(),"What would you like to name these Rankings?", "My Rankings");
+                String ranks_name = JOptionPane.showInputDialog(this.nodeOverlapPanel,"What would you like to name these Rankings?", "My Rankings");
                 boolean noname = true;
                 while(noname){
                     noname = false;
@@ -149,7 +163,7 @@ public class HeatMapActionListener implements ActionListener {
                         String current_name = j.next().toString();
                         if(current_name.equalsIgnoreCase(ranks_name)){
                             noname = true;
-                            ranks_name = JOptionPane.showInputDialog(Cytoscape.getDesktop(),"Sorry that name already exists.Please choose another name.");
+                            ranks_name = JOptionPane.showInputDialog(this.nodeOverlapPanel,"Sorry that name already exists.Please choose another name.");
                         }
                     }
                 }
@@ -157,8 +171,13 @@ public class HeatMapActionListener implements ActionListener {
                 //load the new ranks file
                 //the new rank file is not associated with a dataset.
                 //simply add it to Dataset 1
-                RanksFileReaderTask ranking1 = new RanksFileReaderTask(file.getAbsolutePath(),map.getDataset(EnrichmentMap.DATASET1),ranks_name,true);
-                ranking1.run();
+                RanksFileReaderTask ranking1 = new RanksFileReaderTask(file.getAbsolutePath(),map.getDataset(EnrichmentMap.DATASET1),ranks_name,true,streamUtil);
+                try {
+					ranking1.parse();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 
                 //add an index to the ascending array for the new rank file.
                 boolean[] ascending = hmParams.getAscending();
@@ -210,40 +229,34 @@ public class HeatMapActionListener implements ActionListener {
                     hmParams.setRankFileIndex(ranks_name);
                     hmParams.setSortIndex(columns + i);
                     
-                    //updateAscendingButton = true;
+                    updateAscendingButton = true;
                 }
                 i++;
             }
        }
 
         //if the object selected is associated with a sorting order update the sort direction button
-        /*if(updateAscendingButton){
+        if(updateAscendingButton){
             //the two types that can be associated with a direction as columns and ranks
-           /* if(hmParams.getSort() == HeatMapParameters.Sort.COLUMN)
+            /*if(hmParams.getSort() == HeatMapParameters.Sort.COLUMN)
                 hmParams.setCurrent_ascending(hmParams.isAscending(hmParams.getSortIndex()));
             else if(hmParams.getSort() == HeatMapParameters.Sort.RANK)
                 hmParams.setCurrent_ascending(hmParams.isAscending(1));
                 //TODO: need to specify column for rank files.
              */
             //only swap the direction of the sort if a column sort action was triggered
-          /*  if(hmParams.isSortbycolumn_event_triggered()){
+            if(hmParams.isSortbycolumn_event_triggered()){
                     //reset sort column trigger
                     hmParams.setSortbycolumn_event_triggered(false);
 
                     //change the ascending boolean flag for the column we are about to sort by
                     hmParams.flipAscending(hmParams.getSortIndex());
-                }*/
+                }
         }
 
         hmParams.ResetColorGradient();
         edgeOverlapPanel.updatePanel();
         nodeOverlapPanel.updatePanel();
 
-        /*final CytoscapeDesktop desktop = Cytoscape.getDesktop();
-        CytoPanel cytoPanel = desktop.getCytoPanel(SwingConstants.SOUTH);
-
-        int index  = cytoPanel.getSelectedIndex();
-        cytoPanel.setSelectedIndex(index);
-*/
     }
 }

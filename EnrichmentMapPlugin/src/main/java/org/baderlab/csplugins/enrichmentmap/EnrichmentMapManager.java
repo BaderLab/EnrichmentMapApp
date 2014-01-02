@@ -50,12 +50,15 @@ import org.baderlab.csplugins.enrichmentmap.view.EnrichmentMapInputPanel;
 import org.baderlab.csplugins.enrichmentmap.view.HeatMapPanel;
 import org.baderlab.csplugins.enrichmentmap.view.ParametersPanel;
 import org.baderlab.csplugins.enrichmentmap.view.PostAnalysisInputPanel;
+import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.util.HashMap;
+import java.util.Properties;
 import java.net.URL;
 
 /**
@@ -81,6 +84,7 @@ public class EnrichmentMapManager /*implements PropertyChangeListener*/ {
 
     private EnrichmentMapInputPanel inputWindow;
     private PostAnalysisInputPanel analysisWindow;
+    private CyServiceRegistrar registrar;
 
     /**
      * Method to get instance of EnrichmentMapManager.
@@ -131,54 +135,42 @@ public class EnrichmentMapManager /*implements PropertyChangeListener*/ {
     }
 */
     /**
+     * initialize important variable
+     */
+    public void initialize(ParametersPanel parameterPanel,
+    		HeatMapPanel nodesOverlapPanel, HeatMapPanel edgesOverlapPanel, CyServiceRegistrar registrar){
+    		this.registrar = registrar;
+    		
+    		//initialize the parameters panel
+    		this.parameterPanel = parameterPanel;       
+        registrar.registerService(this.parameterPanel,CytoPanelComponent.class,new Properties());
+        
+
+        this.nodesOverlapPanel = nodesOverlapPanel;
+        this.edgesOverlapPanel = edgesOverlapPanel;
+        registrar.registerService(this.nodesOverlapPanel,CytoPanelComponent.class,new Properties());
+        registrar.registerService(this.edgesOverlapPanel,CytoPanelComponent.class,new Properties());
+          
+    }
+    
+    /**
      * Constructor (private).
      *
      */
     private EnrichmentMapManager() {
        this.cyNetworkList = new HashMap<Long,EnrichmentMap>();
         this.cyNetworkListPostAnalysis = new HashMap<Long,PostAnalysisParameters>();
-
+        
+        //TODO : handle network created and focus events.
         // to catch network creation / destruction events
-/*        Cytoscape.getSwingPropertyChangeSupport().addPropertyChangeListener(this);
+/*       Cytoscape.getSwingPropertyChangeSupport().addPropertyChangeListener(this);
 
         // to catch network selection / focus events
         Cytoscape.getDesktop().getNetworkViewManager().getSwingPropertyChangeSupport()
                  .addPropertyChangeListener(this);
-
-        final CytoscapeDesktop desktop = Cytoscape.getDesktop();
-        CytoPanel cytoPanel = desktop.getCytoPanel(SwingConstants.SOUTH);
-        CytoPanel cytoSidePanel = desktop.getCytoPanel(SwingConstants.EAST);
-
-
-        parameterPanel = new ParametersPanel();
-        
-        //create an icon for the enrichment map panels
-        URL EMIconURL = this.getClass().getResource("view/enrichmentmap_logo_notext_small.png");
-        ImageIcon EMIcon = null;
-        if (EMIconURL != null) {
-            EMIcon = new ImageIcon(EMIconURL);
-        }
-
-        if(EMIcon != null)
-            cytoSidePanel.add("Legend",EMIcon, parameterPanel);
-        else
-            cytoSidePanel.add("Legend", parameterPanel);
-
-        cytoSidePanel.setSelectedIndex(cytoSidePanel.indexOfComponent(parameterPanel));
-        cytoSidePanel.setState(CytoPanelState.DOCK);
-
-        nodesOverlapPanel = new HeatMapPanel(true);
-        edgesOverlapPanel = new HeatMapPanel(false);
-
-        
-        if(EMIcon != null){
-            cytoPanel.add("EM Overlap Expression viewer",EMIcon,edgesOverlapPanel);
-            cytoPanel.add("EM Geneset Expression viewer",EMIcon,nodesOverlapPanel);
-        }else{
-            cytoPanel.add("EM Overlap Expression viewer",edgesOverlapPanel);
-            cytoPanel.add("EM Geneset Expression viewer",nodesOverlapPanel);
-        }
 */
+        
+        
     }
 
     /**

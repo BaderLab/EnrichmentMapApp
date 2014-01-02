@@ -1154,12 +1154,12 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
     }
 
 	public Component getComponent() {
-		// TODO Auto-generated method stub
+		
 		return this;
 	}
 
 	public CytoPanelName getCytoPanelName() {
-		// TODO Auto-generated method stub
+		
 		return CytoPanelName.WEST;
 	}
 
@@ -1173,7 +1173,7 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
 	}
 
 	public String getTitle() {
-		// TODO Auto-generated method stub
+		
 		return "Post Analysis Input Panel";
 	}
     

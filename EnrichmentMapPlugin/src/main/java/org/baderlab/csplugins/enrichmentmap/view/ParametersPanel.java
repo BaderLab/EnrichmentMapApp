@@ -51,6 +51,8 @@ import org.baderlab.csplugins.enrichmentmap.Enrichment_Map_Plugin;
 import org.baderlab.csplugins.enrichmentmap.actions.ParametersPanelActionListener;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.cytoscape.application.swing.CytoPanelComponent;
+import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.util.swing.OpenBrowser;
 
 import java.awt.*;
@@ -66,11 +68,8 @@ import java.net.URL;
  * <p>
  * Right hand information Panel containing files uploaded, legends and p-value,q-value sliders.
  */
-public class ParametersPanel extends JPanel {
+public class ParametersPanel extends JPanel implements CytoPanelComponent{
 
-    /**
-     * TODO: DOCUMENT ME!
-     */
     private static final long serialVersionUID = 2230165793903119571L;
     
     public static int summaryPanelWidth = 150;
@@ -85,7 +84,7 @@ public class ParametersPanel extends JPanel {
      * Class constructor
      */
     public ParametersPanel(OpenBrowser browser) {
-    	this.browser = browser;
+    		this.browser = browser;
        }
 
     /**
@@ -95,7 +94,7 @@ public class ParametersPanel extends JPanel {
      */
     public void updatePanel(EnrichmentMap map){
         this.map = map;
-    	this.emParams = map.getParams();
+    		this.emParams = map.getParams();
         EnrichmentMapParameters params = map.getParams();
 
         this.removeAll();
@@ -529,4 +528,25 @@ public class ParametersPanel extends JPanel {
         else
         		return null;
     }
+
+	public Component getComponent() {
+		return this;
+	}
+
+	public CytoPanelName getCytoPanelName() {
+		return CytoPanelName.EAST;
+	}
+
+	public Icon getIcon() {
+		URL EMIconURL = this.getClass().getResource("enrichmentmap_logo_notext_small.png");
+        ImageIcon EMIcon = null;
+        if (EMIconURL != null) {
+            EMIcon = new ImageIcon(EMIconURL);
+        }
+		return EMIcon;
+	}
+
+	public String getTitle() {
+		return "Legend";
+	}
 }

@@ -18,12 +18,12 @@ public class StreamUtil implements org.cytoscape.io.util.StreamUtil {
 	}
 
 	public InputStream getInputStream(URL url) throws IOException {
-		// TODO Auto-generated method stub
+		
 		return new FileInputStream(url.toString());
 	}
 
 	public URLConnection getURLConnection(URL arg0) throws IOException {
-		// TODO Auto-generated method stub
+		
 		return null;
 	}
 

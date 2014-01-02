@@ -43,22 +43,15 @@
 
 package org.baderlab.csplugins.enrichmentmap.task;
 
-import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
-import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
-import org.cytoscape.session.CySessionManager;
 import org.cytoscape.task.edit.MapTableToNetworkTablesTaskFactory;
-import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 
@@ -251,7 +244,7 @@ public class BuildEnrichmentMapTask implements TaskFactory {
 	}
 
 	public boolean isReady() {
-		// TODO Auto-generated method stub
+
 		return true;
 	}
 }

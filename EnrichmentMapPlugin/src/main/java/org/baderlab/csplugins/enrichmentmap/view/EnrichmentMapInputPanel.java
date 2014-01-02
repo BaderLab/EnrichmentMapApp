@@ -47,14 +47,13 @@ import javax.swing.*;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapUtils;
+import org.baderlab.csplugins.enrichmentmap.actions.BulkEMCreationAction;
 import org.baderlab.csplugins.enrichmentmap.actions.EnrichmentMapBuildMapEvent;
-import org.baderlab.csplugins.enrichmentmap.actions.EnrichmentMapParseInputEvent;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowAboutPanelAction;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.JMultiLineToolTip;
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanelComponent;
@@ -90,6 +89,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 
 /**
@@ -134,6 +134,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
     private CyServiceRegistrar registrar;
     
     private EnrichmentMapInputPanel empanel;
+    private BulkEMCreationPanel bulkEmInput;
 	
     private static final long serialVersionUID = -7837369382106745874L;
 
@@ -216,7 +217,8 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
     		VisualMappingFunctionFactory vmfFactoryContinuous, VisualMappingFunctionFactory vmfFactoryDiscrete,
     	     VisualMappingFunctionFactory vmfFactoryPassthrough,DialogTaskManager dialog, CySessionManager sessionManager, 
     	     CySwingApplication application, OpenBrowser browser,FileUtil fileUtil, StreamUtil streamUtil,CyServiceRegistrar registrar,
-    	     CyLayoutAlgorithmManager layoutManager, MapTableToNetworkTablesTaskFactory mapTableToNetworkTable) {
+    	     CyLayoutAlgorithmManager layoutManager, MapTableToNetworkTablesTaskFactory mapTableToNetworkTable,
+    	     BulkEMCreationPanel bulkEmInput) {
 
     		this.empanel = this;
         decFormat = new DecimalFormat();
@@ -248,6 +250,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
         this.fileUtil = fileUtil;
         this.streamUtil = streamUtil;
         this.registrar = registrar;
+        this.bulkEmInput = bulkEmInput;
         setLayout(new BorderLayout());        
 
         //get the current enrichment map parameters
@@ -301,14 +304,15 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 
            JButton about = new JButton("About");
            
-           //TODO add about box action listener
-//           about.addActionListener(new ShowAboutPanelAction(null, applicationManager, networkViewManager, application, browser));
+           Map<String, String> serviceProperties = new HashMap<String, String>();
+           serviceProperties.put("inMenuBar", "true");
+   		   serviceProperties.put("preferredMenu", "Apps.EnrichmentMap");
+           about.addActionListener(new ShowAboutPanelAction(serviceProperties, applicationManager, networkViewManager, application, browser));
 
            //add button to do bulk EM Creation
-           //TODO: button for bulk EM from main EM interface not implemented
            JButton bulk = new JButton("Bulk EM");
-           /*bulk.addActionListener(new BulkEMCreationAction(null,null,null,application,fileUtil,fileFilterUtil));
-			*/
+           bulk.addActionListener(new BulkEMCreationAction(serviceProperties,applicationManager , networkViewManager, application,bulkEmInput,registrar));
+			
             c_buttons.weighty = 1;
             c_buttons.weightx = 1;
             c_buttons.insets = new Insets(0,0,0,0);
@@ -1251,7 +1255,6 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
         });
 
         importButton.setText("Build");
-        //TODO:Add action listern for build network
         importButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
             	//make sure that the minimum information is set in the current set of parameters
@@ -2500,12 +2503,10 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 	}
 
 	public Component getComponent() {
-		// TODO Auto-generated method stub
 		return this;
 	}
 
 	public CytoPanelName getCytoPanelName() {
-		// TODO Auto-generated method stub
 		return CytoPanelName.WEST;
 	}
 
@@ -2520,7 +2521,6 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 	}
 
 	public String getTitle() {
-		// TODO Auto-generated method stub
 		return "Enrichment Map Input Panel";
 	}
     

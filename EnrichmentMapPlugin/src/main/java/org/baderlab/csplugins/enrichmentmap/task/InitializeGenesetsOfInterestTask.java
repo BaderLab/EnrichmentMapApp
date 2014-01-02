@@ -278,7 +278,6 @@ public class InitializeGenesetsOfInterestTask extends AbstractTask {
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		this.taskMonitor = taskMonitor;
 		this.taskMonitor.setTitle("Initializing subset of genesets and GSEA results of interest");
-		// TODO Auto-generated method stub
 		initializeSets();
 	}
 

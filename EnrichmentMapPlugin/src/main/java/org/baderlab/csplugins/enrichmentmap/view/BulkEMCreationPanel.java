@@ -945,22 +945,22 @@ public class BulkEMCreationPanel extends JPanel implements CytoPanelComponent{
   }
 
 	public Component getComponent() {
-		// TODO Auto-generated method stub
+		
 		return this;
 	}
 
 	public CytoPanelName getCytoPanelName() {
-		// TODO Auto-generated method stub
+		
 		return CytoPanelName.WEST;
 	}
 
 	public Icon getIcon() {
-		// TODO Auto-generated method stub
+		
 		return null;
 	}
 
 	public String getTitle() {
-		// TODO Auto-generated method stub
+		
 		return "Bulk Enrichment Map Input Panel";
 	}
    

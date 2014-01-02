@@ -64,7 +64,7 @@ public class HeatMapTableModel  extends AbstractTableModel implements TableModel
 
 
     public HeatMapTableModel() {
-        // TODO Auto-generated constructor stub
+        
     }
 
     public HeatMapTableModel(Object[] columnNames,Object[][] data,Object[][] expValue){
@@ -131,7 +131,7 @@ public class HeatMapTableModel  extends AbstractTableModel implements TableModel
 
 
     public void tableChanged(TableModelEvent e) {
-        // TODO Auto-generated method stub
+        
         fireTableChanged(e);
     }
 

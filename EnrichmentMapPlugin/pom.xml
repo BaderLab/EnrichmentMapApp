@@ -10,7 +10,8 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <cy3.version>3.0.1</cy3.version>
         <osgi.api.version>4.2.0</osgi.api.version>
-        <bundle.namespace>org.baderlab.csplugins.enrichmentmap</bundle.namespace>
+        <bundle.namespace.parent>org.baderlab.csplugins</bundle.namespace.parent>
+        <bundle.namespace>org.baderlab.csplugins</bundle.namespace>
         <bundle.symbolicName>org.baderlab.csplugins.enrichmentmap</bundle.symbolicName>
     </properties>
     <repositories>
@@ -144,10 +145,10 @@
 				<configuration>
 					<instructions>
 						<Bundle-SymbolicName>${bundle.symbolicName}</Bundle-SymbolicName>
-						<Bundle-Version>3.2.1</Bundle-Version>
-						<Bundle-Activator>${bundle.namespace}.CyActivator</Bundle-Activator>
+						<Bundle-Version>2.0.0</Bundle-Version>
+						<Bundle-Activator>${bundle.namespace}.enrichmentmap.CyActivator</Bundle-Activator>
 						<Private-Package>${bundle.namespace}.*</Private-Package>
-						<Export-Package>!${bundle.namespace}.*;version="${project.version}"</Export-Package>
+						<Export-Package>org.mskcc.*;prefuse.*;version="${project.version}"</Export-Package>
 						<Import-Package>*;resolution:=optional</Import-Package>
 						<_failok>true</_failok>
 					</instructions>
@@ -320,7 +321,7 @@
 				<configuration>
 					<instructions>
 						<Bundle-SymbolicName>${bundle.symbolicName}</Bundle-SymbolicName>
-						<Bundle-Version>3.2.1</Bundle-Version>
+						<Bundle-Version>2.0.0</Bundle-Version>
 						<Bundle-Activator>${bundle.namespace}.CyActivator</Bundle-Activator>
 						<Embed-Dependency>plugin-distribution;inline=true</Embed-Dependency>
 						<Private-Package>${bundle.namespace}.*</Private-Package>

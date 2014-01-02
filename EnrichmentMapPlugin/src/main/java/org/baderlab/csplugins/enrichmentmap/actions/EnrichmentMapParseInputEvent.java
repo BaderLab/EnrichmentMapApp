@@ -45,31 +45,10 @@ package org.baderlab.csplugins.enrichmentmap.actions;
 
 
 
-import javax.swing.SwingUtilities;
-
-import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.task.BuildEnrichmentMapTask;
-import org.baderlab.csplugins.enrichmentmap.task.BuildGMTEnrichmentMapTask;
 import org.baderlab.csplugins.enrichmentmap.task.LoadInputDataTaskFactory;
-import org.baderlab.csplugins.enrichmentmap.task.VisualizeEnrichmentMapTask;
 import org.baderlab.csplugins.enrichmentmap.view.EnrichmentMapInputPanel;
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.util.StreamUtil;
-import org.cytoscape.model.CyNetworkFactory;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyTableFactory;
-import org.cytoscape.model.CyTableManager;
-import org.cytoscape.session.CySessionManager;
-import org.cytoscape.view.model.CyNetworkViewFactory;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.view.vizmap.VisualStyleFactory;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TaskManager;
-import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.swing.DialogTaskManager;
 
 /**

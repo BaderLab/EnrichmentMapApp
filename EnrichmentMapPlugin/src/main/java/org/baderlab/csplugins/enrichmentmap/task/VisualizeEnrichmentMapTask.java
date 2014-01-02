@@ -46,8 +46,10 @@ package org.baderlab.csplugins.enrichmentmap.task;
 
 
 
+import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapVisualStyle;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.view.ParametersPanel;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
@@ -148,16 +150,10 @@ public class VisualizeEnrichmentMapTask extends AbstractTask {
             networkViewManager.addNetworkView(view);
             
             String vs_name = prefix + "Enrichment_map_style";
-            // check to see if a visual style with this name already exists
-            //VisualStyle vs = visualStyleFactory.createVisualStyle(vs_name);
 
-            //if (vs != null) {
-                // if not, create it and add it to the catalog
-                // Create the visual style
-                EnrichmentMapVisualStyle em_vs = new EnrichmentMapVisualStyle(map.getParams(),vmfFactoryContinuous,vmfFactoryDiscrete,vmfFactoryPassthrough);
-                VisualStyle vs = visualStyleFactory.createVisualStyle(vs_name);
-                em_vs.createVisualStyle(vs, prefix);                
-            //}
+            EnrichmentMapVisualStyle em_vs = new EnrichmentMapVisualStyle(map.getParams(),vmfFactoryContinuous,vmfFactoryDiscrete,vmfFactoryPassthrough);
+            VisualStyle vs = visualStyleFactory.createVisualStyle(vs_name);
+            em_vs.createVisualStyle(vs, prefix);                
             
             this.visualMappingManager.addVisualStyle(vs);
             
@@ -169,25 +165,10 @@ public class VisualizeEnrichmentMapTask extends AbstractTask {
          	String layoutAttribute = null;
          	insertTasksAfterCurrentTask(layout.createTaskIterator(view, layout.createLayoutContext(), CyLayoutAlgorithm.ALL_NODE_VIEWS, layoutAttribute));
            
-            //TODO: add listeners and panels.
-            //initialize parameter panel with info for this network
-            /*ParametersPanel parametersPanel = EMmanager.getParameterPanel();
+            //update Parameter panel
+            ParametersPanel parametersPanel = EnrichmentMapManager.getInstance().getParameterPanel();
             parametersPanel.updatePanel(map);
-            final CytoscapeDesktop desktop = Cytoscape.getDesktop();
-            final CytoPanel cytoSidePanel = desktop.getCytoPanel(SwingConstants.EAST);
-            cytoSidePanel.setSelectedIndex(cytoSidePanel.indexOfComponent(parametersPanel));
-
-            //set focus to EnrichmentMapInputPanel (otherwise it is reverted to the Editor)
-            EnrichmentMapInputPanel emInputPanel = EMmanager.getInputWindow();
-            final CytoPanel cytoControlPanel = desktop.getCytoPanel(SwingConstants.WEST);
-            cytoControlPanel.setSelectedIndex(cytoControlPanel.indexOfComponent(emInputPanel));
-
-            //add the click on node/edge listener
-            view.addGraphViewChangeListener(new EnrichmentMapActionListener(map));
-
-            //make sure the network is registered so that Quickfind works
-            Cytoscape.firePropertyChange(cytoscape.view.CytoscapeDesktop.NETWORK_VIEW_CREATED, network, view);
-       		*/
+            
         return true;
     }
    

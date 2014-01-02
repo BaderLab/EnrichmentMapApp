@@ -45,6 +45,8 @@ package org.baderlab.csplugins.enrichmentmap.actions;
 
 
 
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 
@@ -56,6 +58,21 @@ import org.baderlab.csplugins.enrichmentmap.Enrichment_Map_Plugin;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.view.HeatMapPanel;
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.application.swing.CytoPanel;
+import org.cytoscape.application.swing.CytoPanelName;
+import org.cytoscape.application.swing.CytoPanelState;
+import org.cytoscape.io.util.StreamUtil;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTableUtil;
+import org.cytoscape.model.events.RowSetRecord;
+import org.cytoscape.model.events.RowsSetEvent;
+import org.cytoscape.model.events.RowsSetListener;
+import org.cytoscape.util.swing.FileUtil;
 
 /**
  * Created by
@@ -66,119 +83,100 @@ import org.baderlab.csplugins.enrichmentmap.view.HeatMapPanel;
  * Class listener for node and edge selections.  For each enrichment map there is a separate instance of this
  * class specifying the enrichment map parameters, selected nodes, selected edges and heatmap panels
  */
-public class EnrichmentMapActionListener {
-
- /*   private EnrichmentMap map;
+public class EnrichmentMapActionListener implements RowsSetListener{
+	
+	private CyNetwork network;
+    private EnrichmentMap map;
     private HeatMapPanel edgeOverlapPanel;
     private HeatMapPanel nodeOverlapPanel;
 
-    private List<Node> Nodes;
-    private List<Edge> Edges;
-
-    private final CytoPanel cytoPanel;
+    private List<CyNode> Nodes;
+    private List<CyEdge> Edges;
+    private CyApplicationManager applicationManager;
+    private final CytoPanel cytoPanelSouth;
+    private FileUtil fileUtil;
+    private StreamUtil streamUtil;
+    
 
     /**
      * Constructor for network action listener.
      *
      * @param params  - enrichment map parameters associated with this actionlistener
      */
-/*    public EnrichmentMapActionListener(EnrichmentMap map) {
-        this.map = map;
-
-        //get the static enrichment map manager.
-        EnrichmentMapManager manager = EnrichmentMapManager.getInstance();
-
-        //initialize the cyto panel to have the expression viewing.
-        final CytoscapeDesktop desktop = Cytoscape.getDesktop();
-        cytoPanel = desktop.getCytoPanel(SwingConstants.SOUTH);
-        //TODO add logo to any panel asociated with Enrichment maps
-        //final URL url = new URL("http","www.baderlab.org","/wiki/common/network_bader_website_icon.gif");
-        //final Icon icon = new ImageIcon(url);
-        if(map.getParams().isData()){
-            //get the only instance of the overlap and union heat map panels.
-            edgeOverlapPanel = manager.getEdgesOverlapPanel();
-            nodeOverlapPanel = manager.getNodesOverlapPanel();
-
-            //create a heatmap parameters instance for this action listener
-            HeatMapParameters hmParams = new HeatMapParameters(edgeOverlapPanel, nodeOverlapPanel);
-            hmParams.initColorGradients(map.getDataset(EnrichmentMap.DATASET1).getExpressionSets());
-            //associate the newly created heatmap parameters with the current enrichment map paramters
-            map.getParams().setHmParams(hmParams);
-        }
+    public EnrichmentMapActionListener(HeatMapPanel heatMapPanel_node,HeatMapPanel heatMapPanel_edge,
+    		CyApplicationManager applicationManager,CySwingApplication application,
+    		FileUtil fileUtil, StreamUtil streamUtil) {
         
-        Nodes = map.getParams().getSelectedNodes();
-        Edges = map.getParams().getSelectedEdges();
-     
+    		this.applicationManager = applicationManager;
+    		this.fileUtil = fileUtil;
+    		this.streamUtil = streamUtil;
+        this.edgeOverlapPanel = heatMapPanel_edge;
+        this.nodeOverlapPanel = heatMapPanel_node;
+        
+        this.cytoPanelSouth = application.getCytoPanel(CytoPanelName.SOUTH);
+
+           
     }
 
+    /**
+     * intialize the parameters needed for this instance of the action
+     */
+    private void initialize(){
+    		//get the static enrichment map manager.
+        EnrichmentMapManager manager = EnrichmentMapManager.getInstance();
+        
+        this.map = manager.getMap(network.getSUID());
+        
+        if(map.getParams().isData()){        
+            //create a heatmap parameters instance for this action listener
+            HeatMapParameters hmParams = new HeatMapParameters(edgeOverlapPanel, nodeOverlapPanel,fileUtil,streamUtil);
+            hmParams.initColorGradients(this.map.getDataset(EnrichmentMap.DATASET1).getExpressionSets());
+            //associate the newly created heatmap parameters with the current enrichment map paramters
+            this.map.getParams().setHmParams(hmParams);
+        }
+        
+        this.Nodes = this.map.getParams().getSelectedNodes();
+        this.Edges = this.map.getParams().getSelectedEdges();
+        
+    }
     /**
      * Handle network action.  This method handles edge or node selection or unselections.
      *
      * @param event
      */
-/*    public void graphViewChanged(GraphViewChangeEvent event){
+    public void handleEvent(RowsSetEvent e) {
         //TODO: improve performance of calculating the Union of genesets (Nodes) and intersection of overlaps (Edges)
         // Meanwhile we have a flag to skip the updating of the Heatmap, which can be toggled by a check-mark in the EM-Menu
         boolean override_revalidate_heatmap = EnrichmentMapUtils.isOverrideHeatmapRevalidation();
-        if(event.isEdgesSelectedType() && ! override_revalidate_heatmap ) {
+        
+        
+        //get the current network
+        this.network = this.applicationManager.getCurrentNetwork();
+        initialize();
+        
+        //There is no flag to indicate that this is only an edge/node selection
+        //After select get the nodes and the edges that were selected.
+        if( ! override_revalidate_heatmap ) {
+        		
+        		//get the edges
+        		List<CyEdge> selectedEdges = CyTableUtil.getEdgesInState(network, CyNetwork.SELECTED, true);
 
-            Edge[] selectedEdges = event.getSelectedEdges();
-
-            //Add all the selected edges to the list of edges
-            for(int i=0;i<selectedEdges.length;i++){
-                //check to see that the edge isn't already in the list
-                if(!Edges.contains(selectedEdges[i]))
-                    Edges.add(selectedEdges[i]);
-            }
-
+        		Edges.clear();
+        		Edges.addAll(selectedEdges);
+        		
             //if (Edges.size() <= Integer.parseInt(CytoscapeInit.getProperties().getProperty("EnrichmentMap.Heatmap_Edge_Limit",  "100") ) )
-                createEdgesData();
+            if(Edges.size()>0)
+        			createEdgesData();
 
-        }
-        if(event.isNodesSelectedType() && ! override_revalidate_heatmap ){
+            //get the nodes.
+            List<CyNode> selectedNodes = CyTableUtil.getNodesInState(network, CyNetwork.SELECTED, true);
 
-            Node[] selectedNodes = event.getSelectedNodes();
-
-            //Add all the selected nodes to the list of nodes
-            for(int i=0;i<selectedNodes.length;i++){
-                //check to see that the node isn't already in the list
-                if(!Nodes.contains(selectedNodes[i]))
-                    Nodes.add(selectedNodes[i]);
-            }
-
+            Nodes.clear();
+            Nodes.addAll(selectedNodes);
             //if (Nodes.size() <= Integer.parseInt(CytoscapeInit.getProperties().getProperty("EnrichmentMap.Heatmap_Node_Limit",  "50") ) )
-                createNodesData();
-        }
-        if(event.isNodesUnselectedType()){
-            Node[] unselectedNodes = event.getUnselectedNodes();
-
-            //remove all the unselected nodes from the list of nodes
-            for(int i = 0; i < unselectedNodes.length; i++){
-                //check to make sure that the node is in the list
-                if(Nodes.contains(unselectedNodes[i]))
-                    Nodes.remove(unselectedNodes[i]);
-            }
-
-            if(!Nodes.isEmpty())
-                createNodesData();
-
-            if(Nodes.isEmpty() && Edges.isEmpty())
-                clearPanels();
-        }
-        if(event.isEdgesUnselectedType()){
-
-            Edge[] unselectedEdges = event.getUnselectedEdges();
-
-            //Add all the selected edges to the list of edges
-            for(int i=0;i<unselectedEdges.length;i++){
-                 //check to see that the edge isn't already in the list
-                 if(Edges.contains(unselectedEdges[i]))
-                      Edges.remove(unselectedEdges[i]);
-                 }
-
-            if(!Edges.isEmpty())
-                createEdgesData();
-
+            if(Nodes.size()>0)
+            		createNodesData();
+            
             if(Nodes.isEmpty() && Edges.isEmpty())
                 clearPanels();
         }
@@ -186,11 +184,20 @@ public class EnrichmentMapActionListener {
 
   public void createEdgesData(){
 
-
       if(map.getParams().isData()){
         edgeOverlapPanel.updatePanel(map);
         if ( ! map.getParams().isDisableHeatmapAutofocus() ) {
-        	cytoPanel.setSelectedIndex(cytoPanel.indexOfComponent(edgeOverlapPanel));
+        		// If the state of the cytoPanelWest is HIDE, show it
+            if (cytoPanelSouth.getState() == CytoPanelState.HIDE) {
+          	  	cytoPanelSouth.setState(CytoPanelState.DOCK);
+            }
+
+           // Select my panel
+          int index = cytoPanelSouth.indexOfComponent(this.edgeOverlapPanel);
+          if (index == -1) {
+          	 	return;
+          }
+          cytoPanelSouth.setSelectedIndex(index);
         }
         edgeOverlapPanel.revalidate();
 
@@ -203,7 +210,17 @@ public class EnrichmentMapActionListener {
         if(map.getParams().isData()){
             nodeOverlapPanel.updatePanel(map);
             if ( ! map.getParams().isDisableHeatmapAutofocus() ) {
-            	cytoPanel.setSelectedIndex(cytoPanel.indexOfComponent(nodeOverlapPanel));
+            	// If the state of the cytoPanelWest is HIDE, show it
+                if (cytoPanelSouth.getState() == CytoPanelState.HIDE) {
+              	  	cytoPanelSouth.setState(CytoPanelState.DOCK);
+                }
+
+               // Select my panel
+              int index = cytoPanelSouth.indexOfComponent(this.nodeOverlapPanel);
+              if (index == -1) {
+              	 	return;
+              }
+             cytoPanelSouth.setSelectedIndex(index);
             }
             nodeOverlapPanel.revalidate();
         }
@@ -215,9 +232,11 @@ public class EnrichmentMapActionListener {
             nodeOverlapPanel.clearPanel();
             edgeOverlapPanel.clearPanel();
             if ( ! map.getParams().isDisableHeatmapAutofocus() ) {
-	            cytoPanel.setSelectedIndex(cytoPanel.indexOfComponent(nodeOverlapPanel));
-	            cytoPanel.setSelectedIndex(cytoPanel.indexOfComponent(edgeOverlapPanel));
+	            //TODO add clear panels
+            	//cytoPanel.setSelectedIndex(cytoPanel.indexOfComponent(nodeOverlapPanel));
+	            //cytoPanel.setSelectedIndex(cytoPanel.indexOfComponent(edgeOverlapPanel));
             }
         }
-    }*/
+    }
+
 }
