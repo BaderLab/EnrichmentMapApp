@@ -46,11 +46,14 @@ import java.awt.event.ActionEvent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
+import org.cytoscape.util.swing.OpenBrowser;
+
 
 public class HyperLinkOut extends JMenu {
 	private static final String TITLE = "Search";
 	private final String value;
 	private final Map<String, Map<String, String>> structure;
+	private OpenBrowser openBrowser;
 
 	/**
 	 * Creates a new HyperLinkOut object.
@@ -58,7 +61,8 @@ public class HyperLinkOut extends JMenu {
 	 * @param value  DOCUMENT ME!
 	 * @param menuStructure  DOCUMENT ME!
 	 */
-	public HyperLinkOut(String value, final Map<String, Map<String, String>> menuStructure) {
+	public HyperLinkOut(String value, final Map<String, Map<String, String>> menuStructure, OpenBrowser openBrowser) {
+		this.openBrowser = openBrowser;
 		this.value = value;
 		this.structure = menuStructure;
 
@@ -115,7 +119,7 @@ public class HyperLinkOut extends JMenu {
 				dbLink.addActionListener(new ActionListener() {
 						public void actionPerformed(ActionEvent e) {
 							//TODO: move to mouse click action.
-							//openBrowser(structure.get(category).get(name).replace("%ID%", value));
+							openBrowser(structure.get(category).get(name).replace("%ID%", value));
 						}
 					});
 				cat.add(dbLink);
@@ -125,8 +129,8 @@ public class HyperLinkOut extends JMenu {
 		}
 	}
 	//TODO:move to mouse click action on the table.
-	/*private void openBrowser(String url) {
+	private void openBrowser(String url) {
 		// System.out.println("URL ==== " + url);
-		OpenBrowser.openURL(url);
-	}*/
+		openBrowser.openURL(url);
+	}
 }

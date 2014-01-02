@@ -175,7 +175,6 @@ public class HeatMapActionListener implements ActionListener {
                 try {
 					ranking1.parse();
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 

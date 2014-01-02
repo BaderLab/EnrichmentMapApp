@@ -409,7 +409,6 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
                     CyEdge edge = network.addEdge(node1, node2, false);
                     String edge_type;
                     
-                    //TODO: Add attribute to edge specified as type.
                     //in order to create multiple edges we need to create different edge types between the same two nodes
                     if(current_result.getEnrichment_set() == 1)
                     		edge_type = EnrichmentMapParameters.ENRICHMENT_INTERACTION_TYPE_SET1;                        

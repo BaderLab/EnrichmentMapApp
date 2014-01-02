@@ -232,8 +232,7 @@ public class EnrichmentMapActionListener implements RowsSetListener{
             nodeOverlapPanel.clearPanel();
             edgeOverlapPanel.clearPanel();
             if ( ! map.getParams().isDisableHeatmapAutofocus() ) {
-	            //TODO add clear panels
-            	//cytoPanel.setSelectedIndex(cytoPanel.indexOfComponent(nodeOverlapPanel));
+            		//cytoPanel.setSelectedIndex(cytoPanel.indexOfComponent(nodeOverlapPanel));
 	            //cytoPanel.setSelectedIndex(cytoPanel.indexOfComponent(edgeOverlapPanel));
             }
         }

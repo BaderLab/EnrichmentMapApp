@@ -94,6 +94,7 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.util.swing.FileUtil;
+import org.cytoscape.util.swing.OpenBrowser;
 
 /**
  * Created by
@@ -112,6 +113,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
 	private CySwingApplication application;
 	private CyApplicationManager applicationManager;
 	private FileUtil fileUtil;
+	private OpenBrowser openBrowser;
 	
 	private static final long serialVersionUID = 1903063204304411983L;
     
@@ -196,7 +198,8 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
      * @param node - boolean indicating with this is a heat map for node unions or edge overlaps.
      * if true it is a node heatmap, else it is an edge heatmap
      */
-    public HeatMapPanel(boolean node, CySwingApplication application, FileUtil fileUtil,CyApplicationManager applicationManager){
+    public HeatMapPanel(boolean node, CySwingApplication application, 
+    		FileUtil fileUtil,CyApplicationManager applicationManager,OpenBrowser openBrowser){
        this.node = node;
        this.setLayout(new java.awt.BorderLayout());
 
@@ -208,6 +211,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
         
         this.application = application;
         this.applicationManager = applicationManager;
+        this.openBrowser = openBrowser;
     }
 
     /**
@@ -340,7 +344,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
             jTable1 = new JTable(sort);
 
             //add a listener to the table
-            jTable1.addMouseListener(new HeatMapTableActionListener(jTable1,OGT, rightClickPopupMenu,linkoutProps));
+            jTable1.addMouseListener(new HeatMapTableActionListener(jTable1,OGT, rightClickPopupMenu,linkoutProps,openBrowser));
 
             // used for listening to columns when clicked
             TableHeader header = new TableHeader(sort, jTable1, hmParams);

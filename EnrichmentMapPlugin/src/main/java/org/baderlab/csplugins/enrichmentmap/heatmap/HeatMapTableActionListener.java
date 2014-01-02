@@ -4,6 +4,7 @@ package org.baderlab.csplugins.enrichmentmap.heatmap;
 import javax.swing.*;
 
 import org.baderlab.csplugins.enrichmentmap.model.HyperLinkOut;
+import org.cytoscape.util.swing.OpenBrowser;
 
 import java.awt.event.MouseListener;
 import java.awt.event.MouseEvent;
@@ -22,6 +23,7 @@ import java.util.Map;
  */
 public class HeatMapTableActionListener implements MouseListener {
 
+	private OpenBrowser openBrowser;
     private JTable jtable;
     //need the model in order to get the expression value for the mouse click of cells of the heatmap
     private HeatMapTableModel model;
@@ -32,11 +34,13 @@ public class HeatMapTableActionListener implements MouseListener {
     //for the linkout properties that are loaded from cytoscape properties.
     private Map<String, Map<String, String>> linkoutProps;
 
-    public HeatMapTableActionListener(JTable jtable, HeatMapTableModel model,JPopupMenu rightClickPopupMenu,Map<String, Map<String, String>> linkoutProps) {
+    public HeatMapTableActionListener(JTable jtable, HeatMapTableModel model,
+    		JPopupMenu rightClickPopupMenu,Map<String, Map<String, String>> linkoutProps, OpenBrowser openBrowser) {
         this.jtable = jtable;
         this.model = model;
         this.linkoutProps = linkoutProps;
         this.rightClickPopupMenu = rightClickPopupMenu;
+        this.openBrowser = openBrowser;
     }
 
     /**
@@ -60,7 +64,7 @@ public class HeatMapTableActionListener implements MouseListener {
 
                 //put in the pop linkout menu if it is the first two columns
                 if(column ==0 || column == 1){
-                    rightClickPopupMenu.add(new HyperLinkOut(value.toString(), linkoutProps));
+                    rightClickPopupMenu.add(new HyperLinkOut(value.toString(), linkoutProps,openBrowser));
                 }
                 //otherwise put the value in a pop-up
                 else{

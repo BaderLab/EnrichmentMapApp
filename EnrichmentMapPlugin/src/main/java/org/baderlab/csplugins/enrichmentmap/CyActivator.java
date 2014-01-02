@@ -99,8 +99,8 @@ public class CyActivator extends AbstractCyActivator {
 		PostAnalysisInputPanel postEMPanel = new PostAnalysisInputPanel(cyApplicationManagerRef,cySwingApplicationRef, openBrowserRef,fileUtil,sessionManager, streamUtil);
 		
 		//create two instances of the heatmap panel
-		HeatMapPanel heatMapPanel_node = new HeatMapPanel(true, cySwingApplicationRef, fileUtil, cyApplicationManagerRef);
-		HeatMapPanel heatMapPanel_edge = new HeatMapPanel(false, cySwingApplicationRef, fileUtil, cyApplicationManagerRef);
+		HeatMapPanel heatMapPanel_node = new HeatMapPanel(true, cySwingApplicationRef, fileUtil, cyApplicationManagerRef, openBrowserRef);
+		HeatMapPanel heatMapPanel_edge = new HeatMapPanel(false, cySwingApplicationRef, fileUtil, cyApplicationManagerRef, openBrowserRef);
 		ParametersPanel paramsPanel = new ParametersPanel(openBrowserRef);
 		
 		//Get an instance of EM manager
