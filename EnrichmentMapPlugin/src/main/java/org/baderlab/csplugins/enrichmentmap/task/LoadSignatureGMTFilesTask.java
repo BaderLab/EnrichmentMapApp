@@ -18,7 +18,7 @@ import cern.jet.stat.Gamma;
 import cytoscape.task.Task;
 import cytoscape.task.TaskMonitor;
 
-public class LoadSignatureGMTFilesTask implements Task{
+public class LoadSignatureGMTFilesTask implements Task {
 
         private PostAnalysisParameters paParams = null;
         private PostAnalysisInputPanel paPanel = null;
@@ -85,7 +85,6 @@ public class LoadSignatureGMTFilesTask implements Task{
                     //Load the Disease Signature geneset file
                     GMTFileReaderTask gmtFile_2 = new GMTFileReaderTask(map, paParams, taskMonitor, GMTFileReaderTask.SIGNATURE_GMT);
                     gmtFile_2.run();
-    
                 } catch (OutOfMemoryError e) {
                     taskMonitor.setException(e,"Out of Memory. Please increase memory allotment for Cytoscape.");
                     return;
@@ -93,7 +92,7 @@ public class LoadSignatureGMTFilesTask implements Task{
                     taskMonitor.setException(e,"unable to load GMT files");
                     return;
                 }
-                
+                                
                 //Sort the Genesets:
                 DefaultListModel signatureSetNames = paParams.getSignatureSetNames();
                 DefaultListModel selectedSignatureSetNames = paParams.getSelectedSignatureSetNames();
@@ -168,10 +167,10 @@ public class LoadSignatureGMTFilesTask implements Task{
                                         break;
                                     }
                                 }
-                            }
-                            if(matchfound){
-                                if (! signatureSetNames.contains(setNamesArray[i]))
-                                    signatureSetNames.addElement(setNamesArray[i]);
+	                            if(matchfound){
+	                                if (! signatureSetNames.contains(setNamesArray[i]))
+	                                    signatureSetNames.addElement(setNamesArray[i]);
+	                            }
                             }
                         } else {
                         	signatureSetNames.addElement(setNamesArray[i]);
@@ -179,6 +178,7 @@ public class LoadSignatureGMTFilesTask implements Task{
                     }
                 }
                 
+                System.out.println(signatureSetNames.size());
                 this.paPanel.setAvSigCount(signatureSetNames.size());
             
             } catch (InterruptedException e) {

@@ -1827,7 +1827,6 @@ public class EnrichmentMapInputPanel extends JPanel {
           Dataset1RankFileTextField.setText(dataset1files.getRankedFile());
           Dataset1RankFileTextField.setToolTipText(dataset1files.getRankedFile());
       }
-      
      
     	  if(dataset2files.getEnrichmentFileName1()!=null){
     		  Dataset2FileNameTextField.setText(dataset2files.getEnrichmentFileName1());
@@ -1842,7 +1841,7 @@ public class EnrichmentMapInputPanel extends JPanel {
     		  Dataset2RankFileTextField.setToolTipText(dataset2files.getRankedFile());
     	  }
     	  
-    	//Special case with Enrichment results file 2 (there should only be two enrichment
+    	  //Special case with Enrichment results file 2 (there should only be two enrichment
           //Files if the analysis specified is GSEA.  If the user has loaded from an RPT and
           //then changes the type of analysis there shouldn't be an extra file
           if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)){

@@ -122,8 +122,8 @@ public class PostAnalysisInputPanel extends JPanel {
 
     
     //Genesets file related components
-    private JFormattedTextField GMTFileNameTextField;
-    private JFormattedTextField signatureGMTFileNameTextField;
+    private JFormattedTextField knownSignatureGMTFileNameTextField;
+    private JFormattedTextField signatureDiscoveryGMTFileNameTextField;
 
     private JLabel avail_sig_sets_counter_label;
     private int avail_sig_sets_count = 0;
@@ -133,12 +133,21 @@ public class PostAnalysisInputPanel extends JPanel {
     private JList selected_sig_sets_field;
     private DefaultListModel avail_sig_sets;
     private DefaultListModel selected_sig_sets;
-
+    
+    /** Global reference to options panel. Allows panel subcomponents to be altered. **/
+    JPanel signatureDiscoveryPanel;
+    JPanel knownSignaturePanel;
+    JPanel optionsPanel;
+    CollapsiblePanel userInputPanel;
 
     
     //Parameters related components
     private JComboBox sigCutoffCombo;
+    private JComboBox datasetCombo;
+    private JComboBox rankingCombo;
+    private JComboBox rankTestCombo;
     private JFormattedTextField sigCutoffTextField;
+    private JFormattedTextField rankTestTextField;
     
     private int defaultColumns = 15;
 
@@ -176,9 +185,11 @@ public class PostAnalysisInputPanel extends JPanel {
 
         //Put the options panel into a scroll pain
 
-        CollapsiblePanel OptionsPanel = createOptionsPanel();
-        OptionsPanel.setCollapsed(false);
-        JScrollPane scroll = new JScrollPane(OptionsPanel);
+        userInputPanel = new CollapsiblePanel("User Input");
+        userInputPanel.setCollapsed(false);
+        optionsPanel = getSignatureDiscoveryOptionsPanel();
+        userInputPanel.getContentPane().add(optionsPanel);
+        JScrollPane scrollPane = new JScrollPane(userInputPanel);
         //scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
         JPanel bottomPanel = createBottomPanel();
@@ -187,7 +198,7 @@ public class PostAnalysisInputPanel extends JPanel {
         //it will stretch it's height to fit the main panel.  To prevent this we create an
         //additional border layout panel and add advanced options to it's north compartment
         JPanel advancedOptionsContainer = new JPanel(new BorderLayout());
-        advancedOptionsContainer.add(scroll, BorderLayout.CENTER);
+        advancedOptionsContainer.add(scrollPane, BorderLayout.CENTER);
 
         //Add all the vertically aligned components to the main panel
         add(AnalysisTypePanel,BorderLayout.NORTH);
@@ -196,7 +207,14 @@ public class PostAnalysisInputPanel extends JPanel {
 
     }
 
-    /**
+	private JPanel getSignatureDiscoveryOptionsPanel() {
+		if (signatureDiscoveryPanel == null) {
+			signatureDiscoveryPanel = this.createSignatureDiscoveryOptionsPanel();
+		}
+		return signatureDiscoveryPanel;
+	}
+
+	/**
      * Creates a JPanel containing scope radio buttons
      *
      * @return panel containing the scope option buttons
@@ -296,14 +314,13 @@ public class PostAnalysisInputPanel extends JPanel {
     /**
      * @return collapsiblePanel to select Signature Genesets for Signature Analysis
      */
-    private CollapsiblePanel createOptionsPanel() {
-        CollapsiblePanel collapsiblePanel = new CollapsiblePanel("User Input");
+    private JPanel createSignatureDiscoveryOptionsPanel() {
 
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
         //Gene set file panel
-        CollapsiblePanel GMTPanel = createGMTPanel();
+        CollapsiblePanel GMTPanel = createSignatureDiscoveryGMTPanel();
         GMTPanel.setCollapsed(false);
 
         
@@ -318,7 +335,7 @@ public class PostAnalysisInputPanel extends JPanel {
         //signaturePanel.setPreferredSize(new Dimension(280, 300));
         signaturePanel.setAlignmentX((float) 0.0); //LEFT
         
-
+        
 //        //TODO: Make SearchBox functional
 //        // search Box:
 //        JFormattedTextField searchBox = new JFormattedTextField();
@@ -327,7 +344,7 @@ public class PostAnalysisInputPanel extends JPanel {
         
         avail_sig_sets = paParams.getSignatureSetNames(); 
         selected_sig_sets = paParams.getSelectedSignatureSetNames();
-
+        
         //List of all Signature Genesets 
         JPanel availableLabel = new JPanel(new FlowLayout());
         availableLabel.add(new JLabel("Available Signature-Genesets:"));
@@ -435,67 +452,39 @@ public class PostAnalysisInputPanel extends JPanel {
         
         panel.add(GMTPanel);
         panel.add(signature_genesets);
-        panel.add(ParametersPanel);
-        
-        collapsiblePanel.getContentPane().add(panel, BorderLayout.NORTH);
-        return collapsiblePanel;
+        panel.add(ParametersPanel);        
+        return panel;
     }
-
+    
     /**
-     * @return CollapsiblePanel for choosing and loading GMT and SignatureGMT Geneset-Files 
+     * @return collapsiblePanel to select Signature Genesets for Signature Analysis
      */
-    private CollapsiblePanel createGMTPanel() {
-        CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Gene-Sets");
+    private JPanel createKnownSignatureOptionsPanel() {
 
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
-        //add GMT file
-        JLabel GMTLabel = new JLabel("GMT:"){
-            /**
-             * 
-             */
-            private static final long serialVersionUID = 5799024396588991328L;
-
-            public JToolTip createToolTip() {
-                return new JMultiLineToolTip();
-            }
-        };
-        GMTLabel.setToolTipText(gmtTip);
-        JButton selectGMTFileButton = new JButton();
-        GMTFileNameTextField = new JFormattedTextField() ;
-        GMTFileNameTextField.setColumns(defaultColumns);
-
-
-        //components needed for the directory load
-        GMTFileNameTextField.setFont(new java.awt.Font("Dialog",1,10));
-        //GMTFileNameTextField.setText(gmt_instruction);
-        GMTFileNameTextField.addPropertyChangeListener("value",new PostAnalysisInputPanel.FormattedTextFieldAction());
-
-        GMTFileNameTextField.setText( paParams.getGMTFileName() );
-        GMTFileNameTextField.setValue( paParams.getGMTFileName() );
-        if (! (GMTFileNameTextField.getText().equals("") ) ) {
-            GMTFileNameTextField.setToolTipText(GMTFileNameTextField.getText());
-        }
-
-        selectGMTFileButton.setText("...");
-        selectGMTFileButton.setMargin(new Insets(0,0,0,0));
-        selectGMTFileButton
-        .addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                selectGMTFileButtonActionPerformed(evt);
-            }
-        });
-
-        JPanel GMTPanel = new JPanel();
-        GMTPanel.setLayout(new BorderLayout());
-
-        GMTPanel.add(GMTLabel,BorderLayout.WEST);
-        GMTPanel.add( GMTFileNameTextField, BorderLayout.CENTER);
-        GMTPanel.add( selectGMTFileButton, BorderLayout.EAST);
-
-        //add the components to the panel
+        //Gene set file panel
+        CollapsiblePanel GMTPanel = createKnownSignatureGMTPanel();
+        GMTPanel.setCollapsed(false);
+        
+        //Parameters collapsible panel
+        CollapsiblePanel ParametersPanel = createParametersPanel();
+        ParametersPanel.setCollapsed(false);
+        
         panel.add(GMTPanel);
+        panel.add(ParametersPanel);        
+        return panel;
+    }
+    
+    /**
+     * @return CollapsiblePanel for choosing and loading GMT and SignatureGMT Geneset-Files 
+     */
+    private CollapsiblePanel createKnownSignatureGMTPanel() {
+        CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Gene-Sets");
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
         //add SigGMT file
         JLabel SigGMTLabel = new JLabel("SigGMT:"){
@@ -510,18 +499,19 @@ public class PostAnalysisInputPanel extends JPanel {
         };
         SigGMTLabel.setToolTipText(gmtTip);
         JButton selectSigGMTFileButton = new JButton();
-        signatureGMTFileNameTextField = new JFormattedTextField() ;
-        signatureGMTFileNameTextField.setColumns(defaultColumns);
+        knownSignatureGMTFileNameTextField = new JFormattedTextField() ;
+        knownSignatureGMTFileNameTextField.setColumns(defaultColumns);
 
 
         //components needed for the directory load
-        signatureGMTFileNameTextField.setFont(new java.awt.Font("Dialog",1,10));
+        knownSignatureGMTFileNameTextField.setFont(new java.awt.Font("Dialog",1,10));
         //GMTFileNameTextField.setText(gmt_instruction);
-        signatureGMTFileNameTextField.addPropertyChangeListener("value",new PostAnalysisInputPanel.FormattedTextFieldAction());
+        knownSignatureGMTFileNameTextField.addPropertyChangeListener("value",new PostAnalysisInputPanel.FormattedTextFieldAction());
 
 
         selectSigGMTFileButton.setText("...");
         selectSigGMTFileButton.setMargin(new Insets(0,0,0,0));
+        selectSigGMTFileButton.setActionCommand("Known Signature");
         selectSigGMTFileButton
         .addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -533,7 +523,63 @@ public class PostAnalysisInputPanel extends JPanel {
         SigGMTPanel.setLayout(new BorderLayout());
 
         SigGMTPanel.add( SigGMTLabel,BorderLayout.WEST);
-        SigGMTPanel.add( signatureGMTFileNameTextField, BorderLayout.CENTER);
+        SigGMTPanel.add( knownSignatureGMTFileNameTextField, BorderLayout.CENTER);
+        SigGMTPanel.add( selectSigGMTFileButton, BorderLayout.EAST);
+        //add the components to the panel
+        panel.add(SigGMTPanel);   
+        
+        collapsiblePanel.getContentPane().add(panel, BorderLayout.NORTH);
+        return collapsiblePanel;
+
+    }
+
+    /**
+     * @return CollapsiblePanel for choosing and loading GMT and SignatureGMT Geneset-Files 
+     */
+    private CollapsiblePanel createSignatureDiscoveryGMTPanel() {
+        CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Gene-Sets");
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        
+        //add SigGMT file
+        JLabel SigGMTLabel = new JLabel("SigGMT:"){
+            /**
+             * 
+             */
+            private static final long serialVersionUID = 8826340546360207691L;
+
+            public JToolTip createToolTip() {
+                return new JMultiLineToolTip();
+            }
+        };
+        SigGMTLabel.setToolTipText(gmtTip);
+        JButton selectSigGMTFileButton = new JButton();
+        signatureDiscoveryGMTFileNameTextField = new JFormattedTextField() ;
+        signatureDiscoveryGMTFileNameTextField.setColumns(defaultColumns);
+
+
+        //components needed for the directory load
+        signatureDiscoveryGMTFileNameTextField.setFont(new java.awt.Font("Dialog",1,10));
+        //GMTFileNameTextField.setText(gmt_instruction);
+        signatureDiscoveryGMTFileNameTextField.addPropertyChangeListener("value",new PostAnalysisInputPanel.FormattedTextFieldAction());
+
+
+        selectSigGMTFileButton.setText("...");
+        selectSigGMTFileButton.setMargin(new Insets(0,0,0,0));
+        selectSigGMTFileButton.setActionCommand("Signature Discovery");
+        selectSigGMTFileButton
+        .addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                selectSignatureGMTFileButtonActionPerformed(evt);
+            }
+        });
+
+        JPanel SigGMTPanel = new JPanel();
+        SigGMTPanel.setLayout(new BorderLayout());
+
+        SigGMTPanel.add( SigGMTLabel,BorderLayout.WEST);
+        SigGMTPanel.add( signatureDiscoveryGMTFileNameTextField, BorderLayout.CENTER);
         SigGMTPanel.add( selectSigGMTFileButton, BorderLayout.EAST);
         //add the components to the panel
         panel.add(SigGMTPanel);
@@ -678,64 +724,81 @@ public class PostAnalysisInputPanel extends JPanel {
         
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        
+        datasetCombo = new JComboBox();
+        datasetCombo.addItem("Dataset");
+        panel.add(datasetCombo);
+        
+        rankingCombo = new JComboBox();
+        rankingCombo.addItem("Ranking");
+        panel.add(rankingCombo);
+        
+        rankTestCombo = new JComboBox();
+        rankTestCombo.addItem("Rank Test");
+        panel.add(rankTestCombo);
+        
         JPanel cutoffLabel = new JPanel();
         cutoffLabel.add(new JLabel("Select Cutoff:"));
         panel.add(cutoffLabel);
         
         JPanel cutoffPanel = new JPanel();
         cutoffPanel.setLayout(new BoxLayout(cutoffPanel, BoxLayout.X_AXIS));
-        sigCutoffCombo = new JComboBox();
-        sigCutoffCombo.addItem(sigCutoffItems[PostAnalysisParameters.ABS_NUMBER]);
-        sigCutoffCombo.addItem(sigCutoffItems[PostAnalysisParameters.JACCARD]);
-        sigCutoffCombo.addItem(sigCutoffItems[PostAnalysisParameters.OVERLAP]);
-        sigCutoffCombo.addItem(sigCutoffItems[PostAnalysisParameters.DIR_OVERLAP]);
-        sigCutoffCombo.setSelectedItem(sigCutoffItems[paParams.getDefault_signature_CutoffMetric()]);
+//        sigCutoffCombo = new JComboBox();
+//        sigCutoffCombo.addItem(sigCutoffItems[PostAnalysisParameters.ABS_NUMBER]);
+//        sigCutoffCombo.addItem(sigCutoffItems[PostAnalysisParameters.JACCARD]);
+//        sigCutoffCombo.addItem(sigCutoffItems[PostAnalysisParameters.OVERLAP]);
+//        sigCutoffCombo.addItem(sigCutoffItems[PostAnalysisParameters.DIR_OVERLAP]);
+//        sigCutoffCombo.setSelectedItem(sigCutoffItems[paParams.getDefault_signature_CutoffMetric()]);
 
 
         //JFormattedTextField
-        sigCutoffTextField = new JFormattedTextField(decFormat);
-        sigCutoffTextField.setColumns(3);
-        if (paParams.getDefault_signature_CutoffMetric() == PostAnalysisParameters.ABS_NUMBER)
-            sigCutoffTextField.setValue(paParams.getSignature_absNumber_Cutoff());
-        else if (paParams.getDefault_signature_CutoffMetric() == PostAnalysisParameters.JACCARD)
-            sigCutoffTextField.setValue(paParams.getSignature_Jaccard_Cutoff());
-        else if (paParams.getDefault_signature_CutoffMetric() == PostAnalysisParameters.OVERLAP)
-            sigCutoffTextField.setValue(paParams.getSignature_Overlap_Cutoff());
-        else if (paParams.getDefault_signature_CutoffMetric() == PostAnalysisParameters.DIR_OVERLAP)
-            sigCutoffTextField.setValue(paParams.getSignature_DirOverlap_Cutoff());
-        else {
-            //Handle Unsupported Default_signature_CutoffMetric Error
-            String message = "This Cutoff metric is not supported.";
-            JOptionPane.showMessageDialog(Cytoscape.getDesktop(), message, "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
-        }
+//        sigCutoffTextField = new JFormattedTextField(decFormat);
+//        sigCutoffTextField.setColumns(3);
+//        if (paParams.getDefault_signature_CutoffMetric() == PostAnalysisParameters.ABS_NUMBER)
+//            sigCutoffTextField.setValue(paParams.getSignature_absNumber_Cutoff());
+//        else if (paParams.getDefault_signature_CutoffMetric() == PostAnalysisParameters.JACCARD)
+//            sigCutoffTextField.setValue(paParams.getSignature_Jaccard_Cutoff());
+//        else if (paParams.getDefault_signature_CutoffMetric() == PostAnalysisParameters.OVERLAP)
+//            sigCutoffTextField.setValue(paParams.getSignature_Overlap_Cutoff());
+//        else if (paParams.getDefault_signature_CutoffMetric() == PostAnalysisParameters.DIR_OVERLAP)
+//            sigCutoffTextField.setValue(paParams.getSignature_DirOverlap_Cutoff());
+//        else {
+//            //Handle Unsupported Default_signature_CutoffMetric Error
+//            String message = "This Cutoff metric is not supported.";
+//            JOptionPane.showMessageDialog(Cytoscape.getDesktop(), message, "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
+//        }
+//
+//        
+//        //Add Action Listeners
+//        sigCutoffCombo.addActionListener( new ActionListener() { 
+//            String[] sigCutoffItems = PostAnalysisParameters.sigCutoffItems;
+//            public void actionPerformed( ActionEvent e ) 
+//            { 
+//              JComboBox selectedChoice = (JComboBox) e.getSource(); 
+//              if ( sigCutoffItems[PostAnalysisParameters.ABS_NUMBER].equals( selectedChoice.getSelectedItem() ) ) {
+//                  paParams.setSignature_CutoffMetric(PostAnalysisParameters.ABS_NUMBER);
+//                  sigCutoffTextField.setValue(paParams.getSignature_absNumber_Cutoff());
+//              } else if ( sigCutoffItems[PostAnalysisParameters.JACCARD].equals( selectedChoice.getSelectedItem() ) ) {
+//                  paParams.setSignature_CutoffMetric(PostAnalysisParameters.JACCARD);
+//                  sigCutoffTextField.setValue(paParams.getSignature_Jaccard_Cutoff());
+//              } else if ( sigCutoffItems[PostAnalysisParameters.OVERLAP].equals( selectedChoice.getSelectedItem() ) ) {
+//                  paParams.setSignature_CutoffMetric(PostAnalysisParameters.OVERLAP);
+//                  sigCutoffTextField.setValue(paParams.getSignature_Overlap_Cutoff());
+//              } else if ( sigCutoffItems[PostAnalysisParameters.DIR_OVERLAP].equals( selectedChoice.getSelectedItem() ) ) {
+//                  paParams.setSignature_CutoffMetric(PostAnalysisParameters.DIR_OVERLAP);
+//                  sigCutoffTextField.setValue(paParams.getSignature_DirOverlap_Cutoff());
+//              }
+//                 
+//            } 
+//          } ); 
+//        sigCutoffTextField.addPropertyChangeListener("value", new PostAnalysisInputPanel.FormattedTextFieldAction());
+//
+//        cutoffPanel.add(sigCutoffCombo);
+//        cutoffPanel.add(sigCutoffTextField);
 
-        
-        //Add Action Listeners
-        sigCutoffCombo.addActionListener( new ActionListener() { 
-            String[] sigCutoffItems = PostAnalysisParameters.sigCutoffItems;
-            public void actionPerformed( ActionEvent e ) 
-            { 
-              JComboBox selectedChoice = (JComboBox) e.getSource(); 
-              if ( sigCutoffItems[PostAnalysisParameters.ABS_NUMBER].equals( selectedChoice.getSelectedItem() ) ) {
-                  paParams.setSignature_CutoffMetric(PostAnalysisParameters.ABS_NUMBER);
-                  sigCutoffTextField.setValue(paParams.getSignature_absNumber_Cutoff());
-              } else if ( sigCutoffItems[PostAnalysisParameters.JACCARD].equals( selectedChoice.getSelectedItem() ) ) {
-                  paParams.setSignature_CutoffMetric(PostAnalysisParameters.JACCARD);
-                  sigCutoffTextField.setValue(paParams.getSignature_Jaccard_Cutoff());
-              } else if ( sigCutoffItems[PostAnalysisParameters.OVERLAP].equals( selectedChoice.getSelectedItem() ) ) {
-                  paParams.setSignature_CutoffMetric(PostAnalysisParameters.OVERLAP);
-                  sigCutoffTextField.setValue(paParams.getSignature_Overlap_Cutoff());
-              } else if ( sigCutoffItems[PostAnalysisParameters.DIR_OVERLAP].equals( selectedChoice.getSelectedItem() ) ) {
-                  paParams.setSignature_CutoffMetric(PostAnalysisParameters.DIR_OVERLAP);
-                  sigCutoffTextField.setValue(paParams.getSignature_DirOverlap_Cutoff());
-              }
-                 
-            } 
-          } ); 
-        sigCutoffTextField.addPropertyChangeListener("value", new PostAnalysisInputPanel.FormattedTextFieldAction());
-
-        cutoffPanel.add(sigCutoffCombo);
-        cutoffPanel.add(sigCutoffTextField);
+        rankTestTextField = new JFormattedTextField();
+        cutoffPanel.add(rankTestCombo);
+        cutoffPanel.add(rankTestTextField);
 
         panel.add(cutoffPanel);
         collapsiblePanel.getContentPane().add(panel, BorderLayout.NORTH);
@@ -781,34 +844,39 @@ public class PostAnalysisInputPanel extends JPanel {
             String message = "The value you have entered is invalid.\n";
             boolean invalid = false;
 
-            if (source == GMTFileNameTextField) {
-                String value = GMTFileNameTextField.getText();
-                if(value.equalsIgnoreCase("") )
-                    paParams.setGMTFileName(value);
-                else if(GMTFileNameTextField.getText().equalsIgnoreCase((String)e.getOldValue())){
-                    //do nothing
-                }
-                else if(checkFile(value).equals(Color.RED)){
-                    JOptionPane.showMessageDialog(Cytoscape.getDesktop(),message,"File name change entered is not a valid file name",JOptionPane.WARNING_MESSAGE);
-                    GMTFileNameTextField.setForeground(checkFile(value));
-                }
-                else
-                    paParams.setGMTFileName(value);
-            } 
-            else if (source == signatureGMTFileNameTextField) {
-                String value = signatureGMTFileNameTextField.getText();
+            if (source == knownSignatureGMTFileNameTextField) {
+                String value = knownSignatureGMTFileNameTextField.getText();
                 if(value.equalsIgnoreCase("") )
                     paParams.setSignatureGMTFileName(value);
-                else if(signatureGMTFileNameTextField.getText().equalsIgnoreCase((String)e.getOldValue())){
+                else if(knownSignatureGMTFileNameTextField.getText().equalsIgnoreCase((String)e.getOldValue())){
                     //do nothing
                 }
                 else if(checkFile(value).equals(Color.RED)){
                     JOptionPane.showMessageDialog(Cytoscape.getDesktop(),message,"File name change entered is not a valid file name",JOptionPane.WARNING_MESSAGE);
-                    signatureGMTFileNameTextField.setForeground(checkFile(value));
+                    knownSignatureGMTFileNameTextField.setForeground(checkFile(value));
                 }
                 else {
                     paParams.setSignatureGMTFileName(value);
                     paParams.setSignatureGenesets(new SetOfGeneSets());
+                    //paParams.setSignatureSetNames(new DefaultListModel());
+                    //paParams.setSelectedSignatureSetNames(new DefaultListModel());
+                }
+            } else if (source == signatureDiscoveryGMTFileNameTextField) {
+                String value = signatureDiscoveryGMTFileNameTextField.getText();
+                if(value.equalsIgnoreCase("") )
+                    paParams.setSignatureGMTFileName(value);
+                else if(signatureDiscoveryGMTFileNameTextField.getText().equalsIgnoreCase((String)e.getOldValue())){
+                    //do nothing
+                }
+                else if(checkFile(value).equals(Color.RED)){
+                    JOptionPane.showMessageDialog(Cytoscape.getDesktop(),message,"File name change entered is not a valid file name",JOptionPane.WARNING_MESSAGE);
+                    signatureDiscoveryGMTFileNameTextField.setForeground(checkFile(value));
+                }
+                else {
+                    paParams.setSignatureGMTFileName(value);
+                    paParams.setSignatureGenesets(new SetOfGeneSets());
+                    //paParams.setSignatureSetNames(new DefaultListModel());
+                    //paParams.setSelectedSignatureSetNames(new DefaultListModel());
                 }
             } 
             else if (source == sigCutoffTextField) {
@@ -970,53 +1038,38 @@ public class PostAnalysisInputPanel extends JPanel {
     private void selectAnalysisTypeActionPerformed(ActionEvent evt){
         String analysisType = evt.getActionCommand();
 
-        if(analysisType.equalsIgnoreCase("Signature Discovery"))
+        if(analysisType.equalsIgnoreCase("Signature Discovery")) {
             paParams.setSignatureHub(true);
-        else
+        	userInputPanel.getContentPane().remove(optionsPanel);
+        	optionsPanel = getSignatureDiscoveryOptionsPanel();
+        	userInputPanel.getContentPane().add(optionsPanel);
+        	optionsPanel.revalidate();
+//            signature_genesets.remove(signaturePanel);
+//            signaturePanel.remove(dataset1);
+//            signaturePanel.remove(dataset2);
+//            signaturePanel.revalidate();
+            //before clearing the panel find out which panels where collapsed so we maintain its current state.
+            boolean datasets_collapsed = signature_genesets.isCollapsed();
+            signature_genesets.getContentPane().add(signaturePanel, BorderLayout.NORTH);
+            signature_genesets.setCollapsed(datasets_collapsed);
+            signature_genesets.revalidate();
+        } else if (analysisType.equalsIgnoreCase("Known Signature")) {
+        	paParams.setSignatureHub(true);
+        	userInputPanel.getContentPane().remove(optionsPanel);
+        	optionsPanel = getKnownSignatureOptionsPanel();
+        	userInputPanel.getContentPane().add(optionsPanel);
+        	optionsPanel.revalidate();
+        } else
             paParams.setSignatureHub(false);
-
-        //before clearing the panel find out which panels where collapsed so we maintain its current state.
-        boolean datasets_collapsed = signature_genesets.isCollapsed();
-
-        signature_genesets.remove(signaturePanel);
-        signaturePanel.remove(dataset1);
-        signaturePanel.remove(dataset2);
-
-        signaturePanel.revalidate();
-        signature_genesets.getContentPane().add(signaturePanel, BorderLayout.NORTH);
-        signature_genesets.setCollapsed(datasets_collapsed);
-        signature_genesets.revalidate();
-
     }
     
         
-    /**
-     * Event Handler for selectGMTFileButton.<p>
-     * Opens a file browser dialog to select the GMTFile.
-     * 
-     * @param evt
-     */
-    private void selectGMTFileButtonActionPerformed(
-            java.awt.event.ActionEvent evt) {
-
-        //         Create FileFilter
-        CyFileFilter filter = new CyFileFilter();
-
-        // Add accepted File Extensions
-        filter.addExtension("gmt");
-        filter.setDescription("All GMT files");
-
-        // Get the file name
-        File file = FileUtil.getFile("Import GMT File", FileUtil.LOAD,
-                new CyFileFilter[] { filter });
-        if(file != null) {
-            GMTFileNameTextField.setForeground(checkFile(file.getAbsolutePath()));
-            GMTFileNameTextField.setText(file.getAbsolutePath());
-            GMTFileNameTextField.setValue(file.getAbsolutePath());
-            paParams.setGMTFileName(file.getAbsolutePath());
-            GMTFileNameTextField.setToolTipText(file.getAbsolutePath());
-        }
-    }
+    private JPanel getKnownSignatureOptionsPanel() {
+    	if (knownSignaturePanel == null) {
+    		knownSignaturePanel = this.createKnownSignatureOptionsPanel();
+    	}
+		return knownSignaturePanel;
+	}
     
     /**
      * Event Handler for selectSignatureGMTFileButton.<p>
@@ -1038,11 +1091,19 @@ public class PostAnalysisInputPanel extends JPanel {
         File file = FileUtil.getFile("Import SigGMT File", FileUtil.LOAD,
                 new CyFileFilter[] { filter });
         if(file != null) {
-            signatureGMTFileNameTextField.setForeground(checkFile(file.getAbsolutePath()));
-            signatureGMTFileNameTextField.setText(file.getAbsolutePath());
-            signatureGMTFileNameTextField.setValue(file.getAbsolutePath());
-            paParams.setSignatureGMTFileName(file.getAbsolutePath());
-            signatureGMTFileNameTextField.setToolTipText(file.getAbsolutePath());
+        	if (evt.getActionCommand().equalsIgnoreCase("Known Signature")) {
+	            knownSignatureGMTFileNameTextField.setForeground(checkFile(file.getAbsolutePath()));
+	            knownSignatureGMTFileNameTextField.setText(file.getAbsolutePath());
+	            knownSignatureGMTFileNameTextField.setValue(file.getAbsolutePath());
+	            paParams.setSignatureGMTFileName(file.getAbsolutePath());
+	            knownSignatureGMTFileNameTextField.setToolTipText(file.getAbsolutePath());
+        	} else {
+	            signatureDiscoveryGMTFileNameTextField.setForeground(checkFile(file.getAbsolutePath()));
+	            signatureDiscoveryGMTFileNameTextField.setText(file.getAbsolutePath());
+	            signatureDiscoveryGMTFileNameTextField.setValue(file.getAbsolutePath());
+	            paParams.setSignatureGMTFileName(file.getAbsolutePath());
+	            signatureDiscoveryGMTFileNameTextField.setToolTipText(file.getAbsolutePath());
+        	}
         }
     }
     
@@ -1076,57 +1137,62 @@ public class PostAnalysisInputPanel extends JPanel {
 
         this.paParams = new PostAnalysisParameters(EnrichmentMapManager.getInstance().getMap(Cytoscape.getCurrentNetwork().getIdentifier()));
 
-        //Post Analysis Type:
-        signatureDiscovery.setSelected(true);
-        
-        //Gene-Sets Panel
-        this.GMTFileNameTextField.setText("");
-        this.GMTFileNameTextField.setValue("");
-        this.GMTFileNameTextField.setToolTipText(null);
-        this.signatureGMTFileNameTextField.setText("");
-        this.signatureGMTFileNameTextField.setValue("");
-        this.signatureGMTFileNameTextField.setToolTipText(null);
-
-        // reset the List fields:
-        this.avail_sig_sets = this.paParams.getSignatureSetNames();
-        this.avail_sig_sets_field.setModel(avail_sig_sets);
-        this.avail_sig_sets_field.clearSelection();
-        this.setAvSigCount(0);
-        
-        this.selected_sig_sets = this.paParams.getSelectedSignatureSetNames();
-        this.selected_sig_sets_field.setModel(selected_sig_sets);
-        this.selected_sig_sets_field.clearSelection();
-        this.setSelSigCount(0);
-
-        //Parameters Panel:
-        // select default metric in ComboBox
-        paParams.setSignature_CutoffMetric(paParams.getDefault_signature_CutoffMetric());
-        sigCutoffCombo.setSelectedIndex(paParams.getSignature_CutoffMetric());
-        // reset Text Field
-        switch (paParams.getSignature_CutoffMetric()) {
-        case PostAnalysisParameters.ABS_NUMBER:
-            sigCutoffTextField.setValue(paParams.getSignature_absNumber_Cutoff());
-            break;
-        case PostAnalysisParameters.JACCARD:
-            sigCutoffTextField.setValue(paParams.getSignature_Jaccard_Cutoff());
-            break;
-        case PostAnalysisParameters.OVERLAP:
-            sigCutoffTextField.setValue(paParams.getSignature_Overlap_Cutoff());
-            break;
-        default:
-            //Handle Unsupported Default_signature_CutoffMetric Error
-            String message = "This Cutoff metric is not supported.";
-            JOptionPane.showMessageDialog(Cytoscape.getDesktop(), message, "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
-            break;
+        if (knownSignaturePanel != null) {
+            //Gene-Sets Panel
+            this.knownSignatureGMTFileNameTextField.setText("");
+            this.knownSignatureGMTFileNameTextField.setValue("");
+            this.knownSignatureGMTFileNameTextField.setToolTipText(null);
         }
-
-        filter.setSelected(true);
-        nofilter.setSelected(false);
-        paParams.setFilter(false);
-        this.filterTextField.setValue(paParams.getFilterValue());
-
-        paParams.setSignature_filterMetric(paParams.getDefault_signature_filterMetric());
-        this.filterTypeCombo.setSelectedItem(paParams.getSignature_filterMetric());
+        
+        if (signatureDiscoveryPanel != null) {
+        	
+        	// Reset the text field
+            this.signatureDiscoveryGMTFileNameTextField.setText("");
+            this.signatureDiscoveryGMTFileNameTextField.setValue("");
+            this.signatureDiscoveryGMTFileNameTextField.setToolTipText(null);
+	       
+	        // Reset the List fields:
+	        this.avail_sig_sets = this.paParams.getSignatureSetNames();
+	        this.avail_sig_sets_field.setModel(avail_sig_sets);
+	        this.avail_sig_sets_field.clearSelection();
+	        this.setAvSigCount(0);
+	        
+	        this.selected_sig_sets = this.paParams.getSelectedSignatureSetNames();
+	        this.selected_sig_sets_field.setModel(selected_sig_sets);
+	        this.selected_sig_sets_field.clearSelection();
+	        this.setSelSigCount(0);
+	
+//	        //Parameters Panel:
+//	        // select default metric in ComboBox
+//	        paParams.setSignature_CutoffMetric(paParams.getDefault_signature_CutoffMetric());
+//	        sigCutoffCombo.setSelectedIndex(paParams.getSignature_CutoffMetric());
+//	        // reset Text Field
+//	        switch (paParams.getSignature_CutoffMetric()) {
+//	        case PostAnalysisParameters.ABS_NUMBER:
+//	            sigCutoffTextField.setValue(paParams.getSignature_absNumber_Cutoff());
+//	            break;
+//	        case PostAnalysisParameters.JACCARD:
+//	            sigCutoffTextField.setValue(paParams.getSignature_Jaccard_Cutoff());
+//	            break;
+//	        case PostAnalysisParameters.OVERLAP:
+//	            sigCutoffTextField.setValue(paParams.getSignature_Overlap_Cutoff());
+//	            break;
+//	        default:
+//	            //Handle Unsupported Default_signature_CutoffMetric Error
+//	            String message = "This Cutoff metric is not supported.";
+//	            JOptionPane.showMessageDialog(Cytoscape.getDesktop(), message, "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
+//	            break;
+//	        }
+	
+	        // Reset the filter field
+	        filter.setSelected(true);
+	        paParams.setFilter(true);
+	        //this.filterTextField.setValue(paParams.getFilterValue());
+	
+	        paParams.setSignature_filterMetric(paParams.getDefault_signature_filterMetric());
+	        
+	        this.filterTypeCombo.setSelectedIndex(0);
+        }
 
     }
 
@@ -1139,10 +1205,8 @@ public class PostAnalysisInputPanel extends JPanel {
         this.paParams = EnrichmentMapManager.getInstance().getMap(Cytoscape.getCurrentNetwork().getIdentifier()).getPaParams();
        
         // Gene-Set Files:
-        GMTFileNameTextField.setText(this.paParams.getGMTFileName());
-        GMTFileNameTextField.setValue(this.paParams.getGMTFileName());
-        signatureGMTFileNameTextField.setText(this.paParams.getSignatureGMTFileName());
-        signatureGMTFileNameTextField.setValue(this.paParams.getSignatureGMTFileName());
+        knownSignatureGMTFileNameTextField.setText(this.paParams.getSignatureGMTFileName());
+        knownSignatureGMTFileNameTextField.setValue(this.paParams.getSignatureGMTFileName());
         
         // Gene-Set Selection:
         this.avail_sig_sets    = this.paParams.getSignatureSetNames();
