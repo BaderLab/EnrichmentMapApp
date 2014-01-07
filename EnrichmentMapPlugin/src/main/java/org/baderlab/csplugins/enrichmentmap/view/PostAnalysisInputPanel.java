@@ -51,20 +51,24 @@ import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapUtils;
 import org.baderlab.csplugins.enrichmentmap.Enrichment_Map_Plugin;
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
-//import org.baderlab.csplugins.enrichmentmap.actions.BuildPostAnalysisActionListener;
+import org.baderlab.csplugins.enrichmentmap.actions.BuildPostAnalysisActionListener;
+import org.baderlab.csplugins.enrichmentmap.actions.LoadSignatureSetsActionListener;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowAboutPanelAction;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.JMultiLineToolTip;
-//import org.baderlab.csplugins.enrichmentmap.task.LoadSignatureGMTFilesTask;
+import org.baderlab.csplugins.enrichmentmap.task.LoadSignatureGMTFilesTask;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.io.util.StreamUtil;
+import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.util.swing.OpenBrowser;
+import org.cytoscape.work.swing.DialogTaskManager;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -78,6 +82,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 
 /**
  * Created by
@@ -98,6 +103,11 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
     private CySwingApplication application;
 	private OpenBrowser browser;
 	private FileUtil fileUtil;
+	private CyServiceRegistrar registrar;
+	private CySessionManager sessionManager;
+	private StreamUtil streamUtil;
+	private CyNetworkManager networkManager;
+	private DialogTaskManager dialog;
     
     final static int RIGHT = 0, DOWN = 1, UP = 2, LEFT = 3; // image States
 
@@ -149,12 +159,21 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
     //tool tips
     private static String gmtTip = "File specifying gene sets.\n" + "Format: geneset name <tab> description <tab> gene ...";
     
-    public PostAnalysisInputPanel(CyApplicationManager cyApplicationManager, CySwingApplication application, OpenBrowser browser,FileUtil fileUtil, CySessionManager sessionManager,StreamUtil streamUtil) {
+    public PostAnalysisInputPanel(CyApplicationManager cyApplicationManager, CySwingApplication application, 
+    		OpenBrowser browser,FileUtil fileUtil, CySessionManager sessionManager,
+    		StreamUtil streamUtil,CyServiceRegistrar registrar,
+    		CyNetworkManager networkManager,
+    		DialogTaskManager dialog) {
     	
     		this.cyApplicationManager = cyApplicationManager;
     		this.application = application;
         this.browser = browser;
         this.fileUtil = fileUtil;
+        this.registrar = registrar;
+        this.sessionManager = sessionManager;
+        this.streamUtil = streamUtil;
+        this.networkManager = networkManager;
+        this.dialog = dialog;
     		
         //initialize paParams
         this.paParams = new PostAnalysisParameters(sessionManager,streamUtil);
@@ -210,8 +229,11 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
         });
 
         JButton about = new JButton("About");
-        //about.addActionListener(new ShowAboutPanelAction(null, null, null, application, browser));
-
+        Map<String, String> serviceProperties = new HashMap<String, String>();
+        serviceProperties.put("inMenuBar", "true");
+		   serviceProperties.put("preferredMenu", "Apps.EnrichmentMap");
+        about.addActionListener(new ShowAboutPanelAction(serviceProperties , cyApplicationManager, null, application, browser));
+		   
         c_buttons.weighty = 1;
         c_buttons.weightx = 1;
         c_buttons.insets = new Insets(0,0,0,0);
@@ -500,11 +522,7 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
         //add load button
         JButton loadButton = new JButton();
         loadButton.setText("Load Gene-Sets");
-        loadButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                loadGenesetsButtonActionPerformed(evt);
-            }
-        });
+        loadButton.addActionListener(new LoadSignatureSetsActionListener(this, cyApplicationManager, dialog,streamUtil));
         loadButton.setPreferredSize(new Dimension(100,10));
         panel.add(loadButton);
         
@@ -874,8 +892,7 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
         });
 
         importButton.setText("Run");
-        //TODO add buildpost analysis actionlistener
-        //importButton.addActionListener(new BuildPostAnalysisActionListener(this));
+        importButton.addActionListener(new BuildPostAnalysisActionListener(this, sessionManager, streamUtil, networkManager, cyApplicationManager, dialog));
         importButton.setEnabled(true);
 
         panel.add(resetButton);
@@ -885,29 +902,15 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
         return panel;
     }
     
-    //TODO implement close and cancel by unregistering the service
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {
-/*        CytoscapeDesktop desktop = Cytoscape.getDesktop();
+    		this.registrar.unregisterService(this, CytoPanelComponent.class);
+        
 
-        CytoPanel cytoPanel = desktop.getCytoPanel(SwingConstants.WEST);
-
-        //set the input window to null in the instance
-        EnrichmentMapManager.getInstance().setAnalysisWindow(null);
-
-        cytoPanel.remove(this);
-*/
     }
 
     public void close() {
-/*        CytoscapeDesktop desktop = Cytoscape.getDesktop();
-
-        CytoPanel cytoPanel = desktop.getCytoPanel(SwingConstants.WEST);
-
-        //set the input window to null in the instance
-        EnrichmentMapManager.getInstance().setAnalysisWindow(null);
-
-        cytoPanel.remove(this);
-  */  }
+    		this.registrar.unregisterService(this, CytoPanelComponent.class);
+    }
 
 
     public Color checkFile(String filename){
@@ -997,29 +1000,6 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
             paParams.setSignatureGMTFileName(file.getAbsolutePath());
             signatureGMTFileNameTextField.setToolTipText(file.getAbsolutePath());
         }
-    }
-    
-    /**
-     * Event handler for "Load Genesets" Button.
-     * 
-     * @param evt
-     */
-    //TODO:move this action to cyaction
-    private void loadGenesetsButtonActionPerformed(java.awt.event.ActionEvent evt) {
-        //Load in the GMT file
-/*        JTaskConfig config = new JTaskConfig();
-        config.displayCancelButton(true);
-        config.displayCloseButton(true);
-        config.displayStatus(true);
-        
-        String errors = paParams.checkGMTfiles();
-        if (errors.equalsIgnoreCase("")) {
-        		LoadSignatureGMTFilesTask load_GMTs = new LoadSignatureGMTFilesTask(map,this.paParams);
-            /*boolean success =*//* TaskManager.executeTask(load_GMTs, config);
-        } else {
-            JOptionPane.showMessageDialog(application.getJFrame(),errors,"Invalid Input",JOptionPane.WARNING_MESSAGE);
-        }
-*/
     }
     
     /**

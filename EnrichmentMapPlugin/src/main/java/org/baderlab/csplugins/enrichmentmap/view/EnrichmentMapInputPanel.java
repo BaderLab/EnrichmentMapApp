@@ -308,7 +308,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
            serviceProperties.put("inMenuBar", "true");
    		   serviceProperties.put("preferredMenu", "Apps.EnrichmentMap");
            about.addActionListener(new ShowAboutPanelAction(serviceProperties, applicationManager, networkViewManager, application, browser));
-
+   		   
            //add button to do bulk EM Creation
            JButton bulk = new JButton("Bulk EM");
            bulk.addActionListener(new BulkEMCreationAction(serviceProperties,applicationManager , networkViewManager, application,bulkEmInput,registrar));

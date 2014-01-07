@@ -104,7 +104,7 @@
         <dependency>
         	<groupId>colt</groupId>
         	<artifactId>colt</artifactId>
-        	<version>1.0.3</version>
+        	<version>1.2.0</version>
         </dependency>
   </dependencies>
 	<!--  repository settings are required for the build number maven plugin-->
@@ -147,6 +147,7 @@
 						<Bundle-SymbolicName>${bundle.symbolicName}</Bundle-SymbolicName>
 						<Bundle-Version>2.0.0</Bundle-Version>
 						<Bundle-Activator>${bundle.namespace}.enrichmentmap.CyActivator</Bundle-Activator>
+						<Embed-Dependency>*;scope=compile|runtime;groupId=!org.cytoscape</Embed-Dependency>
 						<Private-Package>${bundle.namespace}.*</Private-Package>
 						<Export-Package>org.mskcc.*;prefuse.*;version="${project.version}"</Export-Package>
 						<Import-Package>*;resolution:=optional</Import-Package>

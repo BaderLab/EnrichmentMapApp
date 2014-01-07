@@ -114,8 +114,8 @@ public class GMTFileReaderTask extends AbstractTask {
      * @param taskMonitor
      * @param genesets_file
      */
-    public GMTFileReaderTask(EnrichmentMap map, PostAnalysisParameters params, TaskMonitor taskMonitor, int genesets_file) {
-        this(map,params, genesets_file);
+    public GMTFileReaderTask(EnrichmentMap map, PostAnalysisParameters params, TaskMonitor taskMonitor, int genesets_file,StreamUtil streamUtil) {
+        this(map,params, genesets_file,streamUtil);
         this.taskMonitor = taskMonitor;
     }
 
@@ -125,10 +125,10 @@ public class GMTFileReaderTask extends AbstractTask {
      * @param params
      * @param genesets_file
      */
-    public GMTFileReaderTask(EnrichmentMap map, PostAnalysisParameters params, int genesets_file)   {
+    public GMTFileReaderTask(EnrichmentMap map, PostAnalysisParameters params, int genesets_file,StreamUtil streamUtil)   {
         
     		this.map = map;
-    	
+    		this.streamUtil = streamUtil;
         this.genes = map.getGenes();
         this.hashkey2gene = map.getHashkey2gene();
         

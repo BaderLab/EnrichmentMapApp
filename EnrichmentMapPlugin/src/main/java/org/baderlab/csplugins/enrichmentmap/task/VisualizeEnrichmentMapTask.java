@@ -156,6 +156,7 @@ public class VisualizeEnrichmentMapTask extends AbstractTask {
             em_vs.createVisualStyle(vs, prefix);                
             
             this.visualMappingManager.addVisualStyle(vs);
+            this.visualMappingManager.setCurrentVisualStyle(vs);
             
             vs.apply(view);
             view.updateView();

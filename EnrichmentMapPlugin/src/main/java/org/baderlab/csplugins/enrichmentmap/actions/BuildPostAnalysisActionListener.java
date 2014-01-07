@@ -51,6 +51,12 @@ import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.task.BuildDiseaseSignatureTask;
 import org.baderlab.csplugins.enrichmentmap.view.PostAnalysisInputPanel;
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.io.util.StreamUtil;
+import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.session.CySessionManager;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.swing.DialogTaskManager;
 
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -67,34 +73,49 @@ import java.awt.event.ActionEvent;
 public class BuildPostAnalysisActionListener implements ActionListener {
 
     private PostAnalysisInputPanel inputPanel;
+    private CyNetworkManager networkManager;
+    private CyApplicationManager applicationManager;
+    private CySessionManager sessionManager;
+    private StreamUtil streamUtil;
+    private DialogTaskManager dialog;
 
-    public BuildPostAnalysisActionListener (PostAnalysisInputPanel panel) {
+    public BuildPostAnalysisActionListener (PostAnalysisInputPanel panel,  
+    		CySessionManager sessionManager, StreamUtil streamUtil,CyNetworkManager networkManager,
+    		CyApplicationManager applicationManager,DialogTaskManager dialog) {
         this.inputPanel = panel;
+        this.sessionManager = sessionManager;
+        this.streamUtil = streamUtil;
+        this.networkManager = networkManager;
+        this.applicationManager = applicationManager;
+        this.dialog = dialog;
 
     }
 
     public void actionPerformed(ActionEvent event) {
 
         //make sure that the minimum information is set in the current set of parameters
-    	/*        PostAnalysisParameters paParams = inputPanel.getPaParams();
+    	        PostAnalysisParameters paParams = inputPanel.getPaParams();
         
-        EnrichmentMap current_map = EnrichmentMapManager.getInstance().getMap(Cytoscape.getCurrentNetwork().getIdentifier());
+        EnrichmentMap current_map = EnrichmentMapManager.getInstance().getMap(applicationManager.getCurrentNetwork().getSUID());
 
         String errors = paParams.checkMinimalRequirements();
+        TaskIterator currentTasks = new TaskIterator();
 
         if(errors.equalsIgnoreCase("")) {
             if ( paParams.isSignatureHub() ) {
                 
-                BuildDiseaseSignatureTask new_signature = new BuildDiseaseSignatureTask(current_map, paParams);
-                TaskManager.executeTask(new_signature, config);
+                BuildDiseaseSignatureTask new_signature = new BuildDiseaseSignatureTask(current_map, paParams,this.sessionManager, this.streamUtil, this.applicationManager);
+                currentTasks.append(new_signature);
+                
+                dialog.execute(currentTasks);
             } 
             else {
-                JOptionPane.showMessageDialog(Cytoscape.getDesktop(),errors,"No such Post-Analysis",JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(this.inputPanel, errors,"No such Post-Analysis",JOptionPane.WARNING_MESSAGE);
             }
         } 
         else {
-            JOptionPane.showMessageDialog(Cytoscape.getDesktop(),errors,"Invalid Input",JOptionPane.WARNING_MESSAGE);
-        }*/
+            JOptionPane.showMessageDialog(this.inputPanel,errors,"Invalid Input",JOptionPane.WARNING_MESSAGE);
+        }
     }
 
 }

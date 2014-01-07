@@ -52,6 +52,17 @@ import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.GenesetSimilarity;
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.io.util.StreamUtil;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.session.CySessionManager;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
@@ -69,6 +80,7 @@ import cern.jet.stat.Gamma;
 public class BuildDiseaseSignatureTask extends AbstractTask {
     private PostAnalysisParameters paParams;
     private EnrichmentMap map;
+    private CyApplicationManager applicationManager;
 //    private EnrichmentMapParameters emParams;
     
     // Keep track of progress for monitoring:
@@ -88,13 +100,16 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
      * default constructor
      * @param paParams
      */
-    public BuildDiseaseSignatureTask(EnrichmentMap map, PostAnalysisParameters paParams) {
+    public BuildDiseaseSignatureTask(EnrichmentMap map, PostAnalysisParameters paParams,
+    		CySessionManager manager, StreamUtil streamUtil,
+    		CyApplicationManager applicationManager) {
         
- /*   		this.map = map;
+    		this.map = map;
+    		this.applicationManager = applicationManager;
 
     		//create a new instance of the parameters and copy the version received from the input
         //window into this new instance.
-    		this.paParams = new PostAnalysisParameters();
+    		this.paParams = new PostAnalysisParameters(manager, streamUtil);
         this.paParams.copyFrom(paParams);
         
         this.EnrichmentGenesets   = map.getAllGenesets();
@@ -129,7 +144,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
             String setName = i.next();
             SignatureGenes.addAll(SignatureGenesets.get(setName).getGenes());
         }
-*/        
+       
     }
 
 
@@ -139,17 +154,14 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
          * Calculate Similarity between Signature Gene Sets *
          * and Enrichment Genesets.                         *
          ****************************************************/
-/*        int maxValue = SelectedSignatureGenesets.size() * EnrichmentGenesets.size();
+        int maxValue = SelectedSignatureGenesets.size() * EnrichmentGenesets.size();
         int currentProgress = 0;
         double currentNodeY_offset = paParams.getCurrentNodePlacementY_Offset();
         double currentNodeY_increment = 150.0;
         
         try {
-            CyNetwork current_network = Cytoscape.getCurrentNetwork();
-            CyNetworkView currentNetworkView = Cytoscape.getCurrentNetworkView();
-            CyAttributes cyNodeAttrs = Cytoscape.getNodeAttributes();
-            CyAttributes cyEdgeAttrs = Cytoscape.getEdgeAttributes();
-            CyAttributes cyNetworkAttrs = Cytoscape.getNetworkAttributes();
+            CyNetwork current_network = applicationManager.getCurrentNetwork();
+            CyNetworkView current_view = applicationManager.getCurrentNetworkView();
             
             String prefix = paParams.getAttributePrefix();
             if (prefix == null) {
@@ -157,14 +169,18 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
                 paParams.setAttributePrefix(prefix);
             }
             
+            //get the node attribute and edge attribute tables
+            CyTable cyEdgeAttrs = createEdgeAttributes(current_network,"",prefix);
+            CyTable cyNodeAttrs = createNodeAttributes(current_network,"",prefix);
+            
             // make a HashMap of all Nodes in the Network
             HashMap<String,CyNode> nodesMap = new HashMap<String, CyNode>();
-            List<CyNode> nodesList = current_network.nodesList();
+            List<CyNode> nodesList = current_network.getNodeList();
             Iterator<CyNode> nodesIterator = nodesList.iterator();
             
             while (nodesIterator.hasNext()){
                 CyNode aNode = (CyNode)nodesIterator.next();
-                nodesMap.put(aNode.getIdentifier(), aNode);
+                nodesMap.put(cyNodeAttrs.getRow(aNode.getSUID()).get(prefix + EnrichmentMapVisualStyle.NAME, String.class), aNode);
             }
             
             // Common gene universe: Intersection of EnrichmentGenes and SignatureGenes
@@ -176,7 +192,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
              * but rather the Universe of all Enrichment Genes.  
              */
             // geneUniverse.retainAll(SignatureGenes); 
-/*            int universeSize = geneUniverse.size();
+            int universeSize = geneUniverse.size();
             
             //iterate over selected Signature genesets
             for (Iterator<String> i = SelectedSignatureGenesets.keySet().iterator(); i.hasNext(); ){
@@ -188,17 +204,17 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
                 /** 
                  * the signature genes in this signature gene set 
                  */
- /*               HashSet<Integer> sigGenes = sigGeneSet.getGenes();
+                HashSet<Integer> sigGenes = sigGeneSet.getGenes();
 
                 /** 
                  * the genes that are in this signature gene set 
                  * as well as in the Universe of Enrichment-GMT Genes.    
                  */
- /*               HashSet<Integer> sigGenesInUniverse = new HashSet<Integer>(sigGenes);
+                HashSet<Integer> sigGenesInUniverse = new HashSet<Integer>(sigGenes);
                 sigGenesInUniverse.retainAll(geneUniverse);
 //                sigGeneSet.setGenes(sigGenes);
                 
-                EnrichmentMapManager.getInstance().getMap(current_network.getIdentifier()).getSignatureGenesets().put(hub_name, sigGeneSet);
+                EnrichmentMapManager.getInstance().getMap(current_network.getSUID()).getSignatureGenesets().put(hub_name, sigGeneSet);
                 
                 // iterate over Enrichment Genesets
                 for (Iterator<String> j = EnrichmentGenesets.keySet().iterator(); j.hasNext();) {
@@ -209,9 +225,9 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
                     //  Estimate Time Remaining
                     long timeRemaining = maxValue - currentProgress;
                     if (taskMonitor != null) {
-                       taskMonitor.setPercentCompleted(percentComplete);
-                       taskMonitor.setStatus("Computing Geneset similarity " + currentProgress + " of " + maxValue);
-                       taskMonitor.setEstimatedTimeRemaining(timeRemaining);
+                       taskMonitor.setProgress(percentComplete);
+                       taskMonitor.setStatusMessage("Computing Geneset similarity " + currentProgress + " of " + maxValue);
+                       taskMonitor.setTitle("Post Analysis");
                     }
                     currentProgress++;
                     
@@ -227,7 +243,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
                     //or name2_name1
                     String similarity_key1 = hub_name     + " (" + PostAnalysisParameters.SIGNATURE_INTERACTION_TYPE + ") " + geneset_name;
                     String similarity_key2 = geneset_name + " (" + PostAnalysisParameters.SIGNATURE_INTERACTION_TYPE + ") " + hub_name;
-
+                    
                     //first check to see if the terms are the same
                     if(hub_name.equalsIgnoreCase(geneset_name)) {
                        //don't compare two identical genesets
@@ -235,8 +251,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
                     else if (! nodesMap.containsKey(geneset_name)) {
                         // skip if the Geneset is not in the Network
                     } 
-                    else if (cyNodeAttrs.getStringAttribute(nodesMap.get(geneset_name).getIdentifier(),
-                            prefix + EnrichmentMapVisualStyle.GS_TYPE).equalsIgnoreCase(
+                    else if (cyNodeAttrs.getRow(nodesMap.get(geneset_name).getSUID()).get(prefix + EnrichmentMapVisualStyle.GS_TYPE,String.class).equalsIgnoreCase(
                             EnrichmentMapVisualStyle.GS_TYPE_SIGNATURE)) {
                         // skip if the Geneset is a Signature Node from a previous analysis
                     }
@@ -312,19 +327,21 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
                 /* ***************************
                  * Create Signature Hub Node *
                  *****************************/
-/*                CyNode hub_node = Cytoscape.getCyNode(hub_name, true);
-                current_network.addNode(hub_node);
+                CyNode hub_node = current_network.addNode();
+                current_network.getRow(hub_node).set(CyNetwork.NAME, hub_name);
+                current_view.updateView();
                 
                 // add currentNodeY_offset to initial Y position of the Node
                 // and increase currentNodeY_offset for the next Node
-                NodeView hubNodeView = currentNetworkView.getNodeView(hub_node);
-                double hubNodeY = hubNodeView.getYPosition();
-                hubNodeView.setYPosition(hubNodeY + currentNodeY_offset);
+                View<CyNode> hubNodeView = current_view.getNodeView(hub_node);
+                double hubNodeY = hubNodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
+                hubNodeView.setLockedValue(BasicVisualLexicon.NODE_Y_LOCATION,hubNodeY + currentNodeY_offset);
                 currentNodeY_offset += currentNodeY_increment;
                 
-                String formatted_label =  VisualizeEnrichmentMapTask.formatLabel(hub_node.getIdentifier());
-                cyNodeAttrs.setAttribute(hub_node.getIdentifier(), prefix + EnrichmentMapVisualStyle.FORMATTED_NAME, formatted_label);
-
+                String formatted_label =  CreateEnrichmentMapNetworkTask.formatLabel(hub_name);
+                CyRow current_row = cyNodeAttrs.getRow(hub_node.getSUID());
+                current_row.set( prefix+ EnrichmentMapVisualStyle.FORMATTED_NAME, formatted_label);
+                
                 //create an attribute that stores the genes that are associated with this node as an attribute list
                 //only create the list if the hashkey 2 genes is not null Otherwise it take too much time to populate the list
 //                GeneSet sigGeneSet = SelectedSignatureGenesets.get(hub_name);
@@ -350,14 +367,13 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
                             enr_gene_list.add(gene);
                     }
                     Collections.sort(enr_gene_list);
+                    current_row.set( prefix + EnrichmentMapVisualStyle.GENES, gene_list);
+                    current_row.set(prefix + EnrichmentMapVisualStyle.ENR_GENES, enr_gene_list);
                     
-                    cyNodeAttrs.setListAttribute(hub_node.getIdentifier(), prefix + EnrichmentMapVisualStyle.GENES, gene_list);
-                    cyNodeAttrs.setListAttribute(hub_node.getIdentifier(), prefix + EnrichmentMapVisualStyle.ENR_GENES, enr_gene_list);
-                   
-                    cyNodeAttrs.setAttribute(hub_node.getIdentifier(), prefix + EnrichmentMapVisualStyle.GS_DESCR, sigGeneSet.getDescription() );
-                    cyNodeAttrs.setAttribute(hub_node.getIdentifier(), prefix + EnrichmentMapVisualStyle.GS_TYPE, EnrichmentMapVisualStyle.GS_TYPE_SIGNATURE);
-                    cyNodeAttrs.setAttribute(hub_node.getIdentifier(), prefix + EnrichmentMapVisualStyle.NAME, sigGeneSet.getName() );
-                    cyNodeAttrs.setAttribute(hub_node.getIdentifier(), prefix + EnrichmentMapVisualStyle.GS_SIZE_SIGNATURE , sigGeneSet.getGenes().size() );
+                    current_row.set( prefix + EnrichmentMapVisualStyle.GS_DESCR, sigGeneSet.getDescription());
+                    current_row.set(prefix + EnrichmentMapVisualStyle.GS_TYPE, EnrichmentMapVisualStyle.GS_TYPE_SIGNATURE);
+                    current_row.set( prefix + EnrichmentMapVisualStyle.NAME, sigGeneSet.getName() );
+                    current_row.set(prefix + EnrichmentMapVisualStyle.GS_SIZE_SIGNATURE , sigGeneSet.getGenes().size() );
                 }
 
                 // add the geneset of the signature node to the GenesetsOfInterest,
@@ -369,10 +385,10 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
                 map.getDataset(EnrichmentMap.DATASET1).getGenesetsOfInterest().getGenesets().put(hub_name, sigGeneSet);
                 
                 // set Visual Style bypass
-                cyNodeAttrs.setAttribute(hub_node.getIdentifier(), "node.shape", paParams.getSignatureHub_nodeShape());
-                cyNodeAttrs.setAttribute(hub_node.getIdentifier(), "node.fillColor", paParams.getSignatureHub_nodeColor());
-                cyNodeAttrs.setAttribute(hub_node.getIdentifier(), "node.borderColor", paParams.getSignatureHub_borderColor());
-                
+                hubNodeView.setLockedValue(BasicVisualLexicon.NODE_SHAPE, paParams.getSignatureHub_nodeShape());               
+                hubNodeView.setLockedValue(BasicVisualLexicon.NODE_FILL_COLOR, paParams.getSignatureHub_nodeColor());               
+                hubNodeView.setLockedValue(BasicVisualLexicon.NODE_BORDER_PAINT, paParams.getSignatureHub_borderColor());               
+                              
             }// End: iterate over Signature Genesets
             
             paParams.setCurrentNodePlacementY_Offset(currentNodeY_offset);
@@ -381,7 +397,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
              * Create Signature Hub Edges *
              ******************************/
 
-/*            for (Iterator<String> i = geneset_similarities.keySet().iterator(); i.hasNext() ;) {
+            for (Iterator<String> i = geneset_similarities.keySet().iterator(); i.hasNext() ;) {
                 if (interrupted) {
                     throw new InterruptedException();
                 }
@@ -415,12 +431,16 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
                     passed_cutoff = true;
 
                 if (passed_cutoff) {
-                    CyNode hub_node = Cytoscape.getCyNode( geneset_similarities.get(edge_name).getGeneset1_Name() );
-                    CyNode gene_set = Cytoscape.getCyNode( geneset_similarities.get(edge_name).getGeneset2_Name() );
-   
-                    CyEdge edge = Cytoscape.getCyEdge(hub_node, gene_set, "interaction", PostAnalysisParameters.SIGNATURE_INTERACTION_TYPE, true);
-                    current_network.addEdge(edge);
+                		CyNode hub_node = getNodeWithValue(current_network, cyNodeAttrs, CyNetwork.NAME,geneset_similarities.get(edge_name).getGeneset1_Name());       		
+                		CyNode gene_set = getNodeWithValue(current_network, cyNodeAttrs, CyNetwork.NAME,geneset_similarities.get(edge_name).getGeneset2_Name());
+                    		
+                    CyEdge edge = current_network.addEdge(hub_node, gene_set,false);
+                    //add update view because view is returning null when we try to get the edge view.
+                    current_view.updateView();
+   					CyRow current_edgerow = cyEdgeAttrs.getRow(edge.getSUID());
+   					current_edgerow.set(CyNetwork.NAME, edge_name);
                     
+   					View<CyEdge> edgeView = current_view.getEdgeView(edge);
                     //create an attribute that stores the genes that are associated with this edge as an attribute list
                     //only create the list if the hashkey 2 genes is not null Otherwise it take too much time to populate the list
                     if(map.getHashkey2gene() != null){
@@ -434,35 +454,58 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
                         }
                         Collections.sort(gene_list);
                         
-                        cyEdgeAttrs.setListAttribute(edge.getIdentifier(), prefix+EnrichmentMapVisualStyle.OVERLAP_GENES, gene_list);                        
+                        current_edgerow.set(prefix+EnrichmentMapVisualStyle.OVERLAP_GENES, gene_list);                        
                     }
  
-                    cyEdgeAttrs.setAttribute(edge.getIdentifier(), prefix + EnrichmentMapVisualStyle.OVERLAP_SIZE       , geneset_similarities.get(edge_name).getSizeOfOverlap());
-                    cyEdgeAttrs.setAttribute(edge.getIdentifier(), prefix + EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT, geneset_similarities.get(edge_name).getSimilarity_coeffecient());
-                    cyEdgeAttrs.setAttribute(edge.getIdentifier(), prefix + EnrichmentMapVisualStyle.HYPERGEOM_PVALUE   , geneset_similarities.get(edge_name).getHypergeom_pvalue());
-                    cyEdgeAttrs.setAttribute(edge.getIdentifier(), prefix + EnrichmentMapVisualStyle.ENRICHMENT_SET  , geneset_similarities.get(edge_name).getEnrichment_set());
+                    current_edgerow.set( prefix + EnrichmentMapVisualStyle.OVERLAP_SIZE       , geneset_similarities.get(edge_name).getSizeOfOverlap());
+                    current_edgerow.set( prefix + EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT, geneset_similarities.get(edge_name).getSimilarity_coeffecient());
+                    current_edgerow.set( prefix + EnrichmentMapVisualStyle.HYPERGEOM_PVALUE   , geneset_similarities.get(edge_name).getHypergeom_pvalue());
+                    current_edgerow.set( prefix + EnrichmentMapVisualStyle.ENRICHMENT_SET  , geneset_similarities.get(edge_name).getEnrichment_set());
                     
-                    cyEdgeAttrs.setAttribute(edge.getIdentifier(), "edge.color", paParams.getSignatureHub_edgeColor());
+                    edgeView.setLockedValue(BasicVisualLexicon.EDGE_UNSELECTED_PAINT, paParams.getSignatureHub_edgeColor());
+                    edgeView.setLockedValue(BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT, paParams.getSignatureHub_edgeColor());
+                    
                     //change "edge.lineWidth" based on Hypergeometric Value 
                     if (geneset_similarities.get(edge_name).getHypergeom_pvalue() <= (paParams.getSignature_Hypergeom_Cutoff()/100) )
-                        cyEdgeAttrs.setAttribute(edge.getIdentifier(), "edge.lineWidth", "8.0");
+                    		edgeView.setLockedValue(BasicVisualLexicon.EDGE_WIDTH,8.0);	
                     else 
                     if (geneset_similarities.get(edge_name).getHypergeom_pvalue() <= (paParams.getSignature_Hypergeom_Cutoff()/10) )
-                        cyEdgeAttrs.setAttribute(edge.getIdentifier(), "edge.lineWidth", "4.5");
+                    		edgeView.setLockedValue(BasicVisualLexicon.EDGE_WIDTH,4.5);	                   
                     else
-                        cyEdgeAttrs.setAttribute(edge.getIdentifier(), "edge.lineWidth", "1.0");
+                    		edgeView.setLockedValue(BasicVisualLexicon.EDGE_WIDTH,1.0);	
+                    
                     
 
                 } //if (geneset_similarities.get(edge_name).getSizeOfOverlap() > 0)
             } //for
- 
-            currentNetworkView.redrawGraph(false, true);
-            cyNetworkAttrs.setAttribute(currentNetworkView.getIdentifier(), EnrichmentMapVisualStyle.NUMBER_OF_ENRICHMENT_GENES, geneUniverse.size());
+            
+            //update the view 
+            current_view.updateView();
+            //TODO add network attribute
+           // cyNetworkAttrs.setAttribute(currentNetworkView.getIdentifier(), EnrichmentMapVisualStyle.NUMBER_OF_ENRICHMENT_GENES, geneUniverse.size());
         } catch (InterruptedException e) {
-            taskMonitor.setException(e, "Generation of Signature Hubs cancelled");
+        		//TODO cancel task
+            //taskMonitor.setException(e, "Generation of Signature Hubs cancelled");
         }
- */   }
+    }
     
+    private CyNode getNodeWithValue(CyNetwork net, CyTable table, String colname, String value){
+    		Collection<CyRow> matchingRows = table.getMatchingRows(colname, value);
+    		CyNode node = null;
+    		//only get the matching row if there is only one match
+    		if(matchingRows.size() ==1){
+    			for ( CyRow row : matchingRows){
+    				Long nodeId = row.get(CyNetwork.SUID, Long.class);
+    				if (nodeId == null)
+    					continue;
+    				node = net.getNode(nodeId);
+    				if (node == null)
+    					continue;
+    			}
+    		}
+    		return node;
+    	
+    }
     
     /**
      * Calculate the p-Value of the Hypergeometric Distribution<p>
@@ -585,18 +628,41 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
         return paParams;
     }
 
+    /*
+     * Create Node attribute table with post analysis parameters not in the main EM table
+     */
+    public CyTable createNodeAttributes(CyNetwork network, String name, String prefix){
+		//TODO:change back to creating our own table.  Currently can only map to a string column.
+	    //in mean time use the default node table
+		//CyTable nodeTable = tableFactory.createTable(/*name*/ prefix + "_" + node_table_suffix, CyNetwork.SUID, Long.class, true, true);
     
+		CyTable nodeTable = network.getDefaultNodeTable();
+		//check to see if column exists.  If it doesn't then create it
+		if(nodeTable.getColumn(prefix + EnrichmentMapVisualStyle.ENR_GENES) == null)
+			nodeTable.createListColumn(prefix + EnrichmentMapVisualStyle.ENR_GENES, String.class, false); 
+		if(nodeTable.getColumn(prefix + EnrichmentMapVisualStyle.GS_SIZE_SIGNATURE) == null)
+			nodeTable.createColumn(prefix + EnrichmentMapVisualStyle.GS_SIZE_SIGNATURE , Integer.class, false);
+		
+		return nodeTable;
+    }
+    //create the edge attribue table
+    public CyTable createEdgeAttributes(CyNetwork network, String name, String prefix){
+    		//TODO:change back to creating our own table.  Currently can only map to a string column.
+	    //in mean time use the default edge table
+    		//CyTable edgeTable = tableFactory.createTable(/*name*/ prefix + "_" + edge_table_suffix, CyNetwork.SUID,Long.class, true, true);
+		CyTable edgeTable = network.getDefaultEdgeTable();
+		
+		//check to see if column exists.  If it doesn't then create it
+		if(edgeTable.getColumn(prefix + EnrichmentMapVisualStyle.HYPERGEOM_PVALUE) == null)		
+    			edgeTable.createColumn(prefix + EnrichmentMapVisualStyle.HYPERGEOM_PVALUE , Double.class, false);
+    		
+    		return edgeTable;
+    }
     
     // ***************************************
     // from here: Auto-generated method stubs!
     // ***************************************
-    /**
-     * @see cytoscape.task.Task#run()
-     */
-    public void run() {
-    	buildDiseaseSignature();
-    }
-
+  
     /**
      * @see cytoscape.task.Task#getTitle()
      */
@@ -613,21 +679,23 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
     }
 
     /**
-     * @see cytoscape.task.Task#setTaskMonitor(cytoscape.task.TaskMonitor)
+     * Sets the Task Monitor.
+     *
+     * @param taskMonitor TaskMonitor Object.
      */
-    public void setTaskMonitor(TaskMonitor taskMonitor)
-            throws IllegalThreadStateException {
-
+    public void setTaskMonitor(TaskMonitor taskMonitor) {
         if (this.taskMonitor != null) {
             throw new IllegalStateException("Task Monitor is already set.");
         }
         this.taskMonitor = taskMonitor;
     }
 
-
 	@Override
-	public void run(TaskMonitor arg0) throws Exception {
+	public void run(TaskMonitor taskMonitor) throws Exception {
+		this.taskMonitor = taskMonitor;
+		taskMonitor.setTitle("Generating Signature Hubs");
 		
+		buildDiseaseSignature();
 		
 	}
 
