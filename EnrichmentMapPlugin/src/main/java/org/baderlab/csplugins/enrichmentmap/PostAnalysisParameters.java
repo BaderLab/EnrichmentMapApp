@@ -87,7 +87,7 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
 
     /**
      * String for Filtering options
-     * HYPERGEOM (0): "Passed the Hypergeometric cut-off"
+     * HYPERGEOM (0): "Passed the Hypergeometric test at the desired cut-off"
      * PERCENT (1) : "Contains at least X percent (% of EM geneset)"
      * NUMBER (2) : "Contains at least X genes"
      * PERCENT (3): "Contains at least X percent (% of Signature geneset)"
@@ -105,6 +105,13 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
                                             "Overlap Coefficient",
                                             "Directed Overlap",
                                             };
+    // Rank Test constants
+    final public static int MANN_WHIT = 0;
+    /**
+     * Strings for rank test options
+     * MANN_WHIT (0): "Passed the Mann-Whitney-U rank sum test at the desired cut-off"
+     */
+    final public static String[] rankTestItems = {"Mann-Whitney"};
     
     final public static String SIGNATURE_INTERACTION_TYPE = "sig";
     
@@ -132,7 +139,6 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
     private double default_signature_Overlap_Cutoff   = 0.25;  
     private double default_signature_DirOverlap_Cutoff= 0.25;  
     private double default_signature_Hypergeom_Cutoff = 0.25;
-    private double default_signature_Mann_Whit_Cutoff = 2.575;
     
     private int    default_signature_CutoffMetric = ABS_NUMBER;
     
@@ -150,6 +156,13 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
     private int default_filter_value = 50;
     private int default_signature_filterMetric = HYPERGEOM;
     private int signature_filterMetric;
+    
+    //Disease Signature rank test
+    private int rankCutoffValue;
+    private double default_rankCutoff_value = 0.05;
+    private int default_signature_rankTest = MANN_WHIT;
+    private int signature_rankTest;
+    private double default_signature_Mann_Whit_Cutoff = 0.05;
     
     // Rank file
     private String signature_rankFile;
@@ -208,6 +221,7 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
 
         // Post Analysis Type:
         this.isSignatureDiscovery = true;
+        this.isKnownSignature = false;
         
         // Disease Signature Parameters:
         this.signatureGMTFileName       = "";
@@ -419,6 +433,11 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
      */
     public void setSignatureHub(boolean isSignatureDiscovery) {
         this.isSignatureDiscovery = isSignatureDiscovery;
+    	if (this.isSignatureDiscovery) {
+            this.isKnownSignature = false;
+    	} else{
+    		this.isKnownSignature = true;
+    	}
     }
 
     /**
@@ -740,5 +759,33 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
 	 */
 	public void setKnownSignature(boolean isKnownSignature) {
 		this.isKnownSignature = isKnownSignature;
+	}
+
+	/**
+	 * @return the signature_rankTest
+	 */
+	public int getSignature_rankTest() {
+		return signature_rankTest;
+	}
+
+	/**
+	 * @param signature_rankTest the signature_rankTest to set
+	 */
+	public void setSignature_rankTest(int signature_rankTest) {
+		this.signature_rankTest = signature_rankTest;
+	}
+
+	/**
+	 * @return the default_signature_rankTest
+	 */
+	public int getDefault_signature_rankTest() {
+		return default_signature_rankTest;
+	}
+
+	/**
+	 * @param default_signature_rankTest the default_signature_rankTest to set
+	 */
+	public void setDefault_signature_rankTest(int default_signature_rankTest) {
+		this.default_signature_rankTest = default_signature_rankTest;
 	}
 }

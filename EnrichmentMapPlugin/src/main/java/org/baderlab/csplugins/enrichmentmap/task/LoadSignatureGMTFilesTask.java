@@ -92,24 +92,20 @@ public class LoadSignatureGMTFilesTask implements Task {
                     taskMonitor.setException(e,"unable to load GMT files");
                     return;
                 }
-                                
                 //Sort the Genesets:
                 DefaultListModel signatureSetNames = paParams.getSignatureSetNames();
                 DefaultListModel selectedSignatureSetNames = paParams.getSelectedSignatureSetNames();
                 signatureSetNames.clear(); // clear, that we don't have duplicates afterwards - Bug #103 a
-
                 //filter the signature genesets to only include genesets that overlap with the genesets
                 //in our current map.
                 HashMap<String, GeneSet> genesets_in_map = map.getAllGenesets();
                 Object[] setsOfInterest = genesets_in_map.keySet().toArray();
                 //get the value to be filtered by if there is a filter
-                
                 HashSet<Integer> EnrichmentGenes = new HashSet<Integer>();
                 for (Iterator<String> i = genesets_in_map.keySet().iterator(); i.hasNext(); ){
                     String setName = i.next();
                     EnrichmentGenes.addAll(genesets_in_map.get(setName).getGenes());
                 }
-                
                 // Initialize parameters for Hypergeometric Test
                 int N = EnrichmentGenes.size();
                 int n = 0;
@@ -117,7 +113,7 @@ public class LoadSignatureGMTFilesTask implements Task {
                 int k = 0;
                 Object[] setNamesArray = paParams.getSignatureGenesets().getGenesets().keySet().toArray();
                 Arrays.sort( setNamesArray );
-                
+                double hyperPval;
                 for (int i = 0; i < setNamesArray.length; i++) {
                     if (interrupted)
                         throw new InterruptedException();
@@ -138,13 +134,12 @@ public class LoadSignatureGMTFilesTask implements Task {
                                     n = paset.size();  //size of signature geneset (sample size / number of extracted balls)
                                     m = original_size;   //size of enrichment geneset (success Items / number of white balls in population)
                                     k = mapset.size(); //size of intersection (successes /number of extracted white balls)
-                                    double hyperPval;
                                     if (k > 0) 
                                         hyperPval = hyperGeomPvalue_sum(N, n, m, k, 0);
                                     else // Correct p-value of empty intersections to 1 (i.e. not significant)
                                         hyperPval = 1.0;
                                     if (hyperPval <= paParams.getSignature_Hypergeom_Cutoff()) {
-                                    	matchfound = true;
+                                    	matchfound = true;        
                                     	break;
                                     }
                                 //if we are looking for percentage do:
@@ -167,20 +162,19 @@ public class LoadSignatureGMTFilesTask implements Task {
                                         break;
                                     }
                                 }
-	                            if(matchfound){
-	                                if (! signatureSetNames.contains(setNamesArray[i]))
-	                                    signatureSetNames.addElement(setNamesArray[i]);
-	                            }
+                            }
+                            if(matchfound){
+                                if (! signatureSetNames.contains(setNamesArray[i]))
+                                    signatureSetNames.addElement(setNamesArray[i]);
                             }
                         } else {
                         	signatureSetNames.addElement(setNamesArray[i]);
                         }
                     }
                 }
-                
-                System.out.println(signatureSetNames.size());
-                this.paPanel.setAvSigCount(signatureSetNames.size());
-            
+                if (paParams.isSignatureDiscovery()) {
+                	this.paPanel.setAvSigCount(signatureSetNames.size());
+                }
             } catch (InterruptedException e) {
                 taskMonitor.setException(e, "loading of GMT files cancelled");
             }

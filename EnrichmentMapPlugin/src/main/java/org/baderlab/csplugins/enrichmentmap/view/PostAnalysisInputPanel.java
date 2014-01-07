@@ -63,8 +63,10 @@ import org.baderlab.csplugins.enrichmentmap.Enrichment_Map_Plugin;
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.actions.BuildPostAnalysisActionListener;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowAboutPanelAction;
+import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.JMultiLineToolTip;
+import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
 import org.baderlab.csplugins.enrichmentmap.task.LoadSignatureGMTFilesTask;
 
@@ -115,6 +117,8 @@ public class PostAnalysisInputPanel extends JPanel {
 
     
     private PostAnalysisParameters paParams;
+    private PostAnalysisParameters knownSigPaParams;
+    private PostAnalysisParameters sigDiscoveryPaParams;
 
     // Analysis Type related components
     private JRadioButton signatureDiscovery;
@@ -139,15 +143,20 @@ public class PostAnalysisInputPanel extends JPanel {
     JPanel knownSignaturePanel;
     JPanel optionsPanel;
     CollapsiblePanel userInputPanel;
+    
+    // These hashmaps are needed for edge weight calculation
+    private HashMap<String, DataSet> datasetMap;
+    private HashMap<String, Ranking> rankingMap;
 
     
     //Parameters related components
-    private JComboBox sigCutoffCombo;
     private JComboBox datasetCombo;
     private JComboBox rankingCombo;
-    private JComboBox rankTestCombo;
-    private JFormattedTextField sigCutoffTextField;
-    private JFormattedTextField rankTestTextField;
+    private JComboBox signatureDiscoveryRankTestCombo;
+    private JFormattedTextField signatureDiscoveryRankTestTextField;
+    private JComboBox knownSignatureRankTestCombo;
+    private JFormattedTextField knownSignatureRankTestTextField;
+
     
     private int defaultColumns = 15;
 
@@ -172,13 +181,18 @@ public class PostAnalysisInputPanel extends JPanel {
 
         //get the current enrichment map parameters
         map = EnrichmentMapManager.getInstance().getMap(Cytoscape.getCurrentNetwork().getIdentifier());
+        datasetMap = map.getDatasets();
+        rankingMap = map.getAllRanks();
         EnrichmentMapParameters emParams = map.getParams();
         if (emParams == null){
             emParams = new EnrichmentMapParameters();
         }
         
         // create instance of PostAnalysisParameters an initialize with EnrichmentMapParameters
-        paParams = EnrichmentMapManager.getInstance().getMap(Cytoscape.getCurrentNetwork().getIdentifier()).getPaParams();
+        knownSigPaParams = EnrichmentMapManager.getInstance().getMap(Cytoscape.getCurrentNetwork().getIdentifier()).getPaParams();
+        sigDiscoveryPaParams = new PostAnalysisParameters();
+        sigDiscoveryPaParams.copyFrom(knownSigPaParams);
+        paParams = sigDiscoveryPaParams;
 
         //create the three main panels: scope, advanced options, and bottom
         JPanel AnalysisTypePanel = createAnalysisTypePanel();
@@ -447,7 +461,7 @@ public class PostAnalysisInputPanel extends JPanel {
         signature_genesets.getContentPane().add(signaturePanel, BorderLayout.NORTH);
         
         //Parameters collapsible panel
-        CollapsiblePanel ParametersPanel = createParametersPanel();
+        CollapsiblePanel ParametersPanel = createSignatureDiscoveryParametersPanel();
         ParametersPanel.setCollapsed(false);
         
         panel.add(GMTPanel);
@@ -469,7 +483,7 @@ public class PostAnalysisInputPanel extends JPanel {
         GMTPanel.setCollapsed(false);
         
         //Parameters collapsible panel
-        CollapsiblePanel ParametersPanel = createParametersPanel();
+        CollapsiblePanel ParametersPanel = createKnownSignatureParametersPanel();
         ParametersPanel.setCollapsed(false);
         
         panel.add(GMTPanel);
@@ -718,24 +732,50 @@ public class PostAnalysisInputPanel extends JPanel {
     /**
      * @return CollapsiblePanel to set PostAnalysisParameters 
      */
-    private CollapsiblePanel createParametersPanel() {
+    private CollapsiblePanel createKnownSignatureParametersPanel() {
         String[] sigCutoffItems = PostAnalysisParameters.sigCutoffItems;
         CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Edge Weight Calculation Parameters");
         
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         
-        datasetCombo = new JComboBox();
-        datasetCombo.addItem("Dataset");
+        datasetCombo = new JComboBox(datasetMap.keySet().toArray());
+        datasetCombo.addActionListener( new ActionListener() {
+            public void actionPerformed( ActionEvent e ) {
+            	JComboBox selectedChoice = (JComboBox) e.getSource();
+            	paParams.setSignature_dataSet((String)selectedChoice.getSelectedItem());
+            }
+        });
+        datasetCombo.setSelectedIndex(0);
         panel.add(datasetCombo);
         
-        rankingCombo = new JComboBox();
-        rankingCombo.addItem("Ranking");
+        rankingCombo = new JComboBox(rankingMap.keySet().toArray());
+        rankingCombo.addActionListener( new ActionListener() {
+            public void actionPerformed( ActionEvent e ) {
+            	JComboBox selectedChoice = (JComboBox) e.getSource();
+            	paParams.setSignature_rankFile((String)selectedChoice.getSelectedItem());
+            }
+        });
+        rankingCombo.setSelectedIndex(0);
         panel.add(rankingCombo);
         
-        rankTestCombo = new JComboBox();
-        rankTestCombo.addItem("Rank Test");
-        panel.add(rankTestCombo);
+        knownSignatureRankTestTextField = new JFormattedTextField();
+        
+        String[] rankTestItems = PostAnalysisParameters.rankTestItems;
+        knownSignatureRankTestCombo = new JComboBox();
+        knownSignatureRankTestCombo.addItem(rankTestItems[PostAnalysisParameters.MANN_WHIT]);
+        knownSignatureRankTestCombo.addActionListener( new ActionListener() {
+            String[] rankTestItems = PostAnalysisParameters.rankTestItems;
+            public void actionPerformed( ActionEvent e ) {
+                JComboBox selectedChoice = (JComboBox) e.getSource();
+                if (rankTestItems[PostAnalysisParameters.MANN_WHIT].equals( selectedChoice.getSelectedItem())) {
+                    paParams.setSignature_rankTest(PostAnalysisParameters.MANN_WHIT);
+                    knownSignatureRankTestTextField.setValue(paParams.getSignature_Mann_Whit_Cutoff());
+                }
+            }
+        });
+        knownSignatureRankTestCombo.setSelectedItem(rankTestItems[paParams.getDefault_signature_rankTest()]);
+        panel.add(knownSignatureRankTestCombo);
         
         JPanel cutoffLabel = new JPanel();
         cutoffLabel.add(new JLabel("Select Cutoff:"));
@@ -743,67 +783,77 @@ public class PostAnalysisInputPanel extends JPanel {
         
         JPanel cutoffPanel = new JPanel();
         cutoffPanel.setLayout(new BoxLayout(cutoffPanel, BoxLayout.X_AXIS));
-//        sigCutoffCombo = new JComboBox();
-//        sigCutoffCombo.addItem(sigCutoffItems[PostAnalysisParameters.ABS_NUMBER]);
-//        sigCutoffCombo.addItem(sigCutoffItems[PostAnalysisParameters.JACCARD]);
-//        sigCutoffCombo.addItem(sigCutoffItems[PostAnalysisParameters.OVERLAP]);
-//        sigCutoffCombo.addItem(sigCutoffItems[PostAnalysisParameters.DIR_OVERLAP]);
-//        sigCutoffCombo.setSelectedItem(sigCutoffItems[paParams.getDefault_signature_CutoffMetric()]);
-
-
-        //JFormattedTextField
-//        sigCutoffTextField = new JFormattedTextField(decFormat);
-//        sigCutoffTextField.setColumns(3);
-//        if (paParams.getDefault_signature_CutoffMetric() == PostAnalysisParameters.ABS_NUMBER)
-//            sigCutoffTextField.setValue(paParams.getSignature_absNumber_Cutoff());
-//        else if (paParams.getDefault_signature_CutoffMetric() == PostAnalysisParameters.JACCARD)
-//            sigCutoffTextField.setValue(paParams.getSignature_Jaccard_Cutoff());
-//        else if (paParams.getDefault_signature_CutoffMetric() == PostAnalysisParameters.OVERLAP)
-//            sigCutoffTextField.setValue(paParams.getSignature_Overlap_Cutoff());
-//        else if (paParams.getDefault_signature_CutoffMetric() == PostAnalysisParameters.DIR_OVERLAP)
-//            sigCutoffTextField.setValue(paParams.getSignature_DirOverlap_Cutoff());
-//        else {
-//            //Handle Unsupported Default_signature_CutoffMetric Error
-//            String message = "This Cutoff metric is not supported.";
-//            JOptionPane.showMessageDialog(Cytoscape.getDesktop(), message, "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
-//        }
-//
-//        
-//        //Add Action Listeners
-//        sigCutoffCombo.addActionListener( new ActionListener() { 
-//            String[] sigCutoffItems = PostAnalysisParameters.sigCutoffItems;
-//            public void actionPerformed( ActionEvent e ) 
-//            { 
-//              JComboBox selectedChoice = (JComboBox) e.getSource(); 
-//              if ( sigCutoffItems[PostAnalysisParameters.ABS_NUMBER].equals( selectedChoice.getSelectedItem() ) ) {
-//                  paParams.setSignature_CutoffMetric(PostAnalysisParameters.ABS_NUMBER);
-//                  sigCutoffTextField.setValue(paParams.getSignature_absNumber_Cutoff());
-//              } else if ( sigCutoffItems[PostAnalysisParameters.JACCARD].equals( selectedChoice.getSelectedItem() ) ) {
-//                  paParams.setSignature_CutoffMetric(PostAnalysisParameters.JACCARD);
-//                  sigCutoffTextField.setValue(paParams.getSignature_Jaccard_Cutoff());
-//              } else if ( sigCutoffItems[PostAnalysisParameters.OVERLAP].equals( selectedChoice.getSelectedItem() ) ) {
-//                  paParams.setSignature_CutoffMetric(PostAnalysisParameters.OVERLAP);
-//                  sigCutoffTextField.setValue(paParams.getSignature_Overlap_Cutoff());
-//              } else if ( sigCutoffItems[PostAnalysisParameters.DIR_OVERLAP].equals( selectedChoice.getSelectedItem() ) ) {
-//                  paParams.setSignature_CutoffMetric(PostAnalysisParameters.DIR_OVERLAP);
-//                  sigCutoffTextField.setValue(paParams.getSignature_DirOverlap_Cutoff());
-//              }
-//                 
-//            } 
-//          } ); 
-//        sigCutoffTextField.addPropertyChangeListener("value", new PostAnalysisInputPanel.FormattedTextFieldAction());
-//
-//        cutoffPanel.add(sigCutoffCombo);
-//        cutoffPanel.add(sigCutoffTextField);
-
-        rankTestTextField = new JFormattedTextField();
-        cutoffPanel.add(rankTestCombo);
-        cutoffPanel.add(rankTestTextField);
+        cutoffPanel.add(knownSignatureRankTestCombo);
+        cutoffPanel.add(knownSignatureRankTestTextField);
 
         panel.add(cutoffPanel);
         collapsiblePanel.getContentPane().add(panel, BorderLayout.NORTH);
         return collapsiblePanel;
     }
+    
+    /**
+     * @return CollapsiblePanel to set PostAnalysisParameters 
+     */
+    private CollapsiblePanel createSignatureDiscoveryParametersPanel() {
+        String[] sigCutoffItems = PostAnalysisParameters.sigCutoffItems;
+        CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Edge Weight Calculation Parameters");
+        
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        
+        datasetCombo = new JComboBox(datasetMap.keySet().toArray());
+        datasetCombo.addActionListener( new ActionListener() {
+            public void actionPerformed( ActionEvent e ) {
+            	JComboBox selectedChoice = (JComboBox) e.getSource();
+            	paParams.setSignature_dataSet((String)selectedChoice.getSelectedItem());
+            }
+        });
+        datasetCombo.setSelectedIndex(0);
+        panel.add(datasetCombo);
+        
+        rankingCombo = new JComboBox(rankingMap.keySet().toArray());
+        rankingCombo.addActionListener( new ActionListener() {
+            public void actionPerformed( ActionEvent e ) {
+            	JComboBox selectedChoice = (JComboBox) e.getSource();
+            	paParams.setSignature_rankFile((String)selectedChoice.getSelectedItem());
+            }
+        });
+        rankingCombo.setSelectedIndex(0);
+        panel.add(rankingCombo);
+        
+        signatureDiscoveryRankTestTextField = new JFormattedTextField();
+        
+        String[] rankTestItems = PostAnalysisParameters.rankTestItems;
+        signatureDiscoveryRankTestCombo = new JComboBox();
+        signatureDiscoveryRankTestCombo.addItem(rankTestItems[PostAnalysisParameters.MANN_WHIT]);
+        signatureDiscoveryRankTestCombo.addActionListener( new ActionListener() {
+            String[] rankTestItems = PostAnalysisParameters.rankTestItems;
+            public void actionPerformed( ActionEvent e ) {
+                JComboBox selectedChoice = (JComboBox) e.getSource();
+                if (rankTestItems[PostAnalysisParameters.MANN_WHIT].equals( selectedChoice.getSelectedItem())) {
+                    paParams.setSignature_rankTest(PostAnalysisParameters.MANN_WHIT);
+                    signatureDiscoveryRankTestTextField.setValue(paParams.getSignature_Mann_Whit_Cutoff());
+                }
+            }
+        });
+        signatureDiscoveryRankTestCombo.setSelectedItem(rankTestItems[paParams.getDefault_signature_rankTest()]);
+        panel.add(signatureDiscoveryRankTestCombo);
+        
+        JPanel cutoffLabel = new JPanel();
+        cutoffLabel.add(new JLabel("Select Cutoff:"));
+        panel.add(cutoffLabel);
+        
+        JPanel cutoffPanel = new JPanel();
+        cutoffPanel.setLayout(new BoxLayout(cutoffPanel, BoxLayout.X_AXIS));
+
+        cutoffPanel.add(signatureDiscoveryRankTestCombo);
+        cutoffPanel.add(signatureDiscoveryRankTestTextField);
+
+        panel.add(cutoffPanel);
+        collapsiblePanel.getContentPane().add(panel, BorderLayout.NORTH);
+        return collapsiblePanel;
+    }
+
     
 
     /**
@@ -857,9 +907,8 @@ public class PostAnalysisInputPanel extends JPanel {
                 }
                 else {
                     paParams.setSignatureGMTFileName(value);
-                    paParams.setSignatureGenesets(new SetOfGeneSets());
-                    //paParams.setSignatureSetNames(new DefaultListModel());
-                    //paParams.setSelectedSignatureSetNames(new DefaultListModel());
+                    paParams.setSignatureSetNames(new DefaultListModel());
+                    paParams.setSelectedSignatureSetNames(new DefaultListModel());
                 }
             } else if (source == signatureDiscoveryGMTFileNameTextField) {
                 String value = signatureDiscoveryGMTFileNameTextField.getText();
@@ -874,54 +923,10 @@ public class PostAnalysisInputPanel extends JPanel {
                 }
                 else {
                     paParams.setSignatureGMTFileName(value);
-                    paParams.setSignatureGenesets(new SetOfGeneSets());
-                    //paParams.setSignatureSetNames(new DefaultListModel());
-                    //paParams.setSelectedSignatureSetNames(new DefaultListModel());
+//                    paParams.setSignatureSetNames(new DefaultListModel());
+//                    paParams.setSelectedSignatureSetNames(new DefaultListModel());
                 }
             } 
-            else if (source == sigCutoffTextField) {
-                Number value = (Number) sigCutoffTextField.getValue();
-                if (paParams.getSignature_CutoffMetric() == PostAnalysisParameters.ABS_NUMBER) {
-                    if ((value != null) && (value.intValue() >= 0) ) {
-                        paParams.setSignature_absNumber_Cutoff(value.intValue());
-                    } else {
-                        source.setValue(paParams.getSignature_absNumber_Cutoff());
-                        message += "The \"Number of Common Genes\" cutoff must be a non-negative Integer (0 or larger).";
-                        invalid = true;
-                    }
-                }
-                else if (paParams.getSignature_CutoffMetric() == PostAnalysisParameters.JACCARD) {
-                    if ((value != null) && (value.doubleValue() > 0.0) && (value.doubleValue() <= 1.0)) {
-                        paParams.setSignature_Jaccard_Cutoff(value.doubleValue());
-                    } else {
-                        source.setValue(paParams.getSignature_Jaccard_Cutoff());
-                        message += "The Jaccard Coefficient cutoff must be greater than 0.0 and less than or equal to 1.0.";
-                        invalid = true;
-                    }
-                }
-                else if (paParams.getSignature_CutoffMetric() == PostAnalysisParameters.OVERLAP) {
-                    if ((value != null) && (value.doubleValue() > 0.0) && (value.doubleValue() <= 1.0)) {
-                        paParams.setSignature_Overlap_Cutoff(value.doubleValue());
-                    } else {
-                        source.setValue(paParams.getSignature_Overlap_Cutoff());
-                        message += "The Overlap Coefficient cutoff must be greater than 0.0 and less than or equal to 1.0.";
-                        invalid = true;
-                    }
-                }
-                else if (paParams.getSignature_CutoffMetric() == PostAnalysisParameters.DIR_OVERLAP) {
-                    if ((value != null) && (value.doubleValue() > 0.0) && (value.doubleValue() <= 1.0)) {
-                        paParams.setSignature_DirOverlap_Cutoff(value.doubleValue());
-                    } else {
-                        source.setValue(paParams.getSignature_DirOverlap_Cutoff());
-                        message += "The Overlap Coefficient cutoff must be greater than 0.0 and less than or equal to 1.0.";
-                        invalid = true;
-                    }
-                }
-                else {
-                    message = "This Cutoff metric is not supported.";
-                    invalid = true;
-                }
-            }
             else if (source == filterTextField) {
                 Number value = (Number) filterTextField.getValue();
                 //if the filter type is percent then make sure the number entered is between 0 and 100
@@ -1039,6 +1044,7 @@ public class PostAnalysisInputPanel extends JPanel {
         String analysisType = evt.getActionCommand();
 
         if(analysisType.equalsIgnoreCase("Signature Discovery")) {
+        	paParams = sigDiscoveryPaParams;
             paParams.setSignatureHub(true);
         	userInputPanel.getContentPane().remove(optionsPanel);
         	optionsPanel = getSignatureDiscoveryOptionsPanel();
@@ -1053,14 +1059,15 @@ public class PostAnalysisInputPanel extends JPanel {
             signature_genesets.getContentPane().add(signaturePanel, BorderLayout.NORTH);
             signature_genesets.setCollapsed(datasets_collapsed);
             signature_genesets.revalidate();
-        } else if (analysisType.equalsIgnoreCase("Known Signature")) {
-        	paParams.setSignatureHub(true);
+        } else {
+        	paParams = knownSigPaParams;
+        	paParams.setSignatureHub(false);
+        	paParams.setFilter(false);
         	userInputPanel.getContentPane().remove(optionsPanel);
         	optionsPanel = getKnownSignatureOptionsPanel();
         	userInputPanel.getContentPane().add(optionsPanel);
         	optionsPanel.revalidate();
-        } else
-            paParams.setSignatureHub(false);
+        }
     }
     
         
@@ -1080,7 +1087,7 @@ public class PostAnalysisInputPanel extends JPanel {
     private void selectSignatureGMTFileButtonActionPerformed(
             java.awt.event.ActionEvent evt) {
 
-        //         Create FileFilter
+        // Create FileFilter
         CyFileFilter filter = new CyFileFilter();
 
         // Add accepted File Extensions
@@ -1096,6 +1103,21 @@ public class PostAnalysisInputPanel extends JPanel {
 	            knownSignatureGMTFileNameTextField.setText(file.getAbsolutePath());
 	            knownSignatureGMTFileNameTextField.setValue(file.getAbsolutePath());
 	            paParams.setSignatureGMTFileName(file.getAbsolutePath());
+	            //Load in the GMT file
+	            JTaskConfig config = new JTaskConfig();
+	            config.displayCancelButton(true);
+	            config.displayCloseButton(true);
+	            config.displayStatus(true);
+	            
+	            String errors = paParams.checkGMTfiles();
+	            if (errors.equalsIgnoreCase("")) {
+	            	LoadSignatureGMTFilesTask load_GMTs = new LoadSignatureGMTFilesTask(map, paParams, this);
+	                /*boolean success =*/ 
+	            	TaskManager.executeTask(load_GMTs, config);
+	            } else {
+	                JOptionPane.showMessageDialog(Cytoscape.getDesktop(),errors,"Invalid Input",JOptionPane.WARNING_MESSAGE);
+	            }
+	            paParams.setSelectedSignatureSetNames(paParams.getSignatureSetNames());
 	            knownSignatureGMTFileNameTextField.setToolTipText(file.getAbsolutePath());
         	} else {
 	            signatureDiscoveryGMTFileNameTextField.setForeground(checkFile(file.getAbsolutePath()));
@@ -1142,6 +1164,10 @@ public class PostAnalysisInputPanel extends JPanel {
             this.knownSignatureGMTFileNameTextField.setText("");
             this.knownSignatureGMTFileNameTextField.setValue("");
             this.knownSignatureGMTFileNameTextField.setToolTipText(null);
+            
+	        // Reset the rank test field
+	        String[] rankTestItems = PostAnalysisParameters.rankTestItems;
+	        this.knownSignatureRankTestCombo.setSelectedItem(rankTestItems[paParams.getDefault_signature_rankTest()]);
         }
         
         if (signatureDiscoveryPanel != null) {
@@ -1162,36 +1188,15 @@ public class PostAnalysisInputPanel extends JPanel {
 	        this.selected_sig_sets_field.clearSelection();
 	        this.setSelSigCount(0);
 	
-//	        //Parameters Panel:
-//	        // select default metric in ComboBox
-//	        paParams.setSignature_CutoffMetric(paParams.getDefault_signature_CutoffMetric());
-//	        sigCutoffCombo.setSelectedIndex(paParams.getSignature_CutoffMetric());
-//	        // reset Text Field
-//	        switch (paParams.getSignature_CutoffMetric()) {
-//	        case PostAnalysisParameters.ABS_NUMBER:
-//	            sigCutoffTextField.setValue(paParams.getSignature_absNumber_Cutoff());
-//	            break;
-//	        case PostAnalysisParameters.JACCARD:
-//	            sigCutoffTextField.setValue(paParams.getSignature_Jaccard_Cutoff());
-//	            break;
-//	        case PostAnalysisParameters.OVERLAP:
-//	            sigCutoffTextField.setValue(paParams.getSignature_Overlap_Cutoff());
-//	            break;
-//	        default:
-//	            //Handle Unsupported Default_signature_CutoffMetric Error
-//	            String message = "This Cutoff metric is not supported.";
-//	            JOptionPane.showMessageDialog(Cytoscape.getDesktop(), message, "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
-//	            break;
-//	        }
-	
 	        // Reset the filter field
 	        filter.setSelected(true);
 	        paParams.setFilter(true);
-	        //this.filterTextField.setValue(paParams.getFilterValue());
-	
-	        paParams.setSignature_filterMetric(paParams.getDefault_signature_filterMetric());
+	        String[] filterItems = PostAnalysisParameters.filterItems;
+	        this.filterTypeCombo.setSelectedItem(filterItems[paParams.getDefault_signature_filterMetric()]);
 	        
-	        this.filterTypeCombo.setSelectedIndex(0);
+	        // Reset the rank test field
+	        String[] rankTestItems = PostAnalysisParameters.rankTestItems;
+	        this.signatureDiscoveryRankTestCombo.setSelectedItem(rankTestItems[paParams.getDefault_signature_rankTest()]);
         }
 
     }
@@ -1213,27 +1218,6 @@ public class PostAnalysisInputPanel extends JPanel {
         this.avail_sig_sets_field.setModel(this.avail_sig_sets);
         this.selected_sig_sets = this.paParams.getSelectedSignatureSetNames();
         this.selected_sig_sets_field.setModel(this.selected_sig_sets);
-        
-        //Parameters:
-        this.sigCutoffCombo.setSelectedIndex(this.paParams.getSignature_CutoffMetric());
-        
-        switch (this.paParams.getSignature_CutoffMetric()) {
-        case PostAnalysisParameters.ABS_NUMBER:
-            sigCutoffTextField.setValue(this.paParams.getSignature_absNumber_Cutoff());
-            break;
-        case PostAnalysisParameters.JACCARD:
-            sigCutoffTextField.setValue(this.paParams.getSignature_Jaccard_Cutoff());
-            break;
-        case PostAnalysisParameters.OVERLAP:
-            sigCutoffTextField.setValue(this.paParams.getSignature_Overlap_Cutoff());
-            break;
-
-        default:
-            //Handle Unsupported Default_signature_CutoffMetric Error
-            String message = "This Cutoff metric is not supported.";
-            JOptionPane.showMessageDialog(Cytoscape.getDesktop(), message, "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
-            break;
-        }
         
     }
 

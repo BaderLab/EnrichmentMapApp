@@ -139,13 +139,13 @@ public class BuildDiseaseSignatureTask implements Task {
         // EnrichmentGenes: pool of all genes in Enrichment Gene Sets
         //TODO: get enrichment map genes from enrichment map parameters now that they are computed there.
         EnrichmentGenes = new HashSet<Integer>();
-        for (Iterator<String> i = EnrichmentGenesets.keySet().iterator(); i.hasNext(); ){
+        for (Iterator<String> i = EnrichmentGenesets.keySet().iterator(); i.hasNext(); ) {
             String setName = i.next();
             EnrichmentGenes.addAll(EnrichmentGenesets.get(setName).getGenes());
         }
         // SignatureGenes: pool of all genes in Signature Gene Sets
         SignatureGenes = new HashSet<Integer>();
-        for (Iterator<String> i = SignatureGenesets.keySet().iterator(); i.hasNext(); ){
+        for (Iterator<String> i = SignatureGenesets.keySet().iterator(); i.hasNext(); ) {
             String setName = i.next();
             SignatureGenes.addAll(SignatureGenesets.get(setName).getGenes());
         }
@@ -209,7 +209,7 @@ public class BuildDiseaseSignatureTask implements Task {
                  * the signature genes in this signature gene set 
                  */
                 HashSet<Integer> sigGenes = sigGeneSet.getGenes();
-                Integer[] sig_gene_ids = (Integer[]) sigGenes.toArray();
+                Object[] sig_gene_ids = sigGenes.toArray();
                 double[] sig_gene_scores = new double[sigGenes.size()];
                 HashMap<Integer, Double> gene2score = this.ranks.getGene2Score();
 
