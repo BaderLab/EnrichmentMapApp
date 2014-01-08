@@ -90,29 +90,6 @@ public class Enrichment_Map_Plugin {
     public void onCytoscapeExit(){
 
     }
-
-    /**
-     * SaveSessionStateFiles collects all the data stored in the Enrichment maps
-     * and creates property files for each network listing the variables needed to rebuild the map.
-     * All data(Hashmaps) collections needed for the Enrichment map are stored in separate files specified by the name
-     * of the network with specific file endings to indicate what type of data is stored in the files (i.e. ENR for enrichment,
-     * genes for genes...).
-     *
-     * @param pFileList - pointer to the set of files to be added to the session
-     */
-    public void saveSessionStateFiles(List<File> pFileList){
-       utils.saveSessionStateFiles(pFileList);
-    }
-
-    /**
-     * Restore Enrichment maps
-     *
-     * @param pStateFileList - list of files associated with thie session
-     */
-    public void restoreSessionState(List<File> pStateFileList) {
-    		utils.restoreSessionState(pStateFileList);
-    }
-
-    
+  
 
 }
