@@ -46,7 +46,8 @@ package org.baderlab.csplugins.enrichmentmap.view;
 import javax.swing.*;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
-//import org.baderlab.csplugins.enrichmentmap.actions.SliderBarActionListener;
+import org.baderlab.csplugins.enrichmentmap.actions.SliderBarActionListener;
+import org.cytoscape.application.CyApplicationManager;
 
 import java.util.Hashtable;
 import java.awt.*;
@@ -62,7 +63,10 @@ import java.awt.*;
  * Slider bar panel - it a panel contained within legend panel
  */
 public class SliderBarPanel extends JPanel {
-
+	
+	//required services
+	private CyApplicationManager applicationManager;
+	
     //height of panel
     private final int DIM_HEIGHT = 72;
     //width of panel
@@ -94,8 +98,10 @@ public class SliderBarPanel extends JPanel {
      * @param attrib2 - attribute for dataset 2 that the slider bar is specific to (i.e. p-value or q-value)
      * @param desired_width
      */
-    public SliderBarPanel(double min, double max, String sliderLabel, EnrichmentMapParameters params,String attrib1, String attrib2, int desired_width, boolean edgesOnly, double initial_value) {
-        this.setPreferredSize(new Dimension(DIM_WIDTH, DIM_HEIGHT));
+    public SliderBarPanel(double min, double max, String sliderLabel, EnrichmentMapParameters params,String attrib1, String attrib2, int desired_width, boolean edgesOnly, double initial_value,CyApplicationManager applicationManager) {
+        this.applicationManager = applicationManager;
+    	
+    	this.setPreferredSize(new Dimension(DIM_WIDTH, DIM_HEIGHT));
         this.setLayout(new BorderLayout(0,0));
         this.setOpaque(false);
 
@@ -135,8 +141,7 @@ public class SliderBarPanel extends JPanel {
         JSlider slider = new JSlider(JSlider.HORIZONTAL,
                                       min, max, initial_value);
         
-        //TODO:Add sliderBarAction listener
-        //slider.addChangeListener(new SliderBarActionListener(this,params, attrib1,attrib2,edgesOnly));
+        slider.addChangeListener(new SliderBarActionListener(this, attrib1,attrib2,edgesOnly,applicationManager));
 
         slider.setMajorTickSpacing((max-min)/5);
         slider.setPaintTicks(true);

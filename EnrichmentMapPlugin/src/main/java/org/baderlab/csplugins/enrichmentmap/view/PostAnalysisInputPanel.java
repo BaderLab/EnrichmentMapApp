@@ -176,7 +176,7 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
         this.dialog = dialog;
     		
         //initialize paParams
-        this.paParams = new PostAnalysisParameters(sessionManager,streamUtil);
+        this.paParams = new PostAnalysisParameters(sessionManager,streamUtil,cyApplicationManager);
         
         decFormat = new DecimalFormat();
         decFormat.setParseIntegerOnly(false);

@@ -109,7 +109,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
 
     		//create a new instance of the parameters and copy the version received from the input
         //window into this new instance.
-    		this.paParams = new PostAnalysisParameters(manager, streamUtil);
+    		this.paParams = new PostAnalysisParameters(manager, streamUtil,applicationManager);
         this.paParams.copyFrom(paParams);
         
         this.EnrichmentGenesets   = map.getAllGenesets();

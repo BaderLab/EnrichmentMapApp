@@ -45,14 +45,24 @@ package org.baderlab.csplugins.enrichmentmap.actions;
 
 import java.util.Iterator;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.*;
 
+import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapVisualStyle;
 import org.baderlab.csplugins.enrichmentmap.view.SliderBarPanel;
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 /**
  * Created by
@@ -62,13 +72,15 @@ import org.baderlab.csplugins.enrichmentmap.view.SliderBarPanel;
  * <p>
  * slider bar move action
  */
-public class SliderBarActionListener {
-
-/*    private SliderBarPanel panel;
-    private EnrichmentMapParameters params;
+public class SliderBarActionListener implements ChangeListener {
+	
+	//required services
+	private CyApplicationManager applicationManager;
+	
+    private SliderBarPanel panel;
 
     private ArrayList<HiddenNodes> hiddenNodes;
-    private ArrayList<Edge> hiddenEdges;
+    private ArrayList<CyEdge> hiddenEdges;
 
     //attribute for dataset 1 that the slider bar is specific to
     private String attrib_dataset1;
@@ -85,9 +97,10 @@ public class SliderBarActionListener {
      * @param attrib1 - attribute for dataset 1 that the slider bar is specific to (i.e. p-value or q-value)
      * @param attrib2 - attribute for dataset 2 that the slider bar is specific to (i.e. p-value or q-value)
      */
-/*    public SliderBarActionListener(SliderBarPanel panel, EnrichmentMapParameters params, String attrib1, String attrib2, boolean onlyEdges) {
-        this.panel = panel;
-        this.params = params;
+    public SliderBarActionListener(SliderBarPanel panel, String attrib1, String attrib2, boolean onlyEdges,CyApplicationManager applicationManager) {
+        this.applicationManager = applicationManager;
+    	
+    		this.panel = panel;
         hiddenNodes = new ArrayList();
         hiddenEdges = new ArrayList();
 
@@ -103,7 +116,7 @@ public class SliderBarActionListener {
      *
      * @param e
      */
-/*    public void stateChanged(ChangeEvent e){
+    public void stateChanged(ChangeEvent e){
 
         //check to see if the event is associated with only edges
         if(onlyEdges){
@@ -117,12 +130,13 @@ public class SliderBarActionListener {
 
         panel.setLabel(source.getValue());
 
-        CyNetwork network = Cytoscape.getCurrentNetwork();
-        CyNetworkView view = Cytoscape.getCurrentNetworkView();
-        CyAttributes attributes = Cytoscape.getNodeAttributes();
+        CyNetwork network = this.applicationManager.getCurrentNetwork();
+        CyNetworkView view = this.applicationManager.getCurrentNetworkView();
+        CyTable attributes = network.getDefaultNodeTable();
 
-        int[] nodes = network.getNodeIndicesArray();
-
+        List<CyNode> nodes = network.getNodeList();
+        
+        EnrichmentMapParameters params = EnrichmentMapManager.getInstance().getMap(network.getSUID()).getParams();
        //get the prefix of the current network
        String prefix = params.getAttributePrefix();
 
@@ -138,23 +152,23 @@ public class SliderBarActionListener {
         * relayout the nodes. (can also be done programmatically)
         */
 
- /*       for(int i = 0; i< nodes.length; i++){
-           Node currentNode = network.getNode(nodes[i]);
-           NodeView currentView = Cytoscape.getCurrentNetworkView().getNodeView(currentNode);
-           Double pvalue_dataset1 = attributes.getDoubleAttribute(currentNode.getIdentifier(), prefix + attrib_dataset1);
-
+/*        for(CyNode i:nodes){
+           CyNode currentNode = network.getNode(i.getSUID());
+           View<CyNode> currentView = view .getNodeView(currentNode);
+           Double pvalue_dataset1 = network.getRow(currentNode).get(prefix + attrib_dataset1,Double.class,);
+           
            if((pvalue_dataset1 > max_cutoff) || (pvalue_dataset1 < min_cutoff)){
                if(params.isTwoDatasets()){
-                   Double pvalue_dataset2 = attributes.getDoubleAttribute(currentNode.getIdentifier(), prefix + attrib_dataset2);
+                   Double pvalue_dataset2 = network.getRow(currentNode).get(prefix + attrib_dataset2,Double.class);
                   if((pvalue_dataset2 > max_cutoff) || (pvalue_dataset2 < min_cutoff)){
                         view.hideGraphObject(currentView);
                   }
                    else{
                       view.showGraphObject(currentView);
                       //restore the edges as well
-                      int edges[] = network.getAdjacentEdgeIndicesArray(currentNode.getRootGraphIndex(),true,true,true);
-                      for(int m = 0;m< edges.length;m++){
-                          EdgeView currentEdgeView = view.getEdgeView(edges[m]);
+                      List<CyEdge> edges =  network.getAdjacentEdgeList(currentNode, CyEdge.Type.ANY);
+                      for(CyEdge m:edges){
+                          View<CyEdge> currentEdgeView = view.getEdgeView(m);
                           view.showGraphObject(currentEdgeView);
                       }
 
@@ -168,9 +182,9 @@ public class SliderBarActionListener {
             else{
                view.showGraphObject(currentView);
                //restore the edges as well
-               int edges[] = network.getAdjacentEdgeIndicesArray(currentNode.getRootGraphIndex(),true,true,true);
-               for(int m = 0;m< edges.length;m++){
-                   EdgeView currentEdgeView = view.getEdgeView(edges[m]);
+               List<CyEdge> edges =  network.getAdjacentEdgeList(currentNode, CyEdge.Type.ANY);
+               for(CyEdge m:edges){
+                   View<CyEdge> currentEdgeView = view.getEdgeView(edges[m]);
                    view.showGraphObject(currentEdgeView);
                }
            }
@@ -178,69 +192,72 @@ public class SliderBarActionListener {
 */
 
        //go through all the existing nodes to see if we need to hide any new nodes.
-/*       for(int i = 0; i< nodes.length; i++){
-           Node currentNode = network.getNode(nodes[i]);
-           NodeView currentView = view.getNodeView(currentNode);
+       for(CyNode i:nodes){
+           CyNode currentNode = network.getNode(i.getSUID());
+           View<CyNode> currentView = view.getNodeView(currentNode);
            
            // skip Node if it's not an Enrichment-Geneset (but e.g. a Signature-Hub)
-           if( attributes.hasAttribute(currentNode.getIdentifier(), prefix + EnrichmentMapVisualStyle.GS_TYPE)
-               && ! EnrichmentMapVisualStyle.GS_TYPE_ENRICHMENT.equalsIgnoreCase(attributes.getStringAttribute(currentNode.getIdentifier(), prefix + EnrichmentMapVisualStyle.GS_TYPE)) )
+           if( attributes.getColumn(prefix + EnrichmentMapVisualStyle.GS_TYPE) != null
+               && ! EnrichmentMapVisualStyle.GS_TYPE_ENRICHMENT.equalsIgnoreCase(network.getRow(currentNode).get(prefix + EnrichmentMapVisualStyle.GS_TYPE,String.class)) )
                continue;
            
            
-           Double pvalue_dataset1 = attributes.getDoubleAttribute(currentNode.getIdentifier(), prefix + attrib_dataset1);
-
+           Double pvalue_dataset1 = network.getRow(currentNode).get(prefix + attrib_dataset1,Double.class);
+           
            //possible that there isn't a p-value for this geneset
            if(pvalue_dataset1 == null)
-            pvalue_dataset1 = 0.99;
+        	   		pvalue_dataset1 = 0.99;
 
            if((pvalue_dataset1 > max_cutoff) || (pvalue_dataset1 < min_cutoff)){
                if(params.isTwoDatasets()){
-                   Double pvalue_dataset2 = attributes.getDoubleAttribute(currentNode.getIdentifier(), prefix + attrib_dataset2);
-
+                   Double pvalue_dataset2 = network.getRow(currentNode).get(prefix + attrib_dataset2,Double.class);
+                   
                    if(pvalue_dataset2 == null)
                         pvalue_dataset2 = 0.99;
 
-                  if((pvalue_dataset2 > max_cutoff) || (pvalue_dataset2 < min_cutoff)){
+                   if((pvalue_dataset2 > max_cutoff) || (pvalue_dataset2 < min_cutoff)){
 
-                        int edges[] = network.getAdjacentEdgeIndicesArray(currentNode.getRootGraphIndex(),true,true,true);
-                        for(int m = 0;m< edges.length;m++)
-                            hiddenEdges.add(network.getEdge(edges[m]));
+                	  	  List<CyEdge> edges =  network.getAdjacentEdgeList(currentNode, CyEdge.Type.ANY);
+                	  	  for(CyEdge m:edges)
+                            hiddenEdges.add(network.getEdge(m.getSUID()));
 
-                        hiddenNodes.add(new HiddenNodes(currentNode, currentView.getXPosition(), currentView.getYPosition()));
-                        network.hideNode(currentNode);
-                  }
+                        	hiddenNodes.add(new HiddenNodes(currentNode, currentView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION), currentView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION)));
+                        	//network.hideNode(currentNode);
+                        	currentView.setLockedValue(BasicVisualLexicon.NODE_VISIBLE, false);
+                  	}
 
-               }
-               else{
-                   int edges[] = network.getAdjacentEdgeIndicesArray(currentNode.getRootGraphIndex(),true,true,true);
-                   for(int m = 0;m< edges.length;m++)
-                            hiddenEdges.add(network.getEdge(edges[m]));
-                   hiddenNodes.add(new HiddenNodes(currentNode, currentView.getXPosition(), currentView.getYPosition()));
-                   network.hideNode(currentNode);
-                  }
-           }
-       }
+               	}
+               	else{
+               		List<CyEdge> edges =  network.getAdjacentEdgeList(currentNode, CyEdge.Type.ANY);
+               		for(CyEdge m:edges)
+               			hiddenEdges.add(network.getEdge(m.getSUID()));
+               		hiddenNodes.add(new HiddenNodes(currentNode, currentView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION), currentView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION)));
+               		//network.hideNode(currentNode);
+               		currentView.setLockedValue(BasicVisualLexicon.NODE_VISIBLE, false);
+               	}
+           	}
+       	}
 
         //go through all the hidden nodes to see if we need to restore any of them
         ArrayList<HiddenNodes> unhiddenNodes = new ArrayList();
-        ArrayList<Edge> unhiddenEdges = new ArrayList();
+        ArrayList<CyEdge> unhiddenEdges = new ArrayList();
 
         for(Iterator j = hiddenNodes.iterator();j.hasNext();){
             HiddenNodes currentHN = (HiddenNodes)j.next();
-            Node currentNode = currentHN.getNode();
-            Double pvalue_dataset1 = attributes.getDoubleAttribute(currentNode.getIdentifier(), prefix + attrib_dataset1);
-
+            CyNode currentNode = currentHN.getNode();
+            Double pvalue_dataset1 = network.getRow(currentNode).get(prefix + attrib_dataset1,Double.class);
+            
             //possible that there isn't a p-value for this geneset
            if(pvalue_dataset1 == null)
-            pvalue_dataset1 = 0.99;
+        	   		pvalue_dataset1 = 0.99;
 
             if((pvalue_dataset1 <= max_cutoff) && (pvalue_dataset1 >= min_cutoff)){
 
-                network.restoreNode(currentNode);
-                NodeView currentNodeView = view.getNodeView(currentNode);
-                currentNodeView.setXPosition(currentHN.getX());
-                currentNodeView.setYPosition(currentHN.getY());
+                //network.restoreNode(currentNode);
+                View<CyNode> currentNodeView = view.getNodeView(currentNode);
+                currentNodeView.setLockedValue(BasicVisualLexicon.NODE_VISIBLE, true);
+                currentNodeView.setLockedValue(BasicVisualLexicon.NODE_X_LOCATION,currentHN.getX());
+                currentNodeView.setLockedValue(BasicVisualLexicon.NODE_Y_LOCATION,currentHN.getY());                
                 view.updateView();
                 unhiddenNodes.add(currentHN);
 
@@ -248,16 +265,17 @@ public class SliderBarActionListener {
 
             }
             if(params.isTwoDatasets()){
-                   Double pvalue_dataset2 = attributes.getDoubleAttribute(currentNode.getIdentifier(), prefix + attrib_dataset2);
+                   Double pvalue_dataset2 = network.getRow(currentNode).get(prefix + attrib_dataset2,Double.class);
 
                  if(pvalue_dataset2 == null)
                         pvalue_dataset2 = 0.99;
 
                 if((pvalue_dataset2 <= max_cutoff) && (pvalue_dataset2 >= min_cutoff)){
-                        network.restoreNode(currentNode);
-                        NodeView currentNodeView = view.getNodeView(currentNode);
-                        currentNodeView.setXPosition(currentHN.getX());
-                        currentNodeView.setYPosition(currentHN.getY());
+                        //network.restoreNode(currentNode);
+                        View<CyNode> currentNodeView = view.getNodeView(currentNode);
+                        currentNodeView.setLockedValue(BasicVisualLexicon.NODE_VISIBLE, true);
+                        currentNodeView.setLockedValue(BasicVisualLexicon.NODE_X_LOCATION,currentHN.getX());
+                        currentNodeView.setLockedValue(BasicVisualLexicon.NODE_Y_LOCATION,currentHN.getY());                
                         unhiddenNodes.add(currentHN);
 
 
@@ -268,11 +286,15 @@ public class SliderBarActionListener {
 
         //For the unhidden edges we need to restore its edges with nodes that exist in the network
         //restore edges where both nodes are in the network.
-         for(Iterator k = hiddenEdges.iterator();k.hasNext();){
-            Edge currentEdge = (Edge)k.next();
-            if((network.getNode(currentEdge.getSource().getRootGraphIndex()) != null) &&
-                (network.getNode(currentEdge.getTarget().getRootGraphIndex()) != null)){
-                network.restoreEdge(currentEdge);
+         for(Iterator<CyEdge> k = hiddenEdges.iterator();k.hasNext();){
+            CyEdge currentEdge = k.next();
+        		View<CyNode> nodeSourceView = view.getNodeView(currentEdge.getSource());
+        		View<CyNode> nodeTargetView = view.getNodeView(currentEdge.getTarget());
+            if((nodeSourceView.getVisualProperty(BasicVisualLexicon.NODE_VISIBLE)) &&
+                (nodeTargetView.getVisualProperty(BasicVisualLexicon.NODE_VISIBLE))){
+            		View<CyEdge> currentView = view.getEdgeView(currentEdge);
+            		currentView.setLockedValue(BasicVisualLexicon.EDGE_VISIBLE, true);
+            		//network.restoreEdge(currentEdge);
                 unhiddenEdges.add(currentEdge);
             }
          }
@@ -284,8 +306,7 @@ public class SliderBarActionListener {
         //remove the unhidden edges from the list of hiddenEdges.
         for(Iterator k = unhiddenEdges.iterator();k.hasNext();)
             hiddenEdges.remove(k.next());
-
-        view.redrawGraph(true,true);
+        
         view.updateView();
 
    }
@@ -297,43 +318,44 @@ public class SliderBarActionListener {
 
         panel.setLabel(source.getValue());
 
-        CyNetwork network = Cytoscape.getCurrentNetwork();
-        CyNetworkView view = Cytoscape.getCurrentNetworkView();
-        CyAttributes attributes = Cytoscape.getEdgeAttributes();
+        CyNetwork network = this.applicationManager.getCurrentNetwork();
+        CyNetworkView view = this.applicationManager.getCurrentNetworkView();
+        CyTable attributes = network.getDefaultEdgeTable();
 
-        int[] edges = network.getEdgeIndicesArray();
+        List<CyEdge> edges = network.getEdgeList();
 
         //get the prefix of the current network
-        String prefix = params.getAttributePrefix();
+        String prefix = EnrichmentMapManager.getInstance().getMap(network.getSUID()).getParams().getAttributePrefix();
         //go through all the existing nodes to see if we need to hide any new nodes.
 
-
-        for(int i = 0; i< edges.length; i++){
-            Edge currentEdge = network.getEdge(edges[i]);
+        for(CyEdge i:edges){
+            CyEdge currentEdge = network.getEdge(i.getSUID());
 
             // skip Node if it's not an Enrichment-Geneset (but e.g. a Signature-Hub)
-            if( attributes.hasAttribute(currentEdge.getIdentifier(), prefix + EnrichmentMapVisualStyle.GS_TYPE)
-                && ! EnrichmentMapVisualStyle.GS_TYPE_ENRICHMENT.equalsIgnoreCase(attributes.getStringAttribute(currentEdge.getIdentifier(), prefix + EnrichmentMapVisualStyle.GS_TYPE)) )
+            if( attributes.getColumn(prefix + EnrichmentMapVisualStyle.GS_TYPE) != null
+                && ! EnrichmentMapVisualStyle.GS_TYPE_ENRICHMENT.equalsIgnoreCase(network.getRow(currentEdge).get(prefix + EnrichmentMapVisualStyle.GS_TYPE,String.class)) )
                 continue;
 
-            Double similarity_cutoff = attributes.getDoubleAttribute(currentEdge.getIdentifier(), prefix + attrib_dataset1);
+            Double similarity_cutoff = network.getRow(currentEdge).get(prefix + attrib_dataset1,Double.class);
 
             //possible that there isn't a p-value for this geneset
             if(similarity_cutoff == null)
-             similarity_cutoff = 0.1;
+            		similarity_cutoff = 0.1;
 
             if((similarity_cutoff > max_cutoff) || (similarity_cutoff < min_cutoff)){
                 hiddenEdges.add(currentEdge);
-                network.hideEdge(currentEdge);
+                View<CyEdge> currentView = view.getEdgeView(currentEdge);
+            		currentView.setLockedValue(BasicVisualLexicon.EDGE_VISIBLE, false);
+                //network.hideEdge(currentEdge);
             }
         }
 
         //go through all the hidden edges to see if we need to restore any of them
-        ArrayList<Edge> unhiddenEdges = new ArrayList<Edge>();
+        ArrayList<CyEdge> unhiddenEdges = new ArrayList<CyEdge>();
 
         for(Iterator j = hiddenEdges.iterator();j.hasNext();){
-            Edge currentEdge = (Edge)j.next();
-            Double similarity_curoff = attributes.getDoubleAttribute(currentEdge.getIdentifier(), prefix + attrib_dataset1);
+            CyEdge currentEdge = (CyEdge)j.next();
+            Double similarity_curoff = network.getRow(currentEdge).get(prefix + attrib_dataset1,Double.class);
 
             //possible that there isn't a p-value for this geneset
             if(similarity_curoff == null)
@@ -341,7 +363,9 @@ public class SliderBarActionListener {
 
 
             if((similarity_curoff <= max_cutoff) && (similarity_curoff >= min_cutoff)){
-                network.restoreEdge(currentEdge);
+                //network.restoreEdge(currentEdge);
+                View<CyEdge> currentView = view.getEdgeView(currentEdge);
+                currentView.setLockedValue(BasicVisualLexicon.EDGE_VISIBLE, true);
                 unhiddenEdges.add(currentEdge);
 
             }
@@ -351,23 +375,22 @@ public class SliderBarActionListener {
         for(Iterator k = unhiddenEdges.iterator();k.hasNext();)
             hiddenEdges.remove(k.next());
 
-        view.redrawGraph(true,true);
         view.updateView();
 
     }
 
     private class HiddenNodes{
-           Node node;
+           CyNode node;
            double x;
            double y;
 
-           public HiddenNodes(Node node, double x , double y){
+           public HiddenNodes(CyNode node, double x , double y){
                this.node = node;
                this.x = x;
                this.y = y;
            }
 
-        public Node getNode() {
+        public CyNode getNode() {
             return node;
         }
 
@@ -379,6 +402,6 @@ public class SliderBarActionListener {
             return y;
         }
 
-    }*/
+    }
 
 }

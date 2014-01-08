@@ -255,7 +255,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 
         //get the current enrichment map parameters
         //params = EnrichmentMapManager.getInstance().getParameters(Cytoscape.getCurrentNetwork().getIdentifier());
-         params = new EnrichmentMapParameters(sessionManager,streamUtil);
+         params = new EnrichmentMapParameters(sessionManager,streamUtil,applicationManager);
 
         //create the three main panels: scope, advanced options, and bottom
         JPanel AnalysisTypePanel = createAnalysisTypePanel();
@@ -1260,7 +1260,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
             	//make sure that the minimum information is set in the current set of parameters
                
             		//create a new params for the new EM and add the dataset files to it
-            		EnrichmentMapParameters new_params = new EnrichmentMapParameters(sessionManager,streamUtil);
+            		EnrichmentMapParameters new_params = new EnrichmentMapParameters(sessionManager,streamUtil,applicationManager);
             		new_params.copy(empanel.getParams());
             		new_params.addFiles(EnrichmentMap.DATASET1, dataset1files);
             		if(!dataset2files.isEmpty())
