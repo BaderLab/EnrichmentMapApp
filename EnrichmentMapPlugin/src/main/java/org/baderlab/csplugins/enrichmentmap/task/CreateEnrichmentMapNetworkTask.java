@@ -168,11 +168,9 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 			CyTable edgeTable = createEdgeAttributes(network, map.getName().trim(),prefix);
             
             // store path to GSEA report in Network Attribute
-            if (map.getParams().getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)) {
-     //TODO:Add network attributes           
-               /* CyTable network_table = network.getDefaultNetworkTable();
-                network_table.createColumn(EnrichmentMapVisualStyle.NETW_REPORT1_DIR,String.class,false);
-                CyRow network_row = network_table.getRow(network);
+            if (map.getParams().getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)) {           
+                CyTable network_table = createNetworkAttributes(network, map.getName().trim(),prefix);
+                CyRow network_row = network_table.getRow(network.getSUID());
                 if (map.getParams().getFiles().containsKey(EnrichmentMap.DATASET1) && map.getParams().getFiles().get(EnrichmentMap.DATASET1).getGseaHtmlReportFile() != null) {
                     String report1Path = map.getParams().getFiles().get(EnrichmentMap.DATASET1).getGseaHtmlReportFile();
                     // On Windows we need to replace the Back-Slashes by forward-Slashes.
@@ -195,7 +193,7 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
                     report2Path = report2Path.substring(0, report2Path.lastIndexOf('/') );
                     network_row.set(EnrichmentMapVisualStyle.NETW_REPORT2_DIR,
                             report2Path);
-                }*/
+                }
             }
 
            // HashMap<String, EnrichmentResult> enrichmentResults1OfInterest = params.getEM().getFilteredEnrichment(EnrichmentMap.DATASET1).getEnrichments();
@@ -656,7 +654,19 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
         return formattedLabel;
     }
 
-    
+  //create the Nodes attribute table
+    public CyTable createNetworkAttributes(CyNetwork network, String name, String prefix){
+    		//TODO:change back to creating our own table.  Currently can only map to a string column.
+    	    //in mean time use the default node table
+    		//CyTable nodeTable = tableFactory.createTable(/*name*/ prefix + "_" + node_table_suffix, CyNetwork.SUID, Long.class, true, true);
+    		CyTable networkTable = network.getDefaultNetworkTable();
+    		networkTable.createColumn(EnrichmentMapVisualStyle.NETW_REPORT1_DIR,String.class,false);
+    		if (map.getParams().getFiles().containsKey(EnrichmentMap.DATASET2) && map.getParams().getFiles().get(EnrichmentMap.DATASET2).getGseaHtmlReportFile() != null) 
+    			networkTable.createColumn(EnrichmentMapVisualStyle.NETW_REPORT2_DIR,String.class,false);
+    		     
+    		return networkTable;
+    	
+    }
     //create the Nodes attribute table
     public CyTable createNodeAttributes(CyNetwork network, String name, String prefix){
     		//TODO:change back to creating our own table.  Currently can only map to a string column.

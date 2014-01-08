@@ -51,8 +51,11 @@ import org.baderlab.csplugins.enrichmentmap.Enrichment_Map_Plugin;
 import org.baderlab.csplugins.enrichmentmap.actions.ParametersPanelActionListener;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.util.swing.OpenBrowser;
 
 import java.awt.*;
@@ -79,12 +82,14 @@ public class ParametersPanel extends JPanel implements CytoPanelComponent{
     private EnrichmentMap map;
     
     private OpenBrowser browser;
+    private CyApplicationManager cyApplicationManager;
 
     /**
      * Class constructor
      */
-    public ParametersPanel(OpenBrowser browser) {
+    public ParametersPanel(OpenBrowser browser,CyApplicationManager cyApplicationManager) {
     		this.browser = browser;
+    		this.cyApplicationManager = cyApplicationManager;
        }
 
     /**
@@ -509,12 +514,12 @@ public class ParametersPanel extends JPanel implements CytoPanelComponent{
         // Try the path that is stored in the params:
         if ( reportFile != null && new File(reportFile).canRead() ) {
             return reportFile;
-        } /*TODO: fix this option.  No access to attributes from here.
+        } 
         else if(netwAttrName != null){ // if not: try from Network attributes:
-            CyAttributes networkAttributes = Cytoscape.getNetworkAttributes();
-            String tryPath = networkAttributes.getStringAttribute( 
-                    Cytoscape.getCurrentNetwork().getIdentifier(), 
-                    netwAttrName);
+        		CyNetwork network = cyApplicationManager.getCurrentNetwork();
+        		CyTable networkTable = network.getDefaultNetworkTable();
+        		String tryPath = networkTable.getRow(network).get(netwAttrName,String.class);
+    		
             String tryReportFile = tryPath + File.separator + "index.html";
             if (new File(tryReportFile).canRead()) {
                 return tryReportFile;
@@ -524,7 +529,7 @@ public class ParametersPanel extends JPanel implements CytoPanelComponent{
                 else
                     return reportFile;
             }
-        }*/
+        }
         else
         		return null;
     }

@@ -101,7 +101,7 @@ public class CyActivator extends AbstractCyActivator {
 		//create two instances of the heatmap panel
 		HeatMapPanel heatMapPanel_node = new HeatMapPanel(true, cySwingApplicationRef, fileUtil, cyApplicationManagerRef, openBrowserRef);
 		HeatMapPanel heatMapPanel_edge = new HeatMapPanel(false, cySwingApplicationRef, fileUtil, cyApplicationManagerRef, openBrowserRef);
-		ParametersPanel paramsPanel = new ParametersPanel(openBrowserRef);
+		ParametersPanel paramsPanel = new ParametersPanel(openBrowserRef, cyApplicationManagerRef);
 		
 		//Get an instance of EM manager
 		EnrichmentMapManager manager = EnrichmentMapManager.getInstance();
