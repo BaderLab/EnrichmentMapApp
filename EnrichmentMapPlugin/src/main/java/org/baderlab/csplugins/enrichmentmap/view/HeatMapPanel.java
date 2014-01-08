@@ -1197,7 +1197,7 @@ public class HeatMapPanel extends JPanel {
                     		//ask user if they want to export only the leading edge.
                     		//only ask if the leadingedge is displayed
                     		if(this.displayLeadingEdge == true && hmParams.getSort() == HeatMapParameters.Sort.RANK && params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)){
-                    			int response2 = JOptionPane.showConfirmDialog(this, "Wouuld you like to save the leading edge only?");
+                    			int response2 = JOptionPane.showConfirmDialog(this, "Would you like to save the leading edge only?");
                     			if(response2 == JOptionPane.YES_OPTION || response2 == JOptionPane.OK_OPTION)
                     				this.OnlyLeadingEdge = true;
                     		}
