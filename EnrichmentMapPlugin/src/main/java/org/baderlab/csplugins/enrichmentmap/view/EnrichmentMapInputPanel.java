@@ -2474,7 +2474,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
      */
     private void resetPanel(){
 
-        this.params = new EnrichmentMapParameters();
+        this.params = new EnrichmentMapParameters(sessionManager, streamUtil, applicationManager);
         this.panelUpdate = false;
         //reset the datafiles as well
         this.dataset1files = new DataSetFiles();
@@ -2577,7 +2577,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
     public void updateContents(EnrichmentMapParameters current_params){
     	resetPanel();
     	
-        this.params = new EnrichmentMapParameters();
+        this.params = new EnrichmentMapParameters(sessionManager, streamUtil, applicationManager);
         this.params.copy(current_params);
         this.panelUpdate = true;
         

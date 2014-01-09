@@ -142,34 +142,38 @@ public class EnrichmentMapActionListener implements RowsSetListener{
         
         //get the current network
         CyNetwork network = this.applicationManager.getCurrentNetwork();
-        initialize(network);
         
-        //There is no flag to indicate that this is only an edge/node selection
-        //After select get the nodes and the edges that were selected.
-        if( ! override_revalidate_heatmap ) {
+        //only handle event if it is a selected node
+        if(e.getSource() == network.getDefaultEdgeTable() || e.getSource() == network.getDefaultNodeTable()){
+        		initialize(network);
+        
+        		//There is no flag to indicate that this is only an edge/node selection
+        		//After select get the nodes and the edges that were selected.
+        		if( ! override_revalidate_heatmap ) {
         		
-        		//get the edges
-        		List<CyEdge> selectedEdges = CyTableUtil.getEdgesInState(network, CyNetwork.SELECTED, true);
+        			//get the edges
+        			List<CyEdge> selectedEdges = CyTableUtil.getEdgesInState(network, CyNetwork.SELECTED, true);
 
-        		Edges.clear();
-        		Edges.addAll(selectedEdges);
+        			Edges.clear();
+        			Edges.addAll(selectedEdges);
         		
-            //if (Edges.size() <= Integer.parseInt(CytoscapeInit.getProperties().getProperty("EnrichmentMap.Heatmap_Edge_Limit",  "100") ) )
-            if(Edges.size()>0)
-        			createEdgesData();
+        			//if (Edges.size() <= Integer.parseInt(CytoscapeInit.getProperties().getProperty("EnrichmentMap.Heatmap_Edge_Limit",  "100") ) )
+        			if(Edges.size()>0)
+        				createEdgesData();
 
-            //get the nodes.
-            List<CyNode> selectedNodes = CyTableUtil.getNodesInState(network, CyNetwork.SELECTED, true);
+        			//get the nodes.
+        			List<CyNode> selectedNodes = CyTableUtil.getNodesInState(network, CyNetwork.SELECTED, true);
 
-            Nodes.clear();
-            Nodes.addAll(selectedNodes);
-            //if (Nodes.size() <= Integer.parseInt(CytoscapeInit.getProperties().getProperty("EnrichmentMap.Heatmap_Node_Limit",  "50") ) )
-            if(Nodes.size()>0)
-            		createNodesData();
+        			Nodes.clear();
+        			Nodes.addAll(selectedNodes);
+        			//if (Nodes.size() <= Integer.parseInt(CytoscapeInit.getProperties().getProperty("EnrichmentMap.Heatmap_Node_Limit",  "50") ) )
+        			if(Nodes.size()>0)
+        				createNodesData();
             
-            if(Nodes.isEmpty() && Edges.isEmpty())
-                clearPanels();
-        }
+        			if(Nodes.isEmpty() && Edges.isEmpty())
+        				clearPanels();
+        		}
+        }//end of if e.getSource check
     }
 
   public void createEdgesData(){

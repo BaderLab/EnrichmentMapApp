@@ -218,8 +218,13 @@ public class SliderBarActionListener implements ChangeListener {
                    if((pvalue_dataset2 > max_cutoff) || (pvalue_dataset2 < min_cutoff)){
 
                 	  	  List<CyEdge> edges =  network.getAdjacentEdgeList(currentNode, CyEdge.Type.ANY);
-                	  	  for(CyEdge m:edges)
-                            hiddenEdges.add(network.getEdge(m.getSUID()));
+                	  	  for(CyEdge m:edges){
+                     		CyEdge currentEdge = m;
+                       		hiddenEdges.add(network.getEdge(currentEdge.getSUID()));
+                       		//hide the edges in the network as well. -->trying to fix issue with layouts.
+                       		View<CyEdge> currentEdgeView = view.getEdgeView(currentEdge);
+                       		currentEdgeView.setLockedValue(BasicVisualLexicon.EDGE_VISIBLE, false);
+                       	}
 
                         	hiddenNodes.add(new HiddenNodes(currentNode, currentView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION), currentView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION)));
                         	//network.hideNode(currentNode);
@@ -229,8 +234,13 @@ public class SliderBarActionListener implements ChangeListener {
                	}
                	else{
                		List<CyEdge> edges =  network.getAdjacentEdgeList(currentNode, CyEdge.Type.ANY);
-               		for(CyEdge m:edges)
-               			hiddenEdges.add(network.getEdge(m.getSUID()));
+               		for(CyEdge m:edges){
+               			CyEdge currentEdge = m;
+               			hiddenEdges.add(network.getEdge(currentEdge.getSUID()));
+               			//hide the edges in the network as well. -->trying to fix issue with layouts.
+               			View<CyEdge> currentEdgeView = view.getEdgeView(currentEdge);
+               			currentEdgeView.setLockedValue(BasicVisualLexicon.EDGE_VISIBLE, false);
+               		}
                		hiddenNodes.add(new HiddenNodes(currentNode, currentView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION), currentView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION)));
                		//network.hideNode(currentNode);
                		currentView.setLockedValue(BasicVisualLexicon.NODE_VISIBLE, false);

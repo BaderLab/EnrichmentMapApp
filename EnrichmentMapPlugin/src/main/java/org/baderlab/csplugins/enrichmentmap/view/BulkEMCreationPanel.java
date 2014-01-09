@@ -8,10 +8,13 @@ import org.baderlab.csplugins.enrichmentmap.EnrichmentMapUtils;
 //import org.baderlab.csplugins.enrichmentmap.actions.BuildBulkEnrichmentMapActionListener;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.JMultiLineToolTip;
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
+import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.session.CySessionManager;
 import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
 
@@ -39,6 +42,9 @@ public class BulkEMCreationPanel extends JPanel implements CytoPanelComponent{
     private FileUtil fileUtil;
     private CySwingApplication application;
     private CyServiceRegistrar registrar;
+    private StreamUtil streamUtil;
+    private CyApplicationManager applicationManager;
+    private CySessionManager cySessionManager;
     
     private EnrichmentMapParameters params;
 
@@ -75,8 +81,11 @@ public class BulkEMCreationPanel extends JPanel implements CytoPanelComponent{
     
     private boolean similarityCutOffChanged = false;
     
-    public BulkEMCreationPanel(CySwingApplication application, FileUtil fileUtil, CyServiceRegistrar registrar) {
-          params = new EnrichmentMapParameters();
+    public BulkEMCreationPanel(CySwingApplication application, FileUtil fileUtil, CyServiceRegistrar registrar,CySessionManager sessionManager, StreamUtil streamUtil, CyApplicationManager applicationManager) {
+          params = new EnrichmentMapParameters(sessionManager, streamUtil, applicationManager);
+          this.streamUtil = streamUtil;
+          this.cySessionManager = cySessionManager;
+          this.applicationManager = applicationManager;
           this.application = application;
           this.fileUtil = fileUtil;
           this.registrar = registrar;
@@ -814,7 +823,7 @@ public class BulkEMCreationPanel extends JPanel implements CytoPanelComponent{
          */
         private void resetPanel(){
 
-            this.params = new EnrichmentMapParameters();
+            this.params = new EnrichmentMapParameters(cySessionManager, streamUtil, applicationManager);
 
             GSEAResultsDirTextField.setText("");
             GSEAResultsDirTextField.setToolTipText(null);
