@@ -139,6 +139,12 @@ public class EnrichmentMap {
     		if(dataset1files.getEnrichmentFileName2() != null && !dataset1files.getEnrichmentFileName2().isEmpty())
     			this.getDataset(DATASET1).getEnrichments().setFilename2(dataset1files.getEnrichmentFileName2());
     		
+    		//phenotypes
+    		if(dataset1files.getPhenotype1() != null && !dataset1files.getPhenotype1().isEmpty())
+    			this.getDataset(DATASET1).getEnrichments().setPhenotype1(dataset1files.getPhenotype1());
+    		if(dataset1files.getPhenotype2() != null && !dataset1files.getPhenotype2().isEmpty())
+    			this.getDataset(DATASET1).getEnrichments().setPhenotype2(dataset1files.getPhenotype2());
+    		
     		//rank files - dataset1 
     		if(dataset1files.getRankedFile() != null && !dataset1files.getRankedFile().isEmpty())
     			if(params.getMethod().equals(EnrichmentMapParameters.method_GSEA)){
@@ -161,6 +167,13 @@ public class EnrichmentMap {
     				this.getDataset(DATASET2).getEnrichments().setFilename1(dataset2files.getEnrichmentFileName1());
     			if(dataset2files.getEnrichmentFileName2() != null && !dataset2files.getEnrichmentFileName2().isEmpty())
     				this.getDataset(DATASET2).getEnrichments().setFilename2(dataset2files.getEnrichmentFileName2());
+    			
+    			//phenotypes
+        		if(dataset2files.getPhenotype1() != null && !dataset2files.getPhenotype1().isEmpty())
+        			this.getDataset(DATASET2).getEnrichments().setPhenotype1(dataset2files.getPhenotype1());
+        		if(dataset2files.getPhenotype2() != null && !dataset2files.getPhenotype2().isEmpty())
+        			this.getDataset(DATASET2).getEnrichments().setPhenotype2(dataset2files.getPhenotype2());
+        		
     		
     			//rank files - dataset 2
     			if(dataset2files.getRankedFile() != null && !dataset2files.getRankedFile().isEmpty()){
@@ -381,7 +394,11 @@ public class EnrichmentMap {
     		HashSet<String> allRankNames = new HashSet<String>();
     		//go through each Dataset
     		for(Iterator<String> k = datasets.keySet().iterator(); k.hasNext();){
-    			allRankNames.addAll((datasets.get(k.next())).getExpressionSets().getAllRanksNames());
+    			String current_ds = k.next();
+    			//there could be duplicate ranking names for two different datasets. Add the dataset to the ranks name
+    			HashSet<String> all_names = (datasets.get(current_ds)).getExpressionSets().getAllRanksNames();
+    			for(Iterator<String> l = all_names.iterator();l.hasNext();)
+    				allRankNames.add(l.next() + "-" + current_ds);
     			
     		}
     		return allRankNames;
@@ -398,9 +415,26 @@ public class EnrichmentMap {
     }
     
     public Ranking getRanksByName(String ranks_name){
+    	
+    		//break the ranks file up by "-"
+    		//check to see if the rank file is dataset specific
+    		//needed for encoding the same ranking file name from two different dataset in the interface
+    		String ds="";
+    		String rank="";
+    		if(ranks_name.split("-").length ==2){
+    			ds = ranks_name.split("-")[1];
+    			rank = ranks_name.split("-")[0];
+    		}
+    	
     		for(Iterator<String> k = datasets.keySet().iterator(); k.hasNext();){
     			String current_dataset = k.next();
-			if((datasets.get(current_dataset)).getExpressionSets().getAllRanksNames().contains(ranks_name)){
+    			if(!ds.equalsIgnoreCase("")&&!rank.equalsIgnoreCase("")){
+    				//check that this is the right dataset
+    				if(ds.equalsIgnoreCase(current_dataset) && (datasets.get(current_dataset)).getExpressionSets().getAllRanksNames().contains(rank)){
+    					return datasets.get(current_dataset).getExpressionSets().getRanksByName(rank);
+    				}
+    			}
+    			else if((datasets.get(current_dataset)).getExpressionSets().getAllRanksNames().contains(ranks_name)){
 				return datasets.get(current_dataset).getExpressionSets().getRanksByName(ranks_name);
 			}
     		}

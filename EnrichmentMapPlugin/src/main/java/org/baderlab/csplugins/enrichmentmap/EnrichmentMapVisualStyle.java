@@ -112,7 +112,13 @@ public class EnrichmentMapVisualStyle {
     public static String OVERLAP_GENES = "Overlap_genes";
     public static String HYPERGEOM_PVALUE = "Overlap_Hypergeom_pVal";
     public static String ENRICHMENT_SET = "ENRICHMENT_SET";
-
+    
+    // Related to Hypergeometric distribution
+    public static String HYPERGEOM_N = "HyperGeom_N_Universe";
+    public static String HYPERGEOM_n = "HyperGeom_n_Sig_Universe";
+    public static String HYPERGEOM_k = "k_Intersection";
+    public static String HYPERGEOM_m = "m_Enr_Genes";
+    
     public static String NUMBER_OF_ENRICHMENT_GENES = "# of Enrichment Genes";
     
     public static String NETW_REPORT1_DIR = "GSEA_Report_Dataset1_folder";

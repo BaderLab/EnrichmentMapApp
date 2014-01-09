@@ -229,7 +229,7 @@ public class FileReaderTest extends TestCase {
         assertEquals(4,map.getGenes().size());
 
         assertEquals(4, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getNumGenes());
-        assertEquals(2, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getNumConditions());
+        assertEquals(3, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getNumConditions());
         assertEquals(0.47536945, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getMinExpression());
         assertEquals(0.5418719, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getMaxExpression());
 
@@ -290,7 +290,7 @@ public class FileReaderTest extends TestCase {
         assertEquals(4,map.getGenes().size());
 
         assertEquals(4, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getNumGenes());
-        assertEquals(2, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getNumConditions());
+        assertEquals(3, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getNumConditions());
         assertEquals(0.47536945, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getMinExpression());
         assertEquals(0.5418719, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getMaxExpression());
 

@@ -27,8 +27,8 @@ public class SetOfEnrichmentResults {
 	
 	//phenotype
 	//each enrichment is associated with two phenotypes
-	private String phenotype1 = "UP";
-	private String phenotype2 = "DOWN";
+	private String phenotype1 = DataSetFiles.default_pheno1;
+	private String phenotype2 = DataSetFiles.default_pheno2;
 	
 	public SetOfEnrichmentResults() {
 		this.enrichments = new HashMap<String, EnrichmentResult>();

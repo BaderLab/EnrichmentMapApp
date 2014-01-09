@@ -43,13 +43,11 @@
 
 package org.baderlab.csplugins.enrichmentmap.view;
 
-
 import javax.swing.*;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapUtils;
-import org.baderlab.csplugins.enrichmentmap.Enrichment_Map_Plugin;
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.actions.BuildPostAnalysisActionListener;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadSignatureSetsActionListener;
@@ -138,10 +136,15 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
     private JFormattedTextField GMTFileNameTextField;
     private JFormattedTextField signatureGMTFileNameTextField;
 
+    private JLabel avail_sig_sets_counter_label;
+    private int avail_sig_sets_count = 0;
+    private JLabel selected_sig_sets_counter_label;
+    private int sel_sig_sets_count = 0;
     private JList avail_sig_sets_field;
     private JList selected_sig_sets_field;
     private DefaultListModel avail_sig_sets;
     private DefaultListModel selected_sig_sets;
+
 
     
     //Parameters related components
@@ -182,7 +185,7 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
         decFormat.setParseIntegerOnly(false);
 
         setLayout(new BorderLayout());
-        
+
         //create the three main panels: scope, advanced options, and bottom
         JPanel AnalysisTypePanel = createAnalysisTypePanel();
 
@@ -318,7 +321,7 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
 
         signaturePanel = new JPanel();
         signaturePanel.setLayout(new BoxLayout(signaturePanel, BoxLayout.Y_AXIS));
-        signaturePanel.setPreferredSize(new Dimension(280, 300));
+        //signaturePanel.setPreferredSize(new Dimension(280, 300));
         signaturePanel.setAlignmentX((float) 0.0); //LEFT
         
 
@@ -332,8 +335,9 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
         selected_sig_sets = paParams.getSelectedSignatureSetNames();
 
         //List of all Signature Genesets 
-        JPanel availableLabel = new JPanel();
-        availableLabel.add(new JLabel("available Signature-Genesets:"));
+        JPanel availableLabel = new JPanel(new FlowLayout());
+        availableLabel.add(new JLabel("Available Signature-Genesets:"));
+        availableLabel.add(this.createAvSigCountLabel());
         signaturePanel.add(availableLabel);
         avail_sig_sets_field = new JList(avail_sig_sets);
         
@@ -364,7 +368,8 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
 
         //List of selected Signature Genesets 
         JPanel selectedLabel = new JPanel();
-        selectedLabel.add( new JLabel("selected Signature-Genesets:") );
+        selectedLabel.add( new JLabel("Selected Signature-Genesets:"));
+        selectedLabel.add(this.createSelSigCountLabel());
         signaturePanel.add(selectedLabel);
         selected_sig_sets_field = new JList(selected_sig_sets);
 
@@ -376,18 +381,40 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
         selected_sig_sets_scroll.setMinimumSize(new Dimension(250, 100));
         selected_sig_sets_scroll.setMaximumSize(new Dimension(290, 200));
         signaturePanel.add(selected_sig_sets_scroll);
+        
+        // Add clear panels button
+        JPanel clearButtonPanel = new JPanel();
+        clearButtonPanel.setLayout(new FlowLayout());
+        JButton clearButton = new JButton("Clear Signature Genesets");
+        clearButtonPanel.add(clearButton);
+        signaturePanel.add(clearButtonPanel);
+        
+        //ActionListener for clear button
+        clearButton.addActionListener(new PaPanelActionListener(this) {
+			public void actionPerformed(ActionEvent e) {
+		        this.paPanel.avail_sig_sets.clear();
+		        this.paPanel.avail_sig_sets_field.clearSelection();
+		        this.paPanel.setAvSigCount(0);
+		        
+		        this.paPanel.selected_sig_sets.clear();
+		        this.paPanel.selected_sig_sets_field.clearSelection();
+		        this.paPanel.setSelSigCount(0);			
+		   }
+        }); {}
  
         //ActionListeners for (Un-)SelectButtons
-        selectButton.addActionListener(new java.awt.event.ActionListener() {
+        selectButton.addActionListener(new PaPanelActionListener(this) {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 int[] selected = avail_sig_sets_field.getSelectedIndices();
                 for (int i = selected.length; i > 0 ; i--  ) {
                     selected_sig_sets.addElement( avail_sig_sets.get(selected[i-1]) );
                     avail_sig_sets.remove(selected[i-1]);
                 }
+                this.paPanel.setSelSigCount(selected_sig_sets.size());
+                this.paPanel.setAvSigCount(avail_sig_sets.size());
             }
         });        
-        unselectButton.addActionListener(new java.awt.event.ActionListener() {
+        unselectButton.addActionListener(new PaPanelActionListener(this) {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 int[] selected = selected_sig_sets_field.getSelectedIndices();
                 for (int i = selected.length; i > 0 ; i--  ) {
@@ -402,7 +429,8 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
                 for (int i = 0; i < setNamesArray.length; i++) {
                     avail_sig_sets.addElement(setNamesArray[i] );
                 }
-                
+                this.paPanel.setAvSigCount(avail_sig_sets.size());
+                this.paPanel.setSelSigCount(selected_sig_sets.size());            
             }
         });
         signature_genesets.getContentPane().add(signaturePanel, BorderLayout.NORTH);
@@ -426,7 +454,7 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
         CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Gene-Sets");
 
         JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(0, 1));
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
         //add GMT file
         JLabel GMTLabel = new JLabel("GMT:"){
@@ -526,6 +554,7 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
         loadButton.setPreferredSize(new Dimension(100,10));
         panel.add(loadButton);
         
+
         
         collapsiblePanel.getContentPane().add(panel, BorderLayout.NORTH);
         return collapsiblePanel;
@@ -547,10 +576,10 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
         //radio button for filter or no-filter.  Defaults to no-filter
         filter = new JRadioButton("Filter By");
         filter.setActionCommand("filter");
-        filter.setSelected(false);
+        filter.setSelected(true);
         nofilter = new JRadioButton("No filter");
         nofilter.setActionCommand("nofilter");
-        nofilter.setSelected(true);
+        nofilter.setSelected(false);
 
         filters = new ButtonGroup();
         filters.add(filter);
@@ -1026,10 +1055,12 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
         this.avail_sig_sets = this.paParams.getSignatureSetNames();
         this.avail_sig_sets_field.setModel(avail_sig_sets);
         this.avail_sig_sets_field.clearSelection();
+        this.setAvSigCount(0);
         
         this.selected_sig_sets = this.paParams.getSelectedSignatureSetNames();
         this.selected_sig_sets_field.setModel(selected_sig_sets);
         this.selected_sig_sets_field.clearSelection();
+        this.setSelSigCount(0);
 
         //Parameters Panel:
         // select default metric in ComboBox
@@ -1049,7 +1080,6 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
         case PostAnalysisParameters.OVERLAP:
             sigCutoffTextField.setValue(paParams.getSignature_Overlap_Cutoff());
             break;
-
         default:
             //Handle Unsupported Default_signature_CutoffMetric Error
             String message = "This Cutoff metric is not supported.";
@@ -1057,8 +1087,8 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
             break;
         }
 
-        filter.setSelected(false);
-        nofilter.setSelected(true);
+        filter.setSelected(true);
+        nofilter.setSelected(false);
         paParams.setFilter(false);
         this.filterTextField.setValue(paParams.getFilterValue());
 
@@ -1079,18 +1109,20 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
 
     	
     		this.paParams = EnrichmentMapManager.getInstance().getMap(cyApplicationManager.getCurrentNetwork().getSUID()).getPaParams();
+   		
+    		
        
-        // Gene-Set Files:
-        GMTFileNameTextField.setText(this.paParams.getGMTFileName());
-        GMTFileNameTextField.setValue(this.paParams.getGMTFileName());
-        signatureGMTFileNameTextField.setText(this.paParams.getSignatureGMTFileName());
-        signatureGMTFileNameTextField.setValue(this.paParams.getSignatureGMTFileName());
+    			// Gene-Set Files:
+    			GMTFileNameTextField.setText(this.paParams.getGMTFileName());
+    			GMTFileNameTextField.setValue(this.paParams.getGMTFileName());
+    			signatureGMTFileNameTextField.setText(this.paParams.getSignatureGMTFileName());
+    			signatureGMTFileNameTextField.setValue(this.paParams.getSignatureGMTFileName());
         
-        // Gene-Set Selection:
-        this.avail_sig_sets    = this.paParams.getSignatureSetNames();
-        this.avail_sig_sets_field.setModel(this.avail_sig_sets);
-        this.selected_sig_sets = this.paParams.getSelectedSignatureSetNames();
-        this.selected_sig_sets_field.setModel(this.selected_sig_sets);
+    			// Gene-Set Selection:
+    			this.avail_sig_sets    = this.paParams.getSignatureSetNames();
+    			this.avail_sig_sets_field.setModel(this.avail_sig_sets);
+    			this.selected_sig_sets = this.paParams.getSelectedSignatureSetNames();
+    			this.selected_sig_sets_field.setModel(this.selected_sig_sets);
         
         //Parameters:
         this.sigCutoffCombo.setSelectedIndex(this.paParams.getSignature_CutoffMetric());
@@ -1115,8 +1147,6 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
             JOptionPane.showMessageDialog(application.getJFrame(), message, "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
             break;
         }
-
-        
         
     }
 
@@ -1157,9 +1187,69 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
 		return "Post Analysis Input Panel";
 	}
     
-    
-    
-    
+    /**
+     * Create the available signature counter label
+     * @param null
+     * @return JLabel avSigCount
+     */
+    public JLabel createAvSigCountLabel() {
+		if (this.avail_sig_sets_counter_label == null) {
+			this.avail_sig_sets_counter_label = new JLabel("(0)");
+		}
+		return this.avail_sig_sets_counter_label;
+    }
+	
+	/**
+	 * Set available signature gene set count to specified value
+	 * @param int avSigCount
+	 * @return null
+	 */
+	public void setAvSigCount(int avSigCount) {
+		this.avail_sig_sets_count = 0;
+		this.avail_sig_sets_counter_label.setText("(" + Integer.toString(avSigCount) + ")");
+	}
+	
+	/**
+	 * Get available signature gene set count
+	 * @param null
+	 * @return int avSigCount
+	 */
+	public int getAvSigCount() {
+		return this.avail_sig_sets_count;
+	}
+	
+    /**
+     * Create the selected signature counter label
+     * @param null
+     * @return JLabel selSigCount
+     */
+    public JLabel createSelSigCountLabel() {
+		if (this.selected_sig_sets_counter_label == null) {
+			this.selected_sig_sets_counter_label = new JLabel("(0)");
+		}
+		return this.selected_sig_sets_counter_label;
+    }
+	
+	/**
+	 * Set selected signature gene set count to the 
+	 * specified value
+	 * @param int sigCount
+	 * @return null
+	 */
+	public void setSelSigCount(int num) {
+		this.sel_sig_sets_count = num;
+		this.selected_sig_sets_counter_label.setText("(" + Integer.toString(num) + ")");
+	}
+	
+	/**
+	 * Get selected signature gene set count
+	 * @param null
+	 * @return int selSigCount
+	 */
+	public int getSelSigCount() {
+		return this.sel_sig_sets_count;
+	}
+
     /**
      * @author revilo
      * <p>
@@ -1167,5 +1257,17 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
      * Time   5:50:59 PM<br>
      *
      */
+	
+    private class PaPanelActionListener implements ActionListener {
+    	protected PostAnalysisInputPanel paPanel = null;
+    	
+    	public PaPanelActionListener(PostAnalysisInputPanel paPanel) {
+    		this.paPanel = paPanel;
+    	}
+    	
+		public void actionPerformed(ActionEvent arg0) {
+			
+		}
+    }
     
 }

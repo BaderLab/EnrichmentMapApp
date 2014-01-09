@@ -46,6 +46,8 @@ package org.baderlab.csplugins.enrichmentmap.task;
 
 import java.util.*;
 
+import javax.swing.JOptionPane;
+
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
@@ -104,6 +106,7 @@ public class ComputeSimilarityTask extends AbstractTask {
         this.type = type;
     }    
     
+
     public boolean computeGenesetSimilarities(){
         
             HashMap<String, GeneSet> genesetsOfInterest = map.getAllGenesetsOfInterest();
@@ -548,7 +551,6 @@ public class ComputeSimilarityTask extends AbstractTask {
         return geneset_similarities;
     }
 
-    
       /**
        * Non-blocking call to interrupt the task.
        */

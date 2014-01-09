@@ -306,7 +306,6 @@ public class SliderBarActionListener implements ChangeListener {
         //remove the unhidden edges from the list of hiddenEdges.
         for(Iterator k = unhiddenEdges.iterator();k.hasNext();)
             hiddenEdges.remove(k.next());
-        
         view.updateView();
 
    }

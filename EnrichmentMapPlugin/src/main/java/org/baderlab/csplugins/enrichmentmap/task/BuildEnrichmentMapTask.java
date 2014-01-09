@@ -43,7 +43,6 @@
 
 package org.baderlab.csplugins.enrichmentmap.task;
 
-
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetworkFactory;
@@ -54,6 +53,7 @@ import org.cytoscape.task.edit.MapTableToNetworkTablesTaskFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
+
 
 /**
  * Created by
@@ -141,7 +141,6 @@ public class BuildEnrichmentMapTask implements TaskFactory {
      */
     public void buildEnrichmentMap(){
     		
-    	   			    		
     		//trim the genesets to only contain the genes that are in the data file.
         map.filterGenesets();
 

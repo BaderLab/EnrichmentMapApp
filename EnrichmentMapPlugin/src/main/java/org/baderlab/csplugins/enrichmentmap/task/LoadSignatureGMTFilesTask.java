@@ -8,6 +8,7 @@ import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 
 
+
 public class LoadSignatureGMTFilesTask implements TaskFactory{
 
         private PostAnalysisParameters paParams = null;
@@ -24,7 +25,8 @@ public class LoadSignatureGMTFilesTask implements TaskFactory{
             this.map = map;
             this.streamUtil = streamUtil;
         }
-
+        
+        
         /* (non-Javadoc)
          * @see cytoscape.task.Task#getTitle()
          */
@@ -60,9 +62,6 @@ public class LoadSignatureGMTFilesTask implements TaskFactory{
                 }            
         } 
 
-
-    
-	
 
 		public TaskIterator createTaskIterator() {
 			this.loadSigGMTTaskIterator = new TaskIterator();

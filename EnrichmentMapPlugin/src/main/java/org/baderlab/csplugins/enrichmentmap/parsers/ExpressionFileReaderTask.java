@@ -126,6 +126,7 @@ public class ExpressionFileReaderTask extends AbstractTask {
     	        String []lines = fullText.split("\r\n?|\n");
     			int currentProgress = 0;
     			maxValue = lines.length;
+    		
     			GeneExpressionMatrix expressionMatrix = dataset.getExpressionSets();
     			//GeneExpressionMatrix expressionMatrix = new GeneExpressionMatrix(lines[0].split("\t"));
     			//HashMap<Integer,GeneExpression> expression = new HashMap<Integer, GeneExpression>();
@@ -190,8 +191,9 @@ public class ExpressionFileReaderTask extends AbstractTask {
 
     					//expressionMatrix = new GeneExpressionMatrix(tokens);
     					expressionMatrix.setColumnNames(tokens);
-    					expressionMatrix.setNumConditions(tokens.length);
+    					expressionMatrix.setNumConditions(expressionMatrix.getColumnNames().length);
     					expressionMatrix.setExpressionMatrix(expression);
+
     					continue;
 
     				}
@@ -312,9 +314,6 @@ public class ExpressionFileReaderTask extends AbstractTask {
             return def_pheno;
         }
     }
-
-
-  
     
  
     /**

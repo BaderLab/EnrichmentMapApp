@@ -114,6 +114,9 @@ public class HeatMapParameters {
     //Up and down sort button
     final static int Ascending = 0, Descending= 1; // image States
     private ImageIcon[] iconArrow = createExpandAndCollapseIcon();
+    
+    //switch to turn off the coloring of the heatmap
+    private boolean coloroff = false;
 
     //minimum and maximum expression values used to create colour mapper
     private double minExpression;
@@ -316,7 +319,9 @@ public class HeatMapParameters {
             case RANK:
                 int k = 0;
                 int columns = 0;
-                if(map.getParams().isData2() && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null)
+                //add columns to the colum set but make sure the expression files are not the same dile
+                if(map.getParams().isData2() && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null
+                		&& !map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getFilename().equalsIgnoreCase(map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getFilename()))
                     columns = map.getDataset(EnrichmentMap.DATASET1).getExpressionSets() .getColumnNames().length + map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() .getColumnNames().length - 2;
                 else
                     columns = map.getDataset(EnrichmentMap.DATASET1).getExpressionSets() .getColumnNames().length;
@@ -577,16 +582,24 @@ public class HeatMapParameters {
     }
 
     public void flipAscending(int index){
-        ascending[index] = !ascending[index];
+        this.ascending[index] = !ascending[index];
 
         //reset the panel
-        edgeOverlapPanel.updatePanel();
-        nodeOverlapPanel.updatePanel();
+        /*edgeOverlapPanel.updatePanel();
+        nodeOverlapPanel.updatePanel();*/
     }
 
     public void changeAscendingValue(int index){
         if(index != -1)
-            ascending[index] = !ascending[index];
+            this.ascending[index] = !ascending[index];
     }
+
+	public boolean isColoroff() {
+		return coloroff;
+	}
+
+	public void setColoroff(boolean coloroff) {
+		this.coloroff = coloroff;
+	}
 
 }

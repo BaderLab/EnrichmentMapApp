@@ -404,6 +404,7 @@ public class ParametersPanel extends JPanel implements CytoPanelComponent{
 
             //represent the node border color as an png/gif instead of using java to generate the representation
             URL nodeborderIconURL = this.getClass().getResource("node_border_color_small.png");
+
             if (nodeborderIconURL != null) {
                 ImageIcon nodeborderIcon = new ImageIcon(nodeborderIconURL);
                 JLabel nodeborderColorLabel = new JLabel(nodeborderIcon);
@@ -518,7 +519,7 @@ public class ParametersPanel extends JPanel implements CytoPanelComponent{
         else if(netwAttrName != null){ // if not: try from Network attributes:
         		CyNetwork network = cyApplicationManager.getCurrentNetwork();
         		CyTable networkTable = network.getDefaultNetworkTable();
-        		String tryPath = networkTable.getRow(network).get(netwAttrName,String.class);
+        		String tryPath = networkTable.getRow(network.getSUID()).get(netwAttrName,String.class);
     		
             String tryReportFile = tryPath + File.separator + "index.html";
             if (new File(tryReportFile).canRead()) {

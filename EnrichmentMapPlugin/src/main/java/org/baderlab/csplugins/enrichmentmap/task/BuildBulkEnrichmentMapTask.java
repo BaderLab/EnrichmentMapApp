@@ -19,10 +19,10 @@ import org.cytoscape.work.TaskMonitor;
 */
 public class BuildBulkEnrichmentMapTask extends AbstractTask{
 
+
 	// Keep track of progress for monitoring:
     private TaskMonitor taskMonitor = null;
     private boolean interrupted = false;
-    
     
     private EnrichmentMapParameters params;
 
@@ -288,7 +288,7 @@ public class BuildBulkEnrichmentMapTask extends AbstractTask{
 
         JOptionPane.showMessageDialog(Cytoscape.getDesktop(), "EM Bulk Build Complete. \n" + num_bulk_em_created + " enrichments maps were created.\n all results session and xgmml files can be found in:\n"+ mainDirectory, "Bulk Build Finished", JOptionPane.INFORMATION_MESSAGE);
 */	}
-    
+
 	/**
      * Run the Task.
      */

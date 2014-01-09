@@ -35,9 +35,11 @@ public class GeneSetSimilarityTest extends TestCase {
         //get the default dataset
         dataset = map.getDataset(EnrichmentMap.DATASET1);
 
+
       //set up task
         GMTFileReaderTask task = new GMTFileReaderTask(dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
         task.run(taskMonitor);
+
     }
 	
 	public void testJaccardCalculations() throws Exception{

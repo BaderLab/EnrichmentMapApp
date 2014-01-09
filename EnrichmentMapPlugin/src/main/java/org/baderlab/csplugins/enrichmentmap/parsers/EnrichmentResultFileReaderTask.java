@@ -56,6 +56,7 @@ import org.cytoscape.work.TaskMonitor;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Scanner;
 
@@ -135,8 +136,9 @@ public class EnrichmentResultFileReaderTask extends AbstractTask {
     /**
      * Parse enrichment results file
      */
+
     public void parse()  throws IOException{
-    	
+ 	
     		if(this.EnrichmentResultFileName1 != null && !this.EnrichmentResultFileName1.isEmpty())
     			readFile(this.EnrichmentResultFileName1);
     		if(this.EnrichmentResultFileName2 != null && !this.EnrichmentResultFileName2.isEmpty())
@@ -148,11 +150,17 @@ public class EnrichmentResultFileReaderTask extends AbstractTask {
     /*
      * Read file
      */
+
     public void readFile(String EnrichmentResultFileName) throws IOException{
     		//check to see if the enrichment file is an edb file
     		if(EnrichmentResultFileName.endsWith(".edb")){    			
     			ParseEDBEnrichmentResults edbparser = new ParseEDBEnrichmentResults(new File(EnrichmentResultFileName));    			
-    			this.results = edbparser.parseDocument();
+    			try {
+					this.results = edbparser.parseDocument();
+				} catch (ParseException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
     			
     			//make sure the results are set in the dataset
     			dataset.getEnrichments().setEnrichments(this.results);

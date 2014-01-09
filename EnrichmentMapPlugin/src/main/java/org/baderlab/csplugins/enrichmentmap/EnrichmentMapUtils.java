@@ -127,7 +127,7 @@ public class EnrichmentMapUtils {
 			boolean overrideHeatmapRevalidation) {
 		EnrichmentMapUtils.overrideHeatmapRevalidation = overrideHeatmapRevalidation;
 	}
-   
+
     public Properties getBuild_props() {
 		return build_props;
 	}

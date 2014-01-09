@@ -260,7 +260,15 @@ public class GeneExpressionMatrix {
     }
 
     public void setColumnNames(String[] columnNames) {
-        this.columnNames = columnNames;
+    		if(columnNames.length==2){
+    			String[] new_names = new String[3];
+    			new_names[0] = columnNames[0];
+    			new_names[1] = "Description";
+    			new_names[2] = columnNames[1];
+    			this.columnNames = new_names;
+    		}
+    		else	
+    			this.columnNames = columnNames;
     }
 
     public int getNumConditions() {

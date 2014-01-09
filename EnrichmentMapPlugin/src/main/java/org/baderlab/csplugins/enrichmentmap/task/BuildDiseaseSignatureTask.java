@@ -103,11 +103,10 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
     public BuildDiseaseSignatureTask(EnrichmentMap map, PostAnalysisParameters paParams,
     		CySessionManager manager, StreamUtil streamUtil,
     		CyApplicationManager applicationManager) {
-        
     		this.map = map;
     		this.applicationManager = applicationManager;
 
-    		//create a new instance of the parameters and copy the version received from the input
+    	//create a new instance of the parameters and copy the version received from the input
         //window into this new instance.
     		this.paParams = new PostAnalysisParameters(manager, streamUtil,applicationManager);
         this.paParams.copyFrom(paParams);
@@ -255,9 +254,9 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
                             EnrichmentMapVisualStyle.GS_TYPE_SIGNATURE)) {
                         // skip if the Geneset is a Signature Node from a previous analysis
                     }
-                    else if(geneset_similarities.containsKey(similarity_key1) || geneset_similarities.containsKey(similarity_key2)){
+                   /* else if(geneset_similarities.containsKey(similarity_key1) || geneset_similarities.containsKey(similarity_key2)){
                         //skip this geneset comparison.  It has already been done.
-                    }
+                    }*/
                     else{
                         //get the Enrichment geneset
                         GeneSet enrGeneset = EnrichmentGenesets.get(geneset_name);
@@ -319,8 +318,12 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
                             hyperPval = 1.0;
                         
                         comparison.setHypergeom_pvalue(hyperPval);
+                        comparison.setHypergeom_N(N);
+                        comparison.setHypergeom_n(n);
+                        comparison.setHypergeom_m(m);
+                        comparison.setHypergeom_k(k);
                             
-                        geneset_similarities.put(similarity_key1,comparison);
+                        geneset_similarities.put(similarity_key1, comparison);
                     }
                 } // End: iterate over Enrichment Genesets
                 
@@ -477,6 +480,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
                     
 
                 } //if (geneset_similarities.get(edge_name).getSizeOfOverlap() > 0)
+
             } //for
             
             //update the view 
