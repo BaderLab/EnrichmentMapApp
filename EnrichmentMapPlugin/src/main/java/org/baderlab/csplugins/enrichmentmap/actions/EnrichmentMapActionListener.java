@@ -45,16 +45,10 @@ package org.baderlab.csplugins.enrichmentmap.actions;
 
 
 
-import java.util.Collection;
-import java.util.Iterator;
+
 import java.util.List;
-
-
-import javax.swing.*;
-
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapUtils;
-import org.baderlab.csplugins.enrichmentmap.Enrichment_Map_Plugin;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.view.HeatMapPanel;
@@ -67,9 +61,7 @@ import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTableUtil;
-import org.cytoscape.model.events.RowSetRecord;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.util.swing.FileUtil;
@@ -85,7 +77,6 @@ import org.cytoscape.util.swing.FileUtil;
  */
 public class EnrichmentMapActionListener implements RowsSetListener{
 	
-	private CyNetwork network;
     private EnrichmentMap map;
     private HeatMapPanel edgeOverlapPanel;
     private HeatMapPanel nodeOverlapPanel;
@@ -121,10 +112,9 @@ public class EnrichmentMapActionListener implements RowsSetListener{
     /**
      * intialize the parameters needed for this instance of the action
      */
-    private void initialize(){
+    private void initialize(CyNetwork network){
     		//get the static enrichment map manager.
         EnrichmentMapManager manager = EnrichmentMapManager.getInstance();
-        
         this.map = manager.getMap(network.getSUID());
         
         if(map.getParams().isData()){        
@@ -151,8 +141,8 @@ public class EnrichmentMapActionListener implements RowsSetListener{
         
         
         //get the current network
-        this.network = this.applicationManager.getCurrentNetwork();
-        initialize();
+        CyNetwork network = this.applicationManager.getCurrentNetwork();
+        initialize(network);
         
         //There is no flag to indicate that this is only an edge/node selection
         //After select get the nodes and the edges that were selected.
@@ -232,9 +222,9 @@ public class EnrichmentMapActionListener implements RowsSetListener{
             nodeOverlapPanel.clearPanel();
             edgeOverlapPanel.clearPanel();
             if ( ! map.getParams().isDisableHeatmapAutofocus() ) {
-            		//cytoPanel.setSelectedIndex(cytoPanel.indexOfComponent(nodeOverlapPanel));
-	            //cytoPanel.setSelectedIndex(cytoPanel.indexOfComponent(edgeOverlapPanel));
-            }
+            		cytoPanelSouth.setSelectedIndex(cytoPanelSouth.indexOfComponent(this.nodeOverlapPanel));
+            		cytoPanelSouth.setSelectedIndex(cytoPanelSouth.indexOfComponent(this.edgeOverlapPanel));
+            	}
         }
     }
 

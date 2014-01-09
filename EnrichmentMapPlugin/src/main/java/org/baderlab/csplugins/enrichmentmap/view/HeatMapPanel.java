@@ -490,8 +490,11 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
             data[k][1] = expValue[k][1];
 
             for(int j=0;j<HRow[k];j++){
-            		data[k][j+2] = getColor(RowCRT[k],RowCRR[k],RowGene[k],(Double)expValue[k][j+2]);                
-            		}
+            	 	if(numConditions == 2)
+                     data[k][j+1] = getColor(RowCRT[k],RowCRR[k],RowGene[k],(Double)expValue[k][j+1]);
+            	 	else
+                     data[k][j+2] = getColor(RowCRT[k],RowCRR[k],RowGene[k],(Double)expValue[k][j+2]);
+            	}
 
         }
 
@@ -720,7 +723,10 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
                 rowGeneName[k]=row.getName();
 
                 for(int j = 0; j < row.getExpression().length;j++){
-                    expValue[k][j+2]=expression_values[j];
+                	 if(numConditions == 2)
+                         expValue[k][j+1]=expression_values[j];
+                 else
+                         expValue[k][j+2]=expression_values[j];
                 }
                 k++;
              }
