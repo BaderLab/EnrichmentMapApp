@@ -198,6 +198,8 @@ public class BuildDiseaseSignatureTask implements Task {
             // geneUniverse.retainAll(SignatureGenes); 
             int universeSize = geneUniverse.size();
             
+            HashMap<Integer, Double> gene2score = this.ranks.getGene2Score();
+            
             //iterate over selected Signature genesets
             for (Iterator<String> i = SelectedSignatureGenesets.keySet().iterator(); i.hasNext(); ){
                 String hub_name = i.next().toString();
@@ -211,7 +213,6 @@ public class BuildDiseaseSignatureTask implements Task {
                 HashSet<Integer> sigGenes = sigGeneSet.getGenes();
                 Object[] sig_gene_ids = sigGenes.toArray();
                 double[] sig_gene_scores = new double[sigGenes.size()];
-                HashMap<Integer, Double> gene2score = this.ranks.getGene2Score();
 
                 /** 
                  * the genes that are in this signature gene set 
@@ -276,6 +277,13 @@ public class BuildDiseaseSignatureTask implements Task {
                         GeneSet enrGeneset = EnrichmentGenesets.get(geneset_name);
 
                         HashSet<Integer> enrGenes = enrGeneset.getGenes();
+                        Object[] enr_gene_ids = enrGenes.toArray();
+                        double[] enr_gene_scores = new double[enrGenes.size()];
+                        
+                        // Get the scores for signature genes
+                        for (int k = 0; k < enr_gene_ids.length; k++) {
+                        	enr_gene_scores[k] = gene2score.get(enr_gene_ids[k]);
+                        }
 
                         // restrict to a common gene universe
                         enrGenes.retainAll(geneUniverse);
@@ -326,10 +334,10 @@ public class BuildDiseaseSignatureTask implements Task {
                         
                         // Calculate Mann-Whitney U pValue for Overlap
                 		MannWhitneyUTest mann_whit = new MannWhitneyUTest();
-                		double mannPval = mann_whit.mannWhitneyUTest(sig_gene_scores, this.ranks.getScores());
+                		double mannPval = mann_whit.mannWhitneyUTest(sig_gene_scores, enr_gene_scores);
                 		
                 		// Set Mann-Whitney U Parameters
-                		comparison.setMannWhitney_pValue(mannPval);
+                		comparison.setMann_Whit_pValue(mannPval);
                             
                         geneset_similarities.put(similarity_key1, comparison);
                     }
@@ -423,18 +431,22 @@ public class BuildDiseaseSignatureTask implements Task {
 
                 // check if combination passes Cut-Off:
                 boolean passed_cutoff = false;
-                if ( (paParams.getSignature_CutoffMetric() == PostAnalysisParameters.ABS_NUMBER) && 
-                     (geneset_similarities.get(edge_name).getSizeOfOverlap() >= paParams.getSignature_absNumber_Cutoff() ) )
-                    passed_cutoff = true;
-                else if ( (paParams.getSignature_CutoffMetric() == PostAnalysisParameters.JACCARD) && 
-                          (geneset_similarities.get(edge_name).getSimilarity_coeffecient() >= paParams.getSignature_Jaccard_Cutoff() ) )
-                    passed_cutoff = true;
-                else if ( (paParams.getSignature_CutoffMetric() == PostAnalysisParameters.OVERLAP) && 
-                        (geneset_similarities.get(edge_name).getSimilarity_coeffecient() >= paParams.getSignature_Overlap_Cutoff() ) )
-                    passed_cutoff = true;
-                else if ( (paParams.getSignature_CutoffMetric() == PostAnalysisParameters.DIR_OVERLAP) && 
-                        (geneset_similarities.get(edge_name).getSimilarity_coeffecient() >= paParams.getSignature_DirOverlap_Cutoff() ) )
-                    passed_cutoff = true;
+//                if( (paParams.getSignature_CutoffMetric() == PostAnalysisParameters.ABS_NUMBER) && 
+//                     (geneset_similarities.get(edge_name).getSizeOfOverlap() >= paParams.getSignature_absNumber_Cutoff() ) )
+//                    passed_cutoff = true;
+//                else if ( (paParams.getSignature_CutoffMetric() == PostAnalysisParameters.JACCARD) && 
+//                          (geneset_similarities.get(edge_name).getSimilarity_coeffecient() >= paParams.getSignature_Jaccard_Cutoff() ) )
+//                    passed_cutoff = true;
+//                else if ( (paParams.getSignature_CutoffMetric() == PostAnalysisParameters.OVERLAP) && 
+//                        (geneset_similarities.get(edge_name).getSimilarity_coeffecient() >= paParams.getSignature_Overlap_Cutoff() ) )
+//                    passed_cutoff = true;
+//                else if ( (paParams.getSignature_CutoffMetric() == PostAnalysisParameters.DIR_OVERLAP) && 
+//                        (geneset_similarities.get(edge_name).getSimilarity_coeffecient() >= paParams.getSignature_DirOverlap_Cutoff() ) )
+//                    passed_cutoff = true;
+                if ( (paParams.getSignature_rankTest() == PostAnalysisParameters.MANN_WHIT) && 
+                        (geneset_similarities.get(edge_name).getMann_Whit_pValue() <= paParams.getSignature_Mann_Whit_Cutoff() ) ) {
+                   	passed_cutoff = true;
+                 }
 
                 if (passed_cutoff) {
                     CyNode hub_node = Cytoscape.getCyNode( geneset_similarities.get(edge_name).getGeneset1_Name() );
@@ -465,11 +477,11 @@ public class BuildDiseaseSignatureTask implements Task {
                     cyEdgeAttrs.setAttribute(edge.getIdentifier(), prefix + EnrichmentMapVisualStyle.ENRICHMENT_SET  , geneset_similarities.get(edge_name).getEnrichment_set());
                     
                     // Attributes related to the Hypergeometric Test
-                    cyEdgeAttrs.setAttribute(edge.getIdentifier(), prefix + EnrichmentMapVisualStyle.HYPERGEOM_PVALUE, geneset_similarities.get(edge_name).getHypergeom_pvalue());
-                    cyEdgeAttrs.setAttribute(edge.getIdentifier(), prefix + EnrichmentMapVisualStyle.HYPERGEOM_N, geneset_similarities.get(edge_name).getHypergeom_N());
-                    cyEdgeAttrs.setAttribute(edge.getIdentifier(), prefix + EnrichmentMapVisualStyle.HYPERGEOM_n, geneset_similarities.get(edge_name).getHypergeom_n());
-                    cyEdgeAttrs.setAttribute(edge.getIdentifier(), prefix + EnrichmentMapVisualStyle.HYPERGEOM_m, geneset_similarities.get(edge_name).getHypergeom_m());
-                    cyEdgeAttrs.setAttribute(edge.getIdentifier(), prefix + EnrichmentMapVisualStyle.HYPERGEOM_k, geneset_similarities.get(edge_name).getHypergeom_k());
+//                    cyEdgeAttrs.setAttribute(edge.getIdentifier(), prefix + EnrichmentMapVisualStyle.HYPERGEOM_PVALUE, geneset_similarities.get(edge_name).getHypergeom_pvalue());
+//                    cyEdgeAttrs.setAttribute(edge.getIdentifier(), prefix + EnrichmentMapVisualStyle.HYPERGEOM_N, geneset_similarities.get(edge_name).getHypergeom_N());
+//                    cyEdgeAttrs.setAttribute(edge.getIdentifier(), prefix + EnrichmentMapVisualStyle.HYPERGEOM_n, geneset_similarities.get(edge_name).getHypergeom_n());
+//                    cyEdgeAttrs.setAttribute(edge.getIdentifier(), prefix + EnrichmentMapVisualStyle.HYPERGEOM_m, geneset_similarities.get(edge_name).getHypergeom_m());
+//                    cyEdgeAttrs.setAttribute(edge.getIdentifier(), prefix + EnrichmentMapVisualStyle.HYPERGEOM_k, geneset_similarities.get(edge_name).getHypergeom_k());
                     
                     // Attributes related to the Mann-Whitney Test
                     cyEdgeAttrs.setAttribute(edge.getIdentifier(), prefix + EnrichmentMapVisualStyle.MANN_WHIT_PVALUE, geneset_similarities.get(edge_name).getMann_Whit_pValue());

@@ -158,8 +158,6 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
     private int signature_filterMetric;
     
     //Disease Signature rank test
-    private int rankCutoffValue;
-    private double default_rankCutoff_value = 0.05;
     private int default_signature_rankTest = MANN_WHIT;
     private int signature_rankTest;
     private double default_signature_Mann_Whit_Cutoff = 0.05;

@@ -334,7 +334,7 @@ public class GenesetSimilarity {
 	 * @param double mann_whit_pvalue
 	 * @return null
 	 */
-	public void setMannWhitney_pValue(double mann_whit_pvalue) {
+	public void setMann_Whit_pValue(double mann_whit_pvalue) {
 		this.mann_whit_pvalue = mann_whit_pvalue;
 	}
 

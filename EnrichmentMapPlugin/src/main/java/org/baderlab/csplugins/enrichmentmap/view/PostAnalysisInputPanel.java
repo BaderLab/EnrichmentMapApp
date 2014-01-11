@@ -192,7 +192,8 @@ public class PostAnalysisInputPanel extends JPanel {
         knownSigPaParams = EnrichmentMapManager.getInstance().getMap(Cytoscape.getCurrentNetwork().getIdentifier()).getPaParams();
         sigDiscoveryPaParams = new PostAnalysisParameters();
         sigDiscoveryPaParams.copyFrom(knownSigPaParams);
-        paParams = sigDiscoveryPaParams;
+        paParams = knownSigPaParams;
+        paParams.setSignatureHub(false);
 
         //create the three main panels: scope, advanced options, and bottom
         JPanel AnalysisTypePanel = createAnalysisTypePanel();
@@ -201,7 +202,7 @@ public class PostAnalysisInputPanel extends JPanel {
 
         userInputPanel = new CollapsiblePanel("User Input");
         userInputPanel.setCollapsed(false);
-        optionsPanel = getSignatureDiscoveryOptionsPanel();
+        optionsPanel = getKnownSignatureOptionsPanel();
         userInputPanel.getContentPane().add(optionsPanel);
         JScrollPane scrollPane = new JScrollPane(userInputPanel);
         //scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
@@ -279,16 +280,6 @@ public class PostAnalysisInputPanel extends JPanel {
         c.insets = new Insets(0,0,0,0);
         c.fill = GridBagConstraints.HORIZONTAL;
         panel.setBorder(BorderFactory.createTitledBorder("Post Analysis Type"));
-
-        // Signature Discovery
-        signatureDiscovery = new JRadioButton("Signature Discovery", paParams.isSignatureDiscovery());
-        signatureDiscovery.setActionCommand("Signature Discovery");
-        signatureDiscovery.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                selectAnalysisTypeActionPerformed(evt);
-            }
-        });
-        signatureDiscovery.setSelected(true);
         
         // Known Signature
         knownSignature = new JRadioButton("Known Signature", paParams.isKnownSignature());
@@ -298,20 +289,30 @@ public class PostAnalysisInputPanel extends JPanel {
                 selectAnalysisTypeActionPerformed(evt);
             }
         });        
-        
+        knownSignature.setSelected(true);
+
+        // Signature Discovery
+        signatureDiscovery = new JRadioButton("Signature Discovery", paParams.isSignatureDiscovery());
+        signatureDiscovery.setActionCommand("Signature Discovery");
+        signatureDiscovery.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                selectAnalysisTypeActionPerformed(evt);
+            }
+        });
+
         ButtonGroup analysisOptions = new ButtonGroup();
-        analysisOptions.add(signatureDiscovery);
         analysisOptions.add(knownSignature);
+        analysisOptions.add(signatureDiscovery);
 
         c.gridx = 0;
         c.gridwidth = 3;
         c.gridy = 0;
-        gridbag.setConstraints(signatureDiscovery, c);
-        panel.add(signatureDiscovery);
-        
-        c.gridy = 1;
         gridbag.setConstraints(knownSignature, c);
         panel.add(knownSignature);
+        
+        c.gridy = 1;
+        gridbag.setConstraints(signatureDiscovery, c);
+        panel.add(signatureDiscovery);
         
         JPanel topPanel = new JPanel();
         topPanel.setLayout(new BorderLayout());
@@ -733,7 +734,6 @@ public class PostAnalysisInputPanel extends JPanel {
      * @return CollapsiblePanel to set PostAnalysisParameters 
      */
     private CollapsiblePanel createKnownSignatureParametersPanel() {
-        String[] sigCutoffItems = PostAnalysisParameters.sigCutoffItems;
         CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Edge Weight Calculation Parameters");
         
         JPanel panel = new JPanel();
@@ -760,6 +760,7 @@ public class PostAnalysisInputPanel extends JPanel {
         panel.add(rankingCombo);
         
         knownSignatureRankTestTextField = new JFormattedTextField();
+        knownSignatureRankTestTextField.addPropertyChangeListener("value", new PostAnalysisInputPanel.FormattedTextFieldAction());
         
         String[] rankTestItems = PostAnalysisParameters.rankTestItems;
         knownSignatureRankTestCombo = new JComboBox();
@@ -822,6 +823,7 @@ public class PostAnalysisInputPanel extends JPanel {
         panel.add(rankingCombo);
         
         signatureDiscoveryRankTestTextField = new JFormattedTextField();
+        signatureDiscoveryRankTestTextField.addPropertyChangeListener("value", new PostAnalysisInputPanel.FormattedTextFieldAction());
         
         String[] rankTestItems = PostAnalysisParameters.rankTestItems;
         signatureDiscoveryRankTestCombo = new JComboBox();
@@ -927,6 +929,14 @@ public class PostAnalysisInputPanel extends JPanel {
 //                    paParams.setSelectedSignatureSetNames(new DefaultListModel());
                 }
             } 
+            else if (source == knownSignatureRankTestTextField) {
+            	String value = knownSignatureRankTestTextField.getText();
+            	paParams.setSignature_Mann_Whit_Cutoff(Double.parseDouble(value));
+            }
+            else if (source == signatureDiscoveryRankTestTextField) {
+            	String value = signatureDiscoveryRankTestTextField.getText();
+            	paParams.setSignature_Mann_Whit_Cutoff(Double.parseDouble(value));
+            }
             else if (source == filterTextField) {
                 Number value = (Number) filterTextField.getValue();
                 //if the filter type is percent then make sure the number entered is between 0 and 100
