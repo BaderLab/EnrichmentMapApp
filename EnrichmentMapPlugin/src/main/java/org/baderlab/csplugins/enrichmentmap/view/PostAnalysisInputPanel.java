@@ -788,6 +788,50 @@ public class PostAnalysisInputPanel extends JPanel {
         cutoffPanel.add(knownSignatureRankTestTextField);
 
         panel.add(cutoffPanel);
+        
+        // Create Universe selection panel
+        CollapsiblePanel universeSelectionPanel = new CollapsiblePanel("Advanced");
+        universeSelectionPanel.setCollapsed(false);
+        GridBagLayout gridbag = new GridBagLayout();
+        GridBagConstraints c = new GridBagConstraints();
+        c.weighty = 1;
+        c.weightx = 1;
+        c.insets = new Insets(0,0,0,0);
+        c.fill = GridBagConstraints.HORIZONTAL;
+        universeSelectionPanel.getContentPane().setLayout(gridbag);
+        
+        JRadioButton GMTRadioButton = new JRadioButton("GMT");
+        GMTRadioButton.setSelected(true);
+        JRadioButton ExpressionSetRadioButton = new JRadioButton("Expression Set");
+        JRadioButton IntersectionRadioButton = new JRadioButton("Intersection");
+        JRadioButton UserDefinedRadioButton = new JRadioButton("User Defined");
+        
+        ButtonGroup universeSelectionOptions = new ButtonGroup();
+        universeSelectionOptions.add(GMTRadioButton);
+        universeSelectionOptions.add(ExpressionSetRadioButton);
+        universeSelectionOptions.add(IntersectionRadioButton);
+        universeSelectionOptions.add(UserDefinedRadioButton);
+
+        c.gridx = 0;
+        c.gridwidth = 3;
+        c.gridy = 0;
+        gridbag.setConstraints(GMTRadioButton, c);
+        universeSelectionPanel.getContentPane().add(GMTRadioButton);
+        
+        c.gridy = 1;
+        gridbag.setConstraints(ExpressionSetRadioButton, c);
+        universeSelectionPanel.getContentPane().add(ExpressionSetRadioButton);
+
+        c.gridy = 2;
+        gridbag.setConstraints(IntersectionRadioButton, c);
+        universeSelectionPanel.getContentPane().add(IntersectionRadioButton);
+        
+        c.gridy = 3;
+        gridbag.setConstraints(UserDefinedRadioButton, c);
+        universeSelectionPanel.getContentPane().add(UserDefinedRadioButton);
+        
+        panel.add(universeSelectionPanel);
+        
         collapsiblePanel.getContentPane().add(panel, BorderLayout.NORTH);
         return collapsiblePanel;
     }
@@ -852,6 +896,50 @@ public class PostAnalysisInputPanel extends JPanel {
         cutoffPanel.add(signatureDiscoveryRankTestTextField);
 
         panel.add(cutoffPanel);
+        
+        // Create Universe selection panel
+        CollapsiblePanel universeSelectionPanel = new CollapsiblePanel("Advanced");
+        universeSelectionPanel.setCollapsed(false);
+        GridBagLayout gridbag = new GridBagLayout();
+        GridBagConstraints c = new GridBagConstraints();
+        c.weighty = 1;
+        c.weightx = 1;
+        c.insets = new Insets(0,0,0,0);
+        c.fill = GridBagConstraints.HORIZONTAL;
+        universeSelectionPanel.getContentPane().setLayout(gridbag);
+        
+        JRadioButton GMTRadioButton = new JRadioButton("GMT");
+        GMTRadioButton.setSelected(true);
+        JRadioButton ExpressionSetRadioButton = new JRadioButton("Expression Set");
+        JRadioButton IntersectionRadioButton = new JRadioButton("Intersection");
+        JRadioButton UserDefinedRadioButton = new JRadioButton("User Defined");
+        
+        ButtonGroup universeSelectionOptions = new ButtonGroup();
+        universeSelectionOptions.add(GMTRadioButton);
+        universeSelectionOptions.add(ExpressionSetRadioButton);
+        universeSelectionOptions.add(IntersectionRadioButton);
+        universeSelectionOptions.add(UserDefinedRadioButton);
+
+        c.gridx = 0;
+        c.gridwidth = 3;
+        c.gridy = 0;
+        gridbag.setConstraints(GMTRadioButton, c);
+        universeSelectionPanel.getContentPane().add(GMTRadioButton);
+        
+        c.gridy = 1;
+        gridbag.setConstraints(ExpressionSetRadioButton, c);
+        universeSelectionPanel.getContentPane().add(ExpressionSetRadioButton);
+
+        c.gridy = 2;
+        gridbag.setConstraints(IntersectionRadioButton, c);
+        universeSelectionPanel.getContentPane().add(IntersectionRadioButton);
+        
+        c.gridy = 3;
+        gridbag.setConstraints(UserDefinedRadioButton, c);
+        universeSelectionPanel.getContentPane().add(UserDefinedRadioButton);
+        
+        panel.add(universeSelectionPanel);
+        
         collapsiblePanel.getContentPane().add(panel, BorderLayout.NORTH);
         return collapsiblePanel;
     }
