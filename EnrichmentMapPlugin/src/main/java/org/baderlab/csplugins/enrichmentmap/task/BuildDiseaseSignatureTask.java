@@ -47,9 +47,6 @@ import giny.view.NodeView;
 
 import java.util.*;
 
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-
 import org.apache.commons.math3.stat.inference.MannWhitneyUTest;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapVisualStyle;
