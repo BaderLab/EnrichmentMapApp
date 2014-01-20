@@ -794,9 +794,13 @@ public class EnrichmentMapParameters {
  		}*/
  		//if there are no expression files and this is a david analysis there is no way of telling if they are from the same gmt file so use different one
  		/*else*/ if((this.twoDatasets) && this.method.equalsIgnoreCase(EnrichmentMapParameters.method_DAVID) 
- 				&& (this.files.get(EnrichmentMap.DATASET1).getExpressionFileName() != null) && (this.files.get(EnrichmentMap.DATASET2).getExpressionFileName() != null)){
+ 				&& (this.files.get(EnrichmentMap.DATASET1).getExpressionFileName() != null) && (this.files.get(EnrichmentMap.DATASET2) != null)
+ 				&& (this.files.get(EnrichmentMap.DATASET2).getExpressionFileName() != null)){
  			this.setTwoDistinctExpressionSets(true);
  		}
+ 		//make sure that if the user added Dataset2 files but subsequently deleted them that we have updated twodataset parameter
+ 		if((this.twoDatasets) && ((this.files.get(EnrichmentMap.DATASET1) == null) || (this.files.get(EnrichmentMap.DATASET2) == null)))
+ 				this.setTwoDatasets(false);
  		
         return errors;
     }
