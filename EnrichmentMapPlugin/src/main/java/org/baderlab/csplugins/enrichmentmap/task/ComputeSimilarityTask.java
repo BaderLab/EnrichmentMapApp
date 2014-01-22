@@ -108,16 +108,20 @@ public class ComputeSimilarityTask implements Task {
         this.type = type;
     }    
     
-    public boolean computeGenesetSimilarities(){
+    public boolean computeGenesetSimilarities() throws Exception{
         try{
-            HashMap<String, GeneSet> genesetsOfInterest = map.getAllGenesetsOfInterest();
+        	HashMap<String, GeneSet> genesetsOfInterest;
+        	if(map.getParams().isTwoDistinctExpressionSets())               
+            genesetsOfInterest = map.getDataset(EnrichmentMap.DATASET1).getGenesetsOfInterest().getGenesets();
+        	else	
+        		genesetsOfInterest = map.getAllGenesetsOfInterest();
             
             //if there are no gene sets of interest check to see if there are any genesets to use
             /*if(genesetsOfInterest == null || genesetsOfInterest.isEmpty())
             		genesetsOfInterest = map.getAllGenesets();*/
             if((genesetsOfInterest == null || genesetsOfInterest.isEmpty()))
-            		JOptionPane.showMessageDialog(null,"There are no genesets to compute similarity between.\nNone of the Genesets passes p-value and q-value filter", "No genesets", JOptionPane.INFORMATION_MESSAGE);
-            
+            		//JOptionPane.showMessageDialog(null,"There are no genesets to compute similarity between.\nNone of the Genesets passes p-value and q-value filter", "No genesets", JOptionPane.INFORMATION_MESSAGE);
+            		throw new Exception("There are no genesets to compute similarity between.\nNone of the Genesets passes p-value and q-value filter");
             HashMap genesetsInnerLoop;
             String edgeType = "pp";
             
@@ -562,7 +566,12 @@ public class ComputeSimilarityTask implements Task {
        * Run the Task.
        */
       public void run() {
-         computeGenesetSimilarities();
+    	  		try{
+    	  			computeGenesetSimilarities();
+    	  		}catch(Exception e){
+    	  			halt();
+    	  			this.taskMonitor.setException(e, e.getMessage());
+    	  		}
       }
 
       /**

@@ -57,6 +57,7 @@ import org.baderlab.csplugins.enrichmentmap.model.GenericResult;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfEnrichmentResults;
 
 import java.io.File;
+import java.text.ParseException;
 import java.util.HashMap;
 
 /**
@@ -139,7 +140,7 @@ public class EnrichmentResultFileReaderTask implements Task {
     /**
      * Parse enrichment results file
      */
-    public void parse() {
+    public void parse() throws ParseException{
     	
     		if(this.EnrichmentResultFileName1 != null && !this.EnrichmentResultFileName1.isEmpty())
     			readFile(this.EnrichmentResultFileName1);
@@ -152,7 +153,7 @@ public class EnrichmentResultFileReaderTask implements Task {
     /*
      * Read file
      */
-    public void readFile(String EnrichmentResultFileName){
+    public void readFile(String EnrichmentResultFileName) throws ParseException{
     		//check to see if the enrichment file is an edb file
     		if(EnrichmentResultFileName.endsWith(".edb")){    			
     			ParseEDBEnrichmentResults edbparser = new ParseEDBEnrichmentResults(new File(EnrichmentResultFileName));    			
@@ -772,7 +773,12 @@ public class EnrichmentResultFileReaderTask implements Task {
      * Run the Task.
      */
     public void run() {
-        parse();
+        try {
+			parse();
+		} catch (ParseException e) {
+			halt();
+			this.taskMonitor.setException(e, e.getMessage());
+		}
     }
 
     /**

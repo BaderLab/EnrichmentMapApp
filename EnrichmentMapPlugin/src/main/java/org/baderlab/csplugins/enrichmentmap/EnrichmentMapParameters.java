@@ -323,7 +323,7 @@ public class EnrichmentMapParameters {
         pvalueSlider = new SliderBarPanel(0,this.pvalue,"P-value Cutoff",this, EnrichmentMapVisualStyle.PVALUE_DATASET1, EnrichmentMapVisualStyle.PVALUE_DATASET2,ParametersPanel.summaryPanelWidth, false, this.pvalue);
 
         //create the slider for the qvalue
-        qvalueSlider = new SliderBarPanel(0,this.qvalue,"Q-value Cutoff",this, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2,ParametersPanel.summaryPanelWidth, false, this.pvalue);
+        qvalueSlider = new SliderBarPanel(0,this.qvalue,"Q-value Cutoff",this, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2,ParametersPanel.summaryPanelWidth, false, this.qvalue);
 
         //create the slider for the similarity cutoff
         similaritySlider = new SliderBarPanel(this.similarityCutOff,1,"Similarity Cutoff",this, EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT, EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT,ParametersPanel.summaryPanelWidth, true, this.similarityCutOff);
@@ -436,6 +436,10 @@ public class EnrichmentMapParameters {
     					new_dsf.setClassFile(checkForNull(props,current_ds+ "%" + DataSetFiles.class.getSimpleName() + "%classFile"));
     				if(props.containsKey(current_ds + "%" + DataSetFiles.class.getSimpleName() + "%RankedFile"))
     					new_dsf.setRankedFile(checkForNull(props,current_ds + "%" + DataSetFiles.class.getSimpleName() + "%RankedFile"));
+    				if(props.containsKey(current_ds + "%" + DataSetFiles.class.getSimpleName() + "%Phenotype1"))
+    					new_dsf.setPhenotype1(checkForNull(props,current_ds + "%" + DataSetFiles.class.getSimpleName() + "%Phenotype1"));
+    				if(props.containsKey(current_ds + "%" + DataSetFiles.class.getSimpleName() + "%Phenotype2"))
+    					new_dsf.setPhenotype2(checkForNull(props,current_ds + "%" + DataSetFiles.class.getSimpleName() + "%Phenotype2"));
     				
     				this.files.put(current_ds, new_dsf);
     				
@@ -740,7 +744,7 @@ public class EnrichmentMapParameters {
     * to see if the current set of enrichment map parameters has the minimal amount
     * of information to run enrichment maps.
     *
-    * If it is a GSEA run then gmt,gct,2 enrichment files are needed
+    * If it is a GSEA run then gmt,gct,2 enrichment files are needed OR gmt and edb file
     * If it is a generic run then gmt and 1 enrichment file is needed
     * if there are two datasets then depending on type it requires the same as above.
     *
@@ -774,7 +778,9 @@ public class EnrichmentMapParameters {
 
          		// /GSEA inputs
          		if(this.method.equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)){
-         			if(dsFiles.getEnrichmentFileName2() != null && (dsFiles.getEnrichmentFileName2().equalsIgnoreCase("") || !checkFile(dsFiles.getEnrichmentFileName2())))
+         			if(dsFiles.getEnrichmentFileName2() != null && 
+         					(dsFiles.getEnrichmentFileName2().equalsIgnoreCase("") || !checkFile(dsFiles.getEnrichmentFileName2())) &&
+         					!dsFiles.getEnrichmentFileName1().contains("results.edb"))
          				errors = errors + "Dataset 1, enrichment file 2 can not be found\n";         			
          		}       		
          	}

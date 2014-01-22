@@ -46,8 +46,6 @@ package org.baderlab.csplugins.enrichmentmap.view;
 import cytoscape.view.CytoscapeDesktop;
 import cytoscape.view.cytopanels.CytoPanel;
 import cytoscape.Cytoscape;
-import cytoscape.task.Task;
-import cytoscape.task.TaskMonitor;
 import cytoscape.task.ui.JTaskConfig;
 import cytoscape.task.util.TaskManager;
 import cytoscape.util.CyFileFilter;
@@ -59,7 +57,6 @@ import javax.swing.*;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapUtils;
-import org.baderlab.csplugins.enrichmentmap.Enrichment_Map_Plugin;
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.actions.BuildPostAnalysisActionListener;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowAboutPanelAction;
@@ -67,7 +64,6 @@ import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.JMultiLineToolTip;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
-import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
 import org.baderlab.csplugins.enrichmentmap.task.LoadSignatureGMTFilesTask;
 
 import java.awt.*;
@@ -77,10 +73,9 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.text.DecimalFormat;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.io.File;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.HashSet;
 
 /**
  * Created by
@@ -184,9 +179,17 @@ public class PostAnalysisInputPanel extends JPanel {
         datasetMap = map.getDatasets();
         rankingMap = map.getAllRanks();
         EnrichmentMapParameters emParams = map.getParams();
-        if (emParams == null){
+        if(map != null){
+        		emParams = map.getParams();
+        		// create instance of PostAnalysisParameters an initialize with EnrichmentMapParameters
+        		paParams = map.getPaParams();
+        }else
+        		JOptionPane.showMessageDialog(this, "No Enrichment map was detected.  \nCan only perform Post Analysis on existing Enrichment map.");
+
+        if (emParams == null)
             emParams = new EnrichmentMapParameters();
-        }
+        if(paParams == null)
+        		paParams = new PostAnalysisParameters();
         
         // create instance of PostAnalysisParameters an initialize with EnrichmentMapParameters
         knownSigPaParams = EnrichmentMapManager.getInstance().getMap(Cytoscape.getCurrentNetwork().getIdentifier()).getPaParams();
@@ -840,7 +843,6 @@ public class PostAnalysisInputPanel extends JPanel {
      * @return CollapsiblePanel to set PostAnalysisParameters 
      */
     private CollapsiblePanel createSignatureDiscoveryParametersPanel() {
-        String[] sigCutoffItems = PostAnalysisParameters.sigCutoffItems;
         CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Edge Weight Calculation Parameters");
         
         JPanel panel = new JPanel();
@@ -1305,18 +1307,18 @@ public class PostAnalysisInputPanel extends JPanel {
      * @param current_params
      */
     public void updateContents(EnrichmentMapParameters current_params){
-        this.paParams = EnrichmentMapManager.getInstance().getMap(Cytoscape.getCurrentNetwork().getIdentifier()).getPaParams();
-       
-        // Gene-Set Files:
-        knownSignatureGMTFileNameTextField.setText(this.paParams.getSignatureGMTFileName());
-        knownSignatureGMTFileNameTextField.setValue(this.paParams.getSignatureGMTFileName());
-        
-        // Gene-Set Selection:
-        this.avail_sig_sets    = this.paParams.getSignatureSetNames();
-        this.avail_sig_sets_field.setModel(this.avail_sig_sets);
-        this.selected_sig_sets = this.paParams.getSelectedSignatureSetNames();
-        this.selected_sig_sets_field.setModel(this.selected_sig_sets);
-        
+    		EnrichmentMap currentMap = EnrichmentMapManager.getInstance().getMap(Cytoscape.getCurrentNetwork().getIdentifier());
+    		if(currentMap != null){
+    			this.paParams = currentMap.getPaParams();
+    	        // Gene-Set Files:
+    	        knownSignatureGMTFileNameTextField.setText(this.paParams.getSignatureGMTFileName());
+    	        knownSignatureGMTFileNameTextField.setValue(this.paParams.getSignatureGMTFileName());
+    	        // Gene-Set Selection:
+    	        this.avail_sig_sets    = this.paParams.getSignatureSetNames();
+    	        this.avail_sig_sets_field.setModel(this.avail_sig_sets);
+    	        this.selected_sig_sets = this.paParams.getSelectedSignatureSetNames();
+    	        this.selected_sig_sets_field.setModel(this.selected_sig_sets);  
+    		}
     }
 
     

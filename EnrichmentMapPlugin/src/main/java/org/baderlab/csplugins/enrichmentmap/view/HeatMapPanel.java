@@ -152,6 +152,7 @@ public class HeatMapPanel extends JPanel {
 
     //for displaying leading edge
     private boolean displayLeadingEdge = false;
+    private boolean OnlyLeadingEdge = false;
     private double leadingEdgeScoreAtMax1 = 0;
     private double leadingEdgeScoreAtMax2 = 0;
     private int leadingEdgeRankAtMax1 = 0;
@@ -416,7 +417,15 @@ public class HeatMapPanel extends JPanel {
                         tcModel.getColumn(i).setPreferredWidth(50);
                     else{
                         tcModel.getColumn(i).setPreferredWidth(defaultColumnwidth);
-                        if(phenotypes != null){
+                        /*If the class file is made from within GSEA but the expression file
+                         * has more than one class defined in it there is no way to align
+                         * the class file to the expression file.
+                         * the phenotypes have two less positions because the phenotype file
+                         * doesn't define the name and description columns
+                         * In this case use the default renderer
+                         * Ticket #225
+                         */                  
+                        if(phenotypes != null && (phenotypes.length +2) == columnNames.length){
                             if(phenotypes[i-2].equalsIgnoreCase(Dataset1phenotype1))
                                 tcModel.getColumn(i).setHeaderRenderer(pheno1_renderer);
                             else if(phenotypes[i-2].equalsIgnoreCase(Dataset1phenotype2))
@@ -643,7 +652,10 @@ public class HeatMapPanel extends JPanel {
                 significant_gene = true;
             else if(ranks_subset[m] >= topRank && isNegative && topRank != 0 && topRank != -1)
                 significant_gene = true;
-
+          //if we are only displaying the leading edge (can only do for individual nodes)
+            if(OnlyLeadingEdge == true && significant_gene == false && topRank >0)
+            		continue;
+            
             ArrayList<Integer> keys = rank2keys.get(ranks_subset[m]);
 
             for(Iterator<Integer> p = keys.iterator();p.hasNext();){
@@ -868,6 +880,10 @@ public class HeatMapPanel extends JPanel {
                 significant_gene = true;
             else if(ranks_subset[m] >= topRank && isNegative && topRank != 0 && topRank != -1)
                 significant_gene = true;
+            
+            //if we are only displaying the leading edge (can only do for individual nodes)
+            if(OnlyLeadingEdge == true && significant_gene == false && topRank >0)
+            		continue;
 
             ArrayList<Integer> keys = rank2keys.get(ranks_subset[m]);
 
@@ -1177,6 +1193,14 @@ public class HeatMapPanel extends JPanel {
             }
             else if(response == JOptionPane.YES_OPTION || response == JOptionPane.OK_OPTION){
                     try{
+                    	
+                    		//ask user if they want to export only the leading edge.
+                    		//only ask if the leadingedge is displayed
+                    		if(this.displayLeadingEdge == true && hmParams.getSort() == HeatMapParameters.Sort.RANK && params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)){
+                    			int response2 = JOptionPane.showConfirmDialog(this, "Would you like to save the leading edge only?");
+                    			if(response2 == JOptionPane.YES_OPTION || response2 == JOptionPane.OK_OPTION)
+                    				this.OnlyLeadingEdge = true;
+                    		}
                         BufferedWriter output = new BufferedWriter(new FileWriter(file));
                         String[] currentColumns;
                         if(params.isData2() &&  map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null
@@ -1204,13 +1228,18 @@ public class HeatMapPanel extends JPanel {
 
                         for(int k = 0; k < sortedExpression.length; k++){
                             for(int l = 0; l< sortedExpression[k].length; l++)
-                                output.write(sortedExpression[k][l].toString() + "\t");
+                            		if(sortedExpression[k][l] != null)
+                            			output.write(sortedExpression[k][l].toString() + "\t");
+                            		else
+                            			output.write(""+"\t");
                             output.write("\n");
                         }
 
                         output.flush();
                         output.close();
                         JOptionPane.showMessageDialog(this, "File " + fileName + " saved.");
+                        
+                        this.OnlyLeadingEdge = false;
                     }catch(IOException e){
                         JOptionPane.showMessageDialog(this, "unable to write to file " + fileName);
                 }

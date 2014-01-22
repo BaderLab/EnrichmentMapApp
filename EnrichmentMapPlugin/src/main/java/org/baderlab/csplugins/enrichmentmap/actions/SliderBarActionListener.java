@@ -294,7 +294,7 @@ public class SliderBarActionListener implements ChangeListener {
         //remove the unhidden edges from the list of hiddenEdges.
         for(Iterator k = unhiddenEdges.iterator();k.hasNext();)
             hiddenEdges.remove(k.next());
-
+        
         view.redrawGraph(true,true);
         view.updateView();
 
@@ -315,15 +315,14 @@ public class SliderBarActionListener implements ChangeListener {
 
         //get the prefix of the current network
         String prefix = params.getAttributePrefix();
-        //go through all the existing nodes to see if we need to hide any new nodes.
 
 
         for(int i = 0; i< edges.length; i++){
             Edge currentEdge = network.getEdge(edges[i]);
 
             // skip Node if it's not an Enrichment-Geneset (but e.g. a Signature-Hub)
-            if( attributes.hasAttribute(currentEdge.getIdentifier(), prefix + EnrichmentMapVisualStyle.GS_TYPE)
-                && ! EnrichmentMapVisualStyle.GS_TYPE_ENRICHMENT.equalsIgnoreCase(attributes.getStringAttribute(currentEdge.getIdentifier(), prefix + EnrichmentMapVisualStyle.GS_TYPE)) )
+            if( attributes.hasAttribute(currentEdge.getIdentifier(), "interaction")
+                && EnrichmentMapVisualStyle.GS_TYPE_SIGNATURE.equalsIgnoreCase(attributes.getStringAttribute(currentEdge.getIdentifier(), "interaction")) )
                 continue;
 
             Double similarity_cutoff = attributes.getDoubleAttribute(currentEdge.getIdentifier(), prefix + attrib_dataset1);
@@ -351,8 +350,13 @@ public class SliderBarActionListener implements ChangeListener {
 
 
             if((similarity_curoff <= max_cutoff) && (similarity_curoff >= min_cutoff)){
-                network.restoreEdge(currentEdge);
-                unhiddenEdges.add(currentEdge);
+            		//need to check if the edge that is about to be restored does not actually connect to a node that 
+            		//is already hidden
+            		if((network.getNode(currentEdge.getSource().getRootGraphIndex()) != null) &&
+                   (network.getNode(currentEdge.getTarget().getRootGraphIndex()) != null)){
+                        network.restoreEdge(currentEdge);
+                        unhiddenEdges.add(currentEdge);
+                    }
 
             }
         }
