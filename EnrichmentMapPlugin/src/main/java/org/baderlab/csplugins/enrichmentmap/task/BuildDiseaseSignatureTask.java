@@ -203,17 +203,13 @@ public class BuildDiseaseSignatureTask implements Task {
             for (Iterator<String> i = SelectedSignatureGenesets.keySet().iterator(); i.hasNext(); ){
                 String hub_name = i.next().toString();
                 
-                GeneSet sigGeneSet;
-                
+                // get the Signature Genes, restrict them to the Gene-Universe and add them to the Parameters
+                GeneSet sigGeneSet = SelectedSignatureGenesets.get(hub_name);
+
                 // Check to see if the signature geneset shares the same name with an 
                 // enrichment geneset. If it does, give the signature geneset a unique name
                 if (EnrichmentGenesets.containsKey(hub_name)) {
-                    sigGeneSet = SelectedSignatureGenesets.remove(hub_name);
                 	hub_name = "PA_" + hub_name;
-                	SelectedSignatureGenesets.put(hub_name, sigGeneSet);
-                } else {
-	                // get the Signature Genes, restrict them to the Gene-Universe and add them to the Parameters
-	                sigGeneSet = SelectedSignatureGenesets.get(hub_name);
                 }
 
                 /** 
@@ -296,7 +292,7 @@ public class BuildDiseaseSignatureTask implements Task {
                         if (intersection.size() > 0) {
                         	
                             Object[] overlap_gene_ids = intersection.toArray();
-                            double[] overlap_gene_scores = new double[intersection.size()];
+                            double[] overlap_gene_scores = new double[overlap_gene_ids.length];
                             
                             // Get the scores for the overlap
                             for (int k = 0; k < overlap_gene_ids.length; k++) {
