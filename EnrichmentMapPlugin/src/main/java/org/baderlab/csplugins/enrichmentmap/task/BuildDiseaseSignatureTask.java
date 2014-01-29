@@ -47,6 +47,8 @@ import giny.view.NodeView;
 
 import java.util.*;
 
+import javax.swing.JOptionPane;
+
 import org.apache.commons.math3.stat.inference.MannWhitneyUTest;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapVisualStyle;
@@ -201,8 +203,18 @@ public class BuildDiseaseSignatureTask implements Task {
             for (Iterator<String> i = SelectedSignatureGenesets.keySet().iterator(); i.hasNext(); ){
                 String hub_name = i.next().toString();
                 
-                // get the Signature Genes, restrict them to the Gene-Universe and add them to the Parameters
-                GeneSet sigGeneSet = SelectedSignatureGenesets.get(hub_name);
+                GeneSet sigGeneSet;
+                
+                // Check to see if the signature geneset shares the same name with an 
+                // enrichment geneset. If it does, give the signature geneset a unique name
+                if (EnrichmentGenesets.containsKey(hub_name)) {
+                    sigGeneSet = SelectedSignatureGenesets.remove(hub_name);
+                	hub_name = "PA_" + hub_name;
+                	SelectedSignatureGenesets.put(hub_name, sigGeneSet);
+                } else {
+	                // get the Signature Genes, restrict them to the Gene-Universe and add them to the Parameters
+	                sigGeneSet = SelectedSignatureGenesets.get(hub_name);
+                }
 
                 /** 
                  * the signature genes in this signature gene set 
@@ -222,7 +234,7 @@ public class BuildDiseaseSignatureTask implements Task {
                 // iterate over Enrichment Genesets
                 for (Iterator<String> j = EnrichmentGenesets.keySet().iterator(); j.hasNext();) {
                     String geneset_name = j.next().toString();
-
+                  
                     // Calculate Percentage.  This must be a value between 0..100.
                     int percentComplete = (int) (((double) currentProgress / maxValue) * 100);
                     //  Estimate Time Remaining
@@ -246,12 +258,11 @@ public class BuildDiseaseSignatureTask implements Task {
                     //or name2_name1
                     String similarity_key1 = hub_name     + " (" + PostAnalysisParameters.SIGNATURE_INTERACTION_TYPE + ") " + geneset_name;
                     String similarity_key2 = geneset_name + " (" + PostAnalysisParameters.SIGNATURE_INTERACTION_TYPE + ") " + hub_name;
-
+                    
                     //first check to see if the terms are the same
                     if(hub_name.equalsIgnoreCase(geneset_name)) {
                        //don't compare two identical genesets
-                    }
-                    else if (! nodesMap.containsKey(geneset_name)) {
+                    }else if (! nodesMap.containsKey(geneset_name)) {
                         // skip if the Geneset is not in the Network
                     } 
                     else if (cyNodeAttrs.getStringAttribute(nodesMap.get(geneset_name).getIdentifier(),
@@ -318,13 +329,6 @@ public class BuildDiseaseSignatureTask implements Task {
 	                        
 	                        //create Geneset similarity object
 	                        GenesetSimilarity comparison = new GenesetSimilarity(hub_name, geneset_name, coeffecient, PostAnalysisParameters.SIGNATURE_INTERACTION_TYPE, (HashSet<Integer>)intersection);
-	                        
-	                        // Set Hypergeometric Parameters
-	                        //comparison.setHypergeom_pvalue();
-	                        //comparison.setHypergeom_N(N);
-	                       // comparison.setHypergeom_n(n);
-	                        //comparison.setHypergeom_m(m);
-	                        //comparison.setHypergeom_k(k);
 	                        
 	                        // Calculate Mann-Whitney U pValue for Overlap
 	                        MannWhitneyUTest mann_whit = new MannWhitneyUTest();

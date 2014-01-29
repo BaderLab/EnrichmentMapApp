@@ -804,10 +804,34 @@ public class PostAnalysisInputPanel extends JPanel {
         universeSelectionPanel.getContentPane().setLayout(gridbag);
         
         JRadioButton GMTRadioButton = new JRadioButton("GMT");
+        GMTRadioButton.setActionCommand("GMT");
+        GMTRadioButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                selectUniverseActionPerformed(evt);
+            }
+        });
         GMTRadioButton.setSelected(true);
         JRadioButton ExpressionSetRadioButton = new JRadioButton("Expression Set");
+        ExpressionSetRadioButton.setActionCommand("Expression Set");
+        ExpressionSetRadioButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                selectUniverseActionPerformed(evt);
+            }
+        });
         JRadioButton IntersectionRadioButton = new JRadioButton("Intersection");
+        IntersectionRadioButton.setActionCommand("Intersection");
+        IntersectionRadioButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                selectUniverseActionPerformed(evt);
+            }
+        });
         JRadioButton UserDefinedRadioButton = new JRadioButton("User Defined");
+        UserDefinedRadioButton.setActionCommand("User Defined");
+        UserDefinedRadioButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                selectUniverseActionPerformed(evt);
+            }
+        });
         
         ButtonGroup universeSelectionOptions = new ButtonGroup();
         universeSelectionOptions.add(GMTRadioButton);
@@ -1170,6 +1194,18 @@ public class PostAnalysisInputPanel extends JPanel {
         }
     }
     
+    private void selectUniverseActionPerformed(ActionEvent evt){
+        String analysisType = evt.getActionCommand();
+        if (analysisType.equalsIgnoreCase("GMT")) {
+        	paParams.setGMTFileName("");
+        } else if (analysisType.equalsIgnoreCase("Expression Set")) {
+        	
+        } else if (analysisType.equalsIgnoreCase("Intersection")) {
+        	
+        } else if (analysisType.equalsIgnoreCase("User Defined")) {
+        	
+        }
+    }
         
     private JPanel getKnownSignatureOptionsPanel() {
     	if (knownSignaturePanel == null) {
