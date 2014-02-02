@@ -199,6 +199,8 @@ public class BuildDiseaseSignatureTask implements Task {
             
             HashMap<Integer, Double> gene2score = this.ranks.getGene2Score();
             
+            HashMap<String, String> duplicateGenesets = new HashMap<String, String>();
+            
             //iterate over selected Signature genesets
             for (Iterator<String> i = SelectedSignatureGenesets.keySet().iterator(); i.hasNext(); ){
                 String hub_name = i.next().toString();
@@ -209,6 +211,7 @@ public class BuildDiseaseSignatureTask implements Task {
                 // Check to see if the signature geneset shares the same name with an 
                 // enrichment geneset. If it does, give the signature geneset a unique name
                 if (EnrichmentGenesets.containsKey(hub_name)) {
+                	duplicateGenesets.put(hub_name, "PA_" + hub_name);
                 	hub_name = "PA_" + hub_name;
                 }
 
@@ -233,7 +236,7 @@ public class BuildDiseaseSignatureTask implements Task {
                   
                     // Calculate Percentage.  This must be a value between 0..100.
                     int percentComplete = (int) (((double) currentProgress / maxValue) * 100);
-                    //  Estimate Time Remaining
+                    // Estimate Time Remaining
                     long timeRemaining = maxValue - currentProgress;
                     if (taskMonitor != null) {
                        taskMonitor.setPercentCompleted(percentComplete);
@@ -403,6 +406,18 @@ public class BuildDiseaseSignatureTask implements Task {
                 cyNodeAttrs.setAttribute(hub_node.getIdentifier(), "node.borderColor", paParams.getSignatureHub_borderColor());
                 
             }// End: iterate over Signature Genesets
+            
+            // Update signature geneset map with new names of all signature genesets that
+            // have duplicates
+            String original_hub_name;
+            if (duplicateGenesets.size() > 0) {
+                for (Iterator<String> j = duplicateGenesets.keySet().iterator(); j.hasNext();) {
+                	original_hub_name = j.next().toString();
+                	GeneSet geneset = SelectedSignatureGenesets.remove(original_hub_name);
+                	SelectedSignatureGenesets.put(duplicateGenesets.get(original_hub_name), geneset);
+                }
+                duplicateGenesets.clear();
+            }
             
             paParams.setCurrentNodePlacementY_Offset(currentNodeY_offset);
             
