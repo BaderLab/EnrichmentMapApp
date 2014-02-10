@@ -765,20 +765,24 @@ public class PostAnalysisInputPanel extends JPanel {
         knownSignatureRankTestTextField = new JFormattedTextField();
         knownSignatureRankTestTextField.addPropertyChangeListener("value", new PostAnalysisInputPanel.FormattedTextFieldAction());
         
-        String[] rankTestItems = PostAnalysisParameters.rankTestItems;
+        String[] filterItems = PostAnalysisParameters.filterItems;
         knownSignatureRankTestCombo = new JComboBox();
-        knownSignatureRankTestCombo.addItem(rankTestItems[PostAnalysisParameters.MANN_WHIT]);
+        knownSignatureRankTestCombo.addItem(filterItems[PostAnalysisParameters.MANN_WHIT]);
+        knownSignatureRankTestCombo.addItem(filterItems[PostAnalysisParameters.HYPERGEOM]);
         knownSignatureRankTestCombo.addActionListener( new ActionListener() {
-            String[] rankTestItems = PostAnalysisParameters.rankTestItems;
+            String[] filterItems = PostAnalysisParameters.filterItems;
             public void actionPerformed( ActionEvent e ) {
                 JComboBox selectedChoice = (JComboBox) e.getSource();
-                if (rankTestItems[PostAnalysisParameters.MANN_WHIT].equals( selectedChoice.getSelectedItem())) {
+                if (filterItems[PostAnalysisParameters.MANN_WHIT].equals( selectedChoice.getSelectedItem())) {
                     paParams.setSignature_rankTest(PostAnalysisParameters.MANN_WHIT);
                     knownSignatureRankTestTextField.setValue(paParams.getSignature_Mann_Whit_Cutoff());
+                } else if (filterItems[PostAnalysisParameters.HYPERGEOM].equals( selectedChoice.getSelectedItem())) {
+                    paParams.setSignature_rankTest(PostAnalysisParameters.HYPERGEOM);
+                    knownSignatureRankTestTextField.setValue(paParams.getSignature_Hypergeom_Cutoff());
                 }
             }
         });
-        knownSignatureRankTestCombo.setSelectedItem(rankTestItems[paParams.getDefault_signature_rankTest()]);
+        knownSignatureRankTestCombo.setSelectedItem(filterItems[paParams.getDefault_signature_rankTest()]);
         panel.add(knownSignatureRankTestCombo);
         
         JPanel cutoffLabel = new JPanel();
@@ -895,20 +899,20 @@ public class PostAnalysisInputPanel extends JPanel {
         signatureDiscoveryRankTestTextField = new JFormattedTextField();
         signatureDiscoveryRankTestTextField.addPropertyChangeListener("value", new PostAnalysisInputPanel.FormattedTextFieldAction());
         
-        String[] rankTestItems = PostAnalysisParameters.rankTestItems;
+        String[] filterItems = PostAnalysisParameters.filterItems;
         signatureDiscoveryRankTestCombo = new JComboBox();
-        signatureDiscoveryRankTestCombo.addItem(rankTestItems[PostAnalysisParameters.MANN_WHIT]);
+        signatureDiscoveryRankTestCombo.addItem(filterItems[PostAnalysisParameters.MANN_WHIT]);
         signatureDiscoveryRankTestCombo.addActionListener( new ActionListener() {
-            String[] rankTestItems = PostAnalysisParameters.rankTestItems;
+            String[] filterItems = PostAnalysisParameters.filterItems;
             public void actionPerformed( ActionEvent e ) {
                 JComboBox selectedChoice = (JComboBox) e.getSource();
-                if (rankTestItems[PostAnalysisParameters.MANN_WHIT].equals( selectedChoice.getSelectedItem())) {
+                if (filterItems[PostAnalysisParameters.MANN_WHIT].equals( selectedChoice.getSelectedItem())) {
                     paParams.setSignature_rankTest(PostAnalysisParameters.MANN_WHIT);
                     signatureDiscoveryRankTestTextField.setValue(paParams.getSignature_Mann_Whit_Cutoff());
                 }
             }
         });
-        signatureDiscoveryRankTestCombo.setSelectedItem(rankTestItems[paParams.getDefault_signature_rankTest()]);
+        signatureDiscoveryRankTestCombo.setSelectedItem(filterItems[paParams.getDefault_signature_rankTest()]);
         panel.add(signatureDiscoveryRankTestCombo);
         
         JPanel cutoffLabel = new JPanel();
@@ -1045,7 +1049,13 @@ public class PostAnalysisInputPanel extends JPanel {
             } 
             else if (source == knownSignatureRankTestTextField) {
             	String value = knownSignatureRankTestTextField.getText();
-            	paParams.setSignature_Mann_Whit_Cutoff(Double.parseDouble(value));
+                String[] filterItems = PostAnalysisParameters.filterItems;
+            	if (knownSignatureRankTestCombo.getSelectedItem().equals(filterItems[PostAnalysisParameters.MANN_WHIT])) {
+            		paParams.setSignature_Mann_Whit_Cutoff(Double.parseDouble(value));
+            	}
+            	if (knownSignatureRankTestCombo.getSelectedItem().equals(filterItems[PostAnalysisParameters.HYPERGEOM])) {
+            		paParams.setSignature_Hypergeom_Cutoff(Double.parseDouble(value));
+            	}
             }
             else if (source == signatureDiscoveryRankTestTextField) {
             	String value = signatureDiscoveryRankTestTextField.getText();
@@ -1301,9 +1311,8 @@ public class PostAnalysisInputPanel extends JPanel {
             this.knownSignatureGMTFileNameTextField.setValue("");
             this.knownSignatureGMTFileNameTextField.setToolTipText(null);
             
-	        // Reset the rank test field
-	        String[] rankTestItems = PostAnalysisParameters.rankTestItems;
-	        this.knownSignatureRankTestCombo.setSelectedItem(rankTestItems[paParams.getDefault_signature_rankTest()]);
+	        String[] filterItems = PostAnalysisParameters.filterItems;
+	        this.knownSignatureRankTestCombo.setSelectedItem(filterItems[paParams.getDefault_signature_rankTest()]);
         }
         
         if (signatureDiscoveryPanel != null) {
@@ -1329,10 +1338,7 @@ public class PostAnalysisInputPanel extends JPanel {
 	        paParams.setFilter(true);
 	        String[] filterItems = PostAnalysisParameters.filterItems;
 	        this.filterTypeCombo.setSelectedItem(filterItems[paParams.getDefault_signature_filterMetric()]);
-	        
-	        // Reset the rank test field
-	        String[] rankTestItems = PostAnalysisParameters.rankTestItems;
-	        this.signatureDiscoveryRankTestCombo.setSelectedItem(rankTestItems[paParams.getDefault_signature_rankTest()]);
+	        this.signatureDiscoveryRankTestCombo.setSelectedItem(filterItems[paParams.getDefault_signature_rankTest()]);
         }
 
     }

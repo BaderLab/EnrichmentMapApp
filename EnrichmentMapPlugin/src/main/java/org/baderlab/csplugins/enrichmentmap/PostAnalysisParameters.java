@@ -83,16 +83,17 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
      * Number in overlap = 2
      * Percent overlap (percent of Signature geneset) = 3
      */
-    final public static int HYPERGEOM = 0, PERCENT = 1, NUMBER = 2, SPECIFIC = 3;
+    final public static int HYPERGEOM = 0, MANN_WHIT = 1, PERCENT = 2, NUMBER = 3, SPECIFIC = 4;
 
     /**
      * String for Filtering options
      * HYPERGEOM (0): "Passed the Hypergeometric test at the desired cut-off"
-     * PERCENT (1) : "Contains at least X percent (% of EM geneset)"
-     * NUMBER (2) : "Contains at least X genes"
-     * PERCENT (3): "Contains at least X percent (% of Signature geneset)"
+     * MANN_WHIT (1): "Passed the Mann-Whitney-U rank sum test at the desired cut-off"
+     * PERCENT (2) : "Contains at least X percent (% of EM geneset)"
+     * NUMBER (3) : "Contains at least X genes"
+     * PERCENT (4): "Contains at least X percent (% of Signature geneset)"
      */
-      final public static String[] filterItems = {"Hypergeometric Test", "Overlap X percent of EM gs", "Overlap has at least X genes", "Overlap X percent of Signature gs"};
+      final public static String[] filterItems = {"Hypergeometric Test", "Mann-Whitney", "Overlap X percent of EM gs", "Overlap has at least X genes", "Overlap X percent of Signature gs"};
     /**
      * Strings for Signature-Hub cut-off metric:
      * ABS_NUMBER   (0) : "Number of common genes"
@@ -105,13 +106,6 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
                                             "Overlap Coefficient",
                                             "Directed Overlap",
                                             };
-    // Rank Test constants
-    final public static int MANN_WHIT = 0;
-    /**
-     * Strings for rank test options
-     * MANN_WHIT (0): "Passed the Mann-Whitney-U rank sum test at the desired cut-off"
-     */
-    final public static String[] rankTestItems = {"Mann-Whitney"};
     
     final public static String SIGNATURE_INTERACTION_TYPE = "sig";
     
@@ -159,7 +153,7 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
     
     //Disease Signature rank test
     private int default_signature_rankTest = MANN_WHIT;
-    private int signature_rankTest;
+    private int signature_rankTest = default_signature_rankTest;
     private double default_signature_Mann_Whit_Cutoff = 0.05;
     
     // Rank file
@@ -266,6 +260,7 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
         this.signature_Hypergeom_Cutoff = source.getSignature_Hypergeom_Cutoff();
         this.signature_Mann_Whit_Cutoff = source.getSignature_Mann_Whit_Cutoff();
         this.signature_CutoffMetric     = source.getSignature_CutoffMetric();
+        this.signature_rankTest = source.getSignature_rankTest();
 
         // Disease Signature Data Structures:
         this.signatureGenesets         = source.getSignatureGenesets();
