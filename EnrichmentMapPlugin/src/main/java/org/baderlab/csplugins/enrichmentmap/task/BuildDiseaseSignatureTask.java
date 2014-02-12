@@ -197,7 +197,7 @@ public class BuildDiseaseSignatureTask implements Task {
              * but rather the Universe of all Enrichment Genes.  
              */
             // geneUniverse.retainAll(SignatureGenes); 
-            int universeSize = geneUniverse.size();
+            int universeSize = paParams.getUniverseSize();
             
             HashMap<Integer, Double> gene2score = this.ranks.getGene2Score();
             

@@ -62,6 +62,7 @@ import org.baderlab.csplugins.enrichmentmap.actions.BuildPostAnalysisActionListe
 import org.baderlab.csplugins.enrichmentmap.actions.ShowAboutPanelAction;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.JMultiLineToolTip;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.task.LoadSignatureGMTFilesTask;
@@ -74,6 +75,8 @@ import java.beans.PropertyChangeEvent;
 import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.io.File;
 import java.net.URL;
 
@@ -110,6 +113,8 @@ public class PostAnalysisInputPanel extends JPanel {
 
     DecimalFormat decFormat; // used in the formatted text fields
 
+    // For determining universe size
+    HashSet<Integer> EnrichmentGenes;
     
     private PostAnalysisParameters paParams;
     private PostAnalysisParameters knownSigPaParams;
@@ -177,6 +182,14 @@ public class PostAnalysisInputPanel extends JPanel {
 
         //get the current enrichment map parameters
         map = EnrichmentMapManager.getInstance().getMap(Cytoscape.getCurrentNetwork().getIdentifier());
+        
+        HashMap<String, GeneSet> EnrichmentGenesets = map.getAllGenesets();
+        EnrichmentGenes = new HashSet<Integer>();
+        for (Iterator<String> i = map.getAllGenesets().keySet().iterator(); i.hasNext(); ) {
+            String setName = i.next();
+            EnrichmentGenes.addAll(EnrichmentGenesets.get(setName).getGenes());
+        }
+        
         datasetMap = map.getDatasets();
         rankingMap = map.getAllRanks();
         EnrichmentMapParameters emParams = map.getParams();
@@ -198,6 +211,8 @@ public class PostAnalysisInputPanel extends JPanel {
         sigDiscoveryPaParams.copyFrom(knownSigPaParams);
         paParams = knownSigPaParams;
         paParams.setSignatureHub(false);
+        
+        paParams.setUniverseSize(EnrichmentGenes.size());
 
         //create the three main panels: scope, advanced options, and bottom
         JPanel AnalysisTypePanel = createAnalysisTypePanel();
@@ -815,8 +830,6 @@ public class PostAnalysisInputPanel extends JPanel {
         GMTRadioButton.addActionListener(new PaPanelActionListener(this) {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 selectUniverseActionPerformed(evt);
-                universeSelectionTextField.setText(Integer.toString(universeSize));
-                paPanel.universeSelectionTextField.setEditable(false);
             }
         });
         GMTRadioButton.setSelected(true);
@@ -825,8 +838,6 @@ public class PostAnalysisInputPanel extends JPanel {
         ExpressionSetRadioButton.addActionListener(new PaPanelActionListener(this) {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 selectUniverseActionPerformed(evt);
-                universeSelectionTextField.setText(Integer.toString(universeSize));
-                paPanel.universeSelectionTextField.setEditable(false);
             }
         });
         JRadioButton IntersectionRadioButton = new JRadioButton("Intersection");
@@ -834,8 +845,6 @@ public class PostAnalysisInputPanel extends JPanel {
         IntersectionRadioButton.addActionListener(new PaPanelActionListener(this) {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 selectUniverseActionPerformed(evt);
-                universeSelectionTextField.setText(Integer.toString(universeSize));
-                paPanel.universeSelectionTextField.setEditable(false);
             }
         });
         JRadioButton UserDefinedRadioButton = new JRadioButton("User Defined");
@@ -843,7 +852,6 @@ public class PostAnalysisInputPanel extends JPanel {
         UserDefinedRadioButton.addActionListener(new PaPanelActionListener(this) {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 selectUniverseActionPerformed(evt);
-                paPanel.universeSelectionTextField.setEditable(true);
             }
         });
         
@@ -873,8 +881,8 @@ public class PostAnalysisInputPanel extends JPanel {
         universeSelectionPanel.getContentPane().add(radioButtonsPanel, BorderLayout.WEST);
         
         universeSelectionTextField = new JFormattedTextField();
-        int universeSize = map.getAllGenesets().size();
-        universeSelectionTextField.setText(Integer.toString(universeSize));
+        universeSelectionTextField.addPropertyChangeListener("value", new PostAnalysisInputPanel.FormattedTextFieldAction());
+        universeSelectionTextField.setText(Integer.toString(EnrichmentGenes.size()));
         universeSelectionTextField.setEditable(false);
         universeSelectionPanel.getContentPane().add(universeSelectionTextField, BorderLayout.SOUTH);
                
@@ -1078,6 +1086,10 @@ public class PostAnalysisInputPanel extends JPanel {
             	String value = signatureDiscoveryRankTestTextField.getText();
             	paParams.setSignature_Mann_Whit_Cutoff(Double.parseDouble(value));
             }
+            else if (source == universeSelectionTextField) {
+            	String value = universeSelectionTextField.getText();
+            	paParams.setUniverseSize(Integer.parseInt(value));
+            }
             else if (source == filterTextField) {
                 Number value = (Number) filterTextField.getValue();
                 //if the filter type is percent then make sure the number entered is between 0 and 100
@@ -1223,14 +1235,17 @@ public class PostAnalysisInputPanel extends JPanel {
     
     private void selectUniverseActionPerformed(ActionEvent evt){
         String analysisType = evt.getActionCommand();
+        int universeSize = EnrichmentGenes.size();
+        universeSelectionTextField.setText(Integer.toString(universeSize));
+        paParams.setUniverseSize(universeSize);
         if (analysisType.equalsIgnoreCase("GMT")) {
-        	paParams.setGMTFileName("");
+            universeSelectionTextField.setEditable(false);
         } else if (analysisType.equalsIgnoreCase("Expression Set")) {
-        	
+            universeSelectionTextField.setEditable(false);
         } else if (analysisType.equalsIgnoreCase("Intersection")) {
-        	
+            universeSelectionTextField.setEditable(false);
         } else if (analysisType.equalsIgnoreCase("User Defined")) {
-        	
+            universeSelectionTextField.setEditable(true);
         }
     }
         
@@ -1469,7 +1484,7 @@ public class PostAnalysisInputPanel extends JPanel {
     	
     	public PaPanelActionListener(PostAnalysisInputPanel paPanel) {
     		this.paPanel = paPanel;
-    		this.universeSize = this.paPanel.map.getAllGenesets().size();
+    		this.universeSize = this.paPanel.paParams.getUniverseSize();
     	}
     	
 		public void actionPerformed(ActionEvent arg0) {

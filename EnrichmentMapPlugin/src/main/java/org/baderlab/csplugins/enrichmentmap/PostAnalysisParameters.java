@@ -161,6 +161,9 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
     
     // Disease Signature data-set
     private String signature_dataSet;
+    
+    // Enrichment map universe
+    private int universeSize;
 
     /**
      * default constructor
@@ -250,6 +253,9 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
         
         // Post Analysis Type:
         this.isSignatureDiscovery = source.isSignatureDiscovery();
+        
+        // Enrichment map data
+        this.universeSize = source.getUniverseSize();
 
         // Disease Signature Parameters:
         this.signatureGMTFileName       = source.getSignatureGMTFileName();
@@ -780,5 +786,19 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
 	 */
 	public void setDefault_signature_rankTest(int default_signature_rankTest) {
 		this.default_signature_rankTest = default_signature_rankTest;
+	}
+
+	/**
+	 * @return the universeSize
+	 */
+	public int getUniverseSize() {
+		return universeSize;
+	}
+
+	/**
+	 * @param universeSize the universeSize to set
+	 */
+	public void setUniverseSize(int universeSize) {
+		this.universeSize = universeSize;
 	}
 }
