@@ -123,6 +123,7 @@ public class PostAnalysisInputPanel extends JPanel {
     //Genesets file related components
     private JFormattedTextField knownSignatureGMTFileNameTextField;
     private JFormattedTextField signatureDiscoveryGMTFileNameTextField;
+    private JFormattedTextField universeSelectionTextField;
 
     private JLabel avail_sig_sets_counter_label;
     private int avail_sig_sets_count = 0;
@@ -799,41 +800,50 @@ public class PostAnalysisInputPanel extends JPanel {
         // Create Universe selection panel
         CollapsiblePanel universeSelectionPanel = new CollapsiblePanel("Advanced");
         universeSelectionPanel.setCollapsed(false);
+        universeSelectionPanel.getContentPane().setLayout(new BorderLayout());
+        JPanel radioButtonsPanel = new JPanel();
         GridBagLayout gridbag = new GridBagLayout();
         GridBagConstraints c = new GridBagConstraints();
         c.weighty = 1;
         c.weightx = 1;
         c.insets = new Insets(0,0,0,0);
         c.fill = GridBagConstraints.HORIZONTAL;
-        universeSelectionPanel.getContentPane().setLayout(gridbag);
+        radioButtonsPanel.setLayout(gridbag);
         
         JRadioButton GMTRadioButton = new JRadioButton("GMT");
         GMTRadioButton.setActionCommand("GMT");
-        GMTRadioButton.addActionListener(new java.awt.event.ActionListener() {
+        GMTRadioButton.addActionListener(new PaPanelActionListener(this) {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 selectUniverseActionPerformed(evt);
+                universeSelectionTextField.setText(Integer.toString(universeSize));
+                paPanel.universeSelectionTextField.setEditable(false);
             }
         });
         GMTRadioButton.setSelected(true);
         JRadioButton ExpressionSetRadioButton = new JRadioButton("Expression Set");
         ExpressionSetRadioButton.setActionCommand("Expression Set");
-        ExpressionSetRadioButton.addActionListener(new java.awt.event.ActionListener() {
+        ExpressionSetRadioButton.addActionListener(new PaPanelActionListener(this) {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 selectUniverseActionPerformed(evt);
+                universeSelectionTextField.setText(Integer.toString(universeSize));
+                paPanel.universeSelectionTextField.setEditable(false);
             }
         });
         JRadioButton IntersectionRadioButton = new JRadioButton("Intersection");
         IntersectionRadioButton.setActionCommand("Intersection");
-        IntersectionRadioButton.addActionListener(new java.awt.event.ActionListener() {
+        IntersectionRadioButton.addActionListener(new PaPanelActionListener(this) {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 selectUniverseActionPerformed(evt);
+                universeSelectionTextField.setText(Integer.toString(universeSize));
+                paPanel.universeSelectionTextField.setEditable(false);
             }
         });
         JRadioButton UserDefinedRadioButton = new JRadioButton("User Defined");
         UserDefinedRadioButton.setActionCommand("User Defined");
-        UserDefinedRadioButton.addActionListener(new java.awt.event.ActionListener() {
+        UserDefinedRadioButton.addActionListener(new PaPanelActionListener(this) {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 selectUniverseActionPerformed(evt);
+                paPanel.universeSelectionTextField.setEditable(true);
             }
         });
         
@@ -847,22 +857,29 @@ public class PostAnalysisInputPanel extends JPanel {
         c.gridwidth = 3;
         c.gridy = 0;
         gridbag.setConstraints(GMTRadioButton, c);
-        universeSelectionPanel.getContentPane().add(GMTRadioButton);
+        radioButtonsPanel.add(GMTRadioButton);
         
         c.gridy = 1;
         gridbag.setConstraints(ExpressionSetRadioButton, c);
-        universeSelectionPanel.getContentPane().add(ExpressionSetRadioButton);
+        radioButtonsPanel.add(ExpressionSetRadioButton);
 
         c.gridy = 2;
         gridbag.setConstraints(IntersectionRadioButton, c);
-        universeSelectionPanel.getContentPane().add(IntersectionRadioButton);
+        radioButtonsPanel.add(IntersectionRadioButton);
         
         c.gridy = 3;
         gridbag.setConstraints(UserDefinedRadioButton, c);
-        universeSelectionPanel.getContentPane().add(UserDefinedRadioButton);
+        radioButtonsPanel.add(UserDefinedRadioButton);
+        universeSelectionPanel.getContentPane().add(radioButtonsPanel, BorderLayout.WEST);
         
+        universeSelectionTextField = new JFormattedTextField();
+        int universeSize = map.getAllGenesets().size();
+        universeSelectionTextField.setText(Integer.toString(universeSize));
+        universeSelectionTextField.setEditable(false);
+        universeSelectionPanel.getContentPane().add(universeSelectionTextField, BorderLayout.SOUTH);
+               
         panel.add(universeSelectionPanel);
-        
+       
         collapsiblePanel.getContentPane().add(panel, BorderLayout.NORTH);
         return collapsiblePanel;
     }
@@ -1448,9 +1465,11 @@ public class PostAnalysisInputPanel extends JPanel {
      */
     private class PaPanelActionListener implements ActionListener {
     	protected PostAnalysisInputPanel paPanel = null;
+    	protected int universeSize = 0;
     	
     	public PaPanelActionListener(PostAnalysisInputPanel paPanel) {
     		this.paPanel = paPanel;
+    		this.universeSize = this.paPanel.map.getAllGenesets().size();
     	}
     	
 		public void actionPerformed(ActionEvent arg0) {

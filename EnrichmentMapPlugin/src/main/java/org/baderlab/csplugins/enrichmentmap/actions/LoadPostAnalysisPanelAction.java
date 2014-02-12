@@ -80,9 +80,10 @@ public class LoadPostAnalysisPanelAction extends CytoscapeAction {
         CytoPanel cytoPanel = desktop.getCytoPanel(SwingConstants.WEST);
 
         if(!initialized){
-            EnrichmentMapManager.getInstance();
+            
+        	EnrichmentMapManager.getInstance();
             initialized = true;
-
+            
             PostAnalysisInputPanel analysisWindow = new PostAnalysisInputPanel();
 
             //set the input window in the instance so we can update the instance window
