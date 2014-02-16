@@ -169,7 +169,6 @@ public class PostAnalysisInputPanel extends JPanel {
     public static String siggmt_instruction = "Please select the Signature Gene Set file (.gmt)...";
     //tool tips
     private static String gmtTip = "File specifying gene sets.\n" + "Format: geneset name <tab> description <tab> gene ...";
-
     
     private EnrichmentMap map;
     
@@ -1381,20 +1380,56 @@ public class PostAnalysisInputPanel extends JPanel {
      * @param current_params
      */
     public void updateContents(EnrichmentMapParameters current_params){
-    		EnrichmentMap currentMap = EnrichmentMapManager.getInstance().getMap(Cytoscape.getCurrentNetwork().getIdentifier());
-    		if(currentMap != null){
-    			this.paParams = currentMap.getPaParams();
-    	        // Gene-Set Files:
-    	        knownSignatureGMTFileNameTextField.setText(this.paParams.getSignatureGMTFileName());
-    	        knownSignatureGMTFileNameTextField.setValue(this.paParams.getSignatureGMTFileName());
-    	        // Gene-Set Selection:
-    	        this.avail_sig_sets    = this.paParams.getSignatureSetNames();
-    	        this.avail_sig_sets_field.setModel(this.avail_sig_sets);
-    	        this.selected_sig_sets = this.paParams.getSelectedSignatureSetNames();
-    	        this.selected_sig_sets_field.setModel(this.selected_sig_sets);  
-    		}
+		EnrichmentMap currentMap = EnrichmentMapManager.getInstance().getMap(Cytoscape.getCurrentNetwork().getIdentifier());
+		if(currentMap != null){
+			
+			this.map = currentMap;
+			
+			this.knownSigPaParams = this.map.getPaParams();
+			
+	        // Gene-Set Files:
+	        this.knownSignatureGMTFileNameTextField.setText(this.knownSigPaParams.getSignatureGMTFileName());
+	        this.knownSignatureGMTFileNameTextField.setValue(this.knownSigPaParams.getSignatureGMTFileName());
+	        
+	        this.sigDiscoveryPaParams = new PostAnalysisParameters();
+	        this.sigDiscoveryPaParams.copyFrom(this.knownSigPaParams);
+	        
+	        this.paParams = this.knownSigPaParams;
+	        this.paParams.setSignatureHub(false);
+	        
+	        datasetMap = this.map.getDatasets();
+	        rankingMap = this.map.getAllRanks();
+	        
+	        datasetCombo = new JComboBox(datasetMap.keySet().toArray());
+	        datasetCombo.addActionListener( new ActionListener() {
+	            public void actionPerformed( ActionEvent e ) {
+	            	JComboBox selectedChoice = (JComboBox) e.getSource();
+	            	paParams.setSignature_dataSet((String)selectedChoice.getSelectedItem());
+	            }
+	        });
+	        datasetCombo.setSelectedIndex(0);
+	        
+	        rankingCombo = new JComboBox(rankingMap.keySet().toArray());
+	        rankingCombo.addActionListener( new ActionListener() {
+	            public void actionPerformed( ActionEvent e ) {
+	            	JComboBox selectedChoice = (JComboBox) e.getSource();
+	            	paParams.setSignature_rankFile((String)selectedChoice.getSelectedItem());
+	            }
+	        });
+	        rankingCombo.setSelectedIndex(0);
+	        
+	        HashMap<String, GeneSet> EnrichmentGenesets = map.getAllGenesets();
+	        EnrichmentGenes = new HashSet<Integer>();
+	        for (Iterator<String> i = map.getAllGenesets().keySet().iterator(); i.hasNext(); ) {
+	            String setName = i.next();
+	            EnrichmentGenes.addAll(EnrichmentGenesets.get(setName).getGenes());
+	        }
+	        
+	        int universe = EnrichmentGenes.size();
+	        paParams.setUniverseSize(universe);
+	        universeSelectionTextField.setText(Integer.toString(universe));
+		}
     }
-
     
     /* ************************************************* *
      *                 getters and setters               *
