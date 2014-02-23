@@ -118,7 +118,7 @@ public class LoadSignatureGMTFilesTask implements Task {
                     if (interrupted)
                         throw new InterruptedException();
                     if (! selectedSignatureSetNames.contains(setNamesArray[i])) {
-                        if(paParams.isFilter()){
+                        if(paParams.isFilter()) {
                             //only add the name if it overlaps with the sets in the map.
                             boolean matchfound = false;
                             for(int j = 0; j < setsOfInterest.length ; j++) {
@@ -178,6 +178,7 @@ public class LoadSignatureGMTFilesTask implements Task {
             } catch (InterruptedException e) {
                 taskMonitor.setException(e, "loading of GMT files cancelled");
             }
+            
         }
         /* (non-Javadoc)
          * @see cytoscape.task.Task#setTaskMonitor(cytoscape.task.TaskMonitor)

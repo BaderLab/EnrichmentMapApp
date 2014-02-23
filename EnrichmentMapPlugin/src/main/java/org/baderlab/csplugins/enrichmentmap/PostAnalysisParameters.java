@@ -61,8 +61,8 @@ import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
 public class PostAnalysisParameters extends EnrichmentMapParameters {
     
     // Post Analysis Type:
-    private boolean isSignatureDiscovery;
-    private boolean isKnownSignature;
+    private boolean isSignatureDiscovery = false;
+    private boolean isKnownSignature = true;
 
     // Disease Signature Constants
     /**
@@ -112,8 +112,7 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
     private String signatureHub_nodeShape   = "TRIANGLE";
     private String signatureHub_nodeColor   = "255,255,0"; // yellow
     private String signatureHub_borderColor = "255,255,0"; // yellow
-    private String signatureHub_edgeColor   = "255,0,200"; // pink
-    
+    private String signatureHub_edgeColor   = "255,0,200"; // pink    
     
     // Disease Signature Parameters:
     private String signatureGMTFileName;
@@ -173,9 +172,6 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
     public PostAnalysisParameters(EnrichmentMap map) {
         // EnrichmentMapParameters
     	super.copy(map.getParams());
-
-        // Post Analysis Type:
-        this.isSignatureDiscovery = true;
     	
     	// Disease Signature Parameters:
         this.signatureGMTFileName       = "";
@@ -213,10 +209,6 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
     public PostAnalysisParameters() {
         // EnrichmentMapParameters
         super();
-
-        // Post Analysis Type:
-        this.isSignatureDiscovery = true;
-        this.isKnownSignature = false;
         
         // Disease Signature Parameters:
         this.signatureGMTFileName       = "";
@@ -253,6 +245,7 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
         
         // Post Analysis Type:
         this.isSignatureDiscovery = source.isSignatureDiscovery();
+        this.isKnownSignature = source.isKnownSignature();
         
         // Enrichment map data
         this.universeSize = source.getUniverseSize();
@@ -267,6 +260,7 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
         this.signature_Mann_Whit_Cutoff = source.getSignature_Mann_Whit_Cutoff();
         this.signature_CutoffMetric     = source.getSignature_CutoffMetric();
         this.signature_rankTest = source.getSignature_rankTest();
+        this.signature_dataSet = source.getSignature_dataSet();
 
         // Disease Signature Data Structures:
         this.signatureGenesets         = source.getSignatureGenesets();

@@ -128,7 +128,8 @@ public class PostAnalysisInputPanel extends JPanel {
     //Genesets file related components
     private JFormattedTextField knownSignatureGMTFileNameTextField;
     private JFormattedTextField signatureDiscoveryGMTFileNameTextField;
-    private JFormattedTextField universeSelectionTextField;
+    private JFormattedTextField knownSigUniverseSelectionTextField;
+    private JFormattedTextField sigDiscoveryUniverseSelectionTextField;
 
     private JLabel avail_sig_sets_counter_label;
     private int avail_sig_sets_count = 0;
@@ -148,11 +149,12 @@ public class PostAnalysisInputPanel extends JPanel {
     // These hashmaps are needed for edge weight calculation
     private HashMap<String, DataSet> datasetMap;
     private HashMap<String, Ranking> rankingMap;
-
     
     //Parameters related components
-    private JComboBox datasetCombo;
-    private JComboBox rankingCombo;
+    private JComboBox sigDiscoveryDatasetCombo;
+    private JComboBox sigDiscoveryRankingCombo;
+    private JComboBox knownSigDatasetCombo;
+    private JComboBox knownSigRankingCombo;
     private JComboBox signatureDiscoveryRankTestCombo;
     private JFormattedTextField signatureDiscoveryRankTestTextField;
     private JComboBox knownSignatureRankTestCombo;
@@ -195,23 +197,19 @@ public class PostAnalysisInputPanel extends JPanel {
         if(map != null){
         		emParams = map.getParams();
         		// create instance of PostAnalysisParameters an initialize with EnrichmentMapParameters
-        		paParams = map.getPaParams();
+        		knownSigPaParams = map.getPaParams();
         }else
         		JOptionPane.showMessageDialog(this, "No Enrichment map was detected.  \nCan only perform Post Analysis on existing Enrichment map.");
 
         if (emParams == null)
             emParams = new EnrichmentMapParameters();
-        if(paParams == null)
-        		paParams = new PostAnalysisParameters();
+        if(knownSigPaParams == null)
+        		knownSigPaParams = new PostAnalysisParameters();
         
-        // create instance of PostAnalysisParameters an initialize with EnrichmentMapParameters
-        knownSigPaParams = EnrichmentMapManager.getInstance().getMap(Cytoscape.getCurrentNetwork().getIdentifier()).getPaParams();
         sigDiscoveryPaParams = new PostAnalysisParameters();
         sigDiscoveryPaParams.copyFrom(knownSigPaParams);
-        paParams = knownSigPaParams;
-        paParams.setSignatureHub(false);
         
-        paParams.setUniverseSize(EnrichmentGenes.size());
+        paParams = knownSigPaParams;
 
         //create the three main panels: scope, advanced options, and bottom
         JPanel AnalysisTypePanel = createAnalysisTypePanel();
@@ -757,25 +755,27 @@ public class PostAnalysisInputPanel extends JPanel {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         
-        datasetCombo = new JComboBox(datasetMap.keySet().toArray());
-        datasetCombo.addActionListener( new ActionListener() {
+        String[] datasetArray = datasetMap.keySet().toArray(new String[datasetMap.size()]);
+        Arrays.sort(datasetArray);
+        knownSigDatasetCombo = new JComboBox(datasetArray);
+        knownSigDatasetCombo.addActionListener( new ActionListener() {
             public void actionPerformed( ActionEvent e ) {
             	JComboBox selectedChoice = (JComboBox) e.getSource();
             	paParams.setSignature_dataSet((String)selectedChoice.getSelectedItem());
             }
         });
-        datasetCombo.setSelectedIndex(0);
-        panel.add(datasetCombo);
+        knownSigDatasetCombo.setSelectedIndex(0);
+        panel.add(knownSigDatasetCombo);
         
-        rankingCombo = new JComboBox(rankingMap.keySet().toArray());
-        rankingCombo.addActionListener( new ActionListener() {
+        knownSigRankingCombo = new JComboBox(rankingMap.keySet().toArray());
+        knownSigRankingCombo.addActionListener( new ActionListener() {
             public void actionPerformed( ActionEvent e ) {
             	JComboBox selectedChoice = (JComboBox) e.getSource();
             	paParams.setSignature_rankFile((String)selectedChoice.getSelectedItem());
             }
         });
-        rankingCombo.setSelectedIndex(0);
-        panel.add(rankingCombo);
+        knownSigRankingCombo.setSelectedIndex(0);
+        panel.add(knownSigRankingCombo);
         
         knownSignatureRankTestTextField = new JFormattedTextField();
         knownSignatureRankTestTextField.addPropertyChangeListener("value", new PostAnalysisInputPanel.FormattedTextFieldAction());
@@ -828,7 +828,7 @@ public class PostAnalysisInputPanel extends JPanel {
         GMTRadioButton.setActionCommand("GMT");
         GMTRadioButton.addActionListener(new PaPanelActionListener(this) {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                selectUniverseActionPerformed(evt);
+                selectKnownSigUniverseActionPerformed(evt);
             }
         });
         GMTRadioButton.setSelected(true);
@@ -836,21 +836,21 @@ public class PostAnalysisInputPanel extends JPanel {
         ExpressionSetRadioButton.setActionCommand("Expression Set");
         ExpressionSetRadioButton.addActionListener(new PaPanelActionListener(this) {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                selectUniverseActionPerformed(evt);
+                selectKnownSigUniverseActionPerformed(evt);
             }
         });
         JRadioButton IntersectionRadioButton = new JRadioButton("Intersection");
         IntersectionRadioButton.setActionCommand("Intersection");
         IntersectionRadioButton.addActionListener(new PaPanelActionListener(this) {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                selectUniverseActionPerformed(evt);
+                selectKnownSigUniverseActionPerformed(evt);
             }
         });
         JRadioButton UserDefinedRadioButton = new JRadioButton("User Defined");
         UserDefinedRadioButton.setActionCommand("User Defined");
         UserDefinedRadioButton.addActionListener(new PaPanelActionListener(this) {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                selectUniverseActionPerformed(evt);
+                selectKnownSigUniverseActionPerformed(evt);
             }
         });
         
@@ -879,11 +879,11 @@ public class PostAnalysisInputPanel extends JPanel {
         radioButtonsPanel.add(UserDefinedRadioButton);
         universeSelectionPanel.getContentPane().add(radioButtonsPanel, BorderLayout.WEST);
         
-        universeSelectionTextField = new JFormattedTextField();
-        universeSelectionTextField.addPropertyChangeListener("value", new PostAnalysisInputPanel.FormattedTextFieldAction());
-        universeSelectionTextField.setText(Integer.toString(EnrichmentGenes.size()));
-        universeSelectionTextField.setEditable(false);
-        universeSelectionPanel.getContentPane().add(universeSelectionTextField, BorderLayout.SOUTH);
+        knownSigUniverseSelectionTextField = new JFormattedTextField();
+        knownSigUniverseSelectionTextField.addPropertyChangeListener("value", new PostAnalysisInputPanel.FormattedTextFieldAction());
+        knownSigUniverseSelectionTextField.setText(Integer.toString(EnrichmentGenes.size()));
+        knownSigUniverseSelectionTextField.setEditable(false);
+        universeSelectionPanel.getContentPane().add(knownSigUniverseSelectionTextField, BorderLayout.SOUTH);
                
         panel.add(universeSelectionPanel);
        
@@ -900,25 +900,28 @@ public class PostAnalysisInputPanel extends JPanel {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         
-        datasetCombo = new JComboBox(datasetMap.keySet().toArray());
-        datasetCombo.addActionListener( new ActionListener() {
+        String[] datasetArray = datasetMap.keySet().toArray(new String[datasetMap.size()]);
+        Arrays.sort(datasetArray);
+        sigDiscoveryDatasetCombo = new JComboBox(datasetArray);
+        sigDiscoveryDatasetCombo.addActionListener( new ActionListener() {
             public void actionPerformed( ActionEvent e ) {
             	JComboBox selectedChoice = (JComboBox) e.getSource();
             	paParams.setSignature_dataSet((String)selectedChoice.getSelectedItem());
             }
         });
-        datasetCombo.setSelectedIndex(0);
-        panel.add(datasetCombo);
+        sigDiscoveryDatasetCombo.setSelectedIndex(0);
+
+        panel.add(sigDiscoveryDatasetCombo);
         
-        rankingCombo = new JComboBox(rankingMap.keySet().toArray());
-        rankingCombo.addActionListener( new ActionListener() {
+        sigDiscoveryRankingCombo = new JComboBox(rankingMap.keySet().toArray());
+        sigDiscoveryRankingCombo.addActionListener( new ActionListener() {
             public void actionPerformed( ActionEvent e ) {
             	JComboBox selectedChoice = (JComboBox) e.getSource();
             	paParams.setSignature_rankFile((String)selectedChoice.getSelectedItem());
             }
         });
-        rankingCombo.setSelectedIndex(0);
-        panel.add(rankingCombo);
+        sigDiscoveryRankingCombo.setSelectedIndex(0);
+        panel.add(sigDiscoveryRankingCombo);
         
         signatureDiscoveryRankTestTextField = new JFormattedTextField();
         signatureDiscoveryRankTestTextField.addPropertyChangeListener("value", new PostAnalysisInputPanel.FormattedTextFieldAction());
@@ -926,6 +929,7 @@ public class PostAnalysisInputPanel extends JPanel {
         String[] filterItems = PostAnalysisParameters.filterItems;
         signatureDiscoveryRankTestCombo = new JComboBox();
         signatureDiscoveryRankTestCombo.addItem(filterItems[PostAnalysisParameters.MANN_WHIT]);
+        signatureDiscoveryRankTestCombo.addItem(filterItems[PostAnalysisParameters.HYPERGEOM]);
         signatureDiscoveryRankTestCombo.addActionListener( new ActionListener() {
             String[] filterItems = PostAnalysisParameters.filterItems;
             public void actionPerformed( ActionEvent e ) {
@@ -933,6 +937,9 @@ public class PostAnalysisInputPanel extends JPanel {
                 if (filterItems[PostAnalysisParameters.MANN_WHIT].equals( selectedChoice.getSelectedItem())) {
                     paParams.setSignature_rankTest(PostAnalysisParameters.MANN_WHIT);
                     signatureDiscoveryRankTestTextField.setValue(paParams.getSignature_Mann_Whit_Cutoff());
+                } else if (filterItems[PostAnalysisParameters.HYPERGEOM].equals( selectedChoice.getSelectedItem())) {
+                    paParams.setSignature_rankTest(PostAnalysisParameters.HYPERGEOM);
+                    signatureDiscoveryRankTestTextField.setValue(paParams.getSignature_Hypergeom_Cutoff());
                 }
             }
         });
@@ -954,19 +961,47 @@ public class PostAnalysisInputPanel extends JPanel {
         // Create Universe selection panel
         CollapsiblePanel universeSelectionPanel = new CollapsiblePanel("Advanced");
         universeSelectionPanel.setCollapsed(false);
+        universeSelectionPanel.getContentPane().setLayout(new BorderLayout());
+        
         GridBagLayout gridbag = new GridBagLayout();
         GridBagConstraints c = new GridBagConstraints();
         c.weighty = 1;
         c.weightx = 1;
         c.insets = new Insets(0,0,0,0);
         c.fill = GridBagConstraints.HORIZONTAL;
-        universeSelectionPanel.getContentPane().setLayout(gridbag);
+        
+        JPanel radioButtonsPanel = new JPanel();
+        radioButtonsPanel.setLayout(gridbag);
         
         JRadioButton GMTRadioButton = new JRadioButton("GMT");
+        GMTRadioButton.setActionCommand("GMT");
+        GMTRadioButton.addActionListener(new PaPanelActionListener(this) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                selectSigDiscoveryUniverseActionPerformed(evt);
+            }
+        });        
         GMTRadioButton.setSelected(true);
         JRadioButton ExpressionSetRadioButton = new JRadioButton("Expression Set");
+        ExpressionSetRadioButton.setActionCommand("Expression Set");
+        ExpressionSetRadioButton.addActionListener(new PaPanelActionListener(this) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                selectSigDiscoveryUniverseActionPerformed(evt);
+            }
+        });    
         JRadioButton IntersectionRadioButton = new JRadioButton("Intersection");
+        IntersectionRadioButton.setActionCommand("Intersection");
+        IntersectionRadioButton.addActionListener(new PaPanelActionListener(this) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                selectSigDiscoveryUniverseActionPerformed(evt);
+            }
+        });    
         JRadioButton UserDefinedRadioButton = new JRadioButton("User Defined");
+        UserDefinedRadioButton.setActionCommand("User Defined");
+        UserDefinedRadioButton.addActionListener(new PaPanelActionListener(this) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                selectSigDiscoveryUniverseActionPerformed(evt);
+            }
+        });  
         
         ButtonGroup universeSelectionOptions = new ButtonGroup();
         universeSelectionOptions.add(GMTRadioButton);
@@ -978,20 +1013,27 @@ public class PostAnalysisInputPanel extends JPanel {
         c.gridwidth = 3;
         c.gridy = 0;
         gridbag.setConstraints(GMTRadioButton, c);
-        universeSelectionPanel.getContentPane().add(GMTRadioButton);
+        radioButtonsPanel.add(GMTRadioButton);
         
         c.gridy = 1;
         gridbag.setConstraints(ExpressionSetRadioButton, c);
-        universeSelectionPanel.getContentPane().add(ExpressionSetRadioButton);
+        radioButtonsPanel.add(ExpressionSetRadioButton);
 
         c.gridy = 2;
         gridbag.setConstraints(IntersectionRadioButton, c);
-        universeSelectionPanel.getContentPane().add(IntersectionRadioButton);
+        radioButtonsPanel.add(IntersectionRadioButton);
         
         c.gridy = 3;
         gridbag.setConstraints(UserDefinedRadioButton, c);
-        universeSelectionPanel.getContentPane().add(UserDefinedRadioButton);
+        radioButtonsPanel.add(UserDefinedRadioButton);
+        universeSelectionPanel.getContentPane().add(radioButtonsPanel, BorderLayout.WEST);
         
+        sigDiscoveryUniverseSelectionTextField = new JFormattedTextField();
+        sigDiscoveryUniverseSelectionTextField.addPropertyChangeListener("value", new PostAnalysisInputPanel.FormattedTextFieldAction());
+        sigDiscoveryUniverseSelectionTextField.setText(Integer.toString(EnrichmentGenes.size()));
+        sigDiscoveryUniverseSelectionTextField.setEditable(false);
+        universeSelectionPanel.getContentPane().add(sigDiscoveryUniverseSelectionTextField, BorderLayout.SOUTH);
+               
         panel.add(universeSelectionPanel);
         
         collapsiblePanel.getContentPane().add(panel, BorderLayout.NORTH);
@@ -1085,8 +1127,12 @@ public class PostAnalysisInputPanel extends JPanel {
             	String value = signatureDiscoveryRankTestTextField.getText();
             	paParams.setSignature_Mann_Whit_Cutoff(Double.parseDouble(value));
             }
-            else if (source == universeSelectionTextField) {
-            	String value = universeSelectionTextField.getText();
+            else if (source == knownSigUniverseSelectionTextField) {
+            	String value = knownSigUniverseSelectionTextField.getText();
+            	paParams.setUniverseSize(Integer.parseInt(value));
+            }
+            else if (source == sigDiscoveryUniverseSelectionTextField) {
+            	String value = sigDiscoveryUniverseSelectionTextField.getText();
             	paParams.setUniverseSize(Integer.parseInt(value));
             }
             else if (source == filterTextField) {
@@ -1207,6 +1253,7 @@ public class PostAnalysisInputPanel extends JPanel {
 
         if(analysisType.equalsIgnoreCase("Signature Discovery")) {
         	paParams = sigDiscoveryPaParams;
+            paParams.setUniverseSize(EnrichmentGenes.size());
             paParams.setSignatureHub(true);
         	userInputPanel.getContentPane().remove(optionsPanel);
         	optionsPanel = getSignatureDiscoveryOptionsPanel();
@@ -1223,7 +1270,8 @@ public class PostAnalysisInputPanel extends JPanel {
             signature_genesets.revalidate();
         } else {
         	paParams = knownSigPaParams;
-        	paParams.setSignatureHub(false);
+            paParams.setUniverseSize(EnrichmentGenes.size());
+            paParams.setSignatureHub(false);
         	paParams.setFilter(false);
         	userInputPanel.getContentPane().remove(optionsPanel);
         	optionsPanel = getKnownSignatureOptionsPanel();
@@ -1232,19 +1280,35 @@ public class PostAnalysisInputPanel extends JPanel {
         }
     }
     
-    private void selectUniverseActionPerformed(ActionEvent evt){
+    private void selectKnownSigUniverseActionPerformed(ActionEvent evt){
         String analysisType = evt.getActionCommand();
         int universeSize = EnrichmentGenes.size();
-        universeSelectionTextField.setText(Integer.toString(universeSize));
+        knownSigUniverseSelectionTextField.setText(Integer.toString(universeSize));
         paParams.setUniverseSize(universeSize);
         if (analysisType.equalsIgnoreCase("GMT")) {
-            universeSelectionTextField.setEditable(false);
+            knownSigUniverseSelectionTextField.setEditable(false);
         } else if (analysisType.equalsIgnoreCase("Expression Set")) {
-            universeSelectionTextField.setEditable(false);
+            knownSigUniverseSelectionTextField.setEditable(false);
         } else if (analysisType.equalsIgnoreCase("Intersection")) {
-            universeSelectionTextField.setEditable(false);
+            knownSigUniverseSelectionTextField.setEditable(false);
         } else if (analysisType.equalsIgnoreCase("User Defined")) {
-            universeSelectionTextField.setEditable(true);
+            knownSigUniverseSelectionTextField.setEditable(true);
+        }
+    }
+    
+    private void selectSigDiscoveryUniverseActionPerformed(ActionEvent evt){
+        String analysisType = evt.getActionCommand();
+        int universeSize = EnrichmentGenes.size();
+        sigDiscoveryUniverseSelectionTextField.setText(Integer.toString(universeSize));
+        paParams.setUniverseSize(universeSize);
+        if (analysisType.equalsIgnoreCase("GMT")) {
+        	sigDiscoveryUniverseSelectionTextField.setEditable(false);
+        } else if (analysisType.equalsIgnoreCase("Expression Set")) {
+        	sigDiscoveryUniverseSelectionTextField.setEditable(false);
+        } else if (analysisType.equalsIgnoreCase("Intersection")) {
+        	sigDiscoveryUniverseSelectionTextField.setEditable(false);
+        } else if (analysisType.equalsIgnoreCase("User Defined")) {
+        	sigDiscoveryUniverseSelectionTextField.setEditable(true);
         }
     }
         
@@ -1400,23 +1464,25 @@ public class PostAnalysisInputPanel extends JPanel {
 	        datasetMap = this.map.getDatasets();
 	        rankingMap = this.map.getAllRanks();
 	        
-	        datasetCombo = new JComboBox(datasetMap.keySet().toArray());
-	        datasetCombo.addActionListener( new ActionListener() {
+	        String[] datasetArray = datasetMap.keySet().toArray(new String[datasetMap.size()]);
+	        Arrays.sort(datasetArray);
+	        knownSigDatasetCombo = new JComboBox(datasetArray);
+	        knownSigDatasetCombo.addActionListener( new ActionListener() {
 	            public void actionPerformed( ActionEvent e ) {
 	            	JComboBox selectedChoice = (JComboBox) e.getSource();
 	            	paParams.setSignature_dataSet((String)selectedChoice.getSelectedItem());
 	            }
 	        });
-	        datasetCombo.setSelectedIndex(0);
+	        knownSigDatasetCombo.setSelectedIndex(0);
 	        
-	        rankingCombo = new JComboBox(rankingMap.keySet().toArray());
-	        rankingCombo.addActionListener( new ActionListener() {
+	        knownSigRankingCombo = new JComboBox(rankingMap.keySet().toArray());
+	        knownSigRankingCombo.addActionListener( new ActionListener() {
 	            public void actionPerformed( ActionEvent e ) {
 	            	JComboBox selectedChoice = (JComboBox) e.getSource();
 	            	paParams.setSignature_rankFile((String)selectedChoice.getSelectedItem());
 	            }
 	        });
-	        rankingCombo.setSelectedIndex(0);
+	        knownSigRankingCombo.setSelectedIndex(0);
 	        
 	        HashMap<String, GeneSet> EnrichmentGenesets = map.getAllGenesets();
 	        EnrichmentGenes = new HashSet<Integer>();
@@ -1427,7 +1493,7 @@ public class PostAnalysisInputPanel extends JPanel {
 	        
 	        int universe = EnrichmentGenes.size();
 	        paParams.setUniverseSize(universe);
-	        universeSelectionTextField.setText(Integer.toString(universe));
+	        knownSigUniverseSelectionTextField.setText(Integer.toString(universe));
 		}
     }
     

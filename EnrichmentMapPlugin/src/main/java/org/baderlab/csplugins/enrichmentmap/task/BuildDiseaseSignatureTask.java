@@ -69,6 +69,10 @@ import cytoscape.data.CyAttributes;
 import cytoscape.task.Task;
 import cytoscape.task.TaskMonitor;
 import cytoscape.view.CyNetworkView;
+import cytoscape.visual.NodeShape;
+import cytoscape.visual.VisualMappingManager;
+import cytoscape.visual.mappings.DiscreteMapping;
+import cytoscape.visual.mappings.ObjectMapping;
 
 
 /**
@@ -525,8 +529,17 @@ public class BuildDiseaseSignatureTask implements Task {
                     if (paParams.getSignature_rankTest() == PostAnalysisParameters.MANN_WHIT) {
                     	cyEdgeAttrs.setAttribute(edge.getIdentifier(), prefix + EnrichmentMapVisualStyle.MANN_WHIT_PVALUE, geneset_similarities.get(edge_name).getMann_Whit_pValue());
                     }
-                    
+
                     cyEdgeAttrs.setAttribute(edge.getIdentifier(), "edge.color", paParams.getSignatureHub_edgeColor());
+                    String lineStyle, dataset = paParams.getSignature_dataSet();
+                    if (dataset.equals("Dataset 1")) {
+                    	lineStyle = "SOLID";
+                    } else {
+                    	// Dataset 2
+                    	lineStyle = "LONG_DASH";
+                    }
+                    cyEdgeAttrs.setAttribute(edge.getIdentifier(), "edge.lineStyle", lineStyle);
+
                     //change "edge.lineWidth" based on Hypergeometric Value 
                     if (geneset_similarities.get(edge_name).getHypergeom_pvalue() <= (paParams.getSignature_Hypergeom_Cutoff()/100) )
                         cyEdgeAttrs.setAttribute(edge.getIdentifier(), "edge.lineWidth", "8.0");

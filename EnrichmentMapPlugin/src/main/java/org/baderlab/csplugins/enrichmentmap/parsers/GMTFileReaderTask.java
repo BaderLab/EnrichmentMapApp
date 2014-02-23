@@ -246,8 +246,7 @@ public class GMTFileReaderTask implements Task {
             }
         } catch (InterruptedException e) {
             taskMonitor.setException(e, "Loading of GMT file cancelled");
-        }
-
+        } 
 
     }
 
