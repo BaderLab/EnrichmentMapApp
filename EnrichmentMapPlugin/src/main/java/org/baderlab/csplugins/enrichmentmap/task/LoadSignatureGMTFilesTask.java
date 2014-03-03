@@ -99,7 +99,6 @@ public class LoadSignatureGMTFilesTask implements Task {
                 //filter the signature genesets to only include genesets that overlap with the genesets
                 //in our current map.
                 HashMap<String, GeneSet> genesets_in_map = map.getAllGenesets();
-                Object[] setsOfInterest = genesets_in_map.keySet().toArray();
                 //get the value to be filtered by if there is a filter
                 HashSet<Integer> EnrichmentGenes = new HashSet<Integer>();
                 for (Iterator<String> i = genesets_in_map.keySet().iterator(); i.hasNext(); ){
@@ -111,21 +110,23 @@ public class LoadSignatureGMTFilesTask implements Task {
                 int n = 0;
                 int m = 0;
                 int k = 0;
-                Object[] setNamesArray = paParams.getSignatureGenesets().getGenesets().keySet().toArray();
-                Arrays.sort( setNamesArray );
+//                Arrays.sort( setNamesArray );
                 double hyperPval;
-                for (int i = 0; i < setNamesArray.length; i++) {
+                String signatureGeneset, mapGeneset;
+                for (Iterator<String> i = paParams.getSignatureGenesets().getGenesets().keySet().iterator(); i.hasNext(); ) {
                     if (interrupted)
                         throw new InterruptedException();
-                    if (! selectedSignatureSetNames.contains(setNamesArray[i])) {
+                    signatureGeneset = i.next();
+                    if (! selectedSignatureSetNames.contains(signatureGeneset)) {
                         if(paParams.isFilter()) {
                             //only add the name if it overlaps with the sets in the map.
                             boolean matchfound = false;
-                            for(int j = 0; j < setsOfInterest.length ; j++) {
-                                //check if this set overlaps with current geneset
-                                HashSet <Integer> mapset = new HashSet<Integer>(genesets_in_map.get(setsOfInterest[j]).getGenes());
+                            for (Iterator<String> j = genesets_in_map.keySet().iterator(); j.hasNext(); ){
+                                mapGeneset = j.next();
+                            	//check if this set overlaps with current geneset
+                                HashSet <Integer> mapset = new HashSet<Integer>(genesets_in_map.get(mapGeneset).getGenes());
                                 Integer original_size = mapset.size();
-                                HashSet <Integer> paset = new HashSet<Integer>(paParams.getSignatureGenesets().getGenesets().get(setNamesArray[i]).getGenes());
+                                HashSet <Integer> paset = new HashSet<Integer>(paParams.getSignatureGenesets().getGenesets().get(signatureGeneset).getGenes());
                                 mapset.retainAll(paset);
                                 //if we want to do the hypergeometric test do:
                                 if (paParams.getSignature_filterMetric() == paParams.HYPERGEOM) {
@@ -164,11 +165,11 @@ public class LoadSignatureGMTFilesTask implements Task {
                                 }
                             }
                             if(matchfound){
-                                if (! signatureSetNames.contains(setNamesArray[i]))
-                                    signatureSetNames.addElement(setNamesArray[i]);
+                                if (! signatureSetNames.contains(signatureGeneset))
+                                    signatureSetNames.addElement(signatureGeneset);
                             }
                         } else {
-                        	signatureSetNames.addElement(setNamesArray[i]);
+                        	signatureSetNames.addElement(signatureGeneset);
                         }
                     }
                 }

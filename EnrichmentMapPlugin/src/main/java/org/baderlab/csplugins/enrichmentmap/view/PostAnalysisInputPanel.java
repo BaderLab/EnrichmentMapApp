@@ -151,14 +151,13 @@ public class PostAnalysisInputPanel extends JPanel {
     private HashMap<String, Ranking> rankingMap;
     
     //Parameters related components
-    private JComboBox sigDiscoveryDatasetCombo;
     private JComboBox sigDiscoveryRankingCombo;
-    private JComboBox knownSigDatasetCombo;
-    private JComboBox knownSigRankingCombo;
     private JComboBox signatureDiscoveryRankTestCombo;
     private JFormattedTextField signatureDiscoveryRankTestTextField;
     private JComboBox knownSignatureRankTestCombo;
     private JFormattedTextField knownSignatureRankTestTextField;
+    private DefaultComboBoxModel datasetModel;
+    private DefaultComboBoxModel rankingModel;
 
     
     private int defaultColumns = 15;
@@ -757,7 +756,12 @@ public class PostAnalysisInputPanel extends JPanel {
         
         String[] datasetArray = datasetMap.keySet().toArray(new String[datasetMap.size()]);
         Arrays.sort(datasetArray);
-        knownSigDatasetCombo = new JComboBox(datasetArray);
+        datasetModel = new DefaultComboBoxModel();
+        for (String dataset : datasetArray) {
+        	datasetModel.addElement(dataset);
+        }
+        JComboBox knownSigDatasetCombo = new JComboBox();
+        knownSigDatasetCombo.setModel(datasetModel);
         knownSigDatasetCombo.addActionListener( new ActionListener() {
             public void actionPerformed( ActionEvent e ) {
             	JComboBox selectedChoice = (JComboBox) e.getSource();
@@ -767,7 +771,14 @@ public class PostAnalysisInputPanel extends JPanel {
         knownSigDatasetCombo.setSelectedIndex(0);
         panel.add(knownSigDatasetCombo);
         
-        knownSigRankingCombo = new JComboBox(rankingMap.keySet().toArray());
+        String[] rankingArray = rankingMap.keySet().toArray(new String[rankingMap.size()]);
+        Arrays.sort(rankingArray);
+        rankingModel = new DefaultComboBoxModel();
+        for (String ranking : rankingArray) {
+        	rankingModel.addElement(ranking);
+        }
+        JComboBox knownSigRankingCombo = new JComboBox();
+        knownSigRankingCombo.setModel(rankingModel);
         knownSigRankingCombo.addActionListener( new ActionListener() {
             public void actionPerformed( ActionEvent e ) {
             	JComboBox selectedChoice = (JComboBox) e.getSource();
@@ -900,9 +911,9 @@ public class PostAnalysisInputPanel extends JPanel {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         
-        String[] datasetArray = datasetMap.keySet().toArray(new String[datasetMap.size()]);
-        Arrays.sort(datasetArray);
-        sigDiscoveryDatasetCombo = new JComboBox(datasetArray);
+        JComboBox sigDiscoveryDatasetCombo = new JComboBox();
+        // Dataset model is already initialized
+        sigDiscoveryDatasetCombo.setModel(datasetModel);
         sigDiscoveryDatasetCombo.addActionListener( new ActionListener() {
             public void actionPerformed( ActionEvent e ) {
             	JComboBox selectedChoice = (JComboBox) e.getSource();
@@ -910,10 +921,10 @@ public class PostAnalysisInputPanel extends JPanel {
             }
         });
         sigDiscoveryDatasetCombo.setSelectedIndex(0);
-
         panel.add(sigDiscoveryDatasetCombo);
         
-        sigDiscoveryRankingCombo = new JComboBox(rankingMap.keySet().toArray());
+        sigDiscoveryRankingCombo = new JComboBox();
+        sigDiscoveryRankingCombo.setModel(rankingModel);
         sigDiscoveryRankingCombo.addActionListener( new ActionListener() {
             public void actionPerformed( ActionEvent e ) {
             	JComboBox selectedChoice = (JComboBox) e.getSource();
@@ -1461,28 +1472,19 @@ public class PostAnalysisInputPanel extends JPanel {
 	        this.paParams = this.knownSigPaParams;
 	        this.paParams.setSignatureHub(false);
 	        
-	        datasetMap = this.map.getDatasets();
-	        rankingMap = this.map.getAllRanks();
-	        
-	        String[] datasetArray = datasetMap.keySet().toArray(new String[datasetMap.size()]);
+	        String[] datasetArray = this.map.getDatasets().keySet().toArray(new String[datasetMap.size()]);
 	        Arrays.sort(datasetArray);
-	        knownSigDatasetCombo = new JComboBox(datasetArray);
-	        knownSigDatasetCombo.addActionListener( new ActionListener() {
-	            public void actionPerformed( ActionEvent e ) {
-	            	JComboBox selectedChoice = (JComboBox) e.getSource();
-	            	paParams.setSignature_dataSet((String)selectedChoice.getSelectedItem());
-	            }
-	        });
-	        knownSigDatasetCombo.setSelectedIndex(0);
+	        this.datasetModel.removeAllElements();
+	        for (String dataset : datasetArray) {
+	        	datasetModel.addElement(dataset);
+	        }
 	        
-	        knownSigRankingCombo = new JComboBox(rankingMap.keySet().toArray());
-	        knownSigRankingCombo.addActionListener( new ActionListener() {
-	            public void actionPerformed( ActionEvent e ) {
-	            	JComboBox selectedChoice = (JComboBox) e.getSource();
-	            	paParams.setSignature_rankFile((String)selectedChoice.getSelectedItem());
-	            }
-	        });
-	        knownSigRankingCombo.setSelectedIndex(0);
+	        String[] rankingArray = this.map.getAllRanks().keySet().toArray(new String[rankingMap.size()]);
+	        Arrays.sort(rankingArray);
+	        rankingModel.removeAllElements();
+	        for (String ranking : rankingArray) {
+	        	rankingModel.addElement(ranking);
+	        }
 	        
 	        HashMap<String, GeneSet> EnrichmentGenesets = map.getAllGenesets();
 	        EnrichmentGenes = new HashSet<Integer>();
