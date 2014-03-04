@@ -1,6 +1,5 @@
 package org.baderlab.csplugins.enrichmentmap.task;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -17,6 +16,7 @@ import cern.jet.stat.Gamma;
 
 import cytoscape.task.Task;
 import cytoscape.task.TaskMonitor;
+import cytoscape.task.ui.JTaskConfig;
 
 public class LoadSignatureGMTFilesTask implements Task {
 
@@ -92,6 +92,7 @@ public class LoadSignatureGMTFilesTask implements Task {
                     taskMonitor.setException(e,"unable to load GMT files");
                     return;
                 }
+                taskMonitor.setStatus("Analyzing genesets ... ");
                 //Sort the Genesets:
                 DefaultListModel signatureSetNames = paParams.getSignatureSetNames();
                 DefaultListModel selectedSignatureSetNames = paParams.getSelectedSignatureSetNames();
@@ -113,7 +114,16 @@ public class LoadSignatureGMTFilesTask implements Task {
 //                Arrays.sort( setNamesArray );
                 double hyperPval;
                 String signatureGeneset, mapGeneset;
+                int currentProgress = 0, maxValue = paParams.getSignatureGenesets().getGenesets().size(), percentComplete;
+                long timeRemaining;
                 for (Iterator<String> i = paParams.getSignatureGenesets().getGenesets().keySet().iterator(); i.hasNext(); ) {
+                    this.paPanel.setAvSigCount(signatureSetNames.size());
+                	percentComplete = (int) (((double) currentProgress / maxValue) * 100);
+                    timeRemaining = maxValue - currentProgress;
+                    taskMonitor.setStatus("Analyzing geneset " + currentProgress + " of " + maxValue);
+                    taskMonitor.setPercentCompleted(percentComplete);
+                    taskMonitor.setEstimatedTimeRemaining(timeRemaining);
+                    currentProgress++;
                     if (interrupted)
                         throw new InterruptedException();
                     signatureGeneset = i.next();
@@ -141,40 +151,33 @@ public class LoadSignatureGMTFilesTask implements Task {
                                         hyperPval = 1.0;
                                     if (hyperPval <= paParams.getSignature_Hypergeom_Cutoff()) {
                                     	matchfound = true;        
-                                    	break;
                                     }
                                 //if we are looking for percentage do:
                                 } else if(paParams.getSignature_filterMetric() == paParams.PERCENT) {
                                     Double relative_per =  mapset.size()/original_size.doubleValue();
                                     if(relative_per >= (Double)(paParams.getFilterValue()/100.0) ){
                                         matchfound = true;
-                                        break;
                                     }
                                 //if we are looking for number in the overlap
                                 } else if(paParams.getSignature_filterMetric() == paParams.NUMBER) {
                                     if(mapset.size() >= paParams.getFilterValue()){
                                         matchfound = true;
-                                        break;
                                     }
                                 } else if(paParams.getSignature_filterMetric() == paParams.SPECIFIC) {
                                     Double relative_per =  mapset.size()/((Integer)(paset.size())).doubleValue();
                                     if(relative_per >= (Double)(paParams.getFilterValue()/100.0) ){
                                         matchfound = true;
-                                        break;
                                     }
                                 }
-                            }
-                            if(matchfound){
-                                if (! signatureSetNames.contains(signatureGeneset))
-                                    signatureSetNames.addElement(signatureGeneset);
+                                if(matchfound){
+                                    if (! signatureSetNames.contains(signatureGeneset))
+                                        signatureSetNames.addElement(signatureGeneset);
+                                }
                             }
                         } else {
                         	signatureSetNames.addElement(signatureGeneset);
                         }
                     }
-                }
-                if (paParams.isSignatureDiscovery()) {
-                	this.paPanel.setAvSigCount(signatureSetNames.size());
                 }
             } catch (InterruptedException e) {
                 taskMonitor.setException(e, "loading of GMT files cancelled");

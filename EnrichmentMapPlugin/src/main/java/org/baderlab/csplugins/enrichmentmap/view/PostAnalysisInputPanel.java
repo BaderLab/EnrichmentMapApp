@@ -1529,8 +1529,10 @@ public class PostAnalysisInputPanel extends JPanel {
 	 * @return null
 	 */
 	public void setAvSigCount(int avSigCount) {
-		this.avail_sig_sets_count = 0;
-		this.avail_sig_sets_counter_label.setText("(" + Integer.toString(avSigCount) + ")");
+		if (signatureDiscovery.isSelected()) {
+			this.avail_sig_sets_count = 0;
+			this.avail_sig_sets_counter_label.setText("(" + Integer.toString(avSigCount) + ")");
+		}
 	}
 	
 	/**
