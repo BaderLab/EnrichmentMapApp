@@ -1,5 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.task;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -113,20 +114,23 @@ public class LoadSignatureGMTFilesTask implements Task {
                 int k = 0;
 //                Arrays.sort( setNamesArray );
                 double hyperPval;
-                String signatureGeneset, mapGeneset;
-                int currentProgress = 0, maxValue = paParams.getSignatureGenesets().getGenesets().size(), percentComplete;
+                Object signatureGeneset, mapGeneset;
+                int percentComplete;
                 long timeRemaining;
-                for (Iterator<String> i = paParams.getSignatureGenesets().getGenesets().keySet().iterator(); i.hasNext(); ) {
-                    this.paPanel.setAvSigCount(signatureSetNames.size());
-                	percentComplete = (int) (((double) currentProgress / maxValue) * 100);
-                    timeRemaining = maxValue - currentProgress;
-                    taskMonitor.setStatus("Analyzing geneset " + currentProgress + " of " + maxValue);
+
+                Object[] setNamesArray = paParams.getSignatureGenesets().getGenesets().keySet().toArray();
+                Arrays.sort(setNamesArray);
+                
+                for (int i = 0; i < setNamesArray.length; i++) {                    
+                	this.paPanel.setAvSigCount(signatureSetNames.size());
+                	percentComplete = (int) (((double) i / setNamesArray.length) * 100);
+                    timeRemaining = setNamesArray.length - i;
+                    taskMonitor.setStatus("Analyzing geneset " + (i + 1) + " of " + setNamesArray.length);
                     taskMonitor.setPercentCompleted(percentComplete);
                     taskMonitor.setEstimatedTimeRemaining(timeRemaining);
-                    currentProgress++;
                     if (interrupted)
                         throw new InterruptedException();
-                    signatureGeneset = i.next();
+                    signatureGeneset = setNamesArray[i];
                     if (! selectedSignatureSetNames.contains(signatureGeneset)) {
                         if(paParams.isFilter()) {
                             //only add the name if it overlaps with the sets in the map.

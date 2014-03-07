@@ -823,8 +823,8 @@ public class PostAnalysisInputPanel extends JPanel {
         panel.add(cutoffPanel);
         
         // Create Universe selection panel
-        CollapsiblePanel universeSelectionPanel = new CollapsiblePanel("Advanced");
-        universeSelectionPanel.setCollapsed(false);
+        CollapsiblePanel universeSelectionPanel = new CollapsiblePanel("Advanced Hypergeometric Universe");
+        universeSelectionPanel.setCollapsed(true);
         universeSelectionPanel.getContentPane().setLayout(new BorderLayout());
         JPanel radioButtonsPanel = new JPanel();
         GridBagLayout gridbag = new GridBagLayout();
@@ -835,7 +835,7 @@ public class PostAnalysisInputPanel extends JPanel {
         c.fill = GridBagConstraints.HORIZONTAL;
         radioButtonsPanel.setLayout(gridbag);
         
-        JRadioButton GMTRadioButton = new JRadioButton("GMT");
+        JRadioButton GMTRadioButton = new JRadioButton("GMT (" + Integer.toString(EnrichmentGenes.size()) + ")");
         GMTRadioButton.setActionCommand("GMT");
         GMTRadioButton.addActionListener(new PaPanelActionListener(this) {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -843,14 +843,14 @@ public class PostAnalysisInputPanel extends JPanel {
             }
         });
         GMTRadioButton.setSelected(true);
-        JRadioButton ExpressionSetRadioButton = new JRadioButton("Expression Set");
+        JRadioButton ExpressionSetRadioButton = new JRadioButton("Expression Set (" + Integer.toString(EnrichmentGenes.size()) + ")");
         ExpressionSetRadioButton.setActionCommand("Expression Set");
         ExpressionSetRadioButton.addActionListener(new PaPanelActionListener(this) {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 selectKnownSigUniverseActionPerformed(evt);
             }
         });
-        JRadioButton IntersectionRadioButton = new JRadioButton("Intersection");
+        JRadioButton IntersectionRadioButton = new JRadioButton("Intersection (" + Integer.toString(EnrichmentGenes.size()) + ")");
         IntersectionRadioButton.setActionCommand("Intersection");
         IntersectionRadioButton.addActionListener(new PaPanelActionListener(this) {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -970,8 +970,8 @@ public class PostAnalysisInputPanel extends JPanel {
         panel.add(cutoffPanel);
         
         // Create Universe selection panel
-        CollapsiblePanel universeSelectionPanel = new CollapsiblePanel("Advanced");
-        universeSelectionPanel.setCollapsed(false);
+        CollapsiblePanel universeSelectionPanel = new CollapsiblePanel("Advanced Hypergeometric Universe");
+        universeSelectionPanel.setCollapsed(true);
         universeSelectionPanel.getContentPane().setLayout(new BorderLayout());
         
         GridBagLayout gridbag = new GridBagLayout();
@@ -984,7 +984,7 @@ public class PostAnalysisInputPanel extends JPanel {
         JPanel radioButtonsPanel = new JPanel();
         radioButtonsPanel.setLayout(gridbag);
         
-        JRadioButton GMTRadioButton = new JRadioButton("GMT");
+        JRadioButton GMTRadioButton = new JRadioButton("GMT (" + Integer.toString(EnrichmentGenes.size()) + ")");
         GMTRadioButton.setActionCommand("GMT");
         GMTRadioButton.addActionListener(new PaPanelActionListener(this) {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -992,14 +992,14 @@ public class PostAnalysisInputPanel extends JPanel {
             }
         });        
         GMTRadioButton.setSelected(true);
-        JRadioButton ExpressionSetRadioButton = new JRadioButton("Expression Set");
+        JRadioButton ExpressionSetRadioButton = new JRadioButton("Expression Set (" + Integer.toString(EnrichmentGenes.size()) + ")");
         ExpressionSetRadioButton.setActionCommand("Expression Set");
         ExpressionSetRadioButton.addActionListener(new PaPanelActionListener(this) {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 selectSigDiscoveryUniverseActionPerformed(evt);
             }
         });    
-        JRadioButton IntersectionRadioButton = new JRadioButton("Intersection");
+        JRadioButton IntersectionRadioButton = new JRadioButton("Intersection (" + Integer.toString(EnrichmentGenes.size()) + ")");
         IntersectionRadioButton.setActionCommand("Intersection");
         IntersectionRadioButton.addActionListener(new PaPanelActionListener(this) {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
