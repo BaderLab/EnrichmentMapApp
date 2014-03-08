@@ -148,7 +148,6 @@ public class DataSet {
 			this.datasetGenes = datasetGenes;
 		}
 
-
 		public DataSetFiles getDatasetFiles() {
 			return datasetFiles;
 		}

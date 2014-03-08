@@ -23,6 +23,9 @@ public class SetOfGeneSets {
 		//filename
 		private String filename;
 		
+		//Total universe size (without filtering)
+		private int totalUniverseSize;
+		
 		//Genesets can have multiple sources.  
 		//Keep a list of all the different types of genesets that are contained in this set of genesets.
 	    private HashSet<String> GenesetTypes = new HashSet<String>();
@@ -31,6 +34,7 @@ public class SetOfGeneSets {
 			name = "";
 			filename = "";
 			genesets = new HashMap<String, GeneSet>();
+			totalUniverseSize = 0;
 		}
 		
 		/*
@@ -59,8 +63,8 @@ public class SetOfGeneSets {
 	     */
 	    public void filterGenesets(HashSet<Integer> datasetGenes){
 	    		
-	    		//create a new hashmap to store the filtered geneset
-	    		HashMap<String, GeneSet> filteredGenesets = new HashMap<String,GeneSet>(); 
+    		//create a new hashmap to store the filtered geneset
+    		HashMap<String, GeneSet> filteredGenesets = new HashMap<String,GeneSet>(); 
 	    		
 	        //iterate through each geneset and filter each one
 	         for(Iterator j = genesets.keySet().iterator(); j.hasNext(); ){
@@ -147,6 +151,5 @@ public class SetOfGeneSets {
 			paramVariables.append(ds + "%" + this.getClass().getSimpleName() + "%GenesetTypes\t" +GenesetTypes.toString() + "\n");
 			return paramVariables.toString();
 		}
-
 
 }

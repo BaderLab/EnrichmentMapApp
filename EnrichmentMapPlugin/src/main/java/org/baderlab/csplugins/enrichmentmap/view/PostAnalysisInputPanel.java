@@ -117,21 +117,35 @@ public class PostAnalysisInputPanel extends JPanel {
     HashSet<Integer> EnrichmentGenes;
     
     private PostAnalysisParameters paParams;
-    private PostAnalysisParameters knownSigPaParams;
-    private PostAnalysisParameters sigDiscoveryPaParams;
-
-    // Analysis Type related components
-    private JRadioButton signatureDiscovery;
-    private JRadioButton knownSignature;
-
     
-    //Genesets file related components
-    private JFormattedTextField knownSignatureGMTFileNameTextField;
-    private JFormattedTextField signatureDiscoveryGMTFileNameTextField;
+	// 'Known Signature Panel' parameters
+    private JPanel knownSignaturePanel;
+    private PostAnalysisParameters knownSigPaParams;
+    private JRadioButton knownSignature;
     private JFormattedTextField knownSigUniverseSelectionTextField;
-    private JFormattedTextField sigDiscoveryUniverseSelectionTextField;
+	private JFormattedTextField knownSignatureGMTFileNameTextField;
+	private JComboBox knownSignatureRankTestCombo;
+	private JFormattedTextField knownSignatureRankTestTextField;
+	private JRadioButton KnownSigGMTRadioButton;
+	private JRadioButton KnownSigExpressionSetRadioButton;
+	private JRadioButton KnownSigIntersectionRadioButton;
+	private JRadioButton KnownSigUserDefinedRadioButton;
 
-    private JLabel avail_sig_sets_counter_label;
+	// 'Signature Discovery Panel' parameters
+	private PostAnalysisParameters sigDiscoveryPaParams;
+    private JRadioButton signatureDiscovery;
+    private JFormattedTextField signatureDiscoveryGMTFileNameTextField;
+    private JFormattedTextField sigDiscoveryUniverseSelectionTextField;
+	private JPanel signatureDiscoveryPanel;
+	private JComboBox sigDiscoveryRankingCombo;
+	private JComboBox signatureDiscoveryRankTestCombo;
+	private JFormattedTextField signatureDiscoveryRankTestTextField;
+	private JRadioButton SigDiscoveryGMTRadioButton;
+	private JRadioButton SigDiscoveryIntersectionRadioButton;
+	private JRadioButton SigDiscoveryUserDefinedRadioButton;
+	private JRadioButton SigDiscoveryExpressionSetRadioButton;
+
+	private JLabel avail_sig_sets_counter_label;
     private int avail_sig_sets_count = 0;
     private JLabel selected_sig_sets_counter_label;
     private int sel_sig_sets_count = 0;
@@ -140,9 +154,6 @@ public class PostAnalysisInputPanel extends JPanel {
     private DefaultListModel avail_sig_sets;
     private DefaultListModel selected_sig_sets;
     
-    /** Global reference to options panel. Allows panel subcomponents to be altered. **/
-    JPanel signatureDiscoveryPanel;
-    JPanel knownSignaturePanel;
     JPanel optionsPanel;
     CollapsiblePanel userInputPanel;
     
@@ -150,12 +161,6 @@ public class PostAnalysisInputPanel extends JPanel {
     private HashMap<String, DataSet> datasetMap;
     private HashMap<String, Ranking> rankingMap;
     
-    //Parameters related components
-    private JComboBox sigDiscoveryRankingCombo;
-    private JComboBox signatureDiscoveryRankTestCombo;
-    private JFormattedTextField signatureDiscoveryRankTestTextField;
-    private JComboBox knownSignatureRankTestCombo;
-    private JFormattedTextField knownSignatureRankTestTextField;
     private DefaultComboBoxModel datasetModel;
     private DefaultComboBoxModel rankingModel;
 
@@ -765,7 +770,20 @@ public class PostAnalysisInputPanel extends JPanel {
         knownSigDatasetCombo.addActionListener( new ActionListener() {
             public void actionPerformed( ActionEvent e ) {
             	JComboBox selectedChoice = (JComboBox) e.getSource();
-            	paParams.setSignature_dataSet((String)selectedChoice.getSelectedItem());
+            	String dataset = (String)selectedChoice.getSelectedItem();
+            	paParams.setSignature_dataSet(dataset);
+            	int universeSize = map.getDataset(paParams.getSignature_dataSet()).getDatasetGenes().size();
+            	paParams.setUniverseSize(universeSize);
+            	if (KnownSigGMTRadioButton != null) {
+            		KnownSigGMTRadioButton.setText("GMT (" + universeSize + ")");
+            	}
+            	int expressionSetSize = map.getDataset(dataset).getExpressionSets().getNumGenes();
+            	if (KnownSigExpressionSetRadioButton != null) {
+            		KnownSigExpressionSetRadioButton.setText("Expression Set (" + expressionSetSize + ")");
+            	}
+            	if (KnownSigIntersectionRadioButton != null) {
+            		
+            	}
             }
         });
         knownSigDatasetCombo.setSelectedIndex(0);
@@ -835,59 +853,61 @@ public class PostAnalysisInputPanel extends JPanel {
         c.fill = GridBagConstraints.HORIZONTAL;
         radioButtonsPanel.setLayout(gridbag);
         
-        JRadioButton GMTRadioButton = new JRadioButton("GMT (" + Integer.toString(EnrichmentGenes.size()) + ")");
-        GMTRadioButton.setActionCommand("GMT");
-        GMTRadioButton.addActionListener(new PaPanelActionListener(this) {
+    	int universeSize = map.getDataset(paParams.getSignature_dataSet()).getDatasetGenes().size();
+        KnownSigGMTRadioButton = new JRadioButton("GMT (" + universeSize + ")");
+        KnownSigGMTRadioButton.setActionCommand("GMT");
+        KnownSigGMTRadioButton.addActionListener(new ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 selectKnownSigUniverseActionPerformed(evt);
             }
         });
-        GMTRadioButton.setSelected(true);
-        JRadioButton ExpressionSetRadioButton = new JRadioButton("Expression Set (" + Integer.toString(EnrichmentGenes.size()) + ")");
-        ExpressionSetRadioButton.setActionCommand("Expression Set");
-        ExpressionSetRadioButton.addActionListener(new PaPanelActionListener(this) {
+        KnownSigGMTRadioButton.setSelected(true);
+    	int expressionSetSize = map.getDataset(paParams.getSignature_dataSet()).getExpressionSets().getNumGenes();
+        KnownSigExpressionSetRadioButton = new JRadioButton("Expression Set (" + expressionSetSize + ")");
+        KnownSigExpressionSetRadioButton.setActionCommand("Expression Set");
+        KnownSigExpressionSetRadioButton.addActionListener(new ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 selectKnownSigUniverseActionPerformed(evt);
             }
         });
-        JRadioButton IntersectionRadioButton = new JRadioButton("Intersection (" + Integer.toString(EnrichmentGenes.size()) + ")");
-        IntersectionRadioButton.setActionCommand("Intersection");
-        IntersectionRadioButton.addActionListener(new PaPanelActionListener(this) {
+        KnownSigIntersectionRadioButton = new JRadioButton("Intersection (??)");
+        KnownSigIntersectionRadioButton.setActionCommand("Intersection");
+        KnownSigIntersectionRadioButton.addActionListener(new ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 selectKnownSigUniverseActionPerformed(evt);
             }
         });
-        JRadioButton UserDefinedRadioButton = new JRadioButton("User Defined");
-        UserDefinedRadioButton.setActionCommand("User Defined");
-        UserDefinedRadioButton.addActionListener(new PaPanelActionListener(this) {
+        KnownSigUserDefinedRadioButton = new JRadioButton("User Defined");
+        KnownSigUserDefinedRadioButton.setActionCommand("User Defined");
+        KnownSigUserDefinedRadioButton.addActionListener(new ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 selectKnownSigUniverseActionPerformed(evt);
             }
         });
         
         ButtonGroup universeSelectionOptions = new ButtonGroup();
-        universeSelectionOptions.add(GMTRadioButton);
-        universeSelectionOptions.add(ExpressionSetRadioButton);
-        universeSelectionOptions.add(IntersectionRadioButton);
-        universeSelectionOptions.add(UserDefinedRadioButton);
+        universeSelectionOptions.add(KnownSigGMTRadioButton);
+        universeSelectionOptions.add(KnownSigExpressionSetRadioButton);
+        universeSelectionOptions.add(KnownSigIntersectionRadioButton);
+        universeSelectionOptions.add(KnownSigUserDefinedRadioButton);
 
         c.gridx = 0;
         c.gridwidth = 3;
         c.gridy = 0;
-        gridbag.setConstraints(GMTRadioButton, c);
-        radioButtonsPanel.add(GMTRadioButton);
+        gridbag.setConstraints(KnownSigGMTRadioButton, c);
+        radioButtonsPanel.add(KnownSigGMTRadioButton);
         
         c.gridy = 1;
-        gridbag.setConstraints(ExpressionSetRadioButton, c);
-        radioButtonsPanel.add(ExpressionSetRadioButton);
+        gridbag.setConstraints(KnownSigExpressionSetRadioButton, c);
+        radioButtonsPanel.add(KnownSigExpressionSetRadioButton);
 
         c.gridy = 2;
-        gridbag.setConstraints(IntersectionRadioButton, c);
-        radioButtonsPanel.add(IntersectionRadioButton);
+        gridbag.setConstraints(KnownSigIntersectionRadioButton, c);
+        radioButtonsPanel.add(KnownSigIntersectionRadioButton);
         
         c.gridy = 3;
-        gridbag.setConstraints(UserDefinedRadioButton, c);
-        radioButtonsPanel.add(UserDefinedRadioButton);
+        gridbag.setConstraints(KnownSigUserDefinedRadioButton, c);
+        radioButtonsPanel.add(KnownSigUserDefinedRadioButton);
         universeSelectionPanel.getContentPane().add(radioButtonsPanel, BorderLayout.WEST);
         
         knownSigUniverseSelectionTextField = new JFormattedTextField();
@@ -917,7 +937,20 @@ public class PostAnalysisInputPanel extends JPanel {
         sigDiscoveryDatasetCombo.addActionListener( new ActionListener() {
             public void actionPerformed( ActionEvent e ) {
             	JComboBox selectedChoice = (JComboBox) e.getSource();
-            	paParams.setSignature_dataSet((String)selectedChoice.getSelectedItem());
+            	String dataset = (String)selectedChoice.getSelectedItem();
+            	paParams.setSignature_dataSet(dataset);
+            	int universeSize = map.getDataset(paParams.getSignature_dataSet()).getDatasetGenes().size();
+            	paParams.setUniverseSize(universeSize);
+            	if (SigDiscoveryGMTRadioButton != null) {
+            		SigDiscoveryGMTRadioButton.setText("GMT (" + universeSize + ")");
+            	}
+            	int expressionSetSize = map.getDataset(dataset).getExpressionSets().getNumGenes();
+            	if (SigDiscoveryExpressionSetRadioButton != null) {
+            		SigDiscoveryExpressionSetRadioButton.setText("Expression Set (" + expressionSetSize + ")");
+            	}
+            	if (SigDiscoveryIntersectionRadioButton != null) {
+            		
+            	}            
             }
         });
         sigDiscoveryDatasetCombo.setSelectedIndex(0);
@@ -984,59 +1017,61 @@ public class PostAnalysisInputPanel extends JPanel {
         JPanel radioButtonsPanel = new JPanel();
         radioButtonsPanel.setLayout(gridbag);
         
-        JRadioButton GMTRadioButton = new JRadioButton("GMT (" + Integer.toString(EnrichmentGenes.size()) + ")");
-        GMTRadioButton.setActionCommand("GMT");
-        GMTRadioButton.addActionListener(new PaPanelActionListener(this) {
+    	int universeSize = map.getDataset(paParams.getSignature_dataSet()).getDatasetGenes().size();
+        SigDiscoveryGMTRadioButton = new JRadioButton("GMT (" + universeSize + ")");
+        SigDiscoveryGMTRadioButton.setActionCommand("GMT");
+        SigDiscoveryGMTRadioButton.addActionListener(new ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 selectSigDiscoveryUniverseActionPerformed(evt);
             }
         });        
-        GMTRadioButton.setSelected(true);
-        JRadioButton ExpressionSetRadioButton = new JRadioButton("Expression Set (" + Integer.toString(EnrichmentGenes.size()) + ")");
-        ExpressionSetRadioButton.setActionCommand("Expression Set");
-        ExpressionSetRadioButton.addActionListener(new PaPanelActionListener(this) {
+        SigDiscoveryGMTRadioButton.setSelected(true);
+    	int expressionSetSize = map.getDataset(paParams.getSignature_dataSet()).getExpressionSets().getNumGenes();
+        SigDiscoveryExpressionSetRadioButton = new JRadioButton("Expression Set (" + expressionSetSize + ")");
+        SigDiscoveryExpressionSetRadioButton.setActionCommand("Expression Set");
+        SigDiscoveryExpressionSetRadioButton.addActionListener(new ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 selectSigDiscoveryUniverseActionPerformed(evt);
             }
         });    
-        JRadioButton IntersectionRadioButton = new JRadioButton("Intersection (" + Integer.toString(EnrichmentGenes.size()) + ")");
-        IntersectionRadioButton.setActionCommand("Intersection");
-        IntersectionRadioButton.addActionListener(new PaPanelActionListener(this) {
+        SigDiscoveryIntersectionRadioButton = new JRadioButton("Intersection (??)");
+        SigDiscoveryIntersectionRadioButton.setActionCommand("Intersection");
+        SigDiscoveryIntersectionRadioButton.addActionListener(new ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 selectSigDiscoveryUniverseActionPerformed(evt);
             }
         });    
-        JRadioButton UserDefinedRadioButton = new JRadioButton("User Defined");
-        UserDefinedRadioButton.setActionCommand("User Defined");
-        UserDefinedRadioButton.addActionListener(new PaPanelActionListener(this) {
+        SigDiscoveryUserDefinedRadioButton = new JRadioButton("User Defined");
+        SigDiscoveryUserDefinedRadioButton.setActionCommand("User Defined");
+        SigDiscoveryUserDefinedRadioButton.addActionListener(new ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 selectSigDiscoveryUniverseActionPerformed(evt);
             }
         });  
         
         ButtonGroup universeSelectionOptions = new ButtonGroup();
-        universeSelectionOptions.add(GMTRadioButton);
-        universeSelectionOptions.add(ExpressionSetRadioButton);
-        universeSelectionOptions.add(IntersectionRadioButton);
-        universeSelectionOptions.add(UserDefinedRadioButton);
+        universeSelectionOptions.add(SigDiscoveryGMTRadioButton);
+        universeSelectionOptions.add(SigDiscoveryExpressionSetRadioButton);
+        universeSelectionOptions.add(SigDiscoveryIntersectionRadioButton);
+        universeSelectionOptions.add(SigDiscoveryUserDefinedRadioButton);
 
         c.gridx = 0;
         c.gridwidth = 3;
         c.gridy = 0;
-        gridbag.setConstraints(GMTRadioButton, c);
-        radioButtonsPanel.add(GMTRadioButton);
+        gridbag.setConstraints(SigDiscoveryGMTRadioButton, c);
+        radioButtonsPanel.add(SigDiscoveryGMTRadioButton);
         
         c.gridy = 1;
-        gridbag.setConstraints(ExpressionSetRadioButton, c);
-        radioButtonsPanel.add(ExpressionSetRadioButton);
+        gridbag.setConstraints(SigDiscoveryExpressionSetRadioButton, c);
+        radioButtonsPanel.add(SigDiscoveryExpressionSetRadioButton);
 
         c.gridy = 2;
-        gridbag.setConstraints(IntersectionRadioButton, c);
-        radioButtonsPanel.add(IntersectionRadioButton);
+        gridbag.setConstraints(SigDiscoveryIntersectionRadioButton, c);
+        radioButtonsPanel.add(SigDiscoveryIntersectionRadioButton);
         
         c.gridy = 3;
-        gridbag.setConstraints(UserDefinedRadioButton, c);
-        radioButtonsPanel.add(UserDefinedRadioButton);
+        gridbag.setConstraints(SigDiscoveryUserDefinedRadioButton, c);
+        radioButtonsPanel.add(SigDiscoveryUserDefinedRadioButton);
         universeSelectionPanel.getContentPane().add(radioButtonsPanel, BorderLayout.WEST);
         
         sigDiscoveryUniverseSelectionTextField = new JFormattedTextField();
@@ -1293,34 +1328,40 @@ public class PostAnalysisInputPanel extends JPanel {
     
     private void selectKnownSigUniverseActionPerformed(ActionEvent evt){
         String analysisType = evt.getActionCommand();
-        int universeSize = EnrichmentGenes.size();
-        knownSigUniverseSelectionTextField.setText(Integer.toString(universeSize));
-        paParams.setUniverseSize(universeSize);
+    	int size = 0;
         if (analysisType.equalsIgnoreCase("GMT")) {
+        	size = map.getDataset(paParams.getSignature_dataSet()).getDatasetGenes().size();
+            knownSigUniverseSelectionTextField.setText(Integer.toString(size));
             knownSigUniverseSelectionTextField.setEditable(false);
         } else if (analysisType.equalsIgnoreCase("Expression Set")) {
-            knownSigUniverseSelectionTextField.setEditable(false);
+        	size = map.getDataset(paParams.getSignature_dataSet()).getExpressionSets().getNumGenes();
+        	knownSigUniverseSelectionTextField.setText(Integer.toString(size));
+        	knownSigUniverseSelectionTextField.setEditable(false);
         } else if (analysisType.equalsIgnoreCase("Intersection")) {
-            knownSigUniverseSelectionTextField.setEditable(false);
+        	knownSigUniverseSelectionTextField.setEditable(false);
         } else if (analysisType.equalsIgnoreCase("User Defined")) {
-            knownSigUniverseSelectionTextField.setEditable(true);
+        	knownSigUniverseSelectionTextField.setEditable(true);
         }
+        paParams.setUniverseSize(size);
     }
     
     private void selectSigDiscoveryUniverseActionPerformed(ActionEvent evt){
         String analysisType = evt.getActionCommand();
-        int universeSize = EnrichmentGenes.size();
-        sigDiscoveryUniverseSelectionTextField.setText(Integer.toString(universeSize));
-        paParams.setUniverseSize(universeSize);
+    	int size = 0;
         if (analysisType.equalsIgnoreCase("GMT")) {
+        	size = map.getDataset(paParams.getSignature_dataSet()).getDatasetGenes().size();
+            sigDiscoveryUniverseSelectionTextField.setText(Integer.toString(size));
         	sigDiscoveryUniverseSelectionTextField.setEditable(false);
         } else if (analysisType.equalsIgnoreCase("Expression Set")) {
+        	size = map.getDataset(paParams.getSignature_dataSet()).getExpressionSets().getNumGenes();
+            sigDiscoveryUniverseSelectionTextField.setText(Integer.toString(size));
         	sigDiscoveryUniverseSelectionTextField.setEditable(false);
         } else if (analysisType.equalsIgnoreCase("Intersection")) {
         	sigDiscoveryUniverseSelectionTextField.setEditable(false);
         } else if (analysisType.equalsIgnoreCase("User Defined")) {
         	sigDiscoveryUniverseSelectionTextField.setEditable(true);
         }
+        paParams.setUniverseSize(size);
     }
         
     private JPanel getKnownSignatureOptionsPanel() {
@@ -1493,9 +1534,9 @@ public class PostAnalysisInputPanel extends JPanel {
 	            EnrichmentGenes.addAll(EnrichmentGenesets.get(setName).getGenes());
 	        }
 	        
-	        int universe = EnrichmentGenes.size();
-	        paParams.setUniverseSize(universe);
-	        knownSigUniverseSelectionTextField.setText(Integer.toString(universe));
+	    	int universeSize = map.getDataset(paParams.getSignature_dataSet()).getDatasetGenes().size();
+	        paParams.setUniverseSize(universeSize);
+	        knownSigUniverseSelectionTextField.setText(Integer.toString(universeSize));
 		}
     }
     
