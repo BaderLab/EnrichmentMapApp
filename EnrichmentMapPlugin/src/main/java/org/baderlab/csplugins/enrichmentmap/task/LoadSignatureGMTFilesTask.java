@@ -112,7 +112,7 @@ public class LoadSignatureGMTFilesTask implements Task {
                 int n = 0;
                 int m = 0;
                 int k = 0;
-//                Arrays.sort( setNamesArray );
+
                 double hyperPval;
                 Object signatureGeneset, mapGeneset;
                 int percentComplete;
@@ -121,8 +121,7 @@ public class LoadSignatureGMTFilesTask implements Task {
                 Object[] setNamesArray = paParams.getSignatureGenesets().getGenesets().keySet().toArray();
                 Arrays.sort(setNamesArray);
                 
-                for (int i = 0; i < setNamesArray.length; i++) {                    
-                	this.paPanel.setAvSigCount(signatureSetNames.size());
+                for (int i = 0; i < setNamesArray.length; i++) {  
                 	percentComplete = (int) (((double) i / setNamesArray.length) * 100);
                     timeRemaining = setNamesArray.length - i;
                     taskMonitor.setStatus("Analyzing geneset " + (i + 1) + " of " + setNamesArray.length);
@@ -174,12 +173,15 @@ public class LoadSignatureGMTFilesTask implements Task {
                                     }
                                 }
                                 if(matchfound){
-                                    if (! signatureSetNames.contains(signatureGeneset))
+                                    if (! signatureSetNames.contains(signatureGeneset)) {
                                         signatureSetNames.addElement(signatureGeneset);
+                                        this.paPanel.setAvSigCount(signatureSetNames.size());
+                                    }
                                 }
                             }
                         } else {
                         	signatureSetNames.addElement(signatureGeneset);
+                            this.paPanel.setAvSigCount(signatureSetNames.size());
                         }
                     }
                 }

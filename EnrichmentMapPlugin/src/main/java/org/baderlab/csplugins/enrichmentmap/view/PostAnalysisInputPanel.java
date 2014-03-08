@@ -1450,8 +1450,6 @@ public class PostAnalysisInputPanel extends JPanel {
      */
     private void resetPanel(){
 
-        this.paParams = new PostAnalysisParameters(EnrichmentMapManager.getInstance().getMap(Cytoscape.getCurrentNetwork().getIdentifier()));
-
         if (knownSignaturePanel != null) {
             //Gene-Sets Panel
             this.knownSignatureGMTFileNameTextField.setText("");
@@ -1470,11 +1468,13 @@ public class PostAnalysisInputPanel extends JPanel {
             this.signatureDiscoveryGMTFileNameTextField.setToolTipText(null);
 	       
 	        // Reset the List fields:
+            this.paParams.getSignatureSetNames().clear();
 	        this.avail_sig_sets = this.paParams.getSignatureSetNames();
 	        this.avail_sig_sets_field.setModel(avail_sig_sets);
 	        this.avail_sig_sets_field.clearSelection();
 	        this.setAvSigCount(0);
 	        
+	        this.paParams.getSelectedSignatureSetNames().clear();
 	        this.selected_sig_sets = this.paParams.getSelectedSignatureSetNames();
 	        this.selected_sig_sets_field.setModel(selected_sig_sets);
 	        this.selected_sig_sets_field.clearSelection();
@@ -1571,7 +1571,7 @@ public class PostAnalysisInputPanel extends JPanel {
 	 */
 	public void setAvSigCount(int avSigCount) {
 		if (signatureDiscovery.isSelected()) {
-			this.avail_sig_sets_count = 0;
+			this.avail_sig_sets_count = avSigCount;
 			this.avail_sig_sets_counter_label.setText("(" + Integer.toString(avSigCount) + ")");
 		}
 	}
