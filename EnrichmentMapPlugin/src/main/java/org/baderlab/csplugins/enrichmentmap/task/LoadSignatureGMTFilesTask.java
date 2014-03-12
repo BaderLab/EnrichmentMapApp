@@ -7,9 +7,13 @@ import java.util.Iterator;
 
 import javax.swing.DefaultListModel;
 
+import org.apache.commons.math3.stat.inference.MannWhitneyUTest;
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
+import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
+import org.baderlab.csplugins.enrichmentmap.model.Rank;
+import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.parsers.GMTFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.view.PostAnalysisInputPanel;
 
@@ -121,6 +125,20 @@ public class LoadSignatureGMTFilesTask implements Task {
                 Object[] setNamesArray = paParams.getSignatureGenesets().getGenesets().keySet().toArray();
                 Arrays.sort(setNamesArray);
                 
+            	HashMap<String, DataSet> data_sets = this.map.getDatasets();
+            	DataSet dataset = data_sets.get(paParams.getSignature_dataSet());
+            	Ranking ranks = dataset.getExpressionSets().getRanks().get(paParams.getSignature_rankFile());
+            	
+                HashMap<Integer, Double> gene2score = ranks.getGene2Score();
+                
+//                Object[] overlap_gene_ids;
+//                double[] overlap_gene_scores;
+//                Object[] enr_gene_ids;
+//                double[] enr_gene_scores;
+//            	double mannPval;
+//                MannWhitneyUTest mann_whit;
+
+                
                 for (int i = 0; i < setNamesArray.length; i++) {  
                 	percentComplete = (int) (((double) i / setNamesArray.length) * 100);
                     timeRemaining = setNamesArray.length - i;
@@ -138,6 +156,7 @@ public class LoadSignatureGMTFilesTask implements Task {
                                 mapGeneset = j.next();
                             	//check if this set overlaps with current geneset
                                 HashSet <Integer> mapset = new HashSet<Integer>(genesets_in_map.get(mapGeneset).getGenes());
+//                                HashSet <Integer> enrGeneSet = (HashSet<Integer>) mapset.clone();
                                 Integer original_size = mapset.size();
                                 HashSet <Integer> paset = new HashSet<Integer>(paParams.getSignatureGenesets().getGenesets().get(signatureGeneset).getGenes());
                                 mapset.retainAll(paset);
@@ -153,30 +172,63 @@ public class LoadSignatureGMTFilesTask implements Task {
                                     else // Correct p-value of empty intersections to 1 (i.e. not significant)
                                         hyperPval = 1.0;
                                     if (hyperPval <= paParams.getSignature_Hypergeom_Cutoff()) {
-                                    	matchfound = true;        
+                                    	
+//                                    	/**
+//                                    	 * PERFORM MANN-WHITNEY HERE!!
+//                                    	 */
+//                                    	                                        
+//        	                            overlap_gene_ids = mapset.toArray();
+//        	                            overlap_gene_scores = new double[overlap_gene_ids.length];
+//        	                            
+//        	                            // Get the scores for the overlap
+//        	                            for (int p = 0; p < overlap_gene_ids.length; p++) {
+//        	                            	overlap_gene_scores[p] = gene2score.get(overlap_gene_ids[p]);
+//        	                            }
+//        	                            
+//        	                            enr_gene_ids = enrGeneSet.toArray();
+//        	                            enr_gene_scores = new double[enr_gene_ids.length];
+//       	                            
+//        	                            // Get the scores for the overlap
+//        	                            for (int p = 0; p < enr_gene_ids.length; p++) {
+//        	                            	enr_gene_scores[p] = gene2score.get(enr_gene_ids[p]);
+//        	                            }
+//
+//                                    	
+//        		                        mann_whit = new MannWhitneyUTest();
+//        			                	mannPval = mann_whit.mannWhitneyUTest(overlap_gene_scores, enr_gene_scores);
+//        			                	
+//            			                System.out.println(mannPval);
+//        			                	
+//            			                if (mannPval <= 0.1) { 
+            			                	matchfound = true;    
+            			                	break;
+//            			                }
                                     }
                                 //if we are looking for percentage do:
                                 } else if(paParams.getSignature_filterMetric() == paParams.PERCENT) {
                                     Double relative_per =  mapset.size()/original_size.doubleValue();
                                     if(relative_per >= (Double)(paParams.getFilterValue()/100.0) ){
                                         matchfound = true;
+                                        break;
                                     }
                                 //if we are looking for number in the overlap
                                 } else if(paParams.getSignature_filterMetric() == paParams.NUMBER) {
                                     if(mapset.size() >= paParams.getFilterValue()){
                                         matchfound = true;
+                                        break;
                                     }
                                 } else if(paParams.getSignature_filterMetric() == paParams.SPECIFIC) {
                                     Double relative_per =  mapset.size()/((Integer)(paset.size())).doubleValue();
                                     if(relative_per >= (Double)(paParams.getFilterValue()/100.0) ){
                                         matchfound = true;
+                                        break;
                                     }
                                 }
-                                if(matchfound){
-                                    if (! signatureSetNames.contains(signatureGeneset)) {
-                                        signatureSetNames.addElement(signatureGeneset);
-                                        this.paPanel.setAvSigCount(signatureSetNames.size());
-                                    }
+                            }
+                            if(matchfound){
+                                if (! signatureSetNames.contains(signatureGeneset)) {
+                                    signatureSetNames.addElement(signatureGeneset);
+                                    this.paPanel.setAvSigCount(signatureSetNames.size());
                                 }
                             }
                         } else {

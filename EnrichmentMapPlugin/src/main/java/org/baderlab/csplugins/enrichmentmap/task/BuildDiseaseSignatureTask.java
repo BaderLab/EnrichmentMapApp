@@ -386,7 +386,7 @@ public class BuildDiseaseSignatureTask implements Task {
                 cyNodeAttrs.setAttribute(hub_node.getIdentifier(), prefix + EnrichmentMapVisualStyle.FORMATTED_NAME, formatted_label);
 
                 //create an attribute that stores the genes that are associated with this node as an attribute list
-                //only create the list if the hashkey 2 genes is not null Otherwise it take too much time to populate the list
+                //only create the list if the hashkey 2 genes is not null Otherwise it takes too much time to populate the list
 //                GeneSet sigGeneSet = SelectedSignatureGenesets.get(hub_name);
                 if(map.getHashkey2gene() != null){
                     // HashSet to List:
@@ -483,6 +483,8 @@ public class BuildDiseaseSignatureTask implements Task {
 //                    passed_cutoff = true;
                 if ( (paParams.getSignature_rankTest() == PostAnalysisParameters.MANN_WHIT) && 
                         (geneset_similarities.get(edge_name).getMann_Whit_pValue() <= paParams.getSignature_Mann_Whit_Cutoff() ) ||
+                     (paParams.getSignature_rankTest() == PostAnalysisParameters.MANN_WHIT) && 
+                        (geneset_similarities.get(edge_name).getSensitivity() ) ||
                      (paParams.getSignature_rankTest() == PostAnalysisParameters.HYPERGEOM) && 
                         (geneset_similarities.get(edge_name).getHypergeom_pvalue() <= paParams.getSignature_Hypergeom_Cutoff() )) {
                    	passed_cutoff = true;
@@ -548,7 +550,6 @@ public class BuildDiseaseSignatureTask implements Task {
                         cyEdgeAttrs.setAttribute(edge.getIdentifier(), "edge.lineWidth", "4.5");
                     else
                         cyEdgeAttrs.setAttribute(edge.getIdentifier(), "edge.lineWidth", "1.0");
-                    
 
                 } //if (geneset_similarities.get(edge_name).getSizeOfOverlap() > 0)
             } //for #iterate over selected Signature genesets

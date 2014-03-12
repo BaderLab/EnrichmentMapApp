@@ -65,6 +65,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.JMultiLineToolTip;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
+import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
 import org.baderlab.csplugins.enrichmentmap.task.LoadSignatureGMTFilesTask;
 
 import java.awt.*;
@@ -438,6 +439,7 @@ public class PostAnalysisInputPanel extends JPanel {
         //ActionListener for clear button
         clearButton.addActionListener(new PaPanelActionListener(this) {
 			public void actionPerformed(ActionEvent e) {
+				this.paPanel.paParams.setSignatureGenesets(new SetOfGeneSets());
 		        this.paPanel.avail_sig_sets.clear();
 		        this.paPanel.avail_sig_sets_field.clearSelection();
 		        this.paPanel.setAvSigCount(0);
@@ -1449,6 +1451,8 @@ public class PostAnalysisInputPanel extends JPanel {
      * Clear the current panel and clear the paParams associated with this panel
      */
     private void resetPanel(){
+    	
+        this.paParams.setSignatureGenesets(new SetOfGeneSets());
 
         if (knownSignaturePanel != null) {
             //Gene-Sets Panel
@@ -1466,17 +1470,15 @@ public class PostAnalysisInputPanel extends JPanel {
             this.signatureDiscoveryGMTFileNameTextField.setText("");
             this.signatureDiscoveryGMTFileNameTextField.setValue("");
             this.signatureDiscoveryGMTFileNameTextField.setToolTipText(null);
-	       
+                        	       
 	        // Reset the List fields:
             this.paParams.getSignatureSetNames().clear();
-	        this.avail_sig_sets = this.paParams.getSignatureSetNames();
-	        this.avail_sig_sets_field.setModel(avail_sig_sets);
+	        this.avail_sig_sets.clear();
 	        this.avail_sig_sets_field.clearSelection();
 	        this.setAvSigCount(0);
 	        
 	        this.paParams.getSelectedSignatureSetNames().clear();
-	        this.selected_sig_sets = this.paParams.getSelectedSignatureSetNames();
-	        this.selected_sig_sets_field.setModel(selected_sig_sets);
+	        this.selected_sig_sets.clear();
 	        this.selected_sig_sets_field.clearSelection();
 	        this.setSelSigCount(0);
 	

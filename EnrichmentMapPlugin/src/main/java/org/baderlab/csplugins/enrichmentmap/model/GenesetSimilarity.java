@@ -84,6 +84,8 @@ public class GenesetSimilarity {
     //the similiarity can come from the first or second set of enerichments --(possibly more in future version)
     //if it is zero the similarity applies to both sets.
     private int enrichment_set;
+    
+    private boolean sensitivity;
 
     /**
      * Class constructor
@@ -103,6 +105,7 @@ public class GenesetSimilarity {
         this.hypergeom_pvalue = -1.0;
         this.interaction_type = interaction_type;
         this.enrichment_set = enrichment_set;
+        this.setSensitivity(false);
      }
 
 
@@ -123,6 +126,7 @@ public class GenesetSimilarity {
         this.hypergeom_pvalue = -1.0;
         this.interaction_type = interaction_type;
         this.enrichment_set = 0;
+        this.setSensitivity(false);
      }
 
     /**
@@ -145,6 +149,7 @@ public class GenesetSimilarity {
         this.interaction_type = interaction_type;
 
         this.enrichment_set = 0;
+        this.setSensitivity(false);
     }
 
 
@@ -336,6 +341,22 @@ public class GenesetSimilarity {
 	 */
 	public void setMann_Whit_pValue(double mann_whit_pvalue) {
 		this.mann_whit_pvalue = mann_whit_pvalue;
+	}
+
+
+	/**
+	 * @return the sensitivity
+	 */
+	public boolean getSensitivity() {
+		return sensitivity;
+	}
+
+
+	/**
+	 * @param sensitivity the sensitivity to set
+	 */
+	public void setSensitivity(boolean sensitivity) {
+		this.sensitivity = sensitivity;
 	}
 
 }
