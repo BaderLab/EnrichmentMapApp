@@ -112,7 +112,7 @@ public class HeatMapParameters {
     private ImageIcon[] iconArrow = createExpandAndCollapseIcon();
     
     //switch to turn off the coloring of the heatmap
-    private boolean coloroff = false;
+    private boolean showValues = false;
 
     //minimum and maximum expression values used to create colour mapper
     private double minExpression;
@@ -451,6 +451,7 @@ public class HeatMapParameters {
     	 TitledBorder HMBorder = BorderFactory.createTitledBorder("Normalization");
          HMBorder.setTitleJustification(TitledBorder.LEFT);
     	heatmapOptions   = new JPanel();
+    	heatmapOptions.setLayout(new BorderLayout());
     	hmOptionComboBox = new JComboBox();
         hmOptionComboBox.addItem("Data As Is");
         hmOptionComboBox.addItem("Row Normalize Data");
@@ -466,7 +467,7 @@ public class HeatMapParameters {
        }
 
         hmOptionComboBox.addActionListener(new HeatMapActionListener(edgeOverlapPanel, nodeOverlapPanel,hmOptionComboBox,this, map));
-        heatmapOptions.add(hmOptionComboBox);
+        heatmapOptions.add(hmOptionComboBox,BorderLayout.NORTH);
         heatmapOptions.setBorder(HMBorder);
         return heatmapOptions;
     }
@@ -588,12 +589,12 @@ public class HeatMapParameters {
             this.ascending[index] = !ascending[index];
     }
 
-	public boolean isColoroff() {
-		return coloroff;
+	public boolean isShowValues() {
+		return showValues;
 	}
 
-	public void setColoroff(boolean coloroff) {
-		this.coloroff = coloroff;
+	public void setShowValues(boolean showvalues) {
+		this.showValues = showvalues;
 	}
 
 }
