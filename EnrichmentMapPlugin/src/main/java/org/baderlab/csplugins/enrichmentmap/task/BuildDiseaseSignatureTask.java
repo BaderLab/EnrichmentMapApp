@@ -338,7 +338,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
                 // and increase currentNodeY_offset for the next Node
                 View<CyNode> hubNodeView = current_view.getNodeView(hub_node);
                 double hubNodeY = hubNodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
-                hubNodeView.setLockedValue(BasicVisualLexicon.NODE_Y_LOCATION,hubNodeY + currentNodeY_offset);
+                hubNodeView.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION,hubNodeY + currentNodeY_offset);
                 currentNodeY_offset += currentNodeY_increment;
                 
                 String formatted_label =  CreateEnrichmentMapNetworkTask.formatLabel(hub_name);
@@ -355,7 +355,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
                     for(Iterator<Integer> j=genes_hash.iterator(); j.hasNext();){
                         Integer current = j.next();
                         String gene = map.getGeneFromHashKey(current);
-                        if(gene_list != null)
+                        if(gene_list != null && gene != null)
                             gene_list.add(gene);
                     }
                     Collections.sort(gene_list);
@@ -366,7 +366,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
                     for(Iterator<Integer> j=enr_genes_hash.iterator(); j.hasNext();){
                         Integer current = j.next();
                         String gene = map.getGeneFromHashKey(current);
-                        if(enr_gene_list != null)
+                        if(enr_gene_list != null && gene != null)
                             enr_gene_list.add(gene);
                     }
                     Collections.sort(enr_gene_list);
@@ -452,7 +452,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
                         for(Iterator<Integer> k=genes_hash.iterator(); k.hasNext();){
                             Integer current = k.next();
                             String gene = map.getGeneFromHashKey(current);
-                            if(gene_list != null)
+                            if(gene_list != null && gene != null)
                                 gene_list.add(gene);
                         }
                         Collections.sort(gene_list);
@@ -465,19 +465,20 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
                     current_edgerow.set( prefix + EnrichmentMapVisualStyle.HYPERGEOM_PVALUE   , geneset_similarities.get(edge_name).getHypergeom_pvalue());
                     current_edgerow.set( prefix + EnrichmentMapVisualStyle.ENRICHMENT_SET  , geneset_similarities.get(edge_name).getEnrichment_set());
                     
-                    edgeView.setLockedValue(BasicVisualLexicon.EDGE_UNSELECTED_PAINT, paParams.getSignatureHub_edgeColor());
-                    edgeView.setLockedValue(BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT, paParams.getSignatureHub_edgeColor());
+                    if(edgeView != null){
+                    	edgeView.setLockedValue(BasicVisualLexicon.EDGE_UNSELECTED_PAINT, paParams.getSignatureHub_edgeColor());
+                    	edgeView.setLockedValue(BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT, paParams.getSignatureHub_edgeColor());
                     
-                    //change "edge.lineWidth" based on Hypergeometric Value 
-                    if (geneset_similarities.get(edge_name).getHypergeom_pvalue() <= (paParams.getSignature_Hypergeom_Cutoff()/100) )
+                    	//change "edge.lineWidth" based on Hypergeometric Value 
+                    	if (geneset_similarities.get(edge_name).getHypergeom_pvalue() <= (paParams.getSignature_Hypergeom_Cutoff()/100) )
                     		edgeView.setLockedValue(BasicVisualLexicon.EDGE_WIDTH,8.0);	
-                    else 
-                    if (geneset_similarities.get(edge_name).getHypergeom_pvalue() <= (paParams.getSignature_Hypergeom_Cutoff()/10) )
-                    		edgeView.setLockedValue(BasicVisualLexicon.EDGE_WIDTH,4.5);	                   
-                    else
+                    	else 
+                    		if (geneset_similarities.get(edge_name).getHypergeom_pvalue() <= (paParams.getSignature_Hypergeom_Cutoff()/10) )
+                    			edgeView.setLockedValue(BasicVisualLexicon.EDGE_WIDTH,4.5);	                   
+                    		else
                     		edgeView.setLockedValue(BasicVisualLexicon.EDGE_WIDTH,1.0);	
                     
-                    
+                    }
 
                 } //if (geneset_similarities.get(edge_name).getSizeOfOverlap() > 0)
 
