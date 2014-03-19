@@ -107,10 +107,14 @@ public class ComputeSimilarityTask extends AbstractTask {
     }    
     
 
-    public boolean computeGenesetSimilarities(){
-        
-            HashMap<String, GeneSet> genesetsOfInterest = map.getAllGenesetsOfInterest();
-            
+    public boolean computeGenesetSimilarities() throws Exception{
+        //try{
+        	HashMap<String, GeneSet> genesetsOfInterest;
+        	if(map.getParams().isTwoDistinctExpressionSets())               
+            genesetsOfInterest = map.getDataset(EnrichmentMap.DATASET1).getGenesetsOfInterest().getGenesets();
+        	else	
+        		genesetsOfInterest = map.getAllGenesetsOfInterest();
+          
             //if there are no gene sets of interest check to see if there are any genesets to use
             if(genesetsOfInterest == null || genesetsOfInterest.isEmpty())
             		genesetsOfInterest = map.getAllGenesets();

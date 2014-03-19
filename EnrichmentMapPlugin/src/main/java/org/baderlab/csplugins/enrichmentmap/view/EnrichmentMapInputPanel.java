@@ -1240,8 +1240,11 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
             		else if (source == GMTFileNameTextField) 
             			dataset1files.setGMTFileName(value);                            
             		
-            		Color found = checkFile(value);
-            	 	source.setForeground(found);
+            		Color found = Color.black;
+            		if(!value.equalsIgnoreCase("")){
+            			found = checkFile(value);
+            			source.setForeground(found);
+            		}
             		
             		//For all the files warn the user if the new file is still not found
             		if(found.equals(Color.RED) && !LoadedFromRpt_dataset1 && !LoadedFromRpt_dataset2 && !panelUpdate)

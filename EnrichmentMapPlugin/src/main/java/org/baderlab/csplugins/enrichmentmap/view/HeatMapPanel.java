@@ -50,6 +50,7 @@ import javax.swing.table.*;
 import java.awt.*;
 import java.awt.List;
 import java.awt.event.ActionEvent;
+import java.awt.event.ItemEvent;
 import java.util.*;
 import java.io.*;
 import java.net.URL;
@@ -108,8 +109,8 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
     //private Object[][] data;
     private Object[][] expValue;
     
-    private JRadioButton colorOn;
-    private JRadioButton colorOff;
+    //private JRadioButton colorOn;
+    private JCheckBox showValues;
     
     private int numConditions = 0;
     private int numConditions2 = 0;
@@ -355,9 +356,9 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
             //Set up renderer and editor for the Color column.
             //default column width.  If we are using coloring default should be 10.  If we are using values default should be 50
             int defaultColumnwidth = 10;
-            if(this.hmParams.isColoroff()){
+            if(this.hmParams.isShowValues()){
             		jTable1.setDefaultRenderer(ExpressionTableValue.class, new RawExpressionValueRenderer());
-            		defaultColumnwidth = 10;
+            		defaultColumnwidth = 50;
             }
             else
             		jTable1.setDefaultRenderer(ExpressionTableValue.class,new ColorRenderer());
@@ -1091,57 +1092,30 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
       return expression_values1;
     }
     // created new North panel to accommodate the expression legend, normalization options,sorting options, saving option
-   private JPanel coloroffPanel(){
-       JPanel coloroffPanel= new JPanel() ;
-       coloroffPanel.setMaximumSize(new Dimension(50,100));
-       coloroffPanel.setMinimumSize(new Dimension(50,100));
+   private JPanel showValuesPanel(){
+             
+	   JPanel showValuesPanel= new JPanel() ;
+	   showValuesPanel.setMaximumSize(new Dimension(50,100));
+	   showValuesPanel.setMinimumSize(new Dimension(50,100));
+             
+       showValues = new JCheckBox("Show values");
        
-       TitledBorder expBorder = BorderFactory.createTitledBorder("Expression Values");
-       expBorder.setTitleJustification(TitledBorder.LEFT);
-       coloroffPanel.setBorder(expBorder);
-       
-       //add a check box to turn off the color in the heat map.      
-       colorOn = new JRadioButton("Hide values");
-       colorOn.setActionCommand("on");
-       
-       colorOff = new JRadioButton("Show values");
-       colorOff.setActionCommand("off");
-       
-       if(this.hmParams.isColoroff()){
-   	   		colorOn.setSelected(false);
-   	   		colorOff.setSelected(true);
+       if(this.hmParams.isShowValues()){
+   	   		showValues.setSelected(true);
        }
-       else{
-    	   		colorOn.setSelected(true);
-      	   	colorOff.setSelected(false);
-       }
-       
-       
-       ButtonGroup colorOnOff = new javax.swing.ButtonGroup();
-       colorOnOff.add(colorOn);
-       colorOnOff.add(colorOff);
-       
-
-       colorOn.addActionListener(new java.awt.event.ActionListener() {
-                    public void actionPerformed(java.awt.event.ActionEvent evt) {
-                           selectColorOnOffActionPerformed(evt);
-                    }
-              });
-
-       colorOff.addActionListener(new java.awt.event.ActionListener() {
-                    public void actionPerformed(java.awt.event.ActionEvent evt) {
-                    		selectColorOnOffActionPerformed(evt);
-                    }
+             
+       showValues.addItemListener(new java.awt.event.ItemListener() {
+    					public void itemStateChanged(ItemEvent evt) {
+						showValuesStateChanged(evt);
+						
+					}
               });
     
 
        //create a panel for the two buttons;
-       coloroffPanel.setLayout(new BorderLayout());
-       coloroffPanel.add(colorOn, BorderLayout.NORTH);
-       coloroffPanel.add(colorOff, BorderLayout.SOUTH);
-       
-       
-       return coloroffPanel;
+       showValuesPanel.setLayout(new BorderLayout());
+       showValuesPanel.add(showValues, BorderLayout.SOUTH);
+       return showValuesPanel;
    }
 
     /**
@@ -1149,15 +1123,16 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
      * @return legend panel
      */
     private JPanel expressionLegendPanel(){
-        JPanel expLegendPanel = new JPanel();
-
+        JPanel expLegendPanel = new JPanel(new BorderLayout());
+        expLegendPanel.setPreferredSize(new Dimension(200,75));
+     
          TitledBorder expBorder = BorderFactory.createTitledBorder("Expression legend");
          expBorder.setTitleJustification(TitledBorder.LEFT);
          expLegendPanel.setBorder(expBorder);
 
         ColorGradientWidget new_legend = ColorGradientWidget.getInstance("",200,30,5,5,hmParams.getTheme(),hmParams.getRange(),true,ColorGradientWidget.LEGEND_POSITION.LEFT);
 
-        expLegendPanel.add(new_legend);
+        expLegendPanel.add(new_legend, BorderLayout.CENTER);
         expLegendPanel.revalidate();
         return expLegendPanel;
     }
@@ -1172,6 +1147,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
 
         northPanel = new JPanel();// new north panel
         JPanel buttonPanel = new JPanel();// brought button panel from westPanel
+        buttonPanel.setLayout(new BorderLayout());
         northPanel.setLayout(new GridBagLayout());
 
         JButton SaveExpressionSet = new JButton("Save Expression Set");
@@ -1188,17 +1164,17 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
                }
          });
 
-        buttonPanel.add(SaveExpressionSet);
-        buttonPanel.add(exportExpressionSet);
+        buttonPanel.add(SaveExpressionSet, BorderLayout.NORTH);
+        buttonPanel.add(exportExpressionSet, BorderLayout.SOUTH);
 
-        addComponent(northPanel, expressionLegendPanel(), 0, 0, 1, 1,
-                GridBagConstraints.WEST, GridBagConstraints.NONE);
+        addComponent(northPanel, expressionLegendPanel(), 0, 0, 2, 1,
+                GridBagConstraints.CENTER, GridBagConstraints.NONE);
 
-        addComponent(northPanel,coloroffPanel(), 1, 0, 1, 1,
-                GridBagConstraints.WEST, GridBagConstraints.NONE);
-
-
-        addComponent(northPanel,hmParams.createDataTransformationOptionsPanel(map), 2, 0, 1, 1,
+		//add the show data values to the transformation drop down panel.	
+        JPanel datatransformPanel = hmParams.createDataTransformationOptionsPanel(map);
+        datatransformPanel.add(showValuesPanel(), BorderLayout.SOUTH);
+        
+        addComponent(northPanel,datatransformPanel, 2, 0, 1, 1, 
                 GridBagConstraints.CENTER, GridBagConstraints.NONE);
 
         addComponent(northPanel,hmParams.createSortOptionsPanel(map), 3, 0, 2, 1,
@@ -1241,7 +1217,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
                     		//ask user if they want to export only the leading edge.
                     		//only ask if the leadingedge is displayed
                     		if(this.displayLeadingEdge == true && hmParams.getSort() == HeatMapParameters.Sort.RANK && params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)){
-                    			int response2 = JOptionPane.showConfirmDialog(this, "Wouuld you like to save the leading edge only?");
+                    			int response2 = JOptionPane.showConfirmDialog(this, "Would you like to save the leading edge only?");
                     			if(response2 == JOptionPane.YES_OPTION || response2 == JOptionPane.OK_OPTION)
                     				this.OnlyLeadingEdge = true;
                     		}
@@ -2025,27 +2001,27 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
         return isNegative;
     }
 
-    /**
-     * jaccard or overlap radio button action listener
-     *
-     * @param evt
-     */
-    private void selectColorOnOffActionPerformed(java.awt.event.ActionEvent evt) {
-        if(evt.getActionCommand().equalsIgnoreCase("on")){
-        		this.hmParams.setColoroff(false);
-        		colorOn.setSelected(true);
-        		colorOff.setSelected(false);
-        	}
-        if(evt.getActionCommand().equalsIgnoreCase("off")){
-    			this.hmParams.setColoroff(true);
-    			colorOn.setSelected(false);
-    			colorOff.setSelected(true);
-        }
-        
-        this.updatePanel();
-        this.revalidate();
+   /*
+    * Showvalue toggle action listener
+    */
+    private void showValuesStateChanged(ItemEvent e){
+    	 	//JCheckBox source = (JCheckBox)e.getItemSelectable();
+    	 	JCheckBox source = (JCheckBox)e.getSource();
+    	 	
+    	    //if (source == showValues) {
+    	    		if (e.getStateChange() == ItemEvent.DESELECTED){
+    	    			showValues.setSelected(false);
+    	    			this.hmParams.setShowValues(false);
+    	    		}
+    	    		if(e.getStateChange() == ItemEvent.SELECTED){
+    	    			this.hmParams.setShowValues(true);
+    	    			showValues.setSelected(true);
+    	    		}
+    	    		 this.updatePanel();
+    	    	     this.revalidate();
+    	    //}
+    	    
     }
-    
     
     //Getters and Setters
     Object[][] getExpValue() {

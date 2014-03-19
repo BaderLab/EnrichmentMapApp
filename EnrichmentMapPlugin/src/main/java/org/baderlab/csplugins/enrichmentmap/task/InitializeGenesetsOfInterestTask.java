@@ -213,6 +213,8 @@ public class InitializeGenesetsOfInterestTask extends AbstractTask {
         					//if it isn't then the user has given two files that don't match up
         					if(genesets.containsKey(current_name)){
         						GeneSet current_set = (GeneSet)genesets.get(current_name);
+        						//while we are checking, update the size of the genesets based on post filtered data
+                             current_result.setGsSize(current_set.getGenes().size());
         						genesetsOfInterest.put(current_name, current_set);
         					}
         					else if(genesetsOfInterest.containsKey(current_name)){
@@ -221,6 +223,14 @@ public class InitializeGenesetsOfInterestTask extends AbstractTask {
         					else
         						throw new IllegalThreadStateException("The Geneset: " + current_name + " is not found in the GMT file.");
         					       					
+        				}
+        				//if this result is not one of interest, still a good idea to update its size as might be significant in another dataset
+        				else{
+        					if(genesets.containsKey(current_name)){
+        						GeneSet current_set = (GeneSet)genesets.get(current_name);
+        						//while we are checking, update the size of the genesets based on post filtered data
+                             current_result.setGsSize(current_set.getGenes().size());
+        					}       				
         				}
         			}
             //otherwise it is a generic or David enrichment set
@@ -233,6 +243,8 @@ public class InitializeGenesetsOfInterestTask extends AbstractTask {
                     //if it isn't then the user has given two files that don't match up
                     if(genesets.containsKey(current_name)){                   		
                         GeneSet current_set = (GeneSet)genesets.get(current_name);
+                      //while we are checking, update the size of the genesets based on post filtered data
+                        current_result.setGsSize(current_set.getGenes().size());
                         GeneSet returned = genesetsOfInterest.put(current_name, current_set);
                                              
                     }
@@ -243,6 +255,14 @@ public class InitializeGenesetsOfInterestTask extends AbstractTask {
                         throw new IllegalThreadStateException("The Geneset: " + current_name + " is not found in the GMT file.");
 
                 	}
+              //if this result is not one of interest, still a good idea to update its size as might be significant in another dataset
+				else{
+					if(genesets.containsKey(current_name)){
+						GeneSet current_set = (GeneSet)genesets.get(current_name);
+						//while we are checking, update the size of the genesets based on post filtered data
+                     current_result.setGsSize(current_set.getGenes().size());
+					}       				
+				}
             }
 
         	}
