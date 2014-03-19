@@ -266,8 +266,8 @@ public class SliderBarActionListener implements ChangeListener {
                 //network.restoreNode(currentNode);
                 View<CyNode> currentNodeView = view.getNodeView(currentNode);
                 currentNodeView.setLockedValue(BasicVisualLexicon.NODE_VISIBLE, true);
-                currentNodeView.setLockedValue(BasicVisualLexicon.NODE_X_LOCATION,currentHN.getX());
-                currentNodeView.setLockedValue(BasicVisualLexicon.NODE_Y_LOCATION,currentHN.getY());                
+                currentNodeView.setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION,currentHN.getX());
+                currentNodeView.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION,currentHN.getY());                
                 view.updateView();
                 unhiddenNodes.add(currentHN);
 
@@ -284,8 +284,8 @@ public class SliderBarActionListener implements ChangeListener {
                         //network.restoreNode(currentNode);
                         View<CyNode> currentNodeView = view.getNodeView(currentNode);
                         currentNodeView.setLockedValue(BasicVisualLexicon.NODE_VISIBLE, true);
-                        currentNodeView.setLockedValue(BasicVisualLexicon.NODE_X_LOCATION,currentHN.getX());
-                        currentNodeView.setLockedValue(BasicVisualLexicon.NODE_Y_LOCATION,currentHN.getY());                
+                        currentNodeView.setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION,currentHN.getX());
+                        currentNodeView.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION,currentHN.getY());                
                         unhiddenNodes.add(currentHN);
 
 
