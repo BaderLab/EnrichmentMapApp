@@ -251,7 +251,7 @@ public class GMTFileReaderTask extends AbstractTask {
     /**
      * Non-blocking call to interrupt the task.
      */
-    public void halt() {
+    public void cancel() {
         this.interrupted = true;
     }
 
