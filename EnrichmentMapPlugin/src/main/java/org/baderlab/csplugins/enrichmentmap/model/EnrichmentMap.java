@@ -301,9 +301,11 @@ public class EnrichmentMap {
 		//go through each dataset and get the genesets from each
 		HashMap<String,GeneSet> all_genesets = new HashMap<String,GeneSet>();
 		for(Iterator<String> k = datasets.keySet().iterator(); k.hasNext();){
-        	HashMap<String,GeneSet> current_genesets = (datasets.get(k.next())).getSetofgenesets().getGenesets();
-        	all_genesets.putAll(current_genesets);
+        		HashMap<String,GeneSet> current_genesets = (datasets.get(k.next())).getSetofgenesets().getGenesets();
+        		all_genesets.putAll(current_genesets);
 		}
+		if(signatureGenesets != null && !signatureGenesets.isEmpty())
+			all_genesets.putAll(signatureGenesets);
 		return all_genesets;
 	}
 	
@@ -315,9 +317,12 @@ public class EnrichmentMap {
 		//go through each dataset and get the genesets from each
 		HashMap<String,GeneSet> all_genesetsOfInterest = new HashMap<String,GeneSet>();
 		for(Iterator<String> k = datasets.keySet().iterator(); k.hasNext();){
-        	HashMap<String,GeneSet> current_genesets = (datasets.get(k.next())).getGenesetsOfInterest().getGenesets();
-        	all_genesetsOfInterest.putAll(current_genesets);
+        		HashMap<String,GeneSet> current_genesets = (datasets.get(k.next())).getGenesetsOfInterest().getGenesets();
+        		all_genesetsOfInterest.putAll(current_genesets);
 		}
+		//if there are post analysis genesets, add them to the set of all genesets
+		if(signatureGenesets != null && !signatureGenesets.isEmpty())
+			all_genesetsOfInterest.putAll(signatureGenesets);
 		return all_genesetsOfInterest;
 	}
 

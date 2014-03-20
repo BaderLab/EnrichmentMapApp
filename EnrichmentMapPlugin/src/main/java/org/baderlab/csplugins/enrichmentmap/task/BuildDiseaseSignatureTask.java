@@ -53,6 +53,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.GenesetSimilarity;
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -81,7 +82,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
     private PostAnalysisParameters paParams;
     private EnrichmentMap map;
     private CyApplicationManager applicationManager;
-//    private EnrichmentMapParameters emParams;
+    private CyEventHelper eventHelper;
     
     // Keep track of progress for monitoring:
     private TaskMonitor taskMonitor = null;
@@ -102,9 +103,10 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
      */
     public BuildDiseaseSignatureTask(EnrichmentMap map, PostAnalysisParameters paParams,
     		CySessionManager manager, StreamUtil streamUtil,
-    		CyApplicationManager applicationManager) {
+    		CyApplicationManager applicationManager, CyEventHelper eventHelper) {
     		this.map = map;
     		this.applicationManager = applicationManager;
+    		this.eventHelper = eventHelper;
 
     	//create a new instance of the parameters and copy the version received from the input
         //window into this new instance.
@@ -333,6 +335,8 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
                 CyNode hub_node = current_network.addNode();
                 current_network.getRow(hub_node).set(CyNetwork.NAME, hub_name);
                 current_view.updateView();
+                //flush events to make sure view has been created.
+                this.eventHelper.flushPayloadEvents();
                 
                 // add currentNodeY_offset to initial Y position of the Node
                 // and increase currentNodeY_offset for the next Node

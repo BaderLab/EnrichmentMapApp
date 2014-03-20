@@ -84,14 +84,9 @@ public class EnrichmentMapSessionAction implements SessionAboutToBeSavedListener
 
                     //get the network name
                     String param_name = em.getName();
-
-                    //get the network name from the file name
-                    String[] fullname;
-                    if(prop_file.getName().contains("GSEA"))
-                    		fullname = prop_file.getName().split("Enrichment_Map_Plugin_GSEA_");
-                    else
-                    		fullname = prop_file.getName().split("Enrichment_Map_Plugin_");
-                    String  props_name = (fullname[1].split("\\."))[0];
+                   
+                    //TODO:distinguish between GSEA and EM saved sessions
+                    String props_name = (prop_file.getName().split("\\."))[0];
                     String name = param_name;
 
                     //check to see if the network name matches the name of the file
@@ -120,12 +115,12 @@ public class EnrichmentMapSessionAction implements SessionAboutToBeSavedListener
 
                 File prop_file = pStateFileList.get(i);
 
-                FileNameParts parts = ParseFileName(prop_file.getName());
+                FileNameParts parts = ParseFileName(prop_file);
                 if(parts == null || prop_file.getName().contains(".props"))
                 		continue;
                 
-                EnrichmentMap em = EnrichmentMapManager.getInstance().getMap(getNetworkByName(parts.name).getSUID());
-                
+                CyNetwork net = getNetworkByName(parts.name);
+                EnrichmentMap em  = (net != null) ? EnrichmentMapManager.getInstance().getMap(net.getSUID()) : null;
                 
                 if(em == null)
                     System.out.println("network for file" + prop_file.getName() + " does not exist.");
@@ -298,11 +293,12 @@ public class EnrichmentMapSessionAction implements SessionAboutToBeSavedListener
             for(int i = 0; i < pStateFileList.size(); i++){
 
                 File prop_file = pStateFileList.get(i);
-                FileNameParts parts_exp = ParseFileName(prop_file.getName());
+                FileNameParts parts_exp = ParseFileName(prop_file);
                 //unrecognized file
-                if(parts_exp == null) continue;
+                if((parts_exp == null) || (parts_exp.name == null) )continue;
                 
-                EnrichmentMap map  = EnrichmentMapManager.getInstance().getMap(getNetworkByName(parts_exp.name).getSUID());
+                CyNetwork net = getNetworkByName(parts_exp.name);
+                EnrichmentMap map  = (net != null) ? EnrichmentMapManager.getInstance().getMap(net.getSUID()) : null;
                 
                 if(parts_exp.type != null && parts_exp.type.equalsIgnoreCase("expression")){
                 		if(map.getDatasets().containsKey(parts_exp.dataset)){
@@ -355,52 +351,39 @@ public class EnrichmentMapSessionAction implements SessionAboutToBeSavedListener
             for(Iterator<Long> j = networks.keySet().iterator();j.hasNext();){
                 Long id = j.next();
                 CyNetwork currentNetwork = cyNetworkManager.getNetwork(id);
-//                CyNetworkView view = currentNetwork.getNetworkView(currentNetwork);
-                EnrichmentMap map = (EnrichmentMap)networks.get(currentNetwork);
+                EnrichmentMap map = manager.getMap(id);
+                //only initialize objects if there is a map for this network
+                if(map != null){
+                		//initialize the Genesets (makes sure the leading edge is set correctly)
+                		//Initialize the set of genesets and GSEA results that we want to compute over
+                		InitializeGenesetsOfInterestTask genesets_init = new InitializeGenesetsOfInterestTask(map);
+                		genesets_init.initializeSets();
 
-                //initialize the Genesets (makes sure the leading edge is set correctly)
-                //Initialize the set of genesets and GSEA results that we want to compute over
-                InitializeGenesetsOfInterestTask genesets_init = new InitializeGenesetsOfInterestTask(map);
-                genesets_init.initializeSets();
+                		//for each map compute the similarity matrix, (easier than storing it)
+                		//compute the geneset similarities
+                		ComputeSimilarityTask similarities = new ComputeSimilarityTask(map, ComputeSimilarityTask.ENRICHMENT);
+                		similarities.computeGenesetSimilarities();
+                		HashMap<String, GenesetSimilarity> similarity_results = similarities.getGeneset_similarities();
+                		map.setGenesetSimilarity(similarity_results);
 
-                //for each map compute the similarity matrix, (easier than storing it)
-                //compute the geneset similarities
-                ComputeSimilarityTask similarities = new ComputeSimilarityTask(map, ComputeSimilarityTask.ENRICHMENT);
-                similarities.computeGenesetSimilarities();
-                HashMap<String, GenesetSimilarity> similarity_results = similarities.getGeneset_similarities();
-                map.setGenesetSimilarity(similarity_results);
+                		// also compute geneset similarities between Enrichment- and Signature Genesets (if any)
+                		if (! map.getSignatureGenesets().isEmpty()){
+                			ComputeSimilarityTask sigSimilarities = new ComputeSimilarityTask(map, ComputeSimilarityTask.SIGNATURE);
+                			sigSimilarities.computeGenesetSimilarities();
+                			HashMap<String, GenesetSimilarity> sig_similarity_results = sigSimilarities.getGeneset_similarities();
 
-                // also compute geneset similarities between Enrichment- and Signature Genesets (if any)
-                if (! map.getSignatureGenesets().isEmpty()){
-                    ComputeSimilarityTask sigSimilarities = new ComputeSimilarityTask(map, ComputeSimilarityTask.SIGNATURE);
-                    sigSimilarities.computeGenesetSimilarities();
-                    HashMap<String, GenesetSimilarity> sig_similarity_results = sigSimilarities.getGeneset_similarities();
+                			map.getGenesetSimilarity().putAll(sig_similarity_results);
+                		}
 
-                    map.getGenesetSimilarity().putAll(sig_similarity_results);
-                }
-
-                //add the click on edge listener
- /*                view.addGraphViewChangeListener(new EnrichmentMapActionListener(map));
-
-                //make sure the visual style is set to the right on for this network
-                String vs_name = map.getParams().getAttributePrefix() + "Enrichment_map_style";
-
-                // get the VisualMappingManager and CalculatorCatalog
-                VisualMappingManager manager_vs = Cytoscape.getVisualMappingManager();
-                CalculatorCatalog catalog = manager_vs.getCalculatorCatalog();
-                VisualStyle vs = catalog.getVisualStyle(vs_name);
-
-                view.setVisualStyle(vs.getName()); // not strictly necessary
-*/
-                //set the last network to be the one viewed
-                //and initialize the parameters panel
-                if(!j.hasNext()){
-                    cyApplicationManager.setCurrentNetwork(currentNetwork);
-                    ParametersPanel paramPanel = manager.getParameterPanel();
-                    paramPanel.updatePanel(map);
-                    paramPanel.revalidate();
-                }
-
+                		//set the last network to be the one viewed
+                		//and initialize the parameters panel
+                		if(!j.hasNext()){
+                			cyApplicationManager.setCurrentNetwork(currentNetwork);
+                			ParametersPanel paramPanel = manager.getParameterPanel();
+                			paramPanel.updatePanel(map);
+                			paramPanel.revalidate();
+                		}
+                }//end of if(map != null)
             }
 
         } catch (Exception ee) {
@@ -561,65 +544,62 @@ public class EnrichmentMapSessionAction implements SessionAboutToBeSavedListener
 	            			writer.close();
 	            			
 	            			pFileList.add(session_prop_file);
-
-	        				//Add the files to be saved
-	        				e.addAppFiles(appName, pFileList);
+	        				
 	            		}  
 	            } catch (Exception ex) {
 	                ex.printStackTrace();
 	            }
 
 	        }
+	       //Add the files to be saved
+	        try{
+	        		e.addAppFiles(appName, pFileList);
+	        } catch (Exception ex) {
+                ex.printStackTrace();
+            }
 	}
-	private FileNameParts ParseFileName(String filename){
-		//check to see if the name contains "GSEA", if it does then this session was created using GSEA version
-		//of EM plugin
-		String[] fullname;
-		if(filename.contains("Enrichment_Map_Plugin_GSEA_"))
-			fullname = filename.split("Enrichment_Map_Plugin_GSEA_");
-		else	
-			fullname = filename.split("Enrichment_Map_Plugin_");
-    String name=null,type=null,dataset=null,ranks_name= null;
-    if(fullname.length > 1){                    
-        String[] tokens = fullname[1].split("\\.");
-        if((tokens.length ==2) && (tokens[1].equals("gmt"))){
-        		name = tokens[0];
-        		dataset = EnrichmentMap.DATASET1;
-        		type = "gmt";
-        }
-        //if the length is three then the file is associated with whole map
-        if((tokens.length == 3) && (!tokens[2].equals("gmt"))){
-        		name = tokens[0];
-        		type = tokens[1];
-        }
-        if((tokens.length == 3) && (tokens[2].equals("gmt"))){
-    			name = tokens[0];
-    			dataset = tokens[1];
-    			type = "gmt";
-        }
-        //if the length is four or more then it is associated with a specific dataset
-        if((tokens.length == 4) && !tokens[2].equals("RANKS")){
-    			name = tokens[0];
-    			dataset = tokens[1];
-    			type = tokens[tokens.length-2];
-        }
-        //legacy issue with old session files.
-        if((tokens.length == 4) && tokens[2].equals("RANKS")){
+	private FileNameParts ParseFileName(File filename){
+		String fullname = (filename.getName());
+		String name=null,type=null,dataset=null,ranks_name= null;
+		if(fullname != null){                    
+			String[] tokens = fullname.split("\\.");
+			if((tokens.length ==2) && (tokens[1].equals("gmt"))){
+        			name = tokens[0];
+        			dataset = EnrichmentMap.DATASET1;
+        			type = "gmt";
+			}
+			//if the length is three then the file is associated with whole map
+			if((tokens.length == 3) && (!tokens[2].equals("gmt"))){
+        			name = tokens[0];
+        			type = tokens[1];
+			}
+			if((tokens.length == 3) && (tokens[2].equals("gmt"))){
+    				name = tokens[0];
+    				dataset = tokens[1];
+    				type = "gmt";
+			}
+			//if the length is four or more then it is associated with a specific dataset
+			if((tokens.length == 4) && !tokens[2].equals("RANKS")){
+    				name = tokens[0];
+    				dataset = tokens[1];
+    				type = tokens[tokens.length-2];
+			}
+			//legacy issue with old session files.
+			if((tokens.length == 4) && tokens[2].equals("RANKS")){
 				name = tokens[0];
 				dataset = null;
 				type = tokens[tokens.length-2];
-        }
-        if(tokens.length > 4){
-        		name = tokens[0];
-        		dataset = tokens[1];
-        		ranks_name = tokens[tokens.length-3];
-        		type = tokens[tokens.length-2];
-        }
-        FileNameParts parts = new FileNameParts(name,type,dataset,ranks_name);
-        return parts;
-    }
-    return null;
-	
+			}
+			if(tokens.length > 4){
+        			name = tokens[0];
+        			dataset = tokens[1];
+        			ranks_name = tokens[tokens.length-3];
+        			type = tokens[tokens.length-2];
+			}
+			FileNameParts parts = new FileNameParts(name,type,dataset,ranks_name);
+			return parts;
+		}
+		return null;	
 	}
 	
 	//get Network by name

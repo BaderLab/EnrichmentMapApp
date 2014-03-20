@@ -52,6 +52,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.task.BuildDiseaseSignatureTask;
 import org.baderlab.csplugins.enrichmentmap.view.PostAnalysisInputPanel;
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.session.CySessionManager;
@@ -78,16 +79,18 @@ public class BuildPostAnalysisActionListener implements ActionListener {
     private CySessionManager sessionManager;
     private StreamUtil streamUtil;
     private DialogTaskManager dialog;
+    private CyEventHelper eventHelper;
 
     public BuildPostAnalysisActionListener (PostAnalysisInputPanel panel,  
     		CySessionManager sessionManager, StreamUtil streamUtil,CyNetworkManager networkManager,
-    		CyApplicationManager applicationManager,DialogTaskManager dialog) {
+    		CyApplicationManager applicationManager,DialogTaskManager dialog,CyEventHelper eventHelper) {
         this.inputPanel = panel;
         this.sessionManager = sessionManager;
         this.streamUtil = streamUtil;
         this.networkManager = networkManager;
         this.applicationManager = applicationManager;
         this.dialog = dialog;
+        this.eventHelper = eventHelper;
 
     }
 
@@ -108,7 +111,7 @@ public class BuildPostAnalysisActionListener implements ActionListener {
         if(errors.equalsIgnoreCase("")) {
             if ( paParams.isSignatureHub() ) {
                 
-                BuildDiseaseSignatureTask new_signature = new BuildDiseaseSignatureTask(current_map, paParams,this.sessionManager, this.streamUtil, this.applicationManager);
+                BuildDiseaseSignatureTask new_signature = new BuildDiseaseSignatureTask(current_map, paParams,this.sessionManager, this.streamUtil, this.applicationManager, this.eventHelper);
                 currentTasks.append(new_signature);
                 
                 dialog.execute(currentTasks);

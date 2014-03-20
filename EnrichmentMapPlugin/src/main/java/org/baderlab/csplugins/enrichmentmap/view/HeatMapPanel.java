@@ -1566,7 +1566,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
             //clustering will take a long time and give the user the option to abandon the clustering
             
         	//TODO:get default from poperties.
-        	int hieracical_clustering_threshold = 100;
+        	int hieracical_clustering_threshold = 1000;
         	//int hieracical_clustering_threshold = Integer.parseInt(CytoscapeInit.getProperties().getProperty("EnrichmentMap.hieracical_clustering_threshold", "1000"));
             if((set1_size > hieracical_clustering_threshold)
             || (set2_size > hieracical_clustering_threshold)) {

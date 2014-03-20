@@ -51,6 +51,7 @@ import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapUtils;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.task.UpdateHeatMapTask;
 import org.baderlab.csplugins.enrichmentmap.view.HeatMapPanel;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
@@ -65,6 +66,8 @@ import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.util.swing.FileUtil;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.swing.DialogTaskManager;
 
 /**
  * Created by
@@ -84,6 +87,7 @@ public class EnrichmentMapActionListener implements RowsSetListener{
     private List<CyNode> Nodes;
     private List<CyEdge> Edges;
     private CyApplicationManager applicationManager;
+    private DialogTaskManager dialog;
     private final CytoPanel cytoPanelSouth;
     private FileUtil fileUtil;
     private StreamUtil streamUtil;
@@ -96,11 +100,12 @@ public class EnrichmentMapActionListener implements RowsSetListener{
      */
     public EnrichmentMapActionListener(HeatMapPanel heatMapPanel_node,HeatMapPanel heatMapPanel_edge,
     		CyApplicationManager applicationManager,CySwingApplication application,
-    		FileUtil fileUtil, StreamUtil streamUtil) {
+    		FileUtil fileUtil, StreamUtil streamUtil,DialogTaskManager dialog) {
         
     		this.applicationManager = applicationManager;
     		this.fileUtil = fileUtil;
     		this.streamUtil = streamUtil;
+    		this.dialog = dialog;
         this.edgeOverlapPanel = heatMapPanel_edge;
         this.nodeOverlapPanel = heatMapPanel_node;
         
@@ -117,7 +122,7 @@ public class EnrichmentMapActionListener implements RowsSetListener{
         EnrichmentMapManager manager = EnrichmentMapManager.getInstance();
         this.map = manager.getMap(network.getSUID());
         if(map != null){
-        		if(map.getParams().isData()){        
+        		if(map.getParams().isData() && map.getParams().getHmParams() == null){        
         			//create a heatmap parameters instance for this action listener
         			HeatMapParameters hmParams = new HeatMapParameters(edgeOverlapPanel, nodeOverlapPanel,fileUtil,streamUtil);
         			hmParams.initColorGradients(this.map.getDataset(EnrichmentMap.DATASET1).getExpressionSets());
@@ -146,7 +151,7 @@ public class EnrichmentMapActionListener implements RowsSetListener{
         CyNetwork network = this.applicationManager.getCurrentNetwork();
         
         //only handle event if it is a selected node
-        if(e.getSource() == network.getDefaultEdgeTable() || e.getSource() == network.getDefaultNodeTable()){
+        if(network != null && e != null && (e.getSource() == network.getDefaultEdgeTable() || e.getSource() == network.getDefaultNodeTable())){
         		if(initialize(network)){
         
         			//There is no flag to indicate that this is only an edge/node selection
@@ -159,80 +164,17 @@ public class EnrichmentMapActionListener implements RowsSetListener{
         				Edges.clear();
         				Edges.addAll(selectedEdges);
         		
-        				//if (Edges.size() <= Integer.parseInt(CytoscapeInit.getProperties().getProperty("EnrichmentMap.Heatmap_Edge_Limit",  "100") ) )
-        				if(Edges.size()>0)
-        					createEdgesData();
-
-        				//get the nodes.
         				List<CyNode> selectedNodes = CyTableUtil.getNodesInState(network, CyNetwork.SELECTED, true);
 
         				Nodes.clear();
         				Nodes.addAll(selectedNodes);
-        				//if (Nodes.size() <= Integer.parseInt(CytoscapeInit.getProperties().getProperty("EnrichmentMap.Heatmap_Node_Limit",  "50") ) )
-        				if(Nodes.size()>0)
-        					createNodesData();
-            
-        				if(Nodes.isEmpty() && Edges.isEmpty())
-        					clearPanels();
+        				
+        				//once we have amalgamated all the nodes and edges, launch a task to update the heatmap.
+        				UpdateHeatMapTask updateHeatmap = new UpdateHeatMapTask(map, Nodes, Edges, edgeOverlapPanel, nodeOverlapPanel, cytoPanelSouth);
+        				dialog.execute(new TaskIterator(updateHeatmap));
         			}
         		}
         }//end of if e.getSource check
-    }
-
-  public void createEdgesData(){
-
-      if(map.getParams().isData()){
-        edgeOverlapPanel.updatePanel(map);
-        if ( ! map.getParams().isDisableHeatmapAutofocus() ) {
-        		// If the state of the cytoPanelWest is HIDE, show it
-            if (cytoPanelSouth.getState() == CytoPanelState.HIDE) {
-          	  	cytoPanelSouth.setState(CytoPanelState.DOCK);
-            }
-
-           // Select my panel
-          int index = cytoPanelSouth.indexOfComponent(this.edgeOverlapPanel);
-          if (index == -1) {
-          	 	return;
-          }
-          cytoPanelSouth.setSelectedIndex(index);
-        }
-        edgeOverlapPanel.revalidate();
-
-      }
-
-  }
-
-  private void createNodesData(){
-
-        if(map.getParams().isData()){
-            nodeOverlapPanel.updatePanel(map);
-            if ( ! map.getParams().isDisableHeatmapAutofocus() ) {
-            	// If the state of the cytoPanelWest is HIDE, show it
-                if (cytoPanelSouth.getState() == CytoPanelState.HIDE) {
-              	  	cytoPanelSouth.setState(CytoPanelState.DOCK);
-                }
-
-               // Select my panel
-              int index = cytoPanelSouth.indexOfComponent(this.nodeOverlapPanel);
-              if (index == -1) {
-              	 	return;
-              }
-             cytoPanelSouth.setSelectedIndex(index);
-            }
-            nodeOverlapPanel.revalidate();
-        }
-
-  }
-
-    public void clearPanels(){
-        if(map.getParams().isData()){
-            nodeOverlapPanel.clearPanel();
-            edgeOverlapPanel.clearPanel();
-            if ( ! map.getParams().isDisableHeatmapAutofocus() ) {
-            		cytoPanelSouth.setSelectedIndex(cytoPanelSouth.indexOfComponent(this.nodeOverlapPanel));
-            		cytoPanelSouth.setSelectedIndex(cytoPanelSouth.indexOfComponent(this.edgeOverlapPanel));
-            	}
-        }
     }
 
 }

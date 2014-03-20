@@ -80,7 +80,7 @@ public class CreateDummyExpressionTask extends AbstractTask{
 		dataset.getMap().getParams().setData(true);
     }
 	
-	public void run(TaskMonitor arg0) throws Exception {
+	public void run(TaskMonitor taskMonitor) throws Exception {
 		this.taskMonitor = taskMonitor;
 		createDummyExpression();
 		

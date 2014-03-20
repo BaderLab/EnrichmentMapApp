@@ -43,23 +43,23 @@
 
 package org.baderlab.csplugins.enrichmentmap;
 
-import javax.swing.*;
 
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.view.EnrichmentMapInputPanel;
 import org.baderlab.csplugins.enrichmentmap.view.HeatMapPanel;
 import org.baderlab.csplugins.enrichmentmap.view.ParametersPanel;
 import org.baderlab.csplugins.enrichmentmap.view.PostAnalysisInputPanel;
+import org.cytoscape.application.events.SetCurrentNetworkEvent;
+import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
+import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.view.model.CyNetworkView;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
 import java.util.HashMap;
 import java.util.Properties;
-import java.net.URL;
+
 
 /**
  * Created by
@@ -70,7 +70,7 @@ import java.net.URL;
  * Main class managing all instances of enrichment map as well as singular instances
  * of heatmap panel, parameters panel and input panel.  (implemented as singular class)
  */
-public class EnrichmentMapManager /*implements PropertyChangeListener*/ {
+public class EnrichmentMapManager implements SetCurrentNetworkListener, NetworkAboutToBeDestroyedListener {
 
     private static EnrichmentMapManager manager = null;
 
@@ -97,43 +97,7 @@ public class EnrichmentMapManager /*implements PropertyChangeListener*/ {
         return manager;
     }
 
-    /**
-     * Property change listener - to get network/network view destroy events.
-     *
-     * @param event PropertyChangeEvent
-     */
-    
-    //TODO:add property Change listeners
-/*    public void propertyChange(PropertyChangeEvent event) {
-        boolean relevantEventFlag = false;
 
-        // network destroyed,  remove it from our list
-        if (event.getPropertyName().equals(Cytoscape.NETWORK_DESTROYED)) {
-            networkDestroyed((String) event.getNewValue());
-            relevantEventFlag = true;
-        }
-        else if (event.getPropertyName().equals(CytoscapeDesktop.NETWORK_VIEW_DESTROYED)) {
-            relevantEventFlag = true;
-        }
-        else if (event.getPropertyName().equals(CytoscapeDesktop.NETWORK_VIEW_CREATED)) {
-            networkFocusEvent(event, false);
-        }
-        else if (event.getPropertyName().equals(CytoscapeDesktop.NETWORK_VIEW_FOCUSED)) {
-            networkFocusEvent(event, false);
-        }
-        else if(event.getPropertyName().equals(Cytoscape.NETWORK_TITLE_MODIFIED)){
-            CyNetwork cyNetwork = Cytoscape.getCurrentNetwork();
-            Long networkId = cyNetwork.getSUID();
-            if ( cyNetworkList.containsKey(networkId) ) { // do we know that Network?
-                EnrichmentMap currentNetworkParams = cyNetworkList.get(networkId);
-                currentNetworkParams.setName(cyNetwork.getTitle());
-            }
-        }
-        if (relevantEventFlag && !networkViewsRemain()) {
-            onZeroNetworkViewsRemain();
-        }
-    }
-*/
     /**
      * initialize important variable
      */
@@ -160,17 +124,7 @@ public class EnrichmentMapManager /*implements PropertyChangeListener*/ {
     private EnrichmentMapManager() {
        this.cyNetworkList = new HashMap<Long,EnrichmentMap>();
         this.cyNetworkListPostAnalysis = new HashMap<Long,PostAnalysisParameters>();
-        
-        //TODO : handle network created and focus events.
-        // to catch network creation / destruction events
-/*       Cytoscape.getSwingPropertyChangeSupport().addPropertyChangeListener(this);
-
-        // to catch network selection / focus events
-        Cytoscape.getDesktop().getNetworkViewManager().getSwingPropertyChangeSupport()
-                 .addPropertyChangeListener(this);
-*/
-        
-        
+                
     }
 
     /**
@@ -192,135 +146,6 @@ public class EnrichmentMapManager /*implements PropertyChangeListener*/ {
 
     }
 
-
-
-    /**
-     * Network Focus Event.
-     *
-     * @param event PropertyChangeEvent
-     * @param sessionLoaded boolean
-     */
-/*    private void networkFocusEvent(PropertyChangeEvent event, boolean sessionLoaded) {
-        // get network id
-        String networkId = null;
-        CyNetwork cyNetwork = null;
-        Object newValue = event.getNewValue();
-
-        //initialize the cyto panel to have the expression viewing.
-        final CytoscapeDesktop desktop = Cytoscape.getDesktop();
-        CytoPanel cytoPanel = desktop.getCytoPanel(SwingConstants.SOUTH);
-        CytoPanel cytoSidePanel = desktop.getCytoPanel(SwingConstants.EAST);
-
-        if (event.getPropertyName().equals(Cytoscape.SESSION_LOADED)) {
-            cyNetwork = Cytoscape.getCurrentNetwork();
-            networkId = cyNetwork.getIdentifier();
-        } else if (newValue instanceof CyNetwork) {
-            cyNetwork = (CyNetwork) newValue;
-            networkId = cyNetwork.getIdentifier();
-        } else if (newValue instanceof String) {
-            networkId = (String) newValue;
-            cyNetwork = Cytoscape.getNetwork(networkId);
-        }  else if (newValue instanceof CyNetworkView) {
-            cyNetwork = ((CyNetworkView) newValue).getNetwork();
-            networkId = cyNetwork.getIdentifier();
-        }
-
-        if (networkId != null) {
-            // update view
-            if (!sessionLoaded) {
-                if (cyNetworkList.containsKey(networkId)) {
-                    //clear the panels before re-initializing them
-                    nodesOverlapPanel.clearPanel();
-                    edgesOverlapPanel.clearPanel();
-
-                     EnrichmentMap currentNetwork= cyNetworkList.get(networkId);
-                     PostAnalysisParameters  currentPaParams  = cyNetworkListPostAnalysis.get(networkId);
-                    //update the parameters panel
-                    parameterPanel.updatePanel(currentNetwork);
-
-                    //update the input window to contain the parameters of the selected network
-                    //only if there is a input window
-                    if(inputWindow!=null)
-                        inputWindow.updateContents(currentNetwork.getParams());
-
-                    if(analysisWindow!=null)
-                        analysisWindow.updateContents(currentNetwork.getParams());
-
-                    nodesOverlapPanel.updatePanel(currentNetwork);
-                    edgesOverlapPanel.updatePanel(currentNetwork);
-
-                    nodesOverlapPanel.revalidate();
-                    edgesOverlapPanel.revalidate();
-
-
-                } else {
-                    //if the new network has just been created make sure the panels have been cleared
-                    if(event.getPropertyName().equals(CytoscapeDesktop.NETWORK_VIEW_CREATED)){
-
-                        nodesOverlapPanel.clearPanel();
-                        edgesOverlapPanel.clearPanel();
-
-                        nodesOverlapPanel.revalidate();
-                        edgesOverlapPanel.revalidate();
-
-                    }
-
-                }
-            }
-
-
-        }
-    }*/
-
-    /**
-     * Removes CyNetwork from our list if it has just been destroyed.
-     *
-     * @param networkID the ID of the CyNetwork just destroyed.
-     */
-    private void networkDestroyed(String networkId) {
-
-        // get the index (if it exists) of this network in our list
-        // if it exists, remove it
-        if (cyNetworkList.containsKey(networkId)) {
-            EnrichmentMap currentNetworkParams = cyNetworkList.get(networkId);
-
-            cyNetworkList.remove(networkId);
-        }
-        if (cyNetworkListPostAnalysis.containsKey(networkId)) {
-            PostAnalysisParameters currentPaParams = cyNetworkListPostAnalysis.get(networkId);
-
-            cyNetworkListPostAnalysis.remove(networkId);
-        }
-    }
-
-    /**
-     * Determines if any network views we have created remains.
-     *
-     * @return boolean if any network views that we have created remain.
-     */
-    private boolean networkViewsRemain() {
-
-        // iterate through our network list checking if their views exists
-/*        for (Long id : cyNetworkList.keySet()) {
-
-            // get the network view via id
-            CyNetworkView cyNetworkView = Cytoscape.getNetworkView(id);
-
-            if (cyNetworkView != null) {
-                return true;
-            }
-        }
-*/
-        return false;
-    }
-
-    /**
-     * Event:  No Registered Network Views Remain.
-     * May be subclassed.
-     */
-    protected void onZeroNetworkViewsRemain() {
-
-    }
 
     /**
      * @return reference to the EM Legend Panel (EAST)
@@ -405,5 +230,66 @@ public class EnrichmentMapManager /*implements PropertyChangeListener*/ {
         else
             return false;
     }
+
+    /**
+     * Network Focus Event.
+     *
+     * @param event PropertyChangeEvent
+     */
+
+	public void handleEvent(SetCurrentNetworkEvent event) {
+        // get network id
+        long networkId= event.getNetwork().getSUID();
+
+        
+
+        if (networkId > 0) {
+            // update view
+                if (cyNetworkList.containsKey(networkId)) {
+                    //clear the panels before re-initializing them
+                    nodesOverlapPanel.clearPanel();
+                    edgesOverlapPanel.clearPanel();
+
+                     EnrichmentMap currentNetwork= cyNetworkList.get(networkId);
+                    //update the parameters panel
+                    parameterPanel.updatePanel(currentNetwork);
+
+                    //update the input window to contain the parameters of the selected network
+                    //only if there is a input window
+                    if(inputWindow!=null)
+                        inputWindow.updateContents(currentNetwork.getParams());
+
+                    if(analysisWindow!=null)
+                        analysisWindow.updateContents(currentNetwork.getParams());
+
+                    nodesOverlapPanel.updatePanel(currentNetwork);
+                    edgesOverlapPanel.updatePanel(currentNetwork);
+
+                    nodesOverlapPanel.revalidate();
+                    edgesOverlapPanel.revalidate();
+               
+            }
+
+        }
+		
+	}
+
+    /**
+     * Network about to be destroyed Event.
+     *
+     * @param event PropertyChangeEvent
+     */
+	public void handleEvent(NetworkAboutToBeDestroyedEvent event) {
+		Long networkId = event.getNetwork().getSUID();
+		
+		// get the index (if it exists) of this network in our list
+        // if it exists, remove it
+        if (cyNetworkList.containsKey(networkId)) 
+            cyNetworkList.remove(networkId);
+        if (cyNetworkListPostAnalysis.containsKey(networkId)) 
+        		cyNetworkListPostAnalysis.remove(networkId);
+        
+		
+	}
     
 }

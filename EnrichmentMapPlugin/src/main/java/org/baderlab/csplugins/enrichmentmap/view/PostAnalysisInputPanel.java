@@ -59,6 +59,7 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -106,6 +107,7 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
 	private StreamUtil streamUtil;
 	private CyNetworkManager networkManager;
 	private DialogTaskManager dialog;
+	private CyEventHelper eventHelper;
     
     final static int RIGHT = 0, DOWN = 1, UP = 2, LEFT = 3; // image States
 
@@ -166,7 +168,7 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
     		OpenBrowser browser,FileUtil fileUtil, CySessionManager sessionManager,
     		StreamUtil streamUtil,CyServiceRegistrar registrar,
     		CyNetworkManager networkManager,
-    		DialogTaskManager dialog) {
+    		DialogTaskManager dialog,CyEventHelper eventHelper) {
     	
     		this.cyApplicationManager = cyApplicationManager;
     		this.application = application;
@@ -177,6 +179,7 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
         this.streamUtil = streamUtil;
         this.networkManager = networkManager;
         this.dialog = dialog;
+        this.eventHelper = eventHelper;
     		
         //initialize paParams
         this.paParams = new PostAnalysisParameters(sessionManager,streamUtil,cyApplicationManager);
@@ -921,7 +924,7 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
         });
 
         importButton.setText("Run");
-        importButton.addActionListener(new BuildPostAnalysisActionListener(this, sessionManager, streamUtil, networkManager, cyApplicationManager, dialog));
+        importButton.addActionListener(new BuildPostAnalysisActionListener(this, sessionManager, streamUtil, networkManager, cyApplicationManager, dialog,eventHelper));
         importButton.setEnabled(true);
 
         panel.add(resetButton);
