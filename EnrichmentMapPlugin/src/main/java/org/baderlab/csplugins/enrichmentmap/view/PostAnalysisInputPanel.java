@@ -703,6 +703,7 @@ public class PostAnalysisInputPanel extends JPanel {
         filterTypePanel.setLayout(new BorderLayout());
         filterTypeCombo = new JComboBox();
         filterTypeCombo.addItem(filterItems[PostAnalysisParameters.HYPERGEOM]);
+        filterTypeCombo.addItem(filterItems[PostAnalysisParameters.MANN_WHIT]);
         filterTypeCombo.addItem(filterItems[PostAnalysisParameters.PERCENT]);
         filterTypeCombo.addItem(filterItems[PostAnalysisParameters.NUMBER]);
         filterTypeCombo.addItem(filterItems[PostAnalysisParameters.SPECIFIC]);
@@ -717,6 +718,9 @@ public class PostAnalysisInputPanel extends JPanel {
                 if ( filterItems[PostAnalysisParameters.HYPERGEOM].equals( selectedChoice.getSelectedItem() ) ) {
                     paParams.setSignature_filterMetric(PostAnalysisParameters.HYPERGEOM);
                     filterTextField.setValue(paParams.getSignature_Hypergeom_Cutoff());
+                } else if ( filterItems[PostAnalysisParameters.MANN_WHIT].equals( selectedChoice.getSelectedItem() ) ) {
+                	paParams.setSignature_filterMetric(PostAnalysisParameters.MANN_WHIT);
+                	filterTextField.setValue(paParams.getSignature_Mann_Whit_Cutoff());
                 } else if ( filterItems[PostAnalysisParameters.PERCENT].equals( selectedChoice.getSelectedItem() ) ) {
                     paParams.setSignature_filterMetric(PostAnalysisParameters.PERCENT);
                     filterTextField.setValue(paParams.getFilterValue());
@@ -1493,7 +1497,7 @@ public class PostAnalysisInputPanel extends JPanel {
     }
 
     /**
-     * Refresh content of PostAnalysisInputPanel when Network is changed or Panel is re-opend.
+     * Refresh content of PostAnalysisInputPanel when Network is changed or Panel is re-opened.
      * 
      * @param current_params
      */
