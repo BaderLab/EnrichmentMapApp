@@ -495,6 +495,7 @@ public class BuildDiseaseSignatureTask implements Task {
                     CyNode gene_set = Cytoscape.getCyNode( geneset_similarities.get(edge_name).getGeneset2_Name() );
    
                     CyEdge edge = Cytoscape.getCyEdge(hub_node, gene_set, "interaction", PostAnalysisParameters.SIGNATURE_INTERACTION_TYPE, true);
+                    edge.setIdentifier(edge.getIdentifier() + " (" + paParams.getSignature_dataSet() + ")");
                     current_network.addEdge(edge);
                     
                     //create an attribute that stores the genes that are associated with this edge as an attribute list

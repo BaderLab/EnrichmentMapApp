@@ -1198,6 +1198,14 @@ public class PostAnalysisInputPanel extends JPanel {
                         message += "The filter cutoff must be greater than or equal 0.0 and less than or equal to 1.0";
                         invalid = true;
                     }
+                } else if(paParams.getSignature_filterMetric() == paParams.MANN_WHIT){
+                    if ((value != null) && (value.doubleValue() >= 0.0) && (value.intValue() <= 1.0)) {
+                        paParams.setSignature_Mann_Whit_Cutoff(value.doubleValue());
+                    } else {
+                        source.setValue(paParams.getDefault_signature_Mann_Whit_Cutoff());
+                        message += "The filter cutoff must be greater than or equal 0.0 and less than or equal to 1.0";
+                        invalid = true;
+                    }
                 } else if(paParams.getSignature_filterMetric() == paParams.PERCENT){
                     if ((value != null) && (value.intValue() >= 0) && (value.intValue() <= 100)) {
                         paParams.setFilterValue(value.intValue());

@@ -113,6 +113,7 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
     private String signatureHub_nodeColor   = "255,255,0"; // yellow
     private String signatureHub_borderColor = "255,255,0"; // yellow
     private String signatureHub_edgeColor   = "255,0,200"; // pink    
+
     
     // Disease Signature Parameters:
     private String signatureGMTFileName;
