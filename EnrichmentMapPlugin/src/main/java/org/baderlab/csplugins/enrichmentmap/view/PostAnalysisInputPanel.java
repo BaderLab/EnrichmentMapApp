@@ -876,7 +876,9 @@ public class PostAnalysisInputPanel extends JPanel {
                 selectKnownSigUniverseActionPerformed(evt);
             }
         });
-        KnownSigIntersectionRadioButton = new JRadioButton("Intersection (??)");
+    	HashSet<Integer> intersection = map.getDataset(paParams.getSignature_dataSet()).getDatasetGenes();
+    	intersection.retainAll(map.getDataset(paParams.getSignature_dataSet()).getExpressionSets().getGeneIds());
+        KnownSigIntersectionRadioButton = new JRadioButton("Intersection (" + intersection.size() + ")");
         KnownSigIntersectionRadioButton.setActionCommand("Intersection");
         KnownSigIntersectionRadioButton.addActionListener(new ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -898,8 +900,8 @@ public class PostAnalysisInputPanel extends JPanel {
         universeSelectionOptions.add(KnownSigUserDefinedRadioButton);
 
         c.gridx = 0;
-        c.gridwidth = 3;
         c.gridy = 0;
+        c.gridwidth = GridBagConstraints.REMAINDER;
         gridbag.setConstraints(KnownSigGMTRadioButton, c);
         radioButtonsPanel.add(KnownSigGMTRadioButton);
         
@@ -912,15 +914,20 @@ public class PostAnalysisInputPanel extends JPanel {
         radioButtonsPanel.add(KnownSigIntersectionRadioButton);
         
         c.gridy = 3;
+        c.gridwidth = 2;
         gridbag.setConstraints(KnownSigUserDefinedRadioButton, c);
         radioButtonsPanel.add(KnownSigUserDefinedRadioButton);
-        universeSelectionPanel.getContentPane().add(radioButtonsPanel, BorderLayout.WEST);
         
         knownSigUniverseSelectionTextField = new JFormattedTextField();
         knownSigUniverseSelectionTextField.addPropertyChangeListener("value", new PostAnalysisInputPanel.FormattedTextFieldAction());
         knownSigUniverseSelectionTextField.setText(Integer.toString(EnrichmentGenes.size()));
         knownSigUniverseSelectionTextField.setEditable(false);
-        universeSelectionPanel.getContentPane().add(knownSigUniverseSelectionTextField, BorderLayout.SOUTH);
+        
+        c.gridx = 2;
+        gridbag.setConstraints(knownSigUniverseSelectionTextField, c);
+        radioButtonsPanel.add(knownSigUniverseSelectionTextField);
+        
+        universeSelectionPanel.getContentPane().add(radioButtonsPanel, BorderLayout.WEST);
                
         panel.add(universeSelectionPanel);
        
@@ -1040,7 +1047,9 @@ public class PostAnalysisInputPanel extends JPanel {
                 selectSigDiscoveryUniverseActionPerformed(evt);
             }
         });    
-        SigDiscoveryIntersectionRadioButton = new JRadioButton("Intersection (??)");
+    	HashSet<Integer> intersection = map.getDataset(paParams.getSignature_dataSet()).getDatasetGenes();
+    	intersection.retainAll(map.getDataset(paParams.getSignature_dataSet()).getExpressionSets().getGeneIds());
+        SigDiscoveryIntersectionRadioButton = new JRadioButton("Intersection (" + intersection.size() + ")");
         SigDiscoveryIntersectionRadioButton.setActionCommand("Intersection");
         SigDiscoveryIntersectionRadioButton.addActionListener(new ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1062,7 +1071,7 @@ public class PostAnalysisInputPanel extends JPanel {
         universeSelectionOptions.add(SigDiscoveryUserDefinedRadioButton);
 
         c.gridx = 0;
-        c.gridwidth = 3;
+        c.gridwidth = GridBagConstraints.REMAINDER;
         c.gridy = 0;
         gridbag.setConstraints(SigDiscoveryGMTRadioButton, c);
         radioButtonsPanel.add(SigDiscoveryGMTRadioButton);
@@ -1076,15 +1085,19 @@ public class PostAnalysisInputPanel extends JPanel {
         radioButtonsPanel.add(SigDiscoveryIntersectionRadioButton);
         
         c.gridy = 3;
+        c.gridwidth = 2;
         gridbag.setConstraints(SigDiscoveryUserDefinedRadioButton, c);
         radioButtonsPanel.add(SigDiscoveryUserDefinedRadioButton);
-        universeSelectionPanel.getContentPane().add(radioButtonsPanel, BorderLayout.WEST);
         
+        c.gridx = 2;
         sigDiscoveryUniverseSelectionTextField = new JFormattedTextField();
         sigDiscoveryUniverseSelectionTextField.addPropertyChangeListener("value", new PostAnalysisInputPanel.FormattedTextFieldAction());
         sigDiscoveryUniverseSelectionTextField.setText(Integer.toString(EnrichmentGenes.size()));
         sigDiscoveryUniverseSelectionTextField.setEditable(false);
-        universeSelectionPanel.getContentPane().add(sigDiscoveryUniverseSelectionTextField, BorderLayout.SOUTH);
+        gridbag.setConstraints(sigDiscoveryUniverseSelectionTextField, c);
+        radioButtonsPanel.add(sigDiscoveryUniverseSelectionTextField);
+        
+        universeSelectionPanel.getContentPane().add(radioButtonsPanel, BorderLayout.WEST);
                
         panel.add(universeSelectionPanel);
         
@@ -1352,6 +1365,9 @@ public class PostAnalysisInputPanel extends JPanel {
         	knownSigUniverseSelectionTextField.setText(Integer.toString(size));
         	knownSigUniverseSelectionTextField.setEditable(false);
         } else if (analysisType.equalsIgnoreCase("Intersection")) {
+        	HashSet<Integer> intersection = map.getDataset(paParams.getSignature_dataSet()).getDatasetGenes();
+        	intersection.retainAll(map.getDataset(paParams.getSignature_dataSet()).getExpressionSets().getGeneIds());
+        	knownSigUniverseSelectionTextField.setText(Integer.toString(intersection.size()));
         	knownSigUniverseSelectionTextField.setEditable(false);
         } else if (analysisType.equalsIgnoreCase("User Defined")) {
         	knownSigUniverseSelectionTextField.setEditable(true);
