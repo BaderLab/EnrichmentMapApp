@@ -45,7 +45,6 @@ package org.baderlab.csplugins.enrichmentmap.model;
 
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.BitSet;
 
 /**
  * Created by

@@ -1564,7 +1564,11 @@ public class PostAnalysisInputPanel extends JPanel {
 	            EnrichmentGenes.addAll(EnrichmentGenesets.get(setName).getGenes());
 	        }
 	        
-	    	int universeSize = map.getDataset(paParams.getSignature_dataSet()).getDatasetGenes().size();
+	        DataSet dataset = map.getDataset(paParams.getSignature_dataSet());
+	    	int universeSize = 0;
+	    	if (dataset != null) {
+	    		universeSize = dataset.getDatasetGenes().size();
+	    	}
 	        paParams.setUniverseSize(universeSize);
 	        knownSigUniverseSelectionTextField.setText(Integer.toString(universeSize));
 		}

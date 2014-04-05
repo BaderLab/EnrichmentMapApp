@@ -43,12 +43,9 @@
 
 package org.baderlab.csplugins.enrichmentmap;
 
-import java.util.HashMap;
-
 import javax.swing.DefaultListModel;
 
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
 
 /**
