@@ -114,7 +114,13 @@ public class GeneExpression {
         if(size > 2){
             expression = new Double[size-2];
             for(int i = 2; i< size;i++){
+            	try{
                 expression[i-2] = Double.parseDouble(expres[i]);
+            	}catch(NumberFormatException e){
+                    //if the column doesn't contain doubles then just assume that the expression
+                    //file is empty
+                    expression[i-2] = 0.0;
+                }
             }
         }
         else{

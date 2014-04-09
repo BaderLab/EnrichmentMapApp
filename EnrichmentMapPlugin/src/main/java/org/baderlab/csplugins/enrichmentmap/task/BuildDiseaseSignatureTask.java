@@ -347,7 +347,7 @@ public class BuildDiseaseSignatureTask implements Task {
                     for(Iterator<Integer> j=genes_hash.iterator(); j.hasNext();){
                         Integer current = j.next();
                         String gene = map.getGeneFromHashKey(current);
-                        if(gene_list != null)
+                        if(gene_list != null && gene != null)
                             gene_list.add(gene);
                     }
                     Collections.sort(gene_list);

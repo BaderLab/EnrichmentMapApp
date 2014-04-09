@@ -176,6 +176,7 @@
                     					<include>**/*.txt</include>
                     					<include>**/*.gif</include>
                     					<include>**/*.png</include>
+                    					<include>**/*.props</include>
 						</includes>
                 			<filtering>true</filtering>
             			</resource>
