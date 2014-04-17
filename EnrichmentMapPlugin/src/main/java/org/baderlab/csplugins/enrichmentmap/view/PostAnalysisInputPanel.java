@@ -778,12 +778,20 @@ public class PostAnalysisInputPanel extends JPanel {
             	JComboBox selectedChoice = (JComboBox) e.getSource();
             	String dataset = (String)selectedChoice.getSelectedItem();
             	paParams.setSignature_dataSet(dataset);
-            	int universeSize = map.getDataset(paParams.getSignature_dataSet()).getDatasetGenes().size();
-            	paParams.setUniverseSize(universeSize);
+    	        DataSet datasetObj = map.getDataset(paParams.getSignature_dataSet());
+    	    	int universeSize = 0;
+    	    	if (datasetObj != null) {
+    	    		universeSize = datasetObj.getDatasetGenes().size();
+    	    	}
+    	    	paParams.setUniverseSize(universeSize);
             	if (KnownSigGMTRadioButton != null) {
             		KnownSigGMTRadioButton.setText("GMT (" + universeSize + ")");
             	}
-            	int expressionSetSize = map.getDataset(dataset).getExpressionSets().getNumGenes();
+            	datasetObj = map.getDataset(dataset);
+            	int expressionSetSize = 0;
+            	if (datasetObj != null) {
+            		expressionSetSize = datasetObj.getExpressionSets().getNumGenes();
+            	}
             	if (KnownSigExpressionSetRadioButton != null) {
             		KnownSigExpressionSetRadioButton.setText("Expression Set (" + expressionSetSize + ")");
             	}
@@ -859,8 +867,12 @@ public class PostAnalysisInputPanel extends JPanel {
         c.fill = GridBagConstraints.HORIZONTAL;
         radioButtonsPanel.setLayout(gridbag);
         
-    	int universeSize = map.getDataset(paParams.getSignature_dataSet()).getDatasetGenes().size();
-        KnownSigGMTRadioButton = new JRadioButton("GMT (" + universeSize + ")");
+        DataSet dataset = map.getDataset(paParams.getSignature_dataSet());
+    	int universeSize = 0;
+    	if (dataset != null) {
+    		universeSize = dataset.getDatasetGenes().size();
+    	}
+    	KnownSigGMTRadioButton = new JRadioButton("GMT (" + universeSize + ")");
         KnownSigGMTRadioButton.setActionCommand("GMT");
         KnownSigGMTRadioButton.addActionListener(new ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -952,8 +964,11 @@ public class PostAnalysisInputPanel extends JPanel {
             	JComboBox selectedChoice = (JComboBox) e.getSource();
             	String dataset = (String)selectedChoice.getSelectedItem();
             	paParams.setSignature_dataSet(dataset);
-            	int universeSize = map.getDataset(paParams.getSignature_dataSet()).getDatasetGenes().size();
-            	paParams.setUniverseSize(universeSize);
+    	        DataSet datasetObj = map.getDataset(paParams.getSignature_dataSet());
+    	    	int universeSize = 0;
+    	    	if (datasetObj != null) {
+    	    		universeSize = datasetObj.getDatasetGenes().size();
+    	    	}            	paParams.setUniverseSize(universeSize);
             	if (SigDiscoveryGMTRadioButton != null) {
             		SigDiscoveryGMTRadioButton.setText("GMT (" + universeSize + ")");
             	}
@@ -1030,8 +1045,13 @@ public class PostAnalysisInputPanel extends JPanel {
         JPanel radioButtonsPanel = new JPanel();
         radioButtonsPanel.setLayout(gridbag);
         
-    	int universeSize = map.getDataset(paParams.getSignature_dataSet()).getDatasetGenes().size();
-        SigDiscoveryGMTRadioButton = new JRadioButton("GMT (" + universeSize + ")");
+        DataSet dataset = map.getDataset(paParams.getSignature_dataSet());
+    	int universeSize = 0;
+    	if (dataset != null) {
+    		universeSize = dataset.getDatasetGenes().size();
+    	}
+    	
+    	SigDiscoveryGMTRadioButton = new JRadioButton("GMT (" + universeSize + ")");
         SigDiscoveryGMTRadioButton.setActionCommand("GMT");
         SigDiscoveryGMTRadioButton.addActionListener(new ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

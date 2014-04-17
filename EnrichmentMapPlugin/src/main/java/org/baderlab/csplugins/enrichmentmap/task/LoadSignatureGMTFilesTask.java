@@ -127,10 +127,11 @@ public class LoadSignatureGMTFilesTask implements Task {
                 
             	HashMap<String, DataSet> data_sets = this.map.getDatasets();
             	DataSet dataset = data_sets.get(paParams.getSignature_dataSet());
-            	Ranking ranks = dataset.getExpressionSets().getRanks().get(paParams.getSignature_rankFile());
-            	
-                HashMap<Integer, Double> gene2score = ranks.getGene2Score();
-                
+            	Ranking ranks = new Ranking();
+            	if (dataset != null) {
+            		ranks = dataset.getExpressionSets().getRanks().get(paParams.getSignature_rankFile());
+            	}
+            	HashMap<Integer, Double> gene2score = ranks.getGene2Score();
                 Object[] overlap_gene_ids;
                 double[] overlap_gene_scores;
             	double mannPval;
