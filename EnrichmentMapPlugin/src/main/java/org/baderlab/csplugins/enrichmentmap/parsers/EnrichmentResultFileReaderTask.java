@@ -789,6 +789,15 @@ public class EnrichmentResultFileReaderTask extends AbstractTask {
         this.taskMonitor = taskMonitor;
     }
 
+    /**
+     * Gets the Task Title.
+     *
+     * @return human readable task title.
+     */
+    public String getTitle() {
+        return new String("Parsing Enrichment Result file");
+    }
+    
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		this.taskMonitor = taskMonitor;

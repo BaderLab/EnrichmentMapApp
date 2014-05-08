@@ -48,11 +48,11 @@ import javax.swing.*;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapUtils;
 import org.baderlab.csplugins.enrichmentmap.actions.BulkEMCreationAction;
-import org.baderlab.csplugins.enrichmentmap.actions.EnrichmentMapBuildMapEvent;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowAboutPanelAction;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.JMultiLineToolTip;
+import org.baderlab.csplugins.enrichmentmap.task.EnrichmentMapBuildMapTaskFactory;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.application.swing.CySwingApplication;
@@ -1299,12 +1299,12 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
                 //EnrichmentMapParseInputEvent parseInput = new EnrichmentMapParseInputEvent(empanel,map , dialog,  streamUtil);
                 //parseInput.build();
                                 
-               	EnrichmentMapBuildMapEvent buildmap = new EnrichmentMapBuildMapEvent(map,  
+               	EnrichmentMapBuildMapTaskFactory buildmap = new EnrichmentMapBuildMapTaskFactory(map,  
                     			applicationManager,networkManager,networkViewManager,networkViewFactory,networkFactory,tableFactory,tableManager, 
                     			visualMappingManager,visualStyleFactory,
                     			vmfFactoryContinuous, vmfFactoryDiscrete,vmfFactoryPassthrough, dialog,  streamUtil,layoutManager,mapTableToNetworkTable);
-                buildmap.build();
-                 
+                //buildmap.build();
+                dialog.execute(buildmap.createTaskIterator()); 
             }
         });
         //importButton.addActionListener(new BuildEnrichmentMapActionListener(this));

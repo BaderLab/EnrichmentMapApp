@@ -46,7 +46,7 @@ import javax.swing.*;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadEnrichmentsPanelAction;
 //import org.baderlab.csplugins.enrichmentmap.actions.LoadPostAnalysisPanelAction;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowAboutPanelAction;
-import org.baderlab.csplugins.enrichmentmap.commands.EnrichmentMapCommandHandler;
+import org.baderlab.csplugins.enrichmentmap.commands.EnrichmentMapGSEACommandHandlerTask;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanel;

@@ -117,6 +117,13 @@ public class InitializeGenesetsOfInterestTask extends AbstractTask {
         		HashMap<String,GeneSet> genesets = current_dataset.getSetofgenesets().getGenesets();       		
         		HashMap<String, GeneSet> genesetsOfInterest = current_dataset.getGenesetsOfInterest().getGenesets();
         		
+        		//If there are no genesets associated with this dataset then get the complete set
+        		//assumption being that the gmt file applies to all datasets.
+        		if(genesets == null || genesets.isEmpty()){
+        			genesets = map.getAllGenesets();
+        			//genesetsOfInterest = map.getAllGenesetsOfInterest();
+        		}
+        		
         		//get ranking files.
         		Ranking ranks = current_dataset.getExpressionSets().getRanksByName(current_dataset_name);
 

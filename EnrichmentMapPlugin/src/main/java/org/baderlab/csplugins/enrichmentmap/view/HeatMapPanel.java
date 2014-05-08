@@ -226,7 +226,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
             else
             		ascending = new boolean[columnNames.length];
             
-            hmParams.setAscending(ascending);            
+            if(hmParams != null) hmParams.setAscending(ascending);            
 
             displayLeadingEdge = false;
             leadingEdgeScoreAtMax1 = 0.0;
@@ -253,7 +253,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
                 boolean[] ascending2 = new boolean[columnNames.length + (columnNames2.length-2) + additional_ranks];
                 for(int k = ascending2.length ;  k > ascending2.length - map.getAllRankNames().size(); k--)
                     ascending2[k-1] = true;
-                hmParams.setAscending(ascending2);//we don't have to repeat the name and description columns
+                if(hmParams != null) hmParams.setAscending(ascending2);//we don't have to repeat the name and description columns
 
             }
             
@@ -1569,9 +1569,12 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
         	int hieracical_clustering_threshold = 1000;
         	//int hieracical_clustering_threshold = Integer.parseInt(CytoscapeInit.getProperties().getProperty("EnrichmentMap.hieracical_clustering_threshold", "1000"));
             if((set1_size > hieracical_clustering_threshold)
-            || (set2_size > hieracical_clustering_threshold)) {
-                int answer; 
-                if(set2_size>0)
+            || (set2_size > hieracical_clustering_threshold)) {            		
+            	
+            	//take out check because it causes deadlock on thread
+            	//TODO:add check out of the task.
+            	/*	int answer; 
+                if(set2_size>0)                	
                 		answer = JOptionPane.showConfirmDialog(application.getJFrame(),
 			                                      " The combination of these gene sets contain "
                                                   + set1_size + " And " + set2_size
@@ -1580,8 +1583,8 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
 			                                      + "minutes.\n" + "Do you wish to proceed with the clustering?"
 			                                      + "\n\n(Choosing 'No' will switch the heatmap-sorting to 'No sort'.)",
 			                                      "Cluster large set of genes",
-			                                      JOptionPane.YES_NO_OPTION);
-                else
+			                                      JOptionPane.YES_NO_OPTION);                
+                else                		
                 		answer = JOptionPane.showConfirmDialog(application.getJFrame(),
                             " The combination of these gene sets contain "
                             + set1_size 
@@ -1590,12 +1593,11 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
                             + "minutes.\n" + "Do you wish to proceed with the clustering?"
                             + "\n\n(Choosing 'No' will switch the heatmap-sorting to 'No sort'.)",
                             "Cluster large set of genes",
-                            JOptionPane.YES_NO_OPTION);
-                	
-                if(answer == JOptionPane.NO_OPTION) {
+                            JOptionPane.YES_NO_OPTION);                
+                if(answer == JOptionPane.NO_OPTION) {*/
                     cluster = false;
                     hmParams.changeSortComboBoxToNoSort();
-                }
+                //}
             }
 
 

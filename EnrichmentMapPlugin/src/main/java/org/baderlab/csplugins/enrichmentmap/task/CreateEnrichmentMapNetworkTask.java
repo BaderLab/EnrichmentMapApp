@@ -142,8 +142,8 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
             //be created but it is possible that they have different values for the attributes.  How do
             //we resolve this?
             CyNetwork network;
-            if(map.getParams().getAttributePrefix() == null)
-            		map.getParams().setAttributePrefix();
+            //if(map.getParams().getAttributePrefix() == null)
+            	map.getParams().setAttributePrefix();
             String prefix = map.getParams().getAttributePrefix();
             
             //create the new network.
@@ -206,14 +206,13 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
             HashMap<String, EnrichmentResult> enrichmentResults1 = null;
             HashMap<String, EnrichmentResult> enrichmentResults2 = null;
             Set<String> dataset_names = map.getDatasets().keySet();
-            int count = 0;
             for(Iterator<String> m = dataset_names.iterator(); m.hasNext();){
-            		if(count == 0)
+            		String current_dataset = m.next();
+            		if(current_dataset.equalsIgnoreCase(EnrichmentMap.DATASET1))
             			//get the enrichment results from the first one and place it in enrichment results 1
-            			enrichmentResults1 = map.getDataset(m.next()).getEnrichments().getEnrichments();
+            			enrichmentResults1 = map.getDataset(current_dataset).getEnrichments().getEnrichments();
             		else
-            			enrichmentResults2 = map.getDataset(m.next()).getEnrichments().getEnrichments();
-            		count++;
+            			enrichmentResults2 = map.getDataset(current_dataset).getEnrichments().getEnrichments();
             }
                        
             HashMap<String, GeneSet> genesetsOfInterest = map.getDataset(EnrichmentMap.DATASET1).getGenesetsOfInterest().getGenesets();

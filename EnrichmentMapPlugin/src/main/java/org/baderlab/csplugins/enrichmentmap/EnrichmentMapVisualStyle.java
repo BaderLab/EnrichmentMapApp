@@ -275,7 +275,7 @@ public class EnrichmentMapVisualStyle {
         if(params.isTwoDatasets()){
 
             //Continuous Mapping - set node size based on the size of the geneset
-        	ContinuousMapping<Integer,Double> continuousMapping_size_dataset2 = (ContinuousMapping<Integer,Double>)this.vmfFactoryContinuous.createVisualMappingFunction(prefix+ EnrichmentMapVisualStyle.GS_SIZE_DATASET2, Integer.class, BasicVisualLexicon.NODE_SIZE);
+        		ContinuousMapping<Integer,Double> continuousMapping_size_dataset2 = (ContinuousMapping<Integer,Double>)this.vmfFactoryContinuous.createVisualMappingFunction(prefix+ EnrichmentMapVisualStyle.GS_SIZE_DATASET2, Integer.class, BasicVisualLexicon.NODE_BORDER_WIDTH);
                         
             Double min_line = 4.0;
             Double max_line = 15.0;

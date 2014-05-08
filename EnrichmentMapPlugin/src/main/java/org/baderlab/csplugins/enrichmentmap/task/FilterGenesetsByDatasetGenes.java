@@ -1,6 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap.task;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
@@ -37,13 +38,23 @@ public class FilterGenesetsByDatasetGenes extends AbstractTask {
         //of the genes in the expression file are in the specified genesets.
         if(!map.checkGenesets())
                 throw new IllegalThreadStateException("No genes in the expression file are found in the GMT file ");
-
+        
+        //if there are two dataset check to see if they have the same set of genes
+        if(datasets.size()>1){
+        		HashSet<Integer> dataset1_genes = datasets.get(EnrichmentMap.DATASET1).getDatasetGenes();
+        		HashSet<Integer> dataset2_genes = datasets.get(EnrichmentMap.DATASET2).getDatasetGenes();
+        		
+        		if(!(dataset1_genes.containsAll(dataset2_genes) && dataset2_genes.containsAll(dataset1_genes)))
+        			map.getParams().setTwoDistinctExpressionSets(true);
+                		
+        }
+        
     }
 
 
 	@Override
 	public void run(TaskMonitor arg0) throws Exception {
-		
+		filterGenesets();
 		
 	}
 

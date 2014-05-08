@@ -266,7 +266,7 @@ public class GMTFileReaderTask extends AbstractTask {
         }
         this.taskMonitor = taskMonitor;
     }
-
+        
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		this.taskMonitor = taskMonitor;

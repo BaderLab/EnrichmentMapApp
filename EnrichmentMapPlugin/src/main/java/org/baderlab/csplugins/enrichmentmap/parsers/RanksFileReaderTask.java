@@ -357,7 +357,14 @@ public class RanksFileReaderTask extends AbstractTask {
         this.taskMonitor = taskMonitor;
     }
 
-    
+    /**
+     * Gets the Task Title.
+     *
+     * @return human readable task title.
+     */
+    public String getTitle() {
+        return new String("Parsing Ranks file");
+    }
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {

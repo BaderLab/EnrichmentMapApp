@@ -10,6 +10,8 @@ import org.baderlab.csplugins.enrichmentmap.actions.EnrichmentMapSessionAction;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadEnrichmentsPanelAction;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadPostAnalysisPanelAction;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowAboutPanelAction;
+import org.baderlab.csplugins.enrichmentmap.commands.EnrichmentMapGSEACommandHandlerTaskFactory;
+import org.baderlab.csplugins.enrichmentmap.task.BuildEnrichmentMapTuneableTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.view.BulkEMCreationPanel;
 import org.baderlab.csplugins.enrichmentmap.view.EnrichmentMapInputPanel;
 import org.baderlab.csplugins.enrichmentmap.view.HeatMapPanel;
@@ -42,7 +44,8 @@ import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
-import org.cytoscape.work.TaskManager;
+import org.cytoscape.work.ServiceProperties;
+import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.osgi.framework.BundleContext;
 
@@ -160,6 +163,22 @@ public class CyActivator extends AbstractCyActivator {
 		EnrichmentMapSessionAction sessionAction = new EnrichmentMapSessionAction(cyNetworkManagerRef, sessionManager, cyApplicationManagerRef, streamUtil);
 		registerService(bc,sessionAction,SessionAboutToBeSavedListener.class, new Properties());
 		registerService(bc,sessionAction,SessionLoadedListener.class, new Properties());
-
+		
+		//test out tunables menu
+		Properties properties = new Properties();
+		properties.put(ServiceProperties.PREFERRED_MENU, ServiceProperties.APPS_MENU);
+    		properties.put(ServiceProperties.TITLE, "TestTunables");
+    		properties.put(ServiceProperties.COMMAND, "build");
+    		properties.put(ServiceProperties.COMMAND_NAMESPACE, "enrichmentmap");
+		registerService(bc, new BuildEnrichmentMapTuneableTaskFactory(sessionManager, streamUtil, cyApplicationManagerRef, cyNetworkManagerRef, cyNetworkViewManagerRef, cyNetworkViewFactoryRef, cyNetworkFactoryRef, tableFactory, tableManager, visualMappingManagerRef, visualStyleFactoryRef, continuousMappingFunctionFactoryRef, discreteMappingFunctionFactoryRef, passthroughMappingFunctionFactoryRef, layoutManager, mapTableToNetworkTable, dialogTaskManager), TaskFactory.class, properties);
+		
+		//gsea specifc commandtool
+		properties = new Properties();
+    		properties.put(ServiceProperties.COMMAND, "gseabuild");
+    		properties.put(ServiceProperties.COMMAND_NAMESPACE, "enrichmentmap");
+		registerService(bc, new EnrichmentMapGSEACommandHandlerTaskFactory(sessionManager, streamUtil, cyApplicationManagerRef, cyNetworkManagerRef, cyNetworkViewManagerRef, cyNetworkViewFactoryRef, cyNetworkFactoryRef, tableFactory, tableManager, visualMappingManagerRef, visualStyleFactoryRef, continuousMappingFunctionFactoryRef, discreteMappingFunctionFactoryRef, passthroughMappingFunctionFactoryRef, layoutManager, mapTableToNetworkTable, dialogTaskManager), TaskFactory.class, properties);
+		
+		
+		
 	}
 }

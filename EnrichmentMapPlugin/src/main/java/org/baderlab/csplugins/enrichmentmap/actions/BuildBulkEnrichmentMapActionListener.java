@@ -8,7 +8,7 @@ import javax.xml.bind.JAXBException;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.task.BuildBulkEnrichmentMapTask;
-import org.baderlab.csplugins.enrichmentmap.task.BuildEnrichmentMapTask;
+import org.baderlab.csplugins.enrichmentmap.task.BuildEnrichmentMapTuneableTask;
 import org.baderlab.csplugins.enrichmentmap.view.BulkEMCreationPanel;
 
 import java.awt.Dimension;
