@@ -48,7 +48,6 @@ import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.*;
 import java.awt.*;
-import java.awt.List;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.util.*;
@@ -56,23 +55,25 @@ import java.io.*;
 import java.net.URL;
 
 import org.mskcc.colorgradient.*;
-import org.baderlab.csplugins.brainlib.DistanceMatrix;
-import org.baderlab.csplugins.brainlib.AvgLinkHierarchicalClustering;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapUtils;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapVisualStyle;
 import org.baderlab.csplugins.enrichmentmap.heatmap.*;
+import org.baderlab.csplugins.enrichmentmap.heatmap.task.ClusterTaskObserver;
+import org.baderlab.csplugins.enrichmentmap.heatmap.task.HeatMapHierarchicalClusterTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.model.*;
 import org.baderlab.csplugins.enrichmentmap.parsers.EnrichmentResultFileReaderTask;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
-import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.util.swing.OpenBrowser;
+import org.cytoscape.work.swing.DialogTaskManager;
+
+
 
 /**
  * Created by
@@ -92,6 +93,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
 	private CyApplicationManager applicationManager;
 	private FileUtil fileUtil;
 	private OpenBrowser openBrowser;
+	private DialogTaskManager dialogTaskMonitor;
 	
 	private static final long serialVersionUID = 1903063204304411983L;
     
@@ -136,6 +138,8 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
     private HashMap<Integer, GeneExpression> currentExpressionSet;
      //current subset of expression data from dataset 2 expression set
     private HashMap<Integer, GeneExpression> currentExpressionSet2;
+    
+    private Ranking ranks;
 
     private boolean node=true;
 
@@ -181,7 +185,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
      * if true it is a node heatmap, else it is an edge heatmap
      */
     public HeatMapPanel(boolean node, CySwingApplication application, 
-    		FileUtil fileUtil,CyApplicationManager applicationManager,OpenBrowser openBrowser){
+    		FileUtil fileUtil,CyApplicationManager applicationManager,OpenBrowser openBrowser, DialogTaskManager dialogTaskMonitor){
        this.node = node;
        this.setLayout(new java.awt.BorderLayout());
 
@@ -194,6 +198,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
         this.application = application;
         this.applicationManager = applicationManager;
         this.openBrowser = openBrowser;
+        this.dialogTaskMonitor = dialogTaskMonitor;
     }
 
     /**
@@ -204,6 +209,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
     public void resetVariables(EnrichmentMap map){
         this.map = map;
         this.params = map.getParams();
+        this.ranks = null;
 
         if(params.isData() || params.isData2()){
             GeneExpressionMatrix expression = map.getDataset(EnrichmentMap.DATASET1).getExpressionSets();
@@ -236,9 +242,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
 
             //get the current expressionSet
             if(node)
-                setNodeExpressionSet(params);
-            else
-                setEdgeExpressionSet(params);
+                initializeLeadingEdge(params);           
 
             if(params.isData2() && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null && !map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getFilename().equalsIgnoreCase(map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getFilename())){
 
@@ -1308,65 +1312,37 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
      * @param params - enrichment map parameters of the current map
      *
      */
-    private void setNodeExpressionSet(EnrichmentMapParameters params){
+    private void initializeLeadingEdge(EnrichmentMapParameters params){
 
         Object[] nodes = params.getSelectedNodes().toArray();
-        //all unique genesets - if there are two identical genesets in the two sets then 
-        //one of them will get over written in the hash.
-        //when using two distinct genesets we need to pull the gene info from each set separately.
-        	HashMap<String,GeneSet> genesets = map.getAllGenesetsOfInterest();
-        	HashMap<String, GeneSet> genesets_set1 = (map.getDatasets().containsKey(EnrichmentMap.DATASET1)) ? map.getDataset(EnrichmentMap.DATASET1).getSetofgenesets().getGenesets() : null;            
-        	HashMap<String, GeneSet> genesets_set2 = (map.getDatasets().containsKey(EnrichmentMap.DATASET2)) ? map.getDataset(EnrichmentMap.DATASET2).getSetofgenesets().getGenesets() : null;
-         
-        //get the current Network
-        CyNetwork network = applicationManager.getCurrentNetwork();
-        	
-        //go through the nodes only if there are some
-        if(nodes.length > 0){
+               
+        	//if only one node is selected activate leading edge potential
+            //and if at least one rankfile is present
+            //TODO: we probably have to catch cases where we have only a rank file for one of the datasets
+            if(nodes.length == 1 ){
+               //get the current Network
+               CyNetwork network = applicationManager.getCurrentNetwork();
+               for (Object node1 : nodes) {
+                        	
+                   CyNode current_node = (CyNode) node1;
+                                        
+                   String nodename = network.getRow(current_node).get(CyNetwork.NAME,String.class);
+                                    	
+                   displayLeadingEdge = true;
+                   if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)){
 
-            HashSet<Integer> union = new HashSet<Integer>();
+                	   HashMap<String, EnrichmentResult> results1 = map.getDataset(EnrichmentMap.DATASET1).getEnrichments().getEnrichments();
+                       if(results1.containsKey(nodename)){
+                    	   GSEAResult current_result = (GSEAResult) results1.get(nodename);
+                    	   leadingEdgeScoreAtMax1 = current_result.getScoreAtMax();
+                        	//if the  score at max is set to the default then get the direction of the leading edge
+                        	//from the NES
+                        	if(leadingEdgeScoreAtMax1 == EnrichmentResultFileReaderTask.DefaultScoreAtMax)
+                        		leadingEdgeScoreAtMax1 = current_result.getNES();
 
-            for (Object node1 : nodes) {
-
-                CyNode current_node = (CyNode) node1;
-                
-                
-                String nodename = network.getRow(current_node).get(CyNetwork.NAME,String.class);
-                GeneSet current_geneset = genesets.get(nodename);
-                HashSet<Integer> additional_set = null;
-
-
-                //if we can't find the geneset and we are dealing with a two-distinct expression sets, check for the gene set in the second set
-                //TODO:Add multi species support
-                if(params.isTwoDistinctExpressionSets()){
-                    GeneSet current_geneset_set1 = genesets_set1.get(nodename);
-                    GeneSet current_geneset_set2 = genesets_set2.get(nodename);
-                    if(current_geneset_set1 != null && current_geneset.equals(current_geneset_set1) && current_geneset_set2 != null)
-                        additional_set = current_geneset_set2.getGenes();
-                    if(current_geneset_set2 != null && current_geneset.equals(current_geneset_set2) && current_geneset_set1 != null)
-                        additional_set = current_geneset_set1.getGenes();
-
-                }
-
-                //if only one node is selected activate leading edge potential
-                //and if at least one rankfile is present
-                //TODO: we probably have to catch cases where we have only a rank file for one of the datasets
-                if(nodes.length == 1 ){
-                    displayLeadingEdge = true;
-                    if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)){
-
-                        HashMap<String, EnrichmentResult> results1 = map.getDataset(EnrichmentMap.DATASET1).getEnrichments().getEnrichments();
-                        if(results1.containsKey(nodename)){
-                            GSEAResult current_result = (GSEAResult) results1.get(nodename);
-                            leadingEdgeScoreAtMax1 = current_result.getScoreAtMax();
-                            //if the  score at max is set to the default then get the direction of the leading edge
-                            //from the NES
-                            if(leadingEdgeScoreAtMax1 == EnrichmentResultFileReaderTask.DefaultScoreAtMax)
-                                leadingEdgeScoreAtMax1 = current_result.getNES();
-
-                            leadingEdgeRankAtMax1 = current_result.getRankAtMax();
-                        }
-                        if(map.getParams().isTwoDatasets()){
+                        		leadingEdgeRankAtMax1 = current_result.getRankAtMax();
+                        	}
+                        	if(map.getParams().isTwoDatasets()){
                         		HashMap<String, EnrichmentResult> results2 = map.getDataset(EnrichmentMap.DATASET2).getEnrichments().getEnrichments();
                         		if(results2.containsKey(nodename)){
                         			GSEAResult current_result = (GSEAResult) results2.get(nodename);
@@ -1378,91 +1354,14 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
 
                         			leadingEdgeRankAtMax2 = current_result.getRankAtMax();
                         		}
+                        	}
                         }
                     }
                 }
-                if (current_geneset == null)
-                    continue;
-
-                HashSet<Integer> current_set = current_geneset.getGenes();
-
-                if (union == null) {
-                    union = new HashSet<Integer>(current_set);
-
-                } else {
-                    union.addAll(current_set);
-
-                }
-
-                if(additional_set != null)
-                    union.addAll(additional_set);
-            }
-
-            HashSet<Integer> genes = union;
-            currentExpressionSet = map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getExpressionMatrix(genes);
-            if(params.isData2() && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null)
-                currentExpressionSet2 =map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getExpressionMatrix(genes);
-
-        }
-        else{
-            currentExpressionSet = null;
-            currentExpressionSet2 = null;
-        }
-
-
+                
     }
 
-    /**
-     * Collates the current selected edges genes to represent the expression of the genes that
-     * are in all the selected edges.
-     *
-     * @param params - enrichment map parameters of the current map
-     *
-     */
-    private void setEdgeExpressionSet(EnrichmentMapParameters params){
-
-        Object[] edges = params.getSelectedEdges().toArray();
-
-      //get the current Network
-        CyNetwork network = applicationManager.getCurrentNetwork();
-        
-        if(edges.length>0){
-            HashSet<Integer> intersect = null;
-            //HashSet union = null;
-
-            for(int i = 0; i< edges.length;i++){
-
-                CyEdge current_edge = (CyEdge) edges[i];
-                String edgename = network.getRow(current_edge).get(CyNetwork.NAME, String.class);
-
-
-                GenesetSimilarity similarity = map.getGenesetSimilarity().get(edgename);
-                if(similarity == null)
-                    continue;
-
-                HashSet<Integer> current_set = similarity.getOverlapping_genes();
-
-                //if(intersect == null && union == null){
-                if(intersect == null){
-                    intersect = new HashSet<Integer>(current_set);
-                }else{
-                    intersect.retainAll(current_set);
-                }
-
-                if(intersect.size() < 1)
-                    break;
-
-            }
-            currentExpressionSet = map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getExpressionMatrix(intersect);
-            if(params.isData2() && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null)
-                currentExpressionSet2 = map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getExpressionMatrix(intersect);
-        }
-        else{
-            currentExpressionSet = null;
-            currentExpressionSet2 = null;
-        }
-    }
-
+    
     /**
      * Get the current specified rank file.
      *
@@ -1519,375 +1418,37 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
             if(hmParams.getSort() == HeatMapParameters.Sort.COLUMN)
                 hmParams.setSortbycolumn_event_triggered(true);
         }
-        else if(hmParams.getSort() == HeatMapParameters.Sort.CLUSTER){
-            ranks = getRanksByClustering();
+        else if(hmParams.getSort() == HeatMapParameters.Sort.CLUSTER){            
+        		HeatMapHierarchicalClusterTaskFactory clustertask = new HeatMapHierarchicalClusterTaskFactory(this.numConditions,this.numConditions2,this,this.map);
+        		 ClusterTaskObserver observer = new  ClusterTaskObserver();
+        		
+        		this.dialogTaskMonitor.execute(clustertask.createTaskIterator(),observer );
+        		while (!observer.isAllFinished()) { 
+        			try {
+					Thread.sleep(100);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}   }
+        		ranks = this.ranks;
         }
+        
+        //after trying to sort by hierarchical just check that sorting hasn't defaulted to no sort
+        if(hmParams.getSort() == HeatMapParameters.Sort.NONE) {
+            ranks = new Ranking() ;
+
+            for(Iterator<Integer> i = expressionSet.keySet().iterator();i.hasNext();){
+                    Integer key = i.next();
+                    Rank temp = new Rank(((GeneExpression)expressionSet.get(key)).getName(),0.0,0);
+                    ranks.addRank(key, temp);
+                    //ranks..put(key,temp);
+            }
+        }
+        
         return ranks;
     }
 
-    /**
-     * Hierarchical clusters the current expression set using pearson correlation and generates ranks
-     * based on the the clustering output.
-     *
-     * @return set of ranks based on the hierarchical clustering of the current expression set.
-     */
-    private Ranking getRanksByClustering(){
-
-        Ranking ranks = null;
-
-        //The number of conditions includes the name and description
-        //compute the number of data columns we have.  If there is only one data
-        //column we can not cluster data
-        int numdatacolumns = 0;
-        int numdatacolumns2 = 0;
-
-        int set1_size = 0;
-        int set2_size = 0;
-        if(currentExpressionSet != null)
-            set1_size = currentExpressionSet.keySet().size();
-        if(currentExpressionSet2 != null)
-            set2_size = currentExpressionSet2.keySet().size();
-
-
-        boolean cluster = true;
-
-        if(numConditions > 0){
-            numdatacolumns = numConditions - 2;
-        }
-
-        if(numConditions2 > 0){
-            numdatacolumns2 = numConditions2 - 2;
-        }
-        //only create a ranking if there are genes in the expression set and there
-        //is more than one column of data
-        if(((set1_size > 1) || (set2_size >1)) && ((numdatacolumns + numdatacolumns2) > 1)){
-
-            //check to see how many genes there are, if there are more than 1000 issue warning that
-            //clustering will take a long time and give the user the option to abandon the clustering
-            
-        	//TODO:get default from poperties.
-        	int hieracical_clustering_threshold = 1000;
-        	//int hieracical_clustering_threshold = Integer.parseInt(CytoscapeInit.getProperties().getProperty("EnrichmentMap.hieracical_clustering_threshold", "1000"));
-            if((set1_size > hieracical_clustering_threshold)
-            || (set2_size > hieracical_clustering_threshold)) {            		
-            	
-            	//take out check because it causes deadlock on thread
-            	//TODO:add check out of the task.
-            	/*	int answer; 
-                if(set2_size>0)                	
-                		answer = JOptionPane.showConfirmDialog(application.getJFrame(),
-			                                      " The combination of these gene sets contain "
-                                                  + set1_size + " And " + set2_size
-			                                      + " genes and "
-			                                      + "\nClustering a set this size may take several "
-			                                      + "minutes.\n" + "Do you wish to proceed with the clustering?"
-			                                      + "\n\n(Choosing 'No' will switch the heatmap-sorting to 'No sort'.)",
-			                                      "Cluster large set of genes",
-			                                      JOptionPane.YES_NO_OPTION);                
-                else                		
-                		answer = JOptionPane.showConfirmDialog(application.getJFrame(),
-                            " The combination of these gene sets contain "
-                            + set1_size 
-                            + " genes and "
-                            + "\nClustering a set this size may take several "
-                            + "minutes.\n" + "Do you wish to proceed with the clustering?"
-                            + "\n\n(Choosing 'No' will switch the heatmap-sorting to 'No sort'.)",
-                            "Cluster large set of genes",
-                            JOptionPane.YES_NO_OPTION);                
-                if(answer == JOptionPane.NO_OPTION) {*/
-                    cluster = false;
-                    hmParams.changeSortComboBoxToNoSort();
-                //}
-            }
-
-
-            if((cluster)/*&&(!params.isTwoDistinctExpressionSets())*/
-    ){ 
-
-                try{
-                    //hmParams.setSortbyHC(true);
-                    hmParams.setSort(HeatMapParameters.Sort.CLUSTER);
-
-                    //create an array-list of the expression subset.
-                    ArrayList<Double[]> clustering_expressionset = new ArrayList<Double[]>() ;
-                    ArrayList<Integer> labels = new ArrayList<Integer>();
-                    int j = 0;
-
-                    /* Need to take into account all the different combinations of data when we are dealing with 2
-                    expression files that don't match (as created with two different species, but can also happen if two
-                     different platforms are used)
-                     */
-
-                    //if the two data sets have the same number genes we can cluster them together
-                    if( set1_size == set2_size && set1_size != 0){
-
-                        //go through the expression-set hashmap and add the key to the labels and add the expression to the clustering set
-                        for(Iterator<Integer> i = currentExpressionSet.keySet().iterator();i.hasNext();){
-                            Integer key = i.next();
-
-                            Double[] x = ((GeneExpression)currentExpressionSet.get(key)).getExpression();
-                            Double[] z;
-                            if(params.isData2() && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null && currentExpressionSet2.containsKey(key)
-                            		&& !map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getFilename().equalsIgnoreCase(map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getFilename())){
-                                Double[] y = ((GeneExpression)currentExpressionSet2.get(key)).getExpression();
-                                z = new Double[x.length + y.length];
-                                System.arraycopy(x,0,z,0,x.length);
-                                System.arraycopy(y,0,z,x.length,y.length);
-
-                            }
-                            else{
-                                z = x;
-                            }
-
-                            //add the expression-set
-                            clustering_expressionset.add(j, z);
-
-                            //add the key to the labels
-                            labels.add(j,key);
-
-                            j++;
-                        }
-                    }
-                    //if they are both non zero we need to make sure to include all the genes
-                    else if( set1_size> 0 && set2_size> 0){
-
-                         Double[] dummyexpression1 = new Double[numdatacolumns];
-                         Double[] dummyexpression2 = new Double[numdatacolumns2];
-
-                         for(int k = 0;k<numdatacolumns;k++)
-                             dummyexpression1[k] = 0.0;/*Double.NaN*/
-                        for(int k = 0;k<numdatacolumns2;k++)
-                             dummyexpression2[k] = 0.0;/*Double.NaN*/
-
-                        //go through the expression-set hashmap and add the key to the labels and add the expression to the clustering set
-                        for(Iterator<Integer> i = currentExpressionSet.keySet().iterator();i.hasNext();){
-                            Integer key = i.next();
-
-                            Double[] x = ((GeneExpression)currentExpressionSet.get(key)).getExpression();
-                            Double[] z;
-                            if(params.isData2() && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null && currentExpressionSet2.containsKey(key) && !map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getFilename().equalsIgnoreCase(map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getFilename())){
-                                Double[] y = ((GeneExpression)currentExpressionSet2.get(key)).getExpression();
-                                z = new Double[x.length + y.length];
-                                System.arraycopy(x,0,z,0,x.length);
-                                System.arraycopy(y,0,z,x.length,y.length);
-
-                            }
-                            else{
-
-                                //add a dummy value for the missing data
-                                z = new Double[x.length + dummyexpression2.length];
-                                System.arraycopy(x,0,z,0,x.length);
-                                System.arraycopy(dummyexpression2,0,z,x.length,dummyexpression2.length);
-                            }
-
-                            //add the expression-set
-                            clustering_expressionset.add(j, z);
-
-                            //add the key to the labels
-                            labels.add(j,key);
-
-                            j++;
-                        }
-                        //go through the expression-set hashmap and add the key to the labels and add the expression to the clustering set
-                        for(Iterator<Integer> i = currentExpressionSet2.keySet().iterator();i.hasNext();){
-                            Integer key = i.next();
-
-                            Double[] y = ((GeneExpression)currentExpressionSet2.get(key)).getExpression();
-                            Double[] z;
-                            if(currentExpressionSet.containsKey(key)){
-                                Double[] x = ((GeneExpression)currentExpressionSet.get(key)).getExpression();
-                                z = new Double[x.length + y.length];
-                                System.arraycopy(x,0,z,0,x.length);
-                                System.arraycopy(y,0,z,x.length,y.length);
-
-                            }
-                            else{
-
-                                //add a dummy value for the missing data
-                                z = new Double[y.length + dummyexpression1.length];
-                                System.arraycopy(dummyexpression1,0,z,0,dummyexpression1.length);
-                                System.arraycopy(y,0,z,dummyexpression1.length,y.length);
-                            }
-
-                            //add the expression-set
-                            clustering_expressionset.add(j, z);
-
-                            //add the key to the labels
-                            labels.add(j,key);
-
-                            j++;
-                        }
-
-                    }
-                    //if one of the sets is zero
-                    else if((set1_size> 0) && (set2_size == 0)){
-
-                        Double[] dummyexpression1 = new Double[numdatacolumns];
-                         Double[] dummyexpression2 = new Double[numdatacolumns2];
-
-                         for(int k = 0;k<numdatacolumns;k++)
-                             dummyexpression1[k] = 0.0; /*Double.NaN*/
-                        for(int k = 0;k<numdatacolumns2;k++)
-                             dummyexpression2[k] = 0.0;/*Double.NaN*/
-
-                        //go through the expression-set hashmap and add the key to the labels and add the expression to the clustering set
-                        for(Iterator<Integer> i = currentExpressionSet.keySet().iterator();i.hasNext();){
-                            Integer key = i.next();
-
-                            Double[] x = ((GeneExpression)currentExpressionSet.get(key)).getExpression();
-                            Double[] z;
-                            if(params.isData2() && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null && currentExpressionSet2.containsKey(key) && !map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getFilename().equalsIgnoreCase(map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getFilename())){
-                                Double[] y = ((GeneExpression)currentExpressionSet2.get(key)).getExpression();
-                                z = new Double[x.length + y.length];
-                                System.arraycopy(x,0,z,0,x.length);
-                                System.arraycopy(y,0,z,x.length,y.length);
-
-                            }
-                            else{
-                                //add a dummy value for the missing data
-                                z = new Double[x.length + dummyexpression2.length];
-                                System.arraycopy(x,0,z,0,x.length);
-                                System.arraycopy(dummyexpression2,0,z,x.length,dummyexpression2.length);
-                            }
-
-                            //add the expression-set
-                            clustering_expressionset.add(j, z);
-
-                            //add the key to the labels
-                            labels.add(j,key);
-
-                            j++;
-                        }
-                    }
-                    else if((set2_size> 0)&& (set1_size == 0)){
-
-                        Double[] dummyexpression1 = new Double[numdatacolumns];
-                         Double[] dummyexpression2 = new Double[numdatacolumns2];
-
-                         for(int k = 0;k<numdatacolumns;k++)
-                             dummyexpression1[k] = 0.0;/*Double.NaN*/
-                        for(int k = 0;k<numdatacolumns2;k++)
-                             dummyexpression2[k] = 0.0;/*Double.NaN*/
-
-                        //go through the expression-set hashmap and add the key to the labels and add the expression to the clustering set
-                        for(Iterator<Integer> i = currentExpressionSet2.keySet().iterator();i.hasNext();){
-                            Integer key = i.next();
-
-                            Double[] y = ((GeneExpression)currentExpressionSet2.get(key)).getExpression();
-                            Double[] z;
-                            if(currentExpressionSet.containsKey(key)){
-                                Double[] x = ((GeneExpression)currentExpressionSet.get(key)).getExpression();
-                                z = new Double[x.length + y.length];
-                                System.arraycopy(x,0,z,0,x.length);
-                                System.arraycopy(y,0,z,x.length,y.length);
-
-                            }
-                            else{
-                                //add a dummy value for the missing data
-                                z = new Double[y.length + dummyexpression1.length];
-                                System.arraycopy(dummyexpression1,0,z,0,dummyexpression1.length);
-                                System.arraycopy(y,0,z,dummyexpression1.length,y.length);
-                            }
-
-                            //add the expression-set
-                            clustering_expressionset.add(j, z);
-
-                            //add the key to the labels
-                            labels.add(j,key);
-
-                            j++;
-                        }
-                    }
-
-                    //create a distance matrix the size of the expression set
-                    DistanceMatrix distanceMatrix;
-                    if(set1_size == set2_size)
-                        distanceMatrix = new DistanceMatrix(currentExpressionSet.keySet().size());
-                    else if(set1_size == 0)
-                        distanceMatrix = new DistanceMatrix(currentExpressionSet2.keySet().size());
-                    else if(set2_size == 0)
-                        distanceMatrix = new DistanceMatrix(currentExpressionSet.keySet().size());
-                    else
-                        distanceMatrix = new DistanceMatrix(currentExpressionSet2.keySet().size() + currentExpressionSet.keySet().size());
-                    //calculate the distance metric based on the user choice of distance metric
-                    if(params.getDefaultDistanceMetric().equalsIgnoreCase(HeatMapParameters.pearson_correlation)){
-                        //if the user choice is pearson still have to check to make sure
-                        //there are no errors with pearson calculation.  If can't calculate pearson
-                        //then it calculates the cosine.
-                        try{
-                            distanceMatrix.calcDistances(clustering_expressionset, new PearsonCorrelation());
-                        }catch(RuntimeException e){
-                            try{
-                                if(!shownPearsonErrorMsg){
-                                    JOptionPane.showMessageDialog(this,"Unable to compute Pearson Correlation for this expression Set.\n  Cosine distance used for this set instead.\n To switch distance metric used for all hierarchical clustering \nPlease change setting under Advance Preferences in the Results Panel.");
-                                    shownPearsonErrorMsg = true;
-                                }
-                                distanceMatrix.calcDistances(clustering_expressionset, new CosineDistance());
-                            }catch(RuntimeException ex){
-                                distanceMatrix.calcDistances(clustering_expressionset, new EuclideanDistance());
-                            }
-                        }
-                    }
-                    else if (params.getDefaultDistanceMetric().equalsIgnoreCase(HeatMapParameters.cosine))
-                             distanceMatrix.calcDistances(clustering_expressionset, new CosineDistance());
-                    else if (params.getDefaultDistanceMetric().equalsIgnoreCase(HeatMapParameters.euclidean))
-                             distanceMatrix.calcDistances(clustering_expressionset, new EuclideanDistance());
-
-
-                    distanceMatrix.setLabels(labels);
-
-                    //cluster
-                    AvgLinkHierarchicalClustering cluster_result = new AvgLinkHierarchicalClustering(distanceMatrix);
-
-                    //check to see if there more than 1000 genes, if there are use eisen ordering otherwise use bar-joseph
-                    if((set1_size + set2_size) > 1000)
-                        cluster_result.setOptimalLeafOrdering(false);
-                    else
-                        cluster_result.setOptimalLeafOrdering(true);
-                    cluster_result.run();
-
-                    int[] order = cluster_result.getLeafOrder();
-                    ranks = new Ranking();
-                    for(int i =0;i< order.length;i++){
-                        //get the label
-                        Integer label =  (Integer)labels.get(order[i]);
-
-                        GeneExpression exp;
-                        //check for the expression in expression set 1
-                        if(currentExpressionSet.containsKey(label))
-                            exp = (GeneExpression)currentExpressionSet.get(label);
-                        else if(currentExpressionSet2.containsKey(label))
-                            exp = (GeneExpression)currentExpressionSet2.get(label);
-                        else
-                            exp = null;
-
-                        Rank temp = new Rank(exp.getName(),0.0,i);
-                        ranks.addRank(label,temp);
-                    }
-                }catch(OutOfMemoryError e){
-                    JOptionPane.showMessageDialog(this, "Unable to complete clustering of genes due to insufficient memory.","Out of memory",JOptionPane.INFORMATION_MESSAGE);
-                    cluster = false;
-                }
-            }
-            else if(cluster && params.isTwoDistinctExpressionSets()){
-             cluster = false;
-               hmParams.setSort(HeatMapParameters.Sort.NONE);
-            }
-        }
-
-
-       if((currentExpressionSet.keySet().size() == 1) || ((numdatacolumns + numdatacolumns2) <= 1) || !(cluster)){
-           //hmParams.setNoSort(true);
-           hmParams.setSort(HeatMapParameters.Sort.NONE);
-           ranks = new Ranking();
-            for(Iterator<Integer> i = currentExpressionSet.keySet().iterator();i.hasNext();){
-                Integer key = i.next();
-                Rank temp = new Rank(((GeneExpression)currentExpressionSet.get(key)).getName(),0.0,0);
-                ranks.addRank(key,temp);
-            }
-        }
-        return ranks;
-    }
+   
 
     /**
      * For each heat map there is a standard menu built from the linkouts which are stored in the Cytoscape
@@ -2205,6 +1766,32 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
 	public Component getComponent() {
 		
 		return this;
+	}
+
+	public HashMap<Integer, GeneExpression> getCurrentExpressionSet() {
+		return currentExpressionSet;
+	}
+
+	public void setCurrentExpressionSet(
+			HashMap<Integer, GeneExpression> currentExpressionSet) {
+		this.currentExpressionSet = currentExpressionSet;
+	}
+
+	public HashMap<Integer, GeneExpression> getCurrentExpressionSet2() {
+		return currentExpressionSet2;
+	}
+
+	public void setCurrentExpressionSet2(
+			HashMap<Integer, GeneExpression> currentExpressionSet2) {
+		this.currentExpressionSet2 = currentExpressionSet2;
+	}
+
+	public Ranking getRanks() {
+		return ranks;
+	}
+
+	public void setRanks(Ranking ranks) {
+		this.ranks = ranks;
 	}
 
 	public CytoPanelName getCytoPanelName() {

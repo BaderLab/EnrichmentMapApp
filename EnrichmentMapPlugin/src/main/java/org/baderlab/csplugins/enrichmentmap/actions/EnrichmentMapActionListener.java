@@ -50,8 +50,8 @@ import java.util.List;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapUtils;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters;
+import org.baderlab.csplugins.enrichmentmap.heatmap.task.UpdateHeatMapTask;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.task.UpdateHeatMapTask;
 import org.baderlab.csplugins.enrichmentmap.view.HeatMapPanel;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
@@ -66,6 +66,7 @@ import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.util.swing.FileUtil;
+import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.swing.DialogTaskManager;
 
@@ -87,7 +88,7 @@ public class EnrichmentMapActionListener implements RowsSetListener{
     private List<CyNode> Nodes;
     private List<CyEdge> Edges;
     private CyApplicationManager applicationManager;
-    private DialogTaskManager dialog;
+    private SynchronousTaskManager syncTaskManager;
     private final CytoPanel cytoPanelSouth;
     private FileUtil fileUtil;
     private StreamUtil streamUtil;
@@ -100,12 +101,12 @@ public class EnrichmentMapActionListener implements RowsSetListener{
      */
     public EnrichmentMapActionListener(HeatMapPanel heatMapPanel_node,HeatMapPanel heatMapPanel_edge,
     		CyApplicationManager applicationManager,CySwingApplication application,
-    		FileUtil fileUtil, StreamUtil streamUtil,DialogTaskManager dialog) {
+    		FileUtil fileUtil, StreamUtil streamUtil,SynchronousTaskManager syncTaskManager) {
         
     		this.applicationManager = applicationManager;
     		this.fileUtil = fileUtil;
     		this.streamUtil = streamUtil;
-    		this.dialog = dialog;
+    		this.syncTaskManager = syncTaskManager;
         this.edgeOverlapPanel = heatMapPanel_edge;
         this.nodeOverlapPanel = heatMapPanel_node;
         
@@ -170,8 +171,8 @@ public class EnrichmentMapActionListener implements RowsSetListener{
         				Nodes.addAll(selectedNodes);
         				
         				//once we have amalgamated all the nodes and edges, launch a task to update the heatmap.
-        				UpdateHeatMapTask updateHeatmap = new UpdateHeatMapTask(map, Nodes, Edges, edgeOverlapPanel, nodeOverlapPanel, cytoPanelSouth);
-        				dialog.execute(new TaskIterator(updateHeatmap));
+        				UpdateHeatMapTask updateHeatmap = new UpdateHeatMapTask(map, Nodes, Edges, edgeOverlapPanel, nodeOverlapPanel, cytoPanelSouth,applicationManager);
+        				syncTaskManager.execute(new TaskIterator(updateHeatmap));
         			}
         		}
         }//end of if e.getSource check

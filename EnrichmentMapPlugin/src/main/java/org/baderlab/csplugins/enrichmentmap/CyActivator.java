@@ -45,6 +45,7 @@ import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.work.ServiceProperties;
+import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.osgi.framework.BundleContext;
@@ -83,8 +84,6 @@ public class CyActivator extends AbstractCyActivator {
 		VisualMappingFunctionFactory discreteMappingFunctionFactoryRef = getService(bc, VisualMappingFunctionFactory.class,"(mapping.type=discrete)");
 		VisualMappingFunctionFactory passthroughMappingFunctionFactoryRef = getService(bc, VisualMappingFunctionFactory.class,"(mapping.type=passthrough)");
 		VisualMappingFunctionFactory continuousMappingFunctionFactoryRef = getService(bc, VisualMappingFunctionFactory.class,"(mapping.type=continuous)");
-		//TaskManager<?, ?> taskManagerRef = getService(bc, TaskManager.class);
-		DialogTaskManager dialog = getService(bc, DialogTaskManager.class);
 		CyServiceRegistrar cyServiceRegistrarRef = getService(bc,CyServiceRegistrar.class);
 		CyEventHelper cyEventHelperRef = getService(bc, CyEventHelper.class);
 		CySessionManager sessionManager = getService(bc, CySessionManager.class);
@@ -94,6 +93,7 @@ public class CyActivator extends AbstractCyActivator {
 		CyLayoutAlgorithmManager layoutManager = getService(bc, CyLayoutAlgorithmManager.class);
 		 MapTableToNetworkTablesTaskFactory mapTableToNetworkTable = getService(bc,  MapTableToNetworkTablesTaskFactory.class);
 		 CyEventHelper eventHelper = getService(bc,CyEventHelper.class);
+		 SynchronousTaskManager syncTaskManager = getService(bc, SynchronousTaskManager.class);
 		 
 		//get the service registrar so we can register new services in different classes
 		CyServiceRegistrar registrar = getService(bc, CyServiceRegistrar.class);
@@ -109,8 +109,8 @@ public class CyActivator extends AbstractCyActivator {
 		PostAnalysisInputPanel postEMPanel = new PostAnalysisInputPanel(cyApplicationManagerRef,cySwingApplicationRef, openBrowserRef,fileUtil,sessionManager, streamUtil,registrar, cyNetworkManagerRef, dialogTaskManager,eventHelper );
 		
 		//create two instances of the heatmap panel
-		HeatMapPanel heatMapPanel_node = new HeatMapPanel(true, cySwingApplicationRef, fileUtil, cyApplicationManagerRef, openBrowserRef);
-		HeatMapPanel heatMapPanel_edge = new HeatMapPanel(false, cySwingApplicationRef, fileUtil, cyApplicationManagerRef, openBrowserRef);
+		HeatMapPanel heatMapPanel_node = new HeatMapPanel(true, cySwingApplicationRef, fileUtil, cyApplicationManagerRef, openBrowserRef,dialogTaskManager);
+		HeatMapPanel heatMapPanel_edge = new HeatMapPanel(false, cySwingApplicationRef, fileUtil, cyApplicationManagerRef, openBrowserRef,dialogTaskManager);
 		ParametersPanel paramsPanel = new ParametersPanel(openBrowserRef, cyApplicationManagerRef);
 		
 		//Get an instance of EM manager
@@ -121,7 +121,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,manager, SetCurrentNetworkListener.class, new Properties());		
 		
 		//assocaite them with the action listener
-		EnrichmentMapActionListener EMActionListener = new EnrichmentMapActionListener(heatMapPanel_node,heatMapPanel_edge, cyApplicationManagerRef, cySwingApplicationRef,fileUtil,streamUtil,dialog);
+		EnrichmentMapActionListener EMActionListener = new EnrichmentMapActionListener(heatMapPanel_node,heatMapPanel_edge, cyApplicationManagerRef, cySwingApplicationRef,fileUtil,streamUtil,syncTaskManager);
 		registerService(bc,EMActionListener, RowsSetListener.class, new Properties());		
 		
 		
@@ -164,10 +164,8 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,sessionAction,SessionAboutToBeSavedListener.class, new Properties());
 		registerService(bc,sessionAction,SessionLoadedListener.class, new Properties());
 		
-		//test out tunables menu
+		//generic EM command line option
 		Properties properties = new Properties();
-		properties.put(ServiceProperties.PREFERRED_MENU, ServiceProperties.APPS_MENU);
-    		properties.put(ServiceProperties.TITLE, "TestTunables");
     		properties.put(ServiceProperties.COMMAND, "build");
     		properties.put(ServiceProperties.COMMAND_NAMESPACE, "enrichmentmap");
 		registerService(bc, new BuildEnrichmentMapTuneableTaskFactory(sessionManager, streamUtil, cyApplicationManagerRef, cyNetworkManagerRef, cyNetworkViewManagerRef, cyNetworkViewFactoryRef, cyNetworkFactoryRef, tableFactory, tableManager, visualMappingManagerRef, visualStyleFactoryRef, continuousMappingFunctionFactoryRef, discreteMappingFunctionFactoryRef, passthroughMappingFunctionFactoryRef, layoutManager, mapTableToNetworkTable, dialogTaskManager), TaskFactory.class, properties);
