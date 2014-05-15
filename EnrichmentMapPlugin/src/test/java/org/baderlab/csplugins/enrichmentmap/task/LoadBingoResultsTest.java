@@ -175,7 +175,7 @@ public class LoadBingoResultsTest extends TestCase{
 		assertEquals(398,dataset2.getDatasetGenes().size());
 		
 		//there should be 20 edges (2 edges for every node because of the distinct expresison sets)
-		assertEquals(30,em.getGenesetSimilarity().size());
+		assertEquals(24,em.getGenesetSimilarity().size());
 		//there should be a total of 366 genes
 		assertEquals(704, em.getGenes().size());
 		

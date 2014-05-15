@@ -169,7 +169,7 @@ public class EnrichmentMapParameters {
     //with more methods to support can't just have generic or gsea
     final public static String method_GSEA = "GSEA";
     final public static String method_generic = "generic";
-    final public static String method_DAVID = "DAVID/BiNGO";
+    final public static String method_DAVID = "DAVID/BiNGO/Great";
     //with more similarity metric can't use a boolean to reprensent them.
     final public static String SM_JACCARD = "JACCARD";
     final public static String SM_OVERLAP = "OVERLAP";

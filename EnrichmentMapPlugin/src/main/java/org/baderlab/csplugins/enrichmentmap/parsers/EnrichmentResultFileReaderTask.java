@@ -212,6 +212,9 @@ public class EnrichmentResultFileReaderTask extends AbstractTask {
     			else if (header_line.contains("File created with BiNGO")){
     				parseBingoFile(lines);
     			}
+    			else if(header_line.contains("GREAT version")){
+    				parseGreatFile(lines);
+    			}
     			else{
     				parseGenericFile(lines);
     			}
@@ -770,6 +773,170 @@ public class EnrichmentResultFileReaderTask extends AbstractTask {
             	dataset.getMap().getParams().setFDR(FDR);
         }
 
+        
+        /*
+         * Great is an enrichment tool used for methylation and other high throughput 
+         * sequencing data.
+         */
+        public void parseGreatFile(String [] lines){
+        		HashMap<String, GeneSet> genesets = dataset.getSetofgenesets().getGenesets();
+
+            //get the genes (which should also be empty
+            HashMap<String, Integer> genes = dataset.getMap().getGenes();
+            HashMap<Integer, String> key2gene = dataset.getMap().getHashkey2gene();
+
+            int currentProgress = 0;
+            int maxValue = lines.length;
+            //for great files there is an FDR
+        		dataset.getMap().getParams().setFDR(true);   
+
+             //skip the first l9 which just has the field names (start i=1)
+            //check to see how many columns the data has
+
+            //go through each line until we find the header line
+            int k=0;
+            String line = lines[k];
+            String [] tokens = line.split("\t");
+            for(;k<lines.length;k++){
+                line = lines[k];
+                tokens = line.split("\t");
+                int length = tokens.length;
+                if ((length == 24) && tokens[3].equalsIgnoreCase("BinomRank") ){
+                    break;
+                }
+            }
+            
+            //go through the rest of the lines
+            for (int i = k+1; i < lines.length; i++) {
+                line = lines[i];
+
+                tokens = line.split("\t");
+                //there are extra lines at the end of the file that should be ignored.
+                if(tokens.length != 24)
+                		break;
+
+                double pvalue = 1.0;
+                double FDRqvalue = 1.0;
+                GenericResult result;
+                int gs_size = 0;
+                double NES = 1.0;
+                
+                //details of export file
+                //http://bejerano.stanford.edu/help/display/GREAT/Export
+                
+              //The second column of the file is the name of the geneset
+                String name = tokens[1].trim() + "-" + tokens[2].trim();
+
+                //the first column of the file is the description
+                String description = tokens[2].trim();
+
+                //when there are two different species it is possible that the gene set could
+                //already exist in the set of genesets.  if it does exist then add the genes
+                //in this set to the geneset
+                GeneSet gs;
+                if(genesets.containsKey(name))
+                    gs = genesets.get(name);
+
+                //load the geneset and the genes to their respective data structures.
+                //create an object of type Geneset with the above Name and description
+                else
+                    gs = new GeneSet(name, description);
+
+                String[] gene_tokens = tokens[23].split(",");
+
+                //All subsequent fields in the list are the geneset associated with this geneset.
+                for (int j = 0; j < gene_tokens.length; j++) {
+
+                    String gene = gene_tokens[j].toUpperCase();
+                        //Check to see if the gene is already in the hashmap of genes
+                        //if it is already in the hash then get its associated key and put it
+                        //into the set of genes
+                    if (genes.containsKey(gene)) {
+                            gs.addGene(genes.get(gene));
+                    }
+
+                    //If the gene is not in the list then get the next value to be used and put it in the list
+                    else{
+                        if(!gene.equalsIgnoreCase("")){
+
+                            //add the gene to the master list of genes
+                            int value = dataset.getMap().getNumberOfGenes();
+                            genes.put(gene, value);
+                            key2gene.put(value,gene);
+                            dataset.getMap().setNumberOfGenes(value+1);
+
+                            //add the gene to the genelist
+                            gs.addGene(genes.get(gene));
+                        }
+                    }
+                }
+
+                //finished parsing that geneset
+                //add the current geneset to the hashmap of genesets
+                genesets.put(name, gs);
+
+                	//There are two tests run by GREAT, the binomial on regions and the hypergeometric based on genes
+                //The first pass of results shows only those that are significant both
+                //The user can then choose to sort by only binomial significant 
+                //as the hypergeometric is much more stringent I chose to use the binomial and the users can filter 
+                //by other values if they choose
+                
+                //The 5th column is the nominal p-value for binomial test
+                if(tokens[4].equalsIgnoreCase("")){
+                    //do nothing
+                }else{
+                    pvalue = Double.parseDouble(tokens[4]);
+                }
+
+                //the Count is the size of the geneset - not restricted to the genes of interest
+                //the 20th column total genes, a.k.a "annotation count" (K)
+                if(tokens[19].equalsIgnoreCase("")){
+                    //do nothing
+                }else{
+                    gs_size = Integer.parseInt(tokens[19]);
+                }
+
+                //Use the FDR of the bionomial p-value
+                //the 7th column - binomial FDR q-value
+                if(tokens[6].equalsIgnoreCase("")){
+                    //do nothing
+                }else{
+                    FDRqvalue = Double.parseDouble(tokens[6]);
+                }
+
+                result = new GenericResult(name,description,pvalue,gs_size,FDRqvalue);
+
+
+
+                // Calculate Percentage.  This must be a value between 0..100.
+                int percentComplete = (int) (((double) currentProgress / maxValue) * 100);
+                //  Estimate Time Remaining
+                long timeRemaining = maxValue - currentProgress;
+                if (taskMonitor != null) {
+                        taskMonitor.setProgress(percentComplete);
+                        taskMonitor.setStatusMessage("Parsing Great Results file " + currentProgress + " of " + maxValue);
+                    }
+                currentProgress++;
+              
+                //check to see if the gene set has already been entered in the results
+                //it is possible that one geneset will be in both phenotypes.
+                //if it is already exists then we want to make sure the one retained is the result with the
+                //lower p-value.
+                //ticket #149
+                GenericResult temp = (GenericResult)results.get(name);
+                if(temp == null)
+                   results.put(name, result);
+               else{
+                    if(result.getPvalue() < temp.getPvalue())
+                       results.put(name, result);
+                }
+
+            }
+  
+            
+        }
+        
+        
     /**
      * Non-blocking call to interrupt the task.
      */
