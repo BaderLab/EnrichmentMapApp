@@ -155,11 +155,11 @@ public class ComputeSimilarityTask extends AbstractTask {
             for(Iterator i = genesetsOfInterest.keySet().iterator(); i.hasNext(); ){
 
                  // Calculate Percentage.  This must be a value between 0..100.
-                int percentComplete = (int) (((double) currentProgress / maxValue) * 100);
+                //int percentComplete = (int) (((double) currentProgress / maxValue) * 100);
                 //  Estimate Time Remaining
                 long timeRemaining = maxValue - currentProgress;
                 if (taskMonitor != null) {
-                   taskMonitor.setProgress(percentComplete);
+                   taskMonitor.setProgress((double) currentProgress / maxValue);
                    taskMonitor.setStatusMessage("Computing Geneset similarity " + currentProgress + " of " + maxValue);                
                 }
                 currentProgress++;
@@ -273,7 +273,7 @@ public class ComputeSimilarityTask extends AbstractTask {
                     //  Estimate Time Remaining
                     long timeRemaining = maxValue - currentProgress;
                     if (taskMonitor != null) {
-                        taskMonitor.setProgress(percentComplete);
+                        taskMonitor.setProgress((double) currentProgress / maxValue);
                         taskMonitor.setStatusMessage("Computing Geneset similarity " + currentProgress + " of " + maxValue);                       
                     }
                     currentProgress++;
@@ -354,13 +354,13 @@ public class ComputeSimilarityTask extends AbstractTask {
                HashMap<String, GeneSet> sig_genesets_set1 = map.getDataset(EnrichmentMap.DATASET1).getGenesetsOfInterest().getGenesets();
                HashMap<String, GeneSet> sig_genesets_set2 = map.getDataset(EnrichmentMap.DATASET2).getGenesetsOfInterest().getGenesets();
 
-                HashMap<String, GeneSet> genesetsInnerLoop_missingedges = map.getAllGenesets();
+                //HashMap<String, GeneSet> genesetsInnerLoop_missingedges = map.getAllGenesets();
                 HashMap<String, GeneSet> genesetsOfInterest_missingedges = map.getAllGenesets();
                HashMap<String, EnrichmentResult> dataset1_results = map.getDataset(EnrichmentMap.DATASET1).getEnrichments().getEnrichments();
 
                  //iterate through the each of the GSEA Results of interest - for the second set on the outer loop
                //and the first set on the inner loop
-                for(Iterator i = genesetsOfInterest_missingedges.keySet().iterator(); i.hasNext(); ){
+                for(Iterator i = sig_genesets_set2.keySet().iterator(); i.hasNext(); ){
                     enrichment_set = 1;
                     String geneset1_name = i.next().toString();
 
@@ -369,7 +369,7 @@ public class ComputeSimilarityTask extends AbstractTask {
                         continue;
 
                     //for each individual geneset compute its jaccard index with all other genesets
-                    for(Iterator j = genesetsInnerLoop_missingedges.keySet().iterator(); j.hasNext(); ){
+                    for(Iterator j = sig_genesets_set1.keySet().iterator(); j.hasNext(); ){
 
                         String geneset2_name = j.next().toString();
                         
@@ -451,8 +451,12 @@ public class ComputeSimilarityTask extends AbstractTask {
                 }
 
                //Do dataset2
-               HashMap<String, GeneSet> genesetsInnerLoop_missingedges_d2 = map.getDataset(EnrichmentMap.DATASET2).getSetofgenesets().getGenesets();
-               HashMap<String, GeneSet> genesetsOfInterest_missingedges_d2 = map.getDataset(EnrichmentMap.DATASET2).getSetofgenesets().getGenesets();
+               //HashMap<String, GeneSet> genesetsInnerLoop_missingedges_d2 = map.getDataset(EnrichmentMap.DATASET2).getSetofgenesets().getGenesets();
+               //HashMap<String, GeneSet> genesetsOfInterest_missingedges_d2 = map.getDataset(EnrichmentMap.DATASET2).getSetofgenesets().getGenesets();
+               HashMap<String, GeneSet> genesetsInnerLoop_missingedges_d2 = map.getDataset(EnrichmentMap.DATASET1).getGenesetsOfInterest().getGenesets();
+               HashMap<String, GeneSet> genesetsOfInterest_missingedges_d2 = map.getDataset(EnrichmentMap.DATASET2).getGenesetsOfInterest().getGenesets();
+
+               
                HashMap<String, EnrichmentResult> dataset2_results = map.getDataset(EnrichmentMap.DATASET2).getEnrichments().getEnrichments();
                  //iterate through the each of the GSEA Results of interest - for the second set on the outer loop
                //and the first set on the inner loop
@@ -500,7 +504,7 @@ public class ComputeSimilarityTask extends AbstractTask {
 
                                 //get the two genesets
                                 GeneSet geneset1 = (GeneSet)genesetsOfInterest_missingedges_d2.get(geneset1_name);
-                                GeneSet geneset2 = (GeneSet)genesetsOfInterest_missingedges_d2.get(geneset2_name);
+                                GeneSet geneset2 = (GeneSet)genesetsInnerLoop_missingedges_d2.get(geneset2_name);
 
                                 HashSet<Integer> genes1 = geneset1.getGenes();
                                 HashSet<Integer> genes2 = geneset2.getGenes();

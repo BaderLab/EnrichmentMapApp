@@ -98,7 +98,7 @@ public class TableHeader extends MouseAdapter{
             hmparams.setSort(HeatMapParameters.Sort.COLUMN);
             hmparams.setSortIndex(column);
             hmparams.setSortbycolumn_event_triggered(true);
-            hmparams.changeSortComboBoxToColumnSorted();
+            //hmparams.changeSortComboBoxToColumnSorted();
 
 	    }
 	  

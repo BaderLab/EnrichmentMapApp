@@ -93,11 +93,13 @@ public class EnrichmentMapBuildMapTaskFactory implements TaskFactory{
 
 
 	public TaskIterator createTaskIterator() {
-		TaskIterator currentTasks = new TaskIterator(); 
 
 		BuildEnrichmentMapDummyTask dummyTaskToSetTitle = new BuildEnrichmentMapDummyTask();
-		currentTasks.append(dummyTaskToSetTitle);
-		    
+		
+		//initialize with 8 tasks so the progress bar can be set better.
+		TaskIterator currentTasks = new TaskIterator(8,dummyTaskToSetTitle); 
+
+		
 	    HashMap<String, DataSet> datasets = map.getDatasets();
 	    
 	    for(Iterator<String> i = datasets.keySet().iterator(); i.hasNext();){

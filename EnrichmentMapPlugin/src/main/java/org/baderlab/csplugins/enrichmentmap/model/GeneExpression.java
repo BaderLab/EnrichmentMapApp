@@ -185,6 +185,35 @@ public class GeneExpression {
     }
 
     /**
+     * Go through current object's expression row and check if there is an element that is lower
+     * than the current minimum.  If there is a value lower than the current minimum then return that value,
+     * if not then return - 100
+     *
+     * @param currentMin  - the current minimum
+     * @return the new minimum or -100 if the maximum remains the same.
+     */
+    public double newclosesttoZero(double currentClosest){
+        double newClosest = -100;
+        boolean found_newclosest = false;
+
+        
+        for(int i =0;i<expression.length;i++){
+            if(expression[i] < currentClosest && expression[i]>0){
+                //if we have already found a new min check if the new one is even smaller
+                if(found_newclosest){
+                    if(expression[i] < newClosest)
+                        newClosest = expression[i];
+                }else{
+                    newClosest = expression[i];
+                    found_newclosest = true;
+                    }
+            }
+        }
+        return newClosest;
+    }
+
+    
+    /**
      * Row normalize the current gene expression set.  Row normalization involved subtracting the mena
      * of the row from each expression value in the row and subsequently dividing it by the standard deviation
      * of the expression row.

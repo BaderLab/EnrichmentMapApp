@@ -43,26 +43,8 @@
 
 package org.baderlab.csplugins.enrichmentmap.heatmap;
 
-import javax.swing.*;
-import javax.swing.border.TitledBorder;
-
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.TreeMap;
-import java.net.URL;
-import java.awt.*;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemListener;
-import java.awt.event.ActionEvent;
-import java.awt.event.ItemEvent;
-
-import org.baderlab.csplugins.enrichmentmap.Enrichment_Map_Plugin;
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
 import org.baderlab.csplugins.enrichmentmap.view.HeatMapPanel;
-import org.cytoscape.io.util.StreamUtil;
-import org.cytoscape.util.swing.FileUtil;
 import org.mskcc.colorgradient.* ;
 
 
@@ -80,8 +62,6 @@ public class HeatMapParameters {
     private org.mskcc.colorgradient.ColorGradientRange range;
     private org.mskcc.colorgradient.ColorGradientTheme theme;
     
-    private FileUtil fileUtil;
-    private StreamUtil streamUtil;
 
     //data transformation options (row normalized, as if or log transformed)
     public static enum Transformation{
@@ -94,7 +74,7 @@ public class HeatMapParameters {
     }
 
     Sort sort;
-    Transformation transformation;
+    public Transformation transformation;
 
     //name of column currently sorted by
     private String sortbycolumnName;
@@ -110,25 +90,17 @@ public class HeatMapParameters {
 
     //store the state (ascending or descending) of each column in the table as well as each of the rank files.
     private boolean[] ascending;
-
-    //Up and down sort button
-    final static int Ascending = 0, Descending= 1; // image States
-    private ImageIcon[] iconArrow = createExpandAndCollapseIcon();
-    
+   
     //switch to turn off the coloring of the heatmap
     private boolean showValues = false;
 
     //minimum and maximum expression values used to create colour mapper
     private double minExpression;
     private double maxExpression;
+    private double closestToZeroExpression;
     private double minExpression_rownorm;
     private double maxExpression_rownorm;
-
-    private JPanel heatmapOptions;
-    private JPanel RankOptions;
-    private JComboBox hmOptionComboBox;
-    private JComboBox rankOptionComboBox;
-
+    
     //pointer to panels containing the heatmaps.
     private HeatMapPanel edgeOverlapPanel;
     private HeatMapPanel nodeOverlapPanel;
@@ -141,6 +113,10 @@ public class HeatMapParameters {
     public static String pearson_correlation = "Pearson Correlation";
     public static String cosine = "Cosine Distance";
     public static String euclidean = "Euclidean Distance";
+    
+    public static String asis = "Data As Is";
+    public static String rownorm = "Row Normalize Data";
+    public static String logtrans = "Log Transform Data";
 
     /**
      * Class constructor -
@@ -148,11 +124,9 @@ public class HeatMapParameters {
      * @param edgeOverlapPanel - heatmap for edge genes overlaps
      * @param nodeOverlapPanel - heatmap for node genes unions
      */
-    public HeatMapParameters(HeatMapPanel edgeOverlapPanel, HeatMapPanel nodeOverlapPanel,FileUtil fileUtil, StreamUtil streamUtil) {
+    public HeatMapParameters(HeatMapPanel edgeOverlapPanel, HeatMapPanel nodeOverlapPanel) {
         this.edgeOverlapPanel = edgeOverlapPanel;
         this.nodeOverlapPanel = nodeOverlapPanel;
-        this.fileUtil = fileUtil;
-        this.streamUtil = streamUtil;
         sort = Sort.DEFAULT;
         transformation = Transformation.ASIS;
     }
@@ -167,6 +141,7 @@ public class HeatMapParameters {
 
         minExpression = expression.getMinExpression();
         maxExpression = expression.getMaxExpression();
+        closestToZeroExpression = expression.getClosesttoZero();
         minExpression_rownorm = expression.getMinExpression(expression.getExpressionMatrix_rowNormalized());
         maxExpression_rownorm = expression.getMaxExpression(expression.getExpressionMatrix_rowNormalized());
 
@@ -221,8 +196,8 @@ public class HeatMapParameters {
                     }
                     //if min expression is negative then use the max expression as the max
                     else if(minExpression <= 0){
-                        min = 0;
-                        max = Math.log1p(maxExpression);
+                        min =  Math.min(Math.log(closestToZeroExpression), Math.log1p(maxExpression));
+                        max =  Math.max(Math.log(closestToZeroExpression), Math.log1p(maxExpression));
                     }
                     //if the max expression is negative then use the min expression as the max (should never happen!)
                     else if(maxExpression <= 0){
@@ -258,243 +233,20 @@ public class HeatMapParameters {
 
       }
 
-    /**
-     * method to create Sort by combo box
-     *
-     * @param params - enrichment map parameters of current map
-     * @return - panel with the sort by combo box
-     */
-    public JPanel createSortOptionsPanel(EnrichmentMap map){
-    	 TitledBorder RankBorder = BorderFactory.createTitledBorder("Sorting");
-        HashSet<String> ranks = map.getAllRankNames();
-         RankBorder.setTitleJustification(TitledBorder.LEFT);
-    	RankOptions 		= new JPanel();
-    	rankOptionComboBox	= new JComboBox();
-
-        //create a panel for the combobox and button
-        JPanel ComboButton = new JPanel();
-
-        rankOptionComboBox.addItem(sort_hierarchical_cluster);
-
-        //create the rank options based on what we have in the set of ranks
-        //Go through the ranks hashmap and insert each ranking as an option
-        if(ranks != null){
-            //convert the ranks into a treeset so that they are ordered
-        	
-            for(Iterator<String> j = ranks.iterator(); j.hasNext(); ){
-                String ranks_name = j.next().toString();
-                rankOptionComboBox.addItem(ranks_name);
-            }
-        }
-
-        rankOptionComboBox.addItem(sort_none);
-
-        switch(sort){
-            case DEFAULT:
-                rankOptionComboBox.setSelectedItem(map.getParams().getDefaultSortMethod());
-                if(map.getParams().getDefaultSortMethod().equalsIgnoreCase(sort_rank)){
-                    sort = Sort.RANK;
-                    if(ranks != null){
-                        rankFileIndex = ranks.iterator().next();
-                        sortIndex = ascending.length - ranks.size();
-                    }else{
-                        rankOptionComboBox.setSelectedItem(sort_none);
-                        sort = Sort.NONE;
-                    }
-                }
-                else if(map.getParams().getDefaultSortMethod().equalsIgnoreCase(sort_none))
-                    sort = Sort.NONE;
-                else if(map.getParams().getDefaultSortMethod().equalsIgnoreCase(sort_hierarchical_cluster))
-                    sort = Sort.CLUSTER;
-                break;
-
-            case CLUSTER:
-               rankOptionComboBox.setSelectedItem(sort_hierarchical_cluster);
-                break;
-
-            case NONE:
-                rankOptionComboBox.setSelectedItem(sort_none);
-                break;
-
-            case RANK:
-                int k = 0;
-                int columns = 0;
-                //add columns to the colum set but make sure the expression files are not the same dile
-                if(map.getParams().isData2() && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null
-                		&& !map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getFilename().equalsIgnoreCase(map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getFilename()))
-                    columns = map.getDataset(EnrichmentMap.DATASET1).getExpressionSets() .getColumnNames().length + map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() .getColumnNames().length - 2;
-                else
-                    columns = map.getDataset(EnrichmentMap.DATASET1).getExpressionSets() .getColumnNames().length;
-
-                for(Iterator<String> j = ranks.iterator(); j.hasNext(); ){
-                    String ranks_name = j.next().toString();
-                    if(ranks_name.equalsIgnoreCase(rankFileIndex)){
-                        rankOptionComboBox.setSelectedItem(ranks_name);
-                        sortIndex = columns + k;
-                    }
-                    k++;
-                }
-                break;
-
-            case COLUMN:
-                 rankOptionComboBox.addItem(sort_column + ":" + sortbycolumnName);
-                rankOptionComboBox.setSelectedItem(sort_column + ":" + sortbycolumnName);
-                break;
-
-        }
-
-        // set the selection in the rank combo box
-        //if this is the initial creation then set the rank to the default
-        //add the option to add another rank file
-        rankOptionComboBox.addItem("Add Rankings ... ");
-
-        ComboButton.add(rankOptionComboBox);
-
-         //include the button only if we are sorting by column or ranks
-        if(sort == Sort.RANK || sort == Sort.COLUMN){
-            JButton arrow;
-            if(isAscending(sortIndex))
-                 arrow = createArrowButton(Ascending);
-            else
-                arrow = createArrowButton(Descending);
-            ComboButton.add(arrow);
-            arrow.addActionListener(new ChangeSortAction(arrow));
-        }
-
-        rankOptionComboBox.addActionListener(new HeatMapActionListener(edgeOverlapPanel, nodeOverlapPanel,rankOptionComboBox,this, map,fileUtil,streamUtil));
-
-        ComboButton.revalidate();
-
-        RankOptions.add(ComboButton);
-        RankOptions.setBorder(RankBorder);
-        RankOptions.revalidate();
-
-        return RankOptions;
-    }
+   
 
 
-    /**
-     * Returns a button with an arrow icon and a collapse/expand action listener.
-     *
-     * @return button Button which is used in the titled border component
-     */
-    private JButton createArrowButton (int direction) {
-        JButton button = new JButton(iconArrow[direction]);
-        button.setBorder(BorderFactory.createEmptyBorder(0,1,5,1));
-        button.setVerticalTextPosition(AbstractButton.CENTER);
-        button.setHorizontalTextPosition(AbstractButton.LEFT);
-        button.setMargin(new Insets(0,0,3,0));
-
-        //We want to use the same font as those in the titled border font
-        Font font = BorderFactory.createTitledBorder("Sample").getTitleFont();
-        Color color = BorderFactory.createTitledBorder("Sample").getTitleColor();
-        button.setFont(font);
-        button.setForeground(color);
-        button.setFocusable(false);
-        button.setContentAreaFilled(false);
-
-        return button;
-    }
-
-    private ImageIcon[] createExpandAndCollapseIcon () {
-        ImageIcon[] iconArrow = new ImageIcon[2];
-        URL iconURL;
-        //                         Oliver at 26/06/2009:  relative path works for me,
-        //                         maybe need to change to org/baderlab/csplugins/enrichmentmap/resources/arrow_collapsed.gif
-        iconURL = this.getClass().getResource("arrow_up.gif");
-        if (iconURL != null) {
-            iconArrow[Ascending] = new ImageIcon(iconURL);
-        }
-        iconURL = this.getClass().getResource("arrow_down.gif");
-        if (iconURL != null) {
-            iconArrow[Descending] = new ImageIcon(iconURL);
-        }
-        return iconArrow;
-    }
-
-    /**
-     * Handles expanding and collapsing of extra content on the user's click of the titledBorder component.
-     */
-    private class ChangeSortAction extends AbstractAction implements ActionListener, ItemListener {
-        /**
-         * 
-         */
-        private static final long serialVersionUID = -8951978251258210440L;
-        private JButton arrow;
-
-        private ChangeSortAction(JButton arrow){
-             this.arrow = arrow;
-
-        }
-
-        public void actionPerformed(ActionEvent e) {
-             flipAscending(getSortIndex());
-
-             if(isAscending(getSortIndex()))
-                arrow.setIcon(iconArrow[Ascending]);
-             else
-                arrow.setIcon(iconArrow[Descending]);
-
-            edgeOverlapPanel.clearPanel();
-            nodeOverlapPanel.clearPanel();
-
-            edgeOverlapPanel.updatePanel();
-            nodeOverlapPanel.updatePanel();
-
-        }
-        public void itemStateChanged(ItemEvent e) {
-             flipAscending(getSortIndex());
-        }
-    }
-
-   /**
-     * method to create Data Transformations Options combo box
-     *
-     * @param params - enrichment map parameters of current map
-     * @return - panel with the Data Transformations Options combo box
-     */
-    public JPanel createDataTransformationOptionsPanel(EnrichmentMap map){
-    	 TitledBorder HMBorder = BorderFactory.createTitledBorder("Normalization");
-         HMBorder.setTitleJustification(TitledBorder.LEFT);
-    	heatmapOptions   = new JPanel();
-    	heatmapOptions.setLayout(new BorderLayout());
-    	hmOptionComboBox = new JComboBox();
-        hmOptionComboBox.addItem("Data As Is");
-        hmOptionComboBox.addItem("Row Normalize Data");
-        hmOptionComboBox.addItem("Log Transform Data");
-
-       switch(transformation){
-           case ASIS: hmOptionComboBox.setSelectedItem("Data As Is");
-               break;
-           case ROWNORM: hmOptionComboBox.setSelectedItem("Row Normalize Data");
-               break;
-           case LOGTRANSFORM: hmOptionComboBox.setSelectedItem("Log Transform Data");
-               break;
-       }
-
-
-        hmOptionComboBox.addActionListener(new HeatMapActionListener(edgeOverlapPanel, nodeOverlapPanel,hmOptionComboBox,this, map,fileUtil,streamUtil));
-        heatmapOptions.add(hmOptionComboBox,BorderLayout.NORTH);
-        heatmapOptions.setBorder(HMBorder);
-        return heatmapOptions;
-    }
-
+   
+  
     /**
      * If data is sorted by a column update the sort by combo box to contain the column name sorted by
      */
-    public void changeSortComboBoxToColumnSorted(){
+/*    public void changeSortComboBoxToColumnSorted(){
           rankOptionComboBox.addItem(sort_column + ":" + sortbycolumnName);
           rankOptionComboBox.setSelectedItem(sort_column + ":" + sortbycolumnName);
 
       }
-
-    /**
-     * Set the Sort Option ComboBox back to "No Sort".
-     * e.g. if too many genes are selected and the user chooses to abort the hieracical clustering.
-     */
-    public void changeSortComboBoxToNoSort(){
-        rankOptionComboBox.setSelectedItem(HeatMapParameters.sort_none);
-    }
+*/
 
     //Getters and Setters.
      public HeatMapPanel getEdgeOverlapPanel(){

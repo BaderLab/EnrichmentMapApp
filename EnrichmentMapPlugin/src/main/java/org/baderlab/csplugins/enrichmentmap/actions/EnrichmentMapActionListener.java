@@ -125,7 +125,7 @@ public class EnrichmentMapActionListener implements RowsSetListener{
         if(map != null){
         		if(map.getParams().isData() && map.getParams().getHmParams() == null){        
         			//create a heatmap parameters instance for this action listener
-        			HeatMapParameters hmParams = new HeatMapParameters(edgeOverlapPanel, nodeOverlapPanel,fileUtil,streamUtil);
+        			HeatMapParameters hmParams = new HeatMapParameters(edgeOverlapPanel, nodeOverlapPanel);
         			hmParams.initColorGradients(this.map.getDataset(EnrichmentMap.DATASET1).getExpressionSets());
         			//associate the newly created heatmap parameters with the current enrichment map paramters
         			this.map.getParams().setHmParams(hmParams);

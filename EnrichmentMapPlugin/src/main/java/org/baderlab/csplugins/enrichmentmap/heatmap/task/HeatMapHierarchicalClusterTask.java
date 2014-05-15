@@ -95,6 +95,8 @@ public class HeatMapHierarchicalClusterTask extends AbstractTask implements Obse
             if((cluster)/*&&(!params.isTwoDistinctExpressionSets())*/){ 
 
                 try{
+                		this.taskMonitor.setProgress(0);
+                		this.taskMonitor.setStatusMessage("Preparing data to cluster");
                     //hmParams.setSortbyHC(true);
                     hmParams.setSort(HeatMapParameters.Sort.CLUSTER);
 
@@ -136,6 +138,7 @@ public class HeatMapHierarchicalClusterTask extends AbstractTask implements Obse
                             labels.add(j,key);
 
                             j++;
+                            this.taskMonitor.setProgress((int) (((double) j/currentExpressionSet.size()) * 100));
                         }
                     }
                     //if they are both non zero we need to make sure to include all the genes
@@ -148,7 +151,8 @@ public class HeatMapHierarchicalClusterTask extends AbstractTask implements Obse
                              dummyexpression1[k] = 0.0;/*Double.NaN*/
                         for(int k = 0;k<numdatacolumns2;k++)
                              dummyexpression2[k] = 0.0;/*Double.NaN*/
-
+                        
+                        int total = numdatacolumns + numdatacolumns2;
                         //go through the expression-set hashmap and add the key to the labels and add the expression to the clustering set
                         for(Iterator<Integer> i = currentExpressionSet.keySet().iterator();i.hasNext();){
                             Integer key = i.next();
@@ -177,6 +181,8 @@ public class HeatMapHierarchicalClusterTask extends AbstractTask implements Obse
                             labels.add(j,key);
 
                             j++;
+                            this.taskMonitor.setProgress((int) (((double) j/total) * 100));
+
                         }
                         //go through the expression-set hashmap and add the key to the labels and add the expression to the clustering set
                         for(Iterator<Integer> i = currentExpressionSet2.keySet().iterator();i.hasNext();){
@@ -206,6 +212,8 @@ public class HeatMapHierarchicalClusterTask extends AbstractTask implements Obse
                             labels.add(j,key);
 
                             j++;
+                            this.taskMonitor.setProgress((int)((double)(j+numdatacolumns/total) * 100));
+                            
                         }
 
                     }
@@ -247,6 +255,7 @@ public class HeatMapHierarchicalClusterTask extends AbstractTask implements Obse
                             labels.add(j,key);
 
                             j++;
+                            this.taskMonitor.setProgress((int)(((double)j/currentExpressionSet.size()) * 100));
                         }
                     }
                     else if((set2_size> 0)&& (set1_size == 0)){
@@ -286,10 +295,14 @@ public class HeatMapHierarchicalClusterTask extends AbstractTask implements Obse
                             labels.add(j,key);
 
                             j++;
+                            this.taskMonitor.setProgress((int) (((double) j/currentExpressionSet2.size()) * 100));
+                            
                         }
                     }
 
                     //create a distance matrix the size of the expression set
+                    this.taskMonitor.setProgress(0.0);
+                    this.taskMonitor.setStatusMessage("Calculating Distance");
                     DistanceMatrix distanceMatrix;
                     if(set1_size == set2_size)
                         distanceMatrix = new DistanceMatrix(currentExpressionSet.keySet().size());
@@ -336,7 +349,9 @@ public class HeatMapHierarchicalClusterTask extends AbstractTask implements Obse
                     else
                         cluster_result.setOptimalLeafOrdering(true);
                     cluster_result.run();
-
+                    
+                    this.taskMonitor.setStatusMessage("Caculating Ranks");
+                    this.taskMonitor.setProgress(0);
                     int[] order = cluster_result.getLeafOrder();
                     ranks = new Ranking();
                     for(int i =0;i< order.length;i++){
@@ -354,6 +369,8 @@ public class HeatMapHierarchicalClusterTask extends AbstractTask implements Obse
 
                         Rank temp = new Rank(exp.getName(),0.0,i);
                         ranks.addRank(label,temp);
+                        this.taskMonitor.setProgress((int) (((double) i/order.length) * 100));
+
                     }
                 }catch(OutOfMemoryError e){
                     throw new Exception("Unable to complete clustering of genes due to insufficient memory.",e);
@@ -382,6 +399,8 @@ public class HeatMapHierarchicalClusterTask extends AbstractTask implements Obse
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		this.taskMonitor = taskMonitor;
+		this.taskMonitor.setStatusMessage("Clustering the expression set");
+		this.taskMonitor.setTitle("Clustering the expression set");
 		calculateRanksByClustering();
 	}
 	
@@ -393,5 +412,6 @@ public class HeatMapHierarchicalClusterTask extends AbstractTask implements Obse
 		// TODO Auto-generated method stub
 		return null;
 	}
+	
 
 }

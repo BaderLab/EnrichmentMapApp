@@ -75,6 +75,9 @@ public class GeneExpressionMatrix {
     //minimun expression value of all expresssion values in the array - computed as matrix
     //is loaded in.
     private double minExpression = 10000000;
+    
+    //value closest to zero for the entire expression set (above zero) used for log scaling
+    private double closesttoZero = 10000000;
 
     //phenotype designation of each column
     private String[] phenotypes;
@@ -349,6 +352,14 @@ public class GeneExpressionMatrix {
 
 	public void setFilename(String filename) {
 		this.filename = filename;
+	}
+
+	public double getClosesttoZero() {
+		return closesttoZero;
+	}
+
+	public void setClosesttoZero(double closesttoZero) {
+		this.closesttoZero = closesttoZero;
 	}
 
 	/**

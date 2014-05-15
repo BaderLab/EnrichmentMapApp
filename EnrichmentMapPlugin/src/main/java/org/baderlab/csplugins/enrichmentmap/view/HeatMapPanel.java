@@ -49,7 +49,9 @@ import javax.swing.border.TitledBorder;
 import javax.swing.table.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.util.*;
 import java.io.*;
 import java.net.URL;
@@ -59,6 +61,7 @@ import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapUtils;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapVisualStyle;
 import org.baderlab.csplugins.enrichmentmap.heatmap.*;
+import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters.Sort;
 import org.baderlab.csplugins.enrichmentmap.heatmap.task.ClusterTaskObserver;
 import org.baderlab.csplugins.enrichmentmap.heatmap.task.HeatMapHierarchicalClusterTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.model.*;
@@ -67,6 +70,7 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
+import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.util.swing.FileUtil;
@@ -94,6 +98,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
 	private FileUtil fileUtil;
 	private OpenBrowser openBrowser;
 	private DialogTaskManager dialogTaskMonitor;
+	private StreamUtil streamUtil;
 	
 	private static final long serialVersionUID = 1903063204304411983L;
     
@@ -177,6 +182,12 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
     private JTable jTable1;
     private JTableHeader tableHdr;
     private JPanel northPanel;
+    
+  //Up and down sort button
+    final static int Ascending = 0, Descending= 1; // image States
+    private ImageIcon[] iconArrow = createExpandAndCollapseIcon();
+    
+
 
     /**
      * Class constructor - creates new instance of a Heat map panel
@@ -185,7 +196,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
      * if true it is a node heatmap, else it is an edge heatmap
      */
     public HeatMapPanel(boolean node, CySwingApplication application, 
-    		FileUtil fileUtil,CyApplicationManager applicationManager,OpenBrowser openBrowser, DialogTaskManager dialogTaskMonitor){
+    		FileUtil fileUtil,CyApplicationManager applicationManager,OpenBrowser openBrowser, DialogTaskManager dialogTaskMonitor,StreamUtil streamUtil){
        this.node = node;
        this.setLayout(new java.awt.BorderLayout());
 
@@ -199,6 +210,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
         this.applicationManager = applicationManager;
         this.openBrowser = openBrowser;
         this.dialogTaskMonitor = dialogTaskMonitor;
+        this.streamUtil = streamUtil;
     }
 
     /**
@@ -1175,13 +1187,13 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
                 GridBagConstraints.CENTER, GridBagConstraints.NONE);
 
 		//add the show data values to the transformation drop down panel.	
-        JPanel datatransformPanel = hmParams.createDataTransformationOptionsPanel(map);
+        JPanel datatransformPanel = createDataTransformationOptionsPanel();
         datatransformPanel.add(showValuesPanel(), BorderLayout.SOUTH);
         
         addComponent(northPanel,datatransformPanel, 2, 0, 1, 1, 
                 GridBagConstraints.CENTER, GridBagConstraints.NONE);
 
-        addComponent(northPanel,hmParams.createSortOptionsPanel(map), 3, 0, 2, 1,
+        addComponent(northPanel,createSortOptionsPanel(), 3, 0, 2, 1,
                     GridBagConstraints.CENTER, GridBagConstraints.NONE);
 
         addComponent(northPanel,buttonPanel, 5, 0, 1, 1,
@@ -1191,6 +1203,230 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
         return northPanel;
     }
 
+    /**
+     * method to create Data Transformations Options combo box
+     *
+     * @param params - enrichment map parameters of current map
+     * @return - panel with the Data Transformations Options combo box
+     */
+    public JPanel createDataTransformationOptionsPanel(){
+    	 JPanel heatmapOptions;
+    	 JComboBox hmOptionComboBox;
+    	
+    	TitledBorder HMBorder = BorderFactory.createTitledBorder("Normalization");
+         HMBorder.setTitleJustification(TitledBorder.LEFT);
+    	heatmapOptions   = new JPanel();
+    	heatmapOptions.setLayout(new BorderLayout());
+    	hmOptionComboBox = new JComboBox();
+        hmOptionComboBox.addItem(HeatMapParameters.asis);
+        hmOptionComboBox.addItem(HeatMapParameters.rownorm);
+        hmOptionComboBox.addItem(HeatMapParameters.logtrans);
+
+       switch(hmParams.getTransformation()){
+           case ASIS: hmOptionComboBox.setSelectedItem(HeatMapParameters.asis);
+               break;
+           case ROWNORM: hmOptionComboBox.setSelectedItem(HeatMapParameters.rownorm);
+               break;
+           case LOGTRANSFORM: hmOptionComboBox.setSelectedItem(HeatMapParameters.logtrans);
+               break;
+       }
+
+        hmOptionComboBox.addActionListener(new HeatMapActionListener(hmParams.getEdgeOverlapPanel(), hmParams.getNodeOverlapPanel(),hmOptionComboBox,this.hmParams, map,fileUtil,streamUtil));
+        heatmapOptions.add(hmOptionComboBox,BorderLayout.NORTH);
+        heatmapOptions.setBorder(HMBorder);
+        return heatmapOptions;
+    }
+
+    
+    /**
+     * method to create Sort by combo box
+     *
+     * @param params - enrichment map parameters of current map
+     * @return - panel with the sort by combo box
+     */
+    public JPanel createSortOptionsPanel(){
+   	 	JComboBox rankOptionComboBox;
+   	 	JPanel RankOptions;	
+   	 	
+    	TitledBorder RankBorder = BorderFactory.createTitledBorder("Sorting");
+        HashSet<String> ranks = map.getAllRankNames();
+         RankBorder.setTitleJustification(TitledBorder.LEFT);
+    	RankOptions 		= new JPanel();
+    	rankOptionComboBox	= new JComboBox();
+
+        //create a panel for the combobox and button
+        JPanel ComboButton = new JPanel();
+
+        rankOptionComboBox.addItem(HeatMapParameters.sort_hierarchical_cluster);
+
+        //create the rank options based on what we have in the set of ranks
+        //Go through the ranks hashmap and insert each ranking as an option
+        if(ranks != null){
+            //convert the ranks into a treeset so that they are ordered
+        	
+            for(Iterator<String> j = ranks.iterator(); j.hasNext(); ){
+                String ranks_name = j.next().toString();
+                rankOptionComboBox.addItem(ranks_name);
+            }
+        }
+
+        rankOptionComboBox.addItem(HeatMapParameters.sort_none);
+
+        switch(hmParams.getSort()){
+            case DEFAULT:
+                rankOptionComboBox.setSelectedItem(map.getParams().getDefaultSortMethod());
+                if(map.getParams().getDefaultSortMethod().equalsIgnoreCase(HeatMapParameters.sort_rank)){
+                	hmParams.setSort(Sort.RANK);
+                    if(ranks != null){
+                        hmParams.setRankFileIndex(ranks.iterator().next());
+                        hmParams.setSortIndex(hmParams.getAscending().length - ranks.size());
+                    }else{
+                        rankOptionComboBox.setSelectedItem(HeatMapParameters.sort_none);
+                        hmParams.setSort(Sort.NONE);
+                    }
+                }
+                else if(map.getParams().getDefaultSortMethod().equalsIgnoreCase(HeatMapParameters.sort_none))
+                	hmParams.setSort(Sort.NONE);
+                else if(map.getParams().getDefaultSortMethod().equalsIgnoreCase(HeatMapParameters.sort_hierarchical_cluster))
+                	hmParams.setSort(Sort.CLUSTER);
+                break;
+
+            case CLUSTER:
+               rankOptionComboBox.setSelectedItem(HeatMapParameters.sort_hierarchical_cluster);
+                break;
+
+            case NONE:
+                rankOptionComboBox.setSelectedItem(HeatMapParameters.sort_none);
+                break;
+
+            case RANK:
+                int k = 0;
+                int columns = 0;
+                //add columns to the colum set but make sure the expression files are not the same dile
+                if(map.getParams().isData2() && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null
+                		&& !map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getFilename().equalsIgnoreCase(map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getFilename()))
+                    columns = map.getDataset(EnrichmentMap.DATASET1).getExpressionSets() .getColumnNames().length + map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() .getColumnNames().length - 2;
+                else
+                    columns = map.getDataset(EnrichmentMap.DATASET1).getExpressionSets() .getColumnNames().length;
+
+                for(Iterator<String> j = ranks.iterator(); j.hasNext(); ){
+                    String ranks_name = j.next().toString();
+                    if(ranks_name.equalsIgnoreCase(hmParams.getRankFileIndex())){
+                        rankOptionComboBox.setSelectedItem(ranks_name);
+                        hmParams.setSortIndex( columns + k);
+                    }
+                    k++;
+                }
+                break;
+
+            case COLUMN:
+                 rankOptionComboBox.addItem(HeatMapParameters.sort_column + ":" + hmParams.getSortbycolumnName());
+                rankOptionComboBox.setSelectedItem(HeatMapParameters.sort_column + ":" + hmParams.getSortbycolumnName());
+                break;
+
+        }
+
+        // set the selection in the rank combo box
+        //if this is the initial creation then set the rank to the default
+        //add the option to add another rank file
+        rankOptionComboBox.addItem("Add Rankings ... ");
+
+        ComboButton.add(rankOptionComboBox);
+
+         //include the button only if we are sorting by column or ranks
+        if(hmParams.getSort() == Sort.RANK || hmParams.getSort() == Sort.COLUMN){
+            JButton arrow;
+            if(hmParams.isAscending(hmParams.getSortIndex()))
+                 arrow = createArrowButton(Ascending);
+            else
+                arrow = createArrowButton(Descending);
+            ComboButton.add(arrow);
+            arrow.addActionListener(new ChangeSortAction(arrow));
+        }
+
+        rankOptionComboBox.addActionListener(new HeatMapActionListener(hmParams.getEdgeOverlapPanel(), hmParams.getNodeOverlapPanel(),rankOptionComboBox,hmParams, map,fileUtil,streamUtil));
+
+        ComboButton.revalidate();
+
+        RankOptions.add(ComboButton);
+        RankOptions.setBorder(RankBorder);
+        RankOptions.revalidate();
+
+        return RankOptions;
+    }
+    /**
+     * Returns a button with an arrow icon and a collapse/expand action listener.
+     *
+     * @return button Button which is used in the titled border component
+     */
+    private JButton createArrowButton (int direction) {
+        JButton button = new JButton(iconArrow[direction]);
+        button.setBorder(BorderFactory.createEmptyBorder(0,1,5,1));
+        button.setVerticalTextPosition(AbstractButton.CENTER);
+        button.setHorizontalTextPosition(AbstractButton.LEFT);
+        button.setMargin(new Insets(0,0,3,0));
+
+        //We want to use the same font as those in the titled border font
+        Font font = BorderFactory.createTitledBorder("Sample").getTitleFont();
+        Color color = BorderFactory.createTitledBorder("Sample").getTitleColor();
+        button.setFont(font);
+        button.setForeground(color);
+        button.setFocusable(false);
+        button.setContentAreaFilled(false);
+
+        return button;
+    }
+
+    private ImageIcon[] createExpandAndCollapseIcon () {
+        ImageIcon[] iconArrow = new ImageIcon[2];
+        URL iconURL;
+        //                         Oliver at 26/06/2009:  relative path works for me,
+        //                         maybe need to change to org/baderlab/csplugins/enrichmentmap/resources/arrow_collapsed.gif
+        iconURL = this.getClass().getResource("arrow_up.gif");
+        if (iconURL != null) {
+            iconArrow[Ascending] = new ImageIcon(iconURL);
+        }
+        iconURL = this.getClass().getResource("arrow_down.gif");
+        if (iconURL != null) {
+            iconArrow[Descending] = new ImageIcon(iconURL);
+        }
+        return iconArrow;
+    }
+
+    /**
+     * Handles expanding and collapsing of extra content on the user's click of the titledBorder component.
+     */
+    private class ChangeSortAction extends AbstractAction implements ActionListener, ItemListener {
+        /**
+         * 
+         */
+        private static final long serialVersionUID = -8951978251258210440L;
+        private JButton arrow;
+
+        private ChangeSortAction(JButton arrow){
+             this.arrow = arrow;
+
+        }
+
+        public void actionPerformed(ActionEvent e) {
+        	hmParams.flipAscending(hmParams.getSortIndex());
+
+             if(hmParams.isAscending(hmParams.getSortIndex()))
+                arrow.setIcon(iconArrow[Ascending]);
+             else
+                arrow.setIcon(iconArrow[Descending]);
+
+             hmParams.getEdgeOverlapPanel().clearPanel();
+             hmParams.getNodeOverlapPanel().clearPanel();
+
+            hmParams.getEdgeOverlapPanel().updatePanel();
+            hmParams.getNodeOverlapPanel().updatePanel();
+
+        }
+        public void itemStateChanged(ItemEvent e) {
+        	hmParams.flipAscending(hmParams.getSortIndex());
+        }
+    }
 
     private  void addComponent(Container container, Component component,
                                int gridx, int gridy, int gridwidth, int gridheight, int anchor,

@@ -67,6 +67,9 @@ public class CreateDummyExpressionTask extends AbstractTask{
                 double newMin = expres.newMin(expressionMatrix.getMinExpression());
                 if (newMin != -100)
                     expressionMatrix.setMinExpression(newMin);
+                double newClosest = expres.newclosesttoZero(expressionMatrix.getClosesttoZero());
+				if (newClosest != -100)
+					expressionMatrix.setClosesttoZero(newClosest);
 
                 expression.put(genekey,expres);
 
