@@ -45,6 +45,7 @@ package org.baderlab.csplugins.enrichmentmap.view;
 
 import javax.swing.*;
 
+import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapUtils;
 import org.baderlab.csplugins.enrichmentmap.actions.BulkEMCreationAction;
@@ -1304,7 +1305,12 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
                     			visualMappingManager,visualStyleFactory,
                     			vmfFactoryContinuous, vmfFactoryDiscrete,vmfFactoryPassthrough, dialog,  streamUtil,layoutManager,mapTableToNetworkTable);
                 //buildmap.build();
-                dialog.execute(buildmap.createTaskIterator()); 
+                dialog.execute(buildmap.createTaskIterator());
+                
+                //After the network is built register the HeatMap and Parameters panel
+        		EnrichmentMapManager manager = EnrichmentMapManager.getInstance();
+        		manager.registerServices();
+                
             }
         });
         //importButton.addActionListener(new BuildEnrichmentMapActionListener(this));

@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.Collection;
 import java.util.Map;
 
+import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
@@ -177,6 +178,9 @@ public class EnrichmentMapGSEACommandHandlerTask extends AbstractTask {
         			vmfFactoryContinuous, vmfFactoryDiscrete,vmfFactoryPassthrough, dialog,  streamUtil,layoutManager,mapTableToNetworkTable);
 
 			insertTasksAfterCurrentTask(buildmap.createTaskIterator());
+			
+			EnrichmentMapManager manager = EnrichmentMapManager.getInstance();
+			manager.registerServices();
 		}
 		
 		private DataSetFiles InitializeFiles(String edb, String exp){

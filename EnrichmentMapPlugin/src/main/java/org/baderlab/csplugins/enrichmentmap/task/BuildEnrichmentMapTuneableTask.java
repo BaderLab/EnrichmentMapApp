@@ -47,6 +47,7 @@ import java.io.File;
 
 import javax.swing.JRadioButton;
 
+import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
@@ -312,6 +313,9 @@ public class BuildEnrichmentMapTuneableTask extends AbstractTask {
         			vmfFactoryContinuous, vmfFactoryDiscrete,vmfFactoryPassthrough, dialog,  streamUtil,layoutManager,mapTableToNetworkTable);
 
    	insertTasksAfterCurrentTask(buildmap.createTaskIterator());
+   	
+	EnrichmentMapManager manager = EnrichmentMapManager.getInstance();
+	manager.registerServices();
     	
            
        

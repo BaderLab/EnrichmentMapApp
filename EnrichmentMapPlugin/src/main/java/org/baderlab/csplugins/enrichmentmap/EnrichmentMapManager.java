@@ -107,14 +107,24 @@ public class EnrichmentMapManager implements SetCurrentNetworkListener, NetworkA
     		
     		//initialize the parameters panel
     		this.parameterPanel = parameterPanel;       
-        registrar.registerService(this.parameterPanel,CytoPanelComponent.class,new Properties());
+        //registrar.registerService(this.parameterPanel,CytoPanelComponent.class,new Properties());
         
 
         this.nodesOverlapPanel = nodesOverlapPanel;
         this.edgesOverlapPanel = edgesOverlapPanel;
-        registrar.registerService(this.nodesOverlapPanel,CytoPanelComponent.class,new Properties());
-        registrar.registerService(this.edgesOverlapPanel,CytoPanelComponent.class,new Properties());
+        //registrar.registerService(this.nodesOverlapPanel,CytoPanelComponent.class,new Properties());
+        //registrar.registerService(this.edgesOverlapPanel,CytoPanelComponent.class,new Properties());
           
+    }
+    
+    public void registerServices(){
+    	if(this.nodesOverlapPanel != null)
+    		registrar.registerService(this.nodesOverlapPanel,CytoPanelComponent.class,new Properties());
+        if(this.edgesOverlapPanel != null)
+        	registrar.registerService(this.edgesOverlapPanel,CytoPanelComponent.class,new Properties());
+        if(this.parameterPanel != null)
+        	registrar.registerService(this.parameterPanel,CytoPanelComponent.class,new Properties());
+        
     }
     
     /**

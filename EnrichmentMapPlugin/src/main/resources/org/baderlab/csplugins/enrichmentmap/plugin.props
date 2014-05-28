@@ -15,7 +15,7 @@ pluginDescription=Enrichment Map is a network-based method to visualize and inte
 pluginVersion=2.0
 
 # Compatible Cytoscape version
-cytoscapeVersion=3.0
+cytoscapeVersion=3.1
 
 # Category, use one of the categories listed on the website or create your own
 pluginCategory=Analysis
@@ -31,10 +31,10 @@ pluginAuthorsIntsitutions=Gary Bader, Daniele Merico, Ruth Isserlin, Oliver Stue
 projectURL=http://www.baderlab.org/Software/EnrichmentMap
 
 # Date this plugin/plugin version was released
-releaseDate=February 1, 2013
+releaseDate=May 28, 2014
 
 # If this plugin is never meant to be downloaded except as part of a plugin (not common) add this property.  Default is "no"
 #themeOnly=no
 
 # -- The following properties are NOT OFFICIAL AND PROPRIETARY -- #
-pluginReleaseSuffix=DEV
+pluginReleaseSuffix=

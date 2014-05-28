@@ -345,6 +345,7 @@ public class EnrichmentMapSessionAction implements SessionAboutToBeSavedListener
                 
             //register the action listeners for all the networks.
             EnrichmentMapManager manager = EnrichmentMapManager.getInstance();
+            manager.registerServices();
             HashMap<Long, EnrichmentMap> networks = manager.getCyNetworkList();
 
             //iterate over the networks
