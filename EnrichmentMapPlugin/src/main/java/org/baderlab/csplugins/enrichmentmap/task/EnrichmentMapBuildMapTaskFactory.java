@@ -2,6 +2,8 @@ package org.baderlab.csplugins.enrichmentmap.task;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
@@ -102,8 +104,12 @@ public class EnrichmentMapBuildMapTaskFactory implements TaskFactory{
 		
 	    HashMap<String, DataSet> datasets = map.getDatasets();
 	    
-	    for(Iterator<String> i = datasets.keySet().iterator(); i.hasNext();){
-	    		DataSet dataset = datasets.get(i.next());
+	    //Make sure that Dataset 1 gets parsed first because if there are 2 datasets
+	    //the geneset file is only associated with the first dataset.
+	    SortedSet<String> dataset_names = new TreeSet<String>(datasets.keySet());
+	    
+	    for(String dataset_name:dataset_names){
+	    		DataSet dataset = datasets.get(dataset_name);
 	    		//first step: load GMT file if a file is specified in this dataset    		
 	    		if(dataset.getSetofgenesets().getFilename() != null && !dataset.getSetofgenesets().getFilename().isEmpty()){
     				//Load the geneset file
