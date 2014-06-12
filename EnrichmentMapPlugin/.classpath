@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src/main/java"/>
+	<classpathentry kind="src" path="src/test/java"/>
+	<classpathentry kind="lib" path="lib/junit.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="/cytoscape-app-developer/target/lib/api-3.1.1-sources.jar"/>
+	<classpathentry kind="lib" path="/cytoscape-app-developer/target/lib/cytoscape-swing-app-api-3.1.1.jar"/>
+	<classpathentry kind="lib" path="/cytoscape-app-developer/target/lib/impl-3.1.1-sources.jar"/>
+	<classpathentry kind="lib" path="/Users/arkadyarkhangorodsky/Downloads/osgi.core-5.0.0.jar"/>
+	<classpathentry kind="lib" path="/Users/arkadyarkhangorodsky/.m2/repository/colt/colt/1.2.0/colt-1.2.0.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

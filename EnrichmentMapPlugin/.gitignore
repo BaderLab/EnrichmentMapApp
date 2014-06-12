@@ -20,3 +20,5 @@ resources/scripts/
 temp_resources/
 .settings/
 
+/target
+/bin
