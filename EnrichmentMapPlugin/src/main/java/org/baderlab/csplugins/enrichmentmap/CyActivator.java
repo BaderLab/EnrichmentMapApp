@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import org.baderlab.csplugins.enrichmentmap.actions.AutoAnnotatorAction;
 import org.baderlab.csplugins.enrichmentmap.actions.BulkEMCreationAction;
 import org.baderlab.csplugins.enrichmentmap.actions.EnrichmentMapActionListener;
 import org.baderlab.csplugins.enrichmentmap.actions.EnrichmentMapSessionAction;
@@ -125,6 +126,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,EMActionListener, RowsSetListener.class, new Properties());		
 				
 		//Create each Action within Enrichment map as a service
+		
 		//Build Enrichment Map Action - opens EM panel
 		serviceProperties = new HashMap<String, String>();
 		serviceProperties.put("inMenuBar", "true");
@@ -143,20 +145,24 @@ public class CyActivator extends AbstractCyActivator {
 		serviceProperties.put("preferredMenu", "Apps.EnrichmentMap");
 		LoadPostAnalysisPanelAction loadPostAnalysisAction = new LoadPostAnalysisPanelAction(serviceProperties,cyApplicationManagerRef ,cyNetworkViewManagerRef, cySwingApplicationRef, postEMPanel,registrar);
 							
-		
 		//About Action
 		serviceProperties = new HashMap<String, String>();
 		serviceProperties.put("inMenuBar", "true");
 		serviceProperties.put("preferredMenu", "Apps.EnrichmentMap");
 		ShowAboutPanelAction aboutAction = new ShowAboutPanelAction(serviceProperties,cyApplicationManagerRef ,cyNetworkViewManagerRef, cySwingApplicationRef, openBrowserRef);		
-		
-			
+				
+		//Auto-annotate Action
+		serviceProperties = new HashMap<String, String>();
+		serviceProperties.put("inMenuBar", "true");
+		serviceProperties.put("preferredMenu", "Apps.EnrichmentMap");
+ 		AutoAnnotatorAction autoAnnotateAction = new AutoAnnotatorAction(serviceProperties,cyApplicationManagerRef ,cyNetworkViewManagerRef, cySwingApplicationRef, openBrowserRef);		
 		
 		//register the services
 		registerService(bc, aboutAction, CyAction.class,new Properties());
 		registerService(bc, LoadEnrichmentMapInputPanelAction, CyAction.class, new Properties());
 		registerService(bc, BulkEMInputPanelAction, CyAction.class, new Properties());
-		registerService(bc, loadPostAnalysisAction, CyAction.class, new Properties());
+		registerService(bc, loadPostAnalysisAction, CyAction.class, new Properties());		
+		registerService(bc, autoAnnotateAction, CyAction.class, new Properties());
 		
 		//register the session save and restor
 		EnrichmentMapSessionAction sessionAction = new EnrichmentMapSessionAction(cyNetworkManagerRef, sessionManager, cyApplicationManagerRef, streamUtil);
