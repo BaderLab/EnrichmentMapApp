@@ -113,7 +113,7 @@ public class CyActivator extends AbstractCyActivator {
 		HeatMapPanel heatMapPanel_node = new HeatMapPanel(true, cySwingApplicationRef, fileUtil, cyApplicationManagerRef, openBrowserRef,dialogTaskManager,streamUtil);
 		HeatMapPanel heatMapPanel_edge = new HeatMapPanel(false, cySwingApplicationRef, fileUtil, cyApplicationManagerRef, openBrowserRef,dialogTaskManager,streamUtil);
 		ParametersPanel paramsPanel = new ParametersPanel(openBrowserRef, cyApplicationManagerRef);
-		
+
 		//Get an instance of EM manager
 		EnrichmentMapManager manager = EnrichmentMapManager.getInstance();
 		manager.initialize(paramsPanel, heatMapPanel_node, heatMapPanel_edge, registrar);		
@@ -155,14 +155,14 @@ public class CyActivator extends AbstractCyActivator {
 		serviceProperties = new HashMap<String, String>();
 		serviceProperties.put("inMenuBar", "true");
 		serviceProperties.put("preferredMenu", "Apps.EnrichmentMap");
- 		AutoAnnotatorAction autoAnnotateAction = new AutoAnnotatorAction(serviceProperties,cyApplicationManagerRef ,cyNetworkViewManagerRef, cySwingApplicationRef, openBrowserRef);		
+ 		AutoAnnotatorAction autoAnnotateAction = new AutoAnnotatorAction(serviceProperties,cyApplicationManagerRef ,cyNetworkViewManagerRef, cySwingApplicationRef, openBrowserRef, tableManager, cyNetworkManagerRef);		
 		
 		//register the services
 		registerService(bc, aboutAction, CyAction.class,new Properties());
+		registerService(bc, autoAnnotateAction, CyAction.class, new Properties());
 		registerService(bc, LoadEnrichmentMapInputPanelAction, CyAction.class, new Properties());
 		registerService(bc, BulkEMInputPanelAction, CyAction.class, new Properties());
 		registerService(bc, loadPostAnalysisAction, CyAction.class, new Properties());		
-		registerService(bc, autoAnnotateAction, CyAction.class, new Properties());
 		
 		//register the session save and restor
 		EnrichmentMapSessionAction sessionAction = new EnrichmentMapSessionAction(cyNetworkManagerRef, sessionManager, cyApplicationManagerRef, streamUtil);
