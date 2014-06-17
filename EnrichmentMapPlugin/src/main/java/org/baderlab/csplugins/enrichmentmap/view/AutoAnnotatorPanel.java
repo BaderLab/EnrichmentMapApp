@@ -1,5 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.view;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
@@ -32,16 +33,17 @@ import org.cytoscape.view.presentation.annotations.AnnotationManager;
  * Date   June 16, 2014<br>
  * Time   11:26:32 AM<br>
  */
-public class AutoAnnotatePanel extends JPanel implements CytoPanelComponent {
+public class AutoAnnotatorPanel extends JPanel implements CytoPanelComponent {
 
 	private static final long serialVersionUID = 7901088595186775935L;
 
-	public AutoAnnotatePanel(CyApplicationManager cyApplicationManagerRef, 
+	public AutoAnnotatorPanel(CyApplicationManager cyApplicationManagerRef, 
 			CyNetworkViewManager cyNetworkViewManagerRef, CySwingApplication cySwingApplicationRef,
 			OpenBrowser openBrowserRef, CyNetworkManager cyNetworkManagerRef, AnnotationManager annotationManager,
 			CyServiceRegistrar registrar){
 		JPanel mainPanel = createMainPanel(cyApplicationManagerRef, cyNetworkViewManagerRef, cySwingApplicationRef,
 				openBrowserRef, cyNetworkManagerRef, annotationManager, registrar);
+        add(mainPanel,BorderLayout.CENTER);
 	}
 	
 	private JPanel createMainPanel(CyApplicationManager cyApplicationManagerRef,
@@ -71,14 +73,15 @@ public class AutoAnnotatePanel extends JPanel implements CytoPanelComponent {
                 for (CyColumn column : network.getDefaultNodeTable().getColumns()) {
                 	clusterColumnDropdown.addItem(column.getName());
                 }
-              }
-        	
-        });
+              }    	
+        	});
         
         
         JButton confirmButton = new JButton("Choose network");
         confirmButton.addActionListener(autoAnnotateAction);
         
+        mainPanel.add(clusterColumnDropdown);
+        mainPanel.add(confirmButton);
         
         return mainPanel;
 	}

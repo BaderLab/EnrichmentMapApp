@@ -1,5 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.autoannotate;
 
+import java.awt.Paint;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -132,6 +133,8 @@ public final class AutoAnnotator {
 	
 	private void drawClusters() {
     	AnnotationFactory<ShapeAnnotation> shapeFactory = (AnnotationFactory<ShapeAnnotation>) registrar.getService(AnnotationFactory.class, "(type=ShapeAnnotation.class)");    	
+    	double padding = 1.7;
+    	double min_size = 10.0;
     	for (int clusterNumber : this.clustersToCoordinates.keySet()) {
     		double xmin = 1000000;
 			double ymin = 1000000;
@@ -148,18 +151,18 @@ public final class AutoAnnotator {
     		
     		// This magic number 10 floating around here isn't good style (nor are the other ones after this)
     		double width = (xmax - xmin)*zoom;
-    		width = width > 10 ? width : 10;
+    		width = width > min_size ? width : min_size;
     		double height = (ymax - ymin)*zoom;
-    		height = height > 10 ? height : 10;
+    		height = height > min_size ? height : min_size;
     		
     		HashMap<String, String> arguments = new HashMap<String,String>();
-    		arguments.put("x", String.valueOf(xmin - 20)); // put your values for the annotation position
-    		arguments.put("y", String.valueOf(ymin - 20)); // put your values for the annotation position
+    		arguments.put("x", String.valueOf(xmin - 20*padding)); // put your values for the annotation position
+    		arguments.put("y", String.valueOf(ymin - 20*padding)); // put your values for the annotation position
     		arguments.put("zoom", String.valueOf(zoom));
     		arguments.put("canvas", "foreground");
     		ShapeAnnotation ellipse = shapeFactory.createAnnotation(ShapeAnnotation.class, this.networkView, arguments);
     		ellipse.setShapeType("Ellipse");
-    		ellipse.setSize(width*1.4, height*1.4);
+    		ellipse.setSize(width*padding, height*padding);
     		this.annotationManager.addAnnotation(ellipse);
     	}
 	}
