@@ -1,7 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap.autoannotate;
 
 import java.util.ArrayList;
-
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -10,10 +10,15 @@ import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
+import org.cytoscape.view.presentation.annotations.AnnotationFactory;
+import org.cytoscape.view.presentation.annotations.AnnotationManager;
+import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
+import org.cytoscape.view.presentation.annotations.TextAnnotation;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 /**
@@ -32,19 +37,26 @@ public final class AutoAnnotator {
 	private CyNetworkViewManager networkViewManager;
 	private CyNetworkView networkView;
 	private HashMap<Integer, ArrayList<CyNode>> clustersToNodes;
-	private HashMap<Integer, double[]> clustersToCoordinates;
+	private HashMap<Integer, ArrayList<double[]>> clustersToCoordinates;
+	private AnnotationManager annotationManager;
+	private CyServiceRegistrar registrar;
 
 	public AutoAnnotator(CySwingApplication application, OpenBrowser browser, 
-			CyNetworkManager networkManager, CyNetworkViewManager networkViewManager) {
+			CyNetworkManager networkManager, CyNetworkViewManager networkViewManager,
+			AnnotationManager annotationManager, CyServiceRegistrar registrar) {
 		// get all of the nodes and their corresponding clusters
     	this.application = application;
     	this.browser = browser;
+    	
+    	this.registrar = registrar;
+    	
     	try {
     		this.network = getEMNetwork(networkManager.getNetworkSet().iterator());
     	} catch (Exception e) {
     		// TODO - this should make some pop-up window
     		System.out.println("Load the Enrichment Map first!");
     	}
+    	
     	this.networkViewManager = networkViewManager;
     	try {
     		this.networkView = getEMNetworkView();
@@ -52,13 +64,15 @@ public final class AutoAnnotator {
     		// TODO - this should make some pop-up window
     		System.out.println("Could not find network view!");
     	}
+    	
+    	this.annotationManager = annotationManager;
     	List<CyNode> nodes = this.network.getNodeList();
     	for (CyNode node : nodes) {
     		this.network.getRow(node).get("name", String.class);
     	}
 		this.clustersToNodes = mapClustersToNodes();
 		this.clustersToCoordinates = mapClustersToCoordinates();
-		this.application = application;
+		drawClusters();
     }
 	
 	private CyNetwork getEMNetwork(Iterator<CyNetwork> allNetworks) throws Exception {
@@ -100,17 +114,53 @@ public final class AutoAnnotator {
 		return clustersToNodes;
 	}
 	
-	private HashMap<Integer, double[]> mapClustersToCoordinates() {
-		HashMap<Integer, double[]> clustersToCoordinates = new HashMap<Integer, double[]>();
+	private HashMap<Integer, ArrayList<double[]>> mapClustersToCoordinates() {
+		HashMap<Integer, ArrayList<double[]>> clustersToCoordinates = new HashMap<Integer, ArrayList<double[]>>();
 		for (Integer clusterNumber : this.clustersToNodes.keySet()) {
+			ArrayList<double[]> coordinatesList = new ArrayList<double[]>();
 			for (CyNode node : this.clustersToNodes.get(clusterNumber)) {
 				View<CyNode> nodeView = this.networkView.getNodeView(node);
 				double x = nodeView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION);
 				double y = nodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
 				double[] coordinates = {x, y};
-				clustersToCoordinates.put(clusterNumber, coordinates);
+				coordinatesList.add(coordinates);				
 			}
+			clustersToCoordinates.put(clusterNumber,coordinatesList);
 		}
 		return clustersToCoordinates;
+	}
+	
+	private void drawClusters() {
+    	AnnotationFactory<ShapeAnnotation> shapeFactory = (AnnotationFactory<ShapeAnnotation>) registrar.getService(AnnotationFactory.class, "(type=ShapeAnnotation.class)");    	
+    	for (int clusterNumber : this.clustersToCoordinates.keySet()) {
+    		double xmin = 1000000;
+			double ymin = 1000000;
+    		double xmax = -1000000;
+    		double ymax = -1000000;
+    		for (double[] coordinates : clustersToCoordinates.get(clusterNumber)) {
+    			xmin = coordinates[0] < xmin ? coordinates[0] : xmin;
+    			xmax = coordinates[0] > xmax ? coordinates[0] : xmax;
+    			ymin = coordinates[1] < ymin ? coordinates[1] : ymin;
+    			ymax = coordinates[1] > ymax ? coordinates[1] : ymax;
+    		}
+    		
+    		double zoom = networkView.getVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR);
+    		
+    		// This magic number 10 floating around here isn't good style (nor are the other ones after this)
+    		double width = (xmax - xmin)*zoom;
+    		width = width > 10 ? width : 10;
+    		double height = (ymax - ymin)*zoom;
+    		height = height > 10 ? height : 10;
+    		
+    		HashMap<String, String> arguments = new HashMap<String,String>();
+    		arguments.put("x", String.valueOf(xmin - 20)); // put your values for the annotation position
+    		arguments.put("y", String.valueOf(ymin - 20)); // put your values for the annotation position
+    		arguments.put("zoom", String.valueOf(zoom));
+    		arguments.put("canvas", "foreground");
+    		ShapeAnnotation ellipse = shapeFactory.createAnnotation(ShapeAnnotation.class, this.networkView, arguments);
+    		ellipse.setShapeType("Ellipse");
+    		ellipse.setSize(width*1.4, height*1.4);
+    		this.annotationManager.addAnnotation(ellipse);
+    	}
 	}
 }
