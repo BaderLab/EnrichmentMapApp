@@ -35,6 +35,7 @@ public final class AutoAnnotator {
     private CySwingApplication application;
     private OpenBrowser browser;
 	private CyNetwork network;
+	private String clusterColumnName;
 	private CyNetworkViewManager networkViewManager;
 	private CyNetworkView networkView;
 	private HashMap<Integer, ArrayList<CyNode>> clustersToNodes;
@@ -44,19 +45,14 @@ public final class AutoAnnotator {
 
 	public AutoAnnotator(CySwingApplication application, OpenBrowser browser, 
 			CyNetworkManager networkManager, CyNetworkViewManager networkViewManager,
-			AnnotationManager annotationManager, CyServiceRegistrar registrar) {
+			AnnotationManager annotationManager, long networkID, String clusterColumnName,
+			CyServiceRegistrar registrar) {
 		// get all of the nodes and their corresponding clusters
     	this.application = application;
     	this.browser = browser;
-    	
     	this.registrar = registrar;
-    	
-    	try {
-    		this.network = getEMNetwork(networkManager.getNetworkSet().iterator());
-    	} catch (Exception e) {
-    		// TODO - this should make some pop-up window
-    		System.out.println("Load the Enrichment Map first!");
-    	}
+    	this.network = networkManager.getNetwork(networkID);
+    	this.clusterColumnName = clusterColumnName;
     	
     	this.networkViewManager = networkViewManager;
     	try {
@@ -76,17 +72,6 @@ public final class AutoAnnotator {
 		drawClusters();
     }
 	
-	private CyNetwork getEMNetwork(Iterator<CyNetwork> allNetworks) throws Exception {
-		// TODO - change this to prompt the user for the name of the EnrichmentMap network (maybe only if it can't be found)
-		// TODO - Make the exception more meaningful
-		while (allNetworks.hasNext()) {
-			CyNetwork network = allNetworks.next();
-			if (network.toString().contains("Enrichment Map")) {
-				return network;
-			}
-		}
-		throw new Exception();
-	}
 	
 	private CyNetworkView getEMNetworkView() throws Exception {
     	if (this.networkViewManager.viewExists(this.network)) {
@@ -102,7 +87,7 @@ public final class AutoAnnotator {
 		List<CyNode> nodes = network.getNodeList();
 		for (CyNode node : nodes) {
 			// this should work for all algorithms, and prompt the user if none are available
-			Integer clusterNumber = this.network.getRow(node).get("__mclCluster", Integer.class);
+			Integer clusterNumber = this.network.getRow(node).get(this.clusterColumnName, Integer.class);
 			// empty values (no cluster) are given null
 			if (clusterNumber != null) {
 				// Populate the HashMap

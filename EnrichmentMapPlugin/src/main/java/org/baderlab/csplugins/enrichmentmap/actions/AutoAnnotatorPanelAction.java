@@ -63,6 +63,7 @@ import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.presentation.annotations.AnnotationManager;
+import org.cytoscape.work.swing.DialogTaskManager;
 
 import java.awt.event.ActionEvent;
 import java.util.Map;
@@ -78,41 +79,58 @@ import java.util.Properties;
  */
 public class AutoAnnotatorPanelAction extends AbstractCyAction {
 
-    //variable to track initialization of network event listener
+	private static final long serialVersionUID = 3764130543697594367L;
+
+
+	//variable to track initialization of network event listener
     private boolean initialized = false;
 
     
     private final CytoPanel cytoPanelWest;
-    private AutoAnnotatorPanel autoAnnotatorPanel;
-    private CyServiceRegistrar registrar;
     
+    private CyServiceRegistrar registrar;
+	private Map<String, String> configProps;
+	private CyApplicationManager applicationManager;
+	private CySwingApplication application;
+	private CyNetworkViewManager networkViewManager;
+	private AnnotationManager annotationManager;
+	private OpenBrowser openBrowser;
+	private CyNetworkManager networkManager;
+	private DialogTaskManager dialogTaskManager;
     
     public AutoAnnotatorPanelAction(Map<String,String> configProps, CyApplicationManager applicationManager, 
-    			CyNetworkViewManager networkViewManager, CySwingApplication application, 
-    			 AutoAnnotatorPanel autoAnnotatorPanel, AnnotationManager annotationManager,
-    			 CyServiceRegistrar registrar){
+    			CyNetworkManager cyNetworkManagerRef, CyNetworkViewManager networkViewManager, 
+    			CySwingApplication application, OpenBrowser openBrowserRef, AnnotationManager annotationManager, 
+    			CyServiceRegistrar registrar, DialogTaskManager dialogTaskManager){
         super( configProps,  applicationManager,  networkViewManager);
      
  		putValue(NAME, "Annotate Clusters");		
  		
  		this.cytoPanelWest = application.getCytoPanel(CytoPanelName.WEST);
- 		this.autoAnnotatorPanel = autoAnnotatorPanel;
+ 		this.configProps = configProps;
+ 		this.applicationManager = applicationManager;
+ 		this.networkManager = cyNetworkManagerRef;
+ 		this.networkViewManager = networkViewManager;
+ 		this.application = application;
+ 		this.openBrowser = openBrowserRef;
+ 		this.annotationManager = annotationManager;
  		this.registrar = registrar;
+ 		this.dialogTaskManager = dialogTaskManager;
  		
 
     }
 
 	public void actionPerformed(ActionEvent event) {
-                
+          AutoAnnotatorPanel autoAnnotatorPanel = new AutoAnnotatorPanel(this.applicationManager, this.networkViewManager,
+        		  this.application, this.openBrowser, this.networkManager, this.annotationManager, this.registrar, this.dialogTaskManager);
           if(!initialized){      
                 initialized = true;
 
-                //EnrichmentMapInputPanel inputwindow = new EnrichmentMapInputPanel(application,browser,streamUtilRef);
-                registrar.registerService(this.autoAnnotatorPanel,CytoPanelComponent.class,new Properties());
+                registrar.registerService(autoAnnotatorPanel,CytoPanelComponent.class,new Properties());
           
-                //set the input window in the instance so we can udate the instance window
+                //set the input window in the instance so we can update the instance window
                 //on network focus
-                EnrichmentMapManager.getInstance().setAutoAnnotatorPanel(this.autoAnnotatorPanel);
+                EnrichmentMapManager.getInstance().setAutoAnnotatorPanel(autoAnnotatorPanel);
           } 
                   
           // If the state of the cytoPanelWest is HIDE, show it
@@ -121,7 +139,7 @@ public class AutoAnnotatorPanelAction extends AbstractCyAction {
           }
 
          // Select my panel
-        int index = cytoPanelWest.indexOfComponent(this.autoAnnotatorPanel);
+        int index = cytoPanelWest.indexOfComponent(autoAnnotatorPanel);
         if (index == -1) {
         	 	return;
         }

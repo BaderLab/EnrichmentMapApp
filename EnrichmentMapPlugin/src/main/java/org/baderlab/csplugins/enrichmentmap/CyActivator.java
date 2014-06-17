@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import org.baderlab.csplugins.enrichmentmap.actions.AutoAnnotatorAction;
 import org.baderlab.csplugins.enrichmentmap.actions.AutoAnnotatorPanelAction;
 import org.baderlab.csplugins.enrichmentmap.actions.BulkEMCreationAction;
 import org.baderlab.csplugins.enrichmentmap.actions.EnrichmentMapActionListener;
@@ -118,7 +117,7 @@ public class CyActivator extends AbstractCyActivator {
 		BulkEMCreationPanel bulkEmPanel = new BulkEMCreationPanel(cySwingApplicationRef,fileUtil,registrar, sessionManager, streamUtil, cyApplicationManagerRef);		
 		EnrichmentMapInputPanel emPanel = new EnrichmentMapInputPanel(cyNetworkFactoryRef, cyApplicationManagerRef, cyNetworkManagerRef, cyNetworkViewManagerRef, tableFactory, tableManager, cyNetworkViewFactoryRef, visualMappingManagerRef, visualStyleFactoryRef,  continuousMappingFunctionFactoryRef,discreteMappingFunctionFactoryRef, passthroughMappingFunctionFactoryRef, dialogTaskManager, sessionManager, cySwingApplicationRef, openBrowserRef,fileUtil,streamUtil,registrar,layoutManager,mapTableToNetworkTable,bulkEmPanel);				
 		PostAnalysisInputPanel postEMPanel = new PostAnalysisInputPanel(cyApplicationManagerRef,cySwingApplicationRef, openBrowserRef,fileUtil,sessionManager, streamUtil,registrar, cyNetworkManagerRef, dialogTaskManager,eventHelper);
-		AutoAnnotatorPanel autoAnnotatorPanel = new AutoAnnotatorPanel(cyApplicationManagerRef, cyNetworkViewManagerRef, cySwingApplicationRef, openBrowserRef, cyNetworkManagerRef, annotationManagerRef, registrar);
+		AutoAnnotatorPanel autoAnnotatorPanel = new AutoAnnotatorPanel(cyApplicationManagerRef, cyNetworkViewManagerRef, cySwingApplicationRef, openBrowserRef, cyNetworkManagerRef, annotationManagerRef, registrar, dialogTaskManager);
 		
 		//create two instances of the heatmap panel
 		HeatMapPanel heatMapPanel_node = new HeatMapPanel(true, cySwingApplicationRef, fileUtil, cyApplicationManagerRef, openBrowserRef,dialogTaskManager,streamUtil);
@@ -166,7 +165,7 @@ public class CyActivator extends AbstractCyActivator {
 		serviceProperties = new HashMap<String, String>();
 		serviceProperties.put("inMenuBar", "true");
 		serviceProperties.put("preferredMenu", "Apps.EnrichmentMap");
- 		AutoAnnotatorPanelAction autoAnnotatorPanelAction = new AutoAnnotatorPanelAction(serviceProperties,cyApplicationManagerRef ,cyNetworkViewManagerRef, cySwingApplicationRef, autoAnnotatorPanel, annotationManagerRef, registrar);		
+ 		AutoAnnotatorPanelAction autoAnnotatorPanelAction = new AutoAnnotatorPanelAction(serviceProperties,cyApplicationManagerRef, cyNetworkManagerRef, cyNetworkViewManagerRef, cySwingApplicationRef, openBrowserRef, annotationManagerRef, registrar, dialogTaskManager);
 		
 		//register the services
 		registerService(bc, aboutAction, CyAction.class,new Properties());
