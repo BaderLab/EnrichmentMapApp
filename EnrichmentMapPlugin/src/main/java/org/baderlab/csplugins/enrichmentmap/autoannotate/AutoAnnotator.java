@@ -41,10 +41,8 @@ public final class AutoAnnotator {
 	private String clusterColumnName;
 	private String nameColumnName;
 	private CyNetworkViewManager networkViewManager;
+	private ArrayList<Cluster> clusters;
 	private CyNetworkView networkView;
-	private HashMap<Integer, ArrayList<CyNode>> clustersToNodes;
-	private HashMap<Integer, ArrayList<double[]>> clustersToCoordinates;
-	private HashMap<Integer, ArrayList<NodeText>> clustersToNodeText;
 	private AnnotationManager annotationManager;
 	private CyServiceRegistrar registrar;
 	private HashMap<Integer, String> clustersToLabels;
@@ -74,12 +72,10 @@ public final class AutoAnnotator {
     	for (CyNode node : nodes) {
     		this.network.getRow(node).get("name", String.class);
     	}
-		this.clustersToNodes = mapClustersToNodes();
-		this.clustersToCoordinates = mapClustersToCoordinates();
-		this.clustersToNodeText = mapClustersToNodeText();
+    	this.clusters = makeClusters();
 		drawClusters();
 		
-		WordRanker wordRanker = new WordRanker(clustersToNodeText);
+		WordRanker wordRanker = new WordRanker(clusters);
 		this.clustersToLabels = wordRanker.getClustersToLabels();
 		drawAnnotations();
     }
@@ -94,67 +90,54 @@ public final class AutoAnnotator {
     	}
 	}
 	
-	private HashMap<Integer, ArrayList<CyNode>> mapClustersToNodes() {
-		HashMap<Integer, ArrayList<CyNode>> clustersToNodes = new HashMap<Integer, ArrayList<CyNode>>();
+	private ArrayList<Cluster> makeClusters() {
+		ArrayList<Cluster> clusters = new ArrayList<Cluster>();
 		List<CyNode> nodes = network.getNodeList();
 		for (CyNode node : nodes) {
-			// this should work for all algorithms, and prompt the user if none are available
 			Integer clusterNumber = this.network.getRow(node).get(this.clusterColumnName, Integer.class);
-			// empty values (no cluster) are given null
 			if (clusterNumber != null) {
-				// Populate the HashMap
-				if (!clustersToNodes.containsKey(clusterNumber)) {
-					clustersToNodes.put(clusterNumber, new ArrayList<CyNode>());
-				}
-				clustersToNodes.get(clusterNumber).add(node);
-			}
-		}
-		return clustersToNodes;
-	}
-	
-	private HashMap<Integer, ArrayList<double[]>> mapClustersToCoordinates() {
-		HashMap<Integer, ArrayList<double[]>> clustersToCoordinates = new HashMap<Integer, ArrayList<double[]>>();
-		for (Integer clusterNumber : this.clustersToNodes.keySet()) {
-			ArrayList<double[]> coordinatesList = new ArrayList<double[]>();
-			for (CyNode node : this.clustersToNodes.get(clusterNumber)) {
 				View<CyNode> nodeView = this.networkView.getNodeView(node);
 				double x = nodeView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION);
 				double y = nodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
 				double[] coordinates = {x, y};
-				coordinatesList.add(coordinates);				
-			}
-			clustersToCoordinates.put(clusterNumber,coordinatesList);
-		}
-		return clustersToCoordinates;
-	}
-	
-	private HashMap<Integer, ArrayList<NodeText>> mapClustersToNodeText() {
-		HashMap<Integer, ArrayList<NodeText>> clustersToNodeText = new HashMap<Integer, ArrayList<NodeText>>();
-		for (Integer clusterNumber : this.clustersToNodes.keySet()) {
-			ArrayList<NodeText> nodeDescriptions = new ArrayList<NodeText>();
-			for (CyNode node : this.clustersToNodes.get(clusterNumber)) {
-				// TODO - make this customizable (add to panel)
+				
 				String nodeName = this.network.getRow(node).get(nameColumnName, String.class);
 				NodeText nodeText = new NodeText();
 				nodeText.setName(nodeName);
-				nodeDescriptions.add(nodeText);
+				
+				// empty values (no cluster) are given null
+				boolean flag = true;
+				for (Cluster cluster : clusters) {
+	 				if (cluster.getClusterNumber() == clusterNumber && flag) {
+						cluster.addNode(node);
+						cluster.addCoordinates(coordinates);
+						cluster.addNodeText(nodeText);
+						flag = false;
+					}
+				}
+				if (flag) {
+					Cluster cluster = new Cluster(clusterNumber);
+					cluster.addNode(node);
+					cluster.addCoordinates(coordinates);
+					cluster.addNodeText(nodeText);
+					clusters.add(cluster);
+				}
 			}
-			clustersToNodeText.put(clusterNumber, nodeDescriptions);
 		}
-		return clustersToNodeText;
+		return clusters;
 	}
-	
+		
 	private void drawClusters() {
     	AnnotationFactory<ShapeAnnotation> shapeFactory = (AnnotationFactory<ShapeAnnotation>) registrar.getService(AnnotationFactory.class, "(type=ShapeAnnotation.class)");    	
     	double padding = 1.7;
     	double min_size = 10.0;
-    	for (int clusterNumber : this.clustersToCoordinates.keySet()) {
-    		// initial values
+    	for (Cluster cluster : clusters) {
+    		// extreme initial values
     		double xmin = 100000000;
 			double ymin = 100000000;
     		double xmax = -100000000;
     		double ymax = -100000000;
-    		for (double[] coordinates : clustersToCoordinates.get(clusterNumber)) {
+    		for (double[] coordinates : cluster.getCoordinates()) {
     			xmin = coordinates[0] < xmin ? coordinates[0] : xmin;
     			xmax = coordinates[0] > xmax ? coordinates[0] : xmax;
     			ymin = coordinates[1] < ymin ? coordinates[1] : ymin;
@@ -184,13 +167,13 @@ public final class AutoAnnotator {
     	AnnotationFactory<TextAnnotation> textFactory = (AnnotationFactory<TextAnnotation>) registrar.getService(AnnotationFactory.class, "(type=TextAnnotation.class)");    	
     	double padding = 1.7;
     	double min_size = 10.0;
-    	for (int clusterNumber : this.clustersToCoordinates.keySet()) {
-    		// initial values
+    	for (Cluster cluster : clusters) {
+    		// extreme initial values
     		double xmin = 100000000;
 			double ymin = 100000000;
     		double xmax = -100000000;
     		double ymax = -100000000;
-    		for (double[] coordinates : clustersToCoordinates.get(clusterNumber)) {
+    		for (double[] coordinates : cluster.getCoordinates()) {
     			xmin = coordinates[0] < xmin ? coordinates[0] : xmin;
     			xmax = coordinates[0] > xmax ? coordinates[0] : xmax;
     			ymin = coordinates[1] < ymin ? coordinates[1] : ymin;
@@ -212,9 +195,9 @@ public final class AutoAnnotator {
     		arguments.put("canvas", "foreground");
     		TextAnnotation label = textFactory.createAnnotation(TextAnnotation.class, this.networkView, arguments);
     		// not working
-    		label.setFontSize(0.1*Math.sqrt(Math.pow(width, 2)+ Math.pow(height, 2)));
-    		//label.setFontSize(8.0);
-    		label.setText(this.clustersToLabels.get(clusterNumber));
+    		//label.setFontSize(0.1*Math.sqrt(Math.pow(width, 2)+ Math.pow(height, 2)));
+    		label.setFontSize(8.0);
+    		label.setText(this.clustersToLabels.get(cluster.getClusterNumber()));
     		this.annotationManager.addAnnotation(label);
     	}
 	}

@@ -157,7 +157,7 @@ public class AutoAnnotatorPanel extends JPanel implements CytoPanelComponent {
         clusterColumnDropdown.setAlignmentX(LEFT_ALIGNMENT);
         confirmButton.setAlignmentX(LEFT_ALIGNMENT);
         updateButton.setAlignmentX(LEFT_ALIGNMENT);
-        clearButton.setAlignmentX(LEFT_ALIGNMENT);
+//        clearButton.setAlignmentX(LEFT_ALIGNMENT);
         
         mainPanel.add(networkDropdownLabel);
         mainPanel.add(networkDropdown);
@@ -167,7 +167,7 @@ public class AutoAnnotatorPanel extends JPanel implements CytoPanelComponent {
         mainPanel.add(clusterColumnDropdownLabel);
         mainPanel.add(clusterColumnDropdown);
         mainPanel.add(confirmButton);
-        mainPanel.add(clearButton);
+//        mainPanel.add(clearButton);
         
         
         return mainPanel;

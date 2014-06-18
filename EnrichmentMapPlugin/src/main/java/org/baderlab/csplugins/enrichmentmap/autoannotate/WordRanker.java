@@ -18,10 +18,10 @@ public final class WordRanker {
 	
 	public HashMap<Integer, String> clustersToLabels;
 
-	public WordRanker(HashMap<Integer, ArrayList<NodeText>> clustersToNodeText) {
+	public WordRanker(ArrayList<Cluster> clusters) {
 		this.clustersToLabels = new HashMap<Integer, String>();
-		for (Integer cluster : clustersToNodeText.keySet()) {
-			this.clustersToLabels.put(cluster, getLabel(clustersToNodeText.get(cluster)));
+		for (Cluster cluster : clusters) {
+			this.clustersToLabels.put(cluster.getClusterNumber(), getLabel(cluster.getNodeTexts()));
 		}
 	}
 	
