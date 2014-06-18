@@ -7,6 +7,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.swing.BoxLayout;
@@ -26,9 +27,11 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.OpenBrowser;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationManager;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.swing.DialogTaskManager;
 
 /**
@@ -41,6 +44,7 @@ public class AutoAnnotatorPanel extends JPanel implements CytoPanelComponent {
 
 	private static final long serialVersionUID = 7901088595186775935L;
 	private String clusterColumnName;
+	private String nameColumnName;
 	private long networkID;
 	protected AutoAnnotatorTaskFactory autoAnnotatorTaskFactory;
 
@@ -74,23 +78,23 @@ public class AutoAnnotatorPanel extends JPanel implements CytoPanelComponent {
         }
         
         // Give the user a choice of column with cluster numbers
-        final JComboBox clusterColumnDropdown = new JComboBox();
-        networkDropdown.addItemListener(new ItemListener(){
+        final JComboBox nameColumnDropdown = updatingDropdownColumnName(networkDropdown, nameToSUID, cyNetworkManagerRef);        
+        nameColumnDropdown.addItemListener(new ItemListener(){
         	public void itemStateChanged(ItemEvent itemEvent) {
-                networkID = nameToSUID.get((String) itemEvent.getItem());
-                CyNetwork network = cyNetworkManagerRef.getNetwork(networkID);
-                clusterColumnDropdown.removeAllItems();
-                for (CyColumn column : network.getDefaultNodeTable().getColumns()) {
-                	clusterColumnDropdown.addItem(column.getName());
-                }
-            }    	
+                nameColumnName = (String) itemEvent.getItem();
+            }
         });
         
+        
+        // Give the user a choice of column with cluster numbers
+        final JComboBox clusterColumnDropdown = updatingDropdownColumnName(networkDropdown, nameToSUID, cyNetworkManagerRef);        
         clusterColumnDropdown.addItemListener(new ItemListener(){
         	public void itemStateChanged(ItemEvent itemEvent) {
                 clusterColumnName = (String) itemEvent.getItem();
-            }    	
-        }); 
+            }
+        });
+        
+        
         
         JButton confirmButton = new JButton("Annotate!");
         
@@ -102,7 +106,7 @@ public class AutoAnnotatorPanel extends JPanel implements CytoPanelComponent {
 				// networkID and clusterColumnName field are looked up only when the button is pressed
 				autoAnnotatorTaskFactory = new AutoAnnotatorTaskFactory(cySwingApplicationRef, openBrowserRef,
 						cyNetworkViewManagerRef, cyNetworkManagerRef, annotationManager,
-        				networkID, clusterColumnName, registrar);
+        				networkID, clusterColumnName, nameColumnName, registrar);
 				dialogTaskManager.execute(autoAnnotatorTaskFactory.createTaskIterator());
 			}
         };
@@ -125,25 +129,64 @@ public class AutoAnnotatorPanel extends JPanel implements CytoPanelComponent {
         
         JLabel networkDropdownLabel = new JLabel("Select the network to annotate:");
         JLabel clusterColumnDropdownLabel = new JLabel("Select the column with the clusters:"); // ambiguous phrasing?
-        
-//        JButton clearButton = new JButton("Clear");
+        JLabel nameColumnDropdownLabel = new JLabel("Select the column with the gene set names:"); // ambiguous phrasing?
+        JButton clearButton = new JButton("Clear Annotations");
+        ActionListener clearActionListener = new ActionListener(){
+        	public void actionPerformed(ActionEvent e) {
+        		// Annotations won't go away though!
+        		CyNetwork network = cyNetworkManagerRef.getNetwork(nameToSUID.get(networkDropdown.getSelectedItem()));
+        		CyNetworkView networkView = (CyNetworkView) cyNetworkViewManagerRef.getNetworkViews(network).toArray()[0];
+        		List<Annotation> annotations = annotationManager.getAnnotations(networkView);
+        		for (Annotation a : annotations) {
+        			annotationManager.removeAnnotation(a);
+        		}
+				autoAnnotatorTaskFactory = new AutoAnnotatorTaskFactory(cySwingApplicationRef, openBrowserRef,
+						cyNetworkViewManagerRef, cyNetworkManagerRef, annotationManager,
+        				networkID, clusterColumnName, nameColumnName, registrar);
+				dialogTaskManager.execute(autoAnnotatorTaskFactory.createTaskIterator());
+         		networkView.updateView();
+        	}
+        };        
+        clearButton.addActionListener(clearActionListener);
         
         networkDropdownLabel.setAlignmentX(LEFT_ALIGNMENT);
         networkDropdown.setAlignmentX(LEFT_ALIGNMENT);
+        nameColumnDropdownLabel.setAlignmentX(LEFT_ALIGNMENT);
+        nameColumnDropdown.setAlignmentX(LEFT_ALIGNMENT);
         clusterColumnDropdownLabel.setAlignmentX(LEFT_ALIGNMENT);
         clusterColumnDropdown.setAlignmentX(LEFT_ALIGNMENT);
         confirmButton.setAlignmentX(LEFT_ALIGNMENT);
+        updateButton.setAlignmentX(LEFT_ALIGNMENT);
+        clearButton.setAlignmentX(LEFT_ALIGNMENT);
         
         mainPanel.add(networkDropdownLabel);
         mainPanel.add(networkDropdown);
         mainPanel.add(updateButton);
+        mainPanel.add(nameColumnDropdownLabel);
+        mainPanel.add(nameColumnDropdown);
         mainPanel.add(clusterColumnDropdownLabel);
         mainPanel.add(clusterColumnDropdown);
-        mainPanel.add(new JLabel("")); // to space it out a bit
         mainPanel.add(confirmButton);
+        mainPanel.add(clearButton);
         
         
         return mainPanel;
+	}
+	
+	private JComboBox updatingDropdownColumnName(JComboBox networkDropdown, final HashMap<String, Long> nameToSUID,
+												final CyNetworkManager cyNetworkManagerRef) {
+        final JComboBox columnDropdown = new JComboBox();
+        networkDropdown.addItemListener(new ItemListener(){
+        	public void itemStateChanged(ItemEvent itemEvent) {
+                networkID = nameToSUID.get((String) itemEvent.getItem());
+                CyNetwork network = cyNetworkManagerRef.getNetwork(networkID);
+                columnDropdown.removeAllItems();
+                for (CyColumn column : network.getDefaultNodeTable().getColumns()) {
+                	columnDropdown.addItem(column.getName());
+                }
+            }
+        });
+        return columnDropdown;
 	}
 	
 	@Override

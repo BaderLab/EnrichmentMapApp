@@ -121,8 +121,8 @@ public class AutoAnnotatorPanelAction extends AbstractCyAction {
     }
 
 	public void actionPerformed(ActionEvent event) {
-          AutoAnnotatorPanel autoAnnotatorPanel = new AutoAnnotatorPanel(this.applicationManager, this.networkViewManager,
-        		  this.application, this.openBrowser, this.networkManager, this.annotationManager, this.registrar, this.dialogTaskManager);
+          AutoAnnotatorPanel autoAnnotatorPanel = new AutoAnnotatorPanel(applicationManager, networkViewManager,
+        		  application, openBrowser, networkManager, annotationManager, registrar, dialogTaskManager);
           if(!initialized){      
                 initialized = true;
 

@@ -68,25 +68,27 @@ public class AutoAnnotatorTask extends AbstractTask {
 	private CyNetworkViewManager networkViewManager;
 	private AnnotationManager annotationManager;
 	private long networkID;
+	private String nameColumnName;
 	private String clusterColumnName;
 	private CyServiceRegistrar registrar;
 
 	public AutoAnnotatorTask(CySwingApplication application, OpenBrowser browser, 
 			CyNetworkViewManager networkViewManager, CyNetworkManager networkManager,
 			AnnotationManager annotationManager, long networkID,
-    		String clusterColumnName, CyServiceRegistrar registrar){
+    		String clusterColumnName, String nameColumnName, CyServiceRegistrar registrar){
 		this.application = application;
 		this.browser = browser;
 		this.networkManager = networkManager;
 		this.networkViewManager = networkViewManager;
 		this.annotationManager = annotationManager;
 		this.networkID = networkID;
-		this.clusterColumnName= clusterColumnName;
+		this.clusterColumnName = clusterColumnName;
+		this.nameColumnName = nameColumnName;
 		this.registrar = registrar; 
 	};
 	
 	private void createAutoAnnotator(){
-		AutoAnnotator autoannotate = new AutoAnnotator(application, browser, networkManager, networkViewManager, annotationManager, networkID, clusterColumnName, registrar);
+		AutoAnnotator autoannotate = new AutoAnnotator(application, browser, networkManager, networkViewManager, annotationManager, networkID, clusterColumnName, nameColumnName, registrar);
 	}
 	
 	@Override

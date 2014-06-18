@@ -3,6 +3,7 @@
 	<classpathentry kind="src" path="src/main/java"/>
 	<classpathentry kind="src" path="src/test/java"/>
 	<classpathentry kind="lib" path="lib/junit.jar"/>
+	<classpathentry kind="lib" path="/Users/arkadyarkhangorodsky/Downloads/jsoup-1.7.3.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="/cytoscape-app-developer/target/lib/api-3.1.1-sources.jar"/>
 	<classpathentry kind="lib" path="/cytoscape-app-developer/target/lib/cytoscape-swing-app-api-3.1.1.jar"/>

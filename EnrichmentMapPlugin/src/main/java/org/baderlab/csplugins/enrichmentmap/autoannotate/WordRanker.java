@@ -30,7 +30,7 @@ public final class WordRanker {
 	}
 	
 	public String getLabel(ArrayList<NodeText> nodeTexts) {
-		// This is primitive
+		// Dummy algorithm just to work on showing text on canvas
 		TreeMap<String, Integer> wordUnitSet = getWordSet(nodeTexts, 1);
 		TreeMap<Integer, ArrayList<String>> wordUnitSetInverse = invert(wordUnitSet);
 		TreeMap<String, Integer> wordPairSet = getWordSet(nodeTexts, 2);

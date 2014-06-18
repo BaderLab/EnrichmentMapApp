@@ -45,7 +45,6 @@ import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.annotations.AnnotationManager;
-import org.cytoscape.view.presentation.annotations.BoundedTextAnnotation;
 import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
 import org.cytoscape.view.presentation.annotations.TextAnnotation;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
@@ -104,8 +103,6 @@ public class CyActivator extends AbstractCyActivator {
 		 AnnotationManager annotationManagerRef = getService(bc, AnnotationManager.class);
 		 AnnotationFactory<TextAnnotation> textAnnotationFactory = (AnnotationFactory<TextAnnotation>)getService(bc, AnnotationFactory.class, "(type=TextAnnotation.class)");
 		 AnnotationFactory<ShapeAnnotation> shapeAnnotationFactory = (AnnotationFactory<ShapeAnnotation>)getService(bc, AnnotationFactory.class, "(type=ShapeAnnotation.class)");
-		 AnnotationFactory<BoundedTextAnnotation> boundedTextAnnotationFactory = (AnnotationFactory<BoundedTextAnnotation>)getService(bc, AnnotationFactory.class, "(type=BoundedTextAnnotation.class)");
-		 
 		//get the service registrar so we can register new services in different classes
 		CyServiceRegistrar registrar = getService(bc, CyServiceRegistrar.class);
 		

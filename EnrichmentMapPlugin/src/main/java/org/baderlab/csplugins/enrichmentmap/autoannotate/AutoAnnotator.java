@@ -39,6 +39,7 @@ public final class AutoAnnotator {
     private OpenBrowser browser;
 	private CyNetwork network;
 	private String clusterColumnName;
+	private String nameColumnName;
 	private CyNetworkViewManager networkViewManager;
 	private CyNetworkView networkView;
 	private HashMap<Integer, ArrayList<CyNode>> clustersToNodes;
@@ -51,13 +52,14 @@ public final class AutoAnnotator {
 	public AutoAnnotator(CySwingApplication application, OpenBrowser browser, 
 			CyNetworkManager networkManager, CyNetworkViewManager networkViewManager,
 			AnnotationManager annotationManager, long networkID, String clusterColumnName,
-			CyServiceRegistrar registrar) {
+			String nameColumnName, CyServiceRegistrar registrar) {
 		// get all of the nodes and their corresponding clusters
     	this.application = application;
     	this.browser = browser;
     	this.registrar = registrar;
     	this.network = networkManager.getNetwork(networkID);
     	this.clusterColumnName = clusterColumnName;
+    	this.nameColumnName = nameColumnName;
     	
     	this.networkViewManager = networkViewManager;
     	try {
@@ -132,8 +134,9 @@ public final class AutoAnnotator {
 			ArrayList<NodeText> nodeDescriptions = new ArrayList<NodeText>();
 			for (CyNode node : this.clustersToNodes.get(clusterNumber)) {
 				// TODO - make this customizable (add to panel)
-				String[] nodeDescription = this.network.getRow(node).get("name", String.class).split("%");
-				NodeText nodeText = new NodeText(nodeDescription[0], nodeDescription[1], nodeDescription[2]);
+				String nodeName = this.network.getRow(node).get(nameColumnName, String.class);
+				NodeText nodeText = new NodeText();
+				nodeText.setName(nodeName);
 				nodeDescriptions.add(nodeText);
 			}
 			clustersToNodeText.put(clusterNumber, nodeDescriptions);
@@ -203,11 +206,12 @@ public final class AutoAnnotator {
     		height = height > min_size ? height : min_size;
     		
     		HashMap<String, String> arguments = new HashMap<String,String>();
-    		arguments.put("x", String.valueOf(xmin + width/zoom/2.0)); // put your values for the annotation position
-    		arguments.put("y", String.valueOf(ymin - height/zoom*(padding))); // put your values for the annotation position
+    		arguments.put("x", String.valueOf(xmin)); // put your values for the annotation position
+    		arguments.put("y", String.valueOf(ymin - height/zoom/1.5)); // put your values for the annotation position
     		arguments.put("zoom", String.valueOf(zoom));
     		arguments.put("canvas", "foreground");
     		TextAnnotation label = textFactory.createAnnotation(TextAnnotation.class, this.networkView, arguments);
+    		// not working
     		label.setFontSize(0.1*Math.sqrt(Math.pow(width, 2)+ Math.pow(height, 2)));
     		//label.setFontSize(8.0);
     		label.setText(this.clustersToLabels.get(clusterNumber));

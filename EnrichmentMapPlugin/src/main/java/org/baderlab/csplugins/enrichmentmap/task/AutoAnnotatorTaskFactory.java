@@ -24,25 +24,27 @@ public class AutoAnnotatorTaskFactory implements TaskFactory {
 	private CyNetworkViewManager networkViewManager;
 	private AnnotationManager annotationManager;
 	private long networkID;
+	private String nameColumnName;
 	private String clusterColumnName;
 	private CyServiceRegistrar registrar;
 	
 	public AutoAnnotatorTaskFactory(CySwingApplication application, OpenBrowser browser, 
 			CyNetworkViewManager networkViewManager, CyNetworkManager networkManager,
 			AnnotationManager annotationManager, long networkID,
-    		String clusterColumnName, CyServiceRegistrar registrar) {
+    		String clusterColumnName, String nameColumnName, CyServiceRegistrar registrar) {
 		this.application = application;
 		this.browser = browser;
 		this.networkManager = networkManager;
 		this.networkViewManager = networkViewManager;
 		this.annotationManager = annotationManager;
 		this.networkID = networkID;
-		this.clusterColumnName= clusterColumnName;
+		this.nameColumnName = nameColumnName;
+		this.clusterColumnName = clusterColumnName;
 		this.registrar = registrar; 
 	}
 	
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new AutoAnnotatorTask(application, browser, networkViewManager, networkManager, annotationManager, networkID, clusterColumnName, registrar));
+		return new TaskIterator(new AutoAnnotatorTask(application, browser, networkViewManager, networkManager, annotationManager, networkID, clusterColumnName, nameColumnName, registrar));
 	}
 
 	public boolean isReady() {
