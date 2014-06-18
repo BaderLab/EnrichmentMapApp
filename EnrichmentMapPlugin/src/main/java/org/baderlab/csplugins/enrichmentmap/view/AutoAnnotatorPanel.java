@@ -27,6 +27,7 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationManager;
 import org.cytoscape.work.swing.DialogTaskManager;
 
@@ -63,7 +64,7 @@ public class AutoAnnotatorPanel extends JPanel implements CytoPanelComponent {
 		
 		
         // Give the user a choice of networks to annotate
-        JComboBox networkDropdown = new JComboBox();
+        final JComboBox networkDropdown = new JComboBox();
         final HashMap<String, Long> nameToSUID = new HashMap<String, Long>();
         for (CyNetwork network : cyNetworkManagerRef.getNetworkSet()) {
         	String name = network.toString();
@@ -97,7 +98,7 @@ public class AutoAnnotatorPanel extends JPanel implements CytoPanelComponent {
         serviceProperties.put("inMenuBar", "true");
 		serviceProperties.put("preferredMenu", "Apps.EnrichmentMap");
         ActionListener autoAnnotateAction = new ActionListener(){
-			public void actionPerformed(ActionEvent arg0) {
+			public void actionPerformed(ActionEvent e) {
 				// networkID and clusterColumnName field are looked up only when the button is pressed
 				autoAnnotatorTaskFactory = new AutoAnnotatorTaskFactory(cySwingApplicationRef, openBrowserRef,
 						cyNetworkViewManagerRef, cyNetworkManagerRef, annotationManager,
@@ -107,21 +108,39 @@ public class AutoAnnotatorPanel extends JPanel implements CytoPanelComponent {
         };
         confirmButton.addActionListener(autoAnnotateAction);
         
+        // Weak fix but works for now
+        JButton updateButton = new JButton("Update");
+        ActionListener updateActionListener = new ActionListener(){
+        	public void actionPerformed(ActionEvent e) {
+        		networkDropdown.removeAllItems();
+        		for (CyNetwork network : cyNetworkManagerRef.getNetworkSet()) {
+                	String name = network.toString();
+                	long suid = network.getSUID();
+                	networkDropdown.addItem(name);
+                	nameToSUID.put(name, suid);
+                }
+        	}
+        };
+        updateButton.addActionListener(updateActionListener);
+        
         JLabel networkDropdownLabel = new JLabel("Select the network to annotate:");
         JLabel clusterColumnDropdownLabel = new JLabel("Select the column with the clusters:"); // ambiguous phrasing?
         
+//        JButton clearButton = new JButton("Clear");
+        
         networkDropdownLabel.setAlignmentX(LEFT_ALIGNMENT);
-        clusterColumnDropdownLabel.setAlignmentX(LEFT_ALIGNMENT);
         networkDropdown.setAlignmentX(LEFT_ALIGNMENT);
+        clusterColumnDropdownLabel.setAlignmentX(LEFT_ALIGNMENT);
         clusterColumnDropdown.setAlignmentX(LEFT_ALIGNMENT);
         confirmButton.setAlignmentX(LEFT_ALIGNMENT);
         
         mainPanel.add(networkDropdownLabel);
         mainPanel.add(networkDropdown);
+        mainPanel.add(updateButton);
         mainPanel.add(clusterColumnDropdownLabel);
         mainPanel.add(clusterColumnDropdown);
+        mainPanel.add(new JLabel("")); // to space it out a bit
         mainPanel.add(confirmButton);
-        
         
         
         return mainPanel;

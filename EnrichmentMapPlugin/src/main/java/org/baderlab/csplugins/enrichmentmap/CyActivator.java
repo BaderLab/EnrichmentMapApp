@@ -104,6 +104,7 @@ public class CyActivator extends AbstractCyActivator {
 		 AnnotationManager annotationManagerRef = getService(bc, AnnotationManager.class);
 		 AnnotationFactory<TextAnnotation> textAnnotationFactory = (AnnotationFactory<TextAnnotation>)getService(bc, AnnotationFactory.class, "(type=TextAnnotation.class)");
 		 AnnotationFactory<ShapeAnnotation> shapeAnnotationFactory = (AnnotationFactory<ShapeAnnotation>)getService(bc, AnnotationFactory.class, "(type=ShapeAnnotation.class)");
+		 AnnotationFactory<BoundedTextAnnotation> boundedTextAnnotationFactory = (AnnotationFactory<BoundedTextAnnotation>)getService(bc, AnnotationFactory.class, "(type=BoundedTextAnnotation.class)");
 		 
 		//get the service registrar so we can register new services in different classes
 		CyServiceRegistrar registrar = getService(bc, CyServiceRegistrar.class);
