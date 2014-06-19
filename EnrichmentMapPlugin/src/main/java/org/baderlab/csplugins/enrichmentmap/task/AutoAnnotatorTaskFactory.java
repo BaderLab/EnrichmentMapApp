@@ -1,5 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.task;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -19,6 +20,7 @@ import org.cytoscape.work.TaskIterator;
 public class AutoAnnotatorTaskFactory implements TaskFactory {
 
 	private CySwingApplication application;
+	private CyApplicationManager applicationManager;
 	private OpenBrowser browser;
 	private CyNetworkManager networkManager;
 	private CyNetworkViewManager networkViewManager;
@@ -28,11 +30,12 @@ public class AutoAnnotatorTaskFactory implements TaskFactory {
 	private String clusterColumnName;
 	private CyServiceRegistrar registrar;
 	
-	public AutoAnnotatorTaskFactory(CySwingApplication application, OpenBrowser browser, 
+	public AutoAnnotatorTaskFactory(CySwingApplication application, CyApplicationManager applicationManager, OpenBrowser browser, 
 			CyNetworkViewManager networkViewManager, CyNetworkManager networkManager,
 			AnnotationManager annotationManager, long networkID,
     		String clusterColumnName, String nameColumnName, CyServiceRegistrar registrar) {
 		this.application = application;
+		this.applicationManager = applicationManager;
 		this.browser = browser;
 		this.networkManager = networkManager;
 		this.networkViewManager = networkViewManager;
@@ -44,7 +47,7 @@ public class AutoAnnotatorTaskFactory implements TaskFactory {
 	}
 	
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new AutoAnnotatorTask(application, browser, networkViewManager, networkManager, annotationManager, networkID, clusterColumnName, nameColumnName, registrar));
+		return new TaskIterator(new AutoAnnotatorTask(application, applicationManager, browser, networkViewManager, networkManager, annotationManager, networkID, clusterColumnName, nameColumnName, registrar));
 	}
 
 	public boolean isReady() {

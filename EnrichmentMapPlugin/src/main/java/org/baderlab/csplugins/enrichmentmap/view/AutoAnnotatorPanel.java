@@ -105,7 +105,7 @@ public class AutoAnnotatorPanel extends JPanel implements CytoPanelComponent {
         ActionListener autoAnnotateAction = new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
 				// networkID and clusterColumnName field are looked up only when the button is pressed
-				autoAnnotatorTaskFactory = new AutoAnnotatorTaskFactory(cySwingApplicationRef, openBrowserRef,
+				autoAnnotatorTaskFactory = new AutoAnnotatorTaskFactory(cySwingApplicationRef, cyApplicationManagerRef, openBrowserRef,
 						cyNetworkViewManagerRef, cyNetworkManagerRef, annotationManager,
         				networkID, clusterColumnName, nameColumnName, registrar);
 				dialogTaskManager.execute(autoAnnotatorTaskFactory.createTaskIterator());

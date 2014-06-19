@@ -4,6 +4,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.TreeMap;
 
+
+import org.cytoscape.command.CommandExecutorTaskFactory;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.swing.DialogTaskManager;
+
 /**
  * Created by:
  * @author arkadyark
@@ -17,14 +23,33 @@ import java.util.TreeMap;
 public final class WordRanker {
 	
 	public HashMap<Integer, String> clustersToLabels;
+	private String clusterColumnName;
+	private String nameColumnName;
+	private CyServiceRegistrar registrar;
 
-	public WordRanker(ArrayList<Cluster> clusters) {
+	public WordRanker(ArrayList<Cluster> clusters, String clusterColumnName, String nameColumnName, CyServiceRegistrar registrar) {
 		this.clustersToLabels = new HashMap<Integer, String>();
+		this.clusterColumnName = clusterColumnName;
+		this.nameColumnName = nameColumnName;
+		this.registrar = registrar;
+		createWordClouds();
+
+		// blah blah blah
+		
 		for (Cluster cluster : clusters) {
 			this.clustersToLabels.put(cluster.getClusterNumber(), getLabel(cluster.getNodeTexts()));
 		}
 	}
 	
+	private void createWordClouds() {
+		CommandExecutorTaskFactory executor = registrar.getService(CommandExecutorTaskFactory.class);
+		ArrayList<String> commands = new ArrayList<String>();
+		commands.add("wordcloud build clusterColumnName=\"" + clusterColumnName
+				+ "\" nameColumnName=\"" + nameColumnName + "\"");
+		TaskIterator task = executor.createTaskIterator(commands, null);
+		registrar.getService(DialogTaskManager.class).execute(task); 
+	}
+
 	public HashMap<Integer, String> getClustersToLabels() {
 		return this.clustersToLabels;
 	}

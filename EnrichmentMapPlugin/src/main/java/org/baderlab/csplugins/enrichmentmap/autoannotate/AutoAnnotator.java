@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
@@ -47,7 +48,7 @@ public final class AutoAnnotator {
 	private CyServiceRegistrar registrar;
 	private HashMap<Integer, String> clustersToLabels;
 
-	public AutoAnnotator(CySwingApplication application, OpenBrowser browser, 
+	public AutoAnnotator(CySwingApplication application, CyApplicationManager applicationManager, OpenBrowser browser, 
 			CyNetworkManager networkManager, CyNetworkViewManager networkViewManager,
 			AnnotationManager annotationManager, long networkID, String clusterColumnName,
 			String nameColumnName, CyServiceRegistrar registrar) {
@@ -60,12 +61,7 @@ public final class AutoAnnotator {
     	this.nameColumnName = nameColumnName;
     	
     	this.networkViewManager = networkViewManager;
-    	try {
-    		this.networkView = getEMNetworkView();
-    	} catch (Exception e) {
-    		// TODO - this should make some pop-up window
-    		System.out.println("Could not find network view!");
-    	}
+    	this.networkView = applicationManager.getCurrentNetworkView();
     	
     	this.annotationManager = annotationManager;
     	List<CyNode> nodes = this.network.getNodeList();
@@ -75,20 +71,10 @@ public final class AutoAnnotator {
     	this.clusters = makeClusters();
 		drawClusters();
 		
-		WordRanker wordRanker = new WordRanker(clusters);
+		WordRanker wordRanker = new WordRanker(clusters, clusterColumnName, nameColumnName, registrar);
 		this.clustersToLabels = wordRanker.getClustersToLabels();
 		drawAnnotations();
     }
-	
-	private CyNetworkView getEMNetworkView() throws Exception {
-    	if (this.networkViewManager.viewExists(this.network)) {
-    		Collection<CyNetworkView> networkViews = this.networkViewManager.getNetworkViews(this.network);
-    		return (CyNetworkView) networkViews.toArray()[0];
-    	}
-    	else {
-    		throw new Exception();
-    	}
-	}
 	
 	private ArrayList<Cluster> makeClusters() {
 		ArrayList<Cluster> clusters = new ArrayList<Cluster>();

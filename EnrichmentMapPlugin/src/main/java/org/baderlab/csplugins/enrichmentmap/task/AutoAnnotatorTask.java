@@ -44,6 +44,7 @@
 package org.baderlab.csplugins.enrichmentmap.task;
 
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotator;
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -63,6 +64,7 @@ import org.cytoscape.work.TaskMonitor;
 public class AutoAnnotatorTask extends AbstractTask {
 	
 	private CySwingApplication application;
+	private CyApplicationManager applicationManager;
 	private OpenBrowser browser;
 	private CyNetworkManager networkManager;
 	private CyNetworkViewManager networkViewManager;
@@ -72,11 +74,12 @@ public class AutoAnnotatorTask extends AbstractTask {
 	private String clusterColumnName;
 	private CyServiceRegistrar registrar;
 
-	public AutoAnnotatorTask(CySwingApplication application, OpenBrowser browser, 
-			CyNetworkViewManager networkViewManager, CyNetworkManager networkManager,
+	public AutoAnnotatorTask(CySwingApplication application, CyApplicationManager applicationManager, 
+			OpenBrowser browser, CyNetworkViewManager networkViewManager, CyNetworkManager networkManager,
 			AnnotationManager annotationManager, long networkID,
     		String clusterColumnName, String nameColumnName, CyServiceRegistrar registrar){
 		this.application = application;
+		this.applicationManager = applicationManager;
 		this.browser = browser;
 		this.networkManager = networkManager;
 		this.networkViewManager = networkViewManager;
@@ -88,7 +91,7 @@ public class AutoAnnotatorTask extends AbstractTask {
 	};
 	
 	private void createAutoAnnotator(){
-		AutoAnnotator autoannotate = new AutoAnnotator(application, browser, networkManager, networkViewManager, annotationManager, networkID, clusterColumnName, nameColumnName, registrar);
+		AutoAnnotator autoannotate = new AutoAnnotator(application, applicationManager, browser, networkManager, networkViewManager, annotationManager, networkID, clusterColumnName, nameColumnName, registrar);
 	}
 	
 	@Override

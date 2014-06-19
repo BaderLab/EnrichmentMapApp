@@ -43,10 +43,7 @@ import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.presentation.RenderingEngineManager;
-import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.annotations.AnnotationManager;
-import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
-import org.cytoscape.view.presentation.annotations.TextAnnotation;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
@@ -96,12 +93,10 @@ public class CyActivator extends AbstractCyActivator {
 		CyTableFactory tableFactory = getService(bc, CyTableFactory.class);
 		CyTableManager tableManager	= getService(bc, CyTableManager.class);
 		CyLayoutAlgorithmManager layoutManager = getService(bc, CyLayoutAlgorithmManager.class);
-		 MapTableToNetworkTablesTaskFactory mapTableToNetworkTable = getService(bc,  MapTableToNetworkTablesTaskFactory.class);
-		 CyEventHelper eventHelper = getService(bc,CyEventHelper.class);
-		 SynchronousTaskManager syncTaskManager = getService(bc, SynchronousTaskManager.class);
-		 AnnotationManager annotationManagerRef = getService(bc, AnnotationManager.class);
-		 AnnotationFactory<TextAnnotation> textAnnotationFactory = (AnnotationFactory<TextAnnotation>)getService(bc, AnnotationFactory.class, "(type=TextAnnotation.class)");
-		 AnnotationFactory<ShapeAnnotation> shapeAnnotationFactory = (AnnotationFactory<ShapeAnnotation>)getService(bc, AnnotationFactory.class, "(type=ShapeAnnotation.class)");
+		MapTableToNetworkTablesTaskFactory mapTableToNetworkTable = getService(bc,  MapTableToNetworkTablesTaskFactory.class);
+		CyEventHelper eventHelper = getService(bc,CyEventHelper.class);
+		SynchronousTaskManager syncTaskManager = getService(bc, SynchronousTaskManager.class);
+		AnnotationManager annotationManagerRef = getService(bc, AnnotationManager.class);
 		//get the service registrar so we can register new services in different classes
 		CyServiceRegistrar registrar = getService(bc, CyServiceRegistrar.class);
 		
@@ -187,7 +182,6 @@ public class CyActivator extends AbstractCyActivator {
     		properties.put(ServiceProperties.COMMAND, "gseabuild");
     		properties.put(ServiceProperties.COMMAND_NAMESPACE, "enrichmentmap");
 		registerService(bc, new EnrichmentMapGSEACommandHandlerTaskFactory(sessionManager, streamUtil, cyApplicationManagerRef, cyNetworkManagerRef, cyNetworkViewManagerRef, cyNetworkViewFactoryRef, cyNetworkFactoryRef, tableFactory, tableManager, visualMappingManagerRef, visualStyleFactoryRef, continuousMappingFunctionFactoryRef, discreteMappingFunctionFactoryRef, passthroughMappingFunctionFactoryRef, layoutManager, mapTableToNetworkTable, dialogTaskManager), TaskFactory.class, properties);
-		
 		
 		
 	}
