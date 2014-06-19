@@ -196,7 +196,7 @@ public final class AutoAnnotator {
     		TextAnnotation label = textFactory.createAnnotation(TextAnnotation.class, this.networkView, arguments);
     		// not working
     		//label.setFontSize(0.1*Math.sqrt(Math.pow(width, 2)+ Math.pow(height, 2)));
-    		label.setFontSize(8.0);
+    		label.setFontSize(1.0);
     		label.setText(this.clustersToLabels.get(cluster.getClusterNumber()));
     		this.annotationManager.addAnnotation(label);
     	}

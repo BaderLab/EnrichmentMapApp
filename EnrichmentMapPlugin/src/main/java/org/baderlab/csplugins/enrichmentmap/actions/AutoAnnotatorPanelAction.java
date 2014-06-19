@@ -55,6 +55,7 @@ import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.application.swing.CytoPanelState;
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -97,11 +98,12 @@ public class AutoAnnotatorPanelAction extends AbstractCyAction {
 	private OpenBrowser openBrowser;
 	private CyNetworkManager networkManager;
 	private DialogTaskManager dialogTaskManager;
+	private CyEventHelper eventHelper;
     
     public AutoAnnotatorPanelAction(Map<String,String> configProps, CyApplicationManager applicationManager, 
     			CyNetworkManager cyNetworkManagerRef, CyNetworkViewManager networkViewManager, 
     			CySwingApplication application, OpenBrowser openBrowserRef, AnnotationManager annotationManager, 
-    			CyServiceRegistrar registrar, DialogTaskManager dialogTaskManager){
+    			CyServiceRegistrar registrar, DialogTaskManager dialogTaskManager, CyEventHelper eventHelper){
         super( configProps,  applicationManager,  networkViewManager);
      
  		putValue(NAME, "Annotate Clusters");		
@@ -116,13 +118,14 @@ public class AutoAnnotatorPanelAction extends AbstractCyAction {
  		this.annotationManager = annotationManager;
  		this.registrar = registrar;
  		this.dialogTaskManager = dialogTaskManager;
+ 		this.eventHelper = eventHelper;
  		
 
     }
 
 	public void actionPerformed(ActionEvent event) {
           AutoAnnotatorPanel autoAnnotatorPanel = new AutoAnnotatorPanel(applicationManager, networkViewManager,
-        		  application, openBrowser, networkManager, annotationManager, registrar, dialogTaskManager);
+        		  application, openBrowser, networkManager, annotationManager, registrar, dialogTaskManager, eventHelper);
           if(!initialized){      
                 initialized = true;
 
