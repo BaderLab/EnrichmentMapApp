@@ -4,8 +4,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.TreeMap;
 
-
 import org.cytoscape.command.CommandExecutorTaskFactory;
+import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.swing.DialogTaskManager;
@@ -27,12 +29,18 @@ public final class WordRanker {
 	private String nameColumnName;
 	private CyServiceRegistrar registrar;
 
-	public WordRanker(ArrayList<Cluster> clusters, String clusterColumnName, String nameColumnName, CyServiceRegistrar registrar) {
+	public WordRanker(CyNetwork network, ArrayList<Cluster> clusters, String clusterColumnName, String nameColumnName, CyServiceRegistrar registrar) {
 		this.clustersToLabels = new HashMap<Integer, String>();
 		this.clusterColumnName = clusterColumnName;
 		this.nameColumnName = nameColumnName;
 		this.registrar = registrar;
 		createWordClouds();
+		for (CyRow row : network.getDefaultNodeTable().getAllRows()) {			
+			ArrayList<String> wordInfoRaw = (ArrayList<String>) row.get("Word Info", ArrayList.class);
+			// this is a bit inefficient, I only have n clusters and I'm parsing it m times
+			parseWordInfo(wordInfoRaw);
+		}
+		
 
 		// blah blah blah
 		
@@ -50,6 +58,14 @@ public final class WordRanker {
 		registrar.getService(DialogTaskManager.class).execute(task); 
 	}
 
+	private ArrayList<String[]> parseWordInfo(ArrayList<String> wordInfoRaw) {
+		ArrayList<String[]> wordInfoParsed = new ArrayList<String[]>();
+		for (String wordInfo : wordInfoRaw) {
+			wordInfoParsed.add(wordInfo.split(","));
+		}
+		return wordInfoParsed;
+	}
+	
 	public HashMap<Integer, String> getClustersToLabels() {
 		return this.clustersToLabels;
 	}

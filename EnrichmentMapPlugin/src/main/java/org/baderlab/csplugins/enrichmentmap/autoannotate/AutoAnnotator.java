@@ -71,7 +71,8 @@ public final class AutoAnnotator {
     	this.clusters = makeClusters();
 		drawClusters();
 		
-		WordRanker wordRanker = new WordRanker(clusters, clusterColumnName, nameColumnName, registrar);
+		// this may be a bad place to put this, it should probably go to WordCloud
+		WordRanker wordRanker = new WordRanker(network, clusters, clusterColumnName, nameColumnName, registrar);
 		this.clustersToLabels = wordRanker.getClustersToLabels();
 		drawAnnotations();
     }
@@ -123,6 +124,7 @@ public final class AutoAnnotator {
 			double ymin = 100000000;
     		double xmax = -100000000;
     		double ymax = -100000000;
+    		// get top and left edges
     		for (double[] coordinates : cluster.getCoordinates()) {
     			xmin = coordinates[0] < xmin ? coordinates[0] : xmin;
     			xmax = coordinates[0] > xmax ? coordinates[0] : xmax;
@@ -150,8 +152,7 @@ public final class AutoAnnotator {
 	}
 	
 	private void drawAnnotations() {
-    	AnnotationFactory<TextAnnotation> textFactory = (AnnotationFactory<TextAnnotation>) registrar.getService(AnnotationFactory.class, "(type=TextAnnotation.class)");    	
-    	double padding = 1.7;
+		AnnotationFactory<TextAnnotation> textFactory = (AnnotationFactory<TextAnnotation>) registrar.getService(AnnotationFactory.class, "(type=TextAnnotation.class)");
     	double min_size = 10.0;
     	for (Cluster cluster : clusters) {
     		// extreme initial values
@@ -168,7 +169,6 @@ public final class AutoAnnotator {
     		
     		double zoom = networkView.getVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR);
     		
-    		// This magic number 10 floating around here isn't good style (nor are the other ones after this)
     		double width = (xmax - xmin)*zoom;
     		width = width > min_size ? width : min_size;
     		double height = (ymax - ymin)*zoom;
@@ -180,10 +180,10 @@ public final class AutoAnnotator {
     		arguments.put("zoom", String.valueOf(zoom));
     		arguments.put("canvas", "foreground");
     		TextAnnotation label = textFactory.createAnnotation(TextAnnotation.class, this.networkView, arguments);
-    		// not working
-    		//label.setFontSize(0.1*Math.sqrt(Math.pow(width, 2)+ Math.pow(height, 2)));
-    		label.setFontSize(1.0);
+//    		label.setFontSize(0.1*Math.sqrt(Math.pow(width, 2)+ Math.pow(height, 2)));
+    		label.setFontSize(10.0);
     		label.setText(this.clustersToLabels.get(cluster.getClusterNumber()));
+    		label.update();
     		this.annotationManager.addAnnotation(label);
     	}
 	}

@@ -8,7 +8,7 @@
   <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <cy3.version>3.1.0</cy3.version>
+        <cy3.version>3.2.0-SNAPSHOT</cy3.version>
         <osgi.api.version>4.2.0</osgi.api.version>
         <bundle.namespace.parent>org.baderlab.csplugins</bundle.namespace.parent>
         <bundle.namespace>org.baderlab.csplugins</bundle.namespace>

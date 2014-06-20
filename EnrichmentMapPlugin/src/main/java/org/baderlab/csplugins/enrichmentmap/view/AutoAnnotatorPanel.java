@@ -139,7 +139,7 @@ public class AutoAnnotatorPanel extends JPanel implements CytoPanelComponent {
         		CyNetworkView networkView = (CyNetworkView) cyNetworkViewManagerRef.getNetworkViews(network).toArray()[0];
         		List<Annotation> annotations = annotationManager.getAnnotations(networkView);
         		for (Annotation a : annotations) {
-        			annotationManager.removeAnnotation(a);
+        			a.removeAnnotation();
         		}
         		eventHelper.flushPayloadEvents();
          		networkView.updateView();
