@@ -147,10 +147,9 @@ public class EnrichmentMapActionListener implements RowsSetListener{
         // Meanwhile we have a flag to skip the updating of the Heatmap, which can be toggled by a check-mark in the EM-Menu
         boolean override_revalidate_heatmap = EnrichmentMapUtils.isOverrideHeatmapRevalidation();
         
-        
         //get the current network
         CyNetwork network = this.applicationManager.getCurrentNetwork();
-        
+
         //only handle event if it is a selected node
         if(network != null && e != null && (e.getSource() == network.getDefaultEdgeTable() || e.getSource() == network.getDefaultNodeTable())){
         		if(initialize(network)){
@@ -171,8 +170,8 @@ public class EnrichmentMapActionListener implements RowsSetListener{
         				Nodes.addAll(selectedNodes);
         				
         				//once we have amalgamated all the nodes and edges, launch a task to update the heatmap.
-        				UpdateHeatMapTask updateHeatmap = new UpdateHeatMapTask(map, Nodes, Edges, edgeOverlapPanel, nodeOverlapPanel, cytoPanelSouth,applicationManager);
-        				syncTaskManager.execute(new TaskIterator(updateHeatmap));
+//        				UpdateHeatMapTask updateHeatmap = new UpdateHeatMapTask(map, Nodes, Edges, edgeOverlapPanel, nodeOverlapPanel, cytoPanelSouth,applicationManager);
+//        				syncTaskManager.execute(new TaskIterator(updateHeatmap));
         			}
         		}
         }//end of if e.getSource check

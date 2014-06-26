@@ -2,6 +2,7 @@ package org.baderlab.csplugins.enrichmentmap.autoannotate;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.TreeMap;
 
 import org.cytoscape.command.CommandExecutorTaskFactory;
@@ -35,17 +36,11 @@ public final class WordRanker {
 		this.nameColumnName = nameColumnName;
 		this.registrar = registrar;
 		createWordClouds();
-		for (CyRow row : network.getDefaultNodeTable().getAllRows()) {			
-			ArrayList<String> wordInfoRaw = (ArrayList<String>) row.get("Word Info", ArrayList.class);
-			// this is a bit inefficient, I only have n clusters and I'm parsing it m times
-			parseWordInfo(wordInfoRaw);
-		}
-		
 
 		// blah blah blah
 		
 		for (Cluster cluster : clusters) {
-			this.clustersToLabels.put(cluster.getClusterNumber(), getLabel(cluster.getNodeTexts()));
+			cluster.setLabel(getLabel(cluster, network.getDefaultNodeTable().getAllRows()));
 		}
 	}
 	
@@ -58,7 +53,7 @@ public final class WordRanker {
 		registrar.getService(DialogTaskManager.class).execute(task); 
 	}
 
-	private ArrayList<String[]> parseWordInfo(ArrayList<String> wordInfoRaw) {
+	private ArrayList<String[]> parseWordInfo(List<String> wordInfoRaw) {
 		ArrayList<String[]> wordInfoParsed = new ArrayList<String[]>();
 		for (String wordInfo : wordInfoRaw) {
 			wordInfoParsed.add(wordInfo.split(","));
@@ -66,52 +61,45 @@ public final class WordRanker {
 		return wordInfoParsed;
 	}
 	
+	private String biggestWord(ArrayList<String[]> wordInfoParsed) {
+		String biggestWord = "";
+		int biggestSize = -1;
+		for (String[] wordInfo : wordInfoParsed) {
+			// eventually make use of the other parts of the wordInfo (cluster grouping, word number (?))
+			if (Integer.parseInt(wordInfo[1]) > biggestSize) {
+				biggestSize = Integer.parseInt(wordInfo[1]);
+				biggestWord = wordInfo[0];
+			}
+		}
+		return biggestWord;
+	}
+	
 	public HashMap<Integer, String> getClustersToLabels() {
 		return this.clustersToLabels;
 	}
 	
-	public String getLabel(ArrayList<NodeText> nodeTexts) {
+	public String getLabel(Cluster cluster, List<CyRow> nodeTable) {
 		// Dummy algorithm just to work on showing text on canvas
-		TreeMap<String, Integer> wordUnitSet = getWordSet(nodeTexts, 1);
-		TreeMap<Integer, ArrayList<String>> wordUnitSetInverse = invert(wordUnitSet);
-		TreeMap<String, Integer> wordPairSet = getWordSet(nodeTexts, 2);
-		TreeMap<Integer, ArrayList<String>> wordPairSetInverse = invert(wordPairSet);
-		TreeMap<String, Integer> wordTripletSet = getWordSet(nodeTexts, 3);
-		TreeMap<Integer, ArrayList<String>> wordTripletSetInverse = invert(wordTripletSet);
-		TreeMap<String, Integer> wordQuadrupletSet = getWordSet(nodeTexts, 4);
-		TreeMap<Integer, ArrayList<String>> wordQuadrupletSetInverse = invert(wordTripletSet);
-		return wordPairSetInverse.lastEntry().getValue().get(0);
-	}
-	
-	public TreeMap<String, Integer> getWordSet(ArrayList<NodeText> nodeTextCluster, int wordsPerSplit){
-		TreeMap<String, Integer> wordSet = new TreeMap<String, Integer>(); 
-		for (NodeText nodeText : nodeTextCluster) {
-			String name = nodeText.getName();
-			String[] nameText = name.split(" ");
-			for (int i=0; i < nameText.length+1-wordsPerSplit ; i++) {
-				String word = "";
-				int j = 0;
-				while (j < wordsPerSplit) {
-					word += " " + nameText[i+j];
-					j++;
-				}
-				if (!wordSet.containsKey(word)) {
-					wordSet.put(word, 0);
-				}
-				wordSet.put(word, wordSet.get(word) + 1);
+		int clusterNumber = cluster.getClusterNumber();
+		for (CyRow row : nodeTable) {
+			Integer rowClusterNumber = row.get(clusterColumnName, Integer.class);
+			if (rowClusterNumber != null && rowClusterNumber == clusterNumber) {
+				List<String> wordInfoRaw = row.get("Word Info", List.class);
+				String label = biggestWord(parseWordInfo(wordInfoRaw));
+				return label;
 			}
 		}
-		return wordSet;	
+		return "";
 	}
 	
-	private TreeMap<Integer, ArrayList<String>> invert(TreeMap<String, Integer> map) {
-		TreeMap<Integer, ArrayList<String>> inverse_map = new TreeMap<Integer, ArrayList<String>>(); 
-		for (String key : map.keySet()) {
-			if (!inverse_map.keySet().contains(map.get(key))) {
-				inverse_map.put(map.get(key), new ArrayList<String>());
-			}
-			inverse_map.get(map.get(key)).add(key);
-		}
-		return inverse_map;
-	}
+//	private TreeMap<Integer, ArrayList<String>> invert(TreeMap<String, Integer> map) {
+//		TreeMap<Integer, ArrayList<String>> inverse_map = new TreeMap<Integer, ArrayList<String>>(); 
+//		for (String key : map.keySet()) {
+//			if (!inverse_map.keySet().contains(map.get(key))) {
+//				inverse_map.put(map.get(key), new ArrayList<String>());
+//			}
+//			inverse_map.get(map.get(key)).add(key);
+//		}
+//		return inverse_map;
+//	}
 }

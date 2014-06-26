@@ -22,6 +22,7 @@ public final class Cluster {
 	ArrayList<CyNode> nodes;
 	ArrayList<double[]> coordinates;
 	ArrayList<NodeText> nodeTexts;
+	private String label;
 	
 	public Cluster(int clusterNumber) {
 		this.clusterNumber = clusterNumber;
@@ -52,5 +53,13 @@ public final class Cluster {
 	
 	public void addNodeText(NodeText nodeText) {
 		this.nodeTexts.add(nodeText);
+	}
+
+	public void setLabel(String label) {
+		this.label = label;
+	}
+
+	public String getLabel() {
+		return label;
 	}
 }

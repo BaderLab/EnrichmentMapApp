@@ -73,7 +73,6 @@ public final class AutoAnnotator {
 		
 		// this may be a bad place to put this, it should probably go to WordCloud
 		WordRanker wordRanker = new WordRanker(network, clusters, clusterColumnName, nameColumnName, registrar);
-		this.clustersToLabels = wordRanker.getClustersToLabels();
 		drawAnnotations();
     }
 	
@@ -180,9 +179,9 @@ public final class AutoAnnotator {
     		arguments.put("zoom", String.valueOf(zoom));
     		arguments.put("canvas", "foreground");
     		TextAnnotation label = textFactory.createAnnotation(TextAnnotation.class, this.networkView, arguments);
-//    		label.setFontSize(0.1*Math.sqrt(Math.pow(width, 2)+ Math.pow(height, 2)));
-    		label.setFontSize(10.0);
-    		label.setText(this.clustersToLabels.get(cluster.getClusterNumber()));
+    		label.setFontSize(0.1*Math.sqrt(Math.pow(width, 2)+ Math.pow(height, 2)));
+//    		label.setFontSize(10.0);
+    		label.setText(cluster.getLabel());
     		label.update();
     		this.annotationManager.addAnnotation(label);
     	}
