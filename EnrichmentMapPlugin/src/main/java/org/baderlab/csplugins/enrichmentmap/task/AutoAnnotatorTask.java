@@ -254,6 +254,7 @@ public class AutoAnnotatorTask extends AbstractTask {
 	private void drawAnnotations(ArrayList<Cluster> clusters, CyNetworkView networkView) {
 		AnnotationFactory<TextAnnotation> textFactory = (AnnotationFactory<TextAnnotation>) registrar.getService(AnnotationFactory.class, "(type=TextAnnotation.class)");
     	double min_size = 10.0;
+    	double padding = 1.7;
     	for (Cluster cluster : clusters) {
     		// extreme initial values
     		double xmin = 100000000;
@@ -273,16 +274,21 @@ public class AutoAnnotatorTask extends AbstractTask {
     		width = width > min_size ? width : min_size;
     		double height = (ymax - ymin)*zoom;
     		height = height > min_size ? height : min_size;
+
+    		String labelText = cluster.getLabel();
+    		Integer fontSize = (int) Math.round(0.2*Math.sqrt(Math.pow(width, 2)+ Math.pow(height, 2)));
+    		// To centre the annotation at the middle of the annotation
+    		Integer xPos = (int) Math.round((xmin + xmax)/2 - 0.8*fontSize*labelText.length());
+    		Integer yPos = (int) Math.round(ymin - height*padding - 2.8*fontSize); // not really sure why the height*padding works...
     		
     		HashMap<String, String> arguments = new HashMap<String,String>();
-    		arguments.put("x", String.valueOf(xmin)); // put your values for the annotation position
-    		arguments.put("y", String.valueOf(ymin)); // put your values for the annotation position
+    		arguments.put("fontSize", String.valueOf(fontSize));
+    		arguments.put("x", String.valueOf(xPos));
+    		arguments.put("y", String.valueOf(yPos));
     		arguments.put("zoom", String.valueOf(zoom));
     		arguments.put("canvas", "foreground");
-    		String fontSize = Integer.toString((int) Math.round(0.1*Math.sqrt(Math.pow(width, 2)+ Math.pow(height, 2))));
-    		arguments.put("fontSize", fontSize);
     		TextAnnotation label = textFactory.createAnnotation(TextAnnotation.class, networkView, arguments);
-    		label.setText(cluster.getLabel());
+    		label.setText(labelText);
     		this.annotationManager.addAnnotation(label);
     	}
 	}
