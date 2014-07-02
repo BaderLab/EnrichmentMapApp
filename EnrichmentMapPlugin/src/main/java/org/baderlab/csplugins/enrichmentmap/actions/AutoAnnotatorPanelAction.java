@@ -64,6 +64,7 @@ import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.presentation.annotations.AnnotationManager;
+import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.swing.DialogTaskManager;
 
 import java.awt.event.ActionEvent;
@@ -97,13 +98,13 @@ public class AutoAnnotatorPanelAction extends AbstractCyAction {
 	private AnnotationManager annotationManager;
 	private OpenBrowser openBrowser;
 	private CyNetworkManager networkManager;
-	private DialogTaskManager dialogTaskManager;
+	private SynchronousTaskManager syncTaskManager;
 	private CyEventHelper eventHelper;
     
     public AutoAnnotatorPanelAction(Map<String,String> configProps, CyApplicationManager applicationManager, 
     			CyNetworkManager cyNetworkManagerRef, CyNetworkViewManager networkViewManager, 
     			CySwingApplication application, OpenBrowser openBrowserRef, AnnotationManager annotationManager, 
-    			CyServiceRegistrar registrar, DialogTaskManager dialogTaskManager, CyEventHelper eventHelper){
+    			CyServiceRegistrar registrar, SynchronousTaskManager syncTaskManager, CyEventHelper eventHelper){
         super( configProps,  applicationManager,  networkViewManager);
      
  		putValue(NAME, "Annotate Clusters");		
@@ -117,7 +118,7 @@ public class AutoAnnotatorPanelAction extends AbstractCyAction {
  		this.openBrowser = openBrowserRef;
  		this.annotationManager = annotationManager;
  		this.registrar = registrar;
- 		this.dialogTaskManager = dialogTaskManager;
+ 		this.syncTaskManager = syncTaskManager;
  		this.eventHelper = eventHelper;
  		
 
@@ -125,7 +126,7 @@ public class AutoAnnotatorPanelAction extends AbstractCyAction {
 
 	public void actionPerformed(ActionEvent event) {
           AutoAnnotatorPanel autoAnnotatorPanel = new AutoAnnotatorPanel(applicationManager, networkViewManager,
-        		  application, openBrowser, networkManager, annotationManager, registrar, dialogTaskManager, eventHelper);
+        		  application, openBrowser, networkManager, annotationManager, registrar, syncTaskManager, eventHelper);
           if(!initialized){      
                 initialized = true;
 

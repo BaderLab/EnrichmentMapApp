@@ -33,7 +33,7 @@ import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationManager;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
-import org.cytoscape.work.swing.DialogTaskManager;
+import org.cytoscape.work.SynchronousTaskManager;
 
 /**
  * @author arkadyark
@@ -52,17 +52,17 @@ public class AutoAnnotatorPanel extends JPanel implements CytoPanelComponent {
 	public AutoAnnotatorPanel(CyApplicationManager cyApplicationManagerRef, 
 			CyNetworkViewManager cyNetworkViewManagerRef, CySwingApplication cySwingApplicationRef,
 			OpenBrowser openBrowserRef, CyNetworkManager cyNetworkManagerRef, AnnotationManager annotationManager,
-			CyServiceRegistrar registrar, DialogTaskManager dialogTaskManager, CyEventHelper eventHelper){
+			CyServiceRegistrar registrar, SynchronousTaskManager syncTaskManager, CyEventHelper eventHelper){
 		
 		JPanel mainPanel = createMainPanel(cyApplicationManagerRef, cyNetworkViewManagerRef, cySwingApplicationRef,
-				openBrowserRef, cyNetworkManagerRef, annotationManager, registrar, dialogTaskManager, eventHelper);
+				openBrowserRef, cyNetworkManagerRef, annotationManager, registrar, syncTaskManager, eventHelper);
         add(mainPanel,BorderLayout.CENTER);
 	}
 	
 	private JPanel createMainPanel(final CyApplicationManager cyApplicationManagerRef,
 			final CyNetworkViewManager cyNetworkViewManagerRef, final CySwingApplication cySwingApplicationRef,
 			final OpenBrowser openBrowserRef, final CyNetworkManager cyNetworkManagerRef, final AnnotationManager annotationManager,
-			final CyServiceRegistrar registrar, final DialogTaskManager dialogTaskManager, final CyEventHelper eventHelper) {
+			final CyServiceRegistrar registrar, final SynchronousTaskManager syncTaskManager, final CyEventHelper eventHelper) {
 		
 		JPanel mainPanel = new JPanel();
 		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.PAGE_AXIS));
@@ -107,8 +107,8 @@ public class AutoAnnotatorPanel extends JPanel implements CytoPanelComponent {
 				// networkID and clusterColumnName field are looked up only when the button is pressed
 				autoAnnotatorTaskFactory = new AutoAnnotatorTaskFactory(cySwingApplicationRef, cyApplicationManagerRef, openBrowserRef,
 						cyNetworkViewManagerRef, cyNetworkManagerRef, annotationManager,
-        				networkID, clusterColumnName, nameColumnName, registrar);
-				dialogTaskManager.execute(autoAnnotatorTaskFactory.createTaskIterator());
+        				networkID, clusterColumnName, nameColumnName, registrar, syncTaskManager);
+				syncTaskManager.execute(autoAnnotatorTaskFactory.createTaskIterator());
 			}
         };
         confirmButton.addActionListener(autoAnnotateAction);
@@ -134,15 +134,25 @@ public class AutoAnnotatorPanel extends JPanel implements CytoPanelComponent {
         JButton clearButton = new JButton("Clear Annotations");
         ActionListener clearActionListener = new ActionListener(){
         	public void actionPerformed(ActionEvent e) {
-        		// Annotations won't go away though!
         		CyNetwork network = cyNetworkManagerRef.getNetwork(nameToSUID.get(networkDropdown.getSelectedItem()));
         		CyNetworkView networkView = (CyNetworkView) cyNetworkViewManagerRef.getNetworkViews(network).toArray()[0];
+         		
+        		// Delete WordInfo column created by WordCloud
+         		for (CyColumn column : network.getDefaultNodeTable().getColumns()) {
+         			String name = column.getName();
+         			if (name.equals("WC_Word") || name.equals("WC_FontSize") || name.equals("WC_Cluster") || name.equals("WC_Number")) {
+         				// Problem - leaves them floating around the cloud manager in WordCloud - may have to do another Tuneable Task
+         				network.getDefaultNodeTable().deleteColumn(name);
+         			}
+         		}
+        		// Delete all annotations
         		List<Annotation> annotations = annotationManager.getAnnotations(networkView);
         		for (Annotation a : annotations) {
         			a.removeAnnotation();
         		}
         		eventHelper.flushPayloadEvents();
          		networkView.updateView();
+         		
         	}
         };        
         clearButton.addActionListener(clearActionListener);

@@ -43,16 +43,39 @@
 
 package org.baderlab.csplugins.enrichmentmap.task;
 
-import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotator;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+
+import org.baderlab.csplugins.enrichmentmap.autoannotate.Cluster;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.NodeText;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.RunWordCloudObserver;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.WordUtils;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.command.CommandExecutorTaskFactory;
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.OpenBrowser;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.model.View;
+import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.annotations.AnnotationManager;
+import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
+import org.cytoscape.view.presentation.annotations.TextAnnotation;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.SynchronousTaskManager;
+import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.swing.DialogTaskManager;
 
 /**
  * Created by
@@ -73,11 +96,15 @@ public class AutoAnnotatorTask extends AbstractTask {
 	private String nameColumnName;
 	private String clusterColumnName;
 	private CyServiceRegistrar registrar;
+	private SynchronousTaskManager syncTaskManager;
+	
+	private boolean interrupted;
 
 	public AutoAnnotatorTask(CySwingApplication application, CyApplicationManager applicationManager, 
 			OpenBrowser browser, CyNetworkViewManager networkViewManager, CyNetworkManager networkManager,
-			AnnotationManager annotationManager, long networkID,
-    		String clusterColumnName, String nameColumnName, CyServiceRegistrar registrar){
+			AnnotationManager annotationManager, long networkID, String clusterColumnName, 
+			String nameColumnName, CyServiceRegistrar registrar, SynchronousTaskManager syncTaskManager){
+		
 		this.application = application;
 		this.applicationManager = applicationManager;
 		this.browser = browser;
@@ -87,15 +114,177 @@ public class AutoAnnotatorTask extends AbstractTask {
 		this.networkID = networkID;
 		this.clusterColumnName = clusterColumnName;
 		this.nameColumnName = nameColumnName;
-		this.registrar = registrar; 
+		this.registrar = registrar;
+		this.syncTaskManager = syncTaskManager;
+		
+		this.interrupted = false;
 	};
 	
-	private void createAutoAnnotator(){
-		AutoAnnotator autoannotate = new AutoAnnotator(application, applicationManager, browser, networkManager, networkViewManager, annotationManager, networkID, clusterColumnName, nameColumnName, registrar);
+	@Override
+	public void cancel() {
+		// TODO Auto-generated method stub
+		this.interrupted = true;
+		return;
 	}
 	
 	@Override
-	public void run(TaskMonitor arg0) throws Exception {
-		createAutoAnnotator();
+	public void run(TaskMonitor taskMonitor) throws Exception {
+		taskMonitor.setTitle("Annotating Enrichment Map");
+
+    	CyNetwork network = networkManager.getNetwork(networkID);
+    	CyNetworkView networkView = applicationManager.getCurrentNetworkView();
+
+    	ArrayList<Cluster> clusters = makeClusters(network, networkView);
+		runWordCloud();
+		labelClusters(clusters, network);
+		
+		// TODO - combine these
+		drawClusters(clusters, networkView);
+		drawAnnotations(clusters, networkView);
+	}
+	
+	private ArrayList<Cluster> makeClusters(CyNetwork network, CyNetworkView networkView) {
+		ArrayList<Cluster> clusters = new ArrayList<Cluster>();
+		List<CyNode> nodes = network.getNodeList();
+		for (CyNode node : nodes) {
+			Integer clusterNumber = network.getRow(node).get(this.clusterColumnName, Integer.class);
+			if (clusterNumber != null) {
+				View<CyNode> nodeView = networkView.getNodeView(node);
+				double x = nodeView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION);
+				double y = nodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
+				double[] coordinates = {x, y};
+				
+				String nodeName = network.getRow(node).get(nameColumnName, String.class);
+				NodeText nodeText = new NodeText();
+				nodeText.setName(nodeName);
+				
+				// empty values (no cluster) are given null
+				boolean flag = true;
+				for (Cluster cluster : clusters) {
+	 				if (cluster.getClusterNumber() == clusterNumber && flag) {
+						cluster.addNode(node);
+						cluster.addCoordinates(coordinates);
+						cluster.addNodeText(nodeText);
+						flag = false;
+					}
+				}
+				if (flag) {
+					Cluster cluster = new Cluster(clusterNumber);
+					cluster.addNode(node);
+					cluster.addCoordinates(coordinates);
+					cluster.addNodeText(nodeText);
+					clusters.add(cluster);
+				}
+			}
+		}
+		return clusters;
+	}
+	
+	private void runWordCloud() {
+		RunWordCloudTask rwc = new RunWordCloudTask(registrar, clusterColumnName, nameColumnName);
+		TaskIterator task = new TaskIterator(rwc);
+		RunWordCloudObserver observer = new RunWordCloudObserver();
+		syncTaskManager.execute(task, observer);
+		while (!observer.isComplete()) {
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	private void labelClusters(ArrayList<Cluster> clusters, CyNetwork network) {	
+		for (Cluster cluster : clusters) {
+			cluster.setLabel("");
+			int clusterNumber = cluster.getClusterNumber();
+			List<CyRow> nodeTable = network.getDefaultNodeTable().getAllRows();
+			for (CyRow row : nodeTable) {
+				Integer rowClusterNumber = row.get(clusterColumnName, Integer.class);
+				if (rowClusterNumber != null && rowClusterNumber == clusterNumber) {
+					List<String> wordList = row.get("WC_Word", List.class);
+					List<String> sizeList = row.get("WC_FontSize", List.class);
+					List<String> clusterList = row.get("WC_Cluster", List.class);
+					List<String> numberList = row.get("WC_Number", List.class);
+					String label = WordUtils.biggestWord(wordList, sizeList, clusterList, numberList);
+					cluster.setLabel(label);
+					break;
+				}
+			}
+		}
+	}
+	
+	private void drawClusters(ArrayList<Cluster> clusters, CyNetworkView networkView) {
+    	AnnotationFactory<ShapeAnnotation> shapeFactory = (AnnotationFactory<ShapeAnnotation>) registrar.getService(AnnotationFactory.class, "(type=ShapeAnnotation.class)");    	
+    	double padding = 1.7;
+    	double min_size = 10.0;
+    	for (Cluster cluster : clusters) {
+    		// extreme initial values
+    		double xmin = 100000000;
+			double ymin = 100000000;
+    		double xmax = -100000000;
+    		double ymax = -100000000;
+    		// get top and left edges
+    		for (double[] coordinates : cluster.getCoordinates()) {
+    			xmin = coordinates[0] < xmin ? coordinates[0] : xmin;
+    			xmax = coordinates[0] > xmax ? coordinates[0] : xmax;
+    			ymin = coordinates[1] < ymin ? coordinates[1] : ymin;
+    			ymax = coordinates[1] > ymax ? coordinates[1] : ymax;
+    		}
+    		
+    		double zoom = networkView.getVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR);
+    		
+    		double width = (xmax - xmin)*zoom;
+    		width = width > min_size ? width : min_size;
+    		double height = (ymax - ymin)*zoom;
+    		height = height > min_size ? height : min_size;
+    		
+    		HashMap<String, String> arguments = new HashMap<String,String>();
+    		arguments.put("x", String.valueOf(xmin - width/zoom*padding/5.0));
+    		arguments.put("y", String.valueOf(ymin - height/zoom*padding/5.0));
+    		arguments.put("zoom", String.valueOf(zoom));
+    		arguments.put("canvas", "foreground");
+    		ShapeAnnotation ellipse = shapeFactory.createAnnotation(ShapeAnnotation.class, networkView, arguments);
+    		ellipse.setShapeType("Ellipse");
+    		ellipse.setSize(width*padding, height*padding);
+    		this.annotationManager.addAnnotation(ellipse);
+    	}
+	}
+	
+	private void drawAnnotations(ArrayList<Cluster> clusters, CyNetworkView networkView) {
+		AnnotationFactory<TextAnnotation> textFactory = (AnnotationFactory<TextAnnotation>) registrar.getService(AnnotationFactory.class, "(type=TextAnnotation.class)");
+    	double min_size = 10.0;
+    	for (Cluster cluster : clusters) {
+    		// extreme initial values
+    		double xmin = 100000000;
+			double ymin = 100000000;
+    		double xmax = -100000000;
+    		double ymax = -100000000;
+    		for (double[] coordinates : cluster.getCoordinates()) {
+    			xmin = coordinates[0] < xmin ? coordinates[0] : xmin;
+    			xmax = coordinates[0] > xmax ? coordinates[0] : xmax;
+    			ymin = coordinates[1] < ymin ? coordinates[1] : ymin;
+    			ymax = coordinates[1] > ymax ? coordinates[1] : ymax;
+    		}
+    		
+    		double zoom = networkView.getVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR);
+    		
+    		double width = (xmax - xmin)*zoom;
+    		width = width > min_size ? width : min_size;
+    		double height = (ymax - ymin)*zoom;
+    		height = height > min_size ? height : min_size;
+    		
+    		HashMap<String, String> arguments = new HashMap<String,String>();
+    		arguments.put("x", String.valueOf(xmin)); // put your values for the annotation position
+    		arguments.put("y", String.valueOf(ymin-10)); // put your values for the annotation position
+    		arguments.put("zoom", String.valueOf(zoom));
+    		arguments.put("canvas", "foreground");
+    		TextAnnotation label = textFactory.createAnnotation(TextAnnotation.class, networkView, arguments);
+    		label.setFontSize(0.1*Math.sqrt(Math.pow(width, 2)+ Math.pow(height, 2)));
+//    		label.setFontSize(10.0);
+    		label.setText(cluster.getLabel());
+    		label.update();
+    		this.annotationManager.addAnnotation(label);
+    	}
 	}
 }
