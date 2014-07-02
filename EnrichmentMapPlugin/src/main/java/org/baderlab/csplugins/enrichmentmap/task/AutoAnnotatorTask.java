@@ -137,10 +137,13 @@ public class AutoAnnotatorTask extends AbstractTask {
     	ArrayList<Cluster> clusters = makeClusters(network, networkView);
 		runWordCloud();
 		labelClusters(clusters, network);
+
+		AnnotationFactory<ShapeAnnotation> shapeFactory = (AnnotationFactory<ShapeAnnotation>) registrar.getService(AnnotationFactory.class, "(type=ShapeAnnotation.class)");    	
+		AnnotationFactory<TextAnnotation> textFactory = (AnnotationFactory<TextAnnotation>) registrar.getService(AnnotationFactory.class, "(type=TextAnnotation.class)");
 		
-		// TODO - combine these
-		drawClusters(clusters, networkView);
-		drawAnnotations(clusters, networkView);
+		for (Cluster cluster : clusters) {
+			cluster.drawAnnotations(shapeFactory, textFactory);
+		}
 	}
 	
 	private ArrayList<Cluster> makeClusters(CyNetwork network, CyNetworkView networkView) {
@@ -169,7 +172,7 @@ public class AutoAnnotatorTask extends AbstractTask {
 					}
 				}
 				if (flag) {
-					Cluster cluster = new Cluster(clusterNumber);
+					Cluster cluster = new Cluster(clusterNumber, networkView, annotationManager);
 					cluster.addNode(node);
 					cluster.addCoordinates(coordinates);
 					cluster.addNodeText(nodeText);
@@ -212,84 +215,5 @@ public class AutoAnnotatorTask extends AbstractTask {
 				}
 			}
 		}
-	}
-	
-	private void drawClusters(ArrayList<Cluster> clusters, CyNetworkView networkView) {
-    	AnnotationFactory<ShapeAnnotation> shapeFactory = (AnnotationFactory<ShapeAnnotation>) registrar.getService(AnnotationFactory.class, "(type=ShapeAnnotation.class)");    	
-    	double padding = 1.7;
-    	double min_size = 10.0;
-    	for (Cluster cluster : clusters) {
-    		// extreme initial values
-    		double xmin = 100000000;
-			double ymin = 100000000;
-    		double xmax = -100000000;
-    		double ymax = -100000000;
-    		// get top and left edges
-    		for (double[] coordinates : cluster.getCoordinates()) {
-    			xmin = coordinates[0] < xmin ? coordinates[0] : xmin;
-    			xmax = coordinates[0] > xmax ? coordinates[0] : xmax;
-    			ymin = coordinates[1] < ymin ? coordinates[1] : ymin;
-    			ymax = coordinates[1] > ymax ? coordinates[1] : ymax;
-    		}
-    		
-    		double zoom = networkView.getVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR);
-    		
-    		double width = (xmax - xmin)*zoom;
-    		width = width > min_size ? width : min_size;
-    		double height = (ymax - ymin)*zoom;
-    		height = height > min_size ? height : min_size;
-    		
-    		HashMap<String, String> arguments = new HashMap<String,String>();
-    		arguments.put("x", String.valueOf(xmin - width/zoom*padding/5.0));
-    		arguments.put("y", String.valueOf(ymin - height/zoom*padding/5.0));
-    		arguments.put("zoom", String.valueOf(zoom));
-    		arguments.put("canvas", "foreground");
-    		ShapeAnnotation ellipse = shapeFactory.createAnnotation(ShapeAnnotation.class, networkView, arguments);
-    		ellipse.setShapeType("Ellipse");
-    		ellipse.setSize(width*padding, height*padding);
-    		this.annotationManager.addAnnotation(ellipse);
-    	}
-	}
-	
-	private void drawAnnotations(ArrayList<Cluster> clusters, CyNetworkView networkView) {
-		AnnotationFactory<TextAnnotation> textFactory = (AnnotationFactory<TextAnnotation>) registrar.getService(AnnotationFactory.class, "(type=TextAnnotation.class)");
-    	double min_size = 10.0;
-    	double padding = 1.7;
-    	for (Cluster cluster : clusters) {
-    		// extreme initial values
-    		double xmin = 100000000;
-			double ymin = 100000000;
-    		double xmax = -100000000;
-    		double ymax = -100000000;
-    		for (double[] coordinates : cluster.getCoordinates()) {
-    			xmin = coordinates[0] < xmin ? coordinates[0] : xmin;
-    			xmax = coordinates[0] > xmax ? coordinates[0] : xmax;
-    			ymin = coordinates[1] < ymin ? coordinates[1] : ymin;
-    			ymax = coordinates[1] > ymax ? coordinates[1] : ymax;
-    		}
-    		
-    		double zoom = networkView.getVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR);
-    		
-    		double width = (xmax - xmin)*zoom;
-    		width = width > min_size ? width : min_size;
-    		double height = (ymax - ymin)*zoom;
-    		height = height > min_size ? height : min_size;
-
-    		String labelText = cluster.getLabel();
-    		Integer fontSize = (int) Math.round(0.2*Math.sqrt(Math.pow(width, 2)+ Math.pow(height, 2)));
-    		// To centre the annotation at the middle of the annotation
-    		Integer xPos = (int) Math.round((xmin + xmax)/2 - 0.8*fontSize*labelText.length());
-    		Integer yPos = (int) Math.round(ymin - height*padding - 2.8*fontSize); // not really sure why the height*padding works...
-    		
-    		HashMap<String, String> arguments = new HashMap<String,String>();
-    		arguments.put("fontSize", String.valueOf(fontSize));
-    		arguments.put("x", String.valueOf(xPos));
-    		arguments.put("y", String.valueOf(yPos));
-    		arguments.put("zoom", String.valueOf(zoom));
-    		arguments.put("canvas", "foreground");
-    		TextAnnotation label = textFactory.createAnnotation(TextAnnotation.class, networkView, arguments);
-    		label.setText(labelText);
-    		this.annotationManager.addAnnotation(label);
-    	}
 	}
 }
