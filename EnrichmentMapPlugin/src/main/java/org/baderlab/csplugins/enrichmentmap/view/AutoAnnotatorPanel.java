@@ -114,7 +114,7 @@ public class AutoAnnotatorPanel extends JPanel implements CytoPanelComponent {
         confirmButton.addActionListener(autoAnnotateAction);
         
         // Weak fix but works for now
-        JButton updateButton = new JButton("Update");
+        JButton updateButton = new JButton("Update Networks");
         ActionListener updateActionListener = new ActionListener(){
         	public void actionPerformed(ActionEvent e) {
         		networkDropdown.removeAllItems();
@@ -131,6 +131,8 @@ public class AutoAnnotatorPanel extends JPanel implements CytoPanelComponent {
         JLabel networkDropdownLabel = new JLabel("Select the network to annotate:");
         JLabel clusterColumnDropdownLabel = new JLabel("Select the column with the clusters:"); // ambiguous phrasing?
         JLabel nameColumnDropdownLabel = new JLabel("Select the column with the gene set names:"); // ambiguous phrasing?
+
+        // Button to remove all annotations
         JButton clearButton = new JButton("Clear Annotations");
         ActionListener clearActionListener = new ActionListener(){
         	public void actionPerformed(ActionEvent e) {

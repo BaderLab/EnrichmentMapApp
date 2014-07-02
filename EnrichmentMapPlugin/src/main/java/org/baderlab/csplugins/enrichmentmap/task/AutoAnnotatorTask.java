@@ -276,14 +276,13 @@ public class AutoAnnotatorTask extends AbstractTask {
     		
     		HashMap<String, String> arguments = new HashMap<String,String>();
     		arguments.put("x", String.valueOf(xmin)); // put your values for the annotation position
-    		arguments.put("y", String.valueOf(ymin-10)); // put your values for the annotation position
+    		arguments.put("y", String.valueOf(ymin)); // put your values for the annotation position
     		arguments.put("zoom", String.valueOf(zoom));
     		arguments.put("canvas", "foreground");
+    		String fontSize = Integer.toString((int) Math.round(0.1*Math.sqrt(Math.pow(width, 2)+ Math.pow(height, 2))));
+    		arguments.put("fontSize", fontSize);
     		TextAnnotation label = textFactory.createAnnotation(TextAnnotation.class, networkView, arguments);
-    		label.setFontSize(0.1*Math.sqrt(Math.pow(width, 2)+ Math.pow(height, 2)));
-//    		label.setFontSize(10.0);
     		label.setText(cluster.getLabel());
-    		label.update();
     		this.annotationManager.addAnnotation(label);
     	}
 	}
