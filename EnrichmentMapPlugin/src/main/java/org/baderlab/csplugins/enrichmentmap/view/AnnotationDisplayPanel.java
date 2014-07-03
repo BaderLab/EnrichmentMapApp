@@ -9,6 +9,7 @@ import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.BoxLayout;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -58,9 +59,9 @@ public class AnnotationDisplayPanel extends JPanel implements CytoPanelComponent
 		annotationCounter++;
 		if (!clusterSet.contains(clusters)) clusterSet.add(clusters);
 		JComboBox clusterSetDropdown = (JComboBox) mainPanel.getComponent(0);
-		clusterSetDropdown.addItem("Annotation Set " + String.valueOf(annotationCounter));
-		createClusterSetTable(clusters);
-		clusterSetDropdown.setSelectedIndex(annotationCounter-1); // Zero indexed
+		mainPanel.add(createClusterSetTable(clusters));
+		clusterSetDropdown.addItem("Annotation Set " + String.valueOf(annotationCounter)); // Automatically sets selected
+		clusterSetDropdown.setSelectedIndex(annotationCounter-1);
 	}
 	
 	public void removeClusters(ArrayList<Cluster> clusters) {
@@ -70,16 +71,20 @@ public class AnnotationDisplayPanel extends JPanel implements CytoPanelComponent
 	
 	private JPanel createMainPanel() {
 		JPanel mainPanel = new JPanel();
-		final JComboBox clusterSetDropdown = new JComboBox();
+		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.PAGE_AXIS));
+		
+		final JComboBox clusterSetDropdown = new JComboBox(); // Final so that it can be accessed by ActionListener
 		clusterSetDropdown.addItemListener(new ItemListener(){
 			public void itemStateChanged(ItemEvent itemEvent) {
-                String clusterSetName = (String) itemEvent.getItem();
-                int clusterIndex = Integer.valueOf(clusterSetName.substring("Annotation Set ".length()));
-                currentClusterSet = clusterSet.get(clusterIndex-1);
-                if (tables.size() > 0) { // For the first time a new clusterSet is added
-                	currentTable.setVisible(false); // Hide currently showing table
-	                currentTable = tables.get(clusterIndex-1);
-	                currentTable.setVisible(true); // Show selected table
+				if (itemEvent.getStateChange() == ItemEvent.SELECTED) {
+					String clusterSetName = (String) itemEvent.getItem();
+					int clusterIndex = Integer.valueOf(clusterSetName.substring("Annotation Set ".length()));
+					currentClusterSet = clusterSet.get(clusterIndex-1);
+					if (tables.size() > 0) {
+						currentTable.setVisible(false); // Hide currently showing table
+						currentTable = tables.get(clusterIndex-1);
+						currentTable.setVisible(true); // Show selected table
+					}
                }
             }
 		});
@@ -106,10 +111,13 @@ public class AnnotationDisplayPanel extends JPanel implements CytoPanelComponent
          			cluster.getEllipse().removeAnnotation();
          		}
          		clusterSetDropdown.removeItem(clusterSetDropdown.getSelectedItem());
+         		currentTable.setVisible(false);
         	}
         };
         clearButton.addActionListener(clearActionListener); 
         mainPanel.add(clearButton);
+        
+        clusterSetDropdown.setAlignmentX(LEFT_ALIGNMENT);
         
 		return mainPanel;
 	}
@@ -126,11 +134,13 @@ public class AnnotationDisplayPanel extends JPanel implements CytoPanelComponent
 			model.addRow(rowData);
 		}
 		JScrollPane displayTableScroll = new JScrollPane(table);
+		displayTableScroll.add(table);
 		if (currentTable != null) currentTable.setVisible(false); // Hide currently showing table
         currentTable = table;
         currentTable.setVisible(true); // Show selected table
 
 		tables.add(table);
+		table.setAlignmentX(LEFT_ALIGNMENT);
 		
 		return table;
 	}
