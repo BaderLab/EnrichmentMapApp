@@ -1,5 +1,9 @@
 package org.baderlab.csplugins.enrichmentmap.task;
 
+import java.util.HashMap;
+
+import org.baderlab.csplugins.enrichmentmap.autoannotate.Cluster;
+import org.baderlab.csplugins.enrichmentmap.view.AnnotationDisplayPanel;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.event.CyEventHelper;
@@ -32,10 +36,11 @@ public class AutoAnnotatorTaskFactory implements TaskFactory {
 	private String clusterColumnName;
 	private CyServiceRegistrar registrar;
 	private SynchronousTaskManager syncTaskManager;
+	private AnnotationDisplayPanel displayPanel;
 	
 	public AutoAnnotatorTaskFactory(CySwingApplication application, CyApplicationManager applicationManager, OpenBrowser browser, 
 			CyNetworkViewManager networkViewManager, CyNetworkManager networkManager,
-			AnnotationManager annotationManager, long networkID, String clusterColumnName,
+			AnnotationManager annotationManager, AnnotationDisplayPanel displayPanel, long networkID, String clusterColumnName,
 			String nameColumnName, CyServiceRegistrar registrar, SynchronousTaskManager syncTaskManager) {
 		this.application = application;
 		this.applicationManager = applicationManager;
@@ -43,6 +48,7 @@ public class AutoAnnotatorTaskFactory implements TaskFactory {
 		this.networkManager = networkManager;
 		this.networkViewManager = networkViewManager;
 		this.annotationManager = annotationManager;
+		this.displayPanel = displayPanel;
 		this.networkID = networkID;
 		this.nameColumnName = nameColumnName;
 		this.clusterColumnName = clusterColumnName;
@@ -51,7 +57,7 @@ public class AutoAnnotatorTaskFactory implements TaskFactory {
 	}
 	
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new AutoAnnotatorTask(application, applicationManager, browser, networkViewManager, networkManager, annotationManager, networkID, clusterColumnName, nameColumnName, registrar, syncTaskManager));
+		return new TaskIterator(new AutoAnnotatorTask(application, applicationManager, browser, networkViewManager, networkManager, annotationManager, displayPanel, networkID, clusterColumnName, nameColumnName, registrar, syncTaskManager));
 	}
 
 	public boolean isReady() {

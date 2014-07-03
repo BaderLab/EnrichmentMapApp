@@ -46,7 +46,8 @@ package org.baderlab.csplugins.enrichmentmap.actions;
 import javax.swing.*;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
-import org.baderlab.csplugins.enrichmentmap.view.AutoAnnotatorPanel;
+import org.baderlab.csplugins.enrichmentmap.view.AnnotationDisplayPanel;
+import org.baderlab.csplugins.enrichmentmap.view.AutoAnnotatorInputPanel;
 import org.baderlab.csplugins.enrichmentmap.view.EnrichmentMapInputPanel;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
@@ -125,33 +126,28 @@ public class AutoAnnotatorPanelAction extends AbstractCyAction {
     }
 
 	public void actionPerformed(ActionEvent event) {
-          AutoAnnotatorPanel autoAnnotatorPanel = new AutoAnnotatorPanel(applicationManager, networkViewManager,
-        		  application, openBrowser, networkManager, annotationManager, registrar, syncTaskManager, eventHelper);
-          if(!initialized){      
-                initialized = true;
-
-                registrar.registerService(autoAnnotatorPanel,CytoPanelComponent.class,new Properties());
+		AnnotationDisplayPanel displayPanel = new AnnotationDisplayPanel();
+		registrar.registerService(displayPanel, CytoPanelComponent.class, new Properties());
+		AutoAnnotatorInputPanel autoAnnotatorPanel = new AutoAnnotatorInputPanel(applicationManager, networkViewManager,
+				application, openBrowser, networkManager, annotationManager, displayPanel, registrar, syncTaskManager, eventHelper);
+		if(!initialized){      
+        	  initialized = true;
+        	  registrar.registerService(autoAnnotatorPanel,CytoPanelComponent.class,new Properties());
           
-                //set the input window in the instance so we can update the instance window
-                //on network focus
-                EnrichmentMapManager.getInstance().setAutoAnnotatorPanel(autoAnnotatorPanel);
-          } 
-                  
+              //set the input window in the instance so we can update the instance window
+              //on network focus
+              EnrichmentMapManager.getInstance().setAutoAnnotatorPanel(autoAnnotatorPanel);
+          }
+
           // If the state of the cytoPanelWest is HIDE, show it
           if (cytoPanelWest.getState() == CytoPanelState.HIDE) {
         	  	cytoPanelWest.setState(CytoPanelState.DOCK);
           }
-
-         // Select my panel
-        int index = cytoPanelWest.indexOfComponent(autoAnnotatorPanel);
-        if (index == -1) {
-        	 	return;
-        }
-       cytoPanelWest.setSelectedIndex(index);
-
           
-         
-
+          // Select my panel
+          int index = cytoPanelWest.indexOfComponent(autoAnnotatorPanel);
+          if (index == -1) return;
+          cytoPanelWest.setSelectedIndex(index);
+          
         }
-    
 }

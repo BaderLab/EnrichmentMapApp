@@ -22,7 +22,7 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
  * Class to store the relevant sets of data corresponding to each cluster
  */
 
-public final class Cluster {
+public class Cluster implements Comparable<Cluster> {
 	
 	int clusterNumber;
 	ArrayList<CyNode> nodes;
@@ -31,6 +31,8 @@ public final class Cluster {
 	private CyNetworkView view;
 	private String label;
 	private AnnotationManager annotationManager;
+	private TextAnnotation textAnnotation;
+	private ShapeAnnotation ellipse;
 	
 	public Cluster(int clusterNumber, CyNetworkView view, AnnotationManager annotationManager) {
 		this.clusterNumber = clusterNumber;
@@ -73,6 +75,22 @@ public final class Cluster {
 		return label;
 	}
 	
+	public ShapeAnnotation getEllipse() {
+		return ellipse;
+	}
+	
+	public TextAnnotation getTextAnnotation() {
+		return textAnnotation;
+	}
+	
+	public AnnotationManager getAnnotationManager() {
+		return annotationManager;
+	}
+	
+	public CyNetworkView getNetworkView() {
+		return view;
+	}
+	
 	public void drawAnnotations(AnnotationFactory<ShapeAnnotation> shapeFactory, AnnotationFactory<TextAnnotation> textFactory) {
 		// Factories to create the annotations
 		// Constants used in making the appearance prettier
@@ -107,16 +125,15 @@ public final class Cluster {
 		arguments.put("y", String.valueOf(yPos));
 		arguments.put("zoom", String.valueOf(zoom));
 		arguments.put("canvas", "foreground");
-		ShapeAnnotation ellipse = shapeFactory.createAnnotation(ShapeAnnotation.class, view, arguments);
+		ellipse = shapeFactory.createAnnotation(ShapeAnnotation.class, view, arguments);
 		ellipse.setShapeType("Ellipse");
 		ellipse.setSize(width*padding, height*padding);
 		this.annotationManager.addAnnotation(ellipse);
 		
 		// Parameters of the label
-		String labelText = this.getLabel();
 		Integer fontSize = (int) Math.round(0.2*Math.sqrt(Math.pow(width, 2)+ Math.pow(height, 2)));
 		// To centre the annotation at the middle of the annotation
-		xPos = (int) Math.round((xmin + xmax)/2 - 0.15*width*padding - 0.8*fontSize*labelText.length());
+		xPos = (int) Math.round((xmin + xmax)/2 - 0.15*width*padding - 0.8*fontSize*label.length());
 		yPos = (int) Math.round(ymin - height*padding - 4.5*fontSize);
 		
 		// Create and draw the label
@@ -126,8 +143,14 @@ public final class Cluster {
 		arguments.put("zoom", String.valueOf(zoom));
 		arguments.put("canvas", "foreground");
 		arguments.put("fontSize", String.valueOf(fontSize));
-		TextAnnotation label = textFactory.createAnnotation(TextAnnotation.class, view, arguments);
-		label.setText(labelText);
-		this.annotationManager.addAnnotation(label);
+		textAnnotation = textFactory.createAnnotation(TextAnnotation.class, view, arguments);
+		textAnnotation.setText(label);
+		this.annotationManager.addAnnotation(textAnnotation);
+	}
+
+	@Override
+	public int compareTo(Cluster cluster2) {
+		// TODO Auto-generated method stub
+		return this.getClusterNumber() - cluster2.getClusterNumber();
 	}
 }

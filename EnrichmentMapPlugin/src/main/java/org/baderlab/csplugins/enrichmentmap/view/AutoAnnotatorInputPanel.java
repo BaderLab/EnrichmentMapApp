@@ -2,6 +2,7 @@ package org.baderlab.csplugins.enrichmentmap.view;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -11,12 +12,18 @@ import java.util.List;
 import java.util.Map;
 
 import javax.swing.BoxLayout;
+import javax.swing.DefaultListModel;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.ListModel;
+import javax.swing.ListSelectionModel;
 
+import org.baderlab.csplugins.enrichmentmap.autoannotate.Cluster;
 import org.baderlab.csplugins.enrichmentmap.task.AutoAnnotatorTaskFactory;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
@@ -41,22 +48,26 @@ import org.cytoscape.work.SynchronousTaskManager;
  * Date   June 16, 2014<br>
  * Time   11:26:32 AM<br>
  */
-public class AutoAnnotatorPanel extends JPanel implements CytoPanelComponent {
+
+public class AutoAnnotatorInputPanel extends JPanel implements CytoPanelComponent {
 
 	private static final long serialVersionUID = 7901088595186775935L;
 	private String clusterColumnName;
 	private String nameColumnName;
 	private long networkID;
 	protected AutoAnnotatorTaskFactory autoAnnotatorTaskFactory;
+	private AnnotationDisplayPanel displayPanel;
 
-	public AutoAnnotatorPanel(CyApplicationManager cyApplicationManagerRef, 
+	public AutoAnnotatorInputPanel(CyApplicationManager cyApplicationManagerRef, 
 			CyNetworkViewManager cyNetworkViewManagerRef, CySwingApplication cySwingApplicationRef,
 			OpenBrowser openBrowserRef, CyNetworkManager cyNetworkManagerRef, AnnotationManager annotationManager,
-			CyServiceRegistrar registrar, SynchronousTaskManager syncTaskManager, CyEventHelper eventHelper){
+			AnnotationDisplayPanel displayPanel, CyServiceRegistrar registrar, SynchronousTaskManager syncTaskManager, CyEventHelper eventHelper){
+		
+		this.displayPanel = displayPanel;
 		
 		JPanel mainPanel = createMainPanel(cyApplicationManagerRef, cyNetworkViewManagerRef, cySwingApplicationRef,
 				openBrowserRef, cyNetworkManagerRef, annotationManager, registrar, syncTaskManager, eventHelper);
-        add(mainPanel,BorderLayout.CENTER);
+		add(mainPanel,BorderLayout.CENTER);
 	}
 	
 	private JPanel createMainPanel(final CyApplicationManager cyApplicationManagerRef,
@@ -96,7 +107,6 @@ public class AutoAnnotatorPanel extends JPanel implements CytoPanelComponent {
         });
         
         
-        
         JButton confirmButton = new JButton("Annotate!");
         
         final Map<String, String> serviceProperties = new HashMap<String, String>();
@@ -106,14 +116,13 @@ public class AutoAnnotatorPanel extends JPanel implements CytoPanelComponent {
 			public void actionPerformed(ActionEvent e) {
 				// networkID and clusterColumnName field are looked up only when the button is pressed
 				autoAnnotatorTaskFactory = new AutoAnnotatorTaskFactory(cySwingApplicationRef, cyApplicationManagerRef, openBrowserRef,
-						cyNetworkViewManagerRef, cyNetworkManagerRef, annotationManager,
+						cyNetworkViewManagerRef, cyNetworkManagerRef, annotationManager, displayPanel,
         				networkID, clusterColumnName, nameColumnName, registrar, syncTaskManager);
 				syncTaskManager.execute(autoAnnotatorTaskFactory.createTaskIterator());
 			}
         };
         confirmButton.addActionListener(autoAnnotateAction);
         
-        // Weak fix but works for now
         JButton updateButton = new JButton("Update Networks");
         ActionListener updateActionListener = new ActionListener(){
         	public void actionPerformed(ActionEvent e) {
@@ -130,34 +139,7 @@ public class AutoAnnotatorPanel extends JPanel implements CytoPanelComponent {
         
         JLabel networkDropdownLabel = new JLabel("Select the network to annotate:");
         JLabel clusterColumnDropdownLabel = new JLabel("Select the column with the clusters:"); // ambiguous phrasing?
-        JLabel nameColumnDropdownLabel = new JLabel("Select the column with the gene set names:"); // ambiguous phrasing?
-
-        // Button to remove all annotations
-        JButton clearButton = new JButton("Clear Annotations");
-        ActionListener clearActionListener = new ActionListener(){
-        	public void actionPerformed(ActionEvent e) {
-        		CyNetwork network = cyNetworkManagerRef.getNetwork(nameToSUID.get(networkDropdown.getSelectedItem()));
-        		CyNetworkView networkView = (CyNetworkView) cyNetworkViewManagerRef.getNetworkViews(network).toArray()[0];
-         		
-        		// Delete WordInfo column created by WordCloud
-         		for (CyColumn column : network.getDefaultNodeTable().getColumns()) {
-         			String name = column.getName();
-         			if (name.equals("WC_Word") || name.equals("WC_FontSize") || name.equals("WC_Cluster") || name.equals("WC_Number")) {
-         				// Problem - leaves them floating around the cloud manager in WordCloud - may have to do another Tuneable Task
-         				network.getDefaultNodeTable().deleteColumn(name);
-         			}
-         		}
-        		// Delete all annotations
-        		List<Annotation> annotations = annotationManager.getAnnotations(networkView);
-        		for (Annotation a : annotations) {
-        			a.removeAnnotation();
-        		}
-        		eventHelper.flushPayloadEvents();
-         		networkView.updateView();
-         		
-        	}
-        };        
-        clearButton.addActionListener(clearActionListener);
+        JLabel nameColumnDropdownLabel = new JLabel("Select the column with the gene set names:"); // ambiguous phrasing?       
         
         networkDropdownLabel.setAlignmentX(LEFT_ALIGNMENT);
         networkDropdown.setAlignmentX(LEFT_ALIGNMENT);
@@ -167,7 +149,6 @@ public class AutoAnnotatorPanel extends JPanel implements CytoPanelComponent {
         clusterColumnDropdown.setAlignmentX(LEFT_ALIGNMENT);
         confirmButton.setAlignmentX(LEFT_ALIGNMENT);
         updateButton.setAlignmentX(LEFT_ALIGNMENT);
-        clearButton.setAlignmentX(LEFT_ALIGNMENT);
         
         mainPanel.add(networkDropdownLabel);
         mainPanel.add(networkDropdown);
@@ -177,7 +158,6 @@ public class AutoAnnotatorPanel extends JPanel implements CytoPanelComponent {
         mainPanel.add(clusterColumnDropdownLabel);
         mainPanel.add(clusterColumnDropdown);
         mainPanel.add(confirmButton);
-        mainPanel.add(clearButton);
         
         
         return mainPanel;
@@ -216,7 +196,7 @@ public class AutoAnnotatorPanel extends JPanel implements CytoPanelComponent {
 
 	@Override
 	public String getTitle() {
-		return "Annotation Panel";
+		return "Annotation Input Panel";
 	}
 	
 }

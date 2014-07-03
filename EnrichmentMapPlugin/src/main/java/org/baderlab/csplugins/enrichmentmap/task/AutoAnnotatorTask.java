@@ -45,15 +45,19 @@ package org.baderlab.csplugins.enrichmentmap.task;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Properties;
 
 import org.baderlab.csplugins.enrichmentmap.autoannotate.Cluster;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.NodeText;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.RunWordCloudObserver;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.WordUtils;
+import org.baderlab.csplugins.enrichmentmap.view.AnnotationDisplayPanel;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.command.CommandExecutorTaskFactory;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyColumn;
@@ -97,12 +101,13 @@ public class AutoAnnotatorTask extends AbstractTask {
 	private String clusterColumnName;
 	private CyServiceRegistrar registrar;
 	private SynchronousTaskManager syncTaskManager;
+	private AnnotationDisplayPanel displayPanel;
 	
 	private boolean interrupted;
 
 	public AutoAnnotatorTask(CySwingApplication application, CyApplicationManager applicationManager, 
 			OpenBrowser browser, CyNetworkViewManager networkViewManager, CyNetworkManager networkManager,
-			AnnotationManager annotationManager, long networkID, String clusterColumnName, 
+			AnnotationManager annotationManager, AnnotationDisplayPanel displayPanel, long networkID, String clusterColumnName, 
 			String nameColumnName, CyServiceRegistrar registrar, SynchronousTaskManager syncTaskManager){
 		
 		this.application = application;
@@ -111,6 +116,7 @@ public class AutoAnnotatorTask extends AbstractTask {
 		this.networkManager = networkManager;
 		this.networkViewManager = networkViewManager;
 		this.annotationManager = annotationManager;
+		this.displayPanel = displayPanel;
 		this.networkID = networkID;
 		this.clusterColumnName = clusterColumnName;
 		this.nameColumnName = nameColumnName;
@@ -118,6 +124,7 @@ public class AutoAnnotatorTask extends AbstractTask {
 		this.syncTaskManager = syncTaskManager;
 		
 		this.interrupted = false;
+		
 	};
 	
 	@Override
@@ -144,6 +151,8 @@ public class AutoAnnotatorTask extends AbstractTask {
 		for (Cluster cluster : clusters) {
 			cluster.drawAnnotations(shapeFactory, textFactory);
 		}
+		
+		displayPanel.addClusters(clusters);
 	}
 	
 	private ArrayList<Cluster> makeClusters(CyNetwork network, CyNetworkView networkView) {
@@ -180,6 +189,7 @@ public class AutoAnnotatorTask extends AbstractTask {
 				}
 			}
 		}
+		Collections.sort(clusters);
 		return clusters;
 	}
 	
