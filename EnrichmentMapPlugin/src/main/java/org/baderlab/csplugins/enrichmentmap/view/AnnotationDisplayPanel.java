@@ -6,6 +6,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,6 +18,9 @@ import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
 import org.baderlab.csplugins.enrichmentmap.autoannotate.Cluster;
@@ -26,6 +31,8 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationManager;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.view.presentation.property.DefaultVisualizableVisualProperty;
 
 /**
  * @author arkadyark
@@ -40,8 +47,8 @@ public class AnnotationDisplayPanel extends JPanel implements CytoPanelComponent
 	
 	private JPanel mainPanel;
 	private ArrayList<ArrayList<Cluster>> clusterSet;
-	private ArrayList<JTable> tables;
-	private JTable currentTable;
+	private ArrayList<JScrollPane> tables;
+	private JScrollPane currentScroll;
 	private ArrayList<Cluster> currentClusterSet;
 	private int annotationCounter;
 
@@ -49,7 +56,7 @@ public class AnnotationDisplayPanel extends JPanel implements CytoPanelComponent
 
 	public AnnotationDisplayPanel() {
 		this.clusterSet = new ArrayList<ArrayList<Cluster>>();
-		this.tables = new ArrayList<JTable>(); 
+		this.tables = new ArrayList<JScrollPane>(); 
 		this.annotationCounter = 0;
 		this.mainPanel = createMainPanel();
 		add(mainPanel, BorderLayout.CENTER);
@@ -61,7 +68,7 @@ public class AnnotationDisplayPanel extends JPanel implements CytoPanelComponent
 		JComboBox clusterSetDropdown = (JComboBox) mainPanel.getComponent(0);
 		mainPanel.add(createClusterSetTable(clusters));
 		clusterSetDropdown.addItem("Annotation Set " + String.valueOf(annotationCounter)); // Automatically sets selected
-		clusterSetDropdown.setSelectedIndex(annotationCounter-1);
+		clusterSetDropdown.setSelectedIndex(clusterSetDropdown.getItemCount()-1);
 	}
 	
 	public void removeClusters(ArrayList<Cluster> clusters) {
@@ -71,7 +78,7 @@ public class AnnotationDisplayPanel extends JPanel implements CytoPanelComponent
 	
 	private JPanel createMainPanel() {
 		JPanel mainPanel = new JPanel();
-		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.PAGE_AXIS));
+		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
 		
 		final JComboBox clusterSetDropdown = new JComboBox(); // Final so that it can be accessed by ActionListener
 		clusterSetDropdown.addItemListener(new ItemListener(){
@@ -81,9 +88,9 @@ public class AnnotationDisplayPanel extends JPanel implements CytoPanelComponent
 					int clusterIndex = Integer.valueOf(clusterSetName.substring("Annotation Set ".length()));
 					currentClusterSet = clusterSet.get(clusterIndex-1);
 					if (tables.size() > 0) {
-						currentTable.setVisible(false); // Hide currently showing table
-						currentTable = tables.get(clusterIndex-1);
-						currentTable.setVisible(true); // Show selected table
+						currentScroll.setVisible(false); // Hide currently showing table
+						currentScroll = tables.get(clusterIndex-1);
+						currentScroll.setVisible(true); // Show selected table
 					}
                }
             }
@@ -111,7 +118,7 @@ public class AnnotationDisplayPanel extends JPanel implements CytoPanelComponent
          			cluster.getEllipse().removeAnnotation();
          		}
          		clusterSetDropdown.removeItem(clusterSetDropdown.getSelectedItem());
-         		currentTable.setVisible(false);
+         		currentScroll.setVisible(false);
         	}
         };
         clearButton.addActionListener(clearActionListener); 
@@ -122,27 +129,40 @@ public class AnnotationDisplayPanel extends JPanel implements CytoPanelComponent
 		return mainPanel;
 	}
 	
-	private JTable createClusterSetTable(ArrayList<Cluster> clusters) {
+	private JScrollPane createClusterSetTable(ArrayList<Cluster> clusters) {
 		DefaultTableModel model = new DefaultTableModel();
 		model.addColumn("Cluster number");
 		model.addColumn("Cluster label");
 
-		JTable table = new JTable(model);
+		final JTable table = new JTable(model); // Final to be able to use inside of listener
 		
 		for (int i = 0; i < clusters.size(); i++) {
 			Object[] rowData = {"Cluster " + clusters.get(i).getClusterNumber(), clusters.get(i).getLabel()};
 			model.addRow(rowData);
 		}
-		JScrollPane displayTableScroll = new JScrollPane(table);
-		displayTableScroll.add(table);
-		if (currentTable != null) currentTable.setVisible(false); // Hide currently showing table
-        currentTable = table;
-        currentTable.setVisible(true); // Show selected table
-
-		tables.add(table);
-		table.setAlignmentX(LEFT_ALIGNMENT);
 		
-		return table;
+		table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+
+			@Override
+			public void valueChanged(ListSelectionEvent e) {
+				if (! e.getValueIsAdjusting()) { // Down-click and up-click are separate events
+					int selectedRowIndex = e.getFirstIndex() == table.getSelectedRow()? e.getFirstIndex() : e.getLastIndex();
+					final Cluster selectedCluster = currentClusterSet.get(selectedRowIndex); // Final to use inside of 
+					selectedCluster.select();
+				}
+			}
+		});
+		
+		JScrollPane displayTableScroll = new JScrollPane(table);
+		if (currentScroll != null) currentScroll.setVisible(false); // Hide currently showing table
+        currentScroll = displayTableScroll;
+        currentScroll.setVisible(true); // Show selected table
+
+		tables.add(displayTableScroll);
+		displayTableScroll.setAlignmentX(LEFT_ALIGNMENT);
+		
+		return displayTableScroll;
 	}
 	
 	@Override

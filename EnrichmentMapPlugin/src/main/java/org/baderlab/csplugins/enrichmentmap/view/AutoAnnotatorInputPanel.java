@@ -127,11 +127,12 @@ public class AutoAnnotatorInputPanel extends JPanel implements CytoPanelComponen
         ActionListener updateActionListener = new ActionListener(){
         	public void actionPerformed(ActionEvent e) {
         		networkDropdown.removeAllItems();
+        		nameToSUID.clear();
         		for (CyNetwork network : cyNetworkManagerRef.getNetworkSet()) {
                 	String name = network.toString();
                 	long suid = network.getSUID();
-                	networkDropdown.addItem(name);
                 	nameToSUID.put(name, suid);
+                	networkDropdown.addItem(name);
                 }
         	}
         };

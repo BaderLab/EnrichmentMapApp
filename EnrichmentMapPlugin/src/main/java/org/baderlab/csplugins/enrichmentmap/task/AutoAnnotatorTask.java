@@ -153,6 +153,7 @@ public class AutoAnnotatorTask extends AbstractTask {
 		}
 		
 		displayPanel.addClusters(clusters);
+
 	}
 	
 	private ArrayList<Cluster> makeClusters(CyNetwork network, CyNetworkView networkView) {
@@ -181,7 +182,7 @@ public class AutoAnnotatorTask extends AbstractTask {
 					}
 				}
 				if (flag) {
-					Cluster cluster = new Cluster(clusterNumber, networkView, annotationManager);
+					Cluster cluster = new Cluster(clusterNumber, network, networkView, annotationManager, clusterColumnName);
 					cluster.addNode(node);
 					cluster.addCoordinates(coordinates);
 					cluster.addNodeText(nodeText);
