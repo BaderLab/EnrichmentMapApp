@@ -57,7 +57,9 @@ import org.baderlab.csplugins.enrichmentmap.autoannotate.WordUtils;
 import org.baderlab.csplugins.enrichmentmap.view.AnnotationDisplayPanel;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelComponent;
+import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.command.CommandExecutorTaskFactory;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyColumn;
@@ -145,19 +147,20 @@ public class AutoAnnotatorTask extends AbstractTask {
 		runWordCloud();
 		labelClusters(clusters, network);
 
-		AnnotationFactory<ShapeAnnotation> shapeFactory = (AnnotationFactory<ShapeAnnotation>) registrar.getService(AnnotationFactory.class, "(type=ShapeAnnotation.class)");    	
-		AnnotationFactory<TextAnnotation> textFactory = (AnnotationFactory<TextAnnotation>) registrar.getService(AnnotationFactory.class, "(type=TextAnnotation.class)");
-		
 		for (Cluster cluster : clusters) {
-			cluster.drawAnnotations(shapeFactory, textFactory);
-		}
-		
+			cluster.drawAnnotations();
+		}		
 		displayPanel.addClusters(clusters);
-
+		CytoPanel southPanel = application.getCytoPanel(CytoPanelName.SOUTH);
+		southPanel.setSelectedIndex(southPanel.indexOfComponent(displayPanel));
 	}
 	
 	private ArrayList<Cluster> makeClusters(CyNetwork network, CyNetworkView networkView) {
 		ArrayList<Cluster> clusters = new ArrayList<Cluster>();
+		
+		AnnotationFactory<ShapeAnnotation> shapeFactory = (AnnotationFactory<ShapeAnnotation>) registrar.getService(AnnotationFactory.class, "(type=ShapeAnnotation.class)");    	
+		AnnotationFactory<TextAnnotation> textFactory = (AnnotationFactory<TextAnnotation>) registrar.getService(AnnotationFactory.class, "(type=TextAnnotation.class)");
+		
 		List<CyNode> nodes = network.getNodeList();
 		for (CyNode node : nodes) {
 			Integer clusterNumber = network.getRow(node).get(this.clusterColumnName, Integer.class);
@@ -182,7 +185,7 @@ public class AutoAnnotatorTask extends AbstractTask {
 					}
 				}
 				if (flag) {
-					Cluster cluster = new Cluster(clusterNumber, network, networkView, annotationManager, clusterColumnName);
+					Cluster cluster = new Cluster(clusterNumber, network, networkView, annotationManager, clusterColumnName, shapeFactory, textFactory);
 					cluster.addNode(node);
 					cluster.addCoordinates(coordinates);
 					cluster.addNodeText(nodeText);

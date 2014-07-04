@@ -39,8 +39,11 @@ public class Cluster implements Comparable<Cluster> {
 	private String clusterColumnName;
 	private int[] boundsX;
 	private int[] boundsY;
+	private AnnotationFactory<ShapeAnnotation> shapeFactory;
+	private AnnotationFactory<TextAnnotation> textFactory;
 	
-	public Cluster(int clusterNumber, CyNetwork network, CyNetworkView view, AnnotationManager annotationManager, String clusterColumnName) {
+	public Cluster(int clusterNumber, CyNetwork network, CyNetworkView view, AnnotationManager annotationManager, String clusterColumnName,
+			AnnotationFactory<ShapeAnnotation> shapeFactory, AnnotationFactory<TextAnnotation> textFactory) {
 		this.clusterNumber = clusterNumber;
 		this.nodes = new ArrayList<CyNode>();
 		this.coordinates = new ArrayList<double[]>();
@@ -49,6 +52,8 @@ public class Cluster implements Comparable<Cluster> {
 		this.view = view;
 		this.clusterColumnName = clusterColumnName;
 		this.annotationManager = annotationManager;
+		this.shapeFactory = shapeFactory;
+		this.textFactory = textFactory;
 		boundsX = new int[2];
 		boundsY = new int[2];
 	}
@@ -120,7 +125,12 @@ public class Cluster implements Comparable<Cluster> {
 		}
 	}
 	
-	public void drawAnnotations(AnnotationFactory<ShapeAnnotation> shapeFactory, AnnotationFactory<TextAnnotation> textFactory) {
+	public void erase() {
+		textAnnotation.removeAnnotation();
+		ellipse.removeAnnotation();
+	}
+	
+	public void drawAnnotations() {
 		// Factories to create the annotations
 		// Constants used in making the appearance prettier
 		int padding = 80;
