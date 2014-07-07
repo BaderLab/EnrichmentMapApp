@@ -9,6 +9,7 @@ import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.swing.BoxLayout;
@@ -26,6 +27,7 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 
+import org.baderlab.csplugins.enrichmentmap.autoannotate.AnnotationSet;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.Cluster;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
@@ -49,38 +51,42 @@ public class AnnotationDisplayPanel extends JPanel implements CytoPanelComponent
 	private static final long serialVersionUID = 6589442061666054048L;
 	
 	private JPanel mainPanel;
-	private ArrayList<ArrayList<Cluster>> clusterSet;
-	private ArrayList<JPanel> tables;
-	private JPanel currentTable;
-	private ArrayList<Cluster> currentClusterSet;
+	private HashMap<String, AnnotationSet> clusterSets;
+	private AnnotationSet currentClusterSet;
 	private int annotationCounter;
+	private HashMap<AnnotationSet, JPanel> clustersToTables;
 
 
 
 	public AnnotationDisplayPanel() {
-		this.clusterSet = new ArrayList<ArrayList<Cluster>>();
-		this.tables = new ArrayList<JPanel>(); 
-		this.annotationCounter = 0;
+		this.clusterSets = new HashMap<String, AnnotationSet>();
+		this.clustersToTables = new HashMap<AnnotationSet, JPanel>();
+		annotationCounter = 0;
 		this.mainPanel = createMainPanel();
 		setLayout(new BorderLayout());
 		add(mainPanel, BorderLayout.NORTH);
 	}
 	
-	public void addClusters(ArrayList<Cluster> clusters) {
-		annotationCounter++;
-		if (!clusterSet.contains(clusters)) clusterSet.add(clusters);
+	public void addClusters(AnnotationSet clusters) {
+		String annotationSetName = "Annotation Set " + String.valueOf(++annotationCounter);
+		clusters.setName(annotationSetName);
+		clusterSets.put(annotationSetName, clusters);
 		JComboBox clusterSetDropdown = (JComboBox) mainPanel.getComponent(0);
+
 		JPanel clusterTable = createClusterSetTablePanel(clusters);
+		clustersToTables.put(clusters, clusterTable);
 		JScrollPane clusterTableScroll = new JScrollPane(clusterTable);
 		clusterTableScroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		add(clusterTableScroll, BorderLayout.WEST);
-		clusterSetDropdown.addItem("Annotation Set " + String.valueOf(annotationCounter)); // Automatically sets selected
+		
+		clusterSetDropdown.addItem(clusters); // Automatically sets selected
 		clusterSetDropdown.setSelectedIndex(clusterSetDropdown.getItemCount()-1);
 	}
 	
-	public void removeClusters(ArrayList<Cluster> clusters) {
+	public void removeClusters(AnnotationSet clusters) {
 		JComboBox clusterSetDropdown = (JComboBox) mainPanel.getComponent(0);
-		clusterSetDropdown.removeItem(clusterSet.indexOf(clusters));
+		clusterSetDropdown.removeItem(clusterSets.get(clusters.name));
+		clusterSets.remove(clusters.name);
 	}
 	
 	private JPanel createMainPanel() {
@@ -90,16 +96,19 @@ public class AnnotationDisplayPanel extends JPanel implements CytoPanelComponent
 		clusterSetDropdown.addItemListener(new ItemListener(){
 			public void itemStateChanged(ItemEvent itemEvent) {
 				if (itemEvent.getStateChange() == ItemEvent.SELECTED) {
-					String clusterSetName = (String) itemEvent.getItem();
-					int clusterIndex = Integer.valueOf(clusterSetName.substring("Annotation Set ".length()));
-					currentClusterSet = clusterSet.get(clusterIndex-1);
-					if (tables.size() > 0) {
-						currentTable.setVisible(false); // Hide currently showing table
-						currentTable = tables.get(clusterIndex-1);
-						currentTable.setVisible(true); // Show selected table
-						((JPanel) clusterSetDropdown.getParent()).updateUI();
-					}
-               }
+					AnnotationSet clusters = (AnnotationSet) itemEvent.getItem();				
+					currentClusterSet = clusters;
+					currentClusterSet.drawAnnotations();							
+					clustersToTables.get(clusters).setVisible(true); // Show selected table
+					((JPanel) clusterSetDropdown.getParent()).updateUI();
+				}
+				
+				if (itemEvent.getStateChange() == ItemEvent.DESELECTED) {
+					AnnotationSet clusters = (AnnotationSet) itemEvent.getItem();
+	         		currentClusterSet.eraseAnnotations();
+					clustersToTables.get(clusters).setVisible(false);
+					((JPanel) clusterSetDropdown.getParent()).updateUI();
+				}
             }
 		});
 
@@ -109,8 +118,8 @@ public class AnnotationDisplayPanel extends JPanel implements CytoPanelComponent
         JButton clearButton = new JButton("Remove Annotation Set");
         ActionListener clearActionListener = new ActionListener(){
         	public void actionPerformed(ActionEvent e) {
-        		AnnotationManager annotationManager = currentClusterSet.get(0).getAnnotationManager();
-        		CyNetworkView networkView = currentClusterSet.get(0).getNetworkView();
+        		AnnotationManager annotationManager = currentClusterSet.clusterSet.firstEntry().getValue().getAnnotationManager();
+        		CyNetworkView networkView = currentClusterSet.clusterSet.firstEntry().getValue().getNetworkView();
         		CyNetwork network = networkView.getModel();
         		// Delete WordInfo column created by WordCloud
          		for (CyColumn column : network.getDefaultNodeTable().getColumns()) {
@@ -121,10 +130,11 @@ public class AnnotationDisplayPanel extends JPanel implements CytoPanelComponent
          			}
          		}
         		// Delete all annotations
-         		for (Cluster cluster : currentClusterSet) {
+         		for (Cluster cluster : currentClusterSet.clusterSet.values()) {
          			cluster.erase();
          		}
          		clusterSetDropdown.removeItem(clusterSetDropdown.getSelectedItem());
+         		remove(clustersToTables.get(currentClusterSet));
         	}
         };
         clearButton.addActionListener(clearActionListener); 
@@ -133,15 +143,16 @@ public class AnnotationDisplayPanel extends JPanel implements CytoPanelComponent
 		return mainPanel;
 	}
 	
-	private JPanel createClusterSetTablePanel(ArrayList<Cluster> clusters) {
+	private JPanel createClusterSetTablePanel(AnnotationSet clusters) {
 		
 		JPanel tablePanel = new JPanel();
 		
-		if (currentTable != null) currentTable.setVisible(false); // Hide currently showing table
-        currentTable = tablePanel;
-		tables.add(tablePanel);
-		
-		DefaultTableModel model = new DefaultTableModel();
+		DefaultTableModel model = new DefaultTableModel() {
+			@Override
+		    public boolean isCellEditable(int row, int column) {
+		        return column == 0 ? false : true;
+		    }
+		};
 		model.addColumn("Cluster number");
 		model.addColumn("Label");
 
@@ -150,16 +161,16 @@ public class AnnotationDisplayPanel extends JPanel implements CytoPanelComponent
 			@Override
 			public void tableChanged(TableModelEvent e) {
 				if (e.getType() == TableModelEvent.UPDATE || e.getColumn() == 1) {
-					int editedRowIndex = e.getFirstRow();
-					Cluster editedCluster = currentClusterSet.get(editedRowIndex); // Final to use inside of 
+					int editedRowIndex = e.getFirstRow() == table.getSelectedRow()? e.getLastRow() : e.getFirstRow();
+					Cluster editedCluster = currentClusterSet.clusterSet.get(editedRowIndex + 1);
 					editedCluster.setLabel((String) table.getValueAt(editedRowIndex, 1));
 					editedCluster.erase();
 					editedCluster.drawAnnotations();
 				}
 			}
 		});
-		for (int i = 0; i < clusters.size(); i++) {
-			Object[] rowData = {"Cluster " + clusters.get(i).getClusterNumber(), clusters.get(i).getLabel()};
+		for (Cluster cluster : clusters.clusterSet.values()) {
+			Object[] rowData = {cluster , cluster.getLabel()};
 			model.addRow(rowData);
 		}
 		
@@ -169,7 +180,7 @@ public class AnnotationDisplayPanel extends JPanel implements CytoPanelComponent
 			public void valueChanged(ListSelectionEvent e) {
 				if (! e.getValueIsAdjusting()) { // Down-click and up-click are separate events
 					int selectedRowIndex = e.getFirstIndex() == table.getSelectedRow()? e.getFirstIndex() : e.getLastIndex();
-					final Cluster selectedCluster = currentClusterSet.get(selectedRowIndex); // Final to use inside of 
+					Cluster selectedCluster = (Cluster) table.getValueAt(selectedRowIndex, 0); // Final to use inside of 
 					selectedCluster.select();
 				}
 			}

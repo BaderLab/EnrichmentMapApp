@@ -27,6 +27,7 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 public class Cluster implements Comparable<Cluster> {
 	
 	int clusterNumber;
+	public String name;
 	ArrayList<CyNode> nodes;
 	ArrayList<double[]> coordinates;
 	ArrayList<NodeText> nodeTexts;
@@ -45,6 +46,7 @@ public class Cluster implements Comparable<Cluster> {
 	public Cluster(int clusterNumber, CyNetwork network, CyNetworkView view, AnnotationManager annotationManager, String clusterColumnName,
 			AnnotationFactory<ShapeAnnotation> shapeFactory, AnnotationFactory<TextAnnotation> textFactory) {
 		this.clusterNumber = clusterNumber;
+		this.name = "Annotation Set " + clusterNumber;
 		this.nodes = new ArrayList<CyNode>();
 		this.coordinates = new ArrayList<double[]>();
 		this.nodeTexts = new ArrayList<NodeText>();
@@ -125,17 +127,15 @@ public class Cluster implements Comparable<Cluster> {
 		}
 	}
 	
-	public void erase() {
-		textAnnotation.removeAnnotation();
-		ellipse.removeAnnotation();
-	}
-	
 	public void drawAnnotations() {
-		// Factories to create the annotations
-		// Constants used in making the appearance prettier
-		int padding = 80;
-    	double min_size = 25.0;
 
+		
+		// Constants used in making the appearance prettier
+		double zoom = view.getVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR);
+		double min_size = 15;
+		double padding = 30;
+
+    	// Find the edges of the annotation
 		double xmin = 100000000;
 		double ymin = 100000000;
 		double xmax = -100000000;
@@ -148,29 +148,30 @@ public class Cluster implements Comparable<Cluster> {
 			ymax = coordinates[1] > ymax ? coordinates[1] : ymax;
 		}
 		
-		double width = (xmax - xmin);
+		double width = (xmax - xmin)*zoom;
 		width = width > min_size ? width : min_size;
-		double height = (ymax - ymin);
+		double height = (ymax - ymin)*zoom;
 		height = height > min_size ? height : min_size;
 		
 		// Parameters of the ellipse
-		Integer xPos = (int) Math.round(xmin - padding/2);
-		Integer yPos = (int) Math.round(ymin - padding/2);
+		Integer xPos = (int) Math.round(xmin - 1.7*padding);
+		Integer yPos = (int) Math.round(ymin - 1.7*padding);
 		
-		boundsX[0] = xPos - padding/2;
+		boundsX[0] = xPos;
 		boundsX[1] = (int) Math.round(xPos + width + padding/2);
-		boundsY[0] = yPos - padding/2;
+		boundsY[0] = yPos;
 		boundsY[1] = (int) Math.round(yPos + height*padding/2);
 		
 		// Create and draw the ellipse
 		HashMap<String, String> arguments = new HashMap<String,String>();
 		arguments.put("x", String.valueOf(xPos));
 		arguments.put("y", String.valueOf(yPos));
+		arguments.put("zoom", String.valueOf(zoom));
 		arguments.put("canvas", "foreground");
 		ellipse = shapeFactory.createAnnotation(ShapeAnnotation.class, view, arguments);
 		ellipse.setShapeType("Ellipse");
 		ellipse.setSize(width + padding, height + padding);
-		this.annotationManager.addAnnotation(ellipse);
+		annotationManager.addAnnotation(ellipse);
 		
 		// Parameters of the label
 		Integer fontSize = (int) Math.round(0.35*Math.pow(Math.pow(width, 2)+ Math.pow(height, 2), 0.44));
@@ -182,17 +183,28 @@ public class Cluster implements Comparable<Cluster> {
 		arguments = new HashMap<String,String>();
 		arguments.put("x", String.valueOf(xPos));
 		arguments.put("y", String.valueOf(yPos));
+		arguments.put("zoom", String.valueOf(zoom));
 		arguments.put("canvas", "foreground");
 		arguments.put("fontSize", String.valueOf(fontSize));
 		
 		textAnnotation = textFactory.createAnnotation(TextAnnotation.class, view, arguments);
 		textAnnotation.setText(label);
-		this.annotationManager.addAnnotation(textAnnotation);
+		annotationManager.addAnnotation(textAnnotation);
+	}
+
+	public void erase() {
+		textAnnotation.removeAnnotation();
+		ellipse.removeAnnotation();
 	}
 
 	@Override
 	public int compareTo(Cluster cluster2) {
 		// TODO Auto-generated method stub
 		return this.getClusterNumber() - cluster2.getClusterNumber();
+	}
+	
+	@Override
+	public String toString() {
+		return "Cluster " + getClusterNumber();
 	}
 }

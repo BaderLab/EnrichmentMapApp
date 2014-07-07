@@ -50,6 +50,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
+import org.baderlab.csplugins.enrichmentmap.autoannotate.AnnotationSet;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.Cluster;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.NodeText;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.RunWordCloudObserver;
@@ -131,7 +132,6 @@ public class AutoAnnotatorTask extends AbstractTask {
 	
 	@Override
 	public void cancel() {
-		// TODO Auto-generated method stub
 		this.interrupted = true;
 		return;
 	}
@@ -143,20 +143,16 @@ public class AutoAnnotatorTask extends AbstractTask {
     	CyNetwork network = networkManager.getNetwork(networkID);
     	CyNetworkView networkView = applicationManager.getCurrentNetworkView();
 
-    	ArrayList<Cluster> clusters = makeClusters(network, networkView);
+    	AnnotationSet clusters = makeClusters(network, networkView);
 		runWordCloud();
 		labelClusters(clusters, network);
-
-		for (Cluster cluster : clusters) {
-			cluster.drawAnnotations();
-		}		
-		displayPanel.addClusters(clusters);
+		displayPanel.addClusters(clusters); // Clusters get drawn inside of displayPanel
 		CytoPanel southPanel = application.getCytoPanel(CytoPanelName.SOUTH);
 		southPanel.setSelectedIndex(southPanel.indexOfComponent(displayPanel));
 	}
 	
-	private ArrayList<Cluster> makeClusters(CyNetwork network, CyNetworkView networkView) {
-		ArrayList<Cluster> clusters = new ArrayList<Cluster>();
+	private AnnotationSet makeClusters(CyNetwork network, CyNetworkView networkView) {
+		AnnotationSet clusters = new AnnotationSet();
 		
 		AnnotationFactory<ShapeAnnotation> shapeFactory = (AnnotationFactory<ShapeAnnotation>) registrar.getService(AnnotationFactory.class, "(type=ShapeAnnotation.class)");    	
 		AnnotationFactory<TextAnnotation> textFactory = (AnnotationFactory<TextAnnotation>) registrar.getService(AnnotationFactory.class, "(type=TextAnnotation.class)");
@@ -175,25 +171,18 @@ public class AutoAnnotatorTask extends AbstractTask {
 				nodeText.setName(nodeName);
 				
 				// empty values (no cluster) are given null
-				boolean flag = true;
-				for (Cluster cluster : clusters) {
-	 				if (cluster.getClusterNumber() == clusterNumber && flag) {
-						cluster.addNode(node);
-						cluster.addCoordinates(coordinates);
-						cluster.addNodeText(nodeText);
-						flag = false;
-					}
+				Cluster cluster;
+				if (clusters.clusterSet.keySet().contains(clusterNumber)) {
+					cluster = clusters.clusterSet.get(clusterNumber);
+				} else {
+					cluster = new Cluster(clusterNumber, network, networkView, annotationManager, clusterColumnName, shapeFactory, textFactory);
+					clusters.addCluster(cluster);
 				}
-				if (flag) {
-					Cluster cluster = new Cluster(clusterNumber, network, networkView, annotationManager, clusterColumnName, shapeFactory, textFactory);
-					cluster.addNode(node);
-					cluster.addCoordinates(coordinates);
-					cluster.addNodeText(nodeText);
-					clusters.add(cluster);
-				}
+				cluster.addNode(node);
+				cluster.addCoordinates(coordinates);
+				cluster.addNodeText(nodeText);
 			}
 		}
-		Collections.sort(clusters);
 		return clusters;
 	}
 	
@@ -211,8 +200,8 @@ public class AutoAnnotatorTask extends AbstractTask {
 		}
 	}
 
-	private void labelClusters(ArrayList<Cluster> clusters, CyNetwork network) {	
-		for (Cluster cluster : clusters) {
+	private void labelClusters(AnnotationSet clusters, CyNetwork network) {	
+		for (Cluster cluster : clusters.clusterSet.values()) {
 			cluster.setLabel("");
 			int clusterNumber = cluster.getClusterNumber();
 			List<CyRow> nodeTable = network.getDefaultNodeTable().getAllRows();
