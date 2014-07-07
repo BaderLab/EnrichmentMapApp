@@ -8,6 +8,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.annotations.AnnotationManager;
 import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
@@ -29,7 +30,7 @@ public class Cluster implements Comparable<Cluster> {
 	int clusterNumber;
 	public String name;
 	ArrayList<CyNode> nodes;
-	ArrayList<double[]> coordinates;
+	public ArrayList<double[]> coordinates;
 	ArrayList<NodeText> nodeTexts;
 	private CyNetwork network;
 	private CyNetworkView view;
@@ -126,14 +127,14 @@ public class Cluster implements Comparable<Cluster> {
 			view.updateView();
 		}
 	}
-	
+
 	public void drawAnnotations() {
 
 		
 		// Constants used in making the appearance prettier
 		double zoom = view.getVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR);
 		double min_size = 15;
-		double padding = 30;
+		double padding = 1.9;
 
     	// Find the edges of the annotation
 		double xmin = 100000000;
@@ -154,13 +155,13 @@ public class Cluster implements Comparable<Cluster> {
 		height = height > min_size ? height : min_size;
 		
 		// Parameters of the ellipse
-		Integer xPos = (int) Math.round(xmin - 1.7*padding);
-		Integer yPos = (int) Math.round(ymin - 1.7*padding);
+		Integer xPos = (int) Math.round(xmin - width*padding/2);
+		Integer yPos = (int) Math.round(ymin - height*padding/2);
 		
 		boundsX[0] = xPos;
-		boundsX[1] = (int) Math.round(xPos + width + padding/2);
+		boundsX[1] = (int) Math.round(xPos + width*padding);
 		boundsY[0] = yPos;
-		boundsY[1] = (int) Math.round(yPos + height*padding/2);
+		boundsY[1] = (int) Math.round(yPos + height*padding);
 		
 		// Create and draw the ellipse
 		HashMap<String, String> arguments = new HashMap<String,String>();
@@ -170,14 +171,14 @@ public class Cluster implements Comparable<Cluster> {
 		arguments.put("canvas", "foreground");
 		ellipse = shapeFactory.createAnnotation(ShapeAnnotation.class, view, arguments);
 		ellipse.setShapeType("Ellipse");
-		ellipse.setSize(width + padding, height + padding);
+		ellipse.setSize(width*padding, height*padding);
 		annotationManager.addAnnotation(ellipse);
 		
 		// Parameters of the label
 		Integer fontSize = (int) Math.round(0.35*Math.pow(Math.pow(width, 2)+ Math.pow(height, 2), 0.44));
 		// To centre the annotation at the middle of the annotation
 		xPos = (int) Math.round((xmin + xmax)/2 - 0.23*fontSize*label.length());
-		yPos = (int) Math.round(ymin - padding/2 - 1.05*fontSize);
+		yPos = (int) Math.round(ymin);
 		
 		// Create and draw the label
 		arguments = new HashMap<String,String>();

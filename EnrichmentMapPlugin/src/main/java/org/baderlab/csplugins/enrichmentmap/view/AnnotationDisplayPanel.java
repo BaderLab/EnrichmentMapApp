@@ -130,15 +130,30 @@ public class AnnotationDisplayPanel extends JPanel implements CytoPanelComponent
          			}
          		}
         		// Delete all annotations
-         		for (Cluster cluster : currentClusterSet.clusterSet.values()) {
-         			cluster.erase();
-         		}
+         		currentClusterSet.eraseAnnotations();
+         		
          		clusterSetDropdown.removeItem(clusterSetDropdown.getSelectedItem());
          		remove(clustersToTables.get(currentClusterSet));
         	}
         };
         clearButton.addActionListener(clearActionListener); 
         mainPanel.add(clearButton);
+        
+        // Button to remove all annotations
+        JButton updateButton = new JButton("Update Annotation Set");
+        ActionListener updateActionListener = new ActionListener(){
+        	public void actionPerformed(ActionEvent e) {
+        		AnnotationManager annotationManager = currentClusterSet.clusterSet.firstEntry().getValue().getAnnotationManager();
+        		CyNetworkView networkView = currentClusterSet.clusterSet.firstEntry().getValue().getNetworkView();
+        		CyNetwork network = networkView.getModel();
+
+        		currentClusterSet.updateCoordinates();
+        		currentClusterSet.eraseAnnotations(); 
+        		currentClusterSet.drawAnnotations();
+        	}
+        };
+        updateButton.addActionListener(updateActionListener); 
+        mainPanel.add(updateButton);
         
 		return mainPanel;
 	}

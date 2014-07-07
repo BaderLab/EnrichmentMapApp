@@ -152,7 +152,7 @@ public class AutoAnnotatorTask extends AbstractTask {
 	}
 	
 	private AnnotationSet makeClusters(CyNetwork network, CyNetworkView networkView) {
-		AnnotationSet clusters = new AnnotationSet();
+		AnnotationSet clusters = new AnnotationSet(network, networkView, clusterColumnName);
 		
 		AnnotationFactory<ShapeAnnotation> shapeFactory = (AnnotationFactory<ShapeAnnotation>) registrar.getService(AnnotationFactory.class, "(type=ShapeAnnotation.class)");    	
 		AnnotationFactory<TextAnnotation> textFactory = (AnnotationFactory<TextAnnotation>) registrar.getService(AnnotationFactory.class, "(type=TextAnnotation.class)");
