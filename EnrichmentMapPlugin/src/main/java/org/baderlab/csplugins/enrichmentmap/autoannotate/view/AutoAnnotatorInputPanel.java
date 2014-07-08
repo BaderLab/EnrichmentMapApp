@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap.view;
+package org.baderlab.csplugins.enrichmentmap.autoannotate.view;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -23,8 +23,8 @@ import javax.swing.JScrollPane;
 import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
 
-import org.baderlab.csplugins.enrichmentmap.autoannotate.Cluster;
-import org.baderlab.csplugins.enrichmentmap.task.AutoAnnotatorTaskFactory;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.task.AutoAnnotatorTaskFactory;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanelComponent;
@@ -41,6 +41,7 @@ import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationManager;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.SynchronousTaskManager;
+import org.cytoscape.work.swing.DialogTaskManager;
 
 /**
  * @author arkadyark
@@ -61,19 +62,19 @@ public class AutoAnnotatorInputPanel extends JPanel implements CytoPanelComponen
 	public AutoAnnotatorInputPanel(CyApplicationManager cyApplicationManagerRef, 
 			CyNetworkViewManager cyNetworkViewManagerRef, CySwingApplication cySwingApplicationRef,
 			OpenBrowser openBrowserRef, CyNetworkManager cyNetworkManagerRef, AnnotationManager annotationManager,
-			AnnotationDisplayPanel displayPanel, CyServiceRegistrar registrar, SynchronousTaskManager syncTaskManager, CyEventHelper eventHelper){
+			AnnotationDisplayPanel displayPanel, CyServiceRegistrar registrar, DialogTaskManager dialogTaskManager, CyEventHelper eventHelper){
 		
 		this.displayPanel = displayPanel;
 		
 		JPanel mainPanel = createMainPanel(cyApplicationManagerRef, cyNetworkViewManagerRef, cySwingApplicationRef,
-				openBrowserRef, cyNetworkManagerRef, annotationManager, registrar, syncTaskManager, eventHelper);
+				openBrowserRef, cyNetworkManagerRef, annotationManager, registrar, dialogTaskManager, eventHelper);
 		add(mainPanel,BorderLayout.CENTER);
 	}
 	
 	private JPanel createMainPanel(final CyApplicationManager cyApplicationManagerRef,
 			final CyNetworkViewManager cyNetworkViewManagerRef, final CySwingApplication cySwingApplicationRef,
 			final OpenBrowser openBrowserRef, final CyNetworkManager cyNetworkManagerRef, final AnnotationManager annotationManager,
-			final CyServiceRegistrar registrar, final SynchronousTaskManager syncTaskManager, final CyEventHelper eventHelper) {
+			final CyServiceRegistrar registrar, final DialogTaskManager dialogTaskManager, final CyEventHelper eventHelper) {
 		
 		JPanel mainPanel = new JPanel();
 		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.PAGE_AXIS));
@@ -117,8 +118,8 @@ public class AutoAnnotatorInputPanel extends JPanel implements CytoPanelComponen
 				// networkID and clusterColumnName field are looked up only when the button is pressed
 				autoAnnotatorTaskFactory = new AutoAnnotatorTaskFactory(cySwingApplicationRef, cyApplicationManagerRef, openBrowserRef,
 						cyNetworkViewManagerRef, cyNetworkManagerRef, annotationManager, displayPanel,
-        				networkID, clusterColumnName, nameColumnName, registrar, syncTaskManager);
-				syncTaskManager.execute(autoAnnotatorTaskFactory.createTaskIterator());
+        				networkID, clusterColumnName, nameColumnName, registrar, dialogTaskManager);
+				dialogTaskManager.execute(autoAnnotatorTaskFactory.createTaskIterator());
 			}
         };
         confirmButton.addActionListener(autoAnnotateAction);

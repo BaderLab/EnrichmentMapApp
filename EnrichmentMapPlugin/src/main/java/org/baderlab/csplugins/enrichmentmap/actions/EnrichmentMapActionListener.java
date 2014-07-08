@@ -151,6 +151,7 @@ public class EnrichmentMapActionListener implements RowsSetListener{
         CyNetwork network = this.applicationManager.getCurrentNetwork();
 
         //only handle event if it is a selected node
+
         if(network != null && e != null && (e.getSource() == network.getDefaultEdgeTable() || e.getSource() == network.getDefaultNodeTable())){
         		if(initialize(network)){
         
@@ -169,9 +170,13 @@ public class EnrichmentMapActionListener implements RowsSetListener{
         				Nodes.clear();
         				Nodes.addAll(selectedNodes);
         				
-        				//once we have amalgamated all the nodes and edges, launch a task to update the heatmap.
-//        				UpdateHeatMapTask updateHeatmap = new UpdateHeatMapTask(map, Nodes, Edges, edgeOverlapPanel, nodeOverlapPanel, cytoPanelSouth,applicationManager);
-//        				syncTaskManager.execute(new TaskIterator(updateHeatmap));
+        				boolean annotationRunning = network.getDefaultNetworkTable().getAllRows().get(0).get("Annotation Running", Boolean.class);
+        				System.out.println(annotationRunning);
+        				if (!annotationRunning) {
+	        				//once we have amalgamated all the nodes and edges, launch a task to update the heatmap.
+	        				UpdateHeatMapTask updateHeatmap = new UpdateHeatMapTask(map, Nodes, Edges, edgeOverlapPanel, nodeOverlapPanel, cytoPanelSouth,applicationManager);
+	        				syncTaskManager.execute(new TaskIterator(updateHeatmap));
+        				}
         			}
         		}
         }//end of if e.getSource check

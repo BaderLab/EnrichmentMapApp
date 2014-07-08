@@ -1,9 +1,9 @@
-package org.baderlab.csplugins.enrichmentmap.task;
+package org.baderlab.csplugins.enrichmentmap.autoannotate.task;
 
 import java.util.HashMap;
 
-import org.baderlab.csplugins.enrichmentmap.autoannotate.Cluster;
-import org.baderlab.csplugins.enrichmentmap.view.AnnotationDisplayPanel;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.view.AnnotationDisplayPanel;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.event.CyEventHelper;
@@ -15,6 +15,7 @@ import org.cytoscape.view.presentation.annotations.AnnotationManager;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.swing.DialogTaskManager;
 
 /**
  * Created by
@@ -35,13 +36,13 @@ public class AutoAnnotatorTaskFactory implements TaskFactory {
 	private String nameColumnName;
 	private String clusterColumnName;
 	private CyServiceRegistrar registrar;
-	private SynchronousTaskManager syncTaskManager;
+	private DialogTaskManager dialogTaskManager;
 	private AnnotationDisplayPanel displayPanel;
 	
 	public AutoAnnotatorTaskFactory(CySwingApplication application, CyApplicationManager applicationManager, OpenBrowser browser, 
 			CyNetworkViewManager networkViewManager, CyNetworkManager networkManager,
 			AnnotationManager annotationManager, AnnotationDisplayPanel displayPanel, long networkID, String clusterColumnName,
-			String nameColumnName, CyServiceRegistrar registrar, SynchronousTaskManager syncTaskManager) {
+			String nameColumnName, CyServiceRegistrar registrar, DialogTaskManager dialogTaskManager) {
 		this.application = application;
 		this.applicationManager = applicationManager;
 		this.browser = browser;
@@ -53,11 +54,11 @@ public class AutoAnnotatorTaskFactory implements TaskFactory {
 		this.nameColumnName = nameColumnName;
 		this.clusterColumnName = clusterColumnName;
 		this.registrar = registrar;
-		this.syncTaskManager = syncTaskManager;
+		this.dialogTaskManager = dialogTaskManager;
 	}
 	
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new AutoAnnotatorTask(application, applicationManager, browser, networkViewManager, networkManager, annotationManager, displayPanel, networkID, clusterColumnName, nameColumnName, registrar, syncTaskManager));
+		return new TaskIterator(new AutoAnnotatorTask(application, applicationManager, browser, networkViewManager, networkManager, annotationManager, displayPanel, networkID, clusterColumnName, nameColumnName, registrar, dialogTaskManager));
 	}
 
 	public boolean isReady() {

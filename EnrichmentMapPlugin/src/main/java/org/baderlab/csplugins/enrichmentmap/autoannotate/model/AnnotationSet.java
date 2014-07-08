@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap.autoannotate;
+package org.baderlab.csplugins.enrichmentmap.autoannotate.model;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,8 +22,8 @@ public class AnnotationSet {
 	public String name;
 	public TreeMap<Integer, Cluster> clusterSet; // Having it be sorted is useful for the displayPanel
 	public boolean drawn;
-	private CyNetwork network;
-	private CyNetworkView view;
+	public CyNetwork network;
+	public CyNetworkView view;
 	private String clusterColumnName;
 	
 	public AnnotationSet(CyNetwork network, CyNetworkView view, String clusterColumnName) {

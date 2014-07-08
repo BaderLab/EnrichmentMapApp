@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap.autoannotate;
+package org.baderlab.csplugins.enrichmentmap.autoannotate.model;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -149,19 +149,14 @@ public class Cluster implements Comparable<Cluster> {
 			ymax = coordinates[1] > ymax ? coordinates[1] : ymax;
 		}
 		
-		double width = (xmax - xmin)*zoom;
+		double width = (xmax - xmin);
 		width = width > min_size ? width : min_size;
-		double height = (ymax - ymin)*zoom;
+		double height = (ymax - ymin);
 		height = height > min_size ? height : min_size;
 		
 		// Parameters of the ellipse
-		Integer xPos = (int) Math.round(xmin - width*padding/2);
-		Integer yPos = (int) Math.round(ymin - height*padding/2);
-		
-		boundsX[0] = xPos;
-		boundsX[1] = (int) Math.round(xPos + width*padding);
-		boundsY[0] = yPos;
-		boundsY[1] = (int) Math.round(yPos + height*padding);
+		Integer xPos = (int) Math.round(xmin - width*padding/10);
+		Integer yPos = (int) Math.round(ymin - height*padding/10);
 		
 		// Create and draw the ellipse
 		HashMap<String, String> arguments = new HashMap<String,String>();
@@ -171,14 +166,14 @@ public class Cluster implements Comparable<Cluster> {
 		arguments.put("canvas", "foreground");
 		ellipse = shapeFactory.createAnnotation(ShapeAnnotation.class, view, arguments);
 		ellipse.setShapeType("Ellipse");
-		ellipse.setSize(width*padding, height*padding);
+		ellipse.setSize(width*padding*zoom, height*padding*zoom);
 		annotationManager.addAnnotation(ellipse);
-		
+
 		// Parameters of the label
-		Integer fontSize = (int) Math.round(0.35*Math.pow(Math.pow(width, 2)+ Math.pow(height, 2), 0.44));
+		Integer fontSize = (int) Math.round(0.35*Math.pow(Math.pow(width, 2)+ Math.pow(height, 2), 0.44)*zoom);
 		// To centre the annotation at the middle of the annotation
-		xPos = (int) Math.round((xmin + xmax)/2 - 0.23*fontSize*label.length());
-		yPos = (int) Math.round(ymin);
+		xPos = (int) Math.round(xPos + width*padding/2 - 0.23*fontSize*label.length());
+		yPos = (int) Math.round(yPos - height*padding/10);
 		
 		// Create and draw the label
 		arguments = new HashMap<String,String>();

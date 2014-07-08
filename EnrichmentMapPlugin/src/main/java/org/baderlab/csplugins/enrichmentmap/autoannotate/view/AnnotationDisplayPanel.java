@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap.view;
+package org.baderlab.csplugins.enrichmentmap.autoannotate.view;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -26,9 +26,10 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
 
-import org.baderlab.csplugins.enrichmentmap.autoannotate.AnnotationSet;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.Cluster;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.model.AnnotationSet;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.model.CyColumn;
@@ -78,7 +79,7 @@ public class AnnotationDisplayPanel extends JPanel implements CytoPanelComponent
 		JScrollPane clusterTableScroll = new JScrollPane(clusterTable);
 		clusterTableScroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		add(clusterTableScroll, BorderLayout.WEST);
-		
+
 		clusterSetDropdown.addItem(clusters); // Automatically sets selected
 		clusterSetDropdown.setSelectedIndex(clusterSetDropdown.getItemCount()-1);
 	}
@@ -99,14 +100,14 @@ public class AnnotationDisplayPanel extends JPanel implements CytoPanelComponent
 					AnnotationSet clusters = (AnnotationSet) itemEvent.getItem();				
 					currentClusterSet = clusters;
 					currentClusterSet.drawAnnotations();							
-					clustersToTables.get(clusters).setVisible(true); // Show selected table
+					clustersToTables.get(clusters).getParent().getParent().setVisible(true); // Show selected table
 					((JPanel) clusterSetDropdown.getParent()).updateUI();
 				}
 				
 				if (itemEvent.getStateChange() == ItemEvent.DESELECTED) {
 					AnnotationSet clusters = (AnnotationSet) itemEvent.getItem();
 	         		currentClusterSet.eraseAnnotations();
-					clustersToTables.get(clusters).setVisible(false);
+					clustersToTables.get(clusters).getParent().getParent().setVisible(false);
 					((JPanel) clusterSetDropdown.getParent()).updateUI();
 				}
             }
@@ -133,7 +134,8 @@ public class AnnotationDisplayPanel extends JPanel implements CytoPanelComponent
          		currentClusterSet.eraseAnnotations();
          		
          		clusterSetDropdown.removeItem(clusterSetDropdown.getSelectedItem());
-         		remove(clustersToTables.get(currentClusterSet));
+         		remove(clustersToTables.get(currentClusterSet).getParent());
+         		clustersToTables.remove(currentClusterSet);
         	}
         };
         clearButton.addActionListener(clearActionListener); 
@@ -143,10 +145,6 @@ public class AnnotationDisplayPanel extends JPanel implements CytoPanelComponent
         JButton updateButton = new JButton("Update Annotation Set");
         ActionListener updateActionListener = new ActionListener(){
         	public void actionPerformed(ActionEvent e) {
-        		AnnotationManager annotationManager = currentClusterSet.clusterSet.firstEntry().getValue().getAnnotationManager();
-        		CyNetworkView networkView = currentClusterSet.clusterSet.firstEntry().getValue().getNetworkView();
-        		CyNetwork network = networkView.getModel();
-
         		currentClusterSet.updateCoordinates();
         		currentClusterSet.eraseAnnotations(); 
         		currentClusterSet.drawAnnotations();
@@ -163,6 +161,8 @@ public class AnnotationDisplayPanel extends JPanel implements CytoPanelComponent
 		JPanel tablePanel = new JPanel();
 		
 		DefaultTableModel model = new DefaultTableModel() {
+			private static final long serialVersionUID = -1277709187563893042L;
+
 			@Override
 		    public boolean isCellEditable(int row, int column) {
 		        return column == 0 ? false : true;
@@ -194,7 +194,7 @@ public class AnnotationDisplayPanel extends JPanel implements CytoPanelComponent
 			@Override
 			public void valueChanged(ListSelectionEvent e) {
 				if (! e.getValueIsAdjusting()) { // Down-click and up-click are separate events
-					int selectedRowIndex = e.getFirstIndex() == table.getSelectedRow()? e.getFirstIndex() : e.getLastIndex();
+					int selectedRowIndex = table.getSelectedRow();
 					Cluster selectedCluster = (Cluster) table.getValueAt(selectedRowIndex, 0); // Final to use inside of 
 					selectedCluster.select();
 				}

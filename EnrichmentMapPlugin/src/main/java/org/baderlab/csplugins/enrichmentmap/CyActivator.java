@@ -4,16 +4,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import org.baderlab.csplugins.enrichmentmap.actions.AutoAnnotatorPanelAction;
 import org.baderlab.csplugins.enrichmentmap.actions.BulkEMCreationAction;
 import org.baderlab.csplugins.enrichmentmap.actions.EnrichmentMapActionListener;
 import org.baderlab.csplugins.enrichmentmap.actions.EnrichmentMapSessionAction;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadEnrichmentsPanelAction;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadPostAnalysisPanelAction;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowAboutPanelAction;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.action.AutoAnnotatorPanelAction;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.view.AutoAnnotatorInputPanel;
 import org.baderlab.csplugins.enrichmentmap.commands.EnrichmentMapGSEACommandHandlerTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.task.BuildEnrichmentMapTuneableTaskFactory;
-import org.baderlab.csplugins.enrichmentmap.view.AutoAnnotatorInputPanel;
 import org.baderlab.csplugins.enrichmentmap.view.BulkEMCreationPanel;
 import org.baderlab.csplugins.enrichmentmap.view.EnrichmentMapInputPanel;
 import org.baderlab.csplugins.enrichmentmap.view.HeatMapPanel;
@@ -100,7 +100,6 @@ public class CyActivator extends AbstractCyActivator {
 		//get the service registrar so we can register new services in different classes
 		CyServiceRegistrar registrar = getService(bc, CyServiceRegistrar.class);
 		
-		// Get a Cytoscape service 'DialogTaskManager' in CyActivator class
 		DialogTaskManager dialogTaskManager = getService(bc, DialogTaskManager.class);
 						
 		Map<String, String> serviceProperties;
@@ -155,7 +154,7 @@ public class CyActivator extends AbstractCyActivator {
 		serviceProperties = new HashMap<String, String>();
 		serviceProperties.put("inMenuBar", "true");
 		serviceProperties.put("preferredMenu", "Apps.EnrichmentMap");
- 		AutoAnnotatorPanelAction autoAnnotatorPanelAction = new AutoAnnotatorPanelAction(serviceProperties,cyApplicationManagerRef, cyNetworkManagerRef, cyNetworkViewManagerRef, cySwingApplicationRef, openBrowserRef, annotationManagerRef, registrar, syncTaskManager, eventHelper);
+ 		AutoAnnotatorPanelAction autoAnnotatorPanelAction = new AutoAnnotatorPanelAction(serviceProperties,cyApplicationManagerRef, cyNetworkManagerRef, cyNetworkViewManagerRef, cySwingApplicationRef, openBrowserRef, annotationManagerRef, registrar, dialogTaskManager, eventHelper);
 		
 		//register the services
 		registerService(bc, aboutAction, CyAction.class,new Properties());

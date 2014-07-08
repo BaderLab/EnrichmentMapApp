@@ -41,33 +41,26 @@
 // $LastChangedBy: risserlin $
 // $HeadURL: svn+ssh://risserlin@server1.baderlab.med.utoronto.ca/svn/EnrichmentMap/trunk/EnrichmentMapPlugin/src/org/baderlab/csplugins/enrichmentmap/BuildEnrichmentMapTask.java $
 
-package org.baderlab.csplugins.enrichmentmap.task;
+package org.baderlab.csplugins.enrichmentmap.autoannotate.task;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Properties;
 
-import org.baderlab.csplugins.enrichmentmap.autoannotate.AnnotationSet;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.Cluster;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.NodeText;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.RunWordCloudObserver;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.WordUtils;
-import org.baderlab.csplugins.enrichmentmap.view.AnnotationDisplayPanel;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.model.AnnotationSet;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.model.NodeText;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.model.WordUtils;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.view.AnnotationDisplayPanel;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanel;
-import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.command.CommandExecutorTaskFactory;
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.view.model.CyNetworkView;
@@ -79,7 +72,6 @@ import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
 import org.cytoscape.view.presentation.annotations.TextAnnotation;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.swing.DialogTaskManager;
@@ -95,66 +87,94 @@ public class AutoAnnotatorTask extends AbstractTask {
 	
 	private CySwingApplication application;
 	private CyApplicationManager applicationManager;
-	private OpenBrowser browser;
 	private CyNetworkManager networkManager;
-	private CyNetworkViewManager networkViewManager;
 	private AnnotationManager annotationManager;
 	private long networkID;
 	private String nameColumnName;
 	private String clusterColumnName;
 	private CyServiceRegistrar registrar;
-	private SynchronousTaskManager syncTaskManager;
+	private DialogTaskManager dialogTaskManager;
 	private AnnotationDisplayPanel displayPanel;
-	
-	private boolean interrupted;
 
 	public AutoAnnotatorTask(CySwingApplication application, CyApplicationManager applicationManager, 
 			OpenBrowser browser, CyNetworkViewManager networkViewManager, CyNetworkManager networkManager,
 			AnnotationManager annotationManager, AnnotationDisplayPanel displayPanel, long networkID, String clusterColumnName, 
-			String nameColumnName, CyServiceRegistrar registrar, SynchronousTaskManager syncTaskManager){
+			String nameColumnName, CyServiceRegistrar registrar, DialogTaskManager dialogTaskManager){
 		
 		this.application = application;
 		this.applicationManager = applicationManager;
-		this.browser = browser;
 		this.networkManager = networkManager;
-		this.networkViewManager = networkViewManager;
 		this.annotationManager = annotationManager;
 		this.displayPanel = displayPanel;
 		this.networkID = networkID;
 		this.clusterColumnName = clusterColumnName;
 		this.nameColumnName = nameColumnName;
 		this.registrar = registrar;
-		this.syncTaskManager = syncTaskManager;
-		
-		this.interrupted = false;
+		this.dialogTaskManager = dialogTaskManager;
 		
 	};
 	
 	@Override
 	public void cancel() {
-		this.interrupted = true;
 		return;
 	}
 	
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		taskMonitor.setTitle("Annotating Enrichment Map");
+	
+		taskMonitor.setProgress(0.1);
+		taskMonitor.setStatusMessage("Getting clusters...");
+		if (cancelled) return;
 
     	CyNetwork network = networkManager.getNetwork(networkID);
     	CyNetworkView networkView = applicationManager.getCurrentNetworkView();
+    	CyTable networkTable = network.getDefaultNetworkTable();
+    	try {
+    		networkTable.deleteColumn("Annotation Running");
+    		networkTable.createColumn("Annotation Running", Boolean.class, false);
+    	} catch (Exception e) {
+    		networkTable.createColumn("Annotation Running", Boolean.class, false);
+    	}
+    	networkTable.getAllRows().get(0).set("Annotation Running", true);
 
     	AnnotationSet clusters = makeClusters(network, networkView);
-		runWordCloud();
-		labelClusters(clusters, network);
+    	
+    	taskMonitor.setProgress(0.4);
+    	taskMonitor.setStatusMessage("Running WordCloud...");
+    	if (cancelled) return;
+    	
+    	runWordCloud(taskMonitor);
+    	
+    	taskMonitor.setProgress(0.7);
+    	taskMonitor.setStatusMessage("Annotating Clusters...");
+    	if (cancelled) return;
+
+    	// Gives WordCloud time to finish - the command Task finishes when WordCloud starts
+    	while (true) {
+    		try {
+    			labelClusters(clusters, network);
+    			break;
+    		} catch(NullPointerException e) {
+    			continue;
+    		}
+    	}
 		displayPanel.addClusters(clusters); // Clusters get drawn inside of displayPanel
 		CytoPanel southPanel = application.getCytoPanel(CytoPanelName.SOUTH);
 		southPanel.setSelectedIndex(southPanel.indexOfComponent(displayPanel));
+		
+		network.getDefaultNetworkTable().deleteColumn("Annotation Running");
+
+		taskMonitor.setProgress(1.0);
+		taskMonitor.setStatusMessage("Done!");
 	}
 	
 	private AnnotationSet makeClusters(CyNetwork network, CyNetworkView networkView) {
 		AnnotationSet clusters = new AnnotationSet(network, networkView, clusterColumnName);
 		
+		@SuppressWarnings("unchecked")
 		AnnotationFactory<ShapeAnnotation> shapeFactory = (AnnotationFactory<ShapeAnnotation>) registrar.getService(AnnotationFactory.class, "(type=ShapeAnnotation.class)");    	
+		@SuppressWarnings("unchecked")
 		AnnotationFactory<TextAnnotation> textFactory = (AnnotationFactory<TextAnnotation>) registrar.getService(AnnotationFactory.class, "(type=TextAnnotation.class)");
 		
 		List<CyNode> nodes = network.getNodeList();
@@ -186,20 +206,21 @@ public class AutoAnnotatorTask extends AbstractTask {
 		return clusters;
 	}
 	
-	private void runWordCloud() {
-		RunWordCloudTask rwc = new RunWordCloudTask(registrar, clusterColumnName, nameColumnName);
-		TaskIterator task = new TaskIterator(rwc);
-		RunWordCloudObserver observer = new RunWordCloudObserver();
-		syncTaskManager.execute(task, observer);
-		while (!observer.isComplete()) {
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+	private void runWordCloud(TaskMonitor taskMonitor) {
+		CommandExecutorTaskFactory executor = registrar.getService(CommandExecutorTaskFactory.class);
+		ArrayList<String> commands = new ArrayList<String>();
+		commands.add("wordcloud build clusterColumnName=\"" + clusterColumnName
+				+ "\" nameColumnName=\"" + nameColumnName + "\"");
+		TaskIterator task = executor.createTaskIterator(commands, null);
+		try {
+			// Uses the same TaskMonitor as the main Task
+			task.next().run(taskMonitor);
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	private void labelClusters(AnnotationSet clusters, CyNetwork network) {	
 		for (Cluster cluster : clusters.clusterSet.values()) {
 			cluster.setLabel("");

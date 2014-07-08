@@ -41,13 +41,13 @@
 // $LastChangedBy: risserlin $
 // $HeadURL: svn+ssh://risserlin@server1.baderlab.med.utoronto.ca/svn/EnrichmentMap/trunk/EnrichmentMapPlugin/src/org/baderlab/csplugins/enrichmentmap/LoadEnrichmentsPanelAction.java $
 
-package org.baderlab.csplugins.enrichmentmap.actions;
+package org.baderlab.csplugins.enrichmentmap.autoannotate.action;
 
 import javax.swing.*;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
-import org.baderlab.csplugins.enrichmentmap.view.AnnotationDisplayPanel;
-import org.baderlab.csplugins.enrichmentmap.view.AutoAnnotatorInputPanel;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.view.AnnotationDisplayPanel;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.view.AutoAnnotatorInputPanel;
 import org.baderlab.csplugins.enrichmentmap.view.EnrichmentMapInputPanel;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
@@ -99,13 +99,13 @@ public class AutoAnnotatorPanelAction extends AbstractCyAction {
 	private AnnotationManager annotationManager;
 	private OpenBrowser openBrowser;
 	private CyNetworkManager networkManager;
-	private SynchronousTaskManager syncTaskManager;
+	private DialogTaskManager dialogTaskManager;
 	private CyEventHelper eventHelper;
     
     public AutoAnnotatorPanelAction(Map<String,String> configProps, CyApplicationManager applicationManager, 
     			CyNetworkManager cyNetworkManagerRef, CyNetworkViewManager networkViewManager, 
     			CySwingApplication application, OpenBrowser openBrowserRef, AnnotationManager annotationManager, 
-    			CyServiceRegistrar registrar, SynchronousTaskManager syncTaskManager, CyEventHelper eventHelper){
+    			CyServiceRegistrar registrar, DialogTaskManager dialogTaskManager, CyEventHelper eventHelper){
         super( configProps,  applicationManager,  networkViewManager);
      
  		putValue(NAME, "Annotate Clusters");		
@@ -119,7 +119,7 @@ public class AutoAnnotatorPanelAction extends AbstractCyAction {
  		this.openBrowser = openBrowserRef;
  		this.annotationManager = annotationManager;
  		this.registrar = registrar;
- 		this.syncTaskManager = syncTaskManager;
+ 		this.dialogTaskManager = dialogTaskManager;
  		this.eventHelper = eventHelper;
  		
 
@@ -129,7 +129,7 @@ public class AutoAnnotatorPanelAction extends AbstractCyAction {
 		AnnotationDisplayPanel displayPanel = new AnnotationDisplayPanel();
 		registrar.registerService(displayPanel, CytoPanelComponent.class, new Properties());
 		AutoAnnotatorInputPanel autoAnnotatorPanel = new AutoAnnotatorInputPanel(applicationManager, networkViewManager,
-				application, openBrowser, networkManager, annotationManager, displayPanel, registrar, syncTaskManager, eventHelper);
+				application, openBrowser, networkManager, annotationManager, displayPanel, registrar, dialogTaskManager, eventHelper);
 		if(!initialized){      
         	  initialized = true;
         	  registrar.registerService(autoAnnotatorPanel,CytoPanelComponent.class,new Properties());
