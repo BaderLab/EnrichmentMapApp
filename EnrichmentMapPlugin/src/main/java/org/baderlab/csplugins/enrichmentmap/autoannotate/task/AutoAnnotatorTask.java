@@ -233,7 +233,7 @@ public class AutoAnnotatorTask extends AbstractTask {
 					List<String> sizeList = row.get("WC_FontSize", List.class);
 					List<String> clusterList = row.get("WC_Cluster", List.class);
 					List<String> numberList = row.get("WC_Number", List.class);
-					String label = WordUtils.biggestWord(wordList, sizeList, clusterList, numberList);
+					String label = WordUtils.makeLabel(wordList, sizeList, clusterList, numberList);
 					cluster.setLabel(label);
 					break;
 				}

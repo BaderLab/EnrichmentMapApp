@@ -155,8 +155,8 @@ public class Cluster implements Comparable<Cluster> {
 		height = height > min_size ? height : min_size;
 		
 		// Parameters of the ellipse
-		Integer xPos = (int) Math.round(xmin - width*padding/10);
-		Integer yPos = (int) Math.round(ymin - height*padding/10);
+		Integer xPos = (int) Math.round(xmin - width*padding/4);
+		Integer yPos = (int) Math.round(ymin - height*padding/4);
 		
 		// Create and draw the ellipse
 		HashMap<String, String> arguments = new HashMap<String,String>();
@@ -167,13 +167,14 @@ public class Cluster implements Comparable<Cluster> {
 		ellipse = shapeFactory.createAnnotation(ShapeAnnotation.class, view, arguments);
 		ellipse.setShapeType("Ellipse");
 		ellipse.setSize(width*padding*zoom, height*padding*zoom);
+		ellipse.setBorderWidth(5.0);
 		annotationManager.addAnnotation(ellipse);
 
 		// Parameters of the label
 		Integer fontSize = (int) Math.round(0.35*Math.pow(Math.pow(width, 2)+ Math.pow(height, 2), 0.44)*zoom);
 		// To centre the annotation at the middle of the annotation
-		xPos = (int) Math.round(xPos + width*padding/2 - 0.23*fontSize*label.length());
-		yPos = (int) Math.round(yPos - height*padding/10);
+		xPos = (int) Math.round(xPos + width*padding/2 - 1.1*fontSize*label.length());
+		yPos = (int) Math.round(yPos - 5.3*fontSize);
 		
 		// Create and draw the label
 		arguments = new HashMap<String,String>();

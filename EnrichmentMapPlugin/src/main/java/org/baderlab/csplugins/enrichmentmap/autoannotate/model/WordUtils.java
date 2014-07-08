@@ -3,6 +3,7 @@ package org.baderlab.csplugins.enrichmentmap.autoannotate.model;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.TreeMap;
 
@@ -37,18 +38,40 @@ public class WordUtils{
 		return wordInfoParsed;
 	}
 	
-	public static String biggestWord(List<String> wordList,
+	public static String makeLabel(List<String> wordList,
 			List<String> sizeList, List<String> clusterList,
 			List<String> numberList) {
-		String biggestWord = "";
+		String label = "";
 		int biggestSize = -1;
+		String biggestWord = "";
+		String biggestWordCluster = null;
+		String secondBiggestWord = "";
 		for (int i = 0; i < wordList.size(); i++) {
 			// eventually make use of the other parts of the wordInfo (cluster grouping, word number (?))
 			if (Integer.parseInt(sizeList.get(i)) > biggestSize) {
 				biggestSize = Integer.parseInt(sizeList.get(i));
 				biggestWord = wordList.get(i);
+				biggestWordCluster = clusterList.get(i);
 			}
 		}
-		return biggestWord;
+		biggestSize = -1;
+		HashSet uniqueClusters = new HashSet<String>(clusterList);
+		if (uniqueClusters.size() > 1) {
+			for (int i = 0; i < wordList.size(); i++) {
+				if (Integer.parseInt(sizeList.get(i)) > biggestSize && wordList.get(i) != biggestWord && clusterList.get(i) != biggestWordCluster) {
+					biggestSize = Integer.parseInt(sizeList.get(i));
+					secondBiggestWord = wordList.get(i);
+				}
+			}
+		} else {
+			for (int i = 0; i < wordList.size(); i++) {
+				if (Integer.parseInt(sizeList.get(i)) > biggestSize && wordList.get(i) != biggestWord) {
+					biggestSize = Integer.parseInt(sizeList.get(i));
+					secondBiggestWord = wordList.get(i);
+				}
+			}
+		}
+		label = biggestWord + " " + secondBiggestWord;
+		return label;
 	}
 }
