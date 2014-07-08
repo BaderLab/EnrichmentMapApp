@@ -171,7 +171,6 @@ public class EnrichmentMapActionListener implements RowsSetListener{
         				Nodes.addAll(selectedNodes);
         				
         				boolean annotationRunning = network.getDefaultNetworkTable().getAllRows().get(0).get("Annotation Running", Boolean.class);
-        				System.out.println(annotationRunning);
         				if (!annotationRunning) {
 	        				//once we have amalgamated all the nodes and edges, launch a task to update the heatmap.
 	        				UpdateHeatMapTask updateHeatmap = new UpdateHeatMapTask(map, Nodes, Edges, edgeOverlapPanel, nodeOverlapPanel, cytoPanelSouth,applicationManager);

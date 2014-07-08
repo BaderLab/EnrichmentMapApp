@@ -53,7 +53,6 @@ public class AnnotationDisplayPanel extends JPanel implements CytoPanelComponent
 	
 	private JPanel mainPanel;
 	private HashMap<String, AnnotationSet> clusterSets;
-	private AnnotationSet currentClusterSet;
 	private int annotationCounter;
 	private HashMap<AnnotationSet, JPanel> clustersToTables;
 
@@ -97,16 +96,15 @@ public class AnnotationDisplayPanel extends JPanel implements CytoPanelComponent
 		clusterSetDropdown.addItemListener(new ItemListener(){
 			public void itemStateChanged(ItemEvent itemEvent) {
 				if (itemEvent.getStateChange() == ItemEvent.SELECTED) {
-					AnnotationSet clusters = (AnnotationSet) itemEvent.getItem();				
-					currentClusterSet = clusters;
-					currentClusterSet.drawAnnotations();							
+					AnnotationSet clusters = (AnnotationSet) itemEvent.getItem();
+					clusters.drawAnnotations();							
 					clustersToTables.get(clusters).getParent().getParent().setVisible(true); // Show selected table
 					((JPanel) clusterSetDropdown.getParent()).updateUI();
 				}
 				
 				if (itemEvent.getStateChange() == ItemEvent.DESELECTED) {
 					AnnotationSet clusters = (AnnotationSet) itemEvent.getItem();
-	         		currentClusterSet.eraseAnnotations();
+	         		clusters.eraseAnnotations();
 					clustersToTables.get(clusters).getParent().getParent().setVisible(false);
 					((JPanel) clusterSetDropdown.getParent()).updateUI();
 				}
@@ -119,8 +117,8 @@ public class AnnotationDisplayPanel extends JPanel implements CytoPanelComponent
         JButton clearButton = new JButton("Remove Annotation Set");
         ActionListener clearActionListener = new ActionListener(){
         	public void actionPerformed(ActionEvent e) {
-        		AnnotationManager annotationManager = currentClusterSet.clusterSet.firstEntry().getValue().getAnnotationManager();
-        		CyNetworkView networkView = currentClusterSet.clusterSet.firstEntry().getValue().getNetworkView();
+        		AnnotationSet clusters = (AnnotationSet) clusterSetDropdown.getSelectedItem();
+        		CyNetworkView networkView = clusters.clusterSet.firstEntry().getValue().getNetworkView();
         		CyNetwork network = networkView.getModel();
         		// Delete WordInfo column created by WordCloud
          		for (CyColumn column : network.getDefaultNodeTable().getColumns()) {
@@ -131,11 +129,11 @@ public class AnnotationDisplayPanel extends JPanel implements CytoPanelComponent
          			}
          		}
         		// Delete all annotations
-         		currentClusterSet.eraseAnnotations();
+         		clusters.eraseAnnotations();
          		
          		clusterSetDropdown.removeItem(clusterSetDropdown.getSelectedItem());
-         		remove(clustersToTables.get(currentClusterSet).getParent());
-         		clustersToTables.remove(currentClusterSet);
+         		remove(clustersToTables.get(clusters).getParent());
+         		clustersToTables.remove(clusters);
         	}
         };
         clearButton.addActionListener(clearActionListener); 
@@ -145,9 +143,10 @@ public class AnnotationDisplayPanel extends JPanel implements CytoPanelComponent
         JButton updateButton = new JButton("Update Annotation Set");
         ActionListener updateActionListener = new ActionListener(){
         	public void actionPerformed(ActionEvent e) {
-        		currentClusterSet.updateCoordinates();
-        		currentClusterSet.eraseAnnotations(); 
-        		currentClusterSet.drawAnnotations();
+        		AnnotationSet clusters = (AnnotationSet) clusterSetDropdown.getSelectedItem(); 
+        		clusters.updateCoordinates();
+        		clusters.eraseAnnotations(); 
+        		clusters.drawAnnotations();
         	}
         };
         updateButton.addActionListener(updateActionListener); 
@@ -156,7 +155,7 @@ public class AnnotationDisplayPanel extends JPanel implements CytoPanelComponent
 		return mainPanel;
 	}
 	
-	private JPanel createClusterSetTablePanel(AnnotationSet clusters) {
+	private JPanel createClusterSetTablePanel(final AnnotationSet clusters) {
 		
 		JPanel tablePanel = new JPanel();
 		
@@ -176,8 +175,8 @@ public class AnnotationDisplayPanel extends JPanel implements CytoPanelComponent
 			@Override
 			public void tableChanged(TableModelEvent e) {
 				if (e.getType() == TableModelEvent.UPDATE || e.getColumn() == 1) {
-					int editedRowIndex = e.getFirstRow() == table.getSelectedRow()? e.getLastRow() : e.getFirstRow();
-					Cluster editedCluster = currentClusterSet.clusterSet.get(editedRowIndex + 1);
+					int editedRowIndex = e.getFirstRow() == table.getSelectedRow()? e.getLastRow() : e.getFirstRow(); 
+					Cluster editedCluster = clusters.clusterSet.get(editedRowIndex + 1);
 					editedCluster.setLabel((String) table.getValueAt(editedRowIndex, 1));
 					editedCluster.erase();
 					editedCluster.drawAnnotations();
