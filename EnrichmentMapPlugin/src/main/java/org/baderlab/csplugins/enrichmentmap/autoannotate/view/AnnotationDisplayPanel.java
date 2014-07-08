@@ -77,6 +77,7 @@ public class AnnotationDisplayPanel extends JPanel implements CytoPanelComponent
 		JPanel clusterTable = createClusterSetTablePanel(clusters);
 		clustersToTables.put(clusters, clusterTable);
 		JScrollPane clusterTableScroll = new JScrollPane(clusterTable);
+		clusterTableScroll.setColumnHeaderView(((JTable) clusterTable.getComponent(0)).getTableHeader());
 		clusterTableScroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		add(clusterTableScroll, BorderLayout.WEST);
 
@@ -203,12 +204,9 @@ public class AnnotationDisplayPanel extends JPanel implements CytoPanelComponent
 		});
 		
 		Dimension d = table.getPreferredSize();
-		d.setSize(d.getWidth() + 80, d.getHeight());
 		table.setPreferredScrollableViewportSize(d);
 		
-		JScrollPane displayTableScroll = new JScrollPane(table);
-		tablePanel.add(displayTableScroll, BorderLayout.CENTER);
-		
+		tablePanel.add(table, BorderLayout.CENTER);
 		return tablePanel;
 	}
 	
