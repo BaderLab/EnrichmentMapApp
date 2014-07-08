@@ -2,6 +2,7 @@ package org.baderlab.csplugins.enrichmentmap.autoannotate.view;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -171,6 +172,7 @@ public class AnnotationDisplayPanel extends JPanel implements CytoPanelComponent
 		model.addColumn("Label");
 
 		final JTable table = new JTable(model); // Final to be able to use inside of listener
+		
 		model.addTableModelListener(new TableModelListener() { // Update the label value
 			@Override
 			public void tableChanged(TableModelEvent e) {
@@ -199,6 +201,10 @@ public class AnnotationDisplayPanel extends JPanel implements CytoPanelComponent
 				}
 			}
 		});
+		
+		Dimension d = table.getPreferredSize();
+		d.setSize(d.getWidth() + 80, d.getHeight());
+		table.setPreferredScrollableViewportSize(d);
 		
 		JScrollPane displayTableScroll = new JScrollPane(table);
 		tablePanel.add(displayTableScroll, BorderLayout.CENTER);
