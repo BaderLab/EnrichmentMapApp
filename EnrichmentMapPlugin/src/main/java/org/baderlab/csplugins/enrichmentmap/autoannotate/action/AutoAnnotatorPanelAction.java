@@ -46,6 +46,7 @@ package org.baderlab.csplugins.enrichmentmap.autoannotate.action;
 import javax.swing.*;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.view.AnnotationDisplayPanel;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.view.AutoAnnotatorInputPanel;
 import org.baderlab.csplugins.enrichmentmap.view.EnrichmentMapInputPanel;
@@ -92,7 +93,6 @@ public class AutoAnnotatorPanelAction extends AbstractCyAction {
     private final CytoPanel cytoPanelWest;
     
     private CyServiceRegistrar registrar;
-	private Map<String, String> configProps;
 	private CyApplicationManager applicationManager;
 	private CySwingApplication application;
 	private CyNetworkViewManager networkViewManager;
@@ -101,17 +101,20 @@ public class AutoAnnotatorPanelAction extends AbstractCyAction {
 	private CyNetworkManager networkManager;
 	private DialogTaskManager dialogTaskManager;
 	private CyEventHelper eventHelper;
+	
+	private AutoAnnotationManager manager;
     
     public AutoAnnotatorPanelAction(Map<String,String> configProps, CyApplicationManager applicationManager, 
     			CyNetworkManager cyNetworkManagerRef, CyNetworkViewManager networkViewManager, 
     			CySwingApplication application, OpenBrowser openBrowserRef, AnnotationManager annotationManager, 
-    			CyServiceRegistrar registrar, DialogTaskManager dialogTaskManager, CyEventHelper eventHelper){
+    			CyServiceRegistrar registrar, DialogTaskManager dialogTaskManager, CyEventHelper eventHelper,
+    			AutoAnnotationManager autoAnnotationManager){
+    	
         super( configProps,  applicationManager,  networkViewManager);
      
  		putValue(NAME, "Annotate Clusters");		
  		
  		this.cytoPanelWest = application.getCytoPanel(CytoPanelName.WEST);
- 		this.configProps = configProps;
  		this.applicationManager = applicationManager;
  		this.networkManager = cyNetworkManagerRef;
  		this.networkViewManager = networkViewManager;
@@ -121,7 +124,7 @@ public class AutoAnnotatorPanelAction extends AbstractCyAction {
  		this.registrar = registrar;
  		this.dialogTaskManager = dialogTaskManager;
  		this.eventHelper = eventHelper;
- 		
+ 		this.manager = autoAnnotationManager;
 
     }
 
@@ -130,6 +133,10 @@ public class AutoAnnotatorPanelAction extends AbstractCyAction {
 		registrar.registerService(displayPanel, CytoPanelComponent.class, new Properties());
 		AutoAnnotatorInputPanel autoAnnotatorPanel = new AutoAnnotatorInputPanel(applicationManager, networkViewManager,
 				application, openBrowser, networkManager, annotationManager, displayPanel, registrar, dialogTaskManager, eventHelper);
+		
+		manager.setInputPanel(autoAnnotatorPanel);
+		manager.setDisplayPanel(displayPanel);
+		
 		if(!initialized){      
         	  initialized = true;
         	  registrar.registerService(autoAnnotatorPanel,CytoPanelComponent.class,new Properties());

@@ -62,7 +62,6 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
@@ -74,7 +73,6 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.swing.DialogTaskManager;
 
 /**
  * Created by
@@ -86,34 +84,30 @@ import org.cytoscape.work.swing.DialogTaskManager;
 public class AutoAnnotatorTask extends AbstractTask {
 	
 	private CySwingApplication application;
-	private CyApplicationManager applicationManager;
-	private CyNetworkManager networkManager;
 	private AnnotationManager annotationManager;
-	private long networkID;
+	private CyNetwork network;
+	private CyNetworkView view;
 	private String nameColumnName;
 	private String clusterColumnName;
 	private CyServiceRegistrar registrar;
-	private DialogTaskManager dialogTaskManager;
 	private AnnotationDisplayPanel displayPanel;
 
 	public AutoAnnotatorTask(CySwingApplication application, CyApplicationManager applicationManager, 
-			OpenBrowser browser, CyNetworkViewManager networkViewManager, CyNetworkManager networkManager,
-			AnnotationManager annotationManager, AnnotationDisplayPanel displayPanel, long networkID, String clusterColumnName, 
-			String nameColumnName, CyServiceRegistrar registrar, DialogTaskManager dialogTaskManager){
+			CyNetworkViewManager networkViewManager, CyNetworkManager networkManager,
+			AnnotationManager annotationManager, AnnotationDisplayPanel displayPanel, CyNetworkView selectedView, String clusterColumnName, 
+			String nameColumnName, CyServiceRegistrar registrar){
 		
 		this.application = application;
-		this.applicationManager = applicationManager;
-		this.networkManager = networkManager;
 		this.annotationManager = annotationManager;
 		this.displayPanel = displayPanel;
-		this.networkID = networkID;
+		this.view = selectedView;
+		this.network = view.getModel();
 		this.clusterColumnName = clusterColumnName;
 		this.nameColumnName = nameColumnName;
 		this.registrar = registrar;
-		this.dialogTaskManager = dialogTaskManager;
 		
 	};
-	
+
 	@Override
 	public void cancel() {
 		return;
@@ -127,8 +121,6 @@ public class AutoAnnotatorTask extends AbstractTask {
 		taskMonitor.setStatusMessage("Getting clusters...");
 		if (cancelled) return;
 
-    	CyNetwork network = networkManager.getNetwork(networkID);
-    	CyNetworkView networkView = applicationManager.getCurrentNetworkView();
     	CyTable networkTable = network.getDefaultNetworkTable();
     	try {
     		networkTable.deleteColumn("Annotation Running");
@@ -138,7 +130,7 @@ public class AutoAnnotatorTask extends AbstractTask {
     	}
     	networkTable.getAllRows().get(0).set("Annotation Running", true);
 
-    	AnnotationSet clusters = makeClusters(network, networkView);
+    	AnnotationSet clusters = makeClusters(network, view);
     	
     	taskMonitor.setProgress(0.4);
     	taskMonitor.setStatusMessage("Running WordCloud...");

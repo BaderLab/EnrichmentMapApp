@@ -8,22 +8,18 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.swing.BoxLayout;
-import javax.swing.DefaultListModel;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.ListModel;
-import javax.swing.ListSelectionModel;
+import javax.swing.plaf.basic.BasicComboBoxRenderer;
+import javax.swing.text.Position;
 
-import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.task.AutoAnnotatorTaskFactory;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
@@ -55,9 +51,10 @@ public class AutoAnnotatorInputPanel extends JPanel implements CytoPanelComponen
 	private static final long serialVersionUID = 7901088595186775935L;
 	private String clusterColumnName;
 	private String nameColumnName;
-	private long networkID;
+	protected CyNetworkView selectedView;
 	protected AutoAnnotatorTaskFactory autoAnnotatorTaskFactory;
 	private AnnotationDisplayPanel displayPanel;
+	private JComboBox networkDropdown;
 
 	public AutoAnnotatorInputPanel(CyApplicationManager cyApplicationManagerRef, 
 			CyNetworkViewManager cyNetworkViewManagerRef, CySwingApplication cySwingApplicationRef,
@@ -81,32 +78,46 @@ public class AutoAnnotatorInputPanel extends JPanel implements CytoPanelComponen
 		
 		
         // Give the user a choice of networks to annotate
-        final JComboBox networkDropdown = new JComboBox();
-        final HashMap<String, Long> nameToSUID = new HashMap<String, Long>();
-        for (CyNetwork network : cyNetworkManagerRef.getNetworkSet()) {
-        	String name = network.toString();
-        	long suid = network.getSUID();
-        	networkDropdown.addItem(name);
-        	nameToSUID.put(name, suid);
-        }
+        networkDropdown = new JComboBox();
+        networkDropdown.setRenderer( new NetworkViewRenderer() );  
         
-        // Give the user a choice of column with cluster numbers
-        final JComboBox nameColumnDropdown = updatingDropdownColumnName(networkDropdown, nameToSUID, cyNetworkManagerRef);        
+        // Give the user a choice of column with gene names
+        final JComboBox nameColumnDropdown = new JComboBox();
+
         nameColumnDropdown.addItemListener(new ItemListener(){
         	public void itemStateChanged(ItemEvent itemEvent) {
                 nameColumnName = (String) itemEvent.getItem();
             }
         });
         
-        
         // Give the user a choice of column with cluster numbers
-        final JComboBox clusterColumnDropdown = updatingDropdownColumnName(networkDropdown, nameToSUID, cyNetworkManagerRef);        
+        final JComboBox clusterColumnDropdown = new JComboBox();
+        
         clusterColumnDropdown.addItemListener(new ItemListener(){
         	public void itemStateChanged(ItemEvent itemEvent) {
                 clusterColumnName = (String) itemEvent.getItem();
             }
         });
         
+        networkDropdown.addItemListener(new ItemListener(){
+        	public void itemStateChanged(ItemEvent itemEvent) {
+        		if (itemEvent.getStateChange() == ItemEvent.SELECTED) {
+	        		selectedView = (CyNetworkView) itemEvent.getItem();
+	        		CyNetwork network = selectedView.getModel();
+	        		// Update column name dropdowns
+	        		clusterColumnDropdown.removeAllItems();
+	        		nameColumnDropdown.removeAllItems();
+	        		for (CyColumn column : network.getDefaultNodeTable().getColumns()) {
+	        			clusterColumnDropdown.addItem(column.getName());
+	        			nameColumnDropdown.addItem(column.getName());
+	        		}
+
+        		} else if(itemEvent.getStateChange() == ItemEvent.DESELECTED) {
+	        		clusterColumnDropdown.removeAllItems();
+	        		nameColumnDropdown.removeAllItems();
+        		}
+        	}
+        });
         
         JButton confirmButton = new JButton("Annotate!");
         
@@ -116,28 +127,13 @@ public class AutoAnnotatorInputPanel extends JPanel implements CytoPanelComponen
         ActionListener autoAnnotateAction = new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
 				// networkID and clusterColumnName field are looked up only when the button is pressed
-				autoAnnotatorTaskFactory = new AutoAnnotatorTaskFactory(cySwingApplicationRef, cyApplicationManagerRef, openBrowserRef,
+				autoAnnotatorTaskFactory = new AutoAnnotatorTaskFactory(cySwingApplicationRef, cyApplicationManagerRef, 
 						cyNetworkViewManagerRef, cyNetworkManagerRef, annotationManager, displayPanel,
-        				networkID, clusterColumnName, nameColumnName, registrar, dialogTaskManager);
+        				selectedView, clusterColumnName, nameColumnName, registrar, dialogTaskManager);
 				dialogTaskManager.execute(autoAnnotatorTaskFactory.createTaskIterator());
 			}
         };
         confirmButton.addActionListener(autoAnnotateAction);
-        
-        JButton updateButton = new JButton("Update Networks");
-        ActionListener updateActionListener = new ActionListener(){
-        	public void actionPerformed(ActionEvent e) {
-        		networkDropdown.removeAllItems();
-        		nameToSUID.clear();
-        		for (CyNetwork network : cyNetworkManagerRef.getNetworkSet()) {
-                	String name = network.toString();
-                	long suid = network.getSUID();
-                	nameToSUID.put(name, suid);
-                	networkDropdown.addItem(name);
-                }
-        	}
-        };
-        updateButton.addActionListener(updateActionListener);
         
         JLabel networkDropdownLabel = new JLabel("Select the network to annotate:");
         JLabel clusterColumnDropdownLabel = new JLabel("Select the column with the clusters:"); // ambiguous phrasing?
@@ -150,11 +146,9 @@ public class AutoAnnotatorInputPanel extends JPanel implements CytoPanelComponen
         clusterColumnDropdownLabel.setAlignmentX(LEFT_ALIGNMENT);
         clusterColumnDropdown.setAlignmentX(LEFT_ALIGNMENT);
         confirmButton.setAlignmentX(LEFT_ALIGNMENT);
-        updateButton.setAlignmentX(LEFT_ALIGNMENT);
         
         mainPanel.add(networkDropdownLabel);
         mainPanel.add(networkDropdown);
-        mainPanel.add(updateButton);
         mainPanel.add(nameColumnDropdownLabel);
         mainPanel.add(nameColumnDropdown);
         mainPanel.add(clusterColumnDropdownLabel);
@@ -164,21 +158,13 @@ public class AutoAnnotatorInputPanel extends JPanel implements CytoPanelComponen
         
         return mainPanel;
 	}
+
+	public void addNetworkView(CyNetworkView view) {
+		networkDropdown.addItem(view);
+	}
 	
-	private JComboBox updatingDropdownColumnName(JComboBox networkDropdown, final HashMap<String, Long> nameToSUID,
-												final CyNetworkManager cyNetworkManagerRef) {
-        final JComboBox columnDropdown = new JComboBox();
-        networkDropdown.addItemListener(new ItemListener(){
-        	public void itemStateChanged(ItemEvent itemEvent) {
-                networkID = nameToSUID.get((String) itemEvent.getItem());
-                CyNetwork network = cyNetworkManagerRef.getNetwork(networkID);
-                columnDropdown.removeAllItems();
-                for (CyColumn column : network.getDefaultNodeTable().getColumns()) {
-                	columnDropdown.addItem(column.getName());
-                }
-            }
-        });
-        return columnDropdown;
+	public void removeNetworkView(CyNetworkView view) {
+		networkDropdown.removeItem(view);
 	}
 	
 	@Override
@@ -201,4 +187,29 @@ public class AutoAnnotatorInputPanel extends JPanel implements CytoPanelComponen
 		return "Annotation Input Panel";
 	}
 	
+    class NetworkViewRenderer extends BasicComboBoxRenderer {
+
+		private static final long serialVersionUID = -5877635875395629866L;  
+
+		@Override
+		public Component getListCellRendererComponent(JList list, Object value, int index, 
+				boolean isSelected, boolean cellHasFocus) {
+            
+			super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);  
+  
+            if (value != null) {
+            	String label = ((CyNetworkView) value).getModel().toString();
+            	int viewNumber = 1;
+            	while (list.getNextMatch(label + " View " + String.valueOf(viewNumber), 0, Position.Bias.Forward) != -1) {
+            		viewNumber++;
+            	}
+            	if (viewNumber > 1) {
+            		label += " View " + String.valueOf(viewNumber);
+            	}
+                setText(label);
+            } 
+  
+            return this;  
+        }  
+    }
 }

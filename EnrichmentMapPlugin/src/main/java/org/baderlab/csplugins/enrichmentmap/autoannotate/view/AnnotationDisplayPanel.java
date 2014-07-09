@@ -56,6 +56,7 @@ public class AnnotationDisplayPanel extends JPanel implements CytoPanelComponent
 	private HashMap<String, AnnotationSet> clusterSets;
 	private int annotationCounter;
 	private HashMap<AnnotationSet, JPanel> clustersToTables;
+	private JComboBox clusterSetDropdown;
 
 
 
@@ -72,7 +73,7 @@ public class AnnotationDisplayPanel extends JPanel implements CytoPanelComponent
 		String annotationSetName = "Annotation Set " + String.valueOf(++annotationCounter);
 		clusters.setName(annotationSetName);
 		clusterSets.put(annotationSetName, clusters);
-		JComboBox clusterSetDropdown = (JComboBox) mainPanel.getComponent(0);
+		clusterSetDropdown = (JComboBox) mainPanel.getComponent(0);
 
 		JPanel clusterTable = createClusterSetTablePanel(clusters);
 		clustersToTables.put(clusters, clusterTable);
@@ -94,7 +95,7 @@ public class AnnotationDisplayPanel extends JPanel implements CytoPanelComponent
 	private JPanel createMainPanel() {
 		JPanel mainPanel = new JPanel();
 		
-		final JComboBox clusterSetDropdown = new JComboBox(); // Final so that it can be accessed by ActionListener
+		clusterSetDropdown = new JComboBox(); // Final so that it can be accessed by ActionListener
 		clusterSetDropdown.addItemListener(new ItemListener(){
 			public void itemStateChanged(ItemEvent itemEvent) {
 				if (itemEvent.getStateChange() == ItemEvent.SELECTED) {
@@ -102,9 +103,7 @@ public class AnnotationDisplayPanel extends JPanel implements CytoPanelComponent
 					clusters.drawAnnotations();							
 					clustersToTables.get(clusters).getParent().getParent().setVisible(true); // Show selected table
 					((JPanel) clusterSetDropdown.getParent()).updateUI();
-				}
-				
-				if (itemEvent.getStateChange() == ItemEvent.DESELECTED) {
+				} else if (itemEvent.getStateChange() == ItemEvent.DESELECTED) {
 					AnnotationSet clusters = (AnnotationSet) itemEvent.getItem();
 	         		clusters.eraseAnnotations();
 					clustersToTables.get(clusters).getParent().getParent().setVisible(false);
@@ -157,6 +156,13 @@ public class AnnotationDisplayPanel extends JPanel implements CytoPanelComponent
 		return mainPanel;
 	}
 	
+	public void updateAnnotations() {
+		AnnotationSet clusters = (AnnotationSet) clusterSetDropdown.getSelectedItem(); 
+		clusters.updateCoordinates();
+		clusters.eraseAnnotations(); 
+		clusters.drawAnnotations();
+	}
+	
 	private JPanel createClusterSetTablePanel(final AnnotationSet clusters) {
 		
 		JPanel tablePanel = new JPanel();
@@ -205,6 +211,7 @@ public class AnnotationDisplayPanel extends JPanel implements CytoPanelComponent
 		
 		Dimension d = table.getPreferredSize();
 		table.setPreferredScrollableViewportSize(d);
+		table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 		
 		tablePanel.add(table, BorderLayout.CENTER);
 		return tablePanel;
