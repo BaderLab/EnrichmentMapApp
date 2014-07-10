@@ -125,25 +125,6 @@ public class Cluster implements Comparable<Cluster> {
 		return boundsY;
 	}
 	
-	public void select() {
-		// Select the corresponding WordCloud
-		CommandExecutorTaskFactory executor = registrar.getService(CommandExecutorTaskFactory.class);
-		ArrayList<String> commands = new ArrayList<String>();
-		String command = "wordcloud delete cloudName=\"" + cloudName + "\"";
-		commands.add(command);
-		TaskIterator task = executor.createTaskIterator(commands, null);
-		registrar.getService(DialogTaskManager.class).execute(task);
-		
-		for (CyRow row : network.getDefaultNodeTable().getAllRows()) {
-			if (row.get(clusterColumnName, Integer.class) != null && row.get(clusterColumnName, Integer.class) == clusterNumber) {
-				row.set(CyNetwork.SELECTED, true);
-			} else {
-				row.set(CyNetwork.SELECTED, false);
-			}
-			view.updateView();
-		}
-	}
-
 	public void drawAnnotations() {
 
 		
@@ -223,6 +204,16 @@ public class Cluster implements Comparable<Cluster> {
 		erase();
 	}
 
+	public void select() {
+		// Select the corresponding WordCloud
+		CommandExecutorTaskFactory executor = registrar.getService(CommandExecutorTaskFactory.class);
+		ArrayList<String> commands = new ArrayList<String>();
+		String command = "wordcloud select cloudName=\"" + cloudName + "\"";
+		commands.add(command);
+		TaskIterator task = executor.createTaskIterator(commands, null);
+		registrar.getService(DialogTaskManager.class).execute(task);
+	}
+	
 	@Override
 	public int compareTo(Cluster cluster2) {
 		// TODO Auto-generated method stub

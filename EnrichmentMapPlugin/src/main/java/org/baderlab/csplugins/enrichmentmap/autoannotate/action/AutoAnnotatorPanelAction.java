@@ -129,7 +129,7 @@ public class AutoAnnotatorPanelAction extends AbstractCyAction {
     }
 
 	public void actionPerformed(ActionEvent event) {
-		AnnotationDisplayPanel displayPanel = new AnnotationDisplayPanel();
+		AnnotationDisplayPanel displayPanel = new AnnotationDisplayPanel(application);
 		registrar.registerService(displayPanel, CytoPanelComponent.class, new Properties());
 		AutoAnnotatorInputPanel autoAnnotatorPanel = new AutoAnnotatorInputPanel(applicationManager, networkViewManager,
 				application, openBrowser, networkManager, annotationManager, displayPanel, registrar, dialogTaskManager, eventHelper);

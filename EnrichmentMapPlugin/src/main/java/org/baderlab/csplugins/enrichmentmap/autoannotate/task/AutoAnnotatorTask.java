@@ -149,7 +149,7 @@ public class AutoAnnotatorTask extends AbstractTask {
     	// Gives WordCloud time to finish - the command Task finishes when WordCloud starts
     	while (true) {
     		try {
-    			labelClusters(clusters, network);
+    			clusters.updateLabels();
     			break;
     		} catch(NullPointerException e) {
     			if (cancelled) return;
@@ -216,27 +216,6 @@ public class AutoAnnotatorTask extends AbstractTask {
 			task.next().run(taskMonitor);
 		} catch (Exception e) {
 			e.printStackTrace();
-		}
-	}
-
-	@SuppressWarnings("unchecked")
-	private void labelClusters(AnnotationSet clusters, CyNetwork network) {	
-		for (Cluster cluster : clusters.clusterSet.values()) {
-			cluster.setLabel("");
-			int clusterNumber = cluster.getClusterNumber();
-			List<CyRow> nodeTable = network.getDefaultNodeTable().getAllRows();
-			for (CyRow row : nodeTable) {
-				Integer rowClusterNumber = row.get(clusterColumnName, Integer.class);
-				if (rowClusterNumber != null && rowClusterNumber == clusterNumber) {
-					List<String> wordList = row.get(clusters.name + " WC_Word", List.class);
-					List<String> sizeList = row.get(clusters.name + " WC_FontSize", List.class);
-					List<String> clusterList = row.get(clusters.name + " WC_Cluster", List.class);
-					List<String> numberList = row.get(clusters.name + " WC_Number", List.class);
-					String label = WordUtils.makeLabel(wordList, sizeList, clusterList, numberList);
-					cluster.setLabel(label);
-					break;
-				}
-			}
 		}
 	}
 }

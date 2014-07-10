@@ -31,6 +31,8 @@ import javax.swing.table.TableModel;
 
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.AnnotationSet;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
+import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.model.CyColumn;
@@ -52,18 +54,23 @@ public class AnnotationDisplayPanel extends JPanel implements CytoPanelComponent
 
 	private static final long serialVersionUID = 6589442061666054048L;
 	
+	private static AnnotationDisplayPanel instance;
+	
+	private CySwingApplication application;
 	private JPanel mainPanel;
 	private HashMap<String, AnnotationSet> clusterSets;
-	private int annotationCounter;
 	private HashMap<AnnotationSet, JPanel> clustersToTables;
 	private JComboBox clusterSetDropdown;
 
+	public static AnnotationDisplayPanel getInstance() {
+		return instance;
+	}
 
-
-	public AnnotationDisplayPanel() {
+	public AnnotationDisplayPanel(CySwingApplication application) {
+		instance = this;
+		this.application = application;
 		this.clusterSets = new HashMap<String, AnnotationSet>();
 		this.clustersToTables = new HashMap<AnnotationSet, JPanel>();
-		annotationCounter = 0;
 		this.mainPanel = createMainPanel();
 		setLayout(new BorderLayout());
 		add(mainPanel, BorderLayout.NORTH);
@@ -129,7 +136,8 @@ public class AnnotationDisplayPanel extends JPanel implements CytoPanelComponent
          		}
         		// Delete all annotations
          		clusters.destroyAnnotations();
-         		
+         		CytoPanel panel = application.getCytoPanel(getCytoPanelName());
+         		panel.setSelectedIndex(panel.indexOfComponent(AnnotationDisplayPanel.getInstance()));
          		clusterSetDropdown.removeItem(clusterSetDropdown.getSelectedItem());
          		remove(clustersToTables.get(clusters).getParent());
          		clustersToTables.remove(clusters);
@@ -144,8 +152,18 @@ public class AnnotationDisplayPanel extends JPanel implements CytoPanelComponent
         	public void actionPerformed(ActionEvent e) {
         		AnnotationSet clusters = (AnnotationSet) clusterSetDropdown.getSelectedItem(); 
         		clusters.updateCoordinates();
+        		clusters.updateLabels();
         		clusters.eraseAnnotations(); 
         		clusters.drawAnnotations();
+        		// Update the table if the value has changed (WordCloud has been updated)
+        		DefaultTableModel model = (DefaultTableModel) ((JTable) clustersToTables.get(clusters).getComponent(0)).getModel();
+        		int i = 0;
+        		for (Cluster cluster : clusters.clusterSet.values()) {
+        			if (!(model.getValueAt(i, 1).equals(cluster.getLabel()))) {
+        				model.setValueAt(cluster.getLabel(), i, 1);
+        			}
+        			i++;
+        		}
         	}
         };
         updateButton.addActionListener(updateActionListener); 

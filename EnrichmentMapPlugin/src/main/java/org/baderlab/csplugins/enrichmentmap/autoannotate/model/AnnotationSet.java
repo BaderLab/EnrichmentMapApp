@@ -6,6 +6,7 @@ import java.util.TreeMap;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
@@ -80,9 +81,30 @@ public class AnnotationSet {
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
+	public void updateLabels() {
+		for (Cluster cluster : this.clusterSet.values()) {
+			cluster.setLabel("");
+			int clusterNumber = cluster.getClusterNumber();
+			List<CyRow> nodeTable = network.getDefaultNodeTable().getAllRows();
+			for (CyRow row : nodeTable) {
+				Integer rowClusterNumber = row.get(clusterColumnName, Integer.class);
+				if (rowClusterNumber != null && rowClusterNumber == clusterNumber) {
+					List<String> wordList = row.get(name + " WC_Word", List.class);
+					List<String> sizeList = row.get(name + " WC_FontSize", List.class);
+					List<String> clusterList = row.get(name + " WC_Cluster", List.class);
+					List<String> numberList = row.get(name + " WC_Number", List.class);
+					String label = WordUtils.makeLabel(wordList, sizeList, clusterList, numberList);
+					cluster.setLabel(label);
+					break;
+				}
+			}
+		}
+	}
 	
 	@Override
 	public String toString() {
 		return name;
 	}
+
 }
