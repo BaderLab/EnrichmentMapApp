@@ -4,6 +4,12 @@ import java.util.ArrayList;
 
 import org.baderlab.csplugins.enrichmentmap.autoannotate.view.AnnotationDisplayPanel;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.view.AutoAnnotatorInputPanel;
+import org.cytoscape.model.events.ColumnCreatedEvent;
+import org.cytoscape.model.events.ColumnCreatedListener;
+import org.cytoscape.model.events.ColumnDeletedEvent;
+import org.cytoscape.model.events.ColumnDeletedListener;
+import org.cytoscape.model.events.ColumnNameChangedEvent;
+import org.cytoscape.model.events.ColumnNameChangedListener;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
@@ -11,6 +17,8 @@ import org.cytoscape.view.model.events.NetworkViewAddedEvent;
 import org.cytoscape.view.model.events.NetworkViewAddedListener;
 import org.cytoscape.view.model.events.UpdateNetworkPresentationEvent;
 import org.cytoscape.view.model.events.UpdateNetworkPresentationListener;
+import org.cytoscape.view.vizmap.events.VisualStyleChangedEvent;
+import org.cytoscape.view.vizmap.events.VisualStyleChangedListener;
 
 /**
  * Created by
@@ -21,7 +29,8 @@ import org.cytoscape.view.model.events.UpdateNetworkPresentationListener;
 
 public class AutoAnnotationManager implements
 		NetworkViewAboutToBeDestroyedListener, NetworkViewAddedListener,
-		UpdateNetworkPresentationListener {
+		ColumnCreatedListener, ColumnDeletedListener,
+		ColumnNameChangedListener {
 
 	private static AutoAnnotationManager manager = null;
 	
@@ -52,11 +61,6 @@ public class AutoAnnotationManager implements
     public void setDisplayPanel(AnnotationDisplayPanel displayPanel) {
     	this.displayPanel = displayPanel;
     }
-    
-	@Override
-	public void handleEvent(UpdateNetworkPresentationEvent e) {
-//		displayPanel.updateAnnotations();
-	}
 
 	@Override
 	public void handleEvent(NetworkViewAddedEvent e) {
@@ -73,6 +77,30 @@ public class AutoAnnotationManager implements
 	@Override
 	public void handleEvent(NetworkViewAboutToBeDestroyedEvent e) {
 		inputPanel.removeNetworkView(e.getNetworkView());
+	}
+
+	@Override
+	public void handleEvent(ColumnNameChangedEvent e) {
+		if (inputPanel != null) {
+			if (e.getSource() == inputPanel.selectedView.getModel().getDefaultNodeTable()) {
+				inputPanel.clusterColumnDropdown.removeItem(e.getOldColumnName());
+				inputPanel.nameColumnDropdown.removeItem(e.getOldColumnName());
+				inputPanel.clusterColumnDropdown.addItem(e.getNewColumnName());
+				inputPanel.nameColumnDropdown.addItem(e.getNewColumnName());		
+			}
+		}
+	}
+
+	@Override
+	public void handleEvent(ColumnDeletedEvent e) {
+		inputPanel.clusterColumnDropdown.removeItem(e.getColumnName());
+		inputPanel.nameColumnDropdown.removeItem(e.getColumnName());
+	}
+
+	@Override
+	public void handleEvent(ColumnCreatedEvent e) {
+		inputPanel.clusterColumnDropdown.addItem(e.getColumnName());
+		inputPanel.nameColumnDropdown.addItem(e.getColumnName());
 	}
 
 }

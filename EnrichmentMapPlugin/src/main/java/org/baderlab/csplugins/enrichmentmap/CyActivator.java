@@ -30,6 +30,10 @@ import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
+import org.cytoscape.model.events.ColumnCreatedListener;
+import org.cytoscape.model.events.ColumnDeletedListener;
+import org.cytoscape.model.events.ColumnNameChangedEvent;
+import org.cytoscape.model.events.ColumnNameChangedListener;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
 import org.cytoscape.model.events.NetworkAddedListener;
 import org.cytoscape.model.events.RowsSetListener;
@@ -52,6 +56,7 @@ import org.cytoscape.view.presentation.annotations.AnnotationManager;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
+import org.cytoscape.view.vizmap.events.VisualStyleChangedListener;
 import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskFactory;
@@ -130,7 +135,9 @@ public class CyActivator extends AbstractCyActivator {
 		//register network events with manager class
 		registerService(bc, autoAnnotationManager, NetworkViewAboutToBeDestroyedListener.class, new Properties());
 		registerService(bc, autoAnnotationManager, NetworkViewAddedListener.class, new Properties());
-		registerService(bc, autoAnnotationManager, UpdateNetworkPresentationListener.class, new Properties());
+		registerService(bc, autoAnnotationManager, ColumnCreatedListener.class, new Properties());
+		registerService(bc, autoAnnotationManager, ColumnDeletedListener.class, new Properties());
+		registerService(bc, autoAnnotationManager, ColumnNameChangedListener.class, new Properties());
 		
 		//assocaite them with the action listener
 		EnrichmentMapActionListener EMActionListener = new EnrichmentMapActionListener(heatMapPanel_node,heatMapPanel_edge, cyApplicationManagerRef, cySwingApplicationRef,fileUtil,streamUtil,syncTaskManager);

@@ -53,6 +53,12 @@ public class AnnotationSet {
 		}
 	}
 	
+	public void destroyAnnotations() {
+		for (Cluster cluster : clusterSet.values()) {
+			cluster.destroy();
+		}
+	}
+	
 	public void updateCoordinates() {
 		
 		for (Cluster cluster : clusterSet.values()) {

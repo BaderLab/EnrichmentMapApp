@@ -36,13 +36,14 @@ public class AutoAnnotatorTaskFactory implements TaskFactory {
 	private CyNetworkView selectedView;
 	private String clusterColumnName;
 	private String nameColumnName;
+	private int annotationSetNumber;
 	private CyServiceRegistrar registrar;
 	private AnnotationDisplayPanel displayPanel;
 	
 	public AutoAnnotatorTaskFactory(CySwingApplication application, CyApplicationManager applicationManager, 
 			CyNetworkViewManager networkViewManager, CyNetworkManager networkManager,
 			AnnotationManager annotationManager, AnnotationDisplayPanel displayPanel, CyNetworkView selectedView, String clusterColumnName,
-			String nameColumnName, CyServiceRegistrar registrar, DialogTaskManager dialogTaskManager) {
+			String nameColumnName, int annotationSetNumber, CyServiceRegistrar registrar, DialogTaskManager dialogTaskManager) {
 		this.application = application;
 		this.applicationManager = applicationManager;
 		this.networkManager = networkManager;
@@ -52,11 +53,12 @@ public class AutoAnnotatorTaskFactory implements TaskFactory {
 		this.selectedView = selectedView;
 		this.clusterColumnName = clusterColumnName;
 		this.nameColumnName = nameColumnName;
+		this.annotationSetNumber = annotationSetNumber;
 		this.registrar = registrar;
 	}
 	
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new AutoAnnotatorTask(application, applicationManager, networkViewManager, networkManager, annotationManager, displayPanel, selectedView, clusterColumnName, nameColumnName, registrar));
+		return new TaskIterator(new AutoAnnotatorTask(application, applicationManager, networkViewManager, networkManager, annotationManager, displayPanel, selectedView, clusterColumnName, nameColumnName, annotationSetNumber, registrar));
 	}
 
 	public boolean isReady() {

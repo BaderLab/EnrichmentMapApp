@@ -70,9 +70,7 @@ public class AnnotationDisplayPanel extends JPanel implements CytoPanelComponent
 	}
 	
 	public void addClusters(AnnotationSet clusters) {
-		String annotationSetName = "Annotation Set " + String.valueOf(++annotationCounter);
-		clusters.setName(annotationSetName);
-		clusterSets.put(annotationSetName, clusters);
+		clusterSets.put(clusters.name, clusters);
 		clusterSetDropdown = (JComboBox) mainPanel.getComponent(0);
 
 		JPanel clusterTable = createClusterSetTablePanel(clusters);
@@ -130,7 +128,7 @@ public class AnnotationDisplayPanel extends JPanel implements CytoPanelComponent
          			}
          		}
         		// Delete all annotations
-         		clusters.eraseAnnotations();
+         		clusters.destroyAnnotations();
          		
          		clusterSetDropdown.removeItem(clusterSetDropdown.getSelectedItem());
          		remove(clustersToTables.get(clusters).getParent());

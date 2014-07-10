@@ -91,11 +91,13 @@ public class AutoAnnotatorTask extends AbstractTask {
 	private String clusterColumnName;
 	private CyServiceRegistrar registrar;
 	private AnnotationDisplayPanel displayPanel;
+	private int annotationSetNumber;
+	private String annotationSetName;
 
 	public AutoAnnotatorTask(CySwingApplication application, CyApplicationManager applicationManager, 
 			CyNetworkViewManager networkViewManager, CyNetworkManager networkManager,
 			AnnotationManager annotationManager, AnnotationDisplayPanel displayPanel, CyNetworkView selectedView, String clusterColumnName, 
-			String nameColumnName, CyServiceRegistrar registrar){
+			String nameColumnName, int annotationSetNumber, CyServiceRegistrar registrar){
 		
 		this.application = application;
 		this.annotationManager = annotationManager;
@@ -104,6 +106,7 @@ public class AutoAnnotatorTask extends AbstractTask {
 		this.network = view.getModel();
 		this.clusterColumnName = clusterColumnName;
 		this.nameColumnName = nameColumnName;
+		this.annotationSetNumber = annotationSetNumber;
 		this.registrar = registrar;
 		
 	};
@@ -130,7 +133,8 @@ public class AutoAnnotatorTask extends AbstractTask {
     	}
     	networkTable.getAllRows().get(0).set("Annotation Running", true);
 
-    	AnnotationSet clusters = makeClusters(network, view);
+    	annotationSetName = "Annotation Set " + String.valueOf(annotationSetNumber);
+    	AnnotationSet clusters = makeClusters(network, view, annotationSetName);
     	
     	taskMonitor.setProgress(0.4);
     	taskMonitor.setStatusMessage("Running WordCloud...");
@@ -148,6 +152,7 @@ public class AutoAnnotatorTask extends AbstractTask {
     			labelClusters(clusters, network);
     			break;
     		} catch(NullPointerException e) {
+    			if (cancelled) return;
     			continue;
     		}
     	}
@@ -161,8 +166,9 @@ public class AutoAnnotatorTask extends AbstractTask {
 		taskMonitor.setStatusMessage("Done!");
 	}
 	
-	private AnnotationSet makeClusters(CyNetwork network, CyNetworkView networkView) {
+	private AnnotationSet makeClusters(CyNetwork network, CyNetworkView networkView, String name) {
 		AnnotationSet clusters = new AnnotationSet(network, networkView, clusterColumnName);
+		clusters.setName(name);
 		
 		@SuppressWarnings("unchecked")
 		AnnotationFactory<ShapeAnnotation> shapeFactory = (AnnotationFactory<ShapeAnnotation>) registrar.getService(AnnotationFactory.class, "(type=ShapeAnnotation.class)");    	
@@ -187,7 +193,7 @@ public class AutoAnnotatorTask extends AbstractTask {
 				if (clusters.clusterSet.keySet().contains(clusterNumber)) {
 					cluster = clusters.clusterSet.get(clusterNumber);
 				} else {
-					cluster = new Cluster(clusterNumber, network, networkView, annotationManager, clusterColumnName, shapeFactory, textFactory);
+					cluster = new Cluster(clusterNumber, network, networkView, annotationManager, clusterColumnName, shapeFactory, clusters, textFactory, registrar);
 					clusters.addCluster(cluster);
 				}
 				cluster.addNode(node);
@@ -201,8 +207,9 @@ public class AutoAnnotatorTask extends AbstractTask {
 	private void runWordCloud(TaskMonitor taskMonitor) {
 		CommandExecutorTaskFactory executor = registrar.getService(CommandExecutorTaskFactory.class);
 		ArrayList<String> commands = new ArrayList<String>();
-		commands.add("wordcloud build clusterColumnName=\"" + clusterColumnName
-				+ "\" nameColumnName=\"" + nameColumnName + "\"");
+		String command = "wordcloud build clusterColumnName=\"" + clusterColumnName + "\" nameColumnName=\""
+				+ nameColumnName + "\"" + " cloudNamePrefix=\"" + annotationSetName + " \"";
+		commands.add(command);
 		TaskIterator task = executor.createTaskIterator(commands, null);
 		try {
 			// Uses the same TaskMonitor as the main Task
@@ -221,10 +228,10 @@ public class AutoAnnotatorTask extends AbstractTask {
 			for (CyRow row : nodeTable) {
 				Integer rowClusterNumber = row.get(clusterColumnName, Integer.class);
 				if (rowClusterNumber != null && rowClusterNumber == clusterNumber) {
-					List<String> wordList = row.get("WC_Word", List.class);
-					List<String> sizeList = row.get("WC_FontSize", List.class);
-					List<String> clusterList = row.get("WC_Cluster", List.class);
-					List<String> numberList = row.get("WC_Number", List.class);
+					List<String> wordList = row.get(clusters.name + " WC_Word", List.class);
+					List<String> sizeList = row.get(clusters.name + " WC_FontSize", List.class);
+					List<String> clusterList = row.get(clusters.name + " WC_Cluster", List.class);
+					List<String> numberList = row.get(clusters.name + " WC_Number", List.class);
 					String label = WordUtils.makeLabel(wordList, sizeList, clusterList, numberList);
 					cluster.setLabel(label);
 					break;

@@ -4,9 +4,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.cytoscape.command.CommandExecutorTaskFactory;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
@@ -14,6 +16,8 @@ import org.cytoscape.view.presentation.annotations.AnnotationManager;
 import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
 import org.cytoscape.view.presentation.annotations.TextAnnotation;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.swing.DialogTaskManager;
 
 /**
  * Created by:
@@ -43,11 +47,14 @@ public class Cluster implements Comparable<Cluster> {
 	private int[] boundsY;
 	private AnnotationFactory<ShapeAnnotation> shapeFactory;
 	private AnnotationFactory<TextAnnotation> textFactory;
+	private String cloudName;
+	private CyServiceRegistrar registrar;
 	
 	public Cluster(int clusterNumber, CyNetwork network, CyNetworkView view, AnnotationManager annotationManager, String clusterColumnName,
-			AnnotationFactory<ShapeAnnotation> shapeFactory, AnnotationFactory<TextAnnotation> textFactory) {
+			AnnotationFactory<ShapeAnnotation> shapeFactory, AnnotationSet parent, AnnotationFactory<TextAnnotation> textFactory, CyServiceRegistrar registrar) {
 		this.clusterNumber = clusterNumber;
-		this.name = "Annotation Set " + clusterNumber;
+		this.name = "Cluster " + clusterNumber;
+		this.cloudName = parent.name + " Cloud " + clusterNumber;
 		this.nodes = new ArrayList<CyNode>();
 		this.coordinates = new ArrayList<double[]>();
 		this.nodeTexts = new ArrayList<NodeText>();
@@ -57,6 +64,7 @@ public class Cluster implements Comparable<Cluster> {
 		this.annotationManager = annotationManager;
 		this.shapeFactory = shapeFactory;
 		this.textFactory = textFactory;
+		this.registrar = registrar;
 		boundsX = new int[2];
 		boundsY = new int[2];
 	}
@@ -118,6 +126,14 @@ public class Cluster implements Comparable<Cluster> {
 	}
 	
 	public void select() {
+		// Select the corresponding WordCloud
+		CommandExecutorTaskFactory executor = registrar.getService(CommandExecutorTaskFactory.class);
+		ArrayList<String> commands = new ArrayList<String>();
+		String command = "wordcloud delete cloudName=\"" + cloudName + "\"";
+		commands.add(command);
+		TaskIterator task = executor.createTaskIterator(commands, null);
+		registrar.getService(DialogTaskManager.class).execute(task);
+		
 		for (CyRow row : network.getDefaultNodeTable().getAllRows()) {
 			if (row.get(clusterColumnName, Integer.class) != null && row.get(clusterColumnName, Integer.class) == clusterNumber) {
 				row.set(CyNetwork.SELECTED, true);
@@ -192,6 +208,19 @@ public class Cluster implements Comparable<Cluster> {
 	public void erase() {
 		textAnnotation.removeAnnotation();
 		ellipse.removeAnnotation();
+	}
+	
+	public void destroy() {
+		// Get rid of the WordCloud
+		CommandExecutorTaskFactory executor = registrar.getService(CommandExecutorTaskFactory.class);
+		ArrayList<String> commands = new ArrayList<String>();
+		String command = "wordcloud delete cloudName=\"" + cloudName + "\"";
+		commands.add(command);
+
+		TaskIterator task = executor.createTaskIterator(commands, null);
+		registrar.getService(DialogTaskManager.class).execute(task);
+		// Erase the cluster
+		erase();
 	}
 
 	@Override

@@ -2,7 +2,6 @@ package org.baderlab.csplugins.enrichmentmap.autoannotate.view;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -33,10 +32,7 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationManager;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
-import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.swing.DialogTaskManager;
 
 /**
@@ -51,10 +47,13 @@ public class AutoAnnotatorInputPanel extends JPanel implements CytoPanelComponen
 	private static final long serialVersionUID = 7901088595186775935L;
 	private String clusterColumnName;
 	private String nameColumnName;
-	protected CyNetworkView selectedView;
+	public CyNetworkView selectedView;
 	protected AutoAnnotatorTaskFactory autoAnnotatorTaskFactory;
 	private AnnotationDisplayPanel displayPanel;
 	private JComboBox networkDropdown;
+	public JComboBox clusterColumnDropdown;
+	public JComboBox nameColumnDropdown;
+	private int annotationSetNumber;
 
 	public AutoAnnotatorInputPanel(CyApplicationManager cyApplicationManagerRef, 
 			CyNetworkViewManager cyNetworkViewManagerRef, CySwingApplication cySwingApplicationRef,
@@ -62,7 +61,7 @@ public class AutoAnnotatorInputPanel extends JPanel implements CytoPanelComponen
 			AnnotationDisplayPanel displayPanel, CyServiceRegistrar registrar, DialogTaskManager dialogTaskManager, CyEventHelper eventHelper){
 		
 		this.displayPanel = displayPanel;
-		
+		annotationSetNumber = 1;
 		JPanel mainPanel = createMainPanel(cyApplicationManagerRef, cyNetworkViewManagerRef, cySwingApplicationRef,
 				openBrowserRef, cyNetworkManagerRef, annotationManager, registrar, dialogTaskManager, eventHelper);
 		add(mainPanel,BorderLayout.CENTER);
@@ -82,7 +81,7 @@ public class AutoAnnotatorInputPanel extends JPanel implements CytoPanelComponen
         networkDropdown.setRenderer( new NetworkViewRenderer() );  
         
         // Give the user a choice of column with gene names
-        final JComboBox nameColumnDropdown = new JComboBox();
+        nameColumnDropdown = new JComboBox();
 
         nameColumnDropdown.addItemListener(new ItemListener(){
         	public void itemStateChanged(ItemEvent itemEvent) {
@@ -91,7 +90,7 @@ public class AutoAnnotatorInputPanel extends JPanel implements CytoPanelComponen
         });
         
         // Give the user a choice of column with cluster numbers
-        final JComboBox clusterColumnDropdown = new JComboBox();
+        clusterColumnDropdown = new JComboBox();
         
         clusterColumnDropdown.addItemListener(new ItemListener(){
         	public void itemStateChanged(ItemEvent itemEvent) {
@@ -124,16 +123,17 @@ public class AutoAnnotatorInputPanel extends JPanel implements CytoPanelComponen
         final Map<String, String> serviceProperties = new HashMap<String, String>();
         serviceProperties.put("inMenuBar", "true");
 		serviceProperties.put("preferredMenu", "Apps.EnrichmentMap");
-        ActionListener autoAnnotateAction = new ActionListener(){
+        ActionListener annotateAction = new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
 				// networkID and clusterColumnName field are looked up only when the button is pressed
 				autoAnnotatorTaskFactory = new AutoAnnotatorTaskFactory(cySwingApplicationRef, cyApplicationManagerRef, 
 						cyNetworkViewManagerRef, cyNetworkManagerRef, annotationManager, displayPanel,
-        				selectedView, clusterColumnName, nameColumnName, registrar, dialogTaskManager);
+        				selectedView, clusterColumnName, nameColumnName, annotationSetNumber, registrar, dialogTaskManager);
 				dialogTaskManager.execute(autoAnnotatorTaskFactory.createTaskIterator());
+				annotationSetNumber++;
 			}
         };
-        confirmButton.addActionListener(autoAnnotateAction);
+        confirmButton.addActionListener(annotateAction);
         
         JLabel networkDropdownLabel = new JLabel("Select the network to annotate:");
         JLabel clusterColumnDropdownLabel = new JLabel("Select the column with the clusters:"); // ambiguous phrasing?
