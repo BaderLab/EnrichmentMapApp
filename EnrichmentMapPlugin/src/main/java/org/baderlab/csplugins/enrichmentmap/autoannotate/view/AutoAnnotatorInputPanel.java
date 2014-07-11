@@ -14,12 +14,10 @@ import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.plaf.basic.BasicComboBoxRenderer;
-import javax.swing.text.Position;
 
 import org.baderlab.csplugins.enrichmentmap.autoannotate.task.AutoAnnotatorTaskFactory;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.model.NetworkViewRenderer;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanelComponent;
@@ -186,30 +184,4 @@ public class AutoAnnotatorInputPanel extends JPanel implements CytoPanelComponen
 	public String getTitle() {
 		return "Annotation Input Panel";
 	}
-	
-    class NetworkViewRenderer extends BasicComboBoxRenderer {
-
-		private static final long serialVersionUID = -5877635875395629866L;  
-
-		@Override
-		public Component getListCellRendererComponent(JList list, Object value, int index, 
-				boolean isSelected, boolean cellHasFocus) {
-            
-			super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);  
-  
-            if (value != null) {
-            	String label = ((CyNetworkView) value).getModel().toString();
-            	int viewNumber = 1;
-            	while (list.getNextMatch(label + " View " + String.valueOf(viewNumber), 0, Position.Bias.Forward) != -1) {
-            		viewNumber++;
-            	}
-            	if (viewNumber > 1) {
-            		label += " View " + String.valueOf(viewNumber);
-            	}
-                setText(label);
-            } 
-  
-            return this;  
-        }  
-    }
 }

@@ -2,6 +2,8 @@ package org.baderlab.csplugins.enrichmentmap.autoannotate;
 
 import java.util.ArrayList;
 
+import javax.swing.DefaultComboBoxModel;
+
 import org.baderlab.csplugins.enrichmentmap.autoannotate.view.AnnotationDisplayPanel;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.view.AutoAnnotatorInputPanel;
 import org.cytoscape.model.events.ColumnCreatedEvent;
@@ -93,14 +95,24 @@ public class AutoAnnotationManager implements
 
 	@Override
 	public void handleEvent(ColumnDeletedEvent e) {
-		inputPanel.clusterColumnDropdown.removeItem(e.getColumnName());
-		inputPanel.nameColumnDropdown.removeItem(e.getColumnName());
+		String columnName = e.getColumnName();
+		if (((DefaultComboBoxModel) inputPanel.clusterColumnDropdown.getModel()).getIndexOf(columnName) != -1) {
+			inputPanel.clusterColumnDropdown.removeItem(e.getColumnName());			
+		}
+		if (((DefaultComboBoxModel) inputPanel.nameColumnDropdown.getModel()).getIndexOf(columnName) != -1) {
+			inputPanel.nameColumnDropdown.removeItem(e.getColumnName());			
+		}
 	}
 
 	@Override
 	public void handleEvent(ColumnCreatedEvent e) {
-		inputPanel.clusterColumnDropdown.addItem(e.getColumnName());
-		inputPanel.nameColumnDropdown.addItem(e.getColumnName());
+		String columnName = e.getColumnName();
+		if (((DefaultComboBoxModel) inputPanel.clusterColumnDropdown.getModel()).getIndexOf(columnName) == -1) {
+			inputPanel.clusterColumnDropdown.addItem(e.getColumnName());			
+		}
+		if (((DefaultComboBoxModel) inputPanel.nameColumnDropdown.getModel()).getIndexOf(columnName) == -1) {
+			inputPanel.nameColumnDropdown.addItem(e.getColumnName());			
+		}
 	}
 
 }
