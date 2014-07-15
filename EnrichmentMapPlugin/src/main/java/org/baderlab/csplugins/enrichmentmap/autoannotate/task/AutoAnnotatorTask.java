@@ -157,6 +157,7 @@ public class AutoAnnotatorTask extends AbstractTask {
     		}
     	}
 		displayPanel.addClusters(clusters); // Clusters get drawn inside of displayPanel
+		displayPanel.updateSelectedView(view);
 		CytoPanel southPanel = application.getCytoPanel(CytoPanelName.SOUTH);
 		southPanel.setSelectedIndex(southPanel.indexOfComponent(displayPanel));
 		
@@ -177,7 +178,15 @@ public class AutoAnnotatorTask extends AbstractTask {
 		
 		List<CyNode> nodes = network.getNodeList();
 		for (CyNode node : nodes) {
-			Integer clusterNumber = network.getRow(node).get(this.clusterColumnName, Integer.class);
+			Integer clusterNumber;
+			while (true) { // If clustermaker has not finished yet
+				try {
+					clusterNumber = network.getRow(node).get(this.clusterColumnName, Integer.class);
+					break;
+				} catch (ClassCastException e) {
+					continue;
+				}
+			}
 			if (clusterNumber != null) {
 				View<CyNode> nodeView = networkView.getNodeView(node);
 				double x = nodeView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION);

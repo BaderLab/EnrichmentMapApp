@@ -7,14 +7,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionListener;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 import javax.swing.BoxLayout;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -28,11 +23,9 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableModel;
 
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.AnnotationSet;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.model.NetworkViewRenderer;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelComponent;
@@ -40,10 +33,6 @@ import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.presentation.annotations.Annotation;
-import org.cytoscape.view.presentation.annotations.AnnotationManager;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
-import org.cytoscape.view.presentation.property.DefaultVisualizableVisualProperty;
 
 /**
  * @author arkadyark
@@ -64,7 +53,8 @@ public class AnnotationDisplayPanel extends JPanel implements CytoPanelComponent
 	private HashMap<AnnotationSet, JPanel> clustersToTables;
 	private HashMap<CyNetworkView, JComboBox> networkViewToClusterSetDropdown;
 	private JComboBox clusterSetDropdown;
-	private JComboBox networkViewDropdown;
+
+	private CyNetworkView selectedView;
 	
 
 
@@ -80,7 +70,7 @@ public class AnnotationDisplayPanel extends JPanel implements CytoPanelComponent
 		this.mainPanel = createMainPanel();
 		this.networkViewToClusterSetDropdown = new HashMap<CyNetworkView, JComboBox>();
 		setLayout(new BorderLayout());
-		add(mainPanel, BorderLayout.NORTH);
+		add(mainPanel, BorderLayout.EAST);
 	}
 	
 	public void addClusters(AnnotationSet clusters) {
@@ -88,8 +78,6 @@ public class AnnotationDisplayPanel extends JPanel implements CytoPanelComponent
 		if (!networkViewToClusterSetDropdown.containsKey(clusters.view)) {
 			addNetworkView(clusters.view);
 		}
-		DefaultComboBoxModel model = (DefaultComboBoxModel) networkViewDropdown.getModel();
-		networkViewDropdown.setSelectedIndex(model.getIndexOf(clusters.view));
 		
 		clusterSets.put(clusters.name, clusters);
 		
@@ -125,37 +113,18 @@ public class AnnotationDisplayPanel extends JPanel implements CytoPanelComponent
 		});
 		mainPanel.add(clusterSetDropdown);
 		networkViewToClusterSetDropdown.put(view, clusterSetDropdown);
-		
-		networkViewDropdown.addItem(view);
-		// Select the view that has just been added - this will also hide the previously selected clusterSetDropdown
-		networkViewDropdown.setSelectedIndex(networkViewDropdown.getItemCount() - 1);
+		selectedView = view;
 	}
 	
 	public void removeClusters(AnnotationSet clusters) {
-		JComboBox clusterSetDropdown = (JComboBox) mainPanel.getComponent(0);
+		JComboBox clusterSetDropdown = networkViewToClusterSetDropdown.get(selectedView);
 		clusterSetDropdown.removeItem(clusterSets.get(clusters.name));
 		clusterSets.remove(clusters.name);
 	}
 	
 	private JPanel createMainPanel() {
 		JPanel mainPanel = new JPanel();
-		
-		networkViewDropdown = new JComboBox();
-		networkViewDropdown.addItemListener(new ItemListener(){
-			public void itemStateChanged(ItemEvent itemEvent) {
-				if (itemEvent.getStateChange() == ItemEvent.SELECTED) {
-					CyNetworkView view = (CyNetworkView) itemEvent.getItem();
-					clusterSetDropdown = networkViewToClusterSetDropdown.get(view);
-					clusterSetDropdown.setVisible(true);
-				} else if (itemEvent.getStateChange() == ItemEvent.DESELECTED) {
-					CyNetworkView view = (CyNetworkView) itemEvent.getItem();
-					clusterSetDropdown = networkViewToClusterSetDropdown.get(view);
-					clusterSetDropdown.setVisible(false);
-				}
-			}
-		});
-		networkViewDropdown.setRenderer( new NetworkViewRenderer() );  
-		mainPanel.add(networkViewDropdown);
+		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
 		
         // Button to remove all annotations
         JButton clearButton = new JButton("Remove Annotation Set");
@@ -259,11 +228,15 @@ public class AnnotationDisplayPanel extends JPanel implements CytoPanelComponent
 					int selectedRowIndex = table.getSelectedRow();
 					Cluster selectedCluster = (Cluster) table.getValueAt(selectedRowIndex, 0); // Final to use inside of 
 					selectedCluster.select();
+					// Doesn't work because WordCloud takes some time to switch over
+//					CytoPanel panel = application.getCytoPanel(getCytoPanelName());
+//					panel.setSelectedIndex(panel.indexOfComponent(AnnotationDisplayPanel.getInstance()));
 				}
 			}
 		});
 		
-		Dimension d = table.getPreferredSize();
+		Dimension d = new Dimension(500, table.getPreferredSize().height);
+		table.setPreferredSize(d);
 		table.setPreferredScrollableViewportSize(d);
 		table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 		
@@ -291,5 +264,14 @@ public class AnnotationDisplayPanel extends JPanel implements CytoPanelComponent
 	public String getTitle() {
 		return "Annotation Display";
 	}
+
+	public void updateSelectedView(CyNetworkView view) {
+		clusterSetDropdown = networkViewToClusterSetDropdown.get(selectedView);
+		clusterSetDropdown.setVisible(false);
+		selectedView = view;
+		clusterSetDropdown = networkViewToClusterSetDropdown.get(selectedView);
+		clusterSetDropdown.setVisible(true);
+	}
+
 
 }

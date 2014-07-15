@@ -131,19 +131,19 @@ public class AutoAnnotatorPanelAction extends AbstractCyAction {
 	public void actionPerformed(ActionEvent event) {
 		AnnotationDisplayPanel displayPanel = new AnnotationDisplayPanel(application);
 		registrar.registerService(displayPanel, CytoPanelComponent.class, new Properties());
-		AutoAnnotatorInputPanel autoAnnotatorPanel = new AutoAnnotatorInputPanel(applicationManager, networkViewManager,
+		AutoAnnotatorInputPanel inputPanel = new AutoAnnotatorInputPanel(applicationManager, networkViewManager,
 				application, openBrowser, networkManager, annotationManager, displayPanel, registrar, dialogTaskManager, eventHelper);
-		
-		manager.setInputPanel(autoAnnotatorPanel);
+		inputPanel.updateSelectedView(applicationManager.getCurrentNetworkView());
+		manager.setInputPanel(inputPanel);
 		manager.setDisplayPanel(displayPanel);
 		
 		if(!initialized){      
         	  initialized = true;
-        	  registrar.registerService(autoAnnotatorPanel,CytoPanelComponent.class,new Properties());
+        	  registrar.registerService(inputPanel,CytoPanelComponent.class,new Properties());
           
               //set the input window in the instance so we can update the instance window
               //on network focus
-              EnrichmentMapManager.getInstance().setAutoAnnotatorPanel(autoAnnotatorPanel);
+              EnrichmentMapManager.getInstance().setAutoAnnotatorPanel(inputPanel);
           }
 
           // If the state of the cytoPanelWest is HIDE, show it
@@ -152,7 +152,7 @@ public class AutoAnnotatorPanelAction extends AbstractCyAction {
           }
           
           // Select my panel
-          int index = cytoPanelWest.indexOfComponent(autoAnnotatorPanel);
+          int index = cytoPanelWest.indexOfComponent(inputPanel);
           if (index == -1) return;
           cytoPanelWest.setSelectedIndex(index);
           

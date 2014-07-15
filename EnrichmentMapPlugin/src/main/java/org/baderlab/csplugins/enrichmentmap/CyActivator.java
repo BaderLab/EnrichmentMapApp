@@ -22,6 +22,8 @@ import org.baderlab.csplugins.enrichmentmap.view.ParametersPanel;
 import org.baderlab.csplugins.enrichmentmap.view.PostAnalysisInputPanel;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentNetworkListener;
+import org.cytoscape.application.events.SetSelectedNetworkViewsEvent;
+import org.cytoscape.application.events.SetSelectedNetworkViewsListener;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.event.CyEventHelper;
@@ -133,8 +135,7 @@ public class CyActivator extends AbstractCyActivator {
 		//Get an instance of AA manager
 		AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();		
 		//register network events with manager class
-		registerService(bc, autoAnnotationManager, NetworkViewAboutToBeDestroyedListener.class, new Properties());
-		registerService(bc, autoAnnotationManager, NetworkViewAddedListener.class, new Properties());
+		registerService(bc, autoAnnotationManager, SetSelectedNetworkViewsListener.class, new Properties());
 		registerService(bc, autoAnnotationManager, ColumnCreatedListener.class, new Properties());
 		registerService(bc, autoAnnotationManager, ColumnDeletedListener.class, new Properties());
 		registerService(bc, autoAnnotationManager, ColumnNameChangedListener.class, new Properties());
