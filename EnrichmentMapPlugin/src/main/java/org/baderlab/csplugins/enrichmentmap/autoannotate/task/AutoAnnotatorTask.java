@@ -61,6 +61,7 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTableManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -93,11 +94,12 @@ public class AutoAnnotatorTask extends AbstractTask {
 	private AnnotationDisplayPanel displayPanel;
 	private int annotationSetNumber;
 	private String annotationSetName;
+	private CyTableManager tableManager;
 
 	public AutoAnnotatorTask(CySwingApplication application, CyApplicationManager applicationManager, 
 			CyNetworkViewManager networkViewManager, CyNetworkManager networkManager,
 			AnnotationManager annotationManager, AnnotationDisplayPanel displayPanel, CyNetworkView selectedView, String clusterColumnName, 
-			String nameColumnName, int annotationSetNumber, CyServiceRegistrar registrar){
+			String nameColumnName, int annotationSetNumber, CyServiceRegistrar registrar, CyTableManager tableManager){
 		
 		this.application = application;
 		this.annotationManager = annotationManager;
@@ -108,7 +110,7 @@ public class AutoAnnotatorTask extends AbstractTask {
 		this.nameColumnName = nameColumnName;
 		this.annotationSetNumber = annotationSetNumber;
 		this.registrar = registrar;
-		
+		this.tableManager = tableManager;
 	};
 
 	@Override
@@ -168,8 +170,7 @@ public class AutoAnnotatorTask extends AbstractTask {
 	}
 	
 	private AnnotationSet makeClusters(CyNetwork network, CyNetworkView networkView, String name) {
-		AnnotationSet clusters = new AnnotationSet(network, networkView, clusterColumnName);
-		clusters.setName(name);
+		AnnotationSet clusters = new AnnotationSet(name, network, networkView, clusterColumnName, tableManager);
 		
 		@SuppressWarnings("unchecked")
 		AnnotationFactory<ShapeAnnotation> shapeFactory = (AnnotationFactory<ShapeAnnotation>) registrar.getService(AnnotationFactory.class, "(type=ShapeAnnotation.class)");    	

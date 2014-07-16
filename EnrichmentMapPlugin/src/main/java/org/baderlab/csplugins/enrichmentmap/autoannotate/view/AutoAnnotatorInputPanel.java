@@ -31,6 +31,7 @@ import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTableManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.BasicCollapsiblePanel;
 import org.cytoscape.util.swing.OpenBrowser;
@@ -64,13 +65,16 @@ public class AutoAnnotatorInputPanel extends JPanel implements CytoPanelComponen
 	private JRadioButton defaultButton;
 	private JRadioButton specifyColumnButton;
 	protected CyNetworkView selectedView;
+	private CyTableManager tableManager;
 
 	public AutoAnnotatorInputPanel(CyApplicationManager cyApplicationManagerRef, 
 			CyNetworkViewManager cyNetworkViewManagerRef, CySwingApplication cySwingApplicationRef,
 			OpenBrowser openBrowserRef, CyNetworkManager cyNetworkManagerRef, AnnotationManager annotationManager,
-			AnnotationDisplayPanel displayPanel, CyServiceRegistrar registrar, DialogTaskManager dialogTaskManager, CyEventHelper eventHelper){
+			AnnotationDisplayPanel displayPanel, CyServiceRegistrar registrar, DialogTaskManager dialogTaskManager, 
+			CyEventHelper eventHelper, CyTableManager tableManager){
 		
 		this.displayPanel = displayPanel;
+		this.tableManager = tableManager;
 		annotationSetNumber = 1;
 		
 		algorithmToColumnName = new TreeMap<String, String>();		
@@ -123,8 +127,8 @@ public class AutoAnnotatorInputPanel extends JPanel implements CytoPanelComponen
 					clusterColumnName = (String) clusterColumnDropdown.getSelectedItem();
 				}
 				autoAnnotatorTaskFactory = new AutoAnnotatorTaskFactory(cySwingApplicationRef, cyApplicationManagerRef, 
-						cyNetworkViewManagerRef, cyNetworkManagerRef, annotationManager, displayPanel,
-						selectedView, clusterColumnName, nameColumnName, annotationSetNumber, registrar, dialogTaskManager);
+						cyNetworkViewManagerRef, cyNetworkManagerRef, annotationManager, displayPanel, selectedView, 
+						clusterColumnName, nameColumnName, annotationSetNumber, registrar, dialogTaskManager, tableManager);
 				dialogTaskManager.execute(autoAnnotatorTaskFactory.createTaskIterator());
 				annotationSetNumber++;	
 			}

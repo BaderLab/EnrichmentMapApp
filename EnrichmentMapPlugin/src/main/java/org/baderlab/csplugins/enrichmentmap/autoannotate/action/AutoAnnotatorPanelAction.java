@@ -60,6 +60,7 @@ import org.cytoscape.application.swing.CytoPanelState;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyTableManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
@@ -103,12 +104,15 @@ public class AutoAnnotatorPanelAction extends AbstractCyAction {
 	private CyEventHelper eventHelper;
 	
 	private AutoAnnotationManager manager;
+
+
+	private CyTableManager tableManager;
     
     public AutoAnnotatorPanelAction(Map<String,String> configProps, CyApplicationManager applicationManager, 
     			CyNetworkManager cyNetworkManagerRef, CyNetworkViewManager networkViewManager, 
     			CySwingApplication application, OpenBrowser openBrowserRef, AnnotationManager annotationManager, 
     			CyServiceRegistrar registrar, DialogTaskManager dialogTaskManager, CyEventHelper eventHelper,
-    			AutoAnnotationManager autoAnnotationManager){
+    			AutoAnnotationManager autoAnnotationManager, CyTableManager tableManager){
     	
         super( configProps,  applicationManager,  networkViewManager);
      
@@ -125,6 +129,7 @@ public class AutoAnnotatorPanelAction extends AbstractCyAction {
  		this.dialogTaskManager = dialogTaskManager;
  		this.eventHelper = eventHelper;
  		this.manager = autoAnnotationManager;
+ 		this.tableManager = tableManager;
 
     }
 
@@ -132,7 +137,7 @@ public class AutoAnnotatorPanelAction extends AbstractCyAction {
 		AnnotationDisplayPanel displayPanel = new AnnotationDisplayPanel(application);
 		registrar.registerService(displayPanel, CytoPanelComponent.class, new Properties());
 		AutoAnnotatorInputPanel inputPanel = new AutoAnnotatorInputPanel(applicationManager, networkViewManager,
-				application, openBrowser, networkManager, annotationManager, displayPanel, registrar, dialogTaskManager, eventHelper);
+				application, openBrowser, networkManager, annotationManager, displayPanel, registrar, dialogTaskManager, eventHelper, tableManager);
 		inputPanel.updateSelectedView(applicationManager.getCurrentNetworkView());
 		manager.setInputPanel(inputPanel);
 		manager.setDisplayPanel(displayPanel);

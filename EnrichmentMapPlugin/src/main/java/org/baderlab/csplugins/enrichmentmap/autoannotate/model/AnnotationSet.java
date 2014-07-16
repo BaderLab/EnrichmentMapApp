@@ -7,6 +7,7 @@ import java.util.TreeMap;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTableManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
@@ -26,16 +27,15 @@ public class AnnotationSet {
 	public CyNetwork network;
 	public CyNetworkView view;
 	private String clusterColumnName;
+	private CyTableManager tableManager;
 	
-	public AnnotationSet(CyNetwork network, CyNetworkView view, String clusterColumnName) {
+	public AnnotationSet(String name, CyNetwork network, CyNetworkView view, String clusterColumnName, CyTableManager tableManager) {
+		this.name = name;
 		this.clusterSet = new TreeMap<Integer, Cluster>();
 		this.network = network;
 		this.clusterColumnName = clusterColumnName;
 		this.view = view;
-	}
-	
-	public void setName(String name) {
-		this.name = name;
+		this.tableManager = tableManager;
 	}
 	
 	public void addCluster(Cluster cluster) {
@@ -86,18 +86,15 @@ public class AnnotationSet {
 		for (Cluster cluster : this.clusterSet.values()) {
 			cluster.setLabel("");
 			int clusterNumber = cluster.getClusterNumber();
-			List<CyRow> nodeTable = network.getDefaultNodeTable().getAllRows();
-			for (CyRow row : nodeTable) {
-				Integer rowClusterNumber = row.get(clusterColumnName, Integer.class);
-				if (rowClusterNumber != null && rowClusterNumber == clusterNumber) {
-					List<String> wordList = row.get(name + " WC_Word", List.class);
-					List<String> sizeList = row.get(name + " WC_FontSize", List.class);
-					List<String> clusterList = row.get(name + " WC_Cluster", List.class);
-					List<String> numberList = row.get(name + " WC_Number", List.class);
-					String label = WordUtils.makeLabel(wordList, sizeList, clusterList, numberList);
-					cluster.setLabel(label);
-					break;
-				}
+			Long clusterTableSUID = network.getDefaultNetworkTable().getRow(network.getSUID()).get(name + " ", Long.class);
+			CyRow clusterRow = tableManager.getTable(clusterTableSUID).getRow(clusterNumber);
+			for (CyNode node : cluster.nodes) {
+				List<String> wordList = clusterRow.get("WC_Word", List.class);
+				List<String> sizeList = clusterRow.get("WC_FontSize", List.class);
+				List<String> clusterList = clusterRow.get("WC_Cluster", List.class);
+				List<String> numberList = clusterRow.get("WC_Number", List.class);
+				String label = WordUtils.makeLabel(wordList, sizeList, clusterList, numberList);
+				cluster.setLabel(label);
 			}
 		}
 	}
