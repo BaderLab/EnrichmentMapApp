@@ -46,6 +46,7 @@ package org.baderlab.csplugins.enrichmentmap.autoannotate.task;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.baderlab.csplugins.enrichmentmap.EnrichmentMapUtils;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.AnnotationSet;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.NodeText;
@@ -124,16 +125,8 @@ public class AutoAnnotatorTask extends AbstractTask {
 		taskMonitor.setStatusMessage("Getting clusters...");
 		if (cancelled) return;
 
-    	CyTable networkTable = network.getDefaultNetworkTable();
-    	try {
-    		networkTable.deleteColumn("Annotation Running");
-    		networkTable.createColumn("Annotation Running", Boolean.class, false);
-    	} catch (Exception e) {
-    		networkTable.createColumn("Annotation Running", Boolean.class, false);
-    	}
-    	networkTable.getAllRows().get(0).set("Annotation Running", true);
-
-    	annotationSetName = "Annotation Set " + String.valueOf(annotationSetNumber);
+		EnrichmentMapUtils.setOverrideHeatmapRevalidation(true); // So that HeatMap doesn't update while this is running
+		annotationSetName = "Annotation Set " + String.valueOf(annotationSetNumber);
     	AnnotationSet clusters = makeClusters(network, view, annotationSetName);
     	
     	taskMonitor.setProgress(0.4);
@@ -160,9 +153,9 @@ public class AutoAnnotatorTask extends AbstractTask {
 		displayPanel.updateSelectedView(view);
 		CytoPanel southPanel = application.getCytoPanel(CytoPanelName.SOUTH);
 		southPanel.setSelectedIndex(southPanel.indexOfComponent(displayPanel));
-		
-		network.getDefaultNetworkTable().deleteColumn("Annotation Running");
 
+		EnrichmentMapUtils.setOverrideHeatmapRevalidation(false);
+		
 		taskMonitor.setProgress(1.0);
 		taskMonitor.setStatusMessage("Done!");
 	}

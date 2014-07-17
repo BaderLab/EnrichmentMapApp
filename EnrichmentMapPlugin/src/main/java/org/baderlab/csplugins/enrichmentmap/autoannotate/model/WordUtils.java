@@ -56,7 +56,7 @@ public class WordUtils{
 				}
 			}
 		}
-		label = biggestWord + " " + secondBiggestWord;
+		label = secondBiggestWord + " " + biggestWord;
 		return label;
 	}
 }

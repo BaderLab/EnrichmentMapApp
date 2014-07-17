@@ -151,7 +151,7 @@ public class CyActivator extends AbstractCyActivator {
 		serviceProperties.put("inMenuBar", "true");
 		serviceProperties.put("preferredMenu", "Apps.EnrichmentMap");
 		LoadEnrichmentsPanelAction LoadEnrichmentMapInputPanelAction = new LoadEnrichmentsPanelAction(serviceProperties,cyApplicationManagerRef ,cyNetworkViewManagerRef, cySwingApplicationRef, emPanel,registrar);
-				
+		
 		//Bulk Enrichment Map Action - open bulk em panel
 		serviceProperties = new HashMap<String, String>();
 		serviceProperties.put("inMenuBar", "true");
