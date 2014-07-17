@@ -3,7 +3,7 @@ package org.baderlab.csplugins.enrichmentmap.autoannotate.task;
 import java.util.HashMap;
 
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.view.AnnotationDisplayPanel;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.view.AutoAnnotatorDisplayPanel;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.event.CyEventHelper;
@@ -39,12 +39,12 @@ public class AutoAnnotatorTaskFactory implements TaskFactory {
 	private String nameColumnName;
 	private int annotationSetNumber;
 	private CyServiceRegistrar registrar;
-	private AnnotationDisplayPanel displayPanel;
+	private AutoAnnotatorDisplayPanel displayPanel;
 	private CyTableManager tableManager;
 	
 	public AutoAnnotatorTaskFactory(CySwingApplication application, CyApplicationManager applicationManager, 
 			CyNetworkViewManager networkViewManager, CyNetworkManager networkManager,
-			AnnotationManager annotationManager, AnnotationDisplayPanel displayPanel, CyNetworkView selectedView, String clusterColumnName,
+			AnnotationManager annotationManager, AutoAnnotatorDisplayPanel displayPanel, CyNetworkView selectedView, String clusterColumnName,
 			String nameColumnName, int annotationSetNumber, CyServiceRegistrar registrar, DialogTaskManager dialogTaskManager, CyTableManager tableManager) {
 		this.application = application;
 		this.applicationManager = applicationManager;

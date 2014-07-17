@@ -41,11 +41,11 @@ import org.cytoscape.view.model.CyNetworkView;
  * Time   14:35:53 PM<br>
  */
 
-public class AnnotationDisplayPanel extends JPanel implements CytoPanelComponent{
+public class AutoAnnotatorDisplayPanel extends JPanel implements CytoPanelComponent{
 
 	private static final long serialVersionUID = 6589442061666054048L;
 	
-	private static AnnotationDisplayPanel instance;
+	private static AutoAnnotatorDisplayPanel instance;
 	
 	private CySwingApplication application;
 	private JPanel mainPanel;
@@ -58,11 +58,11 @@ public class AnnotationDisplayPanel extends JPanel implements CytoPanelComponent
 	
 
 
-	public static AnnotationDisplayPanel getInstance() {
+	public static AutoAnnotatorDisplayPanel getInstance() {
 		return instance;
 	}
 
-	public AnnotationDisplayPanel(CySwingApplication application) {
+	public AutoAnnotatorDisplayPanel(CySwingApplication application) {
 		instance = this;
 		this.application = application;
 		this.clusterSets = new HashMap<String, AnnotationSet>();
@@ -144,7 +144,7 @@ public class AnnotationDisplayPanel extends JPanel implements CytoPanelComponent
         		// Delete all annotations
          		clusters.destroyAnnotations();
          		CytoPanel panel = application.getCytoPanel(getCytoPanelName());
-         		panel.setSelectedIndex(panel.indexOfComponent(AnnotationDisplayPanel.getInstance()));
+         		panel.setSelectedIndex(panel.indexOfComponent(AutoAnnotatorDisplayPanel.getInstance()));
          		clusterSetDropdown.removeItem(clusterSetDropdown.getSelectedItem());
          		remove(clustersToTables.get(clusters).getParent());
          		clustersToTables.remove(clusters);

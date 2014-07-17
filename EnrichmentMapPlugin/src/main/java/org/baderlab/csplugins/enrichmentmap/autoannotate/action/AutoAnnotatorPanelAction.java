@@ -47,7 +47,7 @@ import javax.swing.*;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.view.AnnotationDisplayPanel;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.view.AutoAnnotatorDisplayPanel;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.view.AutoAnnotatorInputPanel;
 import org.baderlab.csplugins.enrichmentmap.view.EnrichmentMapInputPanel;
 import org.cytoscape.application.CyApplicationManager;
@@ -92,6 +92,7 @@ public class AutoAnnotatorPanelAction extends AbstractCyAction {
 
     
     private final CytoPanel cytoPanelWest;
+    private CytoPanel cytoPanelSouth;
     
     private CyServiceRegistrar registrar;
 	private CyApplicationManager applicationManager;
@@ -107,6 +108,12 @@ public class AutoAnnotatorPanelAction extends AbstractCyAction {
 
 
 	private CyTableManager tableManager;
+
+
+	private AutoAnnotatorDisplayPanel displayPanel;
+	private AutoAnnotatorInputPanel inputPanel;
+
+
     
     public AutoAnnotatorPanelAction(Map<String,String> configProps, CyApplicationManager applicationManager, 
     			CyNetworkManager cyNetworkManagerRef, CyNetworkViewManager networkViewManager, 
@@ -119,6 +126,7 @@ public class AutoAnnotatorPanelAction extends AbstractCyAction {
  		putValue(NAME, "Annotate Clusters");		
  		
  		this.cytoPanelWest = application.getCytoPanel(CytoPanelName.WEST);
+ 		this.cytoPanelSouth = application.getCytoPanel(CytoPanelName.SOUTH);
  		this.applicationManager = applicationManager;
  		this.networkManager = cyNetworkManagerRef;
  		this.networkViewManager = networkViewManager;
@@ -133,33 +141,29 @@ public class AutoAnnotatorPanelAction extends AbstractCyAction {
 
     }
 
-	public void actionPerformed(ActionEvent event) {
-		AnnotationDisplayPanel displayPanel = new AnnotationDisplayPanel(application);
-		registrar.registerService(displayPanel, CytoPanelComponent.class, new Properties());
-		AutoAnnotatorInputPanel inputPanel = new AutoAnnotatorInputPanel(applicationManager, networkViewManager,
-				application, openBrowser, networkManager, annotationManager, displayPanel, registrar, dialogTaskManager, eventHelper, tableManager);
-		inputPanel.updateSelectedView(applicationManager.getCurrentNetworkView());
-		manager.setInputPanel(inputPanel);
-		manager.setDisplayPanel(displayPanel);
-		
-		if(!initialized){      
-        	  initialized = true;
-        	  registrar.registerService(inputPanel,CytoPanelComponent.class,new Properties());
-          
-              //set the input window in the instance so we can update the instance window
-              //on network focus
-              EnrichmentMapManager.getInstance().setAutoAnnotatorPanel(inputPanel);
-          }
+	public void actionPerformed(ActionEvent event) {		
+		if(!initialized) {      
+			displayPanel = new AutoAnnotatorDisplayPanel(application);
+    		inputPanel = new AutoAnnotatorInputPanel(applicationManager, networkViewManager,
+    				application, openBrowser, networkManager, annotationManager, displayPanel, registrar, dialogTaskManager, eventHelper, tableManager);
+    		inputPanel.updateSelectedView(applicationManager.getCurrentNetworkView());
+    		manager.setInputPanel(inputPanel);
+    		manager.setDisplayPanel(displayPanel);
+    		registrar.registerService(inputPanel,CytoPanelComponent.class, new Properties());
+    		registrar.registerService(displayPanel, CytoPanelComponent.class, new Properties());
+    		initialized = true;
+    	}
 
           // If the state of the cytoPanelWest is HIDE, show it
           if (cytoPanelWest.getState() == CytoPanelState.HIDE) {
-        	  	cytoPanelWest.setState(CytoPanelState.DOCK);
+        	  cytoPanelWest.setState(CytoPanelState.DOCK);
           }
           
-          // Select my panel
-          int index = cytoPanelWest.indexOfComponent(inputPanel);
-          if (index == -1) return;
-          cytoPanelWest.setSelectedIndex(index);
-          
+          // Select my panels
+          int inputIndex = cytoPanelWest.indexOfComponent(inputPanel);
+          if (inputIndex != -1) cytoPanelWest.setSelectedIndex(inputIndex);
+
+          int displayIndex = cytoPanelSouth.indexOfComponent(displayPanel);
+          if (displayIndex != -1) cytoPanelSouth.setSelectedIndex(displayIndex);
         }
 }

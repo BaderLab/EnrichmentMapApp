@@ -8,6 +8,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.util.Collection;
 import java.util.TreeMap;
 
 import javax.swing.BorderFactory;
@@ -54,7 +55,7 @@ public class AutoAnnotatorInputPanel extends JPanel implements CytoPanelComponen
 	private static final String specifyColumnButtonString = "Select cluster column";
 	private String nameColumnName;
 	private AutoAnnotatorTaskFactory autoAnnotatorTaskFactory;
-	private AnnotationDisplayPanel displayPanel;
+	private AutoAnnotatorDisplayPanel displayPanel;
 	public JComboBox clusterColumnDropdown;
 	public JComboBox nameColumnDropdown;
 	private int annotationSetNumber;
@@ -70,7 +71,7 @@ public class AutoAnnotatorInputPanel extends JPanel implements CytoPanelComponen
 	public AutoAnnotatorInputPanel(CyApplicationManager cyApplicationManagerRef, 
 			CyNetworkViewManager cyNetworkViewManagerRef, CySwingApplication cySwingApplicationRef,
 			OpenBrowser openBrowserRef, CyNetworkManager cyNetworkManagerRef, AnnotationManager annotationManager,
-			AnnotationDisplayPanel displayPanel, CyServiceRegistrar registrar, DialogTaskManager dialogTaskManager, 
+			AutoAnnotatorDisplayPanel displayPanel, CyServiceRegistrar registrar, DialogTaskManager dialogTaskManager, 
 			CyEventHelper eventHelper, CyTableManager tableManager){
 		
 		this.displayPanel = displayPanel;
@@ -79,8 +80,10 @@ public class AutoAnnotatorInputPanel extends JPanel implements CytoPanelComponen
 		
 		algorithmToColumnName = new TreeMap<String, String>();		
 		algorithmToColumnName.put("Affinity Propagation Cluster", "__APCluster");
+		algorithmToColumnName.put("Cluster Fuzzifier", "__fuzzifierCluster");
 		algorithmToColumnName.put("Community cluster (GLay)", "__glayCluster");
 		algorithmToColumnName.put("ConnectedComponents Cluster", "__ccCluster");
+		algorithmToColumnName.put("Fuzzy C-Means Cluster", "__fcmlCluster");
 		algorithmToColumnName.put("MCL Cluster", "__mclCluster");
 		algorithmToColumnName.put("SCPS Cluster", "__scpsCluster");
 		
@@ -119,7 +122,11 @@ public class AutoAnnotatorInputPanel extends JPanel implements CytoPanelComponen
 					ClusterMakerTaskFactory clusterMakerTaskFactory = new ClusterMakerTaskFactory(selectedView, algorithm, dialogTaskManager, registrar);
 					dialogTaskManager.execute(clusterMakerTaskFactory.createTaskIterator());
 					clusterColumnName = algorithmToColumnName.get(algorithm);
-					while (selectedView.getModel().getDefaultNodeTable().getColumn(clusterColumnName) == null) {
+					Collection<CyColumn> columns = selectedView.getModel().getDefaultNodeTable().getColumns();
+					CyColumn column = selectedView.getModel().getDefaultNodeTable().getColumn(clusterColumnName);
+					while (column == null) { // Give clusterMaker time to finish
+						columns = selectedView.getModel().getDefaultNodeTable().getColumns();
+						column = selectedView.getModel().getDefaultNodeTable().getColumn(clusterColumnName);
 						continue;
 					}
 				} else if (specifyColumnButton.isSelected()) {

@@ -50,7 +50,7 @@ import org.baderlab.csplugins.enrichmentmap.autoannotate.model.AnnotationSet;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.NodeText;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.WordUtils;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.view.AnnotationDisplayPanel;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.view.AutoAnnotatorDisplayPanel;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanel;
@@ -91,14 +91,14 @@ public class AutoAnnotatorTask extends AbstractTask {
 	private String nameColumnName;
 	private String clusterColumnName;
 	private CyServiceRegistrar registrar;
-	private AnnotationDisplayPanel displayPanel;
+	private AutoAnnotatorDisplayPanel displayPanel;
 	private int annotationSetNumber;
 	private String annotationSetName;
 	private CyTableManager tableManager;
 
 	public AutoAnnotatorTask(CySwingApplication application, CyApplicationManager applicationManager, 
 			CyNetworkViewManager networkViewManager, CyNetworkManager networkManager,
-			AnnotationManager annotationManager, AnnotationDisplayPanel displayPanel, CyNetworkView selectedView, String clusterColumnName, 
+			AnnotationManager annotationManager, AutoAnnotatorDisplayPanel displayPanel, CyNetworkView selectedView, String clusterColumnName, 
 			String nameColumnName, int annotationSetNumber, CyServiceRegistrar registrar, CyTableManager tableManager){
 		
 		this.application = application;
@@ -178,37 +178,60 @@ public class AutoAnnotatorTask extends AbstractTask {
 		AnnotationFactory<TextAnnotation> textFactory = (AnnotationFactory<TextAnnotation>) registrar.getService(AnnotationFactory.class, "(type=TextAnnotation.class)");
 		
 		List<CyNode> nodes = network.getNodeList();
-		for (CyNode node : nodes) {
-			Integer clusterNumber;
-			while (true) { // If clustermaker has not finished yet
-				try {
-					clusterNumber = network.getRow(node).get(this.clusterColumnName, Integer.class);
-					break;
-				} catch (ClassCastException e) {
-					continue;
+		Class<?> columnType = network.getDefaultNodeTable().getColumn(clusterColumnName).getType();
+		if (columnType == Integer.class) {
+			for (CyNode node : nodes) {
+				Integer clusterNumber;
+				clusterNumber = network.getRow(node).get(clusterColumnName, Integer.class);
+				if (clusterNumber != null) {
+					View<CyNode> nodeView = networkView.getNodeView(node);
+					double x = nodeView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION);
+					double y = nodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
+					double[] coordinates = {x, y};
+					
+					String nodeName = network.getRow(node).get(nameColumnName, String.class);
+					NodeText nodeText = new NodeText();
+					nodeText.setName(nodeName);
+					
+					// empty values (no cluster) are given null
+					Cluster cluster;
+					if (clusters.clusterSet.keySet().contains(clusterNumber)) {
+						cluster = clusters.clusterSet.get(clusterNumber);
+					} else {
+						cluster = new Cluster(clusterNumber, network, networkView, annotationManager, clusterColumnName, shapeFactory, clusters, textFactory, registrar);
+						clusters.addCluster(cluster);
+					}
+					cluster.addNode(node);
+					cluster.addCoordinates(coordinates);
+					cluster.addNodeText(nodeText);
 				}
 			}
-			if (clusterNumber != null) {
-				View<CyNode> nodeView = networkView.getNodeView(node);
-				double x = nodeView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION);
-				double y = nodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
-				double[] coordinates = {x, y};
-				
-				String nodeName = network.getRow(node).get(nameColumnName, String.class);
-				NodeText nodeText = new NodeText();
-				nodeText.setName(nodeName);
-				
-				// empty values (no cluster) are given null
-				Cluster cluster;
-				if (clusters.clusterSet.keySet().contains(clusterNumber)) {
-					cluster = clusters.clusterSet.get(clusterNumber);
-				} else {
-					cluster = new Cluster(clusterNumber, network, networkView, annotationManager, clusterColumnName, shapeFactory, clusters, textFactory, registrar);
-					clusters.addCluster(cluster);
+		} else if (columnType == List.class) {
+			for (CyNode node : nodes) {
+				List<Integer> clusterNumbers = new ArrayList<Integer>();
+				clusterNumbers = network.getRow(node).get(clusterColumnName, List.class);
+				for (int clusterNumber : clusterNumbers) {
+					View<CyNode> nodeView = networkView.getNodeView(node);
+					double x = nodeView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION);
+					double y = nodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
+					double[] coordinates = {x, y};
+					
+					String nodeName = network.getRow(node).get(nameColumnName, String.class);
+					NodeText nodeText = new NodeText();
+					nodeText.setName(nodeName);
+					
+					// empty values (no cluster) are given null
+					Cluster cluster;
+					if (clusters.clusterSet.keySet().contains(clusterNumber)) {
+						cluster = clusters.clusterSet.get(clusterNumber);
+					} else {
+						cluster = new Cluster(clusterNumber, network, networkView, annotationManager, clusterColumnName, shapeFactory, clusters, textFactory, registrar);
+						clusters.addCluster(cluster);
+					}
+					cluster.addNode(node);
+					cluster.addCoordinates(coordinates);
+					cluster.addNodeText(nodeText);
 				}
-				cluster.addNode(node);
-				cluster.addCoordinates(coordinates);
-				cluster.addNodeText(nodeText);
 			}
 		}
 		return clusters;

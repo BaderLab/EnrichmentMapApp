@@ -40,24 +40,34 @@ public class ClusterMakerTask implements Task {
 		String command = null;
 		if (algorithm == "Affinity Propagation Cluster") {
 			command = "cluster ap adjustLoops=true attribute=\"--None--\" clusterAttribute=\"__APCluster\" "
-					+ "createGroups=false edgeWeighter=\"None\" lambda=0.5 network=\""
+					+ "createGroups=false lambda=0.5 network=\""
 					+ network.toString() + "\" preference=-1.0 rNumber=8 restoreEdges=false selectedOnly=false "
 					+ "showUI=false undirectedEdges=true";
+		} else if (algorithm == "Cluster Fuzzifier") {
+			command = "cluster fuzzifier adjustLoops=false attribute=\"--None--\" "
+					+ "clusterAttribute=\"__fuzzifierCluster\" createGroups=false "
+					+ "network=\"" + network.toString() + "\" "
+					+ "restoreEdges=false selectedOnly=false showUI=false undirectedEdges=true";
 		} else if (algorithm == "Community cluster (GLay)") {
 			command = "cluster glay clusterAttribute=\"__glayCluster\" createGroups=false network=\""
 					+ network.toString() + "\" restoreEdges=false selectedOnly=false "
 					+ "showUI=false undirectedEdges=true";
 		} else if (algorithm == "ConnectedComponents Cluster") {
 			command = "cluster connectedcomponents adjustLoops=true attribute=\"--None--\" clusterAttribute=\""
-					+ "__ccCluster\" createGroups=false edgeWeighter=\"None\" network=\"" + network.toString()
+					+ "__ccCluster\" createGroups=false network=\"" + network.toString()
+					+ "restoreEdges=false selectedOnly=false showUI=false undirectedEdges=true";
+		} else if (algorithm == "Fuzzy C-Means Cluster") {
+			command = "cluster fcml adjustLoops=false attribute=\"--None--\" "
+					+ "clusterAttribute=\"__fcmCluster\" createGroups=false "
+					+ "estimateClusterNumber=true network=\"" + network.toString() + "\" "
 					+ "restoreEdges=false selectedOnly=false showUI=false undirectedEdges=true";
 		} else if (algorithm == "MCL Cluster") {
 			command = "cluster mcl adjustLoops=false attribute=\"--None--\" clusterAttribute=\"__mclCluster\" "
-					+ "createGroups=false edgeWeighter=\"None\" network=\"" + network.toString() + "\" "
+					+ "createGroups=false network=\"" + network.toString() + "\" "
 					+ "restoreEdges=false selectedOnly=false showUI=false undirectedEdges=true";
 		} else if (algorithm == "SCPS Cluster") {
 			command = "cluster scps adjustLoops=false attribute=\"--None--\" clusterAttribute=\"__scpsCluster\" "
-					+ "createGroups=false edgeWeighter=\"None\" network=\"EM1_Enrichment Map\" restoreEdges=false "
+					+ "createGroups=false network=\"EM1_Enrichment Map\" restoreEdges=false "
 					+ "selectedOnly=false showUI=false undirectedEdges=true";
 		}
 		commands.add(command);

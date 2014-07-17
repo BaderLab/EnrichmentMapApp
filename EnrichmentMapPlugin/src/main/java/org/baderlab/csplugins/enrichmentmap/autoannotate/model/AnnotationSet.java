@@ -26,14 +26,12 @@ public class AnnotationSet {
 	public boolean drawn;
 	public CyNetwork network;
 	public CyNetworkView view;
-	private String clusterColumnName;
 	private CyTableManager tableManager;
 	
 	public AnnotationSet(String name, CyNetwork network, CyNetworkView view, String clusterColumnName, CyTableManager tableManager) {
 		this.name = name;
 		this.clusterSet = new TreeMap<Integer, Cluster>();
 		this.network = network;
-		this.clusterColumnName = clusterColumnName;
 		this.view = view;
 		this.tableManager = tableManager;
 	}
@@ -61,21 +59,13 @@ public class AnnotationSet {
 	}
 	
 	public void updateCoordinates() {
-		
 		for (Cluster cluster : clusterSet.values()) {
 			cluster.coordinates = new ArrayList<double[]>();
-		}
-		
-		List<CyNode> nodes = network.getNodeList();
-		for (CyNode node : nodes) {
-			Integer clusterNumber = network.getRow(node).get(this.clusterColumnName, Integer.class);
-			if (clusterNumber != null) {
+			for (CyNode node : cluster.nodes) {
 				View<CyNode> nodeView = view.getNodeView(node);
 				double x = nodeView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION);
 				double y = nodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
 				double[] coordinates = {x, y};
-				
-				Cluster cluster = clusterSet.get(clusterNumber);
 				cluster.addCoordinates(coordinates);
 			}
 		}
@@ -88,14 +78,12 @@ public class AnnotationSet {
 			int clusterNumber = cluster.getClusterNumber();
 			Long clusterTableSUID = network.getDefaultNetworkTable().getRow(network.getSUID()).get(name + " ", Long.class);
 			CyRow clusterRow = tableManager.getTable(clusterTableSUID).getRow(clusterNumber);
-			for (CyNode node : cluster.nodes) {
-				List<String> wordList = clusterRow.get("WC_Word", List.class);
-				List<String> sizeList = clusterRow.get("WC_FontSize", List.class);
-				List<String> clusterList = clusterRow.get("WC_Cluster", List.class);
-				List<String> numberList = clusterRow.get("WC_Number", List.class);
-				String label = WordUtils.makeLabel(wordList, sizeList, clusterList, numberList);
-				cluster.setLabel(label);
-			}
+			List<String> wordList = clusterRow.get("WC_Word", List.class);
+			List<String> sizeList = clusterRow.get("WC_FontSize", List.class);
+			List<String> clusterList = clusterRow.get("WC_Cluster", List.class);
+			List<String> numberList = clusterRow.get("WC_Number", List.class);
+			String label = WordUtils.makeLabel(wordList, sizeList, clusterList, numberList);
+			cluster.setLabel(label);
 		}
 	}
 	
