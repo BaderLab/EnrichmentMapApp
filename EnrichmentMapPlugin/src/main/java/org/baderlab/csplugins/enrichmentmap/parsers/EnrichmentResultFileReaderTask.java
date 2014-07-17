@@ -209,7 +209,8 @@ public class EnrichmentResultFileReaderTask extends AbstractTask {
     					parseGenericFile(lines);
 
     			}
-    			else if (header_line.contains("File created with BiNGO")){
+    			//fix bug with new version of bingo plugin change the case of the header file.
+    			else if (header_line.toLowerCase().contains("File created with BiNGO".toLowerCase())){
     				parseBingoFile(lines);
     			}
     			else if(header_line.contains("GREAT version")){
