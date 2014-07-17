@@ -13,7 +13,6 @@ import org.cytoscape.work.swing.DialogTaskManager;
 
 public class ClusterMakerTask implements Task {
 
-	private CyNetworkView selectedView;
 	private String algorithm;
 	private DialogTaskManager dialogTaskManager;
 	private CyServiceRegistrar registrar;
@@ -21,7 +20,6 @@ public class ClusterMakerTask implements Task {
 	
 	public ClusterMakerTask(CyNetworkView selectedView, String algorithm, 
 			DialogTaskManager dialogTaskManager, CyServiceRegistrar registrar) {
-		this.selectedView = selectedView;
 		this.network = selectedView.getModel();
 		this.algorithm = algorithm;
 		this.dialogTaskManager = dialogTaskManager;
@@ -40,9 +38,8 @@ public class ClusterMakerTask implements Task {
 		String command = null;
 		if (algorithm == "Affinity Propagation Cluster") {
 			command = "cluster ap adjustLoops=true attribute=\"--None--\" clusterAttribute=\"__APCluster\" "
-					+ "createGroups=false lambda=0.5 network=\""
-					+ network.toString() + "\" preference=-1.0 rNumber=8 restoreEdges=false selectedOnly=false "
-					+ "showUI=false undirectedEdges=true";
+					+ "createGroups=false network=\"" + network.toString() + "\" "
+					+ "restoreEdges=false selectedOnly=false showUI=false undirectedEdges=true";
 		} else if (algorithm == "Cluster Fuzzifier") {
 			command = "cluster fuzzifier adjustLoops=false attribute=\"--None--\" "
 					+ "clusterAttribute=\"__fuzzifierCluster\" createGroups=false "

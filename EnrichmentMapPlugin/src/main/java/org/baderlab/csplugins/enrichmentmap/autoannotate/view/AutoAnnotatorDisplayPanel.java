@@ -3,6 +3,7 @@ package org.baderlab.csplugins.enrichmentmap.autoannotate.view;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -12,7 +13,9 @@ import java.util.HashMap;
 import javax.swing.BoxLayout;
 import javax.swing.Icon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -48,13 +51,17 @@ public class AutoAnnotatorDisplayPanel extends JPanel implements CytoPanelCompon
 	private static AutoAnnotatorDisplayPanel instance;
 	
 	private CySwingApplication application;
-	private JPanel mainPanel;
 	private HashMap<String, AnnotationSet> clusterSets;
 	private HashMap<AnnotationSet, JPanel> clustersToTables;
+	private JLabel networkLabel;
+	private JPanel mainPanel;
 	private HashMap<CyNetworkView, JComboBox> networkViewToClusterSetDropdown;
 	private JComboBox clusterSetDropdown;
 
 	private CyNetworkView selectedView;
+
+	private JCheckBox wordCloudDisplayToggle;
+
 	
 
 
@@ -96,6 +103,7 @@ public class AutoAnnotatorDisplayPanel extends JPanel implements CytoPanelCompon
 	public void addNetworkView(CyNetworkView view) {
 		// Create dropdown with cluster sets of this networkView
 		final JComboBox clusterSetDropdown = new JComboBox(); // Final so that the item listener can access it
+		clusterSetDropdown.setPreferredSize(new Dimension(180, 30));
 		clusterSetDropdown.addItemListener(new ItemListener(){
 			public void itemStateChanged(ItemEvent itemEvent) {
 				if (itemEvent.getStateChange() == ItemEvent.SELECTED) {
@@ -114,6 +122,8 @@ public class AutoAnnotatorDisplayPanel extends JPanel implements CytoPanelCompon
 		mainPanel.add(clusterSetDropdown);
 		networkViewToClusterSetDropdown.put(view, clusterSetDropdown);
 		selectedView = view;
+		networkLabel.setText(view.getModel().toString());
+		mainPanel.updateUI();
 	}
 	
 	public void removeClusters(AnnotationSet clusters) {
@@ -125,6 +135,12 @@ public class AutoAnnotatorDisplayPanel extends JPanel implements CytoPanelCompon
 	private JPanel createMainPanel() {
 		JPanel mainPanel = new JPanel();
 		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+		
+		// Label showing network label
+		networkLabel = new JLabel("");
+		Font font = networkLabel.getFont();
+		networkLabel.setFont(new Font(font.getFamily(), font.getStyle(), 18));
+		mainPanel.add(networkLabel);
 		
         // Button to remove all annotations
         JButton clearButton = new JButton("Remove Annotation Set");
@@ -176,6 +192,9 @@ public class AutoAnnotatorDisplayPanel extends JPanel implements CytoPanelCompon
         updateButton.addActionListener(updateActionListener); 
         mainPanel.add(updateButton);
         
+        wordCloudDisplayToggle = new JCheckBox("Show WordCloud display on selection");
+        mainPanel.add(wordCloudDisplayToggle);
+        
 		return mainPanel;
 	}
 	
@@ -226,11 +245,20 @@ public class AutoAnnotatorDisplayPanel extends JPanel implements CytoPanelCompon
 			public void valueChanged(ListSelectionEvent e) {
 				if (! e.getValueIsAdjusting()) { // Down-click and up-click are separate events
 					int selectedRowIndex = table.getSelectedRow();
-					Cluster selectedCluster = (Cluster) table.getValueAt(selectedRowIndex, 0); // Final to use inside of 
+					Cluster selectedCluster = (Cluster) table.getValueAt(selectedRowIndex, 0); 
 					selectedCluster.select();
-					// Doesn't work because WordCloud takes some time to switch over
-//					CytoPanel panel = application.getCytoPanel(getCytoPanelName());
-//					panel.setSelectedIndex(panel.indexOfComponent(AnnotationDisplayPanel.getInstance()));
+					if (!wordCloudDisplayToggle.isSelected()) {
+						try {
+							Thread.sleep(900); // Give WordCloud time to switch to its panel
+						} catch (InterruptedException e1) {
+							e1.printStackTrace();
+						}
+						CytoPanel panel = application.getCytoPanel(getCytoPanelName());
+						int index = panel.indexOfComponent(AutoAnnotatorDisplayPanel.getInstance());
+						if (index != -1) {
+							panel.setSelectedIndex(panel.indexOfComponent(AutoAnnotatorDisplayPanel.getInstance()));
+						}
+					}
 				}
 			}
 		});
@@ -251,7 +279,6 @@ public class AutoAnnotatorDisplayPanel extends JPanel implements CytoPanelCompon
 
 	@Override
 	public CytoPanelName getCytoPanelName() {
-		// TODO Auto-generated method stub
 		return CytoPanelName.SOUTH;
 	}
 
@@ -266,11 +293,24 @@ public class AutoAnnotatorDisplayPanel extends JPanel implements CytoPanelCompon
 	}
 
 	public void updateSelectedView(CyNetworkView view) {
-		clusterSetDropdown = networkViewToClusterSetDropdown.get(selectedView);
-		clusterSetDropdown.setVisible(false);
-		selectedView = view;
-		clusterSetDropdown = networkViewToClusterSetDropdown.get(selectedView);
-		clusterSetDropdown.setVisible(true);
+		if (networkViewToClusterSetDropdown.containsKey(view)) {
+			// Hide previously selected dropdown
+			clusterSetDropdown = networkViewToClusterSetDropdown.get(selectedView);
+			clusterSetDropdown.setVisible(false);				
+			selectedView = view;
+			// Update the label with the name of the newly selected network
+			networkLabel.setText(view.getModel().toString());
+			mainPanel.updateUI();
+			// Show newly selected dropdown
+			clusterSetDropdown = networkViewToClusterSetDropdown.get(selectedView);
+			clusterSetDropdown.setVisible(true);
+			// Keep the panel visible (WordCloud switches too) - doesn't work!
+//			CytoPanel panel = application.getCytoPanel(getCytoPanelName());
+//			int index = panel.indexOfComponent(AutoAnnotatorDisplayPanel.getInstance());
+//			if (index != -1) {
+//				panel.setSelectedIndex(panel.indexOfComponent(AutoAnnotatorDisplayPanel.getInstance()));
+//			}
+		}
 	}
 
 

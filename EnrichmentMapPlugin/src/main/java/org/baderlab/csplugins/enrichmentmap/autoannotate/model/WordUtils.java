@@ -1,22 +1,8 @@
 package org.baderlab.csplugins.enrichmentmap.autoannotate.model;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.TreeMap;
-
-import org.cytoscape.command.CommandExecutorTaskFactory;
-import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.work.ObservableTask;
-import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.TaskObserver;
-import org.cytoscape.work.swing.DialogTaskManager;
 
 /**
  * Created by:
@@ -47,7 +33,6 @@ public class WordUtils{
 		String biggestWordCluster = null;
 		String secondBiggestWord = "";
 		for (int i = 0; i < wordList.size(); i++) {
-			// eventually make use of the other parts of the wordInfo (cluster grouping, word number (?))
 			if (Integer.parseInt(sizeList.get(i)) > biggestSize) {
 				biggestSize = Integer.parseInt(sizeList.get(i));
 				biggestWord = wordList.get(i);
@@ -55,7 +40,7 @@ public class WordUtils{
 			}
 		}
 		biggestSize = -1;
-		HashSet uniqueClusters = new HashSet<String>(clusterList);
+		HashSet<String> uniqueClusters = new HashSet<String>(clusterList);
 		if (uniqueClusters.size() > 1) {
 			for (int i = 0; i < wordList.size(); i++) {
 				if (Integer.parseInt(sizeList.get(i)) > biggestSize && wordList.get(i) != biggestWord && clusterList.get(i) != biggestWordCluster) {

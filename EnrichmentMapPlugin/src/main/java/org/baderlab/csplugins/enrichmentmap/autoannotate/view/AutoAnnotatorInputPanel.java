@@ -3,15 +3,12 @@ package org.baderlab.csplugins.enrichmentmap.autoannotate.view;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.util.Collection;
 import java.util.TreeMap;
 
-import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
@@ -122,10 +119,8 @@ public class AutoAnnotatorInputPanel extends JPanel implements CytoPanelComponen
 					ClusterMakerTaskFactory clusterMakerTaskFactory = new ClusterMakerTaskFactory(selectedView, algorithm, dialogTaskManager, registrar);
 					dialogTaskManager.execute(clusterMakerTaskFactory.createTaskIterator());
 					clusterColumnName = algorithmToColumnName.get(algorithm);
-					Collection<CyColumn> columns = selectedView.getModel().getDefaultNodeTable().getColumns();
 					CyColumn column = selectedView.getModel().getDefaultNodeTable().getColumn(clusterColumnName);
 					while (column == null) { // Give clusterMaker time to finish
-						columns = selectedView.getModel().getDefaultNodeTable().getColumns();
 						column = selectedView.getModel().getDefaultNodeTable().getColumn(clusterColumnName);
 						continue;
 					}
@@ -152,12 +147,11 @@ public class AutoAnnotatorInputPanel extends JPanel implements CytoPanelComponen
         mainPanel.add(clusterPanel);
         mainPanel.add(confirmButton);
         
-        
         return mainPanel;
 	}
 
 	private BasicCollapsiblePanel createClusterPanel() {
-		BasicCollapsiblePanel clusterPanel = new BasicCollapsiblePanel("Cluster Options");
+		BasicCollapsiblePanel clusterPanel = new BasicCollapsiblePanel("Advanced Clustering Options");
 		
 		JPanel innerPanel = new JPanel(); // To override default layout options of BasicCollapsiblePanel
 		

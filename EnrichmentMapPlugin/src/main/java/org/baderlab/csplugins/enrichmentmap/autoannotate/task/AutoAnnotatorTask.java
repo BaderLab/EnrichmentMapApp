@@ -49,7 +49,6 @@ import java.util.List;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.AnnotationSet;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.NodeText;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.model.WordUtils;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.view.AutoAnnotatorDisplayPanel;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
@@ -59,7 +58,6 @@ import org.cytoscape.command.CommandExecutorTaskFactory;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -169,12 +167,11 @@ public class AutoAnnotatorTask extends AbstractTask {
 		taskMonitor.setStatusMessage("Done!");
 	}
 	
+	@SuppressWarnings("unchecked")
 	private AnnotationSet makeClusters(CyNetwork network, CyNetworkView networkView, String name) {
 		AnnotationSet clusters = new AnnotationSet(name, network, networkView, clusterColumnName, tableManager);
 		
-		@SuppressWarnings("unchecked")
 		AnnotationFactory<ShapeAnnotation> shapeFactory = (AnnotationFactory<ShapeAnnotation>) registrar.getService(AnnotationFactory.class, "(type=ShapeAnnotation.class)");    	
-		@SuppressWarnings("unchecked")
 		AnnotationFactory<TextAnnotation> textFactory = (AnnotationFactory<TextAnnotation>) registrar.getService(AnnotationFactory.class, "(type=TextAnnotation.class)");
 		
 		List<CyNode> nodes = network.getNodeList();

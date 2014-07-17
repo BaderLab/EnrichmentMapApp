@@ -43,13 +43,9 @@
 
 package org.baderlab.csplugins.enrichmentmap.autoannotate.action;
 
-import javax.swing.*;
-
-import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.view.AutoAnnotatorDisplayPanel;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.view.AutoAnnotatorInputPanel;
-import org.baderlab.csplugins.enrichmentmap.view.EnrichmentMapInputPanel;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
@@ -58,16 +54,12 @@ import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.application.swing.CytoPanelState;
 import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.util.swing.FileChooserFilter;
-import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.presentation.annotations.AnnotationManager;
-import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.swing.DialogTaskManager;
 
 import java.awt.event.ActionEvent;
@@ -157,6 +149,11 @@ public class AutoAnnotatorPanelAction extends AbstractCyAction {
           // If the state of the cytoPanelWest is HIDE, show it
           if (cytoPanelWest.getState() == CytoPanelState.HIDE) {
         	  cytoPanelWest.setState(CytoPanelState.DOCK);
+          }
+          
+          // If the state of the cytoPanelSouth is HIDE, show it
+          if (cytoPanelSouth.getState() == CytoPanelState.HIDE) {
+        	  cytoPanelSouth.setState(CytoPanelState.DOCK);
           }
           
           // Select my panels
