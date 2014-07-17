@@ -1429,7 +1429,10 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
             Dataset2RankFileTextField.setText(rnk);
             dataset2files.setRankedFile(rnk);
             Dataset2RankFileTextField.setToolTipText(rnk);
-
+            
+            //dataset 2 needs the gmt file as well
+            dataset2files.setGMTFileName(gmt);
+            
             dataset2files.setEnrichmentFileName1(edbFile.getAbsolutePath());
             this.setDatasetnames(edbFile.getAbsolutePath(),"",dataset1);
        }
@@ -1716,8 +1719,9 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
            }
            if(AutoPopulate){
         	   
-        	   
-                GCTFileName2TextField.setForeground(checkFile(data));
+               dataset2files.setGMTFileName(gmt);
+
+               GCTFileName2TextField.setForeground(checkFile(data));
                 GCTFileName2TextField.setText(data);
                 dataset2files.setExpressionFileName(data);
                 params.setData2(true);

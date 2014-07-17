@@ -79,6 +79,8 @@ public class CreateDummyExpressionTask extends AbstractTask{
         expressionMatrix.setNumGenes(expressionMatrix.getExpressionMatrix().size());
 		expressionMatrix.setNumConditions(3);
 		
+		expressionMatrix.setFilename("Dummy Expression_" + dataset.getName().toString() );
+		
 		//set that there is data for the expression viewer
 		dataset.getMap().getParams().setData(true);
     }
