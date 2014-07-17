@@ -3,10 +3,12 @@ package org.baderlab.csplugins.enrichmentmap.autoannotate.view;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.util.List;
 import java.util.TreeMap;
 
 import javax.swing.BoxLayout;
@@ -64,6 +66,7 @@ public class AutoAnnotatorInputPanel extends JPanel implements CytoPanelComponen
 	private JRadioButton specifyColumnButton;
 	protected CyNetworkView selectedView;
 	private CyTableManager tableManager;
+	private JLabel networkLabel;
 
 	public AutoAnnotatorInputPanel(CyApplicationManager cyApplicationManagerRef, 
 			CyNetworkViewManager cyNetworkViewManagerRef, CySwingApplication cySwingApplicationRef,
@@ -86,7 +89,8 @@ public class AutoAnnotatorInputPanel extends JPanel implements CytoPanelComponen
 		
 		JPanel mainPanel = createMainPanel(cyApplicationManagerRef, cyNetworkViewManagerRef, cySwingApplicationRef,
 				openBrowserRef, cyNetworkManagerRef, annotationManager, registrar, dialogTaskManager, eventHelper);
-		add(mainPanel,BorderLayout.CENTER);		
+		add(mainPanel,BorderLayout.CENTER);
+		setPreferredSize(new Dimension(500, getHeight()));
 	}
 	
 	private JPanel createMainPanel(final CyApplicationManager cyApplicationManagerRef,
@@ -97,6 +101,11 @@ public class AutoAnnotatorInputPanel extends JPanel implements CytoPanelComponen
 		JPanel mainPanel = new JPanel();
 		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
         
+		networkLabel = new JLabel();
+		Font font = networkLabel.getFont();
+		networkLabel.setFont(new Font(font.getFamily(), font.getStyle(), 18));
+		mainPanel.add(networkLabel);
+		
         // Give the user a choice of column with gene names
         nameColumnDropdown = new JComboBox();
 
@@ -245,9 +254,15 @@ public class AutoAnnotatorInputPanel extends JPanel implements CytoPanelComponen
 		nameColumnDropdown.removeAllItems();
 		clusterColumnDropdown.removeAllItems();
 		for (CyColumn column : view.getModel().getDefaultNodeTable().getColumns()) {
-			nameColumnDropdown.addItem(column.getName());
-			clusterColumnDropdown.addItem(column.getName());
+			if (column.getType() == String.class || (column.getType() == List.class && column.getListElementType() == String.class)) {
+				nameColumnDropdown.addItem(column.getName());
+			} else if (column.getType() == Integer.class || (column.getType() == List.class && column.getListElementType() == Integer.class)) {
+				clusterColumnDropdown.addItem(column.getName());
+			}
 		}
+		// Update the label with the network
+		networkLabel.setText("  " + view.getModel().toString());
+		((JPanel) networkLabel.getParent()).updateUI();
 		selectedView = view;
 	}
 
@@ -258,7 +273,10 @@ public class AutoAnnotatorInputPanel extends JPanel implements CytoPanelComponen
 				if (nameColumnDropdown.getModel().getElementAt(i) == oldColumnName) {
 					nameColumnDropdown.removeItem(oldColumnName);
 					nameColumnDropdown.insertItemAt(newColumnName, i);
-					// Eventually clusterColumn and name column should be distinct
+				}
+			}
+			for (int i = 0; i < clusterColumnDropdown.getItemCount(); i++) {
+				if (clusterColumnDropdown.getModel().getElementAt(i) == oldColumnName) {
 					clusterColumnDropdown.removeItem(oldColumnName);
 					clusterColumnDropdown.insertItemAt(newColumnName, i);
 				}
@@ -271,7 +289,10 @@ public class AutoAnnotatorInputPanel extends JPanel implements CytoPanelComponen
 			for (int i = 0; i < nameColumnDropdown.getItemCount(); i++) {
 				if (nameColumnDropdown.getModel().getElementAt(i) == columnName) {
 					nameColumnDropdown.removeItem(columnName);
-					// Eventually clusterColumn and name column should be distinct
+				}
+			}
+			for (int i = 0; i < clusterColumnDropdown.getItemCount(); i++) {
+				if (clusterColumnDropdown.getModel().getElementAt(i) == columnName) {
 					clusterColumnDropdown.removeItem(columnName);
 				}
 			}
@@ -279,10 +300,14 @@ public class AutoAnnotatorInputPanel extends JPanel implements CytoPanelComponen
 	}
 
 	public void columnCreated(CyTable source, String columnName) {
-		// TODO Auto-generated method stub
-		if (source == selectedView.getModel().getDefaultNodeTable()) {
-			nameColumnDropdown.addItem(columnName);
-			clusterColumnDropdown.addItem(columnName);
+		CyTable nodeTable = selectedView.getModel().getDefaultNodeTable();
+		if (source == nodeTable) {
+			CyColumn column = nodeTable.getColumn(columnName);
+			if (column.getType() == String.class || (column.getType() == List.class && column.getListElementType() == String.class)) {
+				nameColumnDropdown.addItem(column.getName());
+			} else if (column.getType() == Integer.class || (column.getType() == List.class && column.getListElementType() == Integer.class)) {
+				clusterColumnDropdown.addItem(column.getName());
+			}
 		}
 	}
 }
