@@ -101,7 +101,7 @@ public class AutoAnnotatorInputPanel extends JPanel implements CytoPanelComponen
 		JPanel mainPanel = new JPanel();
 		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
         
-		networkLabel = new JLabel();
+		networkLabel = new JLabel("No network selected");
 		Font font = networkLabel.getFont();
 		networkLabel.setFont(new Font(font.getFamily(), font.getStyle(), 18));
 		mainPanel.add(networkLabel);
@@ -260,6 +260,15 @@ public class AutoAnnotatorInputPanel extends JPanel implements CytoPanelComponen
 				clusterColumnDropdown.addItem(column.getName());
 			}
 		}
+		
+		for (int i = 0; i < nameColumnDropdown.getItemCount(); i++) {
+			if (nameColumnDropdown.getItemAt(i).getClass() == String.class) {
+				if (((String) nameColumnDropdown.getItemAt(i)).contains("GS_DESCR")) {
+					nameColumnDropdown.setSelectedIndex(i);
+				}
+			}
+		}
+		
 		// Update the label with the network
 		networkLabel.setText("  " + view.getModel().toString());
 		((JPanel) networkLabel.getParent()).updateUI();

@@ -137,7 +137,7 @@ public class AutoAnnotatorDisplayPanel extends JPanel implements CytoPanelCompon
 		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
 		
 		// Label showing network label
-		networkLabel = new JLabel("");
+		networkLabel = new JLabel("No annotated network selected");
 		Font font = networkLabel.getFont();
 		networkLabel.setFont(new Font(font.getFamily(), font.getStyle(), 18));
 		mainPanel.add(networkLabel);
