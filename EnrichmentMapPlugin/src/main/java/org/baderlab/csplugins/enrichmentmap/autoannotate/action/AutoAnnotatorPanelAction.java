@@ -44,7 +44,6 @@
 package org.baderlab.csplugins.enrichmentmap.autoannotate.action;
 
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.view.AutoAnnotatorDisplayPanel;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.view.AutoAnnotatorInputPanel;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
@@ -84,7 +83,6 @@ public class AutoAnnotatorPanelAction extends AbstractCyAction {
 
     
     private final CytoPanel cytoPanelWest;
-    private CytoPanel cytoPanelSouth;
     
     private CyServiceRegistrar registrar;
 	private CyApplicationManager applicationManager;
@@ -101,8 +99,6 @@ public class AutoAnnotatorPanelAction extends AbstractCyAction {
 
 	private CyTableManager tableManager;
 
-
-	private AutoAnnotatorDisplayPanel displayPanel;
 	private AutoAnnotatorInputPanel inputPanel;
 
 
@@ -118,7 +114,6 @@ public class AutoAnnotatorPanelAction extends AbstractCyAction {
  		putValue(NAME, "Annotate Clusters");		
  		
  		this.cytoPanelWest = application.getCytoPanel(CytoPanelName.WEST);
- 		this.cytoPanelSouth = application.getCytoPanel(CytoPanelName.SOUTH);
  		this.applicationManager = applicationManager;
  		this.networkManager = cyNetworkManagerRef;
  		this.networkViewManager = networkViewManager;
@@ -134,15 +129,13 @@ public class AutoAnnotatorPanelAction extends AbstractCyAction {
     }
 
 	public void actionPerformed(ActionEvent event) {		
-		if(!initialized) {      
-			displayPanel = new AutoAnnotatorDisplayPanel(application);
-    		inputPanel = new AutoAnnotatorInputPanel(applicationManager, networkViewManager,
-    				application, openBrowser, networkManager, annotationManager, displayPanel, registrar, dialogTaskManager, eventHelper, tableManager);
+		if(!initialized) {
+    		inputPanel = new AutoAnnotatorInputPanel(applicationManager, networkViewManager, 
+    				application, openBrowser, networkManager, annotationManager, manager, registrar,
+    				dialogTaskManager, eventHelper, tableManager);
     		inputPanel.updateSelectedView(applicationManager.getCurrentNetworkView());
     		manager.setInputPanel(inputPanel);
-    		manager.setDisplayPanel(displayPanel);
     		registrar.registerService(inputPanel,CytoPanelComponent.class, new Properties());
-    		registrar.registerService(displayPanel, CytoPanelComponent.class, new Properties());
     		initialized = true;
     	}
 
@@ -151,16 +144,8 @@ public class AutoAnnotatorPanelAction extends AbstractCyAction {
         	  cytoPanelWest.setState(CytoPanelState.DOCK);
           }
           
-          // If the state of the cytoPanelSouth is HIDE, show it
-          if (cytoPanelSouth.getState() == CytoPanelState.HIDE) {
-        	  cytoPanelSouth.setState(CytoPanelState.DOCK);
-          }
-          
           // Select my panels
           int inputIndex = cytoPanelWest.indexOfComponent(inputPanel);
           if (inputIndex != -1) cytoPanelWest.setSelectedIndex(inputIndex);
-
-          int displayIndex = cytoPanelSouth.indexOfComponent(displayPanel);
-          if (displayIndex != -1) cytoPanelSouth.setSelectedIndex(displayIndex);
         }
 }

@@ -47,10 +47,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapUtils;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.AnnotationSet;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.NodeText;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.view.AutoAnnotatorDisplayPanel;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.view.AutoAnnotatorInputPanel;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanel;
@@ -59,7 +60,6 @@ import org.cytoscape.command.CommandExecutorTaskFactory;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
@@ -90,19 +90,19 @@ public class AutoAnnotatorTask extends AbstractTask {
 	private String nameColumnName;
 	private String clusterColumnName;
 	private CyServiceRegistrar registrar;
-	private AutoAnnotatorDisplayPanel displayPanel;
 	private int annotationSetNumber;
 	private String annotationSetName;
 	private CyTableManager tableManager;
+	private AutoAnnotatorInputPanel inputPanel;
 
 	public AutoAnnotatorTask(CySwingApplication application, CyApplicationManager applicationManager, 
-			CyNetworkViewManager networkViewManager, CyNetworkManager networkManager,
-			AnnotationManager annotationManager, AutoAnnotatorDisplayPanel displayPanel, CyNetworkView selectedView, String clusterColumnName, 
+			CyNetworkViewManager networkViewManager, CyNetworkManager networkManager, AnnotationManager annotationManager,
+			AutoAnnotationManager autoAnnotationManager, CyNetworkView selectedView, String clusterColumnName, 
 			String nameColumnName, int annotationSetNumber, CyServiceRegistrar registrar, CyTableManager tableManager){
 		
 		this.application = application;
 		this.annotationManager = annotationManager;
-		this.displayPanel = displayPanel;
+		this.inputPanel = autoAnnotationManager.inputPanel;
 		this.view = selectedView;
 		this.network = view.getModel();
 		this.clusterColumnName = clusterColumnName;
@@ -114,7 +114,7 @@ public class AutoAnnotatorTask extends AbstractTask {
 
 	@Override
 	public void cancel() {
-		return;
+		cancelled = true;
 	}
 	
 	@Override
@@ -149,10 +149,11 @@ public class AutoAnnotatorTask extends AbstractTask {
     			continue;
     		}
     	}
-		displayPanel.addClusters(clusters); // Clusters get drawn inside of displayPanel
-		displayPanel.updateSelectedView(view);
-		CytoPanel southPanel = application.getCytoPanel(CytoPanelName.SOUTH);
-		southPanel.setSelectedIndex(southPanel.indexOfComponent(displayPanel));
+    	
+    	inputPanel.addClusters(clusters);
+    	inputPanel.updateSelectedView(view);
+		CytoPanel westPanel = application.getCytoPanel(CytoPanelName.WEST);
+		westPanel.setSelectedIndex(westPanel.indexOfComponent(inputPanel));
 
 		EnrichmentMapUtils.setOverrideHeatmapRevalidation(false);
 		
@@ -200,7 +201,8 @@ public class AutoAnnotatorTask extends AbstractTask {
 			for (CyNode node : nodes) {
 				List<Integer> clusterNumbers = new ArrayList<Integer>();
 				clusterNumbers = network.getRow(node).get(clusterColumnName, List.class);
-				for (int clusterNumber : clusterNumbers) {
+				for (int i = 0; i < clusterNumbers.size(); i++) {
+					int clusterNumber = clusterNumbers.get(i);
 					View<CyNode> nodeView = networkView.getNodeView(node);
 					double x = nodeView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION);
 					double y = nodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);

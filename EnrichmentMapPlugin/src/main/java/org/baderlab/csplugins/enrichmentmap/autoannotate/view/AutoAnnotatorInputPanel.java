@@ -8,6 +8,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.util.HashMap;
 import java.util.List;
 import java.util.TreeMap;
 
@@ -20,7 +21,18 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import javax.swing.table.DefaultTableModel;
 
+import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.model.AnnotationSet;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.task.AutoAnnotatorTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.task.ClusterMakerTaskFactory;
 import org.cytoscape.application.CyApplicationManager;
@@ -29,6 +41,7 @@ import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
@@ -54,28 +67,36 @@ public class AutoAnnotatorInputPanel extends JPanel implements CytoPanelComponen
 	private static final String specifyColumnButtonString = "Select cluster column";
 	private String nameColumnName;
 	private AutoAnnotatorTaskFactory autoAnnotatorTaskFactory;
-	private AutoAnnotatorDisplayPanel displayPanel;
 	public JComboBox clusterColumnDropdown;
 	public JComboBox nameColumnDropdown;
 	private int annotationSetNumber;
 	private JComboBox clusterAlgorithmDropdown;
 	private ButtonGroup radioButtonGroup;
 	private TreeMap<String, String> algorithmToColumnName;
-	protected String clustering;
 	private JRadioButton defaultButton;
 	private JRadioButton specifyColumnButton;
 	protected CyNetworkView selectedView;
 	private CyTableManager tableManager;
-	private JLabel networkLabel;
+	public JLabel networkLabel;
+	
+	private HashMap<CyNetworkView, JComboBox> networkViewToClusterSetDropdown;
+	private HashMap<String, AnnotationSet> clusterSets;
+	private HashMap<AnnotationSet, JTable> clustersToTables;
+	protected AutoAnnotationManager autoAnnotationManager;
+	private JPanel mainPanel;
+	private JPanel clusterTablePanel;
 
 	public AutoAnnotatorInputPanel(CyApplicationManager cyApplicationManagerRef, 
-			CyNetworkViewManager cyNetworkViewManagerRef, CySwingApplication cySwingApplicationRef,
+			CyNetworkViewManager cyNetworkViewManagerRef, CySwingApplication application,
 			OpenBrowser openBrowserRef, CyNetworkManager cyNetworkManagerRef, AnnotationManager annotationManager,
-			AutoAnnotatorDisplayPanel displayPanel, CyServiceRegistrar registrar, DialogTaskManager dialogTaskManager, 
+			AutoAnnotationManager autoAnnotationManager, CyServiceRegistrar registrar, DialogTaskManager dialogTaskManager, 
 			CyEventHelper eventHelper, CyTableManager tableManager){
-		
-		this.displayPanel = displayPanel;
+
 		this.tableManager = tableManager;
+		this.autoAnnotationManager = autoAnnotationManager;
+		this.clusterSets = new HashMap<String, AnnotationSet>();
+		this.clustersToTables = new HashMap<AnnotationSet, JTable>();
+		this.networkViewToClusterSetDropdown = new HashMap<CyNetworkView, JComboBox>();
 		annotationSetNumber = 1;
 		
 		algorithmToColumnName = new TreeMap<String, String>();		
@@ -87,14 +108,14 @@ public class AutoAnnotatorInputPanel extends JPanel implements CytoPanelComponen
 		algorithmToColumnName.put("MCL Cluster", "__mclCluster");
 		algorithmToColumnName.put("SCPS Cluster", "__scpsCluster");
 		
-		JPanel mainPanel = createMainPanel(cyApplicationManagerRef, cyNetworkViewManagerRef, cySwingApplicationRef,
+		mainPanel = createMainPanel(cyApplicationManagerRef, cyNetworkViewManagerRef, application,
 				openBrowserRef, cyNetworkManagerRef, annotationManager, registrar, dialogTaskManager, eventHelper);
 		add(mainPanel,BorderLayout.CENTER);
 		setPreferredSize(new Dimension(500, getHeight()));
 	}
 	
 	private JPanel createMainPanel(final CyApplicationManager cyApplicationManagerRef,
-			final CyNetworkViewManager cyNetworkViewManagerRef, final CySwingApplication cySwingApplicationRef,
+			final CyNetworkViewManager cyNetworkViewManagerRef, final CySwingApplication application,
 			final OpenBrowser openBrowserRef, final CyNetworkManager cyNetworkManagerRef, final AnnotationManager annotationManager,
 			final CyServiceRegistrar registrar, final DialogTaskManager dialogTaskManager, final CyEventHelper eventHelper) {
 		
@@ -104,28 +125,37 @@ public class AutoAnnotatorInputPanel extends JPanel implements CytoPanelComponen
 		networkLabel = new JLabel("No network selected");
 		Font font = networkLabel.getFont();
 		networkLabel.setFont(new Font(font.getFamily(), font.getStyle(), 18));
-		mainPanel.add(networkLabel);
 		
+		JLabel nameColumnDropdownLabel = new JLabel("   Select the column with the gene set descriptions:");
         // Give the user a choice of column with gene names
         nameColumnDropdown = new JComboBox();
-
         nameColumnDropdown.addItemListener(new ItemListener(){
         	public void itemStateChanged(ItemEvent itemEvent) {
                 nameColumnName = (String) itemEvent.getItem();
             }
         });
         
-        JPanel clusterPanel = createClusterPanel(); 
+        // Collapsible panel with advanced cluster options
+        JPanel clusterOptionsPanel = createClusterOptionsPanel(); 
         
-        JButton confirmButton = new JButton("Annotate!");
-
+        // Run the annotation
+        JButton annotateButton = new JButton("Annotate!");
         ActionListener annotateAction = new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
 				String clusterColumnName = "";
+				// If using default clustermaker parameters
 				if (defaultButton.isSelected()) {
-					// If using default clustermaker parameters
 					String algorithm = (String) clusterAlgorithmDropdown.getSelectedItem();
-					ClusterMakerTaskFactory clusterMakerTaskFactory = new ClusterMakerTaskFactory(selectedView, algorithm, dialogTaskManager, registrar);
+					
+					String edgeAttribute = "--None--";
+					for (CyColumn edgeColumn : selectedView.getModel().getDefaultEdgeTable().getColumns()) {
+						if (edgeColumn.getName().toLowerCase().contains("overlap_size") ||
+							edgeColumn.getName().toLowerCase().contains("similarity_coefficient")){
+							edgeAttribute = edgeColumn.getName();
+						}
+					}
+					
+					ClusterMakerTaskFactory clusterMakerTaskFactory = new ClusterMakerTaskFactory(selectedView, algorithm, edgeAttribute, dialogTaskManager, registrar);
 					dialogTaskManager.execute(clusterMakerTaskFactory.createTaskIterator());
 					clusterColumnName = algorithmToColumnName.get(algorithm);
 					CyColumn column = selectedView.getModel().getDefaultNodeTable().getColumn(clusterColumnName);
@@ -137,29 +167,75 @@ public class AutoAnnotatorInputPanel extends JPanel implements CytoPanelComponen
 					// If using a user specified column
 					clusterColumnName = (String) clusterColumnDropdown.getSelectedItem();
 				}
-				autoAnnotatorTaskFactory = new AutoAnnotatorTaskFactory(cySwingApplicationRef, cyApplicationManagerRef, 
-						cyNetworkViewManagerRef, cyNetworkManagerRef, annotationManager, displayPanel, selectedView, 
+				autoAnnotatorTaskFactory = new AutoAnnotatorTaskFactory(application, cyApplicationManagerRef, 
+						cyNetworkViewManagerRef, cyNetworkManagerRef, annotationManager, autoAnnotationManager, selectedView, 
 						clusterColumnName, nameColumnName, annotationSetNumber, registrar, dialogTaskManager, tableManager);
 				dialogTaskManager.execute(autoAnnotatorTaskFactory.createTaskIterator());
 				annotationSetNumber++;	
 			}
         };
-        confirmButton.addActionListener(annotateAction);
-        
-        JLabel nameColumnDropdownLabel = new JLabel("   Select the column with the gene set descriptions:"); // ambiguous phrasing?       
+        annotateButton.addActionListener(annotateAction);
         
         nameColumnDropdown.setAlignmentX(LEFT_ALIGNMENT);
-        clusterPanel.setAlignmentX(LEFT_ALIGNMENT);
+        clusterOptionsPanel.setAlignmentX(LEFT_ALIGNMENT);
         
+        clusterTablePanel = new JPanel();
+        clusterTablePanel.setLayout(new BorderLayout());
+        clusterTablePanel.setPreferredSize(new Dimension(200, 400));
+        clusterTablePanel.setMaximumSize(new Dimension(300, 400));
+        
+        JButton clearButton = new JButton("Remove Annotation Set");
+        ActionListener clearActionListener = new ActionListener(){
+        	public void actionPerformed(ActionEvent e) {
+        		JComboBox clusterSetDropdown = networkViewToClusterSetDropdown.get(selectedView);
+        		AnnotationSet clusters = (AnnotationSet) clusterSetDropdown.getSelectedItem();
+        		CyNetwork network = selectedView.getModel();
+        		// Delete wordCloud table
+        		tableManager.deleteTable(network.getDefaultNetworkTable().getRow(network.getSUID()).get(clusters.name + " ", Long.class));
+        		// Delete all annotations
+         		clusters.destroyAnnotations();
+         		clusterSetDropdown.removeItem(clusterSetDropdown.getSelectedItem());
+         		remove(clustersToTables.get(clusters).getParent());
+         		clustersToTables.remove(clusters);
+        	}
+        };
+        clearButton.addActionListener(clearActionListener); 
+        
+        JButton updateButton = new JButton("Update Annotation Set");
+        ActionListener updateActionListener = new ActionListener(){
+        	public void actionPerformed(ActionEvent e) {
+        		JComboBox clusterSetDropdown = networkViewToClusterSetDropdown.get(selectedView);
+        		AnnotationSet clusters = (AnnotationSet) clusterSetDropdown.getSelectedItem(); 
+        		clusters.updateCoordinates();
+        		clusters.updateLabels();
+        		clusters.eraseAnnotations(); 
+        		clusters.drawAnnotations();
+        		// Update the table if the value has changed (WordCloud has been updated)
+        		DefaultTableModel model = (DefaultTableModel) clustersToTables.get(clusters).getModel();
+        		int i = 0;
+        		for (Cluster cluster : clusters.clusterSet.values()) {
+        			if (!(model.getValueAt(i, 1).equals(cluster.getLabel()))) {
+        				model.setValueAt(cluster.getLabel(), i, 1);
+        			}
+        			i++;
+        		}
+        	}
+        };
+        updateButton.addActionListener(updateActionListener); 
+        
+        mainPanel.add(networkLabel);
         mainPanel.add(nameColumnDropdownLabel);
         mainPanel.add(nameColumnDropdown);
-        mainPanel.add(clusterPanel);
-        mainPanel.add(confirmButton);
+        mainPanel.add(clusterOptionsPanel);
+        mainPanel.add(annotateButton);
+        mainPanel.add(clusterTablePanel);
+        mainPanel.add(clearButton);
+        mainPanel.add(updateButton);
         
         return mainPanel;
 	}
 
-	private BasicCollapsiblePanel createClusterPanel() {
+	private BasicCollapsiblePanel createClusterOptionsPanel() {
 		BasicCollapsiblePanel clusterPanel = new BasicCollapsiblePanel("Advanced Clustering Options");
 		
 		JPanel innerPanel = new JPanel(); // To override default layout options of BasicCollapsiblePanel
@@ -230,6 +306,97 @@ public class AutoAnnotatorInputPanel extends JPanel implements CytoPanelComponen
         return clusterPanel;
 	}
 	
+	private JTable createClusterTable(final AnnotationSet clusters) {
+		DefaultTableModel model = new DefaultTableModel() {
+			private static final long serialVersionUID = -1277709187563893042L;
+
+			@Override
+		    public boolean isCellEditable(int row, int column) {
+		        return column == 0 ? false : true;
+		    }
+		};
+		model.addColumn("Cluster number");
+		model.addColumn("Label");
+
+		final JTable table = new JTable(model); // Final to be able to use inside of listener
+		
+		model.addTableModelListener(new TableModelListener() { // Update the label value
+			@Override
+			public void tableChanged(TableModelEvent e) {
+				if (e.getType() == TableModelEvent.UPDATE || e.getColumn() == 1) {
+					int editedRowIndex = e.getFirstRow() == table.getSelectedRow()? e.getLastRow() : e.getFirstRow(); 
+					Cluster editedCluster = clusters.clusterSet.get(editedRowIndex + 1);
+					editedCluster.setLabel((String) table.getValueAt(editedRowIndex, 1));
+					editedCluster.erase();
+					editedCluster.drawAnnotations();
+				}
+			}
+		});
+		for (Cluster cluster : clusters.clusterSet.values()) {
+			Object[] rowData = {cluster , cluster.getLabel()};
+			model.addRow(rowData);
+		}
+		
+		table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+			@Override
+			public void valueChanged(ListSelectionEvent e) {
+				if (! e.getValueIsAdjusting()) { // Down-click and up-click are separate events
+					int selectedRowIndex = table.getSelectedRow();
+					Cluster selectedCluster = (Cluster) table.getValueAt(selectedRowIndex, 0); 
+					selectedCluster.select();
+				}
+			}
+		});
+		
+		return table;
+	}
+
+	public void addClusters(AnnotationSet clusters) {
+		// If this is the view's first AnnotationSet
+		if (!networkViewToClusterSetDropdown.containsKey(clusters.view)) {
+			addNetworkView(clusters.view);
+		}
+		
+		clusterSets.put(clusters.name, clusters);
+		
+		// Create scrollable clusterTable
+		JTable clusterTable = createClusterTable(clusters);
+		JScrollPane clusterTableScroll = new JScrollPane(clusterTable);
+		clusterTablePanel.add(clusterTableScroll, BorderLayout.CENTER);
+		
+		clustersToTables.put(clusters, clusterTable);
+
+		JComboBox clusterSetDropdown = networkViewToClusterSetDropdown.get(clusters.view);
+		clusterSetDropdown.addItem(clusters);
+		clusterSetDropdown.setSelectedIndex(clusterSetDropdown.getItemCount()-1);
+	}
+	
+	private void addNetworkView(CyNetworkView view) {
+		// Create dropdown with cluster sets of this networkView
+		final JComboBox clusterSetDropdown = new JComboBox(); // Final so that the item listener can access it
+		clusterSetDropdown.addItemListener(new ItemListener(){
+			public void itemStateChanged(ItemEvent itemEvent) {
+				if (itemEvent.getStateChange() == ItemEvent.SELECTED) {
+					AnnotationSet clusters = (AnnotationSet) itemEvent.getItem();
+					clusters.drawAnnotations();							
+					clustersToTables.get(clusters).getParent().getParent().setVisible(true); // Show selected table
+					((JPanel) clusterSetDropdown.getParent()).updateUI();
+				} else if (itemEvent.getStateChange() == ItemEvent.DESELECTED) {
+					AnnotationSet clusters = (AnnotationSet) itemEvent.getItem();
+	         		clusters.eraseAnnotations();
+					clustersToTables.get(clusters).getParent().getParent().setVisible(false);
+					((JPanel) clusterSetDropdown.getParent()).updateUI();
+				}
+            }
+		});
+		clusterTablePanel.add(clusterSetDropdown, BorderLayout.PAGE_START);
+		networkViewToClusterSetDropdown.put(view, clusterSetDropdown);
+		selectedView = view;
+		networkLabel.setText(view.getModel().toString());
+		clusterTablePanel.updateUI();
+	}
+
 	@Override
 	public Component getComponent() {
 		return this;
@@ -272,7 +439,10 @@ public class AutoAnnotatorInputPanel extends JPanel implements CytoPanelComponen
 		// Update the label with the network
 		networkLabel.setText("  " + view.getModel().toString());
 		((JPanel) networkLabel.getParent()).updateUI();
+		
+		networkViewToClusterSetDropdown.get(selectedView).setVisible(false);
 		selectedView = view;
+		networkViewToClusterSetDropdown.get(selectedView).setVisible(true);
 	}
 
 	public void updateColumnName(CyTable source, String oldColumnName,

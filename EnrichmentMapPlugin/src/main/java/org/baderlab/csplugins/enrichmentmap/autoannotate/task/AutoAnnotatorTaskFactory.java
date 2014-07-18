@@ -1,5 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.autoannotate.task;
 
+import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.view.AutoAnnotatorDisplayPanel;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
@@ -27,24 +28,24 @@ public class AutoAnnotatorTaskFactory implements TaskFactory {
 	private CyNetworkManager networkManager;
 	private CyNetworkViewManager networkViewManager;
 	private AnnotationManager annotationManager;
+	private AutoAnnotationManager autoAnnotationManager;
 	private CyNetworkView selectedView;
 	private String clusterColumnName;
 	private String nameColumnName;
 	private int annotationSetNumber;
 	private CyServiceRegistrar registrar;
-	private AutoAnnotatorDisplayPanel displayPanel;
 	private CyTableManager tableManager;
 	
 	public AutoAnnotatorTaskFactory(CySwingApplication application, CyApplicationManager applicationManager, 
 			CyNetworkViewManager networkViewManager, CyNetworkManager networkManager,
-			AnnotationManager annotationManager, AutoAnnotatorDisplayPanel displayPanel, CyNetworkView selectedView, String clusterColumnName,
+			AnnotationManager annotationManager, AutoAnnotationManager autoAnnotationManager, CyNetworkView selectedView, String clusterColumnName,
 			String nameColumnName, int annotationSetNumber, CyServiceRegistrar registrar, DialogTaskManager dialogTaskManager, CyTableManager tableManager) {
 		this.application = application;
 		this.applicationManager = applicationManager;
 		this.networkManager = networkManager;
 		this.networkViewManager = networkViewManager;
 		this.annotationManager = annotationManager;
-		this.displayPanel = displayPanel;
+		this.autoAnnotationManager = autoAnnotationManager;
 		this.selectedView = selectedView;
 		this.clusterColumnName = clusterColumnName;
 		this.nameColumnName = nameColumnName;
@@ -54,7 +55,7 @@ public class AutoAnnotatorTaskFactory implements TaskFactory {
 	}
 	
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new AutoAnnotatorTask(application, applicationManager, networkViewManager, networkManager, annotationManager, displayPanel, selectedView, clusterColumnName, nameColumnName, annotationSetNumber, registrar, tableManager));
+		return new TaskIterator(new AutoAnnotatorTask(application, applicationManager, networkViewManager, networkManager, annotationManager, autoAnnotationManager, selectedView, clusterColumnName, nameColumnName, annotationSetNumber, registrar, tableManager));
 	}
 
 	public boolean isReady() {

@@ -139,6 +139,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, autoAnnotationManager, ColumnCreatedListener.class, new Properties());
 		registerService(bc, autoAnnotationManager, ColumnDeletedListener.class, new Properties());
 		registerService(bc, autoAnnotationManager, ColumnNameChangedListener.class, new Properties());
+		registerService(bc, autoAnnotationManager, NetworkViewAboutToBeDestroyedListener.class, new Properties());
 		
 		//assocaite them with the action listener
 		EnrichmentMapActionListener EMActionListener = new EnrichmentMapActionListener(heatMapPanel_node,heatMapPanel_edge, cyApplicationManagerRef, cySwingApplicationRef,fileUtil,streamUtil,syncTaskManager);
@@ -178,12 +179,12 @@ public class CyActivator extends AbstractCyActivator {
 		
 		//register the services
 		registerService(bc, aboutAction, CyAction.class,new Properties());
-		registerService(bc, autoAnnotatorPanelAction, CyAction.class, new Properties());
 		registerService(bc, LoadEnrichmentMapInputPanelAction, CyAction.class, new Properties());
+		registerService(bc, autoAnnotatorPanelAction, CyAction.class, new Properties());
 		registerService(bc, BulkEMInputPanelAction, CyAction.class, new Properties());
 		registerService(bc, loadPostAnalysisAction, CyAction.class, new Properties());	
 		
-		//register the session save and restor
+		//register the session save and restore
 		EnrichmentMapSessionAction sessionAction = new EnrichmentMapSessionAction(cyNetworkManagerRef, sessionManager, cyApplicationManagerRef, streamUtil);
 		registerService(bc,sessionAction,SessionAboutToBeSavedListener.class, new Properties());
 		registerService(bc,sessionAction,SessionLoadedListener.class, new Properties());

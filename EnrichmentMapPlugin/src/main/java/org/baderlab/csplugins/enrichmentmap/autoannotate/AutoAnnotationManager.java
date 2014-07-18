@@ -1,5 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap.autoannotate;
 
+import javax.swing.JPanel;
+
 import org.baderlab.csplugins.enrichmentmap.autoannotate.view.AutoAnnotatorDisplayPanel;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.view.AutoAnnotatorInputPanel;
 import org.cytoscape.application.events.SetSelectedNetworkViewsEvent;
@@ -10,6 +12,8 @@ import org.cytoscape.model.events.ColumnDeletedEvent;
 import org.cytoscape.model.events.ColumnDeletedListener;
 import org.cytoscape.model.events.ColumnNameChangedEvent;
 import org.cytoscape.model.events.ColumnNameChangedListener;
+import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
+import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
 /**
  * Created by
  * User: arkadyark
@@ -19,11 +23,12 @@ import org.cytoscape.model.events.ColumnNameChangedListener;
 
 public class AutoAnnotationManager implements
 		SetSelectedNetworkViewsListener, ColumnCreatedListener, 
-		ColumnDeletedListener, ColumnNameChangedListener {
+		ColumnDeletedListener, ColumnNameChangedListener,
+		NetworkViewAboutToBeDestroyedListener {
 
 	private static AutoAnnotationManager manager = null;
 	
-	private AutoAnnotatorInputPanel inputPanel;
+	public AutoAnnotatorInputPanel inputPanel;
 	private AutoAnnotatorDisplayPanel displayPanel;
 	
     public static AutoAnnotationManager getInstance() {
@@ -45,7 +50,7 @@ public class AutoAnnotationManager implements
 		inputPanel.updateSelectedView(e.getNetworkViews().get(0));
 		displayPanel.updateSelectedView(e.getNetworkViews().get(0));
 	}
-
+	
 	@Override
 	public void handleEvent(ColumnNameChangedEvent e) {
 		if (inputPanel != null) {
@@ -64,6 +69,14 @@ public class AutoAnnotationManager implements
 	public void handleEvent(ColumnCreatedEvent e) {
 		if (inputPanel != null) {
 			inputPanel.columnCreated(e.getSource(), e.getColumnName());
+		}
+	}
+
+	@Override
+	public void handleEvent(NetworkViewAboutToBeDestroyedEvent arg0) {
+		if (inputPanel != null) {
+			inputPanel.networkLabel.setText("No network selected");
+			((JPanel) inputPanel.networkLabel.getParent()).updateUI();
 		}
 	}
 }

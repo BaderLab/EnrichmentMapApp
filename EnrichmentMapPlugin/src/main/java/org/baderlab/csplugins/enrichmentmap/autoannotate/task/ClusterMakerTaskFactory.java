@@ -12,12 +12,14 @@ public class ClusterMakerTaskFactory implements TaskFactory {
 	private String algorithm;
 	private DialogTaskManager dialogTaskManager;
 	private CyServiceRegistrar registrar;
+	private String edgeAttribute;
 	
 	public ClusterMakerTaskFactory(CyNetworkView selectedView, String algorithm,
-			DialogTaskManager dialogTaskManager, CyServiceRegistrar registrar) {
+			String edgeAttribute, DialogTaskManager dialogTaskManager, CyServiceRegistrar registrar) {
 		
 		this.selectedView = selectedView;
 		this.algorithm = algorithm;
+		this.edgeAttribute = edgeAttribute;
 		this.dialogTaskManager = dialogTaskManager;
 		this.registrar = registrar;
 	}
@@ -25,7 +27,7 @@ public class ClusterMakerTaskFactory implements TaskFactory {
 	@Override
 	public TaskIterator createTaskIterator() {
 		// TODO Auto-generated method stub
-		return new TaskIterator(new ClusterMakerTask(selectedView, algorithm, dialogTaskManager, registrar));
+		return new TaskIterator(new ClusterMakerTask(selectedView, algorithm, edgeAttribute, dialogTaskManager, registrar));
 	}
 
 	@Override
