@@ -44,7 +44,7 @@
 package org.baderlab.csplugins.enrichmentmap;
 
 
-import org.baderlab.csplugins.enrichmentmap.autoannotate.view.AutoAnnotatorInputPanel;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.view.AutoAnnotatorPanel;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.view.EnrichmentMapInputPanel;
 import org.baderlab.csplugins.enrichmentmap.view.HeatMapPanel;
@@ -85,7 +85,7 @@ public class EnrichmentMapManager implements SetCurrentNetworkListener, NetworkA
 
     private EnrichmentMapInputPanel inputWindow;
     private PostAnalysisInputPanel analysisWindow;
-    private AutoAnnotatorInputPanel autoAnnotatorPanel;
+    private AutoAnnotatorPanel autoAnnotatorPanel;
     private CyServiceRegistrar registrar;
 
     /**
@@ -216,7 +216,7 @@ public class EnrichmentMapManager implements SetCurrentNetworkListener, NetworkA
     }
     
 
-	public void setAutoAnnotatorPanel(AutoAnnotatorInputPanel autoAnnotatorPanel) {
+	public void setAutoAnnotatorPanel(AutoAnnotatorPanel autoAnnotatorPanel) {
 		this.autoAnnotatorPanel = autoAnnotatorPanel;
 		
 	}

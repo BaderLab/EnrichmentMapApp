@@ -51,7 +51,7 @@ import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.AnnotationSet;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.NodeText;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.view.AutoAnnotatorInputPanel;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.view.AutoAnnotatorPanel;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanel;
@@ -95,7 +95,7 @@ public class AutoAnnotatorTask extends AbstractTask {
 	private int annotationSetNumber;
 	private String annotationSetName;
 	private CyTableManager tableManager;
-	private AutoAnnotatorInputPanel inputPanel;
+	private AutoAnnotatorPanel inputPanel;
 
 	public AutoAnnotatorTask(CySwingApplication application, CyApplicationManager applicationManager, 
 			CyNetworkViewManager networkViewManager, CyNetworkManager networkManager, AnnotationManager annotationManager,

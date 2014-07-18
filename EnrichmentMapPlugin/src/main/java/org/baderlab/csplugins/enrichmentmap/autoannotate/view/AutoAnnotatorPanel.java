@@ -62,7 +62,7 @@ import org.cytoscape.work.swing.DialogTaskManager;
  * Time   11:26:32 AM<br>
  */
 
-public class AutoAnnotatorInputPanel extends JPanel implements CytoPanelComponent {
+public class AutoAnnotatorPanel extends JPanel implements CytoPanelComponent {
 
 	private static final long serialVersionUID = 7901088595186775935L;
 	private static final String defaultButtonString = "Use clusterMaker defaults";
@@ -88,7 +88,7 @@ public class AutoAnnotatorInputPanel extends JPanel implements CytoPanelComponen
 	private JPanel mainPanel;
 	private JPanel clusterTablePanel;
 
-	public AutoAnnotatorInputPanel(CyApplicationManager cyApplicationManagerRef, 
+	public AutoAnnotatorPanel(CyApplicationManager cyApplicationManagerRef, 
 			CyNetworkViewManager cyNetworkViewManagerRef, CySwingApplication application,
 			OpenBrowser openBrowserRef, CyNetworkManager cyNetworkManagerRef, AnnotationManager annotationManager,
 			AutoAnnotationManager autoAnnotationManager, CyServiceRegistrar registrar, DialogTaskManager dialogTaskManager, 
@@ -490,7 +490,7 @@ public class AutoAnnotatorInputPanel extends JPanel implements CytoPanelComponen
 
 	@Override
 	public String getTitle() {
-		return "Annotation Input Panel";
+		return "Annotation Panel";
 	}
 
 }
