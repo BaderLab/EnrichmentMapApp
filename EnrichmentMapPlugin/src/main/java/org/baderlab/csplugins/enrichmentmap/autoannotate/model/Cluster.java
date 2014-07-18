@@ -44,6 +44,7 @@ public class Cluster implements Comparable<Cluster> {
 	private AnnotationFactory<TextAnnotation> textFactory;
 	private String cloudName;
 	private CyServiceRegistrar registrar;
+	private boolean labelManuallyUpdated;
 	
 	public Cluster(int clusterNumber, CyNetwork network, CyNetworkView view, AnnotationManager annotationManager, String clusterColumnName,
 			AnnotationFactory<ShapeAnnotation> shapeFactory, AnnotationSet parent, AnnotationFactory<TextAnnotation> textFactory, CyServiceRegistrar registrar) {
@@ -60,6 +61,7 @@ public class Cluster implements Comparable<Cluster> {
 		this.registrar = registrar;
 		boundsX = new int[2];
 		boundsY = new int[2];
+		labelManuallyUpdated = false;
 	}
 	
 	public int getClusterNumber() {
@@ -92,6 +94,14 @@ public class Cluster implements Comparable<Cluster> {
 
 	public String getLabel() {
 		return label;
+	}
+	
+		public void setLabelManuallyUpdated(boolean b) {
+		labelManuallyUpdated = b;
+	}
+	
+	public boolean getLabelManuallyUpdated() {
+		return labelManuallyUpdated;
 	}
 	
 	public ShapeAnnotation getEllipse() {

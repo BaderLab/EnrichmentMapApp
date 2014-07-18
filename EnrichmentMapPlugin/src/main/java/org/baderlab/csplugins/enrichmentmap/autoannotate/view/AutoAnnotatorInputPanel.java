@@ -37,7 +37,6 @@ import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.AnnotationSet;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.task.AutoAnnotatorTaskFactory;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.task.ClusterMakerTaskFactory;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanelComponent;
@@ -146,33 +145,18 @@ public class AutoAnnotatorInputPanel extends JPanel implements CytoPanelComponen
         ActionListener annotateAction = new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
 				String clusterColumnName = "";
+				String algorithm = "";
 				// If using default clustermaker parameters
 				if (defaultButton.isSelected()) {
-					String algorithm = (String) clusterAlgorithmDropdown.getSelectedItem();
-					
-					String edgeAttribute = "--None--";
-					for (CyColumn edgeColumn : selectedView.getModel().getDefaultEdgeTable().getColumns()) {
-						if (edgeColumn.getName().toLowerCase().contains("overlap_size") ||
-							edgeColumn.getName().toLowerCase().contains("similarity_coefficient")){
-							edgeAttribute = edgeColumn.getName();
-						}
-					}
-					
-					ClusterMakerTaskFactory clusterMakerTaskFactory = new ClusterMakerTaskFactory(selectedView, algorithm, edgeAttribute, dialogTaskManager, registrar);
-					dialogTaskManager.execute(clusterMakerTaskFactory.createTaskIterator());
+					algorithm = (String) clusterAlgorithmDropdown.getSelectedItem();
 					clusterColumnName = algorithmToColumnName.get(algorithm);
-					CyColumn column = selectedView.getModel().getDefaultNodeTable().getColumn(clusterColumnName);
-					while (column == null) { // Give clusterMaker time to finish
-						column = selectedView.getModel().getDefaultNodeTable().getColumn(clusterColumnName);
-						continue;
-					}
 				} else if (specifyColumnButton.isSelected()) {
 					// If using a user specified column
 					clusterColumnName = (String) clusterColumnDropdown.getSelectedItem();
 				}
 				autoAnnotatorTaskFactory = new AutoAnnotatorTaskFactory(application, cyApplicationManagerRef, 
 						cyNetworkViewManagerRef, cyNetworkManagerRef, annotationManager, autoAnnotationManager, selectedView, 
-						clusterColumnName, nameColumnName, annotationSetNumber, registrar, dialogTaskManager, tableManager);
+						clusterColumnName, nameColumnName, algorithm, annotationSetNumber, registrar, dialogTaskManager, tableManager);
 				dialogTaskManager.execute(autoAnnotatorTaskFactory.createTaskIterator());
 				annotationSetNumber++;	
 			}
@@ -194,7 +178,7 @@ public class AutoAnnotatorInputPanel extends JPanel implements CytoPanelComponen
         		AnnotationSet clusters = (AnnotationSet) clusterSetDropdown.getSelectedItem();
         		CyNetwork network = selectedView.getModel();
         		// Delete wordCloud table
-        		tableManager.deleteTable(network.getDefaultNetworkTable().getRow(network.getSUID()).get(clusters.name + " ", Long.class));
+        		tableManager.deleteTable(network.getDefaultNetworkTable().getRow(network.getSUID()).get(clusters.name, Long.class));
         		// Delete all annotations
          		clusters.destroyAnnotations();
          		clusterSetDropdown.removeItem(clusterSetDropdown.getSelectedItem());
@@ -332,6 +316,7 @@ public class AutoAnnotatorInputPanel extends JPanel implements CytoPanelComponen
 					int editedRowIndex = e.getFirstRow() == table.getSelectedRow()? e.getLastRow() : e.getFirstRow(); 
 					Cluster editedCluster = clusters.clusterSet.get(editedRowIndex + 1);
 					editedCluster.setLabel((String) table.getValueAt(editedRowIndex, 1));
+					editedCluster.setLabelManuallyUpdated(true);
 					editedCluster.erase();
 					editedCluster.drawAnnotations();
 				}
@@ -347,12 +332,11 @@ public class AutoAnnotatorInputPanel extends JPanel implements CytoPanelComponen
 			@Override
 			public void valueChanged(ListSelectionEvent e) {
 				EnrichmentMapUtils.setOverrideHeatmapRevalidation(true);
-				if (! e.getValueIsAdjusting()) { // Down-click and up-click are separate events
+				if (! e.getValueIsAdjusting()) { // Down-click and up-click are separate events, this makes only one of them fire
 					int selectedRowIndex = table.getSelectedRow();
 					Cluster selectedCluster = (Cluster) table.getValueAt(selectedRowIndex, 0); 
 					selectedCluster.select();
 				}
-				EnrichmentMapUtils.setOverrideHeatmapRevalidation(false);
 			}
 		});
 		

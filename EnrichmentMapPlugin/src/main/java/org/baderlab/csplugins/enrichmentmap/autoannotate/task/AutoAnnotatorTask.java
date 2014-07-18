@@ -57,6 +57,7 @@ import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.command.CommandExecutorTaskFactory;
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
@@ -89,6 +90,7 @@ public class AutoAnnotatorTask extends AbstractTask {
 	private CyNetworkView view;
 	private String nameColumnName;
 	private String clusterColumnName;
+	private String algorithm;
 	private CyServiceRegistrar registrar;
 	private int annotationSetNumber;
 	private String annotationSetName;
@@ -98,7 +100,8 @@ public class AutoAnnotatorTask extends AbstractTask {
 	public AutoAnnotatorTask(CySwingApplication application, CyApplicationManager applicationManager, 
 			CyNetworkViewManager networkViewManager, CyNetworkManager networkManager, AnnotationManager annotationManager,
 			AutoAnnotationManager autoAnnotationManager, CyNetworkView selectedView, String clusterColumnName, 
-			String nameColumnName, int annotationSetNumber, CyServiceRegistrar registrar, CyTableManager tableManager){
+			String nameColumnName, String algorithm, int annotationSetNumber, CyServiceRegistrar registrar, 
+			CyTableManager tableManager){
 		
 		this.application = application;
 		this.annotationManager = annotationManager;
@@ -107,6 +110,7 @@ public class AutoAnnotatorTask extends AbstractTask {
 		this.network = view.getModel();
 		this.clusterColumnName = clusterColumnName;
 		this.nameColumnName = nameColumnName;
+		this.algorithm = algorithm;
 		this.annotationSetNumber = annotationSetNumber;
 		this.registrar = registrar;
 		this.tableManager = tableManager;
@@ -125,6 +129,10 @@ public class AutoAnnotatorTask extends AbstractTask {
 		taskMonitor.setStatusMessage("Getting clusters...");
 		if (cancelled) return;
 
+		if (algorithm != "") {
+			runClusterMaker(taskMonitor);
+		}
+		
 		EnrichmentMapUtils.setOverrideHeatmapRevalidation(true); // So that HeatMap doesn't update while this is running
 		annotationSetName = "Annotation Set " + String.valueOf(annotationSetNumber);
     	AnnotationSet clusters = makeClusters(network, view, annotationSetName);
@@ -159,6 +167,62 @@ public class AutoAnnotatorTask extends AbstractTask {
 		
 		taskMonitor.setProgress(1.0);
 		taskMonitor.setStatusMessage("Done!");
+	}
+	
+	@SuppressWarnings("unchecked")
+	private void runClusterMaker(TaskMonitor taskMonitor) {
+		if (network.getDefaultNodeTable().getColumn(clusterColumnName) != null) {
+			network.getDefaultNodeTable().deleteColumn(clusterColumnName);
+		}
+		
+		// Tries to get edge attributes that make clustermaker work better
+		String edgeAttribute = "--None--";
+		for (CyColumn edgeColumn : network.getDefaultEdgeTable().getColumns()) {
+			if (edgeColumn.getName().toLowerCase().contains("overlap_size") ||
+				edgeColumn.getName().toLowerCase().contains("similarity_coefficient")){
+				edgeAttribute = edgeColumn.getName();
+			}
+		}
+		
+		CommandExecutorTaskFactory executor = registrar.getService(CommandExecutorTaskFactory.class);
+		ArrayList<String> commands = new ArrayList<String>();
+		commands.add(getCommand(algorithm, edgeAttribute, network.toString()));
+		TaskIterator task = executor.createTaskIterator(commands, null);
+		try {
+			// Uses the same TaskMonitor as the main Task
+			task.next().run(taskMonitor);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		// Give clusterMaker time to finish
+		CyColumn column = network.getDefaultNodeTable().getColumn(clusterColumnName);
+		int nodesWithClusters = 0;
+		while (true) {
+			int currentNodesWithClusters = 0;
+			column = network.getDefaultNodeTable().getColumn(clusterColumnName);
+			if (column != null) {
+				if (column.getType() == Integer.class) {
+					for (Integer i : column.getValues(Integer.class)) {
+						if (i != null) currentNodesWithClusters++;
+					}
+				} else if (column.getType() == List.class) {
+					for (List<Integer> i : column.getValues(List.class)) {
+						if (i != null) currentNodesWithClusters++;
+					}
+				}
+				if (currentNodesWithClusters == nodesWithClusters && currentNodesWithClusters != 0) {
+					// Value has stopped changing
+					break;
+				}
+			}
+			nodesWithClusters = currentNodesWithClusters;
+			try {
+				Thread.sleep(10);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -233,7 +297,7 @@ public class AutoAnnotatorTask extends AbstractTask {
 		CommandExecutorTaskFactory executor = registrar.getService(CommandExecutorTaskFactory.class);
 		ArrayList<String> commands = new ArrayList<String>();
 		String command = "wordcloud build clusterColumnName=\"" + clusterColumnName + "\" nameColumnName=\""
-				+ nameColumnName + "\"" + " cloudNamePrefix=\"" + annotationSetName + " \"";
+				+ nameColumnName + "\"" + " cloudNamePrefix=\"" + annotationSetName + "\"";
 		commands.add(command);
 		TaskIterator task = executor.createTaskIterator(commands, null);
 		try {
@@ -242,5 +306,41 @@ public class AutoAnnotatorTask extends AbstractTask {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	private String getCommand(String algorithm, String edgeAttribute, String networkName) {
+		String command = "";
+		if (algorithm == "Affinity Propagation Cluster") {
+			command = "cluster ap adjustLoops=true attribute=\"" + edgeAttribute + "\" clusterAttribute=\"__APCluster\" "
+					+ "createGroups=false network=\"" + networkName + "\" "
+					+ "restoreEdges=false selectedOnly=false showUI=false undirectedEdges=true";
+		} else if (algorithm == "Cluster Fuzzifier") {
+			command = "cluster fuzzifier adjustLoops=false attribute=\"" + edgeAttribute + "\" "
+					+ "clusterAttribute=\"__fuzzifierCluster\" createGroups=false "
+					+ "network=\"" + networkName + "\" "
+					+ "restoreEdges=false selectedOnly=false showUI=false undirectedEdges=true";
+		} else if (algorithm == "Community cluster (GLay)") {
+			command = "cluster glay clusterAttribute=\"__glayCluster\" createGroups=false network=\""
+					+ networkName + "\" restoreEdges=false selectedOnly=false "
+					+ "showUI=false undirectedEdges=true";
+		} else if (algorithm == "ConnectedComponents Cluster") {
+			command = "cluster connectedcomponents adjustLoops=true attribute=\"" + edgeAttribute + "\" clusterAttribute=\""
+					+ "__ccCluster\" createGroups=false network=\"" + networkName
+					+ "restoreEdges=false selectedOnly=false showUI=false undirectedEdges=true";
+		} else if (algorithm == "Fuzzy C-Means Cluster") {
+			command = "cluster fcml adjustLoops=false attribute=\"" + edgeAttribute + "\" "
+					+ "clusterAttribute=\"__fcmCluster\" createGroups=false "
+					+ "estimateClusterNumber=true network=\"" + networkName + "\" "
+					+ "restoreEdges=false selectedOnly=false showUI=false undirectedEdges=true";
+		} else if (algorithm == "MCL Cluster") {
+			command = "cluster mcl adjustLoops=false attribute=\"" + edgeAttribute + "\" clusterAttribute=\"__mclCluster\" "
+					+ "createGroups=false network=\"" + networkName + "\" "
+					+ "restoreEdges=false selectedOnly=false showUI=false undirectedEdges=true";
+		} else if (algorithm == "SCPS Cluster") {
+			command = "cluster scps adjustLoops=false attribute=\"" + edgeAttribute + "\" clusterAttribute=\"__scpsCluster\" "
+					+ "createGroups=false network=\"" + networkName + "\" restoreEdges=false "
+					+ "selectedOnly=false showUI=false undirectedEdges=true";
+		}
+		return command;
 	}
 }

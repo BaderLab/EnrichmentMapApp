@@ -74,16 +74,19 @@ public class AnnotationSet {
 	@SuppressWarnings("unchecked")
 	public void updateLabels() {
 		for (Cluster cluster : this.clusterSet.values()) {
-			cluster.setLabel("");
-			int clusterNumber = cluster.getClusterNumber();
-			Long clusterTableSUID = network.getDefaultNetworkTable().getRow(network.getSUID()).get(name + " ", Long.class);
-			CyRow clusterRow = tableManager.getTable(clusterTableSUID).getRow(clusterNumber);
-			List<String> wordList = clusterRow.get("WC_Word", List.class);
-			List<String> sizeList = clusterRow.get("WC_FontSize", List.class);
-			List<String> clusterList = clusterRow.get("WC_Cluster", List.class);
-			List<String> numberList = clusterRow.get("WC_Number", List.class);
-			String label = WordUtils.makeLabel(wordList, sizeList, clusterList, numberList);
-			cluster.setLabel(label);
+			// Only update if label hasn't been manually changed by the user
+			if (!cluster.getLabelManuallyUpdated()) {
+				cluster.setLabel("");
+				int clusterNumber = cluster.getClusterNumber();
+				Long clusterTableSUID = network.getDefaultNetworkTable().getRow(network.getSUID()).get(name, Long.class);
+				CyRow clusterRow = tableManager.getTable(clusterTableSUID).getRow(clusterNumber);
+				List<String> wordList = clusterRow.get("WC_Word", List.class);
+				List<String> sizeList = clusterRow.get("WC_FontSize", List.class);
+				List<String> clusterList = clusterRow.get("WC_Cluster", List.class);
+				List<String> numberList = clusterRow.get("WC_Number", List.class);
+				String label = WordUtils.makeLabel(wordList, sizeList, clusterList, numberList);
+				cluster.setLabel(label);
+			}
 		}
 	}
 	
