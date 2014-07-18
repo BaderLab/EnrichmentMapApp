@@ -2,15 +2,12 @@ package org.baderlab.csplugins.enrichmentmap.autoannotate.model;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 import org.cytoscape.command.CommandExecutorTaskFactory;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyRow;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.annotations.AnnotationManager;
 import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
@@ -36,13 +33,11 @@ public class Cluster implements Comparable<Cluster> {
 	ArrayList<CyNode> nodes;
 	public ArrayList<double[]> coordinates;
 	ArrayList<NodeText> nodeTexts;
-	private CyNetwork network;
 	private CyNetworkView view;
 	private String label;
 	private AnnotationManager annotationManager;
 	private TextAnnotation textAnnotation;
 	private ShapeAnnotation ellipse;
-	private String clusterColumnName;
 	private int[] boundsX;
 	private int[] boundsY;
 	private AnnotationFactory<ShapeAnnotation> shapeFactory;
@@ -58,9 +53,7 @@ public class Cluster implements Comparable<Cluster> {
 		this.nodes = new ArrayList<CyNode>();
 		this.coordinates = new ArrayList<double[]>();
 		this.nodeTexts = new ArrayList<NodeText>();
-		this.network = network;
 		this.view = view;
-		this.clusterColumnName = clusterColumnName;
 		this.annotationManager = annotationManager;
 		this.shapeFactory = shapeFactory;
 		this.textFactory = textFactory;
@@ -197,7 +190,6 @@ public class Cluster implements Comparable<Cluster> {
 		ArrayList<String> commands = new ArrayList<String>();
 		String command = "wordcloud delete cloudName=\"" + cloudName + "\"";
 		commands.add(command);
-
 		TaskIterator task = executor.createTaskIterator(commands, null);
 		registrar.getService(DialogTaskManager.class).execute(task);
 		// Erase the cluster

@@ -2,7 +2,6 @@ package org.baderlab.csplugins.enrichmentmap.autoannotate;
 
 import javax.swing.JPanel;
 
-import org.baderlab.csplugins.enrichmentmap.autoannotate.view.AutoAnnotatorDisplayPanel;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.view.AutoAnnotatorInputPanel;
 import org.cytoscape.application.events.SetSelectedNetworkViewsEvent;
 import org.cytoscape.application.events.SetSelectedNetworkViewsListener;
@@ -29,7 +28,6 @@ public class AutoAnnotationManager implements
 	private static AutoAnnotationManager manager = null;
 	
 	public AutoAnnotatorInputPanel inputPanel;
-	private AutoAnnotatorDisplayPanel displayPanel;
 	
     public static AutoAnnotationManager getInstance() {
         if(manager == null)
@@ -40,15 +38,10 @@ public class AutoAnnotationManager implements
     public void setInputPanel(AutoAnnotatorInputPanel inputPanel) {
     	this.inputPanel = inputPanel;
     }
-    
-    public void setDisplayPanel(AutoAnnotatorDisplayPanel displayPanel) {
-    	this.displayPanel = displayPanel;
-    }
-	
+    	
 	@Override
 	public void handleEvent(SetSelectedNetworkViewsEvent e) {
 		inputPanel.updateSelectedView(e.getNetworkViews().get(0));
-		displayPanel.updateSelectedView(e.getNetworkViews().get(0));
 	}
 	
 	@Override

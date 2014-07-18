@@ -8,6 +8,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.TreeMap;
@@ -16,6 +17,7 @@ import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -30,6 +32,7 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 
+import org.baderlab.csplugins.enrichmentmap.EnrichmentMapUtils;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.AnnotationSet;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
@@ -181,8 +184,8 @@ public class AutoAnnotatorInputPanel extends JPanel implements CytoPanelComponen
         
         clusterTablePanel = new JPanel();
         clusterTablePanel.setLayout(new BorderLayout());
-        clusterTablePanel.setPreferredSize(new Dimension(200, 400));
-        clusterTablePanel.setMaximumSize(new Dimension(300, 400));
+        clusterTablePanel.setPreferredSize(new Dimension(350, 400));
+        clusterTablePanel.setMaximumSize(new Dimension(350, 400));
         
         JButton clearButton = new JButton("Remove Annotation Set");
         ActionListener clearActionListener = new ActionListener(){
@@ -223,6 +226,8 @@ public class AutoAnnotatorInputPanel extends JPanel implements CytoPanelComponen
         };
         updateButton.addActionListener(updateActionListener); 
         
+        clusterTablePanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        
         mainPanel.add(networkLabel);
         mainPanel.add(nameColumnDropdownLabel);
         mainPanel.add(nameColumnDropdown);
@@ -237,7 +242,7 @@ public class AutoAnnotatorInputPanel extends JPanel implements CytoPanelComponen
 
 	private BasicCollapsiblePanel createClusterOptionsPanel() {
 		BasicCollapsiblePanel clusterPanel = new BasicCollapsiblePanel("Advanced Clustering Options");
-		
+
 		JPanel innerPanel = new JPanel(); // To override default layout options of BasicCollapsiblePanel
 		
 		// Dropdown with all the available algorithms
@@ -302,7 +307,7 @@ public class AutoAnnotatorInputPanel extends JPanel implements CytoPanelComponen
         innerPanel.add(dropdownPanel);
         
         clusterPanel.add(innerPanel);
-        
+        clusterPanel.setMaximumSize(new Dimension(350, clusterPanel.getHeight()));
         return clusterPanel;
 	}
 	
@@ -341,11 +346,13 @@ public class AutoAnnotatorInputPanel extends JPanel implements CytoPanelComponen
 		table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
 			@Override
 			public void valueChanged(ListSelectionEvent e) {
+				EnrichmentMapUtils.setOverrideHeatmapRevalidation(true);
 				if (! e.getValueIsAdjusting()) { // Down-click and up-click are separate events
 					int selectedRowIndex = table.getSelectedRow();
 					Cluster selectedCluster = (Cluster) table.getValueAt(selectedRowIndex, 0); 
 					selectedCluster.select();
 				}
+				EnrichmentMapUtils.setOverrideHeatmapRevalidation(false);
 			}
 		});
 		
@@ -397,26 +404,6 @@ public class AutoAnnotatorInputPanel extends JPanel implements CytoPanelComponen
 		clusterTablePanel.updateUI();
 	}
 
-	@Override
-	public Component getComponent() {
-		return this;
-	}
-
-	@Override
-	public CytoPanelName getCytoPanelName() {
-		return CytoPanelName.WEST;
-	}
-
-	@Override
-	public Icon getIcon() {
-		return null;
-	}
-
-	@Override
-	public String getTitle() {
-		return "Annotation Input Panel";
-	}
-
 	public void updateSelectedView(CyNetworkView view) {
 		nameColumnDropdown.removeAllItems();
 		clusterColumnDropdown.removeAllItems();
@@ -440,9 +427,15 @@ public class AutoAnnotatorInputPanel extends JPanel implements CytoPanelComponen
 		networkLabel.setText("  " + view.getModel().toString());
 		((JPanel) networkLabel.getParent()).updateUI();
 		
-		networkViewToClusterSetDropdown.get(selectedView).setVisible(false);
+		if (networkViewToClusterSetDropdown.containsKey(selectedView)) {
+			networkViewToClusterSetDropdown.get(selectedView).setVisible(false);
+		}
+		
 		selectedView = view;
-		networkViewToClusterSetDropdown.get(selectedView).setVisible(true);
+		
+		if (networkViewToClusterSetDropdown.containsKey(selectedView)) {
+			networkViewToClusterSetDropdown.get(selectedView).setVisible(true);
+		}		
 	}
 
 	public void updateColumnName(CyTable source, String oldColumnName,
@@ -489,4 +482,31 @@ public class AutoAnnotatorInputPanel extends JPanel implements CytoPanelComponen
 			}
 		}
 	}
+	
+	@Override
+	public Component getComponent() {
+		return this;
+	}
+
+	@Override
+	public CytoPanelName getCytoPanelName() {
+		return CytoPanelName.WEST;
+	}
+
+	@Override
+	public Icon getIcon() {
+		//create an icon for the enrichment map panels
+        URL EMIconURL = this.getClass().getResource("enrichmentmap_logo_notext_small.png");
+        ImageIcon EMIcon = null;
+        if (EMIconURL != null) {
+            EMIcon = new ImageIcon(EMIconURL);
+        }
+		return EMIcon;
+	}
+
+	@Override
+	public String getTitle() {
+		return "Annotation Input Panel";
+	}
+
 }
