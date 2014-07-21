@@ -125,19 +125,23 @@ public class AutoAnnotatorTask extends AbstractTask {
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		taskMonitor.setTitle("Annotating Enrichment Map");
 	
-		taskMonitor.setProgress(0.1);
-		taskMonitor.setStatusMessage("Getting clusters...");
-		if (cancelled) return;
 
 		if (algorithm != "") {
+			taskMonitor.setProgress(0.1);
+			taskMonitor.setStatusMessage("Clustering nodes...");
+			if (cancelled) return;
 			runClusterMaker(taskMonitor);
 		}
+		
+		taskMonitor.setProgress(0.3);
+		taskMonitor.setStatusMessage("Getting clusters...");
+		if (cancelled) return;
 		
 		EnrichmentMapUtils.setOverrideHeatmapRevalidation(true); // So that HeatMap doesn't update while this is running
 		annotationSetName = "Annotation Set " + String.valueOf(annotationSetNumber);
     	AnnotationSet clusters = makeClusters(network, view, annotationSetName);
     	
-    	taskMonitor.setProgress(0.4);
+    	taskMonitor.setProgress(0.5);
     	taskMonitor.setStatusMessage("Running WordCloud...");
     	if (cancelled) return;
     	
