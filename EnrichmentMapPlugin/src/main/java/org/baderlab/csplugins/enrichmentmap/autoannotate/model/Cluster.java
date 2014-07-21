@@ -1,5 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.autoannotate.model;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -135,7 +136,7 @@ public class Cluster implements Comparable<Cluster> {
 		
 		// Constants used in making the appearance prettier
 		double zoom = view.getVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR);
-		double min_size = 15;
+		double min_size = 25;
 		double padding = 1.9;
 
     	// Find the edges of the annotation
@@ -159,7 +160,7 @@ public class Cluster implements Comparable<Cluster> {
 		// Parameters of the ellipse
 		Integer xPos = (int) Math.round(xmin - width*padding/4);
 		Integer yPos = (int) Math.round(ymin - height*padding/4);
-		
+
 		// Create and draw the ellipse
 		HashMap<String, String> arguments = new HashMap<String,String>();
 		arguments.put("x", String.valueOf(xPos));
@@ -173,10 +174,10 @@ public class Cluster implements Comparable<Cluster> {
 		annotationManager.addAnnotation(ellipse);
 
 		// Parameters of the label
-		Integer fontSize = (int) Math.round(0.35*Math.pow(Math.pow(width, 2)+ Math.pow(height, 2), 0.44)*zoom);
+		Integer fontSize = (int) Math.round((0.02*Math.pow(Math.pow(width, 2)+ Math.pow(height, 2), 0.5)));
 		// To centre the annotation at the middle of the annotation
-		xPos = (int) Math.round(xPos + width*padding/2 - 1.1*fontSize*label.length());
-		yPos = (int) Math.round(yPos - 5.3*fontSize);
+		xPos = (int) Math.round(xPos + width*padding/2 - 2.1*fontSize*label.length());
+		yPos = (int) Math.round(yPos - 9.1*fontSize);
 		
 		// Create and draw the label
 		arguments = new HashMap<String,String>();
@@ -184,7 +185,7 @@ public class Cluster implements Comparable<Cluster> {
 		arguments.put("y", String.valueOf(yPos));
 		arguments.put("zoom", String.valueOf(zoom));
 		arguments.put("canvas", "foreground");
-		arguments.put("fontSize", String.valueOf(fontSize));
+		arguments.put("fontSize", String.valueOf((int) Math.round(fontSize*10*zoom)));
 		
 		textAnnotation = textFactory.createAnnotation(TextAnnotation.class, view, arguments);
 		textAnnotation.setText(label);
@@ -230,6 +231,15 @@ public class Cluster implements Comparable<Cluster> {
 			TaskIterator task = executor.createTaskIterator(commands, null);
 			registrar.getService(DialogTaskManager.class).execute(task);
 		}
+		ellipse.setBorderWidth(2*ellipse.getBorderWidth());
+		ellipse.setBorderColor(Color.yellow);
+		textAnnotation.setTextColor(Color.yellow);
+	}
+	
+	public void deselect() {
+		ellipse.setBorderWidth(ellipse.getBorderWidth()/2);
+		ellipse.setBorderColor(Color.black);
+		textAnnotation.setTextColor(Color.black);
 	}
 	
 	@Override
