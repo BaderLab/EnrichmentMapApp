@@ -3,9 +3,11 @@ package org.baderlab.csplugins.enrichmentmap.autoannotate.model;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import org.baderlab.csplugins.enrichmentmap.EnrichmentMapUtils;
 import org.cytoscape.command.CommandExecutorTaskFactory;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
@@ -206,19 +208,32 @@ public class Cluster implements Comparable<Cluster> {
 		erase();
 	}
 
-	public void select() {
+	public void select(boolean showHeatmap) {
 		// Select the corresponding WordCloud
-		CommandExecutorTaskFactory executor = registrar.getService(CommandExecutorTaskFactory.class);
-		ArrayList<String> commands = new ArrayList<String>();
-		String command = "wordcloud select cloudName=\"" + cloudName + "\"";
-		commands.add(command);
-		TaskIterator task = executor.createTaskIterator(commands, null);
-		registrar.getService(DialogTaskManager.class).execute(task);
+		if (showHeatmap) {
+			EnrichmentMapUtils.setOverrideHeatmapRevalidation(false);
+			// Deselect all nodes currently selected
+			for (CyNode node : CyTableUtil.getNodesInState(view.getModel(), CyNetwork.SELECTED, true)) {
+				view.getModel().getRow(node).set(CyNetwork.SELECTED, false);
+			}
+			// Select nodes in this cluster (updates heatmap)
+			for (CyNode node : nodes) {
+				view.getModel().getRow(node).set(CyNetwork.SELECTED, true);
+			}
+		} else {
+			// WordCloud selects and prevents heatmap from updating
+			EnrichmentMapUtils.setOverrideHeatmapRevalidation(true);
+			CommandExecutorTaskFactory executor = registrar.getService(CommandExecutorTaskFactory.class);
+			ArrayList<String> commands = new ArrayList<String>();
+			String command = "wordcloud select cloudName=\"" + cloudName + "\"";
+			commands.add(command);
+			TaskIterator task = executor.createTaskIterator(commands, null);
+			registrar.getService(DialogTaskManager.class).execute(task);
+		}
 	}
 	
 	@Override
 	public int compareTo(Cluster cluster2) {
-		// TODO Auto-generated method stub
 		return this.getClusterNumber() - cluster2.getClusterNumber();
 	}
 	

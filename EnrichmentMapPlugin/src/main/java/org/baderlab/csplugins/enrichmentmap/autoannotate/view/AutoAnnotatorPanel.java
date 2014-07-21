@@ -32,7 +32,6 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 
-import org.baderlab.csplugins.enrichmentmap.EnrichmentMapUtils;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.AnnotationSet;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
@@ -87,6 +86,7 @@ public class AutoAnnotatorPanel extends JPanel implements CytoPanelComponent {
 	protected AutoAnnotationManager autoAnnotationManager;
 	private JPanel mainPanel;
 	private JPanel clusterTablePanel;
+	protected boolean showHeatmap;
 
 	public AutoAnnotatorPanel(CyApplicationManager cyApplicationManagerRef, 
 			CyNetworkViewManager cyNetworkViewManagerRef, CySwingApplication application,
@@ -163,13 +163,12 @@ public class AutoAnnotatorPanel extends JPanel implements CytoPanelComponent {
         };
         annotateButton.addActionListener(annotateAction);
         
-        nameColumnDropdown.setAlignmentX(LEFT_ALIGNMENT);
-        clusterOptionsPanel.setAlignmentX(LEFT_ALIGNMENT);
-        
         clusterTablePanel = new JPanel();
         clusterTablePanel.setLayout(new BorderLayout());
         clusterTablePanel.setPreferredSize(new Dimension(350, 400));
         clusterTablePanel.setMaximumSize(new Dimension(350, 400));
+        
+        BasicCollapsiblePanel selectionPanel = createSelectionPanel();
         
         JButton clearButton = new JButton("Remove Annotation Set");
         ActionListener clearActionListener = new ActionListener(){
@@ -210,7 +209,10 @@ public class AutoAnnotatorPanel extends JPanel implements CytoPanelComponent {
         };
         updateButton.addActionListener(updateActionListener); 
         
-        clusterTablePanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        clusterTablePanel.setAlignmentX(LEFT_ALIGNMENT);
+        nameColumnDropdown.setAlignmentX(LEFT_ALIGNMENT);
+        clusterOptionsPanel.setAlignmentX(LEFT_ALIGNMENT);
+        selectionPanel.setAlignmentX(LEFT_ALIGNMENT);
         
         mainPanel.add(networkLabel);
         mainPanel.add(nameColumnDropdownLabel);
@@ -218,6 +220,7 @@ public class AutoAnnotatorPanel extends JPanel implements CytoPanelComponent {
         mainPanel.add(clusterOptionsPanel);
         mainPanel.add(annotateButton);
         mainPanel.add(clusterTablePanel);
+        mainPanel.add(selectionPanel);
         mainPanel.add(clearButton);
         mainPanel.add(updateButton);
         
@@ -295,6 +298,48 @@ public class AutoAnnotatorPanel extends JPanel implements CytoPanelComponent {
         return clusterPanel;
 	}
 	
+	private BasicCollapsiblePanel createSelectionPanel() {
+		BasicCollapsiblePanel selectionPanel = new BasicCollapsiblePanel("Selection Options");
+		
+		JPanel innerPanel = new JPanel(); // To override default layout options of BasicCollapsiblePanel
+		
+		JPanel labelPanel = new JPanel();
+		JLabel label = new JLabel("Show on selection:");
+		labelPanel.add(label);
+		
+		JRadioButton heatmapButton = new JRadioButton("Heat Map");
+		JRadioButton wordCloudButton = new JRadioButton("WordCloud");
+		ButtonGroup buttonGroup = new ButtonGroup();
+		buttonGroup.add(heatmapButton);
+		buttonGroup.add(wordCloudButton);
+		
+		heatmapButton.addItemListener(new ItemListener() {
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				if (e.getStateChange() == ItemEvent.SELECTED) {
+					showHeatmap = true;
+				} else if (e.getStateChange() == ItemEvent.DESELECTED) {
+					showHeatmap = false;
+				}
+			}
+		});
+		heatmapButton.setSelected(true);
+		
+		JPanel radioButtonPanel = new JPanel();
+		radioButtonPanel.setLayout(new BoxLayout(radioButtonPanel, BoxLayout.PAGE_AXIS));
+		radioButtonPanel.add(heatmapButton);
+		radioButtonPanel.add(wordCloudButton);
+		
+		innerPanel.add(labelPanel);
+		innerPanel.add(radioButtonPanel);
+		
+		selectionPanel.add(innerPanel);
+		
+		selectionPanel.setMaximumSize(new Dimension(300, selectionPanel.getHeight()));
+		
+		return selectionPanel;
+	}
+	
 	private JTable createClusterTable(final AnnotationSet clusters) {
 		DefaultTableModel model = new DefaultTableModel() {
 			private static final long serialVersionUID = -1277709187563893042L;
@@ -331,11 +376,10 @@ public class AutoAnnotatorPanel extends JPanel implements CytoPanelComponent {
 		table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
 			@Override
 			public void valueChanged(ListSelectionEvent e) {
-				EnrichmentMapUtils.setOverrideHeatmapRevalidation(true);
 				if (! e.getValueIsAdjusting()) { // Down-click and up-click are separate events, this makes only one of them fire
 					int selectedRowIndex = table.getSelectedRow();
 					Cluster selectedCluster = (Cluster) table.getValueAt(selectedRowIndex, 0); 
-					selectedCluster.select();
+					selectedCluster.select(showHeatmap);
 				}
 			}
 		});
