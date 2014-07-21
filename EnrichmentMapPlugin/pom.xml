@@ -40,7 +40,7 @@
           				<configuration>
 					<archive>
 						<manifestEntries>
-                                			<Cytoscape-Plugin>org.baderlab.csplugins.enrichmentmap</Cytoscape-Plugin>
+                                			<Cytoscape-Plugin>org.baderlab.csplugins.enrichmentmap.Enrichment_Map_Plugin</Cytoscape-Plugin>
                         			</manifestEntries>
                 			</archive>
             				<classifier></classifier>
