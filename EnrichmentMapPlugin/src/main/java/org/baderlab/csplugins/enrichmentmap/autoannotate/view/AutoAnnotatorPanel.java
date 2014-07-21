@@ -32,6 +32,7 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 
+import org.baderlab.csplugins.enrichmentmap.EnrichmentMapUtils;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.AnnotationSet;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
@@ -87,6 +88,7 @@ public class AutoAnnotatorPanel extends JPanel implements CytoPanelComponent {
 	private JPanel mainPanel;
 	private JPanel clusterTablePanel;
 	protected boolean showHeatmap;
+	protected Cluster selectedCluster;
 
 	public AutoAnnotatorPanel(CyApplicationManager cyApplicationManagerRef, 
 			CyNetworkViewManager cyNetworkViewManagerRef, CySwingApplication application,
@@ -179,6 +181,7 @@ public class AutoAnnotatorPanel extends JPanel implements CytoPanelComponent {
         		// Delete wordCloud table
         		tableManager.deleteTable(network.getDefaultNetworkTable().getRow(network.getSUID()).get(clusters.name, Long.class));
         		// Delete all annotations
+        		EnrichmentMapUtils.setOverrideHeatmapRevalidation(true);
          		clusters.destroyAnnotations();
          		clusterSetDropdown.removeItem(clusterSetDropdown.getSelectedItem());
          		remove(clustersToTables.get(clusters).getParent());
@@ -323,7 +326,9 @@ public class AutoAnnotatorPanel extends JPanel implements CytoPanelComponent {
 				}
 			}
 		});
-		heatmapButton.setSelected(true);
+		// Initially show the wordClouds
+		wordCloudButton.setSelected(true);
+		showHeatmap = false;
 		
 		JPanel radioButtonPanel = new JPanel();
 		radioButtonPanel.setLayout(new BoxLayout(radioButtonPanel, BoxLayout.PAGE_AXIS));
@@ -378,7 +383,10 @@ public class AutoAnnotatorPanel extends JPanel implements CytoPanelComponent {
 			public void valueChanged(ListSelectionEvent e) {
 				if (! e.getValueIsAdjusting()) { // Down-click and up-click are separate events, this makes only one of them fire
 					int selectedRowIndex = table.getSelectedRow();
-					Cluster selectedCluster = (Cluster) table.getValueAt(selectedRowIndex, 0); 
+					if (selectedCluster != null || (Cluster) table.getValueAt(selectedRowIndex, 0) == selectedCluster) {
+						selectedCluster.deselect();
+					}
+					selectedCluster = (Cluster) table.getValueAt(selectedRowIndex, 0); 
 					selectedCluster.select(showHeatmap);
 				}
 			}
@@ -504,9 +512,13 @@ public class AutoAnnotatorPanel extends JPanel implements CytoPanelComponent {
 		if (source == nodeTable) {
 			CyColumn column = nodeTable.getColumn(columnName);
 			if (column.getType() == String.class || (column.getType() == List.class && column.getListElementType() == String.class)) {
-				nameColumnDropdown.addItem(column.getName());
+				if (((DefaultComboBoxModel) nameColumnDropdown.getModel()).getIndexOf(column) == -1) { // doesn't already contain column
+					nameColumnDropdown.addItem(column.getName());					
+				}
 			} else if (column.getType() == Integer.class || (column.getType() == List.class && column.getListElementType() == Integer.class)) {
-				clusterColumnDropdown.addItem(column.getName());
+				if (((DefaultComboBoxModel) clusterColumnDropdown.getModel()).getIndexOf(column) == -1) { // doesn't already contain column
+					clusterColumnDropdown.addItem(column.getName());					
+				}
 			}
 		}
 	}
