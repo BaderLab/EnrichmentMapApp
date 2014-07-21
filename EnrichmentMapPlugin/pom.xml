@@ -33,10 +33,16 @@
     		</activation>
   		<build>
         		<finalName>${project.artifactId}-${project.version}-r${git.commit.id.abbrev}_${buildNumber}_${git.commit.id.describe}</finalName>
+
   			<plugins>
 				<plugin>
           			<artifactId>maven-jar-plugin</artifactId>
           				<configuration>
+					<archive>
+						<manifestEntries>
+                                			<Cytoscape-Plugin>org.baderlab.csplugins.enrichmentmap</Cytoscape-Plugin>
+                        			</manifestEntries>
+                			</archive>
             				<classifier></classifier>
             				<excludes>
             					<exclude>**/Enrichment_Map_Plugin_GSEA.*</exclude>
