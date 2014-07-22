@@ -92,6 +92,7 @@ public class AutoAnnotatorTask extends AbstractTask {
 	private CyNetworkView view;
 	private String nameColumnName;
 	private String clusterColumnName;
+	private String sourceColumnName;
 	private String algorithm;
 	private CyServiceRegistrar registrar;
 	private int annotationSetNumber;
@@ -102,7 +103,7 @@ public class AutoAnnotatorTask extends AbstractTask {
 	public AutoAnnotatorTask(CySwingApplication application, CyApplicationManager applicationManager, 
 			CyNetworkViewManager networkViewManager, CyNetworkManager networkManager, AnnotationManager annotationManager,
 			AutoAnnotationManager autoAnnotationManager, CyNetworkView selectedView, String clusterColumnName, 
-			String nameColumnName, String algorithm, int annotationSetNumber, CyServiceRegistrar registrar, 
+			String nameColumnName, String sourceColumnName, String algorithm, int annotationSetNumber, CyServiceRegistrar registrar, 
 			CyTableManager tableManager){
 		
 		this.application = application;
@@ -112,6 +113,7 @@ public class AutoAnnotatorTask extends AbstractTask {
 		this.network = view.getModel();
 		this.clusterColumnName = clusterColumnName;
 		this.nameColumnName = nameColumnName;
+		this.sourceColumnName = sourceColumnName;
 		this.algorithm = algorithm;
 		this.annotationSetNumber = annotationSetNumber;
 		this.registrar = registrar;
@@ -239,6 +241,8 @@ public class AutoAnnotatorTask extends AbstractTask {
 		AnnotationFactory<ShapeAnnotation> shapeFactory = (AnnotationFactory<ShapeAnnotation>) registrar.getService(AnnotationFactory.class, "(type=ShapeAnnotation.class)");    	
 		AnnotationFactory<TextAnnotation> textFactory = (AnnotationFactory<TextAnnotation>) registrar.getService(AnnotationFactory.class, "(type=TextAnnotation.class)");
 		
+		network.getDefaultNodeTable().createColumn(name + " Text", String.class, false);
+		
 		List<CyNode> nodes = network.getNodeList();
 		Class<?> columnType = network.getDefaultNodeTable().getColumn(clusterColumnName).getType();
 		if (columnType == Integer.class) {
@@ -254,6 +258,10 @@ public class AutoAnnotatorTask extends AbstractTask {
 					String nodeName = network.getRow(node).get(nameColumnName, String.class);
 					NodeText nodeText = new NodeText();
 					nodeText.setName(nodeName);
+					if (sourceColumnName != "") {
+						nodeText.findDefinitions(network.getRow(node).get(sourceColumnName, String.class));
+					}
+					network.getRow(node).set(name + " Text", nodeText.toString());
 					
 					// empty values (no cluster) are given null
 					Cluster cluster;
@@ -282,6 +290,10 @@ public class AutoAnnotatorTask extends AbstractTask {
 					String nodeName = network.getRow(node).get(nameColumnName, String.class);
 					NodeText nodeText = new NodeText();
 					nodeText.setName(nodeName);
+					if (sourceColumnName != "") {
+						network.getRow(node).get(sourceColumnName, String.class);
+						nodeText.findDefinitions(network.getRow(node).get(sourceColumnName, String.class));
+					}
 					
 					// empty values (no cluster) are given null
 					Cluster cluster;
@@ -304,7 +316,7 @@ public class AutoAnnotatorTask extends AbstractTask {
 		CommandExecutorTaskFactory executor = registrar.getService(CommandExecutorTaskFactory.class);
 		ArrayList<String> commands = new ArrayList<String>();
 		String command = "wordcloud build clusterColumnName=\"" + clusterColumnName + "\" nameColumnName=\""
-				+ nameColumnName + "\"" + " cloudNamePrefix=\"" + annotationSetName + "\"";
+				+ annotationSetName + " Text\"" + " cloudNamePrefix=\"" + annotationSetName + "\"";
 		commands.add(command);
 		TaskIterator task = executor.createTaskIterator(commands, null);
 		try {

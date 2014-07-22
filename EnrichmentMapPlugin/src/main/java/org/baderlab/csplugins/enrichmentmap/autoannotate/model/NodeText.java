@@ -21,22 +21,12 @@ import org.jsoup.select.Elements;
 public final class NodeText {
 	
 	public String name;
-	public String database;
-	public String accession;
-	public String definition;
+	public String definition = "";
 	
 	public String getName() {
 		return name;
 	}
 
-	public String getDatabase() {
-		return database;
-	}
-	
-	public String getAccession() {
-		// TODO - strip of the database
-		return accession;
-	}
 	
 	public void setName(String name) {
 		this.name = name;
@@ -44,27 +34,27 @@ public final class NodeText {
 	
 	@Override
 	public String toString() {
-		return name + " " + database + " " + accession;
+		return name + definition;
 	}
 	
-	public String findDefinition() {
-		if (database.equals("GO")) {
-			String url = "http://amigo.geneontology.org/amigo/term/" + accession;
+	public void findDefinitions(String source) {
+		if (source.equals("GO")) {
+			System.out.println(name);
+			String url = "http://amigo2.berkeleybop.org/cgi-bin/amigo2/goose?query="
+					+ "SELECT+term_definition.term_definition+FROM+term+INNER+JOIN+term_"
+					+ "definition+ON+term.id%3Dterm_definition.term_id+WHERE+term.name%3D%22"
+					+ name.replace(" ", "+")
+					+ "%22";
 			try {
 				Document doc = Jsoup.connect(url).get();
-				Elements definitions = doc.select("dt");
-				for (Element e : definitions) {
-					if (e.text().equals("Definition")) {
-						TextNode definitionNode = (TextNode) e.nextSibling().nextSibling().childNode(0);
-						return definitionNode.text();
-					}
-				}
-			} catch (IOException e) {
-				return "";
+				TextNode definitionNode = (TextNode) doc.select("td").get(0).childNode(0);
+				definition = definitionNode.text();
+				definition.replace("\n", "");
+				definition.replace("\t", "");
+				definition.replace(".", "");
+			} catch (Exception e) {
+				return;
 			}
-			
 		}
-		return "";
 	}
-	
 }

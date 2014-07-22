@@ -1,6 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap.autoannotate.model;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.TreeMap;
 
@@ -84,10 +85,50 @@ public class AnnotationSet {
 				List<String> sizeList = clusterRow.get("WC_FontSize", List.class);
 				List<String> clusterList = clusterRow.get("WC_Cluster", List.class);
 				List<String> numberList = clusterRow.get("WC_Number", List.class);
-				String label = WordUtils.makeLabel(wordList, sizeList, clusterList, numberList);
+				ArrayList<WordInfo> wordInfos = new ArrayList<WordInfo>();
+				for (int i=0; i < wordList.size(); i++) {
+					wordInfos.add(new WordInfo(wordList.get(i), 
+											Integer.parseInt(sizeList.get(i)),
+											Integer.parseInt(clusterList.get(i)),
+											Integer.parseInt(numberList.get(i))));
+				}
+				String label = makeLabel(wordInfos);
 				cluster.setLabel(label);
 			}
 		}
+	}
+	
+	public String makeLabel(ArrayList<WordInfo> wordInfos) {
+		Collections.sort(wordInfos);
+		WordInfo biggestWord = wordInfos.get(0);
+		String label = biggestWord.word;
+		for (WordInfo word : wordInfos.subList(1, wordInfos.size())) {
+			if (word.cluster == biggestWord.cluster) {
+				word.size -= 1;
+			}
+		}
+		Collections.sort(wordInfos);
+		WordInfo secondBiggestWord = wordInfos.get(1);
+		if (secondBiggestWord.size >= 0.3*biggestWord.size) {
+			label += " " + secondBiggestWord.word;
+		}
+		try {
+			WordInfo thirdBiggestWord = wordInfos.get(2);
+			if (thirdBiggestWord.size > 0.8*secondBiggestWord.size) {
+				label += " " + thirdBiggestWord.word;
+			}
+		} catch (Exception e) {
+			return label;
+		}
+		try {
+			WordInfo fourthBiggestWord = wordInfos.get(3);
+			if (fourthBiggestWord.size > 0.9*secondBiggestWord.size) {
+				label += " " + fourthBiggestWord.word;
+			}
+		} catch (Exception e) {
+			return label;
+		}
+		return label;
 	}
 	
 	@Override
