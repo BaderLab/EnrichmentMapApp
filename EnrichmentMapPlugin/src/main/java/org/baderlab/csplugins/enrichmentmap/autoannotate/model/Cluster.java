@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import org.baderlab.csplugins.enrichmentmap.EnrichmentMapUtils;
 import org.cytoscape.command.CommandExecutorTaskFactory;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -136,7 +135,7 @@ public class Cluster implements Comparable<Cluster> {
 		
 		// Constants used in making the appearance prettier
 		double zoom = view.getVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR);
-		double min_size = 25;
+		double min_size = 35;
 		double padding = 1.9;
 
     	// Find the edges of the annotation
@@ -177,7 +176,7 @@ public class Cluster implements Comparable<Cluster> {
 		Integer fontSize = (int) Math.round((0.02*Math.pow(Math.pow(width, 2)+ Math.pow(height, 2), 0.5)));
 		// To centre the annotation at the middle of the annotation
 		xPos = (int) Math.round(xPos + width*padding/2 - 2.1*fontSize*label.length());
-		yPos = (int) Math.round(yPos - 9.1*fontSize);
+		yPos = (int) Math.round(yPos - 10.1*fontSize);
 		
 		// Create and draw the label
 		arguments = new HashMap<String,String>();
@@ -185,7 +184,7 @@ public class Cluster implements Comparable<Cluster> {
 		arguments.put("y", String.valueOf(yPos));
 		arguments.put("zoom", String.valueOf(zoom));
 		arguments.put("canvas", "foreground");
-		arguments.put("fontSize", String.valueOf((int) Math.round(fontSize*10*zoom)));
+		arguments.put("fontSize", String.valueOf((int) Math.round(fontSize*11*zoom)));
 		
 		textAnnotation = textFactory.createAnnotation(TextAnnotation.class, view, arguments);
 		textAnnotation.setText(label);
@@ -212,7 +211,6 @@ public class Cluster implements Comparable<Cluster> {
 	public void select(boolean showHeatmap) {
 		// Select the corresponding WordCloud
 		if (showHeatmap) {
-			EnrichmentMapUtils.setOverrideHeatmapRevalidation(false);
 			// Deselect all nodes currently selected
 			for (CyNode node : CyTableUtil.getNodesInState(view.getModel(), CyNetwork.SELECTED, true)) {
 				view.getModel().getRow(node).set(CyNetwork.SELECTED, false);
@@ -222,8 +220,6 @@ public class Cluster implements Comparable<Cluster> {
 				view.getModel().getRow(node).set(CyNetwork.SELECTED, true);
 			}
 		} else {
-			// WordCloud selects and prevents heatmap from updating
-			EnrichmentMapUtils.setOverrideHeatmapRevalidation(true);
 			CommandExecutorTaskFactory executor = registrar.getService(CommandExecutorTaskFactory.class);
 			ArrayList<String> commands = new ArrayList<String>();
 			String command = "wordcloud select cloudName=\"" + cloudName + "\"";
@@ -231,13 +227,13 @@ public class Cluster implements Comparable<Cluster> {
 			TaskIterator task = executor.createTaskIterator(commands, null);
 			registrar.getService(DialogTaskManager.class).execute(task);
 		}
-		ellipse.setBorderWidth(2*ellipse.getBorderWidth());
+		ellipse.setBorderWidth(3*ellipse.getBorderWidth());
 		ellipse.setBorderColor(Color.yellow);
 		textAnnotation.setTextColor(Color.yellow);
 	}
 	
 	public void deselect() {
-		ellipse.setBorderWidth(ellipse.getBorderWidth()/2);
+		ellipse.setBorderWidth(ellipse.getBorderWidth()/3);
 		ellipse.setBorderColor(Color.black);
 		textAnnotation.setTextColor(Color.black);
 	}

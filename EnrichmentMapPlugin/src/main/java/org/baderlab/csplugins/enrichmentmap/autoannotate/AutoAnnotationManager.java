@@ -66,10 +66,9 @@ public class AutoAnnotationManager implements
 	}
 
 	@Override
-	public void handleEvent(NetworkViewAboutToBeDestroyedEvent arg0) {
+	public void handleEvent(NetworkViewAboutToBeDestroyedEvent e) {
 		if (inputPanel != null) {
-			inputPanel.networkLabel.setText("No network selected");
-			((JPanel) inputPanel.networkLabel.getParent()).updateUI();
+			inputPanel.removeNetworkView(e.getNetworkView());
 		}
 	}
 }

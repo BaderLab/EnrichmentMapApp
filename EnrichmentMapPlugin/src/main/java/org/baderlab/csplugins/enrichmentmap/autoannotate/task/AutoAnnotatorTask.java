@@ -46,6 +46,8 @@ package org.baderlab.csplugins.enrichmentmap.autoannotate.task;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JOptionPane;
+
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapUtils;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.AnnotationSet;
@@ -124,12 +126,10 @@ public class AutoAnnotatorTask extends AbstractTask {
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		taskMonitor.setTitle("Annotating Enrichment Map");
-	
 
 		if (algorithm != "") {
 			taskMonitor.setProgress(0.1);
 			taskMonitor.setStatusMessage("Clustering nodes...");
-			if (cancelled) return;
 			runClusterMaker(taskMonitor);
 		}
 		
@@ -137,7 +137,7 @@ public class AutoAnnotatorTask extends AbstractTask {
 		taskMonitor.setStatusMessage("Getting clusters...");
 		if (cancelled) return;
 		
-		EnrichmentMapUtils.setOverrideHeatmapRevalidation(true); // So that HeatMap doesn't update while this is running
+		EnrichmentMapUtils.setOverrideHeatmapRevalidation(true);
 		annotationSetName = "Annotation Set " + String.valueOf(annotationSetNumber);
     	AnnotationSet clusters = makeClusters(network, view, annotationSetName);
     	
@@ -166,7 +166,7 @@ public class AutoAnnotatorTask extends AbstractTask {
     	inputPanel.updateSelectedView(view);
 		CytoPanel westPanel = application.getCytoPanel(CytoPanelName.WEST);
 		westPanel.setSelectedIndex(westPanel.indexOfComponent(inputPanel));
-
+		
 		EnrichmentMapUtils.setOverrideHeatmapRevalidation(false);
 		
 		taskMonitor.setProgress(1.0);
@@ -179,12 +179,13 @@ public class AutoAnnotatorTask extends AbstractTask {
 			network.getDefaultNodeTable().deleteColumn(clusterColumnName);
 		}
 		
-		// Tries to get edge attributes that make clustermaker work better
+		// Tries to get edge attributes that make clusterMaker work better
 		String edgeAttribute = "--None--";
 		for (CyColumn edgeColumn : network.getDefaultEdgeTable().getColumns()) {
-			if (edgeColumn.getName().toLowerCase().contains("overlap_size") ||
-				edgeColumn.getName().toLowerCase().contains("similarity_coefficient")){
-				edgeAttribute = edgeColumn.getName();
+			String edgeName = edgeColumn.getName();
+			if (edgeName.toLowerCase().contains("overlap_size") ||
+				edgeName.toLowerCase().contains("similarity_coefficient")){
+				edgeAttribute = edgeName;
 			}
 		}
 		
@@ -195,6 +196,8 @@ public class AutoAnnotatorTask extends AbstractTask {
 		try {
 			// Uses the same TaskMonitor as the main Task
 			task.next().run(taskMonitor);
+		} catch (IllegalArgumentException e) {
+			throw new IllegalArgumentException("Problem with clusterMaker.\n Try a different algorithm.");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

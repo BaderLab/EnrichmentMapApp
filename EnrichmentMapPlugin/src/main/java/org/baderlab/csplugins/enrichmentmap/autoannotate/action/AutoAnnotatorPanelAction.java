@@ -43,8 +43,10 @@
 
 package org.baderlab.csplugins.enrichmentmap.autoannotate.action;
 
+import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.view.AutoAnnotatorPanel;
+import org.baderlab.csplugins.enrichmentmap.view.ParametersPanel;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
@@ -102,12 +104,15 @@ public class AutoAnnotatorPanelAction extends AbstractCyAction {
 	private AutoAnnotatorPanel inputPanel;
 
 
+	private EnrichmentMapManager emManager;
+
+
     
     public AutoAnnotatorPanelAction(Map<String,String> configProps, CyApplicationManager applicationManager, 
     			CyNetworkManager cyNetworkManagerRef, CyNetworkViewManager networkViewManager, 
     			CySwingApplication application, OpenBrowser openBrowserRef, AnnotationManager annotationManager, 
     			CyServiceRegistrar registrar, DialogTaskManager dialogTaskManager, CyEventHelper eventHelper,
-    			AutoAnnotationManager autoAnnotationManager, CyTableManager tableManager){
+    			AutoAnnotationManager autoAnnotationManager, CyTableManager tableManager, EnrichmentMapManager emManager){
     	
         super( configProps,  applicationManager,  networkViewManager);
      
@@ -125,14 +130,14 @@ public class AutoAnnotatorPanelAction extends AbstractCyAction {
  		this.eventHelper = eventHelper;
  		this.manager = autoAnnotationManager;
  		this.tableManager = tableManager;
-
+ 		this.emManager = emManager;
     }
 
 	public void actionPerformed(ActionEvent event) {		
 		if(!initialized) {
     		inputPanel = new AutoAnnotatorPanel(applicationManager, networkViewManager, 
     				application, openBrowser, networkManager, annotationManager, manager, registrar,
-    				dialogTaskManager, eventHelper, tableManager);
+    				dialogTaskManager, eventHelper, tableManager, emManager);
     		inputPanel.updateSelectedView(applicationManager.getCurrentNetworkView());
     		manager.setInputPanel(inputPanel);
     		registrar.registerService(inputPanel,CytoPanelComponent.class, new Properties());
