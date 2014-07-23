@@ -30,11 +30,10 @@ import org.cytoscape.work.swing.DialogTaskManager;
 
 public class Cluster implements Comparable<Cluster> {
 	
-	int clusterNumber;
+	public int clusterNumber;
 	public String name;
 	ArrayList<CyNode> nodes;
 	public ArrayList<double[]> coordinates;
-	ArrayList<NodeText> nodeTexts;
 	private CyNetworkView view;
 	private String label;
 	private AnnotationManager annotationManager;
@@ -55,7 +54,6 @@ public class Cluster implements Comparable<Cluster> {
 		this.cloudName = parent.name + " Cloud " + clusterNumber;
 		this.nodes = new ArrayList<CyNode>();
 		this.coordinates = new ArrayList<double[]>();
-		this.nodeTexts = new ArrayList<NodeText>();
 		this.view = view;
 		this.annotationManager = annotationManager;
 		this.shapeFactory = shapeFactory;
@@ -74,8 +72,8 @@ public class Cluster implements Comparable<Cluster> {
 		return this.coordinates;
 	}
 	
-	public ArrayList<NodeText> getNodeTexts() {
-		return this.nodeTexts;
+	public ArrayList<CyNode> getNodes() {
+		return this.nodes;
 	}
 	
 	public void addNode(CyNode node) {
@@ -86,10 +84,6 @@ public class Cluster implements Comparable<Cluster> {
 		this.coordinates.add(coordinates);
 	}
 	
-	public void addNodeText(NodeText nodeText) {
-		this.nodeTexts.add(nodeText);
-	}
-
 	public void setLabel(String label) {
 		this.label = label;
 	}

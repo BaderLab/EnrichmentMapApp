@@ -24,14 +24,16 @@ public class AnnotationSet {
 	
 	public String name;
 	public TreeMap<Integer, Cluster> clusterSet; // Having it be sorted is useful for the displayPanel
-	public boolean drawn;
+	public String clusterColumnName;
 	public CyNetwork network;
 	public CyNetworkView view;
 	private CyTableManager tableManager;
 	
 	public AnnotationSet(String name, CyNetwork network, CyNetworkView view, String clusterColumnName, CyTableManager tableManager) {
 		this.name = name;
+		// TODO separate name and prefix so that names can be changed
 		this.clusterSet = new TreeMap<Integer, Cluster>();
+		this.clusterColumnName = clusterColumnName;
 		this.network = network;
 		this.view = view;
 		this.tableManager = tableManager;
@@ -102,37 +104,39 @@ public class AnnotationSet {
 		Collections.sort(wordInfos);
 		WordInfo biggestWord = wordInfos.get(0);
 		String label = biggestWord.word;
-		for (WordInfo word : wordInfos.subList(1, wordInfos.size())) {
-			if (word.cluster == biggestWord.cluster) {
-				word.size -= 1;
+		if (wordInfos.size() > 1) {
+			for (WordInfo word : wordInfos.subList(1, wordInfos.size())) {
+				if (word.cluster == biggestWord.cluster) {
+					word.size -= 1;
+				}
 			}
-		}
-		Collections.sort(wordInfos);
-		WordInfo secondBiggestWord = wordInfos.get(1);
-		if (secondBiggestWord.size >= 0.3*biggestWord.size) {
-			label += " " + secondBiggestWord.word;
-		}
-		for (WordInfo word : wordInfos.subList(1, wordInfos.size())) {
-			if (!word.equals(secondBiggestWord) && word.cluster == secondBiggestWord.cluster) {
-				word.size -= 1;
+			Collections.sort(wordInfos);
+			WordInfo secondBiggestWord = wordInfos.get(1);
+			if (secondBiggestWord.size >= 0.3*biggestWord.size) {
+				label += " " + secondBiggestWord.word;
 			}
-		}
-		Collections.sort(wordInfos);
-		try {
-			WordInfo thirdBiggestWord = wordInfos.get(2);
-			if (thirdBiggestWord.size > 0.8*secondBiggestWord.size) {
-				label += " " + thirdBiggestWord.word;
+			for (WordInfo word : wordInfos.subList(1, wordInfos.size())) {
+				if (!word.equals(secondBiggestWord) && word.cluster == secondBiggestWord.cluster) {
+					word.size -= 1;
+				}
 			}
-		} catch (Exception e) {
-			return label;
-		}
-		try {
-			WordInfo fourthBiggestWord = wordInfos.get(3);
-			if (fourthBiggestWord.size > 0.9*secondBiggestWord.size) {
-				label += " " + fourthBiggestWord.word;
+			Collections.sort(wordInfos);
+			try {
+				WordInfo thirdBiggestWord = wordInfos.get(2);
+				if (thirdBiggestWord.size > 0.8*secondBiggestWord.size) {
+					label += " " + thirdBiggestWord.word;
+				}
+			} catch (Exception e) {
+				return label;
 			}
-		} catch (Exception e) {
-			return label;
+			try {
+				WordInfo fourthBiggestWord = wordInfos.get(3);
+				if (fourthBiggestWord.size > 0.9*secondBiggestWord.size) {
+					label += " " + fourthBiggestWord.word;
+				}
+			} catch (Exception e) {
+				return label;
+			}
 		}
 		return label;
 	}

@@ -50,7 +50,6 @@ import org.baderlab.csplugins.enrichmentmap.EnrichmentMapUtils;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.AnnotationSet;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.model.NodeText;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.view.AutoAnnotatorPanel;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
@@ -88,9 +87,8 @@ public class AutoAnnotatorTask extends AbstractTask {
 	private AnnotationManager annotationManager;
 	private CyNetwork network;
 	private CyNetworkView view;
-	private String nameColumnName;
 	private String clusterColumnName;
-	private String sourceColumnName;
+	private String nameColumnName;
 	private String algorithm;
 	private CyServiceRegistrar registrar;
 	private int annotationSetNumber;
@@ -111,7 +109,6 @@ public class AutoAnnotatorTask extends AbstractTask {
 		this.network = view.getModel();
 		this.clusterColumnName = clusterColumnName;
 		this.nameColumnName = nameColumnName;
-		this.sourceColumnName = sourceColumnName;
 		this.algorithm = algorithm;
 		this.annotationSetNumber = annotationSetNumber;
 		this.registrar = registrar;
@@ -134,7 +131,7 @@ public class AutoAnnotatorTask extends AbstractTask {
 		}
 		
 		taskMonitor.setProgress(0.3);
-		taskMonitor.setStatusMessage("Getting clusters...");
+		taskMonitor.setStatusMessage("Creating clusters...");
 		if (cancelled) return;
 		
 		EnrichmentMapUtils.setOverrideHeatmapRevalidation(true);
@@ -149,11 +146,13 @@ public class AutoAnnotatorTask extends AbstractTask {
     	
     	taskMonitor.setProgress(0.7);
     	taskMonitor.setStatusMessage("Annotating Clusters...");
+    	// TODO Visualizing clusters separately
     	if (cancelled) return;
 
     	// Gives WordCloud time to finish - the command Task finishes when WordCloud starts
     	while (true) {
     		try {
+    			// TODO
     			clusters.updateLabels();
     			break;
     		} catch(NullPointerException e) {
@@ -239,27 +238,19 @@ public class AutoAnnotatorTask extends AbstractTask {
 		AnnotationFactory<ShapeAnnotation> shapeFactory = (AnnotationFactory<ShapeAnnotation>) registrar.getService(AnnotationFactory.class, "(type=ShapeAnnotation.class)");    	
 		AnnotationFactory<TextAnnotation> textFactory = (AnnotationFactory<TextAnnotation>) registrar.getService(AnnotationFactory.class, "(type=TextAnnotation.class)");
 		
-		network.getDefaultNodeTable().createColumn(name + " Text", String.class, false);
-		
 		List<CyNode> nodes = network.getNodeList();
 		Class<?> columnType = network.getDefaultNodeTable().getColumn(clusterColumnName).getType();
-		if (columnType == Integer.class) {
+		if (columnType == Integer.class) { // Discrete clusting
 			for (CyNode node : nodes) {
 				Integer clusterNumber;
 				clusterNumber = network.getRow(node).get(clusterColumnName, Integer.class);
 				if (clusterNumber != null) {
+					// Get coordinates 
 					View<CyNode> nodeView = networkView.getNodeView(node);
 					double x = nodeView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION);
 					double y = nodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
 					double[] coordinates = {x, y};
 					
-					String nodeName = network.getRow(node).get(nameColumnName, String.class);
-					NodeText nodeText = new NodeText();
-					nodeText.setName(nodeName);
-					if (sourceColumnName != "") {
-						nodeText.findDefinitions(network.getRow(node).get(sourceColumnName, String.class));
-					}
-					network.getRow(node).set(name + " Text", nodeText.toString());
 					
 					// empty values (no cluster) are given null
 					Cluster cluster;
@@ -271,10 +262,10 @@ public class AutoAnnotatorTask extends AbstractTask {
 					}
 					cluster.addNode(node);
 					cluster.addCoordinates(coordinates);
-					cluster.addNodeText(nodeText);
 				}
 			}
-		} else if (columnType == List.class) {
+		} else if (columnType == List.class) { // Fuzzy clustering
+			// TODO 
 			for (CyNode node : nodes) {
 				List<Integer> clusterNumbers = new ArrayList<Integer>();
 				clusterNumbers = network.getRow(node).get(clusterColumnName, List.class);
@@ -285,14 +276,6 @@ public class AutoAnnotatorTask extends AbstractTask {
 					double y = nodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
 					double[] coordinates = {x, y};
 					
-					String nodeName = network.getRow(node).get(nameColumnName, String.class);
-					NodeText nodeText = new NodeText();
-					nodeText.setName(nodeName);
-					if (sourceColumnName != "") {
-						network.getRow(node).get(sourceColumnName, String.class);
-						nodeText.findDefinitions(network.getRow(node).get(sourceColumnName, String.class));
-					}
-					
 					// empty values (no cluster) are given null
 					Cluster cluster;
 					if (clusters.clusterSet.keySet().contains(clusterNumber)) {
@@ -303,7 +286,6 @@ public class AutoAnnotatorTask extends AbstractTask {
 					}
 					cluster.addNode(node);
 					cluster.addCoordinates(coordinates);
-					cluster.addNodeText(nodeText);
 				}
 			}
 		}
@@ -314,7 +296,7 @@ public class AutoAnnotatorTask extends AbstractTask {
 		CommandExecutorTaskFactory executor = registrar.getService(CommandExecutorTaskFactory.class);
 		ArrayList<String> commands = new ArrayList<String>();
 		String command = "wordcloud build clusterColumnName=\"" + clusterColumnName + "\" nameColumnName=\""
-				+ annotationSetName + " Text\"" + " cloudNamePrefix=\"" + annotationSetName + "\"";
+				+ nameColumnName + "\"" + " cloudNamePrefix=\"" + annotationSetName + "\"";
 		commands.add(command);
 		TaskIterator task = executor.createTaskIterator(commands, null);
 		try {
