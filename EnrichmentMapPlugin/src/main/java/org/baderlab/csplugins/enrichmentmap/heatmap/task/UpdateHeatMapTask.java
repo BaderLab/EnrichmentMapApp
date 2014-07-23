@@ -75,38 +75,36 @@ public class UpdateHeatMapTask extends AbstractTask{
     }
 
     private void createNodesData(){
+    	if(map.getParams().isData()){
+    		this.setNodeExpressionSet();
+    		nodeOverlapPanel.updatePanel(map);
+    		if ( ! map.getParams().isDisableHeatmapAutofocus() ) {
+    			// If the state of the cytoPanelWest is HIDE, show it
+    			if (cytoPanelSouth.getState() == CytoPanelState.HIDE) {
+    				cytoPanelSouth.setState(CytoPanelState.DOCK);
+    			}
 
-          if(map.getParams().isData()){
-        	  	this.setNodeExpressionSet();
-              nodeOverlapPanel.updatePanel(map);
-              if ( ! map.getParams().isDisableHeatmapAutofocus() ) {
-              	// If the state of the cytoPanelWest is HIDE, show it
-                  if (cytoPanelSouth.getState() == CytoPanelState.HIDE) {
-                	  	cytoPanelSouth.setState(CytoPanelState.DOCK);
-                  }
-
-                 // Select my panel
-                int index = cytoPanelSouth.indexOfComponent(this.nodeOverlapPanel);
-                if (index == -1) {
-                	 	return;
-                }
-               cytoPanelSouth.setSelectedIndex(index);
-              }
-              nodeOverlapPanel.revalidate();
-          }
-
+    			// Select my panel
+    			int index = cytoPanelSouth.indexOfComponent(this.nodeOverlapPanel);
+    			if (index == -1) {
+    				return;
+    			}
+    			cytoPanelSouth.setSelectedIndex(index);
+    		}
+    		nodeOverlapPanel.revalidate();
+    	}
     }
 
-      public void clearPanels(){
-          if(map.getParams().isData()){
-              nodeOverlapPanel.clearPanel();
-              edgeOverlapPanel.clearPanel();
-              if ( ! map.getParams().isDisableHeatmapAutofocus() ) {
-              		cytoPanelSouth.setSelectedIndex(cytoPanelSouth.indexOfComponent(this.nodeOverlapPanel));
-              		cytoPanelSouth.setSelectedIndex(cytoPanelSouth.indexOfComponent(this.edgeOverlapPanel));
-              	}
-          }
-      }
+    public void clearPanels(){
+    	if(map.getParams().isData()){
+    		nodeOverlapPanel.clearPanel();
+    		edgeOverlapPanel.clearPanel();
+    		if ( ! map.getParams().isDisableHeatmapAutofocus() ) {
+    			cytoPanelSouth.setSelectedIndex(cytoPanelSouth.indexOfComponent(this.nodeOverlapPanel));
+    			cytoPanelSouth.setSelectedIndex(cytoPanelSouth.indexOfComponent(this.edgeOverlapPanel));
+    		}
+    	}
+    }
       
       
       /**

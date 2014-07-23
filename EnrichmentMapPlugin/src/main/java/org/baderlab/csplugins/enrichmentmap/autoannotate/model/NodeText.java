@@ -1,12 +1,8 @@
 package org.baderlab.csplugins.enrichmentmap.autoannotate.model;
 
-import java.io.IOException;
-
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 import org.jsoup.nodes.TextNode;
-import org.jsoup.select.Elements;
 
 /**
  * Created by:

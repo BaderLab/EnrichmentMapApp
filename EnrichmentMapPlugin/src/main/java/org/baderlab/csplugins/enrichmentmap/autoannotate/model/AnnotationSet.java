@@ -112,6 +112,12 @@ public class AnnotationSet {
 		if (secondBiggestWord.size >= 0.3*biggestWord.size) {
 			label += " " + secondBiggestWord.word;
 		}
+		for (WordInfo word : wordInfos.subList(1, wordInfos.size())) {
+			if (!word.equals(secondBiggestWord) && word.cluster == secondBiggestWord.cluster) {
+				word.size -= 1;
+			}
+		}
+		Collections.sort(wordInfos);
 		try {
 			WordInfo thirdBiggestWord = wordInfos.get(2);
 			if (thirdBiggestWord.size > 0.8*secondBiggestWord.size) {
