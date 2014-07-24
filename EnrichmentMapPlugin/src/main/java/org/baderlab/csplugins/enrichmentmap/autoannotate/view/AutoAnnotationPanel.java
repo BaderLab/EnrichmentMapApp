@@ -12,7 +12,6 @@ import java.awt.event.ItemListener;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
-import java.util.TreeMap;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -23,7 +22,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
@@ -37,27 +35,27 @@ import javax.swing.table.DefaultTableModel;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationParameters;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationUtils;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.AnnotationSet;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.task.AutoAnnotationTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters;
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
-import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.command.CommandExecutorTaskFactory;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.BasicCollapsiblePanel;
-import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.annotations.AnnotationManager;
+import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
+import org.cytoscape.view.presentation.annotations.TextAnnotation;
 import org.cytoscape.work.swing.DialogTaskManager;
 
 /**
@@ -90,10 +88,10 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 	private HashMap<CyNetworkView, JComboBox> networkViewToClusterSetDropdown;
 	private HashMap<String, AnnotationSet> clusterSets;
 	private HashMap<AnnotationSet, JTable> clustersToTables;
-	
+	// Panels on the CytoPanel component
 	private JPanel mainPanel;
 	private JPanel clusterTablePanel;
-	
+	// Toggle of what to show on selection
 	private boolean showHeatmap;
 
 	private Cluster selectedCluster;
@@ -106,11 +104,8 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 
 	private AutoAnnotationTaskFactory autoAnnotatorTaskFactory;
 
-	public AutoAnnotationPanel(CyApplicationManager cyApplicationManagerRef, 
-			CyNetworkViewManager cyNetworkViewManagerRef, CySwingApplication application,
-			OpenBrowser openBrowserRef, CyNetworkManager cyNetworkManagerRef, AnnotationManager annotationManager,
-			AutoAnnotationManager autoAnnotationManager, CyServiceRegistrar registrar, DialogTaskManager dialogTaskManager, 
-			CyEventHelper eventHelper, CyTableManager tableManager, EnrichmentMapManager emManager){
+	public AutoAnnotationPanel(CySwingApplication application, AutoAnnotationManager autoAnnotationManager, 
+			CyServiceRegistrar registrar, DialogTaskManager dialogTaskManager, EnrichmentMapManager emManager){
 
 		this.clusterSets = new HashMap<String, AnnotationSet>();
 		this.clustersToTables = new HashMap<AnnotationSet, JTable>();
@@ -119,16 +114,14 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 		this.emManager = emManager;
 		this.autoAnnotationManager = autoAnnotationManager;
 		
-		mainPanel = createMainPanel(cyApplicationManagerRef, cyNetworkViewManagerRef, application,
-				openBrowserRef, cyNetworkManagerRef, annotationManager, registrar, dialogTaskManager, eventHelper);
+		mainPanel = createMainPanel(application, registrar, dialogTaskManager);
 		add(mainPanel,BorderLayout.CENTER);
 		setPreferredSize(new Dimension(500, getHeight()));
 	}
 	
-	private JPanel createMainPanel(final CyApplicationManager cyApplicationManagerRef,
-			final CyNetworkViewManager cyNetworkViewManagerRef, final CySwingApplication application,
-			final OpenBrowser openBrowserRef, final CyNetworkManager cyNetworkManagerRef, final AnnotationManager annotationManager,
-			final CyServiceRegistrar registrar, final DialogTaskManager dialogTaskManager, final CyEventHelper eventHelper) {
+	private JPanel createMainPanel(
+			final CySwingApplication application,
+			final CyServiceRegistrar registrar, final DialogTaskManager dialogTaskManager) {
 		
 		JPanel mainPanel = new JPanel();
 		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
@@ -169,8 +162,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 				}
 				int annotationSetNumber = params.getAnnotationSetNumber();
 				CyTableManager tableManager = autoAnnotationManager.getTableManager();
-				autoAnnotatorTaskFactory = new AutoAnnotationTaskFactory(application, cyApplicationManagerRef, 
-						cyNetworkViewManagerRef, cyNetworkManagerRef, annotationManager, autoAnnotationManager, selectedView, 
+				autoAnnotatorTaskFactory = new AutoAnnotationTaskFactory(application, autoAnnotationManager, selectedView, 
 						clusterColumnName, nameColumnName, algorithm, annotationSetNumber, registrar, dialogTaskManager, tableManager);
 				dialogTaskManager.execute(autoAnnotatorTaskFactory.createTaskIterator());
 				params.incrementAnnotationSetNumber();
@@ -194,7 +186,9 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
         		autoAnnotationManager.getTableManager().deleteTable(selectedNetwork.getDefaultNetworkTable().getRow(selectedNetwork.getSUID()).get(clusters.getName(), Long.class));
         		// Delete all annotations
         		setHeatMapNoSort();
-         		clusters.destroyAnnotations();
+        		for (Cluster cluster : clusters.getClusterMap().values()) {
+        			AutoAnnotationUtils.destroyCluster(cluster, autoAnnotationManager.getCommandExecutor(), autoAnnotationManager.getDialogTaskManager());
+        		}
          		clusterSetDropdown.removeItem(clusterSetDropdown.getSelectedItem());
          		remove(clustersToTables.get(clusters).getParent());
          		clustersToTables.remove(clusters);
@@ -212,14 +206,21 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
         		AnnotationSet clusters = (AnnotationSet) clusterSetDropdown.getSelectedItem(); 
         		clusters.updateCoordinates();
         		clusters.updateLabels();
-        		clusters.eraseAnnotations(); 
-        		clusters.drawAnnotations();
+         		for (Cluster cluster : clusters.getClusterMap().values()) {
+         			cluster.erase();
+         		}
+				for (Cluster cluster : clusters.getClusterMap().values()) {
+					AnnotationFactory<ShapeAnnotation> shapeFactory = autoAnnotationManager.getShapeFactory();
+					AnnotationFactory<TextAnnotation> textFactory = autoAnnotationManager.getTextFactory();
+					AnnotationManager annotationManager = autoAnnotationManager.getAnnotationManager();
+					AutoAnnotationUtils.drawCluster(cluster, selectedView, shapeFactory, textFactory, annotationManager);
+				}
         		// Update the table if the value has changed (WordCloud has been updated)
         		DefaultTableModel model = (DefaultTableModel) clustersToTables.get(clusters).getModel();
         		int i = 0;
         		for (Cluster cluster : clusters.getClusterMap().values()) {
-        			if (!(model.getValueAt(i, 1).equals(cluster.getLabel()))) {
-        				model.setValueAt(cluster.getLabel(), i, 1);
+        			if (!(model.getValueAt(i, 0).equals(cluster))) {
+        				model.setValueAt(cluster, i, 0);
         			}
         			i++;
         		}
@@ -424,27 +425,34 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 					editedCluster.setLabel((String) table.getValueAt(editedRowIndex, 0));
 					editedCluster.setLabelManuallyUpdated(true);
 					editedCluster.erase();
-					editedCluster.drawAnnotations();
+					AnnotationFactory<ShapeAnnotation> shapeFactory = autoAnnotationManager.getShapeFactory();
+					AnnotationFactory<TextAnnotation> textFactory = autoAnnotationManager.getTextFactory();
+					AnnotationManager annotationManager = autoAnnotationManager.getAnnotationManager();
+					AutoAnnotationUtils.drawCluster(editedCluster, selectedView, shapeFactory, textFactory, annotationManager);
 				}
 			}
 		});
 		for (Cluster cluster : clusters.getClusterMap().values()) {
-			Object[] rowData = {cluster.getLabel(), cluster.coordinates.size()};
+			Object[] rowData = {cluster, cluster.getCoordinates().size()};
 			model.addRow(rowData);
 		}
 		table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
 			@Override
 			public void valueChanged(ListSelectionEvent e) {
 				if (! e.getValueIsAdjusting()) { // Down-click and up-click are separate events, this makes only one of them fire
+					DialogTaskManager dialogTaskManager = autoAnnotationManager.getDialogTaskManager();
+					CommandExecutorTaskFactory executor = autoAnnotationManager.getCommandExecutor();
 					if (!showHeatmap) {
 						setHeatMapNoSort();
 					}
 					int selectedRowIndex = table.getSelectedRow();
 					if (selectedCluster != null || (Cluster) table.getValueAt(selectedRowIndex, 0) == selectedCluster) {
-						selectedCluster.deselect();
+						// Deselect the previously selected cluster - make annotations no longer yellow
+						AutoAnnotationUtils.deselectCluster(selectedCluster, selectedNetwork);
 					}
-					selectedCluster = (Cluster) table.getValueAt(selectedRowIndex, 0); 
-					selectedCluster.select(showHeatmap);
+					// Select the clicked on cluster
+					selectedCluster = (Cluster) table.getValueAt(selectedRowIndex, 0);
+					AutoAnnotationUtils.selectCluster(selectedCluster, selectedNetwork, showHeatmap, executor, dialogTaskManager);
 				}
 			}
 		});
@@ -483,12 +491,19 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 					AnnotationSet clusters = (AnnotationSet) itemEvent.getItem();
 					clusters.updateCoordinates();
 					clusters.updateLabels();
-					clusters.drawAnnotations();
+					for (Cluster cluster : clusters.getClusterMap().values()) {
+						AnnotationFactory<ShapeAnnotation> shapeFactory = autoAnnotationManager.getShapeFactory();
+						AnnotationFactory<TextAnnotation> textFactory = autoAnnotationManager.getTextFactory();
+						AnnotationManager annotationManager = autoAnnotationManager.getAnnotationManager();
+						AutoAnnotationUtils.drawCluster(cluster, selectedView, shapeFactory, textFactory, annotationManager);
+					}
 					clustersToTables.get(clusters).getParent().getParent().setVisible(true); // Show selected table
 					((JPanel) clusterSetDropdown.getParent()).updateUI();
 				} else if (itemEvent.getStateChange() == ItemEvent.DESELECTED) {
 					AnnotationSet clusters = (AnnotationSet) itemEvent.getItem();
-	         		clusters.eraseAnnotations();
+	         		for (Cluster cluster : clusters.getClusterMap().values()) {
+	         			cluster.erase();
+	         		}
 					clustersToTables.get(clusters).getParent().getParent().setVisible(false);
 					((JPanel) clusterSetDropdown.getParent()).updateUI();
 				}

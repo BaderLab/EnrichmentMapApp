@@ -26,6 +26,7 @@ import org.cytoscape.application.events.SetSelectedNetworkViewsEvent;
 import org.cytoscape.application.events.SetSelectedNetworkViewsListener;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.command.CommandExecutorTaskFactory;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyNetworkFactory;
@@ -54,7 +55,10 @@ import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
 import org.cytoscape.view.model.events.NetworkViewAddedListener;
 import org.cytoscape.view.model.events.UpdateNetworkPresentationListener;
 import org.cytoscape.view.presentation.RenderingEngineManager;
+import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.annotations.AnnotationManager;
+import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
+import org.cytoscape.view.presentation.annotations.TextAnnotation;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
@@ -108,11 +112,14 @@ public class CyActivator extends AbstractCyActivator {
 		MapTableToNetworkTablesTaskFactory mapTableToNetworkTable = getService(bc,  MapTableToNetworkTablesTaskFactory.class);
 		CyEventHelper eventHelper = getService(bc,CyEventHelper.class);
 		SynchronousTaskManager syncTaskManager = getService(bc, SynchronousTaskManager.class);
-		AnnotationManager annotationManagerRef = getService(bc, AnnotationManager.class);
+		DialogTaskManager dialogTaskManager = getService(bc, DialogTaskManager.class);
+		AnnotationManager annotationManager = getService(bc, AnnotationManager.class);
+		AnnotationFactory<ShapeAnnotation> shapeFactory = (AnnotationFactory<ShapeAnnotation>) getService(bc, AnnotationFactory.class, "(type=ShapeAnnotation.class)");    	
+		AnnotationFactory<TextAnnotation> textFactory = (AnnotationFactory<TextAnnotation>) getService(bc, AnnotationFactory.class, "(type=TextAnnotation.class)");
+		CommandExecutorTaskFactory commandExecutor = getService(bc, CommandExecutorTaskFactory.class);
 		//get the service registrar so we can register new services in different classes
 		CyServiceRegistrar registrar = getService(bc, CyServiceRegistrar.class);
 		
-		DialogTaskManager dialogTaskManager = getService(bc, DialogTaskManager.class);
 						
 		Map<String, String> serviceProperties;
 		
@@ -133,8 +140,8 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,manager, SetCurrentNetworkListener.class, new Properties());
 		
 		//Get an instance of AA manager
-		AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
-		autoAnnotationManager.setTableManager(tableManager);
+		
+		AutoAnnotationManager autoAnnotationManager = new AutoAnnotationManager(tableManager, commandExecutor, dialogTaskManager, annotationManager, shapeFactory, textFactory);
 		//register network events with manager class
 		registerService(bc, autoAnnotationManager, SetSelectedNetworkViewsListener.class, new Properties());
 		registerService(bc, autoAnnotationManager, ColumnCreatedListener.class, new Properties());
@@ -176,7 +183,7 @@ public class CyActivator extends AbstractCyActivator {
 		serviceProperties = new HashMap<String, String>();
 		serviceProperties.put("inMenuBar", "true");
 		serviceProperties.put("preferredMenu", "Apps.EnrichmentMap");
- 		AutoAnnotatorPanelAction autoAnnotatorPanelAction = new AutoAnnotatorPanelAction(serviceProperties,cyApplicationManagerRef, cyNetworkManagerRef, cyNetworkViewManagerRef, cySwingApplicationRef, openBrowserRef, annotationManagerRef, registrar, dialogTaskManager, eventHelper, autoAnnotationManager, tableManager, manager);
+ 		AutoAnnotatorPanelAction autoAnnotatorPanelAction = new AutoAnnotatorPanelAction(serviceProperties,cyApplicationManagerRef, cyNetworkViewManagerRef, cySwingApplicationRef, annotationManager, registrar, dialogTaskManager, autoAnnotationManager, manager);
 		
 		//register the services
 		registerService(bc, aboutAction, CyAction.class,new Properties());

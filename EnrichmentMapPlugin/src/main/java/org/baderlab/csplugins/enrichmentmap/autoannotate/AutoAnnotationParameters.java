@@ -6,10 +6,6 @@
  */
 package org.baderlab.csplugins.enrichmentmap.autoannotate;
 
-import java.util.TreeMap;
-
-import org.cytoscape.model.CyTableManager;
-
 /* 
  * AutoAnnotation Parameters define all the variables that are needed to create, manipulate, explore
  * and save an individual AutoAnnotation session (potentially consisting of multiple annotation sets)

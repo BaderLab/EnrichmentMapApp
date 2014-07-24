@@ -49,7 +49,6 @@ import java.util.TreeMap;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapUtils;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationParameters;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.AnnotationSet;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.view.AutoAnnotationPanel;
@@ -67,10 +66,6 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
-import org.cytoscape.view.presentation.annotations.AnnotationFactory;
-import org.cytoscape.view.presentation.annotations.AnnotationManager;
-import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
-import org.cytoscape.view.presentation.annotations.TextAnnotation;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskIterator;
@@ -87,7 +82,6 @@ import org.cytoscape.work.swing.DialogTaskManager;
 public class AutoAnnotationTask extends AbstractTask {
 	
 	private CySwingApplication application;
-	private AnnotationManager annotationManager;
 	private CyNetwork network;
 	private CyNetworkView view;
 	private String clusterColumnName;
@@ -98,17 +92,15 @@ public class AutoAnnotationTask extends AbstractTask {
 	private String annotationSetName;
 	private CyTableManager tableManager;
 	private AutoAnnotationPanel annotationPanel;
-	private AutoAnnotationManager autoAnnotationManager;
+	private DialogTaskManager dialogTaskManager;
 
-	public AutoAnnotationTask(CySwingApplication application, CyApplicationManager applicationManager, 
-			CyNetworkViewManager networkViewManager, CyNetworkManager networkManager, AnnotationManager annotationManager,
-			AutoAnnotationManager autoAnnotationManager, CyNetworkView selectedView, String clusterColumnName, 
-			String nameColumnName, String algorithm, int annotationSetNumber, CyServiceRegistrar registrar, 
-			CyTableManager tableManager){
+	public AutoAnnotationTask (CySwingApplication application, 
+			AutoAnnotationManager autoAnnotationManager, 
+			CyNetworkView selectedView, String clusterColumnName, String nameColumnName, 
+			String algorithm, int annotationSetNumber, DialogTaskManager dialogTaskManager, 
+			CyServiceRegistrar registrar, CyTableManager tableManager){
 		
 		this.application = application;
-		this.annotationManager = annotationManager;
-		this.autoAnnotationManager = autoAnnotationManager;
 		this.annotationPanel = autoAnnotationManager.getAnnotationPanel();
 		this.view = selectedView;
 		this.network = view.getModel();
@@ -116,6 +108,7 @@ public class AutoAnnotationTask extends AbstractTask {
 		this.nameColumnName = nameColumnName;
 		this.algorithm = algorithm;
 		this.annotationSetNumber = annotationSetNumber;
+		this.dialogTaskManager = dialogTaskManager;
 		this.registrar = registrar;
 		this.tableManager = tableManager;
 	};
@@ -166,8 +159,8 @@ public class AutoAnnotationTask extends AbstractTask {
 		taskMonitor.setStatusMessage("Done!");
 	}
 	
-	@SuppressWarnings("unchecked")
 	private void runClusterMaker(TaskMonitor taskMonitor) {
+		// Delete potential existing columns - sometimes clusterMaker doesn't do this
 		if (network.getDefaultNodeTable().getColumn(clusterColumnName) != null) {
 			network.getDefaultNodeTable().deleteColumn(clusterColumnName);
 		}
@@ -182,79 +175,71 @@ public class AutoAnnotationTask extends AbstractTask {
 			}
 		}
 		
+		// Executes the task inside of clusterMaker
 		CommandExecutorTaskFactory executor = registrar.getService(CommandExecutorTaskFactory.class);
 		ArrayList<String> commands = new ArrayList<String>();
 		commands.add(getCommand(algorithm, edgeAttribute, network.toString()));
 		ExecutorObserver observer = new ExecutorObserver();
 		TaskIterator taskIterator = executor.createTaskIterator(commands, null);
-		try {
-			registrar.getService(DialogTaskManager.class).execute(taskIterator, observer);
-			while (!observer.isFinished()) {
+		dialogTaskManager.execute(taskIterator, observer);
+		while (!observer.isFinished()) {
+			// Prevents task from continuing to execute until clusterMaker has finished
+			try {
 				Thread.sleep(10);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
 	}
 	
 	@SuppressWarnings("unchecked")
 	private AnnotationSet makeClusters(CyNetwork network, CyNetworkView networkView, String name) {
 		AnnotationSet annotationSet = new AnnotationSet(name, network, networkView, clusterColumnName, tableManager);
-		TreeMap<Integer, Cluster> clusterMap = annotationSet.getClusterMap();
-		
-		AnnotationFactory<ShapeAnnotation> shapeFactory = (AnnotationFactory<ShapeAnnotation>) registrar.getService(AnnotationFactory.class, "(type=ShapeAnnotation.class)");    	
-		AnnotationFactory<TextAnnotation> textFactory = (AnnotationFactory<TextAnnotation>) registrar.getService(AnnotationFactory.class, "(type=TextAnnotation.class)");
 		
 		List<CyNode> nodes = network.getNodeList();
 		Class<?> columnType = network.getDefaultNodeTable().getColumn(clusterColumnName).getType();
-		if (columnType == Integer.class) { // Discrete clusting
-			for (CyNode node : nodes) {
+		for (CyNode node : nodes) {
+			TreeMap<Integer, Cluster> clusterMap = annotationSet.getClusterMap();
+			Cluster cluster = null;
+			
+			// Get coordinates 
+			View<CyNode> nodeView = networkView.getNodeView(node);
+			double x = nodeView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION);
+			double y = nodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
+			double[] coordinates = {x, y};
+
+			if (columnType == Integer.class) { // Discrete clustering
 				Integer clusterNumber;
 				clusterNumber = network.getRow(node).get(clusterColumnName, Integer.class);
-				if (clusterNumber != null) {
-					// Get coordinates 
-					View<CyNode> nodeView = networkView.getNodeView(node);
-					double x = nodeView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION);
-					double y = nodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
-					double[] coordinates = {x, y};
-					
-					
-					// empty values (no cluster) are given null
-					Cluster cluster;
+				if (clusterNumber != null) { // empty values (no cluster) are given null
 					if (clusterMap.keySet().contains(clusterNumber)) {
+						// Cluster already exists
 						cluster = clusterMap.get(clusterNumber);
 					} else {
-						cluster = new Cluster(clusterNumber, network, networkView, annotationManager, clusterColumnName, shapeFactory, annotationSet, textFactory, registrar);
+						// First node in a new cluster
+						cluster = new Cluster(clusterNumber, annotationSet);
 						annotationSet.addCluster(cluster);
 					}
-					cluster.addNode(node);
-					cluster.addCoordinates(coordinates);
+				} else {
+					continue;
 				}
-			}
-		} else if (columnType == List.class) { // Fuzzy clustering
-			// TODO 
-			for (CyNode node : nodes) {
+			} else if (columnType == List.class) { // Fuzzy clustering
 				List<Integer> clusterNumbers = new ArrayList<Integer>();
 				clusterNumbers = network.getRow(node).get(clusterColumnName, List.class);
 				for (int i = 0; i < clusterNumbers.size(); i++) {
 					int clusterNumber = clusterNumbers.get(i);
-					View<CyNode> nodeView = networkView.getNodeView(node);
-					double x = nodeView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION);
-					double y = nodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
-					double[] coordinates = {x, y};
-					
-					// empty values (no cluster) are given null
-					Cluster cluster;
 					if (clusterMap.keySet().contains(clusterNumber)) {
+						// Cluster already exists
 						cluster = clusterMap.get(clusterNumber);
 					} else {
-						cluster = new Cluster(clusterNumber, network, networkView, annotationManager, clusterColumnName, shapeFactory, annotationSet, textFactory, registrar);
+						// First node in a new cluster
+						cluster = new Cluster(clusterNumber, annotationSet);
 						annotationSet.addCluster(cluster);
 					}
-					cluster.addNode(node);
-					cluster.addCoordinates(coordinates);
 				}
-			}
+			} // No other possible columnTypes (since the dropdown only contains these types
+			cluster.addNode(node);
+			cluster.addCoordinates(coordinates);
 		}
 		return annotationSet;
 	}
@@ -267,13 +252,14 @@ public class AutoAnnotationTask extends AbstractTask {
 		commands.add(command);
 		ExecutorObserver observer = new ExecutorObserver();
 		TaskIterator taskIterator = executor.createTaskIterator(commands, null);
-		try {
-			registrar.getService(DialogTaskManager.class).execute(taskIterator, observer);
-			while (!observer.isFinished()) {
+		registrar.getService(DialogTaskManager.class).execute(taskIterator, observer);
+		// Prevents task from continuing to execute until wordCloud has finished
+		while (!observer.isFinished()) {
+			try {
 				Thread.sleep(10);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
 	}
 

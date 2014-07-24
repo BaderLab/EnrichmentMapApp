@@ -3,11 +3,10 @@ package org.baderlab.csplugins.enrichmentmap.autoannotate;
 import java.util.HashMap;
 import java.util.TreeMap;
 
-import javax.swing.JPanel;
-
 import org.baderlab.csplugins.enrichmentmap.autoannotate.view.AutoAnnotationPanel;
 import org.cytoscape.application.events.SetSelectedNetworkViewsEvent;
 import org.cytoscape.application.events.SetSelectedNetworkViewsListener;
+import org.cytoscape.command.CommandExecutorTaskFactory;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.events.ColumnCreatedEvent;
 import org.cytoscape.model.events.ColumnCreatedListener;
@@ -17,6 +16,11 @@ import org.cytoscape.model.events.ColumnNameChangedEvent;
 import org.cytoscape.model.events.ColumnNameChangedListener;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
+import org.cytoscape.view.presentation.annotations.AnnotationFactory;
+import org.cytoscape.view.presentation.annotations.AnnotationManager;
+import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
+import org.cytoscape.view.presentation.annotations.TextAnnotation;
+import org.cytoscape.work.swing.DialogTaskManager;
 /**
  * Created by
  * User: arkadyark
@@ -28,17 +32,40 @@ public class AutoAnnotationManager implements
 		SetSelectedNetworkViewsListener, ColumnCreatedListener, 
 		ColumnDeletedListener, ColumnNameChangedListener,
 		NetworkViewAboutToBeDestroyedListener {
-
-	private static AutoAnnotationManager manager = null;
 	
 	private AutoAnnotationPanel annotationPanel;
+	// Stores the annotation parameters (one for each network view)
 	private HashMap<Long, AutoAnnotationParameters> networkViewToAutoAnnotationParameters;
-	// Used to set clusterMaker default parameters
+	// used to set clusterMaker default parameters
 	private TreeMap<String, String> algorithmToColumnName;
 	// used to read from the tables that WordCloud creates
 	private CyTableManager tableManager;
+	// used to execute command line commands
+	private CommandExecutorTaskFactory commandExecutor;
+	// used to execute annotation, WordCloud, and clusterMaker tasks
+	private DialogTaskManager dialogTaskManager;
+	// annotations are added to here
+	private AnnotationManager annotationManager;
+	// creates ellipses
+	private AnnotationFactory<ShapeAnnotation> shapeFactory;
+	// creates text labels
+	private AnnotationFactory<TextAnnotation> textFactory;
 	
-	public AutoAnnotationManager() {
+	public AnnotationManager getAnnotationManager() {
+		return annotationManager;
+	}
+
+	public AnnotationFactory<ShapeAnnotation> getShapeFactory() {
+		return shapeFactory;
+	}
+
+	public AnnotationFactory<TextAnnotation> getTextFactory() {
+		return textFactory;
+	}
+
+	public AutoAnnotationManager(CyTableManager tableManager, CommandExecutorTaskFactory commandExecutor,
+			DialogTaskManager dialogTaskManager, AnnotationManager annotationManager, 
+			AnnotationFactory<ShapeAnnotation> shapeFactory, AnnotationFactory<TextAnnotation> textFactory) {
 		networkViewToAutoAnnotationParameters = new HashMap<Long, AutoAnnotationParameters>();
 		
 		algorithmToColumnName = new TreeMap<String, String>();		
@@ -49,13 +76,14 @@ public class AutoAnnotationManager implements
 		algorithmToColumnName.put("Fuzzy C-Means Cluster", "__fcmlCluster");
 		algorithmToColumnName.put("MCL Cluster", "__mclCluster");
 		algorithmToColumnName.put("SCPS Cluster", "__scpsCluster");
+		
+		this.tableManager = tableManager;
+		this.commandExecutor = commandExecutor;
+		this.dialogTaskManager = dialogTaskManager;
+		this.annotationManager = annotationManager;
+		this.shapeFactory = shapeFactory;
+		this.textFactory = textFactory;
 	}
-	
-    public static AutoAnnotationManager getInstance() {
-        if(manager == null)
-            manager = new AutoAnnotationManager();
-        return manager;
-    }
 
 	@Override
 	public void handleEvent(SetSelectedNetworkViewsEvent e) {
@@ -90,19 +118,6 @@ public class AutoAnnotationManager implements
 		}
 	}
 	
-    public AutoAnnotationPanel getAnnotationPanel() {
-		return annotationPanel;
-	}
-
-	public void setAnnotationPanel(AutoAnnotationPanel inputPanel) {
-    	this.annotationPanel = inputPanel;
-    }
-	
-	public TreeMap<String, String> getAlgorithmToColumnName() {
-		return algorithmToColumnName;
-	}
-    	
-	
 	public HashMap<Long, AutoAnnotationParameters> getNetworkViewToAutoAnnotationParameters() {
 		return networkViewToAutoAnnotationParameters;
 	}
@@ -116,7 +131,24 @@ public class AutoAnnotationManager implements
 		return tableManager;
 	}
 
-	public void setTableManager(CyTableManager tableManager) {
-		this.tableManager = tableManager;
+	public CommandExecutorTaskFactory getCommandExecutor() {
+		return commandExecutor;
 	}
+
+	public DialogTaskManager getDialogTaskManager() {
+		return dialogTaskManager;
+	}
+
+	public AutoAnnotationPanel getAnnotationPanel() {
+		return annotationPanel;
+	}
+	
+	public void setAnnotationPanel(AutoAnnotationPanel inputPanel) {
+		this.annotationPanel = inputPanel;
+	}
+	
+	public TreeMap<String, String> getAlgorithmToColumnName() {
+		return algorithmToColumnName;
+	}
+	
 }

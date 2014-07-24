@@ -89,17 +89,10 @@ public class AutoAnnotatorPanelAction extends AbstractCyAction {
     private CyServiceRegistrar registrar;
 	private CyApplicationManager applicationManager;
 	private CySwingApplication application;
-	private CyNetworkViewManager networkViewManager;
-	private AnnotationManager annotationManager;
-	private OpenBrowser openBrowser;
-	private CyNetworkManager networkManager;
 	private DialogTaskManager dialogTaskManager;
-	private CyEventHelper eventHelper;
 	
 	private AutoAnnotationManager manager;
 
-
-	private CyTableManager tableManager;
 
 	private AutoAnnotationPanel inputPanel;
 
@@ -109,10 +102,9 @@ public class AutoAnnotatorPanelAction extends AbstractCyAction {
 
     
     public AutoAnnotatorPanelAction(Map<String,String> configProps, CyApplicationManager applicationManager, 
-    			CyNetworkManager cyNetworkManagerRef, CyNetworkViewManager networkViewManager, 
-    			CySwingApplication application, OpenBrowser openBrowserRef, AnnotationManager annotationManager, 
-    			CyServiceRegistrar registrar, DialogTaskManager dialogTaskManager, CyEventHelper eventHelper,
-    			AutoAnnotationManager autoAnnotationManager, CyTableManager tableManager, EnrichmentMapManager emManager){
+    			CyNetworkViewManager networkViewManager, CySwingApplication application, AnnotationManager annotationManager, 
+    			CyServiceRegistrar registrar, DialogTaskManager dialogTaskManager,
+    			AutoAnnotationManager autoAnnotationManager, EnrichmentMapManager emManager){
     	
         super( configProps,  applicationManager,  networkViewManager);
      
@@ -120,24 +112,17 @@ public class AutoAnnotatorPanelAction extends AbstractCyAction {
  		
  		this.cytoPanelWest = application.getCytoPanel(CytoPanelName.WEST);
  		this.applicationManager = applicationManager;
- 		this.networkManager = cyNetworkManagerRef;
- 		this.networkViewManager = networkViewManager;
  		this.application = application;
- 		this.openBrowser = openBrowserRef;
- 		this.annotationManager = annotationManager;
  		this.registrar = registrar;
  		this.dialogTaskManager = dialogTaskManager;
- 		this.eventHelper = eventHelper;
  		this.manager = autoAnnotationManager;
- 		this.tableManager = tableManager;
  		this.emManager = emManager;
     }
 
 	public void actionPerformed(ActionEvent event) {		
 		if(!initialized) {
-    		inputPanel = new AutoAnnotationPanel(applicationManager, networkViewManager, 
-    				application, openBrowser, networkManager, annotationManager, manager, registrar,
-    				dialogTaskManager, eventHelper, tableManager, emManager);
+    		inputPanel = new AutoAnnotationPanel(application, manager, registrar,
+    				dialogTaskManager, emManager);
     		inputPanel.updateSelectedView(applicationManager.getCurrentNetworkView());
     		manager.setAnnotationPanel(inputPanel);
     		registrar.registerService(inputPanel,CytoPanelComponent.class, new Properties());

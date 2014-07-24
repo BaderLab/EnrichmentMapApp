@@ -48,28 +48,10 @@ public class AnnotationSet {
 		clusterMap.put(cluster.getClusterNumber(), cluster);
 	}
 
-	public void drawAnnotations() {
-		for (Cluster cluster : clusterMap.values()) {
-			cluster.drawAnnotations();
-		}
-	}
-	
-	public void eraseAnnotations() {
-		for (Cluster cluster : clusterMap.values()) {
-			cluster.erase();
-		}
-	}
-	
-	public void destroyAnnotations() {
-		for (Cluster cluster : clusterMap.values()) {
-			cluster.destroy();
-		}
-	}
-	
 	public void updateCoordinates() {
 		for (Cluster cluster : clusterMap.values()) {
-			cluster.coordinates = new ArrayList<double[]>();
-			for (CyNode node : cluster.nodes) {
+			cluster.setCoordinates(new ArrayList<double[]>());
+			for (CyNode node : cluster.getNodes()) {
 				View<CyNode> nodeView = view.getNodeView(node);
 				double x = nodeView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION);
 				double y = nodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
