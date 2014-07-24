@@ -20,7 +20,7 @@ import org.cytoscape.work.swing.DialogTaskManager;
  * Time: 11:43 AM
  */
 
-public class AutoAnnotatorTaskFactory implements TaskFactory {
+public class AutoAnnotationTaskFactory implements TaskFactory {
 
 	private CySwingApplication application;
 	private CyApplicationManager applicationManager;
@@ -31,15 +31,14 @@ public class AutoAnnotatorTaskFactory implements TaskFactory {
 	private CyNetworkView selectedView;
 	private String clusterColumnName;
 	private String nameColumnName;
-	private String sourceColumnName;
 	private String algorithm;
 	private int annotationSetNumber;
 	private CyServiceRegistrar registrar;
 	private CyTableManager tableManager;
 	
-	public AutoAnnotatorTaskFactory(CySwingApplication application, CyApplicationManager applicationManager, CyNetworkViewManager networkViewManager,
+	public AutoAnnotationTaskFactory(CySwingApplication application, CyApplicationManager applicationManager, CyNetworkViewManager networkViewManager,
 			CyNetworkManager networkManager, AnnotationManager annotationManager, AutoAnnotationManager autoAnnotationManager, 
-			CyNetworkView selectedView, String clusterColumnName, String nameColumnName, String sourceColumnName, String algorithm, int annotationSetNumber, 
+			CyNetworkView selectedView, String clusterColumnName, String nameColumnName,  String algorithm, int annotationSetNumber, 
 			CyServiceRegistrar registrar, DialogTaskManager dialogTaskManager, CyTableManager tableManager) {
 		this.application = application;
 		this.applicationManager = applicationManager;
@@ -50,7 +49,6 @@ public class AutoAnnotatorTaskFactory implements TaskFactory {
 		this.selectedView = selectedView;
 		this.clusterColumnName = clusterColumnName;
 		this.nameColumnName = nameColumnName;
-		this.sourceColumnName = sourceColumnName;
 		this.algorithm = algorithm;
 		this.annotationSetNumber = annotationSetNumber;
 		this.registrar = registrar;
@@ -58,7 +56,7 @@ public class AutoAnnotatorTaskFactory implements TaskFactory {
 	}
 	
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new AutoAnnotatorTask(application, applicationManager, networkViewManager, networkManager, annotationManager, autoAnnotationManager, selectedView, clusterColumnName, nameColumnName, sourceColumnName, algorithm, annotationSetNumber, registrar, tableManager));
+		return new TaskIterator(new AutoAnnotationTask(application, applicationManager, networkViewManager, networkManager, annotationManager, autoAnnotationManager, selectedView, clusterColumnName, nameColumnName, algorithm, annotationSetNumber, registrar, tableManager));
 	}
 
 	public boolean isReady() {

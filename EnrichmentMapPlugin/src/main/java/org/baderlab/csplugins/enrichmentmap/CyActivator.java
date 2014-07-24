@@ -12,7 +12,7 @@ import org.baderlab.csplugins.enrichmentmap.actions.LoadPostAnalysisPanelAction;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowAboutPanelAction;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.action.AutoAnnotatorPanelAction;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.view.AutoAnnotatorPanel;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.view.AutoAnnotationPanel;
 import org.baderlab.csplugins.enrichmentmap.commands.EnrichmentMapGSEACommandHandlerTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.task.BuildEnrichmentMapTuneableTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.view.BulkEMCreationPanel;
@@ -133,7 +133,8 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,manager, SetCurrentNetworkListener.class, new Properties());
 		
 		//Get an instance of AA manager
-		AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();		
+		AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
+		autoAnnotationManager.setTableManager(tableManager);
 		//register network events with manager class
 		registerService(bc, autoAnnotationManager, SetSelectedNetworkViewsListener.class, new Properties());
 		registerService(bc, autoAnnotationManager, ColumnCreatedListener.class, new Properties());

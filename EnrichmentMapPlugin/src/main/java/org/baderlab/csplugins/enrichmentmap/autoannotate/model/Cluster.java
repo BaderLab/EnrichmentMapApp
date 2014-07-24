@@ -51,7 +51,7 @@ public class Cluster implements Comparable<Cluster> {
 			AnnotationFactory<ShapeAnnotation> shapeFactory, AnnotationSet parent, AnnotationFactory<TextAnnotation> textFactory, CyServiceRegistrar registrar) {
 		this.clusterNumber = clusterNumber;
 		this.name = "Cluster " + clusterNumber;
-		this.cloudName = parent.name + " Cloud " + clusterNumber;
+		this.cloudName = parent.getCloudNamePrefix() + " Cloud " + clusterNumber;
 		this.nodes = new ArrayList<CyNode>();
 		this.coordinates = new ArrayList<double[]>();
 		this.view = view;

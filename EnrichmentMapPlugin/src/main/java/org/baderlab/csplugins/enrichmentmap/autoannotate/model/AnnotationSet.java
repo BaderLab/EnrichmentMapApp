@@ -22,17 +22,22 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 public class AnnotationSet {
 	
-	public String name;
-	public TreeMap<Integer, Cluster> clusterSet; // Having it be sorted is useful for the displayPanel
-	public String clusterColumnName;
-	public CyNetwork network;
-	public CyNetworkView view;
+	// Name of the annotation set in the dropdown
+	private String name;
+	// Map of clusterNumbers to the comprising clusters
+	private TreeMap<Integer, Cluster> clusterMap;
+	// Name of the column that was used
+	private String cloudNamePrefix;
+	private String clusterColumnName;
+	private CyNetwork network;
+	private CyNetworkView view;
 	private CyTableManager tableManager;
 	
 	public AnnotationSet(String name, CyNetwork network, CyNetworkView view, String clusterColumnName, CyTableManager tableManager) {
 		this.name = name;
 		// TODO separate name and prefix so that names can be changed
-		this.clusterSet = new TreeMap<Integer, Cluster>();
+		this.clusterMap = new TreeMap<Integer, Cluster>();
+		this.cloudNamePrefix = name; // name may change later
 		this.clusterColumnName = clusterColumnName;
 		this.network = network;
 		this.view = view;
@@ -40,29 +45,29 @@ public class AnnotationSet {
 	}
 	
 	public void addCluster(Cluster cluster) {
-		clusterSet.put(cluster.getClusterNumber(), cluster);
+		clusterMap.put(cluster.getClusterNumber(), cluster);
 	}
 
 	public void drawAnnotations() {
-		for (Cluster cluster : clusterSet.values()) {
+		for (Cluster cluster : clusterMap.values()) {
 			cluster.drawAnnotations();
 		}
 	}
 	
 	public void eraseAnnotations() {
-		for (Cluster cluster : clusterSet.values()) {
+		for (Cluster cluster : clusterMap.values()) {
 			cluster.erase();
 		}
 	}
 	
 	public void destroyAnnotations() {
-		for (Cluster cluster : clusterSet.values()) {
+		for (Cluster cluster : clusterMap.values()) {
 			cluster.destroy();
 		}
 	}
 	
 	public void updateCoordinates() {
-		for (Cluster cluster : clusterSet.values()) {
+		for (Cluster cluster : clusterMap.values()) {
 			cluster.coordinates = new ArrayList<double[]>();
 			for (CyNode node : cluster.nodes) {
 				View<CyNode> nodeView = view.getNodeView(node);
@@ -76,7 +81,7 @@ public class AnnotationSet {
 	
 	@SuppressWarnings("unchecked")
 	public void updateLabels() {
-		for (Cluster cluster : this.clusterSet.values()) {
+		for (Cluster cluster : this.clusterMap.values()) {
 			// Only update if label hasn't been manually changed by the user
 			if (!cluster.getLabelManuallyUpdated()) {
 				cluster.setLabel("");
@@ -141,6 +146,62 @@ public class AnnotationSet {
 		return label;
 	}
 	
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public TreeMap<Integer, Cluster> getClusterMap() {
+		return clusterMap;
+	}
+
+	public void setClusterMap(TreeMap<Integer, Cluster> clusterSet) {
+		this.clusterMap = clusterSet;
+	}
+
+	public String getCloudNamePrefix() {
+		return cloudNamePrefix;
+	}
+
+	public void setCloudNamePrefix(String cloudNamePrefix) {
+		this.cloudNamePrefix = cloudNamePrefix;
+	}
+
+	public String getClusterColumnName() {
+		return clusterColumnName;
+	}
+
+	public void setClusterColumnName(String clusterColumnName) {
+		this.clusterColumnName = clusterColumnName;
+	}
+
+	public CyNetwork getNetwork() {
+		return network;
+	}
+
+	public void setNetwork(CyNetwork network) {
+		this.network = network;
+	}
+
+	public CyNetworkView getView() {
+		return view;
+	}
+
+	public void setView(CyNetworkView view) {
+		this.view = view;
+	}
+
+	public CyTableManager getTableManager() {
+		return tableManager;
+	}
+
+	public void setTableManager(CyTableManager tableManager) {
+		this.tableManager = tableManager;
+	}
+
 	@Override
 	public String toString() {
 		return name;
