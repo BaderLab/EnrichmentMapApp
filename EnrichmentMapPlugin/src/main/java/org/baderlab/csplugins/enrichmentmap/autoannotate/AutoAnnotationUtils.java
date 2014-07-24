@@ -29,6 +29,7 @@ public class AutoAnnotationUtils {
 	
 	private static int min_size = 35; // Minimum size of the cluster
 	private static double padding = 1.9; // Amount the ellipses are stretched by
+	private static double ellipseWidth = 5.0;
 	
 	public static void selectCluster(Cluster selectedCluster, CyNetwork network, boolean showHeatmap,
 									 CommandExecutorTaskFactory executor, DialogTaskManager dialogTaskManager) {
@@ -50,7 +51,7 @@ public class AutoAnnotationUtils {
 			dialogTaskManager.execute(task);
 		}
 		ShapeAnnotation ellipse = selectedCluster.getEllipse();
-		ellipse.setBorderWidth(3*ellipse.getBorderWidth());
+		ellipse.setBorderWidth(3*ellipseWidth);
 		ellipse.setBorderColor(Color.yellow);
 		selectedCluster.getTextAnnotation().setTextColor(Color.yellow);
 	}
@@ -62,7 +63,7 @@ public class AutoAnnotationUtils {
 		}
 		// Reset the size/color of the annotations
 		ShapeAnnotation ellipse = deselectedCluster.getEllipse();
-		ellipse.setBorderWidth(ellipse.getBorderWidth()/3);
+		ellipse.setBorderWidth(ellipseWidth);
 		ellipse.setBorderColor(Color.black);
 		deselectedCluster.getTextAnnotation().setTextColor(Color.black);
 	}
@@ -123,7 +124,7 @@ public class AutoAnnotationUtils {
 		ShapeAnnotation ellipse = shapeFactory.createAnnotation(ShapeAnnotation.class, view, arguments);
 		ellipse.setShapeType("Ellipse");
 		ellipse.setSize(width*padding*zoom, height*padding*zoom);
-		ellipse.setBorderWidth(5.0);
+		ellipse.setBorderWidth(ellipseWidth);
 		cluster.setEllipse(ellipse);
 		annotationManager.addAnnotation(ellipse);
 

@@ -23,7 +23,7 @@ public class AutoAnnotationParameters {
 	// used to generate the default names of the annotationSets
 	private int annotationSetNumber;
 	// used to select/deselect cluster
-	private Cluster selectedCluster;
+	private AnnotationSet selectedAnnotationSet;
 	// stores all of the annotation sets for this network view
 	private ArrayList<AnnotationSet> annotationSets;	
 	
@@ -44,12 +44,12 @@ public class AutoAnnotationParameters {
 		annotationSetNumber++;
 	}
 
-	public Cluster getSelectedCluster() {
-		return selectedCluster;
+	public AnnotationSet getSelectedAnnotationSet() {
+		return selectedAnnotationSet;
 	}
 
-	public void setSelectedCluster(Cluster selectedCluster) {
-		this.selectedCluster = selectedCluster;
+	public void setSelectedAnnotationSet(AnnotationSet selectedAnnotationSet) {
+		this.selectedAnnotationSet = selectedAnnotationSet;
 	}
 
 	public ArrayList<AnnotationSet> getAnnotationSets() {
@@ -58,5 +58,9 @@ public class AutoAnnotationParameters {
 	
 	public void addAnnotationSet(AnnotationSet annotationSet) {
 		this.annotationSets.add(annotationSet);
+	}
+	
+	public void removeAnnotationSet(AnnotationSet annotationSet) {
+		this.annotationSets.remove(annotationSet);
 	}
 }

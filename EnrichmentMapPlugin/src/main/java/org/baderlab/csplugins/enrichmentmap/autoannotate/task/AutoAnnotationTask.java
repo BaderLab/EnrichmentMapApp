@@ -88,7 +88,6 @@ public class AutoAnnotationTask extends AbstractTask {
 	private String nameColumnName;
 	private String algorithm;
 	private CyServiceRegistrar registrar;
-	private int annotationSetNumber;
 	private String annotationSetName;
 	private CyTableManager tableManager;
 	private AutoAnnotationPanel annotationPanel;
@@ -97,7 +96,7 @@ public class AutoAnnotationTask extends AbstractTask {
 	public AutoAnnotationTask (CySwingApplication application, 
 			AutoAnnotationManager autoAnnotationManager, 
 			CyNetworkView selectedView, String clusterColumnName, String nameColumnName, 
-			String algorithm, int annotationSetNumber, DialogTaskManager dialogTaskManager, 
+			String algorithm, String annotationSetName, DialogTaskManager dialogTaskManager, 
 			CyServiceRegistrar registrar, CyTableManager tableManager){
 		
 		this.application = application;
@@ -107,7 +106,7 @@ public class AutoAnnotationTask extends AbstractTask {
 		this.clusterColumnName = clusterColumnName;
 		this.nameColumnName = nameColumnName;
 		this.algorithm = algorithm;
-		this.annotationSetNumber = annotationSetNumber;
+		this.annotationSetName = annotationSetName;
 		this.dialogTaskManager = dialogTaskManager;
 		this.registrar = registrar;
 		this.tableManager = tableManager;
@@ -133,7 +132,6 @@ public class AutoAnnotationTask extends AbstractTask {
 		if (cancelled) return;
 		
 		EnrichmentMapUtils.setOverrideHeatmapRevalidation(true);
-		annotationSetName = "Annotation Set " + String.valueOf(annotationSetNumber);
     	AnnotationSet clusters = makeClusters(network, view, annotationSetName);
     	
     	taskMonitor.setProgress(0.5);
@@ -194,7 +192,7 @@ public class AutoAnnotationTask extends AbstractTask {
 	
 	@SuppressWarnings("unchecked")
 	private AnnotationSet makeClusters(CyNetwork network, CyNetworkView networkView, String name) {
-		AnnotationSet annotationSet = new AnnotationSet(name, network, networkView, clusterColumnName, tableManager);
+		AnnotationSet annotationSet = new AnnotationSet(name, network, networkView, clusterColumnName, nameColumnName, tableManager);
 		
 		List<CyNode> nodes = network.getNodeList();
 		Class<?> columnType = network.getDefaultNodeTable().getColumn(clusterColumnName).getType();

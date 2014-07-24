@@ -10,6 +10,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -22,6 +24,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
@@ -105,7 +108,9 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 	// Having them as fields lets me hide them when not needed
 	private JButton clearButton;
 	private JButton updateButton;
+	private JButton mergeButton;
 	private BasicCollapsiblePanel selectionPanel;
+
 
 	public AutoAnnotationPanel(CySwingApplication application, AutoAnnotationManager autoAnnotationManager, 
 			CyServiceRegistrar registrar, DialogTaskManager dialogTaskManager, EnrichmentMapManager emManager){
@@ -163,16 +168,17 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 					params = new AutoAnnotationParameters();
 					autoAnnotationManager.getNetworkViewToAutoAnnotationParameters().put(selectedView.getSUID(), params);
 				}
-				int annotationSetNumber = params.getAnnotationSetNumber();
+				String annotationSetName = "Annotation Set " + String.valueOf(params.getAnnotationSetNumber());
 				CyTableManager tableManager = autoAnnotationManager.getTableManager();
 				autoAnnotatorTaskFactory = new AutoAnnotationTaskFactory(application, autoAnnotationManager, selectedView, 
-						clusterColumnName, nameColumnName, algorithm, annotationSetNumber, registrar, dialogTaskManager, tableManager);
+						clusterColumnName, nameColumnName, algorithm, annotationSetName, registrar, dialogTaskManager, tableManager);
 				dialogTaskManager.execute(autoAnnotatorTaskFactory.createTaskIterator());
 				params.incrementAnnotationSetNumber();
 				// Unhide the buttons
 				clearButton.setVisible(true);
 				updateButton.setVisible(true);
 				selectionPanel.setVisible(true);
+				mergeButton.setVisible(true);
 			}
         };
         annotateButton.addActionListener(annotateAction);
@@ -199,6 +205,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
          		clusterSetDropdown.removeItem(clusterSetDropdown.getSelectedItem());
          		remove(clustersToTables.get(clusters).getParent());
          		clustersToTables.remove(clusters);
+         		params.removeAnnotationSet(clusters);
         	}
         };
         clearButton.addActionListener(clearActionListener); 
@@ -234,33 +241,41 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
         	}
         };
         updateButton.addActionListener(updateActionListener); 
-        
-//        JButton mergeButton = new JButton("Merge Clusters");
-//        ActionListener mergeActionListener = new ActionListener(){
-//        	public void actionPerformed(ActionEvent e) {
-//        		JComboBox clusterSetDropdown = networkViewToClusterSetDropdown.get(selectedView);
-//        		AnnotationSet clusters = (AnnotationSet) clusterSetDropdown.getSelectedItem(); 
-//        		JTable clusterTable = clustersToTables.get(clusters);
-//        		int[] selectedRows = clusterTable.getSelectedRows();
-//        		if (selectedRows.length < 2) {
-//        			JOptionPane.showMessageDialog(null, "Please select at least two clusters");
-//        		} else {
-//        			ArrayList<Integer> selectedClusters = new ArrayList<Integer>();
-//        			for (int rowNumber : selectedRows) {
-//        				selectedClusters.add(rowNumber + 1);
-//        			}
-//	        		Cluster firstCluster = clusters.clusterSet.get(selectedClusters.get(0)); // +1 because it is zero indexed
-//	        		for (int selectedClusterNumber : selectedClusters.subList(1, selectedClusters.size())) {
-//	        			Cluster clusterToSwallow = clusters.clusterSet.get(selectedClusterNumber);
-//	        			for (int nodeIndex = 0; nodeIndex < clusterToSwallow.getNodes().size(); nodeIndex++) {
-//	        				selectedNetwork.getRow(clusterToSwallow.getNodes().get(nodeIndex)).set(clusters.clusterColumnName, firstCluster.clusterNumber);
-//	        			}
-//	        		}
-//	        		clusters.destroyAnnotations();
-//        		}
-//        	}
-//        };
-//        mergeButton.addActionListener(mergeActionListener); 
+
+        mergeButton = new JButton("Merge Clusters");
+        ActionListener mergeActionListener = new ActionListener(){
+        	public void actionPerformed(ActionEvent e) {
+        		JComboBox clusterSetDropdown = networkViewToClusterSetDropdown.get(selectedView);
+        		AnnotationSet annotationSet = (AnnotationSet) clusterSetDropdown.getSelectedItem(); 
+        		JTable clusterTable = clustersToTables.get(annotationSet);
+        		int[] selectedRows = clusterTable.getSelectedRows();
+        		if (selectedRows.length < 2) {
+        			JOptionPane.showMessageDialog(null, "Please select at least two clusters");
+        		} else {
+        			ArrayList<Integer> selectedClusters = new ArrayList<Integer>();
+        			for (int rowNumber : selectedRows) {
+        				selectedClusters.add(rowNumber + 1);
+        			}
+	        		Cluster firstCluster = annotationSet.getClusterMap().get(selectedClusters.get(0)); // +1 because it is zero indexed
+	        		for (int selectedClusterNumber : selectedClusters.subList(1, selectedClusters.size())) {
+	        			Cluster clusterToSwallow = annotationSet.getClusterMap().get(selectedClusterNumber);
+	        			for (int nodeIndex = 0; nodeIndex < clusterToSwallow.getNodes().size(); nodeIndex++) {
+	        				selectedNetwork.getRow(clusterToSwallow.getNodes().get(nodeIndex)).set(annotationSet.getClusterColumnName(), firstCluster.getClusterNumber());
+	        			}
+	        		}
+	        		String annotationSetName = annotationSet.getName();
+	        		String clusterColumnName = annotationSet.getClusterColumnName();
+	        		String nameColumnName = annotationSet.getNameColumnName();
+	        		CyTableManager tableManager = autoAnnotationManager.getTableManager();
+	        		clearButton.doClick();
+					autoAnnotatorTaskFactory = new AutoAnnotationTaskFactory(application, autoAnnotationManager, selectedView, 
+							clusterColumnName, nameColumnName, "", annotationSetName, registrar, dialogTaskManager, tableManager);
+					dialogTaskManager.execute(autoAnnotatorTaskFactory.createTaskIterator());
+        		}
+        	}
+        };
+        mergeButton.addActionListener(mergeActionListener); 
+        clusterTablePanel.add(mainPanel.add(mergeButton), BorderLayout.SOUTH);
         
         clusterTablePanel.setAlignmentX(LEFT_ALIGNMENT);
         nameColumnDropdown.setAlignmentX(LEFT_ALIGNMENT);
@@ -276,7 +291,6 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
         mainPanel.add(selectionPanel);
         mainPanel.add(clearButton);
         mainPanel.add(updateButton);
-//        mainPanel.add(mergeButton);
         
         return mainPanel;
 	}
@@ -452,16 +466,14 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 					if (!showHeatmap) {
 						setHeatMapNoSort();
 					}
-					int selectedRowIndex = table.getSelectedRow();
-					Cluster selectedCluster = params.getSelectedCluster();
-					if (selectedCluster != null && (Cluster) table.getValueAt(selectedRowIndex, 0) != selectedCluster) {
-						// Deselect the previously selected cluster - make annotations no longer yellow
-						AutoAnnotationUtils.deselectCluster(selectedCluster, selectedNetwork);
+					int[] selectedRowsIndex = table.getSelectedRows();
+					for (Cluster cluster : params.getSelectedAnnotationSet().getClusterMap().values()) {
+						AutoAnnotationUtils.deselectCluster(cluster, selectedNetwork);
 					}
-					// Select the clicked on cluster
-					selectedCluster = (Cluster) table.getValueAt(selectedRowIndex, 0);
-					params.setSelectedCluster(selectedCluster);
-					AutoAnnotationUtils.selectCluster(selectedCluster, selectedNetwork, showHeatmap, executor, dialogTaskManager);
+					for (int selectedRow : selectedRowsIndex) {
+						Cluster cluster = (Cluster) table.getModel().getValueAt(selectedRow, 0);
+						AutoAnnotationUtils.selectCluster(cluster, selectedNetwork, showHeatmap, executor, dialogTaskManager);
+					}
 				}
 			}
 		});
@@ -496,17 +508,18 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 		clusterSetDropdown.addItemListener(new ItemListener(){
 			public void itemStateChanged(ItemEvent itemEvent) {
 				if (itemEvent.getStateChange() == ItemEvent.SELECTED) {
-					AnnotationSet clusters = (AnnotationSet) itemEvent.getItem();
-					clusters.updateCoordinates();
-					clusters.updateLabels();
+					AnnotationSet annotationSet = (AnnotationSet) itemEvent.getItem();
+					params.setSelectedAnnotationSet(annotationSet);
+					annotationSet.updateCoordinates();
+					annotationSet.updateLabels();
 					// Redraw selected clusters
-					for (Cluster cluster : clusters.getClusterMap().values()) {
+					for (Cluster cluster : annotationSet.getClusterMap().values()) {
 						AnnotationFactory<ShapeAnnotation> shapeFactory = autoAnnotationManager.getShapeFactory();
 						AnnotationFactory<TextAnnotation> textFactory = autoAnnotationManager.getTextFactory();
 						AnnotationManager annotationManager = autoAnnotationManager.getAnnotationManager();
 						AutoAnnotationUtils.drawCluster(cluster, selectedView, shapeFactory, textFactory, annotationManager);
 					}
-					clustersToTables.get(clusters).getParent().getParent().setVisible(true); // Show selected table
+					clustersToTables.get(annotationSet).getParent().getParent().setVisible(true); // Show selected table
 					clusterTablePanel.updateUI();
 				} else if (itemEvent.getStateChange() == ItemEvent.DESELECTED) {
 					// Hide unselected clusters
@@ -566,10 +579,12 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 			params = autoAnnotationManager.getNetworkViewToAutoAnnotationParameters().get(view.getSUID());			
 			clearButton.setVisible(true);
 			updateButton.setVisible(true);
+			mergeButton.setVisible(true);
 			selectionPanel.setVisible(true);
 		} else {
 			clearButton.setVisible(false);
 			updateButton.setVisible(false);
+			mergeButton.setVisible(false);
 			selectionPanel.setVisible(false);
 		}
 		

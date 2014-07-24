@@ -28,12 +28,14 @@ public class Cluster implements Comparable<Cluster> {
 	private int[] boundsX;
 	private int[] boundsY;
 	private boolean labelManuallyUpdated;
+	private boolean selected;
 	
 	public Cluster(int clusterNumber, AnnotationSet parent) {
 		this.clusterNumber = clusterNumber;
 		this.cloudName = parent.getCloudNamePrefix() + " Cloud " + clusterNumber;
 		this.nodes = new ArrayList<CyNode>();
 		this.coordinates = new ArrayList<double[]>();
+		selected = false;
 		boundsX = new int[2];
 		boundsY = new int[2];
 		labelManuallyUpdated = false;
@@ -120,5 +122,13 @@ public class Cluster implements Comparable<Cluster> {
 	@Override
 	public String toString() {
 		return label;
+	}
+
+	public boolean isSelected() {
+		return selected;
+	}
+
+	public void setSelected(boolean selected) {
+		this.selected = selected;
 	}
 }

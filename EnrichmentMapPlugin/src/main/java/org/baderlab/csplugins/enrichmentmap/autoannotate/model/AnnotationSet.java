@@ -29,16 +29,21 @@ public class AnnotationSet {
 	// Name of the column that was used
 	private String cloudNamePrefix;
 	private String clusterColumnName;
+	private String nameColumnName;
 	private CyNetwork network;
 	private CyNetworkView view;
 	private CyTableManager tableManager;
 	
-	public AnnotationSet(String name, CyNetwork network, CyNetworkView view, String clusterColumnName, CyTableManager tableManager) {
+	public AnnotationSet(String name, CyNetwork network, CyNetworkView view, String clusterColumnName, String nameColumnName, CyTableManager tableManager) {
 		this.name = name;
 		// TODO separate name and prefix so that names can be changed
 		this.clusterMap = new TreeMap<Integer, Cluster>();
 		this.cloudNamePrefix = name; // name may change later
+		
+		// Needed to recreate the annotation set on merges
 		this.clusterColumnName = clusterColumnName;
+		this.nameColumnName = nameColumnName;
+		
 		this.network = network;
 		this.view = view;
 		this.tableManager = tableManager;
@@ -158,6 +163,14 @@ public class AnnotationSet {
 
 	public void setClusterColumnName(String clusterColumnName) {
 		this.clusterColumnName = clusterColumnName;
+	}
+	
+	public String getNameColumnName() {
+		return nameColumnName;
+	}
+
+	public void setNameColumnName(String nameColumnName) {
+		this.nameColumnName = nameColumnName;
 	}
 
 	public CyNetwork getNetwork() {

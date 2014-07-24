@@ -24,13 +24,13 @@ public class AutoAnnotationTaskFactory implements TaskFactory {
 	private String clusterColumnName;
 	private String nameColumnName;
 	private String algorithm;
-	private int annotationSetNumber;
+	private String annotationSetName;
 	private DialogTaskManager dialogTaskManager;
 	private CyServiceRegistrar registrar;
 	private CyTableManager tableManager;
 	
 	public AutoAnnotationTaskFactory(CySwingApplication application, AutoAnnotationManager autoAnnotationManager, 
-			CyNetworkView selectedView, String clusterColumnName, String nameColumnName,  String algorithm, int annotationSetNumber, 
+			CyNetworkView selectedView, String clusterColumnName, String nameColumnName,  String algorithm, String annotationSetName, 
 			CyServiceRegistrar registrar, DialogTaskManager dialogTaskManager, CyTableManager tableManager) {
 		this.application = application;
 		this.autoAnnotationManager = autoAnnotationManager;
@@ -38,7 +38,7 @@ public class AutoAnnotationTaskFactory implements TaskFactory {
 		this.clusterColumnName = clusterColumnName;
 		this.nameColumnName = nameColumnName;
 		this.algorithm = algorithm;
-		this.annotationSetNumber = annotationSetNumber;
+		this.annotationSetName = annotationSetName;
 		this.dialogTaskManager = dialogTaskManager;
 		this.registrar = registrar;
 		this.tableManager = tableManager;
@@ -46,7 +46,7 @@ public class AutoAnnotationTaskFactory implements TaskFactory {
 	
 	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new AutoAnnotationTask(application, autoAnnotationManager, selectedView, clusterColumnName, 
-				nameColumnName, algorithm, annotationSetNumber, dialogTaskManager, registrar, tableManager));
+				nameColumnName, algorithm, annotationSetName, dialogTaskManager, registrar, tableManager));
 	}
 	public boolean isReady() {
 		return true;
