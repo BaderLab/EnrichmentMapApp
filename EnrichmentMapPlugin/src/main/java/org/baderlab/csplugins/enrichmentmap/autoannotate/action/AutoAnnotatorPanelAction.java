@@ -54,11 +54,7 @@ import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.application.swing.CytoPanelState;
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyTableManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.presentation.annotations.AnnotationManager;
 import org.cytoscape.work.swing.DialogTaskManager;
@@ -90,21 +86,13 @@ public class AutoAnnotatorPanelAction extends AbstractCyAction {
 	private CyApplicationManager applicationManager;
 	private CySwingApplication application;
 	private DialogTaskManager dialogTaskManager;
-	
-	private AutoAnnotationManager manager;
-
-
 	private AutoAnnotationPanel inputPanel;
-
-
-	private EnrichmentMapManager emManager;
 
 
     
     public AutoAnnotatorPanelAction(Map<String,String> configProps, CyApplicationManager applicationManager, 
     			CyNetworkViewManager networkViewManager, CySwingApplication application, AnnotationManager annotationManager, 
-    			CyServiceRegistrar registrar, DialogTaskManager dialogTaskManager,
-    			AutoAnnotationManager autoAnnotationManager, EnrichmentMapManager emManager){
+    			CyServiceRegistrar registrar, DialogTaskManager dialogTaskManager){
     	
         super( configProps,  applicationManager,  networkViewManager);
      
@@ -115,16 +103,14 @@ public class AutoAnnotatorPanelAction extends AbstractCyAction {
  		this.application = application;
  		this.registrar = registrar;
  		this.dialogTaskManager = dialogTaskManager;
- 		this.manager = autoAnnotationManager;
- 		this.emManager = emManager;
     }
 
 	public void actionPerformed(ActionEvent event) {		
 		if(!initialized) {
-    		inputPanel = new AutoAnnotationPanel(application, manager, registrar,
-    				dialogTaskManager, emManager);
+    		inputPanel = new AutoAnnotationPanel(application, registrar,
+    				dialogTaskManager);
     		inputPanel.updateSelectedView(applicationManager.getCurrentNetworkView());
-    		manager.setAnnotationPanel(inputPanel);
+    		AutoAnnotationManager.getInstance().setAnnotationPanel(inputPanel);
     		registrar.registerService(inputPanel,CytoPanelComponent.class, new Properties());
     		initialized = true;
     	}

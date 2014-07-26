@@ -1,6 +1,8 @@
 package org.baderlab.csplugins.enrichmentmap.autoannotate;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.baderlab.csplugins.enrichmentmap.autoannotate.view.AutoAnnotationPanel;
@@ -14,6 +16,7 @@ import org.cytoscape.model.events.ColumnDeletedEvent;
 import org.cytoscape.model.events.ColumnDeletedListener;
 import org.cytoscape.model.events.ColumnNameChangedEvent;
 import org.cytoscape.model.events.ColumnNameChangedListener;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
@@ -33,11 +36,24 @@ public class AutoAnnotationManager implements
 		ColumnDeletedListener, ColumnNameChangedListener,
 		NetworkViewAboutToBeDestroyedListener {
 	
+	private static AutoAnnotationManager instance = null;
+	// Reference to the panel that the user interacts with
 	private AutoAnnotationPanel annotationPanel;
 	// Stores the annotation parameters (one for each network view)
-	private HashMap<Long, AutoAnnotationParameters> networkViewToAutoAnnotationParameters;
+	private HashMap<CyNetworkView, AutoAnnotationParameters> networkViewToAutoAnnotationParameters;
 	// used to set clusterMaker default parameters
-	private TreeMap<String, String> algorithmToColumnName;
+	private static final SortedMap<String, String> algorithmToColumnName;
+	static {
+		TreeMap<String, String> aMap = new TreeMap<String, String>();		
+		aMap.put("Affinity Propagation Cluster", "__APCluster");
+		aMap.put("Cluster Fuzzifier", "__fuzzifierCluster");
+		aMap.put("Community cluster (GLay)", "__glayCluster");
+		aMap.put("ConnectedComponents Cluster", "__ccCluster");
+		aMap.put("Fuzzy C-Means Cluster", "__fcmlCluster");
+		aMap.put("MCL Cluster", "__mclCluster");
+		aMap.put("SCPS Cluster", "__scpsCluster");
+		algorithmToColumnName = Collections.unmodifiableSortedMap(aMap);
+	}
 	// used to read from the tables that WordCloud creates
 	private CyTableManager tableManager;
 	// used to execute command line commands
@@ -51,31 +67,20 @@ public class AutoAnnotationManager implements
 	// creates text labels
 	private AnnotationFactory<TextAnnotation> textFactory;
 	
-	public AnnotationManager getAnnotationManager() {
-		return annotationManager;
+	public static AutoAnnotationManager getInstance() {
+		if (instance == null) {
+			instance = new AutoAnnotationManager();
+		}
+		return instance;
+	}
+	
+	public AutoAnnotationManager() {
+		networkViewToAutoAnnotationParameters = new HashMap<CyNetworkView, AutoAnnotationParameters>();
 	}
 
-	public AnnotationFactory<ShapeAnnotation> getShapeFactory() {
-		return shapeFactory;
-	}
-
-	public AnnotationFactory<TextAnnotation> getTextFactory() {
-		return textFactory;
-	}
-
-	public AutoAnnotationManager(CyTableManager tableManager, CommandExecutorTaskFactory commandExecutor,
+	public void initialize(CyTableManager tableManager, CommandExecutorTaskFactory commandExecutor,
 			DialogTaskManager dialogTaskManager, AnnotationManager annotationManager, 
 			AnnotationFactory<ShapeAnnotation> shapeFactory, AnnotationFactory<TextAnnotation> textFactory) {
-		networkViewToAutoAnnotationParameters = new HashMap<Long, AutoAnnotationParameters>();
-		
-		algorithmToColumnName = new TreeMap<String, String>();		
-		algorithmToColumnName.put("Affinity Propagation Cluster", "__APCluster");
-		algorithmToColumnName.put("Cluster Fuzzifier", "__fuzzifierCluster");
-		algorithmToColumnName.put("Community cluster (GLay)", "__glayCluster");
-		algorithmToColumnName.put("ConnectedComponents Cluster", "__ccCluster");
-		algorithmToColumnName.put("Fuzzy C-Means Cluster", "__fcmlCluster");
-		algorithmToColumnName.put("MCL Cluster", "__mclCluster");
-		algorithmToColumnName.put("SCPS Cluster", "__scpsCluster");
 		
 		this.tableManager = tableManager;
 		this.commandExecutor = commandExecutor;
@@ -84,7 +89,7 @@ public class AutoAnnotationManager implements
 		this.shapeFactory = shapeFactory;
 		this.textFactory = textFactory;
 	}
-
+	
 	@Override
 	public void handleEvent(SetSelectedNetworkViewsEvent e) {
 		annotationPanel.updateSelectedView(e.getNetworkViews().get(0));
@@ -118,25 +123,37 @@ public class AutoAnnotationManager implements
 		}
 	}
 	
-	public HashMap<Long, AutoAnnotationParameters> getNetworkViewToAutoAnnotationParameters() {
+	public HashMap<CyNetworkView, AutoAnnotationParameters> getNetworkViewToAutoAnnotationParameters() {
 		return networkViewToAutoAnnotationParameters;
 	}
 
 	public void setNetworkViewToAutoAnnotation(
-			HashMap<Long, AutoAnnotationParameters> networkViewToAutoAnnotationParameters) {
+			HashMap<CyNetworkView, AutoAnnotationParameters> networkViewToAutoAnnotationParameters) {
 		this.networkViewToAutoAnnotationParameters = networkViewToAutoAnnotationParameters;
 	}
 
 	public CyTableManager getTableManager() {
 		return tableManager;
 	}
+	
+	public void setTableManager(CyTableManager tableManager) {
+		this.tableManager = tableManager;
+	}
 
 	public CommandExecutorTaskFactory getCommandExecutor() {
 		return commandExecutor;
 	}
+	
+	public void setCommandExecutor(CommandExecutorTaskFactory commandExecutor) {
+		this.commandExecutor = commandExecutor;
+	}
 
 	public DialogTaskManager getDialogTaskManager() {
 		return dialogTaskManager;
+	}
+
+	public void setDialogTaskManager(DialogTaskManager dialogTaskManager) {
+		this.dialogTaskManager = dialogTaskManager;
 	}
 
 	public AutoAnnotationPanel getAnnotationPanel() {
@@ -147,8 +164,31 @@ public class AutoAnnotationManager implements
 		this.annotationPanel = inputPanel;
 	}
 	
-	public TreeMap<String, String> getAlgorithmToColumnName() {
+	public SortedMap<String, String> getAlgorithmToColumnName() {
 		return algorithmToColumnName;
 	}
 	
+	public AnnotationManager getAnnotationManager() {
+		return annotationManager;
+	}
+	
+	public void setAnnotationManager(AnnotationManager annotationManager) {
+		this.annotationManager = annotationManager;
+	}
+
+	public AnnotationFactory<ShapeAnnotation> getShapeFactory() {
+		return shapeFactory;
+	}
+	
+	public void setShapeFactory(AnnotationFactory<ShapeAnnotation> shapeFactory) {
+		this.shapeFactory = shapeFactory;
+	}
+
+	public AnnotationFactory<TextAnnotation> getTextFactory() {
+		return textFactory;
+	}
+	
+	public void setTextFactory(AnnotationFactory<TextAnnotation> textFactory) {
+		this.textFactory = textFactory;
+	}
 }

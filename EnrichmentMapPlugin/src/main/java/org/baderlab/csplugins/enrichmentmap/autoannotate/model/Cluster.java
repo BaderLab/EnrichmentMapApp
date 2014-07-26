@@ -1,10 +1,20 @@
 package org.baderlab.csplugins.enrichmentmap.autoannotate.model;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Set;
 
+import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationUtils;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
+import org.cytoscape.view.presentation.annotations.Annotation;
+import org.cytoscape.view.presentation.annotations.AnnotationFactory;
+import org.cytoscape.view.presentation.annotations.AnnotationManager;
 import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
 import org.cytoscape.view.presentation.annotations.TextAnnotation;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 /**
  * Created by:
@@ -22,27 +32,41 @@ public class Cluster implements Comparable<Cluster> {
 	private String cloudName;
 	private ArrayList<CyNode> nodes;
 	private ArrayList<double[]> coordinates;
+	private int size;
 	private String label;
 	private TextAnnotation textAnnotation;
 	private ShapeAnnotation ellipse;
-	private int[] boundsX;
-	private int[] boundsY;
+	private AnnotationSet parent;
 	private boolean labelManuallyUpdated;
 	private boolean selected;
 	
+	// Used when initializing from a session file
+	public Cluster() {
+		this.nodes = new ArrayList<CyNode>();
+		this.coordinates = new ArrayList<double[]>();
+	}
+	
 	public Cluster(int clusterNumber, AnnotationSet parent) {
 		this.clusterNumber = clusterNumber;
+		this.parent = parent;
 		this.cloudName = parent.getCloudNamePrefix() + " Cloud " + clusterNumber;
 		this.nodes = new ArrayList<CyNode>();
 		this.coordinates = new ArrayList<double[]>();
+		size = 0;
 		selected = false;
-		boundsX = new int[2];
-		boundsY = new int[2];
 		labelManuallyUpdated = false;
 	}
 	
 	public int getClusterNumber() {
 		return this.clusterNumber;
+	}
+	
+	public AnnotationSet getParent() {
+		return parent;
+	}
+	
+	public void setParent(AnnotationSet annotationSet) {
+		parent = annotationSet;
 	}
 	
 	public ArrayList<double[]> getCoordinates() {
@@ -59,6 +83,7 @@ public class Cluster implements Comparable<Cluster> {
 	
 	public void addNode(CyNode node) {
 		this.nodes.add(node);
+		size++;
 	}
 	
 	public void addCoordinates(double[] coordinates) {
@@ -73,11 +98,15 @@ public class Cluster implements Comparable<Cluster> {
 		return label;
 	}
 	
-		public void setLabelManuallyUpdated(boolean b) {
+	public void setLabelManuallyUpdated(boolean b) {
 		labelManuallyUpdated = b;
 	}
 	
-	public boolean getLabelManuallyUpdated() {
+	public int getSize() {
+		return size;
+	}
+	
+	public boolean isLabelManuallyUpdated() {
 		return labelManuallyUpdated;
 	}
 	
@@ -97,14 +126,6 @@ public class Cluster implements Comparable<Cluster> {
 		this.textAnnotation = textAnnotation;
 	}
 	
-	public int[] getBoundsX() {
-		return boundsX;
-	}
-	
-	public int[] getBoundsY() {
-		return boundsY;
-	}
-	
 	public String getCloudName() {
 		return cloudName;
 	}
@@ -114,16 +135,6 @@ public class Cluster implements Comparable<Cluster> {
 		ellipse.removeAnnotation();
 	}
 	
-	@Override
-	public int compareTo(Cluster cluster2) {
-		return this.getClusterNumber() - cluster2.getClusterNumber();
-	}
-	
-	@Override
-	public String toString() {
-		return label;
-	}
-
 	public boolean isSelected() {
 		return selected;
 	}
@@ -131,4 +142,79 @@ public class Cluster implements Comparable<Cluster> {
 	public void setSelected(boolean selected) {
 		this.selected = selected;
 	}
+	
+	@Override
+	public int compareTo(Cluster cluster2) {
+		return this.getClusterNumber() - cluster2.getClusterNumber();
+	}
+	
+	public String toSessionString() {
+		/* Each cluster is stored in the format:
+	    	 *  		1 - Cluster number
+	    	 *  		2 - Cluster label
+	    	 *  		3 - Selected (0/1)
+	    	 *  		4 - labelManuallyUpdated
+	    	 *  		5... - NodeSUID x y
+	    	 *  		-1 - End of cluster
+	    	 */
+
+		String sessionString = "";
+		// Write parameters of the cluster
+		sessionString += clusterNumber + "\n";
+		sessionString += label + "\n";
+		sessionString += selected + "\n";
+		sessionString += labelManuallyUpdated + "\n";
+		// Write each node
+		for (int nodeIndex=0 ; nodeIndex < size ; nodeIndex++) {
+			double nodeX = coordinates.get(nodeIndex)[0];
+			double nodeY = coordinates.get(nodeIndex)[1];
+			sessionString += nodeX + "\t" + nodeY + "\n";
+		}
+		sessionString += "End of cluster\n";
+		return sessionString;
+	}
+	
+	public void load(ArrayList<String> text) {
+		clusterNumber = Integer.valueOf(text.get(0));
+		cloudName = parent.getCloudNamePrefix() + " Cloud " + clusterNumber;
+		label = text.get(1);
+		selected = Boolean.valueOf(text.get(2));
+		labelManuallyUpdated = Boolean.valueOf(text.get(3));
+		int lineNumber = 4;
+		Collection<View<CyNode>> nodeViewSet = parent.getView().getNodeViews();
+		while (lineNumber < text.size()) {
+			String line = text.get(lineNumber);
+			String[] splitLine = line.split("\t");
+			double[] nodeCoordinates = {Double.valueOf(splitLine[0]), Double.valueOf(splitLine[1])}; 
+			addCoordinates(nodeCoordinates);
+			addNode(getNodeByCoordinates(nodeViewSet, nodeCoordinates));
+			lineNumber++;
+		}
+		AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
+		AnnotationManager annotationManager = autoAnnotationManager.getAnnotationManager();
+		AnnotationFactory<ShapeAnnotation> shapeFactory = autoAnnotationManager.getShapeFactory();
+		AnnotationFactory<TextAnnotation> textFactory = autoAnnotationManager.getTextFactory();
+		for (Annotation annotation : annotationManager.getAnnotations(parent.getView())) {
+			// Get rid of previously showing annotations (if any)
+			annotation.removeAnnotation();
+		}
+		AutoAnnotationUtils.drawCluster(this, parent.getView(), shapeFactory, textFactory, annotationManager);
+	}
+	
+	private CyNode getNodeByCoordinates(Collection<View<CyNode>> nodeViewSet, double[] coordinates) {
+		// IDs change from session to session, no other way (that I know of) to look up nodes
+		for (View<CyNode> nodeView : nodeViewSet) {
+			if (nodeView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION) == coordinates[0] && 
+				nodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION) == coordinates[1]) {
+				return nodeView.getModel();
+			}
+		}
+		return null;
+	}
+	
+	@Override
+	public String toString() {
+		return label;
+	}
+
 }

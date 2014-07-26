@@ -49,6 +49,7 @@ import java.util.TreeMap;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapUtils;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationUtils;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.AnnotationSet;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.view.AutoAnnotationPanel;
@@ -61,6 +62,7 @@ import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
@@ -144,8 +146,15 @@ public class AutoAnnotationTask extends AbstractTask {
     	taskMonitor.setStatusMessage("Annotating Clusters...");
     	// TODO Visualizing clusters separately
     	if (cancelled) return;
-    	clusters.updateLabels();
     	
+		Long clusterTableSUID = network.getDefaultNetworkTable().getRow(network.getSUID()).get(annotationSetName, Long.class);
+    	CyTable clusterSetTable = tableManager.getTable(clusterTableSUID);
+    	String annotationSetName = clusters.getCloudNamePrefix();
+    	// Generate the labels for the clusters
+    	for (Cluster cluster : clusters.getClusterMap().values()) {
+    		AutoAnnotationUtils.updateClusterLabel(cluster, network, annotationSetName, clusterSetTable);
+    	}
+    	// Add these clusters to the table on the annotationPanel
     	annotationPanel.addClusters(clusters);
     	annotationPanel.updateSelectedView(view);
 		CytoPanel westPanel = application.getCytoPanel(CytoPanelName.WEST);
@@ -168,7 +177,7 @@ public class AutoAnnotationTask extends AbstractTask {
 		for (CyColumn edgeColumn : network.getDefaultEdgeTable().getColumns()) {
 			String edgeName = edgeColumn.getName();
 			if (edgeName.toLowerCase().contains("overlap_size") ||
-				edgeName.toLowerCase().contains("similarity_coefficient")){
+				edgeName.toLowerCase().contains("similarity")){
 				edgeAttribute = edgeName;
 			}
 		}
@@ -183,7 +192,7 @@ public class AutoAnnotationTask extends AbstractTask {
 		while (!observer.isFinished()) {
 			// Prevents task from continuing to execute until clusterMaker has finished
 			try {
-				Thread.sleep(10);
+				Thread.sleep(1);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -192,7 +201,7 @@ public class AutoAnnotationTask extends AbstractTask {
 	
 	@SuppressWarnings("unchecked")
 	private AnnotationSet makeClusters(CyNetwork network, CyNetworkView networkView, String name) {
-		AnnotationSet annotationSet = new AnnotationSet(name, network, networkView, clusterColumnName, nameColumnName, tableManager);
+		AnnotationSet annotationSet = new AnnotationSet(name, networkView, clusterColumnName, nameColumnName);
 		
 		List<CyNode> nodes = network.getNodeList();
 		Class<?> columnType = network.getDefaultNodeTable().getColumn(clusterColumnName).getType();
@@ -254,7 +263,7 @@ public class AutoAnnotationTask extends AbstractTask {
 		// Prevents task from continuing to execute until wordCloud has finished
 		while (!observer.isFinished()) {
 			try {
-				Thread.sleep(10);
+				Thread.sleep(1);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}

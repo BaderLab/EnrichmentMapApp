@@ -141,7 +141,8 @@ public class CyActivator extends AbstractCyActivator {
 		
 		//Get an instance of AA manager
 		
-		AutoAnnotationManager autoAnnotationManager = new AutoAnnotationManager(tableManager, commandExecutor, dialogTaskManager, annotationManager, shapeFactory, textFactory);
+		AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
+		autoAnnotationManager.initialize(tableManager, commandExecutor, dialogTaskManager, annotationManager, shapeFactory, textFactory);
 		//register network events with manager class
 		registerService(bc, autoAnnotationManager, SetSelectedNetworkViewsListener.class, new Properties());
 		registerService(bc, autoAnnotationManager, ColumnCreatedListener.class, new Properties());
@@ -178,12 +179,12 @@ public class CyActivator extends AbstractCyActivator {
 		serviceProperties.put("inMenuBar", "true");
 		serviceProperties.put("preferredMenu", "Apps.EnrichmentMap");
 		ShowAboutPanelAction aboutAction = new ShowAboutPanelAction(serviceProperties,cyApplicationManagerRef ,cyNetworkViewManagerRef, cySwingApplicationRef, openBrowserRef);		
-				
+		
 		//Auto-annotate Action
 		serviceProperties = new HashMap<String, String>();
 		serviceProperties.put("inMenuBar", "true");
 		serviceProperties.put("preferredMenu", "Apps.EnrichmentMap");
- 		AutoAnnotatorPanelAction autoAnnotatorPanelAction = new AutoAnnotatorPanelAction(serviceProperties,cyApplicationManagerRef, cyNetworkViewManagerRef, cySwingApplicationRef, annotationManager, registrar, dialogTaskManager, autoAnnotationManager, manager);
+ 		AutoAnnotatorPanelAction autoAnnotatorPanelAction = new AutoAnnotatorPanelAction(serviceProperties,cyApplicationManagerRef, cyNetworkViewManagerRef, cySwingApplicationRef, annotationManager, registrar, dialogTaskManager);
 		
 		//register the services
 		registerService(bc, aboutAction, CyAction.class,new Properties());
@@ -193,7 +194,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, loadPostAnalysisAction, CyAction.class, new Properties());	
 		
 		//register the session save and restore
-		EnrichmentMapSessionAction sessionAction = new EnrichmentMapSessionAction(cyNetworkManagerRef, sessionManager, cyApplicationManagerRef, streamUtil);
+		EnrichmentMapSessionAction sessionAction = new EnrichmentMapSessionAction(cyNetworkManagerRef, cyNetworkViewManagerRef, sessionManager, registrar, cyApplicationManagerRef, streamUtil);
 		registerService(bc,sessionAction,SessionAboutToBeSavedListener.class, new Properties());
 		registerService(bc,sessionAction,SessionLoadedListener.class, new Properties());
 		

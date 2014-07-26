@@ -1,16 +1,21 @@
 package org.baderlab.csplugins.enrichmentmap.autoannotate.model;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.TreeMap;
 
+import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
+import org.cytoscape.view.presentation.annotations.AnnotationManager;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 /**
@@ -28,27 +33,34 @@ public class AnnotationSet {
 	private TreeMap<Integer, Cluster> clusterMap;
 	// Name of the column that was used
 	private String cloudNamePrefix;
+	// Used to recreate the annotation set when merging clusters
 	private String clusterColumnName;
 	private String nameColumnName;
-	private CyNetwork network;
 	private CyNetworkView view;
-	private CyTableManager tableManager;
 	
-	public AnnotationSet(String name, CyNetwork network, CyNetworkView view, String clusterColumnName, String nameColumnName, CyTableManager tableManager) {
-		this.name = name;
-		// TODO separate name and prefix so that names can be changed
+	// Constructor used when loading from a file
+	public AnnotationSet() {
 		this.clusterMap = new TreeMap<Integer, Cluster>();
-		this.cloudNamePrefix = name; // name may change later
-		
+	}
+	
+	public AnnotationSet(String name, CyNetworkView view, String clusterColumnName, String nameColumnName) {
+		this.name = name;
+		this.clusterMap = new TreeMap<Integer, Cluster>();
+		this.cloudNamePrefix = name; // name may change later, this will stay the same to link to the cloud
+		this.view = view;
 		// Needed to recreate the annotation set on merges
 		this.clusterColumnName = clusterColumnName;
 		this.nameColumnName = nameColumnName;
-		
-		this.network = network;
-		this.view = view;
-		this.tableManager = tableManager;
 	}
 	
+	public CyNetworkView getView() {
+		return view;
+	}
+
+	public void setView(CyNetworkView view) {
+		this.view = view;
+	}
+
 	public void addCluster(Cluster cluster) {
 		clusterMap.put(cluster.getClusterNumber(), cluster);
 	}
@@ -65,74 +77,7 @@ public class AnnotationSet {
 			}
 		}
 	}
-	
-	@SuppressWarnings("unchecked")
-	public void updateLabels() {
-		for (Cluster cluster : this.clusterMap.values()) {
-			// Only update if label hasn't been manually changed by the user
-			if (!cluster.getLabelManuallyUpdated()) {
-				cluster.setLabel("");
-				int clusterNumber = cluster.getClusterNumber();
-				Long clusterTableSUID = network.getDefaultNetworkTable().getRow(network.getSUID()).get(name, Long.class);
-				CyRow clusterRow = tableManager.getTable(clusterTableSUID).getRow(clusterNumber);
-				List<String> wordList = clusterRow.get("WC_Word", List.class);
-				List<String> sizeList = clusterRow.get("WC_FontSize", List.class);
-				List<String> clusterList = clusterRow.get("WC_Cluster", List.class);
-				List<String> numberList = clusterRow.get("WC_Number", List.class);
-				ArrayList<WordInfo> wordInfos = new ArrayList<WordInfo>();
-				for (int i=0; i < wordList.size(); i++) {
-					wordInfos.add(new WordInfo(wordList.get(i), 
-											Integer.parseInt(sizeList.get(i)),
-											Integer.parseInt(clusterList.get(i)),
-											Integer.parseInt(numberList.get(i))));
-				}
-				String label = makeLabel(wordInfos);
-				cluster.setLabel(label);
-			}
-		}
-	}
-	
-	public String makeLabel(ArrayList<WordInfo> wordInfos) {
-		Collections.sort(wordInfos);
-		WordInfo biggestWord = wordInfos.get(0);
-		String label = biggestWord.word;
-		if (wordInfos.size() > 1) {
-			for (WordInfo word : wordInfos.subList(1, wordInfos.size())) {
-				if (word.cluster == biggestWord.cluster) {
-					word.size -= 1;
-				}
-			}
-			Collections.sort(wordInfos);
-			WordInfo secondBiggestWord = wordInfos.get(1);
-			if (secondBiggestWord.size >= 0.3*biggestWord.size) {
-				label += " " + secondBiggestWord.word;
-			}
-			for (WordInfo word : wordInfos.subList(1, wordInfos.size())) {
-				if (!word.equals(secondBiggestWord) && word.cluster == secondBiggestWord.cluster) {
-					word.size -= 1;
-				}
-			}
-			Collections.sort(wordInfos);
-			try {
-				WordInfo thirdBiggestWord = wordInfos.get(2);
-				if (thirdBiggestWord.size > 0.8*secondBiggestWord.size) {
-					label += " " + thirdBiggestWord.word;
-				}
-			} catch (Exception e) {
-				return label;
-			}
-			try {
-				WordInfo fourthBiggestWord = wordInfos.get(3);
-				if (fourthBiggestWord.size > 0.9*secondBiggestWord.size) {
-					label += " " + fourthBiggestWord.word;
-				}
-			} catch (Exception e) {
-				return label;
-			}
-		}
-		return label;
-	}
-	
+
 	public String getName() {
 		return name;
 	}
@@ -173,33 +118,70 @@ public class AnnotationSet {
 		this.nameColumnName = nameColumnName;
 	}
 
-	public CyNetwork getNetwork() {
-		return network;
+	public String toSessionString() {
+	    	// Each annotation set is stored in the format:
+	    	/*
+	    	 *  1 - Cloud Name Prefix (Primary identifier)
+	    	 *  2 - Annotation Set Name
+	    	 *  3 - Cluster Column Name
+	    	 *  4 - Name Column Name
+	    	 *  5... - Each cluster, stored in the format:
+	    	 *  		1 - Cluster number
+	    	 *  		2 - Cluster label
+	    	 *  		3 - Selected (0/1)
+	    	 *  		4 - labelManuallyUpdated
+	    	 *  		5... - NodeSUID x y
+	    	 *  		-1 - End of cluster
+	    	 *  -1 - End of annotation set
+	    	 */
+
+		// Returns the string used when saving the session
+		String sessionString = "";
+		sessionString += cloudNamePrefix + "\n";
+		sessionString += name + "\n";
+		sessionString += clusterColumnName + "\n";
+		sessionString += nameColumnName + "\n";
+		for (Cluster cluster : clusterMap.values()) {
+			sessionString += cluster.toSessionString();
+		}
+		sessionString += "End of annotation set\n";
+		return sessionString;
 	}
 
-	public void setNetwork(CyNetwork network) {
-		this.network = network;
+	public void load(ArrayList<String> text) {
+		setCloudNamePrefix(text.get(0));
+		setName(text.get(1));
+		setClusterColumnName(text.get(2));
+		setNameColumnName(text.get(3));
+		// Update the column in the network table with the new SUID of the table
+		AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
+		for (CyTable table : autoAnnotationManager.getTableManager().getAllTables(true)) {
+			if (table.getTitle().equals(cloudNamePrefix + " Table")) {
+				view.getModel().getRow(view.getModel()).set(cloudNamePrefix, table.getSUID());
+				break;
+			}
+		}
+		
+		int lineNumber = 4;
+		ArrayList<String> clusterLines = new ArrayList<String>();
+		while (lineNumber < text.size()) {
+			String line = text.get(lineNumber);
+			if (line.equals("End of cluster")) {
+				Cluster cluster = new Cluster();
+				cluster.setParent(this);
+				cluster.load(clusterLines);
+				clusterMap.put(cluster.getClusterNumber(), cluster);
+				clusterLines = new ArrayList<String>();
+			} else {
+				// Add to the growing list of lines for the annotation set
+				clusterLines.add(line);
+			}
+			lineNumber++;
+		}
 	}
-
-	public CyNetworkView getView() {
-		return view;
-	}
-
-	public void setView(CyNetworkView view) {
-		this.view = view;
-	}
-
-	public CyTableManager getTableManager() {
-		return tableManager;
-	}
-
-	public void setTableManager(CyTableManager tableManager) {
-		this.tableManager = tableManager;
-	}
-
+	
 	@Override
 	public String toString() {
 		return name;
 	}
-
 }

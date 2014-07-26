@@ -8,13 +8,19 @@ package org.baderlab.csplugins.enrichmentmap.autoannotate;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.model.WordInfo;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.task.ExecutorObserver;
 import org.cytoscape.command.CommandExecutorTaskFactory;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
@@ -50,10 +56,8 @@ public class AutoAnnotationUtils {
 			TaskIterator task = executor.createTaskIterator(commands, null);
 			dialogTaskManager.execute(task);
 		}
-		ShapeAnnotation ellipse = selectedCluster.getEllipse();
-		ellipse.setBorderWidth(3*ellipseWidth);
-		ellipse.setBorderColor(Color.yellow);
-		selectedCluster.getTextAnnotation().setTextColor(Color.yellow);
+		selectedCluster.getEllipse().setSelected(true);
+		selectedCluster.getTextAnnotation().setSelected(true);
 	}
 
 	public static void deselectCluster(Cluster deselectedCluster, CyNetwork network) {
@@ -62,10 +66,9 @@ public class AutoAnnotationUtils {
 			network.getRow(node).set(CyNetwork.SELECTED, false);
 		}
 		// Reset the size/color of the annotations
-		ShapeAnnotation ellipse = deselectedCluster.getEllipse();
-		ellipse.setBorderWidth(ellipseWidth);
-		ellipse.setBorderColor(Color.black);
-		deselectedCluster.getTextAnnotation().setTextColor(Color.black);
+		deselectedCluster.getEllipse().setSelected(false);
+		deselectedCluster.getTextAnnotation().setSelected(false);
+
 	}
 
 	public static void destroyCluster(Cluster clusterToDestroy, CommandExecutorTaskFactory executor, 
@@ -147,4 +150,71 @@ public class AutoAnnotationUtils {
 		cluster.setTextAnnotation(textAnnotation);
 		annotationManager.addAnnotation(textAnnotation);
 	}
+	
+	public static void updateClusterLabel(Cluster cluster, CyNetwork network, String annotationSetName, CyTable clusterSetTable) {
+		if (!cluster.isLabelManuallyUpdated()) {
+			// Only updates if the user hasn't changed the label manually
+			cluster.setLabel("");
+			int clusterNumber = cluster.getClusterNumber();
+			// Look up the wordCloud info in the table
+			CyRow clusterRow = clusterSetTable.getRow(clusterNumber);
+			List<String> wordList = clusterRow.get("WC_Word", List.class);
+			List<String> sizeList = clusterRow.get("WC_FontSize", List.class);
+			List<String> clusterList = clusterRow.get("WC_Cluster", List.class);
+			List<String> numberList = clusterRow.get("WC_Number", List.class);
+			ArrayList<WordInfo> wordInfos = new ArrayList<WordInfo>();
+			for (int i=0; i < wordList.size(); i++) {
+				wordInfos.add(new WordInfo(wordList.get(i), 
+										Integer.parseInt(sizeList.get(i)),
+										Integer.parseInt(clusterList.get(i)),
+										Integer.parseInt(numberList.get(i))));
+			}
+			// Update the cluster's label based on these new values
+			String label = makeLabel(wordInfos);
+			cluster.setLabel(label);
+		}
+	}
+	
+	public static String makeLabel(ArrayList<WordInfo> wordInfos) {
+		// TODO more code reuse
+		Collections.sort(wordInfos);
+		WordInfo biggestWord = wordInfos.get(0);
+		String label = biggestWord.getWord();
+		if (wordInfos.size() > 1) {
+			for (WordInfo word : wordInfos.subList(1, wordInfos.size())) {
+				if (word.getCluster() == biggestWord.getCluster()) {
+					word.setSize(word.getSize() - 1);
+				}
+			}
+			Collections.sort(wordInfos);
+			WordInfo secondBiggestWord = wordInfos.get(1);
+			if (secondBiggestWord.getSize() >= 0.3*biggestWord.getSize()) {
+				label += " " + secondBiggestWord.getWord();
+			}
+			for (WordInfo word : wordInfos.subList(1, wordInfos.size())) {
+				if (!word.equals(secondBiggestWord) && word.getCluster() == secondBiggestWord.getCluster()) {
+					word.setSize(word.getSize() - 1);
+				}
+			}
+			Collections.sort(wordInfos);
+			try {
+				WordInfo thirdBiggestWord = wordInfos.get(2);
+				if (thirdBiggestWord.getSize() > 0.8*secondBiggestWord.getSize()) {
+					label += " " + thirdBiggestWord.getWord();
+				}
+			} catch (Exception e) {
+				return label;
+			}
+			try {
+				WordInfo fourthBiggestWord = wordInfos.get(3);
+				if (fourthBiggestWord.getSize() > 0.9*secondBiggestWord.getSize()) {
+					label += " " + fourthBiggestWord.getWord();
+				}
+			} catch (Exception e) {
+				return label;
+			}
+		}
+		return label;
+	}
+
 }
