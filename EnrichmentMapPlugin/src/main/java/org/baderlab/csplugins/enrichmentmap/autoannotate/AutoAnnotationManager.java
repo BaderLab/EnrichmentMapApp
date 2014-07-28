@@ -87,7 +87,7 @@ public class AutoAnnotationManager implements
 			AnnotationManager annotationManager, AnnotationFactory<ShapeAnnotation> shapeFactory, 
 			AnnotationFactory<TextAnnotation> textFactory) {
 		
-		this.application = application;
+		this.setApplication(application);
 		this.tableManager = tableManager;
 		this.commandExecutor = commandExecutor;
 		this.dialogTaskManager = dialogTaskManager;
@@ -136,6 +136,14 @@ public class AutoAnnotationManager implements
 	public void setNetworkViewToAutoAnnotation(
 			HashMap<CyNetworkView, AutoAnnotationParameters> networkViewToAutoAnnotationParameters) {
 		this.networkViewToAutoAnnotationParameters = networkViewToAutoAnnotationParameters;
+	}
+
+	public CySwingApplication getApplication() {
+		return application;
+	}
+
+	public void setApplication(CySwingApplication application) {
+		this.application = application;
 	}
 
 	public CyTableManager getTableManager() {
