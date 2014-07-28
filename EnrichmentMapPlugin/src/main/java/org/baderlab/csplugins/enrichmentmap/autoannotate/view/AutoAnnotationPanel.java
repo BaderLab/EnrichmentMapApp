@@ -272,7 +272,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 					for (int rowNumber : selectedRows) {
 						selectedClusters.add(rowNumber + 1);
 					}
-					Cluster firstCluster = annotationSet.getClusterMap().get(selectedClusters.get(0)); // +1 because it is zero indexed
+					Cluster firstCluster = annotationSet.getClusterMap().get(selectedClusters.get(0));
 					for (int selectedClusterNumber : selectedClusters.subList(1, selectedClusters.size())) {
 						Cluster clusterToSwallow = annotationSet.getClusterMap().get(selectedClusterNumber);
 						for (int nodeIndex = 0; nodeIndex < clusterToSwallow.getNodes().size(); nodeIndex++) {
@@ -291,12 +291,12 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 		};
 		mergeButton.addActionListener(mergeActionListener); 
 		clusterTablePanel.add(mainPanel.add(mergeButton), BorderLayout.SOUTH);
-
+		
 		clusterTablePanel.setAlignmentX(LEFT_ALIGNMENT);
 		nameColumnDropdown.setAlignmentX(LEFT_ALIGNMENT);
 		advancedOptionsPanel.setAlignmentX(LEFT_ALIGNMENT);
 		selectionPanel.setAlignmentX(LEFT_ALIGNMENT);
-
+		
 		mainPanel.add(networkLabel);
 		mainPanel.add(nameColumnDropdownLabel);
 		mainPanel.add(nameColumnDropdown);

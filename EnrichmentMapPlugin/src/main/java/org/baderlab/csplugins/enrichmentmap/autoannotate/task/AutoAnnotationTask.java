@@ -44,7 +44,9 @@
 package org.baderlab.csplugins.enrichmentmap.autoannotate.task;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeMap;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapUtils;
@@ -180,9 +182,6 @@ public class AutoAnnotationTask extends AbstractTask {
 	
 	private void layoutNodes(AnnotationSet clusters) {
 		Observer observer = new Observer();
-		for (CyLayoutAlgorithm algorithm : layoutManager.getAllLayouts()) {
-			System.out.println(algorithm.getName());
-		}
 		CyLayoutAlgorithm attributeCircle = layoutManager.getLayout("attributes-layout");
 		TaskIterator iterator = attributeCircle.createTaskIterator(view, attributeCircle.createLayoutContext(), CyLayoutAlgorithm.ALL_NODE_VIEWS, clusterColumnName);
 		dialogTaskManager.execute(iterator, observer);
@@ -193,6 +192,15 @@ public class AutoAnnotationTask extends AbstractTask {
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
+		}
+		CyLayoutAlgorithm force_directed = layoutManager.getLayout("force-directed");
+		for (Cluster cluster : clusters.getClusterMap().values()) {
+			Set<View<CyNode>> nodeViewSet = new HashSet<View<CyNode>>();
+			for (CyNode node : cluster.getNodes()) {
+				nodeViewSet.add(view.getNodeView(node));
+			}
+			iterator = force_directed.createTaskIterator(view, force_directed.createLayoutContext(), nodeViewSet, null);
+			dialogTaskManager.execute(iterator);
 		}
 	}
 
