@@ -70,6 +70,7 @@ import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.swing.DialogTaskManager;
@@ -177,7 +178,7 @@ public class AutoAnnotationTask extends AbstractTask {
 		for (CyColumn edgeColumn : network.getDefaultEdgeTable().getColumns()) {
 			String edgeName = edgeColumn.getName();
 			if (edgeName.toLowerCase().contains("overlap_size") ||
-				edgeName.toLowerCase().contains("similarity")){
+				edgeName.toLowerCase().contains("similarity_coefficient")){
 				edgeAttribute = edgeName;
 			}
 		}
@@ -186,7 +187,7 @@ public class AutoAnnotationTask extends AbstractTask {
 		CommandExecutorTaskFactory executor = registrar.getService(CommandExecutorTaskFactory.class);
 		ArrayList<String> commands = new ArrayList<String>();
 		commands.add(getCommand(algorithm, edgeAttribute, network.toString()));
-		ExecutorObserver observer = new ExecutorObserver();
+		Observer observer = new Observer();
 		TaskIterator taskIterator = executor.createTaskIterator(commands, null);
 		dialogTaskManager.execute(taskIterator, observer);
 		while (!observer.isFinished()) {
@@ -208,7 +209,6 @@ public class AutoAnnotationTask extends AbstractTask {
 		for (CyNode node : nodes) {
 			TreeMap<Integer, Cluster> clusterMap = annotationSet.getClusterMap();
 			Cluster cluster = null;
-			
 			// Get coordinates 
 			View<CyNode> nodeView = networkView.getNodeView(node);
 			double x = nodeView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION);
@@ -257,7 +257,7 @@ public class AutoAnnotationTask extends AbstractTask {
 		String command = "wordcloud build clusterColumnName=\"" + clusterColumnName + "\" nameColumnName=\""
 				+ nameColumnName + "\"" + " cloudNamePrefix=\"" + annotationSetName + "\"";
 		commands.add(command);
-		ExecutorObserver observer = new ExecutorObserver();
+		Observer observer = new Observer();
 		TaskIterator taskIterator = executor.createTaskIterator(commands, null);
 		registrar.getService(DialogTaskManager.class).execute(taskIterator, observer);
 		// Prevents task from continuing to execute until wordCloud has finished
@@ -274,33 +274,33 @@ public class AutoAnnotationTask extends AbstractTask {
 		String command = "";
 		if (algorithm == "Affinity Propagation Cluster") {
 			command = "cluster ap adjustLoops=true attribute=\"" + edgeAttribute + "\" clusterAttribute=\"__APCluster\" "
-					+ "createGroups=false network=\"" + networkName + "\" "
+					+ "createGroups=false network=\"current\" "
 					+ "restoreEdges=false selectedOnly=false showUI=false undirectedEdges=true";
 		} else if (algorithm == "Cluster Fuzzifier") {
 			command = "cluster fuzzifier adjustLoops=false attribute=\"" + edgeAttribute + "\" "
 					+ "clusterAttribute=\"__fuzzifierCluster\" createGroups=false "
-					+ "network=\"" + networkName + "\" "
+					+ "network=\"current\" "
 					+ "restoreEdges=false selectedOnly=false showUI=false undirectedEdges=true";
 		} else if (algorithm == "Community cluster (GLay)") {
-			command = "cluster glay clusterAttribute=\"__glayCluster\" createGroups=false network=\""
-					+ networkName + "\" restoreEdges=false selectedOnly=false "
+			command = "cluster glay clusterAttribute=\"__glayCluster\" createGroups=false network=\"current\""
+					+ " restoreEdges=false selectedOnly=false "
 					+ "showUI=false undirectedEdges=true";
 		} else if (algorithm == "ConnectedComponents Cluster") {
 			command = "cluster connectedcomponents adjustLoops=true attribute=\"" + edgeAttribute + "\" clusterAttribute=\""
-					+ "__ccCluster\" createGroups=false network=\"" + networkName
+					+ "__ccCluster\" createGroups=false network=\"current\""
 					+ "restoreEdges=false selectedOnly=false showUI=false undirectedEdges=true";
 		} else if (algorithm == "Fuzzy C-Means Cluster") {
 			command = "cluster fcml adjustLoops=false attribute=\"" + edgeAttribute + "\" "
 					+ "clusterAttribute=\"__fcmCluster\" createGroups=false "
-					+ "estimateClusterNumber=true network=\"" + networkName + "\" "
+					+ "estimateClusterNumber=true network=\"current\" "
 					+ "restoreEdges=false selectedOnly=false showUI=false undirectedEdges=true";
 		} else if (algorithm == "MCL Cluster") {
 			command = "cluster mcl adjustLoops=false attribute=\"" + edgeAttribute + "\" clusterAttribute=\"__mclCluster\" "
-					+ "createGroups=false network=\"" + networkName + "\" "
+					+ "createGroups=false network=\"current\" "
 					+ "restoreEdges=false selectedOnly=false showUI=false undirectedEdges=true";
 		} else if (algorithm == "SCPS Cluster") {
 			command = "cluster scps adjustLoops=false attribute=\"" + edgeAttribute + "\" clusterAttribute=\"__scpsCluster\" "
-					+ "createGroups=false network=\"" + networkName + "\" restoreEdges=false "
+					+ "createGroups=false network=\"current\" restoreEdges=false "
 					+ "selectedOnly=false showUI=false undirectedEdges=true";
 		}
 		return command;

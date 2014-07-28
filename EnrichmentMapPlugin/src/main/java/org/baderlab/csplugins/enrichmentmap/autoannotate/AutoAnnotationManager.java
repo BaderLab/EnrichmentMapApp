@@ -6,8 +6,10 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.baderlab.csplugins.enrichmentmap.autoannotate.view.AutoAnnotationPanel;
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetSelectedNetworkViewsEvent;
 import org.cytoscape.application.events.SetSelectedNetworkViewsListener;
+import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.command.CommandExecutorTaskFactory;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.events.ColumnCreatedEvent;
@@ -37,6 +39,8 @@ public class AutoAnnotationManager implements
 		NetworkViewAboutToBeDestroyedListener {
 	
 	private static AutoAnnotationManager instance = null;
+	// Used to control selected panels
+	private CySwingApplication application;
 	// Reference to the panel that the user interacts with
 	private AutoAnnotationPanel annotationPanel;
 	// Stores the annotation parameters (one for each network view)
@@ -78,10 +82,12 @@ public class AutoAnnotationManager implements
 		networkViewToAutoAnnotationParameters = new HashMap<CyNetworkView, AutoAnnotationParameters>();
 	}
 
-	public void initialize(CyTableManager tableManager, CommandExecutorTaskFactory commandExecutor,
-			DialogTaskManager dialogTaskManager, AnnotationManager annotationManager, 
-			AnnotationFactory<ShapeAnnotation> shapeFactory, AnnotationFactory<TextAnnotation> textFactory) {
+	public void initialize(CySwingApplication application, CyTableManager tableManager, 
+			CommandExecutorTaskFactory commandExecutor,	DialogTaskManager dialogTaskManager, 
+			AnnotationManager annotationManager, AnnotationFactory<ShapeAnnotation> shapeFactory, 
+			AnnotationFactory<TextAnnotation> textFactory) {
 		
+		this.application = application;
 		this.tableManager = tableManager;
 		this.commandExecutor = commandExecutor;
 		this.dialogTaskManager = dialogTaskManager;

@@ -3,7 +3,6 @@
 	<classpathentry kind="src" path="src/main/java"/>
 	<classpathentry kind="src" path="src/test/java"/>
 	<classpathentry kind="lib" path="lib/junit.jar"/>
-	<classpathentry kind="lib" path="/Users/arkadyarkhangorodsky/Downloads/jsoup-1.7.3.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="/Users/arkadyarkhangorodsky/Downloads/osgi.core-5.0.0.jar"/>
 	<classpathentry kind="lib" path="/Users/arkadyarkhangorodsky/.m2/repository/colt/colt/1.2.0/colt-1.2.0.jar"/>

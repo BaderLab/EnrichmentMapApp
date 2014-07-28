@@ -145,7 +145,7 @@ public class Cluster implements Comparable<Cluster> {
 	
 	@Override
 	public int compareTo(Cluster cluster2) {
-		return this.getClusterNumber() - cluster2.getClusterNumber();
+		return label.compareTo(cluster2.getLabel());
 	}
 	
 	public String toSessionString() {

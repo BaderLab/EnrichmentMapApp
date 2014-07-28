@@ -14,7 +14,7 @@ import org.cytoscape.work.TaskObserver;
  * @author arkadyarkhangorodsky
  *
  */
-public class ExecutorObserver implements TaskObserver {
+public class Observer implements TaskObserver {
 
 	private boolean allTasksFinished = false;
 	

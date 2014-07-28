@@ -43,10 +43,8 @@
 
 package org.baderlab.csplugins.enrichmentmap.autoannotate.action;
 
-import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.view.AutoAnnotationPanel;
-import org.baderlab.csplugins.enrichmentmap.view.ParametersPanel;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
@@ -63,6 +61,8 @@ import java.awt.event.ActionEvent;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.swing.JOptionPane;
+
 /**
  * Created by
  * User: arkadyark
@@ -77,51 +77,54 @@ public class AutoAnnotatorPanelAction extends AbstractCyAction {
 
 
 	//variable to track initialization of network event listener
-    private boolean initialized = false;
+	private boolean initialized = false;
 
-    
-    private final CytoPanel cytoPanelWest;
-    
-    private CyServiceRegistrar registrar;
+
+	private final CytoPanel cytoPanelWest;
+
+	private CyServiceRegistrar registrar;
 	private CyApplicationManager applicationManager;
 	private CySwingApplication application;
 	private DialogTaskManager dialogTaskManager;
 	private AutoAnnotationPanel inputPanel;
 
 
-    
-    public AutoAnnotatorPanelAction(Map<String,String> configProps, CyApplicationManager applicationManager, 
-    			CyNetworkViewManager networkViewManager, CySwingApplication application, AnnotationManager annotationManager, 
-    			CyServiceRegistrar registrar, DialogTaskManager dialogTaskManager){
-    	
-        super( configProps,  applicationManager,  networkViewManager);
-     
- 		putValue(NAME, "Annotate Clusters");		
- 		
- 		this.cytoPanelWest = application.getCytoPanel(CytoPanelName.WEST);
- 		this.applicationManager = applicationManager;
- 		this.application = application;
- 		this.registrar = registrar;
- 		this.dialogTaskManager = dialogTaskManager;
-    }
 
-	public void actionPerformed(ActionEvent event) {		
-		if(!initialized) {
-    		inputPanel = new AutoAnnotationPanel(application, registrar,
-    				dialogTaskManager);
-    		inputPanel.updateSelectedView(applicationManager.getCurrentNetworkView());
-    		AutoAnnotationManager.getInstance().setAnnotationPanel(inputPanel);
-    		registrar.registerService(inputPanel,CytoPanelComponent.class, new Properties());
-    		initialized = true;
-    	}
+	public AutoAnnotatorPanelAction(Map<String,String> configProps, CyApplicationManager applicationManager, 
+			CyNetworkViewManager networkViewManager, CySwingApplication application, AnnotationManager annotationManager, 
+			CyServiceRegistrar registrar, DialogTaskManager dialogTaskManager){
 
-          // If the state of the cytoPanelWest is HIDE, show it
-          if (cytoPanelWest.getState() == CytoPanelState.HIDE) {
-        	  cytoPanelWest.setState(CytoPanelState.DOCK);
-          }
-          
-          // Select my panels
-          int inputIndex = cytoPanelWest.indexOfComponent(inputPanel);
-          if (inputIndex != -1) cytoPanelWest.setSelectedIndex(inputIndex);
-        }
+		super( configProps,  applicationManager,  networkViewManager);
+
+		putValue(NAME, "Annotate Clusters");		
+
+		this.cytoPanelWest = application.getCytoPanel(CytoPanelName.WEST);
+		this.applicationManager = applicationManager;
+		this.application = application;
+		this.registrar = registrar;
+		this.dialogTaskManager = dialogTaskManager;
+	}
+
+	public void actionPerformed(ActionEvent event) {
+		if (applicationManager.getCurrentNetworkView() != null) {
+			if(!initialized) {
+				inputPanel = new AutoAnnotationPanel(application, registrar,
+						dialogTaskManager);
+				inputPanel.updateSelectedView(applicationManager.getCurrentNetworkView());
+				AutoAnnotationManager.getInstance().setAnnotationPanel(inputPanel);
+				registrar.registerService(inputPanel,CytoPanelComponent.class, new Properties());
+				initialized = true;
+			}
+			// If the state of the cytoPanelWest is HIDE, show it
+			if (cytoPanelWest.getState() == CytoPanelState.HIDE) {
+				cytoPanelWest.setState(CytoPanelState.DOCK);
+			}
+
+			// Select my panels
+			int inputIndex = cytoPanelWest.indexOfComponent(inputPanel);
+			if (inputIndex != -1) cytoPanelWest.setSelectedIndex(inputIndex);
+		} else {
+			JOptionPane.showMessageDialog(application.getJFrame(), "Please load an Enrichment Map.");
+		}
+	}
 }

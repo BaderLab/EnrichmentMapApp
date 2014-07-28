@@ -22,8 +22,6 @@ import org.cytoscape.view.presentation.annotations.AnnotationManager;
 public class AutoAnnotationParameters {
 	// network view that this belongs to
 	private CyNetworkView networkView;
-	// ID of this network view, used to get the view when loading from a file
-	private long networkViewID;
 	// used to generate the default names of the annotationSets
 	private int annotationSetNumber;
 	// used to select/deselect cluster
@@ -42,16 +40,7 @@ public class AutoAnnotationParameters {
 	
 	public void setNetworkView(CyNetworkView networkView) {
 		this.networkView = networkView;
-		this.networkViewID = networkView.getSUID();
 	}	
-
-	public long getNetworkViewID() {
-		return networkViewID;
-	}
-
-	public void setNetworkViewID(long networkViewID) {
-		this.networkViewID = networkViewID;
-	}
 	
 	public int getAnnotationSetNumber() {
 		return annotationSetNumber;
