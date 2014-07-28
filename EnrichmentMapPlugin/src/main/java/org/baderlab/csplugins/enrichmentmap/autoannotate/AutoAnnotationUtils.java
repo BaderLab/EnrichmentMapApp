@@ -147,10 +147,10 @@ public class AutoAnnotationUtils {
 
 		// Parameters of the text label
 		String labelText = cluster.getLabel();
-		Integer fontSize = (int) Math.round((0.02*Math.pow(Math.pow(width, 2)+ Math.pow(height, 2), 0.5)));
+		Integer fontSize = (int) Math.round(2.5*Math.pow(cluster.getSize(), 0.4));
 		// To centre the annotation at the middle of the annotation
 		xPos = (int) Math.round(xPos + width*padding/2 - 2.1*fontSize*labelText.length());
-		yPos = (int) Math.round(yPos - 10.1*fontSize);
+		yPos = (int) Math.round(yPos - 10.3*fontSize);
 		
 		// Create and draw the label
 		arguments = new HashMap<String,String>();
