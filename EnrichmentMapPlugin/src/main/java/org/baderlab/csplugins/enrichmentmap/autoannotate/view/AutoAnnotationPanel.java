@@ -25,6 +25,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -115,6 +116,8 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 	private JButton mergeButton;
 	private BasicCollapsiblePanel selectionPanel;
 
+	private JCheckBox layoutCheckBox;
+
 
 	public AutoAnnotationPanel(CySwingApplication application, 
 			CyServiceRegistrar registrar, DialogTaskManager dialogTaskManager){
@@ -147,38 +150,45 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 		// Collapsible panel with advanced cluster options
 		JPanel advancedOptionsPanel = createAdvancedOptionsPanel(); 
 
+		layoutCheckBox = new JCheckBox("Layout nodes by cluster");
+		layoutCheckBox.setSelected(true);
+		
 		// Run the annotation
 		JButton annotateButton = new JButton("Annotate!");
 		ActionListener annotateAction = new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
-				String clusterColumnName = "";
-				String algorithm = "";
-				// If using default clustermaker parameters
-				if (defaultButton.isSelected()) {
-					algorithm = (String) clusterAlgorithmDropdown.getSelectedItem();
-					clusterColumnName = autoAnnotationManager.getAlgorithmToColumnName().get(algorithm);
-				} else if (specifyColumnButton.isSelected()) {
-					// If using a user specified column
-					clusterColumnName = (String) clusterColumnDropdown.getSelectedItem();
-				}
-				String nameColumnName = (String) nameColumnDropdown.getSelectedItem();
-				if (autoAnnotationManager.getNetworkViewToAutoAnnotationParameters().containsKey(selectedView)) {
-					// Not the first annotation set for this network view
-					params = autoAnnotationManager.getNetworkViewToAutoAnnotationParameters().get(selectedView);
+				if (selectedView == null) {
+					JOptionPane.showMessageDialog(autoAnnotationManager.getAnnotationPanel(), "Load an Enrichment Map");
 				} else {
-					// Register the new network view parameters
-					params = new AutoAnnotationParameters();
-					params.setNetworkView(selectedView);
-					autoAnnotationManager.getNetworkViewToAutoAnnotationParameters().put(selectedView, params);
+					String clusterColumnName = "";
+					String algorithm = "";
+					// If using default clustermaker parameters
+					if (defaultButton.isSelected()) {
+						algorithm = (String) clusterAlgorithmDropdown.getSelectedItem();
+						clusterColumnName = autoAnnotationManager.getAlgorithmToColumnName().get(algorithm);
+					} else if (specifyColumnButton.isSelected()) {
+						// If using a user specified column
+						clusterColumnName = (String) clusterColumnDropdown.getSelectedItem();
+					}
+					String nameColumnName = (String) nameColumnDropdown.getSelectedItem();
+					if (autoAnnotationManager.getNetworkViewToAutoAnnotationParameters().containsKey(selectedView)) {
+						// Not the first annotation set for this network view
+						params = autoAnnotationManager.getNetworkViewToAutoAnnotationParameters().get(selectedView);
+					} else {
+						// Register the new network view parameters
+						params = new AutoAnnotationParameters();
+						params.setNetworkView(selectedView);
+						autoAnnotationManager.getNetworkViewToAutoAnnotationParameters().put(selectedView, params);
+					}
+					String annotationSetName = "Annotation Set " + String.valueOf(params.getAnnotationSetNumber());
+					autoAnnotatorTaskFactory = new AutoAnnotationTaskFactory(application, autoAnnotationManager, 
+							selectedView, clusterColumnName, nameColumnName, algorithm, layoutCheckBox.isSelected(),
+							annotationSetName);
+					dialogTaskManager.execute(autoAnnotatorTaskFactory.createTaskIterator());
+					// Increment the counter used to name the annotation sets
+					params.incrementAnnotationSetNumber();
+					setOutputVisibility(true);
 				}
-				String annotationSetName = "Annotation Set " + String.valueOf(params.getAnnotationSetNumber());
-				CyTableManager tableManager = autoAnnotationManager.getTableManager();
-				autoAnnotatorTaskFactory = new AutoAnnotationTaskFactory(application, autoAnnotationManager, selectedView, 
-						clusterColumnName, nameColumnName, algorithm, annotationSetName, registrar, dialogTaskManager, tableManager);
-				dialogTaskManager.execute(autoAnnotatorTaskFactory.createTaskIterator());
-				// Increment the counter used to name the annotation sets
-				params.incrementAnnotationSetNumber();
-				setOutputVisibility(true);
 			}
 		};
 		annotateButton.addActionListener(annotateAction);
@@ -272,10 +282,9 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 					String annotationSetName = annotationSet.getName();
 					String clusterColumnName = annotationSet.getClusterColumnName();
 					String nameColumnName = annotationSet.getNameColumnName();
-					CyTableManager tableManager = autoAnnotationManager.getTableManager();
 					clearButton.doClick();
 					autoAnnotatorTaskFactory = new AutoAnnotationTaskFactory(application, autoAnnotationManager, selectedView, 
-							clusterColumnName, nameColumnName, "", annotationSetName, registrar, dialogTaskManager, tableManager);
+							clusterColumnName, nameColumnName, "", layoutCheckBox.isSelected(), annotationSetName);
 					dialogTaskManager.execute(autoAnnotatorTaskFactory.createTaskIterator());
 				}
 			}
@@ -292,6 +301,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 		mainPanel.add(nameColumnDropdownLabel);
 		mainPanel.add(nameColumnDropdown);
 		mainPanel.add(advancedOptionsPanel);
+		mainPanel.add(layoutCheckBox);
 		mainPanel.add(annotateButton);
 		mainPanel.add(clusterTablePanel);
 		mainPanel.add(selectionPanel);
@@ -642,9 +652,6 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 
 	public void removeNetworkView(CyNetworkView view) {
 		networkLabel.setText("No network selected");
-		if (networkViewToClusterSetDropdown.size() == 0) {
-			setOutputVisibility(false);			
-		}
 		nameColumnDropdown.removeAllItems();
 		clusterColumnDropdown.removeAllItems();
 		mainPanel.updateUI();
@@ -653,10 +660,15 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 			Container clusterTable = clustersToTables.get(networkViewToClusterSetDropdown.get(view).getSelectedItem()).getParent().getParent();
 			clusterSetDropdown.getParent().remove(clusterSetDropdown);
 			clusterTable.getParent().remove(clusterTable);
+			networkViewToClusterSetDropdown.remove(view);
 		}
 		selectedView = null;
 		selectedNetwork = null;
 		params = null;
+		
+		if (networkViewToClusterSetDropdown.size() == 0) {
+			setOutputVisibility(false);			
+		}
 	}
 
 	public void columnDeleted(CyTable source, String columnName) {
@@ -691,7 +703,9 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 	}
 
 	public void setHeatMapNoSort() {
-		emManager.getMap(selectedNetwork.getSUID()).getParams().getHmParams().setSort(HeatMapParameters.Sort.NONE);
+		if (emManager.getMap(selectedNetwork.getSUID()).getParams().getHmParams() != null) {
+			emManager.getMap(selectedNetwork.getSUID()).getParams().getHmParams().setSort(HeatMapParameters.Sort.NONE);
+		}
 	}
 
 	public void setDisableHeatMapAutoFocus(boolean b) {

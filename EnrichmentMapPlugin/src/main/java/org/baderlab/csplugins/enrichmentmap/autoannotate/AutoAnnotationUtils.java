@@ -37,7 +37,7 @@ import org.cytoscape.work.swing.DialogTaskManager;
 public class AutoAnnotationUtils {
 	
 	private static int min_size = 35; // Minimum size of the cluster
-	private static double padding = 1.9; // Amount the ellipses are stretched by
+	private static double padding = 1.6; // Amount the ellipses are stretched by
 	private static double ellipseWidth = 5.0;
 	
 	public static void selectCluster(Cluster selectedCluster, CyNetwork network, boolean showHeatmap,
@@ -129,8 +129,8 @@ public class AutoAnnotationUtils {
 		height = height > min_size ? height : min_size;
 		
 		// Parameters of the ellipse
-		Integer xPos = (int) Math.round(xmin - width*padding/4);
-		Integer yPos = (int) Math.round(ymin - height*padding/4);
+		Integer xPos = (int) Math.round(xmin - width*(padding-1)/2);
+		Integer yPos = (int) Math.round(ymin - height*(padding-1)/2);
 
 		// Create and draw the ellipse
 		HashMap<String, String> arguments = new HashMap<String,String>();

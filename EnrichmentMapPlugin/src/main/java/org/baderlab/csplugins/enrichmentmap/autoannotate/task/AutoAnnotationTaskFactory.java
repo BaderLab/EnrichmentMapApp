@@ -24,29 +24,25 @@ public class AutoAnnotationTaskFactory implements TaskFactory {
 	private String clusterColumnName;
 	private String nameColumnName;
 	private String algorithm;
+	private boolean layout;
 	private String annotationSetName;
-	private DialogTaskManager dialogTaskManager;
-	private CyServiceRegistrar registrar;
-	private CyTableManager tableManager;
 	
 	public AutoAnnotationTaskFactory(CySwingApplication application, AutoAnnotationManager autoAnnotationManager, 
-			CyNetworkView selectedView, String clusterColumnName, String nameColumnName,  String algorithm, String annotationSetName, 
-			CyServiceRegistrar registrar, DialogTaskManager dialogTaskManager, CyTableManager tableManager) {
+			CyNetworkView selectedView, String clusterColumnName, String nameColumnName,  String algorithm,
+			boolean layout, String annotationSetName) {
 		this.application = application;
 		this.autoAnnotationManager = autoAnnotationManager;
 		this.selectedView = selectedView;
 		this.clusterColumnName = clusterColumnName;
 		this.nameColumnName = nameColumnName;
 		this.algorithm = algorithm;
+		this.layout = layout;
 		this.annotationSetName = annotationSetName;
-		this.dialogTaskManager = dialogTaskManager;
-		this.registrar = registrar;
-		this.tableManager = tableManager;
 	}
 	
 	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new AutoAnnotationTask(application, autoAnnotationManager, selectedView, clusterColumnName, 
-				nameColumnName, algorithm, annotationSetName, dialogTaskManager, registrar, tableManager));
+				nameColumnName, algorithm, layout, annotationSetName));
 	}
 	public boolean isReady() {
 		return true;

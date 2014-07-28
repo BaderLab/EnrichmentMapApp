@@ -65,6 +65,8 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.layout.CyLayoutAlgorithm;
+import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
@@ -90,17 +92,18 @@ public class AutoAnnotationTask extends AbstractTask {
 	private String clusterColumnName;
 	private String nameColumnName;
 	private String algorithm;
-	private CyServiceRegistrar registrar;
+	private boolean layout;
+	private CyLayoutAlgorithmManager layoutManager;
 	private String annotationSetName;
 	private CyTableManager tableManager;
 	private AutoAnnotationPanel annotationPanel;
 	private DialogTaskManager dialogTaskManager;
+	private CommandExecutorTaskFactory executor;
 
 	public AutoAnnotationTask (CySwingApplication application, 
 			AutoAnnotationManager autoAnnotationManager, 
 			CyNetworkView selectedView, String clusterColumnName, String nameColumnName, 
-			String algorithm, String annotationSetName, DialogTaskManager dialogTaskManager, 
-			CyServiceRegistrar registrar, CyTableManager tableManager){
+			String algorithm, boolean layout, String annotationSetName){
 		
 		this.application = application;
 		this.annotationPanel = autoAnnotationManager.getAnnotationPanel();
@@ -109,10 +112,12 @@ public class AutoAnnotationTask extends AbstractTask {
 		this.clusterColumnName = clusterColumnName;
 		this.nameColumnName = nameColumnName;
 		this.algorithm = algorithm;
+		this.layout = layout;
+		this.layoutManager = autoAnnotationManager.getLayoutManager();
 		this.annotationSetName = annotationSetName;
-		this.dialogTaskManager = dialogTaskManager;
-		this.registrar = registrar;
-		this.tableManager = tableManager;
+		this.dialogTaskManager = autoAnnotationManager.getDialogTaskManager();
+		this.tableManager = autoAnnotationManager.getTableManager();
+		this.executor = autoAnnotationManager.getCommandExecutor();
 	};
 
 	@Override
@@ -127,7 +132,7 @@ public class AutoAnnotationTask extends AbstractTask {
 		if (algorithm != "") {
 			taskMonitor.setProgress(0.1);
 			taskMonitor.setStatusMessage("Clustering nodes...");
-			runClusterMaker(taskMonitor);
+			runClusterMaker();
 		}
 		
 		taskMonitor.setProgress(0.3);
@@ -137,11 +142,17 @@ public class AutoAnnotationTask extends AbstractTask {
 		EnrichmentMapUtils.setOverrideHeatmapRevalidation(true);
     	AnnotationSet clusters = makeClusters(network, view, annotationSetName);
     	
+    	if (layout) {
+    		taskMonitor.setProgress(0.4);
+    		taskMonitor.setStatusMessage("Laying out nodes...");
+    		layoutNodes(clusters);
+    	}
+    	
     	taskMonitor.setProgress(0.5);
     	taskMonitor.setStatusMessage("Running WordCloud...");
     	if (cancelled) return;
     	
-    	runWordCloud(taskMonitor);
+    	runWordCloud();
     	
     	taskMonitor.setProgress(0.7);
     	taskMonitor.setStatusMessage("Annotating Clusters...");
@@ -167,7 +178,25 @@ public class AutoAnnotationTask extends AbstractTask {
 		taskMonitor.setStatusMessage("Done!");
 	}
 	
-	private void runClusterMaker(TaskMonitor taskMonitor) {
+	private void layoutNodes(AnnotationSet clusters) {
+		Observer observer = new Observer();
+		for (CyLayoutAlgorithm algorithm : layoutManager.getAllLayouts()) {
+			System.out.println(algorithm.getName());
+		}
+		CyLayoutAlgorithm attributeCircle = layoutManager.getLayout("attributes-layout");
+		TaskIterator iterator = attributeCircle.createTaskIterator(view, attributeCircle.createLayoutContext(), CyLayoutAlgorithm.ALL_NODE_VIEWS, clusterColumnName);
+		dialogTaskManager.execute(iterator, observer);
+		while (!observer.isFinished()) {
+			// Prevents task from continuing to execute until clusterMaker has finished
+			try {
+				Thread.sleep(1);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	private void runClusterMaker() {
 		// Delete potential existing columns - sometimes clusterMaker doesn't do this
 		if (network.getDefaultNodeTable().getColumn(clusterColumnName) != null) {
 			network.getDefaultNodeTable().deleteColumn(clusterColumnName);
@@ -184,7 +213,6 @@ public class AutoAnnotationTask extends AbstractTask {
 		}
 		
 		// Executes the task inside of clusterMaker
-		CommandExecutorTaskFactory executor = registrar.getService(CommandExecutorTaskFactory.class);
 		ArrayList<String> commands = new ArrayList<String>();
 		commands.add(getCommand(algorithm, edgeAttribute, network.toString()));
 		Observer observer = new Observer();
@@ -251,15 +279,14 @@ public class AutoAnnotationTask extends AbstractTask {
 		return annotationSet;
 	}
 	
-	private void runWordCloud(TaskMonitor taskMonitor) {
-		CommandExecutorTaskFactory executor = registrar.getService(CommandExecutorTaskFactory.class);
+	private void runWordCloud() {
 		ArrayList<String> commands = new ArrayList<String>();
 		String command = "wordcloud build clusterColumnName=\"" + clusterColumnName + "\" nameColumnName=\""
 				+ nameColumnName + "\"" + " cloudNamePrefix=\"" + annotationSetName + "\"";
 		commands.add(command);
 		Observer observer = new Observer();
 		TaskIterator taskIterator = executor.createTaskIterator(commands, null);
-		registrar.getService(DialogTaskManager.class).execute(taskIterator, observer);
+		dialogTaskManager.execute(taskIterator, observer);
 		// Prevents task from continuing to execute until wordCloud has finished
 		while (!observer.isFinished()) {
 			try {

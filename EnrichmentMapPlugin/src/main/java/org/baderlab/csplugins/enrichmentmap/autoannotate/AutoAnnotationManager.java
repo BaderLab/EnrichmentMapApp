@@ -18,6 +18,7 @@ import org.cytoscape.model.events.ColumnDeletedEvent;
 import org.cytoscape.model.events.ColumnDeletedListener;
 import org.cytoscape.model.events.ColumnNameChangedEvent;
 import org.cytoscape.model.events.ColumnNameChangedListener;
+import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
@@ -66,6 +67,8 @@ public class AutoAnnotationManager implements
 	private DialogTaskManager dialogTaskManager;
 	// annotations are added to here
 	private AnnotationManager annotationManager;
+	// used to update the layout of the nodes
+	private CyLayoutAlgorithmManager layoutManager;
 	// creates ellipses
 	private AnnotationFactory<ShapeAnnotation> shapeFactory;
 	// creates text labels
@@ -84,14 +87,15 @@ public class AutoAnnotationManager implements
 
 	public void initialize(CySwingApplication application, CyTableManager tableManager, 
 			CommandExecutorTaskFactory commandExecutor,	DialogTaskManager dialogTaskManager, 
-			AnnotationManager annotationManager, AnnotationFactory<ShapeAnnotation> shapeFactory, 
-			AnnotationFactory<TextAnnotation> textFactory) {
+			AnnotationManager annotationManager, CyLayoutAlgorithmManager layoutManager, 
+			AnnotationFactory<ShapeAnnotation> shapeFactory, AnnotationFactory<TextAnnotation> textFactory) {
 		
-		this.setApplication(application);
+		this.application = application;
 		this.tableManager = tableManager;
 		this.commandExecutor = commandExecutor;
 		this.dialogTaskManager = dialogTaskManager;
 		this.annotationManager = annotationManager;
+		this.setLayoutManager(layoutManager);
 		this.shapeFactory = shapeFactory;
 		this.textFactory = textFactory;
 	}
@@ -188,6 +192,14 @@ public class AutoAnnotationManager implements
 	
 	public void setAnnotationManager(AnnotationManager annotationManager) {
 		this.annotationManager = annotationManager;
+	}
+
+	public CyLayoutAlgorithmManager getLayoutManager() {
+		return layoutManager;
+	}
+
+	public void setLayoutManager(CyLayoutAlgorithmManager layoutManager) {
+		this.layoutManager = layoutManager;
 	}
 
 	public AnnotationFactory<ShapeAnnotation> getShapeFactory() {
