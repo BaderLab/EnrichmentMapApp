@@ -174,53 +174,69 @@ public class AutoAnnotationUtils {
 	}
 	
 	public static void updateClusterLabel(Cluster cluster, CyNetwork network, String annotationSetName, CyTable clusterSetTable) {
-		if (!cluster.isLabelManuallyUpdated()) {
-			// Only updates if the user hasn't changed the label manually
-			cluster.setLabel("");
-			int clusterNumber = cluster.getClusterNumber();
-			// Look up the wordCloud info in the table
-			CyRow clusterRow = clusterSetTable.getRow(clusterNumber);
-			List<String> wordList = clusterRow.get("WC_Word", List.class);
-			List<String> sizeList = clusterRow.get("WC_FontSize", List.class);
-			List<String> clusterList = clusterRow.get("WC_Cluster", List.class);
-			List<String> numberList = clusterRow.get("WC_Number", List.class);
-			ArrayList<WordInfo> wordInfos = new ArrayList<WordInfo>();
-			for (int i=0; i < wordList.size(); i++) {
-				wordInfos.add(new WordInfo(wordList.get(i), 
-										Integer.parseInt(sizeList.get(i)),
-										Integer.parseInt(clusterList.get(i)),
-										Integer.parseInt(numberList.get(i))));
+		// Only updates if the user hasn't changed the label manually
+		int clusterNumber = cluster.getClusterNumber();
+		// Look up the wordCloud info in the table
+		CyRow clusterRow = clusterSetTable.getRow(clusterNumber);
+		List<String> wordList = clusterRow.get("WC_Word", List.class);
+		List<String> sizeList = clusterRow.get("WC_FontSize", List.class);
+		List<String> clusterList = clusterRow.get("WC_Cluster", List.class);
+		List<String> numberList = clusterRow.get("WC_Number", List.class);
+		ArrayList<WordInfo> wordInfos = new ArrayList<WordInfo>();
+		for (int i=0; i < wordList.size(); i++) {
+			wordInfos.add(new WordInfo(wordList.get(i), 
+									Integer.parseInt(sizeList.get(i)),
+									Integer.parseInt(clusterList.get(i)),
+									Integer.parseInt(numberList.get(i))));
+		}
+		// Only update the labels if the wordCloud has changed
+		if (wordInfos.size() != cluster.getWordInfos().size()) {
+			// WordCloud table entry for this cluster has changed
+			cluster.setWordInfos(wordInfos);
+			cluster.setLabel(makeLabel(wordInfos));
+		} else {
+			for (int infoIndex = 0; infoIndex < cluster.getWordInfos().size(); infoIndex++) {
+				if (!wordInfos.get(infoIndex).equals(cluster.getWordInfos().get(infoIndex))) {
+					// WordCloud table entry for this cluster has changed
+					cluster.setWordInfos(wordInfos);
+					cluster.setLabel(makeLabel(wordInfos));
+					return;
+				}
 			}
-			// Update the cluster's label based on these new values
-			String label = makeLabel(wordInfos);
-			cluster.setLabel(label);
 		}
 	}
 	
 	public static String makeLabel(ArrayList<WordInfo> wordInfos) {
 		// TODO more code reuse
-		Collections.sort(wordInfos);
-		WordInfo biggestWord = wordInfos.get(0);
+		// WordInfos sort by size descending
+		// Using a copy so as to not mess up the order for comparisons
+		ArrayList<WordInfo> wordInfosCopy = new ArrayList<WordInfo>();
+		for (WordInfo wordInfo : wordInfos) {
+			wordInfosCopy.add(wordInfo.clone());
+		}
+		Collections.sort(wordInfosCopy);
+		// Gets the biggest word
+		WordInfo biggestWord = wordInfosCopy.get(0);
 		String label = biggestWord.getWord();
-		if (wordInfos.size() > 1) {
-			for (WordInfo word : wordInfos.subList(1, wordInfos.size())) {
+		if (wordInfosCopy.size() > 1) {
+			for (WordInfo word : wordInfosCopy.subList(1, wordInfosCopy.size())) {
 				if (word.getCluster() == biggestWord.getCluster()) {
 					word.setSize(word.getSize() - 1);
 				}
 			}
-			Collections.sort(wordInfos);
-			WordInfo secondBiggestWord = wordInfos.get(1);
+			Collections.sort(wordInfosCopy);
+			WordInfo secondBiggestWord = wordInfosCopy.get(1);
 			if (secondBiggestWord.getSize() >= 0.3*biggestWord.getSize()) {
 				label += " " + secondBiggestWord.getWord();
 			}
-			for (WordInfo word : wordInfos.subList(1, wordInfos.size())) {
+			for (WordInfo word : wordInfosCopy.subList(1, wordInfosCopy.size())) {
 				if (!word.equals(secondBiggestWord) && word.getCluster() == secondBiggestWord.getCluster()) {
 					word.setSize(word.getSize() - 1);
 				}
 			}
-			Collections.sort(wordInfos);
+			Collections.sort(wordInfosCopy);
 			try {
-				WordInfo thirdBiggestWord = wordInfos.get(2);
+				WordInfo thirdBiggestWord = wordInfosCopy.get(2);
 				if (thirdBiggestWord.getSize() > 0.8*secondBiggestWord.getSize()) {
 					label += " " + thirdBiggestWord.getWord();
 				}
@@ -228,7 +244,7 @@ public class AutoAnnotationUtils {
 				return label;
 			}
 			try {
-				WordInfo fourthBiggestWord = wordInfos.get(3);
+				WordInfo fourthBiggestWord = wordInfosCopy.get(3);
 				if (fourthBiggestWord.getSize() > 0.9*secondBiggestWord.getSize()) {
 					label += " " + fourthBiggestWord.getWord();
 				}

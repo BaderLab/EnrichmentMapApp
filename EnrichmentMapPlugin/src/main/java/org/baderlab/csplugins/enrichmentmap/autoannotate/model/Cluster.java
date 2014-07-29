@@ -37,13 +37,14 @@ public class Cluster implements Comparable<Cluster> {
 	private TextAnnotation textAnnotation;
 	private ShapeAnnotation ellipse;
 	private AnnotationSet parent;
-	private boolean labelManuallyUpdated;
 	private boolean selected;
+	private ArrayList<WordInfo> wordInfos;
 	
 	// Used when initializing from a session file
 	public Cluster() {
 		this.nodes = new ArrayList<CyNode>();
 		this.coordinates = new ArrayList<double[]>();
+		this.setWordInfos(new ArrayList<WordInfo>());
 	}
 	
 	public Cluster(int clusterNumber, AnnotationSet parent) {
@@ -52,9 +53,9 @@ public class Cluster implements Comparable<Cluster> {
 		this.cloudName = parent.getCloudNamePrefix() + " Cloud " + clusterNumber;
 		this.nodes = new ArrayList<CyNode>();
 		this.coordinates = new ArrayList<double[]>();
+		this.setWordInfos(new ArrayList<WordInfo>());
 		size = 0;
 		selected = false;
-		labelManuallyUpdated = false;
 	}
 	
 	public int getClusterNumber() {
@@ -97,17 +98,9 @@ public class Cluster implements Comparable<Cluster> {
 	public String getLabel() {
 		return label;
 	}
-	
-	public void setLabelManuallyUpdated(boolean b) {
-		labelManuallyUpdated = b;
-	}
-	
+
 	public int getSize() {
 		return size;
-	}
-	
-	public boolean isLabelManuallyUpdated() {
-		return labelManuallyUpdated;
 	}
 	
 	public ShapeAnnotation getEllipse() {
@@ -143,6 +136,14 @@ public class Cluster implements Comparable<Cluster> {
 		this.selected = selected;
 	}
 	
+	public ArrayList<WordInfo> getWordInfos() {
+		return wordInfos;
+	}
+
+	public void setWordInfos(ArrayList<WordInfo> wordInfos) {
+		this.wordInfos = wordInfos;
+	}
+
 	@Override
 	public int compareTo(Cluster cluster2) {
 		return label.compareTo(cluster2.getLabel());
@@ -163,7 +164,6 @@ public class Cluster implements Comparable<Cluster> {
 		sessionString += clusterNumber + "\n";
 		sessionString += label + "\n";
 		sessionString += selected + "\n";
-		sessionString += labelManuallyUpdated + "\n";
 		// Write each node
 		for (int nodeIndex=0 ; nodeIndex < size ; nodeIndex++) {
 			double nodeX = coordinates.get(nodeIndex)[0];
@@ -179,8 +179,7 @@ public class Cluster implements Comparable<Cluster> {
 		cloudName = parent.getCloudNamePrefix() + " Cloud " + clusterNumber;
 		label = text.get(1);
 		selected = Boolean.valueOf(text.get(2));
-		labelManuallyUpdated = Boolean.valueOf(text.get(3));
-		int lineNumber = 4;
+		int lineNumber = 3;
 		Collection<View<CyNode>> nodeViewSet = parent.getView().getNodeViews();
 		while (lineNumber < text.size()) {
 			String line = text.get(lineNumber);

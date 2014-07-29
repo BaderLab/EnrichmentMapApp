@@ -240,7 +240,12 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 				CyTable clusterSetTable = autoAnnotationManager.getTableManager().getTable(clusterTableSUID);
 				for (Cluster cluster : annotationSet.getClusterMap().values()) {
 					// Update the text label of the selected cluster
+					String previousLabel = cluster.getLabel();
 					AutoAnnotationUtils.updateClusterLabel(cluster, selectedNetwork, annotationSetName, clusterSetTable);
+					if (previousLabel != cluster.getLabel()) {
+						// Cluster table needs to be updated with new label
+						clustersToTables.get(annotationSet).updateUI();
+					}
 					cluster.erase();
 					AnnotationFactory<ShapeAnnotation> shapeFactory = autoAnnotationManager.getShapeFactory();
 					AnnotationFactory<TextAnnotation> textFactory = autoAnnotationManager.getTextFactory();
@@ -437,12 +442,12 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 			private static final long serialVersionUID = -1277709187563893042L;
 
 			Class<?>[] types = {Object.class, Integer.class};
-
+			
 			@Override
 			public Class<?> getColumnClass(int columnIndex) {
 				return this.types[columnIndex];
 			}
-
+			
 			@Override
 			public boolean isCellEditable(int row, int column) {
 				return column == 0;
@@ -461,8 +466,13 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 				if (e.getType() == TableModelEvent.UPDATE || e.getColumn() == 0) {
 					int editedRowIndex = e.getFirstRow() == table.getSelectedRow()? e.getLastRow() : e.getFirstRow(); 
 					Cluster editedCluster = clusters.getClusterMap().get(editedRowIndex + 1);
-					editedCluster.setLabel((String) table.getValueAt(editedRowIndex, 0));
-					editedCluster.setLabelManuallyUpdated(true);
+					try {
+						editedCluster.setLabel((String) table.getValueAt(editedRowIndex, 0));
+					} catch (Exception ex) {
+						// This comes from event fired from re-adding the cluster to the table, ignore
+						return;
+					}
+					table.setValueAt(editedCluster, editedRowIndex, 0); // Otherwise String stays in the table
 					editedCluster.erase();
 					AnnotationFactory<ShapeAnnotation> shapeFactory = autoAnnotationManager.getShapeFactory();
 					AnnotationFactory<TextAnnotation> textFactory = autoAnnotationManager.getTextFactory();

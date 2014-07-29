@@ -50,4 +50,19 @@ public class WordInfo implements Comparable<WordInfo>{
 	public int compareTo(WordInfo otherWordInfo) {
 		return (int) Math.signum(otherWordInfo.size - size); // Sorts descending
 	}
+	
+	@Override
+	public boolean equals(Object other) {
+		return (other.getClass() == WordInfo.class
+			   && word.equals(((WordInfo) other).getWord())
+			   && size == ((WordInfo) other).getSize()
+			   && cluster == ((WordInfo) other).getCluster()
+			   && number == ((WordInfo) other).getNumber());
+	}
+	
+	@Override
+	public WordInfo clone() {
+		WordInfo w = new WordInfo(this.word, this.size, this.cluster, this.number);
+		return w;
+	}
 }
