@@ -55,6 +55,7 @@ import org.cytoscape.view.presentation.annotations.TextAnnotation;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
+import org.cytoscape.work.AbstractTaskManager;
 import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskFactory;
@@ -129,7 +130,7 @@ public class CyActivator extends AbstractCyActivator {
 		//Get an instance of AA manager
 		
 		AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
-		autoAnnotationManager.initialize(cySwingApplicationRef, tableManager, commandExecutor, dialogTaskManager, annotationManager, layoutManager, shapeFactory, textFactory);
+		autoAnnotationManager.initialize(cySwingApplicationRef, tableManager, commandExecutor, dialogTaskManager, syncTaskManager, annotationManager, layoutManager, shapeFactory, textFactory);
 		//register network events with manager class
 		registerService(bc, autoAnnotationManager, SetSelectedNetworkViewsListener.class, new Properties());
 		registerService(bc, autoAnnotationManager, ColumnCreatedListener.class, new Properties());

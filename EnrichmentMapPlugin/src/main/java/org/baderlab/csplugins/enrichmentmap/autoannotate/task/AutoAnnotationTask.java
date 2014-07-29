@@ -74,7 +74,9 @@ import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.AbstractTaskManager;
 import org.cytoscape.work.ObservableTask;
+import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.swing.DialogTaskManager;
@@ -100,6 +102,7 @@ public class AutoAnnotationTask extends AbstractTask {
 	private CyTableManager tableManager;
 	private AutoAnnotationPanel annotationPanel;
 	private DialogTaskManager dialogTaskManager;
+	private SynchronousTaskManager syncTaskManager;
 	private CommandExecutorTaskFactory executor;
 
 	public AutoAnnotationTask (CySwingApplication application, 
@@ -118,6 +121,7 @@ public class AutoAnnotationTask extends AbstractTask {
 		this.layoutManager = autoAnnotationManager.getLayoutManager();
 		this.annotationSetName = annotationSetName;
 		this.dialogTaskManager = autoAnnotationManager.getDialogTaskManager();
+		this.syncTaskManager = autoAnnotationManager.getSyncTaskManager();
 		this.tableManager = autoAnnotationManager.getTableManager();
 		this.executor = autoAnnotationManager.getCommandExecutor();
 	};
@@ -184,15 +188,7 @@ public class AutoAnnotationTask extends AbstractTask {
 		Observer observer = new Observer();
 		CyLayoutAlgorithm attributeCircle = layoutManager.getLayout("attributes-layout");
 		TaskIterator iterator = attributeCircle.createTaskIterator(view, attributeCircle.createLayoutContext(), CyLayoutAlgorithm.ALL_NODE_VIEWS, clusterColumnName);
-		dialogTaskManager.execute(iterator, observer);
-		while (!observer.isFinished()) {
-			// Prevents task from continuing to execute until clusterMaker has finished
-			try {
-				Thread.sleep(1);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
+		syncTaskManager.execute(iterator, observer);
 		CyLayoutAlgorithm force_directed = layoutManager.getLayout("force-directed");
 		for (Cluster cluster : clusters.getClusterMap().values()) {
 			Set<View<CyNode>> nodeViewSet = new HashSet<View<CyNode>>();
@@ -200,7 +196,7 @@ public class AutoAnnotationTask extends AbstractTask {
 				nodeViewSet.add(view.getNodeView(node));
 			}
 			iterator = force_directed.createTaskIterator(view, force_directed.createLayoutContext(), nodeViewSet, null);
-			dialogTaskManager.execute(iterator);
+			syncTaskManager.execute(iterator);
 		}
 	}
 

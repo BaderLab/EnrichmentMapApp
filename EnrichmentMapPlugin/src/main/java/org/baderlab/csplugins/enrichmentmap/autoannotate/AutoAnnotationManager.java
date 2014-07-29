@@ -26,6 +26,7 @@ import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.annotations.AnnotationManager;
 import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
 import org.cytoscape.view.presentation.annotations.TextAnnotation;
+import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.swing.DialogTaskManager;
 /**
  * Created by
@@ -65,6 +66,8 @@ public class AutoAnnotationManager implements
 	private CommandExecutorTaskFactory commandExecutor;
 	// used to execute annotation, WordCloud, and clusterMaker tasks
 	private DialogTaskManager dialogTaskManager;
+	// used to apply layouts
+	private SynchronousTaskManager syncTaskManager;
 	// annotations are added to here
 	private AnnotationManager annotationManager;
 	// used to update the layout of the nodes
@@ -87,15 +90,16 @@ public class AutoAnnotationManager implements
 
 	public void initialize(CySwingApplication application, CyTableManager tableManager, 
 			CommandExecutorTaskFactory commandExecutor,	DialogTaskManager dialogTaskManager, 
-			AnnotationManager annotationManager, CyLayoutAlgorithmManager layoutManager, 
+			SynchronousTaskManager syncTaskManager, AnnotationManager annotationManager, CyLayoutAlgorithmManager layoutManager, 
 			AnnotationFactory<ShapeAnnotation> shapeFactory, AnnotationFactory<TextAnnotation> textFactory) {
 		
 		this.application = application;
 		this.tableManager = tableManager;
 		this.commandExecutor = commandExecutor;
 		this.dialogTaskManager = dialogTaskManager;
+		this.syncTaskManager = syncTaskManager;
 		this.annotationManager = annotationManager;
-		this.setLayoutManager(layoutManager);
+		this.layoutManager = layoutManager;
 		this.shapeFactory = shapeFactory;
 		this.textFactory = textFactory;
 	}
@@ -172,6 +176,14 @@ public class AutoAnnotationManager implements
 
 	public void setDialogTaskManager(DialogTaskManager dialogTaskManager) {
 		this.dialogTaskManager = dialogTaskManager;
+	}
+
+	public SynchronousTaskManager getSyncTaskManager() {
+		return syncTaskManager;
+	}
+
+	public void setSyncTaskManager(SynchronousTaskManager syncTaskManager) {
+		this.syncTaskManager = syncTaskManager;
 	}
 
 	public AutoAnnotationPanel getAnnotationPanel() {
