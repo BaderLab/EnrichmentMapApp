@@ -2,11 +2,17 @@ package org.baderlab.csplugins.enrichmentmap.autoannotate.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationUtils;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.group.CyGroup;
+import org.cytoscape.session.CySession;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.annotations.Annotation;
@@ -168,25 +174,25 @@ public class Cluster implements Comparable<Cluster> {
 		for (int nodeIndex=0 ; nodeIndex < size ; nodeIndex++) {
 			double nodeX = coordinates.get(nodeIndex)[0];
 			double nodeY = coordinates.get(nodeIndex)[1];
-			sessionString += nodeX + "\t" + nodeY + "\n";
+			long nodeID = nodes.get(nodeIndex).getSUID();
+			sessionString += nodeX + "\t" + nodeY + "\t" + nodeID + "\n";
 		}
 		sessionString += "End of cluster\n";
 		return sessionString;
 	}
 	
-	public void load(ArrayList<String> text) {
+	public void load(ArrayList<String> text, CySession session) {
 		clusterNumber = Integer.valueOf(text.get(0));
 		cloudName = parent.getCloudNamePrefix() + " Cloud " + clusterNumber;
 		label = text.get(1);
 		selected = Boolean.valueOf(text.get(2));
 		int lineNumber = 3;
-		Collection<View<CyNode>> nodeViewSet = parent.getView().getNodeViews();
 		while (lineNumber < text.size()) {
 			String line = text.get(lineNumber);
 			String[] splitLine = line.split("\t");
 			double[] nodeCoordinates = {Double.valueOf(splitLine[0]), Double.valueOf(splitLine[1])}; 
 			addCoordinates(nodeCoordinates);
-			addNode(getNodeByCoordinates(nodeViewSet, nodeCoordinates));
+			addNode(session.getObject(Long.valueOf(splitLine[2]), CyNode.class));
 			lineNumber++;
 		}
 		AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
@@ -200,20 +206,8 @@ public class Cluster implements Comparable<Cluster> {
 		AutoAnnotationUtils.drawCluster(this, parent.getView(), shapeFactory, textFactory, annotationManager);
 	}
 	
-	private CyNode getNodeByCoordinates(Collection<View<CyNode>> nodeViewSet, double[] coordinates) {
-		// IDs change from session to session, no other way (that I know of) to look up nodes
-		for (View<CyNode> nodeView : nodeViewSet) {
-			if (nodeView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION) == coordinates[0] && 
-				nodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION) == coordinates[1]) {
-				return nodeView.getModel();
-			}
-		}
-		return null;
-	}
-	
 	@Override
 	public String toString() {
 		return label;
 	}
-
 }

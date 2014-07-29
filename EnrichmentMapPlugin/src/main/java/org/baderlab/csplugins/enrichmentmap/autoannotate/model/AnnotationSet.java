@@ -8,11 +8,13 @@ import java.util.List;
 import java.util.TreeMap;
 
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationParameters;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
+import org.cytoscape.session.CySession;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.annotations.AnnotationManager;
@@ -148,7 +150,7 @@ public class AnnotationSet {
 		return sessionString;
 	}
 
-	public void load(ArrayList<String> text) {
+	public void load(ArrayList<String> text, CySession session) {
 		setCloudNamePrefix(text.get(0));
 		setName(text.get(1));
 		setClusterColumnName(text.get(2));
@@ -169,7 +171,7 @@ public class AnnotationSet {
 			if (line.equals("End of cluster")) {
 				Cluster cluster = new Cluster();
 				cluster.setParent(this);
-				cluster.load(clusterLines);
+				cluster.load(clusterLines, session);
 				clusterMap.put(cluster.getClusterNumber(), cluster);
 				clusterLines = new ArrayList<String>();
 			} else {

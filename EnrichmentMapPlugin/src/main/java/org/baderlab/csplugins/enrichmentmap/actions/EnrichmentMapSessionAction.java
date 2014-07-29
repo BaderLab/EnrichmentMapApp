@@ -38,38 +38,29 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.session.CySession;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
 import org.cytoscape.session.events.SessionAboutToBeSavedListener;
 import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewManager;
-
-import com.sun.xml.internal.ws.util.StringUtils;
 
 public class EnrichmentMapSessionAction implements SessionAboutToBeSavedListener, SessionLoadedListener {
 
 	private CyNetworkManager cyNetworkManager;
-	private CyNetworkViewManager cyNetworkViewManager;
 	private CySessionManager cySessionManager;
-	private CyServiceRegistrar registrar;
 	private CyApplicationManager cyApplicationManager;
 	private StreamUtil streamUtil;
 
 	private static final String appName = "EnrichmentMap";
 
 	public EnrichmentMapSessionAction(CyNetworkManager cyNetworkManager, 
-			CyNetworkViewManager cyNetworkViewManager,
-			CySessionManager cySessionManager, CyServiceRegistrar registrar,
+			CySessionManager cySessionManager, 
 			CyApplicationManager cyApplicationManager, StreamUtil streamUtil) {
 		super();
 		this.cyNetworkManager = cyNetworkManager;
-		this.cyNetworkViewManager = cyNetworkViewManager;
 		this.cySessionManager = cySessionManager;
-		this.registrar = registrar;
 		this.cyApplicationManager = cyApplicationManager;
 		this.streamUtil = streamUtil;
 	}
@@ -82,7 +73,8 @@ public class EnrichmentMapSessionAction implements SessionAboutToBeSavedListener
 	public void handleEvent(SessionLoadedEvent e) {
 		if (e.getLoadedSession().getAppFileListMap() == null || e.getLoadedSession().getAppFileListMap().size() ==0){
 			return;
-		}  
+		}
+
 		List<File> pStateFileList = e.getLoadedSession().getAppFileListMap().get(appName);
 		try {
 			//go through the prop files first to create the correct objects to be able
@@ -134,20 +126,20 @@ public class EnrichmentMapSessionAction implements SessionAboutToBeSavedListener
 				File prop_file = pStateFileList.get(i);
 
 				// Load the AutoAnnotation parameters
+				// TODO use SUIDs to load things!!!!!
 				// considerably simpler so doesn't require as much parsing of the file name 
 				if (prop_file.getName().contains("_AAPARAMS.txt")) {
-					String networkName = prop_file.getName().substring(0, prop_file.getName().indexOf("_AAPARAMS.txt"));
-					CyNetworkView view = getNetworkViewByName(networkName); 
+					CySession session = e.getLoadedSession();
 					
 					//read the file
 					InputStream reader = streamUtil.getInputStream(prop_file.getAbsolutePath());     			
 					String fullText = new Scanner(reader,"UTF-8").useDelimiter("\\A").next();
 					AutoAnnotationParameters aaParams = new AutoAnnotationParameters();
 					AutoAnnotationManager aaManager = AutoAnnotationManager.getInstance();
-					aaParams.load(fullText, view);
+					aaParams.load(fullText, session);
 					aaManager.getNetworkViewToAutoAnnotationParameters().put(aaParams.getNetworkView(), aaParams);
 					if (aaManager.getAnnotationPanel() != null) {
-						aaManager.getAnnotationPanel().updateSelectedView(view);
+						aaManager.getAnnotationPanel().updateSelectedView(aaParams.getNetworkView());
 					}
 				} else {
 					FileNameParts parts = ParseFileName(prop_file);
@@ -666,18 +658,6 @@ public class EnrichmentMapSessionAction implements SessionAboutToBeSavedListener
 			String currentName = network.getRow(network).get(CyNetwork.NAME,String.class);
 			if(currentName.equals(name))
 				return network;
-		}
-		return null;
-	}
-
-	//get Network by name
-	public CyNetworkView getNetworkViewByName(String name){
-		Set<CyNetworkView> networkViews = cyNetworkViewManager.getNetworkViewSet();
-		for(CyNetworkView networkView : networkViews){
-			String currentName = networkView.getModel().getRow(networkView.getModel()).get(CyNetwork.NAME,String.class);
-			if(currentName.equals(name)) {
-				return networkView;
-			}
 		}
 		return null;
 	}

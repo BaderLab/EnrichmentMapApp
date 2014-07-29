@@ -182,7 +182,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, loadPostAnalysisAction, CyAction.class, new Properties());	
 		
 		//register the session save and restore
-		EnrichmentMapSessionAction sessionAction = new EnrichmentMapSessionAction(cyNetworkManagerRef, cyNetworkViewManagerRef, sessionManager, registrar, cyApplicationManagerRef, streamUtil);
+		EnrichmentMapSessionAction sessionAction = new EnrichmentMapSessionAction(cyNetworkManagerRef, sessionManager, cyApplicationManagerRef, streamUtil);
 		registerService(bc,sessionAction,SessionAboutToBeSavedListener.class, new Properties());
 		registerService(bc,sessionAction,SessionLoadedListener.class, new Properties());
 		
