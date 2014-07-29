@@ -16,7 +16,9 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -481,15 +483,21 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 					DialogTaskManager dialogTaskManager = autoAnnotationManager.getDialogTaskManager();
 					CommandExecutorTaskFactory executor = autoAnnotationManager.getCommandExecutor();
 					setHeatMapNoSort();
-					// Deselect all previously selected clusters
-					int[] selectedRowsIndex = table.getSelectedRows();
-					for (Cluster cluster : params.getSelectedAnnotationSet().getClusterMap().values()) {
-						AutoAnnotationUtils.deselectCluster(cluster, selectedNetwork);
-					}
-					// Select newly selected clusters
-					for (int selectedRow : selectedRowsIndex) {
-						Cluster cluster = (Cluster) table.getModel().getValueAt(selectedRow, 0);
-						AutoAnnotationUtils.selectCluster(cluster, selectedNetwork, showHeatmap, executor, dialogTaskManager);
+					int[] selectedRows = table.getSelectedRows();
+					for (int rowIndex=0; rowIndex < table.getRowCount(); rowIndex++) {
+						boolean deselect = true;
+						Cluster cluster = (Cluster) table.getModel().getValueAt(table.convertRowIndexToModel(rowIndex), 0);
+						for (int selectedRow : selectedRows) {
+							if (rowIndex == selectedRow) {
+								// Selects the row and exits (to avoid deselecting it after)
+								AutoAnnotationUtils.selectCluster(cluster, selectedNetwork, showHeatmap, executor, dialogTaskManager);
+								deselect = false;
+								break;
+							}
+						}
+						if (deselect) {
+							AutoAnnotationUtils.deselectCluster(cluster, selectedNetwork);
+						}
 					}
 				}
 			}
