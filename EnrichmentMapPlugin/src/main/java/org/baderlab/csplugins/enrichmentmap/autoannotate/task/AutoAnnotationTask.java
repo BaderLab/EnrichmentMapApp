@@ -152,7 +152,8 @@ public class AutoAnnotationTask extends AbstractTask {
 		EnrichmentMapUtils.setOverrideHeatmapRevalidation(true);
     	AnnotationSet clusters = makeClusters(network, view, annotationSetName);
     	
-    	if (layout) {
+    	if (layout && network.getDefaultNodeTable().getColumn(clusterColumnName).getType() != List.class) {
+    		// Can't group layout with fuzzy clusters
     		taskMonitor.setProgress(0.4);
     		taskMonitor.setStatusMessage("Laying out nodes...");
     		layoutNodes(clusters);
@@ -188,10 +189,9 @@ public class AutoAnnotationTask extends AbstractTask {
 	}
 	
 	private void layoutNodes(AnnotationSet clusters) {
-		Observer observer = new Observer();
 		CyLayoutAlgorithm attributeCircle = layoutManager.getLayout("attributes-layout");
 		TaskIterator iterator = attributeCircle.createTaskIterator(view, attributeCircle.createLayoutContext(), CyLayoutAlgorithm.ALL_NODE_VIEWS, clusterColumnName);
-		syncTaskManager.execute(iterator, observer);
+		syncTaskManager.execute(iterator);
 		CyLayoutAlgorithm force_directed = layoutManager.getLayout("force-directed");
 		for (Cluster cluster : clusters.getClusterMap().values()) {
 			Set<View<CyNode>> nodeViewSet = new HashSet<View<CyNode>>();

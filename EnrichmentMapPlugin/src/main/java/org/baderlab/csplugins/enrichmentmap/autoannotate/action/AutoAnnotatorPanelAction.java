@@ -82,17 +82,14 @@ public class AutoAnnotatorPanelAction extends AbstractCyAction {
 
 	private final CytoPanel cytoPanelWest;
 
-	private CyServiceRegistrar registrar;
 	private CyApplicationManager applicationManager;
 	private CySwingApplication application;
-	private DialogTaskManager dialogTaskManager;
 	private AutoAnnotationPanel inputPanel;
-
-
+	private CyServiceRegistrar registrar;
 
 	public AutoAnnotatorPanelAction(Map<String,String> configProps, CyApplicationManager applicationManager, 
 			CyNetworkViewManager networkViewManager, CySwingApplication application, AnnotationManager annotationManager, 
-			CyServiceRegistrar registrar, DialogTaskManager dialogTaskManager){
+			CyServiceRegistrar registrar){
 
 		super( configProps,  applicationManager,  networkViewManager);
 
@@ -102,14 +99,12 @@ public class AutoAnnotatorPanelAction extends AbstractCyAction {
 		this.applicationManager = applicationManager;
 		this.application = application;
 		this.registrar = registrar;
-		this.dialogTaskManager = dialogTaskManager;
 	}
 
 	public void actionPerformed(ActionEvent event) {
 		if (applicationManager.getCurrentNetworkView() != null) {
 			if(!initialized) {
-				inputPanel = new AutoAnnotationPanel(application, registrar,
-						dialogTaskManager);
+				inputPanel = new AutoAnnotationPanel(application);
 				inputPanel.updateSelectedView(applicationManager.getCurrentNetworkView());
 				AutoAnnotationManager.getInstance().setAnnotationPanel(inputPanel);
 				registrar.registerService(inputPanel,CytoPanelComponent.class, new Properties());
