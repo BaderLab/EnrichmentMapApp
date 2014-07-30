@@ -26,6 +26,7 @@ import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.command.CommandExecutorTaskFactory;
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
@@ -101,6 +102,7 @@ public class CyActivator extends AbstractCyActivator {
 		CyEventHelper eventHelper = getService(bc,CyEventHelper.class);
 		SynchronousTaskManager syncTaskManager = getService(bc, SynchronousTaskManager.class);
 		DialogTaskManager dialogTaskManager = getService(bc, DialogTaskManager.class);
+		CyGroupFactory groupFactory = getService(bc, CyGroupFactory.class);
 		AnnotationManager annotationManager = getService(bc, AnnotationManager.class);
 		AnnotationFactory<ShapeAnnotation> shapeFactory = (AnnotationFactory<ShapeAnnotation>) getService(bc, AnnotationFactory.class, "(type=ShapeAnnotation.class)");    	
 		AnnotationFactory<TextAnnotation> textFactory = (AnnotationFactory<TextAnnotation>) getService(bc, AnnotationFactory.class, "(type=TextAnnotation.class)");
@@ -130,7 +132,7 @@ public class CyActivator extends AbstractCyActivator {
 		//Get an instance of AA manager
 		
 		AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
-		autoAnnotationManager.initialize(cySwingApplicationRef, tableManager, commandExecutor, dialogTaskManager, syncTaskManager, annotationManager, layoutManager, shapeFactory, textFactory);
+		autoAnnotationManager.initialize(cySwingApplicationRef, tableManager, commandExecutor, dialogTaskManager, syncTaskManager, annotationManager, layoutManager, shapeFactory, textFactory, groupFactory);
 		//register network events with manager class
 		registerService(bc, autoAnnotationManager, SetSelectedNetworkViewsListener.class, new Properties());
 		registerService(bc, autoAnnotationManager, ColumnCreatedListener.class, new Properties());

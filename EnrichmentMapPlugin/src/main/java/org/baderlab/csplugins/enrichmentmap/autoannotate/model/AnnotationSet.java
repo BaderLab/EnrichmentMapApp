@@ -72,10 +72,13 @@ public class AnnotationSet {
 			cluster.setCoordinates(new ArrayList<double[]>());
 			for (CyNode node : cluster.getNodes()) {
 				View<CyNode> nodeView = view.getNodeView(node);
-				double x = nodeView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION);
-				double y = nodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
-				double[] coordinates = {x, y};
-				cluster.addCoordinates(coordinates);
+				if (nodeView != null) {
+					// nodeView can be null when group is collapsed
+					double x = nodeView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION);
+					double y = nodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
+					double[] coordinates = {x, y};
+					cluster.addCoordinates(coordinates);
+				}
 			}
 		}
 	}

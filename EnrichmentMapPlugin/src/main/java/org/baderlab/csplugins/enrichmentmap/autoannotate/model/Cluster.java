@@ -1,26 +1,18 @@
 package org.baderlab.csplugins.enrichmentmap.autoannotate.model;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationUtils;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.session.CySession;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.annotations.AnnotationManager;
 import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
 import org.cytoscape.view.presentation.annotations.TextAnnotation;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 /**
  * Created by:
@@ -36,7 +28,7 @@ public class Cluster implements Comparable<Cluster> {
 	
 	private int clusterNumber;
 	private String cloudName;
-	private ArrayList<CyNode> nodes;
+	private CyGroup group;
 	private ArrayList<double[]> coordinates;
 	private int size;
 	private String label;
@@ -48,19 +40,19 @@ public class Cluster implements Comparable<Cluster> {
 	
 	// Used when initializing from a session file
 	public Cluster() {
-		this.nodes = new ArrayList<CyNode>();
 		this.coordinates = new ArrayList<double[]>();
-		this.setWordInfos(new ArrayList<WordInfo>());
+		this.wordInfos = new ArrayList<WordInfo>();
 	}
 	
-	public Cluster(int clusterNumber, AnnotationSet parent) {
+	// Used when creating clusters in the task
+	public Cluster(int clusterNumber, AnnotationSet parent, CyGroup group) {
 		this.clusterNumber = clusterNumber;
 		this.parent = parent;
 		this.cloudName = parent.getCloudNamePrefix() + " Cloud " + clusterNumber;
-		this.nodes = new ArrayList<CyNode>();
+		this.group = group;
 		this.coordinates = new ArrayList<double[]>();
 		this.setWordInfos(new ArrayList<WordInfo>());
-		size = 0;
+		size = 1; // Starts at one because it is created with the group node, which doesn't get added to the group
 		selected = false;
 	}
 	
@@ -76,6 +68,14 @@ public class Cluster implements Comparable<Cluster> {
 		parent = annotationSet;
 	}
 	
+	public boolean isCollapsed() {
+		return group.isCollapsed(parent.getView().getModel());
+	}
+	
+	public CyNode getGroupNode() {
+		return group.getGroupNode();
+	}
+	
 	public ArrayList<double[]> getCoordinates() {
 		return this.coordinates;
 	}
@@ -84,12 +84,16 @@ public class Cluster implements Comparable<Cluster> {
 		this.coordinates = coordinates;
 	}
 	
-	public ArrayList<CyNode> getNodes() {
-		return this.nodes;
+	public List<CyNode> getNodes() {
+		List<CyNode> nodeList = group.getNodeList();
+		nodeList.add(getGroupNode());
+		return nodeList;
 	}
 	
 	public void addNode(CyNode node) {
-		this.nodes.add(node);
+		ArrayList<CyNode> nodeList = new ArrayList<CyNode>();
+		nodeList.add(node);
+		group.addNodes(nodeList);
 		size++;
 	}
 	
@@ -172,11 +176,17 @@ public class Cluster implements Comparable<Cluster> {
 		sessionString += selected + "\n";
 		// Write each node
 		for (int nodeIndex=0 ; nodeIndex < size ; nodeIndex++) {
-			double nodeX = coordinates.get(nodeIndex)[0];
-			double nodeY = coordinates.get(nodeIndex)[1];
-			long nodeID = nodes.get(nodeIndex).getSUID();
-			sessionString += nodeX + "\t" + nodeY + "\t" + nodeID + "\n";
+			long nodeID = getNodes().get(nodeIndex).getSUID();
+			sessionString += nodeID + "\n";
 		}
+		sessionString += "End of nodes\n";
+		// Write coordinates (separately, in case a node has been collapsed)
+		for (int coordinateIndex=0 ; coordinateIndex < getCoordinates().size() ; coordinateIndex++) {
+			double nodeX = coordinates.get(coordinateIndex)[0];
+			double nodeY = coordinates.get(coordinateIndex)[1];
+			sessionString += nodeX + "\t" + nodeY + "\n";
+		}
+		sessionString += "End of coordinates\n";
 		sessionString += "End of cluster\n";
 		return sessionString;
 	}
@@ -187,12 +197,17 @@ public class Cluster implements Comparable<Cluster> {
 		label = text.get(1);
 		selected = Boolean.valueOf(text.get(2));
 		int lineNumber = 3;
-		while (lineNumber < text.size()) {
-			String line = text.get(lineNumber);
+		// Reload nodes
+		for (String line = text.get(lineNumber); line != "End of nodes"; line = text.get(lineNumber)) {
+			// TODO - null pointer here because group hasn't been created
+			addNode(session.getObject(Long.valueOf(line), CyNode.class));
+			lineNumber++;
+		}
+		// Reload coordinates
+		for (String line = text.get(lineNumber); line != "End of coordinates"; line = text.get(lineNumber)) {
 			String[] splitLine = line.split("\t");
 			double[] nodeCoordinates = {Double.valueOf(splitLine[0]), Double.valueOf(splitLine[1])}; 
 			addCoordinates(nodeCoordinates);
-			addNode(session.getObject(Long.valueOf(splitLine[2]), CyNode.class));
 			lineNumber++;
 		}
 		AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();

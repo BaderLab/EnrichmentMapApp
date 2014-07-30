@@ -60,6 +60,8 @@ import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.command.CommandExecutorTaskFactory;
+import org.cytoscape.group.CyGroup;
+import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
@@ -104,6 +106,7 @@ public class AutoAnnotationTask extends AbstractTask {
 	private DialogTaskManager dialogTaskManager;
 	private SynchronousTaskManager syncTaskManager;
 	private CommandExecutorTaskFactory executor;
+	private CyGroupFactory groupFactory;
 
 	public AutoAnnotationTask (CySwingApplication application, 
 			AutoAnnotationManager autoAnnotationManager, 
@@ -124,6 +127,7 @@ public class AutoAnnotationTask extends AbstractTask {
 		this.syncTaskManager = autoAnnotationManager.getSyncTaskManager();
 		this.tableManager = autoAnnotationManager.getTableManager();
 		this.executor = autoAnnotationManager.getCommandExecutor();
+		this.groupFactory = autoAnnotationManager.getGroupFactory();
 	};
 
 	@Override
@@ -162,7 +166,6 @@ public class AutoAnnotationTask extends AbstractTask {
     	
     	taskMonitor.setProgress(0.7);
     	taskMonitor.setStatusMessage("Annotating Clusters...");
-    	// TODO Visualizing clusters separately
     	if (cancelled) return;
     	
 		Long clusterTableSUID = network.getDefaultNetworkTable().getRow(network.getSUID()).get(annotationSetName, Long.class);
@@ -240,8 +243,7 @@ public class AutoAnnotationTask extends AbstractTask {
 		Class<?> columnType = network.getDefaultNodeTable().getColumn(clusterColumnName).getType();
 		for (CyNode node : nodes) {
 			TreeMap<Integer, Cluster> clusterMap = annotationSet.getClusterMap();
-			Cluster cluster = null;
-			// Get coordinates 
+			// Get coordinates from the nodeView
 			View<CyNode> nodeView = networkView.getNodeView(node);
 			double x = nodeView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION);
 			double y = nodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
@@ -250,39 +252,39 @@ public class AutoAnnotationTask extends AbstractTask {
 			if (columnType == Integer.class) { // Discrete clustering
 				Integer clusterNumber;
 				clusterNumber = network.getRow(node).get(clusterColumnName, Integer.class);
-				if (clusterNumber != null) { // empty values (no cluster) are given null
-					if (clusterMap.keySet().contains(clusterNumber)) {
-						// Cluster already exists
-						cluster = clusterMap.get(clusterNumber);
-					} else {
-						// First node in a new cluster
-						cluster = new Cluster(clusterNumber, annotationSet);
-						annotationSet.addCluster(cluster);
-					}
-				} else {
-					continue;
+				if (clusterNumber != null) { // empty values (no cluster) are given null, ignore these
+					addNodeToCluster(clusterNumber, node, coordinates, clusterMap, annotationSet);
 				}
 			} else if (columnType == List.class) { // Fuzzy clustering
 				List<Integer> clusterNumbers = new ArrayList<Integer>();
 				clusterNumbers = network.getRow(node).get(clusterColumnName, List.class);
+				// Iterate over each cluster for the node, and add the node to each cluster
 				for (int i = 0; i < clusterNumbers.size(); i++) {
 					int clusterNumber = clusterNumbers.get(i);
-					if (clusterMap.keySet().contains(clusterNumber)) {
-						// Cluster already exists
-						cluster = clusterMap.get(clusterNumber);
-					} else {
-						// First node in a new cluster
-						cluster = new Cluster(clusterNumber, annotationSet);
-						annotationSet.addCluster(cluster);
-					}
+					addNodeToCluster(clusterNumber, node, coordinates, clusterMap, annotationSet);
 				}
 			} // No other possible columnTypes (since the dropdown only contains these types
-			cluster.addNode(node);
-			cluster.addCoordinates(coordinates);
 		}
 		return annotationSet;
 	}
 	
+	// Creates the cluster if it doesn't exist, adds node/coordinates
+	private void addNodeToCluster(Integer clusterNumber, CyNode node, double[] coordinates,
+			TreeMap<Integer, Cluster> clusterMap, AnnotationSet annotationSet) {
+		Cluster cluster;
+		if (clusterMap.keySet().contains(clusterNumber)) {
+			// Cluster already exists
+			cluster = clusterMap.get(clusterNumber);
+			cluster.addNode(node);
+		} else {
+			// First node in a new cluster, create and register this cluster
+			CyGroup clusterGroup = groupFactory.createGroup(network, node, true);
+			cluster = new Cluster(clusterNumber, annotationSet, clusterGroup);
+			annotationSet.addCluster(cluster);
+		}
+		cluster.addCoordinates(coordinates);
+	}
+
 	private void runWordCloud() {
 		ArrayList<String> commands = new ArrayList<String>();
 		String command = "wordcloud build clusterColumnName=\"" + clusterColumnName + "\" nameColumnName=\""
@@ -305,33 +307,33 @@ public class AutoAnnotationTask extends AbstractTask {
 		String command = "";
 		if (algorithm == "Affinity Propagation Cluster") {
 			command = "cluster ap adjustLoops=true attribute=\"" + edgeAttribute + "\" clusterAttribute=\"__APCluster\" "
-					+ "createGroups=false network=\"current\" "
+					+ "createGroups=false network=current "
 					+ "restoreEdges=false selectedOnly=false showUI=false undirectedEdges=true";
 		} else if (algorithm == "Cluster Fuzzifier") {
 			command = "cluster fuzzifier adjustLoops=false attribute=\"" + edgeAttribute + "\" "
 					+ "clusterAttribute=\"__fuzzifierCluster\" createGroups=false "
-					+ "network=\"current\" "
+					+ "network=current "
 					+ "restoreEdges=false selectedOnly=false showUI=false undirectedEdges=true";
 		} else if (algorithm == "Community cluster (GLay)") {
-			command = "cluster glay clusterAttribute=\"__glayCluster\" createGroups=false network=\"current\""
+			command = "cluster glay clusterAttribute=\"__glayCluster\" createGroups=false network=current"
 					+ " restoreEdges=false selectedOnly=false "
 					+ "showUI=false undirectedEdges=true";
 		} else if (algorithm == "ConnectedComponents Cluster") {
 			command = "cluster connectedcomponents adjustLoops=true attribute=\"" + edgeAttribute + "\" clusterAttribute=\""
-					+ "__ccCluster\" createGroups=false network=\"current\""
+					+ "__ccCluster\" createGroups=false network=current"
 					+ "restoreEdges=false selectedOnly=false showUI=false undirectedEdges=true";
 		} else if (algorithm == "Fuzzy C-Means Cluster") {
 			command = "cluster fcml adjustLoops=false attribute=\"" + edgeAttribute + "\" "
 					+ "clusterAttribute=\"__fcmCluster\" createGroups=false "
-					+ "estimateClusterNumber=true network=\"current\" "
+					+ "estimateClusterNumber=true network=current "
 					+ "restoreEdges=false selectedOnly=false showUI=false undirectedEdges=true";
 		} else if (algorithm == "MCL Cluster") {
 			command = "cluster mcl adjustLoops=false attribute=\"" + edgeAttribute + "\" clusterAttribute=\"__mclCluster\" "
-					+ "createGroups=false network=\"current\" "
+					+ "createGroups=false network=current "
 					+ "restoreEdges=false selectedOnly=false showUI=false undirectedEdges=true";
 		} else if (algorithm == "SCPS Cluster") {
 			command = "cluster scps adjustLoops=false attribute=\"" + edgeAttribute + "\" clusterAttribute=\"__scpsCluster\" "
-					+ "createGroups=false network=\"current\" restoreEdges=false "
+					+ "createGroups=false network=current restoreEdges=false "
 					+ "selectedOnly=false showUI=false undirectedEdges=true";
 		}
 		return command;

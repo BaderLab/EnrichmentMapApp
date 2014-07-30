@@ -11,6 +11,7 @@ import org.cytoscape.application.events.SetSelectedNetworkViewsEvent;
 import org.cytoscape.application.events.SetSelectedNetworkViewsListener;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.command.CommandExecutorTaskFactory;
+import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.events.ColumnCreatedEvent;
 import org.cytoscape.model.events.ColumnCreatedListener;
@@ -76,6 +77,8 @@ public class AutoAnnotationManager implements
 	private AnnotationFactory<ShapeAnnotation> shapeFactory;
 	// creates text labels
 	private AnnotationFactory<TextAnnotation> textFactory;
+	// creates node groups stored in clusters
+	private CyGroupFactory groupFactory;
 	
 	public static AutoAnnotationManager getInstance() {
 		if (instance == null) {
@@ -90,8 +93,9 @@ public class AutoAnnotationManager implements
 
 	public void initialize(CySwingApplication application, CyTableManager tableManager, 
 			CommandExecutorTaskFactory commandExecutor,	DialogTaskManager dialogTaskManager, 
-			SynchronousTaskManager syncTaskManager, AnnotationManager annotationManager, CyLayoutAlgorithmManager layoutManager, 
-			AnnotationFactory<ShapeAnnotation> shapeFactory, AnnotationFactory<TextAnnotation> textFactory) {
+			SynchronousTaskManager syncTaskManager, AnnotationManager annotationManager, 
+			CyLayoutAlgorithmManager layoutManager, AnnotationFactory<ShapeAnnotation> shapeFactory, 
+			AnnotationFactory<TextAnnotation> textFactory, CyGroupFactory groupFactory) {
 		
 		this.application = application;
 		this.tableManager = tableManager;
@@ -102,6 +106,7 @@ public class AutoAnnotationManager implements
 		this.layoutManager = layoutManager;
 		this.shapeFactory = shapeFactory;
 		this.textFactory = textFactory;
+		this.groupFactory = groupFactory;
 	}
 	
 	@Override
@@ -228,5 +233,13 @@ public class AutoAnnotationManager implements
 	
 	public void setTextFactory(AnnotationFactory<TextAnnotation> textFactory) {
 		this.textFactory = textFactory;
+	}
+
+	public CyGroupFactory getGroupFactory() {
+		return groupFactory;
+	}
+
+	public void setGroupFactory(CyGroupFactory groupFactory) {
+		this.groupFactory = groupFactory;
 	}
 }

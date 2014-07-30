@@ -6,7 +6,6 @@
  */
 package org.baderlab.csplugins.enrichmentmap.autoannotate;
 
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -23,8 +22,6 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableManager;
-import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.annotations.AnnotationManager;
@@ -45,8 +42,12 @@ public class AutoAnnotationUtils {
 		// Select the corresponding WordCloud
 		if (!selectedCluster.isSelected()) {
 			selectedCluster.setSelected(true);
-			for (CyNode node : selectedCluster.getNodes()) {
-				network.getRow(node).set(CyNetwork.SELECTED, true);
+			if (selectedCluster.isCollapsed()) {
+				network.getRow(selectedCluster.getGroupNode()).set(CyNetwork.SELECTED, true);
+			} else {
+				for (CyNode node : selectedCluster.getNodes()) {
+					network.getRow(node).set(CyNetwork.SELECTED, true);
+				}
 			}
 			ArrayList<String> commands = new ArrayList<String>();
 			String command = "wordcloud select cloudName=\"" + selectedCluster.getCloudName() + "\"";
@@ -84,8 +85,12 @@ public class AutoAnnotationUtils {
 		if (deselectedCluster.isSelected()) {
 			deselectedCluster.setSelected(false);
 			// Deselect nodes in the cluster
-			for (CyNode node : deselectedCluster.getNodes()) {
-				network.getRow(node).set(CyNetwork.SELECTED, false);
+			if (deselectedCluster.isCollapsed()) {
+				network.getRow(deselectedCluster.getGroupNode()).set(CyNetwork.SELECTED, false);
+			} else {
+				for (CyNode node : deselectedCluster.getNodes()) {
+					network.getRow(node).set(CyNetwork.SELECTED, false);
+				}
 			}
 			// Reset the size/color of the annotations
 			deselectedCluster.getEllipse().setSelected(false);
