@@ -125,7 +125,6 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 
 
 	public AutoAnnotationPanel(CySwingApplication application){
-
 		this.clustersToTables = new HashMap<AnnotationSet, JTable>();
 		this.networkViewToClusterSetDropdown = new HashMap<CyNetworkView, JComboBox>();
 		
@@ -136,6 +135,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 		this.dialogTaskManager = autoAnnotationManager.getDialogTaskManager();
 		
 		setLayout(new BorderLayout());
+		setPreferredSize(new Dimension(500, 500));
 		
 		JPanel inputPanel = createInputPanel(); 
 		
@@ -153,8 +153,6 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 	private JPanel createInputPanel() {
 		JPanel inputPanel = new JPanel();
 		inputPanel.setLayout(new BoxLayout(inputPanel, BoxLayout.Y_AXIS));
-		inputPanel.setPreferredSize(new Dimension(350, 200));
-		inputPanel.setMaximumSize(new Dimension(350, 300));
 		
 		networkLabel = new JLabel("No network selected");
 		Font font = networkLabel.getFont();
@@ -165,9 +163,6 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 		nameColumnDropdown = new JComboBox();
 		// Collapsible panel with advanced cluster options
 		JPanel advancedOptionsPanel = createAdvancedOptionsPanel(); 
-
-		layoutCheckBox = new JCheckBox("Layout nodes by cluster");
-		layoutCheckBox.setSelected(true);
 		
 		// Run the annotation
 		JButton annotateButton = new JButton("Annotate!");
@@ -212,23 +207,20 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 		inputPanel.add(networkLabel);
 		inputPanel.add(nameColumnDropdownLabel);
 		inputPanel.add(nameColumnDropdown);
-		
 		inputPanel.add(advancedOptionsPanel);
-		inputPanel.add(layoutCheckBox);
 		inputPanel.add(annotateButton);
 		
-		advancedOptionsPanel.setAlignmentX(LEFT_ALIGNMENT);
+		networkLabel.setAlignmentX(LEFT_ALIGNMENT);
+		nameColumnDropdownLabel.setAlignmentX(LEFT_ALIGNMENT);
 		nameColumnDropdown.setAlignmentX(LEFT_ALIGNMENT);
-		
+		advancedOptionsPanel.setAlignmentX(LEFT_ALIGNMENT);
 		return inputPanel;
 	}
 	
 	private JPanel createOutputPanel() {
-		JPanel clusterTablePanel = new JPanel();
-		clusterTablePanel.setLayout(new BoxLayout(clusterTablePanel, BoxLayout.Y_AXIS));
-
+		JPanel outputPanel = new JPanel(new BorderLayout());
+		
 		selectionPanel = createSelectionPanel();
-		clusterTablePanel.add(selectionPanel);
 		
 		JButton mergeButton = new JButton("Merge Clusters");
 		ActionListener mergeActionListener = new ActionListener(){
@@ -262,9 +254,18 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 			}
 		};
 		mergeButton.addActionListener(mergeActionListener);
-		clusterTablePanel.add(mergeButton);
 		
-		return clusterTablePanel;
+		JPanel outputBottomPanel = new JPanel();
+		outputBottomPanel.setLayout(new BoxLayout(outputBottomPanel, BoxLayout.PAGE_AXIS));
+		
+		outputBottomPanel.add(mergeButton);
+		outputBottomPanel.add(selectionPanel);
+		
+		mergeButton.setAlignmentX(CENTER_ALIGNMENT);
+		
+		outputPanel.add(outputBottomPanel, BorderLayout.SOUTH);
+		
+		return outputPanel;
 	}
 	
 	private JPanel createBottomButtonPanel() {
@@ -341,36 +342,9 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 	
 	private BasicCollapsiblePanel createAdvancedOptionsPanel() {
 		BasicCollapsiblePanel optionsPanel = new BasicCollapsiblePanel("Advanced Clustering Options");
-
-		JPanel innerPanel = new JPanel(); // To override default layout options of BasicCollapsiblePanel
-		innerPanel.setLayout(new BoxLayout(innerPanel, BoxLayout.PAGE_AXIS));
-
-		JPanel clusterOptionPanel = new JPanel();
-		clusterOptionPanel.setBorder(BorderFactory.createTitledBorder("Clustering Options"));
-
-		// Dropdown with all the available algorithms
-		DefaultComboBoxModel clusterDropdownModel = new DefaultComboBoxModel();
-		for (String algorithm : autoAnnotationManager.getAlgorithmToColumnName().keySet()) {
-			clusterDropdownModel.addElement(algorithm);
-		}
-
-		// To choose a clusterMaker algorithm
-		clusterAlgorithmDropdown = new JComboBox(clusterDropdownModel);
-		clusterAlgorithmDropdown.setPreferredSize(new Dimension(110, 30));
-		// Alternatively, user can choose a clusterColumn themselves (if they've run clusterMaker themselves)
-		clusterColumnDropdown = new JComboBox();
-		clusterColumnDropdown.setPreferredSize(new Dimension(110, 30));
-
-		// Only one dropdown visible at a time
-		clusterAlgorithmDropdown.setVisible(true);
-		clusterColumnDropdown.setVisible(false);
-
-		clusterAlgorithmDropdown.setSelectedItem("MCL Cluster");
-
-		JPanel dropdownPanel = new JPanel();
-		dropdownPanel.add(clusterAlgorithmDropdown);
-		dropdownPanel.add(clusterColumnDropdown);
-
+		
+		JPanel innerPanel = new JPanel(new BorderLayout());
+		
 		defaultButton = new JRadioButton(defaultButtonString);
 		specifyColumnButton = new JRadioButton(specifyColumnButtonString);        
 		defaultButton.addItemListener(new ItemListener() {
@@ -394,8 +368,6 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 			}
 		});
 
-		defaultButton.setSelected(true);
-
 		// Group buttons together to make them mutually exclusive
 		radioButtonGroup = new ButtonGroup();
 		radioButtonGroup.add(defaultButton);
@@ -406,18 +378,53 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 		radioButtonPanel.add(defaultButton);
 		radioButtonPanel.add(specifyColumnButton);
 
-		clusterOptionPanel.add(radioButtonPanel);
-		clusterOptionPanel.add(dropdownPanel);
+		// Dropdown with all the available algorithms
+		DefaultComboBoxModel clusterDropdownModel = new DefaultComboBoxModel();
+		for (String algorithm : autoAnnotationManager.getAlgorithmToColumnName().keySet()) {
+			clusterDropdownModel.addElement(algorithm);
+		}
 
-		optionsPanel.add(clusterOptionPanel);
-		optionsPanel.setMaximumSize(new Dimension(350, optionsPanel.getHeight()));
+		// To choose a clusterMaker algorithm
+		clusterAlgorithmDropdown = new JComboBox(clusterDropdownModel);
+		clusterAlgorithmDropdown.setPreferredSize(new Dimension(135, 30));
+		// Alternatively, user can choose a cluster column themselves (if they've run clusterMaker themselves)
+		clusterColumnDropdown = new JComboBox();
+		clusterColumnDropdown.setPreferredSize(new Dimension(135, 30));
+
+		// Only one dropdown visible at a time
+		clusterAlgorithmDropdown.setVisible(true);
+		clusterColumnDropdown.setVisible(false);
+
+		clusterAlgorithmDropdown.setSelectedItem("MCL Cluster");
+
+		JPanel dropdownPanel = new JPanel();
+		dropdownPanel.add(clusterAlgorithmDropdown);
+		dropdownPanel.add(clusterColumnDropdown);
+		
+		// By default use clusterMaker defaults
+		defaultButton.setSelected(true);
+		
+		// By default layout nodes by cluster
+		layoutCheckBox = new JCheckBox("Layout nodes by cluster");
+		layoutCheckBox.setSelected(true);
+		
+		JPanel clusterOptionPanel = new JPanel(new BorderLayout());
+		clusterOptionPanel.setBorder(BorderFactory.createTitledBorder("ClusterMaker Options"));
+		clusterOptionPanel.add(radioButtonPanel, BorderLayout.WEST);
+		clusterOptionPanel.add(dropdownPanel, BorderLayout.EAST);
+
+		innerPanel.add(clusterOptionPanel, BorderLayout.NORTH);
+		innerPanel.add(layoutCheckBox, BorderLayout.SOUTH);
+		
+		optionsPanel.add(innerPanel);
+		
 		return optionsPanel;
 	}
 
 	private BasicCollapsiblePanel createSelectionPanel() {
 		BasicCollapsiblePanel selectionPanel = new BasicCollapsiblePanel("Autofocus Preferences");
 
-		JPanel innerPanel = new JPanel(); // To override default layout options of BasicCollapsiblePanel
+		JPanel innerPanel = new JPanel(new BorderLayout()); // To override default layout options of BasicCollapsiblePanel
 
 		JPanel labelPanel = new JPanel();
 		JLabel label = new JLabel("Show on selection:");
@@ -448,12 +455,10 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 		radioButtonPanel.add(heatmapButton);
 		radioButtonPanel.add(wordCloudButton);
 
-		innerPanel.add(labelPanel);
-		innerPanel.add(radioButtonPanel);
+		innerPanel.add(labelPanel, BorderLayout.WEST);
+		innerPanel.add(radioButtonPanel, BorderLayout.EAST);
 
 		selectionPanel.add(innerPanel);
-
-		selectionPanel.setMaximumSize(new Dimension(370, selectionPanel.getHeight()));
 
 		return selectionPanel;
 	}
@@ -478,8 +483,8 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 		model.addColumn("Number of nodes");
 
 		final JTable table = new JTable(model); // Final to be able to use inside of listener
-		table.setPreferredScrollableViewportSize(new Dimension(350, 250));
-		table.getColumnModel().getColumn(0).setPreferredWidth(220);
+		table.setPreferredScrollableViewportSize(new Dimension(320, 250));
+		table.getColumnModel().getColumn(0).setPreferredWidth(210);
 		table.getColumnModel().getColumn(1).setPreferredWidth(100);
 
 		model.addTableModelListener(new TableModelListener() { // Update the label value
@@ -596,7 +601,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 				}
 			}
 		});
-		outputPanel.add(clusterSetDropdown, BorderLayout.PAGE_START);
+		outputPanel.add(clusterSetDropdown, BorderLayout.NORTH);
 		networkViewToClusterSetDropdown.put(view, clusterSetDropdown);
 
 		selectedView = view;
