@@ -2,6 +2,8 @@ package org.baderlab.csplugins.enrichmentmap.autoannotate.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationUtils;
@@ -29,6 +31,7 @@ public class Cluster implements Comparable<Cluster> {
 	private int clusterNumber;
 	private String cloudName;
 	private CyGroup group;
+	private ArrayList<CyNode> nodeList;
 	private ArrayList<double[]> coordinates;
 	private int size;
 	private String label;
@@ -42,17 +45,26 @@ public class Cluster implements Comparable<Cluster> {
 	public Cluster() {
 		this.coordinates = new ArrayList<double[]>();
 		this.wordInfos = new ArrayList<WordInfo>();
+		this.nodeList = new ArrayList<CyNode>();
+		size = 1;
 	}
 	
 	// Used when creating clusters in the task
 	public Cluster(int clusterNumber, AnnotationSet parent, CyGroup group) {
+		this(clusterNumber, parent);
+		this.group = group;
+		// Group node doesn't get added
+		size++;
+	}
+	
+	public Cluster(int clusterNumber, AnnotationSet parent) {
 		this.clusterNumber = clusterNumber;
 		this.parent = parent;
 		this.cloudName = parent.getCloudNamePrefix() + " Cloud " + clusterNumber;
-		this.group = group;
 		this.coordinates = new ArrayList<double[]>();
-		this.setWordInfos(new ArrayList<WordInfo>());
-		size = 1; // Starts at one because it is created with the group node, which doesn't get added to the group
+		this.wordInfos = new ArrayList<WordInfo>();
+		this.nodeList = new ArrayList<CyNode>();
+		size = 0; // Starts at one because it is created with the group node, which doesn't get added to the group
 		selected = false;
 	}
 	
@@ -69,11 +81,26 @@ public class Cluster implements Comparable<Cluster> {
 	}
 	
 	public boolean isCollapsed() {
-		return group.isCollapsed(parent.getView().getModel());
+		if (group != null) {
+			return group.isCollapsed(parent.getView().getModel());
+		} return false;
 	}
 	
 	public CyNode getGroupNode() {
-		return group.getGroupNode();
+		if (group != null) {
+			return group.getGroupNode();
+		}
+		return null;
+	}
+	
+	public CyGroup getGroup()  {
+		return group;
+	}
+	
+	public void destroyGroup() {
+		if (group != null) { // user could have destroyed the group themselves
+			AutoAnnotationManager.getInstance().getGroupManager().destroyGroup(group);
+		}
 	}
 	
 	public ArrayList<double[]> getCoordinates() {
@@ -85,15 +112,22 @@ public class Cluster implements Comparable<Cluster> {
 	}
 	
 	public List<CyNode> getNodes() {
-		List<CyNode> nodeList = group.getNodeList();
-		nodeList.add(getGroupNode());
+		if (group != null) {
+			// Have to also include the group's nodeList
+			List<CyNode> nodeListWithGroupNode = (List<CyNode>) nodeList.clone();
+			nodeListWithGroupNode.add(getGroupNode());
+			return nodeListWithGroupNode;
+		}
 		return nodeList;
 	}
 	
 	public void addNode(CyNode node) {
-		ArrayList<CyNode> nodeList = new ArrayList<CyNode>();
+		if (group != null) {
+			ArrayList<CyNode> nodeToAdd = new ArrayList<CyNode>();
+			nodeToAdd.add(node);
+			group.addNodes(nodeToAdd);
+		}
 		nodeList.add(node);
-		group.addNodes(nodeList);
 		size++;
 	}
 	
@@ -174,6 +208,14 @@ public class Cluster implements Comparable<Cluster> {
 		sessionString += clusterNumber + "\n";
 		sessionString += label + "\n";
 		sessionString += selected + "\n";
+		// Write parameters of the annotations to find them after
+			// Ellipse
+		sessionString += ellipse.getArgMap().get("x") + "\t" 
+					  + ellipse.getArgMap().get("y") + "\n";
+			// Text
+		sessionString += textAnnotation.getArgMap().get("x") + "\t"
+					  + textAnnotation.getArgMap().get("y") + "\n";
+		
 		// Write each node
 		for (int nodeIndex=0 ; nodeIndex < size ; nodeIndex++) {
 			long nodeID = getNodes().get(nodeIndex).getSUID();
@@ -196,29 +238,64 @@ public class Cluster implements Comparable<Cluster> {
 		cloudName = parent.getCloudNamePrefix() + " Cloud " + clusterNumber;
 		label = text.get(1);
 		selected = Boolean.valueOf(text.get(2));
-		int lineNumber = 3;
+		
+		// Load the parameters of the annotations
+		String[] ellipseParameters = text.get(3).split("\t");
+		String ellipseX = ellipseParameters[0];
+		String ellipseY = ellipseParameters[1];
+		String[] textParameters = text.get(4).split("\t");
+		String textX = textParameters[0];
+		String textY = textParameters[1];
+		
+		// Create the group for the first node
+		String groupNodeLine = text.get(5);
+		CyNode groupNode = session.getObject(Long.valueOf(groupNodeLine), CyNode.class);
+		group = AutoAnnotationManager.getInstance().getGroupFactory().createGroup(parent.getView().getModel(), groupNode, false);
+		
+		int lineNumber = 6;
 		// Reload nodes
-		for (String line = text.get(lineNumber); line != "End of nodes"; line = text.get(lineNumber)) {
-			// TODO - null pointer here because group hasn't been created
+		String line = text.get(lineNumber);
+		while (!line.equals("End of nodes")) {
 			addNode(session.getObject(Long.valueOf(line), CyNode.class));
 			lineNumber++;
+			line = text.get(lineNumber);
 		}
+		lineNumber++;
+		line = text.get(lineNumber);
 		// Reload coordinates
-		for (String line = text.get(lineNumber); line != "End of coordinates"; line = text.get(lineNumber)) {
+		while (!line.equals("End of coordinates")) {
 			String[] splitLine = line.split("\t");
 			double[] nodeCoordinates = {Double.valueOf(splitLine[0]), Double.valueOf(splitLine[1])}; 
 			addCoordinates(nodeCoordinates);
 			lineNumber++;
+			line = text.get(lineNumber);
 		}
+		// Try to find annotation by coordinates
+		// TODO - if annotations have been moved then it redraws all of them
 		AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
 		AnnotationManager annotationManager = autoAnnotationManager.getAnnotationManager();
-		AnnotationFactory<ShapeAnnotation> shapeFactory = autoAnnotationManager.getShapeFactory();
-		AnnotationFactory<TextAnnotation> textFactory = autoAnnotationManager.getTextFactory();
 		for (Annotation annotation : annotationManager.getAnnotations(parent.getView())) {
-			// Get rid of previously showing annotations (if any)
-			annotation.removeAnnotation();
+			Map<String, String> annotationParameters = annotation.getArgMap();
+			String annotationX = annotationParameters.get("x");
+			String annotationY = annotationParameters.get("y");
+			if (annotationX.equals(ellipseX) &&
+				annotationY.equals(ellipseY)) {
+				ellipse = (ShapeAnnotation) annotation;
+				if (textAnnotation != null) break;
+			} else if (annotationX.equals(textX) &&
+					annotationY.equals(textY)) {
+				textAnnotation = (TextAnnotation) annotation;
+				if (ellipse != null) break;
+			}
 		}
-		AutoAnnotationUtils.drawCluster(this, parent.getView(), shapeFactory, textFactory, annotationManager);
+		if (ellipse == null && textAnnotation == null) {
+			// Annotation was moved after save, cluster needs to be redrawn
+			AnnotationFactory<ShapeAnnotation> shapeFactory = autoAnnotationManager.getShapeFactory();
+			AnnotationFactory<TextAnnotation> textFactory = autoAnnotationManager.getTextFactory();
+			AutoAnnotationUtils.drawCluster(this, parent.getView(), shapeFactory, textFactory, annotationManager);
+		} else if (ellipse != null && textAnnotation != null) {
+			erase();
+		}
 	}
 	
 	@Override

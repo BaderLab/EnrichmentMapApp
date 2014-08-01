@@ -18,6 +18,8 @@ import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.command.CommandExecutorTaskFactory;
+import org.cytoscape.group.CyGroup;
+import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
@@ -120,22 +122,20 @@ public class AutoAnnotationUtils {
 
 	public static void drawCluster(Cluster cluster, CyNetworkView view, AnnotationFactory<ShapeAnnotation> shapeFactory, 
 			AnnotationFactory<TextAnnotation> textFactory, AnnotationManager annotationManager) {
-		// Constants used in making the appearance prettier
+
 		double zoom = view.getVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR);
 
-    	// Find the edges of the annotation
+    	// Find the edges of the cluster
 		double xmin = 100000000;
 		double ymin = 100000000;
 		double xmax = -100000000;
 		double ymax = -100000000;
-		
 		for (double[] coordinates : cluster.getCoordinates()) {
 			xmin = coordinates[0] < xmin ? coordinates[0] : xmin;
 			xmax = coordinates[0] > xmax ? coordinates[0] : xmax;
 			ymin = coordinates[1] < ymin ? coordinates[1] : ymin;
 			ymax = coordinates[1] > ymax ? coordinates[1] : ymax;
 		}
-		
 		double width = (xmax - xmin);
 		width = width > min_size ? width : min_size;
 		double height = (ymax - ymin);
@@ -260,4 +260,19 @@ public class AutoAnnotationUtils {
 		return label;
 	}
 
+	public static void registerClusterGroups(Cluster cluster, CyNetwork selectedNetwork,
+											CyGroupManager groupManager) {
+		CyGroup group = cluster.getGroup();
+		if (group != null) {
+			group.addGroupToNetwork(selectedNetwork);
+		}
+	}
+
+	public static void unregisterClusterGroups(Cluster cluster,
+			CyNetwork selectedNetwork, CyGroupManager groupManager) {
+		CyGroup group = cluster.getGroup();
+		if (group != null) {
+			group.removeGroupFromNetwork(selectedNetwork);
+		}
+	}
 }

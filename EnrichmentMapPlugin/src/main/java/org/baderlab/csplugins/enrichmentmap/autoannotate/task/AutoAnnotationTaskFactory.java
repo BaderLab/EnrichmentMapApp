@@ -1,5 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap.autoannotate.task;
 
+import java.awt.BorderLayout;
+
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.model.CyTableManager;
@@ -25,11 +27,12 @@ public class AutoAnnotationTaskFactory implements TaskFactory {
 	private String nameColumnName;
 	private String algorithm;
 	private boolean layout;
+	private boolean groups;
 	private String annotationSetName;
 	
 	public AutoAnnotationTaskFactory(CySwingApplication application, AutoAnnotationManager autoAnnotationManager, 
 			CyNetworkView selectedView, String clusterColumnName, String nameColumnName,  String algorithm,
-			boolean layout, String annotationSetName) {
+			boolean layout, boolean groups, String annotationSetName) {
 		this.application = application;
 		this.autoAnnotationManager = autoAnnotationManager;
 		this.selectedView = selectedView;
@@ -37,12 +40,13 @@ public class AutoAnnotationTaskFactory implements TaskFactory {
 		this.nameColumnName = nameColumnName;
 		this.algorithm = algorithm;
 		this.layout = layout;
+		this.groups = groups;
 		this.annotationSetName = annotationSetName;
 	}
 	
 	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new AutoAnnotationTask(application, autoAnnotationManager, selectedView, clusterColumnName, 
-				nameColumnName, algorithm, layout, annotationSetName));
+				nameColumnName, algorithm, layout, groups, annotationSetName));
 	}
 	public boolean isReady() {
 		return true;

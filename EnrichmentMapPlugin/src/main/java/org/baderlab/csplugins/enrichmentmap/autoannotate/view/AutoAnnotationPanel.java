@@ -54,6 +54,7 @@ import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.command.CommandExecutorTaskFactory;
+import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
@@ -113,14 +114,15 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 	private AutoAnnotationManager autoAnnotationManager;
 	private AutoAnnotationParameters params;
 
-	// Having them as fields lets me hide them when not needed
-
 	private BasicCollapsiblePanel selectionPanel;
 
 	private JCheckBox layoutCheckBox;
+	private JCheckBox groupsCheckBox;
 
 	private CySwingApplication application;
 	private DialogTaskManager dialogTaskManager;
+	private CyGroupManager groupManager;
+
 
 
 
@@ -133,6 +135,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 
 		this.application = application;
 		this.dialogTaskManager = autoAnnotationManager.getDialogTaskManager();
+		this.groupManager = autoAnnotationManager.getGroupManager();
 		
 		setLayout(new BorderLayout());
 		setPreferredSize(new Dimension(500, 500));
@@ -192,9 +195,9 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 						autoAnnotationManager.getNetworkViewToAutoAnnotationParameters().put(selectedView, params);
 					}
 					String annotationSetName = "Annotation Set " + String.valueOf(params.getAnnotationSetNumber());
-					AutoAnnotationTaskFactory autoAnnotatorTaskFactory = new AutoAnnotationTaskFactory(application, autoAnnotationManager, 
-							selectedView, clusterColumnName, nameColumnName, algorithm, layoutCheckBox.isSelected(),
-							annotationSetName);
+					AutoAnnotationTaskFactory autoAnnotatorTaskFactory = new AutoAnnotationTaskFactory(application, 
+							autoAnnotationManager, selectedView, clusterColumnName, nameColumnName, algorithm, 
+							layoutCheckBox.isSelected(), groupsCheckBox.isSelected(), annotationSetName);
 					dialogTaskManager.execute(autoAnnotatorTaskFactory.createTaskIterator());
 					// Increment the counter used to name the annotation sets
 					params.incrementAnnotationSetNumber();
@@ -248,7 +251,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 					String nameColumnName = annotationSet.getNameColumnName();
 					clearButton.doClick();
 					AutoAnnotationTaskFactory autoAnnotatorTaskFactory = new AutoAnnotationTaskFactory(application, autoAnnotationManager, selectedView, 
-							clusterColumnName, nameColumnName, "", false, annotationSetName);
+							clusterColumnName, nameColumnName, "", false, false, annotationSetName);
 					dialogTaskManager.execute(autoAnnotatorTaskFactory.createTaskIterator());
 				}
 			}
@@ -408,13 +411,21 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 		layoutCheckBox = new JCheckBox("Layout nodes by cluster");
 		layoutCheckBox.setSelected(true);
 		
+		// By default layout nodes by cluster
+		groupsCheckBox = new JCheckBox("Create groups (metanodes) for clusters *BUGGY*");
+		groupsCheckBox.setSelected(false);
+		
+		JPanel checkBoxPanel = new JPanel(new BorderLayout());
+		checkBoxPanel.add(layoutCheckBox, BorderLayout.NORTH);
+		checkBoxPanel.add(groupsCheckBox, BorderLayout.SOUTH);
+		
 		JPanel clusterOptionPanel = new JPanel(new BorderLayout());
 		clusterOptionPanel.setBorder(BorderFactory.createTitledBorder("ClusterMaker Options"));
 		clusterOptionPanel.add(radioButtonPanel, BorderLayout.WEST);
 		clusterOptionPanel.add(dropdownPanel, BorderLayout.EAST);
-
+		
 		innerPanel.add(clusterOptionPanel, BorderLayout.NORTH);
-		innerPanel.add(layoutCheckBox, BorderLayout.SOUTH);
+		innerPanel.add(checkBoxPanel, BorderLayout.SOUTH);
 		
 		optionsPanel.add(innerPanel);
 		
@@ -560,9 +571,10 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 		clusterTableScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		outputPanel.add(clusterTableScroll, BorderLayout.CENTER);
 		clustersToTables.put(annotationSet, clusterTable);
-
+		// Add the annotation set to the dropdown
 		JComboBox clusterSetDropdown = networkViewToClusterSetDropdown.get(clusterView);
 		clusterSetDropdown.addItem(annotationSet);
+		// Select the most recently added annotation set
 		clusterSetDropdown.setSelectedIndex(clusterSetDropdown.getItemCount()-1);
 	}
 
@@ -577,9 +589,12 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 					// Update the selected annotation set
 					annotationSet.updateCoordinates();
 					String annotationSetName = annotationSet.getCloudNamePrefix();
+					// Get the table where WordCloud results are stored
 					Long clusterTableSUID = selectedNetwork.getDefaultNetworkTable().getRow(selectedNetwork.getSUID()).get(annotationSetName, Long.class);
 					CyTable clusterSetTable = autoAnnotationManager.getTableManager().getTable(clusterTableSUID);
 					for (Cluster cluster : annotationSet.getClusterMap().values()) {
+						// Register the groups for this cluster
+						AutoAnnotationUtils.registerClusterGroups(cluster, selectedNetwork, groupManager);
 						// Update the text label of the selected cluster
 						AutoAnnotationUtils.updateClusterLabel(cluster, selectedNetwork, annotationSetName, clusterSetTable);
 						// Redraw selected clusters
@@ -591,11 +606,14 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 					clustersToTables.get(annotationSet).getParent().getParent().setVisible(true); // Show selected table
 					updateUI();
 				} else if (itemEvent.getStateChange() == ItemEvent.DESELECTED) {
-					// Hide unselected clusters
 					AnnotationSet clusters = (AnnotationSet) itemEvent.getItem();
 					for (Cluster cluster : clusters.getClusterMap().values()) {
+						// Un-register the groups for deselected clusters
+						AutoAnnotationUtils.unregisterClusterGroups(cluster, selectedNetwork, groupManager);
+						// Hide the annotations
 						cluster.erase();
 					}
+					// Hide the table for deselected clusters
 					clustersToTables.get(clusters).getParent().getParent().setVisible(false);
 					updateUI();
 				}
@@ -702,6 +720,13 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 			clusterTable.getParent().remove(clusterTable);
 			networkViewToClusterSetDropdown.remove(view);
 		}
+		for (AnnotationSet annotationSet : params.getAnnotationSets()) {
+			for (Cluster cluster : annotationSet.getClusterMap().values()) {
+				// Bug with loading groups in session
+				cluster.destroyGroup();
+			}
+		}
+		
 		selectedView = null;
 		selectedNetwork = null;
 		params = null;

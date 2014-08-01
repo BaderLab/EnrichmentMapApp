@@ -12,6 +12,7 @@ import org.cytoscape.application.events.SetSelectedNetworkViewsListener;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.command.CommandExecutorTaskFactory;
 import org.cytoscape.group.CyGroupFactory;
+import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.events.ColumnCreatedEvent;
 import org.cytoscape.model.events.ColumnCreatedListener;
@@ -79,6 +80,8 @@ public class AutoAnnotationManager implements
 	private AnnotationFactory<TextAnnotation> textFactory;
 	// creates node groups stored in clusters
 	private CyGroupFactory groupFactory;
+	// used to destroy the groups
+	private CyGroupManager groupManager;
 	
 	public static AutoAnnotationManager getInstance() {
 		if (instance == null) {
@@ -95,7 +98,8 @@ public class AutoAnnotationManager implements
 			CommandExecutorTaskFactory commandExecutor,	DialogTaskManager dialogTaskManager, 
 			SynchronousTaskManager syncTaskManager, AnnotationManager annotationManager, 
 			CyLayoutAlgorithmManager layoutManager, AnnotationFactory<ShapeAnnotation> shapeFactory, 
-			AnnotationFactory<TextAnnotation> textFactory, CyGroupFactory groupFactory) {
+			AnnotationFactory<TextAnnotation> textFactory, CyGroupFactory groupFactory,
+			CyGroupManager groupManager) {
 		
 		this.application = application;
 		this.tableManager = tableManager;
@@ -107,6 +111,7 @@ public class AutoAnnotationManager implements
 		this.shapeFactory = shapeFactory;
 		this.textFactory = textFactory;
 		this.groupFactory = groupFactory;
+		this.groupManager = groupManager;
 	}
 	
 	@Override
@@ -155,40 +160,20 @@ public class AutoAnnotationManager implements
 		return application;
 	}
 
-	public void setApplication(CySwingApplication application) {
-		this.application = application;
-	}
-
 	public CyTableManager getTableManager() {
 		return tableManager;
-	}
-	
-	public void setTableManager(CyTableManager tableManager) {
-		this.tableManager = tableManager;
 	}
 
 	public CommandExecutorTaskFactory getCommandExecutor() {
 		return commandExecutor;
-	}
-	
-	public void setCommandExecutor(CommandExecutorTaskFactory commandExecutor) {
-		this.commandExecutor = commandExecutor;
 	}
 
 	public DialogTaskManager getDialogTaskManager() {
 		return dialogTaskManager;
 	}
 
-	public void setDialogTaskManager(DialogTaskManager dialogTaskManager) {
-		this.dialogTaskManager = dialogTaskManager;
-	}
-
 	public SynchronousTaskManager getSyncTaskManager() {
 		return syncTaskManager;
-	}
-
-	public void setSyncTaskManager(SynchronousTaskManager syncTaskManager) {
-		this.syncTaskManager = syncTaskManager;
 	}
 
 	public AutoAnnotationPanel getAnnotationPanel() {
@@ -206,40 +191,24 @@ public class AutoAnnotationManager implements
 	public AnnotationManager getAnnotationManager() {
 		return annotationManager;
 	}
-	
-	public void setAnnotationManager(AnnotationManager annotationManager) {
-		this.annotationManager = annotationManager;
-	}
 
 	public CyLayoutAlgorithmManager getLayoutManager() {
 		return layoutManager;
 	}
 
-	public void setLayoutManager(CyLayoutAlgorithmManager layoutManager) {
-		this.layoutManager = layoutManager;
-	}
-
 	public AnnotationFactory<ShapeAnnotation> getShapeFactory() {
 		return shapeFactory;
-	}
-	
-	public void setShapeFactory(AnnotationFactory<ShapeAnnotation> shapeFactory) {
-		this.shapeFactory = shapeFactory;
 	}
 
 	public AnnotationFactory<TextAnnotation> getTextFactory() {
 		return textFactory;
 	}
 	
-	public void setTextFactory(AnnotationFactory<TextAnnotation> textFactory) {
-		this.textFactory = textFactory;
-	}
-
 	public CyGroupFactory getGroupFactory() {
 		return groupFactory;
 	}
 
-	public void setGroupFactory(CyGroupFactory groupFactory) {
-		this.groupFactory = groupFactory;
+	public CyGroupManager getGroupManager() {
+		return groupManager;
 	}
 }

@@ -1,13 +1,10 @@
 package org.baderlab.csplugins.enrichmentmap.actions;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -20,8 +17,6 @@ import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationParameters;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.model.AnnotationSet;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
@@ -126,7 +121,6 @@ public class EnrichmentMapSessionAction implements SessionAboutToBeSavedListener
 				File prop_file = pStateFileList.get(i);
 
 				// Load the AutoAnnotation parameters
-				// TODO use SUIDs to load things!!!!!
 				// considerably simpler so doesn't require as much parsing of the file name 
 				if (prop_file.getName().contains("_AAPARAMS.txt")) {
 					CySession session = e.getLoadedSession();
