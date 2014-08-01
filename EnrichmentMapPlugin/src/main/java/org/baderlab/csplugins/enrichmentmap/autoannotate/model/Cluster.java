@@ -1,6 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap.autoannotate.model;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -208,13 +209,20 @@ public class Cluster implements Comparable<Cluster> {
 		sessionString += clusterNumber + "\n";
 		sessionString += label + "\n";
 		sessionString += selected + "\n";
-		// Write parameters of the annotations to find them after
+		sessionString += (group == null) + "\n";
+		// Write parameters of the annotations to recreate them after
 			// Ellipse
-		sessionString += ellipse.getArgMap().get("x") + "\t" 
-					  + ellipse.getArgMap().get("y") + "\n";
+		Map<String, String> ellipseArgs = ellipse.getArgMap();
+		for (String property : ellipseArgs.keySet()) {
+			sessionString += property + "\t" + ellipseArgs.get(property) + "\n";
+		}
 			// Text
-		sessionString += textAnnotation.getArgMap().get("x") + "\t"
-					  + textAnnotation.getArgMap().get("y") + "\n";
+		sessionString += "Text Annotations\n";
+		Map<String, String> textArgs = textAnnotation.getArgMap();
+		for (String property : textArgs.keySet()) {
+			sessionString += property + "\t" + textArgs.get(property) + "\n";
+		}
+		sessionString += "End of annotations\n";
 		
 		// Write each node
 		for (int nodeIndex=0 ; nodeIndex < size ; nodeIndex++) {
@@ -238,28 +246,46 @@ public class Cluster implements Comparable<Cluster> {
 		cloudName = parent.getCloudNamePrefix() + " Cloud " + clusterNumber;
 		label = text.get(1);
 		selected = Boolean.valueOf(text.get(2));
+		boolean useGroups = Boolean.valueOf(text.get(3));
 		
 		// Load the parameters of the annotations
-		String[] ellipseParameters = text.get(3).split("\t");
-		String ellipseX = ellipseParameters[0];
-		String ellipseY = ellipseParameters[1];
-		String[] textParameters = text.get(4).split("\t");
-		String textX = textParameters[0];
-		String textY = textParameters[1];
+		int lineNumber = 4;
+		String line = text.get(lineNumber);
+		Map<String, String> ellipseMap = new HashMap<String, String>();
+		while (!line.equals("Text Annotations")) {
+			String[] splitLine = line.split("\t");
+			ellipseMap.put(splitLine[0], splitLine[1]);
+			lineNumber++;
+			line = text.get(lineNumber);
+		}
+		lineNumber++;
+		line = text.get(lineNumber);
+		Map<String, String> textMap = new HashMap<String, String>();
+		while (!line.equals("End of annotations")) {
+			String[] splitLine = line.split("\t");
+			textMap.put(splitLine[0], splitLine[1]);
+			lineNumber++;
+			line = text.get(lineNumber);
+		}
+		lineNumber++;
+		line = text.get(lineNumber);
 		
 		// Create the group for the first node
-		String groupNodeLine = text.get(5);
-		CyNode groupNode = session.getObject(Long.valueOf(groupNodeLine), CyNode.class);
-		group = AutoAnnotationManager.getInstance().getGroupFactory().createGroup(parent.getView().getModel(), groupNode, false);
+		if (useGroups) {
+			String groupNodeLine = text.get(lineNumber);
+			CyNode groupNode = session.getObject(Long.valueOf(groupNodeLine), CyNode.class);
+			group = AutoAnnotationManager.getInstance().getGroupFactory().createGroup(parent.getView().getModel(), groupNode, false);
+			lineNumber++;
+		}
 		
-		int lineNumber = 6;
 		// Reload nodes
-		String line = text.get(lineNumber);
+		line = text.get(lineNumber);
 		while (!line.equals("End of nodes")) {
 			addNode(session.getObject(Long.valueOf(line), CyNode.class));
 			lineNumber++;
 			line = text.get(lineNumber);
 		}
+		// Skip the end line
 		lineNumber++;
 		line = text.get(lineNumber);
 		// Reload coordinates
@@ -269,32 +295,6 @@ public class Cluster implements Comparable<Cluster> {
 			addCoordinates(nodeCoordinates);
 			lineNumber++;
 			line = text.get(lineNumber);
-		}
-		// Try to find annotation by coordinates
-		// TODO - if annotations have been moved then it redraws all of them
-		AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
-		AnnotationManager annotationManager = autoAnnotationManager.getAnnotationManager();
-		for (Annotation annotation : annotationManager.getAnnotations(parent.getView())) {
-			Map<String, String> annotationParameters = annotation.getArgMap();
-			String annotationX = annotationParameters.get("x");
-			String annotationY = annotationParameters.get("y");
-			if (annotationX.equals(ellipseX) &&
-				annotationY.equals(ellipseY)) {
-				ellipse = (ShapeAnnotation) annotation;
-				if (textAnnotation != null) break;
-			} else if (annotationX.equals(textX) &&
-					annotationY.equals(textY)) {
-				textAnnotation = (TextAnnotation) annotation;
-				if (ellipse != null) break;
-			}
-		}
-		if (ellipse == null && textAnnotation == null) {
-			// Annotation was moved after save, cluster needs to be redrawn
-			AnnotationFactory<ShapeAnnotation> shapeFactory = autoAnnotationManager.getShapeFactory();
-			AnnotationFactory<TextAnnotation> textFactory = autoAnnotationManager.getTextFactory();
-			AutoAnnotationUtils.drawCluster(this, parent.getView(), shapeFactory, textFactory, annotationManager);
-		} else if (ellipse != null && textAnnotation != null) {
-			erase();
 		}
 	}
 	

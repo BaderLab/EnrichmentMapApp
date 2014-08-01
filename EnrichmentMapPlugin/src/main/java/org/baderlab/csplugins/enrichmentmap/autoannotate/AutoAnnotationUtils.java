@@ -11,6 +11,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
+import javax.swing.JOptionPane;
+
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.WordInfo;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.task.Observer;
@@ -51,9 +53,15 @@ public class AutoAnnotationUtils {
 				Observer observer = new Observer();
 				TaskIterator task = executor.createTaskIterator(commands, null);
 				dialogTaskManager.execute(task, observer);
+				int count = 0;
 				while (! observer.isFinished()) {
 					try {
 						Thread.sleep(1);
+						count++;
+						if (count > 5000) {
+							JOptionPane.showMessageDialog(AutoAnnotationManager.getInstance().getAnnotationPanel(), "Problem with WordCloud");
+							return;
+						}
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}

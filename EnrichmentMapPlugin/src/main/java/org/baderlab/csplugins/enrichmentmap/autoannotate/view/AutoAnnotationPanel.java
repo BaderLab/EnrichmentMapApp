@@ -459,7 +459,8 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 				}
 			}
 		});
-		heatmapButton.setSelected(true);
+		heatmapButton.setSelected(false);
+		wordCloudButton.setSelected(true);
 
 		JPanel radioButtonPanel = new JPanel();
 		radioButtonPanel.setLayout(new BoxLayout(radioButtonPanel, BoxLayout.PAGE_AXIS));

@@ -13,6 +13,7 @@ import org.baderlab.csplugins.enrichmentmap.autoannotate.model.AnnotationSet;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
 import org.cytoscape.session.CySession;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationManager;
 
 /* 
@@ -87,7 +88,11 @@ public class AutoAnnotationParameters {
 
 	public void load(String fullText, CySession session) {
 		String[] fileLines = fullText.split("\n");
-		setNetworkView(session.getObject(Long.parseLong(fileLines[0]), CyNetworkView.class));		
+		CyNetworkView view = session.getObject(Long.parseLong(fileLines[0]), CyNetworkView.class);
+		setNetworkView(view);
+		for (Annotation annotation : AutoAnnotationManager.getInstance().getAnnotationManager().getAnnotations(view)) {
+			annotation.removeAnnotation();
+		}
 		setAnnotationSetNumber(Integer.parseInt(fileLines[1]));
 		setSelectedAnnotationSetIndex(Integer.parseInt(fileLines[2]));
 		int lineNumber = 3;
