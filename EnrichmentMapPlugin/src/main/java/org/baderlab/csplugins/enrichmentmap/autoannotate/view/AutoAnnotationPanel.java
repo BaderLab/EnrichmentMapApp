@@ -532,13 +532,14 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 					CommandExecutorTaskFactory executor = autoAnnotationManager.getCommandExecutor();
 					setHeatMapNoSort();
 					int[] selectedRows = table.getSelectedRows();
+					ArrayList<Cluster> selectedClusters = new ArrayList<Cluster>();
 					for (int rowIndex=0; rowIndex < table.getRowCount(); rowIndex++) {
 						boolean deselect = true;
 						Cluster cluster = (Cluster) table.getModel().getValueAt(table.convertRowIndexToModel(rowIndex), 0);
 						for (int selectedRow : selectedRows) {
 							if (rowIndex == selectedRow) {
 								// Selects the row and exits (to avoid deselecting it after)
-								AutoAnnotationUtils.selectCluster(cluster, selectedNetwork, showHeatmap, executor, dialogTaskManager);
+								selectedClusters.add(cluster);
 								deselect = false;
 								break;
 							}
@@ -547,6 +548,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 							AutoAnnotationUtils.deselectCluster(cluster, selectedNetwork);
 						}
 					}
+					AutoAnnotationUtils.selectClusters(selectedClusters, selectedNetwork, showHeatmap, executor, dialogTaskManager);
 				}
 			}
 		});

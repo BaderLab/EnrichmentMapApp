@@ -39,11 +39,29 @@ public class AutoAnnotationUtils {
 	private static double padding = 1.6; // Amount the ellipses are stretched by
 	private static double ellipseWidth = 5.0;
 	
-	public static void selectCluster(Cluster selectedCluster, CyNetwork network, boolean showHeatmap,
-									 CommandExecutorTaskFactory executor, DialogTaskManager dialogTaskManager) {
-		// Select the corresponding WordCloud
-		if (!selectedCluster.isSelected()) {
-			selectedCluster.setSelected(true);
+	public static void selectClusters(ArrayList<Cluster> selectedClusters, CyNetwork network, boolean showHeatmap,
+									  CommandExecutorTaskFactory executor, DialogTaskManager dialogTaskManager) {
+		for (Cluster selectedCluster : selectedClusters) {
+			if (!selectedCluster.isSelected()) {
+				selectedCluster.setSelected(true);
+				// Select the corresponding wordcloud
+				ArrayList<String> commands = new ArrayList<String>();
+				String command = "wordcloud select cloudName=\"" + selectedCluster.getCloudName() + "\"";
+				commands.add(command);
+				Observer observer = new Observer();
+				TaskIterator task = executor.createTaskIterator(commands, null);
+				dialogTaskManager.execute(task, observer);
+				while (! observer.isFinished()) {
+					try {
+						Thread.sleep(1);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		}
+		for (Cluster selectedCluster : selectedClusters) {
+			// Select nodes again after, since WordCloud deselects with multiple selections
 			if (selectedCluster.isCollapsed()) {
 				network.getRow(selectedCluster.getGroupNode()).set(CyNetwork.SELECTED, true);
 			} else {
@@ -51,35 +69,22 @@ public class AutoAnnotationUtils {
 					network.getRow(node).set(CyNetwork.SELECTED, true);
 				}
 			}
-			ArrayList<String> commands = new ArrayList<String>();
-			String command = "wordcloud select cloudName=\"" + selectedCluster.getCloudName() + "\"";
-			commands.add(command);
-			Observer observer = new Observer();
-			TaskIterator task = executor.createTaskIterator(commands, null);
-			dialogTaskManager.execute(task, observer);
-			while (! observer.isFinished()) {
-				try {
-					Thread.sleep(1);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
-			if (showHeatmap) {
-				CytoPanel southPanel = AutoAnnotationManager.getInstance().getApplication().getCytoPanel(CytoPanelName.SOUTH);
-				for (int panelIndex = 0; panelIndex < southPanel.getCytoPanelComponentCount(); panelIndex++) {
-					try {
-						// In some cases the panels don't implement CytoPanelComponent
-						if (((CytoPanelComponent) southPanel.getComponentAt(panelIndex)).getTitle() == "Heat Map (nodes)") {
-							southPanel.setSelectedIndex(panelIndex);
-						}
-					} catch (Exception e) {
-						continue;
-					}
-				}
-			}
-			
+			// Select the annotations
 			selectedCluster.getEllipse().setSelected(true);
 			selectedCluster.getTextAnnotation().setSelected(true);
+		}
+		if (showHeatmap) {
+			CytoPanel southPanel = AutoAnnotationManager.getInstance().getApplication().getCytoPanel(CytoPanelName.SOUTH);
+			for (int panelIndex = 0; panelIndex < southPanel.getCytoPanelComponentCount(); panelIndex++) {
+				try {
+					// In some cases the panels don't implement CytoPanelComponent
+					if (((CytoPanelComponent) southPanel.getComponentAt(panelIndex)).getTitle() == "Heat Map (nodes)") {
+						southPanel.setSelectedIndex(panelIndex);
+					}
+				} catch (Exception e) {
+					continue;
+				}
+			}
 		}
 	}
 
