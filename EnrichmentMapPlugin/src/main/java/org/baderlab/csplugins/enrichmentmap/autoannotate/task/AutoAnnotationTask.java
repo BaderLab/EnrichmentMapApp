@@ -141,7 +141,7 @@ public class AutoAnnotationTask extends AbstractTask {
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		taskMonitor.setTitle("Annotating Enrichment Map");
 
-		if (algorithm != "") {
+		if (algorithm != null) {
 			taskMonitor.setProgress(0.1);
 			taskMonitor.setStatusMessage("Clustering nodes...");
 			runClusterMaker();

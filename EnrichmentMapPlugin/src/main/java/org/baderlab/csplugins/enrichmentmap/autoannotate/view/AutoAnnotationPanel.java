@@ -174,8 +174,8 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 				if (selectedView == null) {
 					JOptionPane.showMessageDialog(autoAnnotationManager.getAnnotationPanel(), "Load an Enrichment Map");
 				} else {
-					String clusterColumnName = "";
-					String algorithm = "";
+					String clusterColumnName = null;
+					String algorithm = null;
 					// If using default clustermaker parameters
 					if (defaultButton.isSelected()) {
 						algorithm = (String) clusterAlgorithmDropdown.getSelectedItem();
@@ -194,13 +194,12 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 						params.setNetworkView(selectedView);
 						autoAnnotationManager.getNetworkViewToAutoAnnotationParameters().put(selectedView, params);
 					}
-					String annotationSetName = "Annotation Set " + String.valueOf(params.getAnnotationSetNumber());
+					String annotationSetName = params.makeAnnotationSetName(algorithm, clusterColumnName);
 					AutoAnnotationTaskFactory autoAnnotatorTaskFactory = new AutoAnnotationTaskFactory(application, 
 							autoAnnotationManager, selectedView, clusterColumnName, nameColumnName, algorithm, 
 							layoutCheckBox.isSelected(), groupsCheckBox.isSelected(), annotationSetName);
 					dialogTaskManager.execute(autoAnnotatorTaskFactory.createTaskIterator());
 					// Increment the counter used to name the annotation sets
-					params.incrementAnnotationSetNumber();
 					setOutputVisibility(true);
 				}
 			}
@@ -251,7 +250,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 					String nameColumnName = annotationSet.getNameColumnName();
 					clearButton.doClick();
 					AutoAnnotationTaskFactory autoAnnotatorTaskFactory = new AutoAnnotationTaskFactory(application, autoAnnotationManager, selectedView, 
-							clusterColumnName, nameColumnName, "", false, false, annotationSetName);
+							clusterColumnName, nameColumnName, null, false, false, annotationSetName);
 					dialogTaskManager.execute(autoAnnotatorTaskFactory.createTaskIterator());
 				}
 			}
@@ -558,10 +557,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 	}
 
 	public void addClusters(AnnotationSet annotationSet) {
-		// Being created, not loaded
-		if (!params.getAnnotationSets().contains(annotationSet)) {
-			params.addAnnotationSet(annotationSet);
-		}
+		params.addAnnotationSet(annotationSet);
 		// If this is the panel's first AnnotationSet for this view
 		CyNetworkView clusterView = params.getNetworkView();
 		if (!networkViewToClusterSetDropdown.containsKey(clusterView)) {
@@ -677,7 +673,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 			params = autoAnnotationManager.getNetworkViewToAutoAnnotationParameters().get(view);	
 			if (!networkViewToClusterSetDropdown.containsKey(view)) {
 				// Params has just been loaded, dropdown hasn't yet caught up
-				for (AnnotationSet annotationSet : params.getAnnotationSets()) {
+				for (AnnotationSet annotationSet : params.getAnnotationSets().values()) {
 					addClusters(annotationSet);
 				}
 			}
@@ -723,7 +719,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 			clusterTable.getParent().remove(clusterTable);
 			networkViewToClusterSetDropdown.remove(view);
 		}
-		for (AnnotationSet annotationSet : params.getAnnotationSets()) {
+		for (AnnotationSet annotationSet : params.getAnnotationSets().values()) {
 			for (Cluster cluster : annotationSet.getClusterMap().values()) {
 				// Bug with loading groups in session
 				cluster.destroyGroup();

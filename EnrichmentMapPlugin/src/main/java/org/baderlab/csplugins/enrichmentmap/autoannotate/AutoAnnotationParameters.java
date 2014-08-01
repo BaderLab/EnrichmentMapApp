@@ -7,6 +7,7 @@
 package org.baderlab.csplugins.enrichmentmap.autoannotate;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.AnnotationSet;
@@ -26,16 +27,13 @@ public class AutoAnnotationParameters {
 	private CyNetworkView networkView;
 	// network view ID (used for saving/loading)
 	private long networkViewID;
-	// used to generate the default names of the annotationSets
-	private int annotationSetNumber;
 	// used to select/deselect cluster
-	private int selectedAnnotationSetIndex;
+	private String selectedAnnotationSetName;
 	// stores all of the annotation sets for this network view
-	private ArrayList<AnnotationSet> annotationSets;	
+	private HashMap<String, AnnotationSet> annotationSets;	
 	
 	public AutoAnnotationParameters() {
-		annotationSetNumber = 1;
-		annotationSets = new ArrayList<AnnotationSet>();
+		annotationSets = new HashMap<String, AnnotationSet> ();
 	}
 	
 	public CyNetworkView getNetworkView() {
@@ -45,47 +43,53 @@ public class AutoAnnotationParameters {
 	public void setNetworkView(CyNetworkView networkView) {
 		this.networkView = networkView;
 		this.networkViewID = networkView.getSUID();
-	}	
-	
-	public int getAnnotationSetNumber() {
-		return annotationSetNumber;
-	}
-
-	public void setAnnotationSetNumber(int annotationSetNumber) {
-		this.annotationSetNumber = annotationSetNumber;
-	}
-	
-	public void incrementAnnotationSetNumber() {
-		annotationSetNumber++;
 	}
 
 	public AnnotationSet getSelectedAnnotationSet() {
-		return annotationSets.get(selectedAnnotationSetIndex);
+		return annotationSets.get(selectedAnnotationSetName);
 	}
 
 	public void setSelectedAnnotationSet(AnnotationSet selectedAnnotationSet) {
-		int index = annotationSets.indexOf(selectedAnnotationSet);
-		if (index != -1) {
-			this.selectedAnnotationSetIndex = index;			
+		for (AnnotationSet annotationSet : annotationSets.values()) {
+			if (annotationSet.equals(selectedAnnotationSet)) {
+				this.selectedAnnotationSetName = annotationSet.getName();
+			}
 		}
 	}
 
-	public void setSelectedAnnotationSetIndex(int selectedAnnotationSetIndex) {
-		this.selectedAnnotationSetIndex = selectedAnnotationSetIndex;
+	public void setSelectedAnnotationSetName(String selectedAnnotationSetName) {
+		this.selectedAnnotationSetName = selectedAnnotationSetName;
 	}
 	
-	public ArrayList<AnnotationSet> getAnnotationSets() {
+	public HashMap<String, AnnotationSet> getAnnotationSets() {
 		return annotationSets;
 	}
 	
 	public void addAnnotationSet(AnnotationSet annotationSet) {
-		this.annotationSets.add(annotationSet);
+		this.annotationSets.put(annotationSet.getName(), annotationSet);
 	}
 	
 	public void removeAnnotationSet(AnnotationSet annotationSet) {
 		this.annotationSets.remove(annotationSet);
 	}
 
+	public String makeAnnotationSetName(String algorithm,
+			String clusterColumnName) {
+		String originalAnnotationSetName = null;
+		if (algorithm != null) {
+			originalAnnotationSetName = algorithm + " Annotation Set";			
+		} else {
+			originalAnnotationSetName = clusterColumnName + " Column Annotation Set";
+		}
+		String annotationSetName = originalAnnotationSetName;
+		int suffix = 2;
+		while (annotationSets.keySet().contains(annotationSetName)) {
+			annotationSetName = originalAnnotationSetName + " " + suffix;
+			suffix++;
+		}
+		return annotationSetName;
+	}
+	
 	public void load(String fullText, CySession session) {
 		String[] fileLines = fullText.split("\n");
 		CyNetworkView view = session.getObject(Long.parseLong(fileLines[0]), CyNetworkView.class);
@@ -93,9 +97,8 @@ public class AutoAnnotationParameters {
 		for (Annotation annotation : AutoAnnotationManager.getInstance().getAnnotationManager().getAnnotations(view)) {
 			annotation.removeAnnotation();
 		}
-		setAnnotationSetNumber(Integer.parseInt(fileLines[1]));
-		setSelectedAnnotationSetIndex(Integer.parseInt(fileLines[2]));
-		int lineNumber = 3;
+		setSelectedAnnotationSetName(fileLines[1]);
+		int lineNumber = 2;
 		ArrayList<String> annotationSetLines = new ArrayList<String>();
 		while (lineNumber < fileLines.length) {
 			String line = fileLines[lineNumber];
@@ -103,7 +106,7 @@ public class AutoAnnotationParameters {
 				AnnotationSet annotationSet = new AnnotationSet();
 				annotationSet.setView(networkView);
 				annotationSet.load(annotationSetLines, session);
-				annotationSets.add(annotationSet);
+				addAnnotationSet(annotationSet);
 				annotationSetLines = new ArrayList<String>();
 			} else {
 				// Add to the growing list of lines for the annotation set
@@ -116,9 +119,8 @@ public class AutoAnnotationParameters {
 	public String toSessionString() {
 		String sessionString = "";
 		sessionString += networkViewID + "\n";
-		sessionString += annotationSetNumber + "\n";
-		sessionString += selectedAnnotationSetIndex + "\n";
-		for (AnnotationSet annotationSet : annotationSets) {
+		sessionString += selectedAnnotationSetName + "\n";
+		for (AnnotationSet annotationSet : annotationSets.values()) {
 			sessionString += annotationSet.toSessionString();
 		}
 		return sessionString;
