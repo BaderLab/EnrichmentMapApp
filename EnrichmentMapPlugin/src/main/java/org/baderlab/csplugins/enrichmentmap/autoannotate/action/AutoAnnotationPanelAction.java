@@ -109,6 +109,8 @@ public class AutoAnnotationPanelAction extends AbstractCyAction {
 				AutoAnnotationManager.getInstance().setAnnotationPanel(inputPanel);
 				registrar.registerService(inputPanel,CytoPanelComponent.class, new Properties());
 				initialized = true;
+			} else {
+				inputPanel.updateSelectedView(applicationManager.getCurrentNetworkView());
 			}
 			// If the state of the cytoPanelWest is HIDE, show it
 			if (cytoPanelWest.getState() == CytoPanelState.HIDE) {

@@ -554,6 +554,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 					for (Cluster cluster : selectedClusters) {
 						AutoAnnotationUtils.selectCluster(cluster, selectedNetwork, executor, syncTaskManager);
 					}
+					// Selects the heatmap panel (if user tells it to)
 					if (showHeatmap) {
 						CytoPanel southPanel = AutoAnnotationManager.getInstance().getApplication().getCytoPanel(CytoPanelName.SOUTH);
 						for (int panelIndex = 0; panelIndex < southPanel.getCytoPanelComponentCount(); panelIndex++) {
