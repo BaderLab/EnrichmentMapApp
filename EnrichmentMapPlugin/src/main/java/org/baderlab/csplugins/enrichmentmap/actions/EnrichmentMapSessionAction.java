@@ -1,5 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.actions;
 
+import java.awt.event.ActionEvent;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -17,6 +18,7 @@ import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationParameters;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.action.AutoAnnotationPanelAction;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
@@ -47,17 +49,19 @@ public class EnrichmentMapSessionAction implements SessionAboutToBeSavedListener
 	private CySessionManager cySessionManager;
 	private CyApplicationManager cyApplicationManager;
 	private StreamUtil streamUtil;
+	private AutoAnnotationPanelAction autoAnnotationPanelAction;
 
 	private static final String appName = "EnrichmentMap";
 
 	public EnrichmentMapSessionAction(CyNetworkManager cyNetworkManager, 
-			CySessionManager cySessionManager, 
-			CyApplicationManager cyApplicationManager, StreamUtil streamUtil) {
+			CySessionManager cySessionManager, CyApplicationManager cyApplicationManager, 
+			StreamUtil streamUtil, AutoAnnotationPanelAction autoAnnotationPanelAction) {
 		super();
 		this.cyNetworkManager = cyNetworkManager;
 		this.cySessionManager = cySessionManager;
 		this.cyApplicationManager = cyApplicationManager;
 		this.streamUtil = streamUtil;
+		this.autoAnnotationPanelAction = autoAnnotationPanelAction;
 	}
 
 	/**
@@ -132,9 +136,7 @@ public class EnrichmentMapSessionAction implements SessionAboutToBeSavedListener
 					AutoAnnotationManager aaManager = AutoAnnotationManager.getInstance();
 					aaParams.load(fullText, session);
 					aaManager.getNetworkViewToAutoAnnotationParameters().put(aaParams.getNetworkView(), aaParams);
-					if (aaManager.getAnnotationPanel() != null) {
-						aaManager.getAnnotationPanel().updateSelectedView(aaParams.getNetworkView());
-					}
+					autoAnnotationPanelAction.actionPerformed(new ActionEvent("", 0, ""));
 				} else {
 					FileNameParts parts = ParseFileName(prop_file);
 					if(parts == null || prop_file.getName().contains(".props"))

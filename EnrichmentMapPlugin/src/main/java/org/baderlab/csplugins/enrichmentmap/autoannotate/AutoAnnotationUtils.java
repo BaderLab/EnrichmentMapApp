@@ -11,8 +11,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
-import javax.swing.JOptionPane;
-
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.WordInfo;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.task.Observer;
@@ -32,6 +30,7 @@ import org.cytoscape.view.presentation.annotations.AnnotationManager;
 import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
 import org.cytoscape.view.presentation.annotations.TextAnnotation;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.swing.DialogTaskManager;
 
@@ -41,35 +40,11 @@ public class AutoAnnotationUtils {
 	private static double padding = 1.6; // Amount the ellipses are stretched by
 	private static double ellipseWidth = 5.0;
 	
-	public static void selectClusters(ArrayList<Cluster> selectedClusters, CyNetwork network, boolean showHeatmap,
-									  CommandExecutorTaskFactory executor, DialogTaskManager dialogTaskManager) {
-		for (Cluster selectedCluster : selectedClusters) {
-			if (!selectedCluster.isSelected()) {
-				selectedCluster.setSelected(true);
-				// Select the corresponding wordcloud
-				ArrayList<String> commands = new ArrayList<String>();
-				String command = "wordcloud select cloudName=\"" + selectedCluster.getCloudName() + "\"";
-				commands.add(command);
-				Observer observer = new Observer();
-				TaskIterator task = executor.createTaskIterator(commands, null);
-				dialogTaskManager.execute(task, observer);
-				int count = 0;
-				while (! observer.isFinished()) {
-					try {
-						Thread.sleep(1);
-						count++;
-						if (count > 5000) {
-							JOptionPane.showMessageDialog(AutoAnnotationManager.getInstance().getAnnotationPanel(), "Problem with WordCloud");
-							return;
-						}
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-				}
-			}
-		}
-		for (Cluster selectedCluster : selectedClusters) {
-			// Select nodes again after, since WordCloud deselects with multiple selections
+	public static void selectCluster(Cluster selectedCluster, CyNetwork network, 
+									 CommandExecutorTaskFactory executor, SynchronousTaskManager syncTaskManager) {
+		// Select the corresponding WordCloud
+		if (!selectedCluster.isSelected()) {
+			selectedCluster.setSelected(true);
 			if (selectedCluster.isCollapsed()) {
 				network.getRow(selectedCluster.getGroupNode()).set(CyNetwork.SELECTED, true);
 			} else {
@@ -77,22 +52,22 @@ public class AutoAnnotationUtils {
 					network.getRow(node).set(CyNetwork.SELECTED, true);
 				}
 			}
-			// Select the annotations
-			selectedCluster.getEllipse().setSelected(true);
-			selectedCluster.getTextAnnotation().setSelected(true);
-		}
-		if (showHeatmap) {
-			CytoPanel southPanel = AutoAnnotationManager.getInstance().getApplication().getCytoPanel(CytoPanelName.SOUTH);
-			for (int panelIndex = 0; panelIndex < southPanel.getCytoPanelComponentCount(); panelIndex++) {
+			ArrayList<String> commands = new ArrayList<String>();
+			String command = "wordcloud select cloudName=\"" + selectedCluster.getCloudName() + "\"";
+			commands.add(command);
+			Observer observer = new Observer();
+			TaskIterator task = executor.createTaskIterator(commands, null);
+			syncTaskManager.execute(task, observer);
+			while (! observer.isFinished()) {
 				try {
-					// In some cases the panels don't implement CytoPanelComponent
-					if (((CytoPanelComponent) southPanel.getComponentAt(panelIndex)).getTitle() == "Heat Map (nodes)") {
-						southPanel.setSelectedIndex(panelIndex);
-					}
-				} catch (Exception e) {
-					continue;
+					Thread.sleep(1);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
 				}
 			}
+			
+			selectedCluster.getEllipse().setSelected(true);
+			selectedCluster.getTextAnnotation().setSelected(true);
 		}
 	}
 

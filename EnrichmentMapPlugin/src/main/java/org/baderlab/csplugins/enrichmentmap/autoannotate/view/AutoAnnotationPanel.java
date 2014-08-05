@@ -51,6 +51,7 @@ import org.baderlab.csplugins.enrichmentmap.autoannotate.task.AutoAnnotationTask
 import org.baderlab.csplugins.enrichmentmap.autoannotate.task.Observer;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters;
 import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.command.CommandExecutorTaskFactory;
@@ -67,6 +68,7 @@ import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.annotations.AnnotationManager;
 import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
 import org.cytoscape.view.presentation.annotations.TextAnnotation;
+import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.swing.DialogTaskManager;
 
 /**
@@ -458,8 +460,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 				}
 			}
 		});
-		heatmapButton.setSelected(false);
-		wordCloudButton.setSelected(true);
+		heatmapButton.setSelected(true);
 
 		JPanel radioButtonPanel = new JPanel();
 		radioButtonPanel.setLayout(new BoxLayout(radioButtonPanel, BoxLayout.PAGE_AXIS));
@@ -470,7 +471,9 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 		innerPanel.add(radioButtonPanel, BorderLayout.EAST);
 
 		selectionPanel.add(innerPanel);
-
+		// Initially set uncollapsed so the user knows about it
+		selectionPanel.setCollapsed(false);
+		
 		return selectionPanel;
 	}
 
@@ -528,9 +531,9 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 			@Override
 			public void valueChanged(ListSelectionEvent e) {
 				if (! e.getValueIsAdjusting()) { // Down-click and up-click are separate events, this makes only one of them fire
-					DialogTaskManager dialogTaskManager = autoAnnotationManager.getDialogTaskManager();
+					SynchronousTaskManager syncTaskManager = autoAnnotationManager.getSyncTaskManager();
 					CommandExecutorTaskFactory executor = autoAnnotationManager.getCommandExecutor();
-					setHeatMapNoSort();
+					//setHeatMapNoSort();
 					int[] selectedRows = table.getSelectedRows();
 					ArrayList<Cluster> selectedClusters = new ArrayList<Cluster>();
 					for (int rowIndex=0; rowIndex < table.getRowCount(); rowIndex++) {
@@ -548,7 +551,22 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 							AutoAnnotationUtils.deselectCluster(cluster, selectedNetwork);
 						}
 					}
-					AutoAnnotationUtils.selectClusters(selectedClusters, selectedNetwork, showHeatmap, executor, dialogTaskManager);
+					for (Cluster cluster : selectedClusters) {
+						AutoAnnotationUtils.selectCluster(cluster, selectedNetwork, executor, syncTaskManager);
+					}
+					if (showHeatmap) {
+						CytoPanel southPanel = AutoAnnotationManager.getInstance().getApplication().getCytoPanel(CytoPanelName.SOUTH);
+						for (int panelIndex = 0; panelIndex < southPanel.getCytoPanelComponentCount(); panelIndex++) {
+							try {
+								// In some cases the panels don't implement CytoPanelComponent
+								if (((CytoPanelComponent) southPanel.getComponentAt(panelIndex)).getTitle() == "Heat Map (nodes)") {
+									southPanel.setSelectedIndex(panelIndex);
+								}
+							} catch (Exception ex) {
+								continue;
+							}
+						}
+					}
 				}
 			}
 		});

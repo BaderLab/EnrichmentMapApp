@@ -71,7 +71,7 @@ import javax.swing.JOptionPane;
  *
  * Click on Annotate Clusters Action handler
  */
-public class AutoAnnotatorPanelAction extends AbstractCyAction {
+public class AutoAnnotationPanelAction extends AbstractCyAction {
 
 	private static final long serialVersionUID = 3764130543697594367L;
 
@@ -87,7 +87,7 @@ public class AutoAnnotatorPanelAction extends AbstractCyAction {
 	private AutoAnnotationPanel inputPanel;
 	private CyServiceRegistrar registrar;
 
-	public AutoAnnotatorPanelAction(Map<String,String> configProps, CyApplicationManager applicationManager, 
+	public AutoAnnotationPanelAction(Map<String,String> configProps, CyApplicationManager applicationManager, 
 			CyNetworkViewManager networkViewManager, CySwingApplication application, AnnotationManager annotationManager, 
 			CyServiceRegistrar registrar){
 
