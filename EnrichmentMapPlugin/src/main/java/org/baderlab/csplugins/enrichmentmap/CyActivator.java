@@ -57,7 +57,6 @@ import org.cytoscape.view.presentation.annotations.TextAnnotation;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
-import org.cytoscape.work.AbstractTaskManager;
 import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskFactory;
@@ -83,7 +82,6 @@ public class CyActivator extends AbstractCyActivator {
 			
 		//get FileUtil
 		FileUtil fileUtil = getService(bc,FileUtil.class);
-		
 		StreamUtil streamUtil = getService(bc, StreamUtil.class);
 		CyApplicationManager cyApplicationManagerRef = getService(bc,CyApplicationManager.class);
 		CyNetworkManager cyNetworkManagerRef = getService(bc,CyNetworkManager.class);
@@ -103,8 +101,10 @@ public class CyActivator extends AbstractCyActivator {
 		CyEventHelper eventHelper = getService(bc,CyEventHelper.class);
 		SynchronousTaskManager syncTaskManager = getService(bc, SynchronousTaskManager.class);
 		DialogTaskManager dialogTaskManager = getService(bc, DialogTaskManager.class);
+		// Used with annotations to make Groups of nodes
 		CyGroupFactory groupFactory = getService(bc, CyGroupFactory.class);
 		CyGroupManager groupManager = getService(bc, CyGroupManager.class);
+		// Used to create/remove the annotations (ellipses and text labels)
 		AnnotationManager annotationManager = getService(bc, AnnotationManager.class);
 		AnnotationFactory<ShapeAnnotation> shapeFactory = (AnnotationFactory<ShapeAnnotation>) getService(bc, AnnotationFactory.class, "(type=ShapeAnnotation.class)");    	
 		AnnotationFactory<TextAnnotation> textFactory = (AnnotationFactory<TextAnnotation>) getService(bc, AnnotationFactory.class, "(type=TextAnnotation.class)");
@@ -130,23 +130,36 @@ public class CyActivator extends AbstractCyActivator {
 		//register network events with manager class
 		registerService(bc,manager, NetworkAboutToBeDestroyedListener.class, new Properties());
 		registerService(bc,manager, SetCurrentNetworkListener.class, new Properties());
-		
-		//Get an instance of AA manager
-		
+				
+		//associate them with the action listener
+		EnrichmentMapActionListener EMActionListener = new EnrichmentMapActionListener(heatMapPanel_node,heatMapPanel_edge, cyApplicationManagerRef, cySwingApplicationRef,fileUtil,streamUtil,syncTaskManager);
+		registerService(bc,EMActionListener, RowsSetListener.class, new Properties());		
+
+		// Set up autoAnnotationManager, hand it all of the services it needs
 		AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
-		autoAnnotationManager.initialize(cySwingApplicationRef, tableManager, commandExecutor, dialogTaskManager, syncTaskManager, annotationManager, layoutManager, shapeFactory, textFactory, groupFactory, groupManager);
-		//register network events with manager class
+		autoAnnotationManager.initialize(cySwingApplicationRef, tableManager, commandExecutor, dialogTaskManager, syncTaskManager, annotationManager, layoutManager, shapeFactory, textFactory, groupFactory, groupManager, heatMapPanel_node);
+		//register network/table events to autoAnnotationManager
 		registerService(bc, autoAnnotationManager, SetSelectedNetworkViewsListener.class, new Properties());
+		registerService(bc, autoAnnotationManager, NetworkViewAboutToBeDestroyedListener.class, new Properties());
 		registerService(bc, autoAnnotationManager, ColumnCreatedListener.class, new Properties());
 		registerService(bc, autoAnnotationManager, ColumnDeletedListener.class, new Properties());
 		registerService(bc, autoAnnotationManager, ColumnNameChangedListener.class, new Properties());
-		registerService(bc, autoAnnotationManager, NetworkViewAboutToBeDestroyedListener.class, new Properties());
+
 		
-		//assocaite them with the action listener
-		EnrichmentMapActionListener EMActionListener = new EnrichmentMapActionListener(heatMapPanel_node,heatMapPanel_edge, cyApplicationManagerRef, cySwingApplicationRef,fileUtil,streamUtil,syncTaskManager);
-		registerService(bc,EMActionListener, RowsSetListener.class, new Properties());		
-				
 		//Create each Action within Enrichment map as a service
+		
+		//About Action
+		serviceProperties = new HashMap<String, String>();
+		serviceProperties.put("inMenuBar", "true");
+		serviceProperties.put("preferredMenu", "Apps.EnrichmentMap");
+		ShowAboutPanelAction aboutAction = new ShowAboutPanelAction(serviceProperties,cyApplicationManagerRef ,cyNetworkViewManagerRef, cySwingApplicationRef, openBrowserRef);		
+		
+		//Auto-annotate Panel Action - opens Annotation panel
+		serviceProperties = new HashMap<String, String>();
+		serviceProperties.put("inMenuBar", "true");
+		serviceProperties.put("preferredMenu", "Apps.EnrichmentMap");
+ 		AutoAnnotationPanelAction autoAnnotationPanelAction = new AutoAnnotationPanelAction(serviceProperties,cyApplicationManagerRef, cyNetworkViewManagerRef, cySwingApplicationRef, annotationManager, registrar);
+		
 		
 		//Build Enrichment Map Action - opens EM panel
 		serviceProperties = new HashMap<String, String>();
@@ -165,18 +178,6 @@ public class CyActivator extends AbstractCyActivator {
 		serviceProperties.put("inMenuBar", "true");
 		serviceProperties.put("preferredMenu", "Apps.EnrichmentMap");
 		LoadPostAnalysisPanelAction loadPostAnalysisAction = new LoadPostAnalysisPanelAction(serviceProperties,cyApplicationManagerRef ,cyNetworkViewManagerRef, cySwingApplicationRef, postEMPanel,registrar);
-							
-		//About Action
-		serviceProperties = new HashMap<String, String>();
-		serviceProperties.put("inMenuBar", "true");
-		serviceProperties.put("preferredMenu", "Apps.EnrichmentMap");
-		ShowAboutPanelAction aboutAction = new ShowAboutPanelAction(serviceProperties,cyApplicationManagerRef ,cyNetworkViewManagerRef, cySwingApplicationRef, openBrowserRef);		
-		
-		//Auto-annotate Action
-		serviceProperties = new HashMap<String, String>();
-		serviceProperties.put("inMenuBar", "true");
-		serviceProperties.put("preferredMenu", "Apps.EnrichmentMap");
- 		AutoAnnotationPanelAction autoAnnotationPanelAction = new AutoAnnotationPanelAction(serviceProperties,cyApplicationManagerRef, cyNetworkViewManagerRef, cySwingApplicationRef, annotationManager, registrar);
 		
 		//register the services
 		registerService(bc, aboutAction, CyAction.class,new Properties());
@@ -192,14 +193,14 @@ public class CyActivator extends AbstractCyActivator {
 		
 		//generic EM command line option
 		Properties properties = new Properties();
-    		properties.put(ServiceProperties.COMMAND, "build");
-    		properties.put(ServiceProperties.COMMAND_NAMESPACE, "enrichmentmap");
+    	properties.put(ServiceProperties.COMMAND, "build");
+    	properties.put(ServiceProperties.COMMAND_NAMESPACE, "enrichmentmap");
 		registerService(bc, new BuildEnrichmentMapTuneableTaskFactory(sessionManager, streamUtil, cyApplicationManagerRef, cyNetworkManagerRef, cyNetworkViewManagerRef, cyNetworkViewFactoryRef, cyNetworkFactoryRef, tableFactory, tableManager, visualMappingManagerRef, visualStyleFactoryRef, continuousMappingFunctionFactoryRef, discreteMappingFunctionFactoryRef, passthroughMappingFunctionFactoryRef, layoutManager, mapTableToNetworkTable, dialogTaskManager), TaskFactory.class, properties);
 		
 		//gsea specifc commandtool
 		properties = new Properties();
-    		properties.put(ServiceProperties.COMMAND, "gseabuild");
-    		properties.put(ServiceProperties.COMMAND_NAMESPACE, "enrichmentmap");
+    	properties.put(ServiceProperties.COMMAND, "gseabuild");
+    	properties.put(ServiceProperties.COMMAND_NAMESPACE, "enrichmentmap");
 		registerService(bc, new EnrichmentMapGSEACommandHandlerTaskFactory(sessionManager, streamUtil, cyApplicationManagerRef, cyNetworkManagerRef, cyNetworkViewManagerRef, cyNetworkViewFactoryRef, cyNetworkFactoryRef, tableFactory, tableManager, visualMappingManagerRef, visualStyleFactoryRef, continuousMappingFunctionFactoryRef, discreteMappingFunctionFactoryRef, passthroughMappingFunctionFactoryRef, layoutManager, mapTableToNetworkTable, dialogTaskManager), TaskFactory.class, properties);
 		
 		

@@ -4,16 +4,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationUtils;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.session.CySession;
-import org.cytoscape.view.presentation.annotations.Annotation;
-import org.cytoscape.view.presentation.annotations.AnnotationFactory;
-import org.cytoscape.view.presentation.annotations.AnnotationManager;
 import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
 import org.cytoscape.view.presentation.annotations.TextAnnotation;
 
@@ -115,6 +110,7 @@ public class Cluster implements Comparable<Cluster> {
 	public List<CyNode> getNodes() {
 		if (group != null) {
 			// Have to also include the group's nodeList
+			@SuppressWarnings("unchecked")
 			List<CyNode> nodeListWithGroupNode = (List<CyNode>) nodeList.clone();
 			nodeListWithGroupNode.add(getGroupNode());
 			return nodeListWithGroupNode;

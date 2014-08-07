@@ -1,23 +1,14 @@
 package org.baderlab.csplugins.enrichmentmap.autoannotate.model;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.TreeMap;
 
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationParameters;
-import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableManager;
 import org.cytoscape.session.CySession;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
-import org.cytoscape.view.presentation.annotations.AnnotationManager;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 /**
@@ -29,8 +20,6 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 public class AnnotationSet {
 	
-	// Name of the annotation set in the dropdown
-	private String name;
 	// Map of clusterNumbers to the comprising clusters
 	private TreeMap<Integer, Cluster> clusterMap;
 	// Name of the column that was used
@@ -38,6 +27,7 @@ public class AnnotationSet {
 	// Used to recreate the annotation set when merging clusters
 	private String clusterColumnName;
 	private String nameColumnName;
+	// View that the cluster set belonds to
 	private CyNetworkView view;
 	
 	// Constructor used when loading from a file
@@ -45,12 +35,11 @@ public class AnnotationSet {
 		this.clusterMap = new TreeMap<Integer, Cluster>();
 	}
 	
-	public AnnotationSet(String name, CyNetworkView view, String clusterColumnName, String nameColumnName) {
-		this.name = name;
+	// Constructor used when created from an annotation task
+	public AnnotationSet(String cloudNamePrefix, CyNetworkView view, String clusterColumnName, String nameColumnName) {
 		this.clusterMap = new TreeMap<Integer, Cluster>();
-		this.cloudNamePrefix = name; // name may change later, this will stay the same to link to the cloud
+		this.cloudNamePrefix = cloudNamePrefix;
 		this.view = view;
-		// Needed to recreate the annotation set on merges
 		this.clusterColumnName = clusterColumnName;
 		this.nameColumnName = nameColumnName;
 	}
@@ -67,6 +56,7 @@ public class AnnotationSet {
 		clusterMap.put(cluster.getClusterNumber(), cluster);
 	}
 
+	// Get the coordinates of the nodes in each cluster
 	public void updateCoordinates() {
 		for (Cluster cluster : clusterMap.values()) {
 			cluster.setCoordinates(new ArrayList<double[]>());
@@ -81,14 +71,6 @@ public class AnnotationSet {
 				}
 			}
 		}
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
 	}
 
 	public TreeMap<Integer, Cluster> getClusterMap() {
@@ -127,10 +109,9 @@ public class AnnotationSet {
 	    	// Each annotation set is stored in the format:
 	    	/*
 	    	 *  1 - Cloud Name Prefix (Primary identifier)
-	    	 *  2 - Annotation Set Name
-	    	 *  3 - Cluster Column Name
-	    	 *  4 - Name Column Name
-	    	 *  5... - Each cluster, stored in the format:
+	    	 *  2 - Cluster Column Name
+	    	 *  3 - Name Column Name
+	    	 *  4... - Each cluster, stored in the format:
 	    	 *  		1 - Cluster number
 	    	 *  		2 - Cluster label
 	    	 *  		3 - Selected (0/1)
@@ -143,7 +124,6 @@ public class AnnotationSet {
 		// Returns the string used when saving the session
 		String sessionString = "";
 		sessionString += cloudNamePrefix + "\n";
-		sessionString += name + "\n";
 		sessionString += clusterColumnName + "\n";
 		sessionString += nameColumnName + "\n";
 		for (Cluster cluster : clusterMap.values()) {
@@ -155,9 +135,8 @@ public class AnnotationSet {
 
 	public void load(ArrayList<String> text, CySession session) {
 		setCloudNamePrefix(text.get(0));
-		setName(text.get(1));
-		setClusterColumnName(text.get(2));
-		setNameColumnName(text.get(3));
+		setClusterColumnName(text.get(1));
+		setNameColumnName(text.get(2));
 		// Update the column in the network table with the new SUID of the table
 		AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
 		for (CyTable table : autoAnnotationManager.getTableManager().getAllTables(true)) {
@@ -167,7 +146,7 @@ public class AnnotationSet {
 			}
 		}
 		
-		int lineNumber = 4;
+		int lineNumber = 3;
 		ArrayList<String> clusterLines = new ArrayList<String>();
 		while (lineNumber < text.size()) {
 			String line = text.get(lineNumber);
@@ -187,6 +166,6 @@ public class AnnotationSet {
 	
 	@Override
 	public String toString() {
-		return name;
+		return cloudNamePrefix;
 	}
 }

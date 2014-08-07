@@ -1,15 +1,10 @@
 package org.baderlab.csplugins.enrichmentmap.autoannotate.task;
 
-import java.awt.BorderLayout;
-
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
 import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.model.CyTableManager;
-import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.swing.DialogTaskManager;
 
 /**
  * Created by

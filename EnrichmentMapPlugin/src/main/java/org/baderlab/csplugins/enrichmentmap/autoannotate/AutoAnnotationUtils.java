@@ -14,9 +14,6 @@ import java.util.List;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.WordInfo;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.task.Observer;
-import org.cytoscape.application.swing.CytoPanel;
-import org.cytoscape.application.swing.CytoPanelComponent;
-import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.command.CommandExecutorTaskFactory;
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupManager;
@@ -32,19 +29,20 @@ import org.cytoscape.view.presentation.annotations.TextAnnotation;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.swing.DialogTaskManager;
 
 public class AutoAnnotationUtils {
 	
 	private static int min_size = 35; // Minimum size of the cluster
-	private static double padding = 1.6; // Amount the ellipses are stretched by
-	private static double ellipseWidth = 5.0;
+	private static double padding = Math.sqrt(2)*1.2; // Amount the ellipses are stretched by
+	// sqrt(2) is the ratio between the sizes of an ellipse 
+	// enclosing a rectangle and an ellipse enclosed in a rectangle
+	private static double ellipseBorderWidth = 5.0;
 	
 	public static void selectCluster(Cluster selectedCluster, CyNetwork network, 
-									 CommandExecutorTaskFactory executor, SynchronousTaskManager syncTaskManager) {
-		// Select the corresponding WordCloud
+									 CommandExecutorTaskFactory executor, SynchronousTaskManager<?> syncTaskManager) {
 		if (!selectedCluster.isSelected()) {
 			selectedCluster.setSelected(true);
+			// Select node(s) in the cluster
 			if (selectedCluster.isCollapsed()) {
 				network.getRow(selectedCluster.getGroupNode()).set(CyNetwork.SELECTED, true);
 			} else {
@@ -52,12 +50,14 @@ public class AutoAnnotationUtils {
 					network.getRow(node).set(CyNetwork.SELECTED, true);
 				}
 			}
+			// Select the corresponding WordCloud through command line
 			ArrayList<String> commands = new ArrayList<String>();
 			String command = "wordcloud select cloudName=\"" + selectedCluster.getCloudName() + "\"";
 			commands.add(command);
 			Observer observer = new Observer();
 			TaskIterator task = executor.createTaskIterator(commands, null);
 			syncTaskManager.execute(task, observer);
+			// Wait for WordCloud to finish selecting
 			while (! observer.isFinished()) {
 				try {
 					Thread.sleep(1);
@@ -65,7 +65,7 @@ public class AutoAnnotationUtils {
 					e.printStackTrace();
 				}
 			}
-			
+			// Select the annotations (ellipse and text label)
 			selectedCluster.getEllipse().setSelected(true);
 			selectedCluster.getTextAnnotation().setSelected(true);
 		}
@@ -74,7 +74,7 @@ public class AutoAnnotationUtils {
 	public static void deselectCluster(Cluster deselectedCluster, CyNetwork network) {
 		if (deselectedCluster.isSelected()) {
 			deselectedCluster.setSelected(false);
-			// Deselect nodes in the cluster
+			// Deselect node(s) in the cluster
 			if (deselectedCluster.isCollapsed()) {
 				network.getRow(deselectedCluster.getGroupNode()).set(CyNetwork.SELECTED, false);
 			} else {
@@ -82,29 +82,30 @@ public class AutoAnnotationUtils {
 					network.getRow(node).set(CyNetwork.SELECTED, false);
 				}
 			}
-			// Reset the size/color of the annotations
+			// Deselect the annotations
 			deselectedCluster.getEllipse().setSelected(false);
 			deselectedCluster.getTextAnnotation().setSelected(false);
 		}
 	}
 
 	public static void destroyCluster(Cluster clusterToDestroy, CommandExecutorTaskFactory executor, 
-			DialogTaskManager dialogTaskManager) {
-		// Get rid of the WordCloud
+			SynchronousTaskManager<?> syncTaskManager) {
+		// Delete the WordCloud through the command line
 		ArrayList<String> commands = new ArrayList<String>();
 		String command = "wordcloud delete cloudName=\"" + clusterToDestroy.getCloudName() + "\"";
 		commands.add(command);
 		Observer observer = new Observer();
 		TaskIterator task = executor.createTaskIterator(commands, null);
-		dialogTaskManager.execute(task, observer);
+		syncTaskManager.execute(task, observer);
+		// Wait for deletion to finish
 		while (!observer.isFinished()) {
-			// Erase the cluster
 			try {
 				Thread.sleep(1);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 		}
+		// Erase the annotations
 		clusterToDestroy.erase();
 	}
 
@@ -129,7 +130,7 @@ public class AutoAnnotationUtils {
 		double height = (ymax - ymin);
 		height = height > min_size ? height : min_size;
 		
-		// Parameters of the ellipse
+		// Set the position of the top-left corner of the ellipse
 		Integer xPos = (int) Math.round(xmin - width*(padding-1)/2);
 		Integer yPos = (int) Math.round(ymin - height*(padding-1)/2);
 
@@ -142,16 +143,17 @@ public class AutoAnnotationUtils {
 		ShapeAnnotation ellipse = shapeFactory.createAnnotation(ShapeAnnotation.class, view, arguments);
 		ellipse.setShapeType("Ellipse");
 		ellipse.setSize(width*padding*zoom, height*padding*zoom);
-		ellipse.setBorderWidth(ellipseWidth);
+		ellipse.setBorderWidth(ellipseBorderWidth);
 		cluster.setEllipse(ellipse);
 		annotationManager.addAnnotation(ellipse);
 
-		// Parameters of the text label
+		// Set the text of the label
 		String labelText = cluster.getLabel();
+		// Set the font size of the label (proporional to the cluster size)
 		Integer fontSize = (int) Math.round(2.5*Math.pow(cluster.getSize(), 0.4));
-		// To centre the annotation at the middle of the annotation
+		// Set the position of the label so that it is centered over the ellipse
 		xPos = (int) Math.round(xPos + width*padding/2 - 2.1*fontSize*labelText.length());
-		yPos = (int) Math.round(yPos - 10.3*fontSize);
+		yPos = (int) Math.round(yPos - 11.3*fontSize);
 		
 		// Create and draw the label
 		arguments = new HashMap<String,String>();
@@ -166,11 +168,11 @@ public class AutoAnnotationUtils {
 		annotationManager.addAnnotation(textAnnotation);
 	}
 	
+	@SuppressWarnings("unchecked")
 	public static void updateClusterLabel(Cluster cluster, CyNetwork network, String annotationSetName, CyTable clusterSetTable) {
-		// Only updates if the user hasn't changed the label manually
-		int clusterNumber = cluster.getClusterNumber();
-		// Look up the wordCloud info in the table
-		CyRow clusterRow = clusterSetTable.getRow(clusterNumber);
+		// Look up the WordCloud info of this cluster in its table
+		CyRow clusterRow = clusterSetTable.getRow(cluster.getClusterNumber());
+		// Get each piece of the WordCloud info
 		List<String> wordList = clusterRow.get("WC_Word", List.class);
 		List<String> sizeList = clusterRow.get("WC_FontSize", List.class);
 		List<String> clusterList = clusterRow.get("WC_Cluster", List.class);
@@ -200,24 +202,37 @@ public class AutoAnnotationUtils {
 	}
 	
 	public static String makeLabel(ArrayList<WordInfo> wordInfos) {
-		// TODO more code reuse
-		// WordInfos sort by size descending
-		// Using a copy so as to not mess up the order for comparisons
+		// TODO more code reuse		
+		// Work with a copy so as to not mess up the order for comparisons
 		ArrayList<WordInfo> wordInfosCopy = new ArrayList<WordInfo>();
 		for (WordInfo wordInfo : wordInfos) {
 			wordInfosCopy.add(wordInfo.clone());
 		}
-		Collections.sort(wordInfosCopy);
-		// Gets the biggest word
+		Collections.sort(wordInfosCopy); // Sorts by size descending
+		// Gets the biggest word in the cloud
 		WordInfo biggestWord = wordInfosCopy.get(0);
 		String label = biggestWord.getWord();
+//		double[] nextWordSizeThresholds = {0.3, 0.8, 0.9};
+//		int numWords = 1;
+//		WordInfo nextWord = biggestWord;
+//		do {
+//			wordInfosCopy.remove(0);
+//			for (WordInfo word : wordInfosCopy.subList(1, wordInfosCopy.size())) {
+//				if (word.getCluster() == nextWord.getCluster()) {
+//					word.setSize(word.getSize() - 1);	
+//				}
+//			}		
+//			nextWord = wordInfosCopy.get(0);
+//			label += " " + nextWord.getWord();
+//			numWords++;
+//		} while (nextWord.getSize() > nextWordSizeThresholds[numWords - 1] && numWords < 4);
 		if (wordInfosCopy.size() > 1) {
 			for (WordInfo word : wordInfosCopy.subList(1, wordInfosCopy.size())) {
 				if (word.getCluster() == biggestWord.getCluster()) {
 					word.setSize(word.getSize() - 1);
 				}
 			}
-			Collections.sort(wordInfosCopy);
+			Collections.sort(wordInfosCopy); // Sorts by size descending
 			WordInfo secondBiggestWord = wordInfosCopy.get(1);
 			if (secondBiggestWord.getSize() >= 0.3*biggestWord.getSize()) {
 				label += " " + secondBiggestWord.getWord();
@@ -227,7 +242,7 @@ public class AutoAnnotationUtils {
 					word.setSize(word.getSize() - 1);
 				}
 			}
-			Collections.sort(wordInfosCopy);
+			Collections.sort(wordInfosCopy); // Sorts by size descending
 			try {
 				WordInfo thirdBiggestWord = wordInfosCopy.get(2);
 				if (thirdBiggestWord.getSize() > 0.8*secondBiggestWord.getSize()) {

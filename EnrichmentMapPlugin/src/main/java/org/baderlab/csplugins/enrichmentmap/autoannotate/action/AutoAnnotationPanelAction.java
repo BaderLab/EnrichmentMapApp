@@ -55,7 +55,6 @@ import org.cytoscape.application.swing.CytoPanelState;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.presentation.annotations.AnnotationManager;
-import org.cytoscape.work.swing.DialogTaskManager;
 
 import java.awt.event.ActionEvent;
 import java.util.Map;
@@ -76,15 +75,13 @@ public class AutoAnnotationPanelAction extends AbstractCyAction {
 	private static final long serialVersionUID = 3764130543697594367L;
 
 
-	//variable to track initialization of network event listener
+	// track initialization of panel (so only one panel is ever created)
 	private boolean initialized = false;
-
-
 	private final CytoPanel cytoPanelWest;
-
 	private CyApplicationManager applicationManager;
 	private CySwingApplication application;
-	private AutoAnnotationPanel inputPanel;
+	private AutoAnnotationPanel annotationPanel;
+	// used to register the panel
 	private CyServiceRegistrar registrar;
 
 	public AutoAnnotationPanelAction(Map<String,String> configProps, CyApplicationManager applicationManager, 
@@ -103,24 +100,25 @@ public class AutoAnnotationPanelAction extends AbstractCyAction {
 
 	public void actionPerformed(ActionEvent event) {
 		if (applicationManager.getCurrentNetworkView() != null) {
+			// Only registers one panel
 			if(!initialized) {
-				inputPanel = new AutoAnnotationPanel(application);
-				inputPanel.updateSelectedView(applicationManager.getCurrentNetworkView());
-				AutoAnnotationManager.getInstance().setAnnotationPanel(inputPanel);
-				registrar.registerService(inputPanel,CytoPanelComponent.class, new Properties());
+				annotationPanel = new AutoAnnotationPanel(application);
+				AutoAnnotationManager.getInstance().setAnnotationPanel(annotationPanel);
+				registrar.registerService(annotationPanel, CytoPanelComponent.class, new Properties());
 				initialized = true;
-			} else {
-				inputPanel.updateSelectedView(applicationManager.getCurrentNetworkView());
 			}
+			// Update the selected view for the panel (necessary for loading sessions)
+			annotationPanel.updateSelectedView(applicationManager.getCurrentNetworkView());
 			// If the state of the cytoPanelWest is HIDE, show it
 			if (cytoPanelWest.getState() == CytoPanelState.HIDE) {
 				cytoPanelWest.setState(CytoPanelState.DOCK);
 			}
 
-			// Select my panels
-			int inputIndex = cytoPanelWest.indexOfComponent(inputPanel);
+			// Select my panel
+			int inputIndex = cytoPanelWest.indexOfComponent(annotationPanel);
 			if (inputIndex != -1) cytoPanelWest.setSelectedIndex(inputIndex);
 		} else {
+			// Don't create the panel if it can't be used
 			JOptionPane.showMessageDialog(application.getJFrame(), "Please load an Enrichment Map.");
 		}
 	}

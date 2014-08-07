@@ -6,7 +6,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.baderlab.csplugins.enrichmentmap.autoannotate.view.AutoAnnotationPanel;
-import org.cytoscape.application.CyApplicationManager;
+import org.baderlab.csplugins.enrichmentmap.view.HeatMapPanel;
 import org.cytoscape.application.events.SetSelectedNetworkViewsEvent;
 import org.cytoscape.application.events.SetSelectedNetworkViewsListener;
 import org.cytoscape.application.swing.CySwingApplication;
@@ -42,12 +42,13 @@ public class AutoAnnotationManager implements
 		ColumnDeletedListener, ColumnNameChangedListener,
 		NetworkViewAboutToBeDestroyedListener {
 	
+	// instance variable used to get the manager from other parts of the program
 	private static AutoAnnotationManager instance = null;
-	// Used to control selected panels
+	// used to control selected panels
 	private CySwingApplication application;
-	// Reference to the panel that the user interacts with
+	// reference to the panel that the user interacts with
 	private AutoAnnotationPanel annotationPanel;
-	// Stores the annotation parameters (one for each network view)
+	// stores the annotation parameters (one for each network view)
 	private HashMap<CyNetworkView, AutoAnnotationParameters> networkViewToAutoAnnotationParameters;
 	// used to set clusterMaker default parameters
 	private static final SortedMap<String, String> algorithmToColumnName;
@@ -69,7 +70,7 @@ public class AutoAnnotationManager implements
 	// used to execute annotation, WordCloud, and clusterMaker tasks
 	private DialogTaskManager dialogTaskManager;
 	// used to apply layouts
-	private SynchronousTaskManager syncTaskManager;
+	private SynchronousTaskManager<?> syncTaskManager;
 	// annotations are added to here
 	private AnnotationManager annotationManager;
 	// used to update the layout of the nodes
@@ -82,6 +83,8 @@ public class AutoAnnotationManager implements
 	private CyGroupFactory groupFactory;
 	// used to destroy the groups
 	private CyGroupManager groupManager;
+	// used to select heatmap panel on cluster selection
+	private HeatMapPanel heatmapPanel;
 	
 	public static AutoAnnotationManager getInstance() {
 		if (instance == null) {
@@ -94,12 +97,13 @@ public class AutoAnnotationManager implements
 		networkViewToAutoAnnotationParameters = new HashMap<CyNetworkView, AutoAnnotationParameters>();
 	}
 
+	// Initialize all of the services that will be needed for auto annotation
 	public void initialize(CySwingApplication application, CyTableManager tableManager, 
 			CommandExecutorTaskFactory commandExecutor,	DialogTaskManager dialogTaskManager, 
-			SynchronousTaskManager syncTaskManager, AnnotationManager annotationManager, 
+			SynchronousTaskManager<?> syncTaskManager, AnnotationManager annotationManager, 
 			CyLayoutAlgorithmManager layoutManager, AnnotationFactory<ShapeAnnotation> shapeFactory, 
 			AnnotationFactory<TextAnnotation> textFactory, CyGroupFactory groupFactory,
-			CyGroupManager groupManager) {
+			CyGroupManager groupManager, HeatMapPanel heatMapPanel_node) {
 		
 		this.application = application;
 		this.tableManager = tableManager;
@@ -112,11 +116,14 @@ public class AutoAnnotationManager implements
 		this.textFactory = textFactory;
 		this.groupFactory = groupFactory;
 		this.groupManager = groupManager;
+		this.heatmapPanel = heatMapPanel_node;
 	}
 	
 	@Override
 	public void handleEvent(SetSelectedNetworkViewsEvent e) {
-		annotationPanel.updateSelectedView(e.getNetworkViews().get(0));
+		if (annotationPanel != null) {
+			annotationPanel.updateSelectedView(e.getNetworkViews().get(0));			
+		}
 	}
 	
 	@Override
@@ -172,7 +179,7 @@ public class AutoAnnotationManager implements
 		return dialogTaskManager;
 	}
 
-	public SynchronousTaskManager getSyncTaskManager() {
+	public SynchronousTaskManager<?> getSyncTaskManager() {
 		return syncTaskManager;
 	}
 
@@ -210,5 +217,9 @@ public class AutoAnnotationManager implements
 
 	public CyGroupManager getGroupManager() {
 		return groupManager;
+	}
+
+	public HeatMapPanel getHeatmapPanel() {
+		return heatmapPanel;
 	}
 }
