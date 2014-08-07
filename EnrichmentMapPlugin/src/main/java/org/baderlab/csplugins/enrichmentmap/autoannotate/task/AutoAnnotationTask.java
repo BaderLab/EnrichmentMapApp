@@ -194,8 +194,11 @@ public class AutoAnnotationTask extends AbstractTask {
 			for (CyNode node : cluster.getNodes()) {
 				nodeViewSet.add(view.getNodeView(node));
 			}
-			iterator = force_directed.createTaskIterator(view, force_directed.createLayoutContext(), nodeViewSet, null);
-			syncTaskManager.execute(iterator);
+			// Only apply layout to nodes of size greater than 4
+			if (nodeViewSet.size() > 4) {
+				iterator = force_directed.createTaskIterator(view, force_directed.createLayoutContext(), nodeViewSet, null);
+				syncTaskManager.execute(iterator);
+			}
 		}
 	}
 
@@ -308,19 +311,19 @@ public class AutoAnnotationTask extends AbstractTask {
 	private String getCommand(String algorithm, String edgeAttribute, String networkName) {
 		String command = "";
 		if (algorithm == "Affinity Propagation Cluster") {
-			command = "cluster ap attribute=\"" + edgeAttribute + "\"";
+			command = "cluster ap attribute=\"" + edgeAttribute + "\" clusterAttribute=\"" + clusterColumnName + "\"";
 		} else if (algorithm == "Cluster Fuzzifier") {
-			command = "cluster fuzzifier attribute=\"" + edgeAttribute + "\"";
+			command = "cluster fuzzifier attribute=\"" + edgeAttribute + "\" clusterAttribute=\"" + clusterColumnName + "\"";
 		} else if (algorithm == "Community cluster (GLay)") {
-			command = "cluster glay";
+			command = "cluster glay clusterAttribute=\"" + clusterColumnName + "\"";
 		} else if (algorithm == "ConnectedComponents Cluster") {
-			command = "cluster connectedcomponents attribute=\"" + edgeAttribute + "\"";
+			command = "cluster connectedcomponents attribute=\"" + edgeAttribute + "\" clusterAttribute=\"" + clusterColumnName + "\"";
 		} else if (algorithm == "Fuzzy C-Means Cluster") {
-			command = "cluster fcml attribute=\"" + edgeAttribute + "\"";
+			command = "cluster fcml attribute=\"" + edgeAttribute + "\" clusterAttribute=\"" + clusterColumnName + "\"";
 		} else if (algorithm == "MCL Cluster") {
-			command = "cluster mcl attribute=\"" + edgeAttribute + "\"";
+			command = "cluster mcl attribute=\"" + edgeAttribute + "\" clusterAttribute=\"" + clusterColumnName + "\"";
 		} else if (algorithm == "SCPS Cluster") {
-			command = "cluster scps attribute=\"" + edgeAttribute + "\"";
+			command = "cluster scps attribute=\"" + edgeAttribute + "\" clusterAttribute=\"" + clusterColumnName + "\"";
 		}
 		return command;
 	}

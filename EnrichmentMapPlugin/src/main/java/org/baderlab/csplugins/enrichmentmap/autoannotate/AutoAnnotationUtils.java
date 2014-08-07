@@ -13,7 +13,6 @@ import java.util.List;
 
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.WordInfo;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.task.Observer;
 import org.cytoscape.command.CommandExecutorTaskFactory;
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupManager;
@@ -54,17 +53,8 @@ public class AutoAnnotationUtils {
 			ArrayList<String> commands = new ArrayList<String>();
 			String command = "wordcloud select cloudName=\"" + selectedCluster.getCloudName() + "\"";
 			commands.add(command);
-			Observer observer = new Observer();
 			TaskIterator task = executor.createTaskIterator(commands, null);
-			syncTaskManager.execute(task, observer);
-			// Wait for WordCloud to finish selecting
-			while (! observer.isFinished()) {
-				try {
-					Thread.sleep(1);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
+			syncTaskManager.execute(task);
 			// Select the annotations (ellipse and text label)
 			selectedCluster.getEllipse().setSelected(true);
 			selectedCluster.getTextAnnotation().setSelected(true);
@@ -94,17 +84,8 @@ public class AutoAnnotationUtils {
 		ArrayList<String> commands = new ArrayList<String>();
 		String command = "wordcloud delete cloudName=\"" + clusterToDestroy.getCloudName() + "\"";
 		commands.add(command);
-		Observer observer = new Observer();
 		TaskIterator task = executor.createTaskIterator(commands, null);
-		syncTaskManager.execute(task, observer);
-		// Wait for deletion to finish
-		while (!observer.isFinished()) {
-			try {
-				Thread.sleep(1);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
+		syncTaskManager.execute(task);
 		// Erase the annotations
 		clusterToDestroy.erase();
 	}
@@ -202,7 +183,6 @@ public class AutoAnnotationUtils {
 	}
 	
 	public static String makeLabel(ArrayList<WordInfo> wordInfos) {
-		// TODO more code reuse		
 		// Work with a copy so as to not mess up the order for comparisons
 		ArrayList<WordInfo> wordInfosCopy = new ArrayList<WordInfo>();
 		for (WordInfo wordInfo : wordInfos) {
@@ -212,54 +192,25 @@ public class AutoAnnotationUtils {
 		// Gets the biggest word in the cloud
 		WordInfo biggestWord = wordInfosCopy.get(0);
 		String label = biggestWord.getWord();
-//		double[] nextWordSizeThresholds = {0.3, 0.8, 0.9};
-//		int numWords = 1;
-//		WordInfo nextWord = biggestWord;
-//		do {
-//			wordInfosCopy.remove(0);
-//			for (WordInfo word : wordInfosCopy.subList(1, wordInfosCopy.size())) {
-//				if (word.getCluster() == nextWord.getCluster()) {
-//					word.setSize(word.getSize() - 1);	
-//				}
-//			}		
-//			nextWord = wordInfosCopy.get(0);
-//			label += " " + nextWord.getWord();
-//			numWords++;
-//		} while (nextWord.getSize() > nextWordSizeThresholds[numWords - 1] && numWords < 4);
-		if (wordInfosCopy.size() > 1) {
+		double[] nextWordSizeThresholds = {0.3, 0.8, 0.9};
+		int numWords = 1;
+		WordInfo nextWord = biggestWord;
+		do {
+			wordInfosCopy.remove(0);
 			for (WordInfo word : wordInfosCopy.subList(1, wordInfosCopy.size())) {
-				if (word.getCluster() == biggestWord.getCluster()) {
-					word.setSize(word.getSize() - 1);
+				if (word.getCluster() == nextWord.getCluster()) {
+					word.setSize(word.getSize() - 1);	
 				}
 			}
-			Collections.sort(wordInfosCopy); // Sorts by size descending
-			WordInfo secondBiggestWord = wordInfosCopy.get(1);
-			if (secondBiggestWord.getSize() >= 0.3*biggestWord.getSize()) {
-				label += " " + secondBiggestWord.getWord();
+			double wordSizeThreshold = nextWord.getSize()*nextWordSizeThresholds[numWords - 1];
+			nextWord = wordInfosCopy.get(0);
+			if (nextWord.getSize() > wordSizeThreshold) {
+				label += " " + nextWord.getWord();
+				numWords++;
+			} else {
+				break;
 			}
-			for (WordInfo word : wordInfosCopy.subList(1, wordInfosCopy.size())) {
-				if (!word.equals(secondBiggestWord) && word.getCluster() == secondBiggestWord.getCluster()) {
-					word.setSize(word.getSize() - 1);
-				}
-			}
-			Collections.sort(wordInfosCopy); // Sorts by size descending
-			try {
-				WordInfo thirdBiggestWord = wordInfosCopy.get(2);
-				if (thirdBiggestWord.getSize() > 0.8*secondBiggestWord.getSize()) {
-					label += " " + thirdBiggestWord.getWord();
-				}
-			} catch (Exception e) {
-				return label;
-			}
-			try {
-				WordInfo fourthBiggestWord = wordInfosCopy.get(3);
-				if (fourthBiggestWord.getSize() > 0.9*secondBiggestWord.getSize()) {
-					label += " " + fourthBiggestWord.getWord();
-				}
-			} catch (Exception e) {
-				return label;
-			}
-		}
+		} while (numWords < 4 && wordInfosCopy.size() > 0);
 		return label;
 	}
 

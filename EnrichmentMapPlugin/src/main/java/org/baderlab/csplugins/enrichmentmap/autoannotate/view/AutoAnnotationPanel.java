@@ -162,6 +162,16 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 				if (selectedView == null) {
 					JOptionPane.showMessageDialog(autoAnnotationManager.getAnnotationPanel(), "Load an Enrichment Map");
 				} else {
+					// Get the params for this network
+					if (autoAnnotationManager.getNetworkViewToAutoAnnotationParameters().containsKey(selectedView)) {
+						// Not the first annotation set for this network view, lookup
+						params = autoAnnotationManager.getNetworkViewToAutoAnnotationParameters().get(selectedView);
+					} else {
+						// First annotation set for the view, make/register the new network view parameters
+						params = new AutoAnnotationParameters();
+						params.setNetworkView(selectedView);
+						autoAnnotationManager.getNetworkViewToAutoAnnotationParameters().put(selectedView, params);
+					}
 					String clusterColumnName = null;
 					String algorithm = null;
 					if (defaultButton.isSelected()) {
@@ -175,15 +185,6 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 						clusterColumnName = (String) clusterColumnDropdown.getSelectedItem();
 					}
 					String nameColumnName = (String) nameColumnDropdown.getSelectedItem();
-					if (autoAnnotationManager.getNetworkViewToAutoAnnotationParameters().containsKey(selectedView)) {
-						// Not the first annotation set for this network view, lookup
-						params = autoAnnotationManager.getNetworkViewToAutoAnnotationParameters().get(selectedView);
-					} else {
-						// First annotation set for the view, make/register the new network view parameters
-						params = new AutoAnnotationParameters();
-						params.setNetworkView(selectedView);
-						autoAnnotationManager.getNetworkViewToAutoAnnotationParameters().put(selectedView, params);
-					}
 					String annotationSetName = params.nextAnnotationSetName(algorithm, clusterColumnName);
 					AutoAnnotationTaskFactory autoAnnotatorTaskFactory = new AutoAnnotationTaskFactory(application, 
 							autoAnnotationManager, selectedView, clusterColumnName, nameColumnName, algorithm, 
@@ -403,7 +404,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 		
 		// By default layout nodes by cluster
 		layoutCheckBox = new JCheckBox("Layout nodes by cluster");
-		layoutCheckBox.setSelected(true);
+		layoutCheckBox.setSelected(false);
 		
 		// By default layout nodes by cluster
 		groupsCheckBox = new JCheckBox("Create groups (metanodes) for clusters *BUGGY*");
@@ -526,7 +527,6 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 				if (! e.getValueIsAdjusting()) { // Down-click and up-click are separate events, this makes only one of them fire
 					SynchronousTaskManager<?> syncTaskManager = autoAnnotationManager.getSyncTaskManager();
 					CommandExecutorTaskFactory executor = autoAnnotationManager.getCommandExecutor();
-					//setHeatMapNoSort();
 					int[] selectedRows = table.getSelectedRows();
 					ArrayList<Cluster> selectedClusters = new ArrayList<Cluster>();
 					for (int rowIndex=0; rowIndex < table.getRowCount(); rowIndex++) {

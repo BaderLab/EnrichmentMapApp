@@ -91,7 +91,7 @@ public class AutoAnnotationParameters {
 	
 	public String nextClusterColumnName(String clusterMakerColumnName, CyTable nodeTable) {
 		// Method to prevent overlap of cluster columns
-		String originalClusterColumnName = null;
+		String originalClusterColumnName = clusterMakerColumnName;
 		String clusterColumnName = originalClusterColumnName;
 		int suffix = 2;
 		while (nodeTable.getColumn(clusterColumnName) != null) {
