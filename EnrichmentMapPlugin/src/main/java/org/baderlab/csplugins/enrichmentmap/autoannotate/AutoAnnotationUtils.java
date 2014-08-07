@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
+import org.baderlab.csplugins.enrichmentmap.autoannotate.model.AnnotationSet;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.WordInfo;
 import org.cytoscape.command.CommandExecutorTaskFactory;
@@ -227,6 +228,65 @@ public class AutoAnnotationUtils {
 		CyGroup group = cluster.getGroup();
 		if (group != null) {
 			group.removeGroupFromNetwork(selectedNetwork);
+		}
+	}
+
+	public static void updateFontSizes(Integer fontSize) {
+		if (fontSize == null) {
+			// Set font size proportional to number of nodes
+			for (CyNetworkView view : 
+				AutoAnnotationManager.getInstance().getNetworkViewToAutoAnnotationParameters().keySet()) {
+				AutoAnnotationParameters params = AutoAnnotationManager.getInstance().getNetworkViewToAutoAnnotationParameters().get(view);
+				double zoom = view.getVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR);
+				for (AnnotationSet annotationSet : params.getAnnotationSets().values()) {
+					for (Cluster cluster : annotationSet.getClusterMap().values()) {
+						fontSize = (int) Math.round(2.5*Math.pow(cluster.getSize(), 0.4));
+						TextAnnotation oldLabel = cluster.getTextAnnotation();
+						ShapeAnnotation ellipse = cluster.getEllipse();
+						// Create and draw the label
+						HashMap<String, String> arguments = new HashMap<String,String>();
+						int xPos = (int) Math.round(Double.valueOf(ellipse.getArgMap().get("x")) + Double.valueOf(ellipse.getArgMap().get("width"))*padding/2 - 2.1*fontSize*cluster.getLabel().length());
+						int yPos = (int) Math.round(Double.valueOf(ellipse.getArgMap().get("y")) - 11.3*fontSize);
+						arguments.put("x", String.valueOf(xPos));
+						arguments.put("y", String.valueOf(yPos));
+						arguments.put("zoom", String.valueOf(zoom));
+						arguments.put("canvas", "foreground");
+						arguments.put("fontSize", String.valueOf((int) Math.round(11*fontSize*zoom)));
+						TextAnnotation textAnnotation = AutoAnnotationManager.getInstance().getTextFactory().createAnnotation(TextAnnotation.class, view, arguments);
+						textAnnotation.setText(cluster.getLabel());
+						cluster.setTextAnnotation(textAnnotation);
+						oldLabel.removeAnnotation();
+						AutoAnnotationManager.getInstance().getAnnotationManager().addAnnotation(textAnnotation);
+					}
+				}
+			}
+		} else {
+			// Set font size to fontSize
+			for (CyNetworkView view : 
+				AutoAnnotationManager.getInstance().getNetworkViewToAutoAnnotationParameters().keySet()) {
+				AutoAnnotationParameters params = AutoAnnotationManager.getInstance().getNetworkViewToAutoAnnotationParameters().get(view);
+				double zoom = view.getVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR);
+				for (AnnotationSet annotationSet : params.getAnnotationSets().values()) {
+					for (Cluster cluster : annotationSet.getClusterMap().values()) {
+						TextAnnotation oldLabel = cluster.getTextAnnotation();
+						ShapeAnnotation ellipse = cluster.getEllipse();
+						// Create and draw the label
+						int xPos = (int) Math.round(Double.valueOf(ellipse.getArgMap().get("x")) + Double.valueOf(ellipse.getArgMap().get("width"))*padding/2 - 1.3*fontSize*cluster.getLabel().length());
+						int yPos = (int) Math.round(Double.valueOf(ellipse.getArgMap().get("y")) - 7.3*fontSize);
+						HashMap<String, String> arguments = new HashMap<String,String>();
+						arguments.put("x", String.valueOf(xPos));
+						arguments.put("y", String.valueOf(yPos));
+						arguments.put("zoom", String.valueOf(zoom));
+						arguments.put("canvas", "foreground");
+						arguments.put("fontSize", String.valueOf((int) Math.round(fontSize)));
+						TextAnnotation textAnnotation = AutoAnnotationManager.getInstance().getTextFactory().createAnnotation(TextAnnotation.class, view, arguments);
+						textAnnotation.setText(cluster.getLabel());
+						cluster.setTextAnnotation(textAnnotation);
+						oldLabel.removeAnnotation();
+						AutoAnnotationManager.getInstance().getAnnotationManager().addAnnotation(textAnnotation);
+					}
+				}
+			}
 		}
 	}
 }

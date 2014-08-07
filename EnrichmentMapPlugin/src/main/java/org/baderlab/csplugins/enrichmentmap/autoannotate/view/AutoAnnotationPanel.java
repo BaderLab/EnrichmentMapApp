@@ -5,6 +5,8 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -29,6 +31,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
@@ -75,6 +78,9 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 
 	private static final String defaultButtonString = "Use clusterMaker defaults";
 	private static final String specifyColumnButtonString = "Select cluster column";
+	
+	private static final String proportionalSizeButtonString = "Font size by # of nodes";
+	private static final String constantSizeButtonString = "Constant font size";
 
 	// Dropdown menus
 	private JComboBox nameColumnDropdown;
@@ -82,7 +88,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 	private JComboBox clusterAlgorithmDropdown;
 
 	// Radio buttons to choose between clusterMaker defaults and a cluster column
-	private ButtonGroup radioButtonGroup;
+	private ButtonGroup clusterButtonGroup;
 	private JRadioButton defaultButton;
 	private JRadioButton specifyColumnButton;
 
@@ -112,8 +118,11 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 
 	private JCheckBox layoutCheckBox;
 	private JCheckBox groupsCheckBox;
+	// Used to specify the font size
+	private JTextField fontSizeTextField;
 
 	private CySwingApplication application;
+
 
 
 	public AutoAnnotationPanel(CySwingApplication application){
@@ -160,7 +169,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 		ActionListener annotateAction = new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
 				if (selectedView == null) {
-					JOptionPane.showMessageDialog(autoAnnotationManager.getAnnotationPanel(), "Load an Enrichment Map");
+					JOptionPane.showMessageDialog(null, "Load an Enrichment Map", "Error Message", JOptionPane.ERROR_MESSAGE);
 				} else {
 					// Get the params for this network
 					if (autoAnnotationManager.getNetworkViewToAutoAnnotationParameters().containsKey(selectedView)) {
@@ -223,7 +232,8 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 				JTable clusterTable = clustersToTables.get(annotationSet);
 				int[] selectedRows = clusterTable.getSelectedRows();
 				if (selectedRows.length < 2) {
-					JOptionPane.showMessageDialog(null, "Please select at least two clusters");
+					JOptionPane.showMessageDialog(null, "Please select at least two clusters", "Error Message",
+		                    JOptionPane.ERROR_MESSAGE);
 				} else {
 					ArrayList<Integer> selectedClusters = new ArrayList<Integer>();
 					for (int rowNumber : selectedRows) {
@@ -339,7 +349,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 	}
 	
 	private BasicCollapsiblePanel createAdvancedOptionsPanel() {
-		BasicCollapsiblePanel optionsPanel = new BasicCollapsiblePanel("Advanced Clustering Options");
+		BasicCollapsiblePanel optionsPanel = new BasicCollapsiblePanel("Advanced Options");
 		
 		JPanel innerPanel = new JPanel(new BorderLayout());
 		
@@ -367,15 +377,15 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 		});
 
 		// Group buttons together to make them mutually exclusive
-		radioButtonGroup = new ButtonGroup();
-		radioButtonGroup.add(defaultButton);
-		radioButtonGroup.add(specifyColumnButton);
+		clusterButtonGroup = new ButtonGroup();
+		clusterButtonGroup.add(defaultButton);
+		clusterButtonGroup.add(specifyColumnButton);
 
-		JPanel radioButtonPanel = new JPanel();
-		radioButtonPanel.setLayout(new BoxLayout(radioButtonPanel, BoxLayout.PAGE_AXIS));
-		radioButtonPanel.add(defaultButton);
-		radioButtonPanel.add(specifyColumnButton);
-
+		JPanel clusterButtonPanel = new JPanel();
+		clusterButtonPanel.setLayout(new BoxLayout(clusterButtonPanel, BoxLayout.PAGE_AXIS));
+		clusterButtonPanel.add(defaultButton);
+		clusterButtonPanel.add(specifyColumnButton);
+		
 		// Dropdown with all the available algorithms
 		DefaultComboBoxModel clusterDropdownModel = new DefaultComboBoxModel();
 		for (String algorithm : autoAnnotationManager.getAlgorithmToColumnName().keySet()) {
@@ -402,6 +412,66 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 		// By default use clusterMaker defaults
 		defaultButton.setSelected(true);
 		
+		// Font size options
+		JRadioButton proportionalSizeButton = new JRadioButton(proportionalSizeButtonString);
+		proportionalSizeButton.setSelected(true);
+		JRadioButton constantSizeButton = new JRadioButton(constantSizeButtonString);
+		fontSizeTextField = new JTextField();
+		fontSizeTextField.addActionListener(new ActionListener() {
+		    public void actionPerformed(ActionEvent e) {
+		    	try {
+		    		int fontSize = Integer.parseInt(fontSizeTextField.getText());
+		    		if (fontSize <= 0) {
+		    			throw new Exception();
+		    		}
+		    		AutoAnnotationUtils.updateFontSizes(fontSize);
+		    	} catch (Exception ex) {
+		            JOptionPane.showMessageDialog(null,
+		                    "Error: Please enter an integer bigger than 0", "Error Message",
+		                    JOptionPane.ERROR_MESSAGE);
+		    	}
+		    }
+		});
+		fontSizeTextField.setText("12");
+		// Initially hidden
+		fontSizeTextField.setEnabled(false);
+		constantSizeButton.addItemListener(new ItemListener() {
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				if (e.getStateChange() == ItemEvent.SELECTED) {
+					fontSizeTextField.setEnabled(true);
+			    	int fontSize = Integer.parseInt(fontSizeTextField.getText());
+					AutoAnnotationUtils.updateFontSizes(fontSize);
+					updateUI();
+				} else if (e.getStateChange() == ItemEvent.DESELECTED) {
+					fontSizeTextField.setEnabled(false);
+					AutoAnnotationUtils.updateFontSizes(null);
+					updateUI();
+				}
+			}
+		});
+
+		// Group buttons together to make them mutually exclusive
+		ButtonGroup fontButtonGroup = new ButtonGroup();
+		fontButtonGroup.add(proportionalSizeButton);
+		fontButtonGroup.add(constantSizeButton);
+
+		JPanel fontSizePanel = new JPanel(new GridBagLayout());
+		GridBagConstraints c = new GridBagConstraints();
+		fontSizePanel.setBorder(BorderFactory.createTitledBorder("Font Size Options"));
+		c.gridx = 0;
+		c.gridwidth = 5;
+		c.gridy = 0;
+		fontSizePanel.add(proportionalSizeButton,c);
+		c.gridx = 0;
+		c.gridwidth = 4;
+		c.gridy = 1;
+		fontSizePanel.add(constantSizeButton,c);
+		c.gridx = 10;
+		c.gridwidth = 1;
+		c.gridy = 1;
+		fontSizePanel.add(fontSizeTextField,c);
+
 		// By default layout nodes by cluster
 		layoutCheckBox = new JCheckBox("Layout nodes by cluster");
 		layoutCheckBox.setSelected(false);
@@ -414,13 +484,17 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 		checkBoxPanel.add(layoutCheckBox, BorderLayout.NORTH);
 		checkBoxPanel.add(groupsCheckBox, BorderLayout.SOUTH);
 		
+		JPanel nonClusterOptionPanel = new JPanel(new BorderLayout());
+		nonClusterOptionPanel.add(fontSizePanel, BorderLayout.NORTH);
+		nonClusterOptionPanel.add(checkBoxPanel, BorderLayout.SOUTH);
+		
 		JPanel clusterOptionPanel = new JPanel(new BorderLayout());
 		clusterOptionPanel.setBorder(BorderFactory.createTitledBorder("ClusterMaker Options"));
-		clusterOptionPanel.add(radioButtonPanel, BorderLayout.WEST);
+		clusterOptionPanel.add(clusterButtonPanel, BorderLayout.WEST);
 		clusterOptionPanel.add(dropdownPanel, BorderLayout.EAST);
 		
 		innerPanel.add(clusterOptionPanel, BorderLayout.NORTH);
-		innerPanel.add(checkBoxPanel, BorderLayout.SOUTH);
+		innerPanel.add(nonClusterOptionPanel, BorderLayout.SOUTH);
 		
 		optionsPanel.add(innerPanel);
 		
