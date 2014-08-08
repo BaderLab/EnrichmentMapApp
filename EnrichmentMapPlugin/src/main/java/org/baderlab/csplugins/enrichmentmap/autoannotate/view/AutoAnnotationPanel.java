@@ -321,7 +321,8 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 				for (Cluster cluster : annotationSet.getClusterMap().values()) {
 					// Update the text label of the selected cluster
 					String previousLabel = cluster.getLabel();
-					AutoAnnotationUtils.updateClusterLabel(cluster, selectedNetwork, annotationSetName, clusterSetTable);
+					String nameColumnName = (String) nameColumnDropdown.getSelectedItem();
+					AutoAnnotationUtils.updateClusterLabel(cluster, selectedNetwork, annotationSetName, clusterSetTable, nameColumnName);
 					if (previousLabel != cluster.getLabel()) {
 						// Cluster table needs to be updated with new label
 						clustersToTables.get(annotationSet).updateUI();
@@ -690,7 +691,8 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 						// Register the groups for this cluster
 						AutoAnnotationUtils.registerClusterGroups(cluster, selectedNetwork, groupManager);
 						// Update the text label of the selected cluster
-						AutoAnnotationUtils.updateClusterLabel(cluster, selectedNetwork, annotationSetName, clusterSetTable);
+						String nameColumnName = (String) nameColumnDropdown.getSelectedItem();
+						AutoAnnotationUtils.updateClusterLabel(cluster, selectedNetwork, annotationSetName, clusterSetTable, nameColumnName);
 						// Redraw selected clusters
 						AnnotationFactory<ShapeAnnotation> shapeFactory = autoAnnotationManager.getShapeFactory();
 						AnnotationFactory<TextAnnotation> textFactory = autoAnnotationManager.getTextFactory();

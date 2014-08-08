@@ -171,33 +171,41 @@ public class AutoAnnotationUtils {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static void updateClusterLabel(Cluster cluster, CyNetwork network, String annotationSetName, CyTable clusterSetTable) {
-		// Look up the WordCloud info of this cluster in its table
-		CyRow clusterRow = clusterSetTable.getRow(cluster.getClusterNumber());
-		// Get each piece of the WordCloud info
-		List<String> wordList = clusterRow.get("WC_Word", List.class);
-		List<String> sizeList = clusterRow.get("WC_FontSize", List.class);
-		List<String> clusterList = clusterRow.get("WC_Cluster", List.class);
-		List<String> numberList = clusterRow.get("WC_Number", List.class);
-		ArrayList<WordInfo> wordInfos = new ArrayList<WordInfo>();
-		for (int i=0; i < wordList.size(); i++) {
-			wordInfos.add(new WordInfo(wordList.get(i), 
-									Integer.parseInt(sizeList.get(i)),
-									Integer.parseInt(clusterList.get(i)),
-									Integer.parseInt(numberList.get(i))));
-		}
-		// Only update the labels if the wordCloud has changed
-		if (wordInfos.size() != cluster.getWordInfos().size()) {
-			// WordCloud table entry for this cluster has changed
-			cluster.setWordInfos(wordInfos);
-			cluster.setLabel(makeLabel(wordInfos));
+	public static void updateClusterLabel(Cluster cluster, CyNetwork network, String annotationSetName, CyTable clusterSetTable, String nameColumnName) {
+		if (cluster.getSize() == 1) {
+			String oldLabel = cluster.getLabel();
+			String newLabel = network.getRow(cluster.getNodes().get(0)).get(nameColumnName, String.class);
+			if (!(newLabel.equals(oldLabel))) {
+				cluster.setLabel(newLabel);
+			}
 		} else {
-			for (int infoIndex = 0; infoIndex < cluster.getWordInfos().size(); infoIndex++) {
-				if (!wordInfos.get(infoIndex).equals(cluster.getWordInfos().get(infoIndex))) {
-					// WordCloud table entry for this cluster has changed
-					cluster.setWordInfos(wordInfos);
-					cluster.setLabel(makeLabel(wordInfos));
-					return;
+			// Look up the WordCloud info of this cluster in its table
+			CyRow clusterRow = clusterSetTable.getRow(cluster.getClusterNumber());
+			// Get each piece of the WordCloud info
+			List<String> wordList = clusterRow.get("WC_Word", List.class);
+			List<String> sizeList = clusterRow.get("WC_FontSize", List.class);
+			List<String> clusterList = clusterRow.get("WC_Cluster", List.class);
+			List<String> numberList = clusterRow.get("WC_Number", List.class);
+			ArrayList<WordInfo> wordInfos = new ArrayList<WordInfo>();
+			for (int i=0; i < wordList.size(); i++) {
+				wordInfos.add(new WordInfo(wordList.get(i), 
+										Integer.parseInt(sizeList.get(i)),
+										Integer.parseInt(clusterList.get(i)),
+										Integer.parseInt(numberList.get(i))));
+			}
+			// Only update the labels if the wordCloud has changed
+			if (wordInfos.size() != cluster.getWordInfos().size()) {
+				// WordCloud table entry for this cluster has changed
+				cluster.setWordInfos(wordInfos);
+				cluster.setLabel(makeLabel(wordInfos));
+			} else {
+				for (int infoIndex = 0; infoIndex < cluster.getWordInfos().size(); infoIndex++) {
+					if (!wordInfos.get(infoIndex).equals(cluster.getWordInfos().get(infoIndex))) {
+						// WordCloud table entry for this cluster has changed
+						cluster.setWordInfos(wordInfos);
+						cluster.setLabel(makeLabel(wordInfos));
+						return;
+					}
 				}
 			}
 		}
@@ -216,8 +224,8 @@ public class AutoAnnotationUtils {
 		double[] nextWordSizeThresholds = {0.3, 0.8, 0.9};
 		int numWords = 1;
 		WordInfo nextWord = biggestWord;
-		do {
-			wordInfosCopy.remove(0);
+		wordInfosCopy.remove(0);
+		while (numWords < 4 && wordInfosCopy.size() > 0) {
 			for (WordInfo word : wordInfosCopy.subList(1, wordInfosCopy.size())) {
 				if (word.getCluster() == nextWord.getCluster()) {
 					word.setSize(word.getSize() - 1);	
@@ -225,13 +233,14 @@ public class AutoAnnotationUtils {
 			}
 			double wordSizeThreshold = nextWord.getSize()*nextWordSizeThresholds[numWords - 1];
 			nextWord = wordInfosCopy.get(0);
+			wordInfosCopy.remove(0);
 			if (nextWord.getSize() > wordSizeThreshold) {
 				label += " " + nextWord.getWord();
 				numWords++;
 			} else {
 				break;
 			}
-		} while (numWords < 4 && wordInfosCopy.size() > 0);
+		}
 		return label;
 	}
 

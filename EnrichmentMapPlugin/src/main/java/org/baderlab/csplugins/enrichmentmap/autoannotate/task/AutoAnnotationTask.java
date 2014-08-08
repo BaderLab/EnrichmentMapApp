@@ -170,7 +170,7 @@ public class AutoAnnotationTask extends AbstractTask {
     	String annotationSetName = clusters.getCloudNamePrefix();
     	// Generate the labels for the clusters
     	for (Cluster cluster : clusters.getClusterMap().values()) {
-    		AutoAnnotationUtils.updateClusterLabel(cluster, network, annotationSetName, clusterSetTable);
+    		AutoAnnotationUtils.updateClusterLabel(cluster, network, annotationSetName, clusterSetTable, nameColumnName);
     	}
     	// Add these clusters to the table on the annotationPanel
     	annotationPanel.addClusters(clusters);
