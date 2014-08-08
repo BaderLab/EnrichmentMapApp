@@ -93,8 +93,8 @@ public class AutoAnnotationTask extends AbstractTask {
 	private String nameColumnName;
 	private String algorithm;
 	private boolean layout;
-	private boolean groups;
 	private CyLayoutAlgorithmManager layoutManager;
+	private boolean groups;
 	private String annotationSetName;
 	private CyTableManager tableManager;
 	private AutoAnnotationPanel annotationPanel;

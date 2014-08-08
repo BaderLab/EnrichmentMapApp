@@ -114,6 +114,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 	private AutoAnnotationManager autoAnnotationManager;
 	private AutoAnnotationParameters params;
 
+	private BasicCollapsiblePanel advancedOptionsPanel;
 	private BasicCollapsiblePanel selectionPanel;
 
 	private JCheckBox layoutCheckBox;
@@ -162,7 +163,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 		// Gives the user a choice of column with gene names
 		nameColumnDropdown = new JComboBox();
 		// Collapsible panel with advanced cluster options
-		JPanel advancedOptionsPanel = createAdvancedOptionsPanel(); 
+		advancedOptionsPanel = createAdvancedOptionsPanel(); 
 		
 		// Run the annotation
 		JButton annotateButton = new JButton("Annotate!");
@@ -198,6 +199,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 					AutoAnnotationTaskFactory autoAnnotatorTaskFactory = new AutoAnnotationTaskFactory(application, 
 							autoAnnotationManager, selectedView, clusterColumnName, nameColumnName, algorithm, 
 							layoutCheckBox.isSelected(), groupsCheckBox.isSelected(), annotationSetName);
+					advancedOptionsPanel.setCollapsed(true);
 					autoAnnotationManager.getDialogTaskManager().execute(autoAnnotatorTaskFactory.createTaskIterator());
 					// Increment the counter used to name the annotation sets
 					setOutputVisibility(true);
@@ -250,8 +252,10 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 					String clusterColumnName = annotationSet.getClusterColumnName();
 					String nameColumnName = annotationSet.getNameColumnName();
 					removeButton.doClick();
-					AutoAnnotationTaskFactory autoAnnotatorTaskFactory = new AutoAnnotationTaskFactory(application, autoAnnotationManager, selectedView, 
-							clusterColumnName, nameColumnName, null, false, false, annotationSetName);
+					AutoAnnotationTaskFactory autoAnnotatorTaskFactory = new AutoAnnotationTaskFactory(application, 
+							autoAnnotationManager, selectedView, clusterColumnName, 
+							nameColumnName, null, false, false, annotationSetName);
+					advancedOptionsPanel.setCollapsed(true);
 					autoAnnotationManager.getDialogTaskManager().execute(autoAnnotatorTaskFactory.createTaskIterator());
 				}
 			}
@@ -326,7 +330,9 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 					AnnotationFactory<ShapeAnnotation> shapeFactory = autoAnnotationManager.getShapeFactory();
 					AnnotationFactory<TextAnnotation> textFactory = autoAnnotationManager.getTextFactory();
 					AnnotationManager annotationManager = autoAnnotationManager.getAnnotationManager();
-					AutoAnnotationUtils.drawCluster(cluster, selectedView, shapeFactory, textFactory, annotationManager);
+					boolean constantFontSize = fontSizeTextField.isEnabled();
+					int fontSize = Integer.parseInt(fontSizeTextField.getText());
+					AutoAnnotationUtils.drawCluster(cluster, selectedView, shapeFactory, textFactory, annotationManager, constantFontSize, fontSize);
 				}
 				// Update the table if the value has changed (WordCloud has been updated)
 				DefaultTableModel model = (DefaultTableModel) clustersToTables.get(annotationSet).getModel();
@@ -586,7 +592,9 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 					AnnotationFactory<ShapeAnnotation> shapeFactory = autoAnnotationManager.getShapeFactory();
 					AnnotationFactory<TextAnnotation> textFactory = autoAnnotationManager.getTextFactory();
 					AnnotationManager annotationManager = autoAnnotationManager.getAnnotationManager();
-					AutoAnnotationUtils.drawCluster(editedCluster, selectedView, shapeFactory, textFactory, annotationManager);
+					boolean constantFontSize = fontSizeTextField.isEnabled();
+					int fontSize = Integer.parseInt(fontSizeTextField.getText());
+					AutoAnnotationUtils.drawCluster(editedCluster, selectedView, shapeFactory, textFactory, annotationManager, constantFontSize, fontSize);
 				}
 			}
 		});
@@ -687,7 +695,9 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 						AnnotationFactory<ShapeAnnotation> shapeFactory = autoAnnotationManager.getShapeFactory();
 						AnnotationFactory<TextAnnotation> textFactory = autoAnnotationManager.getTextFactory();
 						AnnotationManager annotationManager = autoAnnotationManager.getAnnotationManager();
-						AutoAnnotationUtils.drawCluster(cluster, selectedView, shapeFactory, textFactory, annotationManager);
+						boolean constantFontSize = fontSizeTextField.isEnabled();
+						int fontSize = Integer.parseInt(fontSizeTextField.getText());
+						AutoAnnotationUtils.drawCluster(cluster, selectedView, shapeFactory, textFactory, annotationManager, constantFontSize, fontSize);
 					}
 					clustersToTables.get(annotationSet).getParent().getParent().setVisible(true); // Show selected table
 					updateUI();

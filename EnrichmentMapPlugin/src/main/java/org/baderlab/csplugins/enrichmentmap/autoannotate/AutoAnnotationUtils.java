@@ -32,7 +32,7 @@ import org.cytoscape.work.TaskIterator;
 
 public class AutoAnnotationUtils {
 	
-	private static int min_size = 35; // Minimum size of the cluster
+	private static int min_size = 50; // Minimum size of the cluster
 	private static double padding = Math.sqrt(2)*1.2; // Amount the ellipses are stretched by
 	// sqrt(2) is the ratio between the sizes of an ellipse 
 	// enclosing a rectangle and an ellipse enclosed in a rectangle
@@ -91,8 +91,9 @@ public class AutoAnnotationUtils {
 		clusterToDestroy.erase();
 	}
 
-	public static void drawCluster(Cluster cluster, CyNetworkView view, AnnotationFactory<ShapeAnnotation> shapeFactory, 
-			AnnotationFactory<TextAnnotation> textFactory, AnnotationManager annotationManager) {
+	public static void drawCluster(Cluster cluster, CyNetworkView view, 
+			AnnotationFactory<ShapeAnnotation> shapeFactory, AnnotationFactory<TextAnnotation> textFactory, 
+			AnnotationManager annotationManager, boolean constantFontSize, int fontSize) {
 
 		double zoom = view.getVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR);
 
@@ -131,11 +132,23 @@ public class AutoAnnotationUtils {
 
 		// Set the text of the label
 		String labelText = cluster.getLabel();
-		// Set the font size of the label (proporional to the cluster size)
-		Integer fontSize = (int) Math.round(2.5*Math.pow(cluster.getSize(), 0.4));
-		// Set the position of the label so that it is centered over the ellipse
-		xPos = (int) Math.round(xPos + width*padding/2 - 2.1*fontSize*labelText.length());
-		yPos = (int) Math.round(yPos - 11.3*fontSize);
+
+		// Create the text annotation 
+		Integer labelFontSize = null;
+		String fontSizeArgument = null;
+		if (constantFontSize) {
+			labelFontSize = fontSize;
+			// Set the position of the label so that it is centered over the ellipse
+			xPos = (int) Math.round(xPos + width*padding/2 - 1.3*labelFontSize*cluster.getLabel().length());
+			yPos = (int) Math.round(yPos - 8.3*labelFontSize);
+			fontSizeArgument = String.valueOf((int) Math.round(labelFontSize*7*zoom));
+		} else {
+			labelFontSize = (int) Math.round(2.5*Math.pow(cluster.getSize(), 0.4));
+			// Set the position of the label so that it is centered over the ellipse
+			xPos = (int) Math.round(xPos + width*padding/2 - 2.1*labelFontSize*labelText.length());
+			yPos = (int) Math.round(yPos - 11.3*labelFontSize);
+			fontSizeArgument = String.valueOf((int) Math.round(labelFontSize*11*zoom));
+		}
 		
 		// Create and draw the label
 		arguments = new HashMap<String,String>();
@@ -143,10 +156,11 @@ public class AutoAnnotationUtils {
 		arguments.put("y", String.valueOf(yPos));
 		arguments.put("zoom", String.valueOf(zoom));
 		arguments.put("canvas", "foreground");
-		arguments.put("fontSize", String.valueOf((int) Math.round(fontSize*11*zoom)));
+		arguments.put("fontSize", fontSizeArgument);
 		TextAnnotation textAnnotation = textFactory.createAnnotation(TextAnnotation.class, view, arguments);
 		textAnnotation.setText(labelText);
 		cluster.setTextAnnotation(textAnnotation);
+		
 		annotationManager.addAnnotation(textAnnotation);
 	}
 	
@@ -232,61 +246,29 @@ public class AutoAnnotationUtils {
 	}
 
 	public static void updateFontSizes(Integer fontSize) {
-		if (fontSize == null) {
-			// Set font size proportional to number of nodes
-			for (CyNetworkView view : 
-				AutoAnnotationManager.getInstance().getNetworkViewToAutoAnnotationParameters().keySet()) {
-				AutoAnnotationParameters params = AutoAnnotationManager.getInstance().getNetworkViewToAutoAnnotationParameters().get(view);
-				double zoom = view.getVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR);
-				for (AnnotationSet annotationSet : params.getAnnotationSets().values()) {
-					for (Cluster cluster : annotationSet.getClusterMap().values()) {
-						fontSize = (int) Math.round(2.5*Math.pow(cluster.getSize(), 0.4));
-						TextAnnotation oldLabel = cluster.getTextAnnotation();
-						ShapeAnnotation ellipse = cluster.getEllipse();
-						// Create and draw the label
-						HashMap<String, String> arguments = new HashMap<String,String>();
-						int xPos = (int) Math.round(Double.valueOf(ellipse.getArgMap().get("x")) + Double.valueOf(ellipse.getArgMap().get("width"))*padding/2 - 2.1*fontSize*cluster.getLabel().length());
-						int yPos = (int) Math.round(Double.valueOf(ellipse.getArgMap().get("y")) - 11.3*fontSize);
-						arguments.put("x", String.valueOf(xPos));
-						arguments.put("y", String.valueOf(yPos));
-						arguments.put("zoom", String.valueOf(zoom));
-						arguments.put("canvas", "foreground");
-						arguments.put("fontSize", String.valueOf((int) Math.round(11*fontSize*zoom)));
-						TextAnnotation textAnnotation = AutoAnnotationManager.getInstance().getTextFactory().createAnnotation(TextAnnotation.class, view, arguments);
-						textAnnotation.setText(cluster.getLabel());
-						cluster.setTextAnnotation(textAnnotation);
-						oldLabel.removeAnnotation();
-						AutoAnnotationManager.getInstance().getAnnotationManager().addAnnotation(textAnnotation);
-					}
-				}
-			}
-		} else {
-			// Set font size to fontSize
-			for (CyNetworkView view : 
-				AutoAnnotationManager.getInstance().getNetworkViewToAutoAnnotationParameters().keySet()) {
-				AutoAnnotationParameters params = AutoAnnotationManager.getInstance().getNetworkViewToAutoAnnotationParameters().get(view);
-				double zoom = view.getVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR);
-				for (AnnotationSet annotationSet : params.getAnnotationSets().values()) {
-					for (Cluster cluster : annotationSet.getClusterMap().values()) {
-						TextAnnotation oldLabel = cluster.getTextAnnotation();
-						ShapeAnnotation ellipse = cluster.getEllipse();
-						// Create and draw the label
-						int xPos = (int) Math.round(Double.valueOf(ellipse.getArgMap().get("x")) + Double.valueOf(ellipse.getArgMap().get("width"))*padding/2 - 1.3*fontSize*cluster.getLabel().length());
-						int yPos = (int) Math.round(Double.valueOf(ellipse.getArgMap().get("y")) - 7.3*fontSize);
-						HashMap<String, String> arguments = new HashMap<String,String>();
-						arguments.put("x", String.valueOf(xPos));
-						arguments.put("y", String.valueOf(yPos));
-						arguments.put("zoom", String.valueOf(zoom));
-						arguments.put("canvas", "foreground");
-						arguments.put("fontSize", String.valueOf((int) Math.round(fontSize)));
-						TextAnnotation textAnnotation = AutoAnnotationManager.getInstance().getTextFactory().createAnnotation(TextAnnotation.class, view, arguments);
-						textAnnotation.setText(cluster.getLabel());
-						cluster.setTextAnnotation(textAnnotation);
-						oldLabel.removeAnnotation();
-						AutoAnnotationManager.getInstance().getAnnotationManager().addAnnotation(textAnnotation);
+		// Set font size to fontSize
+		for (CyNetworkView view : 
+			AutoAnnotationManager.getInstance().getNetworkViewToAutoAnnotationParameters().keySet()) {
+			AutoAnnotationParameters params = AutoAnnotationManager.getInstance().getNetworkViewToAutoAnnotationParameters().get(view);
+			for (AnnotationSet annotationSet : params.getAnnotationSets().values()) {
+				for (Cluster cluster : annotationSet.getClusterMap().values()) {
+					cluster.erase();
+					AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
+					AnnotationFactory<ShapeAnnotation> shapeFactory = autoAnnotationManager.getShapeFactory();
+					AnnotationFactory<TextAnnotation> textFactory = autoAnnotationManager.getTextFactory();
+					AnnotationManager annotationManager = autoAnnotationManager.getAnnotationManager();
+					if (fontSize == null) {
+						AutoAnnotationUtils.drawCluster(cluster, view, shapeFactory , textFactory, annotationManager, false, 1);						
+					} else {
+						AutoAnnotationUtils.drawCluster(cluster, view, shapeFactory , textFactory, annotationManager, true, fontSize);
 					}
 				}
 			}
 		}
+	}
+
+	public static void updateClusterLabel(Cluster cluster, CyNetwork network,
+			String annotationSetName, CyTable clusterSetTable, int fontSize) {
+		
 	}
 }
