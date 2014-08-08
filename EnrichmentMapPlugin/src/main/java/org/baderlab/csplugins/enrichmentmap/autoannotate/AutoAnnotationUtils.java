@@ -99,7 +99,7 @@ public class AutoAnnotationUtils {
 
 	public static void drawCluster(Cluster cluster, CyNetworkView view, 
 			AnnotationFactory<ShapeAnnotation> shapeFactory, AnnotationFactory<TextAnnotation> textFactory, 
-			AnnotationManager annotationManager, boolean constantFontSize, int fontSize) {
+			AnnotationManager annotationManager, boolean constantFontSize, int fontSize, boolean showEllipses) {
 
 		double zoom = view.getVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR);
 
@@ -134,7 +134,9 @@ public class AutoAnnotationUtils {
 		ellipse.setSize(width*padding*zoom, height*padding*zoom);
 		ellipse.setBorderWidth(ellipseBorderWidth);
 		cluster.setEllipse(ellipse);
-		annotationManager.addAnnotation(ellipse);
+		if (showEllipses) {
+			annotationManager.addAnnotation(ellipse);
+		}
 
 		// Set the text of the label
 		String labelText = cluster.getLabel();
@@ -175,7 +177,7 @@ public class AutoAnnotationUtils {
 		if (cluster.getSize() == 1) {
 			String oldLabel = cluster.getLabel();
 			String newLabel = network.getRow(cluster.getNodes().get(0)).get(nameColumnName, String.class);
-			if (!(newLabel.equals(oldLabel))) {
+			if (!newLabel.equals(oldLabel)) {
 				cluster.setLabel(newLabel);
 			}
 		} else {
@@ -260,7 +262,7 @@ public class AutoAnnotationUtils {
 		}
 	}
 
-	public static void updateFontSizes(Integer fontSize) {
+	public static void updateFontSizes(Integer fontSize, boolean ellipsesShowing) {
 		// Set font size to fontSize
 		for (CyNetworkView view : 
 			AutoAnnotationManager.getInstance().getNetworkViewToAutoAnnotationParameters().keySet()) {
@@ -273,9 +275,9 @@ public class AutoAnnotationUtils {
 					AnnotationFactory<TextAnnotation> textFactory = autoAnnotationManager.getTextFactory();
 					AnnotationManager annotationManager = autoAnnotationManager.getAnnotationManager();
 					if (fontSize == null) {
-						AutoAnnotationUtils.drawCluster(cluster, view, shapeFactory , textFactory, annotationManager, false, 1);						
+						AutoAnnotationUtils.drawCluster(cluster, view, shapeFactory , textFactory, annotationManager, false, 1, ellipsesShowing);						
 					} else {
-						AutoAnnotationUtils.drawCluster(cluster, view, shapeFactory , textFactory, annotationManager, true, fontSize);
+						AutoAnnotationUtils.drawCluster(cluster, view, shapeFactory , textFactory, annotationManager, true, fontSize, ellipsesShowing);
 					}
 				}
 			}

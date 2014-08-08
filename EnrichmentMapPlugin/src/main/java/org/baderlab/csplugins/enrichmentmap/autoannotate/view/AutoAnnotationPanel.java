@@ -117,14 +117,17 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 	private BasicCollapsiblePanel advancedOptionsPanel;
 	private BasicCollapsiblePanel selectionPanel;
 
+	private JCheckBox showEllipsesCheckBox;
 	private JCheckBox layoutCheckBox;
 	private JCheckBox groupsCheckBox;
+
 	// Used to specify the font size
 	private JTextField fontSizeTextField;
 
 	private CySwingApplication application;
 
-
+	private JButton updateButton;
+	
 
 	public AutoAnnotationPanel(CySwingApplication application){
 		this.clustersToTables = new HashMap<AnnotationSet, JTable>();
@@ -253,8 +256,8 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 					String nameColumnName = annotationSet.getNameColumnName();
 					removeButton.doClick();
 					AutoAnnotationTaskFactory autoAnnotatorTaskFactory = new AutoAnnotationTaskFactory(application, 
-							autoAnnotationManager, selectedView, clusterColumnName, 
-							nameColumnName, null, false, false, annotationSetName);
+							autoAnnotationManager, selectedView, clusterColumnName, nameColumnName, null, 
+							false, false, annotationSetName);
 					advancedOptionsPanel.setCollapsed(true);
 					autoAnnotationManager.getDialogTaskManager().execute(autoAnnotatorTaskFactory.createTaskIterator());
 				}
@@ -306,7 +309,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 		removeButton.addActionListener(clearActionListener); 
 
 		// Button to update the current cluster set
-		JButton updateButton = new JButton("Update");
+		updateButton = new JButton("Update");
 		ActionListener updateActionListener = new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
 				for (CyRow row : selectedNetwork.getDefaultNodeTable().getAllRows()) {
@@ -333,7 +336,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 					AnnotationManager annotationManager = autoAnnotationManager.getAnnotationManager();
 					boolean constantFontSize = fontSizeTextField.isEnabled();
 					int fontSize = Integer.parseInt(fontSizeTextField.getText());
-					AutoAnnotationUtils.drawCluster(cluster, selectedView, shapeFactory, textFactory, annotationManager, constantFontSize, fontSize);
+					AutoAnnotationUtils.drawCluster(cluster, selectedView, shapeFactory, textFactory, annotationManager, constantFontSize, fontSize, showEllipsesCheckBox.isSelected());
 				}
 				// Update the table if the value has changed (WordCloud has been updated)
 				DefaultTableModel model = (DefaultTableModel) clustersToTables.get(annotationSet).getModel();
@@ -431,7 +434,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 		    		if (fontSize <= 0) {
 		    			throw new Exception();
 		    		}
-		    		AutoAnnotationUtils.updateFontSizes(fontSize);
+		    		AutoAnnotationUtils.updateFontSizes(fontSize, showEllipsesCheckBox.isSelected());
 		    	} catch (Exception ex) {
 		            JOptionPane.showMessageDialog(null,
 		                    "Error: Please enter an integer bigger than 0", "Error Message",
@@ -448,11 +451,11 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 				if (e.getStateChange() == ItemEvent.SELECTED) {
 					fontSizeTextField.setEnabled(true);
 			    	int fontSize = Integer.parseInt(fontSizeTextField.getText());
-					AutoAnnotationUtils.updateFontSizes(fontSize);
+					AutoAnnotationUtils.updateFontSizes(fontSize, showEllipsesCheckBox.isSelected());
 					updateUI();
 				} else if (e.getStateChange() == ItemEvent.DESELECTED) {
 					fontSizeTextField.setEnabled(false);
-					AutoAnnotationUtils.updateFontSizes(null);
+					AutoAnnotationUtils.updateFontSizes(null, showEllipsesCheckBox.isSelected());
 					updateUI();
 				}
 			}
@@ -478,18 +481,30 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 		c.gridwidth = 1;
 		c.gridy = 1;
 		fontSizePanel.add(fontSizeTextField,c);
-
+		
+		// By default show ellipses around clusters
+		showEllipsesCheckBox = new JCheckBox("Show ellipses");
+		showEllipsesCheckBox.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				updateButton.doClick();
+			}
+		});
+		showEllipsesCheckBox.setSelected(true);
+		
 		// By default layout nodes by cluster
 		layoutCheckBox = new JCheckBox("Layout nodes by cluster");
 		layoutCheckBox.setSelected(false);
-		
+
 		// By default layout nodes by cluster
 		groupsCheckBox = new JCheckBox("Create groups (metanodes) for clusters *BUGGY*");
 		groupsCheckBox.setSelected(false);
 		
-		JPanel checkBoxPanel = new JPanel(new BorderLayout());
-		checkBoxPanel.add(layoutCheckBox, BorderLayout.NORTH);
-		checkBoxPanel.add(groupsCheckBox, BorderLayout.SOUTH);
+		JPanel checkBoxPanel = new JPanel();
+		checkBoxPanel.setLayout(new BoxLayout(checkBoxPanel, BoxLayout.Y_AXIS));
+		checkBoxPanel.add(showEllipsesCheckBox);
+		checkBoxPanel.add(layoutCheckBox);
+		checkBoxPanel.add(groupsCheckBox);
 		
 		JPanel nonClusterOptionPanel = new JPanel(new BorderLayout());
 		nonClusterOptionPanel.add(fontSizePanel, BorderLayout.NORTH);
@@ -595,7 +610,8 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 					AnnotationManager annotationManager = autoAnnotationManager.getAnnotationManager();
 					boolean constantFontSize = fontSizeTextField.isEnabled();
 					int fontSize = Integer.parseInt(fontSizeTextField.getText());
-					AutoAnnotationUtils.drawCluster(editedCluster, selectedView, shapeFactory, textFactory, annotationManager, constantFontSize, fontSize);
+					AutoAnnotationUtils.drawCluster(editedCluster, selectedView, shapeFactory, textFactory, 
+							annotationManager, constantFontSize, fontSize, showEllipsesCheckBox.isSelected());
 				}
 			}
 		});
@@ -699,7 +715,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 						AnnotationManager annotationManager = autoAnnotationManager.getAnnotationManager();
 						boolean constantFontSize = fontSizeTextField.isEnabled();
 						int fontSize = Integer.parseInt(fontSizeTextField.getText());
-						AutoAnnotationUtils.drawCluster(cluster, selectedView, shapeFactory, textFactory, annotationManager, constantFontSize, fontSize);
+						AutoAnnotationUtils.drawCluster(cluster, selectedView, shapeFactory, textFactory, annotationManager, constantFontSize, fontSize, showEllipsesCheckBox.isSelected());
 					}
 					clustersToTables.get(annotationSet).getParent().getParent().setVisible(true); // Show selected table
 					updateUI();
