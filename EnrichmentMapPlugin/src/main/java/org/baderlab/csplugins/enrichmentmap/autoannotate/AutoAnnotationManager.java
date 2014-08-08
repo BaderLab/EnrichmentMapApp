@@ -5,12 +5,14 @@ import java.util.HashMap;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import org.baderlab.csplugins.enrichmentmap.actions.EnrichmentMapActionListener;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.view.AutoAnnotationPanel;
 import org.baderlab.csplugins.enrichmentmap.view.HeatMapPanel;
 import org.cytoscape.application.events.SetSelectedNetworkViewsEvent;
 import org.cytoscape.application.events.SetSelectedNetworkViewsListener;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.command.CommandExecutorTaskFactory;
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.model.CyTableManager;
@@ -85,6 +87,10 @@ public class AutoAnnotationManager implements
 	private CyGroupManager groupManager;
 	// used to select heatmap panel on cluster selection
 	private HeatMapPanel heatmapPanel;
+	// used to wait for heatmap updating to finish on selection
+	private EnrichmentMapActionListener EMActionListener;
+	// used to force heatmap to update before selection
+	private CyEventHelper eventHelper;
 	
 	public static AutoAnnotationManager getInstance() {
 		if (instance == null) {
@@ -103,7 +109,7 @@ public class AutoAnnotationManager implements
 			SynchronousTaskManager<?> syncTaskManager, AnnotationManager annotationManager, 
 			CyLayoutAlgorithmManager layoutManager, AnnotationFactory<ShapeAnnotation> shapeFactory, 
 			AnnotationFactory<TextAnnotation> textFactory, CyGroupFactory groupFactory,
-			CyGroupManager groupManager, HeatMapPanel heatMapPanel_node) {
+			CyGroupManager groupManager, HeatMapPanel heatMapPanel_node, EnrichmentMapActionListener EMActionListener, CyEventHelper eventHelper) {
 		
 		this.application = application;
 		this.tableManager = tableManager;
@@ -117,6 +123,8 @@ public class AutoAnnotationManager implements
 		this.groupFactory = groupFactory;
 		this.groupManager = groupManager;
 		this.heatmapPanel = heatMapPanel_node;
+		this.EMActionListener = EMActionListener;
+		this.eventHelper = eventHelper;
 	}
 	
 	@Override
@@ -221,5 +229,13 @@ public class AutoAnnotationManager implements
 
 	public HeatMapPanel getHeatmapPanel() {
 		return heatmapPanel;
+	}
+
+	public boolean isHeatMapUpdating() {
+		return EMActionListener.isHeatMapUpdating();
+	}
+	
+	public void flushPayloadEvents() {
+		eventHelper.flushPayloadEvents();
 	}
 }

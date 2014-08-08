@@ -47,8 +47,10 @@ package org.baderlab.csplugins.enrichmentmap.actions;
 
 
 import java.util.List;
+
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapUtils;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.task.Observer;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters;
 import org.baderlab.csplugins.enrichmentmap.heatmap.task.UpdateHeatMapTask;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
@@ -92,6 +94,8 @@ public class EnrichmentMapActionListener implements RowsSetListener{
     private final CytoPanel cytoPanelSouth;
     private FileUtil fileUtil;
     private StreamUtil streamUtil;
+
+    private boolean heatMapUpdating;
     
 
     /**
@@ -109,13 +113,18 @@ public class EnrichmentMapActionListener implements RowsSetListener{
     		this.syncTaskManager = syncTaskManager;
         this.edgeOverlapPanel = heatMapPanel_edge;
         this.nodeOverlapPanel = heatMapPanel_node;
+        heatMapUpdating = false;
         
         this.cytoPanelSouth = application.getCytoPanel(CytoPanelName.SOUTH);
 
            
     }
 
-    /**
+    public boolean isHeatMapUpdating() {
+		return heatMapUpdating;
+	}
+
+	/**
      * intialize the parameters needed for this instance of the action
      */
     private boolean initialize(CyNetwork network){
@@ -145,7 +154,9 @@ public class EnrichmentMapActionListener implements RowsSetListener{
     public void handleEvent(RowsSetEvent e) {
         //TODO: improve performance of calculating the Union of genesets (Nodes) and intersection of overlaps (Edges)
         // Meanwhile we have a flag to skip the updating of the Heatmap, which can be toggled by a check-mark in the EM-Menu
-        boolean override_revalidate_heatmap = EnrichmentMapUtils.isOverrideHeatmapRevalidation();
+    	heatMapUpdating = true;
+
+    	boolean override_revalidate_heatmap = EnrichmentMapUtils.isOverrideHeatmapRevalidation();
         
         //get the current network
         CyNetwork network = this.applicationManager.getCurrentNetwork();
@@ -172,10 +183,19 @@ public class EnrichmentMapActionListener implements RowsSetListener{
         				
         				//once we have amalgamated all the nodes and edges, launch a task to update the heatmap.
         				UpdateHeatMapTask updateHeatmap = new UpdateHeatMapTask(map, Nodes, Edges, edgeOverlapPanel, nodeOverlapPanel, cytoPanelSouth,applicationManager);
-        				syncTaskManager.execute(new TaskIterator(updateHeatmap));
+        				Observer observer = new Observer();
+        				syncTaskManager.execute(new TaskIterator(updateHeatmap), observer);
+        				while (!observer.isFinished()) {
+        					try {
+								Thread.sleep(1);
+							} catch (InterruptedException e1) {
+								e1.printStackTrace();
+							}
+        				}
         			}
         		}
         }//end of if e.getSource check
+        heatMapUpdating = false;
     }
 
 }

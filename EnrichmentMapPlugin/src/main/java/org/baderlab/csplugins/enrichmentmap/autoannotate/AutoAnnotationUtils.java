@@ -33,7 +33,7 @@ import org.cytoscape.work.TaskIterator;
 public class AutoAnnotationUtils {
 	
 	private static int min_size = 50; // Minimum size of the cluster
-	private static double padding = Math.sqrt(2)*1.2; // Amount the ellipses are stretched by
+	private static double padding = Math.sqrt(2)*1.25; // Amount the ellipses are stretched by
 	// sqrt(2) is the ratio between the sizes of an ellipse 
 	// enclosing a rectangle and an ellipse enclosed in a rectangle
 	private static double ellipseBorderWidth = 5.0;
@@ -41,6 +41,12 @@ public class AutoAnnotationUtils {
 	public static void selectCluster(Cluster selectedCluster, CyNetwork network, 
 									 CommandExecutorTaskFactory executor, SynchronousTaskManager<?> syncTaskManager) {
 		if (!selectedCluster.isSelected()) {
+			AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
+			autoAnnotationManager.flushPayloadEvents();
+			boolean heatMapUpdating = true;
+			while (heatMapUpdating) {
+				heatMapUpdating = autoAnnotationManager.isHeatMapUpdating();
+			}
 			selectedCluster.setSelected(true);
 			// Select node(s) in the cluster
 			if (selectedCluster.isCollapsed()) {
