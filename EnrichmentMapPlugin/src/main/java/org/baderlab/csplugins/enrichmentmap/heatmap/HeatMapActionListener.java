@@ -53,6 +53,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.parsers.RanksFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.view.HeatMapPanel;
+import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
@@ -80,6 +81,7 @@ public class HeatMapActionListener implements ActionListener {
     private HeatMapPanel nodeOverlapPanel;
     private FileUtil fileUtil;
     private StreamUtil streamUtil;
+    private CySwingApplication application;
 
     private HeatMapParameters hmParams;
     private JComboBox box;
@@ -98,10 +100,11 @@ public class HeatMapActionListener implements ActionListener {
      * @param params
      */
     public HeatMapActionListener(HeatMapPanel edgeOverlapPanel, HeatMapPanel nodeOverlapPanel,
-    		JComboBox box, HeatMapParameters hmParams, EnrichmentMap map,FileUtil fileUtil, StreamUtil streamUtil) {
+    		JComboBox box, HeatMapParameters hmParams, EnrichmentMap map,FileUtil fileUtil, StreamUtil streamUtil, CySwingApplication application) {
         this.edgeOverlapPanel = edgeOverlapPanel;
         this.nodeOverlapPanel = nodeOverlapPanel;
         this.fileUtil = fileUtil;
+        this.application = application;
         this.streamUtil = streamUtil;
         this.hmParams = hmParams;
         this.box= box;
@@ -150,7 +153,8 @@ public class HeatMapActionListener implements ActionListener {
            all_filters.add(filter_xls);
 
            // Get the file name
-           File file = fileUtil.getFile(this.nodeOverlapPanel,"Import rank File", FileUtil.LOAD, all_filters);
+           File file = fileUtil.getFile(this.application.getJFrame(),"Import rank File", FileUtil.LOAD, all_filters);
+           //File file = fileUtil.getFile(this.nodeOverlapPanel,"Import rank File", FileUtil.LOAD, all_filters);
 
             if(file != null) {
                 //find out from the user what they want to name these ranking
