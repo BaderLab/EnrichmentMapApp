@@ -56,6 +56,10 @@ public class AnnotationSet {
 		clusterMap.put(cluster.getClusterNumber(), cluster);
 	}
 
+	public void removeCluster(Cluster cluster) {
+		clusterMap.remove(cluster);
+	}
+	
 	// Get the coordinates of the nodes in each cluster
 	public void updateCoordinates() {
 		for (Cluster cluster : clusterMap.values()) {
@@ -140,7 +144,7 @@ public class AnnotationSet {
 		// Update the column in the network table with the new SUID of the table
 		AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
 		for (CyTable table : autoAnnotationManager.getTableManager().getAllTables(true)) {
-			if (table.getTitle().equals(cloudNamePrefix + " Table")) {
+			if (table.getTitle().equals(cloudNamePrefix)) {
 				view.getModel().getRow(view.getModel()).set(cloudNamePrefix, table.getSUID());
 				break;
 			}

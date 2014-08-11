@@ -240,19 +240,27 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 					JOptionPane.showMessageDialog(null, "Please select at least two clusters", "Error Message",
 		                    JOptionPane.ERROR_MESSAGE);
 				} else {
-					ArrayList<Integer> selectedClusters = new ArrayList<Integer>();
-					for (int rowNumber : selectedRows) {
-						selectedClusters.add(rowNumber + 1);
+					// Get the selected clusters from the selected rows
+					ArrayList<Cluster> selectedClusters = new ArrayList<Cluster>();
+					for (int rowIndex=0; rowIndex < clusterTable.getRowCount(); rowIndex++) {
+						Cluster cluster = (Cluster) clusterTable.getModel().getValueAt(clusterTable.convertRowIndexToModel(rowIndex), 0);
+						for (int selectedRow : selectedRows) {
+							if (rowIndex == selectedRow) {
+								selectedClusters.add(cluster);
+								break;
+							}
+						}
 					}
-					Cluster firstCluster = annotationSet.getClusterMap().get(selectedClusters.get(0));
-					for (int selectedClusterNumber : selectedClusters.subList(1, selectedClusters.size())) {
-						Cluster clusterToSwallow = annotationSet.getClusterMap().get(selectedClusterNumber);
-						for (int nodeIndex = 0; nodeIndex < clusterToSwallow.getNodes().size(); nodeIndex++) {
-							selectedNetwork.getRow(clusterToSwallow.getNodes().get(nodeIndex)).set(annotationSet.getClusterColumnName(), firstCluster.getClusterNumber());
+					// Sets the values in the cluster table to all be the first cluster
+					Cluster firstCluster = selectedClusters.get(0);
+					int clusterNumber = firstCluster.getClusterNumber();
+					String clusterColumnName = annotationSet.getClusterColumnName();
+					for (Cluster clusterToSwallow : selectedClusters.subList(1, selectedClusters.size())) {
+						for (CyNode node : clusterToSwallow.getNodes()) {
+							selectedNetwork.getRow(node).set(clusterColumnName, clusterNumber);
 						}
 					}
 					String annotationSetName = annotationSet.getCloudNamePrefix();
-					String clusterColumnName = annotationSet.getClusterColumnName();
 					String nameColumnName = annotationSet.getNameColumnName();
 					removeButton.doClick();
 					AutoAnnotationTaskFactory autoAnnotatorTaskFactory = new AutoAnnotationTaskFactory(application, 
@@ -485,11 +493,13 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 		// By default show ellipses around clusters
 		showEllipsesCheckBox = new JCheckBox("Show ellipses");
 		showEllipsesCheckBox.addActionListener(new ActionListener() {
+
 			@Override
-			public void actionPerformed(ActionEvent arg0) {
+			public void actionPerformed(ActionEvent e) {
 				updateButton.doClick();
 			}
-		});
+			
+		}); // Checks if checkbox is selected
 		showEllipsesCheckBox.setSelected(true);
 		
 		// By default layout nodes by cluster
@@ -624,8 +634,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 			@Override
 			public void valueChanged(ListSelectionEvent e) {
 				if (! e.getValueIsAdjusting()) { // Down-click and up-click are separate events, this makes only one of them fire
-					SynchronousTaskManager<?> syncTaskManager = autoAnnotationManager.getSyncTaskManager();
-					CommandExecutorTaskFactory executor = autoAnnotationManager.getCommandExecutor();
+					// Get the selected clusters from the selected rows
 					int[] selectedRows = table.getSelectedRows();
 					ArrayList<Cluster> selectedClusters = new ArrayList<Cluster>();
 					for (int rowIndex=0; rowIndex < table.getRowCount(); rowIndex++) {
@@ -643,6 +652,8 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 							AutoAnnotationUtils.deselectCluster(cluster, selectedNetwork);
 						}
 					}
+					SynchronousTaskManager<?> syncTaskManager = autoAnnotationManager.getSyncTaskManager();
+					CommandExecutorTaskFactory executor = autoAnnotationManager.getCommandExecutor();
 					for (Cluster cluster : selectedClusters) {
 						AutoAnnotationUtils.selectCluster(cluster, selectedNetwork, executor, syncTaskManager);
 					}

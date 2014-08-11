@@ -182,7 +182,7 @@ public class AutoAnnotationUtils {
 			}
 		} else {
 			// Look up the WordCloud info of this cluster in its table
-			CyRow clusterRow = clusterSetTable.getRow(cluster.getClusterNumber());
+			CyRow clusterRow = clusterSetTable.getRow(cluster.getCloudName());
 			// Get each piece of the WordCloud info
 			List<String> wordList = clusterRow.get("WC_Word", List.class);
 			List<String> sizeList = clusterRow.get("WC_FontSize", List.class);
@@ -282,10 +282,5 @@ public class AutoAnnotationUtils {
 				}
 			}
 		}
-	}
-
-	public static void updateClusterLabel(Cluster cluster, CyNetwork network,
-			String annotationSetName, CyTable clusterSetTable, int fontSize) {
-		
 	}
 }

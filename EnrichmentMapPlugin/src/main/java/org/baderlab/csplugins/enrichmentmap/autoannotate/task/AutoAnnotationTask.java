@@ -159,7 +159,7 @@ public class AutoAnnotationTask extends AbstractTask {
     	taskMonitor.setStatusMessage("Running WordCloud...");
     	if (cancelled) return;
     	
-    	runWordCloud();
+    	runWordCloud(clusters, network);
     	
     	taskMonitor.setProgress(0.7);
     	taskMonitor.setStatusMessage("Annotating Clusters...");
@@ -289,25 +289,38 @@ public class AutoAnnotationTask extends AbstractTask {
 		}
 		cluster.addCoordinates(coordinates);
 	}
-
-	private void runWordCloud() {
-		ArrayList<String> commands = new ArrayList<String>();
-		String command = "wordcloud build clusterColumnName=\"" + clusterColumnName + "\" nameColumnName=\""
-				+ nameColumnName + "\"" + " cloudNamePrefix=\"" + annotationSetName + "\"";
-		commands.add(command);
-		Observer observer = new Observer();
-		TaskIterator taskIterator = executor.createTaskIterator(commands, null);
-		dialogTaskManager.execute(taskIterator, observer);
-		// Prevents task from continuing to execute until wordCloud has finished
-		while (!observer.isFinished()) {
-			try {
-				Thread.sleep(1);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
+	
+	private void runWordCloud(AnnotationSet annotationSet, CyNetwork network) {
+		TreeMap<Integer, Cluster> clusterMap = annotationSet.getClusterMap();
+		for (int clusterNumber : clusterMap.keySet()) {
+			Cluster cluster = clusterMap.get(clusterNumber);
+			setClusterSelected(cluster, network, true);
+			ArrayList<String> commands = new ArrayList<String>();
+			String command = "wordcloud create wordColumnName=\"" + nameColumnName + "\"" + 
+			" nodesToUse=\"selected\" cloudName=\"" + annotationSetName + " Cloud " +  clusterNumber + "\""
+			+ " cloudGroupTableName=\"" + annotationSetName + "\"";
+			commands.add(command);
+			Observer observer = new Observer();
+			TaskIterator taskIterator = executor.createTaskIterator(commands, null);
+			dialogTaskManager.execute(taskIterator, observer);
+			// Prevents task from continuing to execute until wordCloud has finished
+			while (!observer.isFinished()) {
+				try {
+					Thread.sleep(1);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
 			}
+			setClusterSelected(cluster, network, false);
 		}
 	}
 
+	private void setClusterSelected(Cluster cluster, CyNetwork network, boolean b) {
+		for (CyNode node : cluster.getNodes()) {
+			network.getRow(node).set(CyNetwork.SELECTED, b);
+		}
+	}
+		
 	private String getCommand(String algorithm, String edgeAttribute, String networkName) {
 		String command = "";
 		if (algorithm == "Affinity Propagation Cluster") {
