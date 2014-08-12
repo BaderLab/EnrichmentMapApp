@@ -545,27 +545,26 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 		JRadioButton heatmapButton = new JRadioButton("Heat Map");
 		JRadioButton wordCloudButton = new JRadioButton("WordCloud");
 		ButtonGroup buttonGroup = new ButtonGroup();
-		buttonGroup.add(heatmapButton);
 		buttonGroup.add(wordCloudButton);
+		buttonGroup.add(heatmapButton);
 
 		heatmapButton.addItemListener(new ItemListener() {
 			@Override
 			public void itemStateChanged(ItemEvent e) {
 				if (e.getStateChange() == ItemEvent.SELECTED) {
 					showHeatmap = true;
-					if (selectedView != null) setDisableHeatMapAutoFocus(false);
 				} else if (e.getStateChange() == ItemEvent.DESELECTED) {
 					showHeatmap = false;
-					if (selectedView != null) setDisableHeatMapAutoFocus(true);
 				}
 			}
 		});
 		heatmapButton.setSelected(true);
+		wordCloudButton.setSelected(true);
 
 		JPanel radioButtonPanel = new JPanel();
 		radioButtonPanel.setLayout(new BoxLayout(radioButtonPanel, BoxLayout.PAGE_AXIS));
-		radioButtonPanel.add(heatmapButton);
 		radioButtonPanel.add(wordCloudButton);
+		radioButtonPanel.add(heatmapButton);
 
 		innerPanel.add(labelPanel, BorderLayout.WEST);
 		innerPanel.add(radioButtonPanel, BorderLayout.EAST);
@@ -652,6 +651,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 							AutoAnnotationUtils.deselectCluster(cluster, selectedNetwork);
 						}
 					}
+					setDisableHeatMapAutoFocus(true);
 					SynchronousTaskManager<?> syncTaskManager = autoAnnotationManager.getSyncTaskManager();
 					CommandExecutorTaskFactory executor = autoAnnotationManager.getCommandExecutor();
 					for (Cluster cluster : selectedClusters) {

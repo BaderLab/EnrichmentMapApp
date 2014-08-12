@@ -43,6 +43,7 @@ public class AutoAnnotationUtils {
 		if (!selectedCluster.isSelected()) {
 			AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
 			autoAnnotationManager.flushPayloadEvents();
+			// Wait for heatmap to finish updating
 			boolean heatMapUpdating = true;
 			while (heatMapUpdating) {
 				heatMapUpdating = autoAnnotationManager.isHeatMapUpdating();
@@ -230,7 +231,7 @@ public class AutoAnnotationUtils {
 		while (numWords < 4 && wordInfosCopy.size() > 0) {
 			for (WordInfo word : wordInfosCopy.subList(1, wordInfosCopy.size())) {
 				if (word.getCluster() == nextWord.getCluster()) {
-					word.setSize(word.getSize() - 1);	
+					word.setSize(word.getSize() + 1);	
 				}
 			}
 			double wordSizeThreshold = nextWord.getSize()*nextWordSizeThresholds[numWords - 1];
