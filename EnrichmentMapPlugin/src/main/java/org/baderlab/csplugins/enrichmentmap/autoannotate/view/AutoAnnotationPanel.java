@@ -254,6 +254,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 							}
 						}
 					}
+					// Get services needed for accessing WordCloud through command line
 					CommandExecutorTaskFactory executor = autoAnnotationManager.getCommandExecutor();
 					SynchronousTaskManager<?> syncTaskManager = autoAnnotationManager.getSyncTaskManager();
 					DialogTaskManager dialogTaskManager = autoAnnotationManager.getDialogTaskManager();
@@ -287,7 +288,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 					Observer observer = new Observer();
 					TaskIterator taskIterator = executor.createTaskIterator(commands, null);
 					dialogTaskManager.execute(taskIterator, observer);
-					// Prevents wait until WordCloud is finished
+					// Wait until WordCloud is finished
 					while (!observer.isFinished()) {
 						try {
 							Thread.sleep(1);
@@ -530,7 +531,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 		fontSizePanel.add(fontSizeTextField,c);
 		
 		// By default show ellipses around clusters
-		showEllipsesCheckBox = new JCheckBox("Show ellipses");
+		showEllipsesCheckBox = new JCheckBox("Draw ellipses around clusters");
 		showEllipsesCheckBox.addActionListener(new ActionListener() {
 
 			@Override
@@ -754,8 +755,6 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 					Long clusterTableSUID = selectedNetwork.getDefaultNetworkTable().getRow(selectedNetwork.getSUID()).get(annotationSetName, Long.class);
 					CyTable clusterSetTable = autoAnnotationManager.getTableManager().getTable(clusterTableSUID);
 					for (Cluster cluster : annotationSet.getClusterMap().values()) {
-						// Register the groups for this cluster
-						AutoAnnotationUtils.registerClusterGroups(cluster, selectedNetwork, groupManager);
 						// Update the text label of the selected cluster
 						String nameColumnName = (String) nameColumnDropdown.getSelectedItem();
 						AutoAnnotationUtils.updateClusterLabel(cluster, selectedNetwork, annotationSetName, clusterSetTable, nameColumnName);
@@ -772,8 +771,6 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 				} else if (itemEvent.getStateChange() == ItemEvent.DESELECTED) {
 					AnnotationSet clusters = (AnnotationSet) itemEvent.getItem();
 					for (Cluster cluster : clusters.getClusterMap().values()) {
-						// Un-register the groups for deselected clusters
-						AutoAnnotationUtils.unregisterClusterGroups(cluster, selectedNetwork, groupManager);
 						// Hide the annotations
 						cluster.erase();
 					}
@@ -898,13 +895,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 			clusterTable.getParent().remove(clusterTable);
 			networkViewToClusterSetDropdown.remove(view);
 		}
-		for (AnnotationSet annotationSet : params.getAnnotationSets().values()) {
-			for (Cluster cluster : annotationSet.getClusterMap().values()) {
-				// Bug with loading groups in session, need to be destroyed then recreated when loading
-				cluster.destroyGroup();
-			}
-		}
-		
+	
 		selectedView = null;
 		selectedNetwork = null;
 		params = null;

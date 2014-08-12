@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationUtils;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.session.CySession;
@@ -42,15 +43,13 @@ public class Cluster implements Comparable<Cluster> {
 		this.coordinates = new ArrayList<double[]>();
 		this.wordInfos = new ArrayList<WordInfo>();
 		this.nodeList = new ArrayList<CyNode>();
-		size = 1;
+		size = 0;
 	}
 	
 	// Used when creating clusters in the task
 	public Cluster(int clusterNumber, AnnotationSet parent, CyGroup group) {
 		this(clusterNumber, parent);
 		this.group = group;
-		// Group node doesn't get added
-		size++;
 	}
 	
 	public Cluster(int clusterNumber, AnnotationSet parent) {
@@ -60,12 +59,16 @@ public class Cluster implements Comparable<Cluster> {
 		this.coordinates = new ArrayList<double[]>();
 		this.wordInfos = new ArrayList<WordInfo>();
 		this.nodeList = new ArrayList<CyNode>();
-		size = 0; // Starts at one because it is created with the group node, which doesn't get added to the group
+		size = 0;
 		selected = false;
 	}
 	
 	public int getClusterNumber() {
-		return this.clusterNumber;
+		return clusterNumber;
+	}
+	
+	public CyGroup getGroup() {
+		return group;
 	}
 	
 	public AnnotationSet getParent() {
@@ -89,16 +92,6 @@ public class Cluster implements Comparable<Cluster> {
 		return null;
 	}
 	
-	public CyGroup getGroup()  {
-		return group;
-	}
-	
-	public void destroyGroup() {
-		if (group != null) { // user could have destroyed the group themselves
-			AutoAnnotationManager.getInstance().getGroupManager().destroyGroup(group);
-		}
-	}
-	
 	public ArrayList<double[]> getCoordinates() {
 		return this.coordinates;
 	}
@@ -108,18 +101,11 @@ public class Cluster implements Comparable<Cluster> {
 	}
 	
 	public List<CyNode> getNodes() {
-		if (group != null) {
-			// Have to also include the group's nodeList
-			@SuppressWarnings("unchecked")
-			List<CyNode> nodeListWithGroupNode = (List<CyNode>) nodeList.clone();
-			nodeListWithGroupNode.add(getGroupNode());
-			return nodeListWithGroupNode;
-		}
 		return nodeList;
 	}
 	
 	public void addNode(CyNode node) {
-		if (group != null) {
+		if (group != null && group.getGroupNode() != node) {
 			ArrayList<CyNode> nodeToAdd = new ArrayList<CyNode>();
 			nodeToAdd.add(node);
 			group.addNodes(nodeToAdd);
@@ -200,7 +186,6 @@ public class Cluster implements Comparable<Cluster> {
 			addCoordinates(coordinates2);
 		}
 		// Remove the second cluster
-		cluster2.destroyGroup();
 		cluster2.getParent().getClusterMap().remove(cluster2.getClusterNumber());
 	}
 	
@@ -209,17 +194,18 @@ public class Cluster implements Comparable<Cluster> {
 	    	 *  		1 - Cluster number
 	    	 *  		2 - Cluster label
 	    	 *  		3 - Selected (0/1)
-	    	 *  		4 - labelManuallyUpdated
-	    	 *  		5... - NodeSUID x y
+	    	 *  		4 - Use groups or not
+	    	 *  		5... - Nodes
+	    	 *  		6... - Node coordinates
 	    	 *  		-1 - End of cluster
 	    	 */
-
+		
 		String sessionString = "";
 		// Write parameters of the cluster
 		sessionString += clusterNumber + "\n";
 		sessionString += label + "\n";
 		sessionString += selected + "\n";
-		sessionString += (group == null) + "\n";
+		sessionString += (group != null) + "\n";
 		// Write parameters of the annotations to recreate them after
 			// Ellipse
 		Map<String, String> ellipseArgs = ellipse.getArgMap();
@@ -235,7 +221,7 @@ public class Cluster implements Comparable<Cluster> {
 		sessionString += "End of annotations\n";
 		
 		// Write each node
-		for (int nodeIndex=0 ; nodeIndex < size ; nodeIndex++) {
+		for (int nodeIndex=0 ; nodeIndex < getSize() ; nodeIndex++) {
 			long nodeID = getNodes().get(nodeIndex).getSUID();
 			sessionString += nodeID + "\n";
 		}
@@ -248,6 +234,13 @@ public class Cluster implements Comparable<Cluster> {
 		}
 		sessionString += "End of coordinates\n";
 		sessionString += "End of cluster\n";
+		
+		// Destroy group (causes problems with session loading)
+		if (group != null) {
+			group.removeGroupFromNetwork(parent.getView().getModel());
+			AutoAnnotationManager.getInstance().getGroupManager().destroyGroup(group);
+		}
+		
 		return sessionString;
 	}
 	
@@ -280,16 +273,18 @@ public class Cluster implements Comparable<Cluster> {
 		lineNumber++;
 		line = text.get(lineNumber);
 		
-		// Create the group for the first node
+		// Create the group out of first node if necessary
 		if (useGroups) {
 			String groupNodeLine = text.get(lineNumber);
 			CyNode groupNode = session.getObject(Long.valueOf(groupNodeLine), CyNode.class);
-			group = AutoAnnotationManager.getInstance().getGroupFactory().createGroup(parent.getView().getModel(), groupNode, false);
+			System.out.println(groupNodeLine + "\t" + groupNode.getSUID());
+			group = AutoAnnotationManager.getInstance().getGroupFactory().createGroup(parent.getView().getModel(), groupNode, true);
+			addNode(groupNode);
 			lineNumber++;
+			line = text.get(lineNumber);
 		}
 		
 		// Reload nodes
-		line = text.get(lineNumber);
 		while (!line.equals("End of nodes")) {
 			addNode(session.getObject(Long.valueOf(line), CyNode.class));
 			lineNumber++;

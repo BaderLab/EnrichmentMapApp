@@ -271,22 +271,21 @@ public class AutoAnnotationTask extends AbstractTask {
 	private void addNodeToCluster(Integer clusterNumber, CyNode node, double[] coordinates,
 			TreeMap<Integer, Cluster> clusterMap, AnnotationSet annotationSet) {
 		Cluster cluster;
-		if (clusterMap.keySet().contains(clusterNumber)) {
-			// Cluster already exists
-			cluster = clusterMap.get(clusterNumber);
-			cluster.addNode(node);
-		} else {
+		if (!clusterMap.keySet().contains(clusterNumber)) {
+			// Cluster doesn't exist, create it
 			if (groups) {
-				// First node in a new cluster, create and register this cluster
-				// With groups, don't add the first node
-				CyGroup clusterGroup = groupFactory.createGroup(network, node, false);
+				// Create cluster with group
+				CyGroup clusterGroup = groupFactory.createGroup(network, node, true);
 				cluster = new Cluster(clusterNumber, annotationSet, clusterGroup);
 			} else {
+				// Create cluster without group
 				cluster = new Cluster(clusterNumber, annotationSet);
-				cluster.addNode(node);
 			}
 			annotationSet.addCluster(cluster);
+		} else {
+			cluster = clusterMap.get(clusterNumber);
 		}
+		cluster.addNode(node);
 		cluster.addCoordinates(coordinates);
 	}
 	

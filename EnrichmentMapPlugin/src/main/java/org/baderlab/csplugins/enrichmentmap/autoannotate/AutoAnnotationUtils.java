@@ -36,7 +36,7 @@ public class AutoAnnotationUtils {
 	private static double padding = Math.sqrt(2)*1.25; // Amount the ellipses are stretched by
 	// sqrt(2) is the ratio between the sizes of an ellipse 
 	// enclosing a rectangle and an ellipse enclosed in a rectangle
-	private static double ellipseBorderWidth = 5.0;
+	private static double ellipseBorderWidth = 3.0;
 	
 	public static void selectCluster(Cluster selectedCluster, CyNetwork network, 
 									 CommandExecutorTaskFactory executor, SynchronousTaskManager<?> syncTaskManager) {
@@ -245,22 +245,6 @@ public class AutoAnnotationUtils {
 			}
 		}
 		return label;
-	}
-
-	public static void registerClusterGroups(Cluster cluster, CyNetwork selectedNetwork,
-											CyGroupManager groupManager) {
-		CyGroup group = cluster.getGroup();
-		if (group != null) {
-			group.addGroupToNetwork(selectedNetwork);
-		}
-	}
-
-	public static void unregisterClusterGroups(Cluster cluster,
-			CyNetwork selectedNetwork, CyGroupManager groupManager) {
-		CyGroup group = cluster.getGroup();
-		if (group != null) {
-			group.removeGroupFromNetwork(selectedNetwork);
-		}
 	}
 
 	public static void updateFontSizes(Integer fontSize, boolean ellipsesShowing) {
