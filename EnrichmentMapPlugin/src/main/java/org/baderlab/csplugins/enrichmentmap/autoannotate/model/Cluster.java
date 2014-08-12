@@ -56,7 +56,7 @@ public class Cluster implements Comparable<Cluster> {
 	public Cluster(int clusterNumber, AnnotationSet parent) {
 		this.clusterNumber = clusterNumber;
 		this.parent = parent;
-		this.cloudName = parent.getCloudNamePrefix() + " Cloud " + clusterNumber;
+		this.cloudName = parent.getName() + " Cloud " + clusterNumber;
 		this.coordinates = new ArrayList<double[]>();
 		this.wordInfos = new ArrayList<WordInfo>();
 		this.nodeList = new ArrayList<CyNode>();
@@ -190,6 +190,20 @@ public class Cluster implements Comparable<Cluster> {
 		return label.compareTo(cluster2.getLabel());
 	}
 	
+	public void swallow(Cluster cluster2) {
+		// Add all of the nodes from the second cluster
+		for (CyNode node2 : cluster2.getNodes()) {
+			addNode(node2);
+		}
+		// Add the coordinates from the second cluster
+		for (double[] coordinates2 : cluster2.getCoordinates()) {
+			addCoordinates(coordinates2);
+		}
+		// Remove the second cluster
+		cluster2.destroyGroup();
+		cluster2.getParent().getClusterMap().remove(cluster2.getClusterNumber());
+	}
+	
 	public String toSessionString() {
 		/* Each cluster is stored in the format:
 	    	 *  		1 - Cluster number
@@ -239,7 +253,7 @@ public class Cluster implements Comparable<Cluster> {
 	
 	public void load(ArrayList<String> text, CySession session) {
 		clusterNumber = Integer.valueOf(text.get(0));
-		cloudName = parent.getCloudNamePrefix() + " Cloud " + clusterNumber;
+		cloudName = parent.getName() + " Cloud " + clusterNumber;
 		label = text.get(1);
 		selected = Boolean.valueOf(text.get(2));
 		boolean useGroups = Boolean.valueOf(text.get(3));

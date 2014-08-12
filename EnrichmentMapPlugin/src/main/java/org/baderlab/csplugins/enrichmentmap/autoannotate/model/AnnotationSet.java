@@ -23,7 +23,7 @@ public class AnnotationSet {
 	// Map of clusterNumbers to the comprising clusters
 	private TreeMap<Integer, Cluster> clusterMap;
 	// Name of the column that was used
-	private String cloudNamePrefix;
+	private String name;
 	// Used to recreate the annotation set when merging clusters
 	private String clusterColumnName;
 	private String nameColumnName;
@@ -38,7 +38,7 @@ public class AnnotationSet {
 	// Constructor used when created from an annotation task
 	public AnnotationSet(String cloudNamePrefix, CyNetworkView view, String clusterColumnName, String nameColumnName) {
 		this.clusterMap = new TreeMap<Integer, Cluster>();
-		this.cloudNamePrefix = cloudNamePrefix;
+		this.name = cloudNamePrefix;
 		this.view = view;
 		this.clusterColumnName = clusterColumnName;
 		this.nameColumnName = nameColumnName;
@@ -85,12 +85,12 @@ public class AnnotationSet {
 		this.clusterMap = clusterSet;
 	}
 
-	public String getCloudNamePrefix() {
-		return cloudNamePrefix;
+	public String getName() {
+		return name;
 	}
 
-	public void setCloudNamePrefix(String cloudNamePrefix) {
-		this.cloudNamePrefix = cloudNamePrefix;
+	public void setCloudNamePrefix(String name) {
+		this.name = name;
 	}
 
 	public String getClusterColumnName() {
@@ -127,7 +127,7 @@ public class AnnotationSet {
 
 		// Returns the string used when saving the session
 		String sessionString = "";
-		sessionString += cloudNamePrefix + "\n";
+		sessionString += name + "\n";
 		sessionString += clusterColumnName + "\n";
 		sessionString += nameColumnName + "\n";
 		for (Cluster cluster : clusterMap.values()) {
@@ -144,8 +144,8 @@ public class AnnotationSet {
 		// Update the column in the network table with the new SUID of the table
 		AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
 		for (CyTable table : autoAnnotationManager.getTableManager().getAllTables(true)) {
-			if (table.getTitle().equals(cloudNamePrefix)) {
-				view.getModel().getRow(view.getModel()).set(cloudNamePrefix, table.getSUID());
+			if (table.getTitle().equals(name)) {
+				view.getModel().getRow(view.getModel()).set(name, table.getSUID());
 				break;
 			}
 		}
@@ -170,6 +170,6 @@ public class AnnotationSet {
 	
 	@Override
 	public String toString() {
-		return cloudNamePrefix;
+		return name;
 	}
 }

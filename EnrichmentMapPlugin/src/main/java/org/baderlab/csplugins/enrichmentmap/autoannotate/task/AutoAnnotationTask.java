@@ -167,7 +167,7 @@ public class AutoAnnotationTask extends AbstractTask {
     	
 		Long clusterTableSUID = network.getDefaultNetworkTable().getRow(network.getSUID()).get(annotationSetName, Long.class);
     	CyTable clusterSetTable = tableManager.getTable(clusterTableSUID);
-    	String annotationSetName = clusters.getCloudNamePrefix();
+    	String annotationSetName = clusters.getName();
     	// Generate the labels for the clusters
     	for (Cluster cluster : clusters.getClusterMap().values()) {
     		AutoAnnotationUtils.updateClusterLabel(cluster, network, annotationSetName, clusterSetTable, nameColumnName);

@@ -50,7 +50,7 @@ public class AutoAnnotationParameters {
 	public void setSelectedAnnotationSet(AnnotationSet selectedAnnotationSet) {
 		for (AnnotationSet annotationSet : annotationSets.values()) {
 			if (annotationSet.equals(selectedAnnotationSet)) {
-				this.selectedAnnotationSetName = annotationSet.getCloudNamePrefix();
+				this.selectedAnnotationSetName = annotationSet.getName();
 			}
 		}
 	}
@@ -64,7 +64,7 @@ public class AutoAnnotationParameters {
 	}
 	
 	public void addAnnotationSet(AnnotationSet annotationSet) {
-		this.annotationSets.put(annotationSet.getCloudNamePrefix(), annotationSet);
+		this.annotationSets.put(annotationSet.getName(), annotationSet);
 	}
 	
 	public void removeAnnotationSet(AnnotationSet annotationSet) {
