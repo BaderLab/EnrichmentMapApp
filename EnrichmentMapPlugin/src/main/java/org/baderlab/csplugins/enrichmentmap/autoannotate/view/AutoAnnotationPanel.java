@@ -52,6 +52,8 @@ import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.command.CommandExecutorTaskFactory;
+import org.cytoscape.group.CyGroup;
+import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
@@ -334,7 +336,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 				AnnotationSet clusters = (AnnotationSet) clusterSetDropdown.getSelectedItem();
 				// Delete wordCloud table
 				autoAnnotationManager.getTableManager().deleteTable(selectedNetwork.getDefaultNetworkTable().getRow(selectedNetwork.getSUID()).get(clusters.getName(), Long.class));
-				// Prevent heatmap dialog from interfering
+				// Prevent heatmap dialog from interrupting this task
 				setHeatMapNoSort();
 				// Delete all annotations
 				for (Cluster cluster : clusters.getClusterMap().values()) {
@@ -345,7 +347,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 				remove(clustersToTables.get(clusters).getParent());
 				clustersToTables.remove(clusters);
 				params.removeAnnotationSet(clusters);
-				// Hide the unuseable buttons if the last annotation set was just deleted
+				// Hide the unusable buttons if the last annotation set was just deleted
 				if (params.getAnnotationSets().size() == 0) {
 					setOutputVisibility(false);
 				}
@@ -547,7 +549,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 		layoutCheckBox.setSelected(false);
 
 		// By default layout nodes by cluster
-		groupsCheckBox = new JCheckBox("Create groups (metanodes) for clusters *BUGGY*");
+		groupsCheckBox = new JCheckBox("Create groups (metanodes) for clusters");
 		groupsCheckBox.setSelected(false);
 		
 		JPanel checkBoxPanel = new JPanel();
@@ -745,6 +747,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 		clusterSetDropdown.addItemListener(new ItemListener(){
 			public void itemStateChanged(ItemEvent itemEvent) {
 				CyGroupManager groupManager = autoAnnotationManager.getGroupManager();
+				CyGroupFactory groupFactory = autoAnnotationManager.getGroupFactory();
 				if (itemEvent.getStateChange() == ItemEvent.SELECTED) {
 					AnnotationSet annotationSet = (AnnotationSet) itemEvent.getItem();
 					params.setSelectedAnnotationSet(annotationSet);
@@ -765,6 +768,15 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 						boolean constantFontSize = fontSizeTextField.isEnabled();
 						int fontSize = Integer.parseInt(fontSizeTextField.getText());
 						AutoAnnotationUtils.drawCluster(cluster, selectedView, shapeFactory, textFactory, annotationManager, constantFontSize, fontSize, showEllipsesCheckBox.isSelected());
+						// Recreate groups if necessary
+						if (annotationSet.usingGroups()) {
+							// TODO - find a faster way to do this
+							CyGroup group = groupFactory.createGroup(selectedNetwork, cluster.getNodes().get(0), true);
+							ArrayList<CyNode> nodesWithoutGroupNode = new ArrayList<CyNode>(cluster.getNodes());
+							nodesWithoutGroupNode.remove(0);
+							group.addNodes(nodesWithoutGroupNode);
+							cluster.setGroup(group);
+						}
 					}
 					clustersToTables.get(annotationSet).getParent().getParent().setVisible(true); // Show selected table
 					updateUI();
@@ -773,6 +785,13 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 					for (Cluster cluster : clusters.getClusterMap().values()) {
 						// Hide the annotations
 						cluster.erase();
+						// Remove the groups if necessary
+						CyGroup group = cluster.getGroup();
+						if (group != null) {
+							group.removeGroupFromNetwork(selectedNetwork);
+							groupManager.destroyGroup(group);
+							cluster.removeGroup();
+						}
 					}
 					// Hide the table for deselected clusters
 					clustersToTables.get(clusters).getParent().getParent().setVisible(false);

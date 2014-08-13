@@ -125,6 +125,10 @@ public class Cluster implements Comparable<Cluster> {
 	public String getLabel() {
 		return label;
 	}
+	
+	public void setGroup(CyGroup group) {
+		this.group = group;
+	}
 
 	public int getSize() {
 		return size;
@@ -171,6 +175,10 @@ public class Cluster implements Comparable<Cluster> {
 		this.wordInfos = wordInfos;
 	}
 
+	public void removeGroup() {
+		group = null;
+	}
+	
 	@Override
 	public int compareTo(Cluster cluster2) {
 		return label.compareTo(cluster2.getLabel());
@@ -205,7 +213,6 @@ public class Cluster implements Comparable<Cluster> {
 		sessionString += clusterNumber + "\n";
 		sessionString += label + "\n";
 		sessionString += selected + "\n";
-		sessionString += (group != null) + "\n";
 		// Write parameters of the annotations to recreate them after
 			// Ellipse
 		Map<String, String> ellipseArgs = ellipse.getArgMap();
@@ -249,10 +256,9 @@ public class Cluster implements Comparable<Cluster> {
 		cloudName = parent.getName() + " Cloud " + clusterNumber;
 		label = text.get(1);
 		selected = Boolean.valueOf(text.get(2));
-		boolean useGroups = Boolean.valueOf(text.get(3));
 		
 		// Load the parameters of the annotations
-		int lineNumber = 4;
+		int lineNumber = 3;
 		String line = text.get(lineNumber);
 		Map<String, String> ellipseMap = new HashMap<String, String>();
 		while (!line.equals("Text Annotations")) {
@@ -272,17 +278,6 @@ public class Cluster implements Comparable<Cluster> {
 		}
 		lineNumber++;
 		line = text.get(lineNumber);
-		
-		// Create the group out of first node if necessary
-		if (useGroups) {
-			String groupNodeLine = text.get(lineNumber);
-			CyNode groupNode = session.getObject(Long.valueOf(groupNodeLine), CyNode.class);
-			System.out.println(groupNodeLine + "\t" + groupNode.getSUID());
-			group = AutoAnnotationManager.getInstance().getGroupFactory().createGroup(parent.getView().getModel(), groupNode, true);
-			addNode(groupNode);
-			lineNumber++;
-			line = text.get(lineNumber);
-		}
 		
 		// Reload nodes
 		while (!line.equals("End of nodes")) {

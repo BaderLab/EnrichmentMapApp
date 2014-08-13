@@ -264,25 +264,20 @@ public class AutoAnnotationTask extends AbstractTask {
 				}
 			} // No other possible columnTypes (since the dropdown only contains these types
 		}
+		annotationSet.setUseGroups(groups);
 		return annotationSet;
 	}
 	
-	// Creates the cluster if it doesn't exist, adds node/coordinates
+	// Adds the node and its coordinates to cluster number specified by clusterNumber
 	private void addNodeToCluster(Integer clusterNumber, CyNode node, double[] coordinates,
 			TreeMap<Integer, Cluster> clusterMap, AnnotationSet annotationSet) {
 		Cluster cluster;
 		if (!clusterMap.keySet().contains(clusterNumber)) {
 			// Cluster doesn't exist, create it
-			if (groups) {
-				// Create cluster with group
-				CyGroup clusterGroup = groupFactory.createGroup(network, node, true);
-				cluster = new Cluster(clusterNumber, annotationSet, clusterGroup);
-			} else {
-				// Create cluster without group
-				cluster = new Cluster(clusterNumber, annotationSet);
-			}
+			cluster = new Cluster(clusterNumber, annotationSet);
 			annotationSet.addCluster(cluster);
 		} else {
+			// Cluster exists, look it up
 			cluster = clusterMap.get(clusterNumber);
 		}
 		cluster.addNode(node);
@@ -290,6 +285,10 @@ public class AutoAnnotationTask extends AbstractTask {
 	}
 	
 	private void runWordCloud(AnnotationSet annotationSet, CyNetwork network) {
+		// Clear any previously selected nodes
+		for (CyNode node : network.getNodeList()) {
+			network.getRow(node).set(CyNetwork.SELECTED, false);
+		}
 		TreeMap<Integer, Cluster> clusterMap = annotationSet.getClusterMap();
 		for (int clusterNumber : clusterMap.keySet()) {
 			Cluster cluster = clusterMap.get(clusterNumber);

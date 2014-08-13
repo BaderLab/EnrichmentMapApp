@@ -27,8 +27,10 @@ public class AnnotationSet {
 	// Used to recreate the annotation set when merging clusters
 	private String clusterColumnName;
 	private String nameColumnName;
-	// View that the cluster set belonds to
+	// View that the cluster set belongs to
 	private CyNetworkView view;
+	// Whether or not groups are created for this annotation set
+	private boolean useGroups;
 	
 	// Constructor used when loading from a file
 	public AnnotationSet() {
@@ -89,7 +91,7 @@ public class AnnotationSet {
 		return name;
 	}
 
-	public void setCloudNamePrefix(String name) {
+	public void setName(String name) {
 		this.name = name;
 	}
 
@@ -109,14 +111,23 @@ public class AnnotationSet {
 		this.nameColumnName = nameColumnName;
 	}
 
+	public boolean usingGroups() {
+		return useGroups;
+	}
+
+	public void setUseGroups(boolean useGroups) {
+		this.useGroups = useGroups;
+	}
+
 	public String toSessionString() {
 	    	// Each annotation set is stored in the format:
 	    	/*
-	    	 *  1 - Cloud Name Prefix (Primary identifier)
+	    	 *  1 - Annotation set name (Primary identifier)
 	    	 *  2 - Cluster Column Name
 	    	 *  3 - Name Column Name
-	    	 *  4... - Each cluster, stored in the format:
-	    	 *  		1 - Cluster number
+	    	 *  4 - Whether or not this annotation set uses groups
+	    	 *  5... - Each cluster, stored in the format:
+	    	 *  		1 - Cluster name
 	    	 *  		2 - Cluster label
 	    	 *  		3 - Selected (0/1)
 	    	 *  		4 - labelManuallyUpdated
@@ -130,6 +141,7 @@ public class AnnotationSet {
 		sessionString += name + "\n";
 		sessionString += clusterColumnName + "\n";
 		sessionString += nameColumnName + "\n";
+		sessionString += useGroups + "\n";
 		for (Cluster cluster : clusterMap.values()) {
 			sessionString += cluster.toSessionString();
 		}
@@ -138,9 +150,10 @@ public class AnnotationSet {
 	}
 
 	public void load(ArrayList<String> text, CySession session) {
-		setCloudNamePrefix(text.get(0));
+		setName(text.get(0));
 		setClusterColumnName(text.get(1));
 		setNameColumnName(text.get(2));
+		setUseGroups(Boolean.valueOf(text.get(3)));
 		// Update the column in the network table with the new SUID of the table
 		AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
 		for (CyTable table : autoAnnotationManager.getTableManager().getAllTables(true)) {
@@ -150,7 +163,7 @@ public class AnnotationSet {
 			}
 		}
 		
-		int lineNumber = 3;
+		int lineNumber = 4;
 		ArrayList<String> clusterLines = new ArrayList<String>();
 		while (lineNumber < text.size()) {
 			String line = text.get(lineNumber);
