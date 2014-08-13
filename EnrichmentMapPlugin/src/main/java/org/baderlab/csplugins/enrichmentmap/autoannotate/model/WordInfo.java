@@ -48,7 +48,8 @@ public class WordInfo implements Comparable<WordInfo>{
 
 	@Override
 	public int compareTo(WordInfo otherWordInfo) {
-		return (int) Math.signum(otherWordInfo.size - size); // Sorts descending
+		// Sorts descending by size
+		return (int) Math.signum(otherWordInfo.getSize() - size);
 	}
 	
 	@Override

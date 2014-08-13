@@ -7,13 +7,16 @@
 package org.baderlab.csplugins.enrichmentmap.autoannotate;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.AnnotationSet;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.WordInfo;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.model.WordInfoNumberComparator;
 import org.cytoscape.command.CommandExecutorTaskFactory;
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupManager;
@@ -223,7 +226,8 @@ public class AutoAnnotationUtils {
 		Collections.sort(wordInfosCopy); // Sorts by size descending
 		// Gets the biggest word in the cloud
 		WordInfo biggestWord = wordInfosCopy.get(0);
-		String label = biggestWord.getWord();
+		ArrayList<WordInfo> label = new ArrayList<WordInfo>();
+		label.add(biggestWord);
 		double[] nextWordSizeThresholds = {0.3, 0.8, 0.9};
 		int numWords = 1;
 		WordInfo nextWord = biggestWord;
@@ -238,15 +242,31 @@ public class AutoAnnotationUtils {
 			nextWord = wordInfosCopy.get(0);
 			wordInfosCopy.remove(0);
 			if (nextWord.getSize() > wordSizeThreshold) {
-				label += " " + nextWord.getWord();
+				label.add(nextWord);
 				numWords++;
 			} else {
 				break;
 			}
 		}
-		return label;
+		// Sort first by size, then by WordCloud 'number', tries to preserve original word order
+		Collections.sort(label, WordInfoNumberComparator.getInstance());
+		// Create a string label from the word infos
+		return join(label, " ");
 	}
 
+	// Connects strings together, separated by separator
+	private static String join(List<WordInfo> stringList, String separator) {
+		String joined = "";
+		for (int index = 0; index < stringList.size(); index++) {
+			if (index == 0) {
+				joined += stringList.get(index).getWord();
+			} else {
+				joined += separator + stringList.get(index).getWord();
+			}
+		}
+		return joined;
+	}
+	
 	public static void updateFontSizes(Integer fontSize, boolean ellipsesShowing) {
 		// Set font size to fontSize
 		for (CyNetworkView view : 
