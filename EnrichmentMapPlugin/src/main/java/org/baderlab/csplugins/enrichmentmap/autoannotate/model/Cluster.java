@@ -244,6 +244,9 @@ public class Cluster implements Comparable<Cluster> {
 		
 		// Destroy group (causes problems with session loading)
 		if (group != null) {
+			if (group.isCollapsed(parent.getView().getModel())) {
+				group.expand(parent.getView().getModel());
+			}
 			group.removeGroupFromNetwork(parent.getView().getModel());
 			AutoAnnotationManager.getInstance().getGroupManager().destroyGroup(group);
 		}

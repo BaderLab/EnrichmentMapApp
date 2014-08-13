@@ -788,6 +788,9 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 						// Remove the groups if necessary
 						CyGroup group = cluster.getGroup();
 						if (group != null) {
+							if (cluster.isCollapsed()) {
+								cluster.getGroup().expand(selectedNetwork);
+							}
 							group.removeGroupFromNetwork(selectedNetwork);
 							groupManager.destroyGroup(group);
 							cluster.removeGroup();
