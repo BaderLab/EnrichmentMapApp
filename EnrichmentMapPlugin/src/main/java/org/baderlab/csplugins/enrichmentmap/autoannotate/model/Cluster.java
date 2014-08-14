@@ -155,7 +155,15 @@ public class Cluster implements Comparable<Cluster> {
 	}
 
 	public void erase() {
+		eraseText();
+		eraseEllipse();
+	}
+	
+	public void eraseText() {
 		textAnnotation.removeAnnotation();
+	}
+	
+	public void eraseEllipse() {
 		ellipse.removeAnnotation();
 	}
 	

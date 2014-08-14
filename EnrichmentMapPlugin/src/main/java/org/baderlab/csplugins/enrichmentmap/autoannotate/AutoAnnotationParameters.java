@@ -68,7 +68,7 @@ public class AutoAnnotationParameters {
 	}
 	
 	public void removeAnnotationSet(AnnotationSet annotationSet) {
-		this.annotationSets.remove(annotationSet);
+		annotationSets.remove(annotationSet.getName());
 	}
 
 	public String nextAnnotationSetName(String algorithm,
