@@ -23,6 +23,7 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.annotations.AnnotationManager;
 import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
@@ -33,10 +34,7 @@ import org.cytoscape.work.TaskIterator;
 
 public class AutoAnnotationUtils {
 	
-	private static int min_size = 55; // Minimum size of the cluster
-	private static double padding = Math.sqrt(2)*1.25; // Amount the ellipses are stretched by
-	// sqrt(2) is the ratio between the sizes of an ellipse 
-	// enclosing a rectangle and an ellipse enclosed in a rectangle
+	private static int min_size = 50; // Minimum size of the ellipse
 	
 	public static void selectCluster(Cluster selectedCluster, CyNetwork network, 
 			CommandExecutorTaskFactory executor, SynchronousTaskManager<?> syncTaskManager,
@@ -123,25 +121,30 @@ public class AutoAnnotationUtils {
 			ymin = coordinates[1] < ymin ? coordinates[1] : ymin;
 			ymax = coordinates[1] > ymax ? coordinates[1] : ymax;
 		}
+		
+		
+		double centreX = (xmin + xmax)/2;
+		double centreY = (ymin + ymax)/2;
 		double width = (xmax - xmin);
 		width = width > min_size ? width : min_size;
 		double height = (ymax - ymin);
 		height = height > min_size ? height : min_size;
+		ArrayList<double[]> coordinatesList = cluster.getCoordinates();
+		ArrayList<Double> nodeSizesList = new ArrayList<Double>();
+		for (CyNode node : cluster.getNodes()) {
+			nodeSizesList.add(view.getNodeView(node).getVisualProperty(BasicVisualLexicon.NODE_WIDTH)/2);
+		}
+		while (nodesOutOfCluster(coordinatesList, nodeSizesList, width, height, centreX, centreY, ellipseBorderWidth)) {
+			width *= 1.1;
+			height *= 1.1;
+		}
+		width += 40;
+		height += 40;
 		
 		// Set the position of the top-left corner of the ellipse
-		Integer xPos;
-		if (width == min_size) {
-			xPos = (int) Math.round(xmin - width/2);
-		} else {
-			xPos = (int) Math.round(xmin - width*(padding-1)/2);
-		}
-		Integer yPos;
-		if (width == min_size) {
-			yPos = (int) Math.round(ymin - height/2);
-		} else {
-			yPos = (int) Math.round(ymin - height*(padding-1)/2);
-		}
-
+		Integer xPos = (int) Math.round(centreX - width/2);
+		Integer yPos = (int) Math.round(centreY - height/2);
+		
 		// Create and draw the ellipse
 		HashMap<String, String> arguments = new HashMap<String,String>();
 		arguments.put("x", String.valueOf(xPos));
@@ -150,13 +153,31 @@ public class AutoAnnotationUtils {
 		arguments.put("canvas", "foreground");
 		ShapeAnnotation ellipse = shapeFactory.createAnnotation(ShapeAnnotation.class, view, arguments);
 		ellipse.setShapeType("Ellipse");
-		ellipse.setSize(width*padding*zoom, height*padding*zoom);
+		ellipse.setSize(width*zoom, height*zoom);
 		ellipse.setBorderWidth(ellipseBorderWidth);
 		ellipse.setBorderColor(Color.DARK_GRAY);
 		cluster.setEllipse(ellipse);
 		if (showEllipses) {
 			annotationManager.addAnnotation(ellipse);
 		}
+	}
+	
+	private static boolean nodesOutOfCluster(ArrayList<double[]> coordinatesList, ArrayList<Double> nodeSizeList, 
+			double width, double height,
+			double centreX, double centreY, int ellipseWidth) {
+		double semimajor_axis = width/2;
+		double semiminor_axis = height/2;
+		for (int index = 0; index < coordinatesList.size(); index++) {
+			double[] coordinates = coordinatesList.get(index);
+			double nodeSize = nodeSizeList.get(index);
+			if (Math.pow((coordinates[0] - centreX - ellipseWidth)/semimajor_axis,2) +
+					Math.pow(nodeSize/semimajor_axis, 2) +
+					Math.pow((coordinates[1] - centreY - ellipseWidth)/semiminor_axis,2) +
+					Math.pow(nodeSize/semiminor_axis,  2) >= 1) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	public static void drawTextLabel(Cluster cluster, CyNetworkView view, AnnotationFactory<TextAnnotation> textFactory,
@@ -176,13 +197,13 @@ public class AutoAnnotationUtils {
 		if (constantFontSize) {
 			labelFontSize = fontSize;
 			// Set the position of the label so that it is centered over the ellipse
-			xPos = (int) Math.round(xPos + width*padding/2 - 1.3*labelFontSize*cluster.getLabel().length());
+			xPos = (int) Math.round(xPos + width/2 - 1.3*labelFontSize*cluster.getLabel().length());
 			yPos = (int) Math.round(yPos - 8.3*labelFontSize);
 			fontSizeArgument = String.valueOf((int) Math.round(labelFontSize*7*zoom));
 		} else {
 			labelFontSize = (int) Math.round(2.5*Math.pow(cluster.getSize(), 0.4));
 			// Set the position of the label so that it is centered over the ellipse
-			xPos = (int) Math.round(xPos + width*padding/2 - 1.3*labelFontSize*labelText.length());
+			xPos = (int) Math.round(xPos + width/2 - 1.3*labelFontSize*labelText.length());
 			yPos = (int) Math.round(yPos - 11.3*labelFontSize);
 			fontSizeArgument = String.valueOf((int) Math.round(labelFontSize*11*zoom));
 		}
