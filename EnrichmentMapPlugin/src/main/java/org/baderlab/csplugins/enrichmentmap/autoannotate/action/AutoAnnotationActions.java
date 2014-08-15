@@ -81,7 +81,8 @@ public class AutoAnnotationActions {
 	
 	public static void deleteAction(CyNetworkView selectedView,
 			AnnotationSet annotationSet, JTable clusterTable,
-			CytoPanel westPanel, boolean constantFontSize, boolean showEllipses, int fontSize) {
+			CytoPanel westPanel, boolean constantFontSize, boolean showEllipses, 
+			int fontSize, int ellipseWidth) {
 		
 		int[] selectedRows = clusterTable.getSelectedRows();
 		if (selectedRows.length < 1) {
@@ -110,7 +111,8 @@ public class AutoAnnotationActions {
 				AutoAnnotationUtils.destroyCluster(cluster, executor, syncTaskManager);
 			}
 			String nameColumnName = annotationSet.getNameColumnName();
-			updateAction(selectedView, annotationSet, nameColumnName, constantFontSize, showEllipses, fontSize, clusterTable);
+			updateAction(selectedView, annotationSet, nameColumnName, constantFontSize, 
+					showEllipses, fontSize, clusterTable, ellipseWidth);
 			// Focus on this panel
 			westPanel.setSelectedIndex(westPanel.indexOfComponent(autoAnnotationManager.getAnnotationPanel()));
 		}
@@ -118,7 +120,8 @@ public class AutoAnnotationActions {
 	
 	public static void mergeAction(CyNetworkView selectedView,
 			AnnotationSet annotationSet, JTable clusterTable,
-			CytoPanel westPanel, boolean constantFontSize, boolean showEllipses, int fontSize) {
+			CytoPanel westPanel, boolean constantFontSize, boolean showEllipses, 
+			int fontSize, int ellipseWidth) {
 		CyNetwork selectedNetwork = selectedView.getModel();
 		AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
 
@@ -187,7 +190,8 @@ public class AutoAnnotationActions {
 			for (CyNode node : firstCluster.getNodes()) {
 				selectedNetwork.getRow(node).set(CyNetwork.SELECTED, false);
 			}
-			updateAction(selectedView, annotationSet, nameColumnName, constantFontSize, showEllipses, fontSize, clusterTable);
+			updateAction(selectedView, annotationSet, nameColumnName, constantFontSize, showEllipses, 
+					fontSize, clusterTable, ellipseWidth);
 			// Deselect rows (no longer meaningful)
 			clusterTable.clearSelection();
 			// Focus on this panel
@@ -229,7 +233,7 @@ public class AutoAnnotationActions {
 	public static void updateAction(CyNetworkView selectedView,
 			AnnotationSet annotationSet, String nameColumnName,
 			boolean constantFontSize, boolean showEllipses, int fontSize,
-			JTable clusterTable) {
+			JTable clusterTable, int ellipseWidth) {
 
 		AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
 		CyNetwork selectedNetwork = selectedView.getModel();
@@ -253,7 +257,8 @@ public class AutoAnnotationActions {
 			AnnotationFactory<ShapeAnnotation> shapeFactory = autoAnnotationManager.getShapeFactory();
 			AnnotationFactory<TextAnnotation> textFactory = autoAnnotationManager.getTextFactory();
 			AnnotationManager annotationManager = autoAnnotationManager.getAnnotationManager();
-			AutoAnnotationUtils.drawCluster(cluster, selectedView, shapeFactory, textFactory, annotationManager, constantFontSize, fontSize, showEllipses);
+			AutoAnnotationUtils.drawCluster(cluster, selectedView, shapeFactory, textFactory, 
+					annotationManager, constantFontSize, fontSize, showEllipses, ellipseWidth);
 		}
 		// Update the table if the value has changed (WordCloud has been updated)
 		DefaultTableModel model = (DefaultTableModel) clusterTable.getModel();

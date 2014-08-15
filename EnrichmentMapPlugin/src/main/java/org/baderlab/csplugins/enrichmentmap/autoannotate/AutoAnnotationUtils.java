@@ -37,10 +37,10 @@ public class AutoAnnotationUtils {
 	private static double padding = Math.sqrt(2)*1.25; // Amount the ellipses are stretched by
 	// sqrt(2) is the ratio between the sizes of an ellipse 
 	// enclosing a rectangle and an ellipse enclosed in a rectangle
-	private static double ellipseBorderWidth = 3.0;
 	
 	public static void selectCluster(Cluster selectedCluster, CyNetwork network, 
-									 CommandExecutorTaskFactory executor, SynchronousTaskManager<?> syncTaskManager) {
+			CommandExecutorTaskFactory executor, SynchronousTaskManager<?> syncTaskManager,
+			int ellipseBorderWidth) {
 		if (!selectedCluster.isSelected()) {
 			AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
 			autoAnnotationManager.flushPayloadEvents();
@@ -71,7 +71,7 @@ public class AutoAnnotationUtils {
 		}
 	}
 
-	public static void deselectCluster(Cluster deselectedCluster, CyNetwork network) {
+	public static void deselectCluster(Cluster deselectedCluster, CyNetwork network, int ellipseBorderWidth) {
 		if (deselectedCluster.isSelected()) {
 			deselectedCluster.setSelected(false);
 			// Deselect node(s) in the cluster
@@ -109,7 +109,8 @@ public class AutoAnnotationUtils {
 	}
 
 	public static void drawEllipse(Cluster cluster, CyNetworkView view,
-			AnnotationFactory<ShapeAnnotation> shapeFactory, AnnotationManager annotationManager, boolean showEllipses) {
+			AnnotationFactory<ShapeAnnotation> shapeFactory, AnnotationManager annotationManager, 
+			boolean showEllipses, int ellipseBorderWidth) {
 		double zoom = view.getVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR);
     	// Find the edges of the cluster
 		double xmin = 100000000;
@@ -202,8 +203,9 @@ public class AutoAnnotationUtils {
 	
 	public static void drawCluster(Cluster cluster, CyNetworkView view, 
 			AnnotationFactory<ShapeAnnotation> shapeFactory, AnnotationFactory<TextAnnotation> textFactory, 
-			AnnotationManager annotationManager, boolean constantFontSize, int fontSize, boolean showEllipses) {
-		drawEllipse(cluster, view, shapeFactory, annotationManager, showEllipses);
+			AnnotationManager annotationManager, boolean constantFontSize, int fontSize, boolean showEllipses,
+			int ellipseBorderWidth) {
+		drawEllipse(cluster, view, shapeFactory, annotationManager, showEllipses, ellipseBorderWidth);
 		drawTextLabel(cluster, view, textFactory, annotationManager, constantFontSize, fontSize);
 	}
 	

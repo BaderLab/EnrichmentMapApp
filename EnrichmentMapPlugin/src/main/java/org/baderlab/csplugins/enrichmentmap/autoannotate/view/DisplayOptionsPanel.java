@@ -5,13 +5,13 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.net.URL;
 
-import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.Icon;
@@ -21,7 +21,10 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.JSlider;
 import javax.swing.JTextField;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationUtils;
@@ -29,7 +32,6 @@ import org.baderlab.csplugins.enrichmentmap.autoannotate.model.AnnotationSet;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
-import org.cytoscape.util.swing.BasicCollapsiblePanel;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.annotations.AnnotationManager;
 import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
@@ -42,9 +44,10 @@ public class DisplayOptionsPanel extends JPanel implements CytoPanelComponent {
 	private JCheckBox showEllipsesCheckBox;
 	private AutoAnnotationManager autoAnnotationManager;
 	private JRadioButton heatmapButton;
+	private JSlider ellipseWidthSlider;
 
-	private static final String proportionalSizeButtonString = "Font size by # of nodes";
-	private static final String constantSizeButtonString = "Constant font size";
+	private static String proportionalSizeButtonString = "Font size by # of nodes";
+	private static String constantSizeButtonString = "Constant font size";
 	
 	public DisplayOptionsPanel() {
 		this.autoAnnotationManager = AutoAnnotationManager.getInstance();
@@ -52,9 +55,39 @@ public class DisplayOptionsPanel extends JPanel implements CytoPanelComponent {
 		setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 		setPreferredSize(new Dimension(300, 300));
 		
+		add(createEllipseWidthSliderPanel());
 		add(createFontSizePanel());
-		add(createShowEllipsesCheckBoxPanel());
 		add(createSelectionPanel());
+		add(createShowEllipsesCheckBoxPanel());
+	}
+	
+	private JPanel createEllipseWidthSliderPanel() {
+		// Slider to set width of the ellipses
+		JLabel sliderLabel = new JLabel("Ellipse Border Width");
+		ellipseWidthSlider = new JSlider(1, 10, 3);
+		ellipseWidthSlider.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+		        JSlider ellipseWidthSlider = (JSlider) e.getSource();
+		        int ellipseWidth = ellipseWidthSlider.getValue();
+		        for (Cluster cluster : selectedAnnotationSet.getClusterMap().values()) {
+		        	if (cluster.isSelected()) {
+		        		cluster.getEllipse().setBorderWidth(ellipseWidth*2);
+		        	} else {
+		        		cluster.getEllipse().setBorderWidth(ellipseWidth);
+		        	}
+		        	cluster.getEllipse().update();
+		        }
+			}
+		});
+		JPanel ellipseWidthSliderPanel = new JPanel();
+		ellipseWidthSliderPanel.setLayout(new BoxLayout(ellipseWidthSliderPanel, BoxLayout.PAGE_AXIS));
+		ellipseWidthSliderPanel.add(sliderLabel);
+		ellipseWidthSliderPanel.add(ellipseWidthSlider);
+		return ellipseWidthSliderPanel;
+	}
+	
+	public int getEllipseWidth() {
+		return ellipseWidthSlider.getValue();
 	}
 	
 	private JPanel createFontSizePanel() {
@@ -104,7 +137,6 @@ public class DisplayOptionsPanel extends JPanel implements CytoPanelComponent {
 
 		JPanel fontSizePanel = new JPanel(new GridBagLayout());
 		GridBagConstraints c = new GridBagConstraints();
-		fontSizePanel.setBorder(BorderFactory.createTitledBorder("Font Size Options"));
 		c.gridx = 0;
 		c.gridwidth = 5;
 		c.gridy = 0;
@@ -134,7 +166,7 @@ public class DisplayOptionsPanel extends JPanel implements CytoPanelComponent {
 					selectedAnnotationSet.updateCoordinates();
 					for (Cluster cluster : selectedAnnotationSet.getClusterMap().values()) {
 						AutoAnnotationUtils.drawEllipse(cluster, selectedAnnotationSet.getView(),
-								shapeFactory, annotationManager, showEllipses);
+								shapeFactory, annotationManager, showEllipses, ellipseWidthSlider.getValue());
 					}
 				} else {
 					for (Cluster cluster : selectedAnnotationSet.getClusterMap().values()) {
@@ -149,21 +181,14 @@ public class DisplayOptionsPanel extends JPanel implements CytoPanelComponent {
 		return checkBoxPanel;
 	}	
 	
-	public JCheckBox getShowEllipsesCheckBox() {
-		return showEllipsesCheckBox;
+	public boolean isShowEllipsesCheckBoxSelected() {
+		return showEllipsesCheckBox.isSelected();
 	}
 	
-	public void setShowEllipsesCheckBox(JCheckBox showEllipsesCheckBox) {
-		this.showEllipsesCheckBox = showEllipsesCheckBox;
-	}
-
 	private JPanel createSelectionPanel() {
-		JPanel selectionPanel = new JPanel(new BorderLayout());
-		selectionPanel.setBorder(BorderFactory.createTitledBorder("Autofocus Preferences"));
+		JPanel selectionPanel = new JPanel(new GridLayout(1, 2));
 
-		JPanel labelPanel = new JPanel();
 		JLabel label = new JLabel("Show on selection:");
-		labelPanel.add(label);
 
 		heatmapButton = new JRadioButton("Heat Map");
 		JRadioButton wordCloudButton = new JRadioButton("WordCloud");
@@ -179,14 +204,14 @@ public class DisplayOptionsPanel extends JPanel implements CytoPanelComponent {
 		radioButtonPanel.add(wordCloudButton);
 		radioButtonPanel.add(heatmapButton);
 
-		selectionPanel.add(labelPanel, BorderLayout.WEST);
-		selectionPanel.add(radioButtonPanel, BorderLayout.EAST);
+		selectionPanel.add(label);
+		selectionPanel.add(radioButtonPanel);
 		
 		return selectionPanel;
 	}
 	
-	public JRadioButton getHeatmapButton() {
-		return heatmapButton;
+	public boolean isHeatmapButtonSelected() {
+		return heatmapButton.isSelected();
 	}
 
 	
