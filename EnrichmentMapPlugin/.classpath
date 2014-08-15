@@ -9,5 +9,6 @@
 	<classpathentry kind="lib" path="/Users/arkadyarkhangorodsky/git/cytoscape-app-developer/target/lib/cytoscape-swing-app-api-3.2.0-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="/Users/arkadyarkhangorodsky/git/cytoscape-app-developer/target/lib/impl-3.2.0-SNAPSHOT-sources.jar"/>
 	<classpathentry kind="lib" path="/Users/arkadyarkhangorodsky/.m2/repository/org/osgi/org.osgi.core/4.2.0/org.osgi.core-4.2.0.jar"/>
+	<classpathentry kind="lib" path="/Users/arkadyarkhangorodsky/.m2/repository/org/mockito/mockito-all/1.9.5/mockito-all-1.9.5.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

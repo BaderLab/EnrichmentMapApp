@@ -65,8 +65,9 @@ public class AutoAnnotationUtils {
 			TaskIterator task = executor.createTaskIterator(commands, null);
 			syncTaskManager.execute(task);
 			// Select the annotations (ellipse and text label)
-			selectedCluster.getEllipse().setSelected(true);
-			selectedCluster.getTextAnnotation().setSelected(true);
+			selectedCluster.getEllipse().setBorderColor(Color.YELLOW);
+			selectedCluster.getEllipse().setBorderWidth(3*ellipseBorderWidth);
+			selectedCluster.getTextAnnotation().setTextColor(Color.YELLOW);
 		}
 	}
 
@@ -82,12 +83,22 @@ public class AutoAnnotationUtils {
 				}
 			}
 			// Deselect the annotations
-			deselectedCluster.getEllipse().setSelected(false);
-			deselectedCluster.getTextAnnotation().setSelected(false);
+			deselectedCluster.getEllipse().setBorderColor(Color.DARK_GRAY);
+			deselectedCluster.getEllipse().setBorderWidth(ellipseBorderWidth);
+			deselectedCluster.getTextAnnotation().setTextColor(Color.BLACK);
 		}
 	}
 
 	public static void destroyCluster(Cluster clusterToDestroy, CommandExecutorTaskFactory executor, 
+			SynchronousTaskManager<?> syncTaskManager) {
+		destroyCloud(clusterToDestroy, executor, syncTaskManager);
+		// Erase the annotations
+		clusterToDestroy.erase();
+		// Remove the cluster from the annotation set
+		clusterToDestroy.getParent().getClusterMap().remove(clusterToDestroy.getClusterNumber());
+	}
+	
+	public static void destroyCloud(Cluster clusterToDestroy, CommandExecutorTaskFactory executor, 
 			SynchronousTaskManager<?> syncTaskManager) {
 		// Delete the WordCloud through the command line
 		ArrayList<String> commands = new ArrayList<String>();
@@ -95,8 +106,6 @@ public class AutoAnnotationUtils {
 		commands.add(command);
 		TaskIterator task = executor.createTaskIterator(commands, null);
 		syncTaskManager.execute(task);
-		// Erase the annotations
-		clusterToDestroy.erase();
 	}
 
 	public static void drawEllipse(Cluster cluster, CyNetworkView view,
@@ -301,6 +310,9 @@ public class AutoAnnotationUtils {
 					AnnotationFactory<TextAnnotation> textFactory = autoAnnotationManager.getTextFactory();
 					AnnotationManager annotationManager = autoAnnotationManager.getAnnotationManager();
 					AutoAnnotationUtils.drawTextLabel(cluster, view, textFactory, annotationManager, constantFontSize, fontSize);
+					if (!annotationSet.isSelected()) {
+						cluster.eraseText();
+					}
 				}
 			}
 		}

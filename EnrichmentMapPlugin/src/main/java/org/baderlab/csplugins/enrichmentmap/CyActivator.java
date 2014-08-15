@@ -12,6 +12,7 @@ import org.baderlab.csplugins.enrichmentmap.actions.LoadPostAnalysisPanelAction;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowAboutPanelAction;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.action.AutoAnnotationPanelAction;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.action.DisplayOptionsPanelAction;
 import org.baderlab.csplugins.enrichmentmap.commands.EnrichmentMapGSEACommandHandlerTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.task.BuildEnrichmentMapTuneableTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.view.BulkEMCreationPanel;
@@ -160,7 +161,11 @@ public class CyActivator extends AbstractCyActivator {
 		serviceProperties.put("preferredMenu", "Apps.EnrichmentMap");
  		AutoAnnotationPanelAction autoAnnotationPanelAction = new AutoAnnotationPanelAction(serviceProperties,cyApplicationManagerRef, cyNetworkViewManagerRef, cySwingApplicationRef, annotationManager, registrar);
 		
-		
+		//Auto-annotate Display Options Panel Action - opens display options panel
+ 		serviceProperties = new HashMap<String, String>();
+ 		DisplayOptionsPanelAction displayOptionsPanelAction = new DisplayOptionsPanelAction(serviceProperties,cyApplicationManagerRef, cyNetworkViewManagerRef, cySwingApplicationRef, annotationManager, registrar);
+ 		autoAnnotationManager.setDisplayOptionsPanelAction(displayOptionsPanelAction);
+ 		
 		//Build Enrichment Map Action - opens EM panel
 		serviceProperties = new HashMap<String, String>();
 		serviceProperties.put("inMenuBar", "true");

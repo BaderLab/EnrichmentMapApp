@@ -146,20 +146,20 @@ public class AutoAnnotationTask extends AbstractTask {
 		if (cancelled) return;
 		
 		EnrichmentMapUtils.setOverrideHeatmapRevalidation(true);
-    	AnnotationSet clusters = makeClusters(network, view, annotationSetName);
+    	AnnotationSet annotationSet = makeClusters(network, view, annotationSetName);
     	
     	if (layout && network.getDefaultNodeTable().getColumn(clusterColumnName).getType() != List.class) {
     		// Can't group layout with fuzzy clusters
     		taskMonitor.setProgress(0.4);
     		taskMonitor.setStatusMessage("Laying out nodes...");
-    		layoutNodes(clusters);
+    		layoutNodes(annotationSet);
     	}
     	
     	taskMonitor.setProgress(0.5);
     	taskMonitor.setStatusMessage("Running WordCloud...");
     	if (cancelled) return;
     	
-    	runWordCloud(clusters, network);
+    	runWordCloud(annotationSet, network);
     	
     	taskMonitor.setProgress(0.7);
     	taskMonitor.setStatusMessage("Annotating Clusters...");
@@ -167,13 +167,13 @@ public class AutoAnnotationTask extends AbstractTask {
     	
 		Long clusterTableSUID = network.getDefaultNetworkTable().getRow(network.getSUID()).get(annotationSetName, Long.class);
     	CyTable clusterSetTable = tableManager.getTable(clusterTableSUID);
-    	String annotationSetName = clusters.getName();
+    	String annotationSetName = annotationSet.getName();
     	// Generate the labels for the clusters
-    	for (Cluster cluster : clusters.getClusterMap().values()) {
+    	for (Cluster cluster : annotationSet.getClusterMap().values()) {
     		AutoAnnotationUtils.updateClusterLabel(cluster, network, annotationSetName, clusterSetTable, nameColumnName);
     	}
     	// Add these clusters to the table on the annotationPanel
-    	annotationPanel.addClusters(clusters);
+    	annotationPanel.addClusters(annotationSet);
     	annotationPanel.updateSelectedView(view);
 		CytoPanel westPanel = application.getCytoPanel(CytoPanelName.WEST);
 		westPanel.setSelectedIndex(westPanel.indexOfComponent(annotationPanel));

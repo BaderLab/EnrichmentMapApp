@@ -48,9 +48,11 @@ public class AutoAnnotationParameters {
 	}
 
 	public void setSelectedAnnotationSet(AnnotationSet selectedAnnotationSet) {
+		this.selectedAnnotationSetName = selectedAnnotationSet.getName();
+		selectedAnnotationSet.setSelected(true);
 		for (AnnotationSet annotationSet : annotationSets.values()) {
-			if (annotationSet.equals(selectedAnnotationSet)) {
-				this.selectedAnnotationSetName = annotationSet.getName();
+			if (!annotationSet.equals(selectedAnnotationSet)) {
+				annotationSet.setSelected(false);
 			}
 		}
 	}

@@ -31,6 +31,8 @@ public class AnnotationSet {
 	private CyNetworkView view;
 	// Whether or not groups are created for this annotation set
 	private boolean useGroups;
+	// Whether or not this annotation set is currently selected (showing)
+	private boolean selected = false;
 	
 	// Constructor used when loading from a file
 	public AnnotationSet() {
@@ -117,6 +119,14 @@ public class AnnotationSet {
 
 	public void setUseGroups(boolean useGroups) {
 		this.useGroups = useGroups;
+	}
+
+	public boolean isSelected() {
+		return selected;
+	}
+
+	public void setSelected(boolean selected) {
+		this.selected = selected;
 	}
 
 	public String toSessionString() {

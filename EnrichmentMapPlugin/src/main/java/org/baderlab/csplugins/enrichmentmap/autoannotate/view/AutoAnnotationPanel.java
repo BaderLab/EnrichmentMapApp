@@ -14,6 +14,7 @@ import java.awt.event.ItemListener;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -45,8 +46,6 @@ import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationUtils;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.action.AutoAnnotationActions;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.AnnotationSet;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.task.AutoAnnotationTaskFactory;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.task.Observer;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanel;
@@ -62,15 +61,12 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.util.swing.BasicCollapsiblePanel;
-import org.cytoscape.view.layout.LayoutNode;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.annotations.AnnotationManager;
 import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
 import org.cytoscape.view.presentation.annotations.TextAnnotation;
 import org.cytoscape.work.SynchronousTaskManager;
-import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.swing.DialogTaskManager;
 
 /**
  * @author arkadyark
@@ -85,9 +81,6 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 
 	private static final String defaultButtonString = "Use clusterMaker defaults";
 	private static final String specifyColumnButtonString = "Select cluster column";
-	
-	private static final String proportionalSizeButtonString = "Font size by # of nodes";
-	private static final String constantSizeButtonString = "Constant font size";
 
 	// Dropdown menus
 	private JComboBox nameColumnDropdown;
@@ -121,22 +114,17 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 	private AutoAnnotationParameters params;
 
 	private BasicCollapsiblePanel advancedOptionsPanel;
-	private BasicCollapsiblePanel selectionPanel;
 
-	private JCheckBox showEllipsesCheckBox;
 	private JCheckBox layoutCheckBox;
 	private JCheckBox groupsCheckBox;
-	// Used for selection autofocus option
-	private JRadioButton heatmapButton;
 
-	// Used to specify the font size
-	private JTextField fontSizeTextField;
+	private DisplayOptionsPanel displayOptionsPanel;
 
-	
-
-	public AutoAnnotationPanel(CySwingApplication application){
+	public AutoAnnotationPanel(CySwingApplication application, DisplayOptionsPanel displayOptionsPanel){
 		this.clustersToTables = new HashMap<AnnotationSet, JTable>();
 		this.networkViewToClusterSetDropdown = new HashMap<CyNetworkView, JComboBox>();
+		
+		this.displayOptionsPanel = displayOptionsPanel;
 		
 		this.emManager = EnrichmentMapManager.getInstance();
 		this.autoAnnotationManager = AutoAnnotationManager.getInstance();
@@ -181,9 +169,10 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 				String nameColumnName = (String) nameColumnDropdown.getSelectedItem();
 				boolean layoutNodes = layoutCheckBox.isSelected();
 				boolean useGroups = groupsCheckBox.isSelected();
-				AutoAnnotationActions.annotateAction(application, selectedView, params, clusterMakerDefault,
+				AutoAnnotationActions.annotateAction(application, selectedView, clusterMakerDefault,
 						nameColumnName, layoutNodes, useGroups, advancedOptionsPanel, clusterAlgorithmDropdown, 
 						clusterColumnDropdown);
+				params = autoAnnotationManager.getNetworkViewToAutoAnnotationParameters().get(selectedView);
 			}
 		};
 		annotateButton.addActionListener(annotateAction);
@@ -204,27 +193,42 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 	private JPanel createOutputPanel() {
 		JPanel outputPanel = new JPanel(new BorderLayout());
 		
-		selectionPanel = createSelectionPanel();
-		
 		JButton mergeButton = new JButton("Merge Clusters");
 		ActionListener mergeActionListener = new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
 				AnnotationSet annotationSet = (AnnotationSet) networkViewToClusterSetDropdown.get(selectedView).getSelectedItem();
 				JTable clusterTable = clustersToTables.get(annotationSet);
 				CytoPanel westPanel = application.getCytoPanel(CytoPanelName.WEST);
-				boolean constantFontSize = fontSizeTextField.isEnabled();
-				boolean showEllipses = showEllipsesCheckBox.isSelected();
-				int fontSize = Integer.parseInt(fontSizeTextField.getText());
+				boolean constantFontSize = displayOptionsPanel.getFontSizeTextField().isEnabled();
+				boolean showEllipses = displayOptionsPanel.getShowEllipsesCheckBox().isSelected();
+				int fontSize = Integer.parseInt(displayOptionsPanel.getFontSizeTextField().getText());
 				AutoAnnotationActions.mergeAction(selectedView, annotationSet, clusterTable, westPanel, constantFontSize, showEllipses, fontSize);
 			}
 		};
 		mergeButton.addActionListener(mergeActionListener);
 		
+		JButton deleteButton = new JButton("Delete Cluster(s)");
+		ActionListener deleteActionListener = new ActionListener(){
+			public void actionPerformed(ActionEvent e) {
+				AnnotationSet annotationSet = (AnnotationSet) networkViewToClusterSetDropdown.get(selectedView).getSelectedItem();
+				JTable clusterTable = clustersToTables.get(annotationSet);
+				CytoPanel westPanel = application.getCytoPanel(CytoPanelName.WEST);
+				boolean constantFontSize = displayOptionsPanel.getFontSizeTextField().isEnabled();
+				boolean showEllipses = displayOptionsPanel.getShowEllipsesCheckBox().isSelected();
+				int fontSize = Integer.parseInt(displayOptionsPanel.getFontSizeTextField().getText());
+				AutoAnnotationActions.deleteAction(selectedView, annotationSet, clusterTable, westPanel, constantFontSize, showEllipses, fontSize);
+			}
+		};
+		deleteButton.addActionListener(deleteActionListener);
+		
+		JPanel outputButtonPanel = new JPanel();
+		outputButtonPanel.add(mergeButton);
+		outputButtonPanel.add(deleteButton);
+		
 		JPanel outputBottomPanel = new JPanel();
 		outputBottomPanel.setLayout(new BoxLayout(outputBottomPanel, BoxLayout.PAGE_AXIS));
 		
-		outputBottomPanel.add(mergeButton);
-		outputBottomPanel.add(selectionPanel);
+		outputBottomPanel.add(outputButtonPanel);
 		
 		mergeButton.setAlignmentX(CENTER_ALIGNMENT);
 		
@@ -256,9 +260,9 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 			public void actionPerformed(ActionEvent e) {
 				AnnotationSet annotationSet = (AnnotationSet) networkViewToClusterSetDropdown.get(selectedView).getSelectedItem();
 				String nameColumnName = (String) nameColumnDropdown.getSelectedItem();
-				boolean constantFontSize = fontSizeTextField.isEnabled();
-				boolean showEllipses = showEllipsesCheckBox.isSelected();
-				int fontSize = Integer.parseInt(fontSizeTextField.getText());
+				boolean constantFontSize = displayOptionsPanel.getFontSizeTextField().isEnabled();
+				boolean showEllipses = displayOptionsPanel.getShowEllipsesCheckBox().isSelected();
+				int fontSize = Integer.parseInt(displayOptionsPanel.getFontSizeTextField().getText());
 				JTable clusterTable = clustersToTables.get(annotationSet);
 				AutoAnnotationActions.updateAction(selectedView, annotationSet, nameColumnName, constantFontSize, showEllipses, fontSize, clusterTable);
 			}
@@ -328,81 +332,6 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 		// By default use clusterMaker defaults
 		defaultButton.setSelected(true);
 		
-		// Font size options
-		JRadioButton proportionalSizeButton = new JRadioButton(proportionalSizeButtonString);
-		proportionalSizeButton.setSelected(true);
-		JRadioButton constantSizeButton = new JRadioButton(constantSizeButtonString);
-		fontSizeTextField = new JTextField();
-		fontSizeTextField.addActionListener(new ActionListener() {
-		    public void actionPerformed(ActionEvent e) {
-		    	try {
-		    		int fontSize = Integer.parseInt(fontSizeTextField.getText());
-		    		if (fontSize <= 0) {
-		    			throw new Exception();
-		    		}
-		    		AutoAnnotationUtils.updateFontSizes(fontSize, showEllipsesCheckBox.isSelected());
-		    	} catch (Exception ex) {
-		            JOptionPane.showMessageDialog(null,
-		                    "Error: Please enter an integer bigger than 0", "Error Message",
-		                    JOptionPane.ERROR_MESSAGE);
-		    	}
-		    }
-		});
-		fontSizeTextField.setText("12");
-		// Initially hidden
-		fontSizeTextField.setEnabled(false);
-		constantSizeButton.addItemListener(new ItemListener() {
-			@Override
-			public void itemStateChanged(ItemEvent e) {
-				int fontSize = 1;
-				if (e.getStateChange() == ItemEvent.SELECTED) {
-					fontSizeTextField.setEnabled(true);
-			    	fontSize = Integer.parseInt(fontSizeTextField.getText());
-				} else if (e.getStateChange() == ItemEvent.DESELECTED) {
-					fontSizeTextField.setEnabled(false);
-				}
-				AutoAnnotationUtils.updateFontSizes(fontSize, fontSizeTextField.isEnabled());
-				updateUI();
-			}
-		});
-
-		// Group buttons together to make them mutually exclusive
-		ButtonGroup fontButtonGroup = new ButtonGroup();
-		fontButtonGroup.add(proportionalSizeButton);
-		fontButtonGroup.add(constantSizeButton);
-
-		JPanel fontSizePanel = new JPanel(new GridBagLayout());
-		GridBagConstraints c = new GridBagConstraints();
-		fontSizePanel.setBorder(BorderFactory.createTitledBorder("Font Size Options"));
-		c.gridx = 0;
-		c.gridwidth = 5;
-		c.gridy = 0;
-		fontSizePanel.add(proportionalSizeButton,c);
-		c.gridx = 0;
-		c.gridwidth = 4;
-		c.gridy = 1;
-		fontSizePanel.add(constantSizeButton,c);
-		c.gridx = 10;
-		c.gridwidth = 1;
-		c.gridy = 1;
-		fontSizePanel.add(fontSizeTextField,c);
-		
-		// By default show ellipses around clusters
-		showEllipsesCheckBox = new JCheckBox("Draw ellipses around clusters");
-		showEllipsesCheckBox.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				AnnotationSet annotationSet = (AnnotationSet) networkViewToClusterSetDropdown.get(selectedView).getSelectedItem();
-				String nameColumnName = (String) nameColumnDropdown.getSelectedItem();
-				boolean constantFontSize = fontSizeTextField.isEnabled();
-				boolean showEllipses = showEllipsesCheckBox.isSelected();
-				int fontSize = Integer.parseInt(fontSizeTextField.getText());
-				JTable clusterTable = clustersToTables.get(annotationSet);
-				AutoAnnotationActions.updateAction(selectedView, annotationSet, nameColumnName, constantFontSize, showEllipses, fontSize, clusterTable);
-			}
-		}); // Checks if checkbox is selected
-		showEllipsesCheckBox.setSelected(true);
-		
 		// By default layout nodes by cluster
 		layoutCheckBox = new JCheckBox("Layout nodes by cluster");
 		layoutCheckBox.setSelected(false);
@@ -413,13 +342,11 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 		
 		JPanel checkBoxPanel = new JPanel();
 		checkBoxPanel.setLayout(new BoxLayout(checkBoxPanel, BoxLayout.Y_AXIS));
-		checkBoxPanel.add(showEllipsesCheckBox);
 		checkBoxPanel.add(layoutCheckBox);
 		checkBoxPanel.add(groupsCheckBox);
 		
-		JPanel nonClusterOptionPanel = new JPanel(new BorderLayout());
-		nonClusterOptionPanel.add(fontSizePanel, BorderLayout.NORTH);
-		nonClusterOptionPanel.add(checkBoxPanel, BorderLayout.SOUTH);
+		JPanel nonClusterOptionPanel = new JPanel();
+		nonClusterOptionPanel.add(checkBoxPanel);
 		
 		JPanel clusterOptionPanel = new JPanel(new BorderLayout());
 		clusterOptionPanel.setBorder(BorderFactory.createTitledBorder("ClusterMaker Options"));
@@ -434,40 +361,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 		return optionsPanel;
 	}
 
-	private BasicCollapsiblePanel createSelectionPanel() {
-		BasicCollapsiblePanel selectionPanel = new BasicCollapsiblePanel("Autofocus Preferences");
-
-		JPanel innerPanel = new JPanel(new BorderLayout()); // To override default layout options of BasicCollapsiblePanel
-
-		JPanel labelPanel = new JPanel();
-		JLabel label = new JLabel("Show on selection:");
-		labelPanel.add(label);
-
-		heatmapButton = new JRadioButton("Heat Map");
-		JRadioButton wordCloudButton = new JRadioButton("WordCloud");
-		ButtonGroup buttonGroup = new ButtonGroup();
-		buttonGroup.add(wordCloudButton);
-		buttonGroup.add(heatmapButton);
-
-		heatmapButton.setSelected(true);
-		wordCloudButton.setSelected(true);
-
-		JPanel radioButtonPanel = new JPanel();
-		radioButtonPanel.setLayout(new BoxLayout(radioButtonPanel, BoxLayout.PAGE_AXIS));
-		radioButtonPanel.add(wordCloudButton);
-		radioButtonPanel.add(heatmapButton);
-
-		innerPanel.add(labelPanel, BorderLayout.WEST);
-		innerPanel.add(radioButtonPanel, BorderLayout.EAST);
-
-		selectionPanel.add(innerPanel);
-		// Initially set uncollapsed so the user knows about it
-		selectionPanel.setCollapsed(false);
-		
-		return selectionPanel;
-	}
-
-	private JTable createClusterTable(final AnnotationSet clusters) {
+	private JTable createClusterTable(final AnnotationSet annotationSet) {
 		DefaultTableModel model = new DefaultTableModel() {
 			private static final long serialVersionUID = -1277709187563893042L;
 
@@ -495,9 +389,22 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 			@Override
 			public void tableChanged(TableModelEvent e) {
 				if (e.getType() == TableModelEvent.UPDATE || e.getColumn() == 0) {
-					int editedRowIndex = e.getFirstRow() == table.getSelectedRow()? e.getLastRow() : e.getFirstRow(); 
-					Cluster editedCluster = clusters.getClusterMap().get(editedRowIndex + 1);
+					int editedRowIndex = e.getFirstRow() == table.getSelectedRow()? e.getLastRow() : e.getFirstRow();
+					// Get the cluster that was modified
+					Iterator<Cluster> clusters = annotationSet.getClusterMap().values().iterator();
+					ArrayList<Cluster> clustersNotInTable = new ArrayList<Cluster>();
+					while (clusters.hasNext()) {
+						clustersNotInTable.add(clusters.next());
+					}
+					for (int index = 0; index < table.getModel().getRowCount(); index++) {
+						if (index != editedRowIndex) {
+							clustersNotInTable.remove((Cluster) table.getValueAt(index, 0)); 
+						}
+					}
+					// The modified cluster will be the only cluster left over
+					Cluster editedCluster;
 					try {
+						editedCluster = clustersNotInTable.get(0);
 						editedCluster.setLabel((String) table.getValueAt(editedRowIndex, 0));
 					} catch (Exception ex) {
 						// This comes from event fired from re-adding the cluster to the table, ignore
@@ -508,14 +415,14 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 					AnnotationFactory<ShapeAnnotation> shapeFactory = autoAnnotationManager.getShapeFactory();
 					AnnotationFactory<TextAnnotation> textFactory = autoAnnotationManager.getTextFactory();
 					AnnotationManager annotationManager = autoAnnotationManager.getAnnotationManager();
-					boolean constantFontSize = fontSizeTextField.isEnabled();
-					int fontSize = Integer.parseInt(fontSizeTextField.getText());
+					boolean constantFontSize = displayOptionsPanel.getFontSizeTextField().isEnabled();
+					int fontSize = Integer.parseInt(displayOptionsPanel.getFontSizeTextField().getText());
 					AutoAnnotationUtils.drawCluster(editedCluster, selectedView, shapeFactory, textFactory, 
-							annotationManager, constantFontSize, fontSize, showEllipsesCheckBox.isSelected());
+							annotationManager, constantFontSize, fontSize, displayOptionsPanel.getShowEllipsesCheckBox().isSelected());
 				}
 			}
 		});
-		for (Cluster cluster : clusters.getClusterMap().values()) {
+		for (Cluster cluster : annotationSet.getClusterMap().values()) {
 			// Each row contains the cluster (printed as a string, its label), and how many nodes it contains 
 			Object[] rowData = {cluster, cluster.getSize()};
 			model.addRow(rowData);
@@ -558,7 +465,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 					}
 					
 					// Selects the heatmap panel (if user tells it to)
-					if (heatmapButton.isSelected()) {
+					if (displayOptionsPanel.getHeatmapButton().isSelected()) {
 						CytoPanel southPanel = application.getCytoPanel(CytoPanelName.SOUTH);
 						southPanel.setSelectedIndex(southPanel.indexOfComponent(autoAnnotationManager.getHeatmapPanel()));
 					}
@@ -599,6 +506,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 				CyGroupFactory groupFactory = autoAnnotationManager.getGroupFactory();
 				if (itemEvent.getStateChange() == ItemEvent.SELECTED) {
 					AnnotationSet annotationSet = (AnnotationSet) itemEvent.getItem();
+					displayOptionsPanel.setSelectedAnnotationSet(annotationSet);
 					params.setSelectedAnnotationSet(annotationSet);
 					// Update the selected annotation set
 					annotationSet.updateCoordinates();
@@ -606,6 +514,8 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 					// Get the table where WordCloud results are stored
 					Long clusterTableSUID = selectedNetwork.getDefaultNetworkTable().getRow(selectedNetwork.getSUID()).get(annotationSetName, Long.class);
 					CyTable clusterSetTable = autoAnnotationManager.getTableManager().getTable(clusterTableSUID);
+					boolean constantFontSize = displayOptionsPanel.getFontSizeTextField().isEnabled();
+					int fontSize = Integer.parseInt(displayOptionsPanel.getFontSizeTextField().getText());
 					for (Cluster cluster : annotationSet.getClusterMap().values()) {
 						// Update the text label of the selected cluster
 						String nameColumnName = (String) nameColumnDropdown.getSelectedItem();
@@ -614,9 +524,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 						AnnotationFactory<ShapeAnnotation> shapeFactory = autoAnnotationManager.getShapeFactory();
 						AnnotationFactory<TextAnnotation> textFactory = autoAnnotationManager.getTextFactory();
 						AnnotationManager annotationManager = autoAnnotationManager.getAnnotationManager();
-						boolean constantFontSize = fontSizeTextField.isEnabled();
-						int fontSize = Integer.parseInt(fontSizeTextField.getText());
-						AutoAnnotationUtils.drawCluster(cluster, selectedView, shapeFactory, textFactory, annotationManager, constantFontSize, fontSize, showEllipsesCheckBox.isSelected());
+						AutoAnnotationUtils.drawCluster(cluster, selectedView, shapeFactory, textFactory, annotationManager, constantFontSize, fontSize, displayOptionsPanel.getShowEllipsesCheckBox().isSelected());
 						// Recreate groups if necessary
 						if (annotationSet.usingGroups()) {
 							// TODO - find a faster way to do this
@@ -671,6 +579,11 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 		// Sets the visibility of the output related components
 		outputPanel.getParent().getParent().setVisible(b);
 		bottomButtonPanel.setVisible(b);
+		if (b) {
+			autoAnnotationManager.getDisplayOptionsPanelAction().actionPerformed(new ActionEvent("",0,""));
+		} else {
+			displayOptionsPanel.setVisible(b);
+		}
 	}
 	
 	public void updateSelectedView(CyNetworkView view) {
@@ -843,5 +756,13 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 	@Override
 	public String getTitle() {
 		return "Annotation Panel";
+	}
+
+	public AnnotationSet getSelectedAnnotationSet() {
+		return params.getSelectedAnnotationSet();
+	}
+
+	public void setDisplayOptionsPanel(DisplayOptionsPanel displayOptionsPanel) {
+		this.displayOptionsPanel = displayOptionsPanel; 
 	}
 }

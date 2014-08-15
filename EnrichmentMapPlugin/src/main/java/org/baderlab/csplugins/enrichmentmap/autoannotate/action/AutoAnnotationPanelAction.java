@@ -45,6 +45,7 @@ package org.baderlab.csplugins.enrichmentmap.autoannotate.action;
 
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.view.AutoAnnotationPanel;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.view.DisplayOptionsPanel;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
@@ -102,8 +103,10 @@ public class AutoAnnotationPanelAction extends AbstractCyAction {
 		if (applicationManager.getCurrentNetworkView() != null) {
 			// Only registers one panel
 			if(!initialized) {
-				annotationPanel = new AutoAnnotationPanel(application);
-				AutoAnnotationManager.getInstance().setAnnotationPanel(annotationPanel);
+				AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
+				autoAnnotationManager.getDisplayOptionsPanelAction().actionPerformed(new ActionEvent("",0,""));
+				annotationPanel = new AutoAnnotationPanel(application, autoAnnotationManager.getDisplayOptionsPanel());
+				autoAnnotationManager.setAnnotationPanel(annotationPanel);
 				registrar.registerService(annotationPanel, CytoPanelComponent.class, new Properties());
 				initialized = true;
 			}

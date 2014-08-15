@@ -2,6 +2,7 @@ package org.baderlab.csplugins.enrichmentmap.autoannotate.action;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 
 import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
@@ -37,7 +38,7 @@ import org.cytoscape.work.swing.DialogTaskManager;
 public class AutoAnnotationActions {
 	
 	public static void annotateAction(CySwingApplication application,
-			CyNetworkView selectedView, AutoAnnotationParameters params, boolean clusterMakerDefault,
+			CyNetworkView selectedView, boolean clusterMakerDefault,
 			String nameColumnName, boolean layoutNodes, boolean useGroups, BasicCollapsiblePanel advancedOptionsPanel,
 			JComboBox clusterAlgorithmDropdown, JComboBox clusterColumnDropdown) {
 		
@@ -47,6 +48,7 @@ public class AutoAnnotationActions {
 			CyNetwork selectedNetwork = selectedView.getModel();
 			AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
 			// Get the params for this network
+			AutoAnnotationParameters params;
 			if (autoAnnotationManager.getNetworkViewToAutoAnnotationParameters().containsKey(selectedView)) {
 				// Not the first annotation set for this network view, lookup
 				params = autoAnnotationManager.getNetworkViewToAutoAnnotationParameters().get(selectedView);
@@ -74,6 +76,43 @@ public class AutoAnnotationActions {
 					layoutNodes, useGroups, annotationSetName);
 			advancedOptionsPanel.setCollapsed(true);
 			autoAnnotationManager.getDialogTaskManager().execute(autoAnnotatorTaskFactory.createTaskIterator());
+		}
+	}
+	
+	public static void deleteAction(CyNetworkView selectedView,
+			AnnotationSet annotationSet, JTable clusterTable,
+			CytoPanel westPanel, boolean constantFontSize, boolean showEllipses, int fontSize) {
+		
+		int[] selectedRows = clusterTable.getSelectedRows();
+		if (selectedRows.length < 1) {
+			JOptionPane.showMessageDialog(null, "Please select at least one cluster", "Error Message",
+					JOptionPane.ERROR_MESSAGE);
+		} else {
+			AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
+			
+			// Get the selected clusters from the selected rows
+			ArrayList<Cluster> selectedClusters = new ArrayList<Cluster>();
+			for (int rowIndex=0; rowIndex < clusterTable.getRowCount(); rowIndex++) {
+				Cluster cluster = (Cluster) clusterTable.getModel().getValueAt(clusterTable.convertRowIndexToModel(rowIndex), 0);
+				for (int selectedRow : selectedRows) {
+					if (rowIndex == selectedRow) {
+						selectedClusters.add(cluster);
+						break;
+					}
+				}
+			}
+			
+			// Get services needed for accessing WordCloud through command line
+			CommandExecutorTaskFactory executor = autoAnnotationManager.getCommandExecutor();
+			SynchronousTaskManager<?> syncTaskManager = autoAnnotationManager.getSyncTaskManager();
+			// Delete clusters
+			for (Cluster cluster : selectedClusters) {
+				AutoAnnotationUtils.destroyCluster(cluster, executor, syncTaskManager);
+			}
+			String nameColumnName = annotationSet.getNameColumnName();
+			updateAction(selectedView, annotationSet, nameColumnName, constantFontSize, showEllipses, fontSize, clusterTable);
+			// Focus on this panel
+			westPanel.setSelectedIndex(westPanel.indexOfComponent(autoAnnotationManager.getAnnotationPanel()));
 		}
 	}
 	
@@ -115,11 +154,11 @@ public class AutoAnnotationActions {
 				}
 				// Swallow nodes/coordinates from smaller cluster
 				firstCluster.swallow(clusterToSwallow);
-				// Destroy the cloud for the smaller cluster
+				// Destroy the smaller cluster
 				AutoAnnotationUtils.destroyCluster(clusterToSwallow, executor, syncTaskManager);
 			}
 			// Destroy the cloud for the first cluster
-			AutoAnnotationUtils.destroyCluster(firstCluster, executor, syncTaskManager);
+			AutoAnnotationUtils.destroyCloud(firstCluster, executor, syncTaskManager);
 			// Create a new cloud for the merged cluster
 			// Clear any previously selected nodes
 			for (CyNode node : selectedNetwork.getNodeList()) {
@@ -162,13 +201,22 @@ public class AutoAnnotationActions {
 		AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
 		EnrichmentMapManager emManager = EnrichmentMapManager.getInstance();
 
+		clustersToTables.get(annotationSet).clearSelection();
+		
 		// Prevent heatmap dialog from interrupting this task
 		HeatMapParameters heatMapParameters = emManager.getMap(selectedNetwork.getSUID()).getParams().getHmParams();
 		if (heatMapParameters != null) {
 			heatMapParameters.setSort(HeatMapParameters.Sort.NONE);
 		}
 		// Delete all annotations
-		for (Cluster cluster : annotationSet.getClusterMap().values()) {
+		Iterator<Cluster> clusterIterator = annotationSet.getClusterMap().values().iterator();
+		// Iterate over a copy to prevent Concurrent Modification
+		ArrayList<Cluster> clusterSetCopy = new ArrayList<Cluster>();
+		while (clusterIterator.hasNext()){
+			clusterSetCopy.add(clusterIterator.next());
+		}
+		// Delete each cluster (WordCloud)
+		for (Cluster cluster : clusterSetCopy) {
 			AutoAnnotationUtils.destroyCluster(cluster, autoAnnotationManager.getCommandExecutor(), autoAnnotationManager.getSyncTaskManager());
 		}
 		params.removeAnnotationSet(annotationSet);
@@ -213,11 +261,18 @@ public class AutoAnnotationActions {
 		for (Cluster cluster : annotationSet.getClusterMap().values()) {
 			if (!(model.getValueAt(i, 0).equals(cluster))) {
 				model.setValueAt(cluster, i, 0);
+				model.setValueAt(cluster.getSize(), i, 1);
 			} else if (!(model.getValueAt(i,  1)).equals(cluster.getSize())) {
 				// Cluster hasn't changed but size has
 				model.setValueAt(cluster.getSize(), i, 1);
 			}
 			i++;
+		}
+		// Remove rows left over at the end (deletion)
+		int numRows = model.getRowCount();
+		while (numRows > i) {
+			model.removeRow(i);
+			numRows = model.getRowCount();
 		}
 		clusterTable.clearSelection();
 	}

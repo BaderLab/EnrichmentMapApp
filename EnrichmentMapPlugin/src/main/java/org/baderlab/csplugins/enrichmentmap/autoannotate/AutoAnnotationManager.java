@@ -6,7 +6,9 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.baderlab.csplugins.enrichmentmap.actions.EnrichmentMapActionListener;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.action.DisplayOptionsPanelAction;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.view.AutoAnnotationPanel;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.view.DisplayOptionsPanel;
 import org.baderlab.csplugins.enrichmentmap.view.HeatMapPanel;
 import org.cytoscape.application.events.SetSelectedNetworkViewsEvent;
 import org.cytoscape.application.events.SetSelectedNetworkViewsListener;
@@ -50,6 +52,8 @@ public class AutoAnnotationManager implements
 	private CySwingApplication application;
 	// reference to the panel that the user interacts with
 	private AutoAnnotationPanel annotationPanel;
+	// reference to the action to create the displayOptionsPanel
+	private DisplayOptionsPanelAction displayOptionsPanelAction;
 	// stores the annotation parameters (one for each network view)
 	private HashMap<CyNetworkView, AutoAnnotationParameters> networkViewToAutoAnnotationParameters;
 	// used to set clusterMaker default parameters
@@ -91,6 +95,7 @@ public class AutoAnnotationManager implements
 	private EnrichmentMapActionListener EMActionListener;
 	// used to force heatmap to update before selection
 	private CyEventHelper eventHelper;
+	private DisplayOptionsPanel displayOptionsPanel;
 	
 	public static AutoAnnotationManager getInstance() {
 		if (instance == null) {
@@ -197,6 +202,22 @@ public class AutoAnnotationManager implements
 	
 	public void setAnnotationPanel(AutoAnnotationPanel inputPanel) {
 		this.annotationPanel = inputPanel;
+	}
+	
+	public DisplayOptionsPanelAction getDisplayOptionsPanelAction() {
+		return displayOptionsPanelAction;
+	}
+	
+	public void setDisplayOptionsPanelAction(DisplayOptionsPanelAction displayOptionsPanelAction) {
+		this.displayOptionsPanelAction = displayOptionsPanelAction;
+	}
+	
+	public DisplayOptionsPanel getDisplayOptionsPanel() {
+		return displayOptionsPanel;
+	}
+	
+	public void setDisplayOptionsPanel(DisplayOptionsPanel displayOptionsPanel) {
+		this.displayOptionsPanel = displayOptionsPanel;
 	}
 	
 	public SortedMap<String, String> getAlgorithmToColumnName() {
