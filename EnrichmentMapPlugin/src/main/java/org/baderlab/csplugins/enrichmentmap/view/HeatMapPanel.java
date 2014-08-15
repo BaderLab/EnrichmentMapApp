@@ -73,6 +73,7 @@ import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.work.swing.DialogTaskManager;
@@ -182,6 +183,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
     private JTable jTable1;
     private JTableHeader tableHdr;
     private JPanel northPanel;
+    private JComboBox rankOptionComboBox;
     
   //Up and down sort button
     final static int Ascending = 0, Descending= 1; // image States
@@ -211,6 +213,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
         this.openBrowser = openBrowser;
         this.dialogTaskMonitor = dialogTaskMonitor;
         this.streamUtil = streamUtil;
+        this.fileUtil = fileUtil;
     }
 
     /**
@@ -349,7 +352,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
             jTable1.addMouseListener(new HeatMapTableActionListener(jTable1,OGT, rightClickPopupMenu,linkoutProps,openBrowser));
 
             // used for listening to columns when clicked
-            TableHeader header = new TableHeader(sort, jTable1, hmParams);
+            TableHeader header = new TableHeader(sort, jTable1, hmParams,this);
 
             tableHdr= jTable1.getTableHeader();
             tableHdr.addMouseListener(header);
@@ -1231,7 +1234,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
                break;
        }
 
-        hmOptionComboBox.addActionListener(new HeatMapActionListener(hmParams.getEdgeOverlapPanel(), hmParams.getNodeOverlapPanel(),hmOptionComboBox,this.hmParams, map,fileUtil,streamUtil));
+        hmOptionComboBox.addActionListener(new HeatMapActionListener(hmParams.getEdgeOverlapPanel(), hmParams.getNodeOverlapPanel(),hmOptionComboBox,this.hmParams, map,fileUtil,streamUtil,application));
         heatmapOptions.add(hmOptionComboBox,BorderLayout.NORTH);
         heatmapOptions.setBorder(HMBorder);
         return heatmapOptions;
@@ -1245,7 +1248,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
      * @return - panel with the sort by combo box
      */
     public JPanel createSortOptionsPanel(){
-   	 	JComboBox rankOptionComboBox;
+   	 	
    	 	JPanel RankOptions;	
    	 	
     	TitledBorder RankBorder = BorderFactory.createTitledBorder("Sorting");
@@ -1344,7 +1347,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
             arrow.addActionListener(new ChangeSortAction(arrow));
         }
 
-        rankOptionComboBox.addActionListener(new HeatMapActionListener(hmParams.getEdgeOverlapPanel(), hmParams.getNodeOverlapPanel(),rankOptionComboBox,hmParams, map,fileUtil,streamUtil));
+        rankOptionComboBox.addActionListener(new HeatMapActionListener(hmParams.getEdgeOverlapPanel(), hmParams.getNodeOverlapPanel(),rankOptionComboBox,hmParams, map,fileUtil,streamUtil,application));
 
         ComboButton.revalidate();
 
@@ -1437,7 +1440,13 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
           }
 
     private void saveExpressionSetActionPerformed(ActionEvent evt){
-        java.io.File file = fileUtil.getFile(EnrichmentMapUtils.getWindowInstance(this), "Export Heatmap as txt File", FileUtil.SAVE,null);
+    	FileChooserFilter filter_txt = new FileChooserFilter("txt Files","txt" );
+
+        //the set of filter (required by the file util method
+        ArrayList<FileChooserFilter> all_filters = new ArrayList<FileChooserFilter>();
+        all_filters.add(filter_txt);
+
+    	java.io.File file = fileUtil.getFile(application.getJFrame(), "Export Heatmap as txt File", FileUtil.SAVE,all_filters);
         if (file != null && file.toString() != null) {
             String fileName = file.toString();
             if (!fileName.endsWith(".txt")) {
@@ -1508,7 +1517,17 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
     }
 
     private void exportExpressionSetActionPerformed(ActionEvent evt){
-            java.io.File file = fileUtil.getFile(EnrichmentMapUtils.getWindowInstance(this),"Export Heatmap as pdf File", FileUtil.SAVE,null);
+
+    	JOptionPane.showMessageDialog(this, "PDF export currently not available");
+    	
+  /*  	FileChooserFilter filter_pdf = new FileChooserFilter("pdf Files","pdf" );
+
+        //the set of filter (required by the file util method
+        ArrayList<FileChooserFilter> all_filters = new ArrayList<FileChooserFilter>();
+        all_filters.add(filter_pdf);
+
+    	
+    	java.io.File file = fileUtil.getFile(application.getJFrame(),"Export Heatmap as pdf File", FileUtil.SAVE,all_filters);
             if (file != null && file.toString() != null) {
                 String fileName = file.toString();
                 if (!fileName.endsWith(".pdf")) {
@@ -1533,11 +1552,11 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
                             output.close();
                             JOptionPane.showMessageDialog(this, "File " + fileName + " saved.");
 */
-                        }catch(IOException e){
+/*                        }catch(IOException e){
                             JOptionPane.showMessageDialog(this, "unable to write to file " + fileName);
                     }
                 }
-            }
+            }*/
         }
 
 
@@ -1827,6 +1846,11 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
         return expValue;
     }
 
+    public void setColumnSort(){
+    	rankOptionComboBox.addItem(HeatMapParameters.sort_column + ":" + hmParams.getSortbycolumnName());
+        rankOptionComboBox.setSelectedItem(HeatMapParameters.sort_column + ":" + hmParams.getSortbycolumnName());       
+    }
+    
     private String[] gethRow1() {
         return hRow1;
     }

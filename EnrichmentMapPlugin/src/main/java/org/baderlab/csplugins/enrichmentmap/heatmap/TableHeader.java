@@ -50,6 +50,8 @@ import javax.swing.JTable;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumnModel;
 
+import org.baderlab.csplugins.enrichmentmap.view.HeatMapPanel;
+
 
 /**
  * Created by
@@ -64,11 +66,13 @@ public class TableHeader extends MouseAdapter{
 	private TableSort sort;
 	private boolean isSort=false;
     private HeatMapParameters hmparams;
+    private HeatMapPanel heatmapPanel;
 
-    public TableHeader(TableSort sort,JTable table, HeatMapParameters hmparams){
+    public TableHeader(TableSort sort,JTable table, HeatMapParameters hmparams,HeatMapPanel heatmapPanel){
         this.sort = sort;
         this.table = table;
         this.hmparams = hmparams;
+        this.heatmapPanel = heatmapPanel;
 
     }
     public TableHeader(){
@@ -99,6 +103,7 @@ public class TableHeader extends MouseAdapter{
             hmparams.setSortIndex(column);
             hmparams.setSortbycolumn_event_triggered(true);
             //hmparams.changeSortComboBoxToColumnSorted();
+            this.heatmapPanel.setColumnSort();
 
 	    }
 	  
