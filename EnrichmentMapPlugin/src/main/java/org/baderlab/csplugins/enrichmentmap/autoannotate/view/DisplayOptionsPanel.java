@@ -1,6 +1,5 @@
 package org.baderlab.csplugins.enrichmentmap.autoannotate.view;
 
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -45,6 +44,7 @@ public class DisplayOptionsPanel extends JPanel implements CytoPanelComponent {
 	private AutoAnnotationManager autoAnnotationManager;
 	private JRadioButton heatmapButton;
 	private JSlider ellipseWidthSlider;
+	private JSlider ellipseOpacitySlider;
 
 	private static String proportionalSizeButtonString = "Font size by # of nodes";
 	private static String constantSizeButtonString = "Constant font size";
@@ -56,6 +56,7 @@ public class DisplayOptionsPanel extends JPanel implements CytoPanelComponent {
 		setPreferredSize(new Dimension(300, 300));
 		
 		add(createEllipseWidthSliderPanel());
+		add(createEllipseOpacitySliderPanel());
 		add(createFontSizePanel());
 		add(createSelectionPanel());
 		add(createShowEllipsesCheckBoxPanel());
@@ -67,7 +68,6 @@ public class DisplayOptionsPanel extends JPanel implements CytoPanelComponent {
 		ellipseWidthSlider = new JSlider(1, 10, 3);
 		ellipseWidthSlider.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
-		        JSlider ellipseWidthSlider = (JSlider) e.getSource();
 		        int ellipseWidth = ellipseWidthSlider.getValue();
 		        for (Cluster cluster : selectedAnnotationSet.getClusterMap().values()) {
 		        	if (cluster.isSelected()) {
@@ -88,6 +88,30 @@ public class DisplayOptionsPanel extends JPanel implements CytoPanelComponent {
 	
 	public int getEllipseWidth() {
 		return ellipseWidthSlider.getValue();
+	}
+	
+	private JPanel createEllipseOpacitySliderPanel() {
+		// Slider to set width of the ellipses
+		JLabel sliderLabel = new JLabel("Ellipse Opacity");
+		ellipseOpacitySlider = new JSlider(1, 100, 20);
+		ellipseOpacitySlider.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+		        int ellipseOpacity = ellipseOpacitySlider.getValue();
+		        for (Cluster cluster : selectedAnnotationSet.getClusterMap().values()) {
+		        	cluster.getEllipse().setFillOpacity(ellipseOpacity);
+		        	cluster.getEllipse().update();
+		        }
+			}
+		});
+		JPanel ellipseOpacitySliderPanel = new JPanel();
+		ellipseOpacitySliderPanel.setLayout(new BoxLayout(ellipseOpacitySliderPanel, BoxLayout.PAGE_AXIS));
+		ellipseOpacitySliderPanel.add(sliderLabel);
+		ellipseOpacitySliderPanel.add(ellipseOpacitySlider);
+		return ellipseOpacitySliderPanel;
+	}
+	
+	public int getEllipseOpacity() {
+		return ellipseOpacitySlider.getValue();
 	}
 	
 	private JPanel createFontSizePanel() {
@@ -166,7 +190,8 @@ public class DisplayOptionsPanel extends JPanel implements CytoPanelComponent {
 					selectedAnnotationSet.updateCoordinates();
 					for (Cluster cluster : selectedAnnotationSet.getClusterMap().values()) {
 						AutoAnnotationUtils.drawEllipse(cluster, selectedAnnotationSet.getView(),
-								shapeFactory, annotationManager, showEllipses, ellipseWidthSlider.getValue());
+								shapeFactory, annotationManager, showEllipses, ellipseWidthSlider.getValue(), 
+								ellipseOpacitySlider.getValue());
 					}
 				} else {
 					for (Cluster cluster : selectedAnnotationSet.getClusterMap().values()) {

@@ -82,7 +82,7 @@ public class AutoAnnotationActions {
 	public static void deleteAction(CyNetworkView selectedView,
 			AnnotationSet annotationSet, JTable clusterTable,
 			CytoPanel westPanel, boolean constantFontSize, boolean showEllipses, 
-			int fontSize, int ellipseWidth) {
+			int fontSize, int ellipseWidth, int ellipseOpacity) {
 		
 		int[] selectedRows = clusterTable.getSelectedRows();
 		if (selectedRows.length < 1) {
@@ -112,7 +112,7 @@ public class AutoAnnotationActions {
 			}
 			String nameColumnName = annotationSet.getNameColumnName();
 			updateAction(selectedView, annotationSet, nameColumnName, constantFontSize, 
-					showEllipses, fontSize, clusterTable, ellipseWidth);
+					showEllipses, fontSize, clusterTable, ellipseWidth, ellipseOpacity);
 			// Focus on this panel
 			westPanel.setSelectedIndex(westPanel.indexOfComponent(autoAnnotationManager.getAnnotationPanel()));
 		}
@@ -121,7 +121,7 @@ public class AutoAnnotationActions {
 	public static void mergeAction(CyNetworkView selectedView,
 			AnnotationSet annotationSet, JTable clusterTable,
 			CytoPanel westPanel, boolean constantFontSize, boolean showEllipses, 
-			int fontSize, int ellipseWidth) {
+			int fontSize, int ellipseWidth, int ellipseOpacity) {
 		CyNetwork selectedNetwork = selectedView.getModel();
 		AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
 
@@ -191,7 +191,7 @@ public class AutoAnnotationActions {
 				selectedNetwork.getRow(node).set(CyNetwork.SELECTED, false);
 			}
 			updateAction(selectedView, annotationSet, nameColumnName, constantFontSize, showEllipses, 
-					fontSize, clusterTable, ellipseWidth);
+					fontSize, clusterTable, ellipseWidth, ellipseOpacity);
 			// Deselect rows (no longer meaningful)
 			clusterTable.clearSelection();
 			// Focus on this panel
@@ -233,7 +233,7 @@ public class AutoAnnotationActions {
 	public static void updateAction(CyNetworkView selectedView,
 			AnnotationSet annotationSet, String nameColumnName,
 			boolean constantFontSize, boolean showEllipses, int fontSize,
-			JTable clusterTable, int ellipseWidth) {
+			JTable clusterTable, int ellipseWidth, int ellipseOpacity) {
 
 		AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
 		CyNetwork selectedNetwork = selectedView.getModel();
@@ -258,7 +258,7 @@ public class AutoAnnotationActions {
 			AnnotationFactory<TextAnnotation> textFactory = autoAnnotationManager.getTextFactory();
 			AnnotationManager annotationManager = autoAnnotationManager.getAnnotationManager();
 			AutoAnnotationUtils.drawCluster(cluster, selectedView, shapeFactory, textFactory, 
-					annotationManager, constantFontSize, fontSize, showEllipses, ellipseWidth);
+					annotationManager, constantFontSize, fontSize, showEllipses, ellipseWidth, ellipseOpacity);
 		}
 		// Update the table if the value has changed (WordCloud has been updated)
 		DefaultTableModel model = (DefaultTableModel) clusterTable.getModel();

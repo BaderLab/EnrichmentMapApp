@@ -8,7 +8,6 @@ package org.baderlab.csplugins.enrichmentmap.autoannotate;
 
 import java.awt.Color;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -24,7 +23,6 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.annotations.AnnotationManager;
 import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
@@ -109,7 +107,7 @@ public class AutoAnnotationUtils {
 
 	public static void drawEllipse(Cluster cluster, CyNetworkView view,
 			AnnotationFactory<ShapeAnnotation> shapeFactory, AnnotationManager annotationManager, 
-			boolean showEllipses, int ellipseBorderWidth) {
+			boolean showEllipses, int ellipseBorderWidth, int ellipseOpacity) {
 		double zoom = view.getVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR);
     	// Find the edges of the cluster
 		double xmin = 100000000;
@@ -149,12 +147,15 @@ public class AutoAnnotationUtils {
 		arguments.put("x", String.valueOf(xPos));
 		arguments.put("y", String.valueOf(yPos));
 		arguments.put("zoom", String.valueOf(zoom));
-		arguments.put("canvas", "foreground");
+		arguments.put("canvas", "background");
 		ShapeAnnotation ellipse = shapeFactory.createAnnotation(ShapeAnnotation.class, view, arguments);
 		ellipse.setShapeType("Ellipse");
 		ellipse.setSize(width*zoom, height*zoom);
 		ellipse.setBorderWidth(ellipseBorderWidth);
 		ellipse.setBorderColor(Color.DARK_GRAY);
+		// Fill opacity is broken for now
+		ellipse.setFillColor(Color.getHSBColor(0.19f, 1.25f, 0.95f));
+		ellipse.setFillOpacity(ellipseOpacity);
 		cluster.setEllipse(ellipse);
 		if (showEllipses) {
 			annotationManager.addAnnotation(ellipse);
@@ -225,8 +226,8 @@ public class AutoAnnotationUtils {
 	public static void drawCluster(Cluster cluster, CyNetworkView view, 
 			AnnotationFactory<ShapeAnnotation> shapeFactory, AnnotationFactory<TextAnnotation> textFactory, 
 			AnnotationManager annotationManager, boolean constantFontSize, int fontSize, boolean showEllipses,
-			int ellipseBorderWidth) {
-		drawEllipse(cluster, view, shapeFactory, annotationManager, showEllipses, ellipseBorderWidth);
+			int ellipseBorderWidth, int ellipseOpacity) {
+		drawEllipse(cluster, view, shapeFactory, annotationManager, showEllipses, ellipseBorderWidth, ellipseOpacity);
 		drawTextLabel(cluster, view, textFactory, annotationManager, constantFontSize, fontSize);
 	}
 	
@@ -303,7 +304,6 @@ public class AutoAnnotationUtils {
 				label.add(nextWord);
 				numWords++;
 			} else {
-				System.out.println(nextWord.getWord() + "\t" + nextWord.getSize() + " " + wordSizeThreshold);
 				break;
 			}
 		}

@@ -59,8 +59,6 @@ import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.command.CommandExecutorTaskFactory;
-import org.cytoscape.group.CyGroup;
-import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -101,7 +99,6 @@ public class AutoAnnotationTask extends AbstractTask {
 	private DialogTaskManager dialogTaskManager;
 	private SynchronousTaskManager<?> syncTaskManager;
 	private CommandExecutorTaskFactory executor;
-	private CyGroupFactory groupFactory;
 
 	public AutoAnnotationTask (CySwingApplication application, 
 			AutoAnnotationManager autoAnnotationManager, 
@@ -123,7 +120,6 @@ public class AutoAnnotationTask extends AbstractTask {
 		this.syncTaskManager = autoAnnotationManager.getSyncTaskManager();
 		this.tableManager = autoAnnotationManager.getTableManager();
 		this.executor = autoAnnotationManager.getCommandExecutor();
-		this.groupFactory = autoAnnotationManager.getGroupFactory();
 	};
 
 	@Override
