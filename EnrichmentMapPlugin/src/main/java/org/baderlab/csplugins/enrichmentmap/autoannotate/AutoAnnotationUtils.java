@@ -283,7 +283,10 @@ public class AutoAnnotationUtils {
 		for (WordInfo wordInfo : wordInfos) {
 			wordInfosCopy.add(wordInfo.clone());
 		}
-		Collections.sort(wordInfosCopy); // Sorts by size descending
+		// Empty WordClouds are given an empty label
+		if (wordInfosCopy.size() == 0) return "";
+		// Sorts by size descending
+		Collections.sort(wordInfosCopy);
 		// Gets the biggest word in the cloud
 		WordInfo biggestWord = wordInfosCopy.get(0);
 		ArrayList<WordInfo> label = new ArrayList<WordInfo>();
@@ -300,7 +303,7 @@ public class AutoAnnotationUtils {
 					}
 				}
 			}
-			Collections.sort(wordInfosCopy); // Sizes have changed, resort
+			Collections.sort(wordInfosCopy); // Sizes have changed, re-sort
 			double wordSizeThreshold = nextWord.getSize()*nextWordSizeThresholds[numWords - 1];
 			nextWord = wordInfosCopy.get(0);
 			wordInfosCopy.remove(0);

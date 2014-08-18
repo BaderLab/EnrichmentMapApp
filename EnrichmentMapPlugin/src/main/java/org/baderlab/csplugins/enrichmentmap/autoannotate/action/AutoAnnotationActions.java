@@ -25,12 +25,15 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTableManager;
 import org.cytoscape.util.swing.BasicCollapsiblePanel;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.annotations.AnnotationManager;
 import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
 import org.cytoscape.view.presentation.annotations.TextAnnotation;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.swing.DialogTaskManager;
@@ -201,7 +204,7 @@ public class AutoAnnotationActions {
 	}
 
 	public static void clearAction(CyNetwork selectedNetwork, AnnotationSet annotationSet,
-			JComboBox clusterSetDropdown, HashMap<AnnotationSet, JTable> clustersToTables, AutoAnnotationParameters params) {
+			JComboBox<AnnotationSet> clusterSetDropdown, HashMap<AnnotationSet, JTable> clustersToTables, AutoAnnotationParameters params) {
 
 		AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
 		EnrichmentMapManager emManager = EnrichmentMapManager.getInstance();
@@ -266,22 +269,128 @@ public class AutoAnnotationActions {
 		// Update the table if the value has changed (WordCloud has been updated)
 		DefaultTableModel model = (DefaultTableModel) clusterTable.getModel();
 		int i = 0;
+		int numRows = model.getRowCount();
 		for (Cluster cluster : annotationSet.getClusterMap().values()) {
-			if (!(model.getValueAt(i, 0).equals(cluster))) {
-				model.setValueAt(cluster, i, 0);
-				model.setValueAt(cluster.getSize(), i, 1);
-			} else if (!(model.getValueAt(i,  1)).equals(cluster.getSize())) {
-				// Cluster hasn't changed but size has
-				model.setValueAt(cluster.getSize(), i, 1);
+			if (i >= numRows) {
+				Object[] newRow = {cluster, cluster.getSize()};
+				model.addRow(newRow);
+			} else {
+				if (!(model.getValueAt(i, 0).equals(cluster))) {
+					model.setValueAt(cluster, i, 0);
+					model.setValueAt(cluster.getSize(), i, 1);
+				} else if (!(model.getValueAt(i,  1)).equals(cluster.getSize())) {
+					// Cluster hasn't changed but size has
+					model.setValueAt(cluster.getSize(), i, 1);
+				}
+				i++;
 			}
-			i++;
 		}
 		// Remove rows left over at the end (deletion)
-		int numRows = model.getRowCount();
 		while (numRows > i) {
 			model.removeRow(i);
 			numRows = model.getRowCount();
 		}
 		clusterTable.clearSelection();
+	}
+
+	public static void extractAction(CyNetworkView selectedView,
+			AnnotationSet annotationSet, JTable clusterTable,
+			CytoPanel westPanel, boolean constantFontSize,
+			boolean showEllipses, int fontSize, int ellipseWidth,
+			int ellipseOpacity, String shapeType) {
+		CyNetwork selectedNetwork = selectedView.getModel();
+		AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
+
+		// Get selected nodes
+		ArrayList<CyNode> selectedNodes = new ArrayList<CyNode>();
+		for (CyNode node : selectedNetwork.getNodeList()) {
+			if (selectedNetwork.getRow(node).get(CyNetwork.SELECTED, Boolean.class)) {
+				selectedNodes.add(node);
+			}
+		}
+		if (selectedNodes.size() < 1) {
+			JOptionPane.showMessageDialog(null, "Please select at least one node", "Error Message",
+					JOptionPane.ERROR_MESSAGE);
+		} else {
+			// Get services needed for accessing WordCloud through command line
+			CommandExecutorTaskFactory executor = autoAnnotationManager.getCommandExecutor();
+			DialogTaskManager dialogTaskManager = autoAnnotationManager.getDialogTaskManager();
+			Class<?> columnType = selectedNetwork.getDefaultNodeTable().getColumn(annotationSet.getClusterColumnName()).getType();
+			String clusterColumnName = annotationSet.getClusterColumnName();
+			String nameColumnName = annotationSet.getNameColumnName();
+			
+			int newClusterNumber = annotationSet.getNextClusterNumber();
+			Cluster newCluster = null;
+			
+			if (columnType == Integer.class) {
+				// Discrete clusters, remove nodes from other clusters
+				for (Cluster cluster : annotationSet.getClusterMap().values()) {
+					for (CyNode node : selectedNodes) {
+						cluster.removeNode(node);
+					}
+				}
+				for (CyRow row : selectedNetwork.getDefaultNodeTable().getAllRows()) {
+					row.set(clusterColumnName, newClusterNumber);
+				}
+			}
+			
+			newCluster = new Cluster(newClusterNumber, annotationSet);
+			annotationSet.addCluster(newCluster);
+			
+			for (CyNode node : selectedNodes) {
+				// Get coordinates from the nodeView
+				View<CyNode> nodeView = selectedView.getNodeView(node);
+				double x = nodeView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION);
+				double y = nodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
+				double[] coordinates = {x, y};
+				double nodeRadius = nodeView.getVisualProperty(BasicVisualLexicon.NODE_WIDTH);
+				newCluster.addNodeCoordinates(node, coordinates);
+				newCluster.addNodeRadius(node, nodeRadius);
+			}	
+			
+			// Create a new cloud for the extracted cluster
+			ArrayList<String> commands = new ArrayList<String>();
+			String command = "wordcloud create wordColumnName=\"" + nameColumnName + "\"" + 
+					" nodesToUse=\"selected\" cloudName=\"" +  newCluster.getCloudName() + "\""
+					+ " cloudGroupTableName=\"" + annotationSet.getName() + "\"";
+			commands.add(command);
+			Observer observer = new Observer();
+			TaskIterator taskIterator = executor.createTaskIterator(commands, null);
+			dialogTaskManager.execute(taskIterator, observer);
+			// Wait until WordCloud is finished
+			while (!observer.isFinished()) {
+				try {
+					Thread.sleep(1);
+				} catch (InterruptedException e1) {
+					e1.printStackTrace();
+				}
+			}
+			for (CyNode node : newCluster.getNodesToCoordinates().keySet()) {
+				selectedNetwork.getRow(node).set(CyNetwork.SELECTED, false);
+			}
+			
+			AnnotationFactory<ShapeAnnotation> shapeFactory = autoAnnotationManager.getShapeFactory();
+			AnnotationFactory<TextAnnotation> textFactory = autoAnnotationManager.getTextFactory();
+			AnnotationManager annotationManager = autoAnnotationManager.getAnnotationManager();
+			CyTableManager tableManager = autoAnnotationManager.getTableManager();
+			
+			String annotationSetName = annotationSet.getName();
+			Long clusterTableSUID = selectedNetwork.getDefaultNetworkTable().getRow(selectedNetwork.getSUID()).get(annotationSetName, Long.class);
+	    	CyTable clusterSetTable = tableManager.getTable(clusterTableSUID);
+	    	
+	    	// Generate the labels for the clusters
+	    	AutoAnnotationUtils.updateClusterLabel(newCluster, selectedNetwork, annotationSetName, clusterSetTable, nameColumnName);
+			AutoAnnotationUtils.drawCluster(newCluster, selectedView, shapeFactory,
+					textFactory, annotationManager, constantFontSize, fontSize,
+					showEllipses, ellipseWidth, ellipseOpacity, shapeType);
+			
+			updateAction(selectedView, annotationSet, nameColumnName, constantFontSize, showEllipses, 
+					fontSize, clusterTable, ellipseWidth, ellipseOpacity, shapeType);
+			
+			// Deselect rows (no longer meaningful)
+			clusterTable.clearSelection();
+			// Focus on this panel
+			westPanel.setSelectedIndex(westPanel.indexOfComponent(autoAnnotationManager.getAnnotationPanel()));
+		}
 	}
 }

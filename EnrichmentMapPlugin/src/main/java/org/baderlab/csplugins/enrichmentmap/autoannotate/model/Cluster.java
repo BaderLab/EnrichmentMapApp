@@ -189,6 +189,14 @@ public class Cluster implements Comparable<Cluster> {
 		return label.compareTo(cluster2.getLabel());
 	}
 	
+	public void removeNode(CyNode nodeToRemove) {
+		if (nodesToCoordinates.containsKey(nodeToRemove)) {
+			nodesToCoordinates.remove(nodeToRemove);
+			nodesToRadii.remove(nodeToRemove);
+			size--;
+		}
+	}
+	
 	public void swallow(Cluster cluster2) {
 		// Add all of the nodes and coordinates from the second cluster
 		HashMap<CyNode, double[]> cluster2NodesToCoordinates = cluster2.getNodesToCoordinates();

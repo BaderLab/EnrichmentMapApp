@@ -65,6 +65,14 @@ public class AnnotationSet {
 		clusterMap.remove(cluster);
 	}
 	
+	public int getNextClusterNumber() {
+		int clusterNumber = 1;
+		while (clusterMap.containsKey(clusterNumber)) {
+			clusterNumber++;
+		}
+		return clusterNumber;
+	}
+	
 	// Get the coordinates of the nodes in each cluster
 	// Returns whether or not there has been a change
 	public void updateCoordinates() {

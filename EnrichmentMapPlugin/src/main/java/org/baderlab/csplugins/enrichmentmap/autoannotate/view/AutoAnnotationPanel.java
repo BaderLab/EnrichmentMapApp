@@ -79,9 +79,9 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 	private static final String specifyColumnButtonString = "Select cluster column";
 
 	// Dropdown menus
-	private JComboBox nameColumnDropdown;
-	private JComboBox clusterColumnDropdown;
-	private JComboBox clusterAlgorithmDropdown;
+	private JComboBox<String> nameColumnDropdown;
+	private JComboBox<String> clusterColumnDropdown;
+	private JComboBox<String> clusterAlgorithmDropdown;
 
 	// Radio buttons to choose between clusterMaker defaults and a cluster column
 	private ButtonGroup clusterButtonGroup;
@@ -91,7 +91,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 	// Label that shows the name of the selected network (updates)
 	private JLabel networkLabel;
 	// Used to update panel on network selection
-	private HashMap<CyNetworkView, JComboBox> networkViewToClusterSetDropdown;
+	private HashMap<CyNetworkView, JComboBox<AnnotationSet>> networkViewToClusterSetDropdown;
 	// Used to update table on annotation set selection
 	private HashMap<AnnotationSet, JTable> clustersToTables;
 	// Used to store the output table
@@ -118,7 +118,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 
 	public AutoAnnotationPanel(CySwingApplication application, DisplayOptionsPanel displayOptionsPanel){
 		this.clustersToTables = new HashMap<AnnotationSet, JTable>();
-		this.networkViewToClusterSetDropdown = new HashMap<CyNetworkView, JComboBox>();
+		this.networkViewToClusterSetDropdown = new HashMap<CyNetworkView, JComboBox<AnnotationSet>>();
 		
 		this.displayOptionsPanel = displayOptionsPanel;
 		
@@ -153,7 +153,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 
 		JLabel nameColumnDropdownLabel = new JLabel("   Select the column with the gene set descriptions:");
 		// Gives the user a choice of column with gene names
-		nameColumnDropdown = new JComboBox();
+		nameColumnDropdown = new JComboBox<String>();
 		// Collapsible panel with advanced cluster options
 		advancedOptionsPanel = createAdvancedOptionsPanel(); 
 		
@@ -188,8 +188,27 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 	
 	private JPanel createOutputPanel() {
 		JPanel outputPanel = new JPanel(new BorderLayout());
+
+		JButton extractButton = new JButton("Extract");
+		ActionListener extractActionListener = new ActionListener(){
+			public void actionPerformed(ActionEvent e) {
+				AnnotationSet annotationSet = (AnnotationSet) networkViewToClusterSetDropdown.
+						get(selectedView).getSelectedItem();
+				JTable clusterTable = clustersToTables.get(annotationSet);
+				CytoPanel westPanel = application.getCytoPanel(CytoPanelName.WEST);
+				boolean constantFontSize = displayOptionsPanel.getFontSizeTextField().isEnabled();
+				boolean showEllipses = displayOptionsPanel.isShowEllipsesCheckBoxSelected();
+				int fontSize = Integer.parseInt(displayOptionsPanel.getFontSizeTextField().getText());
+				int ellipseWidth = displayOptionsPanel.getEllipseWidth();
+				int ellipseOpacity = displayOptionsPanel.getEllipseOpacity();
+				String shapeType = displayOptionsPanel.getShapeType();
+				AutoAnnotationActions.extractAction(selectedView, annotationSet, clusterTable, westPanel,
+						constantFontSize, showEllipses, fontSize, ellipseWidth, ellipseOpacity, shapeType);
+			}
+		};
+		extractButton.addActionListener(extractActionListener);
 		
-		JButton mergeButton = new JButton("Merge Clusters");
+		JButton mergeButton = new JButton("Merge");
 		ActionListener mergeActionListener = new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
 				AnnotationSet annotationSet = (AnnotationSet) networkViewToClusterSetDropdown.
@@ -208,7 +227,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 		};
 		mergeButton.addActionListener(mergeActionListener);
 		
-		JButton deleteButton = new JButton("Delete Cluster(s)");
+		JButton deleteButton = new JButton("Delete");
 		ActionListener deleteActionListener = new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
 				AnnotationSet annotationSet = (AnnotationSet) networkViewToClusterSetDropdown.
@@ -228,6 +247,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 		deleteButton.addActionListener(deleteActionListener);
 		
 		JPanel outputButtonPanel = new JPanel();
+		outputButtonPanel.add(extractButton);
 		outputButtonPanel.add(mergeButton);
 		outputButtonPanel.add(deleteButton);
 		
@@ -235,8 +255,6 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 		outputBottomPanel.setLayout(new BoxLayout(outputBottomPanel, BoxLayout.PAGE_AXIS));
 		
 		outputBottomPanel.add(outputButtonPanel);
-		
-		mergeButton.setAlignmentX(CENTER_ALIGNMENT);
 		
 		outputPanel.add(outputBottomPanel, BorderLayout.SOUTH);
 		
@@ -250,7 +268,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 		removeButton = new JButton("Remove");
 		ActionListener clearActionListener = new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
-				JComboBox clusterSetDropdown = networkViewToClusterSetDropdown.get(selectedView);
+				JComboBox<AnnotationSet> clusterSetDropdown = networkViewToClusterSetDropdown.get(selectedView);
 				AnnotationSet annotationSet = (AnnotationSet) clusterSetDropdown.getSelectedItem();
 				// Get rid of the table associated with this cluster set
 				remove(clustersToTables.get(annotationSet).getParent());
@@ -320,16 +338,16 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 		clusterButtonPanel.add(specifyColumnButton);
 		
 		// Dropdown with all the available algorithms
-		DefaultComboBoxModel clusterDropdownModel = new DefaultComboBoxModel();
+		DefaultComboBoxModel<String> clusterDropdownModel = new DefaultComboBoxModel<String>();
 		for (String algorithm : autoAnnotationManager.getAlgorithmToColumnName().keySet()) {
 			clusterDropdownModel.addElement(algorithm);
 		}
 
 		// To choose a clusterMaker algorithm
-		clusterAlgorithmDropdown = new JComboBox(clusterDropdownModel);
+		clusterAlgorithmDropdown = new JComboBox<String>(clusterDropdownModel);
 		clusterAlgorithmDropdown.setPreferredSize(new Dimension(135, 30));
 		// Alternatively, user can choose a cluster column themselves (if they've run clusterMaker themselves)
-		clusterColumnDropdown = new JComboBox();
+		clusterColumnDropdown = new JComboBox<String>();
 		clusterColumnDropdown.setPreferredSize(new Dimension(135, 30));
 
 		// Only one dropdown visible at a time
@@ -512,7 +530,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 		outputPanel.add(clusterTableScroll, BorderLayout.CENTER);
 		clustersToTables.put(annotationSet, clusterTable);
 		// Add the annotation set to the dropdown
-		JComboBox clusterSetDropdown = networkViewToClusterSetDropdown.get(clusterView);
+		JComboBox<AnnotationSet> clusterSetDropdown = networkViewToClusterSetDropdown.get(clusterView);
 		clusterSetDropdown.addItem(annotationSet);
 		// Select the most recently added annotation set
 		clusterSetDropdown.setSelectedIndex(clusterSetDropdown.getItemCount()-1);
@@ -520,7 +538,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 
 	private void addNetworkView(CyNetworkView view) {
 		// Create dropdown with cluster sets of this networkView
-		JComboBox clusterSetDropdown = new JComboBox();
+		JComboBox<AnnotationSet> clusterSetDropdown = new JComboBox<AnnotationSet>();
 		clusterSetDropdown.addItemListener(new ItemListener(){
 			public void itemStateChanged(ItemEvent itemEvent) {
 				CyGroupManager groupManager = autoAnnotationManager.getGroupManager();
@@ -667,7 +685,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 
 		// Hide previous dropdown and table
 		if (networkViewToClusterSetDropdown.containsKey(selectedView)) {
-			JComboBox currentDropdown = networkViewToClusterSetDropdown.get(selectedView);
+			JComboBox<?> currentDropdown = networkViewToClusterSetDropdown.get(selectedView);
 			currentDropdown.setVisible(false);
 			// Hide the scrollpane containing the clusterTable
 			clustersToTables.get(currentDropdown.getSelectedItem()).getParent().getParent().setVisible(false);
@@ -706,7 +724,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 		clusterColumnDropdown.removeAllItems();
 		updateUI();
 		if (networkViewToClusterSetDropdown.containsKey(view)) {
-			JComboBox clusterSetDropdown = networkViewToClusterSetDropdown.get(view);
+			JComboBox<?> clusterSetDropdown = networkViewToClusterSetDropdown.get(view);
 			Container clusterTable = clustersToTables.get(networkViewToClusterSetDropdown.get(view).getSelectedItem()).getParent().getParent();
 			clusterSetDropdown.getParent().remove(clusterSetDropdown);
 			clusterTable.getParent().remove(clusterTable);
@@ -738,11 +756,11 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 		if (source == nodeTable) {
 			CyColumn column = nodeTable.getColumn(columnName);
 			if (column.getType() == String.class) {
-				if (((DefaultComboBoxModel) nameColumnDropdown.getModel()).getIndexOf(column) == -1) { // doesn't already contain column
+				if (((DefaultComboBoxModel<String>) nameColumnDropdown.getModel()).getIndexOf(column) == -1) { // doesn't already contain column
 					nameColumnDropdown.addItem(column.getName());
 				}
 			} else if (column.getType() == Integer.class || (column.getType() == List.class && column.getListElementType() == Integer.class)) {
-				if (((DefaultComboBoxModel) clusterColumnDropdown.getModel()).getIndexOf(column) == -1) { // doesn't already contain column
+				if (((DefaultComboBoxModel<String>) clusterColumnDropdown.getModel()).getIndexOf(column) == -1) { // doesn't already contain column
 					clusterColumnDropdown.addItem(column.getName());					
 				}
 			}
