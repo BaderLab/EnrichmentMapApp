@@ -398,8 +398,8 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 		model.addTableModelListener(new TableModelListener() { // Update the label value
 			@Override
 			public void tableChanged(TableModelEvent e) {
-				if (e.getType() == TableModelEvent.UPDATE || e.getColumn() == 0) {
-					int editedRowIndex = e.getFirstRow() == table.getSelectedRow()? e.getLastRow() : e.getFirstRow();
+				if (e.getType() == TableModelEvent.UPDATE && e.getColumn() == 0) {
+					int editedRowIndex = table.getSelectedRow();
 					// Get the cluster that was modified
 					Iterator<Cluster> clusters = annotationSet.getClusterMap().values().iterator();
 					ArrayList<Cluster> clustersNotInTable = new ArrayList<Cluster>();
@@ -412,25 +412,25 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 						}
 					}
 					// The modified cluster will be the only cluster left over
-					Cluster editedCluster;
-					try {
-						editedCluster = clustersNotInTable.get(0);
-						editedCluster.setLabel((String) table.getValueAt(editedRowIndex, 0));
-					} catch (Exception ex) {
-						// This comes from event fired from re-adding the cluster to the table, ignore
-						return;
+					if (clustersNotInTable.size() == 1) {
+						Cluster editedCluster = clustersNotInTable.get(0);
+						if (table.getValueAt(editedRowIndex, 0).getClass() == String.class) {
+							editedCluster.setLabel((String) table.getValueAt(editedRowIndex, 0)); 
+							table.setValueAt(editedCluster, editedRowIndex, 0); // Otherwise String stays in the table
+							editedCluster.erase();
+							AnnotationFactory<ShapeAnnotation> shapeFactory = autoAnnotationManager.getShapeFactory();
+							AnnotationFactory<TextAnnotation> textFactory = autoAnnotationManager.getTextFactory();
+							AnnotationManager annotationManager = autoAnnotationManager.getAnnotationManager();
+							boolean constantFontSize = displayOptionsPanel.getFontSizeTextField().isEnabled();
+							int fontSize = Integer.parseInt(displayOptionsPanel.getFontSizeTextField().getText());
+							AutoAnnotationUtils.drawCluster(editedCluster, selectedView, shapeFactory, textFactory, 
+									annotationManager, constantFontSize, fontSize, 
+									displayOptionsPanel.isShowEllipsesCheckBoxSelected(),
+									displayOptionsPanel.getEllipseWidth());
+						}
+					} else {
+						System.out.println(clustersNotInTable.size());
 					}
-					table.setValueAt(editedCluster, editedRowIndex, 0); // Otherwise String stays in the table
-					editedCluster.erase();
-					AnnotationFactory<ShapeAnnotation> shapeFactory = autoAnnotationManager.getShapeFactory();
-					AnnotationFactory<TextAnnotation> textFactory = autoAnnotationManager.getTextFactory();
-					AnnotationManager annotationManager = autoAnnotationManager.getAnnotationManager();
-					boolean constantFontSize = displayOptionsPanel.getFontSizeTextField().isEnabled();
-					int fontSize = Integer.parseInt(displayOptionsPanel.getFontSizeTextField().getText());
-					AutoAnnotationUtils.drawCluster(editedCluster, selectedView, shapeFactory, textFactory, 
-							annotationManager, constantFontSize, fontSize, 
-							displayOptionsPanel.isShowEllipsesCheckBoxSelected(),
-							displayOptionsPanel.getEllipseWidth());
 				}
 			}
 		});
@@ -476,7 +476,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 						row.set(CyNetwork.SELECTED, false);
 					}
 					for (Cluster cluster : selectedClusters) {
-						for (CyNode node : cluster.getNodes()) {
+						for (CyNode node : cluster.getNodesToCoordinates().keySet()) {
 							selectedNetwork.getRow(node).set(CyNetwork.SELECTED, true);
 						}
 					}
@@ -550,8 +550,8 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 						// Recreate groups if necessary
 						if (annotationSet.usingGroups()) {
 							// TODO - find a faster way to do this
-							CyGroup group = groupFactory.createGroup(selectedNetwork, cluster.getNodes().get(0), true);
-							ArrayList<CyNode> nodesWithoutGroupNode = new ArrayList<CyNode>(cluster.getNodes());
+							CyGroup group = groupFactory.createGroup(selectedNetwork, cluster.getNodesToCoordinates().keySet().iterator().next(), true);
+							ArrayList<CyNode> nodesWithoutGroupNode = new ArrayList<CyNode>(cluster.getNodesToCoordinates().keySet());
 							nodesWithoutGroupNode.remove(0);
 							group.addNodes(nodesWithoutGroupNode);
 							cluster.setGroup(group);

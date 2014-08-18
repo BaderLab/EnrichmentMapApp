@@ -1,9 +1,12 @@
 package org.baderlab.csplugins.enrichmentmap.autoannotate.model;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationUtils;
@@ -28,8 +31,7 @@ public class Cluster implements Comparable<Cluster> {
 	private int clusterNumber;
 	private String cloudName;
 	private CyGroup group;
-	private ArrayList<CyNode> nodeList;
-	private ArrayList<double[]> coordinates;
+	private HashMap<CyNode, double[]> nodesToCoordinates;
 	private int size;
 	private String label;
 	private TextAnnotation textAnnotation;
@@ -37,12 +39,13 @@ public class Cluster implements Comparable<Cluster> {
 	private AnnotationSet parent;
 	private boolean selected;
 	private ArrayList<WordInfo> wordInfos;
+	private HashMap<CyNode, Double> nodesToRadii;
 	
 	// Used when initializing from a session file
 	public Cluster() {
-		this.coordinates = new ArrayList<double[]>();
 		this.wordInfos = new ArrayList<WordInfo>();
-		this.nodeList = new ArrayList<CyNode>();
+		this.nodesToCoordinates = new HashMap<CyNode, double[]>();
+		this.nodesToRadii = new HashMap<CyNode, Double>();
 		size = 0;
 	}
 	
@@ -56,9 +59,9 @@ public class Cluster implements Comparable<Cluster> {
 		this.clusterNumber = clusterNumber;
 		this.parent = parent;
 		this.cloudName = parent.getName() + " Cloud " + clusterNumber;
-		this.coordinates = new ArrayList<double[]>();
 		this.wordInfos = new ArrayList<WordInfo>();
-		this.nodeList = new ArrayList<CyNode>();
+		this.nodesToCoordinates = new HashMap<CyNode, double[]>();
+		this.nodesToRadii = new HashMap<CyNode, Double>();
 		size = 0;
 		selected = false;
 	}
@@ -92,30 +95,28 @@ public class Cluster implements Comparable<Cluster> {
 		return null;
 	}
 	
-	public ArrayList<double[]> getCoordinates() {
-		return this.coordinates;
+	public HashMap<CyNode, double[]> getNodesToCoordinates() {
+		return nodesToCoordinates;
 	}
 	
-	public void setCoordinates(ArrayList<double[]> coordinates) {
-		this.coordinates = coordinates;
+	public HashMap<CyNode, Double> getNodesToRadii() {
+		return nodesToRadii;
 	}
 	
-	public List<CyNode> getNodes() {
-		return nodeList;
-	}
-	
-	public void addNode(CyNode node) {
-		if (group != null && group.getGroupNode() != node) {
-			ArrayList<CyNode> nodeToAdd = new ArrayList<CyNode>();
-			nodeToAdd.add(node);
-			group.addNodes(nodeToAdd);
+	public void addNodeCoordinates(CyNode node, double[] coordinates) {
+		if (!nodesToCoordinates.containsKey(node)) {
+			size++;
+			if (group != null && group.getGroupNode() != node) {
+				ArrayList<CyNode> nodeToAdd = new ArrayList<CyNode>();
+				nodeToAdd.add(node);
+				group.addNodes(nodeToAdd);
+			}
 		}
-		nodeList.add(node);
-		size++;
+		nodesToCoordinates.put(node, coordinates);
 	}
 	
-	public void addCoordinates(double[] coordinates) {
-		this.coordinates.add(coordinates);
+	public void addNodeRadius(CyNode node, double radius) {
+		nodesToRadii.put(node, radius);
 	}
 	
 	public void setLabel(String label) {
@@ -193,13 +194,15 @@ public class Cluster implements Comparable<Cluster> {
 	}
 	
 	public void swallow(Cluster cluster2) {
-		// Add all of the nodes from the second cluster
-		for (CyNode node2 : cluster2.getNodes()) {
-			addNode(node2);
+		// Add all of the nodes and coordinates from the second cluster
+		HashMap<CyNode, double[]> cluster2NodesToCoordinates = cluster2.getNodesToCoordinates();
+		HashMap<CyNode, Double> cluster2NodesToRadii = cluster2.getNodesToRadii();
+		for (CyNode node : cluster2NodesToCoordinates.keySet()) {
+			addNodeCoordinates(node, cluster2NodesToCoordinates.get(node));
+			addNodeRadius(node, cluster2NodesToRadii.get(node));
 		}
-		// Add the coordinates from the second cluster
-		for (double[] coordinates2 : cluster2.getCoordinates()) {
-			addCoordinates(coordinates2);
+		for (Entry<CyNode, double[]> entry : cluster2.getNodesToCoordinates().entrySet()) {
+			addNodeCoordinates(entry.getKey(), entry.getValue());
 		}
 		// Remove the second cluster
 		cluster2.getParent().getClusterMap().remove(cluster2.getClusterNumber());
@@ -235,19 +238,16 @@ public class Cluster implements Comparable<Cluster> {
 		}
 		sessionString += "End of annotations\n";
 		
-		// Write each node
-		for (int nodeIndex=0 ; nodeIndex < getSize() ; nodeIndex++) {
-			long nodeID = getNodes().get(nodeIndex).getSUID();
-			sessionString += nodeID + "\n";
+		// Write each node and its coordinates
+		for (CyNode node : nodesToCoordinates.keySet()) {
+			long nodeID = node.getSUID();
+			double[] coordinates = nodesToCoordinates.get(node);
+			double nodeX = coordinates[0];
+			double nodeY = coordinates[1];
+			double nodeRadius = nodesToRadii.get(node);
+			sessionString += nodeID + "\t" + nodeX + "\t" + nodeY + "\t" + nodeRadius + "\n";
 		}
 		sessionString += "End of nodes\n";
-		// Write coordinates (separately, in case a node has been collapsed)
-		for (int coordinateIndex=0 ; coordinateIndex < getCoordinates().size() ; coordinateIndex++) {
-			double nodeX = coordinates.get(coordinateIndex)[0];
-			double nodeY = coordinates.get(coordinateIndex)[1];
-			sessionString += nodeX + "\t" + nodeY + "\n";
-		}
-		sessionString += "End of coordinates\n";
 		sessionString += "End of cluster\n";
 		
 		// Destroy group (causes problems with session loading)
@@ -292,18 +292,12 @@ public class Cluster implements Comparable<Cluster> {
 		
 		// Reload nodes
 		while (!line.equals("End of nodes")) {
-			addNode(session.getObject(Long.valueOf(line), CyNode.class));
-			lineNumber++;
-			line = text.get(lineNumber);
-		}
-		// Skip the end line
-		lineNumber++;
-		line = text.get(lineNumber);
-		// Reload coordinates
-		while (!line.equals("End of coordinates")) {
 			String[] splitLine = line.split("\t");
-			double[] nodeCoordinates = {Double.valueOf(splitLine[0]), Double.valueOf(splitLine[1])}; 
-			addCoordinates(nodeCoordinates);
+			CyNode node = session.getObject(Long.valueOf(splitLine[0]), CyNode.class);
+			double[] nodeCoordinates = {Double.valueOf(splitLine[1]), Double.valueOf(splitLine[2])}; 
+			addNodeCoordinates(node, nodeCoordinates);
+			double nodeRadius = Double.valueOf(splitLine[3]);
+			addNodeRadius(node, nodeRadius);
 			lineNumber++;
 			line = text.get(lineNumber);
 		}

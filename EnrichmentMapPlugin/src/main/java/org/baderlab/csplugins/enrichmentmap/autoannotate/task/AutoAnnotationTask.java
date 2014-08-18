@@ -191,7 +191,7 @@ public class AutoAnnotationTask extends AbstractTask {
 		CyLayoutAlgorithm force_directed = layoutManager.getLayout("force-directed");
 		for (Cluster cluster : clusters.getClusterMap().values()) {
 			Set<View<CyNode>> nodeViewSet = new HashSet<View<CyNode>>();
-			for (CyNode node : cluster.getNodes()) {
+			for (CyNode node : cluster.getNodesToCoordinates().keySet()) {
 				nodeViewSet.add(view.getNodeView(node));
 			}
 			// Only apply layout to nodes of size greater than 4
@@ -247,12 +247,13 @@ public class AutoAnnotationTask extends AbstractTask {
 			double x = nodeView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION);
 			double y = nodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
 			double[] coordinates = {x, y};
+			double nodeRadius = nodeView.getVisualProperty(BasicVisualLexicon.NODE_WIDTH);
 
 			if (columnType == Integer.class) { // Discrete clustering
 				Integer clusterNumber;
 				clusterNumber = network.getRow(node).get(clusterColumnName, Integer.class);
 				if (clusterNumber != null) { // empty values (no cluster) are given null, ignore these
-					addNodeToCluster(clusterNumber, node, coordinates, clusterMap, annotationSet);
+					addNodeToCluster(clusterNumber, node, coordinates, nodeRadius, clusterMap, annotationSet);
 				}
 			} else if (columnType == List.class) { // Fuzzy clustering
 				List<Integer> clusterNumbers = new ArrayList<Integer>();
@@ -260,7 +261,7 @@ public class AutoAnnotationTask extends AbstractTask {
 				// Iterate over each cluster for the node, and add the node to each cluster
 				for (int i = 0; i < clusterNumbers.size(); i++) {
 					int clusterNumber = clusterNumbers.get(i);
-					addNodeToCluster(clusterNumber, node, coordinates, clusterMap, annotationSet);
+					addNodeToCluster(clusterNumber, node, coordinates, nodeRadius, clusterMap, annotationSet);
 				}
 			} // No other possible columnTypes (since the dropdown only contains these types
 		}
@@ -270,7 +271,7 @@ public class AutoAnnotationTask extends AbstractTask {
 	
 	// Adds the node and its coordinates to cluster number specified by clusterNumber
 	private void addNodeToCluster(Integer clusterNumber, CyNode node, double[] coordinates,
-			TreeMap<Integer, Cluster> clusterMap, AnnotationSet annotationSet) {
+			double nodeRadius, TreeMap<Integer, Cluster> clusterMap, AnnotationSet annotationSet) {
 		Cluster cluster;
 		if (!clusterMap.keySet().contains(clusterNumber)) {
 			// Cluster doesn't exist, create it
@@ -280,8 +281,8 @@ public class AutoAnnotationTask extends AbstractTask {
 			// Cluster exists, look it up
 			cluster = clusterMap.get(clusterNumber);
 		}
-		cluster.addNode(node);
-		cluster.addCoordinates(coordinates);
+		cluster.addNodeCoordinates(node, coordinates);
+		cluster.addNodeRadius(node, nodeRadius);
 	}
 	
 	private void runWordCloud(AnnotationSet annotationSet, CyNetwork network) {
@@ -314,7 +315,7 @@ public class AutoAnnotationTask extends AbstractTask {
 	}
 
 	private void setClusterSelected(Cluster cluster, CyNetwork network, boolean b) {
-		for (CyNode node : cluster.getNodes()) {
+		for (CyNode node : cluster.getNodesToCoordinates().keySet()) {
 			network.getRow(node).set(CyNetwork.SELECTED, b);
 		}
 	}

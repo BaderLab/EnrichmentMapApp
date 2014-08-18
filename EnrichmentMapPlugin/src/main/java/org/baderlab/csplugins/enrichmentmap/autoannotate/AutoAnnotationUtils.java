@@ -8,6 +8,7 @@ package org.baderlab.csplugins.enrichmentmap.autoannotate;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -52,7 +53,7 @@ public class AutoAnnotationUtils {
 			if (selectedCluster.isCollapsed()) {
 				network.getRow(selectedCluster.getGroupNode()).set(CyNetwork.SELECTED, true);
 			} else {
-				for (CyNode node : selectedCluster.getNodes()) {
+				for (CyNode node : selectedCluster.getNodesToCoordinates().keySet()) {
 					network.getRow(node).set(CyNetwork.SELECTED, true);
 				}
 			}
@@ -76,7 +77,7 @@ public class AutoAnnotationUtils {
 			if (deselectedCluster.isCollapsed()) {
 				network.getRow(deselectedCluster.getGroupNode()).set(CyNetwork.SELECTED, false);
 			} else {
-				for (CyNode node : deselectedCluster.getNodes()) {
+				for (CyNode node : deselectedCluster.getNodesToCoordinates().keySet()) {
 					network.getRow(node).set(CyNetwork.SELECTED, false);
 				}
 			}
@@ -115,7 +116,7 @@ public class AutoAnnotationUtils {
 		double ymin = 100000000;
 		double xmax = -100000000;
 		double ymax = -100000000;
-		for (double[] coordinates : cluster.getCoordinates()) {
+		for (double[] coordinates : cluster.getNodesToCoordinates().values()) {
 			xmin = coordinates[0] < xmin ? coordinates[0] : xmin;
 			xmax = coordinates[0] > xmax ? coordinates[0] : xmax;
 			ymin = coordinates[1] < ymin ? coordinates[1] : ymin;
@@ -129,12 +130,10 @@ public class AutoAnnotationUtils {
 		width = width > min_size ? width : min_size;
 		double height = (ymax - ymin);
 		height = height > min_size ? height : min_size;
-		ArrayList<double[]> coordinatesList = cluster.getCoordinates();
-		ArrayList<Double> nodeSizesList = new ArrayList<Double>();
-		for (CyNode node : cluster.getNodes()) {
-			nodeSizesList.add(view.getNodeView(node).getVisualProperty(BasicVisualLexicon.NODE_WIDTH)/2);
-		}
-		while (nodesOutOfCluster(coordinatesList, nodeSizesList, width, height, centreX, centreY, ellipseBorderWidth)) {
+		HashMap<CyNode, double[]> nodesToCoordinates = cluster.getNodesToCoordinates();
+		HashMap<CyNode, Double> nodesToRadii = cluster.getNodesToRadii();
+		while (nodesOutOfCluster(nodesToCoordinates, nodesToRadii, 
+				width, height, centreX, centreY, ellipseBorderWidth)) {
 			width *= 1.1;
 			height *= 1.1;
 		}
@@ -162,14 +161,15 @@ public class AutoAnnotationUtils {
 		}
 	}
 	
-	private static boolean nodesOutOfCluster(ArrayList<double[]> coordinatesList, ArrayList<Double> nodeSizeList, 
+	private static boolean nodesOutOfCluster(HashMap<CyNode, double[]> nodesToCoordinates, 
+			HashMap<CyNode, Double> nodesToRadii, 
 			double width, double height,
 			double centreX, double centreY, int ellipseWidth) {
 		double semimajor_axis = width/2;
 		double semiminor_axis = height/2;
-		for (int index = 0; index < coordinatesList.size(); index++) {
-			double[] coordinates = coordinatesList.get(index);
-			double nodeSize = nodeSizeList.get(index);
+		for (CyNode node : nodesToCoordinates.keySet()) {
+			double[] coordinates = nodesToCoordinates.get(node);
+			double nodeSize = nodesToRadii.get(node);
 			if (Math.pow((coordinates[0] - centreX - ellipseWidth)/semimajor_axis,2) +
 					Math.pow(nodeSize/semimajor_axis, 2) +
 					Math.pow((coordinates[1] - centreY - ellipseWidth)/semiminor_axis,2) +
@@ -197,7 +197,7 @@ public class AutoAnnotationUtils {
 		if (constantFontSize) {
 			labelFontSize = fontSize;
 			// Set the position of the label so that it is centered over the ellipse
-			xPos = (int) Math.round(xPos + width/2 - 1.3*labelFontSize*cluster.getLabel().length());
+			xPos = (int) Math.round(xPos + width/2 - 0.1*labelFontSize*cluster.getLabel().length());
 			yPos = (int) Math.round(yPos - 8.3*labelFontSize);
 			fontSizeArgument = String.valueOf((int) Math.round(labelFontSize*7*zoom));
 		} else {
@@ -234,7 +234,8 @@ public class AutoAnnotationUtils {
 	public static void updateClusterLabel(Cluster cluster, CyNetwork network, String annotationSetName, CyTable clusterSetTable, String nameColumnName) {
 		if (cluster.getSize() == 1) {
 			String oldLabel = cluster.getLabel();
-			String newLabel = network.getRow(cluster.getNodes().get(0)).get(nameColumnName, String.class);
+			String newLabel = network.getRow(cluster.getNodesToCoordinates().keySet().iterator().next()).
+					get(nameColumnName, String.class);
 			if (!newLabel.equals(oldLabel)) {
 				cluster.setLabel(newLabel);
 			}
@@ -287,11 +288,14 @@ public class AutoAnnotationUtils {
 		WordInfo nextWord = biggestWord;
 		wordInfosCopy.remove(0);
 		while (numWords < 4 && wordInfosCopy.size() > 0) {
-			for (WordInfo word : wordInfosCopy.subList(1, wordInfosCopy.size())) {
-				if (word.getCluster() == nextWord.getCluster()) {
-					word.setSize(word.getSize() + 1);	
+			for (WordInfo word : wordInfosCopy) {
+				for (WordInfo wordInLabel : label) {
+					if (word.getCluster() == wordInLabel.getCluster()) {
+						word.setSize(word.getSize() + 10);						
+					}
 				}
 			}
+			Collections.sort(wordInfosCopy); // Sizes have changed, resort
 			double wordSizeThreshold = nextWord.getSize()*nextWordSizeThresholds[numWords - 1];
 			nextWord = wordInfosCopy.get(0);
 			wordInfosCopy.remove(0);
@@ -299,6 +303,7 @@ public class AutoAnnotationUtils {
 				label.add(nextWord);
 				numWords++;
 			} else {
+				System.out.println(nextWord.getWord() + "\t" + nextWord.getSize() + " " + wordSizeThreshold);
 				break;
 			}
 		}

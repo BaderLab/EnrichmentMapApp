@@ -1,6 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap.autoannotate.model;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.TreeMap;
 
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
@@ -65,22 +66,32 @@ public class AnnotationSet {
 	}
 	
 	// Get the coordinates of the nodes in each cluster
+	// Returns whether or not there has been a change
 	public void updateCoordinates() {
 		for (Cluster cluster : clusterMap.values()) {
-			cluster.setCoordinates(new ArrayList<double[]>());
-			for (CyNode node : cluster.getNodes()) {
+			HashMap<CyNode, double[]> nodesToCoordinates = cluster.getNodesToCoordinates();
+			for (CyNode node : cluster.getNodesToCoordinates().keySet()) {
 				View<CyNode> nodeView = view.getNodeView(node);
 				if (nodeView != null) {
 					// nodeView can be null when group is collapsed
-					double x = nodeView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION);
-					double y = nodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
-					double[] coordinates = {x, y};
-					cluster.addCoordinates(coordinates);
+					double[] coordinates = {nodeView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION),
+											nodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION)};
+					double nodeRadius = nodeView.getVisualProperty(BasicVisualLexicon.NODE_WIDTH);
+					if (coordinatesHaveChanged(coordinates, nodesToCoordinates.get(node))) {
+						cluster.addNodeCoordinates(node, coordinates);
+						cluster.addNodeRadius(node, nodeRadius);
+					}
 				}
 			}
 		}
 	}
 
+	private boolean coordinatesHaveChanged(double[] oldCoordinates, double[] newCoordinates) {
+		return (oldCoordinates == null || 
+				(Math.abs(oldCoordinates[0] - newCoordinates[0]) > 0.01 &&
+				Math.abs(oldCoordinates[1] - newCoordinates[1]) > 0.01));
+	}
+	
 	public TreeMap<Integer, Cluster> getClusterMap() {
 		return clusterMap;
 	}

@@ -152,7 +152,7 @@ public class AutoAnnotationActions {
 			String clusterColumnName = annotationSet.getClusterColumnName();
 			for (Cluster clusterToSwallow : selectedClusters.subList(1, selectedClusters.size())) {
 				// Update values in cluster column
-				for (CyNode node : clusterToSwallow.getNodes()) {
+				for (CyNode node : clusterToSwallow.getNodesToCoordinates().keySet()) {
 					selectedNetwork.getRow(node).set(clusterColumnName, clusterNumber);
 				}
 				// Swallow nodes/coordinates from smaller cluster
@@ -167,7 +167,7 @@ public class AutoAnnotationActions {
 			for (CyNode node : selectedNetwork.getNodeList()) {
 				selectedNetwork.getRow(node).set(CyNetwork.SELECTED, false);
 			}
-			for (CyNode node : firstCluster.getNodes()) {
+			for (CyNode node : firstCluster.getNodesToCoordinates().keySet()) {
 				selectedNetwork.getRow(node).set(CyNetwork.SELECTED, true);
 			}
 			String nameColumnName = annotationSet.getNameColumnName();
@@ -187,7 +187,7 @@ public class AutoAnnotationActions {
 					e1.printStackTrace();
 				}
 			}
-			for (CyNode node : firstCluster.getNodes()) {
+			for (CyNode node : firstCluster.getNodesToCoordinates().keySet()) {
 				selectedNetwork.getRow(node).set(CyNetwork.SELECTED, false);
 			}
 			updateAction(selectedView, annotationSet, nameColumnName, constantFontSize, showEllipses, 
