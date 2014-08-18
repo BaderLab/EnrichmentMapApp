@@ -45,18 +45,22 @@ public class DisplayOptionsPanel extends JPanel implements CytoPanelComponent {
 	private JRadioButton heatmapButton;
 	private JSlider ellipseWidthSlider;
 	private JSlider ellipseOpacitySlider;
+	private JRadioButton ellipseButton;
+	private String shapeType;
 
 	private static String proportionalSizeButtonString = "Font size by # of nodes";
 	private static String constantSizeButtonString = "Constant font size";
 	
 	public DisplayOptionsPanel() {
 		this.autoAnnotationManager = AutoAnnotationManager.getInstance();
+		shapeType = "ELLIPSE";
 		
 		setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 		setPreferredSize(new Dimension(300, 300));
 		
 		add(createEllipseWidthSliderPanel());
 		add(createEllipseOpacitySliderPanel());
+		add(createShapeTypePanel());
 		add(createFontSizePanel());
 		add(createSelectionPanel());
 		add(createShowEllipsesCheckBoxPanel());
@@ -64,7 +68,7 @@ public class DisplayOptionsPanel extends JPanel implements CytoPanelComponent {
 	
 	private JPanel createEllipseWidthSliderPanel() {
 		// Slider to set width of the ellipses
-		JLabel sliderLabel = new JLabel("Ellipse Border Width");
+		JLabel sliderLabel = new JLabel("Shape Border Width");
 		ellipseWidthSlider = new JSlider(1, 10, 3);
 		ellipseWidthSlider.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
@@ -92,7 +96,7 @@ public class DisplayOptionsPanel extends JPanel implements CytoPanelComponent {
 	
 	private JPanel createEllipseOpacitySliderPanel() {
 		// Slider to set width of the ellipses
-		JLabel sliderLabel = new JLabel("Ellipse Opacity");
+		JLabel sliderLabel = new JLabel("Shape Opacity");
 		ellipseOpacitySlider = new JSlider(1, 100, 20);
 		ellipseOpacitySlider.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
@@ -179,7 +183,7 @@ public class DisplayOptionsPanel extends JPanel implements CytoPanelComponent {
 	
 	private JPanel createShowEllipsesCheckBoxPanel() {
 		// By default show ellipses around clusters
-		showEllipsesCheckBox = new JCheckBox("Draw ellipses around clusters");
+		showEllipsesCheckBox = new JCheckBox("Draw shapes around clusters");
 		showEllipsesCheckBox.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -191,7 +195,7 @@ public class DisplayOptionsPanel extends JPanel implements CytoPanelComponent {
 					for (Cluster cluster : selectedAnnotationSet.getClusterMap().values()) {
 						AutoAnnotationUtils.drawEllipse(cluster, selectedAnnotationSet.getView(),
 								shapeFactory, annotationManager, showEllipses, ellipseWidthSlider.getValue(), 
-								ellipseOpacitySlider.getValue());
+								ellipseOpacitySlider.getValue(), shapeType);
 					}
 				} else {
 					for (Cluster cluster : selectedAnnotationSet.getClusterMap().values()) {
@@ -208,6 +212,52 @@ public class DisplayOptionsPanel extends JPanel implements CytoPanelComponent {
 	
 	public boolean isShowEllipsesCheckBoxSelected() {
 		return showEllipsesCheckBox.isSelected();
+	}
+	
+	private JPanel createShapeTypePanel() {
+		JPanel shapeTypePanel = new JPanel(new GridLayout(1, 2));
+
+		JLabel label = new JLabel("Shape type:");
+
+		ellipseButton = new JRadioButton("Ellipse");
+		JRadioButton rectangleButton = new JRadioButton("Rectangle");
+		ButtonGroup buttonGroup = new ButtonGroup();
+		buttonGroup.add(ellipseButton);
+		buttonGroup.add(rectangleButton);
+
+		ellipseButton.addItemListener(new ItemListener() {
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				AnnotationFactory<ShapeAnnotation> shapeFactory = autoAnnotationManager.getShapeFactory();
+				AnnotationManager annotationManager = autoAnnotationManager.getAnnotationManager();
+				shapeType = ellipseButton.isSelected() ? "ELLIPSE" : "ROUNDEDRECTANGLE";
+				if (selectedAnnotationSet != null) {
+					for (Cluster cluster : selectedAnnotationSet.getClusterMap().values()) {
+						cluster.eraseEllipse();
+						AutoAnnotationUtils.drawEllipse(cluster, selectedAnnotationSet.getView(),
+								shapeFactory, annotationManager, showEllipsesCheckBox.isSelected(), 
+								ellipseWidthSlider.getValue(), ellipseOpacitySlider.getValue(), 
+								shapeType);
+					}
+				}
+			}
+		});
+		
+		ellipseButton.setSelected(true);
+		
+		JPanel radioButtonPanel = new JPanel();
+		radioButtonPanel.setLayout(new BoxLayout(radioButtonPanel, BoxLayout.PAGE_AXIS));
+		radioButtonPanel.add(ellipseButton);
+		radioButtonPanel.add(rectangleButton);
+
+		shapeTypePanel.add(label);
+		shapeTypePanel.add(radioButtonPanel);
+		
+		return shapeTypePanel;
+	}
+	
+	public String getShapeType() {
+		return shapeType;
 	}
 	
 	private JPanel createSelectionPanel() {

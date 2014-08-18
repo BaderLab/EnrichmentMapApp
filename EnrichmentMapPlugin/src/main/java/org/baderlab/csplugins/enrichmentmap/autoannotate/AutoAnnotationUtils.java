@@ -107,7 +107,7 @@ public class AutoAnnotationUtils {
 
 	public static void drawEllipse(Cluster cluster, CyNetworkView view,
 			AnnotationFactory<ShapeAnnotation> shapeFactory, AnnotationManager annotationManager, 
-			boolean showEllipses, int ellipseBorderWidth, int ellipseOpacity) {
+			boolean showEllipses, int ellipseBorderWidth, int ellipseOpacity, String shapeType) {
 		double zoom = view.getVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR);
     	// Find the edges of the cluster
 		double xmin = 100000000;
@@ -130,13 +130,18 @@ public class AutoAnnotationUtils {
 		height = height > min_size ? height : min_size;
 		HashMap<CyNode, double[]> nodesToCoordinates = cluster.getNodesToCoordinates();
 		HashMap<CyNode, Double> nodesToRadii = cluster.getNodesToRadii();
-		while (nodesOutOfCluster(nodesToCoordinates, nodesToRadii, 
-				width, height, centreX, centreY, ellipseBorderWidth)) {
-			width *= 1.1;
-			height *= 1.1;
+		if (shapeType.equals("ELLIPSE")) {
+			while (nodesOutOfCluster(nodesToCoordinates, nodesToRadii, 
+					width, height, centreX, centreY, ellipseBorderWidth)) {
+				width *= 1.1;
+				height *= 1.1;
+			}
+			width += 40;
+			height += 40;
+		} else {
+			width += 50;
+			height += 50;
 		}
-		width += 40;
-		height += 40;
 		
 		// Set the position of the top-left corner of the ellipse
 		Integer xPos = (int) Math.round(centreX - width/2);
@@ -148,12 +153,11 @@ public class AutoAnnotationUtils {
 		arguments.put("y", String.valueOf(yPos));
 		arguments.put("zoom", String.valueOf(zoom));
 		arguments.put("canvas", "background");
+		arguments.put("shapeType", shapeType);
 		ShapeAnnotation ellipse = shapeFactory.createAnnotation(ShapeAnnotation.class, view, arguments);
-		ellipse.setShapeType("Ellipse");
 		ellipse.setSize(width*zoom, height*zoom);
 		ellipse.setBorderWidth(ellipseBorderWidth);
 		ellipse.setBorderColor(Color.DARK_GRAY);
-		// Fill opacity is broken for now
 		ellipse.setFillColor(Color.getHSBColor(0.19f, 1.25f, 0.95f));
 		ellipse.setFillOpacity(ellipseOpacity);
 		cluster.setEllipse(ellipse);
@@ -226,8 +230,8 @@ public class AutoAnnotationUtils {
 	public static void drawCluster(Cluster cluster, CyNetworkView view, 
 			AnnotationFactory<ShapeAnnotation> shapeFactory, AnnotationFactory<TextAnnotation> textFactory, 
 			AnnotationManager annotationManager, boolean constantFontSize, int fontSize, boolean showEllipses,
-			int ellipseBorderWidth, int ellipseOpacity) {
-		drawEllipse(cluster, view, shapeFactory, annotationManager, showEllipses, ellipseBorderWidth, ellipseOpacity);
+			int ellipseBorderWidth, int ellipseOpacity, String shapeType) {
+		drawEllipse(cluster, view, shapeFactory, annotationManager, showEllipses, ellipseBorderWidth, ellipseOpacity, shapeType);
 		drawTextLabel(cluster, view, textFactory, annotationManager, constantFontSize, fontSize);
 	}
 	

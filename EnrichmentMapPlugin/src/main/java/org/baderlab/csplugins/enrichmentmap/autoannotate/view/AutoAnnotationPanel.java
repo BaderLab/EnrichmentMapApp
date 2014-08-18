@@ -201,8 +201,9 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 				int fontSize = Integer.parseInt(displayOptionsPanel.getFontSizeTextField().getText());
 				int ellipseWidth = displayOptionsPanel.getEllipseWidth();
 				int ellipseOpacity = displayOptionsPanel.getEllipseOpacity();
+				String shapeType = displayOptionsPanel.getShapeType();
 				AutoAnnotationActions.mergeAction(selectedView, annotationSet, clusterTable, westPanel,
-						constantFontSize, showEllipses, fontSize, ellipseWidth, ellipseOpacity);
+						constantFontSize, showEllipses, fontSize, ellipseWidth, ellipseOpacity, shapeType);
 			}
 		};
 		mergeButton.addActionListener(mergeActionListener);
@@ -219,8 +220,9 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 				int fontSize = Integer.parseInt(displayOptionsPanel.getFontSizeTextField().getText());
 				int ellipseWidth = displayOptionsPanel.getEllipseWidth();
 				int ellipseOpacity = displayOptionsPanel.getEllipseOpacity();
+				String shapeType = displayOptionsPanel.getShapeType();
 				AutoAnnotationActions.deleteAction(selectedView, annotationSet, clusterTable, westPanel, 
-						constantFontSize, showEllipses, fontSize, ellipseWidth, ellipseOpacity);
+						constantFontSize, showEllipses, fontSize, ellipseWidth, ellipseOpacity, shapeType);
 			}
 		};
 		deleteButton.addActionListener(deleteActionListener);
@@ -272,8 +274,10 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 				JTable clusterTable = clustersToTables.get(annotationSet);
 				int ellipseWidth = displayOptionsPanel.getEllipseWidth();
 				int ellipseOpacity = displayOptionsPanel.getEllipseOpacity();
+				String shapeType = displayOptionsPanel.getShapeType();
 				AutoAnnotationActions.updateAction(selectedView, annotationSet, nameColumnName, 
-						constantFontSize, showEllipses, fontSize, clusterTable, ellipseWidth, ellipseOpacity);
+						constantFontSize, showEllipses, fontSize, clusterTable, ellipseWidth, 
+						ellipseOpacity, shapeType);
 			}
 		};
 		updateButton.addActionListener(updateActionListener);
@@ -425,9 +429,10 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 							boolean showEllipses = displayOptionsPanel.isShowEllipsesCheckBoxSelected();
 							int ellipseWidth = displayOptionsPanel.getEllipseWidth();
 							int ellipseOpacity = displayOptionsPanel.getEllipseOpacity();
+							String shapeType = displayOptionsPanel.getShapeType();
 							AutoAnnotationUtils.drawCluster(editedCluster, selectedView, shapeFactory, textFactory, 
 									annotationManager, constantFontSize, fontSize, showEllipses, ellipseWidth, 
-									ellipseOpacity);
+									ellipseOpacity, shapeType);
 						}
 					}
 				}
@@ -536,6 +541,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 					boolean showEllipses = displayOptionsPanel.isShowEllipsesCheckBoxSelected();
 					int ellipseWidth = displayOptionsPanel.getEllipseWidth();
 					int ellipseOpacity = displayOptionsPanel.getEllipseOpacity();
+					String shapeType = displayOptionsPanel.getShapeType();
 					for (Cluster cluster : annotationSet.getClusterMap().values()) {
 						// Update the text label of the selected cluster
 						String nameColumnName = (String) nameColumnDropdown.getSelectedItem();
@@ -547,10 +553,9 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 						AnnotationManager annotationManager = autoAnnotationManager.getAnnotationManager();
 						AutoAnnotationUtils.drawCluster(cluster, selectedView, shapeFactory, textFactory, 
 								annotationManager, constantFontSize, fontSize, showEllipses, ellipseWidth, 
-								ellipseOpacity);
+								ellipseOpacity, shapeType);
 						// Recreate groups if necessary
 						if (annotationSet.usingGroups()) {
-							// TODO - find a faster way to do this
 							CyGroup group = groupFactory.createGroup(selectedNetwork, cluster.getNodesToCoordinates().keySet().iterator().next(), true);
 							ArrayList<CyNode> nodesWithoutGroupNode = new ArrayList<CyNode>(cluster.getNodesToCoordinates().keySet());
 							nodesWithoutGroupNode.remove(0);
