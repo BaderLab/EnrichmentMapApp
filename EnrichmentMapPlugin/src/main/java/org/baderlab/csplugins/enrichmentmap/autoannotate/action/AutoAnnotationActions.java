@@ -2,6 +2,7 @@ package org.baderlab.csplugins.enrichmentmap.autoannotate.action;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 
 import javax.swing.JComboBox;
@@ -85,7 +86,8 @@ public class AutoAnnotationActions {
 	public static void deleteAction(CyNetworkView selectedView,
 			AnnotationSet annotationSet, JTable clusterTable,
 			CytoPanel westPanel, boolean constantFontSize, boolean showEllipses, 
-			int fontSize, int ellipseWidth, int ellipseOpacity, String shapeType) {
+			int fontSize, int ellipseWidth, int ellipseOpacity, String shapeType,
+			boolean showLabel) {
 		
 		int[] selectedRows = clusterTable.getSelectedRows();
 		if (selectedRows.length < 1) {
@@ -116,7 +118,7 @@ public class AutoAnnotationActions {
 			String nameColumnName = annotationSet.getNameColumnName();
 			updateAction(selectedView, annotationSet, nameColumnName, constantFontSize, 
 					showEllipses, fontSize, clusterTable, ellipseWidth, ellipseOpacity,
-					shapeType);
+					shapeType, showLabel);
 			// Focus on this panel
 			westPanel.setSelectedIndex(westPanel.indexOfComponent(autoAnnotationManager.getAnnotationPanel()));
 		}
@@ -125,7 +127,8 @@ public class AutoAnnotationActions {
 	public static void mergeAction(CyNetworkView selectedView,
 			AnnotationSet annotationSet, JTable clusterTable,
 			CytoPanel westPanel, boolean constantFontSize, boolean showEllipses, 
-			int fontSize, int ellipseWidth, int ellipseOpacity, String shapeType) {
+			int fontSize, int ellipseWidth, int ellipseOpacity, String shapeType,
+			boolean showLabel) {
 		CyNetwork selectedNetwork = selectedView.getModel();
 		AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
 
@@ -195,7 +198,7 @@ public class AutoAnnotationActions {
 				selectedNetwork.getRow(node).set(CyNetwork.SELECTED, false);
 			}
 			updateAction(selectedView, annotationSet, nameColumnName, constantFontSize, showEllipses, 
-					fontSize, clusterTable, ellipseWidth, ellipseOpacity, shapeType);
+					fontSize, clusterTable, ellipseWidth, ellipseOpacity, shapeType, showLabel);
 			// Deselect rows (no longer meaningful)
 			clusterTable.clearSelection();
 			// Focus on this panel
@@ -238,8 +241,8 @@ public class AutoAnnotationActions {
 			AnnotationSet annotationSet, String nameColumnName,
 			boolean constantFontSize, boolean showEllipses, int fontSize,
 			JTable clusterTable, int ellipseWidth, int ellipseOpacity,
-			String shapeType) {
-
+			String shapeType, boolean showLabel) {
+		
 		AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
 		CyNetwork selectedNetwork = selectedView.getModel();
 
@@ -264,7 +267,7 @@ public class AutoAnnotationActions {
 			AnnotationManager annotationManager = autoAnnotationManager.getAnnotationManager();
 			AutoAnnotationUtils.drawCluster(cluster, selectedView, shapeFactory, textFactory, 
 					annotationManager, constantFontSize, fontSize, showEllipses, ellipseWidth, 
-					ellipseOpacity, shapeType);
+					ellipseOpacity, shapeType, showLabel);
 		}
 		// Update the table if the value has changed (WordCloud has been updated)
 		DefaultTableModel model = (DefaultTableModel) clusterTable.getModel();
@@ -297,7 +300,7 @@ public class AutoAnnotationActions {
 			AnnotationSet annotationSet, JTable clusterTable,
 			CytoPanel westPanel, boolean constantFontSize,
 			boolean showEllipses, int fontSize, int ellipseWidth,
-			int ellipseOpacity, String shapeType) {
+			int ellipseOpacity, String shapeType, boolean showLabel) {
 		CyNetwork selectedNetwork = selectedView.getModel();
 		AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
 
@@ -307,6 +310,10 @@ public class AutoAnnotationActions {
 			if (selectedNetwork.getRow(node).get(CyNetwork.SELECTED, Boolean.class)) {
 				selectedNodes.add(node);
 			}
+		}
+		// Clear node selections (for WordCloud)
+		for (CyNode node : selectedNodes) {
+			selectedNetwork.getRow(node).set(CyNetwork.SELECTED, false);
 		}
 		if (selectedNodes.size() < 1) {
 			JOptionPane.showMessageDialog(null, "Please select at least one node", "Error Message",
@@ -324,13 +331,48 @@ public class AutoAnnotationActions {
 			
 			if (columnType == Integer.class) {
 				// Discrete clusters, remove nodes from other clusters
+				HashSet<Cluster> clustersChanged = new HashSet<Cluster>();
 				for (Cluster cluster : annotationSet.getClusterMap().values()) {
 					for (CyNode node : selectedNodes) {
-						cluster.removeNode(node);
+						if (cluster.getNodesToCoordinates().containsKey(node)) {
+							cluster.removeNode(node);
+							clustersChanged.add(cluster);
+						}
 					}
 				}
 				for (CyRow row : selectedNetwork.getDefaultNodeTable().getAllRows()) {
 					row.set(clusterColumnName, newClusterNumber);
+				}
+				for (Cluster modifiedCluster : clustersChanged) {
+					// Select nodes to make the cloud
+					for (CyNode node : modifiedCluster.getNodesToCoordinates().keySet()) {
+						selectedNetwork.getRow(node).set(CyNetwork.SELECTED, true);
+					}
+					// Create a new cloud for the extracted cluster
+					ArrayList<String> commands = new ArrayList<String>();
+					String deleteCommand = "wordcloud delete cloudName=\"" +  modifiedCluster.getCloudName() + "\"";
+					String createCommand = "wordcloud create wordColumnName=\"" + nameColumnName + "\"" + 
+							" nodesToUse=\"selected\" cloudName=\"" +  modifiedCluster.getCloudName() + "\""
+							+ " cloudGroupTableName=\"" + annotationSet.getName() + "\"";
+					commands.add(deleteCommand);
+					commands.add(createCommand);
+					Observer observer = new Observer();
+					TaskIterator taskIterator = executor.createTaskIterator(commands, null);
+					dialogTaskManager.execute(taskIterator, observer);
+					// Wait until WordCloud is finished
+					while (!observer.isFinished()) {
+						try {
+							Thread.sleep(1);
+						} catch (InterruptedException e1) {
+							e1.printStackTrace();
+						}
+					}
+					// Clear selection
+					for (CyNode node : modifiedCluster.getNodesToCoordinates().keySet()) {
+						selectedNetwork.getRow(node).set(CyNetwork.SELECTED, false);
+					}
+					// Ensures that only one cluster changes at a time in the table
+					autoAnnotationManager.flushPayloadEvents();
 				}
 			}
 			
@@ -346,7 +388,12 @@ public class AutoAnnotationActions {
 				double nodeRadius = nodeView.getVisualProperty(BasicVisualLexicon.NODE_WIDTH);
 				newCluster.addNodeCoordinates(node, coordinates);
 				newCluster.addNodeRadius(node, nodeRadius);
+				selectedNetwork.getRow(node).set(CyNetwork.SELECTED, true);
 			}	
+
+			for (CyNode node : newCluster.getNodesToCoordinates().keySet()) {
+				selectedNetwork.getRow(node).set(CyNetwork.SELECTED, true);
+			}
 			
 			// Create a new cloud for the extracted cluster
 			ArrayList<String> commands = new ArrayList<String>();
@@ -365,7 +412,7 @@ public class AutoAnnotationActions {
 					e1.printStackTrace();
 				}
 			}
-			for (CyNode node : newCluster.getNodesToCoordinates().keySet()) {
+			for (CyNode node : selectedNodes) {
 				selectedNetwork.getRow(node).set(CyNetwork.SELECTED, false);
 			}
 			
@@ -382,10 +429,10 @@ public class AutoAnnotationActions {
 	    	AutoAnnotationUtils.updateClusterLabel(newCluster, selectedNetwork, annotationSetName, clusterSetTable, nameColumnName);
 			AutoAnnotationUtils.drawCluster(newCluster, selectedView, shapeFactory,
 					textFactory, annotationManager, constantFontSize, fontSize,
-					showEllipses, ellipseWidth, ellipseOpacity, shapeType);
+					showEllipses, ellipseWidth, ellipseOpacity, shapeType, showLabel);
 			
 			updateAction(selectedView, annotationSet, nameColumnName, constantFontSize, showEllipses, 
-					fontSize, clusterTable, ellipseWidth, ellipseOpacity, shapeType);
+					fontSize, clusterTable, ellipseWidth, ellipseOpacity, shapeType, showLabel);
 			
 			// Deselect rows (no longer meaningful)
 			clusterTable.clearSelection();

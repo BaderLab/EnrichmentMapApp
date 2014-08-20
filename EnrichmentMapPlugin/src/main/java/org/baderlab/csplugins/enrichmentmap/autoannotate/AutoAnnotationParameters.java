@@ -108,6 +108,7 @@ public class AutoAnnotationParameters {
 		// Reload network view by ID
 		CyNetworkView view = session.getObject(Long.parseLong(fileLines[0]), CyNetworkView.class);
 		setNetworkView(view);
+		// TODO
 		// Erase currently showing annotations (cannot map them to my clusters, no ID)
 		for (Annotation annotation : AutoAnnotationManager.getInstance().getAnnotationManager().getAnnotations(view)) {
 			annotation.removeAnnotation();

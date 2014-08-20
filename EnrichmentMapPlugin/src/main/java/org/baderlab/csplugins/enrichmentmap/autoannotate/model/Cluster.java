@@ -193,6 +193,11 @@ public class Cluster implements Comparable<Cluster> {
 		if (nodesToCoordinates.containsKey(nodeToRemove)) {
 			nodesToCoordinates.remove(nodeToRemove);
 			nodesToRadii.remove(nodeToRemove);
+			ArrayList<CyNode> node = new ArrayList<CyNode>();
+			node.add(nodeToRemove);
+			if (group != null) {
+				group.removeNodes(node);
+			}
 			size--;
 		}
 	}

@@ -1,5 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.autoannotate.view;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -10,16 +11,20 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.net.URL;
+import java.util.ArrayList;
 
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
@@ -31,9 +36,12 @@ import org.baderlab.csplugins.enrichmentmap.autoannotate.model.AnnotationSet;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
+import org.cytoscape.util.swing.BasicCollapsiblePanel;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.annotations.AnnotationManager;
 import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
+import org.cytoscape.view.presentation.annotations.TextAnnotation;
 
 public class DisplayOptionsPanel extends JPanel implements CytoPanelComponent {
 
@@ -47,6 +55,9 @@ public class DisplayOptionsPanel extends JPanel implements CytoPanelComponent {
 	private JSlider ellipseOpacitySlider;
 	private JRadioButton ellipseButton;
 	private String shapeType;
+	private ArrayList<JSlider> wordSizeThresholdSliders;
+	protected JPanel slidersPanel;
+	private JCheckBox showTextCheckBox;
 
 	private static String proportionalSizeButtonString = "Font size by # of nodes";
 	private static String constantSizeButtonString = "Constant font size";
@@ -60,10 +71,11 @@ public class DisplayOptionsPanel extends JPanel implements CytoPanelComponent {
 		
 		add(createEllipseWidthSliderPanel());
 		add(createEllipseOpacitySliderPanel());
-		add(createShapeTypePanel());
-		add(createFontSizePanel());
-		add(createSelectionPanel());
 		add(createShowEllipsesCheckBoxPanel());
+		add(createShapeTypePanel());
+		add(createSelectionPanel());
+		add(createFontSizePanel());
+		//add(createLabelOptionsPanel());
 	}
 	
 	private JPanel createEllipseWidthSliderPanel() {
@@ -131,7 +143,8 @@ public class DisplayOptionsPanel extends JPanel implements CytoPanelComponent {
 		    		if (fontSize <= 0) {
 		    			throw new Exception();
 		    		}
-		    		AutoAnnotationUtils.updateFontSizes(fontSize, fontSizeTextField.isEnabled());
+		    		AutoAnnotationUtils.updateFontSizes(fontSize, fontSizeTextField.isEnabled(), 
+							showTextCheckBox.isSelected());
 		    	} catch (Exception ex) {
 		            JOptionPane.showMessageDialog(null,
 		                    "Error: Please enter an integer bigger than 0", "Error Message",
@@ -152,7 +165,8 @@ public class DisplayOptionsPanel extends JPanel implements CytoPanelComponent {
 				} else if (e.getStateChange() == ItemEvent.DESELECTED) {
 					fontSizeTextField.setEnabled(false);
 				}
-				AutoAnnotationUtils.updateFontSizes(fontSize, fontSizeTextField.isEnabled());
+				AutoAnnotationUtils.updateFontSizes(fontSize, fontSizeTextField.isEnabled(), 
+						showTextCheckBox.isSelected());
 				updateUI();
 			}
 		});
@@ -203,10 +217,35 @@ public class DisplayOptionsPanel extends JPanel implements CytoPanelComponent {
 					}
 				}
 			}
-		}); // Checks if checkbox is selected
+		});
 		showEllipsesCheckBox.setSelected(true);
-		JPanel checkBoxPanel = new JPanel();
+		// By default show ellipses around clusters
+		showTextCheckBox = new JCheckBox("Show text labels above clusters");
+		showTextCheckBox.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				boolean showLabel = showTextCheckBox.isSelected();
+				boolean constantFontSize = fontSizeTextField.isEnabled();
+				int fontSize = Integer.valueOf(fontSizeTextField.getText());
+				if (showLabel) {
+					AnnotationFactory<TextAnnotation> textFactory = autoAnnotationManager.getTextFactory();
+					AnnotationManager annotationManager = autoAnnotationManager.getAnnotationManager();
+					selectedAnnotationSet.updateCoordinates();
+					for (Cluster cluster : selectedAnnotationSet.getClusterMap().values()) {
+						AutoAnnotationUtils.drawTextLabel(cluster, selectedAnnotationSet.getView(),
+								textFactory, annotationManager, constantFontSize, fontSize, showLabel);
+					}
+				} else {
+					for (Cluster cluster : selectedAnnotationSet.getClusterMap().values()) {
+						cluster.eraseText();
+					}
+				}
+			}
+		});
+		showTextCheckBox.setSelected(true);
+		JPanel checkBoxPanel = new JPanel(new GridLayout(2, 1));
 		checkBoxPanel.add(showEllipsesCheckBox);
+		checkBoxPanel.add(showTextCheckBox);
 		return checkBoxPanel;
 	}	
 	
@@ -214,8 +253,12 @@ public class DisplayOptionsPanel extends JPanel implements CytoPanelComponent {
 		return showEllipsesCheckBox.isSelected();
 	}
 	
+	public boolean isShowTextCheckBoxSelected() {
+		return showTextCheckBox.isSelected();
+	}
+	
 	private JPanel createShapeTypePanel() {
-		JPanel shapeTypePanel = new JPanel(new GridLayout(1, 2));
+		JPanel shapeTypePanel = new JPanel();
 
 		JLabel label = new JLabel("Shape type:");
 
@@ -261,7 +304,7 @@ public class DisplayOptionsPanel extends JPanel implements CytoPanelComponent {
 	}
 	
 	private JPanel createSelectionPanel() {
-		JPanel selectionPanel = new JPanel(new GridLayout(1, 2));
+		JPanel selectionPanel = new JPanel();
 
 		JLabel label = new JLabel("Show on selection:");
 
@@ -288,7 +331,70 @@ public class DisplayOptionsPanel extends JPanel implements CytoPanelComponent {
 	public boolean isHeatmapButtonSelected() {
 		return heatmapButton.isSelected();
 	}
+	
+	private BasicCollapsiblePanel createLabelOptionsPanel() {
+		BasicCollapsiblePanel labelOptionsPanel = new BasicCollapsiblePanel("Label Options");
+		
+		final JPanel innerPanel = new JPanel(new BorderLayout());
+		
+		JLabel dropdownLabel = new JLabel("Maximum label length (words)");
+		
+		Integer[] labelLengths = {1, 2, 3, 4, 5, 6, 7};
+		DefaultComboBoxModel<Integer> labelLengthModel = new DefaultComboBoxModel<Integer>(labelLengths);
+		final JComboBox<Integer> maximumLabelLengthDropdown = new JComboBox<Integer>(labelLengthModel);
+		
+		JPanel dropdownPanel = new JPanel();
+		dropdownPanel.add(dropdownLabel);
+		dropdownPanel.add(maximumLabelLengthDropdown);
+		innerPanel.add(dropdownPanel, BorderLayout.NORTH);
+		
+		slidersPanel = new JPanel();
+		slidersPanel.setLayout(new BoxLayout(slidersPanel, BoxLayout.PAGE_AXIS));
+		innerPanel.add(slidersPanel);
+		
+		wordSizeThresholdSliders = new ArrayList<JSlider>();
+		maximumLabelLengthDropdown.addItemListener(new ItemListener() {
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				innerPanel.remove(slidersPanel);
+				slidersPanel = new JPanel();
+				slidersPanel.setLayout(new BoxLayout(slidersPanel, BoxLayout.PAGE_AXIS));
+				int[] defaultSliderValues = {30, 80, 90, 90, 90, 95};
+				wordSizeThresholdSliders = new ArrayList<JSlider>();
+				int numWordSizeThresholds = ((Integer) maximumLabelLengthDropdown.getSelectedItem());
+				for (int sliderNumber = 1; sliderNumber <  numWordSizeThresholds; sliderNumber++) {
+					if (sliderNumber == 1) {
+						JLabel slidersLabel = new JLabel("Word Inclusion Threshold(s)");
+						slidersPanel.add(slidersLabel);
+					}
+					JLabel thresholdLabel = new JLabel("Word " + sliderNumber + 
+							" to Word " + String.valueOf(sliderNumber+1)); 
+					JSlider thresholdSlider = new JSlider(1, 100, defaultSliderValues[sliderNumber - 1]);
+					JPanel sliderPanel = new JPanel();
+					sliderPanel.setLayout(new BoxLayout(sliderPanel, BoxLayout.PAGE_AXIS));
+					sliderPanel.add(thresholdLabel);
+					sliderPanel.add(thresholdSlider);
+					wordSizeThresholdSliders.add(thresholdSlider);
+					slidersPanel.add(sliderPanel);
+				}
+				innerPanel.add(slidersPanel, BorderLayout.CENTER);
+				innerPanel.updateUI();
+			}
+		});
+		maximumLabelLengthDropdown.setSelectedItem(4);
+		
+		labelOptionsPanel.add(innerPanel);
+		
+		return labelOptionsPanel;
+	}
 
+	public ArrayList<Integer> getWordSizeThresholds() {
+		ArrayList<Integer> wordSizeThresholds = new ArrayList<Integer>();
+		for (JSlider slider : wordSizeThresholdSliders) {
+			wordSizeThresholds.add(slider.getValue());
+		}
+		return wordSizeThresholds;
+	}
 	
 	@Override
 	public Component getComponent() {

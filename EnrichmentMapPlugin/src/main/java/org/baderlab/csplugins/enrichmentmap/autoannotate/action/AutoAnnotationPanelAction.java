@@ -122,7 +122,8 @@ public class AutoAnnotationPanelAction extends AbstractCyAction {
 			if (inputIndex != -1) cytoPanelWest.setSelectedIndex(inputIndex);
 		} else {
 			// Don't create the panel if it can't be used
-			JOptionPane.showMessageDialog(application.getJFrame(), "Please load an Enrichment Map.");
+			JOptionPane.showMessageDialog(null, "Please load an Enrichment Map", "Error Message",
+					JOptionPane.ERROR_MESSAGE);
 		}
 	}
 }
