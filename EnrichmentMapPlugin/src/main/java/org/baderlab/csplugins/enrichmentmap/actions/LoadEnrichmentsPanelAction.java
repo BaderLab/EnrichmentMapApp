@@ -75,10 +75,7 @@ import java.util.Properties;
  */
 public class LoadEnrichmentsPanelAction extends AbstractCyAction {
 
-    //variable to track initialization of network event listener
-    private boolean initialized = false;
-
-    
+   
     private final CytoPanel cytoPanelWest;
     private EnrichmentMapInputPanel EMinputPanel;
     private CyServiceRegistrar registrar;
@@ -99,10 +96,8 @@ public class LoadEnrichmentsPanelAction extends AbstractCyAction {
     }
 
     public void actionPerformed(ActionEvent event) {
-                
-          if(!initialized){      
-                initialized = true;
-
+          //Assume if we can't find the input window in the panel that the service is not registered.      
+          if(cytoPanelWest.indexOfComponent(this.EMinputPanel) == -1){      
                 //EnrichmentMapInputPanel inputwindow = new EnrichmentMapInputPanel(application,browser,streamUtilRef);
                 registrar.registerService(this.EMinputPanel,CytoPanelComponent.class,new Properties());
           
