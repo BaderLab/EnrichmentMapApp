@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
 import org.cytoscape.model.CyNode;
@@ -36,12 +37,15 @@ public class Cluster implements Comparable<Cluster> {
 	private boolean selected;
 	private ArrayList<WordInfo> wordInfos;
 	private HashMap<CyNode, Double> nodesToRadii;
+	private HashMap<CyNode, Double> nodesToCentralities;
+	private String mostCentralNodeLabel;
 	
 	// Used when initializing from a session file
 	public Cluster() {
 		this.wordInfos = new ArrayList<WordInfo>();
 		this.nodesToCoordinates = new HashMap<CyNode, double[]>();
 		this.nodesToRadii = new HashMap<CyNode, Double>();
+		this.nodesToCentralities = new HashMap<CyNode, Double>();
 		size = 0;
 	}
 	
@@ -58,6 +62,7 @@ public class Cluster implements Comparable<Cluster> {
 		this.wordInfos = new ArrayList<WordInfo>();
 		this.nodesToCoordinates = new HashMap<CyNode, double[]>();
 		this.nodesToRadii = new HashMap<CyNode, Double>();
+		this.nodesToCentralities = new HashMap<CyNode, Double>();
 		size = 0;
 		selected = false;
 	}
@@ -180,6 +185,30 @@ public class Cluster implements Comparable<Cluster> {
 		this.wordInfos = wordInfos;
 	}
 
+	public void setNodesToCentralities(HashMap<CyNode, Double> nodesToCentralities) {
+		this.nodesToCentralities = nodesToCentralities;
+	}
+	
+	public HashMap<CyNode, Double> getNodesToCentralities() {
+		return nodesToCentralities;
+	}
+	
+	public String getMostCentralNodeLabel() {
+		if (mostCentralNodeLabel == null) {
+			CyNode maxNode = nodesToCoordinates.keySet().iterator().next();
+			double maxCentrality = -1;
+			for (CyNode node : nodesToCentralities.keySet()) {
+				double centrality = nodesToCentralities.get(node);
+				if (centrality > maxCentrality) {
+					maxNode = node;
+					maxCentrality = centrality;
+				}
+			}
+			mostCentralNodeLabel = parent.getView().getModel().getRow(maxNode).get(parent.getNameColumnName(), String.class);
+		}
+		return mostCentralNodeLabel;
+	}
+	
 	public void removeGroup() {
 		group = null;
 	}
@@ -187,6 +216,10 @@ public class Cluster implements Comparable<Cluster> {
 	@Override
 	public int compareTo(Cluster cluster2) {
 		return label.compareTo(cluster2.getLabel());
+	}
+	
+	public Set<CyNode> getNodes() {
+		return nodesToCoordinates.keySet();
 	}
 	
 	public void removeNode(CyNode nodeToRemove) {
@@ -254,7 +287,8 @@ public class Cluster implements Comparable<Cluster> {
 			double nodeX = coordinates[0];
 			double nodeY = coordinates[1];
 			double nodeRadius = nodesToRadii.get(node);
-			sessionString += nodeID + "\t" + nodeX + "\t" + nodeY + "\t" + nodeRadius + "\n";
+			double nodeCentrality = nodesToCentralities.get(node);
+			sessionString += nodeID + "\t" + nodeX + "\t" + nodeY + "\t" + nodeRadius + "\t" + nodeCentrality + "\n";
 		}
 		sessionString += "End of nodes\n";
 		sessionString += "End of cluster\n";
@@ -287,8 +321,11 @@ public class Cluster implements Comparable<Cluster> {
 			lineNumber++;
 			line = text.get(lineNumber);
 		}
+		ellipse = AutoAnnotationManager.getInstance().getShapeFactory().createAnnotation(ShapeAnnotation.class,
+				parent.getView(), ellipseMap);
 		lineNumber++;
 		line = text.get(lineNumber);
+		
 		Map<String, String> textMap = new HashMap<String, String>();
 		while (!line.equals("End of annotations")) {
 			String[] splitLine = line.split("\t");
@@ -296,6 +333,8 @@ public class Cluster implements Comparable<Cluster> {
 			lineNumber++;
 			line = text.get(lineNumber);
 		}
+		textAnnotation = AutoAnnotationManager.getInstance().getTextFactory().createAnnotation(TextAnnotation.class,
+				parent.getView(), textMap);
 		lineNumber++;
 		line = text.get(lineNumber);
 		
@@ -307,6 +346,8 @@ public class Cluster implements Comparable<Cluster> {
 			addNodeCoordinates(node, nodeCoordinates);
 			double nodeRadius = Double.valueOf(splitLine[3]);
 			addNodeRadius(node, nodeRadius);
+			double nodeCentrality = Double.valueOf(splitLine[4]);
+			nodesToCentralities.put(node, nodeCentrality);
 			lineNumber++;
 			line = text.get(lineNumber);
 		}

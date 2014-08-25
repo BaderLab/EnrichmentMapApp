@@ -239,7 +239,7 @@ public class EnrichmentMapParameters {
         //create the slider for the qvalue
         qvalueSlider = new SliderBarPanel(0,this.qvalue,"Q-value Cutoff",this, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2,ParametersPanel.summaryPanelWidth, false, this.qvalue,applicationManager);
         //create the slider for the similarity cutoff
-        similaritySlider = new SliderBarPanel(this.similarityCutOff,1,"Similarity Cutoff",this, EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT, EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT,ParametersPanel.summaryPanelWidth, true, this.similarityCutOff,applicationManager);
+        similaritySlider = new SliderBarPanel(this.similarityCutOff,1,"Similarity Cutoff",this, EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT, EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT,ParametersPanel.summaryPanelWidth, true, this.similarityCutOff,applicationManager);
        
     }
     
@@ -431,7 +431,7 @@ public class EnrichmentMapParameters {
         qvalueSlider = new SliderBarPanel(0,this.qvalue,"Q-value Cutoff",this, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2,ParametersPanel.summaryPanelWidth, false, this.qvalue,applicationManager);
 
         //create the slider for the similarity cutoff
-        similaritySlider = new SliderBarPanel(this.similarityCutOff,1,"Similarity Cutoff",this, EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT, EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT,ParametersPanel.summaryPanelWidth, true, this.similarityCutOff,applicationManager);
+        similaritySlider = new SliderBarPanel(this.similarityCutOff,1,"Similarity Cutoff",this, EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT, EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT,ParametersPanel.summaryPanelWidth, true, this.similarityCutOff,applicationManager);
 
     }
     
@@ -764,7 +764,7 @@ public class EnrichmentMapParameters {
 
         this.similarityCutOff = copy.getSimilarityCutOff();
         //create the slider for the similarity cutoff
-        similaritySlider = new SliderBarPanel(this.similarityCutOff,1,"Similarity Cutoff",this, EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT, EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT,ParametersPanel.summaryPanelWidth,true, this.similarityCutOff,copy.getApplicationManager());
+        similaritySlider = new SliderBarPanel(this.similarityCutOff,1,"Similarity Cutoff",this, EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT, EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT,ParametersPanel.summaryPanelWidth,true, this.similarityCutOff,copy.getApplicationManager());
 
 
         this.Data = copy.isData();
@@ -1131,8 +1131,6 @@ public class EnrichmentMapParameters {
     }
     
     // Class Getters and Setters
-    
-    
     
     public String getSimilarityMetric() {
         return similarityMetric;

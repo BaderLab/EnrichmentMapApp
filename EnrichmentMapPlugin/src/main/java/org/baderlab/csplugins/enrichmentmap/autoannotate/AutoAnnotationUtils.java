@@ -12,14 +12,16 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.Set;
 
+import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
+import org.baderlab.csplugins.enrichmentmap.EnrichmentMapVisualStyle;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.AnnotationSet;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.WordInfo;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.WordInfoNumberComparator;
 import org.cytoscape.command.CommandExecutorTaskFactory;
+import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
@@ -37,109 +39,8 @@ public class AutoAnnotationUtils {
 	
 	private static int min_size = 50; // Minimum size of the ellipse
 	
-	private static final Map<String, Double> characterToPixelWidth;
-	static {
-		HashMap<String, Double> aMap = new HashMap<String, Double>();
-		aMap.put("!",3.3);
-		aMap.put("\"",4.3);
-		aMap.put("#",6.7);
-		aMap.put("$",6.7);
-		aMap.put("%",10.7);
-		aMap.put("&",8.0);
-		aMap.put("'",2.3);
-		aMap.put("(",4.0);
-		aMap.put(")",4.0);
-		aMap.put("*",4.7);
-		aMap.put("+",7.0);
-		aMap.put(",",3.3);
-		aMap.put("-",4.0);
-		aMap.put(".",3.3);
-		aMap.put("/",3.3 );
-		aMap.put("0",6.7);
-		aMap.put("1",5.9);
-		aMap.put("2",6.7);
-		aMap.put("3",6.7);
-		aMap.put("4",6.7);
-		aMap.put("5",6.7);
-		aMap.put("6",6.7);
-		aMap.put("7",6.7);
-		aMap.put("8",6.7);
-		aMap.put("9",6.7);
-		aMap.put(":",3.3);
-		aMap.put(";",3.3);
-		aMap.put("<",7.0);
-		aMap.put("=",7.0);
-		aMap.put(">",7.0);
-		aMap.put("?",6.7);
-		aMap.put("@",12.2);
-		aMap.put("A",8.0);
-		aMap.put("B",8.0);
-		aMap.put("C",8.7);
-		aMap.put("D",8.7);
-		aMap.put("E",8.0);
-		aMap.put("F",7.3);
-		aMap.put("G",9.3);
-		aMap.put("H",8.7);
-		aMap.put("I",3.3);
-		aMap.put("J",6.0);
-		aMap.put("K",8.0);
-		aMap.put("L",6.7);
-		aMap.put("M",10.0);
-		aMap.put("N",8.7);
-		aMap.put("O",9.3);
-		aMap.put("P",8.0);
-		aMap.put("Q",9.3);
-		aMap.put("R",8.7);
-		aMap.put("S",8.0);
-		aMap.put("T",7.3);
-		aMap.put("U",8.7);
-		aMap.put("V",8.0);
-		aMap.put("W ",11.3);
-		aMap.put("X",8.0);
-		aMap.put("Y",8.0);
-		aMap.put("Z",7.3);
-		aMap.put("[",3.3);
-		aMap.put("\\",3.3);
-		aMap.put("]",3.3);
-		aMap.put("^",5.6);
-		aMap.put("_",6.7);
-		aMap.put("`",4.0);
-		aMap.put("a",6.7);
-		aMap.put("b",6.7);
-		aMap.put("c",6.0);
-		aMap.put("d",6.7);
-		aMap.put("e",6.7);
-		aMap.put("f",3.1);
-		aMap.put("g",6.7);
-		aMap.put("h",6.7);
-		aMap.put("i", 2.7);
-		aMap.put("j",2.7);
-		aMap.put("k",6.0);
-		aMap.put("l",2.7);
-		aMap.put("m",10.0);
-		aMap.put("n",6.7);
-		aMap.put("o",6.7);
-		aMap.put("p",6.7);
-		aMap.put("q",6.7);
-		aMap.put("r",4.0);
-		aMap.put("s",6.0);
-		aMap.put("t",3.3);
-		aMap.put("u",6.7);
-		aMap.put("v ",6.0);
-		aMap.put("w",8.7 );
-		aMap.put("x",6.0);
-		aMap.put("y",6.0);
-		aMap.put("z",6.0);
-		aMap.put("{",4.0);
-		aMap.put("|",3.1);
-		aMap.put("}",4.0);
-		aMap.put("~",7.0);
-		characterToPixelWidth = Collections.unmodifiableMap(aMap);
-	}
-	
 	public static void selectCluster(Cluster selectedCluster, CyNetwork network, 
-			CommandExecutorTaskFactory executor, SynchronousTaskManager<?> syncTaskManager,
-			int ellipseBorderWidth) {
+			CommandExecutorTaskFactory executor, SynchronousTaskManager<?> syncTaskManager) {
 		if (!selectedCluster.isSelected()) {
 			AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
 			autoAnnotationManager.flushPayloadEvents();
@@ -165,12 +66,14 @@ public class AutoAnnotationUtils {
 			syncTaskManager.execute(task);
 			// Select the annotations (ellipse and text label)
 			selectedCluster.getEllipse().setBorderColor(Color.YELLOW);
-			selectedCluster.getEllipse().setBorderWidth(3*ellipseBorderWidth);
+			selectedCluster.getEllipse().setBorderWidth(3*selectedCluster.getParent().getEllipseWidth());
 			selectedCluster.getTextAnnotation().setTextColor(Color.YELLOW);
 		}
 	}
 
-	public static void deselectCluster(Cluster deselectedCluster, CyNetwork network, int ellipseBorderWidth) {
+	public static void deselectCluster(Cluster deselectedCluster) {
+		CyNetwork network = deselectedCluster.getParent().getView().getModel();
+		int ellipseBorderWidth = deselectedCluster.getParent().getEllipseWidth();
 		if (deselectedCluster.isSelected()) {
 			deselectedCluster.setSelected(false);
 			// Deselect node(s) in the cluster
@@ -207,9 +110,18 @@ public class AutoAnnotationUtils {
 		syncTaskManager.execute(task);
 	}
 
-	public static void drawEllipse(Cluster cluster, CyNetworkView view,
-			AnnotationFactory<ShapeAnnotation> shapeFactory, AnnotationManager annotationManager, 
-			boolean showEllipses, int ellipseBorderWidth, int ellipseOpacity, String shapeType) {
+	public static void drawEllipse(Cluster cluster) {
+		AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
+		AnnotationSet parent = cluster.getParent();
+		CyNetworkView view = parent.getView();
+		String shapeType = parent.getShapeType();
+		int ellipseBorderWidth = parent.getEllipseWidth();
+		boolean showEllipses = parent.isShowEllipses();
+		int ellipseOpacity = parent.getEllipseOpacity();
+		
+		AnnotationFactory<ShapeAnnotation> shapeFactory = autoAnnotationManager.getShapeFactory();
+		AnnotationManager annotationManager = autoAnnotationManager.getAnnotationManager();
+		
 		double zoom = view.getVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR);
     	// Find the edges of the cluster
 		double xmin = 100000000;
@@ -287,10 +199,17 @@ public class AutoAnnotationUtils {
 		return false;
 	}
 	
-	public static void drawTextLabel(Cluster cluster, CyNetworkView view,
-			AnnotationFactory<TextAnnotation> textFactory,
-			AnnotationManager annotationManager, 
-			boolean constantFontSize, int fontSize, boolean showLabel) {
+	public static void drawTextLabel(Cluster cluster) {
+		AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
+		AnnotationSet parent = cluster.getParent();
+		CyNetworkView view = parent.getView();
+		boolean constantFontSize = parent.isConstantFontSize();
+		int fontSize = parent.getFontSize();
+		double[] labelPosition = parent.getLabelPosition();
+		boolean showLabel = parent.isShowLabel();
+		
+		AnnotationFactory<TextAnnotation> textFactory = autoAnnotationManager.getTextFactory();
+		AnnotationManager annotationManager = autoAnnotationManager.getAnnotationManager();
 		double zoom = view.getVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR);
 		// Set the text of the label
 		String labelText = cluster.getLabel();
@@ -299,50 +218,60 @@ public class AutoAnnotationUtils {
 		double xPos = Double.parseDouble(ellipseArgs.get("x"));
 		double yPos = Double.parseDouble(ellipseArgs.get("y"));
 		double width = Double.parseDouble(ellipseArgs.get("width"));
+		double height = Double.parseDouble(ellipseArgs.get("height"));
 		
 		// Create the text annotation 
 		Integer labelFontSize = null;
-		String fontSizeArgument = null;
 		if (constantFontSize) {
 			labelFontSize = fontSize;
-			// Set the position of the label so that it is centered over the ellipse
-			xPos = (int) Math.round(xPos + width/2 - 0.2*labelFontSize*labelText.length());
-			yPos = (int) Math.round(yPos - 8.3*labelFontSize);
-			fontSizeArgument = String.valueOf((int) Math.round(labelFontSize*7*zoom));
 		} else {
-			labelFontSize = (int) Math.round(2.5*Math.pow(cluster.getSize(), 0.4));
-			// Set the position of the label so that it is centered over the ellipse
-			xPos = (int) Math.round(xPos + width/2 - 1.3*labelFontSize*Math.pow(labelText.length(), 0.8));
-			yPos = (int) Math.round(yPos - 11.3*labelFontSize);
-			fontSizeArgument = String.valueOf((int) Math.round(labelFontSize*11*zoom));
+			labelFontSize = (int) Math.round(5*Math.pow(cluster.getSize(), 0.4));
 		}
-				
+		
+		double labelWidth = 2.3*labelFontSize*labelText.length();
+		double labelHeight = 4.8*labelFontSize;
+		
+		double xOffset = labelPosition[0];
+		double yOffset = labelPosition[1];
+		
+		// Set the position of the label relative to the ellipse
+		if (yOffset == 0.5 && xOffset != 0.5) {
+			// If vertically centered, label should go outside of cluster (to the right or left)
+			xPos = (int) Math.round(xPos + width/zoom*xOffset + labelWidth*(xOffset-1));
+		} else {
+			xPos = (int) Math.round(xPos + width/zoom*xOffset - labelWidth*xOffset);
+		}
+		yPos = (int) Math.round(yPos + height/zoom*yOffset - labelHeight*(1.0-yOffset) - 10 + yOffset*20.0);
+		
 		// Create and draw the label
 		HashMap<String, String> arguments = new HashMap<String,String>();
 		arguments.put("x", String.valueOf(xPos));
 		arguments.put("y", String.valueOf(yPos));
 		arguments.put("zoom", String.valueOf(zoom));
 		arguments.put("canvas", "foreground");
-		arguments.put("fontSize", fontSizeArgument);
 		TextAnnotation textAnnotation = textFactory.createAnnotation(TextAnnotation.class, view, arguments);
 		textAnnotation.setText(labelText);
+		textAnnotation.setFontSize(5*zoom*labelFontSize);
 		cluster.setTextAnnotation(textAnnotation);
 		if (showLabel) {
 			annotationManager.addAnnotation(textAnnotation);
 		}
 	}
 	
-	public static void drawCluster(Cluster cluster, CyNetworkView view, 
-			AnnotationFactory<ShapeAnnotation> shapeFactory, AnnotationFactory<TextAnnotation> textFactory, 
-			AnnotationManager annotationManager, boolean constantFontSize, int fontSize, boolean showEllipses,
-			int ellipseBorderWidth, int ellipseOpacity, String shapeType, boolean showLabel) {
-		drawEllipse(cluster, view, shapeFactory, annotationManager, showEllipses, ellipseBorderWidth, ellipseOpacity, shapeType);
-		drawTextLabel(cluster, view, textFactory, annotationManager, constantFontSize, fontSize, showLabel);
+	public static void drawCluster(Cluster cluster) {
+		drawEllipse(cluster);
+		drawTextLabel(cluster);
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static void updateClusterLabel(Cluster cluster, CyNetwork network, 
-			String annotationSetName, CyTable clusterSetTable, String nameColumnName) {
+	public static void updateClusterLabel(Cluster cluster, CyTable clusterSetTable) {
+		AnnotationSet parent = cluster.getParent();
+		CyNetwork network =  parent.getView().getModel();
+		String nameColumnName = parent.getNameColumnName();
+		double sameClusterBonus = parent.getSameClusterBonus();
+		double centralityBonus = parent.getCentralityBonus();
+		
+		String mostCentralNodeLabel = cluster.getMostCentralNodeLabel();
 		if (cluster.getSize() == 1) {
 			String oldLabel = cluster.getLabel();
 			String newLabel = network.getRow(cluster.getNodesToCoordinates().keySet().iterator().next()).
@@ -366,16 +295,22 @@ public class AutoAnnotationUtils {
 										Integer.parseInt(numberList.get(i))));
 			}
 			// Only update the labels if the wordCloud has changed
+			AnnotationSet annotationSet = cluster.getParent();
 			if (wordInfos.size() != cluster.getWordInfos().size()) {
 				// WordCloud table entry for this cluster has changed
 				cluster.setWordInfos(wordInfos);
-				cluster.setLabel(makeLabel(wordInfos));
+				cluster.setLabel(makeLabel(wordInfos, mostCentralNodeLabel, sameClusterBonus, centralityBonus,
+						annotationSet.getWordSizeThresholds(), annotationSet.getMaxWords()));
 			} else {
 				for (int infoIndex = 0; infoIndex < cluster.getWordInfos().size(); infoIndex++) {
 					if (!wordInfos.get(infoIndex).equals(cluster.getWordInfos().get(infoIndex))) {
 						// WordCloud table entry for this cluster has changed
 						cluster.setWordInfos(wordInfos);
-						cluster.setLabel(makeLabel(wordInfos));
+						cluster.setLabel(makeLabel(wordInfos, mostCentralNodeLabel, sameClusterBonus, centralityBonus,
+								annotationSet.getWordSizeThresholds(), annotationSet.getMaxWords()));
+						if (cluster.getTextAnnotation() != null) {
+							cluster.getTextAnnotation().setText(cluster.getLabel());
+						}
 						return;
 					}
 				}
@@ -383,7 +318,24 @@ public class AutoAnnotationUtils {
 		}
 	}
 	
-	public static String makeLabel(ArrayList<WordInfo> wordInfos) {
+	public static void updateFontSizes() {
+ 		// Set font size to fontSize
+ 		for (CyNetworkView view : 
+ 			AutoAnnotationManager.getInstance().getNetworkViewToAutoAnnotationParameters().keySet()) {
+ 			AutoAnnotationParameters params = AutoAnnotationManager.getInstance().getNetworkViewToAutoAnnotationParameters().get(view);
+ 			for (AnnotationSet annotationSet : params.getAnnotationSets().values()) {
+ 				for (Cluster cluster : annotationSet.getClusterMap().values()) {
+					cluster.eraseText();
+					AutoAnnotationUtils.drawTextLabel(cluster);
+ 				}
+ 			}
+ 		}
+	}
+
+	
+	public static String makeLabel(ArrayList<WordInfo> wordInfos, String mostCentralNodeLabel,
+			double sameClusterBonus, double centralityBonus, List<Integer> wordSizeThresholds,
+			int maxWords) {
 		// Work with a copy so as to not mess up the order for comparisons
 		ArrayList<WordInfo> wordInfosCopy = new ArrayList<WordInfo>();
 		for (WordInfo wordInfo : wordInfos) {
@@ -397,18 +349,22 @@ public class AutoAnnotationUtils {
 		WordInfo biggestWord = wordInfosCopy.get(0);
 		ArrayList<WordInfo> label = new ArrayList<WordInfo>();
 		label.add(biggestWord);
-		double[] nextWordSizeThresholds = {0.3, 0.8, 0.9};
 		int numWords = 1;
 		WordInfo nextWord = biggestWord;
 		wordInfosCopy.remove(0);
-		while (numWords < 4 && wordInfosCopy.size() > 0) {
+		for (WordInfo word : wordInfosCopy) {
+			if (mostCentralNodeLabel.toLowerCase().contains(word.getWord())) {
+				word.setSize(word.getSize() + centralityBonus);
+			}
+		}
+		while (numWords < maxWords && wordInfosCopy.size() > 0) {
 			for (WordInfo word : wordInfosCopy) {
 				if (word.getCluster() == nextWord.getCluster()) {
-					word.setSize(word.getSize() + 7);						
+					word.setSize(word.getSize() + sameClusterBonus);						
 				}
 			}
 			Collections.sort(wordInfosCopy); // Sizes have changed, re-sort
-			double wordSizeThreshold = nextWord.getSize()*nextWordSizeThresholds[numWords - 1];
+			double wordSizeThreshold = nextWord.getSize()*wordSizeThresholds.get(numWords - 1)/100.0;
 			nextWord = wordInfosCopy.get(0);
 			wordInfosCopy.remove(0);
 			if (nextWord.getSize() > wordSizeThreshold) {
@@ -437,23 +393,31 @@ public class AutoAnnotationUtils {
 		return joined;
 	}
 	
-	public static void updateFontSizes(Integer fontSize, boolean constantFontSize, boolean showLabel) {
-		// Set font size to fontSize
-		for (CyNetworkView view : 
-			AutoAnnotationManager.getInstance().getNetworkViewToAutoAnnotationParameters().keySet()) {
-			AutoAnnotationParameters params = AutoAnnotationManager.getInstance().getNetworkViewToAutoAnnotationParameters().get(view);
-			for (AnnotationSet annotationSet : params.getAnnotationSets().values()) {
-				for (Cluster cluster : annotationSet.getClusterMap().values()) {
-					cluster.eraseText();
-					AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
-					AnnotationFactory<TextAnnotation> textFactory = autoAnnotationManager.getTextFactory();
-					AnnotationManager annotationManager = autoAnnotationManager.getAnnotationManager();
-					AutoAnnotationUtils.drawTextLabel(cluster, view, textFactory, annotationManager, constantFontSize, fontSize, showLabel);
-					if (!annotationSet.isSelected()) {
-						cluster.eraseText();
+	public static void updateNodeCentralities(Cluster cluster) {
+		CyNetwork network = cluster.getParent().getView().getModel();
+		// Use similarity coefficient if possible
+		String edgeAttribute;
+		try {
+			edgeAttribute = EnrichmentMapManager.getInstance().getCyNetworkList().get(network.getSUID()).getParams().getAttributePrefix() + EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT;
+		} catch (NullPointerException e) {
+			edgeAttribute = "--None--";
+		}
+		Set<CyNode> nodeSet = cluster.getNodes();
+		HashMap<CyNode, Double> nodeCentralities = new HashMap<CyNode, Double>();
+		for (CyNode node : nodeSet) {
+			double clusterWeightedDegreeSum = 0;
+			for (CyEdge edge : network.getAdjacentEdgeIterable(node, CyEdge.Type.ANY)) {
+				if (edge.getSource() != node && nodeSet.contains(edge.getSource()) ||
+					edge.getTarget() != node && nodeSet.contains(edge.getTarget())) {
+					try {
+						clusterWeightedDegreeSum += network.getRow(edge).get(edgeAttribute, Double.class);
+					} catch (Exception e) {
+						clusterWeightedDegreeSum++;
 					}
 				}
 			}
+			nodeCentralities.put(node, clusterWeightedDegreeSum);
 		}
+		cluster.setNodesToCentralities(nodeCentralities);
 	}
 }

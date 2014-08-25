@@ -24,6 +24,8 @@ public class AutoAnnotationTaskFactory implements TaskFactory {
 	private boolean layout;
 	private boolean groups;
 	private String annotationSetName;
+	private double sameClusterBonus;
+	private double centralityBonus;
 	
 	public AutoAnnotationTaskFactory(CySwingApplication application, AutoAnnotationManager autoAnnotationManager, 
 			CyNetworkView selectedView, String clusterColumnName, String nameColumnName,  String algorithm,

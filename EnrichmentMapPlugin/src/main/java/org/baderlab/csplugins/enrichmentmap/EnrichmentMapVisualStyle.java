@@ -108,7 +108,7 @@ public class EnrichmentMapVisualStyle {
     public static String GS_TYPE_SIGNATURE = "SIG";
     
     public static String OVERLAP_SIZE = "Overlap_size";
-    public static String SIMILARITY_COEFFECIENT = "similarity_coefficient";
+    public static String SIMILARITY_COEFFICIENT = "similarity_coefficient";
     public static String OVERLAP_GENES = "Overlap_genes";
     public static String HYPERGEOM_PVALUE = "Overlap_Hypergeom_pVal";
     public static String ENRICHMENT_SET = "ENRICHMENT_SET";
@@ -191,7 +191,7 @@ public class EnrichmentMapVisualStyle {
 
 
         //Continous Mapping - set edge line thickness based on the number of genes in the overlap
-        ContinuousMapping<Double,Double> conmapping_edgewidth = (ContinuousMapping<Double,Double>) this.vmfFactoryContinuous.createVisualMappingFunction(prefix + EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT, Double.class, BasicVisualLexicon.EDGE_WIDTH);
+        ContinuousMapping<Double,Double> conmapping_edgewidth = (ContinuousMapping<Double,Double>) this.vmfFactoryContinuous.createVisualMappingFunction(prefix + EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT, Double.class, BasicVisualLexicon.EDGE_WIDTH);
                 
         Double under_width = 0.5;
         Double min_width = 1.0;

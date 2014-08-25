@@ -166,8 +166,8 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 				boolean layoutNodes = layoutCheckBox.isSelected();
 				boolean useGroups = groupsCheckBox.isSelected();
 				AutoAnnotationActions.annotateAction(application, selectedView, clusterMakerDefault,
-						nameColumnName, layoutNodes, useGroups, advancedOptionsPanel, clusterAlgorithmDropdown, 
-						clusterColumnDropdown);
+						nameColumnName, layoutNodes, useGroups, advancedOptionsPanel, 
+						clusterAlgorithmDropdown, clusterColumnDropdown);
 				params = autoAnnotationManager.getNetworkViewToAutoAnnotationParameters().get(selectedView);
 			}
 		};
@@ -196,16 +196,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 						get(selectedView).getSelectedItem();
 				JTable clusterTable = clustersToTables.get(annotationSet);
 				CytoPanel westPanel = application.getCytoPanel(CytoPanelName.WEST);
-				boolean constantFontSize = displayOptionsPanel.getFontSizeTextField().isEnabled();
-				boolean showEllipses = displayOptionsPanel.isShowEllipsesCheckBoxSelected();
-				int fontSize = Integer.parseInt(displayOptionsPanel.getFontSizeTextField().getText());
-				int ellipseWidth = displayOptionsPanel.getEllipseWidth();
-				int ellipseOpacity = displayOptionsPanel.getEllipseOpacity();
-				String shapeType = displayOptionsPanel.getShapeType();
-				boolean showLabel = displayOptionsPanel.isShowTextCheckBoxSelected();
-				AutoAnnotationActions.extractAction(selectedView, annotationSet, clusterTable, westPanel,
-						constantFontSize, showEllipses, fontSize, ellipseWidth, ellipseOpacity, shapeType,
-						showLabel);
+				AutoAnnotationActions.extractAction(annotationSet, clusterTable, westPanel);
 			}
 		};
 		extractButton.addActionListener(extractActionListener);
@@ -217,16 +208,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 						get(selectedView).getSelectedItem();
 				JTable clusterTable = clustersToTables.get(annotationSet);
 				CytoPanel westPanel = application.getCytoPanel(CytoPanelName.WEST);
-				boolean constantFontSize = displayOptionsPanel.getFontSizeTextField().isEnabled();
-				boolean showEllipses = displayOptionsPanel.isShowEllipsesCheckBoxSelected();
-				int fontSize = Integer.parseInt(displayOptionsPanel.getFontSizeTextField().getText());
-				int ellipseWidth = displayOptionsPanel.getEllipseWidth();
-				int ellipseOpacity = displayOptionsPanel.getEllipseOpacity();
-				String shapeType = displayOptionsPanel.getShapeType();
-				boolean showLabel = displayOptionsPanel.isShowTextCheckBoxSelected();
-				AutoAnnotationActions.mergeAction(selectedView, annotationSet, clusterTable, westPanel,
-						constantFontSize, showEllipses, fontSize, ellipseWidth, ellipseOpacity, shapeType,
-						showLabel);
+				AutoAnnotationActions.mergeAction(annotationSet, clusterTable, westPanel);
 			}
 		};
 		mergeButton.addActionListener(mergeActionListener);
@@ -238,21 +220,13 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 						get(selectedView).getSelectedItem();
 				JTable clusterTable = clustersToTables.get(annotationSet);
 				CytoPanel westPanel = application.getCytoPanel(CytoPanelName.WEST);
-				boolean constantFontSize = displayOptionsPanel.getFontSizeTextField().isEnabled();
-				boolean showEllipses = displayOptionsPanel.isShowEllipsesCheckBoxSelected();
-				int fontSize = Integer.parseInt(displayOptionsPanel.getFontSizeTextField().getText());
-				int ellipseWidth = displayOptionsPanel.getEllipseWidth();
-				int ellipseOpacity = displayOptionsPanel.getEllipseOpacity();
-				String shapeType = displayOptionsPanel.getShapeType();
-				boolean showLabel = displayOptionsPanel.isShowTextCheckBoxSelected();
-				AutoAnnotationActions.deleteAction(selectedView, annotationSet, clusterTable, westPanel, 
-						constantFontSize, showEllipses, fontSize, ellipseWidth, ellipseOpacity, shapeType,
-						showLabel);
+				AutoAnnotationActions.deleteAction(annotationSet, clusterTable, westPanel);
 			}
 		};
 		deleteButton.addActionListener(deleteActionListener);
 		
 		JPanel outputButtonPanel = new JPanel();
+		outputButtonPanel.add(new JLabel("Clusters:"));
 		outputButtonPanel.add(extractButton);
 		outputButtonPanel.add(mergeButton);
 		outputButtonPanel.add(deleteButton);
@@ -278,12 +252,12 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 				AnnotationSet annotationSet = (AnnotationSet) clusterSetDropdown.getSelectedItem();
 				// Get rid of the table associated with this cluster set
 				remove(clustersToTables.get(annotationSet).getParent());
-				AutoAnnotationActions.clearAction(selectedNetwork, annotationSet, clusterSetDropdown, 
+				AutoAnnotationActions.removeAction(selectedNetwork, annotationSet, clusterSetDropdown, 
 						clustersToTables, params);
 				// Hide the unusable buttons if the last annotation set was just deleted
 			}
 		};
-		removeButton.addActionListener(clearActionListener); 
+		removeButton.addActionListener(clearActionListener);
 
 		// Button to update the current cluster set
 		JButton updateButton = new JButton("Update");
@@ -291,23 +265,13 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 			public void actionPerformed(ActionEvent e) {
 				AnnotationSet annotationSet = (AnnotationSet) networkViewToClusterSetDropdown.
 						get(selectedView).getSelectedItem();
-				String nameColumnName = (String) nameColumnDropdown.getSelectedItem();
-				boolean constantFontSize = displayOptionsPanel.getFontSizeTextField().isEnabled();
-				boolean showEllipses = displayOptionsPanel.isShowEllipsesCheckBoxSelected();
-				int fontSize = Integer.parseInt(displayOptionsPanel.getFontSizeTextField().getText());
-				JTable clusterTable = clustersToTables.get(annotationSet);
-				int ellipseWidth = displayOptionsPanel.getEllipseWidth();
-				int ellipseOpacity = displayOptionsPanel.getEllipseOpacity();
-				String shapeType = displayOptionsPanel.getShapeType();
-				boolean showLabel = displayOptionsPanel.isShowTextCheckBoxSelected();
-				AutoAnnotationActions.updateAction(selectedView, annotationSet, nameColumnName, 
-						constantFontSize, showEllipses, fontSize, clusterTable, ellipseWidth, 
-						ellipseOpacity, shapeType, showLabel);
+				AutoAnnotationActions.updateAction(annotationSet);
 			}
 		};
 		updateButton.addActionListener(updateActionListener);
 
 		bottomButtonPanel = new JPanel();
+		bottomButtonPanel.add(new JLabel("Annotation Sets:"));
 		bottomButtonPanel.add(removeButton);
 		bottomButtonPanel.add(updateButton);
 		
@@ -375,7 +339,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 		layoutCheckBox.setSelected(false);
 
 		// By default layout nodes by cluster
-		groupsCheckBox = new JCheckBox("Create Groups for clusters");
+		groupsCheckBox = new JCheckBox("Create Groups for clusters (*BUGGY*)");
 		groupsCheckBox.setSelected(false);
 		
 		JPanel checkBoxPanel = new JPanel();
@@ -446,19 +410,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 							editedCluster.setLabel((String) table.getValueAt(editedRowIndex, 0)); 
 							table.setValueAt(editedCluster, editedRowIndex, 0); // Otherwise String stays in the table
 							editedCluster.erase();
-							AnnotationFactory<ShapeAnnotation> shapeFactory = autoAnnotationManager.getShapeFactory();
-							AnnotationFactory<TextAnnotation> textFactory = autoAnnotationManager.getTextFactory();
-							AnnotationManager annotationManager = autoAnnotationManager.getAnnotationManager();
-							boolean constantFontSize = displayOptionsPanel.getFontSizeTextField().isEnabled();
-							int fontSize = Integer.parseInt(displayOptionsPanel.getFontSizeTextField().getText());
-							boolean showEllipses = displayOptionsPanel.isShowEllipsesCheckBoxSelected();
-							int ellipseWidth = displayOptionsPanel.getEllipseWidth();
-							int ellipseOpacity = displayOptionsPanel.getEllipseOpacity();
-							String shapeType = displayOptionsPanel.getShapeType();
-							boolean showLabel = displayOptionsPanel.isShowTextCheckBoxSelected();
-							AutoAnnotationUtils.drawCluster(editedCluster, selectedView, shapeFactory, textFactory, 
-									annotationManager, constantFontSize, fontSize, showEllipses, ellipseWidth, 
-									ellipseOpacity, shapeType, showLabel);
+							AutoAnnotationUtils.drawCluster(editedCluster);
 						}
 					}
 				}
@@ -491,8 +443,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 							}
 						}
 						if (deselect) {
-							AutoAnnotationUtils.deselectCluster(cluster, selectedNetwork, 
-									displayOptionsPanel.getEllipseWidth());
+							AutoAnnotationUtils.deselectCluster(cluster);
 						}
 					}
 					setDisableHeatMapAutoFocus(true);
@@ -500,7 +451,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 					CommandExecutorTaskFactory executor = autoAnnotationManager.getCommandExecutor();
 					for (Cluster cluster : selectedClusters) {
 						AutoAnnotationUtils.selectCluster(cluster, selectedNetwork, executor, 
-								syncTaskManager, displayOptionsPanel.getEllipseWidth());
+								syncTaskManager);
 					}
 					for (CyRow row: selectedNetwork.getDefaultNodeTable().getAllRows()) {
 						row.set(CyNetwork.SELECTED, false);
@@ -562,27 +513,13 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 					Long clusterTableSUID = selectedNetwork.getDefaultNetworkTable().getRow(
 							selectedNetwork.getSUID()).get(annotationSetName, Long.class);
 					CyTable clusterSetTable = autoAnnotationManager.getTableManager().getTable(clusterTableSUID);
-					boolean constantFontSize = displayOptionsPanel.getFontSizeTextField().isEnabled();
-					int fontSize = Integer.parseInt(displayOptionsPanel.getFontSizeTextField().getText());
-					boolean showEllipses = displayOptionsPanel.isShowEllipsesCheckBoxSelected();
-					int ellipseWidth = displayOptionsPanel.getEllipseWidth();
-					int ellipseOpacity = displayOptionsPanel.getEllipseOpacity();
-					String shapeType = displayOptionsPanel.getShapeType();
-					boolean showLabel = displayOptionsPanel.isShowTextCheckBoxSelected();
-					String nameColumnName = (String) nameColumnDropdown.getSelectedItem();
 					for (Cluster cluster : annotationSet.getClusterMap().values()) {
 						if (cluster.getEllipse() == null && cluster.getTextAnnotation() == null) {
 							// Update the text label of the selected cluster
-	//						AutoAnnotationUtils.updateClusterLabel(cluster, selectedNetwork, annotationSetName,
-	//								clusterSetTable, nameColumnName);
-							// Redraw selected clusters
-							AnnotationFactory<ShapeAnnotation> shapeFactory = autoAnnotationManager.getShapeFactory();
-							AnnotationFactory<TextAnnotation> textFactory = autoAnnotationManager.getTextFactory();
-							AnnotationManager annotationManager = autoAnnotationManager.getAnnotationManager();
-							AutoAnnotationUtils.drawCluster(cluster, selectedView, shapeFactory, 
-										textFactory, annotationManager, constantFontSize, fontSize,
-										showEllipses, ellipseWidth, ellipseOpacity, shapeType, showLabel);
+							AutoAnnotationUtils.updateClusterLabel(cluster, clusterSetTable);
 						}
+						// Redraw selected clusters
+						AutoAnnotationUtils.drawCluster(cluster);
 //						// Recreate groups if necessary
 						if (annotationSet.usingGroups()) {
 							CyGroup group = groupFactory.createGroup(selectedNetwork, cluster.getNodesToCoordinates().keySet().iterator().next(), true);
@@ -708,6 +645,10 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 		}
 	}
 
+	public JTable getClusterTable(AnnotationSet annotationSet) {
+		return clustersToTables.get(annotationSet);
+	}
+	
 	public void updateColumnName(CyTable source, String oldColumnName,
 			String newColumnName) {
 		// Column name has been changed, check if it is 
@@ -780,14 +721,22 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 	}
 
 	public void setHeatMapNoSort() {
-		HeatMapParameters heatMapParameters = emManager.getMap(selectedNetwork.getSUID()).getParams().getHmParams();
-		if (heatMapParameters != null) {
-			heatMapParameters.setSort(HeatMapParameters.Sort.NONE);
+		try {
+			HeatMapParameters heatMapParameters = emManager.getMap(selectedNetwork.getSUID()).getParams().getHmParams();
+			if (heatMapParameters != null) {
+				heatMapParameters.setSort(HeatMapParameters.Sort.NONE);
+			}
+		} catch(NullPointerException e) {
+			return;
 		}
 	}
 
 	public void setDisableHeatMapAutoFocus(boolean b) {
-		emManager.getMap(selectedNetwork.getSUID()).getParams().setDisableHeatmapAutofocus(b);
+		try {
+			emManager.getMap(selectedNetwork.getSUID()).getParams().setDisableHeatmapAutofocus(b);
+		} catch (NullPointerException e) {
+			return;
+		}
 	}
 
 	@Override

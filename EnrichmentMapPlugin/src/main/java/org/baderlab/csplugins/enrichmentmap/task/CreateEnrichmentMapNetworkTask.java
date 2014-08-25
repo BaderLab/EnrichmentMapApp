@@ -429,7 +429,7 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
                     CyRow current_edgerow = edgeTable.getRow(/*current_name*/edge.getSUID());
                     current_edgerow.set(CyNetwork.NAME,current_name);
                     current_edgerow.set(CyEdge.INTERACTION, current_result.getInteractionType());
-                    current_edgerow.set( prefix+EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT, current_result.getSimilarity_coeffecient());
+                    current_edgerow.set( prefix+EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT, current_result.getSimilarity_coeffecient());
                     current_edgerow.set( prefix+ EnrichmentMapVisualStyle.OVERLAP_SIZE, current_result.getSizeOfOverlap());
                     current_edgerow.set( prefix + EnrichmentMapVisualStyle.ENRICHMENT_SET  , current_result.getEnrichment_set());
 
@@ -728,7 +728,7 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
     		//TODO: add own tables
 		//CyTable edgeTable = tableFactory.createTable(/*name*/ prefix + "_" + edge_table_suffix, CyNetwork.NAME,String.class, true, true);
 		CyTable edgeTable = network.getDefaultEdgeTable();
-    		edgeTable.createColumn(prefix+EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT, Double.class, false);
+    		edgeTable.createColumn(prefix+EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT, Double.class, false);
     		edgeTable.createColumn(prefix+EnrichmentMapVisualStyle.OVERLAP_SIZE, Integer.class, false);
     		edgeTable.createListColumn(prefix+EnrichmentMapVisualStyle.OVERLAP_GENES, String.class, false);
     		edgeTable.createColumn(prefix+EnrichmentMapVisualStyle.ENRICHMENT_SET, Integer.class, false);

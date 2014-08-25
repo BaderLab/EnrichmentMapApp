@@ -3,7 +3,7 @@ package org.baderlab.csplugins.enrichmentmap.autoannotate.model;
 public class WordInfo implements Comparable<WordInfo>{
 	
 	private String word;
-	private int size;
+	private double size;
 	private int cluster;
 	private int number;
 
@@ -15,12 +15,12 @@ public class WordInfo implements Comparable<WordInfo>{
 		this.word = word;
 	}
 
-	public int getSize() {
+	public double getSize() {
 		return size;
 	}
 
-	public void setSize(int size) {
-		this.size = size;
+	public void setSize(double d) {
+		this.size = d;
 	}
 
 	public int getCluster() {
@@ -39,7 +39,7 @@ public class WordInfo implements Comparable<WordInfo>{
 		this.number = number;
 	}
 
-	public WordInfo(String word, int size, int cluster, int number) {
+	public WordInfo(String word, double size, int cluster, int number) {
 		this.word = word;
 		this.size = size;
 		this.cluster = cluster;

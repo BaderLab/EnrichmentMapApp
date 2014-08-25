@@ -44,17 +44,21 @@
 package org.baderlab.csplugins.enrichmentmap.autoannotate.task;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapUtils;
+import org.baderlab.csplugins.enrichmentmap.EnrichmentMapVisualStyle;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationUtils;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.AnnotationSet;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.view.AutoAnnotationPanel;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelName;
@@ -163,17 +167,15 @@ public class AutoAnnotationTask extends AbstractTask {
     	
 		Long clusterTableSUID = network.getDefaultNetworkTable().getRow(network.getSUID()).get(annotationSetName, Long.class);
     	CyTable clusterSetTable = tableManager.getTable(clusterTableSUID);
-    	String annotationSetName = annotationSet.getName();
     	// Generate the labels for the clusters
     	for (Cluster cluster : annotationSet.getClusterMap().values()) {
-    		AutoAnnotationUtils.updateClusterLabel(cluster, network, annotationSetName, clusterSetTable, nameColumnName);
+    		AutoAnnotationUtils.updateClusterLabel(cluster, clusterSetTable);
     	}
     	// Add these clusters to the table on the annotationPanel
     	annotationPanel.addClusters(annotationSet);
     	annotationPanel.updateSelectedView(view);
 		CytoPanel westPanel = application.getCytoPanel(CytoPanelName.WEST);
 		westPanel.setSelectedIndex(westPanel.indexOfComponent(annotationPanel));
-		
 		EnrichmentMapUtils.setOverrideHeatmapRevalidation(false);
 		
 		taskMonitor.setProgress(1.0);
@@ -204,14 +206,12 @@ public class AutoAnnotationTask extends AbstractTask {
 			network.getDefaultNodeTable().deleteColumn(clusterColumnName);
 		}
 		
-		// Tries to get edge attributes that make clusterMaker work better
-		String edgeAttribute = "--None--";
-		for (CyColumn edgeColumn : network.getDefaultEdgeTable().getColumns()) {
-			String edgeName = edgeColumn.getName();
-			if (edgeName.toLowerCase().contains("overlap_size") ||
-				edgeName.toLowerCase().contains("similarity_coefficient")){
-				edgeAttribute = edgeName;
-			}
+		// Cluster based on similarity coefficient if possible
+		String edgeAttribute;
+		try {
+			edgeAttribute = EnrichmentMapManager.getInstance().getCyNetworkList().get(view.getModel().getSUID()).getParams().getAttributePrefix() + EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT;
+		} catch (NullPointerException e) {
+			edgeAttribute = "--None--";
 		}
 		
 		// Executes the task inside of clusterMaker
@@ -262,6 +262,9 @@ public class AutoAnnotationTask extends AbstractTask {
 			} // No other possible columnTypes (since the dropdown only contains these types
 		}
 		annotationSet.setUseGroups(groups);
+		for (Cluster cluster : annotationSet.getClusterMap().values()) {
+			AutoAnnotationUtils.updateNodeCentralities(cluster);
+		}
 		return annotationSet;
 	}
 	
@@ -282,10 +285,6 @@ public class AutoAnnotationTask extends AbstractTask {
 	}
 	
 	private void runWordCloud(AnnotationSet annotationSet, CyNetwork network) {
-		// Clear any previously selected nodes
-		for (CyNode node : network.getNodeList()) {
-			network.getRow(node).set(CyNetwork.SELECTED, false);
-		}
 		TreeMap<Integer, Cluster> clusterMap = annotationSet.getClusterMap();
 		for (int clusterNumber : clusterMap.keySet()) {
 			Cluster cluster = clusterMap.get(clusterNumber);
@@ -311,6 +310,10 @@ public class AutoAnnotationTask extends AbstractTask {
 	}
 
 	private void setClusterSelected(Cluster cluster, CyNetwork network, boolean b) {
+		// Clear any previously selected nodes
+		for (CyNode node : network.getNodeList()) {
+			network.getRow(node).set(CyNetwork.SELECTED, false);
+		}
 		for (CyNode node : cluster.getNodesToCoordinates().keySet()) {
 			network.getRow(node).set(CyNetwork.SELECTED, b);
 		}

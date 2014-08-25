@@ -465,7 +465,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
                     }
  
                     current_edgerow.set( prefix + EnrichmentMapVisualStyle.OVERLAP_SIZE       , geneset_similarities.get(edge_name).getSizeOfOverlap());
-                    current_edgerow.set( prefix + EnrichmentMapVisualStyle.SIMILARITY_COEFFECIENT, geneset_similarities.get(edge_name).getSimilarity_coeffecient());
+                    current_edgerow.set( prefix + EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT, geneset_similarities.get(edge_name).getSimilarity_coeffecient());
                     current_edgerow.set( prefix + EnrichmentMapVisualStyle.HYPERGEOM_PVALUE   , geneset_similarities.get(edge_name).getHypergeom_pvalue());
                     current_edgerow.set( prefix + EnrichmentMapVisualStyle.ENRICHMENT_SET  , geneset_similarities.get(edge_name).getEnrichment_set());
                     

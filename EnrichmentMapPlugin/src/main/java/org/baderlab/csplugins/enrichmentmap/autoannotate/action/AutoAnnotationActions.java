@@ -43,7 +43,8 @@ public class AutoAnnotationActions {
 	
 	public static void annotateAction(CySwingApplication application,
 			CyNetworkView selectedView, boolean clusterMakerDefault,
-			String nameColumnName, boolean layoutNodes, boolean useGroups, BasicCollapsiblePanel advancedOptionsPanel,
+			String nameColumnName, boolean layoutNodes, boolean useGroups,
+			BasicCollapsiblePanel advancedOptionsPanel,
 			JComboBox clusterAlgorithmDropdown, JComboBox clusterColumnDropdown) {
 		
 		if (selectedView == null) {
@@ -83,11 +84,8 @@ public class AutoAnnotationActions {
 		}
 	}
 	
-	public static void deleteAction(CyNetworkView selectedView,
-			AnnotationSet annotationSet, JTable clusterTable,
-			CytoPanel westPanel, boolean constantFontSize, boolean showEllipses, 
-			int fontSize, int ellipseWidth, int ellipseOpacity, String shapeType,
-			boolean showLabel) {
+	public static void deleteAction(AnnotationSet annotationSet,
+			JTable clusterTable, CytoPanel westPanel) {
 		
 		int[] selectedRows = clusterTable.getSelectedRows();
 		if (selectedRows.length < 1) {
@@ -115,20 +113,15 @@ public class AutoAnnotationActions {
 			for (Cluster cluster : selectedClusters) {
 				AutoAnnotationUtils.destroyCluster(cluster, executor, syncTaskManager);
 			}
-			String nameColumnName = annotationSet.getNameColumnName();
-			updateAction(selectedView, annotationSet, nameColumnName, constantFontSize, 
-					showEllipses, fontSize, clusterTable, ellipseWidth, ellipseOpacity,
-					shapeType, showLabel);
+			updateAction(annotationSet);
 			// Focus on this panel
 			westPanel.setSelectedIndex(westPanel.indexOfComponent(autoAnnotationManager.getAnnotationPanel()));
 		}
 	}
 	
-	public static void mergeAction(CyNetworkView selectedView,
-			AnnotationSet annotationSet, JTable clusterTable,
-			CytoPanel westPanel, boolean constantFontSize, boolean showEllipses, 
-			int fontSize, int ellipseWidth, int ellipseOpacity, String shapeType,
-			boolean showLabel) {
+	public static void mergeAction(AnnotationSet annotationSet, 
+			JTable clusterTable, CytoPanel westPanel) {
+		CyNetworkView selectedView = annotationSet.getView();
 		CyNetwork selectedNetwork = selectedView.getModel();
 		AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
 
@@ -197,8 +190,8 @@ public class AutoAnnotationActions {
 			for (CyNode node : firstCluster.getNodesToCoordinates().keySet()) {
 				selectedNetwork.getRow(node).set(CyNetwork.SELECTED, false);
 			}
-			updateAction(selectedView, annotationSet, nameColumnName, constantFontSize, showEllipses, 
-					fontSize, clusterTable, ellipseWidth, ellipseOpacity, shapeType, showLabel);
+			AutoAnnotationUtils.updateNodeCentralities(firstCluster);
+			updateAction(annotationSet);
 			// Deselect rows (no longer meaningful)
 			clusterTable.clearSelection();
 			// Focus on this panel
@@ -206,13 +199,15 @@ public class AutoAnnotationActions {
 		}
 	}
 
-	public static void clearAction(CyNetwork selectedNetwork, AnnotationSet annotationSet,
-			JComboBox<AnnotationSet> clusterSetDropdown, HashMap<AnnotationSet, JTable> clustersToTables, AutoAnnotationParameters params) {
+	public static void removeAction(CyNetwork selectedNetwork, AnnotationSet annotationSet,
+			JComboBox<AnnotationSet> clusterSetDropdown, HashMap<AnnotationSet, JTable> clustersToTables,
+			AutoAnnotationParameters params) {
 
 		AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
 		EnrichmentMapManager emManager = EnrichmentMapManager.getInstance();
 
-		clustersToTables.get(annotationSet).clearSelection();
+		JTable clusterTable = clustersToTables.get(annotationSet);
+		clusterTable.getParent().getParent().getParent().remove(clusterTable.getParent().getParent());
 		
 		// Prevent heatmap dialog from interrupting this task
 		HeatMapParameters heatMapParameters = emManager.getMap(selectedNetwork.getSUID()).getParams().getHmParams();
@@ -232,19 +227,19 @@ public class AutoAnnotationActions {
 		}
 		params.removeAnnotationSet(annotationSet);
 		clustersToTables.remove(annotationSet);
-		
 		// Remove cluster set from dropdown
 		clusterSetDropdown.removeItem(annotationSet);
 	}
 	
-	public static void updateAction(CyNetworkView selectedView,
-			AnnotationSet annotationSet, String nameColumnName,
-			boolean constantFontSize, boolean showEllipses, int fontSize,
-			JTable clusterTable, int ellipseWidth, int ellipseOpacity,
-			String shapeType, boolean showLabel) {
+	public static void updateAction(AnnotationSet annotationSet) {
 		
 		AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
+		CyNetworkView selectedView = annotationSet.getView();
 		CyNetwork selectedNetwork = selectedView.getModel();
+		String nameColumnName = annotationSet.getNameColumnName();
+		double sameClusterBonus = annotationSet.getSameClusterBonus();
+		double centralityBonus = annotationSet.getCentralityBonus();
+		JTable clusterTable = autoAnnotationManager.getAnnotationPanel().getClusterTable(annotationSet);
 
 		for (CyRow row : selectedNetwork.getDefaultNodeTable().getAllRows()) {
 			row.set(CyNetwork.SELECTED, false);
@@ -254,20 +249,16 @@ public class AutoAnnotationActions {
 		Long clusterTableSUID = selectedNetwork.getDefaultNetworkTable().getRow(selectedNetwork.getSUID()).get(annotationSetName, Long.class);
 		CyTable clusterSetTable = autoAnnotationManager.getTableManager().getTable(clusterTableSUID);
 		for (Cluster cluster : annotationSet.getClusterMap().values()) {
+			AutoAnnotationUtils.updateNodeCentralities(cluster);
 			// Update the text label of the selected cluster
 			String previousLabel = cluster.getLabel();
-			AutoAnnotationUtils.updateClusterLabel(cluster, selectedNetwork, annotationSetName, clusterSetTable, nameColumnName);
+			AutoAnnotationUtils.updateClusterLabel(cluster, clusterSetTable);
 			if (previousLabel != cluster.getLabel()) {
 				// Cluster table needs to be updated with new label
 				clusterTable.updateUI();
 			}
 			cluster.erase();
-			AnnotationFactory<ShapeAnnotation> shapeFactory = autoAnnotationManager.getShapeFactory();
-			AnnotationFactory<TextAnnotation> textFactory = autoAnnotationManager.getTextFactory();
-			AnnotationManager annotationManager = autoAnnotationManager.getAnnotationManager();
-			AutoAnnotationUtils.drawCluster(cluster, selectedView, shapeFactory, textFactory, 
-					annotationManager, constantFontSize, fontSize, showEllipses, ellipseWidth, 
-					ellipseOpacity, shapeType, showLabel);
+			AutoAnnotationUtils.drawCluster(cluster);
 		}
 		// Update the table if the value has changed (WordCloud has been updated)
 		DefaultTableModel model = (DefaultTableModel) clusterTable.getModel();
@@ -296,12 +287,12 @@ public class AutoAnnotationActions {
 		clusterTable.clearSelection();
 	}
 
-	public static void extractAction(CyNetworkView selectedView,
-			AnnotationSet annotationSet, JTable clusterTable,
-			CytoPanel westPanel, boolean constantFontSize,
-			boolean showEllipses, int fontSize, int ellipseWidth,
-			int ellipseOpacity, String shapeType, boolean showLabel) {
+	public static void extractAction(AnnotationSet annotationSet, 
+			JTable clusterTable, CytoPanel westPanel) {
+		CyNetworkView selectedView = annotationSet.getView();
 		CyNetwork selectedNetwork = selectedView.getModel();
+		double sameClusterBonus = annotationSet.getSameClusterBonus();
+		double centralityBonus = annotationSet.getCentralityBonus();
 		AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
 
 		// Get selected nodes
@@ -415,10 +406,7 @@ public class AutoAnnotationActions {
 			for (CyNode node : selectedNodes) {
 				selectedNetwork.getRow(node).set(CyNetwork.SELECTED, false);
 			}
-			
-			AnnotationFactory<ShapeAnnotation> shapeFactory = autoAnnotationManager.getShapeFactory();
-			AnnotationFactory<TextAnnotation> textFactory = autoAnnotationManager.getTextFactory();
-			AnnotationManager annotationManager = autoAnnotationManager.getAnnotationManager();
+
 			CyTableManager tableManager = autoAnnotationManager.getTableManager();
 			
 			String annotationSetName = annotationSet.getName();
@@ -426,13 +414,10 @@ public class AutoAnnotationActions {
 	    	CyTable clusterSetTable = tableManager.getTable(clusterTableSUID);
 	    	
 	    	// Generate the labels for the clusters
-	    	AutoAnnotationUtils.updateClusterLabel(newCluster, selectedNetwork, annotationSetName, clusterSetTable, nameColumnName);
-			AutoAnnotationUtils.drawCluster(newCluster, selectedView, shapeFactory,
-					textFactory, annotationManager, constantFontSize, fontSize,
-					showEllipses, ellipseWidth, ellipseOpacity, shapeType, showLabel);
+	    	AutoAnnotationUtils.updateClusterLabel(newCluster, clusterSetTable);
+			AutoAnnotationUtils.drawCluster(newCluster);
 			
-			updateAction(selectedView, annotationSet, nameColumnName, constantFontSize, showEllipses, 
-					fontSize, clusterTable, ellipseWidth, ellipseOpacity, shapeType, showLabel);
+			updateAction(annotationSet);
 			
 			// Deselect rows (no longer meaningful)
 			clusterTable.clearSelection();
