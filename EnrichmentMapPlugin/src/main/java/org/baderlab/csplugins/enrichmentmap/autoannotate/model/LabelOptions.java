@@ -1,6 +1,5 @@
 package org.baderlab.csplugins.enrichmentmap.autoannotate.model;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class LabelOptions {

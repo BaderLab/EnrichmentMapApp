@@ -30,10 +30,6 @@ import org.cytoscape.model.CyTableManager;
 import org.cytoscape.util.swing.BasicCollapsiblePanel;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
-import org.cytoscape.view.presentation.annotations.AnnotationFactory;
-import org.cytoscape.view.presentation.annotations.AnnotationManager;
-import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
-import org.cytoscape.view.presentation.annotations.TextAnnotation;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskIterator;
@@ -45,7 +41,7 @@ public class AutoAnnotationActions {
 			CyNetworkView selectedView, boolean clusterMakerDefault,
 			String nameColumnName, boolean layoutNodes, boolean useGroups,
 			BasicCollapsiblePanel advancedOptionsPanel,
-			JComboBox clusterAlgorithmDropdown, JComboBox clusterColumnDropdown) {
+			JComboBox<String> clusterAlgorithmDropdown, JComboBox<String> clusterColumnDropdown) {
 		
 		if (selectedView == null) {
 			JOptionPane.showMessageDialog(null, "Load an Enrichment Map", "Error Message", JOptionPane.ERROR_MESSAGE);
@@ -241,9 +237,6 @@ public class AutoAnnotationActions {
 		AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
 		CyNetworkView selectedView = annotationSet.getView();
 		CyNetwork selectedNetwork = selectedView.getModel();
-		String nameColumnName = annotationSet.getNameColumnName();
-		double sameClusterBonus = annotationSet.getSameClusterBonus();
-		double centralityBonus = annotationSet.getCentralityBonus();
 		JTable clusterTable = autoAnnotationManager.getAnnotationPanel().getClusterTable(annotationSet);
 
 		for (CyRow row : selectedNetwork.getDefaultNodeTable().getAllRows()) {
@@ -296,8 +289,6 @@ public class AutoAnnotationActions {
 			JTable clusterTable, CytoPanel westPanel) {
 		CyNetworkView selectedView = annotationSet.getView();
 		CyNetwork selectedNetwork = selectedView.getModel();
-		double sameClusterBonus = annotationSet.getSameClusterBonus();
-		double centralityBonus = annotationSet.getCentralityBonus();
 		AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
 
 		// Get selected nodes

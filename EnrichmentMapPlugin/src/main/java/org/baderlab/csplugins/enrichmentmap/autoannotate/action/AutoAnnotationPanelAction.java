@@ -45,7 +45,6 @@ package org.baderlab.csplugins.enrichmentmap.autoannotate.action;
 
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.view.AutoAnnotationPanel;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.view.DisplayOptionsPanel;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;

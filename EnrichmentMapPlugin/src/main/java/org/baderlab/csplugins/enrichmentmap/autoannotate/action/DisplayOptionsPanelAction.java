@@ -7,7 +7,6 @@ import java.util.Properties;
 import javax.swing.JOptionPane;
 
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.view.AutoAnnotationPanel;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.view.DisplayOptionsPanel;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;

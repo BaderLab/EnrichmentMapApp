@@ -1,8 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.autoannotate.view;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -116,6 +114,7 @@ public class LabelOptionsEditor extends JDialog {
 		justificationDropdown.addItemListener(new ItemListener() {
 			@Override
 			public void itemStateChanged(ItemEvent e) {
+				@SuppressWarnings("unchecked")
 				String selectedJustification = (String) ((JComboBox<String>) e.getSource()).getSelectedItem();
 				if (selectedJustification.equals("Left")) {
 					labelPositionX = 0.0;
@@ -136,6 +135,7 @@ public class LabelOptionsEditor extends JDialog {
 		verticalPositionDropdown.addItemListener(new ItemListener() {
 			@Override
 			public void itemStateChanged(ItemEvent e) {
+				@SuppressWarnings("unchecked")
 				String selectedPosition = (String) ((JComboBox<String>) e.getSource()).getSelectedItem();
 				if (selectedPosition.equals("Above")) {
 					labelPositionY = 0.0;
