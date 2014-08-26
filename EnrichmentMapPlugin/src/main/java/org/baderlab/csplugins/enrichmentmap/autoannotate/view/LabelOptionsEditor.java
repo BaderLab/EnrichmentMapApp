@@ -93,7 +93,7 @@ public class LabelOptionsEditor extends JDialog {
 			
 			innerPanel = new JPanel();
 			innerPanel.setLayout(new BoxLayout(innerPanel, BoxLayout.PAGE_AXIS));			
-			innerPanel.add(createThresholdPanel());
+			innerPanel.add(createThresholdSliderPanel());
 			innerPanel.add(createBonusSliderPanel());
 			innerPanel.add(createLabelPositionDropdownsPanel());
 			innerPanel.add(createButtonPanel());
@@ -153,7 +153,7 @@ public class LabelOptionsEditor extends JDialog {
 		return labelPositionDropdownsPanel;
 	}
 
-	public JPanel createThresholdPanel() {
+	public JPanel createThresholdSliderPanel() {
 		final JPanel thresholdPanel = new JPanel(new BorderLayout());
 		thresholdPanel.setBorder(BorderFactory.createTitledBorder("Label word threshold options"));
 		
@@ -200,11 +200,13 @@ public class LabelOptionsEditor extends JDialog {
 					thresholdSlider.addChangeListener(new ChangeListener() {
 						@Override
 						public void stateChanged(ChangeEvent e) {
+							// Update word size thresholds
 							JSlider thisSlider = (JSlider) e.getSource();
 							wordSizeThresholds = new ArrayList<Integer>();
 							for (JSlider slider : thresholdSliders) {
 								wordSizeThresholds.add(slider.getValue());
 							}
+							// Update slider labels to show current value
 							String thresholdText = thresholdLabel.getText();
 							String newThresholdText = thresholdText.substring(0, thresholdText.indexOf(":")) 
 									+ ": " + thisSlider.getValue() + "%";

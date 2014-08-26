@@ -179,10 +179,11 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 		inputPanel.add(advancedOptionsPanel);
 		inputPanel.add(annotateButton);
 		
-		networkLabel.setAlignmentX(LEFT_ALIGNMENT);
-		nameColumnDropdownLabel.setAlignmentX(LEFT_ALIGNMENT);
-		nameColumnDropdown.setAlignmentX(LEFT_ALIGNMENT);
-		advancedOptionsPanel.setAlignmentX(LEFT_ALIGNMENT);
+		networkLabel.setAlignmentX(CENTER_ALIGNMENT);
+		nameColumnDropdownLabel.setAlignmentX(CENTER_ALIGNMENT);
+		nameColumnDropdown.setAlignmentX(CENTER_ALIGNMENT);
+		advancedOptionsPanel.setAlignmentX(CENTER_ALIGNMENT);
+		annotateButton.setAlignmentX(CENTER_ALIGNMENT);
 		return inputPanel;
 	}
 	
@@ -339,7 +340,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 		layoutCheckBox.setSelected(false);
 
 		// By default layout nodes by cluster
-		groupsCheckBox = new JCheckBox("Create Groups for clusters (*BUGGY*)");
+		groupsCheckBox = new JCheckBox("Create Groups for clusters");
 		groupsCheckBox.setSelected(false);
 		
 		JPanel checkBoxPanel = new JPanel();

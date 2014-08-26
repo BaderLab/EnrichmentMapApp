@@ -661,7 +661,18 @@ public class AvgLinkHierarchicalClustering {
 
         public int compareTo(Object o) {
             LeafDist ld = (LeafDist) o;
-            return (int) (this.dist - ld.dist);
+            //Changed the comparator.  In Java 7 compareTo method throws a  java.lang.IllegalArgumentException: Comparison method violates its general contract!
+            //In Java 7 they changed the implementation of the compareto method cause this thrown exception
+            //suggestions on web included forcing java to use the old implementation, checking for Nan values or changing the implementation.
+            //Checking for Nan did not solve the problem.
+            if(this.dist > ld.dist)
+            	return 1;
+            if(this.dist < ld.dist)
+            	return -1;
+            else
+            	return 0;
+
+            //return (int) (this.dist - ld.dist);
         }
     }
 
