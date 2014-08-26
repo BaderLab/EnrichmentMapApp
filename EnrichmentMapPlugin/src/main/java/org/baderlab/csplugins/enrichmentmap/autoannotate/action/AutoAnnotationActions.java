@@ -203,32 +203,37 @@ public class AutoAnnotationActions {
 			JComboBox<AnnotationSet> clusterSetDropdown, HashMap<AnnotationSet, JTable> clustersToTables,
 			AutoAnnotationParameters params) {
 
-		AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
-		EnrichmentMapManager emManager = EnrichmentMapManager.getInstance();
-
-		JTable clusterTable = clustersToTables.get(annotationSet);
-		clusterTable.getParent().getParent().getParent().remove(clusterTable.getParent().getParent());
+		int confirmation = JOptionPane.showConfirmDialog(null, "Are you sure you want to remove this annotation set? This cannot be undone.",
+				"Remove confirmation", JOptionPane.YES_NO_OPTION);
 		
-		// Prevent heatmap dialog from interrupting this task
-		HeatMapParameters heatMapParameters = emManager.getMap(selectedNetwork.getSUID()).getParams().getHmParams();
-		if (heatMapParameters != null) {
-			heatMapParameters.setSort(HeatMapParameters.Sort.NONE);
+		if (confirmation == JOptionPane.YES_OPTION) {
+			AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
+			EnrichmentMapManager emManager = EnrichmentMapManager.getInstance();
+	
+			JTable clusterTable = clustersToTables.get(annotationSet);
+			clusterTable.getParent().getParent().getParent().remove(clusterTable.getParent().getParent());
+			
+			// Prevent heatmap dialog from interrupting this task
+			HeatMapParameters heatMapParameters = emManager.getMap(selectedNetwork.getSUID()).getParams().getHmParams();
+			if (heatMapParameters != null) {
+				heatMapParameters.setSort(HeatMapParameters.Sort.NONE);
+			}
+			// Delete all annotations
+			Iterator<Cluster> clusterIterator = annotationSet.getClusterMap().values().iterator();
+			// Iterate over a copy to prevent Concurrent Modification
+			ArrayList<Cluster> clusterSetCopy = new ArrayList<Cluster>();
+			while (clusterIterator.hasNext()){
+				clusterSetCopy.add(clusterIterator.next());
+			}
+			// Delete each cluster (WordCloud)
+			for (Cluster cluster : clusterSetCopy) {
+				AutoAnnotationUtils.destroyCluster(cluster, autoAnnotationManager.getCommandExecutor(), autoAnnotationManager.getSyncTaskManager());
+			}
+			params.removeAnnotationSet(annotationSet);
+			clustersToTables.remove(annotationSet);
+			// Remove cluster set from dropdown
+			clusterSetDropdown.removeItem(annotationSet);
 		}
-		// Delete all annotations
-		Iterator<Cluster> clusterIterator = annotationSet.getClusterMap().values().iterator();
-		// Iterate over a copy to prevent Concurrent Modification
-		ArrayList<Cluster> clusterSetCopy = new ArrayList<Cluster>();
-		while (clusterIterator.hasNext()){
-			clusterSetCopy.add(clusterIterator.next());
-		}
-		// Delete each cluster (WordCloud)
-		for (Cluster cluster : clusterSetCopy) {
-			AutoAnnotationUtils.destroyCluster(cluster, autoAnnotationManager.getCommandExecutor(), autoAnnotationManager.getSyncTaskManager());
-		}
-		params.removeAnnotationSet(annotationSet);
-		clustersToTables.remove(annotationSet);
-		// Remove cluster set from dropdown
-		clusterSetDropdown.removeItem(annotationSet);
 	}
 	
 	public static void updateAction(AnnotationSet annotationSet) {

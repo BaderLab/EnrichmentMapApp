@@ -164,7 +164,7 @@ public class DisplayOptionsPanel extends JPanel implements CytoPanelComponent {
 	
 	private JPanel createShowAnnotationsCheckBoxPanel() {
 		// By default show ellipses around clusters
-		showEllipsesCheckBox = new JCheckBox("Draw shapes around clusters");
+		showEllipsesCheckBox = new JCheckBox("Show clusters");
 		showEllipsesCheckBox.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -185,7 +185,7 @@ public class DisplayOptionsPanel extends JPanel implements CytoPanelComponent {
 		});
 		showEllipsesCheckBox.setSelected(true);
 		// By default show text above clusters
-		JCheckBox showTextCheckBox = new JCheckBox("Show text labels above clusters");
+		JCheckBox showTextCheckBox = new JCheckBox("Show text labels");
 		showTextCheckBox.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {

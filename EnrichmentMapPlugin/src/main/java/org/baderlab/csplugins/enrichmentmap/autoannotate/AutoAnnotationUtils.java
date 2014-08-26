@@ -325,8 +325,12 @@ public class AutoAnnotationUtils {
  			AutoAnnotationParameters params = AutoAnnotationManager.getInstance().getNetworkViewToAutoAnnotationParameters().get(view);
  			for (AnnotationSet annotationSet : params.getAnnotationSets().values()) {
  				for (Cluster cluster : annotationSet.getClusterMap().values()) {
-					cluster.eraseText();
+					// Redraw annotation to update font size
+ 					cluster.eraseText();
 					AutoAnnotationUtils.drawTextLabel(cluster);
+					if (!annotationSet.isSelected() || !annotationSet.isShowLabel()) {
+						cluster.eraseText();
+					}
  				}
  			}
  		}
