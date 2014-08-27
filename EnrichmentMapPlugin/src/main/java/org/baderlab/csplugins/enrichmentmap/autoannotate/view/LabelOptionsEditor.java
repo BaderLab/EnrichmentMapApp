@@ -185,12 +185,11 @@ public class LabelOptionsEditor extends JDialog {
 						JLabel slidersLabel = new JLabel("Word Inclusion Threshold(s)");
 						slidersPanel.add(slidersLabel);
 					}
-					int sliderValue;
-					if (wordSizeThresholds.size() > sliderNumber - 1) {
-						sliderValue = wordSizeThresholds.get(sliderNumber - 1);
-					} else {
-						sliderValue = AnnotationSet.DEFAULT_WORDSIZE_THRESHOLDS.get(sliderNumber - 1);
+					// New sliders are given the default value
+					if (wordSizeThresholds.size() < sliderNumber) {
+						wordSizeThresholds.add(AnnotationSet.DEFAULT_WORDSIZE_THRESHOLDS.get(sliderNumber - 1));
 					}
+					int sliderValue = wordSizeThresholds.get(sliderNumber - 1);
 					final JLabel thresholdLabel = new JLabel("Word " + sliderNumber + 
 							" to Word " + String.valueOf(sliderNumber+1) + ": " + 
 							String.valueOf(sliderValue) + "%");

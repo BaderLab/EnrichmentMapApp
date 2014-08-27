@@ -2,7 +2,7 @@ package org.baderlab.csplugins.enrichmentmap.autoannotate.model;
 
 import java.util.Comparator;
 
-
+// Class used to sort the WordInfos by number to preserve word order
 public class WordInfoNumberComparator implements Comparator<WordInfo> {
 	
 	private static WordInfoNumberComparator instance = null;

@@ -39,9 +39,10 @@ public class AutoAnnotationUtils {
 	
 	private static int min_size = 50; // Minimum size of the ellipse
 	
-	public static void selectCluster(Cluster selectedCluster, CyNetwork network, 
+	public static void selectCluster(Cluster selectedCluster, 
 			CommandExecutorTaskFactory executor, SynchronousTaskManager<?> syncTaskManager) {
 		if (!selectedCluster.isSelected()) {
+			CyNetwork network = selectedCluster.getParent().getView().getModel();
 			AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
 			autoAnnotationManager.flushPayloadEvents();
 			// Wait for heatmap to finish updating
@@ -72,9 +73,9 @@ public class AutoAnnotationUtils {
 	}
 
 	public static void deselectCluster(Cluster deselectedCluster) {
-		CyNetwork network = deselectedCluster.getParent().getView().getModel();
-		int ellipseBorderWidth = deselectedCluster.getParent().getEllipseWidth();
 		if (deselectedCluster.isSelected()) {
+			CyNetwork network = deselectedCluster.getParent().getView().getModel();
+			int ellipseBorderWidth = deselectedCluster.getParent().getEllipseWidth();
 			deselectedCluster.setSelected(false);
 			// Deselect node(s) in the cluster
 			if (deselectedCluster.isCollapsed()) {

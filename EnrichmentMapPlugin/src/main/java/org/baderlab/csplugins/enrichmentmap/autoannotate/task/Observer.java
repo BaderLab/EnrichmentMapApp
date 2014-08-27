@@ -15,7 +15,7 @@ import org.cytoscape.work.TaskObserver;
  *
  */
 public class Observer implements TaskObserver {
-
+	// Class to see when a task has finished
 	private boolean allTasksFinished = false;
 	
 	@Override

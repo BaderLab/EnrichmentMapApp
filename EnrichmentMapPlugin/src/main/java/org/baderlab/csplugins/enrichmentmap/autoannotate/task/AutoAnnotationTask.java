@@ -57,9 +57,7 @@ import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationUtils;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.AnnotationSet;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.view.AutoAnnotationPanel;
-import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanel;
-import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.command.CommandExecutorTaskFactory;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -85,7 +83,6 @@ import org.cytoscape.work.swing.DialogTaskManager;
 
 public class AutoAnnotationTask extends AbstractTask {
 	
-	private CySwingApplication application;
 	private CyNetwork network;
 	private CyNetworkView view;
 	private String clusterColumnName;
@@ -100,13 +97,14 @@ public class AutoAnnotationTask extends AbstractTask {
 	private DialogTaskManager dialogTaskManager;
 	private SynchronousTaskManager<?> syncTaskManager;
 	private CommandExecutorTaskFactory executor;
+	private CytoPanel westPanel;
 
-	public AutoAnnotationTask (CySwingApplication application, 
-			AutoAnnotationManager autoAnnotationManager, 
-			CyNetworkView selectedView, String clusterColumnName, String nameColumnName, 
-			String algorithm, boolean layout, boolean groups, String annotationSetName){
+	public AutoAnnotationTask (CyNetworkView selectedView, 
+			String clusterColumnName, String nameColumnName, 
+			String algorithm, boolean layout, boolean groups, 
+			String annotationSetName){
 		
-		this.application = application;
+		AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
 		this.annotationPanel = autoAnnotationManager.getAnnotationPanel();
 		this.view = selectedView;
 		this.network = view.getModel();
@@ -121,6 +119,7 @@ public class AutoAnnotationTask extends AbstractTask {
 		this.syncTaskManager = autoAnnotationManager.getSyncTaskManager();
 		this.tableManager = autoAnnotationManager.getTableManager();
 		this.executor = autoAnnotationManager.getCommandExecutor();
+		this.westPanel = autoAnnotationManager.getWestPanel();
 	};
 
 	@Override
@@ -171,7 +170,6 @@ public class AutoAnnotationTask extends AbstractTask {
     	// Add these clusters to the table on the annotationPanel
     	annotationPanel.addClusters(annotationSet);
     	annotationPanel.updateSelectedView(view);
-		CytoPanel westPanel = application.getCytoPanel(CytoPanelName.WEST);
 		westPanel.setSelectedIndex(westPanel.indexOfComponent(annotationPanel));
 		EnrichmentMapUtils.setOverrideHeatmapRevalidation(false);
 		

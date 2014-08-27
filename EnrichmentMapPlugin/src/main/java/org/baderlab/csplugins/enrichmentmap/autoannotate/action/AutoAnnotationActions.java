@@ -19,7 +19,6 @@ import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.task.AutoAnnotationTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.task.Observer;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters;
-import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.command.CommandExecutorTaskFactory;
 import org.cytoscape.model.CyNetwork;
@@ -27,7 +26,6 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
-import org.cytoscape.util.swing.BasicCollapsiblePanel;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
@@ -37,10 +35,8 @@ import org.cytoscape.work.swing.DialogTaskManager;
 
 public class AutoAnnotationActions {
 	
-	public static void annotateAction(CySwingApplication application,
-			CyNetworkView selectedView, boolean clusterMakerDefault,
+	public static void annotateAction(CyNetworkView selectedView, boolean clusterMakerDefault,
 			String nameColumnName, boolean layoutNodes, boolean useGroups,
-			BasicCollapsiblePanel advancedOptionsPanel,
 			JComboBox<String> clusterAlgorithmDropdown, JComboBox<String> clusterColumnDropdown) {
 		
 		if (selectedView == null) {
@@ -72,16 +68,14 @@ public class AutoAnnotationActions {
 				clusterColumnName = (String) clusterColumnDropdown.getSelectedItem();
 			}
 			String annotationSetName = params.nextAnnotationSetName(algorithm, clusterColumnName);
-			AutoAnnotationTaskFactory autoAnnotatorTaskFactory = new AutoAnnotationTaskFactory(application, 
-					autoAnnotationManager, selectedView, clusterColumnName, nameColumnName, algorithm, 
+			AutoAnnotationTaskFactory autoAnnotatorTaskFactory = new AutoAnnotationTaskFactory( 
+					selectedView, clusterColumnName, nameColumnName, algorithm, 
 					layoutNodes, useGroups, annotationSetName);
-			advancedOptionsPanel.setCollapsed(true);
 			autoAnnotationManager.getDialogTaskManager().execute(autoAnnotatorTaskFactory.createTaskIterator());
 		}
 	}
 	
-	public static void deleteAction(AnnotationSet annotationSet,
-			JTable clusterTable, CytoPanel westPanel) {
+	public static void deleteAction(AnnotationSet annotationSet, JTable clusterTable) {
 		
 		int[] selectedRows = clusterTable.getSelectedRows();
 		if (selectedRows.length < 1) {
@@ -111,12 +105,12 @@ public class AutoAnnotationActions {
 			}
 			updateAction(annotationSet);
 			// Focus on this panel
+			CytoPanel westPanel = autoAnnotationManager.getWestPanel();
 			westPanel.setSelectedIndex(westPanel.indexOfComponent(autoAnnotationManager.getAnnotationPanel()));
 		}
 	}
 	
-	public static void mergeAction(AnnotationSet annotationSet, 
-			JTable clusterTable, CytoPanel westPanel) {
+	public static void mergeAction(AnnotationSet annotationSet, JTable clusterTable) {
 		CyNetworkView selectedView = annotationSet.getView();
 		CyNetwork selectedNetwork = selectedView.getModel();
 		AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
@@ -191,6 +185,7 @@ public class AutoAnnotationActions {
 			// Deselect rows (no longer meaningful)
 			clusterTable.clearSelection();
 			// Focus on this panel
+			CytoPanel westPanel = autoAnnotationManager.getWestPanel();
 			westPanel.setSelectedIndex(westPanel.indexOfComponent(autoAnnotationManager.getAnnotationPanel()));
 		}
 	}
@@ -285,8 +280,7 @@ public class AutoAnnotationActions {
 		clusterTable.clearSelection();
 	}
 
-	public static void extractAction(AnnotationSet annotationSet, 
-			JTable clusterTable, CytoPanel westPanel) {
+	public static void extractAction(AnnotationSet annotationSet, JTable clusterTable) {
 		CyNetworkView selectedView = annotationSet.getView();
 		CyNetwork selectedNetwork = selectedView.getModel();
 		AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
@@ -312,7 +306,6 @@ public class AutoAnnotationActions {
 			Class<?> columnType = selectedNetwork.getDefaultNodeTable().getColumn(annotationSet.getClusterColumnName()).getType();
 			String clusterColumnName = annotationSet.getClusterColumnName();
 			String nameColumnName = annotationSet.getNameColumnName();
-			
 			int newClusterNumber = annotationSet.getNextClusterNumber();
 			Cluster newCluster = null;
 			
@@ -418,6 +411,7 @@ public class AutoAnnotationActions {
 			// Deselect rows (no longer meaningful)
 			clusterTable.clearSelection();
 			// Focus on this panel
+			CytoPanel westPanel = autoAnnotationManager.getWestPanel();
 			westPanel.setSelectedIndex(westPanel.indexOfComponent(autoAnnotationManager.getAnnotationPanel()));
 		}
 	}

@@ -1,7 +1,5 @@
 package org.baderlab.csplugins.enrichmentmap.autoannotate.task;
 
-import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
-import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
@@ -15,8 +13,6 @@ import org.cytoscape.work.TaskIterator;
 
 public class AutoAnnotationTaskFactory implements TaskFactory {
 
-	private CySwingApplication application;
-	private AutoAnnotationManager autoAnnotationManager;
 	private CyNetworkView selectedView;
 	private String clusterColumnName;
 	private String nameColumnName;
@@ -25,11 +21,9 @@ public class AutoAnnotationTaskFactory implements TaskFactory {
 	private boolean groups;
 	private String annotationSetName;
 	
-	public AutoAnnotationTaskFactory(CySwingApplication application, AutoAnnotationManager autoAnnotationManager, 
-			CyNetworkView selectedView, String clusterColumnName, String nameColumnName,  String algorithm,
+	public AutoAnnotationTaskFactory(CyNetworkView selectedView,
+			String clusterColumnName, String nameColumnName,  String algorithm,
 			boolean layout, boolean groups, String annotationSetName) {
-		this.application = application;
-		this.autoAnnotationManager = autoAnnotationManager;
 		this.selectedView = selectedView;
 		this.clusterColumnName = clusterColumnName;
 		this.nameColumnName = nameColumnName;
@@ -40,7 +34,7 @@ public class AutoAnnotationTaskFactory implements TaskFactory {
 	}
 	
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new AutoAnnotationTask(application, autoAnnotationManager, selectedView, clusterColumnName, 
+		return new TaskIterator(new AutoAnnotationTask(selectedView, clusterColumnName, 
 				nameColumnName, algorithm, layout, groups, annotationSetName));
 	}
 	public boolean isReady() {

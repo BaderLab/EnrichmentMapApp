@@ -13,10 +13,13 @@ import org.baderlab.csplugins.enrichmentmap.view.HeatMapPanel;
 import org.cytoscape.application.events.SetSelectedNetworkViewsEvent;
 import org.cytoscape.application.events.SetSelectedNetworkViewsListener;
 import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.application.swing.CytoPanel;
+import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.command.CommandExecutorTaskFactory;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.group.CyGroupManager;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.events.ColumnCreatedEvent;
 import org.cytoscape.model.events.ColumnCreatedListener;
@@ -24,6 +27,8 @@ import org.cytoscape.model.events.ColumnDeletedEvent;
 import org.cytoscape.model.events.ColumnDeletedListener;
 import org.cytoscape.model.events.ColumnNameChangedEvent;
 import org.cytoscape.model.events.ColumnNameChangedListener;
+import org.cytoscape.model.events.RowsSetEvent;
+import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
@@ -44,7 +49,7 @@ import org.cytoscape.work.swing.DialogTaskManager;
 public class AutoAnnotationManager implements
 		SetSelectedNetworkViewsListener, ColumnCreatedListener, 
 		ColumnDeletedListener, ColumnNameChangedListener,
-		NetworkViewAboutToBeDestroyedListener {
+		NetworkViewAboutToBeDestroyedListener, RowsSetListener {
 	
 	// instance variable used to get the manager from other parts of the program
 	private static AutoAnnotationManager instance = null;
@@ -167,6 +172,14 @@ public class AutoAnnotationManager implements
 		}
 	}
 	
+	@Override
+	public void handleEvent(RowsSetEvent e) {
+		if (annotationPanel != null && e.getColumnRecords(CyNetwork.SELECTED).size() > 0) {
+			// If nodes have been selected/deselected
+			annotationPanel.updateNodeSelection(e.getSource(), e.getColumnRecords(CyNetwork.SELECTED));
+		}
+	}
+	
 	public HashMap<CyNetworkView, AutoAnnotationParameters> getNetworkViewToAutoAnnotationParameters() {
 		return networkViewToAutoAnnotationParameters;
 	}
@@ -251,7 +264,15 @@ public class AutoAnnotationManager implements
 	public HeatMapPanel getHeatmapPanel() {
 		return heatmapPanel;
 	}
+	
+	public CytoPanel getWestPanel() {
+		return application.getCytoPanel(CytoPanelName.WEST);
+	}
 
+	public CytoPanel getSouthPanel() {
+		return application.getCytoPanel(CytoPanelName.SOUTH);
+	}
+	
 	public boolean isHeatMapUpdating() {
 		return EMActionListener.isHeatMapUpdating();
 	}
