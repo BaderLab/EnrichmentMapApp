@@ -209,6 +209,12 @@ public class AutoAnnotationTask extends AbstractTask {
 			edgeAttribute = "--None--";
 		}
 		
+		for (View<CyNode> nodeView : view.getNodeViews()) {
+			if (nodeView.getVisualProperty(BasicVisualLexicon.NODE_VISIBLE)) {
+				network.getRow(nodeView.getModel()).set(CyNetwork.SELECTED, true);
+			}
+		}
+		
 		// Executes the task inside of clusterMaker
 		ArrayList<String> commands = new ArrayList<String>();
 		commands.add(getCommand(algorithm, edgeAttribute, network.toString()));
@@ -317,19 +323,19 @@ public class AutoAnnotationTask extends AbstractTask {
 	private String getCommand(String algorithm, String edgeAttribute, String networkName) {
 		String command = "";
 		if (algorithm == "Affinity Propagation Cluster") {
-			command = "cluster ap attribute=\"" + edgeAttribute + "\" clusterAttribute=\"" + clusterColumnName + "\"";
+			command = "cluster ap attribute=\"" + edgeAttribute + "\" clusterAttribute=\"" + clusterColumnName + "\" selectedOnly=true";
 		} else if (algorithm == "Cluster Fuzzifier") {
-			command = "cluster fuzzifier attribute=\"" + edgeAttribute + "\" clusterAttribute=\"" + clusterColumnName + "\"";
+			command = "cluster fuzzifier attribute=\"" + edgeAttribute + "\" clusterAttribute=\"" + clusterColumnName + "\" selectedOnly=true";
 		} else if (algorithm == "Community cluster (GLay)") {
-			command = "cluster glay clusterAttribute=\"" + clusterColumnName + "\"";
+			command = "cluster glay clusterAttribute=\"" + clusterColumnName + "\" selectedOnly=true";
 		} else if (algorithm == "ConnectedComponents Cluster") {
-			command = "cluster connectedcomponents attribute=\"" + edgeAttribute + "\" clusterAttribute=\"" + clusterColumnName + "\"";
+			command = "cluster connectedcomponents attribute=\"" + edgeAttribute + "\" clusterAttribute=\"" + clusterColumnName + "\" selectedOnly=true";
 		} else if (algorithm == "Fuzzy C-Means Cluster") {
-			command = "cluster fcml attribute=\"" + edgeAttribute + "\" clusterAttribute=\"" + clusterColumnName + "\"";
+			command = "cluster fcml attribute=\"" + edgeAttribute + "\" clusterAttribute=\"" + clusterColumnName + "\" selectedOnly=true";
 		} else if (algorithm == "MCL Cluster") {
-			command = "cluster mcl attribute=\"" + edgeAttribute + "\" clusterAttribute=\"" + clusterColumnName + "\"";
+			command = "cluster mcl attribute=\"" + edgeAttribute + "\" clusterAttribute=\"" + clusterColumnName + "\" selectedOnly=true";
 		} else if (algorithm == "SCPS Cluster") {
-			command = "cluster scps attribute=\"" + edgeAttribute + "\" clusterAttribute=\"" + clusterColumnName + "\"";
+			command = "cluster scps attribute=\"" + edgeAttribute + "\" clusterAttribute=\"" + clusterColumnName + "\" selectedOnly=true";
 		}
 		return command;
 	}
