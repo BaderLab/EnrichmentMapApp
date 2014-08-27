@@ -24,17 +24,20 @@ import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationUtils;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.action.AutoAnnotationActions;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.AnnotationSet;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.LabelOptions;
+import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
 
 public class DisplayOptionsPanel extends JPanel implements CytoPanelComponent {
 
 	private static final long serialVersionUID = -7883203344022939503L;
+	protected static final String WORDCLOUD_PANEL_NAME = "WordCloud Display";
 	private AnnotationSet selectedAnnotationSet;
 	private JTextField fontSizeTextField;
 	private JCheckBox showEllipsesCheckBox;
@@ -273,9 +276,35 @@ public class DisplayOptionsPanel extends JPanel implements CytoPanelComponent {
 		ButtonGroup buttonGroup = new ButtonGroup();
 		buttonGroup.add(wordCloudButton);
 		buttonGroup.add(heatmapButton);
-
-		heatmapButton.setSelected(true);
+		
 		wordCloudButton.setSelected(true);
+		wordCloudButton.addItemListener(new ItemListener() {
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
+				CytoPanel southPanel = autoAnnotationManager.getSouthPanel();
+				if (e.getStateChange() == ItemEvent.SELECTED) {
+					// Switch to WordCloud panel
+					for (int index = 0; index < southPanel.getCytoPanelComponentCount(); index++) {
+						try {
+							CytoPanelComponent panel = (CytoPanelComponent) southPanel.getComponentAt(index);
+							if ((panel.getTitle().equals(WORDCLOUD_PANEL_NAME))) {
+								southPanel.setSelectedIndex(index);
+							}
+						} catch (Exception ex) {
+							// If the panel doesn't implement CytoPanel
+							continue;
+						}
+					}
+				} else {
+					// Switch to heatmap panel
+					int index = southPanel.indexOfComponent(autoAnnotationManager.getHeatmapPanel());
+					if (index != -1) {
+						southPanel.setSelectedIndex(southPanel.indexOfComponent(autoAnnotationManager.getHeatmapPanel()));
+					}					
+				}
+			}
+		});
 
 		JPanel radioButtonPanel = new JPanel();
 		radioButtonPanel.setLayout(new BoxLayout(radioButtonPanel, BoxLayout.PAGE_AXIS));
