@@ -59,6 +59,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.model.events.RowSetRecord;
 import org.cytoscape.util.swing.BasicCollapsiblePanel;
 import org.cytoscape.view.model.CyNetworkView;
@@ -538,7 +539,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 						}
 						// Redraw selected clusters
 						AutoAnnotationUtils.drawCluster(cluster);
-//						// Recreate groups if being used
+						// Recreate groups if being used
 						if (annotationSet.usingGroups()) {
 							CyGroup group = groupFactory.createGroup(selectedNetwork, cluster.getNodesToCoordinates().keySet().iterator().next(), true);
 							ArrayList<CyNode> nodesWithoutGroupNode = new ArrayList<CyNode>(cluster.getNodesToCoordinates().keySet());
@@ -741,10 +742,12 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 	public void updateNodeSelection(CyTable source,
 			Collection<RowSetRecord> columnRecords) {
 		CyTable nodeTable = selectedNetwork.getDefaultNodeTable();
+		List<CyNode> selectedNodes = CyTableUtil.getNodesInState(selectedNetwork, CyNetwork.SELECTED, true);
 		// Ignore events when working on selection/deselection
 		if (source.equals(nodeTable) && params != null && !selecting) {
 			AnnotationSet annotationSet = params.getSelectedAnnotationSet();
 			for (Cluster cluster : annotationSet.getClusterMap().values()) {
+				// Only consider deselecting selected clusters
 				if (cluster.isSelected()) {
 					boolean deselected = false;
 					for (CyNode node : cluster.getNodes()) {
@@ -757,6 +760,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 									if (cluster.equals(clusterTableModel.getValueAt(rowIndex, 0))) {
 										clusterListSelectionModel.removeSelectionInterval(rowIndex, rowIndex);
 										autoAnnotationManager.flushPayloadEvents();
+										break;
 									}
 								}
 								deselected = true;
@@ -764,6 +768,25 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 							}
 						}
 						if (deselected) break;
+					}
+				} else {
+					boolean select = true;
+					for (CyNode node : cluster.getNodes()) {
+						if (!selectedNodes.contains(node)) {
+							select = false;
+							break;
+						}
+					}
+					if (select) {
+						TableModel clusterTableModel = clustersToTables.get(annotationSet).getModel();
+						ListSelectionModel clusterListSelectionModel = clustersToTables.get(annotationSet).getSelectionModel();
+						for (int rowIndex = 0; rowIndex < clusterTableModel.getRowCount(); rowIndex++) {
+							if (cluster.equals(clusterTableModel.getValueAt(rowIndex, 0))) {
+								clusterListSelectionModel.addSelectionInterval(rowIndex, rowIndex);
+								autoAnnotationManager.flushPayloadEvents();
+								break;
+							}
+						}
 					}
 				}
 			}

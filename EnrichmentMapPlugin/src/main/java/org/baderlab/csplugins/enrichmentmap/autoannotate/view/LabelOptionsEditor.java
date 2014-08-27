@@ -220,6 +220,7 @@ public class LabelOptionsEditor extends JDialog {
 					sliderPanel.add(thresholdSlider);
 					slidersPanel.add(sliderPanel);
 				}
+				slidersPanel.setToolTipText("Sliders to adjust thresholds for word inclusion in the label");
 				thresholdPanel.add(slidersPanel, BorderLayout.CENTER);
 				thresholdPanel.updateUI();
 				pack();
@@ -235,7 +236,7 @@ public class LabelOptionsEditor extends JDialog {
 		bonusSliderPanel.setLayout(new BoxLayout(bonusSliderPanel, BoxLayout.PAGE_AXIS));
 		bonusSliderPanel.setBorder(BorderFactory.createTitledBorder("Word Size Bonuses"));
 		// Bonus for words in the same WordCloud cluster 
-		final JLabel sameClusterBonusLabel = new JLabel("Bonus for words in same WordCloud cluster: " +
+		final JLabel sameClusterBonusLabel = new JLabel("Font size bonus for words in same WordCloud cluster: " +
 				sameClusterBonus);
 		sameClusterBonusSlider = new JSlider(0, 15, sameClusterBonus);
 		sameClusterBonusSlider.addChangeListener(new ChangeListener() {
@@ -254,7 +255,7 @@ public class LabelOptionsEditor extends JDialog {
 		bonusSliderPanel.add(sameClusterBonusLabel);
 		bonusSliderPanel.add(sameClusterBonusSlider);
 		// Bonus for words coming from the most central nodes in the cluster
-		final JLabel centralityBonusLabel = new JLabel("Bonus for words from most central nodes: " + 
+		final JLabel centralityBonusLabel = new JLabel("Font size bonus for words from most central nodes: " + 
 				centralityBonus);
 		centralityBonusSlider = new JSlider(0, 15, centralityBonus);
 		centralityBonusSlider.addChangeListener(new ChangeListener() {
@@ -270,6 +271,10 @@ public class LabelOptionsEditor extends JDialog {
 				revalidate();
 			}
 		});
+		
+		sameClusterBonusSlider.setToolTipText("Sliders to adjust font size bonus given to words in the same cluster as ones already in the label");
+		centralityBonusSlider.setToolTipText("Sliders to adjust font size bonus given to words from the most central node");
+		
 		bonusSliderPanel.add(centralityBonusLabel);
 		bonusSliderPanel.add(centralityBonusSlider);
 
