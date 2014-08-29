@@ -261,7 +261,6 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 				// Get rid of the table associated with this cluster set
 				remove(clustersToTables.get(annotationSet).getParent());
 				AutoAnnotationActions.removeAction(clusterSetDropdown, clustersToTables, params);
-				// Hide the unusable buttons if the last annotation set was just deleted
 			}
 		};
 		removeButton.addActionListener(clearActionListener);

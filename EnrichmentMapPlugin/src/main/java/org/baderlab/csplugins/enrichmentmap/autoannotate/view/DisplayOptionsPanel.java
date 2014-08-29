@@ -25,6 +25,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationParameters;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationUtils;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.action.AutoAnnotationActions;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.AnnotationSet;
@@ -242,8 +243,22 @@ public class DisplayOptionsPanel extends JPanel implements CytoPanelComponent {
 		ellipseButton.addItemListener(new ItemListener() {
 			@Override
 			public void itemStateChanged(ItemEvent e) {
+				AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
+				JRadioButton ellipseButton = (JRadioButton) e.getSource();
+				String shapeType = ellipseButton.isSelected() ? "ELLIPSE" : "ROUNDEDRECTANGLE";
+				for (AutoAnnotationParameters params : autoAnnotationManager.getNetworkViewToAutoAnnotationParameters().values()) {
+					for (AnnotationSet annotationSet : params.getAnnotationSets().values()) {
+						annotationSet.setShapeType(shapeType);
+						// Redraw if annotation set is currently selected
+						if (annotationSet.equals(selectedAnnotationSet)) {
+							for (Cluster cluster : selectedAnnotationSet.getClusterMap().values()) {
+								cluster.eraseEllipse();
+								AutoAnnotationUtils.drawEllipse(cluster);
+							}
+						}
+					}
+				}
 				if (selectedAnnotationSet != null) {
-					JRadioButton ellipseButton = (JRadioButton) e.getSource();
 					selectedAnnotationSet.setShapeType(ellipseButton.isSelected() ? "ELLIPSE" : "ROUNDEDRECTANGLE");
 					for (Cluster cluster : selectedAnnotationSet.getClusterMap().values()) {
 						cluster.eraseEllipse();

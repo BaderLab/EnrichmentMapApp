@@ -38,6 +38,7 @@ import org.cytoscape.work.TaskIterator;
 public class AutoAnnotationUtils {
 	
 	private static int min_size = 50; // Minimum size of the ellipse
+	private static Color fillColor = Color.getHSBColor(0.19f, 1.25f, 0.95f);
 	
 	public static void selectCluster(Cluster selectedCluster, 
 			CommandExecutorTaskFactory executor, SynchronousTaskManager<?> syncTaskManager) {
@@ -130,18 +131,12 @@ public class AutoAnnotationUtils {
 		AnnotationManager annotationManager = autoAnnotationManager.getAnnotationManager();
 		
 		double zoom = view.getVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR);
-    	// Find the edges of the cluster
-		double xmin = 100000000;
-		double ymin = 100000000;
-		double xmax = -100000000;
-		double ymax = -100000000;
-		for (double[] coordinates : cluster.getNodesToCoordinates().values()) {
-			xmin = coordinates[0] < xmin ? coordinates[0] : xmin;
-			xmax = coordinates[0] > xmax ? coordinates[0] : xmax;
-			ymin = coordinates[1] < ymin ? coordinates[1] : ymin;
-			ymax = coordinates[1] > ymax ? coordinates[1] : ymax;
-		}
-		
+
+		double[] bounds = cluster.getBounds();
+		double xmin = bounds[0];
+		double xmax = bounds[1];
+		double ymin = bounds[2];
+		double ymax = bounds[3];
 		
 		double centreX = (xmin + xmax)/2;
 		double centreY = (ymin + ymax)/2;
@@ -151,6 +146,7 @@ public class AutoAnnotationUtils {
 		height = height > min_size ? height : min_size;
 		HashMap<CyNode, double[]> nodesToCoordinates = cluster.getNodesToCoordinates();
 		HashMap<CyNode, Double> nodesToRadii = cluster.getNodesToRadii();
+		
 		if (shapeType.equals("ELLIPSE")) {
 			while (nodesOutOfCluster(nodesToCoordinates, nodesToRadii, 
 					width, height, centreX, centreY, ellipseBorderWidth)) {
@@ -179,7 +175,7 @@ public class AutoAnnotationUtils {
 		ellipse.setSize(width*zoom, height*zoom);
 		ellipse.setBorderWidth(ellipseBorderWidth);
 		ellipse.setBorderColor(Color.DARK_GRAY);
-		ellipse.setFillColor(Color.getHSBColor(0.19f, 1.25f, 0.95f));
+		ellipse.setFillColor(fillColor);
 		ellipse.setFillOpacity(ellipseOpacity);
 		cluster.setEllipse(ellipse);
 		if (showEllipses) {

@@ -39,7 +39,8 @@ public class Cluster implements Comparable<Cluster> {
 	private HashMap<CyNode, Double> nodesToRadii;
 	private HashMap<CyNode, Double> nodesToCentralities;
 	private String mostCentralNodeLabel;
-	private boolean coordinatesChanged = false;
+	private boolean coordinatesChanged = true;
+	private double[] bounds = new double[4];
 	
 	// Used when initializing from a session file
 	public Cluster() {
@@ -75,6 +76,27 @@ public class Cluster implements Comparable<Cluster> {
 	
 	public AnnotationSet getParent() {
 		return parent;
+	}
+	
+	public double[] getBounds() {
+		if (coordinatesChanged) {
+			// Find the edges of the cluster
+			double xmin = 100000000;
+			double ymin = 100000000;
+			double xmax = -100000000;
+			double ymax = -100000000;
+			for (double[] coordinates : nodesToCoordinates.values()) {
+				xmin = coordinates[0] < xmin ? coordinates[0] : xmin;
+				xmax = coordinates[0] > xmax ? coordinates[0] : xmax;
+				ymin = coordinates[1] < ymin ? coordinates[1] : ymin;
+				ymax = coordinates[1] > ymax ? coordinates[1] : ymax;
+			}
+			bounds[0] = xmin;
+			bounds[1] = xmax;
+			bounds[2] = ymin;
+			bounds[3] = ymax;
+		}
+		return bounds;
 	}
 	
 	public void setParent(AnnotationSet annotationSet) {
