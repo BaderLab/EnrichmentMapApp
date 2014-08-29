@@ -89,6 +89,12 @@ public class AutoAnnotationUtils {
 			deselectedCluster.getEllipse().setBorderColor(Color.DARK_GRAY);
 			deselectedCluster.getEllipse().setBorderWidth(ellipseBorderWidth);
 			deselectedCluster.getTextAnnotation().setTextColor(Color.BLACK);
+			deselectedCluster.getParent().updateCoordinates();
+			if (deselectedCluster.coordinatesChanged()) {
+				deselectedCluster.erase();
+				AutoAnnotationUtils.drawCluster(deselectedCluster);
+				deselectedCluster.setCoordinatesChanged(false);
+			}
 		}
 	}
 

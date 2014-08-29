@@ -180,7 +180,7 @@ public class AutoAnnotationActions {
 			for (CyNode node : firstCluster.getNodesToCoordinates().keySet()) {
 				selectedNetwork.getRow(node).set(CyNetwork.SELECTED, false);
 			}
-			AutoAnnotationUtils.updateNodeCentralities(firstCluster);
+			firstCluster.setCoordinatesChanged(true);
 			updateAction(annotationSet);
 			// Deselect rows (no longer meaningful)
 			clusterTable.clearSelection();
@@ -190,9 +190,12 @@ public class AutoAnnotationActions {
 		}
 	}
 
-	public static void removeAction(CyNetwork selectedNetwork, AnnotationSet annotationSet,
-			JComboBox<AnnotationSet> clusterSetDropdown, HashMap<AnnotationSet, JTable> clustersToTables,
+	public static void removeAction(JComboBox<AnnotationSet> clusterSetDropdown, 
+			HashMap<AnnotationSet, JTable> clustersToTables,
 			AutoAnnotationParameters params) {
+		
+		AnnotationSet annotationSet = params.getSelectedAnnotationSet();
+		CyNetwork selectedNetwork = annotationSet.getView().getModel();
 
 		int confirmation = JOptionPane.showConfirmDialog(null, "Are you sure you want to remove this annotation set? This cannot be undone.",
 				"Remove confirmation", JOptionPane.YES_NO_OPTION);
@@ -228,7 +231,6 @@ public class AutoAnnotationActions {
 	}
 	
 	public static void updateAction(AnnotationSet annotationSet) {
-		
 		AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
 		CyNetworkView selectedView = annotationSet.getView();
 		CyNetwork selectedNetwork = selectedView.getModel();
@@ -249,9 +251,15 @@ public class AutoAnnotationActions {
 			if (previousLabel != cluster.getLabel()) {
 				// Cluster table needs to be updated with new label
 				clusterTable.updateUI();
+				cluster.eraseText();
+				AutoAnnotationUtils.drawTextLabel(cluster);
 			}
-			cluster.erase();
-			AutoAnnotationUtils.drawCluster(cluster);
+			if (cluster.coordinatesChanged()) {
+				// Redraw cluster if necessary
+				cluster.erase();
+				AutoAnnotationUtils.drawCluster(cluster);
+				cluster.setCoordinatesChanged(false);
+			}
 		}
 		// Update the table if the value has changed (WordCloud has been updated)
 		DefaultTableModel model = (DefaultTableModel) clusterTable.getModel();
@@ -316,6 +324,7 @@ public class AutoAnnotationActions {
 					for (CyNode node : selectedNodes) {
 						if (cluster.getNodesToCoordinates().containsKey(node)) {
 							cluster.removeNode(node);
+							cluster.setCoordinatesChanged(true);
 							clustersChanged.add(cluster);
 						}
 					}

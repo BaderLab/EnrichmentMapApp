@@ -38,8 +38,8 @@ public class AnnotationSet {
 	public static final List<Integer> DEFAULT_WORDSIZE_THRESHOLDS = 
 			Collections.unmodifiableList(Arrays.asList(30, 80, 90, 90, 90, 90));
 	public static final double[] DEFAULT_LABEL_POSITION = {0.5, 0};
-	public static final int DEFAULT_SAME_CLUSTER_BONUS = 5;
-	public static final int DEFAULT_CENTRALITY_BONUS = 5;
+	public static final int DEFAULT_SAME_CLUSTER_BONUS = 8;
+	public static final int DEFAULT_CENTRALITY_BONUS = 4;
 
 	// Map of clusterNumbers to the comprising clusters
 	private TreeMap<Integer, Cluster> clusterMap;
@@ -121,10 +121,14 @@ public class AnnotationSet {
 											nodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION)};
 					double nodeRadius = nodeView.getVisualProperty(BasicVisualLexicon.NODE_WIDTH);
 					if (coordinatesHaveChanged(coordinates, nodesToCoordinates.get(node))) {
+						// Coordinates have changed, redrawing necessary
+						cluster.setCoordinatesChanged(true);
 						cluster.addNodeCoordinates(node, coordinates);
 						cluster.addNodeRadius(node, nodeRadius);
 					}
 				} else {
+					// Coordinates have changed, redrawing necessary
+					cluster.setCoordinatesChanged(true);
 					// Draw the annotation as if all nodes were where the groupNode is
 					cluster.addNodeCoordinates(node, nodesToCoordinates.get(cluster.getGroupNode()));
 					cluster.addNodeRadius(node, nodesToRadii.get(cluster.getGroupNode()));

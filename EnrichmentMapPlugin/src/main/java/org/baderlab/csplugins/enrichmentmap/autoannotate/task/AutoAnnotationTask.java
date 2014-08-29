@@ -129,6 +129,9 @@ public class AutoAnnotationTask extends AbstractTask {
 	
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
+		
+		annotationPanel.setAnnotating(true);
+		
 		taskMonitor.setTitle("Annotating Enrichment Map");
 
 		if (algorithm != null) {
@@ -172,6 +175,9 @@ public class AutoAnnotationTask extends AbstractTask {
     	annotationPanel.updateSelectedView(view);
 		westPanel.setSelectedIndex(westPanel.indexOfComponent(annotationPanel));
 		EnrichmentMapUtils.setOverrideHeatmapRevalidation(false);
+		
+		// Let the panel know annotating is finished
+		annotationPanel.setAnnotating(false);
 		
 		taskMonitor.setProgress(1.0);
 		taskMonitor.setStatusMessage("Done!");

@@ -29,16 +29,17 @@ public class Cluster implements Comparable<Cluster> {
 	private String cloudName;
 	private CyGroup group;
 	private HashMap<CyNode, double[]> nodesToCoordinates;
-	private int size;
+	private int size = 0;
 	private String label;
 	private TextAnnotation textAnnotation;
 	private ShapeAnnotation ellipse;
 	private AnnotationSet parent;
-	private boolean selected;
+	private boolean selected = false;
 	private ArrayList<WordInfo> wordInfos;
 	private HashMap<CyNode, Double> nodesToRadii;
 	private HashMap<CyNode, Double> nodesToCentralities;
 	private String mostCentralNodeLabel;
+	private boolean coordinatesChanged = false;
 	
 	// Used when initializing from a session file
 	public Cluster() {
@@ -46,7 +47,6 @@ public class Cluster implements Comparable<Cluster> {
 		this.nodesToCoordinates = new HashMap<CyNode, double[]>();
 		this.nodesToRadii = new HashMap<CyNode, Double>();
 		this.nodesToCentralities = new HashMap<CyNode, Double>();
-		size = 0;
 	}
 	
 	// Used when creating clusters in the task
@@ -63,8 +63,6 @@ public class Cluster implements Comparable<Cluster> {
 		this.nodesToCoordinates = new HashMap<CyNode, double[]>();
 		this.nodesToRadii = new HashMap<CyNode, Double>();
 		this.nodesToCentralities = new HashMap<CyNode, Double>();
-		size = 0;
-		selected = false;
 	}
 	
 	public int getClusterNumber() {
@@ -356,5 +354,13 @@ public class Cluster implements Comparable<Cluster> {
 	@Override
 	public String toString() {
 		return label;
+	}
+
+	public boolean coordinatesChanged() {
+		return coordinatesChanged ;
+	}
+
+	public void setCoordinatesChanged(boolean b) {
+		coordinatesChanged = b;
 	}
 }

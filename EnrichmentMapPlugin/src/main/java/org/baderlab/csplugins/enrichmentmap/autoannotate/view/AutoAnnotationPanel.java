@@ -114,6 +114,8 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 
 	// Keeps track of when selection of a cluster is happening, to ignore events this fires
 	private boolean selecting = false;
+	// Keeps track of when annotation is happening, to ignore events this fires
+	private boolean annotating = false;
 
 	public AutoAnnotationPanel(CySwingApplication application, DisplayOptionsPanel displayOptionsPanel){
 		this.clustersToTables = new HashMap<AnnotationSet, JTable>();
@@ -172,6 +174,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 			}
 		};
 		annotateButton.addActionListener(annotateAction);
+		annotateButton.setToolTipText("Create a new annotation set");
 
 		inputPanel.add(networkLabel);
 		inputPanel.add(nameColumnDropdownLabel);
@@ -201,6 +204,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 			}
 		};
 		extractButton.addActionListener(extractActionListener);
+		extractButton.setToolTipText("Create a new cluster");
 		
 		// Button to merge two clusters
 		JButton mergeButton = new JButton("Merge");
@@ -213,6 +217,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 			}
 		};
 		mergeButton.addActionListener(mergeActionListener);
+		mergeButton.setToolTipText("Merge clusters into one");
 		
 		// Button to delete a cluster from an annotation set
 		JButton deleteButton = new JButton("Delete");
@@ -225,6 +230,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 			}
 		};
 		deleteButton.addActionListener(deleteActionListener);
+		deleteButton.setToolTipText("Delete selected cluster(s)");
 		
 		// Buttons to edit clusters
 		JPanel outputButtonPanel = new JPanel();
@@ -254,12 +260,12 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 				AnnotationSet annotationSet = (AnnotationSet) clusterSetDropdown.getSelectedItem();
 				// Get rid of the table associated with this cluster set
 				remove(clustersToTables.get(annotationSet).getParent());
-				AutoAnnotationActions.removeAction(selectedNetwork, annotationSet, clusterSetDropdown, 
-						clustersToTables, params);
+				AutoAnnotationActions.removeAction(clusterSetDropdown, clustersToTables, params);
 				// Hide the unusable buttons if the last annotation set was just deleted
 			}
 		};
 		removeButton.addActionListener(clearActionListener);
+		removeButton.setToolTipText("Remove Annotation Set");
 
 		// Button to update the current cluster set
 		JButton updateButton = new JButton("Update");
@@ -271,6 +277,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 			}
 		};
 		updateButton.addActionListener(updateActionListener);
+		updateButton.setToolTipText("Update Annotation Set");
 
 		bottomButtonPanel = new JPanel();
 		bottomButtonPanel.add(new JLabel("Annotation Sets:"));
@@ -744,7 +751,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 		CyTable nodeTable = selectedNetwork.getDefaultNodeTable();
 		List<CyNode> selectedNodes = CyTableUtil.getNodesInState(selectedNetwork, CyNetwork.SELECTED, true);
 		// Ignore events when working on selection/deselection
-		if (source.equals(nodeTable) && params != null && !selecting) {
+		if (source.equals(nodeTable) && params != null && !selecting && !annotating) {
 			AnnotationSet annotationSet = params.getSelectedAnnotationSet();
 			for (Cluster cluster : annotationSet.getClusterMap().values()) {
 				// Only consider deselecting selected clusters
@@ -844,5 +851,9 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 
 	public void setDisplayOptionsPanel(DisplayOptionsPanel displayOptionsPanel) {
 		this.displayOptionsPanel = displayOptionsPanel; 
+	}
+
+	public void setAnnotating(boolean b) {
+		annotating = b;
 	}
 }
