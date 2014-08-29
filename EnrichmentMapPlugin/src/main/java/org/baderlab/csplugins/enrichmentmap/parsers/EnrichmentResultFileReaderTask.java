@@ -814,7 +814,7 @@ public class EnrichmentResultFileReaderTask extends AbstractTask {
                 tokens = line.split("\t");
                 //there are extra lines at the end of the file that should be ignored.
                 if(tokens.length != 24)
-                		break;
+                		continue;
 
                 double pvalue = 1.0;
                 double FDRqvalue = 1.0;
