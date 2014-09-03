@@ -8,7 +8,8 @@ import org.baderlab.csplugins.enrichmentmap.StreamUtil;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.parsers.EnrichmentResultFileReaderTask;
+import org.baderlab.csplugins.enrichmentmap.parsers.DetermineEnrichmentResultFileReader;
+import org.baderlab.csplugins.enrichmentmap.parsers.ParseDavidEnrichmentResults;
 import org.cytoscape.work.TaskMonitor;
 
 public class LoadDavidResultTest extends TestCase{
@@ -32,7 +33,7 @@ public class LoadDavidResultTest extends TestCase{
 		params.addFiles(EnrichmentMap.DATASET1, files);
 		
 		//set the method to David
-		params.setMethod(EnrichmentMapParameters.method_DAVID);
+		params.setMethod(EnrichmentMapParameters.method_Specialized);
 		params.setSimilarityMetric(EnrichmentMapParameters.SM_JACCARD);
 		params.setSimilarityCutOff(0.25);
 		params.setPvalue(0.005);
@@ -47,7 +48,7 @@ public class LoadDavidResultTest extends TestCase{
 		em.addDataset(EnrichmentMap.DATASET1, dataset);
 				
 		//create a DatasetTask
-		EnrichmentResultFileReaderTask enrichmentResultsFilesTask = new EnrichmentResultFileReaderTask(dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
+		ParseDavidEnrichmentResults  enrichmentResultsFilesTask = new ParseDavidEnrichmentResults(dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
         enrichmentResultsFilesTask.run(taskMonitor); 
 
         CreateDummyExpressionTask dummyExpressionTask = new CreateDummyExpressionTask(dataset);
@@ -101,7 +102,7 @@ public class LoadDavidResultTest extends TestCase{
 		params.addFiles(EnrichmentMap.DATASET2, files2);
 		
 		//set the method to David
-		params.setMethod(EnrichmentMapParameters.method_DAVID);
+		params.setMethod(EnrichmentMapParameters.method_Specialized);
 		params.setSimilarityMetric(EnrichmentMapParameters.SM_JACCARD);
 		params.setSimilarityCutOff(0.25);
 		params.setPvalue(0.005);
@@ -116,7 +117,7 @@ public class LoadDavidResultTest extends TestCase{
 		em.addDataset(EnrichmentMap.DATASET1, dataset);
 				
 		//create a DatasetTask
-		EnrichmentResultFileReaderTask enrichmentResultsFilesTask = new EnrichmentResultFileReaderTask(dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
+		ParseDavidEnrichmentResults enrichmentResultsFilesTask = new ParseDavidEnrichmentResults(dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
 		enrichmentResultsFilesTask.run(taskMonitor); 
 
 		       
@@ -126,7 +127,7 @@ public class LoadDavidResultTest extends TestCase{
 		DataSet dataset2 = new DataSet(em, EnrichmentMap.DATASET2,files2);		
 		em.addDataset(EnrichmentMap.DATASET2, dataset2);						
 		//create a DatasetTask
-		EnrichmentResultFileReaderTask enrichmentResultsFiles2Task = new EnrichmentResultFileReaderTask(dataset2,(org.cytoscape.io.util.StreamUtil)streamUtil);
+		ParseDavidEnrichmentResults enrichmentResultsFiles2Task = new ParseDavidEnrichmentResults(dataset2,(org.cytoscape.io.util.StreamUtil)streamUtil);
 		enrichmentResultsFiles2Task.run(taskMonitor); 
 
 		

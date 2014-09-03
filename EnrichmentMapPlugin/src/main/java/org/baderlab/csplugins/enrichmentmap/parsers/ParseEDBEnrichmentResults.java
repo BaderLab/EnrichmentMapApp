@@ -10,25 +10,100 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.xml.sax.SAXException;
+import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
 import org.baderlab.csplugins.enrichmentmap.model.GSEAResult;
+import org.baderlab.csplugins.enrichmentmap.model.SetOfEnrichmentResults;
+import org.cytoscape.io.util.StreamUtil;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskMonitor;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-public class ParseEDBEnrichmentResults {
+public class ParseEDBEnrichmentResults extends AbstractTask {
+	
+	//default Score at Max value
+    public static final Double DefaultScoreAtMax = -1000000.0;
+	
+    //private EnrichmentMapParameters params;
+    private DataSet dataset;
+    //enrichment results file name
+    private String EnrichmentResultFileName1;
+    private String EnrichmentResultFileName2;
+    
+    //Stores the enrichment results
+    private SetOfEnrichmentResults enrichments;
+    private HashMap<String, EnrichmentResult> results ;
+
+    //phenotypes defined by user - used to classify phenotype specifications
+    //in the generic enrichment results file
+    private String upPhenotype;
+    private String downPhenotype;
+
+    // Keep track of progress for monitoring:
+    private TaskMonitor taskMonitor = null;
+    private boolean interrupted = false;
+
+    //services needed
+    private StreamUtil streamUtil;
+
 	
 	private Document dom;
 	private File inputFile;
 	private HashMap<String, EnrichmentResult> enrichmentresults;
 	
-	public ParseEDBEnrichmentResults(File inputFile){
+	public ParseEDBEnrichmentResults(DataSet dataset,StreamUtil streamUtil){
 
-		this.inputFile = inputFile;
+		this.dataset = dataset;
+		this.streamUtil = streamUtil;
+	
+		this.EnrichmentResultFileName1 = dataset.getEnrichments().getFilename1();
+		this.EnrichmentResultFileName2 = dataset.getEnrichments().getFilename2();
+   
+		//create a new enrichment results set
+		enrichments = dataset.getEnrichments();
+		results = enrichments.getEnrichments();
+		upPhenotype = enrichments.getPhenotype1(); 
+		downPhenotype = enrichments.getPhenotype2();
+    
+		
 		this.enrichmentresults = new HashMap<String, EnrichmentResult>();
 		
 	}
-	
+	/**
+     * Parse enrichment results file
+     */
+
+    public void parse()  throws IOException{
+ 	
+    		if(this.EnrichmentResultFileName1 != null && !this.EnrichmentResultFileName1.isEmpty())
+    			readFile(this.EnrichmentResultFileName1);
+    		if(this.EnrichmentResultFileName2 != null && !this.EnrichmentResultFileName2.isEmpty())
+    			readFile(this.EnrichmentResultFileName2);
+         
+
+    }
+    
+    /*
+     * Read file
+     */
+
+    public void readFile(String EnrichmentResultFileName) throws IOException{
+    		
+    			this.inputFile = new File(EnrichmentResultFileName);
+    			try {
+					this.results = parseDocument();
+				} catch (ParseException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+    			//make sure the results are set in the dataset
+    			dataset.getEnrichments().setEnrichments(this.results);
+    		    				
+    }
+    
 	private void parseFile() throws ParseException{
 		try{
 			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -101,5 +176,42 @@ public class ParseEDBEnrichmentResults {
 		
 	}
 
-	
+
+    
+    /**
+     * Non-blocking call to interrupt the task.
+     */
+    public void halt() {
+        this.interrupted = true;
+    }
+
+     /**
+     * Sets the Task Monitor.
+     *
+     * @param taskMonitor TaskMonitor Object.
+     */
+    public void setTaskMonitor(TaskMonitor taskMonitor) {
+        if (this.taskMonitor != null) {
+            throw new IllegalStateException("Task Monitor is already set.");
+        }
+        this.taskMonitor = taskMonitor;
+    }
+
+    /**
+     * Gets the Task Title.
+     *
+     * @return human readable task title.
+     */
+    public String getTitle() {
+        return new String("Parsing Enrichment Result file");
+    }
+    
+	@Override
+	public void run(TaskMonitor taskMonitor) throws Exception {
+		this.taskMonitor = taskMonitor;
+		this.taskMonitor.setTitle("Parsing Enrichment Result file");
+		
+		parse();
+		
+	}
 }

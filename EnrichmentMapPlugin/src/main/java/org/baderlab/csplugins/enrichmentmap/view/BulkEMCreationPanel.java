@@ -378,7 +378,7 @@ public class BulkEMCreationPanel extends JPanel implements CytoPanelComponent{
            newGMTPanel.add( selectGMTFileButton, BorderLayout.EAST);
 
            //add the components to the panel
-           if(!params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_DAVID))
+           if(!params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_Specialized))
                 panel.add(newGMTPanel);
 
            collapsiblePanel.getContentPane().add(panel, BorderLayout.NORTH);
@@ -885,7 +885,7 @@ public class BulkEMCreationPanel extends JPanel implements CytoPanelComponent{
              gsea = new JRadioButton(EnrichmentMapParameters.method_GSEA, false);
              generic = new JRadioButton(EnrichmentMapParameters.method_generic, true);
              //david = new JRadioButton(EnrichmentMapParameters.method_DAVID, false);
-        }else if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_DAVID)){
+        }else if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_Specialized)){
              gsea = new JRadioButton(EnrichmentMapParameters.method_GSEA, false);
              generic = new JRadioButton(EnrichmentMapParameters.method_generic, false);
              //david = new JRadioButton(EnrichmentMapParameters.method_DAVID, true);

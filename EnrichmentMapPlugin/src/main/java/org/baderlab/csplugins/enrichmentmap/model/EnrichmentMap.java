@@ -214,7 +214,7 @@ public class EnrichmentMap {
 
         	}
         }
-        if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_DAVID))
+        if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_Specialized))
             return true;
         return false;
 

@@ -65,7 +65,7 @@ import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters.Sort;
 import org.baderlab.csplugins.enrichmentmap.heatmap.task.ClusterTaskObserver;
 import org.baderlab.csplugins.enrichmentmap.heatmap.task.HeatMapHierarchicalClusterTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.model.*;
-import org.baderlab.csplugins.enrichmentmap.parsers.EnrichmentResultFileReaderTask;
+import org.baderlab.csplugins.enrichmentmap.parsers.DetermineEnrichmentResultFileReader;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanelComponent;
@@ -1592,7 +1592,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
                     	   leadingEdgeScoreAtMax1 = current_result.getScoreAtMax();
                         	//if the  score at max is set to the default then get the direction of the leading edge
                         	//from the NES
-                        	if(leadingEdgeScoreAtMax1 == EnrichmentResultFileReaderTask.DefaultScoreAtMax)
+                        	if(leadingEdgeScoreAtMax1 == DetermineEnrichmentResultFileReader.DefaultScoreAtMax)
                         		leadingEdgeScoreAtMax1 = current_result.getNES();
 
                         		leadingEdgeRankAtMax1 = current_result.getRankAtMax();
@@ -1604,7 +1604,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
                         			leadingEdgeScoreAtMax2 = current_result.getScoreAtMax();
                         			//if the  score at max is set to the default then get the direction of the leading edge
                         			//from the NES
-                        			if(leadingEdgeScoreAtMax2 == EnrichmentResultFileReaderTask.DefaultScoreAtMax)
+                        			if(leadingEdgeScoreAtMax2 == DetermineEnrichmentResultFileReader.DefaultScoreAtMax)
                         				leadingEdgeScoreAtMax2 = current_result.getNES();
 
                         			leadingEdgeRankAtMax2 = current_result.getRankAtMax();

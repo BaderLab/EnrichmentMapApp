@@ -9,7 +9,7 @@ import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
-import org.baderlab.csplugins.enrichmentmap.parsers.EnrichmentResultFileReaderTask;
+import org.baderlab.csplugins.enrichmentmap.parsers.DetermineEnrichmentResultFileReader;
 import org.baderlab.csplugins.enrichmentmap.parsers.ExpressionFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.parsers.GMTFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.parsers.RanksFileReaderTask;
@@ -119,8 +119,8 @@ public class EnrichmentMapBuildMapTaskFactory implements TaskFactory{
     		
     	
 	    		//second step: load the enrichments 
-	    		EnrichmentResultFileReaderTask enrichmentResultsFilesTask = new EnrichmentResultFileReaderTask(dataset,streamUtil);
-	    		currentTasks.append(enrichmentResultsFilesTask);            
+	    		DetermineEnrichmentResultFileReader enrichmentResultsFilesTask = new DetermineEnrichmentResultFileReader(dataset,streamUtil);
+	    		currentTasks.append(enrichmentResultsFilesTask.getParsers());            
     		
              //third step: load expression file if specified in the dataset.
              //if there is no expression file then create a dummy file to associate with 

@@ -169,11 +169,18 @@ public class EnrichmentMapParameters {
     //with more methods to support can't just have generic or gsea
     final public static String method_GSEA = "GSEA";
     final public static String method_generic = "generic";
-    final public static String method_DAVID = "DAVID/BiNGO/Great";
+    final public static String method_Specialized = "DAVID/BiNGO/Great";
     //with more similarity metric can't use a boolean to reprensent them.
     final public static String SM_JACCARD = "JACCARD";
     final public static String SM_OVERLAP = "OVERLAP";
-    final public static String SM_COMBINED = "COMBINED";    
+    final public static String SM_COMBINED = "COMBINED";
+    
+    //Great has multiple way to filter their data
+    final public static String GREAT_hyper = "HYPER";
+    final public static String GREAT_binom = "BINOM";
+    final public static String GREAT_both = "BOTH";
+    final public static String GREAT_either = "EITHER";
+    private String Great_Filter = GREAT_hyper;
     
     //Cytoscape default properties names
     public static final String defaultJaccardCutOff_propname =  "EnrichmentMap.default_jaccard";    
@@ -876,7 +883,7 @@ public class EnrichmentMapParameters {
 
 
          		//GMT file is not required for David analysis
-         		if(!this.method.equalsIgnoreCase(EnrichmentMapParameters.method_DAVID))
+         		if(!this.method.equalsIgnoreCase(EnrichmentMapParameters.method_Specialized))
          			if(dsFiles.getGMTFileName() == null || dsFiles.getGMTFileName().equalsIgnoreCase("") || !checkFile(dsFiles.getGMTFileName()))
          				errors = errors + "GMT file can not be found \n";
 
@@ -897,7 +904,7 @@ public class EnrichmentMapParameters {
  			this.files.get(EnrichmentMap.DATASET2).setExpressionFileName("");
  		}*/
  		//if there are no expression files and this is a david analysis there is no way of telling if they are from the same gmt file so use different one
- 		/*else*/ if((this.twoDatasets) && this.method.equalsIgnoreCase(EnrichmentMapParameters.method_DAVID) 
+ 		/*else*/ if((this.twoDatasets) && this.method.equalsIgnoreCase(EnrichmentMapParameters.method_Specialized) 
  				&& (this.files.get(EnrichmentMap.DATASET1).getExpressionFileName() != null) && (this.files.get(EnrichmentMap.DATASET2) != null)
  				&& (this.files.get(EnrichmentMap.DATASET2).getExpressionFileName() != null)){
  			this.setTwoDistinctExpressionSets(true);
@@ -1271,7 +1278,15 @@ public class EnrichmentMapParameters {
     }
    
 
-    /**
+    public String getGreat_Filter() {
+		return Great_Filter;
+	}
+
+	public void setGreat_Filter(String great_Filter) {
+		Great_Filter = great_Filter;
+	}
+
+	/**
      * @return flag to indicate there are two datasets
      */
     public boolean isTwoDatasets() {

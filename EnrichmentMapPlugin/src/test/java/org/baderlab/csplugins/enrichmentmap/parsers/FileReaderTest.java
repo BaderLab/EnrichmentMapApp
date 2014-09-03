@@ -317,7 +317,7 @@ public class FileReaderTest extends TestCase {
         assertEquals(0, map.getDataset(EnrichmentMap.DATASET1).getEnrichments().getEnrichments().size());
         
         // read
-        EnrichmentResultFileReaderTask task = new EnrichmentResultFileReaderTask(dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
+        ParseGenericEnrichmentResults task = new ParseGenericEnrichmentResults(dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
         task.run(taskMonitor);
 
 
@@ -364,7 +364,7 @@ public class FileReaderTest extends TestCase {
         //get the default dataset
         DataSet dataset = map.getDataset(EnrichmentMap.DATASET1);
         
-        EnrichmentResultFileReaderTask task = new EnrichmentResultFileReaderTask(dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
+        ParseGSEAEnrichmentResults task = new ParseGSEAEnrichmentResults(dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
         task.run(taskMonitor);
         
         //Get the enrichment
@@ -421,7 +421,7 @@ public class FileReaderTest extends TestCase {
         //get the default dataset
         DataSet dataset = map.getDataset(EnrichmentMap.DATASET1);
         
-        EnrichmentResultFileReaderTask task = new EnrichmentResultFileReaderTask(dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
+        ParseEDBEnrichmentResults task = new ParseEDBEnrichmentResults(dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
         task.run(taskMonitor);
         
         //Get the enrichment
@@ -484,7 +484,7 @@ public class FileReaderTest extends TestCase {
         DataSet dataset = map.getDataset(EnrichmentMap.DATASET1);
         
 
-        EnrichmentResultFileReaderTask task = new EnrichmentResultFileReaderTask(dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
+        ParseBingoEnrichmentResults task = new ParseBingoEnrichmentResults(dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
         task.run(taskMonitor);
         
         //Get the enrichment
@@ -527,7 +527,7 @@ public class FileReaderTest extends TestCase {
         DataSet dataset = map.getDataset(EnrichmentMap.DATASET1);
         
 
-        EnrichmentResultFileReaderTask task = new EnrichmentResultFileReaderTask(dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
+        ParseDavidEnrichmentResults task = new ParseDavidEnrichmentResults(dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
         task.run(taskMonitor);
         
         //Get the enrichment
