@@ -39,6 +39,8 @@ public class GeneSetSimilarityTest extends TestCase {
       //set up task
         GMTFileReaderTask task = new GMTFileReaderTask(dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
         task.run(taskMonitor);
+        
+        this.dataset.setGenesetsOfInterest(this.dataset.getSetofgenesets());
 
     }
 	
