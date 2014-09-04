@@ -49,6 +49,7 @@ import org.baderlab.csplugins.enrichmentmap.model.GSEAResult;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.GenericResult;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfEnrichmentResults;
+import org.baderlab.csplugins.enrichmentmap.task.BuildGMTEnrichmentMapTask;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskIterator;
@@ -135,7 +136,7 @@ public class DetermineEnrichmentResultFileReader  {
     		TaskIterator parserTasks = new TaskIterator();
     		AbstractTask current = null; 
     		try {
-    			if(this.EnrichmentResultFileName1 != null && !this.EnrichmentResultFileName1.isEmpty()){
+    			if(this.EnrichmentResultFileName2 != null && !this.EnrichmentResultFileName2.isEmpty()){
     				current = readFile(this.EnrichmentResultFileName1);
     				if(current instanceof ParseGREATEnrichmentResults )
     					parserTasks.append(new GREATWhichPvalueQuestionTask(dataset.getMap()));
@@ -143,6 +144,11 @@ public class DetermineEnrichmentResultFileReader  {
     			}
     			if(this.EnrichmentResultFileName2 != null && !this.EnrichmentResultFileName2.isEmpty()){
     				parserTasks.append(readFile(this.EnrichmentResultFileName2));
+    			}
+    			//If both of the enrichment files are null then we want to default to building a gmt file only build
+    			if((this.EnrichmentResultFileName2 == null || this.EnrichmentResultFileName2.isEmpty()) 
+    					&& (this.EnrichmentResultFileName2 == null || this.EnrichmentResultFileName2.isEmpty())){
+    				parserTasks.append(new BuildGMTEnrichmentMapTask(this.dataset));
     			}
     		} catch (IOException e) {
 				// TODO Auto-generated catch block
