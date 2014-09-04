@@ -1316,7 +1316,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
                
             		//create a new params for the new EM and add the dataset files to it
             		EnrichmentMapParameters new_params = new EnrichmentMapParameters(sessionManager,streamUtil,applicationManager);
-            		new_params.copy(empanel.getParams());
+            		new_params.copy(empanel.getParams());         		
             		new_params.addFiles(EnrichmentMap.DATASET1, dataset1files);
             		if(!dataset2files.isEmpty())
             			new_params.addFiles(EnrichmentMap.DATASET2, dataset2files);

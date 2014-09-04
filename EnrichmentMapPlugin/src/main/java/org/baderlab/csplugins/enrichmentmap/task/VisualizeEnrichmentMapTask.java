@@ -168,7 +168,8 @@ public class VisualizeEnrichmentMapTask extends AbstractTask {
            
             //update Parameter panel
             ParametersPanel parametersPanel = EnrichmentMapManager.getInstance().getParameterPanel();
-            parametersPanel.updatePanel(map);
+            parametersPanel.initializeSliders(map);
+            parametersPanel.updatePanel(map);           
             
         return true;
     }

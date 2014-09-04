@@ -49,6 +49,8 @@ import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.actions.SliderBarActionListener;
 import org.cytoscape.application.CyApplicationManager;
 
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.util.Hashtable;
 import java.awt.*;
 
@@ -76,6 +78,9 @@ public class SliderBarPanel extends JPanel {
     private int min;
     private int max;
     //private NumberRangeModel rangeModel;
+    
+    //flag to indicate very small number
+    private boolean smallNumber = false;
 
     //precision that the slider can be adjusted to
     private double precision = 1000.0;
@@ -106,9 +111,25 @@ public class SliderBarPanel extends JPanel {
         this.setOpaque(false);
 
         if((min <= 1) && (max <= 1)){
-            this.min = (int)(min*precision);
-            this.max = (int)(max*precision);
-            this.initial_value = (int)(initial_value*precision);
+
+        	//if the max is a very small number then use the precision to filter the results 
+        	if(max <= 0.0001){
+        		DecimalFormat df = new DecimalFormat("#.##############################");
+        		String text = df.format(max);
+        		int integerPlaces = text.indexOf('.');
+        		int decimalPlaces = text.length() - integerPlaces - 1;
+        		this.precision = decimalPlaces;
+        		this.min = (int) (min * Math.pow(10, (this.precision+this.dec_precision)));
+        		this.max = (int) (max * Math.pow(10, (this.precision+this.dec_precision)));
+        		       		        		
+        		this.initial_value = (int) (initial_value* Math.pow(10, (this.precision+this.dec_precision)));
+        		this.smallNumber = true;
+        	}
+        	else{
+        		this.min = (int)(min*precision);
+        		this.max = (int)(max*precision);
+        		this.initial_value = (int)(initial_value*precision);
+        	}
         }
         else{
            this.min = (int)min;
@@ -148,8 +169,14 @@ public class SliderBarPanel extends JPanel {
 
         //Create the label table
         Hashtable labelTable = new Hashtable();
-        labelTable.put( new Integer( min ), new JLabel(""+ min/precision));
-        labelTable.put( new Integer( max ), new JLabel("" + max/precision));
+        if(smallNumber){
+        	labelTable.put( new Integer( min ), new JLabel(""+ (int)this.min/Math.pow(10, dec_precision) + "E-" + (int)this.precision));
+        	labelTable.put( new Integer( max ), new JLabel("" + (int)this.max/Math.pow(10, dec_precision) + "E-" + (int)this.precision));
+        }
+        else{
+        	labelTable.put( new Integer( min ), new JLabel(""+ min/precision));
+        	labelTable.put( new Integer( max ), new JLabel("" + max/precision));
+        }
         slider.setLabelTable( labelTable );
 
         slider.setPaintLabels(true);
@@ -171,7 +198,14 @@ public class SliderBarPanel extends JPanel {
     //Getters and Setters
 
     public void setLabel(int current_value) {
-        label.setText(String.format( "<html>" + sliderLabel +                   // "P-value Cutoff" or "Q-value Cutoff"
+    	if(smallNumber)
+    		label.setText( "<html>" + sliderLabel +                   // "P-value Cutoff" or "Q-value Cutoff"
+                    " &#8594; " +                                                   // HTML entity right-arrow ( &rarr; )
+                    "<font size=\"-2\"> " +  (current_value/Math.pow(10, (dec_precision + precision)) + " </font></html>"   // dec_precision is the number of decimals for given precision
+                   ))                                       // the current P/Q-value cutoff
+                     ;
+    	else
+    		label.setText(String.format( "<html>" + sliderLabel +                   // "P-value Cutoff" or "Q-value Cutoff"
                 " &#8594; " +                                                   // HTML entity right-arrow ( &rarr; )
                 "<font size=\"-2\"> %." + dec_precision + "f </font></html>",   // dec_precision is the number of decimals for given precision
                 (current_value/precision)                                       // the current P/Q-value cutoff
@@ -181,10 +215,16 @@ public class SliderBarPanel extends JPanel {
     }
 
     public double getPrecision() {
-        return precision;
+    	if(smallNumber)
+    		return Math.pow(10, this.precision+this.dec_precision);
+    	else
+    		return precision;
     }
 
-    public double getMin() {
+    
+    //Methods are currently not used.  If they become useful in the future need to add case for smallNumbers case
+    
+    /*public double getMin() {
         return min/precision;
     }
 
@@ -200,7 +240,7 @@ public class SliderBarPanel extends JPanel {
         this.max = (int) (max*precision);
     }
 
-    /*public NumberRangeModel getRangeModel() {
+    public NumberRangeModel getRangeModel() {
         return rangeModel;
     }
 

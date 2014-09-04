@@ -100,6 +100,8 @@ public class ParseGREATEnrichmentResults extends AbstractTask implements Observa
      */
     public void parseGreatFile(String [] lines){
     	
+    	EnrichmentMapParameters params = dataset.getMap().getParams();
+    	
     	//Get the type of filter user specified on the GREAT results
     	//If it is hyper use column 14 Hypergeometric p-value and 16 FDR for hyper
     	//If it is binom use column 5 bionomial p-value and 7 FDR for binom
@@ -241,6 +243,13 @@ public class ParseGREATEnrichmentResults extends AbstractTask implements Observa
             else{
             	System.out.println("Invalid attribute setting for GREAT p-value specification");           	
             }
+            
+            //Keep track of minimum p-value to better calculate jslider
+            if(pvalue < params.getPvalue_min())
+            	params.setPvalue_min(pvalue);
+            
+           if(FDRqvalue < params.getQvalue_min())
+        	   params.setQvalue_min(FDRqvalue);
             
             //the Count is the size of the geneset - not restricted to the genes of interest
             //the 20th column total genes, a.k.a "annotation count" (K)

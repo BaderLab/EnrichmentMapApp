@@ -92,6 +92,11 @@ public class ParametersPanel extends JPanel implements CytoPanelComponent{
     		this.cyApplicationManager = cyApplicationManager;
        }
 
+    public void initializeSliders(EnrichmentMap map){
+    	if(map != null)
+    		map.getParams().initSliders();
+    }
+    
     /**
      * Update parameters panel based on given enrichment map parameters
      *
