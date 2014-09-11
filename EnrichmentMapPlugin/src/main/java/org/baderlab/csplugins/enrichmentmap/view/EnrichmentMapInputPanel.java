@@ -44,15 +44,20 @@
 package org.baderlab.csplugins.enrichmentmap.view;
 
 import javax.swing.*;
+import javax.swing.JFormattedTextField.AbstractFormatter;
+import javax.swing.JFormattedTextField.AbstractFormatterFactory;
+import javax.swing.text.InternationalFormatter;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapUtils;
 import org.baderlab.csplugins.enrichmentmap.actions.BulkEMCreationAction;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowAboutPanelAction;
+import org.baderlab.csplugins.enrichmentmap.heatmap.task.ClusterTaskObserver;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.JMultiLineToolTip;
+import org.baderlab.csplugins.enrichmentmap.parsers.GreatFilterTaskObserver;
 import org.baderlab.csplugins.enrichmentmap.task.EnrichmentMapBuildMapTaskFactory;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
@@ -83,6 +88,7 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -148,7 +154,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
     JPanel DatasetsPanel;
 
     DecimalFormat decFormat; // used in the formatted text fields
-
+    
     private EnrichmentMapParameters params;
     
     private DataSetFiles dataset1files = new DataSetFiles();
@@ -193,6 +199,8 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
     private JRadioButton jaccard;
     private JRadioButton combined;
 
+    private JCheckBox scinot;
+    
     private int defaultColumns = 15;
 
     //instruction text
@@ -228,6 +236,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 
     		this.empanel = this;
         decFormat = new DecimalFormat();
+        
         decFormat.setParseIntegerOnly(false);
         this.networkFactory = networkFactory;
         this.applicationManager = applicationManager;
@@ -355,20 +364,20 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
            if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)){
                 gsea = new JRadioButton(EnrichmentMapParameters.method_GSEA, true);
                 generic = new JRadioButton(EnrichmentMapParameters.method_generic, false);
-                david = new JRadioButton(EnrichmentMapParameters.method_DAVID, false);
+                david = new JRadioButton(EnrichmentMapParameters.method_Specialized, false);
            }else if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_generic)){
                 gsea = new JRadioButton(EnrichmentMapParameters.method_GSEA, false);
                 generic = new JRadioButton(EnrichmentMapParameters.method_generic, true);
-                david = new JRadioButton(EnrichmentMapParameters.method_DAVID, false);
-           }else if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_DAVID)){
+                david = new JRadioButton(EnrichmentMapParameters.method_Specialized, false);
+           }else if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_Specialized)){
                 gsea = new JRadioButton(EnrichmentMapParameters.method_GSEA, false);
                 generic = new JRadioButton(EnrichmentMapParameters.method_generic, false);
-                david = new JRadioButton(EnrichmentMapParameters.method_DAVID, true);
+                david = new JRadioButton(EnrichmentMapParameters.method_Specialized, true);
            }
 
            gsea.setActionCommand(EnrichmentMapParameters.method_GSEA);
            generic.setActionCommand(EnrichmentMapParameters.method_generic);
-           david.setActionCommand(EnrichmentMapParameters.method_DAVID);
+           david.setActionCommand(EnrichmentMapParameters.method_Specialized);
 
            gsea.addActionListener(new java.awt.event.ActionListener() {
                                public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -507,7 +516,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
            newGMTPanel.add( selectGMTFileButton, BorderLayout.EAST);
 
            //add the components to the panel
-           if(!params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_DAVID))
+           if(!params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_Specialized))
                 panel.add(newGMTPanel);
 
            collapsiblePanel.getContentPane().add(panel, BorderLayout.NORTH);
@@ -655,7 +664,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
                 panel.add(Results2Panel);
 
            collapsiblePanel.getContentPane().add(panel, BorderLayout.NORTH);
-           if(!params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_DAVID))
+           if(!params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_Specialized))
                 collapsiblePanel.getContentPane().add(createAdvancedDatasetOptions(1),BorderLayout.SOUTH);
            return collapsiblePanel;
 
@@ -798,7 +807,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
                 panel.add(Results2Panel);
 
            collapsiblePanel.getContentPane().add(panel, BorderLayout.NORTH);
-           if(!params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_DAVID))
+           if(!params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_Specialized))
                 collapsiblePanel.getContentPane().add(createAdvancedDatasetOptions(2),BorderLayout.SOUTH);
            return collapsiblePanel;
 
@@ -988,7 +997,23 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 
            JPanel panel = new JPanel();
            panel.setLayout(new GridLayout(0, 1));
+           
+           //Add check box to turn on scientific notation for pvalue and qvalue
+           scinot = new JCheckBox("Scientific notation");
+           scinot.addActionListener(new java.awt.event.ActionListener() {
+               public void actionPerformed(java.awt.event.ActionEvent evt) {
+                      selectScientificNotationActionPerformed(evt);
+               }
+         });
+           
+           JLabel scinotLabel = new JLabel("");
+           JPanel scinotPanel = new JPanel();
+           scinotPanel.setLayout(new BorderLayout());
+           scinotPanel.setToolTipText("Allows pvalue and q-value to be entered in scientific notation, i.e. 5E-3 instead of 0.005");
 
+           scinotPanel.add(scinotLabel, BorderLayout.WEST);
+           scinotPanel.add(scinot, BorderLayout.EAST);
+           
            //pvalue cutoff input
            JLabel pvalueCutOffLabel = new JLabel("P-value Cutoff");
            pvalueTextField = new JFormattedTextField(decFormat);
@@ -1122,6 +1147,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
            //add the components to the panel
            panel.add(pvalueCutOffPanel);
            panel.add(qvalueCutOffPanel);
+           panel.add(scinotPanel);
            //panel.add(coeffecientCutOffPanel);
 
            collapsiblePanel.getContentPane().add(panel, BorderLayout.NORTH);
@@ -1290,7 +1316,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
                
             		//create a new params for the new EM and add the dataset files to it
             		EnrichmentMapParameters new_params = new EnrichmentMapParameters(sessionManager,streamUtil,applicationManager);
-            		new_params.copy(empanel.getParams());
+            		new_params.copy(empanel.getParams());         		
             		new_params.addFiles(EnrichmentMap.DATASET1, dataset1files);
             		if(!dataset2files.isEmpty())
             			new_params.addFiles(EnrichmentMap.DATASET2, dataset2files);
@@ -1299,13 +1325,16 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
                 
                 //EnrichmentMapParseInputEvent parseInput = new EnrichmentMapParseInputEvent(empanel,map , dialog,  streamUtil);
                 //parseInput.build();
-                                
+                
+                //add observer to catch if the input is a GREAT file so we can determine which p-value to use
+                GreatFilterTaskObserver observer = new  GreatFilterTaskObserver();
+                
                	EnrichmentMapBuildMapTaskFactory buildmap = new EnrichmentMapBuildMapTaskFactory(map,  
                     			applicationManager,networkManager,networkViewManager,networkViewFactory,networkFactory,tableFactory,tableManager, 
                     			visualMappingManager,visualStyleFactory,
                     			vmfFactoryContinuous, vmfFactoryDiscrete,vmfFactoryPassthrough, dialog,  streamUtil,layoutManager,mapTableToNetworkTable);
                 //buildmap.build();
-                dialog.execute(buildmap.createTaskIterator());
+                dialog.execute(buildmap.createTaskIterator(),observer);
                 
                 //After the network is built register the HeatMap and Parameters panel
         		EnrichmentMapManager manager = EnrichmentMapManager.getInstance();
@@ -1850,8 +1879,8 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
           params.setMethod(EnrichmentMapParameters.method_GSEA);
       else if(analysisType.equalsIgnoreCase(EnrichmentMapParameters.method_generic))
           params.setMethod(EnrichmentMapParameters.method_generic);
-      else if(analysisType.equalsIgnoreCase(EnrichmentMapParameters.method_DAVID))
-          params.setMethod(EnrichmentMapParameters.method_DAVID);
+      else if(analysisType.equalsIgnoreCase(EnrichmentMapParameters.method_Specialized))
+          params.setMethod(EnrichmentMapParameters.method_Specialized);
 
       //before clearing the panel find out which panels where collapsed so we maintain its current state.
       boolean datasets_collapsed = datasets.isCollapsed();
@@ -2002,6 +2031,69 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 
     //Action listeners for buttons in input panel
 
+  	/**
+  	 * Activate or de-activate scientific notation
+  	 * 
+  	 */
+  	private void selectScientificNotationActionPerformed(java.awt.event.ActionEvent evt){
+  		if(scinot.isSelected()){
+  			this.pvalueTextField.setFormatterFactory(new AbstractFormatterFactory() {
+
+  		        @Override
+  		        public AbstractFormatter getFormatter(JFormattedTextField tf) {
+  		            NumberFormat format= new DecimalFormat("0.######E00");
+  		            format.setMinimumFractionDigits(0);
+		            format.setMaximumFractionDigits(12);
+  		            InternationalFormatter formatter = new InternationalFormatter(format);
+  		            formatter.setAllowsInvalid(true);
+  		            return formatter;
+  		        }
+  		    });
+  			
+  			this.qvalueTextField.setFormatterFactory(new AbstractFormatterFactory() {
+
+  		        @Override
+  		        public AbstractFormatter getFormatter(JFormattedTextField tf) {
+  		            NumberFormat format= new DecimalFormat("0.######E00");
+  		            format.setMinimumFractionDigits(0);
+		            format.setMaximumFractionDigits(12);
+  		            InternationalFormatter formatter = new InternationalFormatter(format);
+  		            formatter.setAllowsInvalid(true);
+  		            return formatter;
+  		        }
+  		    });
+  			
+  		}
+  		else{
+  			this.pvalueTextField.setFormatterFactory(new AbstractFormatterFactory() {
+
+  		        @Override
+  		        public AbstractFormatter getFormatter(JFormattedTextField tf) {
+  		            NumberFormat format= new DecimalFormat();
+  		            format.setMinimumFractionDigits(1);
+  		            format.setMaximumFractionDigits(12);
+  		            InternationalFormatter formatter = new InternationalFormatter(format);
+  		            formatter.setAllowsInvalid(true);
+  		            return formatter;
+  		        }
+  		    });
+  			this.qvalueTextField.setFormatterFactory(new AbstractFormatterFactory() {
+
+  		        @Override
+  		        public AbstractFormatter getFormatter(JFormattedTextField tf) {
+  		            NumberFormat format= new DecimalFormat();
+  		            format.setMinimumFractionDigits(1);
+  		            format.setMaximumFractionDigits(12);
+  		            InternationalFormatter formatter = new InternationalFormatter(format);
+  		            formatter.setAllowsInvalid(true);
+  		            return formatter;
+  		        }
+  		    });
+  		}
+  	}
+  	
+  	
+  	
     /**
      * jaccard or overlap radio button action listener
      *
@@ -2173,6 +2265,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
          FileChooserFilter filter_bgo = new FileChooserFilter("rnk Files","bgo" );
          FileChooserFilter filter_txt = new FileChooserFilter("txt Files","txt" );
          FileChooserFilter filter_edb = new FileChooserFilter("edb Files","edb" );
+         FileChooserFilter filter_tsv = new FileChooserFilter("tsv Files","tsv" );
          
          //the set of filter (required by the file util method
          ArrayList<FileChooserFilter> all_filters = new ArrayList<FileChooserFilter>();
@@ -2181,7 +2274,8 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
          all_filters.add(filter_bgo);
          all_filters.add(filter_txt);
          all_filters.add(filter_edb);
-                    
+         all_filters.add(filter_tsv);
+         
           // Get the file name
           File file = fileUtil.getFile(EnrichmentMapUtils.getWindowInstance(this),"Import dataset result File", FileUtil.LOAD, all_filters);
 
@@ -2219,6 +2313,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
         FileChooserFilter filter_bgo = new FileChooserFilter("rnk Files","bgo" );
         FileChooserFilter filter_txt = new FileChooserFilter("txt Files","txt" );
         FileChooserFilter filter_edb = new FileChooserFilter("edb Files","edb" );
+        FileChooserFilter filter_tsv = new FileChooserFilter("tsv Files","tsv" );
         
         //the set of filter (required by the file util method
         ArrayList<FileChooserFilter> all_filters = new ArrayList<FileChooserFilter>();
@@ -2227,6 +2322,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
         all_filters.add(filter_bgo);
         all_filters.add(filter_txt);
         all_filters.add(filter_edb);
+        all_filters.add(filter_tsv);
                    
          // Get the file name
          File file = fileUtil.getFile(EnrichmentMapUtils.getWindowInstance(this),"Import dataset result File", FileUtil.LOAD, all_filters);
@@ -2264,6 +2360,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
         FileChooserFilter filter_bgo = new FileChooserFilter("rnk Files","bgo" );
         FileChooserFilter filter_txt = new FileChooserFilter("txt Files","txt" );
         FileChooserFilter filter_edb = new FileChooserFilter("edb Files","edb" );
+        FileChooserFilter filter_tsv = new FileChooserFilter("tsv Files","tsv" );
         
         //the set of filter (required by the file util method
         ArrayList<FileChooserFilter> all_filters = new ArrayList<FileChooserFilter>();
@@ -2272,6 +2369,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
         all_filters.add(filter_bgo);
         all_filters.add(filter_txt);
         all_filters.add(filter_edb);
+        all_filters.add(filter_tsv);
                    
          // Get the file name
          File file = fileUtil.getFile(EnrichmentMapUtils.getWindowInstance(this),"Import dataset result File", FileUtil.LOAD, all_filters);
@@ -2310,6 +2408,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
          FileChooserFilter filter_bgo = new FileChooserFilter("rnk Files","bgo" );
          FileChooserFilter filter_txt = new FileChooserFilter("txt Files","txt" );
          FileChooserFilter filter_edb = new FileChooserFilter("edb Files","edb" );
+         FileChooserFilter filter_tsv = new FileChooserFilter("tsv Files","tsv" );
          
          //the set of filter (required by the file util method
          ArrayList<FileChooserFilter> all_filters = new ArrayList<FileChooserFilter>();
@@ -2318,7 +2417,8 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
          all_filters.add(filter_bgo);
          all_filters.add(filter_txt);
          all_filters.add(filter_edb);
-                    
+         all_filters.add(filter_tsv);
+         
           // Get the file name
           File file = fileUtil.getFile(EnrichmentMapUtils.getWindowInstance(this),"Import dataset result File", FileUtil.LOAD, all_filters);
 
@@ -2558,7 +2658,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
             generic.setSelected(true);
             david.setSelected(false);
         }
-        else if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_DAVID)){
+        else if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_Specialized)){
             gsea.setSelected(false);
             generic.setSelected(false);
             david.setSelected(true);
@@ -2651,7 +2751,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
             generic.setSelected(true);
             david.setSelected(false);
         }
-        else if(current_params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_DAVID)){
+        else if(current_params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_Specialized)){
             gsea.setSelected(false);
             generic.setSelected(false);
             david.setSelected(true);

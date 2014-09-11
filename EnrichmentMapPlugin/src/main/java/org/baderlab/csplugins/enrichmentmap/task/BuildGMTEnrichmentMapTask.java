@@ -37,73 +37,34 @@ import org.cytoscape.work.TaskMonitor;
  * Time: 4:27 PM
  * To change this template use File | Settings | File Templates.
  */
-public class BuildGMTEnrichmentMapTask implements TaskFactory{
-    // Keep track of progress for monitoring:
-    private int maxValue;
-    private TaskMonitor taskMonitor = null;
-    private boolean interrupted = false;
+public class BuildGMTEnrichmentMapTask extends AbstractTask{
 
-  //services required
-    private StreamUtil streamUtil;
-    private CyApplicationManager applicationManager;
-    private CyNetworkManager networkManager;
-    private CyNetworkViewManager networkViewManager;
-    private CyNetworkViewFactory networkViewFactory;
-    private CyNetworkFactory networkFactory;
-    private CyTableFactory tableFactory;
-    private CyTableManager tableManager;
-    private  MapTableToNetworkTablesTaskFactory mapTableToNetworkTable;
     
-      
-    private EnrichmentMap map;
-    TaskIterator buildEMGMTTaskIterator;
+	// Keep track of progress for monitoring:
+    private TaskMonitor taskMonitor = null;
+    private boolean interrupted = false;   
+    
+    private DataSet dataset;
 
-    public BuildGMTEnrichmentMapTask(EnrichmentMap map,
-    		CyNetworkFactory networkFactory, CyApplicationManager applicationManager, 
-    		CyNetworkManager networkManager, CyNetworkViewManager networkViewManager,
-    		CyTableFactory tableFactory,CyTableManager tableManager, MapTableToNetworkTablesTaskFactory mapTableToNetworkTable) {
+    public BuildGMTEnrichmentMapTask(DataSet dataset) {
         
-    		this.map = map;
-        
-        this.networkFactory = networkFactory;
-        this.applicationManager = applicationManager;
-        this.networkManager = networkManager;
-        this.networkViewManager	= networkViewManager;
-        this.tableFactory = tableFactory;
-        this.tableManager = tableManager;
-        this.mapTableToNetworkTable = mapTableToNetworkTable;
-        
-
+    		this.dataset = dataset;
+              
     }
 
 
     public void buildEnrichmentMap(){
-
-
-
-        	   		//data is loaded into a dataset.
-        	   		//Since we are building an enrichment map from only the gmt file default to put info into 
-        	   		//dataset 1.
-        	   		DataSet current_dataset = map.getDataset(EnrichmentMap.DATASET1);
-        	   		
-               //in this case all the genesets are of interest
-               map.getParams().setMethod(EnrichmentMapParameters.method_generic);
-               current_dataset.setGenesetsOfInterest(current_dataset.getSetofgenesets());
-              
-             //compute the geneset similarities
-               ComputeSimilarityTask similarities = new ComputeSimilarityTask(map);
-               buildEMGMTTaskIterator.append(similarities);
-
-                HashMap<String, GenesetSimilarity> similarity_results = similarities.getGeneset_similarities();
-
-                map.setGenesetSimilarity(similarity_results);
+    	this.dataset.getMap().getParams().setMethod(EnrichmentMapParameters.method_generic);	   		
+               
+    	//in this case all the genesets are of interest
+        this.dataset.setGenesetsOfInterest(this.dataset.getSetofgenesets());
+                                             
+        HashMap<String, GeneSet> current_sets = this.dataset.getSetofgenesets().getGenesets();                
                 
-                HashMap<String, GeneSet> current_sets = current_dataset.getSetofgenesets().getGenesets();
-                
-                //create an new Set of Enrichment Results
-                SetOfEnrichmentResults setofenrichments = new SetOfEnrichmentResults();
-                
-                HashMap<String,EnrichmentResult> currentEnrichments = setofenrichments.getEnrichments();
+        //create an new Set of Enrichment Results                
+        SetOfEnrichmentResults setofenrichments = new SetOfEnrichmentResults();
+
+        HashMap<String,EnrichmentResult> currentEnrichments = setofenrichments.getEnrichments();
                 
                 //need also to put all genesets into enrichment results
                 for(Iterator i = current_sets.keySet().iterator(); i.hasNext();){
@@ -116,13 +77,8 @@ public class BuildGMTEnrichmentMapTask implements TaskFactory{
                     currentEnrichments.put(current.getName(), temp_result);
 
                 }
-               current_dataset.setEnrichments(setofenrichments);               
+       this.dataset.setEnrichments(setofenrichments);               
 
-             //build the resulting map
-               CreateEnrichmentMapNetworkTask create_map = new CreateEnrichmentMapNetworkTask(map,networkFactory, applicationManager,networkManager,tableFactory,tableManager,mapTableToNetworkTable);
-               buildEMGMTTaskIterator.append(create_map);
-                             
-       
     }
 
     /**
@@ -144,25 +100,23 @@ public class BuildGMTEnrichmentMapTask implements TaskFactory{
         this.taskMonitor = taskMonitor;
     }
 
+    /**
+     * Gets the Task Title.
+     *
+     * @return human readable task title.
+     */
+    public String getTitle() {
+        return new String("Computing geneset similarities");
+    }
 
-	
+
+	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		this.taskMonitor = taskMonitor;
-		taskMonitor.setTitle("Building Enrichment Map based on GMT File");
+		this.taskMonitor.setTitle("Computing geneset similarities");
+
+		buildEnrichmentMap();
 		
-		this.buildEnrichmentMap();
 	}
-
-
-	 public TaskIterator createTaskIterator() {
-			this.buildEMGMTTaskIterator = new TaskIterator();
-			this.buildEnrichmentMap();
-			return buildEMGMTTaskIterator;
-		}
-
-		public boolean isReady() {
-			
-			return false;
-		}
 
 }

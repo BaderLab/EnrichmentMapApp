@@ -44,7 +44,9 @@ public class LoadGMTFileOnlyTest extends TestCase {
 				//set up task
 		GMTFileReaderTask task = new GMTFileReaderTask(dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
 	    task.run(taskMonitor);
-
+	    
+	    dataset.setGenesetsOfInterest(dataset.getSetofgenesets());
+	    
 	    //create dummy expression
 	    CreateDummyExpressionTask dummyExpressionTask = new CreateDummyExpressionTask(dataset);
 		dummyExpressionTask.run(taskMonitor);

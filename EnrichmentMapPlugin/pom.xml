@@ -154,7 +154,7 @@
 				<configuration>
 					<instructions>
 						<Bundle-SymbolicName>${bundle.symbolicName}</Bundle-SymbolicName>
-						<Bundle-Version>2.0.0</Bundle-Version>
+						<Bundle-Version>${version}</Bundle-Version>
 						<Bundle-Activator>${bundle.namespace}.enrichmentmap.CyActivator</Bundle-Activator>
 						<Embed-Dependency>*;scope=compile|runtime;groupId=!org.cytoscape</Embed-Dependency>
 						<Private-Package>${bundle.namespace}.*</Private-Package>

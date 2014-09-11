@@ -246,7 +246,7 @@ public class BuildEnrichmentMapTuneableTask extends AbstractTask {
 		this.dialog = dialog;
 		
 		 //create a drop down of the different types of analyses that can be done.
-        analysisType = new ListSingleSelection<String>(EnrichmentMapParameters.method_GSEA,EnrichmentMapParameters.method_generic,EnrichmentMapParameters.method_DAVID );
+        analysisType = new ListSingleSelection<String>(EnrichmentMapParameters.method_GSEA,EnrichmentMapParameters.method_generic,EnrichmentMapParameters.method_Specialized );
         
         coeffecients = new ListSingleSelection<String>(EnrichmentMapParameters.SM_OVERLAP, EnrichmentMapParameters.SM_JACCARD, EnrichmentMapParameters.SM_COMBINED);
 
@@ -263,8 +263,8 @@ public class BuildEnrichmentMapTuneableTask extends AbstractTask {
     	
     		//create a new params for the new EM and add the dataset files to it
 		EnrichmentMapParameters new_params = new EnrichmentMapParameters(sessionManager,streamUtil,applicationManager);
-		if(analysisType.getSelectedValue() == EnrichmentMapParameters.method_DAVID)
-			new_params.setMethod(EnrichmentMapParameters.method_DAVID);
+		if(analysisType.getSelectedValue() == EnrichmentMapParameters.method_Specialized)
+			new_params.setMethod(EnrichmentMapParameters.method_Specialized);
 		if(analysisType.getSelectedValue() == EnrichmentMapParameters.method_GSEA)
 			new_params.setMethod(EnrichmentMapParameters.method_GSEA);
 		if(analysisType.getSelectedValue() == EnrichmentMapParameters.method_generic)

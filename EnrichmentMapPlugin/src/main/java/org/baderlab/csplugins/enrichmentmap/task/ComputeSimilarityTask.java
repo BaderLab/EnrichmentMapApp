@@ -114,13 +114,7 @@ public class ComputeSimilarityTask extends AbstractTask {
             genesetsOfInterest = map.getDataset(EnrichmentMap.DATASET1).getGenesetsOfInterest().getGenesets();
         	else	
         		genesetsOfInterest = map.getAllGenesetsOfInterest();
-          
-            //if there are no gene sets of interest check to see if there are any genesets to use
-            if(genesetsOfInterest == null || genesetsOfInterest.isEmpty())
-            		genesetsOfInterest = map.getAllGenesets();
-            //if((genesetsOfInterest == null || genesetsOfInterest.isEmpty()))
-            		//this.logger.error("There are no genesets to compute similarity between");
-            
+                   
             HashMap genesetsInnerLoop;
             String edgeType = "pp";
             

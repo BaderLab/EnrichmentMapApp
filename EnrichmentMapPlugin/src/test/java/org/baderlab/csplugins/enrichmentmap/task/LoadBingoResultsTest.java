@@ -5,7 +5,8 @@ import org.baderlab.csplugins.enrichmentmap.StreamUtil;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.parsers.EnrichmentResultFileReaderTask;
+import org.baderlab.csplugins.enrichmentmap.parsers.DetermineEnrichmentResultFileReader;
+import org.baderlab.csplugins.enrichmentmap.parsers.ParseBingoEnrichmentResults;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.TaskMonitor;
@@ -34,7 +35,7 @@ public class LoadBingoResultsTest extends TestCase{
 		params.addFiles(EnrichmentMap.DATASET1, files);
 		
 		//set the method to Bingo
-		params.setMethod(EnrichmentMapParameters.method_DAVID);
+		params.setMethod(EnrichmentMapParameters.method_Specialized);
 		params.setSimilarityMetric(EnrichmentMapParameters.SM_JACCARD);
 		params.setSimilarityCutOff(0.25);
 		params.setPvalue(0.00005);
@@ -48,7 +49,7 @@ public class LoadBingoResultsTest extends TestCase{
 		DataSet dataset = new DataSet(em, EnrichmentMap.DATASET1,files);		
 		em.addDataset(EnrichmentMap.DATASET1, dataset);				
 		
-		EnrichmentResultFileReaderTask enrichmentResultsFilesTask = new EnrichmentResultFileReaderTask(dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
+		ParseBingoEnrichmentResults enrichmentResultsFilesTask = new ParseBingoEnrichmentResults (dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
         enrichmentResultsFilesTask.run(taskMonitor); 
         
         CreateDummyExpressionTask dummyExpressionTask = new CreateDummyExpressionTask(dataset);
@@ -102,7 +103,7 @@ public class LoadBingoResultsTest extends TestCase{
 		params.addFiles(EnrichmentMap.DATASET2, files2);
 		
 		//set the method to Bingo
-		params.setMethod(EnrichmentMapParameters.method_DAVID);
+		params.setMethod(EnrichmentMapParameters.method_Specialized);
 		params.setSimilarityMetric(EnrichmentMapParameters.SM_JACCARD);
 		params.setSimilarityCutOff(0.25);
 		params.setPvalue(0.00005);
@@ -116,7 +117,7 @@ public class LoadBingoResultsTest extends TestCase{
 		DataSet dataset = new DataSet(em, EnrichmentMap.DATASET1,files);		
 		em.addDataset(EnrichmentMap.DATASET1, dataset);
 
-		EnrichmentResultFileReaderTask enrichmentResultsFilesTask = new EnrichmentResultFileReaderTask(dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
+		ParseBingoEnrichmentResults  enrichmentResultsFilesTask = new ParseBingoEnrichmentResults (dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
         enrichmentResultsFilesTask.run(taskMonitor); 
 		
 		//Load second dataset
@@ -125,7 +126,7 @@ public class LoadBingoResultsTest extends TestCase{
 		em.addDataset(EnrichmentMap.DATASET2, dataset2);						
 		//create a DatasetTask
 		
-		EnrichmentResultFileReaderTask enrichmentResultsFiles2Task = new EnrichmentResultFileReaderTask(dataset2,(org.cytoscape.io.util.StreamUtil)streamUtil);
+		ParseBingoEnrichmentResults  enrichmentResultsFiles2Task = new ParseBingoEnrichmentResults (dataset2,(org.cytoscape.io.util.StreamUtil)streamUtil);
         enrichmentResultsFiles2Task.run(taskMonitor); 
 		
 		CreateDummyExpressionTask dummyExpressionTask = new CreateDummyExpressionTask(dataset);
