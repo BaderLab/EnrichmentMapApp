@@ -56,7 +56,7 @@ public class AutoAnnotationUtils {
 			if (selectedCluster.isCollapsed()) {
 				network.getRow(selectedCluster.getGroupNode()).set(CyNetwork.SELECTED, true);
 			} else {
-				for (CyNode node : selectedCluster.getNodesToCoordinates().keySet()) {
+				for (CyNode node : selectedCluster.getNodes()) {
 					network.getRow(node).set(CyNetwork.SELECTED, true);
 				}
 			}
@@ -82,7 +82,7 @@ public class AutoAnnotationUtils {
 			if (deselectedCluster.isCollapsed()) {
 				network.getRow(deselectedCluster.getGroupNode()).set(CyNetwork.SELECTED, false);
 			} else {
-				for (CyNode node : deselectedCluster.getNodesToCoordinates().keySet()) {
+				for (CyNode node : deselectedCluster.getNodes()) {
 					network.getRow(node).set(CyNetwork.SELECTED, false);
 				}
 			}

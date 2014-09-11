@@ -142,7 +142,7 @@ public class AutoAnnotationActions {
 			String clusterColumnName = annotationSet.getClusterColumnName();
 			for (Cluster clusterToSwallow : selectedClusters.subList(1, selectedClusters.size())) {
 				// Update values in cluster column
-				for (CyNode node : clusterToSwallow.getNodesToCoordinates().keySet()) {
+				for (CyNode node : clusterToSwallow.getNodes()) {
 					selectedNetwork.getRow(node).set(clusterColumnName, clusterNumber);
 				}
 				// Swallow nodes/coordinates from smaller cluster

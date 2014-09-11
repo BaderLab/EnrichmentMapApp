@@ -113,9 +113,11 @@ public class AnnotationSet {
 		for (Cluster cluster : clusterMap.values()) {
 			HashMap<CyNode, double[]> nodesToCoordinates = cluster.getNodesToCoordinates();
 			HashMap<CyNode, Double> nodesToRadii = cluster.getNodesToRadii();
+			boolean hasNodeViews = false;
 			for (CyNode node : cluster.getNodes()) {
 				View<CyNode> nodeView = view.getNodeView(node);
 				if (nodeView != null) {
+					hasNodeViews = true;
 					// nodeView can be null when group is collapsed
 					double[] coordinates = {nodeView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION),
 											nodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION)};
@@ -126,12 +128,26 @@ public class AnnotationSet {
 						cluster.addNodeCoordinates(node, coordinates);
 						cluster.addNodeRadius(node, nodeRadius);
 					}
-				} else {
+						
+				} 
+				else{
+					if(nodesToCoordinates.containsKey(node)) nodesToCoordinates.remove(node);
+					if(nodesToRadii.containsKey(node)) nodesToRadii.remove(node);
+				}
+			}//end of for CyNode
+				if(!hasNodeViews) {
+					View<CyNode> nodeView = view.getNodeView(cluster.getGroupNode());
+					if (nodeView != null) {
+						hasNodeViews = true;
+						// nodeView can be null when group is collapsed
+						double[] coordinates = {nodeView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION),
+												nodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION)};
+						double nodeRadius = nodeView.getVisualProperty(BasicVisualLexicon.NODE_WIDTH);
 					// Coordinates have changed, redrawing necessary
 					cluster.setCoordinatesChanged(true);
 					// Draw the annotation as if all nodes were where the groupNode is
-					cluster.addNodeCoordinates(node, nodesToCoordinates.get(cluster.getGroupNode()));
-					cluster.addNodeRadius(node, nodesToRadii.get(cluster.getGroupNode()));
+					cluster.addNodeCoordinates(cluster.getGroupNode(), coordinates);
+					cluster.addNodeRadius(cluster.getGroupNode(), nodeRadius);
 				}
 			}
 		}

@@ -2,6 +2,7 @@ package org.baderlab.csplugins.enrichmentmap.autoannotate.model;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -42,12 +43,15 @@ public class Cluster implements Comparable<Cluster> {
 	private boolean coordinatesChanged = true;
 	private double[] bounds = new double[4];
 	
+	private Set<CyNode> nodes;
+	
 	// Used when initializing from a session file
 	public Cluster() {
 		this.wordInfos = new ArrayList<WordInfo>();
 		this.nodesToCoordinates = new HashMap<CyNode, double[]>();
 		this.nodesToRadii = new HashMap<CyNode, Double>();
 		this.nodesToCentralities = new HashMap<CyNode, Double>();
+		this.nodes = new HashSet<CyNode> ();
 	}
 	
 	// Used when creating clusters in the task
@@ -64,6 +68,7 @@ public class Cluster implements Comparable<Cluster> {
 		this.nodesToCoordinates = new HashMap<CyNode, double[]>();
 		this.nodesToRadii = new HashMap<CyNode, Double>();
 		this.nodesToCentralities = new HashMap<CyNode, Double>();
+		this.nodes = new HashSet<CyNode> ();
 	}
 	
 	public int getClusterNumber() {
@@ -133,6 +138,7 @@ public class Cluster implements Comparable<Cluster> {
 				group.addNodes(nodeToAdd);
 			}
 		}
+		nodes.add(node);
 		nodesToCoordinates.put(node, coordinates);
 	}
 	
@@ -239,7 +245,7 @@ public class Cluster implements Comparable<Cluster> {
 	}
 	
 	public Set<CyNode> getNodes() {
-		return nodesToCoordinates.keySet();
+		return nodes;
 	}
 	
 	public void removeNode(CyNode nodeToRemove) {

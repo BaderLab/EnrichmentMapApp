@@ -63,6 +63,7 @@ import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.model.events.RowSetRecord;
 import org.cytoscape.util.swing.BasicCollapsiblePanel;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.SynchronousTaskManager;
 
 /**
@@ -547,10 +548,20 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 						AutoAnnotationUtils.drawCluster(cluster);
 						// Recreate groups if being used
 						if (annotationSet.usingGroups()) {
-							CyGroup group = groupFactory.createGroup(selectedNetwork, cluster.getNodesToCoordinates().keySet().iterator().next(), true);
+							/*CyGroup group = groupFactory.createGroup(selectedNetwork, cluster.getNodesToCoordinates().keySet().iterator().next(), true);
 							ArrayList<CyNode> nodesWithoutGroupNode = new ArrayList<CyNode>(cluster.getNodesToCoordinates().keySet());
 							nodesWithoutGroupNode.remove(0);
-							group.addNodes(nodesWithoutGroupNode);
+							group.addNodes(nodesWithoutGroupNode);*/
+							
+						
+							//Create a Node with the Annotation Label to represent the group
+							CyNode groupNode = selectedNetwork.addNode();
+							selectedNetwork.getRow(groupNode).set(CyNetwork.NAME, cluster.getLabel());
+							autoAnnotationManager.flushPayloadEvents();
+							//selectedView.getNodeView(groupNode).setVisualProperty(BasicVisualLexicon.NODE_VISIBLE, false);
+							//cluster.addNode(groupNode);
+							
+							CyGroup group = groupFactory.createGroup(selectedNetwork, groupNode,new ArrayList<CyNode>(cluster.getNodes()),null, true);							
 							cluster.setGroup(group);
 						}
 					}
