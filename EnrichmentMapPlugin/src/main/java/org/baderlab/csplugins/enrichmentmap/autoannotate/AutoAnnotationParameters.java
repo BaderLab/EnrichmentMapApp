@@ -110,8 +110,12 @@ public class AutoAnnotationParameters {
 		setNetworkView(view);
 		// TODO
 		// Reload annotations from ID, currently not possible
-		for (Annotation annotation : AutoAnnotationManager.getInstance().getAnnotationManager().getAnnotations(view)) {
-			annotation.removeAnnotation();
+		try{
+			for (Annotation annotation : AutoAnnotationManager.getInstance().getAnnotationManager().getAnnotations(view)) {
+				annotation.removeAnnotation();
+			}
+		}catch(Exception e){
+			System.out.println("There are no annotations in this view");
 		}
 		// Reload selected annotation set
 		setSelectedAnnotationSetName(fileLines[1]);
