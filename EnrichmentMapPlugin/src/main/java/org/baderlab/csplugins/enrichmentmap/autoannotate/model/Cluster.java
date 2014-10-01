@@ -11,8 +11,10 @@ import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.session.CySession;
+import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
 import org.cytoscape.view.presentation.annotations.TextAnnotation;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 /**
  * Created by:
@@ -140,6 +142,60 @@ public class Cluster implements Comparable<Cluster> {
 		}
 		nodes.add(node);
 		nodesToCoordinates.put(node, coordinates);
+	}
+	
+	public void updateCoordinates() {
+			
+			boolean hasNodeViews = false;
+			for (CyNode node : this.getNodes()) {
+				View<CyNode> nodeView = parent.getView().getNodeView(node);
+				// nodeView can be null when group is collapsed
+				if (nodeView != null) {
+					hasNodeViews = true;
+					//the new coordinates
+					double[] coordinates = {nodeView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION),
+											nodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION)};
+					double nodeRadius = nodeView.getVisualProperty(BasicVisualLexicon.NODE_WIDTH);
+					
+					double[] default_coordinates = {0.0,0.0};
+					//check to make sure the node has coordinates.  - it is possilbe that it was just expanded from the group
+					//and not coordinates are registered
+					double[] previous_coordinates = (nodesToCoordinates.containsKey(node)) ? nodesToCoordinates.get(node) : default_coordinates;
+					
+					if (coordinatesHaveChanged(coordinates, previous_coordinates)) {
+						// Coordinates have changed, redrawing necessary
+						this.setCoordinatesChanged(true);
+						this.addNodeCoordinates(node, coordinates);
+						this.addNodeRadius(node, nodeRadius);
+					}
+						
+				} 
+				else{
+					if(nodesToCoordinates.containsKey(node)) nodesToCoordinates.remove(node);
+					if(nodesToRadii.containsKey(node)) nodesToRadii.remove(node);
+				}
+			}//end of for CyNode
+				if(!hasNodeViews) {
+					View<CyNode> nodeView = parent.getView().getNodeView(this.getGroupNode());
+					if (nodeView != null) {
+						hasNodeViews = true;
+						// nodeView can be null when group is collapsed
+						double[] coordinates = {nodeView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION),
+												nodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION)};
+						double nodeRadius = nodeView.getVisualProperty(BasicVisualLexicon.NODE_WIDTH);
+					// Coordinates have changed, redrawing necessary
+					this.setCoordinatesChanged(true);
+					// Draw the annotation as if all nodes were where the groupNode is
+					this.addNodeCoordinates(this.getGroupNode(), coordinates);
+					this.addNodeRadius(this.getGroupNode(), nodeRadius);
+				}
+			}
+		}
+	
+	private boolean coordinatesHaveChanged(double[] oldCoordinates, double[] newCoordinates) {
+		return (oldCoordinates == null || 
+				(Math.abs(oldCoordinates[0] - newCoordinates[0]) > 0.01 &&
+				Math.abs(oldCoordinates[1] - newCoordinates[1]) > 0.01));
 	}
 	
 	public void addNodeRadius(CyNode node, double radius) {
@@ -310,6 +366,15 @@ public class Cluster implements Comparable<Cluster> {
 		}
 		sessionString += "End of annotations\n";
 		
+		//expand the groups
+		if (group != null) {
+			if (group.isCollapsed(parent.getView().getModel())) {
+				group.expand(parent.getView().getModel());
+			}
+		}
+		//update the coordinates based on the expansion
+		this.updateCoordinates();	
+		
 		// Write each node and its coordinates
 		for (CyNode node : nodesToCoordinates.keySet()) {
 			long nodeID = node.getSUID();
@@ -324,13 +389,13 @@ public class Cluster implements Comparable<Cluster> {
 		sessionString += "End of cluster\n";
 		
 		// Destroy group (causes problems with session loading)
-		if (group != null) {
-			if (group.isCollapsed(parent.getView().getModel())) {
-				group.expand(parent.getView().getModel());
-			}
-			group.removeGroupFromNetwork(parent.getView().getModel());
-			AutoAnnotationManager.getInstance().getGroupManager().destroyGroup(group);
-		}
+		//if (group != null) {
+		//	if (group.isCollapsed(parent.getView().getModel())) {
+		//		group.expand(parent.getView().getModel());
+		//	}
+		//	group.removeGroupFromNetwork(parent.getView().getModel());
+		//	AutoAnnotationManager.getInstance().getGroupManager().destroyGroup(group);
+		//}
 		
 		return sessionString;
 	}

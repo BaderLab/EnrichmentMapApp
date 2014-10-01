@@ -111,60 +111,11 @@ public class AnnotationSet {
 	// Returns whether or not there has been a change
 	public void updateCoordinates() {
 		for (Cluster cluster : clusterMap.values()) {
-			HashMap<CyNode, double[]> nodesToCoordinates = cluster.getNodesToCoordinates();
-			HashMap<CyNode, Double> nodesToRadii = cluster.getNodesToRadii();
-			boolean hasNodeViews = false;
-			for (CyNode node : cluster.getNodes()) {
-				View<CyNode> nodeView = view.getNodeView(node);
-				// nodeView can be null when group is collapsed
-				if (nodeView != null) {
-					hasNodeViews = true;
-					//the new coordinates
-					double[] coordinates = {nodeView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION),
-											nodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION)};
-					double nodeRadius = nodeView.getVisualProperty(BasicVisualLexicon.NODE_WIDTH);
-					
-					double[] default_coordinates = {0.0,0.0};
-					//check to make sure the node has coordinates.  - it is possilbe that it was just expanded from the group
-					//and not coordinates are registered
-					double[] previous_coordinates = (nodesToCoordinates.containsKey(node)) ? nodesToCoordinates.get(node) : default_coordinates;
-					
-					if (coordinatesHaveChanged(coordinates, previous_coordinates)) {
-						// Coordinates have changed, redrawing necessary
-						cluster.setCoordinatesChanged(true);
-						cluster.addNodeCoordinates(node, coordinates);
-						cluster.addNodeRadius(node, nodeRadius);
-					}
-						
-				} 
-				else{
-					if(nodesToCoordinates.containsKey(node)) nodesToCoordinates.remove(node);
-					if(nodesToRadii.containsKey(node)) nodesToRadii.remove(node);
-				}
-			}//end of for CyNode
-				if(!hasNodeViews) {
-					View<CyNode> nodeView = view.getNodeView(cluster.getGroupNode());
-					if (nodeView != null) {
-						hasNodeViews = true;
-						// nodeView can be null when group is collapsed
-						double[] coordinates = {nodeView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION),
-												nodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION)};
-						double nodeRadius = nodeView.getVisualProperty(BasicVisualLexicon.NODE_WIDTH);
-					// Coordinates have changed, redrawing necessary
-					cluster.setCoordinatesChanged(true);
-					// Draw the annotation as if all nodes were where the groupNode is
-					cluster.addNodeCoordinates(cluster.getGroupNode(), coordinates);
-					cluster.addNodeRadius(cluster.getGroupNode(), nodeRadius);
-				}
-			}
+			cluster.updateCoordinates();
 		}
 	}
 
-	private boolean coordinatesHaveChanged(double[] oldCoordinates, double[] newCoordinates) {
-		return (oldCoordinates == null || 
-				(Math.abs(oldCoordinates[0] - newCoordinates[0]) > 0.01 &&
-				Math.abs(oldCoordinates[1] - newCoordinates[1]) > 0.01));
-	}
+	
 	
 	public TreeMap<Integer, Cluster> getClusterMap() {
 		return clusterMap;
