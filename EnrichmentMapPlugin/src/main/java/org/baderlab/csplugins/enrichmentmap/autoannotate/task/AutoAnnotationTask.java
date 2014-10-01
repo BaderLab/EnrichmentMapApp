@@ -136,7 +136,9 @@ public class AutoAnnotationTask extends AbstractTask {
 		annotationPanel.setAnnotating(true);
 		
 		taskMonitor.setTitle("Annotating Enrichment Map");
-
+		
+		EnrichmentMapUtils.setOverrideHeatmapRevalidation(true);
+		
 		if (algorithm != null) {
 			taskMonitor.setProgress(0.1);
 			taskMonitor.setStatusMessage("Clustering nodes...");
@@ -147,7 +149,6 @@ public class AutoAnnotationTask extends AbstractTask {
 		taskMonitor.setStatusMessage("Creating clusters...");
 		if (cancelled) return;
 		
-		EnrichmentMapUtils.setOverrideHeatmapRevalidation(true);
     	AnnotationSet annotationSet = makeClusters(network, view, annotationSetName);
     	
     	if (layout && network.getDefaultNodeTable().getColumn(clusterColumnName).getType() != List.class) {
