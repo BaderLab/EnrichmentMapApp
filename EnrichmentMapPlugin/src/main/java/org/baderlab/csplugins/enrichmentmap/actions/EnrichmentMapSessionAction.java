@@ -553,11 +553,13 @@ public class EnrichmentMapSessionAction implements SessionAboutToBeSavedListener
 									pFileList.add(current_ranks);
 
 									//backwards compatibility: add the old file
-									File current_ranks_backcomp = new File(tmpDir, name+"."+ranks_name+".RANKS.txt");
-									BufferedWriter subrank1writer_backcomp = new BufferedWriter(new FileWriter(current_ranks_backcomp));
-									subrank1writer_backcomp.write(params.printHashmap(all_ranks.get(current_ranks_name).getRanking()));
-									subrank1writer_backcomp.close();
-									pFileList.add(current_ranks_backcomp);
+									if(dataset_name.equals(EnrichmentMap.DATASET1)){
+										File current_ranks_backcomp = new File(tmpDir, name+"."+ranks_name+".RANKS.txt");
+										BufferedWriter subrank1writer_backcomp = new BufferedWriter(new FileWriter(current_ranks_backcomp));
+										subrank1writer_backcomp.write(params.printHashmap(all_ranks.get(current_ranks_name).getRanking()));
+										subrank1writer_backcomp.close();
+										pFileList.add(current_ranks_backcomp);
+									}
 								}
 							}
 						}        			        			
