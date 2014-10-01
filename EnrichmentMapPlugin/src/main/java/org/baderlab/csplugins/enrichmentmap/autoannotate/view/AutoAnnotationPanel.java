@@ -524,7 +524,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 		// Create dropdown with cluster sets of this networkView
 		JComboBox<AnnotationSet> annotationSetDropdown = new JComboBox<AnnotationSet>();
 		annotationSetDropdown.addItemListener(new ItemListener(){
-			// Switch the selected annotation set
+			// Switch the selected annotation set - this method is also called when you reload a session
 			public void itemStateChanged(ItemEvent itemEvent) {
 				CyGroupManager groupManager = autoAnnotationManager.getGroupManager();
 				CyGroupFactory groupFactory = autoAnnotationManager.getGroupFactory();
@@ -547,7 +547,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 						// Redraw selected clusters
 						AutoAnnotationUtils.drawCluster(cluster);
 						// Recreate groups if being used
-						if (annotationSet.usingGroups()) {
+				/*		if (annotationSet.usingGroups()) {
 							/*CyGroup group = groupFactory.createGroup(selectedNetwork, cluster.getNodesToCoordinates().keySet().iterator().next(), true);
 							ArrayList<CyNode> nodesWithoutGroupNode = new ArrayList<CyNode>(cluster.getNodesToCoordinates().keySet());
 							nodesWithoutGroupNode.remove(0);
@@ -555,7 +555,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 							
 						
 							//Create a Node with the Annotation Label to represent the group
-							CyNode groupNode = selectedNetwork.addNode();
+				/*			CyNode groupNode = selectedNetwork.addNode();
 							selectedNetwork.getRow(groupNode).set(CyNetwork.NAME, cluster.getLabel());
 							autoAnnotationManager.flushPayloadEvents();
 							//selectedView.getNodeView(groupNode).setVisualProperty(BasicVisualLexicon.NODE_VISIBLE, false);
@@ -563,7 +563,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 							
 							CyGroup group = groupFactory.createGroup(selectedNetwork, groupNode,new ArrayList<CyNode>(cluster.getNodes()),null, true);							
 							cluster.setGroup(group);
-						}
+						}*/
 					}
 					setOutputVisibility(true);
 					clustersToTables.get(annotationSet).getParent().getParent().setVisible(true); // Show selected table

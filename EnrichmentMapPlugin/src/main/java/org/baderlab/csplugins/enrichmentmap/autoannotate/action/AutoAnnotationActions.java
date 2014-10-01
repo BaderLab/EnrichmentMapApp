@@ -322,7 +322,7 @@ public class AutoAnnotationActions {
 				HashSet<Cluster> clustersChanged = new HashSet<Cluster>();
 				for (Cluster cluster : annotationSet.getClusterMap().values()) {
 					for (CyNode node : selectedNodes) {
-						if (cluster.getNodesToCoordinates().containsKey(node)) {
+						if (cluster.getNodes().contains(node)) {
 							cluster.removeNode(node);
 							cluster.setCoordinatesChanged(true);
 							clustersChanged.add(cluster);

@@ -116,13 +116,20 @@ public class AnnotationSet {
 			boolean hasNodeViews = false;
 			for (CyNode node : cluster.getNodes()) {
 				View<CyNode> nodeView = view.getNodeView(node);
+				// nodeView can be null when group is collapsed
 				if (nodeView != null) {
 					hasNodeViews = true;
-					// nodeView can be null when group is collapsed
+					//the new coordinates
 					double[] coordinates = {nodeView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION),
 											nodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION)};
 					double nodeRadius = nodeView.getVisualProperty(BasicVisualLexicon.NODE_WIDTH);
-					if (coordinatesHaveChanged(coordinates, nodesToCoordinates.get(node))) {
+					
+					double[] default_coordinates = {0.0,0.0};
+					//check to make sure the node has coordinates.  - it is possilbe that it was just expanded from the group
+					//and not coordinates are registered
+					double[] previous_coordinates = (nodesToCoordinates.containsKey(node)) ? nodesToCoordinates.get(node) : default_coordinates;
+					
+					if (coordinatesHaveChanged(coordinates, previous_coordinates)) {
 						// Coordinates have changed, redrawing necessary
 						cluster.setCoordinatesChanged(true);
 						cluster.addNodeCoordinates(node, coordinates);

@@ -59,6 +59,9 @@ import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.view.AutoAnnotationPanel;
 import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.command.CommandExecutorTaskFactory;
+import org.cytoscape.group.CyGroup;
+import org.cytoscape.group.CyGroupFactory;
+import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
@@ -170,6 +173,10 @@ public class AutoAnnotationTask extends AbstractTask {
     	for (Cluster cluster : annotationSet.getClusterMap().values()) {
     		AutoAnnotationUtils.updateClusterLabel(cluster, clusterSetTable);
     	}
+    	
+    	//Add groups if groups was selected
+    	if (annotationSet.usingGroups()) createGroups(annotationSet);
+    	
     	// Add these clusters to the table on the annotationPanel
     	annotationPanel.addClusters(annotationSet);
     	annotationPanel.updateSelectedView(view);
@@ -183,6 +190,23 @@ public class AutoAnnotationTask extends AbstractTask {
 		taskMonitor.setStatusMessage("Done!");
 	}
 	
+	private void createGroups(AnnotationSet annotationSet){
+		AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
+		CyGroupManager groupManager = autoAnnotationManager.getGroupManager();
+		CyGroupFactory groupFactory =autoAnnotationManager.getGroupFactory();		
+		
+		for (Cluster cluster : annotationSet.getClusterMap().values()) {
+						
+				//Create a Node with the Annotation Label to represent the group
+				CyNode groupNode = this.network.addNode();
+				this.network.getRow(groupNode).set(CyNetwork.NAME, cluster.getLabel());
+				autoAnnotationManager.flushPayloadEvents();
+				
+				CyGroup group = groupFactory.createGroup(this.network, groupNode,new ArrayList<CyNode>(cluster.getNodes()),null, true);							
+				cluster.setGroup(group);
+			}
+	}
+	
 	private void layoutNodes(AnnotationSet clusters) {
 		CyLayoutAlgorithm attributeCircle = layoutManager.getLayout("attributes-layout");
 		TaskIterator iterator = attributeCircle.createTaskIterator(view, attributeCircle.createLayoutContext(), CyLayoutAlgorithm.ALL_NODE_VIEWS, clusterColumnName);
@@ -190,7 +214,7 @@ public class AutoAnnotationTask extends AbstractTask {
 		CyLayoutAlgorithm force_directed = layoutManager.getLayout("force-directed");
 		for (Cluster cluster : clusters.getClusterMap().values()) {
 			Set<View<CyNode>> nodeViewSet = new HashSet<View<CyNode>>();
-			for (CyNode node : cluster.getNodesToCoordinates().keySet()) {
+			for (CyNode node : cluster.getNodes()) {
 				nodeViewSet.add(view.getNodeView(node));
 			}
 			// Only apply layout to nodes of size greater than 4
@@ -293,26 +317,37 @@ public class AutoAnnotationTask extends AbstractTask {
 	
 	private void runWordCloud(AnnotationSet annotationSet, CyNetwork network) {
 		TreeMap<Integer, Cluster> clusterMap = annotationSet.getClusterMap();
+		//ArrayList<String> commands = new ArrayList<String>();
 		for (int clusterNumber : clusterMap.keySet()) {
-			Cluster cluster = clusterMap.get(clusterNumber);
-			setClusterSelected(cluster, network, true);
+			
 			ArrayList<String> commands = new ArrayList<String>();
+			
+			Cluster cluster = clusterMap.get(clusterNumber);
+
+			Set<CyNode> current_nodes = cluster.getNodes();
+			String names = "";
+			//TODO command will have issue with ccommas in the node names
+			for(CyNode node : current_nodes){
+				names = names +  "SUID:" + network.getRow(node).get(CyNetwork.SUID,  Long.class) + ",";
+			}
 			String command = "wordcloud create wordColumnName=\"" + nameColumnName + "\"" + 
-			" nodesToUse=\"selected\" cloudName=\"" + annotationSetName + " Cloud " +  clusterNumber + "\""
-			+ " cloudGroupTableName=\"" + annotationSetName + "\"";
+			" cloudName=\"" + annotationSetName + " Cloud " +  clusterNumber + "\""
+			+ " cloudGroupTableName=\"" + annotationSetName + "\"" + " nodelist=\"" + names + "\"";
+
 			commands.add(command);
-			Observer observer = new Observer();
-			TaskIterator taskIterator = executor.createTaskIterator(commands, null);
-			dialogTaskManager.execute(taskIterator, observer);
-			// Prevents task from continuing to execute until wordCloud has finished
+		//}
+		//run all the commands (to create all the wordclouds) and wait til it finishes executing before continuing.
+		Observer observer = new Observer();
+		TaskIterator taskIterator = executor.createTaskIterator(commands, null);
+		dialogTaskManager.execute(taskIterator, observer);
+		// Prevents task from continuing to execute until wordCloud has finished
 			while (!observer.isFinished()) {
 				try {
 					Thread.sleep(1);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
-				}
-			}
-			setClusterSelected(cluster, network, false);
+				}			
+		}
 		}
 	}
 
