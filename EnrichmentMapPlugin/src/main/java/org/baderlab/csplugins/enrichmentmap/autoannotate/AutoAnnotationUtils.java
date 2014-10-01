@@ -230,9 +230,13 @@ public class AutoAnnotationUtils {
 		} else {
 			labelFontSize = (int) Math.round(5*Math.pow(cluster.getSize(), 0.4));
 		}
+		double labelWidth = 2.3;
+		double labelHeight = 4.8;
+		if(labelText != null && labelFontSize != null){
+			labelWidth= 2.3*labelFontSize*labelText.length();
+			labelHeight = 4.8*labelFontSize;
+		}
 		
-		double labelWidth = 2.3*labelFontSize*labelText.length();
-		double labelHeight = 4.8*labelFontSize;
 		
 		double xOffset = labelPosition[0];
 		double yOffset = labelPosition[1];
@@ -253,11 +257,15 @@ public class AutoAnnotationUtils {
 		arguments.put("zoom", String.valueOf(zoom));
 		arguments.put("canvas", "foreground");
 		TextAnnotation textAnnotation = textFactory.createAnnotation(TextAnnotation.class, view, arguments);
-		textAnnotation.setText(labelText);
-		textAnnotation.setFontSize(5*zoom*labelFontSize);
-		cluster.setTextAnnotation(textAnnotation);
-		if (showLabel) {
-			annotationManager.addAnnotation(textAnnotation);
+		
+		if(textAnnotation != null && labelText != null){
+		
+			textAnnotation.setText(labelText);
+			textAnnotation.setFontSize(5*zoom*labelFontSize);
+			cluster.setTextAnnotation(textAnnotation);
+			if (showLabel) {
+				annotationManager.addAnnotation(textAnnotation);
+			}
 		}
 	}
 	

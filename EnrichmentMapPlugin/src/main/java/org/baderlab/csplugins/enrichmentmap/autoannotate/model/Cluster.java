@@ -159,7 +159,9 @@ public class Cluster implements Comparable<Cluster> {
 	}
 
 	public int getSize() {
-		return size;
+		if(nodes != null)
+			return nodes.size();
+		return 0;
 	}
 	
 	public ShapeAnnotation getEllipse() {
@@ -188,11 +190,13 @@ public class Cluster implements Comparable<Cluster> {
 	}
 	
 	public void eraseText() {
-		textAnnotation.removeAnnotation();
+		if(textAnnotation !=null)
+			textAnnotation.removeAnnotation();
 	}
 	
 	public void eraseEllipse() {
-		ellipse.removeAnnotation();
+		if(ellipse!= null)
+			ellipse.removeAnnotation();
 	}
 	
 	public boolean isSelected() {
