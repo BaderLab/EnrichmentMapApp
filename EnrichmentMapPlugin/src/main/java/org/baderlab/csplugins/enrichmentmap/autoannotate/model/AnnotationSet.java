@@ -282,7 +282,7 @@ public class AnnotationSet {
 			setSameClusterBonus(labelOptions.getSameClusterBonus());
 			setCentralityBonus(labelOptions.getCentralityBonus());
 			for (Cluster cluster : clusterMap.values()) {
-				cluster.setLabel(AutoAnnotationUtils.makeLabel(cluster.getWordInfos(), 
+				cluster.setLabel(cluster.makeLabel(cluster.getWordInfos(), 
 						cluster.getMostCentralNodeLabel(),
 						sameClusterBonus, centralityBonus,
 						wordSizeThresholds, maxWords));

@@ -10,6 +10,7 @@ import org.baderlab.csplugins.enrichmentmap.autoannotate.action.DisplayOptionsPa
 import org.baderlab.csplugins.enrichmentmap.autoannotate.view.AutoAnnotationPanel;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.view.DisplayOptionsPanel;
 import org.baderlab.csplugins.enrichmentmap.view.HeatMapPanel;
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetSelectedNetworkViewsEvent;
 import org.cytoscape.application.events.SetSelectedNetworkViewsListener;
 import org.cytoscape.application.swing.CySwingApplication;
@@ -62,7 +63,7 @@ public class AutoAnnotationManager implements
 	// stores the annotation parameters (one for each network view)
 	private HashMap<CyNetworkView, AutoAnnotationParameters> networkViewToAutoAnnotationParameters;
 	// used to set clusterMaker default parameters
-	private static final SortedMap<String, String> algorithmToColumnName;
+	public static final SortedMap<String, String> algorithmToColumnName;
 	static {
 		TreeMap<String, String> aMap = new TreeMap<String, String>();		
 		aMap.put("Affinity Propagation Cluster", "__APCluster");
@@ -82,6 +83,8 @@ public class AutoAnnotationManager implements
 	private DialogTaskManager dialogTaskManager;
 	// used to apply layouts
 	private SynchronousTaskManager<?> syncTaskManager;
+	//used for getting current network
+	private CyApplicationManager applicationManager;
 	// annotations are added to here
 	private AnnotationManager annotationManager;
 	// used to update the layout of the nodes
@@ -119,7 +122,8 @@ public class AutoAnnotationManager implements
 			SynchronousTaskManager<?> syncTaskManager, AnnotationManager annotationManager, 
 			CyLayoutAlgorithmManager layoutManager, AnnotationFactory<ShapeAnnotation> shapeFactory, 
 			AnnotationFactory<TextAnnotation> textFactory, CyGroupFactory groupFactory,
-			CyGroupManager groupManager, HeatMapPanel heatMapPanel_node, EnrichmentMapActionListener EMActionListener, CyEventHelper eventHelper) {
+			CyGroupManager groupManager, HeatMapPanel heatMapPanel_node, EnrichmentMapActionListener EMActionListener, CyEventHelper eventHelper,
+			CyApplicationManager applicationManager) {
 		
 		this.application = application;
 		this.tableManager = tableManager;
@@ -135,6 +139,7 @@ public class AutoAnnotationManager implements
 		this.heatmapPanel = heatMapPanel_node;
 		this.EMActionListener = EMActionListener;
 		this.eventHelper = eventHelper;
+		this.applicationManager = applicationManager;
 	}
 	
 	@Override
@@ -243,6 +248,10 @@ public class AutoAnnotationManager implements
 
 	public CyLayoutAlgorithmManager getLayoutManager() {
 		return layoutManager;
+	}
+
+	public CyApplicationManager getApplicationManager() {
+		return applicationManager;
 	}
 
 	public AnnotationFactory<ShapeAnnotation> getShapeFactory() {

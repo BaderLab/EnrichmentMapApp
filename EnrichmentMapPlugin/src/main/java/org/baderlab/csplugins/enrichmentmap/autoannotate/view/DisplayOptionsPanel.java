@@ -31,9 +31,12 @@ import org.baderlab.csplugins.enrichmentmap.autoannotate.action.AutoAnnotationAc
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.AnnotationSet;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.LabelOptions;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.task.DrawClusterEllipseTask;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.task.DrawClusterLabelTask;
 import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
+import org.cytoscape.work.TaskIterator;
 
 public class DisplayOptionsPanel extends JPanel implements CytoPanelComponent {
 
@@ -170,9 +173,14 @@ public class DisplayOptionsPanel extends JPanel implements CytoPanelComponent {
 					selectedAnnotationSet.setShowEllipses(showEllipsesCheckBox.isSelected());
 					if (selectedAnnotationSet.isShowEllipses()) {
 						selectedAnnotationSet.updateCoordinates();
+						//create iterator - to avoid concurrent modifications on the network create iterator for all tasks
+						TaskIterator currentIterator = new TaskIterator();
 						for (Cluster cluster : selectedAnnotationSet.getClusterMap().values()) {
-							AutoAnnotationUtils.drawEllipse(cluster);
+							DrawClusterEllipseTask drawellipse = new DrawClusterEllipseTask(cluster);
+							currentIterator.append(drawellipse);								
 						}
+						AutoAnnotationManager.getInstance().getDialogTaskManager().execute(currentIterator);
+												
 					} else {
 						for (Cluster cluster : selectedAnnotationSet.getClusterMap().values()) {
 							cluster.eraseEllipse();
@@ -192,9 +200,13 @@ public class DisplayOptionsPanel extends JPanel implements CytoPanelComponent {
 					selectedAnnotationSet.setShowLabel(showTextCheckBox.isSelected());
 					if (selectedAnnotationSet.isShowLabel()) {
 						selectedAnnotationSet.updateCoordinates();
+						TaskIterator currentTasks = new TaskIterator();
 						for (Cluster cluster : selectedAnnotationSet.getClusterMap().values()) {
-							AutoAnnotationUtils.drawTextLabel(cluster);
+							
+							DrawClusterLabelTask drawlabel = new DrawClusterLabelTask(cluster);
+							currentTasks.append(drawlabel);
 						}
+						AutoAnnotationManager.getInstance().getDialogTaskManager().execute(currentTasks);
 					} else {
 						for (Cluster cluster : selectedAnnotationSet.getClusterMap().values()) {
 							cluster.eraseText();
@@ -251,19 +263,27 @@ public class DisplayOptionsPanel extends JPanel implements CytoPanelComponent {
 						annotationSet.setShapeType(shapeType);
 						// Redraw if annotation set is currently selected
 						if (annotationSet.equals(selectedAnnotationSet)) {
+							//create iterator - to avoid concurrent modifications on the network create iterator for all tasks
+							TaskIterator currentIterator = new TaskIterator();
 							for (Cluster cluster : selectedAnnotationSet.getClusterMap().values()) {
 								cluster.eraseEllipse();
-								AutoAnnotationUtils.drawEllipse(cluster);
+								DrawClusterEllipseTask drawellipse = new DrawClusterEllipseTask(cluster);
+								currentIterator.append(drawellipse);								
 							}
+							AutoAnnotationManager.getInstance().getDialogTaskManager().execute(currentIterator);
 						}
 					}
 				}
 				if (selectedAnnotationSet != null) {
 					selectedAnnotationSet.setShapeType(ellipseButton.isSelected() ? "ELLIPSE" : "ROUNDEDRECTANGLE");
+					//create iterator - to avoid concurrent modifications on the network create iterator for all tasks
+					TaskIterator currentIterator = new TaskIterator();
 					for (Cluster cluster : selectedAnnotationSet.getClusterMap().values()) {
 						cluster.eraseEllipse();
-						AutoAnnotationUtils.drawEllipse(cluster);
+						DrawClusterEllipseTask drawellipse = new DrawClusterEllipseTask(cluster);
+						currentIterator.append(drawellipse);
 					}
+					AutoAnnotationManager.getInstance().getDialogTaskManager().execute(currentIterator);
 				}
 			}
 		});

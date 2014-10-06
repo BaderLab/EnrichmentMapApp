@@ -1,8 +1,10 @@
 package org.baderlab.csplugins.enrichmentmap.autoannotate.model;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -335,6 +337,67 @@ public class Cluster implements Comparable<Cluster> {
 		// Remove the second cluster
 		cluster2.getParent().getClusterMap().remove(cluster2.getClusterNumber());
 	}
+
+	public String makeLabel(ArrayList<WordInfo> wordInfos, String mostCentralNodeLabel,
+			double sameClusterBonus, double centralityBonus, List<Integer> wordSizeThresholds,
+			int maxWords) {
+		// Work with a copy so as to not mess up the order for comparisons
+		ArrayList<WordInfo> wordInfosCopy = new ArrayList<WordInfo>();
+		for (WordInfo wordInfo : wordInfos) {
+			wordInfosCopy.add(wordInfo.clone());
+		}
+		// Empty WordClouds are given an empty label
+		if (wordInfosCopy.size() == 0) return "";
+		// Sorts by size descending
+		Collections.sort(wordInfosCopy);
+		// Gets the biggest word in the cloud
+		WordInfo biggestWord = wordInfosCopy.get(0);
+		ArrayList<WordInfo> label = new ArrayList<WordInfo>();
+		label.add(biggestWord);
+		int numWords = 1;
+		WordInfo nextWord = biggestWord;
+		wordInfosCopy.remove(0);
+		for (WordInfo word : wordInfosCopy) {
+			if (mostCentralNodeLabel.toLowerCase().contains(word.getWord())) {
+				word.setSize(word.getSize() + centralityBonus);
+			}
+		}
+		while (numWords < maxWords && wordInfosCopy.size() > 0) {
+			for (WordInfo word : wordInfosCopy) {
+				if (word.getCluster() == nextWord.getCluster()) {
+					word.setSize(word.getSize() + sameClusterBonus);						
+				}
+			}
+			Collections.sort(wordInfosCopy); // Sizes have changed, re-sort
+			double wordSizeThreshold = nextWord.getSize()*wordSizeThresholds.get(numWords - 1)/100.0;
+			nextWord = wordInfosCopy.get(0);
+			wordInfosCopy.remove(0);
+			if (nextWord.getSize() > wordSizeThreshold) {
+				label.add(nextWord);
+				numWords++;
+			} else {
+				break;
+			}
+		}
+		// Sort first by size, then by WordCloud 'number', tries to preserve original word order
+		Collections.sort(label, WordInfoNumberComparator.getInstance());
+		// Create a string label from the word infos
+		return join(label, " ");
+	}
+	
+	// Connects strings together, separated by separator
+		private String join(List<WordInfo> stringList, String separator) {
+			String joined = "";
+			for (int index = 0; index < stringList.size(); index++) {
+				if (index == 0) {
+					joined += stringList.get(index).getWord();
+				} else {
+					joined += separator + stringList.get(index).getWord();
+				}
+			}
+			return joined;
+		}
+	
 	
 	public String toSessionString() {
 		/* Each cluster is stored in the format:

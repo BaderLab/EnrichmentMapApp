@@ -138,7 +138,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		// Set up autoAnnotationManager, hand it all of the services it needs
 		AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
-		autoAnnotationManager.initialize(cySwingApplicationRef, tableManager, commandExecutor, dialogTaskManager, syncTaskManager, annotationManager, layoutManager, shapeFactory, textFactory, groupFactory, groupManager, heatMapPanel_node, EMActionListener, eventHelper);
+		autoAnnotationManager.initialize(cySwingApplicationRef, tableManager, commandExecutor, dialogTaskManager, syncTaskManager, annotationManager, layoutManager, shapeFactory, textFactory, groupFactory, groupManager, heatMapPanel_node, EMActionListener, eventHelper,cyApplicationManagerRef);
 		//register network/table events to autoAnnotationManager
 		registerService(bc, autoAnnotationManager, SetSelectedNetworkViewsListener.class, new Properties());
 		registerService(bc, autoAnnotationManager, NetworkViewAboutToBeDestroyedListener.class, new Properties());

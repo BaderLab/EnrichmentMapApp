@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeMap;
 
 import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
@@ -11,13 +14,23 @@ import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
+import org.baderlab.csplugins.enrichmentmap.EnrichmentMapUtils;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationParameters;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationUtils;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.AnnotationSet;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.task.AnnotateClustersTask;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.task.AutoAnnotationTaskFactory;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.task.CreateClustersTask;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.task.RunClustermakerTask;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.task.CreateGroupsTask;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.task.DrawClusterLabelTask;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.task.LayoutNetworkTask;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.task.Observer;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.task.UpdateClusterLabelTask;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.task.VisualizeClusterAnnotationTaskFactory;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.view.AutoAnnotationPanel;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters;
 import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.command.CommandExecutorTaskFactory;
@@ -34,47 +47,7 @@ import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.swing.DialogTaskManager;
 
 public class AutoAnnotationActions {
-	
-	public static void annotateAction(CyNetworkView selectedView, boolean clusterMakerDefault,
-			String nameColumnName, boolean layoutNodes, boolean useGroups,
-			JComboBox<String> clusterAlgorithmDropdown, JComboBox<String> clusterColumnDropdown) {
-		
-		if (selectedView == null) {
-			JOptionPane.showMessageDialog(null, "Load an Enrichment Map", "Error Message", JOptionPane.ERROR_MESSAGE);
-		} else {
-			CyNetwork selectedNetwork = selectedView.getModel();
-			AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
-			// Get the params for this network
-			AutoAnnotationParameters params;
-			if (autoAnnotationManager.getNetworkViewToAutoAnnotationParameters().containsKey(selectedView)) {
-				// Not the first annotation set for this network view, lookup
-				params = autoAnnotationManager.getNetworkViewToAutoAnnotationParameters().get(selectedView);
-			} else {
-				// First annotation set for the view, make/register the new network view parameters
-				params = new AutoAnnotationParameters();
-				params.setNetworkView(selectedView);
-				autoAnnotationManager.getNetworkViewToAutoAnnotationParameters().put(selectedView, params);
-			}
-			String clusterColumnName = null;
-			String algorithm = null;
-			if (clusterMakerDefault) {
-				// using clusterMaker algorithms
-				algorithm = (String) clusterAlgorithmDropdown.getSelectedItem();
-				clusterColumnName = params.nextClusterColumnName(
-						autoAnnotationManager.getAlgorithmToColumnName().get(algorithm), 
-						selectedNetwork.getDefaultNodeTable());
-			} else {
-				// using a user specified column
-				clusterColumnName = (String) clusterColumnDropdown.getSelectedItem();
-			}
-			String annotationSetName = params.nextAnnotationSetName(algorithm, clusterColumnName);
-			AutoAnnotationTaskFactory autoAnnotatorTaskFactory = new AutoAnnotationTaskFactory( 
-					selectedView, clusterColumnName, nameColumnName, algorithm, 
-					layoutNodes, useGroups, annotationSetName);
-			autoAnnotationManager.getDialogTaskManager().execute(autoAnnotatorTaskFactory.createTaskIterator());
-		}
-	}
-	
+
 	public static void deleteAction(AnnotationSet annotationSet, JTable clusterTable) {
 		
 		int[] selectedRows = clusterTable.getSelectedRows();
@@ -243,24 +216,35 @@ public class AutoAnnotationActions {
 		String annotationSetName = annotationSet.getName();
 		Long clusterTableSUID = selectedNetwork.getDefaultNetworkTable().getRow(selectedNetwork.getSUID()).get(annotationSetName, Long.class);
 		CyTable clusterSetTable = autoAnnotationManager.getTableManager().getTable(clusterTableSUID);
+		
+		TaskIterator currentTasks = new TaskIterator();
 		for (Cluster cluster : annotationSet.getClusterMap().values()) {
 			AutoAnnotationUtils.updateNodeCentralities(cluster);
 			// Update the text label of the selected cluster
 			String previousLabel = cluster.getLabel();
-			AutoAnnotationUtils.updateClusterLabel(cluster, clusterSetTable);
+			currentTasks.append(new UpdateClusterLabelTask(cluster, clusterSetTable));
 			if (previousLabel != cluster.getLabel()) {
 				// Cluster table needs to be updated with new label
 				clusterTable.updateUI();
 				cluster.eraseText();
-				AutoAnnotationUtils.drawTextLabel(cluster);
+
+				DrawClusterLabelTask drawlabel = new DrawClusterLabelTask(cluster);
+				currentTasks.append(drawlabel);
+						
 			}
 			if (cluster.coordinatesChanged()) {
 				// Redraw cluster if necessary
 				cluster.erase();
-				AutoAnnotationUtils.drawCluster(cluster);
+				
+				// Redraw selected clusters
+				VisualizeClusterAnnotationTaskFactory visualizeCluster = new VisualizeClusterAnnotationTaskFactory(cluster);
+				currentTasks.append(visualizeCluster.createTaskIterator());
 				cluster.setCoordinatesChanged(false);
 			}
 		}
+		//run all the tasks
+		AutoAnnotationManager.getInstance().getDialogTaskManager().execute(currentTasks);
+		
 		// Update the table if the value has changed (WordCloud has been updated)
 		DefaultTableModel model = (DefaultTableModel) clusterTable.getModel();
 		int i = 0;
@@ -412,8 +396,12 @@ public class AutoAnnotationActions {
 	    	CyTable clusterSetTable = tableManager.getTable(clusterTableSUID);
 	    	
 	    	// Generate the labels for the clusters
-	    	AutoAnnotationUtils.updateClusterLabel(newCluster, clusterSetTable);
-			AutoAnnotationUtils.drawCluster(newCluster);
+	    	AutoAnnotationManager.getInstance().getDialogTaskManager().execute(new TaskIterator(new UpdateClusterLabelTask(newCluster,clusterSetTable)));
+
+			
+			// Redraw selected clusters
+			VisualizeClusterAnnotationTaskFactory visualizeCluster = new VisualizeClusterAnnotationTaskFactory(newCluster);
+			AutoAnnotationManager.getInstance().getDialogTaskManager().execute(visualizeCluster.createTaskIterator());
 			
 			updateAction(annotationSet);
 			

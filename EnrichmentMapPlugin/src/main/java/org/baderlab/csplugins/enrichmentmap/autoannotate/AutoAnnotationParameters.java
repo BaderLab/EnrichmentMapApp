@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.AnnotationSet;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.session.CySession;
 import org.cytoscape.view.model.CyNetworkView;
@@ -21,8 +22,23 @@ import org.cytoscape.view.presentation.annotations.Annotation;
  * on a single network view.
  */
 public class AutoAnnotationParameters {
+	//network that belongs to this annotation
+	private CyNetwork network;
 	// network view that this belongs to
 	private CyNetworkView networkView;
+	
+	//name of annotationset
+	private String name;
+	//column used to cluster
+	private String clusterColumnName;
+	//column used to calculateAnnotations
+	private String annotateColumnName;
+	//name of algorithm used to cluster
+	private String algorithm;
+	
+	//does this annoatation set have groups defined
+	private boolean groups;
+	
 	// network view ID (used for saving/loading)
 	private long networkViewID;
 	// used to select/deselect cluster
@@ -30,8 +46,16 @@ public class AutoAnnotationParameters {
 	// stores all of the annotation sets for this network view
 	private HashMap<String, AnnotationSet> annotationSets;	
 	
+	
 	public AutoAnnotationParameters() {
 		annotationSets = new HashMap<String, AnnotationSet> ();
+	}
+	
+	public AutoAnnotationParameters(CyNetwork network, CyNetworkView networkView) {
+		annotationSets = new HashMap<String, AnnotationSet> ();
+		this.network = network;
+		this.networkView = networkView;
+		this.networkViewID = networkView.getSUID();
 	}
 	
 	public CyNetworkView getNetworkView() {
@@ -41,6 +65,54 @@ public class AutoAnnotationParameters {
 	public void setNetworkView(CyNetworkView networkView) {
 		this.networkView = networkView;
 		this.networkViewID = networkView.getSUID();
+	}
+
+	public CyNetwork getNetwork() {
+		return network;
+	}
+
+	public void setNetwork(CyNetwork network) {
+		this.network = network;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getClusterColumnName() {
+		return clusterColumnName;
+	}
+
+	public void setClusterColumnName(String clusterColumnName) {
+		this.clusterColumnName = clusterColumnName;
+	}
+
+	public String getAlgorithm() {
+		return algorithm;
+	}
+
+	public void setAlgorithm(String algorithm) {
+		this.algorithm = algorithm;
+	}
+
+	public boolean isGroups() {
+		return groups;
+	}
+
+	public void setGroups(boolean groups) {
+		this.groups = groups;
+	}
+
+	public String getAnnotateColumnName() {
+		return annotateColumnName;
+	}
+
+	public void setAnnotateColumnName(String annotateColumnName) {
+		this.annotateColumnName = annotateColumnName;
 	}
 
 	public AnnotationSet getSelectedAnnotationSet() {
