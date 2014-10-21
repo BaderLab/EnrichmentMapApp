@@ -50,7 +50,7 @@ import org.cytoscape.work.swing.DialogTaskManager;
 public class AutoAnnotationManager implements
 		SetSelectedNetworkViewsListener, ColumnCreatedListener, 
 		ColumnDeletedListener, ColumnNameChangedListener,
-		NetworkViewAboutToBeDestroyedListener, RowsSetListener {
+		NetworkViewAboutToBeDestroyedListener {
 	
 	// instance variable used to get the manager from other parts of the program
 	private static AutoAnnotationManager instance = null;
@@ -174,14 +174,6 @@ public class AutoAnnotationManager implements
 	public void handleEvent(NetworkViewAboutToBeDestroyedEvent e) {
 		if (annotationPanel != null) {
 			annotationPanel.removeNetworkView(e.getNetworkView());
-		}
-	}
-	
-	@Override
-	public void handleEvent(RowsSetEvent e) {
-		if (annotationPanel != null && e.getColumnRecords(CyNetwork.SELECTED).size() > 0) {
-			// If nodes have been selected/deselected
-			annotationPanel.updateNodeSelection(e.getSource(), e.getColumnRecords(CyNetwork.SELECTED));
 		}
 	}
 	

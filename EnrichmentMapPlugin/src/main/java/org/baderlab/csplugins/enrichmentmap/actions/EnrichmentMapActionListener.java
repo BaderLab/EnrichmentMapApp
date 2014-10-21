@@ -46,10 +46,19 @@ package org.baderlab.csplugins.enrichmentmap.actions;
 
 
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.TreeMap;
+
+import javax.swing.ListSelectionModel;
+import javax.swing.table.TableModel;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapUtils;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationParameters;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.model.AnnotationSet;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.task.Observer;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters;
 import org.baderlab.csplugins.enrichmentmap.heatmap.task.UpdateHeatMapTask;
@@ -68,6 +77,7 @@ import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.util.swing.FileUtil;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.swing.DialogTaskManager;
@@ -160,6 +170,7 @@ public class EnrichmentMapActionListener implements RowsSetListener{
         
         //get the current network
         CyNetwork network = this.applicationManager.getCurrentNetwork();
+        CyNetworkView view = this.applicationManager.getCurrentNetworkView();
 
         //only handle event if it is a selected node
 
@@ -192,6 +203,79 @@ public class EnrichmentMapActionListener implements RowsSetListener{
 								e1.printStackTrace();
 							}
         				}
+        				
+        				
+        				//if the network has been autoannotated we need to make sure the clusters have been selected
+        				//TODO:need a cleaner way to find out if the currentView has an annotation
+        				if(AutoAnnotationManager.getInstance().getAnnotationPanel()!=null){
+        					
+        					//go through all the clusters for this network to see if any of the cluster have all of their nodes selected
+        					HashMap<CyNetworkView, AutoAnnotationParameters> annotations = AutoAnnotationManager.getInstance().getNetworkViewToAutoAnnotationParameters();
+        					if(annotations.containsKey(view)){
+        						AnnotationSet currentAnnotation = annotations.get(view).getSelectedAnnotationSet();
+        						TableModel clusterTableModel = currentAnnotation.getClusterTable().getModel();
+								ListSelectionModel clusterListSelectionModel = currentAnnotation.getClusterTable().getSelectionModel();
+																
+        						TreeMap<Integer, Cluster> clusters = currentAnnotation.getClusterMap();
+        						//go through each cluster - figure out which ones need to be selected and
+        						//which ones need to deselected
+        						//If any nodes in a cluster are no longer selected then deselect cluster
+        						//If all nodes in a cluster are selected then select cluster (in table and annotation)
+        						for(Cluster cluster:clusters.values()){
+        						        					
+        							boolean select = true;
+        							boolean unselectCluster = false;
+        							for (CyNode node : cluster.getNodes()) {
+        								//if any of the nodes that belong to this cluster are not in the selected set
+        								//And the cluster is current marked as selected 
+        								//then unselect the cluster
+        								if (!selectedNodes.contains(node) && cluster.isSelected()) {
+        									unselectCluster = true;
+        									break;
+        								}
+        								//if any of the nodes that belong to this cluster are not in the selected set
+        								//then do not select this cluster.
+        								if (!selectedNodes.contains(node)) {
+        									select = false;
+        									break;
+        								}
+        							}
+        							
+        							//Cluster has been selected
+        							//if all nodes in a cluster are selected
+        							//update the cluster table
+        							if (select) {
+        								//set flag to tell listener that it shouldn't reselect the nodes as the user manually selected them. 
+        								currentAnnotation.setManualSelection(true);
+        								for (int rowIndex = 0; rowIndex < clusterTableModel.getRowCount(); rowIndex++) {
+        									if (cluster.equals(clusterTableModel.getValueAt(rowIndex, 0))) {
+        										clusterListSelectionModel.addSelectionInterval(rowIndex, rowIndex);
+        										AutoAnnotationManager.getInstance().flushPayloadEvents();
+        										break;
+        									}
+        								}
+        							}
+        							
+        							//Cluster has been unselected
+        							//update the cluster table
+        							if(unselectCluster){
+        								//set flag to tell listener that it shouldn't reselect the nodes as the user manually selected them. 
+        								currentAnnotation.setManualSelection(true);
+        								for (int rowIndex = 0; rowIndex < clusterTableModel.getRowCount(); rowIndex++) {
+        									if (cluster.equals(clusterTableModel.getValueAt(rowIndex, 0))) {
+        										clusterListSelectionModel.removeSelectionInterval(rowIndex, rowIndex);
+        										AutoAnnotationManager.getInstance().flushPayloadEvents();
+        										break;
+        									}
+        								}
+        								
+        							}
+
+        						}
+        					}
+        					
+        				}
+        				
         			}
         		}
         }//end of if e.getSource check
