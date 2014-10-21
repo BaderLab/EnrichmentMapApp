@@ -17,10 +17,11 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 
-public class RunClustermakerTask extends AbstractTask {
+public class RunClustermakerTaskFactory implements TaskFactory {
 	
 
 	private CyNetwork network;
@@ -32,7 +33,7 @@ public class RunClustermakerTask extends AbstractTask {
 	private TaskMonitor taskMonitor = null;
 	
 	
-	public RunClustermakerTask(AutoAnnotationParameters params) {
+	public RunClustermakerTaskFactory(AutoAnnotationParameters params) {
 		super();
 		
 		this.network = params.getNetwork();
@@ -41,44 +42,6 @@ public class RunClustermakerTask extends AbstractTask {
 		this.algorithm = params.getAlgorithm();
 
 	}
-
-	
-	private void runClusterMaker() {
-		// Delete potential existing columns - sometimes clusterMaker doesn't do this
-		if (network.getDefaultNodeTable().getColumn(clusterColumnName) != null) {
-			network.getDefaultNodeTable().deleteColumn(clusterColumnName);
-		}
-		
-		// Cluster based on similarity coefficient if possible
-		String edgeAttribute;
-		try {
-			edgeAttribute = EnrichmentMapManager.getInstance().getCyNetworkList().get(view.getModel().getSUID()).getParams().getAttributePrefix() + EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT;
-		} catch (NullPointerException e) {
-			edgeAttribute = "--None--";
-		}
-		
-		for (View<CyNode> nodeView : view.getNodeViews()) {
-			if (nodeView.getVisualProperty(BasicVisualLexicon.NODE_VISIBLE)) {
-				network.getRow(nodeView.getModel()).set(CyNetwork.SELECTED, true);
-			}
-		}
-		
-		// Executes the task inside of clusterMaker
-		ArrayList<String> commands = new ArrayList<String>();
-		commands.add(getCommand(algorithm, edgeAttribute, network.toString()));
-		Observer observer = new Observer();
-		TaskIterator taskIterator = AutoAnnotationManager.getInstance().getCommandExecutor().createTaskIterator(commands, null);
-		AutoAnnotationManager.getInstance().getDialogTaskManager().execute(taskIterator, observer);
-		while (!observer.isFinished()) {
-			// Prevents task from continuing to execute until clusterMaker has finished
-			try {
-				Thread.sleep(1);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-	}
-	
 	
 	private String getCommand(String algorithm, String edgeAttribute, String networkName) {
 		String command = "";
@@ -100,15 +63,40 @@ public class RunClustermakerTask extends AbstractTask {
 		return command;
 	}
 
+	@Override
+	public TaskIterator createTaskIterator() {
+		// Delete potential existing columns - sometimes clusterMaker doesn't do this
+				if (network.getDefaultNodeTable().getColumn(clusterColumnName) != null) {
+					network.getDefaultNodeTable().deleteColumn(clusterColumnName);
+				}
+				
+				// Cluster based on similarity coefficient if possible
+				String edgeAttribute;
+				try {
+					edgeAttribute = EnrichmentMapManager.getInstance().getCyNetworkList().get(view.getModel().getSUID()).getParams().getAttributePrefix() + EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT;
+				} catch (NullPointerException e) {
+					edgeAttribute = "--None--";
+				}
+				
+				//select all the nodes to cluster
+				for (View<CyNode> nodeView : view.getNodeViews()) {
+					if (nodeView.getVisualProperty(BasicVisualLexicon.NODE_VISIBLE)) {
+						network.getRow(nodeView.getModel()).set(CyNetwork.SELECTED, true);
+					}
+				}
+				
+				// Executes the task inside of clusterMaker
+				ArrayList<String> commands = new ArrayList<String>();
+				commands.add(getCommand(algorithm, edgeAttribute, network.toString()));
+				TaskIterator taskIterator = AutoAnnotationManager.getInstance().getCommandExecutor().createTaskIterator(commands,null);
+				
+				return taskIterator;				
+	}
+
 
 	@Override
-	public void run(TaskMonitor taskMonitor) throws Exception {
-		this.taskMonitor = taskMonitor;
-
-		taskMonitor.setProgress(0.1);
-		taskMonitor.setStatusMessage("Clustering nodes...");
-		runClusterMaker();
-		
-				
+	public boolean isReady() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 }

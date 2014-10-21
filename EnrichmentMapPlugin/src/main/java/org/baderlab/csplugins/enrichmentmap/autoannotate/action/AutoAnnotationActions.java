@@ -14,23 +14,15 @@ import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
-import org.baderlab.csplugins.enrichmentmap.EnrichmentMapUtils;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationParameters;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationUtils;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.AnnotationSet;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.task.AnnotateClustersTask;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.task.AutoAnnotationTaskFactory;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.task.CreateClustersTask;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.task.RunClustermakerTask;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.task.CreateGroupsTask;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.task.DrawClusterLabelTask;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.task.LayoutNetworkTask;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.task.Observer;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.task.UpdateClusterLabelTask;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.task.VisualizeClusterAnnotationTaskFactory;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.view.AutoAnnotationPanel;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters;
 import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.command.CommandExecutorTaskFactory;
@@ -164,7 +156,6 @@ public class AutoAnnotationActions {
 	}
 
 	public static void removeAction(JComboBox<AnnotationSet> clusterSetDropdown, 
-			HashMap<AnnotationSet, JTable> clustersToTables,
 			AutoAnnotationParameters params) {
 		
 		AnnotationSet annotationSet = params.getSelectedAnnotationSet();
@@ -177,7 +168,7 @@ public class AutoAnnotationActions {
 			AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
 			EnrichmentMapManager emManager = EnrichmentMapManager.getInstance();
 	
-			JTable clusterTable = clustersToTables.get(annotationSet);
+			JTable clusterTable = annotationSet.getClusterTable();
 			clusterTable.getParent().getParent().getParent().remove(clusterTable.getParent().getParent());
 			
 			// Prevent heatmap dialog from interrupting this task
@@ -196,8 +187,7 @@ public class AutoAnnotationActions {
 			for (Cluster cluster : clusterSetCopy) {
 				AutoAnnotationUtils.destroyCluster(cluster, autoAnnotationManager.getCommandExecutor(), autoAnnotationManager.getSyncTaskManager());
 			}
-			params.removeAnnotationSet(annotationSet);
-			clustersToTables.remove(annotationSet);
+			params.removeAnnotationSet(annotationSet);			
 			// Remove cluster set from dropdown
 			clusterSetDropdown.removeItem(annotationSet);
 		}

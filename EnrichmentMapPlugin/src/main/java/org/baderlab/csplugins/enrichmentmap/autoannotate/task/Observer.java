@@ -26,7 +26,7 @@ public class Observer implements TaskObserver {
 	
 	@Override
 	public void taskFinished(ObservableTask arg0) {
-		return;
+		//allTasksFinished = true;
 	}
 
 	public boolean isFinished() {

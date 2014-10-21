@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.TreeMap;
 
+import javax.swing.JTable;
+
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationUtils;
 import org.cytoscape.model.CyNode;
@@ -54,6 +56,13 @@ public class AnnotationSet {
 	private boolean useGroups;
 	// Whether or not this annotation set is currently selected (showing)
 	private boolean selected = false;
+	
+	//JTable representing all the clusters in the AutoAnnotationPanel
+	private JTable clusterTable;
+	
+	//flag to indicate the current selection in this annotation Set came from a manual node selection (as opposed to coming from the cluster table)
+	private boolean manualSelection = false;
+	
 	// Visual properties
 	boolean constantFontSize = DEFAULT_CONSTANT_FONT_SIZE;
 	boolean showEllipses = DEFAULT_SHOW_ELLIPSES;
@@ -218,6 +227,14 @@ public class AnnotationSet {
         }
 	}
 
+	public boolean isManualSelection() {
+		return manualSelection;
+	}
+
+	public void setManualSelection(boolean manualSelection) {
+		this.manualSelection = manualSelection;
+	}
+
 	public String getShapeType() {
 		return shapeType;
 	}
@@ -291,6 +308,16 @@ public class AnnotationSet {
 		}
 	}
 	
+	
+	
+	public JTable getClusterTable() {
+		return clusterTable;
+	}
+
+	public void setClusterTable(JTable clusterTable) {
+		this.clusterTable = clusterTable;
+	}
+
 	public String toSessionString() {
 	    	// Each annotation set is stored in the format:
 	    	/*

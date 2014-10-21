@@ -15,19 +15,60 @@ import org.cytoscape.work.TaskMonitor;
 
 public class SelectClusterTask extends AbstractTask{
 	
+	//There are 4 different types of selection
+	// 0. - select cluster annotation and nodes belonging to cluster - called when user clicks on cluster in cluster table.
+	// 1. - deselect cluster annotation and nodes belonging to cluster - called when user clicks on cluster in cluster table.
+	// 2. - select cluster annotation and but do not select nodes belonging to cluster - called when user selects nodes in the network
+	// 3. - deselect cluster annotation and but do not select nodes belonging to cluster - called when user selects nodes in the network
+	final public static int SELECTCLUSTER_WITHNODES = 0,  DESELECTCLUSTER_WITHNODES = 1, SELECTCLUSTER_NONODES  = 2, DESELECTCLUSTER_NONODES = 3; 
+	
 	private Cluster cluster;
 	//if selection is true then select cluster.  If selection is false then de-select cluster
-	private boolean selection = true;
+	private int selection = SELECTCLUSTER_WITHNODES ;
 	
 	private TaskMonitor taskMonitor =null;
 	
-	public SelectClusterTask(Cluster cluster, boolean selection) {
+	public SelectClusterTask(Cluster cluster, int selection) {
 		super();
 		this.cluster = cluster;
 		this.selection = selection;
 	}
 
-	public void selectCluster() {
+	private void selectCluster(Cluster cluster){
+		
+		// Select the annotations (ellipse and text label)
+		cluster.getEllipse().setBorderColor(Color.YELLOW);
+		cluster.getEllipse().setBorderWidth(3*cluster.getParent().getEllipseWidth());
+		cluster.getTextAnnotation().setTextColor(Color.YELLOW);
+		
+	}
+	
+	private void deselectCluster(Cluster cluster){
+		// Deselect the annotations
+		cluster.getEllipse().setBorderColor(Color.DARK_GRAY);
+		cluster.getEllipse().setBorderWidth(cluster.getParent().getEllipseWidth());
+		cluster.getTextAnnotation().setTextColor(Color.BLACK);
+		cluster.getParent().updateCoordinates();
+		if (cluster.coordinatesChanged()) {
+			cluster.erase();
+						
+			// Redraw deselected clusters
+			VisualizeClusterAnnotationTaskFactory visualizeCluster = new VisualizeClusterAnnotationTaskFactory(cluster);
+			AutoAnnotationManager.getInstance().getDialogTaskManager().execute(visualizeCluster.createTaskIterator());
+						
+			cluster.setCoordinatesChanged(false);
+		}
+	}
+	
+	private void updateCloud(String command){
+		// Select the corresponding WordCloud through command line
+		ArrayList<String> commands = new ArrayList<String>();
+		commands.add(command);
+		TaskIterator task = AutoAnnotationManager.getInstance().getCommandExecutor().createTaskIterator(commands, null);
+		AutoAnnotationManager.getInstance().getSyncTaskManager().execute(task);
+	}
+	
+	public void selectCluster_withnodes() {
 		if (!cluster.isSelected()) {
 			CyNetwork network = cluster.getParent().getView().getModel();
 			AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
@@ -46,23 +87,16 @@ public class SelectClusterTask extends AbstractTask{
 					network.getRow(node).set(CyNetwork.SELECTED, true);
 				}
 			}
-			// Select the corresponding WordCloud through command line
-			ArrayList<String> commands = new ArrayList<String>();
-			String command = "wordcloud select cloudName=\"" + cluster.getCloudName() + "\"";
-			commands.add(command);
-			TaskIterator task = AutoAnnotationManager.getInstance().getCommandExecutor().createTaskIterator(commands, null);
-			AutoAnnotationManager.getInstance().getSyncTaskManager().execute(task);
-			// Select the annotations (ellipse and text label)
-			cluster.getEllipse().setBorderColor(Color.YELLOW);
-			cluster.getEllipse().setBorderWidth(3*cluster.getParent().getEllipseWidth());
-			cluster.getTextAnnotation().setTextColor(Color.YELLOW);
+			
+			updateCloud( "wordcloud select cloudName=\"" + cluster.getCloudName() + "\"");
+			selectCluster(cluster);			
+			
 		}
 	}
 
-	public void deselectCluster() {
+	public void deselectCluster_withnodes() {
 		if (cluster.isSelected()) {
 			CyNetwork network = cluster.getParent().getView().getModel();
-			int ellipseBorderWidth = cluster.getParent().getEllipseWidth();
 			cluster.setSelected(false);
 			// Deselect node(s) in the cluster
 			if (cluster.isCollapsed()) {
@@ -72,33 +106,50 @@ public class SelectClusterTask extends AbstractTask{
 					network.getRow(node).set(CyNetwork.SELECTED, false);
 				}
 			}
-			// Deselect the annotations
-			cluster.getEllipse().setBorderColor(Color.DARK_GRAY);
-			cluster.getEllipse().setBorderWidth(ellipseBorderWidth);
-			cluster.getTextAnnotation().setTextColor(Color.BLACK);
-			cluster.getParent().updateCoordinates();
-			if (cluster.coordinatesChanged()) {
-				cluster.erase();
-				
-				// Redraw deselected clusters
-				VisualizeClusterAnnotationTaskFactory visualizeCluster = new VisualizeClusterAnnotationTaskFactory(cluster);
-				AutoAnnotationManager.getInstance().getDialogTaskManager().execute(visualizeCluster.createTaskIterator());
-				
-				cluster.setCoordinatesChanged(false);
-			}
+			deselectCluster(cluster);
 		}
 	}
 
+	public void selectCluster_nonodes() {
+		if (!cluster.isSelected()) {
+
+			AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
+			autoAnnotationManager.flushPayloadEvents();
+			// Wait for heatmap to finish updating
+			boolean heatMapUpdating = true;
+			while (heatMapUpdating) {
+				heatMapUpdating = autoAnnotationManager.isHeatMapUpdating();
+			}
+			cluster.setSelected(true);
+			
+			updateCloud( "wordcloud select cloudName=\"" + cluster.getCloudName() + "\"");
+			selectCluster(cluster);			
+			
+		}
+	}
+	
+	public void deselectCluster_nonodes() {
+		if (cluster.isSelected()) {
+			cluster.setSelected(false);			
+			deselectCluster(cluster);
+		}
+	}
+
+	
 
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		this.taskMonitor = taskMonitor;
 		
-		if(selection)
-			selectCluster();
-		else	
-			deselectCluster();
+		if(this.selection == SELECTCLUSTER_WITHNODES)
+			selectCluster_withnodes();
+		else if(this.selection == DESELECTCLUSTER_WITHNODES)	
+			deselectCluster_withnodes();
+		else if(this.selection == DESELECTCLUSTER_NONODES)	
+			deselectCluster_nonodes();
+		else if(this.selection == SELECTCLUSTER_NONODES)	
+			selectCluster_nonodes();
 	}
 	
 	
