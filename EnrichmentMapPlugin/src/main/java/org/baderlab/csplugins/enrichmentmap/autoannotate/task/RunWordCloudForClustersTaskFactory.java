@@ -17,25 +17,23 @@ import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.swing.DialogTaskManager;
 
-public class AnnotateClustersTaskFactory implements TaskFactory{
+public class RunWordCloudForClustersTaskFactory implements TaskFactory{
 
 	private AnnotationSet annotationSet;
 	private AutoAnnotationParameters params;
 	private CyNetwork network;
 	
-	private DialogTaskManager dialogTaskManager;
 	private CommandExecutorTaskFactory executor;
 	
 	
 	
-	public AnnotateClustersTaskFactory(AnnotationSet annotationSet,
+	public RunWordCloudForClustersTaskFactory(AnnotationSet annotationSet,
 			AutoAnnotationParameters params) {
 		super();
 		this.annotationSet = annotationSet;
 		this.params = params;
 		this.network = params.getNetwork();
 		
-		this.dialogTaskManager = AutoAnnotationManager.getInstance().getDialogTaskManager();
 		this.executor = AutoAnnotationManager.getInstance().getCommandExecutor();
 	}
 

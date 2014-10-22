@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap.autoannotate.task;
+package org.baderlab.csplugins.enrichmentmap.autoannotate.task.cluster;
 
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationParameters;

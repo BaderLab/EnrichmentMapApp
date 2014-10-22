@@ -6,59 +6,23 @@
  */
 package org.baderlab.csplugins.enrichmentmap.autoannotate;
 
-import java.awt.Color;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
+import java.util.HashMap;
+import java.util.Set;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapVisualStyle;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.AnnotationSet;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.model.WordInfo;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.model.WordInfoNumberComparator;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.task.DrawClusterLabelTask;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.task.VisualizeClusterAnnotationTaskFactory;
-import org.cytoscape.command.CommandExecutorTaskFactory;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.task.cluster.DrawClusterLabelTask;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTable;
+
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.presentation.annotations.AnnotationFactory;
-import org.cytoscape.view.presentation.annotations.AnnotationManager;
-import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
-import org.cytoscape.view.presentation.annotations.TextAnnotation;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
-import org.cytoscape.work.SynchronousTaskManager;
+
 import org.cytoscape.work.TaskIterator;
 
 public class AutoAnnotationUtils {
-		
-	
-	public static void destroyCluster(Cluster clusterToDestroy, CommandExecutorTaskFactory executor, 
-			SynchronousTaskManager<?> syncTaskManager) {
-		destroyCloud(clusterToDestroy, executor, syncTaskManager);
-		// Erase the annotations
-		clusterToDestroy.erase();
-		// Remove the cluster from the annotation set
-		clusterToDestroy.getParent().getClusterMap().remove(clusterToDestroy.getClusterNumber());
-	}
-	
-	public static void destroyCloud(Cluster clusterToDestroy, CommandExecutorTaskFactory executor, 
-			SynchronousTaskManager<?> syncTaskManager) {
-		// Delete the WordCloud through the command line
-		ArrayList<String> commands = new ArrayList<String>();
-		String command = "wordcloud delete cloudName=\"" + clusterToDestroy.getCloudName() + "\"";
-		commands.add(command);
-		TaskIterator task = executor.createTaskIterator(commands, null);
-		syncTaskManager.execute(task);
-	}
-
 	
 	public static void updateFontSizes() {
  		// Set font size to fontSize

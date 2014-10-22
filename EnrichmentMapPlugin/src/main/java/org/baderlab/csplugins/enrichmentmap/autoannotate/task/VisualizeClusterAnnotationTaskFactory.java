@@ -1,5 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap.autoannotate.task;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.task.cluster.DrawClusterEllipseTask;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.task.cluster.DrawClusterLabelTask;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 

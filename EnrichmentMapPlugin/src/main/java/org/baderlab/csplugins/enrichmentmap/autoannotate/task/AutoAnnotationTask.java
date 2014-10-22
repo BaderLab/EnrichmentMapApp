@@ -9,6 +9,7 @@ import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationParameters;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.AnnotationSet;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.task.cluster.ComputeClusterLabelsTask;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.view.AutoAnnotationPanel;
 import org.baderlab.csplugins.enrichmentmap.task.BuildEnrichmentMapDummyTask;
 import org.cytoscape.model.CyNetwork;
@@ -99,7 +100,7 @@ public class AutoAnnotationTask extends AbstractTask {
 			//step2 - annotate the network create word clouds
 			taskMonitor.setTitle("Calculating annotations...");
 			observer = new Observer();			
-			AutoAnnotationManager.getInstance().getDialogTaskManager().execute(new AnnotateClustersTaskFactory(annotationSet, this.params).createTaskIterator(),observer );			
+			AutoAnnotationManager.getInstance().getDialogTaskManager().execute(new RunWordCloudForClustersTaskFactory(annotationSet, this.params).createTaskIterator(),observer );			
 			waitTilTaskIsDone(observer);
 			
 			//step3 - layout network

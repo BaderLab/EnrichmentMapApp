@@ -31,8 +31,9 @@ import org.baderlab.csplugins.enrichmentmap.autoannotate.action.AutoAnnotationAc
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.AnnotationSet;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.LabelOptions;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.task.DrawClusterEllipseTask;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.task.DrawClusterLabelTask;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.task.UpdateAnnotationsTaskFactory;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.task.cluster.DrawClusterEllipseTask;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.task.cluster.DrawClusterLabelTask;
 import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
@@ -233,7 +234,9 @@ public class DisplayOptionsPanel extends JPanel implements CytoPanelComponent {
 					LabelOptions labelOptions = labelOptionsEditor.showDialog();
 					selectedAnnotationSet.setLabelOptions(labelOptions);
 					// Redraw labels (position may have changed)
-					AutoAnnotationActions.updateAction(selectedAnnotationSet);
+					//update the Annotations
+					AutoAnnotationManager.getInstance().getDialogTaskManager().execute(new UpdateAnnotationsTaskFactory(selectedAnnotationSet).createTaskIterator());
+					
 				}
 			}
 		});

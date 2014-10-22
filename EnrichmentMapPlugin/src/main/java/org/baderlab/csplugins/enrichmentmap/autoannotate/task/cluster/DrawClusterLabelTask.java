@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap.autoannotate.task;
+package org.baderlab.csplugins.enrichmentmap.autoannotate.task.cluster;
 
 import java.util.HashMap;
 import java.util.Map;

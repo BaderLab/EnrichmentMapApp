@@ -9,7 +9,7 @@ import javax.swing.AbstractAction;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.AnnotationSet;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.task.DrawClusterLabelTask;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.task.cluster.DrawClusterLabelTask;
 import org.cytoscape.work.TaskIterator;
 
 public class ClusterTableUpdateNameAction extends AbstractAction {

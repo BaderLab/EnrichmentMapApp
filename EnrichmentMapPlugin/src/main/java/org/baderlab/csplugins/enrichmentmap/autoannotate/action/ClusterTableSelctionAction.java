@@ -11,7 +11,7 @@ import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.AnnotationSet;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.task.SelectClusterTask;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.task.cluster.SelectClusterTask;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.work.TaskIterator;
 
@@ -76,12 +76,20 @@ public class ClusterTableSelctionAction implements ListSelectionListener{
 			difference.addAll(this.currentSelection);
 			difference.removeAll(newSelection);
 			for(Integer todeselect:difference){
-				Cluster cluster = (Cluster) table.getModel().getValueAt(
-						table.convertRowIndexToModel(todeselect), 0);
-				if(annotationSet.isManualSelection())
-					currentTasks.append(new SelectClusterTask(cluster,SelectClusterTask.DESELECTCLUSTER_NONODES));
-				else
-					currentTasks.append(new SelectClusterTask(cluster,SelectClusterTask.DESELECTCLUSTER_WITHNODES));					
+				//it is possible that the item that needs to be deselected has been deleted from the table
+				Cluster cluster;
+				try{
+					cluster = (Cluster) table.getModel().getValueAt(table.convertRowIndexToModel(todeselect), 0);
+				} catch(java.lang.IndexOutOfBoundsException e1){
+					continue;
+				}
+				
+				if(cluster != null){
+					if(annotationSet.isManualSelection())
+						currentTasks.append(new SelectClusterTask(cluster,SelectClusterTask.DESELECTCLUSTER_NONODES));
+					else
+						currentTasks.append(new SelectClusterTask(cluster,SelectClusterTask.DESELECTCLUSTER_WITHNODES));
+				}
 			}
 			
 			//make the new selection the current selection

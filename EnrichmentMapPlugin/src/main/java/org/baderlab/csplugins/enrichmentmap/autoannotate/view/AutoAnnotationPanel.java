@@ -10,10 +10,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -26,22 +23,15 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableModel;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationParameters;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationUtils;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.action.AnnotateButtonActionListener;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.action.AutoAnnotationActions;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.action.ClusterTableSelctionAction;
@@ -50,30 +40,21 @@ import org.baderlab.csplugins.enrichmentmap.autoannotate.action.TableCellListene
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.AnnotationSet;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.ClusterTableModel;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.task.DrawClusterLabelTask;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.task.SelectClusterTask;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.task.UpdateClusterLabelTask;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.task.VisualizeClusterAnnotationTaskFactory;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.task.cluster.DeleteClusterTask;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.task.cluster.UpdateClusterLabelTask;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters;
 import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
-import org.cytoscape.command.CommandExecutorTaskFactory;
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableUtil;
-import org.cytoscape.model.events.RowSetRecord;
 import org.cytoscape.util.swing.BasicCollapsiblePanel;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
-import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskIterator;
 
 /**
@@ -130,6 +111,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 
 	public AutoAnnotationPanel(CySwingApplication application, DisplayOptionsPanel displayOptionsPanel){
 
+		//Hashmap tracking the views to the group of annotation sets
 		this.networkViewToClusterSetDropdown = new HashMap<CyNetworkView, JComboBox<AnnotationSet>>();
 		
 		this.displayOptionsPanel = displayOptionsPanel;
@@ -198,7 +180,8 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 			public void actionPerformed(ActionEvent e) {
 				AnnotationSet annotationSet = (AnnotationSet) networkViewToClusterSetDropdown.
 						get(selectedView).getSelectedItem();
-				AutoAnnotationActions.extractAction(annotationSet, annotationSet.getClusterTable());
+				AutoAnnotationActions actionSupportClass = new AutoAnnotationActions();
+				actionSupportClass.extractAction(annotationSet);
 			}
 		};
 		extractButton.addActionListener(extractActionListener);
@@ -210,22 +193,20 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 			public void actionPerformed(ActionEvent e) {
 				AnnotationSet annotationSet = (AnnotationSet) networkViewToClusterSetDropdown.
 						get(selectedView).getSelectedItem();
-				AutoAnnotationActions.mergeAction(annotationSet, annotationSet.getClusterTable());
+				AutoAnnotationActions actionSupportClass = new AutoAnnotationActions();
+				actionSupportClass.mergeAction(annotationSet);
 			}
 		};
 		mergeButton.addActionListener(mergeActionListener);
 		mergeButton.setToolTipText("Merge clusters into one");
-		
-		// Button to delete a cluster from an annotation set
-		JButton deleteButton = new JButton("Delete");
-		ActionListener deleteActionListener = new ActionListener(){
+		ActionListener deletActionListener = new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
-				AnnotationSet annotationSet = (AnnotationSet) networkViewToClusterSetDropdown.
-						get(selectedView).getSelectedItem();
-				AutoAnnotationActions.deleteAction(annotationSet, annotationSet.getClusterTable());
+				AutoAnnotationManager.getInstance().getDialogTaskManager().execute(new TaskIterator(new DeleteClusterTask(AutoAnnotationManager.getInstance().getAnnotationPanel())));				
 			}
 		};
-		deleteButton.addActionListener(deleteActionListener);
+		// Button to delete a cluster from an annotation set
+		JButton deleteButton = new JButton("Delete");	
+		deleteButton.addActionListener(deletActionListener);
 		deleteButton.setToolTipText("Delete selected cluster(s)");
 		
 		// Buttons to edit clusters
@@ -252,11 +233,20 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 		JButton removeButton = new JButton("Remove");
 		ActionListener clearActionListener = new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
-				JComboBox<AnnotationSet> clusterSetDropdown = networkViewToClusterSetDropdown.get(selectedView);
-				AnnotationSet annotationSet = (AnnotationSet) clusterSetDropdown.getSelectedItem();
-				// Get rid of the table associated with this cluster set
-				remove(annotationSet.getClusterTable().getParent());
-				AutoAnnotationActions.removeAction(clusterSetDropdown, params);
+				int confirmation = JOptionPane.showConfirmDialog(null, "Are you sure you want to remove this annotation set? This cannot be undone.",
+						"Remove confirmation", JOptionPane.YES_NO_OPTION);
+				
+				if (confirmation == JOptionPane.YES_OPTION) {
+				
+					JComboBox<AnnotationSet> clusterSetDropdown = networkViewToClusterSetDropdown.get(selectedView);
+					AnnotationSet annotationSet = (AnnotationSet) clusterSetDropdown.getSelectedItem();
+					// Get rid of the table associated with this cluster set
+					remove(annotationSet.getClusterTable().getParent());
+					AutoAnnotationActions actionSupportClass = new AutoAnnotationActions();
+					actionSupportClass.removeAction(params);
+					// Remove cluster set from dropdown
+					clusterSetDropdown.removeItem(annotationSet);
+				}
 			}
 		};
 		removeButton.addActionListener(clearActionListener);
@@ -268,7 +258,8 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 			public void actionPerformed(ActionEvent e) {
 				AnnotationSet annotationSet = (AnnotationSet) networkViewToClusterSetDropdown.
 						get(selectedView).getSelectedItem();
-				AutoAnnotationActions.updateAction(annotationSet);
+				AutoAnnotationActions actionSupportClass = new AutoAnnotationActions();
+				actionSupportClass.updateAction(annotationSet);
 			}
 		};
 		updateButton.addActionListener(updateActionListener);
@@ -385,7 +376,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 		//Create a new Cluster Table Model
 		ClusterTableModel model = new ClusterTableModel(columnNames, data,annotationSet.getClusterMap());
 
-		final JTable table = new JTable(model); // Final to be able to use inside of listener
+		JTable table = new JTable(model); 
 		table.setPreferredScrollableViewportSize(new Dimension(320, 250));
 		table.getColumnModel().getColumn(0).setPreferredWidth(210);
 		table.getColumnModel().getColumn(1).setPreferredWidth(100);
