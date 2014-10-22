@@ -459,8 +459,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 					}
 					//execute all the cluster and label drawing tasks
 					AutoAnnotationManager.getInstance().getDialogTaskManager().execute(currentTasks);
-					
-					
+										
 					setOutputVisibility(true);
 					annotationSet.getClusterTable().getParent().getParent().setVisible(true); // Show selected table
 					updateUI();
@@ -479,13 +478,12 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 							groupManager.destroyGroup(group);
 							cluster.removeGroup();
 						}
+						// Hide the table for deselected AnnotationSet clusters
+						clusters.getClusterTable().getParent().getParent().setVisible(false);
 					}
-					// Hide the table for deselected clusters
-	/*				if (clustersToTables.containsKey(clusters)) {
-						// If it hasn't been deleted, in which case it'll be removed already
-						clustersToTables.get(clusters).getParent().getParent().setVisible(false);
-					}
-	*/
+					
+					
+	
 					setOutputVisibility(false);
 					updateUI();
 				}
