@@ -81,29 +81,23 @@ public class AutoAnnotationTask extends AbstractTask {
 			new BuildEnrichmentMapDummyTask("Annotating Enrichment Map").run(taskMonitor);
 			taskMonitor.setTitle("Annotating Enrichment Map");
 			
-			//AutoAnnotationManager.getInstance().getDialogTaskManager().execute(currentTasks);
 			Observer observer;
 			//step 1a - cluster
 			if(this.params.getAlgorithm() != null){
 				taskMonitor.setTitle("Clustering Nodes...");
 				observer = new Observer();
 				AutoAnnotationManager.getInstance().getDialogTaskManager().execute(new RunClustermakerTaskFactory(this.params).createTaskIterator(),observer);
-				
-				//currentTasks.append(new RunClustermakerTask(this.params));
 				waitTilTaskIsDone(observer);
 			}
 				
 			//step 1b - make clusters for annotating
 			taskMonitor.setTitle("Creating Clusters...");
-			//currentTasks.append(new CreateClustersTask(annotationSet, this.params));
 			observer = new Observer();						
 			AutoAnnotationManager.getInstance().getDialogTaskManager().execute(new TaskIterator(new CreateClustersTask(annotationSet, this.params)),observer);
 			waitTilTaskIsDone(observer);
 			
 			//step2 - annotate the network create word clouds
 			taskMonitor.setTitle("Calculating annotations...");
-			//AnnotateClustersTaskFactory annotateClusters = new AnnotateClustersTaskFactory(annotationSet, this.params);
-			//currentTasks.append(annotateClusters.createTaskIterator());
 			observer = new Observer();			
 			AutoAnnotationManager.getInstance().getDialogTaskManager().execute(new AnnotateClustersTaskFactory(annotationSet, this.params).createTaskIterator(),observer );			
 			waitTilTaskIsDone(observer);
@@ -113,43 +107,23 @@ public class AutoAnnotationTask extends AbstractTask {
 				// Can't group layout with fuzzy clusters			
 				taskMonitor.setTitle("Laying Out Network...");
 				LayoutNetworkTask layouttask = new LayoutNetworkTask(annotationSet,this.params);
-				currentTasks.append(layouttask);
-				//observer = new Observer();
-				//AutoAnnotationManager.getInstance().getDialogTaskManager().execute(new TaskIterator(new LayoutNetworkTask(annotationSet,this.params)),observer );				
-				//waitTilTaskIsDone(observer);
+				currentTasks.append(layouttask);				
 			}
-				
-			//step3 - annotate the network
-			//taskMonitor.setTitle("Annotating clusters...");
-			//AnnotateClustersTaskFactory annotateClusters = new AnnotateClustersTaskFactory(annotationSet, this.params);
-			//currentTasks.append(annotateClusters.createTaskIterator());
-			//observer = new Observer();			
-			//AutoAnnotationManager.getInstance().getDialogTaskManager().execute(new AnnotateClustersTaskFactory(annotationSet, this.params).createTaskIterator(),observer );			
-			//waitTilTaskIsDone(observer);
-				
+								
 			// Generate the labels for the clusters
 			ComputeClusterLabelsTask computeLabels = new ComputeClusterLabelsTask(annotationSet,this.params);
 			currentTasks.append(computeLabels);
-			//observer = new Observer();
-			//AutoAnnotationManager.getInstance().getDialogTaskManager().execute(new TaskIterator(new ComputeClusterLabelsTask(annotationSet,this.params)),observer );
-			//waitTilTaskIsDone(observer);
 				
 			//Step 4 - create groups
 			//Add groups if groups was selected
 			if (annotationSet.usingGroups()) {				
 				taskMonitor.setTitle("Creating Groups...");
 				currentTasks.append(new CreateGroupsTask(annotationSet,this.params));
-				//observer = new Observer();
-				//AutoAnnotationManager.getInstance().getDialogTaskManager().execute(new TaskIterator(new CreateGroupsTask(annotationSet,this.params)),observer );
-				//waitTilTaskIsDone(observer);
 			}
 			//Step 5 - clean up
 			// Add these clusters to the table on the annotationPanel
 			taskMonitor.setTitle("Cleaning Up...");
 			currentTasks.append(new UpdateAnnotationPanelTask(annotationSet, this.params));
-			//observer = new Observer();
-			//AutoAnnotationManager.getInstance().getDialogTaskManager().execute(new TaskIterator(new UpdateAnnotationPanelTask(annotationSet, this.params)),observer );
-			//waitTilTaskIsDone(observer);
 			AutoAnnotationManager.getInstance().getDialogTaskManager().execute(currentTasks);
 						
 		}	
