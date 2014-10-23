@@ -180,6 +180,8 @@ public class AutoAnnotationParameters {
 		// Reload network view by ID
 		CyNetworkView view = session.getObject(Long.parseLong(fileLines[0]), CyNetworkView.class);
 		setNetworkView(view);
+		setNetwork(view.getModel());
+		
 		// TODO
 		// Reload annotations from ID, currently not possible
 		try{
