@@ -88,6 +88,7 @@ public class Cluster implements Comparable<Cluster> {
 	}
 	
 	public double[] getBounds() {
+		//Only updates the bounds of cluster where the coordinates have changed.
 		if (coordinatesChanged) {
 			// Find the edges of the cluster
 			double xmin = 100000000;
@@ -104,6 +105,8 @@ public class Cluster implements Comparable<Cluster> {
 			bounds[1] = xmax;
 			bounds[2] = ymin;
 			bounds[3] = ymax;
+			
+			coordinatesChanged = false;
 		}
 		return bounds;
 	}
@@ -141,9 +144,14 @@ public class Cluster implements Comparable<Cluster> {
 				nodeToAdd.add(node);
 				group.addNodes(nodeToAdd);
 			}
-		}
+		
 		nodes.add(node);
 		nodesToCoordinates.put(node, coordinates);
+		}
+		else if(coordinatesHaveChanged(nodesToCoordinates.get(node),coordinates)){
+			nodesToCoordinates.put(node, coordinates);
+			coordinatesChanged = true; 
+		}
 	}
 	
 	public void updateCoordinates() {

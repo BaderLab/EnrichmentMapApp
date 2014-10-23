@@ -57,7 +57,6 @@ public class SelectClusterTask extends AbstractTask{
 			VisualizeClusterAnnotationTaskFactory visualizeCluster = new VisualizeClusterAnnotationTaskFactory(cluster);
 			AutoAnnotationManager.getInstance().getDialogTaskManager().execute(visualizeCluster.createTaskIterator());
 						
-			cluster.setCoordinatesChanged(false);
 		}
 	}
 	

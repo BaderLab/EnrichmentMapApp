@@ -65,7 +65,7 @@ public class UpdateAnnotationsTaskFactory implements TaskFactory{
 				// Redraw selected clusters
 				VisualizeClusterAnnotationTaskFactory visualizeCluster = new VisualizeClusterAnnotationTaskFactory(cluster);
 				currentTasks.append(visualizeCluster.createTaskIterator());
-				cluster.setCoordinatesChanged(false);
+
 			}
 		}
 		

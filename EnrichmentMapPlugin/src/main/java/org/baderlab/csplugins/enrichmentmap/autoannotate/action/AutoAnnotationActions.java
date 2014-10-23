@@ -191,7 +191,7 @@ public class AutoAnnotationActions {
 				// Redraw selected clusters
 				VisualizeClusterAnnotationTaskFactory visualizeCluster = new VisualizeClusterAnnotationTaskFactory(cluster);
 				currentTasks.append(visualizeCluster.createTaskIterator());
-				cluster.setCoordinatesChanged(false);
+
 			}
 		}
 		//run all the tasks
