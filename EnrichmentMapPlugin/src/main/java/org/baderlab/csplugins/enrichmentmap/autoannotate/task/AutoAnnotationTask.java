@@ -75,7 +75,9 @@ public class AutoAnnotationTask extends AbstractTask {
 			EnrichmentMapUtils.setOverrideHeatmapRevalidation(true);
 						
 			AnnotationSet annotationSet = new AnnotationSet(this.params.getName(),this.params.getNetworkView(),this.params.getClusterColumnName(), this.params.getAnnotateColumnName());
-
+			//add this annotation set to the annotations
+			this.params.addAnnotationSet(annotationSet);
+			
 			//Step 0 - add dummy task to bring up the dialog box
 			TaskIterator currentTasks = new TaskIterator();
 			

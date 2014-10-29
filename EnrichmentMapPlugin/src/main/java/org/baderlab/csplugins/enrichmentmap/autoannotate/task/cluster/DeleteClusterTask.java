@@ -6,6 +6,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JTable;
 
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationParameters;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.AnnotationSet;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.ClusterTableModel;
@@ -20,24 +21,32 @@ import org.cytoscape.work.TaskMonitor;
 
 public class DeleteClusterTask extends AbstractTask {
 	
-	private AutoAnnotationPanel autoAnnotationPanel;
+	private AutoAnnotationParameters params;
 	private AnnotationSet annotationSet;
 	private Cluster currentCluster;
 
-	public DeleteClusterTask(AutoAnnotationPanel autoAnnotationPanel) {
+	public DeleteClusterTask(AutoAnnotationParameters params) {
 		super();
-		this.autoAnnotationPanel = autoAnnotationPanel;
+		this.params = params;
 	}
 	
-	public DeleteClusterTask(AutoAnnotationPanel autoAnnotationPanel, Cluster currentCluster) {
+	public DeleteClusterTask(AutoAnnotationParameters params, Cluster currentCluster) {
 		super();
-		this.autoAnnotationPanel = autoAnnotationPanel;
+		this.params = params;
 		this.currentCluster = currentCluster;
 	}
 	
+	public DeleteClusterTask(AnnotationSet annotationSet, Cluster currentCluster) {
+		super();
+		this.annotationSet = annotationSet;
+		this.currentCluster = currentCluster;
+	}
+	
+	
 	@Override
 	public void run(TaskMonitor arg0) throws Exception {
-		this.annotationSet = autoAnnotationPanel.getSelectedAnnotationSet();
+		if(this.annotationSet == null)
+			this.annotationSet = this.params.getSelectedAnnotationSet();
 		//If there is no cluster specified this task has been called directly from the Delete Button Action Listener
 		if(this.currentCluster == null)
 			deleteAction();
@@ -90,7 +99,11 @@ public class DeleteClusterTask extends AbstractTask {
 		// Erase the annotations
 		clusterToDestroy.erase();
 		// Remove the cluster from the annotation set
-		this.annotationSet.getClusterMap().remove(clusterToDestroy.getClusterNumber());
+		//If removing the whole annotation set (using Remove annotation button)
+		//it possible that the annotation set has already been 
+		//removed.  Check to make sure it isn't null
+		if(this.annotationSet != null)
+			this.annotationSet.getClusterMap().remove(clusterToDestroy.getClusterNumber());
 	}
 	
 	public void destroyCloud(Cluster clusterToDestroy) {

@@ -3,14 +3,15 @@ package org.baderlab.csplugins.enrichmentmap.autoannotate.action;
 import java.util.HashSet;
 
 import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
+import org.baderlab.csplugins.enrichmentmap.EnrichmentMapUtils;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.AnnotationSet;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.task.Observer;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.task.cluster.SelectClusterTask;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.work.TaskIterator;
@@ -33,12 +34,14 @@ public class ClusterTableSelctionAction implements ListSelectionListener{
 	public void valueChanged(ListSelectionEvent e) {
 
 		AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
-		ListSelectionModel lsm = (ListSelectionModel)e.getSource();
 		
 		// Down-click and up-click are separate events, 
 		//this makes only one of them fire
 		if (! e.getValueIsAdjusting()) { 
 
+			//fired selection event is currently processing
+			autoAnnotationManager.setClusterTableUpdating(true);
+			
 			// Get the selected clusters from the selected rows
 			//this will return the indices in the table of the selected clusters 
 			int[] selectedRows = table.getSelectedRows();
@@ -98,19 +101,36 @@ public class ClusterTableSelctionAction implements ListSelectionListener{
 			
 			CyNetwork selectedNetwork = autoAnnotationManager.getApplicationManager().getCurrentNetwork();
 
-			//disable Heatmap autofocus.
-			try {
-				EnrichmentMapManager.getInstance().getMap(selectedNetwork.getSUID()).getParams().setDisableHeatmapAutofocus(true);
+			//disable Heatmap revalidation while we are updating the annotation selections.
+		/*	try {
+				//EnrichmentMapManager.getInstance().getMap(selectedNetwork.getSUID()).getParams().setDisableHeatmapAutofocus(true);
+				EnrichmentMapUtils.setOverrideHeatmapRevalidation(true);
 			} catch (NullPointerException excep) {
 				return;
 			}
-			
-			if(currentTasks.hasNext())
-				autoAnnotationManager.getDialogTaskManager().execute(currentTasks);
-			autoAnnotationManager.flushPayloadEvents();
+			*/
+			if(currentTasks.hasNext()){
+				Observer observer = new Observer();
+				autoAnnotationManager.getDialogTaskManager().execute(currentTasks,observer);
+				
+				//wait until the selection is finished to avoid conflict with the rowsetlistener
+				while (!observer.isFinished()) {
+					try {
+						Thread.sleep(1);
+					} catch (InterruptedException e1) {
+						e1.printStackTrace();
+					}			
+				}
+			}
+			//autoAnnotationManager.flushPayloadEvents();
 			
 			if(annotationSet.isManualSelection())
 				annotationSet.setManualSelection(false);
+			
+			//fired selection event is finished processing
+			autoAnnotationManager.setClusterTableUpdating(false);
+			//EnrichmentMapUtils.setOverrideHeatmapRevalidation(false);
+			
 	
 		}	
 	

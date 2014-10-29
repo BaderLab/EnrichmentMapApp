@@ -78,6 +78,8 @@ import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.swing.DialogTaskManager;
@@ -207,7 +209,7 @@ public class EnrichmentMapActionListener implements RowsSetListener{
         				
         				//if the network has been autoannotated we need to make sure the clusters have been selected
         				//TODO:need a cleaner way to find out if the currentView has an annotation
-        				if(AutoAnnotationManager.getInstance().getAnnotationPanel()!=null){
+        				if(AutoAnnotationManager.getInstance().getAnnotationPanel()!=null && !AutoAnnotationManager.getInstance().isClusterTableUpdating()){
         					
         					//go through all the clusters for this network to see if any of the cluster have all of their nodes selected
         					HashMap<CyNetworkView, AutoAnnotationParameters> annotations = AutoAnnotationManager.getInstance().getNetworkViewToAutoAnnotationParameters();
@@ -215,6 +217,15 @@ public class EnrichmentMapActionListener implements RowsSetListener{
         						AnnotationSet currentAnnotation = annotations.get(view).getSelectedAnnotationSet();
         						TableModel clusterTableModel = currentAnnotation.getClusterTable().getModel();
 								ListSelectionModel clusterListSelectionModel = currentAnnotation.getClusterTable().getSelectionModel();
+								
+								//selectedNodes = CyTableUtil.getNodesInState(network, CyNetwork.SELECTED, true);
+								
+								//Go through all the nodes and make sure all the nodes that are selected are in the set.
+								for (View<CyNode> nodeView : view.getNodeViews()) {
+									if (network.getRow(nodeView.getModel()).get(CyNetwork.SELECTED, Boolean.class)){
+										selectedNodes.add(nodeView.getModel());
+									}
+								}
 																
         						TreeMap<Integer, Cluster> clusters = currentAnnotation.getClusterMap();
         						//go through each cluster - figure out which ones need to be selected and
@@ -241,6 +252,11 @@ public class EnrichmentMapActionListener implements RowsSetListener{
         								}
         							}
         							
+        							//one last check, if the cluster is already selected and all its nodes are
+        							//already selected then this is not a new selection event
+        							if(select == true && cluster.isSelected())
+        								select = false;
+        							
         							//Cluster has been selected
         							//if all nodes in a cluster are selected
         							//update the cluster table
@@ -250,7 +266,7 @@ public class EnrichmentMapActionListener implements RowsSetListener{
         								for (int rowIndex = 0; rowIndex < clusterTableModel.getRowCount(); rowIndex++) {
         									if (cluster.equals(clusterTableModel.getValueAt(rowIndex, 0))) {
         										clusterListSelectionModel.addSelectionInterval(rowIndex, rowIndex);
-        										AutoAnnotationManager.getInstance().flushPayloadEvents();
+        										//AutoAnnotationManager.getInstance().flushPayloadEvents();
         										break;
         									}
         								}
@@ -264,7 +280,7 @@ public class EnrichmentMapActionListener implements RowsSetListener{
         								for (int rowIndex = 0; rowIndex < clusterTableModel.getRowCount(); rowIndex++) {
         									if (cluster.equals(clusterTableModel.getValueAt(rowIndex, 0))) {
         										clusterListSelectionModel.removeSelectionInterval(rowIndex, rowIndex);
-        										AutoAnnotationManager.getInstance().flushPayloadEvents();
+        										//AutoAnnotationManager.getInstance().flushPayloadEvents();
         										break;
         									}
         								}

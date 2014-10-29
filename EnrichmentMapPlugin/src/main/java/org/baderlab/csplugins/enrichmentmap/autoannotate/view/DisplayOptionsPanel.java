@@ -27,7 +27,6 @@ import javax.swing.event.ChangeListener;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationParameters;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationUtils;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.action.AutoAnnotationActions;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.AnnotationSet;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.LabelOptions;

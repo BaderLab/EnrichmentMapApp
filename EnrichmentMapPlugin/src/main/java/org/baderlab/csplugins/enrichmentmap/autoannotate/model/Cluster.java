@@ -425,18 +425,21 @@ public class Cluster implements Comparable<Cluster> {
 		sessionString += selected + "\n";
 		// Write parameters of the annotations to recreate them after
 			// Ellipse
-		Map<String, String> ellipseArgs = ellipse.getArgMap();
-		for (String property : ellipseArgs.keySet()) {
-			sessionString += property + "\t" + ellipseArgs.get(property) + "\n";
+		if(ellipse != null){
+			Map<String, String> ellipseArgs = ellipse.getArgMap();
+			for (String property : ellipseArgs.keySet()) {
+				sessionString += property + "\t" + ellipseArgs.get(property) + "\n";
+			}
 		}
 			// Text
-		sessionString += "Text Annotations\n";
-		Map<String, String> textArgs = textAnnotation.getArgMap();
-		for (String property : textArgs.keySet()) {
-			sessionString += property + "\t" + textArgs.get(property) + "\n";
+		if(textAnnotation != null){
+			sessionString += "Text Annotations\n";
+			Map<String, String> textArgs = textAnnotation.getArgMap();
+			for (String property : textArgs.keySet()) {
+				sessionString += property + "\t" + textArgs.get(property) + "\n";
+			}
+			sessionString += "End of annotations\n";
 		}
-		sessionString += "End of annotations\n";
-		
 		//expand the groups
 		if (group != null) {
 			if (group.isCollapsed(parent.getView().getModel())) {

@@ -105,6 +105,9 @@ public class AutoAnnotationManager implements
 	private CyEventHelper eventHelper;
 	private DisplayOptionsPanel displayOptionsPanel;
 	
+	//flag to indicate that currently in the middle of cluster table selection event
+	private boolean clusterTableUpdating = false;
+	
 	public static AutoAnnotationManager getInstance() {
 		if (instance == null) {
 			instance = new AutoAnnotationManager();
@@ -281,4 +284,14 @@ public class AutoAnnotationManager implements
 	public void flushPayloadEvents() {
 		eventHelper.flushPayloadEvents();
 	}
+
+	public boolean isClusterTableUpdating() {
+		return clusterTableUpdating;
+	}
+
+	public void setClusterTableUpdating(boolean clusterTableUpdating) {
+		this.clusterTableUpdating = clusterTableUpdating;
+	}
+	
+	
 }
