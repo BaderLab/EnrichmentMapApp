@@ -100,6 +100,8 @@ public class ParseGREATEnrichmentResults extends AbstractTask implements Observa
      */
     public void parseGreatFile(String [] lines){
     	
+    	boolean hasBackground = false;
+    	
     	EnrichmentMapParameters params = dataset.getMap().getParams();
     	
     	//Get the type of filter user specified on the GREAT results
@@ -133,6 +135,12 @@ public class ParseGREATEnrichmentResults extends AbstractTask implements Observa
             if ((length == 24) && tokens[3].equalsIgnoreCase("BinomRank") ){
                 break;
             }
+            //If GREAT is done with a background set then the table looks different
+            //There is not binom rank and no binomial data.
+            else if ((length == 20) && tokens[3].equalsIgnoreCase("Rank")){
+            	hasBackground = true;
+            	break;
+            }
         }
         
         //go through the rest of the lines
@@ -141,8 +149,10 @@ public class ParseGREATEnrichmentResults extends AbstractTask implements Observa
 
             tokens = line.split("\t");
             //there are extra lines at the end of the file that should be ignored.
-            if(tokens.length != 24)
-            		continue;
+            if(!hasBackground && tokens.length != 24)
+            	continue;
+            if(hasBackground && tokens.length != 20)
+        		continue;
 
             double pvalue = 1.0;
             double FDRqvalue = 1.0;
@@ -170,9 +180,13 @@ public class ParseGREATEnrichmentResults extends AbstractTask implements Observa
             //create an object of type Geneset with the above Name and description
             else
                 gs = new GeneSet(name, description);
-
-            String[] gene_tokens = tokens[23].split(",");
-
+            
+            String[] gene_tokens;
+            if(!hasBackground)
+            	gene_tokens = tokens[23].split(",");
+            else
+            	gene_tokens = tokens[18].split(",");
+            	
             //All subsequent fields in the list are the geneset associated with this geneset.
             for (int j = 0; j < gene_tokens.length; j++) {
 
@@ -215,6 +229,7 @@ public class ParseGREATEnrichmentResults extends AbstractTask implements Observa
             double hyper_fdr = 1;
             double binom_pvalue = 1;
             double binom_fdr = 1;
+            if(!hasBackground){
             if(!tokens[4].equalsIgnoreCase(""))
             	binom_pvalue = Double.parseDouble(tokens[4]);
             if(!tokens[6].equalsIgnoreCase(""))
@@ -223,7 +238,13 @@ public class ParseGREATEnrichmentResults extends AbstractTask implements Observa
             	hyper_pvalue = Double.parseDouble(tokens[13]);
             if(!tokens[15].equalsIgnoreCase(""))
             	hyper_fdr = Double.parseDouble(tokens[15]);
-            
+            }
+            else{
+            	if(!tokens[4].equalsIgnoreCase(""))
+            		hyper_pvalue = Double.parseDouble(tokens[4]);
+            	if(!tokens[6].equalsIgnoreCase(""))
+            		hyper_fdr = Double.parseDouble(tokens[6]);
+            }
             if(filterType.equalsIgnoreCase(EnrichmentMapParameters.GREAT_hyper)){
             	pvalue = hyper_pvalue;
             	FDRqvalue = hyper_fdr;           	
@@ -253,11 +274,12 @@ public class ParseGREATEnrichmentResults extends AbstractTask implements Observa
             
             //the Count is the size of the geneset - not restricted to the genes of interest
             //the 20th column total genes, a.k.a "annotation count" (K)
-            if(tokens[19].equalsIgnoreCase("")){
-                //do nothing
-            }else{
-                gs_size = Integer.parseInt(tokens[19]);
-            }
+           //If this is a background set then it is in the 16th column
+            if((!hasBackground) && (!tokens[19].equalsIgnoreCase("")))
+            	gs_size = Integer.parseInt(tokens[19]);
+            else if ((hasBackground) && (!tokens[15].equalsIgnoreCase("")))
+            		gs_size = Integer.parseInt(tokens[15]);
+            
 
             result = new GenericResult(name,description,pvalue,gs_size,FDRqvalue);
 
