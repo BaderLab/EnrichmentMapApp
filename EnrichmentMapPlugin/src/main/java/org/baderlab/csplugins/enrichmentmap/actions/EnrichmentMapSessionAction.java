@@ -603,6 +603,7 @@ public class EnrichmentMapSessionAction implements SessionAboutToBeSavedListener
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
+
 	}
 	private FileNameParts ParseFileName(File filename){
 		String fullname = (filename.getName());
