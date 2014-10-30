@@ -109,24 +109,29 @@ public class ClusterTableSelctionAction implements ListSelectionListener{
 				return;
 			}
 			*/
-			if(currentTasks.hasNext()){
-				Observer observer = new Observer();
-				autoAnnotationManager.getDialogTaskManager().execute(currentTasks,observer);
+			//If it was not a manual selection you need to wait till the task is done so it can finish selecting the nodes before it tries to
+			//update the heatmap.
+			if(!annotationSet.isManualSelection()){
+				if(currentTasks.hasNext()){
+					Observer observer = new Observer();
+					autoAnnotationManager.getDialogTaskManager().execute(currentTasks,observer);
 				
-				//wait until the selection is finished to avoid conflict with the rowsetlistener
-				while (!observer.isFinished()) {
-					try {
+					//wait until the selection is finished to avoid conflict with the rowsetlistener
+					while (!observer.isFinished()) {
+						try {
 						Thread.sleep(1);
-					} catch (InterruptedException e1) {
+						} catch (InterruptedException e1) {
 						e1.printStackTrace();
-					}			
+						}			
+					}
 				}
-			}
 			//autoAnnotationManager.flushPayloadEvents();
-			
-			if(annotationSet.isManualSelection())
+			}
+			else{
+				if(currentTasks.hasNext())
+					autoAnnotationManager.getDialogTaskManager().execute(currentTasks);
 				annotationSet.setManualSelection(false);
-			
+			}
 			//fired selection event is finished processing
 			autoAnnotationManager.setClusterTableUpdating(false);
 			//EnrichmentMapUtils.setOverrideHeatmapRevalidation(false);
