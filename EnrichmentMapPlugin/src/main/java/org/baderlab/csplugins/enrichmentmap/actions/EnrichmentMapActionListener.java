@@ -217,15 +217,6 @@ public class EnrichmentMapActionListener implements RowsSetListener{
         						AnnotationSet currentAnnotation = annotations.get(view).getSelectedAnnotationSet();
         						TableModel clusterTableModel = currentAnnotation.getClusterTable().getModel();
 								ListSelectionModel clusterListSelectionModel = currentAnnotation.getClusterTable().getSelectionModel();
-								
-								//selectedNodes = CyTableUtil.getNodesInState(network, CyNetwork.SELECTED, true);
-								
-								//Go through all the nodes and make sure all the nodes that are selected are in the set.
-								for (View<CyNode> nodeView : view.getNodeViews()) {
-									if (network.getRow(nodeView.getModel()).get(CyNetwork.SELECTED, Boolean.class)){
-										selectedNodes.add(nodeView.getModel());
-									}
-								}
 																
         						TreeMap<Integer, Cluster> clusters = currentAnnotation.getClusterMap();
         						//go through each cluster - figure out which ones need to be selected and

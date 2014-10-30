@@ -319,13 +319,19 @@ public class Cluster implements Comparable<Cluster> {
 	}
 	
 	public void removeNode(CyNode nodeToRemove) {
-		if (nodesToCoordinates.containsKey(nodeToRemove)) {
-			nodesToCoordinates.remove(nodeToRemove);
-			nodesToRadii.remove(nodeToRemove);
-			ArrayList<CyNode> node = new ArrayList<CyNode>();
-			node.add(nodeToRemove);
+		if (nodesToCoordinates.containsKey(nodeToRemove) || nodes.contains(nodeToRemove) || nodesToRadii.containsKey(nodeToRemove)) {
+			if (nodes.contains(nodeToRemove) )
+					nodes.remove(nodeToRemove);
+			if (nodesToCoordinates.containsKey(nodeToRemove)) 
+					nodesToCoordinates.remove(nodeToRemove);
+			if(nodesToRadii.containsKey(nodeToRemove))
+				nodesToRadii.remove(nodeToRemove);
+			//if there is a group defined remove the node from the group
 			if (group != null) {
-				group.removeNodes(node);
+				//group remove expects a list of nodes so put the solitary node into a list.
+				ArrayList<CyNode> node = new ArrayList<CyNode>();
+				node.add(nodeToRemove);
+				group.removeNodes(new ArrayList<CyNode>(node));
 			}
 			size--;
 		}
@@ -342,8 +348,7 @@ public class Cluster implements Comparable<Cluster> {
 		for (Entry<CyNode, double[]> entry : cluster2.getNodesToCoordinates().entrySet()) {
 			addNodeCoordinates(entry.getKey(), entry.getValue());
 		}
-		// Remove the second cluster
-		cluster2.getParent().getClusterMap().remove(cluster2.getClusterNumber());
+		
 	}
 
 	public String makeLabel(ArrayList<WordInfo> wordInfos, String mostCentralNodeLabel,

@@ -78,11 +78,8 @@ public class DeleteClusterTask extends AbstractTask {
 			}
 						
 			// Delete clusters
-			for (Cluster cluster : selectedClusters) {
-				destroyCluster(cluster);
-				//remove the cluster from the Table
-				((ClusterTableModel)this.annotationSet.getClusterTable().getModel()).removeClusterFromTable(cluster);
-			}
+			for (Cluster cluster : selectedClusters) 
+				destroyCluster(cluster);				
 			
 			//update the Annotations
 			autoAnnotationManager.getDialogTaskManager().execute(new UpdateAnnotationsTaskFactory(annotationSet).createTaskIterator());
@@ -102,8 +99,11 @@ public class DeleteClusterTask extends AbstractTask {
 		//If removing the whole annotation set (using Remove annotation button)
 		//it possible that the annotation set has already been 
 		//removed.  Check to make sure it isn't null
-		if(this.annotationSet != null)
+		if(this.annotationSet != null){
 			this.annotationSet.getClusterMap().remove(clusterToDestroy.getClusterNumber());
+			//remove the cluster from the Table
+			((ClusterTableModel)this.annotationSet.getClusterTable().getModel()).removeClusterFromTable(clusterToDestroy);
+		}
 	}
 	
 	public void destroyCloud(Cluster clusterToDestroy) {

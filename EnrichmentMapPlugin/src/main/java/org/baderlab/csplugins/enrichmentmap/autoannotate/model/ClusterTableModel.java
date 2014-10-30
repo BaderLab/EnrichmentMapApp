@@ -120,8 +120,8 @@ public class ClusterTableModel extends AbstractTableModel implements TableModelL
 		}
 		
 		public void removeRow(int row){
-		     dataVector.remove(row);
-		     //fireTableRowsDeleted(row, row);
+			if(row < dataVector.size() && row != -1)
+				dataVector.remove(row);
 		}
 		
 		@Override

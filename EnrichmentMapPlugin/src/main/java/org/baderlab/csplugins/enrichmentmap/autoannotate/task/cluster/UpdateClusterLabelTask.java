@@ -51,15 +51,17 @@ public class UpdateClusterLabelTask extends AbstractTask{
 			List<String> clusterList = clusterRow.get("WC_Cluster", List.class);
 			List<String> numberList = clusterRow.get("WC_Number", List.class);
 			ArrayList<WordInfo> wordInfos = new ArrayList<WordInfo>();
-			for (int i=0; i < wordList.size(); i++) {
-				wordInfos.add(new WordInfo(wordList.get(i), 
+			if(wordList != null){
+				for (int i=0; i < wordList.size(); i++) {
+					wordInfos.add(new WordInfo(wordList.get(i), 
 										Integer.parseInt(sizeList.get(i)),
 										Integer.parseInt(clusterList.get(i)),
 										Integer.parseInt(numberList.get(i))));
+				}
 			}
 			// Only update the labels if the wordCloud has changed
 			AnnotationSet annotationSet = cluster.getParent();
-			if (wordInfos.size() != cluster.getWordInfos().size()) {
+			if (wordInfos != null && wordInfos.size() != cluster.getWordInfos().size()) {
 				// WordCloud table entry for this cluster has changed
 				cluster.setWordInfos(wordInfos);
 				cluster.setLabel(cluster.makeLabel(wordInfos, mostCentralNodeLabel, sameClusterBonus, centralityBonus,

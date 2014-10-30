@@ -2,6 +2,7 @@ package org.baderlab.csplugins.enrichmentmap.autoannotate.task.cluster;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
@@ -19,6 +20,7 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
+import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
@@ -39,22 +41,23 @@ public class ExtractClusterTask extends AbstractTask{
 	}
 
 	public void extractAction() {
+		
+		//Ignore selection events while we are extracting so there are not conflicts.
+		AutoAnnotationManager.getInstance().setClusterTableUpdating(true);
+		
 		CyNetworkView selectedView = annotationSet.getView();
 		CyNetwork selectedNetwork = selectedView.getModel();
 		AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
 		 JTable clusterTable = annotationSet.getClusterTable();
 		 
-		// Get selected nodes
-		ArrayList<CyNode> selectedNodes = new ArrayList<CyNode>();
-		for (CyNode node : selectedNetwork.getNodeList()) {
-			if (selectedNetwork.getRow(node).get(CyNetwork.SELECTED, Boolean.class)) {
-				selectedNodes.add(node);
-			}
-		}
+		// Get selected nodes - selected nodes are to be put in a new cluster.
+		List<CyNode> selectedNodes = CyTableUtil.getNodesInState(selectedNetwork, CyNetwork.SELECTED, true);
+		
 		// Clear node selections (for WordCloud)
 		for (CyNode node : selectedNodes) {
 			selectedNetwork.getRow(node).set(CyNetwork.SELECTED, false);
 		}
+		
 		if (selectedNodes.size() < 1) {
 			JOptionPane.showMessageDialog(null, "Please select at least one node", "Error Message",
 					JOptionPane.ERROR_MESSAGE);
@@ -66,7 +69,6 @@ public class ExtractClusterTask extends AbstractTask{
 			String clusterColumnName = annotationSet.getClusterColumnName();
 			String nameColumnName = annotationSet.getNameColumnName();
 			int newClusterNumber = annotationSet.getNextClusterNumber();
-			Cluster newCluster = null;
 			
 			if (columnType == Integer.class) {
 				// Discrete clusters, remove nodes from other clusters
@@ -80,9 +82,12 @@ public class ExtractClusterTask extends AbstractTask{
 						}
 					}
 				}
+				//For the selected nodes change the cluster number to the new cluster number
 				for (CyRow row : selectedNetwork.getDefaultNodeTable().getAllRows()) {
 					row.set(clusterColumnName, newClusterNumber);
 				}
+				
+				//For each of the modified clusters update the wordclouds
 				for (Cluster modifiedCluster : clustersChanged) {
 					// Select nodes to make the cloud
 					for (CyNode node : modifiedCluster.getNodesToCoordinates().keySet()) {
@@ -116,7 +121,8 @@ public class ExtractClusterTask extends AbstractTask{
 				}
 			}
 			
-			newCluster = new Cluster(newClusterNumber, annotationSet);
+			//Create the new cluster
+			Cluster newCluster = new Cluster(newClusterNumber, annotationSet);
 			annotationSet.addCluster(newCluster);
 			
 			for (CyNode node : selectedNodes) {
@@ -130,7 +136,8 @@ public class ExtractClusterTask extends AbstractTask{
 				newCluster.addNodeRadius(node, nodeRadius);
 				selectedNetwork.getRow(node).set(CyNetwork.SELECTED, true);
 			}	
-
+			
+			//Create the wordcloud for the new cluster.
 			for (CyNode node : newCluster.getNodesToCoordinates().keySet()) {
 				selectedNetwork.getRow(node).set(CyNetwork.SELECTED, true);
 			}
@@ -162,15 +169,20 @@ public class ExtractClusterTask extends AbstractTask{
 			Long clusterTableSUID = selectedNetwork.getDefaultNetworkTable().getRow(selectedNetwork.getSUID()).get(annotationSetName, Long.class);
 	    	CyTable clusterSetTable = tableManager.getTable(clusterTableSUID);
 	    	
+	    	TaskIterator currentTasks = new TaskIterator();    	
 	    	// Generate the labels for the clusters
-	    	this.insertTasksAfterCurrentTask(new UpdateClusterLabelTask(newCluster,clusterSetTable));
-
+	    	currentTasks.append(new UpdateClusterLabelTask(newCluster,clusterSetTable));
 			
 			// Redraw selected clusters
-	    	this.insertTasksAfterCurrentTask(new VisualizeClusterAnnotationTaskFactory(newCluster).createTaskIterator());
+	    	currentTasks.append(new VisualizeClusterAnnotationTaskFactory(newCluster).createTaskIterator());
 			
-			this.insertTasksAfterCurrentTask(new UpdateAnnotationTask(annotationSet));
+	    	currentTasks.append(new UpdateAnnotationTask(annotationSet));
+	    	if(currentTasks.hasNext())
+	    		dialogTaskManager.execute(currentTasks);
 		
+	    	//Turning selection events back on.
+			AutoAnnotationManager.getInstance().setClusterTableUpdating(false);
+	    	
 			// Deselect rows (no longer meaningful)
 			clusterTable.clearSelection();
 			// Focus on this panel

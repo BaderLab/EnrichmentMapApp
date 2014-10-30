@@ -38,17 +38,23 @@ public class SelectClusterTask extends AbstractTask{
 	private void selectCluster(Cluster cluster){
 		
 		// Select the annotations (ellipse and text label)
-		cluster.getEllipse().setBorderColor(Color.YELLOW);
-		cluster.getEllipse().setBorderWidth(3*cluster.getParent().getEllipseWidth());
-		cluster.getTextAnnotation().setTextColor(Color.YELLOW);
+		if(cluster.getEllipse() != null){
+			cluster.getEllipse().setBorderColor(Color.YELLOW);
+			cluster.getEllipse().setBorderWidth(3*cluster.getParent().getEllipseWidth());
+		}
+		if(cluster.getTextAnnotation() != null)
+			cluster.getTextAnnotation().setTextColor(Color.YELLOW);
 		
 	}
 	
 	private void deselectCluster(Cluster cluster){
 		// Deselect the annotations
-		cluster.getEllipse().setBorderColor(Color.DARK_GRAY);
-		cluster.getEllipse().setBorderWidth(cluster.getParent().getEllipseWidth());
-		cluster.getTextAnnotation().setTextColor(Color.BLACK);
+		if(cluster.getEllipse() != null){
+			cluster.getEllipse().setBorderColor(Color.DARK_GRAY);
+			cluster.getEllipse().setBorderWidth(cluster.getParent().getEllipseWidth());
+		}
+		if(cluster.getTextAnnotation() != null)
+			cluster.getTextAnnotation().setTextColor(Color.BLACK);
 		cluster.getParent().updateCoordinates();
 		if (cluster.coordinatesChanged()) {
 			cluster.erase();

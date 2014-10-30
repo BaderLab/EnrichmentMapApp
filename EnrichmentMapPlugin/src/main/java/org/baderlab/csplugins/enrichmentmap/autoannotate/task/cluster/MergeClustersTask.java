@@ -66,6 +66,7 @@ public class MergeClustersTask extends AbstractTask {
 			Cluster firstCluster = selectedClusters.get(0);
 			int clusterNumber = firstCluster.getClusterNumber();
 			String clusterColumnName = annotationSet.getClusterColumnName();
+			TaskIterator currentTasks = new TaskIterator();
 			for (Cluster clusterToSwallow : selectedClusters.subList(1, selectedClusters.size())) {
 				// Update values in cluster column
 				for (CyNode node : clusterToSwallow.getNodes()) {
@@ -74,9 +75,13 @@ public class MergeClustersTask extends AbstractTask {
 				// Swallow nodes/coordinates from smaller cluster
 				firstCluster.swallow(clusterToSwallow);
 				// Destroy the smaller cluster
-				AutoAnnotationManager.getInstance().getDialogTaskManager().execute(new TaskIterator(new DeleteClusterTask(this.annotationSet,clusterToSwallow)));				
+				currentTasks.append(new DeleteClusterTask(this.annotationSet,clusterToSwallow));				
 				
 			}
+			
+			//run the delete commands
+			if(currentTasks.hasNext())
+				AutoAnnotationManager.getInstance().getDialogTaskManager().execute(currentTasks);
 			
 			// Create a new cloud for the merged cluster
 			// Clear any previously selected nodes
@@ -89,8 +94,8 @@ public class MergeClustersTask extends AbstractTask {
 			String nameColumnName = annotationSet.getNameColumnName();
 			ArrayList<String> commands = new ArrayList<String>();
 			//delete the previous cloud
-			//String command_delete = "wordcloud delete cloudName=\"" +  firstCluster.getCloudName() + "\"";
-			//commands.add(command_delete);
+			String command_delete = "wordcloud delete cloudName=\"" +  firstCluster.getCloudName() + "\"";
+			commands.add(command_delete);
 			//recreate it with the new set of nodes.
 			String command = "wordcloud create wordColumnName=\"" + nameColumnName + "\"" + 
 					" nodeList=\"selected\" cloudName=\"" +  firstCluster.getCloudName() + "\""
