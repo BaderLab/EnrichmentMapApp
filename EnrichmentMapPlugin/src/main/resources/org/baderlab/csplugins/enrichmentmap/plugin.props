@@ -12,7 +12,7 @@ pluginName=EnrichmentMap
 pluginDescription=Enrichment Map is a network-based method to visualize and interpret gene-set enrichment results.
 
 # Plugin version number, this must be two numbers separated by a decimlal.  Ex. 0.2, 14.03
-pluginVersion=2.0.2
+pluginVersion=2.1.0
 
 # Compatible Cytoscape version
 cytoscapeVersion=3.2
