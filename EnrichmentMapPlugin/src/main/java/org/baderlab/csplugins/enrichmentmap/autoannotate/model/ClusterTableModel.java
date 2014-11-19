@@ -9,6 +9,10 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 
+import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
+import org.baderlab.csplugins.enrichmentmap.autoannotate.task.cluster.DrawClusterLabelTask;
+import org.cytoscape.work.TaskIterator;
+
 
 public class ClusterTableModel extends AbstractTableModel implements TableModelListener {
 
@@ -38,7 +42,7 @@ public class ClusterTableModel extends AbstractTableModel implements TableModelL
 		
 		//For given row get the cluster id for that row
 		public Integer getClusterId(int row){
-			String clusterName = (String)this.getValueAt(row, 0);
+			String clusterName = this.getValueAt(row, 0).toString();
 			 for(Map.Entry<Integer, Cluster>entry: clusters.entrySet()){
 				 if(clusterName.equals(entry.getValue().getLabel()))
 					 return entry.getKey();
@@ -157,6 +161,18 @@ public class ClusterTableModel extends AbstractTableModel implements TableModelL
 		@Override
 		public void tableChanged(TableModelEvent e) {
 			// TODO Auto-generated method stub
+			
+		}
+		
+		public void setValueAt(Object aValue, int rowIndex, int columnIndex){
+			int clusterID = getClusterId(rowIndex);
+			Cluster currentCluster = clusters.get(clusterID);
+			currentCluster.setLabel(aValue.toString());
+			
+			//update the cluster label
+			currentCluster.eraseText();
+			DrawClusterLabelTask drawlabel = new DrawClusterLabelTask(currentCluster);
+			AutoAnnotationManager.getInstance().getDialogTaskManager().execute(new TaskIterator(drawlabel));
 			
 		}
 		

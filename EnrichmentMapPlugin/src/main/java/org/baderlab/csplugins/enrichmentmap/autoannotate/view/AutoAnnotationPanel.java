@@ -35,7 +35,6 @@ import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationParameters;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.action.AnnotateButtonActionListener;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.action.ClusterTableSelctionAction;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.action.ClusterTableUpdateNameAction;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.action.TableCellListener;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.AnnotationSet;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
@@ -386,9 +385,7 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 		table.getColumnModel().getColumn(0).setPreferredWidth(210);
 		table.getColumnModel().getColumn(1).setPreferredWidth(100);
 				
-		//Add a table cell listener to listern for manual changes in the cluster names.
-		ClusterTableUpdateNameAction userNameUpdate = new ClusterTableUpdateNameAction(annotationSet);
-		TableCellListener tcl = new TableCellListener(table,userNameUpdate);
+		
 		annotationSet.setClusterTable(table);
 		
 		table.getSelectionModel().addListSelectionListener(new ClusterTableSelctionAction(annotationSet));
