@@ -66,8 +66,14 @@ public class ClusterTableSelctionAction implements ListSelectionListener{
 					//select it
 					Cluster cluster = (Cluster) table.getModel().getValueAt(
 							table.convertRowIndexToModel(selectedRow), 0);
-					if(annotationSet.isManualSelection())
-						currentTasks.append(new SelectClusterTask(cluster,SelectClusterTask.SELECTCLUSTER_NONODES));
+					if(annotationSet.isManualSelection()){
+						//if there are multiple clouds selected at once there is no need to select the clouds as well because you can
+						//only view one cloud at a time. 
+						if(selectedRows.length > 1)
+							currentTasks.append(new SelectClusterTask(cluster,SelectClusterTask.SELECTCLUSTER_NONODES_NOCLOUD));
+						else
+							currentTasks.append(new SelectClusterTask(cluster,SelectClusterTask.SELECTCLUSTER_NONODES));
+					}		
 					else
 						currentTasks.append(new SelectClusterTask(cluster,SelectClusterTask.SELECTCLUSTER_WITHNODES));	
 				}

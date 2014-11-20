@@ -21,7 +21,7 @@ public class SelectClusterTask extends AbstractTask{
 	// 1. - deselect cluster annotation and nodes belonging to cluster - called when user clicks on cluster in cluster table.
 	// 2. - select cluster annotation and but do not select nodes belonging to cluster - called when user selects nodes in the network
 	// 3. - deselect cluster annotation and but do not select nodes belonging to cluster - called when user selects nodes in the network
-	final public static int SELECTCLUSTER_WITHNODES = 0,  DESELECTCLUSTER_WITHNODES = 1, SELECTCLUSTER_NONODES  = 2, DESELECTCLUSTER_NONODES = 3; 
+	final public static int SELECTCLUSTER_WITHNODES = 0,  DESELECTCLUSTER_WITHNODES = 1, SELECTCLUSTER_NONODES  = 2, DESELECTCLUSTER_NONODES = 3,SELECTCLUSTER_NONODES_NOCLOUD  = 4; 
 	
 	private Cluster cluster;
 	//if selection is true then select cluster.  If selection is false then de-select cluster
@@ -127,8 +127,25 @@ public class SelectClusterTask extends AbstractTask{
 				heatMapUpdating = autoAnnotationManager.isHeatMapUpdating();
 			}
 			cluster.setSelected(true);
+			System.out.println( "wordcloud select cloudName=\"" + cluster.getCloudName() + "\" updateNodeSelection=false");
+			updateCloud( "wordcloud select cloudName=\"" + cluster.getCloudName() + "\" updateNodeSelection=false");
+			selectCluster(cluster);			
 			
-			updateCloud( "wordcloud select cloudName=\"" + cluster.getCloudName() + "\"");
+		}
+	}
+	
+	public void selectCluster_nonodes_nocloud() {
+		if (!cluster.isSelected()) {
+
+			AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
+			autoAnnotationManager.flushPayloadEvents();
+			// Wait for heatmap to finish updating
+			boolean heatMapUpdating = true;
+			while (heatMapUpdating) {
+				heatMapUpdating = autoAnnotationManager.isHeatMapUpdating();
+			}
+			cluster.setSelected(true);
+			
 			selectCluster(cluster);			
 			
 		}
@@ -156,6 +173,9 @@ public class SelectClusterTask extends AbstractTask{
 			deselectCluster_nonodes();
 		else if(this.selection == SELECTCLUSTER_NONODES)	
 			selectCluster_nonodes();
+		else if(this.selection == SELECTCLUSTER_NONODES_NOCLOUD)	
+			selectCluster_nonodes_nocloud();
+		
 	}
 	
 	

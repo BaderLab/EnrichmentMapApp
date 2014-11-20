@@ -208,8 +208,10 @@ public class EnrichmentMapActionListener implements RowsSetListener{
         				
         				
         				//if the network has been autoannotated we need to make sure the clusters have been selected
+        				//also only handle the node selection events (not edges)
         				//TODO:need a cleaner way to find out if the currentView has an annotation
-        				if(AutoAnnotationManager.getInstance().getAnnotationPanel()!=null && !AutoAnnotationManager.getInstance().isClusterTableUpdating()){
+        				if(AutoAnnotationManager.getInstance().getAnnotationPanel()!=null && !AutoAnnotationManager.getInstance().isClusterTableUpdating()
+        						&& e.getSource() == network.getDefaultNodeTable()){
         					
         					//go through all the clusters for this network to see if any of the cluster have all of their nodes selected
         					HashMap<CyNetworkView, AutoAnnotationParameters> annotations = AutoAnnotationManager.getInstance().getNetworkViewToAutoAnnotationParameters();
