@@ -35,7 +35,6 @@ import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationParameters;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.action.AnnotateButtonActionListener;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.action.ClusterTableSelctionAction;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.action.TableCellListener;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.AnnotationSet;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.ClusterTableModel;
