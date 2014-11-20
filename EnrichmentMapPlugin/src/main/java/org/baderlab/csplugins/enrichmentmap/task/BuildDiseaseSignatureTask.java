@@ -159,10 +159,13 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
         int currentProgress = 0;
         double currentNodeY_offset = paParams.getCurrentNodePlacementY_Offset();
         double currentNodeY_increment = 150.0;
-        
+              
         try {
             CyNetwork current_network = applicationManager.getCurrentNetwork();
             CyNetworkView current_view = applicationManager.getCurrentNetworkView();
+            
+            //the signature geneset
+            CyNode hub_node = null;
             
             String prefix = paParams.getAttributePrefix();
             if (prefix == null) {
@@ -207,6 +210,8 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
                  */
                 HashSet<Integer> sigGenes = sigGeneSet.getGenes();
 
+
+                
                 /** 
                  * the genes that are in this signature gene set 
                  * as well as in the Universe of Enrichment-GMT Genes.    
@@ -332,7 +337,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
                 /* ***************************
                  * Create Signature Hub Node *
                  *****************************/
-                CyNode hub_node = current_network.addNode();
+                hub_node = current_network.addNode();
                 current_network.getRow(hub_node).set(CyNetwork.NAME, hub_name);
                 current_view.updateView();
                 //flush events to make sure view has been created.
@@ -438,7 +443,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
                     passed_cutoff = true;
 
                 if (passed_cutoff) {
-                		CyNode hub_node = getNodeWithValue(current_network, cyNodeAttrs, CyNetwork.NAME,geneset_similarities.get(edge_name).getGeneset1_Name());       		
+                		//CyNode hub_node = getNodeWithValue(current_network, cyNodeAttrs, CyNetwork.NAME,geneset_similarities.get(edge_name).getGeneset1_Name());       		
                 		CyNode gene_set = getNodeWithValue(current_network, cyNodeAttrs, CyNetwork.NAME,geneset_similarities.get(edge_name).getGeneset2_Name());
                     		
                     CyEdge edge = current_network.addEdge(hub_node, gene_set,false);
@@ -511,6 +516,20 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
     				if (node == null)
     					continue;
     			}
+    		}
+    		//There are multiple matches but check to see if they all belong to the same node.
+    		else{
+    			//Get the set of suid for the matching set
+    			HashSet<Long> ids = new HashSet<Long>();
+    			for ( CyRow row : matchingRows){
+    				Long nodeId = row.get(CyNetwork.SUID, Long.class);
+    				if (nodeId != null)
+    					ids.add(nodeId);
+    			}
+    			if(!ids.isEmpty() && ids.size() == 1)
+    				node = net.getNode(ids.iterator().next());
+    			else
+    				System.out.println("There are multiple node matches for node name:" + value );
     		}
     		return node;
     	
