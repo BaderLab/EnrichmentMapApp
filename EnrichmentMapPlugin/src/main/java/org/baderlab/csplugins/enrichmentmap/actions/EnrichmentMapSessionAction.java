@@ -254,6 +254,10 @@ public class EnrichmentMapSessionAction implements SessionAboutToBeSavedListener
 								if((file_name_tokens.length == 4) && (file_name_tokens[1].equals("Dataset 1 Ranking") || file_name_tokens[1].equals("Dataset 2 Ranking"))
 										|| (prop_file.getName().contains(Ranking.GSEARanking)))
 									parts.ranks_name = Ranking.GSEARanking ;
+								
+								//this is an extra rank file for backwards compatability.  Ignore it.
+								else if((file_name_tokens.length == 4) && (file_name_tokens[1].equals("Dataset 1") || file_name_tokens[1].equals("Dataset 2")) && file_name_tokens[2].equals("RANKS"))
+										continue;
 								else
 									//file name is not structured properly --> default to file name
 									parts.ranks_name = prop_file.getName();
