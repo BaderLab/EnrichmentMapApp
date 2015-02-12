@@ -127,7 +127,6 @@ public class SelectClusterTask extends AbstractTask{
 				heatMapUpdating = autoAnnotationManager.isHeatMapUpdating();
 			}
 			cluster.setSelected(true);
-			System.out.println( "wordcloud select cloudName=\"" + cluster.getCloudName() + "\" updateNodeSelection=false");
 			updateCloud( "wordcloud select cloudName=\"" + cluster.getCloudName() + "\" updateNodeSelection=false");
 			selectCluster(cluster);			
 			
