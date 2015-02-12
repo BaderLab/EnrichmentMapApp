@@ -244,9 +244,9 @@ public class EnrichmentMapParameters {
     
     public void initSliders(){
     	//create the slider for this pvalue
-        pvalueSlider = new SliderBarPanel((this.pvalue_min==1 ? 0:this.pvalue_min),this.pvalue,"P-value Cutoff",this, EnrichmentMapVisualStyle.PVALUE_DATASET1, EnrichmentMapVisualStyle.PVALUE_DATASET2,ParametersPanel.summaryPanelWidth, false, this.pvalue,applicationManager);
+        pvalueSlider = new SliderBarPanel(((this.pvalue_min==1 || this.pvalue_min >= this.pvalue) ? 0:this.pvalue_min),this.pvalue,"P-value Cutoff",this, EnrichmentMapVisualStyle.PVALUE_DATASET1, EnrichmentMapVisualStyle.PVALUE_DATASET2,ParametersPanel.summaryPanelWidth, false, this.pvalue,applicationManager);
         //create the slider for the qvalue
-        qvalueSlider = new SliderBarPanel((this.qvalue_min==1 ? 0:this.qvalue_min),this.qvalue,"Q-value Cutoff",this, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2,ParametersPanel.summaryPanelWidth, false, this.qvalue,applicationManager);
+        qvalueSlider = new SliderBarPanel(((this.qvalue_min==1 || this.qvalue_min >= this.qvalue) ? 0:this.qvalue_min),this.qvalue,"Q-value Cutoff",this, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2,ParametersPanel.summaryPanelWidth, false, this.qvalue,applicationManager);
         //create the slider for the similarity cutoff
         similaritySlider = new SliderBarPanel(this.similarityCutOff,1,"Similarity Cutoff",this, EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT, EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT,ParametersPanel.summaryPanelWidth, true, this.similarityCutOff,applicationManager);
        
