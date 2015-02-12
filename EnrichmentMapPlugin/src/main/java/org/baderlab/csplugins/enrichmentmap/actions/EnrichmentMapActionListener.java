@@ -219,7 +219,10 @@ public class EnrichmentMapActionListener implements RowsSetListener{
         						AnnotationSet currentAnnotation = annotations.get(view).getSelectedAnnotationSet();
         						TableModel clusterTableModel = currentAnnotation.getClusterTable().getModel();
 								ListSelectionModel clusterListSelectionModel = currentAnnotation.getClusterTable().getSelectionModel();
-																
+								
+								//if there are clusters to add or to remove only do it once we have gone through all the clusters - to avoid race conditions.
+        						clusterListSelectionModel.setValueIsAdjusting(true);
+								
         						TreeMap<Integer, Cluster> clusters = currentAnnotation.getClusterMap();
         						//go through each cluster - figure out which ones need to be selected and
         						//which ones need to deselected
@@ -275,12 +278,17 @@ public class EnrichmentMapActionListener implements RowsSetListener{
         										clusterListSelectionModel.removeSelectionInterval(rowIndex, rowIndex);
         										//AutoAnnotationManager.getInstance().flushPayloadEvents();
         										break;
-        									}
-        								}
+        									}//end of if
+        								}//end of for
         								
-        							}
+        							}//end of if unselectedcluster
 
-        						}
+        						}//end of For going through all clusters
+        						
+        						//if there are clusters to add or to remove only do it once we have gone through all the clusters - to avoid race conditions.
+        						clusterListSelectionModel.setValueIsAdjusting(false);
+
+        						
         					}
         					
         				}
