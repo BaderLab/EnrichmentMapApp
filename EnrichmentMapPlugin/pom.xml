@@ -1,14 +1,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.baderlab.csplugins</groupId>
-  <version>2.0.1</version>
+  <version>2.1.0</version>
   <artifactId>enrichmentmap</artifactId>
   <name>EnrichmentMap</name>
   <packaging>bundle</packaging>
   <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <cy3.version>3.1.0</cy3.version>
+        <cy3.version>3.2.0</cy3.version>
         <osgi.api.version>4.2.0</osgi.api.version>
         <bundle.namespace.parent>org.baderlab.csplugins</bundle.namespace.parent>
         <bundle.namespace>org.baderlab.csplugins</bundle.namespace>
@@ -91,6 +91,16 @@
             <version>${cy3.version}</version>
         </dependency>
         <dependency>
+    		<groupId>org.cytoscape</groupId>
+    		<artifactId>command-executor-api</artifactId>
+    		<version>${cy3.version}</version>
+		</dependency>
+		<dependency>
+    		<groupId>org.cytoscape</groupId>
+    		<artifactId>group-api</artifactId>
+    		<version>${cy3.version}</version>
+		</dependency>
+        <dependency>
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.core</artifactId>
             <version>${osgi.api.version}</version>
@@ -136,7 +146,6 @@
 				<groupId>org.ops4j</groupId>
 				<artifactId>maven-pax-plugin</artifactId>
 				<version>1.5</version>
-				<extensions>true</extensions>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.felix</groupId>
@@ -154,9 +163,9 @@
 						<_failok>true</_failok>
 					</instructions>
 				</configuration>
-			</plugin>
-        		
-			<!--  	<plugin>
+				<extensions>true</extensions>
+			</plugin>		
+			  	<plugin>
           			<artifactId>maven-jar-plugin</artifactId>
           				<configuration>
             				<classifier></classifier>
@@ -165,7 +174,7 @@
             				</excludes>
           				</configuration>
         			</plugin>
-        		-->	<plugin>
+        			<plugin>
         				<groupId>org.codehaus.mojo</groupId>
         				<artifactId>buildnumber-maven-plugin</artifactId>
         				<version>1.1</version>
@@ -201,8 +210,8 @@
                 <version>2.0.4</version>
                 <executions>
                     <execution>
-                        <goals>
-                            <goal>revision</goal>
+                       <goals>
+                           <goal>revision</goal>
                          </goals>
                     </execution>
                 </executions>

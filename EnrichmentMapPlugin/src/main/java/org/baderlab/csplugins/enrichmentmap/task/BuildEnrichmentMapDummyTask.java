@@ -8,6 +8,13 @@ public class BuildEnrichmentMapDummyTask extends AbstractTask {
 	
 	private TaskMonitor taskMonitor;
 	
+	private String title;
+	
+	public BuildEnrichmentMapDummyTask(String title) {
+		super();
+		this.title = title;
+	}
+
 	private void build(){
 		
 	}
@@ -17,7 +24,7 @@ public class BuildEnrichmentMapDummyTask extends AbstractTask {
 		//add sleep so that the correct title gets put in the dialog
 		Thread.sleep(1500);
 		this.taskMonitor = taskMonitor;
-		this.taskMonitor.setTitle("Building an Enrichment Map");
+		this.taskMonitor.setTitle(this.title);
 		
 		build();
 		

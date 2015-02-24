@@ -628,6 +628,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
         HashMap<Integer, ArrayList<Integer>> rank2keys = new HashMap<Integer,ArrayList<Integer>>();
 
         Ranking ranks = getRanks(currentExpressionSet);
+        if(ranks == null) ranks = getEmptyRanks(currentExpressionSet);
 
         //if the ranks are the GSEA ranks and the leading edge is activated then we need to highlight
         //genes in the leading edge
@@ -834,6 +835,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
         HashMap<Integer, ArrayList<Integer>> rank2keys = new HashMap<Integer,ArrayList<Integer>>();
 
         Ranking ranks = getRanks(expressionUsing);
+        if(ranks == null) ranks = getEmptyRanks(expressionUsing);
 
         //if the ranks are the GSEA ranks and the leading edge is activated then we need to highlight
         //genes in the leading edge
@@ -1617,6 +1619,19 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
     }
 
     
+    private Ranking getEmptyRanks(HashMap<Integer, GeneExpression> expressionSet){
+    	Ranking ranks = new Ranking() ;
+
+        for(Iterator<Integer> i = expressionSet.keySet().iterator();i.hasNext();){
+                Integer key = i.next();
+                Rank temp = new Rank(((GeneExpression)expressionSet.get(key)).getName(),0.0,0);
+                ranks.addRank(key, temp);
+                //ranks..put(key,temp);
+        }
+    
+        return ranks;
+    }
+    
     /**
      * Get the current specified rank file.
      *
@@ -1690,14 +1705,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
         
         //after trying to sort by hierarchical just check that sorting hasn't defaulted to no sort
         if(hmParams.getSort() == HeatMapParameters.Sort.NONE) {
-            ranks = new Ranking() ;
-
-            for(Iterator<Integer> i = expressionSet.keySet().iterator();i.hasNext();){
-                    Integer key = i.next();
-                    Rank temp = new Rank(((GeneExpression)expressionSet.get(key)).getName(),0.0,0);
-                    ranks.addRank(key, temp);
-                    //ranks..put(key,temp);
-            }
+            ranks = getEmptyRanks(expressionSet);
         }
         
         return ranks;

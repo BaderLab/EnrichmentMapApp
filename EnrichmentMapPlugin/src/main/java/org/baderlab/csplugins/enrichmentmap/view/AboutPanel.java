@@ -86,7 +86,7 @@ public class AboutPanel extends JDialog {
         editorPane.setEditorKit(new HTMLEditorKit());
         editorPane.addHyperlinkListener(new HyperlinkAction(editorPane));
         URL logoURL = this.getClass().getResource("enrichmentmap_logo.png");
-        if ( ! pluginReleaseSuffix.contentEquals(""))
+        if ( pluginReleaseSuffix != null && ! pluginReleaseSuffix.contentEquals(""))
             pluginReleaseSuffix = " (" + pluginReleaseSuffix + ")";
         editorPane.setText(
                 "<html><body>"+

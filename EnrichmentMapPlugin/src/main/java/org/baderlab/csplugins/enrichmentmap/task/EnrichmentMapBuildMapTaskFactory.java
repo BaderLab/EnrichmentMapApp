@@ -96,7 +96,7 @@ public class EnrichmentMapBuildMapTaskFactory implements TaskFactory{
 
 	public TaskIterator createTaskIterator() {
 
-		BuildEnrichmentMapDummyTask dummyTaskToSetTitle = new BuildEnrichmentMapDummyTask();
+		BuildEnrichmentMapDummyTask dummyTaskToSetTitle = new BuildEnrichmentMapDummyTask("Building Enrichment Map");
 		
 		//initialize with 8 tasks so the progress bar can be set better.
 		TaskIterator currentTasks = new TaskIterator(8,dummyTaskToSetTitle); 

@@ -212,7 +212,7 @@ public class EnrichmentMapManager implements SetCurrentNetworkListener, NetworkA
     public void setInputWindow(EnrichmentMapInputPanel inputWindow) {
         this.inputWindow = inputWindow;
     }
-
+    
     /**
      * @return reference to the Post Analysis Input Panel (WEST) 
      */
@@ -301,5 +301,5 @@ public class EnrichmentMapManager implements SetCurrentNetworkListener, NetworkA
         
 		
 	}
-    
+
 }
