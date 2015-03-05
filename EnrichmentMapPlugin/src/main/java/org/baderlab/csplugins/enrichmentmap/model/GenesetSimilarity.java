@@ -66,11 +66,16 @@ public class GenesetSimilarity {
 
     //either jaccard or overlap coeffecient, depends on statistic user specified.
     private double similarity_coeffecient;
+    
+    // Hypergeometric
     private double hypergeom_pvalue;
     private int hypergeom_N;
     private int hypergeom_n;
     private int hypergeom_k;
     private int hypergeom_m;
+    
+    // Mann-Whitney U
+    private double mann_whit_pvalue;
 
     //set of genes in common to both gene sets.
     private HashSet<Integer> overlapping_genes;
@@ -79,6 +84,8 @@ public class GenesetSimilarity {
     //the similiarity can come from the first or second set of enerichments --(possibly more in future version)
     //if it is zero the similarity applies to both sets.
     private int enrichment_set;
+    
+    private boolean sensitivity;
 
     /**
      * Class constructor
@@ -98,6 +105,7 @@ public class GenesetSimilarity {
         this.hypergeom_pvalue = -1.0;
         this.interaction_type = interaction_type;
         this.enrichment_set = enrichment_set;
+        this.setSensitivity(false);
      }
 
 
@@ -118,6 +126,7 @@ public class GenesetSimilarity {
         this.hypergeom_pvalue = -1.0;
         this.interaction_type = interaction_type;
         this.enrichment_set = 0;
+        this.setSensitivity(false);
      }
 
     /**
@@ -140,6 +149,7 @@ public class GenesetSimilarity {
         this.interaction_type = interaction_type;
 
         this.enrichment_set = 0;
+        this.setSensitivity(false);
     }
 
 
@@ -311,6 +321,42 @@ public class GenesetSimilarity {
 	 */
 	public void setHypergeom_m(int hypergeom_m) {
 		this.hypergeom_m = hypergeom_m;
+	}
+
+
+	/**
+	 * Get mann whitney p value
+	 * @param null
+	 * @return double mann_whit_pvalue
+	 */
+	public double getMann_Whit_pValue() {
+		return mann_whit_pvalue;
+	}
+
+
+	/**
+	 * Set mann whitney p value
+	 * @param double mann_whit_pvalue
+	 * @return null
+	 */
+	public void setMann_Whit_pValue(double mann_whit_pvalue) {
+		this.mann_whit_pvalue = mann_whit_pvalue;
+	}
+
+
+	/**
+	 * @return the sensitivity
+	 */
+	public boolean getSensitivity() {
+		return sensitivity;
+	}
+
+
+	/**
+	 * @param sensitivity the sensitivity to set
+	 */
+	public void setSensitivity(boolean sensitivity) {
+		this.sensitivity = sensitivity;
 	}
 
 }

@@ -116,6 +116,11 @@
         	<artifactId>colt</artifactId>
         	<version>1.2.0</version>
         </dependency>
+        <dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-math3</artifactId>
+		<version>3.2</version>
+	</dependency>
   </dependencies>
 	<!--  repository settings are required for the build number maven plugin-->
 
@@ -208,7 +213,13 @@
                 <groupId>pl.project13.maven</groupId>
                 <artifactId>git-commit-id-plugin</artifactId>
                 <version>2.0.4</version>
-
+				<executions>
+                    <execution>
+                        <goals>
+                            <goal>revision</goal>
+                         </goals>
+                    </execution>
+                </executions>
 
                 <configuration>
                     <!-- that's the default value, you don't have to set it -->

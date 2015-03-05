@@ -20,6 +20,12 @@ public class Ranking {
 	private HashMap<Integer, Integer> gene2rank;
 	private HashMap<Integer, Integer> rank2gene;
 	
+	//hash for easy conversion between geneid and score
+	private HashMap<Integer, Double> gene2score;
+	
+	//array for storing scores of all genes in map
+	private double[] scores;
+	
 	//File associated with this ranking set
     private String filename;
 	
@@ -27,6 +33,7 @@ public class Ranking {
 		ranking = new HashMap<Integer,Rank>();
 		gene2rank = new HashMap<Integer,Integer>();
 		rank2gene = new HashMap<Integer,Integer>();
+		gene2score = new HashMap<Integer, Double>();
 	}
 
 	public HashMap<Integer, Rank> getRanking() {
@@ -100,5 +107,41 @@ public class Ranking {
 		return paramVariables.toString();
 		
 		
+	}
+
+	/**
+	 * Get gene2score hash
+	 * @param null
+	 * @return HashMap gene2score
+	 */
+	public HashMap<Integer, Double> getGene2Score() {
+		return this.gene2score;
+	}
+
+	/**
+	 * Set gene2score hash
+	 * @param HashMap gene2score
+	 * @return null
+	 */
+	public void setGene2Score(HashMap<Integer, Double> gene2score) {
+		this.gene2score = gene2score;
+	}
+
+	/**
+	 * Get scores array
+	 * @param null
+	 * @return double[] scores
+	 */
+	public double[] getScores() {
+		return this.scores;
+	}
+
+	/**
+	 * Set scores array
+	 * @param double[] scores
+	 * @return null
+	 */
+	public void setScores(double[] scores) {
+		this.scores = scores;
 	}
 }

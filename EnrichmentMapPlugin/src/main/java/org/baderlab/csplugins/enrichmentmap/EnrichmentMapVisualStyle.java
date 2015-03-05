@@ -111,9 +111,10 @@ public class EnrichmentMapVisualStyle {
     public static String SIMILARITY_COEFFICIENT = "similarity_coefficient";
     public static String OVERLAP_GENES = "Overlap_genes";
     public static String HYPERGEOM_PVALUE = "Overlap_Hypergeom_pVal";
+    public static String MANN_WHIT_PVALUE = "Overlap_Mann_Whit_pVal";
     public static String ENRICHMENT_SET = "ENRICHMENT_SET";
     
-    // Related to Hypergeometric distribution
+    // Related to Hypergeometric Test
     public static String HYPERGEOM_N = "HyperGeom_N_Universe";
     public static String HYPERGEOM_n = "HyperGeom_n_Sig_Universe";
     public static String HYPERGEOM_k = "k_Intersection";
@@ -123,7 +124,7 @@ public class EnrichmentMapVisualStyle {
     
     public static String NETW_REPORT1_DIR = "GSEA_Report_Dataset1_folder";
     public static String NETW_REPORT2_DIR = "GSEA_Report_Dataset2_folder";
-    
+        
     //default colours
     public static Color max_phenotype1 = new Color(255,0,0);
     public static Color lighter_phenotype1 = new Color(255,102,102);

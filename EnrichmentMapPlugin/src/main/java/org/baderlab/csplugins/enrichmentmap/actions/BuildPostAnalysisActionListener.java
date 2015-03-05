@@ -44,7 +44,10 @@
 package org.baderlab.csplugins.enrichmentmap.actions;
 
 
-import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.JOptionPane;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
@@ -58,9 +61,6 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.swing.DialogTaskManager;
-
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
 
 /**
  * Created by:
@@ -109,12 +109,14 @@ public class BuildPostAnalysisActionListener implements ActionListener {
         TaskIterator currentTasks = new TaskIterator();
 
         if(errors.equalsIgnoreCase("")) {
-            if ( paParams.isSignatureHub() ) {
+
+            if ( paParams.isSignatureDiscovery() || paParams.isKnownSignature() ) {
                 
                 BuildDiseaseSignatureTask new_signature = new BuildDiseaseSignatureTask(current_map, paParams,this.sessionManager, this.streamUtil, this.applicationManager, this.eventHelper);
                 currentTasks.append(new_signature);
                 
                 dialog.execute(currentTasks);
+
             } 
             else {
                 JOptionPane.showMessageDialog(this.inputPanel, errors,"No such Post-Analysis",JOptionPane.WARNING_MESSAGE);

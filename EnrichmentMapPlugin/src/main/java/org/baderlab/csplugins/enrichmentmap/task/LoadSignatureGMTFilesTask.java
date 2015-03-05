@@ -3,15 +3,16 @@ package org.baderlab.csplugins.enrichmentmap.task;
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.parsers.GMTFileReaderTask;
+import org.baderlab.csplugins.enrichmentmap.view.PostAnalysisInputPanel;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 
 
-
 public class LoadSignatureGMTFilesTask implements TaskFactory{
 
         private PostAnalysisParameters paParams = null;
+        private PostAnalysisInputPanel paPanel = null;
         private EnrichmentMap map = null;
         private StreamUtil streamUtil;
         private TaskIterator loadSigGMTTaskIterator;        
@@ -26,6 +27,15 @@ public class LoadSignatureGMTFilesTask implements TaskFactory{
             this.streamUtil = streamUtil;
         }
         
+        /**
+         * constructor w map, post-analysis parameters and post-analysis panel
+         * @param paParams
+         */
+        public LoadSignatureGMTFilesTask( EnrichmentMap map, PostAnalysisParameters paParams, PostAnalysisInputPanel paPanel ){
+            this.paParams = paParams;
+            this.map = map;
+            this.paPanel = paPanel;
+        }
         
         /* (non-Javadoc)
          * @see cytoscape.task.Task#getTitle()
@@ -50,9 +60,8 @@ public class LoadSignatureGMTFilesTask implements TaskFactory{
                     this.loadSigGMTTaskIterator.append(gmtFile_2);
                     
                     //filter signature genesets
-                    FilterSignatureGSTask filterSigGs = new FilterSignatureGSTask(map,paParams);
+                    FilterSignatureGSTask filterSigGs = new FilterSignatureGSTask(map,paParams,paPanel);
                     this.loadSigGMTTaskIterator.append(filterSigGs);
-                    
                 } catch (OutOfMemoryError e) {
                     //taskMonitor.setException(e,"Out of Memory. Please increase memory allotment for Cytoscape.");
                     return;

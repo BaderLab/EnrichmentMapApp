@@ -1929,6 +1929,30 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 			  Dataset1FileNameTextField.setForeground(checkFile(new File(file).getAbsolutePath()));
 		  }
       
+      if(dataset1files.getExpressionFileName() != null){
+          GCTFileName1TextField.setText(dataset1files.getExpressionFileName());
+          GCTFileName1TextField.setToolTipText(dataset1files.getExpressionFileName());
+      }
+      
+      if(dataset1files.getRankedFile() != null){
+          Dataset1RankFileTextField.setText(dataset1files.getRankedFile());
+          Dataset1RankFileTextField.setToolTipText(dataset1files.getRankedFile());
+      }
+     
+    	  if(dataset2files.getEnrichmentFileName1()!=null){
+    		  Dataset2FileNameTextField.setText(dataset2files.getEnrichmentFileName1());
+    		  Dataset2FileNameTextField.setToolTipText(dataset2files.getEnrichmentFileName1());
+    	  }
+    	  if(dataset2files.getExpressionFileName() != null){
+    		  GCTFileName2TextField.setText(dataset2files.getExpressionFileName());
+    		  GCTFileName2TextField.setToolTipText(dataset2files.getExpressionFileName());
+    	  }  
+    	  if(dataset2files.getRankedFile() != null){
+    		  Dataset2RankFileTextField.setText(dataset2files.getRankedFile());
+    		  Dataset2RankFileTextField.setToolTipText(dataset2files.getRankedFile());
+    	  }
+    	  
+    	  //Special case with Enrichment results file 2 (there should only be two enrichment
       	if(dataset1files.getExpressionFileName() != null){
       		String file = dataset1files.getExpressionFileName();
       		GCTFileName1TextField.setText(file);
