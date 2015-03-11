@@ -127,8 +127,8 @@ public class GMTFileReaderTask extends AbstractTask {
      */
     public GMTFileReaderTask(EnrichmentMap map, PostAnalysisParameters params, int genesets_file,StreamUtil streamUtil)   {
         
-    		this.map = map;
-    		this.streamUtil = streamUtil;
+    	this.map = map;
+    	this.streamUtil = streamUtil;
         this.genes = map.getGenes();
         this.hashkey2gene = map.getHashkey2gene();
         
@@ -159,10 +159,10 @@ public class GMTFileReaderTask extends AbstractTask {
      */
     public void parse()  throws IOException{
     		
-    		HashMap<String, GeneSet> genesets = setOfgenesets.getGenesets();
+    	HashMap<String, GeneSet> genesets = setOfgenesets.getGenesets();
     	
         //open GMT file
-    		InputStream reader = streamUtil.getInputStream(GMTFileName);
+    	InputStream reader = streamUtil.getInputStream(GMTFileName);
         String fullText = new Scanner(reader,"UTF-8").useDelimiter("\\A").next();
         
         String []lines = fullText.split("\r\n?|\n");

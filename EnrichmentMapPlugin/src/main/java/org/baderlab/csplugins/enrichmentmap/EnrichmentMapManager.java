@@ -44,6 +44,9 @@
 package org.baderlab.csplugins.enrichmentmap;
 
 
+import java.util.HashMap;
+import java.util.Properties;
+
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.view.EnrichmentMapInputPanel;
 import org.baderlab.csplugins.enrichmentmap.view.HeatMapPanel;
@@ -56,9 +59,6 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
-
-import java.util.HashMap;
-import java.util.Properties;
 
 
 /**
@@ -270,7 +270,7 @@ public class EnrichmentMapManager implements SetCurrentNetworkListener, NetworkA
                         inputWindow.updateContents(currentNetwork.getParams());
 
                     if(analysisWindow!=null)
-                        analysisWindow.updateContents(currentNetwork.getParams());
+                        analysisWindow.updateContents(currentNetwork);
 
                     nodesOverlapPanel.updatePanel(currentNetwork);
                     edgesOverlapPanel.updatePanel(currentNetwork);

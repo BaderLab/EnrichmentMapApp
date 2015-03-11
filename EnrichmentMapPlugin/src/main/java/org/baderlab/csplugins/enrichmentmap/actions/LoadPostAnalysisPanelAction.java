@@ -102,7 +102,7 @@ public class LoadPostAnalysisPanelAction extends AbstractCyAction {
             EnrichmentMapManager.getInstance().setAnalysisWindow(this.postEMinputPanel);
             
             EnrichmentMap map = EnrichmentMapManager.getInstance().getMap(applicationManager.getCurrentNetwork().getSUID());
-            postEMinputPanel.updateContents(map.getPaParams());
+            postEMinputPanel.updateContents(map);
         }
             
         // If the state of the cytoPanelWest is HIDE, show it

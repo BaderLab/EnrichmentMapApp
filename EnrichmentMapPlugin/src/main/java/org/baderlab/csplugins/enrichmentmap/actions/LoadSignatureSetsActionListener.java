@@ -11,20 +11,25 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.task.LoadSignatureGMTFilesTask;
 import org.baderlab.csplugins.enrichmentmap.view.PostAnalysisInputPanel;
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.work.swing.DialogTaskManager;
 
 public class LoadSignatureSetsActionListener implements ActionListener {
 
 	private PostAnalysisInputPanel inputPanel;
+	private CySwingApplication application;
 	private CyApplicationManager applicationManager;
 	private DialogTaskManager dialog;
 	private StreamUtil streamUtil;
 
-	public LoadSignatureSetsActionListener(PostAnalysisInputPanel panel,
-			CyApplicationManager applicationManager, DialogTaskManager dialog,
+	public LoadSignatureSetsActionListener(PostAnalysisInputPanel inputPanel,
+			CySwingApplication application,
+			CyApplicationManager applicationManager, 
+			DialogTaskManager dialog,
 			StreamUtil streamUtil) {
-		this.inputPanel = panel;
+		this.inputPanel = inputPanel;
+		this.application = application;
 		this.applicationManager = applicationManager;
 		this.dialog = dialog;
 		this.streamUtil = streamUtil;
@@ -35,10 +40,9 @@ public class LoadSignatureSetsActionListener implements ActionListener {
 
 		// make sure that the minimum information is set in the current set of
 		// parameters
-		PostAnalysisParameters paParams = inputPanel.getPaParams();
-
 		EnrichmentMap current_map = EnrichmentMapManager.getInstance().getMap(applicationManager.getCurrentNetwork().getSUID());
 
+		PostAnalysisParameters paParams = inputPanel.getPaParams();
 		String errors = paParams.checkGMTfiles();
 
 		if (errors.equalsIgnoreCase("")) {
@@ -48,7 +52,7 @@ public class LoadSignatureSetsActionListener implements ActionListener {
 			dialog.execute(load_GMTs.createTaskIterator());
 
 		} else {
-			JOptionPane.showMessageDialog(this.inputPanel, errors, "Invalid Input", JOptionPane.WARNING_MESSAGE);
+			JOptionPane.showMessageDialog(application.getJFrame(), errors, "Invalid Input", JOptionPane.WARNING_MESSAGE);
 		}
 	}
 

@@ -97,13 +97,13 @@ public class BuildPostAnalysisActionListener implements ActionListener {
     public void actionPerformed(ActionEvent event) {
 
         //make sure that the minimum information is set in the current set of parameters
-    	        PostAnalysisParameters paParams = inputPanel.getPaParams();
+    	PostAnalysisParameters paParams = inputPanel.getPaParams();
         
         EnrichmentMap current_map = EnrichmentMapManager.getInstance().getMap(applicationManager.getCurrentNetwork().getSUID());
         
         //set attribute prefix based on the selected Enrichment map
         if(current_map != null)
-        		paParams.setAttributePrefix(current_map.getParams().getAttributePrefix());
+        	paParams.setAttributePrefix(current_map.getParams().getAttributePrefix());
         
         String errors = paParams.checkMinimalRequirements();
         TaskIterator currentTasks = new TaskIterator();

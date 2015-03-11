@@ -1,0 +1,882 @@
+package org.baderlab.csplugins.enrichmentmap.view;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.GridLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListModel;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFormattedTextField;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
+import javax.swing.JToolTip;
+import javax.swing.ScrollPaneConstants;
+
+import org.baderlab.csplugins.enrichmentmap.EnrichmentMapUtils;
+import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
+import org.baderlab.csplugins.enrichmentmap.actions.LoadSignatureSetsActionListener;
+import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
+import org.baderlab.csplugins.enrichmentmap.model.JMultiLineToolTip;
+import org.baderlab.csplugins.enrichmentmap.model.Ranking;
+import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.io.util.StreamUtil;
+import org.cytoscape.util.swing.FileChooserFilter;
+import org.cytoscape.util.swing.FileUtil;
+import org.cytoscape.work.swing.DialogTaskManager;
+
+@SuppressWarnings("serial")
+public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
+
+	private final PostAnalysisInputPanel parentPanel;
+	
+    private final CyApplicationManager cyApplicationManager;
+    private final CySwingApplication application;
+	private final StreamUtil streamUtil;
+	private final DialogTaskManager dialog;
+	private final FileUtil fileUtil;
+	
+	private final static int RIGHT = 0, DOWN = 1, UP = 2, LEFT = 3; // image States
+	
+	
+	// 'Signature Discovery Panel' parameters
+	private PostAnalysisParameters paParams;
+	private EnrichmentMap map;
+    
+    private JFormattedTextField signatureDiscoveryGMTFileNameTextField;
+    private JFormattedTextField sigDiscoveryUniverseSelectionTextField;
+    private JComboBox<String> sigDiscoveryDatasetCombo;
+	private JComboBox<String> sigDiscoveryRankingCombo;
+	private JComboBox<String> signatureDiscoveryRankTestCombo;
+	private JFormattedTextField signatureDiscoveryRankTestTextField;
+	private JRadioButton SigDiscoveryGMTRadioButton;
+	private JRadioButton SigDiscoveryIntersectionRadioButton;
+	private JRadioButton SigDiscoveryUserDefinedRadioButton;
+	private JRadioButton SigDiscoveryExpressionSetRadioButton;
+		
+	private JLabel avail_sig_sets_counter_label;
+	private JList<String> avail_sig_sets_field;
+    private CollapsiblePanel signature_genesets;
+    private JPanel signaturePanel;
+    private JList<String> selected_sig_sets_field;
+    private JLabel selected_sig_sets_counter_label;
+    
+    private DefaultListModel<String> avail_sig_sets;
+    private DefaultListModel<String> selected_sig_sets;
+    
+    private int defaultColumns = 15;
+    
+    private DefaultComboBoxModel<String> rankingModel;
+    private DefaultComboBoxModel<String> datasetModel;
+    
+    private JRadioButton filter;
+    private JRadioButton nofilter;
+    private JFormattedTextField filterTextField;
+    private JComboBox<String> filterTypeCombo;
+    
+    
+    
+	public PostAnalysisSignatureDiscoveryPanel(
+			PostAnalysisInputPanel parentPanel,
+			CyApplicationManager cyApplicationManager,
+			CySwingApplication application,
+			StreamUtil streamUtil,
+			DialogTaskManager dialog,
+			FileUtil fileUtil) {
+		
+		this.parentPanel = parentPanel;
+		this.cyApplicationManager = cyApplicationManager;
+		this.application = application;
+		this.streamUtil = streamUtil;
+		this.dialog = dialog;
+		this.fileUtil = fileUtil;
+		
+		createSignatureDiscoveryOptionsPanel();
+	}
+	
+	
+    private void createSignatureDiscoveryOptionsPanel() {
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+
+        //Gene set file panel
+        CollapsiblePanel GMTPanel = createSignatureDiscoveryGMTPanel();
+        GMTPanel.setCollapsed(false);
+        
+        //signature collapsible panel
+        signature_genesets = new CollapsiblePanel("Signature Genesets");
+        signature_genesets.setLayout(new BorderLayout());
+        signature_genesets.setCollapsed(false);
+
+
+        signaturePanel = new JPanel();
+        signaturePanel.setLayout(new BoxLayout(signaturePanel, BoxLayout.Y_AXIS));
+        //signaturePanel.setPreferredSize(new Dimension(280, 300));
+        signaturePanel.setAlignmentX((float) 0.0); //LEFT
+        
+        
+//        //TODO: Make SearchBox functional
+//        // search Box:
+//        JFormattedTextField searchBox = new JFormattedTextField();
+//        searchBox.setName("Search");
+//        signaturePanel.add(searchBox);
+        
+//        avail_sig_sets = paParams.getSignatureSetNames(); 
+//        selected_sig_sets = paParams.getSelectedSignatureSetNames();
+        
+        //List of all Signature Genesets 
+        JPanel availableLabel = new JPanel(new FlowLayout());
+        availableLabel.add(new JLabel("Available Signature-Genesets:"));
+        avail_sig_sets_counter_label = new JLabel("(0)");
+        availableLabel.add(avail_sig_sets_counter_label);
+        signaturePanel.add(availableLabel);
+        avail_sig_sets_field = new JList<>();
+        
+        JScrollPane avail_sig_sets_scroll = new JScrollPane(    
+                avail_sig_sets_field, 
+                ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, 
+                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        avail_sig_sets_scroll.setPreferredSize(new Dimension(250, 200));
+        avail_sig_sets_scroll.setMinimumSize(new Dimension(250, 150));
+        avail_sig_sets_scroll.setMaximumSize(new Dimension(290, 300));
+        signaturePanel.add(avail_sig_sets_scroll);
+        
+
+        //(Un-)Select-Buttons
+        Icon[] icons = createArrowIcons();
+        JPanel selectButtonPanel = new JPanel();
+        selectButtonPanel.add(new JPanel()); //spacer
+        selectButtonPanel.setLayout(new BoxLayout(selectButtonPanel, BoxLayout.X_AXIS));
+        JButton selectButton = new JButton(icons[DOWN]);
+        selectButton.getSize().width=30;
+        selectButtonPanel.add(selectButton);
+        selectButtonPanel.add(new JPanel()); //spacer
+        JButton unselectButton = new JButton(icons[UP]);
+        unselectButton.getSize().width=30;
+        selectButtonPanel.add(unselectButton);
+        selectButtonPanel.add(new JPanel()); //spacer
+        signaturePanel.add(selectButtonPanel);
+
+        //List of selected Signature Genesets 
+        JPanel selectedLabel = new JPanel();
+        selectedLabel.add( new JLabel("Selected Signature-Genesets:"));
+        selected_sig_sets_counter_label = new JLabel("(0)");
+        selectedLabel.add(selected_sig_sets_counter_label);
+        signaturePanel.add(selectedLabel);
+        selected_sig_sets_field = new JList<>();
+
+        JScrollPane selected_sig_sets_scroll = new JScrollPane(    
+                selected_sig_sets_field, 
+                ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, 
+                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        selected_sig_sets_scroll.setPreferredSize(new Dimension(250, 100));
+        selected_sig_sets_scroll.setMinimumSize(new Dimension(250, 100));
+        selected_sig_sets_scroll.setMaximumSize(new Dimension(290, 200));
+        signaturePanel.add(selected_sig_sets_scroll);
+        
+        // Add clear panels button
+        JPanel clearButtonPanel = new JPanel();
+        clearButtonPanel.setLayout(new FlowLayout());
+        JButton clearButton = new JButton("Clear Signature Genesets");
+        clearButtonPanel.add(clearButton);
+        signaturePanel.add(clearButtonPanel);
+        
+        //ActionListener for clear button
+        clearButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				paParams.setSignatureGenesets(new SetOfGeneSets());
+		        avail_sig_sets.clear();
+		        avail_sig_sets_field.clearSelection();
+		        setAvSigCount(0);
+		        
+		        selected_sig_sets.clear();
+		        selected_sig_sets_field.clearSelection();
+		        setSelSigCount(0);			
+		   }
+        });
+ 
+        //ActionListeners for (Un-)SelectButtons
+        selectButton.addActionListener(new ActionListener() {
+			@Override
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                int[] selected = avail_sig_sets_field.getSelectedIndices();
+                for (int i = selected.length; i > 0 ; i--  ) {
+                    selected_sig_sets.addElement( avail_sig_sets.get(selected[i-1]) );
+                    avail_sig_sets.remove(selected[i-1]);
+                }
+                setSelSigCount(selected_sig_sets.size());
+                setAvSigCount(avail_sig_sets.size());
+            }
+        });        
+        unselectButton.addActionListener(new ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                int[] selected = selected_sig_sets_field.getSelectedIndices();
+                for (int i = selected.length; i > 0 ; i--  ) {
+                    avail_sig_sets.addElement( selected_sig_sets.get(selected[i-1]) );
+                    selected_sig_sets.remove(selected[i-1]);
+                }
+                
+                //Sort the Genesets:
+                List<String> setNamesArray = Collections.list(avail_sig_sets.elements());
+                Collections.sort(setNamesArray);
+                avail_sig_sets.removeAllElements();
+                for (String name : setNamesArray) {
+                    avail_sig_sets.addElement(name);
+                }
+                setAvSigCount(avail_sig_sets.size());
+                setSelSigCount(selected_sig_sets.size());            
+            }
+        });
+        signature_genesets.getContentPane().add(signaturePanel, BorderLayout.NORTH);
+        
+        //Parameters collapsible panel
+        CollapsiblePanel ParametersPanel = createSignatureDiscoveryParametersPanel();
+        ParametersPanel.setCollapsed(false);
+        
+        add(GMTPanel);
+        add(signature_genesets);
+        add(ParametersPanel);        
+    }
+ 
+    /**
+     * @return CollapsiblePanel for choosing and loading GMT and SignatureGMT Geneset-Files 
+     */
+    private CollapsiblePanel createSignatureDiscoveryGMTPanel() {
+        CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Gene-Sets");
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        
+        //add SigGMT file
+        JLabel SigGMTLabel = new JLabel("SigGMT:"){
+            public JToolTip createToolTip() {
+                return new JMultiLineToolTip();
+            }
+        };
+        SigGMTLabel.setToolTipText(PostAnalysisInputPanel.gmtTip);
+        JButton selectSigGMTFileButton = new JButton();
+        signatureDiscoveryGMTFileNameTextField = new JFormattedTextField() ;
+        signatureDiscoveryGMTFileNameTextField.setColumns(defaultColumns);
+
+
+        //components needed for the directory load
+        signatureDiscoveryGMTFileNameTextField.setFont(new java.awt.Font("Dialog",1,10));
+        //GMTFileNameTextField.setText(gmt_instruction);
+        signatureDiscoveryGMTFileNameTextField.addPropertyChangeListener("value", new FormattedTextFieldAction());
+
+
+        selectSigGMTFileButton.setText("...");
+        selectSigGMTFileButton.setMargin(new Insets(0,0,0,0));
+        selectSigGMTFileButton.setActionCommand("Signature Discovery");
+        selectSigGMTFileButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                selectSignatureGMTFileButtonActionPerformed(evt);
+            }
+        });
+
+        JPanel SigGMTPanel = new JPanel();
+        SigGMTPanel.setLayout(new BorderLayout());
+
+        SigGMTPanel.add( SigGMTLabel,BorderLayout.WEST);
+        SigGMTPanel.add( signatureDiscoveryGMTFileNameTextField, BorderLayout.CENTER);
+        SigGMTPanel.add( selectSigGMTFileButton, BorderLayout.EAST);
+        //add the components to the panel
+        panel.add(SigGMTPanel);
+
+        panel.add(createFilterPanel());
+
+        //TODO: Maybe move loading SigGMT to File-selection Event add load button
+        JButton loadButton = new JButton();
+        loadButton.setText("Load Gene-Sets");
+        loadButton.addActionListener(new LoadSignatureSetsActionListener(parentPanel, application, cyApplicationManager, dialog,streamUtil));
+//        loadButton.setPreferredSize(new Dimension(100,10));
+        panel.add(loadButton);
+        
+        collapsiblePanel.getContentPane().add(panel, BorderLayout.NORTH);
+        return collapsiblePanel;
+    }
+    
+    
+    /**
+     * @return CollapsiblePanel to set PostAnalysisParameters 
+     */
+    private CollapsiblePanel createSignatureDiscoveryParametersPanel() {
+        CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Edge Weight Calculation Parameters");
+        
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        
+        sigDiscoveryDatasetCombo = new JComboBox<>();
+        // Dataset model is already initialized
+        datasetModel = new DefaultComboBoxModel<>();
+        sigDiscoveryDatasetCombo.setModel(datasetModel);
+        sigDiscoveryDatasetCombo.addActionListener( new ActionListener() {
+            public void actionPerformed( ActionEvent e ) {
+            	JComboBox<?> selectedChoice = (JComboBox<?>) e.getSource();
+            	String dataset = (String)selectedChoice.getSelectedItem();
+            	paParams.setSignature_dataSet(dataset);
+    	        DataSet datasetObj = map.getDataset(paParams.getSignature_dataSet());
+    	    	int universeSize = 0;
+    	    	if (datasetObj != null) {
+    	    		universeSize = datasetObj.getDatasetGenes().size();
+    	    	}            	paParams.setUniverseSize(universeSize);
+            	if (SigDiscoveryGMTRadioButton != null) {
+            		SigDiscoveryGMTRadioButton.setText("GMT (" + universeSize + ")");
+            	}
+            	int expressionSetSize = map.getDataset(dataset).getExpressionSets().getNumGenes();
+            	if (SigDiscoveryExpressionSetRadioButton != null) {
+            		SigDiscoveryExpressionSetRadioButton.setText("Expression Set (" + expressionSetSize + ")");
+            	}
+            	if (SigDiscoveryIntersectionRadioButton != null) {
+            		
+            	}            
+            }
+        });
+        panel.add(sigDiscoveryDatasetCombo);
+        
+        rankingModel = new DefaultComboBoxModel<>();
+        sigDiscoveryRankingCombo = new JComboBox<>();
+        sigDiscoveryRankingCombo.setModel(rankingModel);
+        sigDiscoveryRankingCombo.addActionListener( new ActionListener() {
+            public void actionPerformed( ActionEvent e ) {
+            	JComboBox<?> selectedChoice = (JComboBox<?>) e.getSource();
+            	paParams.setSignature_rankFile((String)selectedChoice.getSelectedItem());
+            }
+        });
+        panel.add(sigDiscoveryRankingCombo);
+        
+        signatureDiscoveryRankTestTextField = new JFormattedTextField();
+        signatureDiscoveryRankTestTextField.addPropertyChangeListener("value", new FormattedTextFieldAction());
+        
+        String[] filterItems = PostAnalysisParameters.filterItems;
+        signatureDiscoveryRankTestCombo = new JComboBox<>();
+        signatureDiscoveryRankTestCombo.addItem(filterItems[PostAnalysisParameters.MANN_WHIT]);
+        signatureDiscoveryRankTestCombo.addItem(filterItems[PostAnalysisParameters.HYPERGEOM]);
+        signatureDiscoveryRankTestCombo.addActionListener( new ActionListener() {
+            String[] filterItems = PostAnalysisParameters.filterItems;
+            public void actionPerformed( ActionEvent e ) {
+                JComboBox<?> selectedChoice = (JComboBox<?>) e.getSource();
+                if (filterItems[PostAnalysisParameters.MANN_WHIT].equals( selectedChoice.getSelectedItem())) {
+                    paParams.setSignature_rankTest(PostAnalysisParameters.MANN_WHIT);
+                    signatureDiscoveryRankTestTextField.setValue(paParams.getSignature_Mann_Whit_Cutoff());
+                } else if (filterItems[PostAnalysisParameters.HYPERGEOM].equals( selectedChoice.getSelectedItem())) {
+                    paParams.setSignature_rankTest(PostAnalysisParameters.HYPERGEOM);
+                    signatureDiscoveryRankTestTextField.setValue(paParams.getSignature_Hypergeom_Cutoff());
+                }
+            }
+        });
+//        signatureDiscoveryRankTestCombo.setSelectedItem(filterItems[paParams.getDefault_signature_rankTest()]);
+        panel.add(signatureDiscoveryRankTestCombo);
+        
+        JPanel cutoffLabel = new JPanel();
+        cutoffLabel.add(new JLabel("Select Cutoff:"));
+        panel.add(cutoffLabel);
+        
+        JPanel cutoffPanel = new JPanel();
+        cutoffPanel.setLayout(new BoxLayout(cutoffPanel, BoxLayout.X_AXIS));
+
+        cutoffPanel.add(signatureDiscoveryRankTestCombo);
+        cutoffPanel.add(signatureDiscoveryRankTestTextField);
+
+        panel.add(cutoffPanel);
+        
+        // Create Universe selection panel
+        CollapsiblePanel universeSelectionPanel = new CollapsiblePanel("Advanced Hypergeometric Universe");
+        universeSelectionPanel.setCollapsed(true);
+        universeSelectionPanel.getContentPane().setLayout(new BorderLayout());
+        
+        GridBagLayout gridbag = new GridBagLayout();
+        GridBagConstraints c = new GridBagConstraints();
+        c.weighty = 1;
+        c.weightx = 1;
+        c.insets = new Insets(0,0,0,0);
+        c.fill = GridBagConstraints.HORIZONTAL;
+        
+        JPanel radioButtonsPanel = new JPanel();
+        radioButtonsPanel.setLayout(gridbag);
+        
+    	SigDiscoveryGMTRadioButton = new JRadioButton();
+        SigDiscoveryGMTRadioButton.setActionCommand("GMT");
+        SigDiscoveryGMTRadioButton.addActionListener(new ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                selectSigDiscoveryUniverseActionPerformed(evt);
+            }
+        });        
+        SigDiscoveryGMTRadioButton.setSelected(true);
+        SigDiscoveryExpressionSetRadioButton = new JRadioButton();
+        SigDiscoveryExpressionSetRadioButton.setActionCommand("Expression Set");
+        SigDiscoveryExpressionSetRadioButton.addActionListener(new ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                selectSigDiscoveryUniverseActionPerformed(evt);
+            }
+        });    
+        SigDiscoveryIntersectionRadioButton = new JRadioButton();
+        SigDiscoveryIntersectionRadioButton.setActionCommand("Intersection");
+        SigDiscoveryIntersectionRadioButton.addActionListener(new ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                selectSigDiscoveryUniverseActionPerformed(evt);
+            }
+        });    
+        SigDiscoveryUserDefinedRadioButton = new JRadioButton("User Defined");
+        SigDiscoveryUserDefinedRadioButton.setActionCommand("User Defined");
+        SigDiscoveryUserDefinedRadioButton.addActionListener(new ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                selectSigDiscoveryUniverseActionPerformed(evt);
+            }
+        });  
+        
+        ButtonGroup universeSelectionOptions = new ButtonGroup();
+        universeSelectionOptions.add(SigDiscoveryGMTRadioButton);
+        universeSelectionOptions.add(SigDiscoveryExpressionSetRadioButton);
+        universeSelectionOptions.add(SigDiscoveryIntersectionRadioButton);
+        universeSelectionOptions.add(SigDiscoveryUserDefinedRadioButton);
+
+        c.gridx = 0;
+        c.gridwidth = GridBagConstraints.REMAINDER;
+        c.gridy = 0;
+        gridbag.setConstraints(SigDiscoveryGMTRadioButton, c);
+        radioButtonsPanel.add(SigDiscoveryGMTRadioButton);
+        
+        c.gridy = 1;
+        gridbag.setConstraints(SigDiscoveryExpressionSetRadioButton, c);
+        radioButtonsPanel.add(SigDiscoveryExpressionSetRadioButton);
+
+        c.gridy = 2;
+        gridbag.setConstraints(SigDiscoveryIntersectionRadioButton, c);
+        radioButtonsPanel.add(SigDiscoveryIntersectionRadioButton);
+        
+        c.gridy = 3;
+        c.gridwidth = 2;
+        gridbag.setConstraints(SigDiscoveryUserDefinedRadioButton, c);
+        radioButtonsPanel.add(SigDiscoveryUserDefinedRadioButton);
+        
+        c.gridx = 2;
+        sigDiscoveryUniverseSelectionTextField = new JFormattedTextField();
+        sigDiscoveryUniverseSelectionTextField.addPropertyChangeListener("value", new FormattedTextFieldAction());
+        sigDiscoveryUniverseSelectionTextField.setEditable(false);
+        gridbag.setConstraints(sigDiscoveryUniverseSelectionTextField, c);
+        radioButtonsPanel.add(sigDiscoveryUniverseSelectionTextField);
+        
+        universeSelectionPanel.getContentPane().add(radioButtonsPanel, BorderLayout.WEST);
+               
+        panel.add(universeSelectionPanel);
+        
+        collapsiblePanel.getContentPane().add(panel, BorderLayout.NORTH);
+        return collapsiblePanel;
+    }
+    
+    /**
+     *  Create a sub-panel so the user can specify filters so when loading in Signature gene set files
+     *  they can limit the genesets loaded in based on the how many genes overlap with the current EM analyzing.
+     *
+     *  @return CollapsiblePanel to set Filter on Postanalysis genesets
+     */
+    private CollapsiblePanel createFilterPanel(){
+        CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Filters");
+        JPanel panel = new JPanel();
+        panel.setLayout(new GridLayout(2,1));
+        //create radio button
+        ButtonGroup filters;
+
+        //radio button for filter or no-filter.  Defaults to no-filter
+        filter = new JRadioButton("Filter By");
+        filter.setActionCommand("filter");
+        filter.setSelected(true);
+//        paParams.setFilter(true);
+        nofilter = new JRadioButton("No Filter");
+        nofilter.setActionCommand("nofilter");
+        nofilter.setSelected(false);
+
+        filters = new ButtonGroup();
+        filters.add(filter);
+        filters.add(nofilter);
+
+        //action listener for filter radio button.
+        filter.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                selectFilterActionPerformed(evt);
+            }
+        });
+        nofilter.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                selectFilterActionPerformed(evt);
+            }
+        });
+
+        JPanel filtersPanel = new JPanel();
+        filtersPanel.setLayout(new BoxLayout(filtersPanel, BoxLayout.Y_AXIS));
+
+        filtersPanel.add(nofilter);
+
+        String[] filterItems = PostAnalysisParameters.filterItems;
+        
+        filterTextField = new JFormattedTextField() ;
+        filterTextField.setColumns(4);
+//        filterTextField.setValue(paParams.getSignature_Hypergeom_Cutoff());
+        filterTextField.addPropertyChangeListener("value", new FormattedTextFieldAction());
+
+        //Two types of filters:
+        // 1. filter by percent, i.e. the overlap between the signature geneset and EM geneset
+        // has to be X percentage of the EM set it overlaps with for at least one geneset in the enrichment map
+        // 2. filter by number, i.e. the overlap between the signature geneset and EM geneset
+        // has to be X genes of the EM set it overlaps with for at least one geneset in the enrichment map
+        // 3. filter by specificity, i.e looking for the signature genesets that are more specific than other genesets
+        // for instance a drug A that targets only X and Y as opposed to drug B that targets X,y,L,M,N,O,P
+        JPanel filterTypePanel = new JPanel();
+        filterTypePanel.setLayout(new BorderLayout());
+        filterTypeCombo = new JComboBox<>();
+        filterTypeCombo.addItem(filterItems[PostAnalysisParameters.HYPERGEOM]);
+        filterTypeCombo.addItem(filterItems[PostAnalysisParameters.MANN_WHIT]);
+        filterTypeCombo.addItem(filterItems[PostAnalysisParameters.PERCENT]);
+        filterTypeCombo.addItem(filterItems[PostAnalysisParameters.NUMBER]);
+        filterTypeCombo.addItem(filterItems[PostAnalysisParameters.SPECIFIC]);
+//        filterTypeCombo.setSelectedItem(paParams.getDefault_signature_filterMetric());
+
+        //Add Action listener for filter type drop down menu
+        filterTypeCombo.addActionListener( new ActionListener() {
+            String[] filterItems = PostAnalysisParameters.filterItems;
+            public void actionPerformed( ActionEvent e ) {
+                JComboBox<?> selectedChoice = (JComboBox<?>) e.getSource();
+                if ( filterItems[PostAnalysisParameters.HYPERGEOM].equals( selectedChoice.getSelectedItem() ) ) {
+                    paParams.setSignature_filterMetric(PostAnalysisParameters.HYPERGEOM);
+                    filterTextField.setValue(paParams.getSignature_Hypergeom_Cutoff());
+                } else if ( filterItems[PostAnalysisParameters.MANN_WHIT].equals( selectedChoice.getSelectedItem() ) ) {
+                	paParams.setSignature_filterMetric(PostAnalysisParameters.MANN_WHIT);
+                	filterTextField.setValue(paParams.getSignature_Mann_Whit_Cutoff());
+                } else if ( filterItems[PostAnalysisParameters.PERCENT].equals( selectedChoice.getSelectedItem() ) ) {
+                    paParams.setSignature_filterMetric(PostAnalysisParameters.PERCENT);
+                    filterTextField.setValue(paParams.getFilterValue());
+                } else if ( filterItems[PostAnalysisParameters.NUMBER].equals( selectedChoice.getSelectedItem() ) ) {
+                    paParams.setSignature_filterMetric(PostAnalysisParameters.NUMBER);
+                    filterTextField.setValue(paParams.getFilterValue());
+                }else if ( filterItems[PostAnalysisParameters.SPECIFIC].equals( selectedChoice.getSelectedItem() ) ) {
+                    paParams.setSignature_filterMetric(PostAnalysisParameters.SPECIFIC);
+                    filterTextField.setValue(paParams.getFilterValue());
+                }
+            }
+        });
+
+        filterTypePanel.add(filter,BorderLayout.WEST);
+        filterTypePanel.add(filterTypeCombo, BorderLayout.CENTER);
+        filterTypePanel.add(filterTextField, BorderLayout.EAST);
+        panel.add(filterTypePanel);
+        panel.add(filtersPanel);
+
+        collapsiblePanel.getContentPane().add(panel);
+        return collapsiblePanel;
+    }
+    
+    
+    private void selectSigDiscoveryUniverseActionPerformed(ActionEvent evt){
+        String analysisType = evt.getActionCommand();
+    	int size = 0;
+        if (analysisType.equalsIgnoreCase("GMT")) {
+        	size = map.getDataset(paParams.getSignature_dataSet()).getDatasetGenes().size();
+            sigDiscoveryUniverseSelectionTextField.setText(Integer.toString(size));
+        	sigDiscoveryUniverseSelectionTextField.setEditable(false);
+        } else if (analysisType.equalsIgnoreCase("Expression Set")) {
+        	size = map.getDataset(paParams.getSignature_dataSet()).getExpressionSets().getNumGenes();
+            sigDiscoveryUniverseSelectionTextField.setText(Integer.toString(size));
+        	sigDiscoveryUniverseSelectionTextField.setEditable(false);
+        } else if (analysisType.equalsIgnoreCase("Intersection")) {
+        	sigDiscoveryUniverseSelectionTextField.setEditable(false);
+        } else if (analysisType.equalsIgnoreCase("User Defined")) {
+        	sigDiscoveryUniverseSelectionTextField.setEditable(true);
+        }
+        paParams.setUniverseSize(size);
+    }
+    
+    
+    /**
+     * Event Handler for selectSignatureGMTFileButton.<p>
+     * Opens a file browser dialog to select the SignatureGMTFile.
+     */
+    private void selectSignatureGMTFileButtonActionPerformed(ActionEvent evt) {
+
+    	// Create FileFilter
+        FileChooserFilter filter = new FileChooserFilter("All GMT Files","gmt" );          
+        
+        //the set of filter (required by the file util method
+        ArrayList<FileChooserFilter> all_filters = new ArrayList<FileChooserFilter>();
+        all_filters.add(filter);
+        // Get the file name
+        File file = fileUtil.getFile(EnrichmentMapUtils.getWindowInstance(this),"Import Signature GMT File", FileUtil.LOAD,all_filters  );
+        
+        if(file != null) {
+            signatureDiscoveryGMTFileNameTextField.setForeground(PostAnalysisInputPanel.checkFile(file.getAbsolutePath()));
+            signatureDiscoveryGMTFileNameTextField.setText(file.getAbsolutePath());
+            signatureDiscoveryGMTFileNameTextField.setValue(file.getAbsolutePath());
+            paParams.setSignatureGMTFileName(file.getAbsolutePath());
+            signatureDiscoveryGMTFileNameTextField.setToolTipText(file.getAbsolutePath());
+        }
+    }
+    
+    /**
+     * Handles setting for the text field parameters that are numbers.
+     * Makes sure that the numbers make sense.
+     */
+    private class FormattedTextFieldAction implements PropertyChangeListener {
+        public void propertyChange(PropertyChangeEvent e) {
+            JFormattedTextField source = (JFormattedTextField) e.getSource();
+
+            String message = "The value you have entered is invalid.\n";
+            boolean invalid = false;
+
+           if (source == signatureDiscoveryGMTFileNameTextField) {
+                String value = signatureDiscoveryGMTFileNameTextField.getText();
+                if(value.equalsIgnoreCase("") )
+                    paParams.setSignatureGMTFileName(value);
+                else if(signatureDiscoveryGMTFileNameTextField.getText().equalsIgnoreCase((String)e.getOldValue())){
+                    //do nothing
+                }
+                else if(PostAnalysisInputPanel.checkFile(value).equals(Color.RED)){
+                    JOptionPane.showMessageDialog(application.getJFrame(),message,"File name change entered is not a valid file name",JOptionPane.WARNING_MESSAGE);
+                    signatureDiscoveryGMTFileNameTextField.setForeground(PostAnalysisInputPanel.checkFile(value));
+                }
+                else {
+                    paParams.setSignatureGMTFileName(value);
+//                    paParams.setSignatureSetNames(new DefaultListModel());
+//                    paParams.setSelectedSignatureSetNames(new DefaultListModel());
+                }
+            } 
+            else if (source == signatureDiscoveryRankTestTextField) {
+            	String value = signatureDiscoveryRankTestTextField.getText();
+            	paParams.setSignature_Mann_Whit_Cutoff(Double.parseDouble(value));
+            }
+            else if (source == sigDiscoveryUniverseSelectionTextField) {
+            	String value = sigDiscoveryUniverseSelectionTextField.getText();
+            	paParams.setUniverseSize(Integer.parseInt(value));
+            }
+            else if (source == filterTextField) {
+                Number value = (Number) filterTextField.getValue();
+                //if the filter type is percent then make sure the number entered is between 0 and 100
+                if(paParams.getSignature_filterMetric() == PostAnalysisParameters.HYPERGEOM){
+                    if ((value != null) && (value.doubleValue() >= 0.0) && (value.intValue() <= 1.0)) {
+                        paParams.setSignature_Hypergeom_Cutoff(value.doubleValue());
+                    } else {
+                        source.setValue(paParams.getDefault_signature_Hypergeom_Cutoff());
+                        message += "The filter cutoff must be greater than or equal 0.0 and less than or equal to 1.0";
+                        invalid = true;
+                    }
+                } else if(paParams.getSignature_filterMetric() == PostAnalysisParameters.MANN_WHIT){
+                    if ((value != null) && (value.doubleValue() >= 0.0) && (value.intValue() <= 1.0)) {
+                        paParams.setSignature_Mann_Whit_Cutoff(value.doubleValue());
+                    } else {
+                        source.setValue(paParams.getDefault_signature_Mann_Whit_Cutoff());
+                        message += "The filter cutoff must be greater than or equal 0.0 and less than or equal to 1.0";
+                        invalid = true;
+                    }
+                } else if(paParams.getSignature_filterMetric() == PostAnalysisParameters.PERCENT){
+                    if ((value != null) && (value.intValue() >= 0) && (value.intValue() <= 100)) {
+                        paParams.setFilterValue(value.intValue());
+                    } else {
+                        source.setValue(paParams.getFilterValue());
+                        message += "The filter cutoff must be greater than or equal 0 and less than or equal to 100.";
+                        invalid = true;
+                    }
+                }
+                //if the filter type is NUMBER then it can be any number, zero or greater.
+                else if(paParams.getSignature_filterMetric() == PostAnalysisParameters.NUMBER){
+                    if ((value != null) && (value.intValue() >= 0)) {
+                        paParams.setFilterValue(value.intValue());
+                    } else {
+                        source.setValue(paParams.getFilterValue());
+                        message += "The filter cutoff must be greater than or equal 0.";
+                        invalid = true;
+                    }
+                }
+            }
+            
+            if (invalid) {
+                JOptionPane.showMessageDialog(application.getJFrame(), message, "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
+            }
+        }
+    }
+    
+    
+    void resetPanel() {
+    	paParams.setSignatureGenesets(new SetOfGeneSets());
+    	
+    	// Reset the text field
+        signatureDiscoveryGMTFileNameTextField.setText("");
+        signatureDiscoveryGMTFileNameTextField.setValue("");
+        signatureDiscoveryGMTFileNameTextField.setToolTipText(null);
+                    	       
+        // Reset the List fields:
+        paParams.getSignatureSetNames().clear();
+        avail_sig_sets.clear();
+        avail_sig_sets_field.clearSelection();
+        setAvSigCount(0);
+        
+        paParams.getSelectedSignatureSetNames().clear();
+        selected_sig_sets.clear();
+        selected_sig_sets_field.clearSelection();
+        setSelSigCount(0);
+
+        // Reset the filter field
+        filter.setSelected(true);
+        paParams.setFilter(true);
+        String[] filterItems = PostAnalysisParameters.filterItems;
+        filterTypeCombo.setSelectedItem(filterItems[paParams.getDefault_signature_filterMetric()]);
+        signatureDiscoveryRankTestCombo.setSelectedItem(filterItems[paParams.getDefault_signature_rankTest()]);
+    }
+    
+    
+    void updateContents(EnrichmentMap currentMap, PostAnalysisParameters paParams) {
+		this.map = currentMap;
+		this.paParams = paParams;
+		
+		Map<String,DataSet> datasetMap = map.getDatasets();
+        String[] datasetArray = datasetMap.keySet().toArray(new String[datasetMap.size()]);
+        Arrays.sort(datasetArray);
+        this.datasetModel.removeAllElements();
+        for (String dataset : datasetArray) {
+        	datasetModel.addElement(dataset);
+        }
+        
+        Map<String,Ranking> rankingMap = map.getAllRanks();
+        String[] rankingArray = rankingMap.keySet().toArray(new String[rankingMap.size()]);
+        Arrays.sort(rankingArray);
+        rankingModel.removeAllElements();
+        for (String ranking : rankingArray) {
+        	rankingModel.addElement(ranking);
+        }
+        
+        
+		HashMap<String, GeneSet> EnrichmentGenesets = map.getAllGenesets();
+        Set<Integer> EnrichmentGenes = new HashSet<Integer>();
+        for (Iterator<String> i = map.getAllGenesets().keySet().iterator(); i.hasNext(); ) {
+            String setName = i.next();
+            EnrichmentGenes.addAll(EnrichmentGenesets.get(setName).getGenes());
+        }
+        
+		sigDiscoveryUniverseSelectionTextField.setText(Integer.toString(EnrichmentGenes.size()));
+		
+		DataSet dataset = map.getDataset(paParams.getSignature_dataSet());
+    	int universeSize = 0;
+    	if (dataset != null) {
+    		universeSize = dataset.getDatasetGenes().size();
+    	}
+        paParams.setUniverseSize(universeSize);
+        
+        SigDiscoveryGMTRadioButton.setText("GMT (" + universeSize + ")");
+        
+        int expressionSetSize = map.getDataset(paParams.getSignature_dataSet()).getExpressionSets().getNumGenes();
+        SigDiscoveryExpressionSetRadioButton.setText("Expression Set (" + expressionSetSize + ")");
+        
+        HashSet<Integer> intersection = map.getDataset(paParams.getSignature_dataSet()).getDatasetGenes();
+    	intersection.retainAll(map.getDataset(paParams.getSignature_dataSet()).getExpressionSets().getGeneIds());
+        SigDiscoveryIntersectionRadioButton.setText("Intersection (" + intersection.size() + ")");
+        
+        filterTextField.setValue(paParams.getSignature_Hypergeom_Cutoff());
+        filterTypeCombo.setSelectedItem(paParams.getDefault_signature_filterMetric());
+        paParams.setFilter(filter.isSelected());
+        
+        avail_sig_sets = paParams.getSignatureSetNames(); 
+        selected_sig_sets = paParams.getSelectedSignatureSetNames();
+        
+        avail_sig_sets_field.setModel(avail_sig_sets);
+        selected_sig_sets_field.setModel(selected_sig_sets);
+        
+//        sigDiscoveryDatasetCombo.setModel(datasetModel);
+//        sigDiscoveryRankingCombo.setModel(rankingModel);
+        
+        String[] filterItems = PostAnalysisParameters.filterItems;
+        signatureDiscoveryRankTestCombo.setSelectedItem(filterItems[paParams.getDefault_signature_rankTest()]);
+    }
+    
+    /**
+     * @return Array with arrows UP, DOWN, LEFT and RIGHT
+     */
+    private ImageIcon[] createArrowIcons () {
+        ImageIcon[] iconArrow = new ImageIcon[4];
+        URL iconURL;
+        //                         Oliver at 26/06/2009:  relative path works for me,
+        //                         maybe need to change to org/baderlab/csplugins/enrichmentmap/resources/arrow_collapsed.gif
+        iconURL = this.getClass().getResource("arrow_up.gif");
+        if (iconURL != null) {
+            iconArrow[UP] = new ImageIcon(iconURL);
+        }
+        iconURL = this.getClass().getResource("arrow_down.gif");
+        if (iconURL != null) {
+            iconArrow[DOWN] = new ImageIcon(iconURL);
+        }
+        iconURL = this.getClass().getResource("arrow_left.gif");
+        if (iconURL != null) {
+            iconArrow[LEFT] = new ImageIcon(iconURL);
+        }
+        iconURL = this.getClass().getResource("arrow_right.gif");
+        if (iconURL != null) {
+            iconArrow[RIGHT] = new ImageIcon(iconURL);
+        }
+        return iconArrow;
+    }
+    
+    /**
+     * jaccard or overlap radio button action listener
+     *
+     * @param evt
+     */
+    private void selectFilterActionPerformed(java.awt.event.ActionEvent evt) {
+        if(evt.getActionCommand().equalsIgnoreCase("filter")){
+            paParams.setFilter(true);
+        }
+        else if(evt.getActionCommand().equalsIgnoreCase("nofilter")){
+            paParams.setFilter(false);
+        }
+    }
+    
+    
+    /**
+	 * Set available signature gene set count to specified value
+	 * @param int avSigCount
+	 * @return null
+	 */
+	public void setAvSigCount(int avSigCount) {
+//		this.avail_sig_sets_count = avSigCount;
+		this.avail_sig_sets_counter_label.setText("(" + Integer.toString(avSigCount) + ")");
+	}
+	
+	/**
+	 * Set selected signature gene set count to the 
+	 * specified value
+	 * @param int sigCount
+	 * @return null
+	 */
+	public void setSelSigCount(int num) {
+//		this.sel_sig_sets_count = num;
+		this.selected_sig_sets_counter_label.setText("(" + Integer.toString(num) + ")");
+	}
+}
