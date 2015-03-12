@@ -47,7 +47,7 @@ public class LoadSignatureSetsActionListener implements ActionListener {
 
 		if (errors.equalsIgnoreCase("")) {
 
-			LoadSignatureGMTFilesTask load_GMTs = new LoadSignatureGMTFilesTask(current_map, paParams, streamUtil);
+			LoadSignatureGMTFilesTask load_GMTs = new LoadSignatureGMTFilesTask(current_map, paParams, streamUtil, inputPanel);
 
 			dialog.execute(load_GMTs.createTaskIterator());
 

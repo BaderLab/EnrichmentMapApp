@@ -772,16 +772,24 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
     }
     //create the edge attribue table
     public CyTable createEdgeAttributes(CyNetwork network, String name, String prefix){
-    		//TODO:change back to creating our own table.  Currently can only map to a string column.
+    	//TODO:change back to creating our own table.  Currently can only map to a string column.
 	    //in mean time use the default edge table
-    		//CyTable edgeTable = tableFactory.createTable(/*name*/ prefix + "_" + edge_table_suffix, CyNetwork.SUID,Long.class, true, true);
+    	//CyTable edgeTable = tableFactory.createTable(/*name*/ prefix + "_" + edge_table_suffix, CyNetwork.SUID,Long.class, true, true);
 		CyTable edgeTable = network.getDefaultEdgeTable();
 		
 		//check to see if column exists.  If it doesn't then create it
 		if(edgeTable.getColumn(prefix + EnrichmentMapVisualStyle.HYPERGEOM_PVALUE) == null)		
-    			edgeTable.createColumn(prefix + EnrichmentMapVisualStyle.HYPERGEOM_PVALUE , Double.class, false);
-    		
-    		return edgeTable;
+    		edgeTable.createColumn(prefix + EnrichmentMapVisualStyle.HYPERGEOM_PVALUE , Double.class, false);
+    	if(edgeTable.getColumn(prefix + EnrichmentMapVisualStyle.HYPERGEOM_N) == null)	
+    		edgeTable.createColumn(prefix + EnrichmentMapVisualStyle.HYPERGEOM_N , Integer.class, false);
+    	if(edgeTable.getColumn(prefix + EnrichmentMapVisualStyle.HYPERGEOM_n) == null)	
+    		edgeTable.createColumn(prefix + EnrichmentMapVisualStyle.HYPERGEOM_n , Integer.class, false);
+    	if(edgeTable.getColumn(prefix + EnrichmentMapVisualStyle.HYPERGEOM_m) == null)	
+    		edgeTable.createColumn(prefix + EnrichmentMapVisualStyle.HYPERGEOM_m , Integer.class, false);
+    	if(edgeTable.getColumn(prefix + EnrichmentMapVisualStyle.HYPERGEOM_k) == null)	
+    		edgeTable.createColumn(prefix + EnrichmentMapVisualStyle.HYPERGEOM_k , Integer.class, false);
+    	
+    	return edgeTable;
     }
     
     // ***************************************

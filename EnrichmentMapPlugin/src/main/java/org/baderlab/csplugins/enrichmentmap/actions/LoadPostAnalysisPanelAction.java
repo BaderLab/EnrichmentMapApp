@@ -69,9 +69,6 @@ import org.cytoscape.view.model.CyNetworkViewManager;
 @SuppressWarnings("serial")
 public class LoadPostAnalysisPanelAction extends AbstractCyAction {
 
-    //variable to track initialization of network event listener
-    private boolean initialized = false;
-        
     private final CytoPanel cytoPanelWest;
     private PostAnalysisInputPanel postEMinputPanel;
     private CyServiceRegistrar registrar;
@@ -94,8 +91,7 @@ public class LoadPostAnalysisPanelAction extends AbstractCyAction {
 
     public void actionPerformed(ActionEvent event) {
         //if the service has not been registered
-        if(!initialized){
-            initialized = true;
+        if(cytoPanelWest.indexOfComponent(this.postEMinputPanel) == -1){
             registrar.registerService(postEMinputPanel, CytoPanelComponent.class,new Properties());
       
             //set the input window in the instance so we can udate the instance window on network focus

@@ -320,7 +320,7 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
         //TODO: Maybe move loading SigGMT to File-selection Event add load button
         JButton loadButton = new JButton();
         loadButton.setText("Load Gene-Sets");
-        loadButton.addActionListener(new LoadSignatureSetsActionListener(parentPanel, application, cyApplicationManager, dialog,streamUtil));
+        loadButton.addActionListener(new LoadSignatureSetsActionListener(parentPanel, application, cyApplicationManager, dialog, streamUtil));
 //        loadButton.setPreferredSize(new Dimension(100,10));
         panel.add(loadButton);
         
@@ -346,6 +346,8 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
             public void actionPerformed( ActionEvent e ) {
             	JComboBox<?> selectedChoice = (JComboBox<?>) e.getSource();
             	String dataset = (String)selectedChoice.getSelectedItem();
+            	if(dataset == null)
+            		return;
             	paParams.setSignature_dataSet(dataset);
     	        DataSet datasetObj = map.getDataset(paParams.getSignature_dataSet());
     	    	int universeSize = 0;

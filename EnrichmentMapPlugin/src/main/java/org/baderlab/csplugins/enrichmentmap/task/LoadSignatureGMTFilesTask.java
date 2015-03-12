@@ -21,7 +21,7 @@ public class LoadSignatureGMTFilesTask implements TaskFactory{
          * constructor w/o TaskMonitor
          * @param paParams
          */
-        public LoadSignatureGMTFilesTask(EnrichmentMap map, PostAnalysisParameters paParams, StreamUtil streamUtil) {
+        private LoadSignatureGMTFilesTask(EnrichmentMap map, PostAnalysisParameters paParams, StreamUtil streamUtil) {
             this.paParams = paParams;
             this.map = map;
             this.streamUtil = streamUtil;
