@@ -4,8 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -15,18 +13,11 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -45,11 +36,8 @@ import javax.swing.ScrollPaneConstants;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapUtils;
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadSignatureSetsActionListener;
-import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.JMultiLineToolTip;
-import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
@@ -71,22 +59,13 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
 	
 	private final static int RIGHT = 0, DOWN = 1, UP = 2, LEFT = 3; // image States
 	
-	
-	// 'Signature Discovery Panel' parameters
 	private PostAnalysisParameters paParams;
 	private EnrichmentMap map;
     
     private JFormattedTextField signatureDiscoveryGMTFileNameTextField;
-    private JFormattedTextField sigDiscoveryUniverseSelectionTextField;
-    private JComboBox<String> sigDiscoveryDatasetCombo;
-	private JComboBox<String> sigDiscoveryRankingCombo;
-	private JComboBox<String> signatureDiscoveryRankTestCombo;
-	private JFormattedTextField signatureDiscoveryRankTestTextField;
-	private JRadioButton SigDiscoveryGMTRadioButton;
-	private JRadioButton SigDiscoveryIntersectionRadioButton;
-	private JRadioButton SigDiscoveryUserDefinedRadioButton;
-	private JRadioButton SigDiscoveryExpressionSetRadioButton;
 		
+    private PostAnalysisWeightPanel parametersPanel;
+    
 	private JLabel avail_sig_sets_counter_label;
 	private JList<String> avail_sig_sets_field;
     private CollapsiblePanel signature_genesets;
@@ -96,11 +75,6 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
     
     private DefaultListModel<String> avail_sig_sets;
     private DefaultListModel<String> selected_sig_sets;
-    
-    private int defaultColumns = 15;
-    
-    private DefaultComboBoxModel<String> rankingModel;
-    private DefaultComboBoxModel<String> datasetModel;
     
     private JRadioButton filter;
     private JRadioButton nofilter;
@@ -262,12 +236,12 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
         signature_genesets.getContentPane().add(signaturePanel, BorderLayout.NORTH);
         
         //Parameters collapsible panel
-        CollapsiblePanel ParametersPanel = createSignatureDiscoveryParametersPanel();
-        ParametersPanel.setCollapsed(false);
+        parametersPanel = new PostAnalysisWeightPanel();
+        parametersPanel.setCollapsed(false);
         
         add(GMTPanel);
         add(signature_genesets);
-        add(ParametersPanel);        
+        add(parametersPanel);        
     }
  
     /**
@@ -288,7 +262,7 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
         SigGMTLabel.setToolTipText(PostAnalysisInputPanel.gmtTip);
         JButton selectSigGMTFileButton = new JButton();
         signatureDiscoveryGMTFileNameTextField = new JFormattedTextField() ;
-        signatureDiscoveryGMTFileNameTextField.setColumns(defaultColumns);
+        signatureDiscoveryGMTFileNameTextField.setColumns(15);
 
 
         //components needed for the directory load
@@ -329,175 +303,6 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
     }
     
     
-    /**
-     * @return CollapsiblePanel to set PostAnalysisParameters 
-     */
-    private CollapsiblePanel createSignatureDiscoveryParametersPanel() {
-        CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Edge Weight Calculation Parameters");
-        
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        
-        sigDiscoveryDatasetCombo = new JComboBox<>();
-        // Dataset model is already initialized
-        datasetModel = new DefaultComboBoxModel<>();
-        sigDiscoveryDatasetCombo.setModel(datasetModel);
-        sigDiscoveryDatasetCombo.addActionListener( new ActionListener() {
-            public void actionPerformed( ActionEvent e ) {
-            	JComboBox<?> selectedChoice = (JComboBox<?>) e.getSource();
-            	String dataset = (String)selectedChoice.getSelectedItem();
-            	if(dataset == null)
-            		return;
-            	paParams.setSignature_dataSet(dataset);
-    	        DataSet datasetObj = map.getDataset(paParams.getSignature_dataSet());
-    	    	int universeSize = 0;
-    	    	if (datasetObj != null) {
-    	    		universeSize = datasetObj.getDatasetGenes().size();
-    	    	}            	paParams.setUniverseSize(universeSize);
-            	if (SigDiscoveryGMTRadioButton != null) {
-            		SigDiscoveryGMTRadioButton.setText("GMT (" + universeSize + ")");
-            	}
-            	int expressionSetSize = map.getDataset(dataset).getExpressionSets().getNumGenes();
-            	if (SigDiscoveryExpressionSetRadioButton != null) {
-            		SigDiscoveryExpressionSetRadioButton.setText("Expression Set (" + expressionSetSize + ")");
-            	}
-            	if (SigDiscoveryIntersectionRadioButton != null) {
-            		
-            	}            
-            }
-        });
-        panel.add(sigDiscoveryDatasetCombo);
-        
-        rankingModel = new DefaultComboBoxModel<>();
-        sigDiscoveryRankingCombo = new JComboBox<>();
-        sigDiscoveryRankingCombo.setModel(rankingModel);
-        sigDiscoveryRankingCombo.addActionListener( new ActionListener() {
-            public void actionPerformed( ActionEvent e ) {
-            	JComboBox<?> selectedChoice = (JComboBox<?>) e.getSource();
-            	paParams.setSignature_rankFile((String)selectedChoice.getSelectedItem());
-            }
-        });
-        panel.add(sigDiscoveryRankingCombo);
-        
-        signatureDiscoveryRankTestTextField = new JFormattedTextField();
-        signatureDiscoveryRankTestTextField.addPropertyChangeListener("value", new FormattedTextFieldAction());
-        
-        String[] filterItems = PostAnalysisParameters.filterItems;
-        signatureDiscoveryRankTestCombo = new JComboBox<>();
-        signatureDiscoveryRankTestCombo.addItem(filterItems[PostAnalysisParameters.MANN_WHIT]);
-        signatureDiscoveryRankTestCombo.addItem(filterItems[PostAnalysisParameters.HYPERGEOM]);
-        signatureDiscoveryRankTestCombo.addActionListener( new ActionListener() {
-            String[] filterItems = PostAnalysisParameters.filterItems;
-            public void actionPerformed( ActionEvent e ) {
-                JComboBox<?> selectedChoice = (JComboBox<?>) e.getSource();
-                if (filterItems[PostAnalysisParameters.MANN_WHIT].equals( selectedChoice.getSelectedItem())) {
-                    paParams.setSignature_rankTest(PostAnalysisParameters.MANN_WHIT);
-                    signatureDiscoveryRankTestTextField.setValue(paParams.getSignature_Mann_Whit_Cutoff());
-                } else if (filterItems[PostAnalysisParameters.HYPERGEOM].equals( selectedChoice.getSelectedItem())) {
-                    paParams.setSignature_rankTest(PostAnalysisParameters.HYPERGEOM);
-                    signatureDiscoveryRankTestTextField.setValue(paParams.getSignature_Hypergeom_Cutoff());
-                }
-            }
-        });
-//        signatureDiscoveryRankTestCombo.setSelectedItem(filterItems[paParams.getDefault_signature_rankTest()]);
-        panel.add(signatureDiscoveryRankTestCombo);
-        
-        JPanel cutoffLabel = new JPanel();
-        cutoffLabel.add(new JLabel("Select Cutoff:"));
-        panel.add(cutoffLabel);
-        
-        JPanel cutoffPanel = new JPanel();
-        cutoffPanel.setLayout(new BoxLayout(cutoffPanel, BoxLayout.X_AXIS));
-
-        cutoffPanel.add(signatureDiscoveryRankTestCombo);
-        cutoffPanel.add(signatureDiscoveryRankTestTextField);
-
-        panel.add(cutoffPanel);
-        
-        // Create Universe selection panel
-        CollapsiblePanel universeSelectionPanel = new CollapsiblePanel("Advanced Hypergeometric Universe");
-        universeSelectionPanel.setCollapsed(true);
-        universeSelectionPanel.getContentPane().setLayout(new BorderLayout());
-        
-        GridBagLayout gridbag = new GridBagLayout();
-        GridBagConstraints c = new GridBagConstraints();
-        c.weighty = 1;
-        c.weightx = 1;
-        c.insets = new Insets(0,0,0,0);
-        c.fill = GridBagConstraints.HORIZONTAL;
-        
-        JPanel radioButtonsPanel = new JPanel();
-        radioButtonsPanel.setLayout(gridbag);
-        
-    	SigDiscoveryGMTRadioButton = new JRadioButton();
-        SigDiscoveryGMTRadioButton.setActionCommand("GMT");
-        SigDiscoveryGMTRadioButton.addActionListener(new ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                selectSigDiscoveryUniverseActionPerformed(evt);
-            }
-        });        
-        SigDiscoveryGMTRadioButton.setSelected(true);
-        SigDiscoveryExpressionSetRadioButton = new JRadioButton();
-        SigDiscoveryExpressionSetRadioButton.setActionCommand("Expression Set");
-        SigDiscoveryExpressionSetRadioButton.addActionListener(new ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                selectSigDiscoveryUniverseActionPerformed(evt);
-            }
-        });    
-        SigDiscoveryIntersectionRadioButton = new JRadioButton();
-        SigDiscoveryIntersectionRadioButton.setActionCommand("Intersection");
-        SigDiscoveryIntersectionRadioButton.addActionListener(new ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                selectSigDiscoveryUniverseActionPerformed(evt);
-            }
-        });    
-        SigDiscoveryUserDefinedRadioButton = new JRadioButton("User Defined");
-        SigDiscoveryUserDefinedRadioButton.setActionCommand("User Defined");
-        SigDiscoveryUserDefinedRadioButton.addActionListener(new ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                selectSigDiscoveryUniverseActionPerformed(evt);
-            }
-        });  
-        
-        ButtonGroup universeSelectionOptions = new ButtonGroup();
-        universeSelectionOptions.add(SigDiscoveryGMTRadioButton);
-        universeSelectionOptions.add(SigDiscoveryExpressionSetRadioButton);
-        universeSelectionOptions.add(SigDiscoveryIntersectionRadioButton);
-        universeSelectionOptions.add(SigDiscoveryUserDefinedRadioButton);
-
-        c.gridx = 0;
-        c.gridwidth = GridBagConstraints.REMAINDER;
-        c.gridy = 0;
-        gridbag.setConstraints(SigDiscoveryGMTRadioButton, c);
-        radioButtonsPanel.add(SigDiscoveryGMTRadioButton);
-        
-        c.gridy = 1;
-        gridbag.setConstraints(SigDiscoveryExpressionSetRadioButton, c);
-        radioButtonsPanel.add(SigDiscoveryExpressionSetRadioButton);
-
-        c.gridy = 2;
-        gridbag.setConstraints(SigDiscoveryIntersectionRadioButton, c);
-        radioButtonsPanel.add(SigDiscoveryIntersectionRadioButton);
-        
-        c.gridy = 3;
-        c.gridwidth = 2;
-        gridbag.setConstraints(SigDiscoveryUserDefinedRadioButton, c);
-        radioButtonsPanel.add(SigDiscoveryUserDefinedRadioButton);
-        
-        c.gridx = 2;
-        sigDiscoveryUniverseSelectionTextField = new JFormattedTextField();
-        sigDiscoveryUniverseSelectionTextField.addPropertyChangeListener("value", new FormattedTextFieldAction());
-        sigDiscoveryUniverseSelectionTextField.setEditable(false);
-        gridbag.setConstraints(sigDiscoveryUniverseSelectionTextField, c);
-        radioButtonsPanel.add(sigDiscoveryUniverseSelectionTextField);
-        
-        universeSelectionPanel.getContentPane().add(radioButtonsPanel, BorderLayout.WEST);
-               
-        panel.add(universeSelectionPanel);
-        
-        collapsiblePanel.getContentPane().add(panel, BorderLayout.NORTH);
-        return collapsiblePanel;
-    }
     
     /**
      *  Create a sub-panel so the user can specify filters so when loading in Signature gene set files
@@ -601,26 +406,6 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
     }
     
     
-    private void selectSigDiscoveryUniverseActionPerformed(ActionEvent evt){
-        String analysisType = evt.getActionCommand();
-    	int size = 0;
-        if (analysisType.equalsIgnoreCase("GMT")) {
-        	size = map.getDataset(paParams.getSignature_dataSet()).getDatasetGenes().size();
-            sigDiscoveryUniverseSelectionTextField.setText(Integer.toString(size));
-        	sigDiscoveryUniverseSelectionTextField.setEditable(false);
-        } else if (analysisType.equalsIgnoreCase("Expression Set")) {
-        	size = map.getDataset(paParams.getSignature_dataSet()).getExpressionSets().getNumGenes();
-            sigDiscoveryUniverseSelectionTextField.setText(Integer.toString(size));
-        	sigDiscoveryUniverseSelectionTextField.setEditable(false);
-        } else if (analysisType.equalsIgnoreCase("Intersection")) {
-        	sigDiscoveryUniverseSelectionTextField.setEditable(false);
-        } else if (analysisType.equalsIgnoreCase("User Defined")) {
-        	sigDiscoveryUniverseSelectionTextField.setEditable(true);
-        }
-        paParams.setUniverseSize(size);
-    }
-    
-    
     /**
      * Event Handler for selectSignatureGMTFileButton.<p>
      * Opens a file browser dialog to select the SignatureGMTFile.
@@ -673,14 +458,6 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
 //                    paParams.setSelectedSignatureSetNames(new DefaultListModel());
                 }
             } 
-            else if (source == signatureDiscoveryRankTestTextField) {
-            	String value = signatureDiscoveryRankTestTextField.getText();
-            	paParams.setSignature_Mann_Whit_Cutoff(Double.parseDouble(value));
-            }
-            else if (source == sigDiscoveryUniverseSelectionTextField) {
-            	String value = sigDiscoveryUniverseSelectionTextField.getText();
-            	paParams.setUniverseSize(Integer.parseInt(value));
-            }
             else if (source == filterTextField) {
                 Number value = (Number) filterTextField.getValue();
                 //if the filter type is percent then make sure the number entered is between 0 and 100
@@ -752,56 +529,18 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
         paParams.setFilter(true);
         String[] filterItems = PostAnalysisParameters.filterItems;
         filterTypeCombo.setSelectedItem(filterItems[paParams.getDefault_signature_filterMetric()]);
-        signatureDiscoveryRankTestCombo.setSelectedItem(filterItems[paParams.getDefault_signature_rankTest()]);
+//        signatureDiscoveryRankTestCombo.setSelectedItem(filterItems[paParams.getDefault_signature_rankTest()]);
+        
+        parametersPanel.resetPanel();
     }
     
     
     void updateContents(EnrichmentMap currentMap, PostAnalysisParameters paParams) {
 		this.map = currentMap;
 		this.paParams = paParams;
+        
+		parametersPanel.updateContents(currentMap, paParams);
 		
-		Map<String,DataSet> datasetMap = map.getDatasets();
-        String[] datasetArray = datasetMap.keySet().toArray(new String[datasetMap.size()]);
-        Arrays.sort(datasetArray);
-        this.datasetModel.removeAllElements();
-        for (String dataset : datasetArray) {
-        	datasetModel.addElement(dataset);
-        }
-        
-        Map<String,Ranking> rankingMap = map.getAllRanks();
-        String[] rankingArray = rankingMap.keySet().toArray(new String[rankingMap.size()]);
-        Arrays.sort(rankingArray);
-        rankingModel.removeAllElements();
-        for (String ranking : rankingArray) {
-        	rankingModel.addElement(ranking);
-        }
-        
-        
-		HashMap<String, GeneSet> EnrichmentGenesets = map.getAllGenesets();
-        Set<Integer> EnrichmentGenes = new HashSet<Integer>();
-        for (Iterator<String> i = map.getAllGenesets().keySet().iterator(); i.hasNext(); ) {
-            String setName = i.next();
-            EnrichmentGenes.addAll(EnrichmentGenesets.get(setName).getGenes());
-        }
-        
-		sigDiscoveryUniverseSelectionTextField.setText(Integer.toString(EnrichmentGenes.size()));
-		
-		DataSet dataset = map.getDataset(paParams.getSignature_dataSet());
-    	int universeSize = 0;
-    	if (dataset != null) {
-    		universeSize = dataset.getDatasetGenes().size();
-    	}
-        paParams.setUniverseSize(universeSize);
-        
-        SigDiscoveryGMTRadioButton.setText("GMT (" + universeSize + ")");
-        
-        int expressionSetSize = map.getDataset(paParams.getSignature_dataSet()).getExpressionSets().getNumGenes();
-        SigDiscoveryExpressionSetRadioButton.setText("Expression Set (" + expressionSetSize + ")");
-        
-        HashSet<Integer> intersection = map.getDataset(paParams.getSignature_dataSet()).getDatasetGenes();
-    	intersection.retainAll(map.getDataset(paParams.getSignature_dataSet()).getExpressionSets().getGeneIds());
-        SigDiscoveryIntersectionRadioButton.setText("Intersection (" + intersection.size() + ")");
-        
         filterTextField.setValue(paParams.getSignature_Hypergeom_Cutoff());
         filterTypeCombo.setSelectedItem(paParams.getDefault_signature_filterMetric());
         paParams.setFilter(filter.isSelected());
@@ -811,12 +550,6 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
         
         avail_sig_sets_field.setModel(avail_sig_sets);
         selected_sig_sets_field.setModel(selected_sig_sets);
-        
-//        sigDiscoveryDatasetCombo.setModel(datasetModel);
-//        sigDiscoveryRankingCombo.setModel(rankingModel);
-        
-        String[] filterItems = PostAnalysisParameters.filterItems;
-        signatureDiscoveryRankTestCombo.setSelectedItem(filterItems[paParams.getDefault_signature_rankTest()]);
     }
     
     /**
