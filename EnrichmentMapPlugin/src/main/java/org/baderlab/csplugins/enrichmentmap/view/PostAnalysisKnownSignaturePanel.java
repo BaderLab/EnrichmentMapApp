@@ -80,7 +80,7 @@ public class PostAnalysisKnownSignaturePanel extends JPanel {
         GMTPanel.setCollapsed(false);
         
         //Parameters collapsible panel
-        parametersPanel = new PostAnalysisWeightPanel();
+        parametersPanel = new PostAnalysisWeightPanel(application);
         parametersPanel.setCollapsed(false);
         
         add(GMTPanel);

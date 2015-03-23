@@ -236,7 +236,7 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
         signature_genesets.getContentPane().add(signaturePanel, BorderLayout.NORTH);
         
         //Parameters collapsible panel
-        parametersPanel = new PostAnalysisWeightPanel();
+        parametersPanel = new PostAnalysisWeightPanel(application);
         parametersPanel.setCollapsed(false);
         
         add(GMTPanel);

@@ -8,10 +8,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.text.DecimalFormat;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -21,20 +19,28 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
+import org.cytoscape.application.swing.CySwingApplication;
 
 @SuppressWarnings("serial")
 public class PostAnalysisWeightPanel extends CollapsiblePanel {
 
+	private final CySwingApplication application;
+	
 	private PostAnalysisParameters paParams;
 	private EnrichmentMap map;
+	
+	// Universe sizes
+	private int universeGmt;
+	private int universeExpression;
+	private int universeIntersection;
 	
     private JComboBox<String> datasetCombo;
 	private JComboBox<String> rankingCombo;
@@ -51,8 +57,9 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
     private DefaultComboBoxModel<String> datasetModel;
 	
     
-	public PostAnalysisWeightPanel() {
+	public PostAnalysisWeightPanel(CySwingApplication application) {
 		super("Edge Weight Calculation Parameters");
+		this.application = application;
 		createPanel();
 	}
 	
@@ -65,10 +72,9 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
         // Dataset model is already initialized
         datasetModel = new DefaultComboBoxModel<>();
         datasetCombo.setModel(datasetModel);
-        datasetCombo.addActionListener( new ActionListener() {
+        datasetCombo.addActionListener(new ActionListener() {
             public void actionPerformed( ActionEvent e ) {
-            	JComboBox<?> selectedChoice = (JComboBox<?>) e.getSource();
-            	String dataset = (String)selectedChoice.getSelectedItem();
+            	String dataset = (String)datasetCombo.getSelectedItem();
             	if(dataset == null)
             		return;
             	paParams.setSignature_dataSet(dataset);
@@ -87,7 +93,9 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
         });
         panel.add(rankingCombo);
         
-        rankTestTextField = new JFormattedTextField();
+        DecimalFormat decFormat = new DecimalFormat();
+        decFormat.setParseIntegerOnly(false);
+        rankTestTextField = new JFormattedTextField(decFormat);
         rankTestTextField.addPropertyChangeListener("value", new FormattedTextFieldAction());
         
         rankTestCombo = new JComboBox<>();
@@ -150,15 +158,15 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
         userDefinedRadioButton.setActionCommand("User Defined");
         userDefinedRadioButton.addActionListener(new UniverseSelectActionListener());  
         
-        ButtonGroup universeSelectionOptions = new ButtonGroup();
-        universeSelectionOptions.add(gmtRadioButton);
-        universeSelectionOptions.add(expressionSetRadioButton);
-        universeSelectionOptions.add(intersectionRadioButton);
-        universeSelectionOptions.add(userDefinedRadioButton);
+        ButtonGroup buttonGroup = new ButtonGroup();
+        buttonGroup.add(gmtRadioButton);
+        buttonGroup.add(expressionSetRadioButton);
+        buttonGroup.add(intersectionRadioButton);
+        buttonGroup.add(userDefinedRadioButton);
 
         c.gridx = 0;
-        c.gridwidth = GridBagConstraints.REMAINDER;
         c.gridy = 0;
+        c.gridwidth = GridBagConstraints.REMAINDER;
         gridbag.setConstraints(gmtRadioButton, c);
         radioButtonsPanel.add(gmtRadioButton);
         
@@ -176,13 +184,15 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
         radioButtonsPanel.add(userDefinedRadioButton);
         
         c.gridx = 2;
-        universeSelectionTextField = new JFormattedTextField();
+        DecimalFormat intFormat = new DecimalFormat();
+        intFormat.setParseIntegerOnly(true);
+        universeSelectionTextField = new JFormattedTextField(intFormat);
         universeSelectionTextField.addPropertyChangeListener("value", new FormattedTextFieldAction());
-        universeSelectionTextField.setEditable(false);
+        universeSelectionTextField.setEnabled(false);
         gridbag.setConstraints(universeSelectionTextField, c);
         radioButtonsPanel.add(universeSelectionTextField);
         
-        universeSelectionPanel.getContentPane().add(radioButtonsPanel, BorderLayout.WEST);
+        universeSelectionPanel.getContentPane().add(radioButtonsPanel, BorderLayout.CENTER);
                
         panel.add(universeSelectionPanel);
         
@@ -195,20 +205,20 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
 			int size = 0;
 			switch(e.getActionCommand()) {
 				case "GMT":
-					size = map.getDataset(paParams.getSignature_dataSet()).getDatasetGenes().size();
-		            universeSelectionTextField.setText(Integer.toString(size));
-		        	universeSelectionTextField.setEditable(false);
+					size = universeGmt;
+		        	universeSelectionTextField.setEnabled(false);
 		        	break;
 				case "Expression Set":
-		            size = map.getDataset(paParams.getSignature_dataSet()).getExpressionSets().getNumGenes();
-		            universeSelectionTextField.setText(Integer.toString(size));
-		            universeSelectionTextField.setEditable(false);
+		            size = universeExpression;
+		            universeSelectionTextField.setEnabled(false);
 		            break;
 				case "Intersection":
-	            	universeSelectionTextField.setEditable(false);
+					size = universeIntersection;
+	            	universeSelectionTextField.setEnabled(false);
 	            	break;
 				case "User Defined":
-		            universeSelectionTextField.setEditable(true);
+					size = ((Number)universeSelectionTextField.getValue()).intValue();
+		            universeSelectionTextField.setEnabled(true);
 		            break;
 			}
 			paParams.setUniverseSize(size);
@@ -220,24 +230,33 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
         public void propertyChange(PropertyChangeEvent e) {
         	JFormattedTextField source = (JFormattedTextField) e.getSource();
 	        if (source == rankTestTextField) {
-	        	String value = rankTestTextField.getText();
-	            String[] filterItems = PostAnalysisParameters.filterItems;
-	        	if (rankTestCombo.getSelectedItem().equals(filterItems[PostAnalysisParameters.MANN_WHIT])) {
-	        		paParams.setSignature_Mann_Whit_Cutoff(Double.parseDouble(value));
+	        	Number val = (Number)rankTestTextField.getValue();
+	        	if(val == null || val.doubleValue() < 0.0) {
+	        		JOptionPane.showMessageDialog(application.getJFrame(), "Universe value must be greater than zero", "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
+	        		universeSelectionTextField.setValue(val = 1);
 	        	}
-	        	if (rankTestCombo.getSelectedItem().equals(filterItems[PostAnalysisParameters.HYPERGEOM])) {
-	        		paParams.setSignature_Hypergeom_Cutoff(Double.parseDouble(value));
+	        	
+	            if (rankTestCombo.getSelectedItem().equals(PostAnalysisParameters.filterItems[PostAnalysisParameters.MANN_WHIT])) {
+	        		paParams.setSignature_Mann_Whit_Cutoff(val.doubleValue());
+	        	}
+	        	if (rankTestCombo.getSelectedItem().equals(PostAnalysisParameters.filterItems[PostAnalysisParameters.HYPERGEOM])) {
+	        		paParams.setSignature_Hypergeom_Cutoff(val.doubleValue());
 	        	}
 	        }
 	        else if (source == universeSelectionTextField) {
-	        	String value = universeSelectionTextField.getText();
-	        	paParams.setUniverseSize(Integer.parseInt(value));
+	        	Number val = (Number)universeSelectionTextField.getValue();
+	        	if(val == null || val.intValue() < 0) {
+	        		JOptionPane.showMessageDialog(application.getJFrame(), "Universe value must be greater than zero", "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
+	        		universeSelectionTextField.setValue(val = 1);
+	        	}
+	        	paParams.setUniverseSize(val.intValue());
 	        }
         }
 	}
 	
 	
 	void resetPanel() {
+		gmtRadioButton.setSelected(true);
         rankTestCombo.setSelectedItem(PostAnalysisParameters.filterItems[paParams.getDefault_signature_rankTest()]);
     }
     
@@ -262,39 +281,36 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
         	rankingModel.addElement(ranking);
         }
         
-		HashMap<String, GeneSet> EnrichmentGenesets = map.getAllGenesets();
-        Set<Integer> EnrichmentGenes = new HashSet<Integer>();
-        for (Iterator<String> i = map.getAllGenesets().keySet().iterator(); i.hasNext(); ) {
-            String setName = i.next();
-            EnrichmentGenes.addAll(EnrichmentGenesets.get(setName).getGenes());
-        }
-        
-		universeSelectionTextField.setText(Integer.toString(EnrichmentGenes.size()));
-		
 		updateUniverseSize();
         
-        String[] filterItems = PostAnalysisParameters.filterItems;
-        rankTestCombo.setSelectedItem(filterItems[paParams.getDefault_signature_rankTest()]);
+        rankTestCombo.setSelectedItem(PostAnalysisParameters.filterItems[paParams.getDefault_signature_rankTest()]);
     }
     
     
     private void updateUniverseSize() {
     	String signature_dataSet = paParams.getSignature_dataSet();
-		DataSet dataset = map.getDataset(signature_dataSet);
-    	int universeSize = 0;
-    	if (dataset != null) {
-    		universeSize = dataset.getDatasetGenes().size();
-    	}
-    	
-    	paParams.setUniverseSize(universeSize);
-        
-        gmtRadioButton.setText("GMT (" + universeSize + ")");
-        
-        int expressionSetSize = map.getDataset(signature_dataSet).getExpressionSets().getNumGenes();
-        expressionSetRadioButton.setText("Expression Set (" + expressionSetSize + ")");
-        
-        HashSet<Integer> intersection = map.getDataset(signature_dataSet).getDatasetGenes();
+    	Set<Integer> intersection = map.getDataset(signature_dataSet).getDatasetGenes();
     	intersection.retainAll(map.getDataset(signature_dataSet).getExpressionSets().getGeneIds());
-        intersectionRadioButton.setText("Intersection (" + intersection.size() + ")");
+    	
+    	universeGmt = map.getNumberOfGenes();
+    	universeExpression = map.getDataset(signature_dataSet).getExpressionSets().getNumGenes();
+    	universeIntersection = intersection.size();
+    	
+        gmtRadioButton.setText("GMT (" + universeGmt + ")");
+        expressionSetRadioButton.setText("Expression Set (" + universeExpression + ")");
+        intersectionRadioButton.setText("Intersection (" + universeIntersection + ")");
+        
+        universeSelectionTextField.setValue(universeExpression);
+        
+        if(gmtRadioButton.isSelected())
+        	paParams.setUniverseSize(universeGmt);
+        else if(expressionSetRadioButton.isSelected())
+        	paParams.setUniverseSize(universeExpression);
+        else if(intersectionRadioButton.isSelected())
+        	paParams.setUniverseSize(universeIntersection);
+        else
+        	paParams.setUniverseSize((Integer)universeSelectionTextField.getValue());
     }
+    
+    
 }
