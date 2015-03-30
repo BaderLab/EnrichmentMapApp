@@ -287,40 +287,48 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
      * @see org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters#checkMinimalRequirements()
      */
     public String checkMinimalRequirements() {
-        String errors = "";
-        errors += checkGMTfiles();
-        if(this.selectedSignatureSetNames.isEmpty())
-            errors += "No Signature Genesets selected \n";
-        if (this.signature_CutoffMetric == PostAnalysisParameters.ABS_NUMBER) {
-            if (! (this.signature_absNumber_Cutoff > 0))
-                errors += "Number of Genes Cutoff must be a positive, non-zero integer \n";
-        } else if (this.signature_CutoffMetric == PostAnalysisParameters.OVERLAP) {
-            if (! (this.signature_Overlap_Cutoff >= 0.0 && this.signature_Overlap_Cutoff <= 1.0))
-                errors += "Overlap Cutoff must be a decimal Number between 0.0 and 1.0 \n";
-        } else if (this.signature_CutoffMetric == PostAnalysisParameters.JACCARD) {
-            if (! (this.signature_Jaccard_Cutoff >= 0.0 && this.signature_Jaccard_Cutoff <= 1.0))
-                errors += "Jaccard Cutoff must be a decimal Number between 0.0 and 1.0 \n";
-        } else if (this.signature_CutoffMetric == PostAnalysisParameters.DIR_OVERLAP) {
-            if (! (this.signature_DirOverlap_Cutoff >= 0.0 && this.signature_DirOverlap_Cutoff <= 1.0))
-                errors += "Directed Overlap Cutoff must be a decimal Number between 0.0 and 1.0 \n";
-        } else
-            errors += "Invalid Cutoff metric \n";
+        StringBuilder errors = new StringBuilder();
         
-        return errors;
+        errors.append(checkGMTfiles());
+        
+        if(selectedSignatureSetNames.isEmpty())
+        	errors.append("No Signature Genesets selected \n");
+        
+        switch(signature_CutoffMetric) {
+        	case PostAnalysisParameters.ABS_NUMBER:
+	        	if(signature_absNumber_Cutoff <= 0)
+	        		errors.append("Number of Genes Cutoff must be a positive, non-zero integer \n");
+	        	break;
+        	case PostAnalysisParameters.OVERLAP:
+        		if(signature_Overlap_Cutoff < 0.0 || signature_Overlap_Cutoff > 1.0)
+                	errors.append("Overlap Cutoff must be a decimal Number between 0.0 and 1.0 \n");
+        		break;
+        	case PostAnalysisParameters.JACCARD:
+        		if(signature_Jaccard_Cutoff < 0.0 || signature_Jaccard_Cutoff > 1.0)
+                	errors.append("Jaccard Cutoff must be a decimal Number between 0.0 and 1.0 \n");
+        		break;
+        	case PostAnalysisParameters.DIR_OVERLAP:
+        		if(signature_DirOverlap_Cutoff < 0.0 || signature_DirOverlap_Cutoff > 1.0)
+                	errors.append("Directed Overlap Cutoff must be a decimal Number between 0.0 and 1.0 \n");
+        		break;
+        	default:
+        		errors.append("Invalid Cutoff metric \n");
+        }
+        
+        return errors.toString();
     }
 
+    
     /**
-     * Checks if GMTFileName and SignatureGMTFileName are provided and if the files can be read.
+     * Checks if SignatureGMTFileName is provided and if the file can be read.
      * 
      * @return String with error messages (one error per line) or empty String if everything is okay.
      */
     public String checkGMTfiles() {
-        String errors = "";
-        if(this.getGMTFileName().equalsIgnoreCase("") || ! checkFile(this.getGMTFileName()))
-            errors += "GMT file can not be found \n";
-        if(this.getSignatureGMTFileName() .equalsIgnoreCase("") || ! checkFile(this.getSignatureGMTFileName()))
-            errors += "Signature GMT file can not be found \n";
-        return errors;
+        String signatureGMTFileName = getSignatureGMTFileName();
+		if(signatureGMTFileName.isEmpty() || !checkFile(signatureGMTFileName))
+            return "Signature GMT file can not be found \n";
+        return "";
     }
 
     
