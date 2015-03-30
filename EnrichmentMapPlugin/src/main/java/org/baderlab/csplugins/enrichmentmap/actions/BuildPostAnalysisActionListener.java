@@ -58,6 +58,7 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.swing.DialogTaskManager;
@@ -76,19 +77,21 @@ public class BuildPostAnalysisActionListener implements ActionListener {
     private PostAnalysisInputPanel inputPanel;
     private CyNetworkManager networkManager;
     private CyApplicationManager applicationManager;
+    private CyRootNetworkManager rootNetworkManager;
     private CySessionManager sessionManager;
     private StreamUtil streamUtil;
     private DialogTaskManager dialog;
     private CyEventHelper eventHelper;
 
     public BuildPostAnalysisActionListener (PostAnalysisInputPanel panel,  
-    		CySessionManager sessionManager, StreamUtil streamUtil,CyNetworkManager networkManager,
-    		CyApplicationManager applicationManager,DialogTaskManager dialog,CyEventHelper eventHelper) {
+    		CySessionManager sessionManager, StreamUtil streamUtil,CyNetworkManager networkManager, CyRootNetworkManager rootNetworkManager,
+    		CyApplicationManager applicationManager, DialogTaskManager dialog,CyEventHelper eventHelper) {
         this.inputPanel = panel;
         this.sessionManager = sessionManager;
         this.streamUtil = streamUtil;
         this.networkManager = networkManager;
         this.applicationManager = applicationManager;
+        this.rootNetworkManager = rootNetworkManager;
         this.dialog = dialog;
         this.eventHelper = eventHelper;
 
@@ -108,11 +111,11 @@ public class BuildPostAnalysisActionListener implements ActionListener {
         String errors = paParams.checkMinimalRequirements();
         TaskIterator currentTasks = new TaskIterator();
 
-        if(errors.equalsIgnoreCase("")) {
+        if(errors.isEmpty()) {
 
             if ( paParams.isSignatureDiscovery() || paParams.isKnownSignature() ) {
                 
-                BuildDiseaseSignatureTask new_signature = new BuildDiseaseSignatureTask(current_map, paParams,this.sessionManager, this.streamUtil, this.applicationManager, this.eventHelper);
+                BuildDiseaseSignatureTask new_signature = new BuildDiseaseSignatureTask(current_map, paParams,this.sessionManager, this.streamUtil, this.applicationManager, this.eventHelper, this.rootNetworkManager);
                 currentTasks.append(new_signature);
                 
                 dialog.execute(currentTasks);

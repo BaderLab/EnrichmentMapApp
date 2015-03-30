@@ -312,9 +312,14 @@ public class RanksFileReaderTask extends AbstractTask {
         //update scores Hash to contain the ranks as well.
         //only update the ranks if we haven't already defined them using order of scores in file
         if(!gseaDefinedRanks){
-            for(Iterator k = ranks.keySet().iterator(); k.hasNext();){
-                Rank current_ranking = ranks.get(k.next());
-                current_ranking.setRank(score2ranks.get(current_ranking.getScore()));
+            for(Iterator<Integer> k = ranks.keySet().iterator(); k.hasNext();){
+                Integer gene_key = k.next();
+				Rank current_ranking = ranks.get(gene_key);
+                Integer rank = score2ranks.get(current_ranking.getScore());
+				current_ranking.setRank(rank);
+				// update rank2gene and gene2score as well
+				rank2gene.put(rank,gene_key);
+                gene2score.put(gene_key, current_ranking.getScore());
             }
         }
         //check to see if some of the dataset genes are not in this rank file

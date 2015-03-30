@@ -43,8 +43,6 @@
 
 package org.baderlab.csplugins.enrichmentmap;
 
-import static org.mockito.Mockito.mock;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
@@ -52,7 +50,7 @@ import java.util.Scanner;
 
 import junit.framework.TestCase;
 
-import org.baderlab.csplugins.enrichmentmap.task.BuildDiseaseSignatureTask;
+import org.baderlab.csplugins.enrichmentmap.task.Hypergeometric;
 
 /**
  * @author revilo
@@ -78,11 +76,11 @@ public class HypergeometricTest extends TestCase {
         m = 5;
         k = 4;
         
-        pValue = BuildDiseaseSignatureTask.hyperGeomPvalue(N, n, m, k);
+        pValue = Hypergeometric.hyperGeomPvalue(N, n, m, k);
         assertEquals(0.003964583, pValue, 0.0005);
 
         k = 5;
-        pValue = BuildDiseaseSignatureTask.hyperGeomPvalue(N, n, m, k);
+        pValue = Hypergeometric.hyperGeomPvalue(N, n, m, k);
         assertEquals(0.0001189375, pValue, 0.0005);
         
     }
@@ -107,7 +105,7 @@ public class HypergeometricTest extends TestCase {
                 m = Integer.parseInt(tokens[2]);
                 k = Integer.parseInt(tokens[3]);
                 expected_pVal = Double.parseDouble(tokens[4]);
-                pValue = BuildDiseaseSignatureTask.hyperGeomPvalue_sum(N, n, m, k, 1);
+                pValue = Hypergeometric.hyperGeomPvalue_sum(N, n, m, k, 1);
                 
                 assertEquals(expected_pVal, pValue, 0.00000005);
             }

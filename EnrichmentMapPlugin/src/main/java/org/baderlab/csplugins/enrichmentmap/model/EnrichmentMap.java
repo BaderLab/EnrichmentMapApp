@@ -3,7 +3,7 @@ package org.baderlab.csplugins.enrichmentmap.model;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Set;
+import java.util.Map;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
@@ -151,10 +151,9 @@ public class EnrichmentMap {
     				this.getDataset(DATASET1).getExpressionSets().createNewRanking(Ranking.GSEARanking);
     				this.getDataset(DATASET1).getExpressionSets().getRanksByName(Ranking.GSEARanking).setFilename(dataset1files.getRankedFile());
     			}
-    			else{
+    			else {
     				this.getDataset(DATASET1).getExpressionSets().createNewRanking(DATASET1);
     				this.getDataset(DATASET1).getExpressionSets().getRanksByName(DATASET1).setFilename(dataset1files.getRankedFile());
-    			
     			}
     		
     		if(params.getFiles().containsKey(EnrichmentMap.DATASET2)){
@@ -188,7 +187,7 @@ public class EnrichmentMap {
     				}
     			}
     		}
-}
+    }
 
     
     
@@ -294,10 +293,8 @@ public class EnrichmentMap {
 	/* 
 	 * Return a hash of all the genesets in the set of genesets
 	 * regardless of which dataset it comes from
-	 * 
 	 */
 	public HashMap<String, GeneSet> getAllGenesets(){
-		
 		//go through each dataset and get the genesets from each
 		HashMap<String,GeneSet> all_genesets = new HashMap<String,GeneSet>();
 		for(Iterator<String> k = datasets.keySet().iterator(); k.hasNext();){
@@ -306,6 +303,19 @@ public class EnrichmentMap {
 		}
 		if(signatureGenesets != null && !signatureGenesets.isEmpty())
 			all_genesets.putAll(signatureGenesets);
+		return all_genesets;
+	}
+	
+	/* 
+	 * Return a hash of all the genesets but not inlcuding the signature genesets.
+	 */
+	public Map<String, GeneSet> getEnrichmentGenesets(){
+		//go through each dataset and get the genesets from each
+		HashMap<String,GeneSet> all_genesets = new HashMap<String,GeneSet>();
+		for(Iterator<String> k = datasets.keySet().iterator(); k.hasNext();){
+        		HashMap<String,GeneSet> current_genesets = (datasets.get(k.next())).getSetofgenesets().getGenesets();
+        		all_genesets.putAll(current_genesets);
+		}
 		return all_genesets;
 	}
 	

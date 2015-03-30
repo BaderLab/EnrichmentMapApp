@@ -45,12 +45,11 @@ package org.baderlab.csplugins.enrichmentmap.task;
 
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.math3.stat.inference.MannWhitneyUTest;
@@ -62,6 +61,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.GenesetSimilarity;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
+import org.baderlab.csplugins.enrichmentmap.util.NetworkUtil;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.util.StreamUtil;
@@ -70,14 +70,13 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
-
-import cern.jet.stat.Gamma;
 
 
 
@@ -91,22 +90,24 @@ import cern.jet.stat.Gamma;
  *
  */
 public class BuildDiseaseSignatureTask extends AbstractTask {
+	private CyApplicationManager applicationManager;
+	private CyRootNetworkManager rootNetworkManager;
+    private CyEventHelper eventHelper;
+    
     private PostAnalysisParameters paParams;
     private EnrichmentMap map;
-    private CyApplicationManager applicationManager;
-    private CyEventHelper eventHelper;
     
     // Keep track of progress for monitoring:
     private TaskMonitor taskMonitor = null;
     private boolean interrupted = false;
     
-    private HashMap<String,GeneSet> EnrichmentGenesets;
-    private HashMap<String,GeneSet> SignatureGenesets;
-    private HashMap<String,GeneSet> SelectedSignatureGenesets;
+    private Map<String,GeneSet> EnrichmentGenesets;
+    private Map<String,GeneSet> SignatureGenesets;
+    private Map<String,GeneSet> SelectedSignatureGenesets;
     
     // Gene Populations:
-    private HashSet<Integer> EnrichmentGenes;
-    private HashSet<Integer> SignatureGenes;
+    private Set<Integer> EnrichmentGenes;
+    private Set<Integer> SignatureGenes;
     
     // Ranks
     private Ranking ranks;
@@ -120,14 +121,15 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
 
     public BuildDiseaseSignatureTask(EnrichmentMap map, PostAnalysisParameters paParams,
     		CySessionManager manager, StreamUtil streamUtil,
-    		CyApplicationManager applicationManager, CyEventHelper eventHelper) {
+    		CyApplicationManager applicationManager, CyEventHelper eventHelper, CyRootNetworkManager rootNetworkManager) {
     	this.map = map;
     	this.applicationManager = applicationManager;
     	this.eventHelper = eventHelper;
+    	this.rootNetworkManager = rootNetworkManager;
 
     	HashMap<String, DataSet> data_sets = this.map.getDatasets();
     	DataSet dataset = data_sets.get(paParams.getSignature_dataSet());
-    	Ranking ranks = new Ranking();
+    	ranks = new Ranking();
     	if (dataset != null) {
     		ranks = dataset.getExpressionSets().getRanks().get(paParams.getSignature_rankFile());
     	}    	
@@ -137,39 +139,31 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
     	this.paParams = new PostAnalysisParameters(manager, streamUtil,applicationManager);
         this.paParams.copyFrom(paParams);
         
-        this.EnrichmentGenesets   = map.getAllGenesets();
-        this.SignatureGenesets    = this.getPaParams().getSignatureGenesets().getGenesets();
+        this.EnrichmentGenesets = map.getEnrichmentGenesets();
+        this.SignatureGenesets  = getPaParams().getSignatureGenesets().getGenesets();
 
         if (map.getGenesetSimilarity() == null)
             this.geneset_similarities = new HashMap<String, GenesetSimilarity>();
         else
             this.geneset_similarities = map.getGenesetSimilarity();
-
-        if (this.paParams.getSignatureGenesets() == null) {
-            new HashMap<String,GeneSet>();
-        } else
-            map.getAllGenesetsOfInterest();
             
-        this.SelectedSignatureGenesets = new HashMap<String, GeneSet>();
-
+        this.SelectedSignatureGenesets = new HashMap<String,GeneSet>();
         for (int i = 0; i < paParams.getSelectedSignatureSetNames().getSize(); i++){
-            this.SelectedSignatureGenesets.put(paParams.getSelectedSignatureSetNames().get(i).toString(),
-                    this.SignatureGenesets.get(paParams.getSelectedSignatureSetNames().get(i)));
+            Object geneset = paParams.getSelectedSignatureSetNames().get(i);
+			this.SelectedSignatureGenesets.put(geneset.toString(), this.SignatureGenesets.get(geneset));
         }
+        
         // EnrichmentGenes: pool of all genes in Enrichment Gene Sets
         //TODO: get enrichment map genes from enrichment map parameters now that they are computed there.
-        EnrichmentGenes = new HashSet<Integer>();
-        for (Iterator<String> i = EnrichmentGenesets.keySet().iterator(); i.hasNext(); ) {
-            String setName = i.next();
-            EnrichmentGenes.addAll(EnrichmentGenesets.get(setName).getGenes());
+        EnrichmentGenes = new HashSet<>();
+        for(GeneSet geneSet : EnrichmentGenesets.values()) {
+            EnrichmentGenes.addAll(geneSet.getGenes());
         }
         // SignatureGenes: pool of all genes in Signature Gene Sets
-        SignatureGenes = new HashSet<Integer>();
-        for (Iterator<String> i = SignatureGenesets.keySet().iterator(); i.hasNext(); ) {
-            String setName = i.next();
-            SignatureGenes.addAll(SignatureGenesets.get(setName).getGenes());
+        SignatureGenes = new HashSet<>();
+        for(GeneSet geneSet :  SignatureGenesets.values()) {
+            SignatureGenes.addAll(geneSet.getGenes());
         }
-       
     }
 
 
@@ -185,7 +179,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
         double currentNodeY_increment = 150.0;
               
         try {
-            CyNetwork current_network = applicationManager.getCurrentNetwork();
+            CyNetwork current_network  = applicationManager.getCurrentNetwork();
             CyNetworkView current_view = applicationManager.getCurrentNetworkView();
             
             //the signature geneset
@@ -202,17 +196,10 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
             CyTable cyNodeAttrs = createNodeAttributes(current_network,"",prefix);
             
             // make a HashMap of all Nodes in the Network
-            HashMap<String,CyNode> nodesMap = new HashMap<String, CyNode>();
-            List<CyNode> nodesList = current_network.getNodeList();
-            Iterator<CyNode> nodesIterator = nodesList.iterator();
-            
-            while (nodesIterator.hasNext()){
-                CyNode aNode = (CyNode)nodesIterator.next();
-                nodesMap.put(cyNodeAttrs.getRow(aNode.getSUID()).get(prefix + EnrichmentMapVisualStyle.NAME, String.class), aNode);
-            }
+            Map<String,CyNode> nodesMap = createNodeMap(current_network, cyNodeAttrs, prefix);
             
             // Common gene universe: Intersection of EnrichmentGenes and SignatureGenes
-            HashSet<Integer> geneUniverse = new HashSet<Integer>();
+            Set<Integer> geneUniverse = new HashSet<>();
             geneUniverse.addAll(EnrichmentGenes);
 
             /* bug: #97: Post-analysis: thresholding not working with overlap 
@@ -221,17 +208,15 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
              */
             // geneUniverse.retainAll(SignatureGenes); 
             int universeSize = paParams.getUniverseSize();
-        	HashMap<Integer, Double> gene2score = new HashMap<Integer, Double>();
-
+        	Map<Integer,Double> gene2score = new HashMap<>();
             if (this.ranks != null) {
             	gene2score = this.ranks.getGene2Score();
             }
             
-            HashMap<String, String> duplicateGenesets = new HashMap<String, String>();
+            Map<String,String> duplicateGenesets = new HashMap<>();
 
             //iterate over selected Signature genesets
-            for (Iterator<String> i = SelectedSignatureGenesets.keySet().iterator(); i.hasNext(); ){
-                String hub_name = i.next().toString();
+            for(String hub_name : SelectedSignatureGenesets.keySet()) {
                 
                 // get the Signature Genes, restrict them to the Gene-Universe and add them to the Parameters
                 GeneSet sigGeneSet = SelectedSignatureGenesets.get(hub_name);
@@ -243,29 +228,22 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
                 	hub_name = "PA_" + hub_name;
                 }
 
-                /** 
-                 * the signature genes in this signature gene set 
-                 */
-                HashSet<Integer> sigGenes = sigGeneSet.getGenes();
+                //the signature genes in this signature gene set 
+                Set<Integer> sigGenes = sigGeneSet.getGenes();
 
-                /** 
-                 * the genes that are in this signature gene set 
-                 * as well as in the Universe of Enrichment-GMT Genes.    
-                 */
-                HashSet<Integer> sigGenesInUniverse = new HashSet<Integer>(sigGenes);
+                // the genes that are in this signature gene set as well as in the Universe of Enrichment-GMT Genes.    
+                Set<Integer> sigGenesInUniverse = new HashSet<Integer>(sigGenes);
                 sigGenesInUniverse.retainAll(geneUniverse);
-//                sigGeneSet.setGenes(sigGenes);
+                //sigGeneSet.setGenes(sigGenes);
                 
                 EnrichmentMapManager.getInstance().getMap(current_network.getSUID()).getSignatureGenesets().put(hub_name, sigGeneSet);
                 
                 // iterate over Enrichment Genesets
-                for (Iterator<String> j = EnrichmentGenesets.keySet().iterator(); j.hasNext();) {
-                    String geneset_name = j.next().toString();
+                for(String geneset_name : EnrichmentGenesets.keySet()) {
                   
                     // Calculate Percentage.  This must be a value between 0..100.
                     int percentComplete = (int) (((double) currentProgress / maxValue) * 100);
                     // Estimate Time Remaining
-                    long timeRemaining = maxValue - currentProgress;
                     if (taskMonitor != null) {
                        taskMonitor.setProgress(percentComplete);
                        taskMonitor.setStatusMessage("Computing Geneset similarity " + currentProgress + " of " + maxValue);
@@ -280,39 +258,35 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
                     // Calculate overlap:
                     
                     //Check to see if this comparison has been done
-                    //The key for the set of geneset similarities is the
-                    //combination of the two names.  Check for either variation name1_name2
-                    //or name2_name1
+                    //The key for the set of geneset similarities is the combination of the two names.  Check for either variation name1_name2 or name2_name1
                     String similarity_key1 = hub_name     + " (" + PostAnalysisParameters.SIGNATURE_INTERACTION_TYPE + ") " + geneset_name;
                     String similarity_key2 = geneset_name + " (" + PostAnalysisParameters.SIGNATURE_INTERACTION_TYPE + ") " + hub_name;
                     
                     //first check to see if the terms are the same
                     if(hub_name.equalsIgnoreCase(geneset_name)) {
                        //don't compare two identical genesets
-                    }else if (! nodesMap.containsKey(geneset_name)) {
+                    }
+                    else if (! nodesMap.containsKey(geneset_name)) {
                         // skip if the Geneset is not in the Network
                     } 
                     else if (cyNodeAttrs.getRow(nodesMap.get(geneset_name).getSUID()).get(prefix + EnrichmentMapVisualStyle.GS_TYPE,String.class).equalsIgnoreCase(
                             EnrichmentMapVisualStyle.GS_TYPE_SIGNATURE)) {
                         // skip if the Geneset is a Signature Node from a previous analysis
                     }
-                   /* else if(geneset_similarities.containsKey(similarity_key1) || geneset_similarities.containsKey(similarity_key2)){
+                    /* else if(geneset_similarities.containsKey(similarity_key1) || geneset_similarities.containsKey(similarity_key2)){
                         //skip this geneset comparison.  It has already been done.
                     }*/
                     else{
                         //get the Enrichment geneset
                         GeneSet enrGeneset = EnrichmentGenesets.get(geneset_name);
 
-                        HashSet<Integer> enrGenes = enrGeneset.getGenes();
-
                         // restrict to a common gene universe
+                        Set<Integer> enrGenes = enrGeneset.getGenes();
                         enrGenes.retainAll(geneUniverse);
                         
                         //Get the union of the two sets
                         Set<Integer> union = new HashSet<Integer>(sigGenes);
                         union.addAll(enrGenes);
-
-                        double coeffecient;
 
                         //Get the intersection
                         Set<Integer> intersection = new HashSet<Integer>(sigGenesInUniverse);
@@ -320,74 +294,33 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
                         
                         // Only calculate Mann-Whitney pValue if there is overlap
                         if (intersection.size() > 0) {
-                            
-	                        // if  either Jaccard or Overlap similarity are requested:
-	                        if (paParams.getSignature_CutoffMetric() == PostAnalysisParameters.DIR_OVERLAP) {
-	                            coeffecient = (double)intersection.size() /  (double) enrGenes.size();
-	                        } 
-	                        else if (paParams.getSignature_CutoffMetric() == PostAnalysisParameters.JACCARD){
-	                            //compute Jaccard similarity
-	                            coeffecient = (double)intersection.size() / (double)union.size();
-	                        }
-	                        else if(paParams.getSignature_CutoffMetric() == PostAnalysisParameters.OVERLAP){
-	                            //compute Overlap similarity
-	                            coeffecient = (double)intersection.size() / Math.min((double)sigGenes.size(), (double)enrGenes.size());
-	                        } else {
-	                            // use Directed Overlap
-	                            coeffecient = (double)intersection.size() /  (double) enrGenes.size();
-	//                            // use setting from Enrichment Analysis
-	//                            if (paParams.isJaccard() ) {
-	//                                //compute Jaccard similarity
-	//                                coeffecient = (double)intersection.size() / (double)union.size();
-	//                            } else {
-	//                                //compute Overlap similarity
-	//                                coeffecient = (double)intersection.size() / Math.min((double)sigGenes.size(), (double)enrGenes.size());
-	//                            }
-	                        }
-	                        
+                        	double coeffecient;
+                        	
+                        	// if  either Jaccard or Overlap similarity are requested:
+                        	switch(paParams.getSignature_CutoffMetric()) {
+                        		default: // use Directed Overlap
+                        		case PostAnalysisParameters.DIR_OVERLAP:
+                        			coeffecient = (double)intersection.size() / (double)enrGenes.size();
+                        			break;
+                        		case PostAnalysisParameters.JACCARD:
+                        			coeffecient = (double)intersection.size() / (double)union.size();
+                        			break;
+                        		case PostAnalysisParameters.OVERLAP:
+                        			coeffecient = (double)intersection.size() / Math.min((double)sigGenes.size(), (double)enrGenes.size());
+                        			break;
+                        	}
+                        	
 	                        //create Geneset similarity object
 	                        GenesetSimilarity comparison = new GenesetSimilarity(hub_name, geneset_name, coeffecient, PostAnalysisParameters.SIGNATURE_INTERACTION_TYPE, (HashSet<Integer>)intersection);
 	                        
-	                        if (paParams.getSignature_rankTest() == PostAnalysisParameters.MANN_WHIT) {
-	                        	if (gene2score.size() == 0) {
-			                		comparison.setMann_Whit_pValue(1.5);
-	                        	} else {
-			                        // Calculate Mann-Whitney U pValue for Overlap
-		                            Integer[] overlap_gene_ids = intersection.toArray(new Integer[intersection.size()]);
-		                            double[] overlap_gene_scores = new double[overlap_gene_ids.length];
-		                            
-		                            // Get the scores for the overlap
-		                            for (int k = 0; k < overlap_gene_ids.length; k++) {
-		                            	overlap_gene_scores[k] = gene2score.get(overlap_gene_ids[k]);
-		                            }
-		                            
-			                        MannWhitneyUTest mann_whit = new MannWhitneyUTest();
-				                	double mannPval = mann_whit.mannWhitneyUTest(overlap_gene_scores, this.ranks.getScores());
-			                		
-			                		// Set Mann-Whitney U Parameters
-			                		comparison.setMann_Whit_pValue(mannPval);
-	                        	}
-	                        } 
-	                        
-	                        if (paParams.getSignature_rankTest() == PostAnalysisParameters.HYPERGEOM) {
-	                            // Calculate Hypergeometric pValue for Overlap
-	                            int N = universeSize; //number of total genes (size of population / total number of balls)
-	                            int n = sigGenesInUniverse.size(); //size of signature geneset (sample size / number of extracted balls)
-	                            int m = enrGenes.size(); //size of enrichment geneset (success Items / number of white balls in population)
-	                            int k = intersection.size(); //size of intersection (successes /number of extracted white balls)
-	                            double hyperPval;
-	                            
-	                            if (k > 0)
-	                                hyperPval = hyperGeomPvalue_sum(N, n, m, k, 0);
-	                            else // Correct p-value of empty intersections to 1 (i.e. not significant)
-	                                hyperPval = 1.0;
-	                            
-	                            comparison.setHypergeom_pvalue(hyperPval);
-	                            comparison.setHypergeom_N(N);
-	                            comparison.setHypergeom_n(n);
-	                            comparison.setHypergeom_m(m);
-	                            comparison.setHypergeom_k(k);
-	                       }
+	                        switch(paParams.getSignature_rankTest()) {
+		                        case PostAnalysisParameters.MANN_WHIT:
+		                        	mannWhitney(gene2score, intersection, comparison);
+		                        	break;
+		                        case PostAnalysisParameters.HYPERGEOM:
+		                        	hypergeometric(universeSize, sigGenesInUniverse, enrGenes, intersection, comparison);
+		                        	break;
+	                        }
                             
 	                        geneset_similarities.put(similarity_key1, comparison);
 
@@ -395,86 +328,24 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
                     }
                 } // End: iterate over Enrichment Genesets
                 
+                
                 /* ***************************
                  * Create Signature Hub Node *
                  *****************************/
-                hub_node = current_network.addNode();
-                current_network.getRow(hub_node).set(CyNetwork.NAME, hub_name);
-                current_view.updateView();
-                //flush events to make sure view has been created.
-                this.eventHelper.flushPayloadEvents();
                 
-                // add currentNodeY_offset to initial Y position of the Node
-                // and increase currentNodeY_offset for the next Node
-                View<CyNode> hubNodeView = current_view.getNodeView(hub_node);
-                double hubNodeY = hubNodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
-                hubNodeView.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION,hubNodeY + currentNodeY_offset);
+                hub_node = createHubNode(hub_name, current_network, current_view, currentNodeY_offset, 
+                		                 prefix, cyNodeAttrs, geneUniverse, sigGeneSet);   
+                
                 currentNodeY_offset += currentNodeY_increment;
-                
-                String formatted_label =  CreateEnrichmentMapNetworkTask.formatLabel(hub_name);
-                CyRow current_row = cyNodeAttrs.getRow(hub_node.getSUID());
-                current_row.set( prefix+ EnrichmentMapVisualStyle.FORMATTED_NAME, formatted_label);
-                
-                //create an attribute that stores the genes that are associated with this node as an attribute list
-                //only create the list if the hashkey 2 genes is not null Otherwise it takes too much time to populate the list
-//                GeneSet sigGeneSet = SelectedSignatureGenesets.get(hub_name);
-                if(map.getHashkey2gene() != null){
-                    // HashSet to List:
-                    List<String> gene_list = new ArrayList<String>();
-                    HashSet<Integer> genes_hash = sigGeneSet.getGenes();
-                    for(Iterator<Integer> j=genes_hash.iterator(); j.hasNext();){
-                        Integer current = j.next();
-                        String gene = map.getGeneFromHashKey(current);
-                        if(gene_list != null && gene != null)
-                            gene_list.add(gene);
-                    }
-                    Collections.sort(gene_list);
-
-                    List<String> enr_gene_list = new ArrayList<String>();
-                    HashSet<Integer> enr_genes_hash = sigGeneSet.getGenes();
-                    enr_genes_hash.retainAll(geneUniverse);
-                    for(Iterator<Integer> j=enr_genes_hash.iterator(); j.hasNext();){
-                        Integer current = j.next();
-                        String gene = map.getGeneFromHashKey(current);
-                        if(enr_gene_list != null && gene != null)
-                            enr_gene_list.add(gene);
-                    }
-                    Collections.sort(enr_gene_list);
-                    current_row.set( prefix + EnrichmentMapVisualStyle.GENES, gene_list);
-                    current_row.set(prefix + EnrichmentMapVisualStyle.ENR_GENES, enr_gene_list);
-                    
-                    current_row.set( prefix + EnrichmentMapVisualStyle.GS_DESCR, sigGeneSet.getDescription());
-                    current_row.set(prefix + EnrichmentMapVisualStyle.GS_TYPE, EnrichmentMapVisualStyle.GS_TYPE_SIGNATURE);
-                    current_row.set( prefix + EnrichmentMapVisualStyle.NAME, sigGeneSet.getName() );
-                    current_row.set(prefix + EnrichmentMapVisualStyle.GS_SIZE_SIGNATURE , sigGeneSet.getGenes().size() );
-                }
-
-                // add the geneset of the signature node to the GenesetsOfInterest,
-                // as the Heatmap will grep it's data from there.
-                //TODO: Currently only supports one dataset
-                //TODO:Enable signature dataset with multiple dataset
-                
-                sigGeneSet.getGenes().retainAll(map.getDataset(EnrichmentMap.DATASET1).getDatasetGenes());
-                map.getDataset(EnrichmentMap.DATASET1).getGenesetsOfInterest().getGenesets().put(hub_name, sigGeneSet);
-                
-                // set Visual Style bypass
-                hubNodeView.setLockedValue(BasicVisualLexicon.NODE_SHAPE, paParams.getSignatureHub_nodeShape());               
-                hubNodeView.setLockedValue(BasicVisualLexicon.NODE_FILL_COLOR, paParams.getSignatureHub_nodeColor());               
-                hubNodeView.setLockedValue(BasicVisualLexicon.NODE_BORDER_PAINT, paParams.getSignatureHub_borderColor());               
                               
             }// End: iterate over Signature Genesets
             
-            // Update signature geneset map with new names of all signature genesets that
-            // have duplicates
-            String original_hub_name;
-            if (duplicateGenesets.size() > 0) {
-                for (Iterator<String> j = duplicateGenesets.keySet().iterator(); j.hasNext();) {
-                	original_hub_name = j.next().toString();
-                	GeneSet geneset = SelectedSignatureGenesets.remove(original_hub_name);
-                	SelectedSignatureGenesets.put(duplicateGenesets.get(original_hub_name), geneset);
-                }
-                duplicateGenesets.clear();
+            // Update signature geneset map with new names of all signature genesets that have duplicates
+            for(String original_hub_name : duplicateGenesets.keySet()) {
+            	GeneSet geneset = SelectedSignatureGenesets.remove(original_hub_name);
+            	SelectedSignatureGenesets.put(duplicateGenesets.get(original_hub_name), geneset);
             }
+            duplicateGenesets.clear();
             
             paParams.setCurrentNodePlacementY_Offset(currentNodeY_offset);
             
@@ -482,17 +353,15 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
              * Create Signature Hub Edges *
              ******************************/
 
-            for (Iterator<String> i = geneset_similarities.keySet().iterator(); i.hasNext() ;) {
-                if (interrupted) {
+            for (String edge_name : geneset_similarities.keySet()) {
+                if (interrupted)
                     throw new InterruptedException();
-                }
-                String edge_name = i.next().toString();
                 
-                if (! geneset_similarities.get(edge_name).getInteractionType().equals(PostAnalysisParameters.SIGNATURE_INTERACTION_TYPE))
+                if (!geneset_similarities.get(edge_name).getInteractionType().equals(PostAnalysisParameters.SIGNATURE_INTERACTION_TYPE))
                     // skip if it's not a signature edge
                     continue;
-                if (!   (   this.SelectedSignatureGenesets.containsKey(geneset_similarities.get(edge_name).getGeneset1_Name()) 
-                         || this.SelectedSignatureGenesets.containsKey(geneset_similarities.get(edge_name).getGeneset2_Name()) ) )   
+                if (!(this.SelectedSignatureGenesets.containsKey(geneset_similarities.get(edge_name).getGeneset1_Name()) 
+                      || this.SelectedSignatureGenesets.containsKey(geneset_similarities.get(edge_name).getGeneset2_Name()) ) )   
                     // skip if not either of the adjacent nodes is a SelectedSignatureGenesets of the current analysis (fixes Bug #44)
                     continue;
 
@@ -517,73 +386,11 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
                      (paParams.getSignature_rankTest() == PostAnalysisParameters.HYPERGEOM) && 
                         (geneset_similarities.get(edge_name).getHypergeom_pvalue() <= paParams.getSignature_Hypergeom_Cutoff() )) {
                    	passed_cutoff = true;
-                 }
+                }
 
                 if (passed_cutoff) {
-                	//CyNode hub_node = getNodeWithValue(current_network, cyNodeAttrs, CyNetwork.NAME,geneset_similarities.get(edge_name).getGeneset1_Name());       		
-                	CyNode gene_set = getNodeWithValue(current_network, cyNodeAttrs, CyNetwork.NAME,geneset_similarities.get(edge_name).getGeneset2_Name());
-                    		
-                    CyEdge edge = current_network.addEdge(hub_node, gene_set,false);
-                    //add update view because view is returning null when we try to get the edge view.
-                    current_view.updateView();
-   					CyRow current_edgerow = cyEdgeAttrs.getRow(edge.getSUID());
-   					current_edgerow.set(CyNetwork.NAME, edge_name);
-                    
-   					View<CyEdge> edgeView = current_view.getEdgeView(edge);
-                    //create an attribute that stores the genes that are associated with this edge as an attribute list
-                    //only create the list if the hashkey 2 genes is not null Otherwise it take too much time to populate the list
-                    if(map.getHashkey2gene() != null){
-                        List<String> gene_list = new ArrayList<String>();
-                        HashSet<Integer> genes_hash = geneset_similarities.get(edge_name).getOverlapping_genes();
-                        for(Iterator<Integer> k=genes_hash.iterator(); k.hasNext();){
-                            Integer current = k.next();
-                            String gene = map.getGeneFromHashKey(current);
-                            if(gene_list != null && gene != null) {
-                                gene_list.add(gene);
-                            }
-                        }
-                        Collections.sort(gene_list);
-                        
-                        current_edgerow.set(prefix+EnrichmentMapVisualStyle.OVERLAP_GENES, gene_list);                        
-                    }
- 
-                    current_edgerow.set( prefix + EnrichmentMapVisualStyle.OVERLAP_SIZE       , geneset_similarities.get(edge_name).getSizeOfOverlap());
-                    current_edgerow.set( prefix + EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT, geneset_similarities.get(edge_name).getSimilarity_coeffecient());
-                    current_edgerow.set( prefix + EnrichmentMapVisualStyle.HYPERGEOM_PVALUE   , geneset_similarities.get(edge_name).getHypergeom_pvalue());
-                    current_edgerow.set( prefix + EnrichmentMapVisualStyle.ENRICHMENT_SET  , geneset_similarities.get(edge_name).getEnrichment_set());
-                    
-                    // Attributes related to the Hypergeometric Test
-                    if (paParams.getSignature_rankTest() == PostAnalysisParameters.HYPERGEOM) {
-                    	current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_PVALUE, geneset_similarities.get(edge_name).getHypergeom_pvalue());
-                    	current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_N, geneset_similarities.get(edge_name).getHypergeom_N());
-                    	current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_n, geneset_similarities.get(edge_name).getHypergeom_n());
-                    	current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_m, geneset_similarities.get(edge_name).getHypergeom_m());
-                    	current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_k, geneset_similarities.get(edge_name).getHypergeom_k());
-                    }
-                    
-                	// Attributes related to the Mann-Whitney Test
-                    if (paParams.getSignature_rankTest() == PostAnalysisParameters.MANN_WHIT) {
-                    	current_edgerow.set(prefix + EnrichmentMapVisualStyle.MANN_WHIT_PVALUE, geneset_similarities.get(edge_name).getMann_Whit_pValue());
-                    }
-                    
-                    if(edgeView != null){
-                    	edgeView.setLockedValue(BasicVisualLexicon.EDGE_UNSELECTED_PAINT, paParams.getSignatureHub_edgeColor());
-                    	edgeView.setLockedValue(BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT, paParams.getSignatureHub_edgeColor());
-                    
-                    	//change "edge.lineWidth" based on Hypergeometric Value 
-                    	if (geneset_similarities.get(edge_name).getHypergeom_pvalue() <= (paParams.getSignature_Hypergeom_Cutoff()/100) )
-                    		edgeView.setLockedValue(BasicVisualLexicon.EDGE_WIDTH,8.0);	
-                    	else 
-                    		if (geneset_similarities.get(edge_name).getHypergeom_pvalue() <= (paParams.getSignature_Hypergeom_Cutoff()/10) )
-                    			edgeView.setLockedValue(BasicVisualLexicon.EDGE_WIDTH,4.5);	                   
-                    		else
-                    			edgeView.setLockedValue(BasicVisualLexicon.EDGE_WIDTH,1.0);	
-                    }
-
-                    
-
-
-                } //if (geneset_similarities.get(edge_name).getSizeOfOverlap() > 0)
+                	createEdge(edge_name, current_network, current_view, hub_node, prefix, cyEdgeAttrs, cyNodeAttrs);
+                } 
 
             } //for
             
@@ -596,163 +403,232 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
             //taskMonitor.setException(e, "Generation of Signature Hubs cancelled");
         }
     }
-
     
-    private CyNode getNodeWithValue(CyNetwork net, CyTable table, String colname, String value){
-    		Collection<CyRow> matchingRows = table.getMatchingRows(colname, value);
-    		CyNode node = null;
-    		//only get the matching row if there is only one match
-    		if(matchingRows.size() ==1){
-    			for ( CyRow row : matchingRows){
-    				Long nodeId = row.get(CyNetwork.SUID, Long.class);
-    				if (nodeId == null)
-    					continue;
-    				node = net.getNode(nodeId);
-    				if (node == null)
-    					continue;
-    			}
-    		}
-    		//There are multiple matches but check to see if they all belong to the same node.
-    		else{
-    			//Get the set of suid for the matching set
-    			HashSet<Long> ids = new HashSet<Long>();
-    			for ( CyRow row : matchingRows){
-    				Long nodeId = row.get(CyNetwork.SUID, Long.class);
-    				if (nodeId != null)
-    					ids.add(nodeId);
-    			}
-    			if(!ids.isEmpty() && ids.size() == 1)
-    				node = net.getNode(ids.iterator().next());
-    			else
-    				System.out.println("There are multiple node matches for node name:" + value );
-    		}
-    		return node;
-    	
-    }
-
     
-    /**
-     * Calculate the p-Value of the Hypergeometric Distribution<p>
-     * 
-     *  from:  http://en.wikipedia.org/wiki/Hypergeometric_distribution<p>
-     * 
-     * P(X=k) = {m over k} * { (N-m) over (n-k) } / {N over n}
-     * 
-     * @param N size of the population  (Universe of genes)
-     * @param n size of the sample      (signature geneset) 
-     * @param m successes in population (enrichment geneset)
-     * @param k successes in sample     (intersection of both genesets)
-     * 
-     * @return the p-Value of the Hypergeometric Distribution for P(X=k)
-     */
-    public static double hyperGeomPvalue(int N, int n, int m, int k) {
-        //calculating in logarithmic scale as we are dealing with large numbers. 
-        double log_p = binomialLog(m, k) + binomialLog(N-m, n-k) - binomialLog(N, n) ;
-        
-        return Math.exp(log_p);
-    }
+//    private void deleteExistingHubNode(CyNetwork current_network, CyNode hub_node) {
+//    	CyRootNetwork rootNetwork = rootNetworkManager.getRootNetwork(current_network);
+//    	
+//    	List<CyEdge> edges = current_network.getAdjacentEdgeList(hub_node, CyEdge.Type.ANY);
+//    	List<CyNode> nodes = Collections.singletonList(hub_node);
+//    	List<Long> nodeKeys = NetworkUtil.keys(nodes);
+//    	List<Long> edgeKeys = NetworkUtil.keys(edges);
+//    	
+//    	CyTable localNodeTable = current_network.getTable(CyNode.class, CyNetwork.LOCAL_ATTRS);
+//    	CyTable localEdgeTable = current_network.getTable(CyEdge.class, CyNetwork.LOCAL_ATTRS);
+//    	
+//    	current_network.removeEdges(edges);
+//    	current_network.removeNodes(nodes);
+//    	
+//    	localNodeTable.deleteRows(nodeKeys);
+//    	localEdgeTable.deleteRows(edgeKeys);
+//    	
+////    	current_network.getDefaultEdgeTable().deleteRows(edgeKeys);
+////    	current_network.getDefaultNodeTable().deleteRows(nodeKeys);
+//    	
+////    	rootNetwork.removeEdges(edges);
+////    	rootNetwork.removeNodes(nodes);
+////    	rootNetwork.getSharedNodeTable().deleteRows(nodeKeys);
+////    	rootNetwork.getSharedEdgeTable().deleteRows(edgeKeys);
+//    }
     
-    /**
-     * Calculate sum over distinct p-Values of the Hypergeometric Distribution<p>
-     * 
-     * for 
-     * P(X &ge; k) : Probability to get k or more successes in the sample with a size of n<br>
-     * P(X &gt; k) : Probability to get more that k successes in the sample with a size of n<br>
-     * P(X &le; k) : Probability to get k or less successes in the sample with a size of n<br>
-     * P(X &lt; k) : Probability to get less than k successes in the sample with a size of n<p>
-     * 
-     * @param N size of the population  (Universe of genes)
-     * @param n size of the sample      (signature geneset) 
-     * @param m successes in population (enrichment geneset)
-     * @param k successes in sample     (intersection of both genesets)
-     * @param mode = 0 : P(X &ge; k) (default)<br>
-     *        mode = 1 : P(X &gt; k) (behavior of R with "lower.tail=FALSE")<br>  
-     *        mode = 2 : P(X &le; k) (behavior of R with "lower.tail=TRUE")<br>
-     *        mode = 3 : P(X &lt; k)<br>
-     * 
-     * @return the p-Value of the Hypergeometric Distribution for P(X>=k)
-     */
-    public static double hyperGeomPvalue_sum(int N, int n, int m, int k, int mode) {
-        // the number of successes in the sample (k) cannot be larger than the sample (n) or the number of total successes (m)
-        double sum = 0.0;
-        int kMax;
-        switch (mode) {
-        case 0:
-            kMax = Math.min(n,m);
-            for (int k_prime = k; k_prime <= kMax; k_prime++ ){
-                sum += hyperGeomPvalue(N, n, m, k_prime);
-            }
-            break;
 
-        case 1:
-            kMax = Math.min(n,m);
-            for (int k_prime = k+1; k_prime <= kMax; k_prime++ ){
-                sum += hyperGeomPvalue(N, n, m, k_prime);
-            }
-            break;
+    private CyNode createHubNode(String hub_name, CyNetwork current_network, CyNetworkView current_view, double currentNodeY_offset,
+			                     String prefix, CyTable cyNodeAttrs, Set<Integer> geneUniverse, GeneSet sigGeneSet) {
+		
+		// test for existing node first
+		CyNode hub_node;
+		
+//		hub_node = NetworkUtil.getNodeWithValue(current_network, cyNodeAttrs, CyNetwork.NAME, hub_name);
+//		if(hub_node != null)
+//			deleteExistingHubNode(current_network, hub_node);
+		
+		hub_node = current_network.addNode();
+		current_network.getRow(hub_node).set(CyNetwork.NAME, hub_name);
+		current_view.updateView();
+		//flush events to make sure view has been created.
+		this.eventHelper.flushPayloadEvents();
+		
+		// add currentNodeY_offset to initial Y position of the Node
+		// and increase currentNodeY_offset for the next Node
+		View<CyNode> hubNodeView = current_view.getNodeView(hub_node);
+		double hubNodeY = hubNodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
+		hubNodeView.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, hubNodeY + currentNodeY_offset);
+		
+		
+		String formatted_label =  CreateEnrichmentMapNetworkTask.formatLabel(hub_name);
+		CyRow current_row = cyNodeAttrs.getRow(hub_node.getSUID());
+		current_row.set(prefix + EnrichmentMapVisualStyle.FORMATTED_NAME, formatted_label);
+		
+		//create an attribute that stores the genes that are associated with this node as an attribute list
+		//only create the list if the hashkey 2 genes is not null Otherwise it takes too much time to populate the list
+//                GeneSet sigGeneSet = SelectedSignatureGenesets.get(hub_name);
+		if(map.getHashkey2gene() != null){
+		    // HashSet to List:
+		    List<String> gene_list = new ArrayList<>();
+		    for(Integer current : sigGeneSet.getGenes()) {
+		        String gene = map.getGeneFromHashKey(current);
+		        if(gene_list != null && gene != null)
+		            gene_list.add(gene);
+		    }
+		    Collections.sort(gene_list);
 
-        case 2:
-            for (int k_prime = k; k_prime >= 0; k_prime-- ){
-                sum += hyperGeomPvalue(N, n, m, k_prime);
-            }
-            break;
+		    List<String> enr_gene_list = new ArrayList<>();
+		    Set<Integer> enr_genes_hash = sigGeneSet.getGenes();
+		    enr_genes_hash.retainAll(geneUniverse);
+		    for(Integer current : enr_genes_hash) {
+		        String gene = map.getGeneFromHashKey(current);
+		        if(enr_gene_list != null && gene != null)
+		            enr_gene_list.add(gene);
+		    }
+		    Collections.sort(enr_gene_list);
+		    
+		    current_row.set(prefix + EnrichmentMapVisualStyle.GENES, gene_list);
+		    current_row.set(prefix + EnrichmentMapVisualStyle.ENR_GENES, enr_gene_list);
+		    current_row.set(prefix + EnrichmentMapVisualStyle.GS_DESCR, sigGeneSet.getDescription());
+		    current_row.set(prefix + EnrichmentMapVisualStyle.GS_TYPE, EnrichmentMapVisualStyle.GS_TYPE_SIGNATURE);
+		    current_row.set(prefix + EnrichmentMapVisualStyle.NAME, sigGeneSet.getName() );
+		    current_row.set(prefix + EnrichmentMapVisualStyle.GS_SIZE_SIGNATURE , sigGeneSet.getGenes().size() );
+		}
 
-        case 3:
-            for (int k_prime = k-1; k_prime >= 0; k_prime-- ){
-                sum += hyperGeomPvalue(N, n, m, k_prime);
-            }
-            break;
+		// add the geneset of the signature node to the GenesetsOfInterest,
+		// as the Heatmap will grep it's data from there.
+		//TODO: Currently only supports one dataset
+		//TODO:Enable signature dataset with multiple dataset
+		
+		sigGeneSet.getGenes().retainAll(map.getDataset(EnrichmentMap.DATASET1).getDatasetGenes());
+		map.getDataset(EnrichmentMap.DATASET1).getGenesetsOfInterest().getGenesets().put(hub_name, sigGeneSet);
+		
+		// set Visual Style bypass
+		hubNodeView.setLockedValue(BasicVisualLexicon.NODE_SHAPE, paParams.getSignatureHub_nodeShape());               
+		hubNodeView.setLockedValue(BasicVisualLexicon.NODE_FILL_COLOR, paParams.getSignatureHub_nodeColor());               
+		hubNodeView.setLockedValue(BasicVisualLexicon.NODE_BORDER_PAINT, paParams.getSignatureHub_borderColor());
+		return hub_node;
+	}
+    
+    
+    
+	private void createEdge(String edge_name, CyNetwork current_network, CyNetworkView current_view, 
+			                CyNode hub_node, String prefix, CyTable cyEdgeAttrs, CyTable cyNodeAttrs) {
+		
+		CyNode gene_set = NetworkUtil.getNodeWithValue(current_network, cyNodeAttrs, CyNetwork.NAME, geneset_similarities.get(edge_name).getGeneset2_Name());
+		
+		// the edge might already exist, reuse it and overwrite the existing values
+		CyEdge edge = current_network.addEdge(hub_node, gene_set, false);
+		
+		//add update view because view is returning null when we try to get the edge view.
+		current_view.updateView();
+		CyRow current_edgerow = cyEdgeAttrs.getRow(edge.getSUID());
+		current_edgerow.set(CyNetwork.NAME, edge_name);
+		
+		View<CyEdge> edgeView = current_view.getEdgeView(edge);
+		//create an attribute that stores the genes that are associated with this edge as an attribute list
+		//only create the list if the hashkey 2 genes is not null Otherwise it take too much time to populate the list
+		if(map.getHashkey2gene() != null){
+		    List<String> gene_list = new ArrayList<>();
+		    Set<Integer> genes_hash = geneset_similarities.get(edge_name).getOverlapping_genes();
+		    for(Integer current : genes_hash) {
+		        String gene = map.getGeneFromHashKey(current);
+		        if(gene_list != null && gene != null) {
+		            gene_list.add(gene);
+		        }
+		    }
+		    Collections.sort(gene_list);
+		    
+		    current_edgerow.set(prefix + EnrichmentMapVisualStyle.OVERLAP_GENES, gene_list);                        
+		}
+ 
+		current_edgerow.set(prefix + EnrichmentMapVisualStyle.OVERLAP_SIZE, geneset_similarities.get(edge_name).getSizeOfOverlap());
+		current_edgerow.set(prefix + EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT, geneset_similarities.get(edge_name).getSimilarity_coeffecient());
+		current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_PVALUE, geneset_similarities.get(edge_name).getHypergeom_pvalue());
+		current_edgerow.set(prefix + EnrichmentMapVisualStyle.ENRICHMENT_SET, geneset_similarities.get(edge_name).getEnrichment_set());
+		
+		// Attributes related to the Hypergeometric Test
+		if (paParams.getSignature_rankTest() == PostAnalysisParameters.HYPERGEOM) {
+			current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_PVALUE, geneset_similarities.get(edge_name).getHypergeom_pvalue());
+			current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_N, geneset_similarities.get(edge_name).getHypergeom_N());
+			current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_n, geneset_similarities.get(edge_name).getHypergeom_n());
+			current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_m, geneset_similarities.get(edge_name).getHypergeom_m());
+			current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_k, geneset_similarities.get(edge_name).getHypergeom_k());
+		}
+		
+		// Attributes related to the Mann-Whitney Test
+		if (paParams.getSignature_rankTest() == PostAnalysisParameters.MANN_WHIT) {
+			current_edgerow.set(prefix + EnrichmentMapVisualStyle.MANN_WHIT_PVALUE, geneset_similarities.get(edge_name).getMann_Whit_pValue());
+		}
+		
+		if(edgeView != null){
+			edgeView.setLockedValue(BasicVisualLexicon.EDGE_UNSELECTED_PAINT, paParams.getSignatureHub_edgeColor());
+			edgeView.setLockedValue(BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT, paParams.getSignatureHub_edgeColor());
+		
+			//change "edge.lineWidth" based on Hypergeometric Value 
+			if (geneset_similarities.get(edge_name).getHypergeom_pvalue() <= (paParams.getSignature_Hypergeom_Cutoff()/100) )
+				edgeView.setLockedValue(BasicVisualLexicon.EDGE_WIDTH,8.0);	
+			else 
+				if (geneset_similarities.get(edge_name).getHypergeom_pvalue() <= (paParams.getSignature_Hypergeom_Cutoff()/10) )
+					edgeView.setLockedValue(BasicVisualLexicon.EDGE_WIDTH,4.5);	                   
+				else
+					edgeView.setLockedValue(BasicVisualLexicon.EDGE_WIDTH,1.0);	
+		}
+	}
+	
+
+
+	private void hypergeometric(int universeSize,
+			Set<Integer> sigGenesInUniverse, Set<Integer> enrGenes,
+			Set<Integer> intersection, GenesetSimilarity comparison) {
+		
+		// Calculate Hypergeometric pValue for Overlap
+		int N = universeSize; //number of total genes (size of population / total number of balls)
+		int n = sigGenesInUniverse.size(); //size of signature geneset (sample size / number of extracted balls)
+		int m = enrGenes.size(); //size of enrichment geneset (success Items / number of white balls in population)
+		int k = intersection.size(); //size of intersection (successes /number of extracted white balls)
+		double hyperPval;
+		
+		if (k > 0)
+		    hyperPval = Hypergeometric.hyperGeomPvalue_sum(N, n, m, k, 0);
+		else // Correct p-value of empty intersections to 1 (i.e. not significant)
+		    hyperPval = 1.0;
+		
+		comparison.setHypergeom_pvalue(hyperPval);
+		comparison.setHypergeom_N(N);
+		comparison.setHypergeom_n(n);
+		comparison.setHypergeom_m(m);
+		comparison.setHypergeom_k(k);
+	}
+
+
+	private void mannWhitney(Map<Integer, Double> gene2score, Set<Integer> intersection, GenesetSimilarity comparison) {
+		if (gene2score.size() == 0) {
+			comparison.setMann_Whit_pValue(1.5);
+		} else {
+			// Calculate Mann-Whitney U pValue for Overlap
+            Integer[] overlap_gene_ids = intersection.toArray(new Integer[intersection.size()]);
+            double[] overlap_gene_scores = new double[overlap_gene_ids.length];
             
-         default:
-             break;
-         }
-        return sum;
-    }
-    public static double hyperGeomPvalue_sum(int N, int n, int m, int k) {
-        return hyperGeomPvalue_sum(N, n, m, k, 0);
-    }
-    
-    /**
-     * Calculate the log of Binomial coefficient "n over k" aka "n choose k"
-     * 
-     * adapted from http://code.google.com/p/beast-mcmc/source/browse/trunk/src/dr/math/Binomial.java?spec=svn1660&r=1660
-     * @version Id: Binomial.java,v 1.11 2005/05/24 20:26:00 rambaut Exp
-     * Licensed under "LGPL 2.1 or later"
-     * 
-     * original by:
-     * @author Andrew Rambaut
-     * @author Alexei Drummond
-     * @author Korbinian Strimmer
-     * 
-     * adapted for using cern.jet.stat:
-     * @author Oliver Stueker
-     * 
-     * @param n
-     * @param k
-     * @return the binomial coefficient "n over k"
-     */
-    public static double binomialLog(int n, int k) {
-        return (Gamma.logGamma(n + 1.0) - Gamma.logGamma(k + 1.0) - Gamma.logGamma(n - k + 1.0));
-    }
-    
-    
-    /* ***************************************
-     * getters and setters                   *
-     *****************************************/
-    /**
-     * @param paParams the paParams to set
-     */
-    public void setPaParams(PostAnalysisParameters paParams) {
-        this.paParams = paParams;
-    }
+            // Get the scores for the overlap
+            for (int k = 0; k < overlap_gene_ids.length; k++) {
+            	overlap_gene_scores[k] = gene2score.get(overlap_gene_ids[k]);
+            }
+            
+            MannWhitneyUTest mann_whit = new MannWhitneyUTest();
+        	double mannPval = mann_whit.mannWhitneyUTest(overlap_gene_scores, this.ranks.getScores());
+    		
+    		// Set Mann-Whitney U Parameters
+    		comparison.setMann_Whit_pValue(mannPval);
+		}
+	}
 
-    /**
-     * @return the paParams
-     */
-    public PostAnalysisParameters getPaParams() {
-        return paParams;
+    
+    private Map<String,CyNode> createNodeMap(CyNetwork current_network, CyTable cyNodeAttrs, String prefix) {
+    	HashMap<String,CyNode> nodesMap = new HashMap<String, CyNode>();
+        for(CyNode aNode : current_network.getNodeList()) {
+            nodesMap.put(cyNodeAttrs.getRow(aNode.getSUID()).get(prefix + EnrichmentMapVisualStyle.NAME, String.class), aNode);
+        }
+        return nodesMap;
     }
-
+    
+    
+   
     /*
      * Create Node attribute table with post analysis parameters not in the main EM table
      */
@@ -770,6 +646,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
 		
 		return nodeTable;
     }
+    
     //create the edge attribue table
     public CyTable createEdgeAttributes(CyNetwork network, String name, String prefix){
     	//TODO:change back to creating our own table.  Currently can only map to a string column.
@@ -789,12 +666,26 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
     	if(edgeTable.getColumn(prefix + EnrichmentMapVisualStyle.HYPERGEOM_k) == null)	
     		edgeTable.createColumn(prefix + EnrichmentMapVisualStyle.HYPERGEOM_k , Integer.class, false);
     	
+    	if(edgeTable.getColumn(prefix + EnrichmentMapVisualStyle.MANN_WHIT_PVALUE) == null)		
+    		edgeTable.createColumn(prefix + EnrichmentMapVisualStyle.MANN_WHIT_PVALUE , Double.class, false);
+    	
     	return edgeTable;
     }
     
-    // ***************************************
-    // from here: Auto-generated method stubs!
-    // ***************************************
+    
+    /**
+     * @param paParams the paParams to set
+     */
+    public void setPaParams(PostAnalysisParameters paParams) {
+        this.paParams = paParams;
+    }
+
+    /**
+     * @return the paParams
+     */
+    public PostAnalysisParameters getPaParams() {
+        return paParams;
+    }
   
     /**
      * @see cytoscape.task.Task#getTitle()
