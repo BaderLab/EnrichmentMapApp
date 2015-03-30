@@ -63,6 +63,7 @@ import org.baderlab.csplugins.enrichmentmap.model.GenesetSimilarity;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.util.NetworkUtil;
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyEdge;
@@ -70,7 +71,6 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
@@ -90,9 +90,9 @@ import org.cytoscape.work.TaskMonitor;
  *
  */
 public class BuildDiseaseSignatureTask extends AbstractTask {
-	private CyApplicationManager applicationManager;
-	private CyRootNetworkManager rootNetworkManager;
-    private CyEventHelper eventHelper;
+	private final CySwingApplication swingApplication;
+	private final CyApplicationManager applicationManager;
+    private final CyEventHelper eventHelper;
     
     private PostAnalysisParameters paParams;
     private EnrichmentMap map;
@@ -121,11 +121,11 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
 
     public BuildDiseaseSignatureTask(EnrichmentMap map, PostAnalysisParameters paParams,
     		CySessionManager manager, StreamUtil streamUtil,
-    		CyApplicationManager applicationManager, CyEventHelper eventHelper, CyRootNetworkManager rootNetworkManager) {
+    		CyApplicationManager applicationManager, CyEventHelper eventHelper, CySwingApplication swingApplication) {
     	this.map = map;
     	this.applicationManager = applicationManager;
     	this.eventHelper = eventHelper;
-    	this.rootNetworkManager = rootNetworkManager;
+    	this.swingApplication = swingApplication;
 
     	HashMap<String, DataSet> data_sets = this.map.getDatasets();
     	DataSet dataset = data_sets.get(paParams.getSignature_dataSet());
@@ -352,7 +352,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
             /* ****************************
              * Create Signature Hub Edges *
              ******************************/
-
+            
             for (String edge_name : geneset_similarities.keySet()) {
                 if (interrupted)
                     throw new InterruptedException();
@@ -388,14 +388,12 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
                    	passed_cutoff = true;
                 }
 
-                if (passed_cutoff) {
-                	createEdge(edge_name, current_network, current_view, hub_node, prefix, cyEdgeAttrs, cyNodeAttrs);
-                } 
-
+                createEdge(edge_name, current_network, current_view, hub_node, prefix, cyEdgeAttrs, cyNodeAttrs, passed_cutoff);
             } //for
             
             //update the view 
             current_view.updateView();
+            
             //TODO add network attribute
            // cyNetworkAttrs.setAttribute(currentNetworkView.getIdentifier(), EnrichmentMapVisualStyle.NUMBER_OF_ENRICHMENT_GENES, geneUniverse.size());
         } catch (InterruptedException e) {
@@ -404,45 +402,15 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
         }
     }
     
-    
-//    private void deleteExistingHubNode(CyNetwork current_network, CyNode hub_node) {
-//    	CyRootNetwork rootNetwork = rootNetworkManager.getRootNetwork(current_network);
-//    	
-//    	List<CyEdge> edges = current_network.getAdjacentEdgeList(hub_node, CyEdge.Type.ANY);
-//    	List<CyNode> nodes = Collections.singletonList(hub_node);
-//    	List<Long> nodeKeys = NetworkUtil.keys(nodes);
-//    	List<Long> edgeKeys = NetworkUtil.keys(edges);
-//    	
-//    	CyTable localNodeTable = current_network.getTable(CyNode.class, CyNetwork.LOCAL_ATTRS);
-//    	CyTable localEdgeTable = current_network.getTable(CyEdge.class, CyNetwork.LOCAL_ATTRS);
-//    	
-//    	current_network.removeEdges(edges);
-//    	current_network.removeNodes(nodes);
-//    	
-//    	localNodeTable.deleteRows(nodeKeys);
-//    	localEdgeTable.deleteRows(edgeKeys);
-//    	
-////    	current_network.getDefaultEdgeTable().deleteRows(edgeKeys);
-////    	current_network.getDefaultNodeTable().deleteRows(nodeKeys);
-//    	
-////    	rootNetwork.removeEdges(edges);
-////    	rootNetwork.removeNodes(nodes);
-////    	rootNetwork.getSharedNodeTable().deleteRows(nodeKeys);
-////    	rootNetwork.getSharedEdgeTable().deleteRows(edgeKeys);
-//    }
-    
 
     private CyNode createHubNode(String hub_name, CyNetwork current_network, CyNetworkView current_view, double currentNodeY_offset,
 			                     String prefix, CyTable cyNodeAttrs, Set<Integer> geneUniverse, GeneSet sigGeneSet) {
 		
 		// test for existing node first
-		CyNode hub_node;
+		CyNode hub_node = NetworkUtil.getNodeWithValue(current_network, cyNodeAttrs, CyNetwork.NAME, hub_name);
+		if(hub_node == null)
+			hub_node = current_network.addNode();
 		
-//		hub_node = NetworkUtil.getNodeWithValue(current_network, cyNodeAttrs, CyNetwork.NAME, hub_name);
-//		if(hub_node != null)
-//			deleteExistingHubNode(current_network, hub_node);
-		
-		hub_node = current_network.addNode();
 		current_network.getRow(hub_node).set(CyNetwork.NAME, hub_name);
 		current_view.updateView();
 		//flush events to make sure view has been created.
@@ -506,14 +474,23 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
 	}
     
     
-    
+
 	private void createEdge(String edge_name, CyNetwork current_network, CyNetworkView current_view, 
-			                CyNode hub_node, String prefix, CyTable cyEdgeAttrs, CyTable cyNodeAttrs) {
+			                   CyNode hub_node, String prefix, CyTable cyEdgeAttrs, CyTable cyNodeAttrs, boolean passed_cutoff) {
 		
-		CyNode gene_set = NetworkUtil.getNodeWithValue(current_network, cyNodeAttrs, CyNetwork.NAME, geneset_similarities.get(edge_name).getGeneset2_Name());
-		
-		// the edge might already exist, reuse it and overwrite the existing values
-		CyEdge edge = current_network.addEdge(hub_node, gene_set, false);
+		CyEdge edge = NetworkUtil.getEdgeWithValue(current_network, cyEdgeAttrs, CyNetwork.NAME, edge_name);
+		if(passed_cutoff) {
+			if(edge == null) { // edge does not exist, create it
+				CyNode gene_set = NetworkUtil.getNodeWithValue(current_network, cyNodeAttrs, CyNetwork.NAME, geneset_similarities.get(edge_name).getGeneset2_Name());
+				edge = current_network.addEdge(hub_node, gene_set, false);
+			} 
+			// if the edge already exists then just update existing one
+		} else {
+			if(edge == null) { // edge does not exist, so do nothing
+				return;
+			} 
+			// if the edge already exists but does not pass the cutoff we will sill update it
+		}
 		
 		//add update view because view is returning null when we try to get the edge view.
 		current_view.updateView();
@@ -556,7 +533,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
 			current_edgerow.set(prefix + EnrichmentMapVisualStyle.MANN_WHIT_PVALUE, geneset_similarities.get(edge_name).getMann_Whit_pValue());
 		}
 		
-		if(edgeView != null){
+		if(edgeView != null) {
 			edgeView.setLockedValue(BasicVisualLexicon.EDGE_UNSELECTED_PAINT, paParams.getSignatureHub_edgeColor());
 			edgeView.setLockedValue(BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT, paParams.getSignatureHub_edgeColor());
 		

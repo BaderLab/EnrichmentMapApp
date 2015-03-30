@@ -55,10 +55,10 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.task.BuildDiseaseSignatureTask;
 import org.baderlab.csplugins.enrichmentmap.view.PostAnalysisInputPanel;
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.swing.DialogTaskManager;
@@ -77,21 +77,21 @@ public class BuildPostAnalysisActionListener implements ActionListener {
     private PostAnalysisInputPanel inputPanel;
     private CyNetworkManager networkManager;
     private CyApplicationManager applicationManager;
-    private CyRootNetworkManager rootNetworkManager;
+    private CySwingApplication swingApplication;
     private CySessionManager sessionManager;
     private StreamUtil streamUtil;
     private DialogTaskManager dialog;
     private CyEventHelper eventHelper;
 
     public BuildPostAnalysisActionListener (PostAnalysisInputPanel panel,  
-    		CySessionManager sessionManager, StreamUtil streamUtil,CyNetworkManager networkManager, CyRootNetworkManager rootNetworkManager,
+    		CySessionManager sessionManager, StreamUtil streamUtil,CyNetworkManager networkManager, CySwingApplication swingApplication,
     		CyApplicationManager applicationManager, DialogTaskManager dialog,CyEventHelper eventHelper) {
         this.inputPanel = panel;
         this.sessionManager = sessionManager;
         this.streamUtil = streamUtil;
         this.networkManager = networkManager;
         this.applicationManager = applicationManager;
-        this.rootNetworkManager = rootNetworkManager;
+        this.swingApplication = swingApplication;
         this.dialog = dialog;
         this.eventHelper = eventHelper;
 
@@ -115,7 +115,7 @@ public class BuildPostAnalysisActionListener implements ActionListener {
 
             if ( paParams.isSignatureDiscovery() || paParams.isKnownSignature() ) {
                 
-                BuildDiseaseSignatureTask new_signature = new BuildDiseaseSignatureTask(current_map, paParams,this.sessionManager, this.streamUtil, this.applicationManager, this.eventHelper, this.rootNetworkManager);
+                BuildDiseaseSignatureTask new_signature = new BuildDiseaseSignatureTask(current_map, paParams,this.sessionManager, this.streamUtil, this.applicationManager, this.eventHelper, this.swingApplication);
                 currentTasks.append(new_signature);
                 
                 dialog.execute(currentTasks);
