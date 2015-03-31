@@ -44,28 +44,75 @@
 package org.baderlab.csplugins.enrichmentmap.view;
 
 
-import javax.swing.*;
-import javax.swing.border.TitledBorder;
-import javax.swing.table.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.util.*;
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
 
-import org.mskcc.colorgradient.*;
+import javax.swing.AbstractAction;
+import javax.swing.AbstractButton;
+import javax.swing.BorderFactory;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.border.TitledBorder;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableColumnModel;
+
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
-import org.baderlab.csplugins.enrichmentmap.EnrichmentMapUtils;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapVisualStyle;
-import org.baderlab.csplugins.enrichmentmap.heatmap.*;
+import org.baderlab.csplugins.enrichmentmap.heatmap.CellHighlightRenderer;
+import org.baderlab.csplugins.enrichmentmap.heatmap.ColorRenderer;
+import org.baderlab.csplugins.enrichmentmap.heatmap.ColumnHeaderVerticalRenderer;
+import org.baderlab.csplugins.enrichmentmap.heatmap.ExpressionTableValue;
+import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapActionListener;
+import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters.Sort;
-import org.baderlab.csplugins.enrichmentmap.heatmap.task.ClusterTaskObserver;
+import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapTableActionListener;
+import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapTableModel;
+import org.baderlab.csplugins.enrichmentmap.heatmap.RawExpressionValueRenderer;
+import org.baderlab.csplugins.enrichmentmap.heatmap.RowNumberTable;
+import org.baderlab.csplugins.enrichmentmap.heatmap.TableHeader;
+import org.baderlab.csplugins.enrichmentmap.heatmap.TableSort;
 import org.baderlab.csplugins.enrichmentmap.heatmap.task.HeatMapHierarchicalClusterTaskFactory;
-import org.baderlab.csplugins.enrichmentmap.model.*;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
+import org.baderlab.csplugins.enrichmentmap.model.GSEAResult;
+import org.baderlab.csplugins.enrichmentmap.model.GeneExpression;
+import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
+import org.baderlab.csplugins.enrichmentmap.model.Rank;
+import org.baderlab.csplugins.enrichmentmap.model.Ranking;
+import org.baderlab.csplugins.enrichmentmap.model.SignificantGene;
 import org.baderlab.csplugins.enrichmentmap.parsers.DetermineEnrichmentResultFileReader;
+import org.baderlab.csplugins.enrichmentmap.task.ResultTaskObserver;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanelComponent;
@@ -77,6 +124,9 @@ import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.work.swing.DialogTaskManager;
+import org.mskcc.colorgradient.ColorGradientRange;
+import org.mskcc.colorgradient.ColorGradientTheme;
+import org.mskcc.colorgradient.ColorGradientWidget;
 
 
 
@@ -1690,7 +1740,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
         }
         else if(hmParams.getSort() == HeatMapParameters.Sort.CLUSTER){            
         		HeatMapHierarchicalClusterTaskFactory clustertask = new HeatMapHierarchicalClusterTaskFactory(this.numConditions,this.numConditions2,this,this.map);
-        		 ClusterTaskObserver observer = new  ClusterTaskObserver();
+        		ResultTaskObserver observer = new  ResultTaskObserver();
         		
         		this.dialogTaskMonitor.execute(clustertask.createTaskIterator(),observer );
         		while (!observer.isAllFinished()) { 

@@ -76,6 +76,7 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 
 
@@ -89,7 +90,7 @@ import org.cytoscape.work.TaskMonitor;
  * Time   3:58:24 PM<br>
  *
  */
-public class BuildDiseaseSignatureTask extends AbstractTask {
+public class BuildDiseaseSignatureTask extends AbstractTask implements ObservableTask {
 	private final CySwingApplication swingApplication;
 	private final CyApplicationManager applicationManager;
     private final CyEventHelper eventHelper;
@@ -111,6 +112,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
     
     // Ranks
     private Ranking ranks;
+    private boolean warnUser = false;
         
     private HashMap<String,GenesetSimilarity> geneset_similarities;
     
@@ -388,7 +390,8 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
                    	passed_cutoff = true;
                 }
 
-                createEdge(edge_name, current_network, current_view, hub_node, prefix, cyEdgeAttrs, cyNodeAttrs, passed_cutoff);
+                warnUser |= createEdge(edge_name, current_network, current_view, hub_node, prefix, cyEdgeAttrs, cyNodeAttrs, passed_cutoff);
+                
             } //for
             
             //update the view 
@@ -474,8 +477,10 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
 	}
     
     
-
-	private void createEdge(String edge_name, CyNetwork current_network, CyNetworkView current_view, 
+	/**
+	 * Returns true iff the user should be warned about an existing edge that does not pass the new cutoff.
+	 */
+	private boolean createEdge(String edge_name, CyNetwork current_network, CyNetworkView current_view, 
 			                   CyNode hub_node, String prefix, CyTable cyEdgeAttrs, CyTable cyNodeAttrs, boolean passed_cutoff) {
 		
 		CyEdge edge = NetworkUtil.getEdgeWithValue(current_network, cyEdgeAttrs, CyNetwork.NAME, edge_name);
@@ -487,7 +492,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
 			// if the edge already exists then just update existing one
 		} else {
 			if(edge == null) { // edge does not exist, so do nothing
-				return;
+				return false;
 			} 
 			// if the edge already exists but does not pass the cutoff we will sill update it
 		}
@@ -546,6 +551,8 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
 				else
 					edgeView.setLockedValue(BasicVisualLexicon.EDGE_WIDTH,1.0);	
 		}
+		
+		return !passed_cutoff;
 	}
 	
 
@@ -698,6 +705,14 @@ public class BuildDiseaseSignatureTask extends AbstractTask {
 		
 		buildDiseaseSignature();
 		
+	}
+
+	@Override
+	public <R> R getResults(Class<? extends R> type) {
+		if(Boolean.class.equals(type)) {
+			return type.cast(warnUser);
+		}
+		return null;
 	}
 
 }

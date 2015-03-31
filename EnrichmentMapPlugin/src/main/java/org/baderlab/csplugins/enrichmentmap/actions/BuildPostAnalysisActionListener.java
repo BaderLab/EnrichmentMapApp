@@ -60,7 +60,10 @@ import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.session.CySessionManager;
+import org.cytoscape.work.FinishStatus;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskObserver;
 import org.cytoscape.work.swing.DialogTaskManager;
 
 /**
@@ -112,22 +115,40 @@ public class BuildPostAnalysisActionListener implements ActionListener {
         TaskIterator currentTasks = new TaskIterator();
 
         if(errors.isEmpty()) {
-
-            if ( paParams.isSignatureDiscovery() || paParams.isKnownSignature() ) {
-                
-                BuildDiseaseSignatureTask new_signature = new BuildDiseaseSignatureTask(current_map, paParams,this.sessionManager, this.streamUtil, this.applicationManager, this.eventHelper, this.swingApplication);
+            if(paParams.isSignatureDiscovery() || paParams.isKnownSignature()) {
+                BuildDiseaseSignatureTask new_signature = new BuildDiseaseSignatureTask(current_map, paParams, sessionManager, streamUtil, applicationManager, eventHelper, swingApplication);
                 currentTasks.append(new_signature);
                 
-                dialog.execute(currentTasks);
-
+                TaskObserver warnDialogObserver = new WarnDialogObserver();
+                dialog.execute(currentTasks, warnDialogObserver);
             } 
             else {
-                JOptionPane.showMessageDialog(this.inputPanel, errors,"No such Post-Analysis",JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(inputPanel, errors, "No such Post-Analysis", JOptionPane.WARNING_MESSAGE);
             }
         } 
         else {
-            JOptionPane.showMessageDialog(this.inputPanel,errors,"Invalid Input",JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(inputPanel, errors, "Invalid Input", JOptionPane.WARNING_MESSAGE);
         }
     }
 
+    
+    private class WarnDialogObserver implements TaskObserver {
+    	boolean warnUser = false;
+    	
+		@Override 
+		public void taskFinished(ObservableTask task) {
+			if(task instanceof BuildDiseaseSignatureTask) {
+				warnUser = Boolean.TRUE.equals(task.getResults(Boolean.class));
+			}
+		}
+		
+		@Override 
+		public void allFinished(FinishStatus status) {
+			if(warnUser) { // null safe
+				JOptionPane.showMessageDialog(swingApplication.getJFrame(), 
+						"There are existing edges that did not pass the current cutoff value.", 
+						"Warning", JOptionPane.WARNING_MESSAGE);
+			}
+		}
+	};
 }
