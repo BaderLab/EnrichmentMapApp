@@ -138,11 +138,11 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 
     	//create a new instance of the parameters and copy the version received from the input
         //window into this new instance.
-    	this.paParams = new PostAnalysisParameters(manager, streamUtil,applicationManager);
+    	this.paParams = new PostAnalysisParameters();
         this.paParams.copyFrom(paParams);
         
         this.EnrichmentGenesets = map.getEnrichmentGenesets();
-        this.SignatureGenesets  = getPaParams().getSignatureGenesets().getGenesets();
+        this.SignatureGenesets  = this.paParams.getSignatureGenesets().getGenesets();
 
         if (map.getGenesetSimilarity() == null)
             this.geneset_similarities = new HashMap<String, GenesetSimilarity>();
@@ -657,19 +657,6 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
     }
     
     
-    /**
-     * @param paParams the paParams to set
-     */
-    public void setPaParams(PostAnalysisParameters paParams) {
-        this.paParams = paParams;
-    }
-
-    /**
-     * @return the paParams
-     */
-    public PostAnalysisParameters getPaParams() {
-        return paParams;
-    }
   
     /**
      * @see cytoscape.task.Task#getTitle()

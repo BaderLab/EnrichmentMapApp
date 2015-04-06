@@ -387,13 +387,11 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
     public void updateContents(EnrichmentMap currentMap) {
 		if(currentMap != null) {
 			// Use two separate parameters objects so that the two panels don't interfere with each other
-			knownSigPaParams = new PostAnalysisParameters(sessionManager, streamUtil, cyApplicationManager);
-			knownSigPaParams.copyFrom(currentMap.getPaParams());
+			knownSigPaParams = new PostAnalysisParameters();
 			knownSigPaParams.setSignatureHub(false);
 			knownSigPaParams.setFilter(false);
 			
-			sigDiscoveryPaParams = new PostAnalysisParameters(sessionManager, streamUtil, cyApplicationManager);
-			sigDiscoveryPaParams.copyFrom(currentMap.getPaParams());
+			sigDiscoveryPaParams = new PostAnalysisParameters();
 			sigDiscoveryPaParams.setSignatureHub(true);
 			
 			signatureDiscoveryPanel.updateContents(currentMap, sigDiscoveryPaParams);

@@ -49,11 +49,7 @@ import java.awt.Color;
 
 import javax.swing.DefaultListModel;
 
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.io.util.StreamUtil;
-import org.cytoscape.session.CySessionManager;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
 import org.cytoscape.view.presentation.property.values.NodeShape;
 
@@ -64,7 +60,7 @@ import org.cytoscape.view.presentation.property.values.NodeShape;
  * Time   6:01:53 PM<br>
  *
  */
-public class PostAnalysisParameters extends EnrichmentMapParameters {
+public class PostAnalysisParameters {
     
     // Post Analysis Type:
     private boolean isSignatureDiscovery = false;
@@ -173,52 +169,15 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
     // Enrichment map universe
     private int universeSize;
 
-    /**
-     * default constructor
-     * 
-     * @param emParams instance of EnrichmentMapParameters with parameters of the current EnrichmentMap
-     */
-    public PostAnalysisParameters(EnrichmentMap map) {
-        // EnrichmentMapParameters
-    	super.copy(map.getParams());
-    	
-    	// Disease Signature Parameters:
-        this.signatureGMTFileName       = "";
-        this.signature_absNumber_Cutoff = default_signature_absNumber_Cutoff;
-        this.signature_Jaccard_Cutoff   = default_signature_Jaccard_Cutoff;
-        this.signature_Overlap_Cutoff   = default_signature_Overlap_Cutoff;
-        this.signature_DirOverlap_Cutoff= default_signature_DirOverlap_Cutoff;
-        this.signature_Hypergeom_Cutoff = default_signature_Hypergeom_Cutoff;
-        this.signature_CutoffMetric     = default_signature_CutoffMetric;
-        this.signature_Mann_Whit_Cutoff = default_signature_Mann_Whit_Cutoff;
-        
-        // Disease Signature Data Structures:
-        this.signatureGenesets         = new SetOfGeneSets();
-        this.signatureSetNames         = new DefaultListModel<>();
-        this.selectedSignatureSetNames = new DefaultListModel<>();
-        
-//        this.setGenesetSimilarity( emParams.getGenesetSimilarity() );
-        
-        // Disease Signature State variables:
-        this.currentNodePlacementY_Offset = 0.0;
+    //attribute prefix associated with this map
+  	private String attributePrefix = null;
+  	
 
-        //set the default filter
-        this.filterValue = default_filter_value;
-
-        this.signature_filterMetric = default_signature_filterMetric;
-        
-        // register this instance in emParams
-        map.setPaParams(this);
-    }
-
-    /**
+	/**
      * constructor to create a clean instance of PostAnalysisParameters
      * (used when using the Reset Button)
      */
-    public PostAnalysisParameters(  CySessionManager sessionManager,StreamUtil streamUtil,CyApplicationManager applicationManager) {
-        // EnrichmentMapParameters
-        super(sessionManager,streamUtil,applicationManager);
-
+    public PostAnalysisParameters() {
         // Disease Signature Parameters:
         this.signatureGMTFileName       = "";
         this.signature_absNumber_Cutoff = default_signature_absNumber_Cutoff;
@@ -250,8 +209,6 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
      * @param source  the original instance of PostAnalysisParameters
      */
     public void copyFrom(PostAnalysisParameters source) {
-        super.copy(source);
-        
         // Post Analysis Type:
         this.isSignatureDiscovery = source.isSignatureDiscovery();
         this.isKnownSignature = source.isKnownSignature();
@@ -328,7 +285,7 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
      */
     public String checkGMTfiles() {
         String signatureGMTFileName = getSignatureGMTFileName();
-		if(signatureGMTFileName.isEmpty() || !checkFile(signatureGMTFileName))
+		if(signatureGMTFileName.isEmpty() || !EnrichmentMapParameters.checkFile(signatureGMTFileName))
             return "Signature GMT file can not be found \n";
         return "";
     }
@@ -797,5 +754,15 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
 	 */
 	public void setUniverseSize(int universeSize) {
 		this.universeSize = universeSize;
+	}
+	
+	
+	public String getAttributePrefix() {
+		return attributePrefix;
+	}
+
+
+	public void setAttributePrefix(String attributePrefix) {
+		this.attributePrefix = attributePrefix;
 	}
 }

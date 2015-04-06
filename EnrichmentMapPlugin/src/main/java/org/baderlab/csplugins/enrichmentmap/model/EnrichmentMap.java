@@ -6,7 +6,6 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
-import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
 
 /***
  *  An Enrichment Map object contains the minimal information needed to build an 
@@ -48,7 +47,6 @@ public class EnrichmentMap {
     
     //post analysis signature genesets associated with this map.
     private HashMap<String, GeneSet> signatureGenesets;
-    private PostAnalysisParameters paParams;
     
     /*
      * Class Constructor
@@ -483,20 +481,5 @@ public class EnrichmentMap {
     public HashMap<String, GeneSet> getSignatureGenesets() {
         return signatureGenesets;
     }
-    /**
-     * @param paParams store reference to PostAnalysisParameters instance associated with this Enrichment Map
-     */
-    public void setPaParams(PostAnalysisParameters paParams) {
-        this.paParams = paParams;
-    }
-
-    /**
-     * @return reference to PostAnalysisParameters instance associated with this Enrichment Map.<BR>
-     *         If no instance exists, a new one will be created.
-     */
-    public PostAnalysisParameters getPaParams() {
-        if (this.paParams == null)
-            this.paParams = new PostAnalysisParameters(this);
-        return this.paParams;
-    }
+  
 }

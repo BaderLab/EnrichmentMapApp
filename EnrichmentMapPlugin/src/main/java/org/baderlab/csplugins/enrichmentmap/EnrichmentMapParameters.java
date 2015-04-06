@@ -42,11 +42,15 @@
 // $HeadURL$
 
 package org.baderlab.csplugins.enrichmentmap;
-import java.util.*;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Properties;
+import java.util.Scanner;
+import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
@@ -924,17 +928,17 @@ public class EnrichmentMapParameters {
      * @param filename - name of file to be checked
      * @return boolean - true if file is readable, false if it is not.
      */
-    protected boolean checkFile(String filename){
-           //check to see if the files exist and are readable.
-           //if the file is unreadable change the color of the font to red
-           //otherwise the font should be black.
-           if(filename != null){
-               File tempfile = new File(filename);
-               if(!tempfile.canRead())
-                   return false;
-           }
-           return true;
-       }
+    protected static boolean checkFile(String filename) {
+    	//check to see if the files exist and are readable.
+    	//if the file is unreadable change the color of the font to red
+    	//otherwise the font should be black.
+    	if(filename != null){
+    		File tempfile = new File(filename);
+    		if(!tempfile.canRead())
+    			return false;
+    	}
+    	return true;
+    }
 
     
 
@@ -1153,34 +1157,36 @@ public class EnrichmentMapParameters {
     //The attribute prefix is based on the number of nextworks in cytoscape.
     //TODO:make attribute prefix independent of cytoscape
     public void setAttributePrefix(){
-    		Set<CyNetwork> networks = sessionManager.getCurrentSession().getNetworks();
+		Set<CyNetwork> networks = sessionManager.getCurrentSession().getNetworks();
 
-        if(networks == null || networks.isEmpty())
-        		this.attributePrefix = "EM1_";
-        else{
-        		//how many enrichment maps are there?
-            int num_networks = 1;
-            int max_prefix = 0;
-            EnrichmentMapManager manager = EnrichmentMapManager.getInstance();
-            //go through all the networks, check to see if they are enrichment maps
-            //if they are then calculate the max EM_# and use the max number + 1 for the 
-            // current attributes
-            for(Iterator<CyNetwork> i = networks.iterator(); i.hasNext();){
-            		CyNetwork current_network = i.next();
-                Long networkId = current_network.getSUID();
-                if( manager.isEnrichmentMap(networkId) ) {//fails
-                		num_networks++;
-                    EnrichmentMap tmpMap = manager.getMap(networkId);
-                    String tmpPrefix = tmpMap.getParams().getAttributePrefix();
-                    tmpPrefix = tmpPrefix.replace("EM", "");
-                    tmpPrefix = tmpPrefix.replace("_", "");
-                    int tmpNum = Integer.parseInt(tmpPrefix);
-                    if (tmpNum > max_prefix)
-                    		max_prefix = tmpNum;
-                     }
-             }
-            this.attributePrefix = "EM" + (max_prefix + 1) + "_";
-           }
+		if (networks == null || networks.isEmpty())
+			this.attributePrefix = "EM1_";
+		else {
+			// how many enrichment maps are there?
+			int num_networks = 1;
+			int max_prefix = 0;
+			EnrichmentMapManager manager = EnrichmentMapManager.getInstance();
+			// go through all the networks, check to see if they are enrichment
+			// maps
+			// if they are then calculate the max EM_# and use the max number +
+			// 1 for the
+			// current attributes
+			for (Iterator<CyNetwork> i = networks.iterator(); i.hasNext();) {
+				CyNetwork current_network = i.next();
+				Long networkId = current_network.getSUID();
+				if (manager.isEnrichmentMap(networkId)) {// fails
+					num_networks++;
+					EnrichmentMap tmpMap = manager.getMap(networkId);
+					String tmpPrefix = tmpMap.getParams().getAttributePrefix();
+					tmpPrefix = tmpPrefix.replace("EM", "");
+					tmpPrefix = tmpPrefix.replace("_", "");
+					int tmpNum = Integer.parseInt(tmpPrefix);
+					if (tmpNum > max_prefix)
+						max_prefix = tmpNum;
+				}
+			}
+			this.attributePrefix = "EM" + (max_prefix + 1) + "_";
+		}
     }
     
 	public void setAttributePrefix(String attributePrefix) {
