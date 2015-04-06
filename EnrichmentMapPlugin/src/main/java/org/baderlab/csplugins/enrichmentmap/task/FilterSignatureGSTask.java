@@ -3,7 +3,7 @@ package org.baderlab.csplugins.enrichmentmap.task;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 import javax.swing.DefaultListModel;
@@ -38,14 +38,14 @@ public class FilterSignatureGSTask extends AbstractTask{
 
 	public void filterSignatureGS(){
 		try {
-			DefaultListModel signatureSetNames = paParams.getSignatureSetNames();
-	        DefaultListModel selectedSignatureSetNames = paParams.getSelectedSignatureSetNames();
+			DefaultListModel<String> signatureSetNames = paParams.getSignatureSetNames();
+	        DefaultListModel<String> selectedSignatureSetNames = paParams.getSelectedSignatureSetNames();
 	        signatureSetNames.clear(); // clear, that we don't have duplicates afterwards - Bug #103 a
 	        //filter the signature genesets to only include genesets that overlap with the genesets
 	        //in our current map.
 	        HashMap<String, GeneSet> genesets_in_map = map.getAllGenesets();
 	
-	        Object[] setNamesArray = paParams.getSignatureGenesets().getGenesets().keySet().toArray();
+	        String[] setNamesArray = paParams.getSignatureGenesets().getGenesets().keySet().toArray(new String[0]);
 	        Arrays.sort(setNamesArray);
 	        
 	        FilterMetric filterMetric = null;
@@ -57,7 +57,7 @@ public class FilterSignatureGSTask extends AbstractTask{
 	            taskMonitor.setProgress(percentComplete);
 	            if (interrupted)
 	                throw new InterruptedException();
-	            Object signatureGeneset = setNamesArray[i];
+	            String signatureGeneset = setNamesArray[i];
 	            
 	            if(!selectedSignatureSetNames.contains(signatureGeneset)) {
 	            	boolean matchfound = false;
@@ -71,9 +71,9 @@ public class FilterSignatureGSTask extends AbstractTask{
 	                    //only add the name if it overlaps with the sets in the map.
 	                	for(String mapGeneset : genesets_in_map.keySet()) {
 	                    	//check if this set overlaps with current geneset
-	                        Set<Integer> mapset = new HashSet<Integer>(genesets_in_map.get(mapGeneset).getGenes());
+	                        Set<Integer> mapset = new HashSet<>(genesets_in_map.get(mapGeneset).getGenes());
 	                        int original_size = mapset.size();
-	                        Set<Integer> paset = new HashSet<Integer>(paParams.getSignatureGenesets().getGenesets().get(signatureGeneset).getGenes());
+	                        Set<Integer> paset = new HashSet<>(paParams.getSignatureGenesets().getGenesets().get(signatureGeneset).getGenes());
 	                        mapset.retainAll(paset);
 	                        
 	                        matchfound = filterMetric.match(original_size, mapset, paset);
@@ -157,28 +157,26 @@ public class FilterSignatureGSTask extends AbstractTask{
         int N;
         
 		public void init() {
-			HashMap<String, GeneSet> genesets_in_map = map.getAllGenesets();
-			HashSet<Integer> EnrichmentGenes = new HashSet<Integer>();
-	        for (Iterator<String> i = genesets_in_map.keySet().iterator(); i.hasNext(); ){
-	            String setName = i.next();
-	            EnrichmentGenes.addAll(genesets_in_map.get(setName).getGenes());
-	        }
-			
-	        N = EnrichmentGenes.size();
+			N = paParams.getUniverseSize();
 		}
 
 		public boolean match(int original_size, Set<Integer> mapset, Set<Integer> paset) {
 			// Calculate Hypergeometric pValue for Overlap
-            //N: number of total genes (size of population / total number of balls)
+            // N: number of total genes (size of population / total number of balls)
             int n = paset.size();  //size of signature geneset (sample size / number of extracted balls)
-            int m = original_size;   //size of enrichment geneset (success Items / number of white balls in population)
+            int m = original_size; //size of enrichment geneset (success Items / number of white balls in population)
             int k = mapset.size(); //size of intersection (successes /number of extracted white balls)
             
             double hyperPval;
-            if (k > 0) 
-                hyperPval = Hypergeometric.hyperGeomPvalue_sum(N, n, m, k, 0);
-            else // Correct p-value of empty intersections to 1 (i.e. not significant)
-                hyperPval = 1.0;
+            try {
+	            if (k > 0) 
+	                hyperPval = Hypergeometric.hyperGeomPvalue_sum(N, n, m, k, 0);
+	            else // Correct p-value of empty intersections to 1 (i.e. not significant)
+	                hyperPval = 1.0;
+            } catch(ArithmeticException e) {
+            	e.printStackTrace();
+            	return false;
+            }
             
             return hyperPval <= paParams.getSignature_Hypergeom_Cutoff();
 		}
@@ -188,10 +186,10 @@ public class FilterSignatureGSTask extends AbstractTask{
 	private class MannWhitFilterMetric implements FilterMetric {
 
 		Ranking ranks;
-		HashMap<Integer, Double> gene2score;
+		Map<Integer, Double> gene2score;
         
 		public void init() {
-			HashMap<String, DataSet> data_sets = map.getDatasets();
+			Map<String, DataSet> data_sets = map.getDatasets();
 	    	DataSet dataset = data_sets.get(paParams.getSignature_dataSet());
 	    	ranks = new Ranking();
 	    	if (dataset != null) {

@@ -144,8 +144,10 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
     
     // Disease Signature Data Structures:
     private SetOfGeneSets signatureGenesets;
-    private DefaultListModel signatureSetNames;
-    private DefaultListModel selectedSignatureSetNames;
+    
+    // There should not be setters for these, call the get method then use addElement() or clear()
+    private DefaultListModel<String> signatureSetNames;
+    private DefaultListModel<String> selectedSignatureSetNames;
     
     // Disease Signature State variables:
     private double currentNodePlacementY_Offset;
@@ -192,8 +194,8 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
         
         // Disease Signature Data Structures:
         this.signatureGenesets         = new SetOfGeneSets();
-        this.signatureSetNames         = new DefaultListModel();
-        this.selectedSignatureSetNames = new DefaultListModel();
+        this.signatureSetNames         = new DefaultListModel<>();
+        this.selectedSignatureSetNames = new DefaultListModel<>();
         
 //        this.setGenesetSimilarity( emParams.getGenesetSimilarity() );
         
@@ -229,8 +231,8 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
         
         // Disease Signature Data Structures:
         this.signatureGenesets         = new SetOfGeneSets();
-        this.signatureSetNames         = new DefaultListModel();
-        this.selectedSignatureSetNames = new DefaultListModel();
+        this.signatureSetNames         = new DefaultListModel<>();
+        this.selectedSignatureSetNames = new DefaultListModel<>();
         
         // Disease Signature State variables:
         this.currentNodePlacementY_Offset = 0.0;
@@ -561,30 +563,16 @@ public class PostAnalysisParameters extends EnrichmentMapParameters {
     }
 
     /**
-     * @param signatureSetNames the signatureSetNames to set
-     */
-    public void setSignatureSetNames(DefaultListModel signatureSetNames) {
-        this.signatureSetNames = signatureSetNames;
-    }
-
-    /**
      * @return the signatureSetNames
      */
-    public DefaultListModel getSignatureSetNames() {
+    public DefaultListModel<String> getSignatureSetNames() {
         return signatureSetNames;
-    }
-
-    /**
-     * @param selectedSignatureSetNames the selectedSignatureSetNames to set
-     */
-    public void setSelectedSignatureSetNames(DefaultListModel selectedSignatureSetNames) {
-        this.selectedSignatureSetNames = selectedSignatureSetNames;
     }
 
     /**
      * @return the selectedSignatureSetNames
      */
-    public DefaultListModel getSelectedSignatureSetNames() {
+    public DefaultListModel<String> getSelectedSignatureSetNames() {
         return selectedSignatureSetNames;
     }
 

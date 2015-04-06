@@ -51,9 +51,12 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.swing.BorderFactory;
@@ -61,6 +64,7 @@ import javax.swing.ButtonGroup;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JFormattedTextField;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
@@ -79,6 +83,7 @@ import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CySessionManager;
+import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.work.swing.DialogTaskManager;
@@ -127,8 +132,8 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
     //tool tips
 
     
-//    private EnrichmentMap map;
-    private PostAnalysisParameters paParams;
+    private PostAnalysisParameters sigDiscoveryPaParams;
+    private PostAnalysisParameters knownSigPaParams;
     
     
     public PostAnalysisInputPanel(CyApplicationManager cyApplicationManager, CySwingApplication application, 
@@ -280,23 +285,22 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
         JPanel panel = new JPanel();
         panel.setLayout(new FlowLayout());
 
-        JButton closeButton = new JButton();
-        JButton importButton = new JButton();
-
-        JButton resetButton = new JButton ("Reset");
-        resetButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        JButton resetButton = new JButton("Reset");
+        resetButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
                 resetPanel();
             }
         });
 
+        JButton closeButton = new JButton();
         closeButton.setText("Close");
-        closeButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        closeButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
                 cancelButtonActionPerformed(evt);
             }
         });
 
+        JButton importButton = new JButton();
         importButton.setText("Run");
         importButton.addActionListener(new BuildPostAnalysisActionListener(this, sessionManager, streamUtil, networkManager, application, cyApplicationManager, dialog,eventHelper));
         importButton.setEnabled(true);
@@ -309,6 +313,26 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
     }
     
     
+    protected File chooseGMTFile(JFormattedTextField textField) {
+    	FileChooserFilter filter = new FileChooserFilter("All GMT Files", "gmt");          
+        List<FileChooserFilter> all_filters = Arrays.asList(filter);
+       
+        // Get the file name
+        File file = fileUtil.getFile(EnrichmentMapUtils.getWindowInstance(this), "Import Signature GMT File", FileUtil.LOAD, all_filters);
+        getPaParams().setSignatureGMTFileName("");
+        
+        if(file != null) {
+        	textField.setForeground(PostAnalysisInputPanel.checkFile(file.getAbsolutePath()));
+        	textField.setText(file.getAbsolutePath());
+        	textField.setValue(file.getAbsolutePath());
+            getPaParams().setSignatureGMTFileName(file.getAbsolutePath());
+            textField.setToolTipText(file.getAbsolutePath());
+        }
+        
+        return file;
+    }
+        
+    
     private void cancelButtonActionPerformed(ActionEvent evt) {
     	close();
     }
@@ -318,7 +342,7 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
     }
 
 
-    static Color checkFile(String filename){
+    protected static Color checkFile(String filename){
         //check to see if the files exist and are readable.
         //if the file is unreadable change the color of the font to red
         //otherwise the font should be black.
@@ -334,14 +358,11 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
     private void selectAnalysisTypeActionPerformed(ActionEvent evt){
         String analysisType = evt.getActionCommand();
         if(analysisType.equalsIgnoreCase("Signature Discovery")) {
-            paParams.setSignatureHub(true);
         	userInputPanel.remove(optionsPanel);
         	optionsPanel = signatureDiscoveryPanel;
         	userInputPanel.add(optionsPanel);
         	optionsPanel.revalidate();
         } else {
-            paParams.setSignatureHub(false);
-        	paParams.setFilter(false);
         	userInputPanel.remove(optionsPanel);
         	optionsPanel = knownSignaturePanel;
         	userInputPanel.add(optionsPanel);
@@ -365,17 +386,24 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
      */
     public void updateContents(EnrichmentMap currentMap) {
 		if(currentMap != null) {
-			this.paParams = new PostAnalysisParameters(sessionManager, streamUtil, cyApplicationManager);
-			this.paParams.copyFrom(currentMap.getPaParams());
+			// Use two separate parameters objects so that the two panels don't interfere with each other
+			knownSigPaParams = new PostAnalysisParameters(sessionManager, streamUtil, cyApplicationManager);
+			knownSigPaParams.copyFrom(currentMap.getPaParams());
+			knownSigPaParams.setSignatureHub(false);
+			knownSigPaParams.setFilter(false);
 			
-			signatureDiscoveryPanel.updateContents(currentMap, paParams);
-			knownSignaturePanel.updateContents(currentMap, paParams);
+			sigDiscoveryPaParams = new PostAnalysisParameters(sessionManager, streamUtil, cyApplicationManager);
+			sigDiscoveryPaParams.copyFrom(currentMap.getPaParams());
+			sigDiscoveryPaParams.setSignatureHub(true);
+			
+			signatureDiscoveryPanel.updateContents(currentMap, sigDiscoveryPaParams);
+			knownSignaturePanel.updateContents(currentMap, knownSigPaParams);
 		}
     }
     
 
 	public PostAnalysisParameters getPaParams() {
-        return paParams;
+		return optionsPanel == signatureDiscoveryPanel ? sigDiscoveryPaParams : knownSigPaParams;
     }
 
 	public Component getComponent() {

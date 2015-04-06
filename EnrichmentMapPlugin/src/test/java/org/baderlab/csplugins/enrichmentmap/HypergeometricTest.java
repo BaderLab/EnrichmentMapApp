@@ -111,6 +111,12 @@ public class HypergeometricTest extends TestCase {
             }
             
         }
-        
+    }
+    
+    public void testHyperGeomPvalueBad() {
+    	try {
+    		Hypergeometric.hyperGeomPvalue_sum(128, 63, 105, 2, 0);
+    		fail();
+    	} catch(ArithmeticException e) { }
     }
 }

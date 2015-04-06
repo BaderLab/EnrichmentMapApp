@@ -152,4 +152,9 @@ public class SetOfGeneSets {
 			return paramVariables.toString();
 		}
 
+		public void clear() {
+			genesets.clear();
+			GenesetTypes.clear();
+		}
+
 }

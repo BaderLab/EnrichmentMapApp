@@ -21,9 +21,11 @@ public class Hypergeometric {
      * 
      * @return the p-Value of the Hypergeometric Distribution for P(X=k)
      */
-    public static double hyperGeomPvalue(int N, int n, int m, int k) {
+    public static double hyperGeomPvalue(final int N, final int n, final int m, final int k) throws ArithmeticException {
         //calculating in logarithmic scale as we are dealing with large numbers. 
-        double log_p = binomialLog(m, k) + binomialLog(N-m, n-k) - binomialLog(N, n) ;
+        double log_p = binomialLog(m, k) 
+        		     + binomialLog(N-m, n-k) 
+        		     - binomialLog(N, n) ;
         return Math.exp(log_p);
     }
     
@@ -48,7 +50,7 @@ public class Hypergeometric {
      * 
      * @return the p-Value of the Hypergeometric Distribution for P(X>=k)
      */
-    public static double hyperGeomPvalue_sum(int N, int n, int m, int k, int mode) {
+    public static double hyperGeomPvalue_sum(int N, int n, int m, int k, int mode) throws ArithmeticException {
         // the number of successes in the sample (k) cannot be larger than the sample (n) or the number of total successes (m)
         double sum = 0.0;
         int kMax;
@@ -78,10 +80,8 @@ public class Hypergeometric {
                 sum += hyperGeomPvalue(N, n, m, k_prime);
             }
             break;
-            
-         default:
-             break;
-         }
+        }
+        
         return sum;
     }
     
@@ -89,7 +89,7 @@ public class Hypergeometric {
     /**
      * Equivalent to hyperGeomPvalue_sum(N, n, m, k, 0)
      */
-    public static double hyperGeomPvalue_sum(int N, int n, int m, int k) {
+    public static double hyperGeomPvalue_sum(int N, int n, int m, int k) throws ArithmeticException {
         return hyperGeomPvalue_sum(N, n, m, k, 0);
     }
     
@@ -113,8 +113,10 @@ public class Hypergeometric {
      * @param k
      * @return the binomial coefficient "n over k"
      */
-    public static double binomialLog(int n, int k) {
-        return (Gamma.logGamma(n + 1.0) - Gamma.logGamma(k + 1.0) - Gamma.logGamma(n - k + 1.0));
+    public static double binomialLog(final int n, final int k) throws ArithmeticException {
+        return Gamma.logGamma(n + 1.0) 
+        	 - Gamma.logGamma(k + 1.0) 
+        	 - Gamma.logGamma(n - k + 1.0);
     }
     
     

@@ -95,16 +95,15 @@ public class GMTFileReaderTask extends AbstractTask {
      */
     public GMTFileReaderTask(DataSet dataset,StreamUtil streamUtil){
     	
-    		this.GMTFileName = dataset.getSetofgenesets().getFilename();
-    		this.genes = dataset.getMap().getGenes();
-    		this.hashkey2gene = dataset.getMap().getHashkey2gene();
+    	this.GMTFileName = dataset.getSetofgenesets().getFilename();
+    	this.genes = dataset.getMap().getGenes();
+    	this.hashkey2gene = dataset.getMap().getHashkey2gene();
    
-    		this.setOfgenesets = dataset.getSetofgenesets();
+    	this.setOfgenesets = dataset.getSetofgenesets();
+    	
+    	this.map = dataset.getMap();
     		
-    		this.map = dataset.getMap();
-    		
-    		this.streamUtil = streamUtil;
-    		
+    	this.streamUtil = streamUtil;
     }
 
     /**
@@ -222,7 +221,7 @@ public class GMTFileReaderTask extends AbstractTask {
                                 //add the gene to the master list of genes
                                 int value = map.getNumberOfGenes();
                                 genes.put(tokens[j].toUpperCase(), value);
-                                hashkey2gene.put(value,tokens[j].toUpperCase());
+                                hashkey2gene.put(value, tokens[j].toUpperCase());
                                 map.setNumberOfGenes(value+1);
 
                                 //add the gene to the genelist

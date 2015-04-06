@@ -10,9 +10,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -33,7 +31,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JToolTip;
 import javax.swing.ScrollPaneConstants;
 
-import org.baderlab.csplugins.enrichmentmap.EnrichmentMapUtils;
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadSignatureSetsActionListener;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
@@ -42,7 +39,6 @@ import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.io.util.StreamUtil;
-import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.work.swing.DialogTaskManager;
 
@@ -274,9 +270,9 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
         selectSigGMTFileButton.setText("...");
         selectSigGMTFileButton.setMargin(new Insets(0,0,0,0));
         selectSigGMTFileButton.setActionCommand("Signature Discovery");
-        selectSigGMTFileButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                selectSignatureGMTFileButtonActionPerformed(evt);
+        selectSigGMTFileButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                parentPanel.chooseGMTFile(signatureDiscoveryGMTFileNameTextField);
             }
         });
 
@@ -295,7 +291,6 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
         JButton loadButton = new JButton();
         loadButton.setText("Load Gene-Sets");
         loadButton.addActionListener(new LoadSignatureSetsActionListener(parentPanel, application, cyApplicationManager, dialog, streamUtil));
-//        loadButton.setPreferredSize(new Dimension(100,10));
         panel.add(loadButton);
         
         collapsiblePanel.getContentPane().add(panel, BorderLayout.NORTH);
@@ -405,30 +400,6 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
         return collapsiblePanel;
     }
     
-    
-    /**
-     * Event Handler for selectSignatureGMTFileButton.<p>
-     * Opens a file browser dialog to select the SignatureGMTFile.
-     */
-    private void selectSignatureGMTFileButtonActionPerformed(ActionEvent evt) {
-
-    	// Create FileFilter
-        FileChooserFilter filter = new FileChooserFilter("All GMT Files","gmt" );          
-        
-        //the set of filter (required by the file util method
-        ArrayList<FileChooserFilter> all_filters = new ArrayList<FileChooserFilter>();
-        all_filters.add(filter);
-        // Get the file name
-        File file = fileUtil.getFile(EnrichmentMapUtils.getWindowInstance(this),"Import Signature GMT File", FileUtil.LOAD,all_filters  );
-        
-        if(file != null) {
-            signatureDiscoveryGMTFileNameTextField.setForeground(PostAnalysisInputPanel.checkFile(file.getAbsolutePath()));
-            signatureDiscoveryGMTFileNameTextField.setText(file.getAbsolutePath());
-            signatureDiscoveryGMTFileNameTextField.setValue(file.getAbsolutePath());
-            paParams.setSignatureGMTFileName(file.getAbsolutePath());
-            signatureDiscoveryGMTFileNameTextField.setToolTipText(file.getAbsolutePath());
-        }
-    }
     
     /**
      * Handles setting for the text field parameters that are numbers.
