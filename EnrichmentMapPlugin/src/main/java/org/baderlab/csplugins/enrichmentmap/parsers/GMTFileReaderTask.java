@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.Normalizer;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
@@ -75,16 +76,12 @@ public class GMTFileReaderTask extends AbstractTask {
     //gene set file name
     private String GMTFileName;
     // gene hash (and inverse hash)
-    private HashMap<String, Integer> genes;
-    private HashMap<Integer, String> hashkey2gene;
+    private Map<String, Integer> genes;
+    private Map<Integer, String> hashkey2gene;
 
     //gene sets
     private SetOfGeneSets setOfgenesets;
 
-    // Keep track of progress for monitoring:
-    private int maxValue;
-    private TaskMonitor taskMonitor = null;
-    private boolean interrupted = false;
     
     public final static int ENRICHMENT_GMT = 1, SIGNATURE_GMT = 2; 
 
@@ -106,17 +103,6 @@ public class GMTFileReaderTask extends AbstractTask {
     	this.streamUtil = streamUtil;
     }
 
-    /**
-     * for BuildDiseaseSignatureTask
-     *
-     * @param params
-     * @param taskMonitor
-     * @param genesets_file
-     */
-    public GMTFileReaderTask(EnrichmentMap map, PostAnalysisParameters params, TaskMonitor taskMonitor, int genesets_file,StreamUtil streamUtil) {
-        this(map,params, genesets_file,streamUtil);
-        this.taskMonitor = taskMonitor;
-    }
 
     /**
      * for BuildDiseaseSignatureTask
@@ -146,17 +132,16 @@ public class GMTFileReaderTask extends AbstractTask {
             throw new IllegalArgumentException("argument not allowed:" + genesets_file);
     }
 
-    public String deAccent(String str) {
+    private String deAccent(String str) {
         String nfdNormalizedString = Normalizer.normalize(str, Normalizer.Form.NFD); 
         Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
         return pattern.matcher(nfdNormalizedString).replaceAll("");
     }
     
-    
     /**
      * parse GMT (gene set) file
      */
-    public void parse()  throws IOException{
+    public void parse(TaskMonitor taskMonitor) throws IOException {
     		
     	HashMap<String, GeneSet> genesets = setOfgenesets.getGenesets();
     	
@@ -167,10 +152,10 @@ public class GMTFileReaderTask extends AbstractTask {
         String []lines = fullText.split("\r\n?|\n");
 
         int currentProgress = 0;
-        maxValue = lines.length;
+        int maxValue = lines.length;
         try {
             for (int i = 0; i < lines.length; i++) {
-                if (interrupted)
+                if (cancelled)
                     throw new InterruptedException();
 
                 String line = lines[i];
@@ -194,13 +179,8 @@ public class GMTFileReaderTask extends AbstractTask {
 
                     // Calculate Percentage.  This must be a value between 0..100.
                     int percentComplete = (int) (((double) currentProgress / maxValue) * 100);
-                    //  Estimate Time Remaining
-                    long timeRemaining = maxValue - currentProgress;
-                    if (taskMonitor != null) {
-                        taskMonitor.setProgress(percentComplete);
-                        taskMonitor.setStatusMessage("Parsing GMT file " + currentProgress
-                            + " of " + maxValue);                      
-                    }
+                    taskMonitor.setProgress(percentComplete);
+                    taskMonitor.setStatusMessage("Parsing GMT file " + currentProgress + " of " + maxValue);                      
                     currentProgress++;
 
                     //All subsequent fields in the list are the geneset associated with this geneset.
@@ -242,35 +222,13 @@ public class GMTFileReaderTask extends AbstractTask {
         } catch (InterruptedException e) {
             taskMonitor.setStatusMessage("Loading of GMT file cancelled");
         }
-
-
     }
 
-    
-    /**
-     * Non-blocking call to interrupt the task.
-     */
-    public void cancel() {
-        this.interrupted = true;
-    }
 
-     /**
-     * Sets the Task Monitor.
-     *
-     * @param taskMonitor TaskMonitor Object.
-     */
-    public void setTaskMonitor(TaskMonitor taskMonitor) {
-        if (this.taskMonitor != null) {
-            throw new IllegalStateException("Task Monitor is already set.");
-        }
-        this.taskMonitor = taskMonitor;
-    }
         
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
-		this.taskMonitor = taskMonitor;
 		taskMonitor.setTitle("parsing GMT file");
-		
-		parse();
+		parse(taskMonitor);
 	}
 }

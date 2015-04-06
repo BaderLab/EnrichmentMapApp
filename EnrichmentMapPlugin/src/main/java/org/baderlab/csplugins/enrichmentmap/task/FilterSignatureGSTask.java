@@ -21,22 +21,19 @@ import org.cytoscape.work.TaskMonitor.Level;
 
 public class FilterSignatureGSTask extends AbstractTask{
 	
-	private EnrichmentMap map;
-	private PostAnalysisParameters paParams = null;
-	private PostAnalysisInputPanel paPanel = null;
+	private final EnrichmentMap map;
+	private final PostAnalysisParameters paParams;
+	private final PostAnalysisInputPanel paPanel;
 	
-	// Keep track of progress for monitoring:
-    private TaskMonitor taskMonitor = null;
-    private boolean interrupted = false;
 	
 	public FilterSignatureGSTask(EnrichmentMap map, PostAnalysisParameters paParams, PostAnalysisInputPanel paPanel) {
-		super();
 		this.map = map;
 		this.paParams = paParams;
 		this.paPanel = paPanel;
 	}
+	
 
-	public void filterSignatureGS(){
+	private void filterSignatureGS(TaskMonitor taskMonitor) {
 		try {
 			DefaultListModel<String> signatureSetNames = paParams.getSignatureSetNames();
 	        DefaultListModel<String> selectedSignatureSetNames = paParams.getSelectedSignatureSetNames();
@@ -55,7 +52,7 @@ public class FilterSignatureGSTask extends AbstractTask{
 	        	int percentComplete = (int) (((double) i / setNamesArray.length) * 100);
 	            taskMonitor.setStatusMessage("Analyzing geneset " + (i + 1) + " of " + setNamesArray.length);
 	            taskMonitor.setProgress(percentComplete);
-	            if (interrupted)
+	            if (cancelled)
 	                throw new InterruptedException();
 	            String signatureGeneset = setNamesArray[i];
 	            
@@ -178,6 +175,8 @@ public class FilterSignatureGSTask extends AbstractTask{
             	return false;
             }
             
+            System.out.println("hyperPval: " + hyperPval);
+            
             return hyperPval <= paParams.getSignature_Hypergeom_Cutoff();
 		}
 	}
@@ -220,32 +219,10 @@ public class FilterSignatureGSTask extends AbstractTask{
 	}
 	
 	
-	
-	/**
-     * Non-blocking call to interrupt the task.
-     */
-    public void halt() {
-        this.interrupted = true;
-    }
-
-     /**
-     * Sets the Task Monitor.
-     *
-     * @param taskMonitor TaskMonitor Object.
-     */
-    public void setTaskMonitor(TaskMonitor taskMonitor) {
-        if (this.taskMonitor != null) {
-            throw new IllegalStateException("Task Monitor is already set.");
-        }
-        this.taskMonitor = taskMonitor;
-    }
-
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
-		this.taskMonitor = taskMonitor;
 		taskMonitor.setTitle("filtering Signature Gene set file");
-		
-		filterSignatureGS();
+		filterSignatureGS(taskMonitor);
 	}
 
 }
