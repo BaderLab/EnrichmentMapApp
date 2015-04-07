@@ -38,9 +38,12 @@ public class FilterSignatureGSTask extends AbstractTask{
 			DefaultListModel<String> signatureSetNames = paParams.getSignatureSetNames();
 	        DefaultListModel<String> selectedSignatureSetNames = paParams.getSelectedSignatureSetNames();
 	        signatureSetNames.clear(); // clear, that we don't have duplicates afterwards - Bug #103 a
-	        //filter the signature genesets to only include genesets that overlap with the genesets
-	        //in our current map.
-	        HashMap<String, GeneSet> genesets_in_map = map.getAllGenesets();
+	        
+	        //filter the signature genesets to only include genesets that overlap with the genesets in our current map.
+	        
+	        // Use the same genesets that are saved to the session file (bug #66)
+//	        HashMap<String, GeneSet> genesets_in_map = map.getAllGenesets();
+	        HashMap<String, GeneSet> genesets_in_map = map.getAllGenesetsOfInterest();
 	
 	        String[] setNamesArray = paParams.getSignatureGenesets().getGenesets().keySet().toArray(new String[0]);
 	        Arrays.sort(setNamesArray);
@@ -174,8 +177,6 @@ public class FilterSignatureGSTask extends AbstractTask{
             	e.printStackTrace();
             	return false;
             }
-            
-            System.out.println("hyperPval: " + hyperPval);
             
             return hyperPval <= paParams.getSignature_Hypergeom_Cutoff();
 		}
