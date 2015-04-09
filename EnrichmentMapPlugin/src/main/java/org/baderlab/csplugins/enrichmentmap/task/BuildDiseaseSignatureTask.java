@@ -81,6 +81,7 @@ import org.cytoscape.work.TaskMonitor;
 
 
 
+
 /**
  * Cytoscape-Task to perform  Disease-Signature Post-Analysis
  * 
@@ -210,10 +211,6 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
              */
             // geneUniverse.retainAll(SignatureGenes); 
             int universeSize = paParams.getUniverseSize();
-        	Map<Integer,Double> gene2score = new HashMap<>();
-            if (this.ranks != null) {
-            	gene2score = this.ranks.getGene2Score();
-            }
             
             Map<String,String> duplicateGenesets = new HashMap<>();
 
@@ -317,7 +314,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 	                        
 	                        switch(paParams.getSignature_rankTest()) {
 		                        case PostAnalysisParameters.MANN_WHIT:
-		                        	mannWhitney(gene2score, intersection, comparison);
+		                        	mannWhitney(intersection, comparison);
 		                        	break;
 		                        case PostAnalysisParameters.HYPERGEOM:
 		                        	hypergeometric(universeSize, sigGenesInUniverse, enrGenes, intersection, comparison);
@@ -581,8 +578,9 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 	}
 
 
-	private void mannWhitney(Map<Integer, Double> gene2score, Set<Integer> intersection, GenesetSimilarity comparison) {
-		if (gene2score.size() == 0) {
+	private void mannWhitney(Set<Integer> intersection, GenesetSimilarity comparison) {
+		Map<Integer, Double> gene2score = ranks.getGene2Score();
+		if (gene2score == null || gene2score.isEmpty()) {
 			comparison.setMann_Whit_pValue(1.5);
 		} else {
 			// Calculate Mann-Whitney U pValue for Overlap
@@ -594,9 +592,9 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
             	overlap_gene_scores[k] = gene2score.get(overlap_gene_ids[k]);
             }
             
+            double[] scores = ranks.getScores();
             MannWhitneyUTest mann_whit = new MannWhitneyUTest();
-        	double mannPval = mann_whit.mannWhitneyUTest(overlap_gene_scores, this.ranks.getScores());
-    		
+			double mannPval = mann_whit.mannWhitneyUTest(overlap_gene_scores, scores);
     		// Set Mann-Whitney U Parameters
     		comparison.setMann_Whit_pValue(mannPval);
 		}

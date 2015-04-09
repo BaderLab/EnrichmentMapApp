@@ -3,6 +3,7 @@ package org.baderlab.csplugins.enrichmentmap.model;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 
 public class Ranking {
@@ -20,11 +21,11 @@ public class Ranking {
 	private HashMap<Integer, Integer> gene2rank;
 	private HashMap<Integer, Integer> rank2gene;
 	
+	// Lazily computed values
 	//hash for easy conversion between geneid and score
-	private HashMap<Integer, Double> gene2score;
-	
+	private Map<Integer, Double> gene2score = null;
 	//array for storing scores of all genes in map
-	private double[] scores;
+	private double[] scores = null;
 	
 	//File associated with this ranking set
     private String filename;
@@ -33,7 +34,6 @@ public class Ranking {
 		ranking = new HashMap<Integer,Rank>();
 		gene2rank = new HashMap<Integer,Integer>();
 		rank2gene = new HashMap<Integer,Integer>();
-		gene2score = new HashMap<Integer, Double>();
 	}
 
 	public HashMap<Integer, Rank> getRanking() {
@@ -47,6 +47,7 @@ public class Ranking {
 			gene2rank.put(cur,ranking.get(cur).getRank());
 			rank2gene.put(ranking.get(cur).getRank(), cur);
         }
+		invalidateLazyValues();
 	}
 
 	public HashMap<Integer, Integer> getGene2rank() {
@@ -62,6 +63,7 @@ public class Ranking {
 				ranking.put(cur, new Rank(cur.toString(),0.0,gene2rank.get(cur)));
 	        }
 		}
+		invalidateLazyValues();
 	}
 
 	public HashMap<Integer, Integer> getRank2gene() {
@@ -77,6 +79,7 @@ public class Ranking {
 				ranking.put(rank2gene.get(cur), new Rank(rank2gene.get(cur).toString(),0.0,cur));
 	        }
 		}
+		invalidateLazyValues();
 	}
 
 	public String getFilename() {
@@ -88,11 +91,10 @@ public class Ranking {
 	}
 	
 	public void addRank(Integer gene, Rank rank){
-		
-		ranking.put(gene,  rank);
-		
+		ranking.put(gene, rank);
 		gene2rank.put(gene, rank.getRank());
 		rank2gene.put(rank.getRank(), gene);
+		invalidateLazyValues();
 	}
 	
 	public int getMaxRank(){
@@ -103,45 +105,42 @@ public class Ranking {
 	public String toString(){
 		StringBuffer paramVariables = new StringBuffer();
 		paramVariables.append(filename + "%fileName\t" + filename + "\n");
-		
 		return paramVariables.toString();
-		
-		
 	}
 
 	/**
 	 * Get gene2score hash
-	 * @param null
 	 * @return HashMap gene2score
 	 */
-	public HashMap<Integer, Double> getGene2Score() {
-		return this.gene2score;
+	public Map<Integer,Double> getGene2Score() {
+		if(gene2score == null) {
+			gene2score = new HashMap<>();
+			for(Map.Entry<Integer,Rank> entry : ranking.entrySet()) {
+				gene2score.put(entry.getKey(), entry.getValue().getScore());
+			}
+		}
+		return gene2score;
 	}
 
 	/**
-	 * Set gene2score hash
-	 * @param HashMap gene2score
-	 * @return null
-	 */
-	public void setGene2Score(HashMap<Integer, Double> gene2score) {
-		this.gene2score = gene2score;
-	}
-
-	/**
-	 * Get scores array
-	 * @param null
+	 * Get scores array (elements are in no particualr order)
 	 * @return double[] scores
 	 */
 	public double[] getScores() {
-		return this.scores;
+		if(scores == null) {
+			Map<Integer,Double> gene2score = getGene2Score();
+			scores = new double[gene2score.size()];
+			int i = 0;
+			for(Double score : gene2score.values()) {
+				scores[i++] = score;
+			}
+		}
+		return scores;
 	}
-
-	/**
-	 * Set scores array
-	 * @param double[] scores
-	 * @return null
-	 */
-	public void setScores(double[] scores) {
-		this.scores = scores;
+	
+	private void invalidateLazyValues() {
+		gene2score = null;
+		scores = null;
 	}
+ 
 }

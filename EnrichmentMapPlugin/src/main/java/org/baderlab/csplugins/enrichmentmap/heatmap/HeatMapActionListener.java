@@ -43,12 +43,19 @@
 
 package org.baderlab.csplugins.enrichmentmap.heatmap;
 
-import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+
+import javax.swing.JComboBox;
+import javax.swing.JOptionPane;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
-import org.baderlab.csplugins.enrichmentmap.EnrichmentMapUtils;
-import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters.Sort;
-import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters.Transformation;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.parsers.RanksFileReaderTask;
@@ -57,15 +64,6 @@ import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
-
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.io.File;
-import java.io.IOException;
 
 /**
  * Created by
@@ -178,7 +176,7 @@ public class HeatMapActionListener implements ActionListener {
                 //simply add it to Dataset 1
                 RanksFileReaderTask ranking1 = new RanksFileReaderTask(file.getAbsolutePath(),map.getDataset(EnrichmentMap.DATASET1),ranks_name,true,streamUtil);
                 try {
-					ranking1.parse();
+					ranking1.parse(null);
 				} catch (IOException e) {
 					e.printStackTrace();
 				}

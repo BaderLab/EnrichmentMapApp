@@ -185,8 +185,7 @@ public class FilterSignatureGSTask extends AbstractTask{
 	
 	private class MannWhitFilterMetric implements FilterMetric {
 
-		Ranking ranks;
-		Map<Integer, Double> gene2score;
+		private Ranking ranks;
         
 		public void init() {
 			Map<String, DataSet> data_sets = map.getDatasets();
@@ -195,11 +194,11 @@ public class FilterSignatureGSTask extends AbstractTask{
 	    	if (dataset != null) {
 	    		ranks = dataset.getExpressionSets().getRanks().get(paParams.getSignature_rankFile());
 	    	}
-	    	gene2score = ranks.getGene2Score();			
 		}
 
 		public boolean match(int original_size, Set<Integer> mapset, Set<Integer> paset) {
 			// Calculate Mann-Whitney U pValue for Overlap
+			Map<Integer, Double> gene2score = ranks.getGene2Score();
 			Object[] overlap_gene_ids = mapset.toArray();
             if (overlap_gene_ids.length > 0) {
             	double[]  overlap_gene_scores = new double[overlap_gene_ids.length];
@@ -209,8 +208,9 @@ public class FilterSignatureGSTask extends AbstractTask{
                 	overlap_gene_scores[p] = gene2score.get(overlap_gene_ids[p]);
                 }
                 
+                double[] scores = ranks.getScores();
                 MannWhitneyUTest mann_whit = new MannWhitneyUTest();
-            	double mannPval = mann_whit.mannWhitneyUTest(overlap_gene_scores, ranks.getScores());
+				double mannPval = mann_whit.mannWhitneyUTest(overlap_gene_scores, scores);
             	if (mannPval <= paParams.getSignature_Mann_Whit_Cutoff()) {
                     return true;
             	}
