@@ -107,11 +107,11 @@ public class FilterSignatureGSTask extends AbstractTask{
 	private FilterMetric createFilterMetric(PostAnalysisParameters paParams) {
 		switch(paParams.getSignature_filterMetric()) {
 			default:
-			case PostAnalysisParameters.NUMBER:    return new NumberFilterMetric();
-			case PostAnalysisParameters.PERCENT:   return new PercentFilterMetric();
-			case PostAnalysisParameters.SPECIFIC:  return new SpecificFilterMetric();
-			case PostAnalysisParameters.HYPERGEOM: return new HypergeomFilterMetric();
-			case PostAnalysisParameters.MANN_WHIT: return new MannWhitFilterMetric();
+			case NUMBER:    return new NumberFilterMetric();
+			case PERCENT:   return new PercentFilterMetric();
+			case SPECIFIC:  return new SpecificFilterMetric();
+			case HYPERGEOM: return new HypergeomFilterMetric();
+			case MANN_WHIT: return new MannWhitFilterMetric();
 		}
 	}
 	

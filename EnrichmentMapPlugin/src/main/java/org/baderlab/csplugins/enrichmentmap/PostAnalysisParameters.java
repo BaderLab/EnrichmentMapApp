@@ -69,13 +69,16 @@ public class PostAnalysisParameters {
     // Disease Signature Constants
     /**
      * Enum for Signature-Hub cut-off metric:
-     * HYPERGEOM   = 0
-     * ABS_NUMBER  = 1
-     * JACCARD     = 2
-     * OVERLAP     = 3
-     * DIR_OVERLAP = 4
      */
-    final public static int ABS_NUMBER = 0, JACCARD = 1, OVERLAP = 2, DIR_OVERLAP = 3; 
+    public enum CutoffMetric { 
+    	ABS_NUMBER("Number of Common Genes"), 
+    	JACCARD("Jaccard Coefficient"), 
+    	OVERLAP("Overlap Coefficient"), 
+    	DIR_OVERLAP("Directed Overlap");
+    	
+    	public final String display;
+    	CutoffMetric(String display) { this.display = display; }
+    }
 
     //Gene Set Filtering Constants
     /**
@@ -85,29 +88,38 @@ public class PostAnalysisParameters {
      * Number in overlap = 2
      * Percent overlap (percent of Signature geneset) = 3
      */
-    final public static int HYPERGEOM = 0, MANN_WHIT = 1, PERCENT = 2, NUMBER = 3, SPECIFIC = 4;
+    public enum FilterMetric { 
+    	HYPERGEOM("Hypergeometric Test"), 
+    	MANN_WHIT("Mann-Whitney"), 
+    	PERCENT("Overlap X percent of EM gs"), 
+    	NUMBER("Overlap has at least X genes"), 
+    	SPECIFIC("Overlap X percent of Signature gs");
+    	
+    	public final String display;
+    	FilterMetric(String display) { this.display = display; }
+    }
 
-    /**
-     * String for Filtering options
-     * HYPERGEOM (0): "Passed the Hypergeometric test at the desired cut-off"
-     * MANN_WHIT (1): "Passed the Mann-Whitney-U rank sum test at the desired cut-off"
-     * PERCENT (2) : "Contains at least X percent (% of EM geneset)"
-     * NUMBER (3) : "Contains at least X genes"
-     * PERCENT (4): "Contains at least X percent (% of Signature geneset)"
-     */
-      final public static String[] filterItems = {"Hypergeometric Test", "Mann-Whitney", "Overlap X percent of EM gs", "Overlap has at least X genes", "Overlap X percent of Signature gs"};
-    /**
-     * Strings for Signature-Hub cut-off metric:
-     * ABS_NUMBER   (0) : "Number of common genes"
-     * JACCARD      (1) : "Jaccard Coefficient"
-     * OVERLAP      (2) : "Overlap Coefficient"
-     * DIR_OVERLAP  (3) : "Directed Overlap"
-     */
-    final public static String[] sigCutoffItems = {"Number of Common Genes",
-                                            "Jaccard Coefficient", 
-                                            "Overlap Coefficient",
-                                            "Directed Overlap",
-                                            };
+//    /**
+//     * String for Filtering options
+//     * HYPERGEOM (0): "Passed the Hypergeometric test at the desired cut-off"
+//     * MANN_WHIT (1): "Passed the Mann-Whitney-U rank sum test at the desired cut-off"
+//     * PERCENT (2) : "Contains at least X percent (% of EM geneset)"
+//     * NUMBER (3) : "Contains at least X genes"
+//     * PERCENT (4): "Contains at least X percent (% of Signature geneset)"
+//     */
+////      final public static String[] filterItems = {"Hypergeometric Test", "Mann-Whitney", "Overlap X percent of EM gs", "Overlap has at least X genes", "Overlap X percent of Signature gs"};
+//    /**
+//     * Strings for Signature-Hub cut-off metric:
+//     * ABS_NUMBER   (0) : "Number of common genes"
+//     * JACCARD      (1) : "Jaccard Coefficient"
+//     * OVERLAP      (2) : "Overlap Coefficient"
+//     * DIR_OVERLAP  (3) : "Directed Overlap"
+//     */
+//    final public static String[] sigCutoffItems = {"Number of Common Genes",
+//                                            "Jaccard Coefficient", 
+//                                            "Overlap Coefficient",
+//                                            "Directed Overlap",
+//                                            };
     
     final public static String SIGNATURE_INTERACTION_TYPE = "sig";
     
@@ -127,7 +139,7 @@ public class PostAnalysisParameters {
     private double signature_Hypergeom_Cutoff;   
     private double signature_Mann_Whit_Cutoff;
 
-    private int    signature_CutoffMetric;
+    private CutoffMetric signature_CutoffMetric;
     
     // Disease Signature default Values:
     private int    default_signature_absNumber_Cutoff = 5;
@@ -136,7 +148,7 @@ public class PostAnalysisParameters {
     private double default_signature_DirOverlap_Cutoff= 0.25;  
     private double default_signature_Hypergeom_Cutoff = 0.25;
     
-    private int    default_signature_CutoffMetric = ABS_NUMBER;
+    private CutoffMetric default_signature_CutoffMetric = CutoffMetric.ABS_NUMBER;
     
     // Disease Signature Data Structures:
     private SetOfGeneSets signatureGenesets;
@@ -152,12 +164,12 @@ public class PostAnalysisParameters {
     private boolean filter = false;
     private int filterValue;
     private int default_filter_value = 50;
-    private int default_signature_filterMetric = HYPERGEOM;
-    private int signature_filterMetric;
+    private FilterMetric default_signature_filterMetric = FilterMetric.HYPERGEOM;
+    private FilterMetric signature_filterMetric;
     
     //Disease Signature rank test
-    private int default_signature_rankTest = MANN_WHIT;
-    private int signature_rankTest = default_signature_rankTest;
+    private FilterMetric default_signature_rankTest = FilterMetric.MANN_WHIT;
+    private FilterMetric signature_rankTest = default_signature_rankTest;
     private double default_signature_Mann_Whit_Cutoff = 0.05;
     
     // Rank file
@@ -254,19 +266,19 @@ public class PostAnalysisParameters {
         	errors.append("No Signature Genesets selected \n");
         
         switch(signature_CutoffMetric) {
-        	case PostAnalysisParameters.ABS_NUMBER:
+        	case ABS_NUMBER:
 	        	if(signature_absNumber_Cutoff <= 0)
 	        		errors.append("Number of Genes Cutoff must be a positive, non-zero integer \n");
 	        	break;
-        	case PostAnalysisParameters.OVERLAP:
+        	case OVERLAP:
         		if(signature_Overlap_Cutoff < 0.0 || signature_Overlap_Cutoff > 1.0)
                 	errors.append("Overlap Cutoff must be a decimal Number between 0.0 and 1.0 \n");
         		break;
-        	case PostAnalysisParameters.JACCARD:
+        	case JACCARD:
         		if(signature_Jaccard_Cutoff < 0.0 || signature_Jaccard_Cutoff > 1.0)
                 	errors.append("Jaccard Cutoff must be a decimal Number between 0.0 and 1.0 \n");
         		break;
-        	case PostAnalysisParameters.DIR_OVERLAP:
+        	case DIR_OVERLAP:
         		if(signature_DirOverlap_Cutoff < 0.0 || signature_DirOverlap_Cutoff > 1.0)
                 	errors.append("Directed Overlap Cutoff must be a decimal Number between 0.0 and 1.0 \n");
         		break;
@@ -382,14 +394,14 @@ public class PostAnalysisParameters {
     /**
      * @param signature_CutoffMetric the signature_CutoffMetric to set
      */
-    public void setSignature_CutoffMetric(int signature_CutoffMetric) {
+    public void setSignature_CutoffMetric(CutoffMetric signature_CutoffMetric) {
         this.signature_CutoffMetric = signature_CutoffMetric;
     }
 
     /**
      * @return the signature_CutoffMetric
      */
-    public int getSignature_CutoffMetric() {
+    public CutoffMetric getSignature_CutoffMetric() {
         return signature_CutoffMetric;
     }
 
@@ -485,14 +497,14 @@ public class PostAnalysisParameters {
     /**
      * @param defaultSignatureCutoffMetric the default_signature_CutoffMetric to set
      */
-    public void setDefault_signature_CutoffMetric(int defaultSignatureCutoffMetric) {
+    public void setDefault_signature_CutoffMetric(CutoffMetric defaultSignatureCutoffMetric) {
         default_signature_CutoffMetric = defaultSignatureCutoffMetric;
     }
 
     /**
      * @return the default_signature_CutoffMetric
      */
-    public int getDefault_signature_CutoffMetric() {
+    public CutoffMetric getDefault_signature_CutoffMetric() {
         return default_signature_CutoffMetric;
     }
 
@@ -619,15 +631,15 @@ public class PostAnalysisParameters {
         this.filterValue = filterValue;
     }
 
-    public int getSignature_filterMetric() {
+    public FilterMetric getSignature_filterMetric() {
         return signature_filterMetric;
     }
 
-    public void setSignature_filterMetric(int signature_filterMetric) {
+    public void setSignature_filterMetric(FilterMetric signature_filterMetric) {
         this.signature_filterMetric = signature_filterMetric;
     }
 
-    public int getDefault_signature_filterMetric() {
+    public FilterMetric getDefault_signature_filterMetric() {
         return default_signature_filterMetric;
     }
 
@@ -717,28 +729,28 @@ public class PostAnalysisParameters {
 	/**
 	 * @return the signature_rankTest
 	 */
-	public int getSignature_rankTest() {
+	public FilterMetric getSignature_rankTest() {
 		return signature_rankTest;
 	}
 
 	/**
 	 * @param signature_rankTest the signature_rankTest to set
 	 */
-	public void setSignature_rankTest(int signature_rankTest) {
+	public void setSignature_rankTest(FilterMetric signature_rankTest) {
 		this.signature_rankTest = signature_rankTest;
 	}
 
 	/**
 	 * @return the default_signature_rankTest
 	 */
-	public int getDefault_signature_rankTest() {
+	public FilterMetric getDefault_signature_rankTest() {
 		return default_signature_rankTest;
 	}
 
 	/**
 	 * @param default_signature_rankTest the default_signature_rankTest to set
 	 */
-	public void setDefault_signature_rankTest(int default_signature_rankTest) {
+	public void setDefault_signature_rankTest(FilterMetric default_signature_rankTest) {
 		this.default_signature_rankTest = default_signature_rankTest;
 	}
 

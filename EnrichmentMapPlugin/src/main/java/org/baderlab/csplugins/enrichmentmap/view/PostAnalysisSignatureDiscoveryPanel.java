@@ -32,6 +32,7 @@ import javax.swing.JToolTip;
 import javax.swing.ScrollPaneConstants;
 
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
+import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters.FilterMetric;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadSignatureSetsActionListener;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.JMultiLineToolTip;
@@ -342,8 +343,6 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
 
         filtersPanel.add(nofilter);
 
-        String[] filterItems = PostAnalysisParameters.filterItems;
-        
         filterTextField = new JFormattedTextField() ;
         filterTextField.setColumns(4);
 //        filterTextField.setValue(paParams.getSignature_Hypergeom_Cutoff());
@@ -359,32 +358,31 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
         JPanel filterTypePanel = new JPanel();
         filterTypePanel.setLayout(new BorderLayout());
         filterTypeCombo = new JComboBox<>();
-        filterTypeCombo.addItem(filterItems[PostAnalysisParameters.HYPERGEOM]);
-        filterTypeCombo.addItem(filterItems[PostAnalysisParameters.MANN_WHIT]);
-        filterTypeCombo.addItem(filterItems[PostAnalysisParameters.PERCENT]);
-        filterTypeCombo.addItem(filterItems[PostAnalysisParameters.NUMBER]);
-        filterTypeCombo.addItem(filterItems[PostAnalysisParameters.SPECIFIC]);
+        filterTypeCombo.addItem(FilterMetric.HYPERGEOM.display);
+        filterTypeCombo.addItem(FilterMetric.MANN_WHIT.display);
+        filterTypeCombo.addItem(FilterMetric.PERCENT.display);
+        filterTypeCombo.addItem(FilterMetric.NUMBER.display);
+        filterTypeCombo.addItem(FilterMetric.SPECIFIC.display);
 //        filterTypeCombo.setSelectedItem(paParams.getDefault_signature_filterMetric());
 
         //Add Action listener for filter type drop down menu
         filterTypeCombo.addActionListener( new ActionListener() {
-            String[] filterItems = PostAnalysisParameters.filterItems;
             public void actionPerformed( ActionEvent e ) {
                 JComboBox<?> selectedChoice = (JComboBox<?>) e.getSource();
-                if ( filterItems[PostAnalysisParameters.HYPERGEOM].equals( selectedChoice.getSelectedItem() ) ) {
-                    paParams.setSignature_filterMetric(PostAnalysisParameters.HYPERGEOM);
+                if ( FilterMetric.HYPERGEOM.display.equals( selectedChoice.getSelectedItem() ) ) {
+                    paParams.setSignature_filterMetric(FilterMetric.HYPERGEOM);
                     filterTextField.setValue(paParams.getSignature_Hypergeom_Cutoff());
-                } else if ( filterItems[PostAnalysisParameters.MANN_WHIT].equals( selectedChoice.getSelectedItem() ) ) {
-                	paParams.setSignature_filterMetric(PostAnalysisParameters.MANN_WHIT);
+                } else if ( FilterMetric.MANN_WHIT.display.equals( selectedChoice.getSelectedItem() ) ) {
+                	paParams.setSignature_filterMetric(FilterMetric.MANN_WHIT);
                 	filterTextField.setValue(paParams.getSignature_Mann_Whit_Cutoff());
-                } else if ( filterItems[PostAnalysisParameters.PERCENT].equals( selectedChoice.getSelectedItem() ) ) {
-                    paParams.setSignature_filterMetric(PostAnalysisParameters.PERCENT);
+                } else if ( FilterMetric.PERCENT.display.equals( selectedChoice.getSelectedItem() ) ) {
+                    paParams.setSignature_filterMetric(FilterMetric.PERCENT);
                     filterTextField.setValue(paParams.getFilterValue());
-                } else if ( filterItems[PostAnalysisParameters.NUMBER].equals( selectedChoice.getSelectedItem() ) ) {
-                    paParams.setSignature_filterMetric(PostAnalysisParameters.NUMBER);
+                } else if ( FilterMetric.NUMBER.display.equals( selectedChoice.getSelectedItem() ) ) {
+                    paParams.setSignature_filterMetric(FilterMetric.NUMBER);
                     filterTextField.setValue(paParams.getFilterValue());
-                }else if ( filterItems[PostAnalysisParameters.SPECIFIC].equals( selectedChoice.getSelectedItem() ) ) {
-                    paParams.setSignature_filterMetric(PostAnalysisParameters.SPECIFIC);
+                }else if ( FilterMetric.SPECIFIC.display.equals( selectedChoice.getSelectedItem() ) ) {
+                    paParams.setSignature_filterMetric(FilterMetric.SPECIFIC);
                     filterTextField.setValue(paParams.getFilterValue());
                 }
             }
@@ -432,7 +430,7 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
             else if (source == filterTextField) {
                 Number value = (Number) filterTextField.getValue();
                 //if the filter type is percent then make sure the number entered is between 0 and 100
-                if(paParams.getSignature_filterMetric() == PostAnalysisParameters.HYPERGEOM){
+                if(paParams.getSignature_filterMetric() == FilterMetric.HYPERGEOM){
                     if ((value != null) && (value.doubleValue() >= 0.0) && (value.intValue() <= 1.0)) {
                         paParams.setSignature_Hypergeom_Cutoff(value.doubleValue());
                     } else {
@@ -440,7 +438,7 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
                         message += "The filter cutoff must be greater than or equal 0.0 and less than or equal to 1.0";
                         invalid = true;
                     }
-                } else if(paParams.getSignature_filterMetric() == PostAnalysisParameters.MANN_WHIT){
+                } else if(paParams.getSignature_filterMetric() == FilterMetric.MANN_WHIT){
                     if ((value != null) && (value.doubleValue() >= 0.0) && (value.intValue() <= 1.0)) {
                         paParams.setSignature_Mann_Whit_Cutoff(value.doubleValue());
                     } else {
@@ -448,7 +446,7 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
                         message += "The filter cutoff must be greater than or equal 0.0 and less than or equal to 1.0";
                         invalid = true;
                     }
-                } else if(paParams.getSignature_filterMetric() == PostAnalysisParameters.PERCENT){
+                } else if(paParams.getSignature_filterMetric() == FilterMetric.PERCENT){
                     if ((value != null) && (value.intValue() >= 0) && (value.intValue() <= 100)) {
                         paParams.setFilterValue(value.intValue());
                     } else {
@@ -458,7 +456,7 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
                     }
                 }
                 //if the filter type is NUMBER then it can be any number, zero or greater.
-                else if(paParams.getSignature_filterMetric() == PostAnalysisParameters.NUMBER){
+                else if(paParams.getSignature_filterMetric() == FilterMetric.NUMBER){
                     if ((value != null) && (value.intValue() >= 0)) {
                         paParams.setFilterValue(value.intValue());
                     } else {
@@ -498,8 +496,7 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
         // Reset the filter field
         filter.setSelected(true);
         paParams.setFilter(true);
-        String[] filterItems = PostAnalysisParameters.filterItems;
-        filterTypeCombo.setSelectedItem(filterItems[paParams.getDefault_signature_filterMetric()]);
+        filterTypeCombo.setSelectedItem(paParams.getDefault_signature_filterMetric().display);
 //        signatureDiscoveryRankTestCombo.setSelectedItem(filterItems[paParams.getDefault_signature_rankTest()]);
         
         parametersPanel.resetPanel();

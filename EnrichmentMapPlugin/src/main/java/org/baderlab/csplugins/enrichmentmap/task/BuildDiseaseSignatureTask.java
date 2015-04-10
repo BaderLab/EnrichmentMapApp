@@ -170,7 +170,8 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
     }
 
 
-    public void buildDiseaseSignature() {
+    @SuppressWarnings("incomplete-switch")
+	public void buildDiseaseSignature() {
 
         /* **************************************************
          * Calculate Similarity between Signature Gene Sets *
@@ -298,13 +299,13 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
                         	// if  either Jaccard or Overlap similarity are requested:
                         	switch(paParams.getSignature_CutoffMetric()) {
                         		default: // use Directed Overlap
-                        		case PostAnalysisParameters.DIR_OVERLAP:
+                        		case DIR_OVERLAP:
                         			coeffecient = (double)intersection.size() / (double)enrGenes.size();
                         			break;
-                        		case PostAnalysisParameters.JACCARD:
+                        		case JACCARD:
                         			coeffecient = (double)intersection.size() / (double)union.size();
                         			break;
-                        		case PostAnalysisParameters.OVERLAP:
+                        		case OVERLAP:
                         			coeffecient = (double)intersection.size() / Math.min((double)sigGenes.size(), (double)enrGenes.size());
                         			break;
                         	}
@@ -313,10 +314,10 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 	                        GenesetSimilarity comparison = new GenesetSimilarity(hub_name, geneset_name, coeffecient, PostAnalysisParameters.SIGNATURE_INTERACTION_TYPE, (HashSet<Integer>)intersection);
 	                        
 	                        switch(paParams.getSignature_rankTest()) {
-		                        case PostAnalysisParameters.MANN_WHIT:
+		                        case MANN_WHIT:
 		                        	mannWhitney(intersection, comparison);
 		                        	break;
-		                        case PostAnalysisParameters.HYPERGEOM:
+		                        case HYPERGEOM:
 		                        	hypergeometric(universeSize, sigGenesInUniverse, enrGenes, intersection, comparison);
 		                        	break;
 	                        }
@@ -378,11 +379,11 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 //                else if ( (paParams.getSignature_CutoffMetric() == PostAnalysisParameters.DIR_OVERLAP) && 
 //                        (geneset_similarities.get(edge_name).getSimilarity_coeffecient() >= paParams.getSignature_DirOverlap_Cutoff() ) )
 //                    passed_cutoff = true;
-                if ( (paParams.getSignature_rankTest() == PostAnalysisParameters.MANN_WHIT) && 
+                if ( (paParams.getSignature_rankTest() == PostAnalysisParameters.FilterMetric.MANN_WHIT) && 
                         (geneset_similarities.get(edge_name).getMann_Whit_pValue() <= paParams.getSignature_Mann_Whit_Cutoff() ) ||
-                     (paParams.getSignature_rankTest() == PostAnalysisParameters.MANN_WHIT) && 
+                     (paParams.getSignature_rankTest() == PostAnalysisParameters.FilterMetric.MANN_WHIT) && 
                         (geneset_similarities.get(edge_name).getSensitivity() ) ||
-                     (paParams.getSignature_rankTest() == PostAnalysisParameters.HYPERGEOM) && 
+                     (paParams.getSignature_rankTest() == PostAnalysisParameters.FilterMetric.HYPERGEOM) && 
                         (geneset_similarities.get(edge_name).getHypergeom_pvalue() <= paParams.getSignature_Hypergeom_Cutoff() )) {
                    	passed_cutoff = true;
                 }
@@ -522,7 +523,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 		current_edgerow.set(prefix + EnrichmentMapVisualStyle.ENRICHMENT_SET, geneset_similarities.get(edge_name).getEnrichment_set());
 		
 		// Attributes related to the Hypergeometric Test
-		if (paParams.getSignature_rankTest() == PostAnalysisParameters.HYPERGEOM) {
+		if (paParams.getSignature_rankTest() == PostAnalysisParameters.FilterMetric.HYPERGEOM) {
 			current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_PVALUE, geneset_similarities.get(edge_name).getHypergeom_pvalue());
 			current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_N, geneset_similarities.get(edge_name).getHypergeom_N());
 			current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_n, geneset_similarities.get(edge_name).getHypergeom_n());
@@ -531,7 +532,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 		}
 		
 		// Attributes related to the Mann-Whitney Test
-		if (paParams.getSignature_rankTest() == PostAnalysisParameters.MANN_WHIT) {
+		if (paParams.getSignature_rankTest() == PostAnalysisParameters.FilterMetric.MANN_WHIT) {
 			current_edgerow.set(prefix + EnrichmentMapVisualStyle.MANN_WHIT_PVALUE, geneset_similarities.get(edge_name).getMann_Whit_pValue());
 		}
 		
