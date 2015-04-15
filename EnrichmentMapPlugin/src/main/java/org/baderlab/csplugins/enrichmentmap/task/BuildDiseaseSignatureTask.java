@@ -467,10 +467,12 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 		sigGeneSet.getGenes().retainAll(map.getDataset(EnrichmentMap.DATASET1).getDatasetGenes());
 		map.getDataset(EnrichmentMap.DATASET1).getGenesetsOfInterest().getGenesets().put(hub_name, sigGeneSet);
 		
-		// set Visual Style bypass
-		hubNodeView.setLockedValue(BasicVisualLexicon.NODE_SHAPE, paParams.getSignatureHub_nodeShape());               
-		hubNodeView.setLockedValue(BasicVisualLexicon.NODE_FILL_COLOR, paParams.getSignatureHub_nodeColor());               
-		hubNodeView.setLockedValue(BasicVisualLexicon.NODE_BORDER_PAINT, paParams.getSignatureHub_borderColor());
+		// a value less than -1 will be interpreted by the visual style as yellow
+		current_row.set(prefix + EnrichmentMapVisualStyle.COLOURING_DATASET1, -2.0);
+		if(map.getDataset(EnrichmentMap.DATASET2) != null) {
+			current_row.set(prefix + EnrichmentMapVisualStyle.COLOURING_DATASET2, -2.0);
+		}
+		
 		return hub_node;
 	}
     
@@ -482,9 +484,11 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 			                   CyNode hub_node, String prefix, CyTable cyEdgeAttrs, CyTable cyNodeAttrs, boolean passed_cutoff) {
 		
 		CyEdge edge = NetworkUtil.getEdgeWithValue(current_network, cyEdgeAttrs, CyNetwork.NAME, edge_name);
+		GenesetSimilarity genesetSimilarity = geneset_similarities.get(edge_name);
+		
 		if(passed_cutoff) {
 			if(edge == null) { // edge does not exist, create it
-				CyNode gene_set = NetworkUtil.getNodeWithValue(current_network, cyNodeAttrs, CyNetwork.NAME, geneset_similarities.get(edge_name).getGeneset2_Name());
+				CyNode gene_set = NetworkUtil.getNodeWithValue(current_network, cyNodeAttrs, CyNetwork.NAME, genesetSimilarity.getGeneset2_Name());
 				edge = current_network.addEdge(hub_node, gene_set, false);
 			} 
 			// if the edge already exists then just update existing one
@@ -505,7 +509,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 		//only create the list if the hashkey 2 genes is not null Otherwise it take too much time to populate the list
 		if(map.getHashkey2gene() != null){
 		    List<String> gene_list = new ArrayList<>();
-		    Set<Integer> genes_hash = geneset_similarities.get(edge_name).getOverlapping_genes();
+		    Set<Integer> genes_hash = genesetSimilarity.getOverlapping_genes();
 		    for(Integer current : genes_hash) {
 		        String gene = map.getGeneFromHashKey(current);
 		        if(gene_list != null && gene != null) {
@@ -517,37 +521,48 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 		    current_edgerow.set(prefix + EnrichmentMapVisualStyle.OVERLAP_GENES, gene_list);                        
 		}
  
-		current_edgerow.set(prefix + EnrichmentMapVisualStyle.OVERLAP_SIZE, geneset_similarities.get(edge_name).getSizeOfOverlap());
-		current_edgerow.set(prefix + EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT, geneset_similarities.get(edge_name).getSimilarity_coeffecient());
-		current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_PVALUE, geneset_similarities.get(edge_name).getHypergeom_pvalue());
-		current_edgerow.set(prefix + EnrichmentMapVisualStyle.ENRICHMENT_SET, geneset_similarities.get(edge_name).getEnrichment_set());
+		current_edgerow.set(prefix + EnrichmentMapVisualStyle.OVERLAP_SIZE, genesetSimilarity.getSizeOfOverlap());
+		current_edgerow.set(prefix + EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT, genesetSimilarity.getSimilarity_coeffecient());
+		current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_PVALUE, genesetSimilarity.getHypergeom_pvalue());
+		current_edgerow.set(prefix + EnrichmentMapVisualStyle.ENRICHMENT_SET, genesetSimilarity.getEnrichment_set());
+		current_edgerow.set(prefix + EnrichmentMapVisualStyle.COLOURING_EDGES, -1); // special value for PA edge color
 		
 		// Attributes related to the Hypergeometric Test
 		if (paParams.getSignature_rankTest() == PostAnalysisParameters.FilterMetric.HYPERGEOM) {
-			current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_PVALUE, geneset_similarities.get(edge_name).getHypergeom_pvalue());
-			current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_N, geneset_similarities.get(edge_name).getHypergeom_N());
-			current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_n, geneset_similarities.get(edge_name).getHypergeom_n());
-			current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_m, geneset_similarities.get(edge_name).getHypergeom_m());
-			current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_k, geneset_similarities.get(edge_name).getHypergeom_k());
+			current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_PVALUE, genesetSimilarity.getHypergeom_pvalue());
+			current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_N, genesetSimilarity.getHypergeom_N());
+			current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_n, genesetSimilarity.getHypergeom_n());
+			current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_m, genesetSimilarity.getHypergeom_m());
+			current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_k, genesetSimilarity.getHypergeom_k());
 		}
 		
 		// Attributes related to the Mann-Whitney Test
 		if (paParams.getSignature_rankTest() == PostAnalysisParameters.FilterMetric.MANN_WHIT) {
-			current_edgerow.set(prefix + EnrichmentMapVisualStyle.MANN_WHIT_PVALUE, geneset_similarities.get(edge_name).getMann_Whit_pValue());
+			current_edgerow.set(prefix + EnrichmentMapVisualStyle.MANN_WHIT_PVALUE, genesetSimilarity.getMann_Whit_pValue());
 		}
 		
+		// Set edge width attribute
 		if(edgeView != null) {
-			edgeView.setLockedValue(BasicVisualLexicon.EDGE_UNSELECTED_PAINT, paParams.getSignatureHub_edgeColor());
-			edgeView.setLockedValue(BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT, paParams.getSignatureHub_edgeColor());
-		
-			//change "edge.lineWidth" based on Hypergeometric Value 
-			if (geneset_similarities.get(edge_name).getHypergeom_pvalue() <= (paParams.getSignature_Hypergeom_Cutoff()/100) )
-				edgeView.setLockedValue(BasicVisualLexicon.EDGE_WIDTH,8.0);	
-			else 
-				if (geneset_similarities.get(edge_name).getHypergeom_pvalue() <= (paParams.getSignature_Hypergeom_Cutoff()/10) )
-					edgeView.setLockedValue(BasicVisualLexicon.EDGE_WIDTH,4.5);	                   
-				else
-					edgeView.setLockedValue(BasicVisualLexicon.EDGE_WIDTH,1.0);	
+			if(paParams.getSignature_rankTest() == PostAnalysisParameters.FilterMetric.HYPERGEOM) {
+				//change "edge.lineWidth" based on Hypergeometric Value 
+				if (genesetSimilarity.getHypergeom_pvalue() <= (paParams.getSignature_Hypergeom_Cutoff()/100) )
+					current_edgerow.set(prefix + EnrichmentMapVisualStyle.WIDTH_EDGES, 0.8);
+				else 
+					if (genesetSimilarity.getHypergeom_pvalue() <= (paParams.getSignature_Hypergeom_Cutoff()/10) )
+						current_edgerow.set(prefix + EnrichmentMapVisualStyle.WIDTH_EDGES, 0.45);
+					else
+						current_edgerow.set(prefix + EnrichmentMapVisualStyle.WIDTH_EDGES, 0.1);
+			}
+			if(paParams.getSignature_rankTest() == PostAnalysisParameters.FilterMetric.MANN_WHIT) {
+				//change "edge.lineWidth" based on Hypergeometric Value 
+				if (genesetSimilarity.getMann_Whit_pValue() <= (paParams.getSignature_Mann_Whit_Cutoff()/100) )
+					current_edgerow.set(prefix + EnrichmentMapVisualStyle.WIDTH_EDGES, 0.8);
+				else 
+					if (genesetSimilarity.getMann_Whit_pValue() <= (paParams.getSignature_Mann_Whit_Cutoff()/10) )
+						current_edgerow.set(prefix + EnrichmentMapVisualStyle.WIDTH_EDGES, 0.45);
+					else
+						current_edgerow.set(prefix + EnrichmentMapVisualStyle.WIDTH_EDGES, 0.1);
+			}
 		}
 		
 		return !passed_cutoff;
@@ -651,6 +666,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
     	
     	if(edgeTable.getColumn(prefix + EnrichmentMapVisualStyle.MANN_WHIT_PVALUE) == null)		
     		edgeTable.createColumn(prefix + EnrichmentMapVisualStyle.MANN_WHIT_PVALUE , Double.class, false);
+    	
     	
     	return edgeTable;
     }

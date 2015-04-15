@@ -45,13 +45,9 @@ package org.baderlab.csplugins.enrichmentmap;
 
 
 
-import java.awt.Color;
-
 import javax.swing.DefaultListModel;
 
 import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
-import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
-import org.cytoscape.view.presentation.property.values.NodeShape;
 
 /**
  * @author revilo
@@ -98,36 +94,9 @@ public class PostAnalysisParameters {
     	public final String display;
     	FilterMetric(String display) { this.display = display; }
     }
-
-//    /**
-//     * String for Filtering options
-//     * HYPERGEOM (0): "Passed the Hypergeometric test at the desired cut-off"
-//     * MANN_WHIT (1): "Passed the Mann-Whitney-U rank sum test at the desired cut-off"
-//     * PERCENT (2) : "Contains at least X percent (% of EM geneset)"
-//     * NUMBER (3) : "Contains at least X genes"
-//     * PERCENT (4): "Contains at least X percent (% of Signature geneset)"
-//     */
-////      final public static String[] filterItems = {"Hypergeometric Test", "Mann-Whitney", "Overlap X percent of EM gs", "Overlap has at least X genes", "Overlap X percent of Signature gs"};
-//    /**
-//     * Strings for Signature-Hub cut-off metric:
-//     * ABS_NUMBER   (0) : "Number of common genes"
-//     * JACCARD      (1) : "Jaccard Coefficient"
-//     * OVERLAP      (2) : "Overlap Coefficient"
-//     * DIR_OVERLAP  (3) : "Directed Overlap"
-//     */
-//    final public static String[] sigCutoffItems = {"Number of Common Genes",
-//                                            "Jaccard Coefficient", 
-//                                            "Overlap Coefficient",
-//                                            "Directed Overlap",
-//                                            };
     
     final public static String SIGNATURE_INTERACTION_TYPE = "sig";
     
-    private NodeShape signatureHub_nodeShape   = NodeShapeVisualProperty.TRIANGLE;
-    private Color signatureHub_nodeColor   = new Color(255,255,0); // yellow
-    private Color signatureHub_borderColor = new Color(255,255,0); // yellow
-    private Color signatureHub_edgeColor   = new Color(255,0,200); // pink
-
     
     // Disease Signature Parameters:
     private String signatureGMTFileName;
@@ -543,62 +512,6 @@ public class PostAnalysisParameters {
      */
     public DefaultListModel<String> getSelectedSignatureSetNames() {
         return selectedSignatureSetNames;
-    }
-
-    /**
-     * @param signatureHub_nodeShape the signatureHub_nodeShape to set
-     */
-    public void setSignatureHub_nodeShape(NodeShape signatureHub_nodeShape) {
-        this.signatureHub_nodeShape = signatureHub_nodeShape;
-    }
-
-    /**
-     * @return the signatureHub_nodeShape
-     */
-    public NodeShape getSignatureHub_nodeShape() {
-        return signatureHub_nodeShape;
-    }
-
-    /**
-     * @param signatureHub_nodeColor the signatureHub_nodeColor to set
-     */
-    public void setSignatureHub_nodeColor(Color signatureHub_nodeColor) {
-        this.signatureHub_nodeColor = signatureHub_nodeColor;
-    }
-
-    /**
-     * @return the signatureHub_nodeColor
-     */
-    public Color getSignatureHub_nodeColor() {
-        return signatureHub_nodeColor;
-    }
-
-    /**
-     * @param signatureHub_borderColor the signatureHub_borderColor to set
-     */
-    public void setSignatureHub_borderColor(Color signatureHub_borderColor) {
-        this.signatureHub_borderColor = signatureHub_borderColor;
-    }
-
-    /**
-     * @return the signatureHub_borderColor
-     */
-    public Color getSignatureHub_borderColor() {
-        return signatureHub_borderColor;
-    }
-
-    /**
-     * @param signatureHub_edgeColor the signatureHub_edgeColor to set
-     */
-    public void setSignatureHub_edgeColor(Color signatureHub_edgeColor) {
-        this.signatureHub_edgeColor = signatureHub_edgeColor;
-    }
-
-    /**
-     * @return the signatureHub_edgeColor
-     */
-    public Color getSignatureHub_edgeColor() {
-        return signatureHub_edgeColor;
     }
 
     /**

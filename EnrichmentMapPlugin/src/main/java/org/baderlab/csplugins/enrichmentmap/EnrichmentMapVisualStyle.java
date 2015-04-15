@@ -43,10 +43,12 @@
 
 package org.baderlab.csplugins.enrichmentmap;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Paint;
 
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
+import org.cytoscape.view.presentation.property.values.NodeShape;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.mappings.BoundaryRangeValues;
@@ -64,13 +66,13 @@ import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
  */
 public class EnrichmentMapVisualStyle {
 
-	private EnrichmentMapParameters params;
+	private final EnrichmentMapParameters params;
 	
 	//services required for setting up visualStyle
 	//we will need all three mappers
-    private VisualMappingFunctionFactory vmfFactoryContinuous;
-    private VisualMappingFunctionFactory vmfFactoryDiscrete;
-    private VisualMappingFunctionFactory vmfFactoryPassthrough;
+    private final VisualMappingFunctionFactory vmfFactoryContinuous;
+    private final VisualMappingFunctionFactory vmfFactoryDiscrete;
+    private final VisualMappingFunctionFactory vmfFactoryPassthrough;
        
 	
     public static final int maxNodeLabelLength = 15;
@@ -78,62 +80,67 @@ public class EnrichmentMapVisualStyle {
     //Attribute Names - prefix is appended to each one of these names in order to associated these
     //attributes to a particular enrichment map.  This allows for multiple enrichment maps in an
     //individual session.
-    public static String NAME = "Name";
-    public static String GS_DESCR = "GS_DESCR";
-    public static String FORMATTED_NAME = "Formatted_name";
-    public static String GS_SOURCE = "GS_Source";
-    public static String GENES = "Genes";
-    public static String ENR_GENES = "Enrichment_Genes";
-    public static String GS_TYPE = "GS_Type";
+    public static final String NAME = "Name";
+    public static final String GS_DESCR = "GS_DESCR";
+    public static final String FORMATTED_NAME = "Formatted_name";
+    public static final String GS_SOURCE = "GS_Source";
+    public static final String GENES = "Genes";
+    public static final String ENR_GENES = "Enrichment_Genes";
+    public static final String GS_TYPE = "GS_Type";
 
-    public static String ES_DATASET1 = "ES_dataset1";
-    public static String NES_DATASET1 = "NES_dataset1";
-    public static String GS_SIZE_DATASET1 = "gs_size_dataset1";
-    public static String PVALUE_DATASET1 = "pvalue_dataset1";
-    public static String FDR_QVALUE_DATASET1 = "fdr_qvalue_dataset1";
-    public static String FWER_QVALUE_DATASET1 = "fwer_qvalue_dataset1";
-    public static String COLOURING_DATASET1 = "Colouring_dataset1";
+    public static final String ES_DATASET1 = "ES_dataset1";
+    public static final String NES_DATASET1 = "NES_dataset1";
+    public static final String GS_SIZE_DATASET1 = "gs_size_dataset1";
+    public static final String PVALUE_DATASET1 = "pvalue_dataset1";
+    public static final String FDR_QVALUE_DATASET1 = "fdr_qvalue_dataset1";
+    public static final String FWER_QVALUE_DATASET1 = "fwer_qvalue_dataset1";
+    public static final String COLOURING_DATASET1 = "Colouring_dataset1";
 
-    public static String ES_DATASET2 = "ES_dataset2";
-    public static String NES_DATASET2 = "NES_dataset2";
-    public static String GS_SIZE_DATASET2 = "gs_size_dataset2";
-    public static String PVALUE_DATASET2 = "pvalue_dataset2";
-    public static String FDR_QVALUE_DATASET2 = "fdr_qvalue_dataset2";
-    public static String FWER_QVALUE_DATASET2 = "fwer_qvalue_dataset2";
-    public static String COLOURING_DATASET2 = "Colouring_dataset2";
+    public static final String ES_DATASET2 = "ES_dataset2";
+    public static final String NES_DATASET2 = "NES_dataset2";
+    public static final String GS_SIZE_DATASET2 = "gs_size_dataset2";
+    public static final String PVALUE_DATASET2 = "pvalue_dataset2";
+    public static final String FDR_QVALUE_DATASET2 = "fdr_qvalue_dataset2";
+    public static final String FWER_QVALUE_DATASET2 = "fwer_qvalue_dataset2";
+    public static final String COLOURING_DATASET2 = "Colouring_dataset2";
 
-    public static String GS_SIZE_SIGNATURE = "gs_size_signature";
+    public static final String GS_SIZE_SIGNATURE = "gs_size_signature";
     
-    public static String GS_TYPE_ENRICHMENT = "ENR";
-    public static String GS_TYPE_SIGNATURE = "SIG";
+    public static final String GS_TYPE_ENRICHMENT = "ENR";
+    public static final String GS_TYPE_SIGNATURE = "SIG";
     
-    public static String OVERLAP_SIZE = "Overlap_size";
-    public static String SIMILARITY_COEFFICIENT = "similarity_coefficient";
-    public static String OVERLAP_GENES = "Overlap_genes";
-    public static String HYPERGEOM_PVALUE = "Overlap_Hypergeom_pVal";
-    public static String MANN_WHIT_PVALUE = "Overlap_Mann_Whit_pVal";
-    public static String ENRICHMENT_SET = "ENRICHMENT_SET";
+    public static final String OVERLAP_SIZE = "Overlap_size";
+    public static final String SIMILARITY_COEFFICIENT = "similarity_coefficient";
+    public static final String OVERLAP_GENES = "Overlap_genes";
+    public static final String HYPERGEOM_PVALUE = "Overlap_Hypergeom_pVal";
+    public static final String MANN_WHIT_PVALUE = "Overlap_Mann_Whit_pVal";
+    public static final String ENRICHMENT_SET = "ENRICHMENT_SET";
+    public static final String COLOURING_EDGES = "Colouring_edges";
+    public static final String WIDTH_EDGES = "Width_edges";
     
     // Related to Hypergeometric Test
-    public static String HYPERGEOM_N = "HyperGeom_N_Universe";
-    public static String HYPERGEOM_n = "HyperGeom_n_Sig_Universe";
-    public static String HYPERGEOM_k = "k_Intersection";
-    public static String HYPERGEOM_m = "m_Enr_Genes";
+    public static final String HYPERGEOM_N = "HyperGeom_N_Universe";
+    public static final String HYPERGEOM_n = "HyperGeom_n_Sig_Universe";
+    public static final String HYPERGEOM_k = "k_Intersection";
+    public static final String HYPERGEOM_m = "m_Enr_Genes";
     
-    public static String NUMBER_OF_ENRICHMENT_GENES = "# of Enrichment Genes";
+    public static final String NUMBER_OF_ENRICHMENT_GENES = "# of Enrichment Genes";
     
-    public static String NETW_REPORT1_DIR = "GSEA_Report_Dataset1_folder";
-    public static String NETW_REPORT2_DIR = "GSEA_Report_Dataset2_folder";
+    public static final String NETW_REPORT1_DIR = "GSEA_Report_Dataset1_folder";
+    public static final String NETW_REPORT2_DIR = "GSEA_Report_Dataset2_folder";
         
     //default colours
-    public static Color max_phenotype1 = new Color(255,0,0);
-    public static Color lighter_phenotype1 = new Color(255,102,102);
-    public static Color lightest_phenotype1 = new Color(255,179,179);
-    public static Color max_phenotype2 = new Color(0,100,255);
-    public static Color lighter_phenotype2 = new Color(102,162,255);
-    public static Color lightest_phenotype2 = new Color(179,208,255);
-    public static Color overColor = Color.WHITE;
+    public static final Color max_phenotype1 = new Color(255,0,0);
+    public static final Color lighter_phenotype1 = new Color(255,102,102);
+    public static final Color lightest_phenotype1 = new Color(255,179,179);
+    public static final Color max_phenotype2 = new Color(0,100,255);
+    public static final Color lighter_phenotype2 = new Color(102,162,255);
+    public static final Color lightest_phenotype2 = new Color(179,208,255);
+    public static final Color overColor = Color.WHITE;
+    public static final Color yellow = new Color(255,255,0); // yellow
+    public static final Color light_grey = new Color(190,190,190); // a lighter grey
 
+    
     /**
      * Constructor
      *
@@ -167,6 +174,7 @@ public class EnrichmentMapVisualStyle {
         return vs;
     }
 
+    
     /**
      * Create edge appearances for this enrichment map, specify the edge thicknes mapped to the number of genes
      * in the overlap, and default colour
@@ -178,32 +186,45 @@ public class EnrichmentMapVisualStyle {
                       
         //add the discrete mapper for edge colour:        
         //can't just update edge_paint -- need to do the same for all the type of edge paints
-        DiscreteMapping<Integer,Paint> disMapping_edge2 = (DiscreteMapping<Integer,Paint>)this.vmfFactoryDiscrete.createVisualMappingFunction(prefix + EnrichmentMapVisualStyle.ENRICHMENT_SET, Integer.class, BasicVisualLexicon.EDGE_UNSELECTED_PAINT);
-        disMapping_edge2.putMapValue(new Integer(0),new Color(100,200,000));
-        disMapping_edge2.putMapValue(new Integer(1),new Color(100,200,000));
-        disMapping_edge2.putMapValue(new Integer(2),new Color(100,149,237));
+        DiscreteMapping<Integer,Paint> disMapping_edge2 = (DiscreteMapping<Integer,Paint>) vmfFactoryDiscrete.createVisualMappingFunction(prefix + COLOURING_EDGES, Integer.class, BasicVisualLexicon.EDGE_UNSELECTED_PAINT);
+        disMapping_edge2.putMapValue(0, new Color(100,200,000));
+        disMapping_edge2.putMapValue(1, new Color(100,200,000));
+        disMapping_edge2.putMapValue(2, new Color(100,149,237));
+        disMapping_edge2.putMapValue(-1, new Color(255,0,200)); // pink
         vs.addVisualMappingFunction(disMapping_edge2);
         
-        DiscreteMapping<Integer,Paint> disMapping_edge4 = (DiscreteMapping<Integer,Paint>)this.vmfFactoryDiscrete.createVisualMappingFunction(prefix + EnrichmentMapVisualStyle.ENRICHMENT_SET, Integer.class, BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT);
-        disMapping_edge4.putMapValue(new Integer(0),new Color(100,200,000));
-        disMapping_edge4.putMapValue(new Integer(1),new Color(100,200,000));
-        disMapping_edge4.putMapValue(new Integer(2),new Color(100,149,237));
+        DiscreteMapping<Integer,Paint> disMapping_edge4 = (DiscreteMapping<Integer,Paint>) vmfFactoryDiscrete.createVisualMappingFunction(prefix + COLOURING_EDGES, Integer.class, BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT);
+        disMapping_edge4.putMapValue(0, new Color(100,200,000));
+        disMapping_edge4.putMapValue(1, new Color(100,200,000));
+        disMapping_edge4.putMapValue(2, new Color(100,149,237));
+        disMapping_edge4.putMapValue(-1, new Color(255,0,200)); // pink
         vs.addVisualMappingFunction(disMapping_edge4);
 
-
-        //Continous Mapping - set edge line thickness based on the number of genes in the overlap
-        ContinuousMapping<Double,Double> conmapping_edgewidth = (ContinuousMapping<Double,Double>) this.vmfFactoryContinuous.createVisualMappingFunction(prefix + EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT, Double.class, BasicVisualLexicon.EDGE_WIDTH);
-                
-        Double under_width = 0.5;
-        Double min_width = 1.0;
-        Double max_width = 5.0;
-        Double over_width = 6.0;
-
-        // Create boundary conditions                  less than,   equals,  greater than
-        BoundaryRangeValues<Double> bv4 = new BoundaryRangeValues<Double>(under_width, min_width, min_width);
-        BoundaryRangeValues<Double> bv5 = new BoundaryRangeValues<Double>(max_width, max_width, over_width);
-        conmapping_edgewidth.addPoint(params.getSimilarityCutOff(), bv4);
-        conmapping_edgewidth.addPoint(1.0, bv5);
+        // The below logic for computing width based on SIMILARITY_COEFFICIENT is now located in CreateEnrichmentMapNetworkTask by the LinearNumberInterpolator
+        // The width attribute is now a separate attribute (WIDTH_EDGES) that has a value between 0.0 and 1.0
+        
+//        //Continous Mapping - set edge line thickness based on the number of genes in the overlap
+//        ContinuousMapping<Double,Double> conmapping_edgewidth = (ContinuousMapping<Double,Double>) this.vmfFactoryContinuous.createVisualMappingFunction(prefix + EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT, Double.class, BasicVisualLexicon.EDGE_WIDTH);
+//                
+//        Double under_width = 0.5;
+//        Double min_width = 1.0;
+//        Double max_width = 5.0;
+//        Double over_width = 6.0;
+//
+//        // Create boundary conditions                  less than,   equals,  greater than
+//        BoundaryRangeValues<Double> bv4 = new BoundaryRangeValues<Double>(under_width, min_width, min_width);
+//        BoundaryRangeValues<Double> bv5 = new BoundaryRangeValues<Double>(max_width, max_width, over_width);
+//        conmapping_edgewidth.addPoint(params.getSimilarityCutOff(), bv4);
+//        conmapping_edgewidth.addPoint(1.0, bv5);
+        
+        
+        ContinuousMapping<Double,Double> conmapping_edgewidth = (ContinuousMapping<Double,Double>) vmfFactoryContinuous.createVisualMappingFunction(prefix + WIDTH_EDGES, Double.class, BasicVisualLexicon.EDGE_WIDTH);
+        
+        // edge with ranges from 0 to 10, edge_width attribute ranges from 0.0 to 1.0
+        BoundaryRangeValues<Double> brvw1 = new BoundaryRangeValues<Double>(0.0, 0.0, 0.0);
+        BoundaryRangeValues<Double> brvw2 = new BoundaryRangeValues<Double>(10.0, 10.0, 10.0);
+        conmapping_edgewidth.addPoint(0.0, brvw1);
+        conmapping_edgewidth.addPoint(1.0, brvw2);
         
         vs.addVisualMappingFunction(conmapping_edgewidth);
         
@@ -221,8 +242,27 @@ public class EnrichmentMapVisualStyle {
      */
     private VisualStyle createNodeAppearance(VisualStyle vs,String prefix){
 
+    	DiscreteMapping<String,NodeShape> disMapping_nodeShape = (DiscreteMapping<String,NodeShape>) vmfFactoryDiscrete.createVisualMappingFunction(prefix + GS_TYPE, String.class, BasicVisualLexicon.NODE_SHAPE);
+        disMapping_nodeShape.putMapValue(GS_TYPE_ENRICHMENT, NodeShapeVisualProperty.ELLIPSE);
+        disMapping_nodeShape.putMapValue(GS_TYPE_SIGNATURE, NodeShapeVisualProperty.TRIANGLE);
+        
+        vs.addVisualMappingFunction(disMapping_nodeShape);
+        
+        // If we are not creating a continuous mapping for the border paint then use a discrete one
+        if(!params.isTwoDatasets()) {
+        	DiscreteMapping<String,Paint> disMapping_borderPaint = (DiscreteMapping<String,Paint>) vmfFactoryDiscrete.createVisualMappingFunction(prefix + GS_TYPE, String.class, BasicVisualLexicon.NODE_BORDER_PAINT);
+        	disMapping_borderPaint.putMapValue(GS_TYPE_ENRICHMENT, light_grey);
+        	disMapping_borderPaint.putMapValue(GS_TYPE_SIGNATURE, yellow);
+        	
+        	vs.addVisualMappingFunction(disMapping_borderPaint);
+        }
+        
+        
+    	// The "less than" value for the first point is yellow so that Post-Analysis nodes can set a
+    	// value less than -1 to make the node yellow.
+    	
         // Create boundary conditions                  less than,   equals,  greater than
-        BoundaryRangeValues<Paint> bv3a = new BoundaryRangeValues<Paint>(max_phenotype2,max_phenotype2,max_phenotype2);
+        BoundaryRangeValues<Paint> bv3a = new BoundaryRangeValues<Paint>(yellow,max_phenotype2,max_phenotype2);
         BoundaryRangeValues<Paint> bv3b = new BoundaryRangeValues<Paint>(lighter_phenotype2, lighter_phenotype2, max_phenotype2);
         BoundaryRangeValues<Paint> bv3c = new BoundaryRangeValues<Paint>(lightest_phenotype2, lightest_phenotype2,lighter_phenotype2);
         BoundaryRangeValues<Paint> bv3d = new BoundaryRangeValues<Paint>(lightest_phenotype2, overColor, overColor);
@@ -234,9 +274,9 @@ public class EnrichmentMapVisualStyle {
 
 
         //set the default node appearance
-        vs.setDefaultValue(BasicVisualLexicon.NODE_FILL_COLOR, new Color(190,190,190) /* a lighter grey*/);
-        vs.setDefaultValue(BasicVisualLexicon.NODE_BORDER_PAINT, new Color(190,190,190) /* a lighter grey*/);
-        vs.setDefaultValue(BasicVisualLexicon.NODE_SHAPE,NodeShapeVisualProperty.ELLIPSE );
+        vs.setDefaultValue(BasicVisualLexicon.NODE_FILL_COLOR, light_grey);
+        vs.setDefaultValue(BasicVisualLexicon.NODE_BORDER_PAINT, light_grey);
+        vs.setDefaultValue(BasicVisualLexicon.NODE_SHAPE, NodeShapeVisualProperty.ELLIPSE);
 
         //change the default node and border size only when using two distinct dataset to be more equal.
         if(params.isTwoDistinctExpressionSets()){
@@ -249,40 +289,39 @@ public class EnrichmentMapVisualStyle {
         }        
         
         // Passthrough Mapping - set node label
-        PassthroughMapping<String,String> pm = (PassthroughMapping<String,String>)this.vmfFactoryPassthrough.createVisualMappingFunction(prefix + EnrichmentMapVisualStyle.FORMATTED_NAME,String.class,BasicVisualLexicon.NODE_LABEL);
+        PassthroughMapping<String,String> pm = (PassthroughMapping<String,String>) vmfFactoryPassthrough.createVisualMappingFunction(prefix + FORMATTED_NAME, String.class, BasicVisualLexicon.NODE_LABEL);
 
         //if it is an EMgmt then we want the node label to be the description.
         if(params.isEMgmt()){
-        	pm = (PassthroughMapping<String,String>)this.vmfFactoryPassthrough.createVisualMappingFunction(prefix + EnrichmentMapVisualStyle.GS_DESCR,String.class,BasicVisualLexicon.NODE_LABEL);            
+        	pm = (PassthroughMapping<String,String>) vmfFactoryPassthrough.createVisualMappingFunction(prefix + GS_DESCR, String.class, BasicVisualLexicon.NODE_LABEL);            
         }
 
         vs.addVisualMappingFunction(pm);
 
 
         //Continuous Mapping - set node size based on the size of the geneset
-        ContinuousMapping<Integer,Double> continuousMapping_size = (ContinuousMapping<Integer,Double>)this.vmfFactoryContinuous.createVisualMappingFunction(prefix+ EnrichmentMapVisualStyle.GS_SIZE_DATASET1, Integer.class, BasicVisualLexicon.NODE_SIZE);
+        ContinuousMapping<Integer,Double> continuousMapping_size = (ContinuousMapping<Integer,Double>) vmfFactoryContinuous.createVisualMappingFunction(prefix + GS_SIZE_DATASET1, Integer.class, BasicVisualLexicon.NODE_SIZE);
         
         Double min = 20.0;
         Double max = 65.0;
 
-           // Create boundary conditions                  less than,   equals,  greater than
-         BoundaryRangeValues<Double> bv0 = new BoundaryRangeValues<Double>(min, min, min);
-         BoundaryRangeValues<Double> bv1 = new BoundaryRangeValues<Double>(max, max, max);
+        // Create boundary conditions                  less than,   equals,  greater than
+        BoundaryRangeValues<Double> bv0 = new BoundaryRangeValues<Double>(min, min, min);
+        BoundaryRangeValues<Double> bv1 = new BoundaryRangeValues<Double>(max, max, max);
         continuousMapping_size.addPoint(10, bv0);
         continuousMapping_size.addPoint(474, bv1);
         
         vs.addVisualMappingFunction(continuousMapping_size);
 
-        if(params.isTwoDatasets()){
-
+        if(params.isTwoDatasets()) {
             //Continuous Mapping - set node size based on the size of the geneset
-        		ContinuousMapping<Integer,Double> continuousMapping_size_dataset2 = (ContinuousMapping<Integer,Double>)this.vmfFactoryContinuous.createVisualMappingFunction(prefix+ EnrichmentMapVisualStyle.GS_SIZE_DATASET2, Integer.class, BasicVisualLexicon.NODE_BORDER_WIDTH);
+        	ContinuousMapping<Integer,Double> continuousMapping_size_dataset2 = (ContinuousMapping<Integer,Double>) vmfFactoryContinuous.createVisualMappingFunction(prefix + GS_SIZE_DATASET2, Integer.class, BasicVisualLexicon.NODE_BORDER_WIDTH);
                         
             Double min_line = 4.0;
             Double max_line = 15.0;
                // Create boundary conditions                  less than,   equals,  greater than
-             BoundaryRangeValues<Double> bv0a = new BoundaryRangeValues<Double>(min_line, min_line, min_line);
-             BoundaryRangeValues<Double> bv1a = new BoundaryRangeValues<Double>(max_line, max_line, max_line);
+            BoundaryRangeValues<Double> bv0a = new BoundaryRangeValues<Double>(min_line, min_line, min_line);
+            BoundaryRangeValues<Double> bv1a = new BoundaryRangeValues<Double>(max_line, max_line, max_line);
             continuousMapping_size_dataset2.addPoint(10, bv0a);
             continuousMapping_size_dataset2.addPoint(474, bv1a);
             
@@ -290,7 +329,7 @@ public class EnrichmentMapVisualStyle {
 
             //Continuous Mapping - set node line colour based on the sign of the ES score of second dataset
             //Color scale and mapper used by node colour and node line colour
-            ContinuousMapping<Double,Paint> continuousMapping_width_col = (ContinuousMapping<Double,Paint>)this.vmfFactoryContinuous.createVisualMappingFunction(prefix+ EnrichmentMapVisualStyle.COLOURING_DATASET2, Double.class, BasicVisualLexicon.NODE_BORDER_PAINT);
+            ContinuousMapping<Double,Paint> continuousMapping_width_col = (ContinuousMapping<Double,Paint>) vmfFactoryContinuous.createVisualMappingFunction(prefix + COLOURING_DATASET2, Double.class, BasicVisualLexicon.NODE_BORDER_PAINT);
             
             // Set the attribute point values associated with the boundary values
             continuousMapping_width_col.addPoint(-1.0, bv3a);
@@ -304,12 +343,11 @@ public class EnrichmentMapVisualStyle {
             continuousMapping_width_col.addPoint(1.0, bv3i);
 
             vs.addVisualMappingFunction(continuousMapping_width_col);
-
         }
 
         //Continuous Mapping - set node colour based on the sign of the ES score of first dataset
 
-        ContinuousMapping<Double,Paint> continuousMapping = (ContinuousMapping<Double,Paint>)this.vmfFactoryContinuous.createVisualMappingFunction(prefix+ EnrichmentMapVisualStyle.COLOURING_DATASET1, Double.class, BasicVisualLexicon.NODE_FILL_COLOR);
+        ContinuousMapping<Double,Paint> continuousMapping = (ContinuousMapping<Double,Paint>) vmfFactoryContinuous.createVisualMappingFunction(prefix + COLOURING_DATASET1, Double.class, BasicVisualLexicon.NODE_FILL_COLOR);
         	         
          // Set the attribute point values associated with the boundary values
          // Set the attribute point values associated with the boundary values
