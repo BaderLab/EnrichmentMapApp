@@ -75,6 +75,7 @@ import org.cytoscape.session.CySessionManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
@@ -113,14 +114,12 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
     
     // Ranks
     private Ranking ranks;
-    private boolean warnUser = false;
-        
     private HashMap<String,GenesetSimilarity> geneset_similarities;
     
-    /**
-     * default constructor
-     * @param paParams
-     */
+    private boolean warnUserExistingEdges = false;
+    private boolean warnUserBypassStyle = false;
+    
+    
 
     public BuildDiseaseSignatureTask(EnrichmentMap map, PostAnalysisParameters paParams,
     		CySessionManager manager, StreamUtil streamUtil,
@@ -334,7 +333,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
                  *****************************/
                 
                 hub_node = createHubNode(hub_name, current_network, current_view, currentNodeY_offset, 
-                		                 prefix, cyNodeAttrs, geneUniverse, sigGeneSet);   
+                		                 prefix, cyEdgeAttrs, cyNodeAttrs, geneUniverse, sigGeneSet);   
                 
                 currentNodeY_offset += currentNodeY_increment;
                               
@@ -388,9 +387,11 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
                    	passed_cutoff = true;
                 }
 
-                warnUser |= createEdge(edge_name, current_network, current_view, hub_node, prefix, cyEdgeAttrs, cyNodeAttrs, passed_cutoff);
+                warnUserExistingEdges |= createEdge(edge_name, current_network, current_view, hub_node, prefix, cyEdgeAttrs, cyNodeAttrs, passed_cutoff);
                 
             } //for
+            
+            warnUserBypassStyle = shouldUseBypass(prefix, cyEdgeAttrs);
             
             //update the view 
             current_view.updateView();
@@ -405,7 +406,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
     
 
     private CyNode createHubNode(String hub_name, CyNetwork current_network, CyNetworkView current_view, double currentNodeY_offset,
-			                     String prefix, CyTable cyNodeAttrs, Set<Integer> geneUniverse, GeneSet sigGeneSet) {
+			                     String prefix, CyTable cyEdgeAttrs, CyTable cyNodeAttrs, Set<Integer> geneUniverse, GeneSet sigGeneSet) {
 		
 		// test for existing node first
 		CyNode hub_node = NetworkUtil.getNodeWithValue(current_network, cyNodeAttrs, CyNetwork.NAME, hub_name);
@@ -467,10 +468,19 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 		sigGeneSet.getGenes().retainAll(map.getDataset(EnrichmentMap.DATASET1).getDatasetGenes());
 		map.getDataset(EnrichmentMap.DATASET1).getGenesetsOfInterest().getGenesets().put(hub_name, sigGeneSet);
 		
-		// a value less than -1 will be interpreted by the visual style as yellow
-		current_row.set(prefix + EnrichmentMapVisualStyle.COLOURING_DATASET1, -2.0);
-		if(map.getDataset(EnrichmentMap.DATASET2) != null) {
-			current_row.set(prefix + EnrichmentMapVisualStyle.COLOURING_DATASET2, -2.0);
+		
+		if(shouldUseBypass(prefix, cyEdgeAttrs)) {
+			// Use old way of setting bypass
+			hubNodeView.setLockedValue(BasicVisualLexicon.NODE_SHAPE, NodeShapeVisualProperty.TRIANGLE);               
+			hubNodeView.setLockedValue(BasicVisualLexicon.NODE_FILL_COLOR, EnrichmentMapVisualStyle.yellow);               
+			hubNodeView.setLockedValue(BasicVisualLexicon.NODE_BORDER_PAINT, EnrichmentMapVisualStyle.yellow);
+		}
+		else {
+			// a value less than -1 will be interpreted by the visual style as yellow
+			current_row.set(prefix + EnrichmentMapVisualStyle.COLOURING_DATASET1, -2.0);
+			if(map.getDataset(EnrichmentMap.DATASET2) != null) {
+				current_row.set(prefix + EnrichmentMapVisualStyle.COLOURING_DATASET2, -2.0);
+			}
 		}
 		
 		return hub_node;
@@ -525,7 +535,9 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 		current_edgerow.set(prefix + EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT, genesetSimilarity.getSimilarity_coeffecient());
 		current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_PVALUE, genesetSimilarity.getHypergeom_pvalue());
 		current_edgerow.set(prefix + EnrichmentMapVisualStyle.ENRICHMENT_SET, genesetSimilarity.getEnrichment_set());
-		current_edgerow.set(prefix + EnrichmentMapVisualStyle.COLOURING_EDGES, -1); // special value for PA edge color
+		if(!shouldUseBypass(prefix, cyEdgeAttrs)) {
+			current_edgerow.set(prefix + EnrichmentMapVisualStyle.COLOURING_EDGES, -1); // special value for PA edge color
+		}
 		
 		// Attributes related to the Hypergeometric Test
 		if (paParams.getSignature_rankTest() == PostAnalysisParameters.FilterMetric.HYPERGEOM) {
@@ -543,33 +555,61 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 		
 		// Set edge width attribute
 		if(edgeView != null) {
-			if(paParams.getSignature_rankTest() == PostAnalysisParameters.FilterMetric.HYPERGEOM) {
-				//change "edge.lineWidth" based on Hypergeometric Value 
-				if (genesetSimilarity.getHypergeom_pvalue() <= (paParams.getSignature_Hypergeom_Cutoff()/100) )
-					current_edgerow.set(prefix + EnrichmentMapVisualStyle.WIDTH_EDGES, 0.8);
-				else 
-					if (genesetSimilarity.getHypergeom_pvalue() <= (paParams.getSignature_Hypergeom_Cutoff()/10) )
-						current_edgerow.set(prefix + EnrichmentMapVisualStyle.WIDTH_EDGES, 0.45);
-					else
-						current_edgerow.set(prefix + EnrichmentMapVisualStyle.WIDTH_EDGES, 0.1);
+			if(shouldUseBypass(prefix, cyEdgeAttrs)) {
+				// default back to old way of using a bypass
+				edgeView.setLockedValue(BasicVisualLexicon.EDGE_UNSELECTED_PAINT, EnrichmentMapVisualStyle.pink);
+				edgeView.setLockedValue(BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT, EnrichmentMapVisualStyle.pink);
+				
+				if(paParams.getSignature_rankTest() == PostAnalysisParameters.FilterMetric.HYPERGEOM) {
+					//change "edge.lineWidth" based on Hypergeometric Value 
+					if (geneset_similarities.get(edge_name).getHypergeom_pvalue() <= (paParams.getSignature_Hypergeom_Cutoff()/100) )
+						edgeView.setLockedValue(BasicVisualLexicon.EDGE_WIDTH,8.0);	
+					else 
+						if (geneset_similarities.get(edge_name).getHypergeom_pvalue() <= (paParams.getSignature_Hypergeom_Cutoff()/10) )
+							edgeView.setLockedValue(BasicVisualLexicon.EDGE_WIDTH,4.5);	                   
+						else
+							edgeView.setLockedValue(BasicVisualLexicon.EDGE_WIDTH,1.0);
+				}
+				if(paParams.getSignature_rankTest() == PostAnalysisParameters.FilterMetric.MANN_WHIT) {
+					//change "edge.lineWidth" based on Hypergeometric Value 
+					if (geneset_similarities.get(edge_name).getMann_Whit_pValue() <= (paParams.getSignature_Mann_Whit_Cutoff()/100) )
+						edgeView.setLockedValue(BasicVisualLexicon.EDGE_WIDTH,8.0);	
+					else 
+						if (geneset_similarities.get(edge_name).getMann_Whit_pValue() <= (paParams.getSignature_Mann_Whit_Cutoff()/10) )
+							edgeView.setLockedValue(BasicVisualLexicon.EDGE_WIDTH,4.5);	                   
+						else
+							edgeView.setLockedValue(BasicVisualLexicon.EDGE_WIDTH,1.0);
+				}
 			}
-			if(paParams.getSignature_rankTest() == PostAnalysisParameters.FilterMetric.MANN_WHIT) {
-				//change "edge.lineWidth" based on Hypergeometric Value 
-				if (genesetSimilarity.getMann_Whit_pValue() <= (paParams.getSignature_Mann_Whit_Cutoff()/100) )
-					current_edgerow.set(prefix + EnrichmentMapVisualStyle.WIDTH_EDGES, 0.8);
-				else 
-					if (genesetSimilarity.getMann_Whit_pValue() <= (paParams.getSignature_Mann_Whit_Cutoff()/10) )
-						current_edgerow.set(prefix + EnrichmentMapVisualStyle.WIDTH_EDGES, 0.45);
-					else
-						current_edgerow.set(prefix + EnrichmentMapVisualStyle.WIDTH_EDGES, 0.1);
+			else {
+				// New way uses a function based on the WIDTH_EDGES column
+				if(paParams.getSignature_rankTest() == PostAnalysisParameters.FilterMetric.HYPERGEOM) {
+					//change "edge.lineWidth" based on Hypergeometric Value 
+					if (genesetSimilarity.getHypergeom_pvalue() <= (paParams.getSignature_Hypergeom_Cutoff()/100) )
+						current_edgerow.set(prefix + EnrichmentMapVisualStyle.WIDTH_EDGES, 0.8);
+					else 
+						if (genesetSimilarity.getHypergeom_pvalue() <= (paParams.getSignature_Hypergeom_Cutoff()/10) )
+							current_edgerow.set(prefix + EnrichmentMapVisualStyle.WIDTH_EDGES, 0.45);
+						else
+							current_edgerow.set(prefix + EnrichmentMapVisualStyle.WIDTH_EDGES, 0.1);
+				}
+				if(paParams.getSignature_rankTest() == PostAnalysisParameters.FilterMetric.MANN_WHIT) {
+					//change "edge.lineWidth" based on Hypergeometric Value 
+					if (genesetSimilarity.getMann_Whit_pValue() <= (paParams.getSignature_Mann_Whit_Cutoff()/100) )
+						current_edgerow.set(prefix + EnrichmentMapVisualStyle.WIDTH_EDGES, 0.8);
+					else 
+						if (genesetSimilarity.getMann_Whit_pValue() <= (paParams.getSignature_Mann_Whit_Cutoff()/10) )
+							current_edgerow.set(prefix + EnrichmentMapVisualStyle.WIDTH_EDGES, 0.45);
+						else
+							current_edgerow.set(prefix + EnrichmentMapVisualStyle.WIDTH_EDGES, 0.1);
+				}
 			}
 		}
 		
 		return !passed_cutoff;
 	}
 	
-
-
+	
 	private void hypergeometric(int universeSize,
 			Set<Integer> sigGenesInUniverse, Set<Integer> enrGenes,
 			Set<Integer> intersection, GenesetSimilarity comparison) {
@@ -626,7 +666,17 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
     }
     
     
-   
+    /**
+	 * If the user has a session file that was created with an older version of EnrichmentMap then
+	 * they might not have the table columns that are required to support the new visual style.
+	 * In this case revert back to using bypass (better than not working at all).
+	 * @param cyEdgeAttrs The edge table.
+	 */
+	private static boolean shouldUseBypass(String prefix, CyTable cyEdgeAttrs) {
+		return cyEdgeAttrs.getColumn(prefix + EnrichmentMapVisualStyle.WIDTH_EDGES) == null;
+	}
+
+	
     /*
      * Create Node attribute table with post analysis parameters not in the main EM table
      */
@@ -711,8 +761,10 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 
 	@Override
 	public <R> R getResults(Class<? extends R> type) {
-		if(Boolean.class.equals(type)) {
-			return type.cast(warnUser);
+		if(BuildDiseaseSignatureTaskResultFlags.class.equals(type)) {
+			BuildDiseaseSignatureTaskResultFlags flags 
+				= new BuildDiseaseSignatureTaskResultFlags(warnUserExistingEdges, warnUserBypassStyle);
+			return type.cast(flags);
 		}
 		return null;
 	}

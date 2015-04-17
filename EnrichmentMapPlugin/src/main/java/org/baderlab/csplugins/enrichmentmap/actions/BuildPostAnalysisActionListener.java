@@ -53,6 +53,7 @@ import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.task.BuildDiseaseSignatureTask;
+import org.baderlab.csplugins.enrichmentmap.task.BuildDiseaseSignatureTaskResultFlags;
 import org.baderlab.csplugins.enrichmentmap.view.PostAnalysisInputPanel;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
@@ -133,21 +134,29 @@ public class BuildPostAnalysisActionListener implements ActionListener {
 
     
     private class WarnDialogObserver implements TaskObserver {
-    	boolean warnUser = false;
+    	BuildDiseaseSignatureTaskResultFlags flags;
     	
 		@Override 
 		public void taskFinished(ObservableTask task) {
 			if(task instanceof BuildDiseaseSignatureTask) {
-				warnUser = Boolean.TRUE.equals(task.getResults(Boolean.class));
+				flags = task.getResults(BuildDiseaseSignatureTaskResultFlags.class);
 			}
 		}
 		
 		@Override 
 		public void allFinished(FinishStatus status) {
-			if(warnUser) { // null safe
+			if(flags != null && flags.warnUserExistingEdges) {
 				JOptionPane.showMessageDialog(swingApplication.getJFrame(), 
 						"There are existing edges that did not pass the current cutoff value.", 
 						"Warning", JOptionPane.WARNING_MESSAGE);
+			}
+			if(flags != null && flags.warnUserBypassStyle) {
+				JOptionPane.showMessageDialog(swingApplication.getJFrame(), 
+						"The graph was created with an older version of EnrichmentMap.\n"
+						+ "The Visual Properties used for Post Analysis nodes and edges have been set to bypass.\n\n"
+						+ "If you would like your visual style to be upgraded so that it does not use bypass then \n"
+						+ "please rebuild your Enrichment Map graph and then re-run Post Analysis.", 
+						"Visual Property Bypass Used", JOptionPane.WARNING_MESSAGE);
 			}
 		}
 	};

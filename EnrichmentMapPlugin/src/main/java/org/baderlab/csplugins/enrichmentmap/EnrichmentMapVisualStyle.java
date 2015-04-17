@@ -139,6 +139,7 @@ public class EnrichmentMapVisualStyle {
     public static final Color overColor = Color.WHITE;
     public static final Color yellow = new Color(255,255,0); // yellow
     public static final Color light_grey = new Color(190,190,190); // a lighter grey
+    public static final Color pink = new Color(255,0,200);
 
     
     /**
@@ -190,14 +191,14 @@ public class EnrichmentMapVisualStyle {
         disMapping_edge2.putMapValue(0, new Color(100,200,000));
         disMapping_edge2.putMapValue(1, new Color(100,200,000));
         disMapping_edge2.putMapValue(2, new Color(100,149,237));
-        disMapping_edge2.putMapValue(-1, new Color(255,0,200)); // pink
+        disMapping_edge2.putMapValue(-1, pink); // pink
         vs.addVisualMappingFunction(disMapping_edge2);
         
         DiscreteMapping<Integer,Paint> disMapping_edge4 = (DiscreteMapping<Integer,Paint>) vmfFactoryDiscrete.createVisualMappingFunction(prefix + COLOURING_EDGES, Integer.class, BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT);
         disMapping_edge4.putMapValue(0, new Color(100,200,000));
         disMapping_edge4.putMapValue(1, new Color(100,200,000));
         disMapping_edge4.putMapValue(2, new Color(100,149,237));
-        disMapping_edge4.putMapValue(-1, new Color(255,0,200)); // pink
+        disMapping_edge4.putMapValue(-1, pink); // pink
         vs.addVisualMappingFunction(disMapping_edge4);
 
         // The below logic for computing width based on SIMILARITY_COEFFICIENT is now located in CreateEnrichmentMapNetworkTask by the LinearNumberInterpolator
