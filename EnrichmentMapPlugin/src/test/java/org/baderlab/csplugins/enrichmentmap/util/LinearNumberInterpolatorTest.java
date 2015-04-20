@@ -1,15 +1,17 @@
 package org.baderlab.csplugins.enrichmentmap.util;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.*;
 
-public class LinearNumberInterpolatorTest extends TestCase {
+import org.junit.Test;
+
+public class LinearNumberInterpolatorTest {
 
 	private static void assertDouble(double expected, double actual) {
 		final double epsilon = 0.001;
 		assertTrue("expected: " + expected + " actual: " + actual, Math.abs(expected-actual) < epsilon);
 	}
 	
-	
+	@Test
 	public void testLinearNumberInterpolator() {
 		LinearNumberInterpolator interpolator = new LinearNumberInterpolator(0.5, 1.0, 0.0, 5.0);
 		
@@ -25,7 +27,7 @@ public class LinearNumberInterpolatorTest extends TestCase {
 		assertDouble(6.0, interpolator.getRangeValue(1.1));
 	}
 	
-	
+	@Test
 	public void testLinearNumberInterpolatorWithCutoff() {
 		LinearNumberInterpolator interpolator = new LinearNumberInterpolator(0.5, 1.0, 0.0, 5.0).withDomainCutoff(-99, 99);
 		

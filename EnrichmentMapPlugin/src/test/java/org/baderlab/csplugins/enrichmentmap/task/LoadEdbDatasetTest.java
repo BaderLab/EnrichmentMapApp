@@ -1,31 +1,26 @@
 package org.baderlab.csplugins.enrichmentmap.task;
 
-import static org.mockito.Mockito.mock;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.StreamUtil;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.parsers.DetermineEnrichmentResultFileReader;
-import org.baderlab.csplugins.enrichmentmap.parsers.ExpressionFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.parsers.GMTFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.parsers.ParseEDBEnrichmentResults;
 import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.swing.DialogTaskManager;
+import org.junit.Test;
 
-import junit.framework.TestCase;
-
-public class LoadEdbDatasetTest extends TestCase {
+public class LoadEdbDatasetTest {
 
 
 	private TaskMonitor taskMonitor = mock(TaskMonitor.class);
 	private StreamUtil streamUtil  = new StreamUtil();
 	
-	public void setUp() throws Exception {
-		
-	}
 	
+	@Test
 	public void testEdbLoad() throws Exception{
 		EnrichmentMapParameters params = new EnrichmentMapParameters();
 		
@@ -58,33 +53,31 @@ public class LoadEdbDatasetTest extends TestCase {
 		//create a DatasetTask
 		//create a DatasetTask
 		//load Data
-				GMTFileReaderTask task = new GMTFileReaderTask(dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
-			    task.run(taskMonitor);
+		GMTFileReaderTask task = new GMTFileReaderTask(dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
+	    task.run(taskMonitor);
+
+	    ParseEDBEnrichmentResults enrichmentResultsFilesTask = new ParseEDBEnrichmentResults(dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
+        enrichmentResultsFilesTask.run(taskMonitor); 
+        
+        //create dummy expression
+        CreateDummyExpressionTask dummyExpressionTask = new CreateDummyExpressionTask(dataset);
+		dummyExpressionTask.run(taskMonitor);		        
 		
-			    ParseEDBEnrichmentResults enrichmentResultsFilesTask = new ParseEDBEnrichmentResults(dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
-		        enrichmentResultsFilesTask.run(taskMonitor); 
-		        
-		        //create dummy expression
-		        CreateDummyExpressionTask dummyExpressionTask = new CreateDummyExpressionTask(dataset);
-				dummyExpressionTask.run(taskMonitor);		        
-				
-				em.filterGenesets();
-				
-				InitializeGenesetsOfInterestTask genesets_init = new InitializeGenesetsOfInterestTask(em);
-		        genesets_init.run(taskMonitor);
-		        
-		        ComputeSimilarityTask similarities = new ComputeSimilarityTask(em);
-		        similarities.run(taskMonitor);
+		em.filterGenesets();
+		
+		InitializeGenesetsOfInterestTask genesets_init = new InitializeGenesetsOfInterestTask(em);
+        genesets_init.run(taskMonitor);
+        
+        ComputeSimilarityTask similarities = new ComputeSimilarityTask(em);
+        similarities.run(taskMonitor);
 		
         
-      //check to see if the dataset loaded
+        //check to see if the dataset loaded
         //although the original analysis had 193 genesets because this is loaded from
         //edb version it only stores the genesets that overlapped with the dataset analyzed.
       	assertEquals(14, dataset.getSetofgenesets().getGenesets().size());
       	assertEquals(14, dataset.getEnrichments().getEnrichments().size());
       	assertEquals(41, dataset.getDatasetGenes().size());
       	assertEquals(41, dataset.getExpressionSets().getNumGenes());
-
-				
 	}
 }

@@ -1,27 +1,25 @@
 package org.baderlab.csplugins.enrichmentmap.task;
 
-import static org.mockito.Mockito.mock;
-import junit.framework.TestCase;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.StreamUtil;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.parsers.DetermineEnrichmentResultFileReader;
 import org.baderlab.csplugins.enrichmentmap.parsers.ParseDavidEnrichmentResults;
 import org.cytoscape.work.TaskMonitor;
+import org.junit.Test;
 
-public class LoadDavidResultTest extends TestCase{
+public class LoadDavidResultTest {
 
 	private TaskMonitor taskMonitor = mock(TaskMonitor.class);
 	private StreamUtil streamUtil = new StreamUtil();
 	
 	
-	public void setUp() throws Exception {
-		
-	}
-
+	
+	@Test
 	public void testLoadDavidResult_withoutexpression() throws Exception{
 		EnrichmentMapParameters params = new EnrichmentMapParameters();
 	
@@ -79,11 +77,9 @@ public class LoadDavidResultTest extends TestCase{
 		//make sure the dummy expression has values for all the genes
 		assertEquals(414, dataset.getExpressionSets().getNumGenes());
 		assertEquals(414,dataset.getDatasetGenes().size()); 
-
-		
-		
 	}
 	
+	@Test
 	public void testLoad2DavidResult_withoutexpression() throws Exception{
 		EnrichmentMapParameters params = new EnrichmentMapParameters();
 	

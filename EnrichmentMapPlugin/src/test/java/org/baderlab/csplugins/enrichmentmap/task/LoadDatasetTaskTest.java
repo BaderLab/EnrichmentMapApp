@@ -1,32 +1,28 @@
 package org.baderlab.csplugins.enrichmentmap.task;
 
-import static org.mockito.Mockito.mock;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.StreamUtil;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.parsers.DetermineEnrichmentResultFileReader;
 import org.baderlab.csplugins.enrichmentmap.parsers.ExpressionFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.parsers.GMTFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.parsers.ParseGSEAEnrichmentResults;
 import org.cytoscape.work.TaskMonitor;
+import org.junit.Test;
 
-import junit.framework.TestCase;
-
-public class LoadDatasetTaskTest extends TestCase {
+public class LoadDatasetTaskTest {
 	
 	private TaskMonitor taskMonitor = mock(TaskMonitor.class);
 	private StreamUtil streamUtil = new StreamUtil();
 	
 	
-    public void setUp() throws Exception {
-    		
-    	}
-
+	@Test
     public void testLoadDataset1GSEAResult_withexpression() throws Exception{
-    		EnrichmentMapParameters params = new EnrichmentMapParameters();
+    	EnrichmentMapParameters params = new EnrichmentMapParameters();
 		
 		//for a dataset we require genesets, an expression file (optional), enrichment results
 		String testGMTFileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/task/LoadDataset/gs_apop_mouse.gmt";
@@ -54,7 +50,7 @@ public class LoadDatasetTaskTest extends TestCase {
 	    ParseGSEAEnrichmentResults enrichmentResultsFilesTask = new ParseGSEAEnrichmentResults(dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
         enrichmentResultsFilesTask.run(taskMonitor); 
         
-      //load expression file
+        //load expression file
         ExpressionFileReaderTask exptask = new ExpressionFileReaderTask(dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
         exptask.run(taskMonitor);
         		
@@ -63,7 +59,5 @@ public class LoadDatasetTaskTest extends TestCase {
 		assertEquals(14, dataset.getEnrichments().getEnrichments().size());
 		assertEquals(41, dataset.getDatasetGenes().size());
 		assertEquals(41, dataset.getExpressionSets().getNumGenes());
-		
-		
     }
 }

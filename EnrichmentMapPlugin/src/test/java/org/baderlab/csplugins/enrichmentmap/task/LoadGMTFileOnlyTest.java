@@ -1,7 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap.task;
 
-import static org.mockito.Mockito.mock;
-import junit.framework.TestCase;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.StreamUtil;
@@ -10,18 +10,15 @@ import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.parsers.GMTFileReaderTask;
 import org.cytoscape.work.TaskMonitor;
+import org.junit.Test;
 
-public class LoadGMTFileOnlyTest extends TestCase {
+public class LoadGMTFileOnlyTest {
 
 
 	private TaskMonitor taskMonitor = mock(TaskMonitor.class);
 	private StreamUtil streamUtil = new StreamUtil();
 	
-	
-	public void setUp() throws Exception {
-		
-	}
-	
+	@Test
 	public void testGMTOnly() throws Exception{
 		EnrichmentMapParameters params = new EnrichmentMapParameters();
 	

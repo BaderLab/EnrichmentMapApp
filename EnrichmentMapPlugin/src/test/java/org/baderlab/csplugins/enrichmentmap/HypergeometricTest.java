@@ -43,14 +43,15 @@
 
 package org.baderlab.csplugins.enrichmentmap;
 
+import static org.junit.Assert.*;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.util.Scanner;
 
-import junit.framework.TestCase;
-
 import org.baderlab.csplugins.enrichmentmap.task.Hypergeometric;
+import org.junit.Test;
 
 /**
  * @author revilo
@@ -59,17 +60,14 @@ import org.baderlab.csplugins.enrichmentmap.task.Hypergeometric;
  * Time   11:50:07 AM<br>
  *
  */
-public class HypergeometricTest extends TestCase {
+public class HypergeometricTest {
     int N, n, m, k;
     double pValue, expected_pVal;
     Reader testData = null;
  
     private StreamUtil streamUtil = new StreamUtil();
     
-    public void setUp() throws Exception {
-        //nothing to do here
-    }
-    
+    @Test
     public void testHyperGeomPvalueSmall() {
         N = 50;
         n = 10;
@@ -85,38 +83,36 @@ public class HypergeometricTest extends TestCase {
         
     }
     
+    @Test
     public void testHyperGeomPvalueBig() throws IOException{
         String testDataFileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/HypergeometricTest_pvalues.csv";
-        String fullText;
-        String[] lines;
-        
         InputStream reader = streamUtil.getInputStream(testDataFileName);
-        fullText = new Scanner(reader,"UTF-8").useDelimiter("\\A").next();
         
-        lines = fullText.split("\r\n?|\n");         
-        
-        for (int i=0; i < lines.length ; i++ ) {
-            if (i==0) {
-                // Skip headerline
-            } else {
-                String[] tokens = lines[i].split(",");
-                N = Integer.parseInt(tokens[0]);
-                n = Integer.parseInt(tokens[1]);
-                m = Integer.parseInt(tokens[2]);
-                k = Integer.parseInt(tokens[3]);
-                expected_pVal = Double.parseDouble(tokens[4]);
-                pValue = Hypergeometric.hyperGeomPvalue_sum(N, n, m, k, 1);
-                
-                assertEquals(expected_pVal, pValue, 0.00000005);
-            }
-            
+        try(Scanner scanner = new Scanner(reader,"UTF-8")) {
+        	String fullText = scanner.useDelimiter("\\A").next();
+	        String[] lines = fullText.split("\r\n?|\n");         
+	        
+	        for (int i=0; i < lines.length ; i++ ) {
+	            if (i==0) {
+	                // Skip headerline
+	            } else {
+	                String[] tokens = lines[i].split(",");
+	                N = Integer.parseInt(tokens[0]);
+	                n = Integer.parseInt(tokens[1]);
+	                m = Integer.parseInt(tokens[2]);
+	                k = Integer.parseInt(tokens[3]);
+	                expected_pVal = Double.parseDouble(tokens[4]);
+	                pValue = Hypergeometric.hyperGeomPvalue_sum(N, n, m, k, 1);
+	                
+	                assertEquals(expected_pVal, pValue, 0.00000005);
+	            }
+	        }
         }
     }
     
+    @Test(expected=ArithmeticException.class)
     public void testHyperGeomPvalueBad() {
-    	try {
-    		Hypergeometric.hyperGeomPvalue_sum(128, 63, 105, 2, 0);
-    		fail();
-    	} catch(ArithmeticException e) { }
+    	Hypergeometric.hyperGeomPvalue_sum(128, 63, 105, 2, 0);
     }
+    
 }

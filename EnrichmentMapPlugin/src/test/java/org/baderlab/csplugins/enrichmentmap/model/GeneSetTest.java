@@ -1,8 +1,8 @@
 package org.baderlab.csplugins.enrichmentmap.model;
 
-import static org.mockito.Mockito.mock;
+import static org.junit.Assert.*;
 
-import junit.framework.TestCase;
+import org.junit.Test;
 
 /*
  * A Geneset is a basic element of the Enrichment map
@@ -14,12 +14,9 @@ import junit.framework.TestCase;
  * and minimize amount of memory required to store them.
  */
 
-public class GeneSetTest extends TestCase {
+public class GeneSetTest {
 
-	public void setUp() throws Exception {
-
-    }
-	
+	@Test
 	public void testCreateEmptyGeneSet(){
 		//create a new GeneSet
 		GeneSet gs = new GeneSet("Gene Set 1", "fake geneset");
@@ -38,6 +35,7 @@ public class GeneSetTest extends TestCase {
 		
 	}
 	
+	@Test
 	public void testCreateGenesetFromStringArray(){
 		
 		//String Array is what we use to create a saved geneset in cytoscape
@@ -74,6 +72,7 @@ public class GeneSetTest extends TestCase {
 		assertEquals(true, gs.equals(gs2));
 	}
 	
+	@Test
 	public void testImbeddedSource(){
 			
 		//create a new GeneSet from the structure used in the internally generated gene set files

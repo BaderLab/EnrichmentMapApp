@@ -1,7 +1,9 @@
 package org.baderlab.csplugins.enrichmentmap.model;
 
 
-import junit.framework.TestCase;
+import static org.junit.Assert.*;
+
+import org.junit.Test;
 
 /*
  * An enrichment Result is the Parent class for different types of enrichment results - GSEA or generic results
@@ -10,13 +12,10 @@ import junit.framework.TestCase;
  */
 //TODO:Need to fork generic result and create additional types BingoResult, DavidResult
 
-public class EnrichmentResultTest extends TestCase {
-	
-	public void setUp() throws Exception {
-
-    }
+public class EnrichmentResultTest {
 	
 	//create empty enrichment results
+	@Test
 	public void testCreateEmptyEnrichmentResult(){
 		//create a new GeneSet
 		EnrichmentResult results = new EnrichmentResult();
@@ -28,7 +27,7 @@ public class EnrichmentResultTest extends TestCase {
 		assertEquals("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4", results.getName());
 		assertEquals("Apoptosis induced DNA fragmentation", results.getDescription());
 		
-		assertEquals(0.01, results.getPvalue());
+		assertEquals(0.01, results.getPvalue(), 0.0);
 		assertEquals("REACTOME", results.getSource());
 		assertEquals("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4\t0.01\n", results.toString());
 		

@@ -49,6 +49,8 @@
 	</repositories>
 	
 	<dependencies>
+	
+		<!-- Cytoscape API -->
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>work-api</artifactId>
@@ -58,12 +60,6 @@
 			<groupId>org.cytoscape</groupId>
 			<artifactId>layout-api</artifactId>
 			<version>${cy3.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.8.2</version>
-			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
@@ -105,16 +101,12 @@
 			<artifactId>group-api</artifactId>
 			<version>${cy3.version}</version>
 		</dependency>
+		
+		<!-- additional libraries -->
 		<dependency>
 			<groupId>org.osgi</groupId>
 			<artifactId>org.osgi.core</artifactId>
 			<version>${osgi.api.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-all</artifactId>
-			<version>1.9.5</version>
-			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>colt</groupId>
@@ -126,6 +118,35 @@
 			<artifactId>commons-math3</artifactId>
 			<version>3.2</version>
 		</dependency>
+		
+		<!-- testing -->
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-all</artifactId>
+			<version>1.9.5</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.12</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+		    <groupId>org.cytoscape</groupId>
+		    <artifactId>model-impl</artifactId>
+		    <version>${cy3.version}</version>
+		    <type>test-jar</type>
+		    <scope>test</scope>
+		</dependency>
+		<dependency>
+		    <groupId>org.cytoscape</groupId>
+		    <artifactId>event-api</artifactId>
+		    <version>${cy3.version}</version>
+		    <type>test-jar</type>
+		    <scope>test</scope>
+		</dependency>
+		
 	</dependencies>
 	
 	<!-- repository settings are required for the build number maven plugin -->
@@ -217,6 +238,7 @@
 							<options>
 								<option>-dontobfuscate</option>
 								<option>-dontoptimize</option>
+								<option>-dontnote</option>
 								<option>-keep public class org.baderlab.csplugins.enrichmentmap.CyActivator</option>
 							</options>
 							<injar>${project.build.finalName}.jar</injar>

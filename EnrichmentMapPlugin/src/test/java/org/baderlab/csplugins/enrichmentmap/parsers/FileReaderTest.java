@@ -1,17 +1,19 @@
 package org.baderlab.csplugins.enrichmentmap.parsers;
 
-import static org.mockito.Mockito.mock;
-import junit.framework.TestCase;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
+
+import java.util.HashMap;
+
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.StreamUtil;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
-import org.baderlab.csplugins.enrichmentmap.model.GenericResult;
 import org.baderlab.csplugins.enrichmentmap.model.GSEAResult;
+import org.baderlab.csplugins.enrichmentmap.model.GenericResult;
 import org.cytoscape.work.TaskMonitor;
-
-import java.util.HashMap;
+import org.junit.Test;
 
 /**
  * Created by
@@ -19,15 +21,13 @@ import java.util.HashMap;
  * Date: Mar 26, 2010
  * Time: 8:42:21 AM
  */
-public class FileReaderTest extends TestCase {
+public class FileReaderTest {
 
 	private TaskMonitor taskMonitor = mock(TaskMonitor.class);
 	private StreamUtil streamUtil = new StreamUtil();
 	
-    public void setUp() throws Exception {
-
-    }
-
+    
+	@Test
     public void testGMTFileReader() throws Exception{
 
         String testDataFileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/Genesetstestfile.gmt";
@@ -53,6 +53,7 @@ public class FileReaderTest extends TestCase {
 
     }
 
+	@Test
     public void testExpression1ReaderNormal() throws Exception{
 
         //load the test expression file
@@ -108,10 +109,12 @@ public class FileReaderTest extends TestCase {
         
         assertEquals(4, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getNumGenes());
         assertEquals(59, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getNumConditions());
-        assertEquals(0.008720342, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getMinExpression());
-        assertEquals(5.131481026, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getMaxExpression());
+        assertEquals(0.008720342, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getMinExpression(),0.0);
+        assertEquals(5.131481026, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getMaxExpression(),0.0);
 
     }
+	
+	@Test
     public void testExpression1ReaderCommentLines() throws Exception{
 
         //load the test expression file
@@ -165,15 +168,16 @@ public class FileReaderTest extends TestCase {
         //There was one more gene in the expression file that wasn't in the set of genes
         //make sure it was was added
         assertEquals(4,map.getGenes().size());
-        assertEquals(5.131481026, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getMaxExpression());
+        assertEquals(5.131481026, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getMaxExpression(),0.0);
 
         assertEquals(4, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getNumGenes());
         assertEquals(59, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getNumConditions());
-        assertEquals(0.008720342, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getMinExpression());
+        assertEquals(0.008720342, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getMinExpression(),0.0);
 
 
     }
 
+	@Test
     public void testExpression1ReaderRnk() throws Exception{
 
         //load the test expression file
@@ -230,11 +234,12 @@ public class FileReaderTest extends TestCase {
 
         assertEquals(4, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getNumGenes());
         assertEquals(3, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getNumConditions());
-        assertEquals(0.47536945, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getMinExpression());
-        assertEquals(0.5418719, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getMaxExpression());
+        assertEquals(0.47536945, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getMinExpression(),0.0);
+        assertEquals(0.5418719, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getMaxExpression(),0.0);
 
     }
 
+	@Test
     public void testExpression1ReaderEDBRnk() throws Exception{
 
         //load the test expression file
@@ -291,12 +296,12 @@ public class FileReaderTest extends TestCase {
 
         assertEquals(4, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getNumGenes());
         assertEquals(3, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getNumConditions());
-        assertEquals(0.47536945, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getMinExpression());
-        assertEquals(0.5418719, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getMaxExpression());
+        assertEquals(0.47536945, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getMinExpression(),0.0);
+        assertEquals(0.5418719, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getMaxExpression(),0.0);
 
     }
     
-    
+	@Test
     public void testGenericFileReader_5columns() throws Exception{
         //load the test expression file
         String testDataFileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/generic_enr_5col.txt";
@@ -326,27 +331,28 @@ public class FileReaderTest extends TestCase {
         assertEquals(4, results.size() );
         
         // check pValues
-        assertEquals(0.01,     ((GenericResult)results.get("GO:0000346")).getPvalue());
-        assertEquals(0.05,     ((GenericResult)results.get("GO:0030904")).getPvalue());
-        assertEquals(0.05,     ((GenericResult)results.get("GO:0008623")).getPvalue());
-        assertEquals(5.60E-42, ((GenericResult)results.get("GO:0046540")).getPvalue());
+        assertEquals(0.01,     ((GenericResult)results.get("GO:0000346")).getPvalue(),0.0);
+        assertEquals(0.05,     ((GenericResult)results.get("GO:0030904")).getPvalue(),0.0);
+        assertEquals(0.05,     ((GenericResult)results.get("GO:0008623")).getPvalue(),0.0);
+        assertEquals(5.60E-42, ((GenericResult)results.get("GO:0046540")).getPvalue(),0.0);
 
         // check getFdrqvalues
-        assertEquals(0.02, ((GenericResult)results.get("GO:0000346")).getFdrqvalue());
-        assertEquals(0.10, ((GenericResult)results.get("GO:0030904")).getFdrqvalue());
-        assertEquals(0.12, ((GenericResult)results.get("GO:0008623")).getFdrqvalue());
-        assertEquals(0.03, ((GenericResult)results.get("GO:0046540")).getFdrqvalue());
+        assertEquals(0.02, ((GenericResult)results.get("GO:0000346")).getFdrqvalue(),0.0);
+        assertEquals(0.10, ((GenericResult)results.get("GO:0030904")).getFdrqvalue(),0.0);
+        assertEquals(0.12, ((GenericResult)results.get("GO:0008623")).getFdrqvalue(),0.0);
+        assertEquals(0.03, ((GenericResult)results.get("GO:0046540")).getFdrqvalue(),0.0);
 
         // check phenotypes
-        assertEquals( 1.0, ((GenericResult)results.get("GO:0000346")).getNES());
-        assertEquals( 1.0, ((GenericResult)results.get("GO:0030904")).getNES());
-        assertEquals(-1.0, ((GenericResult)results.get("GO:0008623")).getNES());
-        assertEquals(-1.0, ((GenericResult)results.get("GO:0046540")).getNES());
+        assertEquals( 1.0, ((GenericResult)results.get("GO:0000346")).getNES(),0.0);
+        assertEquals( 1.0, ((GenericResult)results.get("GO:0030904")).getNES(),0.0);
+        assertEquals(-1.0, ((GenericResult)results.get("GO:0008623")).getNES(),0.0);
+        assertEquals(-1.0, ((GenericResult)results.get("GO:0046540")).getNES(),0.0);
         
         return;
     }
     
     //test GSEA enrichment results reader
+	@Test
     public void testGSEAEnrichmentsReader() throws Exception{
 
         //load the test enrichment files - GSEA creates two enrichment results files.
@@ -375,13 +381,13 @@ public class FileReaderTest extends TestCase {
         //Check the contents of some of the genesets
         // example from file 1 (ANTIGEN PROCESSING AND PRESENTATION%KEGG%HSA04612)
         //check p-values
-        assertEquals(0.0,((GSEAResult)enrichments.get("ANTIGEN PROCESSING AND PRESENTATION%KEGG%HSA04612")).getPvalue());
+        assertEquals(0.0,((GSEAResult)enrichments.get("ANTIGEN PROCESSING AND PRESENTATION%KEGG%HSA04612")).getPvalue(),0.0);
         //check fdr value
-        assertEquals(0.086938426,((GSEAResult)enrichments.get("ANTIGEN PROCESSING AND PRESENTATION%KEGG%HSA04612")).getFdrqvalue());
+        assertEquals(0.086938426,((GSEAResult)enrichments.get("ANTIGEN PROCESSING AND PRESENTATION%KEGG%HSA04612")).getFdrqvalue(),0.0);
         //check ES value
-        assertEquals(0.6854155,((GSEAResult)enrichments.get("ANTIGEN PROCESSING AND PRESENTATION%KEGG%HSA04612")).getES());       
+        assertEquals(0.6854155,((GSEAResult)enrichments.get("ANTIGEN PROCESSING AND PRESENTATION%KEGG%HSA04612")).getES(),0.0);       
         //check NES
-        assertEquals(2.1194055,((GSEAResult)enrichments.get("ANTIGEN PROCESSING AND PRESENTATION%KEGG%HSA04612")).getNES());
+        assertEquals(2.1194055,((GSEAResult)enrichments.get("ANTIGEN PROCESSING AND PRESENTATION%KEGG%HSA04612")).getNES(),0.0);
         //check ranks at max
         assertEquals(836,((GSEAResult)enrichments.get("ANTIGEN PROCESSING AND PRESENTATION%KEGG%HSA04612")).getRankAtMax());        
         //check size
@@ -389,13 +395,13 @@ public class FileReaderTest extends TestCase {
         
         // example from file 2 (EMBRYONIC HEART TUBE MORPHOGENESIS%GO%GO:0003143)
         //check p-values
-        assertEquals(0.040152963,((GSEAResult)enrichments.get("EMBRYONIC HEART TUBE MORPHOGENESIS%GO%GO:0003143")).getPvalue());
+        assertEquals(0.040152963,((GSEAResult)enrichments.get("EMBRYONIC HEART TUBE MORPHOGENESIS%GO%GO:0003143")).getPvalue(),0.0);
         //check fdr value
-        assertEquals(1.0,((GSEAResult)enrichments.get("EMBRYONIC HEART TUBE MORPHOGENESIS%GO%GO:0003143")).getFdrqvalue());
+        assertEquals(1.0,((GSEAResult)enrichments.get("EMBRYONIC HEART TUBE MORPHOGENESIS%GO%GO:0003143")).getFdrqvalue(),0.0);
         //check ES value
-        assertEquals(-0.49066687,((GSEAResult)enrichments.get("EMBRYONIC HEART TUBE MORPHOGENESIS%GO%GO:0003143")).getES());       
+        assertEquals(-0.49066687,((GSEAResult)enrichments.get("EMBRYONIC HEART TUBE MORPHOGENESIS%GO%GO:0003143")).getES(),0.0);       
         //check NES
-        assertEquals(-1.477554,((GSEAResult)enrichments.get("EMBRYONIC HEART TUBE MORPHOGENESIS%GO%GO:0003143")).getNES());
+        assertEquals(-1.477554,((GSEAResult)enrichments.get("EMBRYONIC HEART TUBE MORPHOGENESIS%GO%GO:0003143")).getNES(),0.0);
         //check ranks at max
         assertEquals(1597,((GSEAResult)enrichments.get("EMBRYONIC HEART TUBE MORPHOGENESIS%GO%GO:0003143")).getRankAtMax());        
         //check size
@@ -404,7 +410,8 @@ public class FileReaderTest extends TestCase {
         
     }
 
-  //test GSEA enrichment results reader
+	//test GSEA enrichment results reader
+	@Test
     public void testGSEAEDBEnrichmentsReader() throws Exception{
 
         //load the test enrichment files - GSEA creates two enrichment results files.
@@ -432,13 +439,13 @@ public class FileReaderTest extends TestCase {
         //Check the contents of some of the genesets
         // example from file 1 (ANTIGEN PROCESSING AND PRESENTATION%KEGG%HSA04612)
         //check p-values
-        assertEquals(0.2271,((GSEAResult)enrichments.get("PROTEASOME ACTIVATOR COMPLEX%GO%GO:0008537")).getPvalue());
+        assertEquals(0.2271,((GSEAResult)enrichments.get("PROTEASOME ACTIVATOR COMPLEX%GO%GO:0008537")).getPvalue(),0.0);
         //check fdr value
-        assertEquals(0.2447,((GSEAResult)enrichments.get("PROTEASOME ACTIVATOR COMPLEX%GO%GO:0008537")).getFdrqvalue());
+        assertEquals(0.2447,((GSEAResult)enrichments.get("PROTEASOME ACTIVATOR COMPLEX%GO%GO:0008537")).getFdrqvalue(),0.0);
         //check ES value
-        assertEquals(0.7852,((GSEAResult)enrichments.get("PROTEASOME ACTIVATOR COMPLEX%GO%GO:0008537")).getES());       
+        assertEquals(0.7852,((GSEAResult)enrichments.get("PROTEASOME ACTIVATOR COMPLEX%GO%GO:0008537")).getES(),0.0);       
         //check NES
-        assertEquals(1.1793,((GSEAResult)enrichments.get("PROTEASOME ACTIVATOR COMPLEX%GO%GO:0008537")).getNES());
+        assertEquals(1.1793,((GSEAResult)enrichments.get("PROTEASOME ACTIVATOR COMPLEX%GO%GO:0008537")).getNES(),0.0);
         //check ranks at max
         assertEquals(6,((GSEAResult)enrichments.get("PROTEASOME ACTIVATOR COMPLEX%GO%GO:0008537")).getRankAtMax());        
         //check size
@@ -446,13 +453,13 @@ public class FileReaderTest extends TestCase {
         
         // example from file 2 (EMBRYONIC HEART TUBE MORPHOGENESIS%GO%GO:0003143)
         //check p-values
-        assertEquals(0.4545,((GSEAResult)enrichments.get("PROTEASOME COMPLEX%GO%GO:0000502")).getPvalue());
+        assertEquals(0.4545,((GSEAResult)enrichments.get("PROTEASOME COMPLEX%GO%GO:0000502")).getPvalue(),0.0);
         //check fdr value
-        assertEquals(0.8650,((GSEAResult)enrichments.get("PROTEASOME COMPLEX%GO%GO:0000502")).getFdrqvalue());
+        assertEquals(0.8650,((GSEAResult)enrichments.get("PROTEASOME COMPLEX%GO%GO:0000502")).getFdrqvalue(),0.0);
         //check ES value
-        assertEquals(-0.4707,((GSEAResult)enrichments.get("PROTEASOME COMPLEX%GO%GO:0000502")).getES());       
+        assertEquals(-0.4707,((GSEAResult)enrichments.get("PROTEASOME COMPLEX%GO%GO:0000502")).getES(),0.0);       
         //check NES
-        assertEquals(-0.9696,((GSEAResult)enrichments.get("PROTEASOME COMPLEX%GO%GO:0000502")).getNES());
+        assertEquals(-0.9696,((GSEAResult)enrichments.get("PROTEASOME COMPLEX%GO%GO:0000502")).getNES(),0.0);
  
         //check ranks at max
         //The Rank at max in the edb file is different from the excel files.  In the excel file that we have been
@@ -467,6 +474,7 @@ public class FileReaderTest extends TestCase {
     
    
     //test Bingo enrichment results
+	@Test
     public void testBingoEnrichmentsReader() throws Exception{
 
         //load the test enrichment files - Bingo
@@ -493,16 +501,16 @@ public class FileReaderTest extends TestCase {
         assertEquals(74,enrichments.size());
         
         //check p-values
-        assertEquals(0.0010354,((GenericResult)enrichments.get("NUCLEOLAR PART")).getPvalue());
+        assertEquals(0.0010354,((GenericResult)enrichments.get("NUCLEOLAR PART")).getPvalue(),0.0);
         //check fdr value
-        assertEquals(0.047796,((GenericResult)enrichments.get("NUCLEOLAR PART")).getFdrqvalue());
+        assertEquals(0.047796,((GenericResult)enrichments.get("NUCLEOLAR PART")).getFdrqvalue(),0.0);
         //check geneset siz
         assertEquals(5,((GenericResult)enrichments.get("NUCLEOLAR PART")).getGsSize());       
         
         //check p-values
-        assertEquals(0.0000000000016209,((GenericResult)enrichments.get("NUCLEOLUS")).getPvalue());
+        assertEquals(0.0000000000016209,((GenericResult)enrichments.get("NUCLEOLUS")).getPvalue(),0.0);
         //check fdr value
-        assertEquals(0.0000000042203,((GenericResult)enrichments.get("NUCLEOLUS")).getFdrqvalue());
+        assertEquals(0.0000000042203,((GenericResult)enrichments.get("NUCLEOLUS")).getFdrqvalue(),0.0);
         //check geneset siz
         assertEquals(43,((GenericResult)enrichments.get("NUCLEOLUS")).getGsSize());       
         
@@ -510,6 +518,7 @@ public class FileReaderTest extends TestCase {
     }
     
     //test David enrichment results reader
+	@Test
     public void testDavidEnrichmentsReader() throws Exception{
 
         //load the test enrichment files - Bingo
@@ -536,16 +545,16 @@ public class FileReaderTest extends TestCase {
         assertEquals(215,enrichments.size());
         
         //check p-values
-        assertEquals(0.00000005210169741980237,((GenericResult)enrichments.get("GO:0031974~MEMBRANE-ENCLOSED LUMEN")).getPvalue());
+        assertEquals(0.00000005210169741980237,((GenericResult)enrichments.get("GO:0031974~MEMBRANE-ENCLOSED LUMEN")).getPvalue(),0.0);
         //check fdr value
-        assertEquals(0.000016724505445320226,((GenericResult)enrichments.get("GO:0031974~MEMBRANE-ENCLOSED LUMEN")).getFdrqvalue());
+        assertEquals(0.000016724505445320226,((GenericResult)enrichments.get("GO:0031974~MEMBRANE-ENCLOSED LUMEN")).getFdrqvalue(),0.0);
         //check geneset siz
         assertEquals(95,((GenericResult)enrichments.get("GO:0031974~MEMBRANE-ENCLOSED LUMEN")).getGsSize());
         
       //check p-values
-        assertEquals(0.0009179741851709047,((GenericResult)enrichments.get(((String)"domain:Leucine-zipper").toUpperCase())).getPvalue());
+        assertEquals(0.0009179741851709047,((GenericResult)enrichments.get(((String)"domain:Leucine-zipper").toUpperCase())).getPvalue(),0.0);
         //check fdr value
-        assertEquals(0.46717397126592464,((GenericResult)enrichments.get(((String)"domain:Leucine-zipper").toUpperCase())).getFdrqvalue());
+        assertEquals(0.46717397126592464,((GenericResult)enrichments.get(((String)"domain:Leucine-zipper").toUpperCase())).getFdrqvalue(),0.0);
         //check geneset siz
         assertEquals(11,((GenericResult)enrichments.get(((String)"domain:Leucine-zipper").toUpperCase())).getGsSize());
         

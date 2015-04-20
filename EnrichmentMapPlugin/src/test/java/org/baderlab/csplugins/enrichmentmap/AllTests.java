@@ -44,50 +44,42 @@
 package org.baderlab.csplugins.enrichmentmap;
 
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultTest;
+import org.baderlab.csplugins.enrichmentmap.model.GeneSetSimilarityTest;
+import org.baderlab.csplugins.enrichmentmap.model.GeneSetTest;
+import org.baderlab.csplugins.enrichmentmap.model.SetOfGenesetsTest;
+import org.baderlab.csplugins.enrichmentmap.parsers.FileReaderTest;
+import org.baderlab.csplugins.enrichmentmap.task.LoadBingoResultsTest;
+import org.baderlab.csplugins.enrichmentmap.task.LoadDatasetTaskTest;
+import org.baderlab.csplugins.enrichmentmap.task.LoadDavidResultTest;
+import org.baderlab.csplugins.enrichmentmap.task.LoadEdbDatasetTest;
+import org.baderlab.csplugins.enrichmentmap.task.LoadGMTFileOnlyTest;
+import org.baderlab.csplugins.enrichmentmap.util.LinearNumberInterpolatorTest;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
 
 
-/**
- * @author revilo
- * <p>
- * Date   Jul 24, 2009<br>
- * Time   12:09:09 PM<br>
- *
- */
+@RunWith(Suite.class)
+@Suite.SuiteClasses({
+	
+	HypergeometricTest.class,
+	MannWhitneyRankSumTest.class,
+	
+	EnrichmentResultTest.class,
+	GeneSetSimilarityTest.class,
+	GeneSetTest.class,
+	SetOfGenesetsTest.class,
+	
+	FileReaderTest.class,
+	
+	LoadBingoResultsTest.class,
+	LoadDatasetTaskTest.class,
+	LoadDavidResultTest.class,
+	LoadEdbDatasetTest.class,
+	LoadGMTFileOnlyTest.class,
+	
+	LinearNumberInterpolatorTest.class,
+	
+})
 public class AllTests {
-
-    /**
-     * The main test suite for EnrichmentMapPlugin
-     */
-    public static Test suite() {
-
-        TestSuite suite = new TestSuite();
-        /*suite.addTestSuite(HypergeometricTest.class);
-
-        //add file reader tests
-        suite.addTestSuite(FileReaderTest.class);
-        
-        //add task tests
-        suite.addTestSuite(LoadDatasetTaskTest.class);
-        
-        //add GeneSet tests
-        suite.addTestSuite(GeneSetTest.class);
-        
-        //add set of Gene sets test
-        suite.addTestSuite(SetOfGenesetsTest.class);
-        
-        suite.setName("EnrichmentMapPlugin Tests");
-*/
-        return suite;
-    }
-
-    /**
-     * In case people want to run the tests from the command line
-     *
-     * @param args
-     */
-    public static void main(String args[]) {
-        junit.textui.TestRunner.run(suite());
-    }
 }

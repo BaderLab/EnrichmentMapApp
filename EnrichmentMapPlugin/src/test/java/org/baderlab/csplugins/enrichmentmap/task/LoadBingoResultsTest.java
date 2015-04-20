@@ -1,29 +1,24 @@
 package org.baderlab.csplugins.enrichmentmap.task;
 
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
+
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.StreamUtil;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.parsers.DetermineEnrichmentResultFileReader;
 import org.baderlab.csplugins.enrichmentmap.parsers.ParseBingoEnrichmentResults;
-import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.TaskMonitor;
+import org.junit.Test;
 
-import junit.framework.TestCase;
-
-import static org.mockito.Mockito.mock;
-
-public class LoadBingoResultsTest extends TestCase{
+public class LoadBingoResultsTest {
 	
 	private TaskMonitor taskMonitor = mock(TaskMonitor.class);
 	private StreamUtil streamUtil = new StreamUtil();
 	
-	public void setUp() throws Exception {
-		
-	}
 
+	@Test
 	public void testLoadBingoResult_withoutexpression() throws Exception{
 		EnrichmentMapParameters params = new EnrichmentMapParameters();
 	
@@ -80,11 +75,10 @@ public class LoadBingoResultsTest extends TestCase{
 		//make sure the dummy expression has values for all the genes
 		assertEquals(446, dataset.getExpressionSets().getNumGenes());
 		assertEquals(446,dataset.getDatasetGenes().size()); 
-
-		
-		
 	}
 	
+	
+	@Test
 	public void testLoad2BingoResult_withoutexpression() throws Exception{
 		EnrichmentMapParameters params = new EnrichmentMapParameters();
 	
@@ -179,9 +173,5 @@ public class LoadBingoResultsTest extends TestCase{
 		assertEquals(24,em.getGenesetSimilarity().size());
 		//there should be a total of 366 genes
 		assertEquals(704, em.getGenes().size());
-		
-
-		
-		
 	}
 }

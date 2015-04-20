@@ -1,6 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap.model;
 
-import static org.mockito.Mockito.mock;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import java.util.HashMap;
 
@@ -9,10 +10,10 @@ import org.baderlab.csplugins.enrichmentmap.StreamUtil;
 import org.baderlab.csplugins.enrichmentmap.parsers.GMTFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.task.ComputeSimilarityTask;
 import org.cytoscape.work.TaskMonitor;
+import org.junit.Before;
+import org.junit.Test;
 
-import junit.framework.TestCase;
-
-public class GeneSetSimilarityTest extends TestCase {
+public class GeneSetSimilarityTest {
 	
 	EnrichmentMap map;
 	DataSet dataset;
@@ -20,7 +21,8 @@ public class GeneSetSimilarityTest extends TestCase {
 	private TaskMonitor taskMonitor = mock(TaskMonitor.class);
 	private StreamUtil streamUtil = new StreamUtil();
 	
-	public void setUp() throws Exception {
+	@Before
+	public void before() throws Exception {
 		//load Genesets from the gmt file associated with this test
 		String testDataFileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/model/Genesetstestfile.gmt";
         
@@ -41,9 +43,9 @@ public class GeneSetSimilarityTest extends TestCase {
         task.run(taskMonitor);
         
         this.dataset.setGenesetsOfInterest(this.dataset.getSetofgenesets());
-
     }
 	
+	@Test
 	public void testJaccardCalculations() throws Exception{
 		
 		//set the parameters in the params to use jaccard coeffecient calculation
@@ -58,7 +60,7 @@ public class GeneSetSimilarityTest extends TestCase {
 		
 		assertEquals(15, similarities.size());
 		
-		SetOfGeneSets gs_set = map.getDataset(EnrichmentMap.DATASET1).getSetofgenesets();
+		//SetOfGeneSets gs_set = map.getDataset(EnrichmentMap.DATASET1).getSetofgenesets();
 		HashMap<String,Integer> genes = map.getGenes();
 		
 		//check the gene set similarity between APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4
@@ -69,7 +71,7 @@ public class GeneSetSimilarityTest extends TestCase {
 		Double jaccard = 13.0/142.0;
 		if(similarities.containsKey("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4 (Geneset_Overlap) APOPTOSIS%REACTOME%REACT_578.5")){			
 			similarity = similarities.get("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4 (Geneset_Overlap) APOPTOSIS%REACTOME%REACT_578.5");
-			assertEquals(jaccard,similarity.getSimilarity_coeffecient());
+			assertEquals(jaccard,similarity.getSimilarity_coeffecient(),0.0);
 			assertEquals("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4", similarity.getGeneset1_Name());
 			assertEquals("APOPTOSIS%REACTOME%REACT_578.5", similarity.getGeneset2_Name());
 			assertEquals(13, similarity.getSizeOfOverlap());
@@ -77,7 +79,7 @@ public class GeneSetSimilarityTest extends TestCase {
 		}
 		else{
 			similarity = similarities.get("APOPTOSIS%REACTOME%REACT_578.5 (Geneset_Overlap) APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4");
-			assertEquals(jaccard,similarity.getSimilarity_coeffecient());
+			assertEquals(jaccard,similarity.getSimilarity_coeffecient(),0.0);
 			assertEquals("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4", similarity.getGeneset2_Name());
 			assertEquals("APOPTOSIS%REACTOME%REACT_578.5", similarity.getGeneset1_Name());
 			assertEquals(13, similarity.getSizeOfOverlap());
@@ -86,7 +88,7 @@ public class GeneSetSimilarityTest extends TestCase {
 		jaccard = 1.0/21.0;
 		if(similarities.containsKey("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4 (Geneset_Overlap) APOPTOTIC CLEAVAGE OF CELL ADHESION PROTEINS%REACTOME%REACT_13579.1")){
 			similarity = similarities.get("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4 (Geneset_Overlap) APOPTOTIC CLEAVAGE OF CELL ADHESION PROTEINS%REACTOME%REACT_13579.1");
-			assertEquals(jaccard,similarity.getSimilarity_coeffecient());
+			assertEquals(jaccard,similarity.getSimilarity_coeffecient(),0.0);
 			assertEquals("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4",similarity.getGeneset1_Name());
 			assertEquals("APOPTOTIC CLEAVAGE OF CELL ADHESION PROTEINS%REACTOME%REACT_13579.1", similarity.getGeneset2_Name());
 			assertEquals(1, similarity.getSizeOfOverlap());
@@ -94,7 +96,7 @@ public class GeneSetSimilarityTest extends TestCase {
 		}
 		else{
 			similarity = similarities.get("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4 (Geneset_Overlap) APOPTOTIC CLEAVAGE OF CELL ADHESION PROTEINS%REACTOME%REACT_13579.1");
-			assertEquals(jaccard,similarity.getSimilarity_coeffecient());
+			assertEquals(jaccard,similarity.getSimilarity_coeffecient(),0.0);
 			assertEquals("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4",similarity.getGeneset2_Name());
 			assertEquals("APOPTOTIC CLEAVAGE OF CELL ADHESION PROTEINS%REACTOME%REACT_13579.1", similarity.getGeneset1_Name());
 			assertEquals(1, similarity.getSizeOfOverlap());
@@ -104,7 +106,7 @@ public class GeneSetSimilarityTest extends TestCase {
 		jaccard = 1.0/19.0;
 		if(similarities.containsKey("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4 (Geneset_Overlap) APOPTOTIC FACTOR-MEDIATED RESPONSE%REACTOME%REACT_963.2")){
 			similarity = similarities.get("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4 (Geneset_Overlap) APOPTOTIC FACTOR-MEDIATED RESPONSE%REACTOME%REACT_963.2");
-			assertEquals(jaccard,similarity.getSimilarity_coeffecient());
+			assertEquals(jaccard,similarity.getSimilarity_coeffecient(),0.0);
 			assertEquals("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4",similarity.getGeneset1_Name());
 			assertEquals("APOPTOTIC FACTOR-MEDIATED RESPONSE%REACTOME%REACT_963.2", similarity.getGeneset2_Name());
 			assertEquals(1, similarity.getSizeOfOverlap());
@@ -112,7 +114,7 @@ public class GeneSetSimilarityTest extends TestCase {
 		}
 		else{
 			similarity = similarities.get("APOPTOTIC FACTOR-MEDIATED RESPONSE%REACTOME%REACT_963.2 (Geneset_Overlap) APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4");
-			assertEquals(jaccard,similarity.getSimilarity_coeffecient());
+			assertEquals(jaccard,similarity.getSimilarity_coeffecient(),0.0);
 			assertEquals("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4",similarity.getGeneset2_Name());
 			assertEquals("APOPTOTIC FACTOR-MEDIATED RESPONSE%REACTOME%REACT_963.2", similarity.getGeneset1_Name());
 			assertEquals(1, similarity.getSizeOfOverlap());
@@ -121,6 +123,7 @@ public class GeneSetSimilarityTest extends TestCase {
 				
 	}
 	
+	@Test
 	public void testOverlapCalculations() throws Exception{
 		//set the parameters in the params to use jaccard coeffecient calculation
 		map.getParams().setSimilarityMetric(EnrichmentMapParameters.SM_OVERLAP);
@@ -134,7 +137,7 @@ public class GeneSetSimilarityTest extends TestCase {
 		
 		assertEquals(15, similarities.size());
 		
-		SetOfGeneSets gs_set = map.getDataset(EnrichmentMap.DATASET1).getSetofgenesets();
+		//SetOfGeneSets gs_set = map.getDataset(EnrichmentMap.DATASET1).getSetofgenesets();
 		HashMap<String,Integer> genes = map.getGenes();
 		
 		//check the gene set similarity between APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4
@@ -145,7 +148,7 @@ public class GeneSetSimilarityTest extends TestCase {
 		Double overlap = 13.0/13.0;
 		if(similarities.containsKey("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4 (Geneset_Overlap) APOPTOSIS%REACTOME%REACT_578.5")){			
 			similarity = similarities.get("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4 (Geneset_Overlap) APOPTOSIS%REACTOME%REACT_578.5");
-			assertEquals(overlap,similarity.getSimilarity_coeffecient());
+			assertEquals(overlap,similarity.getSimilarity_coeffecient(),0.0);
 			assertEquals("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4", similarity.getGeneset1_Name());
 			assertEquals("APOPTOSIS%REACTOME%REACT_578.5", similarity.getGeneset2_Name());
 			assertEquals(13, similarity.getSizeOfOverlap());
@@ -153,7 +156,7 @@ public class GeneSetSimilarityTest extends TestCase {
 		}
 		else{
 			similarity = similarities.get("APOPTOSIS%REACTOME%REACT_578.5 (Geneset_Overlap) APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4");
-			assertEquals(overlap,similarity.getSimilarity_coeffecient());
+			assertEquals(overlap,similarity.getSimilarity_coeffecient(),0.0);
 			assertEquals("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4", similarity.getGeneset2_Name());
 			assertEquals("APOPTOSIS%REACTOME%REACT_578.5", similarity.getGeneset1_Name());
 			assertEquals(13, similarity.getSizeOfOverlap());
@@ -162,7 +165,7 @@ public class GeneSetSimilarityTest extends TestCase {
 		overlap = 1.0/9.0;
 		if(similarities.containsKey("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4 (Geneset_Overlap) APOPTOTIC CLEAVAGE OF CELL ADHESION PROTEINS%REACTOME%REACT_13579.1")){
 			similarity = similarities.get("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4 (Geneset_Overlap) APOPTOTIC CLEAVAGE OF CELL ADHESION PROTEINS%REACTOME%REACT_13579.1");
-			assertEquals(overlap,similarity.getSimilarity_coeffecient());
+			assertEquals(overlap,similarity.getSimilarity_coeffecient(),0.0);
 			assertEquals("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4",similarity.getGeneset1_Name());
 			assertEquals("APOPTOTIC CLEAVAGE OF CELL ADHESION PROTEINS%REACTOME%REACT_13579.1", similarity.getGeneset2_Name());
 			assertEquals(1, similarity.getSizeOfOverlap());
@@ -170,7 +173,7 @@ public class GeneSetSimilarityTest extends TestCase {
 		}
 		else{
 			similarity = similarities.get("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4 (Geneset_Overlap) APOPTOTIC CLEAVAGE OF CELL ADHESION PROTEINS%REACTOME%REACT_13579.1");
-			assertEquals(overlap,similarity.getSimilarity_coeffecient());
+			assertEquals(overlap,similarity.getSimilarity_coeffecient(),0.0);
 			assertEquals("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4",similarity.getGeneset2_Name());
 			assertEquals("APOPTOTIC CLEAVAGE OF CELL ADHESION PROTEINS%REACTOME%REACT_13579.1", similarity.getGeneset1_Name());
 			assertEquals(1, similarity.getSizeOfOverlap());
@@ -180,7 +183,7 @@ public class GeneSetSimilarityTest extends TestCase {
 		overlap = 1.0/7.0;
 		if(similarities.containsKey("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4 (Geneset_Overlap) APOPTOTIC FACTOR-MEDIATED RESPONSE%REACTOME%REACT_963.2")){
 			similarity = similarities.get("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4 (Geneset_Overlap) APOPTOTIC FACTOR-MEDIATED RESPONSE%REACTOME%REACT_963.2");
-			assertEquals(overlap,similarity.getSimilarity_coeffecient());
+			assertEquals(overlap,similarity.getSimilarity_coeffecient(),0.0);
 			assertEquals("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4",similarity.getGeneset1_Name());
 			assertEquals("APOPTOTIC FACTOR-MEDIATED RESPONSE%REACTOME%REACT_963.2", similarity.getGeneset2_Name());
 			assertEquals(1, similarity.getSizeOfOverlap());
@@ -188,7 +191,7 @@ public class GeneSetSimilarityTest extends TestCase {
 		}
 		else{
 			similarity = similarities.get("APOPTOTIC FACTOR-MEDIATED RESPONSE%REACTOME%REACT_963.2 (Geneset_Overlap) APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4");
-			assertEquals(overlap,similarity.getSimilarity_coeffecient());
+			assertEquals(overlap,similarity.getSimilarity_coeffecient(),0.0);
 			assertEquals("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4",similarity.getGeneset2_Name());
 			assertEquals("APOPTOTIC FACTOR-MEDIATED RESPONSE%REACTOME%REACT_963.2", similarity.getGeneset1_Name());
 			assertEquals(1, similarity.getSizeOfOverlap());
@@ -197,6 +200,7 @@ public class GeneSetSimilarityTest extends TestCase {
 		
 	}
 
+	@Test
 	public void testCombindCalculations() throws Exception{
 		double combined_constant = 0.5;
 		
@@ -213,7 +217,7 @@ public class GeneSetSimilarityTest extends TestCase {
 		
 		assertEquals(15, similarities.size());
 		
-		SetOfGeneSets gs_set = map.getDataset(EnrichmentMap.DATASET1).getSetofgenesets();
+		//SetOfGeneSets gs_set = map.getDataset(EnrichmentMap.DATASET1).getSetofgenesets();
 		HashMap<String,Integer> genes = map.getGenes();
 		
 		//check the gene set similarity between APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4
@@ -224,7 +228,7 @@ public class GeneSetSimilarityTest extends TestCase {
 		Double combined = (combined_constant * (13.0/13.0)) + ((1-combined_constant) * (13.0/142.0));
 		if(similarities.containsKey("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4 (Geneset_Overlap) APOPTOSIS%REACTOME%REACT_578.5")){			
 			similarity = similarities.get("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4 (Geneset_Overlap) APOPTOSIS%REACTOME%REACT_578.5");
-			assertEquals(combined,similarity.getSimilarity_coeffecient());
+			assertEquals(combined,similarity.getSimilarity_coeffecient(),0.0);
 			assertEquals("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4", similarity.getGeneset1_Name());
 			assertEquals("APOPTOSIS%REACTOME%REACT_578.5", similarity.getGeneset2_Name());
 			assertEquals(13, similarity.getSizeOfOverlap());
@@ -232,7 +236,7 @@ public class GeneSetSimilarityTest extends TestCase {
 		}
 		else{
 			similarity = similarities.get("APOPTOSIS%REACTOME%REACT_578.5 (Geneset_Overlap) APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4");
-			assertEquals(combined,similarity.getSimilarity_coeffecient());
+			assertEquals(combined,similarity.getSimilarity_coeffecient(),0.0);
 			assertEquals("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4", similarity.getGeneset2_Name());
 			assertEquals("APOPTOSIS%REACTOME%REACT_578.5", similarity.getGeneset1_Name());
 			assertEquals(13, similarity.getSizeOfOverlap());
@@ -241,7 +245,7 @@ public class GeneSetSimilarityTest extends TestCase {
 		combined = (combined_constant * (1.0/9.0)) + ((1-combined_constant) * (1.0/21.0));
 		if(similarities.containsKey("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4 (Geneset_Overlap) APOPTOTIC CLEAVAGE OF CELL ADHESION PROTEINS%REACTOME%REACT_13579.1")){
 			similarity = similarities.get("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4 (Geneset_Overlap) APOPTOTIC CLEAVAGE OF CELL ADHESION PROTEINS%REACTOME%REACT_13579.1");
-			assertEquals(combined,similarity.getSimilarity_coeffecient());
+			assertEquals(combined,similarity.getSimilarity_coeffecient(),0.0);
 			assertEquals("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4",similarity.getGeneset1_Name());
 			assertEquals("APOPTOTIC CLEAVAGE OF CELL ADHESION PROTEINS%REACTOME%REACT_13579.1", similarity.getGeneset2_Name());
 			assertEquals(1, similarity.getSizeOfOverlap());
@@ -249,7 +253,7 @@ public class GeneSetSimilarityTest extends TestCase {
 		}
 		else{
 			similarity = similarities.get("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4 (Geneset_Overlap) APOPTOTIC CLEAVAGE OF CELL ADHESION PROTEINS%REACTOME%REACT_13579.1");
-			assertEquals(combined,similarity.getSimilarity_coeffecient());
+			assertEquals(combined,similarity.getSimilarity_coeffecient(),0.0);
 			assertEquals("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4",similarity.getGeneset2_Name());
 			assertEquals("APOPTOTIC CLEAVAGE OF CELL ADHESION PROTEINS%REACTOME%REACT_13579.1", similarity.getGeneset1_Name());
 			assertEquals(1, similarity.getSizeOfOverlap());
@@ -259,7 +263,7 @@ public class GeneSetSimilarityTest extends TestCase {
 		combined = (combined_constant * (1.0/7.0)) + ((1-combined_constant) * (1.0/19.0));;
 		if(similarities.containsKey("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4 (Geneset_Overlap) APOPTOTIC FACTOR-MEDIATED RESPONSE%REACTOME%REACT_963.2")){
 			similarity = similarities.get("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4 (Geneset_Overlap) APOPTOTIC FACTOR-MEDIATED RESPONSE%REACTOME%REACT_963.2");
-			assertEquals(combined,similarity.getSimilarity_coeffecient());
+			assertEquals(combined,similarity.getSimilarity_coeffecient(),0.0);
 			assertEquals("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4",similarity.getGeneset1_Name());
 			assertEquals("APOPTOTIC FACTOR-MEDIATED RESPONSE%REACTOME%REACT_963.2", similarity.getGeneset2_Name());
 			assertEquals(1, similarity.getSizeOfOverlap());
@@ -267,7 +271,7 @@ public class GeneSetSimilarityTest extends TestCase {
 		}
 		else{
 			similarity = similarities.get("APOPTOTIC FACTOR-MEDIATED RESPONSE%REACTOME%REACT_963.2 (Geneset_Overlap) APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4");
-			assertEquals(combined,similarity.getSimilarity_coeffecient());
+			assertEquals(combined,similarity.getSimilarity_coeffecient(),0.0);
 			assertEquals("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4",similarity.getGeneset2_Name());
 			assertEquals("APOPTOTIC FACTOR-MEDIATED RESPONSE%REACTOME%REACT_963.2", similarity.getGeneset1_Name());
 			assertEquals(1, similarity.getSizeOfOverlap());
