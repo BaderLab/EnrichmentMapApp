@@ -146,6 +146,18 @@
 		    <type>test-jar</type>
 		    <scope>test</scope>
 		</dependency>
+		<dependency>
+		    <groupId>org.cytoscape</groupId>
+		    <artifactId>model-impl</artifactId>
+		    <version>${cy3.version}</version>
+		    <scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.ops4j.pax.logging</groupId>
+			<artifactId>pax-logging-api</artifactId>
+			<version>1.5.2</version>
+			<scope>test</scope>
+		</dependency>
 		
 	</dependencies>
 	

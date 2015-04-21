@@ -17,15 +17,15 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.work.FinishStatus;
+import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.TaskObserver;
-import org.cytoscape.work.swing.DialogTaskManager;
 
 public class LoadSignatureSetsActionListener implements ActionListener {
 
 	private PostAnalysisInputPanel inputPanel;
 	private CySwingApplication application;
 	private CyApplicationManager applicationManager;
-	private DialogTaskManager dialog;
+	private TaskManager<?,?> taskManager;
 	private StreamUtil streamUtil;
 	
 	private boolean selectAll = false;
@@ -34,12 +34,12 @@ public class LoadSignatureSetsActionListener implements ActionListener {
 	public LoadSignatureSetsActionListener(PostAnalysisInputPanel inputPanel,
 			CySwingApplication application,
 			CyApplicationManager applicationManager, 
-			DialogTaskManager dialog,
+			TaskManager<?,?> taskManager,
 			StreamUtil streamUtil) {
 		this.inputPanel = inputPanel;
 		this.application = application;
 		this.applicationManager = applicationManager;
-		this.dialog = dialog;
+		this.taskManager = taskManager;
 		this.streamUtil = streamUtil;
 	}
 
@@ -78,10 +78,10 @@ public class LoadSignatureSetsActionListener implements ActionListener {
 					}
 				};
 				
-				dialog.execute(load_GMTs.createTaskIterator(), taskObserver);
+				taskManager.execute(load_GMTs.createTaskIterator(), taskObserver);
         	}
         	else {
-        		dialog.execute(load_GMTs.createTaskIterator());
+        		taskManager.execute(load_GMTs.createTaskIterator());
         	}
 			
 
