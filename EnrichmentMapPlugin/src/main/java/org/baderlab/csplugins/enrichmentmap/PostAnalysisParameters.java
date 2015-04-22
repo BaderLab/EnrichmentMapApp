@@ -115,7 +115,7 @@ public class PostAnalysisParameters {
     private double default_signature_Jaccard_Cutoff   = 0.125;  
     private double default_signature_Overlap_Cutoff   = 0.25;  
     private double default_signature_DirOverlap_Cutoff= 0.25;  
-    private double default_signature_Hypergeom_Cutoff = 0.25;
+    private double default_signature_Hypergeom_Cutoff = 0.05;
     
     private CutoffMetric default_signature_CutoffMetric = CutoffMetric.ABS_NUMBER;
     

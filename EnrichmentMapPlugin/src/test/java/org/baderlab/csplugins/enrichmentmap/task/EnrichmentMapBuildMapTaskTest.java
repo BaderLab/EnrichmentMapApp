@@ -264,6 +264,7 @@ public class EnrichmentMapBuildMapTaskTest {
 		paParams.setKnownSignature(true);
 		paParams.setSignatureHub(false);
 		paParams.setUniverseSize(11445);
+		paParams.setSignature_Hypergeom_Cutoff(0.25);
 		paParams.setSignatureGMTFileName(PATH + "PA_top8_middle8_bottom8.gmt");
 		
 		paParams.setSignature_rankTest(FilterMetric.HYPERGEOM);
