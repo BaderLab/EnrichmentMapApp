@@ -205,13 +205,6 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
             Set<Integer> geneUniverse = new HashSet<>();
             geneUniverse.addAll(EnrichmentGenes);
 
-            /* bug: #97: Post-analysis: thresholding not working with overlap 
-             * Don't restrict Universe to Intersection of Enrichment- and Signature Genes 
-             * but rather the Universe of all Enrichment Genes.  
-             */
-            // geneUniverse.retainAll(SignatureGenes); 
-            int universeSize = paParams.getUniverseSize();
-            
             Map<String,String> duplicateGenesets = new HashMap<>();
 
             //iterate over selected Signature genesets
@@ -263,7 +256,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
                     
                     //first check to see if the terms are the same
                     if(hub_name.equalsIgnoreCase(geneset_name)) {
-                       //don't compare two identical genesets
+                    	//don't compare two identical genesets
                     }
                     else if (! nodesMap.containsKey(geneset_name)) {
                         // skip if the Geneset is not in the Network
@@ -312,11 +305,15 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 	                        //create Geneset similarity object
 	                        GenesetSimilarity comparison = new GenesetSimilarity(hub_name, geneset_name, coeffecient, PostAnalysisParameters.SIGNATURE_INTERACTION_TYPE, (HashSet<Integer>)intersection);
 	                        
+	                        int universeSize;
 	                        switch(paParams.getSignature_rankTest()) {
 		                        case MANN_WHIT:
 		                        	mannWhitney(intersection, comparison);
+		                        	universeSize = map.getNumberOfGenes(); // #70 calculate hypergeometric also
+		                        	hypergeometric(universeSize, sigGenesInUniverse, enrGenes, intersection, comparison);
 		                        	break;
 		                        case HYPERGEOM:
+		                        	universeSize = paParams.getUniverseSize();
 		                        	hypergeometric(universeSize, sigGenesInUniverse, enrGenes, intersection, comparison);
 		                        	break;
 	                        }
@@ -540,17 +537,17 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 		}
 		
 		// Attributes related to the Hypergeometric Test
-		if (paParams.getSignature_rankTest() == PostAnalysisParameters.FilterMetric.HYPERGEOM) {
-			current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_PVALUE, genesetSimilarity.getHypergeom_pvalue());
-			current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_N, genesetSimilarity.getHypergeom_N());
-			current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_n, genesetSimilarity.getHypergeom_n());
-			current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_m, genesetSimilarity.getHypergeom_m());
-			current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_k, genesetSimilarity.getHypergeom_k());
-		}
-		
-		// Attributes related to the Mann-Whitney Test
-		if (paParams.getSignature_rankTest() == PostAnalysisParameters.FilterMetric.MANN_WHIT) {
-			current_edgerow.set(prefix + EnrichmentMapVisualStyle.MANN_WHIT_PVALUE, genesetSimilarity.getMann_Whit_pValue());
+		switch(paParams.getSignature_rankTest()) {
+			case MANN_WHIT:
+				current_edgerow.set(prefix + EnrichmentMapVisualStyle.MANN_WHIT_PVALUE, genesetSimilarity.getMann_Whit_pValue());
+				// want to fall through to the HYERGEOM case
+			case HYPERGEOM:
+				current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_PVALUE, genesetSimilarity.getHypergeom_pvalue());
+				current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_N, genesetSimilarity.getHypergeom_N());
+				current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_n, genesetSimilarity.getHypergeom_n());
+				current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_m, genesetSimilarity.getHypergeom_m());
+				current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_k, genesetSimilarity.getHypergeom_k());
+			default: break;
 		}
 		
 		// Set edge width attribute
