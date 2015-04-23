@@ -43,7 +43,11 @@
 
 package org.baderlab.csplugins.enrichmentmap.model;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -60,7 +64,7 @@ public class GeneExpressionMatrix {
     private String[] columnNames;
     //number of conditions - number of columns
     private int numConditions;
-    private int numGenes;
+    private int expressionUniverse;
 
     //Store two instances of the expression matrix, one with the raw expression values
     //and one with the row normalized values.  The row normalizes values are stored as opposed
@@ -274,6 +278,14 @@ public class GeneExpressionMatrix {
     			this.columnNames = columnNames;
     }
 
+    public void setExpressionUniverse(int size) {
+    	this.expressionUniverse = size;
+    }
+    
+    public int getExpressionUniverse() {
+    	return expressionUniverse;
+    }
+    
     public int getNumConditions() {
         return numConditions;
     }
@@ -283,11 +295,7 @@ public class GeneExpressionMatrix {
     }
 
     public int getNumGenes() {
-        return numGenes;
-    }
-
-    public void setNumGenes(int numGenes) {
-        this.numGenes = numGenes;
+        return expressionMatrix.size();
     }
 
     public HashMap<Integer, GeneExpression> getExpressionMatrix() {
@@ -369,7 +377,7 @@ public class GeneExpressionMatrix {
      */
     public String toString(){
 
-        StringBuffer expressionSb = new StringBuffer();
+    	StringBuilder expressionSb = new StringBuilder();
 
         for(int i = 0; i<columnNames.length; i++)
             expressionSb.append(columnNames[i] + "\t") ;
@@ -386,24 +394,40 @@ public class GeneExpressionMatrix {
     /*
      * Prints out just the parameters associated with this expression set
      */
-    public String toString(String ds){
-    		StringBuffer paramVariables = new StringBuffer();
+    public String toString(String ds) {
+    	StringBuilder paramVariables = new StringBuilder();
+		String simpleName = this.getClass().getSimpleName();
+		
+		paramVariables.append(ds + "%" + simpleName + "%filename\t" + filename + "\n");
+		paramVariables.append(ds + "%" + simpleName + "%phenotype1\t" + phenotype1  + "\n");
+        paramVariables.append(ds + "%" + simpleName + "%phenotype2\t" + phenotype2   + "\n");
 
-		paramVariables.append(ds + "%" + this.getClass().getSimpleName() + "%filename\t" + filename + "\n");
-		paramVariables.append(ds + "%" + this.getClass().getSimpleName() + "%phenotype1\t" + phenotype1  + "\n");
-        paramVariables.append(ds + "%" + this.getClass().getSimpleName() + "%phenotype2\t" + phenotype2   + "\n");
-
-		paramVariables.append(ds + "%" + this.getClass().getSimpleName() + "%numConditions\t" + numConditions + "\n");
-		paramVariables.append(ds + "%" + this.getClass().getSimpleName() + "%numGenes\t" + numGenes + "\n");
-        paramVariables.append(ds + "%" + this.getClass().getSimpleName() + "%minExpression\t" + minExpression   + "\n");
-        paramVariables.append(ds + "%" + this.getClass().getSimpleName() + "%maxExpression\t" + maxExpression   + "\n");
+		paramVariables.append(ds + "%" + simpleName + "%numConditions\t" + numConditions + "\n");
+		paramVariables.append(ds + "%" + simpleName + "%numGenes\t" + getNumGenes() + "\n");
+        paramVariables.append(ds + "%" + simpleName + "%minExpression\t" + minExpression   + "\n");
+        paramVariables.append(ds + "%" + simpleName + "%maxExpression\t" + maxExpression   + "\n");
+        paramVariables.append(ds + "%" + simpleName + "%expressionUniverse\t" + expressionUniverse   + "\n");
         
         if(phenotypes != null)
-            paramVariables.append(ds + "%" + this.getClass().getSimpleName() + "%phenotypes\t" + phenotypes.toString()   + "\n");
+            paramVariables.append(ds + "%" + simpleName + "%phenotypes\t" + phenotypes.toString()   + "\n");
         
         return paramVariables.toString();
-        
     }
+    
+    /**
+     * Restores parameters saved in the session file.
+     * Note, most of this object is restored by the ExpressionFileReaderTask.
+     */
+    public void restoreProps(String ds, Map<String, String> props) {
+    	String simpleName = this.getClass().getSimpleName();
+		String val = props.get(ds + "%" + simpleName + "%expressionUniverse");
+		if(val != null) {
+			try {
+				expressionUniverse = Integer.parseInt(val);
+			} catch(NumberFormatException e) {}
+		}
+	}
+    
 
     public Set<Integer> getGeneIds(){
         return expressionMatrix.keySet();
@@ -457,5 +481,6 @@ public class GeneExpressionMatrix {
     		Ranking new_ranking = new Ranking();
 		this.ranks.put(name, new_ranking);
     }
+
 
 }

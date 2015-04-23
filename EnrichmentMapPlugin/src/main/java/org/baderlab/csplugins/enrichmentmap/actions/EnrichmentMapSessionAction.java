@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
 
@@ -22,6 +23,7 @@ import org.baderlab.csplugins.enrichmentmap.autoannotate.action.AutoAnnotationPa
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.GenesetSimilarity;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
@@ -326,6 +328,7 @@ public class EnrichmentMapSessionAction implements SessionAboutToBeSavedListener
 
 				CyNetwork net = getNetworkByName(parts_exp.name);
 				EnrichmentMap map  = (net != null) ? EnrichmentMapManager.getInstance().getMap(net.getSUID()) : null;
+				Map<String,String> props = map.getParams().getProps();
 
 				if(parts_exp.type != null && parts_exp.type.equalsIgnoreCase("expression")){
 					if(map.getDatasets().containsKey(parts_exp.dataset)){
@@ -333,7 +336,8 @@ public class EnrichmentMapSessionAction implements SessionAboutToBeSavedListener
 						ds.getDatasetFiles().setExpressionFileName(prop_file.getAbsolutePath());
 						ds.getExpressionSets().setFilename(prop_file.getAbsolutePath());
 						ExpressionFileReaderTask expressionFile1 = new ExpressionFileReaderTask(ds,streamUtil);
-						expressionFile1.parse();
+						GeneExpressionMatrix matrix = expressionFile1.parse();
+						matrix.restoreProps(parts_exp.dataset, props);
 					}
 				}
 				//Deal with legacy session files.

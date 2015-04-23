@@ -43,14 +43,12 @@
 
 package org.baderlab.csplugins.enrichmentmap.parsers;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Scanner;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Scanner;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpression;
@@ -100,7 +98,7 @@ public class ExpressionFileReaderTask extends AbstractTask {
     /**
      * Parse expression/rank file
      */
-    public void parse() throws IOException {
+    public GeneExpressionMatrix parse() throws IOException {
     	
 
     			//Need to check if the file specified as an expression file is actually a rank file
@@ -126,6 +124,7 @@ public class ExpressionFileReaderTask extends AbstractTask {
     	        String []lines = fullText.split("\r\n?|\n");
     			int currentProgress = 0;
     			maxValue = lines.length;
+    			int expressionUniverse = 0;
     		
     			GeneExpressionMatrix expressionMatrix = dataset.getExpressionSets();
     			//GeneExpressionMatrix expressionMatrix = new GeneExpressionMatrix(lines[0].split("\t"));
@@ -236,24 +235,24 @@ public class ExpressionFileReaderTask extends AbstractTask {
     					expression.put(genekey,expres);
 
     				}
-
-    				// Calculate Percentage.  This must be a value between 0..100.
-    				int percentComplete = (int) (((double) currentProgress / maxValue) * 100);
-    				//  Estimate Time Remaining
-    				long timeRemaining = maxValue - currentProgress;
+    				expressionUniverse++;
+    				
     				if (taskMonitor != null) {
-                    taskMonitor.setProgress(percentComplete);
-                    taskMonitor.setStatusMessage("Parsing GCT file " + currentProgress + " of " + maxValue);
-                    
-                }
+    					// Calculate Percentage.  This must be a value between 0..100.
+        				int percentComplete = (int) (((double) currentProgress / maxValue) * 100);
+	                    taskMonitor.setProgress(percentComplete);
+	                    taskMonitor.setStatusMessage("Parsing GCT file " + currentProgress + " of " + maxValue);
+    				}	
     				currentProgress++;
 
     			}
 
     			//set the number of genes
-    			expressionMatrix.setNumGenes(expressionMatrix.getExpressionMatrix().size());
+    			expressionMatrix.setExpressionUniverse(expressionUniverse);
     			//row Normalize expressionset
     			expressionMatrix.rowNormalizeMatrix();
+    			
+    			return expressionMatrix;
         
     			//TODO: intialize phenotypes associated with class files from expression file load
   /*      	if(dataset == 1){

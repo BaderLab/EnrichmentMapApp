@@ -11,7 +11,6 @@ import java.beans.PropertyChangeListener;
 import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.Set;
 
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
@@ -27,6 +26,7 @@ import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters.FilterMetric;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.cytoscape.application.swing.CySwingApplication;
 
@@ -290,12 +290,11 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
     
     private void updateUniverseSize() {
     	String signature_dataSet = paParams.getSignature_dataSet();
-    	Set<Integer> intersection = map.getDataset(signature_dataSet).getDatasetGenes();
-    	intersection.retainAll(map.getDataset(signature_dataSet).getExpressionSets().getGeneIds());
+    	GeneExpressionMatrix expressionSets = map.getDataset(signature_dataSet).getExpressionSets();
     	
     	universeGmt = map.getNumberOfGenes();
-    	universeExpression = map.getDataset(signature_dataSet).getExpressionSets().getNumGenes();
-    	universeIntersection = intersection.size();
+    	universeExpression = expressionSets.getExpressionUniverse();
+    	universeIntersection = expressionSets.getExpressionMatrix().size();
     	
         gmtRadioButton.setText("GMT (" + universeGmt + ")");
         expressionSetRadioButton.setText("Expression Set (" + universeExpression + ")");
