@@ -2,9 +2,7 @@ package org.baderlab.csplugins.enrichmentmap.util;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
@@ -22,6 +20,11 @@ public class NetworkUtil {
 		T get(CyNetwork network, Long suid);
 	}
 	
+	
+	/**
+	 * Returns a single node that matches the given value.
+	 * Returns null if there are no nodes that match or if there are multiple nodes that match.
+	 */
 	public static CyNode getNodeWithValue(CyNetwork net, CyTable table, String colname, String value) {
 		return getObjectWithValue(net, table, colname, value,
 			new NetworkGetter<CyNode>() {
@@ -32,6 +35,10 @@ public class NetworkUtil {
 		);
 	}
 
+	/**
+	 * Returns a single edge that matches the given value.
+	 * Returns null if there are no edges that match or if there are multiple edges that match.
+	 */
 	public static CyEdge getEdgeWithValue(CyNetwork net, CyTable table, String colname, String value) {
 		return getObjectWithValue(net, table, colname, value,
 			new NetworkGetter<CyEdge>() {
@@ -42,39 +49,30 @@ public class NetworkUtil {
 		);
 	}
 	
-	
 	private static <T> T getObjectWithValue(CyNetwork net, CyTable table, String colname, String value, NetworkGetter<T> getter) {
-		Collection<CyRow> matchingRows = table.getMatchingRows(colname, value);
 		T nodeOrEdge = null;
-		//only get the matching row if there is only one match
-		if(matchingRows.size() == 1) {
-			for(CyRow row : matchingRows) {
-				Long id = row.get(CyNetwork.SUID, Long.class);
-				if (id == null)
-					continue;
-				nodeOrEdge = getter.get(net, id);
-				if (nodeOrEdge == null)
-					continue;
+		
+		Collection<CyRow> matchingRows = table.getMatchingRows(colname, value);
+		for(CyRow row : matchingRows) {
+			Long id = row.get(CyNetwork.SUID, Long.class);
+			if(id == null)
+				continue;
+			T currentNodeOrEdge = getter.get(net, id);
+			if(nodeOrEdge == null) {
+				nodeOrEdge = currentNodeOrEdge;
 			}
-		}
-		//There are multiple matches but check to see if they all belong to the same node.
-		else {
-			//Get the set of suid for the matching set
-			Set<Long> ids = new HashSet<>();
-			for(CyRow row : matchingRows) {
-				Long id = row.get(CyNetwork.SUID, Long.class);
-				if(id != null)
-					ids.add(id);
+			else if(currentNodeOrEdge != null) {
+				// found 2 nodes or edges that match the criteria
+				//System.out.println("There are at least 2 nodes or edges that match for name: " + value);
+				return null;
 			}
-			if(!ids.isEmpty() && ids.size() == 1)
-				nodeOrEdge = getter.get(net, ids.iterator().next());
-			else
-				System.out.println("There are multiple node/edge matches for name:" + value + " " + ids);
 		}
 		return nodeOrEdge;
-    }
+	}
 	
-	
+	/**
+	 * Maps a collection of nodes or edges to a list of their SUIDs.
+	 */
 	public static List<Long> keys(Collection<? extends CyIdentifiable> nodesOrEdges) {
 		List<Long> keys = new ArrayList<>(nodesOrEdges.size());
 		for(CyIdentifiable obj : nodesOrEdges) {

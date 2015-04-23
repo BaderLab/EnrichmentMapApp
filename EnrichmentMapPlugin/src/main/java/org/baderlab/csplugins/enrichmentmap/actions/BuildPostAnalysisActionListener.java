@@ -46,6 +46,7 @@ package org.baderlab.csplugins.enrichmentmap.actions;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Set;
 
 import javax.swing.JOptionPane;
 
@@ -53,13 +54,14 @@ import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.task.BuildDiseaseSignatureTask;
-import org.baderlab.csplugins.enrichmentmap.task.BuildDiseaseSignatureTaskResultFlags;
+import org.baderlab.csplugins.enrichmentmap.task.BuildDiseaseSignatureTaskResult;
 import org.baderlab.csplugins.enrichmentmap.view.PostAnalysisInputPanel;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.util.StreamUtil;
-import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.ObservableTask;
@@ -67,19 +69,10 @@ import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskObserver;
 import org.cytoscape.work.swing.DialogTaskManager;
 
-/**
- * Created by:
- * @author revilo
- * <p>
- * Date Jul 10, 2009<br>
- * Time 2:35:40 PM<br>
- * 
- * Based on: BuildEnrichmentMapActionListener.java (288) by risserlin
- */
+
 public class BuildPostAnalysisActionListener implements ActionListener {
 
     private PostAnalysisInputPanel inputPanel;
-    private CyNetworkManager networkManager;
     private CyApplicationManager applicationManager;
     private CySwingApplication swingApplication;
     private CySessionManager sessionManager;
@@ -88,12 +81,11 @@ public class BuildPostAnalysisActionListener implements ActionListener {
     private CyEventHelper eventHelper;
 
     public BuildPostAnalysisActionListener (PostAnalysisInputPanel panel,  
-    		CySessionManager sessionManager, StreamUtil streamUtil,CyNetworkManager networkManager, CySwingApplication swingApplication,
+    		CySessionManager sessionManager, StreamUtil streamUtil, CySwingApplication swingApplication,
     		CyApplicationManager applicationManager, DialogTaskManager dialog,CyEventHelper eventHelper) {
         this.inputPanel = panel;
         this.sessionManager = sessionManager;
         this.streamUtil = streamUtil;
-        this.networkManager = networkManager;
         this.applicationManager = applicationManager;
         this.swingApplication = swingApplication;
         this.dialog = dialog;
@@ -134,23 +126,42 @@ public class BuildPostAnalysisActionListener implements ActionListener {
 
     
     private class WarnDialogObserver implements TaskObserver {
-    	BuildDiseaseSignatureTaskResultFlags flags;
+    	BuildDiseaseSignatureTaskResult result;
     	
 		@Override 
 		public void taskFinished(ObservableTask task) {
 			if(task instanceof BuildDiseaseSignatureTask) {
-				flags = task.getResults(BuildDiseaseSignatureTaskResultFlags.class);
+				result = task.getResults(BuildDiseaseSignatureTaskResult.class);
 			}
 		}
 		
 		@Override 
 		public void allFinished(FinishStatus status) {
-			if(flags != null && flags.warnUserExistingEdges) {
-				JOptionPane.showMessageDialog(swingApplication.getJFrame(), 
-						"There are existing edges that did not pass the current cutoff value.", 
-						"Warning", JOptionPane.WARNING_MESSAGE);
+			if(result == null)
+				return;
+			
+			if(!result.getExistingEdgesFailingCutoff().isEmpty()) {
+				String[] options = {"Delete Edges From Previous Run", "Keep All Edges"};
+				int dialogResult = JOptionPane.showOptionDialog(
+						swingApplication.getJFrame(), 
+						"There are edges from a previous run of post-analysis that do not pass the current cutoff value.\n"
+						+ "Keep these edges or delete them?", 
+						"Existing post-analysis edges", 
+						JOptionPane.YES_NO_OPTION, 
+						JOptionPane.QUESTION_MESSAGE, 
+						null, 
+						options, 
+						options[1]);
+				
+				if(dialogResult == JOptionPane.YES_OPTION) {
+					Set<CyEdge> edgesToDelete = result.getExistingEdgesFailingCutoff();
+					CyNetwork network = result.getNetwork();
+					network.removeEdges(edgesToDelete);
+					result.getNetworkView().updateView();
+				}
 			}
-			if(flags != null && flags.warnUserBypassStyle) {
+			
+			if(result.isWarnUserBypassStyle()) {
 				JOptionPane.showMessageDialog(swingApplication.getJFrame(), 
 						"The graph was created with an older version of EnrichmentMap.\n"
 						+ "The Visual Properties used for Post Analysis nodes and edges have been set to bypass.\n\n"

@@ -116,8 +116,8 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
     private Ranking ranks;
     private HashMap<String,GenesetSimilarity> geneset_similarities;
     
-    private boolean warnUserExistingEdges = false;
-    private boolean warnUserBypassStyle = false;
+    private BuildDiseaseSignatureTaskResult.Builder taskResult = new BuildDiseaseSignatureTaskResult.Builder();
+    
     
     
 
@@ -172,6 +172,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
     @SuppressWarnings("incomplete-switch")
 	public void buildDiseaseSignature() {
 
+    	System.out.println("buildDiseaseSignature");
         /* **************************************************
          * Calculate Similarity between Signature Gene Sets *
          * and Enrichment Genesets.                         *
@@ -184,6 +185,8 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
         try {
             CyNetwork current_network  = applicationManager.getCurrentNetwork();
             CyNetworkView current_view = applicationManager.getCurrentNetworkView();
+            taskResult.setNetwork(current_network);
+            taskResult.setNetworkView(current_view);
             
             //the signature geneset
             CyNode hub_node = null;
@@ -384,11 +387,11 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
                    	passed_cutoff = true;
                 }
 
-                warnUserExistingEdges |= createEdge(edge_name, current_network, current_view, hub_node, prefix, cyEdgeAttrs, cyNodeAttrs, passed_cutoff);
+                createEdge(edge_name, current_network, current_view, hub_node, prefix, cyEdgeAttrs, cyNodeAttrs, passed_cutoff);
                 
             } //for
             
-            warnUserBypassStyle = shouldUseBypass(prefix, cyEdgeAttrs);
+            taskResult.setWarnUserBypassStyle(shouldUseBypass(prefix, cyEdgeAttrs));
             
             //update the view 
             current_view.updateView();
@@ -486,24 +489,28 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
     
 	/**
 	 * Returns true iff the user should be warned about an existing edge that does not pass the new cutoff.
+	 * If the edge already exists it will be returned, if the edge had to be created it will not be returned.
 	 */
-	private boolean createEdge(String edge_name, CyNetwork current_network, CyNetworkView current_view, 
-			                   CyNode hub_node, String prefix, CyTable cyEdgeAttrs, CyTable cyNodeAttrs, boolean passed_cutoff) {
+	private void createEdge(String edge_name, CyNetwork current_network, CyNetworkView current_view, 
+			                CyNode hub_node, String prefix, CyTable cyEdgeAttrs, CyTable cyNodeAttrs, boolean passed_cutoff) {
 		
+		System.out.println("createEdge: " + edge_name);
 		CyEdge edge = NetworkUtil.getEdgeWithValue(current_network, cyEdgeAttrs, CyNetwork.NAME, edge_name);
+		
 		GenesetSimilarity genesetSimilarity = geneset_similarities.get(edge_name);
 		
-		if(passed_cutoff) {
-			if(edge == null) { // edge does not exist, create it
+		if(edge == null) {
+			if(passed_cutoff) {
 				CyNode gene_set = NetworkUtil.getNodeWithValue(current_network, cyNodeAttrs, CyNetwork.NAME, genesetSimilarity.getGeneset2_Name());
 				edge = current_network.addEdge(hub_node, gene_set, false);
-			} 
-			// if the edge already exists then just update existing one
-		} else {
-			if(edge == null) { // edge does not exist, so do nothing
-				return false;
-			} 
-			// if the edge already exists but does not pass the cutoff we will sill update it
+			} else {
+				return;
+			}
+		}
+		else {
+			if(!passed_cutoff) {
+				taskResult.addExistingEdgeFailsCutoff(edge);
+			}
 		}
 		
 		//add update view because view is returning null when we try to get the edge view.
@@ -602,8 +609,6 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 				}
 			}
 		}
-		
-		return !passed_cutoff;
 	}
 	
 	
@@ -677,7 +682,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
     /*
      * Create Node attribute table with post analysis parameters not in the main EM table
      */
-    public CyTable createNodeAttributes(CyNetwork network, String name, String prefix){
+    private CyTable createNodeAttributes(CyNetwork network, String name, String prefix){
 		//TODO:change back to creating our own table.  Currently can only map to a string column.
 	    //in mean time use the default node table
 		//CyTable nodeTable = tableFactory.createTable(/*name*/ prefix + "_" + node_table_suffix, CyNetwork.SUID, Long.class, true, true);
@@ -693,7 +698,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
     }
     
     //create the edge attribue table
-    public CyTable createEdgeAttributes(CyNetwork network, String name, String prefix){
+    private CyTable createEdgeAttributes(CyNetwork network, String name, String prefix){
     	//TODO:change back to creating our own table.  Currently can only map to a string column.
 	    //in mean time use the default edge table
     	//CyTable edgeTable = tableFactory.createTable(/*name*/ prefix + "_" + edge_table_suffix, CyNetwork.SUID,Long.class, true, true);
@@ -758,10 +763,8 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 
 	@Override
 	public <R> R getResults(Class<? extends R> type) {
-		if(BuildDiseaseSignatureTaskResultFlags.class.equals(type)) {
-			BuildDiseaseSignatureTaskResultFlags flags 
-				= new BuildDiseaseSignatureTaskResultFlags(warnUserExistingEdges, warnUserBypassStyle);
-			return type.cast(flags);
+		if(BuildDiseaseSignatureTaskResult.class.equals(type)) {
+			return type.cast(taskResult.build());
 		}
 		return null;
 	}

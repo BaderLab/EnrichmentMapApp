@@ -302,7 +302,7 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
 
         JButton importButton = new JButton();
         importButton.setText("Run");
-        importButton.addActionListener(new BuildPostAnalysisActionListener(this, sessionManager, streamUtil, networkManager, application, cyApplicationManager, dialog,eventHelper));
+        importButton.addActionListener(new BuildPostAnalysisActionListener(this, sessionManager, streamUtil, application, cyApplicationManager, dialog,eventHelper));
         importButton.setEnabled(true);
 
         panel.add(resetButton);
