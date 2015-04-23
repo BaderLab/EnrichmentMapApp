@@ -20,13 +20,15 @@ public class BuildDiseaseSignatureTaskResult {
 	private final CyNetwork network;
 	private final CyNetworkView networkView;
 	private final boolean warnUserBypassStyle;
+	private final int createdEdgeCount;
 	
-	
-	private BuildDiseaseSignatureTaskResult(CyNetwork network, CyNetworkView networkView, Set<CyEdge> existingEdges, boolean warnUserBypassStyle) {
+	private BuildDiseaseSignatureTaskResult(CyNetwork network, CyNetworkView networkView, Set<CyEdge> existingEdges, 
+			                                boolean warnUserBypassStyle, int createdEdgeCount) {
 		this.existingEdges = new HashSet<>(existingEdges);
 		this.warnUserBypassStyle = warnUserBypassStyle;
 		this.network = network;
 		this.networkView = networkView;
+		this.createdEdgeCount = createdEdgeCount;
 	}
 	
 	public Set<CyEdge> getExistingEdgesFailingCutoff() {
@@ -45,6 +47,10 @@ public class BuildDiseaseSignatureTaskResult {
 		return networkView;
 	}
 	
+	public int getCreatedEdgeCount() {
+		return createdEdgeCount;
+	}
+	
 	/**
 	 * Builder.
 	 */
@@ -53,11 +59,16 @@ public class BuildDiseaseSignatureTaskResult {
 		private boolean warnUserBypassStyle;
 		private CyNetwork network;
 		private CyNetworkView networkView;
+		private int createdEdgeCount = 0;
 		
 		public void addExistingEdgeFailsCutoff(CyEdge edge) {
 			if(edge != null) {
 				existingEdges.add(edge);
 			}
+		}
+		
+		public void incrementCreatedEdgeCount() {
+			createdEdgeCount++;
 		}
 		
 		public void setWarnUserBypassStyle(boolean warn) {
@@ -73,7 +84,7 @@ public class BuildDiseaseSignatureTaskResult {
 		}
 		
 		public BuildDiseaseSignatureTaskResult build() {
-			return new BuildDiseaseSignatureTaskResult(network, networkView, existingEdges, warnUserBypassStyle);
+			return new BuildDiseaseSignatureTaskResult(network, networkView, existingEdges, warnUserBypassStyle, createdEdgeCount);
 		}
 	}
 

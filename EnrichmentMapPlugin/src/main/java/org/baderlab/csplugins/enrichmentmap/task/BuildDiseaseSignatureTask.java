@@ -172,7 +172,6 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
     @SuppressWarnings("incomplete-switch")
 	public void buildDiseaseSignature() {
 
-    	System.out.println("buildDiseaseSignature");
         /* **************************************************
          * Calculate Similarity between Signature Gene Sets *
          * and Enrichment Genesets.                         *
@@ -494,15 +493,14 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 	private void createEdge(String edge_name, CyNetwork current_network, CyNetworkView current_view, 
 			                CyNode hub_node, String prefix, CyTable cyEdgeAttrs, CyTable cyNodeAttrs, boolean passed_cutoff) {
 		
-		System.out.println("createEdge: " + edge_name);
 		CyEdge edge = NetworkUtil.getEdgeWithValue(current_network, cyEdgeAttrs, CyNetwork.NAME, edge_name);
-		
 		GenesetSimilarity genesetSimilarity = geneset_similarities.get(edge_name);
 		
 		if(edge == null) {
 			if(passed_cutoff) {
 				CyNode gene_set = NetworkUtil.getNodeWithValue(current_network, cyNodeAttrs, CyNetwork.NAME, genesetSimilarity.getGeneset2_Name());
 				edge = current_network.addEdge(hub_node, gene_set, false);
+				taskResult.incrementCreatedEdgeCount();
 			} else {
 				return;
 			}

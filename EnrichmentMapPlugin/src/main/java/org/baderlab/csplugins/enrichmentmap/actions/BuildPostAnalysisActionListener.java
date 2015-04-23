@@ -112,8 +112,8 @@ public class BuildPostAnalysisActionListener implements ActionListener {
                 BuildDiseaseSignatureTask new_signature = new BuildDiseaseSignatureTask(current_map, paParams, sessionManager, streamUtil, applicationManager, eventHelper, swingApplication);
                 currentTasks.append(new_signature);
                 
-                TaskObserver warnDialogObserver = new WarnDialogObserver();
-                dialog.execute(currentTasks, warnDialogObserver);
+                TaskObserver dialogObserver = new DialogObserver();
+                dialog.execute(currentTasks, dialogObserver);
             } 
             else {
                 JOptionPane.showMessageDialog(inputPanel, errors, "No such Post-Analysis", JOptionPane.WARNING_MESSAGE);
@@ -125,7 +125,7 @@ public class BuildPostAnalysisActionListener implements ActionListener {
     }
 
     
-    private class WarnDialogObserver implements TaskObserver {
+    private class DialogObserver implements TaskObserver {
     	BuildDiseaseSignatureTaskResult result;
     	
 		@Override 
@@ -140,6 +140,12 @@ public class BuildPostAnalysisActionListener implements ActionListener {
 			if(result == null)
 				return;
 			
+			if(result.getCreatedEdgeCount() == 0) {
+				JOptionPane.showMessageDialog(swingApplication.getJFrame(), 
+						"No edges were found passing the cutoff value for the signature set(s)", 
+						"Post Analysis", JOptionPane.WARNING_MESSAGE);
+			}
+
 			if(!result.getExistingEdgesFailingCutoff().isEmpty()) {
 				String[] options = {"Delete Edges From Previous Run", "Keep All Edges"};
 				int dialogResult = JOptionPane.showOptionDialog(
