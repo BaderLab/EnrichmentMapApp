@@ -126,7 +126,8 @@ public class BuildPostAnalysisActionListener implements ActionListener {
 
     
     private class DialogObserver implements TaskObserver {
-    	BuildDiseaseSignatureTaskResult result;
+    	
+    	private BuildDiseaseSignatureTaskResult result;
     	
 		@Override 
 		public void taskFinished(ObservableTask task) {
@@ -137,7 +138,7 @@ public class BuildPostAnalysisActionListener implements ActionListener {
 		
 		@Override 
 		public void allFinished(FinishStatus status) {
-			if(result == null)
+			if(result == null || result.isCancelled())
 				return;
 			
 			if(result.getCreatedEdgeCount() == 0) {

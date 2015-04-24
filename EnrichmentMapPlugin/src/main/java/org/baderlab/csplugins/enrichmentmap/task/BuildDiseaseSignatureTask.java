@@ -81,16 +81,8 @@ import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 
 
-
-
 /**
  * Cytoscape-Task to perform  Disease-Signature Post-Analysis
- * 
- * @author revilo
- * <p>
- * Date   July 10, 2009<br>
- * Time   3:58:24 PM<br>
- *
  */
 public class BuildDiseaseSignatureTask extends AbstractTask implements ObservableTask {
 	private final CySwingApplication swingApplication;
@@ -99,10 +91,6 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
     
     private PostAnalysisParameters paParams;
     private EnrichmentMap map;
-    
-    // Keep track of progress for monitoring:
-    private TaskMonitor taskMonitor = null;
-    private boolean interrupted = false;
     
     private Map<String,GeneSet> EnrichmentGenesets;
     private Map<String,GeneSet> SignatureGenesets;
@@ -114,7 +102,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
     
     // Ranks
     private Ranking ranks;
-    private HashMap<String,GenesetSimilarity> geneset_similarities;
+    private Map<String,GenesetSimilarity> geneset_similarities;
     
     private BuildDiseaseSignatureTaskResult.Builder taskResult = new BuildDiseaseSignatureTaskResult.Builder();
     
@@ -170,7 +158,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 
 
     @SuppressWarnings("incomplete-switch")
-	public void buildDiseaseSignature() {
+	public void buildDiseaseSignature(TaskMonitor taskMonitor) {
 
         /* **************************************************
          * Calculate Similarity between Signature Gene Sets *
@@ -245,7 +233,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
                     }
                     currentProgress++;
                     
-                    if (interrupted) {
+                    if (cancelled) {
                         throw new InterruptedException();
                     }
                     
@@ -352,7 +340,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
              ******************************/
             
             for (String edge_name : geneset_similarities.keySet()) {
-                if (interrupted)
+                if (cancelled)
                     throw new InterruptedException();
                 
                 if (!geneset_similarities.get(edge_name).getInteractionType().equals(PostAnalysisParameters.SIGNATURE_INTERACTION_TYPE))
@@ -413,7 +401,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 			hub_node = current_network.addNode();
 		
 		current_network.getRow(hub_node).set(CyNetwork.NAME, hub_name);
-		current_view.updateView();
+		//current_view.updateView();
 		//flush events to make sure view has been created.
 		this.eventHelper.flushPayloadEvents();
 		
@@ -723,45 +711,16 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
     
     
   
-    /**
-     * @see cytoscape.task.Task#getTitle()
-     */
-    public String getTitle() {
-        return new String("Generating Signature Hubs");
-    }
-
-    /**
-     * @see cytoscape.task.Task#halt()
-     */
-    public void halt() {
-        this.interrupted = true;
-
-    }
-
-    /**
-     * Sets the Task Monitor.
-     *
-     * @param taskMonitor TaskMonitor Object.
-     */
-    public void setTaskMonitor(TaskMonitor taskMonitor) {
-        if (this.taskMonitor != null) {
-            throw new IllegalStateException("Task Monitor is already set.");
-        }
-        this.taskMonitor = taskMonitor;
-    }
-
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
-		this.taskMonitor = taskMonitor;
 		taskMonitor.setTitle("Generating Signature Hubs");
-		
-		buildDiseaseSignature();
-		
+		buildDiseaseSignature(taskMonitor);
 	}
 
 	@Override
 	public <R> R getResults(Class<? extends R> type) {
 		if(BuildDiseaseSignatureTaskResult.class.equals(type)) {
+			taskResult.setCancelled(cancelled);
 			return type.cast(taskResult.build());
 		}
 		return null;
