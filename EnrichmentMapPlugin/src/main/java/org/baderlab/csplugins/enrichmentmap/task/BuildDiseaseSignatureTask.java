@@ -175,9 +175,6 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
             taskResult.setNetwork(current_network);
             taskResult.setNetworkView(current_view);
             
-            //the signature geneset
-            CyNode hub_node = null;
-            
             String prefix = paParams.getAttributePrefix();
             if (prefix == null) {
                 prefix = "EM1_";
@@ -319,8 +316,8 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
                  * Create Signature Hub Node *
                  *****************************/
                 
-                hub_node = createHubNode(hub_name, current_network, current_view, currentNodeY_offset, 
-                		                 prefix, cyEdgeAttrs, cyNodeAttrs, geneUniverse, sigGeneSet);   
+                createHubNode(hub_name, current_network, current_view, currentNodeY_offset, 
+                		      prefix, cyEdgeAttrs, cyNodeAttrs, geneUniverse, sigGeneSet);   
                 
                 currentNodeY_offset += currentNodeY_increment;
                               
@@ -374,7 +371,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
                    	passed_cutoff = true;
                 }
 
-                createEdge(edge_name, current_network, current_view, hub_node, prefix, cyEdgeAttrs, cyNodeAttrs, passed_cutoff);
+                createEdge(edge_name, current_network, current_view, prefix, cyEdgeAttrs, cyNodeAttrs, passed_cutoff);
                 
             } //for
             
@@ -479,13 +476,14 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 	 * If the edge already exists it will be returned, if the edge had to be created it will not be returned.
 	 */
 	private void createEdge(String edge_name, CyNetwork current_network, CyNetworkView current_view, 
-			                CyNode hub_node, String prefix, CyTable cyEdgeAttrs, CyTable cyNodeAttrs, boolean passed_cutoff) {
+			                String prefix, CyTable cyEdgeAttrs, CyTable cyNodeAttrs, boolean passed_cutoff) {
 		
 		CyEdge edge = NetworkUtil.getEdgeWithValue(current_network, cyEdgeAttrs, CyNetwork.NAME, edge_name);
 		GenesetSimilarity genesetSimilarity = geneset_similarities.get(edge_name);
 		
 		if(edge == null) {
 			if(passed_cutoff) {
+				CyNode hub_node = NetworkUtil.getNodeWithValue(current_network, cyNodeAttrs, CyNetwork.NAME, genesetSimilarity.getGeneset1_Name());
 				CyNode gene_set = NetworkUtil.getNodeWithValue(current_network, cyNodeAttrs, CyNetwork.NAME, genesetSimilarity.getGeneset2_Name());
 				edge = current_network.addEdge(hub_node, gene_set, false);
 				taskResult.incrementCreatedEdgeCount();
