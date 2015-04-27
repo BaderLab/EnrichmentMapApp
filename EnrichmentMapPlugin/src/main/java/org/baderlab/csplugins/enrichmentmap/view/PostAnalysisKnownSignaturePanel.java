@@ -43,7 +43,7 @@ public class PostAnalysisKnownSignaturePanel extends JPanel {
 	private EnrichmentMap map;
     private PostAnalysisParameters paParams;
    
-    private PostAnalysisWeightPanel parametersPanel;
+    private PostAnalysisWeightPanel weightPanel;
     
 	private JFormattedTextField knownSignatureGMTFileNameTextField;
 	
@@ -73,15 +73,15 @@ public class PostAnalysisKnownSignaturePanel extends JPanel {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
         //Gene set file panel
-        CollapsiblePanel GMTPanel = createKnownSignatureGMTPanel();
-        GMTPanel.setCollapsed(false);
+        CollapsiblePanel gmtPanel = createKnownSignatureGMTPanel();
+        gmtPanel.setCollapsed(false);
         
         //Parameters collapsible panel
-        parametersPanel = new PostAnalysisWeightPanel(application);
-        parametersPanel.setCollapsed(false);
+        weightPanel = new PostAnalysisWeightPanel(application);
+        weightPanel.setCollapsed(false);
         
-        add(GMTPanel);
-        add(parametersPanel);        
+        add(gmtPanel);
+        add(weightPanel);        
     }
     
 	/**
@@ -193,7 +193,7 @@ public class PostAnalysisKnownSignaturePanel extends JPanel {
         knownSignatureGMTFileNameTextField.setValue("");
         knownSignatureGMTFileNameTextField.setToolTipText(null);
         
-        parametersPanel.resetPanel();
+        weightPanel.resetPanel();
     }
     
     
@@ -201,6 +201,6 @@ public class PostAnalysisKnownSignaturePanel extends JPanel {
     	this.map = currentMap;
 		this.paParams = paParams;
 		
-		parametersPanel.updateContents(currentMap, paParams);
+		weightPanel.updateContents(currentMap, paParams);
     }
 }

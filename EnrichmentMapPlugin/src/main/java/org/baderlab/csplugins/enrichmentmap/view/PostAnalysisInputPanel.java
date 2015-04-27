@@ -375,8 +375,10 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
      * Clear the current panel and clear the paParams associated with each panel
      */
     private void resetPanel() {
-    	knownSignaturePanel.resetPanel();
-    	signatureDiscoveryPanel.resetPanel();
+    	if(knownSigPaParams != null)
+    		knownSignaturePanel.resetPanel();
+    	if(sigDiscoveryPaParams != null)
+    		signatureDiscoveryPanel.resetPanel();
     }
 
     /**
@@ -385,6 +387,9 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
      * @param current_params
      */
     public void updateContents(EnrichmentMap currentMap) {
+    	// MKTODO Come up with a better way to handle switching networks that doesn't throw away user input by resetting the panel.
+    	resetPanel();
+    	
 		if(currentMap != null) {
 			// Use two separate parameters objects so that the two panels don't interfere with each other
 			knownSigPaParams = new PostAnalysisParameters();
@@ -394,8 +399,8 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
 			sigDiscoveryPaParams = new PostAnalysisParameters();
 			sigDiscoveryPaParams.setSignatureHub(true);
 			
-			signatureDiscoveryPanel.updateContents(currentMap, sigDiscoveryPaParams);
 			knownSignaturePanel.updateContents(currentMap, knownSigPaParams);
+			signatureDiscoveryPanel.updateContents(currentMap, sigDiscoveryPaParams);
 		}
     }
     

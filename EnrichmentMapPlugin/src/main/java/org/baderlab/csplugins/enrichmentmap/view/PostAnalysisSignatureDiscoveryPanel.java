@@ -61,7 +61,7 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
     
     private JFormattedTextField signatureDiscoveryGMTFileNameTextField;
 		
-    private PostAnalysisWeightPanel parametersPanel;
+    private PostAnalysisWeightPanel weightPanel;
     
 	private JLabel avail_sig_sets_counter_label;
 	private JList<String> avail_sig_sets_field;
@@ -103,8 +103,8 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
         //Gene set file panel
-        CollapsiblePanel GMTPanel = createSignatureDiscoveryGMTPanel();
-        GMTPanel.setCollapsed(false);
+        CollapsiblePanel gmtPanel = createSignatureDiscoveryGMTPanel();
+        gmtPanel.setCollapsed(false);
         
         //signature collapsible panel
         signature_genesets = new CollapsiblePanel("Signature Genesets");
@@ -233,12 +233,12 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
         signature_genesets.getContentPane().add(signaturePanel, BorderLayout.NORTH);
         
         //Parameters collapsible panel
-        parametersPanel = new PostAnalysisWeightPanel(application);
-        parametersPanel.setCollapsed(false);
+        weightPanel = new PostAnalysisWeightPanel(application);
+        weightPanel.setCollapsed(false);
         
-        add(GMTPanel);
+        add(gmtPanel);
         add(signature_genesets);
-        add(parametersPanel);        
+        add(weightPanel);        
     }
  
     /**
@@ -497,9 +497,8 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
         filter.setSelected(true);
         paParams.setFilter(true);
         filterTypeCombo.setSelectedItem(paParams.getDefault_signature_filterMetric().display);
-//        signatureDiscoveryRankTestCombo.setSelectedItem(filterItems[paParams.getDefault_signature_rankTest()]);
-        
-        parametersPanel.resetPanel();
+        // signatureDiscoveryRankTestCombo.setSelectedItem(filterItems[paParams.getDefault_signature_rankTest()]);
+        weightPanel.resetPanel();
     }
     
     
@@ -507,7 +506,7 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
 		this.map = currentMap;
 		this.paParams = paParams;
         
-		parametersPanel.updateContents(currentMap, paParams);
+		weightPanel.updateContents(currentMap, paParams);
 		
         filterTextField.setValue(paParams.getSignature_Hypergeom_Cutoff());
         filterTypeCombo.setSelectedItem(paParams.getDefault_signature_filterMetric());
