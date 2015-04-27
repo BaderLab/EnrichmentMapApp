@@ -377,18 +377,20 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
            c.insets = new Insets(0,0,0,0);
            c.fill = GridBagConstraints.HORIZONTAL;
            panel.setBorder(BorderFactory.createTitledBorder("Analysis Type"));
-
+           
+           //Added a string to the radio button on generic pointing out that this is the route for gprofiler.
+           //Did not change the static variable as it might be stored and used in older sessions.
            if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)){
                 gsea = new JRadioButton(EnrichmentMapParameters.method_GSEA, true);
-                generic = new JRadioButton(EnrichmentMapParameters.method_generic, false);
+                generic = new JRadioButton(EnrichmentMapParameters.method_generic + "(ex: gProfiler)", false);
                 david = new JRadioButton(EnrichmentMapParameters.method_Specialized, false);
            }else if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_generic)){
                 gsea = new JRadioButton(EnrichmentMapParameters.method_GSEA, false);
-                generic = new JRadioButton(EnrichmentMapParameters.method_generic, true);
+                generic = new JRadioButton(EnrichmentMapParameters.method_generic+ "(ex: gProfiler)", true);
                 david = new JRadioButton(EnrichmentMapParameters.method_Specialized, false);
            }else if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_Specialized)){
                 gsea = new JRadioButton(EnrichmentMapParameters.method_GSEA, false);
-                generic = new JRadioButton(EnrichmentMapParameters.method_generic, false);
+                generic = new JRadioButton(EnrichmentMapParameters.method_generic+ "(ex: gProfiler)", false);
                 david = new JRadioButton(EnrichmentMapParameters.method_Specialized, true);
            }
 

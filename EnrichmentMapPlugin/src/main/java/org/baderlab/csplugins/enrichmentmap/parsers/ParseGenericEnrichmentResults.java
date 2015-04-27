@@ -3,6 +3,7 @@ package org.baderlab.csplugins.enrichmentmap.parsers;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Scanner;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
@@ -55,6 +56,7 @@ public class ParseGenericEnrichmentResults extends AbstractTask {
 	     results = enrichments.getEnrichments();
 	     upPhenotype = enrichments.getPhenotype1(); 
 	     downPhenotype = enrichments.getPhenotype2();
+	     
 	       
 	}
 
@@ -100,18 +102,32 @@ public class ParseGenericEnrichmentResults extends AbstractTask {
 
         //Get the current genesets so we can check that all the results are in the geneset list
         //and put the size of the genesets into the visual style
-        HashMap genesets = dataset.getMap().getAllGenesets();
+        HashMap<String,GeneSet> genesets = dataset.getSetofgenesets().getGenesets();
 
         int currentProgress = 0;
         int maxValue = lines.length;
         boolean FDR = false;
-        boolean ignore_phenotype = false;
 
          //skip the first line which just has the field names (start i=1)
         //check to see how many columns the data has
         String line = lines[0];
         String [] tokens = line.split("\t");
         int length = tokens.length;
+        
+        HashMap<String, Integer> genes = dataset.getMap().getGenes();
+        HashMap<Integer, String> key2gene = dataset.getMap().getHashkey2gene();
+        
+        //check to see if there are genesets.
+        //if there are no genesets then populate the genesets from the generic file
+        //can only do this if the 6th column has a list of genes for that geneset.
+        boolean populate_gs = false;
+        if(genesets == null || genesets.isEmpty())
+        	populate_gs = true;
+        //as this is the default for gprofiler use the Description in the visual style instead of the formatted name
+        //but only if there is a gmt supplied.  If using just the generic output file there is not field for description
+        else
+        	dataset.getMap().getParams().setEMgmt(true);
+        
         //if (length < 3)
            //not enough data in the file!!
 
@@ -128,11 +144,17 @@ public class ParseGenericEnrichmentResults extends AbstractTask {
 
             //The first column of the file is the name of the geneset
             String name = tokens[0].toUpperCase().trim();
-
+            
+            //the current gene-set
+            GeneSet current_set; 
+            
             if(genesets.containsKey(name)){
-                GeneSet current_set = (GeneSet)genesets.get(name);
+                current_set = (GeneSet)genesets.get(name);
                 gs_size = current_set.getGenes().size();
             }
+            else
+                current_set = new GeneSet(name, name);
+            
 
             String description = tokens[1].toUpperCase();
 
@@ -155,7 +177,7 @@ public class ParseGenericEnrichmentResults extends AbstractTask {
                 //it can either be a signed number or it can be text specifying the phenotype
                 //in order for it to be parseable the text has to match the user specified phenotypes
                 // and if it is a number the only important part is the sign
-                if((length > 4) && !ignore_phenotype){
+                if(length > 4) {
 
                     if(tokens[4].equalsIgnoreCase("")){
 
@@ -171,20 +193,95 @@ public class ParseGenericEnrichmentResults extends AbstractTask {
                             try{
                                 NES = Double.parseDouble(tokens[4]);
                             }catch (NumberFormatException nfe){
-                                //would like to give user the option but it won't let me interupt the task using Joptionpane
-                                /*int answer = JOptionPane.showConfirmDialog(Cytoscape.getDesktop(),"One or more of the enrichment results have a phenotype of unknown type specified.  Would you like me to ignore the phenotype Column?","Unrecognizable Phenotype.", JOptionPane.YES_NO_OPTION);
-                                if(answer == JOptionPane.YES_OPTION)
-                                    ignore_phenotype = true;
-                                else*/
+                                
                                     throw new IllegalThreadStateException(tokens[4]+ " is not a valid phenotype.  Phenotype specified in generic enrichment results file must have the same phenotype as specified in advanced options or must be a positive or negative number.");
                             }
                         }
                     }
+                    
+                    	//ticket#57 - adding additional column to generic format, similiar to Bingo and David
+                    	// that outlines the genes from the query that are found in the geneset and results in
+                    	//its enrichment
+                    	if(length > 5){
+                    		//the set of genes in this geneset (as specifed in the generic output file)
+                    		HashSet<Integer> genes_inset = new HashSet<Integer>();
+                    	
+                    		//get all the genes in the field
+                    		String[] gene_tokens = tokens[5].split(",");
 
-                    result = new GenericResult(name,description,pvalue,gs_size,FDRqvalue,NES);
-                }
+                    		//All subsequent fields in the list are the geneset associated with this geneset.
+                    		for (int j = 0; j < gene_tokens.length; j++) {
+
+                    			String gene = (gene_tokens[j].trim()).toUpperCase();
+                    			if(populate_gs){
+                    				//Check to see if the gene is already in the hashmap of genes
+                                    //if it is already in the hash then get its associated key and put it
+                                    //into the set of genes
+                    				if (genes.containsKey(gene)) {
+                                        current_set.addGene(genes.get(gene));
+                    				}
+
+                    				//If the gene is not in the list then get the next value to be used and put it in the list
+                    				else{
+                    					if(!gene.equalsIgnoreCase("")){
+
+                    						//add the gene to the master list of genes
+                    						int value = dataset.getMap().getNumberOfGenes();
+                    						genes.put(gene, value);
+                    						key2gene.put(value,gene);
+                    						dataset.getMap().setNumberOfGenes(value+1);
+
+                    						//add the gene to the genelist
+                    						current_set.addGene(genes.get(gene));
+                    					}
+                    				}
+                    			}
+                    			else{
+                    				//Check to see if the gene is already in the hashmap of genes
+                    				//if it is already in the hash then get its associated key and put it
+                    				//into the set of genes
+                    				if (genes.containsKey(gene)) {
+                    					genes_inset.add(genes.get(gene));
+                    				}
+
+                    				//If the gene is not in the list then the gmt and generic file don't match
+                    				//The assumption is the generic file contains a subset of the original gmt file
+                    				//
+                    				//We can change this requirment which would mean that the generic file could 
+                    				//be used to compute an enrichment map without a gmt (similiar to how to handle 
+                    				//Bingo and David) -- not sure how many people rely on this method though so
+                    				//don't want to change
+                    				else{
+                    					//throw new IllegalThreadStateException(gene+ " is not found in the set of genes in the specified gmt file.  The generic file does not match the gmt file");
+                    					System.out.println(gene+ " is not found in the set of genes in the specified gmt file.  The generic file does not match the gmt file");
+                    					
+                    					//add the gene to the master list of genes
+                						int value = dataset.getMap().getNumberOfGenes();
+                						genes.put(gene, value);
+                						key2gene.put(value,gene);
+                						dataset.getMap().setNumberOfGenes(value+1);
+                						
+                						genes_inset.add(genes.get(gene));
+                    				}
+                    			}
+                    		}
+                    		
+                    		if(!populate_gs){
+                    			//replace genes in set with the ones in the enrichment results file (the ones filtered by the dataset)
+                    			current_set.setGenes(genes_inset);                   			
+                    		}
+                    		
+                    		gs_size = current_set.getGenes().size();
+                    		//put the new or filtered geneset back into the set.
+                    		genesets.put(name, current_set);
+                    		
+                    	}//end of tokens>5
+                    	result = new GenericResult(name,description,pvalue,gs_size,FDRqvalue,NES);
+                    }//end of tokens>4
+                                    
                 else
                     result = new GenericResult(name,description,pvalue,gs_size,FDRqvalue);
+        	
 
             }
             else{
