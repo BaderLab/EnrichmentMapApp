@@ -316,10 +316,10 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
                  * Create Signature Hub Node *
                  *****************************/
                 
-                createHubNode(hub_name, current_network, current_view, currentNodeY_offset, 
-                		      prefix, cyEdgeAttrs, cyNodeAttrs, geneUniverse, sigGeneSet);   
-                
-                currentNodeY_offset += currentNodeY_increment;
+                boolean created = createHubNode(hub_name, current_network, current_view, currentNodeY_offset, 
+                		                        prefix, cyEdgeAttrs, cyNodeAttrs, geneUniverse, sigGeneSet);   
+                if(created)
+                	currentNodeY_offset += currentNodeY_increment;
                               
             }// End: iterate over Signature Genesets
             
@@ -389,13 +389,19 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
     }
     
 
-    private CyNode createHubNode(String hub_name, CyNetwork current_network, CyNetworkView current_view, double currentNodeY_offset,
-			                     String prefix, CyTable cyEdgeAttrs, CyTable cyNodeAttrs, Set<Integer> geneUniverse, GeneSet sigGeneSet) {
+    /**
+     * Returns true if a hub-node was actually created, false if the existing one was reused.
+     */
+    private boolean createHubNode(String hub_name, CyNetwork current_network, CyNetworkView current_view, double currentNodeY_offset,
+			                      String prefix, CyTable cyEdgeAttrs, CyTable cyNodeAttrs, Set<Integer> geneUniverse, GeneSet sigGeneSet) {
 		
+    	boolean created = false;
 		// test for existing node first
 		CyNode hub_node = NetworkUtil.getNodeWithValue(current_network, cyNodeAttrs, CyNetwork.NAME, hub_name);
-		if(hub_node == null)
+		if(hub_node == null) {
 			hub_node = current_network.addNode();
+			created = true;
+		}
 		
 		current_network.getRow(hub_node).set(CyNetwork.NAME, hub_name);
 		//current_view.updateView();
@@ -406,8 +412,9 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 		// and increase currentNodeY_offset for the next Node
 		View<CyNode> hubNodeView = current_view.getNodeView(hub_node);
 		double hubNodeY = hubNodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
-		hubNodeView.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, hubNodeY + currentNodeY_offset);
-		
+		if(created) { // don't move nodes that already exist
+			hubNodeView.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, hubNodeY + currentNodeY_offset);
+		}
 		
 		String formatted_label =  CreateEnrichmentMapNetworkTask.formatLabel(hub_name);
 		CyRow current_row = cyNodeAttrs.getRow(hub_node.getSUID());
@@ -467,7 +474,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 			}
 		}
 		
-		return hub_node;
+		return created;
 	}
     
     
