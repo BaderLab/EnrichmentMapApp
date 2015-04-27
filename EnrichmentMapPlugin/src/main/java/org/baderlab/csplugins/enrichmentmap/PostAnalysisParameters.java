@@ -218,6 +218,7 @@ public class PostAnalysisParameters {
         this.currentNodePlacementY_Offset = source.getCurrentNodePlacementY_Offset();
 
         this.filterValue = source.getFilterValue();
+        this.attributePrefix = source.getAttributePrefix();
     }
     
     /** 
