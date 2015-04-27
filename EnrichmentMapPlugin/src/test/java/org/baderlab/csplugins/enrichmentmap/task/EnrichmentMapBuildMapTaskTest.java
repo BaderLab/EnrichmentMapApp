@@ -10,6 +10,7 @@ import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
+import org.baderlab.csplugins.enrichmentmap.LogSilenceRule;
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters.FilterMetric;
 import org.baderlab.csplugins.enrichmentmap.SerialTestTaskManager;
@@ -50,7 +51,9 @@ import org.cytoscape.work.TaskObserver;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runners.MethodSorters;
 import org.mockito.Matchers;
 import org.mockito.Mock;
@@ -59,6 +62,8 @@ import org.mockito.MockitoAnnotations;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EnrichmentMapBuildMapTaskTest {
+	
+	@Rule public TestRule logSilenceRule = new LogSilenceRule();
 	
 	private static final String PATH = "src/test/resources/org/baderlab/csplugins/enrichmentmap/task/EMandPA/";
 	

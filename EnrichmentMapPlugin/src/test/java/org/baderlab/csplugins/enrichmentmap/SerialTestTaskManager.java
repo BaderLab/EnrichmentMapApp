@@ -57,12 +57,12 @@ public class SerialTestTaskManager extends AbstractTaskManager<Void, Void> {
 				task = iterator.next();
 				
 				if(tasksToIgnore.contains(task.getClass())) {
-					System.out.println("Task Ignored: " + task.getClass());
+					//System.out.println("Task Ignored: " + task.getClass());
 					continue;
 				}
 				
 				task.run(monitor);
-				System.out.println("Task Ran: " + task.getClass());
+				//System.out.println("Task Ran: " + task.getClass());
 				
 				if(task instanceof ObservableTask && observer != null) {
 					observer.taskFinished((ObservableTask)task);
