@@ -141,7 +141,7 @@ public class BuildPostAnalysisActionListener implements ActionListener {
 			if(result == null || result.isCancelled())
 				return;
 			
-			if(result.getCreatedEdgeCount() == 0) {
+			if(result.getPassedCutoffCount() == 0) {
 				JOptionPane.showMessageDialog(swingApplication.getJFrame(), 
 						"No edges were found passing the cutoff value for the signature set(s)", 
 						"Post Analysis", JOptionPane.WARNING_MESSAGE);

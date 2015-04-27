@@ -488,7 +488,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 				edge = current_network.addEdge(hub_node, gene_set, false);
 				taskResult.incrementCreatedEdgeCount();
 			} else {
-				return;
+				return; // edge does not exist and does not pass cutoff, do nothing
 			}
 		}
 		else {
@@ -497,6 +497,9 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 			}
 		}
 		
+		if(passed_cutoff)
+			taskResult.incrementPassedCutoffCount();
+			
 		//add update view because view is returning null when we try to get the edge view.
 		current_view.updateView();
 		CyRow current_edgerow = cyEdgeAttrs.getRow(edge.getSUID());

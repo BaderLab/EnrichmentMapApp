@@ -21,16 +21,17 @@ public class BuildDiseaseSignatureTaskResult {
 	private final CyNetworkView networkView;
 	private final boolean warnUserBypassStyle;
 	private final int createdEdgeCount;
+	private final int passedCutoffCount;
 	private final boolean cancelled;
 	
-	private BuildDiseaseSignatureTaskResult(CyNetwork network, CyNetworkView networkView, Set<CyEdge> existingEdges, 
-			                                boolean warnUserBypassStyle, int createdEdgeCount, boolean cancelled) {
-		this.existingEdges = new HashSet<>(existingEdges);
-		this.warnUserBypassStyle = warnUserBypassStyle;
-		this.network = network;
-		this.networkView = networkView;
-		this.createdEdgeCount = createdEdgeCount;
-		this.cancelled = cancelled;
+	private BuildDiseaseSignatureTaskResult(Builder builder) {
+		this.existingEdges = new HashSet<>(builder.existingEdges);
+		this.warnUserBypassStyle = builder.warnUserBypassStyle;
+		this.network = builder.network;
+		this.networkView = builder.networkView;
+		this.createdEdgeCount = builder.createdEdgeCount;
+		this.passedCutoffCount = builder.passedCutoffCount;
+		this.cancelled = builder.cancelled;
 	}
 	
 	public Set<CyEdge> getExistingEdgesFailingCutoff() {
@@ -53,6 +54,10 @@ public class BuildDiseaseSignatureTaskResult {
 		return createdEdgeCount;
 	}
 	
+	public int getPassedCutoffCount() {
+		return passedCutoffCount;
+	}
+	
 	public boolean isCancelled() {
 		return cancelled;
 	}
@@ -67,6 +72,7 @@ public class BuildDiseaseSignatureTaskResult {
 		private CyNetwork network;
 		private CyNetworkView networkView;
 		private int createdEdgeCount = 0;
+		private int passedCutoffCount = 0;
 		private boolean cancelled;
 		
 		public void addExistingEdgeFailsCutoff(CyEdge edge) {
@@ -77,6 +83,10 @@ public class BuildDiseaseSignatureTaskResult {
 		
 		public void incrementCreatedEdgeCount() {
 			createdEdgeCount++;
+		}
+		
+		public void incrementPassedCutoffCount() {
+			passedCutoffCount++;
 		}
 		
 		public void setWarnUserBypassStyle(boolean warn) {
@@ -91,13 +101,12 @@ public class BuildDiseaseSignatureTaskResult {
 			this.networkView = networkView;
 		}
 		
-		public BuildDiseaseSignatureTaskResult build() {
-			return new BuildDiseaseSignatureTaskResult(network, networkView, existingEdges, 
-					                                   warnUserBypassStyle, createdEdgeCount, cancelled);
-		}
-
 		public void setCancelled(boolean cancelled) {
 			this.cancelled = cancelled;
+		}
+		
+		public BuildDiseaseSignatureTaskResult build() {
+			return new BuildDiseaseSignatureTaskResult(this);
 		}
 	}
 
