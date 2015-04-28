@@ -89,8 +89,9 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 	private final CyApplicationManager applicationManager;
     private final CyEventHelper eventHelper;
     
-    private PostAnalysisParameters paParams;
-    private EnrichmentMap map;
+    private final PostAnalysisParameters paParams;
+    private final EnrichmentMap map;
+    private final String interaction;
     
     private Map<String,GeneSet> EnrichmentGenesets;
     private Map<String,GeneSet> SignatureGenesets;
@@ -154,8 +155,23 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
         for(GeneSet geneSet :  SignatureGenesets.values()) {
             SignatureGenes.addAll(geneSet.getGenes());
         }
+        
+        this.interaction = getInteraction();
     }
 
+    private String getInteraction() {
+    	if(map.getParams().isTwoDatasets()) {
+    		if(EnrichmentMap.DATASET1.equals(paParams.getSignature_dataSet())) {
+    			return PostAnalysisParameters.SIGNATURE_INTERACTION_TYPE_SET1;
+    		}
+    		else if(EnrichmentMap.DATASET2.equals(paParams.getSignature_dataSet())) {
+    			return PostAnalysisParameters.SIGNATURE_INTERACTION_TYPE_SET2;
+    		}
+    	}
+    	return PostAnalysisParameters.SIGNATURE_INTERACTION_TYPE;
+    }
+
+    
 
     @SuppressWarnings("incomplete-switch")
 	public void buildDiseaseSignature(TaskMonitor taskMonitor) {
@@ -238,8 +254,8 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
                     
                     //Check to see if this comparison has been done
                     //The key for the set of geneset similarities is the combination of the two names.  Check for either variation name1_name2 or name2_name1
-                    String similarity_key1 = hub_name     + " (" + PostAnalysisParameters.SIGNATURE_INTERACTION_TYPE + ") " + geneset_name;
-                    String similarity_key2 = geneset_name + " (" + PostAnalysisParameters.SIGNATURE_INTERACTION_TYPE + ") " + hub_name;
+                    String similarity_key1 = hub_name + " (" + interaction + ") " + geneset_name;
+                    //String similarity_key2 = geneset_name + " (" + interaction + ") " + hub_name;
                     
                     //first check to see if the terms are the same
                     if(hub_name.equalsIgnoreCase(geneset_name)) {
@@ -290,7 +306,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
                         	}
                         	
 	                        //create Geneset similarity object
-	                        GenesetSimilarity comparison = new GenesetSimilarity(hub_name, geneset_name, coeffecient, PostAnalysisParameters.SIGNATURE_INTERACTION_TYPE, (HashSet<Integer>)intersection);
+	                        GenesetSimilarity comparison = new GenesetSimilarity(hub_name, geneset_name, coeffecient, interaction, intersection);
 	                        
 	                        int universeSize;
 	                        switch(paParams.getSignature_rankTest()) {
@@ -340,8 +356,8 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
                 if (cancelled)
                     throw new InterruptedException();
                 
-                if (!geneset_similarities.get(edge_name).getInteractionType().equals(PostAnalysisParameters.SIGNATURE_INTERACTION_TYPE))
-                    // skip if it's not a signature edge
+                if (!geneset_similarities.get(edge_name).getInteractionType().equals(interaction))
+                    // skip if it's not a signature edge from the same dataset
                     continue;
                 if (!(this.SelectedSignatureGenesets.containsKey(geneset_similarities.get(edge_name).getGeneset1_Name()) 
                       || this.SelectedSignatureGenesets.containsKey(geneset_similarities.get(edge_name).getGeneset2_Name()) ) )   
@@ -478,6 +494,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 	}
     
     
+    
 	/**
 	 * Returns true iff the user should be warned about an existing edge that does not pass the new cutoff.
 	 * If the edge already exists it will be returned, if the edge had to be created it will not be returned.
@@ -511,6 +528,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 		current_view.updateView();
 		CyRow current_edgerow = cyEdgeAttrs.getRow(edge.getSUID());
 		current_edgerow.set(CyNetwork.NAME, edge_name);
+		current_edgerow.set(CyEdge.INTERACTION, interaction);
 		
 		View<CyEdge> edgeView = current_view.getEdgeView(edge);
 		//create an attribute that stores the genes that are associated with this edge as an attribute list
@@ -520,7 +538,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 		    Set<Integer> genes_hash = genesetSimilarity.getOverlapping_genes();
 		    for(Integer current : genes_hash) {
 		        String gene = map.getGeneFromHashKey(current);
-		        if(gene_list != null && gene != null) {
+		        if(gene != null) {
 		            gene_list.add(gene);
 		        }
 		    }
@@ -604,8 +622,8 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 			}
 		}
 	}
-	
-	
+
+
 	private void hypergeometric(int universeSize,
 			Set<Integer> sigGenesInUniverse, Set<Integer> enrGenes,
 			Set<Integer> intersection, GenesetSimilarity comparison) {

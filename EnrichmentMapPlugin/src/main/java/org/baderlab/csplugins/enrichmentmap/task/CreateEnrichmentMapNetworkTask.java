@@ -433,10 +433,9 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
                                                               
                     CyEdge edge = network.addEdge(node1, node2, false);
                     String edge_type;
-                    
                     //in order to create multiple edges we need to create different edge types between the same two nodes
                     if(current_result.getEnrichment_set() == 1)
-                    		edge_type = EnrichmentMapParameters.ENRICHMENT_INTERACTION_TYPE_SET1;                        
+                    	edge_type = EnrichmentMapParameters.ENRICHMENT_INTERACTION_TYPE_SET1;                        
                     else if(current_result.getEnrichment_set() == 2)
                         edge_type = EnrichmentMapParameters.ENRICHMENT_INTERACTION_TYPE_SET2;
                     else
@@ -466,9 +465,8 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
                     //only create the list if the hashkey 2 genes is not null Otherwise it take too much time to populate the list
                     if(map.getHashkey2gene() != null){
                         List<String> gene_list = new ArrayList<String>();
-                        HashSet<Integer> genes_hash = current_result.getOverlapping_genes();
-                        for(Iterator<Integer> i=genes_hash.iterator(); i.hasNext();){
-                            Integer current = i.next();
+                        Set<Integer> genes_hash = current_result.getOverlapping_genes();
+                        for(Integer current : genes_hash) {
                             String gene = map.getGeneFromHashKey(current);
                             if(gene_list != null)
                                 gene_list.add(gene);

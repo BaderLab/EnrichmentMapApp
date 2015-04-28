@@ -43,7 +43,7 @@
 
 package org.baderlab.csplugins.enrichmentmap.model;
 
-import java.util.HashSet;
+import java.util.Set;
 
 
 /**
@@ -78,7 +78,7 @@ public class GenesetSimilarity {
     private double mann_whit_pvalue;
 
     //set of genes in common to both gene sets.
-    private HashSet<Integer> overlapping_genes;
+    private Set<Integer> overlapping_genes;
 
     //set - with the implementattion of additional species and expresion file type
     //the similiarity can come from the first or second set of enerichments --(possibly more in future version)
@@ -96,7 +96,7 @@ public class GenesetSimilarity {
      * @param overlapping_genes - set of genes in common to gene set 1 and gene set 2
      * @param enrichment_set - the enrichment set the similarity comes from.
      */
-     public GenesetSimilarity(String geneset1_Name, String geneset2_Name, double similarity_coeffecient, String interaction_type, HashSet<Integer> overlapping_genes, int enrichment_set) {
+     public GenesetSimilarity(String geneset1_Name, String geneset2_Name, double similarity_coeffecient, String interaction_type, Set<Integer> overlapping_genes, int enrichment_set) {
         this.geneset1_Name = geneset1_Name;
         this.geneset2_Name = geneset2_Name;
         this.similarity_coeffecient = similarity_coeffecient;
@@ -117,7 +117,7 @@ public class GenesetSimilarity {
      * @param similarity_coeffecient - jaccard or overlap coeffecient for geneset 1 and geneset 2
      * @param overlapping_genes - set of genes in common to gene set 1 and gene set 2
      */
-     public GenesetSimilarity(String geneset1_Name, String geneset2_Name, double similarity_coeffecient, String interaction_type, HashSet<Integer> overlapping_genes) {
+     public GenesetSimilarity(String geneset1_Name, String geneset2_Name, double similarity_coeffecient, String interaction_type, Set<Integer> overlapping_genes) {
         this.geneset1_Name = geneset1_Name;
         this.geneset2_Name = geneset2_Name;
         this.similarity_coeffecient = similarity_coeffecient;
@@ -139,7 +139,7 @@ public class GenesetSimilarity {
      * @param interaction_type - default to pp currrently
      * @param overlapping_genes - set of genes in common to gene set 1 and gene set 2
      */
-    public GenesetSimilarity(String geneset1_Name, String geneset2_Name, double similarity_coeffecient,double hypergeom_pvalue, String interaction_type, HashSet<Integer> overlapping_genes) {
+    public GenesetSimilarity(String geneset1_Name, String geneset2_Name, double similarity_coeffecient,double hypergeom_pvalue, String interaction_type, Set<Integer> overlapping_genes) {
         this.geneset1_Name = geneset1_Name;
         this.geneset2_Name = geneset2_Name;
         this.similarity_coeffecient = similarity_coeffecient;
@@ -207,11 +207,11 @@ public class GenesetSimilarity {
         return hypergeom_pvalue;
     }
 
-    public HashSet<Integer> getOverlapping_genes() {
+    public Set<Integer> getOverlapping_genes() {
         return overlapping_genes;
     }
 
-    public void setOverlapping_genes(HashSet<Integer> overlapping_genes) {
+    public void setOverlapping_genes(Set<Integer> overlapping_genes) {
         this.overlapping_genes = overlapping_genes;
     }
 

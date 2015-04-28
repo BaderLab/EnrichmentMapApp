@@ -46,8 +46,11 @@ package org.baderlab.csplugins.enrichmentmap;
 import java.awt.Color;
 import java.awt.Paint;
 
+import org.cytoscape.model.CyEdge;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.view.presentation.property.LineTypeVisualProperty;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
+import org.cytoscape.view.presentation.property.values.LineType;
 import org.cytoscape.view.presentation.property.values.NodeShape;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualStyle;
@@ -201,6 +204,11 @@ public class EnrichmentMapVisualStyle {
         disMapping_edge4.putMapValue(-1, pink); // pink
         vs.addVisualMappingFunction(disMapping_edge4);
 
+        // Post-analysis edge line type
+        DiscreteMapping<String,LineType> disMapping_lineType = (DiscreteMapping<String,LineType>) vmfFactoryDiscrete.createVisualMappingFunction(CyEdge.INTERACTION, String.class, BasicVisualLexicon.EDGE_LINE_TYPE);
+        disMapping_lineType.putMapValue(PostAnalysisParameters.SIGNATURE_INTERACTION_TYPE_SET2, LineTypeVisualProperty.LONG_DASH);
+        vs.addVisualMappingFunction(disMapping_lineType);
+        
         // The below logic for computing width based on SIMILARITY_COEFFICIENT is now located in CreateEnrichmentMapNetworkTask by the LinearNumberInterpolator
         // The width attribute is now a separate attribute (WIDTH_EDGES) that has a value between 0.0 and 1.0
         

@@ -96,6 +96,8 @@ public class PostAnalysisParameters {
     }
     
     final public static String SIGNATURE_INTERACTION_TYPE = "sig";
+    final public static String SIGNATURE_INTERACTION_TYPE_SET1 = "sig_set1";
+    final public static String SIGNATURE_INTERACTION_TYPE_SET2 = "sig_set2";
     
     
     // Disease Signature Parameters:

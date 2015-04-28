@@ -3,6 +3,7 @@ package org.baderlab.csplugins.enrichmentmap.heatmap.task;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
@@ -213,7 +214,7 @@ public class UpdateHeatMapTask extends AbstractTask{
                   if(similarity == null)
                       continue;
 
-                  HashSet<Integer> current_set = similarity.getOverlapping_genes();
+                  Set<Integer> current_set = similarity.getOverlapping_genes();
 
                   //if(intersect == null && union == null){
                   if(intersect == null){
