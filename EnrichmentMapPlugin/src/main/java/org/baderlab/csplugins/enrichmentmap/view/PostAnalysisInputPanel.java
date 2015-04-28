@@ -80,12 +80,14 @@ import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.util.StreamUtil;
-import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.util.swing.OpenBrowser;
+import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
+import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
 
 /**
@@ -101,16 +103,22 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
     
     private static final long serialVersionUID = 5472169142720323583L;
     
-    private CyApplicationManager cyApplicationManager;
-    private CySwingApplication application;
-	private OpenBrowser browser;
-	private FileUtil fileUtil;
-	private CyServiceRegistrar registrar;
-	private CySessionManager sessionManager;
-	private StreamUtil streamUtil;
-	private CyNetworkManager networkManager;
-	private DialogTaskManager dialog;
-	private CyEventHelper eventHelper;
+    private final CyApplicationManager cyApplicationManager;
+    private final CySwingApplication application;
+	private final OpenBrowser browser;
+	private final FileUtil fileUtil;
+	private final CyServiceRegistrar registrar;
+	private final CySessionManager sessionManager;
+	private final StreamUtil streamUtil;
+	private final DialogTaskManager dialog;
+	private final CyEventHelper eventHelper;
+    
+	private final VisualMappingManager visualMappingManager;
+	private final VisualStyleFactory visualStyleFactory;
+	
+	private final VisualMappingFunctionFactory vmfFactoryContinuous;
+    private final VisualMappingFunctionFactory vmfFactoryDiscrete;
+    private final VisualMappingFunctionFactory vmfFactoryPassthrough;
     
     
     private JRadioButton knownSignature;
@@ -139,8 +147,9 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
     public PostAnalysisInputPanel(CyApplicationManager cyApplicationManager, CySwingApplication application, 
     		OpenBrowser browser,FileUtil fileUtil, CySessionManager sessionManager,
     		StreamUtil streamUtil,CyServiceRegistrar registrar,
-    		CyNetworkManager networkManager,
-    		DialogTaskManager dialog,CyEventHelper eventHelper) {
+    		DialogTaskManager dialog,CyEventHelper eventHelper,
+    		VisualMappingManager visualMappingManager, VisualStyleFactory visualStyleFactory,
+    		VisualMappingFunctionFactory vmfFactoryContinuous, VisualMappingFunctionFactory vmfFactoryDiscrete, VisualMappingFunctionFactory vmfFactoryPassthrough) {
     	
     	this.cyApplicationManager = cyApplicationManager;
     	this.application = application;
@@ -149,9 +158,13 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
         this.registrar = registrar;
         this.sessionManager = sessionManager;
         this.streamUtil = streamUtil;
-        this.networkManager = networkManager;
         this.dialog = dialog;
         this.eventHelper = eventHelper;
+        this.visualMappingManager = visualMappingManager;
+        this.visualStyleFactory = visualStyleFactory;
+        this.vmfFactoryContinuous = vmfFactoryContinuous;
+        this.vmfFactoryDiscrete = vmfFactoryDiscrete;
+        this.vmfFactoryPassthrough = vmfFactoryPassthrough;
     		
         
         // Create the two main panels, set the default one
@@ -302,7 +315,9 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
 
         JButton importButton = new JButton();
         importButton.setText("Run");
-        importButton.addActionListener(new BuildPostAnalysisActionListener(this, sessionManager, streamUtil, application, cyApplicationManager, dialog,eventHelper));
+        importButton.addActionListener(new BuildPostAnalysisActionListener(this, sessionManager, streamUtil, application, cyApplicationManager, 
+        		                                                           dialog, eventHelper, visualMappingManager, visualStyleFactory,
+        																   vmfFactoryContinuous, vmfFactoryDiscrete, vmfFactoryPassthrough));
         importButton.setEnabled(true);
 
         panel.add(resetButton);

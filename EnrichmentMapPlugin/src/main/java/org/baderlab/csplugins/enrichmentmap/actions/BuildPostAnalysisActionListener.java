@@ -55,6 +55,7 @@ import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.task.BuildDiseaseSignatureTask;
 import org.baderlab.csplugins.enrichmentmap.task.BuildDiseaseSignatureTaskResult;
+import org.baderlab.csplugins.enrichmentmap.task.CreatePostAnalysisVisualStyleTask;
 import org.baderlab.csplugins.enrichmentmap.view.PostAnalysisInputPanel;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
@@ -63,6 +64,9 @@ import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.session.CySessionManager;
+import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
+import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskIterator;
@@ -72,17 +76,26 @@ import org.cytoscape.work.swing.DialogTaskManager;
 
 public class BuildPostAnalysisActionListener implements ActionListener {
 
-    private PostAnalysisInputPanel inputPanel;
-    private CyApplicationManager applicationManager;
-    private CySwingApplication swingApplication;
-    private CySessionManager sessionManager;
-    private StreamUtil streamUtil;
-    private DialogTaskManager dialog;
-    private CyEventHelper eventHelper;
+    private final PostAnalysisInputPanel inputPanel;
+    private final CyApplicationManager applicationManager;
+    private final CySwingApplication swingApplication;
+    private final CySessionManager sessionManager;
+    private final StreamUtil streamUtil;
+    private final DialogTaskManager dialog;
+    private final CyEventHelper eventHelper;
+    
+	private final VisualMappingManager visualMappingManager;
+	private final VisualStyleFactory visualStyleFactory;
+	
+	private final VisualMappingFunctionFactory vmfFactoryContinuous;
+    private final VisualMappingFunctionFactory vmfFactoryDiscrete;
+    private final VisualMappingFunctionFactory vmfFactoryPassthrough;
 
     public BuildPostAnalysisActionListener (PostAnalysisInputPanel panel,  
     		CySessionManager sessionManager, StreamUtil streamUtil, CySwingApplication swingApplication,
-    		CyApplicationManager applicationManager, DialogTaskManager dialog,CyEventHelper eventHelper) {
+    		CyApplicationManager applicationManager, DialogTaskManager dialog,CyEventHelper eventHelper,
+    		VisualMappingManager visualMappingManager, VisualStyleFactory visualStyleFactory,
+    		VisualMappingFunctionFactory vmfFactoryContinuous, VisualMappingFunctionFactory vmfFactoryDiscrete, VisualMappingFunctionFactory vmfFactoryPassthrough) {
         this.inputPanel = panel;
         this.sessionManager = sessionManager;
         this.streamUtil = streamUtil;
@@ -90,7 +103,11 @@ public class BuildPostAnalysisActionListener implements ActionListener {
         this.swingApplication = swingApplication;
         this.dialog = dialog;
         this.eventHelper = eventHelper;
-
+        this.visualMappingManager = visualMappingManager;
+        this.visualStyleFactory = visualStyleFactory;
+        this.vmfFactoryContinuous = vmfFactoryContinuous;
+        this.vmfFactoryDiscrete = vmfFactoryDiscrete;
+        this.vmfFactoryPassthrough = vmfFactoryPassthrough;
     }
 
     public void actionPerformed(ActionEvent event) {
@@ -98,19 +115,25 @@ public class BuildPostAnalysisActionListener implements ActionListener {
         //make sure that the minimum information is set in the current set of parameters
     	PostAnalysisParameters paParams = inputPanel.getPaParams();
         
-        EnrichmentMap current_map = EnrichmentMapManager.getInstance().getMap(applicationManager.getCurrentNetwork().getSUID());
+        EnrichmentMap map = EnrichmentMapManager.getInstance().getMap(applicationManager.getCurrentNetwork().getSUID());
         
         //set attribute prefix based on the selected Enrichment map
-        if(current_map != null)
-        	paParams.setAttributePrefix(current_map.getParams().getAttributePrefix());
+        if(map != null)
+        	paParams.setAttributePrefix(map.getParams().getAttributePrefix());
         
         String errors = paParams.checkMinimalRequirements();
         TaskIterator currentTasks = new TaskIterator();
 
         if(errors.isEmpty()) {
             if(paParams.isSignatureDiscovery() || paParams.isKnownSignature()) {
-                BuildDiseaseSignatureTask new_signature = new BuildDiseaseSignatureTask(current_map, paParams, sessionManager, streamUtil, applicationManager, eventHelper, swingApplication);
+                BuildDiseaseSignatureTask new_signature 
+                	= new BuildDiseaseSignatureTask(map, paParams, sessionManager, streamUtil, applicationManager, eventHelper, swingApplication);
                 currentTasks.append(new_signature);
+                
+                CreatePostAnalysisVisualStyleTask visualStyleTask 
+                	= new CreatePostAnalysisVisualStyleTask(map, paParams, applicationManager, visualMappingManager, visualStyleFactory, 
+                			                                vmfFactoryContinuous, vmfFactoryDiscrete, vmfFactoryPassthrough);
+                currentTasks.append(visualStyleTask);
                 
                 TaskObserver dialogObserver = new DialogObserver();
                 dialog.execute(currentTasks, dialogObserver);

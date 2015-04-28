@@ -167,15 +167,13 @@ public class EnrichmentMapVisualStyle {
      * @param prefix - prefix to be appended to each of the attribute names
      * @return visual style
      */
-    public VisualStyle createVisualStyle(VisualStyle vs, String prefix){
+    public void applyVisualStyle(VisualStyle vs, String prefix) {
     	
     	//set default background colour
     	vs.setDefaultValue(BasicVisualLexicon.NETWORK_BACKGROUND_PAINT, new Color(205,205,235));    	        
 
-        vs = createEdgeAppearance(vs, prefix);
-        vs = createNodeAppearance(vs, prefix);
-
-        return vs;
+        createEdgeAppearance(vs, prefix);
+        createNodeAppearance(vs, prefix);
     }
 
     
@@ -186,7 +184,7 @@ public class EnrichmentMapVisualStyle {
      * @param network - network to apply this visual style
      * @param prefix - prefix to be appended to each of the attribute names
      */
-    private VisualStyle createEdgeAppearance(VisualStyle vs, String prefix){
+    private void createEdgeAppearance(VisualStyle vs, String prefix){
                       
         //add the discrete mapper for edge colour:        
         //can't just update edge_paint -- need to do the same for all the type of edge paints
@@ -236,9 +234,6 @@ public class EnrichmentMapVisualStyle {
         conmapping_edgewidth.addPoint(1.0, brvw2);
         
         vs.addVisualMappingFunction(conmapping_edgewidth);
-        
-        return vs;
-
     }
 
     /**
@@ -249,7 +244,7 @@ public class EnrichmentMapVisualStyle {
      * @param network - network to apply this visual style
      * @param prefix - prefix to be appended to each of the attribute names
      */
-    private VisualStyle createNodeAppearance(VisualStyle vs,String prefix){
+    private void createNodeAppearance(VisualStyle vs,String prefix){
 
     	DiscreteMapping<String,NodeShape> disMapping_nodeShape = (DiscreteMapping<String,NodeShape>) vmfFactoryDiscrete.createVisualMappingFunction(prefix + GS_TYPE, String.class, BasicVisualLexicon.NODE_SHAPE);
         disMapping_nodeShape.putMapValue(GS_TYPE_ENRICHMENT, NodeShapeVisualProperty.ELLIPSE);
@@ -411,7 +406,6 @@ public class EnrichmentMapVisualStyle {
         }
 
 */      
-       return vs;
 
     }
 }

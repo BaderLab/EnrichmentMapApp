@@ -50,11 +50,11 @@ import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapVisualStyle;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.view.ParametersPanel;
-
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
-
+import org.cytoscape.view.layout.CyLayoutAlgorithm;
+import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -62,8 +62,6 @@ import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
-import org.cytoscape.view.layout.CyLayoutAlgorithm;
-import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
@@ -95,8 +93,6 @@ public class VisualizeEnrichmentMapTask extends AbstractTask {
     private CyLayoutAlgorithmManager layoutManager;
        
 
-    // Keep track of progress for monitoring:
-    private TaskMonitor taskMonitor = null;
 
     /**
      * Class constructor - current task monitor
@@ -110,7 +106,7 @@ public class VisualizeEnrichmentMapTask extends AbstractTask {
     		VisualMappingManager visualMappingManager,VisualStyleFactory visualStyleFactory,
     		VisualMappingFunctionFactory vmfFactoryContinuous, VisualMappingFunctionFactory vmfFactoryDiscrete,
      VisualMappingFunctionFactory vmfFactoryPassthrough, CyLayoutAlgorithmManager layoutManager) {
-        this(map);
+    	this.map = map;
         this.networkFactory = networkFactory;
         this.networkManager = networkManager;
         this.networkViewManager	= networkViewManager;
@@ -122,85 +118,50 @@ public class VisualizeEnrichmentMapTask extends AbstractTask {
         this.vmfFactoryDiscrete = vmfFactoryDiscrete;
         this.vmfFactoryPassthrough = vmfFactoryPassthrough;
         this.layoutManager = layoutManager;
-                        
-        
-    }
-
-    /**
-     * Class constructor
-     *
-     * @param params - enrichment map parameters for current map
-     */
-    public VisualizeEnrichmentMapTask(EnrichmentMap map) {
-        this.map = map;
-
     }
 
     /**
      * Compute, and create cytoscape enrichment map
-     *
-     * @return  true if successful
      */
-    public boolean visualizeMap(){
-    		CyNetwork network = this.networkManager.getNetwork(map.getParams().getNetworkID());
-    		String prefix = map.getParams().getAttributePrefix();
-    	
-    		//create the network view
-            CyNetworkView view = networkViewFactory.createNetworkView( network );
-            networkViewManager.addNetworkView(view);
-            
-            String vs_name = prefix + "Enrichment_map_style";
+    public void visualizeMap(TaskMonitor taskMonitor) {
+		CyNetwork network = networkManager.getNetwork(map.getParams().getNetworkID());
+		String prefix = map.getParams().getAttributePrefix();
+	
+		//create the network view
+        CyNetworkView view = networkViewFactory.createNetworkView( network );
+        networkViewManager.addNetworkView(view);
+        
+        String vs_name = prefix + "Enrichment_map_style";
 
-            EnrichmentMapVisualStyle em_vs = new EnrichmentMapVisualStyle(map.getParams(),vmfFactoryContinuous,vmfFactoryDiscrete,vmfFactoryPassthrough);
-            VisualStyle vs = visualStyleFactory.createVisualStyle(vs_name);
-            em_vs.createVisualStyle(vs, prefix);                
-            
-            this.visualMappingManager.addVisualStyle(vs);
-            this.visualMappingManager.setCurrentVisualStyle(vs);
-            
-            vs.apply(view);
-            view.updateView();
-            
-            //apply force directed layout
-         	CyLayoutAlgorithm layout = layoutManager.getLayout("force-directed");
-         	String layoutAttribute = null;
-         	insertTasksAfterCurrentTask(layout.createTaskIterator(view, layout.createLayoutContext(), CyLayoutAlgorithm.ALL_NODE_VIEWS, layoutAttribute));
-           
-            //update Parameter panel
-            ParametersPanel parametersPanel = EnrichmentMapManager.getInstance().getParameterPanel();
-            parametersPanel.initializeSliders(map);
-            parametersPanel.updatePanel(map);           
-            
-        return true;
+        EnrichmentMapVisualStyle em_vs = new EnrichmentMapVisualStyle(map.getParams(),vmfFactoryContinuous,vmfFactoryDiscrete,vmfFactoryPassthrough);
+        VisualStyle vs = visualStyleFactory.createVisualStyle(vs_name);
+        em_vs.applyVisualStyle(vs, prefix);                
+        
+        visualMappingManager.addVisualStyle(vs);
+        visualMappingManager.setCurrentVisualStyle(vs);
+        
+        vs.apply(view);
+        view.updateView();
+        
+        //apply force directed layout
+     	CyLayoutAlgorithm layout = layoutManager.getLayout("force-directed");
+     	String layoutAttribute = null;
+     	insertTasksAfterCurrentTask(layout.createTaskIterator(view, layout.createLayoutContext(), CyLayoutAlgorithm.ALL_NODE_VIEWS, layoutAttribute));
+       
+        //update Parameter panel
+        ParametersPanel parametersPanel = EnrichmentMapManager.getInstance().getParameterPanel();
+        parametersPanel.initializeSliders(map);
+        parametersPanel.updatePanel(map);           
     }
    
-    /**
-     * Sets the Task Monitor.
-     *
-     * @param taskMonitor TaskMonitor Object.
-     */
-    public void setTaskMonitor(TaskMonitor taskMonitor) {
-        if (this.taskMonitor != null) {
-            throw new IllegalStateException("Task Monitor is already set.");
-        }
-        this.taskMonitor = taskMonitor;
-    }
-
-    /**
-     * Gets the Task Title.
-     *
-     * @return human readable task title.
-     */
     public String getTitle() {
-        return new String("Building Enrichment Map");
+        return "Building Enrichment Map";
     }
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
-		this.taskMonitor = taskMonitor;
-		this.taskMonitor.setTitle("Creating Network View");
-		visualizeMap();		
-		
+		taskMonitor.setTitle("Creating Network View");
+		visualizeMap(taskMonitor);		
 	}
 
 }
