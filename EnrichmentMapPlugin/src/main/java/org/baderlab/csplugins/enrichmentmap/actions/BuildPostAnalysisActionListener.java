@@ -59,6 +59,7 @@ import org.baderlab.csplugins.enrichmentmap.task.CreatePostAnalysisVisualStyleTa
 import org.baderlab.csplugins.enrichmentmap.view.PostAnalysisInputPanel;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyEdge;
@@ -86,6 +87,7 @@ public class BuildPostAnalysisActionListener implements ActionListener {
     
 	private final VisualMappingManager visualMappingManager;
 	private final VisualStyleFactory visualStyleFactory;
+	private final EquationCompiler equationCompiler;
 	
 	private final VisualMappingFunctionFactory vmfFactoryContinuous;
     private final VisualMappingFunctionFactory vmfFactoryDiscrete;
@@ -93,8 +95,8 @@ public class BuildPostAnalysisActionListener implements ActionListener {
 
     public BuildPostAnalysisActionListener (PostAnalysisInputPanel panel,  
     		CySessionManager sessionManager, StreamUtil streamUtil, CySwingApplication swingApplication,
-    		CyApplicationManager applicationManager, DialogTaskManager dialog,CyEventHelper eventHelper,
-    		VisualMappingManager visualMappingManager, VisualStyleFactory visualStyleFactory,
+    		CyApplicationManager applicationManager, DialogTaskManager dialog,CyEventHelper eventHelper, EquationCompiler equationCompiler,
+    		VisualMappingManager visualMappingManager, VisualStyleFactory visualStyleFactory, 
     		VisualMappingFunctionFactory vmfFactoryContinuous, VisualMappingFunctionFactory vmfFactoryDiscrete, VisualMappingFunctionFactory vmfFactoryPassthrough) {
         this.inputPanel = panel;
         this.sessionManager = sessionManager;
@@ -105,6 +107,7 @@ public class BuildPostAnalysisActionListener implements ActionListener {
         this.eventHelper = eventHelper;
         this.visualMappingManager = visualMappingManager;
         this.visualStyleFactory = visualStyleFactory;
+        this.equationCompiler = equationCompiler;
         this.vmfFactoryContinuous = vmfFactoryContinuous;
         this.vmfFactoryDiscrete = vmfFactoryDiscrete;
         this.vmfFactoryPassthrough = vmfFactoryPassthrough;
@@ -131,11 +134,11 @@ public class BuildPostAnalysisActionListener implements ActionListener {
                 currentTasks.append(new_signature);
                 
                 CreatePostAnalysisVisualStyleTask visualStyleTask 
-                	= new CreatePostAnalysisVisualStyleTask(map, paParams, applicationManager, visualMappingManager, visualStyleFactory, 
+                	= new CreatePostAnalysisVisualStyleTask(map, paParams, applicationManager, visualMappingManager, visualStyleFactory, equationCompiler,
                 			                                vmfFactoryContinuous, vmfFactoryDiscrete, vmfFactoryPassthrough);
                 currentTasks.append(visualStyleTask);
                 
-                TaskObserver dialogObserver = new DialogObserver();
+                TaskObserver dialogObserver = new DialogObserver(visualStyleTask);
                 dialog.execute(currentTasks, dialogObserver);
             } 
             else {
@@ -150,12 +153,19 @@ public class BuildPostAnalysisActionListener implements ActionListener {
     
     private class DialogObserver implements TaskObserver {
     	
+    	private CreatePostAnalysisVisualStyleTask visualStyleTask;
     	private BuildDiseaseSignatureTaskResult result;
+    	
+    	private DialogObserver(CreatePostAnalysisVisualStyleTask visualStyleTask) {
+    		this.visualStyleTask = visualStyleTask;
+    	}
     	
 		@Override 
 		public void taskFinished(ObservableTask task) {
 			if(task instanceof BuildDiseaseSignatureTask) {
 				result = task.getResults(BuildDiseaseSignatureTaskResult.class);
+				// Is there a better way to pass results from one task to another?
+				visualStyleTask.setBuildDiseaseSignatureTaskResult(result);
 			}
 		}
 		
@@ -163,6 +173,7 @@ public class BuildPostAnalysisActionListener implements ActionListener {
 		public void allFinished(FinishStatus status) {
 			if(result == null || result.isCancelled())
 				return;
+			
 			
 			if(result.getPassedCutoffCount() == 0) {
 				JOptionPane.showMessageDialog(swingApplication.getJFrame(), 
@@ -189,15 +200,6 @@ public class BuildPostAnalysisActionListener implements ActionListener {
 					network.removeEdges(edgesToDelete);
 					result.getNetworkView().updateView();
 				}
-			}
-			
-			if(result.isWarnUserBypassStyle()) {
-				JOptionPane.showMessageDialog(swingApplication.getJFrame(), 
-						"The graph was created with an older version of EnrichmentMap.\n"
-						+ "The Visual Properties used for Post Analysis nodes and edges have been set to bypass.\n\n"
-						+ "If you would like your visual style to be upgraded so that it does not use bypass then \n"
-						+ "please rebuild your Enrichment Map graph and then re-run Post Analysis.", 
-						"Visual Property Bypass Used", JOptionPane.WARNING_MESSAGE);
 			}
 		}
 	};

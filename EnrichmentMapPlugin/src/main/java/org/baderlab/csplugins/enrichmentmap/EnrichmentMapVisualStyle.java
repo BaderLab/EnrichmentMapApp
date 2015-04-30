@@ -46,12 +46,8 @@ package org.baderlab.csplugins.enrichmentmap;
 import java.awt.Color;
 import java.awt.Paint;
 
-import org.cytoscape.model.CyEdge;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
-import org.cytoscape.view.presentation.property.LineTypeVisualProperty;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
-import org.cytoscape.view.presentation.property.values.LineType;
-import org.cytoscape.view.presentation.property.values.NodeShape;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.mappings.BoundaryRangeValues;
@@ -118,8 +114,6 @@ public class EnrichmentMapVisualStyle {
     public static final String HYPERGEOM_PVALUE = "Overlap_Hypergeom_pVal";
     public static final String MANN_WHIT_PVALUE = "Overlap_Mann_Whit_pVal";
     public static final String ENRICHMENT_SET = "ENRICHMENT_SET";
-    public static final String COLOURING_EDGES = "Colouring_edges";
-    public static final String WIDTH_EDGES = "Width_edges";
     
     // Related to Hypergeometric Test
     public static final String HYPERGEOM_N = "HyperGeom_N_Universe";
@@ -140,9 +134,8 @@ public class EnrichmentMapVisualStyle {
     public static final Color lighter_phenotype2 = new Color(102,162,255);
     public static final Color lightest_phenotype2 = new Color(179,208,255);
     public static final Color overColor = Color.WHITE;
-    public static final Color yellow = new Color(255,255,0); // yellow
     public static final Color light_grey = new Color(190,190,190); // a lighter grey
-    public static final Color pink = new Color(255,0,200);
+    
 
     
     /**
@@ -188,50 +181,31 @@ public class EnrichmentMapVisualStyle {
                       
         //add the discrete mapper for edge colour:        
         //can't just update edge_paint -- need to do the same for all the type of edge paints
-        DiscreteMapping<Integer,Paint> disMapping_edge2 = (DiscreteMapping<Integer,Paint>) vmfFactoryDiscrete.createVisualMappingFunction(prefix + COLOURING_EDGES, Integer.class, BasicVisualLexicon.EDGE_UNSELECTED_PAINT);
+        DiscreteMapping<Integer,Paint> disMapping_edge2 = (DiscreteMapping<Integer,Paint>) vmfFactoryDiscrete.createVisualMappingFunction(prefix + ENRICHMENT_SET, Integer.class, BasicVisualLexicon.EDGE_UNSELECTED_PAINT);
         disMapping_edge2.putMapValue(0, new Color(100,200,000));
         disMapping_edge2.putMapValue(1, new Color(100,200,000));
         disMapping_edge2.putMapValue(2, new Color(100,149,237));
-        disMapping_edge2.putMapValue(-1, pink); // pink
         vs.addVisualMappingFunction(disMapping_edge2);
         
-        DiscreteMapping<Integer,Paint> disMapping_edge4 = (DiscreteMapping<Integer,Paint>) vmfFactoryDiscrete.createVisualMappingFunction(prefix + COLOURING_EDGES, Integer.class, BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT);
+        DiscreteMapping<Integer,Paint> disMapping_edge4 = (DiscreteMapping<Integer,Paint>) vmfFactoryDiscrete.createVisualMappingFunction(prefix + ENRICHMENT_SET, Integer.class, BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT);
         disMapping_edge4.putMapValue(0, new Color(100,200,000));
         disMapping_edge4.putMapValue(1, new Color(100,200,000));
         disMapping_edge4.putMapValue(2, new Color(100,149,237));
-        disMapping_edge4.putMapValue(-1, pink); // pink
         vs.addVisualMappingFunction(disMapping_edge4);
 
-        // Post-analysis edge line type
-        DiscreteMapping<String,LineType> disMapping_lineType = (DiscreteMapping<String,LineType>) vmfFactoryDiscrete.createVisualMappingFunction(CyEdge.INTERACTION, String.class, BasicVisualLexicon.EDGE_LINE_TYPE);
-        disMapping_lineType.putMapValue(PostAnalysisParameters.SIGNATURE_INTERACTION_TYPE_SET2, LineTypeVisualProperty.LONG_DASH);
-        vs.addVisualMappingFunction(disMapping_lineType);
-        
-        // The below logic for computing width based on SIMILARITY_COEFFICIENT is now located in CreateEnrichmentMapNetworkTask by the LinearNumberInterpolator
-        // The width attribute is now a separate attribute (WIDTH_EDGES) that has a value between 0.0 and 1.0
-        
-//        //Continous Mapping - set edge line thickness based on the number of genes in the overlap
-//        ContinuousMapping<Double,Double> conmapping_edgewidth = (ContinuousMapping<Double,Double>) this.vmfFactoryContinuous.createVisualMappingFunction(prefix + EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT, Double.class, BasicVisualLexicon.EDGE_WIDTH);
-//                
-//        Double under_width = 0.5;
-//        Double min_width = 1.0;
-//        Double max_width = 5.0;
-//        Double over_width = 6.0;
-//
-//        // Create boundary conditions                  less than,   equals,  greater than
-//        BoundaryRangeValues<Double> bv4 = new BoundaryRangeValues<Double>(under_width, min_width, min_width);
-//        BoundaryRangeValues<Double> bv5 = new BoundaryRangeValues<Double>(max_width, max_width, over_width);
-//        conmapping_edgewidth.addPoint(params.getSimilarityCutOff(), bv4);
-//        conmapping_edgewidth.addPoint(1.0, bv5);
-        
-        
-        ContinuousMapping<Double,Double> conmapping_edgewidth = (ContinuousMapping<Double,Double>) vmfFactoryContinuous.createVisualMappingFunction(prefix + WIDTH_EDGES, Double.class, BasicVisualLexicon.EDGE_WIDTH);
-        
-        // edge with ranges from 0 to 10, edge_width attribute ranges from 0.0 to 1.0
-        BoundaryRangeValues<Double> brvw1 = new BoundaryRangeValues<Double>(0.0, 0.0, 0.0);
-        BoundaryRangeValues<Double> brvw2 = new BoundaryRangeValues<Double>(10.0, 10.0, 10.0);
-        conmapping_edgewidth.addPoint(0.0, brvw1);
-        conmapping_edgewidth.addPoint(1.0, brvw2);
+        //Continous Mapping - set edge line thickness based on the number of genes in the overlap
+        ContinuousMapping<Double,Double> conmapping_edgewidth = (ContinuousMapping<Double,Double>) vmfFactoryContinuous.createVisualMappingFunction(prefix + SIMILARITY_COEFFICIENT, Double.class, BasicVisualLexicon.EDGE_WIDTH);
+                
+        Double under_width = 0.5;
+        Double min_width = 1.0;
+        Double max_width = 5.0;
+        Double over_width = 6.0;
+
+        // Create boundary conditions                  less than,   equals,  greater than
+        BoundaryRangeValues<Double> bv4 = new BoundaryRangeValues<Double>(under_width, min_width, min_width);
+        BoundaryRangeValues<Double> bv5 = new BoundaryRangeValues<Double>(max_width, max_width, over_width);
+        conmapping_edgewidth.addPoint(params.getSimilarityCutOff(), bv4);
+        conmapping_edgewidth.addPoint(1.0, bv5);
         
         vs.addVisualMappingFunction(conmapping_edgewidth);
     }
@@ -246,27 +220,11 @@ public class EnrichmentMapVisualStyle {
      */
     private void createNodeAppearance(VisualStyle vs,String prefix){
 
-    	DiscreteMapping<String,NodeShape> disMapping_nodeShape = (DiscreteMapping<String,NodeShape>) vmfFactoryDiscrete.createVisualMappingFunction(prefix + GS_TYPE, String.class, BasicVisualLexicon.NODE_SHAPE);
-        disMapping_nodeShape.putMapValue(GS_TYPE_ENRICHMENT, NodeShapeVisualProperty.ELLIPSE);
-        disMapping_nodeShape.putMapValue(GS_TYPE_SIGNATURE, NodeShapeVisualProperty.TRIANGLE);
-        
-        vs.addVisualMappingFunction(disMapping_nodeShape);
-        
-        // If we are not creating a continuous mapping for the border paint then use a discrete one
-        if(!params.isTwoDatasets()) {
-        	DiscreteMapping<String,Paint> disMapping_borderPaint = (DiscreteMapping<String,Paint>) vmfFactoryDiscrete.createVisualMappingFunction(prefix + GS_TYPE, String.class, BasicVisualLexicon.NODE_BORDER_PAINT);
-        	disMapping_borderPaint.putMapValue(GS_TYPE_ENRICHMENT, light_grey);
-        	disMapping_borderPaint.putMapValue(GS_TYPE_SIGNATURE, yellow);
-        	
-        	vs.addVisualMappingFunction(disMapping_borderPaint);
-        }
-        
-        
     	// The "less than" value for the first point is yellow so that Post-Analysis nodes can set a
     	// value less than -1 to make the node yellow.
     	
         // Create boundary conditions                  less than,   equals,  greater than
-        BoundaryRangeValues<Paint> bv3a = new BoundaryRangeValues<Paint>(yellow,max_phenotype2,max_phenotype2);
+        BoundaryRangeValues<Paint> bv3a = new BoundaryRangeValues<Paint>(max_phenotype2,max_phenotype2,max_phenotype2);
         BoundaryRangeValues<Paint> bv3b = new BoundaryRangeValues<Paint>(lighter_phenotype2, lighter_phenotype2, max_phenotype2);
         BoundaryRangeValues<Paint> bv3c = new BoundaryRangeValues<Paint>(lightest_phenotype2, lightest_phenotype2,lighter_phenotype2);
         BoundaryRangeValues<Paint> bv3d = new BoundaryRangeValues<Paint>(lightest_phenotype2, overColor, overColor);

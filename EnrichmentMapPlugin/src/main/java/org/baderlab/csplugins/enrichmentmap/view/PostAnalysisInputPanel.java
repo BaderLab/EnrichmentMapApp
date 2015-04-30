@@ -78,6 +78,7 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
+import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -112,6 +113,7 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
 	private final StreamUtil streamUtil;
 	private final DialogTaskManager dialog;
 	private final CyEventHelper eventHelper;
+	private final EquationCompiler equationCompiler;
     
 	private final VisualMappingManager visualMappingManager;
 	private final VisualStyleFactory visualStyleFactory;
@@ -147,7 +149,7 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
     public PostAnalysisInputPanel(CyApplicationManager cyApplicationManager, CySwingApplication application, 
     		OpenBrowser browser,FileUtil fileUtil, CySessionManager sessionManager,
     		StreamUtil streamUtil,CyServiceRegistrar registrar,
-    		DialogTaskManager dialog,CyEventHelper eventHelper,
+    		DialogTaskManager dialog,CyEventHelper eventHelper, EquationCompiler equationCompiler,
     		VisualMappingManager visualMappingManager, VisualStyleFactory visualStyleFactory,
     		VisualMappingFunctionFactory vmfFactoryContinuous, VisualMappingFunctionFactory vmfFactoryDiscrete, VisualMappingFunctionFactory vmfFactoryPassthrough) {
     	
@@ -160,6 +162,7 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
         this.streamUtil = streamUtil;
         this.dialog = dialog;
         this.eventHelper = eventHelper;
+        this.equationCompiler = equationCompiler;
         this.visualMappingManager = visualMappingManager;
         this.visualStyleFactory = visualStyleFactory;
         this.vmfFactoryContinuous = vmfFactoryContinuous;
@@ -316,7 +319,7 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
         JButton importButton = new JButton();
         importButton.setText("Run");
         importButton.addActionListener(new BuildPostAnalysisActionListener(this, sessionManager, streamUtil, application, cyApplicationManager, 
-        		                                                           dialog, eventHelper, visualMappingManager, visualStyleFactory,
+        		                                                           dialog, eventHelper, equationCompiler, visualMappingManager, visualStyleFactory,
         																   vmfFactoryContinuous, vmfFactoryDiscrete, vmfFactoryPassthrough));
         importButton.setEnabled(true);
 

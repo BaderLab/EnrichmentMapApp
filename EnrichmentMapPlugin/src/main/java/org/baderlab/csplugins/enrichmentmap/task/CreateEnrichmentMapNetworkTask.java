@@ -63,7 +63,6 @@ import org.baderlab.csplugins.enrichmentmap.model.GSEAResult;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.GenericResult;
 import org.baderlab.csplugins.enrichmentmap.model.GenesetSimilarity;
-import org.baderlab.csplugins.enrichmentmap.util.LinearNumberInterpolator;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -404,10 +403,6 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
                 }
             }
             
-            // Maps the similarity coefficient to a width value between 0.0 and 1.0 (actually in this case between 0.05 and 0.6)
-            LinearNumberInterpolator widthInterpolator = 
-            		new LinearNumberInterpolator(map.getParams().getSimilarityCutOff(),1.0, 0.1,0.5).withDomainCutoff(0.05, 0.6);
-            
             int k = 0;
             //iterate through the similarities to create the edges
             for(Iterator<String> j = geneset_similarities.keySet().iterator(); j.hasNext(); ){
@@ -447,11 +442,6 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
                     current_edgerow.set( prefix + EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT, similarity_coeffecient);
                     current_edgerow.set( prefix + EnrichmentMapVisualStyle.OVERLAP_SIZE, current_result.getSizeOfOverlap());
                     current_edgerow.set( prefix + EnrichmentMapVisualStyle.ENRICHMENT_SET, current_result.getEnrichment_set());
-                    current_edgerow.set( prefix + EnrichmentMapVisualStyle.COLOURING_EDGES, current_result.getEnrichment_set());
-
-                    // compute edge width from similarity_coefficient
-                    double width_coefficient = widthInterpolator.getRangeValue(similarity_coeffecient);
-                    current_edgerow.set( prefix + EnrichmentMapVisualStyle.WIDTH_EDGES, width_coefficient);
                     
                     //set the default table
                   //TODO: add own tables
@@ -750,8 +740,6 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 		edgeTable.createColumn(prefix+EnrichmentMapVisualStyle.OVERLAP_SIZE, Integer.class, false);
 		edgeTable.createListColumn(prefix+EnrichmentMapVisualStyle.OVERLAP_GENES, String.class, false);
 		edgeTable.createColumn(prefix+EnrichmentMapVisualStyle.ENRICHMENT_SET, Integer.class, false);
-		edgeTable.createColumn(prefix+EnrichmentMapVisualStyle.COLOURING_EDGES, Integer.class, false);
-		edgeTable.createColumn(prefix+EnrichmentMapVisualStyle.WIDTH_EDGES, Double.class, false);
 		
 		return edgeTable;
     }
