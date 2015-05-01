@@ -174,6 +174,8 @@ public class BuildPostAnalysisActionListener implements ActionListener {
 			if(result == null || result.isCancelled())
 				return;
 			
+			// Only update the view once the tasks are complete
+			result.getNetworkView().updateView();
 			
 			if(result.getPassedCutoffCount() == 0) {
 				JOptionPane.showMessageDialog(swingApplication.getJFrame(), 

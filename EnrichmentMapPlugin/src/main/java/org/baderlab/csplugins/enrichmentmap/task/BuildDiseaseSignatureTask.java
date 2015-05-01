@@ -390,9 +390,6 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
                 
             } //for
             
-            //update the view 
-            current_view.updateView();
-            
             //TODO add network attribute
            // cyNetworkAttrs.setAttribute(currentNetworkView.getIdentifier(), EnrichmentMapVisualStyle.NUMBER_OF_ENRICHMENT_GENES, geneUniverse.size());
         } catch (InterruptedException e) {
@@ -418,7 +415,6 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 		}
 		
 		current_network.getRow(hub_node).set(CyNetwork.NAME, hub_name);
-		current_view.updateView();
 		//flush events to make sure view has been created.
 		this.eventHelper.flushPayloadEvents();
 		
@@ -507,8 +503,6 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 		if(passed_cutoff)
 			taskResult.incrementPassedCutoffCount();
 			
-		//add update view because view is returning null when we try to get the edge view.
-		//current_view.updateView();
 		CyRow current_edgerow = cyEdgeAttrs.getRow(edge.getSUID());
 		current_edgerow.set(CyNetwork.NAME, edge_name);
 		current_edgerow.set(CyEdge.INTERACTION, interaction);
