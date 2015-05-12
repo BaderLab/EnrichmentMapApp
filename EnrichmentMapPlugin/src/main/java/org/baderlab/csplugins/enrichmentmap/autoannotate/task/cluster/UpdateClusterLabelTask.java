@@ -34,6 +34,11 @@ public class UpdateClusterLabelTask extends AbstractTask{
 		double sameClusterBonus = parent.getSameClusterBonus();
 		double centralityBonus = parent.getCentralityBonus();
 		
+		//add a column to the clusterSetTable to store the computed label if it doesn't already exist
+		if(clusterSetTable.getColumn("WC_ComputedLabel") == null)
+			clusterSetTable.createColumn("WC_ComputedLabel", String.class, false);
+	
+		
 		String mostCentralNodeLabel = cluster.getMostCentralNodeLabel();
 		if (cluster.getSize() == 1) {
 			String oldLabel = cluster.getLabel();
@@ -50,6 +55,7 @@ public class UpdateClusterLabelTask extends AbstractTask{
 			List<String> sizeList = clusterRow.get("WC_FontSize", List.class);
 			List<String> clusterList = clusterRow.get("WC_Cluster", List.class);
 			List<String> numberList = clusterRow.get("WC_Number", List.class);
+			
 			ArrayList<WordInfo> wordInfos = new ArrayList<WordInfo>();
 			if(wordList != null){
 				for (int i=0; i < wordList.size(); i++) {
@@ -80,6 +86,9 @@ public class UpdateClusterLabelTask extends AbstractTask{
 					}
 				}
 			}
+			
+			//set the label in the wordcloud table
+			clusterRow.set("WC_ComputedLabel", cluster.getLabel());
 		}
 	}
 	
