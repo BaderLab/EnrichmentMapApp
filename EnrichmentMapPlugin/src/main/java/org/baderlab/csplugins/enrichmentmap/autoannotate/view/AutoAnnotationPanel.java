@@ -536,6 +536,9 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 			// Add string columns to nameColumnDropdown
 			if (column.getType() == String.class) {
 				nameColumnDropdown.addItem(column.getName());
+				//Add string list columns to the nameColumnDropDown
+			} else if (column.getType() == List.class && column.getListElementType() == String.class) {
+				nameColumnDropdown.addItem(column.getName());			
 			// Add integer/integer list columns to clusterColumnDropdown
 			} else if (column.getType() == Integer.class || (column.getType() == List.class && column.getListElementType() == Integer.class)) {
 				clusterColumnDropdown.addItem(column.getName());

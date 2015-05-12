@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.session.CySession;
@@ -300,7 +301,16 @@ public class Cluster implements Comparable<Cluster> {
 					maxCentrality = centrality;
 				}
 			}
-			mostCentralNodeLabel = parent.getView().getModel().getRow(maxNode).get(parent.getNameColumnName(), String.class);
+			CyColumn current_column = parent.getView().getModel().getDefaultNodeTable().getColumn(parent.getNameColumnName());
+			if(current_column.getType() == String.class)
+				mostCentralNodeLabel = parent.getView().getModel().getRow(maxNode).get(parent.getNameColumnName(), String.class);
+			else if(current_column.getType() == List.class && current_column.getListElementType() == String.class){
+				List<String> nodelabelList = parent.getView().getModel().getRow(maxNode).get(parent.getNameColumnName(), List.class);
+				if(nodelabelList != null){
+					for(Object list_value : nodelabelList)
+						mostCentralNodeLabel = mostCentralNodeLabel + list_value.toString();
+				}
+			}
 		}
 		return mostCentralNodeLabel;
 	}
