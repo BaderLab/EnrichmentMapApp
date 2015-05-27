@@ -72,8 +72,9 @@ public class PostAnalysisParameters {
     	OVERLAP("Overlap Coefficient"), 
     	DIR_OVERLAP("Directed Overlap");
     	
-    	public final String display;
+    	private final String display;
     	CutoffMetric(String display) { this.display = display; }
+    	public String toString() { return display; }
     }
 
     //Gene Set Filtering Constants
@@ -91,8 +92,9 @@ public class PostAnalysisParameters {
     	NUMBER("Overlap has at least X genes"), 
     	SPECIFIC("Overlap X percent of Signature gs");
     	
-    	public final String display;
+    	private final String display;
     	FilterMetric(String display) { this.display = display; }
+    	public String toString() { return display; }
     }
     
     final public static String SIGNATURE_INTERACTION_TYPE = "sig";

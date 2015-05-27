@@ -528,11 +528,13 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 		current_edgerow.set(prefix + EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT, genesetSimilarity.getSimilarity_coeffecient());
 		current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_PVALUE, genesetSimilarity.getHypergeom_pvalue());
 		current_edgerow.set(prefix + EnrichmentMapVisualStyle.ENRICHMENT_SET, 4 /*genesetSimilarity.getEnrichment_set()*/);
+		current_edgerow.set(prefix + EnrichmentMapVisualStyle.CUTOFF_TYPE, paParams.getSignature_rankTest().toString());
 		
 		// Attributes related to the Hypergeometric Test
 		switch(paParams.getSignature_rankTest()) {
 			case MANN_WHIT:
 				current_edgerow.set(prefix + EnrichmentMapVisualStyle.MANN_WHIT_PVALUE, genesetSimilarity.getMann_Whit_pValue());
+				current_edgerow.set(prefix + EnrichmentMapVisualStyle.MANN_WHIT_CUTOFF, paParams.getSignature_Mann_Whit_Cutoff());
 				// want to fall through to the HYERGEOM case
 			case HYPERGEOM:
 				current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_PVALUE, genesetSimilarity.getHypergeom_pvalue());
@@ -540,6 +542,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 				current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_n, genesetSimilarity.getHypergeom_n());
 				current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_m, genesetSimilarity.getHypergeom_m());
 				current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_k, genesetSimilarity.getHypergeom_k());
+				current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_CUTOFF, paParams.getSignature_Hypergeom_Cutoff());
 			default: break;
 		}
 		
@@ -639,10 +642,16 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
     		edgeTable.createColumn(prefix + EnrichmentMapVisualStyle.HYPERGEOM_m , Integer.class, false);
     	if(edgeTable.getColumn(prefix + EnrichmentMapVisualStyle.HYPERGEOM_k) == null)	
     		edgeTable.createColumn(prefix + EnrichmentMapVisualStyle.HYPERGEOM_k , Integer.class, false);
+    	if(edgeTable.getColumn(prefix + EnrichmentMapVisualStyle.HYPERGEOM_CUTOFF) == null)		
+    		edgeTable.createColumn(prefix + EnrichmentMapVisualStyle.HYPERGEOM_CUTOFF , Double.class, false);
     	
     	if(edgeTable.getColumn(prefix + EnrichmentMapVisualStyle.MANN_WHIT_PVALUE) == null)		
     		edgeTable.createColumn(prefix + EnrichmentMapVisualStyle.MANN_WHIT_PVALUE , Double.class, false);
+    	if(edgeTable.getColumn(prefix + EnrichmentMapVisualStyle.MANN_WHIT_CUTOFF) == null)		
+    		edgeTable.createColumn(prefix + EnrichmentMapVisualStyle.MANN_WHIT_CUTOFF , Double.class, false);
     	
+    	if(edgeTable.getColumn(prefix + EnrichmentMapVisualStyle.CUTOFF_TYPE) == null)		
+    		edgeTable.createColumn(prefix + EnrichmentMapVisualStyle.CUTOFF_TYPE , String.class, false);
     	
     	return edgeTable;
     }

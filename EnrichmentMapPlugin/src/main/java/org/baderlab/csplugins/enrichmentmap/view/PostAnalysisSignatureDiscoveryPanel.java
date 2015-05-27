@@ -76,7 +76,7 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
     private JRadioButton filter;
     private JRadioButton nofilter;
     private JFormattedTextField filterTextField;
-    private JComboBox<String> filterTypeCombo;
+    private JComboBox<FilterMetric> filterTypeCombo;
     
     
     
@@ -358,32 +358,39 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
         JPanel filterTypePanel = new JPanel();
         filterTypePanel.setLayout(new BorderLayout());
         filterTypeCombo = new JComboBox<>();
-        filterTypeCombo.addItem(FilterMetric.HYPERGEOM.display);
-        filterTypeCombo.addItem(FilterMetric.MANN_WHIT.display);
-        filterTypeCombo.addItem(FilterMetric.PERCENT.display);
-        filterTypeCombo.addItem(FilterMetric.NUMBER.display);
-        filterTypeCombo.addItem(FilterMetric.SPECIFIC.display);
+        filterTypeCombo.addItem(FilterMetric.HYPERGEOM);
+        filterTypeCombo.addItem(FilterMetric.MANN_WHIT);
+        filterTypeCombo.addItem(FilterMetric.PERCENT);
+        filterTypeCombo.addItem(FilterMetric.NUMBER);
+        filterTypeCombo.addItem(FilterMetric.SPECIFIC);
 //        filterTypeCombo.setSelectedItem(paParams.getDefault_signature_filterMetric());
 
-        //Add Action listener for filter type drop down menu
-        filterTypeCombo.addActionListener( new ActionListener() {
-            public void actionPerformed( ActionEvent e ) {
+        filterTypeCombo.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
                 JComboBox<?> selectedChoice = (JComboBox<?>) e.getSource();
-                if ( FilterMetric.HYPERGEOM.display.equals( selectedChoice.getSelectedItem() ) ) {
-                    paParams.setSignature_filterMetric(FilterMetric.HYPERGEOM);
-                    filterTextField.setValue(paParams.getSignature_Hypergeom_Cutoff());
-                } else if ( FilterMetric.MANN_WHIT.display.equals( selectedChoice.getSelectedItem() ) ) {
-                	paParams.setSignature_filterMetric(FilterMetric.MANN_WHIT);
+                switch((FilterMetric)selectedChoice.getSelectedItem()) {
+				case HYPERGEOM:
+					paParams.setSignature_filterMetric(FilterMetric.HYPERGEOM);
+	                filterTextField.setValue(paParams.getSignature_Hypergeom_Cutoff());
+					break;
+				case MANN_WHIT:
+					paParams.setSignature_filterMetric(FilterMetric.MANN_WHIT);
                 	filterTextField.setValue(paParams.getSignature_Mann_Whit_Cutoff());
-                } else if ( FilterMetric.PERCENT.display.equals( selectedChoice.getSelectedItem() ) ) {
-                    paParams.setSignature_filterMetric(FilterMetric.PERCENT);
+					break;
+				case NUMBER:
+					paParams.setSignature_filterMetric(FilterMetric.NUMBER);
                     filterTextField.setValue(paParams.getFilterValue());
-                } else if ( FilterMetric.NUMBER.display.equals( selectedChoice.getSelectedItem() ) ) {
-                    paParams.setSignature_filterMetric(FilterMetric.NUMBER);
+					break;
+				case PERCENT:
+					paParams.setSignature_filterMetric(FilterMetric.PERCENT);
                     filterTextField.setValue(paParams.getFilterValue());
-                }else if ( FilterMetric.SPECIFIC.display.equals( selectedChoice.getSelectedItem() ) ) {
-                    paParams.setSignature_filterMetric(FilterMetric.SPECIFIC);
+					break;
+				case SPECIFIC:
+					paParams.setSignature_filterMetric(FilterMetric.SPECIFIC);
                     filterTextField.setValue(paParams.getFilterValue());
+                    break;
+				default:
+					break;
                 }
             }
         });
@@ -496,7 +503,7 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
         // Reset the filter field
         filter.setSelected(true);
         paParams.setFilter(true);
-        filterTypeCombo.setSelectedItem(paParams.getDefault_signature_filterMetric().display);
+        filterTypeCombo.setSelectedItem(paParams.getDefault_signature_filterMetric());
         // signatureDiscoveryRankTestCombo.setSelectedItem(filterItems[paParams.getDefault_signature_rankTest()]);
         weightPanel.resetPanel();
     }

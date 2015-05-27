@@ -10,6 +10,7 @@ import org.baderlab.csplugins.enrichmentmap.actions.EnrichmentMapSessionAction;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadEnrichmentsPanelAction;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadPostAnalysisPanelAction;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowAboutPanelAction;
+import org.baderlab.csplugins.enrichmentmap.actions.ShowEdgeWidthPanelAction;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.action.AutoAnnotationPanelAction;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.action.DisplayOptionsPanelAction;
@@ -115,8 +116,6 @@ public class CyActivator extends AbstractCyActivator {
 		EquationCompiler compilerServiceRef = getService(bc, EquationCompiler.class);
 		
 						
-		Map<String, String> serviceProperties;
-		
 		//create the Panels
 		BulkEMCreationPanel bulkEmPanel = new BulkEMCreationPanel(cySwingApplicationRef,fileUtil,registrar, sessionManager, streamUtil, cyApplicationManagerRef);		
 		EnrichmentMapInputPanel emPanel = new EnrichmentMapInputPanel(cyNetworkFactoryRef, cyApplicationManagerRef, cyNetworkManagerRef, cyNetworkViewManagerRef, tableFactory, tableManager, cyNetworkViewFactoryRef, visualMappingManagerRef, visualStyleFactoryRef,  continuousMappingFunctionFactoryRef,discreteMappingFunctionFactoryRef, passthroughMappingFunctionFactoryRef, dialogTaskManager, sessionManager, cySwingApplicationRef, openBrowserRef,fileUtil,streamUtil,registrar,layoutManager,mapTableToNetworkTable,bulkEmPanel);				
@@ -147,50 +146,58 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, autoAnnotationManager, ColumnDeletedListener.class, new Properties());
 		registerService(bc, autoAnnotationManager, ColumnNameChangedListener.class, new Properties());
 
+		WidthFunction widthFunction = new WidthFunction(cyNetworkManagerRef, continuousMappingFunctionFactoryRef, manager);
 		
 		//Create each Action within Enrichment map as a service
+		Map<String,String> serviceProperties;
 		
 		//About Action
-		serviceProperties = new HashMap<String, String>();
+		serviceProperties = new HashMap<>();
 		serviceProperties.put("inMenuBar", "true");
 		serviceProperties.put("preferredMenu", "Apps.EnrichmentMap");
 		ShowAboutPanelAction aboutAction = new ShowAboutPanelAction(serviceProperties,cyApplicationManagerRef ,cyNetworkViewManagerRef, cySwingApplicationRef, openBrowserRef);		
 		
 		//Auto-annotate Panel Action - opens Annotation panel
-		serviceProperties = new HashMap<String, String>();
+		serviceProperties = new HashMap<>();
 		serviceProperties.put("inMenuBar", "true");
 		serviceProperties.put("preferredMenu", "Apps.EnrichmentMap");
  		AutoAnnotationPanelAction autoAnnotationPanelAction = new AutoAnnotationPanelAction(serviceProperties,cyApplicationManagerRef, cyNetworkViewManagerRef, cySwingApplicationRef, annotationManager, registrar);
 		
 		//Auto-annotate Display Options Panel Action - opens display options panel
- 		serviceProperties = new HashMap<String, String>();
+ 		serviceProperties = new HashMap<>();
  		DisplayOptionsPanelAction displayOptionsPanelAction = new DisplayOptionsPanelAction(serviceProperties,cyApplicationManagerRef, cyNetworkViewManagerRef, cySwingApplicationRef, annotationManager, registrar);
  		autoAnnotationManager.setDisplayOptionsPanelAction(displayOptionsPanelAction);
  		
 		//Build Enrichment Map Action - opens EM panel
-		serviceProperties = new HashMap<String, String>();
+		serviceProperties = new HashMap<>();
 		serviceProperties.put("inMenuBar", "true");
 		serviceProperties.put("preferredMenu", "Apps.EnrichmentMap");
 		LoadEnrichmentsPanelAction LoadEnrichmentMapInputPanelAction = new LoadEnrichmentsPanelAction(serviceProperties,cyApplicationManagerRef ,cyNetworkViewManagerRef, cySwingApplicationRef, emPanel,registrar);
 		
 		//Bulk Enrichment Map Action - open bulk em panel
-		serviceProperties = new HashMap<String, String>();
+		serviceProperties = new HashMap<>();
 		serviceProperties.put("inMenuBar", "true");
 		serviceProperties.put("preferredMenu", "Apps.EnrichmentMap");
 		BulkEMCreationAction BulkEMInputPanelAction = new BulkEMCreationAction(serviceProperties,cyApplicationManagerRef ,cyNetworkViewManagerRef, cySwingApplicationRef, bulkEmPanel,registrar);
 		
 		//Post Enrichment Map analysis Action - open post EM panel
-		serviceProperties = new HashMap<String, String>();
+		serviceProperties = new HashMap<>();
 		serviceProperties.put("inMenuBar", "true");
-		serviceProperties.put("preferredMenu", "Apps.EnrichmentMap");
+		serviceProperties.put("preferredMenu", "Apps.EnrichmentMap.Post Analysis");
 		LoadPostAnalysisPanelAction loadPostAnalysisAction = new LoadPostAnalysisPanelAction(serviceProperties,cyApplicationManagerRef ,cyNetworkViewManagerRef, cySwingApplicationRef, postEMPanel,registrar);
 		
+		serviceProperties = new HashMap<>();
+		serviceProperties.put("inMenuBar", "true");
+		serviceProperties.put("preferredMenu", "Apps.EnrichmentMap.Post Analysis");
+		ShowEdgeWidthPanelAction edgeWidthDialogAction = new ShowEdgeWidthPanelAction(serviceProperties, cyApplicationManagerRef ,cyNetworkViewManagerRef, cySwingApplicationRef, manager, compilerServiceRef);
+		
 		//register the services
-		registerService(bc, aboutAction, CyAction.class,new Properties());
 		registerService(bc, LoadEnrichmentMapInputPanelAction, CyAction.class, new Properties());
 		registerService(bc, autoAnnotationPanelAction, CyAction.class, new Properties());
 		registerService(bc, BulkEMInputPanelAction, CyAction.class, new Properties());
 		registerService(bc, loadPostAnalysisAction, CyAction.class, new Properties());	
+		registerService(bc, edgeWidthDialogAction, CyAction.class, new Properties());
+		registerService(bc, aboutAction, CyAction.class,new Properties());
 		
 		//register the session save and restore
 		EnrichmentMapSessionAction sessionAction = new EnrichmentMapSessionAction(cyNetworkManagerRef, sessionManager, cyApplicationManagerRef, streamUtil, autoAnnotationPanelAction);
@@ -210,6 +217,6 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, new EnrichmentMapGSEACommandHandlerTaskFactory(sessionManager, streamUtil, cyApplicationManagerRef, cyNetworkManagerRef, cyNetworkViewManagerRef, cyNetworkViewFactoryRef, cyNetworkFactoryRef, tableFactory, tableManager, visualMappingManagerRef, visualStyleFactoryRef, continuousMappingFunctionFactoryRef, discreteMappingFunctionFactoryRef, passthroughMappingFunctionFactoryRef, layoutManager, mapTableToNetworkTable, dialogTaskManager), TaskFactory.class, properties);
 		
 		// register width function (used in formulas/equations in the table browser)
-		compilerServiceRef.getParser().registerFunction(new WidthFunction());
+		compilerServiceRef.getParser().registerFunction(widthFunction);
 	}
 }

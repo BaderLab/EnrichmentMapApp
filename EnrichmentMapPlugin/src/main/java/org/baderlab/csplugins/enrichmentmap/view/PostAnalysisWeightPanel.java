@@ -45,7 +45,7 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
 	
     private JComboBox<String> datasetCombo;
 	private JComboBox<String> rankingCombo;
-	private JComboBox<String> rankTestCombo;
+	private JComboBox<FilterMetric> rankTestCombo;
 	private JFormattedTextField rankTestTextField;
 	
 	private JRadioButton gmtRadioButton;
@@ -100,14 +100,14 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
         rankTestTextField.addPropertyChangeListener("value", new FormattedTextFieldAction());
         
         rankTestCombo = new JComboBox<>();
-        rankTestCombo.addItem(FilterMetric.MANN_WHIT.display);
-        rankTestCombo.addItem(FilterMetric.HYPERGEOM.display);
+        rankTestCombo.addItem(FilterMetric.MANN_WHIT);
+        rankTestCombo.addItem(FilterMetric.HYPERGEOM);
         rankTestCombo.addActionListener( new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                if (FilterMetric.MANN_WHIT.display.equals(rankTestCombo.getSelectedItem())) {
+                if (FilterMetric.MANN_WHIT.equals(rankTestCombo.getSelectedItem())) {
                     paParams.setSignature_rankTest(FilterMetric.MANN_WHIT);
                     rankTestTextField.setValue(paParams.getSignature_Mann_Whit_Cutoff());
-                } else if (FilterMetric.HYPERGEOM.display.equals(rankTestCombo.getSelectedItem())) {
+                } else if (FilterMetric.HYPERGEOM.equals(rankTestCombo.getSelectedItem())) {
                     paParams.setSignature_rankTest(FilterMetric.HYPERGEOM);
                     rankTestTextField.setValue(paParams.getSignature_Hypergeom_Cutoff());
                 }
@@ -237,10 +237,10 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
 	        		universeSelectionTextField.setValue(val = 1);
 	        	}
 	        	
-	            if (rankTestCombo.getSelectedItem().equals(FilterMetric.MANN_WHIT.display)) {
+	            if (rankTestCombo.getSelectedItem().equals(FilterMetric.MANN_WHIT)) {
 	        		paParams.setSignature_Mann_Whit_Cutoff(val.doubleValue());
 	        	}
-	        	if (rankTestCombo.getSelectedItem().equals(FilterMetric.HYPERGEOM.display)) {
+	        	if (rankTestCombo.getSelectedItem().equals(FilterMetric.HYPERGEOM)) {
 	        		paParams.setSignature_Hypergeom_Cutoff(val.doubleValue());
 	        	}
 	        }
@@ -258,7 +258,7 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
 	
 	void resetPanel() {
 		gmtRadioButton.setSelected(true);
-        rankTestCombo.setSelectedItem(paParams.getDefault_signature_rankTest().display);
+        rankTestCombo.setSelectedItem(paParams.getDefault_signature_rankTest());
     }
     
     
@@ -284,7 +284,7 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
         
 		updateUniverseSize();
         
-        rankTestCombo.setSelectedItem(paParams.getDefault_signature_rankTest().display);
+        rankTestCombo.setSelectedItem(paParams.getDefault_signature_rankTest());
     }
     
     
