@@ -121,7 +121,6 @@ public class WidthFunction extends AbstractFunction {
 	        return conmapping_edgewidth.getMappedValue(row);
 		}
 		
-		System.out.println("Don't want to be here");
 		return 1.0;
 	}
 	

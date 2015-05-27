@@ -4,6 +4,7 @@ package org.baderlab.csplugins.enrichmentmap.task;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -15,6 +16,7 @@ import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters.FilterMetric;
 import org.baderlab.csplugins.enrichmentmap.SerialTestTaskManager;
 import org.baderlab.csplugins.enrichmentmap.StreamUtil;
+import org.baderlab.csplugins.enrichmentmap.WidthFunction;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadSignatureSetsActionListener;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
@@ -248,10 +250,12 @@ public class EnrichmentMapBuildMapTaskTest {
 	   	CyEdge edge1 = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig) TOP8_PLUS100");
 	   	assertNotNull(edge1);
 	   	assertEquals(1.40E-6, emNetwork.getRow(edge1).get("EM1_Overlap_Mann_Whit_pVal", Double.class), 0.001);
+	   	assertEquals(FilterMetric.MANN_WHIT.toString(), emNetwork.getRow(edge1).get("EM1_Overlap_cutoff", String.class));
 	   	
 	   	CyEdge edge2 = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig) BOTTOM8_PLUS100");
 	   	assertNotNull(edge2);
 	   	assertEquals(1.40E-6, emNetwork.getRow(edge2).get("EM1_Overlap_Mann_Whit_pVal", Double.class), 0.001);
+	   	assertEquals(FilterMetric.MANN_WHIT.toString(), emNetwork.getRow(edge2).get("EM1_Overlap_cutoff", String.class));
 	}
 	
 	
@@ -288,21 +292,50 @@ public class EnrichmentMapBuildMapTaskTest {
 	   	assertNotNull(edge1);
 	   	assertEquals(1.40E-6,  emNetwork.getRow(edge1).get("EM1_Overlap_Mann_Whit_pVal", Double.class), 0.001);
 	   	assertEquals(4.21E-11, emNetwork.getRow(edge1).get("EM1_Overlap_Hypergeom_pVal", Double.class), 0.001);
+	   	assertEquals(FilterMetric.HYPERGEOM.toString(), emNetwork.getRow(edge1).get("EM1_Overlap_cutoff", String.class));
 	   	
 	   	CyEdge edge2 = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig) BOTTOM8_PLUS100");
 	   	assertNotNull(edge2);
 	   	assertEquals(1.40E-6,  emNetwork.getRow(edge2).get("EM1_Overlap_Mann_Whit_pVal", Double.class), 0.001);
 	   	assertEquals(4.21E-11, emNetwork.getRow(edge2).get("EM1_Overlap_Hypergeom_pVal", Double.class), 0.001);
+	   	assertEquals(FilterMetric.HYPERGEOM.toString(), emNetwork.getRow(edge2).get("EM1_Overlap_cutoff", String.class));
 	   	
 	   	CyEdge edge3 = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig) MIDDLE8_PLUS100");
 	   	assertNotNull(edge3);
 		assertNull(emNetwork.getRow(edge3).get("EM1_Overlap_Mann_Whit_pVal", Double.class));
 	   	assertEquals(4.21E-11, emNetwork.getRow(edge3).get("EM1_Overlap_Hypergeom_pVal", Double.class), 0.001);
+	   	assertEquals(FilterMetric.HYPERGEOM.toString(), emNetwork.getRow(edge3).get("EM1_Overlap_cutoff", String.class));
 	   	
 	   	CyEdge edge4 = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig) TOP1_PLUS100");
 	   	assertNotNull(edge4);
 	   	assertNull(emNetwork.getRow(edge4).get("EM1_Overlap_Mann_Whit_pVal", Double.class));
 	   	assertEquals(0.19, emNetwork.getRow(edge4).get("EM1_Overlap_Hypergeom_pVal", Double.class), 0.01);
+	   	assertEquals(FilterMetric.HYPERGEOM.toString(), emNetwork.getRow(edge4).get("EM1_Overlap_cutoff", String.class));
 	}
 
+	
+	@Test
+	public void test_4_WidthFunction() {
+		CyNetworkManager networkManager = mock(CyNetworkManager.class);
+		when(networkManager.getNetworkSet()).thenReturn(Collections.singleton(emNetwork));
+	   	
+		Map<String,CyEdge> edges = getEdges(emNetwork);
+		
+		CyEdge sigEdge1 = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig) TOP8_PLUS100");
+		CyEdge sigEdge2 = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig) TOP1_PLUS100");
+		
+		EnrichmentMap map = EnrichmentMapManager.getInstance().getMap(emNetwork.getSUID());
+		assertNotNull(map);
+		
+		WidthFunction widthFunction = new WidthFunction(networkManager, vmfFactoryContinuous, EnrichmentMapManager.getInstance());
+		assertEquals(WidthFunction.NAME, widthFunction.getName());
+		assertNotNull(widthFunction.getFunctionSummary());
+		assertEquals(Double.class, widthFunction.getReturnType());
+		
+		
+		double sigWidth1 = widthFunction.evaluateFunction(new Long[] {sigEdge1.getSUID()});
+		assertEquals(8.0, sigWidth1, 0.0);
+		double sigWidth2 = widthFunction.evaluateFunction(new Long[] {sigEdge2.getSUID()});
+		assertEquals(1.0, sigWidth2, 0.0);
+	}
 }
