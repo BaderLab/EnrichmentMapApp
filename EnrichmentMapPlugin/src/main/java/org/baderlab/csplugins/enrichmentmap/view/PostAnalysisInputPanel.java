@@ -344,6 +344,7 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
         	textField.setValue(file.getAbsolutePath());
             getPaParams().setSignatureGMTFileName(file.getAbsolutePath());
             textField.setToolTipText(file.getAbsolutePath());
+            textField.setCaretPosition(textField.getText().length());
         }
         
         return file;
