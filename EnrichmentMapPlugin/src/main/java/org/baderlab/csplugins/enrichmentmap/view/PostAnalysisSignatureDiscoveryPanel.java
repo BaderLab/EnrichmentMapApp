@@ -2,9 +2,9 @@ package org.baderlab.csplugins.enrichmentmap.view;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -15,7 +15,6 @@ import java.util.Collections;
 import java.util.List;
 
 import javax.swing.BoxLayout;
-import javax.swing.ButtonGroup;
 import javax.swing.DefaultListModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -26,7 +25,6 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JToolTip;
 import javax.swing.ScrollPaneConstants;
@@ -46,6 +44,8 @@ import org.cytoscape.work.swing.DialogTaskManager;
 @SuppressWarnings("serial")
 public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
 
+	private static final String NO_FILTER = "-- no filter --";
+	
 	private final PostAnalysisInputPanel parentPanel;
 	
     private final CyApplicationManager cyApplicationManager;
@@ -73,10 +73,10 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
     private DefaultListModel<String> avail_sig_sets;
     private DefaultListModel<String> selected_sig_sets;
     
-    private JRadioButton filter;
-    private JRadioButton nofilter;
+//    private JRadioButton filter;
+//    private JRadioButton nofilter;
     private JFormattedTextField filterTextField;
-    private JComboBox<FilterMetric> filterTypeCombo;
+    private JComboBox<Object> filterTypeCombo;
     
     
     
@@ -280,18 +280,23 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
         JPanel SigGMTPanel = new JPanel();
         SigGMTPanel.setLayout(new BorderLayout());
 
-        SigGMTPanel.add( SigGMTLabel,BorderLayout.WEST);
-        SigGMTPanel.add( signatureDiscoveryGMTFileNameTextField, BorderLayout.CENTER);
-        SigGMTPanel.add( selectSigGMTFileButton, BorderLayout.EAST);
+        SigGMTPanel.add(SigGMTLabel, BorderLayout.WEST);
+        SigGMTPanel.add(signatureDiscoveryGMTFileNameTextField, BorderLayout.CENTER);
+        SigGMTPanel.add(selectSigGMTFileButton, BorderLayout.EAST);
         //add the components to the panel
+        
         panel.add(SigGMTPanel);
 
-        panel.add(createFilterPanel());
+        
+        CollapsiblePanel filterPanel = createFilterPanel();
+		panel.add(filterPanel);
 
         //TODO: Maybe move loading SigGMT to File-selection Event add load button
         JButton loadButton = new JButton();
         loadButton.setText("Load Gene-Sets");
         loadButton.addActionListener(new LoadSignatureSetsActionListener(parentPanel, application, cyApplicationManager, dialog, streamUtil));
+        
+        loadButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         panel.add(loadButton);
         
         collapsiblePanel.getContentPane().add(panel, BorderLayout.NORTH);
@@ -307,45 +312,11 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
      *  @return CollapsiblePanel to set Filter on Postanalysis genesets
      */
     private CollapsiblePanel createFilterPanel(){
-        CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Filters");
-        JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(2,1));
-        //create radio button
-        ButtonGroup filters;
-
-        //radio button for filter or no-filter.  Defaults to no-filter
-        filter = new JRadioButton("Filter By");
-        filter.setActionCommand("filter");
-        filter.setSelected(true);
-//        paParams.setFilter(true);
-        nofilter = new JRadioButton("No Filter");
-        nofilter.setActionCommand("nofilter");
-        nofilter.setSelected(false);
-
-        filters = new ButtonGroup();
-        filters.add(filter);
-        filters.add(nofilter);
-
-        //action listener for filter radio button.
-        filter.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                selectFilterActionPerformed(evt);
-            }
-        });
-        nofilter.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                selectFilterActionPerformed(evt);
-            }
-        });
-
-        JPanel filtersPanel = new JPanel();
-        filtersPanel.setLayout(new BoxLayout(filtersPanel, BoxLayout.Y_AXIS));
-
-        filtersPanel.add(nofilter);
-
+        CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Filter");
+        collapsiblePanel.setCollapsed(false);
+        
         filterTextField = new JFormattedTextField() ;
         filterTextField.setColumns(4);
-//        filterTextField.setValue(paParams.getSignature_Hypergeom_Cutoff());
         filterTextField.addPropertyChangeListener("value", new FormattedTextFieldAction());
 
         //Two types of filters:
@@ -355,53 +326,47 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
         // has to be X genes of the EM set it overlaps with for at least one geneset in the enrichment map
         // 3. filter by specificity, i.e looking for the signature genesets that are more specific than other genesets
         // for instance a drug A that targets only X and Y as opposed to drug B that targets X,y,L,M,N,O,P
-        JPanel filterTypePanel = new JPanel();
-        filterTypePanel.setLayout(new BorderLayout());
-        filterTypeCombo = new JComboBox<>();
+        filterTypeCombo = new JComboBox<Object>();
+        filterTypeCombo.addItem(NO_FILTER); // default
         filterTypeCombo.addItem(FilterMetric.HYPERGEOM);
         filterTypeCombo.addItem(FilterMetric.MANN_WHIT);
         filterTypeCombo.addItem(FilterMetric.PERCENT);
         filterTypeCombo.addItem(FilterMetric.NUMBER);
         filterTypeCombo.addItem(FilterMetric.SPECIFIC);
-//        filterTypeCombo.setSelectedItem(paParams.getDefault_signature_filterMetric());
 
         filterTypeCombo.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                JComboBox<?> selectedChoice = (JComboBox<?>) e.getSource();
-                switch((FilterMetric)selectedChoice.getSelectedItem()) {
-				case HYPERGEOM:
-					paParams.setSignature_filterMetric(FilterMetric.HYPERGEOM);
-	                filterTextField.setValue(paParams.getSignature_Hypergeom_Cutoff());
-					break;
-				case MANN_WHIT:
-					paParams.setSignature_filterMetric(FilterMetric.MANN_WHIT);
-                	filterTextField.setValue(paParams.getSignature_Mann_Whit_Cutoff());
-					break;
-				case NUMBER:
-					paParams.setSignature_filterMetric(FilterMetric.NUMBER);
-                    filterTextField.setValue(paParams.getFilterValue());
-					break;
-				case PERCENT:
-					paParams.setSignature_filterMetric(FilterMetric.PERCENT);
-                    filterTextField.setValue(paParams.getFilterValue());
-					break;
-				case SPECIFIC:
-					paParams.setSignature_filterMetric(FilterMetric.SPECIFIC);
-                    filterTextField.setValue(paParams.getFilterValue());
-                    break;
-				default:
-					break;
+                if(filterTypeCombo.getSelectedItem().equals(NO_FILTER)) {
+                	paParams.setFilter(false);
+                	filterTextField.setEnabled(false);
+                }
+                else {
+	                paParams.setFilter(true);
+	                filterTextField.setEnabled(true);
+	                FilterMetric filterMetric = (FilterMetric)filterTypeCombo.getSelectedItem();
+	                paParams.setSignature_filterMetric(filterMetric);
+	                switch(filterMetric) {
+						case HYPERGEOM:
+			                filterTextField.setValue(paParams.getSignature_Hypergeom_Cutoff());
+							break;
+						case MANN_WHIT:
+		                	filterTextField.setValue(paParams.getSignature_Mann_Whit_Cutoff());
+							break;
+						case NUMBER:
+						case PERCENT:
+						case SPECIFIC:
+		                    filterTextField.setValue(paParams.getFilterValue());
+		                    break;
+	                }
                 }
             }
         });
-
-        filterTypePanel.add(filter,BorderLayout.WEST);
+       
+        JPanel filterTypePanel = new JPanel(new BorderLayout());
         filterTypePanel.add(filterTypeCombo, BorderLayout.CENTER);
         filterTypePanel.add(filterTextField, BorderLayout.EAST);
-        panel.add(filterTypePanel);
-        panel.add(filtersPanel);
 
-        collapsiblePanel.getContentPane().add(panel);
+        collapsiblePanel.getContentPane().add(filterTypePanel);
         return collapsiblePanel;
     }
     
@@ -501,10 +466,8 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
         setSelSigCount(0);
 
         // Reset the filter field
-        filter.setSelected(true);
-        paParams.setFilter(true);
-        filterTypeCombo.setSelectedItem(paParams.getDefault_signature_filterMetric());
-        // signatureDiscoveryRankTestCombo.setSelectedItem(filterItems[paParams.getDefault_signature_rankTest()]);
+        paParams.setFilter(false);
+        filterTypeCombo.setSelectedItem(NO_FILTER);
         weightPanel.resetPanel();
     }
     
@@ -516,8 +479,11 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
 		weightPanel.updateContents(currentMap, paParams);
 		
         filterTextField.setValue(paParams.getSignature_Hypergeom_Cutoff());
-        filterTypeCombo.setSelectedItem(paParams.getDefault_signature_filterMetric());
-        paParams.setFilter(filter.isSelected());
+        
+        if(paParams.isFilter())
+        	filterTypeCombo.setSelectedItem(paParams.getDefault_signature_filterMetric());
+        else
+        	filterTypeCombo.setSelectedItem(NO_FILTER);
         
         avail_sig_sets = paParams.getSignatureSetNames(); 
         selected_sig_sets = paParams.getSelectedSignatureSetNames();

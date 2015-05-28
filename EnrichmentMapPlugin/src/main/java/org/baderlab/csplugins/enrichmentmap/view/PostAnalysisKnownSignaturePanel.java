@@ -70,7 +70,7 @@ public class PostAnalysisKnownSignaturePanel extends JPanel {
      * @return collapsiblePanel to select Signature Genesets for Signature Analysis
      */
     private void createKnownSignatureOptionsPanel() {
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        setLayout(new BorderLayout());
 
         //Gene set file panel
         CollapsiblePanel gmtPanel = createKnownSignatureGMTPanel();
@@ -80,8 +80,8 @@ public class PostAnalysisKnownSignaturePanel extends JPanel {
         weightPanel = new PostAnalysisWeightPanel(application);
         weightPanel.setCollapsed(false);
         
-        add(gmtPanel);
-        add(weightPanel);        
+        add(gmtPanel, BorderLayout.NORTH);
+        add(weightPanel, BorderLayout.CENTER);        
     }
     
 	/**

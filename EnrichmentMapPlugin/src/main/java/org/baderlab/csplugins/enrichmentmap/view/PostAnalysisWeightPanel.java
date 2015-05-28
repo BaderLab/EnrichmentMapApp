@@ -1,6 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap.view;
 
 import java.awt.BorderLayout;
+import java.awt.CardLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -57,6 +58,7 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
     private DefaultComboBoxModel<String> rankingModel;
     private DefaultComboBoxModel<String> datasetModel;
 	
+    private JPanel cardPanel;
     
 	public PostAnalysisWeightPanel(CySwingApplication application) {
 		super("Edge Weight Calculation Parameters");
@@ -66,53 +68,52 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
 	
 	
 	private void createPanel() {
+		JPanel selectPanel = createRankTestSelectPanel();
+		
+		JPanel hypergeomCard = createHypergeomPanel();
+		JPanel mannWhittCard = createMannWhittPanel();
+		
+		cardPanel = new JPanel(new CardLayout());
+		cardPanel.add(mannWhittCard, FilterMetric.MANN_WHIT.toString());
+		cardPanel.add(hypergeomCard, FilterMetric.HYPERGEOM.toString());
+        
+        getContentPane().add(selectPanel, BorderLayout.NORTH);
+        getContentPane().add(cardPanel, BorderLayout.CENTER);
+    }
+
+	
+	private JPanel createRankTestSelectPanel() {
 		JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        
-        datasetCombo = new JComboBox<>();
-        // Dataset model is already initialized
-        datasetModel = new DefaultComboBoxModel<>();
-        datasetCombo.setModel(datasetModel);
-        datasetCombo.addActionListener(new ActionListener() {
-            public void actionPerformed( ActionEvent e ) {
-            	String dataset = (String)datasetCombo.getSelectedItem();
-            	if(dataset == null)
-            		return;
-            	paParams.setSignature_dataSet(dataset);
-            	updateUniverseSize();
-            }
-        });
-        panel.add(datasetCombo);
-        
-        rankingModel = new DefaultComboBoxModel<>();
-        rankingCombo = new JComboBox<>();
-        rankingCombo.setModel(rankingModel);
-        rankingCombo.addActionListener( new ActionListener() {
-            public void actionPerformed( ActionEvent e ) {
-            	paParams.setSignature_rankFile((String)rankingCombo.getSelectedItem());
-            }
-        });
-        panel.add(rankingCombo);
-        
-        DecimalFormat decFormat = new DecimalFormat();
+		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+		
+		DecimalFormat decFormat = new DecimalFormat();
         decFormat.setParseIntegerOnly(false);
         rankTestTextField = new JFormattedTextField(decFormat);
         rankTestTextField.addPropertyChangeListener("value", new FormattedTextFieldAction());
         
-        rankTestCombo = new JComboBox<>();
+		rankTestCombo = new JComboBox<>();
         rankTestCombo.addItem(FilterMetric.MANN_WHIT);
         rankTestCombo.addItem(FilterMetric.HYPERGEOM);
-        rankTestCombo.addActionListener( new ActionListener() {
+        
+        rankTestCombo.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                if (FilterMetric.MANN_WHIT.equals(rankTestCombo.getSelectedItem())) {
-                    paParams.setSignature_rankTest(FilterMetric.MANN_WHIT);
-                    rankTestTextField.setValue(paParams.getSignature_Mann_Whit_Cutoff());
-                } else if (FilterMetric.HYPERGEOM.equals(rankTestCombo.getSelectedItem())) {
-                    paParams.setSignature_rankTest(FilterMetric.HYPERGEOM);
-                    rankTestTextField.setValue(paParams.getSignature_Hypergeom_Cutoff());
-                }
+            	FilterMetric rankTest = (FilterMetric)rankTestCombo.getSelectedItem();
+            	paParams.setSignature_rankTest(rankTest);
+            	CardLayout cardLayout = (CardLayout)cardPanel.getLayout();
+            	cardLayout.show(cardPanel, rankTest.toString());
+            	
+				switch(rankTest) {
+					case HYPERGEOM:
+	                    rankTestTextField.setValue(paParams.getSignature_Hypergeom_Cutoff());
+						break;
+					case MANN_WHIT:
+	                    rankTestTextField.setValue(paParams.getSignature_Mann_Whit_Cutoff());
+						break;
+					default: break;
+            	}
             }
         });
+        
         panel.add(rankTestCombo);
         
         JPanel cutoffLabel = new JPanel();
@@ -127,9 +128,16 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
 
         panel.add(cutoffPanel);
         
+        return panel;
+	}
+	
+	private JPanel createHypergeomPanel() {
+		JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        
         // Create Universe selection panel
         CollapsiblePanel universeSelectionPanel = new CollapsiblePanel("Advanced Hypergeometric Universe");
-        universeSelectionPanel.setCollapsed(true);
+        universeSelectionPanel.setCollapsed(false);
         universeSelectionPanel.getContentPane().setLayout(new BorderLayout());
         
         GridBagLayout gridbag = new GridBagLayout();
@@ -196,10 +204,57 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
         universeSelectionPanel.getContentPane().add(radioButtonsPanel, BorderLayout.CENTER);
                
         panel.add(universeSelectionPanel);
+        return panel;
+	}
+	
+	
+	private JPanel createMannWhittPanel() {
+		JPanel panel = new JPanel(new GridBagLayout());
+		
+		datasetCombo = new JComboBox<>();
+        // Dataset model is already initialized
+        datasetModel = new DefaultComboBoxModel<>();
+        datasetCombo.setModel(datasetModel);
+        datasetCombo.addActionListener(new ActionListener() {
+            public void actionPerformed( ActionEvent e ) {
+            	String dataset = (String)datasetCombo.getSelectedItem();
+            	if(dataset == null)
+            		return;
+            	paParams.setSignature_dataSet(dataset);
+            	updateUniverseSize();
+            }
+        });
         
-        getContentPane().add(panel, BorderLayout.NORTH);
-    }
-
+        rankingModel = new DefaultComboBoxModel<>();
+        rankingCombo = new JComboBox<>();
+        rankingCombo.setModel(rankingModel);
+        rankingCombo.addActionListener( new ActionListener() {
+            public void actionPerformed( ActionEvent e ) {
+            	paParams.setSignature_rankFile((String)rankingCombo.getSelectedItem());
+            }
+        });
+        
+        
+        GridBagConstraints c = new GridBagConstraints();
+        c.insets = new Insets(0,0,0,0);
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.anchor = GridBagConstraints.WEST;
+        c.gridx = 0;
+        c.gridy = 0;
+        panel.add(datasetCombo, c);
+        
+        c.gridy = 1;
+        panel.add(rankingCombo, c);
+        
+        c.gridy = 2;
+        c.weighty = 1.0;
+        c.weightx = 1.0;
+        panel.add(new JLabel(""), c);
+        
+        return panel;
+	}
+	
+	
 	
 	private class UniverseSelectActionListener implements ActionListener {
 		public void actionPerformed(ActionEvent e) {

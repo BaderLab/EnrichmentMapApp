@@ -92,7 +92,7 @@ public class PostAnalysisParameters {
     	NUMBER("Overlap has at least X genes"), 
     	SPECIFIC("Overlap X percent of Signature gs");
     	
-    	private final String display;
+    	public final String display;
     	FilterMetric(String display) { this.display = display; }
     	public String toString() { return display; }
     }

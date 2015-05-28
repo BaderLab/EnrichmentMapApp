@@ -127,7 +127,7 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
     private JRadioButton signatureDiscovery;
     
     // Top level panel for signature discovery or known signature
-    private CollapsiblePanel userInputPanel;
+    private JPanel userInputPanel;
     
     private JPanel optionsPanel; // value is set to either signatureDiscoveryPanel or knownSignaturePanel
     private PostAnalysisSignatureDiscoveryPanel signatureDiscoveryPanel;
@@ -175,9 +175,8 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
         knownSignaturePanel = new PostAnalysisKnownSignaturePanel(this, cyApplicationManager, application, streamUtil, dialog, fileUtil);
         optionsPanel = knownSignaturePanel; // default
        
-        userInputPanel = new CollapsiblePanel("User Input");
-        userInputPanel.setCollapsed(false);
-        userInputPanel.add(optionsPanel);
+        userInputPanel = new JPanel(new BorderLayout());
+        userInputPanel.add(optionsPanel, BorderLayout.CENTER);
 
         setLayout(new BorderLayout());
         
