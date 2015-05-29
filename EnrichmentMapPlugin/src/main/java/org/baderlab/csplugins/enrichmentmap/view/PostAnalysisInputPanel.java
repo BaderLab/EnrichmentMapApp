@@ -91,18 +91,14 @@ import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
 
-/**
- * Created by
- * @author revilo
- * <p>
- * Date July 9, 2009
- * 
- * Based on: EnrichmentMapInputPanel.java (302) by risserlin
- */
 
+@SuppressWarnings("serial")
 public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent {
     
-    private static final long serialVersionUID = 5472169142720323583L;
+    // tool tips
+    protected static final String gmtTip = "File specifying gene sets.\n" + "Format: geneset name <tab> description <tab> gene ...";
+    protected static final String gmt_instruction = "Please select the Gene Set file (.gmt)...";
+    protected static final String siggmt_instruction = "Please select the Signature Gene Set file (.gmt)...";
     
     private final CyApplicationManager cyApplicationManager;
     private final CySwingApplication application;
@@ -129,18 +125,8 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
     // Top level panel for signature discovery or known signature
     private JPanel userInputPanel;
     
-    private JPanel optionsPanel; // value is set to either signatureDiscoveryPanel or knownSignaturePanel
     private PostAnalysisSignatureDiscoveryPanel signatureDiscoveryPanel;
     private PostAnalysisKnownSignaturePanel knownSignaturePanel;
-    
-    
-    
-    
-    protected static String gmtTip = "File specifying gene sets.\n" + "Format: geneset name <tab> description <tab> gene ...";
-    protected static String gmt_instruction = "Please select the Gene Set file (.gmt)...";
-    protected static String siggmt_instruction = "Please select the Signature Gene Set file (.gmt)...";
-    //tool tips
-
     
     private PostAnalysisParameters sigDiscoveryPaParams;
     private PostAnalysisParameters knownSigPaParams;
@@ -171,12 +157,11 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
     		
         
         // Create the two main panels, set the default one
-        signatureDiscoveryPanel = new PostAnalysisSignatureDiscoveryPanel(this, cyApplicationManager, application, streamUtil, dialog, fileUtil);
         knownSignaturePanel = new PostAnalysisKnownSignaturePanel(this, cyApplicationManager, application, streamUtil, dialog, fileUtil);
-        optionsPanel = knownSignaturePanel; // default
+        signatureDiscoveryPanel = new PostAnalysisSignatureDiscoveryPanel(this, cyApplicationManager, application, streamUtil, dialog, fileUtil);
        
         userInputPanel = new JPanel(new BorderLayout());
-        userInputPanel.add(optionsPanel, BorderLayout.CENTER);
+        userInputPanel.add(knownSignaturePanel, BorderLayout.CENTER); // Default panel
 
         setLayout(new BorderLayout());
         
@@ -186,12 +171,19 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
         JPanel advancedOptionsContainer = new JPanel(new BorderLayout());
         JScrollPane scrollPane = new JScrollPane(userInputPanel);
         advancedOptionsContainer.add(scrollPane, BorderLayout.CENTER);
-        add(advancedOptionsContainer,BorderLayout.CENTER);
+        add(advancedOptionsContainer, BorderLayout.CENTER);
         
         JPanel bottomPanel = createBottomPanel();
         add(bottomPanel, BorderLayout.SOUTH);
     }
+    
 
+    private void flipPanels(JPanel toRemove, JPanel toAdd){
+    	userInputPanel.remove(toRemove);
+    	userInputPanel.add(toAdd, BorderLayout.CENTER);
+    	userInputPanel.revalidate();
+    }
+    
     
 	/**
      * Creates a JPanel containing scope radio buttons
@@ -207,8 +199,8 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
         buttonsPanel.setBorder(BorderFactory.createTitledBorder("Info:"));
 
         JButton help = new JButton("Online Manual");
-        help.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        help.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
                 browser.openURL(EnrichmentMapUtils.userManualUrl);
             }
         });
@@ -216,7 +208,7 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
         JButton about = new JButton("About");
         Map<String, String> serviceProperties = new HashMap<String, String>();
         serviceProperties.put("inMenuBar", "true");
-		   serviceProperties.put("preferredMenu", "Apps.EnrichmentMap");
+		serviceProperties.put("preferredMenu", "Apps.EnrichmentMap");
         about.addActionListener(new ShowAboutPanelAction(serviceProperties , cyApplicationManager, null, application, browser));
 		   
         c_buttons.weighty = 1;
@@ -248,22 +240,18 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
         c.fill = GridBagConstraints.HORIZONTAL;
         panel.setBorder(BorderFactory.createTitledBorder("Post Analysis Type"));
         
-        // Known Signature
-        knownSignature = new JRadioButton("Known Signature", optionsPanel == knownSignaturePanel);
-        knownSignature.setActionCommand("Known Signature");
-        knownSignature.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                selectAnalysisTypeActionPerformed(evt);
+        knownSignature = new JRadioButton("Known Signature");
+        knownSignature.setSelected(true);
+        knownSignature.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+            	flipPanels(signatureDiscoveryPanel, knownSignaturePanel);
             }
         });        
-        knownSignature.setSelected(true);
 
-        // Signature Discovery
-        signatureDiscovery = new JRadioButton("Signature Discovery", optionsPanel == signatureDiscoveryPanel);
-        signatureDiscovery.setActionCommand("Signature Discovery");
-        signatureDiscovery.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                selectAnalysisTypeActionPerformed(evt);
+        signatureDiscovery = new JRadioButton("Signature Discovery");
+        signatureDiscovery.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+            	flipPanels(knownSignaturePanel, signatureDiscoveryPanel);
             }
         });
 
@@ -311,7 +299,7 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
         closeButton.setText("Close");
         closeButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                cancelButtonActionPerformed(evt);
+            	close();
             }
         });
 
@@ -351,14 +339,9 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
     }
         
     
-    private void cancelButtonActionPerformed(ActionEvent evt) {
-    	close();
-    }
-
     public void close() {
     	registrar.unregisterService(this, CytoPanelComponent.class);
     }
-
 
     protected static Color checkFile(String filename){
         //check to see if the files exist and are readable.
@@ -372,22 +355,6 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
         return Color.BLACK;
     }
 
-
-    private void selectAnalysisTypeActionPerformed(ActionEvent evt){
-        String analysisType = evt.getActionCommand();
-        if(analysisType.equalsIgnoreCase("Signature Discovery")) {
-        	userInputPanel.remove(optionsPanel);
-        	optionsPanel = signatureDiscoveryPanel;
-        	userInputPanel.add(optionsPanel);
-        	optionsPanel.revalidate();
-        } else {
-        	userInputPanel.remove(optionsPanel);
-        	optionsPanel = knownSignaturePanel;
-        	userInputPanel.add(optionsPanel);
-        	optionsPanel.revalidate();
-        }
-    }
-    
     
     /**
      * Clear the current panel and clear the paParams associated with each panel
@@ -424,7 +391,7 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
     
 
 	public PostAnalysisParameters getPaParams() {
-		return optionsPanel == signatureDiscoveryPanel ? sigDiscoveryPaParams : knownSigPaParams;
+		return knownSignature.isSelected() ? knownSigPaParams : sigDiscoveryPaParams;
     }
 
 	public Component getComponent() {
