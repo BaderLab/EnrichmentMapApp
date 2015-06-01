@@ -1,6 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap.autoannotate.task;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationParameters;
@@ -38,11 +39,16 @@ public class CreateGroupsTask extends AbstractTask{
 						
 				//Create a Node with the Annotation Label to represent the group
 				CyNode groupNode = this.params.getNetwork().addNode();
-				 this.params.getNetwork().getRow(groupNode).set(CyNetwork.NAME, cluster.getLabel());
+				this.params.getNetwork().getRow(groupNode).set(CyNetwork.NAME, cluster.getLabel());
 				autoAnnotationManager.flushPayloadEvents();
 				
 				CyGroup group = groupFactory.createGroup( this.params.getNetwork(), groupNode,new ArrayList<CyNode>(cluster.getNodes()),null, true);							
 				cluster.setGroup(group);
+				
+				//on suggestion from Scooter, remove the group node after the group has been created.
+				HashSet<CyNode> removeGroupNode = new HashSet<CyNode>();
+				removeGroupNode.add(groupNode);
+				this.params.getNetwork().removeNodes(removeGroupNode);
 			}
 	}
 
