@@ -98,8 +98,8 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
 		rankTestCombo = new JComboBox<>();
         rankTestCombo.addItem(FilterType.MANN_WHIT);
         rankTestCombo.addItem(FilterType.HYPERGEOM);
-        rankTestCombo.addItem(FilterType.PERCENT);
         rankTestCombo.addItem(FilterType.NUMBER);
+        rankTestCombo.addItem(FilterType.PERCENT);
         rankTestCombo.addItem(FilterType.SPECIFIC);
         
         rankTestCombo.addActionListener(new ActionListener() {
@@ -285,7 +285,7 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
         	JFormattedTextField source = (JFormattedTextField) e.getSource();
 	        if (source == rankTestTextField) {
 	        	StringBuilder message = new StringBuilder("The value you have entered is invalid.\n");
-            	boolean valid = PostAnalysisInputPanel.validateAndSetFilterValue(rankTestTextField, paParams.getFilterParameters(), message);
+            	boolean valid = PostAnalysisInputPanel.validateAndSetFilterValue(rankTestTextField, paParams.getRankTestParameters(), message);
             	if (!valid) {
                     JOptionPane.showMessageDialog(application.getJFrame(), message.toString(), "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
                 }

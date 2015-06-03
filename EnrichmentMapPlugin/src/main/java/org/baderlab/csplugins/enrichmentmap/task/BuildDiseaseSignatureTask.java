@@ -273,7 +273,6 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
                     else{
                         //get the Enrichment geneset
                         GeneSet enrGeneset = EnrichmentGenesets.get(geneset_name);
-
                         // restrict to a common gene universe
                         Set<Integer> enrGenes = enrGeneset.getGenes();
                         enrGenes.retainAll(geneUniverse);
@@ -369,7 +368,17 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 			case NUMBER:
 				return similarity.getSizeOfOverlap() >= filterParams.getValue(FilterType.NUMBER);
 			case PERCENT:
+				String geneset_name = similarity.getGeneset2_Name();
+				GeneSet enrGeneset = EnrichmentGenesets.get(geneset_name);
+                int enrGenesetSize = enrGeneset.getGenes().size();
+				double relative_per = (double)similarity.getSizeOfOverlap() / (double)enrGenesetSize;
+				return relative_per >= filterParams.getValue(FilterType.PERCENT)/100.0;
 			case SPECIFIC:
+				String hub_name = similarity.getGeneset1_Name();
+				GeneSet sigGeneSet = SelectedSignatureGenesets.get(hub_name);
+				int sigGeneSetSize = sigGeneSet.getGenes().size();
+				double relative_per2 = (double)similarity.getSizeOfOverlap() / (double)sigGeneSetSize;
+				return relative_per2 >= filterParams.getValue(FilterType.SPECIFIC)/100.0;
 			default:
 				return false;
         }
@@ -505,7 +514,8 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 		current_edgerow.set(prefix + EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT, genesetSimilarity.getSimilarity_coeffecient());
 		current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_PVALUE, genesetSimilarity.getHypergeom_pvalue());
 		current_edgerow.set(prefix + EnrichmentMapVisualStyle.ENRICHMENT_SET, 4 /*genesetSimilarity.getEnrichment_set()*/);
-		current_edgerow.set(prefix + EnrichmentMapVisualStyle.CUTOFF_TYPE, paParams.getRankTestParameters().getType().display);
+		if(passed_cutoff)
+			current_edgerow.set(prefix + EnrichmentMapVisualStyle.CUTOFF_TYPE, paParams.getRankTestParameters().getType().display);
 		
 		// Attributes related to the Hypergeometric Test
 		switch(paParams.getRankTestParameters().getType()) {

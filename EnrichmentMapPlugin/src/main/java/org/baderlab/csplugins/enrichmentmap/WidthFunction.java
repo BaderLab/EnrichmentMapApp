@@ -68,7 +68,7 @@ public class WidthFunction extends AbstractFunction {
 	public Double evaluateFunction(final Object[] args) {
 		long edgeSuid = (Long)args[0];
 		CyNetwork network = getNetwork(edgeSuid);
-		EdgeWidthParams params = EdgeWidthParams.restore(network);
+		EdgeWidthParams edgeWidthParams = EdgeWidthParams.restore(network);
 		CyRow row = network.getDefaultEdgeTable().getRow(edgeSuid);
 		EnrichmentMap map = enrichmentMapManager.getMap(network.getSUID());
 		String prefix = map.getParams().getAttributePrefix();
@@ -77,62 +77,52 @@ public class WidthFunction extends AbstractFunction {
 		
 		if(isSignature(interaction)) {
 			String cutoffType = row.get(prefix + EnrichmentMapVisualStyle.CUTOFF_TYPE, String.class);
-			FilterType filterType = fromString(cutoffType);
+			FilterType filterType = FilterType.fromDisplayString(cutoffType);
 			if(filterType == null) {
 				return 1.0;
 			}
 			
-			if(filterType == FilterType.HYPERGEOM || filterType == FilterType.MANN_WHIT) {
-				Double pvalue, cutoff;
-				if(filterType == FilterType.HYPERGEOM) {
-					pvalue = row.get(prefix + EnrichmentMapVisualStyle.HYPERGEOM_PVALUE, Double.class);
-					cutoff = row.get(prefix + EnrichmentMapVisualStyle.HYPERGEOM_CUTOFF, Double.class);
-				}
-				else {
-					pvalue = row.get(prefix + EnrichmentMapVisualStyle.MANN_WHIT_PVALUE, Double.class);
-					cutoff = row.get(prefix + EnrichmentMapVisualStyle.MANN_WHIT_CUTOFF, Double.class);
-				}
-				
-				if(pvalue == null || cutoff == null)
-					return 1.0;
-				if(pvalue <= cutoff/100)
-					return params.pa_lessThan100;
-				else
-					if(pvalue <= cutoff/10)
-						return params.pa_lessThan10;
-					else
-						return params.pa_greater;
+			Double pvalue, cutoff;
+			if(filterType == FilterType.MANN_WHIT) {
+				pvalue = row.get(prefix + EnrichmentMapVisualStyle.MANN_WHIT_PVALUE, Double.class);
+				cutoff = row.get(prefix + EnrichmentMapVisualStyle.MANN_WHIT_CUTOFF, Double.class);
 			}
+			else {
+				pvalue = row.get(prefix + EnrichmentMapVisualStyle.HYPERGEOM_PVALUE, Double.class);
+				cutoff = row.get(prefix + EnrichmentMapVisualStyle.HYPERGEOM_CUTOFF, Double.class);
+			}
+			
+			if(pvalue == null || cutoff == null)
+				return 1.0;
+			
+			if(pvalue <= cutoff/100)
+				return edgeWidthParams.pa_lessThan100;
+			else if(pvalue <= cutoff/10)
+				return edgeWidthParams.pa_lessThan10;
+			else
+				return edgeWidthParams.pa_greater;
+			
 		} 
 		else {
 			// Can use a continuous mapping object to perform calculation even though it won't be added to the visual style.
-	        ContinuousMapping<Double,Double> conmapping_edgewidth = (ContinuousMapping<Double,Double>) vmfFactoryContinuous.createVisualMappingFunction(prefix + EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT, Double.class, BasicVisualLexicon.EDGE_WIDTH);
-	                
-	        Double under_width = 0.5;
-	        Double min_width = params.em_lower;
-	        Double max_width = params.em_upper;
-	        Double over_width = 6.0;
+			ContinuousMapping<Double,Double> conmapping_edgewidth = (ContinuousMapping<Double,Double>) vmfFactoryContinuous.createVisualMappingFunction(prefix + EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT, Double.class, BasicVisualLexicon.EDGE_WIDTH);
 
-	        // Create boundary conditions                  less than,   equals,  greater than
-	        BoundaryRangeValues<Double> bv4 = new BoundaryRangeValues<Double>(under_width, min_width, min_width);
-	        BoundaryRangeValues<Double> bv5 = new BoundaryRangeValues<Double>(max_width, max_width, over_width);
-	        conmapping_edgewidth.addPoint(map.getParams().getSimilarityCutOff(), bv4);
-	        conmapping_edgewidth.addPoint(1.0, bv5);
-	        
-	        return conmapping_edgewidth.getMappedValue(row);
+			Double under_width = 0.5;
+			Double min_width = edgeWidthParams.em_lower;
+			Double max_width = edgeWidthParams.em_upper;
+			Double over_width = 6.0;
+
+			// Create boundary conditions                  less than,   equals,  greater than
+			BoundaryRangeValues<Double> bv4 = new BoundaryRangeValues<Double>(under_width, min_width, min_width);
+			BoundaryRangeValues<Double> bv5 = new BoundaryRangeValues<Double>(max_width, max_width, over_width);
+			conmapping_edgewidth.addPoint(map.getParams().getSimilarityCutOff(), bv4);
+			conmapping_edgewidth.addPoint(1.0, bv5);
+			
+			return conmapping_edgewidth.getMappedValue(row);
 		}
-		
-		return 1.0;
 	}
 	
 	
-	private static FilterType fromString(String val) {
-		for(FilterType metric : FilterType.values()) {
-			if(metric.toString().equals(val)) {
-				return metric;
-			}
-		}
-		return null;
-	}
+	
 	
 }

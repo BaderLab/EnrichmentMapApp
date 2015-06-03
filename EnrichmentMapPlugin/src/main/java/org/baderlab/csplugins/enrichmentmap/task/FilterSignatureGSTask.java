@@ -122,32 +122,31 @@ public class FilterSignatureGSTask extends AbstractTask{
 	private abstract class FilterMetric {
 		void init() {}
 		/**
-		 * @param original_size 
-		 * @param mapset
-		 * @param paset
-		 * @return
+		 * @param mapGenesetSize number of genes associated with the node in the enrichment map
+		 * @param intersection intersection of genes from enrichment map node and signature geneset
+		 * @param signatureSet genes in the signature geneset (each hub node created by post-analysis)
 		 */
-		abstract boolean match(int original_size, Set<Integer> mapset, Set<Integer> paset);
+		abstract boolean match(int mapGenesetSize, Set<Integer> intersection, Set<Integer> signatureSet);
 	}
 	
 	
 	private class PercentFilterMetric extends FilterMetric {
-		public boolean match(int original_size, Set<Integer> mapset, Set<Integer> paset) {
-			Double relative_per =  mapset.size()/(double)original_size;
-            return relative_per >= (Double)(paParams.getFilterParameters().getValue(FilterType.PERCENT)/100.0);
+		public boolean match(int mapGenesetSize, Set<Integer> intersection, Set<Integer> signatureSet) {
+			double relative_per =  (double)intersection.size() / (double)mapGenesetSize;
+            return relative_per >= paParams.getFilterParameters().getValue(FilterType.PERCENT)/100.0;
 		}
 	}
 	
 	private class NumberFilterMetric extends FilterMetric {
-		public boolean match(int original_size, Set<Integer> mapset, Set<Integer> paset) {
-            return mapset.size() >= paParams.getFilterParameters().getValue(FilterType.NUMBER);
+		public boolean match(int mapGenesetSize, Set<Integer> intersection, Set<Integer> signatureSet) {
+            return intersection.size() >= paParams.getFilterParameters().getValue(FilterType.NUMBER);
 		}
 	}
 	
 	private class SpecificFilterMetric extends FilterMetric {
-		public boolean match(int original_size, Set<Integer> mapset, Set<Integer> paset) {
-			Double relative_per =  mapset.size()/((Integer)(paset.size())).doubleValue();
-            return relative_per >= (Double)(paParams.getFilterParameters().getValue(FilterType.SPECIFIC)/100.0);
+		public boolean match(int mapGenesetSize, Set<Integer> intersection, Set<Integer> signatureSet) {
+			double relative_per =  (double)intersection.size() / (double)signatureSet.size();
+            return relative_per >= paParams.getFilterParameters().getValue(FilterType.SPECIFIC)/100.0;
 		}
 	}
 	
@@ -160,12 +159,12 @@ public class FilterSignatureGSTask extends AbstractTask{
 			N = paParams.getUniverseSize();
 		}
 
-		public boolean match(int original_size, Set<Integer> mapset, Set<Integer> paset) {
+		public boolean match(int mapGenesetSize, Set<Integer> intersection, Set<Integer> signatureSet) {
 			// Calculate Hypergeometric pValue for Overlap
             // N: number of total genes (size of population / total number of balls)
-            int n = paset.size();  //size of signature geneset (sample size / number of extracted balls)
-            int m = original_size; //size of enrichment geneset (success Items / number of white balls in population)
-            int k = mapset.size(); //size of intersection (successes /number of extracted white balls)
+            int n = signatureSet.size();  //size of signature geneset (sample size / number of extracted balls)
+            int m = mapGenesetSize; //size of enrichment geneset (success Items / number of white balls in population)
+            int k = intersection.size(); //size of intersection (successes /number of extracted white balls)
             
             double hyperPval;
             try {
@@ -196,10 +195,10 @@ public class FilterSignatureGSTask extends AbstractTask{
 	    	}
 		}
 
-		public boolean match(int original_size, Set<Integer> mapset, Set<Integer> paset) {
+		public boolean match(int mapGenesetSize, Set<Integer> intersection, Set<Integer> signatureSet) {
 			// Calculate Mann-Whitney U pValue for Overlap
 			Map<Integer, Double> gene2score = ranks.getGene2Score();
-			Object[] overlap_gene_ids = mapset.toArray();
+			Object[] overlap_gene_ids = intersection.toArray();
             if (overlap_gene_ids.length > 0) {
             	double[]  overlap_gene_scores = new double[overlap_gene_ids.length];
                 

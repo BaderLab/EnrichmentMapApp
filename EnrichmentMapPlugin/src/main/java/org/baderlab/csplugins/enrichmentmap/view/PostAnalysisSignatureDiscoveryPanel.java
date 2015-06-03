@@ -329,8 +329,8 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
         filterTypeCombo.addItem(FilterType.NO_FILTER); // default
         filterTypeCombo.addItem(FilterType.MANN_WHIT);
         filterTypeCombo.addItem(FilterType.HYPERGEOM);
-        filterTypeCombo.addItem(FilterType.PERCENT);
         filterTypeCombo.addItem(FilterType.NUMBER);
+        filterTypeCombo.addItem(FilterType.PERCENT);
         filterTypeCombo.addItem(FilterType.SPECIFIC);
 
         filterTypeCombo.addActionListener(new ActionListener() {

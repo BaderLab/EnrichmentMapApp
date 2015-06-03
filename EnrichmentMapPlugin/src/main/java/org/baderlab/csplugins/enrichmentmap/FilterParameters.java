@@ -16,9 +16,9 @@ public class FilterParameters {
     	NO_FILTER("-- no filter --", 0.0),
     	HYPERGEOM("Hypergeometric Test", 0.05), // MKTODO confirm this default, Ruth opened a bug about this at some point 
     	MANN_WHIT("Mann-Whitney", 0.05), 
-    	PERCENT("Overlap X percent of EM gs", 0.25), 
     	NUMBER("Overlap has at least X genes", 5), 
-    	SPECIFIC("Overlap X percent of Signature gs", 0.25);
+    	PERCENT("Overlap is X percent of EM gs", 25),
+    	SPECIFIC("Overlap is X percent of Signature gs", 25);
     	
     	public final String display;
     	public final double defaultValue;
@@ -30,6 +30,15 @@ public class FilterParameters {
     	
     	public String toString() { 
     		return display; 
+    	}
+    	
+    	public static FilterType fromDisplayString(String val) {
+    		for(FilterType metric : values()) {
+    			if(metric.display.equals(val)) {
+    				return metric;
+    			}
+    		}
+    		return null;
     	}
     }
     
