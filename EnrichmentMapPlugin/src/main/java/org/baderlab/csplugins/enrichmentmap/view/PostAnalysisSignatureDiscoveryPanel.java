@@ -29,8 +29,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JToolTip;
 import javax.swing.ScrollPaneConstants;
 
+import org.baderlab.csplugins.enrichmentmap.FilterParameters;
+import org.baderlab.csplugins.enrichmentmap.FilterParameters.FilterType;
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
-import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters.FilterMetric;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadSignatureSetsActionListener;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.JMultiLineToolTip;
@@ -44,8 +45,6 @@ import org.cytoscape.work.swing.DialogTaskManager;
 @SuppressWarnings("serial")
 public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
 
-	private static final String NO_FILTER = "-- no filter --";
-	
 	private final PostAnalysisInputPanel parentPanel;
 	
     private final CyApplicationManager cyApplicationManager;
@@ -76,7 +75,7 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
 //    private JRadioButton filter;
 //    private JRadioButton nofilter;
     private JFormattedTextField filterTextField;
-    private JComboBox<Object> filterTypeCombo;
+    private JComboBox<FilterType> filterTypeCombo;
     
     
     
@@ -326,39 +325,21 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
         // has to be X genes of the EM set it overlaps with for at least one geneset in the enrichment map
         // 3. filter by specificity, i.e looking for the signature genesets that are more specific than other genesets
         // for instance a drug A that targets only X and Y as opposed to drug B that targets X,y,L,M,N,O,P
-        filterTypeCombo = new JComboBox<Object>();
-        filterTypeCombo.addItem(NO_FILTER); // default
-        filterTypeCombo.addItem(FilterMetric.HYPERGEOM);
-        filterTypeCombo.addItem(FilterMetric.MANN_WHIT);
-        filterTypeCombo.addItem(FilterMetric.PERCENT);
-        filterTypeCombo.addItem(FilterMetric.NUMBER);
-        filterTypeCombo.addItem(FilterMetric.SPECIFIC);
+        filterTypeCombo = new JComboBox<FilterType>();
+        filterTypeCombo.addItem(FilterType.NO_FILTER); // default
+        filterTypeCombo.addItem(FilterType.MANN_WHIT);
+        filterTypeCombo.addItem(FilterType.HYPERGEOM);
+        filterTypeCombo.addItem(FilterType.PERCENT);
+        filterTypeCombo.addItem(FilterType.NUMBER);
+        filterTypeCombo.addItem(FilterType.SPECIFIC);
 
         filterTypeCombo.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                if(filterTypeCombo.getSelectedItem().equals(NO_FILTER)) {
-                	paParams.setFilter(false);
-                	filterTextField.setEnabled(false);
-                }
-                else {
-	                paParams.setFilter(true);
-	                filterTextField.setEnabled(true);
-	                FilterMetric filterMetric = (FilterMetric)filterTypeCombo.getSelectedItem();
-	                paParams.setSignature_filterMetric(filterMetric);
-	                switch(filterMetric) {
-						case HYPERGEOM:
-			                filterTextField.setValue(paParams.getSignature_Hypergeom_Cutoff());
-							break;
-						case MANN_WHIT:
-		                	filterTextField.setValue(paParams.getSignature_Mann_Whit_Cutoff());
-							break;
-						case NUMBER:
-						case PERCENT:
-						case SPECIFIC:
-		                    filterTextField.setValue(paParams.getFilterValue());
-		                    break;
-	                }
-                }
+            	FilterType filterType = (FilterType)filterTypeCombo.getSelectedItem();
+            	FilterParameters filterParams = paParams.getFilterParameters();
+				filterParams.setType(filterType);
+				filterTextField.setValue(filterParams.getValue(filterType));
+				filterTextField.setEnabled(filterType != FilterType.NO_FILTER);
             }
         });
        
@@ -377,11 +358,9 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
      */
     private class FormattedTextFieldAction implements PropertyChangeListener {
         public void propertyChange(PropertyChangeEvent e) {
-            JFormattedTextField source = (JFormattedTextField) e.getSource();
-
-            String message = "The value you have entered is invalid.\n";
-            boolean invalid = false;
-
+           JFormattedTextField source = (JFormattedTextField) e.getSource();
+           StringBuilder message = new StringBuilder("The value you have entered is invalid.\n");
+           
            if (source == signatureDiscoveryGMTFileNameTextField) {
                 String value = signatureDiscoveryGMTFileNameTextField.getText();
                 if(value.equalsIgnoreCase("") )
@@ -400,47 +379,10 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
                 }
             } 
             else if (source == filterTextField) {
-                Number value = (Number) filterTextField.getValue();
-                //if the filter type is percent then make sure the number entered is between 0 and 100
-                if(paParams.getSignature_filterMetric() == FilterMetric.HYPERGEOM){
-                    if ((value != null) && (value.doubleValue() >= 0.0) && (value.intValue() <= 1.0)) {
-                        paParams.setSignature_Hypergeom_Cutoff(value.doubleValue());
-                    } else {
-                        source.setValue(paParams.getDefault_signature_Hypergeom_Cutoff());
-                        message += "The filter cutoff must be greater than or equal 0.0 and less than or equal to 1.0";
-                        invalid = true;
-                    }
-                } else if(paParams.getSignature_filterMetric() == FilterMetric.MANN_WHIT){
-                    if ((value != null) && (value.doubleValue() >= 0.0) && (value.intValue() <= 1.0)) {
-                        paParams.setSignature_Mann_Whit_Cutoff(value.doubleValue());
-                    } else {
-                        source.setValue(paParams.getDefault_signature_Mann_Whit_Cutoff());
-                        message += "The filter cutoff must be greater than or equal 0.0 and less than or equal to 1.0";
-                        invalid = true;
-                    }
-                } else if(paParams.getSignature_filterMetric() == FilterMetric.PERCENT){
-                    if ((value != null) && (value.intValue() >= 0) && (value.intValue() <= 100)) {
-                        paParams.setFilterValue(value.intValue());
-                    } else {
-                        source.setValue(paParams.getFilterValue());
-                        message += "The filter cutoff must be greater than or equal 0 and less than or equal to 100.";
-                        invalid = true;
-                    }
+            	boolean valid = PostAnalysisInputPanel.validateAndSetFilterValue(filterTextField, paParams.getFilterParameters(), message);
+            	if (!valid) {
+                    JOptionPane.showMessageDialog(application.getJFrame(), message.toString(), "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
                 }
-                //if the filter type is NUMBER then it can be any number, zero or greater.
-                else if(paParams.getSignature_filterMetric() == FilterMetric.NUMBER){
-                    if ((value != null) && (value.intValue() >= 0)) {
-                        paParams.setFilterValue(value.intValue());
-                    } else {
-                        source.setValue(paParams.getFilterValue());
-                        message += "The filter cutoff must be greater than or equal 0.";
-                        invalid = true;
-                    }
-                }
-            }
-            
-            if (invalid) {
-                JOptionPane.showMessageDialog(application.getJFrame(), message, "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
             }
         }
     }
@@ -466,8 +408,8 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
         setSelSigCount(0);
 
         // Reset the filter field
-        paParams.setFilter(false);
-        filterTypeCombo.setSelectedItem(NO_FILTER);
+        paParams.getFilterParameters().setType(FilterType.NO_FILTER);
+        filterTypeCombo.setSelectedItem(FilterType.NO_FILTER);
         weightPanel.resetPanel();
     }
     
@@ -478,12 +420,9 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
         
 		weightPanel.updateContents(currentMap, paParams);
 		
-        filterTextField.setValue(paParams.getSignature_Hypergeom_Cutoff());
-        
-        if(paParams.isFilter())
-        	filterTypeCombo.setSelectedItem(paParams.getDefault_signature_filterMetric());
-        else
-        	filterTypeCombo.setSelectedItem(NO_FILTER);
+		FilterParameters filterParams = paParams.getFilterParameters();
+        filterTypeCombo.setSelectedItem(filterParams.getType());
+        filterTextField.setValue(filterParams.getValue(filterParams.getType()));
         
         avail_sig_sets = paParams.getSignatureSetNames(); 
         selected_sig_sets = paParams.getSelectedSignatureSetNames();
@@ -498,8 +437,8 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
     private ImageIcon[] createArrowIcons () {
         ImageIcon[] iconArrow = new ImageIcon[4];
         URL iconURL;
-        //                         Oliver at 26/06/2009:  relative path works for me,
-        //                         maybe need to change to org/baderlab/csplugins/enrichmentmap/resources/arrow_collapsed.gif
+        // Oliver at 26/06/2009:  relative path works for me,
+        // maybe need to change to org/baderlab/csplugins/enrichmentmap/resources/arrow_collapsed.gif
         iconURL = this.getClass().getResource("arrow_up.gif");
         if (iconURL != null) {
             iconArrow[UP] = new ImageIcon(iconURL);
@@ -517,20 +456,6 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
             iconArrow[RIGHT] = new ImageIcon(iconURL);
         }
         return iconArrow;
-    }
-    
-    /**
-     * jaccard or overlap radio button action listener
-     *
-     * @param evt
-     */
-    private void selectFilterActionPerformed(java.awt.event.ActionEvent evt) {
-        if(evt.getActionCommand().equalsIgnoreCase("filter")){
-            paParams.setFilter(true);
-        }
-        else if(evt.getActionCommand().equalsIgnoreCase("nofilter")){
-            paParams.setFilter(false);
-        }
     }
     
     

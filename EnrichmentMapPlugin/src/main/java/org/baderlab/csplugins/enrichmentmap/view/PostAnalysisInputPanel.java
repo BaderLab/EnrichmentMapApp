@@ -70,6 +70,8 @@ import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapUtils;
+import org.baderlab.csplugins.enrichmentmap.FilterParameters;
+import org.baderlab.csplugins.enrichmentmap.FilterParameters.FilterType;
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.actions.BuildPostAnalysisActionListener;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowAboutPanelAction;
@@ -339,6 +341,51 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
     }
         
     
+	protected static boolean validateAndSetFilterValue(JFormattedTextField source, FilterParameters filterParams, StringBuilder message) {
+    	Number value = (Number) source.getValue();
+    	boolean valid = false;
+    	FilterType type = filterParams.getType();
+    	
+		switch(type) {
+	    	case HYPERGEOM:
+	    		if(value != null && value.doubleValue() >= 0.0 && value.intValue() <= 1.0)
+	    			valid = true;
+	            else
+	                message.append("The value must be greater than or equal 0.0 and less than or equal to 1.0");
+	    		break;
+	    	case MANN_WHIT:
+	    		if(value != null && value.doubleValue() >= 0.0 && value.intValue() <= 1.0)
+	    			valid = true;
+	            else
+	                message.append("The value must be greater than or equal 0.0 and less than or equal to 1.0");
+	    		break;
+	    	case PERCENT: 
+	    	case SPECIFIC:
+	    		if(value != null && value.intValue() >= 0 && value.intValue() <= 100)
+	    			valid = true;
+	            else
+	                message.append("The value must be greater than or equal 0 and less than or equal to 100.");
+	    		break;
+	    	case NUMBER:
+	    		if(value != null && value.intValue() >= 0)
+	    			valid = true;
+	            else
+	                message.append("The value must be greater than or equal 0.");
+	    		break;
+	    	default:
+	    		valid = true;
+	    		break;
+    	}
+    	
+    	if(valid)
+    		filterParams.setValue(type, value.doubleValue());
+    	else
+    		source.setValue(type.defaultValue);
+    	
+    	return valid;
+    }
+    
+    
     public void close() {
     	registrar.unregisterService(this, CytoPanelComponent.class);
     }
@@ -379,7 +426,6 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
 			// Use two separate parameters objects so that the two panels don't interfere with each other
 			knownSigPaParams = new PostAnalysisParameters();
 			knownSigPaParams.setSignatureHub(false);
-			knownSigPaParams.setFilter(false);
 			
 			sigDiscoveryPaParams = new PostAnalysisParameters();
 			sigDiscoveryPaParams.setSignatureHub(true);

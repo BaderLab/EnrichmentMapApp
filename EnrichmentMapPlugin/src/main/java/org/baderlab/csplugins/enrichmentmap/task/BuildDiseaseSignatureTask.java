@@ -55,6 +55,8 @@ import java.util.Set;
 import org.apache.commons.math3.stat.inference.MannWhitneyUTest;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapVisualStyle;
+import org.baderlab.csplugins.enrichmentmap.FilterParameters;
+import org.baderlab.csplugins.enrichmentmap.FilterParameters.FilterType;
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
@@ -124,10 +126,8 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
     		ranks = dataset.getExpressionSets().getRanks().get(paParams.getSignature_rankFile());
     	}    	
 
-    	//create a new instance of the parameters and copy the version received from the input
-        //window into this new instance.
-    	this.paParams = new PostAnalysisParameters();
-        this.paParams.copyFrom(paParams);
+    	//create a new instance of the parameters and copy the version received from the input window into this new instance.
+    	this.paParams = new PostAnalysisParameters(paParams); // copy constructor
         
         this.EnrichmentGenesets = map.getEnrichmentGenesets();
         this.SignatureGenesets  = this.paParams.getSignatureGenesets().getGenesets();
@@ -288,40 +288,23 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
                         
                         // Only calculate Mann-Whitney pValue if there is overlap
                         if (intersection.size() > 0) {
-                        	double coeffecient;
-                        	
-                        	// if  either Jaccard or Overlap similarity are requested:
-                        	switch(paParams.getSignature_CutoffMetric()) {
-                        		default: // use Directed Overlap
-                        		case DIR_OVERLAP:
-                        			coeffecient = (double)intersection.size() / (double)enrGenes.size();
-                        			break;
-                        		case JACCARD:
-                        			coeffecient = (double)intersection.size() / (double)union.size();
-                        			break;
-                        		case OVERLAP:
-                        			coeffecient = (double)intersection.size() / Math.min((double)sigGenes.size(), (double)enrGenes.size());
-                        			break;
-                        	}
-                        	
-	                        //create Geneset similarity object
+                        	double coeffecient = ComputeSimilarityTask.computeSimilarityCoeffecient(map.getParams(), intersection, union, sigGenes, enrGenes);
 	                        GenesetSimilarity comparison = new GenesetSimilarity(hub_name, geneset_name, coeffecient, interaction, intersection);
 	                        
-	                        int universeSize;
-	                        switch(paParams.getSignature_rankTest()) {
+	                        switch(paParams.getRankTestParameters().getType()) {
+		                        case HYPERGEOM:
+		                        	int universeSize1 = paParams.getUniverseSize();
+		                        	hypergeometric(universeSize1, sigGenesInUniverse, enrGenes, intersection, comparison);
+		                        	break;
 		                        case MANN_WHIT:
 		                        	mannWhitney(intersection, comparison);
-		                        	universeSize = map.getNumberOfGenes(); // #70 calculate hypergeometric also
-		                        	hypergeometric(universeSize, sigGenesInUniverse, enrGenes, intersection, comparison);
-		                        	break;
-		                        case HYPERGEOM:
-		                        	universeSize = paParams.getUniverseSize();
-		                        	hypergeometric(universeSize, sigGenesInUniverse, enrGenes, intersection, comparison);
+		                        default: // want mann-whit to fall through
+		                        	int universeSize2 = map.getNumberOfGenes(); // #70 calculate hypergeometric also
+		                        	hypergeometric(universeSize2, sigGenesInUniverse, enrGenes, intersection, comparison);
 		                        	break;
 	                        }
                             
 	                        geneset_similarities.put(similarity_key1, comparison);
-
 	                    }
                     }
                 } // End: iterate over Enrichment Genesets
@@ -363,42 +346,36 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
                     // skip if not either of the adjacent nodes is a SelectedSignatureGenesets of the current analysis (fixes Bug #44)
                     continue;
 
-                // check if combination passes Cut-Off:
-                boolean passed_cutoff = false;
-//                if( (paParams.getSignature_CutoffMetric() == PostAnalysisParameters.ABS_NUMBER) && 
-//                     (geneset_similarities.get(edge_name).getSizeOfOverlap() >= paParams.getSignature_absNumber_Cutoff() ) )
-//                    passed_cutoff = true;
-//                else if ( (paParams.getSignature_CutoffMetric() == PostAnalysisParameters.JACCARD) && 
-//                          (geneset_similarities.get(edge_name).getSimilarity_coeffecient() >= paParams.getSignature_Jaccard_Cutoff() ) )
-//                    passed_cutoff = true;
-//                else if ( (paParams.getSignature_CutoffMetric() == PostAnalysisParameters.OVERLAP) && 
-//                        (geneset_similarities.get(edge_name).getSimilarity_coeffecient() >= paParams.getSignature_Overlap_Cutoff() ) )
-//                    passed_cutoff = true;
-//                else if ( (paParams.getSignature_CutoffMetric() == PostAnalysisParameters.DIR_OVERLAP) && 
-//                        (geneset_similarities.get(edge_name).getSimilarity_coeffecient() >= paParams.getSignature_DirOverlap_Cutoff() ) )
-//                    passed_cutoff = true;
-                if ( (paParams.getSignature_rankTest() == PostAnalysisParameters.FilterMetric.MANN_WHIT) && 
-                        (geneset_similarities.get(edge_name).getMann_Whit_pValue() <= paParams.getSignature_Mann_Whit_Cutoff() ) ||
-                     (paParams.getSignature_rankTest() == PostAnalysisParameters.FilterMetric.MANN_WHIT) && 
-                        (geneset_similarities.get(edge_name).getSensitivity() ) ||
-                     (paParams.getSignature_rankTest() == PostAnalysisParameters.FilterMetric.HYPERGEOM) && 
-                        (geneset_similarities.get(edge_name).getHypergeom_pvalue() <= paParams.getSignature_Hypergeom_Cutoff() )) {
-                   	passed_cutoff = true;
-                }
-
+                boolean passed_cutoff = passesCutoff(edge_name);
                 createEdge(edge_name, current_network, current_view, prefix, cyEdgeAttrs, cyNodeAttrs, passed_cutoff);
                 
-            } //for
+            }
             
-            //TODO add network attribute
-           // cyNetworkAttrs.setAttribute(currentNetworkView.getIdentifier(), EnrichmentMapVisualStyle.NUMBER_OF_ENRICHMENT_GENES, geneUniverse.size());
         } catch (InterruptedException e) {
-        		//TODO cancel task
-            //taskMonitor.setException(e, "Generation of Signature Hubs cancelled");
+        	// TODO cancel task
         }
     }
     
 
+    private boolean passesCutoff(String edge_name) {
+		GenesetSimilarity similarity = geneset_similarities.get(edge_name);
+        FilterParameters filterParams = paParams.getRankTestParameters();
+        
+        switch(filterParams.getType()) {
+			case HYPERGEOM:
+				return similarity.getHypergeom_pvalue() <= filterParams.getValue(FilterType.HYPERGEOM);
+			case MANN_WHIT:
+				return similarity.getSensitivity() || similarity.getMann_Whit_pValue() <= filterParams.getValue(FilterType.MANN_WHIT);
+			case NUMBER:
+				return similarity.getSizeOfOverlap() >= filterParams.getValue(FilterType.NUMBER);
+			case PERCENT:
+			case SPECIFIC:
+			default:
+				return false;
+        }
+    }
+    
+    
     /**
      * Returns true if a hub-node was actually created, false if the existing one was reused.
      */
@@ -528,24 +505,23 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 		current_edgerow.set(prefix + EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT, genesetSimilarity.getSimilarity_coeffecient());
 		current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_PVALUE, genesetSimilarity.getHypergeom_pvalue());
 		current_edgerow.set(prefix + EnrichmentMapVisualStyle.ENRICHMENT_SET, 4 /*genesetSimilarity.getEnrichment_set()*/);
-		current_edgerow.set(prefix + EnrichmentMapVisualStyle.CUTOFF_TYPE, paParams.getSignature_rankTest().toString());
+		current_edgerow.set(prefix + EnrichmentMapVisualStyle.CUTOFF_TYPE, paParams.getRankTestParameters().getType().display);
 		
 		// Attributes related to the Hypergeometric Test
-		switch(paParams.getSignature_rankTest()) {
+		switch(paParams.getRankTestParameters().getType()) {
 			case MANN_WHIT:
 				current_edgerow.set(prefix + EnrichmentMapVisualStyle.MANN_WHIT_PVALUE, genesetSimilarity.getMann_Whit_pValue());
-				current_edgerow.set(prefix + EnrichmentMapVisualStyle.MANN_WHIT_CUTOFF, paParams.getSignature_Mann_Whit_Cutoff());
+				current_edgerow.set(prefix + EnrichmentMapVisualStyle.MANN_WHIT_CUTOFF, paParams.getRankTestParameters().getValue(FilterType.MANN_WHIT));
 				// want to fall through to the HYERGEOM case
+			default:
 			case HYPERGEOM:
 				current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_PVALUE, genesetSimilarity.getHypergeom_pvalue());
 				current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_N, genesetSimilarity.getHypergeom_N());
 				current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_n, genesetSimilarity.getHypergeom_n());
 				current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_m, genesetSimilarity.getHypergeom_m());
 				current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_k, genesetSimilarity.getHypergeom_k());
-				current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_CUTOFF, paParams.getSignature_Hypergeom_Cutoff());
-			default: break;
+				current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_CUTOFF, paParams.getRankTestParameters().getValue(FilterType.HYPERGEOM));
 		}
-		
 	}
 
 

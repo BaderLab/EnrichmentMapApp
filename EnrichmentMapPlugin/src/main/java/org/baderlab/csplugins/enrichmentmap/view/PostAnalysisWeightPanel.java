@@ -23,8 +23,9 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 
+import org.baderlab.csplugins.enrichmentmap.FilterParameters;
+import org.baderlab.csplugins.enrichmentmap.FilterParameters.FilterType;
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
-import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters.FilterMetric;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
@@ -46,7 +47,7 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
 	
     private JComboBox<String> datasetCombo;
 	private JComboBox<String> rankingCombo;
-	private JComboBox<FilterMetric> rankTestCombo;
+	private JComboBox<FilterType> rankTestCombo;
 	private JFormattedTextField rankTestTextField;
 	
 	private JRadioButton gmtRadioButton;
@@ -74,8 +75,11 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
 		JPanel mannWhittCard = createMannWhittPanel();
 		
 		cardPanel = new JPanel(new CardLayout());
-		cardPanel.add(mannWhittCard, FilterMetric.MANN_WHIT.toString());
-		cardPanel.add(hypergeomCard, FilterMetric.HYPERGEOM.toString());
+		cardPanel.add(mannWhittCard, FilterType.MANN_WHIT.toString());
+		cardPanel.add(hypergeomCard, FilterType.HYPERGEOM.toString());
+		cardPanel.add(new JPanel(), FilterType.PERCENT.toString());
+		cardPanel.add(new JPanel(), FilterType.NUMBER.toString());
+		cardPanel.add(new JPanel(), FilterType.SPECIFIC.toString());
         
         getContentPane().add(selectPanel, BorderLayout.NORTH);
         getContentPane().add(cardPanel, BorderLayout.CENTER);
@@ -92,25 +96,20 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
         rankTestTextField.addPropertyChangeListener("value", new FormattedTextFieldAction());
         
 		rankTestCombo = new JComboBox<>();
-        rankTestCombo.addItem(FilterMetric.MANN_WHIT);
-        rankTestCombo.addItem(FilterMetric.HYPERGEOM);
+        rankTestCombo.addItem(FilterType.MANN_WHIT);
+        rankTestCombo.addItem(FilterType.HYPERGEOM);
+        rankTestCombo.addItem(FilterType.PERCENT);
+        rankTestCombo.addItem(FilterType.NUMBER);
+        rankTestCombo.addItem(FilterType.SPECIFIC);
         
         rankTestCombo.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-            	FilterMetric rankTest = (FilterMetric)rankTestCombo.getSelectedItem();
-            	paParams.setSignature_rankTest(rankTest);
+            	FilterType rankTest = (FilterType)rankTestCombo.getSelectedItem();
+            	FilterParameters rankTestParams = paParams.getRankTestParameters();
+        		rankTestParams.setType(rankTest);
+        		rankTestTextField.setValue(rankTestParams.getValue(rankTest));
             	CardLayout cardLayout = (CardLayout)cardPanel.getLayout();
             	cardLayout.show(cardPanel, rankTest.toString());
-            	
-				switch(rankTest) {
-					case HYPERGEOM:
-	                    rankTestTextField.setValue(paParams.getSignature_Hypergeom_Cutoff());
-						break;
-					case MANN_WHIT:
-	                    rankTestTextField.setValue(paParams.getSignature_Mann_Whit_Cutoff());
-						break;
-					default: break;
-            	}
             }
         });
         
@@ -255,7 +254,6 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
 	}
 	
 	
-	
 	private class UniverseSelectActionListener implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
 			int size = 0;
@@ -286,18 +284,11 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
         public void propertyChange(PropertyChangeEvent e) {
         	JFormattedTextField source = (JFormattedTextField) e.getSource();
 	        if (source == rankTestTextField) {
-	        	Number val = (Number)rankTestTextField.getValue();
-	        	if(val == null || val.doubleValue() < 0.0) {
-	        		JOptionPane.showMessageDialog(application.getJFrame(), "Universe value must be greater than zero", "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
-	        		universeSelectionTextField.setValue(val = 1);
-	        	}
-	        	
-	            if (rankTestCombo.getSelectedItem().equals(FilterMetric.MANN_WHIT)) {
-	        		paParams.setSignature_Mann_Whit_Cutoff(val.doubleValue());
-	        	}
-	        	if (rankTestCombo.getSelectedItem().equals(FilterMetric.HYPERGEOM)) {
-	        		paParams.setSignature_Hypergeom_Cutoff(val.doubleValue());
-	        	}
+	        	StringBuilder message = new StringBuilder("The value you have entered is invalid.\n");
+            	boolean valid = PostAnalysisInputPanel.validateAndSetFilterValue(rankTestTextField, paParams.getFilterParameters(), message);
+            	if (!valid) {
+                    JOptionPane.showMessageDialog(application.getJFrame(), message.toString(), "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
+                }
 	        }
 	        else if (source == universeSelectionTextField) {
 	        	Number val = (Number)universeSelectionTextField.getValue();
@@ -313,7 +304,8 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
 	
 	void resetPanel() {
 		gmtRadioButton.setSelected(true);
-        rankTestCombo.setSelectedItem(paParams.getDefault_signature_rankTest());
+        rankTestCombo.setSelectedItem(FilterType.MANN_WHIT);
+        rankTestTextField.setValue(paParams.getRankTestParameters().getValue(FilterType.MANN_WHIT));
     }
     
     
@@ -339,7 +331,14 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
         
 		updateUniverseSize();
         
-        rankTestCombo.setSelectedItem(paParams.getDefault_signature_rankTest());
+		FilterParameters filterParams = paParams.getRankTestParameters();
+		if(filterParams.getType() == FilterType.NO_FILTER) {
+			filterParams.setType(FilterType.MANN_WHIT);
+		}
+		
+        rankTestCombo.setSelectedItem(filterParams.getType());
+        double value = filterParams.getValue(filterParams.getType());
+		rankTestTextField.setValue(value);
     }
     
     

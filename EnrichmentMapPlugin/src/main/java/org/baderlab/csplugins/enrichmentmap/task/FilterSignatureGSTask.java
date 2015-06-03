@@ -9,6 +9,7 @@ import java.util.Set;
 import javax.swing.DefaultListModel;
 
 import org.apache.commons.math3.stat.inference.MannWhitneyUTest;
+import org.baderlab.csplugins.enrichmentmap.FilterParameters.FilterType;
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
@@ -62,7 +63,7 @@ public class FilterSignatureGSTask extends AbstractTask{
 	            if(!selectedSignatureSetNames.contains(signatureGeneset)) {
 	            	boolean matchfound = false;
 	            	
-	                if(paParams.isFilter()) {
+	                if(paParams.getFilterParameters().getType() != FilterType.NO_FILTER) {
 	                	if(filterMetric == null) {
 		            		filterMetric = createFilterMetric(paParams);
 		                 	filterMetric.init();
@@ -105,54 +106,53 @@ public class FilterSignatureGSTask extends AbstractTask{
 	
 	
 	private FilterMetric createFilterMetric(PostAnalysisParameters paParams) {
-		switch(paParams.getSignature_filterMetric()) {
-			default:
+		FilterType type = paParams.getFilterParameters().getType();
+		switch(type) {
 			case NUMBER:    return new NumberFilterMetric();
 			case PERCENT:   return new PercentFilterMetric();
 			case SPECIFIC:  return new SpecificFilterMetric();
 			case HYPERGEOM: return new HypergeomFilterMetric();
 			case MANN_WHIT: return new MannWhitFilterMetric();
+			default:
+				throw new RuntimeException("Unsupported FilterType: " + type);
 		}
 	}
 	
 	
-	private interface FilterMetric {
-		void init();
-		boolean match(int original_size, Set<Integer> mapset, Set<Integer> paset);
+	private abstract class FilterMetric {
+		void init() {}
+		/**
+		 * @param original_size 
+		 * @param mapset
+		 * @param paset
+		 * @return
+		 */
+		abstract boolean match(int original_size, Set<Integer> mapset, Set<Integer> paset);
 	}
 	
 	
-	private class PercentFilterMetric implements FilterMetric {
-		public void init() { }
-		
+	private class PercentFilterMetric extends FilterMetric {
 		public boolean match(int original_size, Set<Integer> mapset, Set<Integer> paset) {
 			Double relative_per =  mapset.size()/(double)original_size;
-            return relative_per >= (Double)(paParams.getFilterValue()/100.0);
+            return relative_per >= (Double)(paParams.getFilterParameters().getValue(FilterType.PERCENT)/100.0);
 		}
 	}
 	
+	private class NumberFilterMetric extends FilterMetric {
+		public boolean match(int original_size, Set<Integer> mapset, Set<Integer> paset) {
+            return mapset.size() >= paParams.getFilterParameters().getValue(FilterType.NUMBER);
+		}
+	}
 	
-	private class NumberFilterMetric implements FilterMetric {
-		public void init() { }
-
+	private class SpecificFilterMetric extends FilterMetric {
 		public boolean match(int original_size, Set<Integer> mapset, Set<Integer> paset) {
 			Double relative_per =  mapset.size()/((Integer)(paset.size())).doubleValue();
-            return relative_per >= (Double)(paParams.getFilterValue()/100.0);
+            return relative_per >= (Double)(paParams.getFilterParameters().getValue(FilterType.SPECIFIC)/100.0);
 		}
 	}
 	
 	
-	private class SpecificFilterMetric implements FilterMetric {
-		public void init() { }
-		
-		public boolean match(int original_size, Set<Integer> mapset, Set<Integer> paset) {
-			Double relative_per =  mapset.size()/((Integer)(paset.size())).doubleValue();
-            return relative_per >= (Double)(paParams.getFilterValue()/100.0);
-		}
-	}
-	
-	
-	private class HypergeomFilterMetric implements FilterMetric {
+	private class HypergeomFilterMetric extends FilterMetric {
 
         int N;
         
@@ -178,12 +178,12 @@ public class FilterSignatureGSTask extends AbstractTask{
             	return false;
             }
             
-            return hyperPval <= paParams.getSignature_Hypergeom_Cutoff();
+            return hyperPval <= paParams.getFilterParameters().getValue(FilterType.HYPERGEOM);
 		}
 	}
 	
 	
-	private class MannWhitFilterMetric implements FilterMetric {
+	private class MannWhitFilterMetric extends FilterMetric {
 
 		private Ranking ranks;
         
@@ -211,7 +211,7 @@ public class FilterSignatureGSTask extends AbstractTask{
                 double[] scores = ranks.getScores();
                 MannWhitneyUTest mann_whit = new MannWhitneyUTest();
 				double mannPval = mann_whit.mannWhitneyUTest(overlap_gene_scores, scores);
-            	if (mannPval <= paParams.getSignature_Mann_Whit_Cutoff()) {
+            	if (mannPval <= paParams.getFilterParameters().getValue(FilterType.MANN_WHIT)) {
                     return true;
             	}
             }

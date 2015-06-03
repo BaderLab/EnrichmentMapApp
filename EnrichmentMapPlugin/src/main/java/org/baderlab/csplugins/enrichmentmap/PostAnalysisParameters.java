@@ -49,53 +49,14 @@ import javax.swing.DefaultListModel;
 
 import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
 
-/**
- * @author revilo
- * <p>
- * Date   Jul 9, 2009<br>
- * Time   6:01:53 PM<br>
- *
- */
 public class PostAnalysisParameters {
     
     // Post Analysis Type:
     private boolean isSignatureDiscovery = false;
     private boolean isKnownSignature = true;
 
-    // Disease Signature Constants
-    /**
-     * Enum for Signature-Hub cut-off metric:
-     */
-    public enum CutoffMetric { 
-    	ABS_NUMBER("Number of Common Genes"), 
-    	JACCARD("Jaccard Coefficient"), 
-    	OVERLAP("Overlap Coefficient"), 
-    	DIR_OVERLAP("Directed Overlap");
-    	
-    	private final String display;
-    	CutoffMetric(String display) { this.display = display; }
-    	public String toString() { return display; }
-    }
-
-    //Gene Set Filtering Constants
-    /**
-     * Enum for Signature geneset filtering
-     * Hypergeometric Test = 0
-     * Percent overlap (percent of Enrichment Map geneset)  = 1
-     * Number in overlap = 2
-     * Percent overlap (percent of Signature geneset) = 3
-     */
-    public enum FilterMetric { 
-    	HYPERGEOM("Hypergeometric Test"), 
-    	MANN_WHIT("Mann-Whitney"), 
-    	PERCENT("Overlap X percent of EM gs"), 
-    	NUMBER("Overlap has at least X genes"), 
-    	SPECIFIC("Overlap X percent of Signature gs");
-    	
-    	public final String display;
-    	FilterMetric(String display) { this.display = display; }
-    	public String toString() { return display; }
-    }
+    private FilterParameters filterParameters = new FilterParameters();
+    private FilterParameters rankTestParameters = new FilterParameters();
     
     final public static String SIGNATURE_INTERACTION_TYPE = "sig";
     final public static String SIGNATURE_INTERACTION_TYPE_SET1 = "sig_set1";
@@ -104,24 +65,6 @@ public class PostAnalysisParameters {
     
     // Disease Signature Parameters:
     private String signatureGMTFileName;
-    
-    private int    signature_absNumber_Cutoff;
-    private double signature_Jaccard_Cutoff;
-    private double signature_Overlap_Cutoff;
-    private double signature_DirOverlap_Cutoff;
-    private double signature_Hypergeom_Cutoff;   
-    private double signature_Mann_Whit_Cutoff;
-
-    private CutoffMetric signature_CutoffMetric;
-    
-    // Disease Signature default Values:
-    private int    default_signature_absNumber_Cutoff = 5;
-    private double default_signature_Jaccard_Cutoff   = 0.125;  
-    private double default_signature_Overlap_Cutoff   = 0.25;  
-    private double default_signature_DirOverlap_Cutoff= 0.25;  
-    private double default_signature_Hypergeom_Cutoff = 0.05;
-    
-    private CutoffMetric default_signature_CutoffMetric = CutoffMetric.ABS_NUMBER;
     
     // Disease Signature Data Structures:
     private SetOfGeneSets signatureGenesets;
@@ -132,18 +75,6 @@ public class PostAnalysisParameters {
     
     // Disease Signature State variables:
     private double currentNodePlacementY_Offset;
-
-    //Disease Signature filter
-    private boolean filter = false;
-    private int filterValue;
-    private int default_filter_value = 50;
-    private FilterMetric default_signature_filterMetric = FilterMetric.HYPERGEOM;
-    private FilterMetric signature_filterMetric;
-    
-    //Disease Signature rank test
-    private FilterMetric default_signature_rankTest = FilterMetric.MANN_WHIT;
-    private FilterMetric signature_rankTest = default_signature_rankTest;
-    private double default_signature_Mann_Whit_Cutoff = 0.05;
     
     // Rank file
     private String signature_rankFile;
@@ -165,13 +96,6 @@ public class PostAnalysisParameters {
     public PostAnalysisParameters() {
         // Disease Signature Parameters:
         this.signatureGMTFileName       = "";
-        this.signature_absNumber_Cutoff = default_signature_absNumber_Cutoff;
-        this.signature_Jaccard_Cutoff   = default_signature_Jaccard_Cutoff;
-        this.signature_Overlap_Cutoff   = default_signature_Overlap_Cutoff;
-        this.signature_DirOverlap_Cutoff= default_signature_DirOverlap_Cutoff;
-        this.signature_Hypergeom_Cutoff = default_signature_Hypergeom_Cutoff;
-        this.signature_CutoffMetric     = default_signature_CutoffMetric;
-        this.signature_Mann_Whit_Cutoff = default_signature_Mann_Whit_Cutoff;
         
         // Disease Signature Data Structures:
         this.signatureGenesets         = new SetOfGeneSets();
@@ -180,20 +104,14 @@ public class PostAnalysisParameters {
         
         // Disease Signature State variables:
         this.currentNodePlacementY_Offset = 0.0;
-
-        //set the default filter
-        this.filterValue = default_filter_value;
-
-        this.signature_filterMetric = default_signature_filterMetric;
     }
     
 
     /**
      * copies all attributes from another instance of PostAnalysisParameters
-     * 
-     * @param source  the original instance of PostAnalysisParameters
      */
-    public void copyFrom(PostAnalysisParameters source) {
+    public PostAnalysisParameters(PostAnalysisParameters source) {
+    	this();
         // Post Analysis Type:
         this.isSignatureDiscovery = source.isSignatureDiscovery();
         this.isKnownSignature = source.isKnownSignature();
@@ -203,14 +121,6 @@ public class PostAnalysisParameters {
 
         // Disease Signature Parameters:
         this.signatureGMTFileName       = source.getSignatureGMTFileName();
-        this.signature_absNumber_Cutoff = source.getSignature_absNumber_Cutoff();
-        this.signature_Jaccard_Cutoff   = source.getSignature_Jaccard_Cutoff();
-        this.signature_Overlap_Cutoff   = source.getSignature_Overlap_Cutoff();
-        this.signature_DirOverlap_Cutoff= source.getSignature_DirOverlap_Cutoff();
-        this.signature_Hypergeom_Cutoff = source.getSignature_Hypergeom_Cutoff();
-        this.signature_Mann_Whit_Cutoff = source.getSignature_Mann_Whit_Cutoff();
-        this.signature_CutoffMetric     = source.getSignature_CutoffMetric();
-        this.signature_rankTest = source.getSignature_rankTest();
         this.signature_dataSet = source.getSignature_dataSet();
 
         // Disease Signature Data Structures:
@@ -221,8 +131,10 @@ public class PostAnalysisParameters {
         // Disease Signature State variables:
         this.currentNodePlacementY_Offset = source.getCurrentNodePlacementY_Offset();
 
-        this.filterValue = source.getFilterValue();
         this.attributePrefix = source.getAttributePrefix();
+        
+        this.filterParameters = new FilterParameters(source.getFilterParameters());
+        this.rankTestParameters = new FilterParameters(source.getRankTestParameters());
     }
     
     /** 
@@ -233,36 +145,22 @@ public class PostAnalysisParameters {
      */
     public String checkMinimalRequirements() {
         StringBuilder errors = new StringBuilder();
-        
         errors.append(checkGMTfiles());
         
         if(selectedSignatureSetNames.isEmpty())
         	errors.append("No Signature Genesets selected \n");
         
-        switch(signature_CutoffMetric) {
-        	case ABS_NUMBER:
-	        	if(signature_absNumber_Cutoff <= 0)
-	        		errors.append("Number of Genes Cutoff must be a positive, non-zero integer \n");
-	        	break;
-        	case OVERLAP:
-        		if(signature_Overlap_Cutoff < 0.0 || signature_Overlap_Cutoff > 1.0)
-                	errors.append("Overlap Cutoff must be a decimal Number between 0.0 and 1.0 \n");
-        		break;
-        	case JACCARD:
-        		if(signature_Jaccard_Cutoff < 0.0 || signature_Jaccard_Cutoff > 1.0)
-                	errors.append("Jaccard Cutoff must be a decimal Number between 0.0 and 1.0 \n");
-        		break;
-        	case DIR_OVERLAP:
-        		if(signature_DirOverlap_Cutoff < 0.0 || signature_DirOverlap_Cutoff > 1.0)
-                	errors.append("Directed Overlap Cutoff must be a decimal Number between 0.0 and 1.0 \n");
-        		break;
-        	default:
-        		errors.append("Invalid Cutoff metric \n");
-        }
-        
         return errors.toString();
     }
 
+    
+    public FilterParameters getFilterParameters() {
+    	return filterParameters;
+    }
+    
+    public FilterParameters getRankTestParameters() {
+    	return rankTestParameters;
+    }
     
     /**
      * Checks if SignatureGMTFileName is provided and if the file can be read.
@@ -296,90 +194,6 @@ public class PostAnalysisParameters {
     }
 
     /**
-     * @param signature_absNumber_Cutoff the signature_absNumber_Cutoff to set
-     */
-    public void setSignature_absNumber_Cutoff(int signature_absNumber_Cutoff) {
-        this.signature_absNumber_Cutoff = signature_absNumber_Cutoff;
-    }
-
-    /**
-     * @return the signature_absNumber_Cutoff
-     */
-    public int getSignature_absNumber_Cutoff() {
-        return signature_absNumber_Cutoff;
-    }
-
-    /**
-     * @param signature_Jaccard_Cutoff the signature_Jaccard_Cutoff to set
-     */
-    public void setSignature_Jaccard_Cutoff(double signature_Jaccard_Cutoff) {
-        this.signature_Jaccard_Cutoff = signature_Jaccard_Cutoff;
-    }
-
-    /**
-     * @return the signature_Jaccard_Cutoff
-     */
-    public double getSignature_Jaccard_Cutoff() {
-        return signature_Jaccard_Cutoff;
-    }
-
-    /**
-     * @param signature_Overlap_Cutoff the signature_Overlap_Cutoff to set
-     */
-    public void setSignature_Overlap_Cutoff(double signature_Overlap_Cutoff) {
-        this.signature_Overlap_Cutoff = signature_Overlap_Cutoff;
-    }
-
-    /**
-     * @return the signature_Overlap_Cutoff
-     */
-    public double getSignature_Overlap_Cutoff() {
-        return signature_Overlap_Cutoff;
-    }
-
-    /**
-     * @param signature_DirOverlap_Cutoff the signature_DirOverlap_Cutoff to set
-     */
-    public void setSignature_DirOverlap_Cutoff(double signature_DirOverlap_Cutoff) {
-        this.signature_DirOverlap_Cutoff = signature_DirOverlap_Cutoff;
-    }
-
-    /**
-     * @return the signature_DirOverlap_Cutoff
-     */
-    public double getSignature_DirOverlap_Cutoff() {
-        return signature_DirOverlap_Cutoff;
-    }
-
-    /**
-     * @param signature_Hypergeom_Cutoff the signature_Hypergeom_Cutoff to set
-     */
-    public void setSignature_Hypergeom_Cutoff(double signature_Hypergeom_Cutoff) {
-        this.signature_Hypergeom_Cutoff = signature_Hypergeom_Cutoff;
-    }
-
-    /**
-     * @return the signature_Hypergeom_Cutoff
-     */
-    public double getSignature_Hypergeom_Cutoff() {
-        return signature_Hypergeom_Cutoff;
-    }
-
-    /**
-     * @param signature_CutoffMetric the signature_CutoffMetric to set
-     */
-    public void setSignature_CutoffMetric(CutoffMetric signature_CutoffMetric) {
-        this.signature_CutoffMetric = signature_CutoffMetric;
-    }
-
-    /**
-     * @return the signature_CutoffMetric
-     */
-    public CutoffMetric getSignature_CutoffMetric() {
-        return signature_CutoffMetric;
-    }
-
-    /**
      * Set post-analysis type (Signature Discovery)
      * @param boolean isSignatureDiscovery
      * @return null 
@@ -393,94 +207,6 @@ public class PostAnalysisParameters {
     	}
     }
 
-    /**
-     * @param defaultSignatureAbsNumberCutoff the default_signature_absNumber_Cutoff to set
-     */
-    public void setDefault_signature_absNumber_Cutoff(
-            int defaultSignatureAbsNumberCutoff) {
-        default_signature_absNumber_Cutoff = defaultSignatureAbsNumberCutoff;
-    }
-
-    /**
-     * @return the default_signature_absNumber_Cutoff
-     */
-    public int getDefault_signature_absNumber_Cutoff() {
-        return default_signature_absNumber_Cutoff;
-    }
-
-    /**
-     * @param defaultSignatureJaccardCutoff the default_signature_Jaccard_Cutoff to set
-     */
-    public void setDefault_signature_Jaccard_Cutoff(
-            double defaultSignatureJaccardCutoff) {
-        default_signature_Jaccard_Cutoff = defaultSignatureJaccardCutoff;
-    }
-
-    /**
-     * @return the default_signature_Jaccard_Cutoff
-     */
-    public double getDefault_signature_Jaccard_Cutoff() {
-        return default_signature_Jaccard_Cutoff;
-    }
-
-    /**
-     * @param defaultSignatureOverlapCutoff the default_signature_Overlap_Cutoff to set
-     */
-    public void setDefault_signature_Overlap_Cutoff(
-            double defaultSignatureOverlapCutoff) {
-        default_signature_Overlap_Cutoff = defaultSignatureOverlapCutoff;
-    }
-
-    /**
-     * @return the default_signature_Overlap_Cutoff
-     */
-    public double getDefault_signature_Overlap_Cutoff() {
-        return default_signature_Overlap_Cutoff;
-    }
-
-    /**
-     * @param defaultSignatureHypergeomCutoff the default_signature_Hypergeom_Cutoff to set
-     */
-    public void setDefault_signature_Hypergeom_Cutoff(
-            double defaultSignatureHypergeomCutoff) {
-        default_signature_Hypergeom_Cutoff = defaultSignatureHypergeomCutoff;
-    }
-
-    /**
-     * @return the default_signature_Hypergeom_Cutoff
-     */
-    public double getDefault_signature_Hypergeom_Cutoff() {
-        return default_signature_Hypergeom_Cutoff;
-    }
-
-    /**
-     * @param default_signature_DirOverlap_Cutoff the default_signature_DirOverlap_Cutoff to set
-     */
-    public void setDefault_signature_DirOverlap_Cutoff(
-            double default_signature_DirOverlap_Cutoff) {
-        this.default_signature_DirOverlap_Cutoff = default_signature_DirOverlap_Cutoff;
-    }
-
-    /**
-     * @return the default_signature_DirOverlap_Cutoff
-     */
-    public double getDefault_signature_DirOverlap_Cutoff() {
-        return default_signature_DirOverlap_Cutoff;
-    }
-
-    /**
-     * @param defaultSignatureCutoffMetric the default_signature_CutoffMetric to set
-     */
-    public void setDefault_signature_CutoffMetric(CutoffMetric defaultSignatureCutoffMetric) {
-        default_signature_CutoffMetric = defaultSignatureCutoffMetric;
-    }
-
-    /**
-     * @return the default_signature_CutoffMetric
-     */
-    public CutoffMetric getDefault_signature_CutoffMetric() {
-        return default_signature_CutoffMetric;
-    }
 
     /**
      * True iff Signature Discovery panel has been requested
@@ -533,62 +259,6 @@ public class PostAnalysisParameters {
         return currentNodePlacementY_Offset;
     }
 
-    public boolean isFilter() {
-        return filter;
-    }
-
-    public void setFilter(boolean filter) {
-        this.filter = filter;
-    }
-
-    public int getFilterValue() {
-        return filterValue;
-    }
-
-    public void setFilterValue(int filterValue) {
-        this.filterValue = filterValue;
-    }
-
-    public FilterMetric getSignature_filterMetric() {
-        return signature_filterMetric;
-    }
-
-    public void setSignature_filterMetric(FilterMetric signature_filterMetric) {
-        this.signature_filterMetric = signature_filterMetric;
-    }
-
-    public FilterMetric getDefault_signature_filterMetric() {
-        return default_signature_filterMetric;
-    }
-
-	/**
-	 * @return the default_signature_Mann_Whit_Cutoff
-	 */
-	public double getDefault_signature_Mann_Whit_Cutoff() {
-		return default_signature_Mann_Whit_Cutoff;
-	}
-
-	/**
-	 * @param default_signature_Mann_Whit_Cutoff the default_signature_Mann_Whit_Cutoff to set
-	 */
-	public void setDefault_signature_Mann_Whit_Cutoff(
-			double default_signature_Mann_Whit_Cutoff) {
-		this.default_signature_Mann_Whit_Cutoff = default_signature_Mann_Whit_Cutoff;
-	}
-
-	/**
-	 * @return the signature_Mann_Whit_Cutoff
-	 */
-	public double getSignature_Mann_Whit_Cutoff() {
-		return signature_Mann_Whit_Cutoff;
-	}
-
-	/**
-	 * @param signature_Mann_Whit_Cutoff the signature_Mann_Whit_Cutoff to set
-	 */
-	public void setSignature_Mann_Whit_Cutoff(double signature_Mann_Whit_Cutoff) {
-		this.signature_Mann_Whit_Cutoff = signature_Mann_Whit_Cutoff;
-	}
 
 	/**
 	 * Get signature rank file
@@ -642,34 +312,6 @@ public class PostAnalysisParameters {
 	 */
 	public void setKnownSignature(boolean isKnownSignature) {
 		this.isKnownSignature = isKnownSignature;
-	}
-
-	/**
-	 * @return the signature_rankTest
-	 */
-	public FilterMetric getSignature_rankTest() {
-		return signature_rankTest;
-	}
-
-	/**
-	 * @param signature_rankTest the signature_rankTest to set
-	 */
-	public void setSignature_rankTest(FilterMetric signature_rankTest) {
-		this.signature_rankTest = signature_rankTest;
-	}
-
-	/**
-	 * @return the default_signature_rankTest
-	 */
-	public FilterMetric getDefault_signature_rankTest() {
-		return default_signature_rankTest;
-	}
-
-	/**
-	 * @param default_signature_rankTest the default_signature_rankTest to set
-	 */
-	public void setDefault_signature_rankTest(FilterMetric default_signature_rankTest) {
-		this.default_signature_rankTest = default_signature_rankTest;
 	}
 
 	/**

@@ -11,9 +11,9 @@ import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
+import org.baderlab.csplugins.enrichmentmap.FilterParameters.FilterType;
 import org.baderlab.csplugins.enrichmentmap.LogSilenceRule;
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
-import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters.FilterMetric;
 import org.baderlab.csplugins.enrichmentmap.SerialTestTaskManager;
 import org.baderlab.csplugins.enrichmentmap.StreamUtil;
 import org.baderlab.csplugins.enrichmentmap.WidthFunction;
@@ -231,11 +231,11 @@ public class EnrichmentMapBuildMapTaskTest {
 		PostAnalysisParameters paParams = new PostAnalysisParameters();
     	paParams.setSignature_dataSet(EnrichmentMap.DATASET1);
     	paParams.setSignature_rankFile(EnrichmentMap.DATASET1);
-    	paParams.setFilter(false);
 		paParams.setKnownSignature(true);
 		paParams.setSignatureHub(false);
 		paParams.setUniverseSize(11445);
 		paParams.setSignatureGMTFileName(PATH + "PA_top8_middle8_bottom8.gmt");
+		paParams.getRankTestParameters().setType(FilterType.MANN_WHIT);
 		
 		runPostAnalysis(paParams);
 		// Assert that post-analysis created the new nodes correctly
@@ -250,12 +250,12 @@ public class EnrichmentMapBuildMapTaskTest {
 	   	CyEdge edge1 = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig) TOP8_PLUS100");
 	   	assertNotNull(edge1);
 	   	assertEquals(1.40E-6, emNetwork.getRow(edge1).get("EM1_Overlap_Mann_Whit_pVal", Double.class), 0.001);
-	   	assertEquals(FilterMetric.MANN_WHIT.toString(), emNetwork.getRow(edge1).get("EM1_Overlap_cutoff", String.class));
+	   	assertEquals(FilterType.MANN_WHIT.toString(), emNetwork.getRow(edge1).get("EM1_Overlap_cutoff", String.class));
 	   	
 	   	CyEdge edge2 = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig) BOTTOM8_PLUS100");
 	   	assertNotNull(edge2);
 	   	assertEquals(1.40E-6, emNetwork.getRow(edge2).get("EM1_Overlap_Mann_Whit_pVal", Double.class), 0.001);
-	   	assertEquals(FilterMetric.MANN_WHIT.toString(), emNetwork.getRow(edge2).get("EM1_Overlap_cutoff", String.class));
+	   	assertEquals(FilterType.MANN_WHIT.toString(), emNetwork.getRow(edge2).get("EM1_Overlap_cutoff", String.class));
 	}
 	
 	
@@ -269,14 +269,13 @@ public class EnrichmentMapBuildMapTaskTest {
 		PostAnalysisParameters paParams = new PostAnalysisParameters();
     	paParams.setSignature_dataSet(EnrichmentMap.DATASET1);
     	paParams.setSignature_rankFile(EnrichmentMap.DATASET1);
-    	paParams.setFilter(false);
 		paParams.setKnownSignature(true);
 		paParams.setSignatureHub(false);
 		paParams.setUniverseSize(11445);
-		paParams.setSignature_Hypergeom_Cutoff(0.25);
 		paParams.setSignatureGMTFileName(PATH + "PA_top8_middle8_bottom8.gmt");
 		
-		paParams.setSignature_rankTest(FilterMetric.HYPERGEOM);
+		paParams.getRankTestParameters().setType(FilterType.HYPERGEOM);
+		paParams.getRankTestParameters().setValue(FilterType.HYPERGEOM, 0.25);
 		
 		runPostAnalysis(paParams);
 		// Assert that post-analysis created the new nodes correctly
@@ -292,25 +291,25 @@ public class EnrichmentMapBuildMapTaskTest {
 	   	assertNotNull(edge1);
 	   	assertEquals(1.40E-6,  emNetwork.getRow(edge1).get("EM1_Overlap_Mann_Whit_pVal", Double.class), 0.001);
 	   	assertEquals(4.21E-11, emNetwork.getRow(edge1).get("EM1_Overlap_Hypergeom_pVal", Double.class), 0.001);
-	   	assertEquals(FilterMetric.HYPERGEOM.toString(), emNetwork.getRow(edge1).get("EM1_Overlap_cutoff", String.class));
+	   	assertEquals(FilterType.HYPERGEOM.toString(), emNetwork.getRow(edge1).get("EM1_Overlap_cutoff", String.class));
 	   	
 	   	CyEdge edge2 = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig) BOTTOM8_PLUS100");
 	   	assertNotNull(edge2);
 	   	assertEquals(1.40E-6,  emNetwork.getRow(edge2).get("EM1_Overlap_Mann_Whit_pVal", Double.class), 0.001);
 	   	assertEquals(4.21E-11, emNetwork.getRow(edge2).get("EM1_Overlap_Hypergeom_pVal", Double.class), 0.001);
-	   	assertEquals(FilterMetric.HYPERGEOM.toString(), emNetwork.getRow(edge2).get("EM1_Overlap_cutoff", String.class));
+	   	assertEquals(FilterType.HYPERGEOM.toString(), emNetwork.getRow(edge2).get("EM1_Overlap_cutoff", String.class));
 	   	
 	   	CyEdge edge3 = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig) MIDDLE8_PLUS100");
 	   	assertNotNull(edge3);
 		assertNull(emNetwork.getRow(edge3).get("EM1_Overlap_Mann_Whit_pVal", Double.class));
 	   	assertEquals(4.21E-11, emNetwork.getRow(edge3).get("EM1_Overlap_Hypergeom_pVal", Double.class), 0.001);
-	   	assertEquals(FilterMetric.HYPERGEOM.toString(), emNetwork.getRow(edge3).get("EM1_Overlap_cutoff", String.class));
+	   	assertEquals(FilterType.HYPERGEOM.toString(), emNetwork.getRow(edge3).get("EM1_Overlap_cutoff", String.class));
 	   	
 	   	CyEdge edge4 = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig) TOP1_PLUS100");
 	   	assertNotNull(edge4);
 	   	assertNull(emNetwork.getRow(edge4).get("EM1_Overlap_Mann_Whit_pVal", Double.class));
 	   	assertEquals(0.19, emNetwork.getRow(edge4).get("EM1_Overlap_Hypergeom_pVal", Double.class), 0.01);
-	   	assertEquals(FilterMetric.HYPERGEOM.toString(), emNetwork.getRow(edge4).get("EM1_Overlap_cutoff", String.class));
+	   	assertEquals(FilterType.HYPERGEOM.toString(), emNetwork.getRow(edge4).get("EM1_Overlap_cutoff", String.class));
 	}
 
 	

@@ -1,6 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap;
 
-import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters.FilterMetric;
+import org.baderlab.csplugins.enrichmentmap.FilterParameters.FilterType;
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisVisualStyle.EdgeWidthParams;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.cytoscape.equations.AbstractFunction;
@@ -15,6 +15,7 @@ import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.mappings.BoundaryRangeValues;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 
+@SuppressWarnings("unchecked")
 public class WidthFunction extends AbstractFunction {
 	
 	public static final String NAME = "EM_width";
@@ -76,14 +77,14 @@ public class WidthFunction extends AbstractFunction {
 		
 		if(isSignature(interaction)) {
 			String cutoffType = row.get(prefix + EnrichmentMapVisualStyle.CUTOFF_TYPE, String.class);
-			FilterMetric filterMetric = fromString(cutoffType);
-			if(filterMetric == null) {
+			FilterType filterType = fromString(cutoffType);
+			if(filterType == null) {
 				return 1.0;
 			}
 			
-			if(filterMetric == FilterMetric.HYPERGEOM || filterMetric == FilterMetric.MANN_WHIT) {
+			if(filterType == FilterType.HYPERGEOM || filterType == FilterType.MANN_WHIT) {
 				Double pvalue, cutoff;
-				if(filterMetric == FilterMetric.HYPERGEOM) {
+				if(filterType == FilterType.HYPERGEOM) {
 					pvalue = row.get(prefix + EnrichmentMapVisualStyle.HYPERGEOM_PVALUE, Double.class);
 					cutoff = row.get(prefix + EnrichmentMapVisualStyle.HYPERGEOM_CUTOFF, Double.class);
 				}
@@ -125,8 +126,8 @@ public class WidthFunction extends AbstractFunction {
 	}
 	
 	
-	private static FilterMetric fromString(String val) {
-		for(FilterMetric metric : FilterMetric.values()) {
+	private static FilterType fromString(String val) {
+		for(FilterType metric : FilterType.values()) {
 			if(metric.toString().equals(val)) {
 				return metric;
 			}
