@@ -5,150 +5,31 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.FilterParameters.FilterType;
-import org.baderlab.csplugins.enrichmentmap.LogSilenceRule;
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
-import org.baderlab.csplugins.enrichmentmap.SerialTestTaskManager;
-import org.baderlab.csplugins.enrichmentmap.StreamUtil;
 import org.baderlab.csplugins.enrichmentmap.WidthFunction;
-import org.baderlab.csplugins.enrichmentmap.actions.LoadSignatureSetsActionListener;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.view.PostAnalysisInputPanel;
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTableFactory;
-import org.cytoscape.model.CyTableManager;
-import org.cytoscape.model.NetworkTestSupport;
-import org.cytoscape.model.TableTestSupport;
-import org.cytoscape.session.CySession;
-import org.cytoscape.session.CySessionManager;
-import org.cytoscape.task.edit.MapTableToNetworkTablesTaskFactory;
-import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewFactory;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.model.View;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
-import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.view.vizmap.VisualStyleFactory;
-import org.cytoscape.work.FinishStatus;
-import org.cytoscape.work.ObservableTask;
-import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.TaskObserver;
-import org.cytoscape.work.swing.DialogTaskManager;
-import org.junit.Before;
 import org.junit.FixMethodOrder;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runners.MethodSorters;
-import org.mockito.Matchers;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class EnrichmentMapBuildMapTaskTest {
-	
-	@Rule public TestRule logSilenceRule = new LogSilenceRule();
+public class PostAnalysisTaskTest extends BaseNetworkTest {
 	
 	private static final String PATH = "src/test/resources/org/baderlab/csplugins/enrichmentmap/task/EMandPA/";
 	
-	private StreamUtil streamUtil = new StreamUtil();
-	
-	private NetworkTestSupport networkTestSupport = new NetworkTestSupport();
-	private TableTestSupport tableTestSupport = new TableTestSupport();
-	
-    private CyNetworkManager networkManager = networkTestSupport.getNetworkManager();
-    private CyNetworkFactory networkFactory = networkTestSupport.getNetworkFactory();
-    private CyTableFactory tableFactory = tableTestSupport.getTableFactory();
-    
-    @Mock private CyApplicationManager applicationManager;
-	@Mock private CyTableManager tableManager;
-	@Mock private CySessionManager sessionManager;
-	@Mock private CyNetworkViewManager networkViewManager;
-	@Mock private CyNetworkViewFactory networkViewFactory;
-	@Mock private VisualMappingManager visualMappingManager;
-	@Mock private VisualStyleFactory visualStyleFactory;
-	@Mock private VisualMappingFunctionFactory vmfFactoryContinuous;
-	@Mock private VisualMappingFunctionFactory vmfFactoryDiscrete;
-	@Mock private VisualMappingFunctionFactory vmfFactoryPassthrough;
-	@Mock private DialogTaskManager dialog;
-	@Mock private CyLayoutAlgorithmManager layoutManager;
-	@Mock private MapTableToNetworkTablesTaskFactory mapTableToNetworkTable;
-    @Mock private CyEventHelper eventHelper;
-    @Mock private CySwingApplication swingApplication;
-    
-	
 	private static CyNetwork emNetwork;
-	
-	
-	@Before
-	public void before() {
-		MockitoAnnotations.initMocks(this);
-		CySession emptySession = new CySession.Builder().build();
-		when(sessionManager.getCurrentSession()).thenReturn(emptySession);
-	}
-	
-	
-	private Map<String,CyNode> getNodes(CyNetwork network) {
-		Map<String,CyNode> nodes = new HashMap<>();
-	   	for(CyNode node : network.getNodeList()) {
-	   		nodes.put(network.getRow(node).get("name", String.class), node);
-	   	}
-	   	return nodes;
-	}
-	
-	private Map<String,CyEdge> getEdges(CyNetwork network) {
-		Map<String,CyEdge> edges = new HashMap<>();
-	   	for(CyEdge edge : network.getEdgeList()) {
-	   		edges.put(network.getRow(edge).get("name", String.class), edge);
-	   	}
-	   	return edges;
-	}
-	
-	
-	private void buildEnrichmentMap(EnrichmentMapParameters emParams) {
-		EnrichmentMap map = new EnrichmentMap(emParams);
-	   	EnrichmentMapBuildMapTaskFactory buildmap = new EnrichmentMapBuildMapTaskFactory(map,  
-	        			applicationManager, networkManager, networkViewManager,
-	        			networkViewFactory, networkFactory, tableFactory,
-	        			tableManager, visualMappingManager, visualStyleFactory,
-	        			vmfFactoryContinuous, vmfFactoryDiscrete, vmfFactoryPassthrough, 
-	        			dialog, streamUtil, layoutManager, mapTableToNetworkTable);
-	    
-	   	TaskIterator taskIterator = buildmap.createTaskIterator();
-	   	
-	    // make sure the task iterator completes
-	    TaskObserver observer = new TaskObserver() {
-			public void taskFinished(ObservableTask task) { }
-			public void allFinished(FinishStatus finishStatus) {
-				if(finishStatus == null)
-					fail();
-				if(finishStatus.getType() != FinishStatus.Type.SUCCEEDED)
-					throw new AssertionError("TaskIterator Failed", finishStatus.getException());
-			}
-		};
-
-	   	SerialTestTaskManager testTaskManager = new SerialTestTaskManager();
-	   	testTaskManager.ignoreTask(VisualizeEnrichmentMapTask.class);
-	   	testTaskManager.execute(taskIterator, observer);
-	}
 	
 	
 	@Test
@@ -190,38 +71,6 @@ public class EnrichmentMapBuildMapTaskTest {
 	}
 	
 	
-	
-	private void runPostAnalysis(PostAnalysisParameters paParams) throws Exception {
-		// Set up mocks
-		when(applicationManager.getCurrentNetwork()).thenReturn(emNetwork);
-		CyNetworkView networkViewMock = mock(CyNetworkView.class);
-		when(applicationManager.getCurrentNetworkView()).thenReturn(networkViewMock);
-		@SuppressWarnings("unchecked")
-		View<CyNode> nodeViewMock = mock(View.class);
-		when(networkViewMock.getNodeView(Matchers.<CyNode>anyObject())).thenReturn(nodeViewMock);
-		when(nodeViewMock.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION)).thenReturn(Double.valueOf(0.0));
-		
-		EnrichmentMap map = EnrichmentMapManager.getInstance().getMap(emNetwork.getSUID());
-		assertNotNull(map);
-		
-		PostAnalysisInputPanel inputPanel = mock(PostAnalysisInputPanel.class);
-		when(inputPanel.getPaParams()).thenReturn(paParams);
-		
-		// Load the gene-sets from the file
-		SerialTestTaskManager testTaskManager = new SerialTestTaskManager();
-		LoadSignatureSetsActionListener loadSignatureSetsActionListener 
-			= new LoadSignatureSetsActionListener(inputPanel, swingApplication, applicationManager, testTaskManager, streamUtil);
-		loadSignatureSetsActionListener.setSelectAll(true);
-		loadSignatureSetsActionListener.actionPerformed(null);
-		
-		// Run post-analysis
-		BuildDiseaseSignatureTask signatureTask = new BuildDiseaseSignatureTask(map, paParams, 
-					sessionManager, streamUtil, applicationManager, 
-					eventHelper, swingApplication);
-		signatureTask.run(mock(TaskMonitor.class));
-	}
-	
-	
 	/**
 	 * Run post-analysis with the default mann-whitney test.
 	 * Uses the network that was created by the previous test method.
@@ -237,7 +86,7 @@ public class EnrichmentMapBuildMapTaskTest {
 		paParams.setSignatureGMTFileName(PATH + "PA_top8_middle8_bottom8.gmt");
 		paParams.getRankTestParameters().setType(FilterType.MANN_WHIT);
 		
-		runPostAnalysis(paParams);
+		runPostAnalysis(emNetwork, paParams);
 		// Assert that post-analysis created the new nodes correctly
 		
 		Map<String,CyNode> nodes = getNodes(emNetwork);
@@ -277,7 +126,7 @@ public class EnrichmentMapBuildMapTaskTest {
 		paParams.getRankTestParameters().setType(FilterType.HYPERGEOM);
 		paParams.getRankTestParameters().setValue(FilterType.HYPERGEOM, 0.25);
 		
-		runPostAnalysis(paParams);
+		runPostAnalysis(emNetwork, paParams);
 		// Assert that post-analysis created the new nodes correctly
 		
 		Map<String,CyNode> nodes = getNodes(emNetwork);

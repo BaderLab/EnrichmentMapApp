@@ -49,7 +49,7 @@ import org.baderlab.csplugins.enrichmentmap.model.GeneSetSimilarityTest;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSetTest;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfGenesetsTest;
 import org.baderlab.csplugins.enrichmentmap.parsers.FileReaderTest;
-import org.baderlab.csplugins.enrichmentmap.task.EnrichmentMapBuildMapTaskTest;
+import org.baderlab.csplugins.enrichmentmap.task.PostAnalysisTaskTest;
 import org.baderlab.csplugins.enrichmentmap.task.LoadBingoResultsTest;
 import org.baderlab.csplugins.enrichmentmap.task.LoadDatasetTaskTest;
 import org.baderlab.csplugins.enrichmentmap.task.LoadDavidResultTest;
@@ -78,7 +78,7 @@ import org.junit.runners.Suite;
 	LoadDavidResultTest.class,
 	LoadEdbDatasetTest.class,
 	LoadGMTFileOnlyTest.class,
-	EnrichmentMapBuildMapTaskTest.class,
+	PostAnalysisTaskTest.class,
 	
 	LinearNumberInterpolatorTest.class,
 	
