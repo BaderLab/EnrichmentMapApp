@@ -47,6 +47,7 @@ package org.baderlab.csplugins.enrichmentmap;
 
 import javax.swing.DefaultListModel;
 
+import org.baderlab.csplugins.enrichmentmap.FilterParameters.FilterType;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
 
 public class PostAnalysisParameters {
@@ -104,6 +105,9 @@ public class PostAnalysisParameters {
         
         // Disease Signature State variables:
         this.currentNodePlacementY_Offset = 0.0;
+        
+        // Default for hypergeom in filter is 0.25
+        filterParameters.setValue(FilterType.HYPERGEOM, 0.25);
     }
     
 
