@@ -45,9 +45,9 @@ public class PostAnalysisVisualStyle {
 	private final EnrichmentMapVisualStyle delegateStyle;
 	
 	// Column in edge table that holds the formula
-	private static final String EDGE_WIDTH_FORMULA_COLUMN = "Edge_width_formula";
+	public static final String EDGE_WIDTH_FORMULA_COLUMN = "Edge_width_formula";
 	// Column in network table that holds the edge parameters
-	private static final String EDGE_WIDTH_PARAMETERS_COLUMN = "EM_Edge_width_parameters";
+	public static final String EDGE_WIDTH_PARAMETERS_COLUMN = "EM_Edge_width_parameters";
 	
 	private static final Color PINK   = new Color(255,0,200);    
 	private static final Color YELLOW = new Color(255,255,0);

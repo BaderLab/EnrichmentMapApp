@@ -1,5 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap;
 
+import static org.cytoscape.work.ServiceProperties.TITLE;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -16,6 +18,7 @@ import org.baderlab.csplugins.enrichmentmap.autoannotate.action.AutoAnnotationPa
 import org.baderlab.csplugins.enrichmentmap.autoannotate.action.DisplayOptionsPanelAction;
 import org.baderlab.csplugins.enrichmentmap.commands.EnrichmentMapGSEACommandHandlerTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.task.BuildEnrichmentMapTuneableTaskFactory;
+import org.baderlab.csplugins.enrichmentmap.task.EdgeWidthTableColumnTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.view.BulkEMCreationPanel;
 import org.baderlab.csplugins.enrichmentmap.view.EnrichmentMapInputPanel;
 import org.baderlab.csplugins.enrichmentmap.view.HeatMapPanel;
@@ -46,6 +49,7 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.session.events.SessionAboutToBeSavedListener;
 import org.cytoscape.session.events.SessionLoadedListener;
+import org.cytoscape.task.TableColumnTaskFactory;
 import org.cytoscape.task.edit.MapTableToNetworkTablesTaskFactory;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.util.swing.OpenBrowser;
@@ -71,9 +75,6 @@ import org.osgi.framework.BundleContext;
 public class CyActivator extends AbstractCyActivator {
 
 	public void start(BundleContext bc) {
-		
-		//Initialize Enrichment Map parametres
-		EnrichmentMapUtils utils = new EnrichmentMapUtils("");
 		
 		//fetch Cytoscape OSGi services that EM needs
 		//main service for dealing with the cytoscape application.  (used when putting in cytopanels...)
@@ -101,6 +102,7 @@ public class CyActivator extends AbstractCyActivator {
 		CyLayoutAlgorithmManager layoutManager = getService(bc, CyLayoutAlgorithmManager.class);
 		MapTableToNetworkTablesTaskFactory mapTableToNetworkTable = getService(bc,  MapTableToNetworkTablesTaskFactory.class);
 		CyEventHelper eventHelper = getService(bc,CyEventHelper.class);
+		@SuppressWarnings("rawtypes")
 		SynchronousTaskManager syncTaskManager = getService(bc, SynchronousTaskManager.class);
 		DialogTaskManager dialogTaskManager = getService(bc, DialogTaskManager.class);
 		// Used with annotations to make Groups of nodes
@@ -108,7 +110,9 @@ public class CyActivator extends AbstractCyActivator {
 		CyGroupManager groupManager = getService(bc, CyGroupManager.class);
 		// Used to create/remove the annotations (ellipses and text labels)
 		AnnotationManager annotationManager = getService(bc, AnnotationManager.class);
+		@SuppressWarnings("unchecked")
 		AnnotationFactory<ShapeAnnotation> shapeFactory = (AnnotationFactory<ShapeAnnotation>) getService(bc, AnnotationFactory.class, "(type=ShapeAnnotation.class)");    	
+		@SuppressWarnings("unchecked")
 		AnnotationFactory<TextAnnotation> textFactory = (AnnotationFactory<TextAnnotation>) getService(bc, AnnotationFactory.class, "(type=TextAnnotation.class)");
 		CommandExecutorTaskFactory commandExecutor = getService(bc, CommandExecutorTaskFactory.class);
 		//get the service registrar so we can register new services in different classes
@@ -189,14 +193,14 @@ public class CyActivator extends AbstractCyActivator {
 		serviceProperties = new HashMap<>();
 		serviceProperties.put("inMenuBar", "true");
 		serviceProperties.put("preferredMenu", "Apps.EnrichmentMap.Post Analysis");
-		ShowEdgeWidthPanelAction edgeWidthDialogAction = new ShowEdgeWidthPanelAction(serviceProperties, cyApplicationManagerRef ,cyNetworkViewManagerRef, cySwingApplicationRef, manager, compilerServiceRef);
+		ShowEdgeWidthPanelAction edgeWidthPanelAction = new ShowEdgeWidthPanelAction(serviceProperties, cyApplicationManagerRef ,cyNetworkViewManagerRef, cySwingApplicationRef, manager, compilerServiceRef);
 		
 		//register the services
 		registerService(bc, LoadEnrichmentMapInputPanelAction, CyAction.class, new Properties());
 		registerService(bc, autoAnnotationPanelAction, CyAction.class, new Properties());
 		registerService(bc, BulkEMInputPanelAction, CyAction.class, new Properties());
 		registerService(bc, loadPostAnalysisAction, CyAction.class, new Properties());	
-		registerService(bc, edgeWidthDialogAction, CyAction.class, new Properties());
+		registerService(bc, edgeWidthPanelAction, CyAction.class, new Properties());
 		registerService(bc, aboutAction, CyAction.class,new Properties());
 		
 		//register the session save and restore
@@ -215,6 +219,13 @@ public class CyActivator extends AbstractCyActivator {
     	properties.put(ServiceProperties.COMMAND, "gseabuild");
     	properties.put(ServiceProperties.COMMAND_NAMESPACE, "enrichmentmap");
 		registerService(bc, new EnrichmentMapGSEACommandHandlerTaskFactory(sessionManager, streamUtil, cyApplicationManagerRef, cyNetworkManagerRef, cyNetworkViewManagerRef, cyNetworkViewFactoryRef, cyNetworkFactoryRef, tableFactory, tableManager, visualMappingManagerRef, visualStyleFactoryRef, continuousMappingFunctionFactoryRef, discreteMappingFunctionFactoryRef, passthroughMappingFunctionFactoryRef, layoutManager, mapTableToNetworkTable, dialogTaskManager), TaskFactory.class, properties);
+		
+		//edge table context menu
+		EdgeWidthTableColumnTaskFactory tableColumnTaskFactory = new EdgeWidthTableColumnTaskFactory(edgeWidthPanelAction);
+		Properties tableColumnTaskFactoryProps = new Properties();
+		tableColumnTaskFactoryProps.setProperty(TITLE, "Post Analysis Edge Width...");
+		tableColumnTaskFactoryProps.setProperty("tableTypes", "edge");
+		registerService(bc, tableColumnTaskFactory, TableColumnTaskFactory.class, tableColumnTaskFactoryProps);
 		
 		// register width function (used in formulas/equations in the table browser)
 		compilerServiceRef.getParser().registerFunction(widthFunction);

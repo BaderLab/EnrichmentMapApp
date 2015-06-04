@@ -33,7 +33,7 @@ public class ShowEdgeWidthPanelAction extends AbstractCyAction {
 		this.equationCompiler = equationCompiler;
 	}
 	
-	public void actionPerformed(ActionEvent event) {
+	public void actionPerformed(ActionEvent _) {
 		
 		if(PostAnalysisVisualStyle.appliesTo(applicationManager.getCurrentNetwork())) {
 			EdgeWidthDialog dialog = new EdgeWidthDialog(application, applicationManager, enrichmentMapManager, equationCompiler);
@@ -43,7 +43,7 @@ public class ShowEdgeWidthPanelAction extends AbstractCyAction {
 		}
 		else {
 			JOptionPane.showMessageDialog(application.getJFrame(), 
-				"Edge width parameters are tunable for enrichment map networks that have had post analysys run.", // MKTODO what nonsense is this
+				"Please run Post Analysis first.",
 				"EnrichmentMap Edge Width", 
 				JOptionPane.WARNING_MESSAGE);
 		}
