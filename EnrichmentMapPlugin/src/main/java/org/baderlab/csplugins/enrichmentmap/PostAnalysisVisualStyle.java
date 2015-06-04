@@ -27,6 +27,8 @@ import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
 
 public class PostAnalysisVisualStyle {
 
+	public static final String NAME = "Post_analysis_style";
+	
 	public static final double DEFAULT_WIDTH_EM_LOWER = 1.0;
 	public static final double DEFAULT_WIDTH_EM_UPPER = 5.0;
 	public static final double DEFAULT_WIDTH_PA_LESS_THAN_100 = 8.0;
@@ -34,6 +36,7 @@ public class PostAnalysisVisualStyle {
 	public static final double DEFAULT_WIDTH_PA_GREATER = 1.0;
 	
 	
+	@SuppressWarnings("unused")
 	private final VisualMappingFunctionFactory vmfFactoryContinuous;
     private final VisualMappingFunctionFactory vmfFactoryDiscrete;
     private final VisualMappingFunctionFactory vmfFactoryPassthrough;
@@ -50,7 +53,7 @@ public class PostAnalysisVisualStyle {
 	private static final Color YELLOW = new Color(255,255,0);
 	
 	
-	public PostAnalysisVisualStyle(PostAnalysisParameters paParams, EnrichmentMapParameters emParsms, EquationCompiler equationCompiler,
+	public PostAnalysisVisualStyle(EnrichmentMapParameters emParsms, EquationCompiler equationCompiler,
 			                       VisualMappingFunctionFactory vmfFactoryContinuous, VisualMappingFunctionFactory vmfFactoryDiscrete, VisualMappingFunctionFactory vmfFactoryPassthrough) {
 		
 		this.delegateStyle = new EnrichmentMapVisualStyle(emParsms, vmfFactoryContinuous, vmfFactoryDiscrete, vmfFactoryPassthrough);
@@ -60,15 +63,31 @@ public class PostAnalysisVisualStyle {
         this.equationCompiler = equationCompiler;
 	}
 	
-	
-	public void applyVisualStyle(BuildDiseaseSignatureTaskResult taskResult, VisualStyle vs, String prefix) {
+	/**
+	 * Create a new post analysis visual style.
+	 */
+	public void createVisualStyle(VisualStyle vs, String prefix) {
 		delegateStyle.applyVisualStyle(vs, prefix);
-		createPostAnalysisAppearance(taskResult, vs, prefix);
+		createPostAnalysisAppearance(vs, prefix);
 	}
 
+	/**
+	 * Sets node bypasses and edge equations.
+	 */
+	public void applyNetworkSpeficifProperties(BuildDiseaseSignatureTaskResult taskResult, String prefix) {
+		createNodeBypassForColor(taskResult);
+		CyNetwork network = taskResult.getNetwork();
+        
+        CyTable networkTable = network.getDefaultNetworkTable();
+        if(networkTable.getColumn(EDGE_WIDTH_PARAMETERS_COLUMN) == null) {
+        	networkTable.createColumn(EDGE_WIDTH_PARAMETERS_COLUMN, String.class, false);
+        }
+        
+		applyWidthEquation(equationCompiler, prefix, network);
+	}
 
-	@SuppressWarnings("unchecked")
-	private void createPostAnalysisAppearance(BuildDiseaseSignatureTaskResult taskResult, VisualStyle vs, String prefix) {
+	
+	private void createPostAnalysisAppearance(VisualStyle vs, String prefix) {
 		// Post-analysis edge line type
 		// Use a dashed line for post analysis on Dataset 2
         DiscreteMapping<String,LineType> lineType = (DiscreteMapping<String,LineType>) vmfFactoryDiscrete.createVisualMappingFunction(CyEdge.INTERACTION, String.class, BasicVisualLexicon.EDGE_LINE_TYPE);
@@ -76,9 +95,11 @@ public class PostAnalysisVisualStyle {
         vs.addVisualMappingFunction(lineType);
         
         // Add mapped value for post-analysis edge color
-        DiscreteMapping<Integer,Paint> disMapping_edge2 = (DiscreteMapping<Integer,Paint>) vs.getVisualMappingFunction(BasicVisualLexicon.EDGE_UNSELECTED_PAINT);
+        @SuppressWarnings("unchecked")
+		DiscreteMapping<Integer,Paint> disMapping_edge2 = (DiscreteMapping<Integer,Paint>) vs.getVisualMappingFunction(BasicVisualLexicon.EDGE_UNSELECTED_PAINT);
         disMapping_edge2.putMapValue(4, PINK); // pink
-        DiscreteMapping<Integer,Paint> disMapping_edge4 = (DiscreteMapping<Integer,Paint>) vs.getVisualMappingFunction(BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT);
+        @SuppressWarnings("unchecked")
+		DiscreteMapping<Integer,Paint> disMapping_edge4 = (DiscreteMapping<Integer,Paint>) vs.getVisualMappingFunction(BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT);
         disMapping_edge4.putMapValue(4, PINK); // pink
         
         // Add mapping function for node shape
@@ -87,31 +108,21 @@ public class PostAnalysisVisualStyle {
         disMapping_nodeShape.putMapValue(EnrichmentMapVisualStyle.GS_TYPE_SIGNATURE, NodeShapeVisualProperty.TRIANGLE);
         vs.addVisualMappingFunction(disMapping_nodeShape);
         
-        // Set bypass for signature hub node color
-        for(CyNode node : taskResult.getNewNodes()) {
+        // Replace the edge width mapping that was created by EnrichmentMapVisualStyle
+        String widthAttribute = prefix + EDGE_WIDTH_FORMULA_COLUMN;
+        PassthroughMapping<Double,Double> edgeWidthMapping = (PassthroughMapping<Double,Double>) vmfFactoryPassthrough.createVisualMappingFunction(widthAttribute, Double.class, BasicVisualLexicon.EDGE_WIDTH);
+        vs.addVisualMappingFunction(edgeWidthMapping);
+	}
+	
+	
+	private void createNodeBypassForColor(BuildDiseaseSignatureTaskResult taskResult) {
+		for(CyNode node : taskResult.getNewNodes()) {
         	View<CyNode> hubNodeView = taskResult.getNetworkView().getNodeView(node);
         	if(hubNodeView != null) {
 				hubNodeView.setLockedValue(BasicVisualLexicon.NODE_FILL_COLOR, YELLOW);               
 				hubNodeView.setLockedValue(BasicVisualLexicon.NODE_BORDER_PAINT, YELLOW);
         	}
         }
-        
-        
-        // NOW... edge width
-        
-        CyNetwork network = taskResult.getNetwork();
-        
-        CyTable networkTable = network.getDefaultNetworkTable();
-        if(networkTable.getColumn(EDGE_WIDTH_PARAMETERS_COLUMN) == null) {
-        	networkTable.createColumn(EDGE_WIDTH_PARAMETERS_COLUMN, String.class, false);
-        }
-        
-        applyWidthEquation(equationCompiler, prefix, network);
-        
-        // Replace the edge width mapping that was created by EnrichmentMapVisualStyle
-        String widthAttribute = prefix + EDGE_WIDTH_FORMULA_COLUMN;
-        PassthroughMapping<Double,Double> edgeWidthMapping = (PassthroughMapping<Double,Double>) vmfFactoryPassthrough.createVisualMappingFunction(widthAttribute, Double.class, BasicVisualLexicon.EDGE_WIDTH);
-        vs.addVisualMappingFunction(edgeWidthMapping);
 	}
 	
 	

@@ -134,7 +134,7 @@ public class BuildPostAnalysisActionListener implements ActionListener {
                 currentTasks.append(new_signature);
                 
                 CreatePostAnalysisVisualStyleTask visualStyleTask 
-                	= new CreatePostAnalysisVisualStyleTask(map, paParams, applicationManager, visualMappingManager, visualStyleFactory, equationCompiler,
+                	= new CreatePostAnalysisVisualStyleTask(map, applicationManager, visualMappingManager, visualStyleFactory, equationCompiler, eventHelper,
                 			                                vmfFactoryContinuous, vmfFactoryDiscrete, vmfFactoryPassthrough);
                 currentTasks.append(visualStyleTask);
                 
