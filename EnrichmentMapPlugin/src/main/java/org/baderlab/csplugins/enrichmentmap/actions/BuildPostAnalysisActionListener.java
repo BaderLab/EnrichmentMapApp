@@ -51,6 +51,7 @@ import java.util.Set;
 import javax.swing.JOptionPane;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
+import org.baderlab.csplugins.enrichmentmap.FilterParameters.FilterType;
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.task.BuildDiseaseSignatureTask;
@@ -124,11 +125,17 @@ public class BuildPostAnalysisActionListener implements ActionListener {
         if(map != null)
         	paParams.setAttributePrefix(map.getParams().getAttributePrefix());
         
-        String errors = paParams.checkMinimalRequirements();
-        TaskIterator currentTasks = new TaskIterator();
-
+        StringBuilder errorBuilder = new StringBuilder();
+        paParams.checkMinimalRequirements(errorBuilder);
+        if(paParams.getRankTestParameters().getType() == FilterType.MANN_WHIT && map.getAllRanks().isEmpty()) {
+        	errorBuilder.append(FilterType.MANN_WHIT.display + " requires ranks. \n");
+        }
+        String errors = errorBuilder.toString();
+        
         if(errors.isEmpty()) {
             if(paParams.isSignatureDiscovery() || paParams.isKnownSignature()) {
+            	TaskIterator currentTasks = new TaskIterator();
+            	
                 BuildDiseaseSignatureTask new_signature 
                 	= new BuildDiseaseSignatureTask(map, paParams, sessionManager, streamUtil, applicationManager, eventHelper, swingApplication);
                 currentTasks.append(new_signature);

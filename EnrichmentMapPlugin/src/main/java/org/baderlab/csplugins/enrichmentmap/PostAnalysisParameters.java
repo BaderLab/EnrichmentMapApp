@@ -147,14 +147,10 @@ public class PostAnalysisParameters {
      * @return String with error messages (one error per line) or empty String if everything is okay.
      * @see org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters#checkMinimalRequirements()
      */
-    public String checkMinimalRequirements() {
-        StringBuilder errors = new StringBuilder();
+    public void checkMinimalRequirements(StringBuilder errors) {
         errors.append(checkGMTfiles());
-        
         if(selectedSignatureSetNames.isEmpty())
         	errors.append("No Signature Genesets selected \n");
-        
-        return errors.toString();
     }
 
     

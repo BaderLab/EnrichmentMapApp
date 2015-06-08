@@ -2,6 +2,9 @@ package org.baderlab.csplugins.enrichmentmap.view;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.FontFormatException;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -9,6 +12,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.Map;
@@ -58,7 +62,8 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
 	
     private DefaultComboBoxModel<String> rankingModel;
     private DefaultComboBoxModel<String> datasetModel;
-	
+	private EnablementComboBoxRenderer rankingEnablementRenderer;
+    
     private JPanel cardPanel;
     
 	public PostAnalysisWeightPanel(CySwingApplication application) {
@@ -73,6 +78,7 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
 		
 		JPanel hypergeomCard = createHypergeomPanel();
 		JPanel mannWhittCard = createMannWhittPanel();
+		JPanel warnCard = createWarningPanel();
 		
 		cardPanel = new JPanel(new CardLayout());
 		cardPanel.add(mannWhittCard, FilterType.MANN_WHIT.toString());
@@ -80,12 +86,40 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
 		cardPanel.add(new JPanel(), FilterType.PERCENT.toString());
 		cardPanel.add(new JPanel(), FilterType.NUMBER.toString());
 		cardPanel.add(new JPanel(), FilterType.SPECIFIC.toString());
+		cardPanel.add(warnCard, "warn");
         
         getContentPane().add(selectPanel, BorderLayout.NORTH);
         getContentPane().add(cardPanel, BorderLayout.CENTER);
     }
+	
+	
+	private JPanel createWarningPanel() {
+		JPanel warnPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
+		
+		try {
+			Font iconFont = Font.createFont(Font.TRUETYPE_FONT, getClass().getResourceAsStream("/fonts/fontawesome-webfont.ttf"));
+			Font iconFontSized = iconFont.deriveFont(Font.PLAIN, new JLabel().getFont().getSize2D());
+			
+			JLabel warnIcon = new JLabel();
+			warnIcon.setFont(iconFontSized);
+			warnIcon.setText("\uf071"); // warn icon
+			
+			warnPanel.add(warnIcon);
+		} catch (FontFormatException | IOException e) {
+			e.printStackTrace();
+		}
+		
+		JLabel label = new JLabel(FilterType.MANN_WHIT.display + " requires ranks.");
+		
+		warnPanel.add(label);
+		
+		JPanel panel = new JPanel(new BorderLayout());
+		panel.add(warnPanel, BorderLayout.NORTH);
+		return panel;
+	}
 
 	
+	@SuppressWarnings("unchecked")
 	private JPanel createRankTestSelectPanel() {
 		JPanel panel = new JPanel();
 		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
@@ -95,7 +129,10 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
         rankTestTextField = new JFormattedTextField(decFormat);
         rankTestTextField.addPropertyChangeListener("value", new FormattedTextFieldAction());
         
+        rankingEnablementRenderer = new EnablementComboBoxRenderer();
 		rankTestCombo = new JComboBox<>();
+		rankTestCombo.setRenderer(rankingEnablementRenderer);
+		
         rankTestCombo.addItem(FilterType.MANN_WHIT);
         rankTestCombo.addItem(FilterType.HYPERGEOM);
         rankTestCombo.addItem(FilterType.NUMBER);
@@ -108,8 +145,12 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
             	FilterParameters rankTestParams = paParams.getRankTestParameters();
         		rankTestParams.setType(rankTest);
         		rankTestTextField.setValue(rankTestParams.getValue(rankTest));
-            	CardLayout cardLayout = (CardLayout)cardPanel.getLayout();
-            	cardLayout.show(cardPanel, rankTest.toString());
+        		
+        		CardLayout cardLayout = (CardLayout)cardPanel.getLayout();
+        		if(rankTest == FilterType.MANN_WHIT && map.getAllRanks().isEmpty())
+        			cardLayout.show(cardPanel, "warn");
+        		else
+        			cardLayout.show(cardPanel, rankTest.toString());
             }
         });
         
@@ -335,10 +376,17 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
 		if(filterParams.getType() == FilterType.NO_FILTER) {
 			filterParams.setType(FilterType.MANN_WHIT);
 		}
+		if(rankingArray.length == 0 && filterParams.getType() == FilterType.MANN_WHIT) {
+			filterParams.setType(FilterType.HYPERGEOM);
+		}
 		
         rankTestCombo.setSelectedItem(filterParams.getType());
         double value = filterParams.getValue(filterParams.getType());
 		rankTestTextField.setValue(value);
+		
+		rankingEnablementRenderer.enableIndex(0);
+		if(rankingArray.length == 0)
+			rankingEnablementRenderer.disableIndex(0);
     }
     
     

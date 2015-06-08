@@ -97,7 +97,7 @@ public class CreatePostAnalysisVisualStyleTask extends AbstractTask {
         }
         
 		visualMappingManager.setCurrentVisualStyle(vs);
-        vs.apply(view);
+        //vs.apply(view);
         view.updateView();
 	}
 
