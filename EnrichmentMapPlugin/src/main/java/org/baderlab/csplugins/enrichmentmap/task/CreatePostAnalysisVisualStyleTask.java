@@ -1,5 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap.task;
 
+import java.util.ConcurrentModificationException;
+
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisVisualStyle;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.cytoscape.application.CyApplicationManager;
@@ -93,11 +95,15 @@ public class CreatePostAnalysisVisualStyleTask extends AbstractTask {
         else {
         	// update node bypass and edge width equations
         	pa_vs.applyNetworkSpeficifProperties(taskResult, prefix);
-        	eventHelper.flushPayloadEvents(); // view won't update properly without this
         }
         
+		eventHelper.flushPayloadEvents(); // view won't update properly without this
 		visualMappingManager.setCurrentVisualStyle(vs);
-        //vs.apply(view);
+		
+		try {
+			vs.apply(view);
+		} catch(ConcurrentModificationException e) {}
+		
         view.updateView();
 	}
 

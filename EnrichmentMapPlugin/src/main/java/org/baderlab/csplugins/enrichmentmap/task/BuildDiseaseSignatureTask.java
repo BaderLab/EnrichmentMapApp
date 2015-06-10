@@ -474,6 +474,8 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 			if(passed_cutoff) {
 				CyNode hub_node = NetworkUtil.getNodeWithValue(current_network, cyNodeAttrs, CyNetwork.NAME, genesetSimilarity.getGeneset1_Name());
 				CyNode gene_set = NetworkUtil.getNodeWithValue(current_network, cyNodeAttrs, CyNetwork.NAME, genesetSimilarity.getGeneset2_Name());
+				if(hub_node == null || gene_set == null)
+					return;
 				edge = current_network.addEdge(hub_node, gene_set, false);
 				taskResult.addNewEdge(edge);
 			} else {

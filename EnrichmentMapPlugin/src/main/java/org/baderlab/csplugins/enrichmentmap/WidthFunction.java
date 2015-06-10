@@ -20,6 +20,8 @@ public class WidthFunction extends AbstractFunction {
 	
 	public static final String NAME = "EM_width";
 	
+	private static final double ERR_DEFAULT = 1.0;
+	
 	private final CyNetworkManager networkManager;
 	private final EnrichmentMapManager enrichmentMapManager;
 	private final VisualMappingFunctionFactory vmfFactoryContinuous;
@@ -32,14 +34,17 @@ public class WidthFunction extends AbstractFunction {
 		this.enrichmentMapManager = enrichmentMapManager;
 	}
 
+	@Override
 	public String getName() { 
 		return NAME; 
 	}
  
+	@Override
 	public String getFunctionSummary() { 
 		return "Calculate edge width for EnrichmentMap networks. (Automatically created)"; 
 	}
 
+	@Override
 	public Class<Double> getReturnType() { 
 		return Double.class; 
 	}
@@ -65,9 +70,13 @@ public class WidthFunction extends AbstractFunction {
 	}
 	
 	
+	@Override
 	public Double evaluateFunction(final Object[] args) {
 		long edgeSuid = (Long)args[0];
 		CyNetwork network = getNetwork(edgeSuid);
+		if(network == null)
+			return ERR_DEFAULT;
+		
 		EdgeWidthParams edgeWidthParams = EdgeWidthParams.restore(network);
 		CyRow row = network.getDefaultEdgeTable().getRow(edgeSuid);
 		EnrichmentMap map = enrichmentMapManager.getMap(network.getSUID());
@@ -79,7 +88,7 @@ public class WidthFunction extends AbstractFunction {
 			String cutoffType = row.get(prefix + EnrichmentMapVisualStyle.CUTOFF_TYPE, String.class);
 			FilterType filterType = FilterType.fromDisplayString(cutoffType);
 			if(filterType == null) {
-				return 1.0;
+				return ERR_DEFAULT;
 			}
 			
 			Double pvalue, cutoff;
@@ -93,7 +102,7 @@ public class WidthFunction extends AbstractFunction {
 			}
 			
 			if(pvalue == null || cutoff == null)
-				return 1.0;
+				return ERR_DEFAULT;
 			
 			if(pvalue <= cutoff/100)
 				return edgeWidthParams.pa_lessThan100;
@@ -121,7 +130,6 @@ public class WidthFunction extends AbstractFunction {
 			return conmapping_edgewidth.getMappedValue(row);
 		}
 	}
-	
 	
 	
 	
