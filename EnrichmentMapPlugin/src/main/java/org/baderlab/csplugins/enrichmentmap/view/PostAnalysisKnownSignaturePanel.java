@@ -197,10 +197,10 @@ public class PostAnalysisKnownSignaturePanel extends JPanel {
     }
     
     
-    void updateContents(EnrichmentMap currentMap, PostAnalysisParameters paParams) {
+    void initialize(EnrichmentMap currentMap, PostAnalysisParameters paParams) {
     	this.map = currentMap;
 		this.paParams = paParams;
 		
-		weightPanel.updateContents(currentMap, paParams);
+		weightPanel.initialize(currentMap, paParams);
     }
 }

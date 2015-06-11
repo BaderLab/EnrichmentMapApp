@@ -51,14 +51,17 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.view.EnrichmentMapInputPanel;
 import org.baderlab.csplugins.enrichmentmap.view.HeatMapPanel;
 import org.baderlab.csplugins.enrichmentmap.view.ParametersPanel;
-import org.baderlab.csplugins.enrichmentmap.view.PostAnalysisInputPanel;
+import org.baderlab.csplugins.enrichmentmap.view.PostAnalysisPanel;
 import org.cytoscape.application.events.SetCurrentNetworkEvent;
 import org.cytoscape.application.events.SetCurrentNetworkListener;
+import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
+import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.CyNetworkView;
 
 
 /**
@@ -70,12 +73,11 @@ import org.cytoscape.service.util.CyServiceRegistrar;
  * Main class managing all instances of enrichment map as well as singular instances
  * of heatmap panel, parameters panel and input panel.  (implemented as singular class)
  */
-public class EnrichmentMapManager implements SetCurrentNetworkListener, NetworkAboutToBeDestroyedListener {
+public class EnrichmentMapManager implements SetCurrentNetworkListener, NetworkAboutToBeDestroyedListener, SetCurrentNetworkViewListener {
 
     private static EnrichmentMapManager manager = null;
 
     private HashMap<Long,EnrichmentMap> cyNetworkList;
-    private HashMap<Long,PostAnalysisParameters> cyNetworkListPostAnalysis;
 
     //create only one instance of the  parameter and expression panels.
     private ParametersPanel parameterPanel;
@@ -83,7 +85,7 @@ public class EnrichmentMapManager implements SetCurrentNetworkListener, NetworkA
     private HeatMapPanel edgesOverlapPanel;
 
     private EnrichmentMapInputPanel inputWindow;
-    private PostAnalysisInputPanel analysisWindow;
+    private PostAnalysisPanel analysisWindow;
     private CyServiceRegistrar registrar;
 
     /**
@@ -133,7 +135,6 @@ public class EnrichmentMapManager implements SetCurrentNetworkListener, NetworkA
      */
     private EnrichmentMapManager() {
        this.cyNetworkList = new HashMap<Long,EnrichmentMap>();
-        this.cyNetworkListPostAnalysis = new HashMap<Long,PostAnalysisParameters>();
                 
     }
 
@@ -146,13 +147,6 @@ public class EnrichmentMapManager implements SetCurrentNetworkListener, NetworkA
 
         if(!cyNetworkList.containsKey(cyNetwork.getSUID()))
             cyNetworkList.put(cyNetwork.getSUID(),map);
-
-    }
-
-    public void registerNetwork(CyNetwork cyNetwork, PostAnalysisParameters paParams) {
-
-        if(!cyNetworkListPostAnalysis.containsKey(cyNetwork.getSUID()))
-            cyNetworkListPostAnalysis.put(cyNetwork.getSUID(),paParams);
 
     }
 
@@ -216,14 +210,14 @@ public class EnrichmentMapManager implements SetCurrentNetworkListener, NetworkA
     /**
      * @return reference to the Post Analysis Input Panel (WEST) 
      */
-    public PostAnalysisInputPanel getAnalysisWindow() {
+    public PostAnalysisPanel getAnalysisWindow() {
         return analysisWindow;
     }
 
     /**
      * @param reference to the Post Analysis Input Panel (WEST) 
      */
-    public void setAnalysisWindow(PostAnalysisInputPanel analysisWindow) {
+    public void setAnalysisWindow(PostAnalysisPanel analysisWindow) {
         this.analysisWindow = analysisWindow;
     }
     
@@ -255,33 +249,49 @@ public class EnrichmentMapManager implements SetCurrentNetworkListener, NetworkA
 
         if (networkId > 0) {
             // update view
-                if (cyNetworkList.containsKey(networkId)) {
-                    //clear the panels before re-initializing them
-                    nodesOverlapPanel.clearPanel();
-                    edgesOverlapPanel.clearPanel();
+            if (cyNetworkList.containsKey(networkId)) {
+                //clear the panels before re-initializing them
+                nodesOverlapPanel.clearPanel();
+                edgesOverlapPanel.clearPanel();
 
-                     EnrichmentMap currentNetwork= cyNetworkList.get(networkId);
-                    //update the parameters panel
-                    parameterPanel.updatePanel(currentNetwork);
+                 EnrichmentMap currentNetwork= cyNetworkList.get(networkId);
+                //update the parameters panel
+                parameterPanel.updatePanel(currentNetwork);
 
-                    //update the input window to contain the parameters of the selected network
-                    //only if there is a input window
-                    if(inputWindow!=null)
-                        inputWindow.updateContents(currentNetwork.getParams());
+                //update the input window to contain the parameters of the selected network
+                //only if there is a input window
+                if(inputWindow!=null)
+                    inputWindow.updateContents(currentNetwork.getParams());
 
-                    if(analysisWindow!=null)
-                        analysisWindow.updateContents(currentNetwork);
+                if(analysisWindow!=null)
+                    analysisWindow.showPanelFor(currentNetwork);
 
-                    nodesOverlapPanel.updatePanel(currentNetwork);
-                    edgesOverlapPanel.updatePanel(currentNetwork);
+                nodesOverlapPanel.updatePanel(currentNetwork);
+                edgesOverlapPanel.updatePanel(currentNetwork);
 
-                    nodesOverlapPanel.revalidate();
-                    edgesOverlapPanel.revalidate();
-               
+                nodesOverlapPanel.revalidate();
+                edgesOverlapPanel.revalidate();
             }
-
+            else {
+            	if(analysisWindow!=null)
+                    analysisWindow.showPanelFor(null);
+            }
         }
-		
+	}
+	
+	
+	public void handleEvent(SetCurrentNetworkViewEvent e) {
+		// make sure to clear the panel if there is no network view
+		if(analysisWindow != null) {
+			CyNetworkView view = e.getNetworkView();
+			if(view == null) {
+				analysisWindow.showPanelFor(null);
+			}
+			else {
+				EnrichmentMap currentNetwork = cyNetworkList.get(view.getModel().getSUID());
+				analysisWindow.showPanelFor(currentNetwork); // may be null
+			}
+		}
 	}
 
     /**
@@ -291,15 +301,9 @@ public class EnrichmentMapManager implements SetCurrentNetworkListener, NetworkA
      */
 	public void handleEvent(NetworkAboutToBeDestroyedEvent event) {
 		Long networkId = event.getNetwork().getSUID();
-		
-		// get the index (if it exists) of this network in our list
-        // if it exists, remove it
-        if (cyNetworkList.containsKey(networkId)) 
-            cyNetworkList.remove(networkId);
-        if (cyNetworkListPostAnalysis.containsKey(networkId)) 
-        		cyNetworkListPostAnalysis.remove(networkId);
-        
-		
+        EnrichmentMap removed = cyNetworkList.remove(networkId);
+        if(analysisWindow != null && removed != null)
+        	analysisWindow.removeEnrichmentMap(removed);
 	}
 
 }

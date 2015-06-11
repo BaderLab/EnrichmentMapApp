@@ -350,7 +350,7 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
     }
     
     
-    void updateContents(EnrichmentMap currentMap, PostAnalysisParameters paParams) {
+    void initialize(EnrichmentMap currentMap, PostAnalysisParameters paParams) {
     	this.map = currentMap;
 		this.paParams = paParams;
 		

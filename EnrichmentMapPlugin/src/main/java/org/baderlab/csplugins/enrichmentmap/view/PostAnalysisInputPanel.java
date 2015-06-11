@@ -45,7 +45,6 @@ package org.baderlab.csplugins.enrichmentmap.view;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -53,7 +52,6 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -61,8 +59,6 @@ import java.util.Map;
 
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFormattedTextField;
 import javax.swing.JPanel;
@@ -79,7 +75,6 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanelComponent;
-import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.util.StreamUtil;
@@ -95,7 +90,7 @@ import org.cytoscape.work.swing.DialogTaskManager;
 
 
 @SuppressWarnings("serial")
-public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent {
+public class PostAnalysisInputPanel extends JPanel {
     
     // tool tips
     protected static final String gmtTip = "File specifying gene sets.\n" + "Format: geneset name <tab> description <tab> gene ...";
@@ -184,6 +179,7 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
     	userInputPanel.remove(toRemove);
     	userInputPanel.add(toAdd, BorderLayout.CENTER);
     	userInputPanel.revalidate();
+    	userInputPanel.repaint();
     }
     
     
@@ -418,10 +414,8 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
      * 
      * @param current_params
      */
-    public void updateContents(EnrichmentMap currentMap) {
-    	// MKTODO Come up with a better way to handle switching networks that doesn't throw away user input by resetting the panel.
+    public void initialize(EnrichmentMap currentMap) {
     	resetPanel();
-    	
 		if(currentMap != null) {
 			// Use two separate parameters objects so that the two panels don't interfere with each other
 			knownSigPaParams = new PostAnalysisParameters();
@@ -430,8 +424,10 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
 			sigDiscoveryPaParams = new PostAnalysisParameters();
 			sigDiscoveryPaParams.setSignatureHub(true);
 			
-			knownSignaturePanel.updateContents(currentMap, knownSigPaParams);
-			signatureDiscoveryPanel.updateContents(currentMap, sigDiscoveryPaParams);
+			knownSignaturePanel.initialize(currentMap, knownSigPaParams);
+			signatureDiscoveryPanel.initialize(currentMap, sigDiscoveryPaParams);
+			
+	        knownSignature.setToolTipText(currentMap.getName());
 		}
     }
     
@@ -440,26 +436,7 @@ public class PostAnalysisInputPanel extends JPanel implements CytoPanelComponent
 		return knownSignature.isSelected() ? knownSigPaParams : sigDiscoveryPaParams;
     }
 
-	public Component getComponent() {
-		return this;
-	}
-
-	public CytoPanelName getCytoPanelName() {
-		return CytoPanelName.WEST;
-	}
-
-	public Icon getIcon() {
-		URL EMIconURL = this.getClass().getResource("enrichmentmap_logo_notext_small.png");
-        ImageIcon EMIcon = null;
-        if (EMIconURL != null) {
-            EMIcon = new ImageIcon(EMIconURL);
-        }
-		return EMIcon;
-	}
-
-	public String getTitle() {
-		return "Post Analysis Input Panel";
-	}
+	
     
 	/**
 	 * Set available signature gene set count to specified value

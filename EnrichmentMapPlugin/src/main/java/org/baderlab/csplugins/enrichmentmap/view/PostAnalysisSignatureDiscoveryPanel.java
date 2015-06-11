@@ -414,11 +414,11 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
     }
     
     
-    void updateContents(EnrichmentMap currentMap, PostAnalysisParameters paParams) {
+    void initialize(EnrichmentMap currentMap, PostAnalysisParameters paParams) {
 		this.map = currentMap;
 		this.paParams = paParams;
         
-		weightPanel.updateContents(currentMap, paParams);
+		weightPanel.initialize(currentMap, paParams);
 		
 		FilterParameters filterParams = paParams.getFilterParameters();
         filterTypeCombo.setSelectedItem(filterParams.getType());
