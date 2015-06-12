@@ -42,42 +42,29 @@
 // $HeadURL$
 
 package org.baderlab.csplugins.enrichmentmap.view;
-import java.awt.*;
+import static org.baderlab.csplugins.enrichmentmap.EnrichmentMapBuildProperties.*;
+
+import java.awt.Insets;
 import java.net.URL;
-import javax.swing.*;
+
+import javax.swing.JDialog;
+import javax.swing.JEditorPane;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.text.html.HTMLEditorKit;
 
-import org.baderlab.csplugins.enrichmentmap.EnrichmentMapUtils;
-import org.baderlab.csplugins.enrichmentmap.Enrichment_Map_Plugin;
 import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.util.swing.*;
+import org.cytoscape.util.swing.OpenBrowser;
 
-/**
- * @author revilo
- * <p>
- * Date   June 6, 2009<br>
- * Time   6:03:00 PM<br>
- */
+@SuppressWarnings("serial")
 public class AboutPanel extends JDialog {
-    /**
-     * 
-     */
-    private static final long serialVersionUID = 7233557042420194604L;
     
-    private CySwingApplication application;
     private OpenBrowser browser;
    
     public AboutPanel(CySwingApplication application, OpenBrowser browser) {
         super(application.getJFrame(), "About Enrichment Map", false);
-        this.application=application;
         this.browser = browser;
         setResizable(false);
-
-        String pluginUrl = EnrichmentMapUtils.pluginUrl;
-        String pluginVersion = EnrichmentMapUtils.pluginVersion;
-        String pluginReleaseSuffix = EnrichmentMapUtils.pluginReleaseSuffix;
 
         //main panel for dialog box
         JEditorPane editorPane = new JEditorPane();
@@ -85,16 +72,16 @@ public class AboutPanel extends JDialog {
         editorPane.setEditable(false);
         editorPane.setEditorKit(new HTMLEditorKit());
         editorPane.addHyperlinkListener(new HyperlinkAction(editorPane));
+        
         URL logoURL = this.getClass().getResource("enrichmentmap_logo.png");
-        if ( pluginReleaseSuffix != null && ! pluginReleaseSuffix.contentEquals(""))
-            pluginReleaseSuffix = " (" + pluginReleaseSuffix + ")";
+
         editorPane.setText(
                 "<html><body>"+
                 //"<div style=\"float:right;\"><img height=\"77\" width=\"125\" src=\""+ logoURL.toString() +"\" ></div>" +
                 "<table border='0'><tr>" +
                 "<td width='125'></td>"+
                 "<td width='200'>"+
-                "<p align=center><b>Enrichment Map v" + pluginVersion + pluginReleaseSuffix + "</b><BR>" + 
+                "<p align=center><b>Enrichment Map v" + APP_VERSION + "</b><BR>" + 
                 "A Cytoscape App<BR>" +
                 "<BR></p>" +
                 "</td>"+
@@ -107,7 +94,7 @@ public class AboutPanel extends JDialog {
                 "(<a href='http://www.baderlab.org/'>Bader Lab</a>, University of Toronto)<BR>" +
                 "<BR>" +
                 "App Homepage:<BR>" +
-                "<a href='" + pluginUrl + "'>" + pluginUrl + "</a><BR>" +
+                "<a href='" + APP_URL + "'>" + APP_URL + "</a><BR>" +
                 "<BR>" +
                 "If you use this app in your research, please cite:<BR>" +
                 "Merico D, Isserlin R, Stueker O, Emili A, Bader GD<BR>" +
@@ -115,9 +102,10 @@ public class AboutPanel extends JDialog {
                 "Gene-Set Enrichment Visualization and Interpretation<BR>" +
                 "<i>PLoS One. 2010 Nov 15;5(11)</i><BR>" +
                 "<BR>" +
-                "<font size='-1'>" + EnrichmentMapUtils.buildId + "</font>" +
+                "<font size='-1'>" + BUILD_ID + "</font>" +
                 "</p></body></html>"
             );
+        
         setContentPane(editorPane);
     }
 
@@ -131,8 +119,7 @@ public class AboutPanel extends JDialog {
 
         public void hyperlinkUpdate(HyperlinkEvent event) {
             if (event.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-                
-            		browser.openURL(event.getURL().toString());
+            	browser.openURL(event.getURL().toString());
             }
         }
     }	

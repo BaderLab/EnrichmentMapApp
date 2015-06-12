@@ -88,6 +88,9 @@ public class EnrichmentMapManager implements SetCurrentNetworkListener, NetworkA
     private PostAnalysisPanel analysisWindow;
     private CyServiceRegistrar registrar;
 
+    private boolean overrideHeatmapRevalidation = false;
+    
+    
     /**
      * Method to get instance of EnrichmentMapManager.
      *
@@ -306,4 +309,12 @@ public class EnrichmentMapManager implements SetCurrentNetworkListener, NetworkA
         	analysisWindow.removeEnrichmentMap(removed);
 	}
 
+	
+	public boolean isOverrideHeatmapRevalidation() {
+		return overrideHeatmapRevalidation;
+	}
+	
+	public void setOverrideHeatmapRevalidation(boolean overrideHeatmapRevalidation) {
+		this.overrideHeatmapRevalidation = overrideHeatmapRevalidation;
+	}
 }

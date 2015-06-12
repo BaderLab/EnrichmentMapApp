@@ -77,9 +77,6 @@ public class CyActivator extends AbstractCyActivator {
 
 	public void start(BundleContext bc) {
 		
-		//Initialize Enrichment Map parametres
-		EnrichmentMapUtils utils = new EnrichmentMapUtils("");
-		
 		//fetch Cytoscape OSGi services that EM needs
 		//main service for dealing with the cytoscape application.  (used when putting in cytopanels...)
 		CySwingApplication cySwingApplicationRef = getService(bc,CySwingApplication.class);

@@ -1,13 +1,38 @@
 package org.baderlab.csplugins.enrichmentmap.view;
 
-import javax.swing.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.FlowLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.GridLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.ArrayList;
 
-import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JFormattedTextField;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JToolTip;
+
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
-import org.baderlab.csplugins.enrichmentmap.EnrichmentMapUtils;
 //import org.baderlab.csplugins.enrichmentmap.actions.BuildBulkEnrichmentMapActionListener;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.JMultiLineToolTip;
+import org.baderlab.csplugins.enrichmentmap.util.SwingUtil;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanelComponent;
@@ -17,16 +42,6 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
-
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.File;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
 
 /**
  * Created by IntelliJ IDEA.
@@ -708,7 +723,7 @@ public class BulkEMCreationPanel extends JPanel implements CytoPanelComponent{
          all_filters.add(filter);
     	 
            // Get the file name
-           File file = fileUtil.getFile(EnrichmentMapUtils.getWindowInstance(this),"Import gmt file", FileUtil.LOAD,all_filters);
+           File file = fileUtil.getFile(SwingUtil.getWindowInstance(this),"Import gmt file", FileUtil.LOAD,all_filters);
            if(file != null) {
                GSEAResultsDirTextField.setText(file.getParent());
                params.setGSEAResultsDirName(file.getParent());
@@ -736,7 +751,7 @@ public class BulkEMCreationPanel extends JPanel implements CytoPanelComponent{
          all_filters.add(filter_xls);
          
            // Get the file name
-           File file = fileUtil.getFile(EnrichmentMapUtils.getWindowInstance(this), "GMT directory", FileUtil.LOAD,all_filters);
+           File file = fileUtil.getFile(SwingUtil.getWindowInstance(this), "GMT directory", FileUtil.LOAD,all_filters);
            if(file != null) {
                GMTDirectoryTextField.setText(file.getParent());
                params.setGMTDirName(file.getParent());
@@ -765,7 +780,7 @@ public class BulkEMCreationPanel extends JPanel implements CytoPanelComponent{
          all_filters.add(filter_xls);
          
            // Get the file name
-           File file = fileUtil.getFile(EnrichmentMapUtils.getWindowInstance(this),"GCT directory", FileUtil.LOAD,all_filters);
+           File file = fileUtil.getFile(SwingUtil.getWindowInstance(this),"GCT directory", FileUtil.LOAD,all_filters);
            if(file != null) {
                GCTDirectoryTextField.setText(file.getParent());
                params.setGCTDirName(file.getParent());

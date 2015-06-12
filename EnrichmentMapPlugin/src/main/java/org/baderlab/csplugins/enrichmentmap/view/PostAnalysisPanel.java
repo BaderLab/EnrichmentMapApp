@@ -2,7 +2,6 @@ package org.baderlab.csplugins.enrichmentmap.view;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Container;
 import java.net.URL;
 import java.util.WeakHashMap;
 
@@ -11,6 +10,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.util.SwingUtil;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanelComponent;
@@ -91,7 +91,7 @@ public class PostAnalysisPanel extends JPanel implements CytoPanelComponent {
     		if(!currentPanel.isEnabled()) // its already showing the disabled panel
     			return;
 			panel = newPostAnalysisInputPanel();
-			recursiveDisable(panel);
+			SwingUtil.recursiveEnable(panel, false);
     	}
     	else {
 	    	panel = panels.get(currentMap);
@@ -115,16 +115,6 @@ public class PostAnalysisPanel extends JPanel implements CytoPanelComponent {
     private PostAnalysisInputPanel newPostAnalysisInputPanel() {
     	return new PostAnalysisInputPanel(cyApplicationManager, application, browser, fileUtil, sessionManager, streamUtil, registrar, dialog, 
     			eventHelper, equationCompiler, visualMappingManager, visualStyleFactory, vmfFactoryContinuous, vmfFactoryDiscrete, vmfFactoryPassthrough);
-    }
-    
-    
-    private static void recursiveDisable(Component component) {
-    	component.setEnabled(false);
-    	if(component instanceof Container) {
-    		for(Component child : ((Container)component).getComponents()) {
-    			recursiveDisable(child);
-    		}
-    	}
     }
     
     

@@ -4,19 +4,15 @@ import java.util.List;
 
 import javax.swing.JOptionPane;
 
-import org.baderlab.csplugins.enrichmentmap.EnrichmentMapUtils;
+import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationParameters;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.AnnotationSet;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.task.cluster.ComputeClusterLabelsTask;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.view.AutoAnnotationPanel;
 import org.baderlab.csplugins.enrichmentmap.task.BuildEnrichmentMapDummyTask;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyTable;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 
@@ -72,7 +68,7 @@ public class AutoAnnotationTask extends AbstractTask {
 			this.autoAnnotationPanel.setAnnotating(true);
 						
 			//Turn off automatic heatmap on selection
-			EnrichmentMapUtils.setOverrideHeatmapRevalidation(true);
+			EnrichmentMapManager.getInstance().setOverrideHeatmapRevalidation(true);
 						
 			AnnotationSet annotationSet = new AnnotationSet(this.params.getName(),this.params.getNetworkView(),this.params.getClusterColumnName(), this.params.getAnnotateColumnName());
 			//add this annotation set to the annotations

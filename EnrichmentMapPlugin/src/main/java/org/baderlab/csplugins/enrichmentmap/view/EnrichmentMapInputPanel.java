@@ -52,6 +52,7 @@ import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -83,9 +84,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JToolTip;
 import javax.swing.text.InternationalFormatter;
 
+import org.baderlab.csplugins.enrichmentmap.EnrichmentMapBuildProperties;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
-import org.baderlab.csplugins.enrichmentmap.EnrichmentMapUtils;
 import org.baderlab.csplugins.enrichmentmap.actions.BulkEMCreationAction;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowAboutPanelAction;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
@@ -93,6 +94,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.JMultiLineToolTip;
 import org.baderlab.csplugins.enrichmentmap.task.EnrichmentMapBuildMapTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.task.ResultTaskObserver;
+import org.baderlab.csplugins.enrichmentmap.util.SwingUtil;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanelComponent;
@@ -328,11 +330,11 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
            buttonsPanel.setBorder(BorderFactory.createTitledBorder("Info:"));
 
            JButton help = new JButton("Online Manual");
-           help.addActionListener(new java.awt.event.ActionListener() {
-                                      public void actionPerformed(java.awt.event.ActionEvent evt) {
-                                          browser.openURL(EnrichmentMapUtils.userManualUrl);
-                                      }
-                  });
+           help.addActionListener(new ActionListener() {
+              public void actionPerformed(ActionEvent evt) {
+                  browser.openURL(EnrichmentMapBuildProperties.USER_MANUAL_URL);
+              }
+          });
 
            JButton about = new JButton("About");
            
@@ -2190,7 +2192,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
            ArrayList<FileChooserFilter> all_filters = new ArrayList<FileChooserFilter>();
            all_filters.add(filter);
            // Get the file name
-           File file = fileUtil.getFile(EnrichmentMapUtils.getWindowInstance(this),"Import GMT File", FileUtil.LOAD,all_filters  );
+           File file = fileUtil.getFile(SwingUtil.getWindowInstance(this),"Import GMT File", FileUtil.LOAD,all_filters  );
            if(file != null) {
                GMTFileNameTextField.setForeground(checkFile(file.getAbsolutePath()));
                GMTFileNameTextField.setText(file.getAbsolutePath());
@@ -2223,7 +2225,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
           all_filters.add(filter_edb);
                      
            // Get the file name
-           File file = fileUtil.getFile(EnrichmentMapUtils.getWindowInstance(this),"Import GCT File", FileUtil.LOAD, all_filters);
+           File file = fileUtil.getFile(SwingUtil.getWindowInstance(this),"Import GCT File", FileUtil.LOAD, all_filters);
            if(file != null) {
 
                if(file.getPath().contains(".rpt")){
@@ -2270,7 +2272,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
         all_filters.add(filter_edb);
                    
          // Get the file name
-         File file = fileUtil.getFile(EnrichmentMapUtils.getWindowInstance(this),"Import GCT File", FileUtil.LOAD, all_filters);
+         File file = fileUtil.getFile(SwingUtil.getWindowInstance(this),"Import GCT File", FileUtil.LOAD, all_filters);
          if(file != null) {
              if(file.getPath().contains(".rpt")){
                       //The file loaded is an rpt file --> populate the fields based on the
@@ -2320,7 +2322,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
          all_filters.add(filter_tsv);
          
           // Get the file name
-          File file = fileUtil.getFile(EnrichmentMapUtils.getWindowInstance(this),"Import dataset result File", FileUtil.LOAD, all_filters);
+          File file = fileUtil.getFile(SwingUtil.getWindowInstance(this),"Import dataset result File", FileUtil.LOAD, all_filters);
 
         if(file != null) {
              if(file.getPath().contains(".rpt")){
@@ -2368,7 +2370,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
         all_filters.add(filter_tsv);
                    
          // Get the file name
-         File file = fileUtil.getFile(EnrichmentMapUtils.getWindowInstance(this),"Import dataset result File", FileUtil.LOAD, all_filters);
+         File file = fileUtil.getFile(SwingUtil.getWindowInstance(this),"Import dataset result File", FileUtil.LOAD, all_filters);
 
         if(file != null) {
              if(file.getPath().contains(".rpt")){
@@ -2415,7 +2417,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
         all_filters.add(filter_tsv);
                    
          // Get the file name
-         File file = fileUtil.getFile(EnrichmentMapUtils.getWindowInstance(this),"Import dataset result File", FileUtil.LOAD, all_filters);
+         File file = fileUtil.getFile(SwingUtil.getWindowInstance(this),"Import dataset result File", FileUtil.LOAD, all_filters);
 
       if(file != null) {
            if(file.getPath().contains(".rpt")){
@@ -2463,7 +2465,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
          all_filters.add(filter_tsv);
          
           // Get the file name
-          File file = fileUtil.getFile(EnrichmentMapUtils.getWindowInstance(this),"Import dataset result File", FileUtil.LOAD, all_filters);
+          File file = fileUtil.getFile(SwingUtil.getWindowInstance(this),"Import dataset result File", FileUtil.LOAD, all_filters);
 
       if(file != null) {
            if(file.getPath().contains(".rpt")){
@@ -2511,7 +2513,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 
                     
           // Get the file name
-          File file = fileUtil.getFile(EnrichmentMapUtils.getWindowInstance(this),"Import rank File", FileUtil.LOAD, all_filters);
+          File file = fileUtil.getFile(SwingUtil.getWindowInstance(this),"Import rank File", FileUtil.LOAD, all_filters);
 
         if(file != null) {
                 Dataset1RankFileTextField.setForeground(checkFile(file.getAbsolutePath()));
@@ -2541,7 +2543,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
           all_filters.add(filter_txt);
          
          // Get the file name
-          File file = fileUtil.getFile(EnrichmentMapUtils.getWindowInstance(this),"Import class file", FileUtil.LOAD, all_filters);
+          File file = fileUtil.getFile(SwingUtil.getWindowInstance(this),"Import class file", FileUtil.LOAD, all_filters);
           
          if(file != null) {
                  Dataset1ClassFileTextField.setForeground(checkFile(file.getAbsolutePath()));
@@ -2572,7 +2574,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
            all_filters.add(filter_txt);
           
           // Get the file name
-           File file = fileUtil.getFile(EnrichmentMapUtils.getWindowInstance(this),"Import class file", FileUtil.LOAD, all_filters);
+           File file = fileUtil.getFile(SwingUtil.getWindowInstance(this),"Import class file", FileUtil.LOAD, all_filters);
            
           if(file != null) {
                   Dataset2ClassFileTextField.setForeground(checkFile(file.getAbsolutePath()));
@@ -2611,7 +2613,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 
                     
           // Get the file name
-          File file = fileUtil.getFile(EnrichmentMapUtils.getWindowInstance(this),"Import rank File", FileUtil.LOAD, all_filters);
+          File file = fileUtil.getFile(SwingUtil.getWindowInstance(this),"Import rank File", FileUtil.LOAD, all_filters);
 
         if(file != null) {
                 Dataset2RankFileTextField.setForeground(checkFile(file.getAbsolutePath()));

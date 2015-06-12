@@ -1,17 +1,15 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	
 	<modelVersion>4.0.0</modelVersion>
+	
 	<groupId>org.baderlab.csplugins</groupId>
-	<version>2.1.0</version>
 	<artifactId>enrichmentmap</artifactId>
-	<name>EnrichmentMap</name>
+	<version>2.1.0</version>
 	<packaging>bundle</packaging>
 	
 	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<cy3.version>3.2.0</cy3.version>
+	    <project.name>EnrichmentMap</project.name>
+	    <cy3.version>3.2.0</cy3.version>
 		<osgi.api.version>4.2.0</osgi.api.version>
 		<bundle.namespace.parent>org.baderlab.csplugins</bundle.namespace.parent>
 		<bundle.namespace>org.baderlab.csplugins</bundle.namespace>
@@ -167,373 +165,143 @@
 	</dependencies>
 	
 	<!-- repository settings are required for the build number maven plugin -->
+	<build>
+		<finalName>${project.artifactId}-${project.version}-r${git.commit.id.abbrev}_${buildNumber}_${git.branch}</finalName>
+		<plugins>
+			<plugin>
+				<groupId>org.ops4j</groupId>
+				<artifactId>maven-pax-plugin</artifactId>
+				<version>1.5</version>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+				<version>2.4.0</version>
+				<configuration>
+					<instructions>
+						<Bundle-SymbolicName>${bundle.symbolicName}</Bundle-SymbolicName>
+						<Bundle-Version>${project.version}</Bundle-Version>
+						<Bundle-Activator>${bundle.namespace}.enrichmentmap.CyActivator</Bundle-Activator>
+						<Embed-Dependency>colt;inline=true,commons-math3;inline=true</Embed-Dependency>
+						<Private-Package>${bundle.namespace}.*</Private-Package>
+						<Export-Package>org.mskcc.*;prefuse.*;version="${project.version}"</Export-Package>
+						<Import-Package>*;resolution:=optional</Import-Package>
+						<_failok>true</_failok>
+					</instructions>
+				</configuration>
+				<extensions>true</extensions>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>buildnumber-maven-plugin</artifactId>
+				<version>1.1</version>
+				<executions>
+					<execution>
+						<phase>validate</phase>
+						<goals>
+							<goal>create</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<doCheck>true</doCheck>
+					<doUpdate>false</doUpdate>
+					<format>{0,number}</format>
+					<items>
+						<item>buildNumber</item>
+					</items>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.0</version>
+				<configuration>
+					<source>1.7</source>
+					<target>1.7</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<!-- Shrinks the jar file by removing unused .class files. Embedded jars must be inlined. -->
+				<groupId>com.github.wvengen</groupId>
+				<artifactId>proguard-maven-plugin</artifactId>
+				<version>2.0.10</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>proguard</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<options>
+						<option>-dontobfuscate</option>
+						<option>-dontoptimize</option>
+						<option>-dontnote</option>
+						<option>-keep public class org.baderlab.csplugins.enrichmentmap.CyActivator</option>
+					</options>
+					<injar>${project.build.finalName}.jar</injar>
+					<outjar>${project.build.finalName}-small.jar</outjar>
+					<outputDirectory>${project.build.directory}</outputDirectory>
+					<libs>
+						<lib>${java.home}/lib/rt.jar</lib>
+					</libs>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>pl.project13.maven</groupId>
+				<artifactId>git-commit-id-plugin</artifactId>
+				<version>2.1.15</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>revision</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<prefix>git</prefix>
+					<dateFormat>dd.MM.yyyy '@' HH:mm:ss z</dateFormat>
+					<verbose>false</verbose>
+					<dotGitDirectory>${project.basedir}/.git</dotGitDirectory>
+					<skipPoms>true</skipPoms>
+					<generateGitPropertiesFile>false</generateGitPropertiesFile>
+					<generateGitPropertiesFilename>src/main/resources/revision.txt</generateGitPropertiesFilename>
+					<failOnNoGitDirectory>false</failOnNoGitDirectory>
+					<excludeProperties>
+                    	<excludeProperty>git.commit.message.*</excludeProperty>
+                    </excludeProperties>
+					<gitDescribe>
+						<skip>false</skip>
+						<always>false</always>
+						<abbrev>7</abbrev>
+						<dirty>-dirty</dirty>
+						<forceLongFormat>false</forceLongFormat>
+					</gitDescribe>
+				</configuration>
+			</plugin>
+		</plugins>
+		<resources>
+        	<resource>
+        		<filtering>true</filtering>
+		        <directory>src/main/resources</directory>
+		        <includes>
+		          	<include>**/app.props</include>
+		          	<include>**/revision.props</include>
+		        </includes>
+	      	</resource>
+	      	<resource>
+	    		<filtering>false</filtering>
+		        <directory>src/main/resources</directory>
+		        <excludes>
+		          	<exclude>**/app.props</exclude>
+		          	<exclude>**/revision.props</exclude>
+		        </excludes>
+	      	</resource>
+        </resources>
+	</build>
 
-	<profiles>
-		<!-- Create two profiles. One for the base Enrichment Map jar and One for 
-			the Enrichment map jar integrated into GSEA (profile: -PEnrichmentMap) Enrichment 
-			map jar contains plugin.props and Enrichment_Map_Plugin main class (profile: 
-			-PEM_gsea) GSEA Enrichment map plugin contains plugin_gsea.props and Enrichment_Map_Plugin_GSEA 
-			main class We need two different main classes so if both are installed Cytoscape 
-			is able to load both plugins if they are present without any conflicts Before 
-			building either of these profiles need to run mvn clean to make sure they 
-			are built correctly -->
-			
-		<profile>
-			<id>EnrichmentMap</id>
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
-			<build>
-				<finalName>${project.artifactId}-${project.version}-r${git.commit.id.abbrev}_${buildNumber}_${git.branch}</finalName>
-				<plugins>
-					<plugin>
-						<groupId>org.ops4j</groupId>
-						<artifactId>maven-pax-plugin</artifactId>
-						<version>1.5</version>
-					</plugin>
-					<plugin>
-						<groupId>org.apache.felix</groupId>
-						<artifactId>maven-bundle-plugin</artifactId>
-						<version>2.4.0</version>
-						<configuration>
-							<instructions>
-								<Bundle-SymbolicName>${bundle.symbolicName}</Bundle-SymbolicName>
-								<Bundle-Version>${version}</Bundle-Version>
-								<Bundle-Activator>${bundle.namespace}.enrichmentmap.CyActivator</Bundle-Activator>
-								<Embed-Dependency>colt;inline=true,commons-math3;inline=true</Embed-Dependency>
-								<Private-Package>${bundle.namespace}.*</Private-Package>
-								<Export-Package>org.mskcc.*;prefuse.*;version="${project.version}"</Export-Package>
-								<Import-Package>*;resolution:=optional</Import-Package>
-								<_failok>true</_failok>
-							</instructions>
-						</configuration>
-						<extensions>true</extensions>
-					</plugin>
-					<plugin>
-						<groupId>org.codehaus.mojo</groupId>
-						<artifactId>buildnumber-maven-plugin</artifactId>
-						<version>1.1</version>
-						<executions>
-							<execution>
-								<phase>validate</phase>
-								<goals>
-									<goal>create</goal>
-								</goals>
-							</execution>
-						</executions>
-						<configuration>
-							<doCheck>true</doCheck>
-							<doUpdate>false</doUpdate>
-							<format>{0,number}</format>
-							<items>
-								<item>buildNumber</item>
-							</items>
-						</configuration>
-					</plugin>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-compiler-plugin</artifactId>
-						<version>3.0</version>
-						<configuration>
-							<source>1.7</source>
-							<target>1.7</target>
-						</configuration>
-					</plugin>
-					<plugin>
-						<!-- Shrinks the jar file by removing unused .class files. Embedded jars must be inlined. -->
-						<groupId>com.github.wvengen</groupId>
-						<artifactId>proguard-maven-plugin</artifactId>
-						<executions>
-							<execution>
-								<phase>package</phase>
-								<goals>
-									<goal>proguard</goal>
-								</goals>
-							</execution>
-						</executions>
-						<configuration>
-							<options>
-								<option>-dontobfuscate</option>
-								<option>-dontoptimize</option>
-								<option>-dontnote</option>
-								<option>-keep public class org.baderlab.csplugins.enrichmentmap.CyActivator</option>
-							</options>
-							<injar>${project.build.finalName}.jar</injar>
-							<outjar>${project.build.finalName}-small.jar</outjar>
-							<outputDirectory>${project.build.directory}</outputDirectory>
-							<libs>
-								<lib>${java.home}/lib/rt.jar</lib>
-							</libs>
-						</configuration>
-					</plugin>
-					<plugin>
-						<groupId>pl.project13.maven</groupId>
-						<artifactId>git-commit-id-plugin</artifactId>
-						<version>2.0.4</version>
-						<executions>
-							<execution>
-								<goals>
-									<goal>revision</goal>
-								</goals>
-							</execution>
-						</executions>
-
-						<configuration>
-							<!-- that's the default value, you don't have to set it -->
-							<prefix>git</prefix>
-
-							<!-- that's the default value -->
-							<dateFormat>dd.MM.yyyy '@' HH:mm:ss z</dateFormat>
-
-							<!-- true is default here, it prints some more information during the build -->
-							<verbose>false</verbose>
-
-							<!-- If you'd like to tell the plugin where your .git directory is, 
-								use this setting, otherwise we'll perform a search trying to figure out the 
-								right directory. It's better to add it explicite IMHO. -->
-							<dotGitDirectory>${project.basedir}/.git</dotGitDirectory>
-
-							<!-- ALTERNATE SETUP - GENERATE FILE -->
-							<!-- If you want to keep git information, even in your WAR file etc, 
-								use this mode, which will generate a properties file (with filled out values) 
-								which you can then normally read using new Properties().load(/**/) -->
-
-							<!-- this is true by default; You may want to set this to false, if 
-								the plugin should run inside a <packaging>pom</packaging> project. Most projects 
-								won't need to override this property. For an use-case for this kind of behaviour 
-								see: https://github.com/ktoso/maven-git-commit-id-plugin/issues/21 -->
-							<skipPoms>true</skipPoms>
-
-							<!-- this is false by default, forces the plugin to generate the git.properties 
-								file -->
-							<generateGitPropertiesFile>false</generateGitPropertiesFile>
-
-							<!-- The path for the to be generated properties file, it's relative 
-								to ${project.basedir} -->
-							<generateGitPropertiesFilename>src/main/resources/revision.txt</generateGitPropertiesFilename>
-
-							<!-- true by default, controls whether the plugin will fail when no 
-								.git directory is found, when set to false the plugin will just skip execution -->
-							<!-- @since 2.0.4 -->
-							<failOnNoGitDirectory>false</failOnNoGitDirectory>
-
-							<!-- @since 2.1.0 -->
-							<!-- read up about git-describe on the in man, or it's homepage - 
-								it's a really powerful versioning helper and the recommended way to use git-commit-id-plugin. 
-								The configuration bellow is optional, by default describe will run "just 
-								like git-describe on the command line", even though it's a JGit reimplementation. -->
-							<gitDescribe>
-
-								<!-- don't generate the describe property -->
-								<skip>false</skip>
-
-								<!-- if no tag was found "near" this commit, just print the commit's 
-									id instead, helpful when you always expect this field to be not-empty -->
-								<always>false</always>
-								<!-- how many chars should be displayed as the commit object id? 
-									7 is git's default, 0 has a special meaning (see end of this README.md), 
-									and 40 is the maximum value here -->
-								<abbrev>7</abbrev>
-
-								<!-- when the build is triggered while the repo is in "dirty state", 
-									append this suffix -->
-								<dirty>-dirty</dirty>
-
-								<!-- always print using the "tag-commits_from_tag-g_commit_id-maybe_dirty" 
-									format, even if "on" a tag. The distance will always be 0 if you're "on" 
-									the tag. -->
-								<forceLongFormat>false</forceLongFormat>
-							</gitDescribe>
-						</configuration>
-
-					</plugin>
-				</plugins>
-				<resources>
-					<resource>
-						<directory>${project.basedir}/src/main/resources</directory>
-						<excludes>
-							<exclude>org/baderlab/csplugins/enrichmentmap/gsea/plugin.props</exclude>
-						</excludes>
-						<filtering>false</filtering>
-					</resource>
-					<resource>
-						<directory>${project.basedir}/src/main/resources/config</directory>
-						<filtering>true</filtering>
-					</resource>
-				</resources>
-			</build>
-		</profile>
-		
-		<profile>
-			<id>EM_gsea</id>
-			<build>
-				<finalName>${project.artifactId}-${project.version}-r${git.commit.id.abbrev}_${buildNumber}_${git.branch}</finalName>
-				<plugins>
-					<plugin>
-						<artifactId>maven-jar-plugin</artifactId>
-						<configuration>
-							<classifier>gsea</classifier>
-							<excludes>
-								<exclude>**/Enrichment_Map_Plugin.*</exclude>
-							</excludes>
-						</configuration>
-					</plugin>
-					<plugin>
-						<groupId>org.apache.felix</groupId>
-						<artifactId>maven-bundle-plugin</artifactId>
-						<version>2.4.0</version>
-						<configuration>
-							<instructions>
-								<Bundle-SymbolicName>${bundle.symbolicName}</Bundle-SymbolicName>
-								<Bundle-Version>2.0.0</Bundle-Version>
-								<Bundle-Activator>${bundle.namespace}.CyActivator</Bundle-Activator>
-								<Embed-Dependency>plugin-distribution;inline=true</Embed-Dependency>
-								<Private-Package>${bundle.namespace}.*</Private-Package>
-								<Export-Package>!${bundle.namespace}.*;version="${project.version}"</Export-Package>
-								<Import-Package>*;resolution:=optional</Import-Package>
-								<_failok>true</_failok>
-							</instructions>
-						</configuration>
-					</plugin>
-
-					<plugin>
-						<groupId>org.codehaus.mojo</groupId>
-						<artifactId>buildnumber-maven-plugin</artifactId>
-						<version>1.1</version>
-						<executions>
-							<execution>
-								<phase>validate</phase>
-								<goals>
-									<goal>create</goal>
-								</goals>
-							</execution>
-						</executions>
-						<configuration>
-							<doCheck>true</doCheck>
-							<doUpdate>false</doUpdate>
-							<format>{0,number}</format>
-							<items>
-								<item>buildNumber</item>
-							</items>
-						</configuration>
-					</plugin>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-compiler-plugin</artifactId>
-						<version>3.0</version>
-						<configuration>
-							<source>1.5</source>
-							<target>1.5</target>
-						</configuration>
-					</plugin>
-					<plugin>
-						<groupId>pl.project13.maven</groupId>
-						<artifactId>git-commit-id-plugin</artifactId>
-						<version>2.0.4</version>
-						<executions>
-							<execution>
-								<goals>
-									<goal>revision</goal>
-								</goals>
-							</execution>
-						</executions>
-						<configuration>
-							<!-- that's the default value, you don't have to set it -->
-							<prefix>git</prefix>
-
-							<!-- that's the default value -->
-							<dateFormat>dd.MM.yyyy '@' HH:mm:ss z</dateFormat>
-
-							<!-- true is default here, it prints some more information during 
-								the build -->
-							<verbose>false</verbose>
-
-							<!-- If you'd like to tell the plugin where your .git directory is, 
-								use this setting, otherwise we'll perform a search trying to figure out the 
-								right directory. It's better to add it explicite IMHO. -->
-							<dotGitDirectory>${project.basedir}/.git</dotGitDirectory>
-
-							<!-- ALTERNATE SETUP - GENERATE FILE -->
-							<!-- If you want to keep git information, even in your WAR file etc, 
-								use this mode, which will generate a properties file (with filled out values) 
-								which you can then normally read using new Properties().load(/**/) -->
-
-							<!-- this is true by default; You may want to set this to false, if 
-								the plugin should run inside a <packaging>pom</packaging> project. Most projects 
-								won't need to override this property. For an use-case for this kind of behaviour 
-								see: https://github.com/ktoso/maven-git-commit-id-plugin/issues/21 -->
-							<skipPoms>true</skipPoms>
-
-							<!-- this is false by default, forces the plugin to generate the git.properties 
-								file -->
-							<generateGitPropertiesFile>false</generateGitPropertiesFile>
-
-							<!-- The path for the to be generated properties file, it's relative 
-								to ${project.basedir} -->
-							<generateGitPropertiesFilename>src/main/resources/revision.txt</generateGitPropertiesFilename>
-
-							<!-- true by default, controls whether the plugin will fail when no 
-								.git directory is found, when set to false the plugin will just skip execution -->
-							<!-- @since 2.0.4 -->
-							<failOnNoGitDirectory>false</failOnNoGitDirectory>
-
-							<!-- @since 2.1.0 -->
-							<!-- read up about git-describe on the in man, or it's homepage - 
-								it's a really powerful versioning helper and the recommended way to use git-commit-id-plugin. 
-								The configuration bellow is optional, by default describe will run "just 
-								like git-describe on the command line", even though it's a JGit reimplementation. -->
-							<gitDescribe>
-
-								<!-- don't generate the describe property -->
-								<skip>false</skip>
-
-								<!-- if no tag was found "near" this commit, just print the commit's 
-									id instead, helpful when you always expect this field to be not-empty -->
-								<always>false</always>
-								<!-- how many chars should be displayed as the commit object id? 
-									7 is git's default, 0 has a special meaning (see end of this README.md), 
-									and 40 is the maximum value here -->
-								<abbrev>7</abbrev>
-
-								<!-- when the build is triggered while the repo is in "dirty state", 
-									append this suffix -->
-								<dirty>-dirty</dirty>
-
-								<!-- always print using the "tag-commits_from_tag-g_commit_id-maybe_dirty" 
-									format, even if "on" a tag. The distance will always be 0 if you're "on" 
-									the tag. -->
-								<forceLongFormat>false</forceLongFormat>
-							</gitDescribe>
-						</configuration>
-					</plugin>
-				</plugins>
-				<resources>
-					<resource>
-						<directory>${project.basedir}/src/main/resources</directory>
-						<excludes>
-							<exclude>org/baderlab/csplugins/enrichmentmap/plugin.props</exclude>
-						</excludes>
-						<includes>
-							<include>**/*.properties</include>
-							<include>**/*.xml</include>
-							<include>**/*.txt</include>
-							<include>**/*.gif</include>
-							<include>**/*.png</include>
-						</includes>
-						<filtering>true</filtering>
-					</resource>
-					<resource>
-						<directory>${project.basedir}/resources</directory>
-						<excludes>
-							<exclude>EM_EBC_TestData/**</exclude>
-							<exclude>Graphics_for_Manual/**</exclude>
-							<exclude>scripts/**</exclude>
-						</excludes>
-					</resource>
-				</resources>
-			</build>
-		</profile>
-	</profiles>
 	
 	<scm>
 		<connection>scm:git:git://github.com/BaderLab/EnrichmentMapApp.git</connection>

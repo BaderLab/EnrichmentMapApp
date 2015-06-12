@@ -1,0 +1,2 @@
+appName=${project.name}
+appVersion=${project.version}

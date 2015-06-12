@@ -65,13 +65,14 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 
-import org.baderlab.csplugins.enrichmentmap.EnrichmentMapUtils;
+import org.baderlab.csplugins.enrichmentmap.EnrichmentMapBuildProperties;
 import org.baderlab.csplugins.enrichmentmap.FilterParameters;
 import org.baderlab.csplugins.enrichmentmap.FilterParameters.FilterType;
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.actions.BuildPostAnalysisActionListener;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowAboutPanelAction;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.util.SwingUtil;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanelComponent;
@@ -199,7 +200,7 @@ public class PostAnalysisInputPanel extends JPanel {
         JButton help = new JButton("Online Manual");
         help.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                browser.openURL(EnrichmentMapUtils.userManualUrl);
+                browser.openURL(EnrichmentMapBuildProperties.USER_MANUAL_URL);
             }
         });
 
@@ -321,7 +322,7 @@ public class PostAnalysisInputPanel extends JPanel {
         List<FileChooserFilter> all_filters = Arrays.asList(filter);
        
         // Get the file name
-        File file = fileUtil.getFile(EnrichmentMapUtils.getWindowInstance(this), "Import Signature GMT File", FileUtil.LOAD, all_filters);
+        File file = fileUtil.getFile(SwingUtil.getWindowInstance(this), "Import Signature GMT File", FileUtil.LOAD, all_filters);
         getPaParams().setSignatureGMTFileName("");
         
         if(file != null) {

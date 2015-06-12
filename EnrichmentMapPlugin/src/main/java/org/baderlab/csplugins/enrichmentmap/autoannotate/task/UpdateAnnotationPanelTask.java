@@ -1,6 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.autoannotate.task;
 
-import org.baderlab.csplugins.enrichmentmap.EnrichmentMapUtils;
+import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationParameters;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.AnnotationSet;
@@ -35,7 +35,7 @@ public class UpdateAnnotationPanelTask extends AbstractTask {
 		autoAnnotationPanel.addClusters(annotationSet,params);
 		autoAnnotationPanel.updateSelectedView(params.getNetworkView());
 		AutoAnnotationManager.getInstance().getWestPanel().setSelectedIndex(AutoAnnotationManager.getInstance().getWestPanel().indexOfComponent(autoAnnotationPanel));
-		EnrichmentMapUtils.setOverrideHeatmapRevalidation(false);
+		EnrichmentMapManager.getInstance().setOverrideHeatmapRevalidation(false);
 				
 		// Let the panel know annotating is finished
 		autoAnnotationPanel.setAnnotating(false);
