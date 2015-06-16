@@ -76,7 +76,9 @@ public class GenesetSimilarity {
     
     // Mann-Whitney U
     private double mann_whit_pvalue;
-
+    // flag that indicates if either of the gene sets has no ranks (and therefore we cannot calculated mann-whit
+    private boolean mann_whit_missing_ranks = false; 
+    
     //set of genes in common to both gene sets.
     private Set<Integer> overlapping_genes;
 
@@ -85,7 +87,7 @@ public class GenesetSimilarity {
     //if it is zero the similarity applies to both sets.
     private int enrichment_set;
     
-    private boolean sensitivity;
+    
 
     /**
      * Class constructor
@@ -105,7 +107,6 @@ public class GenesetSimilarity {
         this.hypergeom_pvalue = -1.0;
         this.interaction_type = interaction_type;
         this.enrichment_set = enrichment_set;
-        this.setSensitivity(false);
      }
 
 
@@ -126,7 +127,6 @@ public class GenesetSimilarity {
         this.hypergeom_pvalue = -1.0;
         this.interaction_type = interaction_type;
         this.enrichment_set = 0;
-        this.setSensitivity(false);
      }
 
     /**
@@ -149,7 +149,6 @@ public class GenesetSimilarity {
         this.interaction_type = interaction_type;
 
         this.enrichment_set = 0;
-        this.setSensitivity(false);
     }
 
 
@@ -344,19 +343,14 @@ public class GenesetSimilarity {
 	}
 
 
-	/**
-	 * @return the sensitivity
-	 */
-	public boolean getSensitivity() {
-		return sensitivity;
+	public boolean isMannWhitMissingRanks() {
+		return mann_whit_missing_ranks;
 	}
 
 
-	/**
-	 * @param sensitivity the sensitivity to set
-	 */
-	public void setSensitivity(boolean sensitivity) {
-		this.sensitivity = sensitivity;
+	public void setMannWhitMissingRanks(boolean mann_whit_missing_ranks) {
+		this.mann_whit_missing_ranks = mann_whit_missing_ranks;
 	}
+
 
 }

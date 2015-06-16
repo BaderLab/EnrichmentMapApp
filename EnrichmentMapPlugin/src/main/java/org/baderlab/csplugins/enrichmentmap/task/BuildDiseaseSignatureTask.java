@@ -45,6 +45,7 @@ package org.baderlab.csplugins.enrichmentmap.task;
 
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -86,7 +87,6 @@ import org.cytoscape.work.TaskMonitor;
  * Cytoscape-Task to perform  Disease-Signature Post-Analysis
  */
 public class BuildDiseaseSignatureTask extends AbstractTask implements ObservableTask {
-	private final CySwingApplication swingApplication;
 	private final CyApplicationManager applicationManager;
     private final CyEventHelper eventHelper;
     
@@ -117,7 +117,6 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
     	this.map = map;
     	this.applicationManager = applicationManager;
     	this.eventHelper = eventHelper;
-    	this.swingApplication = swingApplication;
 
     	HashMap<String, DataSet> data_sets = this.map.getDatasets();
     	DataSet dataset = data_sets.get(paParams.getSignature_dataSet());
@@ -172,7 +171,6 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 
     
 
-    @SuppressWarnings("incomplete-switch")
 	public void buildDiseaseSignature(TaskMonitor taskMonitor) {
 
         /* **************************************************
@@ -364,7 +362,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 			case HYPERGEOM:
 				return similarity.getHypergeom_pvalue() <= filterParams.getValue(FilterType.HYPERGEOM);
 			case MANN_WHIT:
-				return similarity.getSensitivity() || similarity.getMann_Whit_pValue() <= filterParams.getValue(FilterType.MANN_WHIT);
+				return !similarity.isMannWhitMissingRanks() && similarity.getMann_Whit_pValue() <= filterParams.getValue(FilterType.MANN_WHIT);
 			case NUMBER:
 				return similarity.getSizeOfOverlap() >= filterParams.getValue(FilterType.NUMBER);
 			case PERCENT:
@@ -565,21 +563,32 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 		Map<Integer, Double> gene2score = ranks.getGene2Score();
 		if (gene2score == null || gene2score.isEmpty()) {
 			comparison.setMann_Whit_pValue(1.5);
+			comparison.setMannWhitMissingRanks(true);
 		} else {
 			// Calculate Mann-Whitney U pValue for Overlap
             Integer[] overlap_gene_ids = intersection.toArray(new Integer[intersection.size()]);
-            double[] overlap_gene_scores = new double[overlap_gene_ids.length];
             
-            // Get the scores for the overlap
-            for (int k = 0; k < overlap_gene_ids.length; k++) {
-            	overlap_gene_scores[k] = gene2score.get(overlap_gene_ids[k]);
+            double[] overlap_gene_scores = new double[overlap_gene_ids.length];
+            int j = 0;
+            for(Integer gene_id : overlap_gene_ids) {
+            	Double score = gene2score.get(gene_id);
+            	if(score != null) {
+            		overlap_gene_scores[j++] = score; // unbox
+            	}
             }
             
+            overlap_gene_scores = Arrays.copyOf(overlap_gene_scores, j);
             double[] scores = ranks.getScores();
-            MannWhitneyUTest mann_whit = new MannWhitneyUTest();
-			double mannPval = mann_whit.mannWhitneyUTest(overlap_gene_scores, scores);
-    		// Set Mann-Whitney U Parameters
-    		comparison.setMann_Whit_pValue(mannPval);
+            
+            if(scores.length == 0 || overlap_gene_scores.length == 0) {
+            	comparison.setMann_Whit_pValue(1.5); // avoid NoDataException
+            	comparison.setMannWhitMissingRanks(true);
+            }
+            else {
+	            MannWhitneyUTest mann_whit = new MannWhitneyUTest();
+				double mannPval = mann_whit.mannWhitneyUTest(overlap_gene_scores, scores);
+	    		comparison.setMann_Whit_pValue(mannPval);
+            }
 		}
 	}
 
