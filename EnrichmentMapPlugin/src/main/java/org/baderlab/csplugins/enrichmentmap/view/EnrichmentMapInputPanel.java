@@ -1351,7 +1351,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
                 ResultTaskObserver observer = new ResultTaskObserver();
                 
                	EnrichmentMapBuildMapTaskFactory buildmap = new EnrichmentMapBuildMapTaskFactory(map,  
-                    			applicationManager,networkManager,networkViewManager,networkViewFactory,networkFactory,tableFactory,tableManager, 
+               					applicationManager,application,networkManager,networkViewManager,networkViewFactory,networkFactory,tableFactory,tableManager, 
                     			visualMappingManager,visualStyleFactory,
                     			vmfFactoryContinuous, vmfFactoryDiscrete,vmfFactoryPassthrough, dialog,  streamUtil,layoutManager,mapTableToNetworkTable);
                 //buildmap.build();

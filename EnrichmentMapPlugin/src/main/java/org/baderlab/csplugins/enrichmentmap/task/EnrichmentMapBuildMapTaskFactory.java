@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
@@ -12,7 +13,9 @@ import org.baderlab.csplugins.enrichmentmap.parsers.DetermineEnrichmentResultFil
 import org.baderlab.csplugins.enrichmentmap.parsers.ExpressionFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.parsers.GMTFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.parsers.RanksFileReaderTask;
+import org.baderlab.csplugins.enrichmentmap.view.ParametersPanel;
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
@@ -35,6 +38,7 @@ public class EnrichmentMapBuildMapTaskFactory implements TaskFactory{
     
 	//services required
 	    private CyApplicationManager applicationManager;
+	    private CySwingApplication swingApplication;
 	    private CyNetworkManager networkManager;
 	    private CyNetworkViewManager networkViewManager;
 	    private CyNetworkViewFactory networkViewFactory;
@@ -61,6 +65,7 @@ public class EnrichmentMapBuildMapTaskFactory implements TaskFactory{
 	    
 	public EnrichmentMapBuildMapTaskFactory(EnrichmentMap map,
 				CyApplicationManager applicationManager,
+				CySwingApplication swingApplication,
 				CyNetworkManager networkManager,
 				CyNetworkViewManager networkViewManager,
 				CyNetworkViewFactory networkViewFactory,
@@ -75,6 +80,7 @@ public class EnrichmentMapBuildMapTaskFactory implements TaskFactory{
 			super();
 			this.map = map;
 			this.applicationManager = applicationManager;
+			this.swingApplication = swingApplication;
 			this.networkManager = networkManager;
 			this.networkViewManager = networkViewManager;
 			this.networkViewFactory = networkViewFactory;
@@ -169,8 +175,11 @@ public class EnrichmentMapBuildMapTaskFactory implements TaskFactory{
         //build the resulting map
         CreateEnrichmentMapNetworkTask create_map = new CreateEnrichmentMapNetworkTask(map,networkFactory, applicationManager,networkManager,tableFactory,tableManager,mapTableToNetworkTable);
         currentTasks.append(create_map);
-  		
-   
+        
+  		ParametersPanel paramsPanel = EnrichmentMapManager.getInstance().getParameterPanel();
+        ShowPanelTask show_parameters_panel = new ShowPanelTask(swingApplication, paramsPanel);
+        currentTasks.append(show_parameters_panel);
+        
         //visualize Network
   		VisualizeEnrichmentMapTask map_viz = new VisualizeEnrichmentMapTask(map,networkFactory,networkManager, networkViewManager,
          		networkViewFactory,visualMappingManager,visualStyleFactory,

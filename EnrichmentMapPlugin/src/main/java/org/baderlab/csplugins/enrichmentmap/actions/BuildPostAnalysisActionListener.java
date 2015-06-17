@@ -57,6 +57,8 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.task.BuildDiseaseSignatureTask;
 import org.baderlab.csplugins.enrichmentmap.task.BuildDiseaseSignatureTaskResult;
 import org.baderlab.csplugins.enrichmentmap.task.CreatePostAnalysisVisualStyleTask;
+import org.baderlab.csplugins.enrichmentmap.task.ShowPanelTask;
+import org.baderlab.csplugins.enrichmentmap.view.ParametersPanel;
 import org.baderlab.csplugins.enrichmentmap.view.PostAnalysisInputPanel;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
@@ -144,6 +146,10 @@ public class BuildPostAnalysisActionListener implements ActionListener {
                 	= new CreatePostAnalysisVisualStyleTask(map, applicationManager, visualMappingManager, visualStyleFactory, equationCompiler, eventHelper,
                 			                                vmfFactoryContinuous, vmfFactoryDiscrete, vmfFactoryPassthrough);
                 currentTasks.append(visualStyleTask);
+                
+                ParametersPanel paramsPanel = EnrichmentMapManager.getInstance().getParameterPanel();
+                ShowPanelTask show_parameters_panel = new ShowPanelTask(swingApplication, paramsPanel);
+                currentTasks.append(show_parameters_panel);
                 
                 TaskObserver dialogObserver = new DialogObserver(visualStyleTask);
                 dialog.execute(currentTasks, dialogObserver);

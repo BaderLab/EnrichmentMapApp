@@ -45,13 +45,12 @@ package org.baderlab.csplugins.enrichmentmap.task;
 
 import java.io.File;
 
-import javax.swing.JRadioButton;
-
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
@@ -191,6 +190,7 @@ public class BuildEnrichmentMapTuneableTask extends AbstractTask {
 	private StreamUtil streamUtil;
 	
     private CyApplicationManager applicationManager;
+    private CySwingApplication swingApplication;
     private CyNetworkManager networkManager;
     private CyNetworkViewManager networkViewManager;
     private CyNetworkViewFactory networkViewFactory;
@@ -213,6 +213,7 @@ public class BuildEnrichmentMapTuneableTask extends AbstractTask {
       
     public BuildEnrichmentMapTuneableTask(CySessionManager sessionManager,
 			StreamUtil streamUtil, CyApplicationManager applicationManager,
+			CySwingApplication swingApplication,
 			CyNetworkManager networkManager,
 			CyNetworkViewManager networkViewManager,
 			CyNetworkViewFactory networkViewFactory,
@@ -230,6 +231,7 @@ public class BuildEnrichmentMapTuneableTask extends AbstractTask {
 		this.sessionManager = sessionManager;
 		this.streamUtil = streamUtil;
 		this.applicationManager = applicationManager;
+		this.swingApplication = swingApplication;
 		this.networkManager = networkManager;
 		this.networkViewManager = networkViewManager;
 		this.networkViewFactory = networkViewFactory;
@@ -308,7 +310,7 @@ public class BuildEnrichmentMapTuneableTask extends AbstractTask {
 
                     
    	EnrichmentMapBuildMapTaskFactory buildmap = new EnrichmentMapBuildMapTaskFactory(map,  
-        			applicationManager,networkManager,networkViewManager,networkViewFactory,networkFactory,tableFactory,tableManager, 
+        			applicationManager,swingApplication,networkManager,networkViewManager,networkViewFactory,networkFactory,tableFactory,tableManager, 
         			visualMappingManager,visualStyleFactory,
         			vmfFactoryContinuous, vmfFactoryDiscrete,vmfFactoryPassthrough, dialog,  streamUtil,layoutManager,mapTableToNetworkTable);
 

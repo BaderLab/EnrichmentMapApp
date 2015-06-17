@@ -1,16 +1,14 @@
 package org.baderlab.csplugins.enrichmentmap.commands;
 
 import java.io.File;
-import java.util.Collection;
-import java.util.Map;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.task.BuildEnrichmentMapTuneableTask;
 import org.baderlab.csplugins.enrichmentmap.task.EnrichmentMapBuildMapTaskFactory;
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
@@ -71,6 +69,7 @@ public class EnrichmentMapGSEACommandHandlerTask extends AbstractTask {
 		private StreamUtil streamUtil;
 		
 	    private CyApplicationManager applicationManager;
+	    private CySwingApplication swingApplication;
 	    private CyNetworkManager networkManager;
 	    private CyNetworkViewManager networkViewManager;
 	    private CyNetworkViewFactory networkViewFactory;
@@ -93,6 +92,7 @@ public class EnrichmentMapGSEACommandHandlerTask extends AbstractTask {
 	    
 	    public EnrichmentMapGSEACommandHandlerTask(CySessionManager sessionManager,
 				StreamUtil streamUtil, CyApplicationManager applicationManager,
+				CySwingApplication swingApplication,
 				CyNetworkManager networkManager,
 				CyNetworkViewManager networkViewManager,
 				CyNetworkViewFactory networkViewFactory,
@@ -110,6 +110,7 @@ public class EnrichmentMapGSEACommandHandlerTask extends AbstractTask {
 			this.sessionManager = sessionManager;
 			this.streamUtil = streamUtil;
 			this.applicationManager = applicationManager;
+			this.swingApplication = swingApplication;
 			this.networkManager = networkManager;
 			this.networkViewManager = networkViewManager;
 			this.networkViewFactory = networkViewFactory;
@@ -173,7 +174,7 @@ public class EnrichmentMapGSEACommandHandlerTask extends AbstractTask {
 
                     
 			EnrichmentMapBuildMapTaskFactory buildmap = new EnrichmentMapBuildMapTaskFactory(map,  
-        			applicationManager,networkManager,networkViewManager,networkViewFactory,networkFactory,tableFactory,tableManager, 
+        			applicationManager,swingApplication,networkManager,networkViewManager,networkViewFactory,networkFactory,tableFactory,tableManager, 
         			visualMappingManager,visualStyleFactory,
         			vmfFactoryContinuous, vmfFactoryDiscrete,vmfFactoryPassthrough, dialog,  streamUtil,layoutManager,mapTableToNetworkTable);
 

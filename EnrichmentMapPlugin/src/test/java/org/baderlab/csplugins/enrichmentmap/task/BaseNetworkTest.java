@@ -113,7 +113,7 @@ public abstract class BaseNetworkTest {
 	protected void buildEnrichmentMap(EnrichmentMapParameters emParams) {
 		EnrichmentMap map = new EnrichmentMap(emParams);
 	   	EnrichmentMapBuildMapTaskFactory buildmap = new EnrichmentMapBuildMapTaskFactory(map,  
-	        			applicationManager, networkManager, networkViewManager,
+	        			applicationManager, swingApplication, networkManager, networkViewManager,
 	        			networkViewFactory, networkFactory, tableFactory,
 	        			tableManager, visualMappingManager, visualStyleFactory,
 	        			vmfFactoryContinuous, vmfFactoryDiscrete, vmfFactoryPassthrough, 
