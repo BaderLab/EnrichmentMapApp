@@ -84,25 +84,22 @@ public class CreatePostAnalysisVisualStyleTask extends AbstractTask {
 		CyNetworkView view = applicationManager.getCurrentNetworkView();
 
         PostAnalysisVisualStyle pa_vs = new PostAnalysisVisualStyle(map.getParams(), equationCompiler, vmfFactoryContinuous, vmfFactoryDiscrete, vmfFactoryPassthrough);
+        pa_vs.applyNetworkSpeficifProperties(taskResult, prefix);
         
         VisualStyle vs = attemptToGetExistingStyle(vs_name);
 		if(vs == null) {
         	vs = visualStyleFactory.createVisualStyle(vs_name);
         	pa_vs.createVisualStyle(vs, prefix);
-        	pa_vs.applyNetworkSpeficifProperties(taskResult, prefix);
             visualMappingManager.addVisualStyle(vs);
         }
-        else {
-        	// update node bypass and edge width equations
-        	pa_vs.applyNetworkSpeficifProperties(taskResult, prefix);
-        }
-        
-		eventHelper.flushPayloadEvents(); // view won't update properly without this
+		
 		visualMappingManager.setCurrentVisualStyle(vs);
 		
 		try {
 			vs.apply(view);
 		} catch(ConcurrentModificationException e) {}
+		
+		eventHelper.flushPayloadEvents(); // view won't update properly without this
 		
         view.updateView();
 	}
