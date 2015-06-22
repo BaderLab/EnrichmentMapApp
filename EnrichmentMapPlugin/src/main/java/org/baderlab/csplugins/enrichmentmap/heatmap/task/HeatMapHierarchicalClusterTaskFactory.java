@@ -36,7 +36,6 @@ public class HeatMapHierarchicalClusterTaskFactory implements TaskFactory {
 		if(this.heatmapPanel.getCurrentExpressionSet2() != null)
 			size += this.heatmapPanel.getCurrentExpressionSet2().size();
 		       				
-		System.out.println("size: " + size + " hierarchicalClusterMax: " + hierarchicalClusterMax);
 		//if there are too many genes then check that the user wants to do clustering
 		if(size > hierarchicalClusterMax){
 			HeatMapHierarchicalClusterQuestionTask clusterquesttask = new HeatMapHierarchicalClusterQuestionTask(swingApplication, this.numConditions,this.numConditions2,this.heatmapPanel,this.map);

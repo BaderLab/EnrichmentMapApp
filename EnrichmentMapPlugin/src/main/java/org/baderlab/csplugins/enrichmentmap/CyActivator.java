@@ -189,12 +189,12 @@ public class CyActivator extends AbstractCyActivator {
 		//Post Enrichment Map analysis Action - open post EM panel
 		serviceProperties = new HashMap<>();
 		serviceProperties.put("inMenuBar", "true");
-		serviceProperties.put("preferredMenu", "Apps.EnrichmentMap.Post Analysis");
+		serviceProperties.put("preferredMenu", "Apps.EnrichmentMap");
 		LoadPostAnalysisPanelAction loadPostAnalysisAction = new LoadPostAnalysisPanelAction(serviceProperties,cyApplicationManagerRef ,cyNetworkViewManagerRef, cySwingApplicationRef, postEMPanel,registrar);
 		
 		serviceProperties = new HashMap<>();
 		serviceProperties.put("inMenuBar", "true");
-		serviceProperties.put("preferredMenu", "Apps.EnrichmentMap.Post Analysis");
+		serviceProperties.put("preferredMenu", "Apps.EnrichmentMap");
 		ShowEdgeWidthPanelAction edgeWidthPanelAction = new ShowEdgeWidthPanelAction(serviceProperties, cyApplicationManagerRef ,cyNetworkViewManagerRef, cySwingApplicationRef, manager, compilerServiceRef);
 		
 		//register the services

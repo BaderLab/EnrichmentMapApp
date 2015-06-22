@@ -26,7 +26,7 @@ public class ShowEdgeWidthPanelAction extends AbstractCyAction {
     public ShowEdgeWidthPanelAction(Map<String,String> configProps, CyApplicationManager applicationManager, 
 			CyNetworkViewManager networkViewManager, CySwingApplication application, EnrichmentMapManager enrichmentMapManager, EquationCompiler equationCompiler) {
     	super(configProps, applicationManager, networkViewManager); 
-    	putValue(NAME, "Edge Width...");
+    	putValue(NAME, "Post Analysis Edge Width...");
 		this.application = application;
 		this.applicationManager = applicationManager;
 		this.enrichmentMapManager = enrichmentMapManager;
