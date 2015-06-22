@@ -57,25 +57,25 @@ public class HeatMapHierarchicalClusterQuestionTask extends AbstractTask impleme
 
 
 	private String showInputDialog() {
-		Object[] options = {NO_SORT, CLUSTER};
+		Object[] options = { NO_SORT, CLUSTER };
 		String message = "<html>The combination of the selected gene sets contains more than 1000 genes.<BR><BR>"
-				       + "Clustering may take a while. Would you like to cluster anyways?<BR></html>";
-		
+						+ "Clustering may take a while. Would you like to cluster anyways?<BR></html>";
+
 		String response = (String) JOptionPane.showInputDialog(
-                swingApplication.getJFrame(),
-                message,
-                "EnrichmentMap: Clustering",
-                JOptionPane.PLAIN_MESSAGE,
-                getDialogIcon(),
-                options,
-                NO_SORT);
-		
+				swingApplication.getJFrame(), 
+				message,
+				"EnrichmentMap: Clustering", 
+				JOptionPane.PLAIN_MESSAGE,
+				getDialogIcon(), 
+				options, 
+				NO_SORT);
+
 		return response;
 	}
-	
+
 	private Icon getDialogIcon() {
-        URL iconURL = getClass().getResource("enrichmentmap_logo.png");
-        return iconURL == null ? null : new ImageIcon(iconURL);
+		URL iconURL = getClass().getResource("enrichmentmap_logo.png");
+		return iconURL == null ? null : new ImageIcon(iconURL);
 	}
 	
 	public <R> R getResults(Class<? extends R> arg0) {
