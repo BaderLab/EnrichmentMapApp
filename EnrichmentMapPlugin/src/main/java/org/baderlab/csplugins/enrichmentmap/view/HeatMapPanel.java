@@ -112,7 +112,6 @@ import org.baderlab.csplugins.enrichmentmap.model.Rank;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.model.SignificantGene;
 import org.baderlab.csplugins.enrichmentmap.parsers.DetermineEnrichmentResultFileReader;
-import org.baderlab.csplugins.enrichmentmap.task.ResultTaskObserver;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanelComponent;
@@ -123,7 +122,7 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.util.swing.OpenBrowser;
-import org.cytoscape.work.swing.DialogTaskManager;
+import org.cytoscape.work.SynchronousTaskManager;
 import org.mskcc.colorgradient.ColorGradientRange;
 import org.mskcc.colorgradient.ColorGradientTheme;
 import org.mskcc.colorgradient.ColorGradientWidget;
@@ -148,7 +147,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
 	private CyApplicationManager applicationManager;
 	private FileUtil fileUtil;
 	private OpenBrowser openBrowser;
-	private DialogTaskManager dialogTaskMonitor;
+	private SynchronousTaskManager syncTaskManager;
 	private StreamUtil streamUtil;
 	
 	private static final long serialVersionUID = 1903063204304411983L;
@@ -248,7 +247,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
      * if true it is a node heatmap, else it is an edge heatmap
      */
     public HeatMapPanel(boolean node, CySwingApplication application, 
-    		FileUtil fileUtil,CyApplicationManager applicationManager,OpenBrowser openBrowser, DialogTaskManager dialogTaskMonitor,StreamUtil streamUtil){
+    		FileUtil fileUtil,CyApplicationManager applicationManager,OpenBrowser openBrowser, SynchronousTaskManager syncTaskManager,StreamUtil streamUtil){
        this.node = node;
        this.setLayout(new java.awt.BorderLayout());
 
@@ -261,7 +260,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
         this.application = application;
         this.applicationManager = applicationManager;
         this.openBrowser = openBrowser;
-        this.dialogTaskMonitor = dialogTaskMonitor;
+        this.syncTaskManager = syncTaskManager;
         this.streamUtil = streamUtil;
         this.fileUtil = fileUtil;
     }
@@ -1739,17 +1738,8 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
                 hmParams.setSortbycolumn_event_triggered(true);
         }
         else if(hmParams.getSort() == HeatMapParameters.Sort.CLUSTER){            
-        		HeatMapHierarchicalClusterTaskFactory clustertask = new HeatMapHierarchicalClusterTaskFactory(this.numConditions,this.numConditions2,this,this.map);
-        		ResultTaskObserver observer = new  ResultTaskObserver();
-        		
-        		this.dialogTaskMonitor.execute(clustertask.createTaskIterator(),observer );
-        		while (!observer.isAllFinished()) { 
-        			try {
-					Thread.sleep(100);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}   }
+        		HeatMapHierarchicalClusterTaskFactory clustertask = new HeatMapHierarchicalClusterTaskFactory(application, this.numConditions,this.numConditions2,this,this.map);
+        		syncTaskManager.execute(clustertask.createTaskIterator());
         		ranks = this.ranks;
         }
         
