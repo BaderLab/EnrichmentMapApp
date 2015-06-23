@@ -47,7 +47,7 @@ public class DisplayOptionsPanel extends JPanel implements CytoPanelComponent {
 	private JCheckBox showEllipsesCheckBox;
 	private JRadioButton heatmapButton;
 	protected JPanel slidersPanel;
-
+	
 	private static String proportionalSizeButtonString = "Font size by # of nodes";
 	private static String constantSizeButtonString = "Constant font size";
 	
@@ -116,8 +116,11 @@ public class DisplayOptionsPanel extends JPanel implements CytoPanelComponent {
 		    		if (fontSize <= 0) {
 		    			throw new Exception();
 		    		}
-		    		selectedAnnotationSet.setFontSize(fontSize);
-		    		AutoAnnotationUtils.updateFontSizes();
+		    		setSelectedAnnotationSet();
+					if(selectedAnnotationSet != null){
+						selectedAnnotationSet.setFontSize(fontSize);
+						AutoAnnotationUtils.updateFontSizes();
+					}
 		    	} catch (Exception ex) {
 		            JOptionPane.showMessageDialog(null,
 		                    "Error: Please enter an integer bigger than 0", "Error Message",
@@ -169,6 +172,9 @@ public class DisplayOptionsPanel extends JPanel implements CytoPanelComponent {
 		showEllipsesCheckBox.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				//make sure we are working with the current selected network
+				setSelectedAnnotationSet();
+				
 				if (selectedAnnotationSet != null) {
 					selectedAnnotationSet.setShowEllipses(showEllipsesCheckBox.isSelected());
 					if (selectedAnnotationSet.isShowEllipses()) {
@@ -195,6 +201,9 @@ public class DisplayOptionsPanel extends JPanel implements CytoPanelComponent {
 		showTextCheckBox.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				//make sure we are working with the current selected network
+				setSelectedAnnotationSet();
+				
 				if (selectedAnnotationSet != null) {
 					JCheckBox showTextCheckBox = (JCheckBox) e.getSource();
 					selectedAnnotationSet.setShowLabel(showTextCheckBox.isSelected());
@@ -228,6 +237,9 @@ public class DisplayOptionsPanel extends JPanel implements CytoPanelComponent {
 		labelOptionsButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				//make sure we are working with the current selected network
+				setSelectedAnnotationSet();
+				
 				if (selectedAnnotationSet != null) {
 					LabelOptionsEditor labelOptionsEditor = new LabelOptionsEditor(selectedAnnotationSet);
 					LabelOptions labelOptions = labelOptionsEditor.showDialog();
@@ -384,7 +396,8 @@ public class DisplayOptionsPanel extends JPanel implements CytoPanelComponent {
 		return "Annotation Display Options Panel";
 	}
 
-	public void setSelectedAnnotationSet(AnnotationSet selectedAnnotationSet) {
-		this.selectedAnnotationSet = selectedAnnotationSet;
+	public void setSelectedAnnotationSet() {		
+			this.selectedAnnotationSet = AutoAnnotationManager.getInstance().getParams().getSelectedAnnotationSet();
+
 	}
 }

@@ -293,5 +293,14 @@ public class AutoAnnotationManager implements
 		this.clusterTableUpdating = clusterTableUpdating;
 	}
 	
-	
+	public AutoAnnotationParameters getParams(){
+		//get the current View
+		CyNetworkView selectedView = this.annotationPanel.getCurrentView();
+
+		if (networkViewToAutoAnnotationParameters.containsKey(selectedView)) 
+			
+			return networkViewToAutoAnnotationParameters.get(selectedView);
+		else
+			return null;
+	}
 }

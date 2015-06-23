@@ -430,8 +430,8 @@ public class AutoAnnotationPanel extends JPanel implements CytoPanelComponent {
 				CyGroupFactory groupFactory = autoAnnotationManager.getGroupFactory();
 				if (itemEvent.getStateChange() == ItemEvent.SELECTED) {
 					AnnotationSet annotationSet = (AnnotationSet) itemEvent.getItem();
-					displayOptionsPanel.setSelectedAnnotationSet(annotationSet);
 					params.setSelectedAnnotationSet(annotationSet);
+					displayOptionsPanel.setSelectedAnnotationSet();					
 					// Update the selected annotation set
 					annotationSet.updateCoordinates();
 					String annotationSetName = annotationSet.getName();

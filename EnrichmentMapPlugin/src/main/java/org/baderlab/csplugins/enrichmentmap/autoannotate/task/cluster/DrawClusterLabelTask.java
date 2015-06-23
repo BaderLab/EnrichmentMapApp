@@ -39,12 +39,14 @@ public class DrawClusterLabelTask extends AbstractTask{
 		// Set the text of the label
 		String labelText = cluster.getLabel();
 
-		Map<String, String> ellipseArgs = cluster.getEllipse().getArgMap();
-		double xPos = Double.parseDouble(ellipseArgs.get("x"));
-		double yPos = Double.parseDouble(ellipseArgs.get("y"));
-		double width = Double.parseDouble(ellipseArgs.get("width"));
-		double height = Double.parseDouble(ellipseArgs.get("height"));
-		
+		double xPos= 0.0,yPos= 0.0,width= 0.0,height = 0.0;
+		if(cluster.getEllipse() != null){
+			Map<String, String> ellipseArgs = cluster.getEllipse().getArgMap();
+			xPos = Double.parseDouble(ellipseArgs.get("x"));
+			yPos = Double.parseDouble(ellipseArgs.get("y"));
+			width = Double.parseDouble(ellipseArgs.get("width"));
+			height = Double.parseDouble(ellipseArgs.get("height"));
+		}
 		// Create the text annotation 
 		Integer labelFontSize = null;
 		if (constantFontSize) {
