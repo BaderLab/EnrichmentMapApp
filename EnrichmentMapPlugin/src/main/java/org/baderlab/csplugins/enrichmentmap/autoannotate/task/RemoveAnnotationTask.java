@@ -38,9 +38,13 @@ public class RemoveAnnotationTask extends AbstractTask {
 		clusterTable.getParent().getParent().getParent().remove(clusterTable.getParent().getParent());
 		
 		// Prevent heatmap dialog from interrupting this task
-		HeatMapParameters heatMapParameters = emManager.getMap(selectedNetwork.getSUID()).getParams().getHmParams();
-		if (heatMapParameters != null) {
-			heatMapParameters.setSort(HeatMapParameters.Sort.NONE);
+		//first check if emManager exists.  If you use the app for networks that aren't EMs then no
+		//need to check heatmap params
+		if(emManager != null && emManager.getMap(selectedNetwork.getSUID()) != null){
+			HeatMapParameters heatMapParameters = emManager.getMap(selectedNetwork.getSUID()).getParams().getHmParams();
+			if (heatMapParameters != null) {
+				heatMapParameters.setSort(HeatMapParameters.Sort.NONE);
+			}
 		}
 		// Delete all annotations
 		Iterator<Cluster> clusterIterator = annotationSet.getClusterMap().values().iterator();
