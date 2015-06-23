@@ -381,7 +381,8 @@ public class Cluster implements Comparable<Cluster> {
 		WordInfo nextWord = biggestWord;
 		wordInfosCopy.remove(0);
 		for (WordInfo word : wordInfosCopy) {
-			if (mostCentralNodeLabel.toLowerCase().contains(word.getWord())) {
+			if (mostCentralNodeLabel != null && !mostCentralNodeLabel.equals("") 
+					&& mostCentralNodeLabel.toLowerCase().contains(word.getWord())) {
 				word.setSize(word.getSize() + centralityBonus);
 			}
 		}
