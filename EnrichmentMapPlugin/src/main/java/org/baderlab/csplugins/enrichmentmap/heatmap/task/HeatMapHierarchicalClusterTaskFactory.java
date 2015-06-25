@@ -1,8 +1,9 @@
 package org.baderlab.csplugins.enrichmentmap.heatmap.task;
 
+import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
+import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.view.HeatMapPanel;
-import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 
@@ -14,11 +15,10 @@ public class HeatMapHierarchicalClusterTaskFactory implements TaskFactory {
     
     private HeatMapPanel heatmapPanel;
     private EnrichmentMap map;
-    private CySwingApplication swingApplication;
 
-	public HeatMapHierarchicalClusterTaskFactory(CySwingApplication swingApplication, int numConditions,
+	public HeatMapHierarchicalClusterTaskFactory(int numConditions,
 			int numConditions2, HeatMapPanel heatmapPanel, EnrichmentMap map) {
-		this.swingApplication = swingApplication;
+		super();
 		this.numConditions = numConditions;
 		this.numConditions2 = numConditions2;
 		this.heatmapPanel = heatmapPanel;
@@ -38,7 +38,7 @@ public class HeatMapHierarchicalClusterTaskFactory implements TaskFactory {
 		       				
 		//if there are too many genes then check that the user wants to do clustering
 		if(size > hierarchicalClusterMax){
-			HeatMapHierarchicalClusterQuestionTask clusterquesttask = new HeatMapHierarchicalClusterQuestionTask(swingApplication, this.numConditions,this.numConditions2,this.heatmapPanel,this.map);
+			HeatMapHierarchicalClusterQuestionTask clusterquesttask = new HeatMapHierarchicalClusterQuestionTask(this.numConditions,this.numConditions2,this.heatmapPanel,this.map);
 			clusterIterator.append(clusterquesttask);
 		}
 		else{

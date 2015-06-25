@@ -42,6 +42,9 @@ public class LoadSignatureGMTFilesTask implements TaskFactory{
     }
 
     
+    /**
+     * @see cytoscape.task.Task#run()
+     */
     public void load() {
         //now a Cytoscape Task (LoadSignatureGenesetsTask)
         try {
