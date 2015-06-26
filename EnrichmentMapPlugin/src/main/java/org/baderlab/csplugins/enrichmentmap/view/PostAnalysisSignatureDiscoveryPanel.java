@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -259,12 +260,15 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
         JButton selectSigGMTFileButton = new JButton();
         signatureDiscoveryGMTFileNameTextField = new JFormattedTextField() ;
         signatureDiscoveryGMTFileNameTextField.setColumns(15);
+        final Color textFieldForeground = signatureDiscoveryGMTFileNameTextField.getForeground();
 
-
-        //components needed for the directory load
-        signatureDiscoveryGMTFileNameTextField.setFont(new java.awt.Font("Dialog",1,10));
-        //GMTFileNameTextField.setText(gmt_instruction);
-        signatureDiscoveryGMTFileNameTextField.addPropertyChangeListener("value", new FormattedTextFieldAction());
+        signatureDiscoveryGMTFileNameTextField.setFont(new Font("Dialog",1,10));
+        signatureDiscoveryGMTFileNameTextField.addPropertyChangeListener("value", new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent e) {
+            	// if the text is red set it back to black as soon as the user starts typing
+            	signatureDiscoveryGMTFileNameTextField.setForeground(textFieldForeground);
+            }
+        });
 
 
         selectSigGMTFileButton.setText("...");
@@ -282,7 +286,6 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
         SigGMTPanel.add(SigGMTLabel, BorderLayout.WEST);
         SigGMTPanel.add(signatureDiscoveryGMTFileNameTextField, BorderLayout.CENTER);
         SigGMTPanel.add(selectSigGMTFileButton, BorderLayout.EAST);
-        //add the components to the panel
         
         panel.add(SigGMTPanel);
 
@@ -293,7 +296,22 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
         //TODO: Maybe move loading SigGMT to File-selection Event add load button
         JButton loadButton = new JButton();
         loadButton.setText("Load Gene-Sets");
-        loadButton.addActionListener(new LoadSignatureSetsActionListener(parentPanel, application, cyApplicationManager, dialog, streamUtil));
+        loadButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				String filePath = (String) signatureDiscoveryGMTFileNameTextField.getValue();
+		    	
+		    	if(filePath == null || PostAnalysisInputPanel.checkFile(filePath).equals(Color.RED)){
+		    		String message = "SigGMT file name not valid.\n";
+		    		signatureDiscoveryGMTFileNameTextField.setForeground(Color.RED);
+		            JOptionPane.showMessageDialog(application.getJFrame(), message, "Post Analysis Known Signature", JOptionPane.WARNING_MESSAGE);
+		            return;
+		        }
+		    	
+				paParams.setSignatureGMTFileName(filePath);
+				LoadSignatureSetsActionListener action = new LoadSignatureSetsActionListener(parentPanel, application, cyApplicationManager, dialog, streamUtil);
+				action.actionPerformed(null);
+			}
+		});
         
         loadButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         panel.add(loadButton);
@@ -316,7 +334,15 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
         
         filterTextField = new JFormattedTextField() ;
         filterTextField.setColumns(4);
-        filterTextField.addPropertyChangeListener("value", new FormattedTextFieldAction());
+        filterTextField.addPropertyChangeListener("value", new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent e) {
+                StringBuilder message = new StringBuilder("The value you have entered is invalid.\n");
+                boolean valid = PostAnalysisInputPanel.validateAndSetFilterValue(filterTextField, paParams.getFilterParameters(), message);
+                if (!valid) {
+                	JOptionPane.showMessageDialog(application.getJFrame(), message.toString(), "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
+                }
+             }
+         });
 
         //Two types of filters:
         // 1. filter by percent, i.e. the overlap between the signature geneset and EM geneset
@@ -350,43 +376,7 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
         collapsiblePanel.getContentPane().add(filterTypePanel);
         return collapsiblePanel;
     }
-    
-    
-    /**
-     * Handles setting for the text field parameters that are numbers.
-     * Makes sure that the numbers make sense.
-     */
-    private class FormattedTextFieldAction implements PropertyChangeListener {
-        public void propertyChange(PropertyChangeEvent e) {
-           JFormattedTextField source = (JFormattedTextField) e.getSource();
-           StringBuilder message = new StringBuilder("The value you have entered is invalid.\n");
-           
-           if (source == signatureDiscoveryGMTFileNameTextField) {
-                String value = signatureDiscoveryGMTFileNameTextField.getText();
-                if(value.equalsIgnoreCase("") )
-                    paParams.setSignatureGMTFileName(value);
-                else if(signatureDiscoveryGMTFileNameTextField.getText().equalsIgnoreCase((String)e.getOldValue())){
-                    //do nothing
-                }
-                else if(PostAnalysisInputPanel.checkFile(value).equals(Color.RED)){
-                    JOptionPane.showMessageDialog(application.getJFrame(),message,"File name change entered is not a valid file name",JOptionPane.WARNING_MESSAGE);
-                    signatureDiscoveryGMTFileNameTextField.setForeground(PostAnalysisInputPanel.checkFile(value));
-                }
-                else {
-                    paParams.setSignatureGMTFileName(value);
-//                    paParams.setSignatureSetNames(new DefaultListModel());
-//                    paParams.setSelectedSignatureSetNames(new DefaultListModel());
-                }
-            } 
-            else if (source == filterTextField) {
-            	boolean valid = PostAnalysisInputPanel.validateAndSetFilterValue(filterTextField, paParams.getFilterParameters(), message);
-            	if (!valid) {
-                    JOptionPane.showMessageDialog(application.getJFrame(), message.toString(), "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
-                }
-            }
-        }
-    }
-    
+
     
     void resetPanel() {
     	paParams.setSignatureGenesets(new SetOfGeneSets());

@@ -87,6 +87,7 @@ import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
+import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.swing.DialogTaskManager;
 
 
@@ -105,7 +106,8 @@ public class PostAnalysisInputPanel extends JPanel {
 	private final CyServiceRegistrar registrar;
 	private final CySessionManager sessionManager;
 	private final StreamUtil streamUtil;
-	private final DialogTaskManager dialog;
+	private final DialogTaskManager dialogTaskManager;
+	private final SynchronousTaskManager syncTaskManager;
 	private final CyEventHelper eventHelper;
 	private final EquationCompiler equationCompiler;
     
@@ -133,7 +135,7 @@ public class PostAnalysisInputPanel extends JPanel {
     public PostAnalysisInputPanel(CyApplicationManager cyApplicationManager, CySwingApplication application, 
     		OpenBrowser browser,FileUtil fileUtil, CySessionManager sessionManager,
     		StreamUtil streamUtil,CyServiceRegistrar registrar,
-    		DialogTaskManager dialog,CyEventHelper eventHelper, EquationCompiler equationCompiler,
+    		DialogTaskManager dialog, SynchronousTaskManager syncTaskManager, CyEventHelper eventHelper, EquationCompiler equationCompiler,
     		VisualMappingManager visualMappingManager, VisualStyleFactory visualStyleFactory,
     		VisualMappingFunctionFactory vmfFactoryContinuous, VisualMappingFunctionFactory vmfFactoryDiscrete, VisualMappingFunctionFactory vmfFactoryPassthrough) {
     	
@@ -144,7 +146,8 @@ public class PostAnalysisInputPanel extends JPanel {
         this.registrar = registrar;
         this.sessionManager = sessionManager;
         this.streamUtil = streamUtil;
-        this.dialog = dialog;
+        this.dialogTaskManager = dialog;
+        this.syncTaskManager = syncTaskManager;
         this.eventHelper = eventHelper;
         this.equationCompiler = equationCompiler;
         this.visualMappingManager = visualMappingManager;
@@ -155,7 +158,7 @@ public class PostAnalysisInputPanel extends JPanel {
     		
         
         // Create the two main panels, set the default one
-        knownSignaturePanel = new PostAnalysisKnownSignaturePanel(this, cyApplicationManager, application, streamUtil, dialog, fileUtil);
+        knownSignaturePanel = new PostAnalysisKnownSignaturePanel(this, cyApplicationManager, application, streamUtil, syncTaskManager);
         signatureDiscoveryPanel = new PostAnalysisSignatureDiscoveryPanel(this, cyApplicationManager, application, streamUtil, dialog, fileUtil);
        
         userInputPanel = new JPanel(new BorderLayout());
@@ -176,7 +179,7 @@ public class PostAnalysisInputPanel extends JPanel {
     }
     
 
-    private void flipPanels(JPanel toRemove, JPanel toAdd){
+    private void flipPanels(JPanel toRemove, JPanel toAdd) {
     	userInputPanel.remove(toRemove);
     	userInputPanel.add(toAdd, BorderLayout.CENTER);
     	userInputPanel.revalidate();
@@ -304,9 +307,19 @@ public class PostAnalysisInputPanel extends JPanel {
 
         JButton importButton = new JButton();
         importButton.setText("Run");
-        importButton.addActionListener(new BuildPostAnalysisActionListener(this, sessionManager, streamUtil, application, cyApplicationManager, 
-        		                                                           dialog, eventHelper, equationCompiler, visualMappingManager, visualStyleFactory,
-        																   vmfFactoryContinuous, vmfFactoryDiscrete, vmfFactoryPassthrough));
+        importButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				boolean okToRun = beforeRun();
+				if(okToRun) {
+					BuildPostAnalysisActionListener action = new BuildPostAnalysisActionListener(PostAnalysisInputPanel.this, sessionManager, streamUtil, application, cyApplicationManager, 
+	                        dialogTaskManager, eventHelper, equationCompiler, visualMappingManager, visualStyleFactory, vmfFactoryContinuous, vmfFactoryDiscrete, vmfFactoryPassthrough);
+					action.runPostAnalysis();
+				}
+			}
+		});
+        		
+        		
+        		
         importButton.setEnabled(true);
 
         panel.add(resetButton);
@@ -323,14 +336,13 @@ public class PostAnalysisInputPanel extends JPanel {
        
         // Get the file name
         File file = fileUtil.getFile(SwingUtil.getWindowInstance(this), "Import Signature GMT File", FileUtil.LOAD, all_filters);
-        getPaParams().setSignatureGMTFileName("");
         
         if(file != null) {
-        	textField.setForeground(PostAnalysisInputPanel.checkFile(file.getAbsolutePath()));
-        	textField.setText(file.getAbsolutePath());
-        	textField.setValue(file.getAbsolutePath());
-            getPaParams().setSignatureGMTFileName(file.getAbsolutePath());
-            textField.setToolTipText(file.getAbsolutePath());
+        	String absolutePath = file.getAbsolutePath();
+			textField.setForeground(PostAnalysisInputPanel.checkFile(absolutePath));
+        	textField.setText(absolutePath);
+        	textField.setValue(absolutePath);
+            textField.setToolTipText(absolutePath);
             textField.setCaretPosition(textField.getText().length());
         }
         
@@ -448,6 +460,13 @@ public class PostAnalysisInputPanel extends JPanel {
 		if (signatureDiscovery.isSelected()) {
 			signatureDiscoveryPanel.setAvSigCount(avSigCount);
 		}
+	}
+	
+	public boolean beforeRun() {
+		if(knownSignature.isSelected())
+			return knownSignaturePanel.beforeRun();
+		else
+			return true;
 	}
 	
 }

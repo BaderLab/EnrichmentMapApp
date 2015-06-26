@@ -117,7 +117,10 @@ public class BuildPostAnalysisActionListener implements ActionListener {
     }
 
     public void actionPerformed(ActionEvent event) {
-
+    	runPostAnalysis();
+    }
+    
+    public void runPostAnalysis() {
         //make sure that the minimum information is set in the current set of parameters
     	PostAnalysisParameters paParams = inputPanel.getPaParams();
         

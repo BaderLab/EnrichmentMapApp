@@ -2,12 +2,12 @@ package org.baderlab.csplugins.enrichmentmap.view;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -25,8 +25,7 @@ import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.io.util.StreamUtil;
-import org.cytoscape.util.swing.FileUtil;
-import org.cytoscape.work.swing.DialogTaskManager;
+import org.cytoscape.work.SynchronousTaskManager;
 
 @SuppressWarnings("serial")
 public class PostAnalysisKnownSignaturePanel extends JPanel {
@@ -36,8 +35,7 @@ public class PostAnalysisKnownSignaturePanel extends JPanel {
 	private final CyApplicationManager cyApplicationManager;
     private final CySwingApplication application;
 	private final StreamUtil streamUtil;
-	private final DialogTaskManager dialog;
-	private final FileUtil fileUtil;
+	private final SynchronousTaskManager syncTaskManager;
 	
 	// 'Known Signature Panel' parameters
 	private EnrichmentMap map;
@@ -46,21 +44,20 @@ public class PostAnalysisKnownSignaturePanel extends JPanel {
     private PostAnalysisWeightPanel weightPanel;
     
 	private JFormattedTextField knownSignatureGMTFileNameTextField;
+
 	
 	public PostAnalysisKnownSignaturePanel(
 			PostAnalysisInputPanel parentPanel,
 			CyApplicationManager cyApplicationManager,
 			CySwingApplication application,
 			StreamUtil streamUtil,
-			DialogTaskManager dialog,
-			FileUtil fileUtil) {
+			SynchronousTaskManager syncTaskManager) {
 		
 		this.parentPanel = parentPanel;
 		this.cyApplicationManager = cyApplicationManager;
 		this.application = application;
 		this.streamUtil = streamUtil;
-		this.dialog = dialog;
-		this.fileUtil = fileUtil;
+		this.syncTaskManager = syncTaskManager;
 		
 		createKnownSignatureOptionsPanel();
 	}
@@ -103,12 +100,15 @@ public class PostAnalysisKnownSignaturePanel extends JPanel {
         JButton selectSigGMTFileButton = new JButton();
         knownSignatureGMTFileNameTextField = new JFormattedTextField() ;
         knownSignatureGMTFileNameTextField.setColumns(15);
+        final Color textFieldForeground = knownSignatureGMTFileNameTextField.getForeground();
 
-
-        //components needed for the directory load
-        knownSignatureGMTFileNameTextField.setFont(new java.awt.Font("Dialog",1,10));
-        //GMTFileNameTextField.setText(gmt_instruction);
-        knownSignatureGMTFileNameTextField.addPropertyChangeListener("value",new FormattedTextFieldAction());
+        knownSignatureGMTFileNameTextField.setFont(new Font("Dialog",1,10));
+        knownSignatureGMTFileNameTextField.addPropertyChangeListener("value", new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent e) {
+            	// if the text is red set it back to black as soon as the user starts typing
+                knownSignatureGMTFileNameTextField.setForeground(textFieldForeground);
+            }
+        });
 
 
         selectSigGMTFileButton.setText("...");
@@ -116,7 +116,7 @@ public class PostAnalysisKnownSignaturePanel extends JPanel {
         selectSigGMTFileButton.setActionCommand("Known Signature");
         selectSigGMTFileButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                selectSignatureGMTFileButtonActionPerformed(evt);
+            	parentPanel.chooseGMTFile(knownSignatureGMTFileNameTextField);
             }
         });
 
@@ -136,55 +136,28 @@ public class PostAnalysisKnownSignaturePanel extends JPanel {
     }
     
     
-    /**
-     * Event Handler for selectSignatureGMTFileButton.<p>
-     * Opens a file browser dialog to select the SignatureGMTFile.
-     */
-    private void selectSignatureGMTFileButtonActionPerformed(ActionEvent evt) {
-    	File file = parentPanel.chooseGMTFile(knownSignatureGMTFileNameTextField);
-    	if(file != null) {
-            //Load in the GMT file
-            //Manually fire the same action listener that is used by the signature discovery panel
-            LoadSignatureSetsActionListener loadAction = new LoadSignatureSetsActionListener(parentPanel, application, cyApplicationManager, dialog, streamUtil);
-            loadAction.setSelectAll(true);
-            loadAction.actionPerformed(evt);
+    public boolean beforeRun() {
+    	String filePath = (String)knownSignatureGMTFileNameTextField.getValue();
+    	
+    	if(filePath == null || PostAnalysisInputPanel.checkFile(filePath).equals(Color.RED)){
+    		String message = "SigGMT file name not valid.\n";
+    		knownSignatureGMTFileNameTextField.setForeground(Color.RED);
+            JOptionPane.showMessageDialog(application.getJFrame(), message, "Post Analysis Known Signature", JOptionPane.WARNING_MESSAGE);
+            return false;
         }
+    	
+    	paParams.setSignatureGMTFileName(filePath);
+    	
+    	// Load in the GMT file
+        // Manually fire the same action listener that is used by the signature discovery panel.
+    	// Use the synchronousTaskManager so that this blocks
+        LoadSignatureSetsActionListener loadAction = new LoadSignatureSetsActionListener(parentPanel, application, cyApplicationManager, syncTaskManager, streamUtil);
+        loadAction.setSelectAll(true);
+        loadAction.actionPerformed(null);
+    	
+        return true;
     }
     
-    
-    /**
-     * Handles setting for the text field parameters that are numbers.
-     * Makes sure that the numbers make sense.
-     */
-    private class FormattedTextFieldAction implements PropertyChangeListener {
-        public void propertyChange(PropertyChangeEvent e) {
-            JFormattedTextField source = (JFormattedTextField) e.getSource();
-
-            String message = "The value you have entered is invalid.\n";
-            boolean invalid = false;
-
-            if (source == knownSignatureGMTFileNameTextField) {
-                String value = knownSignatureGMTFileNameTextField.getText();
-                if(value.equalsIgnoreCase("") )
-                    paParams.setSignatureGMTFileName(value);
-                else if(knownSignatureGMTFileNameTextField.getText().equalsIgnoreCase((String)e.getOldValue())){
-                    //do nothing
-                }
-                else if(PostAnalysisInputPanel.checkFile(value).equals(Color.RED)){
-                    JOptionPane.showMessageDialog(application.getJFrame(),message,"File name change entered is not a valid file name",JOptionPane.WARNING_MESSAGE);
-                    knownSignatureGMTFileNameTextField.setForeground(PostAnalysisInputPanel.checkFile(value));
-                }
-                else {
-                    paParams.setSignatureGMTFileName(value);
-                    paParams.getSignatureSetNames().clear();
-                    paParams.getSelectedSignatureSetNames().clear();
-                }
-            } 
-            if (invalid) {
-                JOptionPane.showMessageDialog(application.getJFrame(), message, "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
-            }
-        }
-    }
     
     void resetPanel() {
     	paParams.setSignatureGenesets(new SetOfGeneSets());

@@ -169,7 +169,7 @@ public class PostAnalysisParameters {
      */
     public String checkGMTfiles() {
         String signatureGMTFileName = getSignatureGMTFileName();
-		if(signatureGMTFileName.isEmpty() || !EnrichmentMapParameters.checkFile(signatureGMTFileName))
+		if(signatureGMTFileName == null || signatureGMTFileName.isEmpty() || !EnrichmentMapParameters.checkFile(signatureGMTFileName))
             return "Signature GMT file can not be found \n";
         return "";
     }
