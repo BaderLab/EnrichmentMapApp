@@ -581,12 +581,15 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
     }
 
     private Color getColor(ColorGradientTheme theme, ColorGradientRange range, String gene, Double measurement){
-    		float rLow = theme.getMinColor().getRed()/255, gLow = theme.getMinColor().getGreen()/255, bLow = theme.getMinColor().getBlue()/255;
-    		float rMid = theme.getCenterColor().getRed()/255,gMid = theme.getCenterColor().getGreen()/255,bMid = theme.getCenterColor().getBlue()/255;
-    		float rHigh = theme.getMaxColor().getRed()/255, gHigh = theme.getMaxColor().getGreen()/255, bHigh = theme.getMaxColor().getBlue()/255;
+    	if(theme == null || range == null || measurement == null)
+    		return Color.GRAY;
+    	
+    	float rLow = theme.getMinColor().getRed()/255, gLow = theme.getMinColor().getGreen()/255, bLow = theme.getMinColor().getBlue()/255;
+    	float rMid = theme.getCenterColor().getRed()/255,gMid = theme.getCenterColor().getGreen()/255,bMid = theme.getCenterColor().getBlue()/255;
+    	float rHigh = theme.getMaxColor().getRed()/255, gHigh = theme.getMaxColor().getGreen()/255, bHigh = theme.getMaxColor().getBlue()/255;
     		
-    		double median;
-    		if(range.getMinValue() >= 0)
+    	double median;
+    	if(range.getMinValue() >= 0)
                 median = (range.getMaxValue() /2);
         else
         		median = 0.0;
@@ -600,12 +603,21 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
     			return new Color(rVal,gVal,bVal);
     		}
     		else{
+    			//Related to bug https://github.com/BaderLab/EnrichmentMapApp/issues/116
+    			//When there is differing max and mins for datasets then it will throw exception
+    			//for the dataset2 if the value is bigger than the max
+    			//This need to be fixed on the dataset but in the meantime if the value is bigger
+    			//than the max set it to the max
+    			if(measurement > range.getMaxValue())
+    				measurement = range.getMaxValue();
+    			
     			float prop = (float) ((float)(measurement - median)/(range.getMaxValue() - median));
     			float rVal = rMid + prop * ( rHigh - rMid );
     			float gVal = gMid + prop * ( gHigh - gMid );
     			float bVal = bMid + prop * ( bHigh - bMid );
-    		
+    			   			
     			return new Color(rVal,gVal,bVal);
+    			
     		}
     }
     
@@ -803,8 +815,8 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
                 expValue[k][1]=row.getDescription();
 
                 rowLength[k]=row.getExpression().length;
-                rowTheme[k]=hmParams.getTheme();
-                rowRange[k]=hmParams.getRange();
+                rowTheme[k]=hmParams.getTheme_ds1();
+                rowRange[k]=hmParams.getRange_ds1();
                 rowGeneName[k]=row.getName();
 
                 for(int j = 0; j < row.getExpression().length;j++){
@@ -1083,8 +1095,8 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
 
 
                 halfRow1Length[k]=expression_values1.length;
-                themeHalfRow1[k]=hmParams.getTheme();
-                rangeHalfRow1[k]=hmParams.getRange();
+                themeHalfRow1[k]=hmParams.getTheme_ds1();
+                rangeHalfRow1[k]=hmParams.getRange_ds1();
 
                 if(halfRow1 != null)
                     hRow1[k]=halfRow1.getName();
@@ -1098,8 +1110,8 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
 
 
                halfRow2Length[k]=(expression_values1.length + expression_values2.length);
-               themeHalfRow2[k]=hmParams.getTheme();
-               rangeHalfRow2[k]=hmParams.getRange();
+               themeHalfRow2[k]=hmParams.getTheme_ds2();
+               rangeHalfRow2[k]=hmParams.getRange_ds2();
                if(halfRow1 != null)
                     hRow2[k]=halfRow1.getName();
                 else
@@ -1201,9 +1213,19 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent{
          expBorder.setTitleJustification(TitledBorder.LEFT);
          expLegendPanel.setBorder(expBorder);
 
-        ColorGradientWidget new_legend = ColorGradientWidget.getInstance("",200,30,5,5,hmParams.getTheme(),hmParams.getRange(),true,ColorGradientWidget.LEGEND_POSITION.LEFT);
+        if(this.currentExpressionSet2 != null && !this.currentExpressionSet2.isEmpty()){
+        	ColorGradientWidget new_legend_ds1 = ColorGradientWidget.getInstance("",100,30,5,5,hmParams.getTheme_ds1(),hmParams.getRange_ds1(),true,ColorGradientWidget.LEGEND_POSITION.LEFT);
+        	ColorGradientWidget new_legend_ds2 = ColorGradientWidget.getInstance("",100,30,5,5,hmParams.getTheme_ds2(),hmParams.getRange_ds2(),true,ColorGradientWidget.LEGEND_POSITION.LEFT);
 
-        expLegendPanel.add(new_legend, BorderLayout.CENTER);
+        	expLegendPanel.add(new_legend_ds1, BorderLayout.NORTH);
+        	expLegendPanel.add(new_legend_ds2, BorderLayout.SOUTH);
+        }
+        else{
+        	ColorGradientWidget new_legend = ColorGradientWidget.getInstance("",200,30,5,5,hmParams.getTheme_ds1(),hmParams.getRange_ds1(),true,ColorGradientWidget.LEGEND_POSITION.LEFT);
+
+        	expLegendPanel.add(new_legend, BorderLayout.CENTER);
+        }
+        
         expLegendPanel.revalidate();
         return expLegendPanel;
     }

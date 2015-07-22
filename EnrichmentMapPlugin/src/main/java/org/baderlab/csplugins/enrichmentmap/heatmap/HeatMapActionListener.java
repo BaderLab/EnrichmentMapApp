@@ -256,8 +256,14 @@ public class HeatMapActionListener implements ActionListener {
                     hmParams.flipAscending(hmParams.getSortIndex());
                 }
         }
-
-        hmParams.ResetColorGradient();
+        
+           
+        hmParams.ResetColorGradient_ds1();
+        
+        if(params.isData2() && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null
+      		   && !map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getFilename().equalsIgnoreCase(map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getFilename()))
+        	hmParams.ResetColorGradient_ds2();
+        
         edgeOverlapPanel.updatePanel();
         nodeOverlapPanel.updatePanel();
 
