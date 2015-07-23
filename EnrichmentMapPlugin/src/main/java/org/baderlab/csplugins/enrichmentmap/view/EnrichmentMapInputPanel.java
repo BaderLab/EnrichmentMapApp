@@ -1848,9 +1848,24 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
         			String fullText2 = new Scanner(reader,"UTF-8").useDelimiter("\\A").next();
 
         			String[] lines2 = fullText2.split("\r\n?|\n");
+        			
+        			/*
+        			 * GSEA class files will have 3 lines in the following format:
+        			 * 	6 2 1
+						# R9C_8W WT_8W
+						R9C_8W R9C_8W R9C_8W WT_8W WT_8W WT_8W 
+						
+						If the file has 3 lines assume it is a GSEA and get the phenotypes from the third line.
+						If the file only has 1 line assume that it is a generic class file and get the phenotypes from the single line
+
+        			 */
 
         			//the class file can be split by a space or a tab
-        			String[] classes = lines2[2].split("\\s");
+        			String[] classes=null;
+        			if(lines2.length >= 3)
+        				classes = lines2[2].split("\\s");
+        			else if(lines2.length == 1)
+        				classes = lines2[0].split("\\s");
 
 
         			//the third line of the class file defines the classes
