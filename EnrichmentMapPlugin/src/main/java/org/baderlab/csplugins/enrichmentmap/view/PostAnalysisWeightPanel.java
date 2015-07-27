@@ -17,6 +17,7 @@ import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.Map;
 
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
@@ -39,6 +40,10 @@ import org.cytoscape.application.swing.CySwingApplication;
 @SuppressWarnings("serial")
 public class PostAnalysisWeightPanel extends CollapsiblePanel {
 
+	private static final String LABEL_TEST = "Test:";
+	private static final String LABEL_DATASET = "Data Set:";
+	private static final String LABEL_RANKS = "Ranks:";
+	
 	private final CySwingApplication application;
 	
 	private PostAnalysisParameters paParams;
@@ -67,7 +72,7 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
     private JPanel cardPanel;
     
 	public PostAnalysisWeightPanel(CySwingApplication application) {
-		super("Edge Weight Calculation Parameters");
+		super("Edge Weight Parameters");
 		this.application = application;
 		createPanel();
 	}
@@ -124,6 +129,10 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
 		JPanel panel = new JPanel();
 		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 		
+		JPanel cutoffLabel = new JPanel();
+	    cutoffLabel.add(new JLabel("Select Cutoff:"));
+	    panel.add(cutoffLabel);
+	        
 		DecimalFormat decFormat = new DecimalFormat();
         decFormat.setParseIntegerOnly(false);
         rankTestTextField = new JFormattedTextField(decFormat);
@@ -154,19 +163,24 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
             }
         });
         
-        panel.add(rankTestCombo);
+       
+        panel.add(create3CellGridPanel(LABEL_TEST, rankTestCombo, rankTestTextField));
         
-        JPanel cutoffLabel = new JPanel();
-        cutoffLabel.add(new JLabel("Select Cutoff:"));
-        panel.add(cutoffLabel);
+        datasetCombo = new JComboBox<>();
+        // Dataset model is already initialized
+        datasetModel = new DefaultComboBoxModel<>();
+        datasetCombo.setModel(datasetModel);
+        datasetCombo.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+            	String dataset = (String)datasetCombo.getSelectedItem();
+            	if(dataset == null)
+            		return;
+            	paParams.setSignature_dataSet(dataset);
+            	updateUniverseSize(dataset);
+            }
+        });
         
-        JPanel cutoffPanel = new JPanel();
-        cutoffPanel.setLayout(new BoxLayout(cutoffPanel, BoxLayout.X_AXIS));
-
-        cutoffPanel.add(rankTestCombo);
-        cutoffPanel.add(rankTestTextField);
-
-        panel.add(cutoffPanel);
+        panel.add(create3CellGridPanel(LABEL_DATASET, datasetCombo, null));
         
         return panel;
 	}
@@ -249,22 +263,6 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
 	
 	
 	private JPanel createMannWhittPanel() {
-		JPanel panel = new JPanel(new GridBagLayout());
-		
-		datasetCombo = new JComboBox<>();
-        // Dataset model is already initialized
-        datasetModel = new DefaultComboBoxModel<>();
-        datasetCombo.setModel(datasetModel);
-        datasetCombo.addActionListener(new ActionListener() {
-            public void actionPerformed( ActionEvent e ) {
-            	String dataset = (String)datasetCombo.getSelectedItem();
-            	if(dataset == null)
-            		return;
-            	paParams.setSignature_dataSet(dataset);
-            	updateUniverseSize();
-            }
-        });
-        
         rankingModel = new DefaultComboBoxModel<>();
         rankingCombo = new JComboBox<>();
         rankingCombo.setModel(rankingModel);
@@ -274,23 +272,8 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
             }
         });
         
-        
-        GridBagConstraints c = new GridBagConstraints();
-        c.insets = new Insets(0,0,0,0);
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.anchor = GridBagConstraints.WEST;
-        c.gridx = 0;
-        c.gridy = 0;
-        panel.add(datasetCombo, c);
-        
-        c.gridy = 1;
-        panel.add(rankingCombo, c);
-        
-        c.gridy = 2;
-        c.weighty = 1.0;
-        c.weightx = 1.0;
-        panel.add(new JLabel(""), c);
-        
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.add(create3CellGridPanel(LABEL_RANKS, rankingCombo, null), BorderLayout.NORTH);
         return panel;
 	}
 	
@@ -342,6 +325,49 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
         }
 	}
 	
+	/*
+	 * This is a hackey way of getting the three comboboxes to line up properly without putting them in the
+	 * same grid panel. I didn't want to put them in the same panel because I would have had to rewrite
+	 * a big chunk of this file.
+	 */
+	private static JPanel create3CellGridPanel(String label, JComboBox<?> combo, JFormattedTextField textField) {
+		int labelWidth = (int) new JLabel(LABEL_DATASET).getPreferredSize().getWidth();  // use the widest one
+		
+		JPanel panel = new JPanel(new GridBagLayout());
+		
+		GridBagConstraints c = new GridBagConstraints();
+        c.insets = new Insets(0,0,0,0);
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.anchor = GridBagConstraints.WEST;
+        
+        c.gridy = 0;
+        
+        c.gridx = 0;
+		panel.add(Box.createHorizontalStrut(labelWidth), c);
+		c.gridx = 1;
+		panel.add(Box.createHorizontalStrut(1), c);
+		c.gridx = 2;
+		c.weightx = 1.0;
+		panel.add(Box.createHorizontalStrut(1), c);
+		
+		c.weightx = 0.0;
+		c.gridy = 1;
+		
+		c.gridx = 0;
+        panel.add(new JLabel(label), c);
+        c.gridx = 1;
+        if(textField == null)
+        	c.gridwidth = 2;
+        panel.add(combo, c);
+        if(textField == null)
+        	return panel;
+        c.gridx = 2;
+        panel.add(textField,c);
+		
+		return panel;
+	}
+	
+	
 	
 	void resetPanel() {
 		gmtRadioButton.setSelected(true);
@@ -361,6 +387,10 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
         for (String dataset : datasetArray) {
         	datasetModel.addElement(dataset);
         }
+        datasetCombo.setEnabled(datasetModel.getSize() > 1);
+        if(datasetModel.getSize() > 0) {
+        	datasetCombo.setSelectedIndex(0);
+        }
         
         Map<String,Ranking> rankingMap = map.getAllRanks();
         String[] rankingArray = rankingMap.keySet().toArray(new String[rankingMap.size()]);
@@ -369,8 +399,10 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
         for (String ranking : rankingArray) {
         	rankingModel.addElement(ranking);
         }
-        
-		updateUniverseSize();
+        rankingCombo.setEnabled(rankingModel.getSize() > 1);
+        if(rankingModel.getSize() > 0) {
+        	rankingCombo.setSelectedIndex(0);
+        }
         
 		FilterParameters filterParams = paParams.getRankTestParameters();
 		if(filterParams.getType() == FilterType.NO_FILTER) {
@@ -385,13 +417,13 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
 		rankTestTextField.setValue(value);
 		
 		rankingEnablementRenderer.enableIndex(0);
-		if(rankingArray.length == 0)
+		if(rankingArray.length == 0) {
 			rankingEnablementRenderer.disableIndex(0);
+		}
     }
     
     
-    private void updateUniverseSize() {
-    	String signature_dataSet = paParams.getSignature_dataSet();
+    private void updateUniverseSize(String signature_dataSet) {
     	GeneExpressionMatrix expressionSets = map.getDataset(signature_dataSet).getExpressionSets();
     	
     	universeGmt = map.getNumberOfGenes();

@@ -118,17 +118,19 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
     	this.applicationManager = applicationManager;
     	this.eventHelper = eventHelper;
 
-    	HashMap<String, DataSet> data_sets = this.map.getDatasets();
-    	DataSet dataset = data_sets.get(paParams.getSignature_dataSet());
-    	ranks = new Ranking();
-    	if (dataset != null) {
-    		ranks = dataset.getExpressionSets().getRanks().get(paParams.getSignature_rankFile());
-    	}    	
+    	DataSet dataset = map.getDataset(paParams.getSignature_dataSet());
+    	this.ranks = dataset.getExpressionSets().getRanks().get(paParams.getSignature_rankFile());
 
     	//create a new instance of the parameters and copy the version received from the input window into this new instance.
     	this.paParams = new PostAnalysisParameters(paParams); // copy constructor
         
-        this.EnrichmentGenesets = map.getEnrichmentGenesets();
+    	// we want genesets of interest that are not signature genesets put there by previous runs of post-analysis
+    	this.EnrichmentGenesets = new HashMap<>();
+    	for(Map.Entry<String, GeneSet> gs : dataset.getGenesetsOfInterest().getGenesets().entrySet()) {
+    		if(map.getEnrichmentGenesets().containsKey(gs.getKey())) {
+    			this.EnrichmentGenesets.put(gs.getKey(), gs.getValue());
+    		}
+    	}
         this.SignatureGenesets  = this.paParams.getSignatureGenesets().getGenesets();
 
         if (map.getGenesetSimilarity() == null)
@@ -447,11 +449,9 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 
 		// add the geneset of the signature node to the GenesetsOfInterest,
 		// as the Heatmap will grep it's data from there.
-		//TODO: Currently only supports one dataset
-		//TODO:Enable signature dataset with multiple dataset
-		
-		sigGeneSet.getGenes().retainAll(map.getDataset(EnrichmentMap.DATASET1).getDatasetGenes());
-		map.getDataset(EnrichmentMap.DATASET1).getGenesetsOfInterest().getGenesets().put(hub_name, sigGeneSet);
+		DataSet dataset = map.getDataset(paParams.getSignature_dataSet());
+		sigGeneSet.getGenes().retainAll(dataset.getDatasetGenes());
+		dataset.getGenesetsOfInterest().getGenesets().put(hub_name, sigGeneSet);
 		
 		return created;
 	}

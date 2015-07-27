@@ -18,7 +18,7 @@ public class FilterParameters {
     	MANN_WHIT("Mann-Whitney", 0.05), 
     	NUMBER("Overlap has at least X genes", 5), 
     	PERCENT("Overlap is X percent of EM gs", 25),
-    	SPECIFIC("Overlap is X percent of Signature gs", 25);
+    	SPECIFIC("Overlap is X percent of Sig gs", 25);
     	
     	public final String display;
     	public final double defaultValue;
