@@ -135,6 +135,9 @@ public class ParseGenericEnrichmentResults extends AbstractTask {
             line = lines[i];
 
             tokens = line.split("\t");
+            
+            //update the length each time because some line might have missing values
+            length = tokens.length;
 
             double pvalue = 1.0;
             double FDRqvalue = 1.0;
@@ -159,7 +162,7 @@ public class ParseGenericEnrichmentResults extends AbstractTask {
             String description = tokens[1].toUpperCase();
 
             //The third column is the nominal p-value
-            if(tokens[2].equalsIgnoreCase("")){
+            if(tokens[2] == null || tokens[2].equalsIgnoreCase("")){
                 //do nothing
             }else{
                 pvalue = Double.parseDouble(tokens[2]);
@@ -167,7 +170,7 @@ public class ParseGenericEnrichmentResults extends AbstractTask {
 
             if(length > 3){
                 //the fourth column is the FDR q-value
-                if(tokens[3].equalsIgnoreCase("")){
+                if(tokens[3] == null || tokens[3].equalsIgnoreCase("")){
                     //do nothing
                 }else{
                     FDRqvalue = Double.parseDouble(tokens[3]);
@@ -179,7 +182,7 @@ public class ParseGenericEnrichmentResults extends AbstractTask {
                 // and if it is a number the only important part is the sign
                 if(length > 4) {
 
-                    if(tokens[4].equalsIgnoreCase("")){
+                    if(tokens[4] == null || tokens[4].equalsIgnoreCase("")){
 
                     }else{
 
