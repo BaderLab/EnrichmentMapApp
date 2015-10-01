@@ -112,7 +112,8 @@ public class ExpressionFileReaderTask extends AbstractTask {
     			//expression
 
     			boolean twoColumns = false;
-
+    			
+					
 
     			HashSet<Integer> datasetGenes = dataset.getDatasetGenes();
     			HashMap genes = dataset.getMap().getGenes();
@@ -126,6 +127,9 @@ public class ExpressionFileReaderTask extends AbstractTask {
     			maxValue = lines.length;
     			int expressionUniverse = 0;
     		
+    			if (taskMonitor != null) 					
+                    taskMonitor.setStatusMessage("Parsing GCT file - " + maxValue + " rows");
+    			
     			GeneExpressionMatrix expressionMatrix = dataset.getExpressionSets();
     			//GeneExpressionMatrix expressionMatrix = new GeneExpressionMatrix(lines[0].split("\t"));
     			//HashMap<Integer,GeneExpression> expression = new HashMap<Integer, GeneExpression>();
@@ -241,7 +245,6 @@ public class ExpressionFileReaderTask extends AbstractTask {
     					// Calculate Percentage.  This must be a value between 0..100.
         				int percentComplete = (int) (((double) currentProgress / maxValue) * 100);
 	                    taskMonitor.setProgress(percentComplete);
-	                    taskMonitor.setStatusMessage("Parsing GCT file " + currentProgress + " of " + maxValue);
     				}	
     				currentProgress++;
 

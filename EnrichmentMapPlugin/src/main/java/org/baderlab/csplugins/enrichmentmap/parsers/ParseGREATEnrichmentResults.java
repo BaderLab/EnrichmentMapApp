@@ -118,6 +118,8 @@ public class ParseGREATEnrichmentResults extends AbstractTask implements Observa
 
         int currentProgress = 0;
         int maxValue = lines.length;
+        if(taskMonitor != null)
+            taskMonitor.setStatusMessage("Parsing Great Results file - " + maxValue + " rows");
         //for great files there is an FDR
     		dataset.getMap().getParams().setFDR(true);   
 
@@ -287,10 +289,9 @@ public class ParseGREATEnrichmentResults extends AbstractTask implements Observa
             int percentComplete = (int) (((double) currentProgress / maxValue) * 100);
             //  Estimate Time Remaining
             long timeRemaining = maxValue - currentProgress;
-            if (taskMonitor != null) {
+            if (taskMonitor != null) 
                     taskMonitor.setProgress(percentComplete);
-                    taskMonitor.setStatusMessage("Parsing Great Results file " + currentProgress + " of " + maxValue);
-                }
+                
             currentProgress++;
           
             //check to see if the gene set has already been entered in the results

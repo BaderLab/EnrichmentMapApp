@@ -103,6 +103,9 @@ public class ParseGSEAEnrichmentResults extends AbstractTask{
 
          int currentProgress = 0;
          int maxValue = lines.length;
+         if(taskMonitor!=null)
+        	taskMonitor.setStatusMessage("Parsing Enrichment Results file - " + maxValue + " rows");
+         
          for (int i = 1; i < lines.length; i++) {
                 String line = lines[i];
 
@@ -172,11 +175,9 @@ public class ParseGSEAEnrichmentResults extends AbstractTask{
                 int percentComplete = (int) (((double) currentProgress / maxValue) * 100);
                 //  Estimate Time Remaining
                 long timeRemaining = maxValue - currentProgress;
-                if (taskMonitor != null) {
+                if (taskMonitor != null) 
                         taskMonitor.setProgress(percentComplete);
-                        taskMonitor.setStatusMessage("Parsing Enrichment Results file " + currentProgress + " of " + maxValue);
-                        
-                    }
+ 
                 currentProgress++;
 
                 results.put(Name, result);

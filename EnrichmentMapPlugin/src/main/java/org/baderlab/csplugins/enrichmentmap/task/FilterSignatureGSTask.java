@@ -39,7 +39,7 @@ public class FilterSignatureGSTask extends AbstractTask{
 			DefaultListModel<String> signatureSetNames = paParams.getSignatureSetNames();
 	        DefaultListModel<String> selectedSignatureSetNames = paParams.getSelectedSignatureSetNames();
 	        signatureSetNames.clear(); // clear, that we don't have duplicates afterwards - Bug #103 a
-	        
+	        	        
 	        //filter the signature genesets to only include genesets that overlap with the genesets in our current map.
 	        
 	        // Use the same genesets that are saved to the session file (bug #66)
@@ -49,13 +49,17 @@ public class FilterSignatureGSTask extends AbstractTask{
 	        String[] setNamesArray = paParams.getSignatureGenesets().getGenesets().keySet().toArray(new String[0]);
 	        Arrays.sort(setNamesArray);
 	        
+	        if(taskMonitor != null)
+	        	taskMonitor.setStatusMessage("Analyzing "+ setNamesArray.length+ " genesets"  );
+	        
+	        
 	        FilterMetric filterMetric = null;
         	
 	        for (int i = 0; i < setNamesArray.length; i++) {  
 	        	
 	        	int percentComplete = (int) (((double) i / setNamesArray.length) * 100);
-	            taskMonitor.setStatusMessage("Analyzing geneset " + (i + 1) + " of " + setNamesArray.length);
-	            taskMonitor.setProgress(percentComplete);
+	            if(taskMonitor != null)
+	            	taskMonitor.setProgress(percentComplete);
 	            if (cancelled)
 	                throw new InterruptedException();
 	            String signatureGeneset = setNamesArray[i];

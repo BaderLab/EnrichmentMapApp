@@ -153,6 +153,8 @@ public class GMTFileReaderTask extends AbstractTask {
 
         int currentProgress = 0;
         int maxValue = lines.length;
+        
+        taskMonitor.setStatusMessage("Parsing GMT file - " + maxValue + " rows");   
         try {
             for (int i = 0; i < lines.length; i++) {
                 if (cancelled)
@@ -179,8 +181,7 @@ public class GMTFileReaderTask extends AbstractTask {
 
                     // Calculate Percentage.  This must be a value between 0..100.
                     int percentComplete = (int) (((double) currentProgress / maxValue) * 100);
-                    taskMonitor.setProgress(percentComplete);
-                    taskMonitor.setStatusMessage("Parsing GMT file " + currentProgress + " of " + maxValue);                      
+                    taskMonitor.setProgress(percentComplete);                   
                     currentProgress++;
 
                     //All subsequent fields in the list are the geneset associated with this geneset.

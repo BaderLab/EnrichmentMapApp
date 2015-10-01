@@ -128,7 +128,8 @@ public class ParseBingoEnrichmentResults extends AbstractTask {
         int currentProgress = 0;
         int maxValue = lines.length;
         boolean FDR = true;
-
+        if(taskMonitor != null)
+        	taskMonitor.setStatusMessage("Parsing Generic Results file -" + maxValue + " rows");   
          //skip the first l9 which just has the field names (start i=1)
         //check to see how many columns the data has
 
@@ -245,8 +246,7 @@ public class ParseBingoEnrichmentResults extends AbstractTask {
             //  Estimate Time Remaining
             long timeRemaining = maxValue - currentProgress;
             if (taskMonitor != null) {
-                    taskMonitor.setProgress(percentComplete);
-                    taskMonitor.setStatusMessage("Parsing Generic Results file " + currentProgress + " of " + maxValue);              
+                    taskMonitor.setProgress(percentComplete);           
                 }
             currentProgress++;
 

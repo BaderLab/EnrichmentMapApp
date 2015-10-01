@@ -232,6 +232,8 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
              
             int currentProgress = 0;
             int maxValue = genesetsOfInterest.size();
+            if(taskMonitor != null)
+                taskMonitor.setStatusMessage("Building Enrichment Map - " + maxValue + " genesets"); 
 
             //create the nodes
             //Each geneset of interest is a node
@@ -321,10 +323,9 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
                 int percentComplete = (int) (((double) currentProgress / maxValue) * 100);
                 //  Estimate Time Remaining
                 long timeRemaining = maxValue - currentProgress;
-                if (taskMonitor != null) {
+                if (taskMonitor != null) 
                     taskMonitor.setProgress(percentComplete);
-                    taskMonitor.setStatusMessage("Building Enrichment Map " + currentProgress + " of " + maxValue);                    
-                }
+
                 currentProgress++;
 
             }

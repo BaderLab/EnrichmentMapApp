@@ -106,6 +106,8 @@ public class ParseGenericEnrichmentResults extends AbstractTask {
 
         int currentProgress = 0;
         int maxValue = lines.length;
+        if(taskMonitor != null)
+        	taskMonitor.setStatusMessage("Parsing Generic Results file - " + maxValue + " rows");
         boolean FDR = false;
 
          //skip the first line which just has the field names (start i=1)
@@ -295,10 +297,9 @@ public class ParseGenericEnrichmentResults extends AbstractTask {
             int percentComplete = (int) (((double) currentProgress / maxValue) * 100);
             //  Estimate Time Remaining
             long timeRemaining = maxValue - currentProgress;
-            if (taskMonitor != null) {
+            if (taskMonitor != null) 
                     taskMonitor.setProgress(percentComplete);
-                    taskMonitor.setStatusMessage("Parsing Generic Results file " + currentProgress + " of " + maxValue);
-                }
+                
             currentProgress++;
 
              //check to see if the gene set has already been entered in the results

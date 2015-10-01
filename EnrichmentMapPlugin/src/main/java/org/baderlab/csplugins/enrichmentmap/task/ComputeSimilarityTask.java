@@ -136,6 +136,8 @@ public class ComputeSimilarityTask extends AbstractTask {
             
             int currentProgress = 0;
             int maxValue = genesetsOfInterest.size();
+            if(taskMonitor != null)
+                taskMonitor.setStatusMessage("Computing Geneset similarity - " + maxValue + " similarities"); 
 
             //figure out if we need to compute edges for two different expression sets or one.
             int enrichment_set =0;
@@ -153,10 +155,9 @@ public class ComputeSimilarityTask extends AbstractTask {
                 //int percentComplete = (int) (((double) currentProgress / maxValue) * 100);
                 //  Estimate Time Remaining
                 long timeRemaining = maxValue - currentProgress;
-                if (taskMonitor != null) {
-                   taskMonitor.setProgress((double) currentProgress / maxValue);
-                   taskMonitor.setStatusMessage("Computing Geneset similarity " + currentProgress + " of " + maxValue);                
-                }
+                if (taskMonitor != null) 
+                   taskMonitor.setProgress((double) currentProgress / maxValue);             
+                
                 currentProgress++;
 
                 String geneset1_name = i.next().toString();
@@ -239,7 +240,8 @@ public class ComputeSimilarityTask extends AbstractTask {
                 genesetsInnerLoop = genesetsOfInterest_set2;
                 
                 maxValue = genesetsOfInterest.size() + genesetsOfInterest_set2.size();
-                
+                if(taskMonitor != null)
+                    taskMonitor.setStatusMessage("Computing Geneset similarity - " + maxValue + " similarities");   
                //iterate through the each of the GSEA Results of interest - for the second set.
                 for(Iterator i = genesetsOfInterest_set2.keySet().iterator(); i.hasNext(); ){
 
@@ -247,10 +249,9 @@ public class ComputeSimilarityTask extends AbstractTask {
                     int percentComplete = (int) (((double) currentProgress / maxValue) * 100);
                     //  Estimate Time Remaining
                     long timeRemaining = maxValue - currentProgress;
-                    if (taskMonitor != null) {
-                        taskMonitor.setProgress((double) currentProgress / maxValue);
-                        taskMonitor.setStatusMessage("Computing Geneset similarity " + currentProgress + " of " + maxValue);                       
-                    }
+                    if (taskMonitor != null) 
+                        taskMonitor.setProgress((double) currentProgress / maxValue);                       
+                    
                     currentProgress++;
 
                     String geneset1_name = i.next().toString();

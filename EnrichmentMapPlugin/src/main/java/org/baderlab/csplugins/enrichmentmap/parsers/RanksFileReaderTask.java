@@ -152,6 +152,8 @@ public class RanksFileReaderTask extends AbstractTask {
         String[] lines = fullText.split("\r\n?|\n");
         int currentProgress = 0;
         maxValue = lines.length;
+        if(taskMonitor != null)
+            taskMonitor.setStatusMessage("Parsing Rank file - " + maxValue + " rows");  
 
         HashMap<String,Integer> genes = dataset.getMap().getGenes();
         // we don't know the number of scores in the rank file yet, but it can't be more than the number of lines.
@@ -266,8 +268,7 @@ public class RanksFileReaderTask extends AbstractTask {
             // Calculate Percentage.  This must be a value between 0..100.
             if (taskMonitor != null) {
             	int percentComplete = (int) (((double) currentProgress / maxValue) * 100);
-                taskMonitor.setProgress(percentComplete);
-                taskMonitor.setStatusMessage("Parsing Rank file " + currentProgress + " of " + maxValue);                    
+                taskMonitor.setProgress(percentComplete);                  
             }
             currentProgress++;
 

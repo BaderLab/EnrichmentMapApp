@@ -106,7 +106,7 @@ public class InitializeGenesetsOfInterestTask extends AbstractTask {
  
         //create subset of genesets that contains only the genesets of interest with pvalue and qbalue less than values
         //specified by the user.
-               
+       	
         //Go through each Dataset populating the Gene set of interest in each dataset object
         HashMap<String,DataSet> datasets = map.getDatasets();
         for(Iterator<String> j = datasets.keySet().iterator();j.hasNext();){
@@ -136,6 +136,10 @@ public class InitializeGenesetsOfInterestTask extends AbstractTask {
         		int currentProgress = 0;
         		int maxValue = enrichmentResults.size() ;
         		
+        	  	if(taskMonitor!=null)
+        			taskMonitor.setStatusMessage("Initializing " + maxValue + " genesets");
+            
+        		
         		//if there are no enrichment Results then do nothing
         		if(enrichmentResults == null || enrichmentResults.isEmpty())
         			return false;
@@ -147,11 +151,9 @@ public class InitializeGenesetsOfInterestTask extends AbstractTask {
         			int percentComplete = (int) (((double) currentProgress / maxValue) * 100);
         			//  Estimate Time Remaining
         			long timeRemaining = maxValue - currentProgress;
-        			if (taskMonitor != null) {
+        			if (taskMonitor != null) 
         				taskMonitor.setProgress(percentComplete);
-        				taskMonitor.setStatusMessage("Parsing GMT file " + currentProgress + " of " + maxValue);
-        				
-        			}
+
         			currentProgress++;
 
         			String current_name = i.next().toString();

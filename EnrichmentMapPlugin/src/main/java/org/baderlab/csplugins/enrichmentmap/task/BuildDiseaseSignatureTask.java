@@ -180,6 +180,8 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
          * and Enrichment Genesets.                         *
          ****************************************************/
         int maxValue = SelectedSignatureGenesets.size() * EnrichmentGenesets.size();
+        if(taskMonitor != null)
+            taskMonitor.setStatusMessage("Computing Geneset similarity - " + maxValue + " rows");
         int currentProgress = 0;
         double currentNodeY_offset = paParams.getCurrentNodePlacementY_Offset();
         double currentNodeY_increment = 150.0;
@@ -240,7 +242,6 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
                     // Estimate Time Remaining
                     if (taskMonitor != null) {
                        taskMonitor.setProgress(percentComplete);
-                       taskMonitor.setStatusMessage("Computing Geneset similarity " + currentProgress + " of " + maxValue);
                        taskMonitor.setTitle("Post Analysis");
                     }
                     currentProgress++;
