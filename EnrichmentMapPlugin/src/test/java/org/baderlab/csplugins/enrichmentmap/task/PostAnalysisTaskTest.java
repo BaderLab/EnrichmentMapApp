@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
+import org.baderlab.csplugins.enrichmentmap.EdgeSimilarities;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.FilterParameters.FilterType;
@@ -57,14 +58,15 @@ public class PostAnalysisTaskTest extends BaseNetworkTest {
 	   	assertTrue(nodes.containsKey("TOP8_PLUS100"));
 	   	assertTrue(nodes.containsKey("TOP1_PLUS100"));
 	   	
-	   	Map<String,CyEdge> edges = getEdges(network);
+	   	EdgeSimilarities edges = getEdgeSimilarities(network);
+	   	
 	   	assertEquals(6, edges.size());
-	   	assertTrue(edges.containsKey("MIDDLE8_PLUS100 (Geneset_Overlap) BOTTOM8_PLUS100"));
-	   	assertTrue(edges.containsKey("TOP8_PLUS100 (Geneset_Overlap) MIDDLE8_PLUS100"));
-	   	assertTrue(edges.containsKey("TOP8_PLUS100 (Geneset_Overlap) BOTTOM8_PLUS100"));
-	   	assertTrue(edges.containsKey("TOP1_PLUS100 (Geneset_Overlap) TOP8_PLUS100"));
-	   	assertTrue(edges.containsKey("TOP1_PLUS100 (Geneset_Overlap) MIDDLE8_PLUS100"));
-	   	assertTrue(edges.containsKey("TOP1_PLUS100 (Geneset_Overlap) BOTTOM8_PLUS100"));
+	   	assertTrue(edges.containsEdge("MIDDLE8_PLUS100", "Geneset_Overlap", "BOTTOM8_PLUS100"));
+	   	assertTrue(edges.containsEdge("TOP8_PLUS100", "Geneset_Overlap", "MIDDLE8_PLUS100"));
+	   	assertTrue(edges.containsEdge("TOP8_PLUS100", "Geneset_Overlap", "BOTTOM8_PLUS100"));
+	   	assertTrue(edges.containsEdge("TOP1_PLUS100", "Geneset_Overlap", "TOP8_PLUS100"));
+	   	assertTrue(edges.containsEdge("TOP1_PLUS100", "Geneset_Overlap", "MIDDLE8_PLUS100"));
+	   	assertTrue(edges.containsEdge("TOP1_PLUS100", "Geneset_Overlap" ,"BOTTOM8_PLUS100"));
 	   	
 	   	// Make the network available to the subsequent test methods (requires test methods are run in order)
 	   	emNetwork = network;
@@ -93,15 +95,15 @@ public class PostAnalysisTaskTest extends BaseNetworkTest {
 	   	assertEquals(5, nodes.size());
 	   	assertTrue(nodes.containsKey("PA_TOP8_MIDDLE8_BOTTOM8"));
 	   	
-	   	Map<String,CyEdge> edges = getEdges(emNetwork);
+	   	EdgeSimilarities edges = getEdgeSimilarities(emNetwork);
 	   	assertEquals(8, edges.size());
 	   	
-	   	CyEdge edge1 = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig) TOP8_PLUS100");
+	   	CyEdge edge1 = edges.getEdge("PA_TOP8_MIDDLE8_BOTTOM8 (sig) TOP8_PLUS100");
 	   	assertNotNull(edge1);
 	   	assertEquals(1.40E-6, emNetwork.getRow(edge1).get("EM1_Overlap_Mann_Whit_pVal", Double.class), 0.001);
 	   	assertEquals(FilterType.MANN_WHIT.toString(), emNetwork.getRow(edge1).get("EM1_Overlap_cutoff", String.class));
 	   	
-	   	CyEdge edge2 = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig) BOTTOM8_PLUS100");
+	   	CyEdge edge2 = edges.getEdge("PA_TOP8_MIDDLE8_BOTTOM8 (sig) BOTTOM8_PLUS100");
 	   	assertNotNull(edge2);
 	   	assertEquals(1.40E-6, emNetwork.getRow(edge2).get("EM1_Overlap_Mann_Whit_pVal", Double.class), 0.001);
 	   	assertEquals(FilterType.MANN_WHIT.toString(), emNetwork.getRow(edge2).get("EM1_Overlap_cutoff", String.class));
@@ -133,28 +135,28 @@ public class PostAnalysisTaskTest extends BaseNetworkTest {
 	   	assertEquals(5, nodes.size());
 	   	assertTrue(nodes.containsKey("PA_TOP8_MIDDLE8_BOTTOM8"));
 	   	
-	   	Map<String,CyEdge> edges = getEdges(emNetwork);
+	   	EdgeSimilarities edges = getEdgeSimilarities(emNetwork);
 	   	assertEquals(10, edges.size());
 	   	
-	   	CyEdge edge1 = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig) TOP8_PLUS100");
+	   	CyEdge edge1 = edges.getEdge("PA_TOP8_MIDDLE8_BOTTOM8 (sig) TOP8_PLUS100");
 	   	assertNotNull(edge1);
 	   	assertEquals(1.40E-6,  emNetwork.getRow(edge1).get("EM1_Overlap_Mann_Whit_pVal", Double.class), 0.001);
 	   	assertEquals(4.21E-11, emNetwork.getRow(edge1).get("EM1_Overlap_Hypergeom_pVal", Double.class), 0.001);
 	   	assertEquals(FilterType.HYPERGEOM.toString(), emNetwork.getRow(edge1).get("EM1_Overlap_cutoff", String.class));
 	   	
-	   	CyEdge edge2 = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig) BOTTOM8_PLUS100");
+	   	CyEdge edge2 = edges.getEdge("PA_TOP8_MIDDLE8_BOTTOM8 (sig) BOTTOM8_PLUS100");
 	   	assertNotNull(edge2);
 	   	assertEquals(1.40E-6,  emNetwork.getRow(edge2).get("EM1_Overlap_Mann_Whit_pVal", Double.class), 0.001);
 	   	assertEquals(4.21E-11, emNetwork.getRow(edge2).get("EM1_Overlap_Hypergeom_pVal", Double.class), 0.001);
 	   	assertEquals(FilterType.HYPERGEOM.toString(), emNetwork.getRow(edge2).get("EM1_Overlap_cutoff", String.class));
 	   	
-	   	CyEdge edge3 = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig) MIDDLE8_PLUS100");
+	   	CyEdge edge3 = edges.getEdge("PA_TOP8_MIDDLE8_BOTTOM8 (sig) MIDDLE8_PLUS100");
 	   	assertNotNull(edge3);
 		assertNull(emNetwork.getRow(edge3).get("EM1_Overlap_Mann_Whit_pVal", Double.class));
 	   	assertEquals(4.21E-11, emNetwork.getRow(edge3).get("EM1_Overlap_Hypergeom_pVal", Double.class), 0.001);
 	   	assertEquals(FilterType.HYPERGEOM.toString(), emNetwork.getRow(edge3).get("EM1_Overlap_cutoff", String.class));
 	   	
-	   	CyEdge edge4 = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig) TOP1_PLUS100");
+	   	CyEdge edge4 = edges.getEdge("PA_TOP8_MIDDLE8_BOTTOM8 (sig) TOP1_PLUS100");
 	   	assertNotNull(edge4);
 	   	assertNull(emNetwork.getRow(edge4).get("EM1_Overlap_Mann_Whit_pVal", Double.class));
 	   	assertEquals(0.19, emNetwork.getRow(edge4).get("EM1_Overlap_Hypergeom_pVal", Double.class), 0.01);
@@ -167,10 +169,10 @@ public class PostAnalysisTaskTest extends BaseNetworkTest {
 		CyNetworkManager networkManager = mock(CyNetworkManager.class);
 		when(networkManager.getNetworkSet()).thenReturn(Collections.singleton(emNetwork));
 	   	
-		Map<String,CyEdge> edges = getEdges(emNetwork);
+		EdgeSimilarities edges = getEdgeSimilarities(emNetwork);
 		
-		CyEdge sigEdge1 = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig) TOP8_PLUS100");
-		CyEdge sigEdge2 = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig) TOP1_PLUS100");
+		CyEdge sigEdge1 = edges.getEdge("PA_TOP8_MIDDLE8_BOTTOM8 (sig) TOP8_PLUS100");
+		CyEdge sigEdge2 = edges.getEdge("PA_TOP8_MIDDLE8_BOTTOM8 (sig) TOP1_PLUS100");
 		
 		EnrichmentMap map = EnrichmentMapManager.getInstance().getMap(emNetwork.getSUID());
 		assertNotNull(map);

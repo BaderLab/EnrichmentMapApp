@@ -1,6 +1,11 @@
 package org.baderlab.csplugins.enrichmentmap.model;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import org.junit.Test;
 
@@ -57,7 +62,10 @@ public class GeneSetTest {
 		assertEquals("fake geneset", gs.getDescription());
 		
 		assertEquals(4, gs.getGenes().size());
-		assertEquals("Gene Set 1\tfake geneset\t0\t10\t12\t-1\t", gs.toString());
+		
+		List<Integer> geneIds = new ArrayList<>(gs.getGenes());
+		Collections.sort(geneIds);
+		assertEquals(Arrays.asList(-1,0,10,12), geneIds);
 		
 		//test equals function
 		GeneSet gs2 = new GeneSet("Gene Set 1", "fake geneset");

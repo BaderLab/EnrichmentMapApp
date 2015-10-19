@@ -6,6 +6,7 @@ import static org.mockito.Mockito.*;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.baderlab.csplugins.enrichmentmap.EdgeSimilarities;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.LogSilenceRule;
@@ -109,6 +110,13 @@ public abstract class BaseNetworkTest {
 	   	return edges;
 	}
 	
+	protected EdgeSimilarities getEdgeSimilarities(CyNetwork network) {
+		EdgeSimilarities edges = new EdgeSimilarities();
+	   	for(CyEdge edge : network.getEdgeList()) {
+	   		edges.addEdge(network.getRow(edge).get("name", String.class), edge);
+	   	}
+	   	return edges;
+	}
 	
 	protected void buildEnrichmentMap(EnrichmentMapParameters emParams) {
 		EnrichmentMap map = new EnrichmentMap(emParams);

@@ -1,7 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap.task;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.StreamUtil;
@@ -124,58 +124,53 @@ public class LoadDavidResultTest {
 		em.addDataset(EnrichmentMap.DATASET2, dataset2);						
 		//create a DatasetTask
 		ParseDavidEnrichmentResults enrichmentResultsFiles2Task = new ParseDavidEnrichmentResults(dataset2,(org.cytoscape.io.util.StreamUtil)streamUtil);
-		enrichmentResultsFiles2Task.run(taskMonitor); 
+		enrichmentResultsFiles2Task.run(taskMonitor);
 
-		
-		//check to see if the two datasets are distinct
-		if(!(
-				(dataset.getDatasetGenes().containsAll(dataset2.getDatasetGenes())) && 
-				(dataset2.getDatasetGenes().containsAll(dataset.getDatasetGenes()))
-				))
-			params.setTwoDistinctExpressionSets(true);		
-		
-		 	CreateDummyExpressionTask dummyExpressionTask = new CreateDummyExpressionTask(dataset);
-			dummyExpressionTask.run(taskMonitor);
-			CreateDummyExpressionTask dummyExpressionTask2 = new CreateDummyExpressionTask(dataset2);
-			dummyExpressionTask2.run(taskMonitor);
-			
-			em.filterGenesets();
-			
-			InitializeGenesetsOfInterestTask genesets_init = new InitializeGenesetsOfInterestTask(em);
-	        genesets_init.run(taskMonitor);
-	        
-	        ComputeSimilarityTask similarities = new ComputeSimilarityTask(em);
-	        similarities.run(taskMonitor);
+		// check to see if the two datasets are distinct
+		if (!((dataset.getDatasetGenes().containsAll(dataset2.getDatasetGenes()))
+		   && (dataset2.getDatasetGenes().containsAll(dataset.getDatasetGenes()))))
+			params.setTwoDistinctExpressionSets(true);
 
+		CreateDummyExpressionTask dummyExpressionTask = new CreateDummyExpressionTask(dataset);
+		dummyExpressionTask.run(taskMonitor);
+		CreateDummyExpressionTask dummyExpressionTask2 = new CreateDummyExpressionTask(dataset2);
+		dummyExpressionTask2.run(taskMonitor);
 
-      //check to see if the dataset loaded - there should be 215 genesets
-      assertEquals(215, dataset.getSetofgenesets().getGenesets().size());
-      //there should also be 215 enrichments (the genesets are built from the txt file)
-      assertEquals(215, dataset.getEnrichments().getEnrichments().size());
-      //there should be 7 genesets in the enrichments of interest
-      assertEquals(7, dataset.getGenesetsOfInterest().getGenesets().size());      
-      
-      //there should be 114 genes in the geneset "acetylation"
-      assertEquals(114, em.getAllGenesets().get("ACETYLATION").getGenes().size());
-		
+		em.filterGenesets();
+
+		InitializeGenesetsOfInterestTask genesets_init = new InitializeGenesetsOfInterestTask(em);
+		genesets_init.run(taskMonitor);
+
+		ComputeSimilarityTask similarities = new ComputeSimilarityTask(em);
+		similarities.run(taskMonitor);
+
+		// check to see if the dataset loaded - there should be 215 genesets
+		assertEquals(215, dataset.getSetofgenesets().getGenesets().size());
+		// there should also be 215 enrichments (the genesets are built from the txt file)
+		assertEquals(215, dataset.getEnrichments().getEnrichments().size());
+		// there should be 7 genesets in the enrichments of interest
+		assertEquals(7, dataset.getGenesetsOfInterest().getGenesets().size());
+
+		// there should be 114 genes in the geneset "acetylation"
+		assertEquals(114, em.getAllGenesets().get("ACETYLATION").getGenes().size());
+
 		dataset2 = em.getDataset(EnrichmentMap.DATASET2);
-		//check the stats for dataset2
-		//check to see if the dataset loaded - there should be 263 genesets
+		// check the stats for dataset2
+		// check to see if the dataset loaded - there should be 263 genesets
 		assertEquals(263, dataset2.getSetofgenesets().getGenesets().size());
-		//there should also be 263 enrichments (the genesets are built from the bgo file)
+		// there should also be 263 enrichments (the genesets are built from the bgo file)
 		assertEquals(263, dataset2.getEnrichments().getEnrichments().size());
-		//there should be 0 genesets in the enrichments of interest
+		// there should be 0 genesets in the enrichments of interest
 		assertEquals(0, dataset2.getGenesetsOfInterest().getGenesets().size());
-		
-		//make sure the dummy expression has values for all the genes
+
+		// make sure the dummy expression has values for all the genes
 		assertEquals(367, dataset2.getExpressionSets().getNumGenes());
-		assertEquals(367,dataset2.getDatasetGenes().size());
-		
-		//there should be 20 edges (2 edges for every node because of the distinct expresison sets)
-		//assertEquals((7*6),em.getGenesetSimilarity().size());
-		//there should be a total of 366 genes
+		assertEquals(367, dataset2.getDatasetGenes().size());
+
+		// there should be 20 edges (2 edges for every node because of the distinct expresison sets)
+		// assertEquals((7*6),em.getGenesetSimilarity().size()); there should be a total of 366 genes
 		assertEquals(661, em.getGenes().size());
-		
+
 	}
 		
 }

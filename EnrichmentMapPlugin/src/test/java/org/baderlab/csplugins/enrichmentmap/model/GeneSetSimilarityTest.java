@@ -1,7 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap.model;
 
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
 
 import java.util.HashMap;
 
@@ -95,7 +95,7 @@ public class GeneSetSimilarityTest {
 			assertTrue(similarity.getOverlapping_genes().contains(genes.get("CASP3")));
 		}
 		else{
-			similarity = similarities.get("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4 (Geneset_Overlap) APOPTOTIC CLEAVAGE OF CELL ADHESION PROTEINS%REACTOME%REACT_13579.1");
+			similarity = similarities.get("APOPTOTIC CLEAVAGE OF CELL ADHESION PROTEINS%REACTOME%REACT_13579.1 (Geneset_Overlap) APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4");
 			assertEquals(jaccard,similarity.getSimilarity_coeffecient(),0.0);
 			assertEquals("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4",similarity.getGeneset2_Name());
 			assertEquals("APOPTOTIC CLEAVAGE OF CELL ADHESION PROTEINS%REACTOME%REACT_13579.1", similarity.getGeneset1_Name());
@@ -172,7 +172,7 @@ public class GeneSetSimilarityTest {
 			assertTrue(similarity.getOverlapping_genes().contains(genes.get("CASP3")));
 		}
 		else{
-			similarity = similarities.get("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4 (Geneset_Overlap) APOPTOTIC CLEAVAGE OF CELL ADHESION PROTEINS%REACTOME%REACT_13579.1");
+			similarity = similarities.get("APOPTOTIC CLEAVAGE OF CELL ADHESION PROTEINS%REACTOME%REACT_13579.1 (Geneset_Overlap) APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4");
 			assertEquals(overlap,similarity.getSimilarity_coeffecient(),0.0);
 			assertEquals("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4",similarity.getGeneset2_Name());
 			assertEquals("APOPTOTIC CLEAVAGE OF CELL ADHESION PROTEINS%REACTOME%REACT_13579.1", similarity.getGeneset1_Name());
@@ -252,7 +252,7 @@ public class GeneSetSimilarityTest {
 			assertTrue(similarity.getOverlapping_genes().contains(genes.get("CASP3")));
 		}
 		else{
-			similarity = similarities.get("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4 (Geneset_Overlap) APOPTOTIC CLEAVAGE OF CELL ADHESION PROTEINS%REACTOME%REACT_13579.1");
+			similarity = similarities.get("APOPTOTIC CLEAVAGE OF CELL ADHESION PROTEINS%REACTOME%REACT_13579.1 (Geneset_Overlap) APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4");
 			assertEquals(combined,similarity.getSimilarity_coeffecient(),0.0);
 			assertEquals("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4",similarity.getGeneset2_Name());
 			assertEquals("APOPTOTIC CLEAVAGE OF CELL ADHESION PROTEINS%REACTOME%REACT_13579.1", similarity.getGeneset1_Name());
