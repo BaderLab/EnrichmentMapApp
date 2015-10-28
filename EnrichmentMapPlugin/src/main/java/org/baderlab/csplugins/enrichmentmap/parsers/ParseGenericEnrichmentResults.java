@@ -149,6 +149,7 @@ public class ParseGenericEnrichmentResults extends AbstractTask {
 
             //The first column of the file is the name of the geneset
             String name = tokens[0].toUpperCase().trim();
+            String description = tokens[1].toUpperCase();
             
             //the current gene-set
             GeneSet current_set; 
@@ -158,10 +159,8 @@ public class ParseGenericEnrichmentResults extends AbstractTask {
                 gs_size = current_set.getGenes().size();
             }
             else
-                current_set = new GeneSet(name, name);
-            
-
-            String description = tokens[1].toUpperCase();
+                current_set = new GeneSet(name, description);
+                       
 
             //The third column is the nominal p-value
             if(tokens[2] == null || tokens[2].equalsIgnoreCase("")){
