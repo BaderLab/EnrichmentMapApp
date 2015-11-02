@@ -62,7 +62,6 @@ import org.baderlab.csplugins.enrichmentmap.view.ParametersPanel;
 import org.baderlab.csplugins.enrichmentmap.view.PostAnalysisInputPanel;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyEdge;
@@ -90,7 +89,6 @@ public class BuildPostAnalysisActionListener implements ActionListener {
     
 	private final VisualMappingManager visualMappingManager;
 	private final VisualStyleFactory visualStyleFactory;
-	private final EquationCompiler equationCompiler;
 	
 	private final VisualMappingFunctionFactory vmfFactoryContinuous;
     private final VisualMappingFunctionFactory vmfFactoryDiscrete;
@@ -98,7 +96,7 @@ public class BuildPostAnalysisActionListener implements ActionListener {
 
     public BuildPostAnalysisActionListener (PostAnalysisInputPanel panel,  
     		CySessionManager sessionManager, StreamUtil streamUtil, CySwingApplication swingApplication,
-    		CyApplicationManager applicationManager, DialogTaskManager dialog,CyEventHelper eventHelper, EquationCompiler equationCompiler,
+    		CyApplicationManager applicationManager, DialogTaskManager dialog,CyEventHelper eventHelper,
     		VisualMappingManager visualMappingManager, VisualStyleFactory visualStyleFactory, 
     		VisualMappingFunctionFactory vmfFactoryContinuous, VisualMappingFunctionFactory vmfFactoryDiscrete, VisualMappingFunctionFactory vmfFactoryPassthrough) {
         this.inputPanel = panel;
@@ -110,7 +108,6 @@ public class BuildPostAnalysisActionListener implements ActionListener {
         this.eventHelper = eventHelper;
         this.visualMappingManager = visualMappingManager;
         this.visualStyleFactory = visualStyleFactory;
-        this.equationCompiler = equationCompiler;
         this.vmfFactoryContinuous = vmfFactoryContinuous;
         this.vmfFactoryDiscrete = vmfFactoryDiscrete;
         this.vmfFactoryPassthrough = vmfFactoryPassthrough;
@@ -146,7 +143,7 @@ public class BuildPostAnalysisActionListener implements ActionListener {
                 currentTasks.append(new_signature);
                 
                 CreatePostAnalysisVisualStyleTask visualStyleTask 
-                	= new CreatePostAnalysisVisualStyleTask(map, applicationManager, visualMappingManager, visualStyleFactory, equationCompiler, eventHelper,
+                	= new CreatePostAnalysisVisualStyleTask(map, applicationManager, visualMappingManager, visualStyleFactory, eventHelper,
                 			                                vmfFactoryContinuous, vmfFactoryDiscrete, vmfFactoryPassthrough);
                 currentTasks.append(visualStyleTask);
                 

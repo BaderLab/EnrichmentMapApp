@@ -5,38 +5,39 @@ import java.util.Map;
 
 import javax.swing.JOptionPane;
 
-import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
-import org.baderlab.csplugins.enrichmentmap.PostAnalysisVisualStyle;
+import org.baderlab.csplugins.enrichmentmap.WidthFunction;
 import org.baderlab.csplugins.enrichmentmap.view.EdgeWidthDialog;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
+import org.cytoscape.work.TaskManager;
 
 
 @SuppressWarnings("serial")
-public class ShowEdgeWidthPanelAction extends AbstractCyAction {
+public class ShowEdgeWidthDialogAction extends AbstractCyAction {
 	
 	private final CySwingApplication application;
 	private final CyApplicationManager applicationManager;
-	private final EnrichmentMapManager enrichmentMapManager;
-	private final EquationCompiler equationCompiler;
+	private final VisualMappingFunctionFactory vmfFactoryContinuous;
+	private final TaskManager<?,?> taskManager;
 	
-    public ShowEdgeWidthPanelAction(Map<String,String> configProps, CyApplicationManager applicationManager, 
-			CyNetworkViewManager networkViewManager, CySwingApplication application, EnrichmentMapManager enrichmentMapManager, EquationCompiler equationCompiler) {
+    public ShowEdgeWidthDialogAction(Map<String,String> configProps, CyApplicationManager applicationManager, 
+    		VisualMappingFunctionFactory vmfFactoryContinuous, TaskManager<?,?> taskManager,
+			CyNetworkViewManager networkViewManager, CySwingApplication application) {
     	super(configProps, applicationManager, networkViewManager); 
     	putValue(NAME, "Post Analysis Edge Width...");
 		this.application = application;
 		this.applicationManager = applicationManager;
-		this.enrichmentMapManager = enrichmentMapManager;
-		this.equationCompiler = equationCompiler;
+		this.vmfFactoryContinuous = vmfFactoryContinuous;
+		this.taskManager = taskManager;
 	}
 	
 	public void actionPerformed(ActionEvent _) {
 		
-		if(PostAnalysisVisualStyle.appliesTo(applicationManager.getCurrentNetwork())) {
-			EdgeWidthDialog dialog = new EdgeWidthDialog(application, applicationManager, enrichmentMapManager, equationCompiler);
+		if(WidthFunction.appliesTo(applicationManager.getCurrentNetwork())) {
+			EdgeWidthDialog dialog = new EdgeWidthDialog(application, applicationManager, vmfFactoryContinuous, taskManager);
 			dialog.pack();
 			dialog.setLocationRelativeTo(application.getJFrame());
 			dialog.setVisible(true);

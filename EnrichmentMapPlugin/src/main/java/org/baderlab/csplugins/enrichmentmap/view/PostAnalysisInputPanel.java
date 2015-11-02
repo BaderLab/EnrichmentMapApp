@@ -76,7 +76,6 @@ import org.baderlab.csplugins.enrichmentmap.util.SwingUtil;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanelComponent;
-import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -109,7 +108,6 @@ public class PostAnalysisInputPanel extends JPanel {
 	private final DialogTaskManager dialogTaskManager;
 	private final SynchronousTaskManager syncTaskManager;
 	private final CyEventHelper eventHelper;
-	private final EquationCompiler equationCompiler;
     
 	private final VisualMappingManager visualMappingManager;
 	private final VisualStyleFactory visualStyleFactory;
@@ -132,10 +130,10 @@ public class PostAnalysisInputPanel extends JPanel {
     private PostAnalysisParameters knownSigPaParams;
     
     
-    public PostAnalysisInputPanel(CyApplicationManager cyApplicationManager, CySwingApplication application, 
+    public PostAnalysisInputPanel(CyApplicationManager cyApplicationManager, CySwingApplication application,
     		OpenBrowser browser,FileUtil fileUtil, CySessionManager sessionManager,
     		StreamUtil streamUtil,CyServiceRegistrar registrar,
-    		DialogTaskManager dialog, SynchronousTaskManager syncTaskManager, CyEventHelper eventHelper, EquationCompiler equationCompiler,
+    		DialogTaskManager dialog, SynchronousTaskManager syncTaskManager, CyEventHelper eventHelper,
     		VisualMappingManager visualMappingManager, VisualStyleFactory visualStyleFactory,
     		VisualMappingFunctionFactory vmfFactoryContinuous, VisualMappingFunctionFactory vmfFactoryDiscrete, VisualMappingFunctionFactory vmfFactoryPassthrough) {
     	
@@ -149,7 +147,6 @@ public class PostAnalysisInputPanel extends JPanel {
         this.dialogTaskManager = dialog;
         this.syncTaskManager = syncTaskManager;
         this.eventHelper = eventHelper;
-        this.equationCompiler = equationCompiler;
         this.visualMappingManager = visualMappingManager;
         this.visualStyleFactory = visualStyleFactory;
         this.vmfFactoryContinuous = vmfFactoryContinuous;
@@ -312,7 +309,7 @@ public class PostAnalysisInputPanel extends JPanel {
 				boolean okToRun = beforeRun();
 				if(okToRun) {
 					BuildPostAnalysisActionListener action = new BuildPostAnalysisActionListener(PostAnalysisInputPanel.this, sessionManager, streamUtil, application, cyApplicationManager, 
-	                        dialogTaskManager, eventHelper, equationCompiler, visualMappingManager, visualStyleFactory, vmfFactoryContinuous, vmfFactoryDiscrete, vmfFactoryPassthrough);
+	                        dialogTaskManager, eventHelper, visualMappingManager, visualStyleFactory, vmfFactoryContinuous, vmfFactoryDiscrete, vmfFactoryPassthrough);
 					action.runPostAnalysis();
 				}
 			}

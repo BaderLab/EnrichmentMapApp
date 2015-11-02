@@ -20,9 +20,13 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
+import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
+import org.mockito.Matchers;
 
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -168,6 +172,10 @@ public class PostAnalysisTaskTest extends BaseNetworkTest {
 	public void test_4_WidthFunction() {
 		CyNetworkManager networkManager = mock(CyNetworkManager.class);
 		when(networkManager.getNetworkSet()).thenReturn(Collections.singleton(emNetwork));
+		
+		ContinuousMapping<Double,Double> mockFunction = mock(ContinuousMapping.class);
+		when(mockFunction.getMappedValue(Matchers.<CyRow>anyObject())).thenReturn(-1.0);
+		when(vmfFactoryContinuous.createVisualMappingFunction(Matchers.<String>anyObject(), Matchers.<Class>anyObject(), Matchers.<VisualProperty>anyObject())).thenReturn(mockFunction);
 	   	
 		EdgeSimilarities edges = getEdgeSimilarities(emNetwork);
 		
@@ -177,15 +185,14 @@ public class PostAnalysisTaskTest extends BaseNetworkTest {
 		EnrichmentMap map = EnrichmentMapManager.getInstance().getMap(emNetwork.getSUID());
 		assertNotNull(map);
 		
-		WidthFunction widthFunction = new WidthFunction(networkManager, vmfFactoryContinuous, EnrichmentMapManager.getInstance());
-		assertEquals(WidthFunction.NAME, widthFunction.getName());
-		assertNotNull(widthFunction.getFunctionSummary());
-		assertEquals(Double.class, widthFunction.getReturnType());
+		WidthFunction widthFunction = new WidthFunction(vmfFactoryContinuous);
+		widthFunction.setEdgeWidths(emNetwork, "EM1_", null);
 		
+		String widthCol = "EM1_" + WidthFunction.EDGE_WIDTH_FORMULA_COLUMN;
 		
-		double sigWidth1 = widthFunction.evaluateFunction(new Long[] {sigEdge1.getSUID()});
+		double sigWidth1 = emNetwork.getRow(sigEdge1).get(widthCol, Double.class);
 		assertEquals(8.0, sigWidth1, 0.0);
-		double sigWidth2 = widthFunction.evaluateFunction(new Long[] {sigEdge2.getSUID()});
+		double sigWidth2 = emNetwork.getRow(sigEdge2).get(widthCol, Double.class);
 		assertEquals(1.0, sigWidth2, 0.0);
 	}
 }

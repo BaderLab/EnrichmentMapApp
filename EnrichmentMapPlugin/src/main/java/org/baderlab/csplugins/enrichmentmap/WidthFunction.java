@@ -1,136 +1,184 @@
 package org.baderlab.csplugins.enrichmentmap;
 
 import org.baderlab.csplugins.enrichmentmap.FilterParameters.FilterType;
-import org.baderlab.csplugins.enrichmentmap.PostAnalysisVisualStyle.EdgeWidthParams;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.cytoscape.equations.AbstractFunction;
-import org.cytoscape.equations.ArgDescriptor;
-import org.cytoscape.equations.ArgType;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.mappings.BoundaryRangeValues;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
+import org.cytoscape.work.TaskMonitor;
 
-@SuppressWarnings("unchecked")
-public class WidthFunction extends AbstractFunction {
+public class WidthFunction {
 	
-	public static final String NAME = "EM_width";
+	public static final double DEFAULT_WIDTH_EM_LOWER = 1.0;
+	public static final double DEFAULT_WIDTH_EM_UPPER = 5.0;
+	public static final double DEFAULT_WIDTH_PA_LESS_THAN_100 = 8.0;
+	public static final double DEFAULT_WIDTH_PA_LESS_THAN_10 = 4.5;
+	public static final double DEFAULT_WIDTH_PA_GREATER = 1.0;
 	
-	private static final double ERR_DEFAULT = 1.0;
 	
-	private final CyNetworkManager networkManager;
-	private final EnrichmentMapManager enrichmentMapManager;
+	// Column in edge table that holds the formula
+	public static final String EDGE_WIDTH_FORMULA_COLUMN = "Edge_width_formula";
+	// Column in network table that holds the edge parameters
+	public static final String EDGE_WIDTH_PARAMETERS_COLUMN = "EM_Edge_width_parameters";
+	
+	
 	private final VisualMappingFunctionFactory vmfFactoryContinuous;
 	
 	
-	public WidthFunction(CyNetworkManager networkManager, VisualMappingFunctionFactory vmfFactoryContinuous, EnrichmentMapManager enrichmentMapManager) {
-		super(new ArgDescriptor[] { new ArgDescriptor(ArgType.INT, "SUID", "The SUID for the current edge row.") });
-		this.networkManager = networkManager;
+	public WidthFunction(VisualMappingFunctionFactory vmfFactoryContinuous) {
 		this.vmfFactoryContinuous = vmfFactoryContinuous;
-		this.enrichmentMapManager = enrichmentMapManager;
 	}
 
-	@Override
-	public String getName() { 
-		return NAME; 
-	}
- 
-	@Override
-	public String getFunctionSummary() { 
-		return "Calculate edge width for EnrichmentMap networks. (Automatically created)"; 
-	}
-
-	@Override
-	public Class<Double> getReturnType() { 
-		return Double.class; 
-	}
-
-	
-	/**
-	 * Return the CyNetwork that contains the given edge SUID.
-	 */
-	private CyNetwork getNetwork(long edgeSUID) {
-		for(CyNetwork network : networkManager.getNetworkSet()) {
-			if(network.getEdge(edgeSUID) != null) {
-				return network;
-			}
-		}
-		return null;
-	}
-	
-	
 	private static boolean isSignature(String interaction) {
 		return PostAnalysisParameters.SIGNATURE_INTERACTION_TYPE.equals(interaction)
 		    || PostAnalysisParameters.SIGNATURE_INTERACTION_TYPE_SET1.equals(interaction)
 		    || PostAnalysisParameters.SIGNATURE_INTERACTION_TYPE_SET2.equals(interaction);
 	}
 	
+	public static boolean appliesTo(CyNetwork network) {
+		CyTable networkTable = network.getDefaultNetworkTable();
+	    return networkTable.getColumn(EDGE_WIDTH_PARAMETERS_COLUMN) != null;
+	}
 	
-	@Override
-	public Double evaluateFunction(final Object[] args) {
-		long edgeSuid = (Long)args[0];
-		CyNetwork network = getNetwork(edgeSuid);
-		if(network == null)
-			return ERR_DEFAULT;
-		
+	
+	public void setEdgeWidths(CyNetwork network, String prefix, TaskMonitor taskMonitor) {
+		createColumns(network, prefix);
+		calculateAndSetEdgeWidths(network, prefix, taskMonitor);
+	}
+	
+	
+	private void createColumns(CyNetwork network, String prefix) {
+		CyTable networkTable = network.getDefaultNetworkTable();
+        if(networkTable.getColumn(EDGE_WIDTH_PARAMETERS_COLUMN) == null) {
+        	networkTable.createColumn(EDGE_WIDTH_PARAMETERS_COLUMN, String.class, false);
+        }
+        
+        String widthAttribute = prefix + EDGE_WIDTH_FORMULA_COLUMN;
+        CyTable edgeTable = network.getDefaultEdgeTable();
+        if(edgeTable.getColumn(widthAttribute) == null) {
+        	edgeTable.createColumn(widthAttribute, Double.class, false);
+        }
+	}
+	
+	private void calculateAndSetEdgeWidths(CyNetwork network, String prefix, TaskMonitor taskMonitor) {
 		EdgeWidthParams edgeWidthParams = EdgeWidthParams.restore(network);
-		CyRow row = network.getDefaultEdgeTable().getRow(edgeSuid);
-		EnrichmentMap map = enrichmentMapManager.getMap(network.getSUID());
-		String prefix = map.getParams().getAttributePrefix();
+		EnrichmentMap map = EnrichmentMapManager.getInstance().getMap(network.getSUID());
+		String widthAttribute = prefix + EDGE_WIDTH_FORMULA_COLUMN;
 		
-		String interaction = row.get(CyEdge.INTERACTION, String.class);
+		int n = network.getDefaultEdgeTable().getRowCount();
+		int i = 0;
 		
-		if(isSignature(interaction)) {
-			String cutoffType = row.get(prefix + EnrichmentMapVisualStyle.CUTOFF_TYPE, String.class);
-			FilterType filterType = FilterType.fromDisplayString(cutoffType);
-			if(filterType == null) {
-				return ERR_DEFAULT;
+		for(CyRow row : network.getDefaultEdgeTable().getAllRows()) {
+			if(taskMonitor != null) {
+				taskMonitor.setProgress((double)i/(double)n);
 			}
+			i++;
 			
-			Double pvalue, cutoff;
-			if(filterType == FilterType.MANN_WHIT) {
-				pvalue = row.get(prefix + EnrichmentMapVisualStyle.MANN_WHIT_PVALUE, Double.class);
-				cutoff = row.get(prefix + EnrichmentMapVisualStyle.MANN_WHIT_CUTOFF, Double.class);
-			}
+			String interaction = row.get(CyEdge.INTERACTION, String.class);
+			
+			if(isSignature(interaction)) {
+				String cutoffType = row.get(prefix + EnrichmentMapVisualStyle.CUTOFF_TYPE, String.class);
+				FilterType filterType = FilterType.fromDisplayString(cutoffType);
+				if(filterType == null) {
+					row.set(widthAttribute, null);
+					continue;
+				}
+				
+				Double pvalue, cutoff;
+				if(filterType == FilterType.MANN_WHIT) {
+					pvalue = row.get(prefix + EnrichmentMapVisualStyle.MANN_WHIT_PVALUE, Double.class);
+					cutoff = row.get(prefix + EnrichmentMapVisualStyle.MANN_WHIT_CUTOFF, Double.class);
+				}
+				else {
+					pvalue = row.get(prefix + EnrichmentMapVisualStyle.HYPERGEOM_PVALUE, Double.class);
+					cutoff = row.get(prefix + EnrichmentMapVisualStyle.HYPERGEOM_CUTOFF, Double.class);
+				}
+				
+				if(pvalue == null || cutoff == null) {
+					row.set(widthAttribute, null);
+				}
+				else if(pvalue <= cutoff/100) {
+					row.set(widthAttribute, edgeWidthParams.pa_lessThan100);
+				}
+				else if(pvalue <= cutoff/10) {
+					row.set(widthAttribute, edgeWidthParams.pa_lessThan10);
+				}
+				else {
+					row.set(widthAttribute, edgeWidthParams.pa_greater);
+				}
+				
+			} 
 			else {
-				pvalue = row.get(prefix + EnrichmentMapVisualStyle.HYPERGEOM_PVALUE, Double.class);
-				cutoff = row.get(prefix + EnrichmentMapVisualStyle.HYPERGEOM_CUTOFF, Double.class);
+				// Can use a continuous mapping object to perform calculation even though it won't be added to the visual style.
+				ContinuousMapping<Double,Double> conmapping_edgewidth = (ContinuousMapping<Double,Double>) vmfFactoryContinuous.createVisualMappingFunction(prefix + EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT, Double.class, BasicVisualLexicon.EDGE_WIDTH);
+	
+				Double under_width = 0.5;
+				Double min_width = edgeWidthParams.em_lower;
+				Double max_width = edgeWidthParams.em_upper;
+				Double over_width = 6.0;
+	
+				// Create boundary conditions                  less than,   equals,  greater than
+				BoundaryRangeValues<Double> bv4 = new BoundaryRangeValues<Double>(under_width, min_width, min_width);
+				BoundaryRangeValues<Double> bv5 = new BoundaryRangeValues<Double>(max_width, max_width, over_width);
+				conmapping_edgewidth.addPoint(map.getParams().getSimilarityCutOff(), bv4);
+				conmapping_edgewidth.addPoint(1.0, bv5);
+				
+				Double value = conmapping_edgewidth.getMappedValue(row);
+				row.set(widthAttribute, value);
 			}
-			
-			if(pvalue == null || cutoff == null)
-				return ERR_DEFAULT;
-			
-			if(pvalue <= cutoff/100)
-				return edgeWidthParams.pa_lessThan100;
-			else if(pvalue <= cutoff/10)
-				return edgeWidthParams.pa_lessThan10;
-			else
-				return edgeWidthParams.pa_greater;
-			
-		} 
-		else {
-			// Can use a continuous mapping object to perform calculation even though it won't be added to the visual style.
-			ContinuousMapping<Double,Double> conmapping_edgewidth = (ContinuousMapping<Double,Double>) vmfFactoryContinuous.createVisualMappingFunction(prefix + EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT, Double.class, BasicVisualLexicon.EDGE_WIDTH);
-
-			Double under_width = 0.5;
-			Double min_width = edgeWidthParams.em_lower;
-			Double max_width = edgeWidthParams.em_upper;
-			Double over_width = 6.0;
-
-			// Create boundary conditions                  less than,   equals,  greater than
-			BoundaryRangeValues<Double> bv4 = new BoundaryRangeValues<Double>(under_width, min_width, min_width);
-			BoundaryRangeValues<Double> bv5 = new BoundaryRangeValues<Double>(max_width, max_width, over_width);
-			conmapping_edgewidth.addPoint(map.getParams().getSimilarityCutOff(), bv4);
-			conmapping_edgewidth.addPoint(1.0, bv5);
-			
-			return conmapping_edgewidth.getMappedValue(row);
 		}
 	}
 	
+	
+	/**
+	 * Parameters typically used by the EdgeWidthDialog and stored in the network table.
+	 */
+	public static class EdgeWidthParams {
+		public final double em_lower;
+		public final double em_upper;
+		public final double pa_lessThan100;
+		public final double pa_lessThan10;
+		public final double pa_greater;
+		
+		public EdgeWidthParams(double em_lower, double em_upper, double pa_lessThan100, double pa_lessThan10, double pa_greater) {
+			this.em_lower = em_lower;
+			this.em_upper = em_upper;
+			this.pa_lessThan100 = pa_lessThan100;
+			this.pa_lessThan10 = pa_lessThan10;
+			this.pa_greater = pa_greater;
+		}
+		
+		public static EdgeWidthParams defaultValues() {
+			return new EdgeWidthParams(DEFAULT_WIDTH_EM_LOWER, DEFAULT_WIDTH_EM_UPPER,
+					                   DEFAULT_WIDTH_PA_LESS_THAN_100, DEFAULT_WIDTH_PA_LESS_THAN_10, DEFAULT_WIDTH_PA_GREATER);
+		}
+		
+		public static EdgeWidthParams restore(CyNetwork network) {
+			try {
+				String val = network.getRow(network).get(EDGE_WIDTH_PARAMETERS_COLUMN, String.class);
+				String[] params = val.split(",");
+				double em_lower = Double.parseDouble(params[0]);
+				double em_upper = Double.parseDouble(params[1]);
+				double pa_lessThan100 = Double.parseDouble(params[2]);
+				double pa_lessThan10 = Double.parseDouble(params[3]);
+				double pa_greater = Double.parseDouble(params[4]);
+				return new EdgeWidthParams(em_lower, em_upper, pa_lessThan100, pa_lessThan10, pa_greater);
+			} catch(NullPointerException | ArrayIndexOutOfBoundsException | IllegalArgumentException e) {
+				return defaultValues();
+			}
+		}
+		
+		public void save(CyNetwork network) {
+			CyRow row = network.getRow(network);
+			String val = String.format("%f,%f,%f,%f,%f", em_lower, em_upper, pa_lessThan100, pa_lessThan10, pa_greater);
+			row.set(EDGE_WIDTH_PARAMETERS_COLUMN, val);
+		}
+	}
 	
 	
 }

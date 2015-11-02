@@ -15,7 +15,6 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
-import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -46,7 +45,6 @@ public class PostAnalysisPanel extends JPanel implements CytoPanelComponent {
 	private final DialogTaskManager dialog;
 	private final SynchronousTaskManager syncTaskManager;
 	private final CyEventHelper eventHelper;
-	private final EquationCompiler equationCompiler;
     
 	private final VisualMappingManager visualMappingManager;
 	private final VisualStyleFactory visualStyleFactory;
@@ -60,10 +58,10 @@ public class PostAnalysisPanel extends JPanel implements CytoPanelComponent {
     private PostAnalysisInputPanel currentPanel;
     
     
-    public PostAnalysisPanel(CyApplicationManager cyApplicationManager, CySwingApplication application, 
+    public PostAnalysisPanel(CyApplicationManager cyApplicationManager, CySwingApplication application,
     		OpenBrowser browser,FileUtil fileUtil, CySessionManager sessionManager,
     		StreamUtil streamUtil,CyServiceRegistrar registrar,
-    		DialogTaskManager dialog, SynchronousTaskManager syncTaskManager, CyEventHelper eventHelper, EquationCompiler equationCompiler,
+    		DialogTaskManager dialog, SynchronousTaskManager syncTaskManager, CyEventHelper eventHelper,
     		VisualMappingManager visualMappingManager, VisualStyleFactory visualStyleFactory,
     		VisualMappingFunctionFactory vmfFactoryContinuous, VisualMappingFunctionFactory vmfFactoryDiscrete, VisualMappingFunctionFactory vmfFactoryPassthrough) {
     	
@@ -77,7 +75,6 @@ public class PostAnalysisPanel extends JPanel implements CytoPanelComponent {
         this.dialog = dialog;
         this.syncTaskManager = syncTaskManager;
         this.eventHelper = eventHelper;
-        this.equationCompiler = equationCompiler;
         this.visualMappingManager = visualMappingManager;
         this.visualStyleFactory = visualStyleFactory;
         this.vmfFactoryContinuous = vmfFactoryContinuous;
@@ -117,7 +114,7 @@ public class PostAnalysisPanel extends JPanel implements CytoPanelComponent {
     
     private PostAnalysisInputPanel newPostAnalysisInputPanel() {
     	return new PostAnalysisInputPanel(cyApplicationManager, application, browser, fileUtil, sessionManager, streamUtil, registrar, dialog, syncTaskManager, 
-    			eventHelper, equationCompiler, visualMappingManager, visualStyleFactory, vmfFactoryContinuous, vmfFactoryDiscrete, vmfFactoryPassthrough);
+    			eventHelper, visualMappingManager, visualStyleFactory, vmfFactoryContinuous, vmfFactoryDiscrete, vmfFactoryPassthrough);
     }
     
     

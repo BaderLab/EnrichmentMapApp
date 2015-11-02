@@ -99,11 +99,6 @@
 			<artifactId>group-api</artifactId>
 			<version>${cy3.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>org.cytoscape</groupId>
-			<artifactId>equations-api</artifactId>
-			<version>${cy3.version}</version>
-		</dependency>
 		
 		<!-- additional libraries -->
 		<dependency>

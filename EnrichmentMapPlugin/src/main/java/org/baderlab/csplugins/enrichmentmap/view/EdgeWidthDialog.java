@@ -9,7 +9,6 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.DecimalFormat;
-import java.util.concurrent.FutureTask;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -21,18 +20,23 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
-import org.baderlab.csplugins.enrichmentmap.PostAnalysisVisualStyle;
-import org.baderlab.csplugins.enrichmentmap.PostAnalysisVisualStyle.EdgeWidthParams;
+import org.baderlab.csplugins.enrichmentmap.WidthFunction;
+import org.baderlab.csplugins.enrichmentmap.WidthFunction.EdgeWidthParams;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
+import org.cytoscape.work.Task;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskManager;
+import org.cytoscape.work.TaskMonitor;
 
 @SuppressWarnings("serial")
 public class EdgeWidthDialog extends JDialog {
 
-	private final EquationCompiler equationCompiler;
+	private final VisualMappingFunctionFactory vmfFactoryContinuous;
+	private final TaskManager<?,?> taskManager;
 	private final CyNetwork network;
 	private final double similarityCutoff;
 	private final String prefix;
@@ -44,12 +48,14 @@ public class EdgeWidthDialog extends JDialog {
 	private JFormattedTextField greaterThanText;
 	
 	
-	public EdgeWidthDialog(CySwingApplication application, CyApplicationManager applicationManager, EnrichmentMapManager enrichmentMapManager, EquationCompiler equationCompiler) {
+	public EdgeWidthDialog(CySwingApplication application, CyApplicationManager applicationManager, 
+			               VisualMappingFunctionFactory vmfFactoryContinuous, TaskManager<?,?> taskManager) {
+		
 		super(application.getJFrame(), true);
 		this.network = applicationManager.getCurrentNetwork();
-		this.equationCompiler = equationCompiler;
-		
-		EnrichmentMap map = enrichmentMapManager.getMap(network.getSUID());
+		this.taskManager = taskManager;
+		this.vmfFactoryContinuous = vmfFactoryContinuous;
+		EnrichmentMap map = EnrichmentMapManager.getInstance().getMap(network.getSUID());
 		this.similarityCutoff = map.getParams().getSimilarityCutOff();
 		this.prefix = map.getParams().getAttributePrefix();
 		
@@ -249,12 +255,17 @@ public class EdgeWidthDialog extends JDialog {
 				EdgeWidthParams params = new EdgeWidthParams(emLowerWidth, emUpperWidth, lessThan100, lessThan10, greaterThan);
 				params.save(network);
 				
-				// Forces the view to update
-				new FutureTask<>(new Runnable() {
-					public void run() {
-						PostAnalysisVisualStyle.applyWidthEquation(equationCompiler, prefix, network);
+				Task task = new Task() {
+					public void run(TaskMonitor taskMonitor) throws Exception {
+						taskMonitor.setTitle("EnrichmentMap");
+						taskMonitor.setStatusMessage("Calculating Post-Analysis Edge Widths");
+						WidthFunction widthFunction = new WidthFunction(vmfFactoryContinuous);
+						widthFunction.setEdgeWidths(network, prefix, taskMonitor);
 					}
-				}, null).run();
+					public void cancel() { }
+				};
+				
+				taskManager.execute(new TaskIterator(task));
 				
 				dispose();
 			}

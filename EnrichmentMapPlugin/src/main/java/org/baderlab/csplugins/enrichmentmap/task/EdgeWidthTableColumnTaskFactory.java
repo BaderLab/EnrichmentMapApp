@@ -2,8 +2,8 @@ package org.baderlab.csplugins.enrichmentmap.task;
 
 import javax.swing.SwingUtilities;
 
-import org.baderlab.csplugins.enrichmentmap.PostAnalysisVisualStyle;
-import org.baderlab.csplugins.enrichmentmap.actions.ShowEdgeWidthPanelAction;
+import org.baderlab.csplugins.enrichmentmap.WidthFunction;
+import org.baderlab.csplugins.enrichmentmap.actions.ShowEdgeWidthDialogAction;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.task.TableColumnTaskFactory;
 import org.cytoscape.work.Task;
@@ -12,9 +12,9 @@ import org.cytoscape.work.TaskMonitor;
 
 public class EdgeWidthTableColumnTaskFactory implements TableColumnTaskFactory {
 
-	private final ShowEdgeWidthPanelAction action;
+	private final ShowEdgeWidthDialogAction action;
 	
-	public EdgeWidthTableColumnTaskFactory(ShowEdgeWidthPanelAction action) {
+	public EdgeWidthTableColumnTaskFactory(ShowEdgeWidthDialogAction action) {
 		this.action = action;
 	}
 
@@ -36,7 +36,7 @@ public class EdgeWidthTableColumnTaskFactory implements TableColumnTaskFactory {
 	public boolean isReady(CyColumn column) {
 		return column != null 
 		    && column.getName() != null
-		    && column.getName().endsWith(PostAnalysisVisualStyle.EDGE_WIDTH_FORMULA_COLUMN);
+		    && column.getName().endsWith(WidthFunction.EDGE_WIDTH_FORMULA_COLUMN);
 	}
 
 

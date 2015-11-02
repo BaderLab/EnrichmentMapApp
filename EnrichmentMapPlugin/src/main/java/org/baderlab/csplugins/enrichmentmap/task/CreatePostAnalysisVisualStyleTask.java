@@ -5,7 +5,6 @@ import java.util.ConcurrentModificationException;
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisVisualStyle;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
@@ -22,7 +21,6 @@ public class CreatePostAnalysisVisualStyleTask extends AbstractTask {
 	private final CyApplicationManager applicationManager;
 	private final VisualMappingManager visualMappingManager;
 	private final VisualStyleFactory visualStyleFactory;
-	private final EquationCompiler equationCompiler;
 	private final CyEventHelper eventHelper;
 	
 	private final VisualMappingFunctionFactory vmfFactoryContinuous;
@@ -36,16 +34,15 @@ public class CreatePostAnalysisVisualStyleTask extends AbstractTask {
 			CyApplicationManager applicationManager,
 			VisualMappingManager visualMappingManager,
 			VisualStyleFactory visualStyleFactory,
-			EquationCompiler equationCompiler,
 			CyEventHelper eventHelper,
 			VisualMappingFunctionFactory vmfFactoryContinuous,
 			VisualMappingFunctionFactory vmfFactoryDiscrete,
 			VisualMappingFunctionFactory vmfFactoryPassthrough) {
+		
 		this.map = map;
 		this.applicationManager = applicationManager;
 		this.visualMappingManager = visualMappingManager;
 		this.visualStyleFactory = visualStyleFactory;
-		this.equationCompiler = equationCompiler;
 		this.eventHelper = eventHelper;
 		this.vmfFactoryContinuous = vmfFactoryContinuous;
 		this.vmfFactoryDiscrete = vmfFactoryDiscrete;
@@ -76,6 +73,8 @@ public class CreatePostAnalysisVisualStyleTask extends AbstractTask {
 	
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
+		taskMonitor.setTitle("EnrichmentMap");
+		taskMonitor.setStatusMessage("Create Post-Analysis Visual Style");
 		if(taskResult == null)
 			return;
 		
@@ -83,8 +82,8 @@ public class CreatePostAnalysisVisualStyleTask extends AbstractTask {
 		String vs_name = prefix + PostAnalysisVisualStyle.NAME;
 		CyNetworkView view = applicationManager.getCurrentNetworkView();
 
-        PostAnalysisVisualStyle pa_vs = new PostAnalysisVisualStyle(map.getParams(), equationCompiler, vmfFactoryContinuous, vmfFactoryDiscrete, vmfFactoryPassthrough);
-        pa_vs.applyNetworkSpeficifProperties(taskResult, prefix);
+        PostAnalysisVisualStyle pa_vs = new PostAnalysisVisualStyle(map.getParams(), vmfFactoryContinuous, vmfFactoryDiscrete, vmfFactoryPassthrough);
+        pa_vs.applyNetworkSpeficifProperties(taskResult, prefix, taskMonitor);
         
         VisualStyle vs = attemptToGetExistingStyle(vs_name);
 		if(vs == null) {
