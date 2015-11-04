@@ -144,6 +144,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, autoAnnotationManager, ColumnCreatedListener.class, new Properties());
 		registerService(bc, autoAnnotationManager, ColumnDeletedListener.class, new Properties());
 		registerService(bc, autoAnnotationManager, ColumnNameChangedListener.class, new Properties());
+		registerService(bc, autoAnnotationManager, RowsSetListener.class, new Properties());
 
 		//Create each Action within Enrichment map as a service
 		Map<String,String> serviceProperties;

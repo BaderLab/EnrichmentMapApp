@@ -6,11 +6,9 @@ import java.util.ArrayList;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.task.VisualizeClusterAnnotationTaskFactory;
-import org.cytoscape.command.CommandExecutorTaskFactory;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 
@@ -79,11 +77,6 @@ public class SelectClusterTask extends AbstractTask{
 			CyNetwork network = cluster.getParent().getView().getModel();
 			AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
 			autoAnnotationManager.flushPayloadEvents();
-			// Wait for heatmap to finish updating
-			boolean heatMapUpdating = true;
-			while (heatMapUpdating) {
-				heatMapUpdating = autoAnnotationManager.isHeatMapUpdating();
-			}
 			cluster.setSelected(true);
 			// Select node(s) in the cluster
 			if (cluster.isCollapsed()) {
@@ -121,11 +114,6 @@ public class SelectClusterTask extends AbstractTask{
 
 			AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
 			autoAnnotationManager.flushPayloadEvents();
-			// Wait for heatmap to finish updating
-			boolean heatMapUpdating = true;
-			while (heatMapUpdating) {
-				heatMapUpdating = autoAnnotationManager.isHeatMapUpdating();
-			}
 			cluster.setSelected(true);
 			updateCloud( "wordcloud select cloudName=\"" + cluster.getCloudName() + "\" updateNodeSelection=false");
 			selectCluster(cluster);			
@@ -138,11 +126,6 @@ public class SelectClusterTask extends AbstractTask{
 
 			AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
 			autoAnnotationManager.flushPayloadEvents();
-			// Wait for heatmap to finish updating
-			boolean heatMapUpdating = true;
-			while (heatMapUpdating) {
-				heatMapUpdating = autoAnnotationManager.isHeatMapUpdating();
-			}
 			cluster.setSelected(true);
 			
 			selectCluster(cluster);			
