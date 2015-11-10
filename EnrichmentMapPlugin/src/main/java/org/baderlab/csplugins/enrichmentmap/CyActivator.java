@@ -18,6 +18,7 @@ import org.baderlab.csplugins.enrichmentmap.autoannotate.action.AutoAnnotationPa
 import org.baderlab.csplugins.enrichmentmap.autoannotate.action.DisplayOptionsPanelAction;
 import org.baderlab.csplugins.enrichmentmap.commands.EnrichmentMapGSEACommandHandlerTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.task.BuildEnrichmentMapTuneableTaskFactory;
+import org.baderlab.csplugins.enrichmentmap.task.CreatePublicationVisualStyleTaskRunner;
 import org.baderlab.csplugins.enrichmentmap.task.EdgeWidthTableColumnTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.view.BulkEMCreationPanel;
 import org.baderlab.csplugins.enrichmentmap.view.EnrichmentMapInputPanel;
@@ -121,7 +122,8 @@ public class CyActivator extends AbstractCyActivator {
 		//create two instances of the heatmap panel
 		HeatMapPanel heatMapPanel_node = new HeatMapPanel(true, cySwingApplicationRef, fileUtil, cyApplicationManagerRef, openBrowserRef,dialogTaskManager,streamUtil);
 		HeatMapPanel heatMapPanel_edge = new HeatMapPanel(false, cySwingApplicationRef, fileUtil, cyApplicationManagerRef, openBrowserRef,dialogTaskManager,streamUtil);
-		ParametersPanel paramsPanel = new ParametersPanel(openBrowserRef, cyApplicationManagerRef);
+		CreatePublicationVisualStyleTaskRunner taskRunner = new CreatePublicationVisualStyleTaskRunner(cyApplicationManagerRef, visualMappingManagerRef, visualStyleFactoryRef, eventHelper, dialogTaskManager);
+		ParametersPanel paramsPanel = new ParametersPanel(openBrowserRef, cyApplicationManagerRef, taskRunner);
 
 		//Get an instance of EM manager
 		EnrichmentMapManager manager = EnrichmentMapManager.getInstance();
