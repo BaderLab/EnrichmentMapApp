@@ -116,6 +116,11 @@
 			<artifactId>commons-math3</artifactId>
 			<version>3.2</version>
 		</dependency>
+		<dependency>
+			<groupId>com.lowagie</groupId>
+			<artifactId>itext</artifactId>
+			<version>2.0.8</version>
+		</dependency>
 		
 		<!-- testing -->
 		<dependency>
@@ -177,7 +182,7 @@
 						<Bundle-SymbolicName>${bundle.symbolicName}</Bundle-SymbolicName>
 						<Bundle-Version>${project.version}</Bundle-Version>
 						<Bundle-Activator>${bundle.namespace}.enrichmentmap.CyActivator</Bundle-Activator>
-						<Embed-Dependency>colt;inline=true,commons-math3;inline=true</Embed-Dependency>
+						<Embed-Dependency>colt;inline=true,commons-math3;inline=true,itext;inline=true</Embed-Dependency>
 						<Private-Package>${bundle.namespace}.*</Private-Package>
 						<Export-Package>org.mskcc.*;prefuse.*;version="${project.version}"</Export-Package>
 						<Import-Package>*;resolution:=optional</Import-Package>
@@ -241,6 +246,8 @@
 					<outputDirectory>${project.build.directory}</outputDirectory>
 					<libs>
 						<lib>${java.home}/lib/rt.jar</lib>
+						<!-- itext has dependency on javax.crypto in jce.jar -->
+						<lib>${java.home}/lib/jce.jar</lib> 
 					</libs>
 				</configuration>
 			</plugin>

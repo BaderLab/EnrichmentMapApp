@@ -50,6 +50,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.net.URL;
 
@@ -72,13 +73,14 @@ import org.baderlab.csplugins.enrichmentmap.EnrichmentMapVisualStyle;
 import org.baderlab.csplugins.enrichmentmap.actions.ParametersPanelActionListener;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.task.CreatePublicationVisualStyleTaskRunner;
+import org.baderlab.csplugins.enrichmentmap.task.CreatePublicationVisualStyleTaskFactory;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.util.swing.OpenBrowser;
+import org.cytoscape.work.TaskManager;
 
 /**
  * Created by User: risserlin Date: Feb 9, 2009 Time: 2:41:48 PM
@@ -98,15 +100,17 @@ public class ParametersPanel extends JPanel implements CytoPanelComponent {
 
 	private OpenBrowser browser;
 	private CyApplicationManager cyApplicationManager;
-	private CreatePublicationVisualStyleTaskRunner visualStyleTaskRunner;
+	private CreatePublicationVisualStyleTaskFactory visualStyleTaskFactory;
+	private TaskManager<?,?> taskManager;
 
 	/**
 	 * Class constructor
 	 */
-	public ParametersPanel(OpenBrowser browser, CyApplicationManager cyApplicationManager, CreatePublicationVisualStyleTaskRunner visualStyleTaskRunner) {
+	public ParametersPanel(OpenBrowser browser, CyApplicationManager cyApplicationManager, TaskManager<?,?> taskManager, CreatePublicationVisualStyleTaskFactory visualStyleTaskFactory) {
 		this.browser = browser;
 		this.cyApplicationManager = cyApplicationManager;
-		this.visualStyleTaskRunner = visualStyleTaskRunner;
+		this.taskManager = taskManager;
+		this.visualStyleTaskFactory = visualStyleTaskFactory;
 	}
 
 	public void initializeSliders(EnrichmentMap map) {
@@ -198,7 +202,11 @@ public class ParametersPanel extends JPanel implements CytoPanelComponent {
 		prefsPanel.setLayout(new BoxLayout(prefsPanel, BoxLayout.Y_AXIS));
 
 		JButton togglePublicationButton = new JButton("Toggle Publication-Ready");
-		togglePublicationButton.addActionListener(visualStyleTaskRunner);
+		togglePublicationButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				taskManager.execute(visualStyleTaskFactory.createTaskIterator());
+			}
+		});
 		prefsPanel.add(togglePublicationButton);
 		
 		// Begin of Code to toggle "Disable Heatmap autofocus"

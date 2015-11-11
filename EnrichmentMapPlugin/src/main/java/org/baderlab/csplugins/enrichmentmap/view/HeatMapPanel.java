@@ -68,6 +68,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import javax.swing.AbstractAction;
@@ -94,6 +95,7 @@ import org.baderlab.csplugins.enrichmentmap.heatmap.ColorRenderer;
 import org.baderlab.csplugins.enrichmentmap.heatmap.ColumnHeaderVerticalRenderer;
 import org.baderlab.csplugins.enrichmentmap.heatmap.ExpressionTableValue;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapActionListener;
+import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapExporterTask;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters.Sort;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapTableActionListener;
@@ -123,6 +125,7 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.util.swing.OpenBrowser;
+import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.mskcc.colorgradient.ColorGradientRange;
 import org.mskcc.colorgradient.ColorGradientTheme;
@@ -1572,44 +1575,21 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 	}
 
 	private void exportExpressionSetActionPerformed(ActionEvent evt) {
-
-		JOptionPane.showMessageDialog(this, "PDF export currently not available");
-
-		/*
-		 * FileChooserFilter filter_pdf = new FileChooserFilter("pdf Files"
-		 * ,"pdf" );
-		 * 
-		 * //the set of filter (required by the file util method
-		 * ArrayList<FileChooserFilter> all_filters = new
-		 * ArrayList<FileChooserFilter>(); all_filters.add(filter_pdf);
-		 * 
-		 * 
-		 * java.io.File file = fileUtil.getFile(application.getJFrame(),
-		 * "Export Heatmap as pdf File", FileUtil.SAVE,all_filters); if (file !=
-		 * null && file.toString() != null) { String fileName = file.toString();
-		 * if (!fileName.endsWith(".pdf")) { fileName += ".pdf"; file = new
-		 * File(fileName); }
-		 * 
-		 * int response = JOptionPane.OK_OPTION; if(file.exists()) response =
-		 * JOptionPane.showConfirmDialog(this,
-		 * "The file already exists.  Would you like to overwrite it?");
-		 * if(response == JOptionPane.NO_OPTION || response ==
-		 * JOptionPane.CANCEL_OPTION ){
-		 * 
-		 * } else if(response == JOptionPane.YES_OPTION || response ==
-		 * JOptionPane.OK_OPTION){ try{ FileOutputStream output = new
-		 * FileOutputStream(file);
-		 * 
-		 * //TODO:add heatmap exporter /* HeatMapExporter exporter = new
-		 * HeatMapExporter();
-		 * exporter.export(this.getNorthPanel(),this.getjTable1(),this.
-		 * getTableHeader(), output) ; output.flush(); output.close();
-		 * JOptionPane.showMessageDialog(this, "File " + fileName + " saved.");
-		 */
-		/*
-		 * }catch(IOException e){ JOptionPane.showMessageDialog(this,
-		 * "unable to write to file " + fileName); } } }
-		 */
+		//JOptionPane.showMessageDialog(this, "PDF export currently not available");
+		
+		List<FileChooserFilter> filter = Collections.singletonList(new FileChooserFilter("pdf Files", "pdf"));
+		File file = fileUtil.getFile(application.getJFrame(), "Export Heatmap as PDF File", FileUtil.SAVE, filter);
+		
+		if (file != null && file.toString() != null) {
+			String fileName = file.toString();
+			if (!fileName.endsWith(".pdf")) {
+				fileName += ".pdf";
+				file = new File(fileName);
+			}
+			
+			HeatMapExporterTask task = new HeatMapExporterTask(getjTable1(), getTableHeader(), file);
+			dialogTaskMonitor.execute(new TaskIterator(task));
+		}
 	}
 
 	/**
