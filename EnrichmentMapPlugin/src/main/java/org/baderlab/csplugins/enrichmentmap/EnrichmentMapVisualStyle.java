@@ -254,12 +254,7 @@ public class EnrichmentMapVisualStyle {
         }        
         
         // Passthrough Mapping - set node label
-        PassthroughMapping<String,String> pm = (PassthroughMapping<String,String>) vmfFactoryPassthrough.createVisualMappingFunction(prefix + FORMATTED_NAME, String.class, BasicVisualLexicon.NODE_LABEL);
-
-        //if it is an EMgmt then we want the node label to be the description.
-        if(params.isEMgmt()){
-        	pm = (PassthroughMapping<String,String>) vmfFactoryPassthrough.createVisualMappingFunction(prefix + GS_DESCR, String.class, BasicVisualLexicon.NODE_LABEL);            
-        }
+        PassthroughMapping<String,String> pm = (PassthroughMapping<String,String>) vmfFactoryPassthrough.createVisualMappingFunction(prefix + GS_DESCR, String.class, BasicVisualLexicon.NODE_LABEL);            
 
         vs.addVisualMappingFunction(pm);
 
