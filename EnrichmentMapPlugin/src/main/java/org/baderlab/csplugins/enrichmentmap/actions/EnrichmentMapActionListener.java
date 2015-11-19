@@ -43,22 +43,9 @@
 
 package org.baderlab.csplugins.enrichmentmap.actions;
 
-
-
-
-import java.util.HashMap;
 import java.util.List;
-import java.util.TreeMap;
-
-import javax.swing.ListSelectionModel;
-import javax.swing.table.TableModel;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationParameters;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.model.AnnotationSet;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.task.Observer;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters;
 import org.baderlab.csplugins.enrichmentmap.heatmap.task.UpdateHeatMapTask;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
@@ -75,228 +62,107 @@ import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.util.swing.FileUtil;
-import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskIterator;
 
 /**
- * Created by
- * User: risserlin
- * Date: Feb 2, 2009
- * Time: 1:25:36 PM
+ * Created by User: risserlin Date: Feb 2, 2009 Time: 1:25:36 PM
  * <p>
- * Class listener for node and edge selections.  For each enrichment map there is a separate instance of this
- * class specifying the enrichment map parameters, selected nodes, selected edges and heatmap panels
+ * Class listener for node and edge selections. For each enrichment map there is
+ * a separate instance of this class specifying the enrichment map parameters,
+ * selected nodes, selected edges and heatmap panels
  */
-public class EnrichmentMapActionListener implements RowsSetListener{
-	
-    private EnrichmentMap map;
-    private HeatMapPanel edgeOverlapPanel;
-    private HeatMapPanel nodeOverlapPanel;
+public class EnrichmentMapActionListener implements RowsSetListener {
 
-    private List<CyNode> Nodes;
-    private List<CyEdge> Edges;
-    private CyApplicationManager applicationManager;
-    private SynchronousTaskManager syncTaskManager;
-    private final CytoPanel cytoPanelSouth;
-    private FileUtil fileUtil;
-    private StreamUtil streamUtil;
+	private HeatMapPanel edgeOverlapPanel;
+	private HeatMapPanel nodeOverlapPanel;
+	private CyApplicationManager applicationManager;
+	private SynchronousTaskManager syncTaskManager;
+	private final CytoPanel cytoPanelSouth;
+	private FileUtil fileUtil;
+	private StreamUtil streamUtil;
 
-    private boolean heatMapUpdating;
-    
 
-    /**
-     * Constructor for network action listener.
-     *
-     * @param params  - enrichment map parameters associated with this actionlistener
-     */
-    public EnrichmentMapActionListener(HeatMapPanel heatMapPanel_node,HeatMapPanel heatMapPanel_edge,
-    		CyApplicationManager applicationManager,CySwingApplication application,
-    		FileUtil fileUtil, StreamUtil streamUtil,SynchronousTaskManager syncTaskManager) {
-        
-    		this.applicationManager = applicationManager;
-    		this.fileUtil = fileUtil;
-    		this.streamUtil = streamUtil;
-    		this.syncTaskManager = syncTaskManager;
-        this.edgeOverlapPanel = heatMapPanel_edge;
-        this.nodeOverlapPanel = heatMapPanel_node;
-        heatMapUpdating = false;
-        
-        this.cytoPanelSouth = application.getCytoPanel(CytoPanelName.SOUTH);
+	public EnrichmentMapActionListener(HeatMapPanel heatMapPanel_node, HeatMapPanel heatMapPanel_edge,
+			CyApplicationManager applicationManager, CySwingApplication application, FileUtil fileUtil,
+			StreamUtil streamUtil, SynchronousTaskManager syncTaskManager) {
 
-           
-    }
+		this.applicationManager = applicationManager;
+		this.fileUtil = fileUtil;
+		this.streamUtil = streamUtil;
+		this.syncTaskManager = syncTaskManager;
+		this.edgeOverlapPanel = heatMapPanel_edge;
+		this.nodeOverlapPanel = heatMapPanel_node;
 
-    public boolean isHeatMapUpdating() {
-		return heatMapUpdating;
+		this.cytoPanelSouth = application.getCytoPanel(CytoPanelName.SOUTH);
 	}
 
 	/**
-     * intialize the parameters needed for this instance of the action
-     */
-    private boolean initialize(CyNetwork network){
-    		//get the static enrichment map manager.
-        EnrichmentMapManager manager = EnrichmentMapManager.getInstance();
-        this.map = manager.getMap(network.getSUID());
-        if(map != null){
-        		if(map.getParams().isData() && map.getParams().getHmParams() == null){        
-        			//create a heatmap parameters instance for this action listener
-        			HeatMapParameters hmParams = new HeatMapParameters(edgeOverlapPanel, nodeOverlapPanel);
-        			//If there are two distinct datasets intialize the theme and range for the heatmap coloring separately.
-        			if(map.getParams().isData2() && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null
-        		      		   && !map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getFilename().equalsIgnoreCase(map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getFilename()))
-        				hmParams.initColorGradients(this.map.getDataset(EnrichmentMap.DATASET1).getExpressionSets(),this.map.getDataset(EnrichmentMap.DATASET2).getExpressionSets());
-        			else	
-        				hmParams.initColorGradients(this.map.getDataset(EnrichmentMap.DATASET1).getExpressionSets());
-        			//associate the newly created heatmap parameters with the current enrichment map paramters
-        			this.map.getParams().setHmParams(hmParams);
-        		}
-        
-        		this.Nodes = this.map.getParams().getSelectedNodes();
-        		this.Edges = this.map.getParams().getSelectedEdges();
-        		return true;
-        }
-        return false;
-    }
-    /**
-     * Handle network action.  This method handles edge or node selection or unselections.
-     *
-     * @param event
-     */
-    public void handleEvent(RowsSetEvent e) {
-        //TODO: improve performance of calculating the Union of genesets (Nodes) and intersection of overlaps (Edges)
-        // Meanwhile we have a flag to skip the updating of the Heatmap, which can be toggled by a check-mark in the EM-Menu
-    	heatMapUpdating = true;
+	 * intialize the parameters needed for this instance of the action
+	 */
+	private EnrichmentMap getAndInitializeEnrichmentMap(CyNetwork network) {
+		// get the static enrichment map manager.
+		EnrichmentMapManager manager = EnrichmentMapManager.getInstance();
+		EnrichmentMap map = manager.getMap(network.getSUID());
+		if (map != null) {
+			if (map.getParams().isData() && map.getParams().getHmParams() == null) {
+				// create a heatmap parameters instance for this action listener
+				HeatMapParameters hmParams = new HeatMapParameters(edgeOverlapPanel, nodeOverlapPanel);
+				// If there are two distinct datasets intialize the theme and range for the heatmap coloring separately.
+				if (map.getParams().isData2() && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null && !map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getFilename().equalsIgnoreCase(map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getFilename()))
+					hmParams.initColorGradients(map.getDataset(EnrichmentMap.DATASET1).getExpressionSets(), map.getDataset(EnrichmentMap.DATASET2).getExpressionSets());
+				else
+					hmParams.initColorGradients(map.getDataset(EnrichmentMap.DATASET1).getExpressionSets());
+				// associate the newly created heatmap parameters with the current enrichment map paramters
+				map.getParams().setHmParams(hmParams);
+			}
 
-    	boolean override_revalidate_heatmap = EnrichmentMapManager.getInstance().isOverrideHeatmapRevalidation();
-        
-        //get the current network
-        CyNetwork network = this.applicationManager.getCurrentNetwork();
-        CyNetworkView view = this.applicationManager.getCurrentNetworkView();
+		}
+		return map;
+	}
 
-        //only handle event if it is a selected node
+	/**
+	 * Handle network action. This method handles edge or node selection or unselections.
+	 */
+	public void handleEvent(RowsSetEvent e) {
+		// TODO: improve performance of calculating the Union of genesets (Nodes) and intersection of overlaps (Edges)
+		// Meanwhile we have a flag to skip the updating of the Heatmap, which can be toggled by a check-mark in the EM-Menu
+		boolean override_revalidate_heatmap = EnrichmentMapManager.getInstance().isOverrideHeatmapRevalidation();
 
-        if(network != null && e != null && (e.getSource() == network.getDefaultEdgeTable() || e.getSource() == network.getDefaultNodeTable())){
-        		if(initialize(network)){
-        
-        			//There is no flag to indicate that this is only an edge/node selection
-        			//After select get the nodes and the edges that were selected.
-        			if( ! override_revalidate_heatmap ) {
-        		
-        				//get the edges
-        				List<CyEdge> selectedEdges = CyTableUtil.getEdgesInState(network, CyNetwork.SELECTED, true);
+		CyNetwork network = this.applicationManager.getCurrentNetwork();
 
-        				Edges.clear();
-        				Edges.addAll(selectedEdges);
-        		
-        				List<CyNode> selectedNodes = CyTableUtil.getNodesInState(network, CyNetwork.SELECTED, true);
+		// only handle event if it is a selected node
+		if (network != null && e != null && (e.getSource() == network.getDefaultEdgeTable() || e.getSource() == network.getDefaultNodeTable())) {
+			final EnrichmentMap map = getAndInitializeEnrichmentMap(network);
+			if (map != null) {
 
-        				Nodes.clear();
-        				Nodes.addAll(selectedNodes);
-        				
-        				//once we have amalgamated all the nodes and edges, launch a task to update the heatmap.
-        				UpdateHeatMapTask updateHeatmap = new UpdateHeatMapTask(map, Nodes, Edges, edgeOverlapPanel, nodeOverlapPanel, cytoPanelSouth,applicationManager);
-        				Observer observer = new Observer();
-        				syncTaskManager.execute(new TaskIterator(updateHeatmap), observer);
-        				while (!observer.isFinished()) {
-        					try {
-								Thread.sleep(1);
-							} catch (InterruptedException e1) {
-								e1.printStackTrace();
-							}
-        				}
-        				
-        				
-        				//if the network has been autoannotated we need to make sure the clusters have been selected
-        				//also only handle the node selection events (not edges)
-        				//TODO:need a cleaner way to find out if the currentView has an annotation
-        				if(AutoAnnotationManager.getInstance().getAnnotationPanel()!=null && !AutoAnnotationManager.getInstance().isClusterTableUpdating()
-        						&& e.getSource() == network.getDefaultNodeTable()){
-        					
-        					//go through all the clusters for this network to see if any of the cluster have all of their nodes selected
-        					HashMap<CyNetworkView, AutoAnnotationParameters> annotations = AutoAnnotationManager.getInstance().getNetworkViewToAutoAnnotationParameters();
-        					if(annotations.containsKey(view)){
-        						AnnotationSet currentAnnotation = annotations.get(view).getSelectedAnnotationSet();
-        						TableModel clusterTableModel = currentAnnotation.getClusterTable().getModel();
-								ListSelectionModel clusterListSelectionModel = currentAnnotation.getClusterTable().getSelectionModel();
-								
-								//if there are clusters to add or to remove only do it once we have gone through all the clusters - to avoid race conditions.
-        						clusterListSelectionModel.setValueIsAdjusting(true);
-								
-        						TreeMap<Integer, Cluster> clusters = currentAnnotation.getClusterMap();
-        						//go through each cluster - figure out which ones need to be selected and
-        						//which ones need to deselected
-        						//If any nodes in a cluster are no longer selected then deselect cluster
-        						//If all nodes in a cluster are selected then select cluster (in table and annotation)
-        						for(Cluster cluster:clusters.values()){
-        						        					
-        							boolean select = true;
-        							boolean unselectCluster = false;
-        							for (CyNode node : cluster.getNodes()) {
-        								//if any of the nodes that belong to this cluster are not in the selected set
-        								//And the cluster is current marked as selected 
-        								//then unselect the cluster
-        								if (!selectedNodes.contains(node) && cluster.isSelected()) {
-        									unselectCluster = true;
-        									break;
-        								}
-        								//if any of the nodes that belong to this cluster are not in the selected set
-        								//then do not select this cluster.
-        								if (!selectedNodes.contains(node)) {
-        									select = false;
-        									break;
-        								}
-        							}
-        							
-        							//one last check, if the cluster is already selected and all its nodes are
-        							//already selected then this is not a new selection event
-        							if(select == true && cluster.isSelected())
-        								select = false;
-        							
-        							//Cluster has been selected
-        							//if all nodes in a cluster are selected
-        							//update the cluster table
-        							if (select) {
-        								//set flag to tell listener that it shouldn't reselect the nodes as the user manually selected them. 
-        								currentAnnotation.setManualSelection(true);
-        								for (int rowIndex = 0; rowIndex < clusterTableModel.getRowCount(); rowIndex++) {
-        									if (cluster.equals(clusterTableModel.getValueAt(rowIndex, 0))) {
-        										clusterListSelectionModel.addSelectionInterval(rowIndex, rowIndex);
-        										//AutoAnnotationManager.getInstance().flushPayloadEvents();
-        										break;
-        									}
-        								}
-        							}
-        							
-        							//Cluster has been unselected
-        							//update the cluster table
-        							if(unselectCluster){
-        								//set flag to tell listener that it shouldn't reselect the nodes as the user manually selected them. 
-        								currentAnnotation.setManualSelection(true);
-        								for (int rowIndex = 0; rowIndex < clusterTableModel.getRowCount(); rowIndex++) {
-        									if (cluster.equals(clusterTableModel.getValueAt(rowIndex, 0))) {
-        										clusterListSelectionModel.removeSelectionInterval(rowIndex, rowIndex);
-        										//AutoAnnotationManager.getInstance().flushPayloadEvents();
-        										break;
-        									}//end of if
-        								}//end of for
-        								
-        							}//end of if unselectedcluster
-
-        						}//end of For going through all clusters
-        						
-        						//if there are clusters to add or to remove only do it once we have gone through all the clusters - to avoid race conditions.
-        						clusterListSelectionModel.setValueIsAdjusting(false);
-
-        						
-        					}
-        					
-        				}
-        				
-        			}
-        		}
-        }//end of if e.getSource check
-        heatMapUpdating = false;
-    }
+				// There is no flag to indicate that this is only an edge/node selection
+				// After select get the nodes and the edges that were selected.
+				if (!override_revalidate_heatmap) {
+					
+					List<CyNode> selectedNodes = CyTableUtil.getNodesInState(network, CyNetwork.SELECTED, true);
+					List<CyEdge> selectedEdges = CyTableUtil.getEdgesInState(network, CyNetwork.SELECTED, true);
+					
+					final List<CyNode> Nodes = map.getParams().getSelectedNodes();
+					final List<CyEdge> Edges = map.getParams().getSelectedEdges();
+					
+					Nodes.clear();
+					Nodes.addAll(selectedNodes);
+					
+					Edges.clear();
+					Edges.addAll(selectedEdges);
+					
+					// Once we have amalgamated all the nodes and edges, launch a task to update the heatmap.
+					// Start the task in a separate thread to avoid Cytoscape deadlock bug (redmine issue #3370)
+					new Thread() {
+						public void run() {
+							UpdateHeatMapTask updateHeatmap = new UpdateHeatMapTask(map, Nodes, Edges, edgeOverlapPanel, nodeOverlapPanel, cytoPanelSouth, applicationManager);
+							syncTaskManager.execute(new TaskIterator(updateHeatmap));
+						}
+					}.start();
+				}
+			}
+		} // end of if e.getSource check
+	}
 
 }
