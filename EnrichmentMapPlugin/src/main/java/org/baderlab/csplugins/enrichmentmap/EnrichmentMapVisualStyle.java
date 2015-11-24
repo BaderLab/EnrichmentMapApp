@@ -113,7 +113,9 @@ public class EnrichmentMapVisualStyle {
     public static final String OVERLAP_GENES = "Overlap_genes";
     public static final String HYPERGEOM_PVALUE = "Overlap_Hypergeom_pVal";
     public static final String HYPERGEOM_CUTOFF = "Overlap_Hypergeom_cutoff";
-    public static final String MANN_WHIT_PVALUE = "Overlap_Mann_Whit_pVal";
+    public static final String MANN_WHIT_TWOSIDED_PVALUE = "Overlap_Mann_Whit_pVal";
+    public static final String MANN_WHIT_GREATER_PVALUE = "Overlap_Mann_Whit_greater_pVal";
+    public static final String MANN_WHIT_LESS_PVALUE = "Overlap_Mann_Whit_less_pVal";
     public static final String MANN_WHIT_CUTOFF = "Overlap_Mann_Whit_cutoff";
     public static final String CUTOFF_TYPE = "Overlap_cutoff";
     public static final String ENRICHMENT_SET = "ENRICHMENT_SET";

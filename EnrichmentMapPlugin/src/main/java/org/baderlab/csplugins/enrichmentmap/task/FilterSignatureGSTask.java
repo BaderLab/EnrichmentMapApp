@@ -8,7 +8,6 @@ import java.util.Set;
 
 import javax.swing.DefaultListModel;
 
-import org.apache.commons.math3.stat.inference.MannWhitneyUTest;
 import org.baderlab.csplugins.enrichmentmap.FilterParameters.FilterType;
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
@@ -16,6 +15,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.view.PostAnalysisInputPanel;
+import org.baderlab.csplugins.mannwhit.MannWhitneyUTestSided;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.TaskMonitor.Level;
@@ -112,11 +112,18 @@ public class FilterSignatureGSTask extends AbstractTask{
 	private FilterMetric createFilterMetric(PostAnalysisParameters paParams) {
 		FilterType type = paParams.getFilterParameters().getType();
 		switch(type) {
-			case NUMBER:    return new NumberFilterMetric();
-			case PERCENT:   return new PercentFilterMetric();
-			case SPECIFIC:  return new SpecificFilterMetric();
-			case HYPERGEOM: return new HypergeomFilterMetric();
-			case MANN_WHIT: return new MannWhitFilterMetric();
+			case NUMBER:    
+				return new NumberFilterMetric();
+			case PERCENT:   
+				return new PercentFilterMetric();
+			case SPECIFIC:  
+				return new SpecificFilterMetric();
+			case HYPERGEOM: 
+				return new HypergeomFilterMetric();
+			case MANN_WHIT_TWO_SIDED: 
+			case MANN_WHIT_GREATER:
+			case MANN_WHIT_LESS:
+				return new MannWhitFilterMetric(type);
 			default:
 				throw new RuntimeException("Unsupported FilterType: " + type);
 		}
@@ -189,6 +196,11 @@ public class FilterSignatureGSTask extends AbstractTask{
 	private class MannWhitFilterMetric extends FilterMetric {
 
 		private Ranking ranks;
+		private final FilterType type;
+		
+		public MannWhitFilterMetric(FilterType type) {
+			this.type = type;
+		}
         
 		public void init() {
 			Map<String, DataSet> data_sets = map.getDatasets();
@@ -212,9 +224,9 @@ public class FilterSignatureGSTask extends AbstractTask{
                 }
                 
                 double[] scores = ranks.getScores();
-                MannWhitneyUTest mann_whit = new MannWhitneyUTest();
-				double mannPval = mann_whit.mannWhitneyUTest(overlap_gene_scores, scores);
-            	if (mannPval <= paParams.getFilterParameters().getValue(FilterType.MANN_WHIT)) {
+                MannWhitneyUTestSided mann_whit = new MannWhitneyUTestSided();
+				double mannPval = mann_whit.mannWhitneyUTest(overlap_gene_scores, scores, type.mannWhitneyTestType());
+            	if (mannPval <= paParams.getFilterParameters().getValue(type)) {
                     return true;
             	}
             }

@@ -90,7 +90,7 @@ public class PostAnalysisTaskTest extends BaseNetworkTest {
 		paParams.setSignatureHub(false);
 		paParams.setUniverseSize(11445);
 		paParams.setSignatureGMTFileName(PATH + "PA_top8_middle8_bottom8.gmt");
-		paParams.getRankTestParameters().setType(FilterType.MANN_WHIT);
+		paParams.getRankTestParameters().setType(FilterType.MANN_WHIT_TWO_SIDED);
 		
 		runPostAnalysis(emNetwork, paParams);
 		// Assert that post-analysis created the new nodes correctly
@@ -105,12 +105,12 @@ public class PostAnalysisTaskTest extends BaseNetworkTest {
 	   	CyEdge edge1 = edges.getEdge("PA_TOP8_MIDDLE8_BOTTOM8 (sig) TOP8_PLUS100");
 	   	assertNotNull(edge1);
 	   	assertEquals(1.40E-6, emNetwork.getRow(edge1).get("EM1_Overlap_Mann_Whit_pVal", Double.class), 0.001);
-	   	assertEquals(FilterType.MANN_WHIT.toString(), emNetwork.getRow(edge1).get("EM1_Overlap_cutoff", String.class));
+	   	assertEquals(FilterType.MANN_WHIT_TWO_SIDED.toString(), emNetwork.getRow(edge1).get("EM1_Overlap_cutoff", String.class));
 	   	
 	   	CyEdge edge2 = edges.getEdge("PA_TOP8_MIDDLE8_BOTTOM8 (sig) BOTTOM8_PLUS100");
 	   	assertNotNull(edge2);
 	   	assertEquals(1.40E-6, emNetwork.getRow(edge2).get("EM1_Overlap_Mann_Whit_pVal", Double.class), 0.001);
-	   	assertEquals(FilterType.MANN_WHIT.toString(), emNetwork.getRow(edge2).get("EM1_Overlap_cutoff", String.class));
+	   	assertEquals(FilterType.MANN_WHIT_TWO_SIDED.toString(), emNetwork.getRow(edge2).get("EM1_Overlap_cutoff", String.class));
 	}
 	
 	

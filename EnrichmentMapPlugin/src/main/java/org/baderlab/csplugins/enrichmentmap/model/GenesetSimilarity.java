@@ -75,7 +75,10 @@ public class GenesetSimilarity {
     private int hypergeom_m;
     
     // Mann-Whitney U
-    private double mann_whit_pvalue;
+    private double mann_whit_pvalue_twoSided;
+    private double mann_whit_pvalue_greater;
+    private double mann_whit_pvalue_less;
+    
     // flag that indicates if either of the gene sets has no ranks (and therefore we cannot calculated mann-whit
     private boolean mann_whit_missing_ranks = false; 
     
@@ -323,30 +326,34 @@ public class GenesetSimilarity {
 	}
 
 
-	/**
-	 * Get mann whitney p value
-	 * @param null
-	 * @return double mann_whit_pvalue
-	 */
-	public double getMann_Whit_pValue() {
-		return mann_whit_pvalue;
+	public double getMann_Whit_pValue_twoSided() {
+		return mann_whit_pvalue_twoSided;
 	}
 
+	public void setMann_Whit_pValue_twoSided(double mann_whit_pvalue) {
+		this.mann_whit_pvalue_twoSided = mann_whit_pvalue;
+	}
 
-	/**
-	 * Set mann whitney p value
-	 * @param double mann_whit_pvalue
-	 * @return null
-	 */
-	public void setMann_Whit_pValue(double mann_whit_pvalue) {
-		this.mann_whit_pvalue = mann_whit_pvalue;
+	public double getMann_Whit_pValue_greater() {
+		return mann_whit_pvalue_greater;
+	}
+
+	public void setMann_Whit_pValue_greater(double mann_whit_pvalue) {
+		this.mann_whit_pvalue_greater = mann_whit_pvalue;
+	}
+	
+	public double getMann_Whit_pValue_less() {
+		return mann_whit_pvalue_less;
+	}
+
+	public void setMann_Whit_pValue_less(double mann_whit_pvalue) {
+		this.mann_whit_pvalue_less = mann_whit_pvalue;
 	}
 
 
 	public boolean isMannWhitMissingRanks() {
 		return mann_whit_missing_ranks;
 	}
-
 
 	public void setMannWhitMissingRanks(boolean mann_whit_missing_ranks) {
 		this.mann_whit_missing_ranks = mann_whit_missing_ranks;

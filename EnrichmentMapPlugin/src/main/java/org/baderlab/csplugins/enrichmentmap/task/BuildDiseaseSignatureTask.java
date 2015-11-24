@@ -53,7 +53,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.math3.stat.inference.MannWhitneyUTest;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapVisualStyle;
 import org.baderlab.csplugins.enrichmentmap.FilterParameters;
@@ -65,6 +64,7 @@ import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.GenesetSimilarity;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.util.NetworkUtil;
+import org.baderlab.csplugins.mannwhit.MannWhitneyUTestSided;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.event.CyEventHelper;
@@ -291,12 +291,15 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
                         	double coeffecient = ComputeSimilarityTask.computeSimilarityCoeffecient(map.getParams(), intersection, union, sigGenes, enrGenes);
 	                        GenesetSimilarity comparison = new GenesetSimilarity(hub_name, geneset_name, coeffecient, interaction, intersection);
 	                        
-	                        switch(paParams.getRankTestParameters().getType()) {
+	                        FilterType filterType = paParams.getRankTestParameters().getType();
+	                        switch(filterType) {
 		                        case HYPERGEOM:
 		                        	int universeSize1 = paParams.getUniverseSize();
 		                        	hypergeometric(universeSize1, sigGenesInUniverse, enrGenes, intersection, comparison);
 		                        	break;
-		                        case MANN_WHIT:
+		                        case MANN_WHIT_TWO_SIDED:
+		                        case MANN_WHIT_GREATER:
+		                        case MANN_WHIT_LESS:
 		                        	mannWhitney(intersection, comparison);
 		                        default: // want mann-whit to fall through
 		                        	int universeSize2 = map.getNumberOfGenes(); // #70 calculate hypergeometric also
@@ -364,8 +367,12 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
         switch(filterParams.getType()) {
 			case HYPERGEOM:
 				return similarity.getHypergeom_pvalue() <= filterParams.getValue(FilterType.HYPERGEOM);
-			case MANN_WHIT:
-				return !similarity.isMannWhitMissingRanks() && similarity.getMann_Whit_pValue() <= filterParams.getValue(FilterType.MANN_WHIT);
+			case MANN_WHIT_TWO_SIDED:
+				return !similarity.isMannWhitMissingRanks() && similarity.getMann_Whit_pValue_twoSided() <= filterParams.getValue(FilterType.MANN_WHIT_TWO_SIDED);
+			case MANN_WHIT_GREATER:
+				return !similarity.isMannWhitMissingRanks() && similarity.getMann_Whit_pValue_greater() <= filterParams.getValue(FilterType.MANN_WHIT_GREATER);
+			case MANN_WHIT_LESS:
+				return !similarity.isMannWhitMissingRanks() && similarity.getMann_Whit_pValue_less() <= filterParams.getValue(FilterType.MANN_WHIT_LESS);
 			case NUMBER:
 				return similarity.getSizeOfOverlap() >= filterParams.getValue(FilterType.NUMBER);
 			case PERCENT:
@@ -518,21 +525,22 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 		if(passed_cutoff)
 			current_edgerow.set(prefix + EnrichmentMapVisualStyle.CUTOFF_TYPE, paParams.getRankTestParameters().getType().display);
 		
-		// Attributes related to the Hypergeometric Test
-		switch(paParams.getRankTestParameters().getType()) {
-			case MANN_WHIT:
-				current_edgerow.set(prefix + EnrichmentMapVisualStyle.MANN_WHIT_PVALUE, genesetSimilarity.getMann_Whit_pValue());
-				current_edgerow.set(prefix + EnrichmentMapVisualStyle.MANN_WHIT_CUTOFF, paParams.getRankTestParameters().getValue(FilterType.MANN_WHIT));
-				// want to fall through to the HYERGEOM case
-			default:
-			case HYPERGEOM:
-				current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_PVALUE, genesetSimilarity.getHypergeom_pvalue());
-				current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_N, genesetSimilarity.getHypergeom_N());
-				current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_n, genesetSimilarity.getHypergeom_n());
-				current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_m, genesetSimilarity.getHypergeom_m());
-				current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_k, genesetSimilarity.getHypergeom_k());
-				current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_CUTOFF, paParams.getRankTestParameters().getValue(FilterType.HYPERGEOM));
+		FilterType filterType = paParams.getRankTestParameters().getType();
+		
+		if(filterType.isMannWhitney()) {
+			current_edgerow.set(prefix + EnrichmentMapVisualStyle.MANN_WHIT_TWOSIDED_PVALUE, genesetSimilarity.getMann_Whit_pValue_twoSided());
+			current_edgerow.set(prefix + EnrichmentMapVisualStyle.MANN_WHIT_GREATER_PVALUE, genesetSimilarity.getMann_Whit_pValue_greater());
+			current_edgerow.set(prefix + EnrichmentMapVisualStyle.MANN_WHIT_LESS_PVALUE, genesetSimilarity.getMann_Whit_pValue_less());
+			current_edgerow.set(prefix + EnrichmentMapVisualStyle.MANN_WHIT_CUTOFF, paParams.getRankTestParameters().getValue(filterType));
 		}
+		
+		// always calculate hypergeometric
+		current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_PVALUE, genesetSimilarity.getHypergeom_pvalue());
+		current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_N, genesetSimilarity.getHypergeom_N());
+		current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_n, genesetSimilarity.getHypergeom_n());
+		current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_m, genesetSimilarity.getHypergeom_m());
+		current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_k, genesetSimilarity.getHypergeom_k());
+		current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_CUTOFF, paParams.getRankTestParameters().getValue(FilterType.HYPERGEOM));
 	}
 
 
@@ -563,7 +571,9 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 	private void mannWhitney(Set<Integer> intersection, GenesetSimilarity comparison) {
 		Map<Integer, Double> gene2score = ranks.getGene2Score();
 		if (gene2score == null || gene2score.isEmpty()) {
-			comparison.setMann_Whit_pValue(1.5);
+			comparison.setMann_Whit_pValue_twoSided(1.5);
+			comparison.setMann_Whit_pValue_greater(1.5);
+			comparison.setMann_Whit_pValue_less(1.5);
 			comparison.setMannWhitMissingRanks(true);
 		} else {
 			// Calculate Mann-Whitney U pValue for Overlap
@@ -582,13 +592,20 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
             double[] scores = ranks.getScores();
             
             if(scores.length == 0 || overlap_gene_scores.length == 0) {
-            	comparison.setMann_Whit_pValue(1.5); // avoid NoDataException
+            	comparison.setMann_Whit_pValue_twoSided(1.5); // avoid NoDataException
+    			comparison.setMann_Whit_pValue_greater(1.5);
+    			comparison.setMann_Whit_pValue_less(1.5);
             	comparison.setMannWhitMissingRanks(true);
             }
             else {
-	            MannWhitneyUTest mann_whit = new MannWhitneyUTest();
-				double mannPval = mann_whit.mannWhitneyUTest(overlap_gene_scores, scores);
-	    		comparison.setMann_Whit_pValue(mannPval);
+            	// MKTODO could modify MannWHitneyUTestSided to return all three values from one call
+            	MannWhitneyUTestSided mann_whit = new MannWhitneyUTestSided();
+				double mannPvalTwoSided = mann_whit.mannWhitneyUTest(overlap_gene_scores, scores, MannWhitneyUTestSided.Type.TWO_SIDED);
+	    		comparison.setMann_Whit_pValue_twoSided(mannPvalTwoSided);
+	    		double mannPvalGreater = mann_whit.mannWhitneyUTest(overlap_gene_scores, scores, MannWhitneyUTestSided.Type.GREATER);
+	    		comparison.setMann_Whit_pValue_greater(mannPvalGreater);
+	    		double mannPvalLess = mann_whit.mannWhitneyUTest(overlap_gene_scores, scores, MannWhitneyUTestSided.Type.LESS);
+	    		comparison.setMann_Whit_pValue_less(mannPvalLess);
             }
 		}
 	}
@@ -643,8 +660,13 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
     	if(edgeTable.getColumn(prefix + EnrichmentMapVisualStyle.HYPERGEOM_CUTOFF) == null)		
     		edgeTable.createColumn(prefix + EnrichmentMapVisualStyle.HYPERGEOM_CUTOFF , Double.class, false);
     	
-    	if(edgeTable.getColumn(prefix + EnrichmentMapVisualStyle.MANN_WHIT_PVALUE) == null)		
-    		edgeTable.createColumn(prefix + EnrichmentMapVisualStyle.MANN_WHIT_PVALUE , Double.class, false);
+    	if(edgeTable.getColumn(prefix + EnrichmentMapVisualStyle.MANN_WHIT_TWOSIDED_PVALUE) == null)		
+    		edgeTable.createColumn(prefix + EnrichmentMapVisualStyle.MANN_WHIT_TWOSIDED_PVALUE , Double.class, false);
+    	if(edgeTable.getColumn(prefix + EnrichmentMapVisualStyle.MANN_WHIT_GREATER_PVALUE) == null)		
+    		edgeTable.createColumn(prefix + EnrichmentMapVisualStyle.MANN_WHIT_GREATER_PVALUE , Double.class, false);
+    	if(edgeTable.getColumn(prefix + EnrichmentMapVisualStyle.MANN_WHIT_LESS_PVALUE) == null)		
+    		edgeTable.createColumn(prefix + EnrichmentMapVisualStyle.MANN_WHIT_LESS_PVALUE , Double.class, false);
+    	
     	if(edgeTable.getColumn(prefix + EnrichmentMapVisualStyle.MANN_WHIT_CUTOFF) == null)		
     		edgeTable.createColumn(prefix + EnrichmentMapVisualStyle.MANN_WHIT_CUTOFF , Double.class, false);
     	

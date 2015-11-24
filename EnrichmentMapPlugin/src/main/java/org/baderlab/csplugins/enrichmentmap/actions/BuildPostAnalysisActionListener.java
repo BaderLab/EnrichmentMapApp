@@ -51,7 +51,6 @@ import java.util.Set;
 import javax.swing.JOptionPane;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
-import org.baderlab.csplugins.enrichmentmap.FilterParameters.FilterType;
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.task.BuildDiseaseSignatureTask;
@@ -129,8 +128,8 @@ public class BuildPostAnalysisActionListener implements ActionListener {
         
         StringBuilder errorBuilder = new StringBuilder();
         paParams.checkMinimalRequirements(errorBuilder);
-        if(paParams.getRankTestParameters().getType() == FilterType.MANN_WHIT && map.getAllRanks().isEmpty()) {
-        	errorBuilder.append(FilterType.MANN_WHIT.display + " requires ranks. \n");
+        if(paParams.getRankTestParameters().getType().isMannWhitney() && map.getAllRanks().isEmpty()) {
+        	errorBuilder.append("Mann-Whitney requires ranks. \n");
         }
         String errors = errorBuilder.toString();
         

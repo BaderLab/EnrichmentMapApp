@@ -359,7 +359,9 @@ public class PostAnalysisInputPanel extends JPanel {
 	            else
 	                message.append("The value must be greater than or equal 0.0 and less than or equal to 1.0");
 	    		break;
-	    	case MANN_WHIT:
+	    	case MANN_WHIT_TWO_SIDED:
+	    	case MANN_WHIT_LESS:
+	    	case MANN_WHIT_GREATER:
 	    		if(value != null && value.doubleValue() >= 0.0 && value.intValue() <= 1.0)
 	    			valid = true;
 	            else

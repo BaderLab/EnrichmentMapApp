@@ -6,7 +6,6 @@ import org.baderlab.csplugins.enrichmentmap.autoannotate.model.AnnotationSet;
 import org.baderlab.csplugins.enrichmentmap.autoannotate.model.Cluster;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 
@@ -34,7 +33,7 @@ public class ComputeClusterLabelsTask extends AbstractTask {
 		
 		// Generate the labels for the clusters
 		for (Cluster cluster : annotationSet.getClusterMap().values()) {
-		    		currentTasks.append(new UpdateClusterLabelTask(cluster, clusterSetTable));
+		    currentTasks.append(new UpdateClusterLabelTask(cluster, clusterSetTable));
 		}
 		AutoAnnotationManager.getInstance().getDialogTaskManager().execute(currentTasks);
 	}

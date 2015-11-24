@@ -353,7 +353,9 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
         // for instance a drug A that targets only X and Y as opposed to drug B that targets X,y,L,M,N,O,P
         filterTypeCombo = new JComboBox<FilterType>();
         filterTypeCombo.addItem(FilterType.NO_FILTER); // default
-        filterTypeCombo.addItem(FilterType.MANN_WHIT);
+        filterTypeCombo.addItem(FilterType.MANN_WHIT_TWO_SIDED);
+        filterTypeCombo.addItem(FilterType.MANN_WHIT_GREATER);
+        filterTypeCombo.addItem(FilterType.MANN_WHIT_LESS);
         filterTypeCombo.addItem(FilterType.HYPERGEOM);
         filterTypeCombo.addItem(FilterType.NUMBER);
         filterTypeCombo.addItem(FilterType.PERCENT);

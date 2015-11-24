@@ -90,13 +90,23 @@ public class WidthFunction {
 				}
 				
 				Double pvalue, cutoff;
-				if(filterType == FilterType.MANN_WHIT) {
-					pvalue = row.get(prefix + EnrichmentMapVisualStyle.MANN_WHIT_PVALUE, Double.class);
+				switch(filterType) {
+				case MANN_WHIT_TWO_SIDED:
+					pvalue = row.get(prefix + EnrichmentMapVisualStyle.MANN_WHIT_TWOSIDED_PVALUE, Double.class);
 					cutoff = row.get(prefix + EnrichmentMapVisualStyle.MANN_WHIT_CUTOFF, Double.class);
-				}
-				else {
+					break;
+				case MANN_WHIT_GREATER:
+					pvalue = row.get(prefix + EnrichmentMapVisualStyle.MANN_WHIT_GREATER_PVALUE, Double.class);
+					cutoff = row.get(prefix + EnrichmentMapVisualStyle.MANN_WHIT_CUTOFF, Double.class);
+					break;
+				case MANN_WHIT_LESS:
+					pvalue = row.get(prefix + EnrichmentMapVisualStyle.MANN_WHIT_LESS_PVALUE, Double.class);
+					cutoff = row.get(prefix + EnrichmentMapVisualStyle.MANN_WHIT_CUTOFF, Double.class);
+					break;
+				default:
 					pvalue = row.get(prefix + EnrichmentMapVisualStyle.HYPERGEOM_PVALUE, Double.class);
 					cutoff = row.get(prefix + EnrichmentMapVisualStyle.HYPERGEOM_CUTOFF, Double.class);
+					break;
 				}
 				
 				if(pvalue == null || cutoff == null) {

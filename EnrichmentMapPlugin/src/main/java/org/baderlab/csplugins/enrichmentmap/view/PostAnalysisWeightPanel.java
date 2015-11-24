@@ -86,7 +86,9 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
 		JPanel warnCard = createWarningPanel();
 		
 		cardPanel = new JPanel(new CardLayout());
-		cardPanel.add(mannWhittCard, FilterType.MANN_WHIT.toString());
+		cardPanel.add(mannWhittCard, FilterType.MANN_WHIT_TWO_SIDED.toString());
+		cardPanel.add(mannWhittCard, FilterType.MANN_WHIT_GREATER.toString());
+		cardPanel.add(mannWhittCard, FilterType.MANN_WHIT_LESS.toString());
 		cardPanel.add(hypergeomCard, FilterType.HYPERGEOM.toString());
 		cardPanel.add(new JPanel(), FilterType.PERCENT.toString());
 		cardPanel.add(new JPanel(), FilterType.NUMBER.toString());
@@ -114,7 +116,7 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
 			e.printStackTrace();
 		}
 		
-		JLabel label = new JLabel(FilterType.MANN_WHIT.display + " requires ranks.");
+		JLabel label = new JLabel("Mann-Whitney requires ranks.");
 		
 		warnPanel.add(label);
 		
@@ -142,7 +144,9 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
 		rankTestCombo = new JComboBox<>();
 		rankTestCombo.setRenderer(rankingEnablementRenderer);
 		
-        rankTestCombo.addItem(FilterType.MANN_WHIT);
+        rankTestCombo.addItem(FilterType.MANN_WHIT_TWO_SIDED);
+        rankTestCombo.addItem(FilterType.MANN_WHIT_GREATER);
+        rankTestCombo.addItem(FilterType.MANN_WHIT_LESS);
         rankTestCombo.addItem(FilterType.HYPERGEOM);
         rankTestCombo.addItem(FilterType.NUMBER);
         rankTestCombo.addItem(FilterType.PERCENT);
@@ -156,7 +160,7 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
         		rankTestTextField.setValue(rankTestParams.getValue(rankTest));
         		
         		CardLayout cardLayout = (CardLayout)cardPanel.getLayout();
-        		if(rankTest == FilterType.MANN_WHIT && map.getAllRanks().isEmpty())
+        		if(rankTest.isMannWhitney() && map.getAllRanks().isEmpty())
         			cardLayout.show(cardPanel, "warn");
         		else
         			cardLayout.show(cardPanel, rankTest.toString());
@@ -371,8 +375,8 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
 	
 	void resetPanel() {
 		gmtRadioButton.setSelected(true);
-        rankTestCombo.setSelectedItem(FilterType.MANN_WHIT);
-        rankTestTextField.setValue(paParams.getRankTestParameters().getValue(FilterType.MANN_WHIT));
+        rankTestCombo.setSelectedItem(FilterType.MANN_WHIT_TWO_SIDED);
+        rankTestTextField.setValue(paParams.getRankTestParameters().getValue(FilterType.MANN_WHIT_TWO_SIDED));
     }
     
     
@@ -406,9 +410,9 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
         
 		FilterParameters filterParams = paParams.getRankTestParameters();
 		if(filterParams.getType() == FilterType.NO_FILTER) {
-			filterParams.setType(FilterType.MANN_WHIT);
+			filterParams.setType(FilterType.MANN_WHIT_TWO_SIDED);
 		}
-		if(rankingArray.length == 0 && filterParams.getType() == FilterType.MANN_WHIT) {
+		if(rankingArray.length == 0 && filterParams.getType().isMannWhitney()) {
 			filterParams.setType(FilterType.HYPERGEOM);
 		}
 		
