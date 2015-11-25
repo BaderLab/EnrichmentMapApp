@@ -164,8 +164,62 @@ public class MannWhitneyUTestSided {
         return FastMath.max(U1, U2);
     }
 
+    
+    /**
+     * Computes the Mann-Whitney
+     * U1 statistic</a> comparing mean for two independent samples possibly of
+     * different length.
+     * <p>
+     * Let X<sub>i</sub> denote the i'th individual of the first sample and
+     * Y<sub>j</sub> the j'th individual in the second sample. Note that the
+     * samples would often have different length.
+     * </p>
+     * <p>
+     * <strong>Preconditions</strong>:
+     * <ul>
+     * <li>All observations in the two samples are independent.</li>
+     * <li>The observations are at least ordinal (continuous are also ordinal).</li>
+     * </ul>
+     * </p>
+     *
+     * @param x the first sample
+     * @param y the second sample
+     * @return Mann-Whitney U statistic (maximum of U<sup>x</sup> and U<sup>y</sup>)
+     * @throws NullArgumentException if {@code x} or {@code y} are {@code null}.
+     * @throws NoDataException if {@code x} or {@code y} are zero-length.
+     */
+    public double mannWhitneyU1(final double[] x, final double[] y)
+            throws NullArgumentException, NoDataException {
+
+            ensureDataConformance(x, y);
+
+            final double[] z = concatenateSamples(x, y);
+            final double[] ranks = naturalRanking.rank(z);
+
+            double sumRankX = 0;
+
+            /*
+             * The ranks for x is in the first x.length entries in ranks because x
+             * is in the first x.length entries in z
+             */
+            for (int i = 0; i < x.length; ++i) {
+                sumRankX += ranks[i];
+            }
+
+            /*
+             * U1 = R1 - (n1 * (n1 + 1)) / 2 where R1 is sum of ranks for sample 1,
+             * e.g. x, n1 is the number of observations in sample 1.
+             */
+            final double U1 = sumRankX - (x.length * (x.length + 1)) / 2;
+            
+            
+            return U1;
+    }
+    
     /**
      * @param Umin smallest Mann-Whitney U value
+     * @param Umin smallest Mann-Whitney U1 value
+     * @param Umin smallest Mann-Whitney U2 value
      * @param n1 number of subjects in first sample
      * @param n2 number of subjects in second sample
      * @return two-sided asymptotic p-value
@@ -175,6 +229,8 @@ public class MannWhitneyUTestSided {
      * iterations is exceeded
      */
     private double calculateAsymptoticPValue(final double Umin,
+    										 final double U1,
+    										 final double U2,
                                              final int n1,
                                              final int n2,
                                              final Type side)
@@ -195,19 +251,19 @@ public class MannWhitneyUTestSided {
         final NormalDistribution standardNormal = new NormalDistribution(0, 1);
 
         double p = 2 * standardNormal.cumulativeProbability(z);
-        
+                
         if(side == Type.TWO_SIDED) {
         	return p;
         }
         
         if(side == Type.LESS) {
-        	if(z > 0) {
+        	if(U1 < U2) {
         		return 0.5 * p;
         	} else {
         		return 1.0 - (0.5 * p);
         	}
         } else {
-        	if(z < 0) {
+        	if(U1 > U2) {
         		return 0.5 * p;
         	} else {
         		return 1.0 - (0.5 * p);
@@ -259,8 +315,12 @@ public class MannWhitneyUTestSided {
          * It can be shown that U1 + U2 = n1 * n2
          */
         final double Umin = x.length * y.length - Umax;
+        
+      //we require the U1 and U2 values in order to determine which p-value to calculate for the sided tests
+        final double U1 = mannWhitneyU1(x, y);
+        final double U2 = x.length * y.length - U1;
 
-        return calculateAsymptoticPValue(Umin, x.length, y.length, side);
+        return calculateAsymptoticPValue(Umin, U1, U2, x.length, y.length, side);
     }
 
 }
