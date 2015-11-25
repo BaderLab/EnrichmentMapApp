@@ -200,7 +200,7 @@ public class MannWhitneyUTestSided {
         	return p;
         }
         
-        if(side == Type.GREATER) {
+        if(side == Type.LESS) {
         	if(z > 0) {
         		return 0.5 * p;
         	} else {

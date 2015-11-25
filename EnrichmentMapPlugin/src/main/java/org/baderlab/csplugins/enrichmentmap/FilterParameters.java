@@ -18,8 +18,8 @@ public class FilterParameters {
     	NO_FILTER("-- no filter --", 0.0),
     	HYPERGEOM("Hypergeometric Test", 0.05),
     	MANN_WHIT_TWO_SIDED("Mann-Whitney (Two-Sided)", 0.05), 
-    	MANN_WHIT_GREATER("Mann-Whitney (One-Sided Less)", 0.05), 
-    	MANN_WHIT_LESS("Mann-Whitney (One-Sided Greater)", 0.05), 
+    	MANN_WHIT_GREATER("Mann-Whitney (One-Sided Greater)", 0.05), 
+    	MANN_WHIT_LESS("Mann-Whitney (One-Sided Less)", 0.05), 
     	NUMBER("Overlap has at least X genes", 5), 
     	PERCENT("Overlap is X percent of EM gs", 25),
     	SPECIFIC("Overlap is X percent of Sig gs", 25);
