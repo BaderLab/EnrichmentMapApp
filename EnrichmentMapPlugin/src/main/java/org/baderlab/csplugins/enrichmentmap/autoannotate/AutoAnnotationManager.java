@@ -209,7 +209,6 @@ public class AutoAnnotationManager implements
 					AnnotationSet currentAnnotation = annotations.get(view).getSelectedAnnotationSet();
 					TableModel clusterTableModel = currentAnnotation.getClusterTable().getModel();
 					ListSelectionModel clusterListSelectionModel = currentAnnotation.getClusterTable().getSelectionModel();
-					System.out.println("HERE");
 					//if there are clusters to add or to remove only do it once we have gone through all the clusters - to avoid race conditions.
 					clusterListSelectionModel.setValueIsAdjusting(true);
 					
