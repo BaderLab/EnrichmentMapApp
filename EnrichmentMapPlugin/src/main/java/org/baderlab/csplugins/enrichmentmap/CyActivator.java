@@ -13,9 +13,6 @@ import org.baderlab.csplugins.enrichmentmap.actions.LoadEnrichmentsPanelAction;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadPostAnalysisPanelAction;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowAboutPanelAction;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowEdgeWidthDialogAction;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.action.AutoAnnotationPanelAction;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.action.DisplayOptionsPanelAction;
 import org.baderlab.csplugins.enrichmentmap.commands.EnrichmentMapGSEACommandHandlerTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.task.BuildEnrichmentMapTuneableTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.task.CreatePublicationVisualStyleTaskFactory;
@@ -28,7 +25,6 @@ import org.baderlab.csplugins.enrichmentmap.view.PostAnalysisPanel;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
-import org.cytoscape.application.events.SetSelectedNetworkViewsListener;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.command.CommandExecutorTaskFactory;
@@ -40,9 +36,6 @@ import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
-import org.cytoscape.model.events.ColumnCreatedListener;
-import org.cytoscape.model.events.ColumnDeletedListener;
-import org.cytoscape.model.events.ColumnNameChangedListener;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
 import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.service.util.AbstractCyActivator;
@@ -57,7 +50,6 @@ import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.annotations.AnnotationManager;
 import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
@@ -137,37 +129,15 @@ public class CyActivator extends AbstractCyActivator {
 		EnrichmentMapActionListener EMActionListener = new EnrichmentMapActionListener(heatMapPanel_node,heatMapPanel_edge, cyApplicationManagerRef, cySwingApplicationRef,fileUtil,streamUtil,syncTaskManager);
 		registerService(bc,EMActionListener, RowsSetListener.class, new Properties());		
 
-		// Set up autoAnnotationManager, hand it all of the services it needs
-		AutoAnnotationManager autoAnnotationManager = AutoAnnotationManager.getInstance();
-		autoAnnotationManager.initialize(cySwingApplicationRef, tableManager, commandExecutor, dialogTaskManager, syncTaskManager, annotationManager, layoutManager, shapeFactory, textFactory, groupFactory, groupManager, heatMapPanel_node, EMActionListener, eventHelper,cyApplicationManagerRef);
-		//register network/table events to autoAnnotationManager
-		registerService(bc, autoAnnotationManager, SetSelectedNetworkViewsListener.class, new Properties());
-		registerService(bc, autoAnnotationManager, NetworkViewAboutToBeDestroyedListener.class, new Properties());
-		registerService(bc, autoAnnotationManager, ColumnCreatedListener.class, new Properties());
-		registerService(bc, autoAnnotationManager, ColumnDeletedListener.class, new Properties());
-		registerService(bc, autoAnnotationManager, ColumnNameChangedListener.class, new Properties());
-		registerService(bc, autoAnnotationManager, RowsSetListener.class, new Properties());
 
 		//Create each Action within Enrichment map as a service
 		Map<String,String> serviceProperties;
-		
 		//About Action
 		serviceProperties = new HashMap<>();
 		serviceProperties.put("inMenuBar", "true");
 		serviceProperties.put("preferredMenu", "Apps.EnrichmentMap");
 		ShowAboutPanelAction aboutAction = new ShowAboutPanelAction(serviceProperties,cyApplicationManagerRef ,cyNetworkViewManagerRef, cySwingApplicationRef, openBrowserRef);		
 		
-		//Auto-annotate Panel Action - opens Annotation panel
-		serviceProperties = new HashMap<>();
-		serviceProperties.put("inMenuBar", "true");
-		serviceProperties.put("preferredMenu", "Apps.EnrichmentMap");
- 		AutoAnnotationPanelAction autoAnnotationPanelAction = new AutoAnnotationPanelAction(serviceProperties,cyApplicationManagerRef, cyNetworkViewManagerRef, cySwingApplicationRef, annotationManager, registrar);
-		
-		//Auto-annotate Display Options Panel Action - opens display options panel
- 		serviceProperties = new HashMap<>();
- 		DisplayOptionsPanelAction displayOptionsPanelAction = new DisplayOptionsPanelAction(serviceProperties,cyApplicationManagerRef, cyNetworkViewManagerRef, cySwingApplicationRef, annotationManager, registrar);
- 		autoAnnotationManager.setDisplayOptionsPanelAction(displayOptionsPanelAction);
- 		
 		//Build Enrichment Map Action - opens EM panel
 		serviceProperties = new HashMap<>();
 		serviceProperties.put("inMenuBar", "true");
@@ -193,14 +163,13 @@ public class CyActivator extends AbstractCyActivator {
 		
 		//register the services
 		registerService(bc, LoadEnrichmentMapInputPanelAction, CyAction.class, new Properties());
-		registerService(bc, autoAnnotationPanelAction, CyAction.class, new Properties());
 		registerService(bc, BulkEMInputPanelAction, CyAction.class, new Properties());
 		registerService(bc, loadPostAnalysisAction, CyAction.class, new Properties());	
 		registerService(bc, edgeWidthPanelAction, CyAction.class, new Properties());
 		registerService(bc, aboutAction, CyAction.class,new Properties());
 		
 		//register the session save and restore
-		EnrichmentMapSessionAction sessionAction = new EnrichmentMapSessionAction(cyNetworkManagerRef, sessionManager, cyApplicationManagerRef, streamUtil, autoAnnotationPanelAction);
+		EnrichmentMapSessionAction sessionAction = new EnrichmentMapSessionAction(cyNetworkManagerRef, sessionManager, cyApplicationManagerRef, streamUtil);
 		registerService(bc,sessionAction,SessionAboutToBeSavedListener.class, new Properties());
 		registerService(bc,sessionAction,SessionLoadedListener.class, new Properties());
 		

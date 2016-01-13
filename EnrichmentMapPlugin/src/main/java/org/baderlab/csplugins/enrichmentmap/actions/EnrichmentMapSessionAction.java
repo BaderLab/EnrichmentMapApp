@@ -1,6 +1,5 @@
 package org.baderlab.csplugins.enrichmentmap.actions;
 
-import java.awt.event.ActionEvent;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -17,9 +16,6 @@ import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationManager;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.AutoAnnotationParameters;
-import org.baderlab.csplugins.enrichmentmap.autoannotate.action.AutoAnnotationPanelAction;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
@@ -37,13 +33,11 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.session.CySession;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
 import org.cytoscape.session.events.SessionAboutToBeSavedListener;
 import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
-import org.cytoscape.view.model.CyNetworkView;
 
 public class EnrichmentMapSessionAction implements SessionAboutToBeSavedListener, SessionLoadedListener {
 
@@ -51,19 +45,17 @@ public class EnrichmentMapSessionAction implements SessionAboutToBeSavedListener
 	private CySessionManager cySessionManager;
 	private CyApplicationManager cyApplicationManager;
 	private StreamUtil streamUtil;
-	private AutoAnnotationPanelAction autoAnnotationPanelAction;
 
 	private static final String appName = "EnrichmentMap";
 
 	public EnrichmentMapSessionAction(CyNetworkManager cyNetworkManager, 
 			CySessionManager cySessionManager, CyApplicationManager cyApplicationManager, 
-			StreamUtil streamUtil, AutoAnnotationPanelAction autoAnnotationPanelAction) {
+			StreamUtil streamUtil) {
 		super();
 		this.cyNetworkManager = cyNetworkManager;
 		this.cySessionManager = cySessionManager;
 		this.cyApplicationManager = cyApplicationManager;
 		this.streamUtil = streamUtil;
-		this.autoAnnotationPanelAction = autoAnnotationPanelAction;
 	}
 
 	/**
@@ -126,194 +118,177 @@ public class EnrichmentMapSessionAction implements SessionAboutToBeSavedListener
 
 				File prop_file = pStateFileList.get(i);
 
-				// Load the AutoAnnotation parameters
-				// considerably simpler so doesn't require as much parsing of the file name 
-				if (prop_file.getName().contains("_AAPARAMS.txt")) {
-					CySession session = e.getLoadedSession();
-					
+				FileNameParts parts = ParseFileName(prop_file);
+				if(parts == null || prop_file.getName().contains(".props"))
+					continue;
+
+				CyNetwork net = getNetworkByName(parts.name);
+				EnrichmentMap em  = (net != null) ? EnrichmentMapManager.getInstance().getMap(net.getSUID()) : null;
+
+				if(em == null)
+					System.out.println("network for file" + prop_file.getName() + " does not exist.");
+				else if((!prop_file.getName().contains(".props"))
+						&& (!prop_file.getName().contains(".expression1.txt"))
+						&& (!prop_file.getName().contains(".expression2.txt"))
+						){
+					EnrichmentMapParameters params = em.getParams();
+					HashMap<String,String> props = params.getProps();
+					//if this a dataset specific file make sure there is a dataset object for it
+					if(!(parts.dataset == null) && em.getDataset(parts.dataset) == null && !parts.dataset.equalsIgnoreCase("signature"))
+						em.addDataset(parts.dataset, new DataSet(em,parts.name,params.getFiles().get(parts.dataset)));
+					if(parts.type == null)
+						System.out.println("Sorry, unable to determine the type of the file: "+ prop_file.getName());
+
 					//read the file
 					InputStream reader = streamUtil.getInputStream(prop_file.getAbsolutePath());     			
-					String fullText = new Scanner(reader,"UTF-8").useDelimiter("\\A").next();
-					AutoAnnotationParameters aaParams = new AutoAnnotationParameters();
-					AutoAnnotationManager aaManager = AutoAnnotationManager.getInstance();
-					aaParams.load(fullText, session);
-					aaManager.getNetworkViewToAutoAnnotationParameters().put(aaParams.getNetworkView(), aaParams);
-					autoAnnotationPanelAction.actionPerformed(new ActionEvent("", 0, ""));
-				} else {
-					FileNameParts parts = ParseFileName(prop_file);
-					if(parts == null || prop_file.getName().contains(".props"))
+					String fullText = new Scanner(reader,"UTF-8").useDelimiter("\\A").next();                        
+
+
+					//if the file is empty then skip it
+					if(fullText == null || fullText.equalsIgnoreCase(""))
 						continue;
 
-					CyNetwork net = getNetworkByName(parts.name);
-					EnrichmentMap em  = (net != null) ? EnrichmentMapManager.getInstance().getMap(net.getSUID()) : null;
-
-					if(em == null)
-						System.out.println("network for file" + prop_file.getName() + " does not exist.");
-					else if((!prop_file.getName().contains(".props"))
-							&& (!prop_file.getName().contains(".expression1.txt"))
-							&& (!prop_file.getName().contains(".expression2.txt"))
-							){
-						EnrichmentMapParameters params = em.getParams();
-						HashMap<String,String> props = params.getProps();
-						//if this a dataset specific file make sure there is a dataset object for it
-						if(!(parts.dataset == null) && em.getDataset(parts.dataset) == null && !parts.dataset.equalsIgnoreCase("signature"))
-							em.addDataset(parts.dataset, new DataSet(em,parts.name,params.getFiles().get(parts.dataset)));
-						if(parts.type == null)
-							System.out.println("Sorry, unable to determine the type of the file: "+ prop_file.getName());
-
-						//read the file
-						InputStream reader = streamUtil.getInputStream(prop_file.getAbsolutePath());     			
-						String fullText = new Scanner(reader,"UTF-8").useDelimiter("\\A").next();                        
-
-
-						//if the file is empty then skip it
-						if(fullText == null || fullText.equalsIgnoreCase(""))
-							continue;
-
-						if(prop_file.getName().contains(".gmt")){
-							if (prop_file.getName().contains(".signature.gmt"))
-								em.setSignatureGenesets((HashMap<String, GeneSet>)params.repopulateHashmap(fullText, 1));
-							//account for legacy session files
-							else if(prop_file.getName().contains(".set2.gmt")){
-								if(em.getAllGenesets().containsKey(EnrichmentMap.DATASET2)){
-									SetOfGeneSets gs = new SetOfGeneSets(EnrichmentMap.DATASET2,props);
-									gs.setGenesets((HashMap<String, GeneSet>) params.repopulateHashmap(fullText,1));
-								}
-							}else{
-								SetOfGeneSets gs = new SetOfGeneSets(parts.dataset,props);
-								gs.setGenesets((HashMap<String, GeneSet>)params.repopulateHashmap(fullText,1));
-								em.getDatasets().get(parts.dataset).setSetofgenesets(gs);
+					if(prop_file.getName().contains(".gmt")){
+						if (prop_file.getName().contains(".signature.gmt"))
+							em.setSignatureGenesets((HashMap<String, GeneSet>)params.repopulateHashmap(fullText, 1));
+						//account for legacy session files
+						else if(prop_file.getName().contains(".set2.gmt")){
+							if(em.getAllGenesets().containsKey(EnrichmentMap.DATASET2)){
+								SetOfGeneSets gs = new SetOfGeneSets(EnrichmentMap.DATASET2,props);
+								gs.setGenesets((HashMap<String, GeneSet>) params.repopulateHashmap(fullText,1));
 							}
+						}else{
+							SetOfGeneSets gs = new SetOfGeneSets(parts.dataset,props);
+							gs.setGenesets((HashMap<String, GeneSet>)params.repopulateHashmap(fullText,1));
+							em.getDatasets().get(parts.dataset).setSetofgenesets(gs);
 						}
-						if(prop_file.getName().contains(".genes.txt")){
-							HashMap<String, Integer> genes = params.repopulateHashmap(fullText,2);
-							em.setGenes(genes);
-							//ticket #188 - unable to open session files that have empty enrichment maps.
-							if(genes != null && !genes.isEmpty())
-								// Ticket #107 : restore also gene count (needed to determine the next free hash in case we do PostAnalysis with a restored session)
-								em.setNumberOfGenes( Math.max( em.getNumberOfGenes(), Collections.max(genes.values())+1 ));
-						}
-						if(prop_file.getName().contains(".hashkey2genes.txt")){
-							HashMap<Integer,String> hashkey2gene = params.repopulateHashmap(fullText,5);
-							em.setHashkey2gene(hashkey2gene);
-							//ticket #188 - unable to open session files that have empty enrichment maps.
-							if(hashkey2gene != null && !hashkey2gene.isEmpty() )
-								// Ticket #107 : restore also gene count (needed to determine the next free hash in case we do PostAnalysis with a restored session)
-								em.setNumberOfGenes( Math.max( em.getNumberOfGenes(), Collections.max(hashkey2gene.keySet())+1 ));
-						}
+					}
+					if(prop_file.getName().contains(".genes.txt")){
+						HashMap<String, Integer> genes = params.repopulateHashmap(fullText,2);
+						em.setGenes(genes);
+						//ticket #188 - unable to open session files that have empty enrichment maps.
+						if(genes != null && !genes.isEmpty())
+							// Ticket #107 : restore also gene count (needed to determine the next free hash in case we do PostAnalysis with a restored session)
+							em.setNumberOfGenes( Math.max( em.getNumberOfGenes(), Collections.max(genes.values())+1 ));
+					}
+					if(prop_file.getName().contains(".hashkey2genes.txt")){
+						HashMap<Integer,String> hashkey2gene = params.repopulateHashmap(fullText,5);
+						em.setHashkey2gene(hashkey2gene);
+						//ticket #188 - unable to open session files that have empty enrichment maps.
+						if(hashkey2gene != null && !hashkey2gene.isEmpty() )
+							// Ticket #107 : restore also gene count (needed to determine the next free hash in case we do PostAnalysis with a restored session)
+							em.setNumberOfGenes( Math.max( em.getNumberOfGenes(), Collections.max(hashkey2gene.keySet())+1 ));
+					}
 
 
 
-						if((parts.type != null && (parts.type.equalsIgnoreCase("ENR") || (parts.type.equalsIgnoreCase("SubENR")))) 
-								|| prop_file.getName().contains(".ENR1.txt") || prop_file.getName().contains(".SubENR1.txt")){
+					if((parts.type != null && (parts.type.equalsIgnoreCase("ENR") || (parts.type.equalsIgnoreCase("SubENR")))) 
+							|| prop_file.getName().contains(".ENR1.txt") || prop_file.getName().contains(".SubENR1.txt")){
+						SetOfEnrichmentResults enrichments;
+						int temp = 1;
+						//check to see if this dataset has enrichment results already
+						if(parts.dataset != null && em.getDataset(parts.dataset).getEnrichments() != null)
+							enrichments = em.getDataset(parts.dataset).getEnrichments();
+						else	 if (parts.dataset == null){
+							enrichments = em.getDataset(EnrichmentMap.DATASET1).getEnrichments();
+							/*enrichments = new SetOfEnrichmentResults(EnrichmentMap.DATASET1,props);
+                			em.getDataset(EnrichmentMap.DATASET1).setEnrichments(enrichments);*/
+						}
+						else	{
+							enrichments = new SetOfEnrichmentResults(parts.dataset,props);
+							em.getDataset(parts.dataset).setEnrichments(enrichments);
+						}
+						if(parts.type.equalsIgnoreCase("ENR") || prop_file.getName().contains(".ENR1.txt")){
+							if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA))
+								enrichments.setEnrichments(params.repopulateHashmap(fullText,3));
+							else
+								enrichments.setEnrichments(params.repopulateHashmap(fullText,4));
+						}
+
+					}
+
+					//have to keep this method just in case old session files have ranks saved in this way
+					//it would only happen for sessions saved with version 0.8
+					if(prop_file.getName().contains(".RANKS1.txt") || prop_file.getName().contains(".RANKS1Genes.txt")){
+						Ranking new_ranking;
+						//Check to see if there is already GSEARanking
+						if(em.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getAllRanksNames().contains(Ranking.GSEARanking))
+							new_ranking = em.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getRanksByName(Ranking.GSEARanking);
+						else{
+							new_ranking = new Ranking();
+							em.getDataset(EnrichmentMap.DATASET1).getExpressionSets().addRanks(Ranking.GSEARanking, new_ranking);                			
+						}
+						if(prop_file.getName().contains(".RANKS1Genes.txt"))
+							new_ranking.setRank2gene(em.getParams().repopulateHashmap(fullText,7));
+						if(prop_file.getName().contains(".RANKS1.txt"))
+							new_ranking.setRanking(em.getParams().repopulateHashmap(fullText,6));
+					}
+
+					if(prop_file.getName().contains(".RANKS.txt")){
+						if(parts.ranks_name == null){
+							//we need to get the name of this set of rankings
+							// network_name.ranking_name.ranks.txt --> split by "." and get 2
+
+							String[] file_name_tokens = (prop_file.getName()).split("\\.");
+
+							if((file_name_tokens.length == 4) && (file_name_tokens[1].equals("Dataset 1 Ranking") || file_name_tokens[1].equals("Dataset 2 Ranking"))
+									|| (prop_file.getName().contains(Ranking.GSEARanking)))
+								parts.ranks_name = Ranking.GSEARanking ;
+							
+							//this is an extra rank file for backwards compatability.  Ignore it.
+							else if((file_name_tokens.length == 4) && (file_name_tokens[1].equals("Dataset 1") || file_name_tokens[1].equals("Dataset 2")) && file_name_tokens[2].equals("RANKS"))
+									continue;
+							else
+								//file name is not structured properly --> default to file name
+								parts.ranks_name = prop_file.getName();
+						}
+						Ranking new_ranking = new Ranking();
+						new_ranking.setRanking(em.getParams().repopulateHashmap(fullText,6));
+
+						if(parts.dataset != null)
+							em.getDataset(parts.dataset).getExpressionSets().addRanks(parts.ranks_name,new_ranking);
+						else
+							em.getDataset(EnrichmentMap.DATASET1).getExpressionSets().addRanks(parts.ranks_name,new_ranking);
+					}
+					//Deal with legacy issues                    
+					if(params.isTwoDatasets()){
+						//make sure there is a Dataset2
+						if(!em.getDatasets().containsKey(EnrichmentMap.DATASET2))
+							em.addDataset(EnrichmentMap.DATASET2, null);
+						if( prop_file.getName().contains(".ENR2.txt") || prop_file.getName().contains(".SubENR2.txt")){
 							SetOfEnrichmentResults enrichments;
-							int temp = 1;
 							//check to see if this dataset has enrichment results already
-							if(parts.dataset != null && em.getDataset(parts.dataset).getEnrichments() != null)
-								enrichments = em.getDataset(parts.dataset).getEnrichments();
-							else	 if (parts.dataset == null){
-								enrichments = em.getDataset(EnrichmentMap.DATASET1).getEnrichments();
-								/*enrichments = new SetOfEnrichmentResults(EnrichmentMap.DATASET1,props);
-                    			em.getDataset(EnrichmentMap.DATASET1).setEnrichments(enrichments);*/
-							}
+							if(em.getDataset(EnrichmentMap.DATASET2).getEnrichments() != null)
+								enrichments = em.getDataset(EnrichmentMap.DATASET2).getEnrichments();
 							else	{
-								enrichments = new SetOfEnrichmentResults(parts.dataset,props);
-								em.getDataset(parts.dataset).setEnrichments(enrichments);
+								enrichments = new SetOfEnrichmentResults(EnrichmentMap.DATASET2,props);
+								em.getDataset(EnrichmentMap.DATASET2).setEnrichments(enrichments);
 							}
-							if(parts.type.equalsIgnoreCase("ENR") || prop_file.getName().contains(".ENR1.txt")){
+							if(prop_file.getName().contains(".ENR2.txt")){
 								if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA))
 									enrichments.setEnrichments(params.repopulateHashmap(fullText,3));
 								else
 									enrichments.setEnrichments(params.repopulateHashmap(fullText,4));
-							}
-
-						}
-
+							}  			
+						}                        
 						//have to keep this method just in case old session files have ranks saved in this way
 						//it would only happen for sessions saved with version 0.8
-						if(prop_file.getName().contains(".RANKS1.txt") || prop_file.getName().contains(".RANKS1Genes.txt")){
+						if(prop_file.getName().contains(".RANKS2.txt") || prop_file.getName().contains(".RANKS2Genes.txt")){
 							Ranking new_ranking;
 							//Check to see if there is already GSEARanking
-							if(em.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getAllRanksNames().contains(Ranking.GSEARanking))
-								new_ranking = em.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getRanksByName(Ranking.GSEARanking);
+							if(em.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getAllRanksNames().contains(Ranking.GSEARanking))
+								new_ranking = em.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getRanksByName(Ranking.GSEARanking);
 							else{
 								new_ranking = new Ranking();
-								em.getDataset(EnrichmentMap.DATASET1).getExpressionSets().addRanks(Ranking.GSEARanking, new_ranking);                			
+								em.getDataset(EnrichmentMap.DATASET2).getExpressionSets().addRanks(Ranking.GSEARanking, new_ranking);                			
 							}
-							if(prop_file.getName().contains(".RANKS1Genes.txt"))
+							if(prop_file.getName().contains(".RANKS2Genes.txt"))
 								new_ranking.setRank2gene(em.getParams().repopulateHashmap(fullText,7));
-							if(prop_file.getName().contains(".RANKS1.txt"))
-								new_ranking.setRanking(em.getParams().repopulateHashmap(fullText,6));
-						}
-
-						if(prop_file.getName().contains(".RANKS.txt")){
-							if(parts.ranks_name == null){
-								//we need to get the name of this set of rankings
-								// network_name.ranking_name.ranks.txt --> split by "." and get 2
-
-								String[] file_name_tokens = (prop_file.getName()).split("\\.");
-
-								if((file_name_tokens.length == 4) && (file_name_tokens[1].equals("Dataset 1 Ranking") || file_name_tokens[1].equals("Dataset 2 Ranking"))
-										|| (prop_file.getName().contains(Ranking.GSEARanking)))
-									parts.ranks_name = Ranking.GSEARanking ;
-								
-								//this is an extra rank file for backwards compatability.  Ignore it.
-								else if((file_name_tokens.length == 4) && (file_name_tokens[1].equals("Dataset 1") || file_name_tokens[1].equals("Dataset 2")) && file_name_tokens[2].equals("RANKS"))
-										continue;
-								else
-									//file name is not structured properly --> default to file name
-									parts.ranks_name = prop_file.getName();
-							}
-							Ranking new_ranking = new Ranking();
-							new_ranking.setRanking(em.getParams().repopulateHashmap(fullText,6));
-
-							if(parts.dataset != null)
-								em.getDataset(parts.dataset).getExpressionSets().addRanks(parts.ranks_name,new_ranking);
-							else
-								em.getDataset(EnrichmentMap.DATASET1).getExpressionSets().addRanks(parts.ranks_name,new_ranking);
-						}
-						//Deal with legacy issues                    
-						if(params.isTwoDatasets()){
-							//make sure there is a Dataset2
-							if(!em.getDatasets().containsKey(EnrichmentMap.DATASET2))
-								em.addDataset(EnrichmentMap.DATASET2, null);
-							if( prop_file.getName().contains(".ENR2.txt") || prop_file.getName().contains(".SubENR2.txt")){
-								SetOfEnrichmentResults enrichments;
-								//check to see if this dataset has enrichment results already
-								if(em.getDataset(EnrichmentMap.DATASET2).getEnrichments() != null)
-									enrichments = em.getDataset(EnrichmentMap.DATASET2).getEnrichments();
-								else	{
-									enrichments = new SetOfEnrichmentResults(EnrichmentMap.DATASET2,props);
-									em.getDataset(EnrichmentMap.DATASET2).setEnrichments(enrichments);
-								}
-								if(prop_file.getName().contains(".ENR2.txt")){
-									if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA))
-										enrichments.setEnrichments(params.repopulateHashmap(fullText,3));
-									else
-										enrichments.setEnrichments(params.repopulateHashmap(fullText,4));
-								}  			
-							}                        
-							//have to keep this method just in case old session files have ranks saved in this way
-							//it would only happen for sessions saved with version 0.8
-							if(prop_file.getName().contains(".RANKS2.txt") || prop_file.getName().contains(".RANKS2Genes.txt")){
-								Ranking new_ranking;
-								//Check to see if there is already GSEARanking
-								if(em.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getAllRanksNames().contains(Ranking.GSEARanking))
-									new_ranking = em.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getRanksByName(Ranking.GSEARanking);
-								else{
-									new_ranking = new Ranking();
-									em.getDataset(EnrichmentMap.DATASET2).getExpressionSets().addRanks(Ranking.GSEARanking, new_ranking);                			
-								}
-								if(prop_file.getName().contains(".RANKS2Genes.txt"))
-									new_ranking.setRank2gene(em.getParams().repopulateHashmap(fullText,7));
-								if(prop_file.getName().contains(".RANKS2.txt"))
-									new_ranking.setGene2rank(em.getParams().repopulateHashmap(fullText,6));
-							}
+							if(prop_file.getName().contains(".RANKS2.txt"))
+								new_ranking.setGene2rank(em.getParams().repopulateHashmap(fullText,6));
 						}
 					}
-
 				}
-
 
 			}
 
@@ -581,28 +556,6 @@ public class EnrichmentMapSessionAction implements SessionAboutToBeSavedListener
 				ex.printStackTrace();
 			}
 
-		}
-
-		HashMap<CyNetworkView, AutoAnnotationParameters> networkViewsToParams = AutoAnnotationManager.getInstance().getNetworkViewToAutoAnnotationParameters();
-		// Iterate through the network views, saving the annotationParams
-		for(Iterator<CyNetworkView> i = networkViewsToParams.keySet().iterator(); i.hasNext();) {
-			CyNetworkView view = i.next();
-			CyNetwork network = view.getModel();
-			// current parameters
-			AutoAnnotationParameters params = networkViewsToParams.get(view);
-			// Name of the network
-			String name = network.getRow(network).get(CyNetwork.NAME,String.class);
-			
-			String annotationParamsFileName = name + "_AAPARAMS.txt";
-			File annotationParamsFile = new File(tmpDir, annotationParamsFileName);
-			try {
-				BufferedWriter writer = new BufferedWriter(new FileWriter(annotationParamsFile));
-				writer.write(params.toSessionString());
-				writer.close();
-			} catch (Exception ex) {
-				ex.printStackTrace();
-			}
-			pFileList.add(annotationParamsFile);
 		}
 
 		//Add the files to be saved
