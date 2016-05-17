@@ -2,7 +2,6 @@ package org.baderlab.csplugins.enrichmentmap.parsers;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
@@ -16,7 +15,7 @@ public class GREATWhichPvalueQuestionTask extends AbstractTask implements Observ
 	
 	private static String hyper = "Hypergeometric p-value";
 	private static String binom = "Binomial p-value";
-	private static String both = "Both";
+	private static String both  = "Both";
 	private static String either = "Either";
 	
 	private EnrichmentMapParameters params;
@@ -36,10 +35,6 @@ public class GREATWhichPvalueQuestionTask extends AbstractTask implements Observ
 			params.setGreat_Filter(EnrichmentMapParameters.GREAT_both);
 		if(filterResponse.getSelectedValue().equals(either))
 			params.setGreat_Filter(EnrichmentMapParameters.GREAT_either);
-				
-		
-		
-			
 	}
 	
 	public void run() throws Exception {
@@ -51,8 +46,6 @@ public class GREATWhichPvalueQuestionTask extends AbstractTask implements Observ
 			params.setGreat_Filter(EnrichmentMapParameters.GREAT_both);
 		if(filterResponse.getSelectedValue().equals(either))
 			params.setGreat_Filter(EnrichmentMapParameters.GREAT_either);
-			
-									
 	}
 
 	public <R> R getResults(Class<? extends R> arg0) {

@@ -1,5 +1,8 @@
 package org.baderlab.csplugins.enrichmentmap.heatmap;
 
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+
 /* 
  * NOTE: This file is no longer used by TableSorter.java.  It's here
  * only to avoid bad links and to provide another example of a table
@@ -20,57 +23,56 @@ package org.baderlab.csplugins.enrichmentmap.heatmap;
 
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
-import javax.swing.event.TableModelListener;
-import javax.swing.event.TableModelEvent;
-
 
 public class Mapper extends AbstractTableModel implements TableModelListener {
-    protected HeatMapTableModel model;
+	protected HeatMapTableModel model;
 
-    public TableModel getModel() {
-        return model;
-    }
+	public TableModel getModel() {
+		return model;
+	}
 
-    public void setModel(TableModel model) {
-        this.model =  (HeatMapTableModel)model;
-        model.addTableModelListener(this);
-    }
-    
-    public Object getValueAt(int aRow, int aColumn) {
-        return model.getValueAt(aRow, aColumn);
-    }
-   
-    public void setValueAt(Object aValue, int aRow, int aColumn) {
-        model.setValueAt(aValue, aRow, aColumn);
-    }
-    public Object getExpValueAt(int aRow, int aColumn) {
-        return model.getExpValueAt(aRow, aColumn);
-    }
-   
-    public void setExpValueAt(Object aValue, int aRow, int aColumn) {
-        model.setExpValueAt(aValue, aRow, aColumn);
-    }
+	public void setModel(TableModel model) {
+		this.model = (HeatMapTableModel) model;
+		model.addTableModelListener(this);
+	}
 
-    public int getRowCount() {
-        return (model == null) ? 0 : model.getRowCount();
-    }
+	public Object getValueAt(int aRow, int aColumn) {
+		return model.getValueAt(aRow, aColumn);
+	}
 
-    public int getColumnCount() {
-        return (model == null) ? 0 : model.getColumnCount();
-    }
+	public void setValueAt(Object aValue, int aRow, int aColumn) {
+		model.setValueAt(aValue, aRow, aColumn);
+	}
 
-    public String getColumnName(int aColumn) {
-        return model.getColumnName(aColumn);
-    }
+	public Object getExpValueAt(int aRow, int aColumn) {
+		return model.getExpValueAt(aRow, aColumn);
+	}
 
-    public Class getColumnClass(int aColumn) {
-        return model.getColumnClass(aColumn);
-    }
+	public void setExpValueAt(Object aValue, int aRow, int aColumn) {
+		model.setExpValueAt(aValue, aRow, aColumn);
+	}
 
-    public boolean isCellEditable(int row, int column) {
-         return model.isCellEditable(row, column);
-    }
-  public void tableChanged(TableModelEvent e) {
-        fireTableChanged(e);
-    }
+	public int getRowCount() {
+		return (model == null) ? 0 : model.getRowCount();
+	}
+
+	public int getColumnCount() {
+		return (model == null) ? 0 : model.getColumnCount();
+	}
+
+	public String getColumnName(int aColumn) {
+		return model.getColumnName(aColumn);
+	}
+
+	public Class getColumnClass(int aColumn) {
+		return model.getColumnClass(aColumn);
+	}
+
+	public boolean isCellEditable(int row, int column) {
+		return model.isCellEditable(row, column);
+	}
+
+	public void tableChanged(TableModelEvent e) {
+		fireTableChanged(e);
+	}
 }

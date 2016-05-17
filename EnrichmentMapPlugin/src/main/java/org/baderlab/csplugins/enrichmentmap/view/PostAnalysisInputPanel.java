@@ -89,17 +89,17 @@ import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.swing.DialogTaskManager;
 
-
 @SuppressWarnings("serial")
 public class PostAnalysisInputPanel extends JPanel {
-    
-    // tool tips
-    protected static final String gmtTip = "File specifying gene sets.\n" + "Format: geneset name <tab> description <tab> gene ...";
-    protected static final String gmt_instruction = "Please select the Gene Set file (.gmt)...";
-    protected static final String siggmt_instruction = "Please select the Signature Gene Set file (.gmt)...";
-    
-    private final CyApplicationManager cyApplicationManager;
-    private final CySwingApplication application;
+
+	// tool tips
+	protected static final String gmtTip = "File specifying gene sets.\n"
+			+ "Format: geneset name <tab> description <tab> gene ...";
+	protected static final String gmt_instruction = "Please select the Gene Set file (.gmt)...";
+	protected static final String siggmt_instruction = "Please select the Signature Gene Set file (.gmt)...";
+
+	private final CyApplicationManager cyApplicationManager;
+	private final CySwingApplication application;
 	private final OpenBrowser browser;
 	private final FileUtil fileUtil;
 	private final CyServiceRegistrar registrar;
@@ -108,364 +108,357 @@ public class PostAnalysisInputPanel extends JPanel {
 	private final DialogTaskManager dialogTaskManager;
 	private final SynchronousTaskManager syncTaskManager;
 	private final CyEventHelper eventHelper;
-    
+
 	private final VisualMappingManager visualMappingManager;
 	private final VisualStyleFactory visualStyleFactory;
-	
+
 	private final VisualMappingFunctionFactory vmfFactoryContinuous;
-    private final VisualMappingFunctionFactory vmfFactoryDiscrete;
-    private final VisualMappingFunctionFactory vmfFactoryPassthrough;
-    
-    
-    private JRadioButton knownSignature;
-    private JRadioButton signatureDiscovery;
-    
-    // Top level panel for signature discovery or known signature
-    private JPanel userInputPanel;
-    
-    private PostAnalysisSignatureDiscoveryPanel signatureDiscoveryPanel;
-    private PostAnalysisKnownSignaturePanel knownSignaturePanel;
-    
-    private PostAnalysisParameters sigDiscoveryPaParams;
-    private PostAnalysisParameters knownSigPaParams;
-    
-    
-    public PostAnalysisInputPanel(CyApplicationManager cyApplicationManager, CySwingApplication application,
-    		OpenBrowser browser,FileUtil fileUtil, CySessionManager sessionManager,
-    		StreamUtil streamUtil,CyServiceRegistrar registrar,
-    		DialogTaskManager dialog, SynchronousTaskManager syncTaskManager, CyEventHelper eventHelper,
-    		VisualMappingManager visualMappingManager, VisualStyleFactory visualStyleFactory,
-    		VisualMappingFunctionFactory vmfFactoryContinuous, VisualMappingFunctionFactory vmfFactoryDiscrete, VisualMappingFunctionFactory vmfFactoryPassthrough) {
-    	
-    	this.cyApplicationManager = cyApplicationManager;
-    	this.application = application;
-        this.browser = browser;
-        this.fileUtil = fileUtil;
-        this.registrar = registrar;
-        this.sessionManager = sessionManager;
-        this.streamUtil = streamUtil;
-        this.dialogTaskManager = dialog;
-        this.syncTaskManager = syncTaskManager;
-        this.eventHelper = eventHelper;
-        this.visualMappingManager = visualMappingManager;
-        this.visualStyleFactory = visualStyleFactory;
-        this.vmfFactoryContinuous = vmfFactoryContinuous;
-        this.vmfFactoryDiscrete = vmfFactoryDiscrete;
-        this.vmfFactoryPassthrough = vmfFactoryPassthrough;
-    		
-        
-        // Create the two main panels, set the default one
-        knownSignaturePanel = new PostAnalysisKnownSignaturePanel(this, cyApplicationManager, application, streamUtil, syncTaskManager);
-        signatureDiscoveryPanel = new PostAnalysisSignatureDiscoveryPanel(this, cyApplicationManager, application, streamUtil, dialog, fileUtil);
-       
-        userInputPanel = new JPanel(new BorderLayout());
-        userInputPanel.add(knownSignaturePanel, BorderLayout.CENTER); // Default panel
+	private final VisualMappingFunctionFactory vmfFactoryDiscrete;
+	private final VisualMappingFunctionFactory vmfFactoryPassthrough;
 
-        setLayout(new BorderLayout());
-        
-        JPanel analysisTypePanel = createAnalysisTypePanel();
-        add(analysisTypePanel, BorderLayout.NORTH);
-        
-        JPanel advancedOptionsContainer = new JPanel(new BorderLayout());
-        JScrollPane scrollPane = new JScrollPane(userInputPanel);
-        advancedOptionsContainer.add(scrollPane, BorderLayout.CENTER);
-        add(advancedOptionsContainer, BorderLayout.CENTER);
-        
-        JPanel bottomPanel = createBottomPanel();
-        add(bottomPanel, BorderLayout.SOUTH);
-    }
-    
+	private JRadioButton knownSignature;
+	private JRadioButton signatureDiscovery;
 
-    private void flipPanels(JPanel toRemove, JPanel toAdd) {
-    	userInputPanel.remove(toRemove);
-    	userInputPanel.add(toAdd, BorderLayout.CENTER);
-    	userInputPanel.revalidate();
-    	userInputPanel.repaint();
-    }
-    
-    
+	// Top level panel for signature discovery or known signature
+	private JPanel userInputPanel;
+
+	private PostAnalysisSignatureDiscoveryPanel signatureDiscoveryPanel;
+	private PostAnalysisKnownSignaturePanel knownSignaturePanel;
+
+	private PostAnalysisParameters sigDiscoveryPaParams;
+	private PostAnalysisParameters knownSigPaParams;
+
+	public PostAnalysisInputPanel(CyApplicationManager cyApplicationManager, CySwingApplication application,
+			OpenBrowser browser, FileUtil fileUtil, CySessionManager sessionManager, StreamUtil streamUtil,
+			CyServiceRegistrar registrar, DialogTaskManager dialog, SynchronousTaskManager syncTaskManager,
+			CyEventHelper eventHelper, VisualMappingManager visualMappingManager, VisualStyleFactory visualStyleFactory,
+			VisualMappingFunctionFactory vmfFactoryContinuous, VisualMappingFunctionFactory vmfFactoryDiscrete,
+			VisualMappingFunctionFactory vmfFactoryPassthrough) {
+
+		this.cyApplicationManager = cyApplicationManager;
+		this.application = application;
+		this.browser = browser;
+		this.fileUtil = fileUtil;
+		this.registrar = registrar;
+		this.sessionManager = sessionManager;
+		this.streamUtil = streamUtil;
+		this.dialogTaskManager = dialog;
+		this.syncTaskManager = syncTaskManager;
+		this.eventHelper = eventHelper;
+		this.visualMappingManager = visualMappingManager;
+		this.visualStyleFactory = visualStyleFactory;
+		this.vmfFactoryContinuous = vmfFactoryContinuous;
+		this.vmfFactoryDiscrete = vmfFactoryDiscrete;
+		this.vmfFactoryPassthrough = vmfFactoryPassthrough;
+
+		// Create the two main panels, set the default one
+		knownSignaturePanel = new PostAnalysisKnownSignaturePanel(this, cyApplicationManager, application, streamUtil,
+				syncTaskManager);
+		signatureDiscoveryPanel = new PostAnalysisSignatureDiscoveryPanel(this, cyApplicationManager, application,
+				streamUtil, dialog, fileUtil);
+
+		userInputPanel = new JPanel(new BorderLayout());
+		userInputPanel.add(knownSignaturePanel, BorderLayout.CENTER); // Default panel
+
+		setLayout(new BorderLayout());
+
+		JPanel analysisTypePanel = createAnalysisTypePanel();
+		add(analysisTypePanel, BorderLayout.NORTH);
+
+		JPanel advancedOptionsContainer = new JPanel(new BorderLayout());
+		JScrollPane scrollPane = new JScrollPane(userInputPanel);
+		advancedOptionsContainer.add(scrollPane, BorderLayout.CENTER);
+		add(advancedOptionsContainer, BorderLayout.CENTER);
+
+		JPanel bottomPanel = createBottomPanel();
+		add(bottomPanel, BorderLayout.SOUTH);
+	}
+
+	private void flipPanels(JPanel toRemove, JPanel toAdd) {
+		userInputPanel.remove(toRemove);
+		userInputPanel.add(toAdd, BorderLayout.CENTER);
+		userInputPanel.revalidate();
+		userInputPanel.repaint();
+	}
+
 	/**
-     * Creates a JPanel containing scope radio buttons
-     *
-     * @return panel containing the scope option buttons
-     */
-    private JPanel createAnalysisTypePanel() {
+	 * Creates a JPanel containing scope radio buttons
+	 *
+	 * @return panel containing the scope option buttons
+	 */
+	private JPanel createAnalysisTypePanel() {
 
-        JPanel buttonsPanel = new JPanel();
-        GridBagLayout gridbag_buttons = new GridBagLayout();
-        GridBagConstraints c_buttons = new GridBagConstraints();
-        buttonsPanel.setLayout(gridbag_buttons);
-        buttonsPanel.setBorder(BorderFactory.createTitledBorder("Info:"));
+		JPanel buttonsPanel = new JPanel();
+		GridBagLayout gridbag_buttons = new GridBagLayout();
+		GridBagConstraints c_buttons = new GridBagConstraints();
+		buttonsPanel.setLayout(gridbag_buttons);
+		buttonsPanel.setBorder(BorderFactory.createTitledBorder("Info:"));
 
-        JButton help = new JButton("Online Manual");
-        help.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                browser.openURL(EnrichmentMapBuildProperties.USER_MANUAL_URL);
-            }
-        });
+		JButton help = new JButton("Online Manual");
+		help.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				browser.openURL(EnrichmentMapBuildProperties.USER_MANUAL_URL);
+			}
+		});
 
-        JButton about = new JButton("About");
-        Map<String, String> serviceProperties = new HashMap<String, String>();
-        serviceProperties.put("inMenuBar", "true");
+		JButton about = new JButton("About");
+		Map<String, String> serviceProperties = new HashMap<String, String>();
+		serviceProperties.put("inMenuBar", "true");
 		serviceProperties.put("preferredMenu", "Apps.EnrichmentMap");
-        about.addActionListener(new ShowAboutPanelAction(serviceProperties , cyApplicationManager, null, application, browser));
-		   
-        c_buttons.weighty = 1;
-        c_buttons.weightx = 1;
-        c_buttons.insets = new Insets(0,0,0,0);
-        c_buttons.gridx = 0;
-        c_buttons.gridwidth = 1;
-        c_buttons.gridy = 0;
-        c_buttons.fill = GridBagConstraints.HORIZONTAL;
+		about.addActionListener(
+				new ShowAboutPanelAction(serviceProperties, cyApplicationManager, null, application, browser));
 
-        c_buttons.gridy = 0;
-        gridbag_buttons.setConstraints(about, c_buttons);
-        buttonsPanel.add(about);
+		c_buttons.weighty = 1;
+		c_buttons.weightx = 1;
+		c_buttons.insets = new Insets(0, 0, 0, 0);
+		c_buttons.gridx = 0;
+		c_buttons.gridwidth = 1;
+		c_buttons.gridy = 0;
+		c_buttons.fill = GridBagConstraints.HORIZONTAL;
 
-        c_buttons.gridy = 1;
-        gridbag_buttons.setConstraints(help, c_buttons);
-        buttonsPanel.add(help);
+		c_buttons.gridy = 0;
+		gridbag_buttons.setConstraints(about, c_buttons);
+		buttonsPanel.add(about);
 
+		c_buttons.gridy = 1;
+		gridbag_buttons.setConstraints(help, c_buttons);
+		buttonsPanel.add(help);
 
-        JPanel panel = new JPanel();
+		JPanel panel = new JPanel();
 
-        GridBagLayout gridbag = new GridBagLayout();
-        GridBagConstraints c = new GridBagConstraints();
-        panel.setLayout(gridbag);
+		GridBagLayout gridbag = new GridBagLayout();
+		GridBagConstraints c = new GridBagConstraints();
+		panel.setLayout(gridbag);
 
-        c.weighty = 1;
-        c.weightx = 1;
-        c.insets = new Insets(0,0,0,0);
-        c.fill = GridBagConstraints.HORIZONTAL;
-        panel.setBorder(BorderFactory.createTitledBorder("Post Analysis Type"));
-        
-        knownSignature = new JRadioButton("Known Signature");
-        knownSignature.setSelected(true);
-        knownSignature.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-            	flipPanels(signatureDiscoveryPanel, knownSignaturePanel);
-            }
-        });        
+		c.weighty = 1;
+		c.weightx = 1;
+		c.insets = new Insets(0, 0, 0, 0);
+		c.fill = GridBagConstraints.HORIZONTAL;
+		panel.setBorder(BorderFactory.createTitledBorder("Post Analysis Type"));
 
-        signatureDiscovery = new JRadioButton("Signature Discovery");
-        signatureDiscovery.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-            	flipPanels(knownSignaturePanel, signatureDiscoveryPanel);
-            }
-        });
+		knownSignature = new JRadioButton("Known Signature");
+		knownSignature.setSelected(true);
+		knownSignature.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				flipPanels(signatureDiscoveryPanel, knownSignaturePanel);
+			}
+		});
 
-        ButtonGroup analysisOptions = new ButtonGroup();
-        analysisOptions.add(knownSignature);
-        analysisOptions.add(signatureDiscovery);
+		signatureDiscovery = new JRadioButton("Signature Discovery");
+		signatureDiscovery.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				flipPanels(knownSignaturePanel, signatureDiscoveryPanel);
+			}
+		});
 
-        c.gridx = 0;
-        c.gridwidth = 3;
-        c.gridy = 0;
-        gridbag.setConstraints(knownSignature, c);
-        panel.add(knownSignature);
-        
-        c.gridy = 1;
-        gridbag.setConstraints(signatureDiscovery, c);
-        panel.add(signatureDiscovery);
-        
-        JPanel topPanel = new JPanel();
-        topPanel.setLayout(new BorderLayout());
-        topPanel.add(buttonsPanel, BorderLayout.EAST);
-        topPanel.add(panel, BorderLayout.CENTER);
+		ButtonGroup analysisOptions = new ButtonGroup();
+		analysisOptions.add(knownSignature);
+		analysisOptions.add(signatureDiscovery);
 
-        return topPanel;
-    }
-    
-    
+		c.gridx = 0;
+		c.gridwidth = 3;
+		c.gridy = 0;
+		gridbag.setConstraints(knownSignature, c);
+		panel.add(knownSignature);
 
-    /**
-     * Utility method that creates a panel for buttons at the bottom of the Enrichment Map Panel
-     *
-     * @return a flow layout panel containing the build map and cancel buttons
-     */
-    private JPanel createBottomPanel() {
-        JPanel panel = new JPanel();
-        panel.setLayout(new FlowLayout());
+		c.gridy = 1;
+		gridbag.setConstraints(signatureDiscovery, c);
+		panel.add(signatureDiscovery);
 
-        JButton resetButton = new JButton("Reset");
-        resetButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                resetPanel();
-            }
-        });
+		JPanel topPanel = new JPanel();
+		topPanel.setLayout(new BorderLayout());
+		topPanel.add(buttonsPanel, BorderLayout.EAST);
+		topPanel.add(panel, BorderLayout.CENTER);
 
-        JButton closeButton = new JButton();
-        closeButton.setText("Close");
-        closeButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-            	close();
-            }
-        });
+		return topPanel;
+	}
 
-        JButton importButton = new JButton();
-        importButton.setText("Run");
-        importButton.addActionListener(new ActionListener() {
+	/**
+	 * Utility method that creates a panel for buttons at the bottom of the
+	 * Enrichment Map Panel
+	 *
+	 * @return a flow layout panel containing the build map and cancel buttons
+	 */
+	private JPanel createBottomPanel() {
+		JPanel panel = new JPanel();
+		panel.setLayout(new FlowLayout());
+
+		JButton resetButton = new JButton("Reset");
+		resetButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				resetPanel();
+			}
+		});
+
+		JButton closeButton = new JButton();
+		closeButton.setText("Close");
+		closeButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				close();
+			}
+		});
+
+		JButton importButton = new JButton();
+		importButton.setText("Run");
+		importButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				boolean okToRun = beforeRun();
 				if(okToRun) {
-					BuildPostAnalysisActionListener action = new BuildPostAnalysisActionListener(PostAnalysisInputPanel.this, sessionManager, streamUtil, application, cyApplicationManager, 
-	                        dialogTaskManager, eventHelper, visualMappingManager, visualStyleFactory, vmfFactoryContinuous, vmfFactoryDiscrete, vmfFactoryPassthrough);
+					BuildPostAnalysisActionListener action = new BuildPostAnalysisActionListener(
+							PostAnalysisInputPanel.this, sessionManager, streamUtil, application, cyApplicationManager,
+							dialogTaskManager, eventHelper, visualMappingManager, visualStyleFactory,
+							vmfFactoryContinuous, vmfFactoryDiscrete, vmfFactoryPassthrough);
 					action.runPostAnalysis();
 				}
 			}
 		});
-        		
-        		
-        		
-        importButton.setEnabled(true);
 
-        panel.add(resetButton);
-        panel.add(closeButton);
-        panel.add(importButton);
+		importButton.setEnabled(true);
 
-        return panel;
-    }
-    
-    
-    protected File chooseGMTFile(JFormattedTextField textField) {
-    	FileChooserFilter filter = new FileChooserFilter("All GMT Files", "gmt");          
-        List<FileChooserFilter> all_filters = Arrays.asList(filter);
-       
-        // Get the file name
-        File file = fileUtil.getFile(SwingUtil.getWindowInstance(this), "Import Signature GMT File", FileUtil.LOAD, all_filters);
-        
-        if(file != null) {
-        	String absolutePath = file.getAbsolutePath();
+		panel.add(resetButton);
+		panel.add(closeButton);
+		panel.add(importButton);
+
+		return panel;
+	}
+
+	protected File chooseGMTFile(JFormattedTextField textField) {
+		FileChooserFilter filter = new FileChooserFilter("All GMT Files", "gmt");
+		List<FileChooserFilter> all_filters = Arrays.asList(filter);
+
+		// Get the file name
+		File file = fileUtil.getFile(SwingUtil.getWindowInstance(this), "Import Signature GMT File", FileUtil.LOAD,
+				all_filters);
+
+		if(file != null) {
+			String absolutePath = file.getAbsolutePath();
 			textField.setForeground(PostAnalysisInputPanel.checkFile(absolutePath));
-        	textField.setText(absolutePath);
-        	textField.setValue(absolutePath);
-            textField.setToolTipText(absolutePath);
-            textField.setCaretPosition(textField.getText().length());
-        }
-        
-        return file;
-    }
-        
-    
-	protected static boolean validateAndSetFilterValue(JFormattedTextField source, FilterParameters filterParams, StringBuilder message) {
-    	Number value = (Number) source.getValue();
-    	boolean valid = false;
-    	FilterType type = filterParams.getType();
-    	
+			textField.setText(absolutePath);
+			textField.setValue(absolutePath);
+			textField.setToolTipText(absolutePath);
+			textField.setCaretPosition(textField.getText().length());
+		}
+
+		return file;
+	}
+
+	protected static boolean validateAndSetFilterValue(JFormattedTextField source, FilterParameters filterParams,
+			StringBuilder message) {
+		Number value = (Number) source.getValue();
+		boolean valid = false;
+		FilterType type = filterParams.getType();
+
 		switch(type) {
-	    	case HYPERGEOM:
-	    		if(value != null && value.doubleValue() >= 0.0 && value.intValue() <= 1.0)
-	    			valid = true;
-	            else
-	                message.append("The value must be greater than or equal 0.0 and less than or equal to 1.0");
-	    		break;
-	    	case MANN_WHIT_TWO_SIDED:
-	    	case MANN_WHIT_LESS:
-	    	case MANN_WHIT_GREATER:
-	    		if(value != null && value.doubleValue() >= 0.0 && value.intValue() <= 1.0)
-	    			valid = true;
-	            else
-	                message.append("The value must be greater than or equal 0.0 and less than or equal to 1.0");
-	    		break;
-	    	case PERCENT: 
-	    	case SPECIFIC:
-	    		if(value != null && value.intValue() >= 0 && value.intValue() <= 100)
-	    			valid = true;
-	            else
-	                message.append("The value must be greater than or equal 0 and less than or equal to 100.");
-	    		break;
-	    	case NUMBER:
-	    		if(value != null && value.intValue() >= 0)
-	    			valid = true;
-	            else
-	                message.append("The value must be greater than or equal 0.");
-	    		break;
-	    	default:
-	    		valid = true;
-	    		break;
-    	}
-    	
-    	if(valid)
-    		filterParams.setValue(type, value.doubleValue());
-    	else
-    		source.setValue(type.defaultValue);
-    	
-    	return valid;
-    }
-    
-    
-    public void close() {
-    	registrar.unregisterService(this, CytoPanelComponent.class);
-    }
+			case HYPERGEOM:
+				if(value != null && value.doubleValue() >= 0.0 && value.intValue() <= 1.0)
+					valid = true;
+				else
+					message.append("The value must be greater than or equal 0.0 and less than or equal to 1.0");
+				break;
+			case MANN_WHIT_TWO_SIDED:
+			case MANN_WHIT_LESS:
+			case MANN_WHIT_GREATER:
+				if(value != null && value.doubleValue() >= 0.0 && value.intValue() <= 1.0)
+					valid = true;
+				else
+					message.append("The value must be greater than or equal 0.0 and less than or equal to 1.0");
+				break;
+			case PERCENT:
+			case SPECIFIC:
+				if(value != null && value.intValue() >= 0 && value.intValue() <= 100)
+					valid = true;
+				else
+					message.append("The value must be greater than or equal 0 and less than or equal to 100.");
+				break;
+			case NUMBER:
+				if(value != null && value.intValue() >= 0)
+					valid = true;
+				else
+					message.append("The value must be greater than or equal 0.");
+				break;
+			default:
+				valid = true;
+				break;
+		}
 
-    protected static Color checkFile(String filename){
-        //check to see if the files exist and are readable.
-        //if the file is unreadable change the color of the font to red
-        //otherwise the font should be black.
-        if(filename != null){
-            File tempfile = new File(filename);
-            if(!tempfile.canRead())
-                return Color.RED;
-        }
-        return Color.BLACK;
-    }
+		if(valid)
+			filterParams.setValue(type, value.doubleValue());
+		else
+			source.setValue(type.defaultValue);
 
-    
-    /**
-     * Clear the current panel and clear the paParams associated with each panel
-     */
-    private void resetPanel() {
-    	if(knownSigPaParams != null)
-    		knownSignaturePanel.resetPanel();
-    	if(sigDiscoveryPaParams != null)
-    		signatureDiscoveryPanel.resetPanel();
-    }
+		return valid;
+	}
 
-    /**
-     * Refresh content of PostAnalysisInputPanel when Network is changed or Panel is re-opened.
-     * 
-     * @param current_params
-     */
-    public void initialize(EnrichmentMap currentMap) {
-    	resetPanel();
+	public void close() {
+		registrar.unregisterService(this, CytoPanelComponent.class);
+	}
+
+	protected static Color checkFile(String filename) {
+		//check to see if the files exist and are readable.
+		//if the file is unreadable change the color of the font to red
+		//otherwise the font should be black.
+		if(filename != null) {
+			File tempfile = new File(filename);
+			if(!tempfile.canRead())
+				return Color.RED;
+		}
+		return Color.BLACK;
+	}
+
+	/**
+	 * Clear the current panel and clear the paParams associated with each panel
+	 */
+	private void resetPanel() {
+		if(knownSigPaParams != null)
+			knownSignaturePanel.resetPanel();
+		if(sigDiscoveryPaParams != null)
+			signatureDiscoveryPanel.resetPanel();
+	}
+
+	/**
+	 * Refresh content of PostAnalysisInputPanel when Network is changed or
+	 * Panel is re-opened.
+	 * 
+	 * @param current_params
+	 */
+	public void initialize(EnrichmentMap currentMap) {
+		resetPanel();
 		if(currentMap != null) {
 			// Use two separate parameters objects so that the two panels don't interfere with each other
 			knownSigPaParams = new PostAnalysisParameters();
 			knownSigPaParams.setSignatureHub(false);
-			
+
 			sigDiscoveryPaParams = new PostAnalysisParameters();
 			sigDiscoveryPaParams.setSignatureHub(true);
-			
+
 			knownSignaturePanel.initialize(currentMap, knownSigPaParams);
 			signatureDiscoveryPanel.initialize(currentMap, sigDiscoveryPaParams);
-			
-	        knownSignature.setToolTipText(currentMap.getName());
+
+			knownSignature.setToolTipText(currentMap.getName());
 		}
-    }
-    
+	}
 
 	public PostAnalysisParameters getPaParams() {
 		return knownSignature.isSelected() ? knownSigPaParams : sigDiscoveryPaParams;
-    }
+	}
 
-	
-    
 	/**
 	 * Set available signature gene set count to specified value
+	 * 
 	 * @param int avSigCount
 	 * @return null
 	 */
 	public void setAvSigCount(int avSigCount) {
-		if (signatureDiscovery.isSelected()) {
+		if(signatureDiscovery.isSelected()) {
 			signatureDiscoveryPanel.setAvSigCount(avSigCount);
 		}
 	}
-	
+
 	public boolean beforeRun() {
 		if(knownSignature.isSelected())
 			return knownSignaturePanel.beforeRun();
 		else
 			return true;
 	}
-	
+
 }

@@ -42,7 +42,10 @@
 // $HeadURL$
 
 package org.baderlab.csplugins.enrichmentmap.view;
-import static org.baderlab.csplugins.enrichmentmap.EnrichmentMapBuildProperties.*;
+
+import static org.baderlab.csplugins.enrichmentmap.EnrichmentMapBuildProperties.APP_URL;
+import static org.baderlab.csplugins.enrichmentmap.EnrichmentMapBuildProperties.APP_VERSION;
+import static org.baderlab.csplugins.enrichmentmap.EnrichmentMapBuildProperties.BUILD_ID;
 
 import java.awt.Insets;
 import java.net.URL;
@@ -58,69 +61,55 @@ import org.cytoscape.util.swing.OpenBrowser;
 
 @SuppressWarnings("serial")
 public class AboutPanel extends JDialog {
-    
-    private OpenBrowser browser;
-   
-    public AboutPanel(CySwingApplication application, OpenBrowser browser) {
-        super(application.getJFrame(), "About Enrichment Map", false);
-        this.browser = browser;
-        setResizable(false);
 
-        //main panel for dialog box
-        JEditorPane editorPane = new JEditorPane();
-        editorPane.setMargin(new Insets(10,10,10,10));
-        editorPane.setEditable(false);
-        editorPane.setEditorKit(new HTMLEditorKit());
-        editorPane.addHyperlinkListener(new HyperlinkAction(editorPane));
-        
-        URL logoURL = this.getClass().getResource("enrichmentmap_logo.png");
+	private OpenBrowser browser;
 
-        editorPane.setText(
-                "<html><body>"+
-                //"<div style=\"float:right;\"><img height=\"77\" width=\"125\" src=\""+ logoURL.toString() +"\" ></div>" +
-                "<table border='0'><tr>" +
-                "<td width='125'></td>"+
-                "<td width='200'>"+
-                "<p align=center><b>Enrichment Map v" + APP_VERSION + "</b><BR>" + 
-                "A Cytoscape App<BR>" +
-                "<BR></p>" +
-                "</td>"+
-                "<td width='125'><div align='right'><img height='77' width='125' src=\""+ logoURL.toString() +"\" ></div></td>"+
-                "</tr></table>" +
-                "<p align=center>Enrichment Map is a network-based method to visualize<BR>"+
-                "and interpret gene-set enrichment results.<BR>" +
-                "<BR>" +
-                "by Gary Bader, Daniele Merico, Ruth Isserlin and Oliver Stueker<BR>" +
-                "(<a href='http://www.baderlab.org/'>Bader Lab</a>, University of Toronto)<BR>" +
-                "<BR>" +
-                "App Homepage:<BR>" +
-                "<a href='" + APP_URL + "'>" + APP_URL + "</a><BR>" +
-                "<BR>" +
-                "If you use this app in your research, please cite:<BR>" +
-                "Merico D, Isserlin R, Stueker O, Emili A, Bader GD<BR>" +
-                "Enrichment Map: A Network-Based Method for <BR>" +
-                "Gene-Set Enrichment Visualization and Interpretation<BR>" +
-                "<i>PLoS One. 2010 Nov 15;5(11)</i><BR>" +
-                "<BR>" +
-                "<font size='-1'>" + BUILD_ID + "</font>" +
-                "</p></body></html>"
-            );
-        
-        setContentPane(editorPane);
-    }
+	public AboutPanel(CySwingApplication application, OpenBrowser browser) {
+		super(application.getJFrame(), "About Enrichment Map", false);
+		this.browser = browser;
+		setResizable(false);
 
-    private class HyperlinkAction implements HyperlinkListener {
-        @SuppressWarnings("unused")
-        JEditorPane pane;
+		//main panel for dialog box
+		JEditorPane editorPane = new JEditorPane();
+		editorPane.setMargin(new Insets(10, 10, 10, 10));
+		editorPane.setEditable(false);
+		editorPane.setEditorKit(new HTMLEditorKit());
+		editorPane.addHyperlinkListener(new HyperlinkAction(editorPane));
 
-        public HyperlinkAction(JEditorPane pane) {
-            this.pane = pane;
-        }
+		URL logoURL = this.getClass().getResource("enrichmentmap_logo.png");
 
-        public void hyperlinkUpdate(HyperlinkEvent event) {
-            if (event.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-            	browser.openURL(event.getURL().toString());
-            }
-        }
-    }	
+		editorPane.setText("<html><body>" +
+		//"<div style=\"float:right;\"><img height=\"77\" width=\"125\" src=\""+ logoURL.toString() +"\" ></div>" +
+				"<table border='0'><tr>" + "<td width='125'></td>" + "<td width='200'>"
+				+ "<p align=center><b>Enrichment Map v" + APP_VERSION + "</b><BR>" + "A Cytoscape App<BR>" + "<BR></p>"
+				+ "</td>" + "<td width='125'><div align='right'><img height='77' width='125' src=\""
+				+ logoURL.toString() + "\" ></div></td>" + "</tr></table>"
+				+ "<p align=center>Enrichment Map is a network-based method to visualize<BR>"
+				+ "and interpret gene-set enrichment results.<BR>" + "<BR>"
+				+ "by Gary Bader, Daniele Merico, Ruth Isserlin and Oliver Stueker<BR>"
+				+ "(<a href='http://www.baderlab.org/'>Bader Lab</a>, University of Toronto)<BR>" + "<BR>"
+				+ "App Homepage:<BR>" + "<a href='" + APP_URL + "'>" + APP_URL + "</a><BR>" + "<BR>"
+				+ "If you use this app in your research, please cite:<BR>"
+				+ "Merico D, Isserlin R, Stueker O, Emili A, Bader GD<BR>"
+				+ "Enrichment Map: A Network-Based Method for <BR>"
+				+ "Gene-Set Enrichment Visualization and Interpretation<BR>" + "<i>PLoS One. 2010 Nov 15;5(11)</i><BR>"
+				+ "<BR>" + "<font size='-1'>" + BUILD_ID + "</font>" + "</p></body></html>");
+
+		setContentPane(editorPane);
+	}
+
+	private class HyperlinkAction implements HyperlinkListener {
+		@SuppressWarnings("unused")
+		JEditorPane pane;
+
+		public HyperlinkAction(JEditorPane pane) {
+			this.pane = pane;
+		}
+
+		public void hyperlinkUpdate(HyperlinkEvent event) {
+			if(event.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+				browser.openURL(event.getURL().toString());
+			}
+		}
+	}
 }

@@ -7,7 +7,7 @@ import java.awt.Color;
 public class ExpressionTableValue {
 	private Double expression_value;
 	private Color expression_color;
-		
+
 	public ExpressionTableValue(Double expression_value, Color expression_color) {
 		super();
 		this.expression_value = expression_value;
@@ -25,6 +25,4 @@ public class ExpressionTableValue {
 	public void setExpression_color(Color expression_color) {
 		this.expression_color = expression_color;
 	}
-	
-	
 }

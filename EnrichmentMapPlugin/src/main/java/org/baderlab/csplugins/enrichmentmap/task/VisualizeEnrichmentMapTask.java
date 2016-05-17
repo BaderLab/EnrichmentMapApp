@@ -43,9 +43,6 @@
 
 package org.baderlab.csplugins.enrichmentmap.task;
 
-
-
-
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapVisualStyle;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
@@ -65,103 +62,99 @@ import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
-
 /**
- * Created by
- * User: risserlin
- * Date: Jan 8, 2009
- * Time: 4:11:11 PM
+ * Created by User: risserlin Date: Jan 8, 2009 Time: 4:11:11 PM
  * <p>
  * Create visual representation of enrichment map in cytoscape
  */
 public class VisualizeEnrichmentMapTask extends AbstractTask {
 
-    private EnrichmentMap map;
-    
-    private CyNetworkFactory networkFactory;
-    private CyNetworkManager networkManager;
-    private CyNetworkViewManager networkViewManager; 
-    private CyNetworkViewFactory networkViewFactory;
-    private VisualMappingManager visualMappingManager;
-    private VisualStyleFactory visualStyleFactory;
-    
-    //we will need all three mappers
-    private VisualMappingFunctionFactory vmfFactoryContinuous;
-    private VisualMappingFunctionFactory vmfFactoryDiscrete;
-    private VisualMappingFunctionFactory vmfFactoryPassthrough;
-    
-    private CyLayoutAlgorithmManager layoutManager;
-       
+	private EnrichmentMap map;
 
+	private CyNetworkFactory networkFactory;
+	private CyNetworkManager networkManager;
+	private CyNetworkViewManager networkViewManager;
+	private CyNetworkViewFactory networkViewFactory;
+	private VisualMappingManager visualMappingManager;
+	private VisualStyleFactory visualStyleFactory;
 
-    /**
-     * Class constructor - current task monitor
-     *
-     * @param params - enrichment map parameters for current map
-     * @param taskMonitor - current task monitor
-     */
-    public VisualizeEnrichmentMapTask(EnrichmentMap map, CyNetworkFactory networkFactory,
-    		CyNetworkManager networkManager, CyNetworkViewManager networkViewManager,
-    		CyNetworkViewFactory networkViewFactory,
-    		VisualMappingManager visualMappingManager,VisualStyleFactory visualStyleFactory,
-    		VisualMappingFunctionFactory vmfFactoryContinuous, VisualMappingFunctionFactory vmfFactoryDiscrete,
-     VisualMappingFunctionFactory vmfFactoryPassthrough, CyLayoutAlgorithmManager layoutManager) {
-    	this.map = map;
-        this.networkFactory = networkFactory;
-        this.networkManager = networkManager;
-        this.networkViewManager	= networkViewManager;
-        this.networkViewFactory = networkViewFactory;
-        this.visualMappingManager = visualMappingManager;
-        this.visualStyleFactory = visualStyleFactory;
-        
-        this.vmfFactoryContinuous = vmfFactoryContinuous;
-        this.vmfFactoryDiscrete = vmfFactoryDiscrete;
-        this.vmfFactoryPassthrough = vmfFactoryPassthrough;
-        this.layoutManager = layoutManager;
-    }
+	//we will need all three mappers
+	private VisualMappingFunctionFactory vmfFactoryContinuous;
+	private VisualMappingFunctionFactory vmfFactoryDiscrete;
+	private VisualMappingFunctionFactory vmfFactoryPassthrough;
 
-    /**
-     * Compute, and create cytoscape enrichment map
-     */
-    public void visualizeMap(TaskMonitor taskMonitor) {
+	private CyLayoutAlgorithmManager layoutManager;
+
+	/**
+	 * Class constructor - current task monitor
+	 *
+	 * @param params - enrichment map parameters for current map
+	 * @param taskMonitor - current task monitor
+	 */
+	public VisualizeEnrichmentMapTask(EnrichmentMap map, CyNetworkFactory networkFactory,
+			CyNetworkManager networkManager, CyNetworkViewManager networkViewManager,
+			CyNetworkViewFactory networkViewFactory, VisualMappingManager visualMappingManager,
+			VisualStyleFactory visualStyleFactory, VisualMappingFunctionFactory vmfFactoryContinuous,
+			VisualMappingFunctionFactory vmfFactoryDiscrete, VisualMappingFunctionFactory vmfFactoryPassthrough,
+			CyLayoutAlgorithmManager layoutManager) {
+		this.map = map;
+		this.networkFactory = networkFactory;
+		this.networkManager = networkManager;
+		this.networkViewManager = networkViewManager;
+		this.networkViewFactory = networkViewFactory;
+		this.visualMappingManager = visualMappingManager;
+		this.visualStyleFactory = visualStyleFactory;
+
+		this.vmfFactoryContinuous = vmfFactoryContinuous;
+		this.vmfFactoryDiscrete = vmfFactoryDiscrete;
+		this.vmfFactoryPassthrough = vmfFactoryPassthrough;
+		this.layoutManager = layoutManager;
+	}
+
+	/**
+	 * Compute, and create cytoscape enrichment map
+	 */
+	public void visualizeMap(TaskMonitor taskMonitor) {
 		CyNetwork network = networkManager.getNetwork(map.getParams().getNetworkID());
 		String prefix = map.getParams().getAttributePrefix();
-	
-		//create the network view
-        CyNetworkView view = networkViewFactory.createNetworkView( network );
-        networkViewManager.addNetworkView(view);
-        
-        String vs_name = prefix + "Enrichment_map_style";
 
-        EnrichmentMapVisualStyle em_vs = new EnrichmentMapVisualStyle(map.getParams(),vmfFactoryContinuous,vmfFactoryDiscrete,vmfFactoryPassthrough);
-        VisualStyle vs = visualStyleFactory.createVisualStyle(vs_name);
-        em_vs.applyVisualStyle(vs, prefix);                
-        
-        visualMappingManager.addVisualStyle(vs);
-        visualMappingManager.setCurrentVisualStyle(vs);
-        
-        vs.apply(view);
-        view.updateView();
-        
-        //apply force directed layout
-     	CyLayoutAlgorithm layout = layoutManager.getLayout("force-directed");
-     	String layoutAttribute = null;
-     	insertTasksAfterCurrentTask(layout.createTaskIterator(view, layout.createLayoutContext(), CyLayoutAlgorithm.ALL_NODE_VIEWS, layoutAttribute));
-       
-        //update Parameter panel
-        ParametersPanel parametersPanel = EnrichmentMapManager.getInstance().getParameterPanel();
-        parametersPanel.initializeSliders(map);
-        parametersPanel.updatePanel(map);           
-    }
-   
-    public String getTitle() {
-        return "Building Enrichment Map";
-    }
+		//create the network view
+		CyNetworkView view = networkViewFactory.createNetworkView(network);
+		networkViewManager.addNetworkView(view);
+
+		String vs_name = prefix + "Enrichment_map_style";
+
+		EnrichmentMapVisualStyle em_vs = new EnrichmentMapVisualStyle(map.getParams(), vmfFactoryContinuous,
+				vmfFactoryDiscrete, vmfFactoryPassthrough);
+		VisualStyle vs = visualStyleFactory.createVisualStyle(vs_name);
+		em_vs.applyVisualStyle(vs, prefix);
+
+		visualMappingManager.addVisualStyle(vs);
+		visualMappingManager.setCurrentVisualStyle(vs);
+
+		vs.apply(view);
+		view.updateView();
+
+		//apply force directed layout
+		CyLayoutAlgorithm layout = layoutManager.getLayout("force-directed");
+		String layoutAttribute = null;
+		insertTasksAfterCurrentTask(layout.createTaskIterator(view, layout.createLayoutContext(),
+				CyLayoutAlgorithm.ALL_NODE_VIEWS, layoutAttribute));
+
+		//update Parameter panel
+		ParametersPanel parametersPanel = EnrichmentMapManager.getInstance().getParameterPanel();
+		parametersPanel.initializeSliders(map);
+		parametersPanel.updatePanel(map);
+	}
+
+	public String getTitle() {
+		return "Building Enrichment Map";
+	}
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		taskMonitor.setTitle("Creating Network View");
-		visualizeMap(taskMonitor);		
+		visualizeMap(taskMonitor);
 	}
 
 }

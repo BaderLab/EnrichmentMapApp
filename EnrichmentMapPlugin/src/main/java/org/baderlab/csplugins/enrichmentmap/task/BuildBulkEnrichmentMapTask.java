@@ -1,16 +1,8 @@
 package org.baderlab.csplugins.enrichmentmap.task;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.net.URISyntaxException;
-
-import javax.swing.JOptionPane;
-import javax.xml.bind.JAXBException;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
@@ -19,47 +11,45 @@ import org.cytoscape.work.TaskMonitor;
 */
 public class BuildBulkEnrichmentMapTask extends AbstractTask{
 
-
 	// Keep track of progress for monitoring:
-    private TaskMonitor taskMonitor = null;
-    private boolean interrupted = false;
-    
-    private EnrichmentMapParameters params;
+	private TaskMonitor taskMonitor = null;
+	private boolean interrupted = false;
+
+	private EnrichmentMapParameters params;
 
 	public BuildBulkEnrichmentMapTask(EnrichmentMapParameters params) {
 		super();
 		this.params = params;
 	}
 
-	public BuildBulkEnrichmentMapTask(TaskMonitor taskMonitor,
-			EnrichmentMapParameters params) {
+	public BuildBulkEnrichmentMapTask(TaskMonitor taskMonitor, EnrichmentMapParameters params) {
 		super();
 		this.taskMonitor = taskMonitor;
 		this.params = params;
 	}
 
-	public void buildBulkEnrichmentMap(){
+	public void buildBulkEnrichmentMap() {
 		//The Enrichment Map parameters contains only some of the info as in this
-        //version a directory is given with the GSEA results and an EM needs to be generated for each
-        //GSEA result
+		//version a directory is given with the GSEA results and an EM needs to be generated for each
+		//GSEA result
 
-        String mainDirectory = params.getGSEAResultsDirName();
-        //the user has given a file in the main directory.
-        //String mainDirectory = new File(directory_file).getParent();
+		String mainDirectory = params.getGSEAResultsDirName();
+		//the user has given a file in the main directory.
+		//String mainDirectory = new File(directory_file).getParent();
 
-        //get all the directories in this directory
+		//get all the directories in this directory
 
-        String[] gsea_results = new File(mainDirectory).list();
+		String[] gsea_results = new File(mainDirectory).list();
 
-        //get the lower and upper limits if the user has specified any
-        int lower = params.getLowerlimit();
-        int upper = params.getUpperlimit();
-        if(lower ==1 && upper ==1)
-            upper = gsea_results.length;
+		//get the lower and upper limits if the user has specified any
+		int lower = params.getLowerlimit();
+		int upper = params.getUpperlimit();
+		if(lower == 1 && upper == 1)
+			upper = gsea_results.length;
 
-        int counter = 0;
-        
-        int num_bulk_em_created = 0;
+		int counter = 0;
+
+		int num_bulk_em_created = 0;
 
 
         //if the bulk results are for GSEA
@@ -290,44 +280,43 @@ public class BuildBulkEnrichmentMapTask extends AbstractTask{
 */	}
 
 	/**
-     * Run the Task.
-     */
-    public void run() {
-        buildBulkEnrichmentMap();
-    }
+	 * Run the Task.
+	 */
+	public void run() {
+		buildBulkEnrichmentMap();
+	}
 
-    /**
-     * Non-blocking call to interrupt the task.
-     */
-    public void halt() {
-        this.interrupted = true;
-    }
+	/**
+	 * Non-blocking call to interrupt the task.
+	 */
+	public void halt() {
+		this.interrupted = true;
+	}
 
-     /**
-     * Sets the Task Monitor.
-     *
-     * @param taskMonitor TaskMonitor Object.
-     */
-    public void setTaskMonitor(TaskMonitor taskMonitor) {
-        if (this.taskMonitor != null) {
-            throw new IllegalStateException("Task Monitor is already set.");
-        }
-        this.taskMonitor = taskMonitor;
-    }
+	/**
+	 * Sets the Task Monitor.
+	 *
+	 * @param taskMonitor TaskMonitor Object.
+	 */
+	public void setTaskMonitor(TaskMonitor taskMonitor) {
+		if(this.taskMonitor != null) {
+			throw new IllegalStateException("Task Monitor is already set.");
+		}
+		this.taskMonitor = taskMonitor;
+	}
 
-    /**
-     * Gets the Task Title.
-     *
-     * @return human readable task title.
-     */
-    public String getTitle() {
-        return new String("Building Bulk Enrichment Maps based on GSEA or generic results");
-    }
+	/**
+	 * Gets the Task Title.
+	 *
+	 * @return human readable task title.
+	 */
+	public String getTitle() {
+		return new String("Building Bulk Enrichment Maps based on GSEA or generic results");
+	}
 
 	@Override
 	public void run(TaskMonitor arg0) throws Exception {
-		
-		
+
 	}
 	
 }

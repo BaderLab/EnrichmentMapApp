@@ -63,285 +63,280 @@ import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
 /**
- * Created by
- * User: risserlin
- * Date: May 1, 2009
- * Time: 9:10:22 AM
+ * Created by User: risserlin Date: May 1, 2009 Time: 9:10:22 AM
  * <p>
  * Task to parse ranks file <br>
  * There are multiple potential rank file formats: <br>
- * GSEA input rnk file - a two column file with genes and their specified rank represented as a double, commented lines
- * have a # at the line start.
- * GSEA output rank files (xls file) - a five column file with genes and specified rank but also have three bland
- * columns.
+ * GSEA input rnk file - a two column file with genes and their specified rank
+ * represented as a double, commented lines have a # at the line start. GSEA
+ * output rank files (xls file) - a five column file with genes and specified
+ * rank but also have three bland columns.
  *
  */
 public class RanksFileReaderTask extends AbstractTask {
 
-	
-    private String RankFileName;
-    private DataSet dataset;
-    private String ranks_name;
+	private String RankFileName;
+	private DataSet dataset;
+	private String ranks_name;
 
-    // Keep track of progress for monitoring:
-    private int maxValue;
+	// Keep track of progress for monitoring:
+	private int maxValue;
 
-    //distinguish between load from enrichment map input panel and heatmap interface
-    private boolean loadFromHeatmap = false;
-    
-    private StreamUtil streamUtil;
+	//distinguish between load from enrichment map input panel and heatmap interface
+	private boolean loadFromHeatmap = false;
 
-    /**
-     * Class constructor
-     *
-     * @param params - enrichment map parameters for current map
-     * @param rankFileName - file name of ranks file
-     * @param dataset - which dataset is this rank file related to (dataset 1 or dataset 2)
-     */
-    public RanksFileReaderTask(String rankFileName, DataSet dataset, boolean loadFromHeatmap,StreamUtil streamUtil) {
-        RankFileName = rankFileName;
-        this.dataset = dataset;
-        this.loadFromHeatmap = loadFromHeatmap;
-        
-        this.streamUtil = streamUtil;
-        
-    }
+	private StreamUtil streamUtil;
 
-    
-  
-    /**
-     *  Class constructor - curent task monitor specified.
-     *
-     * @param params - enrichment map parameters for current map
-     * @param rankFileName - file name of ranks file
-     * @param dataset - which dataset is this rank file related to (dataset 1 or dataset 2)
-     */
-    public RanksFileReaderTask(String rankFileName, DataSet dataset, String ranks_name, boolean loadFromHeatmap,StreamUtil streamUtil) {
-        RankFileName = rankFileName;
-        this.ranks_name = ranks_name;
-        this.dataset = dataset;
-        this.loadFromHeatmap = loadFromHeatmap;
-        
-        this.streamUtil = streamUtil;
-        
-    }
+	/**
+	 * Class constructor
+	 *
+	 * @param params - enrichment map parameters for current map
+	 * @param rankFileName - file name of ranks file
+	 * @param dataset - which dataset is this rank file related to (dataset 1 or
+	 *            dataset 2)
+	 */
+	public RanksFileReaderTask(String rankFileName, DataSet dataset, boolean loadFromHeatmap, StreamUtil streamUtil) {
+		RankFileName = rankFileName;
+		this.dataset = dataset;
+		this.loadFromHeatmap = loadFromHeatmap;
 
-    /**
-     * Class constructor - for late loaded rank file that aren't specific to a dataset.
-     *
-     * @param params - enrichment map parameters for current map
-     * @param rankFileName - file name of ranks file
-     * @param ranks_name - name of rankings to be used in heat map drop down to refer to it.
-     */
-     public RanksFileReaderTask( String rankFileName, String ranks_name, boolean loadFromHeatmap) {
-        RankFileName = rankFileName;
-        this.ranks_name = ranks_name;
-         this.loadFromHeatmap = loadFromHeatmap;
-    }
+		this.streamUtil = streamUtil;
 
-    /**
-     * parse the rank file
-     */
-    public void parse(TaskMonitor taskMonitor) throws IOException {
-    	
-    	InputStream reader = streamUtil.getInputStream(RankFileName);
-        String fullText = new Scanner(reader,"UTF-8").useDelimiter("\\A").next();                        
-       
-        int lineNumber = 0;
+	}
 
-        String[] lines = fullText.split("\r\n?|\n");
-        int currentProgress = 0;
-        maxValue = lines.length;
-        if(taskMonitor != null)
-            taskMonitor.setStatusMessage("Parsing Rank file - " + maxValue + " rows");  
+	/**
+	 * Class constructor - curent task monitor specified.
+	 *
+	 * @param params - enrichment map parameters for current map
+	 * @param rankFileName - file name of ranks file
+	 * @param dataset - which dataset is this rank file related to (dataset 1 or
+	 *            dataset 2)
+	 */
+	public RanksFileReaderTask(String rankFileName, DataSet dataset, String ranks_name, boolean loadFromHeatmap,
+			StreamUtil streamUtil) {
+		RankFileName = rankFileName;
+		this.ranks_name = ranks_name;
+		this.dataset = dataset;
+		this.loadFromHeatmap = loadFromHeatmap;
 
-        HashMap<String,Integer> genes = dataset.getMap().getGenes();
-        // we don't know the number of scores in the rank file yet, but it can't be more than the number of lines.
-        Double[] score_collector = new Double[lines.length];
+		this.streamUtil = streamUtil;
 
-        boolean gseaDefinedRanks = false;
+	}
 
-        HashMap<Integer,Rank> ranks = new HashMap<Integer,Rank>();
-        HashMap<Integer,Integer> rank2gene = new HashMap<Integer, Integer>();
+	/**
+	 * Class constructor - for late loaded rank file that aren't specific to a
+	 * dataset.
+	 *
+	 * @param params - enrichment map parameters for current map
+	 * @param rankFileName - file name of ranks file
+	 * @param ranks_name - name of rankings to be used in heat map drop down to
+	 *            refer to it.
+	 */
+	public RanksFileReaderTask(String rankFileName, String ranks_name, boolean loadFromHeatmap) {
+		RankFileName = rankFileName;
+		this.ranks_name = ranks_name;
+		this.loadFromHeatmap = loadFromHeatmap;
+	}
 
-        /* there are two possible Rank files:
-         * If loaded through the rpt file the file is the one generated by
-         * GSEA and will have 5 columns (name, description, empty,empty,score)
-         * If the user loaded it through the generic of specifying advanced options
-         * then it will 2 columns (name,score).
-         * The score in either case should be a double and the name a string so
-         * check for either option.
-         */
+	/**
+	 * parse the rank file
+	 */
+	public void parse(TaskMonitor taskMonitor) throws IOException {
 
-        int nScores = 0;    //number of found scores
-        for (int i = 0; i < lines.length; i++) {
-            Integer genekey ;
+		InputStream reader = streamUtil.getInputStream(RankFileName);
+		String fullText = new Scanner(reader, "UTF-8").useDelimiter("\\A").next();
 
-            String line = lines[i];
+		int lineNumber = 0;
 
-            //check to see if the line is commented out and should be ignored.
-            if ( line.startsWith("#") ) {
-                // look for ranks_name in comment line e.g.: "# Ranks Name : My Ranks"
-                if (Pattern.matches("^# *Ranks[ _-]?Name *:.+", line) ) {
-                    this.ranks_name = line.split(":", 2)[1];
-                    while (this.ranks_name.startsWith(" "))
-                        this.ranks_name = this.ranks_name.substring(1);
-                }
-                //ignore comment line
-                continue;
-            }
+		String[] lines = fullText.split("\r\n?|\n");
+		int currentProgress = 0;
+		maxValue = lines.length;
+		if(taskMonitor != null)
+			taskMonitor.setStatusMessage("Parsing Rank file - " + maxValue + " rows");
 
-            String [] tokens = line.split("\t");
+		HashMap<String, Integer> genes = dataset.getMap().getGenes();
+		// we don't know the number of scores in the rank file yet, but it can't be more than the number of lines.
+		Double[] score_collector = new Double[lines.length];
 
+		boolean gseaDefinedRanks = false;
 
+		HashMap<Integer, Rank> ranks = new HashMap<Integer, Rank>();
+		HashMap<Integer, Integer> rank2gene = new HashMap<Integer, Integer>();
 
-            String name = tokens[0].toUpperCase();
-            double score = 0;
+		/*
+		 * there are two possible Rank files: If loaded through the rpt file the
+		 * file is the one generated by GSEA and will have 5 columns (name,
+		 * description, empty,empty,score) If the user loaded it through the
+		 * generic of specifying advanced options then it will 2 columns
+		 * (name,score). The score in either case should be a double and the
+		 * name a string so check for either option.
+		 */
 
-            //if there are 5 columns in the data then the rank is the last column
-            if(tokens.length == 5 ){
-                //ignore rows where the expected rank value is not a valid double
-                try{
-                    //gseaDefinedRanks = true;
-                    score = Double.parseDouble(tokens[4]);
-                } catch (NumberFormatException nfe){
-                    if(lineNumber == 0){
-                        lineNumber++;
-                        continue;
-                    }
-                    else
-                        throw new IllegalThreadStateException("rank value for"+ tokens[0]+ "is not a valid number");
-                }
-                nScores++;
-            }
-            //if there are 2 columns in the data then the rank is the 2 column
-            else if(tokens.length == 2){
-                try{
-                    score = Double.parseDouble(tokens[1]);
-                }catch (NumberFormatException nfe){
-                    if(lineNumber == 0){
-                        lineNumber++;
-                        continue;
-                    }
-                    else
-                        throw new IllegalThreadStateException("rank value for"+ tokens[0]+ "is not a valid number");
-                }
-                nScores++;
-            }
-            else{
-                System.out.println("Invalid number of tokens line of Rank File (should be 5 or 2)");
-                //skip invalid line
-                continue;
-            }
+		int nScores = 0; //number of found scores
+		for(int i = 0; i < lines.length; i++) {
+			Integer genekey;
 
-             if((tokens.length == 5 ) || (dataset.getMap().getParams().getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA) && !loadFromHeatmap))
-                 gseaDefinedRanks = true;
+			String line = lines[i];
 
-            //add score to array of scores
-            score_collector[nScores-1] = score;
+			//check to see if the line is commented out and should be ignored.
+			if(line.startsWith("#")) {
+				// look for ranks_name in comment line e.g.: "# Ranks Name : My Ranks"
+				if(Pattern.matches("^# *Ranks[ _-]?Name *:.+", line)) {
+					this.ranks_name = line.split(":", 2)[1];
+					while(this.ranks_name.startsWith(" "))
+						this.ranks_name = this.ranks_name.substring(1);
+				}
+				//ignore comment line
+				continue;
+			}
 
-            //check to see if the gene is in the genelist
-            if(genes.containsKey(name)){
-                genekey = (Integer)genes.get(name);
-                Rank current_ranking ;
-                //if their were 5 tokens in the rank file then the assumption
-                //is that this is a GSEA rank file and the order of the scores
-                //is indicative of the rank
-                //TODO: need a better way of defining GSEA or user defined rank files.
-                //Ticket #189 if the user uses the rnk file from the of the edb directory insteaad of 5 column
-                // rank file from the main directory (as entered by rpt load) the leading edge
-                // is calculated wrong because it only has 2 columns but still needs to have the ranks defined
-                // based on the order of the scores.
-                // Making the assumption that all rank files loaded for GSEA results from EM input panel are leading
-                // edge compatible files.
-                if((tokens.length == 5 ) || (dataset.getMap().getParams().getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA) && !loadFromHeatmap)){
-                    current_ranking = new Rank(name,score,nScores);
-                    rank2gene.put(nScores,genekey);
-                }
-                else {
-                    current_ranking = new Rank(name,score);
-                }
-                ranks.put(genekey, current_ranking);
-            }
-            
+			String[] tokens = line.split("\t");
 
-            // Calculate Percentage.  This must be a value between 0..100.
-            if (taskMonitor != null) {
-            	int percentComplete = (int) (((double) currentProgress / maxValue) * 100);
-                taskMonitor.setProgress(percentComplete);                  
-            }
-            currentProgress++;
+			String name = tokens[0].toUpperCase();
+			double score = 0;
 
-        }
+			//if there are 5 columns in the data then the rank is the last column
+			if(tokens.length == 5) {
+				//ignore rows where the expected rank value is not a valid double
+				try {
+					//gseaDefinedRanks = true;
+					score = Double.parseDouble(tokens[4]);
+				} catch(NumberFormatException nfe) {
+					if(lineNumber == 0) {
+						lineNumber++;
+						continue;
+					} else
+						throw new IllegalThreadStateException("rank value for" + tokens[0] + "is not a valid number");
+				}
+				nScores++;
+			}
+			//if there are 2 columns in the data then the rank is the 2 column
+			else if(tokens.length == 2) {
+				try {
+					score = Double.parseDouble(tokens[1]);
+				} catch(NumberFormatException nfe) {
+					if(lineNumber == 0) {
+						lineNumber++;
+						continue;
+					} else
+						throw new IllegalThreadStateException("rank value for" + tokens[0] + "is not a valid number");
+				}
+				nScores++;
+			} else {
+				System.out.println("Invalid number of tokens line of Rank File (should be 5 or 2)");
+				//skip invalid line
+				continue;
+			}
 
-         //the none of the genes are in the gene list
-         if(ranks.isEmpty()){
-             throw new IllegalThreadStateException("None of the genes in the rank file are found in the expression file.  Make sure the identifiers of the two files match.");
-         }
+			if((tokens.length == 5)
+					|| (dataset.getMap().getParams().getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)
+							&& !loadFromHeatmap))
+				gseaDefinedRanks = true;
 
-         //remove Null values from collector
-         Double[] sort_scores = new Double[nScores];
-         double[] scores = new double[nScores];
-         for (int i=0; i < nScores; i++) {
-             sort_scores[i] = score_collector[i];
-             scores[i] = (double) score_collector[i];
-         }
-         
-        //after we have loaded in all the scores, sort the score to compute ranks
-        //create hash of scores to ranks.
-        HashMap<Double,Integer> score2ranks = new HashMap<Double,Integer> ();
-        //sorts the array in descending order
-        Arrays.sort(sort_scores, Collections.reverseOrder());
+			//add score to array of scores
+			score_collector[nScores - 1] = score;
 
-        //check to see if they are p-values (if the values are between -1 and 1 , for a signed pvalue)
-        //this will actually give a weird sorting behaviour if the scores are actually not p-values and
-        //just signed statistics for instance as it will sort them in the opposite direction.
-        if(sort_scores[0] <= 1 && sort_scores[sort_scores.length-1] >= -1)
-            Arrays.sort(sort_scores);
+			//check to see if the gene is in the genelist
+			if(genes.containsKey(name)) {
+				genekey = (Integer) genes.get(name);
+				Rank current_ranking;
+				//if their were 5 tokens in the rank file then the assumption
+				//is that this is a GSEA rank file and the order of the scores
+				//is indicative of the rank
+				//TODO: need a better way of defining GSEA or user defined rank files.
+				//Ticket #189 if the user uses the rnk file from the of the edb directory insteaad of 5 column
+				// rank file from the main directory (as entered by rpt load) the leading edge
+				// is calculated wrong because it only has 2 columns but still needs to have the ranks defined
+				// based on the order of the scores.
+				// Making the assumption that all rank files loaded for GSEA results from EM input panel are leading
+				// edge compatible files.
+				if((tokens.length == 5) || (dataset.getMap().getParams().getMethod()
+						.equalsIgnoreCase(EnrichmentMapParameters.method_GSEA) && !loadFromHeatmap)) {
+					current_ranking = new Rank(name, score, nScores);
+					rank2gene.put(nScores, genekey);
+				} else {
+					current_ranking = new Rank(name, score);
+				}
+				ranks.put(genekey, current_ranking);
+			}
 
-        for(int j = 0; j<sort_scores.length;j++){
-            //check to see if this score is already enter
-            if(!score2ranks.containsKey(sort_scores[j]))
-                    score2ranks.put(sort_scores[j],j);
-        }
+			// Calculate Percentage.  This must be a value between 0..100.
+			if(taskMonitor != null) {
+				int percentComplete = (int) (((double) currentProgress / maxValue) * 100);
+				taskMonitor.setProgress(percentComplete);
+			}
+			currentProgress++;
 
-        //update scores Hash to contain the ranks as well.
-        //only update the ranks if we haven't already defined them using order of scores in file
-        if(!gseaDefinedRanks){
-            for(Iterator<Integer> k = ranks.keySet().iterator(); k.hasNext();){
-                Integer gene_key = k.next();
+		}
+
+		//the none of the genes are in the gene list
+		if(ranks.isEmpty()) {
+			throw new IllegalThreadStateException(
+					"None of the genes in the rank file are found in the expression file.  Make sure the identifiers of the two files match.");
+		}
+
+		//remove Null values from collector
+		Double[] sort_scores = new Double[nScores];
+		double[] scores = new double[nScores];
+		for(int i = 0; i < nScores; i++) {
+			sort_scores[i] = score_collector[i];
+			scores[i] = (double) score_collector[i];
+		}
+
+		//after we have loaded in all the scores, sort the score to compute ranks
+		//create hash of scores to ranks.
+		HashMap<Double, Integer> score2ranks = new HashMap<Double, Integer>();
+		//sorts the array in descending order
+		Arrays.sort(sort_scores, Collections.reverseOrder());
+
+		//check to see if they are p-values (if the values are between -1 and 1 , for a signed pvalue)
+		//this will actually give a weird sorting behaviour if the scores are actually not p-values and
+		//just signed statistics for instance as it will sort them in the opposite direction.
+		if(sort_scores[0] <= 1 && sort_scores[sort_scores.length - 1] >= -1)
+			Arrays.sort(sort_scores);
+
+		for(int j = 0; j < sort_scores.length; j++) {
+			//check to see if this score is already enter
+			if(!score2ranks.containsKey(sort_scores[j]))
+				score2ranks.put(sort_scores[j], j);
+		}
+
+		//update scores Hash to contain the ranks as well.
+		//only update the ranks if we haven't already defined them using order of scores in file
+		if(!gseaDefinedRanks) {
+			for(Iterator<Integer> k = ranks.keySet().iterator(); k.hasNext();) {
+				Integer gene_key = k.next();
 				Rank current_ranking = ranks.get(gene_key);
-                Integer rank = score2ranks.get(current_ranking.getScore());
+				Integer rank = score2ranks.get(current_ranking.getScore());
 				current_ranking.setRank(rank);
 				// update rank2gene and gene2score as well
-				rank2gene.put(rank,gene_key);
-            }
-        }
-        //check to see if some of the dataset genes are not in this rank file
-        HashSet<Integer> current_genes = dataset.getDatasetGenes();
+				rank2gene.put(rank, gene_key);
+			}
+		}
+		//check to see if some of the dataset genes are not in this rank file
+		HashSet<Integer> current_genes = dataset.getDatasetGenes();
 
-        Set<Integer> current_ranks = ranks.keySet();
+		Set<Integer> current_ranks = ranks.keySet();
 
-        //intersect the genes with the ranks.  only retain the genes that have ranks.
-        Set<Integer> intersection = new HashSet<Integer>(current_genes);
-        intersection.retainAll(current_ranks);
+		//intersect the genes with the ranks.  only retain the genes that have ranks.
+		Set<Integer> intersection = new HashSet<Integer>(current_genes);
+		intersection.retainAll(current_ranks);
 
-        //see if there more genes than there are ranks
-        if(!(intersection.size() == current_genes.size())){
-            //JOptionPane.showMessageDialog(Cytoscape.getDesktop(),"Ranks for some of the genes/proteins listed in the expression file are missing. \n These genes/proteins will be excluded from ranked listing in the heat map.");
+		//see if there more genes than there are ranks
+		if(!(intersection.size() == current_genes.size())) {
+			//JOptionPane.showMessageDialog(Cytoscape.getDesktop(),"Ranks for some of the genes/proteins listed in the expression file are missing. \n These genes/proteins will be excluded from ranked listing in the heat map.");
 
-        }
-        
-        //create a new Ranking
-        Ranking new_ranking = new Ranking();
-        new_ranking.setRanking(ranks);
-        new_ranking.setRank2gene(rank2gene);
-        
-        //add the Ranks to the expression file ranking
-        dataset.getExpressionSets().addRanks(ranks_name, new_ranking);
+		}
 
-    }
+		//create a new Ranking
+		Ranking new_ranking = new Ranking();
+		new_ranking.setRanking(ranks);
+		new_ranking.setRank2gene(rank2gene);
 
+		//add the Ranks to the expression file ranking
+		dataset.getExpressionSets().addRanks(ranks_name, new_ranking);
+
+	}
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {

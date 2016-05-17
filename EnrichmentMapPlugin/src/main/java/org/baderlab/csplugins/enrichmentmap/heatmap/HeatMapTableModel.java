@@ -48,92 +48,82 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 
 /**
- * Created by
- * User: risserlin
- * Date: Jan 30, 2009
- * Time: 10:56:40 AM
+ * Created by User: risserlin Date: Jan 30, 2009 Time: 10:56:40 AM
  *
  * Table model for Heat map table
  */
-public class HeatMapTableModel  extends AbstractTableModel implements TableModelListener  {
+public class HeatMapTableModel extends AbstractTableModel implements TableModelListener {
 
-    private Object[] columnNames;
-    private Object[][] data;
-    private Object[][] expValue;
+	private Object[] columnNames;
+	private Object[][] data;
+	private Object[][] expValue;
 
+	public HeatMapTableModel() {
 
+	}
 
-    public HeatMapTableModel() {
-        
-    }
+	public HeatMapTableModel(Object[] columnNames, Object[][] data, Object[][] expValue) {
+		super();
+		this.columnNames = columnNames;
+		this.data = data;
+		this.expValue = expValue;
+	}
 
-    public HeatMapTableModel(Object[] columnNames,Object[][] data,Object[][] expValue){
-        super();
-        this.columnNames = columnNames;
-        this.data=data;
-        this.expValue=expValue;
-    }
+	public int getColumnCount() {
+		return columnNames.length;
 
-    public int getColumnCount() {
-        return columnNames.length;
+	}
 
-    }
+	public int getRowCount() {
+		return data.length;
+	}
 
-    public int getRowCount() {
-        return data.length;
-    }
+	public String getColumnName(int col) {
+		return (String) columnNames[col];
+	}
 
-    public String getColumnName(int col) {
-        return (String)columnNames[col];
-    }
+	public Object getValueAt(int row, int col) {
+		return data[row][col];
+	}
 
-    public Object getValueAt(int row, int col) {
-        return data[row][col];
-    }
+	/*
+	 * JTable uses this method to determine the default renderer/ editor for
+	 * each cell. If we didn't implement this method, then the last column would
+	 * contain text ("true"/"false"), rather than a check box.
+	 *
+	 * Used in TableSort to identify the class of the column
+	 */
+	public Class getColumnClass(int c) {
+		return getValueAt(0, c).getClass();
+	}
 
-    /*
-     * JTable uses this method to determine the default renderer/
-     * editor for each cell.  If we didn't implement this method,
-     * then the last column would contain text ("true"/"false"),
-     * rather than a check box.
-     *
-     * Used in TableSort to identify the class of the column
-     */
-     public Class getColumnClass(int c) {
-            return getValueAt(0, c).getClass();
-     }
+	/*
+	 * Don't need to implement this method unless your table's editable.
+	 */
+	public boolean isCellEditable(int row, int col) {
+		return false;
 
-     /*
-      * Don't need to implement this method unless your table's
-      * editable.
-      */
-    public boolean isCellEditable(int row, int col) {
-        return false;
+	}
 
-    }
+	/*
+	 * Don't need to implement this method unless your table's data can change.
+	 */
+	public void setValueAt(Object value, int row, int col) {
+		data[row][col] = value;
+		fireTableCellUpdated(row, col);
+	}
 
-      /*
-       * Don't need to implement this method unless your table's
-       * data can change.
-       */
-    public void setValueAt(Object value, int row, int col) {
-        data[row][col] = value;
-        fireTableCellUpdated(row, col);
-    }
+	public void setExpValueAt(Object value, int row, int col) {
+		expValue[row][col] = value;
+	}
 
-    public void setExpValueAt(Object value, int row, int col) {
-        expValue [row][col]= value;
-    }
+	public Object getExpValueAt(int row, int col) {
+		return expValue[row][col];
+	}
 
-    public Object getExpValueAt(int row, int col) {
-        return expValue[row][col];
-    }
+	public void tableChanged(TableModelEvent e) {
 
-
-    public void tableChanged(TableModelEvent e) {
-        
-        fireTableChanged(e);
-    }
+		fireTableChanged(e);
+	}
 
 }
-

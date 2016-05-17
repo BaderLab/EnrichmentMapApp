@@ -29,13 +29,13 @@ public class BuildEnrichmentMapDummyTask extends AbstractTask {
 		build();
 		
 	}
-	
-	 /**
-     * Gets the Task Title.
-     *
-     * @return human readable task title.
-     */
-    public String getTitle() {
-        return new String("Building an Enrichment Map");
-    }
+
+	/**
+	 * Gets the Task Title.
+	 *
+	 * @return human readable task title.
+	 */
+	public String getTitle() {
+		return new String("Building an Enrichment Map");
+	}
 }

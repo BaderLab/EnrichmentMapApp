@@ -23,28 +23,28 @@ public class EnrichmentMapGSEACommandHandlerTaskFactory implements TaskFactory{
 	private CySessionManager sessionManager;
 	private StreamUtil streamUtil;
 	
-    private CyApplicationManager applicationManager;
-    private CySwingApplication swingApplication;
-    private CyNetworkManager networkManager;
-    private CyNetworkViewManager networkViewManager;
-    private CyNetworkViewFactory networkViewFactory;
-    private CyNetworkFactory networkFactory;
-    private CyTableFactory tableFactory;
-    private CyTableManager tableManager;
-    
-    private VisualMappingManager visualMappingManager;
-    private VisualStyleFactory visualStyleFactory;
-    
-    //we will need all three mappers
-    private VisualMappingFunctionFactory vmfFactoryContinuous;
-    private VisualMappingFunctionFactory vmfFactoryDiscrete;
-    private VisualMappingFunctionFactory vmfFactoryPassthrough;
-    
-    private CyLayoutAlgorithmManager layoutManager;
-    private  MapTableToNetworkTablesTaskFactory mapTableToNetworkTable;
-    //
-    private DialogTaskManager dialog;
-    
+	private CyApplicationManager applicationManager;
+	private CySwingApplication swingApplication;
+	private CyNetworkManager networkManager;
+	private CyNetworkViewManager networkViewManager;
+	private CyNetworkViewFactory networkViewFactory;
+	private CyNetworkFactory networkFactory;
+	private CyTableFactory tableFactory;
+	private CyTableManager tableManager;
+
+	private VisualMappingManager visualMappingManager;
+	private VisualStyleFactory visualStyleFactory;
+
+	//we will need all three mappers
+	private VisualMappingFunctionFactory vmfFactoryContinuous;
+	private VisualMappingFunctionFactory vmfFactoryDiscrete;
+	private VisualMappingFunctionFactory vmfFactoryPassthrough;
+
+	private CyLayoutAlgorithmManager layoutManager;
+	private MapTableToNetworkTablesTaskFactory mapTableToNetworkTable;
+
+	private DialogTaskManager dialog;
+
 	public EnrichmentMapGSEACommandHandlerTaskFactory(CySessionManager sessionManager,
 			StreamUtil streamUtil, CyApplicationManager applicationManager,
 			CySwingApplication swingApplication,
@@ -83,13 +83,11 @@ public class EnrichmentMapGSEACommandHandlerTaskFactory implements TaskFactory{
 	}
 
 	public boolean isReady() {
-		// TODO Auto-generated method stub
 		return true;
 	}
 
 	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new EnrichmentMapGSEACommandHandlerTask(sessionManager, streamUtil, applicationManager, swingApplication, networkManager, networkViewManager, networkViewFactory, networkFactory, tableFactory, tableManager, visualMappingManager, visualStyleFactory, vmfFactoryContinuous, vmfFactoryDiscrete, vmfFactoryPassthrough, layoutManager, mapTableToNetworkTable, dialog));
-		
 	}
 
 }

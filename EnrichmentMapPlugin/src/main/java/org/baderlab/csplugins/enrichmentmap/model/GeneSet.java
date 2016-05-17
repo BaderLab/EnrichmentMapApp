@@ -45,145 +45,144 @@ package org.baderlab.csplugins.enrichmentmap.model;
 
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.BitSet;
 
 /**
- * Created by
- * User: risserlin
- * Date: Jan 8, 2009
- * Time: 11:32:40 AM
+ * Created by User: risserlin Date: Jan 8, 2009 Time: 11:32:40 AM
  * <p>
  * Class representing Geneset Object <br>
  * Each Geneset consists of: <br>
  * Name <br>
  * Description <br>
- * A list of genes in the geneset (represented using a HashSet) - as genes are read in they are
- * converted into an integer and stored in global unique hashmap in the enrichment map paramters.  any subsequent
- * use of the gene is stored as its integer hashkey.
+ * A list of genes in the geneset (represented using a HashSet) - as genes are
+ * read in they are converted into an integer and stored in global unique
+ * hashmap in the enrichment map paramters. any subsequent use of the gene is
+ * stored as its integer hashkey.
  */
 
 public class GeneSet {
 
-    //Gene set name
-    private String Name;
-    //Gene set description
-    private String Description;
-    //genes associated with this gene set
-    private HashSet<Integer> genes = null;
-    //add type of geneset - specific to Enrichment Map gene set files
-    private String source = "none";
+	//Gene set name
+	private String Name;
+	//Gene set description
+	private String Description;
+	//genes associated with this gene set
+	private HashSet<Integer> genes = null;
+	//add type of geneset - specific to Enrichment Map gene set files
+	private String source = "none";
 
+	/**
+	 * Class Constructor - creates gene set with a specified name and
+	 * description with an empty list of genes.
+	 *
+	 * @param name
+	 *            - gene set name
+	 * @param descrip
+	 *            - gene set description
+	 */
+	public GeneSet(String name, String descrip) {
+		this.Name = name;
+		this.Description = descrip;
 
-    /**
-     * Class Constructor - creates gene set with a specified name and description with an empty
-     * list of genes.
-     *
-     * @param name - gene set name
-     * @param descrip - gene set description
-     */
-    public GeneSet(String name, String descrip) {
-        this.Name = name;
-        this.Description = descrip;
+		genes = new HashSet<Integer>();
 
-        genes = new HashSet<Integer>();
+		//if you can split the name using '|', take the second token to be the gene set type
+		String[] name_tokens = name.split("%");
+		if(name_tokens.length > 1)
+			this.source = name_tokens[1];
 
-        //if you can split the name using '|', take the second token to be the gene set type
-        String[] name_tokens = name.split("%");
-        if(name_tokens.length > 1)
-            this.source = name_tokens[1];
+	}
 
-    }
+	/**
+	 * Class constructor - parse the string tokenized line of a session file
+	 * representation of a GMT file into a gene set object. (in the original gmt
+	 * file the gene set is specified followed by the list of genes, in a
+	 * session file the genes are converted to their hash keys.)
+	 *
+	 * @param tokens
+	 *            - string tokenized line for an GMT file.
+	 */
+	public GeneSet(String[] tokens) {
+		this(tokens[1], tokens[2]);
 
-    /**
-     * Class constructor - parse the string tokenized line of a session file representation of a GMT
-     * file into a gene set object.  (in the original gmt file the gene set is specified followed by
-     * the list of genes, in a session file the genes are converted to their hash keys.)
-     *
-     * @param tokens - string tokenized line for an GMT file.
-     */
-    public GeneSet(String[] tokens){
-        this(tokens[1],tokens[2]);
+		if(tokens.length < 3)
+			return;
 
-        if(tokens.length<3)
-            return;
+		for(int i = 3; i < tokens.length; i++)
+			this.genes.add(Integer.parseInt(tokens[i]));
 
-        for(int i = 3; i < tokens.length;i++)
-            this.genes.add(Integer.parseInt(tokens[i]));
+	}
 
-    }
+	/*
+	 * Given a Hashkey
+	 *
+	 */
 
-    /* Given a Hashkey
-    *
-    */
+	/**
+	 * Add the gene hashkey to the set of genes
+	 *
+	 * @param gene_hashkey
+	 *            - a new gene hashkey to add to current geneset
+	 * @return true if it was successfully added, false otherwise.
+	 */
+	public boolean addGene(int gene_hashkey) {
+		if(genes != null) {
+			return genes.add(gene_hashkey);
+		} else {
+			return false;
+		}
+	}
 
-    /**
-     * Add the gene hashkey to the set of genes
-     *
-     * @param gene_hashkey - a new gene hashkey to add to current geneset
-     * @return true if it was successfully added, false otherwise.
-     */
-    public boolean addGene(int gene_hashkey){
-        if(genes != null){
-            return genes.add(gene_hashkey);
-        }
-        else{
-            return false;
-        }
-    }
+	//Getters and Setters
 
-    //Getters and Setters
+	public String getName() {
+		return Name;
+	}
 
-    public String getName() {
-        return Name;
-    }
+	public void setName(String name) {
+		Name = name;
+	}
 
-    public void setName(String name) {
-        Name = name;
-    }
+	public String getDescription() {
+		return Description;
+	}
 
-    public String getDescription() {
-        return Description;
-    }
+	public void setDescription(String description) {
+		Description = description;
+	}
 
-    public void setDescription(String description) {
-        Description = description;
-    }
+	public HashSet<Integer> getGenes() {
+		return genes;
+	}
 
-    public HashSet<Integer> getGenes() {
-        return genes;
-    }
+	public void setGenes(HashSet<Integer> genes) {
+		this.genes = genes;
+	}
 
-    public void setGenes(HashSet<Integer> genes) {
-        this.genes = genes;
-    }
+	public String getSource() {
+		return source;
+	}
 
-    public String getSource() {
-        return source;
-    }
+	public void setSource(String type) {
+		this.source = type;
+	}
 
-    public void setSource(String type) {
-        this.source = type;
-    }
+	public String toString() {
+		StringBuffer geneset = new StringBuffer();
 
-    public String toString(){
-        StringBuffer geneset = new StringBuffer();
+		geneset.append(Name + "\t" + Description + "\t");
 
-        geneset.append(Name + "\t" + Description + "\t");
+		for(Iterator i = genes.iterator(); i.hasNext();)
+			geneset.append(i.next().toString() + "\t");
 
-        for(Iterator i = genes.iterator(); i.hasNext();)
-            geneset.append( i.next().toString() + "\t");
+		return geneset.toString();
+	}
 
-        return geneset.toString();
-    }
-    
-    public boolean equals(GeneSet current){
-    		if(this.Name.equals(current.getName()) &&
-    				this.source.equals(current.getSource()) &&
-    				this.Description.equals(current.getDescription()) &&
-    				this.genes.equals(current.getGenes()))
-    			return true;
-    		else
-    			return false;
-    }
+	public boolean equals(GeneSet current) {
+		if(this.Name.equals(current.getName()) && this.source.equals(current.getSource())
+				&& this.Description.equals(current.getDescription()) && this.genes.equals(current.getGenes()))
+			return true;
+		else
+			return false;
+	}
 
 }

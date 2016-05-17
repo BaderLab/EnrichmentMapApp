@@ -43,166 +43,162 @@
 
 package org.baderlab.csplugins.enrichmentmap.model;
 
-
 /**
- * Created by
- * User: risserlin
- * Date: Jan 8, 2009
- * Time: 3:01:22 PM
+ * Created by User: risserlin Date: Jan 8, 2009 Time: 3:01:22 PM
  * <p>
- * Class representing a specialized enrichment result generated from Gene set enrichment Analysis(GSEa)
- * GSEA enrichment result contain additional information (as compared to a generic result) including
- * Enrichment score(ES), normalized Enrichment Score (NES), Family-wise error rate (FWER)
+ * Class representing a specialized enrichment result generated from Gene set
+ * enrichment Analysis(GSEa) GSEA enrichment result contain additional
+ * information (as compared to a generic result) including Enrichment score(ES),
+ * normalized Enrichment Score (NES), Family-wise error rate (FWER)
  */
-public class GSEAResult extends EnrichmentResult{
+public class GSEAResult extends EnrichmentResult {
 
-    //gene set size
-    private int gsSize;
-    //enrichment score
-    private double ES;
-    //normalized enrichment score
-    private double NES;
-    //false discovery rate q-value
-    private double fdrqvalue;
-    //family wise error rate (fwer) q-value
-    private double fwerqvalue;
-    //the rank (off by two) of the gene that is at the apex of ES score calculation
-    private int rankAtMax;
-    //translate the rank at max to the corresponding score at the max
-    private double scoreAtMax;
+	//gene set size
+	private int gsSize;
+	//enrichment score
+	private double ES;
+	//normalized enrichment score
+	private double NES;
+	//false discovery rate q-value
+	private double fdrqvalue;
+	//family wise error rate (fwer) q-value
+	private double fwerqvalue;
+	//the rank (off by two) of the gene that is at the apex of ES score calculation
+	private int rankAtMax;
+	//translate the rank at max to the corresponding score at the max
+	private double scoreAtMax;
 
-    /**
-     * Class Constructor
-     *
-     * @param name - gene set name
-     * @param size - gene set size
-     * @param ES - enrichment score
-     * @param NES - normalized enrichment score
-     * @param pvalue
-     * @param fdrqvalue
-     * @param fwerqvalue
-     */
-    public GSEAResult(String name, int size, double ES, double NES, double pvalue, double fdrqvalue, double fwerqvalue, int rankAtMax, double scoreAtMax) {
-        this.name = name;
-        this.gsSize = size;
-        this.ES = ES;
-        this.NES = NES;
-        this.pvalue = pvalue;
-        this.fdrqvalue = fdrqvalue;
-        this.fwerqvalue = fwerqvalue;
-        this.rankAtMax = rankAtMax;
-        this.scoreAtMax = scoreAtMax;
+	/**
+	 * Class Constructor
+	 *
+	 * @param name - gene set name
+	 * @param size - gene set size
+	 * @param ES - enrichment score
+	 * @param NES - normalized enrichment score
+	 * @param pvalue
+	 * @param fdrqvalue
+	 * @param fwerqvalue
+	 */
+	public GSEAResult(String name, int size, double ES, double NES, double pvalue, double fdrqvalue, double fwerqvalue,
+			int rankAtMax, double scoreAtMax) {
+		this.name = name;
+		this.gsSize = size;
+		this.ES = ES;
+		this.NES = NES;
+		this.pvalue = pvalue;
+		this.fdrqvalue = fdrqvalue;
+		this.fwerqvalue = fwerqvalue;
+		this.rankAtMax = rankAtMax;
+		this.scoreAtMax = scoreAtMax;
 
-        setSource();
-    }
+		setSource();
+	}
 
-    /**
-     * Class constructor - build GSEA result from tokenized line from a GSEA results file
-     *
-     * @param tokens - tokenized line from a GSEA results file
-     */
-    public GSEAResult(String[] tokens){
+	/**
+	 * Class constructor - build GSEA result from tokenized line from a GSEA
+	 * results file
+	 *
+	 * @param tokens - tokenized line from a GSEA results file
+	 */
+	public GSEAResult(String[] tokens) {
 
-        //old session files will be missing rankatmax and scoreatmax
-        if(tokens.length != 8)
-            if(tokens.length != 10)
-                return;
+		//old session files will be missing rankatmax and scoreatmax
+		if(tokens.length != 8)
+			if(tokens.length != 10)
+				return;
 
-        this.name = tokens[1];
-        this.gsSize = Integer.parseInt(tokens[2]);
-        this.ES = Double.parseDouble(tokens[3]);
-        this.NES = Double.parseDouble(tokens[4]);
-        this.pvalue = Double.parseDouble(tokens[5]);
-        this.fdrqvalue = Double.parseDouble(tokens[6]);
-        this.fwerqvalue = Double.parseDouble(tokens[7]);
+		this.name = tokens[1];
+		this.gsSize = Integer.parseInt(tokens[2]);
+		this.ES = Double.parseDouble(tokens[3]);
+		this.NES = Double.parseDouble(tokens[4]);
+		this.pvalue = Double.parseDouble(tokens[5]);
+		this.fdrqvalue = Double.parseDouble(tokens[6]);
+		this.fwerqvalue = Double.parseDouble(tokens[7]);
 
-        if(tokens.length == 10){
-            this.rankAtMax = Integer.parseInt(tokens[8]);
-            this.scoreAtMax = Double.parseDouble(tokens[9]);
-        }
-        else{
-            this.rankAtMax = -1;
-            this.scoreAtMax = -1;
-        }
-        setSource();
-    }
+		if(tokens.length == 10) {
+			this.rankAtMax = Integer.parseInt(tokens[8]);
+			this.scoreAtMax = Double.parseDouble(tokens[9]);
+		} else {
+			this.rankAtMax = -1;
+			this.scoreAtMax = -1;
+		}
+		setSource();
+	}
 
-  //Each Enrichment Result must implement a method to determine
-  	//if the current enrichment result is of interest to the analysis or not
-  	//returns true if the enrichment passes both pvalue and qvalue cut-offs 
-  	//returns false if it doesn't pass one or both the pvalue or qvalue cut-offs
-  	public boolean geneSetOfInterest(double pvalue, double fdrqvalue){
-  		 if((this.pvalue <= pvalue) && (this.fdrqvalue <= fdrqvalue)){
-  	            return true;
-  	       }else{
-  	            return false;
-  	        }
-  	}
-    
-    
-    //Getters and Settters
+	//Each Enrichment Result must implement a method to determine
+	//if the current enrichment result is of interest to the analysis or not
+	//returns true if the enrichment passes both pvalue and qvalue cut-offs 
+	//returns false if it doesn't pass one or both the pvalue or qvalue cut-offs
+	public boolean geneSetOfInterest(double pvalue, double fdrqvalue) {
+		if((this.pvalue <= pvalue) && (this.fdrqvalue <= fdrqvalue)) {
+			return true;
+		} else {
+			return false;
+		}
+	}
 
-    public int getGsSize() {
-        return gsSize;
-    }
+	//Getters and Settters
 
-    public void setGsSize(int gsSize) {
-        this.gsSize = gsSize;
-    }
+	public int getGsSize() {
+		return gsSize;
+	}
 
-    public double getES() {
-        return ES;
-    }
+	public void setGsSize(int gsSize) {
+		this.gsSize = gsSize;
+	}
 
-    public void setES(double ES) {
-        this.ES = ES;
-    }
+	public double getES() {
+		return ES;
+	}
 
-    public double getNES() {
-        return NES;
-    }
+	public void setES(double ES) {
+		this.ES = ES;
+	}
 
-    public void setNES(double NES) {
-        this.NES = NES;
-    }
+	public double getNES() {
+		return NES;
+	}
 
+	public void setNES(double NES) {
+		this.NES = NES;
+	}
 
-    public double getFdrqvalue() {
-        return fdrqvalue;
-    }
+	public double getFdrqvalue() {
+		return fdrqvalue;
+	}
 
-    public void setFdrqvalue(double fdrqvalue) {
-        this.fdrqvalue = fdrqvalue;
-    }
+	public void setFdrqvalue(double fdrqvalue) {
+		this.fdrqvalue = fdrqvalue;
+	}
 
-    public double getFwerqvalue() {
-        return fwerqvalue;
-    }
+	public double getFwerqvalue() {
+		return fwerqvalue;
+	}
 
-    public void setFwerqvalue(double fwerqvalue) {
-        this.fwerqvalue = fwerqvalue;
-    }
+	public void setFwerqvalue(double fwerqvalue) {
+		this.fwerqvalue = fwerqvalue;
+	}
 
-    public int getRankAtMax() {
-        return rankAtMax;
-    }
+	public int getRankAtMax() {
+		return rankAtMax;
+	}
 
-    public void setRankAtMax(int rankAtMax) {
-        this.rankAtMax = rankAtMax;
-    }
+	public void setRankAtMax(int rankAtMax) {
+		this.rankAtMax = rankAtMax;
+	}
 
-    public double getScoreAtMax() {
-        return scoreAtMax;
-    }
+	public double getScoreAtMax() {
+		return scoreAtMax;
+	}
 
-    public void setScoreAtMax(double scoreAtMax) {
-        this.scoreAtMax = scoreAtMax;
-    }
+	public void setScoreAtMax(double scoreAtMax) {
+		this.scoreAtMax = scoreAtMax;
+	}
 
-    public String toString(){
+	public String toString() {
 
-        return name + "\t" + gsSize + "\t" + ES + "\t" + NES +"\t"+pvalue + "\t" + fdrqvalue + "\t" + fwerqvalue + "\t"
-                + rankAtMax + "\t" + scoreAtMax ;
-    }
-    
+		return name + "\t" + gsSize + "\t" + ES + "\t" + NES + "\t" + pvalue + "\t" + fdrqvalue + "\t" + fwerqvalue
+				+ "\t" + rankAtMax + "\t" + scoreAtMax;
+	}
+
 }

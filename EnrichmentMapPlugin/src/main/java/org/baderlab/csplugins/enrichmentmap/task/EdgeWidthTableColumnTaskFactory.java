@@ -35,8 +35,8 @@ public class EdgeWidthTableColumnTaskFactory implements TableColumnTaskFactory {
 	@Override
 	public boolean isReady(CyColumn column) {
 		return column != null 
-		    && column.getName() != null
-		    && column.getName().endsWith(WidthFunction.EDGE_WIDTH_FORMULA_COLUMN);
+				&& column.getName() != null
+				&& column.getName().endsWith(WidthFunction.EDGE_WIDTH_FORMULA_COLUMN);
 	}
 
 

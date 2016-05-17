@@ -58,14 +58,14 @@ public class LoadSignatureSetsActionListener implements ActionListener {
 		if(errors.isEmpty()) {
 
 			// make sure to clear out the signature sets first (bug #61)
-        	paParams.getSignatureSetNames().clear();
-        	paParams.getSelectedSignatureSetNames().clear();
-        	paParams.getSignatureGenesets().clear();
-        	
-        	LoadSignatureGMTFilesTask load_GMTs = new LoadSignatureGMTFilesTask(current_map, paParams, streamUtil, inputPanel);
-        	
-        	if(selectAll) {
-        		TaskObserver taskObserver = new ResultTaskObserver() {
+			paParams.getSignatureSetNames().clear();
+			paParams.getSelectedSignatureSetNames().clear();
+			paParams.getSignatureGenesets().clear();
+
+			LoadSignatureGMTFilesTask load_GMTs = new LoadSignatureGMTFilesTask(current_map, paParams, streamUtil, inputPanel);
+
+			if(selectAll) {
+				TaskObserver taskObserver = new ResultTaskObserver() {
 					public void allFinished(FinishStatus finishStatus) {
 						// Select all of the signature sets in the file
 						DefaultListModel<String> signatureSets = paParams.getSignatureSetNames();
@@ -79,11 +79,9 @@ public class LoadSignatureSetsActionListener implements ActionListener {
 				};
 				
 				taskManager.execute(load_GMTs.createTaskIterator(), taskObserver);
-        	}
-        	else {
-        		taskManager.execute(load_GMTs.createTaskIterator());
-        	}
-			
+			} else {
+				taskManager.execute(load_GMTs.createTaskIterator());
+			}
 
 		} else {
 			JOptionPane.showMessageDialog(application.getJFrame(), errors, "Invalid Input", JOptionPane.WARNING_MESSAGE);

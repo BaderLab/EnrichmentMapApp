@@ -43,9 +43,6 @@
 
 package org.baderlab.csplugins.enrichmentmap.task;
 
-
-
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -77,746 +74,741 @@ import org.cytoscape.task.edit.MapTableToNetworkTablesTaskFactory;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
-
 /**
- * Created by
- * User: risserlin
- * Date: Jan 8, 2009
- * Time: 4:11:11 PM
+ * Created by User: risserlin Date: Jan 8, 2009 Time: 4:11:11 PM
  * <p>
  * Create visual representation of enrichment map in cytoscape
  */
 public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 
-    private EnrichmentMap map;
-    
-    private CyApplicationManager applicationManager;
-    private CyNetworkManager networkManager;    
-    private CyNetworkFactory networkFactory;
-    private CyTableFactory tableFactory;
-    private CyTableManager tableManager;
-    private MapTableToNetworkTablesTaskFactory mapTableToNetworkTable;
-    
-    private HashMap<String, GenesetSimilarity> geneset_similarities;
+	private EnrichmentMap map;
 
-    //enrichment map name
-    private String mapName;
+	private CyApplicationManager applicationManager;
+	private CyNetworkManager networkManager;
+	private CyNetworkFactory networkFactory;
+	private CyTableFactory tableFactory;
+	private CyTableManager tableManager;
+	private MapTableToNetworkTablesTaskFactory mapTableToNetworkTable;
 
-    // Keep track of progress for monitoring:
-    private TaskMonitor taskMonitor = null;
-    private boolean interrupted = false;
-    
-    public static String node_table_suffix = "node_attribs";
-    public static String edge_table_suffix = "edge_attribs";
+	private HashMap<String, GenesetSimilarity> geneset_similarities;
 
-    /**
-     * Class constructor - current task monitor
-     *
-     * @param params - enrichment map parameters for current map
-     * @param taskMonitor - current task monitor
-     */
-    public CreateEnrichmentMapNetworkTask(EnrichmentMap map, CyNetworkFactory networkFactory, CyApplicationManager applicationManager, CyNetworkManager networkManager,CyTableFactory tableFactory,CyTableManager tableManager,MapTableToNetworkTablesTaskFactory maptabletonetworktable) {
-        this(map);
-        this.networkFactory = networkFactory;
-        this.applicationManager = applicationManager;
-        this.networkManager = networkManager;
-        this.tableFactory = tableFactory;
-        this.tableManager = tableManager;
-        this.mapTableToNetworkTable = maptabletonetworktable;
-    }
+	//enrichment map name
+	private String mapName;
 
-    /**
-     * Class constructor
-     *
-     * @param params - enrichment map parameters for current map
-     */
-    public CreateEnrichmentMapNetworkTask(EnrichmentMap map) {
-        this.map = map;
-        this.geneset_similarities = map.getGenesetSimilarity();
-        mapName = "Enrichment Map";
+	// Keep track of progress for monitoring:
+	private TaskMonitor taskMonitor = null;
+	private boolean interrupted = false;
 
-    }
+	public static String node_table_suffix = "node_attribs";
+	public static String edge_table_suffix = "edge_attribs";
 
-    /**
-     * Compute, and create cytoscape enrichment map
-     *
-     * @return  true if successful
-     */
-    public boolean computeMap(){
-        
-        
-            //on multiple runs of the program some of the nodes or all of them might already
-            //be created but it is possible that they have different values for the attributes.  How do
-            //we resolve this?
-            CyNetwork network;
-            //if(map.getParams().getAttributePrefix() == null)
-            	map.getParams().setAttributePrefix();
-            String prefix = map.getParams().getAttributePrefix();
-            
-            //create the new network.
-    			network = networkFactory.createNetwork();
-    			
-    			
-            //Check to see if there is already a name specifed for the network
-            //We still need to calculate the number of networks so that we can specify the paramters for
-            //each network.
+	/**
+	 * Class constructor - current task monitor
+	 *
+	 * @param params - enrichment map parameters for current map
+	 * @param taskMonitor - current task monitor
+	 */
+	public CreateEnrichmentMapNetworkTask(EnrichmentMap map, CyNetworkFactory networkFactory,
+			CyApplicationManager applicationManager, CyNetworkManager networkManager, CyTableFactory tableFactory,
+			CyTableManager tableManager, MapTableToNetworkTablesTaskFactory maptabletonetworktable) {
+		this(map);
+		this.networkFactory = networkFactory;
+		this.applicationManager = applicationManager;
+		this.networkManager = networkManager;
+		this.tableFactory = tableFactory;
+		this.tableManager = tableManager;
+		this.mapTableToNetworkTable = maptabletonetworktable;
+	}
 
-            if(map.getName() == null){            		                                                                  
-               map.setName(prefix+mapName);                              
-            }
-            network.getRow(network).set(CyNetwork.NAME,map.getName());
-            
-            //set the NetworkID in the EM parameters
-            map.getParams().setNetworkID(network.getSUID());
-            
-          //create the Node attributes table
-			CyTable nodeTable = createNodeAttributes(network, map.getName().trim(),prefix);
-			//create the edge attributes table
-			CyTable edgeTable = createEdgeAttributes(network, map.getName().trim(),prefix);
-            
-			//get the default edge table - in order to map the interaction type.
-			CyTable edgeTableDef = network.getDefaultEdgeTable();
-			
-            // store path to GSEA report in Network Attribute
-            if (map.getParams().getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)) {           
-                CyTable network_table = createNetworkAttributes(network, map.getName().trim(),prefix);
-                CyRow network_row = network_table.getRow(network.getSUID());
-                if (map.getParams().getFiles().containsKey(EnrichmentMap.DATASET1) && map.getParams().getFiles().get(EnrichmentMap.DATASET1).getGseaHtmlReportFile() != null) {
-                    String report1Path = map.getParams().getFiles().get(EnrichmentMap.DATASET1).getGseaHtmlReportFile();
-                    // On Windows we need to replace the Back-Slashes by forward-Slashes.
-                    // Otherwise we might produce special characters (\r, \n, \t, ...) 
-                    // when editing the attribute in Cytoscape.
-                    // Anyway Windows supports slashes as separator in all NT based versions 
-                    // (NT4, 2000, XP, Vista and newer)
-                    report1Path = report1Path.replaceAll("\\\\", "/"); 
-                    report1Path = report1Path.substring(0, report1Path.lastIndexOf('/') );
-                    network_row.set(EnrichmentMapVisualStyle.NETW_REPORT1_DIR,report1Path);
-                }
-                if (map.getParams().getFiles().containsKey(EnrichmentMap.DATASET2) && map.getParams().getFiles().get(EnrichmentMap.DATASET2).getGseaHtmlReportFile() != null) {
-                    String report2Path = map.getParams().getFiles().get(EnrichmentMap.DATASET2).getGseaHtmlReportFile();
-                    // On Windows we need to replace the Back-Slashes by forward-Slashes.
-                    // Otherwise we might produce special characters (\r, \n, \t, ...) 
-                    // when editing the attribute in Cytoscape.
-                    // Anyway Windows supports slashes as separator in all NT based versions 
-                    // (NT4, 2000, XP, Vista and newer)
-                    report2Path = report2Path.replaceAll("\\\\", "/");
-                    report2Path = report2Path.substring(0, report2Path.lastIndexOf('/') );
-                    network_row.set(EnrichmentMapVisualStyle.NETW_REPORT2_DIR,
-                            report2Path);
-                }
-            }
+	/**
+	 * Class constructor
+	 *
+	 * @param params - enrichment map parameters for current map
+	 */
+	public CreateEnrichmentMapNetworkTask(EnrichmentMap map) {
+		this.map = map;
+		this.geneset_similarities = map.getGenesetSimilarity();
+		mapName = "Enrichment Map";
 
-           // HashMap<String, EnrichmentResult> enrichmentResults1OfInterest = params.getEM().getFilteredEnrichment(EnrichmentMap.DATASET1).getEnrichments();
-            //HashMap<String, EnrichmentResult> enrichmentResults2OfInterest = params.getEM().getFilteredEnrichment(EnrichmentMap.DATASET2).getEnrichments();
-           
-            //Currently this supports two dataset
-            //TODO:add multiple dataset support.
-            //go through the datasets to get the enrichments
-            //currently only 2 datasets are supported in the visualization
-            HashMap<String, EnrichmentResult> enrichmentResults1 = null;
-            HashMap<String, EnrichmentResult> enrichmentResults2 = null;
-            Set<String> dataset_names = map.getDatasets().keySet();
-            for(Iterator<String> m = dataset_names.iterator(); m.hasNext();){
-            		String current_dataset = m.next();
-            		if(current_dataset.equalsIgnoreCase(EnrichmentMap.DATASET1))
-            			//get the enrichment results from the first one and place it in enrichment results 1
-            			enrichmentResults1 = map.getDataset(current_dataset).getEnrichments().getEnrichments();
-            		else
-            			enrichmentResults2 = map.getDataset(current_dataset).getEnrichments().getEnrichments();
-            }
-                       
-            HashMap<String, GeneSet> genesetsOfInterest = map.getDataset(EnrichmentMap.DATASET1).getGenesetsOfInterest().getGenesets();
-            HashMap<String, GeneSet> genesetsOfInterest_set2 = null;
-            if(map.getParams().isTwoDatasets())
-            		genesetsOfInterest_set2 = map.getDataset(EnrichmentMap.DATASET2).getGenesetsOfInterest().getGenesets();
-             
-            int currentProgress = 0;
-            int maxValue = genesetsOfInterest.size();
-            if(taskMonitor != null)
-                taskMonitor.setStatusMessage("Building Enrichment Map - " + maxValue + " genesets"); 
+	}
 
-            //create the nodes
-            //Each geneset of interest is a node
-            //its size is dependent on the size of the geneset
+	/**
+	 * Compute, and create cytoscape enrichment map
+	 *
+	 * @return true if successful
+	 */
+	public boolean computeMap() {
 
-            //on multiple runs of the program some of the nodes or all of them might already
-            //be created but it is possible that they have different values for the attributes.  How do
-            //we resolve this?
+		//on multiple runs of the program some of the nodes or all of them might already
+		//be created but it is possible that they have different values for the attributes.  How do
+		//we resolve this?
+		CyNetwork network;
+		//if(map.getParams().getAttributePrefix() == null)
+		map.getParams().setAttributePrefix();
+		String prefix = map.getParams().getAttributePrefix();
 
-            //iterate through the each of the GSEA Results of interest
-            for(Iterator<String> i = genesetsOfInterest.keySet().iterator(); i.hasNext(); ){
-                String current_name =i.next();
+		//create the new network.
+		network = networkFactory.createNetwork();
 
+		//Check to see if there is already a name specifed for the network
+		//We still need to calculate the number of networks so that we can specify the paramters for
+		//each network.
 
-                CyNode node = network.addNode();
-                network.getRow(node).set(CyNetwork.NAME, current_name);               
+		if(map.getName() == null) {
+			map.setName(prefix + mapName);
+		}
+		network.getRow(network).set(CyNetwork.NAME, map.getName());
 
-                //Add the description to the node
-                GeneSet gs = null;
-                GeneSet gs2 = null;
-                if(!map.getParams().isTwoDatasets())
-                    gs = (GeneSet)genesetsOfInterest.get(current_name);
-                else{
-                    if(genesetsOfInterest.containsKey(current_name))
-                        gs = (GeneSet)genesetsOfInterest.get(current_name);
-                    if(genesetsOfInterest_set2.containsKey(current_name))
-                        gs2 = (GeneSet)genesetsOfInterest_set2.get(current_name);
+		//set the NetworkID in the EM parameters
+		map.getParams().setNetworkID(network.getSUID());
 
-                    if(gs == null && gs2 != null)
-                        gs = gs2;
-                }         
-               CyRow current_row = nodeTable.getRow(node.getSUID());
-              //TODO: add own tables
-        		//CyRow current_row = nodeTable.getRow(current_name);
-               current_row.set( prefix+ EnrichmentMapVisualStyle.GS_DESCR, gs.getDescription());
-                
-                //create an attribute that stores the genes that are associated with this node as an attribute list
-                //only create the list if the hashkey 2 genes is not null Otherwise it take too much time to populate the list
-                if(map.getHashkey2gene() != null){
-                    List<String> gene_list = new ArrayList<String>();
-                    HashSet<Integer> genes_hash = new HashSet<Integer>();
+		//create the Node attributes table
+		CyTable nodeTable = createNodeAttributes(network, map.getName().trim(), prefix);
+		//create the edge attributes table
+		CyTable edgeTable = createEdgeAttributes(network, map.getName().trim(), prefix);
 
-                    genes_hash.addAll(gs.getGenes());
+		//get the default edge table - in order to map the interaction type.
+		CyTable edgeTableDef = network.getDefaultEdgeTable();
 
-                    if(gs2 != null)
-                        genes_hash.addAll(gs2.getGenes());
+		// store path to GSEA report in Network Attribute
+		if(map.getParams().getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)) {
+			CyTable network_table = createNetworkAttributes(network, map.getName().trim(), prefix);
+			CyRow network_row = network_table.getRow(network.getSUID());
+			if(map.getParams().getFiles().containsKey(EnrichmentMap.DATASET1)
+					&& map.getParams().getFiles().get(EnrichmentMap.DATASET1).getGseaHtmlReportFile() != null) {
+				String report1Path = map.getParams().getFiles().get(EnrichmentMap.DATASET1).getGseaHtmlReportFile();
+				// On Windows we need to replace the Back-Slashes by forward-Slashes.
+				// Otherwise we might produce special characters (\r, \n, \t, ...) 
+				// when editing the attribute in Cytoscape.
+				// Anyway Windows supports slashes as separator in all NT based versions 
+				// (NT4, 2000, XP, Vista and newer)
+				report1Path = report1Path.replaceAll("\\\\", "/");
+				report1Path = report1Path.substring(0, report1Path.lastIndexOf('/'));
+				network_row.set(EnrichmentMapVisualStyle.NETW_REPORT1_DIR, report1Path);
+			}
+			if(map.getParams().getFiles().containsKey(EnrichmentMap.DATASET2)
+					&& map.getParams().getFiles().get(EnrichmentMap.DATASET2).getGseaHtmlReportFile() != null) {
+				String report2Path = map.getParams().getFiles().get(EnrichmentMap.DATASET2).getGseaHtmlReportFile();
+				// On Windows we need to replace the Back-Slashes by forward-Slashes.
+				// Otherwise we might produce special characters (\r, \n, \t, ...) 
+				// when editing the attribute in Cytoscape.
+				// Anyway Windows supports slashes as separator in all NT based versions 
+				// (NT4, 2000, XP, Vista and newer)
+				report2Path = report2Path.replaceAll("\\\\", "/");
+				report2Path = report2Path.substring(0, report2Path.lastIndexOf('/'));
+				network_row.set(EnrichmentMapVisualStyle.NETW_REPORT2_DIR, report2Path);
+			}
+		}
 
-                    for(Iterator<Integer> j=genes_hash.iterator(); j.hasNext();){
-                        Integer current = j.next();
-                        String gene = map.getGeneFromHashKey(current);
-                        if(gene_list != null)
-                            gene_list.add(gene);
-                    }
-                    current_row.set( prefix+ EnrichmentMapVisualStyle.GENES, gene_list);
-                }
+		// HashMap<String, EnrichmentResult> enrichmentResults1OfInterest = params.getEM().getFilteredEnrichment(EnrichmentMap.DATASET1).getEnrichments();
+		//HashMap<String, EnrichmentResult> enrichmentResults2OfInterest = params.getEM().getFilteredEnrichment(EnrichmentMap.DATASET2).getEnrichments();
 
-                if(map.getParams().getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)){
-                    GSEAResult current_result = (GSEAResult) enrichmentResults1.get(current_name);
-                    setGSEAResultDataset1Attributes(current_row, current_result,prefix);
-                }
-                else{
-                    GenericResult current_result = (GenericResult) enrichmentResults1.get(current_name);
-                    setGenericResultDataset1Attributes(current_row, current_result, prefix);
-                }
+		//Currently this supports two dataset
+		//TODO:add multiple dataset support.
+		//go through the datasets to get the enrichments
+		//currently only 2 datasets are supported in the visualization
+		HashMap<String, EnrichmentResult> enrichmentResults1 = null;
+		HashMap<String, EnrichmentResult> enrichmentResults2 = null;
+		Set<String> dataset_names = map.getDatasets().keySet();
+		for(Iterator<String> m = dataset_names.iterator(); m.hasNext();) {
+			String current_dataset = m.next();
+			if(current_dataset.equalsIgnoreCase(EnrichmentMap.DATASET1))
+				//get the enrichment results from the first one and place it in enrichment results 1
+				enrichmentResults1 = map.getDataset(current_dataset).getEnrichments().getEnrichments();
+			else
+				enrichmentResults2 = map.getDataset(current_dataset).getEnrichments().getEnrichments();
+		}
 
-                //if we are using two datasets check to see if there is data for this node
-                if(map.getParams().isTwoDatasets()){
-                    if(map.getParams().getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)){
-                        if(enrichmentResults2.containsKey(current_name)){
-                            GSEAResult second_result = (GSEAResult) enrichmentResults2.get(current_name);
-                            setGSEAResultDataset2Attributes(current_row, second_result,prefix);
+		HashMap<String, GeneSet> genesetsOfInterest = map.getDataset(EnrichmentMap.DATASET1).getGenesetsOfInterest()
+				.getGenesets();
+		HashMap<String, GeneSet> genesetsOfInterest_set2 = null;
+		if(map.getParams().isTwoDatasets())
+			genesetsOfInterest_set2 = map.getDataset(EnrichmentMap.DATASET2).getGenesetsOfInterest().getGenesets();
 
-                        }
+		int currentProgress = 0;
+		int maxValue = genesetsOfInterest.size();
+		if(taskMonitor != null)
+			taskMonitor.setStatusMessage("Building Enrichment Map - " + maxValue + " genesets");
 
-                    }
-                    else{
-                        if(enrichmentResults2.containsKey(current_name)){
-                            GenericResult second_result = (GenericResult) enrichmentResults2.get(current_name);
-                            setGenericResultDataset2Attributes(current_row, second_result,prefix);
+		//create the nodes
+		//Each geneset of interest is a node
+		//its size is dependent on the size of the geneset
 
-                        }
+		//on multiple runs of the program some of the nodes or all of them might already
+		//be created but it is possible that they have different values for the attributes.  How do
+		//we resolve this?
 
-                    }
-                }
+		//iterate through the each of the GSEA Results of interest
+		for(Iterator<String> i = genesetsOfInterest.keySet().iterator(); i.hasNext();) {
+			String current_name = i.next();
 
-                // Calculate Percentage.  This must be a value between 0..100.
-                int percentComplete = (int) (((double) currentProgress / maxValue) * 100);
-                //  Estimate Time Remaining
-                long timeRemaining = maxValue - currentProgress;
-                if (taskMonitor != null) 
-                    taskMonitor.setProgress(percentComplete);
+			CyNode node = network.addNode();
+			network.getRow(node).set(CyNetwork.NAME, current_name);
 
-                currentProgress++;
+			//Add the description to the node
+			GeneSet gs = null;
+			GeneSet gs2 = null;
+			if(!map.getParams().isTwoDatasets())
+				gs = (GeneSet) genesetsOfInterest.get(current_name);
+			else {
+				if(genesetsOfInterest.containsKey(current_name))
+					gs = (GeneSet) genesetsOfInterest.get(current_name);
+				if(genesetsOfInterest_set2.containsKey(current_name))
+					gs2 = (GeneSet) genesetsOfInterest_set2.get(current_name);
 
-            }
+				if(gs == null && gs2 != null)
+					gs = gs2;
+			}
+			CyRow current_row = nodeTable.getRow(node.getSUID());
+			//TODO: add own tables
+			//CyRow current_row = nodeTable.getRow(current_name);
+			current_row.set(prefix + EnrichmentMapVisualStyle.GS_DESCR, gs.getDescription());
 
-            //Add any additional nodes from the second dataset that haven't been added yet
-            if(map.getParams().isTwoDatasets()){
-                for(Iterator<String> i = genesetsOfInterest_set2.keySet().iterator(); i.hasNext(); ){
-                    String current_name =i.next();
+			//create an attribute that stores the genes that are associated with this node as an attribute list
+			//only create the list if the hashkey 2 genes is not null Otherwise it take too much time to populate the list
+			if(map.getHashkey2gene() != null) {
+				List<String> gene_list = new ArrayList<String>();
+				HashSet<Integer> genes_hash = new HashSet<Integer>();
 
-                    //is this already a node from the first subset
-                    if(genesetsOfInterest.containsKey(current_name)){
-                        //Don't need to add it
-                    }
-                    else{
-                    		CyNode node = network.addNode();
-                        network.getRow(node).set(CyNetwork.NAME, current_name); 
+				genes_hash.addAll(gs.getGenes());
 
-                        //Add the description to the node
-                        GeneSet gs =null;
-                        GeneSet gs2 = null;
-                        if(!map.getParams().isTwoDatasets())
-                            gs = (GeneSet)genesetsOfInterest.get(current_name);
-                        else{
-                            if(genesetsOfInterest.containsKey(current_name))
-                                gs = (GeneSet)genesetsOfInterest.get(current_name);
-                            if(genesetsOfInterest_set2.containsKey(current_name))
-                                gs2 = (GeneSet)genesetsOfInterest_set2.get(current_name);
+				if(gs2 != null)
+					genes_hash.addAll(gs2.getGenes());
 
-                            if(gs == null && gs2 != null)
-                                gs = gs2;
-                        }
-                        CyRow current_row = nodeTable.getRow(node.getSUID());
-                      //TODO: add own tables
-                		//CyRow current_row = nodeTable.getRow(current_name);
-                        current_row.set( prefix+ EnrichmentMapVisualStyle.GS_DESCR, gs.getDescription());
-                        
-                        //create an attribute that stores the genes that are associated with this node as an attribute list
-                        //only create the list if the hashkey 2 genes is not null Otherwise it take too much time to populate the list
-                        if(map.getHashkey2gene() != null){
-                            List<String> gene_list = new ArrayList<String>();
-                            HashSet<Integer> genes_hash = new HashSet<Integer>();
-                            genes_hash.addAll(gs.getGenes());
+				for(Iterator<Integer> j = genes_hash.iterator(); j.hasNext();) {
+					Integer current = j.next();
+					String gene = map.getGeneFromHashKey(current);
+					if(gene_list != null)
+						gene_list.add(gene);
+				}
+				current_row.set(prefix + EnrichmentMapVisualStyle.GENES, gene_list);
+			}
 
-                            if(gs2 != null)
-                                genes_hash.addAll(gs2.getGenes());
+			if(map.getParams().getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)) {
+				GSEAResult current_result = (GSEAResult) enrichmentResults1.get(current_name);
+				setGSEAResultDataset1Attributes(current_row, current_result, prefix);
+			} else {
+				GenericResult current_result = (GenericResult) enrichmentResults1.get(current_name);
+				setGenericResultDataset1Attributes(current_row, current_result, prefix);
+			}
 
-                            for(Iterator<Integer> j=genes_hash.iterator(); j.hasNext();){
-                                Integer current = j.next();
-                                String gene = map.getGeneFromHashKey(current);
-                                if(gene_list != null)
-                                    gene_list.add(gene);
-                            }
+			//if we are using two datasets check to see if there is data for this node
+			if(map.getParams().isTwoDatasets()) {
+				if(map.getParams().getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)) {
+					if(enrichmentResults2.containsKey(current_name)) {
+						GSEAResult second_result = (GSEAResult) enrichmentResults2.get(current_name);
+						setGSEAResultDataset2Attributes(current_row, second_result, prefix);
 
-                            current_row.set(prefix+EnrichmentMapVisualStyle.GENES, gene_list);
-                        }
+					}
 
-                        if(map.getParams().getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)){
-                            if(enrichmentResults1.containsKey(current_name)){
-                                GSEAResult result = (GSEAResult) enrichmentResults1.get(current_name);
-                                setGSEAResultDataset1Attributes(current_row,result, prefix);
-                            }
+				} else {
+					if(enrichmentResults2.containsKey(current_name)) {
+						GenericResult second_result = (GenericResult) enrichmentResults2.get(current_name);
+						setGenericResultDataset2Attributes(current_row, second_result, prefix);
 
-                            GSEAResult second_result = (GSEAResult) enrichmentResults2.get(current_name);
-                            setGSEAResultDataset2Attributes(current_row, second_result,prefix);
-                        }
-                        else{
-                            if(enrichmentResults1.containsKey(current_name)){
-                                GenericResult result = (GenericResult) enrichmentResults1.get(current_name);
-                                setGenericResultDataset1Attributes(current_row,result, prefix);
-                            }
+					}
 
-                            GenericResult second_result = (GenericResult) enrichmentResults2.get(current_name);
-                            setGenericResultDataset2Attributes(current_row, second_result,prefix);
-                        }
-                    }
-                }
-            }
-            
-            int k = 0;
-            //iterate through the similarities to create the edges
-            for(Iterator<String> j = geneset_similarities.keySet().iterator(); j.hasNext(); ){
-                String current_name =j.next().toString();
-                GenesetSimilarity current_result = geneset_similarities.get(current_name);
+				}
+			}
 
-                
-                
-                //only create edges where the jaccard coefficient to great than
-                //and if both nodes exist
-                /*if(current_result.getSimilarity_coeffecient()>=map.getParams().getSimilarityCutOff() &&
-                		!getNodesWithValue(network,nodeTable,prefix + EnrichmentMapVisualStyle.NAME, current_result.getGeneset1_Name()).isEmpty() &&
-                		!getNodesWithValue(network,nodeTable,prefix + EnrichmentMapVisualStyle.NAME,current_result.getGeneset2_Name()).isEmpty()){
-                    CyNode node1 = getUniqueNodeWithValue(network,nodeTable,prefix + EnrichmentMapVisualStyle.NAME,current_result.getGeneset1_Name());
-                    CyNode node2 = getUniqueNodeWithValue(network,nodeTable,prefix + EnrichmentMapVisualStyle.NAME,current_result.getGeneset2_Name());
-                */
-                double similarity_coeffecient = current_result.getSimilarity_coeffecient();
-				if(similarity_coeffecient>=map.getParams().getSimilarityCutOff() &&
-                    		!getNodesWithValue(network,network.getDefaultNodeTable(),CyNetwork.NAME, current_result.getGeneset1_Name()).isEmpty() &&
-                    		!getNodesWithValue(network,network.getDefaultNodeTable(),CyNetwork.NAME,current_result.getGeneset2_Name()).isEmpty()){
-                        CyNode node1 = getUniqueNodeWithValue(network,network.getDefaultNodeTable(),CyNetwork.NAME,current_result.getGeneset1_Name());
-                        CyNode node2 = getUniqueNodeWithValue(network,network.getDefaultNodeTable(),CyNetwork.NAME,current_result.getGeneset2_Name());
-                                                              
-                    CyEdge edge = network.addEdge(node1, node2, false);
-                    String edge_type;
-                    //in order to create multiple edges we need to create different edge types between the same two nodes
-                    if(current_result.getEnrichment_set() == 1)
-                    	edge_type = EnrichmentMapParameters.ENRICHMENT_INTERACTION_TYPE_SET1;                        
-                    else if(current_result.getEnrichment_set() == 2)
-                        edge_type = EnrichmentMapParameters.ENRICHMENT_INTERACTION_TYPE_SET2;
-                    else
-                        edge_type = EnrichmentMapParameters.ENRICHMENT_INTERACTION_TYPE;
-                                                                            
-                    CyRow current_edgerow = edgeTable.getRow(/*current_name*/edge.getSUID());
-                    current_edgerow.set(CyNetwork.NAME,current_name);
-                    current_edgerow.set(CyEdge.INTERACTION, current_result.getInteractionType());
-                    current_edgerow.set( prefix + EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT, similarity_coeffecient);
-                    current_edgerow.set( prefix + EnrichmentMapVisualStyle.OVERLAP_SIZE, current_result.getSizeOfOverlap());
-                    current_edgerow.set( prefix + EnrichmentMapVisualStyle.ENRICHMENT_SET, current_result.getEnrichment_set());
-                    
-                    //set the default table
-                  //TODO: add own tables
-            		//
-                    //CyRow current_edgerowDef = edgeTableDef.getRow(edge.getSUID());
-                    //current_edgerowDef.set(CyNetwork.NAME,current_name);
-                    //current_edgerowDef.set(CyEdge.INTERACTION, current_result.getInteractionType());
-                    
-                    
-                    //create an attribute that stores the genes that are associated with this edge as an attribute list
-                    //only create the list if the hashkey 2 genes is not null Otherwise it take too much time to populate the list
-                    if(map.getHashkey2gene() != null){
-                        List<String> gene_list = new ArrayList<String>();
-                        Set<Integer> genes_hash = current_result.getOverlapping_genes();
-                        for(Integer current : genes_hash) {
-                            String gene = map.getGeneFromHashKey(current);
-                            if(gene_list != null)
-                                gene_list.add(gene);
-                        }
+			// Calculate Percentage.  This must be a value between 0..100.
+			int percentComplete = (int) (((double) currentProgress / maxValue) * 100);
+			//  Estimate Time Remaining
+			long timeRemaining = maxValue - currentProgress;
+			if(taskMonitor != null)
+				taskMonitor.setProgress(percentComplete);
 
-                        current_edgerow.set( prefix+EnrichmentMapVisualStyle.OVERLAP_GENES, gene_list);
-                    }
+			currentProgress++;
 
-                }
-            }
-            
-            //register the network and tables
-            this.networkManager.addNetwork(network);
-            
-          //TODO: add own tables
-           /* this.tableManager.addTable(nodeTable);
-            this.tableManager.addTable(edgeTable);
-            
-            ArrayList<CyNetwork> networkSet = new ArrayList<CyNetwork>();
-            networkSet.add(network);
-            
-            super.insertTasksAfterCurrentTask( this.mapTableToNetworkTable.createTaskIterator(nodeTable,true,networkSet,CyNode.class ));
-            super.insertTasksAfterCurrentTask( this.mapTableToNetworkTable.createTaskIterator(edgeTable,true,networkSet,CyEdge.class));
-             */                      
-            //register the new Network with EM
-            EnrichmentMapManager EMmanager = EnrichmentMapManager.getInstance();
-            EMmanager.registerNetwork(network,map);
-            
-            map.getParams().setNetworkID(network.getSUID());
+		}
 
-            
-           
-        return true;
-    }
+		//Add any additional nodes from the second dataset that haven't been added yet
+		if(map.getParams().isTwoDatasets()) {
+			for(Iterator<String> i = genesetsOfInterest_set2.keySet().iterator(); i.hasNext();) {
+				String current_name = i.next();
 
-    /**
-     * set node attributes for dataset1 generic results
-     *
-     * @param node - node to associated attributes to
-     * @param result - generic results object to get values of the attributes from
-     * @param prefix - attribute prefix
-     */
-    private void setGenericResultDataset1Attributes(CyRow current_row, GenericResult result, String prefix){
-    		
-    		if(result == null)
+				//is this already a node from the first subset
+				if(genesetsOfInterest.containsKey(current_name)) {
+					//Don't need to add it
+				} else {
+					CyNode node = network.addNode();
+					network.getRow(node).set(CyNetwork.NAME, current_name);
+
+					//Add the description to the node
+					GeneSet gs = null;
+					GeneSet gs2 = null;
+					if(!map.getParams().isTwoDatasets())
+						gs = (GeneSet) genesetsOfInterest.get(current_name);
+					else {
+						if(genesetsOfInterest.containsKey(current_name))
+							gs = (GeneSet) genesetsOfInterest.get(current_name);
+						if(genesetsOfInterest_set2.containsKey(current_name))
+							gs2 = (GeneSet) genesetsOfInterest_set2.get(current_name);
+
+						if(gs == null && gs2 != null)
+							gs = gs2;
+					}
+					CyRow current_row = nodeTable.getRow(node.getSUID());
+					//TODO: add own tables
+					//CyRow current_row = nodeTable.getRow(current_name);
+					current_row.set(prefix + EnrichmentMapVisualStyle.GS_DESCR, gs.getDescription());
+
+					//create an attribute that stores the genes that are associated with this node as an attribute list
+					//only create the list if the hashkey 2 genes is not null Otherwise it take too much time to populate the list
+					if(map.getHashkey2gene() != null) {
+						List<String> gene_list = new ArrayList<String>();
+						HashSet<Integer> genes_hash = new HashSet<Integer>();
+						genes_hash.addAll(gs.getGenes());
+
+						if(gs2 != null)
+							genes_hash.addAll(gs2.getGenes());
+
+						for(Iterator<Integer> j = genes_hash.iterator(); j.hasNext();) {
+							Integer current = j.next();
+							String gene = map.getGeneFromHashKey(current);
+							if(gene_list != null)
+								gene_list.add(gene);
+						}
+
+						current_row.set(prefix + EnrichmentMapVisualStyle.GENES, gene_list);
+					}
+
+					if(map.getParams().getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)) {
+						if(enrichmentResults1.containsKey(current_name)) {
+							GSEAResult result = (GSEAResult) enrichmentResults1.get(current_name);
+							setGSEAResultDataset1Attributes(current_row, result, prefix);
+						}
+
+						GSEAResult second_result = (GSEAResult) enrichmentResults2.get(current_name);
+						setGSEAResultDataset2Attributes(current_row, second_result, prefix);
+					} else {
+						if(enrichmentResults1.containsKey(current_name)) {
+							GenericResult result = (GenericResult) enrichmentResults1.get(current_name);
+							setGenericResultDataset1Attributes(current_row, result, prefix);
+						}
+
+						GenericResult second_result = (GenericResult) enrichmentResults2.get(current_name);
+						setGenericResultDataset2Attributes(current_row, second_result, prefix);
+					}
+				}
+			}
+		}
+
+		int k = 0;
+		//iterate through the similarities to create the edges
+		for(Iterator<String> j = geneset_similarities.keySet().iterator(); j.hasNext();) {
+			String current_name = j.next().toString();
+			GenesetSimilarity current_result = geneset_similarities.get(current_name);
+
+			//only create edges where the jaccard coefficient to great than
+			//and if both nodes exist
+			/*
+			 * if(current_result.getSimilarity_coeffecient()>=map.getParams().
+			 * getSimilarityCutOff() &&
+			 * !getNodesWithValue(network,nodeTable,prefix +
+			 * EnrichmentMapVisualStyle.NAME,
+			 * current_result.getGeneset1_Name()).isEmpty() &&
+			 * !getNodesWithValue(network,nodeTable,prefix +
+			 * EnrichmentMapVisualStyle.NAME,current_result.getGeneset2_Name()).
+			 * isEmpty()){ CyNode node1 =
+			 * getUniqueNodeWithValue(network,nodeTable,prefix +
+			 * EnrichmentMapVisualStyle.NAME,current_result.getGeneset1_Name());
+			 * CyNode node2 = getUniqueNodeWithValue(network,nodeTable,prefix +
+			 * EnrichmentMapVisualStyle.NAME,current_result.getGeneset2_Name());
+			 */
+			double similarity_coeffecient = current_result.getSimilarity_coeffecient();
+			if(similarity_coeffecient >= map.getParams().getSimilarityCutOff()
+					&& !getNodesWithValue(network, network.getDefaultNodeTable(), CyNetwork.NAME,
+							current_result.getGeneset1_Name()).isEmpty()
+					&& !getNodesWithValue(network, network.getDefaultNodeTable(), CyNetwork.NAME,
+							current_result.getGeneset2_Name()).isEmpty()) {
+				CyNode node1 = getUniqueNodeWithValue(network, network.getDefaultNodeTable(), CyNetwork.NAME,
+						current_result.getGeneset1_Name());
+				CyNode node2 = getUniqueNodeWithValue(network, network.getDefaultNodeTable(), CyNetwork.NAME,
+						current_result.getGeneset2_Name());
+
+				CyEdge edge = network.addEdge(node1, node2, false);
+				String edge_type;
+				//in order to create multiple edges we need to create different edge types between the same two nodes
+				if(current_result.getEnrichment_set() == 1)
+					edge_type = EnrichmentMapParameters.ENRICHMENT_INTERACTION_TYPE_SET1;
+				else if(current_result.getEnrichment_set() == 2)
+					edge_type = EnrichmentMapParameters.ENRICHMENT_INTERACTION_TYPE_SET2;
+				else
+					edge_type = EnrichmentMapParameters.ENRICHMENT_INTERACTION_TYPE;
+
+				CyRow current_edgerow = edgeTable.getRow(/* current_name */edge.getSUID());
+				current_edgerow.set(CyNetwork.NAME, current_name);
+				current_edgerow.set(CyEdge.INTERACTION, current_result.getInteractionType());
+				current_edgerow.set(prefix + EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT, similarity_coeffecient);
+				current_edgerow.set(prefix + EnrichmentMapVisualStyle.OVERLAP_SIZE, current_result.getSizeOfOverlap());
+				current_edgerow.set(prefix + EnrichmentMapVisualStyle.ENRICHMENT_SET,
+						current_result.getEnrichment_set());
+
+				//set the default table
+				//TODO: add own tables
+				//
+				//CyRow current_edgerowDef = edgeTableDef.getRow(edge.getSUID());
+				//current_edgerowDef.set(CyNetwork.NAME,current_name);
+				//current_edgerowDef.set(CyEdge.INTERACTION, current_result.getInteractionType());
+
+				//create an attribute that stores the genes that are associated with this edge as an attribute list
+				//only create the list if the hashkey 2 genes is not null Otherwise it take too much time to populate the list
+				if(map.getHashkey2gene() != null) {
+					List<String> gene_list = new ArrayList<String>();
+					Set<Integer> genes_hash = current_result.getOverlapping_genes();
+					for(Integer current : genes_hash) {
+						String gene = map.getGeneFromHashKey(current);
+						if(gene_list != null)
+							gene_list.add(gene);
+					}
+
+					current_edgerow.set(prefix + EnrichmentMapVisualStyle.OVERLAP_GENES, gene_list);
+				}
+
+			}
+		}
+
+		//register the network and tables
+		this.networkManager.addNetwork(network);
+
+		//TODO: add own tables
+		/*
+		 * this.tableManager.addTable(nodeTable);
+		 * this.tableManager.addTable(edgeTable);
+		 * 
+		 * ArrayList<CyNetwork> networkSet = new ArrayList<CyNetwork>();
+		 * networkSet.add(network);
+		 * 
+		 * super.insertTasksAfterCurrentTask(
+		 * this.mapTableToNetworkTable.createTaskIterator(nodeTable,true,
+		 * networkSet,CyNode.class )); super.insertTasksAfterCurrentTask(
+		 * this.mapTableToNetworkTable.createTaskIterator(edgeTable,true,
+		 * networkSet,CyEdge.class));
+		 */
+		//register the new Network with EM
+		EnrichmentMapManager EMmanager = EnrichmentMapManager.getInstance();
+		EMmanager.registerNetwork(network, map);
+
+		map.getParams().setNetworkID(network.getSUID());
+
+		return true;
+	}
+
+	/**
+	 * set node attributes for dataset1 generic results
+	 *
+	 * @param node - node to associated attributes to
+	 * @param result - generic results object to get values of the attributes
+	 *            from
+	 * @param prefix - attribute prefix
+	 */
+	private void setGenericResultDataset1Attributes(CyRow current_row, GenericResult result, String prefix) {
+
+		if(result == null)
 			return;
-        
-        //format the node name
-        String formattedName = formatLabel(result.getName());
 
-        current_row.set( prefix + EnrichmentMapVisualStyle.FORMATTED_NAME, formattedName);
-        current_row.set( prefix + EnrichmentMapVisualStyle.NAME, result.getName());
-        current_row.set( prefix + EnrichmentMapVisualStyle.PVALUE_DATASET1, result.getPvalue());
-        current_row.set( prefix + EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1, result.getFdrqvalue());
-        current_row.set( prefix + EnrichmentMapVisualStyle.GS_SIZE_DATASET1, result.getGsSize());
-        current_row.set( prefix + EnrichmentMapVisualStyle.GS_TYPE, EnrichmentMapVisualStyle.GS_TYPE_ENRICHMENT);
-        current_row.set( prefix + EnrichmentMapVisualStyle.GS_SOURCE, result.getSource());
-        if(result.getNES()>=0){
-        		current_row.set( prefix+ EnrichmentMapVisualStyle.COLOURING_DATASET1,  (1-result.getPvalue()));
-        }
-        else{
-        		current_row.set( prefix+ EnrichmentMapVisualStyle.COLOURING_DATASET1,  ((-1) * (1-result.getPvalue())));
-        }
-    }
+		//format the node name
+		String formattedName = formatLabel(result.getName());
 
-    /**
-     * set node attributes for dataset 2 generic results
-     *
-     * @param node - node to associated attributes to
-     * @param result - generic results object to get values of the attributes from
-     * @param prefix - attribute prefix
-     */
-    private void setGenericResultDataset2Attributes(CyRow current_row, GenericResult result, String prefix){
-    		
-    		if( result == null)
-    			return;
+		current_row.set(prefix + EnrichmentMapVisualStyle.FORMATTED_NAME, formattedName);
+		current_row.set(prefix + EnrichmentMapVisualStyle.NAME, result.getName());
+		current_row.set(prefix + EnrichmentMapVisualStyle.PVALUE_DATASET1, result.getPvalue());
+		current_row.set(prefix + EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1, result.getFdrqvalue());
+		current_row.set(prefix + EnrichmentMapVisualStyle.GS_SIZE_DATASET1, result.getGsSize());
+		current_row.set(prefix + EnrichmentMapVisualStyle.GS_TYPE, EnrichmentMapVisualStyle.GS_TYPE_ENRICHMENT);
+		current_row.set(prefix + EnrichmentMapVisualStyle.GS_SOURCE, result.getSource());
+		if(result.getNES() >= 0) {
+			current_row.set(prefix + EnrichmentMapVisualStyle.COLOURING_DATASET1, (1 - result.getPvalue()));
+		} else {
+			current_row.set(prefix + EnrichmentMapVisualStyle.COLOURING_DATASET1, ((-1) * (1 - result.getPvalue())));
+		}
+	}
 
-        //format the node name
-        String formattedName = formatLabel(result.getName());
+	/**
+	 * set node attributes for dataset 2 generic results
+	 *
+	 * @param node - node to associated attributes to
+	 * @param result - generic results object to get values of the attributes
+	 *            from
+	 * @param prefix - attribute prefix
+	 */
+	private void setGenericResultDataset2Attributes(CyRow current_row, GenericResult result, String prefix) {
 
-        current_row.set( prefix + EnrichmentMapVisualStyle.FORMATTED_NAME, formattedName);
-        current_row.set( prefix + EnrichmentMapVisualStyle.NAME, result.getName());
-        current_row.set( prefix + EnrichmentMapVisualStyle.PVALUE_DATASET2, result.getPvalue());
-        current_row.set( prefix + EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2, result.getFdrqvalue());
-        current_row.set( prefix + EnrichmentMapVisualStyle.GS_SIZE_DATASET2, result.getGsSize());
-        current_row.set( prefix + EnrichmentMapVisualStyle.GS_TYPE, EnrichmentMapVisualStyle.GS_TYPE_ENRICHMENT);
-        current_row.set( prefix + EnrichmentMapVisualStyle.GS_SOURCE, result.getSource());
-        if(result.getNES()>=0){
-        		current_row.set( prefix+ EnrichmentMapVisualStyle.COLOURING_DATASET2,  (1-result.getPvalue()));
-        }
-        else{
-        		current_row.set( prefix+ EnrichmentMapVisualStyle.COLOURING_DATASET2,  ((-1) * (1-result.getPvalue())));
-        }
-    }
+		if(result == null)
+			return;
 
-    /**
-     * set node attributes for dataset 1 gsea results
-     *
-     * @param node - node to associated attributes to
-     * @param result - gsea results object to get values of the attributes from
-     * @param prefix - attribute prefix
-     */
-    private void setGSEAResultDataset1Attributes(CyRow current_row, GSEAResult result, String prefix ){
-    		
-    		if(result == null)
-			return;    	
-        //format the node name
-        String formattedName = formatLabel(result.getName());
+		//format the node name
+		String formattedName = formatLabel(result.getName());
 
-        current_row.set( prefix + EnrichmentMapVisualStyle.FORMATTED_NAME, formattedName);
-        current_row.set( prefix + EnrichmentMapVisualStyle.NAME, result.getName());
-        current_row.set( prefix + EnrichmentMapVisualStyle.PVALUE_DATASET1, result.getPvalue());
-        current_row.set( prefix + EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1, result.getFdrqvalue());
-        current_row.set( prefix + EnrichmentMapVisualStyle.FWER_QVALUE_DATASET1, result.getFwerqvalue());
-        current_row.set( prefix + EnrichmentMapVisualStyle.GS_SIZE_DATASET1, result.getGsSize());
-        current_row.set( prefix + EnrichmentMapVisualStyle.ES_DATASET1, result.getES());
-        current_row.set( prefix + EnrichmentMapVisualStyle.NES_DATASET1, result.getNES());
-        current_row.set( prefix + EnrichmentMapVisualStyle.GS_TYPE, EnrichmentMapVisualStyle.GS_TYPE_ENRICHMENT);
-        current_row.set( prefix + EnrichmentMapVisualStyle.GS_SOURCE, result.getSource());
-        if(result.getNES()>=0){
-        		double current_pvalue = result.getPvalue();
-        		current_row.set( prefix+ EnrichmentMapVisualStyle.COLOURING_DATASET1,  (1-current_pvalue));
-        }
-        else{
-        		current_row.set( prefix+ EnrichmentMapVisualStyle.COLOURING_DATASET1,  ((-1) * (1-result.getPvalue())));
-        }
-    }
+		current_row.set(prefix + EnrichmentMapVisualStyle.FORMATTED_NAME, formattedName);
+		current_row.set(prefix + EnrichmentMapVisualStyle.NAME, result.getName());
+		current_row.set(prefix + EnrichmentMapVisualStyle.PVALUE_DATASET2, result.getPvalue());
+		current_row.set(prefix + EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2, result.getFdrqvalue());
+		current_row.set(prefix + EnrichmentMapVisualStyle.GS_SIZE_DATASET2, result.getGsSize());
+		current_row.set(prefix + EnrichmentMapVisualStyle.GS_TYPE, EnrichmentMapVisualStyle.GS_TYPE_ENRICHMENT);
+		current_row.set(prefix + EnrichmentMapVisualStyle.GS_SOURCE, result.getSource());
+		if(result.getNES() >= 0) {
+			current_row.set(prefix + EnrichmentMapVisualStyle.COLOURING_DATASET2, (1 - result.getPvalue()));
+		} else {
+			current_row.set(prefix + EnrichmentMapVisualStyle.COLOURING_DATASET2, ((-1) * (1 - result.getPvalue())));
+		}
+	}
 
-    /**
-     * set node attributes for dataset 2 gsea results
-     *
-     * @param node - node to associated attributes to
-     * @param result - gsea results object to get values of the attributes from
-     * @param prefix - attribute prefix
-     */
-    private void setGSEAResultDataset2Attributes(CyRow current_row, GSEAResult result, String prefix){
-    	
-    		if(result == null)
-			return;    	
-        //format the node name
-        String formattedName = formatLabel(result.getName());
+	/**
+	 * set node attributes for dataset 1 gsea results
+	 *
+	 * @param node - node to associated attributes to
+	 * @param result - gsea results object to get values of the attributes from
+	 * @param prefix - attribute prefix
+	 */
+	private void setGSEAResultDataset1Attributes(CyRow current_row, GSEAResult result, String prefix) {
 
-        current_row.set( prefix + EnrichmentMapVisualStyle.FORMATTED_NAME, formattedName);
-        current_row.set( prefix + EnrichmentMapVisualStyle.NAME, result.getName());
-        current_row.set( prefix + EnrichmentMapVisualStyle.PVALUE_DATASET2, result.getPvalue());
-        current_row.set( prefix + EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2, result.getFdrqvalue());
-        current_row.set( prefix + EnrichmentMapVisualStyle.FWER_QVALUE_DATASET2, result.getFwerqvalue());
-        current_row.set( prefix + EnrichmentMapVisualStyle.GS_SIZE_DATASET2, result.getGsSize());
-        current_row.set( prefix + EnrichmentMapVisualStyle.ES_DATASET2, result.getES());
-        current_row.set( prefix + EnrichmentMapVisualStyle.NES_DATASET2, result.getNES());
-        current_row.set( prefix + EnrichmentMapVisualStyle.GS_TYPE, EnrichmentMapVisualStyle.GS_TYPE_ENRICHMENT);
-        current_row.set( prefix + EnrichmentMapVisualStyle.GS_SOURCE, result.getSource());
-        if(result.getNES()>=0){
-        		double current_pvalue = result.getPvalue();
-        		current_row.set( prefix+ EnrichmentMapVisualStyle.COLOURING_DATASET2,  (1-current_pvalue));
-        }
-        else{
-        		current_row.set( prefix+ EnrichmentMapVisualStyle.COLOURING_DATASET2,  ((-1) * (1-result.getPvalue())));
-        }
+		if(result == null)
+			return;
+		//format the node name
+		String formattedName = formatLabel(result.getName());
 
-    }
+		current_row.set(prefix + EnrichmentMapVisualStyle.FORMATTED_NAME, formattedName);
+		current_row.set(prefix + EnrichmentMapVisualStyle.NAME, result.getName());
+		current_row.set(prefix + EnrichmentMapVisualStyle.PVALUE_DATASET1, result.getPvalue());
+		current_row.set(prefix + EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1, result.getFdrqvalue());
+		current_row.set(prefix + EnrichmentMapVisualStyle.FWER_QVALUE_DATASET1, result.getFwerqvalue());
+		current_row.set(prefix + EnrichmentMapVisualStyle.GS_SIZE_DATASET1, result.getGsSize());
+		current_row.set(prefix + EnrichmentMapVisualStyle.ES_DATASET1, result.getES());
+		current_row.set(prefix + EnrichmentMapVisualStyle.NES_DATASET1, result.getNES());
+		current_row.set(prefix + EnrichmentMapVisualStyle.GS_TYPE, EnrichmentMapVisualStyle.GS_TYPE_ENRICHMENT);
+		current_row.set(prefix + EnrichmentMapVisualStyle.GS_SOURCE, result.getSource());
+		if(result.getNES() >= 0) {
+			double current_pvalue = result.getPvalue();
+			current_row.set(prefix + EnrichmentMapVisualStyle.COLOURING_DATASET1, (1 - current_pvalue));
+		} else {
+			current_row.set(prefix + EnrichmentMapVisualStyle.COLOURING_DATASET1, ((-1) * (1 - result.getPvalue())));
+		}
+	}
 
-    /**
-     * Wrap label
-     *
-     * @param label - current one line representation of label
-     * @return formatted, wrapped label
-     */
-    static String formatLabel(String label){
-        String formattedLabel = "";
+	/**
+	 * set node attributes for dataset 2 gsea results
+	 *
+	 * @param node - node to associated attributes to
+	 * @param result - gsea results object to get values of the attributes from
+	 * @param prefix - attribute prefix
+	 */
+	private void setGSEAResultDataset2Attributes(CyRow current_row, GSEAResult result, String prefix) {
 
-        int i = 0;
-        int k = 1;
+		if(result == null)
+			return;
+		//format the node name
+		String formattedName = formatLabel(result.getName());
 
-        //only wrap at spaces
-        String[] tokens = label.split(" ");
-        //first try and wrap label based on spacing
-        if(tokens.length > 1){
-            int current_count = 0;
-            for(int j = 0; j< tokens.length;j++){
-                if(current_count + tokens[j].length() <= EnrichmentMapVisualStyle.maxNodeLabelLength){
-                    formattedLabel = formattedLabel + tokens[j] + " ";
-                    current_count = current_count + tokens[j].length();
-                }
-                else if(current_count + tokens[j].length() > EnrichmentMapVisualStyle.maxNodeLabelLength) {
-                    formattedLabel = formattedLabel + "\n" + tokens[j] + " ";
-                    current_count = tokens[j].length();
-                }
-            }
-        }
-        else{
-            tokens = label.split("_");
+		current_row.set(prefix + EnrichmentMapVisualStyle.FORMATTED_NAME, formattedName);
+		current_row.set(prefix + EnrichmentMapVisualStyle.NAME, result.getName());
+		current_row.set(prefix + EnrichmentMapVisualStyle.PVALUE_DATASET2, result.getPvalue());
+		current_row.set(prefix + EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2, result.getFdrqvalue());
+		current_row.set(prefix + EnrichmentMapVisualStyle.FWER_QVALUE_DATASET2, result.getFwerqvalue());
+		current_row.set(prefix + EnrichmentMapVisualStyle.GS_SIZE_DATASET2, result.getGsSize());
+		current_row.set(prefix + EnrichmentMapVisualStyle.ES_DATASET2, result.getES());
+		current_row.set(prefix + EnrichmentMapVisualStyle.NES_DATASET2, result.getNES());
+		current_row.set(prefix + EnrichmentMapVisualStyle.GS_TYPE, EnrichmentMapVisualStyle.GS_TYPE_ENRICHMENT);
+		current_row.set(prefix + EnrichmentMapVisualStyle.GS_SOURCE, result.getSource());
+		if(result.getNES() >= 0) {
+			double current_pvalue = result.getPvalue();
+			current_row.set(prefix + EnrichmentMapVisualStyle.COLOURING_DATASET2, (1 - current_pvalue));
+		} else {
+			current_row.set(prefix + EnrichmentMapVisualStyle.COLOURING_DATASET2, ((-1) * (1 - result.getPvalue())));
+		}
 
-            if(tokens.length > 1){
-                int current_count = 0;
-                for(int j = 0; j< tokens.length;j++){
-                    if(j != 0)
-                        formattedLabel = formattedLabel +  "_";
-                    if(current_count + tokens[j].length() <= EnrichmentMapVisualStyle.maxNodeLabelLength){
-                        formattedLabel = formattedLabel + tokens[j] ;
-                        current_count = current_count + tokens[j].length();
-                    }
-                    else if(current_count + tokens[j].length() > EnrichmentMapVisualStyle.maxNodeLabelLength) {
-                        formattedLabel = formattedLabel + "\n" + tokens[j] ;
-                        current_count = tokens[j].length();
-                    }
-                }
-            }
+	}
 
-            //if there is only one token wrap it anyways.
-            else if(tokens.length == 1){
-                while(i<=label.length()){
+	/**
+	 * Wrap label
+	 *
+	 * @param label - current one line representation of label
+	 * @return formatted, wrapped label
+	 */
+	static String formatLabel(String label) {
+		String formattedLabel = "";
 
-                    if(i+EnrichmentMapVisualStyle.maxNodeLabelLength > label.length())
-                        formattedLabel = formattedLabel + label.substring(i, label.length()) + "\n";
-                    else
-                        formattedLabel = formattedLabel + label.substring(i, k* EnrichmentMapVisualStyle.maxNodeLabelLength) + "\n";
-                    i = (k * EnrichmentMapVisualStyle.maxNodeLabelLength) ;
-                    k++;
-                }
-            }
-        }
+		int i = 0;
+		int k = 1;
 
-        return formattedLabel;
-    }
+		//only wrap at spaces
+		String[] tokens = label.split(" ");
+		//first try and wrap label based on spacing
+		if(tokens.length > 1) {
+			int current_count = 0;
+			for(int j = 0; j < tokens.length; j++) {
+				if(current_count + tokens[j].length() <= EnrichmentMapVisualStyle.maxNodeLabelLength) {
+					formattedLabel = formattedLabel + tokens[j] + " ";
+					current_count = current_count + tokens[j].length();
+				} else if(current_count + tokens[j].length() > EnrichmentMapVisualStyle.maxNodeLabelLength) {
+					formattedLabel = formattedLabel + "\n" + tokens[j] + " ";
+					current_count = tokens[j].length();
+				}
+			}
+		} else {
+			tokens = label.split("_");
 
-  //create the Nodes attribute table
-    public CyTable createNetworkAttributes(CyNetwork network, String name, String prefix){
-    		//TODO:change back to creating our own table.  Currently can only map to a string column.
-    	    //in mean time use the default node table
-    		//CyTable nodeTable = tableFactory.createTable(/*name*/ prefix + "_" + node_table_suffix, CyNetwork.SUID, Long.class, true, true);
-    		CyTable networkTable = network.getDefaultNetworkTable();
-    		networkTable.createColumn(EnrichmentMapVisualStyle.NETW_REPORT1_DIR,String.class,false);
-    		if (map.getParams().getFiles().containsKey(EnrichmentMap.DATASET2) && map.getParams().getFiles().get(EnrichmentMap.DATASET2).getGseaHtmlReportFile() != null) 
-    			networkTable.createColumn(EnrichmentMapVisualStyle.NETW_REPORT2_DIR,String.class,false);
-    		     
-    		return networkTable;
-    	
-    }
-    //create the Nodes attribute table
-    public CyTable createNodeAttributes(CyNetwork network, String name, String prefix){
-    		//TODO: add own tables
-    		//CyTable nodeTable = tableFactory.createTable(/*name*/ prefix + "_" + node_table_suffix, CyNetwork.NAME, String.class, true, true);
-    		CyTable nodeTable = network.getDefaultNodeTable();
-    		nodeTable.createColumn(prefix+ EnrichmentMapVisualStyle.GS_DESCR, String.class, false); 
-    		nodeTable.createColumn(prefix+ EnrichmentMapVisualStyle.FORMATTED_NAME, String.class, false);
-    		nodeTable.createColumn(prefix+ EnrichmentMapVisualStyle.NAME, String.class, false);
-    		nodeTable.createColumn(prefix+ EnrichmentMapVisualStyle.GS_SOURCE, String.class, false);
-    		nodeTable.createColumn(prefix+ EnrichmentMapVisualStyle.GS_TYPE, String.class, false);
-    		nodeTable.createListColumn(prefix + EnrichmentMapVisualStyle.GENES, String.class, false);
-    		
-    		nodeTable.createColumn(prefix+EnrichmentMapVisualStyle.PVALUE_DATASET1, Double.class, false);    		
-    		nodeTable.createColumn(prefix+EnrichmentMapVisualStyle.COLOURING_DATASET1, Double.class, false);   		
-    		nodeTable.createColumn(prefix+EnrichmentMapVisualStyle.ES_DATASET1, Double.class, false);    		
-    		nodeTable.createColumn(prefix+EnrichmentMapVisualStyle.NES_DATASET1, Double.class, false);    		
-    		nodeTable.createColumn(prefix+EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1, Double.class, false);    		
-    		nodeTable.createColumn(prefix+EnrichmentMapVisualStyle.FWER_QVALUE_DATASET1, Double.class, false);		
-    		nodeTable.createColumn(prefix+ EnrichmentMapVisualStyle.GS_SIZE_DATASET1, Integer.class, false);
-    		
-    		//only create dataset2 if this map has two datasets
-    		if(map.getDatasets().size()>1){
-    			nodeTable.createColumn(prefix+EnrichmentMapVisualStyle.PVALUE_DATASET2, Double.class, false);
-    			nodeTable.createColumn(prefix+EnrichmentMapVisualStyle.COLOURING_DATASET2, Double.class, false);
-    			nodeTable.createColumn(prefix+EnrichmentMapVisualStyle.ES_DATASET2, Double.class, false);
-    			nodeTable.createColumn(prefix+EnrichmentMapVisualStyle.NES_DATASET2, Double.class, false);
-    			nodeTable.createColumn(prefix+EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2, Double.class, false);
-    			nodeTable.createColumn(prefix+EnrichmentMapVisualStyle.FWER_QVALUE_DATASET2, Double.class, false);
-    			nodeTable.createColumn(prefix+ EnrichmentMapVisualStyle.GS_SIZE_DATASET2, Integer.class, false);
-    		}
-    		
-    		
-    		return nodeTable;
-    }
-    
-    //create the edge attribue table
-    public CyTable createEdgeAttributes(CyNetwork network, String name, String prefix){
-    	//TODO: add own tables
+			if(tokens.length > 1) {
+				int current_count = 0;
+				for(int j = 0; j < tokens.length; j++) {
+					if(j != 0)
+						formattedLabel = formattedLabel + "_";
+					if(current_count + tokens[j].length() <= EnrichmentMapVisualStyle.maxNodeLabelLength) {
+						formattedLabel = formattedLabel + tokens[j];
+						current_count = current_count + tokens[j].length();
+					} else if(current_count + tokens[j].length() > EnrichmentMapVisualStyle.maxNodeLabelLength) {
+						formattedLabel = formattedLabel + "\n" + tokens[j];
+						current_count = tokens[j].length();
+					}
+				}
+			}
+
+			//if there is only one token wrap it anyways.
+			else if(tokens.length == 1) {
+				while(i <= label.length()) {
+
+					if(i + EnrichmentMapVisualStyle.maxNodeLabelLength > label.length())
+						formattedLabel = formattedLabel + label.substring(i, label.length()) + "\n";
+					else
+						formattedLabel = formattedLabel
+								+ label.substring(i, k * EnrichmentMapVisualStyle.maxNodeLabelLength) + "\n";
+					i = (k * EnrichmentMapVisualStyle.maxNodeLabelLength);
+					k++;
+				}
+			}
+		}
+
+		return formattedLabel;
+	}
+
+	//create the Nodes attribute table
+	public CyTable createNetworkAttributes(CyNetwork network, String name, String prefix) {
+		//TODO:change back to creating our own table.  Currently can only map to a string column.
+		//in mean time use the default node table
+		//CyTable nodeTable = tableFactory.createTable(/*name*/ prefix + "_" + node_table_suffix, CyNetwork.SUID, Long.class, true, true);
+		CyTable networkTable = network.getDefaultNetworkTable();
+		networkTable.createColumn(EnrichmentMapVisualStyle.NETW_REPORT1_DIR, String.class, false);
+		if(map.getParams().getFiles().containsKey(EnrichmentMap.DATASET2)
+				&& map.getParams().getFiles().get(EnrichmentMap.DATASET2).getGseaHtmlReportFile() != null)
+			networkTable.createColumn(EnrichmentMapVisualStyle.NETW_REPORT2_DIR, String.class, false);
+
+		return networkTable;
+
+	}
+
+	//create the Nodes attribute table
+	public CyTable createNodeAttributes(CyNetwork network, String name, String prefix) {
+		//TODO: add own tables
+		//CyTable nodeTable = tableFactory.createTable(/*name*/ prefix + "_" + node_table_suffix, CyNetwork.NAME, String.class, true, true);
+		CyTable nodeTable = network.getDefaultNodeTable();
+		nodeTable.createColumn(prefix + EnrichmentMapVisualStyle.GS_DESCR, String.class, false);
+		nodeTable.createColumn(prefix + EnrichmentMapVisualStyle.FORMATTED_NAME, String.class, false);
+		nodeTable.createColumn(prefix + EnrichmentMapVisualStyle.NAME, String.class, false);
+		nodeTable.createColumn(prefix + EnrichmentMapVisualStyle.GS_SOURCE, String.class, false);
+		nodeTable.createColumn(prefix + EnrichmentMapVisualStyle.GS_TYPE, String.class, false);
+		nodeTable.createListColumn(prefix + EnrichmentMapVisualStyle.GENES, String.class, false);
+
+		nodeTable.createColumn(prefix + EnrichmentMapVisualStyle.PVALUE_DATASET1, Double.class, false);
+		nodeTable.createColumn(prefix + EnrichmentMapVisualStyle.COLOURING_DATASET1, Double.class, false);
+		nodeTable.createColumn(prefix + EnrichmentMapVisualStyle.ES_DATASET1, Double.class, false);
+		nodeTable.createColumn(prefix + EnrichmentMapVisualStyle.NES_DATASET1, Double.class, false);
+		nodeTable.createColumn(prefix + EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1, Double.class, false);
+		nodeTable.createColumn(prefix + EnrichmentMapVisualStyle.FWER_QVALUE_DATASET1, Double.class, false);
+		nodeTable.createColumn(prefix + EnrichmentMapVisualStyle.GS_SIZE_DATASET1, Integer.class, false);
+
+		//only create dataset2 if this map has two datasets
+		if(map.getDatasets().size() > 1) {
+			nodeTable.createColumn(prefix + EnrichmentMapVisualStyle.PVALUE_DATASET2, Double.class, false);
+			nodeTable.createColumn(prefix + EnrichmentMapVisualStyle.COLOURING_DATASET2, Double.class, false);
+			nodeTable.createColumn(prefix + EnrichmentMapVisualStyle.ES_DATASET2, Double.class, false);
+			nodeTable.createColumn(prefix + EnrichmentMapVisualStyle.NES_DATASET2, Double.class, false);
+			nodeTable.createColumn(prefix + EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2, Double.class, false);
+			nodeTable.createColumn(prefix + EnrichmentMapVisualStyle.FWER_QVALUE_DATASET2, Double.class, false);
+			nodeTable.createColumn(prefix + EnrichmentMapVisualStyle.GS_SIZE_DATASET2, Integer.class, false);
+		}
+
+		return nodeTable;
+	}
+
+	//create the edge attribue table
+	public CyTable createEdgeAttributes(CyNetwork network, String name, String prefix) {
+		//TODO: add own tables
 		//CyTable edgeTable = tableFactory.createTable(/*name*/ prefix + "_" + edge_table_suffix, CyNetwork.NAME,String.class, true, true);
 		CyTable edgeTable = network.getDefaultEdgeTable();
-		edgeTable.createColumn(prefix+EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT, Double.class, false);
-		edgeTable.createColumn(prefix+EnrichmentMapVisualStyle.OVERLAP_SIZE, Integer.class, false);
-		edgeTable.createListColumn(prefix+EnrichmentMapVisualStyle.OVERLAP_GENES, String.class, false);
-		edgeTable.createColumn(prefix+EnrichmentMapVisualStyle.ENRICHMENT_SET, Integer.class, false);
-		
-		return edgeTable;
-    }
-    
-    //TODO:move this method to utilities method.
-    private static Set<CyNode> getNodesWithValue(
-            final CyNetwork net, final CyTable table,
-             final String colname, final Object value)
-    {
-         final Collection<CyRow> matchingRows = table.getMatchingRows(colname, value);
-         final Set<CyNode> nodes = new HashSet<CyNode>();
-         final String primaryKeyColname = table.getPrimaryKey().getName();
-         for (final CyRow row : matchingRows)
-         {
-            final Long nodeId = row.get(primaryKeyColname, Long.class);
-             if (nodeId == null)
-                 continue;
-             final CyNode node = net.getNode(nodeId);
-             if (node == null)
-                 continue;
-             nodes.add(node);
-         }
-         return nodes;
-     }
-    
-  //TODO:move this method to utilities method.
-    private static CyNode getUniqueNodeWithValue(
-            final CyNetwork net, final CyTable table,
-             final String colname, final Object value)
-    {
-         final Collection<CyRow> matchingRows = table.getMatchingRows(colname, value);
-         //if this id matches more than one node then don't return anything
-         if(matchingRows.size() > 1 || matchingRows.size() <= 0 )
-        	 	return null;
-                 
-         final String primaryKeyColname = table.getPrimaryKey().getName();
-         for (final CyRow row : matchingRows)
-         {
-            final Long nodeId = row.get(primaryKeyColname, Long.class);
-             if (nodeId == null)
-                 continue;
-             final CyNode node = net.getNode(nodeId);
-             if (node == null)
-                 continue;
-             return node;
-         }
-         return null;
-     }
-    
-    
-    /**
-     * Sets the Task Monitor.
-     *
-     * @param taskMonitor TaskMonitor Object.
-     */
-    public void setTaskMonitor(TaskMonitor taskMonitor) {
-        if (this.taskMonitor != null) {
-            throw new IllegalStateException("Task Monitor is already set.");
-        }
-        this.taskMonitor = taskMonitor;
-    }
+		edgeTable.createColumn(prefix + EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT, Double.class, false);
+		edgeTable.createColumn(prefix + EnrichmentMapVisualStyle.OVERLAP_SIZE, Integer.class, false);
+		edgeTable.createListColumn(prefix + EnrichmentMapVisualStyle.OVERLAP_GENES, String.class, false);
+		edgeTable.createColumn(prefix + EnrichmentMapVisualStyle.ENRICHMENT_SET, Integer.class, false);
 
-    /**
-     * Gets the Task Title.
-     *
-     * @return human readable task title.
-     */
-    public String getTitle() {
-        return new String("Building Enrichment Map");
-    }
+		return edgeTable;
+	}
+
+	//TODO:move this method to utilities method.
+	private static Set<CyNode> getNodesWithValue(final CyNetwork net, final CyTable table, final String colname,
+			final Object value) {
+		final Collection<CyRow> matchingRows = table.getMatchingRows(colname, value);
+		final Set<CyNode> nodes = new HashSet<CyNode>();
+		final String primaryKeyColname = table.getPrimaryKey().getName();
+		for(final CyRow row : matchingRows) {
+			final Long nodeId = row.get(primaryKeyColname, Long.class);
+			if(nodeId == null)
+				continue;
+			final CyNode node = net.getNode(nodeId);
+			if(node == null)
+				continue;
+			nodes.add(node);
+		}
+		return nodes;
+	}
+
+	//TODO:move this method to utilities method.
+	private static CyNode getUniqueNodeWithValue(final CyNetwork net, final CyTable table, final String colname,
+			final Object value) {
+		final Collection<CyRow> matchingRows = table.getMatchingRows(colname, value);
+		//if this id matches more than one node then don't return anything
+		if(matchingRows.size() > 1 || matchingRows.size() <= 0)
+			return null;
+
+		final String primaryKeyColname = table.getPrimaryKey().getName();
+		for(final CyRow row : matchingRows) {
+			final Long nodeId = row.get(primaryKeyColname, Long.class);
+			if(nodeId == null)
+				continue;
+			final CyNode node = net.getNode(nodeId);
+			if(node == null)
+				continue;
+			return node;
+		}
+		return null;
+	}
+
+	/**
+	 * Sets the Task Monitor.
+	 *
+	 * @param taskMonitor TaskMonitor Object.
+	 */
+	public void setTaskMonitor(TaskMonitor taskMonitor) {
+		if(this.taskMonitor != null) {
+			throw new IllegalStateException("Task Monitor is already set.");
+		}
+		this.taskMonitor = taskMonitor;
+	}
+
+	/**
+	 * Gets the Task Title.
+	 *
+	 * @return human readable task title.
+	 */
+	public String getTitle() {
+		return new String("Building Enrichment Map");
+	}
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		this.taskMonitor = taskMonitor;
-		computeMap();		
-		
+		computeMap();
+
 	}
 
 }

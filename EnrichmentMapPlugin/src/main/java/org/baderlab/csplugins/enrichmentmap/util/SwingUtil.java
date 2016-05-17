@@ -34,12 +34,12 @@ public class SwingUtil {
 	 * Warning: The current enabled state of components is not remembered.
 	 */
 	public static void recursiveEnable(Component component, boolean enabled) {
-    	component.setEnabled(enabled);
-    	if(component instanceof Container) {
-    		for(Component child : ((Container)component).getComponents()) {
-    			recursiveEnable(child, enabled);
-    		}
-    	}
-    }
-	
+		component.setEnabled(enabled);
+		if(component instanceof Container) {
+			for(Component child : ((Container) component).getComponents()) {
+				recursiveEnable(child, enabled);
+			}
+		}
+	}
+
 }
