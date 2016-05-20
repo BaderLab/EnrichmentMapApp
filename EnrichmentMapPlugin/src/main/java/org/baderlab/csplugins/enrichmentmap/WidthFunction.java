@@ -1,6 +1,5 @@
 package org.baderlab.csplugins.enrichmentmap;
 
-import org.baderlab.csplugins.enrichmentmap.FilterParameters.FilterType;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;

@@ -104,8 +104,7 @@ public class EnrichmentMapBuildMapTaskFactory implements TaskFactory {
 		for(String dataset_name : dataset_names) {
 			DataSet dataset = datasets.get(dataset_name);
 			//first step: load GMT file if a file is specified in this dataset    		
-			if(dataset.getSetofgenesets().getFilename() != null
-					&& !dataset.getSetofgenesets().getFilename().isEmpty()) {
+			if(dataset.getSetofgenesets().getFilename() != null && !dataset.getSetofgenesets().getFilename().isEmpty()) {
 				//Load the geneset file
 				GMTFileReaderTask gmtFileTask = new GMTFileReaderTask(dataset, streamUtil);
 				currentTasks.append(gmtFileTask);

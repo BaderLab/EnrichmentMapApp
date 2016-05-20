@@ -4,10 +4,9 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Set;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -22,6 +21,7 @@ import org.baderlab.csplugins.enrichmentmap.actions.LoadSignatureSetsActionListe
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.JMultiLineToolTip;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
+import org.baderlab.csplugins.enrichmentmap.task.FilterMetric;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.io.util.StreamUtil;
@@ -35,19 +35,18 @@ public class PostAnalysisKnownSignaturePanel extends JPanel {
 	private final CyApplicationManager cyApplicationManager;
 	private final CySwingApplication application;
 	private final StreamUtil streamUtil;
-	private final SynchronousTaskManager syncTaskManager;
+	private final SynchronousTaskManager<?> syncTaskManager;
 
-	// 'Known Signature Panel' parameters
-	private EnrichmentMap map;
-	private PostAnalysisParameters paParams;
-
+	private SetOfGeneSets signatureGenesets;
+	private Set<String> selectedGenesetNames;
+	
 	private PostAnalysisWeightPanel weightPanel;
 
 	private JFormattedTextField knownSignatureGMTFileNameTextField;
 
 	public PostAnalysisKnownSignaturePanel(PostAnalysisInputPanel parentPanel,
 			CyApplicationManager cyApplicationManager, CySwingApplication application, StreamUtil streamUtil,
-			SynchronousTaskManager syncTaskManager) {
+			SynchronousTaskManager<?> syncTaskManager) {
 
 		this.parentPanel = parentPanel;
 		this.cyApplicationManager = cyApplicationManager;
@@ -110,10 +109,8 @@ public class PostAnalysisKnownSignaturePanel extends JPanel {
 		selectSigGMTFileButton.setText("...");
 		selectSigGMTFileButton.setMargin(new Insets(0, 0, 0, 0));
 		selectSigGMTFileButton.setActionCommand("Known Signature");
-		selectSigGMTFileButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
-				parentPanel.chooseGMTFile(knownSignatureGMTFileNameTextField);
-			}
+		selectSigGMTFileButton.addActionListener(e -> {
+			parentPanel.chooseGMTFile(knownSignatureGMTFileNameTextField);
 		});
 
 		JPanel SigGMTPanel = new JPanel();
@@ -130,32 +127,41 @@ public class PostAnalysisKnownSignaturePanel extends JPanel {
 
 	}
 
-	public boolean beforeRun() {
+	public boolean okToRun() {
 		String filePath = (String) knownSignatureGMTFileNameTextField.getValue();
 
 		if(filePath == null || PostAnalysisInputPanel.checkFile(filePath).equals(Color.RED)) {
 			String message = "SigGMT file name not valid.\n";
 			knownSignatureGMTFileNameTextField.setForeground(Color.RED);
-			JOptionPane.showMessageDialog(application.getJFrame(), message, "Post Analysis Known Signature",
-					JOptionPane.WARNING_MESSAGE);
+			JOptionPane.showMessageDialog(application.getJFrame(), message, "Post Analysis Known Signature", JOptionPane.WARNING_MESSAGE);
 			return false;
 		}
-
-		paParams.setSignatureGMTFileName(filePath);
 
 		// Load in the GMT file
 		// Manually fire the same action listener that is used by the signature discovery panel.
 		// Use the synchronousTaskManager so that this blocks
-		LoadSignatureSetsActionListener loadAction = new LoadSignatureSetsActionListener(parentPanel, application,
-				cyApplicationManager, syncTaskManager, streamUtil);
-		loadAction.setSelectAll(true);
-		loadAction.actionPerformed(null);
+		
+		FilterMetric filterMetric = new FilterMetric.None();
+		LoadSignatureSetsActionListener loadAction = new LoadSignatureSetsActionListener(filePath, filterMetric, application, cyApplicationManager, syncTaskManager, streamUtil);
+		
+		loadAction.setGeneSetCallback(gs -> {
+			this.signatureGenesets = gs;
+		});
+		
+		loadAction.setLoadedSignatureSetsCallback(selected -> {
+			this.selectedGenesetNames = selected;
+		});
 
+		
+		loadAction.actionPerformed(null);
+		
+		System.out.println(this.signatureGenesets);
+		System.out.println(this.selectedGenesetNames);
+		
 		return true;
 	}
 
 	void resetPanel() {
-		paParams.setSignatureGenesets(new SetOfGeneSets());
 		//Gene-Sets Panel
 		knownSignatureGMTFileNameTextField.setText("");
 		knownSignatureGMTFileNameTextField.setValue("");
@@ -164,10 +170,17 @@ public class PostAnalysisKnownSignaturePanel extends JPanel {
 		weightPanel.resetPanel();
 	}
 
-	void initialize(EnrichmentMap currentMap, PostAnalysisParameters paParams) {
-		this.map = currentMap;
-		this.paParams = paParams;
-
-		weightPanel.initialize(currentMap, paParams);
+	void initialize(EnrichmentMap currentMap) {
+		weightPanel.initialize(currentMap);
+	}
+	
+	
+	public void build(PostAnalysisParameters.Builder builder) {
+		weightPanel.build(builder);
+		
+		String filePath = (String) knownSignatureGMTFileNameTextField.getValue();
+		builder.setSignatureGMTFileName(filePath);
+		builder.setSignatureGenesets(signatureGenesets);
+		builder.addAllSelectedSignatureSetNames(selectedGenesetNames);
 	}
 }

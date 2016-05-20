@@ -8,14 +8,12 @@ import java.awt.FontFormatException;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -28,8 +26,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 
-import org.baderlab.csplugins.enrichmentmap.FilterParameters;
-import org.baderlab.csplugins.enrichmentmap.FilterParameters.FilterType;
+import org.baderlab.csplugins.enrichmentmap.FilterParameters.Builder;
+import org.baderlab.csplugins.enrichmentmap.FilterType;
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
@@ -44,9 +42,10 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
 	private static final String LABEL_DATASET = "Data Set:";
 	private static final String LABEL_RANKS = "Ranks:";
 
+	private static final double HYPERGOM_DEFAULT = 0.25;
+	
 	private final CySwingApplication application;
 
-	private PostAnalysisParameters paParams;
 	private EnrichmentMap map;
 
 	// Universe sizes
@@ -70,12 +69,20 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
 	private EnablementComboBoxRenderer rankingEnablementRenderer;
 
 	private JPanel cardPanel;
+	
+	private Map<FilterType,Double> savedFilterValues = FilterType.createMapOfDefaults();
 
+	
 	public PostAnalysisWeightPanel(CySwingApplication application) {
 		super("Edge Weight Parameters");
 		this.application = application;
+		
+		// override the default value for HYPERGEOM
+		savedFilterValues.put(FilterType.HYPERGEOM, HYPERGOM_DEFAULT);
+		
 		createPanel();
 	}
+	
 
 	private void createPanel() {
 		JPanel selectPanel = createRankTestSelectPanel();
@@ -89,9 +96,9 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
 		cardPanel.add(mannWhittCard, FilterType.MANN_WHIT_GREATER.toString());
 		cardPanel.add(mannWhittCard, FilterType.MANN_WHIT_LESS.toString());
 		cardPanel.add(hypergeomCard, FilterType.HYPERGEOM.toString());
-		cardPanel.add(new JPanel(), FilterType.PERCENT.toString());
-		cardPanel.add(new JPanel(), FilterType.NUMBER.toString());
-		cardPanel.add(new JPanel(), FilterType.SPECIFIC.toString());
+		cardPanel.add(new JPanel(),  FilterType.PERCENT.toString());
+		cardPanel.add(new JPanel(),  FilterType.NUMBER.toString());
+		cardPanel.add(new JPanel(),  FilterType.SPECIFIC.toString());
 		cardPanel.add(warnCard, "warn");
 
 		getContentPane().add(selectPanel, BorderLayout.NORTH);
@@ -102,8 +109,7 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
 		JPanel warnPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
 
 		try {
-			Font iconFont = Font.createFont(Font.TRUETYPE_FONT,
-					getClass().getResourceAsStream("/fonts/fontawesome-webfont.ttf"));
+			Font iconFont = Font.createFont(Font.TRUETYPE_FONT, getClass().getResourceAsStream("/fonts/fontawesome-webfont.ttf"));
 			Font iconFontSized = iconFont.deriveFont(Font.PLAIN, new JLabel().getFont().getSize2D());
 
 			JLabel warnIcon = new JLabel();
@@ -136,7 +142,19 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
 		DecimalFormat decFormat = new DecimalFormat();
 		decFormat.setParseIntegerOnly(false);
 		rankTestTextField = new JFormattedTextField(decFormat);
-		rankTestTextField.addPropertyChangeListener("value", new FormattedTextFieldAction());
+		rankTestTextField.addPropertyChangeListener("value", e -> {
+			StringBuilder message = new StringBuilder("The value you have entered is invalid.\n");
+			Number number = (Number) rankTestTextField.getValue();
+			FilterType filterType = getFilterType();
+			
+			Optional<Double> value = PostAnalysisInputPanel.validateAndGetFilterValue(number, filterType, message);
+			double def = filterType == FilterType.HYPERGEOM ? HYPERGOM_DEFAULT : filterType.defaultValue;
+			savedFilterValues.put(filterType, value.orElse(def));
+			if(!value.isPresent()) {
+				rankTestTextField.setValue(def);
+				JOptionPane.showMessageDialog(application.getJFrame(), message.toString(), "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
+			}
+		});
 
 		rankingEnablementRenderer = new EnablementComboBoxRenderer();
 		rankTestCombo = new JComboBox<>();
@@ -150,19 +168,15 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
 		rankTestCombo.addItem(FilterType.PERCENT);
 		rankTestCombo.addItem(FilterType.SPECIFIC);
 
-		rankTestCombo.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				FilterType rankTest = (FilterType) rankTestCombo.getSelectedItem();
-				FilterParameters rankTestParams = paParams.getRankTestParameters();
-				rankTestParams.setType(rankTest);
-				rankTestTextField.setValue(rankTestParams.getValue(rankTest));
+		rankTestCombo.addActionListener(e -> {
+			FilterType filterType = (FilterType) rankTestCombo.getSelectedItem();
+			rankTestTextField.setValue(savedFilterValues.get(filterType));
 
-				CardLayout cardLayout = (CardLayout) cardPanel.getLayout();
-				if(rankTest.isMannWhitney() && map.getAllRanks().isEmpty())
-					cardLayout.show(cardPanel, "warn");
-				else
-					cardLayout.show(cardPanel, rankTest.toString());
-			}
+			CardLayout cardLayout = (CardLayout) cardPanel.getLayout();
+			if(filterType.isMannWhitney() && map.getAllRanks().isEmpty())
+				cardLayout.show(cardPanel, "warn");
+			else
+				cardLayout.show(cardPanel, filterType.toString());
 		});
 
 		panel.add(create3CellGridPanel(LABEL_TEST, rankTestCombo, rankTestTextField));
@@ -171,14 +185,11 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
 		// Dataset model is already initialized
 		datasetModel = new DefaultComboBoxModel<>();
 		datasetCombo.setModel(datasetModel);
-		datasetCombo.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				String dataset = (String) datasetCombo.getSelectedItem();
-				if(dataset == null)
-					return;
-				paParams.setSignature_dataSet(dataset);
-				updateUniverseSize(dataset);
-			}
+		datasetCombo.addActionListener(e -> {
+			String dataset = (String) datasetCombo.getSelectedItem();
+			if(dataset == null)
+				return;
+			updateUniverseSize(dataset);
 		});
 
 		panel.add(create3CellGridPanel(LABEL_DATASET, datasetCombo, null));
@@ -205,22 +216,27 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
 		JPanel radioButtonsPanel = new JPanel();
 		radioButtonsPanel.setLayout(gridbag);
 
+		ActionListener universeSelectActionListener = e -> {
+			boolean enable = e.getActionCommand().equals("User Defined");
+			universeSelectionTextField.setEnabled(enable);
+		};
+		
 		gmtRadioButton = new JRadioButton();
 		gmtRadioButton.setActionCommand("GMT");
-		gmtRadioButton.addActionListener(new UniverseSelectActionListener());
+		gmtRadioButton.addActionListener(universeSelectActionListener);
 		gmtRadioButton.setSelected(true);
 
 		expressionSetRadioButton = new JRadioButton();
 		expressionSetRadioButton.setActionCommand("Expression Set");
-		expressionSetRadioButton.addActionListener(new UniverseSelectActionListener());
+		expressionSetRadioButton.addActionListener(universeSelectActionListener);
 
 		intersectionRadioButton = new JRadioButton();
 		intersectionRadioButton.setActionCommand("Intersection");
-		intersectionRadioButton.addActionListener(new UniverseSelectActionListener());
+		intersectionRadioButton.addActionListener(universeSelectActionListener);
 
 		userDefinedRadioButton = new JRadioButton("User Defined");
 		userDefinedRadioButton.setActionCommand("User Defined");
-		userDefinedRadioButton.addActionListener(new UniverseSelectActionListener());
+		userDefinedRadioButton.addActionListener(universeSelectActionListener);
 
 		ButtonGroup buttonGroup = new ButtonGroup();
 		buttonGroup.add(gmtRadioButton);
@@ -251,8 +267,16 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
 		DecimalFormat intFormat = new DecimalFormat();
 		intFormat.setParseIntegerOnly(true);
 		universeSelectionTextField = new JFormattedTextField(intFormat);
-		universeSelectionTextField.addPropertyChangeListener("value", new FormattedTextFieldAction());
 		universeSelectionTextField.setEnabled(false);
+		
+		universeSelectionTextField.addPropertyChangeListener("value", e -> {
+			Number val = (Number) universeSelectionTextField.getValue();
+			if(val == null || val.intValue() < 0) {
+				universeSelectionTextField.setValue(1);
+				JOptionPane.showMessageDialog(application.getJFrame(), "Universe value must be greater than zero", "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
+			}
+		});
+		
 		gridbag.setConstraints(universeSelectionTextField, c);
 		radioButtonsPanel.add(universeSelectionTextField);
 
@@ -266,65 +290,13 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
 		rankingModel = new DefaultComboBoxModel<>();
 		rankingCombo = new JComboBox<>();
 		rankingCombo.setModel(rankingModel);
-		rankingCombo.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				paParams.setSignature_rankFile((String) rankingCombo.getSelectedItem());
-			}
-		});
 
 		JPanel panel = new JPanel(new BorderLayout());
 		panel.add(create3CellGridPanel(LABEL_RANKS, rankingCombo, null), BorderLayout.NORTH);
 		return panel;
 	}
 
-	private class UniverseSelectActionListener implements ActionListener {
-		public void actionPerformed(ActionEvent e) {
-			int size = 0;
-			switch(e.getActionCommand()) {
-				case "GMT":
-					size = universeGmt;
-					universeSelectionTextField.setEnabled(false);
-					break;
-				case "Expression Set":
-					size = universeExpression;
-					universeSelectionTextField.setEnabled(false);
-					break;
-				case "Intersection":
-					size = universeIntersection;
-					universeSelectionTextField.setEnabled(false);
-					break;
-				case "User Defined":
-					size = ((Number) universeSelectionTextField.getValue()).intValue();
-					universeSelectionTextField.setEnabled(true);
-					break;
-			}
-			paParams.setUniverseSize(size);
-		}
-	}
-
-	private class FormattedTextFieldAction implements PropertyChangeListener {
-		public void propertyChange(PropertyChangeEvent e) {
-			JFormattedTextField source = (JFormattedTextField) e.getSource();
-			if(source == rankTestTextField) {
-				StringBuilder message = new StringBuilder("The value you have entered is invalid.\n");
-				boolean valid = PostAnalysisInputPanel.validateAndSetFilterValue(rankTestTextField,
-						paParams.getRankTestParameters(), message);
-				if(!valid) {
-					JOptionPane.showMessageDialog(application.getJFrame(), message.toString(),
-							"Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
-				}
-			} else if(source == universeSelectionTextField) {
-				Number val = (Number) universeSelectionTextField.getValue();
-				if(val == null || val.intValue() < 0) {
-					JOptionPane.showMessageDialog(application.getJFrame(), "Universe value must be greater than zero",
-							"Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
-					universeSelectionTextField.setValue(val = 1);
-				}
-				paParams.setUniverseSize(val.intValue());
-			}
-		}
-	}
-
+	
 	/*
 	 * This is a hackey way of getting the three comboboxes to line up properly
 	 * without putting them in the same grid panel. I didn't want to put them in
@@ -340,9 +312,7 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
 		c.insets = new Insets(0, 0, 0, 0);
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.anchor = GridBagConstraints.WEST;
-
 		c.gridy = 0;
-
 		c.gridx = 0;
 		panel.add(Box.createHorizontalStrut(labelWidth), c);
 		c.gridx = 1;
@@ -367,16 +337,36 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
 
 		return panel;
 	}
+	
+	
+	private void updateUniverseSize(String signature_dataSet) {
+		GeneExpressionMatrix expressionSets = map.getDataset(signature_dataSet).getExpressionSets();
+
+		universeGmt = map.getNumberOfGenes();
+		universeExpression = expressionSets.getExpressionUniverse();
+		universeIntersection = expressionSets.getExpressionMatrix().size();
+
+		gmtRadioButton.setText("GMT (" + universeGmt + ")");
+		expressionSetRadioButton.setText("Expression Set (" + universeExpression + ")");
+		intersectionRadioButton.setText("Intersection (" + universeIntersection + ")");
+
+		universeSelectionTextField.setValue(universeExpression);
+	}
+	
 
 	void resetPanel() {
 		gmtRadioButton.setSelected(true);
-		rankTestCombo.setSelectedItem(FilterType.MANN_WHIT_TWO_SIDED);
-		rankTestTextField.setValue(paParams.getRankTestParameters().getValue(FilterType.MANN_WHIT_TWO_SIDED));
+		FilterType filterType = FilterType.MANN_WHIT_TWO_SIDED;
+		rankTestCombo.setSelectedItem(filterType);
+		rankTestTextField.setValue(filterType.defaultValue);
+		
+		savedFilterValues = FilterType.createMapOfDefaults();
+		savedFilterValues.put(FilterType.HYPERGEOM, HYPERGOM_DEFAULT);
 	}
 
-	void initialize(EnrichmentMap currentMap, PostAnalysisParameters paParams) {
+	
+	void initialize(EnrichmentMap currentMap) {
 		this.map = currentMap;
-		this.paParams = paParams;
 
 		Map<String, DataSet> datasetMap = map.getDatasets();
 		String[] datasetArray = datasetMap.keySet().toArray(new String[datasetMap.size()]);
@@ -402,45 +392,50 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
 			rankingCombo.setSelectedIndex(0);
 		}
 
-		FilterParameters filterParams = paParams.getRankTestParameters();
-		if(filterParams.getType() == FilterType.NO_FILTER) {
-			filterParams.setType(FilterType.MANN_WHIT_TWO_SIDED);
-		}
-		if(rankingArray.length == 0 && filterParams.getType().isMannWhitney()) {
-			filterParams.setType(FilterType.HYPERGEOM);
-		}
-
-		rankTestCombo.setSelectedItem(filterParams.getType());
-		double value = filterParams.getValue(filterParams.getType());
-		rankTestTextField.setValue(value);
+		FilterType typeToUse = rankingArray.length == 0 ? FilterType.HYPERGEOM : FilterType.MANN_WHIT_TWO_SIDED;
+		rankTestCombo.setSelectedItem(typeToUse);
+		rankTestTextField.setValue(typeToUse.defaultValue);
 
 		rankingEnablementRenderer.enableIndex(0);
 		if(rankingArray.length == 0) {
 			rankingEnablementRenderer.disableIndex(0);
 		}
 	}
-
-	private void updateUniverseSize(String signature_dataSet) {
-		GeneExpressionMatrix expressionSets = map.getDataset(signature_dataSet).getExpressionSets();
-
-		universeGmt = map.getNumberOfGenes();
-		universeExpression = expressionSets.getExpressionUniverse();
-		universeIntersection = expressionSets.getExpressionMatrix().size();
-
-		gmtRadioButton.setText("GMT (" + universeGmt + ")");
-		expressionSetRadioButton.setText("Expression Set (" + universeExpression + ")");
-		intersectionRadioButton.setText("Intersection (" + universeIntersection + ")");
-
-		universeSelectionTextField.setValue(universeExpression);
-
+	
+	
+	protected FilterType getFilterType() {
+		return (FilterType) rankTestCombo.getSelectedItem();
+	}
+	
+	protected String getDataSet() {
+		return (String) datasetCombo.getSelectedItem();
+	}
+	
+	protected String getRankFile() {
+		return (String) rankingCombo.getSelectedItem();
+	}
+	
+	protected int getUniverseSize() {
+		int size = 0;
 		if(gmtRadioButton.isSelected())
-			paParams.setUniverseSize(universeGmt);
+			size = universeGmt;
 		else if(expressionSetRadioButton.isSelected())
-			paParams.setUniverseSize(universeExpression);
+			size = universeExpression;
 		else if(intersectionRadioButton.isSelected())
-			paParams.setUniverseSize(universeIntersection);
-		else
-			paParams.setUniverseSize((Integer) universeSelectionTextField.getValue());
+			size = universeIntersection;
+		else if(userDefinedRadioButton.isSelected())
+			size = ((Number) universeSelectionTextField.getValue()).intValue();
+		return size;
+	}
+	
+	public void build(PostAnalysisParameters.Builder builder) {
+		Builder rankTestBuilder = builder.getRankTestParametersBuilder();
+		rankTestBuilder.setType(getFilterType());
+		rankTestBuilder.setValue(((Number) rankTestTextField.getValue()).doubleValue());
+		
+		builder.setSignature_dataSet(getDataSet());
+		builder.setSignature_rankFile(getRankFile());
+		builder.setUniverseSize(getUniverseSize());
 	}
 
 }

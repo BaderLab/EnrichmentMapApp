@@ -7,13 +7,11 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
@@ -30,17 +28,19 @@ import javax.swing.JScrollPane;
 import javax.swing.JToolTip;
 import javax.swing.ScrollPaneConstants;
 
-import org.baderlab.csplugins.enrichmentmap.FilterParameters;
-import org.baderlab.csplugins.enrichmentmap.FilterParameters.FilterType;
+import org.baderlab.csplugins.enrichmentmap.FilterParameters.Builder;
+import org.baderlab.csplugins.enrichmentmap.FilterType;
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadSignatureSetsActionListener;
+import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.JMultiLineToolTip;
+import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
+import org.baderlab.csplugins.enrichmentmap.task.FilterMetric;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.io.util.StreamUtil;
-import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.work.swing.DialogTaskManager;
 
 @SuppressWarnings("serial")
@@ -52,15 +52,10 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
 	private final CySwingApplication application;
 	private final StreamUtil streamUtil;
 	private final DialogTaskManager dialog;
-	private final FileUtil fileUtil;
 
 	private final static int RIGHT = 0, DOWN = 1, UP = 2, LEFT = 3; // image States
 
-	private PostAnalysisParameters paParams;
-	private EnrichmentMap map;
-
 	private JFormattedTextField signatureDiscoveryGMTFileNameTextField;
-
 	private PostAnalysisWeightPanel weightPanel;
 
 	private JLabel avail_sig_sets_counter_label;
@@ -70,25 +65,31 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
 	private JList<String> selected_sig_sets_field;
 	private JLabel selected_sig_sets_counter_label;
 
-	private DefaultListModel<String> avail_sig_sets;
-	private DefaultListModel<String> selected_sig_sets;
+	private DefaultListModel<String> avail_sig_sets = new DefaultListModel<>();
+	private DefaultListModel<String> selected_sig_sets = new DefaultListModel<>();
 
-	//    private JRadioButton filter;
-	//    private JRadioButton nofilter;
 	private JFormattedTextField filterTextField;
 	private JComboBox<FilterType> filterTypeCombo;
+	
+	// used for filtering
+	private int hypergomUniverseSize;
+	private Ranking mannWhitRanks;
+	
+	private SetOfGeneSets signatureGenesets;
+	
+	private final Map<FilterType,Double> savedFilterValues = FilterType.createMapOfDefaults();
+	
 
 	public PostAnalysisSignatureDiscoveryPanel(PostAnalysisInputPanel parentPanel,
 			CyApplicationManager cyApplicationManager, CySwingApplication application, StreamUtil streamUtil,
-			DialogTaskManager dialog, FileUtil fileUtil) {
+			DialogTaskManager dialog) {
 
 		this.parentPanel = parentPanel;
 		this.cyApplicationManager = cyApplicationManager;
 		this.application = application;
 		this.streamUtil = streamUtil;
 		this.dialog = dialog;
-		this.fileUtil = fileUtil;
-
+		
 		createSignatureDiscoveryOptionsPanel();
 	}
 
@@ -109,23 +110,16 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
 		//signaturePanel.setPreferredSize(new Dimension(280, 300));
 		signaturePanel.setAlignmentX((float) 0.0); //LEFT
 
-		//        //TODO: Make SearchBox functional
-		//        // search Box:
-		//        JFormattedTextField searchBox = new JFormattedTextField();
-		//        searchBox.setName("Search");
-		//        signaturePanel.add(searchBox);
-
-		//        avail_sig_sets = paParams.getSignatureSetNames(); 
-		//        selected_sig_sets = paParams.getSelectedSignatureSetNames();
-
 		//List of all Signature Genesets 
 		JPanel availableLabel = new JPanel(new FlowLayout());
 		availableLabel.add(new JLabel("Available Signature-Genesets:"));
 		avail_sig_sets_counter_label = new JLabel("(0)");
 		availableLabel.add(avail_sig_sets_counter_label);
 		signaturePanel.add(availableLabel);
+		
 		avail_sig_sets_field = new JList<>();
-
+		avail_sig_sets_field.setModel(avail_sig_sets);
+		
 		JScrollPane avail_sig_sets_scroll = new JScrollPane(avail_sig_sets_field,
 				ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		avail_sig_sets_scroll.setPreferredSize(new Dimension(250, 200));
@@ -154,7 +148,9 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
 		selected_sig_sets_counter_label = new JLabel("(0)");
 		selectedLabel.add(selected_sig_sets_counter_label);
 		signaturePanel.add(selectedLabel);
+		
 		selected_sig_sets_field = new JList<>();
+		selected_sig_sets_field.setModel(selected_sig_sets);
 
 		JScrollPane selected_sig_sets_scroll = new JScrollPane(selected_sig_sets_field,
 				ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
@@ -170,52 +166,43 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
 		clearButtonPanel.add(clearButton);
 		signaturePanel.add(clearButtonPanel);
 
-		//ActionListener for clear button
-		clearButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				paParams.setSignatureGenesets(new SetOfGeneSets());
-				avail_sig_sets.clear();
-				avail_sig_sets_field.clearSelection();
-				setAvSigCount(0);
-
-				selected_sig_sets.clear();
-				selected_sig_sets_field.clearSelection();
-				setSelSigCount(0);
-			}
+		clearButton.addActionListener(e -> {
+			avail_sig_sets.clear();
+			avail_sig_sets_field.clearSelection();
+			setAvSigCount(0);
+			selected_sig_sets.clear();
+			selected_sig_sets_field.clearSelection();
+			setSelSigCount(0);
 		});
 
-		//ActionListeners for (Un-)SelectButtons
-		selectButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				int[] selected = avail_sig_sets_field.getSelectedIndices();
-				for(int i = selected.length; i > 0; i--) {
-					selected_sig_sets.addElement(avail_sig_sets.get(selected[i - 1]));
-					avail_sig_sets.remove(selected[i - 1]);
-				}
-				setSelSigCount(selected_sig_sets.size());
-				setAvSigCount(avail_sig_sets.size());
+		selectButton.addActionListener(e -> {
+			int[] selected = avail_sig_sets_field.getSelectedIndices();
+			for(int i = selected.length; i > 0; i--) {
+				selected_sig_sets.addElement(avail_sig_sets.get(selected[i - 1]));
+				avail_sig_sets.remove(selected[i - 1]);
 			}
+			setSelSigCount(selected_sig_sets.size());
+			setAvSigCount(avail_sig_sets.size());
 		});
-		unselectButton.addActionListener(new ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				int[] selected = selected_sig_sets_field.getSelectedIndices();
-				for(int i = selected.length; i > 0; i--) {
-					avail_sig_sets.addElement(selected_sig_sets.get(selected[i - 1]));
-					selected_sig_sets.remove(selected[i - 1]);
-				}
+		
+		unselectButton.addActionListener(e -> {
+			int[] selected = selected_sig_sets_field.getSelectedIndices();
+			for(int i = selected.length; i > 0; i--) {
+				avail_sig_sets.addElement(selected_sig_sets.get(selected[i - 1]));
+				selected_sig_sets.remove(selected[i - 1]);
+			}
 
-				//Sort the Genesets:
-				List<String> setNamesArray = Collections.list(avail_sig_sets.elements());
-				Collections.sort(setNamesArray);
-				avail_sig_sets.removeAllElements();
-				for(String name : setNamesArray) {
-					avail_sig_sets.addElement(name);
-				}
-				setAvSigCount(avail_sig_sets.size());
-				setSelSigCount(selected_sig_sets.size());
+			//Sort the Genesets:
+			List<String> setNamesArray = Collections.list(avail_sig_sets.elements());
+			Collections.sort(setNamesArray);
+			avail_sig_sets.removeAllElements();
+			for(String name : setNamesArray) {
+				avail_sig_sets.addElement(name);
 			}
+			setAvSigCount(avail_sig_sets.size());
+			setSelSigCount(selected_sig_sets.size());
 		});
+		
 		signature_genesets.getContentPane().add(signaturePanel, BorderLayout.NORTH);
 
 		//Parameters collapsible panel
@@ -250,20 +237,16 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
 		final Color textFieldForeground = signatureDiscoveryGMTFileNameTextField.getForeground();
 
 		signatureDiscoveryGMTFileNameTextField.setFont(new Font("Dialog", 1, 10));
-		signatureDiscoveryGMTFileNameTextField.addPropertyChangeListener("value", new PropertyChangeListener() {
-			public void propertyChange(PropertyChangeEvent e) {
-				// if the text is red set it back to black as soon as the user starts typing
-				signatureDiscoveryGMTFileNameTextField.setForeground(textFieldForeground);
-			}
+		signatureDiscoveryGMTFileNameTextField.addPropertyChangeListener("value", e -> {
+			// if the text is red set it back to black as soon as the user starts typing
+			signatureDiscoveryGMTFileNameTextField.setForeground(textFieldForeground);
 		});
 
 		selectSigGMTFileButton.setText("...");
 		selectSigGMTFileButton.setMargin(new Insets(0, 0, 0, 0));
 		selectSigGMTFileButton.setActionCommand("Signature Discovery");
-		selectSigGMTFileButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
-				parentPanel.chooseGMTFile(signatureDiscoveryGMTFileNameTextField);
-			}
+		selectSigGMTFileButton.addActionListener(e -> {
+			parentPanel.chooseGMTFile(signatureDiscoveryGMTFileNameTextField);
 		});
 
 		JPanel SigGMTPanel = new JPanel();
@@ -281,23 +264,34 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
 		//TODO: Maybe move loading SigGMT to File-selection Event add load button
 		JButton loadButton = new JButton();
 		loadButton.setText("Load Gene-Sets");
-		loadButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				String filePath = (String) signatureDiscoveryGMTFileNameTextField.getValue();
+		loadButton.addActionListener(e -> {
+			String filePath = (String) signatureDiscoveryGMTFileNameTextField.getValue();
 
-				if(filePath == null || PostAnalysisInputPanel.checkFile(filePath).equals(Color.RED)) {
-					String message = "SigGMT file name not valid.\n";
-					signatureDiscoveryGMTFileNameTextField.setForeground(Color.RED);
-					JOptionPane.showMessageDialog(application.getJFrame(), message, "Post Analysis Known Signature",
-							JOptionPane.WARNING_MESSAGE);
-					return;
-				}
-
-				paParams.setSignatureGMTFileName(filePath);
-				LoadSignatureSetsActionListener action = new LoadSignatureSetsActionListener(parentPanel, application,
-						cyApplicationManager, dialog, streamUtil);
-				action.actionPerformed(null);
+			if(filePath == null || PostAnalysisInputPanel.checkFile(filePath).equals(Color.RED)) {
+				String message = "SigGMT file name not valid.\n";
+				signatureDiscoveryGMTFileNameTextField.setForeground(Color.RED);
+				JOptionPane.showMessageDialog(application.getJFrame(), message, "Post Analysis Known Signature", JOptionPane.WARNING_MESSAGE);
+				return;
 			}
+
+			FilterMetric filterMetric = createFilterMetric();
+			LoadSignatureSetsActionListener action = new LoadSignatureSetsActionListener(filePath, filterMetric, application, cyApplicationManager, dialog, streamUtil);
+			
+			action.setGeneSetCallback(gs -> {
+				this.signatureGenesets = gs;
+			});
+			
+			action.setLoadedSignatureSetsCallback(selected -> {
+				avail_sig_sets.clear();
+				selected_sig_sets.clear();
+				
+				for(String name : selected) {
+					avail_sig_sets.addElement(name);
+				}
+			});
+			
+			action.actionPerformed(null);
+			
 		});
 
 		loadButton.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -306,6 +300,31 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
 		collapsiblePanel.getContentPane().add(panel, BorderLayout.NORTH);
 		return collapsiblePanel;
 	}
+	
+	
+	private FilterMetric createFilterMetric() {
+		Number number = (Number) filterTextField.getValue();
+		double value = number.doubleValue();
+		FilterType type = getFilterType();
+		
+		switch(type) {
+			case NUMBER:
+				return new FilterMetric.Number(value);
+			case PERCENT:
+				return new FilterMetric.Percent(value);
+			case SPECIFIC:
+				return new FilterMetric.Specific(value);
+			case HYPERGEOM:
+				return new FilterMetric.Hypergeom(value, hypergomUniverseSize);
+			case MANN_WHIT_TWO_SIDED:
+			case MANN_WHIT_GREATER:
+			case MANN_WHIT_LESS:
+				return new FilterMetric.MannWhit(value, mannWhitRanks, type);
+			default:
+				throw new RuntimeException("Unsupported FilterType: " + type);
+		}
+	}
+	
 
 	/**
 	 * Create a sub-panel so the user can specify filters so when loading in
@@ -320,15 +339,16 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
 
 		filterTextField = new JFormattedTextField();
 		filterTextField.setColumns(4);
-		filterTextField.addPropertyChangeListener("value", new PropertyChangeListener() {
-			public void propertyChange(PropertyChangeEvent e) {
-				StringBuilder message = new StringBuilder("The value you have entered is invalid.\n");
-				boolean valid = PostAnalysisInputPanel.validateAndSetFilterValue(filterTextField,
-						paParams.getFilterParameters(), message);
-				if(!valid) {
-					JOptionPane.showMessageDialog(application.getJFrame(), message.toString(),
-							"Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
-				}
+		filterTextField.addPropertyChangeListener("value", e -> {
+			StringBuilder message = new StringBuilder("The value you have entered is invalid.\n");
+			Number number = (Number) filterTextField.getValue();
+			FilterType filterType = getFilterType();
+			
+			Optional<Double> value = PostAnalysisInputPanel.validateAndGetFilterValue(number, filterType, message);
+			savedFilterValues.put(filterType, value.orElse(filterType.defaultValue));
+			if(!value.isPresent()) {
+				filterTextField.setValue(filterType.defaultValue);
+				JOptionPane.showMessageDialog(application.getJFrame(), message.toString(), "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
 			}
 		});
 
@@ -349,14 +369,10 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
 		filterTypeCombo.addItem(FilterType.PERCENT);
 		filterTypeCombo.addItem(FilterType.SPECIFIC);
 
-		filterTypeCombo.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				FilterType filterType = (FilterType) filterTypeCombo.getSelectedItem();
-				FilterParameters filterParams = paParams.getFilterParameters();
-				filterParams.setType(filterType);
-				filterTextField.setValue(filterParams.getValue(filterType));
-				filterTextField.setEnabled(filterType != FilterType.NO_FILTER);
-			}
+		filterTypeCombo.addActionListener(e -> {
+			FilterType filterType = (FilterType) filterTypeCombo.getSelectedItem();
+			filterTextField.setValue(savedFilterValues.get(filterType));
+			filterTextField.setEnabled(filterType != FilterType.NO_FILTER);
 		});
 
 		JPanel filterTypePanel = new JPanel(new BorderLayout());
@@ -366,70 +382,84 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
 		collapsiblePanel.getContentPane().add(filterTypePanel);
 		return collapsiblePanel;
 	}
+	
+	private FilterType getFilterType() {
+		return (FilterType) filterTypeCombo.getSelectedItem();
+	}
 
 	void resetPanel() {
-		paParams.setSignatureGenesets(new SetOfGeneSets());
-
 		// Reset the text field
 		signatureDiscoveryGMTFileNameTextField.setText("");
 		signatureDiscoveryGMTFileNameTextField.setValue("");
 		signatureDiscoveryGMTFileNameTextField.setToolTipText(null);
 
 		// Reset the List fields:
-		paParams.getSignatureSetNames().clear();
 		avail_sig_sets.clear();
 		avail_sig_sets_field.clearSelection();
 		setAvSigCount(0);
 
-		paParams.getSelectedSignatureSetNames().clear();
 		selected_sig_sets.clear();
 		selected_sig_sets_field.clearSelection();
 		setSelSigCount(0);
 
 		// Reset the filter field
-		paParams.getFilterParameters().setType(FilterType.NO_FILTER);
 		filterTypeCombo.setSelectedItem(FilterType.NO_FILTER);
 		weightPanel.resetPanel();
 	}
 
-	void initialize(EnrichmentMap currentMap, PostAnalysisParameters paParams) {
-		this.map = currentMap;
-		this.paParams = paParams;
-
-		weightPanel.initialize(currentMap, paParams);
-
-		FilterParameters filterParams = paParams.getFilterParameters();
-		filterTypeCombo.setSelectedItem(filterParams.getType());
-		filterTextField.setValue(filterParams.getValue(filterParams.getType()));
-
-		avail_sig_sets = paParams.getSignatureSetNames();
-		selected_sig_sets = paParams.getSelectedSignatureSetNames();
-
-		avail_sig_sets_field.setModel(avail_sig_sets);
-		selected_sig_sets_field.setModel(selected_sig_sets);
+	void initialize(EnrichmentMap currentMap) {
+		weightPanel.initialize(currentMap);
+		
+		hypergomUniverseSize = currentMap.getNumberOfGenes();
+		
+		Map<String, DataSet> data_sets = currentMap.getDatasets();
+		DataSet dataset = data_sets.get(weightPanel.getDataSet());
+		mannWhitRanks = new Ranking();
+		if(dataset != null) {
+			mannWhitRanks = dataset.getExpressionSets().getRanks().get(weightPanel.getRankFile());
+		}
 	}
 
+	void build(PostAnalysisParameters.Builder builder) {
+		weightPanel.build(builder);
+		
+		for(int i = 0; i < selected_sig_sets.size(); i++) {
+			builder.addSelectedSignatureSetNames(selected_sig_sets.getElementAt(i));
+		}
+		
+		Builder filterParametersBuilder = builder.getFilterParametersBuilder();
+		Number number = (Number) filterTextField.getValue();
+		filterParametersBuilder.setType(getFilterType());
+		filterParametersBuilder.setValue(number.doubleValue());
+		
+		String filePath = (String) signatureDiscoveryGMTFileNameTextField.getValue();
+		builder.setSignatureGMTFileName(filePath);
+		
+		builder.setSignatureGenesets(signatureGenesets);
+	}
+	
+	
 	/**
 	 * @return Array with arrows UP, DOWN, LEFT and RIGHT
 	 */
 	private ImageIcon[] createArrowIcons() {
 		ImageIcon[] iconArrow = new ImageIcon[4];
 		URL iconURL;
-		// Oliver at 26/06/2009:  relative path works for me,
-		// maybe need to change to org/baderlab/csplugins/enrichmentmap/resources/arrow_collapsed.gif
-		iconURL = this.getClass().getResource("arrow_up.gif");
+		
+		Class<?> cls = this.getClass();
+		iconURL = cls.getResource("arrow_up.gif");
 		if(iconURL != null) {
 			iconArrow[UP] = new ImageIcon(iconURL);
 		}
-		iconURL = this.getClass().getResource("arrow_down.gif");
+		iconURL = cls.getResource("arrow_down.gif");
 		if(iconURL != null) {
 			iconArrow[DOWN] = new ImageIcon(iconURL);
 		}
-		iconURL = this.getClass().getResource("arrow_left.gif");
+		iconURL = cls.getResource("arrow_left.gif");
 		if(iconURL != null) {
 			iconArrow[LEFT] = new ImageIcon(iconURL);
 		}
-		iconURL = this.getClass().getResource("arrow_right.gif");
+		iconURL = cls.getResource("arrow_right.gif");
 		if(iconURL != null) {
 			iconArrow[RIGHT] = new ImageIcon(iconURL);
 		}
@@ -442,7 +472,7 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
 	 * @param int avSigCount
 	 * @return null
 	 */
-	public void setAvSigCount(int avSigCount) {
+	private void setAvSigCount(int avSigCount) {
 		//		this.avail_sig_sets_count = avSigCount;
 		this.avail_sig_sets_counter_label.setText("(" + Integer.toString(avSigCount) + ")");
 	}
@@ -453,8 +483,11 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
 	 * @param int sigCount
 	 * @return null
 	 */
-	public void setSelSigCount(int num) {
+	private void setSelSigCount(int num) {
 		//		this.sel_sig_sets_count = num;
 		this.selected_sig_sets_counter_label.setText("(" + Integer.toString(num) + ")");
 	}
+	
+	
+	
 }

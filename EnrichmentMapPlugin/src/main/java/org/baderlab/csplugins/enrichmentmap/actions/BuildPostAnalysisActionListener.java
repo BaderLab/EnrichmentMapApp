@@ -57,7 +57,6 @@ import org.baderlab.csplugins.enrichmentmap.task.BuildDiseaseSignatureTaskResult
 import org.baderlab.csplugins.enrichmentmap.task.CreatePostAnalysisVisualStyleTask;
 import org.baderlab.csplugins.enrichmentmap.task.ShowPanelTask;
 import org.baderlab.csplugins.enrichmentmap.view.ParametersPanel;
-import org.baderlab.csplugins.enrichmentmap.view.PostAnalysisInputPanel;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.event.CyEventHelper;
@@ -76,7 +75,6 @@ import org.cytoscape.work.swing.DialogTaskManager;
 
 public class BuildPostAnalysisActionListener implements ActionListener {
 
-	private final PostAnalysisInputPanel inputPanel;
 	private final CyApplicationManager applicationManager;
 	private final CySwingApplication swingApplication;
 	private final CySessionManager sessionManager;
@@ -90,13 +88,17 @@ public class BuildPostAnalysisActionListener implements ActionListener {
 	private final VisualMappingFunctionFactory vmfFactoryContinuous;
 	private final VisualMappingFunctionFactory vmfFactoryDiscrete;
 	private final VisualMappingFunctionFactory vmfFactoryPassthrough;
+	
+	private final PostAnalysisParameters paParams;
 
-	public BuildPostAnalysisActionListener(PostAnalysisInputPanel panel, CySessionManager sessionManager,
+	public BuildPostAnalysisActionListener(PostAnalysisParameters paParams, CySessionManager sessionManager,
 			StreamUtil streamUtil, CySwingApplication swingApplication, CyApplicationManager applicationManager,
 			DialogTaskManager dialog, CyEventHelper eventHelper, VisualMappingManager visualMappingManager,
 			VisualStyleFactory visualStyleFactory, VisualMappingFunctionFactory vmfFactoryContinuous,
 			VisualMappingFunctionFactory vmfFactoryDiscrete, VisualMappingFunctionFactory vmfFactoryPassthrough) {
-		this.inputPanel = panel;
+		
+		this.paParams = paParams;
+		
 		this.sessionManager = sessionManager;
 		this.streamUtil = streamUtil;
 		this.applicationManager = applicationManager;
@@ -116,13 +118,7 @@ public class BuildPostAnalysisActionListener implements ActionListener {
 
 	public void runPostAnalysis() {
 		//make sure that the minimum information is set in the current set of parameters
-		PostAnalysisParameters paParams = inputPanel.getPaParams();
-
 		EnrichmentMap map = EnrichmentMapManager.getInstance().getMap(applicationManager.getCurrentNetwork().getSUID());
-
-		//set attribute prefix based on the selected Enrichment map
-		if(map != null)
-			paParams.setAttributePrefix(map.getParams().getAttributePrefix());
 
 		StringBuilder errorBuilder = new StringBuilder();
 		paParams.checkMinimalRequirements(errorBuilder);
@@ -132,29 +128,25 @@ public class BuildPostAnalysisActionListener implements ActionListener {
 		String errors = errorBuilder.toString();
 
 		if(errors.isEmpty()) {
-			if(paParams.isSignatureDiscovery() || paParams.isKnownSignature()) {
-				TaskIterator currentTasks = new TaskIterator();
+			TaskIterator currentTasks = new TaskIterator();
 
-				BuildDiseaseSignatureTask new_signature = new BuildDiseaseSignatureTask(map, paParams, sessionManager,
-						streamUtil, applicationManager, eventHelper, swingApplication);
-				currentTasks.append(new_signature);
+			BuildDiseaseSignatureTask new_signature = new BuildDiseaseSignatureTask(map, paParams, sessionManager,
+					streamUtil, applicationManager, eventHelper, swingApplication);
+			currentTasks.append(new_signature);
 
-				CreatePostAnalysisVisualStyleTask visualStyleTask = new CreatePostAnalysisVisualStyleTask(map,
-						applicationManager, visualMappingManager, visualStyleFactory, eventHelper, vmfFactoryContinuous,
-						vmfFactoryDiscrete, vmfFactoryPassthrough);
-				currentTasks.append(visualStyleTask);
+			CreatePostAnalysisVisualStyleTask visualStyleTask = new CreatePostAnalysisVisualStyleTask(map,
+					applicationManager, visualMappingManager, visualStyleFactory, eventHelper, vmfFactoryContinuous,
+					vmfFactoryDiscrete, vmfFactoryPassthrough);
+			currentTasks.append(visualStyleTask);
 
-				ParametersPanel paramsPanel = EnrichmentMapManager.getInstance().getParameterPanel();
-				ShowPanelTask show_parameters_panel = new ShowPanelTask(swingApplication, paramsPanel);
-				currentTasks.append(show_parameters_panel);
+			ParametersPanel paramsPanel = EnrichmentMapManager.getInstance().getParameterPanel();
+			ShowPanelTask show_parameters_panel = new ShowPanelTask(swingApplication, paramsPanel);
+			currentTasks.append(show_parameters_panel);
 
-				TaskObserver dialogObserver = new DialogObserver(visualStyleTask);
-				dialog.execute(currentTasks, dialogObserver);
-			} else {
-				JOptionPane.showMessageDialog(inputPanel, errors, "No such Post-Analysis", JOptionPane.WARNING_MESSAGE);
-			}
+			TaskObserver dialogObserver = new DialogObserver(visualStyleTask);
+			dialog.execute(currentTasks, dialogObserver);
 		} else {
-			JOptionPane.showMessageDialog(inputPanel, errors, "Invalid Input", JOptionPane.WARNING_MESSAGE);
+			JOptionPane.showMessageDialog(swingApplication.getJFrame(), errors, "Invalid Input", JOptionPane.WARNING_MESSAGE);
 		}
 	}
 

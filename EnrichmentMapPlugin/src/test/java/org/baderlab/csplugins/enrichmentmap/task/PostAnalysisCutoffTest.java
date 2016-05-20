@@ -1,12 +1,14 @@
 package org.baderlab.csplugins.enrichmentmap.task;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.util.Map;
 import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
-import org.baderlab.csplugins.enrichmentmap.FilterParameters.FilterType;
+import org.baderlab.csplugins.enrichmentmap.FilterType;
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
@@ -27,15 +29,16 @@ public class PostAnalysisCutoffTest extends BaseNetworkTest {
 	
 	private static CyNetwork emNetwork;
 	
-	private PostAnalysisParameters getPaParams() {
-		PostAnalysisParameters paParams = new PostAnalysisParameters();
-    	paParams.setSignature_dataSet(EnrichmentMap.DATASET1);
-    	paParams.setSignature_rankFile(EnrichmentMap.DATASET1);
-		paParams.setKnownSignature(true);
-		paParams.setSignatureHub(false);
-		paParams.setUniverseSize(11445);
-		paParams.setSignatureGMTFileName(PATH + "PA_top8_middle8_bottom8.gmt");
-		return paParams;
+	private PostAnalysisParameters.Builder getBuilder() {
+		PostAnalysisParameters.Builder builder = new PostAnalysisParameters.Builder();
+    	builder.setSignature_dataSet(EnrichmentMap.DATASET1);
+    	builder.setSignature_rankFile(EnrichmentMap.DATASET1);
+    	builder.setAnalysisType(PostAnalysisParameters.AnalysisType.KNOWN_SIGNATURE);
+		builder.setUniverseSize(11445);
+		builder.setSignatureGMTFileName(PATH + "PA_top8_middle8_bottom8.gmt");
+		builder.setAttributePrefix("EM1_");
+		
+		return builder;
 	}
 	
 	
@@ -61,12 +64,12 @@ public class PostAnalysisCutoffTest extends BaseNetworkTest {
 	
 	@Test
 	public void test_1_FilterType_Number() throws Exception {
-		PostAnalysisParameters paParams = getPaParams();
+		PostAnalysisParameters.Builder builder = getBuilder();
 		
-		paParams.getRankTestParameters().setType(FilterType.NUMBER);
-		paParams.getRankTestParameters().setValue(FilterType.NUMBER, 5);
+		builder.getRankTestParametersBuilder().setType(FilterType.NUMBER);
+		builder.getRankTestParametersBuilder().setValue(5);
 		
-		runPostAnalysis(emNetwork, paParams);
+		runPostAnalysis(emNetwork, builder);
 	   	
 	   	Map<String,CyEdge> edges = getEdges(emNetwork);
 	   	assertEquals(9, edges.size());
@@ -92,12 +95,12 @@ public class PostAnalysisCutoffTest extends BaseNetworkTest {
 	
 	@Test
 	public void test_2_FilterType_Percent() throws Exception {
-		PostAnalysisParameters paParams = getPaParams();
+		PostAnalysisParameters.Builder builder = getBuilder();
 		
-		paParams.getRankTestParameters().setType(FilterType.PERCENT);
-		paParams.getRankTestParameters().setValue(FilterType.PERCENT, 7);
+		builder.getRankTestParametersBuilder().setType(FilterType.PERCENT);
+		builder.getRankTestParametersBuilder().setValue(7);
 		
-		runPostAnalysis(emNetwork, paParams);
+		runPostAnalysis(emNetwork, builder);
 		
 	   	Map<String,CyEdge> edges = getEdges(emNetwork);
 	   	assertEquals(9, edges.size());
@@ -122,13 +125,13 @@ public class PostAnalysisCutoffTest extends BaseNetworkTest {
 	}
 	
 	@Test
-	public void test_3_FilterType_Specific() throws Exception {
-		PostAnalysisParameters paParams = getPaParams();
+	public void test_3_FilterType_Specific() throws Exception {		
+		PostAnalysisParameters.Builder builder = getBuilder();
 		
-		paParams.getRankTestParameters().setType(FilterType.SPECIFIC);
-		paParams.getRankTestParameters().setValue(FilterType.SPECIFIC, 25);
+		builder.getRankTestParametersBuilder().setType(FilterType.SPECIFIC);
+		builder.getRankTestParametersBuilder().setValue(25);
 		
-		runPostAnalysis(emNetwork, paParams);
+		runPostAnalysis(emNetwork, builder);
 		
 	   	Map<String,CyEdge> edges = getEdges(emNetwork);
 	   	assertEquals(9, edges.size());

@@ -51,7 +51,6 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
-import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
@@ -88,15 +87,11 @@ public class GMTFileReaderTask extends AbstractTask {
 	 * @param DataSet - a gmt file is associated with a dataset
 	 */
 	public GMTFileReaderTask(DataSet dataset, StreamUtil streamUtil) {
-
 		this.GMTFileName = dataset.getSetofgenesets().getFilename();
 		this.genes = dataset.getMap().getGenes();
 		this.hashkey2gene = dataset.getMap().getHashkey2gene();
-
 		this.setOfgenesets = dataset.getSetofgenesets();
-
 		this.map = dataset.getMap();
-
 		this.streamUtil = streamUtil;
 	}
 
@@ -106,8 +101,7 @@ public class GMTFileReaderTask extends AbstractTask {
 	 * @param params
 	 * @param genesets_file
 	 */
-	public GMTFileReaderTask(EnrichmentMap map, PostAnalysisParameters params, int genesets_file,
-			StreamUtil streamUtil) {
+	public GMTFileReaderTask(EnrichmentMap map, String gmtFileName, SetOfGeneSets setOfgensets, int genesets_file, StreamUtil streamUtil) {
 
 		this.map = map;
 		this.streamUtil = streamUtil;
@@ -121,11 +115,14 @@ public class GMTFileReaderTask extends AbstractTask {
 			//this.setOfgenesets = map.get
 		} else if(genesets_file == SIGNATURE_GMT) {
 			//open signature-GMT file
-			this.GMTFileName = params.getSignatureGMTFileName();
-			this.setOfgenesets = params.getSignatureGenesets();
+			this.GMTFileName = gmtFileName;
+			this.setOfgenesets = setOfgensets;
 		} else
 			throw new IllegalArgumentException("argument not allowed:" + genesets_file);
 	}
+	
+	
+	
 
 	private String deAccent(String str) {
 		String nfdNormalizedString = Normalizer.normalize(str, Normalizer.Form.NFD);

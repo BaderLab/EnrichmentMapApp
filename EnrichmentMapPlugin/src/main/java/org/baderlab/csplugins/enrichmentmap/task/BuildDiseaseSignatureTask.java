@@ -55,7 +55,7 @@ import java.util.Set;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapVisualStyle;
 import org.baderlab.csplugins.enrichmentmap.FilterParameters;
-import org.baderlab.csplugins.enrichmentmap.FilterParameters.FilterType;
+import org.baderlab.csplugins.enrichmentmap.FilterType;
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
@@ -88,7 +88,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 	private final CyApplicationManager applicationManager;
 	private final CyEventHelper eventHelper;
 
-	private final PostAnalysisParameters paParams;
+	private PostAnalysisParameters paParams;
 	private final EnrichmentMap map;
 	private final String interaction;
 
@@ -96,6 +96,8 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 	private Map<String, GeneSet> SignatureGenesets;
 	private Map<String, GeneSet> SelectedSignatureGenesets;
 
+	private double currentNodeY_offset;
+	
 	// Gene Populations:
 	private Set<Integer> EnrichmentGenes;
 	private Set<Integer> SignatureGenes;
@@ -112,12 +114,11 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 		this.map = map;
 		this.applicationManager = applicationManager;
 		this.eventHelper = eventHelper;
-
+		this.paParams = paParams; 
+		
 		DataSet dataset = map.getDataset(paParams.getSignature_dataSet());
 		this.ranks = dataset.getExpressionSets().getRanks().get(paParams.getSignature_rankFile());
 
-		//create a new instance of the parameters and copy the version received from the input window into this new instance.
-		this.paParams = new PostAnalysisParameters(paParams); // copy constructor
 
 		// we want genesets of interest that are not signature genesets put there by previous runs of post-analysis
 		this.EnrichmentGenesets = new HashMap<>();
@@ -134,9 +135,8 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 			this.geneset_similarities = map.getGenesetSimilarity();
 
 		this.SelectedSignatureGenesets = new HashMap<String, GeneSet>();
-		for(int i = 0; i < paParams.getSelectedSignatureSetNames().getSize(); i++) {
-			Object geneset = paParams.getSelectedSignatureSetNames().get(i);
-			this.SelectedSignatureGenesets.put(geneset.toString(), this.SignatureGenesets.get(geneset));
+		for(String geneset : paParams.getSelectedSignatureSetNames()) {
+			this.SelectedSignatureGenesets.put(geneset, this.SignatureGenesets.get(geneset));
 		}
 
 		// EnrichmentGenes: pool of all genes in Enrichment Gene Sets
@@ -175,7 +175,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 		if(taskMonitor != null)
 			taskMonitor.setStatusMessage("Computing Geneset similarity - " + maxValue + " rows");
 		int currentProgress = 0;
-		double currentNodeY_offset = paParams.getCurrentNodePlacementY_Offset();
+
 		double currentNodeY_increment = 150.0;
 
 		try {
@@ -187,7 +187,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 			String prefix = paParams.getAttributePrefix();
 			if(prefix == null) {
 				prefix = "EM1_";
-				paParams.setAttributePrefix(prefix);
+				paParams = new PostAnalysisParameters.Builder().mergeFrom(paParams).setAttributePrefix(prefix).build();
 			}
 
 			//get the node attribute and edge attribute tables
@@ -283,17 +283,14 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 
 						// Only calculate Mann-Whitney pValue if there is overlap
 						if(intersection.size() > 0) {
-							double coeffecient = ComputeSimilarityTask.computeSimilarityCoeffecient(map.getParams(),
-									intersection, union, sigGenes, enrGenes);
-							GenesetSimilarity comparison = new GenesetSimilarity(hub_name, geneset_name, coeffecient,
-									interaction, intersection);
+							double coeffecient = ComputeSimilarityTask.computeSimilarityCoeffecient(map.getParams(), intersection, union, sigGenes, enrGenes);
+							GenesetSimilarity comparison = new GenesetSimilarity(hub_name, geneset_name, coeffecient, interaction, intersection);
 
 							FilterType filterType = paParams.getRankTestParameters().getType();
 							switch(filterType) {
 								case HYPERGEOM:
 									int universeSize1 = paParams.getUniverseSize();
-									hypergeometric(universeSize1, sigGenesInUniverse, enrGenes, intersection,
-											comparison);
+									hypergeometric(universeSize1, sigGenesInUniverse, enrGenes, intersection, comparison);
 									break;
 								case MANN_WHIT_TWO_SIDED:
 								case MANN_WHIT_GREATER:
@@ -301,8 +298,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 									mannWhitney(intersection, comparison);
 								default: // want mann-whit to fall through
 									int universeSize2 = map.getNumberOfGenes(); // #70 calculate hypergeometric also
-									hypergeometric(universeSize2, sigGenesInUniverse, enrGenes, intersection,
-											comparison);
+									hypergeometric(universeSize2, sigGenesInUniverse, enrGenes, intersection, comparison);
 									break;
 							}
 
@@ -328,8 +324,6 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 				SelectedSignatureGenesets.put(duplicateGenesets.get(original_hub_name), geneset);
 			}
 			duplicateGenesets.clear();
-
-			paParams.setCurrentNodePlacementY_Offset(currentNodeY_offset);
 
 			/*
 			 * **************************** Create Signature Hub Edges *
@@ -364,30 +358,28 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 
 		switch(filterParams.getType()) {
 			case HYPERGEOM:
-				return similarity.getHypergeom_pvalue() <= filterParams.getValue(FilterType.HYPERGEOM);
+				return similarity.getHypergeom_pvalue() <= filterParams.getValue();
 			case MANN_WHIT_TWO_SIDED:
-				return !similarity.isMannWhitMissingRanks() && similarity.getMann_Whit_pValue_twoSided() <= filterParams
-						.getValue(FilterType.MANN_WHIT_TWO_SIDED);
+				return !similarity.isMannWhitMissingRanks() && similarity.getMann_Whit_pValue_twoSided() <= filterParams.getValue();
 			case MANN_WHIT_GREATER:
-				return !similarity.isMannWhitMissingRanks() && similarity.getMann_Whit_pValue_greater() <= filterParams
-						.getValue(FilterType.MANN_WHIT_GREATER);
+				return !similarity.isMannWhitMissingRanks() && similarity.getMann_Whit_pValue_greater() <= filterParams.getValue();
 			case MANN_WHIT_LESS:
 				return !similarity.isMannWhitMissingRanks()
-						&& similarity.getMann_Whit_pValue_less() <= filterParams.getValue(FilterType.MANN_WHIT_LESS);
+						&& similarity.getMann_Whit_pValue_less() <= filterParams.getValue();
 			case NUMBER:
-				return similarity.getSizeOfOverlap() >= filterParams.getValue(FilterType.NUMBER);
+				return similarity.getSizeOfOverlap() >= filterParams.getValue();
 			case PERCENT:
 				String geneset_name = similarity.getGeneset2_Name();
 				GeneSet enrGeneset = EnrichmentGenesets.get(geneset_name);
 				int enrGenesetSize = enrGeneset.getGenes().size();
 				double relative_per = (double) similarity.getSizeOfOverlap() / (double) enrGenesetSize;
-				return relative_per >= filterParams.getValue(FilterType.PERCENT) / 100.0;
+				return relative_per >= filterParams.getValue() / 100.0;
 			case SPECIFIC:
 				String hub_name = similarity.getGeneset1_Name();
 				GeneSet sigGeneSet = SelectedSignatureGenesets.get(hub_name);
 				int sigGeneSetSize = sigGeneSet.getGenes().size();
 				double relative_per2 = (double) similarity.getSizeOfOverlap() / (double) sigGeneSetSize;
-				return relative_per2 >= filterParams.getValue(FilterType.SPECIFIC) / 100.0;
+				return relative_per2 >= filterParams.getValue() / 100.0;
 			default:
 				return false;
 		}
@@ -528,14 +520,10 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 		FilterType filterType = paParams.getRankTestParameters().getType();
 
 		if(filterType.isMannWhitney()) {
-			current_edgerow.set(prefix + EnrichmentMapVisualStyle.MANN_WHIT_TWOSIDED_PVALUE,
-					genesetSimilarity.getMann_Whit_pValue_twoSided());
-			current_edgerow.set(prefix + EnrichmentMapVisualStyle.MANN_WHIT_GREATER_PVALUE,
-					genesetSimilarity.getMann_Whit_pValue_greater());
-			current_edgerow.set(prefix + EnrichmentMapVisualStyle.MANN_WHIT_LESS_PVALUE,
-					genesetSimilarity.getMann_Whit_pValue_less());
-			current_edgerow.set(prefix + EnrichmentMapVisualStyle.MANN_WHIT_CUTOFF,
-					paParams.getRankTestParameters().getValue(filterType));
+			current_edgerow.set(prefix + EnrichmentMapVisualStyle.MANN_WHIT_TWOSIDED_PVALUE, genesetSimilarity.getMann_Whit_pValue_twoSided());
+			current_edgerow.set(prefix + EnrichmentMapVisualStyle.MANN_WHIT_GREATER_PVALUE, genesetSimilarity.getMann_Whit_pValue_greater());
+			current_edgerow.set(prefix + EnrichmentMapVisualStyle.MANN_WHIT_LESS_PVALUE, genesetSimilarity.getMann_Whit_pValue_less());
+			current_edgerow.set(prefix + EnrichmentMapVisualStyle.MANN_WHIT_CUTOFF, paParams.getRankTestParameters().getValue());
 		}
 
 		// always calculate hypergeometric
@@ -544,11 +532,10 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 		current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_n, genesetSimilarity.getHypergeom_n());
 		current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_m, genesetSimilarity.getHypergeom_m());
 		current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_k, genesetSimilarity.getHypergeom_k());
-		current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_CUTOFF, paParams.getRankTestParameters().getValue(FilterType.HYPERGEOM));
+		current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_CUTOFF, paParams.getRankTestParameters().getValue());
 	}
 
-	private void hypergeometric(int universeSize, Set<Integer> sigGenesInUniverse, Set<Integer> enrGenes,
-			Set<Integer> intersection, GenesetSimilarity comparison) {
+	private void hypergeometric(int universeSize, Set<Integer> sigGenesInUniverse, Set<Integer> enrGenes, Set<Integer> intersection, GenesetSimilarity comparison) {
 
 		// Calculate Hypergeometric pValue for Overlap
 		int N = universeSize; //number of total genes (size of population / total number of balls)

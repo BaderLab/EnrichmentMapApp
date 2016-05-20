@@ -1,7 +1,9 @@
 package org.baderlab.csplugins.enrichmentmap.task;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,7 +17,6 @@ import org.baderlab.csplugins.enrichmentmap.SerialTestTaskManager;
 import org.baderlab.csplugins.enrichmentmap.StreamUtil;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadSignatureSetsActionListener;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.view.PostAnalysisInputPanel;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.event.CyEventHelper;
@@ -145,7 +146,7 @@ public abstract class BaseNetworkTest {
 	   	testTaskManager.execute(taskIterator, observer);
 	}
 	
-	protected void runPostAnalysis(CyNetwork emNetwork, PostAnalysisParameters paParams) throws Exception {
+	protected void runPostAnalysis(CyNetwork emNetwork, PostAnalysisParameters.Builder builder) throws Exception {
 		// Set up mocks
 		when(applicationManager.getCurrentNetwork()).thenReturn(emNetwork);
 		CyNetworkView networkViewMock = mock(CyNetworkView.class);
@@ -158,15 +159,17 @@ public abstract class BaseNetworkTest {
 		EnrichmentMap map = EnrichmentMapManager.getInstance().getMap(emNetwork.getSUID());
 		assertNotNull(map);
 		
-		PostAnalysisInputPanel inputPanel = mock(PostAnalysisInputPanel.class);
-		when(inputPanel.getPaParams()).thenReturn(paParams);
-		
 		// Load the gene-sets from the file
 		SerialTestTaskManager testTaskManager = new SerialTestTaskManager();
-		LoadSignatureSetsActionListener loadSignatureSetsActionListener 
-			= new LoadSignatureSetsActionListener(inputPanel, swingApplication, applicationManager, testTaskManager, streamUtil);
-		loadSignatureSetsActionListener.setSelectAll(true);
-		loadSignatureSetsActionListener.actionPerformed(null);
+		LoadSignatureSetsActionListener loader = new LoadSignatureSetsActionListener(builder.getSignatureGMTFileName(), new FilterMetric.None(), 
+															swingApplication, applicationManager, testTaskManager, streamUtil);
+		
+		loader.setGeneSetCallback(builder::setSignatureGenesets);
+		loader.setLoadedSignatureSetsCallback(builder::addAllSelectedSignatureSetNames);
+
+		loader.actionPerformed(null);
+		
+		PostAnalysisParameters paParams = builder.buildPartial();
 		
 		// Run post-analysis
 		BuildDiseaseSignatureTask signatureTask = new BuildDiseaseSignatureTask(map, paParams, 
