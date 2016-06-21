@@ -274,7 +274,10 @@ public class BuildEnrichmentMapTuneableTask extends AbstractTask {
 		
 		//Set Dataset1 Files
 		if(gmtFile!=null) dataset1files.setGMTFileName(gmtFile.getAbsolutePath());
-		if(expressionDataset1!=null) dataset1files.setExpressionFileName(expressionDataset1.getAbsolutePath());
+		if(expressionDataset1!=null) { 
+			dataset1files.setExpressionFileName(expressionDataset1.getAbsolutePath());
+			new_params.setData(true);
+		}
 		if(enrichmentsDataset1!=null) dataset1files.setEnrichmentFileName1(enrichmentsDataset1.getAbsolutePath());
 		if(enrichments2Dataset1!=null) dataset1files.setEnrichmentFileName2(enrichments2Dataset1.getAbsolutePath());
 		if(ranksDataset1!=null) dataset1files.setRankedFile(ranksDataset1.getAbsolutePath());
@@ -295,7 +298,10 @@ public class BuildEnrichmentMapTuneableTask extends AbstractTask {
 			new_params.setSimilarityMetric(EnrichmentMapParameters.SM_COMBINED);
 		
 		//Set Dataset2 Files
-		if(expressionDataset2!=null) dataset2files.setExpressionFileName(expressionDataset2.getAbsolutePath());
+		if(expressionDataset2!=null) {
+			dataset2files.setExpressionFileName(expressionDataset2.getAbsolutePath());
+			new_params.setData2(true);
+		}
 		if(enrichmentsDataset2!=null) dataset2files.setEnrichmentFileName1(enrichmentsDataset2.getAbsolutePath());
 		if(enrichments2Dataset2!=null) dataset2files.setEnrichmentFileName2(enrichments2Dataset2.getAbsolutePath());
 		if(ranksDataset2!=null) dataset2files.setRankedFile(ranksDataset2.getAbsolutePath());
