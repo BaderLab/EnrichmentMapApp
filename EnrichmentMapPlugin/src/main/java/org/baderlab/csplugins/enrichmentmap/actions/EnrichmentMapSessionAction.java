@@ -192,7 +192,7 @@ public class EnrichmentMapSessionAction implements SessionAboutToBeSavedListener
 						else	 if (parts.dataset == null){
 							enrichments = em.getDataset(EnrichmentMap.DATASET1).getEnrichments();
 							/*enrichments = new SetOfEnrichmentResults(EnrichmentMap.DATASET1,props);
-                			em.getDataset(EnrichmentMap.DATASET1).setEnrichments(enrichments);*/
+							em.getDataset(EnrichmentMap.DATASET1).setEnrichments(enrichments);*/
 						}
 						else	{
 							enrichments = new SetOfEnrichmentResults(parts.dataset,props);
@@ -345,7 +345,7 @@ public class EnrichmentMapSessionAction implements SessionAboutToBeSavedListener
 			}
 
 			/* else if(params.getDataset1Rankings() != null){
-                		params.setRank2geneDataset1(params.getRank2geneDataset(params.getDataset1Rankings()));
+				params.setRank2geneDataset1(params.getRank2geneDataset(params.getDataset1Rankings()));
 			 */
 
 			//register the action listeners for all the networks.
@@ -545,13 +545,13 @@ public class EnrichmentMapSessionAction implements SessionAboutToBeSavedListener
 									}
 								}
 							}
-						}        			        			
+						}
 					}
 					BufferedWriter writer = new BufferedWriter(new FileWriter(session_prop_file));
 					writer.write(prop_file_content);
 					writer.close();
 					pFileList.add(session_prop_file);
-				}  
+				}
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
@@ -569,7 +569,7 @@ public class EnrichmentMapSessionAction implements SessionAboutToBeSavedListener
 	private FileNameParts ParseFileName(File filename){
 		String fullname = (filename.getName());
 		String name=null,type=null,dataset=null,ranks_name= null;
-		if(fullname != null){                    
+		if(fullname != null){
 			String[] tokens = fullname.split("\\.");
 			if((tokens.length ==2) && (tokens[1].equals("gmt"))){
 				name = tokens[0];

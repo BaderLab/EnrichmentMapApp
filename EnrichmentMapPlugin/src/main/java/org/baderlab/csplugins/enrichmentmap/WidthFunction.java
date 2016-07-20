@@ -1,6 +1,5 @@
 package org.baderlab.csplugins.enrichmentmap;
 
-import org.baderlab.csplugins.enrichmentmap.FilterParameters.FilterType;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -54,15 +53,15 @@ public class WidthFunction {
 	
 	private void createColumns(CyNetwork network, String prefix) {
 		CyTable networkTable = network.getDefaultNetworkTable();
-        if(networkTable.getColumn(EDGE_WIDTH_PARAMETERS_COLUMN) == null) {
-        	networkTable.createColumn(EDGE_WIDTH_PARAMETERS_COLUMN, String.class, false);
-        }
-        
-        String widthAttribute = prefix + EDGE_WIDTH_FORMULA_COLUMN;
-        CyTable edgeTable = network.getDefaultEdgeTable();
-        if(edgeTable.getColumn(widthAttribute) == null) {
-        	edgeTable.createColumn(widthAttribute, Double.class, false);
-        }
+		if(networkTable.getColumn(EDGE_WIDTH_PARAMETERS_COLUMN) == null) {
+			networkTable.createColumn(EDGE_WIDTH_PARAMETERS_COLUMN, String.class, false);
+		}
+
+		String widthAttribute = prefix + EDGE_WIDTH_FORMULA_COLUMN;
+		CyTable edgeTable = network.getDefaultEdgeTable();
+		if(edgeTable.getColumn(widthAttribute) == null) {
+			edgeTable.createColumn(widthAttribute, Double.class, false);
+		}
 	}
 	
 	private void calculateAndSetEdgeWidths(CyNetwork network, String prefix, TaskMonitor taskMonitor) {

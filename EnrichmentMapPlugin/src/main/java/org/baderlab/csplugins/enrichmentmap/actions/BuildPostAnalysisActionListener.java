@@ -43,7 +43,6 @@
 
 package org.baderlab.csplugins.enrichmentmap.actions;
 
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Set;
@@ -58,7 +57,6 @@ import org.baderlab.csplugins.enrichmentmap.task.BuildDiseaseSignatureTaskResult
 import org.baderlab.csplugins.enrichmentmap.task.CreatePostAnalysisVisualStyleTask;
 import org.baderlab.csplugins.enrichmentmap.task.ShowPanelTask;
 import org.baderlab.csplugins.enrichmentmap.view.ParametersPanel;
-import org.baderlab.csplugins.enrichmentmap.view.PostAnalysisInputPanel;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.event.CyEventHelper;
@@ -75,104 +73,93 @@ import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskObserver;
 import org.cytoscape.work.swing.DialogTaskManager;
 
-
 public class BuildPostAnalysisActionListener implements ActionListener {
 
-    private final PostAnalysisInputPanel inputPanel;
-    private final CyApplicationManager applicationManager;
-    private final CySwingApplication swingApplication;
-    private final CySessionManager sessionManager;
-    private final StreamUtil streamUtil;
-    private final DialogTaskManager dialog;
-    private final CyEventHelper eventHelper;
-    
+	private final CyApplicationManager applicationManager;
+	private final CySwingApplication swingApplication;
+	private final CySessionManager sessionManager;
+	private final StreamUtil streamUtil;
+	private final DialogTaskManager dialog;
+	private final CyEventHelper eventHelper;
+
 	private final VisualMappingManager visualMappingManager;
 	private final VisualStyleFactory visualStyleFactory;
-	
+
 	private final VisualMappingFunctionFactory vmfFactoryContinuous;
-    private final VisualMappingFunctionFactory vmfFactoryDiscrete;
-    private final VisualMappingFunctionFactory vmfFactoryPassthrough;
+	private final VisualMappingFunctionFactory vmfFactoryDiscrete;
+	private final VisualMappingFunctionFactory vmfFactoryPassthrough;
+	
+	private final PostAnalysisParameters paParams;
 
-    public BuildPostAnalysisActionListener (PostAnalysisInputPanel panel,  
-    		CySessionManager sessionManager, StreamUtil streamUtil, CySwingApplication swingApplication,
-    		CyApplicationManager applicationManager, DialogTaskManager dialog,CyEventHelper eventHelper,
-    		VisualMappingManager visualMappingManager, VisualStyleFactory visualStyleFactory, 
-    		VisualMappingFunctionFactory vmfFactoryContinuous, VisualMappingFunctionFactory vmfFactoryDiscrete, VisualMappingFunctionFactory vmfFactoryPassthrough) {
-        this.inputPanel = panel;
-        this.sessionManager = sessionManager;
-        this.streamUtil = streamUtil;
-        this.applicationManager = applicationManager;
-        this.swingApplication = swingApplication;
-        this.dialog = dialog;
-        this.eventHelper = eventHelper;
-        this.visualMappingManager = visualMappingManager;
-        this.visualStyleFactory = visualStyleFactory;
-        this.vmfFactoryContinuous = vmfFactoryContinuous;
-        this.vmfFactoryDiscrete = vmfFactoryDiscrete;
-        this.vmfFactoryPassthrough = vmfFactoryPassthrough;
-    }
+	public BuildPostAnalysisActionListener(PostAnalysisParameters paParams, CySessionManager sessionManager,
+			StreamUtil streamUtil, CySwingApplication swingApplication, CyApplicationManager applicationManager,
+			DialogTaskManager dialog, CyEventHelper eventHelper, VisualMappingManager visualMappingManager,
+			VisualStyleFactory visualStyleFactory, VisualMappingFunctionFactory vmfFactoryContinuous,
+			VisualMappingFunctionFactory vmfFactoryDiscrete, VisualMappingFunctionFactory vmfFactoryPassthrough) {
+		
+		this.paParams = paParams;
+		
+		this.sessionManager = sessionManager;
+		this.streamUtil = streamUtil;
+		this.applicationManager = applicationManager;
+		this.swingApplication = swingApplication;
+		this.dialog = dialog;
+		this.eventHelper = eventHelper;
+		this.visualMappingManager = visualMappingManager;
+		this.visualStyleFactory = visualStyleFactory;
+		this.vmfFactoryContinuous = vmfFactoryContinuous;
+		this.vmfFactoryDiscrete = vmfFactoryDiscrete;
+		this.vmfFactoryPassthrough = vmfFactoryPassthrough;
+	}
 
-    public void actionPerformed(ActionEvent event) {
-    	runPostAnalysis();
-    }
-    
-    public void runPostAnalysis() {
-        //make sure that the minimum information is set in the current set of parameters
-    	PostAnalysisParameters paParams = inputPanel.getPaParams();
-        
-        EnrichmentMap map = EnrichmentMapManager.getInstance().getMap(applicationManager.getCurrentNetwork().getSUID());
-        
-        //set attribute prefix based on the selected Enrichment map
-        if(map != null)
-        	paParams.setAttributePrefix(map.getParams().getAttributePrefix());
-        
-        StringBuilder errorBuilder = new StringBuilder();
-        paParams.checkMinimalRequirements(errorBuilder);
-        if(paParams.getRankTestParameters().getType().isMannWhitney() && map.getAllRanks().isEmpty()) {
-        	errorBuilder.append("Mann-Whitney requires ranks. \n");
-        }
-        String errors = errorBuilder.toString();
-        
-        if(errors.isEmpty()) {
-            if(paParams.isSignatureDiscovery() || paParams.isKnownSignature()) {
-            	TaskIterator currentTasks = new TaskIterator();
-            	
-                BuildDiseaseSignatureTask new_signature 
-                	= new BuildDiseaseSignatureTask(map, paParams, sessionManager, streamUtil, applicationManager, eventHelper, swingApplication);
-                currentTasks.append(new_signature);
-                
-                CreatePostAnalysisVisualStyleTask visualStyleTask 
-                	= new CreatePostAnalysisVisualStyleTask(map, applicationManager, visualMappingManager, visualStyleFactory, eventHelper,
-                			                                vmfFactoryContinuous, vmfFactoryDiscrete, vmfFactoryPassthrough);
-                currentTasks.append(visualStyleTask);
-                
-                ParametersPanel paramsPanel = EnrichmentMapManager.getInstance().getParameterPanel();
-                ShowPanelTask show_parameters_panel = new ShowPanelTask(swingApplication, paramsPanel);
-                currentTasks.append(show_parameters_panel);
-                
-                TaskObserver dialogObserver = new DialogObserver(visualStyleTask);
-                dialog.execute(currentTasks, dialogObserver);
-            } 
-            else {
-                JOptionPane.showMessageDialog(inputPanel, errors, "No such Post-Analysis", JOptionPane.WARNING_MESSAGE);
-            }
-        } 
-        else {
-            JOptionPane.showMessageDialog(inputPanel, errors, "Invalid Input", JOptionPane.WARNING_MESSAGE);
-        }
-    }
+	public void actionPerformed(ActionEvent event) {
+		runPostAnalysis();
+	}
 
-    
-    private class DialogObserver implements TaskObserver {
-    	
-    	private CreatePostAnalysisVisualStyleTask visualStyleTask;
-    	private BuildDiseaseSignatureTaskResult result;
-    	
-    	private DialogObserver(CreatePostAnalysisVisualStyleTask visualStyleTask) {
-    		this.visualStyleTask = visualStyleTask;
-    	}
-    	
-		@Override 
+	public void runPostAnalysis() {
+		//make sure that the minimum information is set in the current set of parameters
+		EnrichmentMap map = EnrichmentMapManager.getInstance().getMap(applicationManager.getCurrentNetwork().getSUID());
+
+		StringBuilder errorBuilder = new StringBuilder();
+		paParams.checkMinimalRequirements(errorBuilder);
+		if(paParams.getRankTestParameters().getType().isMannWhitney() && map.getAllRanks().isEmpty()) {
+			errorBuilder.append("Mann-Whitney requires ranks. \n");
+		}
+		String errors = errorBuilder.toString();
+
+		if(errors.isEmpty()) {
+			TaskIterator currentTasks = new TaskIterator();
+
+			BuildDiseaseSignatureTask new_signature = new BuildDiseaseSignatureTask(map, paParams, sessionManager,
+					streamUtil, applicationManager, eventHelper, swingApplication);
+			currentTasks.append(new_signature);
+
+			CreatePostAnalysisVisualStyleTask visualStyleTask = new CreatePostAnalysisVisualStyleTask(map,
+					applicationManager, visualMappingManager, visualStyleFactory, eventHelper, vmfFactoryContinuous,
+					vmfFactoryDiscrete, vmfFactoryPassthrough);
+			currentTasks.append(visualStyleTask);
+
+			ParametersPanel paramsPanel = EnrichmentMapManager.getInstance().getParameterPanel();
+			ShowPanelTask show_parameters_panel = new ShowPanelTask(swingApplication, paramsPanel);
+			currentTasks.append(show_parameters_panel);
+
+			TaskObserver dialogObserver = new DialogObserver(visualStyleTask);
+			dialog.execute(currentTasks, dialogObserver);
+		} else {
+			JOptionPane.showMessageDialog(swingApplication.getJFrame(), errors, "Invalid Input", JOptionPane.WARNING_MESSAGE);
+		}
+	}
+
+	private class DialogObserver implements TaskObserver {
+
+		private CreatePostAnalysisVisualStyleTask visualStyleTask;
+		private BuildDiseaseSignatureTaskResult result;
+
+		private DialogObserver(CreatePostAnalysisVisualStyleTask visualStyleTask) {
+			this.visualStyleTask = visualStyleTask;
+		}
+
+		@Override
 		public void taskFinished(ObservableTask task) {
 			if(task instanceof BuildDiseaseSignatureTask) {
 				result = task.getResults(BuildDiseaseSignatureTaskResult.class);
@@ -180,34 +167,34 @@ public class BuildPostAnalysisActionListener implements ActionListener {
 				visualStyleTask.setBuildDiseaseSignatureTaskResult(result);
 			}
 		}
-		
-		@Override 
+
+		@Override
 		public void allFinished(FinishStatus status) {
 			if(result == null || result.isCancelled())
 				return;
-			
+
 			// Only update the view once the tasks are complete
 			result.getNetworkView().updateView();
-			
+
 			if(result.getPassedCutoffCount() == 0) {
-				JOptionPane.showMessageDialog(swingApplication.getJFrame(), 
+				JOptionPane.showMessageDialog(swingApplication.getJFrame(),
 						"No edges were found passing the cutoff value for the signature set(s)", 
-						"Post Analysis", JOptionPane.WARNING_MESSAGE);
+						"Post Analysis",
+						JOptionPane.WARNING_MESSAGE);
 			}
 
 			if(!result.getExistingEdgesFailingCutoff().isEmpty()) {
-				String[] options = {"Delete Edges From Previous Run", "Keep All Edges"};
-				int dialogResult = JOptionPane.showOptionDialog(
-						swingApplication.getJFrame(), 
-						"There are edges from a previous run of post-analysis that do not pass the current cutoff value.\n"
-						+ "Keep these edges or delete them?", 
+				String[] options = { "Delete Edges From Previous Run", "Keep All Edges" };
+				int dialogResult = 
+					JOptionPane.showOptionDialog(swingApplication.getJFrame(),
+						"There are edges from a previous run of post-analysis that do not pass the current cutoff value.\nKeep these edges or delete them?",
 						"Existing post-analysis edges", 
 						JOptionPane.YES_NO_OPTION, 
 						JOptionPane.QUESTION_MESSAGE, 
-						null, 
+						null,
 						options, 
 						options[1]);
-				
+
 				if(dialogResult == JOptionPane.YES_OPTION) {
 					Set<CyEdge> edgesToDelete = result.getExistingEdgesFailingCutoff();
 					CyNetwork network = result.getNetwork();

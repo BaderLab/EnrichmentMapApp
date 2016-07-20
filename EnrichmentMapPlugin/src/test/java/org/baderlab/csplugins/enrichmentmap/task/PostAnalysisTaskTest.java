@@ -1,8 +1,12 @@
 package org.baderlab.csplugins.enrichmentmap.task;
 
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.Collections;
 import java.util.Map;
@@ -11,8 +15,9 @@ import java.util.Set;
 import org.baderlab.csplugins.enrichmentmap.EdgeSimilarities;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
-import org.baderlab.csplugins.enrichmentmap.FilterParameters.FilterType;
+import org.baderlab.csplugins.enrichmentmap.FilterType;
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
+import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters.AnalysisType;
 import org.baderlab.csplugins.enrichmentmap.WidthFunction;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
@@ -83,16 +88,17 @@ public class PostAnalysisTaskTest extends BaseNetworkTest {
 	 */
 	@Test
 	public void test_2_PostAnalysisMannWhitney() throws Exception {
-		PostAnalysisParameters paParams = new PostAnalysisParameters();
-    	paParams.setSignature_dataSet(EnrichmentMap.DATASET1);
-    	paParams.setSignature_rankFile(EnrichmentMap.DATASET1);
-		paParams.setKnownSignature(true);
-		paParams.setSignatureHub(false);
-		paParams.setUniverseSize(11445);
-		paParams.setSignatureGMTFileName(PATH + "PA_top8_middle8_bottom8.gmt");
-		paParams.getRankTestParameters().setType(FilterType.MANN_WHIT_TWO_SIDED);
+		PostAnalysisParameters.Builder builder = new PostAnalysisParameters.Builder();
+		builder.setSignature_dataSet(EnrichmentMap.DATASET1);
+		builder.setSignature_rankFile(EnrichmentMap.DATASET1);
+		builder.setAnalysisType(AnalysisType.KNOWN_SIGNATURE);
+		builder.setUniverseSize(11445);
+		builder.setSignatureGMTFileName(PATH + "PA_top8_middle8_bottom8.gmt");
+		builder.setAttributePrefix("EM1_");
+		builder.getRankTestParametersBuilder().setType(FilterType.MANN_WHIT_TWO_SIDED);
+		builder.getRankTestParametersBuilder().setValue(FilterType.MANN_WHIT_TWO_SIDED.defaultValue);
 		
-		runPostAnalysis(emNetwork, paParams);
+		runPostAnalysis(emNetwork, builder);
 		// Assert that post-analysis created the new nodes correctly
 		
 		Map<String,CyNode> nodes = getNodes(emNetwork);
@@ -121,20 +127,19 @@ public class PostAnalysisTaskTest extends BaseNetworkTest {
 	 */
 	@Test
 	public void test_3_PostAnalysisHypergeometric_overlap() throws Exception {
-		PostAnalysisParameters paParams = new PostAnalysisParameters();
-    	paParams.setSignature_dataSet(EnrichmentMap.DATASET1);
-    	paParams.setSignature_rankFile(EnrichmentMap.DATASET1);
-		paParams.setKnownSignature(true);
-		paParams.setSignatureHub(false);
-		paParams.setUniverseSize(11445);
-		paParams.setSignatureGMTFileName(PATH + "PA_top8_middle8_bottom8.gmt");
+		PostAnalysisParameters.Builder builder = new PostAnalysisParameters.Builder();
+		builder.setSignature_dataSet(EnrichmentMap.DATASET1);
+		builder.setSignature_rankFile(EnrichmentMap.DATASET1);
+		builder.setAnalysisType(AnalysisType.KNOWN_SIGNATURE);
+		builder.setUniverseSize(11445);
+		builder.setSignatureGMTFileName(PATH + "PA_top8_middle8_bottom8.gmt");
+		builder.setAttributePrefix("EM1_");
+		builder.getRankTestParametersBuilder().setType(FilterType.HYPERGEOM);
+		builder.getRankTestParametersBuilder().setValue(0.25);
 		
-		paParams.getRankTestParameters().setType(FilterType.HYPERGEOM);
-		paParams.getRankTestParameters().setValue(FilterType.HYPERGEOM, 0.25);
+		runPostAnalysis(emNetwork, builder);
 		
-		runPostAnalysis(emNetwork, paParams);
 		// Assert that post-analysis created the new nodes correctly
-		
 		Map<String,CyNode> nodes = getNodes(emNetwork);
 	   	assertEquals(5, nodes.size());
 	   	assertTrue(nodes.containsKey("PA_TOP8_MIDDLE8_BOTTOM8"));

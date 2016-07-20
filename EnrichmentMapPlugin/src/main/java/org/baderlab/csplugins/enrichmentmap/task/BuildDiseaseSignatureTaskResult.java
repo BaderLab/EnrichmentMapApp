@@ -9,9 +9,9 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
 
-
 /**
- * Contains information about the results of running {@link BuildDiseaseSignatureTask}.
+ * Contains information about the results of running
+ * {@link BuildDiseaseSignatureTask}.
  * 
  * @author mkucera
  */
@@ -24,7 +24,7 @@ public class BuildDiseaseSignatureTaskResult {
 	private final CyNetworkView networkView;
 	private final int passedCutoffCount;
 	private final boolean cancelled;
-	
+
 	private BuildDiseaseSignatureTaskResult(Builder builder) {
 		// Not making copies of the Sets, this is why Builder.build() should only be called once.
 		this.existingEdgesFailingCutoff = builder.existingEdgesFailingCutoff;
@@ -35,11 +35,11 @@ public class BuildDiseaseSignatureTaskResult {
 		this.passedCutoffCount = builder.passedCutoffCount;
 		this.cancelled = builder.cancelled;
 	}
-	
+
 	public Set<CyEdge> getExistingEdgesFailingCutoff() {
 		return Collections.unmodifiableSet(existingEdgesFailingCutoff);
 	}
-	
+
 	public Set<CyEdge> getNewEdges() {
 		return Collections.unmodifiableSet(newEdges);
 	}
@@ -47,27 +47,26 @@ public class BuildDiseaseSignatureTaskResult {
 	public Set<CyNode> getNewNodes() {
 		return Collections.unmodifiableSet(newNodes);
 	}
-	
+
 	public CyNetwork getNetwork() {
 		return network;
 	}
-	
+
 	public CyNetworkView getNetworkView() {
 		return networkView;
 	}
-	
+
 	public int getPassedCutoffCount() {
 		return passedCutoffCount;
 	}
-	
+
 	public boolean isCancelled() {
 		return cancelled;
 	}
-	
-	
+
 	/**
-	 * Note: This builder is not thread safe and the build() method 
-	 * should only be called once per builder instance.
+	 * Note: This builder is not thread safe and the build() method should only
+	 * be called once per builder instance.
 	 */
 	public static class Builder {
 		private Set<CyEdge> existingEdgesFailingCutoff = new HashSet<>();
@@ -77,41 +76,40 @@ public class BuildDiseaseSignatureTaskResult {
 		private CyNetworkView networkView;
 		private int passedCutoffCount = 0;
 		private boolean cancelled = false;
-		
+
 		private BuildDiseaseSignatureTaskResult result = null;
-		
-		
+
 		public void addExistingEdgeFailsCutoff(CyEdge edge) {
 			if(edge != null)
 				existingEdgesFailingCutoff.add(edge);
 		}
-		
+
 		public void addNewEdge(CyEdge edge) {
 			if(edge != null)
 				newEdges.add(edge);
 		}
-		
+
 		public void addNewNode(CyNode node) {
 			if(node != null)
 				newNodes.add(node);
 		}
-		
+
 		public void incrementPassedCutoffCount() {
 			passedCutoffCount++;
 		}
-		
+
 		public void setNetwork(CyNetwork network) {
 			this.network = network;
 		}
-		
+
 		public void setNetworkView(CyNetworkView networkView) {
 			this.networkView = networkView;
 		}
-		
+
 		public void setCancelled(boolean cancelled) {
 			this.cancelled = cancelled;
 		}
-		
+
 		public BuildDiseaseSignatureTaskResult build() {
 			if(result == null) {
 				result = new BuildDiseaseSignatureTaskResult(this);
@@ -120,7 +118,4 @@ public class BuildDiseaseSignatureTaskResult {
 		}
 	}
 
-
-	
-	
 }

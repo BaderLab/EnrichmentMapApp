@@ -3,6 +3,7 @@ package org.baderlab.csplugins.enrichmentmap.util;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Function;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
@@ -16,40 +17,25 @@ public class NetworkUtil {
 	private NetworkUtil() { }
 	
 	
-	private interface NetworkGetter<T> {
-		T get(CyNetwork network, Long suid);
-	}
-	
 	
 	/**
 	 * Returns a single node that matches the given value.
 	 * Returns null if there are no nodes that match or if there are multiple nodes that match.
 	 */
-	public static CyNode getNodeWithValue(CyNetwork net, CyTable table, String colname, String value) {
-		return getObjectWithValue(net, table, colname, value,
-			new NetworkGetter<CyNode>() {
-				public CyNode get(CyNetwork network, Long suid) {
-					return network.getNode(suid);
-				}
-			}
-		);
+	public static CyNode getNodeWithValue(CyNetwork network, CyTable table, String colname, String value) {
+		return getObjectWithValue(table, colname, value, network::getNode);
 	}
 
 	/**
 	 * Returns a single edge that matches the given value.
 	 * Returns null if there are no edges that match or if there are multiple edges that match.
 	 */
-	public static CyEdge getEdgeWithValue(CyNetwork net, CyTable table, String colname, String value) {
-		return getObjectWithValue(net, table, colname, value,
-			new NetworkGetter<CyEdge>() {
-				public CyEdge get(CyNetwork network, Long suid) {
-					return network.getEdge(suid);
-				}
-			}
-		);
+	public static CyEdge getEdgeWithValue(CyNetwork network, CyTable table, String colname, String value) {
+		return getObjectWithValue(table, colname, value, network::getEdge);
 	}
 	
-	private static <T> T getObjectWithValue(CyNetwork net, CyTable table, String colname, String value, NetworkGetter<T> getter) {
+	
+	private static <T> T getObjectWithValue(CyTable table, String colname, String value, Function<Long, T> getter) {
 		T nodeOrEdge = null;
 		
 		Collection<CyRow> matchingRows = table.getMatchingRows(colname, value);
@@ -57,7 +43,7 @@ public class NetworkUtil {
 			Long id = row.get(CyNetwork.SUID, Long.class);
 			if(id == null)
 				continue;
-			T currentNodeOrEdge = getter.get(net, id);
+			T currentNodeOrEdge = getter.apply(id);
 			if(nodeOrEdge == null) {
 				nodeOrEdge = currentNodeOrEdge;
 			}

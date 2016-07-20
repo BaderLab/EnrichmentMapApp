@@ -154,12 +154,10 @@ public class EnrichmentMapActionListener implements RowsSetListener {
 					
 					// Once we have amalgamated all the nodes and edges, launch a task to update the heatmap.
 					// Start the task in a separate thread to avoid Cytoscape deadlock bug (redmine issue #3370)
-					new Thread() {
-						public void run() {
-							UpdateHeatMapTask updateHeatmap = new UpdateHeatMapTask(map, Nodes, Edges, edgeOverlapPanel, nodeOverlapPanel, cytoPanelSouth, applicationManager);
-							syncTaskManager.execute(new TaskIterator(updateHeatmap));
-						}
-					}.start();
+					new Thread(() -> {
+						UpdateHeatMapTask updateHeatmap = new UpdateHeatMapTask(map, Nodes, Edges, edgeOverlapPanel, nodeOverlapPanel, cytoPanelSouth, applicationManager);
+						syncTaskManager.execute(new TaskIterator(updateHeatmap));
+					}).start();
 				}
 			}
 		} // end of if e.getSource check

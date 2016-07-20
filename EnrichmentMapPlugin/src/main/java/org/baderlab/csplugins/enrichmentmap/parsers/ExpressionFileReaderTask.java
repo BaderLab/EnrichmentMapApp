@@ -58,288 +58,274 @@ import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
 /**
- * Created by
- * User: risserlin
- * Date: Jan 21, 2009
- * Time: 9:07:34 AM
+ * Created by User: risserlin Date: Jan 21, 2009 Time: 9:07:34 AM
  * <p>
- * Parse expression file.  The user can also use a rank file instead of an expression file so this class
- * also handles reading of rank files.
+ * Parse expression file. The user can also use a rank file instead of an
+ * expression file so this class also handles reading of rank files.
  */
 public class ExpressionFileReaderTask extends AbstractTask {
 
-    //private EnrichmentMapParameters params;
-	
-    //expression file name
-    private String expressionFileName;
+	//private EnrichmentMapParameters params;
 
-    //which dataset is this expression file associated with
-    private DataSet dataset;
+	//expression file name
+	private String expressionFileName;
 
-    // Keep track of progress for monitoring:
-    private int maxValue;
-    private TaskMonitor taskMonitor = null;
-    private boolean interrupted = false;
-    
-    private StreamUtil streamUtil;
-    
-    /**
-     * Class constructor
-     *
-     * @param dataset  - dataset expression file is associated with
-     */
-    public ExpressionFileReaderTask(DataSet dataset,StreamUtil streamUtil){
-    		this.streamUtil = streamUtil;
-    		this.dataset = dataset;
-    		if(dataset.getExpressionSets() != null)
-    			this.expressionFileName = dataset.getExpressionSets().getFilename();
-    }
-    
-    /**
-     * Parse expression/rank file
-     */
-    public GeneExpressionMatrix parse() throws IOException {
-    	
+	//which dataset is this expression file associated with
+	private DataSet dataset;
 
-    			//Need to check if the file specified as an expression file is actually a rank file
-    			//If it is a rank file it can either be 5 or 2 columns but it is important that the rank
-    			//value is extracted from the right column and placed in the expression matrix as if it
-    			//was an expression value in order for other features to work.
+	// Keep track of progress for monitoring:
+	private int maxValue;
+	private TaskMonitor taskMonitor = null;
+	private boolean interrupted = false;
 
-    			//Also a problem with old session files that imported a rank file so it also
-    			//important to check if the file only has two columns.  If it only has two columns,
-    			//check to see if the second column is a double.  If it is then consider that column
-    			//expression
+	private StreamUtil streamUtil;
 
-    			boolean twoColumns = false;
-    			
-					
+	/**
+	 * Class constructor
+	 *
+	 * @param dataset - dataset expression file is associated with
+	 */
+	public ExpressionFileReaderTask(DataSet dataset, StreamUtil streamUtil) {
+		this.streamUtil = streamUtil;
+		this.dataset = dataset;
+		if(dataset.getExpressionSets() != null)
+			this.expressionFileName = dataset.getExpressionSets().getFilename();
+	}
 
-    			HashSet<Integer> datasetGenes = dataset.getDatasetGenes();
-    			HashMap genes = dataset.getMap().getGenes();
+	/**
+	 * Parse expression/rank file
+	 */
+	public GeneExpressionMatrix parse() throws IOException {
 
-    			InputStream reader = streamUtil.getInputStream(expressionFileName);
-    	        String fullText = new Scanner(reader,"UTF-8").useDelimiter("\\A").next();
-    	        
+		//Need to check if the file specified as an expression file is actually a rank file
+		//If it is a rank file it can either be 5 or 2 columns but it is important that the rank
+		//value is extracted from the right column and placed in the expression matrix as if it
+		//was an expression value in order for other features to work.
 
-    	        String []lines = fullText.split("\r\n?|\n");
-    			int currentProgress = 0;
-    			maxValue = lines.length;
-    			int expressionUniverse = 0;
-    		
-    			if (taskMonitor != null) 					
-                    taskMonitor.setStatusMessage("Parsing GCT file - " + maxValue + " rows");
-    			
-    			GeneExpressionMatrix expressionMatrix = dataset.getExpressionSets();
-    			//GeneExpressionMatrix expressionMatrix = new GeneExpressionMatrix(lines[0].split("\t"));
-    			//HashMap<Integer,GeneExpression> expression = new HashMap<Integer, GeneExpression>();
-    			HashMap<Integer,GeneExpression> expression = expressionMatrix.getExpressionMatrix();
-        
-    			for (int i = 0; i < lines.length; i++) {
-    				Integer genekey ;
+		//Also a problem with old session files that imported a rank file so it also
+		//important to check if the file only has two columns.  If it only has two columns,
+		//check to see if the second column is a double.  If it is then consider that column
+		//expression
 
-    				String line = lines[i];
+		boolean twoColumns = false;
 
-    				String [] tokens = line.split("\t");
+		HashSet<Integer> datasetGenes = dataset.getDatasetGenes();
+		HashMap genes = dataset.getMap().getGenes();
 
-    				//The first column of the file is the name of the geneset
-    				String Name = tokens[0].toUpperCase().trim();
-    				
-    				//if this is the first line and the expression matrix if still empty and the column names are empty
-    				//Added column names empty for GSEA rank files that have no heading but after going through the loop
-    				//the first time we have given them default headings
-    				if(i==0 && (expressionMatrix == null || expressionMatrix.getExpressionMatrix().isEmpty())
-    						&& expressionMatrix.getColumnNames() == null){
-    					//otherwise the first line is the header
-    					if(Name.equalsIgnoreCase("#1.2")){
-    						line = lines[2];
-    						i=2;
-    					}
-    					else{
-    						line = lines[0];
-    						//ignore all comment lines
-    						int k = 0;
-    						while (line.startsWith("#")){
-    							k++;
-    							line = lines[k];
-    						}
-    						i = k;
-    					}
-    					tokens = line.split("\t");
+		InputStream reader = streamUtil.getInputStream(expressionFileName);
+		String fullText = new Scanner(reader, "UTF-8").useDelimiter("\\A").next();
 
-    					//check to see how many columns there are
-    					//if there are only 2 columns then we could be dealing with a ranked file
-    					//check to see if the second column contains expression values.
-    					if(tokens.length == 2){
-    						twoColumns = true;
-    						//the assumption is the first line is the column names but
-    						//if we are loading a GSEA edb rnk file then their might not be column names
-    						try{
-    							int temp = Integer.parseInt(tokens[1]);
-    							i = -1;
-    							tokens[0] = "Name";
-    							tokens[1] = "Rank/Score";
-    						} catch (NumberFormatException v){
-    							try{
-    								double temp2 = Double.parseDouble(tokens[1]);
-    								i = -1;
-    								tokens[0] = "Name";
-    								tokens[1] = "Rank/Score";
+		String[] lines = fullText.split("\r\n?|\n");
+		int currentProgress = 0;
+		maxValue = lines.length;
+		int expressionUniverse = 0;
 
-    							}  catch (NumberFormatException v2){
-    								//if it isn't a double or int then we have a title line.
-    							}
-    						}
-    					}
+		if(taskMonitor != null)
+			taskMonitor.setStatusMessage("Parsing GCT file - " + maxValue + " rows");
 
-    					//expressionMatrix = new GeneExpressionMatrix(tokens);
-    					expressionMatrix.setColumnNames(tokens);
-    					expressionMatrix.setNumConditions(expressionMatrix.getColumnNames().length);
-    					expressionMatrix.setExpressionMatrix(expression);
+		GeneExpressionMatrix expressionMatrix = dataset.getExpressionSets();
+		//GeneExpressionMatrix expressionMatrix = new GeneExpressionMatrix(lines[0].split("\t"));
+		//HashMap<Integer,GeneExpression> expression = new HashMap<Integer, GeneExpression>();
+		HashMap<Integer, GeneExpression> expression = expressionMatrix.getExpressionMatrix();
 
-    					continue;
+		for(int i = 0; i < lines.length; i++) {
+			Integer genekey;
 
-    				}
+			String line = lines[i];
 
+			String[] tokens = line.split("\t");
 
-    				//Check to see if this gene is in the genes list
-    				//Currently we only load gene expression data for genes that are already in the gene list (i.e. are listed in at least one geneset)
-    				//TODO:is there the possibility that we need all the expression genes?  Currently this great decreases space when saving sessions
-    				if(genes.containsKey(Name)){
-    					genekey = (Integer)genes.get(Name);
-    					//we want the genes hashmap and dataset genes hashmap to have the same keys so it is
-    					//easier to compare.
-    					datasetGenes.add((Integer)genes.get(Name));
+			//The first column of the file is the name of the geneset
+			String Name = tokens[0].toUpperCase().trim();
 
-    					String description = "";
-    					//check to see if the second column is parseable
-    					if(twoColumns){
-    						try{
-    							Double.parseDouble(tokens[1]);
-    						}catch(NumberFormatException e){
-    							description = tokens[1];
-    						}
-    					}
-    					else
-    						description = tokens[1];
+			//if this is the first line and the expression matrix if still empty and the column names are empty
+			//Added column names empty for GSEA rank files that have no heading but after going through the loop
+			//the first time we have given them default headings
+			if(i == 0 && (expressionMatrix == null || expressionMatrix.getExpressionMatrix().isEmpty())
+					&& expressionMatrix.getColumnNames() == null) {
+				//otherwise the first line is the header
+				if(Name.equalsIgnoreCase("#1.2")) {
+					line = lines[2];
+					i = 2;
+				} else {
+					line = lines[0];
+					//ignore all comment lines
+					int k = 0;
+					while(line.startsWith("#")) {
+						k++;
+						line = lines[k];
+					}
+					i = k;
+				}
+				tokens = line.split("\t");
 
-    					GeneExpression expres = new GeneExpression(Name, description);
-    					expres.setExpression(tokens);
+				//check to see how many columns there are
+				//if there are only 2 columns then we could be dealing with a ranked file
+				//check to see if the second column contains expression values.
+				if(tokens.length == 2) {
+					twoColumns = true;
+					//the assumption is the first line is the column names but
+					//if we are loading a GSEA edb rnk file then their might not be column names
+					try {
+						int temp = Integer.parseInt(tokens[1]);
+						i = -1;
+						tokens[0] = "Name";
+						tokens[1] = "Rank/Score";
+					} catch(NumberFormatException v) {
+						try {
+							double temp2 = Double.parseDouble(tokens[1]);
+							i = -1;
+							tokens[0] = "Name";
+							tokens[1] = "Rank/Score";
 
-    					double newMax = expres.newMax(expressionMatrix.getMaxExpression());
-    					if(newMax != -100)
-    						expressionMatrix.setMaxExpression(newMax);
-    					double newMin = expres.newMin(expressionMatrix.getMinExpression());
-    					if (newMin != -100)
-    						expressionMatrix.setMinExpression(newMin);
-    					double newClosest = expres.newclosesttoZero(expressionMatrix.getClosesttoZero());
-    					if (newClosest != -100)
-    						expressionMatrix.setClosesttoZero(newClosest);
+						} catch(NumberFormatException v2) {
+							//if it isn't a double or int then we have a title line.
+						}
+					}
+				}
 
-    					expression.put(genekey,expres);
+				//expressionMatrix = new GeneExpressionMatrix(tokens);
+				expressionMatrix.setColumnNames(tokens);
+				expressionMatrix.setNumConditions(expressionMatrix.getColumnNames().length);
+				expressionMatrix.setExpressionMatrix(expression);
 
-    				}
-    				expressionUniverse++;
-    				
-    				if (taskMonitor != null) {
-    					// Calculate Percentage.  This must be a value between 0..100.
-        				int percentComplete = (int) (((double) currentProgress / maxValue) * 100);
-	                    taskMonitor.setProgress(percentComplete);
-    				}	
-    				currentProgress++;
+				continue;
 
-    			}
+			}
 
-    			//set the number of genes
-    			expressionMatrix.setExpressionUniverse(expressionUniverse);
-    			//row Normalize expressionset
-    			expressionMatrix.rowNormalizeMatrix();
-    			
-    			return expressionMatrix;
-        
-    			//TODO: intialize phenotypes associated with class files from expression file load
-  /*      	if(dataset == 1){
-            		//set up the classes definition if it is set.
-            		//check to see if the phenotypes were already set in the params from a session load
-            		if(params.getTemp_class1() != null)
-                		expressionMatrix.setPhenotypes(params.getTemp_class1());
-            		if(params.getClassFile1() != null)
-                		expressionMatrix.setPhenotypes(setClasses( params.getClassFile1()));
-            		//params.getEM().addExpression(EnrichmentMap.DATASET1,expressionMatrix);
-        		}
-        		else{
-            		//set up the classes definition if it is set.
+			//Check to see if this gene is in the genes list
+			//Currently we only load gene expression data for genes that are already in the gene list (i.e. are listed in at least one geneset)
+			//TODO:is there the possibility that we need all the expression genes?  Currently this great decreases space when saving sessions
+			if(genes.containsKey(Name)) {
+				genekey = (Integer) genes.get(Name);
+				//we want the genes hashmap and dataset genes hashmap to have the same keys so it is
+				//easier to compare.
+				datasetGenes.add((Integer) genes.get(Name));
 
-            		//check to see if the phenotypes were already set in the params from a session load
-            		if(params.getTemp_class2() != null)
-                		expressionMatrix.setPhenotypes(params.getTemp_class2());
-            		else if(params.getClassFile2() != null)
-                		expressionMatrix.setPhenotypes(setClasses( params.getClassFile2()));
-            		//params.getEM().addExpression(EnrichmentMap.DATASET2,expressionMatrix);
-        		}
-        */
-    		
-    }
+				String description = "";
+				//check to see if the second column is parseable
+				if(twoColumns) {
+					try {
+						Double.parseDouble(tokens[1]);
+					} catch(NumberFormatException e) {
+						description = tokens[1];
+					}
+				} else
+					description = tokens[1];
 
-    /**
-     * Parse class file (The class file is a GSEA specific file that specifyies which phenotype
-     * each column of the expression file belongs to.)  The class file can only be associated with
-     * an analysis when dataset specifications are specified initially using an rpt file.
-     *
-     * @param classFile - name of class file
-     * @return String array of the phenotypes of each column in the expression array
-     */
-    private String[] setClasses(String classFile) throws IOException{
+				GeneExpression expres = new GeneExpression(Name, description);
+				expres.setExpression(tokens);
 
-        File f = new File(classFile);
+				double newMax = expres.newMax(expressionMatrix.getMaxExpression());
+				if(newMax != -100)
+					expressionMatrix.setMaxExpression(newMax);
+				double newMin = expres.newMin(expressionMatrix.getMinExpression());
+				if(newMin != -100)
+					expressionMatrix.setMinExpression(newMin);
+				double newClosest = expres.newclosesttoZero(expressionMatrix.getClosesttoZero());
+				if(newClosest != -100)
+					expressionMatrix.setClosesttoZero(newClosest);
 
-        //deal with legacy issue, if a session file has the class file set but
-        //it didn't actually save the classes yet.
-        if(!f.exists()){
-           return null;
-        }        
-        //check to see if the file was opened successfully
+				expression.put(genekey, expres);
 
-        if(!classFile.equalsIgnoreCase(null)) {
-        	
-        	InputStream reader = streamUtil.getInputStream(classFile);
-            String fullText2 = new Scanner(reader,"UTF-8").useDelimiter("\\A").next();                        
+			}
+			expressionUniverse++;
 
-            String []lines2 = fullText2.split("\r\n?|\n");
+			if(taskMonitor != null) {
+				// Calculate Percentage.  This must be a value between 0..100.
+				int percentComplete = (int) (((double) currentProgress / maxValue) * 100);
+				taskMonitor.setProgress(percentComplete);
+			}
+			currentProgress++;
 
-            //the class file can be split by a space or a tab
-            String[] classes = lines2[2].split("\\s");
+		}
 
+		//set the number of genes
+		expressionMatrix.setExpressionUniverse(expressionUniverse);
+		//row Normalize expressionset
+		expressionMatrix.rowNormalizeMatrix();
 
-            //the third line of the class file defines the classes
-            return classes;
-        }
-        else{
-            String[] def_pheno = {"Na_pos","NA_neg"};
-            return def_pheno;
-        }
-    }
-    
- 
-    /**
-     * Non-blocking call to interrupt the task.
-     */
-    public void halt() {
-        this.interrupted = true;
-    }
+		return expressionMatrix;
 
-     /**
-     * Sets the Task Monitor.
-     *
-     * @param taskMonitor TaskMonitor Object.
-     */
-    public void setTaskMonitor(TaskMonitor taskMonitor) {
-        if (this.taskMonitor != null) {
-            throw new IllegalStateException("Task Monitor is already set.");
-        }
-        this.taskMonitor = taskMonitor;
-    }
-  
+		//TODO: intialize phenotypes associated with class files from expression file load
+		/*
+		 * if(dataset == 1){ //set up the classes definition if it is set.
+		 * //check to see if the phenotypes were already set in the params from
+		 * a session load if(params.getTemp_class1() != null)
+		 * expressionMatrix.setPhenotypes(params.getTemp_class1());
+		 * if(params.getClassFile1() != null)
+		 * expressionMatrix.setPhenotypes(setClasses( params.getClassFile1()));
+		 * //params.getEM().addExpression(EnrichmentMap.DATASET1,
+		 * expressionMatrix); } else{ //set up the classes definition if it is
+		 * set.
+		 * 
+		 * //check to see if the phenotypes were already set in the params from
+		 * a session load if(params.getTemp_class2() != null)
+		 * expressionMatrix.setPhenotypes(params.getTemp_class2()); else
+		 * if(params.getClassFile2() != null)
+		 * expressionMatrix.setPhenotypes(setClasses( params.getClassFile2()));
+		 * //params.getEM().addExpression(EnrichmentMap.DATASET2,
+		 * expressionMatrix); }
+		 */
+
+	}
+
+	/**
+	 * Parse class file (The class file is a GSEA specific file that specifyies
+	 * which phenotype each column of the expression file belongs to.) The class
+	 * file can only be associated with an analysis when dataset specifications
+	 * are specified initially using an rpt file.
+	 *
+	 * @param classFile - name of class file
+	 * @return String array of the phenotypes of each column in the expression
+	 *         array
+	 */
+	private String[] setClasses(String classFile) throws IOException {
+
+		File f = new File(classFile);
+
+		//deal with legacy issue, if a session file has the class file set but
+		//it didn't actually save the classes yet.
+		if(!f.exists()) {
+			return null;
+		}
+		//check to see if the file was opened successfully
+
+		if(!classFile.equalsIgnoreCase(null)) {
+			InputStream reader = streamUtil.getInputStream(classFile);
+			String fullText2 = new Scanner(reader, "UTF-8").useDelimiter("\\A").next();
+
+			String[] lines2 = fullText2.split("\r\n?|\n");
+
+			//the class file can be split by a space or a tab
+			String[] classes = lines2[2].split("\\s");
+
+			//the third line of the class file defines the classes
+			return classes;
+		} else {
+			String[] def_pheno = { "Na_pos", "NA_neg" };
+			return def_pheno;
+		}
+	}
+
+	/**
+	 * Non-blocking call to interrupt the task.
+	 */
+	public void halt() {
+		this.interrupted = true;
+	}
+
+	/**
+	 * Sets the Task Monitor.
+	 *
+	 * @param taskMonitor TaskMonitor Object.
+	 */
+	public void setTaskMonitor(TaskMonitor taskMonitor) {
+		if(this.taskMonitor != null) {
+			throw new IllegalStateException("Task Monitor is already set.");
+		}
+		this.taskMonitor = taskMonitor;
+	}
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {

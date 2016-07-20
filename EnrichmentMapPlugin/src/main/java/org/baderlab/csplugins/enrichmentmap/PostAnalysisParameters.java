@@ -43,298 +43,86 @@
 
 package org.baderlab.csplugins.enrichmentmap;
 
+import java.util.Collection;
 
-
-import javax.swing.DefaultListModel;
-
-import org.baderlab.csplugins.enrichmentmap.FilterParameters.FilterType;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
+import org.inferred.freebuilder.FreeBuilder;
 
-public class PostAnalysisParameters {
-    
-    // Post Analysis Type:
-    private boolean isSignatureDiscovery = false;
-    private boolean isKnownSignature = true;
+@FreeBuilder
+public interface PostAnalysisParameters {
 
-    private FilterParameters filterParameters = new FilterParameters();
-    private FilterParameters rankTestParameters = new FilterParameters();
-    
-    final public static String SIGNATURE_INTERACTION_TYPE = "sig";
-    final public static String SIGNATURE_INTERACTION_TYPE_SET1 = "sig_set1";
-    final public static String SIGNATURE_INTERACTION_TYPE_SET2 = "sig_set2";
-    
-    
-    // Disease Signature Parameters:
-    private String signatureGMTFileName;
-    
-    // Disease Signature Data Structures:
-    private SetOfGeneSets signatureGenesets;
-    
-    // There should not be setters for these, call the get method then use addElement() or clear()
-    private DefaultListModel<String> signatureSetNames;
-    private DefaultListModel<String> selectedSignatureSetNames;
-    
-    // Disease Signature State variables:
-    private double currentNodePlacementY_Offset;
-    
-    // Rank file
-    private String signature_rankFile;
-    
-    // Disease Signature data-set
-    private String signature_dataSet;
-    
-    // Enrichment map universe
-    private int universeSize;
+	final public static String SIGNATURE_INTERACTION_TYPE = "sig";
+	final public static String SIGNATURE_INTERACTION_TYPE_SET1 = "sig_set1";
+	final public static String SIGNATURE_INTERACTION_TYPE_SET2 = "sig_set2";
+	
+	public enum AnalysisType {
+		KNOWN_SIGNATURE,
+		SIGNATURE_DISCOVERY
+	}
+	
+	public AnalysisType getAnalysisType();
+	
+	
+	public FilterParameters getFilterParameters();
 
-    //attribute prefix associated with this map
-  	private String attributePrefix = null;
-  	
+	public FilterParameters getRankTestParameters();
+
+	
+	public String getSignatureGMTFileName();
+
+
+	// MKTODO should be just one list of selected gene sets
+	// Right now it stores all the gene sets that were loaded, and a list of the ones that were selected
+	public SetOfGeneSets getSignatureGenesets();
+
+	public Collection<String> getSelectedSignatureSetNames();
+	
+	
+	public double getCurrentNodePlacementY_Offset();
+
+	public String getSignature_rankFile();
+
+	public String getSignature_dataSet();
+
+	public int getUniverseSize();
+
+	public String getAttributePrefix();
+
+	
+
+	
+	class Builder extends PostAnalysisParameters_Builder {
+		public Builder() {
+			// defaults
+			setCurrentNodePlacementY_Offset(0.0);
+			setSignatureGMTFileName("");
+		}
+	}
 
 	/**
-     * constructor to create a clean instance of PostAnalysisParameters
-     * (used when using the Reset Button)
-     */
-    public PostAnalysisParameters() {
-        // Disease Signature Parameters:
-        this.signatureGMTFileName       = "";
-        
-        // Disease Signature Data Structures:
-        this.signatureGenesets         = new SetOfGeneSets();
-        this.signatureSetNames         = new DefaultListModel<>();
-        this.selectedSignatureSetNames = new DefaultListModel<>();
-        
-        // Disease Signature State variables:
-        this.currentNodePlacementY_Offset = 0.0;
-        
-        // Default for hypergeom in filter is 0.25
-        filterParameters.setValue(FilterType.HYPERGEOM, 0.25);
-    }
-    
+	 * Checks all values of the PostAnalysisInputPanel
+	 * 
+	 * @return String with error messages (one error per line) or empty String if everything is okay.
+	 * @see org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters#checkMinimalRequirements()
+	 */
+	public default void checkMinimalRequirements(StringBuilder errors) {
+		errors.append(checkGMTfiles());
+		if(getSelectedSignatureSetNames().isEmpty()) {
+			errors.append("No Signature Genesets selected \n");
+		}
+	}
 
-    /**
-     * copies all attributes from another instance of PostAnalysisParameters
-     */
-    public PostAnalysisParameters(PostAnalysisParameters source) {
-    	this();
-        // Post Analysis Type:
-        this.isSignatureDiscovery = source.isSignatureDiscovery();
-        this.isKnownSignature = source.isKnownSignature();
-        
-        // Enrichment map data
-        this.universeSize = source.getUniverseSize();
-
-        // Disease Signature Parameters:
-        this.signatureGMTFileName       = source.getSignatureGMTFileName();
-        this.signature_dataSet = source.getSignature_dataSet();
-
-        // Disease Signature Data Structures:
-        this.signatureGenesets         = source.getSignatureGenesets();
-        this.signatureSetNames         = source.getSignatureSetNames();
-        this.selectedSignatureSetNames = source.getSelectedSignatureSetNames();
-
-        // Disease Signature State variables:
-        this.currentNodePlacementY_Offset = source.getCurrentNodePlacementY_Offset();
-
-        this.attributePrefix = source.getAttributePrefix();
-        
-        this.filterParameters = new FilterParameters(source.getFilterParameters());
-        this.rankTestParameters = new FilterParameters(source.getRankTestParameters());
-    }
-    
-    /** 
-     * Checks all values of the PostAnalysisInputPanel 
-     * 
-     * @return String with error messages (one error per line) or empty String if everything is okay.
-     * @see org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters#checkMinimalRequirements()
-     */
-    public void checkMinimalRequirements(StringBuilder errors) {
-        errors.append(checkGMTfiles());
-        if(selectedSignatureSetNames.isEmpty())
-        	errors.append("No Signature Genesets selected \n");
-    }
-
-    
-    public FilterParameters getFilterParameters() {
-    	return filterParameters;
-    }
-    
-    public FilterParameters getRankTestParameters() {
-    	return rankTestParameters;
-    }
-    
-    /**
-     * Checks if SignatureGMTFileName is provided and if the file can be read.
-     * 
-     * @return String with error messages (one error per line) or empty String if everything is okay.
-     */
-    public String checkGMTfiles() {
-        String signatureGMTFileName = getSignatureGMTFileName();
+	/**
+	 * Checks if SignatureGMTFileName is provided and if the file can be read.
+	 * 
+	 * @return String with error messages (one error per line) or empty String
+	 *         if everything is okay.
+	 */
+	public default String checkGMTfiles() {
+		String signatureGMTFileName = getSignatureGMTFileName();
 		if(signatureGMTFileName == null || signatureGMTFileName.isEmpty() || !EnrichmentMapParameters.checkFile(signatureGMTFileName))
-            return "Signature GMT file can not be found \n";
-        return "";
-    }
-
-    
-    // ***************************************
-    // getters and setters
-    // ***************************************
-
-    /**
-     * @param signatureGMTFileName the signatureGMTFileName to set
-     */
-    public void setSignatureGMTFileName(String signatureGMTFileName) {
-        this.signatureGMTFileName = signatureGMTFileName;
-    }
-
-    /**
-     * @return the signatureGMTFileName
-     */
-    public String getSignatureGMTFileName() {
-        return signatureGMTFileName;
-    }
-
-    /**
-     * Set post-analysis type (Signature Discovery)
-     * @param boolean isSignatureDiscovery
-     * @return null 
-     */
-    public void setSignatureHub(boolean isSignatureDiscovery) {
-        this.isSignatureDiscovery = isSignatureDiscovery;
-    	if (this.isSignatureDiscovery) {
-            this.isKnownSignature = false;
-    	} else{
-    		this.isKnownSignature = true;
-    	}
-    }
-
-
-    /**
-     * True iff Signature Discovery panel has been requested
-     * @param null
-     * @return boolean isSignatureDiscovery
-     */
-    public boolean isSignatureDiscovery() {
-        return isSignatureDiscovery;
-    }
-
-    /**
-     * @param signatureGenesets the signatureGenesets to set
-     */
-    public void setSignatureGenesets(SetOfGeneSets signatureGenesets) {
-        this.signatureGenesets = signatureGenesets;
-    }
-
-    /**
-     * @return the signatureGenesets
-     */
-    public SetOfGeneSets getSignatureGenesets() {
-        return signatureGenesets;
-    }
-
-    /**
-     * @return the signatureSetNames
-     */
-    public DefaultListModel<String> getSignatureSetNames() {
-        return signatureSetNames;
-    }
-
-    /**
-     * @return the selectedSignatureSetNames
-     */
-    public DefaultListModel<String> getSelectedSignatureSetNames() {
-        return selectedSignatureSetNames;
-    }
-
-    /**
-     * @param currentNodePlacementY_Offset the currentNodePlacementY_Offset to set
-     */
-    public void setCurrentNodePlacementY_Offset(double currentNodePlacementY_Offset) {
-        this.currentNodePlacementY_Offset = currentNodePlacementY_Offset;
-    }
-
-    /**
-     * @return the currentNodePlacementY_Offset
-     */
-    public double getCurrentNodePlacementY_Offset() {
-        return currentNodePlacementY_Offset;
-    }
-
-
-	/**
-	 * Get signature rank file
-	 * @param null
-	 * @return String signature_rankFile
-	 */
-	public String getSignature_rankFile() {
-		return signature_rankFile;
+			return "Signature GMT file can not be found \n";
+		return "";
 	}
 
-	/**
-	 * Set signature rank file
-	 * @param String signature_rankFile 
-	 * @return null
-	 */
-	public void setSignature_rankFile(String signature_rankFile) {
-		this.signature_rankFile = signature_rankFile;
-	}
-
-	/**
-	 * Get signature data set
-	 * @param null
-	 * @return String signature_dataSet
-	 */
-	public String getSignature_dataSet() {
-		return signature_dataSet;
-	}
-
-	/**
-	 * Set signature data set
-	 * @param String signature_dataSet
-	 * @return null 
-	 */
-	public void setSignature_dataSet(String signature_dataSet) {
-		this.signature_dataSet = signature_dataSet;
-	}
-
-	/**
-	 * True iff KnownSignature Panel has been requested
-	 * @param null
-	 * @return boolean isKnownSignature
-	 */
-	public boolean isKnownSignature() {
-		return isKnownSignature;
-	}
-
-	/**
-	 * Set post-analysis type (KnownSignature)
-	 * @param boolean isKnownSignature 
-	 * @return null
-	 */
-	public void setKnownSignature(boolean isKnownSignature) {
-		this.isKnownSignature = isKnownSignature;
-	}
-
-	/**
-	 * @return the universeSize
-	 */
-	public int getUniverseSize() {
-		return universeSize;
-	}
-
-	/**
-	 * @param universeSize the universeSize to set
-	 */
-	public void setUniverseSize(int universeSize) {
-		this.universeSize = universeSize;
-	}
-	
-	
-	public String getAttributePrefix() {
-		return attributePrefix;
-	}
-
-
-	public void setAttributePrefix(String attributePrefix) {
-		this.attributePrefix = attributePrefix;
-	}
 }

@@ -34,63 +34,62 @@ import org.cytoscape.work.util.ListSingleSelection;
 public class EnrichmentMapGSEACommandHandlerTask extends AbstractTask {
 	
 	
-		@Tunable(description="edbdir")		
-		public String edbdir;
-		@Tunable(description="edbdir2")		
-		public String edbdir2;
-		
-		@Tunable(description="P-value Cutoff", groups={"User Input","Parameters"}, gravity = 17.0,
-				tooltip="P-value between 0 and 1.")
-		public Double pvalue = 0.005;
-		
-		@Tunable(description="FDR Q-value Cutoff", groups={"User Input","Parameters"}, gravity = 18.0,
-				tooltip="FDR Q-value between 0 and 1.")
-		public Double qvalue = 0.1;
-		
-		@Tunable(description="overlap", groups={"User Input","Parameters"}, gravity = 19.0,
-				tooltip="coeffecient between 0 and 1.")
-		public Double overlap = 0.25;
-		
-		@Tunable(description="similaritymetric", groups={"User Input","Parameters"}, gravity = 20.0,
-				tooltip="coeffecient between 0 and 1.")
-		public  ListSingleSelection<String> similaritymetric;
-		
-		@Tunable(description="expressionfile")
-		public String expressionfile = "expressionfile";
-		@Tunable(description="expressionfile2")
-		public String expressionfile2 = "expressionfile2";
-
-		@Tunable(description="combinedconstant ", groups={"User Input","Parameters"}, gravity = 19.0,
-				tooltip="coeffecient between 0 and 1.")
-		public Double combinedconstant ;
+	@Tunable(description="edbdir")		
+	public String edbdir;
 	
-		//required services
-	    private CySessionManager sessionManager;
-		private StreamUtil streamUtil;
-		
-	    private CyApplicationManager applicationManager;
-	    private CySwingApplication swingApplication;
-	    private CyNetworkManager networkManager;
-	    private CyNetworkViewManager networkViewManager;
-	    private CyNetworkViewFactory networkViewFactory;
-	    private CyNetworkFactory networkFactory;
-	    private CyTableFactory tableFactory;
-	    private CyTableManager tableManager;
-	    
-	    private VisualMappingManager visualMappingManager;
-	    private VisualStyleFactory visualStyleFactory;
-	    
-	    //we will need all three mappers
-	    private VisualMappingFunctionFactory vmfFactoryContinuous;
-	    private VisualMappingFunctionFactory vmfFactoryDiscrete;
-	    private VisualMappingFunctionFactory vmfFactoryPassthrough;
-	    
-	    private CyLayoutAlgorithmManager layoutManager;
-	    private  MapTableToNetworkTablesTaskFactory mapTableToNetworkTable;
-	    //
-	    private DialogTaskManager dialog;
-	    
-	    public EnrichmentMapGSEACommandHandlerTask(CySessionManager sessionManager,
+	@Tunable(description="edbdir2")		
+	public String edbdir2;
+	
+	@Tunable(description="P-value Cutoff", groups={"User Input","Parameters"}, gravity = 17.0, tooltip="P-value between 0 and 1.")
+	public Double pvalue = 0.005;
+	
+	@Tunable(description="FDR Q-value Cutoff", groups={"User Input","Parameters"}, gravity = 18.0, tooltip="FDR Q-value between 0 and 1.")
+	public Double qvalue = 0.1;
+	
+	@Tunable(description="overlap", groups={"User Input","Parameters"}, gravity = 19.0, tooltip="coeffecient between 0 and 1.")
+	public Double overlap = 0.25;
+	
+	@Tunable(description="similaritymetric", groups={"User Input","Parameters"}, gravity = 20.0, tooltip="coeffecient between 0 and 1.")
+	public ListSingleSelection<String> similaritymetric;
+	
+	@Tunable(description="expressionfile")
+	public String expressionfile = "expressionfile";
+	
+	@Tunable(description="expressionfile2")
+	public String expressionfile2 = "expressionfile2";
+
+	@Tunable(description="combinedconstant ", groups={"User Input","Parameters"}, gravity = 19.0, tooltip="coeffecient between 0 and 1.")
+	public Double combinedconstant ;
+
+	
+	//required services
+	private CySessionManager sessionManager;
+	private StreamUtil streamUtil;
+
+	private CyApplicationManager applicationManager;
+	private CySwingApplication swingApplication;
+	private CyNetworkManager networkManager;
+	private CyNetworkViewManager networkViewManager;
+	private CyNetworkViewFactory networkViewFactory;
+	private CyNetworkFactory networkFactory;
+	private CyTableFactory tableFactory;
+	private CyTableManager tableManager;
+
+	private VisualMappingManager visualMappingManager;
+	private VisualStyleFactory visualStyleFactory;
+
+	//we will need all three mappers
+	private VisualMappingFunctionFactory vmfFactoryContinuous;
+	private VisualMappingFunctionFactory vmfFactoryDiscrete;
+	private VisualMappingFunctionFactory vmfFactoryPassthrough;
+
+	private CyLayoutAlgorithmManager layoutManager;
+	private MapTableToNetworkTablesTaskFactory mapTableToNetworkTable;
+
+	private DialogTaskManager dialog;
+
+	
+	public EnrichmentMapGSEACommandHandlerTask(CySessionManager sessionManager,
 				StreamUtil streamUtil, CyApplicationManager applicationManager,
 				CySwingApplication swingApplication,
 				CyNetworkManager networkManager,
@@ -125,17 +124,13 @@ public class EnrichmentMapGSEACommandHandlerTask extends AbstractTask {
 			this.layoutManager = layoutManager;
 			this.mapTableToNetworkTable = mapTableToNetworkTable;
 			this.dialog = dialog;
-			
 			 
 			similaritymetric = new ListSingleSelection<String>(EnrichmentMapParameters.SM_OVERLAP, EnrichmentMapParameters.SM_JACCARD, EnrichmentMapParameters.SM_COMBINED);
-
 		}
 
 		
 		private void buildEnrichmentMap(){
-			//Initialize Data
-	    	
-    			//create a new params for the new EM and add the dataset files to it
+			//Initialize Data create a new params for the new EM and add the dataset files to it
 			EnrichmentMapParameters new_params = new EnrichmentMapParameters(sessionManager,streamUtil,applicationManager);
 		
 		
@@ -170,13 +165,12 @@ public class EnrichmentMapGSEACommandHandlerTask extends AbstractTask {
 			new_params.setFDR(true);
 			new_params.setCombinedConstant(combinedconstant);
 		
-			EnrichmentMap map = new EnrichmentMap(new_params);
+		EnrichmentMap map = new EnrichmentMap(new_params);
 
-                    
-			EnrichmentMapBuildMapTaskFactory buildmap = new EnrichmentMapBuildMapTaskFactory(map,  
-        			applicationManager,swingApplication,networkManager,networkViewManager,networkViewFactory,networkFactory,tableFactory,tableManager, 
-        			visualMappingManager,visualStyleFactory,
-        			vmfFactoryContinuous, vmfFactoryDiscrete,vmfFactoryPassthrough, dialog,  streamUtil,layoutManager,mapTableToNetworkTable);
+		EnrichmentMapBuildMapTaskFactory buildmap = new EnrichmentMapBuildMapTaskFactory(map, applicationManager,
+				swingApplication, networkManager, networkViewManager, networkViewFactory, networkFactory, tableFactory,
+				tableManager, visualMappingManager, visualStyleFactory, vmfFactoryContinuous, vmfFactoryDiscrete,
+				vmfFactoryPassthrough, dialog, streamUtil, layoutManager, mapTableToNetworkTable);
 
 			insertTasksAfterCurrentTask(buildmap.createTaskIterator());
 			
@@ -185,15 +179,13 @@ public class EnrichmentMapGSEACommandHandlerTask extends AbstractTask {
 		}
 		
 		private DataSetFiles InitializeFiles(String edb, String exp){
-
 			//for a dataset we require genesets, an expression file (optional), enrichment results
 			String file_sep = System.getProperty("file.separator");
 			String testEdbResultsFileName = edb + file_sep + "results.edb";
 			String testgmtFileName = edb + file_sep + "gene_sets.gmt";
 			
-			//the rank file does not have a set name.  We need to figure out the name
-			//of the rank file
-			String testrnkFileName = "";	
+			//the rank file does not have a set name.  We need to figure out the name of the rank file
+			String testrnkFileName = "";
 			File directory = new File(edb);
 			String[] dir_listing = directory.list();
 			if(dir_listing.length > 0){

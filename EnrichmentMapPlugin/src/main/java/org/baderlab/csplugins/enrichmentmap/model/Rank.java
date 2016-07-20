@@ -44,93 +44,90 @@
 package org.baderlab.csplugins.enrichmentmap.model;
 
 /**
- * Created by
- * User: risserlin
- * Date: May 1, 2009
- * Time: 10:42:44 AM
+ * Created by User: risserlin Date: May 1, 2009 Time: 10:42:44 AM
  * <p>
  * Object representing the rank of an individual gene or protein
  */
 public class Rank {
 
-    //gene/protein name
-    private String Name;
+	//gene/protein name
+	private String Name;
 
-    //score given in the ranking file
-    private Double Score;
+	//score given in the ranking file
+	private Double Score;
 
-    //rank computed based on sorting the given scores.  (if the score given are actually ranks then
-    //the two will be synonmous)
-    private Integer gene_rank;
+	//rank computed based on sorting the given scores.  (if the score given are actually ranks then
+	//the two will be synonmous)
+	private Integer gene_rank;
 
-    /**
-     * Class constructor
-     *
-     * @param name - gene/protein name
-     * @param score - score supplied by user
-     */
-    public Rank(String name, Double score) {
-        this.Name = name;
-        this.Score = score;
-    }
+	/**
+	 * Class constructor
+	 *
+	 * @param name - gene/protein name
+	 * @param score - score supplied by user
+	 */
+	public Rank(String name, Double score) {
+		this.Name = name;
+		this.Score = score;
+	}
 
-    /**
-     * Class constructor
-     *
-     * @param name - gene/protein name
-     * @param score - score supplied by user
-     * @param rank - rank computed based on scores.
-     */
-    public Rank(String name, Double score, Integer rank) {
-        this.Name = name;
-        this.Score = score;
-        this.gene_rank = rank;
-    }
+	/**
+	 * Class constructor
+	 *
+	 * @param name - gene/protein name
+	 * @param score - score supplied by user
+	 * @param rank - rank computed based on scores.
+	 */
+	public Rank(String name, Double score, Integer rank) {
+		this.Name = name;
+		this.Score = score;
+		this.gene_rank = rank;
+	}
 
-    /**
-     * Class constructor - for reconstruction from session saved rank files.
-     *
-     * @param tokens - tokenized version of rank file as saved in a session file
-     */
-    public Rank(String[] tokens){
+	/**
+	 * Class constructor - for reconstruction from session saved rank files.
+	 *
+	 * @param tokens - tokenized version of rank file as saved in a session file
+	 */
+	public Rank(String[] tokens) {
 
-        //make sure that there are 4 tokens (hashkey, name, score, rank)
-        if(tokens.length != 4)
-            return;
-        
-        this.Name = tokens[1];
-        this.Score = Double.parseDouble(tokens[2]);
-        this.gene_rank = Integer.parseInt(tokens[3]);
+		//make sure that there are 4 tokens (hashkey, name, score, rank)
+		if(tokens.length != 4)
+			return;
 
-    }
+		this.Name = tokens[1];
+		this.Score = Double.parseDouble(tokens[2]);
+		this.gene_rank = Integer.parseInt(tokens[3]);
 
-    //Getters and Setters
+	}
 
-    public String getName() {
-        return Name;
-    }
+	//Getters and Setters
 
-    public void setName(String name) {
-        Name = name;
-    }
+	public String getName() {
+		return Name;
+	}
 
-    public Double getScore() {
-        return Score;
-    }
+	public void setName(String name) {
+		Name = name;
+	}
 
-    public void setScore(Double score) {
-        Score = score;
-    }
+	public Double getScore() {
+		return Score;
+	}
 
-    public Integer getRank() {
-        return gene_rank;
-    }
+	public void setScore(Double score) {
+		Score = score;
+	}
 
-    public void setRank(Integer rank) {
-        this.gene_rank = rank;
-    }
+	public Integer getRank() {
+		return gene_rank;
+	}
 
-    public String toString(){
-        return Name + "\t" + Score + "\t" + gene_rank ;
-    }
+	public void setRank(Integer rank) {
+		this.gene_rank = rank;
+	}
+
+	public String toString() {
+		return Name + "\t" + Score + "\t" + gene_rank;
+	}
 }

@@ -61,61 +61,56 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkViewManager;
 
-/**
- * Created by
- * User: revilo
- * Date: July 9, 2009
- * Based on: LoadEnrichmentsPanel by risserlin
- */
+
 @SuppressWarnings("serial")
 public class LoadPostAnalysisPanelAction extends AbstractCyAction {
 
-    private final CytoPanel cytoPanelWest;
-    private PostAnalysisPanel postEMinputPanel;
-    private CyServiceRegistrar registrar;
-    private CyApplicationManager applicationManager;
-    
-    public LoadPostAnalysisPanelAction(Map<String,String> configProps, CyApplicationManager applicationManager, 
-			CyNetworkViewManager networkViewManager,CySwingApplication application, PostAnalysisPanel inputPanel,
+	private final CytoPanel cytoPanelWest;
+	private PostAnalysisPanel postEMinputPanel;
+	private CyServiceRegistrar registrar;
+	private CyApplicationManager applicationManager;
+
+	public LoadPostAnalysisPanelAction(Map<String, String> configProps, CyApplicationManager applicationManager,
+			CyNetworkViewManager networkViewManager, CySwingApplication application, PostAnalysisPanel inputPanel,
 			CyServiceRegistrar registrar) {
 
-    	super(configProps, applicationManager, networkViewManager);
- 
+		super(configProps, applicationManager, networkViewManager);
+
 		putValue(NAME, "Load Post Analysis Panel");
-				
+
 		this.cytoPanelWest = application.getCytoPanel(CytoPanelName.WEST);
 		this.postEMinputPanel = inputPanel;
 		this.applicationManager = applicationManager;
 		this.registrar = registrar;
 
-    }
+	}
 
-    public void actionPerformed(ActionEvent event) {
-    	CyNetwork network = applicationManager.getCurrentNetwork();
-    	if(network == null)
-    		return;
-    	
-        //if the service has not been registered
-        if(cytoPanelWest.indexOfComponent(this.postEMinputPanel) == -1){
-            registrar.registerService(postEMinputPanel, CytoPanelComponent.class,new Properties());
-      
-            //set the input window in the instance so we can udate the instance window on network focus
-            EnrichmentMapManager.getInstance().setAnalysisWindow(this.postEMinputPanel);
-            
+	public void actionPerformed(ActionEvent event) {
+		CyNetwork network = applicationManager.getCurrentNetwork();
+		if(network == null)
+			return;
+
+		//if the service has not been registered
+		if(cytoPanelWest.indexOfComponent(this.postEMinputPanel) == -1) {
+			registrar.registerService(postEMinputPanel, CytoPanelComponent.class, new Properties());
+
+			//set the input window in the instance so we can udate the instance window on network focus
+			EnrichmentMapManager.getInstance().setAnalysisWindow(this.postEMinputPanel);
+
 			EnrichmentMap map = EnrichmentMapManager.getInstance().getMap(network.getSUID());
-            postEMinputPanel.showPanelFor(map);
-        }
-            
-        // If the state of the cytoPanelWest is HIDE, show it
-        if (cytoPanelWest.getState() == CytoPanelState.HIDE) {
-    	  	cytoPanelWest.setState(CytoPanelState.DOCK);
-        }
+			postEMinputPanel.showPanelFor(map);
+		}
 
-        // Select my panel
-        int index = cytoPanelWest.indexOfComponent(this.postEMinputPanel);
-        if (index == -1) {
-    	  	return;
-        }
-        cytoPanelWest.setSelectedIndex(index);
-    }
+		// If the state of the cytoPanelWest is HIDE, show it
+		if(cytoPanelWest.getState() == CytoPanelState.HIDE) {
+			cytoPanelWest.setState(CytoPanelState.DOCK);
+		}
+
+		// Select my panel
+		int index = cytoPanelWest.indexOfComponent(this.postEMinputPanel);
+		if(index == -1) {
+			return;
+		}
+		cytoPanelWest.setSelectedIndex(index);
+	}
 }

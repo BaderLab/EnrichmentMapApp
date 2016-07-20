@@ -43,77 +43,61 @@
 
 package org.baderlab.csplugins.enrichmentmap.heatmap;
 
-import javax.swing.*;
+import java.awt.Color;
+import java.awt.Component;
+
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
+import javax.swing.JTable;
 import javax.swing.border.Border;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 
-
-import java.awt.*;
-import java.text.DecimalFormat;
-
 /**
- * Created by
- * User: risserlin
- * Date: Feb 2, 2009
- * Time: 9:50:34 AM
+ * Created by User: risserlin Date: Feb 2, 2009 Time: 9:50:34 AM
  */
-public class ColorRenderer extends JLabel
-                           implements TableCellRenderer {
+@SuppressWarnings("serial")
+public class ColorRenderer extends JLabel implements TableCellRenderer {
 	Border unselectedBorder = null;
-    Border selectedBorder = null;
-    boolean isBordered = true;
-    HeatMapTableModel ogt= new HeatMapTableModel();
+	Border selectedBorder = null;
+	boolean isBordered = true;
+	HeatMapTableModel ogt = new HeatMapTableModel();
 
-    public ColorRenderer() {
-    	this.isBordered = isBordered;
-        setOpaque(true); //MUST do this for background to show up.
-    }
+	public ColorRenderer() {
+		setOpaque(true); //MUST do this for background to show up.
+	}
 
-    public Component getTableCellRendererComponent(
-                            JTable table, Object value,
-                            boolean isSelected, boolean hasFocus,
-                            int row, int column) {
+	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+		Color newColor = null;
+		Double numberValue = 0.0;
 
-        Color newColor = null;
-        Double numberValue = 0.0; 
-        
-        if (( value != null) && (value instanceof ExpressionTableValue)) {
-        		ExpressionTableValue avalue = (ExpressionTableValue)value;
+		if((value != null) && (value instanceof ExpressionTableValue)) {
+			ExpressionTableValue avalue = (ExpressionTableValue) value;
+			numberValue = avalue.getExpression_value();
+			newColor = avalue.getExpression_color();
+		}
 
-  		  numberValue = avalue.getExpression_value();
-  	      
-  	      
-  	      newColor = avalue.getExpression_color();
-        }
-        
-        TableModel tc=table.getModel();
-        
-        
-        
-   
-       
-       //Object disp=tc.getExpValueAt(row, column);
-        setBackground(newColor);
-        if (isBordered) {
-            if (isSelected) {
-                if (selectedBorder == null) {
-                    selectedBorder = BorderFactory.createMatteBorder(0,0,0,0,
-                                              table.getSelectionBackground());
-                }
-                setBorder(selectedBorder);
-            } else {
-                if (unselectedBorder == null) {
-                    unselectedBorder = BorderFactory.createMatteBorder(0,0,0,0,
-                                              table.getBackground());
-                }
-                setBorder(unselectedBorder);
-            }
-        }
-        
-       // setToolTipText("Exp Value: " + );
-        setToolTipText("Exp value: " + numberValue);                          
-       
-        return this;
-    }
+		TableModel tc = table.getModel();
+
+		//Object disp=tc.getExpValueAt(row, column);
+		setBackground(newColor);
+		if(isBordered) {
+			if(isSelected) {
+				if(selectedBorder == null) {
+					selectedBorder = BorderFactory.createMatteBorder(0, 0, 0, 0, table.getSelectionBackground());
+				}
+				setBorder(selectedBorder);
+			} else {
+				if(unselectedBorder == null) {
+					unselectedBorder = BorderFactory.createMatteBorder(0, 0, 0, 0, table.getBackground());
+				}
+				setBorder(unselectedBorder);
+			}
+		}
+
+		// setToolTipText("Exp Value: " + );
+		setToolTipText("Exp value: " + numberValue);
+
+		return this;
+	}
 }

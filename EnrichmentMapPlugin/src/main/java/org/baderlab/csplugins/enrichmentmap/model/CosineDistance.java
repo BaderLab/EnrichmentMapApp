@@ -46,49 +46,45 @@ package org.baderlab.csplugins.enrichmentmap.model;
 import org.baderlab.csplugins.brainlib.DistanceMetric;
 
 /**
- * Created by
- * User: risserlin
- * Date: Nov 2, 2010
- * Time: 9:42:43 AM
+ * Created by User: risserlin Date: Nov 2, 2010 Time: 9:42:43 AM
  */
 public class CosineDistance extends DistanceMetric {
 
-    /**
-        * Calculate the cosine distance for two vectors
-        */
-        public double calc(Object expr1, Object expr2) {
+	/**
+	 * Calculate the cosine distance for two vectors
+	 */
+	public double calc(Object expr1, Object expr2) {
 
-            Double[] vectorA = (Double[])expr1;
-            Double[] vectorB = (Double[])expr2;
+		Double[] vectorA = (Double[]) expr1;
+		Double[] vectorB = (Double[]) expr2;
 
-            double result = 0.0;
+		double result = 0.0;
 
-            //numerator - the dot product between A and B
-            double numerator=0;
+		//numerator - the dot product between A and B
+		double numerator = 0;
 
-            //denominator - the magnitude of A time the magnitude of B
-            double denominator=0;
+		//denominator - the magnitude of A time the magnitude of B
+		double denominator = 0;
 
-            //make sure vectorA and vectorB are not null and the same leghth
-            if(vectorA.length == vectorB.length && vectorA.length > 0){
-                double magnitudeA = 0;
-                double magnitudeB = 0;
-                for(int i = 0;i<vectorA.length;i++){
-                    numerator = numerator + (vectorA[i] * vectorB[i]);
-                    magnitudeA = magnitudeA + (vectorA[i] * vectorA[i]);
-                    magnitudeB = magnitudeB + (vectorB[i] * vectorB[i]);
-                }
+		//make sure vectorA and vectorB are not null and the same leghth
+		if(vectorA.length == vectorB.length && vectorA.length > 0) {
+			double magnitudeA = 0;
+			double magnitudeB = 0;
+			for(int i = 0; i < vectorA.length; i++) {
+				numerator = numerator + (vectorA[i] * vectorB[i]);
+				magnitudeA = magnitudeA + (vectorA[i] * vectorA[i]);
+				magnitudeB = magnitudeB + (vectorB[i] * vectorB[i]);
+			}
 
-                denominator = Math.sqrt(magnitudeA) * Math.sqrt(magnitudeB);
-            }
-            else
-                throw new RuntimeException ("vectors are not the same length. Can not compute cosine distance");
+			denominator = Math.sqrt(magnitudeA) * Math.sqrt(magnitudeB);
+		} else
+			throw new RuntimeException("vectors are not the same length. Can not compute cosine distance");
 
-            if(!(denominator == 0))
-                result = numerator/denominator;
-            else
-                throw new RuntimeException ("Can not divided by zero.  Can not computer cosine distance");
-            
-            return 1-result;
-    }
+		if(!(denominator == 0))
+			result = numerator / denominator;
+		else
+			throw new RuntimeException("Can not divided by zero.  Can not computer cosine distance");
+
+		return 1 - result;
+	}
 }

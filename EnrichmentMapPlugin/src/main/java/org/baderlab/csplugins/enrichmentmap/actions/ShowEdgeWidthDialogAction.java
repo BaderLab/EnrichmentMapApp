@@ -21,20 +21,20 @@ public class ShowEdgeWidthDialogAction extends AbstractCyAction {
 	private final CySwingApplication application;
 	private final CyApplicationManager applicationManager;
 	private final VisualMappingFunctionFactory vmfFactoryContinuous;
-	private final TaskManager<?,?> taskManager;
-	
-    public ShowEdgeWidthDialogAction(Map<String,String> configProps, CyApplicationManager applicationManager, 
-    		VisualMappingFunctionFactory vmfFactoryContinuous, TaskManager<?,?> taskManager,
+	private final TaskManager<?, ?> taskManager;
+
+	public ShowEdgeWidthDialogAction(Map<String, String> configProps, CyApplicationManager applicationManager,
+			VisualMappingFunctionFactory vmfFactoryContinuous, TaskManager<?, ?> taskManager,
 			CyNetworkViewManager networkViewManager, CySwingApplication application) {
-    	super(configProps, applicationManager, networkViewManager); 
-    	putValue(NAME, "Post Analysis Edge Width...");
+		super(configProps, applicationManager, networkViewManager);
+		putValue(NAME, "Post Analysis Edge Width...");
 		this.application = application;
 		this.applicationManager = applicationManager;
 		this.vmfFactoryContinuous = vmfFactoryContinuous;
 		this.taskManager = taskManager;
 	}
 	
-	public void actionPerformed(ActionEvent _) {
+	public void actionPerformed(ActionEvent e) {
 		
 		if(WidthFunction.appliesTo(applicationManager.getCurrentNetwork())) {
 			EdgeWidthDialog dialog = new EdgeWidthDialog(application, applicationManager, vmfFactoryContinuous, taskManager);
@@ -48,8 +48,6 @@ public class ShowEdgeWidthDialogAction extends AbstractCyAction {
 				"EnrichmentMap Edge Width", 
 				JOptionPane.WARNING_MESSAGE);
 		}
-		
-		
 	}
 
 }

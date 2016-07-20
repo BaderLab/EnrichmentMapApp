@@ -68,23 +68,21 @@ public class CreatePublicationVisualStyleTask extends AbstractTask {
 				// create a copy of the current style
 				visualStyle = visualStyleFactory.createVisualStyle(currentStyle);
 				visualStyle.setTitle(title);
-	        
 				// Remove node labels
 				visualStyle.removeVisualMappingFunction(BasicVisualLexicon.NODE_LABEL);
 				visualStyle.setDefaultValue(BasicVisualLexicon.NODE_LABEL, "");
-	        	
 				// Make background white
 				visualStyle.removeVisualMappingFunction(BasicVisualLexicon.NETWORK_BACKGROUND_PAINT);
 				visualStyle.setDefaultValue(BasicVisualLexicon.NETWORK_BACKGROUND_PAINT, Color.WHITE);
 				
-		        visualMappingManager.addVisualStyle(visualStyle);
+				visualMappingManager.addVisualStyle(visualStyle);
 			}
 			visualMappingManager.setCurrentVisualStyle(visualStyle);
 		}
 		
 		eventHelper.flushPayloadEvents(); // view won't update properly without this
 		CyNetworkView view = applicationManager.getCurrentNetworkView();
-        view.updateView();
+		view.updateView();
 	}
 
 }

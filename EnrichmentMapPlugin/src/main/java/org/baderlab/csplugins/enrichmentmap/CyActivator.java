@@ -105,8 +105,8 @@ public class CyActivator extends AbstractCyActivator {
 		CommandExecutorTaskFactory commandExecutor = getService(bc, CommandExecutorTaskFactory.class);
 		//get the service registrar so we can register new services in different classes
 		CyServiceRegistrar registrar = getService(bc, CyServiceRegistrar.class);
-		
-						
+
+
 		//create the Panels
 		BulkEMCreationPanel bulkEmPanel = new BulkEMCreationPanel(cySwingApplicationRef,fileUtil,registrar, sessionManager, streamUtil, cyApplicationManagerRef);		
 		EnrichmentMapInputPanel emPanel = new EnrichmentMapInputPanel(cyNetworkFactoryRef, cyApplicationManagerRef, cyNetworkManagerRef, cyNetworkViewManagerRef, tableFactory, tableManager, cyNetworkViewFactoryRef, visualMappingManagerRef, visualStyleFactoryRef,  continuousMappingFunctionFactoryRef,discreteMappingFunctionFactoryRef, passthroughMappingFunctionFactoryRef, dialogTaskManager, sessionManager, cySwingApplicationRef, openBrowserRef,fileUtil,streamUtil,registrar,layoutManager,mapTableToNetworkTable,bulkEmPanel);				
@@ -124,7 +124,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,manager, NetworkAboutToBeDestroyedListener.class, new Properties());
 		registerService(bc,manager, SetCurrentNetworkListener.class, new Properties());
 		registerService(bc,manager, SetCurrentNetworkViewListener.class, new Properties());
-				
+
 		//associate them with the action listener
 		EnrichmentMapActionListener EMActionListener = new EnrichmentMapActionListener(heatMapPanel_node,heatMapPanel_edge, cyApplicationManagerRef, cySwingApplicationRef,fileUtil,streamUtil,syncTaskManager);
 		registerService(bc,EMActionListener, RowsSetListener.class, new Properties());		
@@ -137,60 +137,60 @@ public class CyActivator extends AbstractCyActivator {
 		serviceProperties.put("inMenuBar", "true");
 		serviceProperties.put("preferredMenu", "Apps.EnrichmentMap");
 		ShowAboutPanelAction aboutAction = new ShowAboutPanelAction(serviceProperties,cyApplicationManagerRef ,cyNetworkViewManagerRef, cySwingApplicationRef, openBrowserRef);		
-		
+
 		//Build Enrichment Map Action - opens EM panel
 		serviceProperties = new HashMap<>();
 		serviceProperties.put("inMenuBar", "true");
 		serviceProperties.put("preferredMenu", "Apps.EnrichmentMap");
 		LoadEnrichmentsPanelAction LoadEnrichmentMapInputPanelAction = new LoadEnrichmentsPanelAction(serviceProperties,cyApplicationManagerRef ,cyNetworkViewManagerRef, cySwingApplicationRef, emPanel,registrar);
-		
+
 		//Bulk Enrichment Map Action - open bulk em panel
 		serviceProperties = new HashMap<>();
 		serviceProperties.put("inMenuBar", "true");
 		serviceProperties.put("preferredMenu", "Apps.EnrichmentMap");
 		BulkEMCreationAction BulkEMInputPanelAction = new BulkEMCreationAction(serviceProperties,cyApplicationManagerRef ,cyNetworkViewManagerRef, cySwingApplicationRef, bulkEmPanel,registrar);
-		
+
 		//Post Enrichment Map analysis Action - open post EM panel
 		serviceProperties = new HashMap<>();
 		serviceProperties.put("inMenuBar", "true");
 		serviceProperties.put("preferredMenu", "Apps.EnrichmentMap");
 		LoadPostAnalysisPanelAction loadPostAnalysisAction = new LoadPostAnalysisPanelAction(serviceProperties,cyApplicationManagerRef ,cyNetworkViewManagerRef, cySwingApplicationRef, postEMPanel,registrar);
-		
+
 		serviceProperties = new HashMap<>();
 		serviceProperties.put("inMenuBar", "true");
 		serviceProperties.put("preferredMenu", "Apps.EnrichmentMap");
 		ShowEdgeWidthDialogAction edgeWidthPanelAction = new ShowEdgeWidthDialogAction(serviceProperties, cyApplicationManagerRef, continuousMappingFunctionFactoryRef, dialogTaskManager, cyNetworkViewManagerRef, cySwingApplicationRef);
-		
+
 		//register the services
 		registerService(bc, LoadEnrichmentMapInputPanelAction, CyAction.class, new Properties());
 		registerService(bc, BulkEMInputPanelAction, CyAction.class, new Properties());
 		registerService(bc, loadPostAnalysisAction, CyAction.class, new Properties());	
 		registerService(bc, edgeWidthPanelAction, CyAction.class, new Properties());
 		registerService(bc, aboutAction, CyAction.class,new Properties());
-		
+
 		//register the session save and restore
 		EnrichmentMapSessionAction sessionAction = new EnrichmentMapSessionAction(cyNetworkManagerRef, sessionManager, cyApplicationManagerRef, streamUtil);
 		registerService(bc,sessionAction,SessionAboutToBeSavedListener.class, new Properties());
 		registerService(bc,sessionAction,SessionLoadedListener.class, new Properties());
-		
+
 		//generic EM command line option
 		Properties properties = new Properties();
-    	properties.put(ServiceProperties.COMMAND, "build");
-    	properties.put(ServiceProperties.COMMAND_NAMESPACE, "enrichmentmap");
+		properties.put(ServiceProperties.COMMAND, "build");
+		properties.put(ServiceProperties.COMMAND_NAMESPACE, "enrichmentmap");
 		registerService(bc, new BuildEnrichmentMapTuneableTaskFactory(sessionManager, streamUtil, cyApplicationManagerRef, cySwingApplicationRef, cyNetworkManagerRef, cyNetworkViewManagerRef, cyNetworkViewFactoryRef, cyNetworkFactoryRef, tableFactory, tableManager, visualMappingManagerRef, visualStyleFactoryRef, continuousMappingFunctionFactoryRef, discreteMappingFunctionFactoryRef, passthroughMappingFunctionFactoryRef, layoutManager, mapTableToNetworkTable, dialogTaskManager), TaskFactory.class, properties);
-		
+
 		//gsea specifc commandtool
 		properties = new Properties();
-    	properties.put(ServiceProperties.COMMAND, "gseabuild");
-    	properties.put(ServiceProperties.COMMAND_NAMESPACE, "enrichmentmap");
+		properties.put(ServiceProperties.COMMAND, "gseabuild");
+		properties.put(ServiceProperties.COMMAND_NAMESPACE, "enrichmentmap");
 		registerService(bc, new EnrichmentMapGSEACommandHandlerTaskFactory(sessionManager, streamUtil, cyApplicationManagerRef, cySwingApplicationRef, cyNetworkManagerRef, cyNetworkViewManagerRef, cyNetworkViewFactoryRef, cyNetworkFactoryRef, tableFactory, tableManager, visualMappingManagerRef, visualStyleFactoryRef, continuousMappingFunctionFactoryRef, discreteMappingFunctionFactoryRef, passthroughMappingFunctionFactoryRef, layoutManager, mapTableToNetworkTable, dialogTaskManager), TaskFactory.class, properties);
-		
+
 		//edge table context menu
 		EdgeWidthTableColumnTaskFactory tableColumnTaskFactory = new EdgeWidthTableColumnTaskFactory(edgeWidthPanelAction);
 		Properties tableColumnTaskFactoryProps = new Properties();
 		tableColumnTaskFactoryProps.setProperty(TITLE, "Post Analysis Edge Width...");
 		tableColumnTaskFactoryProps.setProperty("tableTypes", "edge");
 		registerService(bc, tableColumnTaskFactory, TableColumnTaskFactory.class, tableColumnTaskFactoryProps);
-		
+
 	}
 }

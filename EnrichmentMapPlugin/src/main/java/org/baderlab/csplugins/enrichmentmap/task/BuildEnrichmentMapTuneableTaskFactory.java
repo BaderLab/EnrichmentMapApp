@@ -22,45 +22,37 @@ import org.cytoscape.work.swing.DialogTaskManager;
 public class BuildEnrichmentMapTuneableTaskFactory implements TaskFactory {
 	private CySessionManager sessionManager;
 	private StreamUtil streamUtil;
-	
-    private CyApplicationManager applicationManager;
-    private CySwingApplication swingApplication;
-    private CyNetworkManager networkManager;
-    private CyNetworkViewManager networkViewManager;
-    private CyNetworkViewFactory networkViewFactory;
-    private CyNetworkFactory networkFactory;
-    private CyTableFactory tableFactory;
-    private CyTableManager tableManager;
-    
-    private VisualMappingManager visualMappingManager;
-    private VisualStyleFactory visualStyleFactory;
-    
-    //we will need all three mappers
-    private VisualMappingFunctionFactory vmfFactoryContinuous;
-    private VisualMappingFunctionFactory vmfFactoryDiscrete;
-    private VisualMappingFunctionFactory vmfFactoryPassthrough;
-    
-    private CyLayoutAlgorithmManager layoutManager;
-    private  MapTableToNetworkTablesTaskFactory mapTableToNetworkTable;
-    //
-    private DialogTaskManager dialog;
-    
-    
-	public BuildEnrichmentMapTuneableTaskFactory(CySessionManager sessionManager,
-			StreamUtil streamUtil, CyApplicationManager applicationManager,
-			CySwingApplication swingApplication,
-			CyNetworkManager networkManager,
-			CyNetworkViewManager networkViewManager,
-			CyNetworkViewFactory networkViewFactory,
-			CyNetworkFactory networkFactory, CyTableFactory tableFactory,
-			CyTableManager tableManager,
-			VisualMappingManager visualMappingManager,
-			VisualStyleFactory visualStyleFactory,
-			VisualMappingFunctionFactory vmfFactoryContinuous,
-			VisualMappingFunctionFactory vmfFactoryDiscrete,
-			VisualMappingFunctionFactory vmfFactoryPassthrough,
-			CyLayoutAlgorithmManager layoutManager,
-			MapTableToNetworkTablesTaskFactory mapTableToNetworkTable,
+
+	private CyApplicationManager applicationManager;
+	private CySwingApplication swingApplication;
+	private CyNetworkManager networkManager;
+	private CyNetworkViewManager networkViewManager;
+	private CyNetworkViewFactory networkViewFactory;
+	private CyNetworkFactory networkFactory;
+	private CyTableFactory tableFactory;
+	private CyTableManager tableManager;
+
+	private VisualMappingManager visualMappingManager;
+	private VisualStyleFactory visualStyleFactory;
+
+	//we will need all three mappers
+	private VisualMappingFunctionFactory vmfFactoryContinuous;
+	private VisualMappingFunctionFactory vmfFactoryDiscrete;
+	private VisualMappingFunctionFactory vmfFactoryPassthrough;
+
+	private CyLayoutAlgorithmManager layoutManager;
+	private MapTableToNetworkTablesTaskFactory mapTableToNetworkTable;
+	//
+	private DialogTaskManager dialog;
+
+	public BuildEnrichmentMapTuneableTaskFactory(CySessionManager sessionManager, StreamUtil streamUtil,
+			CyApplicationManager applicationManager, CySwingApplication swingApplication,
+			CyNetworkManager networkManager, CyNetworkViewManager networkViewManager,
+			CyNetworkViewFactory networkViewFactory, CyNetworkFactory networkFactory, CyTableFactory tableFactory,
+			CyTableManager tableManager, VisualMappingManager visualMappingManager,
+			VisualStyleFactory visualStyleFactory, VisualMappingFunctionFactory vmfFactoryContinuous,
+			VisualMappingFunctionFactory vmfFactoryDiscrete, VisualMappingFunctionFactory vmfFactoryPassthrough,
+			CyLayoutAlgorithmManager layoutManager, MapTableToNetworkTablesTaskFactory mapTableToNetworkTable,
 			DialogTaskManager dialog) {
 		super();
 		this.sessionManager = sessionManager;
@@ -85,7 +77,10 @@ public class BuildEnrichmentMapTuneableTaskFactory implements TaskFactory {
 
 	public TaskIterator createTaskIterator() {
 		// TODO Auto-generated method stub
-		return new TaskIterator(new BuildEnrichmentMapTuneableTask(sessionManager, streamUtil, applicationManager, swingApplication, networkManager, networkViewManager, networkViewFactory, networkFactory, tableFactory, tableManager, visualMappingManager, visualStyleFactory, vmfFactoryContinuous, vmfFactoryDiscrete, vmfFactoryPassthrough, layoutManager, mapTableToNetworkTable, dialog));
+		return new TaskIterator(new BuildEnrichmentMapTuneableTask(sessionManager, streamUtil, applicationManager,
+				swingApplication, networkManager, networkViewManager, networkViewFactory, networkFactory, tableFactory,
+				tableManager, visualMappingManager, visualStyleFactory, vmfFactoryContinuous, vmfFactoryDiscrete,
+				vmfFactoryPassthrough, layoutManager, mapTableToNetworkTable, dialog));
 	}
 
 	public boolean isReady() {

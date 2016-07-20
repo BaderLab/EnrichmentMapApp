@@ -26,7 +26,7 @@ public class EnablementComboBoxRenderer extends BasicComboBoxRenderer {
 	
 	@Override
 	public Component getListCellRendererComponent(@SuppressWarnings("rawtypes") JList list, Object value, 
-			                                      int index, boolean isSelected, boolean cellHasFocus) {
+			int index, boolean isSelected, boolean cellHasFocus) {
 		
 		Component component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 		

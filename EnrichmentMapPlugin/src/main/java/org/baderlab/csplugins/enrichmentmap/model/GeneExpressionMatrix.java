@@ -49,296 +49,296 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-
 /**
- * Created by
- * User: risserlin
- * Date: Jan 30, 2009
- * Time: 9:32:17 AM
+ * Created by User: risserlin Date: Jan 30, 2009 Time: 9:32:17 AM
  * <p>
  * Class representing a set of genes/proteins expresion profile
  */
 public class GeneExpressionMatrix {
 
-    //name of columns - specified by first or second row in the expression matrix
-    private String[] columnNames;
-    //number of conditions - number of columns
-    private int numConditions;
-    private int expressionUniverse;
+	//name of columns - specified by first or second row in the expression matrix
+	private String[] columnNames;
+	//number of conditions - number of columns
+	private int numConditions;
+	private int expressionUniverse;
 
-    //Store two instances of the expression matrix, one with the raw expression values
-    //and one with the row normalized values.  The row normalizes values are stored as opposed
-    //to being computing on the fly to decrease the time needed to update a heatmap.
-    private HashMap<Integer, GeneExpression> expressionMatrix;
-    private HashMap<Integer, GeneExpression> expressionMatrix_rowNormalized;
+	//Store two instances of the expression matrix, one with the raw expression values
+	//and one with the row normalized values.  The row normalizes values are stored as opposed
+	//to being computing on the fly to decrease the time needed to update a heatmap.
+	private HashMap<Integer, GeneExpression> expressionMatrix;
+	private HashMap<Integer, GeneExpression> expressionMatrix_rowNormalized;
 
-    //maximum expression value of all expression values in the array - computed as matrix is
-    //loaded in.
-    private double maxExpression = -1000000;
+	//maximum expression value of all expression values in the array - computed as matrix is
+	//loaded in.
+	private double maxExpression = -1000000;
 
-    //minimun expression value of all expresssion values in the array - computed as matrix
-    //is loaded in.
-    private double minExpression = 10000000;
-    
-    //value closest to zero for the entire expression set (above zero) used for log scaling
-    private double closesttoZero = 10000000;
+	//minimun expression value of all expresssion values in the array - computed as matrix
+	//is loaded in.
+	private double minExpression = 10000000;
 
-    //phenotype designation of each column
-    private String[] phenotypes;
-    private String phenotype1;
-    private String phenotype2;
-    
-    //Set of Rankings
-    //Set of Rankings - (HashMap of Hashmaps)
-    //Stores the dataset rank files if they were loaded on input but also has
-    //the capability of storing more rank files
-    private HashMap<String, Ranking> ranks;
-    
-    //File associated with this expression set
-    private String filename;
-    
-    public GeneExpressionMatrix(){
-    		this.expressionMatrix = new HashMap<Integer, GeneExpression>();
-    		this.expressionMatrix_rowNormalized = new HashMap<Integer, GeneExpression>();
-    		this.ranks = new HashMap<String, Ranking>();
-    		
-    }
-    
-    public GeneExpressionMatrix(String filename){
-    		this();
-    		this.filename = filename;
-    }
-    
-    /**
-     * Class Constructor
-     *
-     * @param columnNames - String array of the column names of gene/protein expression matrix
-     */
-    public GeneExpressionMatrix(String[] columnNames) {
-        setColumnNames(columnNames);
+	//value closest to zero for the entire expression set (above zero) used for log scaling
+	private double closesttoZero = 10000000;
 
-    }
-    
-    /*
-     * Given an array of strings set the column names up from given string
-     */
-    public void SetColumnNames(){
-    		numConditions = columnNames.length;
+	//phenotype designation of each column
+	private String[] phenotypes;
+	private String phenotype1;
+	private String phenotype2;
 
-        //As a bypass for people who want to run Enrichment map without expression data
-        //if the expression file only contains 2 columns (name and description) then make a dummy
-        //expression matrix with no expression data.
-        if(numConditions == 2){
-            numConditions = 3;
-            String[] newNames = new String[3];
+	//Set of Rankings
+	//Set of Rankings - (HashMap of Hashmaps)
+	//Stores the dataset rank files if they were loaded on input but also has
+	//the capability of storing more rank files
+	private HashMap<String, Ranking> ranks;
 
-            //the first column is the name and the second column is description
-            //then add a third column with no data
-            //otherwise assume this is a rank file and it is missing the description files
+	//File associated with this expression set
+	private String filename;
 
-            if(columnNames[1].equalsIgnoreCase("description")){
-                newNames[0] = columnNames[0];
-                newNames[1] = columnNames[1];
-                newNames[2] = "NO DATA";
-            }
-            else{
-                newNames[0] = columnNames[0];
-                newNames[1] = "description";
-                newNames[2] = columnNames[1];
-            }
-            this.columnNames = newNames;
+	public GeneExpressionMatrix() {
+		this.expressionMatrix = new HashMap<Integer, GeneExpression>();
+		this.expressionMatrix_rowNormalized = new HashMap<Integer, GeneExpression>();
+		this.ranks = new HashMap<String, Ranking>();
 
-        }
-    }
-    
-    /**
-     * Get a subset of the expression matrix containing only the set of given genes
-     *
-     * @param subset - hasset of integers representing the hash keys of the genes to be included in the expression subset
-     * @return Hashmap of gene Hashkeys and there gene expression set for the specified gene hashkeys
-     */
-    public HashMap<Integer, GeneExpression> getExpressionMatrix(HashSet<Integer> subset){
+	}
 
-        if((subset == null) || (subset.size() == 0))
-            return null;
+	public GeneExpressionMatrix(String filename) {
+		this();
+		this.filename = filename;
+	}
 
-        HashMap<Integer, GeneExpression> expression_subset = new HashMap<Integer, GeneExpression>();
+	/**
+	 * Class Constructor
+	 *
+	 * @param columnNames String array of the column names of gene/protein expression matrix
+	 */
+	public GeneExpressionMatrix(String[] columnNames) {
+		setColumnNames(columnNames);
 
-        //go through the expression matrix and get the subset of
-        //genes of interest
-        for(Iterator<Integer> i = subset.iterator(); i.hasNext();){
-            Integer k = i.next();
-            if(expressionMatrix.containsKey(k)){
-                expression_subset.put(k,expressionMatrix.get(k));
-            }
-            else{
-                //With the implementation of Two distinct expression files it is possible that an expression
-                //set will not contain a gene 
-                //System.out.println("how is this key not in the hashmap?");
-            }
+	}
 
-        }
+	/*
+	 * Given an array of strings set the column names up from given string
+	 */
+	public void SetColumnNames() {
+		numConditions = columnNames.length;
 
-        return expression_subset;
+		//As a bypass for people who want to run Enrichment map without expression data
+		//if the expression file only contains 2 columns (name and description) then make a dummy
+		//expression matrix with no expression data.
+		if(numConditions == 2) {
+			numConditions = 3;
+			String[] newNames = new String[3];
 
-    }
+			//the first column is the name and the second column is description
+			//then add a third column with no data
+			//otherwise assume this is a rank file and it is missing the description files
 
-    /**
-     * Get the current maximum value of the given subset of the expression matrix
-     *
-     * @param currentMatrix - subset of gene expression matrix
-     * @return maximum expression value of the expression subset
-     */
-      public double getMaxExpression(HashMap<Integer, GeneExpression> currentMatrix){
-        double max = 0.0;
-          if(currentMatrix != null){
-            //go through the expression matrix
-            for(Iterator<Integer> i = currentMatrix.keySet().iterator(); i.hasNext();){
-                Double[] currentRow = ((GeneExpression)currentMatrix.get(i.next())).getExpression();
-                for(int j = 0; j< currentRow.length;j++){
-                    if(max < currentRow[j])
-                        max = currentRow[j];
-                }
+			if(columnNames[1].equalsIgnoreCase("description")) {
+				newNames[0] = columnNames[0];
+				newNames[1] = columnNames[1];
+				newNames[2] = "NO DATA";
+			} else {
+				newNames[0] = columnNames[0];
+				newNames[1] = "description";
+				newNames[2] = columnNames[1];
+			}
+			this.columnNames = newNames;
 
-            }
-          }
-        return max;
+		}
+	}
 
-    }
+	/**
+	 * Get a subset of the expression matrix containing only the set of given
+	 * genes
+	 *
+	 * @param subset
+	 *            - hasset of integers representing the hash keys of the genes
+	 *            to be included in the expression subset
+	 * @return Hashmap of gene Hashkeys and there gene expression set for the
+	 *         specified gene hashkeys
+	 */
+	public HashMap<Integer, GeneExpression> getExpressionMatrix(HashSet<Integer> subset) {
 
-    /**
-     * Get the current minimum value of the given subset of the expression matrix
-     *
-     * @param currentMatrix - subset of gene expression matrix
-     * @return minimum expression value of the expression subset
-     */
-    public double getMinExpression(HashMap<Integer, GeneExpression> currentMatrix){
-        double min = 0.0;
-        //go through the expression matrix
-        if(currentMatrix != null){
-            for(Iterator<Integer> i = currentMatrix.keySet().iterator(); i.hasNext();){
-                Double[] currentRow = ((GeneExpression)currentMatrix.get(i.next())).getExpression();
-                for(int j = 0; j< currentRow.length;j++){
-                    if(min > currentRow[j])
-                        min = currentRow[j];
-                }
+		if((subset == null) || (subset.size() == 0))
+			return null;
 
-            }
-        }
-        return min;
+		HashMap<Integer, GeneExpression> expression_subset = new HashMap<Integer, GeneExpression>();
 
-    }
+		//go through the expression matrix and get the subset of
+		//genes of interest
+		for(Iterator<Integer> i = subset.iterator(); i.hasNext();) {
+			Integer k = i.next();
+			if(expressionMatrix.containsKey(k)) {
+				expression_subset.put(k, expressionMatrix.get(k));
+			} else {
+				//With the implementation of Two distinct expression files it is possible that an expression
+				//set will not contain a gene 
+				//System.out.println("how is this key not in the hashmap?");
+			}
 
-    /**
-     * Compute the row Normalized version of the current expression matrix.
-     * Row Normalization involves computing the mean and standard deviation for each row in the
-     * matrix.  Each value in that specific row has the mean subtracted and is divided by the standard
-     * deviation.
-     * Row normalization is precomputed and stored with the expression matrix to decrease computation
-     * time on the fly.  (Log normalization is computed on the fly)
-     */
-    public void rowNormalizeMatrix(){
+		}
 
-        if(expressionMatrix == null)
-            return;
+		return expression_subset;
 
-        //create new matrix
-        expressionMatrix_rowNormalized = new HashMap<Integer, GeneExpression>();
+	}
 
-        //go through the expression matrix
-        for(Iterator<Integer> i = expressionMatrix.keySet().iterator(); i.hasNext();){
-            Integer key = i.next();
-            GeneExpression currentexpression = ((GeneExpression)expressionMatrix.get(key));
-            String Name = currentexpression.getName();
-            String description = currentexpression.getDescription();
-            GeneExpression norm_row = new GeneExpression(Name,description);
-            Double[] currentexpression_row_normalized = currentexpression.rowNormalize();
-            norm_row.setExpression( currentexpression_row_normalized);
+	/**
+	 * Get the current maximum value of the given subset of the expression
+	 * matrix
+	 *
+	 * @param currentMatrix
+	 *            - subset of gene expression matrix
+	 * @return maximum expression value of the expression subset
+	 */
+	public double getMaxExpression(HashMap<Integer, GeneExpression> currentMatrix) {
+		double max = 0.0;
+		if(currentMatrix != null) {
+			//go through the expression matrix
+			for(Iterator<Integer> i = currentMatrix.keySet().iterator(); i.hasNext();) {
+				Double[] currentRow = ((GeneExpression) currentMatrix.get(i.next())).getExpression();
+				for(int j = 0; j < currentRow.length; j++) {
+					if(max < currentRow[j])
+						max = currentRow[j];
+				}
 
-            expressionMatrix_rowNormalized.put(key,norm_row);
-       }
+			}
+		}
+		return max;
 
-    }
+	}
 
-    //Getters and Setters
+	/**
+	 * Get the current minimum value of the given subset of the expression
+	 * matrix
+	 *
+	 * @param currentMatrix
+	 *            - subset of gene expression matrix
+	 * @return minimum expression value of the expression subset
+	 */
+	public double getMinExpression(HashMap<Integer, GeneExpression> currentMatrix) {
+		double min = 0.0;
+		//go through the expression matrix
+		if(currentMatrix != null) {
+			for(Iterator<Integer> i = currentMatrix.keySet().iterator(); i.hasNext();) {
+				Double[] currentRow = ((GeneExpression) currentMatrix.get(i.next())).getExpression();
+				for(int j = 0; j < currentRow.length; j++) {
+					if(min > currentRow[j])
+						min = currentRow[j];
+				}
+			}
+		}
+		return min;
 
-    public String[] getColumnNames() {
-        return columnNames;
-    }
+	}
 
-    public void setColumnNames(String[] columnNames) {
-    		if(columnNames.length==2){
-    			String[] new_names = new String[3];
-    			new_names[0] = columnNames[0];
-    			new_names[1] = "Description";
-    			new_names[2] = columnNames[1];
-    			this.columnNames = new_names;
-    		}
-    		else	
-    			this.columnNames = columnNames;
-    }
+	/**
+	 * Compute the row Normalized version of the current expression matrix. Row
+	 * Normalization involves computing the mean and standard deviation for each
+	 * row in the matrix. Each value in that specific row has the mean
+	 * subtracted and is divided by the standard deviation. Row normalization is
+	 * precomputed and stored with the expression matrix to decrease computation
+	 * time on the fly. (Log normalization is computed on the fly)
+	 */
+	public void rowNormalizeMatrix() {
 
-    public void setExpressionUniverse(int size) {
-    	this.expressionUniverse = size;
-    }
-    
-    public int getExpressionUniverse() {
-    	return expressionUniverse;
-    }
-    
-    public int getNumConditions() {
-        return numConditions;
-    }
+		if(expressionMatrix == null)
+			return;
 
-    public void setNumConditions(int numConditions) {
-        this.numConditions = numConditions;
-    }
+		//create new matrix
+		expressionMatrix_rowNormalized = new HashMap<Integer, GeneExpression>();
 
-    public int getNumGenes() {
-        return expressionMatrix.size();
-    }
+		//go through the expression matrix
+		for(Iterator<Integer> i = expressionMatrix.keySet().iterator(); i.hasNext();) {
+			Integer key = i.next();
+			GeneExpression currentexpression = ((GeneExpression) expressionMatrix.get(key));
+			String Name = currentexpression.getName();
+			String description = currentexpression.getDescription();
+			GeneExpression norm_row = new GeneExpression(Name, description);
+			Double[] currentexpression_row_normalized = currentexpression.rowNormalize();
+			norm_row.setExpression(currentexpression_row_normalized);
 
-    public HashMap<Integer, GeneExpression> getExpressionMatrix() {
-        return expressionMatrix;
-    }
+			expressionMatrix_rowNormalized.put(key, norm_row);
+		}
 
-    public void setExpressionMatrix(HashMap<Integer, GeneExpression> expressionMatrix) {
-        this.expressionMatrix = expressionMatrix;
-    }
+	}
 
-    public HashMap<Integer, GeneExpression> getExpressionMatrix_rowNormalized() {
-        return expressionMatrix_rowNormalized;
-    }
+	//Getters and Setters
 
-    public void setExpressionMatrix_rowNormalized(HashMap<Integer, GeneExpression> expressionMatrix_rowNormalized) {
-        this.expressionMatrix_rowNormalized = expressionMatrix_rowNormalized;
-    }
+	public String[] getColumnNames() {
+		return columnNames;
+	}
 
-    public double getMaxExpression() {
-        return maxExpression;
-    }
+	public void setColumnNames(String[] columnNames) {
+		if(columnNames.length == 2) {
+			String[] new_names = new String[3];
+			new_names[0] = columnNames[0];
+			new_names[1] = "Description";
+			new_names[2] = columnNames[1];
+			this.columnNames = new_names;
+		} else
+			this.columnNames = columnNames;
+	}
 
-    public void setMaxExpression(double maxExpression) {
-        this.maxExpression = maxExpression;
-    }
+	public void setExpressionUniverse(int size) {
+		this.expressionUniverse = size;
+	}
 
-    public double getMinExpression() {
-        return minExpression;
-    }
+	public int getExpressionUniverse() {
+		return expressionUniverse;
+	}
 
-    public void setMinExpression(double minExpression) {
-        this.minExpression = minExpression;
-    }
+	public int getNumConditions() {
+		return numConditions;
+	}
 
-    public String[] getPhenotypes() {
-        return phenotypes;
-    }
+	public void setNumConditions(int numConditions) {
+		this.numConditions = numConditions;
+	}
 
-    public void setPhenotypes(String[] phenotypes) {
-        this.phenotypes = phenotypes;
-    }
-    
-    public String getPhenotype1() {
+	public int getNumGenes() {
+		return expressionMatrix.size();
+	}
+
+	public HashMap<Integer, GeneExpression> getExpressionMatrix() {
+		return expressionMatrix;
+	}
+
+	public void setExpressionMatrix(HashMap<Integer, GeneExpression> expressionMatrix) {
+		this.expressionMatrix = expressionMatrix;
+	}
+
+	public HashMap<Integer, GeneExpression> getExpressionMatrix_rowNormalized() {
+		return expressionMatrix_rowNormalized;
+	}
+
+	public void setExpressionMatrix_rowNormalized(HashMap<Integer, GeneExpression> expressionMatrix_rowNormalized) {
+		this.expressionMatrix_rowNormalized = expressionMatrix_rowNormalized;
+	}
+
+	public double getMaxExpression() {
+		return maxExpression;
+	}
+
+	public void setMaxExpression(double maxExpression) {
+		this.maxExpression = maxExpression;
+	}
+
+	public double getMinExpression() {
+		return minExpression;
+	}
+
+	public void setMinExpression(double minExpression) {
+		this.minExpression = minExpression;
+	}
+
+	public String[] getPhenotypes() {
+		return phenotypes;
+	}
+
+	public void setPhenotypes(String[] phenotypes) {
+		this.phenotypes = phenotypes;
+	}
+
+	public String getPhenotype1() {
 		return phenotype1;
 	}
 
@@ -371,116 +371,114 @@ public class GeneExpressionMatrix {
 	}
 
 	/**
-     * Converts gene expression into a string representation
-     *
-     * @return String representation of the gene expression matrix
-     */
-    public String toString(){
+	 * Converts gene expression into a string representation
+	 *
+	 * @return String representation of the gene expression matrix
+	 */
+	public String toString() {
 
-    	StringBuilder expressionSb = new StringBuilder();
+		StringBuilder expressionSb = new StringBuilder();
 
-        for(int i = 0; i<columnNames.length; i++)
-            expressionSb.append(columnNames[i] + "\t") ;
+		for(int i = 0; i < columnNames.length; i++)
+			expressionSb.append(columnNames[i] + "\t");
 
-        expressionSb.append( "\n");
+		expressionSb.append("\n");
 
-        for(Iterator<Integer> i = expressionMatrix.keySet().iterator(); i.hasNext();){
-            expressionSb.append( ((GeneExpression)expressionMatrix.get(i.next())).toString() );
-           }
+		for(Iterator<Integer> i = expressionMatrix.keySet().iterator(); i.hasNext();) {
+			expressionSb.append(((GeneExpression) expressionMatrix.get(i.next())).toString());
+		}
 
-        return expressionSb.toString();
-    }
-    
-    /*
-     * Prints out just the parameters associated with this expression set
-     */
-    public String toString(String ds) {
-    	StringBuilder paramVariables = new StringBuilder();
+		return expressionSb.toString();
+	}
+
+	/*
+	 * Prints out just the parameters associated with this expression set
+	 */
+	public String toString(String ds) {
+		StringBuilder paramVariables = new StringBuilder();
 		String simpleName = this.getClass().getSimpleName();
-		
+
 		paramVariables.append(ds + "%" + simpleName + "%filename\t" + filename + "\n");
-		paramVariables.append(ds + "%" + simpleName + "%phenotype1\t" + phenotype1  + "\n");
-        paramVariables.append(ds + "%" + simpleName + "%phenotype2\t" + phenotype2   + "\n");
+		paramVariables.append(ds + "%" + simpleName + "%phenotype1\t" + phenotype1 + "\n");
+		paramVariables.append(ds + "%" + simpleName + "%phenotype2\t" + phenotype2 + "\n");
 
 		paramVariables.append(ds + "%" + simpleName + "%numConditions\t" + numConditions + "\n");
 		paramVariables.append(ds + "%" + simpleName + "%numGenes\t" + getNumGenes() + "\n");
-        paramVariables.append(ds + "%" + simpleName + "%minExpression\t" + minExpression   + "\n");
-        paramVariables.append(ds + "%" + simpleName + "%maxExpression\t" + maxExpression   + "\n");
-        paramVariables.append(ds + "%" + simpleName + "%expressionUniverse\t" + expressionUniverse   + "\n");
-        
-        if(phenotypes != null)
-            paramVariables.append(ds + "%" + simpleName + "%phenotypes\t" + phenotypes.toString()   + "\n");
-        
-        return paramVariables.toString();
-    }
-    
-    /**
-     * Restores parameters saved in the session file.
-     * Note, most of this object is restored by the ExpressionFileReaderTask.
-     */
-    public void restoreProps(String ds, Map<String, String> props) {
-    	String simpleName = this.getClass().getSimpleName();
+		paramVariables.append(ds + "%" + simpleName + "%minExpression\t" + minExpression + "\n");
+		paramVariables.append(ds + "%" + simpleName + "%maxExpression\t" + maxExpression + "\n");
+		paramVariables.append(ds + "%" + simpleName + "%expressionUniverse\t" + expressionUniverse + "\n");
+
+		if(phenotypes != null)
+			paramVariables.append(ds + "%" + simpleName + "%phenotypes\t" + phenotypes.toString() + "\n");
+
+		return paramVariables.toString();
+	}
+
+	/**
+	 * Restores parameters saved in the session file. Note, most of this object
+	 * is restored by the ExpressionFileReaderTask.
+	 */
+	public void restoreProps(String ds, Map<String, String> props) {
+		String simpleName = this.getClass().getSimpleName();
 		String val = props.get(ds + "%" + simpleName + "%expressionUniverse");
 		if(val != null) {
 			try {
 				expressionUniverse = Integer.parseInt(val);
-			} catch(NumberFormatException e) {}
+			} catch(NumberFormatException e) {
+			}
 		}
 	}
-    
 
-    public Set<Integer> getGeneIds(){
-        return expressionMatrix.keySet();
-    }
-    
-    public HashMap<String, Ranking> getRanks() {
+	public Set<Integer> getGeneIds() {
+		return expressionMatrix.keySet();
+	}
+
+	public HashMap<String, Ranking> getRanks() {
 		return ranks;
 	}
 
 	public void setRanks(HashMap<String, Ranking> ranks) {
 		this.ranks = ranks;
 	}
-    
-	public void addRanks(String ranks_name, Ranking new_rank){
-        if(this.ranks != null && ranks_name != null && new_rank != null)
-            this.ranks.put(ranks_name, new_rank);
+
+	public void addRanks(String ranks_name, Ranking new_rank) {
+		if(this.ranks != null && ranks_name != null && new_rank != null)
+			this.ranks.put(ranks_name, new_rank);
 	}
 
-    public Ranking getRanksByName(String ranks_name){
-        if(this.ranks != null){
-            return this.ranks.get(ranks_name);
-        }
-        else{
-            return null;
-        }
-    }
-    
-    public HashSet<String> getAllRanksNames(){
-    		HashSet<String> allnames = new HashSet<String>();
-    		if(ranks != null && !ranks.isEmpty()){
-    			for(Iterator<String> i = ranks.keySet().iterator();i.hasNext();){
-    				String current_name = (String)i.next();
-    				if(current_name != null)
-    					allnames.add(current_name);
-    			}
-    		}
-    		return allnames;
-    }
-    
-    /**
-     * @return true if we have at least one list of gene ranks
-     */
-    public boolean haveRanks() {
-        if (this.ranks != null && this.ranks.size() > 0)
-            return true;
-        else
-            return false;
-    }
-    
-    public void createNewRanking(String name){
-    		Ranking new_ranking = new Ranking();
-		this.ranks.put(name, new_ranking);
-    }
+	public Ranking getRanksByName(String ranks_name) {
+		if(this.ranks != null) {
+			return this.ranks.get(ranks_name);
+		} else {
+			return null;
+		}
+	}
 
+	public HashSet<String> getAllRanksNames() {
+		HashSet<String> allnames = new HashSet<String>();
+		if(ranks != null && !ranks.isEmpty()) {
+			for(Iterator<String> i = ranks.keySet().iterator(); i.hasNext();) {
+				String current_name = (String) i.next();
+				if(current_name != null)
+					allnames.add(current_name);
+			}
+		}
+		return allnames;
+	}
+
+	/**
+	 * @return true if we have at least one list of gene ranks
+	 */
+	public boolean haveRanks() {
+		if(this.ranks != null && this.ranks.size() > 0)
+			return true;
+		else
+			return false;
+	}
+
+	public void createNewRanking(String name) {
+		Ranking new_ranking = new Ranking();
+		this.ranks.put(name, new_ranking);
+	}
 
 }

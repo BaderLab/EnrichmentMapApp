@@ -17,28 +17,23 @@ import org.cytoscape.work.TaskMonitor;
 public class CreatePostAnalysisVisualStyleTask extends AbstractTask {
 
 	private final EnrichmentMap map;
-	
+
 	private final CyApplicationManager applicationManager;
 	private final VisualMappingManager visualMappingManager;
 	private final VisualStyleFactory visualStyleFactory;
 	private final CyEventHelper eventHelper;
-	
+
 	private final VisualMappingFunctionFactory vmfFactoryContinuous;
-    private final VisualMappingFunctionFactory vmfFactoryDiscrete;
-    private final VisualMappingFunctionFactory vmfFactoryPassthrough;
-    
-    private BuildDiseaseSignatureTaskResult taskResult;
-    
-	
-	public CreatePostAnalysisVisualStyleTask(EnrichmentMap map,
-			CyApplicationManager applicationManager,
-			VisualMappingManager visualMappingManager,
-			VisualStyleFactory visualStyleFactory,
-			CyEventHelper eventHelper,
-			VisualMappingFunctionFactory vmfFactoryContinuous,
-			VisualMappingFunctionFactory vmfFactoryDiscrete,
+	private final VisualMappingFunctionFactory vmfFactoryDiscrete;
+	private final VisualMappingFunctionFactory vmfFactoryPassthrough;
+
+	private BuildDiseaseSignatureTaskResult taskResult;
+
+	public CreatePostAnalysisVisualStyleTask(EnrichmentMap map, CyApplicationManager applicationManager,
+			VisualMappingManager visualMappingManager, VisualStyleFactory visualStyleFactory, CyEventHelper eventHelper,
+			VisualMappingFunctionFactory vmfFactoryContinuous, VisualMappingFunctionFactory vmfFactoryDiscrete,
 			VisualMappingFunctionFactory vmfFactoryPassthrough) {
-		
+
 		this.map = map;
 		this.applicationManager = applicationManager;
 		this.visualMappingManager = visualMappingManager;
@@ -48,18 +43,16 @@ public class CreatePostAnalysisVisualStyleTask extends AbstractTask {
 		this.vmfFactoryDiscrete = vmfFactoryDiscrete;
 		this.vmfFactoryPassthrough = vmfFactoryPassthrough;
 	}
-	
+
 	public void setBuildDiseaseSignatureTaskResult(BuildDiseaseSignatureTaskResult result) {
 		this.taskResult = result;
 	}
 
-
 	/**
-	 * Note: 
-	 * Cytoscape does not provide a way to uniquely identify a visual style.
-	 * Here we use the name we previously generated to attempt to identify the visual style.
-	 * This is just a heuristic, it is possible the user changed the name.
-	 * In that case a new visual style will be generated. 
+	 * Note: Cytoscape does not provide a way to uniquely identify a visual
+	 * style. Here we use the name we previously generated to attempt to
+	 * identify the visual style. This is just a heuristic, it is possible the
+	 * user changed the name. In that case a new visual style will be generated.
 	 */
 	private VisualStyle attemptToGetExistingStyle(String vs_name) {
 		for(VisualStyle vs : visualMappingManager.getAllVisualStyles()) {
@@ -69,38 +62,39 @@ public class CreatePostAnalysisVisualStyleTask extends AbstractTask {
 		}
 		return null;
 	}
-	
-	
+
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		taskMonitor.setTitle("EnrichmentMap");
 		taskMonitor.setStatusMessage("Create Post-Analysis Visual Style");
 		if(taskResult == null)
 			return;
-		
+
 		String prefix = map.getParams().getAttributePrefix();
 		String vs_name = prefix + PostAnalysisVisualStyle.NAME;
 		CyNetworkView view = applicationManager.getCurrentNetworkView();
 
-        PostAnalysisVisualStyle pa_vs = new PostAnalysisVisualStyle(map.getParams(), vmfFactoryContinuous, vmfFactoryDiscrete, vmfFactoryPassthrough);
-        pa_vs.applyNetworkSpeficifProperties(taskResult, prefix, taskMonitor);
-        
-        VisualStyle vs = attemptToGetExistingStyle(vs_name);
+		PostAnalysisVisualStyle pa_vs = new PostAnalysisVisualStyle(map.getParams(), vmfFactoryContinuous,
+				vmfFactoryDiscrete, vmfFactoryPassthrough);
+		pa_vs.applyNetworkSpeficifProperties(taskResult, prefix, taskMonitor);
+
+		VisualStyle vs = attemptToGetExistingStyle(vs_name);
 		if(vs == null) {
-        	vs = visualStyleFactory.createVisualStyle(vs_name);
-        	pa_vs.createVisualStyle(vs, prefix);
-            visualMappingManager.addVisualStyle(vs);
-        }
-		
+			vs = visualStyleFactory.createVisualStyle(vs_name);
+			pa_vs.createVisualStyle(vs, prefix);
+			visualMappingManager.addVisualStyle(vs);
+		}
+
 		visualMappingManager.setCurrentVisualStyle(vs);
-		
+
 		try {
 			vs.apply(view);
-		} catch(ConcurrentModificationException e) {}
-		
+		} catch(ConcurrentModificationException e) {
+		}
+
 		eventHelper.flushPayloadEvents(); // view won't update properly without this
-		
-        view.updateView();
+
+		view.updateView();
 	}
 
 }
