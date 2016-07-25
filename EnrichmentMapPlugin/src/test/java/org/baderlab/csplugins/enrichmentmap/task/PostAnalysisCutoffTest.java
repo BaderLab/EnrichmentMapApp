@@ -10,6 +10,7 @@ import java.util.Set;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.FilterType;
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
+import org.baderlab.csplugins.enrichmentmap.TestUtils;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.cytoscape.model.CyEdge;
@@ -71,7 +72,7 @@ public class PostAnalysisCutoffTest extends BaseNetworkTest {
 		
 		runPostAnalysis(emNetwork, builder);
 	   	
-	   	Map<String,CyEdge> edges = getEdges(emNetwork);
+	   	Map<String,CyEdge> edges = TestUtils.getEdges(emNetwork);
 	   	assertEquals(9, edges.size());
 	   	
 	   	CyEdge edge = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig) MIDDLE8_PLUS100");
@@ -102,7 +103,7 @@ public class PostAnalysisCutoffTest extends BaseNetworkTest {
 		
 		runPostAnalysis(emNetwork, builder);
 		
-	   	Map<String,CyEdge> edges = getEdges(emNetwork);
+	   	Map<String,CyEdge> edges = TestUtils.getEdges(emNetwork);
 	   	assertEquals(9, edges.size());
 	   	
 	   	CyEdge edge = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig) MIDDLE8_PLUS100");
@@ -133,7 +134,7 @@ public class PostAnalysisCutoffTest extends BaseNetworkTest {
 		
 		runPostAnalysis(emNetwork, builder);
 		
-	   	Map<String,CyEdge> edges = getEdges(emNetwork);
+	   	Map<String,CyEdge> edges = TestUtils.getEdges(emNetwork);
 	   	assertEquals(9, edges.size());
 	   	
 	   	CyEdge edge = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig) MIDDLE8_PLUS100");

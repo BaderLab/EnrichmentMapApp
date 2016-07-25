@@ -2,52 +2,16 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	
-	<groupId>org.baderlab.csplugins</groupId>
-	<artifactId>enrichmentmap</artifactId>
-	<version>2.2.0-SNAPSHOT</version>
+	<parent>
+	    <groupId>org.baderlab.csplugins</groupId>
+	    <artifactId>enrichmentmap-parent</artifactId>
+	    <version>2.2.0-SNAPSHOT</version>
+	</parent>
+   
+	<artifactId>enrichmentmap-app</artifactId>
 	<packaging>bundle</packaging>
 	
-	<properties>
-	    <project.name>EnrichmentMap</project.name>
-	    <cy3.version>3.3.0</cy3.version>
-		<osgi.api.version>4.2.0</osgi.api.version>
-		<bundle.namespace.parent>org.baderlab.csplugins</bundle.namespace.parent>
-		<bundle.namespace>org.baderlab.csplugins</bundle.namespace>
-		<bundle.symbolicName>org.baderlab.csplugins.enrichmentmap</bundle.symbolicName>
-	</properties>
-	
-	<repositories>
-		<repository>
-			<id>cytoscape_thirdparty</id>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<name>Wrapped Third Party Libraries</name>
-			<url>http://code.cytoscape.org/nexus/content/repositories/thirdparty/</url>
-		</repository>
-		<repository>
-			<id>releases</id>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<name>Releases</name>
-			<url>http://code.cytoscape.org/nexus/content/repositories/releases/</url>
-		</repository>
-		<repository>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-			<id>snapshots</id>
-			<name>Snapshots</name>
-			<url>http://code.cytoscape.org/nexus/content/repositories/snapshots/</url>
-		</repository>
-	</repositories>
-	
 	<dependencies>
-	
 		<!-- Cytoscape API -->
 		<dependency>
 			<groupId>org.cytoscape</groupId>
@@ -196,10 +160,10 @@
 				<version>2.4.0</version>
 				<configuration>
 					<instructions>
-						<Bundle-SymbolicName>${bundle.symbolicName}</Bundle-SymbolicName>
+						<Bundle-SymbolicName>${bundle.namespace}.enrichmentmap</Bundle-SymbolicName>
 						<Bundle-Version>${project.version}</Bundle-Version>
 						<Bundle-Activator>${bundle.namespace}.enrichmentmap.CyActivator</Bundle-Activator>
-						<Embed-Dependency>colt;inline=true,commons-math3;inline=true,itext;inline=true,guava;inline=true,jsr305;inline=true</Embed-Dependency>
+						<Embed-Dependency>colt,commons-math3,itext,guava,jsr305</Embed-Dependency>
 						<Private-Package>${bundle.namespace}.*</Private-Package>
 						<Export-Package>org.mskcc.*;prefuse.*;org.apache.*;org.baderlab.*;version="${project.version}"</Export-Package>
 						<Import-Package>*;resolution:=optional</Import-Package>
@@ -227,15 +191,6 @@
 					<items>
 						<item>buildNumber</item>
 					</items>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.0</version>
-				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
 				</configuration>
 			</plugin>
 			<!-- 
@@ -361,11 +316,5 @@
         </resources>
 	</build>
 
-	
-	<scm>
-		<connection>scm:git:git://github.com/BaderLab/EnrichmentMapApp.git</connection>
-		<url>https://github.com/BaderLab/EnrichmentMapApp</url>
-		<developerConnection>scm:git:git@github.com:BaderLab/EnrichmentMapApp.git</developerConnection>
-	</scm>
 	
 </project>

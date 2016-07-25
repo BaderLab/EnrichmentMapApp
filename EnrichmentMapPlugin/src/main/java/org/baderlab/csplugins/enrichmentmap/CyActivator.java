@@ -27,10 +27,7 @@ import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.command.CommandExecutorTaskFactory;
 import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.group.CyGroupFactory;
-import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
@@ -50,10 +47,6 @@ import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.presentation.annotations.AnnotationFactory;
-import org.cytoscape.view.presentation.annotations.AnnotationManager;
-import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
-import org.cytoscape.view.presentation.annotations.TextAnnotation;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
@@ -62,15 +55,20 @@ import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceReference;
 
 
 
 public class CyActivator extends AbstractCyActivator {
 
 	public void start(BundleContext bc) {
+		ServiceReference ref = bc.getServiceReference(CySwingApplication.class.getName());
+		if(ref == null) {
+			// Cytoscape is running headless or integration tests are running, don't register UI components
+			return;
+		}
 		
-		//fetch Cytoscape OSGi services that EM needs
-		CySwingApplication cySwingApplicationRef = getService(bc,CySwingApplication.class);
+		CySwingApplication cySwingApplicationRef = getService(bc, CySwingApplication.class);
 		OpenBrowser openBrowserRef = getService(bc, OpenBrowser.class);
 		FileUtil fileUtil = getService(bc,FileUtil.class);
 		StreamUtil streamUtil = getService(bc, StreamUtil.class);
@@ -88,21 +86,11 @@ public class CyActivator extends AbstractCyActivator {
 		CyTableFactory tableFactory = getService(bc, CyTableFactory.class);
 		CyTableManager tableManager	= getService(bc, CyTableManager.class);
 		CyLayoutAlgorithmManager layoutManager = getService(bc, CyLayoutAlgorithmManager.class);
-		MapTableToNetworkTablesTaskFactory mapTableToNetworkTable = getService(bc,  MapTableToNetworkTablesTaskFactory.class);
+		MapTableToNetworkTablesTaskFactory mapTableToNetworkTable = getService(bc, MapTableToNetworkTablesTaskFactory.class);
 		CyEventHelper eventHelper = getService(bc,CyEventHelper.class);
 		@SuppressWarnings("rawtypes")
 		SynchronousTaskManager syncTaskManager = getService(bc, SynchronousTaskManager.class);
 		DialogTaskManager dialogTaskManager = getService(bc, DialogTaskManager.class);
-		// Used with annotations to make Groups of nodes
-		CyGroupFactory groupFactory = getService(bc, CyGroupFactory.class);
-		CyGroupManager groupManager = getService(bc, CyGroupManager.class);
-		// Used to create/remove the annotations (ellipses and text labels)
-		AnnotationManager annotationManager = getService(bc, AnnotationManager.class);
-		@SuppressWarnings("unchecked")
-		AnnotationFactory<ShapeAnnotation> shapeFactory = (AnnotationFactory<ShapeAnnotation>) getService(bc, AnnotationFactory.class, "(type=ShapeAnnotation.class)");    	
-		@SuppressWarnings("unchecked")
-		AnnotationFactory<TextAnnotation> textFactory = (AnnotationFactory<TextAnnotation>) getService(bc, AnnotationFactory.class, "(type=TextAnnotation.class)");
-		CommandExecutorTaskFactory commandExecutor = getService(bc, CommandExecutorTaskFactory.class);
 		//get the service registrar so we can register new services in different classes
 		CyServiceRegistrar registrar = getService(bc, CyServiceRegistrar.class);
 

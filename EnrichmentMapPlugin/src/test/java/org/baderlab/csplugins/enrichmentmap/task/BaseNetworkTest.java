@@ -5,10 +5,6 @@ import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.baderlab.csplugins.enrichmentmap.EdgeSimilarities;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.LogSilenceRule;
@@ -20,7 +16,6 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
@@ -94,30 +89,6 @@ public abstract class BaseNetworkTest {
 		when(sessionManager.getCurrentSession()).thenReturn(emptySession);
 	}
 	
-	
-	protected Map<String,CyNode> getNodes(CyNetwork network) {
-		Map<String,CyNode> nodes = new HashMap<>();
-	   	for(CyNode node : network.getNodeList()) {
-	   		nodes.put(network.getRow(node).get("name", String.class), node);
-	   	}
-	   	return nodes;
-	}
-	
-	protected Map<String,CyEdge> getEdges(CyNetwork network) {
-		Map<String,CyEdge> edges = new HashMap<>();
-	   	for(CyEdge edge : network.getEdgeList()) {
-	   		edges.put(network.getRow(edge).get("name", String.class), edge);
-	   	}
-	   	return edges;
-	}
-	
-	protected EdgeSimilarities getEdgeSimilarities(CyNetwork network) {
-		EdgeSimilarities edges = new EdgeSimilarities();
-	   	for(CyEdge edge : network.getEdgeList()) {
-	   		edges.addEdge(network.getRow(edge).get("name", String.class), edge);
-	   	}
-	   	return edges;
-	}
 	
 	protected void buildEnrichmentMap(EnrichmentMapParameters emParams) {
 		EnrichmentMap map = new EnrichmentMap(emParams);

@@ -18,6 +18,7 @@ import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.FilterType;
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters.AnalysisType;
+import org.baderlab.csplugins.enrichmentmap.TestUtils;
 import org.baderlab.csplugins.enrichmentmap.WidthFunction;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
@@ -60,14 +61,14 @@ public class PostAnalysisTaskTest extends BaseNetworkTest {
 	   	assertEquals(1, networks.size());
 	   	CyNetwork network = networks.iterator().next();
 	   	
-	   	Map<String,CyNode> nodes = getNodes(network);
+	   	Map<String,CyNode> nodes = TestUtils.getNodes(network);
 	   	assertEquals(4, nodes.size());
 	   	assertTrue(nodes.containsKey("BOTTOM8_PLUS100"));
 	   	assertTrue(nodes.containsKey("MIDDLE8_PLUS100"));
 	   	assertTrue(nodes.containsKey("TOP8_PLUS100"));
 	   	assertTrue(nodes.containsKey("TOP1_PLUS100"));
 	   	
-	   	EdgeSimilarities edges = getEdgeSimilarities(network);
+	   	EdgeSimilarities edges = TestUtils.getEdgeSimilarities(network);
 	   	
 	   	assertEquals(6, edges.size());
 	   	assertTrue(edges.containsEdge("MIDDLE8_PLUS100", "Geneset_Overlap", "BOTTOM8_PLUS100"));
@@ -101,11 +102,11 @@ public class PostAnalysisTaskTest extends BaseNetworkTest {
 		runPostAnalysis(emNetwork, builder);
 		// Assert that post-analysis created the new nodes correctly
 		
-		Map<String,CyNode> nodes = getNodes(emNetwork);
+		Map<String,CyNode> nodes = TestUtils.getNodes(emNetwork);
 	   	assertEquals(5, nodes.size());
 	   	assertTrue(nodes.containsKey("PA_TOP8_MIDDLE8_BOTTOM8"));
 	   	
-	   	EdgeSimilarities edges = getEdgeSimilarities(emNetwork);
+	   	EdgeSimilarities edges = TestUtils.getEdgeSimilarities(emNetwork);
 	   	assertEquals(8, edges.size());
 	   	
 	   	CyEdge edge1 = edges.getEdge("PA_TOP8_MIDDLE8_BOTTOM8 (sig) TOP8_PLUS100");
@@ -140,11 +141,11 @@ public class PostAnalysisTaskTest extends BaseNetworkTest {
 		runPostAnalysis(emNetwork, builder);
 		
 		// Assert that post-analysis created the new nodes correctly
-		Map<String,CyNode> nodes = getNodes(emNetwork);
+		Map<String,CyNode> nodes = TestUtils.getNodes(emNetwork);
 	   	assertEquals(5, nodes.size());
 	   	assertTrue(nodes.containsKey("PA_TOP8_MIDDLE8_BOTTOM8"));
 	   	
-	   	EdgeSimilarities edges = getEdgeSimilarities(emNetwork);
+	   	EdgeSimilarities edges = TestUtils.getEdgeSimilarities(emNetwork);
 	   	assertEquals(10, edges.size());
 	   	
 	   	CyEdge edge1 = edges.getEdge("PA_TOP8_MIDDLE8_BOTTOM8 (sig) TOP8_PLUS100");
@@ -182,7 +183,7 @@ public class PostAnalysisTaskTest extends BaseNetworkTest {
 		when(mockFunction.getMappedValue(Matchers.<CyRow>anyObject())).thenReturn(-1.0);
 		when(vmfFactoryContinuous.createVisualMappingFunction(Matchers.<String>anyObject(), Matchers.<Class>anyObject(), Matchers.<VisualProperty>anyObject())).thenReturn(mockFunction);
 	   	
-		EdgeSimilarities edges = getEdgeSimilarities(emNetwork);
+		EdgeSimilarities edges = TestUtils.getEdgeSimilarities(emNetwork);
 		
 		CyEdge sigEdge1 = edges.getEdge("PA_TOP8_MIDDLE8_BOTTOM8 (sig) TOP8_PLUS100");
 		CyEdge sigEdge2 = edges.getEdge("PA_TOP8_MIDDLE8_BOTTOM8 (sig) TOP1_PLUS100");
