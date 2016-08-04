@@ -13,8 +13,8 @@ import org.baderlab.csplugins.enrichmentmap.actions.LoadEnrichmentsPanelAction;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadPostAnalysisPanelAction;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowAboutPanelAction;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowEdgeWidthDialogAction;
+import org.baderlab.csplugins.enrichmentmap.commands.BuildEnrichmentMapTuneableTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.commands.EnrichmentMapGSEACommandHandlerTaskFactory;
-import org.baderlab.csplugins.enrichmentmap.task.BuildEnrichmentMapTuneableTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.task.CreatePublicationVisualStyleTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.task.EdgeWidthTableColumnTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.view.BulkEMCreationPanel;
@@ -165,13 +165,13 @@ public class CyActivator extends AbstractCyActivator {
 		Properties properties = new Properties();
 		properties.put(ServiceProperties.COMMAND, "build");
 		properties.put(ServiceProperties.COMMAND_NAMESPACE, "enrichmentmap");
-		registerService(bc, new BuildEnrichmentMapTuneableTaskFactory(sessionManager, streamUtil, cyApplicationManagerRef, cySwingApplicationRef, cyNetworkManagerRef, cyNetworkViewManagerRef, cyNetworkViewFactoryRef, cyNetworkFactoryRef, tableFactory, tableManager, visualMappingManagerRef, visualStyleFactoryRef, continuousMappingFunctionFactoryRef, discreteMappingFunctionFactoryRef, passthroughMappingFunctionFactoryRef, layoutManager, mapTableToNetworkTable, dialogTaskManager), TaskFactory.class, properties);
+		registerService(bc, new BuildEnrichmentMapTuneableTaskFactory(sessionManager, streamUtil, cyApplicationManagerRef, cySwingApplicationRef, cyNetworkManagerRef, cyNetworkViewManagerRef, cyNetworkViewFactoryRef, cyNetworkFactoryRef, tableFactory, tableManager, visualMappingManagerRef, visualStyleFactoryRef, continuousMappingFunctionFactoryRef, discreteMappingFunctionFactoryRef, passthroughMappingFunctionFactoryRef, layoutManager, mapTableToNetworkTable), TaskFactory.class, properties);
 
 		//gsea specifc commandtool
 		properties = new Properties();
 		properties.put(ServiceProperties.COMMAND, "gseabuild");
 		properties.put(ServiceProperties.COMMAND_NAMESPACE, "enrichmentmap");
-		registerService(bc, new EnrichmentMapGSEACommandHandlerTaskFactory(sessionManager, streamUtil, cyApplicationManagerRef, cySwingApplicationRef, cyNetworkManagerRef, cyNetworkViewManagerRef, cyNetworkViewFactoryRef, cyNetworkFactoryRef, tableFactory, tableManager, visualMappingManagerRef, visualStyleFactoryRef, continuousMappingFunctionFactoryRef, discreteMappingFunctionFactoryRef, passthroughMappingFunctionFactoryRef, layoutManager, mapTableToNetworkTable, dialogTaskManager), TaskFactory.class, properties);
+		registerService(bc, new EnrichmentMapGSEACommandHandlerTaskFactory(sessionManager, streamUtil, cyApplicationManagerRef, cySwingApplicationRef, cyNetworkManagerRef, cyNetworkViewManagerRef, cyNetworkViewFactoryRef, cyNetworkFactoryRef, tableFactory, tableManager, visualMappingManagerRef, visualStyleFactoryRef, continuousMappingFunctionFactoryRef, discreteMappingFunctionFactoryRef, passthroughMappingFunctionFactoryRef, layoutManager, mapTableToNetworkTable), TaskFactory.class, properties);
 
 		//edge table context menu
 		EdgeWidthTableColumnTaskFactory tableColumnTaskFactory = new EdgeWidthTableColumnTaskFactory(edgeWidthPanelAction);

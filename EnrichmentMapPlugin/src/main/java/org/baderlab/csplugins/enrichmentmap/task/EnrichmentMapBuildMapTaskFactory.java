@@ -65,7 +65,7 @@ public class EnrichmentMapBuildMapTaskFactory implements TaskFactory {
 			CyNetworkFactory networkFactory, CyTableFactory tableFactory, CyTableManager tableManager,
 			VisualMappingManager visualMappingManager, VisualStyleFactory visualStyleFactory,
 			VisualMappingFunctionFactory vmfFactoryContinuous, VisualMappingFunctionFactory vmfFactoryDiscrete,
-			VisualMappingFunctionFactory vmfFactoryPassthrough, DialogTaskManager dialog, StreamUtil streamUtil,
+			VisualMappingFunctionFactory vmfFactoryPassthrough, StreamUtil streamUtil,
 			CyLayoutAlgorithmManager layoutManager, MapTableToNetworkTablesTaskFactory mapTableToNetworkTable) {
 		super();
 		this.map = map;
@@ -82,7 +82,6 @@ public class EnrichmentMapBuildMapTaskFactory implements TaskFactory {
 		this.vmfFactoryContinuous = vmfFactoryContinuous;
 		this.vmfFactoryDiscrete = vmfFactoryDiscrete;
 		this.vmfFactoryPassthrough = vmfFactoryPassthrough;
-		this.dialog = dialog;
 		this.streamUtil = streamUtil;
 		this.layoutManager = layoutManager;
 		this.mapTableToNetworkTable = mapTableToNetworkTable;
@@ -168,17 +167,18 @@ public class EnrichmentMapBuildMapTaskFactory implements TaskFactory {
 				applicationManager, networkManager, tableFactory, tableManager, mapTableToNetworkTable);
 		currentTasks.append(create_map);
 
+		// don't visualize the map if running headless
 		if(swingApplication != null) {
 			ParametersPanel paramsPanel = EnrichmentMapManager.getInstance().getParameterPanel();
 			ShowPanelTask show_parameters_panel = new ShowPanelTask(swingApplication, paramsPanel);
 			currentTasks.append(show_parameters_panel);
+			
+			//visualize Network
+			VisualizeEnrichmentMapTask map_viz = new VisualizeEnrichmentMapTask(map, networkFactory, networkManager,
+					networkViewManager, networkViewFactory, visualMappingManager, visualStyleFactory, vmfFactoryContinuous,
+					vmfFactoryDiscrete, vmfFactoryPassthrough, layoutManager);
+			currentTasks.append(map_viz);
 		}
-
-		//visualize Network
-		VisualizeEnrichmentMapTask map_viz = new VisualizeEnrichmentMapTask(map, networkFactory, networkManager,
-				networkViewManager, networkViewFactory, visualMappingManager, visualStyleFactory, vmfFactoryContinuous,
-				vmfFactoryDiscrete, vmfFactoryPassthrough, layoutManager);
-		currentTasks.append(map_viz);
 
 		return currentTasks;
 	}

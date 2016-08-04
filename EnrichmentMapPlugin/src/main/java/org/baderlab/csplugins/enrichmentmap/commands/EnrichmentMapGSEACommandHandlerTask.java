@@ -25,7 +25,6 @@ import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
-import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.util.ListSingleSelection;
 
 
@@ -86,8 +85,6 @@ public class EnrichmentMapGSEACommandHandlerTask extends AbstractTask {
 	private CyLayoutAlgorithmManager layoutManager;
 	private MapTableToNetworkTablesTaskFactory mapTableToNetworkTable;
 
-	private DialogTaskManager dialog;
-
 	
 	public EnrichmentMapGSEACommandHandlerTask(CySessionManager sessionManager,
 				StreamUtil streamUtil, CyApplicationManager applicationManager,
@@ -103,8 +100,7 @@ public class EnrichmentMapGSEACommandHandlerTask extends AbstractTask {
 				VisualMappingFunctionFactory vmfFactoryDiscrete,
 				VisualMappingFunctionFactory vmfFactoryPassthrough,
 				CyLayoutAlgorithmManager layoutManager,
-				MapTableToNetworkTablesTaskFactory mapTableToNetworkTable,
-				DialogTaskManager dialog) {
+				MapTableToNetworkTablesTaskFactory mapTableToNetworkTable) {
 			super();
 			this.sessionManager = sessionManager;
 			this.streamUtil = streamUtil;
@@ -123,7 +119,6 @@ public class EnrichmentMapGSEACommandHandlerTask extends AbstractTask {
 			this.vmfFactoryPassthrough = vmfFactoryPassthrough;
 			this.layoutManager = layoutManager;
 			this.mapTableToNetworkTable = mapTableToNetworkTable;
-			this.dialog = dialog;
 			 
 			similaritymetric = new ListSingleSelection<String>(EnrichmentMapParameters.SM_OVERLAP, EnrichmentMapParameters.SM_JACCARD, EnrichmentMapParameters.SM_COMBINED);
 		}
@@ -170,7 +165,7 @@ public class EnrichmentMapGSEACommandHandlerTask extends AbstractTask {
 		EnrichmentMapBuildMapTaskFactory buildmap = new EnrichmentMapBuildMapTaskFactory(map, applicationManager,
 				swingApplication, networkManager, networkViewManager, networkViewFactory, networkFactory, tableFactory,
 				tableManager, visualMappingManager, visualStyleFactory, vmfFactoryContinuous, vmfFactoryDiscrete,
-				vmfFactoryPassthrough, dialog, streamUtil, layoutManager, mapTableToNetworkTable);
+				vmfFactoryPassthrough, streamUtil, layoutManager, mapTableToNetworkTable);
 
 			insertTasksAfterCurrentTask(buildmap.createTaskIterator());
 			

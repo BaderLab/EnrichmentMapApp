@@ -3,10 +3,6 @@ package org.baderlab.csplugins.enrichmentmap.integration.task;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.util.Map;
 import java.util.Set;
 
@@ -15,6 +11,7 @@ import javax.inject.Inject;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.integration.BaseIntegrationTest;
 import org.baderlab.csplugins.enrichmentmap.integration.EdgeSimilarities;
+import org.baderlab.csplugins.enrichmentmap.integration.SerialTestTaskManager;
 import org.baderlab.csplugins.enrichmentmap.integration.TestUtils;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
@@ -35,17 +32,16 @@ import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
-import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.swing.DialogTaskManager;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.ops4j.pax.exam.junit.PaxExam;
+import org.ops4j.pax.exam.util.Filter;
 
 @RunWith(PaxExam.class)
 public class EnrichmentMapTaskTest extends BaseIntegrationTest {
 	
-	private static final String PATH = "/org/baderlab/csplugins/enrichmentmap/task/EMandPA/";
+	private static final String PATH = "/EnrichmentMapTaskTest/";
 	
 	
 	@Inject private CyNetworkManager networkManager;
@@ -58,65 +54,35 @@ public class EnrichmentMapTaskTest extends BaseIntegrationTest {
 	@Inject private CyNetworkViewFactory networkViewFactory;
 	@Inject private VisualMappingManager visualMappingManager;
 	@Inject private VisualStyleFactory visualStyleFactory;
-	@Inject private VisualMappingFunctionFactory vmfFactoryContinuous;
-	@Inject private VisualMappingFunctionFactory vmfFactoryDiscrete;
-	@Inject private VisualMappingFunctionFactory vmfFactoryPassthrough;
-	@Inject private DialogTaskManager dialog;
+	@Inject private @Filter("(mapping.type=continuous)") VisualMappingFunctionFactory vmfFactoryContinuous;
+	@Inject private @Filter("(mapping.type=discrete)")   VisualMappingFunctionFactory vmfFactoryDiscrete;
+	@Inject private @Filter("(mapping.type=passthrough)")VisualMappingFunctionFactory vmfFactoryPassthrough;
 	@Inject private CyLayoutAlgorithmManager layoutManager;
 	@Inject private MapTableToNetworkTablesTaskFactory mapTableToNetworkTable;
-//	@Inject private CySwingApplication swingApplication ;
 	@Inject private StreamUtil streamUtil;
-	@Inject private SynchronousTaskManager<?> taskManager;
 	
-	
-	private String createTempFile(String fileName) throws IOException {
-		int dot = fileName.indexOf('.');
-		String prefix = fileName.substring(0, dot);
-		String suffix = fileName.substring(dot+1);
-		File tempFile = File.createTempFile(prefix, suffix);
-		Files.copy(getClass().getResourceAsStream(PATH + prefix + "." + suffix), tempFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-		return tempFile.getAbsolutePath();
-	}
 	
 	protected void buildEnrichmentMap(EnrichmentMapParameters emParams) {
 		EnrichmentMap map = new EnrichmentMap(emParams);
 	   	EnrichmentMapBuildMapTaskFactory buildmap = new EnrichmentMapBuildMapTaskFactory(map,  
-	        			applicationManager, null /*swingApplication*/, networkManager, networkViewManager,
-	        			networkViewFactory, networkFactory, tableFactory,
-	        			tableManager, visualMappingManager, visualStyleFactory,
-	        			vmfFactoryContinuous, vmfFactoryDiscrete, vmfFactoryPassthrough, 
-	        			dialog, streamUtil, layoutManager, mapTableToNetworkTable);
+			applicationManager, null /*swingApplication*/, networkManager, networkViewManager,
+			networkViewFactory, networkFactory, tableFactory,
+			tableManager, visualMappingManager, visualStyleFactory,
+			vmfFactoryContinuous, vmfFactoryDiscrete, vmfFactoryPassthrough, 
+			streamUtil, layoutManager, mapTableToNetworkTable);
 	    
 	   	TaskIterator taskIterator = buildmap.createTaskIterator();
-	   	
-//	    // make sure the task iterator completes
-//	    TaskObserver observer = new TaskObserver() {
-//			public void taskFinished(ObservableTask task) { }
-//			public void allFinished(FinishStatus finishStatus) {
-//				if(finishStatus == null)
-//					fail();
-//				if(finishStatus.getType() != FinishStatus.Type.SUCCEEDED)
-//					throw new AssertionError("TaskIterator Failed", finishStatus.getException());
-//			}
-//		};
-
+	   	SerialTestTaskManager taskManager = new SerialTestTaskManager();
 	   	taskManager.execute(taskIterator);
-//	   	SerialTestTaskManager testTaskManager = new SerialTestTaskManager();
-//	   	testTaskManager.ignoreTask(VisualizeEnrichmentMapTask.class);
-//	   	testTaskManager.execute(taskIterator, observer);
-//	   	testTaskManager.execute(taskIterator);
 	}
 	
 	
 	@Test
-	public void test_1_EnrichmentMapBuildMapTask() throws Exception {
-		String geneSetsFile = createTempFile("gene_sets.gmt");
-		String expressionFile = createTempFile("FakeExpression.txt");
-		String enrichmentFile = createTempFile("fakeEnrichments.txt");
-		String rankFile = createTempFile("FakeRank.rnk");
-		
-		System.out.println(geneSetsFile);
-		
+	public void testEnrichmentMapBuildMapTask() throws Exception {
+		String geneSetsFile   = createTempFile(PATH, "gene_sets.gmt").getAbsolutePath();
+		String expressionFile = createTempFile(PATH, "FakeExpression.txt").getAbsolutePath();
+		String enrichmentFile = createTempFile(PATH, "fakeEnrichments.txt").getAbsolutePath();
+		String rankFile       = createTempFile(PATH, "FakeRank.rnk").getAbsolutePath();
 		
 		EnrichmentMapParameters emParams = new EnrichmentMapParameters(sessionManager, streamUtil, applicationManager);
 		emParams.setMethod(EnrichmentMapParameters.method_generic);

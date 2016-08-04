@@ -17,7 +17,6 @@ import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.swing.DialogTaskManager;
 
 public class EnrichmentMapGSEACommandHandlerTaskFactory implements TaskFactory{
 	private CySessionManager sessionManager;
@@ -43,7 +42,6 @@ public class EnrichmentMapGSEACommandHandlerTaskFactory implements TaskFactory{
 	private CyLayoutAlgorithmManager layoutManager;
 	private MapTableToNetworkTablesTaskFactory mapTableToNetworkTable;
 
-	private DialogTaskManager dialog;
 
 	public EnrichmentMapGSEACommandHandlerTaskFactory(CySessionManager sessionManager,
 			StreamUtil streamUtil, CyApplicationManager applicationManager,
@@ -59,8 +57,7 @@ public class EnrichmentMapGSEACommandHandlerTaskFactory implements TaskFactory{
 			VisualMappingFunctionFactory vmfFactoryDiscrete,
 			VisualMappingFunctionFactory vmfFactoryPassthrough,
 			CyLayoutAlgorithmManager layoutManager,
-			MapTableToNetworkTablesTaskFactory mapTableToNetworkTable,
-			DialogTaskManager dialog) {
+			MapTableToNetworkTablesTaskFactory mapTableToNetworkTable) {
 		super();
 		this.sessionManager = sessionManager;
 		this.streamUtil = streamUtil;
@@ -79,7 +76,6 @@ public class EnrichmentMapGSEACommandHandlerTaskFactory implements TaskFactory{
 		this.vmfFactoryPassthrough = vmfFactoryPassthrough;
 		this.layoutManager = layoutManager;
 		this.mapTableToNetworkTable = mapTableToNetworkTable;
-		this.dialog = dialog;
 	}
 
 	public boolean isReady() {
@@ -87,7 +83,7 @@ public class EnrichmentMapGSEACommandHandlerTaskFactory implements TaskFactory{
 	}
 
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new EnrichmentMapGSEACommandHandlerTask(sessionManager, streamUtil, applicationManager, swingApplication, networkManager, networkViewManager, networkViewFactory, networkFactory, tableFactory, tableManager, visualMappingManager, visualStyleFactory, vmfFactoryContinuous, vmfFactoryDiscrete, vmfFactoryPassthrough, layoutManager, mapTableToNetworkTable, dialog));
+		return new TaskIterator(new EnrichmentMapGSEACommandHandlerTask(sessionManager, streamUtil, applicationManager, swingApplication, networkManager, networkViewManager, networkViewFactory, networkFactory, tableFactory, tableManager, visualMappingManager, visualStyleFactory, vmfFactoryContinuous, vmfFactoryDiscrete, vmfFactoryPassthrough, layoutManager, mapTableToNetworkTable));
 	}
 
 }

@@ -1,5 +1,0 @@
-Name	Description	pvalue 	fdr
-Top8_plus100	Top8_plus100	0.005	0.1
-Bottom8_plus100	Bottom8_plus100	0.005	0.1
-Middle8_plus100	Middle8_plus100	0.005	0.1
-top1_plus100	top1_plus100	0.005	0.1

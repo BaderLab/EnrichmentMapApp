@@ -137,10 +137,12 @@ public class VisualizeEnrichmentMapTask extends AbstractTask {
 
 		//apply force directed layout
 		CyLayoutAlgorithm layout = layoutManager.getLayout("force-directed");
-		String layoutAttribute = null;
-		insertTasksAfterCurrentTask(layout.createTaskIterator(view, layout.createLayoutContext(),
-				CyLayoutAlgorithm.ALL_NODE_VIEWS, layoutAttribute));
-
+		if(layout != null) {
+			String layoutAttribute = null;
+			insertTasksAfterCurrentTask(layout.createTaskIterator(view, layout.createLayoutContext(),
+					CyLayoutAlgorithm.ALL_NODE_VIEWS, layoutAttribute));
+		}
+		
 		//update Parameter panel
 		ParametersPanel parametersPanel = EnrichmentMapManager.getInstance().getParameterPanel();
 		parametersPanel.initializeSliders(map);

@@ -41,7 +41,6 @@ import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.TaskObserver;
-import org.cytoscape.work.swing.DialogTaskManager;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TestRule;
@@ -72,7 +71,6 @@ public abstract class BaseNetworkTest {
 	@Mock protected VisualMappingFunctionFactory vmfFactoryContinuous;
 	@Mock protected VisualMappingFunctionFactory vmfFactoryDiscrete;
 	@Mock protected VisualMappingFunctionFactory vmfFactoryPassthrough;
-	@Mock protected DialogTaskManager dialog;
 	@Mock protected CyLayoutAlgorithmManager layoutManager;
 	@Mock protected MapTableToNetworkTablesTaskFactory mapTableToNetworkTable;
     @Mock protected CyEventHelper eventHelper;
@@ -97,7 +95,7 @@ public abstract class BaseNetworkTest {
 	        			networkViewFactory, networkFactory, tableFactory,
 	        			tableManager, visualMappingManager, visualStyleFactory,
 	        			vmfFactoryContinuous, vmfFactoryDiscrete, vmfFactoryPassthrough, 
-	        			dialog, streamUtil, layoutManager, mapTableToNetworkTable);
+	        			streamUtil, layoutManager, mapTableToNetworkTable);
 	    
 	   	TaskIterator taskIterator = buildmap.createTaskIterator();
 	   	

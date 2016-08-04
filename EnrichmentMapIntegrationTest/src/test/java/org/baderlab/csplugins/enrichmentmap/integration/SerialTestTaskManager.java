@@ -1,33 +1,34 @@
 package org.baderlab.csplugins.enrichmentmap.integration;
 
-import static org.mockito.Mockito.*;
 
 import java.util.HashSet;
 import java.util.Set;
 
-import org.cytoscape.work.AbstractTaskManager;
 import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.TaskObserver;
-import org.cytoscape.work.TunableMutator;
 
 
 /**
  * A TaskManager that just runs the tasks in order in the current Thread.
  * Only useful for testing.
  * 
+ * One advantage of this TaskManager is that it will fail the test
+ * when a Task throws an exception, wheras the Cytoscape SynchronousTaskManager
+ * swallows exceptions.
+ * 
  * @author mkucera
  */
-public class SerialTestTaskManager extends AbstractTaskManager<Void, Void> {
+public class SerialTestTaskManager implements TaskManager<Void,Void> {
 
 	private final Set<Class<?>> tasksToIgnore = new HashSet<>();
 	
 	public SerialTestTaskManager() {
-		super(mock(TunableMutator.class));
 	}
 
 	public void ignoreTask(Class<?> taskClass) {
@@ -48,7 +49,7 @@ public class SerialTestTaskManager extends AbstractTaskManager<Void, Void> {
 
 	@Override
 	public void execute(TaskIterator iterator, TaskObserver observer) {
-		TaskMonitor monitor = mock(TaskMonitor.class);
+		TaskMonitor monitor = new NullTaskMonitor();
 		FinishStatus finishStatus = null;
 		
 		Task task = null;
@@ -78,6 +79,10 @@ public class SerialTestTaskManager extends AbstractTaskManager<Void, Void> {
 				observer.allFinished(finishStatus);
 			}
 		}
+	}
+
+	@Override
+	public void setExecutionContext(Void context) {
 	}
 
 }
