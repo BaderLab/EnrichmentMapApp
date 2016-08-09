@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 
@@ -210,7 +211,7 @@ public class EnrichmentMap {
 				GeneSet current_set = genesets.get(geneset2_name);
 
 				//get the genes in the geneset
-				HashSet<Integer> geneset_genes = current_set.getGenes();
+				Set<Integer> geneset_genes = current_set.getGenes();
 
 				//if there is at least one gene in any of the genesets then the ids match.
 				if(!geneset_genes.isEmpty())
@@ -257,7 +258,7 @@ public class EnrichmentMap {
 
 			//compare the HashSet of dataset genes to the HashSet of the current Geneset
 			//only keep the genes from the geneset that are in the dataset genes
-			HashSet<Integer> geneset_genes = current_set.getGenes();
+			Set<Integer> geneset_genes = current_set.getGenes();
 
 			for(Iterator k = geneset_genes.iterator(); k.hasNext();) {
 				Integer current_genekey = (Integer) k.next();

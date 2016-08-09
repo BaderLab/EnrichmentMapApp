@@ -135,7 +135,7 @@ public class UpdateHeatMapTask extends AbstractTask {
 
 				String nodename = network.getRow(current_node).get(CyNetwork.NAME, String.class);
 				GeneSet current_geneset = genesets.get(nodename);
-				HashSet<Integer> additional_set = null;
+				Set<Integer> additional_set = null;
 
 				// if we can't find the geneset and we are dealing with a
 				// two-distinct expression sets, check for the gene set in the
@@ -155,7 +155,7 @@ public class UpdateHeatMapTask extends AbstractTask {
 				if(current_geneset == null)
 					continue;
 
-				HashSet<Integer> current_set = current_geneset.getGenes();
+				Set<Integer> current_set = current_geneset.getGenes();
 
 				if(union == null) {
 					union = new HashSet<Integer>(current_set);

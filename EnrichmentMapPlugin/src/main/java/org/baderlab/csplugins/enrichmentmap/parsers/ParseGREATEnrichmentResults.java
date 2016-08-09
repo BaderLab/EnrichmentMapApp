@@ -171,14 +171,14 @@ public class ParseGREATEnrichmentResults extends AbstractTask implements Observa
 			//when there are two different species it is possible that the gene set could
 			//already exist in the set of genesets.  if it does exist then add the genes
 			//in this set to the geneset
-			GeneSet gs;
+			GeneSet.Builder builder;
 			if(genesets.containsKey(name))
-				gs = genesets.get(name);
+				builder = GeneSet.Builder.from(genesets.get(name));
 
 			//load the geneset and the genes to their respective data structures.
 			//create an object of type Geneset with the above Name and description
 			else
-				gs = new GeneSet(name, description);
+				builder = new GeneSet.Builder(name, description);
 
 			String[] gene_tokens;
 			if(!hasBackground)
@@ -194,7 +194,7 @@ public class ParseGREATEnrichmentResults extends AbstractTask implements Observa
 				//if it is already in the hash then get its associated key and put it
 				//into the set of genes
 				if(genes.containsKey(gene)) {
-					gs.addGene(genes.get(gene));
+					builder.addGenes(genes.get(gene));
 				}
 
 				//If the gene is not in the list then get the next value to be used and put it in the list
@@ -208,13 +208,14 @@ public class ParseGREATEnrichmentResults extends AbstractTask implements Observa
 						dataset.getMap().setNumberOfGenes(value + 1);
 
 						//add the gene to the genelist
-						gs.addGene(genes.get(gene));
+						builder.addGenes(genes.get(gene));
 					}
 				}
 			}
 
 			//finished parsing that geneset
 			//add the current geneset to the hashmap of genesets
+			GeneSet gs = builder.build();
 			genesets.put(name, gs);
 
 			//There are two tests run by GREAT, the binomial on regions and the hypergeometric based on genes

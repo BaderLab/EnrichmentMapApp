@@ -1160,7 +1160,7 @@ public class EnrichmentMapParameters {
 			//Genesets
 			if(type == 1)
 				if(tokens.length >= 3)
-					newMap.put(tokens[0], new GeneSet(tokens));
+					newMap.put(tokens[0], new GeneSet.Builder(tokens).build());
 
 			//Genes
 			if(type == 2) {

@@ -365,24 +365,19 @@ public class EnrichmentMapSessionAction implements SessionAboutToBeSavedListener
 					InitializeGenesetsOfInterestTask genesets_init = new InitializeGenesetsOfInterestTask(map);
 					genesets_init.initializeSets();
 
-					//for each map compute the similarity matrix, (easier than storing it)
-					//compute the geneset similarities
+					//for each map compute the similarity matrix, (easier than storing it) compute the geneset similarities
 					ComputeSimilarityTask similarities = new ComputeSimilarityTask(map, ComputeSimilarityTask.ENRICHMENT);
-					similarities.computeGenesetSimilarities();
-					HashMap<String, GenesetSimilarity> similarity_results = similarities.getGeneset_similarities();
+					HashMap<String, GenesetSimilarity> similarity_results = similarities.computeGenesetSimilarities(null);
 					map.setGenesetSimilarity(similarity_results);
 
 					// also compute geneset similarities between Enrichment- and Signature Genesets (if any)
 					if (! map.getSignatureGenesets().isEmpty()){
 						ComputeSimilarityTask sigSimilarities = new ComputeSimilarityTask(map, ComputeSimilarityTask.SIGNATURE);
-						sigSimilarities.computeGenesetSimilarities();
-						HashMap<String, GenesetSimilarity> sig_similarity_results = sigSimilarities.getGeneset_similarities();
-
+						HashMap<String, GenesetSimilarity> sig_similarity_results = sigSimilarities.computeGenesetSimilarities(null);
 						map.getGenesetSimilarity().putAll(sig_similarity_results);
 					}
 
-					//set the last network to be the one viewed
-					//and initialize the parameters panel
+					//set the last network to be the one viewed and initialize the parameters panel
 					if(!j.hasNext()){
 						cyApplicationManager.setCurrentNetwork(currentNetwork);
 						ParametersPanel paramPanel = manager.getParameterPanel();

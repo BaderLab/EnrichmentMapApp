@@ -1,4 +1,8 @@
-Some Notes about Pax Exam
+Some Notes
+
+Protocol tests are based on the Enrichment Map Protocols from the EM-tutorial-docker repository.
+
+Pax Exam
 
 - Can't figure out how to reuse utility classes from enrichmentmap-app in the integration tests so they had to be copied.
 - For some reason using the same package names was causing NoClassDefFoundErrors, so I added 'integration' to the package names.

@@ -149,13 +149,14 @@ public class ParseGenericEnrichmentResults extends AbstractTask {
 			String description = tokens[1].toUpperCase();
 
 			//the current gene-set
-			GeneSet current_set;
+			GeneSet.Builder builder;
 
 			if(genesets.containsKey(name)) {
-				current_set = (GeneSet) genesets.get(name);
-				gs_size = current_set.getGenes().size();
+				GeneSet gs = genesets.get(name);
+				builder = GeneSet.Builder.from(gs);
+				gs_size = gs.getGenes().size();
 			} else
-				current_set = new GeneSet(name, description);
+				builder = new GeneSet.Builder(name, description);
 
 			//The third column is the nominal p-value
 			if(tokens[2] == null || tokens[2].equalsIgnoreCase("")) {
@@ -218,7 +219,7 @@ public class ParseGenericEnrichmentResults extends AbstractTask {
 								//if it is already in the hash then get its associated key and put it
 								//into the set of genes
 								if(genes.containsKey(gene)) {
-									current_set.addGene(genes.get(gene));
+									builder.addGenes(genes.get(gene));
 								}
 
 								//If the gene is not in the list then get the next value to be used and put it in the list
@@ -232,7 +233,7 @@ public class ParseGenericEnrichmentResults extends AbstractTask {
 										dataset.getMap().setNumberOfGenes(value + 1);
 
 										//add the gene to the genelist
-										current_set.addGene(genes.get(gene));
+										builder.addGenes(genes.get(gene));
 									}
 								}
 							} else {
@@ -268,12 +269,14 @@ public class ParseGenericEnrichmentResults extends AbstractTask {
 
 						if(!populate_gs) {
 							//replace genes in set with the ones in the enrichment results file (the ones filtered by the dataset)
-							current_set.setGenes(genes_inset);
+							builder.clearGenes();
+							builder.addAllGenes(genes_inset);
 						}
 
-						gs_size = current_set.getGenes().size();
+						GeneSet gs = builder.build();
+						gs_size = gs.getGenes().size();
 						//put the new or filtered geneset back into the set.
-						genesets.put(name, current_set);
+						genesets.put(name, gs);
 
 					} //end of tokens>5
 					result = new GenericResult(name, description, pvalue, gs_size, FDRqvalue, NES);

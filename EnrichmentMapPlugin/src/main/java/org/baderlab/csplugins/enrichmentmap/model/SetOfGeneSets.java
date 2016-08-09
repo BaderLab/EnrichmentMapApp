@@ -73,7 +73,7 @@ public class SetOfGeneSets {
 
 			//compare the HashSet of dataset genes to the HashSet of the current Geneset
 			//only keep the genes from the geneset that are in the dataset genes
-			HashSet<Integer> geneset_genes = current_set.getGenes();
+			Set<Integer> geneset_genes = current_set.getGenes();
 
 			//Get the intersection between current geneset and dataset genes
 			Set<Integer> intersection = new HashSet<Integer>(geneset_genes);
@@ -81,8 +81,9 @@ public class SetOfGeneSets {
 
 			//Add new geneset to the filtered set of genesets
 			HashSet<Integer> new_geneset = new HashSet<Integer>(intersection);
-			GeneSet new_set = new GeneSet(geneset2_name, current_set.getDescription());
-			new_set.setGenes(new_geneset);
+			GeneSet.Builder builder = new GeneSet.Builder(geneset2_name, current_set.getDescription());
+			builder.addAllGenes(new_geneset);
+			GeneSet new_set = builder.build();
 
 			filteredGenesets.put(geneset2_name, new_set);
 

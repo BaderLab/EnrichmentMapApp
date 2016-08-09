@@ -110,8 +110,7 @@ public class EnrichmentMapBuildMapTaskFactory implements TaskFactory {
 			}
 
 			//second step: load the enrichments 
-			DetermineEnrichmentResultFileReader enrichmentResultsFilesTask = new DetermineEnrichmentResultFileReader(
-					dataset, streamUtil);
+			DetermineEnrichmentResultFileReader enrichmentResultsFilesTask = new DetermineEnrichmentResultFileReader(dataset, streamUtil);
 			currentTasks.append(enrichmentResultsFilesTask.getParsers());
 
 			//third step: load expression file if specified in the dataset.

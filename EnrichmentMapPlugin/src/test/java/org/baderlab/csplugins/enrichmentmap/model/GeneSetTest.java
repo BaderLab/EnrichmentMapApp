@@ -1,6 +1,8 @@
 package org.baderlab.csplugins.enrichmentmap.model;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,15 +26,16 @@ public class GeneSetTest {
 	@Test
 	public void testCreateEmptyGeneSet(){
 		//create a new GeneSet
-		GeneSet gs = new GeneSet("Gene Set 1", "fake geneset");
+		GeneSet.Builder builder = new GeneSet.Builder("Gene Set 1", "fake geneset");
 		
-		gs.addGene(10);
-		gs.addGene(12);
-		gs.addGene(-1);
-		gs.addGene(0);
+		builder.addGenes(10);
+		builder.addGenes(12);
+		builder.addGenes(-1);
+		builder.addGenes(0);
 		//check if it handles duplicates
-		gs.addGene(10);
+		builder.addGenes(10);
 		
+		GeneSet gs = builder.build();
 		assertEquals("Gene Set 1", gs.getName());
 		assertEquals("fake geneset", gs.getDescription());
 		
@@ -56,7 +59,9 @@ public class GeneSetTest {
 		saved_gs[5] = "-1";
 		saved_gs[6] = "0";
 		
-		GeneSet gs = new GeneSet(saved_gs);
+		
+		GeneSet.Builder builder = new GeneSet.Builder(saved_gs);
+		GeneSet gs = builder.build();
 		
 		assertEquals("Gene Set 1", gs.getName());
 		assertEquals("fake geneset", gs.getDescription());
@@ -68,27 +73,30 @@ public class GeneSetTest {
 		assertEquals(Arrays.asList(-1,0,10,12), geneIds);
 		
 		//test equals function
-		GeneSet gs2 = new GeneSet("Gene Set 1", "fake geneset");
+		GeneSet.Builder builder2 = new GeneSet.Builder("Gene Set 1", "fake geneset");
+		builder2.addGenes(10);
+		builder2.addGenes(12);
+		builder2.addGenes(-1);
 		
-		gs2.addGene(10);
-		gs2.addGene(12);
-		gs2.addGene(-1);
+		GeneSet gs2 = builder2.build();
+		assertFalse(gs.equals(gs2));
 		
-		assertEquals(false, gs.equals(gs2));
+		builder2 = GeneSet.Builder.from(gs2);
+		builder2.addGenes(0);
 		
-		gs2.addGene(0);
-		assertEquals(true, gs.equals(gs2));
+		gs2 = builder2.build();
+		assertTrue(gs.equals(gs2));
 	}
 	
 	@Test
 	public void testImbeddedSource(){
 			
 		//create a new GeneSet from the structure used in the internally generated gene set files
-		GeneSet gs = new GeneSet("alanine biosynthesis II%HumanCyc%ALANINE-SYN2-PWY", "alanine biosynthesis II");
+		GeneSet gs = new GeneSet.Builder("alanine biosynthesis II%HumanCyc%ALANINE-SYN2-PWY", "alanine biosynthesis II").build();
 		
 		assertEquals("alanine biosynthesis II%HumanCyc%ALANINE-SYN2-PWY", gs.getName());
 		assertEquals("alanine biosynthesis II", gs.getDescription());
-		assertEquals("HumanCyc", gs.getSource());
+		assertEquals("HumanCyc", gs.getSource().get());
 		
 	}
 }

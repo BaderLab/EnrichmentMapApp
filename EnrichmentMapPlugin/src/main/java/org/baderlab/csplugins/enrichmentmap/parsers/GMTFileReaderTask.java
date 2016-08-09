@@ -168,7 +168,7 @@ public class GMTFileReaderTask extends AbstractTask {
 					String description = tokens[1].trim();
 
 					//create an object of type Geneset with the above Name and description
-					GeneSet gs = new GeneSet(Name, description);
+					GeneSet.Builder builder = new GeneSet.Builder(Name, description);
 
 					// Calculate Percentage.  This must be a value between 0..100.
 					int percentComplete = (int) (((double) currentProgress / maxValue) * 100);
@@ -182,7 +182,7 @@ public class GMTFileReaderTask extends AbstractTask {
 						//if it is already in the hash then get its associated key and put it
 						//into the set of genes
 						if(genes.containsKey(tokens[j].toUpperCase())) {
-							gs.addGene(genes.get(tokens[j].toUpperCase()));
+							builder.addGenes(genes.get(tokens[j].toUpperCase()));
 						}
 
 						//If the gene is not in the list then get the next value to be used and put it in the list
@@ -197,17 +197,18 @@ public class GMTFileReaderTask extends AbstractTask {
 								map.setNumberOfGenes(value + 1);
 
 								//add the gene to the genelist
-								gs.addGene(genes.get(tokens[j].toUpperCase()));
+								builder.addGenes(genes.get(tokens[j].toUpperCase()));
 							}
 						}
 					}
 
 					//finished parsing that geneset
 					//add the current geneset to the hashmap of genesets
+					GeneSet gs = builder.build();
 					genesets.put(Name, gs);
 
 					//add the geneset type to the list of types
-					setOfgenesets.addGenesetType(gs.getSource());
+					gs.getSource().ifPresent(source -> setOfgenesets.addGenesetType(source));
 				}
 
 			}

@@ -50,7 +50,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapVisualStyle;
@@ -80,6 +82,9 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
+
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 
 /**
  * Cytoscape-Task to perform Disease-Signature Post-Analysis
@@ -187,7 +192,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 			String prefix = paParams.getAttributePrefix();
 			if(prefix == null) {
 				prefix = "EM1_";
-				paParams = new PostAnalysisParameters.Builder().mergeFrom(paParams).setAttributePrefix(prefix).build();
+				paParams = PostAnalysisParameters.Builder.from(paParams).setAttributePrefix(prefix).build();
 			}
 
 			//get the node attribute and edge attribute tables
@@ -198,8 +203,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 			Map<String, CyNode> nodesMap = createNodeMap(current_network, cyNodeAttrs, prefix);
 
 			// Common gene universe: Intersection of EnrichmentGenes and SignatureGenes
-			Set<Integer> geneUniverse = new HashSet<>();
-			geneUniverse.addAll(EnrichmentGenes);
+			Set<Integer> geneUniverse = ImmutableSet.copyOf(EnrichmentGenes);
 
 			Map<String, String> duplicateGenesets = new HashMap<>();
 
@@ -220,12 +224,9 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 				Set<Integer> sigGenes = sigGeneSet.getGenes();
 
 				// the genes that are in this signature gene set as well as in the Universe of Enrichment-GMT Genes.    
-				Set<Integer> sigGenesInUniverse = new HashSet<Integer>(sigGenes);
-				sigGenesInUniverse.retainAll(geneUniverse);
-				//sigGeneSet.setGenes(sigGenes);
+				Set<Integer> sigGenesInUniverse = Sets.intersection(sigGenes, geneUniverse);
 
-				EnrichmentMapManager.getInstance().getMap(current_network.getSUID()).getSignatureGenesets()
-						.put(hub_name, sigGeneSet);
+				EnrichmentMapManager.getInstance().getMap(current_network.getSUID()).getSignatureGenesets().put(hub_name, sigGeneSet);
 
 				// iterate over Enrichment Genesets
 				for(String geneset_name : EnrichmentGenesets.keySet()) {
@@ -269,17 +270,11 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 					else {
 						//get the Enrichment geneset
 						GeneSet enrGeneset = EnrichmentGenesets.get(geneset_name);
+						
 						// restrict to a common gene universe
-						Set<Integer> enrGenes = enrGeneset.getGenes();
-						enrGenes.retainAll(geneUniverse);
-
-						//Get the union of the two sets
-						Set<Integer> union = new HashSet<Integer>(sigGenes);
-						union.addAll(enrGenes);
-
-						//Get the intersection
-						Set<Integer> intersection = new HashSet<Integer>(sigGenesInUniverse);
-						intersection.retainAll(enrGenes);
+						Set<Integer> enrGenes = Sets.intersection(enrGeneset.getGenes(), geneUniverse);
+						Set<Integer> union = Sets.union(sigGenes, enrGenes);
+						Set<Integer> intersection = Sets.intersection(sigGenesInUniverse, enrGenes);
 
 						// Only calculate Mann-Whitney pValue if there is overlap
 						if(intersection.size() > 0) {
@@ -307,10 +302,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 					}
 				} // End: iterate over Enrichment Genesets
 
-				/*
-				 * *************************** Create Signature Hub Node *
-				 *****************************/
-
+				// Create Signature Hub Node
 				boolean created = createHubNode(hub_name, current_network, current_view, currentNodeY_offset, prefix,
 						cyEdgeAttrs, cyNodeAttrs, geneUniverse, sigGeneSet);
 				if(created)
@@ -325,10 +317,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 			}
 			duplicateGenesets.clear();
 
-			/*
-			 * **************************** Create Signature Hub Edges *
-			 ******************************/
-
+			// Create Signature Hub Edges
 			for(String edge_name : geneset_similarities.keySet()) {
 				if(cancelled)
 					throw new InterruptedException();
@@ -337,8 +326,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 					// skip if it's not a signature edge from the same dataset
 					continue;
 				if(!(this.SelectedSignatureGenesets.containsKey(geneset_similarities.get(edge_name).getGeneset1_Name())
-						|| this.SelectedSignatureGenesets
-								.containsKey(geneset_similarities.get(edge_name).getGeneset2_Name())))
+						|| this.SelectedSignatureGenesets.containsKey(geneset_similarities.get(edge_name).getGeneset2_Name())))
 					// skip if not either of the adjacent nodes is a SelectedSignatureGenesets of the current analysis (fixes Bug #44)
 					continue;
 
@@ -364,8 +352,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 			case MANN_WHIT_GREATER:
 				return !similarity.isMannWhitMissingRanks() && similarity.getMann_Whit_pValue_greater() <= filterParams.getValue();
 			case MANN_WHIT_LESS:
-				return !similarity.isMannWhitMissingRanks()
-						&& similarity.getMann_Whit_pValue_less() <= filterParams.getValue();
+				return !similarity.isMannWhitMissingRanks() && similarity.getMann_Whit_pValue_less() <= filterParams.getValue();
 			case NUMBER:
 				return similarity.getSizeOfOverlap() >= filterParams.getValue();
 			case PERCENT:
@@ -422,25 +409,19 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 		//only create the list if the hashkey 2 genes is not null Otherwise it takes too much time to populate the list
 		//                GeneSet sigGeneSet = SelectedSignatureGenesets.get(hub_name);
 		if(map.getHashkey2gene() != null) {
-			// HashSet to List:
-			List<String> gene_list = new ArrayList<>();
-			for(Integer current : sigGeneSet.getGenes()) {
-				String gene = map.getGeneFromHashKey(current);
-				if(gene_list != null && gene != null)
-					gene_list.add(gene);
-			}
-			Collections.sort(gene_list);
-
-			List<String> enr_gene_list = new ArrayList<>();
-			Set<Integer> enr_genes_hash = sigGeneSet.getGenes();
-			enr_genes_hash.retainAll(geneUniverse);
-			for(Integer current : enr_genes_hash) {
-				String gene = map.getGeneFromHashKey(current);
-				if(enr_gene_list != null && gene != null)
-					enr_gene_list.add(gene);
-			}
-			Collections.sort(enr_gene_list);
-
+			List<String> gene_list = sigGeneSet.getGenes().stream()
+					.map(map::getGeneFromHashKey)
+					.filter(Objects::nonNull)
+					.sorted()
+					.collect(Collectors.toList());
+			
+			List<String> enr_gene_list = sigGeneSet.getGenes().stream()
+					.filter(geneUniverse::contains)
+					.map(map::getGeneFromHashKey)
+					.filter(Objects::nonNull)
+					.sorted()
+					.collect(Collectors.toList());
+			
 			current_row.set(prefix + EnrichmentMapVisualStyle.GENES, gene_list);
 			current_row.set(prefix + EnrichmentMapVisualStyle.ENR_GENES, enr_gene_list);
 			current_row.set(prefix + EnrichmentMapVisualStyle.GS_DESCR, sigGeneSet.getDescription());
@@ -452,8 +433,9 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 		// add the geneset of the signature node to the GenesetsOfInterest,
 		// as the Heatmap will grep it's data from there.
 		DataSet dataset = map.getDataset(paParams.getSignature_dataSet());
-		sigGeneSet.getGenes().retainAll(dataset.getDatasetGenes());
-		dataset.getGenesetsOfInterest().getGenesets().put(hub_name, sigGeneSet);
+		Set<Integer> signatureGenesInDataSet = ImmutableSet.copyOf(Sets.intersection(sigGeneSet.getGenes(), dataset.getDatasetGenes()));
+		GeneSet geneSetInDataSet = new GeneSet.Builder(sigGeneSet.getName(), sigGeneSet.getDescription()).addAllGenes(signatureGenesInDataSet).build();
+		dataset.getGenesetsOfInterest().getGenesets().put(hub_name, geneSetInDataSet);
 
 		return created;
 	}
