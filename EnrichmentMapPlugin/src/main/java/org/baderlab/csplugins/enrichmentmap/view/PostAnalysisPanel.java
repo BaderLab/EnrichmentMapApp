@@ -44,7 +44,7 @@ public class PostAnalysisPanel extends JPanel implements CytoPanelComponent {
 	private final CySessionManager sessionManager;
 	private final StreamUtil streamUtil;
 	private final DialogTaskManager dialog;
-	private final SynchronousTaskManager syncTaskManager;
+	private final SynchronousTaskManager<?> syncTaskManager;
 	private final CyEventHelper eventHelper;
 
 	private final VisualMappingManager visualMappingManager;
@@ -55,11 +55,10 @@ public class PostAnalysisPanel extends JPanel implements CytoPanelComponent {
 	private final VisualMappingFunctionFactory vmfFactoryPassthrough;
 
 	private WeakHashMap<EnrichmentMap, PostAnalysisInputPanel> panels = new WeakHashMap<>();
-	private PostAnalysisInputPanel currentPanel;
 
 	public PostAnalysisPanel(CyApplicationManager cyApplicationManager, CySwingApplication application,
 			OpenBrowser browser, FileUtil fileUtil, CySessionManager sessionManager, StreamUtil streamUtil,
-			CyServiceRegistrar registrar, DialogTaskManager dialog, SynchronousTaskManager syncTaskManager,
+			CyServiceRegistrar registrar, DialogTaskManager dialog, SynchronousTaskManager<?> syncTaskManager,
 			CyEventHelper eventHelper, VisualMappingManager visualMappingManager, VisualStyleFactory visualStyleFactory,
 			VisualMappingFunctionFactory vmfFactoryContinuous, VisualMappingFunctionFactory vmfFactoryDiscrete,
 			VisualMappingFunctionFactory vmfFactoryPassthrough) {
@@ -83,24 +82,18 @@ public class PostAnalysisPanel extends JPanel implements CytoPanelComponent {
 		setLayout(new BorderLayout());
 	}
 
-	public void showPanelFor(EnrichmentMap currentMap) {
+	public void showPanelFor(EnrichmentMap map) {
 		PostAnalysisInputPanel panel;
-		if(currentMap == null) {
-			if(!currentPanel.isEnabled()) // its already showing the disabled panel
-				return;
-			panel = newPostAnalysisInputPanel();
+		if(map == null) {
+			// create a dummy panel that's disabled
+			panel = newPostAnalysisInputPanel(null);
 			SwingUtil.recursiveEnable(panel, false);
 		} else {
-			panel = panels.get(currentMap);
-			if(panel == null) {
-				panel = newPostAnalysisInputPanel();
-				panel.initialize(currentMap);
-				panels.put(currentMap, panel);
-			}
+			panel = panels.computeIfAbsent(map, this::newPostAnalysisInputPanel);
 		}
 
 		removeAll();
-		add(currentPanel = panel, BorderLayout.CENTER);
+		add(panel, BorderLayout.CENTER);
 		revalidate();
 		repaint();
 	}
@@ -109,10 +102,14 @@ public class PostAnalysisPanel extends JPanel implements CytoPanelComponent {
 		panels.remove(map);
 	}
 
-	private PostAnalysisInputPanel newPostAnalysisInputPanel() {
-		return new PostAnalysisInputPanel(cyApplicationManager, application, browser, fileUtil, sessionManager,
+	private PostAnalysisInputPanel newPostAnalysisInputPanel(EnrichmentMap map) {
+		PostAnalysisInputPanel panel = 
+			new PostAnalysisInputPanel(cyApplicationManager, application, browser, fileUtil, sessionManager,
 				streamUtil, registrar, dialog, syncTaskManager, eventHelper, visualMappingManager, visualStyleFactory,
 				vmfFactoryContinuous, vmfFactoryDiscrete, vmfFactoryPassthrough);
+		if(map != null)
+			panel.initialize(map);
+		return panel;
 	}
 
 	@Override

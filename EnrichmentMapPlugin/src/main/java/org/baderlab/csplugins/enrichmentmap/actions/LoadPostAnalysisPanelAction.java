@@ -47,6 +47,8 @@ import java.awt.event.ActionEvent;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.swing.JOptionPane;
+
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.view.PostAnalysisPanel;
@@ -65,10 +67,10 @@ import org.cytoscape.view.model.CyNetworkViewManager;
 @SuppressWarnings("serial")
 public class LoadPostAnalysisPanelAction extends AbstractCyAction {
 
-	private final CytoPanel cytoPanelWest;
-	private PostAnalysisPanel postEMinputPanel;
-	private CyServiceRegistrar registrar;
-	private CyApplicationManager applicationManager;
+	private final PostAnalysisPanel postEMinputPanel;
+	private final CyServiceRegistrar registrar;
+	private final CyApplicationManager applicationManager;
+	private final CySwingApplication swingApplication;
 
 	public LoadPostAnalysisPanelAction(Map<String, String> configProps, CyApplicationManager applicationManager,
 			CyNetworkViewManager networkViewManager, CySwingApplication application, PostAnalysisPanel inputPanel,
@@ -78,20 +80,23 @@ public class LoadPostAnalysisPanelAction extends AbstractCyAction {
 
 		putValue(NAME, "Load Post Analysis Panel");
 
-		this.cytoPanelWest = application.getCytoPanel(CytoPanelName.WEST);
 		this.postEMinputPanel = inputPanel;
 		this.applicationManager = applicationManager;
 		this.registrar = registrar;
-
+		this.swingApplication = application;
 	}
 
 	public void actionPerformed(ActionEvent event) {
 		CyNetwork network = applicationManager.getCurrentNetwork();
-		if(network == null)
+		if(network == null) {
+			JOptionPane.showMessageDialog(swingApplication.getJFrame(), "Please select a network first", "EnrichmentMap: Post Analysis", JOptionPane.WARNING_MESSAGE);
 			return;
+		}
 
+		CytoPanel cytoPanel = swingApplication.getCytoPanel(CytoPanelName.WEST);
+		
 		//if the service has not been registered
-		if(cytoPanelWest.indexOfComponent(this.postEMinputPanel) == -1) {
+		if(cytoPanel.indexOfComponent(this.postEMinputPanel) == -1) {
 			registrar.registerService(postEMinputPanel, CytoPanelComponent.class, new Properties());
 
 			//set the input window in the instance so we can udate the instance window on network focus
@@ -102,15 +107,15 @@ public class LoadPostAnalysisPanelAction extends AbstractCyAction {
 		}
 
 		// If the state of the cytoPanelWest is HIDE, show it
-		if(cytoPanelWest.getState() == CytoPanelState.HIDE) {
-			cytoPanelWest.setState(CytoPanelState.DOCK);
+		if(cytoPanel.getState() == CytoPanelState.HIDE) {
+			cytoPanel.setState(CytoPanelState.DOCK);
 		}
 
 		// Select my panel
-		int index = cytoPanelWest.indexOfComponent(this.postEMinputPanel);
+		int index = cytoPanel.indexOfComponent(this.postEMinputPanel);
 		if(index == -1) {
 			return;
 		}
-		cytoPanelWest.setSelectedIndex(index);
+		cytoPanel.setSelectedIndex(index);
 	}
 }
