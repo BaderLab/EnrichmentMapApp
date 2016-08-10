@@ -49,19 +49,24 @@ import java.util.Set;
 
 import org.inferred.freebuilder.FreeBuilder;
 
+/**
+ * This is an abstract class only so we can override toString(), otherwise it would be an interface
+ * @author mkucera
+ *
+ */
 @FreeBuilder
-public interface GeneSet {
+public abstract class GeneSet {
 
-	public String getName();
+	public abstract String getName();
 
-	public String getDescription();
+	public abstract String getDescription();
 
-	public Set<Integer> getGenes();
+	public abstract Set<Integer> getGenes();
 
-	public Optional<String> getSource();
+	public abstract Optional<String> getSource();
 	
 	
-	class Builder extends GeneSet_Builder {
+	public static class Builder extends GeneSet_Builder {
 		
 		public static Builder from(GeneSet gs) {
 			return new Builder().mergeFrom(gs);
@@ -90,7 +95,8 @@ public interface GeneSet {
 	}
 	
 
-	public default String toSessionString() {
+	@Override
+	public  String toString() {
 		StringBuffer geneset = new StringBuffer();
 
 		geneset.append(getName() + "\t" + getDescription() + "\t");

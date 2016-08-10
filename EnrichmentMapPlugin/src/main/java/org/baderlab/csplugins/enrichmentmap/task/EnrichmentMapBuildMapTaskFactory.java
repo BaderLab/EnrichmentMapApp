@@ -30,34 +30,30 @@ import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.swing.DialogTaskManager;
+
+import com.google.common.base.Strings;
 
 public class EnrichmentMapBuildMapTaskFactory implements TaskFactory {
 
-	private EnrichmentMap map;
+	private final EnrichmentMap map;
 
 	//services required
-	private CyApplicationManager applicationManager;
-	private CySwingApplication swingApplication;
-	private CyNetworkManager networkManager;
-	private CyNetworkViewManager networkViewManager;
-	private CyNetworkViewFactory networkViewFactory;
-	private CyNetworkFactory networkFactory;
-	private CyTableFactory tableFactory;
-	private CyTableManager tableManager;
-
-	private VisualMappingManager visualMappingManager;
-	private VisualStyleFactory visualStyleFactory;
-
-	//we will need all three mappers
-	private VisualMappingFunctionFactory vmfFactoryContinuous;
-	private VisualMappingFunctionFactory vmfFactoryDiscrete;
-	private VisualMappingFunctionFactory vmfFactoryPassthrough;
-
-	private StreamUtil streamUtil;
-	private DialogTaskManager dialog;
-	private CyLayoutAlgorithmManager layoutManager;
-	private MapTableToNetworkTablesTaskFactory mapTableToNetworkTable;
+	private final CyApplicationManager applicationManager;
+	private final CySwingApplication swingApplication;
+	private final CyNetworkManager networkManager;
+	private final CyNetworkViewManager networkViewManager;
+	private final CyNetworkViewFactory networkViewFactory;
+	private final CyNetworkFactory networkFactory;
+	private final CyTableFactory tableFactory;
+	private final CyTableManager tableManager;
+	private final VisualMappingManager visualMappingManager;
+	private final VisualStyleFactory visualStyleFactory;
+	private final VisualMappingFunctionFactory vmfFactoryContinuous;
+	private final VisualMappingFunctionFactory vmfFactoryDiscrete;
+	private final VisualMappingFunctionFactory vmfFactoryPassthrough;
+	private final StreamUtil streamUtil;
+	private final CyLayoutAlgorithmManager layoutManager;
+	private final MapTableToNetworkTablesTaskFactory mapTableToNetworkTable;
 
 	public EnrichmentMapBuildMapTaskFactory(EnrichmentMap map, CyApplicationManager applicationManager,
 			CySwingApplication swingApplication, CyNetworkManager networkManager,
@@ -67,8 +63,9 @@ public class EnrichmentMapBuildMapTaskFactory implements TaskFactory {
 			VisualMappingFunctionFactory vmfFactoryContinuous, VisualMappingFunctionFactory vmfFactoryDiscrete,
 			VisualMappingFunctionFactory vmfFactoryPassthrough, StreamUtil streamUtil,
 			CyLayoutAlgorithmManager layoutManager, MapTableToNetworkTablesTaskFactory mapTableToNetworkTable) {
-		super();
+
 		this.map = map;
+		
 		this.applicationManager = applicationManager;
 		this.swingApplication = swingApplication;
 		this.networkManager = networkManager;
@@ -102,8 +99,9 @@ public class EnrichmentMapBuildMapTaskFactory implements TaskFactory {
 
 		for(String dataset_name : dataset_names) {
 			DataSet dataset = datasets.get(dataset_name);
+			
 			//first step: load GMT file if a file is specified in this dataset    		
-			if(dataset.getSetofgenesets().getFilename() != null && !dataset.getSetofgenesets().getFilename().isEmpty()) {
+			if(!Strings.isNullOrEmpty(dataset.getSetofgenesets().getFilename())) {
 				//Load the geneset file
 				GMTFileReaderTask gmtFileTask = new GMTFileReaderTask(dataset, streamUtil);
 				currentTasks.append(gmtFileTask);
@@ -116,14 +114,14 @@ public class EnrichmentMapBuildMapTaskFactory implements TaskFactory {
 			//third step: load expression file if specified in the dataset.
 			//if there is no expression file then create a dummy file to associate with 
 			//this dataset so we can still use the expression viewer
-			if(dataset.getDatasetFiles().getExpressionFileName() == null
-					|| dataset.getDatasetFiles().getExpressionFileName().isEmpty()) {
+			if(Strings.isNullOrEmpty(dataset.getDatasetFiles().getExpressionFileName())) {
 				CreateDummyExpressionTask dummyExpressionTask = new CreateDummyExpressionTask(dataset);
 				currentTasks.append(dummyExpressionTask);
 			} else {
 				ExpressionFileReaderTask expressionFileTask = new ExpressionFileReaderTask(dataset, streamUtil);
 				currentTasks.append(expressionFileTask);
 			}
+			
 			//fourth step: Load ranks
 			//check to see if we have ranking files
 			if(dataset.getMap().getParams().getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)) {
@@ -182,10 +180,9 @@ public class EnrichmentMapBuildMapTaskFactory implements TaskFactory {
 		return currentTasks;
 	}
 
+	
 	public boolean isReady() {
-		if(map != null && !map.getDatasets().isEmpty())
-			return true;
-		return false;
+		return map != null && !map.getDatasets().isEmpty();
 	}
 
 }

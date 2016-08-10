@@ -52,7 +52,6 @@ import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -63,7 +62,6 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Scanner;
 
 import javax.swing.BorderFactory;
@@ -84,6 +82,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JToolTip;
 import javax.swing.text.InternationalFormatter;
 
+import org.baderlab.csplugins.enrichmentmap.CyActivator;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapBuildProperties;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
@@ -118,93 +117,66 @@ import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
 
-/**
- * Created by User: risserlin Date: Jun 16, 2009 Time: 11:13:12 AM
- * <p>
- * Enrichment map User input Panel
- */
+@SuppressWarnings("serial")
 public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponent {
 
 	//services required
-	private StreamUtil streamUtil;
-	private CyApplicationManager applicationManager;
-	private CyNetworkManager networkManager;
-	private CyNetworkViewManager networkViewManager;
-	private CyNetworkViewFactory networkViewFactory;
-	private CyNetworkFactory networkFactory;
-	private CyTableFactory tableFactory;
-	private CyTableManager tableManager;
+	private final StreamUtil streamUtil;
+	private final CyApplicationManager applicationManager;
+	private final CyNetworkManager networkManager;
+	private final CyNetworkViewManager networkViewManager;
+	private final CyNetworkViewFactory networkViewFactory;
+	private final CyNetworkFactory networkFactory;
+	private final CyTableFactory tableFactory;
+	private final CyTableManager tableManager;
+	private final VisualMappingManager visualMappingManager;
+	private final VisualStyleFactory visualStyleFactory;
+	private final VisualMappingFunctionFactory vmfFactoryContinuous;
+	private final VisualMappingFunctionFactory vmfFactoryDiscrete;
+	private final VisualMappingFunctionFactory vmfFactoryPassthrough;
+	private final CyLayoutAlgorithmManager layoutManager;
+	private final MapTableToNetworkTablesTaskFactory mapTableToNetworkTable;
+	private final DialogTaskManager dialog;
+	private final CySessionManager sessionManager;
+	private final CySwingApplication application;
+	private final OpenBrowser browser;
+	private final FileUtil fileUtil;
+	private final CyServiceRegistrar registrar;
 
-	private VisualMappingManager visualMappingManager;
-	private VisualStyleFactory visualStyleFactory;
-
-	//we will need all three mappers
-	private VisualMappingFunctionFactory vmfFactoryContinuous;
-	private VisualMappingFunctionFactory vmfFactoryDiscrete;
-	private VisualMappingFunctionFactory vmfFactoryPassthrough;
-
-	private CyLayoutAlgorithmManager layoutManager;
-	private MapTableToNetworkTablesTaskFactory mapTableToNetworkTable;
-	//
-	private DialogTaskManager dialog;
-	private CySessionManager sessionManager;
-
-	private CySwingApplication application;
-	private OpenBrowser browser;
-	private FileUtil fileUtil;
-	private CyServiceRegistrar registrar;
-
-	private EnrichmentMapInputPanel empanel;
-	private BulkEMCreationPanel bulkEmInput;
-
-	private static final long serialVersionUID = -7837369382106745874L;
-
-	CollapsiblePanel Parameters;
-	CollapsiblePanel datasets;
-
-	CollapsiblePanel dataset1;
-	CollapsiblePanel dataset2;
-
-	JPanel DatasetsPanel;
-
-	DecimalFormat decFormat; // used in the formatted text fields
-
+	
 	private EnrichmentMapParameters params;
-
+	
+	private BulkEMCreationPanel bulkEmInput;
+	
 	private DataSetFiles dataset1files = new DataSetFiles();
 	private DataSetFiles dataset2files = new DataSetFiles();
 
-	//Genesets file related components
-	//user specified file names
-	private JFormattedTextField GMTFileNameTextField;
+	private CollapsiblePanel datasets;
+	private CollapsiblePanel dataset1;
+	private CollapsiblePanel dataset2;
 
+	private JPanel DatasetsPanel;
+
+	private JFormattedTextField GMTFileNameTextField;
 	private JFormattedTextField GCTFileName1TextField;
 	private JFormattedTextField GCTFileName2TextField;
-
 	private JFormattedTextField Dataset1FileNameTextField;
 	private JFormattedTextField Dataset1FileName2TextField;
-
 	private JFormattedTextField Dataset2FileNameTextField;
 	private JFormattedTextField Dataset2FileName2TextField;
-
 	private JFormattedTextField Dataset1RankFileTextField;
 	private JFormattedTextField Dataset2RankFileTextField;
-
 	private JFormattedTextField Dataset1ClassFileTextField;
 	private JFormattedTextField Dataset2ClassFileTextField;
-
-	//user specified terms and cut offs
 	private JFormattedTextField Dataset1Phenotype1TextField;
 	private JFormattedTextField Dataset1Phenotype2TextField;
 	private JFormattedTextField Dataset2Phenotype1TextField;
 	private JFormattedTextField Dataset2Phenotype2TextField;
-
 	private JFormattedTextField pvalueTextField;
 	private JFormattedTextField qvalueTextField;
 	private JFormattedTextField coeffecientTextField;
 	private JFormattedTextField combinedConstantTextField;
 
-	//flags
 	private JRadioButton gsea;
 	private JRadioButton generic;
 	private JRadioButton david;
@@ -223,23 +195,18 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 	public static String rank_instruction = "Please select the rank file (.txt), (.rnk)...";
 
 	//tool tips
-	private static String gmtTip = "File specifying gene sets.\n"
-			+ "Format: geneset name <tab> description <tab> gene ...";
-	private static String gctTip = "File with gene expression values.\n"
-			+ "Format: gene <tab> description <tab> expression value <tab> ...";
+	private static String gmtTip = "File specifying gene sets.\nFormat: geneset name <tab> description <tab> gene ...";
+	private static String gctTip = "File with gene expression values.\nFormat: gene <tab> description <tab> expression value <tab> ...";
 	private static String datasetTip = "File specifying enrichment results.\n";
 	private static String rankTip = "File specifying ranked genes.\n" + "Format: gene <tab> score or statistic";
-	private static String classTip = "File specifying the classes of each sample in expression file.\n"
-			+ "format: see GSEA website";
+	private static String classTip = "File specifying the classes of each sample in expression file.\nformat: see GSEA website";
 
 	private boolean similarityCutOffChanged = false;
 	private boolean LoadedFromRpt_dataset1 = false;
 	private boolean LoadedFromRpt_dataset2 = false;
 	private boolean panelUpdate = false;
 
-	/**
-	 * Constructor
-	 */
+
 	public EnrichmentMapInputPanel(CyNetworkFactory networkFactory, CyApplicationManager applicationManager,
 			CyNetworkManager networkManager, CyNetworkViewManager networkViewManager, CyTableFactory tableFactory,
 			CyTableManager tableManager, CyNetworkViewFactory networkViewFactory,
@@ -250,10 +217,6 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 			StreamUtil streamUtil, CyServiceRegistrar registrar, CyLayoutAlgorithmManager layoutManager,
 			MapTableToNetworkTablesTaskFactory mapTableToNetworkTable, BulkEMCreationPanel bulkEmInput) {
 
-		this.empanel = this;
-		decFormat = new DecimalFormat();
-
-		decFormat.setParseIntegerOnly(false);
 		this.networkFactory = networkFactory;
 		this.applicationManager = applicationManager;
 		this.networkManager = networkManager;
@@ -262,42 +225,29 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 		this.tableManager = tableManager;
 		this.networkViewFactory = networkViewFactory;
 		this.streamUtil = streamUtil;
-
 		this.visualMappingManager = visualMappingManager;
 		this.visualStyleFactory = visualStyleFactory;
-
 		this.vmfFactoryContinuous = vmfFactoryContinuous;
 		this.vmfFactoryDiscrete = vmfFactoryDiscrete;
 		this.vmfFactoryPassthrough = vmfFactoryPassthrough;
-
 		this.layoutManager = layoutManager;
 		this.mapTableToNetworkTable = mapTableToNetworkTable;
-
 		this.dialog = dialog;
-
 		this.sessionManager = sessionManager;
 		this.application = application;
 		this.browser = browser;
 		this.fileUtil = fileUtil;
-		this.streamUtil = streamUtil;
 		this.registrar = registrar;
 		this.bulkEmInput = bulkEmInput;
-		setLayout(new BorderLayout());
-
-		//get the current enrichment map parameters
-		//params = EnrichmentMapManager.getInstance().getParameters(Cytoscape.getCurrentNetwork().getIdentifier());
+		
 		params = new EnrichmentMapParameters(sessionManager, streamUtil, applicationManager);
 
 		//create the three main panels: scope, advanced options, and bottom
-		JPanel AnalysisTypePanel = createAnalysisTypePanel();
+		JPanel analysisTypePanel = createAnalysisTypePanel();
 
-		//Put the options panel into a scroll pain
-
-		CollapsiblePanel OptionsPanel = createOptionsPanel();
-		OptionsPanel.setCollapsed(false);
-		JScrollPane scroll = new JScrollPane(OptionsPanel);
-		//scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-
+		CollapsiblePanel optionsPanel = createOptionsPanel();
+		optionsPanel.setCollapsed(false);
+		JScrollPane scroll = new JScrollPane(optionsPanel);
 		JPanel bottomPanel = createBottomPanel();
 
 		//Since the advanced options panel is being added to the center of this border layout
@@ -306,22 +256,18 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 		JPanel advancedOptionsContainer = new JPanel(new BorderLayout());
 		advancedOptionsContainer.add(scroll, BorderLayout.CENTER);
 
-		//Add all the vertically aligned components to the main panel
-		add(AnalysisTypePanel, BorderLayout.NORTH);
+		setLayout(new BorderLayout());
+		add(analysisTypePanel, BorderLayout.NORTH);
 		add(advancedOptionsContainer, BorderLayout.CENTER);
 		add(bottomPanel, BorderLayout.SOUTH);
-
 	}
 
+	
 	/**
 	 * Creates a JPanel containing analysis type (GSEA or generic) radio buttons
 	 * and links to additional information
-	 *
-	 * @return panel containing the analysis type (GSEA or generic) option
-	 *         buttons
 	 */
 	private JPanel createAnalysisTypePanel() {
-
 		JPanel buttonsPanel = new JPanel();
 		GridBagLayout gridbag_buttons = new GridBagLayout();
 		GridBagConstraints c_buttons = new GridBagConstraints();
@@ -329,24 +275,13 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 		buttonsPanel.setBorder(BorderFactory.createTitledBorder("Info:"));
 
 		JButton help = new JButton("Online Manual");
-		help.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
-				browser.openURL(EnrichmentMapBuildProperties.USER_MANUAL_URL);
-			}
-		});
+		help.addActionListener(e -> browser.openURL(EnrichmentMapBuildProperties.USER_MANUAL_URL));
 
 		JButton about = new JButton("About");
+		about.addActionListener(new ShowAboutPanelAction(CyActivator.actionProps(), applicationManager, networkViewManager, application, browser));
 
-		Map<String, String> serviceProperties = new HashMap<String, String>();
-		serviceProperties.put("inMenuBar", "true");
-		serviceProperties.put("preferredMenu", "Apps.EnrichmentMap");
-		about.addActionListener(new ShowAboutPanelAction(serviceProperties, applicationManager, networkViewManager,
-				application, browser));
-
-		//add button to do bulk EM Creation
 		JButton bulk = new JButton("Bulk EM");
-		bulk.addActionListener(new BulkEMCreationAction(serviceProperties, applicationManager, networkViewManager,
-				application, bulkEmInput, registrar));
+		bulk.addActionListener(new BulkEMCreationAction(CyActivator.actionProps(), applicationManager, networkViewManager, application, bulkEmInput, registrar));
 
 		c_buttons.weighty = 1;
 		c_buttons.weightx = 1;
@@ -380,41 +315,12 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 		c.fill = GridBagConstraints.HORIZONTAL;
 		panel.setBorder(BorderFactory.createTitledBorder("Analysis Type"));
 
-		//Added a string to the radio button on generic pointing out that this is the route for gprofiler.
-		//Did not change the static variable as it might be stored and used in older sessions.
-		if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)) {
-			gsea = new JRadioButton(EnrichmentMapParameters.method_GSEA, true);
-			generic = new JRadioButton(EnrichmentMapParameters.method_generic + "(ex: gProfiler)", false);
-			david = new JRadioButton(EnrichmentMapParameters.method_Specialized, false);
-		} else if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_generic)) {
-			gsea = new JRadioButton(EnrichmentMapParameters.method_GSEA, false);
-			generic = new JRadioButton(EnrichmentMapParameters.method_generic + "(ex: gProfiler)", true);
-			david = new JRadioButton(EnrichmentMapParameters.method_Specialized, false);
-		} else if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_Specialized)) {
-			gsea = new JRadioButton(EnrichmentMapParameters.method_GSEA, false);
-			generic = new JRadioButton(EnrichmentMapParameters.method_generic + "(ex: gProfiler)", false);
-			david = new JRadioButton(EnrichmentMapParameters.method_Specialized, true);
-		}
-
-		gsea.setActionCommand(EnrichmentMapParameters.method_GSEA);
-		generic.setActionCommand(EnrichmentMapParameters.method_generic);
-		david.setActionCommand(EnrichmentMapParameters.method_Specialized);
-
-		gsea.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				selectAnalysisTypeActionPerformed(evt);
-			}
-		});
-		generic.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				selectAnalysisTypeActionPerformed(evt);
-			}
-		});
-		david.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				selectAnalysisTypeActionPerformed(evt);
-			}
-		});
+		gsea    = createMainRadioButton(EnrichmentMapParameters.method_GSEA);
+		generic = createMainRadioButton(EnrichmentMapParameters.method_generic);
+		david   = createMainRadioButton(EnrichmentMapParameters.method_Specialized);
+		
+		generic.setText(generic.getText() + "(ex: gProfiler)");
+		
 		ButtonGroup analysisOptions = new ButtonGroup();
 		analysisOptions.add(gsea);
 		analysisOptions.add(generic);
@@ -439,12 +345,19 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 
 		return topPanel;
 	}
+	
+	
+	private JRadioButton createMainRadioButton(String method) {
+		JRadioButton button = new JRadioButton(method);
+		button.setSelected(params.getMethod().equalsIgnoreCase(method));
+		button.setActionCommand(method);
+		button.addActionListener(this::selectAnalysisTypeActionPerformed);
+		return button;
+	}
 
 	/**
 	 * Creates a collapsible panel that holds main user inputs geneset files,
 	 * datasets and parameters
-	 *
-	 * @return collapsablePanel - main analysis panel
 	 */
 	private CollapsiblePanel createOptionsPanel() {
 		CollapsiblePanel collapsiblePanel = new CollapsiblePanel("User Input");
@@ -488,8 +401,6 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 
 	/**
 	 * Creates a collapsible panel that holds gene set file specification
-	 *
-	 * @return collapsible panel - gmt gene set file specification interface
 	 */
 	private CollapsiblePanel createGMTPanel() {
 		CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Gene Sets");
@@ -499,11 +410,6 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 
 		//add GMT file
 		JLabel GMTLabel = new JLabel("GMT:") {
-			/**
-			* 
-			*/
-			private static final long serialVersionUID = -122741876830022713L;
-
 			public JToolTip createToolTip() {
 				return new JMultiLineToolTip();
 			}
@@ -515,16 +421,11 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 
 		//components needed for the directory load
 		GMTFileNameTextField.setFont(new java.awt.Font("Dialog", 1, 10));
-		//GMTFileNameTextField.setText(gmt_instruction);
 		GMTFileNameTextField.addPropertyChangeListener("value", new EnrichmentMapInputPanel.FormattedTextFieldAction());
 
 		selectGMTFileButton.setText("...");
 		selectGMTFileButton.setMargin(new Insets(0, 0, 0, 0));
-		selectGMTFileButton.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				selectGMTFileButtonActionPerformed(evt);
-			}
-		});
+		selectGMTFileButton.addActionListener(this::selectGMTFileButtonActionPerformed);
 
 		JPanel newGMTPanel = new JPanel();
 		newGMTPanel.setLayout(new BorderLayout());
@@ -544,8 +445,6 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 
 	/**
 	 * Creates a collapsible panel that holds dataset 1 file specifications
-	 *
-	 * @return Collapsible panel with dataset 1 file specification interface
 	 */
 	private CollapsiblePanel createDataset1Panel() {
 		CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Dataset 1");
@@ -553,13 +452,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 		JPanel panel = new JPanel();
 		panel.setLayout(new GridLayout(0, 1));
 
-		//add GCT file
 		JLabel GCTLabel = new JLabel("Expression:") {
-			/**
-			 * 
-			 */
-			private static final long serialVersionUID = -1021506153608619217L;
-
 			public JToolTip createToolTip() {
 				return new JMultiLineToolTip();
 			}
@@ -572,18 +465,11 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 
 		//components needed for the directory load
 		GCTFileName1TextField.setFont(new java.awt.Font("Dialog", 1, 10));
-		GCTFileName1TextField.addPropertyChangeListener("value",
-				new EnrichmentMapInputPanel.FormattedTextFieldAction());
-
-		//GCTFileName1TextField.setText(gct_instruction);
+		GCTFileName1TextField.addPropertyChangeListener("value", new FormattedTextFieldAction());
 
 		selectGCTFileButton.setText("...");
 		selectGCTFileButton.setMargin(new Insets(0, 0, 0, 0));
-		selectGCTFileButton.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				selectGCTFileButtonActionPerformed(evt);
-			}
-		});
+		selectGCTFileButton.addActionListener(this::selectGCTFileButtonActionPerformed);
 
 		JPanel GCTPanel = new JPanel();
 		GCTPanel.setLayout(new BorderLayout());
@@ -592,17 +478,12 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 		GCTPanel.add(GCTFileName1TextField, BorderLayout.CENTER);
 		GCTPanel.add(selectGCTFileButton, BorderLayout.EAST);
 
-		//add Results1 file
 		JLabel Results1Label = new JLabel("Enrichments 1:") {
-			/**
-			 * 
-			 */
-			private static final long serialVersionUID = 4890287742836119482L;
-
 			public JToolTip createToolTip() {
 				return new JMultiLineToolTip();
 			}
 		};
+		
 		Results1Label.setToolTipText(datasetTip);
 		if(!params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA))
 			Results1Label.setText("Enrichments:");
@@ -613,18 +494,11 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 
 		//components needed for the directory load
 		Dataset1FileNameTextField.setFont(new java.awt.Font("Dialog", 1, 10));
-		Dataset1FileNameTextField.addPropertyChangeListener("value",
-				new EnrichmentMapInputPanel.FormattedTextFieldAction());
-
-		//Dataset1FileNameTextField.setText(dataset_instruction);
+		Dataset1FileNameTextField.addPropertyChangeListener("value", new FormattedTextFieldAction());
 
 		selectResults1FileButton.setText("...");
 		selectResults1FileButton.setMargin(new Insets(0, 0, 0, 0));
-		selectResults1FileButton.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				selectDataset1FileButtonActionPerformed(evt);
-			}
-		});
+		selectResults1FileButton.addActionListener(this::selectDataset1FileButtonActionPerformed);
 
 		JPanel Results1Panel = new JPanel();
 		Results1Panel.setLayout(new BorderLayout());
@@ -633,13 +507,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 		Results1Panel.add(Dataset1FileNameTextField, BorderLayout.CENTER);
 		Results1Panel.add(selectResults1FileButton, BorderLayout.EAST);
 
-		//add Results2 file
 		JLabel Results2Label = new JLabel("Enrichments 2:") {
-			/**
-			 * 
-			 */
-			private static final long serialVersionUID = 8462720651589188103L;
-
 			public JToolTip createToolTip() {
 				return new JMultiLineToolTip();
 			}
@@ -652,18 +520,11 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 
 		//components needed for the directory load
 		Dataset1FileName2TextField.setFont(new java.awt.Font("Dialog", 1, 10));
-		Dataset1FileName2TextField.addPropertyChangeListener("value",
-				new EnrichmentMapInputPanel.FormattedTextFieldAction());
-
-		//Dataset1FileName2TextField.setText(dataset_instruction);
+		Dataset1FileName2TextField.addPropertyChangeListener("value", new FormattedTextFieldAction());
 
 		selectResults2FileButton.setText("...");
 		selectResults2FileButton.setMargin(new Insets(0, 0, 0, 0));
-		selectResults2FileButton.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				selectDataset1File2ButtonActionPerformed(evt);
-			}
-		});
+		selectResults2FileButton.addActionListener(this::selectDataset1File2ButtonActionPerformed);
 
 		JPanel Results2Panel = new JPanel();
 		Results2Panel.setLayout(new BorderLayout());
@@ -672,9 +533,6 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 		Results2Panel.add(Dataset1FileName2TextField, BorderLayout.CENTER);
 		Results2Panel.add(selectResults2FileButton, BorderLayout.EAST);
 
-		//add the components to the panel
-		//don't add the expression file to the David  results.
-		//if(!params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_DAVID))
 		panel.add(GCTPanel);
 		panel.add(Results1Panel);
 		if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA))
@@ -683,15 +541,13 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 		collapsiblePanel.getContentPane().add(panel, BorderLayout.NORTH);
 		if(!params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_Specialized))
 			collapsiblePanel.getContentPane().add(createAdvancedDatasetOptions(1), BorderLayout.SOUTH);
+		
 		return collapsiblePanel;
 
 	}
 
 	/**
 	 * Creates a collapsible panel that holds dataset 2 file specification
-	 *
-	 * @return Collapsible panel that holds dataset2 file specification
-	 *         interface
 	 */
 	private CollapsiblePanel createDataset2Panel() {
 		CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Dataset 2");
@@ -699,17 +555,12 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 		JPanel panel = new JPanel();
 		panel.setLayout(new GridLayout(0, 1));
 
-		//add GCT file
 		JLabel GCTLabel = new JLabel("Expression:") {
-			/**
-			 * 
-			 */
-			private static final long serialVersionUID = 2369686770191667604L;
-
 			public JToolTip createToolTip() {
 				return new JMultiLineToolTip();
 			}
 		};
+		
 		GCTLabel.setToolTipText(gctTip);
 		JButton selectGCTFileButton = new JButton();
 		GCTFileName2TextField = new JFormattedTextField();
@@ -717,16 +568,11 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 
 		//components needed for the directory load
 		GCTFileName2TextField.setFont(new java.awt.Font("Dialog", 1, 10));
-		GCTFileName2TextField.addPropertyChangeListener("value",
-				new EnrichmentMapInputPanel.FormattedTextFieldAction());
+		GCTFileName2TextField.addPropertyChangeListener("value", new FormattedTextFieldAction());
 
 		selectGCTFileButton.setText("...");
 		selectGCTFileButton.setMargin(new Insets(0, 0, 0, 0));
-		selectGCTFileButton.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				selectGCTFileButton2ActionPerformed(evt);
-			}
-		});
+		selectGCTFileButton.addActionListener(this::selectGCTFileButton2ActionPerformed);
 
 		JPanel GCTPanel = new JPanel();
 		GCTPanel.setLayout(new BorderLayout());
@@ -735,14 +581,8 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 		GCTPanel.add(GCTFileName2TextField, BorderLayout.CENTER);
 		GCTPanel.add(selectGCTFileButton, BorderLayout.EAST);
 
-		//add Results1 file
 
 		JLabel Results1Label = new JLabel("Enrichments 1:") {
-			/**
-			 * 
-			 */
-			private static final long serialVersionUID = -1405865291417154L;
-
 			public JToolTip createToolTip() {
 				return new JMultiLineToolTip();
 			}
@@ -758,18 +598,11 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 
 		//components needed for the directory load
 		Dataset2FileNameTextField.setFont(new java.awt.Font("Dialog", 1, 10));
-		Dataset2FileNameTextField.addPropertyChangeListener("value",
-				new EnrichmentMapInputPanel.FormattedTextFieldAction());
-
-		//Dataset2FileNameTextField.setText(dataset_instruction);
+		Dataset2FileNameTextField.addPropertyChangeListener("value", new FormattedTextFieldAction());
 
 		selectResults1FileButton.setText("...");
 		selectResults1FileButton.setMargin(new Insets(0, 0, 0, 0));
-		selectResults1FileButton.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				selectDataset2FileButtonActionPerformed(evt);
-			}
-		});
+		selectResults1FileButton.addActionListener(this::selectDataset2FileButtonActionPerformed);
 
 		JPanel Results1Panel = new JPanel();
 		Results1Panel.setLayout(new BorderLayout());
@@ -778,35 +611,23 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 		Results1Panel.add(Dataset2FileNameTextField, BorderLayout.CENTER);
 		Results1Panel.add(selectResults1FileButton, BorderLayout.EAST);
 
-		//add Results2 file
 		JLabel Results2Label = new JLabel("Enrichments 2:") {
-			/**
-			 * 
-			 */
-			private static final long serialVersionUID = -5178668573493553453L;
-
 			public JToolTip createToolTip() {
 				return new JMultiLineToolTip();
 			}
 		};
+		
 		Results2Label.setToolTipText(datasetTip);
 		JButton selectResults2FileButton = new JButton();
 		Dataset2FileName2TextField = new JFormattedTextField();
 		Dataset2FileName2TextField.setColumns(defaultColumns);
 		//components needed for the directory load
 		Dataset2FileName2TextField.setFont(new java.awt.Font("Dialog", 1, 10));
-		Dataset2FileName2TextField.addPropertyChangeListener("value",
-				new EnrichmentMapInputPanel.FormattedTextFieldAction());
-
-		//Dataset2FileName2TextField.setText(dataset_instruction);
+		Dataset2FileName2TextField.addPropertyChangeListener("value", new FormattedTextFieldAction());
 
 		selectResults2FileButton.setText("...");
 		selectResults2FileButton.setMargin(new Insets(0, 0, 0, 0));
-		selectResults2FileButton.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				selectDataset2File2ButtonActionPerformed(evt);
-			}
-		});
+		selectResults2FileButton.addActionListener(this::selectDataset2File2ButtonActionPerformed);
 
 		JPanel Results2Panel = new JPanel();
 		Results2Panel.setLayout(new BorderLayout());
@@ -826,6 +647,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 		collapsiblePanel.getContentPane().add(panel, BorderLayout.NORTH);
 		if(!params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_Specialized))
 			collapsiblePanel.getContentPane().add(createAdvancedDatasetOptions(2), BorderLayout.SOUTH);
+		
 		return collapsiblePanel;
 
 	}
@@ -834,46 +656,31 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 	 * Creates a collapsible panel that holds the advanced options
 	 * specifications (rank file, phenotypes)
 	 *
-	 * @param dataset - whether this collapsible advanced panel is for dataset 1
-	 *            or dataset 2
-	 * @return Collapsible panel that holds the advanced options specification
-	 *         interface
+	 * @param dataset - whether this collapsible advanced panel is for dataset 1  or dataset 2
 	 */
 	private CollapsiblePanel createAdvancedDatasetOptions(int dataset) {
-		//create a panel for advanced options
+		// MKTODO this needs to be in a separate class
 		CollapsiblePanel Advanced = new CollapsiblePanel("Advanced");
-
-		//expand it
 		Advanced.setCollapsed(false);
 
 		JPanel advancedpanel = new JPanel();
 		advancedpanel.setLayout(new BorderLayout());
 
-		//add Ranks file
 		JLabel RanksLabel = new JLabel("Ranks:") {
-			/**
-			 * 
-			 */
-			private static final long serialVersionUID = 4549754054012943869L;
-
 			public JToolTip createToolTip() {
 				return new JMultiLineToolTip();
 			}
 		};
+		
 		RanksLabel.setToolTipText(rankTip);
 		JButton selectRanksFileButton = new JButton();
 
-		//add class file
 		JLabel ClassLabel = new JLabel("Classes") {
-			/**
-			 * 
-			 */
-			private static final long serialVersionUID = 4549754054012943869L;
-
 			public JToolTip createToolTip() {
 				return new JMultiLineToolTip();
 			}
 		};
+		
 		ClassLabel.setToolTipText(classTip);
 		JButton selectClassFileButton = new JButton();
 
@@ -881,61 +688,39 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 			Dataset1RankFileTextField = new JFormattedTextField();
 			Dataset1RankFileTextField.setColumns(defaultColumns);
 			Dataset1RankFileTextField.setFont(new java.awt.Font("Dialog", 1, 10));
-			Dataset1RankFileTextField.addPropertyChangeListener("value",
-					new EnrichmentMapInputPanel.FormattedTextFieldAction());
+			Dataset1RankFileTextField.addPropertyChangeListener("value", new FormattedTextFieldAction());
 
-			//Dataset1RankFileTextField.setText(rank_instruction);
 			selectRanksFileButton.setText("...");
 			selectRanksFileButton.setMargin(new Insets(0, 0, 0, 0));
-			selectRanksFileButton.addActionListener(new java.awt.event.ActionListener() {
-				public void actionPerformed(java.awt.event.ActionEvent evt) {
-					selectRank1FileButtonActionPerformed(evt);
-				}
-			});
+			selectRanksFileButton.addActionListener(this::selectRank1FileButtonActionPerformed);
 
 			Dataset1ClassFileTextField = new JFormattedTextField();
 			Dataset1ClassFileTextField.setColumns(defaultColumns);
 			Dataset1ClassFileTextField.setFont(new java.awt.Font("Dialog", 1, 10));
-			Dataset1ClassFileTextField.addPropertyChangeListener("value",
-					new EnrichmentMapInputPanel.FormattedTextFieldAction());
+			Dataset1ClassFileTextField.addPropertyChangeListener("value", new FormattedTextFieldAction());
+			
 			selectClassFileButton.setText("...");
 			selectClassFileButton.setMargin(new Insets(0, 0, 0, 0));
-			selectClassFileButton.addActionListener(new java.awt.event.ActionListener() {
-				public void actionPerformed(java.awt.event.ActionEvent evt) {
-					selectClass1FileButtonActionPerformed(evt);
-				}
-			});
+			selectClassFileButton.addActionListener(this::selectClass1FileButtonActionPerformed);
+			
 		} else {
 			Dataset2RankFileTextField = new JFormattedTextField();
 			Dataset2RankFileTextField.setColumns(defaultColumns);
 			Dataset2RankFileTextField.setFont(new java.awt.Font("Dialog", 1, 10));
-			Dataset2RankFileTextField.addPropertyChangeListener("value",
-					new EnrichmentMapInputPanel.FormattedTextFieldAction());
-
-			//Dataset2RankFileTextField.setText(rank_instruction);
+			Dataset2RankFileTextField.addPropertyChangeListener("value", new FormattedTextFieldAction());
 
 			selectRanksFileButton.setText("...");
 			selectRanksFileButton.setMargin(new Insets(0, 0, 0, 0));
-			selectRanksFileButton.addActionListener(new java.awt.event.ActionListener() {
-				public void actionPerformed(java.awt.event.ActionEvent evt) {
-					selectRank2FileButtonActionPerformed(evt);
-				}
-			});
+			selectRanksFileButton.addActionListener(this::selectRank2FileButtonActionPerformed);
 
 			Dataset2ClassFileTextField = new JFormattedTextField();
 			Dataset2ClassFileTextField.setColumns(defaultColumns);
 			Dataset2ClassFileTextField.setFont(new java.awt.Font("Dialog", 1, 10));
-			Dataset2ClassFileTextField.addPropertyChangeListener("value",
-					new EnrichmentMapInputPanel.FormattedTextFieldAction());
+			Dataset2ClassFileTextField.addPropertyChangeListener("value", new FormattedTextFieldAction());
 
 			selectClassFileButton.setText("...");
 			selectClassFileButton.setMargin(new Insets(0, 0, 0, 0));
-			selectClassFileButton.addActionListener(new java.awt.event.ActionListener() {
-				public void actionPerformed(java.awt.event.ActionEvent evt) {
-					selectClass2FileButtonActionPerformed(evt);
-				}
-			});
-
+			selectClassFileButton.addActionListener(this::selectClass2FileButtonActionPerformed);
 		}
 
 		JPanel RanksPanel = new JPanel();
@@ -964,26 +749,22 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 		if(dataset == 1) {
 			Dataset1Phenotype1TextField = new JFormattedTextField("UP");
 			Dataset1Phenotype1TextField.setColumns(4);
-			Dataset1Phenotype1TextField.addPropertyChangeListener("value",
-					new EnrichmentMapInputPanel.FormattedTextFieldAction());
+			Dataset1Phenotype1TextField.addPropertyChangeListener("value", new FormattedTextFieldAction());
 
 			Dataset1Phenotype2TextField = new JFormattedTextField("DOWN");
 			Dataset1Phenotype2TextField.setColumns(4);
-			Dataset1Phenotype2TextField.addPropertyChangeListener("value",
-					new EnrichmentMapInputPanel.FormattedTextFieldAction());
+			Dataset1Phenotype2TextField.addPropertyChangeListener("value", new FormattedTextFieldAction());
 
 		} else {
 			Dataset2Phenotype1TextField = new JFormattedTextField("UP");
 			Dataset2Phenotype1TextField.setColumns(4);
-			Dataset2Phenotype1TextField.addPropertyChangeListener("value",
-					new EnrichmentMapInputPanel.FormattedTextFieldAction());
+			Dataset2Phenotype1TextField.addPropertyChangeListener("value", new FormattedTextFieldAction());
 
 			Dataset2Phenotype2TextField = new JFormattedTextField("DOWN");
 			Dataset2Phenotype2TextField.setColumns(4);
-			Dataset2Phenotype2TextField.addPropertyChangeListener("value",
-					new EnrichmentMapInputPanel.FormattedTextFieldAction());
-
+			Dataset2Phenotype2TextField.addPropertyChangeListener("value", new FormattedTextFieldAction());
 		}
+		
 		JPanel PhenotypesPanel = new JPanel();
 		PhenotypesPanel.setLayout(new FlowLayout());
 
@@ -1008,8 +789,6 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 
 	/**
 	 * Creates a collapsable panel that holds parameter inputs
-	 *
-	 * @return panel containing the parameter specification interface
 	 */
 	private CollapsiblePanel createParametersPanel() {
 		int precision = 6;
@@ -1020,28 +799,25 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 
 		//Add check box to turn on scientific notation for pvalue and qvalue
 		scinot = new JCheckBox("Scientific notation");
-		scinot.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				selectScientificNotationActionPerformed(evt);
-			}
-		});
+		scinot.addActionListener(this::selectScientificNotationActionPerformed);
 
 		JLabel scinotLabel = new JLabel("");
 		JPanel scinotPanel = new JPanel();
 		scinotPanel.setLayout(new BorderLayout());
-		scinotPanel.setToolTipText(
-				"Allows pvalue and q-value to be entered in scientific notation, i.e. 5E-3 instead of 0.005");
+		scinotPanel.setToolTipText("Allows pvalue and q-value to be entered in scientific notation, i.e. 5E-3 instead of 0.005");
 
 		scinotPanel.add(scinotLabel, BorderLayout.WEST);
 		scinotPanel.add(scinot, BorderLayout.EAST);
 
+		DecimalFormat decFormat = new DecimalFormat();
+		decFormat.setParseIntegerOnly(false);
+		
 		//pvalue cutoff input
 		JLabel pvalueCutOffLabel = new JLabel("P-value Cutoff");
 		pvalueTextField = new JFormattedTextField(decFormat);
 		pvalueTextField.setColumns(precision);
 		pvalueTextField.addPropertyChangeListener("value", new EnrichmentMapInputPanel.FormattedTextFieldAction());
-		String pvalueCutOffTip = "Sets the p-value cutoff \n" + "only genesets with a p-value less than \n"
-				+ "the cutoff will be included.";
+		String pvalueCutOffTip = "Sets the p-value cutoff \n" + "only genesets with a p-value less than \nthe cutoff will be included.";
 		pvalueTextField.setToolTipText(pvalueCutOffTip);
 		pvalueTextField.setText(Double.toString(params.getPvalue()));
 		pvalueTextField.setValue(params.getPvalue());
@@ -1058,8 +834,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 		qvalueTextField = new JFormattedTextField(decFormat);
 		qvalueTextField.setColumns(precision);
 		qvalueTextField.addPropertyChangeListener("value", new EnrichmentMapInputPanel.FormattedTextFieldAction());
-		String qvalueCutOffTip = "Sets the FDR q-value cutoff \n" + "only genesets with a FDR q-value less than \n"
-				+ "the cutoff will be included.";
+		String qvalueCutOffTip = "Sets the FDR q-value cutoff \n" + "only genesets with a FDR q-value less than \nthe cutoff will be included.";
 		qvalueTextField.setToolTipText(qvalueCutOffTip);
 		qvalueTextField.setText(Double.toString(params.getQvalue()));
 		qvalueTextField.setValue(params.getQvalue());
@@ -1073,8 +848,6 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 
 		//Coeffecient cutoff input
 
-		ButtonGroup jaccardOrOverlap;
-
 		jaccard = new JRadioButton("Jaccard Coefficient");
 		jaccard.setActionCommand("jaccard");
 		jaccard.setSelected(true);
@@ -1082,40 +855,20 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 		overlap.setActionCommand("overlap");
 		combined = new JRadioButton("Jaccard+Overlap Combined");
 		combined.setActionCommand("combined");
-		if(params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_JACCARD)) {
-			jaccard.setSelected(true);
-			overlap.setSelected(false);
-			combined.setSelected(false);
-		} else if(params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_OVERLAP)) {
-			jaccard.setSelected(false);
-			overlap.setSelected(true);
-			combined.setSelected(false);
-		} else if(params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_COMBINED)) {
-			jaccard.setSelected(false);
-			overlap.setSelected(false);
-			combined.setSelected(true);
-		}
-		jaccardOrOverlap = new javax.swing.ButtonGroup();
+		
+		jaccard.setSelected(params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_JACCARD));
+		overlap.setSelected(params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_OVERLAP));
+		combined.setSelected(params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_COMBINED));
+		
+
+		ButtonGroup jaccardOrOverlap = new ButtonGroup();
 		jaccardOrOverlap.add(jaccard);
 		jaccardOrOverlap.add(overlap);
 		jaccardOrOverlap.add(combined);
 
-		jaccard.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				selectJaccardOrOverlapActionPerformed(evt);
-			}
-		});
-
-		overlap.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				selectJaccardOrOverlapActionPerformed(evt);
-			}
-		});
-		combined.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				selectJaccardOrOverlapActionPerformed(evt);
-			}
-		});
+		jaccard.addActionListener(this::selectJaccardOrOverlapActionPerformed);
+		overlap.addActionListener(this::selectJaccardOrOverlapActionPerformed);
+		combined.addActionListener(this::selectJaccardOrOverlapActionPerformed);
 
 		//create a panel for the two buttons
 		JPanel index_buttons = new JPanel();
@@ -1131,7 +884,6 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 		String coeffecientCutOffTip = "Sets the Jaccard or Overlap coefficient cutoff \n"
 				+ "only edges with a Jaccard or Overlap coefficient less than \n" + "the cutoff will be added.";
 		coeffecientTextField.setToolTipText(coeffecientCutOffTip);
-		//          coeffecientTextField.setText(Double.toString(params.getSimilarityCutOff()));
 		coeffecientTextField.setValue(params.getSimilarityCutOff());
 		similarityCutOffChanged = false; //reset for new Panel after .setValue(...) wrongly changed it to "true"
 
@@ -1182,8 +934,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 			String message = "The value you have entered is invalid.\n";
 			boolean invalid = false;
 
-			if(source == pvalueTextField || source == qvalueTextField || source == coeffecientTextField
-					|| source == combinedConstantTextField) {
+			if(source == pvalueTextField || source == qvalueTextField || source == coeffecientTextField || source == combinedConstantTextField) {
 				if(source == pvalueTextField) {
 					Number value = (Number) pvalueTextField.getValue();
 					if((value != null) && (value.doubleValue() > 0.0) && (value.doubleValue() <= 1)) {
@@ -1218,10 +969,8 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 						params.setCombinedConstant(value.doubleValue());
 
 						//if the similarity cutoff is equal to the default then updated it to reflect what it should be given the value of k
-						if(!similarityCutOffChanged
-								&& params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_COMBINED))
-							params.setSimilarityCutOff((params.getDefaultOverlapCutOff() * value.doubleValue())
-									+ ((1 - value.doubleValue()) * params.getDefaultJaccardCutOff()));
+						if(!similarityCutOffChanged && params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_COMBINED))
+							params.setSimilarityCutOff((params.getDefaultOverlapCutOff() * value.doubleValue()) + ((1 - value.doubleValue()) * params.getDefaultJaccardCutOff()));
 
 						//params.setCombinedConstantCutOffChanged(true);
 					} else {
@@ -1230,14 +979,13 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 						invalid = true;
 					}
 				}
-				if(invalid)
-					JOptionPane.showMessageDialog(application.getJFrame(), message, "Parameter out of bounds",
-							JOptionPane.WARNING_MESSAGE);
-
+				
+				if(invalid) {
+					JOptionPane.showMessageDialog(application.getJFrame(), message, "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
+				}
 			}
 			//boxes taht are text but not files
-			else if(source == Dataset1Phenotype1TextField || source == Dataset1Phenotype2TextField
-					|| source == Dataset2Phenotype1TextField || source == Dataset2Phenotype2TextField) {
+			else if(source == Dataset1Phenotype1TextField || source == Dataset1Phenotype2TextField || source == Dataset2Phenotype1TextField || source == Dataset2Phenotype2TextField) {
 				if(source == Dataset1Phenotype1TextField) {
 					String value = Dataset1Phenotype1TextField.getText();
 					dataset1files.setPhenotype1(value);
@@ -1292,11 +1040,9 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 
 				//For all the files warn the user if the new file is still not found
 				if(found.equals(Color.RED) && !LoadedFromRpt_dataset1 && !LoadedFromRpt_dataset2 && !panelUpdate)
-					JOptionPane.showMessageDialog(application.getJFrame(), message,
-							"File name change entered is not a valid file name", JOptionPane.WARNING_MESSAGE);
+					JOptionPane.showMessageDialog(application.getJFrame(), message, "File name change entered is not a valid file name", JOptionPane.WARNING_MESSAGE);
 
 			} //end of else for Text boxes that are text and files
-
 		}
 	}
 
@@ -1314,53 +1060,42 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 		JButton importButton = new JButton();
 
 		JButton resetButton = new JButton("Reset");
-		resetButton.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				resetPanel();
-			}
-		});
+		resetButton.addActionListener(e -> resetPanel());
 
 		closeButton.setText("Close");
-		closeButton.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				cancelButtonActionPerformed(evt);
-			}
-		});
+		closeButton.addActionListener(this::cancelButtonActionPerformed);
 
 		importButton.setText("Build");
-		importButton.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				//make sure that the minimum information is set in the current set of parameters
+		importButton.addActionListener(e -> {
+			//make sure that the minimum information is set in the current set of parameters
 
-				//create a new params for the new EM and add the dataset files to it
-				EnrichmentMapParameters new_params = new EnrichmentMapParameters(sessionManager, streamUtil,
-						applicationManager);
-				new_params.copy(empanel.getParams());
-				new_params.addFiles(EnrichmentMap.DATASET1, dataset1files);
-				if(!dataset2files.isEmpty())
-					new_params.addFiles(EnrichmentMap.DATASET2, dataset2files);
+			//create a new params for the new EM and add the dataset files to it
+			EnrichmentMapParameters new_params = new EnrichmentMapParameters(sessionManager, streamUtil, applicationManager);
+			new_params.copy(EnrichmentMapInputPanel.this.getParams());
+			new_params.addFiles(EnrichmentMap.DATASET1, dataset1files);
+			if(!dataset2files.isEmpty())
+				new_params.addFiles(EnrichmentMap.DATASET2, dataset2files);
 
-				EnrichmentMap map = new EnrichmentMap(new_params);
+			EnrichmentMap map = new EnrichmentMap(new_params);
 
-				//EnrichmentMapParseInputEvent parseInput = new EnrichmentMapParseInputEvent(empanel,map , dialog,  streamUtil);
-				//parseInput.build();
+			//EnrichmentMapParseInputEvent parseInput = new EnrichmentMapParseInputEvent(empanel,map , dialog,  streamUtil);
+			//parseInput.build();
 
-				//add observer to catch if the input is a GREAT file so we can determine which p-value to use
-				ResultTaskObserver observer = new ResultTaskObserver();
+			//add observer to catch if the input is a GREAT file so we can determine which p-value to use
+			ResultTaskObserver observer = new ResultTaskObserver();
 
-				EnrichmentMapBuildMapTaskFactory buildmap = new EnrichmentMapBuildMapTaskFactory(map,
-						applicationManager, application, networkManager, networkViewManager, networkViewFactory,
-						networkFactory, tableFactory, tableManager, visualMappingManager, visualStyleFactory,
-						vmfFactoryContinuous, vmfFactoryDiscrete, vmfFactoryPassthrough, streamUtil,
-						layoutManager, mapTableToNetworkTable);
-				//buildmap.build();
-				dialog.execute(buildmap.createTaskIterator(), observer);
+			EnrichmentMapBuildMapTaskFactory buildmap = new EnrichmentMapBuildMapTaskFactory(map,
+					applicationManager, application, networkManager, networkViewManager, networkViewFactory,
+					networkFactory, tableFactory, tableManager, visualMappingManager, visualStyleFactory,
+					vmfFactoryContinuous, vmfFactoryDiscrete, vmfFactoryPassthrough, streamUtil,
+					layoutManager, mapTableToNetworkTable);
+			//buildmap.build();
+			dialog.execute(buildmap.createTaskIterator(), observer);
 
-				//After the network is built register the HeatMap and Parameters panel
-				EnrichmentMapManager manager = EnrichmentMapManager.getInstance();
-				manager.registerServices();
+			//After the network is built register the HeatMap and Parameters panel
+			EnrichmentMapManager manager = EnrichmentMapManager.getInstance();
+			manager.registerServices();
 
-			}
 		});
 		//importButton.addActionListener(new BuildEnrichmentMapActionListener(this));
 		importButton.setEnabled(true);

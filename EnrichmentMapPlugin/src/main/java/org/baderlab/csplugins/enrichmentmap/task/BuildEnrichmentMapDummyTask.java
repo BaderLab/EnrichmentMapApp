@@ -6,36 +6,16 @@ import org.cytoscape.work.TaskMonitor;
 
 public class BuildEnrichmentMapDummyTask extends AbstractTask {
 	
-	private TaskMonitor taskMonitor;
-	
-	private String title;
+	private final String title;
 	
 	public BuildEnrichmentMapDummyTask(String title) {
-		super();
 		this.title = title;
-	}
-
-	private void build(){
-		
 	}
 	
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		//add sleep so that the correct title gets put in the dialog
 		Thread.sleep(1500);
-		this.taskMonitor = taskMonitor;
-		this.taskMonitor.setTitle(this.title);
-		
-		build();
-		
-	}
-
-	/**
-	 * Gets the Task Title.
-	 *
-	 * @return human readable task title.
-	 */
-	public String getTitle() {
-		return new String("Building an Enrichment Map");
+		taskMonitor.setTitle(title);
 	}
 }
