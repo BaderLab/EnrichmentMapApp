@@ -44,18 +44,16 @@
 package org.baderlab.csplugins.enrichmentmap.parsers;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.text.Normalizer;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
 import java.util.regex.Pattern;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
-import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
@@ -79,20 +77,16 @@ public class GMTFileReaderTask extends AbstractTask {
 
 	public final static int ENRICHMENT_GMT = 1, SIGNATURE_GMT = 2;
 
-	private StreamUtil streamUtil;
 
 	/**
-	 * Class Constructor - also given current task monitor
-	 * 
 	 * @param DataSet - a gmt file is associated with a dataset
 	 */
-	public GMTFileReaderTask(DataSet dataset, StreamUtil streamUtil) {
+	public GMTFileReaderTask(DataSet dataset) {
 		this.GMTFileName = dataset.getSetofgenesets().getFilename();
 		this.genes = dataset.getMap().getGenes();
 		this.hashkey2gene = dataset.getMap().getHashkey2gene();
 		this.setOfgenesets = dataset.getSetofgenesets();
 		this.map = dataset.getMap();
-		this.streamUtil = streamUtil;
 	}
 
 	/**
@@ -101,10 +95,8 @@ public class GMTFileReaderTask extends AbstractTask {
 	 * @param params
 	 * @param genesets_file
 	 */
-	public GMTFileReaderTask(EnrichmentMap map, String gmtFileName, SetOfGeneSets setOfgensets, int genesets_file, StreamUtil streamUtil) {
-
+	public GMTFileReaderTask(EnrichmentMap map, String gmtFileName, SetOfGeneSets setOfgensets, int genesets_file) {
 		this.map = map;
-		this.streamUtil = streamUtil;
 		this.genes = map.getGenes();
 		this.hashkey2gene = map.getHashkey2gene();
 
@@ -136,23 +128,15 @@ public class GMTFileReaderTask extends AbstractTask {
 	public void parse(TaskMonitor taskMonitor) throws IOException {
 
 		HashMap<String, GeneSet> genesets = setOfgenesets.getGenesets();
-
-		//open GMT file
-		InputStream reader = streamUtil.getInputStream(GMTFileName);
-		String fullText = new Scanner(reader, "UTF-8").useDelimiter("\\A").next();
-
-		String[] lines = fullText.split("\r\n?|\n");
-
+		List<String> lines = DatasetLineParser.readLines(GMTFileName);
+		
 		int currentProgress = 0;
-		int maxValue = lines.length;
 
-		taskMonitor.setStatusMessage("Parsing GMT file - " + maxValue + " rows");
+		taskMonitor.setStatusMessage("Parsing GMT file - " + lines.size() + " rows");
 		try {
-			for(int i = 0; i < lines.length; i++) {
+			for(String line : lines) {
 				if(cancelled)
 					throw new InterruptedException();
-
-				String line = lines[i];
 
 				String[] tokens = line.split("\t");
 
@@ -171,7 +155,7 @@ public class GMTFileReaderTask extends AbstractTask {
 					GeneSet.Builder builder = new GeneSet.Builder(Name, description);
 
 					// Calculate Percentage.  This must be a value between 0..100.
-					int percentComplete = (int) (((double) currentProgress / maxValue) * 100);
+					int percentComplete = (int) (((double) currentProgress / lines.size()) * 100);
 					taskMonitor.setProgress(percentComplete);
 					currentProgress++;
 

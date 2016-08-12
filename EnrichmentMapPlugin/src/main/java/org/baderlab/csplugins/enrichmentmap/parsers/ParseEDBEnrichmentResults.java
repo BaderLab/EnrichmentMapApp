@@ -1,135 +1,70 @@
 package org.baderlab.csplugins.enrichmentmap.parsers;
 
 import java.io.File;
-import java.io.IOException;
-import java.text.ParseException;
 import java.util.HashMap;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
 import org.baderlab.csplugins.enrichmentmap.model.GSEAResult;
-import org.baderlab.csplugins.enrichmentmap.model.SetOfEnrichmentResults;
-import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
+
+import com.google.common.base.Strings;
 
 public class ParseEDBEnrichmentResults extends AbstractTask {
 
-	//default Score at Max value
-	public static final Double DefaultScoreAtMax = -1000000.0;
+	private final DataSet dataset;
 
-	//private EnrichmentMapParameters params;
-	private DataSet dataset;
-	//enrichment results file name
-	private String EnrichmentResultFileName1;
-	private String EnrichmentResultFileName2;
-
-	//Stores the enrichment results
-	private SetOfEnrichmentResults enrichments;
-	private HashMap<String, EnrichmentResult> results;
-
-	//phenotypes defined by user - used to classify phenotype specifications
-	//in the generic enrichment results file
-	private String upPhenotype;
-	private String downPhenotype;
-
-	// Keep track of progress for monitoring:
-	private TaskMonitor taskMonitor = null;
-	private boolean interrupted = false;
-
-	//services needed
-	private StreamUtil streamUtil;
-
-	private Document dom;
-	private File inputFile;
-	private HashMap<String, EnrichmentResult> enrichmentresults;
-
-	public ParseEDBEnrichmentResults(DataSet dataset, StreamUtil streamUtil) {
-
+	public ParseEDBEnrichmentResults(DataSet dataset) {
 		this.dataset = dataset;
-		this.streamUtil = streamUtil;
-
-		this.EnrichmentResultFileName1 = dataset.getEnrichments().getFilename1();
-		this.EnrichmentResultFileName2 = dataset.getEnrichments().getFilename2();
-
-		//create a new enrichment results set
-		enrichments = dataset.getEnrichments();
-		results = enrichments.getEnrichments();
-		upPhenotype = enrichments.getPhenotype1();
-		downPhenotype = enrichments.getPhenotype2();
-
-		this.enrichmentresults = new HashMap<String, EnrichmentResult>();
-
 	}
 
-	/**
-	 * Parse enrichment results file
-	 */
-
-	public void parse() throws IOException {
-
-		if(this.EnrichmentResultFileName1 != null && !this.EnrichmentResultFileName1.isEmpty())
-			readFile(this.EnrichmentResultFileName1);
-		if(this.EnrichmentResultFileName2 != null && !this.EnrichmentResultFileName2.isEmpty())
-			readFile(this.EnrichmentResultFileName2);
-
+	@Override
+	public void run(TaskMonitor taskMonitor) throws Exception {
+		taskMonitor.setTitle("Parsing Enrichment Result file");
+		parse(taskMonitor);
 	}
 
-	/*
-	 * Read file
-	 */
+	public void parse(TaskMonitor taskMonitor) throws Exception {
+		String enrichmentResultFileName1 = dataset.getEnrichments().getFilename1();
+		String enrichmentResultFileName2 = dataset.getEnrichments().getFilename2();
+		
+		if(!Strings.isNullOrEmpty(enrichmentResultFileName1))
+			readFile(enrichmentResultFileName1, taskMonitor);
+		if(!Strings.isNullOrEmpty(enrichmentResultFileName2))
+			readFile(enrichmentResultFileName2, taskMonitor);
+	}
+	
 
-	public void readFile(String EnrichmentResultFileName) throws IOException {
-
-		this.inputFile = new File(EnrichmentResultFileName);
-		try {
-			this.results = parseDocument();
-		} catch(ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+	public void readFile(String EnrichmentResultFileName, TaskMonitor taskMonitor) throws Exception {
+		File inputFile = new File(EnrichmentResultFileName);
+		HashMap<String, EnrichmentResult> results = parseDocument(inputFile);
 		//make sure the results are set in the dataset
-		dataset.getEnrichments().setEnrichments(this.results);
-
+		dataset.getEnrichments().setEnrichments(results);
 	}
 
-	private void parseFile() throws ParseException {
-		try {
-			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-			DocumentBuilder db = dbf.newDocumentBuilder();
-
-			dom = db.parse(inputFile);
-
-		} catch(ParserConfigurationException pce) {
-			pce.printStackTrace();
-		} catch(SAXException se) {
-			se.printStackTrace();
-			throw new ParseException(
-					"Malformed EDB file: It looks like your EDB file was created by an older version of GSEA that Enrichment Map does not support. Please update your GSEA results files.",
-					0);
-		} catch(IOException ioe) {
-			ioe.printStackTrace();
-			throw new ParseException(
-					"Malformed EDB file: It looks like your EDB file was created by an older version of GSEA that Enrichment Map does not support. Please update your GSEA results files.",
-					0);
-		}
+	
+	private Document parseFile(File inputFile) throws Exception {
+		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+		DocumentBuilder db = dbf.newDocumentBuilder();
+		return db.parse(inputFile);
 	}
+	
 
-	public HashMap<String, EnrichmentResult> parseDocument() throws ParseException {
-
-		parseFile();
+	public HashMap<String, EnrichmentResult> parseDocument(File inputFile) throws Exception {
+		Document dom = parseFile(inputFile);
 
 		//get the root element
 		Element docEle = dom.getDocumentElement();
 
+		HashMap<String, EnrichmentResult> enrichmentresults = new HashMap<>();
+		
 		//get a nodelist of elements
 		NodeList nl = docEle.getElementsByTagName("DTG");
 		if(nl != null && nl.getLength() > 0) {
@@ -175,43 +110,6 @@ public class ParseEDBEnrichmentResults extends AbstractTask {
 		GSEAResult result = new GSEAResult(name, gsSize, ES, NES, pvalue, FDR, FWER, (int) rank_at_max, score_at_max);
 
 		return result;
-
 	}
 
-	/**
-	 * Non-blocking call to interrupt the task.
-	 */
-	public void halt() {
-		this.interrupted = true;
-	}
-
-	/**
-	 * Sets the Task Monitor.
-	 *
-	 * @param taskMonitor TaskMonitor Object.
-	 */
-	public void setTaskMonitor(TaskMonitor taskMonitor) {
-		if(this.taskMonitor != null) {
-			throw new IllegalStateException("Task Monitor is already set.");
-		}
-		this.taskMonitor = taskMonitor;
-	}
-
-	/**
-	 * Gets the Task Title.
-	 *
-	 * @return human readable task title.
-	 */
-	public String getTitle() {
-		return new String("Parsing Enrichment Result file");
-	}
-
-	@Override
-	public void run(TaskMonitor taskMonitor) throws Exception {
-		this.taskMonitor = taskMonitor;
-		this.taskMonitor.setTitle("Parsing Enrichment Result file");
-
-		parse();
-
-	}
 }

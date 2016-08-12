@@ -1,13 +1,13 @@
 package org.baderlab.csplugins.enrichmentmap.model;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
 import java.util.HashMap;
 import java.util.HashSet;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
-import org.baderlab.csplugins.enrichmentmap.StreamUtil;
 import org.baderlab.csplugins.enrichmentmap.parsers.GMTFileReaderTask;
 import org.cytoscape.work.TaskMonitor;
 import org.junit.Before;
@@ -22,7 +22,6 @@ import org.junit.Test;
 public class SetOfGenesetsTest {
 		
 	private TaskMonitor taskMonitor = mock(TaskMonitor.class);
-	private StreamUtil streamUtil = new StreamUtil();
 	EnrichmentMap map;
 	DataSet dataset;
 
@@ -44,7 +43,7 @@ public class SetOfGenesetsTest {
         dataset = map.getDataset(EnrichmentMap.DATASET1);
 
         //set up task
-        GMTFileReaderTask task = new GMTFileReaderTask(dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
+        GMTFileReaderTask task = new GMTFileReaderTask(dataset);
         task.run(taskMonitor);
         	
     }

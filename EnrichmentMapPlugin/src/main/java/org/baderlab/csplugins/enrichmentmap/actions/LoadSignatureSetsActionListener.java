@@ -71,7 +71,7 @@ public class LoadSignatureSetsActionListener implements ActionListener {
 		if(errors.isEmpty()) {
 
 			// MKTODO warning LoadSignatureGMTFilesTask is side-effecting, it pulls the loaded genes into the EnrichmentMap object
-			LoadSignatureGMTFilesTask load_GMTs = new LoadSignatureGMTFilesTask(fileName, current_map, filterMetric, streamUtil);
+			LoadSignatureGMTFilesTask load_GMTs = new LoadSignatureGMTFilesTask(fileName, current_map, filterMetric);
 
 			TaskObserver taskObserver = new ResultTaskObserver() {
 				private SetOfGeneSets resultGeneSets;

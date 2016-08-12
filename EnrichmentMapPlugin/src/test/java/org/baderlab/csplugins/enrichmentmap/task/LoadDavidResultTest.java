@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
-import org.baderlab.csplugins.enrichmentmap.StreamUtil;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
@@ -15,7 +14,6 @@ import org.junit.Test;
 public class LoadDavidResultTest {
 
 	private TaskMonitor taskMonitor = mock(TaskMonitor.class);
-	private StreamUtil streamUtil = new StreamUtil();
 	
 	
 	
@@ -46,7 +44,7 @@ public class LoadDavidResultTest {
 		em.addDataset(EnrichmentMap.DATASET1, dataset);
 				
 		//create a DatasetTask
-		ParseDavidEnrichmentResults  enrichmentResultsFilesTask = new ParseDavidEnrichmentResults(dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
+		ParseDavidEnrichmentResults  enrichmentResultsFilesTask = new ParseDavidEnrichmentResults(dataset);
         enrichmentResultsFilesTask.run(taskMonitor); 
 
         CreateDummyExpressionTask dummyExpressionTask = new CreateDummyExpressionTask(dataset);
@@ -113,7 +111,7 @@ public class LoadDavidResultTest {
 		em.addDataset(EnrichmentMap.DATASET1, dataset);
 				
 		//create a DatasetTask
-		ParseDavidEnrichmentResults enrichmentResultsFilesTask = new ParseDavidEnrichmentResults(dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
+		ParseDavidEnrichmentResults enrichmentResultsFilesTask = new ParseDavidEnrichmentResults(dataset);
 		enrichmentResultsFilesTask.run(taskMonitor); 
 
 		       
@@ -123,7 +121,7 @@ public class LoadDavidResultTest {
 		DataSet dataset2 = new DataSet(em, EnrichmentMap.DATASET2,files2);		
 		em.addDataset(EnrichmentMap.DATASET2, dataset2);						
 		//create a DatasetTask
-		ParseDavidEnrichmentResults enrichmentResultsFiles2Task = new ParseDavidEnrichmentResults(dataset2,(org.cytoscape.io.util.StreamUtil)streamUtil);
+		ParseDavidEnrichmentResults enrichmentResultsFiles2Task = new ParseDavidEnrichmentResults(dataset2);
 		enrichmentResultsFiles2Task.run(taskMonitor);
 
 		// check to see if the two datasets are distinct

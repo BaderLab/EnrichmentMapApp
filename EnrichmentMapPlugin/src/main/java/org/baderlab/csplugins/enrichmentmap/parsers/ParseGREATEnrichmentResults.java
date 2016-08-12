@@ -1,101 +1,26 @@
 package org.baderlab.csplugins.enrichmentmap.parsers;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashMap;
-import java.util.Scanner;
+import java.util.List;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.GenericResult;
-import org.baderlab.csplugins.enrichmentmap.model.SetOfEnrichmentResults;
-import org.cytoscape.io.util.StreamUtil;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.ObservableTask;
+import org.baderlab.csplugins.enrichmentmap.task.NullTaskMonitor;
 import org.cytoscape.work.TaskMonitor;
 
-public class ParseGREATEnrichmentResults extends AbstractTask implements ObservableTask {
-	//default Score at Max value
-	public static final Double DefaultScoreAtMax = -1000000.0;
+public class ParseGREATEnrichmentResults extends DatasetLineParser {
 
-	//private EnrichmentMapParameters params;
-	private DataSet dataset;
-	//enrichment results file name
-	private String EnrichmentResultFileName1;
-	private String EnrichmentResultFileName2;
-
-	//Stores the enrichment results
-	private SetOfEnrichmentResults enrichments;
-	private HashMap<String, EnrichmentResult> results;
-
-	//phenotypes defined by user - used to classify phenotype specifications
-	//in the generic enrichment results file
-	private String upPhenotype;
-	private String downPhenotype;
-
-	// Keep track of progress for monitoring:
-	private TaskMonitor taskMonitor = null;
-	private boolean interrupted = false;
-
-	//services needed
-	private StreamUtil streamUtil;
-
-	public ParseGREATEnrichmentResults(DataSet dataset, StreamUtil streamUtil) {
-		super();
-		this.dataset = dataset;
-		this.streamUtil = streamUtil;
-
-		this.EnrichmentResultFileName1 = dataset.getEnrichments().getFilename1();
-		this.EnrichmentResultFileName2 = dataset.getEnrichments().getFilename2();
-
-		//create a new enrichment results set
-		enrichments = dataset.getEnrichments();
-		results = enrichments.getEnrichments();
-		upPhenotype = enrichments.getPhenotype1();
-		downPhenotype = enrichments.getPhenotype2();
-
+	public ParseGREATEnrichmentResults(DataSet dataset) {
+		super(dataset);
 	}
 
-	/**
-	 * Parse enrichment results file
-	 */
-
-	public void parse() throws IOException {
-
-		if(this.EnrichmentResultFileName1 != null && !this.EnrichmentResultFileName1.isEmpty())
-			readFile(this.EnrichmentResultFileName1);
-		if(this.EnrichmentResultFileName2 != null && !this.EnrichmentResultFileName2.isEmpty())
-			readFile(this.EnrichmentResultFileName2);
-
-	}
-	/*
-	 * Read file
-	 */
-
-	public void readFile(String EnrichmentResultFileName) throws IOException {
-
-		//open Enrichment Result file
-		InputStream reader = streamUtil.getInputStream(EnrichmentResultFileName);
-
-		String fullText = new Scanner(reader, "UTF-8").useDelimiter("\\A").next();
-
-		String[] lines = fullText.split("\r\n?|\n");
-
-		//ES and NES columns are specific to the GSEA format
-		String header_line = lines[0];
-		String[] tokens = header_line.split("\t");
-
-		parseGreatFile(lines);
-
-	}//end of method
-
-	/*
-	 * Great is an enrichment tool used for methylation and other high
-	 * throughput sequencing data.
-	 */
-	public void parseGreatFile(String[] lines) {
+	public void parseLines(List<String> lines, DataSet dataset, TaskMonitor taskMonitor) {
+		if(taskMonitor == null)
+			taskMonitor = new NullTaskMonitor();
+		taskMonitor.setTitle("Parsing Enrichment Result file");
 
 		boolean hasBackground = false;
 
@@ -112,11 +37,11 @@ public class ParseGREATEnrichmentResults extends AbstractTask implements Observa
 		//get the genes (which should also be empty
 		HashMap<String, Integer> genes = dataset.getMap().getGenes();
 		HashMap<Integer, String> key2gene = dataset.getMap().getHashkey2gene();
-
+		HashMap<String, EnrichmentResult> results = dataset.getEnrichments().getEnrichments();
+		
 		int currentProgress = 0;
-		int maxValue = lines.length;
-		if(taskMonitor != null)
-			taskMonitor.setStatusMessage("Parsing Great Results file - " + maxValue + " rows");
+		int maxValue = lines.size();
+		taskMonitor.setStatusMessage("Parsing Great Results file - " + maxValue + " rows");
 		//for great files there is an FDR
 		dataset.getMap().getParams().setFDR(true);
 
@@ -125,10 +50,10 @@ public class ParseGREATEnrichmentResults extends AbstractTask implements Observa
 
 		//go through each line until we find the header line
 		int k = 0;
-		String line = lines[k];
+		String line = lines.get(k);
 		String[] tokens = line.split("\t");
-		for(; k < lines.length; k++) {
-			line = lines[k];
+		for(; k < lines.size(); k++) {
+			line = lines.get(k);
 			tokens = line.split("\t");
 			int length = tokens.length;
 			if((length == 24) && tokens[3].equalsIgnoreCase("BinomRank")) {
@@ -143,8 +68,8 @@ public class ParseGREATEnrichmentResults extends AbstractTask implements Observa
 		}
 
 		//go through the rest of the lines
-		for(int i = k + 1; i < lines.length; i++) {
-			line = lines[i];
+		for(int i = k + 1; i < lines.size(); i++) {
+			line = lines.get(i);
 
 			tokens = line.split("\t");
 			//there are extra lines at the end of the file that should be ignored.
@@ -279,11 +204,7 @@ public class ParseGREATEnrichmentResults extends AbstractTask implements Observa
 
 			// Calculate Percentage.  This must be a value between 0..100.
 			int percentComplete = (int) (((double) currentProgress / maxValue) * 100);
-			//  Estimate Time Remaining
-			long timeRemaining = maxValue - currentProgress;
-			if(taskMonitor != null)
-				taskMonitor.setProgress(percentComplete);
-
+			taskMonitor.setProgress(percentComplete);
 			currentProgress++;
 
 			//check to see if the gene set has already been entered in the results
@@ -298,50 +219,8 @@ public class ParseGREATEnrichmentResults extends AbstractTask implements Observa
 				if(result.getPvalue() < temp.getPvalue())
 					results.put(name, result);
 			}
-
+			
 		}
-
 	}
 
-	/**
-	 * Non-blocking call to interrupt the task.
-	 */
-	public void halt() {
-		this.interrupted = true;
-	}
-
-	/**
-	 * Sets the Task Monitor.
-	 *
-	 * @param taskMonitor TaskMonitor Object.
-	 */
-	public void setTaskMonitor(TaskMonitor taskMonitor) {
-		if(this.taskMonitor != null) {
-			throw new IllegalStateException("Task Monitor is already set.");
-		}
-		this.taskMonitor = taskMonitor;
-	}
-
-	/**
-	 * Gets the Task Title.
-	 *
-	 * @return human readable task title.
-	 */
-	public String getTitle() {
-		return new String("Parsing Enrichment Result file");
-	}
-
-	@Override
-	public void run(TaskMonitor taskMonitor) throws Exception {
-		this.taskMonitor = taskMonitor;
-		this.taskMonitor.setTitle("Parsing GSEA Enrichment Result file");
-
-		parse();
-
-	}
-
-	public <R> R getResults(Class<? extends R> arg0) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 }

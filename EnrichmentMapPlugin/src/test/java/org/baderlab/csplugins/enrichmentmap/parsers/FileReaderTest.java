@@ -1,7 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap.parsers;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
 
 import java.util.HashMap;
 
@@ -44,7 +44,7 @@ public class FileReaderTest {
         DataSet dataset = map.getDataset(EnrichmentMap.DATASET1);
 
       //set up task
-        GMTFileReaderTask task = new GMTFileReaderTask(dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
+        GMTFileReaderTask task = new GMTFileReaderTask(dataset);
         	task.run(taskMonitor);
 
         //test to make sure that the file loaded in 10 genesets with a total of 75 genes
@@ -322,7 +322,7 @@ public class FileReaderTest {
         assertEquals(0, map.getDataset(EnrichmentMap.DATASET1).getEnrichments().getEnrichments().size());
         
         // read
-        ParseGenericEnrichmentResults task = new ParseGenericEnrichmentResults(dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
+        ParseGenericEnrichmentResults task = new ParseGenericEnrichmentResults(dataset);
         task.run(taskMonitor);
 
 
@@ -370,7 +370,7 @@ public class FileReaderTest {
         //get the default dataset
         DataSet dataset = map.getDataset(EnrichmentMap.DATASET1);
         
-        ParseGSEAEnrichmentResults task = new ParseGSEAEnrichmentResults(dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
+        ParseGSEAEnrichmentResults task = new ParseGSEAEnrichmentResults(dataset);
         task.run(taskMonitor);
         
         //Get the enrichment
@@ -428,7 +428,7 @@ public class FileReaderTest {
         //get the default dataset
         DataSet dataset = map.getDataset(EnrichmentMap.DATASET1);
         
-        ParseEDBEnrichmentResults task = new ParseEDBEnrichmentResults(dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
+        ParseEDBEnrichmentResults task = new ParseEDBEnrichmentResults(dataset);
         task.run(taskMonitor);
         
         //Get the enrichment
@@ -492,7 +492,7 @@ public class FileReaderTest {
         DataSet dataset = map.getDataset(EnrichmentMap.DATASET1);
         
 
-        ParseBingoEnrichmentResults task = new ParseBingoEnrichmentResults(dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
+        ParseBingoEnrichmentResults task = new ParseBingoEnrichmentResults(dataset);
         task.run(taskMonitor);
         
         //Get the enrichment
@@ -536,7 +536,7 @@ public class FileReaderTest {
         DataSet dataset = map.getDataset(EnrichmentMap.DATASET1);
         
 
-        ParseDavidEnrichmentResults task = new ParseDavidEnrichmentResults(dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
+        ParseDavidEnrichmentResults task = new ParseDavidEnrichmentResults(dataset);
         task.run(taskMonitor);
         
         //Get the enrichment

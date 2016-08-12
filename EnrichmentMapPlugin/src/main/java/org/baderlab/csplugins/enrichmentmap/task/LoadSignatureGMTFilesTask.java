@@ -3,14 +3,12 @@ package org.baderlab.csplugins.enrichmentmap.task;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
 import org.baderlab.csplugins.enrichmentmap.parsers.GMTFileReaderTask;
-import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 
 public class LoadSignatureGMTFilesTask implements TaskFactory {
 
 	private final EnrichmentMap map;
-	private final StreamUtil streamUtil;
 	private final String fileName;
 	private final FilterMetric filterMetric;
 
@@ -18,10 +16,9 @@ public class LoadSignatureGMTFilesTask implements TaskFactory {
 	 * @param map Out paramter, this task loads the genes into this object
 	 * @param setOfGeneSets Out parameter, this task loads the genes into this object
 	 */
-	public LoadSignatureGMTFilesTask(String fileName, EnrichmentMap map, FilterMetric filterMetric, StreamUtil streamUtil) {
+	public LoadSignatureGMTFilesTask(String fileName, EnrichmentMap map, FilterMetric filterMetric) {
 		this.fileName = fileName;
 		this.map = map;
-		this.streamUtil = streamUtil;
 		this.filterMetric = filterMetric;
 	}
 
@@ -39,7 +36,7 @@ public class LoadSignatureGMTFilesTask implements TaskFactory {
 		// doesn't this need to be made available to paParams?
 		SetOfGeneSets setOfGeneSets = new SetOfGeneSets();
 		
-		taskIterator.append(new GMTFileReaderTask(map, fileName, setOfGeneSets, GMTFileReaderTask.SIGNATURE_GMT, streamUtil));
+		taskIterator.append(new GMTFileReaderTask(map, fileName, setOfGeneSets, GMTFileReaderTask.SIGNATURE_GMT));
 		taskIterator.append(new FilterSignatureGSTask(map, setOfGeneSets, filterMetric));
 		
 		return taskIterator;

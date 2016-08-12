@@ -7,7 +7,6 @@ import static org.mockito.Mockito.mock;
 import java.util.HashMap;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
-import org.baderlab.csplugins.enrichmentmap.StreamUtil;
 import org.baderlab.csplugins.enrichmentmap.parsers.GMTFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.task.ComputeSimilarityTask;
 import org.cytoscape.work.TaskMonitor;
@@ -20,7 +19,6 @@ public class GeneSetSimilarityTest {
 	DataSet dataset;
 
 	private TaskMonitor taskMonitor = mock(TaskMonitor.class);
-	private StreamUtil streamUtil = new StreamUtil();
 	
 	@Before
 	public void before() throws Exception {
@@ -40,7 +38,7 @@ public class GeneSetSimilarityTest {
 
 
       //set up task
-        GMTFileReaderTask task = new GMTFileReaderTask(dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
+        GMTFileReaderTask task = new GMTFileReaderTask(dataset);
         task.run(taskMonitor);
         
         this.dataset.setGenesetsOfInterest(this.dataset.getSetofgenesets());

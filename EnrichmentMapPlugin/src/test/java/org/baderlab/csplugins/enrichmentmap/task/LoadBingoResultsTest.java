@@ -44,7 +44,7 @@ public class LoadBingoResultsTest {
 		DataSet dataset = new DataSet(em, EnrichmentMap.DATASET1,files);		
 		em.addDataset(EnrichmentMap.DATASET1, dataset);				
 		
-		ParseBingoEnrichmentResults enrichmentResultsFilesTask = new ParseBingoEnrichmentResults (dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
+		ParseBingoEnrichmentResults enrichmentResultsFilesTask = new ParseBingoEnrichmentResults(dataset);
         enrichmentResultsFilesTask.run(taskMonitor); 
         
         CreateDummyExpressionTask dummyExpressionTask = new CreateDummyExpressionTask(dataset);
@@ -111,7 +111,7 @@ public class LoadBingoResultsTest {
 		DataSet dataset = new DataSet(em, EnrichmentMap.DATASET1,files);		
 		em.addDataset(EnrichmentMap.DATASET1, dataset);
 
-		ParseBingoEnrichmentResults  enrichmentResultsFilesTask = new ParseBingoEnrichmentResults (dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
+		ParseBingoEnrichmentResults  enrichmentResultsFilesTask = new ParseBingoEnrichmentResults(dataset);
         enrichmentResultsFilesTask.run(taskMonitor); 
 		
 		//Load second dataset
@@ -120,7 +120,7 @@ public class LoadBingoResultsTest {
 		em.addDataset(EnrichmentMap.DATASET2, dataset2);						
 		//create a DatasetTask
 		
-		ParseBingoEnrichmentResults  enrichmentResultsFiles2Task = new ParseBingoEnrichmentResults (dataset2,(org.cytoscape.io.util.StreamUtil)streamUtil);
+		ParseBingoEnrichmentResults  enrichmentResultsFiles2Task = new ParseBingoEnrichmentResults(dataset2);
         enrichmentResultsFiles2Task.run(taskMonitor); 
 		
 		CreateDummyExpressionTask dummyExpressionTask = new CreateDummyExpressionTask(dataset);

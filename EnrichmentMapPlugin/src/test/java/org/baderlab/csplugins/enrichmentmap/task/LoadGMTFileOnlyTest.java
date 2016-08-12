@@ -1,10 +1,9 @@
 package org.baderlab.csplugins.enrichmentmap.task;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
-import org.baderlab.csplugins.enrichmentmap.StreamUtil;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
@@ -14,9 +13,7 @@ import org.junit.Test;
 
 public class LoadGMTFileOnlyTest {
 
-
 	private TaskMonitor taskMonitor = mock(TaskMonitor.class);
-	private StreamUtil streamUtil = new StreamUtil();
 	
 	@Test
 	public void testGMTOnly() throws Exception{
@@ -39,7 +36,7 @@ public class LoadGMTFileOnlyTest {
 				
 		//create a DatasetTask
 				//set up task
-		GMTFileReaderTask task = new GMTFileReaderTask(dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
+		GMTFileReaderTask task = new GMTFileReaderTask(dataset);
 	    task.run(taskMonitor);
 	    
 	    dataset.setGenesetsOfInterest(dataset.getSetofgenesets());

@@ -103,12 +103,12 @@ public class EnrichmentMapBuildMapTaskFactory implements TaskFactory {
 			//first step: load GMT file if a file is specified in this dataset    		
 			if(!Strings.isNullOrEmpty(dataset.getSetofgenesets().getFilename())) {
 				//Load the geneset file
-				GMTFileReaderTask gmtFileTask = new GMTFileReaderTask(dataset, streamUtil);
+				GMTFileReaderTask gmtFileTask = new GMTFileReaderTask(dataset);
 				currentTasks.append(gmtFileTask);
 			}
 
 			//second step: load the enrichments 
-			DetermineEnrichmentResultFileReader enrichmentResultsFilesTask = new DetermineEnrichmentResultFileReader(dataset, streamUtil);
+			DetermineEnrichmentResultFileReader enrichmentResultsFilesTask = new DetermineEnrichmentResultFileReader(dataset);
 			currentTasks.append(enrichmentResultsFilesTask.getParsers());
 
 			//third step: load expression file if specified in the dataset.

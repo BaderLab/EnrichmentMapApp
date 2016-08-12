@@ -1,121 +1,51 @@
 package org.baderlab.csplugins.enrichmentmap.parsers;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Scanner;
+import java.util.List;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.GenericResult;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfEnrichmentResults;
-import org.cytoscape.io.util.StreamUtil;
-import org.cytoscape.work.AbstractTask;
+import org.baderlab.csplugins.enrichmentmap.task.NullTaskMonitor;
 import org.cytoscape.work.TaskMonitor;
 
-public class ParseGenericEnrichmentResults extends AbstractTask {
-	//default Score at Max value
-	public static final Double DefaultScoreAtMax = -1000000.0;
+public class ParseGenericEnrichmentResults extends DatasetLineParser {
+	
 
-	//private EnrichmentMapParameters params;
-	private DataSet dataset;
-	//enrichment results file name
-	private String EnrichmentResultFileName1;
-	private String EnrichmentResultFileName2;
-
-	//Stores the enrichment results
-	private SetOfEnrichmentResults enrichments;
-	private HashMap<String, EnrichmentResult> results;
-
-	//phenotypes defined by user - used to classify phenotype specifications
-	//in the generic enrichment results file
-	private String upPhenotype;
-	private String downPhenotype;
-
-	// Keep track of progress for monitoring:
-	private TaskMonitor taskMonitor = null;
-	private boolean interrupted = false;
-
-	//services needed
-	private StreamUtil streamUtil;
-
-	public ParseGenericEnrichmentResults(DataSet dataset, StreamUtil streamUtil) {
-		super();
-		this.dataset = dataset;
-		this.streamUtil = streamUtil;
-
-		this.EnrichmentResultFileName1 = dataset.getEnrichments().getFilename1();
-		this.EnrichmentResultFileName2 = dataset.getEnrichments().getFilename2();
-
-		//create a new enrichment results set
-		enrichments = dataset.getEnrichments();
-		results = enrichments.getEnrichments();
-		upPhenotype = enrichments.getPhenotype1();
-		downPhenotype = enrichments.getPhenotype2();
+	public ParseGenericEnrichmentResults(DataSet dataset) {
+		super(dataset);
 
 	}
-
-	/**
-	 * Parse enrichment results file
-	 */
-
-	public void parse() throws IOException {
-
-		if(this.EnrichmentResultFileName1 != null && !this.EnrichmentResultFileName1.isEmpty())
-			readFile(this.EnrichmentResultFileName1);
-		if(this.EnrichmentResultFileName2 != null && !this.EnrichmentResultFileName2.isEmpty())
-			readFile(this.EnrichmentResultFileName2);
-
-	}
-	/*
-	 * Read file
-	 */
-
-	public void readFile(String EnrichmentResultFileName) throws IOException {
-
-		//open Enrichment Result file
-		InputStream reader = streamUtil.getInputStream(EnrichmentResultFileName);
-
-		String fullText = new Scanner(reader, "UTF-8").useDelimiter("\\A").next();
-
-		String[] lines = fullText.split("\r\n?|\n");
-
-		//ES and NES columns are specific to the GSEA format
-		String header_line = lines[0];
-		String[] tokens = header_line.split("\t");
-
-		parseGenericFile(lines);
-
-	}//end of method
-
-	/**
-	 * Parse generic enrichment results file
-	 *
-	 * @param lines - contents of results file
-	 */
-	public void parseGenericFile(String[] lines) {
+	public void parseLines(List<String> lines, DataSet dataset, TaskMonitor taskMonitor) {
+		if(taskMonitor == null)
+			taskMonitor = new NullTaskMonitor();
+		taskMonitor.setTitle("Parsing Generic Result file");
 
 		//Get the current genesets so we can check that all the results are in the geneset list
 		//and put the size of the genesets into the visual style
 		HashMap<String, GeneSet> genesets = dataset.getSetofgenesets().getGenesets();
 
 		int currentProgress = 0;
-		int maxValue = lines.length;
-		if(taskMonitor != null)
-			taskMonitor.setStatusMessage("Parsing Generic Results file - " + maxValue + " rows");
+		int maxValue = lines.size();
+		taskMonitor.setStatusMessage("Parsing Generic Results file - " + maxValue + " rows");
 		boolean FDR = false;
 
 		//skip the first line which just has the field names (start i=1)
 		//check to see how many columns the data has
-		String line = lines[0];
+		String line = lines.get(0);
 		String[] tokens = line.split("\t");
 		int length = tokens.length;
 
 		HashMap<String, Integer> genes = dataset.getMap().getGenes();
 		HashMap<Integer, String> key2gene = dataset.getMap().getHashkey2gene();
-
+		SetOfEnrichmentResults enrichments = dataset.getEnrichments();
+		HashMap<String, EnrichmentResult> results = enrichments.getEnrichments();
+		String upPhenotype = enrichments.getPhenotype1();
+		String downPhenotype = enrichments.getPhenotype2();
+		
 		//check to see if there are genesets.
 		//if there are no genesets then populate the genesets from the generic file
 		//can only do this if the 6th column has a list of genes for that geneset.
@@ -130,8 +60,8 @@ public class ParseGenericEnrichmentResults extends AbstractTask {
 		//if (length < 3)
 		//not enough data in the file!!
 
-		for(int i = 1; i < lines.length; i++) {
-			line = lines[i];
+		for(int i = 1; i < lines.size(); i++) {
+			line = lines.get(i);
 
 			tokens = line.split("\t");
 
@@ -291,11 +221,7 @@ public class ParseGenericEnrichmentResults extends AbstractTask {
 
 			// Calculate Percentage.  This must be a value between 0..100.
 			int percentComplete = (int) (((double) currentProgress / maxValue) * 100);
-			//  Estimate Time Remaining
-			long timeRemaining = maxValue - currentProgress;
-			if(taskMonitor != null)
-				taskMonitor.setProgress(percentComplete);
-
+			taskMonitor.setProgress(percentComplete);
 			currentProgress++;
 
 			//check to see if the gene set has already been entered in the results
@@ -316,40 +242,4 @@ public class ParseGenericEnrichmentResults extends AbstractTask {
 			dataset.getMap().getParams().setFDR(FDR);
 	}
 
-	/**
-	 * Non-blocking call to interrupt the task.
-	 */
-	public void halt() {
-		this.interrupted = true;
-	}
-
-	/**
-	 * Sets the Task Monitor.
-	 *
-	 * @param taskMonitor TaskMonitor Object.
-	 */
-	public void setTaskMonitor(TaskMonitor taskMonitor) {
-		if(this.taskMonitor != null) {
-			throw new IllegalStateException("Task Monitor is already set.");
-		}
-		this.taskMonitor = taskMonitor;
-	}
-
-	/**
-	 * Gets the Task Title.
-	 *
-	 * @return human readable task title.
-	 */
-	public String getTitle() {
-		return new String("Parsing Enrichment Result file");
-	}
-
-	@Override
-	public void run(TaskMonitor taskMonitor) throws Exception {
-		this.taskMonitor = taskMonitor;
-		this.taskMonitor.setTitle("Parsing GSEA Enrichment Result file");
-
-		parse();
-
-	}
 }

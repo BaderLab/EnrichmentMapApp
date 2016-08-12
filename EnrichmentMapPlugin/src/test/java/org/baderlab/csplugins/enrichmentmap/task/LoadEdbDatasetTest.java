@@ -1,10 +1,9 @@
 package org.baderlab.csplugins.enrichmentmap.task;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
-import org.baderlab.csplugins.enrichmentmap.StreamUtil;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
@@ -17,7 +16,6 @@ public class LoadEdbDatasetTest {
 
 
 	private TaskMonitor taskMonitor = mock(TaskMonitor.class);
-	private StreamUtil streamUtil  = new StreamUtil();
 	
 	
 	@Test
@@ -53,10 +51,10 @@ public class LoadEdbDatasetTest {
 		//create a DatasetTask
 		//create a DatasetTask
 		//load Data
-		GMTFileReaderTask task = new GMTFileReaderTask(dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
+		GMTFileReaderTask task = new GMTFileReaderTask(dataset);
 	    task.run(taskMonitor);
 
-	    ParseEDBEnrichmentResults enrichmentResultsFilesTask = new ParseEDBEnrichmentResults(dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
+	    ParseEDBEnrichmentResults enrichmentResultsFilesTask = new ParseEDBEnrichmentResults(dataset);
         enrichmentResultsFilesTask.run(taskMonitor); 
         
         //create dummy expression
