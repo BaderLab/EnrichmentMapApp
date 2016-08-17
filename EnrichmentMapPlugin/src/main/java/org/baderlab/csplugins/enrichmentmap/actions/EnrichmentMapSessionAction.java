@@ -310,7 +310,7 @@ public class EnrichmentMapSessionAction implements SessionAboutToBeSavedListener
 						DataSet ds = map.getDataset(parts_exp.dataset);
 						ds.getDatasetFiles().setExpressionFileName(prop_file.getAbsolutePath());
 						ds.getExpressionSets().setFilename(prop_file.getAbsolutePath());
-						ExpressionFileReaderTask expressionFile1 = new ExpressionFileReaderTask(ds,streamUtil);
+						ExpressionFileReaderTask expressionFile1 = new ExpressionFileReaderTask(ds);
 						GeneExpressionMatrix matrix = expressionFile1.parse();
 						matrix.restoreProps(parts_exp.dataset, props);
 					}
@@ -322,7 +322,7 @@ public class EnrichmentMapSessionAction implements SessionAboutToBeSavedListener
 					DataSet ds1 = map.getDataset(EnrichmentMap.DATASET1);
 					ds1.getDatasetFiles().setExpressionFileName(prop_file.getAbsolutePath());
 					ds1.getExpressionSets().setFilename(prop_file.getAbsolutePath());
-					ExpressionFileReaderTask expressionFile1 = new ExpressionFileReaderTask(ds1,streamUtil);
+					ExpressionFileReaderTask expressionFile1 = new ExpressionFileReaderTask(ds1);
 					expressionFile1.parse();
 
 				}
@@ -330,7 +330,7 @@ public class EnrichmentMapSessionAction implements SessionAboutToBeSavedListener
 					DataSet ds2 = map.getDataset(EnrichmentMap.DATASET2);
 					ds2.getDatasetFiles().setExpressionFileName(prop_file.getAbsolutePath());
 					ds2.getExpressionSets().setFilename(prop_file.getAbsolutePath());
-					ExpressionFileReaderTask expressionFile2 = new ExpressionFileReaderTask(ds2,streamUtil);
+					ExpressionFileReaderTask expressionFile2 = new ExpressionFileReaderTask(ds2);
 					expressionFile2.parse();
 
 					//if there are two expression sets and there is a second set of genesets of interest then we
@@ -363,7 +363,7 @@ public class EnrichmentMapSessionAction implements SessionAboutToBeSavedListener
 					//initialize the Genesets (makes sure the leading edge is set correctly)
 					//Initialize the set of genesets and GSEA results that we want to compute over
 					InitializeGenesetsOfInterestTask genesets_init = new InitializeGenesetsOfInterestTask(map);
-					genesets_init.initializeSets();
+					genesets_init.initializeSets(null);
 
 					//for each map compute the similarity matrix, (easier than storing it) compute the geneset similarities
 					ComputeSimilarityTask similarities = new ComputeSimilarityTask(map, ComputeSimilarityTask.ENRICHMENT);

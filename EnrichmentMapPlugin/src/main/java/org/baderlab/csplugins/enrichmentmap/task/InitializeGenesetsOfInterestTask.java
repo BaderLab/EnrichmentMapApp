@@ -45,7 +45,6 @@ package org.baderlab.csplugins.enrichmentmap.task;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
@@ -61,8 +60,6 @@ import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
 /**
- * Created by User: risserlin Date: Jan 9, 2009 Time: 10:59:05 AM
- * <p>
  * Task to create a subset of the geneset in the total gmt file that contains
  * only the genesets with pvalue and q-value less than threshold values
  * specified by the user.
@@ -72,26 +69,8 @@ public class InitializeGenesetsOfInterestTask extends AbstractTask {
 
 	private EnrichmentMap map;
 
-	// Keep track of progress for monitoring:
-	private TaskMonitor taskMonitor = null;
-	private boolean interrupted = false;
 
-	/**
-	 * Class constructor - specifying the current task monitor
-	 *
-	 * @param params - enrichment map parameters of current map
-	 * @param taskMonitor - current task monitor
-	 */
-	public InitializeGenesetsOfInterestTask(EnrichmentMap map, TaskMonitor taskMonitor) {
-		this(map);
-		this.taskMonitor = taskMonitor;
-	}
 
-	/**
-	 * Class constructor
-	 *
-	 * @param params - enrichment map parameters of current map
-	 */
 	public InitializeGenesetsOfInterestTask(EnrichmentMap map) {
 		this.map = map;
 	}
@@ -102,15 +81,16 @@ public class InitializeGenesetsOfInterestTask extends AbstractTask {
 	 * 
 	 * @return true if successful and false otherwise.
 	 */
-	public boolean initializeSets() {
+	public boolean initializeSets(TaskMonitor taskMonitor) {
+		if(taskMonitor == null)
+			taskMonitor = new NullTaskMonitor();
 
 		//create subset of genesets that contains only the genesets of interest with pvalue and qbalue less than values
 		//specified by the user.
 
 		//Go through each Dataset populating the Gene set of interest in each dataset object
 		HashMap<String, DataSet> datasets = map.getDatasets();
-		for(Iterator<String> j = datasets.keySet().iterator(); j.hasNext();) {
-			String current_dataset_name = j.next();
+		for(String current_dataset_name : datasets.keySet()) {
 			DataSet current_dataset = datasets.get(current_dataset_name);
 
 			HashMap<String, EnrichmentResult> enrichmentResults = current_dataset.getEnrichments().getEnrichments();
@@ -136,26 +116,20 @@ public class InitializeGenesetsOfInterestTask extends AbstractTask {
 			int currentProgress = 0;
 			int maxValue = enrichmentResults.size();
 
-			if(taskMonitor != null)
-				taskMonitor.setStatusMessage("Initializing " + maxValue + " genesets");
+			taskMonitor.setStatusMessage("Initializing " + maxValue + " genesets");
 
 			//if there are no enrichment Results then do nothing
 			if(enrichmentResults == null || enrichmentResults.isEmpty())
 				return false;
 
 			//iterate through the GSEA Results to figure out which genesets we want to use
-			for(Iterator i = enrichmentResults.keySet().iterator(); i.hasNext();) {
+			for(String current_name : enrichmentResults.keySet()) {
 
 				// Calculate Percentage.  This must be a value between 0..100.
 				int percentComplete = (int) (((double) currentProgress / maxValue) * 100);
-				//  Estimate Time Remaining
-				long timeRemaining = maxValue - currentProgress;
-				if(taskMonitor != null)
-					taskMonitor.setProgress(percentComplete);
-
+				taskMonitor.setProgress(percentComplete);
 				currentProgress++;
 
-				String current_name = i.next().toString();
 				//check geneset result to see if it meets the required cutoffs
 
 				//if it is a GSEA Result then
@@ -216,20 +190,20 @@ public class InitializeGenesetsOfInterestTask extends AbstractTask {
 							}
 						}
 					} // end of determining the leading edge
+					
 					if(current_result.geneSetOfInterest(map.getParams().getPvalue(), map.getParams().getQvalue())) {
 						//check to see that the geneset in the results file is in the geneset table
 						//if it isn't then the user has given two files that don't match up
 						if(genesets.containsKey(current_name)) {
-							GeneSet current_set = (GeneSet) genesets.get(current_name);
+							GeneSet current_set = genesets.get(current_name);
 							//while we are checking, update the size of the genesets based on post filtered data
 							current_result.setGsSize(current_set.getGenes().size());
 							genesetsOfInterest.put(current_name, current_set);
 						} else if(genesetsOfInterest.containsKey(current_name)) {
 							//already found in genesets of interest - loading from session
-						} else
-							throw new IllegalThreadStateException(
-									"The Geneset: " + current_name + " is not found in the GMT file.");
-
+						} else {
+							throw new IllegalThreadStateException("The Geneset: " + current_name + " is not found in the GMT file.");
+						}
 					}
 					//if this result is not one of interest, still a good idea to update its size as might be significant in another dataset
 					else {
@@ -244,8 +218,7 @@ public class InitializeGenesetsOfInterestTask extends AbstractTask {
 				else {
 					GenericResult current_result = (GenericResult) enrichmentResults.get(current_name);
 
-					if(current_result.geneSetOfInterest(map.getParams().getPvalue(), map.getParams().getQvalue(),
-							map.getParams().isFDR())) {
+					if(current_result.geneSetOfInterest(map.getParams().getPvalue(), map.getParams().getQvalue(), map.getParams().isFDR())) {
 
 						//check to see that the geneset in the results file is in the geneset talbe
 						//if it isn't then the user has given two files that don't match up
@@ -253,13 +226,13 @@ public class InitializeGenesetsOfInterestTask extends AbstractTask {
 							GeneSet current_set = (GeneSet) genesets.get(current_name);
 							//while we are checking, update the size of the genesets based on post filtered data
 							current_result.setGsSize(current_set.getGenes().size());
-							GeneSet returned = genesetsOfInterest.put(current_name, current_set);
+							genesetsOfInterest.put(current_name, current_set);
 
 						} else if(genesetsOfInterest.containsKey(current_name)) {
 							//this geneset is already in the set of interest - loaded in from session
-						} else
-							throw new IllegalThreadStateException(
-									"The Geneset: " + current_name + " is not found in the GMT file.");
+						} else {
+							throw new IllegalThreadStateException("The Geneset: " + current_name + " is not found in the GMT file.");
+						}
 
 					}
 					//if this result is not one of interest, still a good idea to update its size as might be significant in another dataset
@@ -271,7 +244,6 @@ public class InitializeGenesetsOfInterestTask extends AbstractTask {
 						}
 					}
 				}
-
 			}
 
 		} // end of current dataset.  If more than one dataset repeat process.
@@ -279,30 +251,11 @@ public class InitializeGenesetsOfInterestTask extends AbstractTask {
 		return true;
 	}
 
-	/**
-	 * Non-blocking call to interrupt the task.
-	 */
-	public void halt() {
-		this.interrupted = true;
-	}
-
-	/**
-	 * Sets the Task Monitor.
-	 *
-	 * @param taskMonitor TaskMonitor Object.
-	 */
-	public void setTaskMonitor(TaskMonitor taskMonitor) {
-		if(this.taskMonitor != null) {
-			throw new IllegalStateException("Task Monitor is already set.");
-		}
-		this.taskMonitor = taskMonitor;
-	}
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
-		this.taskMonitor = taskMonitor;
-		this.taskMonitor.setTitle("Initializing subset of genesets and GSEA results of interest");
-		initializeSets();
+		taskMonitor.setTitle("Initializing subset of genesets and GSEA results of interest");
+		initializeSets(taskMonitor);
 	}
 
 }

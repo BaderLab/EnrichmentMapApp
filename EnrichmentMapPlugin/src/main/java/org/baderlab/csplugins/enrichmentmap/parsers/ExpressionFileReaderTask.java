@@ -45,57 +45,45 @@ package org.baderlab.csplugins.enrichmentmap.parsers;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Scanner;
+import java.util.List;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpression;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
-import org.cytoscape.io.util.StreamUtil;
+import org.baderlab.csplugins.enrichmentmap.task.NullTaskMonitor;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
 /**
- * Created by User: risserlin Date: Jan 21, 2009 Time: 9:07:34 AM
- * <p>
  * Parse expression file. The user can also use a rank file instead of an
  * expression file so this class also handles reading of rank files.
  */
 public class ExpressionFileReaderTask extends AbstractTask {
 
-	//private EnrichmentMapParameters params;
-
-	//expression file name
-	private String expressionFileName;
-
-	//which dataset is this expression file associated with
-	private DataSet dataset;
-
-	// Keep track of progress for monitoring:
-	private int maxValue;
-	private TaskMonitor taskMonitor = null;
-	private boolean interrupted = false;
-
-	private StreamUtil streamUtil;
+	private final DataSet dataset;
 
 	/**
-	 * Class constructor
-	 *
 	 * @param dataset - dataset expression file is associated with
 	 */
-	public ExpressionFileReaderTask(DataSet dataset, StreamUtil streamUtil) {
-		this.streamUtil = streamUtil;
+	public ExpressionFileReaderTask(DataSet dataset) {
 		this.dataset = dataset;
-		if(dataset.getExpressionSets() != null)
-			this.expressionFileName = dataset.getExpressionSets().getFilename();
 	}
 
 	/**
 	 * Parse expression/rank file
 	 */
 	public GeneExpressionMatrix parse() throws IOException {
+		return parse(null);
+	}
+	
+	/**
+	 * Parse expression/rank file
+	 */
+	public GeneExpressionMatrix parse(TaskMonitor taskMonitor) throws IOException {
+		if(taskMonitor == null)
+			taskMonitor = new NullTaskMonitor();
 
 		//Need to check if the file specified as an expression file is actually a rank file
 		//If it is a rank file it can either be 5 or 2 columns but it is important that the rank
@@ -110,29 +98,24 @@ public class ExpressionFileReaderTask extends AbstractTask {
 		boolean twoColumns = false;
 
 		HashSet<Integer> datasetGenes = dataset.getDatasetGenes();
-		HashMap genes = dataset.getMap().getGenes();
+		HashMap<String,Integer> genes = dataset.getMap().getGenes();
 
-		InputStream reader = streamUtil.getInputStream(expressionFileName);
-		String fullText = new Scanner(reader, "UTF-8").useDelimiter("\\A").next();
-
-		String[] lines = fullText.split("\r\n?|\n");
+		String expressionFileName = dataset.getExpressionSets().getFilename();
+		List<String> lines = DatasetLineParser.readLines(expressionFileName);
+		
 		int currentProgress = 0;
-		maxValue = lines.length;
+		int maxValue = lines.size();
 		int expressionUniverse = 0;
 
-		if(taskMonitor != null)
-			taskMonitor.setStatusMessage("Parsing GCT file - " + maxValue + " rows");
+		taskMonitor.setStatusMessage("Parsing GCT file - " + maxValue + " rows");
 
 		GeneExpressionMatrix expressionMatrix = dataset.getExpressionSets();
 		//GeneExpressionMatrix expressionMatrix = new GeneExpressionMatrix(lines[0].split("\t"));
 		//HashMap<Integer,GeneExpression> expression = new HashMap<Integer, GeneExpression>();
 		HashMap<Integer, GeneExpression> expression = expressionMatrix.getExpressionMatrix();
 
-		for(int i = 0; i < lines.length; i++) {
-			Integer genekey;
-
-			String line = lines[i];
-
+		for(int i = 0; i < lines.size(); i++) {
+			String line = lines.get(i);
 			String[] tokens = line.split("\t");
 
 			//The first column of the file is the name of the geneset
@@ -141,19 +124,18 @@ public class ExpressionFileReaderTask extends AbstractTask {
 			//if this is the first line and the expression matrix if still empty and the column names are empty
 			//Added column names empty for GSEA rank files that have no heading but after going through the loop
 			//the first time we have given them default headings
-			if(i == 0 && (expressionMatrix == null || expressionMatrix.getExpressionMatrix().isEmpty())
-					&& expressionMatrix.getColumnNames() == null) {
+			if(i == 0 && (expressionMatrix == null || expressionMatrix.getExpressionMatrix().isEmpty()) && expressionMatrix.getColumnNames() == null) {
 				//otherwise the first line is the header
 				if(Name.equalsIgnoreCase("#1.2")) {
-					line = lines[2];
+					line = lines.get(2);
 					i = 2;
 				} else {
-					line = lines[0];
+					line = lines.get(0);
 					//ignore all comment lines
 					int k = 0;
 					while(line.startsWith("#")) {
 						k++;
-						line = lines[k];
+						line = lines.get(k);
 					}
 					i = k;
 				}
@@ -190,17 +172,15 @@ public class ExpressionFileReaderTask extends AbstractTask {
 				expressionMatrix.setExpressionMatrix(expression);
 
 				continue;
-
 			}
 
 			//Check to see if this gene is in the genes list
 			//Currently we only load gene expression data for genes that are already in the gene list (i.e. are listed in at least one geneset)
 			//TODO:is there the possibility that we need all the expression genes?  Currently this great decreases space when saving sessions
 			if(genes.containsKey(Name)) {
-				genekey = (Integer) genes.get(Name);
-				//we want the genes hashmap and dataset genes hashmap to have the same keys so it is
-				//easier to compare.
-				datasetGenes.add((Integer) genes.get(Name));
+				Integer genekey = genes.get(Name);
+				//we want the genes hashmap and dataset genes hashmap to have the same keys so it is easier to compare.
+				datasetGenes.add(genekey);
 
 				String description = "";
 				//check to see if the second column is parseable
@@ -210,8 +190,9 @@ public class ExpressionFileReaderTask extends AbstractTask {
 					} catch(NumberFormatException e) {
 						description = tokens[1];
 					}
-				} else
+				} else {
 					description = tokens[1];
+				}
 
 				GeneExpression expres = new GeneExpression(Name, description);
 				expres.setExpression(tokens);
@@ -219,9 +200,11 @@ public class ExpressionFileReaderTask extends AbstractTask {
 				double newMax = expres.newMax(expressionMatrix.getMaxExpression());
 				if(newMax != -100)
 					expressionMatrix.setMaxExpression(newMax);
+				
 				double newMin = expres.newMin(expressionMatrix.getMinExpression());
 				if(newMin != -100)
 					expressionMatrix.setMinExpression(newMin);
+				
 				double newClosest = expres.newclosesttoZero(expressionMatrix.getClosesttoZero());
 				if(newClosest != -100)
 					expressionMatrix.setClosesttoZero(newClosest);
@@ -231,13 +214,11 @@ public class ExpressionFileReaderTask extends AbstractTask {
 			}
 			expressionUniverse++;
 
-			if(taskMonitor != null) {
-				// Calculate Percentage.  This must be a value between 0..100.
-				int percentComplete = (int) (((double) currentProgress / maxValue) * 100);
-				taskMonitor.setProgress(percentComplete);
-			}
+			// Calculate Percentage.  This must be a value between 0..100.
+			int percentComplete = (int) (((double) currentProgress / maxValue) * 100);
+			taskMonitor.setProgress(percentComplete);
+			
 			currentProgress++;
-
 		}
 
 		//set the number of genes
@@ -289,16 +270,14 @@ public class ExpressionFileReaderTask extends AbstractTask {
 		if(!f.exists()) {
 			return null;
 		}
+		
 		//check to see if the file was opened successfully
 
 		if(!classFile.equalsIgnoreCase(null)) {
-			InputStream reader = streamUtil.getInputStream(classFile);
-			String fullText2 = new Scanner(reader, "UTF-8").useDelimiter("\\A").next();
-
-			String[] lines2 = fullText2.split("\r\n?|\n");
+			List<String> lines = DatasetLineParser.readLines(classFile);
 
 			//the class file can be split by a space or a tab
-			String[] classes = lines2[2].split("\\s");
+			String[] classes = lines.get(2).split("\\s");
 
 			//the third line of the class file defines the classes
 			return classes;
@@ -308,29 +287,9 @@ public class ExpressionFileReaderTask extends AbstractTask {
 		}
 	}
 
-	/**
-	 * Non-blocking call to interrupt the task.
-	 */
-	public void halt() {
-		this.interrupted = true;
-	}
-
-	/**
-	 * Sets the Task Monitor.
-	 *
-	 * @param taskMonitor TaskMonitor Object.
-	 */
-	public void setTaskMonitor(TaskMonitor taskMonitor) {
-		if(this.taskMonitor != null) {
-			throw new IllegalStateException("Task Monitor is already set.");
-		}
-		this.taskMonitor = taskMonitor;
-	}
-
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
-		this.taskMonitor = taskMonitor;
 		taskMonitor.setTitle("Parsing GCT file");
-		parse();
+		parse(taskMonitor);
 	}
 }

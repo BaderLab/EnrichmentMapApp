@@ -2,7 +2,6 @@ package org.baderlab.csplugins.enrichmentmap.task;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
@@ -14,7 +13,6 @@ public class FilterGenesetsByDatasetGenes extends AbstractTask {
 	private EnrichmentMap map;
 
 	public FilterGenesetsByDatasetGenes(EnrichmentMap map) {
-		super();
 		this.map = map;
 	}
 
@@ -23,13 +21,15 @@ public class FilterGenesetsByDatasetGenes extends AbstractTask {
 	 * of genesets make sure to filter by the specific dataset genes
 	 */
 	public void filterGenesets() {
-		HashMap<String, DataSet> datasets = this.map.getDatasets();
-		for(Iterator<String> k = datasets.keySet().iterator(); k.hasNext();) {
-			DataSet current_set = datasets.get(k.next());
+		HashMap<String, DataSet> datasets = map.getDatasets();
+		for(String k : datasets.keySet()) {
+			DataSet current_set = datasets.get(k);
+			
 			//only filter the genesets if dataset genes are not null or empty
-			if(current_set.getDatasetGenes() != null && !current_set.getDatasetGenes().isEmpty())
-				current_set.getSetofgenesets().filterGenesets(current_set.getDatasetGenes());
-
+			HashSet<Integer> datasetGenes = current_set.getDatasetGenes();
+			if(datasetGenes != null && !datasetGenes.isEmpty()) {
+				current_set.getSetofgenesets().filterGenesets(datasetGenes);
+			}
 		}
 
 		//check to make sure that after filtering there are still genes in the genesets
@@ -43,17 +43,15 @@ public class FilterGenesetsByDatasetGenes extends AbstractTask {
 			HashSet<Integer> dataset1_genes = datasets.get(EnrichmentMap.DATASET1).getDatasetGenes();
 			HashSet<Integer> dataset2_genes = datasets.get(EnrichmentMap.DATASET2).getDatasetGenes();
 
-			if(!(dataset1_genes.containsAll(dataset2_genes) && dataset2_genes.containsAll(dataset1_genes)))
+			if(!dataset1_genes.equals(dataset2_genes)) {
 				map.getParams().setTwoDistinctExpressionSets(true);
-
+			}
 		}
-
 	}
 
 	@Override
 	public void run(TaskMonitor arg0) throws Exception {
 		filterGenesets();
-
 	}
 
 }

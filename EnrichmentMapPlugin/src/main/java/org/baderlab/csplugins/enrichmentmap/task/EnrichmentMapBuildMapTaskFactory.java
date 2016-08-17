@@ -118,7 +118,7 @@ public class EnrichmentMapBuildMapTaskFactory implements TaskFactory {
 				CreateDummyExpressionTask dummyExpressionTask = new CreateDummyExpressionTask(dataset);
 				currentTasks.append(dummyExpressionTask);
 			} else {
-				ExpressionFileReaderTask expressionFileTask = new ExpressionFileReaderTask(dataset, streamUtil);
+				ExpressionFileReaderTask expressionFileTask = new ExpressionFileReaderTask(dataset);
 				currentTasks.append(expressionFileTask);
 			}
 			
@@ -127,21 +127,18 @@ public class EnrichmentMapBuildMapTaskFactory implements TaskFactory {
 			if(dataset.getMap().getParams().getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)) {
 				if(dataset.getExpressionSets().getRanksByName(Ranking.GSEARanking) != null) {
 					RanksFileReaderTask ranking1 = new RanksFileReaderTask(
-							dataset.getExpressionSets().getRanksByName(Ranking.GSEARanking).getFilename(), dataset,
-							Ranking.GSEARanking, false, streamUtil);
+							dataset.getExpressionSets().getRanksByName(Ranking.GSEARanking).getFilename(), dataset, Ranking.GSEARanking, false);
 					currentTasks.append(ranking1);
 				}
 			} else {
 				if(dataset.getExpressionSets().getRanksByName(EnrichmentMap.DATASET1) != null) {
 					RanksFileReaderTask ranking1 = new RanksFileReaderTask(
-							dataset.getExpressionSets().getRanksByName(EnrichmentMap.DATASET1).getFilename(), dataset,
-							EnrichmentMap.DATASET1, false, streamUtil);
+							dataset.getExpressionSets().getRanksByName(EnrichmentMap.DATASET1).getFilename(), dataset, EnrichmentMap.DATASET1, false);
 					currentTasks.append(ranking1);
 				}
 				if(dataset.getExpressionSets().getRanksByName(EnrichmentMap.DATASET2) != null) {
 					RanksFileReaderTask ranking1 = new RanksFileReaderTask(
-							dataset.getExpressionSets().getRanksByName(EnrichmentMap.DATASET2).getFilename(), dataset,
-							EnrichmentMap.DATASET2, false, streamUtil);
+							dataset.getExpressionSets().getRanksByName(EnrichmentMap.DATASET2).getFilename(), dataset, EnrichmentMap.DATASET2, false);
 					currentTasks.append(ranking1);
 				}
 			}

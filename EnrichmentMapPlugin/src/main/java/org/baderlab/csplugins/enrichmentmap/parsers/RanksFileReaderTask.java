@@ -44,13 +44,12 @@
 package org.baderlab.csplugins.enrichmentmap.parsers;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Scanner;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -58,7 +57,7 @@ import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.Rank;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
-import org.cytoscape.io.util.StreamUtil;
+import org.baderlab.csplugins.enrichmentmap.task.NullTaskMonitor;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
@@ -79,84 +78,67 @@ public class RanksFileReaderTask extends AbstractTask {
 	private DataSet dataset;
 	private String ranks_name;
 
-	// Keep track of progress for monitoring:
-	private int maxValue;
 
 	//distinguish between load from enrichment map input panel and heatmap interface
 	private boolean loadFromHeatmap = false;
 
-	private StreamUtil streamUtil;
 
 	/**
 	 * Class constructor
 	 *
-	 * @param params - enrichment map parameters for current map
 	 * @param rankFileName - file name of ranks file
-	 * @param dataset - which dataset is this rank file related to (dataset 1 or
-	 *            dataset 2)
+	 * @param dataset - which dataset is this rank file related to (dataset 1 or  dataset 2)
 	 */
-	public RanksFileReaderTask(String rankFileName, DataSet dataset, boolean loadFromHeatmap, StreamUtil streamUtil) {
-		RankFileName = rankFileName;
+	public RanksFileReaderTask(String rankFileName, DataSet dataset, boolean loadFromHeatmap) {
+		this.RankFileName = rankFileName;
 		this.dataset = dataset;
 		this.loadFromHeatmap = loadFromHeatmap;
-
-		this.streamUtil = streamUtil;
-
 	}
 
 	/**
 	 * Class constructor - curent task monitor specified.
 	 *
-	 * @param params - enrichment map parameters for current map
 	 * @param rankFileName - file name of ranks file
-	 * @param dataset - which dataset is this rank file related to (dataset 1 or
-	 *            dataset 2)
+	 * @param dataset - which dataset is this rank file related to (dataset 1 or  dataset 2)
 	 */
-	public RanksFileReaderTask(String rankFileName, DataSet dataset, String ranks_name, boolean loadFromHeatmap,
-			StreamUtil streamUtil) {
+	public RanksFileReaderTask(String rankFileName, DataSet dataset, String ranks_name, boolean loadFromHeatmap) {
 		RankFileName = rankFileName;
 		this.ranks_name = ranks_name;
 		this.dataset = dataset;
 		this.loadFromHeatmap = loadFromHeatmap;
-
-		this.streamUtil = streamUtil;
-
 	}
 
 	/**
-	 * Class constructor - for late loaded rank file that aren't specific to a
-	 * dataset.
+	 * Class constructor - for late loaded rank file that aren't specific to a dataset.
 	 *
 	 * @param params - enrichment map parameters for current map
 	 * @param rankFileName - file name of ranks file
-	 * @param ranks_name - name of rankings to be used in heat map drop down to
-	 *            refer to it.
+	 * @param ranks_name - name of rankings to be used in heat map drop down to refer to it.
 	 */
 	public RanksFileReaderTask(String rankFileName, String ranks_name, boolean loadFromHeatmap) {
-		RankFileName = rankFileName;
+		this.RankFileName = rankFileName;
 		this.ranks_name = ranks_name;
 		this.loadFromHeatmap = loadFromHeatmap;
 	}
 
+	
 	/**
 	 * parse the rank file
 	 */
 	public void parse(TaskMonitor taskMonitor) throws IOException {
-
-		InputStream reader = streamUtil.getInputStream(RankFileName);
-		String fullText = new Scanner(reader, "UTF-8").useDelimiter("\\A").next();
-
+		if(taskMonitor == null)
+			taskMonitor = new NullTaskMonitor();
+		
+		List<String> lines = DatasetLineParser.readLines(RankFileName);
+		
 		int lineNumber = 0;
-
-		String[] lines = fullText.split("\r\n?|\n");
 		int currentProgress = 0;
-		maxValue = lines.length;
-		if(taskMonitor != null)
-			taskMonitor.setStatusMessage("Parsing Rank file - " + maxValue + " rows");
+		int maxValue = lines.size();
+		taskMonitor.setStatusMessage("Parsing Rank file - " + maxValue + " rows");
 
 		HashMap<String, Integer> genes = dataset.getMap().getGenes();
 		// we don't know the number of scores in the rank file yet, but it can't be more than the number of lines.
-		Double[] score_collector = new Double[lines.length];
+		Double[] score_collector = new Double[lines.size()];
 
 		boolean gseaDefinedRanks = false;
 
@@ -173,10 +155,8 @@ public class RanksFileReaderTask extends AbstractTask {
 		 */
 
 		int nScores = 0; //number of found scores
-		for(int i = 0; i < lines.length; i++) {
-			Integer genekey;
-
-			String line = lines[i];
+		for(int i = 0; i < lines.size(); i++) {
+			String line = lines.get(i);
 
 			//check to see if the line is commented out and should be ignored.
 			if(line.startsWith("#")) {
@@ -238,7 +218,7 @@ public class RanksFileReaderTask extends AbstractTask {
 
 			//check to see if the gene is in the genelist
 			if(genes.containsKey(name)) {
-				genekey = (Integer) genes.get(name);
+				Integer genekey = genes.get(name);
 				Rank current_ranking;
 				//if their were 5 tokens in the rank file then the assumption
 				//is that this is a GSEA rank file and the order of the scores
@@ -250,8 +230,7 @@ public class RanksFileReaderTask extends AbstractTask {
 				// based on the order of the scores.
 				// Making the assumption that all rank files loaded for GSEA results from EM input panel are leading
 				// edge compatible files.
-				if((tokens.length == 5) || (dataset.getMap().getParams().getMethod()
-						.equalsIgnoreCase(EnrichmentMapParameters.method_GSEA) && !loadFromHeatmap)) {
+				if((tokens.length == 5) || (dataset.getMap().getParams().getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA) && !loadFromHeatmap)) {
 					current_ranking = new Rank(name, score, nScores);
 					rank2gene.put(nScores, genekey);
 				} else {
@@ -261,18 +240,15 @@ public class RanksFileReaderTask extends AbstractTask {
 			}
 
 			// Calculate Percentage.  This must be a value between 0..100.
-			if(taskMonitor != null) {
-				int percentComplete = (int) (((double) currentProgress / maxValue) * 100);
-				taskMonitor.setProgress(percentComplete);
-			}
+			int percentComplete = (int) (((double) currentProgress / maxValue) * 100);
+			taskMonitor.setProgress(percentComplete);
 			currentProgress++;
 
 		}
 
 		//the none of the genes are in the gene list
 		if(ranks.isEmpty()) {
-			throw new IllegalThreadStateException(
-					"None of the genes in the rank file are found in the expression file.  Make sure the identifiers of the two files match.");
+			throw new IllegalThreadStateException("None of the genes in the rank file are found in the expression file.  Make sure the identifiers of the two files match.");
 		}
 
 		//remove Null values from collector

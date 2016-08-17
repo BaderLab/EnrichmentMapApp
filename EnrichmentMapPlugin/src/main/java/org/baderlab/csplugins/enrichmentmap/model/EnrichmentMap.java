@@ -284,7 +284,6 @@ public class EnrichmentMap {
 			//only filter the genesets if dataset genes are not null or empty
 			if(current_set.getDatasetGenes() != null && !current_set.getDatasetGenes().isEmpty())
 				current_set.getSetofgenesets().filterGenesets(current_set.getDatasetGenes());
-
 		}
 	}
 

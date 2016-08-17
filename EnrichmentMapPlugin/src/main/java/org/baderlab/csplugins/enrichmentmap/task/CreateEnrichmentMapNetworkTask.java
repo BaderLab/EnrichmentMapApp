@@ -50,6 +50,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
@@ -73,6 +74,8 @@ import org.cytoscape.model.CyTableManager;
 import org.cytoscape.task.edit.MapTableToNetworkTablesTaskFactory;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
+
+import com.google.common.collect.Sets;
 
 /**
  * Created by User: risserlin Date: Jan 8, 2009 Time: 4:11:11 PM
@@ -162,13 +165,8 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 		//set the NetworkID in the EM parameters
 		map.getParams().setNetworkID(network.getSUID());
 
-		//create the Node attributes table
 		CyTable nodeTable = createNodeAttributes(network, map.getName().trim(), prefix);
-		//create the edge attributes table
 		CyTable edgeTable = createEdgeAttributes(network, map.getName().trim(), prefix);
-
-		//get the default edge table - in order to map the interaction type.
-		CyTable edgeTableDef = network.getDefaultEdgeTable();
 
 		// store path to GSEA report in Network Attribute
 		if(map.getParams().getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)) {
@@ -200,9 +198,6 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 			}
 		}
 
-		// HashMap<String, EnrichmentResult> enrichmentResults1OfInterest = params.getEM().getFilteredEnrichment(EnrichmentMap.DATASET1).getEnrichments();
-		//HashMap<String, EnrichmentResult> enrichmentResults2OfInterest = params.getEM().getFilteredEnrichment(EnrichmentMap.DATASET2).getEnrichments();
-
 		//Currently this supports two dataset
 		//TODO:add multiple dataset support.
 		//go through the datasets to get the enrichments
@@ -219,8 +214,7 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 				enrichmentResults2 = map.getDataset(current_dataset).getEnrichments().getEnrichments();
 		}
 
-		HashMap<String, GeneSet> genesetsOfInterest = map.getDataset(EnrichmentMap.DATASET1).getGenesetsOfInterest()
-				.getGenesets();
+		HashMap<String, GeneSet> genesetsOfInterest = map.getDataset(EnrichmentMap.DATASET1).getGenesetsOfInterest().getGenesets();
 		HashMap<String, GeneSet> genesetsOfInterest_set2 = null;
 		if(map.getParams().isTwoDatasets())
 			genesetsOfInterest_set2 = map.getDataset(EnrichmentMap.DATASET2).getGenesetsOfInterest().getGenesets();
@@ -239,9 +233,7 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 		//we resolve this?
 
 		//iterate through the each of the GSEA Results of interest
-		for(Iterator<String> i = genesetsOfInterest.keySet().iterator(); i.hasNext();) {
-			String current_name = i.next();
-
+		for(String current_name : genesetsOfInterest.keySet()) {
 			CyNode node = network.addNode();
 			network.getRow(node).set(CyNetwork.NAME, current_name);
 
@@ -260,27 +252,16 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 					gs = gs2;
 			}
 			CyRow current_row = nodeTable.getRow(node.getSUID());
-			//TODO: add own tables
-			//CyRow current_row = nodeTable.getRow(current_name);
 			current_row.set(prefix + EnrichmentMapVisualStyle.GS_DESCR, gs.getDescription());
 
 			//create an attribute that stores the genes that are associated with this node as an attribute list
 			//only create the list if the hashkey 2 genes is not null Otherwise it take too much time to populate the list
 			if(map.getHashkey2gene() != null) {
-				List<String> gene_list = new ArrayList<String>();
-				HashSet<Integer> genes_hash = new HashSet<Integer>();
-
-				genes_hash.addAll(gs.getGenes());
-
+				Set<Integer> genes = gs.getGenes();
 				if(gs2 != null)
-					genes_hash.addAll(gs2.getGenes());
-
-				for(Iterator<Integer> j = genes_hash.iterator(); j.hasNext();) {
-					Integer current = j.next();
-					String gene = map.getGeneFromHashKey(current);
-					if(gene_list != null)
-						gene_list.add(gene);
-				}
+					genes = Sets.union(genes, gs2.getGenes());
+				
+				List<String> gene_list = genes.stream().map(map::getGeneFromHashKey).collect(Collectors.toList());
 				current_row.set(prefix + EnrichmentMapVisualStyle.GENES, gene_list);
 			}
 
@@ -298,28 +279,21 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 					if(enrichmentResults2.containsKey(current_name)) {
 						GSEAResult second_result = (GSEAResult) enrichmentResults2.get(current_name);
 						setGSEAResultDataset2Attributes(current_row, second_result, prefix);
-
 					}
-
 				} else {
 					if(enrichmentResults2.containsKey(current_name)) {
 						GenericResult second_result = (GenericResult) enrichmentResults2.get(current_name);
 						setGenericResultDataset2Attributes(current_row, second_result, prefix);
-
 					}
-
 				}
 			}
 
 			// Calculate Percentage.  This must be a value between 0..100.
 			int percentComplete = (int) (((double) currentProgress / maxValue) * 100);
-			//  Estimate Time Remaining
-			long timeRemaining = maxValue - currentProgress;
 			if(taskMonitor != null)
 				taskMonitor.setProgress(percentComplete);
 
 			currentProgress++;
-
 		}
 
 		//Add any additional nodes from the second dataset that haven't been added yet
@@ -442,8 +416,7 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 				current_edgerow.set(CyEdge.INTERACTION, current_result.getInteractionType());
 				current_edgerow.set(prefix + EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT, similarity_coeffecient);
 				current_edgerow.set(prefix + EnrichmentMapVisualStyle.OVERLAP_SIZE, current_result.getSizeOfOverlap());
-				current_edgerow.set(prefix + EnrichmentMapVisualStyle.ENRICHMENT_SET,
-						current_result.getEnrichment_set());
+				current_edgerow.set(prefix + EnrichmentMapVisualStyle.ENRICHMENT_SET, current_result.getEnrichment_set());
 
 				//set the default table
 				//TODO: add own tables
@@ -455,14 +428,10 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 				//create an attribute that stores the genes that are associated with this edge as an attribute list
 				//only create the list if the hashkey 2 genes is not null Otherwise it take too much time to populate the list
 				if(map.getHashkey2gene() != null) {
-					List<String> gene_list = new ArrayList<String>();
-					Set<Integer> genes_hash = current_result.getOverlapping_genes();
-					for(Integer current : genes_hash) {
-						String gene = map.getGeneFromHashKey(current);
-						if(gene_list != null)
-							gene_list.add(gene);
-					}
-
+					List<String> gene_list = 
+							current_result.getOverlapping_genes().stream()
+							.map(map::getGeneFromHashKey)
+							.collect(Collectors.toList());
 					current_edgerow.set(prefix + EnrichmentMapVisualStyle.OVERLAP_GENES, gene_list);
 				}
 
@@ -563,7 +532,6 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 	 * @param prefix - attribute prefix
 	 */
 	private void setGSEAResultDataset1Attributes(CyRow current_row, GSEAResult result, String prefix) {
-
 		if(result == null)
 			return;
 		//format the node name
@@ -671,8 +639,7 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 					if(i + EnrichmentMapVisualStyle.maxNodeLabelLength > label.length())
 						formattedLabel = formattedLabel + label.substring(i, label.length()) + "\n";
 					else
-						formattedLabel = formattedLabel
-								+ label.substring(i, k * EnrichmentMapVisualStyle.maxNodeLabelLength) + "\n";
+						formattedLabel = formattedLabel + label.substring(i, k * EnrichmentMapVisualStyle.maxNodeLabelLength) + "\n";
 					i = (k * EnrichmentMapVisualStyle.maxNodeLabelLength);
 					k++;
 				}
@@ -745,8 +712,7 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 	}
 
 	//TODO:move this method to utilities method.
-	private static Set<CyNode> getNodesWithValue(final CyNetwork net, final CyTable table, final String colname,
-			final Object value) {
+	private static Set<CyNode> getNodesWithValue(final CyNetwork net, final CyTable table, final String colname, final Object value) {
 		final Collection<CyRow> matchingRows = table.getMatchingRows(colname, value);
 		final Set<CyNode> nodes = new HashSet<CyNode>();
 		final String primaryKeyColname = table.getPrimaryKey().getName();
@@ -763,8 +729,7 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 	}
 
 	//TODO:move this method to utilities method.
-	private static CyNode getUniqueNodeWithValue(final CyNetwork net, final CyTable table, final String colname,
-			final Object value) {
+	private static CyNode getUniqueNodeWithValue(final CyNetwork net, final CyTable table, final String colname, final Object value) {
 		final Collection<CyRow> matchingRows = table.getMatchingRows(colname, value);
 		//if this id matches more than one node then don't return anything
 		if(matchingRows.size() > 1 || matchingRows.size() <= 0)

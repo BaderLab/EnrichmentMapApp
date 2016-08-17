@@ -100,7 +100,7 @@ public class FileReaderTest {
         assertEquals(4,map.getGenes().size());
 
         //load expression file
-        ExpressionFileReaderTask task = new ExpressionFileReaderTask(dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
+        ExpressionFileReaderTask task = new ExpressionFileReaderTask(dataset);
         task.run(taskMonitor);
 
         //There was one more gene in the expression file that wasn't in the set of genes
@@ -161,7 +161,7 @@ public class FileReaderTest {
         assertEquals(4,map.getGenes().size());
 
         //load expression file
-        ExpressionFileReaderTask task = new ExpressionFileReaderTask(dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
+        ExpressionFileReaderTask task = new ExpressionFileReaderTask(dataset);
         task.run(taskMonitor);
 
 
@@ -224,7 +224,7 @@ public class FileReaderTest {
         assertEquals(4,map.getGenes().size());
 
         //load expression file
-        ExpressionFileReaderTask task = new ExpressionFileReaderTask(dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
+        ExpressionFileReaderTask task = new ExpressionFileReaderTask(dataset);
         task.run(taskMonitor);
 
 
@@ -286,7 +286,7 @@ public class FileReaderTest {
         assertEquals(4,map.getGenes().size());
 
         //load expression file
-        ExpressionFileReaderTask task = new ExpressionFileReaderTask(dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
+        ExpressionFileReaderTask task = new ExpressionFileReaderTask(dataset);
         task.run(taskMonitor);
 
 

@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
-import org.baderlab.csplugins.enrichmentmap.StreamUtil;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
@@ -17,7 +16,6 @@ import org.junit.Test;
 public class LoadDatasetTaskTest {
 	
 	private TaskMonitor taskMonitor = mock(TaskMonitor.class);
-	private StreamUtil streamUtil = new StreamUtil();
 	
 	
 	@Test
@@ -51,7 +49,7 @@ public class LoadDatasetTaskTest {
         enrichmentResultsFilesTask.run(taskMonitor); 
         
         //load expression file
-        ExpressionFileReaderTask exptask = new ExpressionFileReaderTask(dataset,(org.cytoscape.io.util.StreamUtil)streamUtil);
+        ExpressionFileReaderTask exptask = new ExpressionFileReaderTask(dataset);
         exptask.run(taskMonitor);
         		
 		//check to see if the dataset loaded

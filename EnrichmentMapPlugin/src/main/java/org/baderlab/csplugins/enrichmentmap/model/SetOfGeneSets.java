@@ -2,8 +2,9 @@ package org.baderlab.csplugins.enrichmentmap.model;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
+
+import com.google.common.collect.Sets;
 
 /*
  * Class represents a set of genesets.  In GSEA the set of genesets is contained
@@ -61,40 +62,28 @@ public class SetOfGeneSets {
 	 * the genes found in the expression file.
 	 */
 	public void filterGenesets(HashSet<Integer> datasetGenes) {
-
 		//create a new hashmap to store the filtered geneset
 		HashMap<String, GeneSet> filteredGenesets = new HashMap<String, GeneSet>();
 
 		//iterate through each geneset and filter each one
-		for(Iterator j = genesets.keySet().iterator(); j.hasNext();) {
-
-			String geneset2_name = j.next().toString();
+		for(String geneset2_name : genesets.keySet()) {
 			GeneSet current_set = genesets.get(geneset2_name);
 
 			//compare the HashSet of dataset genes to the HashSet of the current Geneset
 			//only keep the genes from the geneset that are in the dataset genes
-			Set<Integer> geneset_genes = current_set.getGenes();
+			Set<Integer> intersection = Sets.intersection(current_set.getGenes(), datasetGenes);
 
-			//Get the intersection between current geneset and dataset genes
-			Set<Integer> intersection = new HashSet<Integer>(geneset_genes);
-			intersection.retainAll(datasetGenes);
-
-			//Add new geneset to the filtered set of genesets
-			HashSet<Integer> new_geneset = new HashSet<Integer>(intersection);
 			GeneSet.Builder builder = new GeneSet.Builder(geneset2_name, current_set.getDescription());
-			builder.addAllGenes(new_geneset);
+			builder.addAllGenes(intersection);
 			GeneSet new_set = builder.build();
 
 			filteredGenesets.put(geneset2_name, new_set);
-
 		}
-		//once we have filtered the genesets clear the original genesets object
-		genesets.clear();
-
+		
 		genesets = filteredGenesets;
-
 	}
 
+	
 	public String getName() {
 		return name;
 	}

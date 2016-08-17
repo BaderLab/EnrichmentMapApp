@@ -159,8 +159,7 @@ public class HeatMapActionListener implements ActionListener {
 				//load the new ranks file
 				//the new rank file is not associated with a dataset.
 				//simply add it to Dataset 1
-				RanksFileReaderTask ranking1 = new RanksFileReaderTask(file.getAbsolutePath(),
-						map.getDataset(EnrichmentMap.DATASET1), ranks_name, true, streamUtil);
+				RanksFileReaderTask ranking1 = new RanksFileReaderTask(file.getAbsolutePath(), map.getDataset(EnrichmentMap.DATASET1), ranks_name, true);
 				try {
 					ranking1.parse(null);
 				} catch(IOException e) {
