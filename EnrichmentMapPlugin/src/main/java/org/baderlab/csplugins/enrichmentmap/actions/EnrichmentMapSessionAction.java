@@ -39,24 +39,17 @@ import org.cytoscape.session.events.SessionAboutToBeSavedListener;
 import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
 
+import com.google.inject.Inject;
+
 public class EnrichmentMapSessionAction implements SessionAboutToBeSavedListener, SessionLoadedListener {
 
-	private CyNetworkManager cyNetworkManager;
-	private CySessionManager cySessionManager;
-	private CyApplicationManager cyApplicationManager;
-	private StreamUtil streamUtil;
+	@Inject private CyNetworkManager cyNetworkManager;
+	@Inject private CySessionManager cySessionManager;
+	@Inject private CyApplicationManager cyApplicationManager;
+	@Inject private StreamUtil streamUtil;
 
 	private static final String appName = "EnrichmentMap";
 
-	public EnrichmentMapSessionAction(CyNetworkManager cyNetworkManager, 
-			CySessionManager cySessionManager, CyApplicationManager cyApplicationManager, 
-			StreamUtil streamUtil) {
-		super();
-		this.cyNetworkManager = cyNetworkManager;
-		this.cySessionManager = cySessionManager;
-		this.cyApplicationManager = cyApplicationManager;
-		this.streamUtil = streamUtil;
-	}
 
 	/**
 	 * Restore Enrichment maps

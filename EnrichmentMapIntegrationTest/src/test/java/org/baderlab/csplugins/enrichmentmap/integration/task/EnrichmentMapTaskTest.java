@@ -64,12 +64,12 @@ public class EnrichmentMapTaskTest extends BaseIntegrationTest {
 	
 	protected void buildEnrichmentMap(EnrichmentMapParameters emParams) {
 		EnrichmentMap map = new EnrichmentMap(emParams);
-	   	EnrichmentMapBuildMapTaskFactory buildmap = new EnrichmentMapBuildMapTaskFactory(map,  
+	   	EnrichmentMapBuildMapTaskFactory buildmap = new EnrichmentMapBuildMapTaskFactory(  
 			applicationManager, null /*swingApplication*/, networkManager, networkViewManager,
 			networkViewFactory, networkFactory, tableFactory,
 			tableManager, visualMappingManager, visualStyleFactory,
 			vmfFactoryContinuous, vmfFactoryDiscrete, vmfFactoryPassthrough, 
-			streamUtil, layoutManager, mapTableToNetworkTable);
+			layoutManager, mapTableToNetworkTable).init(map);
 	    
 	   	TaskIterator taskIterator = buildmap.createTaskIterator();
 	   	SerialTestTaskManager taskManager = new SerialTestTaskManager();

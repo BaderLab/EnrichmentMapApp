@@ -9,23 +9,14 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 
+import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.util.SwingUtil;
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.io.util.StreamUtil;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.session.CySessionManager;
-import org.cytoscape.util.swing.FileUtil;
-import org.cytoscape.util.swing.OpenBrowser;
-import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.view.vizmap.VisualStyleFactory;
-import org.cytoscape.work.SynchronousTaskManager;
-import org.cytoscape.work.swing.DialogTaskManager;
+
+import com.google.inject.Inject;
+import com.google.inject.Provider;
 
 /**
  * A simple top-level panel which manages an instance of PostAnalysisInputPanel
@@ -36,51 +27,16 @@ import org.cytoscape.work.swing.DialogTaskManager;
 @SuppressWarnings("serial")
 public class PostAnalysisPanel extends JPanel implements CytoPanelComponent {
 
-	private final CyApplicationManager cyApplicationManager;
-	private final CySwingApplication application;
-	private final OpenBrowser browser;
-	private final FileUtil fileUtil;
-	private final CyServiceRegistrar registrar;
-	private final CySessionManager sessionManager;
-	private final StreamUtil streamUtil;
-	private final DialogTaskManager dialog;
-	private final SynchronousTaskManager<?> syncTaskManager;
-	private final CyEventHelper eventHelper;
-
-	private final VisualMappingManager visualMappingManager;
-	private final VisualStyleFactory visualStyleFactory;
-
-	private final VisualMappingFunctionFactory vmfFactoryContinuous;
-	private final VisualMappingFunctionFactory vmfFactoryDiscrete;
-	private final VisualMappingFunctionFactory vmfFactoryPassthrough;
-
+	@Inject private Provider<PostAnalysisInputPanel> panelProvider;
+	
 	private WeakHashMap<EnrichmentMap, PostAnalysisInputPanel> panels = new WeakHashMap<>();
 
-	public PostAnalysisPanel(CyApplicationManager cyApplicationManager, CySwingApplication application,
-			OpenBrowser browser, FileUtil fileUtil, CySessionManager sessionManager, StreamUtil streamUtil,
-			CyServiceRegistrar registrar, DialogTaskManager dialog, SynchronousTaskManager<?> syncTaskManager,
-			CyEventHelper eventHelper, VisualMappingManager visualMappingManager, VisualStyleFactory visualStyleFactory,
-			VisualMappingFunctionFactory vmfFactoryContinuous, VisualMappingFunctionFactory vmfFactoryDiscrete,
-			VisualMappingFunctionFactory vmfFactoryPassthrough) {
 
-		this.cyApplicationManager = cyApplicationManager;
-		this.application = application;
-		this.browser = browser;
-		this.fileUtil = fileUtil;
-		this.registrar = registrar;
-		this.sessionManager = sessionManager;
-		this.streamUtil = streamUtil;
-		this.dialog = dialog;
-		this.syncTaskManager = syncTaskManager;
-		this.eventHelper = eventHelper;
-		this.visualMappingManager = visualMappingManager;
-		this.visualStyleFactory = visualStyleFactory;
-		this.vmfFactoryContinuous = vmfFactoryContinuous;
-		this.vmfFactoryDiscrete = vmfFactoryDiscrete;
-		this.vmfFactoryPassthrough = vmfFactoryPassthrough;
-
+	@AfterInjection
+	private void createContents() {
 		setLayout(new BorderLayout());
 	}
+	
 
 	public void showPanelFor(EnrichmentMap map) {
 		PostAnalysisInputPanel panel;
@@ -103,10 +59,7 @@ public class PostAnalysisPanel extends JPanel implements CytoPanelComponent {
 	}
 
 	private PostAnalysisInputPanel newPostAnalysisInputPanel(EnrichmentMap map) {
-		PostAnalysisInputPanel panel = 
-			new PostAnalysisInputPanel(cyApplicationManager, application, browser, fileUtil, sessionManager,
-				streamUtil, registrar, dialog, syncTaskManager, eventHelper, visualMappingManager, visualStyleFactory,
-				vmfFactoryContinuous, vmfFactoryDiscrete, vmfFactoryPassthrough);
+		PostAnalysisInputPanel panel = panelProvider.get();
 		if(map != null)
 			panel.initialize(map);
 		return panel;

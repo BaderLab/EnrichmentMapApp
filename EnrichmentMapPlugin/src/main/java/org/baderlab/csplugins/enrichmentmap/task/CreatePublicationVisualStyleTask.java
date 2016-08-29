@@ -12,27 +12,17 @@ import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
+import com.google.inject.Inject;
+
 public class CreatePublicationVisualStyleTask extends AbstractTask {
 
 	private static final String SUFFIX = "_publication";
 	
-	private final CyApplicationManager applicationManager;
-	private final VisualMappingManager visualMappingManager;
-	private final VisualStyleFactory visualStyleFactory;
-	private final CyEventHelper eventHelper;
+	@Inject private CyApplicationManager applicationManager;
+	@Inject private VisualMappingManager visualMappingManager;
+	@Inject private VisualStyleFactory visualStyleFactory;
+	@Inject private CyEventHelper eventHelper;
 	
-	
-	public CreatePublicationVisualStyleTask(
-			CyApplicationManager applicationManager,
-			VisualMappingManager visualMappingManager,
-			VisualStyleFactory visualStyleFactory,
-			CyEventHelper eventHelper) {
-		
-		this.applicationManager = applicationManager;
-		this.visualMappingManager = visualMappingManager;
-		this.visualStyleFactory = visualStyleFactory;
-		this.eventHelper = eventHelper;
-	}
 	
 	private VisualStyle attemptToGetExistingStyle(String vs_name) {
 		for(VisualStyle vs : visualMappingManager.getAllVisualStyles()) {

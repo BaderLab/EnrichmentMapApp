@@ -88,6 +88,7 @@ import javax.swing.border.TitledBorder;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumnModel;
 
+import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapVisualStyle;
 import org.baderlab.csplugins.enrichmentmap.heatmap.CellHighlightRenderer;
@@ -131,6 +132,8 @@ import org.mskcc.colorgradient.ColorGradientRange;
 import org.mskcc.colorgradient.ColorGradientTheme;
 import org.mskcc.colorgradient.ColorGradientWidget;
 
+import com.google.inject.Inject;
+
 
 
 /**
@@ -144,12 +147,12 @@ import org.mskcc.colorgradient.ColorGradientWidget;
  */
 public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 
-	private CySwingApplication application;
-	private CyApplicationManager applicationManager;
-	private FileUtil fileUtil;
-	private OpenBrowser openBrowser;
-	private DialogTaskManager dialogTaskMonitor;
-	private StreamUtil streamUtil;
+	@Inject private CySwingApplication application;
+	@Inject private CyApplicationManager applicationManager;
+	@Inject private FileUtil fileUtil;
+	@Inject private OpenBrowser openBrowser;
+	@Inject private DialogTaskManager dialogTaskMonitor;
+	@Inject private StreamUtil streamUtil;
 
 	private static final long serialVersionUID = 1903063204304411983L;
 
@@ -199,8 +202,6 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 
 	private boolean node = true;
 
-	private boolean shownPearsonErrorMsg = false;
-
 	//phenotypes specified by the user (if correspond to the class file definition the colour of the column can
 	//be changed to indicate its phenotype.
 	private String Dataset1phenotype1;
@@ -239,32 +240,23 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 	final static int Ascending = 0, Descending = 1; // image States
 	private ImageIcon[] iconArrow = createExpandAndCollapseIcon();
 
-	/**
-	 * Class constructor - creates new instance of a Heat map panel
-	 *
-	 * @param node - boolean indicating with this is a heat map for node unions
-	 *        or edge overlaps. if true it is a node heatmap, else it is an edge
-	 *        heatmap
-	 */
-	public HeatMapPanel(boolean node, CySwingApplication application, FileUtil fileUtil, CyApplicationManager applicationManager, OpenBrowser openBrowser,
-			DialogTaskManager dialogTaskMonitor, StreamUtil streamUtil) {
+	
+	public HeatMapPanel setNode(boolean node) {
 		this.node = node;
-		this.setLayout(new java.awt.BorderLayout());
+		return this;
+	}
 
+	@AfterInjection
+	public void createContents() {
+		this.setLayout(new java.awt.BorderLayout());
+		
 		//initialize the linkout props
 		initialize_linkouts();
 
 		//initialize pop up menu
 		rightClickPopupMenu = new JPopupMenu();
-
-		this.application = application;
-		this.applicationManager = applicationManager;
-		this.openBrowser = openBrowser;
-		this.dialogTaskMonitor = dialogTaskMonitor;
-		this.streamUtil = streamUtil;
-		this.fileUtil = fileUtil;
 	}
-
+	
 	/**
 	 * Set the Heat map Panel to the variables in the given enrichment map
 	 * parameters set

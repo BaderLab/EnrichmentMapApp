@@ -6,61 +6,35 @@ import java.io.File;
 
 import javax.inject.Inject;
 
+import org.baderlab.csplugins.enrichmentmap.AfterInjectionModule;
+import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.commands.BuildEnrichmentMapTuneableTask;
 import org.baderlab.csplugins.enrichmentmap.integration.BaseIntegrationTest;
 import org.baderlab.csplugins.enrichmentmap.integration.SerialTestTaskManager;
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkFactory;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyTableFactory;
-import org.cytoscape.model.CyTableManager;
-import org.cytoscape.session.CySessionManager;
-import org.cytoscape.task.edit.MapTableToNetworkTablesTaskFactory;
-import org.cytoscape.task.read.LoadNetworkFileTaskFactory;
-import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
-import org.cytoscape.view.model.CyNetworkViewFactory;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.work.TaskIterator;
 import org.junit.Test;
+import org.ops4j.peaberry.osgi.OSGiModule;
+import org.osgi.framework.BundleContext;
+
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 
 
 public class Protocol1Test extends BaseIntegrationTest {
 
 	private static final String PATH = "/Protocol1Test/";
 	
-	@Inject private CySessionManager sessionManager;
-	@Inject private StreamUtil streamUtil;
-	@Inject private CyApplicationManager applicationManager;
-	@Inject private CyNetworkManager networkManager;
-	@Inject private CyNetworkViewManager networkViewManager;
-	@Inject private CyNetworkViewFactory networkViewFactory;
-	@Inject private CyNetworkFactory networkFactory;
-	@Inject private CyTableFactory tableFactory;
-	@Inject private CyTableManager tableManager;
-	@Inject private VisualMappingManager visualMappingManager;
-	@Inject private VisualStyleFactory visualStyleFactory;
-	@Inject private VisualMappingFunctionFactory vmfFactoryContinuous;
-	@Inject private VisualMappingFunctionFactory vmfFactoryDiscrete;
-	@Inject private VisualMappingFunctionFactory vmfFactoryPassthrough;
-	@Inject private CyLayoutAlgorithmManager layoutManager;
-	@Inject private MapTableToNetworkTablesTaskFactory mapTableToNetworkTable;
-	
-	@Inject private LoadNetworkFileTaskFactory loadNetworkFileTaskFactory;
-	
+	// injected by Pax Exam
+	@Inject private BundleContext bc;
 	
 	@Test
 	public void testProtocol1() throws Exception {
-		BuildEnrichmentMapTuneableTask task = new BuildEnrichmentMapTuneableTask(sessionManager,
-				streamUtil, applicationManager, null /*swingApplication*/, networkManager, networkViewManager,
-				networkViewFactory, networkFactory, tableFactory, tableManager, visualMappingManager,
-				visualStyleFactory, vmfFactoryContinuous, vmfFactoryDiscrete, vmfFactoryPassthrough, layoutManager,
-				mapTableToNetworkTable);
+		System.out.println("Protocol1Test.testProtocol1()");
+		Injector injector = Guice.createInjector(new OSGiModule(bc), new AfterInjectionModule(), new CytoscapeServiceModule());
+		
+		BuildEnrichmentMapTuneableTask task = injector.getInstance(BuildEnrichmentMapTuneableTask.class);
 		
 		File enrichmentFile = createTempFile(PATH, "gprofiler_results_mesenonly_ordered_computedinR.txt");
 		assertTrue(enrichmentFile.exists());

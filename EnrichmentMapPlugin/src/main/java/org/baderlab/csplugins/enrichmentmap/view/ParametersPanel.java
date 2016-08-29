@@ -80,7 +80,10 @@ import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.util.swing.OpenBrowser;
-import org.cytoscape.work.TaskManager;
+import org.cytoscape.work.swing.DialogTaskManager;
+
+import com.google.inject.Inject;
+import com.google.inject.Provider;
 
 /**
  * Created by User: risserlin Date: Feb 9, 2009 Time: 2:41:48 PM
@@ -98,20 +101,12 @@ public class ParametersPanel extends JPanel implements CytoPanelComponent {
 	private EnrichmentMapParameters emParams;
 	private EnrichmentMap map;
 
-	private OpenBrowser browser;
-	private CyApplicationManager cyApplicationManager;
-	private CreatePublicationVisualStyleTaskFactory visualStyleTaskFactory;
-	private TaskManager<?,?> taskManager;
+	@Inject private OpenBrowser browser;
+	@Inject private CyApplicationManager cyApplicationManager;
+	@Inject private DialogTaskManager taskManager;
+	
+	@Inject private Provider<CreatePublicationVisualStyleTaskFactory> visualStyleTaskFactoryProvider;
 
-	/**
-	 * Class constructor
-	 */
-	public ParametersPanel(OpenBrowser browser, CyApplicationManager cyApplicationManager, TaskManager<?,?> taskManager, CreatePublicationVisualStyleTaskFactory visualStyleTaskFactory) {
-		this.browser = browser;
-		this.cyApplicationManager = cyApplicationManager;
-		this.taskManager = taskManager;
-		this.visualStyleTaskFactory = visualStyleTaskFactory;
-	}
 
 	public void initializeSliders(EnrichmentMap map) {
 		if (map != null)
@@ -204,7 +199,7 @@ public class ParametersPanel extends JPanel implements CytoPanelComponent {
 		JButton togglePublicationButton = new JButton("Toggle Publication-Ready");
 		togglePublicationButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				taskManager.execute(visualStyleTaskFactory.createTaskIterator());
+				taskManager.execute(visualStyleTaskFactoryProvider.get().createTaskIterator());
 			}
 		});
 		prefsPanel.add(togglePublicationButton);

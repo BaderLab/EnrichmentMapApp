@@ -51,28 +51,19 @@ import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.task.EnrichmentMapBuildMapTaskFactory;
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.io.util.StreamUtil;
-import org.cytoscape.model.CyNetworkFactory;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyTableFactory;
-import org.cytoscape.model.CyTableManager;
 import org.cytoscape.session.CySessionManager;
-import org.cytoscape.task.edit.MapTableToNetworkTablesTaskFactory;
-import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
-import org.cytoscape.view.model.CyNetworkViewFactory;
-import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
 
+import com.google.inject.Inject;
+import com.google.inject.Provider;
+import com.google.inject.name.Named;
+
 /**
- * Created by User: risserlin Date: Jan 28, 2009 Time: 11:44:46 AM
- * <p>
  * This class builds an Enrichment map from GSEA (Gene set Enrichment analysis)
  * or Generic input. There are two distinct ways to build an enrichment map,
  * from generic input or from GSEA input. GSEA input has specific files that
@@ -84,8 +75,6 @@ import org.cytoscape.work.util.ListSingleSelection;
  * score(NES).
  */
 public class BuildEnrichmentMapTuneableTask extends AbstractTask {
-	private EnrichmentMap map;
-	private EnrichmentMapParameters params;
 
 	private DataSetFiles dataset1files = new DataSetFiles();
 	private DataSetFiles dataset2files = new DataSetFiles();
@@ -93,172 +82,103 @@ public class BuildEnrichmentMapTuneableTask extends AbstractTask {
 	@Tunable(description = "Analysis Type", groups = { "Analysis Type" }, gravity = 1.0)
 	public ListSingleSelection<String> analysisType;
 
-	@Tunable(description = "GMT", groups = { "User Input", "Gene Sets" }, gravity = 2.0, dependsOn = "analysisType="
-			+ EnrichmentMapParameters.method_generic, params = "fileCategory=table;input=true", tooltip = "File specifying gene sets.\n"
-					+ "Format: geneset name <tab> description <tab> gene ...")
+	@Tunable(description = "GMT", groups = { "User Input", "Gene Sets" }, gravity = 2.0, dependsOn = "analysisType=" + EnrichmentMapParameters.method_generic, 
+			params = "fileCategory=table;input=true", tooltip = "File specifying gene sets.\nFormat: geneset name <tab> description <tab> gene ...")
 	public File gmtFile;
 
 	//Dataset 1 Tunables
-	@Tunable(description = "Expression", groups = { "User Input", "Datasets",
-			"Dataset 1" }, gravity = 3.0, params = "fileCategory=table;input=true", tooltip = "File with gene expression values.\n"
-					+ "Format: gene <tab> description <tab> expression value <tab> ...")
+	@Tunable(description = "Expression", groups = { "User Input", "Datasets", "Dataset 1" }, gravity = 3.0, params = "fileCategory=table;input=true", 
+			tooltip = "File with gene expression values.\nFormat: gene <tab> description <tab> expression value <tab> ...")
 	public File expressionDataset1;
 
-	@Tunable(description = "Enrichments", groups = { "User Input", "Datasets",
-			"Dataset 1" }, gravity = 4.0, dependsOn = "analysisType="
-					+ EnrichmentMapParameters.method_generic, params = "fileCategory=table;input=true", tooltip = "File specifying enrichment results.\n")
+	@Tunable(description = "Enrichments", groups = { "User Input", "Datasets", "Dataset 1" }, gravity = 4.0, 
+			dependsOn = "analysisType=" + EnrichmentMapParameters.method_generic, params = "fileCategory=table;input=true", tooltip = "File specifying enrichment results.\n")
 	public File enrichmentsDataset1;
 
-	@Tunable(description = "Enrichments 2", groups = { "User Input", "Datasets",
-			"Dataset 1" }, gravity = 5.0, dependsOn = "analysisType="
-					+ EnrichmentMapParameters.method_GSEA, params = "fileCategory=table;input=true", tooltip = "File specifying enrichment results.\n")
+	@Tunable(description = "Enrichments 2", groups = { "User Input", "Datasets", "Dataset 1" }, gravity = 5.0, 
+			dependsOn = "analysisType=" + EnrichmentMapParameters.method_GSEA, params = "fileCategory=table;input=true", tooltip = "File specifying enrichment results.\n")
 	public File enrichments2Dataset1;
 
-	@Tunable(description = "Ranks", groups = { "User Input", "Datasets", "Dataset 1",
-			"Advanced" }, gravity = 6.0, params = "fileCategory=table;input=true", tooltip = "File specifying ranked genes.\n"
-					+ "Format: gene <tab> score or statistic")
+	@Tunable(description = "Ranks", groups = { "User Input", "Datasets", "Dataset 1", "Advanced" }, gravity = 6.0, params = "fileCategory=table;input=true", 
+			tooltip = "File specifying ranked genes.\nFormat: gene <tab> score or statistic")
 	public File ranksDataset1;
 
-	@Tunable(description = "Classes", groups = { "User Input", "Datasets", "Dataset 1",
-			"Advanced" }, gravity = 7.0, params = "fileCategory=table;input=true", tooltip = "File specifying the classes of each sample in expression file.\n"
-					+ "format: see GSEA website")
+	@Tunable(description = "Classes", groups = { "User Input", "Datasets", "Dataset 1", "Advanced" }, gravity = 7.0, params = "fileCategory=table;input=true", 
+			tooltip = "File specifying the classes of each sample in expression file.\nformat: see GSEA website")
 	public File classDataset1;
 
-	@Tunable(description = "Phenotype1", groups = { "User Input", "Datasets", "Dataset 1",
-			"Advanced" }, gravity = 8.0, tooltip = "Dataset1 phenotype/class")
+	@Tunable(description = "Phenotype1", groups = { "User Input", "Datasets", "Dataset 1", "Advanced" }, gravity = 8.0, tooltip = "Dataset1 phenotype/class")
 	public String phenotype1Dataset1;
 
-	@Tunable(description = "Phenotype2", groups = { "User Input", "Datasets", "Dataset 1",
-			"Advanced" }, gravity = 9.0, tooltip = "Dataset1 phenotype/class")
+	@Tunable(description = "Phenotype2", groups = { "User Input", "Datasets", "Dataset 1", "Advanced" }, gravity = 9.0, tooltip = "Dataset1 phenotype/class")
 	public String phenotype2Dataset1;
 
 	//Dataset 2 Tunables
-	@Tunable(description = "Expression", groups = { "User Input", "Datasets",
-			"Dataset 2" }, gravity = 10.0, params = "fileCategory=table;input=true;displayState=callapsed", tooltip = "File with gene expression values.\n"
-					+ "Format: gene <tab> description <tab> expression value <tab> ...")
+	@Tunable(description = "Expression", groups = { "User Input", "Datasets", "Dataset 2" }, gravity = 10.0, 
+			params = "fileCategory=table;input=true;displayState=callapsed", tooltip = "File with gene expression values.\nFormat: gene <tab> description <tab> expression value <tab> ...")
 	public File expressionDataset2;
 
-	@Tunable(description = "Enrichments", groups = { "User Input", "Datasets",
-			"Dataset 2" }, gravity = 11.0, dependsOn = "analysisType="
-					+ EnrichmentMapParameters.method_generic, params = "fileCategory=table;input=true;displayState=callapsed", tooltip = "File specifying enrichment results.\n")
+	@Tunable(description = "Enrichments", groups = { "User Input", "Datasets", "Dataset 2" }, gravity = 11.0, 
+			dependsOn = "analysisType=" + EnrichmentMapParameters.method_generic, params = "fileCategory=table;input=true;displayState=callapsed", tooltip = "File specifying enrichment results.\n")
 	public File enrichmentsDataset2;
 
-	@Tunable(description = "Enrichments 2", groups = { "User Input", "Datasets",
-			"Dataset 2" }, gravity = 12.0, dependsOn = "analysisType="
-					+ EnrichmentMapParameters.method_GSEA, params = "fileCategory=table;input=true;displayState=callapsed", tooltip = "File specifying enrichment results.\n")
+	@Tunable(description = "Enrichments 2", groups = { "User Input", "Datasets", "Dataset 2" }, gravity = 12.0, 
+			dependsOn = "analysisType=" + EnrichmentMapParameters.method_GSEA, params = "fileCategory=table;input=true;displayState=callapsed", tooltip = "File specifying enrichment results.\n")
 	public File enrichments2Dataset2;
 
-	@Tunable(description = "Ranks", groups = { "User Input", "Datasets", "Dataset 2",
-			"Advanced" }, gravity = 13.0, params = "fileCategory=table;input=true;displayState=callapsed", tooltip = "File specifying ranked genes.\n"
-					+ "Format: gene <tab> score or statistic")
+	@Tunable(description = "Ranks", groups = { "User Input", "Datasets", "Dataset 2", "Advanced" }, gravity = 13.0, 
+			params = "fileCategory=table;input=true;displayState=callapsed", tooltip = "File specifying ranked genes.\nFormat: gene <tab> score or statistic")
 	public File ranksDataset2;
 
-	@Tunable(description = "Classes", groups = { "User Input", "Datasets", "Dataset 2",
-			"Advanced" }, gravity = 14.0, params = "fileCategory=table;input=true;displayState=callapsed", tooltip = "File specifying the classes of each sample in expression file.\n"
-					+ "format: see GSEA website")
+	@Tunable(description = "Classes", groups = { "User Input", "Datasets", "Dataset 2", "Advanced" }, gravity = 14.0, 
+			params = "fileCategory=table;input=true;displayState=callapsed", tooltip = "File specifying the classes of each sample in expression file.\nformat: see GSEA website")
 	public File classDataset2;
 
-	@Tunable(description = "Phenotype1", groups = { "User Input", "Datasets", "Dataset 2",
-			"Advanced" }, gravity = 15.0, params = "displayState=callapsed", tooltip = "Dataset2 phenotype/class")
+	@Tunable(description = "Phenotype1", groups = { "User Input", "Datasets", "Dataset 2", "Advanced" }, gravity = 15.0, params = "displayState=callapsed", tooltip = "Dataset2 phenotype/class")
 	public String phenotype1Dataset2;
 
-	@Tunable(description = "Phenotype2", groups = { "User Input", "Datasets", "Dataset 2",
-			"Advanced" }, gravity = 16.0, params = "displayState=callapsed", tooltip = "Dataset2 phenotype/class")
+	@Tunable(description = "Phenotype2", groups = { "User Input", "Datasets", "Dataset 2", "Advanced" }, gravity = 16.0, params = "displayState=callapsed", tooltip = "Dataset2 phenotype/class")
 	public String phenotype2Dataset2;
 
 	//Parameter Tuneables
-	@Tunable(description = "P-value Cutoff", groups = { "User Input",
-			"Parameters" }, gravity = 17.0, tooltip = "P-value between 0 and 1.")
+	@Tunable(description = "P-value Cutoff", groups = { "User Input", "Parameters" }, gravity = 17.0, tooltip = "P-value between 0 and 1.")
 	public Double pvalue = 0.005;
 
-	@Tunable(description = "FDR Q-value Cutoff", groups = { "User Input",
-			"Parameters" }, gravity = 18.0, tooltip = "FDR Q-value between 0 and 1.")
+	@Tunable(description = "FDR Q-value Cutoff", groups = { "User Input", "Parameters" }, gravity = 18.0, tooltip = "FDR Q-value between 0 and 1.")
 	public Double qvalue = 0.1;
 
-	@Tunable(description = "Similarity Cutoff", groups = { "User Input",
-			"Parameters" }, gravity = 19.0, tooltip = "coeffecient between 0 and 1.")
+	@Tunable(description = "Similarity Cutoff", groups = { "User Input", "Parameters" }, gravity = 19.0, tooltip = "coeffecient between 0 and 1.")
 	public Double similaritycutoff = 0.25;
 
-	@Tunable(description = "Similarity Coeffecient", groups = { "User Input",
-			"Parameters" }, gravity = 20.0, tooltip = "coeffecient between 0 and 1.")
+	@Tunable(description = "Similarity Coeffecient", groups = { "User Input", "Parameters" }, gravity = 20.0, tooltip = "coeffecient between 0 and 1.")
 	public ListSingleSelection<String> coeffecients;
 
-	//values to track progress
-	//TODO - implement usage
-	//private int maxValue;
 
-	//required services
-	private CySessionManager sessionManager;
-	private StreamUtil streamUtil;
+	@Inject private Provider<EnrichmentMapBuildMapTaskFactory> taskFactoryProvider;
+	
+	@Inject private CySessionManager sessionManager;
+	@Inject private StreamUtil streamUtil;
+	@Inject private CyApplicationManager applicationManager;
+	@Inject private @Named("continuous")  VisualMappingFunctionFactory vmfFactoryContinuous;
+	@Inject private @Named("discrete")    VisualMappingFunctionFactory vmfFactoryDiscrete;
+	@Inject private @Named("passthrough") VisualMappingFunctionFactory vmfFactoryPassthrough;
 
-	private CyApplicationManager applicationManager;
-	private CySwingApplication swingApplication;
-	private CyNetworkManager networkManager;
-	private CyNetworkViewManager networkViewManager;
-	private CyNetworkViewFactory networkViewFactory;
-	private CyNetworkFactory networkFactory;
-	private CyTableFactory tableFactory;
-	private CyTableManager tableManager;
-
-	private VisualMappingManager visualMappingManager;
-	private VisualStyleFactory visualStyleFactory;
-
-	//we will need all three mappers
-	private VisualMappingFunctionFactory vmfFactoryContinuous;
-	private VisualMappingFunctionFactory vmfFactoryDiscrete;
-	private VisualMappingFunctionFactory vmfFactoryPassthrough;
-
-	private CyLayoutAlgorithmManager layoutManager;
-	private MapTableToNetworkTablesTaskFactory mapTableToNetworkTable;
-	//
-
-	public BuildEnrichmentMapTuneableTask(CySessionManager sessionManager, StreamUtil streamUtil,
-			CyApplicationManager applicationManager, CySwingApplication swingApplication,
-			CyNetworkManager networkManager, CyNetworkViewManager networkViewManager,
-			CyNetworkViewFactory networkViewFactory, CyNetworkFactory networkFactory, CyTableFactory tableFactory,
-			CyTableManager tableManager, VisualMappingManager visualMappingManager,
-			VisualStyleFactory visualStyleFactory, VisualMappingFunctionFactory vmfFactoryContinuous,
-			VisualMappingFunctionFactory vmfFactoryDiscrete, VisualMappingFunctionFactory vmfFactoryPassthrough,
-			CyLayoutAlgorithmManager layoutManager, MapTableToNetworkTablesTaskFactory mapTableToNetworkTable) {
-		super();
-		this.sessionManager = sessionManager;
-		this.streamUtil = streamUtil;
-		this.applicationManager = applicationManager;
-		this.swingApplication = swingApplication;
-		this.networkManager = networkManager;
-		this.networkViewManager = networkViewManager;
-		this.networkViewFactory = networkViewFactory;
-		this.networkFactory = networkFactory;
-		this.tableFactory = tableFactory;
-		this.tableManager = tableManager;
-		this.visualMappingManager = visualMappingManager;
-		this.visualStyleFactory = visualStyleFactory;
-		this.vmfFactoryContinuous = vmfFactoryContinuous;
-		this.vmfFactoryDiscrete = vmfFactoryDiscrete;
-		this.vmfFactoryPassthrough = vmfFactoryPassthrough;
-		this.layoutManager = layoutManager;
-		this.mapTableToNetworkTable = mapTableToNetworkTable;
-
-		//create a drop down of the different types of analyses that can be done.
+	
+	public BuildEnrichmentMapTuneableTask() {
 		analysisType = new ListSingleSelection<String>(EnrichmentMapParameters.method_GSEA,
 				EnrichmentMapParameters.method_generic, EnrichmentMapParameters.method_Specialized);
 
 		coeffecients = new ListSingleSelection<String>(EnrichmentMapParameters.SM_OVERLAP,
 				EnrichmentMapParameters.SM_JACCARD, EnrichmentMapParameters.SM_COMBINED);
-
 	}
 
+	
 	/**
-	 * buildEnrichmentMap - parses all GSEA input files and creates an
-	 * enrichment map
+	 * buildEnrichmentMap - parses all GSEA input files and creates an enrichment map
 	 */
 	public void buildEnrichmentMap() {
-
-		//Initialize Data
-
 		//create a new params for the new EM and add the dataset files to it
-		EnrichmentMapParameters new_params = new EnrichmentMapParameters(sessionManager, streamUtil,
-				applicationManager);
+		EnrichmentMapParameters new_params = new EnrichmentMapParameters(sessionManager, streamUtil, applicationManager);
 		if(analysisType.getSelectedValue() == EnrichmentMapParameters.method_Specialized)
 			new_params.setMethod(EnrichmentMapParameters.method_Specialized);
 		if(analysisType.getSelectedValue() == EnrichmentMapParameters.method_GSEA)
@@ -321,11 +241,7 @@ public class BuildEnrichmentMapTuneableTask extends AbstractTask {
 
 		EnrichmentMap map = new EnrichmentMap(new_params);
 
-		EnrichmentMapBuildMapTaskFactory buildmap = new EnrichmentMapBuildMapTaskFactory(map, applicationManager,
-				swingApplication, networkManager, networkViewManager, networkViewFactory, networkFactory, tableFactory,
-				tableManager, visualMappingManager, visualStyleFactory, vmfFactoryContinuous, vmfFactoryDiscrete,
-				vmfFactoryPassthrough, streamUtil, layoutManager, mapTableToNetworkTable);
-
+		EnrichmentMapBuildMapTaskFactory buildmap = taskFactoryProvider.get().init(map);
 		insertTasksAfterCurrentTask(buildmap.createTaskIterator());
 
 		EnrichmentMapManager manager = EnrichmentMapManager.getInstance();
@@ -333,20 +249,12 @@ public class BuildEnrichmentMapTuneableTask extends AbstractTask {
 
 	}
 
-	/**
-	 * Run the Task.
-	 */
 	public void run() {
 		buildEnrichmentMap();
 	}
 
-	/**
-	 * Gets the Task Title.
-	 *
-	 * @return human readable task title.
-	 */
 	public String getTitle() {
-		return new String("Enrichment Map Tuneable build");
+		return "Enrichment Map Tuneable build";
 	}
 
 	public boolean isReady() {
@@ -354,8 +262,7 @@ public class BuildEnrichmentMapTuneableTask extends AbstractTask {
 	}
 
 	@Override
-	public void run(TaskMonitor arg0) throws Exception {
-		// TODO Auto-generated method stub
+	public void run(TaskMonitor arg0) {
 		buildEnrichmentMap();
 	}
 }

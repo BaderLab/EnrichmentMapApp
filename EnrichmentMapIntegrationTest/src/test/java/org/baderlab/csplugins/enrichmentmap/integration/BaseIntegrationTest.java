@@ -1,8 +1,8 @@
 package org.baderlab.csplugins.enrichmentmap.integration;
 
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -116,7 +117,7 @@ public abstract class BaseIntegrationTest extends PaxExamConfiguration {
 					String message = "Row: " + i + ", Col: " + name + ",";
 					
 					if(type.equals(List.class)) { // because CyListImpl doesn't implement equals()
-						assertArrayEquals(message, ((List<?>)expectedValue).toArray(), ((List<?>)actualValue).toArray());
+						assertArrayEquals(message, ((List<?>)expectedValue).toArray(), ((List<?>)actualValue).toArray() );
 					}
 					else {
 						assertEquals(message, expectedValue, actualValue);
@@ -139,6 +140,17 @@ public abstract class BaseIntegrationTest extends PaxExamConfiguration {
 			}
 		}
 		Collections.sort(rows, rowComparator);
+	}
+	
+	/**
+	 * This method exists because:
+	 * - The JUnit 4.11 version of assertArrayEquals actually has a bug in it.
+	 * - Need to sort the arrays.
+	 */
+	private static void assertArrayEquals(String message, Object[] expected, Object[] actual) {
+		Arrays.sort(expected);
+		Arrays.sort(actual);
+		assertTrue(message, Arrays.equals(expected, actual));
 	}
 	
 	

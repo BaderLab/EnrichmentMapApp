@@ -54,16 +54,16 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelName;
-import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
-import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskIterator;
+
+import com.google.inject.Inject;
 
 /**
  * Created by User: risserlin Date: Feb 2, 2009 Time: 1:25:36 PM
@@ -73,28 +73,20 @@ import org.cytoscape.work.TaskIterator;
  * selected nodes, selected edges and heatmap panels
  */
 public class EnrichmentMapActionListener implements RowsSetListener {
-
+	
+	@Inject private CyApplicationManager applicationManager;
+	@Inject private SynchronousTaskManager<?> syncTaskManager;
+	@Inject private CySwingApplication swingApplication;
+	
 	private HeatMapPanel edgeOverlapPanel;
 	private HeatMapPanel nodeOverlapPanel;
-	private CyApplicationManager applicationManager;
-	private SynchronousTaskManager syncTaskManager;
-	private final CytoPanel cytoPanelSouth;
-	private FileUtil fileUtil;
-	private StreamUtil streamUtil;
+	
 
 
-	public EnrichmentMapActionListener(HeatMapPanel heatMapPanel_node, HeatMapPanel heatMapPanel_edge,
-			CyApplicationManager applicationManager, CySwingApplication application, FileUtil fileUtil,
-			StreamUtil streamUtil, SynchronousTaskManager syncTaskManager) {
-
-		this.applicationManager = applicationManager;
-		this.fileUtil = fileUtil;
-		this.streamUtil = streamUtil;
-		this.syncTaskManager = syncTaskManager;
+	public EnrichmentMapActionListener init(HeatMapPanel heatMapPanel_node, HeatMapPanel heatMapPanel_edge) {
 		this.edgeOverlapPanel = heatMapPanel_edge;
 		this.nodeOverlapPanel = heatMapPanel_node;
-
-		this.cytoPanelSouth = application.getCytoPanel(CytoPanelName.SOUTH);
+		return this;
 	}
 
 	/**
@@ -152,6 +144,7 @@ public class EnrichmentMapActionListener implements RowsSetListener {
 					Edges.clear();
 					Edges.addAll(selectedEdges);
 					
+					CytoPanel cytoPanelSouth = swingApplication.getCytoPanel(CytoPanelName.SOUTH);
 					// Once we have amalgamated all the nodes and edges, launch a task to update the heatmap.
 					// Start the task in a separate thread to avoid Cytoscape deadlock bug (redmine issue #3370)
 					new Thread(() -> {

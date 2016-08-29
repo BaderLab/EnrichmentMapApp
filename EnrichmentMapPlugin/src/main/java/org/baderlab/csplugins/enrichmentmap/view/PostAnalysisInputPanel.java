@@ -64,6 +64,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 
+import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapBuildProperties;
 import org.baderlab.csplugins.enrichmentmap.FilterType;
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
@@ -88,6 +89,10 @@ import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.swing.DialogTaskManager;
 
+import com.google.inject.Inject;
+import com.google.inject.Provider;
+import com.google.inject.name.Named;
+
 @SuppressWarnings("serial")
 public class PostAnalysisInputPanel extends JPanel {
 
@@ -96,24 +101,26 @@ public class PostAnalysisInputPanel extends JPanel {
 	protected static final String gmt_instruction = "Please select the Gene Set file (.gmt)...";
 	protected static final String siggmt_instruction = "Please select the Signature Gene Set file (.gmt)...";
 
-	private final CyApplicationManager cyApplicationManager;
-	private final CySwingApplication application;
-	private final OpenBrowser browser;
-	private final FileUtil fileUtil;
-	private final CyServiceRegistrar registrar;
-	private final CySessionManager sessionManager;
-	private final StreamUtil streamUtil;
-	private final DialogTaskManager dialogTaskManager;
-	private final SynchronousTaskManager syncTaskManager;
-	private final CyEventHelper eventHelper;
+	@Inject private CyApplicationManager cyApplicationManager;
+	@Inject private CySwingApplication application;
+	@Inject private OpenBrowser browser;
+	@Inject private FileUtil fileUtil;
+	@Inject private CyServiceRegistrar registrar;
+	@Inject private CySessionManager sessionManager;
+	@Inject private StreamUtil streamUtil;
+	@Inject private DialogTaskManager dialogTaskManager;
+	@Inject private SynchronousTaskManager<?> syncTaskManager;
+	@Inject private CyEventHelper eventHelper;
+	@Inject private DialogTaskManager dialog;
+	@Inject private VisualMappingManager visualMappingManager;
+	@Inject private VisualStyleFactory visualStyleFactory;
+	@Inject private @Named("continuous")  VisualMappingFunctionFactory vmfFactoryContinuous;
+	@Inject private @Named("discrete")    VisualMappingFunctionFactory vmfFactoryDiscrete;
+	@Inject private @Named("passthrough") VisualMappingFunctionFactory vmfFactoryPassthrough;
+	
+	@Inject private Provider<ShowAboutPanelAction> aboutPanelActionProvider;
 
-	private final VisualMappingManager visualMappingManager;
-	private final VisualStyleFactory visualStyleFactory;
-
-	private final VisualMappingFunctionFactory vmfFactoryContinuous;
-	private final VisualMappingFunctionFactory vmfFactoryDiscrete;
-	private final VisualMappingFunctionFactory vmfFactoryPassthrough;
-
+	
 	private JRadioButton knownSignature;
 	private JRadioButton signatureDiscovery;
 
@@ -129,29 +136,12 @@ public class PostAnalysisInputPanel extends JPanel {
 	/**
 	 * Note: The initialize() method must be called before the panel can be used.
 	 */
-	public PostAnalysisInputPanel(CyApplicationManager cyApplicationManager, CySwingApplication application,
-			OpenBrowser browser, FileUtil fileUtil, CySessionManager sessionManager, StreamUtil streamUtil,
-			CyServiceRegistrar registrar, DialogTaskManager dialog, SynchronousTaskManager syncTaskManager,
-			CyEventHelper eventHelper, VisualMappingManager visualMappingManager, VisualStyleFactory visualStyleFactory,
-			VisualMappingFunctionFactory vmfFactoryContinuous, VisualMappingFunctionFactory vmfFactoryDiscrete,
-			VisualMappingFunctionFactory vmfFactoryPassthrough) {
+	public PostAnalysisInputPanel() {
+	}
 
-		this.cyApplicationManager = cyApplicationManager;
-		this.application = application;
-		this.browser = browser;
-		this.fileUtil = fileUtil;
-		this.registrar = registrar;
-		this.sessionManager = sessionManager;
-		this.streamUtil = streamUtil;
-		this.dialogTaskManager = dialog;
-		this.syncTaskManager = syncTaskManager;
-		this.eventHelper = eventHelper;
-		this.visualMappingManager = visualMappingManager;
-		this.visualStyleFactory = visualStyleFactory;
-		this.vmfFactoryContinuous = vmfFactoryContinuous;
-		this.vmfFactoryDiscrete = vmfFactoryDiscrete;
-		this.vmfFactoryPassthrough = vmfFactoryPassthrough;
-
+	
+	@AfterInjection
+	private void createContents() {
 		// Create the two main panels, set the default one
 		knownSignaturePanel = new PostAnalysisKnownSignaturePanel(this, cyApplicationManager, application, streamUtil, syncTaskManager);
 		signatureDiscoveryPanel = new PostAnalysisSignatureDiscoveryPanel(this, cyApplicationManager, application, streamUtil, dialog);
@@ -201,7 +191,7 @@ public class PostAnalysisInputPanel extends JPanel {
 		Map<String, String> serviceProperties = new HashMap<String, String>();
 		serviceProperties.put("inMenuBar", "true");
 		serviceProperties.put("preferredMenu", "Apps.EnrichmentMap");
-		about.addActionListener(new ShowAboutPanelAction(serviceProperties, cyApplicationManager, null, application, browser));
+		about.addActionListener(aboutPanelActionProvider.get());
 
 		c_buttons.weighty = 1;
 		c_buttons.weightx = 1;

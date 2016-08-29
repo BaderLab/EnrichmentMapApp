@@ -76,10 +76,6 @@ public abstract class BaseNetworkTest {
     @Mock protected CyEventHelper eventHelper;
     @Mock protected CySwingApplication swingApplication;
     
-	
-	
-	
-	
 	@Before
 	public void before() {
 		MockitoAnnotations.initMocks(this);
@@ -90,12 +86,12 @@ public abstract class BaseNetworkTest {
 	
 	protected void buildEnrichmentMap(EnrichmentMapParameters emParams) {
 		EnrichmentMap map = new EnrichmentMap(emParams);
-	   	EnrichmentMapBuildMapTaskFactory buildmap = new EnrichmentMapBuildMapTaskFactory(map,  
+	   	EnrichmentMapBuildMapTaskFactory buildmap = new EnrichmentMapBuildMapTaskFactory(  
 	        			applicationManager, swingApplication, networkManager, networkViewManager,
 	        			networkViewFactory, networkFactory, tableFactory,
 	        			tableManager, visualMappingManager, visualStyleFactory,
 	        			vmfFactoryContinuous, vmfFactoryDiscrete, vmfFactoryPassthrough, 
-	        			streamUtil, layoutManager, mapTableToNetworkTable);
+	        			layoutManager, mapTableToNetworkTable).init(map);
 	    
 	   	TaskIterator taskIterator = buildmap.createTaskIterator();
 	   	

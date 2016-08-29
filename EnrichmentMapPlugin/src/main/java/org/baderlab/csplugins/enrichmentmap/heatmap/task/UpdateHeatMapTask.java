@@ -36,10 +36,11 @@ public class UpdateHeatMapTask extends AbstractTask {
 	private static final ThreadLocal<Boolean> isCurrentlyFocusing = new ThreadLocal<Boolean>() {
 		@Override
 		protected Boolean initialValue() {
-			return false;
+			return Boolean.FALSE;
 		}
 	};
-
+	
+	
 	public UpdateHeatMapTask(EnrichmentMap map, List<CyNode> nodes, List<CyEdge> edges, HeatMapPanel edgeOverlapPanel,
 			HeatMapPanel nodeOverlapPanel, CytoPanel cytoPanelSouth, CyApplicationManager applicationManager) {
 		this.map = map;
@@ -247,5 +248,6 @@ public class UpdateHeatMapTask extends AbstractTask {
 			clearPanels();
 
 	}
+
 
 }

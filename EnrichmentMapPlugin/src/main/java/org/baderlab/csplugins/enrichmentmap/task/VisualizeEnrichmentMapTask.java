@@ -115,6 +115,7 @@ public class VisualizeEnrichmentMapTask extends AbstractTask {
 	 * Compute, and create cytoscape enrichment map
 	 */
 	public void visualizeMap(TaskMonitor taskMonitor) {
+		System.out.println("VisualizeEnrichmentMapTask.visualizeMap()");
 		CyNetwork network = networkManager.getNetwork(map.getParams().getNetworkID());
 		String prefix = map.getParams().getAttributePrefix();
 

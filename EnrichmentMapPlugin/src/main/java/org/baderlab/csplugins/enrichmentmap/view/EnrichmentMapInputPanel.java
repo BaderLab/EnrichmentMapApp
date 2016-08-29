@@ -82,11 +82,10 @@ import javax.swing.JScrollPane;
 import javax.swing.JToolTip;
 import javax.swing.text.InternationalFormatter;
 
-import org.baderlab.csplugins.enrichmentmap.CyActivator;
+import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapBuildProperties;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
-import org.baderlab.csplugins.enrichmentmap.actions.BulkEMCreationAction;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowAboutPanelAction;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
@@ -99,54 +98,40 @@ import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.io.util.StreamUtil;
-import org.cytoscape.model.CyNetworkFactory;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyTableFactory;
-import org.cytoscape.model.CyTableManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CySessionManager;
-import org.cytoscape.task.edit.MapTableToNetworkTablesTaskFactory;
 import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.util.swing.OpenBrowser;
-import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
-import org.cytoscape.view.model.CyNetworkViewFactory;
-import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
+
+import com.google.inject.Inject;
+import com.google.inject.Provider;
+import com.google.inject.name.Named;
 
 @SuppressWarnings("serial")
 public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponent {
 
-	//services required
-	private final StreamUtil streamUtil;
-	private final CyApplicationManager applicationManager;
-	private final CyNetworkManager networkManager;
-	private final CyNetworkViewManager networkViewManager;
-	private final CyNetworkViewFactory networkViewFactory;
-	private final CyNetworkFactory networkFactory;
-	private final CyTableFactory tableFactory;
-	private final CyTableManager tableManager;
-	private final VisualMappingManager visualMappingManager;
-	private final VisualStyleFactory visualStyleFactory;
-	private final VisualMappingFunctionFactory vmfFactoryContinuous;
-	private final VisualMappingFunctionFactory vmfFactoryDiscrete;
-	private final VisualMappingFunctionFactory vmfFactoryPassthrough;
-	private final CyLayoutAlgorithmManager layoutManager;
-	private final MapTableToNetworkTablesTaskFactory mapTableToNetworkTable;
-	private final DialogTaskManager dialog;
-	private final CySessionManager sessionManager;
-	private final CySwingApplication application;
-	private final OpenBrowser browser;
-	private final FileUtil fileUtil;
-	private final CyServiceRegistrar registrar;
-
+	@Inject private StreamUtil streamUtil;
+	@Inject private CyApplicationManager applicationManager;
+	@Inject private DialogTaskManager dialog;
+	@Inject private CySessionManager sessionManager;
+	@Inject private CySwingApplication application;
+	@Inject private OpenBrowser browser;
+	@Inject private FileUtil fileUtil;
+	@Inject private CyServiceRegistrar registrar;
+	@Inject private @Named("continuous") VisualMappingFunctionFactory vmfFactoryContinuous;
+	@Inject private @Named("discrete") VisualMappingFunctionFactory vmfFactoryDiscrete;
+	@Inject private @Named("passthrough") VisualMappingFunctionFactory vmfFactoryPassthrough;
+	
+	@Inject private Provider<ShowAboutPanelAction> aboutPanelActionProvider;
+	@Inject private Provider<EnrichmentMapBuildMapTaskFactory> taskFactoryProvider;
+	
 	
 	private EnrichmentMapParameters params;
 	
-	private BulkEMCreationPanel bulkEmInput;
+//	private BulkEMCreationPanel bulkEmInput;
 	
 	private DataSetFiles dataset1files = new DataSetFiles();
 	private DataSetFiles dataset2files = new DataSetFiles();
@@ -206,40 +191,9 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 	private boolean LoadedFromRpt_dataset2 = false;
 	private boolean panelUpdate = false;
 
-
-	public EnrichmentMapInputPanel(CyNetworkFactory networkFactory, CyApplicationManager applicationManager,
-			CyNetworkManager networkManager, CyNetworkViewManager networkViewManager, CyTableFactory tableFactory,
-			CyTableManager tableManager, CyNetworkViewFactory networkViewFactory,
-			VisualMappingManager visualMappingManager, VisualStyleFactory visualStyleFactory,
-			VisualMappingFunctionFactory vmfFactoryContinuous, VisualMappingFunctionFactory vmfFactoryDiscrete,
-			VisualMappingFunctionFactory vmfFactoryPassthrough, DialogTaskManager dialog,
-			CySessionManager sessionManager, CySwingApplication application, OpenBrowser browser, FileUtil fileUtil,
-			StreamUtil streamUtil, CyServiceRegistrar registrar, CyLayoutAlgorithmManager layoutManager,
-			MapTableToNetworkTablesTaskFactory mapTableToNetworkTable, BulkEMCreationPanel bulkEmInput) {
-
-		this.networkFactory = networkFactory;
-		this.applicationManager = applicationManager;
-		this.networkManager = networkManager;
-		this.networkViewManager = networkViewManager;
-		this.tableFactory = tableFactory;
-		this.tableManager = tableManager;
-		this.networkViewFactory = networkViewFactory;
-		this.streamUtil = streamUtil;
-		this.visualMappingManager = visualMappingManager;
-		this.visualStyleFactory = visualStyleFactory;
-		this.vmfFactoryContinuous = vmfFactoryContinuous;
-		this.vmfFactoryDiscrete = vmfFactoryDiscrete;
-		this.vmfFactoryPassthrough = vmfFactoryPassthrough;
-		this.layoutManager = layoutManager;
-		this.mapTableToNetworkTable = mapTableToNetworkTable;
-		this.dialog = dialog;
-		this.sessionManager = sessionManager;
-		this.application = application;
-		this.browser = browser;
-		this.fileUtil = fileUtil;
-		this.registrar = registrar;
-		this.bulkEmInput = bulkEmInput;
-		
+	
+	@AfterInjection
+	private void createContents() {
 		params = new EnrichmentMapParameters(sessionManager, streamUtil, applicationManager);
 
 		//create the three main panels: scope, advanced options, and bottom
@@ -278,10 +232,11 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 		help.addActionListener(e -> browser.openURL(EnrichmentMapBuildProperties.USER_MANUAL_URL));
 
 		JButton about = new JButton("About");
-		about.addActionListener(new ShowAboutPanelAction(CyActivator.actionProps(), applicationManager, networkViewManager, application, browser));
+		about.addActionListener(aboutPanelActionProvider.get());
 
 		JButton bulk = new JButton("Bulk EM");
-		bulk.addActionListener(new BulkEMCreationAction(CyActivator.actionProps(), applicationManager, networkViewManager, application, bulkEmInput, registrar));
+//		bulk.addActionListener(new BulkEMCreationAction(CyActivator.actionProps(), applicationManager, networkViewManager, application, bulkEmInput, registrar));
+		bulk.setEnabled(false);
 
 		c_buttons.weighty = 1;
 		c_buttons.weightx = 1;
@@ -1084,11 +1039,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 			//add observer to catch if the input is a GREAT file so we can determine which p-value to use
 			ResultTaskObserver observer = new ResultTaskObserver();
 
-			EnrichmentMapBuildMapTaskFactory buildmap = new EnrichmentMapBuildMapTaskFactory(map,
-					applicationManager, application, networkManager, networkViewManager, networkViewFactory,
-					networkFactory, tableFactory, tableManager, visualMappingManager, visualStyleFactory,
-					vmfFactoryContinuous, vmfFactoryDiscrete, vmfFactoryPassthrough, streamUtil,
-					layoutManager, mapTableToNetworkTable);
+			EnrichmentMapBuildMapTaskFactory buildmap = taskFactoryProvider.get().init(map);
 			//buildmap.build();
 			dialog.execute(buildmap.createTaskIterator(), observer);
 

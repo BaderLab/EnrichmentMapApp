@@ -59,11 +59,14 @@ import javax.swing.text.html.HTMLEditorKit;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.util.swing.OpenBrowser;
 
+import com.google.inject.Inject;
+
 @SuppressWarnings("serial")
 public class AboutPanel extends JDialog {
 
 	private OpenBrowser browser;
 
+	@Inject
 	public AboutPanel(CySwingApplication application, OpenBrowser browser) {
 		super(application.getJFrame(), "About Enrichment Map", false);
 		this.browser = browser;

@@ -1,7 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.actions;
 
 import java.awt.event.ActionEvent;
-import java.util.Map;
 
 import javax.swing.JOptionPane;
 
@@ -10,32 +9,26 @@ import org.baderlab.csplugins.enrichmentmap.view.EdgeWidthDialog;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
-import org.cytoscape.work.TaskManager;
+import org.cytoscape.work.swing.DialogTaskManager;
+
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
 
 
 @SuppressWarnings("serial")
 public class ShowEdgeWidthDialogAction extends AbstractCyAction {
 	
-	private final CySwingApplication application;
-	private final CyApplicationManager applicationManager;
-	private final VisualMappingFunctionFactory vmfFactoryContinuous;
-	private final TaskManager<?, ?> taskManager;
+	@Inject private CySwingApplication application;
+	@Inject private CyApplicationManager applicationManager;
+	@Inject private @Named("continuous") VisualMappingFunctionFactory vmfFactoryContinuous;
+	@Inject private DialogTaskManager taskManager;
 
-	public ShowEdgeWidthDialogAction(Map<String, String> configProps, CyApplicationManager applicationManager,
-			VisualMappingFunctionFactory vmfFactoryContinuous, TaskManager<?, ?> taskManager,
-			CyNetworkViewManager networkViewManager, CySwingApplication application) {
-		super(configProps, applicationManager, networkViewManager);
-		putValue(NAME, "Post Analysis Edge Width...");
-		this.application = application;
-		this.applicationManager = applicationManager;
-		this.vmfFactoryContinuous = vmfFactoryContinuous;
-		this.taskManager = taskManager;
+	public ShowEdgeWidthDialogAction() {
+		super("Post Analysis Edge Width...");
 	}
 	
 	public void actionPerformed(ActionEvent e) {
-		
 		if(WidthFunction.appliesTo(applicationManager.getCurrentNetwork())) {
 			EdgeWidthDialog dialog = new EdgeWidthDialog(application, applicationManager, vmfFactoryContinuous, taskManager);
 			dialog.pack();

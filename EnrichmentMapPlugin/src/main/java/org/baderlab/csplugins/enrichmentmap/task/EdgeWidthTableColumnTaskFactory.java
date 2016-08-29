@@ -3,7 +3,7 @@ package org.baderlab.csplugins.enrichmentmap.task;
 import javax.swing.SwingUtilities;
 
 import org.baderlab.csplugins.enrichmentmap.WidthFunction;
-import org.baderlab.csplugins.enrichmentmap.actions.ShowEdgeWidthDialogAction;
+import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.task.TableColumnTaskFactory;
 import org.cytoscape.work.Task;
@@ -12,9 +12,9 @@ import org.cytoscape.work.TaskMonitor;
 
 public class EdgeWidthTableColumnTaskFactory implements TableColumnTaskFactory {
 
-	private final ShowEdgeWidthDialogAction action;
+	private final CyAction action;
 	
-	public EdgeWidthTableColumnTaskFactory(ShowEdgeWidthDialogAction action) {
+	public EdgeWidthTableColumnTaskFactory(CyAction action) {
 		this.action = action;
 	}
 

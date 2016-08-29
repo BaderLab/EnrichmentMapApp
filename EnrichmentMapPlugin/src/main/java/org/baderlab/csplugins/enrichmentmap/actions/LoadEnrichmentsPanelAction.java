@@ -44,12 +44,10 @@
 package org.baderlab.csplugins.enrichmentmap.actions;
 
 import java.awt.event.ActionEvent;
-import java.util.Map;
 import java.util.Properties;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.view.EnrichmentMapInputPanel;
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanel;
@@ -57,42 +55,38 @@ import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.application.swing.CytoPanelState;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.view.model.CyNetworkViewManager;
 
-/**
- * Created by User: risserlin Date: Jan 28, 2009 Time: 12:30:13 PM
- *
- * Click on Build Enrichment Map Action handler
- */
+import com.google.inject.Inject;
+
+
 @SuppressWarnings("serial")
 public class LoadEnrichmentsPanelAction extends AbstractCyAction {
 
-	private final CytoPanel cytoPanelWest;
-	private EnrichmentMapInputPanel EMinputPanel;
-	private CyServiceRegistrar registrar;
+	@Inject private CySwingApplication application;
+	@Inject private CyServiceRegistrar registrar;
+	
+	private EnrichmentMapInputPanel inputPanel;
 
-	public LoadEnrichmentsPanelAction(Map<String, String> configProps, CyApplicationManager applicationManager,
-			CyNetworkViewManager networkViewManager, CySwingApplication application, EnrichmentMapInputPanel inputPanel,
-			CyServiceRegistrar registrar) {
-		super(configProps, applicationManager, networkViewManager);
-
-		putValue(NAME, "Create Enrichment Map");
-
-		this.cytoPanelWest = application.getCytoPanel(CytoPanelName.WEST);
-		this.EMinputPanel = inputPanel;
-		this.registrar = registrar;
-
+	public LoadEnrichmentsPanelAction() {
+		super("Create Enrichment Map");
 	}
+	
+	public LoadEnrichmentsPanelAction init(EnrichmentMapInputPanel inputPanel) {
+		this.inputPanel = inputPanel;
+		return this;
+	}
+	
 
 	public void actionPerformed(ActionEvent event) {
+		CytoPanel cytoPanelWest = application.getCytoPanel(CytoPanelName.WEST);
 		//Assume if we can't find the input window in the panel that the service is not registered.      
-		if(cytoPanelWest.indexOfComponent(this.EMinputPanel) == -1) {
+		if(cytoPanelWest.indexOfComponent(inputPanel) == -1) {
 			//EnrichmentMapInputPanel inputwindow = new EnrichmentMapInputPanel(application,browser,streamUtilRef);
-			registrar.registerService(this.EMinputPanel, CytoPanelComponent.class, new Properties());
+			registrar.registerService(inputPanel, CytoPanelComponent.class, new Properties());
 
 			//set the input window in the instance so we can udate the instance window
 			//on network focus
-			EnrichmentMapManager.getInstance().setInputWindow(this.EMinputPanel);
+			EnrichmentMapManager.getInstance().setInputWindow(inputPanel);
 		}
 
 		// If the state of the cytoPanelWest is HIDE, show it
@@ -101,7 +95,7 @@ public class LoadEnrichmentsPanelAction extends AbstractCyAction {
 		}
 
 		// Select my panel
-		int index = cytoPanelWest.indexOfComponent(this.EMinputPanel);
+		int index = cytoPanelWest.indexOfComponent(inputPanel);
 		if(index == -1) {
 			return;
 		}
