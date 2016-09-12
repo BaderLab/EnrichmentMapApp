@@ -1,7 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.parsers;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
@@ -112,7 +111,6 @@ public class ParseGenericEnrichmentResults extends DatasetLineParser {
 					if(tokens[4] == null || tokens[4].equalsIgnoreCase("")) {
 
 					} else {
-
 						//check to see if the string matches the specified phenotypes
 						if(tokens[4].equalsIgnoreCase(upPhenotype))
 							NES = 1.0;
@@ -133,74 +131,33 @@ public class ParseGenericEnrichmentResults extends DatasetLineParser {
 					//ticket#57 - adding additional column to generic format, similiar to Bingo and David
 					// that outlines the genes from the query that are found in the geneset and results in
 					//its enrichment
-					if(length > 5) {
-						//the set of genes in this geneset (as specifed in the generic output file)
-						HashSet<Integer> genes_inset = new HashSet<Integer>();
+					if(length > 5 && populate_gs) {
 
 						//get all the genes in the field
 						String[] gene_tokens = tokens[5].split(",");
 
 						//All subsequent fields in the list are the geneset associated with this geneset.
-						for(int j = 0; j < gene_tokens.length; j++) {
+						for(String token : gene_tokens) {
+							String gene = token.trim().toUpperCase();
 
-							String gene = (gene_tokens[j].trim()).toUpperCase();
-							if(populate_gs) {
-								//Check to see if the gene is already in the hashmap of genes
-								//if it is already in the hash then get its associated key and put it
-								//into the set of genes
-								if(genes.containsKey(gene)) {
-									builder.addGenes(genes.get(gene));
-								}
-
-								//If the gene is not in the list then get the next value to be used and put it in the list
-								else {
-									if(!gene.equalsIgnoreCase("")) {
-
-										//add the gene to the master list of genes
-										int value = dataset.getMap().getNumberOfGenes();
-										genes.put(gene, value);
-										key2gene.put(value, gene);
-										dataset.getMap().setNumberOfGenes(value + 1);
-
-										//add the gene to the genelist
-										builder.addGenes(genes.get(gene));
-									}
-								}
-							} else {
-								//Check to see if the gene is already in the hashmap of genes
-								//if it is already in the hash then get its associated key and put it
-								//into the set of genes
-								if(genes.containsKey(gene)) {
-									genes_inset.add(genes.get(gene));
-								}
-
-								//If the gene is not in the list then the gmt and generic file don't match
-								//The assumption is the generic file contains a subset of the original gmt file
-								//
-								//We can change this requirment which would mean that the generic file could 
-								//be used to compute an enrichment map without a gmt (similiar to how to handle 
-								//Bingo and David) -- not sure how many people rely on this method though so
-								//don't want to change
-								else {
-									//throw new IllegalThreadStateException(gene+ " is not found in the set of genes in the specified gmt file.  The generic file does not match the gmt file");
-									System.out.println(gene
-											+ " is not found in the set of genes in the specified gmt file.  The generic file does not match the gmt file");
-
-									//add the gene to the master list of genes
-									int value = dataset.getMap().getNumberOfGenes();
-									genes.put(gene, value);
-									key2gene.put(value, gene);
-									dataset.getMap().setNumberOfGenes(value + 1);
-
-									genes_inset.add(genes.get(gene));
-								}
+							//Check to see if the gene is already in the hashmap of genes
+							//if it is already in the hash then get its associated key and put it
+							//into the set of genes
+							if(genes.containsKey(gene)) {
+								builder.addGenes(genes.get(gene));
 							}
-						}
 
-						if(!populate_gs) {
-							//replace genes in set with the ones in the enrichment results file (the ones filtered by the dataset)
-							builder.clearGenes();
-							builder.addAllGenes(genes_inset);
+							//If the gene is not in the list then get the next value to be used and put it in the list
+							else if(!gene.equalsIgnoreCase("")) {
+								//add the gene to the master list of genes
+								int value = dataset.getMap().getNumberOfGenes();
+								genes.put(gene, value);
+								key2gene.put(value, gene);
+								dataset.getMap().setNumberOfGenes(value + 1);
+
+								//add the gene to the genelist
+								builder.addGenes(genes.get(gene));
+							}
 						}
 
 						GeneSet gs = builder.build();
