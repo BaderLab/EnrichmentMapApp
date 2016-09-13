@@ -12,6 +12,7 @@ import org.baderlab.csplugins.enrichmentmap.actions.ShowAboutPanelAction;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowEdgeWidthDialogAction;
 import org.baderlab.csplugins.enrichmentmap.commands.BuildEnrichmentMapTuneableTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.commands.EnrichmentMapGSEACommandHandlerTaskFactory;
+import org.baderlab.csplugins.enrichmentmap.mastermap.MasterMapDialogAction;
 import org.baderlab.csplugins.enrichmentmap.task.EdgeWidthTableColumnTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.view.EnrichmentMapInputPanel;
 import org.baderlab.csplugins.enrichmentmap.view.HeatMapPanel;
@@ -72,12 +73,14 @@ public class CyActivator extends AbstractCyActivator {
 		EnrichmentMapActionListener EMActionListener = injector.getInstance(EnrichmentMapActionListener.class).init(heatMapPanel_node, heatMapPanel_edge);
 		registerService(bc, EMActionListener, RowsSetListener.class, new Properties());		
 
+		AbstractCyAction mmAction           = injector.getInstance(MasterMapDialogAction.class);
 		AbstractCyAction aboutAction        = injector.getInstance(ShowAboutPanelAction.class);
 		AbstractCyAction inputPanelAction   = injector.getInstance(LoadEnrichmentsPanelAction.class).init(emPanel);
 		AbstractCyAction postAnalysisAction = injector.getInstance(LoadPostAnalysisPanelAction.class).init(postEMPanel);
 		AbstractCyAction edgePanelAction    = injector.getInstance(ShowEdgeWidthDialogAction.class);
 
 		//register the services
+		registerAction(bc, mmAction);
 		registerAction(bc, inputPanelAction);
 		registerAction(bc, postAnalysisAction);	
 		registerAction(bc, edgePanelAction);
