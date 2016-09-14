@@ -12,21 +12,26 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import org.baderlab.csplugins.enrichmentmap.mastermap.NiceDialogCallback.Message;
+import org.cytoscape.util.swing.IconManager;
+
 public class NiceDialog {
 	
-	private JButton finishButton;
-	
-	private JLabel titleMessage;
-	private JLabel message;
+	private JLabel subTitle;
+	private JPanel message;
 	
 	private JDialog dialog;
+	private JButton finishButton;
 	
 	private final NiceDialogController controller;
+	private final IconManager iconManager;
 	
-	public NiceDialog(JFrame parent, NiceDialogController controller) {
-		if(controller == null)
+	
+	public NiceDialog(JFrame parent, IconManager iconManager, NiceDialogController controller) {
+		if(controller == null || iconManager == null)
 			throw new NullPointerException();
 		this.controller = controller;
+		this.iconManager = iconManager;
 		
 		dialog = new JDialog(parent);
 		createComponents();
@@ -50,7 +55,6 @@ public class NiceDialog {
 		// the controller can call callbacks from inside createBodyPanel()
 		JPanel messagePanel = createMessagePanel();
 		JPanel buttonPanel  = createButtonPanel();
-		
 		JPanel bodyPanel    = createBodyPanel();
 	    
 	    messagePanel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Color.LIGHT_GRAY));
@@ -80,12 +84,13 @@ public class NiceDialog {
 		panel.setBackground(panel.getBackground().brighter());
 
 		JPanel messagePanel = new JPanel(new BorderLayout());
-		titleMessage = new JLabel("<html><b>" + controller.getSubTitle() + "</b></html>");
-		message = new JLabel(" ");
+		subTitle = new JLabel("<html><b>" + controller.getSubTitle() + "</b></html>");
+		message = new JPanel(new BorderLayout());
+		message.setOpaque(false);
 		
-		titleMessage.setBorder(BorderFactory.createEmptyBorder(0, 0, 5, 0));
+		subTitle.setBorder(BorderFactory.createEmptyBorder(0, 0, 5, 0));
 		
-		messagePanel.add(titleMessage, BorderLayout.NORTH);
+		messagePanel.add(subTitle, BorderLayout.NORTH);
 		messagePanel.add(message, BorderLayout.CENTER);
 		
 		messagePanel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
@@ -107,6 +112,39 @@ public class NiceDialog {
 	}
 	
 	
+	private JPanel createMessage(Message severity, String message) {
+		JPanel panel = new JPanel(new BorderLayout());
+		JLabel icon = getMessageIcon(severity);
+		JLabel messageLabel = new JLabel(message + "  ");
+		panel.add(icon, BorderLayout.WEST);
+		panel.add(messageLabel, BorderLayout.CENTER);
+		panel.setOpaque(false);
+		return panel;
+	}
+	
+	private JLabel getMessageIcon(Message severity) {
+		JLabel icon = new JLabel();
+		switch(severity) {
+			default:
+			case INFO:  
+				icon.setText("");
+				break;
+			case WARN:
+				icon.setText(IconManager.ICON_EXCLAMATION_CIRCLE);
+				icon.setForeground(Color.YELLOW.darker());
+				break;
+			case ERROR:
+				icon.setText(IconManager.ICON_TIMES_CIRCLE);
+				icon.setForeground(Color.RED.darker());
+				break;
+		}
+		
+		icon.setFont(iconManager.getIconFont(16));
+		icon.setBorder(BorderFactory.createEmptyBorder(3,3,3,3));
+		icon.setOpaque(false);
+		return icon;
+	}
+	
 	private JPanel createButtonPanel() {
 		JPanel panel = new JPanel(new BorderLayout());
 		
@@ -127,13 +165,22 @@ public class NiceDialog {
 	
 	public class Callback implements NiceDialogCallback {
 
-		public void setMessage(String text) {
-			message.setText("   " + text);
+		@Override
+		public void setMessage(Message severity, String text) {
+			JPanel messageContent = createMessage(severity, text);
+			message.removeAll();
+			message.add(messageContent, BorderLayout.CENTER);
+			dialog.revalidate();
 		}
 
 		@Override
 		public void setFinishButtonEnabled(boolean enabled) {
 			finishButton.setEnabled(enabled);
+		}
+		
+		@Override
+		public JDialog getDialogFrame() {
+			return dialog;
 		}
 		
 	}

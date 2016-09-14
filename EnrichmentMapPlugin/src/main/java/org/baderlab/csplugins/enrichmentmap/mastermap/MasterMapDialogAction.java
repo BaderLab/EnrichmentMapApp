@@ -4,6 +4,7 @@ import java.awt.event.ActionEvent;
 
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.util.swing.IconManager;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
@@ -12,6 +13,7 @@ import com.google.inject.Provider;
 public class MasterMapDialogAction extends AbstractCyAction {
 
 	@Inject private Provider<MasterMapDialogController> controllerProvider;
+	@Inject private IconManager iconManager;
 	@Inject private CySwingApplication application;
 	
 	private NiceDialog masterMapDialog;
@@ -24,7 +26,7 @@ public class MasterMapDialogAction extends AbstractCyAction {
 	public void actionPerformed(ActionEvent e) {
 		if(masterMapDialog == null) {
 			MasterMapDialogController controller = controllerProvider.get();
-			masterMapDialog = new NiceDialog(application.getJFrame(), controller);
+			masterMapDialog = new NiceDialog(application.getJFrame(), iconManager, controller);
 		}
 		masterMapDialog.open();
 	}

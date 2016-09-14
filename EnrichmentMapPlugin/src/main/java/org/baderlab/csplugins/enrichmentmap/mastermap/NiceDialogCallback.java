@@ -1,8 +1,24 @@
 package org.baderlab.csplugins.enrichmentmap.mastermap;
 
-public interface NiceDialogCallback {
+import javax.swing.JDialog;
 
-	void setMessage(String message);
+public interface NiceDialogCallback {
+	
+	public static enum Message {
+		INFO, WARN, ERROR
+	}
+	
+	void setMessage(Message severity, String message);
+	
+	default void clearMessage() {
+		setMessage(Message.INFO, "");
+	}
+	
+	default void setMessage(String message) {
+		setMessage(Message.INFO, message);
+	}
 	
 	void setFinishButtonEnabled(boolean enabled);
+
+	JDialog getDialogFrame();
 }

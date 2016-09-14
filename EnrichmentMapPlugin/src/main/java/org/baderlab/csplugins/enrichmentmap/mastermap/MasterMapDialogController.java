@@ -2,6 +2,7 @@ package org.baderlab.csplugins.enrichmentmap.mastermap;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.FileDialog;
 import java.awt.FlowLayout;
 import java.awt.Image;
 import java.io.File;
@@ -9,13 +10,14 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -23,6 +25,7 @@ import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 
+import org.baderlab.csplugins.enrichmentmap.mastermap.NiceDialogCallback.Message;
 import org.baderlab.csplugins.enrichmentmap.view.AboutPanel;
 
 import com.google.inject.Singleton;
@@ -33,6 +36,9 @@ public class MasterMapDialogController implements NiceDialogController {
 	private JTextField pathTextField;
 	private CheckboxList checkboxList;
 	private CheckboxListModel checkboxListModel;
+	
+	private JButton selectAllButton;
+	private JButton selectNoneButton;
 	
 	private NiceDialogCallback callback;
 	private JPanel panel;
@@ -54,7 +60,7 @@ public class MasterMapDialogController implements NiceDialogController {
 	
 	@Override
 	public Dimension getMinimumSize() {
-		return new Dimension(600, 600);
+		return new Dimension(600, 500);
 	}
 	
 	
@@ -94,6 +100,9 @@ public class MasterMapDialogController implements NiceDialogController {
 	@Override
 	public void finish() {
 		System.out.println("CREATE MASTERMAP BOOYAKASHA");
+		for(CheckboxData data : checkboxListModel) {
+			System.out.println(data.getData());
+		}
 	}
 	
 	
@@ -137,44 +146,87 @@ public class MasterMapDialogController implements NiceDialogController {
 	private void browseForRootFolder() {
 		final String osName = System.getProperty("os.name");
 		
-		if (osName.startsWith("Mac")) {
-		
-		}
-		else {
-			JFileChooser chooser = new JFileChooser(); 
-		    chooser.setDialogTitle("Select GSEA Root Folder");
-		    chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-		    chooser.setAcceptAllFileFilterUsed(false);
-		    if (chooser.showOpenDialog(panel) == JFileChooser.APPROVE_OPTION) { 
-		    	setRootFolder(chooser.getSelectedFile());
-		    }
+		Optional<File> rootFolder;
+		if(osName.startsWith("Mac"))
+			rootFolder = browseForRootFolderMac();
+		else
+			rootFolder = browseForRootFolderSwing();
+
+		rootFolder.ifPresent(this::setRootFolder);
+	}
+	
+	
+	private Optional<File> browseForRootFolderMac() {
+		final String property = System.getProperty("apple.awt.fileDialogForDirectories");
+		System.setProperty("apple.awt.fileDialogForDirectories", "true");
+		try {
+			FileDialog chooser = new FileDialog(callback.getDialogFrame(), "Choose GSEA Root Folder", FileDialog.LOAD);
+			chooser.setModal(true);
+			chooser.setLocationRelativeTo(callback.getDialogFrame());
+			chooser.setVisible(true);
+			
+			String file = chooser.getFile();
+			String dir = chooser.getDirectory();
+			
+			if(file == null || dir == null) {
+				return Optional.empty();
+			}
+			return Optional.of(new File(dir + File.separator + file));
+		} finally {
+			if(property != null) {
+				System.setProperty("apple.awt.fileDialogForDirectories", property);
+			}
 		}
 	}
+	
+	
+	private Optional<File> browseForRootFolderSwing() {
+		JFileChooser chooser = new JFileChooser(); 
+	    chooser.setDialogTitle("Select GSEA Root Folder");
+	    chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+	    chooser.setAcceptAllFileFilterUsed(false);
+	    if (chooser.showOpenDialog(panel) == JFileChooser.APPROVE_OPTION) { 
+	    	return Optional.of(chooser.getSelectedFile());
+	    }
+	    return Optional.empty();
+	}
+	
 	
 	private void setRootFolder(File root) {
 		Path path = root.toPath();
 		pathTextField.setText(path.toString());
 		
 		checkboxListModel.clear();
+		callback.clearMessage();
+		selectAllButton.setEnabled(true);
+		selectNoneButton.setEnabled(true);
 		
 		if(!root.isDirectory()) {
-			callback.setMessage("Not a folder");
+			callback.setMessage(Message.ERROR, "Not a folder");
 			return;
 		}
 		
 		try {
-			Files.list(path)
-			.filter(Files::isDirectory)
-			.forEach(folder -> {
-				checkboxListModel.addElement(new JCheckBox(folder.getFileName().toString()));
-			});
+			try(Stream<Path> contents = Files.list(path)) {
+				contents
+				.filter(Files::isDirectory)
+				.filter(new GSEAFolderPredicate())
+				.map(folder -> new CheckboxData(folder.getFileName().toString(), folder.getFileName().toAbsolutePath().toString()))
+				.forEach(checkboxListModel::addElement);
+			}
 			
 		} catch(IOException e) {
-			callback.setMessage("Cannot read folder contents");
+			callback.setMessage(Message.ERROR, "Cannot read folder contents");
 			e.printStackTrace();
+			return;
+		}
+		
+		if(checkboxListModel.isEmpty()) {
+			callback.setMessage(Message.ERROR, "The chosen folder does not contain any GSEA results folders");
+			selectAllButton.setEnabled(false);
+			selectNoneButton.setEnabled(false);
 		}
 	}
-	
 	
 	
 	private JPanel createListPanel() {
@@ -187,8 +239,22 @@ public class MasterMapDialogController implements NiceDialogController {
 		scrollPane.setViewportView(checkboxList);
 		
 		JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.TRAILING));
-		JButton selectAllButton  = new JButton("Select All");
-		JButton selectNoneButton = new JButton("Select None");
+		selectAllButton  = new JButton("Select All");
+		selectNoneButton = new JButton("Select None");
+		
+		selectAllButton.addActionListener(e -> {
+			checkboxListModel.forEach(cb -> cb.setSelected(true));
+			checkboxList.invalidate();
+			checkboxList.repaint();
+		});
+		selectNoneButton.addActionListener(e -> {
+			checkboxListModel.forEach(cb -> cb.setSelected(false));
+			checkboxList.invalidate();
+			checkboxList.repaint();
+		});
+		
+		selectAllButton.setEnabled(false);
+		selectNoneButton.setEnabled(false);
 		
 		buttonPanel.add(selectAllButton);
 		buttonPanel.add(selectNoneButton);
@@ -198,7 +264,6 @@ public class MasterMapDialogController implements NiceDialogController {
 		
 		return panel;
 	}
-
 
 	
 }
