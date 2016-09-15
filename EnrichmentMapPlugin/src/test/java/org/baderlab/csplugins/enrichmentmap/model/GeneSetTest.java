@@ -28,12 +28,12 @@ public class GeneSetTest {
 		//create a new GeneSet
 		GeneSet.Builder builder = new GeneSet.Builder("Gene Set 1", "fake geneset");
 		
-		builder.addGenes(10);
-		builder.addGenes(12);
-		builder.addGenes(-1);
-		builder.addGenes(0);
+		builder.addGene(10);
+		builder.addGene(12);
+		builder.addGene(-1);
+		builder.addGene(0);
 		//check if it handles duplicates
-		builder.addGenes(10);
+		builder.addGene(10);
 		
 		GeneSet gs = builder.build();
 		assertEquals("Gene Set 1", gs.getName());
@@ -74,15 +74,15 @@ public class GeneSetTest {
 		
 		//test equals function
 		GeneSet.Builder builder2 = new GeneSet.Builder("Gene Set 1", "fake geneset");
-		builder2.addGenes(10);
-		builder2.addGenes(12);
-		builder2.addGenes(-1);
+		builder2.addGene(10);
+		builder2.addGene(12);
+		builder2.addGene(-1);
 		
 		GeneSet gs2 = builder2.build();
 		assertFalse(gs.equals(gs2));
 		
 		builder2 = GeneSet.Builder.from(gs2);
-		builder2.addGenes(0);
+		builder2.addGene(0);
 		
 		gs2 = builder2.build();
 		assertTrue(gs.equals(gs2));

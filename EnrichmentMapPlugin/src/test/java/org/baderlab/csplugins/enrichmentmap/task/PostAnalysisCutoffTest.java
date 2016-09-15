@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
+import org.baderlab.csplugins.enrichmentmap.FilterParameters;
 import org.baderlab.csplugins.enrichmentmap.FilterType;
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.TestUtils;
@@ -32,8 +33,8 @@ public class PostAnalysisCutoffTest extends BaseNetworkTest {
 	
 	private PostAnalysisParameters.Builder getBuilder() {
 		PostAnalysisParameters.Builder builder = new PostAnalysisParameters.Builder();
-    	builder.setSignature_dataSet(EnrichmentMap.DATASET1);
-    	builder.setSignature_rankFile(EnrichmentMap.DATASET1);
+    	builder.setSignatureDataSet(EnrichmentMap.DATASET1);
+    	builder.setSignatureRankFile(EnrichmentMap.DATASET1);
     	builder.setAnalysisType(PostAnalysisParameters.AnalysisType.KNOWN_SIGNATURE);
 		builder.setUniverseSize(11445);
 		builder.setSignatureGMTFileName(PATH + "PA_top8_middle8_bottom8.gmt");
@@ -67,8 +68,8 @@ public class PostAnalysisCutoffTest extends BaseNetworkTest {
 	public void test_1_FilterType_Number() throws Exception {
 		PostAnalysisParameters.Builder builder = getBuilder();
 		
-		builder.getRankTestParametersBuilder().setType(FilterType.NUMBER);
-		builder.getRankTestParametersBuilder().setValue(5);
+		FilterParameters rankTest = new FilterParameters(FilterType.NUMBER, 5);
+		builder.setRankTestParameters(rankTest);
 		
 		runPostAnalysis(emNetwork, builder);
 	   	
@@ -98,8 +99,8 @@ public class PostAnalysisCutoffTest extends BaseNetworkTest {
 	public void test_2_FilterType_Percent() throws Exception {
 		PostAnalysisParameters.Builder builder = getBuilder();
 		
-		builder.getRankTestParametersBuilder().setType(FilterType.PERCENT);
-		builder.getRankTestParametersBuilder().setValue(7);
+		FilterParameters rankTest = new FilterParameters(FilterType.PERCENT, 7);
+		builder.setRankTestParameters(rankTest);
 		
 		runPostAnalysis(emNetwork, builder);
 		
@@ -129,8 +130,8 @@ public class PostAnalysisCutoffTest extends BaseNetworkTest {
 	public void test_3_FilterType_Specific() throws Exception {		
 		PostAnalysisParameters.Builder builder = getBuilder();
 		
-		builder.getRankTestParametersBuilder().setType(FilterType.SPECIFIC);
-		builder.getRankTestParametersBuilder().setValue(25);
+		FilterParameters rankTest = new FilterParameters(FilterType.SPECIFIC, 25);
+		builder.setRankTestParameters(rankTest);
 		
 		runPostAnalysis(emNetwork, builder);
 		

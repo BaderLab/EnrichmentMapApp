@@ -15,6 +15,7 @@ import java.util.Set;
 import org.baderlab.csplugins.enrichmentmap.EdgeSimilarities;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
+import org.baderlab.csplugins.enrichmentmap.FilterParameters;
 import org.baderlab.csplugins.enrichmentmap.FilterType;
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters.AnalysisType;
@@ -90,14 +91,15 @@ public class PostAnalysisTaskTest extends BaseNetworkTest {
 	@Test
 	public void test_2_PostAnalysisMannWhitney() throws Exception {
 		PostAnalysisParameters.Builder builder = new PostAnalysisParameters.Builder();
-		builder.setSignature_dataSet(EnrichmentMap.DATASET1);
-		builder.setSignature_rankFile(EnrichmentMap.DATASET1);
+		builder.setSignatureDataSet(EnrichmentMap.DATASET1);
+		builder.setSignatureRankFile(EnrichmentMap.DATASET1);
 		builder.setAnalysisType(AnalysisType.KNOWN_SIGNATURE);
 		builder.setUniverseSize(11445);
 		builder.setSignatureGMTFileName(PATH + "PA_top8_middle8_bottom8.gmt");
 		builder.setAttributePrefix("EM1_");
-		builder.getRankTestParametersBuilder().setType(FilterType.MANN_WHIT_TWO_SIDED);
-		builder.getRankTestParametersBuilder().setValue(FilterType.MANN_WHIT_TWO_SIDED.defaultValue);
+		
+		FilterParameters rankTest = new FilterParameters(FilterType.MANN_WHIT_TWO_SIDED);
+		builder.setRankTestParameters(rankTest);
 		
 		runPostAnalysis(emNetwork, builder);
 		// Assert that post-analysis created the new nodes correctly
@@ -129,14 +131,15 @@ public class PostAnalysisTaskTest extends BaseNetworkTest {
 	@Test
 	public void test_3_PostAnalysisHypergeometric_overlap() throws Exception {
 		PostAnalysisParameters.Builder builder = new PostAnalysisParameters.Builder();
-		builder.setSignature_dataSet(EnrichmentMap.DATASET1);
-		builder.setSignature_rankFile(EnrichmentMap.DATASET1);
+		builder.setSignatureDataSet(EnrichmentMap.DATASET1);
+		builder.setSignatureRankFile(EnrichmentMap.DATASET1);
 		builder.setAnalysisType(AnalysisType.KNOWN_SIGNATURE);
 		builder.setUniverseSize(11445);
 		builder.setSignatureGMTFileName(PATH + "PA_top8_middle8_bottom8.gmt");
 		builder.setAttributePrefix("EM1_");
-		builder.getRankTestParametersBuilder().setType(FilterType.HYPERGEOM);
-		builder.getRankTestParametersBuilder().setValue(0.25);
+		
+		FilterParameters rankTest = new FilterParameters(FilterType.HYPERGEOM, 0.25);
+		builder.setRankTestParameters(rankTest);
 		
 		runPostAnalysis(emNetwork, builder);
 		

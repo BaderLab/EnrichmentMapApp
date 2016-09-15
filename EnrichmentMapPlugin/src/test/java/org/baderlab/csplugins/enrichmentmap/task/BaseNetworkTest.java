@@ -130,11 +130,11 @@ public abstract class BaseNetworkTest {
 															swingApplication, applicationManager, testTaskManager, streamUtil);
 		
 		loader.setGeneSetCallback(builder::setSignatureGenesets);
-		loader.setLoadedSignatureSetsCallback(builder::addAllSelectedSignatureSetNames);
+		loader.setLoadedSignatureSetsCallback(builder::addSelectedSignatureSetNames);
 
 		loader.actionPerformed(null);
 		
-		PostAnalysisParameters paParams = builder.buildPartial();
+		PostAnalysisParameters paParams = builder.build();
 		
 		// Run post-analysis
 		BuildDiseaseSignatureTask signatureTask = new BuildDiseaseSignatureTask(map, paParams, 

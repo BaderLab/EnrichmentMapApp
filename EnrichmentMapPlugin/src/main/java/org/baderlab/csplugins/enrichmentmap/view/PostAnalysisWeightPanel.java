@@ -26,7 +26,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 
-import org.baderlab.csplugins.enrichmentmap.FilterParameters.Builder;
+import org.baderlab.csplugins.enrichmentmap.FilterParameters;
 import org.baderlab.csplugins.enrichmentmap.FilterType;
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
@@ -429,12 +429,12 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
 	}
 	
 	public void build(PostAnalysisParameters.Builder builder) {
-		Builder rankTestBuilder = builder.getRankTestParametersBuilder();
-		rankTestBuilder.setType(getFilterType());
-		rankTestBuilder.setValue(((Number) rankTestTextField.getValue()).doubleValue());
+		double value = ((Number) rankTestTextField.getValue()).doubleValue();
+		FilterParameters rankTest = new FilterParameters(getFilterType(), value);
 		
-		builder.setSignature_dataSet(getDataSet());
-		builder.setSignature_rankFile(getRankFile());
+		builder.setRankTestParameters(rankTest);
+		builder.setSignatureDataSet(getDataSet());
+		builder.setSignatureRankFile(getRankFile());
 		builder.setUniverseSize(getUniverseSize());
 	}
 

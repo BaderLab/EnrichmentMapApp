@@ -28,7 +28,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JToolTip;
 import javax.swing.ScrollPaneConstants;
 
-import org.baderlab.csplugins.enrichmentmap.FilterParameters.Builder;
+import org.baderlab.csplugins.enrichmentmap.FilterParameters;
 import org.baderlab.csplugins.enrichmentmap.FilterType;
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadSignatureSetsActionListener;
@@ -424,13 +424,12 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
 		weightPanel.build(builder);
 		
 		for(int i = 0; i < selected_sig_sets.size(); i++) {
-			builder.addSelectedSignatureSetNames(selected_sig_sets.getElementAt(i));
+			builder.addSelectedSignatureSetName(selected_sig_sets.getElementAt(i));
 		}
 		
-		Builder filterParametersBuilder = builder.getFilterParametersBuilder();
 		Number number = (Number) filterTextField.getValue();
-		filterParametersBuilder.setType(getFilterType());
-		filterParametersBuilder.setValue(number.doubleValue());
+		FilterParameters filterParameters = new FilterParameters(getFilterType(), number.doubleValue());
+		builder.setFilterParameters(filterParameters);
 		
 		String filePath = (String) signatureDiscoveryGMTFileNameTextField.getValue();
 		builder.setSignatureGMTFileName(filePath);

@@ -121,8 +121,8 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 		this.eventHelper = eventHelper;
 		this.paParams = paParams; 
 		
-		DataSet dataset = map.getDataset(paParams.getSignature_dataSet());
-		this.ranks = dataset.getExpressionSets().getRanks().get(paParams.getSignature_rankFile());
+		DataSet dataset = map.getDataset(paParams.getSignatureDataSet());
+		this.ranks = dataset.getExpressionSets().getRanks().get(paParams.getSignatureRankFile());
 
 
 		// we want genesets of interest that are not signature genesets put there by previous runs of post-analysis
@@ -161,9 +161,9 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 
 	private String getInteraction() {
 		if(map.getParams().isTwoDatasets()) {
-			if(EnrichmentMap.DATASET1.equals(paParams.getSignature_dataSet())) {
+			if(EnrichmentMap.DATASET1.equals(paParams.getSignatureDataSet())) {
 				return PostAnalysisParameters.SIGNATURE_INTERACTION_TYPE_SET1;
-			} else if(EnrichmentMap.DATASET2.equals(paParams.getSignature_dataSet())) {
+			} else if(EnrichmentMap.DATASET2.equals(paParams.getSignatureDataSet())) {
 				return PostAnalysisParameters.SIGNATURE_INTERACTION_TYPE_SET2;
 			}
 		}
@@ -432,7 +432,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 
 		// add the geneset of the signature node to the GenesetsOfInterest,
 		// as the Heatmap will grep it's data from there.
-		DataSet dataset = map.getDataset(paParams.getSignature_dataSet());
+		DataSet dataset = map.getDataset(paParams.getSignatureDataSet());
 		Set<Integer> signatureGenesInDataSet = ImmutableSet.copyOf(Sets.intersection(sigGeneSet.getGenes(), dataset.getDatasetGenes()));
 		GeneSet geneSetInDataSet = new GeneSet.Builder(sigGeneSet.getName(), sigGeneSet.getDescription()).addAllGenes(signatureGenesInDataSet).build();
 		dataset.getGenesetsOfInterest().getGenesets().put(hub_name, geneSetInDataSet);

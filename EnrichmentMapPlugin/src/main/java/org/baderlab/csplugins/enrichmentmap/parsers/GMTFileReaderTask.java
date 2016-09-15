@@ -166,7 +166,7 @@ public class GMTFileReaderTask extends AbstractTask {
 						//if it is already in the hash then get its associated key and put it
 						//into the set of genes
 						if(genes.containsKey(tokens[j].toUpperCase())) {
-							builder.addGenes(genes.get(tokens[j].toUpperCase()));
+							builder.addGene(genes.get(tokens[j].toUpperCase()));
 						}
 
 						//If the gene is not in the list then get the next value to be used and put it in the list
@@ -181,7 +181,7 @@ public class GMTFileReaderTask extends AbstractTask {
 								map.setNumberOfGenes(value + 1);
 
 								//add the gene to the genelist
-								builder.addGenes(genes.get(tokens[j].toUpperCase()));
+								builder.addGene(genes.get(tokens[j].toUpperCase()));
 							}
 						}
 					}

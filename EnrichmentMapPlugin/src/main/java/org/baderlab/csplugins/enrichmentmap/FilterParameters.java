@@ -1,24 +1,36 @@
 package org.baderlab.csplugins.enrichmentmap;
 
-import org.inferred.freebuilder.FreeBuilder;
-
 /**
  * Parameters used for specifying filters and cutoffs for post-analysis.
  */
-@FreeBuilder
-public interface FilterParameters {
+public class FilterParameters {
+	
+	private final FilterType type;
+	private final double value;
+	
 
-	public FilterType getType();
-
-	public double getValue();
+	public FilterParameters(FilterType type, double value) {
+		this.type = type;
+		this.value = value;
+	}
+	
+	public FilterParameters(FilterType type) {
+		this(type, type.defaultValue);
+	}
 	
 	
-	class Builder extends FilterParameters_Builder {
-		public Builder() {
-			FilterType filterType = FilterType.NO_FILTER;
-			setType(filterType);
-			setValue(filterType.defaultValue);
-		}
+
+	public static FilterParameters noFilter() {
+		FilterType filterType = FilterType.NO_FILTER;
+		return new FilterParameters(filterType, filterType.defaultValue);
+	}
+	
+	public FilterType getType() {
+		return type;
+	}
+
+	public double getValue() {
+		return value;
 	}
 	
 }

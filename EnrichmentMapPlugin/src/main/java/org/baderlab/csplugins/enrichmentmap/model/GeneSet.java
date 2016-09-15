@@ -43,37 +43,65 @@
 
 package org.baderlab.csplugins.enrichmentmap.model;
 
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
 
-import org.inferred.freebuilder.FreeBuilder;
+import com.google.common.collect.ImmutableSet;
+
 
 /**
- * This is an abstract class only so we can override toString(), otherwise it would be an interface
  * @author mkucera
  *
  */
-@FreeBuilder
-public abstract class GeneSet {
+public class GeneSet {
 
-	public abstract String getName();
+	private final String name;
+	private final String description;
+	private final Set<Integer> genes;
+	private final Optional<String> source;
+	
+	private GeneSet(String name, String description, Set<Integer> genes, Optional<String> source) {
+		this.name = name;
+		this.description = description;
+		this.genes = genes;
+		this.source = source;
+	}
 
-	public abstract String getDescription();
+	public String getName() {
+		return name;
+	}
 
-	public abstract Set<Integer> getGenes();
+	public String getDescription() {
+		return description;
+	}
 
-	public abstract Optional<String> getSource();
+	public Set<Integer> getGenes() {
+		return genes;
+	}
+
+	public Optional<String> getSource() {
+		return source;
+	}
 	
 	
-	public static class Builder extends GeneSet_Builder {
+	public static class Builder {
+		
+		private String name;
+		private String description;
+		private Set<Integer> genes = new HashSet<>();
+		private Optional<String> source = Optional.empty();
+		
 		
 		public static Builder from(GeneSet gs) {
-			return new Builder().mergeFrom(gs);
+			Builder b = new Builder(gs.name, gs.description);
+			b.addAllGenes(gs.genes);
+			gs.source.ifPresent(s -> b.setSource(s));
+			return b;
 		}
 		
-		private Builder() {
-		}
 		
 		public Builder(String name, String descrip) {
 			setName(name);
@@ -90,7 +118,39 @@ public abstract class GeneSet {
 			if(tokens.length < 3)
 				return;
 			for(int i = 3; i < tokens.length; i++)
-				addGenes(Integer.parseInt(tokens[i]));
+				addGene(Integer.parseInt(tokens[i]));
+		}
+		
+		
+		public Builder setName(String name) {
+			this.name = name;
+			return this;
+		}
+		
+		public Builder setDescription(String description) {
+			this.description = description;
+			return this;
+		}
+		
+		public Builder addGene(Integer gene) {
+			genes.add(gene);
+			return this;
+		}
+		
+		public Builder addAllGenes(Collection<Integer> genes) {
+			genes.forEach(this::addGene);
+			return this;
+		}
+		
+		public Builder setSource(String source) {
+			this.source = Optional.of(source);
+			return this;
+		}
+		
+		public GeneSet build() {
+			if(name == null || description == null)
+				throw new IllegalStateException();
+			return new GeneSet(name, description, ImmutableSet.copyOf(genes), source);
 		}
 	}
 	
@@ -106,6 +166,51 @@ public abstract class GeneSet {
 
 		return geneset.toString();
 	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((description == null) ? 0 : description.hashCode());
+		result = prime * result + ((genes == null) ? 0 : genes.hashCode());
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result + ((source == null) ? 0 : source.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj)
+			return true;
+		if(obj == null)
+			return false;
+		if(getClass() != obj.getClass())
+			return false;
+		GeneSet other = (GeneSet) obj;
+		if(description == null) {
+			if(other.description != null)
+				return false;
+		} else if(!description.equals(other.description))
+			return false;
+		if(genes == null) {
+			if(other.genes != null)
+				return false;
+		} else if(!genes.equals(other.genes))
+			return false;
+		if(name == null) {
+			if(other.name != null)
+				return false;
+		} else if(!name.equals(other.name))
+			return false;
+		if(source == null) {
+			if(other.source != null)
+				return false;
+		} else if(!source.equals(other.source))
+			return false;
+		return true;
+	}
+	
+	
 
 
 }

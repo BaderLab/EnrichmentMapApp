@@ -181,6 +181,6 @@ public class PostAnalysisKnownSignaturePanel extends JPanel {
 		String filePath = (String) knownSignatureGMTFileNameTextField.getValue();
 		builder.setSignatureGMTFileName(filePath);
 		builder.setSignatureGenesets(signatureGenesets);
-		builder.addAllSelectedSignatureSetNames(selectedGenesetNames);
+		builder.addSelectedSignatureSetNames(selectedGenesetNames);
 	}
 }
