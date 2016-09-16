@@ -70,6 +70,10 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.session.CySessionManager;
 
+import com.google.inject.Inject;
+import com.google.inject.assistedinject.Assisted;
+import com.google.inject.assistedinject.AssistedInject;
+
 /**
  * Created by User: risserlin Date: Jan 8, 2009 Time: 12:04:28 PM
  * <p>
@@ -80,9 +84,9 @@ import org.cytoscape.session.CySessionManager;
  */
 public class EnrichmentMapParameters {
 
-	private CySessionManager sessionManager;
-	private StreamUtil streamUtil;
-	private CyApplicationManager applicationManager;
+	@Inject private CySessionManager sessionManager;
+	@Inject private StreamUtil streamUtil;
+	@Inject private CyApplicationManager applicationManager;
 
 	//attribute prefix associated with this map
 	private String attributePrefix = null;
@@ -206,10 +210,28 @@ public class EnrichmentMapParameters {
 	//Create a hashmap to contain all the values in the rpt file.
 	HashMap<String, String> props;
 
+	
+	public interface Factory {
+		EnrichmentMapParameters create();
+		EnrichmentMapParameters create(String propFile);
+	}
+	
+	
 	/**
-	 * Default constructor to create a fresh instance.
+	 * Just for tests.
+	 * Marked as deprecated to remind you not to use in real code.
+	 * @deprecated
 	 */
 	public EnrichmentMapParameters() {
+		this(null, null, null);
+	}
+	
+	@AssistedInject
+	public EnrichmentMapParameters(CySessionManager sessionManager, StreamUtil streamUtil, CyApplicationManager applicationManager) {
+		this.sessionManager = sessionManager;
+		this.streamUtil = streamUtil;
+		this.applicationManager = applicationManager;
+		
 		//by default GSEA is the method.
 		this.method = EnrichmentMapParameters.method_GSEA;
 
@@ -243,36 +265,26 @@ public class EnrichmentMapParameters {
 		this.files.put(EnrichmentMap.DATASET1, new DataSetFiles());
 	}
 
-	public void initSliders() {
+	public void initSliders(EnrichmentMapManager emManager) {
 		//create the slider for this pvalue
 		pvalueSlider = new SliderBarPanel(
 				((this.pvalue_min == 1 || this.pvalue_min >= this.pvalue) ? 0 : this.pvalue_min), this.pvalue,
 				"P-value Cutoff", this, EnrichmentMapVisualStyle.PVALUE_DATASET1,
 				EnrichmentMapVisualStyle.PVALUE_DATASET2, ParametersPanel.summaryPanelWidth, false, this.pvalue,
-				applicationManager);
+				applicationManager, emManager);
 		//create the slider for the qvalue
 		qvalueSlider = new SliderBarPanel(
 				((this.qvalue_min == 1 || this.qvalue_min >= this.qvalue) ? 0 : this.qvalue_min), this.qvalue,
 				"Q-value Cutoff", this, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1,
 				EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2, ParametersPanel.summaryPanelWidth, false, this.qvalue,
-				applicationManager);
+				applicationManager, emManager);
 		//create the slider for the similarity cutoff
 		similaritySlider = new SliderBarPanel(this.similarityCutOff, 1, "Similarity Cutoff", this,
 				EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT, EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT,
-				ParametersPanel.summaryPanelWidth, true, this.similarityCutOff, applicationManager);
+				ParametersPanel.summaryPanelWidth, true, this.similarityCutOff, applicationManager, emManager);
 
 	}
 
-	public EnrichmentMapParameters(CySessionManager sessionManager, StreamUtil streamUtil,
-			CyApplicationManager applicationManager) {
-		this();
-		this.sessionManager = sessionManager;
-		this.streamUtil = streamUtil;
-		this.applicationManager = applicationManager;
-
-		//initSliders();
-
-	}
 
 	public void initializeDefaultParameters() {
 
@@ -373,8 +385,8 @@ public class EnrichmentMapParameters {
 	 * @param propFile
 	 *            the name of the property file as a String
 	 */
-	public EnrichmentMapParameters(String propFile, CySessionManager sessionManager, StreamUtil streamUtil,
-			CyApplicationManager applicationManager) {
+	@AssistedInject
+	public EnrichmentMapParameters(@Assisted String propFile, CySessionManager sessionManager, StreamUtil streamUtil, CyApplicationManager applicationManager, EnrichmentMapManager emManager) {
 		this(sessionManager, streamUtil, applicationManager);
 
 		//Create a hashmap to contain all the values in the rpt file.
@@ -459,17 +471,17 @@ public class EnrichmentMapParameters {
 		//create the slider for this pvalue
 		pvalueSlider = new SliderBarPanel((this.pvalue_min == 1 ? 0 : this.pvalue_min), this.pvalue, "P-value Cutoff",
 				this, EnrichmentMapVisualStyle.PVALUE_DATASET1, EnrichmentMapVisualStyle.PVALUE_DATASET2,
-				ParametersPanel.summaryPanelWidth, false, this.pvalue, applicationManager);
+				ParametersPanel.summaryPanelWidth, false, this.pvalue, applicationManager, emManager);
 
 		//create the slider for the qvalue
 		qvalueSlider = new SliderBarPanel((this.qvalue_min == 1 ? 0 : this.qvalue_min), this.qvalue, "Q-value Cutoff",
 				this, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2,
-				ParametersPanel.summaryPanelWidth, false, this.qvalue, applicationManager);
+				ParametersPanel.summaryPanelWidth, false, this.qvalue, applicationManager, emManager);
 
 		//create the slider for the similarity cutoff
 		similaritySlider = new SliderBarPanel(this.similarityCutOff, 1, "Similarity Cutoff", this,
 				EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT, EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT,
-				ParametersPanel.summaryPanelWidth, true, this.similarityCutOff, applicationManager);
+				ParametersPanel.summaryPanelWidth, true, this.similarityCutOff, applicationManager, emManager);
 
 	}
 
@@ -786,80 +798,12 @@ public class EnrichmentMapParameters {
 
 	}
 
-	/*
-	 * Method to copy the input contents of an enrichment map paremeter set Only
-	 * copy parameters specified in the input window
-	 *
-	 * Given -
-	 */
-
-	/**
-	 * Method to copy the input contents of an enrichment map paremeter set Only
-	 * copy parameters specified in the input window
-	 *
-	 * @param copy
-	 *            - a parameters set to copy from.
-	 */
-	public void copyInputParameters(EnrichmentMapParameters copy) {
-
-		//We can only transfer the Network name if it is needed
-		//for instance for Bulk EM creation.
-		if(copy.isBulkEM()) {
-			//this.NetworkName = copy.getNetworkName();
-			this.BulkEM = copy.isBulkEM();
-		}
-
-		//go through each dataset and copy it into the current em
-		for(Iterator<?> i = copy.getFiles().keySet().iterator(); i.hasNext();) {
-			String ds = (String) i.next();
-			DataSetFiles new_ds = new DataSetFiles();
-			new_ds.copy(copy.getFiles().get(ds));
-
-			//put the new dataset in
-			this.files.put(ds, new_ds);
-
-		}
-
-		this.pvalue = copy.getPvalue();
-		//create the slider for this pvalue
-		pvalueSlider = new SliderBarPanel((this.pvalue_min == 1 ? 0 : this.pvalue_min), this.pvalue, "P-value Cutoff",
-				this, EnrichmentMapVisualStyle.PVALUE_DATASET1, EnrichmentMapVisualStyle.PVALUE_DATASET2,
-				ParametersPanel.summaryPanelWidth, false, this.pvalue, copy.getApplicationManager());
-
-		this.qvalue = copy.getQvalue();
-		//create the slider for the qvalue
-		qvalueSlider = new SliderBarPanel((this.qvalue_min == 1 ? 0 : this.qvalue_min), this.qvalue, "Q-value Cutoff",
-				this, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2,
-				ParametersPanel.summaryPanelWidth, false, this.qvalue, copy.getApplicationManager());
-
-		this.similarityCutOff = copy.getSimilarityCutOff();
-		//create the slider for the similarity cutoff
-		similaritySlider = new SliderBarPanel(this.similarityCutOff, 1, "Similarity Cutoff", this,
-				EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT, EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT,
-				ParametersPanel.summaryPanelWidth, true, this.similarityCutOff, copy.getApplicationManager());
-
-		this.Data = copy.isData();
-		this.Data2 = copy.isData2();
-		this.twoDatasets = copy.isTwoDatasets();
-		this.method = copy.getMethod();
-		this.similarityMetric = copy.getSimilarityMetric();
-		this.FDR = copy.isFDR();
-
-		//field needed when calculating bulk enrichment maps.
-		this.GMTDirName = copy.getGMTDirName();
-		this.GCTDirName = copy.getGCTDirName();
-		this.GSEAResultsDirName = copy.getGSEAResultsDirName();
-		this.upperlimit = copy.getUpperlimit();
-		this.lowerlimit = copy.getLowerlimit();
-
-	}
 
 	/**
 	 * Method to copy the contents of one set of parameters into another
 	 * instance
 	 *
-	 * @param copy
-	 *            the parameters to copy from.
+	 * @param copy   the parameters to copy from.
 	 */
 	public void copy(EnrichmentMapParameters copy) {
 
@@ -1225,7 +1169,7 @@ public class EnrichmentMapParameters {
 	//Set up the attributePrefix
 	//The attribute prefix is based on the number of nextworks in cytoscape.
 	//TODO:make attribute prefix independent of cytoscape
-	public void setAttributePrefix() {
+	public void setAttributePrefix(EnrichmentMapManager emManager) {
 		Set<CyNetwork> networks = sessionManager.getCurrentSession().getNetworks();
 
 		if(networks == null || networks.isEmpty())
@@ -1234,7 +1178,6 @@ public class EnrichmentMapParameters {
 			// how many enrichment maps are there?
 			int num_networks = 1;
 			int max_prefix = 0;
-			EnrichmentMapManager manager = EnrichmentMapManager.getInstance();
 			// go through all the networks, check to see if they are enrichment
 			// maps
 			// if they are then calculate the max EM_# and use the max number +
@@ -1243,9 +1186,9 @@ public class EnrichmentMapParameters {
 			for(Iterator<CyNetwork> i = networks.iterator(); i.hasNext();) {
 				CyNetwork current_network = i.next();
 				Long networkId = current_network.getSUID();
-				if(manager.isEnrichmentMap(networkId)) {// fails
+				if(emManager.isEnrichmentMap(networkId)) {// fails
 					num_networks++;
-					EnrichmentMap tmpMap = manager.getMap(networkId);
+					EnrichmentMap tmpMap = emManager.getMap(networkId);
 					String tmpPrefix = tmpMap.getParams().getAttributePrefix();
 					tmpPrefix = tmpPrefix.replace("EM", "");
 					tmpPrefix = tmpPrefix.replace("_", "");

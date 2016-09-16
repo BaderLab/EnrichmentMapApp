@@ -45,6 +45,8 @@ package org.baderlab.csplugins.enrichmentmap.actions;
 
 import java.util.List;
 
+import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Edges;
+import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Nodes;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters;
 import org.baderlab.csplugins.enrichmentmap.heatmap.task.UpdateHeatMapTask;
@@ -66,35 +68,27 @@ import org.cytoscape.work.TaskIterator;
 import com.google.inject.Inject;
 
 /**
- * Created by User: risserlin Date: Feb 2, 2009 Time: 1:25:36 PM
- * <p>
  * Class listener for node and edge selections. For each enrichment map there is
  * a separate instance of this class specifying the enrichment map parameters,
  * selected nodes, selected edges and heatmap panels
  */
 public class EnrichmentMapActionListener implements RowsSetListener {
 	
+	@Inject private EnrichmentMapManager manager;
+	
 	@Inject private CyApplicationManager applicationManager;
 	@Inject private SynchronousTaskManager<?> syncTaskManager;
 	@Inject private CySwingApplication swingApplication;
 	
-	private HeatMapPanel edgeOverlapPanel;
-	private HeatMapPanel nodeOverlapPanel;
+	@Inject private @Edges HeatMapPanel edgeOverlapPanel;
+	@Inject private @Nodes HeatMapPanel nodeOverlapPanel;
 	
-
-
-	public EnrichmentMapActionListener init(HeatMapPanel heatMapPanel_node, HeatMapPanel heatMapPanel_edge) {
-		this.edgeOverlapPanel = heatMapPanel_edge;
-		this.nodeOverlapPanel = heatMapPanel_node;
-		return this;
-	}
 
 	/**
 	 * intialize the parameters needed for this instance of the action
 	 */
 	private EnrichmentMap getAndInitializeEnrichmentMap(CyNetwork network) {
 		// get the static enrichment map manager.
-		EnrichmentMapManager manager = EnrichmentMapManager.getInstance();
 		EnrichmentMap map = manager.getMap(network.getSUID());
 		if (map != null) {
 			if (map.getParams().isData() && map.getParams().getHmParams() == null) {
@@ -119,7 +113,7 @@ public class EnrichmentMapActionListener implements RowsSetListener {
 	public void handleEvent(RowsSetEvent e) {
 		// TODO: improve performance of calculating the Union of genesets (Nodes) and intersection of overlaps (Edges)
 		// Meanwhile we have a flag to skip the updating of the Heatmap, which can be toggled by a check-mark in the EM-Menu
-		boolean override_revalidate_heatmap = EnrichmentMapManager.getInstance().isOverrideHeatmapRevalidation();
+		boolean override_revalidate_heatmap = manager.isOverrideHeatmapRevalidation();
 
 		CyNetwork network = this.applicationManager.getCurrentNetwork();
 

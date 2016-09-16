@@ -53,6 +53,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
 
+import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.actions.SliderBarActionListener;
 import org.cytoscape.application.CyApplicationManager;
@@ -60,14 +61,13 @@ import org.cytoscape.application.CyApplicationManager;
 //import prefuse.data.query.NumberRangeModel;
 
 /**
- * Created by User: risserlin Date: Feb 24, 2009 Time: 10:58:55 AM
- * <p>
  * Slider bar panel - it a panel contained within legend panel
  */
+@SuppressWarnings("serial")
 public class SliderBarPanel extends JPanel {
 
-	//required services
 	private CyApplicationManager applicationManager;
+	private EnrichmentMapManager emManager;
 
 	//height of panel
 	private final int DIM_HEIGHT = 72;
@@ -92,6 +92,8 @@ public class SliderBarPanel extends JPanel {
 	private boolean edgesOnly;
 	private int initial_value;
 
+	
+	
 	/**
 	 * Class constructor
 	 *
@@ -105,11 +107,13 @@ public class SliderBarPanel extends JPanel {
 	 *            to (i.e. p-value or q-value)
 	 * @param desired_width
 	 */
-	public SliderBarPanel(double min, double max, String sliderLabel, EnrichmentMapParameters params, String attrib1,
-			String attrib2, int desired_width, boolean edgesOnly, double initial_value,
-			CyApplicationManager applicationManager) {
-		this.applicationManager = applicationManager;
+	public SliderBarPanel(double min, double max, String sliderLabel, EnrichmentMapParameters params, 
+			String attrib1, String attrib2, 
+			int desired_width, boolean edgesOnly, double initial_value,
+			CyApplicationManager applicationManager, EnrichmentMapManager emManager) {
 
+		this.applicationManager = applicationManager;
+		this.emManager = emManager;
 		this.setPreferredSize(new Dimension(DIM_WIDTH, DIM_HEIGHT));
 		this.setLayout(new BorderLayout(0, 0));
 		this.setOpaque(false);
@@ -166,7 +170,7 @@ public class SliderBarPanel extends JPanel {
 
 		JSlider slider = new JSlider(JSlider.HORIZONTAL, min, max, initial_value);
 
-		slider.addChangeListener(new SliderBarActionListener(this, attrib1, attrib2, edgesOnly, applicationManager));
+		slider.addChangeListener(new SliderBarActionListener(this, attrib1, attrib2, edgesOnly, applicationManager, emManager));
 
 		slider.setMajorTickSpacing((max - min) / 5);
 		slider.setPaintTicks(true);

@@ -10,9 +10,12 @@ import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.parsers.GMTFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.task.ComputeSimilarityTask;
 import org.cytoscape.work.TaskMonitor;
+import org.jukito.JukitoRunner;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
+@RunWith(JukitoRunner.class)
 public class GeneSetSimilarityTest {
 	
 	EnrichmentMap map;
@@ -21,7 +24,7 @@ public class GeneSetSimilarityTest {
 	private TaskMonitor taskMonitor = mock(TaskMonitor.class);
 	
 	@Before
-	public void before() throws Exception {
+	public void before(EnrichmentMapParameters.Factory empFactory) throws Exception {
 		//load Genesets from the gmt file associated with this test
 		String testDataFileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/model/Genesetstestfile.gmt";
         

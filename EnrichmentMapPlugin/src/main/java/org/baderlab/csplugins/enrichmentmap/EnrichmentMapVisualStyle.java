@@ -46,6 +46,9 @@ package org.baderlab.csplugins.enrichmentmap;
 import java.awt.Color;
 import java.awt.Paint;
 
+import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Continuous;
+import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Discrete;
+import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Passthrough;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
@@ -55,26 +58,25 @@ import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
 import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
 
+import com.google.inject.Inject;
+import com.google.inject.assistedinject.Assisted;
+
 /**
- * Created by User: risserlin Date: Jan 26, 2009 Time: 3:23:52 PM
- * <p>
  * Class defining all the attributes of the Enrichment map Visual style
  */
 public class EnrichmentMapVisualStyle {
 
 	private final EnrichmentMapParameters params;
 
-	//services required for setting up visualStyle
-	//we will need all three mappers
-	private final VisualMappingFunctionFactory vmfFactoryContinuous;
-	private final VisualMappingFunctionFactory vmfFactoryDiscrete;
-	private final VisualMappingFunctionFactory vmfFactoryPassthrough;
+	@Inject private @Continuous  VisualMappingFunctionFactory vmfFactoryContinuous;
+	@Inject private @Discrete    VisualMappingFunctionFactory vmfFactoryDiscrete;
+	@Inject private @Passthrough VisualMappingFunctionFactory vmfFactoryPassthrough;
 
+	
 	public static final int maxNodeLabelLength = 15;
 
 	//Attribute Names - prefix is appended to each one of these names in order to associated these
-	//attributes to a particular enrichment map.  This allows for multiple enrichment maps in an
-	//individual session.
+	//attributes to a particular enrichment map.  This allows for multiple enrichment maps in an individual session.
 	public static final String NAME = "Name";
 	public static final String GS_DESCR = "GS_DESCR";
 	public static final String FORMATTED_NAME = "Formatted_name";
@@ -137,21 +139,14 @@ public class EnrichmentMapVisualStyle {
 	public static final Color overColor = Color.WHITE;
 	public static final Color light_grey = new Color(190, 190, 190); // a lighter grey
 
-	/**
-	 * Constructor
-	 *
-	 * @param string
-	 *            - name of visual style
-	 * @param params
-	 *            - enrichment map parameters associated with this visual style.
-	 */
-	public EnrichmentMapVisualStyle(EnrichmentMapParameters params, VisualMappingFunctionFactory vmfFactoryContinuous,
-			VisualMappingFunctionFactory vmfFactoryDiscrete, VisualMappingFunctionFactory vmfFactoryPassthrough) {
+	
+	public interface Factory {
+		EnrichmentMapVisualStyle create(EnrichmentMapParameters params);
+	}
+	
+	@Inject
+	public EnrichmentMapVisualStyle(@Assisted EnrichmentMapParameters params) {
 		this.params = params;
-
-		this.vmfFactoryContinuous = vmfFactoryContinuous;
-		this.vmfFactoryDiscrete = vmfFactoryDiscrete;
-		this.vmfFactoryPassthrough = vmfFactoryPassthrough;
 	}
 
 	/**

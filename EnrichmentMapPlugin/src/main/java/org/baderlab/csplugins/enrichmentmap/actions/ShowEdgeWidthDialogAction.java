@@ -9,20 +9,17 @@ import org.baderlab.csplugins.enrichmentmap.view.EdgeWidthDialog;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
-import org.cytoscape.work.swing.DialogTaskManager;
 
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
+import com.google.inject.Provider;
 
 
 @SuppressWarnings("serial")
 public class ShowEdgeWidthDialogAction extends AbstractCyAction {
 	
+	@Inject private Provider<EdgeWidthDialog> dialogProvider;
 	@Inject private CySwingApplication application;
 	@Inject private CyApplicationManager applicationManager;
-	@Inject private @Named("continuous") VisualMappingFunctionFactory vmfFactoryContinuous;
-	@Inject private DialogTaskManager taskManager;
 
 	public ShowEdgeWidthDialogAction() {
 		super("Post Analysis Edge Width...");
@@ -30,7 +27,7 @@ public class ShowEdgeWidthDialogAction extends AbstractCyAction {
 	
 	public void actionPerformed(ActionEvent e) {
 		if(WidthFunction.appliesTo(applicationManager.getCurrentNetwork())) {
-			EdgeWidthDialog dialog = new EdgeWidthDialog(application, applicationManager, vmfFactoryContinuous, taskManager);
+			EdgeWidthDialog dialog = dialogProvider.get();
 			dialog.pack();
 			dialog.setLocationRelativeTo(application.getJFrame());
 			dialog.setVisible(true);

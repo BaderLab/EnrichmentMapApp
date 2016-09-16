@@ -68,6 +68,8 @@ public class SliderBarActionListener implements ChangeListener {
 
 	//required services
 	private CyApplicationManager applicationManager;
+	private EnrichmentMapManager emManager;
+	
 
 	private SliderBarPanel panel;
 
@@ -81,6 +83,8 @@ public class SliderBarActionListener implements ChangeListener {
 
 	private boolean onlyEdges = false;
 
+	
+	
 	/**
 	 * Class constructor
 	 *
@@ -90,10 +94,10 @@ public class SliderBarActionListener implements ChangeListener {
 	 * @param attrib2 attribute for dataset 2 that the slider bar is specific to (i.e. p-value or q-value)
 	 */
 	public SliderBarActionListener(SliderBarPanel panel, String attrib1, String attrib2, boolean onlyEdges,
-			CyApplicationManager applicationManager) {
-		this.applicationManager = applicationManager;
-
+			 CyApplicationManager applicationManager, EnrichmentMapManager emManager) {
 		this.panel = panel;
+		this.applicationManager = applicationManager;
+		this.emManager = emManager;
 		hiddenNodes = new ArrayList<>();
 		hiddenEdges = new ArrayList<>();
 
@@ -101,7 +105,7 @@ public class SliderBarActionListener implements ChangeListener {
 		attrib_dataset2 = attrib2;
 
 		this.onlyEdges = onlyEdges;
-
+		
 	}
 
 	/**
@@ -130,7 +134,7 @@ public class SliderBarActionListener implements ChangeListener {
 
 		List<CyNode> nodes = network.getNodeList();
 
-		EnrichmentMapParameters params = EnrichmentMapManager.getInstance().getMap(network.getSUID()).getParams();
+		EnrichmentMapParameters params = emManager.getMap(network.getSUID()).getParams();
 		//get the prefix of the current network
 		String prefix = params.getAttributePrefix();
 
@@ -318,7 +322,7 @@ public class SliderBarActionListener implements ChangeListener {
 		List<CyEdge> edges = network.getEdgeList();
 
 		//get the prefix of the current network
-		String prefix = EnrichmentMapManager.getInstance().getMap(network.getSUID()).getParams().getAttributePrefix();
+		String prefix = emManager.getMap(network.getSUID()).getParams().getAttributePrefix();
 		//go through all the existing nodes to see if we need to hide any new nodes.
 
 		for(CyEdge i : edges) {

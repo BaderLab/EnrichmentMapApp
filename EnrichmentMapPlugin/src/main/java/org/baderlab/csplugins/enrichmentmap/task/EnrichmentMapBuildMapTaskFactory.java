@@ -16,89 +16,31 @@ import org.baderlab.csplugins.enrichmentmap.parsers.ExpressionFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.parsers.GMTFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.parsers.RanksFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.view.ParametersPanel;
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.model.CyNetworkFactory;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyTableFactory;
-import org.cytoscape.model.CyTableManager;
-import org.cytoscape.task.edit.MapTableToNetworkTablesTaskFactory;
-import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
-import org.cytoscape.view.model.CyNetworkViewFactory;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 
 import com.google.common.base.Strings;
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
+import com.google.inject.assistedinject.Assisted;
 
 public class EnrichmentMapBuildMapTaskFactory implements TaskFactory {
 
-	private CyApplicationManager applicationManager;
-	private CySwingApplication swingApplication;
-	private CyNetworkManager networkManager;
-	private CyNetworkViewManager networkViewManager;
-	private CyNetworkViewFactory networkViewFactory;
-	private CyNetworkFactory networkFactory;
-	private CyTableFactory tableFactory;
-	private CyTableManager tableManager;
-	private VisualMappingManager visualMappingManager;
-	private VisualStyleFactory visualStyleFactory;
-	private CyLayoutAlgorithmManager layoutManager;
-	private MapTableToNetworkTablesTaskFactory mapTableToNetworkTable;
-	private @Named("continuous")  VisualMappingFunctionFactory vmfFactoryContinuous;
-	private @Named("discrete")    VisualMappingFunctionFactory vmfFactoryDiscrete;
-	private @Named("passthrough") VisualMappingFunctionFactory vmfFactoryPassthrough;
+	@Inject private VisualizeEnrichmentMapTask.Factory visualizeEnrichmentMapTaskFactory;
+	@Inject private CreateEnrichmentMapNetworkTask.Factory createEnrichmentMapNetworkTaskFactory;
+	@Inject private EnrichmentMapManager emManager;
+	@Inject private @Nullable CySwingApplication swingApplication;
+	
 
 	private EnrichmentMap map;
 	
-	/**
-	 * Using constructor injection here just so I don't have to make big changes
-	 * to BaseNetworkTest at the moment.
-	 */
-	@Inject
-	public EnrichmentMapBuildMapTaskFactory(
-			CyApplicationManager applicationManager,
-			@Nullable CySwingApplication swingApplication, 
-			CyNetworkManager networkManager,
-			CyNetworkViewManager networkViewManager, 
-			CyNetworkViewFactory networkViewFactory,
-			CyNetworkFactory networkFactory, 
-			CyTableFactory tableFactory, 
-			CyTableManager tableManager,
-			VisualMappingManager visualMappingManager, 
-			VisualStyleFactory visualStyleFactory,
-			@Named("continuous") VisualMappingFunctionFactory vmfFactoryContinuous, 
-			@Named("discrete") VisualMappingFunctionFactory vmfFactoryDiscrete,
-			@Named("passthrough") VisualMappingFunctionFactory vmfFactoryPassthrough,
-			CyLayoutAlgorithmManager layoutManager, 
-			MapTableToNetworkTablesTaskFactory mapTableToNetworkTable) {
-
-		this.applicationManager = applicationManager;
-		this.swingApplication = swingApplication;
-		this.networkManager = networkManager;
-		this.networkViewManager = networkViewManager;
-		this.networkViewFactory = networkViewFactory;
-		this.networkFactory = networkFactory;
-		this.tableFactory = tableFactory;
-		this.tableManager = tableManager;
-		this.visualMappingManager = visualMappingManager;
-		this.visualStyleFactory = visualStyleFactory;
-		this.vmfFactoryContinuous = vmfFactoryContinuous;
-		this.vmfFactoryDiscrete = vmfFactoryDiscrete;
-		this.vmfFactoryPassthrough = vmfFactoryPassthrough;
-		this.layoutManager = layoutManager;
-		this.mapTableToNetworkTable = mapTableToNetworkTable;
+	public interface Factory {
+		EnrichmentMapBuildMapTaskFactory create(EnrichmentMap map);
 	}
 	
-	
-	public EnrichmentMapBuildMapTaskFactory init(EnrichmentMap map) {
+	@Inject
+	public EnrichmentMapBuildMapTaskFactory(@Assisted EnrichmentMap map) {
 		this.map = map;
-		return this;
 	}
 
 	
@@ -174,20 +116,17 @@ public class EnrichmentMapBuildMapTaskFactory implements TaskFactory {
 		currentTasks.append(similarities);
 
 		//build the resulting map
-		CreateEnrichmentMapNetworkTask create_map = new CreateEnrichmentMapNetworkTask(map, networkFactory,
-				applicationManager, networkManager, tableFactory, tableManager, mapTableToNetworkTable);
+		CreateEnrichmentMapNetworkTask create_map = createEnrichmentMapNetworkTaskFactory.create(map);
 		currentTasks.append(create_map);
 
 		// don't visualize the map if running headless
 		if(swingApplication != null) {
-			ParametersPanel paramsPanel = EnrichmentMapManager.getInstance().getParameterPanel();
+			ParametersPanel paramsPanel = emManager.getParameterPanel();
 			ShowPanelTask show_parameters_panel = new ShowPanelTask(swingApplication, paramsPanel);
 			currentTasks.append(show_parameters_panel);
 			
 			//visualize Network
-			VisualizeEnrichmentMapTask map_viz = new VisualizeEnrichmentMapTask(map, networkFactory, networkManager,
-					networkViewManager, networkViewFactory, visualMappingManager, visualStyleFactory, vmfFactoryContinuous,
-					vmfFactoryDiscrete, vmfFactoryPassthrough, layoutManager);
+			VisualizeEnrichmentMapTask map_viz = visualizeEnrichmentMapTaskFactory.create(map);
 			currentTasks.append(map_viz);
 		}
 

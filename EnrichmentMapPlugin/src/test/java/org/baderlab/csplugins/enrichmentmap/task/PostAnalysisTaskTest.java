@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
+import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Continuous;
 import org.baderlab.csplugins.enrichmentmap.EdgeSimilarities;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
@@ -19,34 +20,50 @@ import org.baderlab.csplugins.enrichmentmap.FilterParameters;
 import org.baderlab.csplugins.enrichmentmap.FilterType;
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters.AnalysisType;
+import org.baderlab.csplugins.enrichmentmap.StreamUtil;
 import org.baderlab.csplugins.enrichmentmap.TestUtils;
 import org.baderlab.csplugins.enrichmentmap.WidthFunction;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
+import org.cytoscape.session.CySessionManager;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
+import org.jukito.JukitoRunner;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.mockito.Matchers;
 
+import com.google.inject.Provider;
 
+
+@RunWith(JukitoRunner.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class PostAnalysisTaskTest extends BaseNetworkTest {
 	
 	private static final String PATH = "src/test/resources/org/baderlab/csplugins/enrichmentmap/task/EMandPA/";
 	
+	public static class TestModule extends BaseNetworkTest.TestModule {
+		@Override
+		protected void configureTest() {
+			super.configureTest();
+		}
+	}
+	
 	private static CyNetwork emNetwork;
 	
 	
 	@Test
-	public void test_1_EnrichmentMapBuildMapTask() {
-		EnrichmentMapParameters emParams = new EnrichmentMapParameters(sessionManager, streamUtil, applicationManager);
+	public void test_1_EnrichmentMapBuildMapTask(CySessionManager sessionManager, CyApplicationManager applicationManager, CyNetworkManager networkManager) {
+		EnrichmentMapParameters emParams = new EnrichmentMapParameters(sessionManager, new StreamUtil(), applicationManager);
 		emParams.setMethod(EnrichmentMapParameters.method_generic);
 		DataSetFiles dataset1files = new DataSetFiles();
 		dataset1files.setGMTFileName(PATH + "gene_sets.gmt");  
@@ -178,7 +195,7 @@ public class PostAnalysisTaskTest extends BaseNetworkTest {
 
 	
 	@Test
-	public void test_4_WidthFunction() {
+	public void test_4_WidthFunction(@Continuous VisualMappingFunctionFactory vmfFactoryContinuous, EnrichmentMapManager emManager, Provider<WidthFunction> widthFunctionProvider) {
 		CyNetworkManager networkManager = mock(CyNetworkManager.class);
 		when(networkManager.getNetworkSet()).thenReturn(Collections.singleton(emNetwork));
 		
@@ -191,10 +208,10 @@ public class PostAnalysisTaskTest extends BaseNetworkTest {
 		CyEdge sigEdge1 = edges.getEdge("PA_TOP8_MIDDLE8_BOTTOM8 (sig) TOP8_PLUS100");
 		CyEdge sigEdge2 = edges.getEdge("PA_TOP8_MIDDLE8_BOTTOM8 (sig) TOP1_PLUS100");
 		
-		EnrichmentMap map = EnrichmentMapManager.getInstance().getMap(emNetwork.getSUID());
+		EnrichmentMap map = emManager.getMap(emNetwork.getSUID());
 		assertNotNull(map);
 		
-		WidthFunction widthFunction = new WidthFunction(vmfFactoryContinuous);
+		WidthFunction widthFunction = widthFunctionProvider.get();
 		widthFunction.setEdgeWidths(emNetwork, "EM1_", null);
 		
 		String widthCol = "EM1_" + WidthFunction.EDGE_WIDTH_FORMULA_COLUMN;

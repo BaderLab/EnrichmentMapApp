@@ -46,6 +46,10 @@ package org.baderlab.csplugins.enrichmentmap;
 import java.util.HashMap;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
+import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Edges;
+import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Nodes;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.view.EnrichmentMapInputPanel;
 import org.baderlab.csplugins.enrichmentmap.view.HeatMapPanel;
@@ -62,131 +66,67 @@ import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 /**
- * Created by User: risserlin Date: Mar 3, 2009 Time: 1:48:31 PM
- * <p>
  * Main class managing all instances of enrichment map as well as singular
  * instances of heatmap panel, parameters panel and input panel. (implemented as
  * singular class)
  */
-public class EnrichmentMapManager
-		implements SetCurrentNetworkListener, NetworkAboutToBeDestroyedListener, SetCurrentNetworkViewListener {
+@Singleton
+public class EnrichmentMapManager implements SetCurrentNetworkListener, NetworkAboutToBeDestroyedListener, SetCurrentNetworkViewListener {
+		
+	@Inject private CyServiceRegistrar registrar;
+	@Inject private ParametersPanel parameterPanel;
+	@Inject private @Nodes @Nullable HeatMapPanel nodesOverlapPanel;
+	@Inject private @Edges @Nullable HeatMapPanel edgesOverlapPanel;
 
-	private static EnrichmentMapManager manager = null;
-
-	private HashMap<Long, EnrichmentMap> cyNetworkList;
-
-	// create only one instance of the parameter and expression panels.
-	private ParametersPanel parameterPanel;
-	private HeatMapPanel nodesOverlapPanel;
-	private HeatMapPanel edgesOverlapPanel;
-
+	private HashMap<Long, EnrichmentMap> cyNetworkList = new HashMap<>();
 	private EnrichmentMapInputPanel inputWindow;
 	private PostAnalysisPanel analysisWindow;
-	private CyServiceRegistrar registrar;
 
 	private boolean overrideHeatmapRevalidation = false;
-
-	/**
-	 * Method to get instance of EnrichmentMapManager.
-	 *
-	 * @return EnrichmentMapManager
-	 */
-	public static EnrichmentMapManager getInstance() {
-		if(manager == null)
-			manager = new EnrichmentMapManager();
-		return manager;
-	}
-
-	/**
-	 * initialize important variable
-	 */
-	public void initialize(ParametersPanel parameterPanel, HeatMapPanel nodesOverlapPanel, HeatMapPanel edgesOverlapPanel, CyServiceRegistrar registrar) {
-		this.registrar = registrar;
-
-		// initialize the parameters panel
-		this.parameterPanel = parameterPanel;
-		// registrar.registerService(this.parameterPanel,CytoPanelComponent.class,new
-		// Properties());
-
-		this.nodesOverlapPanel = nodesOverlapPanel;
-		this.edgesOverlapPanel = edgesOverlapPanel;
-		// registrar.registerService(this.nodesOverlapPanel,CytoPanelComponent.class,new
-		// Properties());
-		// registrar.registerService(this.edgesOverlapPanel,CytoPanelComponent.class,new
-		// Properties());
-
-	}
+	
 
 	public void registerServices() {
-		if(this.nodesOverlapPanel != null)
-			registrar.registerService(this.nodesOverlapPanel, CytoPanelComponent.class, new Properties());
-		if(this.edgesOverlapPanel != null)
-			registrar.registerService(this.edgesOverlapPanel, CytoPanelComponent.class, new Properties());
-		if(this.parameterPanel != null)
-			registrar.registerService(this.parameterPanel, CytoPanelComponent.class, new Properties());
-
-	}
-
-	/**
-	 * Constructor (private).
-	 *
-	 */
-	private EnrichmentMapManager() {
-		this.cyNetworkList = new HashMap<Long, EnrichmentMap>();
-
+		if(nodesOverlapPanel != null)
+			registrar.registerService(nodesOverlapPanel, CytoPanelComponent.class, new Properties());
+		if(edgesOverlapPanel != null)
+			registrar.registerService(edgesOverlapPanel, CytoPanelComponent.class, new Properties());
+		if(parameterPanel != null)
+			registrar.registerService(parameterPanel,    CytoPanelComponent.class, new Properties());
 	}
 
 	/**
 	 * Registers a newly created Network.
-	 *
-	 * @param cyNetwork
-	 *            Object.
 	 */
 	public void registerNetwork(CyNetwork cyNetwork, EnrichmentMap map) {
 		if(!cyNetworkList.containsKey(cyNetwork.getSUID()))
 			cyNetworkList.put(cyNetwork.getSUID(), map);
 	}
 
-	/**
-	 * @return reference to the EM Legend Panel (EAST)
-	 */
 	public ParametersPanel getParameterPanel() {
 		return parameterPanel;
 	}
 
-	/**
-	 * @return reference to the EM Geneset Expression Viewer Panel (SOUTH)
-	 */
 	public HeatMapPanel getNodesOverlapPanel() {
 		return nodesOverlapPanel;
 	}
 
-	/**
-	 * @return reference to the EM Overlap Expression Viewer Panel (SOUTH)
-	 */
 	public HeatMapPanel getEdgesOverlapPanel() {
 		return edgesOverlapPanel;
 	}
 
-	/**
-	 * @return hashmap with instances of EnrichmentMap referenced by network
-	 *         Identifiers. (eg.: CyNetwork.getIdentifier() or
-	 *         CyNetworkView.getIdentifier() )
-	 */
 	public HashMap<Long, EnrichmentMap> getCyNetworkList() {
 		return cyNetworkList;
 	}
 
 	/**
 	 * Returns the instance of EnrichmentMapParameters for the CyNetwork with
-	 * the Identifier "name",<br>
-	 * or null if the CyNetwork is not an EnrichmentMap.
+	 * the Identifier "name",<br> or null if the CyNetwork is not an EnrichmentMap.
 	 * 
-	 * @param name
-	 *            the Identifier of a network <br>
-	 *            (eg.: CyNetwork.getIdentifier() or
-	 *            CyNetworkView.getIdentifier() )
+	 * @param name the Identifier of a network <br> (eg.: CyNetwork.getIdentifier() or CyNetworkView.getIdentifier() )
 	 * @return EnrichmentMap
 	 */
 	public EnrichmentMap getMap(Long id) {
@@ -204,8 +144,7 @@ public class EnrichmentMapManager
 	}
 
 	/**
-	 * @param reference
-	 *            to the Enrichment Map Input Panel (WEST)
+	 * @param reference to the Enrichment Map Input Panel (WEST)
 	 */
 	public void setInputWindow(EnrichmentMapInputPanel inputWindow) {
 		this.inputWindow = inputWindow;
@@ -219,8 +158,7 @@ public class EnrichmentMapManager
 	}
 
 	/**
-	 * @param reference
-	 *            to the Post Analysis Input Panel (WEST)
+	 * @param reference to the Post Analysis Input Panel (WEST)
 	 */
 	public void setAnalysisWindow(PostAnalysisPanel analysisWindow) {
 		this.analysisWindow = analysisWindow;
@@ -228,11 +166,7 @@ public class EnrichmentMapManager
 
 	/**
 	 * Returns true if the network with the identifier networkID an
-	 * EnrichmentMap.<br>
-	 * (and therefore an instance EnrichmentMapParameters is present)
-	 * 
-	 * @param networkID
-	 * @return true or false
+	 * EnrichmentMap.<br> (and therefore an instance EnrichmentMapParameters is present)
 	 */
 	public boolean isEnrichmentMap(Long networkID) {
 		return cyNetworkList.containsKey(networkID);
@@ -240,9 +174,6 @@ public class EnrichmentMapManager
 
 	/**
 	 * Network Focus Event.
-	 *
-	 * @param event
-	 *            PropertyChangeEvent
 	 */
 	public void handleEvent(SetCurrentNetworkEvent event) {
 		// get network id
@@ -293,11 +224,9 @@ public class EnrichmentMapManager
 		}
 	}
 
+	
 	/**
 	 * Network about to be destroyed Event.
-	 *
-	 * @param event
-	 *            PropertyChangeEvent
 	 */
 	public void handleEvent(NetworkAboutToBeDestroyedEvent event) {
 		Long networkId = event.getNetwork().getSUID();

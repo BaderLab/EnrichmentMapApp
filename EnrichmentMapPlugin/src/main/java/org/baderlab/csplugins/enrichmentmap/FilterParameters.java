@@ -18,13 +18,6 @@ public class FilterParameters {
 		this(type, type.defaultValue);
 	}
 	
-	
-
-	public static FilterParameters noFilter() {
-		FilterType filterType = FilterType.NO_FILTER;
-		return new FilterParameters(filterType, filterType.defaultValue);
-	}
-	
 	public FilterType getType() {
 		return type;
 	}
@@ -32,5 +25,4 @@ public class FilterParameters {
 	public double getValue() {
 		return value;
 	}
-	
 }

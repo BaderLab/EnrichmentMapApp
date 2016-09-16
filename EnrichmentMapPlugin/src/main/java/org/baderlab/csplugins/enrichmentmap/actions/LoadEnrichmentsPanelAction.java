@@ -64,9 +64,11 @@ public class LoadEnrichmentsPanelAction extends AbstractCyAction {
 
 	@Inject private CySwingApplication application;
 	@Inject private CyServiceRegistrar registrar;
+	@Inject private EnrichmentMapManager emManager;
 	
 	private EnrichmentMapInputPanel inputPanel;
 
+	
 	public LoadEnrichmentsPanelAction() {
 		super("Create Enrichment Map");
 	}
@@ -86,7 +88,7 @@ public class LoadEnrichmentsPanelAction extends AbstractCyAction {
 
 			//set the input window in the instance so we can udate the instance window
 			//on network focus
-			EnrichmentMapManager.getInstance().setInputWindow(inputPanel);
+			emManager.setInputWindow(inputPanel);
 		}
 
 		// If the state of the cytoPanelWest is HIDE, show it

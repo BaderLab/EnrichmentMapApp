@@ -14,8 +14,6 @@ import org.baderlab.csplugins.enrichmentmap.commands.BuildEnrichmentMapTuneableT
 import org.baderlab.csplugins.enrichmentmap.commands.EnrichmentMapGSEACommandHandlerTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.task.EdgeWidthTableColumnTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.view.EnrichmentMapInputPanel;
-import org.baderlab.csplugins.enrichmentmap.view.HeatMapPanel;
-import org.baderlab.csplugins.enrichmentmap.view.ParametersPanel;
 import org.baderlab.csplugins.enrichmentmap.view.PostAnalysisPanel;
 import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
@@ -25,7 +23,6 @@ import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
 import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.service.util.AbstractCyActivator;
-import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.events.SessionAboutToBeSavedListener;
 import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.task.TableColumnTaskFactory;
@@ -48,28 +45,18 @@ public class CyActivator extends AbstractCyActivator {
 			return; // Cytoscape is running headless or integration tests are running, don't register UI components
 		}
 		
-		Injector injector = Guice.createInjector(new OSGiModule(bc), new AfterInjectionModule(), new CytoscapeServiceModule());
+		Injector injector = Guice.createInjector(new OSGiModule(bc), new AfterInjectionModule(), new CytoscapeServiceModule(), new ApplicationModule());
 		
-		
-		CyServiceRegistrar registrar = getService(bc, CyServiceRegistrar.class);
-
-		EnrichmentMapInputPanel emPanel = injector.getInstance(EnrichmentMapInputPanel.class);		
-		PostAnalysisPanel postEMPanel   = injector.getInstance(PostAnalysisPanel.class);
-		HeatMapPanel heatMapPanel_node  = injector.getInstance(HeatMapPanel.class).setNode(true);
-		HeatMapPanel heatMapPanel_edge  = injector.getInstance(HeatMapPanel.class).setNode(false);
-		ParametersPanel paramsPanel     = injector.getInstance(ParametersPanel.class);
-
-		// MKTODO: convert EnrichmentMapManager into a guice eager singleton
-		EnrichmentMapManager manager = EnrichmentMapManager.getInstance();
-		manager.initialize(paramsPanel, heatMapPanel_node, heatMapPanel_edge, registrar);
-		
-		//register network events with manager class
+		EnrichmentMapManager manager = injector.getInstance(EnrichmentMapManager.class);
 		registerService(bc, manager, NetworkAboutToBeDestroyedListener.class, new Properties());
 		registerService(bc, manager, SetCurrentNetworkListener.class, new Properties());
 		registerService(bc, manager, SetCurrentNetworkViewListener.class, new Properties());
 
+		EnrichmentMapInputPanel emPanel = injector.getInstance(EnrichmentMapInputPanel.class);		
+		PostAnalysisPanel postEMPanel   = injector.getInstance(PostAnalysisPanel.class);
+		
 		//associate them with the action listener
-		EnrichmentMapActionListener EMActionListener = injector.getInstance(EnrichmentMapActionListener.class).init(heatMapPanel_node, heatMapPanel_edge);
+		EnrichmentMapActionListener EMActionListener = injector.getInstance(EnrichmentMapActionListener.class);
 		registerService(bc, EMActionListener, RowsSetListener.class, new Properties());		
 
 		AbstractCyAction aboutAction        = injector.getInstance(ShowAboutPanelAction.class);
@@ -111,9 +98,9 @@ public class CyActivator extends AbstractCyActivator {
 
 	}
 	
-	private void registerAction(BundleContext context, AbstractCyAction action) {
+	private void registerAction(BundleContext bc, AbstractCyAction action) {
 		action.setPreferredMenu("Apps.EnrichmentMap");
-		registerService(context, action, CyAction.class, new Properties());
+		registerService(bc, action, CyAction.class, new Properties());
 	}
 	
 }

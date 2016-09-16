@@ -33,7 +33,6 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.session.CySessionManager;
 import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
 import org.cytoscape.session.events.SessionAboutToBeSavedListener;
 import org.cytoscape.session.events.SessionLoadedEvent;
@@ -44,9 +43,10 @@ import com.google.inject.Inject;
 public class EnrichmentMapSessionAction implements SessionAboutToBeSavedListener, SessionLoadedListener {
 
 	@Inject private CyNetworkManager cyNetworkManager;
-	@Inject private CySessionManager cySessionManager;
 	@Inject private CyApplicationManager cyApplicationManager;
 	@Inject private StreamUtil streamUtil;
+	@Inject private EnrichmentMapManager emManager;
+	@Inject private EnrichmentMapParameters.Factory enrichmentMapParametersFactory;
 
 	private static final String appName = "EnrichmentMap";
 
@@ -75,7 +75,7 @@ public class EnrichmentMapSessionAction implements SessionAboutToBeSavedListener
 					String fullText = new Scanner(reader,"UTF-8").useDelimiter("\\A").next();                        
 
 					//Given the file with all the parameters create a new parameter
-					EnrichmentMapParameters params = new EnrichmentMapParameters(fullText, cySessionManager, streamUtil, cyApplicationManager);
+					EnrichmentMapParameters params = enrichmentMapParametersFactory.create(fullText);
 					EnrichmentMap em = new EnrichmentMap(params);
 
 					//get the network name
@@ -103,7 +103,7 @@ public class EnrichmentMapSessionAction implements SessionAboutToBeSavedListener
 					}
 
 					//register network and parameters
-					EnrichmentMapManager.getInstance().registerNetwork(getNetworkByName(name),em);
+					emManager.registerNetwork(getNetworkByName(name),em);
 				}
 			}
 			//go through the rest of the files
@@ -116,7 +116,7 @@ public class EnrichmentMapSessionAction implements SessionAboutToBeSavedListener
 					continue;
 
 				CyNetwork net = getNetworkByName(parts.name);
-				EnrichmentMap em  = (net != null) ? EnrichmentMapManager.getInstance().getMap(net.getSUID()) : null;
+				EnrichmentMap em  = (net != null) ? emManager.getMap(net.getSUID()) : null;
 
 				if(em == null)
 					System.out.println("network for file" + prop_file.getName() + " does not exist.");
@@ -295,7 +295,7 @@ public class EnrichmentMapSessionAction implements SessionAboutToBeSavedListener
 				if((parts_exp == null) || (parts_exp.name == null) )continue;
 
 				CyNetwork net = getNetworkByName(parts_exp.name);
-				EnrichmentMap map  = (net != null) ? EnrichmentMapManager.getInstance().getMap(net.getSUID()) : null;
+				EnrichmentMap map  = (net != null) ? emManager.getMap(net.getSUID()) : null;
 				Map<String,String> props = map.getParams().getProps();
 
 				if(parts_exp.type != null && parts_exp.type.equalsIgnoreCase("expression")){
@@ -342,15 +342,14 @@ public class EnrichmentMapSessionAction implements SessionAboutToBeSavedListener
 			 */
 
 			//register the action listeners for all the networks.
-			EnrichmentMapManager manager = EnrichmentMapManager.getInstance();
-			manager.registerServices();
-			HashMap<Long, EnrichmentMap> networks = manager.getCyNetworkList();
+			emManager.registerServices();
+			HashMap<Long, EnrichmentMap> networks = emManager.getCyNetworkList();
 
 			//iterate over the networks
 			for(Iterator<Long> j = networks.keySet().iterator();j.hasNext();){
 				Long id = j.next();
 				CyNetwork currentNetwork = cyNetworkManager.getNetwork(id);
-				EnrichmentMap map = manager.getMap(id);
+				EnrichmentMap map = emManager.getMap(id);
 				//only initialize objects if there is a map for this network
 				if(map != null){
 					//initialize the Genesets (makes sure the leading edge is set correctly)
@@ -373,7 +372,7 @@ public class EnrichmentMapSessionAction implements SessionAboutToBeSavedListener
 					//set the last network to be the one viewed and initialize the parameters panel
 					if(!j.hasNext()){
 						cyApplicationManager.setCurrentNetwork(currentNetwork);
-						ParametersPanel paramPanel = manager.getParameterPanel();
+						ParametersPanel paramPanel = emManager.getParameterPanel();
 						paramPanel.updatePanel(map);
 						paramPanel.revalidate();
 					}
@@ -401,7 +400,7 @@ public class EnrichmentMapSessionAction implements SessionAboutToBeSavedListener
 		String prop_file_content = "";
 
 		//get the networks
-		HashMap<Long, EnrichmentMap> networks = EnrichmentMapManager.getInstance().getCyNetworkList();
+		HashMap<Long, EnrichmentMap> networks = emManager.getCyNetworkList();
 
 		//go through each network
 		for(Iterator<Long> i = networks.keySet().iterator(); i.hasNext();){

@@ -67,15 +67,12 @@ import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.util.NetworkUtil;
 import org.baderlab.csplugins.mannwhit.MannWhitneyUTestSided;
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.session.CySessionManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
@@ -85,13 +82,17 @@ import org.cytoscape.work.TaskMonitor;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+import com.google.inject.Inject;
+import com.google.inject.assistedinject.Assisted;
 
 /**
  * Cytoscape-Task to perform Disease-Signature Post-Analysis
  */
 public class BuildDiseaseSignatureTask extends AbstractTask implements ObservableTask {
-	private final CyApplicationManager applicationManager;
-	private final CyEventHelper eventHelper;
+	
+	@Inject private CyApplicationManager applicationManager;
+	@Inject private CyEventHelper eventHelper;
+	@Inject private EnrichmentMapManager emManager;
 
 	private PostAnalysisParameters paParams;
 	private final EnrichmentMap map;
@@ -113,12 +114,14 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 
 	private BuildDiseaseSignatureTaskResult.Builder taskResult = new BuildDiseaseSignatureTaskResult.Builder();
 
-	public BuildDiseaseSignatureTask(EnrichmentMap map, PostAnalysisParameters paParams, CySessionManager manager,
-			StreamUtil streamUtil, CyApplicationManager applicationManager, CyEventHelper eventHelper,
-			CySwingApplication swingApplication) {
+	
+	public interface Factory {
+		BuildDiseaseSignatureTask create(EnrichmentMap map, PostAnalysisParameters paParams);
+	}
+	
+	@Inject
+	public BuildDiseaseSignatureTask(@Assisted EnrichmentMap map, @Assisted PostAnalysisParameters paParams) {
 		this.map = map;
-		this.applicationManager = applicationManager;
-		this.eventHelper = eventHelper;
 		this.paParams = paParams; 
 		
 		DataSet dataset = map.getDataset(paParams.getSignatureDataSet());
@@ -226,7 +229,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 				// the genes that are in this signature gene set as well as in the Universe of Enrichment-GMT Genes.    
 				Set<Integer> sigGenesInUniverse = Sets.intersection(sigGenes, geneUniverse);
 
-				EnrichmentMapManager.getInstance().getMap(current_network.getSUID()).getSignatureGenesets().put(hub_name, sigGeneSet);
+				emManager.getMap(current_network.getSUID()).getSignatureGenesets().put(hub_name, sigGeneSet);
 
 				// iterate over Enrichment Genesets
 				for(String geneset_name : EnrichmentGenesets.keySet()) {

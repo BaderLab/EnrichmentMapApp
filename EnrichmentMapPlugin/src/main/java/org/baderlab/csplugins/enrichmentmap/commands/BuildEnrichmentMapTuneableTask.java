@@ -45,14 +45,14 @@ package org.baderlab.csplugins.enrichmentmap.commands;
 
 import java.io.File;
 
+import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Continuous;
+import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Discrete;
+import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Passthrough;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.task.EnrichmentMapBuildMapTaskFactory;
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.io.util.StreamUtil;
-import org.cytoscape.session.CySessionManager;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
@@ -60,8 +60,6 @@ import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
 
 import com.google.inject.Inject;
-import com.google.inject.Provider;
-import com.google.inject.name.Named;
 
 /**
  * This class builds an Enrichment map from GSEA (Gene set Enrichment analysis)
@@ -154,15 +152,14 @@ public class BuildEnrichmentMapTuneableTask extends AbstractTask {
 	public ListSingleSelection<String> coeffecients;
 
 
-	@Inject private Provider<EnrichmentMapBuildMapTaskFactory> taskFactoryProvider;
+	@Inject private EnrichmentMapManager emManager;
+	@Inject private EnrichmentMapParameters.Factory enrichmentMapParametersFactory;
+	@Inject private EnrichmentMapBuildMapTaskFactory.Factory taskFactoryProvider;
 	
-	@Inject private CySessionManager sessionManager;
-	@Inject private StreamUtil streamUtil;
-	@Inject private CyApplicationManager applicationManager;
-	@Inject private @Named("continuous")  VisualMappingFunctionFactory vmfFactoryContinuous;
-	@Inject private @Named("discrete")    VisualMappingFunctionFactory vmfFactoryDiscrete;
-	@Inject private @Named("passthrough") VisualMappingFunctionFactory vmfFactoryPassthrough;
-
+	@Inject private @Continuous  VisualMappingFunctionFactory vmfFactoryContinuous;
+	@Inject private @Discrete    VisualMappingFunctionFactory vmfFactoryDiscrete;
+	@Inject private @Passthrough VisualMappingFunctionFactory vmfFactoryPassthrough;
+	
 	
 	public BuildEnrichmentMapTuneableTask() {
 		analysisType = new ListSingleSelection<String>(EnrichmentMapParameters.method_GSEA,
@@ -178,7 +175,7 @@ public class BuildEnrichmentMapTuneableTask extends AbstractTask {
 	 */
 	public void buildEnrichmentMap() {
 		//create a new params for the new EM and add the dataset files to it
-		EnrichmentMapParameters new_params = new EnrichmentMapParameters(sessionManager, streamUtil, applicationManager);
+		EnrichmentMapParameters new_params = enrichmentMapParametersFactory.create();
 		if(analysisType.getSelectedValue() == EnrichmentMapParameters.method_Specialized)
 			new_params.setMethod(EnrichmentMapParameters.method_Specialized);
 		if(analysisType.getSelectedValue() == EnrichmentMapParameters.method_GSEA)
@@ -241,12 +238,10 @@ public class BuildEnrichmentMapTuneableTask extends AbstractTask {
 
 		EnrichmentMap map = new EnrichmentMap(new_params);
 
-		EnrichmentMapBuildMapTaskFactory buildmap = taskFactoryProvider.get().init(map);
+		EnrichmentMapBuildMapTaskFactory buildmap = taskFactoryProvider.create(map);
 		insertTasksAfterCurrentTask(buildmap.createTaskIterator());
 
-		EnrichmentMapManager manager = EnrichmentMapManager.getInstance();
-		manager.registerServices();
-
+		emManager.registerServices();
 	}
 
 	public void run() {

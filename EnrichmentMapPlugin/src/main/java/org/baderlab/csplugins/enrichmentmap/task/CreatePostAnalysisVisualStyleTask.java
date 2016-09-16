@@ -7,41 +7,34 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
+import com.google.inject.Inject;
+import com.google.inject.assistedinject.Assisted;
+
 public class CreatePostAnalysisVisualStyleTask extends AbstractTask {
 
 	private final EnrichmentMap map;
 
-	private final CyApplicationManager applicationManager;
-	private final VisualMappingManager visualMappingManager;
-	private final VisualStyleFactory visualStyleFactory;
-	private final CyEventHelper eventHelper;
-
-	private final VisualMappingFunctionFactory vmfFactoryContinuous;
-	private final VisualMappingFunctionFactory vmfFactoryDiscrete;
-	private final VisualMappingFunctionFactory vmfFactoryPassthrough;
+	@Inject private PostAnalysisVisualStyle.Factory paStyleFactory;
+	@Inject private CyApplicationManager applicationManager;
+	@Inject private VisualMappingManager visualMappingManager;
+	@Inject private VisualStyleFactory visualStyleFactory;
+	@Inject private CyEventHelper eventHelper;
 
 	private BuildDiseaseSignatureTaskResult taskResult;
 
-	public CreatePostAnalysisVisualStyleTask(EnrichmentMap map, CyApplicationManager applicationManager,
-			VisualMappingManager visualMappingManager, VisualStyleFactory visualStyleFactory, CyEventHelper eventHelper,
-			VisualMappingFunctionFactory vmfFactoryContinuous, VisualMappingFunctionFactory vmfFactoryDiscrete,
-			VisualMappingFunctionFactory vmfFactoryPassthrough) {
-
+	public interface Factory {
+		CreatePostAnalysisVisualStyleTask create(EnrichmentMap map);
+	}
+	
+	@Inject
+	public CreatePostAnalysisVisualStyleTask(@Assisted EnrichmentMap map) {
 		this.map = map;
-		this.applicationManager = applicationManager;
-		this.visualMappingManager = visualMappingManager;
-		this.visualStyleFactory = visualStyleFactory;
-		this.eventHelper = eventHelper;
-		this.vmfFactoryContinuous = vmfFactoryContinuous;
-		this.vmfFactoryDiscrete = vmfFactoryDiscrete;
-		this.vmfFactoryPassthrough = vmfFactoryPassthrough;
 	}
 
 	public void setBuildDiseaseSignatureTaskResult(BuildDiseaseSignatureTaskResult result) {
@@ -74,8 +67,7 @@ public class CreatePostAnalysisVisualStyleTask extends AbstractTask {
 		String vs_name = prefix + PostAnalysisVisualStyle.NAME;
 		CyNetworkView view = applicationManager.getCurrentNetworkView();
 
-		PostAnalysisVisualStyle pa_vs = new PostAnalysisVisualStyle(map.getParams(), vmfFactoryContinuous,
-				vmfFactoryDiscrete, vmfFactoryPassthrough);
+		PostAnalysisVisualStyle pa_vs = paStyleFactory.create(map.getParams());
 		pa_vs.applyNetworkSpeficifProperties(taskResult, prefix, taskMonitor);
 
 		VisualStyle vs = attemptToGetExistingStyle(vs_name);

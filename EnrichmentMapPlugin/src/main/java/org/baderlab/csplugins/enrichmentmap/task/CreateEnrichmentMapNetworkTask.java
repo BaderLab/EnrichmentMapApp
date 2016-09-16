@@ -61,7 +61,6 @@ import org.baderlab.csplugins.enrichmentmap.model.GSEAResult;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.GenericResult;
 import org.baderlab.csplugins.enrichmentmap.model.GenesetSimilarity;
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
@@ -69,70 +68,39 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableFactory;
-import org.cytoscape.model.CyTableManager;
-import org.cytoscape.task.edit.MapTableToNetworkTablesTaskFactory;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
 import com.google.common.collect.Sets;
+import com.google.inject.Inject;
+import com.google.inject.assistedinject.Assisted;
 
 /**
- * Created by User: risserlin Date: Jan 8, 2009 Time: 4:11:11 PM
- * <p>
  * Create visual representation of enrichment map in cytoscape
  */
 public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 
-	private EnrichmentMap map;
-
-	private CyApplicationManager applicationManager;
-	private CyNetworkManager networkManager;
-	private CyNetworkFactory networkFactory;
-	private CyTableFactory tableFactory;
-	private CyTableManager tableManager;
-	private MapTableToNetworkTablesTaskFactory mapTableToNetworkTable;
-
-	private HashMap<String, GenesetSimilarity> geneset_similarities;
-
-	//enrichment map name
-	private String mapName;
-
-	// Keep track of progress for monitoring:
-	private TaskMonitor taskMonitor = null;
-	private boolean interrupted = false;
-
 	public static String node_table_suffix = "node_attribs";
 	public static String edge_table_suffix = "edge_attribs";
+	
+	@Inject private CyNetworkManager networkManager;
+	@Inject private CyNetworkFactory networkFactory;
+	@Inject private EnrichmentMapManager emManager;
+	
+	private final EnrichmentMap map;
 
-	/**
-	 * Class constructor - current task monitor
-	 *
-	 * @param params - enrichment map parameters for current map
-	 * @param taskMonitor - current task monitor
-	 */
-	public CreateEnrichmentMapNetworkTask(EnrichmentMap map, CyNetworkFactory networkFactory,
-			CyApplicationManager applicationManager, CyNetworkManager networkManager, CyTableFactory tableFactory,
-			CyTableManager tableManager, MapTableToNetworkTablesTaskFactory maptabletonetworktable) {
-		this(map);
-		this.networkFactory = networkFactory;
-		this.applicationManager = applicationManager;
-		this.networkManager = networkManager;
-		this.tableFactory = tableFactory;
-		this.tableManager = tableManager;
-		this.mapTableToNetworkTable = maptabletonetworktable;
+	private HashMap<String, GenesetSimilarity> geneset_similarities;
+	private String mapName;
+	
+	public interface Factory {
+		CreateEnrichmentMapNetworkTask create(EnrichmentMap map);
 	}
-
-	/**
-	 * Class constructor
-	 *
-	 * @param params - enrichment map parameters for current map
-	 */
-	public CreateEnrichmentMapNetworkTask(EnrichmentMap map) {
+	
+	@Inject
+	public CreateEnrichmentMapNetworkTask(@Assisted EnrichmentMap map) {
 		this.map = map;
 		this.geneset_similarities = map.getGenesetSimilarity();
-		mapName = "Enrichment Map";
-
+		this.mapName = "Enrichment Map";
 	}
 
 	/**
@@ -140,14 +108,14 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 	 *
 	 * @return true if successful
 	 */
-	public boolean computeMap() {
+	public boolean computeMap(TaskMonitor taskMonitor) {
 
 		//on multiple runs of the program some of the nodes or all of them might already
 		//be created but it is possible that they have different values for the attributes.  How do
 		//we resolve this?
 		CyNetwork network;
 		//if(map.getParams().getAttributePrefix() == null)
-		map.getParams().setAttributePrefix();
+		map.getParams().setAttributePrefix(emManager);
 		String prefix = map.getParams().getAttributePrefix();
 
 		//create the new network.
@@ -456,8 +424,7 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 		 * networkSet,CyEdge.class));
 		 */
 		//register the new Network with EM
-		EnrichmentMapManager EMmanager = EnrichmentMapManager.getInstance();
-		EMmanager.registerNetwork(network, map);
+		emManager.registerNetwork(network, map);
 
 		map.getParams().setNetworkID(network.getSUID());
 
@@ -748,32 +715,12 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 		return null;
 	}
 
-	/**
-	 * Sets the Task Monitor.
-	 *
-	 * @param taskMonitor TaskMonitor Object.
-	 */
-	public void setTaskMonitor(TaskMonitor taskMonitor) {
-		if(this.taskMonitor != null) {
-			throw new IllegalStateException("Task Monitor is already set.");
-		}
-		this.taskMonitor = taskMonitor;
-	}
-
-	/**
-	 * Gets the Task Title.
-	 *
-	 * @return human readable task title.
-	 */
 	public String getTitle() {
-		return new String("Building Enrichment Map");
+		return "Building Enrichment Map";
 	}
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
-		this.taskMonitor = taskMonitor;
-		computeMap();
-
+		computeMap(taskMonitor);
 	}
-
 }

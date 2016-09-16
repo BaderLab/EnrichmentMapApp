@@ -8,6 +8,9 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
+import org.baderlab.csplugins.enrichmentmap.AfterInjectionModule;
+import org.baderlab.csplugins.enrichmentmap.ApplicationModule;
+import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.integration.BaseIntegrationTest;
 import org.baderlab.csplugins.enrichmentmap.integration.EdgeSimilarities;
@@ -19,57 +22,38 @@ import org.baderlab.csplugins.enrichmentmap.task.EnrichmentMapBuildMapTaskFactor
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTableFactory;
-import org.cytoscape.model.CyTableManager;
 import org.cytoscape.session.CySessionManager;
-import org.cytoscape.task.edit.MapTableToNetworkTablesTaskFactory;
-import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
-import org.cytoscape.view.model.CyNetworkViewFactory;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.work.TaskIterator;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.ops4j.pax.exam.junit.PaxExam;
-import org.ops4j.pax.exam.util.Filter;
+import org.ops4j.peaberry.osgi.OSGiModule;
+import org.osgi.framework.BundleContext;
+
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 
 @RunWith(PaxExam.class)
 public class EnrichmentMapTaskTest extends BaseIntegrationTest {
 	
 	private static final String PATH = "/EnrichmentMapTaskTest/";
 	
-	
 	@Inject private CyNetworkManager networkManager;
-	@Inject private CyNetworkFactory networkFactory;
-	@Inject private CyTableFactory tableFactory;
 	@Inject private CyApplicationManager applicationManager;
-	@Inject private CyTableManager tableManager;
 	@Inject private CySessionManager sessionManager;
-	@Inject private CyNetworkViewManager networkViewManager;
-	@Inject private CyNetworkViewFactory networkViewFactory;
-	@Inject private VisualMappingManager visualMappingManager;
-	@Inject private VisualStyleFactory visualStyleFactory;
-	@Inject private @Filter("(mapping.type=continuous)") VisualMappingFunctionFactory vmfFactoryContinuous;
-	@Inject private @Filter("(mapping.type=discrete)")   VisualMappingFunctionFactory vmfFactoryDiscrete;
-	@Inject private @Filter("(mapping.type=passthrough)")VisualMappingFunctionFactory vmfFactoryPassthrough;
-	@Inject private CyLayoutAlgorithmManager layoutManager;
-	@Inject private MapTableToNetworkTablesTaskFactory mapTableToNetworkTable;
 	@Inject private StreamUtil streamUtil;
+	@Inject private BundleContext bc;
 	
 	
 	protected void buildEnrichmentMap(EnrichmentMapParameters emParams) {
 		EnrichmentMap map = new EnrichmentMap(emParams);
-	   	EnrichmentMapBuildMapTaskFactory buildmap = new EnrichmentMapBuildMapTaskFactory(  
-			applicationManager, null /*swingApplication*/, networkManager, networkViewManager,
-			networkViewFactory, networkFactory, tableFactory,
-			tableManager, visualMappingManager, visualStyleFactory,
-			vmfFactoryContinuous, vmfFactoryDiscrete, vmfFactoryPassthrough, 
-			layoutManager, mapTableToNetworkTable).init(map);
+		
+		Injector injector = Guice.createInjector(new OSGiModule(bc), new AfterInjectionModule(), new CytoscapeServiceModule(), ApplicationModule.headless());
+		EnrichmentMapBuildMapTaskFactory.Factory factory = injector.getInstance(EnrichmentMapBuildMapTaskFactory.Factory.class);
+		
+	   	EnrichmentMapBuildMapTaskFactory buildmap = factory.create(map);
 	    
 	   	TaskIterator taskIterator = buildmap.createTaskIterator();
 	   	SerialTestTaskManager taskManager = new SerialTestTaskManager();

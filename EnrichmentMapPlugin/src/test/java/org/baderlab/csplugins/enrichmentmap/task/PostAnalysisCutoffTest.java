@@ -11,23 +11,38 @@ import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.FilterParameters;
 import org.baderlab.csplugins.enrichmentmap.FilterType;
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
+import org.baderlab.csplugins.enrichmentmap.StreamUtil;
 import org.baderlab.csplugins.enrichmentmap.TestUtils;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.session.CySessionManager;
+import org.jukito.JukitoRunner;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 
 /**
  * Test FilterTypes: NUMBER, PERCENT, SPECIFIC.
  * @author mkucera
  */
+@RunWith(JukitoRunner.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class PostAnalysisCutoffTest extends BaseNetworkTest {
 
 	private static final String PATH = "src/test/resources/org/baderlab/csplugins/enrichmentmap/task/EMandPA/";
+	
+	public static class TestModule extends BaseNetworkTest.TestModule {
+		@Override
+		protected void configureTest() {
+			super.configureTest();
+		}
+	}
+	
 	
 	private static CyNetwork emNetwork;
 	
@@ -45,8 +60,8 @@ public class PostAnalysisCutoffTest extends BaseNetworkTest {
 	
 	
 	@Test
-	public void _setup() {
-		EnrichmentMapParameters emParams = new EnrichmentMapParameters(sessionManager, streamUtil, applicationManager);
+	public void _setup(CySessionManager sessionManager, CyApplicationManager applicationManager, CyNetworkManager networkManager) {
+		EnrichmentMapParameters emParams = new EnrichmentMapParameters(sessionManager, new StreamUtil(), applicationManager);
 		emParams.setMethod(EnrichmentMapParameters.method_generic);
 		DataSetFiles dataset1files = new DataSetFiles();
 		dataset1files.setGMTFileName(PATH + "gene_sets.gmt");  

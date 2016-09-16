@@ -70,6 +70,7 @@ public class LoadPostAnalysisPanelAction extends AbstractCyAction {
 	@Inject private CyServiceRegistrar registrar;
 	@Inject private CyApplicationManager applicationManager;
 	@Inject private CySwingApplication swingApplication;
+	@Inject private EnrichmentMapManager emManager;
 	
 	private PostAnalysisPanel inputPanel;
 
@@ -96,9 +97,9 @@ public class LoadPostAnalysisPanelAction extends AbstractCyAction {
 			registrar.registerService(inputPanel, CytoPanelComponent.class, new Properties());
 
 			//set the input window in the instance so we can udate the instance window on network focus
-			EnrichmentMapManager.getInstance().setAnalysisWindow(inputPanel);
+			emManager.setAnalysisWindow(inputPanel);
 
-			EnrichmentMap map = EnrichmentMapManager.getInstance().getMap(network.getSUID());
+			EnrichmentMap map = emManager.getMap(network.getSUID());
 			inputPanel.showPanelFor(map);
 		}
 

@@ -1,8 +1,10 @@
 package org.baderlab.csplugins.enrichmentmap;
 
-import static com.google.inject.name.Names.named;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static org.ops4j.peaberry.Peaberry.service;
 import static org.ops4j.peaberry.util.Filters.ldap;
+
+import java.lang.annotation.Retention;
 
 import javax.swing.JFrame;
 
@@ -30,10 +32,6 @@ import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.presentation.annotations.AnnotationFactory;
-import org.cytoscape.view.presentation.annotations.AnnotationManager;
-import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
-import org.cytoscape.view.presentation.annotations.TextAnnotation;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
@@ -42,18 +40,28 @@ import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.swing.DialogTaskManager;
 
 import com.google.inject.AbstractModule;
+import com.google.inject.BindingAnnotation;
 import com.google.inject.Provides;
 import com.google.inject.TypeLiteral;
-import com.google.inject.name.Names;
 
 /**
- * Guice module, binds Cytoscape services using Peaberry.
+ * Guice configuration module. 
+ * Binds Cytoscape services using Peaberry.
  * 
  * @author mkucera
- *
  */
 public class CytoscapeServiceModule extends AbstractModule {
 
+	// VisualMappingFunctionFactory
+	@BindingAnnotation @Retention(RUNTIME) public @interface Continuous {}
+	@BindingAnnotation @Retention(RUNTIME) public @interface Discrete {}
+	@BindingAnnotation @Retention(RUNTIME) public @interface Passthrough {}
+	
+	// TaskManager<?,?>
+	@BindingAnnotation @Retention(RUNTIME) public @interface Dialog {}
+	@BindingAnnotation @Retention(RUNTIME) public @interface Sync {}
+	
+	
 	@Override
 	protected void configure() {
 		// Bind cytoscape OSGi services
@@ -89,18 +97,12 @@ public class CytoscapeServiceModule extends AbstractModule {
 		bind(synchronousManager).toProvider(service(synchronousManager).single());
 		
 		TypeLiteral<TaskManager<?,?>> taskManager = new TypeLiteral<TaskManager<?,?>>(){};
-		bind(taskManager).annotatedWith(Names.named("dialog")).toProvider(service(DialogTaskManager.class).single());
-		bind(taskManager).annotatedWith(Names.named("sync")).toProvider(service(synchronousManager).single());
+		bind(taskManager).annotatedWith(Dialog.class).toProvider(service(DialogTaskManager.class).single());
+		bind(taskManager).annotatedWith(Sync.class).toProvider(service(synchronousManager).single());
 		
-		bind(VisualMappingFunctionFactory.class).annotatedWith(named("continuous")).toProvider(service(VisualMappingFunctionFactory.class).filter(ldap("(mapping.type=continuous)")).single());
-		bind(VisualMappingFunctionFactory.class).annotatedWith(named("discrete")).toProvider(service(VisualMappingFunctionFactory.class).filter(ldap("(mapping.type=discrete)")).single());
-		bind(VisualMappingFunctionFactory.class).annotatedWith(named("passthrough")).toProvider(service(VisualMappingFunctionFactory.class).filter(ldap("(mapping.type=passthrough)")).single());
-		
-		bindService(AnnotationManager.class);
-		TypeLiteral<AnnotationFactory<ShapeAnnotation>> shapeFactory = new TypeLiteral<AnnotationFactory<ShapeAnnotation>>(){};
-		bind(shapeFactory).toProvider(service(shapeFactory).filter(ldap("(type=ShapeAnnotation.class)")).single());
-		TypeLiteral<AnnotationFactory<TextAnnotation>> textFactory = new TypeLiteral<AnnotationFactory<TextAnnotation>>(){};
-		bind(textFactory).toProvider(service(textFactory).filter(ldap("(type=TextAnnotation.class)")).single());
+		bind(VisualMappingFunctionFactory.class).annotatedWith(Continuous.class).toProvider(service(VisualMappingFunctionFactory.class).filter(ldap("(mapping.type=continuous)")).single());
+		bind(VisualMappingFunctionFactory.class).annotatedWith(Discrete.class).toProvider(service(VisualMappingFunctionFactory.class).filter(ldap("(mapping.type=discrete)")).single());
+		bind(VisualMappingFunctionFactory.class).annotatedWith(Passthrough.class).toProvider(service(VisualMappingFunctionFactory.class).filter(ldap("(mapping.type=passthrough)")).single());
 	}
 		
 	private <T> void bindService(Class<T> serviceClass) {
