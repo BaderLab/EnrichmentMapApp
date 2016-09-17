@@ -7,16 +7,12 @@ import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.task.EnrichmentMapBuildMapTaskFactory;
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.io.util.StreamUtil;
-import org.cytoscape.session.CySessionManager;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
 
 import com.google.inject.Inject;
-import com.google.inject.Provider;
 
 
 public class EnrichmentMapGSEACommandHandlerTask extends AbstractTask {
@@ -49,11 +45,9 @@ public class EnrichmentMapGSEACommandHandlerTask extends AbstractTask {
 	public Double combinedconstant ;
 
 	
-	@Inject private Provider<EnrichmentMapBuildMapTaskFactory> taskFactoryProvider;
-	
-	@Inject private CySessionManager sessionManager;
-	@Inject private StreamUtil streamUtil;
-	@Inject private CyApplicationManager applicationManager;
+	@Inject private EnrichmentMapParameters.Factory enrichmentMapParametersFactory;
+	@Inject private EnrichmentMapBuildMapTaskFactory.Factory taskFactoryProvider;
+	@Inject private EnrichmentMapManager emManager;
 
 	
 	public EnrichmentMapGSEACommandHandlerTask() {
@@ -63,7 +57,7 @@ public class EnrichmentMapGSEACommandHandlerTask extends AbstractTask {
 	
 	private void buildEnrichmentMap(){
 		//Initialize Data create a new params for the new EM and add the dataset files to it
-		EnrichmentMapParameters new_params = new EnrichmentMapParameters(sessionManager, streamUtil, applicationManager);
+		EnrichmentMapParameters new_params = enrichmentMapParametersFactory.create();
 	
 	
 		//set all files as extracted from the edb directory
@@ -99,12 +93,11 @@ public class EnrichmentMapGSEACommandHandlerTask extends AbstractTask {
 	
 		EnrichmentMap map = new EnrichmentMap(new_params);
 		
-		EnrichmentMapBuildMapTaskFactory buildmap = taskFactoryProvider.get().init(map);
+		EnrichmentMapBuildMapTaskFactory buildmap = taskFactoryProvider.create(map);
 
 		insertTasksAfterCurrentTask(buildmap.createTaskIterator());
 		
-		EnrichmentMapManager manager = EnrichmentMapManager.getInstance();
-		manager.registerServices();
+		emManager.registerServices();
 	}
 	
 	private DataSetFiles InitializeFiles(String edb, String exp){

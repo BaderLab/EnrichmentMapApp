@@ -73,25 +73,14 @@ import org.baderlab.csplugins.enrichmentmap.actions.BuildPostAnalysisActionListe
 import org.baderlab.csplugins.enrichmentmap.actions.ShowAboutPanelAction;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.util.SwingUtil;
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanelComponent;
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.session.CySessionManager;
 import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.util.swing.OpenBrowser;
-import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.view.vizmap.VisualStyleFactory;
-import org.cytoscape.work.SynchronousTaskManager;
-import org.cytoscape.work.swing.DialogTaskManager;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
-import com.google.inject.name.Named;
 
 @SuppressWarnings("serial")
 public class PostAnalysisInputPanel extends JPanel {
@@ -101,25 +90,13 @@ public class PostAnalysisInputPanel extends JPanel {
 	protected static final String gmt_instruction = "Please select the Gene Set file (.gmt)...";
 	protected static final String siggmt_instruction = "Please select the Signature Gene Set file (.gmt)...";
 
-	@Inject private CyApplicationManager cyApplicationManager;
-	@Inject private CySwingApplication application;
 	@Inject private OpenBrowser browser;
 	@Inject private FileUtil fileUtil;
 	@Inject private CyServiceRegistrar registrar;
-	@Inject private CySessionManager sessionManager;
-	@Inject private StreamUtil streamUtil;
-	@Inject private DialogTaskManager dialogTaskManager;
-	@Inject private SynchronousTaskManager<?> syncTaskManager;
-	@Inject private CyEventHelper eventHelper;
-	@Inject private DialogTaskManager dialog;
-	@Inject private VisualMappingManager visualMappingManager;
-	@Inject private VisualStyleFactory visualStyleFactory;
-	@Inject private @Named("continuous")  VisualMappingFunctionFactory vmfFactoryContinuous;
-	@Inject private @Named("discrete")    VisualMappingFunctionFactory vmfFactoryDiscrete;
-	@Inject private @Named("passthrough") VisualMappingFunctionFactory vmfFactoryPassthrough;
 	
 	@Inject private Provider<ShowAboutPanelAction> aboutPanelActionProvider;
-
+	@Inject private BuildPostAnalysisActionListener.Factory buildPostAnalysisActionListenerFactory;
+	
 	
 	private JRadioButton knownSignature;
 	private JRadioButton signatureDiscovery;
@@ -136,19 +113,21 @@ public class PostAnalysisInputPanel extends JPanel {
 	/**
 	 * Note: The initialize() method must be called before the panel can be used.
 	 */
-	public PostAnalysisInputPanel() {
-	}
-
-	
-	@AfterInjection
-	private void createContents() {
+	@Inject
+	public PostAnalysisInputPanel(
+			PostAnalysisKnownSignaturePanel.Factory knownSignaturePanelFactory,
+			PostAnalysisSignatureDiscoveryPanel.Factory signatureDiscoveryPanelFactory) {
+		
 		// Create the two main panels, set the default one
-		knownSignaturePanel = new PostAnalysisKnownSignaturePanel(this, cyApplicationManager, application, streamUtil, syncTaskManager);
-		signatureDiscoveryPanel = new PostAnalysisSignatureDiscoveryPanel(this, cyApplicationManager, application, streamUtil, dialog);
+		knownSignaturePanel = knownSignaturePanelFactory.create(this);
+		signatureDiscoveryPanel = signatureDiscoveryPanelFactory.create(this);
 
 		userInputPanel = new JPanel(new BorderLayout());
 		userInputPanel.add(knownSignaturePanel, BorderLayout.CENTER); // Default panel
-
+	}
+	
+	@AfterInjection
+	private void createContent() {
 		setLayout(new BorderLayout());
 
 		JPanel analysisTypePanel = createAnalysisTypePanel();
@@ -274,13 +253,7 @@ public class PostAnalysisInputPanel extends JPanel {
 		runButton.addActionListener(e -> {
 			if(okToRun()) {
 				PostAnalysisParameters paParams = buildPostAnalysisParameters();
-				
-				BuildPostAnalysisActionListener action = new BuildPostAnalysisActionListener(
-						paParams,
-						sessionManager, streamUtil, application, cyApplicationManager,
-						dialogTaskManager, eventHelper, visualMappingManager, visualStyleFactory,
-						vmfFactoryContinuous, vmfFactoryDiscrete, vmfFactoryPassthrough);
-				
+				BuildPostAnalysisActionListener action = buildPostAnalysisActionListenerFactory.create(paParams);
 				action.runPostAnalysis();
 			}
 		});

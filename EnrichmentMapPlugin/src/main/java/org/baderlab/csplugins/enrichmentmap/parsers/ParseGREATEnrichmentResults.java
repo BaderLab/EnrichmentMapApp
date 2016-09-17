@@ -119,7 +119,7 @@ public class ParseGREATEnrichmentResults extends DatasetLineParser {
 				//if it is already in the hash then get its associated key and put it
 				//into the set of genes
 				if(genes.containsKey(gene)) {
-					builder.addGenes(genes.get(gene));
+					builder.addGene(genes.get(gene));
 				}
 
 				//If the gene is not in the list then get the next value to be used and put it in the list
@@ -133,7 +133,7 @@ public class ParseGREATEnrichmentResults extends DatasetLineParser {
 						dataset.getMap().setNumberOfGenes(value + 1);
 
 						//add the gene to the genelist
-						builder.addGenes(genes.get(gene));
+						builder.addGene(genes.get(gene));
 					}
 				}
 			}

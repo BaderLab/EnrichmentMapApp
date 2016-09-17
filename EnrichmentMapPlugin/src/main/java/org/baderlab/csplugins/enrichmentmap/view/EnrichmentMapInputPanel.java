@@ -103,12 +103,10 @@ import org.cytoscape.session.CySessionManager;
 import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.util.swing.OpenBrowser;
-import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
-import com.google.inject.name.Named;
 
 @SuppressWarnings("serial")
 public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponent {
@@ -121,12 +119,10 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 	@Inject private OpenBrowser browser;
 	@Inject private FileUtil fileUtil;
 	@Inject private CyServiceRegistrar registrar;
-	@Inject private @Named("continuous") VisualMappingFunctionFactory vmfFactoryContinuous;
-	@Inject private @Named("discrete") VisualMappingFunctionFactory vmfFactoryDiscrete;
-	@Inject private @Named("passthrough") VisualMappingFunctionFactory vmfFactoryPassthrough;
 	
 	@Inject private Provider<ShowAboutPanelAction> aboutPanelActionProvider;
-	@Inject private Provider<EnrichmentMapBuildMapTaskFactory> taskFactoryProvider;
+	@Inject private EnrichmentMapBuildMapTaskFactory.Factory taskFactoryFactory;
+	@Inject private EnrichmentMapManager emManager;
 	
 	
 	private EnrichmentMapParameters params;
@@ -1039,13 +1035,12 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 			//add observer to catch if the input is a GREAT file so we can determine which p-value to use
 			ResultTaskObserver observer = new ResultTaskObserver();
 
-			EnrichmentMapBuildMapTaskFactory buildmap = taskFactoryProvider.get().init(map);
+			EnrichmentMapBuildMapTaskFactory buildmap = taskFactoryFactory.create(map);
 			//buildmap.build();
 			dialog.execute(buildmap.createTaskIterator(), observer);
 
 			//After the network is built register the HeatMap and Parameters panel
-			EnrichmentMapManager manager = EnrichmentMapManager.getInstance();
-			manager.registerServices();
+			emManager.registerServices();
 
 		});
 		//importButton.addActionListener(new BuildEnrichmentMapActionListener(this));

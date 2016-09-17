@@ -68,6 +68,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 
+import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapVisualStyle;
 import org.baderlab.csplugins.enrichmentmap.actions.ParametersPanelActionListener;
@@ -84,13 +85,13 @@ import org.cytoscape.work.swing.DialogTaskManager;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
+import com.google.inject.Singleton;
 
 /**
- * Created by User: risserlin Date: Feb 9, 2009 Time: 2:41:48 PM
- * <p>
  * Right hand information Panel containing files uploaded, legends and
  * p-value,q-value sliders.
  */
+@Singleton
 public class ParametersPanel extends JPanel implements CytoPanelComponent {
 
 	private static final long serialVersionUID = 2230165793903119571L;
@@ -104,13 +105,14 @@ public class ParametersPanel extends JPanel implements CytoPanelComponent {
 	@Inject private OpenBrowser browser;
 	@Inject private CyApplicationManager cyApplicationManager;
 	@Inject private DialogTaskManager taskManager;
+	@Inject private EnrichmentMapManager emManager;
 	
 	@Inject private Provider<CreatePublicationVisualStyleTaskFactory> visualStyleTaskFactoryProvider;
 
 
 	public void initializeSliders(EnrichmentMap map) {
 		if (map != null)
-			map.getParams().initSliders();
+			map.getParams().initSliders(emManager);
 	}
 
 	/**

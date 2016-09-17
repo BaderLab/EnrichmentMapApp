@@ -16,51 +16,43 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JToolTip;
 
+import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadSignatureSetsActionListener;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.JMultiLineToolTip;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
 import org.baderlab.csplugins.enrichmentmap.task.FilterMetric;
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.io.util.StreamUtil;
-import org.cytoscape.work.SynchronousTaskManager;
+
+import com.google.inject.Inject;
+import com.google.inject.assistedinject.Assisted;
 
 @SuppressWarnings("serial")
 public class PostAnalysisKnownSignaturePanel extends JPanel {
 
 	private final PostAnalysisInputPanel parentPanel;
 
-	private final CyApplicationManager cyApplicationManager;
-	private final CySwingApplication application;
-	private final StreamUtil streamUtil;
-	private final SynchronousTaskManager<?> syncTaskManager;
+	@Inject private CySwingApplication application;
+	@Inject private LoadSignatureSetsActionListener.Factory loadSignatureSetsActionListenerFactory;
 
 	private SetOfGeneSets signatureGenesets;
 	private Set<String> selectedGenesetNames;
-	
 	private PostAnalysisWeightPanel weightPanel;
-
 	private JFormattedTextField knownSignatureGMTFileNameTextField;
 
-	public PostAnalysisKnownSignaturePanel(PostAnalysisInputPanel parentPanel,
-			CyApplicationManager cyApplicationManager, CySwingApplication application, StreamUtil streamUtil,
-			SynchronousTaskManager<?> syncTaskManager) {
-
-		this.parentPanel = parentPanel;
-		this.cyApplicationManager = cyApplicationManager;
-		this.application = application;
-		this.streamUtil = streamUtil;
-		this.syncTaskManager = syncTaskManager;
-
-		createKnownSignatureOptionsPanel();
+	
+	public interface Factory {
+		PostAnalysisKnownSignaturePanel create(PostAnalysisInputPanel parentPanel);
 	}
+	
+	@Inject
+	public PostAnalysisKnownSignaturePanel(@Assisted PostAnalysisInputPanel parentPanel) {
+		this.parentPanel = parentPanel;
+	}
+	
 
-	/**
-	 * @return collapsiblePanel to select Signature Genesets for Signature
-	 *         Analysis
-	 */
+	@AfterInjection
 	private void createKnownSignatureOptionsPanel() {
 		setLayout(new BorderLayout());
 
@@ -142,7 +134,7 @@ public class PostAnalysisKnownSignaturePanel extends JPanel {
 		// Use the synchronousTaskManager so that this blocks
 		
 		FilterMetric filterMetric = new FilterMetric.None();
-		LoadSignatureSetsActionListener loadAction = new LoadSignatureSetsActionListener(filePath, filterMetric, application, cyApplicationManager, syncTaskManager, streamUtil);
+		LoadSignatureSetsActionListener loadAction = loadSignatureSetsActionListenerFactory.create(filePath, filterMetric);
 		
 		loadAction.setGeneSetCallback(gs -> {
 			this.signatureGenesets = gs;
@@ -181,6 +173,6 @@ public class PostAnalysisKnownSignaturePanel extends JPanel {
 		String filePath = (String) knownSignatureGMTFileNameTextField.getValue();
 		builder.setSignatureGMTFileName(filePath);
 		builder.setSignatureGenesets(signatureGenesets);
-		builder.addAllSelectedSignatureSetNames(selectedGenesetNames);
+		builder.addSelectedSignatureSetNames(selectedGenesetNames);
 	}
 }

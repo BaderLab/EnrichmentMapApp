@@ -26,17 +26,21 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.swing.DialogTaskManager;
+
+import com.google.inject.Inject;
+import com.google.inject.Provider;
 
 @SuppressWarnings("serial")
 public class EdgeWidthDialog extends JDialog {
 
-	private final VisualMappingFunctionFactory vmfFactoryContinuous;
-	private final TaskManager<?,?> taskManager;
+	@Inject private DialogTaskManager taskManager;
+	@Inject private EnrichmentMapManager emManager;
+	@Inject private Provider<WidthFunction> widthFunctionProvider;
+	
 	private final CyNetwork network;
 	private final double similarityCutoff;
 	private final String prefix;
@@ -48,14 +52,11 @@ public class EdgeWidthDialog extends JDialog {
 	private JFormattedTextField greaterThanText;
 	
 	
-	public EdgeWidthDialog(CySwingApplication application, CyApplicationManager applicationManager, 
-			               VisualMappingFunctionFactory vmfFactoryContinuous, TaskManager<?,?> taskManager) {
-		
+	@Inject
+	public EdgeWidthDialog(CySwingApplication application, CyApplicationManager applicationManager) {
 		super(application.getJFrame(), true);
 		this.network = applicationManager.getCurrentNetwork();
-		this.taskManager = taskManager;
-		this.vmfFactoryContinuous = vmfFactoryContinuous;
-		EnrichmentMap map = EnrichmentMapManager.getInstance().getMap(network.getSUID());
+		EnrichmentMap map = emManager.getMap(network.getSUID());
 		this.similarityCutoff = map.getParams().getSimilarityCutOff();
 		this.prefix = map.getParams().getAttributePrefix();
 		
@@ -259,7 +260,7 @@ public class EdgeWidthDialog extends JDialog {
 					public void run(TaskMonitor taskMonitor) throws Exception {
 						taskMonitor.setTitle("EnrichmentMap");
 						taskMonitor.setStatusMessage("Calculating Post-Analysis Edge Widths");
-						WidthFunction widthFunction = new WidthFunction(vmfFactoryContinuous);
+						WidthFunction widthFunction = widthFunctionProvider.get();
 						widthFunction.setEdgeWidths(network, prefix, taskMonitor);
 					}
 					public void cancel() { }

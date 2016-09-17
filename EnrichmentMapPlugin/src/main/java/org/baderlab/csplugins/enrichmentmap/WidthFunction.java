@@ -1,5 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap;
 
+import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Continuous;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -10,6 +11,8 @@ import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.mappings.BoundaryRangeValues;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import org.cytoscape.work.TaskMonitor;
+
+import com.google.inject.Inject;
 
 public class WidthFunction {
 	
@@ -27,10 +30,12 @@ public class WidthFunction {
 	
 	
 	private final VisualMappingFunctionFactory vmfFactoryContinuous;
+	private final EnrichmentMapManager emManager;
 	
-	
-	public WidthFunction(VisualMappingFunctionFactory vmfFactoryContinuous) {
+	@Inject
+	public WidthFunction(@Continuous VisualMappingFunctionFactory vmfFactoryContinuous, EnrichmentMapManager emManager) {
 		this.vmfFactoryContinuous = vmfFactoryContinuous;
+		this.emManager = emManager;
 	}
 
 	private static boolean isSignature(String interaction) {
@@ -66,7 +71,7 @@ public class WidthFunction {
 	
 	private void calculateAndSetEdgeWidths(CyNetwork network, String prefix, TaskMonitor taskMonitor) {
 		EdgeWidthParams edgeWidthParams = EdgeWidthParams.restore(network);
-		EnrichmentMap map = EnrichmentMapManager.getInstance().getMap(network.getSUID());
+		EnrichmentMap map = emManager.getMap(network.getSUID());
 		String widthAttribute = prefix + EDGE_WIDTH_FORMULA_COLUMN;
 		
 		int n = network.getDefaultEdgeTable().getRowCount();

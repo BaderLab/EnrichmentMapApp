@@ -48,74 +48,53 @@ import org.baderlab.csplugins.enrichmentmap.EnrichmentMapVisualStyle;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.view.ParametersPanel;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
+import com.google.inject.Inject;
+import com.google.inject.assistedinject.Assisted;
+
 /**
- * Created by User: risserlin Date: Jan 8, 2009 Time: 4:11:11 PM
- * <p>
  * Create visual representation of enrichment map in cytoscape
  */
 public class VisualizeEnrichmentMapTask extends AbstractTask {
 
-	private EnrichmentMap map;
+	private final EnrichmentMap map;
 
-	private CyNetworkFactory networkFactory;
-	private CyNetworkManager networkManager;
-	private CyNetworkViewManager networkViewManager;
-	private CyNetworkViewFactory networkViewFactory;
-	private VisualMappingManager visualMappingManager;
-	private VisualStyleFactory visualStyleFactory;
+	@Inject private CyNetworkManager networkManager;
+	@Inject private CyNetworkViewManager networkViewManager;
+	@Inject private CyNetworkViewFactory networkViewFactory;
+	@Inject private VisualMappingManager visualMappingManager;
+	@Inject private VisualStyleFactory visualStyleFactory;
+	@Inject private CyLayoutAlgorithmManager layoutManager;
 
-	//we will need all three mappers
-	private VisualMappingFunctionFactory vmfFactoryContinuous;
-	private VisualMappingFunctionFactory vmfFactoryDiscrete;
-	private VisualMappingFunctionFactory vmfFactoryPassthrough;
+	@Inject private EnrichmentMapVisualStyle.Factory emVisualStyleFactory;
+	@Inject private EnrichmentMapManager emManager;
+	
 
-	private CyLayoutAlgorithmManager layoutManager;
-
-	/**
-	 * Class constructor - current task monitor
-	 *
-	 * @param params - enrichment map parameters for current map
-	 * @param taskMonitor - current task monitor
-	 */
-	public VisualizeEnrichmentMapTask(EnrichmentMap map, CyNetworkFactory networkFactory,
-			CyNetworkManager networkManager, CyNetworkViewManager networkViewManager,
-			CyNetworkViewFactory networkViewFactory, VisualMappingManager visualMappingManager,
-			VisualStyleFactory visualStyleFactory, VisualMappingFunctionFactory vmfFactoryContinuous,
-			VisualMappingFunctionFactory vmfFactoryDiscrete, VisualMappingFunctionFactory vmfFactoryPassthrough,
-			CyLayoutAlgorithmManager layoutManager) {
+	public interface Factory {
+		VisualizeEnrichmentMapTask create(EnrichmentMap map);
+	}
+	
+	@Inject
+	public VisualizeEnrichmentMapTask(@Assisted EnrichmentMap map) {
 		this.map = map;
-		this.networkFactory = networkFactory;
-		this.networkManager = networkManager;
-		this.networkViewManager = networkViewManager;
-		this.networkViewFactory = networkViewFactory;
-		this.visualMappingManager = visualMappingManager;
-		this.visualStyleFactory = visualStyleFactory;
-
-		this.vmfFactoryContinuous = vmfFactoryContinuous;
-		this.vmfFactoryDiscrete = vmfFactoryDiscrete;
-		this.vmfFactoryPassthrough = vmfFactoryPassthrough;
-		this.layoutManager = layoutManager;
 	}
 
+	
 	/**
 	 * Compute, and create cytoscape enrichment map
 	 */
 	public void visualizeMap(TaskMonitor taskMonitor) {
-		System.out.println("VisualizeEnrichmentMapTask.visualizeMap()");
 		CyNetwork network = networkManager.getNetwork(map.getParams().getNetworkID());
 		String prefix = map.getParams().getAttributePrefix();
 
@@ -125,8 +104,8 @@ public class VisualizeEnrichmentMapTask extends AbstractTask {
 
 		String vs_name = prefix + "Enrichment_map_style";
 
-		EnrichmentMapVisualStyle em_vs = new EnrichmentMapVisualStyle(map.getParams(), vmfFactoryContinuous,
-				vmfFactoryDiscrete, vmfFactoryPassthrough);
+		EnrichmentMapVisualStyle em_vs = emVisualStyleFactory.create(map.getParams());
+		
 		VisualStyle vs = visualStyleFactory.createVisualStyle(vs_name);
 		em_vs.applyVisualStyle(vs, prefix);
 
@@ -145,7 +124,7 @@ public class VisualizeEnrichmentMapTask extends AbstractTask {
 		}
 		
 		//update Parameter panel
-		ParametersPanel parametersPanel = EnrichmentMapManager.getInstance().getParameterPanel();
+		ParametersPanel parametersPanel = emManager.getParameterPanel();
 		parametersPanel.initializeSliders(map);
 		parametersPanel.updatePanel(map);
 	}

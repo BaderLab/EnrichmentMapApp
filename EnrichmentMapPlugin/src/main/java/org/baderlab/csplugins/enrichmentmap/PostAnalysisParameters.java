@@ -44,12 +44,14 @@
 package org.baderlab.csplugins.enrichmentmap;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
-import org.inferred.freebuilder.FreeBuilder;
 
-@FreeBuilder
-public interface PostAnalysisParameters {
+import com.google.common.collect.ImmutableSet;
+
+public class PostAnalysisParameters {
 
 	final public static String SIGNATURE_INTERACTION_TYPE = "sig";
 	final public static String SIGNATURE_INTERACTION_TYPE_SET1 = "sig_set1";
@@ -60,43 +62,205 @@ public interface PostAnalysisParameters {
 		SIGNATURE_DISCOVERY
 	}
 	
-	public AnalysisType getAnalysisType();
+	private final AnalysisType analysisType;
+	private final FilterParameters filterParameters;
+	private final FilterParameters rankTestParameters;
+	private final String signatureGMTFileName;
+	private final SetOfGeneSets signatureGenesets;
+	private final Collection<String> selectedSignatureSetNames;
+	private final double currentNodePlacementYOffset;
+	private final String signatureRankFile;
+	private final String signatureDataSet;
+	private final int universeSize;
+	private final String attributePrefix;
 	
 	
-	public FilterParameters getFilterParameters();
+	
+	private PostAnalysisParameters(AnalysisType analysisType, FilterParameters filterParameters,
+			FilterParameters rankTestParameters, String signatureGMTFileName, SetOfGeneSets signatureGenesets,
+			Collection<String> selectedSignatureSetNames, double currentNodePlacementYOffset, String signatureRankFile,
+			String signatureDataSet, int universeSize, String attributePrefix) {
+		this.analysisType = analysisType;
+		this.filterParameters = filterParameters;
+		this.rankTestParameters = rankTestParameters;
+		this.signatureGMTFileName = signatureGMTFileName;
+		this.signatureGenesets = signatureGenesets;
+		this.selectedSignatureSetNames = selectedSignatureSetNames;
+		this.currentNodePlacementYOffset = currentNodePlacementYOffset;
+		this.signatureRankFile = signatureRankFile;
+		this.signatureDataSet = signatureDataSet;
+		this.universeSize = universeSize;
+		this.attributePrefix = attributePrefix;
+	}
 
-	public FilterParameters getRankTestParameters();
-
+	public AnalysisType getAnalysisType() {
+		return analysisType;
+	}
 	
-	public String getSignatureGMTFileName();
+	public FilterParameters getFilterParameters() {
+		return filterParameters;
+	}
+
+	public FilterParameters getRankTestParameters() {
+		return rankTestParameters;
+	}
+	
+	public String getSignatureGMTFileName() {
+		return signatureGMTFileName;
+	}
 
 
 	// MKTODO should be just one list of selected gene sets
 	// Right now it stores all the gene sets that were loaded, and a list of the ones that were selected
-	public SetOfGeneSets getSignatureGenesets();
+	public SetOfGeneSets getSignatureGenesets() {
+		return signatureGenesets;
+	}
 
-	public Collection<String> getSelectedSignatureSetNames();
+	public Collection<String> getSelectedSignatureSetNames() {
+		return selectedSignatureSetNames;
+	}
 	
 	
-	public double getCurrentNodePlacementY_Offset();
+	public double getCurrentNodePlacementY_Offset() {
+		return currentNodePlacementYOffset;
+	}
 
-	public String getSignature_rankFile();
+	public String getSignatureRankFile() {
+		return signatureRankFile;
+	}
 
-	public String getSignature_dataSet();
+	public String getSignatureDataSet() {
+		return signatureDataSet;
+	}
 
-	public int getUniverseSize();
+	public int getUniverseSize() {
+		return universeSize;
+	}
 
-	public String getAttributePrefix();
+	public String getAttributePrefix() {
+		return attributePrefix;
+	}
 
 	
 
 	
-	class Builder extends PostAnalysisParameters_Builder {
+	public static class Builder {
+		
+		private AnalysisType analysisType;
+		private FilterParameters filterParameters;
+		private FilterParameters rankTestParameters;
+		private String signatureGMTFileName;
+		private SetOfGeneSets signatureGenesets;
+		private Set<String> selectedSignatureSetNames = new HashSet<>();
+		private double currentNodePlacementYOffset;
+		private String signatureRankFile;
+		private String signatureDataSet;
+		private int universeSize;
+		private String attributePrefix;
+		
+		
 		public Builder() {
 			// defaults
-			setCurrentNodePlacementY_Offset(0.0);
+			setCurrentNodePlacementYOffset(0.0);
 			setSignatureGMTFileName("");
 		}
+
+		public static Builder from(PostAnalysisParameters other) {
+			Builder b = new Builder();
+			b.setAnalysisType(other.analysisType);
+			b.setFilterParameters(other.filterParameters);
+			b.setRankTestParameters(other.rankTestParameters);
+			b.setSignatureGMTFileName(other.signatureGMTFileName);
+			b.setSignatureGenesets(other.signatureGenesets);
+			b.addSelectedSignatureSetNames(other.selectedSignatureSetNames);
+			b.setCurrentNodePlacementYOffset(other.currentNodePlacementYOffset);
+			b.setSignatureRankFile(other.signatureRankFile);
+			b.setSignatureDataSet(other.signatureDataSet);
+			b.setUniverseSize(other.universeSize);
+			b.setAttributePrefix(other.attributePrefix);
+			return b;
+		}
+		
+		public Builder addSelectedSignatureSetNames(Collection<String> names) {
+			selectedSignatureSetNames.addAll(names);
+			return this;
+		}
+		
+		public Builder addSelectedSignatureSetName(String name) {
+			selectedSignatureSetNames.add(name);
+			return this;
+		}
+
+		public Builder setAnalysisType(AnalysisType analysisType) {
+			this.analysisType = analysisType;
+			return this;
+		}
+
+
+		public Builder setFilterParameters(FilterParameters filterParameters) {
+			this.filterParameters = filterParameters;
+			return this;
+		}
+
+
+		public Builder setRankTestParameters(FilterParameters rankTestParameters) {
+			this.rankTestParameters = rankTestParameters;
+			return this;
+		}
+
+
+		public Builder setSignatureGMTFileName(String signatureGMTFileName) {
+			this.signatureGMTFileName = signatureGMTFileName;
+			return this;
+		}
+		
+		public String getSignatureGMTFileName() {
+			return signatureGMTFileName;
+		}
+
+		public Builder setSignatureGenesets(SetOfGeneSets signatureGenesets) {
+			this.signatureGenesets = signatureGenesets;
+			return this;
+		}
+
+
+		public Builder setCurrentNodePlacementYOffset(double currentNodePlacementYOffset) {
+			this.currentNodePlacementYOffset = currentNodePlacementYOffset;
+			return this;
+		}
+
+
+		public Builder setSignatureRankFile(String signatureRankFile) {
+			this.signatureRankFile = signatureRankFile;
+			return this;
+		}
+
+
+		public Builder setSignatureDataSet(String signatureDataSet) {
+			this.signatureDataSet = signatureDataSet;
+			return this;
+		}
+
+
+		public Builder setUniverseSize(int universeSize) {
+			this.universeSize = universeSize;
+			return this;
+		}
+
+
+		public Builder setAttributePrefix(String attributePrefix) {
+			this.attributePrefix = attributePrefix;
+			return this;
+		}
+		
+		public PostAnalysisParameters build() {
+			return new PostAnalysisParameters(analysisType, filterParameters,
+					rankTestParameters, signatureGMTFileName, signatureGenesets,
+					ImmutableSet.copyOf(selectedSignatureSetNames), currentNodePlacementYOffset, signatureRankFile,
+					signatureDataSet, universeSize, attributePrefix);
+		}
+		
+		
 	}
 
 	/**
@@ -105,7 +269,7 @@ public interface PostAnalysisParameters {
 	 * @return String with error messages (one error per line) or empty String if everything is okay.
 	 * @see org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters#checkMinimalRequirements()
 	 */
-	public default void checkMinimalRequirements(StringBuilder errors) {
+	public void checkMinimalRequirements(StringBuilder errors) {
 		errors.append(checkGMTfiles());
 		if(getSelectedSignatureSetNames().isEmpty()) {
 			errors.append("No Signature Genesets selected \n");
@@ -118,7 +282,7 @@ public interface PostAnalysisParameters {
 	 * @return String with error messages (one error per line) or empty String
 	 *         if everything is okay.
 	 */
-	public default String checkGMTfiles() {
+	public String checkGMTfiles() {
 		String signatureGMTFileName = getSignatureGMTFileName();
 		if(signatureGMTFileName == null || signatureGMTFileName.isEmpty() || !EnrichmentMapParameters.checkFile(signatureGMTFileName))
 			return "Signature GMT file can not be found \n";

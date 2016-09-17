@@ -8,7 +8,6 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.GenericResult;
 import org.baderlab.csplugins.enrichmentmap.task.NullTaskMonitor;
-import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.work.TaskMonitor;
 
 public class ParseDavidEnrichmentResults extends DatasetLineParser {
@@ -100,7 +99,7 @@ public class ParseDavidEnrichmentResults extends DatasetLineParser {
 				//if it is already in the hash then get its associated key and put it
 				//into the set of genes
 				if(genes.containsKey(gene)) {
-					builder.addGenes(genes.get(gene));
+					builder.addGene(genes.get(gene));
 				}
 
 				//If the gene is not in the list then get the next value to be used and put it in the list
@@ -114,7 +113,7 @@ public class ParseDavidEnrichmentResults extends DatasetLineParser {
 						dataset.getMap().setNumberOfGenes(value + 1);
 
 						//add the gene to the genelist
-						builder.addGenes(genes.get(gene));
+						builder.addGene(genes.get(gene));
 					}
 				}
 			}

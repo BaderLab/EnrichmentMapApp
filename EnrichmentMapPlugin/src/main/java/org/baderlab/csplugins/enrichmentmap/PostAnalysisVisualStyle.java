@@ -3,6 +3,9 @@ package org.baderlab.csplugins.enrichmentmap;
 import java.awt.Color;
 import java.awt.Paint;
 
+import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Continuous;
+import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Discrete;
+import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Passthrough;
 import org.baderlab.csplugins.enrichmentmap.task.BuildDiseaseSignatureTaskResult;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -19,26 +22,34 @@ import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
 import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
 import org.cytoscape.work.TaskMonitor;
 
+import com.google.inject.Inject;
+import com.google.inject.Provider;
+import com.google.inject.assistedinject.Assisted;
+
 public class PostAnalysisVisualStyle {
-
+	
 	public static final String NAME = "Post_analysis_style";
-
-	private final VisualMappingFunctionFactory vmfFactoryContinuous;
-	private final VisualMappingFunctionFactory vmfFactoryDiscrete;
-	private final VisualMappingFunctionFactory vmfFactoryPassthrough;
-
-	private final EnrichmentMapVisualStyle delegateStyle;
-
+	
 	private static final Color PINK = new Color(255, 0, 200);
 	private static final Color YELLOW = new Color(255, 255, 0);
 
-	public PostAnalysisVisualStyle(EnrichmentMapParameters emParsms, VisualMappingFunctionFactory vmfFactoryContinuous,
-			VisualMappingFunctionFactory vmfFactoryDiscrete, VisualMappingFunctionFactory vmfFactoryPassthrough) {
+	@Inject private @Continuous  VisualMappingFunctionFactory vmfFactoryContinuous;
+	@Inject private @Discrete    VisualMappingFunctionFactory vmfFactoryDiscrete;
+	@Inject private @Passthrough VisualMappingFunctionFactory vmfFactoryPassthrough;
+	@Inject private Provider<WidthFunction> widthFunctionProvider;
 
-		this.delegateStyle = new EnrichmentMapVisualStyle(emParsms, vmfFactoryContinuous, vmfFactoryDiscrete, vmfFactoryPassthrough);
-		this.vmfFactoryContinuous = vmfFactoryContinuous;
-		this.vmfFactoryDiscrete = vmfFactoryDiscrete;
-		this.vmfFactoryPassthrough = vmfFactoryPassthrough;
+	private final EnrichmentMapVisualStyle delegateStyle;
+	
+	public interface Factory {
+		PostAnalysisVisualStyle create(EnrichmentMapParameters emParsms);
+	}
+	
+	@Inject
+	public PostAnalysisVisualStyle(
+			@Assisted EnrichmentMapParameters emParsms,
+			EnrichmentMapVisualStyle.Factory emStyleFactory) {
+
+		this.delegateStyle = emStyleFactory.create(emParsms);
 	}
 
 	/**
@@ -56,7 +67,7 @@ public class PostAnalysisVisualStyle {
 		createNodeBypassForColor(taskResult);
 		CyNetwork network = taskResult.getNetwork();
 
-		WidthFunction widthFunction = new WidthFunction(vmfFactoryContinuous);
+		WidthFunction widthFunction = widthFunctionProvider.get();
 		widthFunction.setEdgeWidths(network, prefix, taskMonitor);
 	}
 

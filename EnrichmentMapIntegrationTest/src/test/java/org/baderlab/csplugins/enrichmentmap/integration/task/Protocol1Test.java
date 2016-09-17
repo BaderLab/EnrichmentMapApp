@@ -7,6 +7,7 @@ import java.io.File;
 import javax.inject.Inject;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjectionModule;
+import org.baderlab.csplugins.enrichmentmap.ApplicationModule;
 import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.commands.BuildEnrichmentMapTuneableTask;
@@ -32,7 +33,8 @@ public class Protocol1Test extends BaseIntegrationTest {
 	@Test
 	public void testProtocol1() throws Exception {
 		System.out.println("Protocol1Test.testProtocol1()");
-		Injector injector = Guice.createInjector(new OSGiModule(bc), new AfterInjectionModule(), new CytoscapeServiceModule());
+		
+		Injector injector = Guice.createInjector(new OSGiModule(bc), new AfterInjectionModule(), new CytoscapeServiceModule(), ApplicationModule.headless());
 		
 		BuildEnrichmentMapTuneableTask task = injector.getInstance(BuildEnrichmentMapTuneableTask.class);
 		

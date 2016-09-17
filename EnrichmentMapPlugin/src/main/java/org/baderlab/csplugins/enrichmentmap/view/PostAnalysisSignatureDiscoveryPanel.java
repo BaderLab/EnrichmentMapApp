@@ -28,7 +28,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JToolTip;
 import javax.swing.ScrollPaneConstants;
 
-import org.baderlab.csplugins.enrichmentmap.FilterParameters.Builder;
+import org.baderlab.csplugins.enrichmentmap.AfterInjection;
+import org.baderlab.csplugins.enrichmentmap.FilterParameters;
 import org.baderlab.csplugins.enrichmentmap.FilterType;
 import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadSignatureSetsActionListener;
@@ -38,20 +39,18 @@ import org.baderlab.csplugins.enrichmentmap.model.JMultiLineToolTip;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
 import org.baderlab.csplugins.enrichmentmap.task.FilterMetric;
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.io.util.StreamUtil;
-import org.cytoscape.work.swing.DialogTaskManager;
+
+import com.google.inject.Inject;
+import com.google.inject.assistedinject.Assisted;
 
 @SuppressWarnings("serial")
 public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
 
 	private final PostAnalysisInputPanel parentPanel;
 
-	private final CyApplicationManager cyApplicationManager;
-	private final CySwingApplication application;
-	private final StreamUtil streamUtil;
-	private final DialogTaskManager dialog;
+	@Inject private LoadSignatureSetsActionListener.Factory loadSignatureSetsActionListenerFactory;
+	@Inject private CySwingApplication application;
 
 	private final static int RIGHT = 0, DOWN = 1, UP = 2, LEFT = 3; // image States
 
@@ -80,19 +79,16 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
 	private final Map<FilterType,Double> savedFilterValues = FilterType.createMapOfDefaults();
 	
 
-	public PostAnalysisSignatureDiscoveryPanel(PostAnalysisInputPanel parentPanel,
-			CyApplicationManager cyApplicationManager, CySwingApplication application, StreamUtil streamUtil,
-			DialogTaskManager dialog) {
-
+	public interface Factory {
+		PostAnalysisSignatureDiscoveryPanel create(PostAnalysisInputPanel parentPanel);
+	}
+	
+	@Inject
+	public PostAnalysisSignatureDiscoveryPanel(@Assisted PostAnalysisInputPanel parentPanel) {
 		this.parentPanel = parentPanel;
-		this.cyApplicationManager = cyApplicationManager;
-		this.application = application;
-		this.streamUtil = streamUtil;
-		this.dialog = dialog;
-		
-		createSignatureDiscoveryOptionsPanel();
 	}
 
+	@AfterInjection
 	private void createSignatureDiscoveryOptionsPanel() {
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
@@ -275,7 +271,7 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
 			}
 
 			FilterMetric filterMetric = createFilterMetric();
-			LoadSignatureSetsActionListener action = new LoadSignatureSetsActionListener(filePath, filterMetric, application, cyApplicationManager, dialog, streamUtil);
+			LoadSignatureSetsActionListener action = loadSignatureSetsActionListenerFactory.create(filePath, filterMetric);
 			
 			action.setGeneSetCallback(gs -> {
 				this.signatureGenesets = gs;
@@ -424,13 +420,12 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel {
 		weightPanel.build(builder);
 		
 		for(int i = 0; i < selected_sig_sets.size(); i++) {
-			builder.addSelectedSignatureSetNames(selected_sig_sets.getElementAt(i));
+			builder.addSelectedSignatureSetName(selected_sig_sets.getElementAt(i));
 		}
 		
-		Builder filterParametersBuilder = builder.getFilterParametersBuilder();
 		Number number = (Number) filterTextField.getValue();
-		filterParametersBuilder.setType(getFilterType());
-		filterParametersBuilder.setValue(number.doubleValue());
+		FilterParameters filterParameters = new FilterParameters(getFilterType(), number.doubleValue());
+		builder.setFilterParameters(filterParameters);
 		
 		String filePath = (String) signatureDiscoveryGMTFileNameTextField.getValue();
 		builder.setSignatureGMTFileName(filePath);
