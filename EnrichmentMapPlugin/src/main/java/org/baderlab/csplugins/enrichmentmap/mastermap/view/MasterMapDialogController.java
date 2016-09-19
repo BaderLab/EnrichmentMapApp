@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap.mastermap;
+package org.baderlab.csplugins.enrichmentmap.mastermap.view;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -25,7 +25,9 @@ import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 
-import org.baderlab.csplugins.enrichmentmap.mastermap.NiceDialogCallback.Message;
+import org.baderlab.csplugins.enrichmentmap.dialog.NiceDialogCallback;
+import org.baderlab.csplugins.enrichmentmap.dialog.NiceDialogController;
+import org.baderlab.csplugins.enrichmentmap.dialog.NiceDialogCallback.Message;
 import org.baderlab.csplugins.enrichmentmap.view.AboutPanel;
 
 import com.google.inject.Singleton;

@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap.mastermap;
+package org.baderlab.csplugins.enrichmentmap.mastermap.view;
 
 import java.awt.Component;
 import java.awt.event.MouseAdapter;

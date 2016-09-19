@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap.mastermap;
+package org.baderlab.csplugins.enrichmentmap.dialog;
 
 import javax.swing.JDialog;
 

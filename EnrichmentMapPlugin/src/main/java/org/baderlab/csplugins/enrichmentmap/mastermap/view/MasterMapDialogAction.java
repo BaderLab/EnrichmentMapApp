@@ -1,7 +1,8 @@
-package org.baderlab.csplugins.enrichmentmap.mastermap;
+package org.baderlab.csplugins.enrichmentmap.mastermap.view;
 
 import java.awt.event.ActionEvent;
 
+import org.baderlab.csplugins.enrichmentmap.dialog.NiceDialog;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.util.swing.IconManager;
