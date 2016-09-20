@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -12,34 +11,20 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 import org.baderlab.csplugins.enrichmentmap.mastermap.model.GeneSet;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.TaskMonitor;
 
-public class GMTFileParserTask extends AbstractTask {
+public class GMTFileParserTask extends FutureTask<List<GeneSet>> {
 
-	private final Path filePath;
-	private final CompletableFuture<List<GeneSet>> future;
 	
-	
-	public GMTFileParserTask(Path filePath) {
-		this.filePath = filePath;
-		this.future = new CompletableFuture<>();
+	public GMTFileParserTask(Path filePath, String datasetName) {
+		super(filePath, datasetName);
 	}
 
-	public CompletableFuture<List<GeneSet>> ask() {
-		return future;
-	}
 
 	@Override
-	public void run(TaskMonitor taskMonitor) throws IOException, InterruptedException {
+	public void parse(Path filePath, CompletableFuture<List<GeneSet>> future) throws IOException, InterruptedException {
 		List<GeneSet> geneSets = new ArrayList<>();
-		Path path = filePath.resolve(Paths.get("edb/gene_sets.gmt"));
 		
-		int length = path.getNameCount();
-		Path endPart = path.subpath(length - 3, length - 0);
-		taskMonitor.setStatusMessage("Parsing ..." + endPart);
-		
-		try(BufferedReader reader = new BufferedReader(new FileReader(path.toString()))) {
+		try(BufferedReader reader = new BufferedReader(new FileReader(filePath.toString()))) {
 		    for(String line; (line = reader.readLine()) != null;) {
 		    	if(cancelled) {
 					throw new InterruptedException();
@@ -74,5 +59,6 @@ public class GMTFileParserTask extends AbstractTask {
 		}
 		return null;
 	}
+
 
 }

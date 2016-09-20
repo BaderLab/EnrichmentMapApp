@@ -4,11 +4,11 @@ import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 //A dummy task so that the correct title is set on the task dialog.
 
-public class BuildEnrichmentMapDummyTask extends AbstractTask {
+public class TitleTask extends AbstractTask {
 	
 	private final String title;
 	
-	public BuildEnrichmentMapDummyTask(String title) {
+	public TitleTask(String title) {
 		this.title = title;
 	}
 	

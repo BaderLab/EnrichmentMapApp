@@ -243,6 +243,7 @@ public class MasterMapDialogController implements NiceDialogController {
 			callback.setMessage(Message.ERROR, "The chosen folder does not contain any GSEA results folders");
 			selectAllButton.setEnabled(false);
 			selectNoneButton.setEnabled(false);
+			updateBuildButton();
 		}
 	}
 	
