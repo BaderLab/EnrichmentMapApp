@@ -6,6 +6,7 @@ import java.lang.annotation.Retention;
 
 import org.baderlab.csplugins.enrichmentmap.actions.BuildPostAnalysisActionListener;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadSignatureSetsActionListener;
+import org.baderlab.csplugins.enrichmentmap.mastermap.task.MasterMapTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.task.BuildDiseaseSignatureTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreateEnrichmentMapNetworkTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreatePostAnalysisVisualStyleTask;
@@ -80,6 +81,7 @@ class FactoryModule extends AbstractModule {
 		installFactory(PostAnalysisKnownSignaturePanel.Factory.class);
 		installFactory(PostAnalysisSignatureDiscoveryPanel.Factory.class);
 		installFactory(EnrichmentMapParameters.Factory.class);
+		installFactory(MasterMapTaskFactory.Factory.class);
 	}
 	
 	private void installFactory(Class<?> factoryInterface) {

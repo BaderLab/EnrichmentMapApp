@@ -10,7 +10,9 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.swing.BorderFactory;
@@ -26,24 +28,30 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 
 import org.baderlab.csplugins.enrichmentmap.dialog.NiceDialogCallback;
-import org.baderlab.csplugins.enrichmentmap.dialog.NiceDialogController;
 import org.baderlab.csplugins.enrichmentmap.dialog.NiceDialogCallback.Message;
+import org.baderlab.csplugins.enrichmentmap.dialog.NiceDialogController;
+import org.baderlab.csplugins.enrichmentmap.mastermap.task.MasterMapTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.view.AboutPanel;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.swing.DialogTaskManager;
 
+import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 @Singleton
 public class MasterMapDialogController implements NiceDialogController {
 	
+	@Inject private DialogTaskManager taskManager;
+	@Inject private MasterMapTaskFactory.Factory taskFactoryFactory;
+	
 	private JTextField pathTextField;
 	private CheckboxList checkboxList;
 	private CheckboxListModel checkboxListModel;
-	
 	private JButton selectAllButton;
 	private JButton selectNoneButton;
-	
 	private NiceDialogCallback callback;
 	private JPanel panel;
+	
 	
 	@Override
 	public String getTitle() {
@@ -63,6 +71,20 @@ public class MasterMapDialogController implements NiceDialogController {
 	@Override
 	public Dimension getMinimumSize() {
 		return new Dimension(600, 500);
+	}
+	
+
+	@Override
+	public void finish() {
+		List<Path> paths = 
+				checkboxListModel.stream()
+				.filter(CheckboxData::isSelected)
+				.map(CheckboxData::getPath)
+				.collect(Collectors.toList());
+		
+		MasterMapTaskFactory taskFactory = taskFactoryFactory.create(paths);
+		TaskIterator tasks = taskFactory.createTaskIterator();
+		taskManager.execute(tasks);
 	}
 	
 	
@@ -98,15 +120,6 @@ public class MasterMapDialogController implements NiceDialogController {
 		return panel;
 	}
 
-
-	@Override
-	public void finish() {
-		System.out.println("CREATE MASTERMAP BOOYAKASHA");
-		for(CheckboxData data : checkboxListModel) {
-			System.out.println(data.getData());
-		}
-	}
-	
 	
 	private JPanel createAnalysisTypePanel() {
 		JLabel label = new JLabel("Analysis Type:");
@@ -213,9 +226,12 @@ public class MasterMapDialogController implements NiceDialogController {
 				contents
 				.filter(Files::isDirectory)
 				.filter(new GSEAFolderPredicate())
-				.map(folder -> new CheckboxData(folder.getFileName().toString(), folder.getFileName().toAbsolutePath().toString()))
+				.map(folder -> new CheckboxData(folder.getFileName().toString(), folder))
 				.forEach(checkboxListModel::addElement);
 			}
+			
+			for(CheckboxData checkbox : checkboxListModel)
+				checkbox.addPropertyChangeListener("selected", evt -> updateBuildButton());
 			
 		} catch(IOException e) {
 			callback.setMessage(Message.ERROR, "Cannot read folder contents");
@@ -248,11 +264,13 @@ public class MasterMapDialogController implements NiceDialogController {
 			checkboxListModel.forEach(cb -> cb.setSelected(true));
 			checkboxList.invalidate();
 			checkboxList.repaint();
+			updateBuildButton();
 		});
 		selectNoneButton.addActionListener(e -> {
 			checkboxListModel.forEach(cb -> cb.setSelected(false));
 			checkboxList.invalidate();
 			checkboxList.repaint();
+			updateBuildButton();
 		});
 		
 		selectAllButton.setEnabled(false);
@@ -268,4 +286,8 @@ public class MasterMapDialogController implements NiceDialogController {
 	}
 
 	
+	private void updateBuildButton() {
+		boolean hasSelected = checkboxListModel.stream().anyMatch(checkbox -> checkbox.isSelected());
+		callback.setFinishButtonEnabled(hasSelected);
+	}
 }

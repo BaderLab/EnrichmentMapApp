@@ -1,6 +1,10 @@
 package org.baderlab.csplugins.enrichmentmap.mastermap.view;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import javax.swing.DefaultListModel;
 
@@ -9,6 +13,19 @@ public class CheckboxListModel extends DefaultListModel<CheckboxData> implements
 
 	public CheckboxListModel() {
 		super();
+	}
+	
+	public List<CheckboxData> toList() {
+		int n = getSize();
+		List<CheckboxData> list = new ArrayList<>(n);
+		for(int i = 0; i < n; i++) {
+			list.add(get(i));
+		}
+		return list;
+	}
+	
+	public Stream<CheckboxData> stream() {
+		return StreamSupport.stream(spliterator(), false);
 	}
 	
 	public Iterator<CheckboxData> iterator() {

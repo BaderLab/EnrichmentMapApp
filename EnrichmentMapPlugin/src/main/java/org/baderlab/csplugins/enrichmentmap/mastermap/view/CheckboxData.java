@@ -2,6 +2,7 @@ package org.baderlab.csplugins.enrichmentmap.mastermap.view;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.nio.file.Path;
 
 public class CheckboxData {
 
@@ -10,11 +11,11 @@ public class CheckboxData {
 	private boolean selected;
 
 	private final String display;
-	private final String data;
+	private final Path path;
 
-	public CheckboxData(String display, String data) {
+	public CheckboxData(String display, Path path) {
 		this.display = display;
-		this.data = data;
+		this.path = path;
 	}
 
 	public boolean isSelected() {
@@ -33,8 +34,8 @@ public class CheckboxData {
 		return display;
 	}
 
-	public String getData() {
-		return data;
+	public Path getPath() {
+		return path;
 	}
 
 	public void addPropertyChangeListener(String propName, PropertyChangeListener listener) {
