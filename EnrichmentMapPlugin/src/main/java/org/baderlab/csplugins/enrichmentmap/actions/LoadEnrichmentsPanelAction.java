@@ -46,7 +46,7 @@ package org.baderlab.csplugins.enrichmentmap.actions;
 import java.awt.event.ActionEvent;
 import java.util.Properties;
 
-import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.view.EnrichmentMapInputPanel;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;

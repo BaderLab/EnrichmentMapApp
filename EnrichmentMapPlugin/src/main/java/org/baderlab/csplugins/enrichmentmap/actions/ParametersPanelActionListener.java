@@ -2,9 +2,9 @@ package org.baderlab.csplugins.enrichmentmap.actions;
 
 import java.awt.event.ActionListener;
 
-import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 
 
 public class ParametersPanelActionListener implements ActionListener {

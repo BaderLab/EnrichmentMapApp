@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap.dialog;
+package org.baderlab.csplugins.enrichmentmap.util;
 
 import java.awt.Dimension;
 

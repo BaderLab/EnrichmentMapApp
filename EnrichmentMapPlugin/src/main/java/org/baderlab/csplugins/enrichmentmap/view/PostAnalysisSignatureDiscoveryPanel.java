@@ -29,13 +29,13 @@ import javax.swing.JToolTip;
 import javax.swing.ScrollPaneConstants;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
-import org.baderlab.csplugins.enrichmentmap.FilterParameters;
-import org.baderlab.csplugins.enrichmentmap.FilterType;
-import org.baderlab.csplugins.enrichmentmap.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadSignatureSetsActionListener;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.model.FilterParameters;
+import org.baderlab.csplugins.enrichmentmap.model.FilterType;
 import org.baderlab.csplugins.enrichmentmap.model.JMultiLineToolTip;
+import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
 import org.baderlab.csplugins.enrichmentmap.task.FilterMetric;

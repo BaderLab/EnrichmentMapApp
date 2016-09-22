@@ -3,7 +3,7 @@ package org.baderlab.csplugins.enrichmentmap.actions;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.task.BuildBulkEnrichmentMapTask;
 import org.baderlab.csplugins.enrichmentmap.view.BulkEMCreationPanel;
 

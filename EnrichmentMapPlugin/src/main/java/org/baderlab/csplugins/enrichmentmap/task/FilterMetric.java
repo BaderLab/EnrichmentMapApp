@@ -3,7 +3,7 @@ package org.baderlab.csplugins.enrichmentmap.task;
 import java.util.Map;
 import java.util.Set;
 
-import org.baderlab.csplugins.enrichmentmap.FilterType;
+import org.baderlab.csplugins.enrichmentmap.model.FilterType;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.mannwhit.MannWhitneyUTestSided;
 

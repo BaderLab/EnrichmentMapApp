@@ -41,13 +41,11 @@
 // $LastChangedBy$
 // $HeadURL$
 
-package org.baderlab.csplugins.enrichmentmap;
+package org.baderlab.csplugins.enrichmentmap.model;
 
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-
-import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -267,7 +265,7 @@ public class PostAnalysisParameters {
 	 * Checks all values of the PostAnalysisInputPanel
 	 * 
 	 * @return String with error messages (one error per line) or empty String if everything is okay.
-	 * @see org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters#checkMinimalRequirements()
+	 * @see org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters#checkMinimalRequirements()
 	 */
 	public void checkMinimalRequirements(StringBuilder errors) {
 		errors.append(checkGMTfiles());

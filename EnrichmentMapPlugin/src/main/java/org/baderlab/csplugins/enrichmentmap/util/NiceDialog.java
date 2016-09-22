@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap.dialog;
+package org.baderlab.csplugins.enrichmentmap.util;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -12,7 +12,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import org.baderlab.csplugins.enrichmentmap.dialog.NiceDialogCallback.Message;
+import org.baderlab.csplugins.enrichmentmap.util.NiceDialogCallback.Message;
 import org.cytoscape.util.swing.IconManager;
 
 public class NiceDialog {

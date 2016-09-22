@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap;
+package org.baderlab.csplugins.enrichmentmap.model;
 
 import java.util.HashMap;
 import java.util.Map;

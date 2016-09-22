@@ -27,10 +27,10 @@ import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 
-import org.baderlab.csplugins.enrichmentmap.dialog.NiceDialogCallback;
-import org.baderlab.csplugins.enrichmentmap.dialog.NiceDialogCallback.Message;
-import org.baderlab.csplugins.enrichmentmap.dialog.NiceDialogController;
 import org.baderlab.csplugins.enrichmentmap.mastermap.task.MasterMapTaskFactory;
+import org.baderlab.csplugins.enrichmentmap.util.NiceDialogCallback;
+import org.baderlab.csplugins.enrichmentmap.util.NiceDialogController;
+import org.baderlab.csplugins.enrichmentmap.util.NiceDialogCallback.Message;
 import org.baderlab.csplugins.enrichmentmap.view.AboutPanel;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.swing.DialogTaskManager;

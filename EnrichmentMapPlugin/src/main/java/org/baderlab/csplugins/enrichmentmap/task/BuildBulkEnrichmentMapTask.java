@@ -2,7 +2,7 @@ package org.baderlab.csplugins.enrichmentmap.task;
 
 import java.io.File;
 
-import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 

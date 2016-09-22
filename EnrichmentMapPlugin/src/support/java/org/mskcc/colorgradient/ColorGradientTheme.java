@@ -32,6 +32,7 @@ package org.mskcc.colorgradient;
 // imports
 import java.awt.Color;
 import org.baderlab.csplugins.enrichmentmap.*;
+import org.baderlab.csplugins.enrichmentmap.style.EnrichmentMapVisualStyle;
 
 /**
  * Encapsulates a Color Theme, e.g. a BLUE_RED_GRADIENT_THEME.

@@ -2,7 +2,7 @@ package org.baderlab.csplugins.enrichmentmap.task;
 
 import javax.swing.SwingUtilities;
 
-import org.baderlab.csplugins.enrichmentmap.WidthFunction;
+import org.baderlab.csplugins.enrichmentmap.style.WidthFunction;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.task.TableColumnTaskFactory;

@@ -41,7 +41,7 @@
 // $LastChangedBy$
 // $HeadURL$
 
-package org.baderlab.csplugins.enrichmentmap;
+package org.baderlab.csplugins.enrichmentmap.model;
 
 import java.io.File;
 import java.io.IOException;
@@ -54,12 +54,7 @@ import java.util.Scanner;
 import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters;
-import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.model.GSEAResult;
-import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
-import org.baderlab.csplugins.enrichmentmap.model.GenericResult;
-import org.baderlab.csplugins.enrichmentmap.model.Rank;
+import org.baderlab.csplugins.enrichmentmap.style.EnrichmentMapVisualStyle;
 import org.baderlab.csplugins.enrichmentmap.view.ParametersPanel;
 import org.baderlab.csplugins.enrichmentmap.view.SliderBarPanel;
 import org.cytoscape.application.CyApplicationManager;

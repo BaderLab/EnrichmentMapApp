@@ -6,10 +6,10 @@ import java.util.Iterator;
 
 import org.baderlab.csplugins.brainlib.AvgLinkHierarchicalClustering;
 import org.baderlab.csplugins.brainlib.DistanceMatrix;
-import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.CosineDistance;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EuclideanDistance;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpression;
 import org.baderlab.csplugins.enrichmentmap.model.PearsonCorrelation;

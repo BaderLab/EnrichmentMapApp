@@ -8,9 +8,9 @@ import java.util.function.Consumer;
 import javax.swing.JOptionPane;
 
 import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Sync;
-import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
-import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
 import org.baderlab.csplugins.enrichmentmap.task.FilterMetric;
 import org.baderlab.csplugins.enrichmentmap.task.FilterSignatureGSTask;

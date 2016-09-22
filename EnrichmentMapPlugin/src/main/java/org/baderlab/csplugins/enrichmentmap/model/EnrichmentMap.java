@@ -6,8 +6,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
-
 /***
  * An Enrichment Map object contains the minimal information needed to build an
  * enrichment map.

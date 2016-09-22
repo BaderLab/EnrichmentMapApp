@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap;
+package org.baderlab.csplugins.enrichmentmap.model;
 
 /**
  * Parameters used for specifying filters and cutoffs for post-analysis.

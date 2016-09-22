@@ -2,8 +2,8 @@ package org.baderlab.csplugins.enrichmentmap.task;
 
 import java.util.ConcurrentModificationException;
 
-import org.baderlab.csplugins.enrichmentmap.PostAnalysisVisualStyle;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.style.PostAnalysisVisualStyle;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.view.model.CyNetworkView;

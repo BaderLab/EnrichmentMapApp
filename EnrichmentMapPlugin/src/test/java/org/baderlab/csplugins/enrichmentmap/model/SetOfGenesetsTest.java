@@ -7,7 +7,6 @@ import static org.mockito.Mockito.mock;
 import java.util.HashMap;
 import java.util.HashSet;
 
-import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.parsers.GMTFileReaderTask;
 import org.cytoscape.work.TaskMonitor;
 import org.junit.Before;

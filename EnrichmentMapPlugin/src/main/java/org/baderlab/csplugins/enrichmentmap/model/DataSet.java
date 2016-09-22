@@ -2,8 +2,6 @@ package org.baderlab.csplugins.enrichmentmap.model;
 
 import java.util.HashSet;
 
-import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
-
 /*
  * An Enrichment Map Dataset consists of:
  * Set of Genesets
