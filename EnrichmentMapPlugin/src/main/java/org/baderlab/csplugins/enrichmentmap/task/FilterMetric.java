@@ -7,7 +7,9 @@ import org.baderlab.csplugins.enrichmentmap.FilterType;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.mannwhit.MannWhitneyUTestSided;
 
-
+/**
+ * Filters used by post-analysis.
+ */
 public interface FilterMetric {
 	
 	boolean match(int mapGenesetSize, Set<Integer> intersection, Set<Integer> signatureSet);

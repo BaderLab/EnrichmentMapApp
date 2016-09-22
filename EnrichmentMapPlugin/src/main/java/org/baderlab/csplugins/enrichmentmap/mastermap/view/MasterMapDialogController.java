@@ -15,8 +15,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
+import javax.swing.GroupLayout;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -77,10 +77,10 @@ public class MasterMapDialogController implements NiceDialogController {
 	@Override
 	public void finish() {
 		List<Path> paths = 
-				checkboxListModel.stream()
-				.filter(CheckboxData::isSelected)
-				.map(CheckboxData::getPath)
-				.collect(Collectors.toList());
+			checkboxListModel.stream()
+			.filter(CheckboxData::isSelected)
+			.map(CheckboxData::getPath)
+			.collect(Collectors.toList());
 		
 		MasterMapTaskFactory taskFactory = taskFactoryFactory.create(paths);
 		TaskIterator tasks = taskFactory.createTaskIterator();
@@ -105,15 +105,28 @@ public class MasterMapDialogController implements NiceDialogController {
 		JPanel analysisPanel = createAnalysisTypePanel();
 		JPanel browsePanel   = createBrowsePanel();
 		JPanel listPanel     = createListPanel();
+		JPanel cutoffPanel   = createCutoffPanel();
 		
-		JPanel body = new JPanel(new BorderLayout());
-		body.add(browsePanel, BorderLayout.NORTH);
-		body.add(listPanel, BorderLayout.CENTER);
+		GroupLayout layout = new GroupLayout(panel);
+		panel.setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(true);
 		
-		analysisPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
+		layout.setHorizontalGroup(
+			layout.createParallelGroup()
+				.addComponent(analysisPanel)
+				.addComponent(browsePanel)
+				.addComponent(listPanel)
+				.addComponent(cutoffPanel)
+		);
 		
-		panel.add(analysisPanel, BorderLayout.NORTH);
-		panel.add(body, BorderLayout.CENTER);
+		layout.setVerticalGroup(
+			layout.createSequentialGroup()
+				.addComponent(analysisPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+				.addComponent(browsePanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+				.addComponent(listPanel)
+				.addComponent(cutoffPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+		);
 		
 		callback.setFinishButtonEnabled(false);
 		
@@ -286,6 +299,10 @@ public class MasterMapDialogController implements NiceDialogController {
 		return panel;
 	}
 
+	private JPanel createCutoffPanel() {
+		CutoffPropertiesPanel cutoffPanel = new CutoffPropertiesPanel();
+		return cutoffPanel;
+	}
 	
 	private void updateBuildButton() {
 		boolean hasSelected = checkboxListModel.stream().anyMatch(checkbox -> checkbox.isSelected());
