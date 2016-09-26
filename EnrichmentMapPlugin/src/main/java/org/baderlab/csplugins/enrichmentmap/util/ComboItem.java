@@ -1,11 +1,9 @@
 package org.baderlab.csplugins.enrichmentmap.util;
 
-
 public class ComboItem<V> {
 	
 	private final V value;
 	private final String label;
-	
 	
 	public ComboItem(V value, String label) {
 		this.value = value;

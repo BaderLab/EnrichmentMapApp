@@ -17,8 +17,8 @@ public class FilterGenesetsByDatasetGenes extends AbstractTask {
 	}
 
 	/*
-	 * Filter all the genesets by the dataset genes If there are multiple sets
-	 * of genesets make sure to filter by the specific dataset genes
+	 * Filter all the genesets by the dataset genes. If there are multiple sets
+	 * of genesets make sure to filter by the specific dataset genes.
 	 */
 	public void filterGenesets() {
 		HashMap<String, DataSet> datasets = map.getDatasets();
