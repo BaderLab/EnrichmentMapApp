@@ -29,8 +29,11 @@ public class PostAnalysisVisualStyle {
     
 	private final EnrichmentMapVisualStyle delegateStyle;
 	
-	private static final Color PINK   = new Color(255,0,200);    
-	private static final Color YELLOW = new Color(255,255,0);
+	/* See http://colorbrewer2.org/#type=qualitative&scheme=Dark2&n=3 */
+	private static final Color EDGE_COLOR = new Color(217, 95, 2);
+	
+	private static final Color NODE_BORDER_COLOR = new Color(223, 194, 125);
+	private static final Color NODE_COLOR = new Color(246, 232, 195);
 	
 	
 	public PostAnalysisVisualStyle(EnrichmentMapParameters emParsms,
@@ -74,10 +77,10 @@ public class PostAnalysisVisualStyle {
         // Add mapped value for post-analysis edge color
         @SuppressWarnings("unchecked")
 		DiscreteMapping<Integer,Paint> disMapping_edge2 = (DiscreteMapping<Integer,Paint>) vs.getVisualMappingFunction(BasicVisualLexicon.EDGE_UNSELECTED_PAINT);
-        disMapping_edge2.putMapValue(4, PINK); // pink
+        disMapping_edge2.putMapValue(4, EDGE_COLOR); // pink
         @SuppressWarnings("unchecked")
 		DiscreteMapping<Integer,Paint> disMapping_edge4 = (DiscreteMapping<Integer,Paint>) vs.getVisualMappingFunction(BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT);
-        disMapping_edge4.putMapValue(4, PINK); // pink
+        disMapping_edge4.putMapValue(4, EDGE_COLOR); // pink
         
         // Add mapping function for node shape
         DiscreteMapping<String,NodeShape> disMapping_nodeShape = (DiscreteMapping<String,NodeShape>) vmfFactoryDiscrete.createVisualMappingFunction(prefix + EnrichmentMapVisualStyle.GS_TYPE, String.class, BasicVisualLexicon.NODE_SHAPE);
@@ -96,11 +99,9 @@ public class PostAnalysisVisualStyle {
 		for(CyNode node : taskResult.getNewNodes()) {
         	View<CyNode> hubNodeView = taskResult.getNetworkView().getNodeView(node);
         	if(hubNodeView != null) {
-				hubNodeView.setLockedValue(BasicVisualLexicon.NODE_FILL_COLOR, YELLOW);               
-				hubNodeView.setLockedValue(BasicVisualLexicon.NODE_BORDER_PAINT, YELLOW);
+				hubNodeView.setLockedValue(BasicVisualLexicon.NODE_FILL_COLOR, NODE_COLOR);               
+				hubNodeView.setLockedValue(BasicVisualLexicon.NODE_BORDER_PAINT, NODE_BORDER_COLOR);
         	}
         }
 	}
-	
-	
 }
