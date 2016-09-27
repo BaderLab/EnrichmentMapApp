@@ -1,7 +1,9 @@
 package org.baderlab.csplugins.enrichmentmap.task;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,6 +30,7 @@ import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.model.TableTestSupport;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CySession;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.task.edit.MapTableToNetworkTablesTaskFactory;
@@ -76,15 +79,12 @@ public abstract class BaseNetworkTest {
 	@Mock protected VisualMappingFunctionFactory vmfFactoryContinuous;
 	@Mock protected VisualMappingFunctionFactory vmfFactoryDiscrete;
 	@Mock protected VisualMappingFunctionFactory vmfFactoryPassthrough;
-	@Mock protected DialogTaskManager dialog;
+	@Mock protected DialogTaskManager dialogTaskManager;
 	@Mock protected CyLayoutAlgorithmManager layoutManager;
 	@Mock protected MapTableToNetworkTablesTaskFactory mapTableToNetworkTable;
     @Mock protected CyEventHelper eventHelper;
     @Mock protected CySwingApplication swingApplication;
-    
-	
-	
-	
+    @Mock protected CyServiceRegistrar serviceRegistrar;
 	
 	@Before
 	public void before() {
@@ -125,7 +125,7 @@ public abstract class BaseNetworkTest {
 	        			networkViewFactory, networkFactory, tableFactory,
 	        			tableManager, visualMappingManager, visualStyleFactory,
 	        			vmfFactoryContinuous, vmfFactoryDiscrete, vmfFactoryPassthrough, 
-	        			dialog, streamUtil, layoutManager, mapTableToNetworkTable);
+	        			dialogTaskManager, streamUtil, layoutManager, mapTableToNetworkTable);
 	    
 	   	TaskIterator taskIterator = buildmap.createTaskIterator();
 	   	
@@ -161,10 +161,13 @@ public abstract class BaseNetworkTest {
 		PostAnalysisInputPanel inputPanel = mock(PostAnalysisInputPanel.class);
 		when(inputPanel.getPaParams()).thenReturn(paParams);
 		
+		when(serviceRegistrar.getService(CyApplicationManager.class)).thenReturn(applicationManager);
+		when(serviceRegistrar.getService(CySwingApplication.class)).thenReturn(swingApplication);
+		
 		// Load the gene-sets from the file
 		SerialTestTaskManager testTaskManager = new SerialTestTaskManager();
 		LoadSignatureSetsActionListener loadSignatureSetsActionListener 
-			= new LoadSignatureSetsActionListener(inputPanel, swingApplication, applicationManager, testTaskManager, streamUtil);
+			= new LoadSignatureSetsActionListener(inputPanel, testTaskManager, streamUtil, serviceRegistrar);
 		loadSignatureSetsActionListener.setSelectAll(true);
 		loadSignatureSetsActionListener.actionPerformed(null);
 		

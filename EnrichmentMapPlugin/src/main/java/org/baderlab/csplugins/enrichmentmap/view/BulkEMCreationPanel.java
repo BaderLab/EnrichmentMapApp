@@ -1,13 +1,11 @@
 package org.baderlab.csplugins.enrichmentmap.view;
 
-import java.awt.BorderLayout;
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static org.baderlab.csplugins.enrichmentmap.util.SwingUtil.makeSmall;
+
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.FlowLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.GridLayout;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -16,9 +14,9 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JFormattedTextField;
@@ -26,12 +24,10 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
-import javax.swing.JToolTip;
+import javax.swing.LayoutStyle.ComponentPlacement;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
-//import org.baderlab.csplugins.enrichmentmap.actions.BuildBulkEnrichmentMapActionListener;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.model.JMultiLineToolTip;
 import org.baderlab.csplugins.enrichmentmap.util.SwingUtil;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
@@ -40,8 +36,10 @@ import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CySessionManager;
+import org.cytoscape.util.swing.BasicCollapsiblePanel;
 import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 
 /**
  * Created by IntelliJ IDEA.
@@ -50,10 +48,9 @@ import org.cytoscape.util.swing.FileUtil;
  * Time: 9:17 AM
  * To change this template use File | Settings | File Templates.
  */
+@SuppressWarnings("serial")
 public class BulkEMCreationPanel extends JPanel implements CytoPanelComponent{
 
-    private static final long serialVersionUID = 7233557042420194604L;
-    
     private FileUtil fileUtil;
     private CySwingApplication application;
     private CyServiceRegistrar registrar;
@@ -63,13 +60,13 @@ public class BulkEMCreationPanel extends JPanel implements CytoPanelComponent{
     
     private EnrichmentMapParameters params;
 
-    //Genesets file related components
-    //user specified file names
-    private JFormattedTextField GSEAResultsDirTextField;
+	// Genesets file related components
+    // user specified file names
+    private JFormattedTextField gseaResultsDirTextField;
 
     //directory for GMT and GCT if they are different than the RPT file
-    private JFormattedTextField GMTDirectoryTextField;
-    private JFormattedTextField GCTDirectoryTextField;
+    private JFormattedTextField gmtDirectoryTextField;
+    private JFormattedTextField gctDirectoryTextField;
 
     private JFormattedTextField pvalueTextField;
     private JFormattedTextField qvalueTextField;
@@ -85,8 +82,8 @@ public class BulkEMCreationPanel extends JPanel implements CytoPanelComponent{
     private JRadioButton jaccard;
     private JRadioButton combined;
 
-    private JRadioButton onesession;
-    private JRadioButton multisession;
+    private JRadioButton oneSessionRadio;
+    private JRadioButton multiSessionRadio;
     private boolean sessions = true;
 
     DecimalFormat decFormat; // used in the formatted text fields
@@ -96,448 +93,432 @@ public class BulkEMCreationPanel extends JPanel implements CytoPanelComponent{
     
     private boolean similarityCutOffChanged = false;
     
-    public BulkEMCreationPanel(CySwingApplication application, FileUtil fileUtil, CyServiceRegistrar registrar,CySessionManager sessionManager, StreamUtil streamUtil, CyApplicationManager applicationManager) {
-          params = new EnrichmentMapParameters(sessionManager, streamUtil, applicationManager);
-          this.streamUtil = streamUtil;
-          this.cySessionManager = cySessionManager;
-          this.applicationManager = applicationManager;
-          this.application = application;
-          this.fileUtil = fileUtil;
-          this.registrar = registrar;
-          
-        //create the three main panels: scope, advanced options, and bottom
-        JPanel AnalysisTypePanel = createAnalysisTypePanel();
+	public BulkEMCreationPanel(CySwingApplication application, FileUtil fileUtil, CyServiceRegistrar registrar,
+			CySessionManager sessionManager, StreamUtil streamUtil, CyApplicationManager applicationManager) {
+		params = new EnrichmentMapParameters(sessionManager, streamUtil, applicationManager);
+		this.streamUtil = streamUtil;
+		this.cySessionManager = sessionManager;
+		this.applicationManager = applicationManager;
+		this.application = application;
+		this.fileUtil = fileUtil;
+		this.registrar = registrar;
 
-        //Put the options panel into a scroll pain
+		if (LookAndFeelUtil.isAquaLAF())
+			setOpaque(false);
 
-        CollapsiblePanel OptionsPanel = createOptionsPanel();
-        OptionsPanel.setCollapsed(false);
-        //JScrollPane scroll = new JScrollPane(OptionsPanel);
+		// create the three main panels
+		JPanel analysisTypePanel = createAnalysisTypePanel();
+		JPanel optionsPanel = createOptionsPanel();
+		JPanel bottomPanel = createBottomPanel();
 
-        //Since the advanced options panel is being added to the center of this border layout
-        //it will stretch it's height to fit the main panel.  To prevent this we create an
-        //additional border layout panel and add advanced options to it's north compartment
-        JPanel advancedOptionsContainer = new JPanel(new BorderLayout());
-        //advancedOptionsContainer.add(scroll, BorderLayout.CENTER);
-        advancedOptionsContainer.add(OptionsPanel, BorderLayout.CENTER);
-        JPanel bottomPanel = createBottomPanel();
+		// Add all the vertically aligned components to the main panel
+		final GroupLayout layout = new GroupLayout(this);
+		setLayout(layout);
+		layout.setAutoCreateContainerGaps(false);
+		layout.setAutoCreateGaps(false);
+		
+		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
+				.addComponent(analysisTypePanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(optionsPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(bottomPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addComponent(analysisTypePanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(optionsPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(bottomPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+		);
+	}
 
-        //Add all the vertically aligned components to the main panel
-        //Add all the vertically aligned components to the main panel
-        add(AnalysisTypePanel,BorderLayout.NORTH);
-        add(advancedOptionsContainer,BorderLayout.CENTER);
-        add(bottomPanel,BorderLayout.SOUTH);
+	/**
+	 * Creates a panel that holds main user inputs geneset files, datasets and parameters
+	 */
+	private JPanel createOptionsPanel() {
+		JPanel gmtPanel = createGMTPanel();
 
+		BasicCollapsiblePanel paramsPanel = createParametersPanel();
+		paramsPanel.setCollapsed(true);
 
-    }
+		BasicCollapsiblePanel gmtDirPanel = createDiffGMTGCTDirectory();
+		gmtDirPanel.setCollapsed(true);
+
+		JPanel panel = new JPanel();
+		GroupLayout layout = new GroupLayout(panel);
+		panel.setLayout(layout);
+		layout.setAutoCreateContainerGaps(false);
+		layout.setAutoCreateGaps(true);
+
+		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
+				.addComponent(gmtPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(paramsPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(gmtDirPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addComponent(gmtPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(paramsPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(gmtDirPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+		);
+		
+		if (LookAndFeelUtil.isAquaLAF())
+			panel.setOpaque(false);
+
+		return panel;
+	}
 
     /**
-            * Creates a collapsible panel that holds main user inputs geneset files, datasets and parameters
-            *
-            * @return collapsablePanel - main analysis panel
-            */
-           private CollapsiblePanel createOptionsPanel() {
-               CollapsiblePanel collapsiblePanel = new CollapsiblePanel("User Input");
-
-               JPanel panel = new JPanel();
-               panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-
-               //Gene set file panel
-               CollapsiblePanel GMTcollapsiblePanel = createGMTPanel();
-               GMTcollapsiblePanel.setCollapsed(false);
-
-               //Parameters collapsible panel
-               CollapsiblePanel ParametersPanel = createParametersPanel();
-               ParametersPanel.setCollapsed(false);
-
-                //GMT and GCT path changer
-                CollapsiblePanel GMTDirPanel = createDiffGMTGCTDirectory();
-                GMTDirPanel.setCollapsed(true);
-
-               panel.add(GMTcollapsiblePanel);
-               panel.add(ParametersPanel);
-                panel.add(GMTDirPanel);
-
-               collapsiblePanel.getContentPane().add(panel, BorderLayout.NORTH);
-               return collapsiblePanel;
-           }
-
-    /**
-     * Creates a collapsible panel that holds the different paths for the GMT and GCt file
+     * Creates a collapsible panel that holds the different paths for the GMT and GCt file.
      *
      * Only required when the user has moved the location of the these files and they are different
      * than the ones defined in the RPT file
-     * @return CollapsiblePanel
      */
+	private BasicCollapsiblePanel createDiffGMTGCTDirectory() {
+		BasicCollapsiblePanel panel = new BasicCollapsiblePanel("Advanced");
 
-    private CollapsiblePanel createDiffGMTGCTDirectory(){
-      CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Advanced");
+		// add GMT file
+		JLabel gmtLabel = new JLabel("Directory containing GMT file:");
+		
+		JButton selectGMTDirButton = new JButton("Browse...");
+		
+		gmtDirectoryTextField = new JFormattedTextField();
+		gmtDirectoryTextField.setColumns(defaultColumns);
+		// components needed for the directory load
+		gmtDirectoryTextField.setFont(new java.awt.Font("Dialog", 1, 10));
+		gmtDirectoryTextField.addPropertyChangeListener("value", new BulkEMCreationPanel.FormattedTextFieldAction());
 
+		selectGMTDirButton.addActionListener((ActionEvent evt) -> {
+			selectGMTDirButtonActionPerformed(evt);
+		});
 
-            JPanel panel = new JPanel();
-            panel.setLayout(new GridLayout(0, 1));
+		// add GMT file
+		JLabel gctLabel = new JLabel("Directory containing GCT file:");
+		
+		JButton selectGCTDirButton = new JButton("Browse...");
+		gctDirectoryTextField = new JFormattedTextField();
+		gctDirectoryTextField.setColumns(defaultColumns);
 
-            //add GMT file
-            JLabel GMTLabel = new JLabel("Directory containing GMT file:"){
-                 /**
-                 *
-                 */
-                private static final long serialVersionUID = -122741876830022713L;
+		// components needed for the directory load
+		gctDirectoryTextField.addPropertyChangeListener("value", new BulkEMCreationPanel.FormattedTextFieldAction());
 
-                public JToolTip createToolTip() {
-                      return new JMultiLineToolTip();
-                 }
-            };
-            JButton selectGMTDirButton = new JButton();
-            GMTDirectoryTextField = new JFormattedTextField() ;
-            GMTDirectoryTextField.setColumns(defaultColumns);
+		selectGCTDirButton.addActionListener((ActionEvent evt) -> {
+			selectGCTDirButtonActionPerformed(evt);
+		});
 
+		// add the ability to specify range of directories to use when building maps.
+		// qvalue cutoff input
+		String lowerTip =
+				"<html>Sets the lower limit<br />" +
+				"of the directory number you want to<br />" +
+				"use when creating networks.</html>";
+		
+		JLabel lowerLimitLabel = new JLabel("Lower Limit:");
+		lowerLimitLabel.setToolTipText(lowerTip);
+		
+		lowerLimitField = new JFormattedTextField(numFormat);
+		lowerLimitField.setColumns(3);
+		lowerLimitField.addPropertyChangeListener("value", new BulkEMCreationPanel.FormattedTextFieldAction());
+		lowerLimitField.setToolTipText(lowerTip);
+		lowerLimitField.setText("1");
+		lowerLimitField.setValue(1);
 
-           //components needed for the directory load
-           GMTDirectoryTextField.setFont(new java.awt.Font("Dialog",1,10));
-           //GSEAResultsDirTextField.setText(gmt_instruction);
-           GMTDirectoryTextField.addPropertyChangeListener("value",new BulkEMCreationPanel.FormattedTextFieldAction());
+		// add the ability to specify range of directories to use when building maps.
+		// qvalue cutoff input
+		String upperTip =
+				"<html>Sets the upper limit<br />" +
+				"of the directory number you want to<br />" +
+				"use when creating networks.</html>";
+		
+		JLabel upperLimitLabel = new JLabel("Upper Limit:");
+		upperLimitLabel.setToolTipText(upperTip);
+		
+		upperLimitField = new JFormattedTextField(numFormat);
+		upperLimitField.setColumns(3);
+		upperLimitField.addPropertyChangeListener("value", new BulkEMCreationPanel.FormattedTextFieldAction());
+		upperLimitField.setToolTipText(upperTip);
+		upperLimitField.setText("1");
+		upperLimitField.setValue(1);
 
+		// add check box to indicate if you want to create one session or multiple sessions
+		oneSessionRadio = new JRadioButton("One Session File");
+		oneSessionRadio.setActionCommand("onesession");
+		oneSessionRadio.setSelected(true);
+		multiSessionRadio = new JRadioButton("Multiple Session files");
+		multiSessionRadio.setActionCommand("multisession");
 
-           selectGMTDirButton.setText("...");
-           selectGMTDirButton.setMargin(new Insets(0,0,0,0));
-           selectGMTDirButton
-                           .addActionListener(new java.awt.event.ActionListener() {
-                               public void actionPerformed(java.awt.event.ActionEvent evt) {
-                                   selectGMTDirButtonActionPerformed(evt);
-                               }
-           });
+		multiSessionRadio.setSelected(true);
+		oneSessionRadio.setSelected(false);
 
-           JPanel newGMTDirPanel = new JPanel();
-           newGMTDirPanel.setLayout(new BorderLayout());
+		ButtonGroup sessionsgroup = new ButtonGroup();
+		sessionsgroup.add(oneSessionRadio);
+		sessionsgroup.add(multiSessionRadio);
 
-           newGMTDirPanel.add(GMTLabel,BorderLayout.WEST);
-           newGMTDirPanel.add(GMTDirectoryTextField, BorderLayout.CENTER);
-           newGMTDirPanel.add( selectGMTDirButton, BorderLayout.EAST);
+		oneSessionRadio.addActionListener((ActionEvent evt) -> {
+			selectOneMultiSessionActionPerformed(evt);
+		});
 
-           panel.add(newGMTDirPanel);
+		multiSessionRadio.addActionListener((ActionEvent evt) -> {
+			selectOneMultiSessionActionPerformed(evt);
+		});
 
-
-            //add GMT file
-            JLabel GCTLabel = new JLabel("Directory containing GCT file:"){
-                 /**
-                 *
-                 */
-                private static final long serialVersionUID = -122741876830022713L;
-
-                public JToolTip createToolTip() {
-                      return new JMultiLineToolTip();
-                 }
-            };
-            JButton selectGCTDirButton = new JButton();
-            GCTDirectoryTextField = new JFormattedTextField() ;
-            GCTDirectoryTextField.setColumns(defaultColumns);
-
-
-           //components needed for the directory load
-           GCTDirectoryTextField.setFont(new java.awt.Font("Dialog",1,10));
-           //GSEAResultsDirTextField.setText(gmt_instruction);
-           GCTDirectoryTextField.addPropertyChangeListener("value",new BulkEMCreationPanel.FormattedTextFieldAction());
-
-
-           selectGCTDirButton.setText("...");
-           selectGCTDirButton.setMargin(new Insets(0,0,0,0));
-           selectGCTDirButton
-                           .addActionListener(new java.awt.event.ActionListener() {
-                               public void actionPerformed(java.awt.event.ActionEvent evt) {
-                                   selectGCTDirButtonActionPerformed(evt);
-                               }
-           });
-
-           JPanel newGCTDirPanel = new JPanel();
-           newGCTDirPanel.setLayout(new BorderLayout());
-
-           newGCTDirPanel.add(GCTLabel,BorderLayout.WEST);
-           newGCTDirPanel.add(GCTDirectoryTextField, BorderLayout.CENTER);
-           newGCTDirPanel.add( selectGCTDirButton, BorderLayout.EAST);
-
-           panel.add(newGCTDirPanel);
-
-
-          //add the ability to specify range of directories to use when building maps.
-           //qvalue cutoff input
-              JLabel lowerlimitLabel = new JLabel("Lower limit:");
-              lowerLimitField = new JFormattedTextField(numFormat);
-              lowerLimitField.setColumns(3);
-              lowerLimitField.addPropertyChangeListener("value", new BulkEMCreationPanel.FormattedTextFieldAction());
-              String lowerTip = "Sets the lower limit \n" +
-                      "of the directory number you want to  \n"+
-                       "use when creating networks.";
-              lowerLimitField.setToolTipText(lowerTip);
-              lowerLimitField.setText("1");
-              lowerLimitField.setValue(1);
-
-              JPanel lowerLimitPanel = new JPanel();
-              lowerLimitPanel.setLayout(new BorderLayout());
-              lowerLimitPanel.setToolTipText(lowerTip);
-
-              lowerLimitPanel.add(lowerlimitLabel, BorderLayout.WEST);
-              lowerLimitPanel.add(lowerLimitField, BorderLayout.EAST);
-
-           //add the ability to specify range of directories to use when building maps.
-           //qvalue cutoff input
-              JLabel upperlimitLabel = new JLabel("Upper limit:");
-              upperLimitField = new JFormattedTextField(numFormat);
-              upperLimitField.setColumns(3);
-              upperLimitField.addPropertyChangeListener("value", new BulkEMCreationPanel.FormattedTextFieldAction());
-              String upperTip = "Sets the upper limit \n" +
-                      "of the directory number you want to  \n"+
-                       "use when creating networks.";
-              upperLimitField.setToolTipText(upperTip);
-              upperLimitField.setText("1");
-              upperLimitField.setValue(1);
-
-              JPanel upperLimitPanel = new JPanel();
-              upperLimitPanel.setLayout(new BorderLayout());
-              upperLimitPanel.setToolTipText(upperTip);
-
-              upperLimitPanel.add(upperlimitLabel, BorderLayout.WEST);
-              upperLimitPanel.add(upperLimitField, BorderLayout.EAST);
-
-           panel.add(lowerLimitPanel);
-           panel.add(upperLimitPanel);
-
-            //add check box to indicate if you want to create one session or multiple sessions
-           ButtonGroup sessionsgroup;
-
-          onesession = new JRadioButton("One session File");
-          onesession.setActionCommand("onesession");
-          onesession.setSelected(true);
-          multisession = new JRadioButton("Multiple session files");
-          multisession.setActionCommand("multisession");
-
-           multisession.setSelected(true);
-           onesession.setSelected(false);
-
-          sessionsgroup = new javax.swing.ButtonGroup();
-          sessionsgroup.add(onesession);
-          sessionsgroup.add(multisession);
-
-
-          onesession.addActionListener(new java.awt.event.ActionListener() {
-                    public void actionPerformed(java.awt.event.ActionEvent evt) {
-                           selectOneMultiSessionActionPerformed(evt);
-                    }
-              });
-
-          multisession.addActionListener(new java.awt.event.ActionListener() {
-                    public void actionPerformed(java.awt.event.ActionEvent evt) {
-                           selectOneMultiSessionActionPerformed(evt);
-                    }
-              });
-
-        //create a panel for the two buttons
-              JPanel session_buttons = new JPanel();
-              session_buttons.setLayout(new BorderLayout());
-              session_buttons.add(onesession, BorderLayout.NORTH);
-              session_buttons.add(multisession, BorderLayout.SOUTH);
-
-           panel.add(session_buttons);
-           collapsiblePanel.getContentPane().add(panel, BorderLayout.NORTH);
-           return collapsiblePanel;
+		makeSmall(gmtLabel, gmtDirectoryTextField, selectGMTDirButton);
+		makeSmall(gctLabel, gctDirectoryTextField, selectGCTDirButton);
+		makeSmall(lowerLimitLabel, lowerLimitField, upperLimitLabel, upperLimitField);
+		makeSmall(oneSessionRadio, multiSessionRadio);
+		
+		// add the components to the panel
+		final GroupLayout layout = new GroupLayout(panel.getContentPane());
+		panel.getContentPane().setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
+		
+		layout.setHorizontalGroup(layout.createSequentialGroup()
+				.addGroup(layout.createParallelGroup(Alignment.TRAILING, true)
+						.addComponent(gmtLabel)
+						.addComponent(gctLabel)
+						.addComponent(lowerLimitLabel)
+						.addComponent(upperLimitLabel)
+				)
+				.addPreferredGap(ComponentPlacement.RELATED)
+				.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
+						.addGroup(layout.createSequentialGroup()
+								.addComponent(gmtDirectoryTextField, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+								.addComponent(selectGMTDirButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						)
+						.addGroup(layout.createSequentialGroup()
+								.addComponent(gctDirectoryTextField, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+								.addComponent(selectGCTDirButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						)
+						.addComponent(lowerLimitField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(upperLimitField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(oneSessionRadio, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(multiSessionRadio, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+						.addComponent(gmtLabel)
+						.addComponent(gmtDirectoryTextField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(selectGMTDirButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
+				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+						.addComponent(gctLabel)
+						.addComponent(gctDirectoryTextField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(selectGCTDirButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
+				.addPreferredGap(ComponentPlacement.UNRELATED)
+				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+						.addComponent(lowerLimitLabel)
+						.addComponent(lowerLimitField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
+				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+						.addComponent(upperLimitLabel)
+						.addComponent(upperLimitField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
+				.addPreferredGap(ComponentPlacement.UNRELATED)
+				.addComponent(oneSessionRadio)
+				.addComponent(multiSessionRadio)
+		);
+		
+		if (LookAndFeelUtil.isAquaLAF())
+			panel.setOpaque(false);
+		
+		return panel;
     }
 
-
     /**
-     * Creates a collapsible panel that holds gene set file specification
-     *
-     * @return collapsible panel - gmt gene set file specification interface
+     * Creates a panel that holds gene set file specification
      */
-        private CollapsiblePanel createGMTPanel() {
-            CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Gene Sets");
+	private JPanel createGMTPanel() {
+		JButton selectGMTFileButton = new JButton("Browse...");
+		gseaResultsDirTextField = new JFormattedTextField();
+		gseaResultsDirTextField.setColumns(defaultColumns);
 
-            JPanel panel = new JPanel();
-            panel.setLayout(new GridLayout(0, 1));
+		// components needed for the directory load
+		// GSEAResultsDirTextField.setText(gmt_instruction);
+		gseaResultsDirTextField.addPropertyChangeListener("value", new BulkEMCreationPanel.FormattedTextFieldAction());
 
-            //add GMT file
-            JLabel GMTLabel = new JLabel("GSEA Results directory:"){
-                 /**
-                 *
-                 */
-                private static final long serialVersionUID = -122741876830022713L;
+		selectGMTFileButton.addActionListener((ActionEvent evt) -> {
+			selectGMTFileButtonActionPerformed(evt);
+		});
 
-                public JToolTip createToolTip() {
-                      return new JMultiLineToolTip();
-                 }
-            };
-            JButton selectGMTFileButton = new JButton();
-            GSEAResultsDirTextField = new JFormattedTextField() ;
-            GSEAResultsDirTextField.setColumns(defaultColumns);
+		makeSmall(gseaResultsDirTextField, selectGMTFileButton);
+		
+		JPanel panel = new JPanel();
+		panel.setBorder(LookAndFeelUtil.createTitledBorder("Gene Sets (GSEA Results directory)"));
+		
+		final GroupLayout layout = new GroupLayout(panel);
+       	panel.setLayout(layout);
+   		layout.setAutoCreateContainerGaps(true);
+   		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
+   		
+   		layout.setHorizontalGroup(layout.createSequentialGroup()
+   				.addComponent(gseaResultsDirTextField, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+   				.addComponent(selectGMTFileButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+   		);
+   		layout.setVerticalGroup(layout.createParallelGroup(Alignment.CENTER, false)
+   				.addComponent(gseaResultsDirTextField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+   				.addComponent(selectGMTFileButton)
+   		);
+   		
+   		if (LookAndFeelUtil.isAquaLAF())
+			panel.setOpaque(false);
 
+		// FIXME
+//		if (!params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_Specialized))
+//			panel.add(newGMTPanel);
 
-           //components needed for the directory load
-           GSEAResultsDirTextField.setFont(new java.awt.Font("Dialog",1,10));
-           //GSEAResultsDirTextField.setText(gmt_instruction);
-            GSEAResultsDirTextField.addPropertyChangeListener("value",new BulkEMCreationPanel.FormattedTextFieldAction());
+		return panel;
+	}
+	
+	/**
+	 * Creates a collapsable panel that holds parameter inputs
+	 */
+	private BasicCollapsiblePanel createParametersPanel() {
+		BasicCollapsiblePanel panel = new BasicCollapsiblePanel("Parameters");
+		
+		if (LookAndFeelUtil.isAquaLAF())
+			panel.setOpaque(false);
 
+		// pvalue cutoff input
+		String pvalueCutOffTip =
+				"<html>Only genesets with a p-value less than<br />"+
+				"the cutoff will be included.</html>";
+		
+		JLabel pvalueCutOffLabel = new JLabel("P-value Cutoff:");
+		pvalueCutOffLabel.setToolTipText(pvalueCutOffTip);
+		
+		pvalueTextField = new JFormattedTextField(decFormat);
+		pvalueTextField.setColumns(3);
+		pvalueTextField.addPropertyChangeListener("value", new BulkEMCreationPanel.FormattedTextFieldAction());
+		pvalueTextField.setToolTipText(pvalueCutOffTip);
+		pvalueTextField.setText(Double.toString(params.getPvalue()));
+		pvalueTextField.setValue(params.getPvalue());
 
-           selectGMTFileButton.setText("...");
-           selectGMTFileButton.setMargin(new Insets(0,0,0,0));
-           selectGMTFileButton
-                           .addActionListener(new java.awt.event.ActionListener() {
-                               public void actionPerformed(java.awt.event.ActionEvent evt) {
-                                   selectGMTFileButtonActionPerformed(evt);
-                               }
-           });
+		// qvalue cutoff input
+		String qvalueCutOffTip =
+				"<html>Only genesets with a FDR q-value less than<br />"+
+                "the cutoff will be included.</html>";
+		
+		JLabel qvalueCutOffLabel = new JLabel("FDR Q-value Cutoff:");
+		qvalueCutOffLabel.setToolTipText(qvalueCutOffTip);
+		
+		qvalueTextField = new JFormattedTextField(decFormat);
+		qvalueTextField.setColumns(3);
+		qvalueTextField.addPropertyChangeListener("value", new BulkEMCreationPanel.FormattedTextFieldAction());
+		qvalueTextField.setToolTipText(qvalueCutOffTip);
+		qvalueTextField.setText(Double.toString(params.getQvalue()));
+		qvalueTextField.setValue(params.getQvalue());
 
-           JPanel newGMTPanel = new JPanel();
-           newGMTPanel.setLayout(new BorderLayout());
+		// coefficient cutoff input
+		ButtonGroup jaccardOrOverlap;
 
-           newGMTPanel.add(GMTLabel,BorderLayout.WEST);
-           newGMTPanel.add(GSEAResultsDirTextField, BorderLayout.CENTER);
-           newGMTPanel.add( selectGMTFileButton, BorderLayout.EAST);
+		jaccard = new JRadioButton("Jaccard Coeffecient");
+		jaccard.setActionCommand("jaccard");
+		jaccard.setSelected(true);
+		overlap = new JRadioButton("Overlap Coeffecient");
+		overlap.setActionCommand("overlap");
+		combined = new JRadioButton("Jaccard+Overlap Combined");
+		combined.setActionCommand("combined");
+		
+		if (params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_JACCARD)) {
+			jaccard.setSelected(true);
+			overlap.setSelected(false);
+			combined.setSelected(false);
+		} else if (params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_OVERLAP)) {
+			jaccard.setSelected(false);
+			overlap.setSelected(true);
+			combined.setSelected(false);
+		} else if (params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_COMBINED)) {
+			jaccard.setSelected(false);
+			overlap.setSelected(false);
+			combined.setSelected(true);
+		}
+		
+		jaccardOrOverlap = new ButtonGroup();
+		jaccardOrOverlap.add(jaccard);
+		jaccardOrOverlap.add(overlap);
+		jaccardOrOverlap.add(combined);
 
-           //add the components to the panel
-           if(!params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_Specialized))
-                panel.add(newGMTPanel);
+		jaccard.addActionListener((ActionEvent evt) -> {
+			selectJaccardOrOverlapActionPerformed(evt);
+		});
+		overlap.addActionListener((ActionEvent evt) -> {
+			selectJaccardOrOverlapActionPerformed(evt);
+		});
+		combined.addActionListener((ActionEvent evt) -> {
+			selectJaccardOrOverlapActionPerformed(evt);
+		});
 
-           collapsiblePanel.getContentPane().add(panel, BorderLayout.NORTH);
-           return collapsiblePanel;
+		String coeffecientCutOffTip =
+				"<html>Sets the Jaccard or Overlap coeffecient cutoff.<br />" +
+				"only edges with a Jaccard or Overlap coffecient less than<br />" +
+				"the cutoff will be added.</html>";
+		
+		JLabel coeffecientCutOffLabel = new JLabel("Cutoff:");
+		coeffecientCutOffLabel.setToolTipText(coeffecientCutOffTip);
+		
+		coeffecientTextField = new JFormattedTextField(decFormat);
+		coeffecientTextField.setColumns(3);
+		coeffecientTextField.addPropertyChangeListener("value", new BulkEMCreationPanel.FormattedTextFieldAction());
+		coeffecientTextField.setToolTipText(coeffecientCutOffTip);
+		// coeffecientTextField.setText(Double.toString(params.getSimilarityCutOff()));
+		coeffecientTextField.setValue(params.getSimilarityCutOff());
+		similarityCutOffChanged = false; // reset for new Panel after .setValue(...) wrongly changed it to "true"
 
-        }
-    /**
-           * Creates a collapsable panel that holds parameter inputs
-           *
-           * @return panel containing the parameter specification interface
-           */
-          private CollapsiblePanel createParametersPanel() {
-              CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Parameters");
-
-              JPanel panel = new JPanel();
-              panel.setLayout(new GridLayout(0, 1));
-
-              //pvalue cutoff input
-              JLabel pvalueCutOffLabel = new JLabel("P-value Cutoff");
-              pvalueTextField = new JFormattedTextField(decFormat);
-              pvalueTextField.setColumns(3);
-              pvalueTextField.addPropertyChangeListener("value", new BulkEMCreationPanel.FormattedTextFieldAction());
-              String pvalueCutOffTip = "Sets the p-value cutoff \n" +
-                      "only genesets with a p-value less than \n"+
-                       "the cutoff will be included.";
-              pvalueTextField.setToolTipText(pvalueCutOffTip);
-              pvalueTextField.setText(Double.toString(params.getPvalue()));
-              pvalueTextField.setValue(params.getPvalue());
-
-              JPanel pvalueCutOffPanel = new JPanel();
-              pvalueCutOffPanel.setLayout(new BorderLayout());
-              pvalueCutOffPanel.setToolTipText(pvalueCutOffTip);
-
-              pvalueCutOffPanel.add(pvalueCutOffLabel, BorderLayout.WEST);
-              pvalueCutOffPanel.add(pvalueTextField, BorderLayout.EAST);
-
-
-               //qvalue cutoff input
-              JLabel qvalueCutOffLabel = new JLabel("FDR Q-value Cutoff");
-              qvalueTextField = new JFormattedTextField(decFormat);
-              qvalueTextField.setColumns(3);
-              qvalueTextField.addPropertyChangeListener("value", new BulkEMCreationPanel.FormattedTextFieldAction());
-              String qvalueCutOffTip = "Sets the FDR q-value cutoff \n" +
-                      "only genesets with a FDR q-value less than \n"+
-                       "the cutoff will be included.";
-              qvalueTextField.setToolTipText(qvalueCutOffTip);
-              qvalueTextField.setText(Double.toString(params.getQvalue()));
-              qvalueTextField.setValue(params.getQvalue());
-
-              JPanel qvalueCutOffPanel = new JPanel();
-              qvalueCutOffPanel.setLayout(new BorderLayout());
-              qvalueCutOffPanel.setToolTipText(qvalueCutOffTip);
-
-              qvalueCutOffPanel.add(qvalueCutOffLabel, BorderLayout.WEST);
-              qvalueCutOffPanel.add(qvalueTextField, BorderLayout.EAST);
-
-              //coefficient cutoff input
-
-              ButtonGroup jaccardOrOverlap;
-
-              jaccard = new JRadioButton("Jaccard Coeffecient");
-              jaccard.setActionCommand("jaccard");
-              jaccard.setSelected(true);
-              overlap = new JRadioButton("Overlap Coeffecient");
-              overlap.setActionCommand("overlap");
-              combined = new JRadioButton("Jaccard+Overlap Combined");
-              combined.setActionCommand("combined");
-               if ( params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_JACCARD) ) {
-               jaccard.setSelected(true);
-               overlap.setSelected(false);
-               combined.setSelected(false);
-           } else if ( params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_OVERLAP)){
-               jaccard.setSelected(false);
-               overlap.setSelected(true);
-               combined.setSelected(false);
-           }
-           else if ( params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_COMBINED)){
-               jaccard.setSelected(false);
-               overlap.setSelected(false);
-               combined.setSelected(true);
-           }
-              jaccardOrOverlap = new javax.swing.ButtonGroup();
-              jaccardOrOverlap.add(jaccard);
-           jaccardOrOverlap.add(overlap);
-           jaccardOrOverlap.add(combined);
-
-           jaccard.addActionListener(new java.awt.event.ActionListener() {
-                        public void actionPerformed(java.awt.event.ActionEvent evt) {
-                               selectJaccardOrOverlapActionPerformed(evt);
-                        }
-                  });
-
-           overlap.addActionListener(new java.awt.event.ActionListener() {
-                        public void actionPerformed(java.awt.event.ActionEvent evt) {
-                               selectJaccardOrOverlapActionPerformed(evt);
-                        }
-                  });
-           combined.addActionListener(new java.awt.event.ActionListener() {
-                        public void actionPerformed(java.awt.event.ActionEvent evt) {
-                               selectJaccardOrOverlapActionPerformed(evt);
-                        }
-                  });
-
-              //create a panel for the two buttons
-              JPanel index_buttons = new JPanel();
-              index_buttons.setLayout(new BorderLayout());
-              index_buttons.add(jaccard, BorderLayout.NORTH);
-              index_buttons.add(overlap, BorderLayout.SOUTH);
-
-              JLabel coeffecientCutOffLabel = new JLabel("Cutoff");
-              coeffecientTextField = new JFormattedTextField(decFormat);
-              coeffecientTextField.setColumns(3);
-              coeffecientTextField.addPropertyChangeListener("value", new BulkEMCreationPanel.FormattedTextFieldAction());
-              String coeffecientCutOffTip = "Sets the Jaccard or Overlap coeffecient cutoff \n" +
-                                "only edges with a Jaccard or Overlap coffecient less than \n"+
-                                 "the cutoff will be added.";
-             coeffecientTextField.setToolTipText(coeffecientCutOffTip);
-//          coeffecientTextField.setText(Double.toString(params.getSimilarityCutOff()));
-             coeffecientTextField.setValue(params.getSimilarityCutOff());
-             similarityCutOffChanged = false; //reset for new Panel after .setValue(...) wrongly changed it to "true"
-
-             JPanel coeffecientCutOffPanel = new JPanel();
-             coeffecientCutOffPanel.setLayout(new BorderLayout());
-             coeffecientCutOffPanel.setToolTipText(coeffecientCutOffTip);
-
-             coeffecientCutOffPanel.add(index_buttons,BorderLayout.WEST);
-             coeffecientCutOffPanel.add(coeffecientCutOffLabel, BorderLayout.CENTER);
-             coeffecientCutOffPanel.add(coeffecientTextField, BorderLayout.EAST);
-
-              //add the components to the panel
-              panel.add(pvalueCutOffPanel);
-              panel.add(qvalueCutOffPanel);
-              //panel.add(coeffecientCutOffPanel);
-
-              collapsiblePanel.getContentPane().add(panel, BorderLayout.NORTH);
-              collapsiblePanel.getContentPane().add(coeffecientCutOffPanel, BorderLayout.SOUTH);
-              return collapsiblePanel;
-          }
+		makeSmall(pvalueCutOffLabel, pvalueTextField, qvalueCutOffLabel, qvalueTextField);
+		makeSmall(jaccard, overlap, combined);
+		makeSmall(coeffecientCutOffLabel, coeffecientTextField);
+		
+		// add the components to the panel
+		final GroupLayout layout = new GroupLayout(panel.getContentPane());
+		panel.getContentPane().setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
+		
+		layout.setHorizontalGroup(layout.createSequentialGroup()
+				.addGroup(layout.createParallelGroup(Alignment.TRAILING, true)
+						.addComponent(pvalueCutOffLabel)
+						.addComponent(qvalueCutOffLabel)
+						.addComponent(coeffecientCutOffLabel)
+				)
+				.addPreferredGap(ComponentPlacement.RELATED)
+				.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
+						.addComponent(pvalueTextField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(qvalueTextField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(jaccard, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(overlap, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(combined, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(coeffecientTextField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+						.addComponent(pvalueCutOffLabel)
+						.addComponent(pvalueTextField)
+				)
+				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+						.addComponent(qvalueCutOffLabel)
+						.addComponent(qvalueTextField)
+				)
+				.addPreferredGap(ComponentPlacement.UNRELATED)
+				.addComponent(jaccard)
+				.addComponent(overlap)
+				.addComponent(combined)
+				.addPreferredGap(ComponentPlacement.UNRELATED)
+				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+						.addComponent(coeffecientCutOffLabel)
+						.addComponent(coeffecientTextField)
+				)
+		);
+		
+		return panel;
+	}
 
      /**
      * Handles setting for the text field parameters that are numbers.
      * Makes sure that the numbers make sense.
      */
      private class FormattedTextFieldAction implements PropertyChangeListener {
+    	 
+    	 @Override
         public void propertyChange(PropertyChangeEvent e) {
             JFormattedTextField source = (JFormattedTextField) e.getSource();
 
@@ -590,42 +571,42 @@ public class BulkEMCreationPanel extends JPanel implements CytoPanelComponent{
                     message += "The upper limit must be greater than 0.";
                     invalid = true;
                 }
-            }else if (source == GSEAResultsDirTextField) {
-                String value = GSEAResultsDirTextField.getText();
+            }else if (source == gseaResultsDirTextField) {
+                String value = gseaResultsDirTextField.getText();
                 if(value.equalsIgnoreCase("") )
                     params.setGSEAResultsDirName(value);
-                else if(GSEAResultsDirTextField.getText().equalsIgnoreCase((String)e.getOldValue())){
+                else if(gseaResultsDirTextField.getText().equalsIgnoreCase((String)e.getOldValue())){
                    //do nothing
                 }
                 else if(checkFile(value).equals(Color.RED)){
                     JOptionPane.showMessageDialog(application.getJFrame(),message,"File name change entered is not a valid file name",JOptionPane.WARNING_MESSAGE);
-                    GSEAResultsDirTextField.setForeground(checkFile(value));
+                    gseaResultsDirTextField.setForeground(checkFile(value));
                 }
                else
             	   params.getFiles().get(EnrichmentMap.DATASET1).setGMTFileName(value);
-            }else if (source == GMTDirectoryTextField) {
-                String value = GMTDirectoryTextField.getText();
+            }else if (source == gmtDirectoryTextField) {
+                String value = gmtDirectoryTextField.getText();
                 if(value.equalsIgnoreCase("") )
                     params.setGMTDirName(value);
-                else if(GMTDirectoryTextField.getText().equalsIgnoreCase((String)e.getOldValue())){
+                else if(gmtDirectoryTextField.getText().equalsIgnoreCase((String)e.getOldValue())){
                    //do nothing
                 }
                 else if(checkFile(value).equals(Color.RED)){
                     JOptionPane.showMessageDialog(application.getJFrame(),message,"Directory name change entered is not a valid file name",JOptionPane.WARNING_MESSAGE);
-                    GMTDirectoryTextField.setForeground(checkFile(value));
+                    gmtDirectoryTextField.setForeground(checkFile(value));
                 }
                else
             	   params.getFiles().get(EnrichmentMap.DATASET1).setGMTFileName(value);
-            }else if (source == GCTDirectoryTextField) {
-                String value = GCTDirectoryTextField.getText();
+            }else if (source == gctDirectoryTextField) {
+                String value = gctDirectoryTextField.getText();
                 if(value.equalsIgnoreCase("") )
                     params.setGCTDirName(value);
-                else if(GCTDirectoryTextField.getText().equalsIgnoreCase((String)e.getOldValue())){
+                else if(gctDirectoryTextField.getText().equalsIgnoreCase((String)e.getOldValue())){
                    //do nothing
                 }
                 else if(checkFile(value).equals(Color.RED)){
                     JOptionPane.showMessageDialog(application.getJFrame(),message,"Directory name change entered is not a valid file name",JOptionPane.WARNING_MESSAGE);
-                    GCTDirectoryTextField.setForeground(checkFile(value));
+                    gctDirectoryTextField.setForeground(checkFile(value));
                 }
                else
             	   params.getFiles().get(EnrichmentMap.DATASET1).setGMTFileName(value);
@@ -725,7 +706,7 @@ public class BulkEMCreationPanel extends JPanel implements CytoPanelComponent{
            // Get the file name
            File file = fileUtil.getFile(SwingUtil.getWindowInstance(this),"Import gmt file", FileUtil.LOAD,all_filters);
            if(file != null) {
-               GSEAResultsDirTextField.setText(file.getParent());
+               gseaResultsDirTextField.setText(file.getParent());
                params.setGSEAResultsDirName(file.getParent());
            }
        }
@@ -753,7 +734,7 @@ public class BulkEMCreationPanel extends JPanel implements CytoPanelComponent{
            // Get the file name
            File file = fileUtil.getFile(SwingUtil.getWindowInstance(this), "GMT directory", FileUtil.LOAD,all_filters);
            if(file != null) {
-               GMTDirectoryTextField.setText(file.getParent());
+               gmtDirectoryTextField.setText(file.getParent());
                params.setGMTDirName(file.getParent());
            }
        }
@@ -782,48 +763,41 @@ public class BulkEMCreationPanel extends JPanel implements CytoPanelComponent{
            // Get the file name
            File file = fileUtil.getFile(SwingUtil.getWindowInstance(this),"GCT directory", FileUtil.LOAD,all_filters);
            if(file != null) {
-               GCTDirectoryTextField.setText(file.getParent());
+               gctDirectoryTextField.setText(file.getParent());
                params.setGCTDirName(file.getParent());
            }
        }
 
-    /**
-         * Utility method that creates a panel for buttons at the bottom of the Enrichment Map Panel
-         *
-         * @return a flow layout panel containing the build map and cancel buttons
-         */
-        private JPanel createBottomPanel() {
-            JPanel panel = new JPanel();
-            panel.setLayout(new FlowLayout());
+	/**
+	 * Utility method that creates a panel for buttons at the bottom of the Enrichment Map Panel
+	 */
+	private JPanel createBottomPanel() {
+		JButton resetButton = new JButton("Reset");
+		resetButton.addActionListener(new java.awt.event.ActionListener() {
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
+				resetPanel();
+			}
+		});
 
-            JButton closeButton = new JButton();
-            JButton importButton = new JButton();
+		JButton closeButton = new JButton("Close");
+		closeButton.addActionListener(new java.awt.event.ActionListener() {
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
+				cancelButtonActionPerformed(evt);
+			}
+		});
 
-            JButton resetButton = new JButton ("Reset");
-               resetButton.addActionListener(new java.awt.event.ActionListener() {
-                                          public void actionPerformed(java.awt.event.ActionEvent evt) {
-                                              resetPanel();
-                                          }
-                      });
+		JButton importButton = new JButton("Build");
+		// TODO:Add actionlistener
+		// importButton.addActionListener(new
+		// BuildBulkEnrichmentMapActionListener(this));
 
-            closeButton.setText("Close");
-            closeButton.addActionListener(new java.awt.event.ActionListener() {
-                public void actionPerformed(java.awt.event.ActionEvent evt) {
-                    cancelButtonActionPerformed(evt);
-                }
-            });
+		JPanel panel = LookAndFeelUtil.createOkCancelPanel(importButton, closeButton, resetButton);
+		
+		if (LookAndFeelUtil.isAquaLAF())
+			panel.setOpaque(false);
 
-            importButton.setText("Build");
-            //TODO:Add actionlistener
-            //importButton.addActionListener(new BuildBulkEnrichmentMapActionListener(this));
-            importButton.setEnabled(true);
-
-            panel.add(resetButton);
-            panel.add(closeButton);
-            panel.add(importButton);
-
-            return panel;
-        }
+		return panel;
+	}
         
         //TODO: implement un-register service for this window
         private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {
@@ -840,8 +814,8 @@ public class BulkEMCreationPanel extends JPanel implements CytoPanelComponent{
 
             this.params = new EnrichmentMapParameters(cySessionManager, streamUtil, applicationManager);
 
-            GSEAResultsDirTextField.setText("");
-            GSEAResultsDirTextField.setToolTipText(null);
+            gseaResultsDirTextField.setText("");
+            gseaResultsDirTextField.setToolTipText(null);
 
             pvalueTextField.setText(Double.toString(params.getPvalue()));
             qvalueTextField.setText(Double.toString(params.getQvalue()));
@@ -877,77 +851,57 @@ public class BulkEMCreationPanel extends JPanel implements CytoPanelComponent{
         this.params = params;
     }
 
-    private JPanel createAnalysisTypePanel() {
+	private JPanel createAnalysisTypePanel() {
+		if (params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)) {
+			gsea = new JRadioButton(EnrichmentMapParameters.method_GSEA, true);
+			generic = new JRadioButton(EnrichmentMapParameters.method_generic, false);
+		} else if (params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_generic)) {
+			gsea = new JRadioButton(EnrichmentMapParameters.method_GSEA, false);
+			generic = new JRadioButton(EnrichmentMapParameters.method_generic, true);
+		} else if (params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_Specialized)) {
+			gsea = new JRadioButton(EnrichmentMapParameters.method_GSEA, false);
+			generic = new JRadioButton(EnrichmentMapParameters.method_generic, false);
+		}
 
+		gsea.setActionCommand(EnrichmentMapParameters.method_GSEA);
+		generic.setActionCommand(EnrichmentMapParameters.method_generic);
 
-        JPanel panel = new JPanel();
+		gsea.addActionListener((ActionEvent evt) -> {
+			selectAnalysisTypeActionPerformed(evt);
+		});
+		generic.addActionListener((ActionEvent evt) -> {
+			selectAnalysisTypeActionPerformed(evt);
+		});
 
-        GridBagLayout gridbag = new GridBagLayout();
-        GridBagConstraints c = new GridBagConstraints();
-        panel.setLayout(gridbag);
+		ButtonGroup analysisOptions = new ButtonGroup();
+		analysisOptions.add(gsea);
+		analysisOptions.add(generic);
 
-        c.weighty = 1;
-        c.weightx = 1;
-        c.insets = new Insets(0,0,0,0);
-        c.fill = GridBagConstraints.HORIZONTAL;
-        panel.setBorder(BorderFactory.createTitledBorder("Analysis Type"));
+		makeSmall(gsea, generic);
+		
+		JPanel panel = new JPanel();
 
-        if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)){
-             gsea = new JRadioButton(EnrichmentMapParameters.method_GSEA, true);
-             generic = new JRadioButton(EnrichmentMapParameters.method_generic, false);
-             //david = new JRadioButton(EnrichmentMapParameters.method_DAVID, false);
-        }else if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_generic)){
-             gsea = new JRadioButton(EnrichmentMapParameters.method_GSEA, false);
-             generic = new JRadioButton(EnrichmentMapParameters.method_generic, true);
-             //david = new JRadioButton(EnrichmentMapParameters.method_DAVID, false);
-        }else if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_Specialized)){
-             gsea = new JRadioButton(EnrichmentMapParameters.method_GSEA, false);
-             generic = new JRadioButton(EnrichmentMapParameters.method_generic, false);
-             //david = new JRadioButton(EnrichmentMapParameters.method_DAVID, true);
-        }
-
-        gsea.setActionCommand(EnrichmentMapParameters.method_GSEA);
-        generic.setActionCommand(EnrichmentMapParameters.method_generic);
-        //david.setActionCommand(EnrichmentMapParameters.method_DAVID);
-
-        gsea.addActionListener(new java.awt.event.ActionListener() {
-                            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                                selectAnalysisTypeActionPerformed(evt);
-                            }
-        });
-        generic.addActionListener(new java.awt.event.ActionListener() {
-                            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                                selectAnalysisTypeActionPerformed(evt);
-                            }
-        });
-        /*david.addActionListener(new java.awt.event.ActionListener() {
-                            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                                selectAnalysisTypeActionPerformed(evt);
-                            }
-        });*/
-        ButtonGroup analysisOptions = new ButtonGroup();
-        analysisOptions.add(gsea);
-        analysisOptions.add(generic);
-        //analysisOptions.add(david);
-
-
-        c.gridx = 0;
-        c.gridwidth = 3;
-        c.gridy = 0;
-        gridbag.setConstraints(gsea, c);
-        panel.add(gsea);
-        c.gridy = 1;
-        gridbag.setConstraints(generic, c);
-        panel.add(generic);
-        /*c.gridy = 2;
-        gridbag.setConstraints(david, c);
-        panel.add(david);
-        */
-       JPanel topPanel = new JPanel();
-       topPanel.setLayout(new BorderLayout());
-       topPanel.add(panel, BorderLayout.CENTER);
-
-        return topPanel;
+		if (LookAndFeelUtil.isAquaLAF())
+			panel.setOpaque(false);
+          
+		panel.setBorder(LookAndFeelUtil.createTitledBorder("Analysis Type"));
+		final GroupLayout layout = new GroupLayout(panel);
+		panel.setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(true);
+	   		
+  		layout.setHorizontalGroup(layout.createSequentialGroup()
+  				.addGap(0, 0, Short.MAX_VALUE)
+  				.addComponent(gsea)
+  				.addComponent(generic)
+  				.addGap(0, 0, Short.MAX_VALUE)
+  		);
+  		layout.setVerticalGroup(layout.createParallelGroup(Alignment.CENTER, true)
+  				.addComponent(gsea, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+  				.addComponent(generic, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+  		);
+  		
+        return panel;
     }
 
      /**

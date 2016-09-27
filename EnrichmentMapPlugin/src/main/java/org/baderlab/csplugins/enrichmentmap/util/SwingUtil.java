@@ -2,10 +2,22 @@ package org.baderlab.csplugins.enrichmentmap.util;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
 
+import javax.swing.BorderFactory;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JList;
 import javax.swing.JPanel;
+
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.util.swing.OpenBrowser;
 
 
 public class SwingUtil {
@@ -42,4 +54,52 @@ public class SwingUtil {
     	}
     }
 	
+	public static void makeSmall(final JComponent... components) {
+		if (components == null || components.length == 0)
+			return;
+		
+		for (JComponent c : components) {
+			if (LookAndFeelUtil.isAquaLAF()) {
+				c.putClientProperty("JComponent.sizeVariant", "small");
+			} else {
+				if (c.getFont() != null)
+					c.setFont(c.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
+			}
+			
+			if (c instanceof JList) {
+				((JList<?>) c).setCellRenderer(new DefaultListCellRenderer() {
+					@Override
+					public Component getListCellRendererComponent(JList<?> list, Object value, int index,
+							boolean isSelected, boolean cellHasFocus) {
+						super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+						setFont(getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
+						
+						return this;
+					}
+				});
+			}
+		}
+	}
+	
+	public static JButton createOnlineHelpButton(String url, String toolTipText, CyServiceRegistrar serviceRegistrar) {
+		JButton btn = new JButton();
+		btn.setToolTipText(toolTipText);
+		btn.addActionListener((ActionEvent evt) -> {
+			serviceRegistrar.getService(OpenBrowser.class).openURL(url);
+		});
+		
+		if (LookAndFeelUtil.isAquaLAF()) {
+			btn.putClientProperty("JButton.buttonType", "help");
+		} else {
+			btn.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(22.0f));
+			btn.setText(IconManager.ICON_QUESTION_CIRCLE);
+			btn.setBorderPainted(false);
+			btn.setContentAreaFilled(false);
+			btn.setFocusPainted(false);
+			btn.setBorder(BorderFactory.createEmptyBorder());
+			btn.setMinimumSize(new Dimension(22, 22));
+		}
+		
+		return btn;
+	}
 }

@@ -43,16 +43,15 @@
 
 package org.baderlab.csplugins.enrichmentmap.view;
 
-import java.awt.BorderLayout;
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static org.baderlab.csplugins.enrichmentmap.util.SwingUtil.makeSmall;
+
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.FlowLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.GridLayout;
-import java.awt.Insets;
+import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -63,12 +62,15 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Scanner;
 
-import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
+import javax.swing.GroupLayout.ParallelGroup;
+import javax.swing.GroupLayout.SequentialGroup;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -81,17 +83,19 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
-import javax.swing.JToolTip;
+import javax.swing.JTextField;
+import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.ScrollPaneConstants;
+import javax.swing.Scrollable;
+import javax.swing.SwingConstants;
+import javax.swing.UIManager;
 import javax.swing.text.InternationalFormatter;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapBuildProperties;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
-import org.baderlab.csplugins.enrichmentmap.actions.BulkEMCreationAction;
-import org.baderlab.csplugins.enrichmentmap.actions.ShowAboutPanelAction;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.model.JMultiLineToolTip;
 import org.baderlab.csplugins.enrichmentmap.task.EnrichmentMapBuildMapTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.task.ResultTaskObserver;
 import org.baderlab.csplugins.enrichmentmap.util.SwingUtil;
@@ -107,9 +111,10 @@ import org.cytoscape.model.CyTableManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.task.edit.MapTableToNetworkTablesTaskFactory;
+import org.cytoscape.util.swing.BasicCollapsiblePanel;
 import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
-import org.cytoscape.util.swing.OpenBrowser;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -126,51 +131,45 @@ import org.cytoscape.work.swing.DialogTaskManager;
  * <p>
  * Enrichment map User input Panel
  */
+@SuppressWarnings("serial")
 public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponent {
-    /**
-     * 
-     */
-	//services required
-		private StreamUtil streamUtil;
-	    private CyApplicationManager applicationManager;
-	    private CyNetworkManager networkManager;
-	    private CyNetworkViewManager networkViewManager;
-	    private CyNetworkViewFactory networkViewFactory;
-	    private CyNetworkFactory networkFactory;
-	    private CyTableFactory tableFactory;
-	    private CyTableManager tableManager;
-	    
-	    private VisualMappingManager visualMappingManager;
-	    private VisualStyleFactory visualStyleFactory;
-	    
-	    //we will need all three mappers
-	    private VisualMappingFunctionFactory vmfFactoryContinuous;
-	    private VisualMappingFunctionFactory vmfFactoryDiscrete;
-	    private VisualMappingFunctionFactory vmfFactoryPassthrough;
-	    
-	    private CyLayoutAlgorithmManager layoutManager;
-	    private  MapTableToNetworkTablesTaskFactory mapTableToNetworkTable;
-	    //
-	    private DialogTaskManager dialog;
-	    private CySessionManager sessionManager;
+	
+	// services required
+	private StreamUtil streamUtil;
+	private CyApplicationManager applicationManager;
+	private CyNetworkManager networkManager;
+	private CyNetworkViewManager networkViewManager;
+	private CyNetworkViewFactory networkViewFactory;
+	private CyNetworkFactory networkFactory;
+	private CyTableFactory tableFactory;
+	private CyTableManager tableManager;
+
+	private VisualMappingManager visualMappingManager;
+	private VisualStyleFactory visualStyleFactory;
+
+	// we will need all three mappers
+	private VisualMappingFunctionFactory vmfFactoryContinuous;
+	private VisualMappingFunctionFactory vmfFactoryDiscrete;
+	private VisualMappingFunctionFactory vmfFactoryPassthrough;
+
+	private CyLayoutAlgorithmManager layoutManager;
+	private MapTableToNetworkTablesTaskFactory mapTableToNetworkTable;
+	//
+	private DialogTaskManager dialog;
+	private CySessionManager sessionManager;
 	
 	private CySwingApplication application;
-	private OpenBrowser browser;
 	private FileUtil fileUtil;
     private CyServiceRegistrar registrar;
     
     private EnrichmentMapInputPanel empanel;
-    private BulkEMCreationPanel bulkEmInput;
 	
-    private static final long serialVersionUID = -7837369382106745874L;
+    BasicCollapsiblePanel Parameters;
 
-    CollapsiblePanel Parameters;
-    CollapsiblePanel datasets;
+    JPanel dataset1Panel;
+    BasicCollapsiblePanel dataset2Panel;
 
-    CollapsiblePanel dataset1;
-    CollapsiblePanel dataset2;
-
-    JPanel DatasetsPanel;
+    JPanel datasetsPanel;
 
     DecimalFormat decFormat; // used in the formatted text fields
     
@@ -182,28 +181,28 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 
     //Genesets file related components
     //user specified file names
-    private JFormattedTextField GMTFileNameTextField;
+    private JFormattedTextField gmtFileNameTextField;
 
-    private JFormattedTextField GCTFileName1TextField;
-    private JFormattedTextField GCTFileName2TextField;
+    private JFormattedTextField gctFileName1TextField;
+    private JFormattedTextField gctFileName2TextField;
 
-    private JFormattedTextField Dataset1FileNameTextField;
-    private JFormattedTextField Dataset1FileName2TextField;
+    private JFormattedTextField dataset1FileNameTextField;
+    private JFormattedTextField dataset1FileName2TextField;
 
-    private JFormattedTextField Dataset2FileNameTextField;
-    private JFormattedTextField Dataset2FileName2TextField;
+    private JFormattedTextField dataset2FileNameTextField;
+    private JFormattedTextField dataset2FileName2TextField;
 
-    private JFormattedTextField Dataset1RankFileTextField;
-    private JFormattedTextField Dataset2RankFileTextField;
+    private JFormattedTextField ds1RanksTextField;
+    private JFormattedTextField ds2RanksTextField;
     
-    private JFormattedTextField Dataset1ClassFileTextField;
-    private JFormattedTextField Dataset2ClassFileTextField;
+    private JFormattedTextField ds1ClassesTextField;
+    private JFormattedTextField ds2ClassesTextField;
 
     //user specified terms and cut offs
-    private JFormattedTextField Dataset1Phenotype1TextField;
-    private JFormattedTextField Dataset1Phenotype2TextField;
-    private JFormattedTextField Dataset2Phenotype1TextField;
-    private JFormattedTextField Dataset2Phenotype2TextField;
+    private JFormattedTextField ds1Phenotype1TextField;
+    private JFormattedTextField ds1Phenotype2TextField;
+    private JFormattedTextField ds2Phenotype1TextField;
+    private JFormattedTextField ds2Phenotype2TextField;
 
     private JFormattedTextField pvalueTextField;
     private JFormattedTextField qvalueTextField;
@@ -211,9 +210,9 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
     private JFormattedTextField combinedConstantTextField;
 
     //flags
-    private JRadioButton gsea;
-    private JRadioButton generic;
-    private JRadioButton david;
+    private JRadioButton gseaRadio;
+    private JRadioButton genericRadio;
+    private JRadioButton davidRadio;
     private JRadioButton overlap;
     private JRadioButton jaccard;
     private JRadioButton combined;
@@ -229,32 +228,28 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
     public static String rank_instruction = "Please select the rank file (.txt), (.rnk)...";
 
     //tool tips
-    private static String gmtTip = "File specifying gene sets.\n" + "Format: geneset name <tab> description <tab> gene ...";
-    private static String gctTip = "File with gene expression values.\n" + "Format: gene <tab> description <tab> expression value <tab> ...";
-    private static String datasetTip = "File specifying enrichment results.\n";
-    private static String rankTip = "File specifying ranked genes.\n" + "Format: gene <tab> score or statistic";
-    private static String classTip = "File specifying the classes of each sample in expression file.\n" + "format: see GSEA website";
+    protected static String gmtTip = "<html>File specifying gene sets.<br />" + "Format: geneset name &lt;tab&gt; description &lt;tab&gt; gene ...</html>";
+    private static String gctTip = "<html>File with gene expression values.<br />" + "Format: gene &lt;tab&gt; description &lt;tab&gt; expression value &lt;tab&gt; ...</html>";
+    private static String datasetTip = "<html>File specifying enrichment results.</html>";
+    private static String rankTip = "<html>File specifying ranked genes.<br />" + "Format: gene &lt;tab&gt; score or statistic</html>";
+    private static String classTip = "<html>File specifying the classes of each sample in expression file.<br />" + "Format: see GSEA website</html>";
 
     private boolean similarityCutOffChanged = false;
     private boolean LoadedFromRpt_dataset1 = false;
     private boolean LoadedFromRpt_dataset2 = false;
     private boolean panelUpdate = false;
     
-    /**
-     * Constructor
-     */
-    public EnrichmentMapInputPanel(CyNetworkFactory networkFactory, CyApplicationManager applicationManager, 
-    		CyNetworkManager networkManager, CyNetworkViewManager networkViewManager,
-    		CyTableFactory tableFactory,CyTableManager tableManager,CyNetworkViewFactory networkViewFactory,
-    		VisualMappingManager visualMappingManager,VisualStyleFactory visualStyleFactory,
-    		VisualMappingFunctionFactory vmfFactoryContinuous, VisualMappingFunctionFactory vmfFactoryDiscrete,
-    	     VisualMappingFunctionFactory vmfFactoryPassthrough,DialogTaskManager dialog, CySessionManager sessionManager, 
-    	     CySwingApplication application, OpenBrowser browser,FileUtil fileUtil, StreamUtil streamUtil,CyServiceRegistrar registrar,
-    	     CyLayoutAlgorithmManager layoutManager, MapTableToNetworkTablesTaskFactory mapTableToNetworkTable,
-    	     BulkEMCreationPanel bulkEmInput) {
-
-    		this.empanel = this;
-        decFormat = new DecimalFormat();
+	public EnrichmentMapInputPanel(CyNetworkFactory networkFactory, CyApplicationManager applicationManager,
+			CyNetworkManager networkManager, CyNetworkViewManager networkViewManager, CyTableFactory tableFactory,
+			CyTableManager tableManager, CyNetworkViewFactory networkViewFactory,
+			VisualMappingManager visualMappingManager, VisualStyleFactory visualStyleFactory,
+			VisualMappingFunctionFactory vmfFactoryContinuous, VisualMappingFunctionFactory vmfFactoryDiscrete,
+			VisualMappingFunctionFactory vmfFactoryPassthrough, DialogTaskManager dialog,
+			CySessionManager sessionManager, CySwingApplication application, FileUtil fileUtil, StreamUtil streamUtil,
+			CyServiceRegistrar registrar, CyLayoutAlgorithmManager layoutManager,
+			MapTableToNetworkTablesTaskFactory mapTableToNetworkTable) {
+		this.empanel = this;
+		decFormat = new DecimalFormat();
         
         decFormat.setParseIntegerOnly(false);
         this.networkFactory = networkFactory;
@@ -280,559 +275,517 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
         
         this.sessionManager = sessionManager;
         this.application = application;
-        this.browser = browser;
         this.fileUtil = fileUtil;
         this.streamUtil = streamUtil;
         this.registrar = registrar;
-        this.bulkEmInput = bulkEmInput;
-        setLayout(new BorderLayout());        
-
+        
+        setMinimumSize(new Dimension(420, 480));
+        setPreferredSize(new Dimension(440, 600));
+        
         //get the current enrichment map parameters
         //params = EnrichmentMapManager.getInstance().getParameters(Cytoscape.getCurrentNetwork().getIdentifier());
          params = new EnrichmentMapParameters(sessionManager,streamUtil,applicationManager);
 
+         if (LookAndFeelUtil.isAquaLAF())
+        	 setOpaque(false);
+         
         //create the three main panels: scope, advanced options, and bottom
-        JPanel AnalysisTypePanel = createAnalysisTypePanel();
+        JPanel analysisTypePanel = createAnalysisTypePanel();
 
-        //Put the options panel into a scroll pain
-
-        CollapsiblePanel OptionsPanel = createOptionsPanel();
-        OptionsPanel.setCollapsed(false);
-        JScrollPane scroll = new JScrollPane(OptionsPanel);
-        //scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        //Put the options panel into a scroll pane
+        JPanel optionsPanel = createOptionsPanel();
+        
+        JScrollPane scrollPane = new JScrollPane(optionsPanel);
+        scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollPane.getViewport().setBackground(UIManager.getColor("Panel.background"));
 
         JPanel bottomPanel = createBottomPanel();
 
-        //Since the advanced options panel is being added to the center of this border layout
-        //it will stretch it's height to fit the main panel.  To prevent this we create an
-        //additional border layout panel and add advanced options to it's north compartment
-        JPanel advancedOptionsContainer = new JPanel(new BorderLayout());
-        advancedOptionsContainer.add(scroll, BorderLayout.CENTER);
-
-        //Add all the vertically aligned components to the main panel
-        add(AnalysisTypePanel,BorderLayout.NORTH);
-        add(advancedOptionsContainer,BorderLayout.CENTER);
-        add(bottomPanel,BorderLayout.SOUTH);
-
+        final GroupLayout layout = new GroupLayout(this);
+		setLayout(layout);
+		layout.setAutoCreateContainerGaps(false);
+		layout.setAutoCreateGaps(false);
+		
+		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
+				.addComponent(analysisTypePanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(scrollPane, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(bottomPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addComponent(analysisTypePanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(scrollPane, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(bottomPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+		);
     }
 
     /**
-        * Creates a JPanel containing analysis type (GSEA or generic)  radio buttons and links to additional information
-        *
-        * @return panel containing the analysis type (GSEA or generic) option buttons
-        */
-       private JPanel createAnalysisTypePanel() {
+	 * Creates a JPanel containing analysis type (GSEA or generic) radio buttons and links to additional information
+	 */
+	private JPanel createAnalysisTypePanel() {
+		// Added a string to the radio button on generic pointing out that this is the route for gprofiler.
+		// Did not change the static variable as it might be stored and used in older sessions.
+		String genericTxt = EnrichmentMapParameters.method_generic + "/gProfiler";
 
-           JPanel buttonsPanel = new JPanel();
-           GridBagLayout gridbag_buttons = new GridBagLayout();
-           GridBagConstraints c_buttons = new GridBagConstraints();
-           buttonsPanel.setLayout(gridbag_buttons);
-           buttonsPanel.setBorder(BorderFactory.createTitledBorder("Info:"));
+		if (params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)) {
+			gseaRadio = new JRadioButton(EnrichmentMapParameters.method_GSEA, true);
+			genericRadio = new JRadioButton(genericTxt, false);
+			davidRadio = new JRadioButton(EnrichmentMapParameters.method_Specialized, false);
+		} else if (params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_generic)) {
+			gseaRadio = new JRadioButton(EnrichmentMapParameters.method_GSEA, false);
+			genericRadio = new JRadioButton(genericTxt, true);
+			davidRadio = new JRadioButton(EnrichmentMapParameters.method_Specialized, false);
+		} else if (params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_Specialized)) {
+			gseaRadio = new JRadioButton(EnrichmentMapParameters.method_GSEA, false);
+			genericRadio = new JRadioButton(genericTxt, false);
+			davidRadio = new JRadioButton(EnrichmentMapParameters.method_Specialized, true);
+		}
 
-           JButton help = new JButton("Online Manual");
-           help.addActionListener(new ActionListener() {
-              public void actionPerformed(ActionEvent evt) {
-                  browser.openURL(EnrichmentMapBuildProperties.USER_MANUAL_URL);
-              }
-          });
+		gseaRadio.setActionCommand(EnrichmentMapParameters.method_GSEA);
+		genericRadio.setActionCommand(EnrichmentMapParameters.method_generic);
+		davidRadio.setActionCommand(EnrichmentMapParameters.method_Specialized);
 
-           JButton about = new JButton("About");
-           
-           Map<String, String> serviceProperties = new HashMap<String, String>();
-           serviceProperties.put("inMenuBar", "true");
-   		   serviceProperties.put("preferredMenu", "Apps.EnrichmentMap");
-           about.addActionListener(new ShowAboutPanelAction(serviceProperties, applicationManager, networkViewManager, application, browser));
-   		   
-           //add button to do bulk EM Creation
-           JButton bulk = new JButton("Bulk EM");
-           bulk.addActionListener(new BulkEMCreationAction(serviceProperties,applicationManager , networkViewManager, application,bulkEmInput,registrar));
+		gseaRadio.addActionListener((ActionEvent evt) -> {
+			selectAnalysisTypeActionPerformed(evt);
+		});
+		genericRadio.addActionListener((ActionEvent evt) -> {
+			selectAnalysisTypeActionPerformed(evt);
+		});
+		davidRadio.addActionListener((ActionEvent evt) -> {
+			selectAnalysisTypeActionPerformed(evt);
+		});
+
+		makeSmall(gseaRadio, genericRadio, davidRadio);
+
+		ButtonGroup analysisOptions = new ButtonGroup();
+		analysisOptions.add(gseaRadio);
+		analysisOptions.add(genericRadio);
+		analysisOptions.add(davidRadio);
+
+		JPanel panel = new JPanel();
+		panel.setBorder(LookAndFeelUtil.createTitledBorder("Analysis Type"));
+		
+		final GroupLayout layout = new GroupLayout(panel);
+		panel.setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(true);
+	   		
+   		layout.setHorizontalGroup(layout.createSequentialGroup()
+   				.addGap(0, 0, Short.MAX_VALUE)
+   				.addComponent(gseaRadio)
+   				.addComponent(genericRadio)
+   				.addComponent(davidRadio)
+   				.addGap(0, 0, Short.MAX_VALUE)
+   		);
+   		layout.setVerticalGroup(layout.createParallelGroup(Alignment.CENTER, true)
+   				.addComponent(gseaRadio, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+   				.addComponent(genericRadio, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+   				.addComponent(davidRadio, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+   		);
+   		
+   		if (LookAndFeelUtil.isAquaLAF())
+			panel.setOpaque(false);
+
+		return panel;
+	}
+
+	/**
+	 * Creates a panel that holds main user inputs geneset files, datasets and parameters
+	 */
+	private OptionsPanel createOptionsPanel() {
+		JPanel gmtPanel = createGMTPanel();
+		
+		BasicCollapsiblePanel paramsPanel = createParametersPanel();
+		paramsPanel.setCollapsed(true);
+
+		OptionsPanel panel = new OptionsPanel();
+		{
+			GroupLayout layout = new GroupLayout(panel);
+			panel.setLayout(layout);
+			layout.setAutoCreateContainerGaps(false);
+			layout.setAutoCreateGaps(true);
+	
+			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
+					.addComponent(gmtPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(getDatasetsPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(paramsPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+			);
+			layout.setVerticalGroup(layout.createSequentialGroup()
+					.addComponent(gmtPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getDatasetsPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(paramsPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+			);
+		}
+		
+		if (LookAndFeelUtil.isAquaLAF())
+			panel.setOpaque(false);
+
+		return panel;
+	}
+	
+	private JPanel getDatasetsPanel() {
+		if (datasetsPanel == null) {
+			datasetsPanel = new JPanel();
+			datasetsPanel.setLayout(new BoxLayout(datasetsPanel, BoxLayout.Y_AXIS));
 			
-            c_buttons.weighty = 1;
-            c_buttons.weightx = 1;
-            c_buttons.insets = new Insets(0,0,0,0);
-            c_buttons.gridx = 0;
-            c_buttons.gridwidth = 1;
-            c_buttons.gridy = 0;
-            c_buttons.fill = GridBagConstraints.HORIZONTAL;
+			if (LookAndFeelUtil.isAquaLAF())
+				datasetsPanel.setOpaque(false);
+			
+			updateDatasetsPanel();
+		}
+		
+		return datasetsPanel;
+	}
+	
+	private void updateDatasetsPanel() {
+		// before clearing the panel find out which panels where collapsed so we maintain its current state.
+		boolean collapseDs2 = dataset2Panel == null || dataset2Panel.isCollapsed();
 
-            c_buttons.gridy = 0;
-            gridbag_buttons.setConstraints(about, c_buttons);
-            buttonsPanel.add(about);
+		getDatasetsPanel().removeAll();
 
-            c_buttons.gridy = 1;
-            gridbag_buttons.setConstraints(help, c_buttons);
-            buttonsPanel.add(help);
+		dataset1Panel = createDataset1Panel();
 
-           c_buttons.gridy = 2;
-            gridbag_buttons.setConstraints(bulk, c_buttons);
-            buttonsPanel.add(bulk);
+		dataset2Panel = createDataset2Panel();
+		dataset2Panel.setCollapsed(collapseDs2);
 
+		getDatasetsPanel().add(dataset1Panel);
+		getDatasetsPanel().add(dataset2Panel);
+		getDatasetsPanel().add(Box.createVerticalGlue());
+		getDatasetsPanel().revalidate();
+	}
 
-           JPanel panel = new JPanel();
+	/**
+	 * Creates a panel that holds gene set file specification
+	 */
+	private JPanel createGMTPanel() {
+		// add GMT file
+		JButton selectGMTFileButton = new JButton("Browse...");
+		selectGMTFileButton.setToolTipText(gmtTip);
+		
+		gmtFileNameTextField = new JFormattedTextField();
+		gmtFileNameTextField.setToolTipText(gmtTip);
+		gmtFileNameTextField.setColumns(defaultColumns);
+		// components needed for the directory load
+		gmtFileNameTextField.addPropertyChangeListener("value", new EnrichmentMapInputPanel.FormattedTextFieldAction());
 
-           GridBagLayout gridbag = new GridBagLayout();
-           GridBagConstraints c = new GridBagConstraints();
-           panel.setLayout(gridbag);
+		selectGMTFileButton.addActionListener((ActionEvent evt) -> {
+			selectGMTFileButtonActionPerformed(evt);
+		});
+        
+		makeSmall(gmtFileNameTextField, selectGMTFileButton);
+		
+		JPanel panel = new JPanel();
+		panel.setBorder(LookAndFeelUtil.createTitledBorder("GMT File (contains gene-set/pathway definitions)"));
+		
+       	final GroupLayout layout = new GroupLayout(panel);
+       	panel.setLayout(layout);
+   		layout.setAutoCreateContainerGaps(true);
+   		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
+   		
+   		layout.setHorizontalGroup(layout.createSequentialGroup()
+   				.addComponent(gmtFileNameTextField, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+   				.addComponent(selectGMTFileButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+   		);
+   		layout.setVerticalGroup(layout.createParallelGroup(Alignment.CENTER, false)
+   				.addComponent(gmtFileNameTextField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+   				.addComponent(selectGMTFileButton)
+   		);
+   		
+   		if (LookAndFeelUtil.isAquaLAF())
+			panel.setOpaque(false);
 
-           c.weighty = 1;
-           c.weightx = 1;
-           c.insets = new Insets(0,0,0,0);
-           c.fill = GridBagConstraints.HORIZONTAL;
-           panel.setBorder(BorderFactory.createTitledBorder("Analysis Type"));
-           
-           //Added a string to the radio button on generic pointing out that this is the route for gprofiler.
-           //Did not change the static variable as it might be stored and used in older sessions.
-           if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)){
-                gsea = new JRadioButton(EnrichmentMapParameters.method_GSEA, true);
-                generic = new JRadioButton(EnrichmentMapParameters.method_generic + "(ex: gProfiler)", false);
-                david = new JRadioButton(EnrichmentMapParameters.method_Specialized, false);
-           }else if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_generic)){
-                gsea = new JRadioButton(EnrichmentMapParameters.method_GSEA, false);
-                generic = new JRadioButton(EnrichmentMapParameters.method_generic+ "(ex: gProfiler)", true);
-                david = new JRadioButton(EnrichmentMapParameters.method_Specialized, false);
-           }else if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_Specialized)){
-                gsea = new JRadioButton(EnrichmentMapParameters.method_GSEA, false);
-                generic = new JRadioButton(EnrichmentMapParameters.method_generic+ "(ex: gProfiler)", false);
-                david = new JRadioButton(EnrichmentMapParameters.method_Specialized, true);
-           }
+   		// FIXME
+//      if(!params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_Specialized))
+//      	panel.add(newGMTPanel);
+   		
+		return panel;
+	}
 
-           gsea.setActionCommand(EnrichmentMapParameters.method_GSEA);
-           generic.setActionCommand(EnrichmentMapParameters.method_generic);
-           david.setActionCommand(EnrichmentMapParameters.method_Specialized);
+	/**
+	 * Creates a panel that holds dataset 1 file specifications
+	 */
+	private JPanel createDataset1Panel() {
+		// add GCT file
+		JLabel gctLabel = new JLabel("Expression:");
+		gctLabel.setToolTipText(gctTip);
 
-           gsea.addActionListener(new java.awt.event.ActionListener() {
-                               public void actionPerformed(java.awt.event.ActionEvent evt) {
-                                   selectAnalysisTypeActionPerformed(evt);
-                               }
-           });
-           generic.addActionListener(new java.awt.event.ActionListener() {
-                               public void actionPerformed(java.awt.event.ActionEvent evt) {
-                                   selectAnalysisTypeActionPerformed(evt);
-                               }
-           });
-           david.addActionListener(new java.awt.event.ActionListener() {
-                               public void actionPerformed(java.awt.event.ActionEvent evt) {
-                                   selectAnalysisTypeActionPerformed(evt);
-                               }
-           });
-           ButtonGroup analysisOptions = new ButtonGroup();
-           analysisOptions.add(gsea);
-           analysisOptions.add(generic);
-           analysisOptions.add(david);
+		JButton selectGCTFileButton = new JButton("Browse...");
+		selectGCTFileButton.setToolTipText(gctTip);
+		
+		gctFileName1TextField = new JFormattedTextField();
+		gctFileName1TextField.setToolTipText(gctTip);
+		gctFileName1TextField.setColumns(defaultColumns);
 
+		// components needed for the directory load
+		gctFileName1TextField.addPropertyChangeListener("value",
+				new EnrichmentMapInputPanel.FormattedTextFieldAction());
 
-           c.gridx = 0;
-           c.gridwidth = 3;
-           c.gridy = 0;
-           gridbag.setConstraints(gsea, c);
-           panel.add(gsea);
-           c.gridy = 1;
-           gridbag.setConstraints(generic, c);
-           panel.add(generic);
-           c.gridy = 2;
-           gridbag.setConstraints(david, c);
-           panel.add(david);
+		// GCTFileName1TextField.setText(gct_instruction);
 
-          JPanel topPanel = new JPanel();
-          topPanel.setLayout(new BorderLayout());
-          topPanel.add(buttonsPanel, BorderLayout.EAST);
-          topPanel.add(panel, BorderLayout.CENTER);
+		selectGCTFileButton.addActionListener((ActionEvent evt) -> {
+			selectGCTFileButtonActionPerformed(evt);
+		});
 
-           return topPanel;
-       }
+		boolean isGSEA = params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA);
+		
+		// add Results1 file
+		JLabel results1Label = new JLabel(isGSEA ? "Enrichments 1:" : "Enrichments:");
+		results1Label.setToolTipText(datasetTip);
+		
+		JButton selectResults1FileButton = new JButton("Browse...");
+		selectResults1FileButton.setToolTipText(datasetTip);
+		
+		dataset1FileNameTextField = new JFormattedTextField();
+		dataset1FileNameTextField.setToolTipText(datasetTip);
+		dataset1FileNameTextField.setColumns(defaultColumns);
 
-           /**
-            * Creates a collapsible panel that holds main user inputs geneset files, datasets and parameters
-            *
-            * @return collapsablePanel - main analysis panel
-            */
-           private CollapsiblePanel createOptionsPanel() {
-               CollapsiblePanel collapsiblePanel = new CollapsiblePanel("User Input");
+		// components needed for the directory load
+		dataset1FileNameTextField.addPropertyChangeListener("value",
+				new EnrichmentMapInputPanel.FormattedTextFieldAction());
 
-               JPanel panel = new JPanel();
-               panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+		selectResults1FileButton.addActionListener((ActionEvent evt) -> {
+			selectDataset1FileButtonActionPerformed(evt);
+		});
 
-               //Gene set file panel
-               CollapsiblePanel GMTcollapsiblePanel = createGMTPanel();
-               GMTcollapsiblePanel.setCollapsed(false);
+		// add Results2 file
+		JLabel results2Label = new JLabel("Enrichments 2:");
+		results2Label.setToolTipText(datasetTip);
 
-               //Dataset1 collapsible panel
-               DatasetsPanel = new JPanel();
-               DatasetsPanel.setLayout(new BoxLayout(DatasetsPanel, BoxLayout.Y_AXIS));
+		JButton selectResults2FileButton = new JButton("Browse...");
+		selectResults2FileButton.setToolTipText(datasetTip);
+		
+		dataset1FileName2TextField = new JFormattedTextField();
+		dataset1FileName2TextField.setToolTipText(datasetTip);
+		dataset1FileName2TextField.setColumns(defaultColumns);
 
-               datasets = new CollapsiblePanel("Datasets");
-               datasets.setLayout(new BorderLayout());
+		// components needed for the directory load
+		dataset1FileName2TextField.addPropertyChangeListener("value",
+				new EnrichmentMapInputPanel.FormattedTextFieldAction());
 
-               dataset1 = createDataset1Panel();
-               dataset1.setCollapsed(false);
+		selectResults2FileButton.addActionListener((ActionEvent evt) -> {
+			selectDataset1File2ButtonActionPerformed(evt);
+		});
 
-               dataset2 = createDataset2Panel();
-               datasets.setCollapsed(false);
+		makeSmall(gctLabel, gctFileName1TextField, selectGCTFileButton);
+   		makeSmall(results1Label, dataset1FileNameTextField, selectResults1FileButton);
+   		makeSmall(results2Label, dataset1FileName2TextField, selectResults2FileButton);
+   		
+   		results2Label.setVisible(isGSEA);
+   		dataset1FileName2TextField.setEnabled(isGSEA);
+   		dataset1FileName2TextField.setVisible(isGSEA);
+   		selectResults2FileButton.setEnabled(isGSEA);
+   		selectResults2FileButton.setVisible(isGSEA);
+		
+		JPanel panel = new JPanel();
+		panel.setBorder(LookAndFeelUtil.createTitledBorder("Dataset 1"));
+		panel.setAlignmentX(Component.CENTER_ALIGNMENT);
+		panel.setMaximumSize(new Dimension(Short.MAX_VALUE, panel.getPreferredSize().height));
+		
+		final GroupLayout layout = new GroupLayout(panel);
+		panel.setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
+		
+		ParallelGroup hGroup = layout.createParallelGroup(Alignment.CENTER, true);
+		SequentialGroup vGroup = layout.createSequentialGroup();
+		
+		layout.setHorizontalGroup(hGroup
+				.addGroup(layout.createSequentialGroup()
+						.addGroup(layout.createParallelGroup(Alignment.TRAILING, true)
+								.addComponent(gctLabel)
+								.addComponent(results1Label)
+								.addComponent(results2Label)
+						)
+						.addPreferredGap(ComponentPlacement.RELATED)
+						.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
+								.addGroup(layout.createSequentialGroup()
+										.addComponent(gctFileName1TextField, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+										.addComponent(selectGCTFileButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+								)
+								.addGroup(layout.createSequentialGroup()
+										.addComponent(dataset1FileNameTextField, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+										.addComponent(selectResults1FileButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+								)
+								.addGroup(layout.createSequentialGroup()
+										.addComponent(dataset1FileName2TextField, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+										.addComponent(selectResults2FileButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+								)
+								
+						)
+				)
+		);
+		layout.setVerticalGroup(vGroup
+				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+						.addComponent(gctLabel)
+						.addComponent(gctFileName1TextField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(selectGCTFileButton)
+				)
+				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+						.addComponent(results1Label)
+						.addComponent(dataset1FileNameTextField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(selectResults1FileButton)
+				)
+				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+						.addComponent(results2Label)
+						.addComponent(dataset1FileName2TextField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(selectResults2FileButton)
+				)
+		);
 
-               DatasetsPanel.add(dataset1);
-               DatasetsPanel.add(dataset2);
-
-               datasets.getContentPane().add(DatasetsPanel, BorderLayout.NORTH);
-
-               //Parameters collapsible panel
-               CollapsiblePanel ParametersPanel = createParametersPanel();
-               ParametersPanel.setCollapsed(false);
-
-               panel.add(GMTcollapsiblePanel);
-               panel.add(datasets);
-               panel.add(ParametersPanel);
-
-               collapsiblePanel.getContentPane().add(panel, BorderLayout.NORTH);
-               return collapsiblePanel;
-           }
+		if (!params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_Specialized)) {
+			BasicCollapsiblePanel advancedDatasetOptionsPanel = createAdvancedDatasetOptions(1);
+			
+			hGroup.addComponent(advancedDatasetOptionsPanel);
+			vGroup.addPreferredGap(ComponentPlacement.UNRELATED).addComponent(advancedDatasetOptionsPanel);
+		}
+		
+		if (LookAndFeelUtil.isAquaLAF())
+			panel.setOpaque(false);
+		
+		return panel;
+	}
 
     /**
-     * Creates a collapsible panel that holds gene set file specification
-     *
-     * @return collapsible panel - gmt gene set file specification interface
+     * Creates a panel that holds dataset 2 file specification
      */
-        private CollapsiblePanel createGMTPanel() {
-            CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Gene Sets");
-
-            JPanel panel = new JPanel();
-            panel.setLayout(new GridLayout(0, 1));
-
-            //add GMT file
-            JLabel GMTLabel = new JLabel("GMT:"){
-                 /**
-                 * 
-                 */
-                private static final long serialVersionUID = -122741876830022713L;
-
-                public JToolTip createToolTip() {
-                      return new JMultiLineToolTip();
-                 }
-            };
-            GMTLabel.setToolTipText(gmtTip);
-            JButton selectGMTFileButton = new JButton();
-            GMTFileNameTextField = new JFormattedTextField() ;
-            GMTFileNameTextField.setColumns(defaultColumns);
-
-
-           //components needed for the directory load
-           GMTFileNameTextField.setFont(new java.awt.Font("Dialog",1,10));
-           //GMTFileNameTextField.setText(gmt_instruction);
-            GMTFileNameTextField.addPropertyChangeListener("value",new EnrichmentMapInputPanel.FormattedTextFieldAction());
-
-
-           selectGMTFileButton.setText("...");
-           selectGMTFileButton.setMargin(new Insets(0,0,0,0));
-           selectGMTFileButton
-                           .addActionListener(new java.awt.event.ActionListener() {
-                               public void actionPerformed(java.awt.event.ActionEvent evt) {
-                                   selectGMTFileButtonActionPerformed(evt);
-                               }
-           });
-
-           JPanel newGMTPanel = new JPanel();
-           newGMTPanel.setLayout(new BorderLayout());
-
-           newGMTPanel.add(GMTLabel,BorderLayout.WEST);
-           newGMTPanel.add( GMTFileNameTextField, BorderLayout.CENTER);
-           newGMTPanel.add( selectGMTFileButton, BorderLayout.EAST);
-
-           //add the components to the panel
-           if(!params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_Specialized))
-                panel.add(newGMTPanel);
-
-           collapsiblePanel.getContentPane().add(panel, BorderLayout.NORTH);
-           return collapsiblePanel;
-
-        }
-
-    /**
-     * Creates a collapsible panel that holds dataset 1 file specifications
-     *
-     * @return  Collapsible panel with dataset 1 file specification interface
-     */
-       private CollapsiblePanel createDataset1Panel() {
-           CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Dataset 1");
-
-           JPanel panel = new JPanel();
-           panel.setLayout(new GridLayout(0, 1));
-
-           //add GCT file
-           JLabel GCTLabel = new JLabel("Expression:"){
-            /**
-             * 
-             */
-            private static final long serialVersionUID = -1021506153608619217L;
-
-            public JToolTip createToolTip() {
-                return new JMultiLineToolTip();
-                }
-            };
-           GCTLabel.setToolTipText(gctTip);
-
-           JButton selectGCTFileButton = new JButton();
-           GCTFileName1TextField = new JFormattedTextField();
-           GCTFileName1TextField.setColumns(defaultColumns);
-
-            //components needed for the directory load
-            GCTFileName1TextField.setFont(new java.awt.Font("Dialog",1,10));
-            GCTFileName1TextField.addPropertyChangeListener("value",new EnrichmentMapInputPanel.FormattedTextFieldAction());
-
-            //GCTFileName1TextField.setText(gct_instruction);
-
-            selectGCTFileButton.setText("...");
-            selectGCTFileButton.setMargin(new Insets(0,0,0,0));
-            selectGCTFileButton
-                .addActionListener(new java.awt.event.ActionListener() {
-                    public void actionPerformed(java.awt.event.ActionEvent evt) {
-                        selectGCTFileButtonActionPerformed(evt);
-                    }
-                });
-
-           JPanel GCTPanel = new JPanel();
-           GCTPanel.setLayout(new BorderLayout());
-
-           GCTPanel.add(GCTLabel,BorderLayout.WEST);
-           GCTPanel.add( GCTFileName1TextField, BorderLayout.CENTER);
-           GCTPanel.add( selectGCTFileButton, BorderLayout.EAST);
-
-           //add Results1 file
-           JLabel Results1Label = new JLabel("Enrichments 1:"){
-            /**
-             * 
-             */
-            private static final long serialVersionUID = 4890287742836119482L;
-
-            public JToolTip createToolTip() {
-                return new JMultiLineToolTip();
-                }
-            };
-           Results1Label.setToolTipText(datasetTip);
-           if(!params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA))
-                Results1Label.setText("Enrichments:");
-
-           JButton selectResults1FileButton = new JButton();
-           Dataset1FileNameTextField = new JFormattedTextField();
-           Dataset1FileNameTextField.setColumns(defaultColumns);
-
-            //components needed for the directory load
-            Dataset1FileNameTextField.setFont(new java.awt.Font("Dialog",1,10));
-            Dataset1FileNameTextField.addPropertyChangeListener("value",new EnrichmentMapInputPanel.FormattedTextFieldAction());
-
-            //Dataset1FileNameTextField.setText(dataset_instruction);
-
-            selectResults1FileButton.setText("...");
-           selectResults1FileButton.setMargin(new Insets(0,0,0,0));
-            selectResults1FileButton
-                .addActionListener(new java.awt.event.ActionListener() {
-                    public void actionPerformed(java.awt.event.ActionEvent evt) {
-                        selectDataset1FileButtonActionPerformed(evt);
-                    }
-                });
-
-           JPanel Results1Panel = new JPanel();
-           Results1Panel.setLayout(new BorderLayout());
-
-           Results1Panel.add(Results1Label,BorderLayout.WEST);
-           Results1Panel.add( Dataset1FileNameTextField, BorderLayout.CENTER);
-           Results1Panel.add( selectResults1FileButton, BorderLayout.EAST);
-
-
-            //add Results2 file
-           JLabel Results2Label = new JLabel("Enrichments 2:"){
-            /**
-             * 
-             */
-            private static final long serialVersionUID = 8462720651589188103L;
-
-            public JToolTip createToolTip() {
-                return new JMultiLineToolTip();
-                }
-            };
-           Results2Label.setToolTipText(datasetTip);
-
-           JButton selectResults2FileButton = new JButton();
-           Dataset1FileName2TextField = new JFormattedTextField();
-           Dataset1FileName2TextField.setColumns(defaultColumns);
-
-            //components needed for the directory load
-            Dataset1FileName2TextField.setFont(new java.awt.Font("Dialog",1,10));
-            Dataset1FileName2TextField.addPropertyChangeListener("value",new EnrichmentMapInputPanel.FormattedTextFieldAction());
-
-            //Dataset1FileName2TextField.setText(dataset_instruction);
-
-            selectResults2FileButton.setText("...");
-            selectResults2FileButton.setMargin(new Insets(0,0,0,0));
-            selectResults2FileButton
-                .addActionListener(new java.awt.event.ActionListener() {
-                    public void actionPerformed(java.awt.event.ActionEvent evt) {
-                        selectDataset1File2ButtonActionPerformed(evt);
-                    }
-                });
-
-           JPanel Results2Panel = new JPanel();
-           Results2Panel.setLayout(new BorderLayout());
-
-           Results2Panel.add(Results2Label,BorderLayout.WEST);
-           Results2Panel.add( Dataset1FileName2TextField, BorderLayout.CENTER);
-           Results2Panel.add( selectResults2FileButton, BorderLayout.EAST);
-
-           //add the components to the panel
-            //don't add the expression file to the David  results.
-           //if(!params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_DAVID))
-                panel.add(GCTPanel);
-           panel.add(Results1Panel);
-           if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA))
-                panel.add(Results2Panel);
-
-           collapsiblePanel.getContentPane().add(panel, BorderLayout.NORTH);
-           if(!params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_Specialized))
-                collapsiblePanel.getContentPane().add(createAdvancedDatasetOptions(1),BorderLayout.SOUTH);
-           return collapsiblePanel;
-
-       }
-
-    /**
-     * Creates a collapsible panel that holds dataset 2 file specification
-     *
-     * @return Collapsible panel that holds dataset2 file specification interface
-     */
-        private CollapsiblePanel createDataset2Panel() {
-           CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Dataset 2");
-
-           JPanel panel = new JPanel();
-           panel.setLayout(new GridLayout(0, 1));
-
-           //add GCT file
-           JLabel GCTLabel = new JLabel("Expression:"){
-            /**
-             * 
-             */
-            private static final long serialVersionUID = 2369686770191667604L;
-
-            public JToolTip createToolTip() {
-                return new JMultiLineToolTip();
-                }
-            };
-            GCTLabel.setToolTipText(gctTip);
-           JButton selectGCTFileButton = new JButton();
-           GCTFileName2TextField = new JFormattedTextField();
-           GCTFileName2TextField.setColumns(defaultColumns);
-
-            //components needed for the directory load
-            GCTFileName2TextField.setFont(new java.awt.Font("Dialog",1,10));
-            GCTFileName2TextField.addPropertyChangeListener("value",new EnrichmentMapInputPanel.FormattedTextFieldAction());
-
-
-            selectGCTFileButton.setText("...");
-            selectGCTFileButton.setMargin(new Insets(0,0,0,0));
-            selectGCTFileButton
-                .addActionListener(new java.awt.event.ActionListener() {
-                    public void actionPerformed(java.awt.event.ActionEvent evt) {
-                        selectGCTFileButton2ActionPerformed(evt);
-                    }
-                });
-
-           JPanel GCTPanel = new JPanel();
-           GCTPanel.setLayout(new BorderLayout());
-
-           GCTPanel.add(GCTLabel,BorderLayout.WEST);
-           GCTPanel.add( GCTFileName2TextField, BorderLayout.CENTER);
-           GCTPanel.add( selectGCTFileButton, BorderLayout.EAST);
-
-           //add Results1 file
-
-           JLabel Results1Label = new JLabel("Enrichments 1:"){
-            /**
-             * 
-             */
-            private static final long serialVersionUID = -1405865291417154L;
-
-            public JToolTip createToolTip() {
-                return new JMultiLineToolTip();
-                }
-            };
-
-            if(!params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA))
-                Results1Label.setText("Enrichments:");
-            Results1Label.setToolTipText(datasetTip);
-
-           JButton selectResults1FileButton = new JButton();
-           Dataset2FileNameTextField = new JFormattedTextField();
-           Dataset2FileNameTextField.setColumns(defaultColumns);
-
-            //components needed for the directory load
-            Dataset2FileNameTextField.setFont(new java.awt.Font("Dialog",1,10));
-            Dataset2FileNameTextField.addPropertyChangeListener("value",new EnrichmentMapInputPanel.FormattedTextFieldAction());
-
-            //Dataset2FileNameTextField.setText(dataset_instruction);
-
-            selectResults1FileButton.setText("...");
-            selectResults1FileButton.setMargin(new Insets(0,0,0,0));
-            selectResults1FileButton
-                .addActionListener(new java.awt.event.ActionListener() {
-                    public void actionPerformed(java.awt.event.ActionEvent evt) {
-                        selectDataset2FileButtonActionPerformed(evt);
-                    }
-                });
-
-           JPanel Results1Panel = new JPanel();
-           Results1Panel.setLayout(new BorderLayout());
-
-           Results1Panel.add(Results1Label,BorderLayout.WEST);
-           Results1Panel.add( Dataset2FileNameTextField, BorderLayout.CENTER);
-           Results1Panel.add( selectResults1FileButton, BorderLayout.EAST);
-
-            //add Results2 file
-           JLabel Results2Label = new JLabel("Enrichments 2:"){
-            /**
-             * 
-             */
-            private static final long serialVersionUID = -5178668573493553453L;
-
-            public JToolTip createToolTip() {
-                return new JMultiLineToolTip();
-                }
-            };
-           Results2Label.setToolTipText(datasetTip);
-           JButton selectResults2FileButton = new JButton();
-           Dataset2FileName2TextField = new JFormattedTextField();
-           Dataset2FileName2TextField.setColumns(defaultColumns);
-            //components needed for the directory load
-            Dataset2FileName2TextField.setFont(new java.awt.Font("Dialog",1,10));
-            Dataset2FileName2TextField.addPropertyChangeListener("value",new EnrichmentMapInputPanel.FormattedTextFieldAction());
-
-            //Dataset2FileName2TextField.setText(dataset_instruction);
-
-            selectResults2FileButton.setText("...");
-            selectResults2FileButton.setMargin(new Insets(0,0,0,0));
-            selectResults2FileButton
-                .addActionListener(new java.awt.event.ActionListener() {
-                    public void actionPerformed(java.awt.event.ActionEvent evt) {
-                        selectDataset2File2ButtonActionPerformed(evt);
-                    }
-                });
-
-           JPanel Results2Panel = new JPanel();
-           Results2Panel.setLayout(new BorderLayout());
-
-           Results2Panel.add(Results2Label,BorderLayout.WEST);
-           Results2Panel.add( Dataset2FileName2TextField, BorderLayout.CENTER);
-           Results2Panel.add( selectResults2FileButton, BorderLayout.EAST);
-
-           //add the components to the panel
-            //don't add the expression file to the David  results.
-           //if(!params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_DAVID))
-                panel.add(GCTPanel);
-           panel.add(Results1Panel);
-           if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA))
-                panel.add(Results2Panel);
-
-           collapsiblePanel.getContentPane().add(panel, BorderLayout.NORTH);
-           if(!params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_Specialized))
-                collapsiblePanel.getContentPane().add(createAdvancedDatasetOptions(2),BorderLayout.SOUTH);
-           return collapsiblePanel;
-
-       }
+	private BasicCollapsiblePanel createDataset2Panel() {
+		// add GCT file
+		JLabel gctLabel = new JLabel("Expression:");
+		gctLabel.setToolTipText(gctTip);
+		
+		JButton selectGCTFileButton = new JButton("Browse...");
+		selectGCTFileButton.setToolTipText(gctTip);
+		
+		gctFileName2TextField = new JFormattedTextField();
+		gctFileName2TextField.setToolTipText(gctTip);
+		gctFileName2TextField.setColumns(defaultColumns);
+
+		// components needed for the directory load
+		gctFileName2TextField.addPropertyChangeListener("value",
+				new EnrichmentMapInputPanel.FormattedTextFieldAction());
+
+		selectGCTFileButton.addActionListener((ActionEvent evt) -> {
+			selectGCTFileButton2ActionPerformed(evt);
+		});
+
+		boolean isGSEA = params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA);
+		
+		// add Results1 file
+		JLabel results1Label = new JLabel(isGSEA ? "Enrichments 1:" : "Enrichments:");
+		results1Label.setToolTipText(datasetTip);
+
+		JButton selectResults1FileButton = new JButton("Browse...");
+		selectResults1FileButton.setToolTipText(datasetTip);
+		
+		dataset2FileNameTextField = new JFormattedTextField();
+		dataset2FileNameTextField.setToolTipText(datasetTip);
+		dataset2FileNameTextField.setColumns(defaultColumns);
+
+		// components needed for the directory load
+		dataset2FileNameTextField.addPropertyChangeListener("value",
+				new EnrichmentMapInputPanel.FormattedTextFieldAction());
+
+		// Dataset2FileNameTextField.setText(dataset_instruction);
+
+		selectResults1FileButton.addActionListener((ActionEvent evt) -> {
+			selectDataset2FileButtonActionPerformed(evt);
+		});
+
+		// add Results2 file
+		JLabel results2Label = new JLabel("Enrichments 2:");
+		results2Label.setToolTipText(datasetTip);
+		
+		JButton selectResults2FileButton = new JButton("Browse...");
+		selectResults2FileButton.setToolTipText(datasetTip);
+		
+		dataset2FileName2TextField = new JFormattedTextField();
+		dataset2FileName2TextField.setToolTipText(datasetTip);
+		dataset2FileName2TextField.setColumns(defaultColumns);
+		// components needed for the directory load
+		dataset2FileName2TextField.addPropertyChangeListener("value",
+				new EnrichmentMapInputPanel.FormattedTextFieldAction());
+
+		selectResults2FileButton.addActionListener((ActionEvent evt) -> {
+			selectDataset2File2ButtonActionPerformed(evt);
+		});
+		
+		makeSmall(gctLabel, gctFileName2TextField, selectGCTFileButton);
+   		makeSmall(results1Label, dataset2FileNameTextField, selectResults1FileButton);
+   		makeSmall(results2Label, dataset2FileName2TextField, selectResults2FileButton);
+   		
+   		results2Label.setVisible(isGSEA);
+   		dataset2FileName2TextField.setEnabled(isGSEA);
+   		dataset2FileName2TextField.setVisible(isGSEA);
+   		selectResults2FileButton.setEnabled(isGSEA);
+   		selectResults2FileButton.setVisible(isGSEA);
+
+		BasicCollapsiblePanel panel = new BasicCollapsiblePanel("Dataset 2");
+		panel.setAlignmentX(Component.CENTER_ALIGNMENT);
+		panel.setMaximumSize(new Dimension(Short.MAX_VALUE, panel.getPreferredSize().height));
+		
+		final GroupLayout layout = new GroupLayout(panel.getContentPane());
+		panel.getContentPane().setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
+		
+		ParallelGroup hGroup = layout.createParallelGroup(Alignment.CENTER, true);
+		SequentialGroup vGroup = layout.createSequentialGroup();
+		
+		layout.setHorizontalGroup(hGroup
+				.addGroup(layout.createSequentialGroup()
+						.addGroup(layout.createParallelGroup(Alignment.TRAILING, true)
+								.addComponent(gctLabel)
+								.addComponent(results1Label)
+								.addComponent(results2Label)
+						)
+						.addPreferredGap(ComponentPlacement.RELATED)
+						.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
+								.addGroup(layout.createSequentialGroup()
+										.addComponent(gctFileName2TextField, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+										.addComponent(selectGCTFileButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+								)
+								.addGroup(layout.createSequentialGroup()
+										.addComponent(dataset2FileNameTextField, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+										.addComponent(selectResults1FileButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+								)
+								.addGroup(layout.createSequentialGroup()
+										.addComponent(dataset2FileName2TextField, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+										.addComponent(selectResults2FileButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+								)
+								
+						)
+				)
+		);
+		layout.setVerticalGroup(vGroup
+				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+						.addComponent(gctLabel)
+						.addComponent(gctFileName2TextField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(selectGCTFileButton)
+				)
+				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+						.addComponent(results1Label)
+						.addComponent(dataset2FileNameTextField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(selectResults1FileButton)
+				)
+				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+						.addComponent(results2Label)
+						.addComponent(dataset2FileName2TextField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(selectResults2FileButton)
+				)
+		);
+
+		if (!params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_Specialized)) {
+			BasicCollapsiblePanel advancedDatasetOptionsPanel = createAdvancedDatasetOptions(2);
+			
+			hGroup.addComponent(advancedDatasetOptionsPanel);
+			vGroup.addPreferredGap(ComponentPlacement.UNRELATED).addComponent(advancedDatasetOptionsPanel);
+		}
+		
+		if (LookAndFeelUtil.isAquaLAF())
+			panel.setOpaque(false);
+
+		return panel;
+	}
 
     /**
      * Creates a collapsible panel that holds the advanced options specifications (rank file, phenotypes)
@@ -840,353 +793,366 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
      * @param dataset - whether this collapsible advanced panel is for dataset 1 or dataset 2
      * @return Collapsible panel that holds the advanced options specification interface
      */
-    private CollapsiblePanel createAdvancedDatasetOptions(int dataset){
-           //create a panel for advanced options
-            CollapsiblePanel Advanced = new CollapsiblePanel("Advanced");
-            
-            //expand it
-            Advanced.setCollapsed(false);
+	private BasicCollapsiblePanel createAdvancedDatasetOptions(int dataset) {
+		// create a panel for advanced options
+		BasicCollapsiblePanel panel = new BasicCollapsiblePanel("Advanced");
+		panel.setCollapsed(true);
 
-           JPanel advancedpanel = new JPanel();
-           advancedpanel.setLayout(new BorderLayout());
+		if (LookAndFeelUtil.isAquaLAF())
+			panel.setOpaque(false);
 
-            //add Ranks file
-           JLabel RanksLabel = new JLabel("Ranks:"){
-           /**
-             * 
-             */
-            private static final long serialVersionUID = 4549754054012943869L;
+		// add Ranks file
+		JLabel ranksLabel = new JLabel("Ranks:");
+		ranksLabel.setToolTipText(rankTip);
+		
+		JButton selectRanksFileButton = new JButton("Browse...");
+		selectRanksFileButton.setToolTipText(rankTip);
 
-                    public JToolTip createToolTip() {
-                        return new JMultiLineToolTip();
-                    }
-                };
-           RanksLabel.setToolTipText(rankTip);
-           JButton selectRanksFileButton = new JButton();
-           
-         //add class file
-           JLabel ClassLabel = new JLabel("Classes"){
-           /**
-             * 
-             */
-            private static final long serialVersionUID = 4549754054012943869L;
+		// add class file
+		JLabel classesLabel = new JLabel("Classes:");
+		classesLabel.setToolTipText(classTip);
+		
+		JButton selectClassFileButton = new JButton("Browse...");
+		selectClassFileButton.setToolTipText(classTip);
 
-                    public JToolTip createToolTip() {
-                        return new JMultiLineToolTip();
-                    }
-                };
-           ClassLabel.setToolTipText(classTip);
-           JButton selectClassFileButton = new JButton();
+		final JFormattedTextField ranksTextField;
+		final JFormattedTextField classesTextField;
+		
+		if (dataset == 1) {
+			ds1RanksTextField = new JFormattedTextField();
+			ds1RanksTextField.setColumns(defaultColumns);
+			ds1RanksTextField.addPropertyChangeListener("value",
+					new EnrichmentMapInputPanel.FormattedTextFieldAction());
 
-            if(dataset ==1 ){
-                Dataset1RankFileTextField = new JFormattedTextField();
-                Dataset1RankFileTextField.setColumns(defaultColumns);
-                Dataset1RankFileTextField.setFont(new java.awt.Font("Dialog",1,10));
-                Dataset1RankFileTextField.addPropertyChangeListener("value",new EnrichmentMapInputPanel.FormattedTextFieldAction());
+			// Dataset1RankFileTextField.setText(rank_instruction);
+			selectRanksFileButton.addActionListener((ActionEvent evt) -> {
+				selectRank1FileButtonActionPerformed(evt);
+			});
 
-                //Dataset1RankFileTextField.setText(rank_instruction);
-                 selectRanksFileButton.setText("...");
-                selectRanksFileButton.setMargin(new Insets(0,0,0,0));
-                selectRanksFileButton
-                .addActionListener(new java.awt.event.ActionListener() {
-                    public void actionPerformed(java.awt.event.ActionEvent evt) {
-                        selectRank1FileButtonActionPerformed(evt);
-                    }
-                });
-                
-                Dataset1ClassFileTextField = new JFormattedTextField();
-                Dataset1ClassFileTextField.setColumns(defaultColumns);
-                Dataset1ClassFileTextField.setFont(new java.awt.Font("Dialog",1,10));
-                Dataset1ClassFileTextField.addPropertyChangeListener("value",new EnrichmentMapInputPanel.FormattedTextFieldAction());
-                 selectClassFileButton.setText("...");
-                selectClassFileButton.setMargin(new Insets(0,0,0,0));
-                selectClassFileButton
-                .addActionListener(new java.awt.event.ActionListener() {
-                    public void actionPerformed(java.awt.event.ActionEvent evt) {
-                        selectClass1FileButtonActionPerformed(evt);
-                    }
-                });
-            }
-            else {
-               Dataset2RankFileTextField = new JFormattedTextField();
-               Dataset2RankFileTextField.setColumns(defaultColumns);
-               Dataset2RankFileTextField.setFont(new java.awt.Font("Dialog",1,10));
-               Dataset2RankFileTextField.addPropertyChangeListener("value",new EnrichmentMapInputPanel.FormattedTextFieldAction());
+			ds1ClassesTextField = new JFormattedTextField();
+			ds1ClassesTextField.setColumns(defaultColumns);
+			ds1ClassesTextField.addPropertyChangeListener("value",
+					new EnrichmentMapInputPanel.FormattedTextFieldAction());
+			selectClassFileButton.addActionListener((ActionEvent evt) -> {
+				selectClass1FileButtonActionPerformed(evt);
+			});
+			
+			ranksTextField = ds1RanksTextField;
+			classesTextField = ds1ClassesTextField;
+		} else {
+			ds2RanksTextField = new JFormattedTextField();
+			ds2RanksTextField.setColumns(defaultColumns);
+			ds2RanksTextField.addPropertyChangeListener("value",
+					new EnrichmentMapInputPanel.FormattedTextFieldAction());
 
-               //Dataset2RankFileTextField.setText(rank_instruction);
+			// Dataset2RankFileTextField.setText(rank_instruction);
 
-               selectRanksFileButton.setText("...");
-               selectRanksFileButton.setMargin(new Insets(0,0,0,0));
-               selectRanksFileButton
-                .addActionListener(new java.awt.event.ActionListener() {
-                    public void actionPerformed(java.awt.event.ActionEvent evt) {
-                        selectRank2FileButtonActionPerformed(evt);
-                    }
-                });
-               
-               Dataset2ClassFileTextField = new JFormattedTextField();
-               Dataset2ClassFileTextField.setColumns(defaultColumns);
-               Dataset2ClassFileTextField.setFont(new java.awt.Font("Dialog",1,10));
-               Dataset2ClassFileTextField.addPropertyChangeListener("value",new EnrichmentMapInputPanel.FormattedTextFieldAction());
+			selectRanksFileButton.addActionListener((ActionEvent evt) -> {
+				selectRank2FileButtonActionPerformed(evt);
+			});
 
-                selectClassFileButton.setText("...");
-               selectClassFileButton.setMargin(new Insets(0,0,0,0));
-               selectClassFileButton
-               .addActionListener(new java.awt.event.ActionListener() {
-                   public void actionPerformed(java.awt.event.ActionEvent evt) {
-                       selectClass2FileButtonActionPerformed(evt);
-                   }
-               });
+			ds2ClassesTextField = new JFormattedTextField();
+			ds2ClassesTextField.setColumns(defaultColumns);
+			ds2ClassesTextField.addPropertyChangeListener("value",
+					new EnrichmentMapInputPanel.FormattedTextFieldAction());
 
-            }
+			selectClassFileButton.addActionListener((ActionEvent evt) -> {
+				selectClass2FileButtonActionPerformed(evt);
+			});
+			
+			ranksTextField = ds2RanksTextField;
+			classesTextField = ds2ClassesTextField;
+		}
+		
+		ranksTextField.setToolTipText(rankTip);
+		classesTextField.setToolTipText(classTip);
 
+		// add Phenotypes
+		JLabel phenotypesLabel = new JLabel("Phenotypes:");
+		JLabel vsLabel = new JLabel("VS.");
+		
+		final JFormattedTextField phenotype1TextField;
+		final JFormattedTextField phenotype2TextField;
+		
+		if (dataset == 1) {
+			ds1Phenotype1TextField = new JFormattedTextField("UP");
+			ds1Phenotype1TextField.setColumns(4);
+			ds1Phenotype1TextField.addPropertyChangeListener("value",
+					new EnrichmentMapInputPanel.FormattedTextFieldAction());
 
-           JPanel RanksPanel = new JPanel();
-           RanksPanel.setLayout(new BorderLayout());
+			ds1Phenotype2TextField = new JFormattedTextField("DOWN");
+			ds1Phenotype2TextField.setColumns(4);
+			ds1Phenotype2TextField.addPropertyChangeListener("value",
+					new EnrichmentMapInputPanel.FormattedTextFieldAction());
 
-           RanksPanel.add(RanksLabel,BorderLayout.WEST);
-           if(dataset ==1)
-                RanksPanel.add( Dataset1RankFileTextField, BorderLayout.CENTER);
-           else
-                RanksPanel.add( Dataset2RankFileTextField, BorderLayout.CENTER);
-           RanksPanel.add( selectRanksFileButton, BorderLayout.EAST);
-           
-           JPanel ClassPanel = new JPanel();
-           ClassPanel.setLayout(new BorderLayout());
-           
-           ClassPanel.add(ClassLabel,BorderLayout.WEST);
-           if(dataset ==1)
-        	   ClassPanel.add( Dataset1ClassFileTextField, BorderLayout.CENTER);
-           else
-        	   ClassPanel.add( Dataset2ClassFileTextField, BorderLayout.CENTER);
-           ClassPanel.add( selectClassFileButton, BorderLayout.EAST);
+			phenotype1TextField = ds1Phenotype1TextField;
+			phenotype2TextField = ds1Phenotype2TextField;
+		} else {
+			ds2Phenotype1TextField = new JFormattedTextField("UP");
+			ds2Phenotype1TextField.setColumns(4);
+			ds2Phenotype1TextField.addPropertyChangeListener("value",
+					new EnrichmentMapInputPanel.FormattedTextFieldAction());
 
-           //add Phenotypes
-           JLabel PhenotypesLabel = new JLabel("Phenotypes:");
-           JLabel vsLabel = new JLabel("VS.");
-           if(dataset == 1){
-               Dataset1Phenotype1TextField= new JFormattedTextField("UP");
-               Dataset1Phenotype1TextField.setColumns(4);
-               Dataset1Phenotype1TextField.addPropertyChangeListener("value",new EnrichmentMapInputPanel.FormattedTextFieldAction());
+			ds2Phenotype2TextField = new JFormattedTextField("DOWN");
+			ds2Phenotype2TextField.setColumns(4);
+			ds2Phenotype2TextField.addPropertyChangeListener("value",
+					new EnrichmentMapInputPanel.FormattedTextFieldAction());
 
-                Dataset1Phenotype2TextField= new JFormattedTextField("DOWN");
-               Dataset1Phenotype2TextField.setColumns(4);
-               Dataset1Phenotype2TextField.addPropertyChangeListener("value",new EnrichmentMapInputPanel.FormattedTextFieldAction());
+			phenotype1TextField = ds2Phenotype1TextField;
+			phenotype2TextField = ds2Phenotype2TextField;			
+		}
+		
+		makeSmall(ranksLabel, ranksTextField, selectRanksFileButton);
+		makeSmall(classesLabel, classesTextField, selectClassFileButton);
+		makeSmall(phenotypesLabel, vsLabel, phenotype1TextField, phenotype2TextField);
+		
+		final GroupLayout layout = new GroupLayout(panel.getContentPane());
+		panel.getContentPane().setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
+		
+		ParallelGroup hGroup = layout.createParallelGroup(Alignment.CENTER, true);
+		SequentialGroup vGroup = layout.createSequentialGroup();
+		
+		layout.setHorizontalGroup(hGroup
+				.addGroup(layout.createSequentialGroup()
+						.addGroup(layout.createParallelGroup(Alignment.TRAILING, true)
+								.addComponent(ranksLabel)
+								.addComponent(classesLabel)
+								.addComponent(phenotypesLabel)
+						)
+						.addPreferredGap(ComponentPlacement.RELATED)
+						.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
+								.addGroup(layout.createSequentialGroup()
+										.addComponent(ranksTextField, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+										.addComponent(selectRanksFileButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+								)
+								.addGroup(layout.createSequentialGroup()
+										.addComponent(classesTextField, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+										.addComponent(selectClassFileButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+								)
+								.addGroup(layout.createSequentialGroup()
+										.addComponent(phenotype1TextField,PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+										.addComponent(vsLabel,PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+										.addComponent(phenotype2TextField,PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+								)
+								
+						)
+				)
+		);
+		layout.setVerticalGroup(vGroup
+				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+						.addComponent(ranksLabel)
+						.addComponent(ranksTextField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(selectRanksFileButton)
+				)
+				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+						.addComponent(classesLabel)
+						.addComponent(classesTextField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(selectClassFileButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
+				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+						.addComponent(phenotypesLabel)
+						.addComponent(phenotype1TextField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(vsLabel)
+						.addComponent(phenotype2TextField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
+		);
 
-           }
-            else {
-               Dataset2Phenotype1TextField= new JFormattedTextField("UP");
-               Dataset2Phenotype1TextField.setColumns(4);
-               Dataset2Phenotype1TextField.addPropertyChangeListener("value",new EnrichmentMapInputPanel.FormattedTextFieldAction());
+		return panel;
+	}
 
-               Dataset2Phenotype2TextField= new JFormattedTextField("DOWN");
-               Dataset2Phenotype2TextField.setColumns(4);
-               Dataset2Phenotype2TextField.addPropertyChangeListener("value",new EnrichmentMapInputPanel.FormattedTextFieldAction());
+	/**
+	 * Creates a collapsable panel that holds parameter inputs
+	 *
+	 * @return panel containing the parameter specification interface
+	 */
+	private BasicCollapsiblePanel createParametersPanel() {
+		int precision = 6;
+		BasicCollapsiblePanel panel = new BasicCollapsiblePanel("Parameters");
 
-           }
-           JPanel PhenotypesPanel = new JPanel();
-           PhenotypesPanel.setLayout(new FlowLayout());
+		if (LookAndFeelUtil.isAquaLAF())
+			panel.setOpaque(false);
 
-           PhenotypesPanel.add(PhenotypesLabel);
-            if(dataset == 1){
-                PhenotypesPanel.add( Dataset1Phenotype1TextField);
-                PhenotypesPanel.add(vsLabel);
-                PhenotypesPanel.add( Dataset1Phenotype2TextField);
-            }
-            else{
-                PhenotypesPanel.add( Dataset2Phenotype1TextField);
-                PhenotypesPanel.add(vsLabel);
-                PhenotypesPanel.add( Dataset2Phenotype2TextField);
-            }
+		// Add check box to turn on scientific notation for pvalue and qvalue
+		scinot = new JCheckBox("Scientific Notation");
+		scinot.setToolTipText(
+				"Allows pvalue and q-value to be entered in scientific notation, i.e. 5E-3 instead of 0.005");
+		scinot.addActionListener((ActionEvent evt) -> {
+			selectScientificNotationActionPerformed(evt);
+		});
 
-           advancedpanel.add(RanksPanel,BorderLayout.NORTH);
-           advancedpanel.add(ClassPanel, BorderLayout.CENTER);
-           advancedpanel.add(PhenotypesPanel, BorderLayout.SOUTH);
-           Advanced.getContentPane().add(advancedpanel,BorderLayout.NORTH);
+		// P-value Cutoff input
+		String pvalueCutOffTip =
+				"<html>Only genesets with a p-value less than<br />" +
+				"the cutoff will be included.</html>";
+		
+		JLabel pvalueCutOffLabel = new JLabel("P-value Cutoff:");
+		pvalueCutOffLabel.setToolTipText(pvalueCutOffTip);
+		
+		pvalueTextField = new JFormattedTextField(decFormat);
+		pvalueTextField.setColumns(precision);
+		pvalueTextField.setHorizontalAlignment(JTextField.RIGHT);
+		pvalueTextField.addPropertyChangeListener("value", new EnrichmentMapInputPanel.FormattedTextFieldAction());
+		pvalueTextField.setToolTipText(pvalueCutOffTip);
+		pvalueTextField.setText(Double.toString(params.getPvalue()));
+		pvalueTextField.setValue(params.getPvalue());
 
-        return Advanced;
-    }
+		// Q-value Cutoff input
+		String qvalueCutOffTip =
+				"<html>Only genesets with a FDR q-value less than<br />" +
+				"the cutoff will be included.</html>";
+		
+		JLabel qvalueCutOffLabel = new JLabel("FDR Q-value Cutoff:");
+		qvalueCutOffLabel.setToolTipText(qvalueCutOffTip);
+		
+		qvalueTextField = new JFormattedTextField(decFormat);
+		qvalueTextField.setColumns(precision);
+		qvalueTextField.setHorizontalAlignment(JTextField.RIGHT);
+		qvalueTextField.addPropertyChangeListener("value", new EnrichmentMapInputPanel.FormattedTextFieldAction());
+		qvalueTextField.setToolTipText(qvalueCutOffTip);
+		qvalueTextField.setText(Double.toString(params.getQvalue()));
+		qvalueTextField.setValue(params.getQvalue());
 
-       /**
-        * Creates a collapsable panel that holds parameter inputs
-        *
-        * @return panel containing the parameter specification interface
-        */
-       private CollapsiblePanel createParametersPanel() {
-    	   		int precision = 6;
-           CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Parameters");
+		// Coefficient Cutoff input
+		JLabel similarityCutoff = new JLabel("Similarity Cutoff:");
+		
+		jaccard = new JRadioButton("Jaccard Coefficient");
+		jaccard.setActionCommand("jaccard");
+		jaccard.setSelected(true);
+		
+		overlap = new JRadioButton("Overlap Coefficient");
+		overlap.setActionCommand("overlap");
+		
+		combined = new JRadioButton("Jaccard+Overlap Combined");
+		combined.setActionCommand("combined");
+		
+		if (params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_JACCARD)) {
+			jaccard.setSelected(true);
+			overlap.setSelected(false);
+			combined.setSelected(false);
+		} else if (params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_OVERLAP)) {
+			jaccard.setSelected(false);
+			overlap.setSelected(true);
+			combined.setSelected(false);
+		} else if (params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_COMBINED)) {
+			jaccard.setSelected(false);
+			overlap.setSelected(false);
+			combined.setSelected(true);
+		}
+		
+		ButtonGroup jaccardOrOverlap = new ButtonGroup();
+		jaccardOrOverlap.add(jaccard);
+		jaccardOrOverlap.add(overlap);
+		jaccardOrOverlap.add(combined);
 
-           JPanel panel = new JPanel();
-           panel.setLayout(new GridLayout(0, 1));
-           
-           //Add check box to turn on scientific notation for pvalue and qvalue
-           scinot = new JCheckBox("Scientific notation");
-           scinot.addActionListener(new java.awt.event.ActionListener() {
-               public void actionPerformed(java.awt.event.ActionEvent evt) {
-                      selectScientificNotationActionPerformed(evt);
-               }
-         });
-           
-           JLabel scinotLabel = new JLabel("");
-           JPanel scinotPanel = new JPanel();
-           scinotPanel.setLayout(new BorderLayout());
-           scinotPanel.setToolTipText("Allows pvalue and q-value to be entered in scientific notation, i.e. 5E-3 instead of 0.005");
+		jaccard.addActionListener((ActionEvent evt) -> {
+			selectJaccardOrOverlapActionPerformed(evt);
+		});
+		overlap.addActionListener((ActionEvent evt) -> {
+			selectJaccardOrOverlapActionPerformed(evt);
+		});
+		combined.addActionListener((ActionEvent evt) -> {
+			selectJaccardOrOverlapActionPerformed(evt);
+		});
 
-           scinotPanel.add(scinotLabel, BorderLayout.WEST);
-           scinotPanel.add(scinot, BorderLayout.EAST);
-           
-           //pvalue cutoff input
-           JLabel pvalueCutOffLabel = new JLabel("P-value Cutoff");
-           pvalueTextField = new JFormattedTextField(decFormat);
-           pvalueTextField.setColumns(precision);
-           pvalueTextField.addPropertyChangeListener("value", new EnrichmentMapInputPanel.FormattedTextFieldAction());
-           String pvalueCutOffTip = "Sets the p-value cutoff \n" +
-                   "only genesets with a p-value less than \n"+
-                    "the cutoff will be included.";
-           pvalueTextField.setToolTipText(pvalueCutOffTip);
-           pvalueTextField.setText(Double.toString(params.getPvalue()));
-           pvalueTextField.setValue(params.getPvalue());
+		String coeffecientCutOffTip = 
+				"<html>Sets the Jaccard or Overlap coefficient cutoff.<br />" +
+				"Only edges with a Jaccard or Overlap coefficient less than<br />" +
+				"the cutoff will be added.</html>";
+		
+		JLabel coeffecientCutOffLabel = new JLabel("Cutoff:");
+		coeffecientCutOffLabel.setToolTipText(coeffecientCutOffTip);
+		
+		coeffecientTextField = new JFormattedTextField(decFormat);
+		coeffecientTextField.setColumns(precision);
+		coeffecientTextField.setHorizontalAlignment(JTextField.RIGHT);
+		coeffecientTextField.addPropertyChangeListener("value", new EnrichmentMapInputPanel.FormattedTextFieldAction());
+		coeffecientTextField.setToolTipText(coeffecientCutOffTip);
+		// coeffecientTextField.setText(Double.toString(params.getSimilarityCutOff()));
+		coeffecientTextField.setValue(params.getSimilarityCutOff());
+		similarityCutOffChanged = false; // reset for new Panel after .setValue(...) wrongly changed it to "true"
 
-           JPanel pvalueCutOffPanel = new JPanel();
-           pvalueCutOffPanel.setLayout(new BorderLayout());
-           pvalueCutOffPanel.setToolTipText(pvalueCutOffTip);
+		// Add a box to specify the constant used in created the combined value
+		JLabel combinedConstantLabel = new JLabel("Combined Constant:");
+		
+		combinedConstantTextField = new JFormattedTextField(decFormat);
+		combinedConstantTextField.setColumns(precision);
+		combinedConstantTextField.setHorizontalAlignment(JTextField.RIGHT);
+		combinedConstantTextField.addPropertyChangeListener("value", new FormattedTextFieldAction());
+		combinedConstantTextField.setValue(0.5);
 
-           pvalueCutOffPanel.add(pvalueCutOffLabel, BorderLayout.WEST);
-           pvalueCutOffPanel.add(pvalueTextField, BorderLayout.EAST);
-
-
-            //qvalue cutoff input
-           JLabel qvalueCutOffLabel = new JLabel("FDR Q-value Cutoff");
-           qvalueTextField = new JFormattedTextField(decFormat);
-           qvalueTextField.setColumns(precision);
-           qvalueTextField.addPropertyChangeListener("value", new EnrichmentMapInputPanel.FormattedTextFieldAction());
-           String qvalueCutOffTip = "Sets the FDR q-value cutoff \n" +
-                   "only genesets with a FDR q-value less than \n"+
-                    "the cutoff will be included.";
-           qvalueTextField.setToolTipText(qvalueCutOffTip);
-           qvalueTextField.setText(Double.toString(params.getQvalue()));
-           qvalueTextField.setValue(params.getQvalue());
-
-           JPanel qvalueCutOffPanel = new JPanel();
-           qvalueCutOffPanel.setLayout(new BorderLayout());
-           qvalueCutOffPanel.setToolTipText(qvalueCutOffTip);
-
-           qvalueCutOffPanel.add(qvalueCutOffLabel, BorderLayout.WEST);
-           qvalueCutOffPanel.add(qvalueTextField, BorderLayout.EAST);
-
-           //Coeffecient cutoff input
-
-           ButtonGroup jaccardOrOverlap;
-
-           jaccard = new JRadioButton("Jaccard Coefficient");
-           jaccard.setActionCommand("jaccard");
-           jaccard.setSelected(true);
-           overlap = new JRadioButton("Overlap Coefficient");
-           overlap.setActionCommand("overlap");
-           combined = new JRadioButton("Jaccard+Overlap Combined");
-           combined.setActionCommand("combined");
-           if ( params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_JACCARD) ) {
-               jaccard.setSelected(true);
-               overlap.setSelected(false);
-               combined.setSelected(false);
-           } else if ( params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_OVERLAP)){
-               jaccard.setSelected(false);
-               overlap.setSelected(true);
-               combined.setSelected(false);
-           }
-           else if ( params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_COMBINED)){
-               jaccard.setSelected(false);
-               overlap.setSelected(false);
-               combined.setSelected(true);
-           }
-           jaccardOrOverlap = new javax.swing.ButtonGroup();
-           jaccardOrOverlap.add(jaccard);
-           jaccardOrOverlap.add(overlap);
-           jaccardOrOverlap.add(combined);
-
-           jaccard.addActionListener(new java.awt.event.ActionListener() {
-                        public void actionPerformed(java.awt.event.ActionEvent evt) {
-                               selectJaccardOrOverlapActionPerformed(evt);
-                        }
-                  });
-
-           overlap.addActionListener(new java.awt.event.ActionListener() {
-                        public void actionPerformed(java.awt.event.ActionEvent evt) {
-                               selectJaccardOrOverlapActionPerformed(evt);
-                        }
-                  });
-           combined.addActionListener(new java.awt.event.ActionListener() {
-               public void actionPerformed(java.awt.event.ActionEvent evt) {
-                   selectJaccardOrOverlapActionPerformed(evt);
-               }
-           });
-
-           //create a panel for the two buttons
-           JPanel index_buttons = new JPanel();
-           index_buttons.setLayout(new BorderLayout());
-           index_buttons.add(jaccard, BorderLayout.NORTH);
-           index_buttons.add(overlap, BorderLayout.CENTER);
-           index_buttons.add(combined, BorderLayout.SOUTH);
-
-           JLabel coeffecientCutOffLabel = new JLabel("Cutoff");
-           coeffecientTextField = new JFormattedTextField(decFormat);
-           coeffecientTextField.setColumns(precision);
-           coeffecientTextField.addPropertyChangeListener("value", new EnrichmentMapInputPanel.FormattedTextFieldAction());
-           String coeffecientCutOffTip = "Sets the Jaccard or Overlap coefficient cutoff \n" +
-                             "only edges with a Jaccard or Overlap coefficient less than \n"+
-                              "the cutoff will be added.";
-          coeffecientTextField.setToolTipText(coeffecientCutOffTip);
-//          coeffecientTextField.setText(Double.toString(params.getSimilarityCutOff()));
-          coeffecientTextField.setValue(params.getSimilarityCutOff());
-          similarityCutOffChanged = false; //reset for new Panel after .setValue(...) wrongly changed it to "true"
-
-          //Add a box to specify the constant used in created the combined value
-           JLabel combinedCutoff = new JLabel("Combined Constant");
-           combinedConstantTextField =new JFormattedTextField(decFormat);
-           combinedConstantTextField.setColumns(precision);
-           combinedConstantTextField.addPropertyChangeListener("value", new FormattedTextFieldAction());
-           combinedConstantTextField.setValue(0.5);
-
-           JPanel kconstantPanel = new JPanel();
-           kconstantPanel.setLayout(new BorderLayout());
-           kconstantPanel.add(combinedCutoff, BorderLayout.WEST);
-           kconstantPanel.add(combinedConstantTextField, BorderLayout.EAST);
-
-          JPanel coeffecientCutOffPanel = new JPanel();
-          coeffecientCutOffPanel.setLayout(new BorderLayout());
-          coeffecientCutOffPanel.setToolTipText(coeffecientCutOffTip);
-          
-          //add a label to the similarity coeffecient section
-          JLabel similarityCutoff = new JLabel("Similarity Cutoff:");
-          coeffecientCutOffPanel.add(similarityCutoff,BorderLayout.NORTH);
-          
-          coeffecientCutOffPanel.add(index_buttons,BorderLayout.WEST);
-          coeffecientCutOffPanel.add(coeffecientCutOffLabel, BorderLayout.CENTER);
-          coeffecientCutOffPanel.add(coeffecientTextField, BorderLayout.EAST);
-           coeffecientCutOffPanel.add(kconstantPanel, BorderLayout.SOUTH);
-
-           //add the components to the panel
-           panel.add(pvalueCutOffPanel);
-           panel.add(qvalueCutOffPanel);
-           panel.add(scinotPanel);
-           //panel.add(coeffecientCutOffPanel);
-
-           collapsiblePanel.getContentPane().add(panel, BorderLayout.NORTH);
-           collapsiblePanel.getContentPane().add(coeffecientCutOffPanel, BorderLayout.SOUTH);
-           return collapsiblePanel;
-       }
-
-
+		makeSmall(pvalueCutOffLabel, pvalueTextField, qvalueCutOffLabel, qvalueTextField, scinot);
+		makeSmall(similarityCutoff, jaccard, overlap, combined);
+		makeSmall(coeffecientCutOffLabel, coeffecientTextField, combinedConstantLabel, combinedConstantTextField);
+		
+		// add the components to the panel
+		final GroupLayout layout = new GroupLayout(panel.getContentPane());
+		panel.getContentPane().setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
+		
+		layout.setHorizontalGroup(layout.createSequentialGroup()
+				.addGroup(layout.createParallelGroup(Alignment.TRAILING, true)
+						.addComponent(pvalueCutOffLabel)
+						.addComponent(qvalueCutOffLabel)
+						.addComponent(similarityCutoff)
+						.addComponent(coeffecientCutOffLabel)
+						.addComponent(combinedConstantLabel)
+				)
+				.addPreferredGap(ComponentPlacement.RELATED)
+				.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
+						.addComponent(pvalueTextField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(qvalueTextField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(scinot, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(jaccard, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(overlap, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(combined, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(coeffecientTextField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(combinedConstantTextField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+						.addComponent(pvalueCutOffLabel)
+						.addComponent(pvalueTextField)
+				)
+				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+						.addComponent(qvalueCutOffLabel)
+						.addComponent(qvalueTextField)
+				)
+				.addComponent(scinot)
+				.addPreferredGap(ComponentPlacement.UNRELATED)
+				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+						.addComponent(similarityCutoff)
+						.addComponent(jaccard)
+				)
+				.addComponent(overlap)
+				.addComponent(combined)
+				.addPreferredGap(ComponentPlacement.UNRELATED)
+				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+						.addComponent(coeffecientCutOffLabel)
+						.addComponent(coeffecientTextField)
+				)
+				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+						.addComponent(combinedConstantLabel)
+						.addComponent(combinedConstantTextField)
+				)
+		);
+		
+		return panel;
+	}
 
      /**
      * Handles setting for the text field parameters that are numbers.
      * Makes sure that the numbers make sense.
      */
      private class FormattedTextFieldAction implements PropertyChangeListener {
+    	@Override
         public void propertyChange(PropertyChangeEvent e) {
             JFormattedTextField source = (JFormattedTextField) e.getSource();
 
-            String message = "The value you have entered is invalid.\n";
+            String message = "The value you have entered is invalid.";
             boolean invalid = false;
 
             if(source == pvalueTextField || source == qvalueTextField || source == coeffecientTextField || source == combinedConstantTextField){
@@ -1239,53 +1205,53 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
             
             } 
             //boxes taht are text but not files
-            else if(source == Dataset1Phenotype1TextField || source == Dataset1Phenotype2TextField || source == Dataset2Phenotype1TextField || source == Dataset2Phenotype2TextField){
-            		if (source == Dataset1Phenotype1TextField) {
-                    String value = Dataset1Phenotype1TextField.getText();
+            else if(source == ds1Phenotype1TextField || source == ds1Phenotype2TextField || source == ds2Phenotype1TextField || source == ds2Phenotype2TextField){
+            		if (source == ds1Phenotype1TextField) {
+                    String value = ds1Phenotype1TextField.getText();
                     dataset1files.setPhenotype1(value);                
                 }
-                else if (source == Dataset1Phenotype2TextField) {
-                    String value = Dataset1Phenotype2TextField.getText();
+                else if (source == ds1Phenotype2TextField) {
+                    String value = ds1Phenotype2TextField.getText();
                     dataset1files.setPhenotype2(value);
                 }
 
-                else if (source == Dataset2Phenotype1TextField) {
-                    String value = Dataset2Phenotype1TextField.getText();
+                else if (source == ds2Phenotype1TextField) {
+                    String value = ds2Phenotype1TextField.getText();
                     dataset2files.setPhenotype1(value);
                 }
-                else if (source == Dataset2Phenotype2TextField) {
-                    String value = Dataset2Phenotype2TextField.getText();
+                else if (source == ds2Phenotype2TextField) {
+                    String value = ds2Phenotype2TextField.getText();
                     dataset2files.setPhenotype2(value);
                 }
             }
             //the rest of the text textboxes
             else{
             		String value = source.getText();
-            		if (source == GCTFileName1TextField) {
+            		if (source == gctFileName1TextField) {
             			dataset1files.setExpressionFileName(value);
             			if(value.equalsIgnoreCase("") )
             				params.setData(false);           	   		
-            		}else if (source == GCTFileName2TextField) {
+            		}else if (source == gctFileName2TextField) {
             			dataset2files.setExpressionFileName(value); 
             			if(value.equalsIgnoreCase("") )              		               	
             				params.setData2(false);               
-            		}else if (source == Dataset1FileNameTextField) 
+            		}else if (source == dataset1FileNameTextField) 
             			dataset1files.setEnrichmentFileName1(value);            	   		
-            		else if (source == Dataset1FileName2TextField) 
+            		else if (source == dataset1FileName2TextField) 
             			dataset1files.setEnrichmentFileName2(value);              
-            		else if (source == Dataset2FileNameTextField) 
+            		else if (source == dataset2FileNameTextField) 
             			dataset2files.setEnrichmentFileName1(value);               		
-            		else if (source == Dataset2FileName2TextField) 
+            		else if (source == dataset2FileName2TextField) 
             			dataset2files.setEnrichmentFileName2(value);                             		            		
-            		else if (source == Dataset1RankFileTextField)
+            		else if (source == ds1RanksTextField)
             			dataset1files.setRankedFile(value);            		
-            		else if (source == Dataset2RankFileTextField)
+            		else if (source == ds2RanksTextField)
             			dataset2files.setRankedFile(value);           	                 		
-            		else if (source == Dataset1ClassFileTextField)
+            		else if (source == ds1ClassesTextField)
             			dataset1files.setClassFile(value);            		
-            		else if (source == Dataset2ClassFileTextField)
+            		else if (source == ds2ClassesTextField)
             			dataset2files.setClassFile(value);          	                 		
-            		else if (source == GMTFileNameTextField) 
+            		else if (source == gmtFileNameTextField) 
             			dataset1files.setGMTFileName(value);                            
             		
             		Color found = Color.black;
@@ -1304,80 +1270,66 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
     }
 
 
-    /**
-     * Utility method that creates a panel for buttons at the bottom of the Enrichment Map Panel
-     *
-     * @return a flow layout panel containing the build map and cancel buttons
-     */
-    private JPanel createBottomPanel() {
-        JPanel panel = new JPanel();
-        panel.setLayout(new FlowLayout());
+	/**
+	 * Utility method that creates a panel for buttons at the bottom of the Enrichment Map Panel
+	 */
+	private JPanel createBottomPanel() {
+		JButton helpButton = SwingUtil.createOnlineHelpButton(EnrichmentMapBuildProperties.USER_MANUAL_URL,
+				"Online Manual...", registrar);
+		
+		JButton resetButton = new JButton("Reset");
+		resetButton.addActionListener((ActionEvent evt) -> {
+			resetPanel();
+		});
 
-        JButton closeButton = new JButton();
-        JButton importButton = new JButton();
+		JButton closeButton = new JButton("Close");
+		closeButton.addActionListener((ActionEvent evt) -> {
+			cancelButtonActionPerformed(evt);
+		});
 
-        JButton resetButton = new JButton ("Reset");
-           resetButton.addActionListener(new java.awt.event.ActionListener() {
-                                      public void actionPerformed(java.awt.event.ActionEvent evt) {
-                                          resetPanel();
-                                      }
-                  });
+		JButton importButton = new JButton("Build");
+		importButton.addActionListener((ActionEvent evt) -> {
+			// make sure that the minimum information is set in the current set of parameters
 
-        closeButton.setText("Close");
-        closeButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cancelButtonActionPerformed(evt);
-            }
-        });
+			// create a new params for the new EM and add the dataset files to it
+			EnrichmentMapParameters newParams = new EnrichmentMapParameters(sessionManager, streamUtil,
+					applicationManager);
+			newParams.copy(empanel.getParams());
+			newParams.addFiles(EnrichmentMap.DATASET1, dataset1files);
 
-        importButton.setText("Build");
-        importButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-            	//make sure that the minimum information is set in the current set of parameters
-               
-            		//create a new params for the new EM and add the dataset files to it
-            		EnrichmentMapParameters new_params = new EnrichmentMapParameters(sessionManager,streamUtil,applicationManager);
-            		new_params.copy(empanel.getParams());         		
-            		new_params.addFiles(EnrichmentMap.DATASET1, dataset1files);
-            		if(!dataset2files.isEmpty())
-            			new_params.addFiles(EnrichmentMap.DATASET2, dataset2files);
-            	
-                EnrichmentMap map = new EnrichmentMap(new_params);
-                
-                //EnrichmentMapParseInputEvent parseInput = new EnrichmentMapParseInputEvent(empanel,map , dialog,  streamUtil);
-                //parseInput.build();
-                
-                //add observer to catch if the input is a GREAT file so we can determine which p-value to use
-                ResultTaskObserver observer = new ResultTaskObserver();
-                
-               	EnrichmentMapBuildMapTaskFactory buildmap = new EnrichmentMapBuildMapTaskFactory(map,  
-               					applicationManager,application,networkManager,networkViewManager,networkViewFactory,networkFactory,tableFactory,tableManager, 
-                    			visualMappingManager,visualStyleFactory,
-                    			vmfFactoryContinuous, vmfFactoryDiscrete,vmfFactoryPassthrough, dialog,  streamUtil,layoutManager,mapTableToNetworkTable);
-                //buildmap.build();
-                dialog.execute(buildmap.createTaskIterator(), observer);
-                
-                //After the network is built register the HeatMap and Parameters panel
-        		EnrichmentMapManager manager = EnrichmentMapManager.getInstance();
-        		manager.registerServices();
-                
-            }
-        });
-        //importButton.addActionListener(new BuildEnrichmentMapActionListener(this));
-        importButton.setEnabled(true);
+			if (!dataset2files.isEmpty())
+				newParams.addFiles(EnrichmentMap.DATASET2, dataset2files);
 
-        panel.add(resetButton);
-        panel.add(closeButton);
-        panel.add(importButton);
+			EnrichmentMap map = new EnrichmentMap(newParams);
 
-        return panel;
-    }
+			// add observer to catch if the input is a GREAT file so we can determine which p-value to use
+			ResultTaskObserver observer = new ResultTaskObserver();
 
-    private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {
+			EnrichmentMapBuildMapTaskFactory buildmap = new EnrichmentMapBuildMapTaskFactory(map, applicationManager,
+					application, networkManager, networkViewManager, networkViewFactory, networkFactory, tableFactory,
+					tableManager, visualMappingManager, visualStyleFactory, vmfFactoryContinuous, vmfFactoryDiscrete,
+					vmfFactoryPassthrough, dialog, streamUtil, layoutManager, mapTableToNetworkTable);
+			// buildmap.build();
+			dialog.execute(buildmap.createTaskIterator(), observer);
+
+			// After the network is built register the HeatMap and Parameters panel
+			EnrichmentMapManager manager = EnrichmentMapManager.getInstance();
+			manager.registerServices();
+		});
+
+		JPanel panel = LookAndFeelUtil.createOkCancelPanel(importButton, closeButton, helpButton, resetButton);
+
+		if (LookAndFeelUtil.isAquaLAF())
+			panel.setOpaque(false);
+
+		return panel;
+	}
+
+	private void cancelButtonActionPerformed(ActionEvent evt) {
     		this.registrar.unregisterService(this, CytoPanelComponent.class);
     }
 
-    public void close() {
+	public void close() {
     		this.registrar.unregisterService(this, CytoPanelComponent.class);
     	}
 
@@ -1413,10 +1365,10 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
             //check to see the file exists and can be read
             //check to see if the gmt file has already been set
             if(dataset1files.getGMTFileName() == null || dataset1files.getGMTFileName().equalsIgnoreCase("")){
-                GMTFileNameTextField.setForeground(checkFile(gmt));
-                GMTFileNameTextField.setText(gmt);
+                gmtFileNameTextField.setForeground(checkFile(gmt));
+                gmtFileNameTextField.setText(gmt);
                 dataset1files.setGMTFileName(gmt);
-                GMTFileNameTextField.setToolTipText(gmt);
+                gmtFileNameTextField.setToolTipText(gmt);
             }
 
 
@@ -1428,10 +1380,10 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
                 if(!currentGMTFilename.getName().equalsIgnoreCase(newGMTFilename.getName())){
                     int answer = JOptionPane.showConfirmDialog(this,"This analysis GMT file does not match the previous dataset loaded.\n If you want to use the current GMT file but still use the new rpt file to populated fields press YES,\n If you want to change the GMT file to the one in this rpt file and populate the fields with the rpt file press NO,\n to choose a different rpt file press CANCEL\n","GMT files name mismatch", JOptionPane.YES_NO_CANCEL_OPTION);
                     if(answer == JOptionPane.NO_OPTION){
-                        GMTFileNameTextField.setForeground(checkFile(gmt));
-                        GMTFileNameTextField.setText(gmt);
+                        gmtFileNameTextField.setForeground(checkFile(gmt));
+                        gmtFileNameTextField.setText(gmt);
                         dataset1files.setGMTFileName(gmt);
-                        GMTFileNameTextField.setToolTipText(gmt);
+                        gmtFileNameTextField.setToolTipText(gmt);
                     }
                     else if(answer == JOptionPane.CANCEL_OPTION)
                         AutoPopulate = false;
@@ -1439,10 +1391,10 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
             }
             if(AutoPopulate){
                 
-                Dataset1RankFileTextField.setForeground(checkFile(rnk));
-                Dataset1RankFileTextField.setText(rnk);
+                ds1RanksTextField.setForeground(checkFile(rnk));
+                ds1RanksTextField.setText(rnk);
                 dataset1files.setRankedFile(rnk);
-                Dataset1RankFileTextField.setToolTipText(rnk);
+                ds1RanksTextField.setToolTipText(rnk);
 
                 dataset1files.setEnrichmentFileName1(edbFile.getAbsolutePath());
                 this.setDatasetnames(edbFile.getAbsolutePath(),"",dataset1);
@@ -1450,10 +1402,10 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
     }
     else{
        if(dataset1files.getGMTFileName() == null || dataset1files.getGMTFileName().equalsIgnoreCase("")){
-            GMTFileNameTextField.setForeground(checkFile(gmt));
-            GMTFileNameTextField.setText(gmt);
+            gmtFileNameTextField.setForeground(checkFile(gmt));
+            gmtFileNameTextField.setText(gmt);
             dataset1files.setGMTFileName(gmt);
-            GMTFileNameTextField.setToolTipText(gmt);
+            gmtFileNameTextField.setToolTipText(gmt);
        }
 
         boolean AutoPopulate = true;
@@ -1464,10 +1416,10 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
           if(!currentGMTFilename.getName().equalsIgnoreCase(newGMTFilename.getName())){
               int answer = JOptionPane.showConfirmDialog(this,"This analysis GMT file does not match the previous dataset loaded.\n If you want to use the current GMT file but still use the new rpt file to populated fields press YES,\n If you want to change the GMT file to the one in this rpt file and populate the fields with the rpt file press NO,\n to choose a different rpt file press CANCEL\n","GMT files name mismatch", JOptionPane.YES_NO_CANCEL_OPTION);
               if(answer == JOptionPane.NO_OPTION){
-                GMTFileNameTextField.setForeground(checkFile(gmt));
-                GMTFileNameTextField.setText(gmt);
+                gmtFileNameTextField.setForeground(checkFile(gmt));
+                gmtFileNameTextField.setText(gmt);
                 dataset1files.setGMTFileName(gmt);
-                GMTFileNameTextField.setToolTipText(gmt);
+                gmtFileNameTextField.setToolTipText(gmt);
               }
               else if(answer == JOptionPane.CANCEL_OPTION)
                         AutoPopulate = false;
@@ -1475,10 +1427,10 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
        }
        if(AutoPopulate){
 
-            Dataset2RankFileTextField.setForeground(checkFile(rnk));
-            Dataset2RankFileTextField.setText(rnk);
+            ds2RanksTextField.setForeground(checkFile(rnk));
+            ds2RanksTextField.setText(rnk);
             dataset2files.setRankedFile(rnk);
-            Dataset2RankFileTextField.setToolTipText(rnk);
+            ds2RanksTextField.setToolTipText(rnk);
             
             //dataset 2 needs the gmt file as well
             dataset2files.setGMTFileName(gmt);
@@ -1570,12 +1522,12 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
             				dataset1files.setPhenotype1(phenotype1);
             				dataset1files.setPhenotype2(phenotype2);
 
-            				Dataset1Phenotype1TextField.setText(phenotype1);
-            				Dataset1Phenotype1TextField.setValue(phenotype1);
-            				Dataset1Phenotype2TextField.setText(phenotype2);
-            				Dataset1Phenotype2TextField.setValue(phenotype2);
-            				Dataset1ClassFileTextField.setValue(classes_split[0]);
-            				Dataset1ClassFileTextField.setForeground(checkFile(classes_split[0]));
+            				ds1Phenotype1TextField.setText(phenotype1);
+            				ds1Phenotype1TextField.setValue(phenotype1);
+            				ds1Phenotype2TextField.setText(phenotype2);
+            				ds1Phenotype2TextField.setValue(phenotype2);
+            				ds1ClassesTextField.setValue(classes_split[0]);
+            				ds1ClassesTextField.setForeground(checkFile(classes_split[0]));
             			}
             			else{
             				dataset2files.setClassFile(classes_split[0]);
@@ -1583,12 +1535,12 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
             				dataset2files.setPhenotype1(phenotype1);
             				dataset2files.setPhenotype2(phenotype2);
 
-            				Dataset2Phenotype1TextField.setText(phenotype1);
-            				Dataset2Phenotype2TextField.setText(phenotype2);
-            				Dataset2Phenotype1TextField.setValue(phenotype1);
-            				Dataset2Phenotype2TextField.setValue(phenotype2);
-            				Dataset2ClassFileTextField.setValue(classes_split[0]);
-            				Dataset2ClassFileTextField.setForeground(checkFile(classes_split[0]));
+            				ds2Phenotype1TextField.setText(phenotype1);
+            				ds2Phenotype2TextField.setText(phenotype2);
+            				ds2Phenotype1TextField.setValue(phenotype1);
+            				ds2Phenotype2TextField.setValue(phenotype2);
+            				ds2ClassesTextField.setValue(classes_split[0]);
+            				ds2ClassesTextField.setForeground(checkFile(classes_split[0]));
                 			
             			}
             		}
@@ -1606,19 +1558,19 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
             		dataset1files.setPhenotype1(phenotype1);
             		dataset1files.setPhenotype2(phenotype2);
 
-                Dataset1Phenotype1TextField.setText(phenotype1);
-                Dataset1Phenotype2TextField.setText(phenotype2);
-                Dataset1Phenotype1TextField.setValue(phenotype1);
-                Dataset1Phenotype2TextField.setValue(phenotype2);
+                ds1Phenotype1TextField.setText(phenotype1);
+                ds1Phenotype2TextField.setText(phenotype2);
+                ds1Phenotype1TextField.setValue(phenotype1);
+                ds1Phenotype2TextField.setValue(phenotype2);
             }
             else{
             		dataset2files.setPhenotype1(phenotype1);
             		dataset2files.setPhenotype2(phenotype2);
 
-                Dataset2Phenotype1TextField.setText(phenotype1);
-                Dataset2Phenotype2TextField.setText(phenotype2);
-                Dataset2Phenotype1TextField.setValue(phenotype1);
-                Dataset2Phenotype2TextField.setValue(phenotype2);
+                ds2Phenotype1TextField.setText(phenotype1);
+                ds2Phenotype2TextField.setText(phenotype2);
+                ds2Phenotype1TextField.setValue(phenotype1);
+                ds2Phenotype2TextField.setValue(phenotype2);
             }
 
             /*XXX: BEGIN optional parameters for phenotypes and expression matrix in rpt file from pre-ranked GSEA:
@@ -1634,12 +1586,12 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
                 String phenotypes = (String)rpt.get("param phenotypes");
                 String[] phenotypes_split = phenotypes.split("_versus_");
                 if (dataset1){
-                    Dataset1Phenotype1TextField.setValue(phenotypes_split[0]);
-                    Dataset1Phenotype2TextField.setValue(phenotypes_split[1]);
+                    ds1Phenotype1TextField.setValue(phenotypes_split[0]);
+                    ds1Phenotype2TextField.setValue(phenotypes_split[1]);
                 }
                 else{
-                    Dataset2Phenotype1TextField.setValue(phenotypes_split[0]);
-                    Dataset2Phenotype2TextField.setValue(phenotypes_split[1]);
+                    ds2Phenotype1TextField.setValue(phenotypes_split[0]);
+                    ds2Phenotype2TextField.setValue(phenotypes_split[1]);
                 }
             }
             if (rpt.containsKey("param expressionMatrix")){
@@ -1700,10 +1652,10 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
                 //check to see the file exists and can be read
                 //check to see if the gmt file has already been set
                 if(dataset1files.getGMTFileName() == null || dataset1files.getGMTFileName().equalsIgnoreCase("")){
-                    GMTFileNameTextField.setForeground(checkFile(gmt));
-                    GMTFileNameTextField.setText(gmt);
+                    gmtFileNameTextField.setForeground(checkFile(gmt));
+                    gmtFileNameTextField.setText(gmt);
                     dataset1files.setGMTFileName(gmt);
-                    GMTFileNameTextField.setToolTipText(gmt);
+                    gmtFileNameTextField.setToolTipText(gmt);
                 }
 
 
@@ -1715,26 +1667,26 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
                     if(!currentGMTFilename.getName().equalsIgnoreCase(newGMTFilename.getName())){
                         int answer = JOptionPane.showConfirmDialog(this,"This analysis GMT file does not match the previous dataset loaded.\n If you want to use the current GMT file but still use the new rpt file to populated fields press YES,\n If you want to change the GMT file to the one in this rpt file and populate the fields with the rpt file press NO,\n to choose a different rpt file press CANCEL\n","GMT files name mismatch", JOptionPane.YES_NO_CANCEL_OPTION);
                         if(answer == JOptionPane.NO_OPTION){
-                            GMTFileNameTextField.setForeground(checkFile(gmt));
-                            GMTFileNameTextField.setText(gmt);
+                            gmtFileNameTextField.setForeground(checkFile(gmt));
+                            gmtFileNameTextField.setText(gmt);
                             dataset1files.setGMTFileName(gmt);
-                            GMTFileNameTextField.setToolTipText(gmt);
+                            gmtFileNameTextField.setToolTipText(gmt);
                         }
                         else if(answer == JOptionPane.CANCEL_OPTION)
                             AutoPopulate = false;
                     }
                 }
                 if(AutoPopulate){
-                    GCTFileName1TextField.setForeground(checkFile(data));
-                    GCTFileName1TextField.setText(data);
+                    gctFileName1TextField.setForeground(checkFile(data));
+                    gctFileName1TextField.setText(data);
                     dataset1files.setExpressionFileName(data);
                     params.setData(true);
-                    GCTFileName1TextField.setToolTipText(data);
+                    gctFileName1TextField.setToolTipText(data);
 
-                    Dataset1RankFileTextField.setForeground(checkFile(ranks));
-                    Dataset1RankFileTextField.setText(ranks);
+                    ds1RanksTextField.setForeground(checkFile(ranks));
+                    ds1RanksTextField.setText(ranks);
                     dataset1files.setRankedFile(ranks);
-                    Dataset1RankFileTextField.setToolTipText(ranks);
+                    ds1RanksTextField.setToolTipText(ranks);
 
                     dataset1files.setEnrichmentFileName1(results1);
                     dataset1files.setEnrichmentFileName2(results2);
@@ -1744,10 +1696,10 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
         }
         else{
            if(dataset1files.getGMTFileName() == null || dataset1files.getGMTFileName().equalsIgnoreCase("")){
-                GMTFileNameTextField.setForeground(checkFile(gmt));
-                GMTFileNameTextField.setText(gmt);
+                gmtFileNameTextField.setForeground(checkFile(gmt));
+                gmtFileNameTextField.setText(gmt);
                 dataset1files.setGMTFileName(gmt);
-                GMTFileNameTextField.setToolTipText(gmt);
+                gmtFileNameTextField.setToolTipText(gmt);
            }
 
             boolean AutoPopulate = true;
@@ -1758,10 +1710,10 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
               if(!currentGMTFilename.getName().equalsIgnoreCase(newGMTFilename.getName())){
                   int answer = JOptionPane.showConfirmDialog(this,"This analysis GMT file does not match the previous dataset loaded.\n If you want to use the current GMT file but still use the new rpt file to populated fields press YES,\n If you want to change the GMT file to the one in this rpt file and populate the fields with the rpt file press NO,\n to choose a different rpt file press CANCEL\n","GMT files name mismatch", JOptionPane.YES_NO_CANCEL_OPTION);
                   if(answer == JOptionPane.NO_OPTION){
-                    GMTFileNameTextField.setForeground(checkFile(gmt));
-                    GMTFileNameTextField.setText(gmt);
+                    gmtFileNameTextField.setForeground(checkFile(gmt));
+                    gmtFileNameTextField.setText(gmt);
                     dataset1files.setGMTFileName(gmt);
-                    GMTFileNameTextField.setToolTipText(gmt);
+                    gmtFileNameTextField.setToolTipText(gmt);
                   }
                   else if(answer == JOptionPane.CANCEL_OPTION)
                             AutoPopulate = false;
@@ -1771,16 +1723,16 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
         	   
                dataset2files.setGMTFileName(gmt);
 
-               GCTFileName2TextField.setForeground(checkFile(data));
-                GCTFileName2TextField.setText(data);
+               gctFileName2TextField.setForeground(checkFile(data));
+                gctFileName2TextField.setText(data);
                 dataset2files.setExpressionFileName(data);
                 params.setData2(true);
-                GCTFileName2TextField.setToolTipText(data);
+                gctFileName2TextField.setToolTipText(data);
 
-                Dataset2RankFileTextField.setForeground(checkFile(ranks));
-                Dataset2RankFileTextField.setText(ranks);
+                ds2RanksTextField.setForeground(checkFile(ranks));
+                ds2RanksTextField.setText(ranks);
                 dataset2files.setRankedFile(ranks);
-                Dataset2RankFileTextField.setToolTipText(ranks);
+                ds2RanksTextField.setToolTipText(ranks);
 
                 dataset2files.setEnrichmentFileName1(results1);
                 dataset2files.setEnrichmentFileName2(results2);
@@ -1804,22 +1756,22 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
     protected void setDatasetnames(String file1, String file2, boolean dataset1){
 
            if(dataset1){
-               Dataset1FileNameTextField.setForeground(checkFile(file1));
-               Dataset1FileNameTextField.setText(file1 );
-               Dataset1FileNameTextField.setToolTipText(file1 );
+               dataset1FileNameTextField.setForeground(checkFile(file1));
+               dataset1FileNameTextField.setText(file1 );
+               dataset1FileNameTextField.setToolTipText(file1 );
 
-               Dataset1FileName2TextField.setForeground(checkFile(file2));
-               Dataset1FileName2TextField.setText(file2 );
-               Dataset1FileName2TextField.setToolTipText(file2 );
+               dataset1FileName2TextField.setForeground(checkFile(file2));
+               dataset1FileName2TextField.setText(file2 );
+               dataset1FileName2TextField.setToolTipText(file2 );
            }
            else{
-               Dataset2FileNameTextField.setForeground(checkFile(file1));
-               Dataset2FileNameTextField.setText(file1 );
-               Dataset2FileNameTextField.setToolTipText(file1 );
+               dataset2FileNameTextField.setForeground(checkFile(file1));
+               dataset2FileNameTextField.setText(file1 );
+               dataset2FileNameTextField.setToolTipText(file1 );
 
-               Dataset2FileName2TextField.setForeground(checkFile(file2));
-               Dataset2FileName2TextField.setText(file2 );
-               Dataset2FileName2TextField.setToolTipText(file2 );
+               dataset2FileName2TextField.setForeground(checkFile(file2));
+               dataset2FileName2TextField.setText(file2 );
+               dataset2FileName2TextField.setToolTipText(file2 );
            }
        }
 
@@ -1908,186 +1860,160 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
      *
      * @param evt
      */
-  private void selectAnalysisTypeActionPerformed(ActionEvent evt){
-      String analysisType = evt.getActionCommand();
+	private void selectAnalysisTypeActionPerformed(ActionEvent evt) {
+		String analysisType = evt.getActionCommand();
 
-      if(analysisType.equalsIgnoreCase(EnrichmentMapParameters.method_GSEA))
-          params.setMethod(EnrichmentMapParameters.method_GSEA);
-      else if(analysisType.equalsIgnoreCase(EnrichmentMapParameters.method_generic))
-          params.setMethod(EnrichmentMapParameters.method_generic);
-      else if(analysisType.equalsIgnoreCase(EnrichmentMapParameters.method_Specialized))
-          params.setMethod(EnrichmentMapParameters.method_Specialized);
+		if (analysisType.equalsIgnoreCase(EnrichmentMapParameters.method_GSEA))
+			params.setMethod(EnrichmentMapParameters.method_GSEA);
+		else if (analysisType.equalsIgnoreCase(EnrichmentMapParameters.method_generic))
+			params.setMethod(EnrichmentMapParameters.method_generic);
+		else if (analysisType.equalsIgnoreCase(EnrichmentMapParameters.method_Specialized))
+			params.setMethod(EnrichmentMapParameters.method_Specialized);
 
-      //before clearing the panel find out which panels where collapsed so we maintain its current state.
-      boolean datasets_collapsed = datasets.isCollapsed();
-      boolean dataset1_collapsed = dataset1.isCollapsed();
-      boolean dataset2_collapsed = dataset2.isCollapsed();
+		updatePanel();
+	}
 
-      datasets.remove(DatasetsPanel);
-      DatasetsPanel.remove(dataset1);
-      DatasetsPanel.remove(dataset2);
+	/**
+	 * update the panel to contain the values that are
+	 * defined in the stored dataset files.  This methos is used when the type of analysis is
+	 * changed (gsea to generic or vice versa).  The user wants what ever info they have already
+	 * entered to transfered over even though they changed the type of analysis
+	 *
+	 */
+	private void updatePanel() {
+		// no need to change the gmt file as it should stay the same no matter which radio button was selected
+		updateDatasetsPanel();
 
-      dataset1 =  createDataset1Panel();
-      dataset1.setCollapsed(dataset1_collapsed);
-      DatasetsPanel.add(dataset1);
+		// dataset 1
+		if (this.dataset1files != null) {
+			// check to see if the user had already entered anything into the newly created Dataset Frame
+			if (dataset1files.getEnrichmentFileName1() != null) {
+				String file = dataset1files.getEnrichmentFileName1();
+				dataset1FileNameTextField.setText(file);
+				dataset1FileNameTextField.setToolTipText(file);
+				dataset1FileNameTextField.setForeground(checkFile(new File(file).getAbsolutePath()));
+			}
 
-      dataset2 =  createDataset2Panel();
-      dataset2.setCollapsed(dataset2_collapsed);
-      DatasetsPanel.add(dataset2);
-
-      DatasetsPanel.revalidate();
-      datasets.getContentPane().add(DatasetsPanel, BorderLayout.NORTH);
-      datasets.setCollapsed(datasets_collapsed);
-      datasets.revalidate();
-
-      UpdatePanel();
-
-  }
-
-    /**
-     * update the panel to contain the values that are
-     * defined in the stored dataset files.  This methos is used when the type of analysis is
-     * changed (gsea to generic or vice versa).  The user wants what ever info they have already
-     * entered to transfered over even though they changed the type of analysis
-     *
-     */
-  private void UpdatePanel(){
-	 	
-	  //no need to change the gmt file as it should stay the same no matter which radio button was selected
-	  
-	  //dataset 1 
-	  if(this.dataset1files != null){
-      //check to see if the user had already entered anything into the newly created Dataset Frame
-		  if(dataset1files.getEnrichmentFileName1()!=null){
-			  String file = dataset1files.getEnrichmentFileName1();
-			  Dataset1FileNameTextField.setText(file);
-			  Dataset1FileNameTextField.setToolTipText(file);
-			  Dataset1FileNameTextField.setForeground(checkFile(new File(file).getAbsolutePath()));
-		  }
+			if (dataset1files.getExpressionFileName() != null) {
+				gctFileName1TextField.setText(dataset1files.getExpressionFileName());
+				gctFileName1TextField.setToolTipText(dataset1files.getExpressionFileName());
+			}
       
-      if(dataset1files.getExpressionFileName() != null){
-          GCTFileName1TextField.setText(dataset1files.getExpressionFileName());
-          GCTFileName1TextField.setToolTipText(dataset1files.getExpressionFileName());
-      }
-      
-      if(dataset1files.getRankedFile() != null){
-          Dataset1RankFileTextField.setText(dataset1files.getRankedFile());
-          Dataset1RankFileTextField.setToolTipText(dataset1files.getRankedFile());
-      }
-     
-    	  if(dataset2files.getEnrichmentFileName1()!=null){
-    		  Dataset2FileNameTextField.setText(dataset2files.getEnrichmentFileName1());
-    		  Dataset2FileNameTextField.setToolTipText(dataset2files.getEnrichmentFileName1());
-    	  }
-    	  if(dataset2files.getExpressionFileName() != null){
-    		  GCTFileName2TextField.setText(dataset2files.getExpressionFileName());
-    		  GCTFileName2TextField.setToolTipText(dataset2files.getExpressionFileName());
-    	  }  
-    	  if(dataset2files.getRankedFile() != null){
-    		  Dataset2RankFileTextField.setText(dataset2files.getRankedFile());
-    		  Dataset2RankFileTextField.setToolTipText(dataset2files.getRankedFile());
-    	  }
-    	  
-    	  //Special case with Enrichment results file 2 (there should only be two enrichment
-      	if(dataset1files.getExpressionFileName() != null){
-      		String file = dataset1files.getExpressionFileName();
-      		GCTFileName1TextField.setText(file);
-      		GCTFileName1TextField.setToolTipText(file);
-      		GCTFileName1TextField.setForeground(checkFile(new File(file).getAbsolutePath()));
-      	}
-      
-      	if(dataset1files.getRankedFile() != null){
-      		String file = dataset1files.getRankedFile();
-      		Dataset1RankFileTextField.setText(file);
-      		Dataset1RankFileTextField.setToolTipText(file);
-      		Dataset1RankFileTextField.setForeground(checkFile(new File(file).getAbsolutePath()));
-      	}
-      	 if(dataset1files.getPhenotype1() != null){
-             Dataset1Phenotype1TextField.setText(dataset1files.getPhenotype1());
-             Dataset1Phenotype1TextField.setValue(dataset1files.getPhenotype1());
-             Dataset1Phenotype1TextField.setToolTipText(dataset1files.getPhenotype1());
-         }
-      	if(dataset1files.getPhenotype2() != null){
-            Dataset1Phenotype2TextField.setText(dataset1files.getPhenotype2());
-            Dataset1Phenotype2TextField.setValue(dataset1files.getPhenotype2());
-            Dataset1Phenotype2TextField.setToolTipText(dataset1files.getPhenotype2());
-        }
-      	
-      //Special case with Enrichment results file 2 (there should only be two enrichment
-        //Files if the analysis specified is GSEA.  If the user has loaded from an RPT and
-        //then changes the type of analysis there shouldn't be an extra file
-        if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)){
-             if(dataset1files.getEnrichmentFileName2()!=null){
-           		  String file = dataset1files.getEnrichmentFileName2();
-                  Dataset1FileName2TextField.setText(file);
-                  Dataset1FileName2TextField.setToolTipText(file);
-                  Dataset1FileName2TextField.setForeground(checkFile(new File(file).getAbsolutePath()));
-              }            
-        }
-        else{
-              if((dataset1files.getEnrichmentFileName2()!=null) ){
-                  JOptionPane.showMessageDialog(this,"Running Enrichment Map with Generic input " +
-                          "allows for only one enrichment results file.\n  The second file specified has been removed.");
-                  if(dataset1files.getEnrichmentFileName2()!=null)
-                  		dataset1files.setEnrichmentFileName2(null);
+			if (dataset1files.getRankedFile() != null) {
+				ds1RanksTextField.setText(dataset1files.getRankedFile());
+				ds1RanksTextField.setToolTipText(dataset1files.getRankedFile());
+			}
 
-              }
-        }
-	  }
-	  if(this.dataset2files != null){
-    	  	if(dataset2files.getEnrichmentFileName1()!=null){
-    	  		String file = dataset2files.getEnrichmentFileName1();
-    	  		Dataset2FileNameTextField.setText(file);
-    	  		Dataset2FileNameTextField.setToolTipText(file);
-    	  		Dataset2FileNameTextField.setForeground(checkFile(new File(file).getAbsolutePath()));
-    	  	}
-    	  	if(dataset2files.getExpressionFileName() != null){
-    	  		String file = dataset2files.getExpressionFileName();
-    	  		GCTFileName2TextField.setText(file);
-    	  		GCTFileName2TextField.setToolTipText(file);
-    	  		GCTFileName2TextField.setForeground(checkFile(new File(file).getAbsolutePath()));
-    	  	}  
-    	  	if(dataset2files.getRankedFile() != null){
-    	  		String file = dataset2files.getRankedFile();
-    	  		Dataset2RankFileTextField.setText(file);
-    	  		Dataset2RankFileTextField.setToolTipText(file);
-    	  		Dataset2RankFileTextField.setForeground(checkFile(new File(file).getAbsolutePath()));
-    	  	}    	  	
-    	  //update the phenotypes
-    	  	if(dataset2files.getPhenotype1() != null){
-    	          Dataset2Phenotype1TextField.setText(dataset2files.getPhenotype1());
-    	          Dataset2Phenotype1TextField.setValue(dataset2files.getPhenotype1());
-    	          Dataset2Phenotype1TextField.setToolTipText(dataset2files.getPhenotype1());
-    	      }
-    	      if(dataset2files.getPhenotype2() != null){
-    	          Dataset2Phenotype2TextField.setText(dataset2files.getPhenotype2());
-    	          Dataset2Phenotype2TextField.setValue(dataset2files.getPhenotype2());
-    	          Dataset2Phenotype2TextField.setToolTipText(dataset2files.getPhenotype2());
-    	      }
+			if (dataset2files.getEnrichmentFileName1() != null) {
+				dataset2FileNameTextField.setText(dataset2files.getEnrichmentFileName1());
+				dataset2FileNameTextField.setToolTipText(dataset2files.getEnrichmentFileName1());
+			}
+			if (dataset2files.getExpressionFileName() != null) {
+				gctFileName2TextField.setText(dataset2files.getExpressionFileName());
+				gctFileName2TextField.setToolTipText(dataset2files.getExpressionFileName());
+			}
+			if (dataset2files.getRankedFile() != null) {
+				ds2RanksTextField.setText(dataset2files.getRankedFile());
+				ds2RanksTextField.setToolTipText(dataset2files.getRankedFile());
+			}
 
-    	//Special case with Enrichment results file 2 (there should only be two enrichment
-          //Files if the analysis specified is GSEA.  If the user has loaded from an RPT and
-          //then changes the type of analysis there shouldn't be an extra file
-          if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)){
-                if(dataset2files.getEnrichmentFileName2()!=null){
-                		String file = dataset2files.getEnrichmentFileName2();
-                    Dataset2FileName2TextField.setText(file);
-                    Dataset2FileName2TextField.setToolTipText(file);
-                    Dataset2FileName2TextField.setForeground(checkFile(new File(file).getAbsolutePath()));
-                }
-          }
-          else{
-                if( (dataset2files.getEnrichmentFileName2()!=null)){                    
-                    if(dataset2files.getEnrichmentFileName2()!=null)
-                    		dataset2files.setEnrichmentFileName2(null);
+			// Special case with Enrichment results file 2 (there should only be two enrichment
+			if (dataset1files.getExpressionFileName() != null) {
+				String file = dataset1files.getExpressionFileName();
+				gctFileName1TextField.setText(file);
+				gctFileName1TextField.setToolTipText(file);
+				gctFileName1TextField.setForeground(checkFile(new File(file).getAbsolutePath()));
+			}
 
-                }
-          }
-	  }
+			if (dataset1files.getRankedFile() != null) {
+				String file = dataset1files.getRankedFile();
+				ds1RanksTextField.setText(file);
+				ds1RanksTextField.setToolTipText(file);
+				ds1RanksTextField.setForeground(checkFile(new File(file).getAbsolutePath()));
+			}
+			if (dataset1files.getPhenotype1() != null) {
+				ds1Phenotype1TextField.setText(dataset1files.getPhenotype1());
+				ds1Phenotype1TextField.setValue(dataset1files.getPhenotype1());
+				ds1Phenotype1TextField.setToolTipText(dataset1files.getPhenotype1());
+			}
+			if (dataset1files.getPhenotype2() != null) {
+				ds1Phenotype2TextField.setText(dataset1files.getPhenotype2());
+				ds1Phenotype2TextField.setValue(dataset1files.getPhenotype2());
+				ds1Phenotype2TextField.setToolTipText(dataset1files.getPhenotype2());
+			}
 
-      
-      
-  }
+			// Special case with Enrichment results file 2 (there should only be two enrichment
+			// Files if the analysis specified is GSEA. If the user has loaded from an RPT and
+			// then changes the type of analysis there shouldn't be an extra file
+			if (params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)) {
+				if (dataset1files.getEnrichmentFileName2() != null) {
+					String file = dataset1files.getEnrichmentFileName2();
+					dataset1FileName2TextField.setText(file);
+					dataset1FileName2TextField.setToolTipText(file);
+					dataset1FileName2TextField.setForeground(checkFile(new File(file).getAbsolutePath()));
+				}
+			} else {
+				if ((dataset1files.getEnrichmentFileName2() != null)) {
+					JOptionPane.showMessageDialog(this, "Running Enrichment Map with Generic input "
+							+ "allows for only one enrichment results file.\n  The second file specified has been removed.");
+					if (dataset1files.getEnrichmentFileName2() != null)
+						dataset1files.setEnrichmentFileName2(null);
+
+				}
+			}
+		}
+		
+		if (this.dataset2files != null) {
+			if (dataset2files.getEnrichmentFileName1() != null) {
+				String file = dataset2files.getEnrichmentFileName1();
+				dataset2FileNameTextField.setText(file);
+				dataset2FileNameTextField.setToolTipText(file);
+				dataset2FileNameTextField.setForeground(checkFile(new File(file).getAbsolutePath()));
+			}
+			if (dataset2files.getExpressionFileName() != null) {
+				String file = dataset2files.getExpressionFileName();
+				gctFileName2TextField.setText(file);
+				gctFileName2TextField.setToolTipText(file);
+				gctFileName2TextField.setForeground(checkFile(new File(file).getAbsolutePath()));
+			}
+			if (dataset2files.getRankedFile() != null) {
+				String file = dataset2files.getRankedFile();
+				ds2RanksTextField.setText(file);
+				ds2RanksTextField.setToolTipText(file);
+				ds2RanksTextField.setForeground(checkFile(new File(file).getAbsolutePath()));
+			}
+			
+			// update the phenotypes
+			if (dataset2files.getPhenotype1() != null) {
+				ds2Phenotype1TextField.setText(dataset2files.getPhenotype1());
+				ds2Phenotype1TextField.setValue(dataset2files.getPhenotype1());
+				ds2Phenotype1TextField.setToolTipText(dataset2files.getPhenotype1());
+			}
+			if (dataset2files.getPhenotype2() != null) {
+				ds2Phenotype2TextField.setText(dataset2files.getPhenotype2());
+				ds2Phenotype2TextField.setValue(dataset2files.getPhenotype2());
+				ds2Phenotype2TextField.setToolTipText(dataset2files.getPhenotype2());
+			}
+
+			// Special case with Enrichment results file 2 (there should only be two enrichment
+			// Files if the analysis specified is GSEA. If the user has loaded from an RPT and
+			// then changes the type of analysis there shouldn't be an extra file
+			if (params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)) {
+				if (dataset2files.getEnrichmentFileName2() != null) {
+					String file = dataset2files.getEnrichmentFileName2();
+					dataset2FileName2TextField.setText(file);
+					dataset2FileName2TextField.setToolTipText(file);
+					dataset2FileName2TextField.setForeground(checkFile(new File(file).getAbsolutePath()));
+				}
+			} else {
+				if ((dataset2files.getEnrichmentFileName2() != null)) {
+					if (dataset2files.getEnrichmentFileName2() != null)
+						dataset2files.setEnrichmentFileName2(null);
+
+				}
+			}
+		}
+	}
 
     //Action listeners for buttons in input panel
 
@@ -2095,7 +2021,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
   	 * Activate or de-activate scientific notation
   	 * 
   	 */
-  	private void selectScientificNotationActionPerformed(java.awt.event.ActionEvent evt){
+  	private void selectScientificNotationActionPerformed(ActionEvent evt){
   		if(scinot.isSelected()){
   			this.pvalueTextField.setFormatterFactory(new AbstractFormatterFactory() {
 
@@ -2152,14 +2078,10 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
   		}
   	}
   	
-  	
-  	
     /**
      * jaccard or overlap radio button action listener
-     *
-     * @param evt
      */
-    private void selectJaccardOrOverlapActionPerformed(java.awt.event.ActionEvent evt) {
+    private void selectJaccardOrOverlapActionPerformed(ActionEvent evt) {
         if(evt.getActionCommand().equalsIgnoreCase("jaccard")){
             params.setSimilarityMetric(EnrichmentMapParameters.SM_JACCARD);
             if ( ! similarityCutOffChanged ) {
@@ -2197,8 +2119,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
      *
      * @param evt
      */
-     private void selectGMTFileButtonActionPerformed(
-               java.awt.event.ActionEvent evt) {
+	private void selectGMTFileButtonActionPerformed(ActionEvent evt) {
 
             // Create FileFilter
            FileChooserFilter filter = new FileChooserFilter("All GMT Files","gmt" );          
@@ -2209,21 +2130,17 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
            // Get the file name
            File file = fileUtil.getFile(SwingUtil.getWindowInstance(this),"Import GMT File", FileUtil.LOAD,all_filters  );
            if(file != null) {
-               GMTFileNameTextField.setForeground(checkFile(file.getAbsolutePath()));
-               GMTFileNameTextField.setText(file.getAbsolutePath());
+               gmtFileNameTextField.setForeground(checkFile(file.getAbsolutePath()));
+               gmtFileNameTextField.setText(file.getAbsolutePath());
                dataset1files.setGMTFileName(file.getAbsolutePath());
-               GMTFileNameTextField.setToolTipText(file.getAbsolutePath());
+               gmtFileNameTextField.setToolTipText(file.getAbsolutePath());
            }
        }
 
     /**
      * gct/expression 1 file selector action listener
-     *
-     * @param evt
      */
-      private void selectGCTFileButtonActionPerformed(
-               java.awt.event.ActionEvent evt) {
-
+	private void selectGCTFileButtonActionPerformed(ActionEvent evt) {
     	  // Create FileFilter
           FileChooserFilter filter_gct = new FileChooserFilter("gct Files","gct" );          
           FileChooserFilter filter_rpt = new FileChooserFilter("rpt Files","rpt" );
@@ -2253,23 +2170,20 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
                    populateFieldsFromEdb(file,true);
                }
                else{
-                    GCTFileName1TextField.setForeground(checkFile(file.getAbsolutePath()));
-                    GCTFileName1TextField.setText(file.getAbsolutePath());
+                    gctFileName1TextField.setForeground(checkFile(file.getAbsolutePath()));
+                    gctFileName1TextField.setText(file.getAbsolutePath());
                     dataset1files.setExpressionFileName(file.getAbsolutePath());
-                    GCTFileName1TextField.setToolTipText(file.getAbsolutePath());
+                    gctFileName1TextField.setToolTipText(file.getAbsolutePath());
                }
                params.setData(true);
 
            }
        }
 
-    /**
-     * gct/expression 2 file selector action listener
-     *
-     * @param evt
-     */
-    private void selectGCTFileButton2ActionPerformed(
-             java.awt.event.ActionEvent evt) {
+	/**
+	 * gct/expression 2 file selector action listener
+	 */
+	private void selectGCTFileButton2ActionPerformed(ActionEvent evt) {
 
     	 // Create FileFilter
         FileChooserFilter filter_gct = new FileChooserFilter("gct Files","gct" );          
@@ -2298,28 +2212,24 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
                  populateFieldsFromEdb(file,false);
              }
              else{
-               GCTFileName2TextField.setForeground(checkFile(file.getAbsolutePath()));
-               GCTFileName2TextField.setText(file.getAbsolutePath());
+               gctFileName2TextField.setForeground(checkFile(file.getAbsolutePath()));
+               gctFileName2TextField.setText(file.getAbsolutePath());
                //check to see that there is a dataset2
                
                dataset2files.setExpressionFileName(file.getAbsolutePath());
                
-               GCTFileName2TextField.setToolTipText(file.getAbsolutePath());
+               gctFileName2TextField.setToolTipText(file.getAbsolutePath());
              }
              params.setTwoDatasets(true);
              params.setData2(true);
          }
      }
 
-    /**
-     * enrichment results 1 file selector action listener
-     *
-     * @param evt
-     */
-     private void selectDataset1FileButtonActionPerformed(
-               java.awt.event.ActionEvent evt) {
-
-    	 // Create FileFilter
+	/**
+	 * enrichment results 1 file selector action listener
+	 */
+	private void selectDataset1FileButtonActionPerformed(ActionEvent evt) {
+		// Create FileFilter
          FileChooserFilter filter_xls = new FileChooserFilter("gct Files","xls" );          
          FileChooserFilter filter_rpt = new FileChooserFilter("rpt Files","rpt" );
          FileChooserFilter filter_bgo = new FileChooserFilter("rnk Files","bgo" );
@@ -2350,23 +2260,19 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
                  populateFieldsFromEdb(file,true);
              }
              else{
-                Dataset1FileNameTextField.setForeground(checkFile(file.getAbsolutePath()));
-                Dataset1FileNameTextField.setText(file.getAbsolutePath() );
+                dataset1FileNameTextField.setForeground(checkFile(file.getAbsolutePath()));
+                dataset1FileNameTextField.setText(file.getAbsolutePath() );
                 dataset1files.setEnrichmentFileName1(file.getAbsolutePath());
-                Dataset1FileNameTextField.setToolTipText(file.getAbsolutePath() );
+                dataset1FileNameTextField.setToolTipText(file.getAbsolutePath() );
              }
 
         }
     }
 
     /**
-     * enrichment results 2 file selector action listener
-     *
-     * @param evt
-     */
-    private void selectDataset1File2ButtonActionPerformed(
-               java.awt.event.ActionEvent evt) {
-
+	 * enrichment results 2 file selector action listener
+	 */
+	private void selectDataset1File2ButtonActionPerformed(ActionEvent evt) {
     	 // Create FileFilter
         FileChooserFilter filter_xls = new FileChooserFilter("gct Files","xls" );          
         FileChooserFilter filter_rpt = new FileChooserFilter("rpt Files","rpt" );
@@ -2397,24 +2303,20 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
                  populateFieldsFromEdb(file,true);
              }
              else{
-                Dataset1FileName2TextField.setForeground(checkFile(file.getAbsolutePath()));
-                Dataset1FileName2TextField.setText(file.getAbsolutePath() );
+                dataset1FileName2TextField.setForeground(checkFile(file.getAbsolutePath()));
+                dataset1FileName2TextField.setText(file.getAbsolutePath() );
                 dataset1files.setEnrichmentFileName2(file.getAbsolutePath());
-                Dataset1FileName2TextField.setToolTipText(file.getAbsolutePath() );
+                dataset1FileName2TextField.setToolTipText(file.getAbsolutePath() );
              }
 
         }
     }
 
-    /**
-     * enrichment results 1 file selector action listener
-     *
-     * @param evt
-     */
-    private void selectDataset2FileButtonActionPerformed(
-             java.awt.event.ActionEvent evt) {
-
-    	 // Create FileFilter
+	/**
+	 * enrichment results 1 file selector action listener
+	 */
+	private void selectDataset2FileButtonActionPerformed(ActionEvent evt) {
+		// Create FileFilter
         FileChooserFilter filter_xls = new FileChooserFilter("gct Files","xls" );          
         FileChooserFilter filter_rpt = new FileChooserFilter("rpt Files","rpt" );
         FileChooserFilter filter_bgo = new FileChooserFilter("rnk Files","bgo" );
@@ -2444,12 +2346,12 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
                populateFieldsFromEdb(file,false);
            }
              else{
-              Dataset2FileNameTextField.setForeground(checkFile(file.getAbsolutePath()));
-              Dataset2FileNameTextField.setText(file.getAbsolutePath() );
+              dataset2FileNameTextField.setForeground(checkFile(file.getAbsolutePath()));
+              dataset2FileNameTextField.setText(file.getAbsolutePath() );
               
               dataset2files.setEnrichmentFileName1(file.getAbsolutePath());
               
-              Dataset2FileNameTextField.setToolTipText(file.getAbsolutePath() );
+              dataset2FileNameTextField.setToolTipText(file.getAbsolutePath() );
            }
            params.setTwoDatasets(true);
       }
@@ -2460,7 +2362,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
      * @param evt
      */
      private void selectDataset2File2ButtonActionPerformed(
-             java.awt.event.ActionEvent evt) {
+             ActionEvent evt) {
 
     	 // Create FileFilter
          FileChooserFilter filter_xls = new FileChooserFilter("gct Files","xls" );          
@@ -2493,12 +2395,12 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
                populateFieldsFromEdb(file,false);
            }
              else{
-              Dataset2FileName2TextField.setForeground(checkFile(file.getAbsolutePath()));
-              Dataset2FileName2TextField.setText(file.getAbsolutePath() );
+              dataset2FileName2TextField.setForeground(checkFile(file.getAbsolutePath()));
+              dataset2FileName2TextField.setText(file.getAbsolutePath() );
               
               dataset2files.setEnrichmentFileName2(file.getAbsolutePath());
             
-              Dataset2FileName2TextField.setToolTipText(file.getAbsolutePath() );
+              dataset2FileName2TextField.setToolTipText(file.getAbsolutePath() );
            }
            params.setTwoDatasets(true);
       }
@@ -2510,11 +2412,11 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
      * @param evt
      */
      private void selectRank1FileButtonActionPerformed(
-               java.awt.event.ActionEvent evt) {
+               ActionEvent evt) {
 
          //For GSEA input, Check to see if there is already a rank file defined and if it was from the rpt
          if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA) &&
-        		 	LoadedFromRpt_dataset1 && !Dataset1RankFileTextField.getText().equalsIgnoreCase(""))
+        		 	LoadedFromRpt_dataset1 && !ds1RanksTextField.getText().equalsIgnoreCase(""))
              JOptionPane.showMessageDialog(application.getJFrame(),"GSEA defined rank file is in a specific order and is used to calculate the leading edge.  \n If you change this file the leading edges will be calculated incorrectly.","Trying to change pre-defined GSEA rank file",JOptionPane.WARNING_MESSAGE);
 
          // Create FileFilter
@@ -2531,10 +2433,10 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
           File file = fileUtil.getFile(SwingUtil.getWindowInstance(this),"Import rank File", FileUtil.LOAD, all_filters);
 
         if(file != null) {
-                Dataset1RankFileTextField.setForeground(checkFile(file.getAbsolutePath()));
-                Dataset1RankFileTextField.setText(file.getAbsolutePath() );
+                ds1RanksTextField.setForeground(checkFile(file.getAbsolutePath()));
+                ds1RanksTextField.setText(file.getAbsolutePath() );
                 dataset1files.setRankedFile(file.getAbsolutePath());
-                Dataset1RankFileTextField.setToolTipText(file.getAbsolutePath() );
+                ds1RanksTextField.setToolTipText(file.getAbsolutePath() );
 
 
         }
@@ -2546,7 +2448,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
       * @param evt
       */
       private void selectClass1FileButtonActionPerformed(
-                java.awt.event.ActionEvent evt) {
+                ActionEvent evt) {
           
     	  	// Create FileFilter
           FileChooserFilter filter_cls = new FileChooserFilter("cls Files","cls" );          
@@ -2561,11 +2463,11 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
           File file = fileUtil.getFile(SwingUtil.getWindowInstance(this),"Import class file", FileUtil.LOAD, all_filters);
           
          if(file != null) {
-                 Dataset1ClassFileTextField.setForeground(checkFile(file.getAbsolutePath()));
-                 Dataset1ClassFileTextField.setText(file.getAbsolutePath() );
+                 ds1ClassesTextField.setForeground(checkFile(file.getAbsolutePath()));
+                 ds1ClassesTextField.setText(file.getAbsolutePath() );
                  dataset1files.setClassFile(file.getAbsolutePath());
  				 dataset1files.setTemp_class1(setClasses(file.getAbsolutePath()));
-                 Dataset1ClassFileTextField.setToolTipText(file.getAbsolutePath() );
+                 ds1ClassesTextField.setToolTipText(file.getAbsolutePath() );
 
 
          }
@@ -2577,7 +2479,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
        * @param evt
        */
        private void selectClass2FileButtonActionPerformed(
-                 java.awt.event.ActionEvent evt) {
+                 ActionEvent evt) {
            
     	   // Create FileFilter
            FileChooserFilter filter_cls = new FileChooserFilter("cls Files","cls" );          
@@ -2592,11 +2494,11 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
            File file = fileUtil.getFile(SwingUtil.getWindowInstance(this),"Import class file", FileUtil.LOAD, all_filters);
            
           if(file != null) {
-                  Dataset2ClassFileTextField.setForeground(checkFile(file.getAbsolutePath()));
-                  Dataset2ClassFileTextField.setText(file.getAbsolutePath() );
+                  ds2ClassesTextField.setForeground(checkFile(file.getAbsolutePath()));
+                  ds2ClassesTextField.setText(file.getAbsolutePath() );
                   dataset2files.setClassFile(file.getAbsolutePath());
   				  dataset2files.setTemp_class1(setClasses(file.getAbsolutePath()));
-                  Dataset2ClassFileTextField.setToolTipText(file.getAbsolutePath() );
+                  ds2ClassesTextField.setToolTipText(file.getAbsolutePath() );
 
 
           }
@@ -2609,11 +2511,11 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
      * @param evt
      */
      private void selectRank2FileButtonActionPerformed(
-               java.awt.event.ActionEvent evt) {
+               ActionEvent evt) {
 
         //For GSEA input, Check to see if there is already a rank file defined and if it was from the rpt
          if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA) &&
-        		 	LoadedFromRpt_dataset2 && !Dataset2RankFileTextField.getText().equalsIgnoreCase(""))
+        		 	LoadedFromRpt_dataset2 && !ds2RanksTextField.getText().equalsIgnoreCase(""))
              JOptionPane.showMessageDialog(application.getJFrame(),"GSEA defined rank file is in a specific order and is used to calculate the leading edge.  \n If you change this file the leading edges will be calculated incorrectly.","Trying to change pre-defined GSEA rank file",JOptionPane.WARNING_MESSAGE);
 
 
@@ -2631,12 +2533,12 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
           File file = fileUtil.getFile(SwingUtil.getWindowInstance(this),"Import rank File", FileUtil.LOAD, all_filters);
 
         if(file != null) {
-                Dataset2RankFileTextField.setForeground(checkFile(file.getAbsolutePath()));
-                Dataset2RankFileTextField.setText(file.getAbsolutePath() );
+                ds2RanksTextField.setForeground(checkFile(file.getAbsolutePath()));
+                ds2RanksTextField.setText(file.getAbsolutePath() );
 
                 	dataset2files.setRankedFile(file.getAbsolutePath());
                 
-                Dataset2RankFileTextField.setToolTipText(file.getAbsolutePath() );
+                ds2RanksTextField.setToolTipText(file.getAbsolutePath() );
 
 
         }
@@ -2653,50 +2555,50 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
         this.dataset1files = new DataSetFiles();
         this.dataset2files = new DataSetFiles();
 
-        GMTFileNameTextField.setText("");
-        GMTFileNameTextField.setToolTipText(null);
-        GMTFileNameTextField.setForeground(Color.black);
+        gmtFileNameTextField.setText("");
+        gmtFileNameTextField.setToolTipText(null);
+        gmtFileNameTextField.setForeground(Color.black);
 
-        GCTFileName1TextField.setText("");
-        GCTFileName1TextField.setToolTipText(null);
-        GCTFileName1TextField.setForeground(Color.black);
-        GCTFileName2TextField.setText("");
-        GCTFileName2TextField.setToolTipText(null);
-        GCTFileName2TextField.setForeground(Color.black);
+        gctFileName1TextField.setText("");
+        gctFileName1TextField.setToolTipText(null);
+        gctFileName1TextField.setForeground(Color.black);
+        gctFileName2TextField.setText("");
+        gctFileName2TextField.setToolTipText(null);
+        gctFileName2TextField.setForeground(Color.black);
 
-        Dataset1FileNameTextField.setText("");
-        Dataset1FileNameTextField.setToolTipText(null);
-        Dataset1FileNameTextField.setForeground(Color.black);
-        Dataset1FileName2TextField.setText("");
-        Dataset1FileName2TextField.setToolTipText(null);
-        Dataset1FileName2TextField.setForeground(Color.black);
+        dataset1FileNameTextField.setText("");
+        dataset1FileNameTextField.setToolTipText(null);
+        dataset1FileNameTextField.setForeground(Color.black);
+        dataset1FileName2TextField.setText("");
+        dataset1FileName2TextField.setToolTipText(null);
+        dataset1FileName2TextField.setForeground(Color.black);
 
-        Dataset2FileNameTextField.setText("");
-        Dataset2FileNameTextField.setToolTipText(null);
-        Dataset2FileNameTextField.setForeground(Color.black);
-        Dataset2FileName2TextField.setText("");
-        Dataset2FileName2TextField.setToolTipText(null);
-        Dataset2FileName2TextField.setForeground(Color.black);
+        dataset2FileNameTextField.setText("");
+        dataset2FileNameTextField.setToolTipText(null);
+        dataset2FileNameTextField.setForeground(Color.black);
+        dataset2FileName2TextField.setText("");
+        dataset2FileName2TextField.setToolTipText(null);
+        dataset2FileName2TextField.setForeground(Color.black);
 
-        Dataset1RankFileTextField.setText("");
-        Dataset1RankFileTextField.setToolTipText(null);
-        Dataset1RankFileTextField.setForeground(Color.black);
-        Dataset2RankFileTextField.setText("");
-        Dataset2RankFileTextField.setToolTipText(null);
-        Dataset2RankFileTextField.setForeground(Color.black);
+        ds1RanksTextField.setText("");
+        ds1RanksTextField.setToolTipText(null);
+        ds1RanksTextField.setForeground(Color.black);
+        ds2RanksTextField.setText("");
+        ds2RanksTextField.setToolTipText(null);
+        ds2RanksTextField.setForeground(Color.black);
 
-        Dataset1Phenotype1TextField.setText(DataSetFiles.default_pheno1);
-        Dataset1Phenotype2TextField.setText(DataSetFiles.default_pheno2);
-        Dataset2Phenotype1TextField.setText(DataSetFiles.default_pheno1);
-        Dataset2Phenotype2TextField.setText(DataSetFiles.default_pheno2);
+        ds1Phenotype1TextField.setText(DataSetFiles.default_pheno1);
+        ds1Phenotype2TextField.setText(DataSetFiles.default_pheno2);
+        ds2Phenotype1TextField.setText(DataSetFiles.default_pheno1);
+        ds2Phenotype2TextField.setText(DataSetFiles.default_pheno2);
 
-        Dataset1Phenotype1TextField.setValue(DataSetFiles.default_pheno1);
-        Dataset1Phenotype2TextField.setValue(DataSetFiles.default_pheno2);
-        Dataset2Phenotype1TextField.setValue(DataSetFiles.default_pheno1);
-        Dataset2Phenotype2TextField.setValue(DataSetFiles.default_pheno2);
+        ds1Phenotype1TextField.setValue(DataSetFiles.default_pheno1);
+        ds1Phenotype2TextField.setValue(DataSetFiles.default_pheno2);
+        ds2Phenotype1TextField.setValue(DataSetFiles.default_pheno1);
+        ds2Phenotype2TextField.setValue(DataSetFiles.default_pheno2);
         
-        Dataset1ClassFileTextField.setText("");
-        Dataset2ClassFileTextField.setText("");
+        ds1ClassesTextField.setText("");
+        ds2ClassesTextField.setText("");
 
         pvalueTextField.setText(Double.toString(params.getPvalue()));
         qvalueTextField.setText(Double.toString(params.getQvalue()));
@@ -2709,19 +2611,19 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
         similarityCutOffChanged = false;
 
         if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)){
-            gsea.setSelected(true);
-            generic.setSelected(false);
-            david.setSelected(false);
+            gseaRadio.setSelected(true);
+            genericRadio.setSelected(false);
+            davidRadio.setSelected(false);
         }
         else if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_generic)){
-            gsea.setSelected(false);
-            generic.setSelected(true);
-            david.setSelected(false);
+            gseaRadio.setSelected(false);
+            genericRadio.setSelected(true);
+            davidRadio.setSelected(false);
         }
         else if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_Specialized)){
-            gsea.setSelected(false);
-            generic.setSelected(false);
-            david.setSelected(true);
+            gseaRadio.setSelected(false);
+            genericRadio.setSelected(false);
+            davidRadio.setSelected(true);
         }
 
         if(params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_JACCARD)){
@@ -2759,38 +2661,38 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
   	  	if(params.getFiles().containsKey(EnrichmentMap.DATASET2))
   	  		this.dataset2files = params.getFiles().get(EnrichmentMap.DATASET2);
 
-  	    GMTFileNameTextField.setText((dataset1files.getGMTFileName() == null)? "" :dataset1files.getGMTFileName());
-  	    GMTFileNameTextField.setForeground(checkFile(GMTFileNameTextField.getText()));
-  	    GCTFileName1TextField.setText((dataset1files.getExpressionFileName() == null)? "":dataset1files.getExpressionFileName());
-  	    GCTFileName1TextField.setForeground(checkFile(GCTFileName1TextField.getText()));
-  	    Dataset1FileNameTextField.setText((dataset1files.getEnrichmentFileName1()==null)?"":dataset1files.getEnrichmentFileName1());
-  	    Dataset1FileNameTextField.setForeground(checkFile(Dataset1FileNameTextField.getText()));
-  	    Dataset1FileName2TextField.setText((dataset1files.getEnrichmentFileName2()==null)?"":dataset1files.getEnrichmentFileName2());
-  	    Dataset1FileName2TextField.setForeground(checkFile(Dataset1FileName2TextField.getText()));
-  	    Dataset1RankFileTextField.setText((dataset1files.getRankedFile()==null)?"":dataset1files.getRankedFile());
-  	    Dataset1RankFileTextField.setForeground(checkFile(Dataset1RankFileTextField.getText()));
+  	    gmtFileNameTextField.setText((dataset1files.getGMTFileName() == null)? "" :dataset1files.getGMTFileName());
+  	    gmtFileNameTextField.setForeground(checkFile(gmtFileNameTextField.getText()));
+  	    gctFileName1TextField.setText((dataset1files.getExpressionFileName() == null)? "":dataset1files.getExpressionFileName());
+  	    gctFileName1TextField.setForeground(checkFile(gctFileName1TextField.getText()));
+  	    dataset1FileNameTextField.setText((dataset1files.getEnrichmentFileName1()==null)?"":dataset1files.getEnrichmentFileName1());
+  	    dataset1FileNameTextField.setForeground(checkFile(dataset1FileNameTextField.getText()));
+  	    dataset1FileName2TextField.setText((dataset1files.getEnrichmentFileName2()==null)?"":dataset1files.getEnrichmentFileName2());
+  	    dataset1FileName2TextField.setForeground(checkFile(dataset1FileName2TextField.getText()));
+  	    ds1RanksTextField.setText((dataset1files.getRankedFile()==null)?"":dataset1files.getRankedFile());
+  	    ds1RanksTextField.setForeground(checkFile(ds1RanksTextField.getText()));
         
-        GCTFileName2TextField.setText((dataset2files.getExpressionFileName() == null)? "":dataset2files.getExpressionFileName());
-        GCTFileName2TextField.setForeground(checkFile(GCTFileName2TextField.getText()));
-        Dataset2FileNameTextField.setText((dataset2files.getEnrichmentFileName1()==null)?"":dataset2files.getEnrichmentFileName1());
-        Dataset2FileNameTextField.setForeground(checkFile(Dataset2FileNameTextField.getText()));
-        Dataset2FileName2TextField.setText((dataset2files.getEnrichmentFileName2()==null)?"":dataset2files.getEnrichmentFileName2());
-        Dataset2FileName2TextField.setForeground(checkFile(Dataset2FileName2TextField.getText()));
-        Dataset2RankFileTextField.setText((dataset2files.getRankedFile()==null)?"":dataset2files.getRankedFile());
-        Dataset2RankFileTextField.setForeground(checkFile(Dataset2RankFileTextField.getText()));
+        gctFileName2TextField.setText((dataset2files.getExpressionFileName() == null)? "":dataset2files.getExpressionFileName());
+        gctFileName2TextField.setForeground(checkFile(gctFileName2TextField.getText()));
+        dataset2FileNameTextField.setText((dataset2files.getEnrichmentFileName1()==null)?"":dataset2files.getEnrichmentFileName1());
+        dataset2FileNameTextField.setForeground(checkFile(dataset2FileNameTextField.getText()));
+        dataset2FileName2TextField.setText((dataset2files.getEnrichmentFileName2()==null)?"":dataset2files.getEnrichmentFileName2());
+        dataset2FileName2TextField.setForeground(checkFile(dataset2FileName2TextField.getText()));
+        ds2RanksTextField.setText((dataset2files.getRankedFile()==null)?"":dataset2files.getRankedFile());
+        ds2RanksTextField.setForeground(checkFile(ds2RanksTextField.getText()));
 
-        Dataset1Phenotype1TextField.setText(dataset1files.getPhenotype1());
-        Dataset1Phenotype2TextField.setText(dataset1files.getPhenotype2());
-        Dataset2Phenotype1TextField.setText(dataset2files.getPhenotype1());
-        Dataset2Phenotype2TextField.setText(dataset2files.getPhenotype2());
+        ds1Phenotype1TextField.setText(dataset1files.getPhenotype1());
+        ds1Phenotype2TextField.setText(dataset1files.getPhenotype2());
+        ds2Phenotype1TextField.setText(dataset2files.getPhenotype1());
+        ds2Phenotype2TextField.setText(dataset2files.getPhenotype2());
 
-        Dataset1Phenotype1TextField.setValue(dataset1files.getPhenotype1());
-        Dataset1Phenotype2TextField.setValue(dataset1files.getPhenotype2());
-        Dataset2Phenotype1TextField.setValue(dataset2files.getPhenotype1());
-        Dataset2Phenotype2TextField.setValue(dataset2files.getPhenotype2());
+        ds1Phenotype1TextField.setValue(dataset1files.getPhenotype1());
+        ds1Phenotype2TextField.setValue(dataset1files.getPhenotype2());
+        ds2Phenotype1TextField.setValue(dataset2files.getPhenotype1());
+        ds2Phenotype2TextField.setValue(dataset2files.getPhenotype2());
         
-        Dataset1ClassFileTextField.setValue(dataset1files.getClassFile());
-        Dataset2ClassFileTextField.setValue(dataset2files.getClassFile());
+        ds1ClassesTextField.setValue(dataset1files.getClassFile());
+        ds2ClassesTextField.setValue(dataset2files.getClassFile());
 
         pvalueTextField.setText(Double.toString(current_params.getPvalue()));
         qvalueTextField.setText(Double.toString(current_params.getQvalue()));
@@ -2802,19 +2704,19 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
         combinedConstantTextField.setValue(current_params.getCombinedConstant());
 
         if(current_params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)){
-            gsea.setSelected(true);
-            generic.setSelected(false);
-            david.setSelected(false);
+            gseaRadio.setSelected(true);
+            genericRadio.setSelected(false);
+            davidRadio.setSelected(false);
         }
         else if(current_params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_generic)){
-            gsea.setSelected(false);
-            generic.setSelected(true);
-            david.setSelected(false);
+            gseaRadio.setSelected(false);
+            genericRadio.setSelected(true);
+            davidRadio.setSelected(false);
         }
         else if(current_params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_Specialized)){
-            gsea.setSelected(false);
-            generic.setSelected(false);
-            david.setSelected(true);
+            gseaRadio.setSelected(false);
+            genericRadio.setSelected(false);
+            davidRadio.setSelected(true);
         }
 
         if(params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_JACCARD)){
@@ -2845,24 +2747,24 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 		
 		//check to see if any of the textboxes have been updated manually
 		//Take the textbox value over the one in datasetFiles object
-		if(!GCTFileName1TextField.getText().equalsIgnoreCase(this.dataset1files.getExpressionFileName()))
-			this.dataset1files.setExpressionFileName(GCTFileName1TextField.getText());
+		if(!gctFileName1TextField.getText().equalsIgnoreCase(this.dataset1files.getExpressionFileName()))
+			this.dataset1files.setExpressionFileName(gctFileName1TextField.getText());
 
-		if(!Dataset1FileNameTextField.getText().equalsIgnoreCase(this.dataset1files.getEnrichmentFileName1()))
-			this.dataset1files.setEnrichmentFileName1(Dataset1FileNameTextField.getText());
-		if(!Dataset1FileName2TextField.getText().equalsIgnoreCase(this.dataset1files.getEnrichmentFileName2()))
-			this.dataset1files.setEnrichmentFileName2(Dataset1FileName2TextField.getText());
+		if(!dataset1FileNameTextField.getText().equalsIgnoreCase(this.dataset1files.getEnrichmentFileName1()))
+			this.dataset1files.setEnrichmentFileName1(dataset1FileNameTextField.getText());
+		if(!dataset1FileName2TextField.getText().equalsIgnoreCase(this.dataset1files.getEnrichmentFileName2()))
+			this.dataset1files.setEnrichmentFileName2(dataset1FileName2TextField.getText());
 		
-		if(!Dataset1RankFileTextField.getText().equalsIgnoreCase(this.dataset1files.getRankedFile()))
-			this.dataset1files.setRankedFile(Dataset1RankFileTextField.getText());
+		if(!ds1RanksTextField.getText().equalsIgnoreCase(this.dataset1files.getRankedFile()))
+			this.dataset1files.setRankedFile(ds1RanksTextField.getText());
 	
-		if(!Dataset1ClassFileTextField.getText().equalsIgnoreCase(this.dataset1files.getClassFile()))
-			this.dataset1files.setClassFile(Dataset1ClassFileTextField.getText());
+		if(!ds1ClassesTextField.getText().equalsIgnoreCase(this.dataset1files.getClassFile()))
+			this.dataset1files.setClassFile(ds1ClassesTextField.getText());
 		
-		if(!Dataset1Phenotype1TextField.getText().equalsIgnoreCase(this.dataset1files.getPhenotype1()))
-			this.dataset1files.setPhenotype1(Dataset1Phenotype1TextField.getText());
-		if(!Dataset1Phenotype2TextField.getText().equalsIgnoreCase(this.dataset1files.getPhenotype2()))
-			this.dataset1files.setPhenotype2(Dataset1Phenotype2TextField.getText());
+		if(!ds1Phenotype1TextField.getText().equalsIgnoreCase(this.dataset1files.getPhenotype1()))
+			this.dataset1files.setPhenotype1(ds1Phenotype1TextField.getText());
+		if(!ds1Phenotype2TextField.getText().equalsIgnoreCase(this.dataset1files.getPhenotype2()))
+			this.dataset1files.setPhenotype2(ds1Phenotype2TextField.getText());
 		
 		return dataset1files;
 	}
@@ -2882,24 +2784,24 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 		
 		//check to see if any of the textboxes have been updated manually
 		//Take the textbox value over the one in datasetFiles object
-		if(!GCTFileName2TextField.getText().equalsIgnoreCase(this.dataset2files.getExpressionFileName()))
-					this.dataset2files.setExpressionFileName(GCTFileName2TextField.getText());
+		if(!gctFileName2TextField.getText().equalsIgnoreCase(this.dataset2files.getExpressionFileName()))
+					this.dataset2files.setExpressionFileName(gctFileName2TextField.getText());
 
-		if(!Dataset2FileNameTextField.getText().equalsIgnoreCase(this.dataset2files.getEnrichmentFileName1()))
-					this.dataset2files.setEnrichmentFileName1(Dataset2FileNameTextField.getText());
-		if(!Dataset2FileName2TextField.getText().equalsIgnoreCase(this.dataset2files.getEnrichmentFileName2()))
-					this.dataset2files.setEnrichmentFileName2(Dataset2FileName2TextField.getText());
+		if(!dataset2FileNameTextField.getText().equalsIgnoreCase(this.dataset2files.getEnrichmentFileName1()))
+					this.dataset2files.setEnrichmentFileName1(dataset2FileNameTextField.getText());
+		if(!dataset2FileName2TextField.getText().equalsIgnoreCase(this.dataset2files.getEnrichmentFileName2()))
+					this.dataset2files.setEnrichmentFileName2(dataset2FileName2TextField.getText());
 				
-		if(!Dataset2RankFileTextField.getText().equalsIgnoreCase(this.dataset2files.getRankedFile()))
-					this.dataset2files.setRankedFile(Dataset2RankFileTextField.getText());
+		if(!ds2RanksTextField.getText().equalsIgnoreCase(this.dataset2files.getRankedFile()))
+					this.dataset2files.setRankedFile(ds2RanksTextField.getText());
 			
-		if(!Dataset2ClassFileTextField.getText().equalsIgnoreCase(this.dataset2files.getClassFile()))
-					this.dataset2files.setClassFile(Dataset2ClassFileTextField.getText());
+		if(!ds2ClassesTextField.getText().equalsIgnoreCase(this.dataset2files.getClassFile()))
+					this.dataset2files.setClassFile(ds2ClassesTextField.getText());
 				
-		if(!Dataset2Phenotype1TextField.getText().equalsIgnoreCase(this.dataset2files.getPhenotype1()))
-					this.dataset2files.setPhenotype1(Dataset2Phenotype1TextField.getText());
-		if(!Dataset2Phenotype2TextField.getText().equalsIgnoreCase(this.dataset2files.getPhenotype2()))
-					this.dataset2files.setPhenotype2(Dataset2Phenotype2TextField.getText());
+		if(!ds2Phenotype1TextField.getText().equalsIgnoreCase(this.dataset2files.getPhenotype1()))
+					this.dataset2files.setPhenotype1(ds2Phenotype1TextField.getText());
+		if(!ds2Phenotype2TextField.getText().equalsIgnoreCase(this.dataset2files.getPhenotype2()))
+					this.dataset2files.setPhenotype2(ds2Phenotype2TextField.getText());
 				
 		
 		return dataset2files;
@@ -2928,7 +2830,34 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 	}
 
 	public String getTitle() {
-		return "Enrichment Map Input Panel";
+		return "Enrichment Map Input";
 	}
     
+	private class OptionsPanel extends JPanel implements Scrollable {
+		
+		@Override
+		public Dimension getPreferredScrollableViewportSize() {
+			return getPreferredSize();
+		}
+
+		@Override
+		public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
+			return 10;
+		}
+
+		@Override
+		public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
+			return ((orientation == SwingConstants.VERTICAL) ? visibleRect.height : visibleRect.width) - 10;
+		}
+
+		@Override
+		public boolean getScrollableTracksViewportWidth() {
+			return true;
+		}
+
+		@Override
+		public boolean getScrollableTracksViewportHeight() {
+			return false;
+		}
+	}
 }

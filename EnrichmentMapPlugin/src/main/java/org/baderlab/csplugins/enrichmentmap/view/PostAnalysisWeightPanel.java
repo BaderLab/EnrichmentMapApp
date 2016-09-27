@@ -1,32 +1,30 @@
 package org.baderlab.csplugins.enrichmentmap.view;
 
-import java.awt.BorderLayout;
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static org.baderlab.csplugins.enrichmentmap.util.SwingUtil.makeSmall;
+
 import java.awt.CardLayout;
-import java.awt.FlowLayout;
-import java.awt.Font;
-import java.awt.FontFormatException;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.Map;
 
-import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.JTextField;
+import javax.swing.LayoutStyle.ComponentPlacement;
 
 import org.baderlab.csplugins.enrichmentmap.FilterParameters;
 import org.baderlab.csplugins.enrichmentmap.FilterParameters.FilterType;
@@ -36,15 +34,17 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 
 @SuppressWarnings("serial")
-public class PostAnalysisWeightPanel extends CollapsiblePanel {
+public class PostAnalysisWeightPanel extends JPanel {
 
+	private static final String LABEL_CUTOFF = "Cutoff:";
 	private static final String LABEL_TEST = "Test:";
 	private static final String LABEL_DATASET = "Data Set:";
 	private static final String LABEL_RANKS = "Ranks:";
-	
-	private final CySwingApplication application;
 	
 	private PostAnalysisParameters paParams;
 	private EnrichmentMap map;
@@ -59,10 +59,10 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
 	private JComboBox<FilterType> rankTestCombo;
 	private JFormattedTextField rankTestTextField;
 	
-	private JRadioButton gmtRadioButton;
-	private JRadioButton intersectionRadioButton;
-	private JRadioButton expressionSetRadioButton;
-	private JRadioButton userDefinedRadioButton;
+	private JRadioButton gmtRadio;
+	private JRadioButton intersectionRadio;
+	private JRadioButton expressionSetRadio;
+	private JRadioButton userDefinedRadio;
     private JFormattedTextField universeSelectionTextField;
 	
     private DefaultComboBoxModel<String> rankingModel;
@@ -71,16 +71,18 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
     
     private JPanel cardPanel;
     
-	public PostAnalysisWeightPanel(CySwingApplication application) {
-		super("Edge Weight Parameters");
-		this.application = application;
-		createPanel();
+	private final CyServiceRegistrar serviceRegistrar;
+    
+	public PostAnalysisWeightPanel(CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
+		
+		init();
 	}
 	
-	
-	private void createPanel() {
-		JPanel selectPanel = createRankTestSelectPanel();
+	private void init() {
+		setBorder(LookAndFeelUtil.createTitledBorder("Edge Weight Parameters"));
 		
+		JPanel selectPanel = createRankTestSelectPanel();
 		JPanel hypergeomCard = createHypergeomPanel();
 		JPanel mannWhittCard = createMannWhittPanel();
 		JPanel warnCard = createWarningPanel();
@@ -90,201 +92,281 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
 		cardPanel.add(mannWhittCard, FilterType.MANN_WHIT_GREATER.toString());
 		cardPanel.add(mannWhittCard, FilterType.MANN_WHIT_LESS.toString());
 		cardPanel.add(hypergeomCard, FilterType.HYPERGEOM.toString());
-		cardPanel.add(new JPanel(), FilterType.PERCENT.toString());
-		cardPanel.add(new JPanel(), FilterType.NUMBER.toString());
-		cardPanel.add(new JPanel(), FilterType.SPECIFIC.toString());
+		cardPanel.add(createEmptyPanel(), FilterType.PERCENT.toString());
+		cardPanel.add(createEmptyPanel(), FilterType.NUMBER.toString());
+		cardPanel.add(createEmptyPanel(), FilterType.SPECIFIC.toString());
 		cardPanel.add(warnCard, "warn");
         
-        getContentPane().add(selectPanel, BorderLayout.NORTH);
-        getContentPane().add(cardPanel, BorderLayout.CENTER);
+        GroupLayout layout = new GroupLayout(this);
+        setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(true);
+
+		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
+				.addComponent(selectPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(cardPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addComponent(selectPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(cardPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+		);
+		
+		if (LookAndFeelUtil.isAquaLAF()) {
+			setOpaque(false);
+			cardPanel.setOpaque(false);
+		}
     }
 	
-	
-	private JPanel createWarningPanel() {
-		JPanel warnPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
+	private JPanel createEmptyPanel() {
+		JPanel panel = new JPanel();
 		
-		try {
-			Font iconFont = Font.createFont(Font.TRUETYPE_FONT, getClass().getResourceAsStream("/fonts/fontawesome-webfont.ttf"));
-			Font iconFontSized = iconFont.deriveFont(Font.PLAIN, new JLabel().getFont().getSize2D());
-			
-			JLabel warnIcon = new JLabel();
-			warnIcon.setFont(iconFontSized);
-			warnIcon.setText("\uf071"); // warn icon
-			
-			warnPanel.add(warnIcon);
-		} catch (FontFormatException | IOException e) {
-			e.printStackTrace();
-		}
+		if (LookAndFeelUtil.isAquaLAF())
+        	panel.setOpaque(false);
 		
-		JLabel label = new JLabel("Mann-Whitney requires ranks.");
-		
-		warnPanel.add(label);
-		
-		JPanel panel = new JPanel(new BorderLayout());
-		panel.add(warnPanel, BorderLayout.NORTH);
 		return panel;
 	}
 
+	private JPanel createWarningPanel() {
+		JLabel iconLabel = new JLabel(IconManager.ICON_WARNING);
+		iconLabel.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(16.0f));
+		iconLabel.setForeground(LookAndFeelUtil.getWarnColor());
+		
+		JLabel msgLabel = new JLabel("Mann-Whitney requires ranks.");
+		
+		JPanel panel = new JPanel();
+		final GroupLayout layout = new GroupLayout(panel);
+		panel.setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(true);
+		
+		layout.setHorizontalGroup(layout.createSequentialGroup()
+				.addGap(0, 0, Short.MAX_VALUE)
+				.addComponent(iconLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(msgLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addGap(0, 0, Short.MAX_VALUE)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addGap(0, 0, Short.MAX_VALUE)
+				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+						.addComponent(iconLabel)
+						.addComponent(msgLabel)
+				)
+				.addGap(0, 0, Short.MAX_VALUE)
+		);
+		
+		if (LookAndFeelUtil.isAquaLAF())
+        	panel.setOpaque(false);
+		
+		return panel;
+	}
 	
 	@SuppressWarnings("unchecked")
 	private JPanel createRankTestSelectPanel() {
-		JPanel panel = new JPanel();
-		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-		
-		JPanel cutoffLabel = new JPanel();
-	    cutoffLabel.add(new JLabel("Select Cutoff:"));
-	    panel.add(cutoffLabel);
-	        
+		JLabel testLabel = new JLabel(LABEL_TEST);
+		JLabel cuttofLabel = new JLabel(LABEL_CUTOFF);
+		JLabel dataSetLabel = new JLabel(LABEL_DATASET);
+
 		DecimalFormat decFormat = new DecimalFormat();
-        decFormat.setParseIntegerOnly(false);
-        rankTestTextField = new JFormattedTextField(decFormat);
-        rankTestTextField.addPropertyChangeListener("value", new FormattedTextFieldAction());
-        
-        rankingEnablementRenderer = new EnablementComboBoxRenderer();
+		decFormat.setParseIntegerOnly(false);
+		rankTestTextField = new JFormattedTextField(decFormat);
+		rankTestTextField.setColumns(6);
+		rankTestTextField.setHorizontalAlignment(JTextField.RIGHT);
+		rankTestTextField.addPropertyChangeListener("value", new FormattedTextFieldAction());
+
+		rankingEnablementRenderer = new EnablementComboBoxRenderer();
 		rankTestCombo = new JComboBox<>();
 		rankTestCombo.setRenderer(rankingEnablementRenderer);
+
+		rankTestCombo.addItem(FilterType.MANN_WHIT_TWO_SIDED);
+		rankTestCombo.addItem(FilterType.MANN_WHIT_GREATER);
+		rankTestCombo.addItem(FilterType.MANN_WHIT_LESS);
+		rankTestCombo.addItem(FilterType.HYPERGEOM);
+		rankTestCombo.addItem(FilterType.NUMBER);
+		rankTestCombo.addItem(FilterType.PERCENT);
+		rankTestCombo.addItem(FilterType.SPECIFIC);
+        
+		rankTestCombo.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				FilterType rankTest = (FilterType) rankTestCombo.getSelectedItem();
+				FilterParameters rankTestParams = paParams.getRankTestParameters();
+				rankTestParams.setType(rankTest);
+				rankTestTextField.setValue(rankTestParams.getValue(rankTest));
+
+				CardLayout cardLayout = (CardLayout) cardPanel.getLayout();
+				if (rankTest.isMannWhitney() && map.getAllRanks().isEmpty())
+					cardLayout.show(cardPanel, "warn");
+				else
+					cardLayout.show(cardPanel, rankTest.toString());
+			}
+		});
+        
+		datasetCombo = new JComboBox<>();
+		// Dataset model is already initialized
+		datasetModel = new DefaultComboBoxModel<>();
+		datasetCombo.setModel(datasetModel);
+		datasetCombo.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String dataset = (String) datasetCombo.getSelectedItem();
+				if (dataset == null)
+					return;
+				paParams.setSignature_dataSet(dataset);
+				updateUniverseSize(dataset);
+			}
+		});
+        
+		makeSmall(testLabel, cuttofLabel, rankTestCombo, rankTestTextField);
+		makeSmall(dataSetLabel, datasetCombo);
+        
+        JPanel panel = new JPanel();
+        final GroupLayout layout = new GroupLayout(panel);
+		panel.setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
 		
-        rankTestCombo.addItem(FilterType.MANN_WHIT_TWO_SIDED);
-        rankTestCombo.addItem(FilterType.MANN_WHIT_GREATER);
-        rankTestCombo.addItem(FilterType.MANN_WHIT_LESS);
-        rankTestCombo.addItem(FilterType.HYPERGEOM);
-        rankTestCombo.addItem(FilterType.NUMBER);
-        rankTestCombo.addItem(FilterType.PERCENT);
-        rankTestCombo.addItem(FilterType.SPECIFIC);
+		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
+				.addGroup(layout.createSequentialGroup()
+						.addGroup(layout.createParallelGroup(Alignment.TRAILING, true)
+								.addComponent(testLabel)
+								.addComponent(cuttofLabel)
+								.addComponent(dataSetLabel)
+						)
+						.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
+								.addComponent(rankTestCombo, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+								.addComponent(rankTestTextField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+								.addComponent(datasetCombo, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+						)
+				)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+						.addComponent(testLabel)
+						.addComponent(rankTestCombo, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
+				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+						.addComponent(cuttofLabel)
+						.addComponent(rankTestTextField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
+				.addPreferredGap(ComponentPlacement.UNRELATED)
+				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+						.addComponent(dataSetLabel)
+						.addComponent(datasetCombo, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
+		);
         
-        rankTestCombo.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-            	FilterType rankTest = (FilterType)rankTestCombo.getSelectedItem();
-            	FilterParameters rankTestParams = paParams.getRankTestParameters();
-        		rankTestParams.setType(rankTest);
-        		rankTestTextField.setValue(rankTestParams.getValue(rankTest));
-        		
-        		CardLayout cardLayout = (CardLayout)cardPanel.getLayout();
-        		if(rankTest.isMannWhitney() && map.getAllRanks().isEmpty())
-        			cardLayout.show(cardPanel, "warn");
-        		else
-        			cardLayout.show(cardPanel, rankTest.toString());
-            }
-        });
-        
-       
-        panel.add(create3CellGridPanel(LABEL_TEST, rankTestCombo, rankTestTextField));
-        
-        datasetCombo = new JComboBox<>();
-        // Dataset model is already initialized
-        datasetModel = new DefaultComboBoxModel<>();
-        datasetCombo.setModel(datasetModel);
-        datasetCombo.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-            	String dataset = (String)datasetCombo.getSelectedItem();
-            	if(dataset == null)
-            		return;
-            	paParams.setSignature_dataSet(dataset);
-            	updateUniverseSize(dataset);
-            }
-        });
-        
-        panel.add(create3CellGridPanel(LABEL_DATASET, datasetCombo, null));
+        if (LookAndFeelUtil.isAquaLAF())
+        	panel.setOpaque(false);
         
         return panel;
 	}
 	
 	private JPanel createHypergeomPanel() {
-		JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+    	gmtRadio = new JRadioButton();
+        gmtRadio.setActionCommand("GMT");
+        gmtRadio.addActionListener(new UniverseSelectActionListener());        
+        gmtRadio.setSelected(true);
         
-        // Create Universe selection panel
-        CollapsiblePanel universeSelectionPanel = new CollapsiblePanel("Advanced Hypergeometric Universe");
-        universeSelectionPanel.setCollapsed(false);
-        universeSelectionPanel.getContentPane().setLayout(new BorderLayout());
+        expressionSetRadio = new JRadioButton();
+        expressionSetRadio.setActionCommand("Expression Set");
+        expressionSetRadio.addActionListener(new UniverseSelectActionListener());
         
-        GridBagLayout gridbag = new GridBagLayout();
-        GridBagConstraints c = new GridBagConstraints();
-        c.weighty = 1;
-        c.weightx = 1;
-        c.insets = new Insets(0,0,0,0);
-        c.fill = GridBagConstraints.HORIZONTAL;
+        intersectionRadio = new JRadioButton();
+        intersectionRadio.setActionCommand("Intersection");
+        intersectionRadio.addActionListener(new UniverseSelectActionListener());
         
-        JPanel radioButtonsPanel = new JPanel();
-        radioButtonsPanel.setLayout(gridbag);
-        
-    	gmtRadioButton = new JRadioButton();
-        gmtRadioButton.setActionCommand("GMT");
-        gmtRadioButton.addActionListener(new UniverseSelectActionListener());        
-        gmtRadioButton.setSelected(true);
-        
-        expressionSetRadioButton = new JRadioButton();
-        expressionSetRadioButton.setActionCommand("Expression Set");
-        expressionSetRadioButton.addActionListener(new UniverseSelectActionListener());
-        
-        intersectionRadioButton = new JRadioButton();
-        intersectionRadioButton.setActionCommand("Intersection");
-        intersectionRadioButton.addActionListener(new UniverseSelectActionListener());
-        
-        userDefinedRadioButton = new JRadioButton("User Defined");
-        userDefinedRadioButton.setActionCommand("User Defined");
-        userDefinedRadioButton.addActionListener(new UniverseSelectActionListener());  
+        userDefinedRadio = new JRadioButton("User Defined:");
+        userDefinedRadio.setActionCommand("User Defined");
+        userDefinedRadio.addActionListener(new UniverseSelectActionListener());  
         
         ButtonGroup buttonGroup = new ButtonGroup();
-        buttonGroup.add(gmtRadioButton);
-        buttonGroup.add(expressionSetRadioButton);
-        buttonGroup.add(intersectionRadioButton);
-        buttonGroup.add(userDefinedRadioButton);
+        buttonGroup.add(gmtRadio);
+        buttonGroup.add(expressionSetRadio);
+        buttonGroup.add(intersectionRadio);
+        buttonGroup.add(userDefinedRadio);
 
-        c.gridx = 0;
-        c.gridy = 0;
-        c.gridwidth = GridBagConstraints.REMAINDER;
-        gridbag.setConstraints(gmtRadioButton, c);
-        radioButtonsPanel.add(gmtRadioButton);
-        
-        c.gridy = 1;
-        gridbag.setConstraints(expressionSetRadioButton, c);
-        radioButtonsPanel.add(expressionSetRadioButton);
-
-        c.gridy = 2;
-        gridbag.setConstraints(intersectionRadioButton, c);
-        radioButtonsPanel.add(intersectionRadioButton);
-        
-        c.gridy = 3;
-        c.gridwidth = 2;
-        gridbag.setConstraints(userDefinedRadioButton, c);
-        radioButtonsPanel.add(userDefinedRadioButton);
-        
-        c.gridx = 2;
         DecimalFormat intFormat = new DecimalFormat();
         intFormat.setParseIntegerOnly(true);
         universeSelectionTextField = new JFormattedTextField(intFormat);
         universeSelectionTextField.addPropertyChangeListener("value", new FormattedTextFieldAction());
         universeSelectionTextField.setEnabled(false);
-        gridbag.setConstraints(universeSelectionTextField, c);
-        radioButtonsPanel.add(universeSelectionTextField);
         
-        universeSelectionPanel.getContentPane().add(radioButtonsPanel, BorderLayout.CENTER);
-               
-        panel.add(universeSelectionPanel);
+        makeSmall(gmtRadio, expressionSetRadio, intersectionRadio, userDefinedRadio, universeSelectionTextField);
+        
+        JPanel panel = new JPanel();
+		panel.setBorder(LookAndFeelUtil.createTitledBorder("Advanced Hypergeometric Universe"));
+		
+		final GroupLayout layout = new GroupLayout(panel);
+		panel.setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
+		
+		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
+				.addComponent(gmtRadio)
+				.addComponent(expressionSetRadio)
+				.addComponent(intersectionRadio)
+				.addGroup(layout.createSequentialGroup()
+						.addComponent(userDefinedRadio, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addPreferredGap(ComponentPlacement.RELATED)
+						.addComponent(universeSelectionTextField, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addComponent(gmtRadio, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(expressionSetRadio, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(intersectionRadio, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+						.addComponent(userDefinedRadio, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(universeSelectionTextField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
+		);
+        
+        if (LookAndFeelUtil.isAquaLAF())
+        	panel.setOpaque(false);
+        
         return panel;
 	}
 	
 	
 	private JPanel createMannWhittPanel() {
+		JLabel ranksLabel = new JLabel(LABEL_RANKS);
+		
         rankingModel = new DefaultComboBoxModel<>();
         rankingCombo = new JComboBox<>();
         rankingCombo.setModel(rankingModel);
-        rankingCombo.addActionListener( new ActionListener() {
-            public void actionPerformed( ActionEvent e ) {
-            	paParams.setSignature_rankFile((String)rankingCombo.getSelectedItem());
-            }
-        });
+		rankingCombo.addActionListener((ActionEvent e) -> {
+			paParams.setSignature_rankFile((String) rankingCombo.getSelectedItem());
+		});
         
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.add(create3CellGridPanel(LABEL_RANKS, rankingCombo, null), BorderLayout.NORTH);
+        makeSmall(ranksLabel, rankingCombo);
+        
+        JPanel panel = new JPanel();
+        final GroupLayout layout = new GroupLayout(panel);
+		panel.setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
+		
+		layout.setHorizontalGroup(layout.createSequentialGroup()
+				.addComponent(ranksLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addPreferredGap(ComponentPlacement.RELATED)
+				.addComponent(rankingCombo, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+		);
+		layout.setVerticalGroup(layout.createParallelGroup(Alignment.CENTER, false)
+				.addComponent(ranksLabel)
+				.addComponent(rankingCombo, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+		);
+        
+        if (LookAndFeelUtil.isAquaLAF())
+        	panel.setOpaque(false);
+        
         return panel;
 	}
 	
-	
 	private class UniverseSelectActionListener implements ActionListener {
+		@Override
 		public void actionPerformed(ActionEvent e) {
 			int size = 0;
+			
 			switch(e.getActionCommand()) {
 				case "GMT":
 					size = universeGmt;
@@ -303,13 +385,16 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
 		            universeSelectionTextField.setEnabled(true);
 		            break;
 			}
+			
 			paParams.setUniverseSize(size);
 		}
 	}
 	
 	
 	private class FormattedTextFieldAction implements PropertyChangeListener {
+		@Override
         public void propertyChange(PropertyChangeEvent e) {
+			CySwingApplication application = serviceRegistrar.getService(CySwingApplication.class);
         	JFormattedTextField source = (JFormattedTextField) e.getSource();
 	        if (source == rankTestTextField) {
 	        	StringBuilder message = new StringBuilder("The value you have entered is invalid.\n");
@@ -329,56 +414,11 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
         }
 	}
 	
-	/*
-	 * This is a hackey way of getting the three comboboxes to line up properly without putting them in the
-	 * same grid panel. I didn't want to put them in the same panel because I would have had to rewrite
-	 * a big chunk of this file.
-	 */
-	private static JPanel create3CellGridPanel(String label, JComboBox<?> combo, JFormattedTextField textField) {
-		int labelWidth = (int) new JLabel(LABEL_DATASET).getPreferredSize().getWidth();  // use the widest one
-		
-		JPanel panel = new JPanel(new GridBagLayout());
-		
-		GridBagConstraints c = new GridBagConstraints();
-        c.insets = new Insets(0,0,0,0);
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.anchor = GridBagConstraints.WEST;
-        
-        c.gridy = 0;
-        
-        c.gridx = 0;
-		panel.add(Box.createHorizontalStrut(labelWidth), c);
-		c.gridx = 1;
-		panel.add(Box.createHorizontalStrut(1), c);
-		c.gridx = 2;
-		c.weightx = 1.0;
-		panel.add(Box.createHorizontalStrut(1), c);
-		
-		c.weightx = 0.0;
-		c.gridy = 1;
-		
-		c.gridx = 0;
-        panel.add(new JLabel(label), c);
-        c.gridx = 1;
-        if(textField == null)
-        	c.gridwidth = 2;
-        panel.add(combo, c);
-        if(textField == null)
-        	return panel;
-        c.gridx = 2;
-        panel.add(textField,c);
-		
-		return panel;
-	}
-	
-	
-	
 	void resetPanel() {
-		gmtRadioButton.setSelected(true);
+		gmtRadio.setSelected(true);
         rankTestCombo.setSelectedItem(FilterType.MANN_WHIT_TWO_SIDED);
         rankTestTextField.setValue(paParams.getRankTestParameters().getValue(FilterType.MANN_WHIT_TWO_SIDED));
     }
-    
     
     void initialize(EnrichmentMap currentMap, PostAnalysisParameters paParams) {
     	this.map = currentMap;
@@ -426,7 +466,6 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
 		}
     }
     
-    
     private void updateUniverseSize(String signature_dataSet) {
     	GeneExpressionMatrix expressionSets = map.getDataset(signature_dataSet).getExpressionSets();
     	
@@ -434,21 +473,19 @@ public class PostAnalysisWeightPanel extends CollapsiblePanel {
     	universeExpression = expressionSets.getExpressionUniverse();
     	universeIntersection = expressionSets.getExpressionMatrix().size();
     	
-        gmtRadioButton.setText("GMT (" + universeGmt + ")");
-        expressionSetRadioButton.setText("Expression Set (" + universeExpression + ")");
-        intersectionRadioButton.setText("Intersection (" + universeIntersection + ")");
+        gmtRadio.setText("GMT (" + universeGmt + ")");
+        expressionSetRadio.setText("Expression Set (" + universeExpression + ")");
+        intersectionRadio.setText("Intersection (" + universeIntersection + ")");
         
         universeSelectionTextField.setValue(universeExpression);
         
-        if(gmtRadioButton.isSelected())
+        if(gmtRadio.isSelected())
         	paParams.setUniverseSize(universeGmt);
-        else if(expressionSetRadioButton.isSelected())
+        else if(expressionSetRadio.isSelected())
         	paParams.setUniverseSize(universeExpression);
-        else if(intersectionRadioButton.isSelected())
+        else if(intersectionRadio.isSelected())
         	paParams.setUniverseSize(universeIntersection);
         else
         	paParams.setUniverseSize((Integer)universeSelectionTextField.getValue());
     }
-    
-    
 }

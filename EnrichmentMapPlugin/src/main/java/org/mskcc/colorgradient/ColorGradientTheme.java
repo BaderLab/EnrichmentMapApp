@@ -31,7 +31,6 @@ package org.mskcc.colorgradient;
 
 // imports
 import java.awt.Color;
-import org.baderlab.csplugins.enrichmentmap.*;
 
 /**
  * Encapsulates a Color Theme, e.g. a BLUE_RED_GRADIENT_THEME.
@@ -39,6 +38,7 @@ import org.baderlab.csplugins.enrichmentmap.*;
  * @author Ethan Cerami.
  */
 public class ColorGradientTheme {
+	
     private String name;
     private Color minColor, centerColor, maxColor;
     private Color noDataColor;
@@ -147,43 +147,15 @@ public class ColorGradientTheme {
         return this.maxLabelColor;
     }
 
-    /**
-     * Color Theme:  BLUE_RED_GRADIENT_THEME
-     */
-    public static final ColorGradientTheme BLUE_RED_GRADIENT_THEME
-            = new ColorGradientTheme("Blue Red", Color.BLUE, Color.WHITE,
-									 Color.RED, Color.LIGHT_GRAY,
-									 Color.WHITE, Color.BLACK);
-
-    /**
-     * Color Theme:  GREEN_RED_GRADIENT_THEME
-     */
-    public static final ColorGradientTheme GREEN_RED_GRADIENT_THEME
-            = new ColorGradientTheme("Green Red", Color.GREEN, Color.BLACK,
-									 Color.RED, Color.LIGHT_GRAY,
-									 Color.BLACK, Color.WHITE);
-
-    /**
-     * Color Theme:  YELLOW_BLUE_GRADIENT_THEME
-     */
-    public static final ColorGradientTheme YELLOW_BLUE_GRADIENT_THEME
-            = new ColorGradientTheme("Yellow Blue", Color.YELLOW, Color.BLACK,
-									 Color.BLUE, Color.LIGHT_GRAY,
-									 Color.BLACK, Color.WHITE);
-      /**
-     * Color Theme:  GREEN_MAGENTA_GRADIENT_THEME
-     */
-    public static final ColorGradientTheme GREEN_MAGENTA_GRADIENT_THEME
-            = new ColorGradientTheme("Green Magenta", Color.GREEN, Color.WHITE,
-									 Color.MAGENTA, Color.LIGHT_GRAY,
-									 Color.BLACK, Color.WHITE);
-    /**
-     * Color Theme:  RED_ONECOLOR_GRADIENT_THEME
-     */
-    public static final ColorGradientTheme RED_ONECOLOR_GRADIENT_THEME
-            = new ColorGradientTheme("Red", Color.WHITE, new Color(255,120,120),
-									 Color.RED, Color.LIGHT_GRAY,
-									 Color.BLACK, Color.WHITE);
+	/**
+	 * See http://colorbrewer2.org/#type=diverging&scheme=PRGn&n=3
+	 */
+    public static final ColorGradientTheme PR_GN_GRADIENT_THEME = new ColorGradientTheme(
+            		"3-class PRGn",
+            		new Color(127, 191, 123)/*green*/, new Color(247, 247, 247)/*almost white*/,
+					new Color(175, 141, 195)/*purple*/, Color.LIGHT_GRAY,
+					Color.BLACK, Color.WHITE
+	);
 
     /**
      * Color Theme:  RED_ONECOLOR_GRADIENT_THEME
@@ -192,15 +164,5 @@ public class ColorGradientTheme {
             = new ColorGradientTheme("Green", Color.WHITE, new Color(120,255,120),
 									 Color.GREEN, Color.LIGHT_GRAY,
 									 Color.BLACK, Color.WHITE);
-
-    /**
-     * Color Theme: enrichmentmap node coloring
-     */
-      public static final ColorGradientTheme ENRICHMENTMAP_NODE_THEME
-            = new ColorGradientTheme("Node colouring",
-                                    EnrichmentMapVisualStyle.max_phenotype2,
-                                    EnrichmentMapVisualStyle.overColor,
-                                    EnrichmentMapVisualStyle.max_phenotype1,
-                                    Color.gray, Color.black, Color.white);
 
 }

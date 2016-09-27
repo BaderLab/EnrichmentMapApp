@@ -65,6 +65,25 @@ import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
  */
 public class EnrichmentMapVisualStyle {
 
+	// default colours
+	private static final Color BG_COLOR = new Color(247, 247, 247);
+	
+	/* See http://colorbrewer2.org/#type=diverging&scheme=RdBu&n=9 */
+	public static final Color MAX_PHENOTYPE_1 = new Color(178, 24, 43);
+	public static final Color LIGHTER_PHENOTYPE_1 = new Color(214, 96, 77);
+	public static final Color LIGHTEST_PHENOTYPE_1 = new Color(244, 165, 130);
+	public static final Color OVER_COLOR = new Color(247, 247, 247);
+	public static final Color MAX_PHENOTYPE_2 = new Color(33, 102, 172);
+	public static final Color LIGHTER_PHENOTYPE_2 = new Color(67, 147, 195);
+	public static final Color LIGHTEST_PHENOTYPE_2 = new Color(146, 197, 222);
+	
+	public static final Color LIGHT_GREY = new Color(190, 190, 190); // a lighter grey
+	
+	/* See http://colorbrewer2.org/#type=qualitative&scheme=Dark2&n=3 */
+	private static final Color EDGE_COLOR_0 = new Color(27, 158, 119);
+	private static final Color EDGE_COLOR_1 = new Color(27, 158, 119);
+	private static final Color EDGE_COLOR_2 = new Color(117, 112, 179);
+
 	private final EnrichmentMapParameters params;
 	
 	//services required for setting up visualStyle
@@ -131,17 +150,6 @@ public class EnrichmentMapVisualStyle {
     public static final String NETW_REPORT1_DIR = "GSEA_Report_Dataset1_folder";
     public static final String NETW_REPORT2_DIR = "GSEA_Report_Dataset2_folder";
         
-    //default colours
-    public static final Color max_phenotype1 = new Color(255,0,0);
-    public static final Color lighter_phenotype1 = new Color(255,102,102);
-    public static final Color lightest_phenotype1 = new Color(255,179,179);
-    public static final Color max_phenotype2 = new Color(0,100,255);
-    public static final Color lighter_phenotype2 = new Color(102,162,255);
-    public static final Color lightest_phenotype2 = new Color(179,208,255);
-    public static final Color overColor = Color.WHITE;
-    public static final Color light_grey = new Color(190,190,190); // a lighter grey
-    
-
     
     /**
      * Constructor
@@ -166,14 +174,12 @@ public class EnrichmentMapVisualStyle {
      * @return visual style
      */
     public void applyVisualStyle(VisualStyle vs, String prefix) {
-    	
     	//set default background colour
-    	vs.setDefaultValue(BasicVisualLexicon.NETWORK_BACKGROUND_PAINT, new Color(205,205,235));    	        
+    	vs.setDefaultValue(BasicVisualLexicon.NETWORK_BACKGROUND_PAINT, BG_COLOR);    	        
 
         createEdgeAppearance(vs, prefix);
         createNodeAppearance(vs, prefix);
     }
-
     
     /**
      * Create edge appearances for this enrichment map, specify the edge thicknes mapped to the number of genes
@@ -187,15 +193,15 @@ public class EnrichmentMapVisualStyle {
         //add the discrete mapper for edge colour:        
         //can't just update edge_paint -- need to do the same for all the type of edge paints
         DiscreteMapping<Integer,Paint> disMapping_edge2 = (DiscreteMapping<Integer,Paint>) vmfFactoryDiscrete.createVisualMappingFunction(prefix + ENRICHMENT_SET, Integer.class, BasicVisualLexicon.EDGE_UNSELECTED_PAINT);
-        disMapping_edge2.putMapValue(0, new Color(100,200,000));
-        disMapping_edge2.putMapValue(1, new Color(100,200,000));
-        disMapping_edge2.putMapValue(2, new Color(100,149,237));
+        disMapping_edge2.putMapValue(0, EDGE_COLOR_0);
+        disMapping_edge2.putMapValue(1, EDGE_COLOR_1);
+        disMapping_edge2.putMapValue(2, EDGE_COLOR_2);
         vs.addVisualMappingFunction(disMapping_edge2);
         
         DiscreteMapping<Integer,Paint> disMapping_edge4 = (DiscreteMapping<Integer,Paint>) vmfFactoryDiscrete.createVisualMappingFunction(prefix + ENRICHMENT_SET, Integer.class, BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT);
-        disMapping_edge4.putMapValue(0, new Color(100,200,000));
-        disMapping_edge4.putMapValue(1, new Color(100,200,000));
-        disMapping_edge4.putMapValue(2, new Color(100,149,237));
+        disMapping_edge4.putMapValue(0, EDGE_COLOR_0);
+        disMapping_edge4.putMapValue(1, EDGE_COLOR_1);
+        disMapping_edge4.putMapValue(2, EDGE_COLOR_2);
         vs.addVisualMappingFunction(disMapping_edge4);
 
         //Continous Mapping - set edge line thickness based on the number of genes in the overlap
@@ -229,20 +235,20 @@ public class EnrichmentMapVisualStyle {
     	// value less than -1 to make the node yellow.
     	
         // Create boundary conditions                  less than,   equals,  greater than
-        BoundaryRangeValues<Paint> bv3a = new BoundaryRangeValues<Paint>(max_phenotype2,max_phenotype2,max_phenotype2);
-        BoundaryRangeValues<Paint> bv3b = new BoundaryRangeValues<Paint>(lighter_phenotype2, lighter_phenotype2, max_phenotype2);
-        BoundaryRangeValues<Paint> bv3c = new BoundaryRangeValues<Paint>(lightest_phenotype2, lightest_phenotype2,lighter_phenotype2);
-        BoundaryRangeValues<Paint> bv3d = new BoundaryRangeValues<Paint>(lightest_phenotype2, overColor, overColor);
-        BoundaryRangeValues<Paint> bv3e = new BoundaryRangeValues<Paint>(overColor, overColor,overColor);
-        BoundaryRangeValues<Paint> bv3f = new BoundaryRangeValues<Paint>(overColor, overColor, lightest_phenotype1);
-        BoundaryRangeValues<Paint> bv3g = new BoundaryRangeValues<Paint>(lightest_phenotype1, lightest_phenotype1, lighter_phenotype1);
-        BoundaryRangeValues<Paint> bv3h = new BoundaryRangeValues<Paint>(lighter_phenotype1, lighter_phenotype1, max_phenotype1);
-        BoundaryRangeValues<Paint> bv3i = new BoundaryRangeValues<Paint>(max_phenotype1, max_phenotype1, max_phenotype1);
+        BoundaryRangeValues<Paint> bv3a = new BoundaryRangeValues<Paint>(MAX_PHENOTYPE_2,MAX_PHENOTYPE_2,MAX_PHENOTYPE_2);
+        BoundaryRangeValues<Paint> bv3b = new BoundaryRangeValues<Paint>(LIGHTER_PHENOTYPE_2, LIGHTER_PHENOTYPE_2, MAX_PHENOTYPE_2);
+        BoundaryRangeValues<Paint> bv3c = new BoundaryRangeValues<Paint>(LIGHTEST_PHENOTYPE_2, LIGHTEST_PHENOTYPE_2,LIGHTER_PHENOTYPE_2);
+        BoundaryRangeValues<Paint> bv3d = new BoundaryRangeValues<Paint>(LIGHTEST_PHENOTYPE_2, OVER_COLOR, OVER_COLOR);
+        BoundaryRangeValues<Paint> bv3e = new BoundaryRangeValues<Paint>(OVER_COLOR, OVER_COLOR,OVER_COLOR);
+        BoundaryRangeValues<Paint> bv3f = new BoundaryRangeValues<Paint>(OVER_COLOR, OVER_COLOR, LIGHTEST_PHENOTYPE_1);
+        BoundaryRangeValues<Paint> bv3g = new BoundaryRangeValues<Paint>(LIGHTEST_PHENOTYPE_1, LIGHTEST_PHENOTYPE_1, LIGHTER_PHENOTYPE_1);
+        BoundaryRangeValues<Paint> bv3h = new BoundaryRangeValues<Paint>(LIGHTER_PHENOTYPE_1, LIGHTER_PHENOTYPE_1, MAX_PHENOTYPE_1);
+        BoundaryRangeValues<Paint> bv3i = new BoundaryRangeValues<Paint>(MAX_PHENOTYPE_1, MAX_PHENOTYPE_1, MAX_PHENOTYPE_1);
 
 
         //set the default node appearance
-        vs.setDefaultValue(BasicVisualLexicon.NODE_FILL_COLOR, light_grey);
-        vs.setDefaultValue(BasicVisualLexicon.NODE_BORDER_PAINT, light_grey);
+        vs.setDefaultValue(BasicVisualLexicon.NODE_FILL_COLOR, LIGHT_GREY);
+        vs.setDefaultValue(BasicVisualLexicon.NODE_BORDER_PAINT, LIGHT_GREY);
         vs.setDefaultValue(BasicVisualLexicon.NODE_SHAPE, NodeShapeVisualProperty.ELLIPSE);
 
         //change the default node and border size only when using two distinct dataset to be more equal.

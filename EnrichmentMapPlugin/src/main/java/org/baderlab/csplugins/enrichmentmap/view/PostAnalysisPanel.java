@@ -20,7 +20,7 @@ import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.util.swing.FileUtil;
-import org.cytoscape.util.swing.OpenBrowser;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
@@ -37,7 +37,6 @@ public class PostAnalysisPanel extends JPanel implements CytoPanelComponent {
 	
 	private final CyApplicationManager cyApplicationManager;
     private final CySwingApplication application;
-	private final OpenBrowser browser;
 	private final FileUtil fileUtil;
 	private final CyServiceRegistrar registrar;
 	private final CySessionManager sessionManager;
@@ -58,19 +57,17 @@ public class PostAnalysisPanel extends JPanel implements CytoPanelComponent {
     private PostAnalysisInputPanel currentPanel;
     
     
-    public PostAnalysisPanel(CyApplicationManager cyApplicationManager, CySwingApplication application,
-    		OpenBrowser browser,FileUtil fileUtil, CySessionManager sessionManager,
-    		StreamUtil streamUtil,CyServiceRegistrar registrar,
-    		DialogTaskManager dialog, SynchronousTaskManager syncTaskManager, CyEventHelper eventHelper,
-    		VisualMappingManager visualMappingManager, VisualStyleFactory visualStyleFactory,
-    		VisualMappingFunctionFactory vmfFactoryContinuous, VisualMappingFunctionFactory vmfFactoryDiscrete, VisualMappingFunctionFactory vmfFactoryPassthrough) {
-    	
-    	this.cyApplicationManager = cyApplicationManager;
-    	this.application = application;
-        this.browser = browser;
-        this.fileUtil = fileUtil;
-        this.registrar = registrar;
-        this.sessionManager = sessionManager;
+	public PostAnalysisPanel(CyApplicationManager cyApplicationManager, CySwingApplication application,
+			FileUtil fileUtil, CySessionManager sessionManager, StreamUtil streamUtil, CyServiceRegistrar registrar,
+			DialogTaskManager dialog, SynchronousTaskManager syncTaskManager, CyEventHelper eventHelper,
+			VisualMappingManager visualMappingManager, VisualStyleFactory visualStyleFactory,
+			VisualMappingFunctionFactory vmfFactoryContinuous, VisualMappingFunctionFactory vmfFactoryDiscrete,
+			VisualMappingFunctionFactory vmfFactoryPassthrough) {
+		this.cyApplicationManager = cyApplicationManager;
+		this.application = application;
+		this.fileUtil = fileUtil;
+		this.registrar = registrar;
+		this.sessionManager = sessionManager;
         this.streamUtil = streamUtil;
         this.dialog = dialog;
         this.syncTaskManager = syncTaskManager;
@@ -81,9 +78,11 @@ public class PostAnalysisPanel extends JPanel implements CytoPanelComponent {
         this.vmfFactoryDiscrete = vmfFactoryDiscrete;
         this.vmfFactoryPassthrough = vmfFactoryPassthrough;
         
+        if (LookAndFeelUtil.isAquaLAF())
+       	 setOpaque(false);
+        
     	setLayout(new BorderLayout());
     }
-	
     
     public void showPanelFor(EnrichmentMap currentMap) {
     	PostAnalysisInputPanel panel;
@@ -113,10 +112,10 @@ public class PostAnalysisPanel extends JPanel implements CytoPanelComponent {
     }    
     
     private PostAnalysisInputPanel newPostAnalysisInputPanel() {
-    	return new PostAnalysisInputPanel(cyApplicationManager, application, browser, fileUtil, sessionManager, streamUtil, registrar, dialog, syncTaskManager, 
-    			eventHelper, visualMappingManager, visualStyleFactory, vmfFactoryContinuous, vmfFactoryDiscrete, vmfFactoryPassthrough);
+		return new PostAnalysisInputPanel(cyApplicationManager, application, fileUtil, sessionManager, streamUtil,
+				registrar, dialog, syncTaskManager, eventHelper, visualMappingManager, visualStyleFactory,
+				vmfFactoryContinuous, vmfFactoryDiscrete, vmfFactoryPassthrough);
     }
-    
     
 	@Override
 	public Component getComponent() {
@@ -140,7 +139,7 @@ public class PostAnalysisPanel extends JPanel implements CytoPanelComponent {
 
 	@Override
 	public String getTitle() {
-		return "Post Analysis Input Panel";
+		return "Post Analysis Input";
 	}
 
 }

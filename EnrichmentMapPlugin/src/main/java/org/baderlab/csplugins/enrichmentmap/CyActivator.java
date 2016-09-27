@@ -1,14 +1,19 @@
 package org.baderlab.csplugins.enrichmentmap;
 
+import static org.cytoscape.work.ServiceProperties.COMMAND;
+import static org.cytoscape.work.ServiceProperties.COMMAND_NAMESPACE;
+import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_BEFORE;
+import static org.cytoscape.work.ServiceProperties.IN_MENU_BAR;
+import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
 import static org.cytoscape.work.ServiceProperties.TITLE;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import org.baderlab.csplugins.enrichmentmap.actions.BulkEMCreationAction;
 import org.baderlab.csplugins.enrichmentmap.actions.EnrichmentMapActionListener;
 import org.baderlab.csplugins.enrichmentmap.actions.EnrichmentMapSessionAction;
+import org.baderlab.csplugins.enrichmentmap.actions.HelpAction;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadEnrichmentsPanelAction;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadPostAnalysisPanelAction;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowAboutPanelAction;
@@ -17,7 +22,6 @@ import org.baderlab.csplugins.enrichmentmap.commands.EnrichmentMapGSEACommandHan
 import org.baderlab.csplugins.enrichmentmap.task.BuildEnrichmentMapTuneableTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.task.CreatePublicationVisualStyleTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.task.EdgeWidthTableColumnTaskFactory;
-import org.baderlab.csplugins.enrichmentmap.view.BulkEMCreationPanel;
 import org.baderlab.csplugins.enrichmentmap.view.EnrichmentMapInputPanel;
 import org.baderlab.csplugins.enrichmentmap.view.HeatMapPanel;
 import org.baderlab.csplugins.enrichmentmap.view.ParametersPanel;
@@ -57,7 +61,6 @@ import org.cytoscape.view.presentation.annotations.TextAnnotation;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
-import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
@@ -66,6 +69,8 @@ import org.osgi.framework.BundleContext;
 
 
 public class CyActivator extends AbstractCyActivator {
+
+	private static final String APP_MENU = "Apps.EnrichmentMap";
 
 	public void start(BundleContext bc) {
 		
@@ -108,9 +113,9 @@ public class CyActivator extends AbstractCyActivator {
 		
 						
 		//create the Panels
-		BulkEMCreationPanel bulkEmPanel = new BulkEMCreationPanel(cySwingApplicationRef,fileUtil,registrar, sessionManager, streamUtil, cyApplicationManagerRef);		
-		EnrichmentMapInputPanel emPanel = new EnrichmentMapInputPanel(cyNetworkFactoryRef, cyApplicationManagerRef, cyNetworkManagerRef, cyNetworkViewManagerRef, tableFactory, tableManager, cyNetworkViewFactoryRef, visualMappingManagerRef, visualStyleFactoryRef,  continuousMappingFunctionFactoryRef,discreteMappingFunctionFactoryRef, passthroughMappingFunctionFactoryRef, dialogTaskManager, sessionManager, cySwingApplicationRef, openBrowserRef,fileUtil,streamUtil,registrar,layoutManager,mapTableToNetworkTable,bulkEmPanel);				
-		PostAnalysisPanel postEMPanel = new PostAnalysisPanel(cyApplicationManagerRef,cySwingApplicationRef, openBrowserRef,fileUtil,sessionManager, streamUtil,registrar, dialogTaskManager, syncTaskManager, eventHelper, visualMappingManagerRef, visualStyleFactoryRef, continuousMappingFunctionFactoryRef, discreteMappingFunctionFactoryRef, passthroughMappingFunctionFactoryRef);		
+//		BulkEMCreationPanel bulkEmPanel = new BulkEMCreationPanel(cySwingApplicationRef,fileUtil,registrar, sessionManager, streamUtil, cyApplicationManagerRef);		
+		EnrichmentMapInputPanel emPanel = new EnrichmentMapInputPanel(cyNetworkFactoryRef, cyApplicationManagerRef, cyNetworkManagerRef, cyNetworkViewManagerRef, tableFactory, tableManager, cyNetworkViewFactoryRef, visualMappingManagerRef, visualStyleFactoryRef,  continuousMappingFunctionFactoryRef,discreteMappingFunctionFactoryRef, passthroughMappingFunctionFactoryRef, dialogTaskManager, sessionManager, cySwingApplicationRef,fileUtil,streamUtil,registrar,layoutManager,mapTableToNetworkTable);				
+		PostAnalysisPanel postEMPanel = new PostAnalysisPanel(cyApplicationManagerRef,cySwingApplicationRef,fileUtil,sessionManager, streamUtil,registrar, dialogTaskManager, syncTaskManager, eventHelper, visualMappingManagerRef, visualStyleFactoryRef, continuousMappingFunctionFactoryRef, discreteMappingFunctionFactoryRef, passthroughMappingFunctionFactoryRef);		
 		//create two instances of the heatmap panel
 		HeatMapPanel heatMapPanel_node = new HeatMapPanel(true, cySwingApplicationRef, fileUtil, cyApplicationManagerRef, openBrowserRef,dialogTaskManager,streamUtil);
 		HeatMapPanel heatMapPanel_edge = new HeatMapPanel(false, cySwingApplicationRef, fileUtil, cyApplicationManagerRef, openBrowserRef,dialogTaskManager,streamUtil);
@@ -132,41 +137,54 @@ public class CyActivator extends AbstractCyActivator {
 
 		//Create each Action within Enrichment map as a service
 		Map<String,String> serviceProperties;
+		//Online Help Action
+		serviceProperties = new HashMap<>();
+		serviceProperties.put(IN_MENU_BAR, "true");
+		serviceProperties.put(PREFERRED_MENU, APP_MENU);
+		serviceProperties.put(INSERT_SEPARATOR_BEFORE, "true");
+		HelpAction helpAction = new HelpAction(serviceProperties, cyApplicationManagerRef, cyNetworkViewManagerRef,
+				registrar);
+		helpAction.setMenuGravity(2.1f);
+
 		//About Action
 		serviceProperties = new HashMap<>();
-		serviceProperties.put("inMenuBar", "true");
-		serviceProperties.put("preferredMenu", "Apps.EnrichmentMap");
+		serviceProperties.put(IN_MENU_BAR, "true");
+		serviceProperties.put(PREFERRED_MENU, APP_MENU);
 		ShowAboutPanelAction aboutAction = new ShowAboutPanelAction(serviceProperties,cyApplicationManagerRef ,cyNetworkViewManagerRef, cySwingApplicationRef, openBrowserRef);		
+		aboutAction.setMenuGravity(2.2f);
 		
 		//Build Enrichment Map Action - opens EM panel
 		serviceProperties = new HashMap<>();
-		serviceProperties.put("inMenuBar", "true");
-		serviceProperties.put("preferredMenu", "Apps.EnrichmentMap");
-		LoadEnrichmentsPanelAction LoadEnrichmentMapInputPanelAction = new LoadEnrichmentsPanelAction(serviceProperties,cyApplicationManagerRef ,cyNetworkViewManagerRef, cySwingApplicationRef, emPanel,registrar);
+		serviceProperties.put(IN_MENU_BAR, "true");
+		serviceProperties.put(PREFERRED_MENU, APP_MENU);
+		LoadEnrichmentsPanelAction loadEnrichmentMapInputPanelAction = new LoadEnrichmentsPanelAction(serviceProperties,cyApplicationManagerRef ,cyNetworkViewManagerRef, cySwingApplicationRef, emPanel,registrar);
+		loadEnrichmentMapInputPanelAction.setMenuGravity(1.1f);
 		
 		//Bulk Enrichment Map Action - open bulk em panel
-		serviceProperties = new HashMap<>();
-		serviceProperties.put("inMenuBar", "true");
-		serviceProperties.put("preferredMenu", "Apps.EnrichmentMap");
-		BulkEMCreationAction BulkEMInputPanelAction = new BulkEMCreationAction(serviceProperties,cyApplicationManagerRef ,cyNetworkViewManagerRef, cySwingApplicationRef, bulkEmPanel,registrar);
+//		serviceProperties = new HashMap<>();
+//		serviceProperties.put(IN_MENU_BAR, "true");
+//		serviceProperties.put(PREFERRED_MENU, APP_MENU);
+//		BulkEMCreationAction BulkEMInputPanelAction = new BulkEMCreationAction(serviceProperties,cyApplicationManagerRef ,cyNetworkViewManagerRef, cySwingApplicationRef, bulkEmPanel,registrar);
 		
 		//Post Enrichment Map analysis Action - open post EM panel
 		serviceProperties = new HashMap<>();
-		serviceProperties.put("inMenuBar", "true");
-		serviceProperties.put("preferredMenu", "Apps.EnrichmentMap");
+		serviceProperties.put(IN_MENU_BAR, "true");
+		serviceProperties.put(PREFERRED_MENU, APP_MENU);
 		LoadPostAnalysisPanelAction loadPostAnalysisAction = new LoadPostAnalysisPanelAction(serviceProperties,cyApplicationManagerRef ,cyNetworkViewManagerRef, cySwingApplicationRef, postEMPanel,registrar);
+		loadPostAnalysisAction.setMenuGravity(1.2f);
 		
 		serviceProperties = new HashMap<>();
-		serviceProperties.put("inMenuBar", "true");
-		serviceProperties.put("preferredMenu", "Apps.EnrichmentMap");
+		serviceProperties.put(IN_MENU_BAR, "true");
+		serviceProperties.put(PREFERRED_MENU, APP_MENU);
 		ShowEdgeWidthDialogAction edgeWidthPanelAction = new ShowEdgeWidthDialogAction(serviceProperties, cyApplicationManagerRef, continuousMappingFunctionFactoryRef, dialogTaskManager, cyNetworkViewManagerRef, cySwingApplicationRef);
+		edgeWidthPanelAction.setMenuGravity(1.3f);
 		
 		//register the services
-		registerService(bc, LoadEnrichmentMapInputPanelAction, CyAction.class, new Properties());
-		registerService(bc, BulkEMInputPanelAction, CyAction.class, new Properties());
-		registerService(bc, loadPostAnalysisAction, CyAction.class, new Properties());	
+		registerService(bc, loadEnrichmentMapInputPanelAction, CyAction.class, new Properties());
+		registerService(bc, loadPostAnalysisAction, CyAction.class, new Properties());
 		registerService(bc, edgeWidthPanelAction, CyAction.class, new Properties());
-		registerService(bc, aboutAction, CyAction.class,new Properties());
+		registerService(bc, helpAction, CyAction.class, new Properties());
+		registerService(bc, aboutAction, CyAction.class, new Properties());
 		
 		//register the session save and restore
 		EnrichmentMapSessionAction sessionAction = new EnrichmentMapSessionAction(cyNetworkManagerRef, sessionManager, cyApplicationManagerRef, streamUtil);
@@ -175,14 +193,14 @@ public class CyActivator extends AbstractCyActivator {
 		
 		//generic EM command line option
 		Properties properties = new Properties();
-    	properties.put(ServiceProperties.COMMAND, "build");
-    	properties.put(ServiceProperties.COMMAND_NAMESPACE, "enrichmentmap");
+    	properties.put(COMMAND, "build");
+    	properties.put(COMMAND_NAMESPACE, "enrichmentmap");
 		registerService(bc, new BuildEnrichmentMapTuneableTaskFactory(sessionManager, streamUtil, cyApplicationManagerRef, cySwingApplicationRef, cyNetworkManagerRef, cyNetworkViewManagerRef, cyNetworkViewFactoryRef, cyNetworkFactoryRef, tableFactory, tableManager, visualMappingManagerRef, visualStyleFactoryRef, continuousMappingFunctionFactoryRef, discreteMappingFunctionFactoryRef, passthroughMappingFunctionFactoryRef, layoutManager, mapTableToNetworkTable, dialogTaskManager), TaskFactory.class, properties);
 		
 		//gsea specifc commandtool
 		properties = new Properties();
-    	properties.put(ServiceProperties.COMMAND, "gseabuild");
-    	properties.put(ServiceProperties.COMMAND_NAMESPACE, "enrichmentmap");
+    	properties.put(COMMAND, "gseabuild");
+    	properties.put(COMMAND_NAMESPACE, "enrichmentmap");
 		registerService(bc, new EnrichmentMapGSEACommandHandlerTaskFactory(sessionManager, streamUtil, cyApplicationManagerRef, cySwingApplicationRef, cyNetworkManagerRef, cyNetworkViewManagerRef, cyNetworkViewFactoryRef, cyNetworkFactoryRef, tableFactory, tableManager, visualMappingManagerRef, visualStyleFactoryRef, continuousMappingFunctionFactoryRef, discreteMappingFunctionFactoryRef, passthroughMappingFunctionFactoryRef, layoutManager, mapTableToNetworkTable, dialogTaskManager), TaskFactory.class, properties);
 		
 		//edge table context menu

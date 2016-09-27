@@ -43,18 +43,26 @@
 
 package org.baderlab.csplugins.enrichmentmap.view;
 
-import javax.swing.*;
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static org.baderlab.csplugins.enrichmentmap.util.SwingUtil.makeSmall;
+import static org.cytoscape.util.swing.LookAndFeelUtil.getSmallFontSize;
+
+import java.awt.Font;
+import java.text.DecimalFormat;
+import java.util.Enumeration;
+import java.util.Hashtable;
+
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JSlider;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.actions.SliderBarActionListener;
 import org.cytoscape.application.CyApplicationManager;
-
-import java.math.BigDecimal;
-import java.text.DecimalFormat;
-import java.util.Hashtable;
-import java.awt.*;
-
-//import prefuse.data.query.NumberRangeModel;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 
 /**
  * Created by
@@ -64,16 +72,12 @@ import java.awt.*;
  * <p>
  * Slider bar panel - it a panel contained within legend panel
  */
+@SuppressWarnings("serial")
 public class SliderBarPanel extends JPanel {
 	
 	//required services
 	private CyApplicationManager applicationManager;
 	
-    //height of panel
-    private final int DIM_HEIGHT = 72;
-    //width of panel
-    private final int DIM_WIDTH = 150;
-
     //min and max values for the slider
     private int min;
     private int max;
@@ -82,71 +86,57 @@ public class SliderBarPanel extends JPanel {
     //flag to indicate very small number
     private boolean smallNumber = false;
 
-    //precision that the slider can be adjusted to
+    /** Precision that the slider can be adjusted to */
     private double precision = 1000.0;
-    private int dec_precision = (int) Math.log10(precision);
+    /** The number of decimals for given precision */
+    private int decPrecision = (int) Math.log10(precision);
 
-    private JLabel label;
     private String sliderLabel;
 
     private boolean edgesOnly;
-    private int initial_value;
+    private int initialValue;
 
     /**
-     * Class constructor
-     *
      * @param min - slider mininmum value
      * @param max - slider maximum value
      * @param sliderLabel
      * @param params - enrichment map parameters for current map
      * @param attrib1 - attribute for dataset 1 that the slider bar is specific to (i.e. p-value or q-value)
      * @param attrib2 - attribute for dataset 2 that the slider bar is specific to (i.e. p-value or q-value)
-     * @param desired_width
      */
-    public SliderBarPanel(double min, double max, String sliderLabel, EnrichmentMapParameters params,String attrib1, String attrib2, int desired_width, boolean edgesOnly, double initial_value,CyApplicationManager applicationManager) {
-        this.applicationManager = applicationManager;
-    	
-    	this.setPreferredSize(new Dimension(DIM_WIDTH, DIM_HEIGHT));
-        this.setLayout(new BorderLayout(0,0));
-        this.setOpaque(false);
+	public SliderBarPanel(double min, double max, String sliderLabel, EnrichmentMapParameters params, String attrib1,
+			String attrib2, boolean edgesOnly, double initial_value,
+			CyApplicationManager applicationManager) {
+		this.applicationManager = applicationManager;
 
-        if((min <= 1) && (max <= 1)){
+		if ((min <= 1) && (max <= 1)) {
+			// if the max is a very small number then use the precision to filter the results
+			if (max <= 0.0001) {
+				DecimalFormat df = new DecimalFormat("#.##############################");
+				String text = df.format(max);
+				int integerPlaces = text.indexOf('.');
+				int decimalPlaces = text.length() - integerPlaces - 1;
+				this.precision = decimalPlaces;
+				this.min = (int) (min * Math.pow(10, (this.precision + this.decPrecision)));
+				this.max = (int) (max * Math.pow(10, (this.precision + this.decPrecision)));
 
-        	//if the max is a very small number then use the precision to filter the results 
-        	if(max <= 0.0001){
-        		DecimalFormat df = new DecimalFormat("#.##############################");
-        		String text = df.format(max);
-        		int integerPlaces = text.indexOf('.');
-        		int decimalPlaces = text.length() - integerPlaces - 1;
-        		this.precision = decimalPlaces;
-        		this.min = (int) (min * Math.pow(10, (this.precision+this.dec_precision)));
-        		this.max = (int) (max * Math.pow(10, (this.precision+this.dec_precision)));
-        		       		        		
-        		this.initial_value = (int) (initial_value* Math.pow(10, (this.precision+this.dec_precision)));
-        		this.smallNumber = true;
-        	}
-        	else{
-        		this.min = (int)(min*precision);
-        		this.max = (int)(max*precision);
-        		this.initial_value = (int)(initial_value*precision);
-        	}
-        }
-        else{
-           this.min = (int)min;
-           this.max = (int)max;
-           this.initial_value = (int)initial_value;
-        }
-        this.sliderLabel = sliderLabel;
+				this.initialValue = (int) (initial_value * Math.pow(10, (this.precision + this.decPrecision)));
+				this.smallNumber = true;
+			} else {
+				this.min = (int) (min * precision);
+				this.max = (int) (max * precision);
+				this.initialValue = (int) (initial_value * precision);
+			}
+		} else {
+			this.min = (int) min;
+			this.max = (int) max;
+			this.initialValue = (int) initial_value;
+		}
 
-        label = new JLabel(sliderLabel);
+		this.sliderLabel = sliderLabel;
+		this.edgesOnly = edgesOnly;
 
-        Dimension currentsize = label.getPreferredSize();
-        currentsize.height = DIM_HEIGHT/12;
-        label.setPreferredSize(currentsize);
-
-        this.edgesOnly = edgesOnly;
-
-        initPanel(params, attrib1, attrib2,desired_width);
+		initPanel(params, attrib1, attrib2);
     }
 
     /**
@@ -155,42 +145,62 @@ public class SliderBarPanel extends JPanel {
      * @param params - enrichment map parameters for current map
      * @param attrib1 - attribute for dataset 1 that the slider bar is specific to (i.e. p-value or q-value)
      * @param attrib2 - attribute for dataset 2 that the slider bar is specific to (i.e. p-value or q-value)
-     * @param desired_width
+     * @param desiredWidth
      */
-    public void initPanel(EnrichmentMapParameters params,String attrib1, String attrib2, int desired_width){
-
-        JSlider slider = new JSlider(JSlider.HORIZONTAL,
-                                      min, max, initial_value);
+	public void initPanel(EnrichmentMapParameters params, String attrib1, String attrib2) {
+		setBorder(LookAndFeelUtil.createTitledBorder(sliderLabel));
+		
+		JSlider slider = new JSlider(JSlider.HORIZONTAL, min, max, initialValue);
         
-        slider.addChangeListener(new SliderBarActionListener(this, attrib1,attrib2,edgesOnly,applicationManager));
-
-        slider.setMajorTickSpacing((max-min)/5);
-        slider.setPaintTicks(true);
+		slider.addChangeListener(new SliderBarActionListener(this, attrib1, attrib2, edgesOnly, applicationManager));
+		slider.setMajorTickSpacing((max - min) / 5);
+		slider.setPaintTicks(true);
 
         //Create the label table
-        Hashtable labelTable = new Hashtable();
-        if(smallNumber){
-        	labelTable.put( new Integer( min ), new JLabel(""+ (int)this.min/Math.pow(10, dec_precision) + "E-" + (int)this.precision));
-        	labelTable.put( new Integer( max ), new JLabel("" + (int)this.max/Math.pow(10, dec_precision) + "E-" + (int)this.precision));
-        }
-        else{
-        	labelTable.put( new Integer( min ), new JLabel(""+ min/precision));
-        	labelTable.put( new Integer( max ), new JLabel("" + max/precision));
-        }
-        slider.setLabelTable( labelTable );
+        Hashtable<Integer, JLabel> labelTable = new Hashtable<>();
+        
+		if (smallNumber) {
+			labelTable.put(
+					new Integer(min),
+					new JLabel("" + (int) this.min / Math.pow(10, decPrecision) + "E-" + (int) precision));
+			labelTable.put(
+					new Integer(max),
+					new JLabel("" + (int) this.max / Math.pow(10, decPrecision) + "E-" + (int) precision));
+		} else {
+			labelTable.put(new Integer(min), new JLabel("" + min / precision));
+			labelTable.put(new Integer(max), new JLabel("" + max / precision));
+		}
+        
+		slider.setLabelTable(labelTable);
+		slider.setPaintLabels(true);
 
-        slider.setPaintLabels(true);
+		makeSmall(slider);
+		
+        final GroupLayout layout = new GroupLayout(this);
+       	this.setLayout(layout);
+   		layout.setAutoCreateContainerGaps(LookAndFeelUtil.isWinLAF());
+   		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
+   		
+   		layout.setHorizontalGroup(layout.createSequentialGroup()
+   				.addComponent(slider, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+   		);
+   		layout.setVerticalGroup(layout.createParallelGroup(Alignment.CENTER, false)
+   				.addComponent(slider, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+   		);
+   		
+   		if (LookAndFeelUtil.isAquaLAF())
+			setOpaque(false);
+   		
+		// Change the slider's label sizes -- only works if it's done after the
+		// slider has been added to its parent container and had its UI assigned
+		final Font tickFont = slider.getFont().deriveFont(getSmallFontSize());
 
-        Dimension currentsize = slider.getPreferredSize();
-        currentsize.width = desired_width;
-        currentsize.height = (DIM_HEIGHT/12) * 11;
-        slider.setPreferredSize(currentsize);
-
-        this.setLayout(new GridLayout(2,1));
-
-        this.add(label, BorderLayout.NORTH);
-
-        this.add(slider,  BorderLayout.SOUTH);
+		for (Enumeration<Integer> enumeration = labelTable.keys(); enumeration.hasMoreElements();) {
+			int k = enumeration.nextElement();
+			final JLabel label = labelTable.get(k);
+			label.setFont(tickFont); // Updates the font size
+			label.setSize(label.getPreferredSize()); // Updates the label size and slider layout
+		}
 
         this.revalidate();
     }
@@ -198,28 +208,23 @@ public class SliderBarPanel extends JPanel {
     //Getters and Setters
 
     public void setLabel(int current_value) {
-    	if(smallNumber)
-    		label.setText( "<html>" + sliderLabel +                   // "P-value Cutoff" or "Q-value Cutoff"
-                    " &#8594; " +                                                   // HTML entity right-arrow ( &rarr; )
-                    "<font size=\"-2\"> " +  (current_value/Math.pow(10, (dec_precision + precision)) + " </font></html>"   // dec_precision is the number of decimals for given precision
-                   ))                                       // the current P/Q-value cutoff
-                     ;
-    	else
-    		label.setText(String.format( "<html>" + sliderLabel +                   // "P-value Cutoff" or "Q-value Cutoff"
-                " &#8594; " +                                                   // HTML entity right-arrow ( &rarr; )
-                "<font size=\"-2\"> %." + dec_precision + "f </font></html>",   // dec_precision is the number of decimals for given precision
-                (current_value/precision)                                       // the current P/Q-value cutoff
-                ) );
+    	// Show the current P/Q-value cutoff
+    	final String title;
+    	
+		if (smallNumber)
+			title = sliderLabel + " (" + (current_value / Math.pow(10, (decPrecision + precision))) + ")";
+		else
+			title = String.format(sliderLabel + " (%." + decPrecision + "f", (current_value / precision)) + ")";
 
-        this.revalidate();
-    }
+		setBorder(LookAndFeelUtil.createTitledBorder(title));
+	}
 
-    public double getPrecision() {
-    	if(smallNumber)
-    		return Math.pow(10, this.precision+this.dec_precision);
-    	else
-    		return precision;
-    }
+	public double getPrecision() {
+		if (smallNumber)
+			return Math.pow(10, this.precision + this.decPrecision);
+		else
+			return precision;
+	}
 
     
     //Methods are currently not used.  If they become useful in the future need to add case for smallNumbers case
