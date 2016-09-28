@@ -59,7 +59,6 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.parsers.RanksFileReaderTask;
-import org.baderlab.csplugins.enrichmentmap.view.HeatMapPanel;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.util.swing.FileChooserFilter;

@@ -8,7 +8,6 @@ import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 
-import org.baderlab.csplugins.enrichmentmap.model.HyperLinkOut;
 import org.cytoscape.util.swing.OpenBrowser;
 
 /**

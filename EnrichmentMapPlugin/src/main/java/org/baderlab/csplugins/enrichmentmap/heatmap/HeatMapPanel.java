@@ -41,7 +41,7 @@
 // $LastChangedBy: risserlin $
 // $HeadURL: svn+ssh://risserlin@server1.baderlab.med.utoronto.ca/svn/EnrichmentMap/trunk/EnrichmentMapPlugin/src/org/baderlab/csplugins/enrichmentmap/HeatMapPanel.java $
 
-package org.baderlab.csplugins.enrichmentmap.view;
+package org.baderlab.csplugins.enrichmentmap.heatmap;
 
 
 import java.awt.BorderLayout;
@@ -89,20 +89,7 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumnModel;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
-import org.baderlab.csplugins.enrichmentmap.heatmap.CellHighlightRenderer;
-import org.baderlab.csplugins.enrichmentmap.heatmap.ColorRenderer;
-import org.baderlab.csplugins.enrichmentmap.heatmap.ColumnHeaderVerticalRenderer;
-import org.baderlab.csplugins.enrichmentmap.heatmap.ExpressionTableValue;
-import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapActionListener;
-import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapExporterTask;
-import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters.Sort;
-import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapTableActionListener;
-import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapTableModel;
-import org.baderlab.csplugins.enrichmentmap.heatmap.RawExpressionValueRenderer;
-import org.baderlab.csplugins.enrichmentmap.heatmap.RowNumberTable;
-import org.baderlab.csplugins.enrichmentmap.heatmap.TableHeader;
-import org.baderlab.csplugins.enrichmentmap.heatmap.TableSort;
 import org.baderlab.csplugins.enrichmentmap.heatmap.task.HeatMapHierarchicalClusterTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;

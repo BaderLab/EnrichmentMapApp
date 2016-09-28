@@ -31,7 +31,7 @@ import javax.swing.JToolTip;
 //import org.baderlab.csplugins.enrichmentmap.actions.BuildBulkEnrichmentMapActionListener;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
-import org.baderlab.csplugins.enrichmentmap.model.JMultiLineToolTip;
+import org.baderlab.csplugins.enrichmentmap.util.JMultiLineToolTip;
 import org.baderlab.csplugins.enrichmentmap.util.SwingUtil;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;

@@ -44,7 +44,6 @@
 package org.baderlab.csplugins.enrichmentmap.heatmap;
 
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
-import org.baderlab.csplugins.enrichmentmap.view.HeatMapPanel;
 import org.mskcc.colorgradient.ColorGradientRange;
 import org.mskcc.colorgradient.ColorGradientTheme;
 

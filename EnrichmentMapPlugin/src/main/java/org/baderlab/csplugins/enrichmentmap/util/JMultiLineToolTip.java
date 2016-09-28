@@ -41,7 +41,7 @@
 // $LastChangedBy$
 // $HeadURL$
 
-package org.baderlab.csplugins.enrichmentmap.model;
+package org.baderlab.csplugins.enrichmentmap.util;
 
 import java.awt.Dimension;
 import java.awt.Font;

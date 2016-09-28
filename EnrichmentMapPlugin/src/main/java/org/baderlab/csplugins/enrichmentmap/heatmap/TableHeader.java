@@ -50,8 +50,6 @@ import javax.swing.JTable;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumnModel;
 
-import org.baderlab.csplugins.enrichmentmap.view.HeatMapPanel;
-
 /**
  * Created by User: vinod vasavan Date: July 2009
  * <p>

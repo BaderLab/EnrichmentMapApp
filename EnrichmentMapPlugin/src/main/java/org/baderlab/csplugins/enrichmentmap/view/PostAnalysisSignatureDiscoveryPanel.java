@@ -34,11 +34,11 @@ import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.FilterParameters;
 import org.baderlab.csplugins.enrichmentmap.model.FilterType;
-import org.baderlab.csplugins.enrichmentmap.model.JMultiLineToolTip;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
 import org.baderlab.csplugins.enrichmentmap.task.FilterMetric;
+import org.baderlab.csplugins.enrichmentmap.util.JMultiLineToolTip;
 import org.cytoscape.application.swing.CySwingApplication;
 
 import com.google.inject.Inject;

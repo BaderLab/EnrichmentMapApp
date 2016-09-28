@@ -6,6 +6,7 @@ import java.lang.annotation.Retention;
 
 import org.baderlab.csplugins.enrichmentmap.actions.BuildPostAnalysisActionListener;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadSignatureSetsActionListener;
+import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapPanel;
 import org.baderlab.csplugins.enrichmentmap.mastermap.task.MasterMapTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
@@ -16,7 +17,6 @@ import org.baderlab.csplugins.enrichmentmap.task.CreateEnrichmentMapNetworkTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreatePostAnalysisVisualStyleTask;
 import org.baderlab.csplugins.enrichmentmap.task.EnrichmentMapBuildMapTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.task.VisualizeEnrichmentMapTask;
-import org.baderlab.csplugins.enrichmentmap.view.HeatMapPanel;
 import org.baderlab.csplugins.enrichmentmap.view.PostAnalysisKnownSignaturePanel;
 import org.baderlab.csplugins.enrichmentmap.view.PostAnalysisSignatureDiscoveryPanel;
 

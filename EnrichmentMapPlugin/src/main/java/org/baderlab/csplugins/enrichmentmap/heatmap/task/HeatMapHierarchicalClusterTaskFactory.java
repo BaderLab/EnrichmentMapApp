@@ -1,7 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap.heatmap.task;
 
+import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapPanel;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.view.HeatMapPanel;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 

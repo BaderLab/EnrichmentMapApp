@@ -19,10 +19,10 @@ import javax.swing.JToolTip;
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadSignatureSetsActionListener;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.model.JMultiLineToolTip;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
 import org.baderlab.csplugins.enrichmentmap.task.FilterMetric;
+import org.baderlab.csplugins.enrichmentmap.util.JMultiLineToolTip;
 import org.cytoscape.application.swing.CySwingApplication;
 
 import com.google.inject.Inject;
