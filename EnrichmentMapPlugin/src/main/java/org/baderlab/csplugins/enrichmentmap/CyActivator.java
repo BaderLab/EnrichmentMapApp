@@ -4,8 +4,8 @@ import static org.cytoscape.work.ServiceProperties.TITLE;
 
 import java.util.Properties;
 
-import org.baderlab.csplugins.enrichmentmap.actions.EnrichmentMapSessionAction;
 import org.baderlab.csplugins.enrichmentmap.actions.HeatMapSelectionListener;
+import org.baderlab.csplugins.enrichmentmap.actions.LegacyEnrichmentMapSessionListener;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadEnrichmentsPanelAction;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadPostAnalysisPanelAction;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowAboutPanelAction;
@@ -25,7 +25,6 @@ import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
 import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.service.util.AbstractCyActivator;
-import org.cytoscape.session.events.SessionAboutToBeSavedListener;
 import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.task.TableColumnTaskFactory;
 import org.cytoscape.work.ServiceProperties;
@@ -41,6 +40,9 @@ import com.google.inject.Injector;
 
 public class CyActivator extends AbstractCyActivator {
 
+	public static final String APP_NAME = "EnrichmentMap";
+	
+	
 	public void start(BundleContext bc) {
 		ServiceReference ref = bc.getServiceReference(CySwingApplication.class.getName());
 		if(ref == null) {
@@ -69,8 +71,8 @@ public class CyActivator extends AbstractCyActivator {
 		registerAction(bc, injector.getInstance(ShowAboutPanelAction.class));
 
 		//register the session save and restore
-		EnrichmentMapSessionAction sessionAction = injector.getInstance(EnrichmentMapSessionAction.class);
-		registerService(bc, sessionAction, SessionAboutToBeSavedListener.class, new Properties());
+		LegacyEnrichmentMapSessionListener sessionAction = injector.getInstance(LegacyEnrichmentMapSessionListener.class);
+//		registerService(bc, sessionAction, SessionAboutToBeSavedListener.class, new Properties());
 		registerService(bc, sessionAction, SessionLoadedListener.class, new Properties());
 
 		//generic EM command line option

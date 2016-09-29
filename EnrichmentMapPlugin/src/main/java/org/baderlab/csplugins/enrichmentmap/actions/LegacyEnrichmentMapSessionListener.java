@@ -1,10 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap.actions;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -14,6 +11,7 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
 
+import org.baderlab.csplugins.enrichmentmap.CyActivator;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
@@ -33,14 +31,12 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
-import org.cytoscape.session.events.SessionAboutToBeSavedListener;
 import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
 
 import com.google.inject.Inject;
 
-public class EnrichmentMapSessionAction implements SessionAboutToBeSavedListener, SessionLoadedListener {
+public class LegacyEnrichmentMapSessionListener implements SessionLoadedListener  /*, SessionAboutToBeSavedListener */ {
 
 	@Inject private CyNetworkManager cyNetworkManager;
 	@Inject private CyApplicationManager cyApplicationManager;
@@ -48,20 +44,19 @@ public class EnrichmentMapSessionAction implements SessionAboutToBeSavedListener
 	@Inject private EnrichmentMapManager emManager;
 	@Inject private EnrichmentMapParameters.Factory enrichmentMapParametersFactory;
 
-	private static final String appName = "EnrichmentMap";
-
 
 	/**
 	 * Restore Enrichment maps
 	 *
 	 * @param pStateFileList - list of files associated with thie session
 	 */
+	@Override
 	public void handleEvent(SessionLoadedEvent e) {
 		if (e.getLoadedSession().getAppFileListMap() == null || e.getLoadedSession().getAppFileListMap().size() ==0){
 			return;
 		}
 
-		List<File> pStateFileList = e.getLoadedSession().getAppFileListMap().get(appName);
+		List<File> pStateFileList = e.getLoadedSession().getAppFileListMap().get(CyActivator.APP_NAME);
 		try {
 			//go through the prop files first to create the correct objects to be able
 			//to add other files to.
@@ -384,175 +379,178 @@ public class EnrichmentMapSessionAction implements SessionAboutToBeSavedListener
 		}	
 	}
 
-	/**
-	 * SaveSessionStateFiles collects all the data stored in the Enrichment maps
-	 * and creates property files for each network listing the variables needed to rebuild the map.
-	 * All data(Hashmaps) collections needed for the Enrichment map are stored in separate files specified by the name
-	 * of the network with specific file endings to indicate what type of data is stored in the files (i.e. ENR for enrichment,
-	 * genes for genes...).
-	 */
-	public void handleEvent(SessionAboutToBeSavedEvent e) {
-
-		ArrayList<File> pFileList = new ArrayList<File>();
-		String tmpDir = System.getProperty("java.io.tmpdir");
-		System.out.println("java.io.tmpdir: [" + tmpDir + "]");
-
-		String prop_file_content = "";
-
-		//get the networks
-		HashMap<Long, EnrichmentMap> networks = emManager.getCyNetworkList();
-
-		//go through each network
-		for(Iterator<Long> i = networks.keySet().iterator(); i.hasNext();){
-			Long networkId = i.next();
-			EnrichmentMap em = networks.get(networkId);
-			EnrichmentMapParameters params = networks.get(networkId).getParams();
-			//current network
-			CyNetwork network = cyNetworkManager.getNetwork(networkId); 
-
-			String name = network.getRow(network).get(CyNetwork.NAME,String.class);
-
-			//get the network name specified in the parameters
-			String param_name = em.getName();
-
-			//check to see if the name of the network matches the one specified in it parameters
-			//if the two names differ then use the network name specified by the user
-			if(!name.equalsIgnoreCase(param_name))
-				em.setName(name);
-
-			//property file
-			File session_prop_file = new File(tmpDir,name+".props");
-
-			//get the properties to be saved that are associated with the map
-			//genes involved in the analysis
-			//do not need to store the similarities because they are recomputed on reload
-			//geneset file for PostAnalysis Signature Genesets
-			File siggmt = new File(tmpDir,name+".signature.gmt");
-
-			prop_file_content = prop_file_content + "Version\t2.0\n";
-			prop_file_content = prop_file_content + params.toString();
-			try{
-				if (!em.getSignatureGenesets().isEmpty() ) {
-					BufferedWriter sigGmtwriter = new BufferedWriter(new FileWriter(siggmt));
-					sigGmtwriter.write(params.printHashmap(em.getSignatureGenesets()));
-					sigGmtwriter.close();
-					pFileList.add(siggmt);
-				}
-
-				File genes = new File(tmpDir, name+".genes.txt");
-				BufferedWriter geneswriter = new BufferedWriter(new FileWriter(genes));
-				geneswriter.write(params.printHashmap(em.getGenes()));
-				geneswriter.close();
-				pFileList.add(genes);
-
-				File hkgenes = new File(tmpDir, name+".hashkey2genes.txt");
-				BufferedWriter hashkey2geneswriter = new BufferedWriter(new FileWriter(hkgenes));
-				hashkey2geneswriter.write(params.printHashmap(em.getHashkey2gene()));
-				hashkey2geneswriter.close();
-				pFileList.add(hkgenes);
-
-				//get the properties associated with each Dataset
-				if(!em.getDatasets().isEmpty()){
-					HashMap<String, DataSet> all_datasets = em.getDatasets();
-
-					//output to the property file how many datasets we have (so we know on reload)
-					prop_file_content = prop_file_content + "Datasets\t"+  all_datasets.keySet().toString() +"\n";
-
-					for(Iterator<String> k  = all_datasets.keySet().iterator(); k.hasNext();){
-						String dataset_name = k.next().toString();
-						String current = dataset_name ;
-						if(dataset_name .contains("."))
-							dataset_name .replace('.', '_');
-
-						//genesets
-						File gmt = new File(tmpDir, name+ "." + dataset_name +".gmt");
-						BufferedWriter gmtwriter = new BufferedWriter(new FileWriter(gmt));
-						gmtwriter.write(params.printHashmap(em.getDataset(current).getGenesetsOfInterest().getGenesets()));
-						gmtwriter.close();
-						pFileList.add(gmt);
-
-						File enrichmentresults_backcomp = new File(tmpDir, name +".ENR1.txt");
-						if(dataset_name.equals(EnrichmentMap.DATASET1))
-							enrichmentresults_backcomp = new File(tmpDir, name +".ENR1.txt");
-						if(dataset_name.equals(EnrichmentMap.DATASET2))
-							enrichmentresults_backcomp = new File(tmpDir, name +".ENR2.txt");	
-						BufferedWriter enr1writer_backcomp = new BufferedWriter(new FileWriter(enrichmentresults_backcomp));
-						enr1writer_backcomp.write(params.printHashmap(em.getDataset(current).getEnrichments().getEnrichments()));
-						enr1writer_backcomp.close();
-						pFileList.add(enrichmentresults_backcomp);    
-
-						prop_file_content = prop_file_content + em.getDataset(current).getSetofgenesets().toString(current);
-
-						//enrichments
-						File enrichmentresults = new File(tmpDir, name+"." + dataset_name +".ENR.txt");
-
-						BufferedWriter enr1writer = new BufferedWriter(new FileWriter(enrichmentresults));
-						enr1writer.write(params.printHashmap(em.getDataset(current).getEnrichments().getEnrichments()));
-						enr1writer.close();
-						pFileList.add(enrichmentresults);            				
-
-						prop_file_content = prop_file_content + em.getDataset(current).getEnrichments().toString(current);
-
-						//expression
-						if(em.getDataset(current).getExpressionSets() != null){
-
-							File expression = new File(tmpDir, name+"." + dataset_name +".expression.txt");
-							BufferedWriter expression1writer = new BufferedWriter(new FileWriter(expression));
-							expression1writer.write(em.getDataset(current).getExpressionSets().toString());
-							expression1writer.close();
-							pFileList.add(expression);
-
-							//print out the information about the expression files
-							prop_file_content = prop_file_content + em.getDataset(current).getExpressionSets().toString(current);
-
-							//save all the rank files
-							if(!em.getDataset(current).getExpressionSets().getRanks().isEmpty()){
-								HashMap<String, Ranking> all_ranks = em.getDataset(current).getExpressionSets().getRanks();
-
-								for(Iterator j = all_ranks.keySet().iterator(); j.hasNext(); ){
-									String ranks_name = j.next().toString();
-									String current_ranks_name = ranks_name;
-									// as ranks names that contain dots make problems, when restoring a session,
-									// we'll replace them by underscores:
-									if (ranks_name.contains("."))
-										ranks_name.replace('.', '_');
-									File current_ranks = new File(tmpDir, name+"." + dataset_name + "."+ranks_name+".RANKS.txt");
-									BufferedWriter subrank1writer = new BufferedWriter(new FileWriter(current_ranks));
-									subrank1writer.write(params.printHashmap(all_ranks.get(current_ranks_name).getRanking()));
-									subrank1writer.close();
-									pFileList.add(current_ranks);
-
-									//backwards compatibility: add the old file
-									if(dataset_name.equals(EnrichmentMap.DATASET1)){
-										File current_ranks_backcomp = new File(tmpDir, name+"."+ranks_name+".RANKS.txt");
-										BufferedWriter subrank1writer_backcomp = new BufferedWriter(new FileWriter(current_ranks_backcomp));
-										subrank1writer_backcomp.write(params.printHashmap(all_ranks.get(current_ranks_name).getRanking()));
-										subrank1writer_backcomp.close();
-										pFileList.add(current_ranks_backcomp);
-									}
-								}
-							}
-						}
-					}
-					BufferedWriter writer = new BufferedWriter(new FileWriter(session_prop_file));
-					writer.write(prop_file_content);
-					writer.close();
-					pFileList.add(session_prop_file);
-				}
-			} catch (Exception ex) {
-				ex.printStackTrace();
-			}
-
-		}
-
-		//Add the files to be saved
-		try{
-			e.addAppFiles(appName, pFileList);
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
-
-	}
+//	/**
+//	 * SaveSessionStateFiles collects all the data stored in the Enrichment maps
+//	 * and creates property files for each network listing the variables needed to rebuild the map.
+//	 * All data(Hashmaps) collections needed for the Enrichment map are stored in separate files specified by the name
+//	 * of the network with specific file endings to indicate what type of data is stored in the files (i.e. ENR for enrichment,
+//	 * genes for genes...).
+//	 */
+//	@Override
+//	public void handleEvent(SessionAboutToBeSavedEvent e) {
+//
+//		ArrayList<File> pFileList = new ArrayList<File>();
+//		String tmpDir = System.getProperty("java.io.tmpdir");
+//		System.out.println("java.io.tmpdir: [" + tmpDir + "]");
+//
+//		String prop_file_content = "";
+//
+//		//get the networks
+//		HashMap<Long, EnrichmentMap> networks = emManager.getCyNetworkList();
+//
+//		//go through each network
+//		for(Iterator<Long> i = networks.keySet().iterator(); i.hasNext();){
+//			Long networkId = i.next();
+//			EnrichmentMap em = networks.get(networkId);
+//			EnrichmentMapParameters params = networks.get(networkId).getParams();
+//			//current network
+//			CyNetwork network = cyNetworkManager.getNetwork(networkId); 
+//
+//			String name = network.getRow(network).get(CyNetwork.NAME,String.class);
+//
+//			//get the network name specified in the parameters
+//			String param_name = em.getName();
+//
+//			//check to see if the name of the network matches the one specified in it parameters
+//			//if the two names differ then use the network name specified by the user
+//			if(!name.equalsIgnoreCase(param_name))
+//				em.setName(name);
+//
+//			//property file
+//			File session_prop_file = new File(tmpDir,name+".props");
+//
+//			//get the properties to be saved that are associated with the map
+//			//genes involved in the analysis
+//			//do not need to store the similarities because they are recomputed on reload
+//			//geneset file for PostAnalysis Signature Genesets
+//			File siggmt = new File(tmpDir,name+".signature.gmt");
+//
+//			prop_file_content = prop_file_content + "Version\t2.0\n";
+//			prop_file_content = prop_file_content + params.toString();
+//			try{
+//				if (!em.getSignatureGenesets().isEmpty() ) {
+//					BufferedWriter sigGmtwriter = new BufferedWriter(new FileWriter(siggmt));
+//					sigGmtwriter.write(params.printHashmap(em.getSignatureGenesets()));
+//					sigGmtwriter.close();
+//					pFileList.add(siggmt);
+//				}
+//
+//				File genes = new File(tmpDir, name+".genes.txt");
+//				BufferedWriter geneswriter = new BufferedWriter(new FileWriter(genes));
+//				geneswriter.write(params.printHashmap(em.getGenes()));
+//				geneswriter.close();
+//				pFileList.add(genes);
+//
+//				File hkgenes = new File(tmpDir, name+".hashkey2genes.txt");
+//				BufferedWriter hashkey2geneswriter = new BufferedWriter(new FileWriter(hkgenes));
+//				hashkey2geneswriter.write(params.printHashmap(em.getHashkey2gene()));
+//				hashkey2geneswriter.close();
+//				pFileList.add(hkgenes);
+//
+//				//get the properties associated with each Dataset
+//				if(!em.getDatasets().isEmpty()){
+//					HashMap<String, DataSet> all_datasets = em.getDatasets();
+//
+//					//output to the property file how many datasets we have (so we know on reload)
+//					prop_file_content = prop_file_content + "Datasets\t"+  all_datasets.keySet().toString() +"\n";
+//
+//					for(Iterator<String> k  = all_datasets.keySet().iterator(); k.hasNext();){
+//						String dataset_name = k.next().toString();
+//						String current = dataset_name ;
+//						if(dataset_name .contains("."))
+//							dataset_name .replace('.', '_');
+//
+//						//genesets
+//						File gmt = new File(tmpDir, name+ "." + dataset_name +".gmt");
+//						BufferedWriter gmtwriter = new BufferedWriter(new FileWriter(gmt));
+//						gmtwriter.write(params.printHashmap(em.getDataset(current).getGenesetsOfInterest().getGenesets()));
+//						gmtwriter.close();
+//						pFileList.add(gmt);
+//
+//						File enrichmentresults_backcomp = new File(tmpDir, name +".ENR1.txt");
+//						if(dataset_name.equals(EnrichmentMap.DATASET1))
+//							enrichmentresults_backcomp = new File(tmpDir, name +".ENR1.txt");
+//						if(dataset_name.equals(EnrichmentMap.DATASET2))
+//							enrichmentresults_backcomp = new File(tmpDir, name +".ENR2.txt");	
+//						BufferedWriter enr1writer_backcomp = new BufferedWriter(new FileWriter(enrichmentresults_backcomp));
+//						enr1writer_backcomp.write(params.printHashmap(em.getDataset(current).getEnrichments().getEnrichments()));
+//						enr1writer_backcomp.close();
+//						pFileList.add(enrichmentresults_backcomp);    
+//
+//						prop_file_content = prop_file_content + em.getDataset(current).getSetofgenesets().toString(current);
+//
+//						//enrichments
+//						File enrichmentresults = new File(tmpDir, name+"." + dataset_name +".ENR.txt");
+//
+//						BufferedWriter enr1writer = new BufferedWriter(new FileWriter(enrichmentresults));
+//						enr1writer.write(params.printHashmap(em.getDataset(current).getEnrichments().getEnrichments()));
+//						enr1writer.close();
+//						pFileList.add(enrichmentresults);            				
+//
+//						prop_file_content = prop_file_content + em.getDataset(current).getEnrichments().toString(current);
+//
+//						//expression
+//						if(em.getDataset(current).getExpressionSets() != null){
+//
+//							File expression = new File(tmpDir, name+"." + dataset_name +".expression.txt");
+//							BufferedWriter expression1writer = new BufferedWriter(new FileWriter(expression));
+//							expression1writer.write(em.getDataset(current).getExpressionSets().toString());
+//							expression1writer.close();
+//							pFileList.add(expression);
+//
+//							//print out the information about the expression files
+//							prop_file_content = prop_file_content + em.getDataset(current).getExpressionSets().toString(current);
+//
+//							//save all the rank files
+//							if(!em.getDataset(current).getExpressionSets().getRanks().isEmpty()){
+//								HashMap<String, Ranking> all_ranks = em.getDataset(current).getExpressionSets().getRanks();
+//
+//								for(Iterator j = all_ranks.keySet().iterator(); j.hasNext(); ){
+//									String ranks_name = j.next().toString();
+//									String current_ranks_name = ranks_name;
+//									// as ranks names that contain dots make problems, when restoring a session,
+//									// we'll replace them by underscores:
+//									if (ranks_name.contains("."))
+//										ranks_name.replace('.', '_');
+//									File current_ranks = new File(tmpDir, name+"." + dataset_name + "."+ranks_name+".RANKS.txt");
+//									BufferedWriter subrank1writer = new BufferedWriter(new FileWriter(current_ranks));
+//									subrank1writer.write(params.printHashmap(all_ranks.get(current_ranks_name).getRanking()));
+//									subrank1writer.close();
+//									pFileList.add(current_ranks);
+//
+//									//backwards compatibility: add the old file
+//									if(dataset_name.equals(EnrichmentMap.DATASET1)){
+//										File current_ranks_backcomp = new File(tmpDir, name+"."+ranks_name+".RANKS.txt");
+//										BufferedWriter subrank1writer_backcomp = new BufferedWriter(new FileWriter(current_ranks_backcomp));
+//										subrank1writer_backcomp.write(params.printHashmap(all_ranks.get(current_ranks_name).getRanking()));
+//										subrank1writer_backcomp.close();
+//										pFileList.add(current_ranks_backcomp);
+//									}
+//								}
+//							}
+//						}
+//					}
+//					BufferedWriter writer = new BufferedWriter(new FileWriter(session_prop_file));
+//					writer.write(prop_file_content);
+//					writer.close();
+//					pFileList.add(session_prop_file);
+//				}
+//			} catch (Exception ex) {
+//				ex.printStackTrace();
+//			}
+//
+//		}
+//
+//		//Add the files to be saved
+//		try{
+//			e.addAppFiles(appName, pFileList);
+//		} catch (Exception ex) {
+//			ex.printStackTrace();
+//		}
+//
+//	}
+	
+	
 	private FileNameParts ParseFileName(File filename){
 		String fullname = (filename.getName());
 		String name=null,type=null,dataset=null,ranks_name= null;
