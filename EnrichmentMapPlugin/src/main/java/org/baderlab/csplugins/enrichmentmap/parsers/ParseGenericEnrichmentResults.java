@@ -11,6 +11,8 @@ import org.baderlab.csplugins.enrichmentmap.model.SetOfEnrichmentResults;
 import org.baderlab.csplugins.enrichmentmap.task.NullTaskMonitor;
 import org.cytoscape.work.TaskMonitor;
 
+import com.google.common.collect.ImmutableSet;
+
 public class ParseGenericEnrichmentResults extends DatasetLineParser {
 	
 
@@ -74,18 +76,17 @@ public class ParseGenericEnrichmentResults extends DatasetLineParser {
 			double NES = 1.0;
 
 			//The first column of the file is the name of the geneset
-			String name = tokens[0].toUpperCase().trim();
-			String description = tokens[1].toUpperCase();
+			final String name = tokens[0].toUpperCase().trim();
+			final String description = tokens[1].toUpperCase();
 
 			//the current gene-set
-			GeneSet.Builder builder;
+			ImmutableSet.Builder<Integer> builder = ImmutableSet.builder();
 
 			if(genesets.containsKey(name)) {
 				GeneSet gs = genesets.get(name);
-				builder = GeneSet.Builder.from(gs);
+				builder = builder.addAll(gs.getGenes());
 				gs_size = gs.getGenes().size();
-			} else
-				builder = new GeneSet.Builder(name, description);
+			} 
 
 			//The third column is the nominal p-value
 			if(tokens[2] == null || tokens[2].equalsIgnoreCase("")) {
@@ -144,7 +145,7 @@ public class ParseGenericEnrichmentResults extends DatasetLineParser {
 							//if it is already in the hash then get its associated key and put it
 							//into the set of genes
 							if(genes.containsKey(gene)) {
-								builder.addGene(genes.get(gene));
+								builder.add(genes.get(gene));
 							}
 
 							//If the gene is not in the list then get the next value to be used and put it in the list
@@ -156,11 +157,11 @@ public class ParseGenericEnrichmentResults extends DatasetLineParser {
 								dataset.getMap().setNumberOfGenes(value + 1);
 
 								//add the gene to the genelist
-								builder.addGene(genes.get(gene));
+								builder.add(genes.get(gene));
 							}
 						}
 
-						GeneSet gs = builder.build();
+						GeneSet gs = new GeneSet(name, description, builder.build());
 						gs_size = gs.getGenes().size();
 						//put the new or filtered geneset back into the set.
 						genesets.put(name, gs);

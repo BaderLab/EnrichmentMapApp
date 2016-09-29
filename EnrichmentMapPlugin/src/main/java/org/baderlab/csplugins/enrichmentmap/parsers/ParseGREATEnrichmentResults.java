@@ -11,6 +11,8 @@ import org.baderlab.csplugins.enrichmentmap.model.GenericResult;
 import org.baderlab.csplugins.enrichmentmap.task.NullTaskMonitor;
 import org.cytoscape.work.TaskMonitor;
 
+import com.google.common.collect.ImmutableSet;
+
 public class ParseGREATEnrichmentResults extends DatasetLineParser {
 
 	public ParseGREATEnrichmentResults(DataSet dataset) {
@@ -88,22 +90,19 @@ public class ParseGREATEnrichmentResults extends DatasetLineParser {
 			//http://bejerano.stanford.edu/help/display/GREAT/Export
 
 			//The second column of the file is the name of the geneset
-			String name = tokens[1].trim() + "-" + tokens[2].trim();
+			final String name = tokens[1].trim() + "-" + tokens[2].trim();
 
 			//the first column of the file is the description
-			String description = tokens[2].trim();
+			final String description = tokens[2].trim();
 
 			//when there are two different species it is possible that the gene set could
 			//already exist in the set of genesets.  if it does exist then add the genes
 			//in this set to the geneset
-			GeneSet.Builder builder;
+			
+			ImmutableSet.Builder<Integer> builder = ImmutableSet.builder();
+			
 			if(genesets.containsKey(name))
-				builder = GeneSet.Builder.from(genesets.get(name));
-
-			//load the geneset and the genes to their respective data structures.
-			//create an object of type Geneset with the above Name and description
-			else
-				builder = new GeneSet.Builder(name, description);
+				builder = builder.addAll(genesets.get(name).getGenes());
 
 			String[] gene_tokens;
 			if(!hasBackground)
@@ -119,7 +118,7 @@ public class ParseGREATEnrichmentResults extends DatasetLineParser {
 				//if it is already in the hash then get its associated key and put it
 				//into the set of genes
 				if(genes.containsKey(gene)) {
-					builder.addGene(genes.get(gene));
+					builder.add(genes.get(gene));
 				}
 
 				//If the gene is not in the list then get the next value to be used and put it in the list
@@ -133,14 +132,14 @@ public class ParseGREATEnrichmentResults extends DatasetLineParser {
 						dataset.getMap().setNumberOfGenes(value + 1);
 
 						//add the gene to the genelist
-						builder.addGene(genes.get(gene));
+						builder.add(genes.get(gene));
 					}
 				}
 			}
 
 			//finished parsing that geneset
 			//add the current geneset to the hashmap of genesets
-			GeneSet gs = builder.build();
+			GeneSet gs = new GeneSet(name, description, builder.build());
 			genesets.put(name, gs);
 
 			//There are two tests run by GREAT, the binomial on regions and the hypergeometric based on genes

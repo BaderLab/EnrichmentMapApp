@@ -10,6 +10,8 @@ import org.baderlab.csplugins.enrichmentmap.model.GenericResult;
 import org.baderlab.csplugins.enrichmentmap.task.NullTaskMonitor;
 import org.cytoscape.work.TaskMonitor;
 
+import com.google.common.collect.ImmutableSet;
+
 public class ParseBingoEnrichmentResults extends DatasetLineParser {
 
 	public ParseBingoEnrichmentResults(DataSet dataset) {
@@ -83,22 +85,19 @@ public class ParseBingoEnrichmentResults extends DatasetLineParser {
 			double NES = 1.0;
 
 			//The 8th column of the file is the name of the geneset
-			String name = tokens[7].toUpperCase().trim();
+			final String name = tokens[7].toUpperCase().trim();
 
 			//the 8th column of the file is the description
-			String description = tokens[7].toUpperCase();
+			final String description = tokens[7].toUpperCase();
 
 			//when there are two different species it is possible that the gene set could
 			//already exist in the set of genesets.  if it does exist then add the genes
 			//in this set to the geneset
-			GeneSet.Builder builder;
-			if(genesets.containsKey(name))
-				builder = GeneSet.Builder.from(genesets.get(name));
+			ImmutableSet.Builder<Integer> builder = ImmutableSet.builder();
 
-			//load the geneset and the genes to their respective data structures.
-			//create an object of type Geneset with the above Name and description
-			else
-				builder = new GeneSet.Builder(name, description);
+			if(genesets.containsKey(name))
+				builder = builder.addAll(genesets.get(name).getGenes());
+
 
 			String[] gene_tokens = tokens[8].split("\\|");
 
@@ -110,7 +109,7 @@ public class ParseBingoEnrichmentResults extends DatasetLineParser {
 				//if it is already in the hash then get its associated key and put it
 				//into the set of genes
 				if(genes.containsKey(gene)) {
-					builder.addGene(genes.get(gene));
+					builder.add(genes.get(gene));
 				}
 
 				//If the gene is not in the list then get the next value to be used and put it in the list
@@ -124,14 +123,14 @@ public class ParseBingoEnrichmentResults extends DatasetLineParser {
 						dataset.getMap().setNumberOfGenes(value + 1);
 
 						//add the gene to the genelist
-						builder.addGene(genes.get(gene));
+						builder.add(genes.get(gene));
 					}
 				}
 			}
 
 			//finished parsing that geneset
 			//add the current geneset to the hashmap of genesets
-			GeneSet gs = builder.build();
+			GeneSet gs = new GeneSet(name, description, builder.build());
 			genesets.put(name, gs);
 
 			//The 2nd column is the nominal p-value

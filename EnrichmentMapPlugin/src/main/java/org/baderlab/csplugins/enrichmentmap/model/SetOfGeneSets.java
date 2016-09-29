@@ -73,9 +73,7 @@ public class SetOfGeneSets {
 			//only keep the genes from the geneset that are in the dataset genes
 			Set<Integer> intersection = Sets.intersection(current_set.getGenes(), datasetGenes);
 
-			GeneSet.Builder builder = new GeneSet.Builder(geneset2_name, current_set.getDescription());
-			builder.addAllGenes(intersection);
-			GeneSet new_set = builder.build();
+			GeneSet new_set = new GeneSet(geneset2_name, current_set.getDescription(), intersection);
 
 			filteredGenesets.put(geneset2_name, new_set);
 		}

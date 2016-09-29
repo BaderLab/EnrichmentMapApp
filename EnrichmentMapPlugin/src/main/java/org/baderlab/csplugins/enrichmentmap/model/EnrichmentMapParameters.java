@@ -1099,7 +1099,7 @@ public class EnrichmentMapParameters {
 			//Genesets
 			if(type == 1)
 				if(tokens.length >= 3)
-					newMap.put(tokens[0], new GeneSet.Builder(tokens).build());
+					newMap.put(tokens[0], GeneSet.fromTokens(tokens));
 
 			//Genes
 			if(type == 2) {

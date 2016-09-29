@@ -437,7 +437,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 		// as the Heatmap will grep it's data from there.
 		DataSet dataset = map.getDataset(paParams.getSignatureDataSet());
 		Set<Integer> signatureGenesInDataSet = ImmutableSet.copyOf(Sets.intersection(sigGeneSet.getGenes(), dataset.getDatasetGenes()));
-		GeneSet geneSetInDataSet = new GeneSet.Builder(sigGeneSet.getName(), sigGeneSet.getDescription()).addAllGenes(signatureGenesInDataSet).build();
+		GeneSet geneSetInDataSet = new GeneSet(sigGeneSet.getName(), sigGeneSet.getDescription(), signatureGenesInDataSet);
 		dataset.getGenesetsOfInterest().getGenesets().put(hub_name, geneSetInDataSet);
 
 		return created;
