@@ -66,18 +66,6 @@ public class DataSet {
 
 	}
 
-	public void copy(DataSet copy) {
-
-		this.map = copy.getMap();
-		//gene sets
-		this.setofgenesets = copy.getSetofgenesets();
-		this.genesetsOfInterest = copy.getGenesetsOfInterest();
-
-		this.enrichments = copy.getEnrichments();
-		this.expressionSets = copy.getExpressionSets();
-		this.datasetGenes = copy.getDatasetGenes();
-	}
-
 	/*
 	 * Using the genesetsOfInterest filter the enrichment results return - a set
 	 * of enrichment Results contain only the genesets of interest.

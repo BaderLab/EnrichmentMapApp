@@ -98,29 +98,6 @@ public class EnrichmentMap {
 		this.name = name;
 	}
 
-	/**
-	 * Method to copy the contents of one set of parameters into another
-	 * instance
-	 *
-	 * @param copy
-	 *            the parameters from the copy to this instance.
-	 */
-	public void copy(EnrichmentMap copy) {
-		this.name = copy.getName();
-
-		//genes
-		this.genes = copy.getGenes();
-		this.hashkey2gene = copy.getHashkey2gene();
-
-		this.genesetSimilarity = copy.getGenesetSimilarity();
-
-		this.params = copy.getParams();
-
-		this.datasets = copy.getDatasets();
-
-		this.signatureGenesets = copy.getSignatureGenesets();
-
-	}
 
 	/**
 	 * Method to transfer files specified in the parameters to the objects they

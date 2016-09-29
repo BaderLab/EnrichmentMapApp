@@ -105,14 +105,6 @@ public class SetOfEnrichmentResults {
 		this.filename2 = filename2;
 	}
 
-	public void copy(SetOfEnrichmentResults copy){
-		this.name = copy.getName();
-		this.enrichments = copy.getEnrichments();
-		this.phenotype1 = copy.getPhenotype1();
-		this.phenotype2 = copy.getPhenotype2();
-		this.filename1 = copy.getFilename1();
-		this.filename2 = copy.getFilename2();
-	}
 	
 	public String toString(String ds){
 		StringBuffer paramVariables = new StringBuffer();
