@@ -51,110 +51,78 @@ package org.baderlab.csplugins.enrichmentmap.model;
 public class GenericResult extends EnrichmentResult {
 
 	//minimum requirement of a generic enrichment results
-	private int gsSize = 0;
+	private int gsSize;
 
 	//optional parameters
-	private double fdrqvalue = 1.0;
+	private final double fdrqvalue;
 
 	//make the generic file synonamous with gsea result file
 	//the phenotype is deduced from the sign of the ES score so create a variable to store
 	//the phenotype.
-	private double NES = 1.0;
-
-	//add type of geneset - specific to Enrichment Map gene set files
-	private String source = "none";
-
+	private final double NES;
+	
+	
 	/**
 	 * Class constructor
-	 *
-	 * @param tokens
-	 *            - string tokenized line from a generic result file as stored
-	 *            in the session file
+	 * @param tokens - string tokenized line from a generic result file as stored in the session file
+	 * @deprecated Parsing of tokens should be done by calling code.
 	 */
+	@Deprecated
 	public GenericResult(String[] tokens) {
 		//ignore the first token as it is from the hash
-		this.name = tokens[1];
-		this.desc = tokens[2];
-		this.pvalue = Double.parseDouble(tokens[3]);
+		super(tokens[1], tokens[2], Double.parseDouble(tokens[3]));
+		
 		this.gsSize = Integer.parseInt(tokens[4]);
 		this.fdrqvalue = Double.parseDouble(tokens[5]);
 		this.NES = Double.parseDouble(tokens[6]);
-
-		setSource();
-
 	}
 
 	/**
 	 * Class constructor - minimal requirements
 	 *
-	 * @param name
-	 *            - gene set name (enrichment result)
-	 * @param description
-	 *            - gene set description
-	 * @param pvalue
-	 *            - enrichment p-value
-	 * @param gssize
-	 *            - gene set size
+	 * @param name - gene set name (enrichment result)
+	 * @param description - gene set description
+	 * @param pvalue - enrichment p-value
+	 * @param gssize - gene set size
 	 */
 	public GenericResult(String name, String description, double pvalue, int gssize) {
-		this.name = name;
-		this.desc = description;
-		this.pvalue = pvalue;
+		super(name, description, pvalue);
 		this.gsSize = gssize;
-
-		setSource();
+		this.fdrqvalue = 1.0;
+		this.NES = 1.0;
 	}
 
 	/**
 	 * Class constructor - minimal requirement with addition of fdr qvalue
 	 *
-	 * @param name
-	 *            - gene set name (enrichment result)
-	 * @param description
-	 *            - gene set description
-	 * @param pvalue
-	 *            - enrichment p-value
-	 * @param gssize
-	 *            - gene set size
-	 * @param fdrqvalue
-	 *            - enrichment fdr q-value
+	 * @param name - gene set name (enrichment result)
+	 * @param description - gene set description
+	 * @param pvalue - enrichment p-value
+	 * @param gssize - gene set size
+	 * @param fdrqvalue - enrichment fdr q-value
 	 */
 	public GenericResult(String name, String description, double pvalue, int gssize, double fdrqvalue) {
-		this.name = name;
-		this.desc = description;
-		this.pvalue = pvalue;
+		super(name, description, pvalue);
 		this.gsSize = gssize;
 		this.fdrqvalue = fdrqvalue;
-		setSource();
+		this.NES = 1.0;
 	}
 
 	/**
-	 * Class constructor - minimal requirements with addition of fdr qvalue and
-	 * phenotype
+	 * Class constructor - minimal requirements with addition of fdr qvalue and phenotype
 	 *
-	 * @param name
-	 *            - gene set name (enrichment result)
-	 * @param description
-	 *            - gene set description
-	 * @param pvalue
-	 *            - enrichment p-value
-	 * @param gssize
-	 *            - gene set size
-	 * @param fdrqvalue
-	 *            - enrichment fdr q-value
-	 * @param phenotype
-	 *            - which phenotype or class is this enrichment results
-	 *            associated with
+	 * @param name  - gene set name (enrichment result)
+	 * @param description  - gene set description
+	 * @param pvalue - enrichment p-value
+	 * @param gssize - gene set size
+	 * @param fdrqvalue - enrichment fdr q-value
+	 * @param phenotype - which phenotype or class is this enrichment results associated with
 	 */
-	public GenericResult(String name, String description, double pvalue, int gssize, double fdrqvalue,
-			double phenotype) {
-		this.name = name;
-		this.desc = description;
+	public GenericResult(String name, String description, double pvalue, int gssize, double fdrqvalue, double phenotype) {
+		super(name, description, pvalue);
 		this.gsSize = gssize;
-		this.pvalue = pvalue;
 		this.fdrqvalue = fdrqvalue;
 		this.NES = phenotype;
-		setSource();
 	}
 
 	/**
@@ -162,25 +130,22 @@ public class GenericResult extends EnrichmentResult {
 	 * p-value threshold (and optionallly does it also pass the fdr 1-value
 	 * threshold)
 	 *
-	 * @param pvalue
-	 *            - pvalue of current gene set enrichment
-	 * @param fdrqvalue
-	 *            - fdr q-value of current gene set enrichment
-	 * @param useFDR
-	 *            - is there a fdr q-value threshold set
+	 * @param pvalue - pvalue of current gene set enrichment
+	 * @param fdrqvalue - fdr q-value of current gene set enrichment
+	 * @param useFDR  - is there a fdr q-value threshold set
 	 * @return whether these p-value and fdr q-value for the specified gene set
 	 *         enrichment fall into our gene sets of interest category (i.e. do
 	 *         these values pass the specified thresholds)
 	 */
 	public boolean geneSetOfInterest(double pvalue, double fdrqvalue, boolean useFDR) {
 		if(useFDR) {
-			if((this.pvalue <= pvalue) && (this.fdrqvalue <= fdrqvalue)) {
+			if((getPvalue() <= pvalue) && (this.fdrqvalue <= fdrqvalue)) {
 				return true;
 			} else {
 				return false;
 			}
 		} else {
-			if(this.pvalue <= pvalue) {
+			if(getPvalue() <= pvalue) {
 				return true;
 			} else {
 				return false;
@@ -193,17 +158,16 @@ public class GenericResult extends EnrichmentResult {
 		return fdrqvalue;
 	}
 
-	public void setFdrqvalue(double fdrqvalue) {
-		this.fdrqvalue = fdrqvalue;
-	}
 
 	public int getGsSize() {
 		return gsSize;
 	}
-
-	public void setGsSize(int gs_size) {
-		this.gsSize = gs_size;
+	
+	// MKTODO why?
+	public void setGsSize(int size) {
+		this.gsSize = size;
 	}
+
 
 	/**
 	 * @return 1.0 for Phenotype A or -1.0 for Phenotype B
@@ -212,12 +176,9 @@ public class GenericResult extends EnrichmentResult {
 		return NES;
 	}
 
-	public void setNES(double NES) {
-		this.NES = NES;
-	}
 
 	public String toString() {
-		return name + "\t" + desc + "\t" + pvalue + "\t" + gsSize + "\t" + fdrqvalue + "\t" + NES;
+		return getName() + "\t" + getDescription() + "\t" + getPvalue() + "\t" + gsSize + "\t" + fdrqvalue + "\t" + NES;
 	}
 
 }

@@ -453,7 +453,7 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 		current_row.set(prefix + EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1, result.getFdrqvalue());
 		current_row.set(prefix + EnrichmentMapVisualStyle.GS_SIZE_DATASET1, result.getGsSize());
 		current_row.set(prefix + EnrichmentMapVisualStyle.GS_TYPE, EnrichmentMapVisualStyle.GS_TYPE_ENRICHMENT);
-		current_row.set(prefix + EnrichmentMapVisualStyle.GS_SOURCE, result.getSource());
+		current_row.set(prefix + EnrichmentMapVisualStyle.GS_SOURCE, result.getSource().orElse(null));
 		if(result.getNES() >= 0) {
 			current_row.set(prefix + EnrichmentMapVisualStyle.COLOURING_DATASET1, (1 - result.getPvalue()));
 		} else {
@@ -483,7 +483,7 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 		current_row.set(prefix + EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2, result.getFdrqvalue());
 		current_row.set(prefix + EnrichmentMapVisualStyle.GS_SIZE_DATASET2, result.getGsSize());
 		current_row.set(prefix + EnrichmentMapVisualStyle.GS_TYPE, EnrichmentMapVisualStyle.GS_TYPE_ENRICHMENT);
-		current_row.set(prefix + EnrichmentMapVisualStyle.GS_SOURCE, result.getSource());
+		current_row.set(prefix + EnrichmentMapVisualStyle.GS_SOURCE, result.getSource().orElse(null));
 		if(result.getNES() >= 0) {
 			current_row.set(prefix + EnrichmentMapVisualStyle.COLOURING_DATASET2, (1 - result.getPvalue()));
 		} else {
@@ -513,7 +513,7 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 		current_row.set(prefix + EnrichmentMapVisualStyle.ES_DATASET1, result.getES());
 		current_row.set(prefix + EnrichmentMapVisualStyle.NES_DATASET1, result.getNES());
 		current_row.set(prefix + EnrichmentMapVisualStyle.GS_TYPE, EnrichmentMapVisualStyle.GS_TYPE_ENRICHMENT);
-		current_row.set(prefix + EnrichmentMapVisualStyle.GS_SOURCE, result.getSource());
+		current_row.set(prefix + EnrichmentMapVisualStyle.GS_SOURCE, result.getSource().orElse(null));
 		if(result.getNES() >= 0) {
 			double current_pvalue = result.getPvalue();
 			current_row.set(prefix + EnrichmentMapVisualStyle.COLOURING_DATASET1, (1 - current_pvalue));
@@ -545,7 +545,7 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 		current_row.set(prefix + EnrichmentMapVisualStyle.ES_DATASET2, result.getES());
 		current_row.set(prefix + EnrichmentMapVisualStyle.NES_DATASET2, result.getNES());
 		current_row.set(prefix + EnrichmentMapVisualStyle.GS_TYPE, EnrichmentMapVisualStyle.GS_TYPE_ENRICHMENT);
-		current_row.set(prefix + EnrichmentMapVisualStyle.GS_SOURCE, result.getSource());
+		current_row.set(prefix + EnrichmentMapVisualStyle.GS_SOURCE, result.getSource().orElse(null));
 		if(result.getNES() >= 0) {
 			double current_pvalue = result.getPvalue();
 			current_row.set(prefix + EnrichmentMapVisualStyle.COLOURING_DATASET2, (1 - current_pvalue));
