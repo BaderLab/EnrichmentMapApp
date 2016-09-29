@@ -66,7 +66,7 @@ import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
 public class EnrichmentMapVisualStyle {
 
 	// default colours
-	private static final Color BG_COLOR = new Color(247, 247, 247);
+	private static final Color BG_COLOR = Color.WHITE;
 	
 	/* See http://colorbrewer2.org/#type=diverging&scheme=RdBu&n=9 */
 	public static final Color MAX_PHENOTYPE_1 = new Color(178, 24, 43);
@@ -176,6 +176,7 @@ public class EnrichmentMapVisualStyle {
     public void applyVisualStyle(VisualStyle vs, String prefix) {
     	//set default background colour
     	vs.setDefaultValue(BasicVisualLexicon.NETWORK_BACKGROUND_PAINT, BG_COLOR);    	        
+    	vs.setDefaultValue(BasicVisualLexicon.EDGE_TRANSPARENCY, 100);    	        
 
         createEdgeAppearance(vs, prefix);
         createNodeAppearance(vs, prefix);
@@ -189,7 +190,6 @@ public class EnrichmentMapVisualStyle {
      * @param prefix - prefix to be appended to each of the attribute names
      */
     private void createEdgeAppearance(VisualStyle vs, String prefix){
-                      
         //add the discrete mapper for edge colour:        
         //can't just update edge_paint -- need to do the same for all the type of edge paints
         DiscreteMapping<Integer,Paint> disMapping_edge2 = (DiscreteMapping<Integer,Paint>) vmfFactoryDiscrete.createVisualMappingFunction(prefix + ENRICHMENT_SET, Integer.class, BasicVisualLexicon.EDGE_UNSELECTED_PAINT);
