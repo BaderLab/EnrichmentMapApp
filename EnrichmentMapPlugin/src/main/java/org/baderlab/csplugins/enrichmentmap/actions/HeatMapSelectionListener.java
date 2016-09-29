@@ -72,7 +72,7 @@ import com.google.inject.Inject;
  * a separate instance of this class specifying the enrichment map parameters,
  * selected nodes, selected edges and heatmap panels
  */
-public class EnrichmentMapActionListener implements RowsSetListener {
+public class HeatMapSelectionListener implements RowsSetListener {
 	
 	@Inject private EnrichmentMapManager manager;
 	
