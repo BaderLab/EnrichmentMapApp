@@ -1,7 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap.parsers;
 
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
@@ -40,12 +40,12 @@ public class ParseDavidEnrichmentResults extends DatasetLineParser {
 		// Column 2 is the geneset name
 		// Column 1 is the category (and can be used for the description)
 		// Column 6 is the list of genes (from the loaded list) in this geneset -- therefore pre-filtered.
-		HashMap<String, GeneSet> genesets = dataset.getSetofgenesets().getGenesets();
+		Map<String, GeneSet> genesets = dataset.getSetofgenesets().getGenesets();
 
 		//get the genes (which should also be empty
-		HashMap<String, Integer> genes = dataset.getMap().getGenes();
-		HashMap<Integer, String> key2gene = dataset.getMap().getHashkey2gene();
-		HashMap<String, EnrichmentResult> results = dataset.getEnrichments().getEnrichments();
+		Map<String, Integer> genes = dataset.getMap().getGenes();
+		Map<Integer, String> key2gene = dataset.getMap().getHashkey2gene();
+		Map<String, EnrichmentResult> results = dataset.getEnrichments().getEnrichments();
 
 		int currentProgress = 0;
 		int maxValue = lines.size();

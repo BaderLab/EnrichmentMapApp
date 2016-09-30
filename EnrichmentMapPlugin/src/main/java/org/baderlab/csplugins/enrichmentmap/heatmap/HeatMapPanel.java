@@ -66,10 +66,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
@@ -688,7 +688,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 		}
 
 		int n = 0;
-		HashMap<Integer, Rank> current_ranks = ranks.getRanking();
+		Map<Integer, Rank> current_ranks = ranks.getRanking();
 		for (Iterator<Integer> i = currentExpressionSet.keySet().iterator(); i.hasNext();) {
 			Integer key = i.next();
 
@@ -885,7 +885,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 		int n = 0;
 		int maxRank = 0;
 		int missingRanksCount = 0;
-		HashMap<Integer, Rank> current_ranks = ranks.getRanking();
+		Map<Integer, Rank> current_ranks = ranks.getRanking();
 		for (Iterator<Integer> i = expressionUsing.keySet().iterator(); i.hasNext();) {
 			Integer key = i.next();
 			//check to see the key is in the rank file.
@@ -1287,7 +1287,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 		JPanel RankOptions;
 
 		TitledBorder RankBorder = BorderFactory.createTitledBorder("Sorting");
-		HashSet<String> ranks = map.getAllRankNames();
+		Set<String> ranks = map.getAllRankNames();
 		RankBorder.setTitleJustification(TitledBorder.LEFT);
 		RankOptions = new JPanel();
 		rankOptionComboBox = new JComboBox();
@@ -1598,7 +1598,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 				displayLeadingEdge = true;
 				if (params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)) {
 
-					HashMap<String, EnrichmentResult> results1 = map.getDataset(EnrichmentMap.DATASET1).getEnrichments().getEnrichments();
+					Map<String, EnrichmentResult> results1 = map.getDataset(EnrichmentMap.DATASET1).getEnrichments().getEnrichments();
 					if (results1.containsKey(nodename)) {
 						GSEAResult current_result = (GSEAResult) results1.get(nodename);
 						leadingEdgeScoreAtMax1 = current_result.getScoreAtMax();
@@ -1610,7 +1610,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 						leadingEdgeRankAtMax1 = current_result.getRankAtMax();
 					}
 					if (map.getParams().isTwoDatasets()) {
-						HashMap<String, EnrichmentResult> results2 = map.getDataset(EnrichmentMap.DATASET2).getEnrichments().getEnrichments();
+						Map<String, EnrichmentResult> results2 = map.getDataset(EnrichmentMap.DATASET2).getEnrichments().getEnrichments();
 						if (results2.containsKey(nodename)) {
 							GSEAResult current_result = (GSEAResult) results2.get(nodename);
 							leadingEdgeScoreAtMax2 = current_result.getScoreAtMax();
@@ -1657,7 +1657,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 				hmParams.setSort(HeatMapParameters.Sort.CLUSTER);
 			if (params.getDefaultSortMethod().equalsIgnoreCase(HeatMapParameters.sort_rank)) {
 				hmParams.setSort(HeatMapParameters.Sort.RANK);
-				HashSet<String> ranksnames = map.getAllRankNames();
+				Set<String> ranksnames = map.getAllRankNames();
 				if (!ranksnames.isEmpty())
 					hmParams.setRankFileIndex(ranksnames.iterator().next());
 				else {
@@ -1672,7 +1672,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 			}
 		}
 
-		HashSet<String> all_ranks = map.getAllRankNames();
+		Set<String> all_ranks = map.getAllRankNames();
 		if (hmParams.getSort() == HeatMapParameters.Sort.RANK) {
 			for (Iterator<String> j = all_ranks.iterator(); j.hasNext();) {
 				String ranks_name = j.next().toString();

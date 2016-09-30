@@ -354,13 +354,13 @@ public class LegacyEnrichmentMapSessionListener implements SessionLoadedListener
 
 					//for each map compute the similarity matrix, (easier than storing it) compute the geneset similarities
 					ComputeSimilarityTask similarities = new ComputeSimilarityTask(map, ComputeSimilarityTask.ENRICHMENT);
-					HashMap<String, GenesetSimilarity> similarity_results = similarities.computeGenesetSimilarities(null);
+					Map<String, GenesetSimilarity> similarity_results = similarities.computeGenesetSimilarities(null);
 					map.setGenesetSimilarity(similarity_results);
 
 					// also compute geneset similarities between Enrichment- and Signature Genesets (if any)
 					if (! map.getSignatureGenesets().isEmpty()){
 						ComputeSimilarityTask sigSimilarities = new ComputeSimilarityTask(map, ComputeSimilarityTask.SIGNATURE);
-						HashMap<String, GenesetSimilarity> sig_similarity_results = sigSimilarities.computeGenesetSimilarities(null);
+						Map<String, GenesetSimilarity> sig_similarity_results = sigSimilarities.computeGenesetSimilarities(null);
 						map.getGenesetSimilarity().putAll(sig_similarity_results);
 					}
 

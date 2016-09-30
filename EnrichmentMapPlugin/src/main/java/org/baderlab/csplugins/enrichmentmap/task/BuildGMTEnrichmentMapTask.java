@@ -1,7 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap.task;
 
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
@@ -36,19 +36,18 @@ public class BuildGMTEnrichmentMapTask extends AbstractTask {
 		//in this case all the genesets are of interest
 		this.dataset.setGenesetsOfInterest(this.dataset.getSetofgenesets());
 
-		HashMap<String, GeneSet> current_sets = this.dataset.getSetofgenesets().getGenesets();
+		Map<String, GeneSet> current_sets = this.dataset.getSetofgenesets().getGenesets();
 
 		//create an new Set of Enrichment Results                
 		SetOfEnrichmentResults setofenrichments = new SetOfEnrichmentResults();
 
-		HashMap<String, EnrichmentResult> currentEnrichments = setofenrichments.getEnrichments();
+		Map<String, EnrichmentResult> currentEnrichments = setofenrichments.getEnrichments();
 
 		//need also to put all genesets into enrichment results
 		for(Iterator i = current_sets.keySet().iterator(); i.hasNext();) {
 			String geneset1_name = i.next().toString();
 			GeneSet current = (GeneSet) current_sets.get(geneset1_name);
-			GenericResult temp_result = new GenericResult(current.getName(), current.getDescription(), 0.01,
-					current.getGenes().size());
+			GenericResult temp_result = new GenericResult(current.getName(), current.getDescription(), 0.01, current.getGenes().size());
 			currentEnrichments.put(current.getName(), temp_result);
 		}
 		this.dataset.setEnrichments(setofenrichments);

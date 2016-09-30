@@ -99,10 +99,10 @@ public class ComputeSimilarityTask extends AbstractTask {
 	}
 
 	
-	public HashMap<String,GenesetSimilarity> computeGenesetSimilarities(TaskMonitor taskMonitor) {
-		HashMap<String,GenesetSimilarity> similarities = new HashMap<>();
+	public Map<String,GenesetSimilarity> computeGenesetSimilarities(TaskMonitor taskMonitor) {
+		Map<String,GenesetSimilarity> similarities = new HashMap<>();
 		
-		HashMap<String, GeneSet> genesetsOfInterest;
+		Map<String, GeneSet> genesetsOfInterest;
 		if (map.getParams().isTwoDistinctExpressionSets())
 			genesetsOfInterest = map.getDataset(EnrichmentMap.DATASET1).getGenesetsOfInterest().getGenesets();
 		else
@@ -230,8 +230,8 @@ public class ComputeSimilarityTask extends AbstractTask {
 			}
 			
 			//We need to also compute the edges between the two different groups.
-			HashMap<String, GeneSet> genesetsOfInterest_missingedges = map.getAllGenesets();
-			HashMap<String, EnrichmentResult> dataset1_results = map.getDataset(EnrichmentMap.DATASET1).getEnrichments().getEnrichments();
+			Map<String, GeneSet> genesetsOfInterest_missingedges = map.getAllGenesets();
+			Map<String, EnrichmentResult> dataset1_results = map.getDataset(EnrichmentMap.DATASET1).getEnrichments().getEnrichments();
 
 			//iterate through the each of the GSEA Results of interest - for the second set on the outer loop and the first set on the inner loop
 			for (String geneset1_name : sig_genesets_set2.keySet()) {

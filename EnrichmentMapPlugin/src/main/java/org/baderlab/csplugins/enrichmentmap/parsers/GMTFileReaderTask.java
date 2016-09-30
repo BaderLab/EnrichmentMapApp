@@ -45,7 +45,6 @@ package org.baderlab.csplugins.enrichmentmap.parsers;
 
 import java.io.IOException;
 import java.text.Normalizer;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -129,7 +128,7 @@ public class GMTFileReaderTask extends AbstractTask {
 	 */
 	public void parse(TaskMonitor taskMonitor) throws IOException {
 
-		HashMap<String, GeneSet> genesets = setOfgenesets.getGenesets();
+		Map<String, GeneSet> genesets = setOfgenesets.getGenesets();
 		List<String> lines = DatasetLineParser.readLines(GMTFileName);
 		
 		int currentProgress = 0;

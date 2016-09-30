@@ -50,6 +50,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -136,7 +137,7 @@ public class RanksFileReaderTask extends AbstractTask {
 		int maxValue = lines.size();
 		taskMonitor.setStatusMessage("Parsing Rank file - " + maxValue + " rows");
 
-		HashMap<String, Integer> genes = dataset.getMap().getGenes();
+		Map<String, Integer> genes = dataset.getMap().getGenes();
 		// we don't know the number of scores in the rank file yet, but it can't be more than the number of lines.
 		Double[] score_collector = new Double[lines.size()];
 
@@ -290,12 +291,12 @@ public class RanksFileReaderTask extends AbstractTask {
 			}
 		}
 		//check to see if some of the dataset genes are not in this rank file
-		HashSet<Integer> current_genes = dataset.getDatasetGenes();
+		Set<Integer> current_genes = dataset.getDatasetGenes();
 
 		Set<Integer> current_ranks = ranks.keySet();
 
 		//intersect the genes with the ranks.  only retain the genes that have ranks.
-		Set<Integer> intersection = new HashSet<Integer>(current_genes);
+		Set<Integer> intersection = new HashSet<>(current_genes);
 		intersection.retainAll(current_ranks);
 
 		//see if there more genes than there are ranks

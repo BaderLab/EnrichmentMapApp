@@ -44,7 +44,7 @@
 package org.baderlab.csplugins.enrichmentmap.task;
 
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
@@ -89,13 +89,13 @@ public class InitializeGenesetsOfInterestTask extends AbstractTask {
 		//specified by the user.
 
 		//Go through each Dataset populating the Gene set of interest in each dataset object
-		HashMap<String, DataSet> datasets = map.getDatasets();
+		Map<String, DataSet> datasets = map.getDatasets();
 		for(String current_dataset_name : datasets.keySet()) {
 			DataSet current_dataset = datasets.get(current_dataset_name);
 
-			HashMap<String, EnrichmentResult> enrichmentResults = current_dataset.getEnrichments().getEnrichments();
-			HashMap<String, GeneSet> genesets = current_dataset.getSetofgenesets().getGenesets();
-			HashMap<String, GeneSet> genesetsOfInterest = current_dataset.getGenesetsOfInterest().getGenesets();
+			Map<String, EnrichmentResult> enrichmentResults = current_dataset.getEnrichments().getEnrichments();
+			Map<String, GeneSet> genesets = current_dataset.getSetofgenesets().getGenesets();
+			Map<String, GeneSet> genesetsOfInterest = current_dataset.getGenesetsOfInterest().getGenesets();
 
 			//If there are no genesets associated with this dataset then get the complete set
 			//assumption being that the gmt file applies to all datasets.
@@ -107,8 +107,8 @@ public class InitializeGenesetsOfInterestTask extends AbstractTask {
 			//get ranking files.
 			Ranking ranks = current_dataset.getExpressionSets().getRanksByName(current_dataset_name);
 
-			HashMap<Integer, Integer> rank2gene = null;
-			HashMap<Integer, Rank> gene2rank = null;
+			Map<Integer, Integer> rank2gene = null;
+			Map<Integer, Rank> gene2rank = null;
 			if(ranks != null) {
 				rank2gene = ranks.getRank2gene();
 				gene2rank = ranks.getRanking();

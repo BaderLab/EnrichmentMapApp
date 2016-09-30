@@ -1,7 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap.parsers;
 
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
@@ -34,12 +34,12 @@ public class ParseGREATEnrichmentResults extends DatasetLineParser {
 		//If they specify both use the highest p-value and q-value from the above columns
 		String filterType = dataset.getMap().getParams().getGreat_Filter();
 
-		HashMap<String, GeneSet> genesets = dataset.getSetofgenesets().getGenesets();
+		Map<String, GeneSet> genesets = dataset.getSetofgenesets().getGenesets();
 
 		//get the genes (which should also be empty
-		HashMap<String, Integer> genes = dataset.getMap().getGenes();
-		HashMap<Integer, String> key2gene = dataset.getMap().getHashkey2gene();
-		HashMap<String, EnrichmentResult> results = dataset.getEnrichments().getEnrichments();
+		Map<String, Integer> genes = dataset.getMap().getGenes();
+		Map<Integer, String> key2gene = dataset.getMap().getHashkey2gene();
+		Map<String, EnrichmentResult> results = dataset.getEnrichments().getEnrichments();
 		
 		int currentProgress = 0;
 		int maxValue = lines.size();

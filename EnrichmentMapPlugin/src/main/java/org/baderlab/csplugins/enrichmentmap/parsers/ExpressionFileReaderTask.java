@@ -45,9 +45,9 @@ package org.baderlab.csplugins.enrichmentmap.parsers;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpression;
@@ -97,8 +97,8 @@ public class ExpressionFileReaderTask extends AbstractTask {
 
 		boolean twoColumns = false;
 
-		HashSet<Integer> datasetGenes = dataset.getDatasetGenes();
-		HashMap<String,Integer> genes = dataset.getMap().getGenes();
+		Set<Integer> datasetGenes = dataset.getDatasetGenes();
+		Map<String,Integer> genes = dataset.getMap().getGenes();
 
 		String expressionFileName = dataset.getExpressionSets().getFilename();
 		List<String> lines = DatasetLineParser.readLines(expressionFileName);
@@ -112,7 +112,7 @@ public class ExpressionFileReaderTask extends AbstractTask {
 		GeneExpressionMatrix expressionMatrix = dataset.getExpressionSets();
 		//GeneExpressionMatrix expressionMatrix = new GeneExpressionMatrix(lines[0].split("\t"));
 		//HashMap<Integer,GeneExpression> expression = new HashMap<Integer, GeneExpression>();
-		HashMap<Integer, GeneExpression> expression = expressionMatrix.getExpressionMatrix();
+		Map<Integer, GeneExpression> expression = expressionMatrix.getExpressionMatrix();
 
 		for(int i = 0; i < lines.size(); i++) {
 			String line = lines.get(i);

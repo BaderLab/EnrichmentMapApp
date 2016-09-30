@@ -14,11 +14,11 @@ public class Ranking {
 	//Set of Ranks
 	//key - gene hash key
 	//value - Rank
-	private HashMap<Integer, Rank> ranking;
+	private Map<Integer, Rank> ranking;
 
 	//hashes for easy conversion between geneid and rank
-	private HashMap<Integer, Integer> gene2rank;
-	private HashMap<Integer, Integer> rank2gene;
+	private Map<Integer, Integer> gene2rank;
+	private Map<Integer, Integer> rank2gene;
 
 	// Lazily computed values
 	//hash for easy conversion between geneid and score
@@ -35,7 +35,7 @@ public class Ranking {
 		rank2gene = new HashMap<Integer, Integer>();
 	}
 
-	public HashMap<Integer, Rank> getRanking() {
+	public Map<Integer, Rank> getRanking() {
 		return ranking;
 	}
 
@@ -49,7 +49,7 @@ public class Ranking {
 		invalidateLazyValues();
 	}
 
-	public HashMap<Integer, Integer> getGene2rank() {
+	public Map<Integer, Integer> getGene2rank() {
 		return gene2rank;
 	}
 
@@ -65,7 +65,7 @@ public class Ranking {
 		invalidateLazyValues();
 	}
 
-	public HashMap<Integer, Integer> getRank2gene() {
+	public Map<Integer, Integer> getRank2gene() {
 		return rank2gene;
 	}
 

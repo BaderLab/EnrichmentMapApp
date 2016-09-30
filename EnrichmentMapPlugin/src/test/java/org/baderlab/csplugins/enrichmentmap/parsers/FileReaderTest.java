@@ -3,7 +3,7 @@ package org.baderlab.csplugins.enrichmentmap.parsers;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 
-import java.util.HashMap;
+import java.util.Map;
 
 import org.baderlab.csplugins.enrichmentmap.StreamUtil;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
@@ -71,8 +71,8 @@ public class FileReaderTest {
         DataSet dataset = map.getDataset(EnrichmentMap.DATASET1);
 
         //in order to load expression data the genes have to be registered with the application
-        HashMap<String, Integer> genes = map.getGenes();
-        HashMap<Integer, String> hash2genes = map.getHashkey2gene();
+        Map<String, Integer> genes = map.getGenes();
+        Map<Integer, String> hash2genes = map.getHashkey2gene();
 
         //make sure that the genes are empty
         assertEquals(0,genes.size());
@@ -132,8 +132,8 @@ public class FileReaderTest {
         DataSet dataset = map.getDataset(EnrichmentMap.DATASET1);
 
         //in order to load expression data the genes have to be registered with the application
-        HashMap<String, Integer> genes = map.getGenes();
-        HashMap<Integer, String> hash2genes = map.getHashkey2gene();
+        Map<String, Integer> genes = map.getGenes();
+        Map<Integer, String> hash2genes = map.getHashkey2gene();
 
         //make sure that the genes are empty
         assertEquals(0,genes.size());
@@ -195,8 +195,8 @@ public class FileReaderTest {
         DataSet dataset = map.getDataset(EnrichmentMap.DATASET1);
 
         //in order to load expression data the genes have to be registered with the application
-        HashMap<String, Integer> genes = map.getGenes();
-        HashMap<Integer, String> hash2genes = map.getHashkey2gene();
+        Map<String, Integer> genes = map.getGenes();
+        Map<Integer, String> hash2genes = map.getHashkey2gene();
 
         //make sure that the genes are empty
         assertEquals(0,genes.size());
@@ -257,8 +257,8 @@ public class FileReaderTest {
         DataSet dataset = map.getDataset(EnrichmentMap.DATASET1);
 
         //in order to load expression data the genes have to be registered with the application
-        HashMap<String, Integer> genes = map.getGenes();
-        HashMap<Integer, String> hash2genes = map.getHashkey2gene();
+        Map<String, Integer> genes = map.getGenes();
+        Map<Integer, String> hash2genes = map.getHashkey2gene();
 
         //make sure that the genes are empty
         assertEquals(0,genes.size());
@@ -326,7 +326,7 @@ public class FileReaderTest {
         task.run(taskMonitor);
 
 
-        HashMap<String, EnrichmentResult> results = map.getDataset(EnrichmentMap.DATASET1).getEnrichments().getEnrichments();
+        Map<String, EnrichmentResult> results = map.getDataset(EnrichmentMap.DATASET1).getEnrichments().getEnrichments();
         // check we have 4 results
         assertEquals(4, results.size() );
         
@@ -374,7 +374,7 @@ public class FileReaderTest {
         task.run(taskMonitor);
         
         //Get the enrichment
-        HashMap<String, EnrichmentResult> enrichments = map.getDataset(EnrichmentMap.DATASET1).getEnrichments().getEnrichments();
+        Map<String, EnrichmentResult> enrichments = map.getDataset(EnrichmentMap.DATASET1).getEnrichments().getEnrichments();
         
         assertEquals(40,enrichments.size());
         
@@ -432,7 +432,7 @@ public class FileReaderTest {
         task.run(taskMonitor);
         
         //Get the enrichment
-        HashMap<String, EnrichmentResult> enrichments = map.getDataset(EnrichmentMap.DATASET1).getEnrichments().getEnrichments();
+        Map<String, EnrichmentResult> enrichments = map.getDataset(EnrichmentMap.DATASET1).getEnrichments().getEnrichments();
         
         assertEquals(14,enrichments.size());
         
@@ -496,7 +496,7 @@ public class FileReaderTest {
         task.run(taskMonitor);
         
         //Get the enrichment
-        HashMap<String, EnrichmentResult> enrichments = map.getDataset(EnrichmentMap.DATASET1).getEnrichments().getEnrichments();
+        Map<String, EnrichmentResult> enrichments = map.getDataset(EnrichmentMap.DATASET1).getEnrichments().getEnrichments();
         
         assertEquals(74,enrichments.size());
         
@@ -540,7 +540,7 @@ public class FileReaderTest {
         task.run(taskMonitor);
         
         //Get the enrichment
-        HashMap<String, EnrichmentResult> enrichments = map.getDataset(EnrichmentMap.DATASET1).getEnrichments().getEnrichments();
+        Map<String, EnrichmentResult> enrichments = map.getDataset(EnrichmentMap.DATASET1).getEnrichments().getEnrichments();
         
         assertEquals(215,enrichments.size());
         

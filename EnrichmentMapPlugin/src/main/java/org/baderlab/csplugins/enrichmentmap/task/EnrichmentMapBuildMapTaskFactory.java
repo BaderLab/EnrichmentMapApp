@@ -1,6 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.task;
 
-import java.util.HashMap;
+import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -50,7 +50,7 @@ public class EnrichmentMapBuildMapTaskFactory implements TaskFactory {
 		//initialize with 8 tasks so the progress bar can be set better.
 		TaskIterator currentTasks = new TaskIterator(8, dummyTaskToSetTitle);
 
-		HashMap<String, DataSet> datasets = map.getDatasets();
+		Map<String, DataSet> datasets = map.getDatasets();
 
 		//Make sure that Dataset 1 gets parsed first because if there are 2 datasets
 		//the geneset file is only associated with the first dataset.

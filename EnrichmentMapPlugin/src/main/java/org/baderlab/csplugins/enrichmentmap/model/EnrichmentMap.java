@@ -20,20 +20,20 @@ public class EnrichmentMap {
 	private String name = null;
 
 	//The set of Datasets
-	private HashMap<String, DataSet> datasets;
+	private Map<String, DataSet> datasets;
 
 	//Hashmap of all the similarities between all the genesets
 	//key = geneset1 + geneset2
 	//value = geneset similarity 
-	private HashMap<String, GenesetSimilarity> genesetSimilarity;
+	private Map<String, GenesetSimilarity> genesetSimilarity;
 
 	//The set of genes defined in the Enrichment map
-	private HashMap<String, Integer> genes;
+	private Map<String, Integer> genes;
 
 	//when translating visual attribute of the gene list we need to be able to translate
 	//the gene hash key into the gene name without tracing from the entire hash.
 	//create the opposite of the gene hashmap so we can do this.
-	private HashMap<Integer, String> hashkey2gene;
+	private Map<Integer, String> hashkey2gene;
 
 	// Temporary constants for Dataset 1 and Dataset 2
 	// Will eventually get rid of them
@@ -46,7 +46,7 @@ public class EnrichmentMap {
 	private int NumberOfGenes = 0;
 
 	//post analysis signature genesets associated with this map.
-	private HashMap<String, GeneSet> signatureGenesets;
+	private Map<String, GeneSet> signatureGenesets;
 
 	/*
 	 * Class Constructor Given - EnrichmentnMapParameters create a new
@@ -180,7 +180,7 @@ public class EnrichmentMap {
 	public boolean checkGenesets() {
 
 		for(Iterator<String> k = datasets.keySet().iterator(); k.hasNext();) {
-			HashMap<String, GeneSet> genesets = (datasets.get(k.next())).getSetofgenesets().getGenesets();
+			Map<String, GeneSet> genesets = (datasets.get(k.next())).getSetofgenesets().getGenesets();
 			for(Iterator j = genesets.keySet().iterator(); j.hasNext();) {
 				String geneset2_name = j.next().toString();
 				GeneSet current_set = genesets.get(geneset2_name);
@@ -222,7 +222,7 @@ public class EnrichmentMap {
 	 * genes in a geneset without have to generate their own dummy expression
 	 * file)
 	 */
-	public HashMap<String, Integer> getGenesetsGenes(HashMap<String, GeneSet> current_genesets) {
+	public Map<String, Integer> getGenesetsGenes(Map<String, GeneSet> current_genesets) {
 
 		HashMap<String, Integer> genesetGenes = new HashMap<String, Integer>();
 
@@ -274,11 +274,11 @@ public class EnrichmentMap {
 	 * Return a hash of all the genesets in the set of genesets regardless of
 	 * which dataset it comes from
 	 */
-	public HashMap<String, GeneSet> getAllGenesets() {
+	public Map<String, GeneSet> getAllGenesets() {
 		//go through each dataset and get the genesets from each
 		HashMap<String, GeneSet> all_genesets = new HashMap<String, GeneSet>();
 		for(Iterator<String> k = datasets.keySet().iterator(); k.hasNext();) {
-			HashMap<String, GeneSet> current_genesets = (datasets.get(k.next())).getSetofgenesets().getGenesets();
+			Map<String, GeneSet> current_genesets = (datasets.get(k.next())).getSetofgenesets().getGenesets();
 			all_genesets.putAll(current_genesets);
 		}
 		if(signatureGenesets != null && !signatureGenesets.isEmpty())
@@ -294,7 +294,7 @@ public class EnrichmentMap {
 		//go through each dataset and get the genesets from each
 		HashMap<String, GeneSet> all_genesets = new HashMap<String, GeneSet>();
 		for(Iterator<String> k = datasets.keySet().iterator(); k.hasNext();) {
-			HashMap<String, GeneSet> current_genesets = (datasets.get(k.next())).getSetofgenesets().getGenesets();
+			Map<String, GeneSet> current_genesets = (datasets.get(k.next())).getSetofgenesets().getGenesets();
 			all_genesets.putAll(current_genesets);
 		}
 		return all_genesets;
@@ -304,11 +304,11 @@ public class EnrichmentMap {
 	 * Return a hash of all the genesets in the set of genesets of interest
 	 * regardless of which dataset it comes from
 	 */
-	public HashMap<String, GeneSet> getAllGenesetsOfInterest() {
+	public Map<String, GeneSet> getAllGenesetsOfInterest() {
 		//go through each dataset and get the genesets from each
 		HashMap<String, GeneSet> all_genesetsOfInterest = new HashMap<String, GeneSet>();
 		for(Iterator<String> k = datasets.keySet().iterator(); k.hasNext();) {
-			HashMap<String, GeneSet> current_genesets = (datasets.get(k.next())).getGenesetsOfInterest().getGenesets();
+			Map<String, GeneSet> current_genesets = (datasets.get(k.next())).getGenesetsOfInterest().getGenesets();
 			all_genesetsOfInterest.putAll(current_genesets);
 		}
 		//if there are post analysis genesets, add them to the set of all genesets
@@ -317,19 +317,19 @@ public class EnrichmentMap {
 		return all_genesetsOfInterest;
 	}
 
-	public HashMap<String, GenesetSimilarity> getGenesetSimilarity() {
+	public Map<String, GenesetSimilarity> getGenesetSimilarity() {
 		return genesetSimilarity;
 	}
 
-	public void setGenesetSimilarity(HashMap<String, GenesetSimilarity> genesetSimilarity) {
+	public void setGenesetSimilarity(Map<String, GenesetSimilarity> genesetSimilarity) {
 		this.genesetSimilarity = genesetSimilarity;
 	}
 
-	public HashMap<String, Integer> getGenes() {
+	public Map<String, Integer> getGenes() {
 		return genes;
 	}
 
-	public void setGenes(HashMap<String, Integer> genes) {
+	public void setGenes(Map<String, Integer> genes) {
 		this.genes = genes;
 	}
 
@@ -341,11 +341,11 @@ public class EnrichmentMap {
 		NumberOfGenes = numberOfGenes;
 	}
 
-	public HashMap<String, DataSet> getDatasets() {
+	public Map<String, DataSet> getDatasets() {
 		return datasets;
 	}
 
-	public void setDatasets(HashMap<String, DataSet> datasets) {
+	public void setDatasets(Map<String, DataSet> datasets) {
 		this.datasets = datasets;
 	}
 
@@ -375,7 +375,7 @@ public class EnrichmentMap {
 		this.params = params;
 	}
 
-	public HashMap<Integer, String> getHashkey2gene() {
+	public Map<Integer, String> getHashkey2gene() {
 		return hashkey2gene;
 	}
 
@@ -383,13 +383,13 @@ public class EnrichmentMap {
 		this.hashkey2gene = hashkey2gene;
 	}
 
-	public HashSet<String> getAllRankNames() {
+	public Set<String> getAllRankNames() {
 		HashSet<String> allRankNames = new HashSet<String>();
 		//go through each Dataset
 		for(Iterator<String> k = datasets.keySet().iterator(); k.hasNext();) {
 			String current_ds = k.next();
 			//there could be duplicate ranking names for two different datasets. Add the dataset to the ranks name
-			HashSet<String> all_names = (datasets.get(current_ds)).getExpressionSets().getAllRanksNames();
+			Set<String> all_names = (datasets.get(current_ds)).getExpressionSets().getAllRanksNames();
 			for(Iterator<String> l = all_names.iterator(); l.hasNext();)
 				allRankNames.add(l.next() + "-" + current_ds);
 
@@ -397,7 +397,7 @@ public class EnrichmentMap {
 		return allRankNames;
 	}
 
-	public HashMap<String, Ranking> getAllRanks() {
+	public Map<String, Ranking> getAllRanks() {
 		HashMap<String, Ranking> allranks = new HashMap<String, Ranking>();
 		for(Iterator<String> k = datasets.keySet().iterator(); k.hasNext();) {
 			allranks.putAll((datasets.get(k.next())).getExpressionSets().getRanks());
@@ -438,11 +438,11 @@ public class EnrichmentMap {
 	 * Return a hash of all different type of genesets from all the datasets
 	 * regardless of which dataset it comes from
 	 */
-	public HashSet<String> getAllGenesetTypes() {
+	public Set<String> getAllGenesetTypes() {
 		//go through each dataset and get the genesets from each
 		HashSet<String> all_genesetTypes = new HashSet<String>();
 		for(Iterator<String> k = datasets.keySet().iterator(); k.hasNext();) {
-			HashSet<String> current_genesets_types = (datasets.get(k.next())).getSetofgenesets().getGenesetTypes();
+			Set<String> current_genesets_types = (datasets.get(k.next())).getSetofgenesets().getGenesetTypes();
 			all_genesetTypes.addAll(current_genesets_types);
 		}
 		return all_genesetTypes;
@@ -452,14 +452,14 @@ public class EnrichmentMap {
 	 * @param signatureGenesets
 	 *            the signatureGenesets to set
 	 */
-	public void setSignatureGenesets(HashMap<String, GeneSet> signatureGenesets) {
+	public void setSignatureGenesets(Map<String, GeneSet> signatureGenesets) {
 		this.signatureGenesets = signatureGenesets;
 	}
 
 	/**
 	 * @return the signatureGenesets
 	 */
-	public HashMap<String, GeneSet> getSignatureGenesets() {
+	public Map<String, GeneSet> getSignatureGenesets() {
 		return signatureGenesets;
 	}
 

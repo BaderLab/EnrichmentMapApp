@@ -4,8 +4,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.parsers.GMTFileReaderTask;
 import org.cytoscape.work.TaskMonitor;
@@ -71,9 +72,9 @@ public class SetOfGenesetsTest {
 		SetOfGeneSets gs_set = map.getDataset(EnrichmentMap.DATASET1).getSetofgenesets();			
 		
 		//get the genes to hash so we can create our own dataset genes to filter by
-		HashMap<String, Integer> genes = map.getGenes();
+		Map<String, Integer> genes = map.getGenes();
 		
-		HashSet<Integer> datasetgenes = new HashSet<Integer>();
+		Set<Integer> datasetgenes = new HashSet<>();
 		
 		//define a dataset							
 		if(genes.containsKey("HIST1H1B"))

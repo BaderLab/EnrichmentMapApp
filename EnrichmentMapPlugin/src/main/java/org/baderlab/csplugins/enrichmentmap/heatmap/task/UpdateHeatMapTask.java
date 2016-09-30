@@ -1,8 +1,8 @@
 package org.baderlab.csplugins.enrichmentmap.heatmap.task;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapPanel;
@@ -116,10 +116,10 @@ public class UpdateHeatMapTask extends AbstractTask {
 		// one of them will get over written in the hash.
 		// when using two distinct genesets we need to pull the gene info from
 		// each set separately.
-		HashMap<String, GeneSet> genesets = map.getAllGenesetsOfInterest();
-		HashMap<String, GeneSet> genesets_set1 = (map.getDatasets().containsKey(EnrichmentMap.DATASET1))
+		Map<String, GeneSet> genesets = map.getAllGenesetsOfInterest();
+		Map<String, GeneSet> genesets_set1 = (map.getDatasets().containsKey(EnrichmentMap.DATASET1))
 				? map.getDataset(EnrichmentMap.DATASET1).getSetofgenesets().getGenesets() : null;
-		HashMap<String, GeneSet> genesets_set2 = (map.getDatasets().containsKey(EnrichmentMap.DATASET2))
+		Map<String, GeneSet> genesets_set2 = (map.getDatasets().containsKey(EnrichmentMap.DATASET2))
 				? map.getDataset(EnrichmentMap.DATASET2).getSetofgenesets().getGenesets() : null;
 
 		// get the current Network

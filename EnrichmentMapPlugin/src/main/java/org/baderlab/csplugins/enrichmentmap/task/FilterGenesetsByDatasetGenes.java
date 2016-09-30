@@ -1,7 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap.task;
 
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
@@ -21,12 +21,12 @@ public class FilterGenesetsByDatasetGenes extends AbstractTask {
 	 * of genesets make sure to filter by the specific dataset genes.
 	 */
 	public void filterGenesets() {
-		HashMap<String, DataSet> datasets = map.getDatasets();
+		Map<String, DataSet> datasets = map.getDatasets();
 		for(String k : datasets.keySet()) {
 			DataSet current_set = datasets.get(k);
 			
 			//only filter the genesets if dataset genes are not null or empty
-			HashSet<Integer> datasetGenes = current_set.getDatasetGenes();
+			Set<Integer> datasetGenes = current_set.getDatasetGenes();
 			if(datasetGenes != null && !datasetGenes.isEmpty()) {
 				current_set.getSetofgenesets().filterGenesets(datasetGenes);
 			}
@@ -40,8 +40,8 @@ public class FilterGenesetsByDatasetGenes extends AbstractTask {
 
 		//if there are two dataset check to see if they have the same set of genes
 		if(datasets.size() > 1) {
-			HashSet<Integer> dataset1_genes = datasets.get(EnrichmentMap.DATASET1).getDatasetGenes();
-			HashSet<Integer> dataset2_genes = datasets.get(EnrichmentMap.DATASET2).getDatasetGenes();
+			Set<Integer> dataset1_genes = datasets.get(EnrichmentMap.DATASET1).getDatasetGenes();
+			Set<Integer> dataset2_genes = datasets.get(EnrichmentMap.DATASET2).getDatasetGenes();
 
 			if(!dataset1_genes.equals(dataset2_genes)) {
 				map.getParams().setTwoDistinctExpressionSets(true);

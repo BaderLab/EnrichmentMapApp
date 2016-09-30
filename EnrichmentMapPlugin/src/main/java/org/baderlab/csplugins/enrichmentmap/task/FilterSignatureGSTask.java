@@ -1,8 +1,8 @@
 package org.baderlab.csplugins.enrichmentmap.task;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
@@ -44,7 +44,7 @@ public class FilterSignatureGSTask extends AbstractTask implements ObservableTas
 
 		// Use the same genesets that are saved to the session file (bug #66)
 		// HashMap<String, GeneSet> genesets_in_map = map.getAllGenesets();
-		HashMap<String, GeneSet> genesets_in_map = map.getAllGenesetsOfInterest();
+		Map<String, GeneSet> genesets_in_map = map.getAllGenesetsOfInterest();
 
 		String[] setNamesArray = signatureGenesets.getGenesets().keySet().toArray(new String[0]);
 		Arrays.sort(setNamesArray);

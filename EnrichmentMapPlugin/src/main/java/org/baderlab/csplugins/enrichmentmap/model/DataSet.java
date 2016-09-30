@@ -1,6 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap.model;
 
 import java.util.HashSet;
+import java.util.Set;
 
 /*
  * An Enrichment Map Dataset consists of:
@@ -27,7 +28,7 @@ public class DataSet {
 
 	//The set of genes in the analysis
 	//(there might be genes in the gmt file that are not in expression set)
-	private HashSet<Integer> datasetGenes;
+	private Set<Integer> datasetGenes;
 
 	//Enrichment Map
 	//A dataset is associated with an Enrichment map.
@@ -40,7 +41,7 @@ public class DataSet {
 	public DataSet(EnrichmentMap map, String name, DataSetFiles files) {
 		this.map = map;
 		this.name = name;
-		this.datasetGenes = new HashSet<Integer>();
+		this.datasetGenes = new HashSet<>();
 
 		this.setofgenesets = new SetOfGeneSets();
 		this.genesetsOfInterest = new SetOfGeneSets();
@@ -124,7 +125,7 @@ public class DataSet {
 		this.genesetsOfInterest = genesetsOfInterest;
 	}
 
-	public HashSet<Integer> getDatasetGenes() {
+	public Set<Integer> getDatasetGenes() {
 		return datasetGenes;
 	}
 

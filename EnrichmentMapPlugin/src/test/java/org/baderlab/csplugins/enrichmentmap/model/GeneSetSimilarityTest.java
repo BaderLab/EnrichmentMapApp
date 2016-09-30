@@ -4,7 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
-import java.util.HashMap;
+import java.util.Map;
 
 import org.baderlab.csplugins.enrichmentmap.parsers.GMTFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.task.ComputeSimilarityTask;
@@ -57,12 +57,12 @@ public class GeneSetSimilarityTest {
 		ComputeSimilarityTask sim_task = new ComputeSimilarityTask(map);		
 		sim_task.run(taskMonitor);
 		
-		HashMap<String,GenesetSimilarity> similarities = map.getGenesetSimilarity();
+		Map<String,GenesetSimilarity> similarities = map.getGenesetSimilarity();
 		
 		assertEquals(15, similarities.size());
 		
 		//SetOfGeneSets gs_set = map.getDataset(EnrichmentMap.DATASET1).getSetofgenesets();
-		HashMap<String,Integer> genes = map.getGenes();
+		Map<String,Integer> genes = map.getGenes();
 		
 		//check the gene set similarity between APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4
 		//and APOPTOSIS%REACTOME%REACT_578.5
@@ -134,12 +134,12 @@ public class GeneSetSimilarityTest {
 		ComputeSimilarityTask sim_task = new ComputeSimilarityTask(map);		
 		sim_task.run(taskMonitor);
 		
-		HashMap<String,GenesetSimilarity> similarities = map.getGenesetSimilarity();
+		Map<String,GenesetSimilarity> similarities = map.getGenesetSimilarity();
 		
 		assertEquals(15, similarities.size());
 		
 		//SetOfGeneSets gs_set = map.getDataset(EnrichmentMap.DATASET1).getSetofgenesets();
-		HashMap<String,Integer> genes = map.getGenes();
+		Map<String,Integer> genes = map.getGenes();
 		
 		//check the gene set similarity between APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4
 		//and APOPTOSIS%REACTOME%REACT_578.5
@@ -214,12 +214,12 @@ public class GeneSetSimilarityTest {
 		ComputeSimilarityTask sim_task = new ComputeSimilarityTask(map);		
 		sim_task.run(taskMonitor);
 		
-		HashMap<String,GenesetSimilarity> similarities = map.getGenesetSimilarity();
+		Map<String,GenesetSimilarity> similarities = map.getGenesetSimilarity();
 		
 		assertEquals(15, similarities.size());
 		
 		//SetOfGeneSets gs_set = map.getDataset(EnrichmentMap.DATASET1).getSetofgenesets();
-		HashMap<String,Integer> genes = map.getGenes();
+		Map<String,Integer> genes = map.getGenes();
 		
 		//check the gene set similarity between APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4
 		//and APOPTOSIS%REACTOME%REACT_578.5

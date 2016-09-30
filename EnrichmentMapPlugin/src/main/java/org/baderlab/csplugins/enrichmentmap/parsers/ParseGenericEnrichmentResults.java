@@ -1,7 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap.parsers;
 
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
@@ -27,7 +27,7 @@ public class ParseGenericEnrichmentResults extends DatasetLineParser {
 
 		//Get the current genesets so we can check that all the results are in the geneset list
 		//and put the size of the genesets into the visual style
-		HashMap<String, GeneSet> genesets = dataset.getSetofgenesets().getGenesets();
+		Map<String, GeneSet> genesets = dataset.getSetofgenesets().getGenesets();
 
 		int currentProgress = 0;
 		int maxValue = lines.size();
@@ -40,10 +40,10 @@ public class ParseGenericEnrichmentResults extends DatasetLineParser {
 		String[] tokens = line.split("\t");
 		int length = tokens.length;
 
-		HashMap<String, Integer> genes = dataset.getMap().getGenes();
-		HashMap<Integer, String> key2gene = dataset.getMap().getHashkey2gene();
+		Map<String, Integer> genes = dataset.getMap().getGenes();
+		Map<Integer, String> key2gene = dataset.getMap().getHashkey2gene();
 		SetOfEnrichmentResults enrichments = dataset.getEnrichments();
-		HashMap<String, EnrichmentResult> results = enrichments.getEnrichments();
+		Map<String, EnrichmentResult> results = enrichments.getEnrichments();
 		String upPhenotype = enrichments.getPhenotype1();
 		String downPhenotype = enrichments.getPhenotype2();
 		
