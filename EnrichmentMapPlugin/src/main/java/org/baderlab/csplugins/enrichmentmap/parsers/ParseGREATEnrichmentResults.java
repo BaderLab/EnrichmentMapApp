@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
@@ -36,9 +37,7 @@ public class ParseGREATEnrichmentResults extends DatasetLineParser {
 
 		Map<String, GeneSet> genesets = dataset.getSetofgenesets().getGenesets();
 
-		//get the genes (which should also be empty
-		Map<String, Integer> genes = dataset.getMap().getGenes();
-		Map<Integer, String> key2gene = dataset.getMap().getHashkey2gene();
+		EnrichmentMap map = dataset.getMap();
 		Map<String, EnrichmentResult> results = dataset.getEnrichments().getEnrichments();
 		
 		int currentProgress = 0;
@@ -112,28 +111,15 @@ public class ParseGREATEnrichmentResults extends DatasetLineParser {
 
 			//All subsequent fields in the list are the geneset associated with this geneset.
 			for(int j = 0; j < gene_tokens.length; j++) {
-
 				String gene = gene_tokens[j].toUpperCase();
 				//Check to see if the gene is already in the hashmap of genes
-				//if it is already in the hash then get its associated key and put it
-				//into the set of genes
-				if(genes.containsKey(gene)) {
-					builder.add(genes.get(gene));
+				//if it is already in the hash then get its associated key and put it into the set of genes
+				if(map.containsGene(gene)) {
+					builder.add(map.getHashFromGene(gene));
 				}
-
-				//If the gene is not in the list then get the next value to be used and put it in the list
-				else {
-					if(!gene.equalsIgnoreCase("")) {
-
-						//add the gene to the master list of genes
-						int value = dataset.getMap().getNumberOfGenes();
-						genes.put(gene, value);
-						key2gene.put(value, gene);
-						dataset.getMap().setNumberOfGenes(value + 1);
-
-						//add the gene to the genelist
-						builder.add(genes.get(gene));
-					}
+				else if(!gene.isEmpty()) {
+					Integer hash = map.addGene(gene).get();
+					builder.add(hash);
 				}
 			}
 

@@ -411,7 +411,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 		//create an attribute that stores the genes that are associated with this node as an attribute list
 		//only create the list if the hashkey 2 genes is not null Otherwise it takes too much time to populate the list
 		//                GeneSet sigGeneSet = SelectedSignatureGenesets.get(hub_name);
-		if(map.getHashkey2gene() != null) {
+//		if(map.getHashkey2gene() != null) {
 			List<String> gene_list = sigGeneSet.getGenes().stream()
 					.map(map::getGeneFromHashKey)
 					.filter(Objects::nonNull)
@@ -431,7 +431,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 			current_row.set(prefix + EnrichmentMapVisualStyle.GS_TYPE, EnrichmentMapVisualStyle.GS_TYPE_SIGNATURE);
 			current_row.set(prefix + EnrichmentMapVisualStyle.NAME, sigGeneSet.getName());
 			current_row.set(prefix + EnrichmentMapVisualStyle.GS_SIZE_SIGNATURE, sigGeneSet.getGenes().size());
-		}
+//		}
 
 		// add the geneset of the signature node to the GenesetsOfInterest,
 		// as the Heatmap will grep it's data from there.
@@ -481,7 +481,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 		//View<CyEdge> edgeView = current_view.getEdgeView(edge);
 		//create an attribute that stores the genes that are associated with this edge as an attribute list
 		//only create the list if the hashkey 2 genes is not null Otherwise it take too much time to populate the list
-		if(map.getHashkey2gene() != null) {
+//		if(map.getHashkey2gene() != null) {
 			List<String> gene_list = new ArrayList<>();
 			Set<Integer> genes_hash = genesetSimilarity.getOverlapping_genes();
 			for(Integer current : genes_hash) {
@@ -493,7 +493,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 			Collections.sort(gene_list);
 
 			current_edgerow.set(prefix + EnrichmentMapVisualStyle.OVERLAP_GENES, gene_list);
-		}
+//		}
 
 		current_edgerow.set(prefix + EnrichmentMapVisualStyle.OVERLAP_SIZE, genesetSimilarity.getSizeOfOverlap());
 		current_edgerow.set(prefix + EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT, genesetSimilarity.getSimilarity_coeffecient());

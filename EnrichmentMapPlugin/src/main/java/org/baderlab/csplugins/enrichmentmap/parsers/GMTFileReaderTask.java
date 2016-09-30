@@ -70,8 +70,6 @@ public class GMTFileReaderTask extends AbstractTask {
 	//gene set file name
 	private String GMTFileName;
 	// gene hash (and inverse hash)
-	private Map<String, Integer> genes;
-	private Map<Integer, String> hashkey2gene;
 
 	//gene sets
 	private SetOfGeneSets setOfgenesets;
@@ -84,8 +82,6 @@ public class GMTFileReaderTask extends AbstractTask {
 	 */
 	public GMTFileReaderTask(DataSet dataset) {
 		this.GMTFileName = dataset.getSetofgenesets().getFilename();
-		this.genes = dataset.getMap().getGenes();
-		this.hashkey2gene = dataset.getMap().getHashkey2gene();
 		this.setOfgenesets = dataset.getSetofgenesets();
 		this.map = dataset.getMap();
 	}
@@ -98,8 +94,6 @@ public class GMTFileReaderTask extends AbstractTask {
 	 */
 	public GMTFileReaderTask(EnrichmentMap map, String gmtFileName, SetOfGeneSets setOfgensets, int genesets_file) {
 		this.map = map;
-		this.genes = map.getGenes();
-		this.hashkey2gene = map.getHashkey2gene();
 
 		if(genesets_file == ENRICHMENT_GMT) {
 			//open GMT file
@@ -127,7 +121,6 @@ public class GMTFileReaderTask extends AbstractTask {
 	 * parse GMT (gene set) file
 	 */
 	public void parse(TaskMonitor taskMonitor) throws IOException {
-
 		Map<String, GeneSet> genesets = setOfgenesets.getGenesets();
 		List<String> lines = DatasetLineParser.readLines(GMTFileName);
 		
@@ -143,16 +136,10 @@ public class GMTFileReaderTask extends AbstractTask {
 
 				//only go through the lines that have at least a gene set name and description.
 				if(tokens.length >= 2) {
-					//The first column of the file is the name of the geneset
-					//String Name = deAccent(tokens[0].toUpperCase().trim());
 					final String name = tokens[0].toUpperCase().trim();
-
-					//issue with accents on some of the genesets - replace all the accents
-
-					//The second column of the file is the description of the geneset
 					final String description = tokens[1].trim();
 
-					//create an object of type Geneset with the above Name and description
+					// set of genes keys
 					ImmutableSet.Builder<Integer> builder = ImmutableSet.builder();
 
 					// Calculate Percentage.  This must be a value between 0..100.
@@ -162,28 +149,15 @@ public class GMTFileReaderTask extends AbstractTask {
 
 					//All subsequent fields in the list are the geneset associated with this geneset.
 					for(int j = 2; j < tokens.length; j++) {
-
 						//Check to see if the gene is already in the hashmap of genes
-						//if it is already in the hash then get its associated key and put it
-						//into the set of genes
-						if(genes.containsKey(tokens[j].toUpperCase())) {
-							builder.add(genes.get(tokens[j].toUpperCase()));
+						//if it is already in the hash then get its associated key and put it into the set of genes
+						String gene = tokens[j].toUpperCase();
+						if(map.containsGene(gene)) {
+							builder.add(map.getHashFromGene(gene));
 						}
-
-						//If the gene is not in the list then get the next value to be used and put it in the list
-						else {
-							//only add the gene if it isn't a blank
-							if(!tokens[j].equalsIgnoreCase("")) {
-
-								//add the gene to the master list of genes
-								int value = map.getNumberOfGenes();
-								genes.put(tokens[j].toUpperCase(), value);
-								hashkey2gene.put(value, tokens[j].toUpperCase());
-								map.setNumberOfGenes(value + 1);
-
-								//add the gene to the genelist
-								builder.add(genes.get(tokens[j].toUpperCase()));
-							}
+						else if(!gene.isEmpty()) {
+							Integer hash = map.addGene(gene).get();
+							builder.add(hash);
 						}
 					}
 

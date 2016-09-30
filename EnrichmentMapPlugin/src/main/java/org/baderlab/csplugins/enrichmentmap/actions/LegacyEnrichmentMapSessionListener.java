@@ -153,7 +153,8 @@ public class LegacyEnrichmentMapSessionListener implements SessionLoadedListener
 					}
 					if(prop_file.getName().contains(".genes.txt")){
 						HashMap<String, Integer> genes = params.repopulateHashmap(fullText,2);
-						em.setGenes(genes);
+						genes.forEach(em::addGene);
+//						em.setGenes(genes);
 						//ticket #188 - unable to open session files that have empty enrichment maps.
 						if(genes != null && !genes.isEmpty())
 							// Ticket #107 : restore also gene count (needed to determine the next free hash in case we do PostAnalysis with a restored session)
@@ -161,7 +162,7 @@ public class LegacyEnrichmentMapSessionListener implements SessionLoadedListener
 					}
 					if(prop_file.getName().contains(".hashkey2genes.txt")){
 						HashMap<Integer,String> hashkey2gene = params.repopulateHashmap(fullText,5);
-						em.setHashkey2gene(hashkey2gene);
+//						em.setHashkey2gene(hashkey2gene);
 						//ticket #188 - unable to open session files that have empty enrichment maps.
 						if(hashkey2gene != null && !hashkey2gene.isEmpty() )
 							// Ticket #107 : restore also gene count (needed to determine the next free hash in case we do PostAnalysis with a restored session)

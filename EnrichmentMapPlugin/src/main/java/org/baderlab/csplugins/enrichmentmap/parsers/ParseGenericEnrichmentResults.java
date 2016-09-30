@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.GenericResult;
@@ -40,8 +41,7 @@ public class ParseGenericEnrichmentResults extends DatasetLineParser {
 		String[] tokens = line.split("\t");
 		int length = tokens.length;
 
-		Map<String, Integer> genes = dataset.getMap().getGenes();
-		Map<Integer, String> key2gene = dataset.getMap().getHashkey2gene();
+		EnrichmentMap map = dataset.getMap();
 		SetOfEnrichmentResults enrichments = dataset.getEnrichments();
 		Map<String, EnrichmentResult> results = enrichments.getEnrichments();
 		String upPhenotype = enrichments.getPhenotype1();
@@ -142,22 +142,13 @@ public class ParseGenericEnrichmentResults extends DatasetLineParser {
 							String gene = token.trim().toUpperCase();
 
 							//Check to see if the gene is already in the hashmap of genes
-							//if it is already in the hash then get its associated key and put it
-							//into the set of genes
-							if(genes.containsKey(gene)) {
-								builder.add(genes.get(gene));
+							//if it is already in the hash then get its associated key and put it into the set of genes
+							if(map.containsGene(gene)) {
+								builder.add(map.getHashFromGene(gene));
 							}
-
-							//If the gene is not in the list then get the next value to be used and put it in the list
-							else if(!gene.equalsIgnoreCase("")) {
-								//add the gene to the master list of genes
-								int value = dataset.getMap().getNumberOfGenes();
-								genes.put(gene, value);
-								key2gene.put(value, gene);
-								dataset.getMap().setNumberOfGenes(value + 1);
-
-								//add the gene to the genelist
-								builder.add(genes.get(gene));
+							else if(!gene.isEmpty()) {
+								Integer hash = map.addGene(gene).get();
+								builder.add(hash);
 							}
 						}
 

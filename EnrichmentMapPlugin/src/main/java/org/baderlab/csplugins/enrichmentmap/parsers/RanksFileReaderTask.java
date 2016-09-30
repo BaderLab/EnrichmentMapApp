@@ -50,11 +50,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.Rank;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
@@ -137,7 +137,7 @@ public class RanksFileReaderTask extends AbstractTask {
 		int maxValue = lines.size();
 		taskMonitor.setStatusMessage("Parsing Rank file - " + maxValue + " rows");
 
-		Map<String, Integer> genes = dataset.getMap().getGenes();
+		EnrichmentMap map = dataset.getMap();
 		// we don't know the number of scores in the rank file yet, but it can't be more than the number of lines.
 		Double[] score_collector = new Double[lines.size()];
 
@@ -218,8 +218,8 @@ public class RanksFileReaderTask extends AbstractTask {
 			score_collector[nScores - 1] = score;
 
 			//check to see if the gene is in the genelist
-			if(genes.containsKey(name)) {
-				Integer genekey = genes.get(name);
+			Integer genekey = map.getHashFromGene(name);
+			if(genekey != null) {
 				Rank current_ranking;
 				//if their were 5 tokens in the rank file then the assumption
 				//is that this is a GSEA rank file and the order of the scores

@@ -1,10 +1,15 @@
 package org.baderlab.csplugins.enrichmentmap.model;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 
 /***
  * An Enrichment Map object contains the minimal information needed to build an
@@ -28,12 +33,8 @@ public class EnrichmentMap {
 	private Map<String, GenesetSimilarity> genesetSimilarity;
 
 	//The set of genes defined in the Enrichment map
-	private Map<String, Integer> genes;
+	private BiMap<Integer,String> genes;
 
-	//when translating visual attribute of the gene list we need to be able to translate
-	//the gene hash key into the gene name without tracing from the entire hash.
-	//create the opposite of the gene hashmap so we can do this.
-	private Map<Integer, String> hashkey2gene;
 
 	// Temporary constants for Dataset 1 and Dataset 2
 	// Will eventually get rid of them
@@ -55,11 +56,10 @@ public class EnrichmentMap {
 	 */
 
 	public EnrichmentMap(EnrichmentMapParameters params) {
-
 		this.params = params;
 		this.name = null;
-
 		this.datasets = new HashMap<String, DataSet>();
+		
 		//initialize a new Dataset if the params have enrichment result or a GMT file
 		if(params.getFiles().containsKey(EnrichmentMap.DATASET1)) {
 			DataSetFiles dataset1files = params.getFiles().get(EnrichmentMap.DATASET1);
@@ -82,15 +82,10 @@ public class EnrichmentMap {
 			}
 		}
 
-		this.genes = new HashMap<String, Integer>();
-		this.hashkey2gene = new HashMap<Integer, String>();
-
-		this.genesetSimilarity = new HashMap<String, GenesetSimilarity>();
-
-		this.signatureGenesets = new HashMap<String, GeneSet>();
-
+		this.genes = HashBiMap.create();
+		this.genesetSimilarity = new HashMap<>();
+		this.signatureGenesets = new HashMap<>();
 		initialize_files();
-
 	}
 
 	public EnrichmentMap(EnrichmentMapParameters params, String name) {
@@ -200,19 +195,51 @@ public class EnrichmentMap {
 
 	}
 
-	/**
-	 * given the hash key representing a gene return the gene name
-	 *
-	 * @param hash
-	 *            - the hash key representing a gene
-	 * @return String - gene name
-	 */
-	public String getGeneFromHashKey(Integer hash) {
-		String gene = null;
-		if(hashkey2gene != null || !hashkey2gene.isEmpty())
-			gene = hashkey2gene.get(hash);
-		return gene;
+	public boolean containsGene(String gene) {
+		return genes.containsValue(gene);
+	}
 
+	public String getGeneFromHashKey(Integer hash) {
+		return genes.get(hash);
+	}
+	
+	public Integer getHashFromGene(String gene) {
+		// MKTOD should I toUpperCase?
+		return genes.inverse().get(gene);
+	}
+	
+	public Collection<String> getAllGenes() {
+		return genes.values();
+	}
+	
+	public Optional<Integer> addGene(String gene) {
+		gene = gene.toUpperCase();
+		
+		Map<String,Integer> geneToHash = genes.inverse();
+		
+		Integer hash = geneToHash.get(gene);
+		if(hash != null)
+			return Optional.of(hash);
+
+		Integer newHash = ++NumberOfGenes;
+		genes.put(newHash, gene);
+		return Optional.of(newHash);
+	}
+	
+	@Deprecated // MKTODO this is here to support legacy session loading, TEMPORARY until a builder is available
+	public void addGene(String gene, int id) {
+		genes.put(id, gene);
+		if(id > NumberOfGenes)
+			NumberOfGenes = id;
+	}
+	
+
+	public int getNumberOfGenes() {
+		return NumberOfGenes;
+	}
+
+	public void setNumberOfGenes(int numberOfGenes) {
+		NumberOfGenes = numberOfGenes;
 	}
 
 	/*
@@ -238,8 +265,8 @@ public class EnrichmentMap {
 			for(Iterator k = geneset_genes.iterator(); k.hasNext();) {
 				Integer current_genekey = (Integer) k.next();
 				//get the current geneName
-				if(hashkey2gene.containsKey(current_genekey)) {
-					String name = hashkey2gene.get(current_genekey);
+				if(genes.containsKey(current_genekey)) {
+					String name = genes.get(current_genekey);
 					genesetGenes.put(name, current_genekey);
 				}
 
@@ -324,23 +351,7 @@ public class EnrichmentMap {
 	public void setGenesetSimilarity(Map<String, GenesetSimilarity> genesetSimilarity) {
 		this.genesetSimilarity = genesetSimilarity;
 	}
-
-	public Map<String, Integer> getGenes() {
-		return genes;
-	}
-
-	public void setGenes(Map<String, Integer> genes) {
-		this.genes = genes;
-	}
-
-	public int getNumberOfGenes() {
-		return NumberOfGenes;
-	}
-
-	public void setNumberOfGenes(int numberOfGenes) {
-		NumberOfGenes = numberOfGenes;
-	}
-
+	
 	public Map<String, DataSet> getDatasets() {
 		return datasets;
 	}
@@ -373,14 +384,6 @@ public class EnrichmentMap {
 
 	public void setParams(EnrichmentMapParameters params) {
 		this.params = params;
-	}
-
-	public Map<Integer, String> getHashkey2gene() {
-		return hashkey2gene;
-	}
-
-	public void setHashkey2gene(HashMap<Integer, String> hashkey2gene) {
-		this.hashkey2gene = hashkey2gene;
 	}
 
 	public Set<String> getAllRankNames() {

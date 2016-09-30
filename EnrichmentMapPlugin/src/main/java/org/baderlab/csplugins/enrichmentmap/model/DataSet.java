@@ -67,15 +67,6 @@ public class DataSet {
 
 	}
 
-	/*
-	 * Using the genesetsOfInterest filter the enrichment results return - a set
-	 * of enrichment Results contain only the genesets of interest.
-	 */
-	/*
-	 * public SetOfEnrichmentResults getFilteredEnrichmentResults(){
-	 * 
-	 * }
-	 */
 
 	public String getName() {
 		return name;

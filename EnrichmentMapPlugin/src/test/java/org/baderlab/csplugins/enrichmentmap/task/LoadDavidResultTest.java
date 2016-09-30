@@ -68,7 +68,7 @@ public class LoadDavidResultTest {
 		//there should be 7 * 6 edges
 		assertEquals((7 * 6)/2,em.getGenesetSimilarity().size());
 		//there should be a total of 366 genes
-		assertEquals(414, em.getGenes().size());
+		assertEquals(414, em.getNumberOfGenes());
 		//there should be 43 genes in the geneset "nucleolus"
 		assertEquals(114, em.getAllGenesets().get("ACETYLATION").getGenes().size());
 
@@ -168,7 +168,7 @@ public class LoadDavidResultTest {
 
 		// there should be 20 edges (2 edges for every node because of the distinct expresison sets)
 		// assertEquals((7*6),em.getGenesetSimilarity().size()); there should be a total of 366 genes
-		assertEquals(661, em.getGenes().size());
+		assertEquals(661, em.getNumberOfGenes());
 
 	}
 		

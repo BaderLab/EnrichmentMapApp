@@ -224,14 +224,14 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 
 			//create an attribute that stores the genes that are associated with this node as an attribute list
 			//only create the list if the hashkey 2 genes is not null Otherwise it take too much time to populate the list
-			if(map.getHashkey2gene() != null) {
+//			if(map.getHashkey2gene() != null) {
 				Set<Integer> genes = gs.getGenes();
 				if(gs2 != null)
 					genes = Sets.union(genes, gs2.getGenes());
 				
 				List<String> gene_list = genes.stream().map(map::getGeneFromHashKey).collect(Collectors.toList());
 				current_row.set(prefix + EnrichmentMapVisualStyle.GENES, gene_list);
-			}
+//			}
 
 			if(map.getParams().getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)) {
 				GSEAResult current_result = (GSEAResult) enrichmentResults1.get(current_name);
@@ -297,7 +297,7 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 
 					//create an attribute that stores the genes that are associated with this node as an attribute list
 					//only create the list if the hashkey 2 genes is not null Otherwise it take too much time to populate the list
-					if(map.getHashkey2gene() != null) {
+//					if(map.getHashkey2gene() != null) {
 						List<String> gene_list = new ArrayList<String>();
 						HashSet<Integer> genes_hash = new HashSet<Integer>();
 						genes_hash.addAll(gs.getGenes());
@@ -313,7 +313,7 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 						}
 
 						current_row.set(prefix + EnrichmentMapVisualStyle.GENES, gene_list);
-					}
+//					}
 
 					if(map.getParams().getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)) {
 						if(enrichmentResults1.containsKey(current_name)) {
@@ -395,13 +395,13 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 
 				//create an attribute that stores the genes that are associated with this edge as an attribute list
 				//only create the list if the hashkey 2 genes is not null Otherwise it take too much time to populate the list
-				if(map.getHashkey2gene() != null) {
+//				if(map.getHashkey2gene() != null) {
 					List<String> gene_list = 
 							current_result.getOverlapping_genes().stream()
 							.map(map::getGeneFromHashKey)
 							.collect(Collectors.toList());
 					current_edgerow.set(prefix + EnrichmentMapVisualStyle.OVERLAP_GENES, gene_list);
-				}
+//				}
 
 			}
 		}

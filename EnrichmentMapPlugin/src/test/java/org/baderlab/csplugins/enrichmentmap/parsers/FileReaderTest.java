@@ -49,7 +49,7 @@ public class FileReaderTest {
 
         //test to make sure that the file loaded in 10 genesets with a total of 75 genes
         assertEquals(10, map.getAllGenesets().size());
-        assertEquals(75, map.getGenes().size());
+        assertEquals(75, map.getNumberOfGenes());
 
     }
 
@@ -71,33 +71,18 @@ public class FileReaderTest {
         DataSet dataset = map.getDataset(EnrichmentMap.DATASET1);
 
         //in order to load expression data the genes have to be registered with the application
-        Map<String, Integer> genes = map.getGenes();
-        Map<Integer, String> hash2genes = map.getHashkey2gene();
 
         //make sure that the genes are empty
-        assertEquals(0,genes.size());
+        assertEquals(0, map.getNumberOfGenes());
 
         //add the gene to the master list of genes
-        int value = map.getNumberOfGenes();
-        genes.put("GLS", value);
-        hash2genes.put(value,"GLS");
-        map.setNumberOfGenes(value++);
-
-        genes.put("PSMA1", value);
-        hash2genes.put(value,"PSMA1");
-        map.setNumberOfGenes(value++);
-
-        //different case to the one in the expression file
-        genes.put("ZP1", value);
-        hash2genes.put(value,"ZP1");
-        map.setNumberOfGenes(value++);
-
-        genes.put("ZYX", value);
-        hash2genes.put(value,"ZYX");
-        map.setNumberOfGenes(value++);
+        map.addGene("GLS");
+        map.addGene("PSMA1");
+        map.addGene("ZP1");
+        map.addGene("ZYX");
 
         //make sure all four genes have been associated
-        assertEquals(4,map.getGenes().size());
+        assertEquals(4, map.getNumberOfGenes());
 
         //load expression file
         ExpressionFileReaderTask task = new ExpressionFileReaderTask(dataset);
@@ -105,7 +90,7 @@ public class FileReaderTest {
 
         //There was one more gene in the expression file that wasn't in the set of genes
         //make sure it was was added
-        assertEquals(4,map.getGenes().size());
+        assertEquals(4, map.getNumberOfGenes());
         
         assertEquals(4, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getNumGenes());
         assertEquals(59, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getNumConditions());
@@ -131,34 +116,17 @@ public class FileReaderTest {
         //get the default dataset
         DataSet dataset = map.getDataset(EnrichmentMap.DATASET1);
 
-        //in order to load expression data the genes have to be registered with the application
-        Map<String, Integer> genes = map.getGenes();
-        Map<Integer, String> hash2genes = map.getHashkey2gene();
-
         //make sure that the genes are empty
-        assertEquals(0,genes.size());
+        assertEquals(0, map.getNumberOfGenes());
 
         //add the gene to the master list of genes
-        int value = map.getNumberOfGenes();
-        genes.put("GLS", value);
-        hash2genes.put(value,"GLS");
-        map.setNumberOfGenes(value++);
-
-        genes.put("PSMA1", value);
-        hash2genes.put(value,"PSMA1");
-        map.setNumberOfGenes(value++);
-
-        //different case to the one in the expression file
-        genes.put("ZP1", value);
-        hash2genes.put(value,"ZP1");
-        map.setNumberOfGenes(value++);
-
-        genes.put("ZYX", value);
-        hash2genes.put(value,"ZYX");
-        map.setNumberOfGenes(value++);
+        map.addGene("GLS");
+        map.addGene("PSMA1");
+        map.addGene("ZP1");
+        map.addGene("ZYX");
 
         //make sure all four genes have been associated
-        assertEquals(4,map.getGenes().size());
+        assertEquals(4, map.getNumberOfGenes());
 
         //load expression file
         ExpressionFileReaderTask task = new ExpressionFileReaderTask(dataset);
@@ -167,7 +135,7 @@ public class FileReaderTest {
 
         //There was one more gene in the expression file that wasn't in the set of genes
         //make sure it was was added
-        assertEquals(4,map.getGenes().size());
+        assertEquals(4, map.getNumberOfGenes());
         assertEquals(5.131481026, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getMaxExpression(),0.0);
 
         assertEquals(4, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getNumGenes());
@@ -194,34 +162,17 @@ public class FileReaderTest {
         //get the default dataset
         DataSet dataset = map.getDataset(EnrichmentMap.DATASET1);
 
-        //in order to load expression data the genes have to be registered with the application
-        Map<String, Integer> genes = map.getGenes();
-        Map<Integer, String> hash2genes = map.getHashkey2gene();
-
         //make sure that the genes are empty
-        assertEquals(0,genes.size());
+        assertEquals(0, map.getNumberOfGenes());
 
         //add the gene to the master list of genes
-        int value = map.getNumberOfGenes();
-        genes.put("GLS", value);
-        hash2genes.put(value,"GLS");
-        map.setNumberOfGenes(value++);
-
-        genes.put("PSMA1", value);
-        hash2genes.put(value,"PSMA1");
-        map.setNumberOfGenes(value++);
-
-        //different case to the one in the expression file
-        genes.put("ZP1", value);
-        hash2genes.put(value,"ZP1");
-        map.setNumberOfGenes(value++);
-
-        genes.put("ZYX", value);
-        hash2genes.put(value,"ZYX");
-        map.setNumberOfGenes(value++);
+        map.addGene("GLS");
+        map.addGene("PSMA1");
+        map.addGene("ZP1");
+        map.addGene("ZYX");
 
         //make sure all four genes have been associated
-        assertEquals(4,map.getGenes().size());
+        assertEquals(4, map.getNumberOfGenes());
 
         //load expression file
         ExpressionFileReaderTask task = new ExpressionFileReaderTask(dataset);
@@ -230,7 +181,7 @@ public class FileReaderTest {
 
         //There was one more gene in the expression file that wasn't in the set of genes
         //make sure it was was added
-        assertEquals(4,map.getGenes().size());
+        assertEquals(4, map.getNumberOfGenes());
 
         assertEquals(4, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getNumGenes());
         assertEquals(3, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getNumConditions());
@@ -256,34 +207,17 @@ public class FileReaderTest {
         //get the default dataset
         DataSet dataset = map.getDataset(EnrichmentMap.DATASET1);
 
-        //in order to load expression data the genes have to be registered with the application
-        Map<String, Integer> genes = map.getGenes();
-        Map<Integer, String> hash2genes = map.getHashkey2gene();
-
         //make sure that the genes are empty
-        assertEquals(0,genes.size());
+        assertEquals(0, map.getNumberOfGenes());
 
         //add the gene to the master list of genes
-        int value = map.getNumberOfGenes();
-        genes.put("GLS", value);
-        hash2genes.put(value,"GLS");
-        map.setNumberOfGenes(value++);
-
-        genes.put("PSMA1", value);
-        hash2genes.put(value,"PSMA1");
-        map.setNumberOfGenes(value++);
-
-        //different case to the one in the expression file
-        genes.put("ZP1", value);
-        hash2genes.put(value,"ZP1");
-        map.setNumberOfGenes(value++);
-
-        genes.put("ZYX", value);
-        hash2genes.put(value,"ZYX");
-        map.setNumberOfGenes(value++);
+        map.addGene("GLS");
+        map.addGene("PSMA1");
+        map.addGene("ZP1");
+        map.addGene("ZYX");
 
         //make sure all four genes have been associated
-        assertEquals(4,map.getGenes().size());
+        assertEquals(4, map.getNumberOfGenes());
 
         //load expression file
         ExpressionFileReaderTask task = new ExpressionFileReaderTask(dataset);
@@ -292,7 +226,7 @@ public class FileReaderTest {
 
         //There was one more gene in the expression file that wasn't in the set of genes
         //make sure it was was added
-        assertEquals(4,map.getGenes().size());
+        assertEquals(4, map.getNumberOfGenes());
 
         assertEquals(4, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getNumGenes());
         assertEquals(3, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getNumConditions());
