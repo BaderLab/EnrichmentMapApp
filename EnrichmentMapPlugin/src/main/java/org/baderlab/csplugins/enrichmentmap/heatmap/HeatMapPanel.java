@@ -688,14 +688,13 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 		}
 
 		int n = 0;
-		Map<Integer, Rank> current_ranks = ranks.getRanking();
 		for (Iterator<Integer> i = currentExpressionSet.keySet().iterator(); i.hasNext();) {
 			Integer key = i.next();
 
 			//check to see the key is in the rank file.
 			//For new rank files it is possible that some of the genes/proteins won't be ranked
-			if (current_ranks.containsKey(key)) {
-				ranks_subset[n] = ((Rank) current_ranks.get(key)).getRank();
+			if (ranks.contains(key)) {
+				ranks_subset[n] = ranks.getRank(key).getRank();
 				//check to see if the rank is already in the list.
 			} else {
 				ranks_subset[n] = -1;
@@ -885,13 +884,12 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 		int n = 0;
 		int maxRank = 0;
 		int missingRanksCount = 0;
-		Map<Integer, Rank> current_ranks = ranks.getRanking();
 		for (Iterator<Integer> i = expressionUsing.keySet().iterator(); i.hasNext();) {
 			Integer key = i.next();
 			//check to see the key is in the rank file.
 			//For new rank files it is possible that some of the genes/proteins won't be ranked
-			if (current_ranks.containsKey(key)) {
-				ranks_subset[n] = ((Rank) current_ranks.get(key)).getRank();
+			if (ranks.contains(key)) {
+				ranks_subset[n] = ranks.getRank(key).getRank();
 
 				if (ranks_subset[n] > maxRank)
 					maxRank = ranks_subset[n];

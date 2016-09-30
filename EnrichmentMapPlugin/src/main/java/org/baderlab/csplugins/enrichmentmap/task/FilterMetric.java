@@ -1,6 +1,5 @@
 package org.baderlab.csplugins.enrichmentmap.task;
 
-import java.util.Map;
 import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.model.FilterType;
@@ -127,14 +126,13 @@ public interface FilterMetric {
 
 		public boolean match(int mapGenesetSize, Set<Integer> intersection, Set<Integer> signatureSet) {
 			// Calculate Mann-Whitney U pValue for Overlap
-			Map<Integer, Double> gene2score = ranks.getGene2Score();
-			Object[] overlap_gene_ids = intersection.toArray();
+			Integer[] overlap_gene_ids = intersection.toArray(new Integer[0]);
 			if(overlap_gene_ids.length > 0) {
 				double[] overlap_gene_scores = new double[overlap_gene_ids.length];
 
 				// Get the scores for the overlap
 				for(int p = 0; p < overlap_gene_ids.length; p++) {
-					overlap_gene_scores[p] = gene2score.get(overlap_gene_ids[p]);
+					overlap_gene_scores[p] = ranks.getScore(overlap_gene_ids[p]);
 				}
 
 				double[] scores = ranks.getScores();

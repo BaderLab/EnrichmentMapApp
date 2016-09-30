@@ -20,6 +20,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.GenesetSimilarity;
+import org.baderlab.csplugins.enrichmentmap.model.Rank;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfEnrichmentResults;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
@@ -207,10 +208,15 @@ public class LegacyEnrichmentMapSessionListener implements SessionLoadedListener
 							new_ranking = new Ranking();
 							em.getDataset(EnrichmentMap.DATASET1).getExpressionSets().addRanks(Ranking.GSEARanking, new_ranking);                			
 						}
-						if(prop_file.getName().contains(".RANKS1Genes.txt"))
-							new_ranking.setRank2gene(em.getParams().repopulateHashmap(fullText,7));
-						if(prop_file.getName().contains(".RANKS1.txt"))
-							new_ranking.setRanking(em.getParams().repopulateHashmap(fullText,6));
+						
+						if(prop_file.getName().contains(".RANKS1.txt")) {
+							Map<Integer,Rank> ranks = (Map<Integer,Rank>)em.getParams().repopulateHashmap(fullText,7);
+							ranks.forEach(new_ranking::addRank);
+						}
+//						if(prop_file.getName().contains(".RANKS1Genes.txt"))
+//							new_ranking.setRank2gene(em.getParams().repopulateHashmap(fullText,7));
+//						if(prop_file.getName().contains(".RANKS1.txt"))
+//							new_ranking.setRanking(em.getParams().repopulateHashmap(fullText,6));
 					}
 
 					if(prop_file.getName().contains(".RANKS.txt")){
@@ -232,7 +238,9 @@ public class LegacyEnrichmentMapSessionListener implements SessionLoadedListener
 								parts.ranks_name = prop_file.getName();
 						}
 						Ranking new_ranking = new Ranking();
-						new_ranking.setRanking(em.getParams().repopulateHashmap(fullText,6));
+						Map<Integer,Rank> ranks = (Map<Integer,Rank>)em.getParams().repopulateHashmap(fullText,7);
+						ranks.forEach(new_ranking::addRank);
+//						new_ranking.setRanking(em.getParams().repopulateHashmap(fullText,6));
 
 						if(parts.dataset != null)
 							em.getDataset(parts.dataset).getExpressionSets().addRanks(parts.ranks_name,new_ranking);
@@ -271,10 +279,14 @@ public class LegacyEnrichmentMapSessionListener implements SessionLoadedListener
 								new_ranking = new Ranking();
 								em.getDataset(EnrichmentMap.DATASET2).getExpressionSets().addRanks(Ranking.GSEARanking, new_ranking);                			
 							}
-							if(prop_file.getName().contains(".RANKS2Genes.txt"))
-								new_ranking.setRank2gene(em.getParams().repopulateHashmap(fullText,7));
-							if(prop_file.getName().contains(".RANKS2.txt"))
-								new_ranking.setGene2rank(em.getParams().repopulateHashmap(fullText,6));
+							if(prop_file.getName().contains(".RANKS2.txt")) {
+								Map<Integer,Rank> ranks = (Map<Integer,Rank>)em.getParams().repopulateHashmap(fullText,7);
+								ranks.forEach(new_ranking::addRank);
+							}
+//							if(prop_file.getName().contains(".RANKS2Genes.txt"))
+//								new_ranking.setRank2gene(em.getParams().repopulateHashmap(fullText,7));
+//							if(prop_file.getName().contains(".RANKS2.txt"))
+//								new_ranking.setGene2rank(em.getParams().repopulateHashmap(fullText,6));
 						}
 					}
 				}
