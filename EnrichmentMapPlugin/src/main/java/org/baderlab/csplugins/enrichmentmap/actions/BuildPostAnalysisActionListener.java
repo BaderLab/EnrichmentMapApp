@@ -97,7 +97,7 @@ public class BuildPostAnalysisActionListener implements ActionListener {
 
 	public void runPostAnalysis() {
 		//make sure that the minimum information is set in the current set of parameters
-		EnrichmentMap map = emManager.getMap(applicationManager.getCurrentNetwork().getSUID());
+		EnrichmentMap map = emManager.getEnrichmentMap(applicationManager.getCurrentNetwork().getSUID());
 
 		StringBuilder errorBuilder = new StringBuilder();
 		paParams.checkMinimalRequirements(errorBuilder);

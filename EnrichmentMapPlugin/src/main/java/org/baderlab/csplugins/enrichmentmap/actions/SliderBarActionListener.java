@@ -134,7 +134,7 @@ public class SliderBarActionListener implements ChangeListener {
 
 		List<CyNode> nodes = network.getNodeList();
 
-		EnrichmentMapParameters params = emManager.getMap(network.getSUID()).getParams();
+		EnrichmentMapParameters params = emManager.getEnrichmentMap(network.getSUID()).getParams();
 		//get the prefix of the current network
 		String prefix = params.getAttributePrefix();
 
@@ -322,7 +322,7 @@ public class SliderBarActionListener implements ChangeListener {
 		List<CyEdge> edges = network.getEdgeList();
 
 		//get the prefix of the current network
-		String prefix = emManager.getMap(network.getSUID()).getParams().getAttributePrefix();
+		String prefix = emManager.getEnrichmentMap(network.getSUID()).getParams().getAttributePrefix();
 		//go through all the existing nodes to see if we need to hide any new nodes.
 
 		for(CyEdge i : edges) {

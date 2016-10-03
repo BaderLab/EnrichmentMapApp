@@ -99,7 +99,7 @@ public class LegacyEnrichmentMapSessionListener implements SessionLoadedListener
 					}
 
 					//register network and parameters
-					emManager.registerNetwork(getNetworkByName(name),em);
+					emManager.registerEnrichmentMap(getNetworkByName(name),em);
 				}
 			}
 			//go through the rest of the files
@@ -112,7 +112,7 @@ public class LegacyEnrichmentMapSessionListener implements SessionLoadedListener
 					continue;
 
 				CyNetwork net = getNetworkByName(parts.name);
-				EnrichmentMap em  = (net != null) ? emManager.getMap(net.getSUID()) : null;
+				EnrichmentMap em  = (net != null) ? emManager.getEnrichmentMap(net.getSUID()) : null;
 
 				if(em == null)
 					System.out.println("network for file" + prop_file.getName() + " does not exist.");
@@ -303,7 +303,7 @@ public class LegacyEnrichmentMapSessionListener implements SessionLoadedListener
 				if((parts_exp == null) || (parts_exp.name == null) )continue;
 
 				CyNetwork net = getNetworkByName(parts_exp.name);
-				EnrichmentMap map  = (net != null) ? emManager.getMap(net.getSUID()) : null;
+				EnrichmentMap map  = (net != null) ? emManager.getEnrichmentMap(net.getSUID()) : null;
 				Map<String,String> props = map.getParams().getProps();
 
 				if(parts_exp.type != null && parts_exp.type.equalsIgnoreCase("expression")){
@@ -351,13 +351,13 @@ public class LegacyEnrichmentMapSessionListener implements SessionLoadedListener
 
 			//register the action listeners for all the networks.
 			emManager.registerServices();
-			HashMap<Long, EnrichmentMap> networks = emManager.getCyNetworkList();
+			Map<Long, EnrichmentMap> networks = emManager.getAllEnrichmentMaps();
 
 			//iterate over the networks
 			for(Iterator<Long> j = networks.keySet().iterator();j.hasNext();){
 				Long id = j.next();
 				CyNetwork currentNetwork = cyNetworkManager.getNetwork(id);
-				EnrichmentMap map = emManager.getMap(id);
+				EnrichmentMap map = emManager.getEnrichmentMap(id);
 				//only initialize objects if there is a map for this network
 				if(map != null){
 					//initialize the Genesets (makes sure the leading edge is set correctly)

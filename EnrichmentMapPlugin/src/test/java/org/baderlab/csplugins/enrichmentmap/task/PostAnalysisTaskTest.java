@@ -208,7 +208,7 @@ public class PostAnalysisTaskTest extends BaseNetworkTest {
 		CyEdge sigEdge1 = edges.getEdge("PA_TOP8_MIDDLE8_BOTTOM8 (sig) TOP8_PLUS100");
 		CyEdge sigEdge2 = edges.getEdge("PA_TOP8_MIDDLE8_BOTTOM8 (sig) TOP1_PLUS100");
 		
-		EnrichmentMap map = emManager.getMap(emNetwork.getSUID());
+		EnrichmentMap map = emManager.getEnrichmentMap(emNetwork.getSUID());
 		assertNotNull(map);
 		
 		WidthFunction widthFunction = widthFunctionProvider.get();

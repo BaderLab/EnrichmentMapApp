@@ -5,8 +5,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Edges;
+import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Nodes;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapPanel;
-import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.GenesetSimilarity;
@@ -19,18 +20,20 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
-public class UpdateHeatMapTask extends AbstractTask {
-	// heat map parameters for heat map
-	private HeatMapParameters hmParams;
-	private CyApplicationManager applicationManager;
+import com.google.inject.Inject;
+import com.google.inject.assistedinject.Assisted;
 
+public class UpdateHeatMapTask extends AbstractTask {
+	
+	@Inject private CyApplicationManager applicationManager;
+	@Inject private @Edges HeatMapPanel edgeOverlapPanel;
+	@Inject private @Nodes HeatMapPanel nodeOverlapPanel;
+	
 	private EnrichmentMap map;
 
-	private List<CyNode> Nodes;
-	private List<CyEdge> Edges;
-
-	private HeatMapPanel edgeOverlapPanel;
-	private HeatMapPanel nodeOverlapPanel;
+	private List<CyNode> nodes;
+	private List<CyEdge> edges;
+	
 	private final CytoPanel cytoPanelSouth;
 
 	private static final ThreadLocal<Boolean> isCurrentlyFocusing = new ThreadLocal<Boolean>() {
@@ -40,17 +43,17 @@ public class UpdateHeatMapTask extends AbstractTask {
 		}
 	};
 	
+	public interface Factory {
+		UpdateHeatMapTask create(EnrichmentMap map, @Assisted("nodes") List<CyNode> nodes, @Assisted("edges") List<CyEdge> edges, CytoPanel cytoPanelSouth);
+	}
 	
-	public UpdateHeatMapTask(EnrichmentMap map, List<CyNode> nodes, List<CyEdge> edges, HeatMapPanel edgeOverlapPanel,
-			HeatMapPanel nodeOverlapPanel, CytoPanel cytoPanelSouth, CyApplicationManager applicationManager) {
+	
+	@Inject
+	public UpdateHeatMapTask(@Assisted EnrichmentMap map, @Assisted("nodes") List<CyNode> nodes, @Assisted("edges") List<CyEdge> edges, @Assisted CytoPanel cytoPanelSouth) {
 		this.map = map;
-		this.hmParams = map.getParams().getHmParams();
-		this.Nodes = nodes;
-		this.Edges = edges;
-		this.edgeOverlapPanel = edgeOverlapPanel;
-		this.nodeOverlapPanel = nodeOverlapPanel;
+		this.nodes = nodes;
+		this.edges = edges;
 		this.cytoPanelSouth = cytoPanelSouth;
-		this.applicationManager = applicationManager;
 	}
 
 	public void createEdgesData() {
@@ -237,14 +240,14 @@ public class UpdateHeatMapTask extends AbstractTask {
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		// if (Edges.size() <= Integer.parseInt(CytoscapeInit.getProperties().getProperty("EnrichmentMap.Heatmap_Edge_Limit", "100") ) )
-		if(Edges.size() > 0)
+		if(edges.size() > 0)
 			createEdgesData();
 
 		// if (Nodes.size() <= Integer.parseInt(CytoscapeInit.getProperties().getProperty("EnrichmentMap.Heatmap_Node_Limit", "50") ) )
-		if(Nodes.size() > 0)
+		if(nodes.size() > 0)
 			createNodesData();
 
-		if(Nodes.isEmpty() && Edges.isEmpty())
+		if(nodes.isEmpty() && edges.isEmpty())
 			clearPanels();
 
 	}

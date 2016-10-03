@@ -424,7 +424,7 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 		 * networkSet,CyEdge.class));
 		 */
 		//register the new Network with EM
-		emManager.registerNetwork(network, map);
+		emManager.registerEnrichmentMap(network, map);
 
 		map.getParams().setNetworkID(network.getSUID());
 

@@ -43,9 +43,13 @@
 
 package org.baderlab.csplugins.enrichmentmap.heatmap;
 
+import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Edges;
+import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Nodes;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
 import org.mskcc.colorgradient.ColorGradientRange;
 import org.mskcc.colorgradient.ColorGradientTheme;
+
+import com.google.inject.Inject;
 
 /**
  * Created by User: risserlin Date: Feb 11, 2009 Time: 12:23:01 PM
@@ -130,7 +134,8 @@ public class HeatMapParameters {
 	 * @param nodeOverlapPanel
 	 *            - heatmap for node genes unions
 	 */
-	public HeatMapParameters(HeatMapPanel edgeOverlapPanel, HeatMapPanel nodeOverlapPanel) {
+	@Inject
+	public HeatMapParameters(@Edges HeatMapPanel edgeOverlapPanel, @Nodes HeatMapPanel nodeOverlapPanel) {
 		this.edgeOverlapPanel = edgeOverlapPanel;
 		this.nodeOverlapPanel = nodeOverlapPanel;
 		sort = Sort.DEFAULT;

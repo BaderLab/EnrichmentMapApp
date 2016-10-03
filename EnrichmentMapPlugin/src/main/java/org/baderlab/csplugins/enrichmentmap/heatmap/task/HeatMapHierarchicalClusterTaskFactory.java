@@ -1,6 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap.heatmap.task;
 
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapPanel;
+import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
@@ -12,14 +13,14 @@ public class HeatMapHierarchicalClusterTaskFactory implements TaskFactory {
 
 	private HeatMapPanel heatmapPanel;
 	private EnrichmentMap map;
+	private HeatMapParameters hmParams;
 
-	public HeatMapHierarchicalClusterTaskFactory(int numConditions, int numConditions2, HeatMapPanel heatmapPanel,
-			EnrichmentMap map) {
-		super();
+	public HeatMapHierarchicalClusterTaskFactory(int numConditions, int numConditions2, HeatMapPanel heatmapPanel, EnrichmentMap map, HeatMapParameters hmParams) {
 		this.numConditions = numConditions;
 		this.numConditions2 = numConditions2;
 		this.heatmapPanel = heatmapPanel;
 		this.map = map;
+		this.hmParams = hmParams;
 	}
 
 	public TaskIterator createTaskIterator() {
@@ -35,12 +36,10 @@ public class HeatMapHierarchicalClusterTaskFactory implements TaskFactory {
 
 		//if there are too many genes then check that the user wants to do clustering
 		if(size > hierarchicalClusterMax) {
-			HeatMapHierarchicalClusterQuestionTask clusterquesttask = new HeatMapHierarchicalClusterQuestionTask(
-					this.numConditions, this.numConditions2, this.heatmapPanel, this.map);
+			HeatMapHierarchicalClusterQuestionTask clusterquesttask = new HeatMapHierarchicalClusterQuestionTask(numConditions, numConditions2, heatmapPanel, map, hmParams);
 			clusterIterator.append(clusterquesttask);
 		} else {
-			HeatMapHierarchicalClusterTask clustertask = new HeatMapHierarchicalClusterTask(this.numConditions,
-					this.numConditions2, this.heatmapPanel, this.map);
+			HeatMapHierarchicalClusterTask clustertask = new HeatMapHierarchicalClusterTask(numConditions, numConditions2, heatmapPanel, map, hmParams);
 			clusterIterator.append(clustertask);
 		}
 

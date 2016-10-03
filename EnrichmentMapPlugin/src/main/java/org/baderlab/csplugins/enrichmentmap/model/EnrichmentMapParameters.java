@@ -153,8 +153,8 @@ public class EnrichmentMapParameters {
 	private ArrayList<CyNode> selectedNodes;
 	private ArrayList<CyEdge> selectedEdges;
 
-	//Heat map parameters for this enrichment map - user specified current normalization, and sorting.
-	private HeatMapParameters hmParams;
+//	//Heat map parameters for this enrichment map - user specified current normalization, and sorting.
+//	private HeatMapParameters hmParams;
 
 	private Set<CyProperty<?>> cyto_prop;
 	private double defaultJaccardCutOff;
@@ -835,7 +835,7 @@ public class EnrichmentMapParameters {
 
 		this.selectedEdges = copy.getSelectedEdges();
 		this.selectedNodes = copy.getSelectedNodes();
-		this.hmParams = copy.getHmParams();
+//		this.hmParams = copy.getHmParams();
 		this.enrichment_edge_type = copy.getEnrichment_edge_type();
 
 		//field needed when calculating bulk enrichment maps.
@@ -1183,7 +1183,7 @@ public class EnrichmentMapParameters {
 				Long networkId = current_network.getSUID();
 				if(emManager.isEnrichmentMap(networkId)) {// fails
 					num_networks++;
-					EnrichmentMap tmpMap = emManager.getMap(networkId);
+					EnrichmentMap tmpMap = emManager.getEnrichmentMap(networkId);
 					String tmpPrefix = tmpMap.getParams().getAttributePrefix();
 					tmpPrefix = tmpPrefix.replace("EM", "");
 					tmpPrefix = tmpPrefix.replace("_", "");
@@ -1371,13 +1371,13 @@ public class EnrichmentMapParameters {
 		this.selectedEdges = selectedEdges;
 	}
 
-	public HeatMapParameters getHmParams() {
-		return hmParams;
-	}
-
-	public void setHmParams(HeatMapParameters hmParams) {
-		this.hmParams = hmParams;
-	}
+//	public HeatMapParameters getHmParams() {
+//		return hmParams;
+//	}
+//
+//	public void setHmParams(HeatMapParameters hmParams) {
+//		this.hmParams = hmParams;
+//	}
 
 	/* create a method to re-create rank to gene given the gene to rank */
 	public HashMap<Integer, Integer> getRank2geneDataset(HashMap<Integer, Rank> gene2rank) {

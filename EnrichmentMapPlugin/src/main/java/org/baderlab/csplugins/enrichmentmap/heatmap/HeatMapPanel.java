@@ -92,6 +92,7 @@ import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters.Sort;
 import org.baderlab.csplugins.enrichmentmap.heatmap.task.HeatMapHierarchicalClusterTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
 import org.baderlab.csplugins.enrichmentmap.model.GSEAResult;
@@ -134,6 +135,8 @@ import com.google.inject.Inject;
  */
 public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 
+	@Inject private EnrichmentMapManager emManager;
+	
 	@Inject private CySwingApplication application;
 	@Inject private CyApplicationManager applicationManager;
 	@Inject private FileUtil fileUtil;
@@ -265,7 +268,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 			this.Dataset1phenotype1 = params.getFiles().get(EnrichmentMap.DATASET1).getPhenotype1();
 			this.Dataset1phenotype2 = params.getFiles().get(EnrichmentMap.DATASET1).getPhenotype2();
 
-			hmParams = params.getHmParams();
+			hmParams = emManager.getHeatMapParameters(map.getParams().getNetworkID());
 			boolean[] ascending;
 			if (expression.getRanks() != null) {
 				ascending = new boolean[columnNames.length + map.getAllRankNames().size()];
@@ -864,7 +867,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 
 		Integer[] ranks_subset = new Integer[kValue];
 
-		HashMap<Integer, ArrayList<Integer>> rank2keys = new HashMap<Integer, ArrayList<Integer>>();
+		Map<Integer, ArrayList<Integer>> rank2keys = new HashMap<>();
 
 		Ranking ranks = getRanks(expressionUsing);
 		if (ranks == null)
@@ -1626,7 +1629,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 
 	}
 
-	private Ranking getEmptyRanks(HashMap<Integer, GeneExpression> expressionSet) {
+	private Ranking getEmptyRanks(Map<Integer, GeneExpression> expressionSet) {
 		Ranking ranks = new Ranking();
 
 		for (Iterator<Integer> i = expressionSet.keySet().iterator(); i.hasNext();) {
@@ -1644,7 +1647,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 	 *
 	 * @return current ranking specified by sort by combo box
 	 */
-	private Ranking getRanks(HashMap<Integer, GeneExpression> expressionSet) {
+	private Ranking getRanks(Map<Integer, GeneExpression> expressionSet) {
 		//Get the ranks for all the keys, if there is a ranking file
 		Ranking ranks = null;
 
@@ -1694,8 +1697,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 			if (hmParams.getSort() == HeatMapParameters.Sort.COLUMN)
 				hmParams.setSortbycolumn_event_triggered(true);
 		} else if (hmParams.getSort() == HeatMapParameters.Sort.CLUSTER) {
-			HeatMapHierarchicalClusterTaskFactory clustertask = new HeatMapHierarchicalClusterTaskFactory(this.numConditions, this.numConditions2, this,
-					this.map);
+			HeatMapHierarchicalClusterTaskFactory clustertask = new HeatMapHierarchicalClusterTaskFactory(numConditions, numConditions2, this, map, hmParams);
 			ResultTaskObserver observer = new ResultTaskObserver();
 
 			this.dialogTaskMonitor.execute(clustertask.createTaskIterator(), observer);

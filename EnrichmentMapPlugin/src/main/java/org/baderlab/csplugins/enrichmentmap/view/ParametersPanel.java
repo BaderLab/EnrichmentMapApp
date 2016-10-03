@@ -68,7 +68,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 
-import org.baderlab.csplugins.enrichmentmap.actions.ParametersPanelActionListener;
+import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Edges;
+import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Nodes;
+import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapPanel;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
@@ -98,14 +100,18 @@ public class ParametersPanel extends JPanel implements CytoPanelComponent {
 
 	public static int summaryPanelWidth = 150;
 	public static int summaryPanelHeight = 1000;
+	
 	private JCheckBox heatmapAutofocusCheckbox;
-	private EnrichmentMapParameters emParams;
+	
 	private EnrichmentMap map;
 
 	@Inject private OpenBrowser browser;
 	@Inject private CyApplicationManager cyApplicationManager;
 	@Inject private DialogTaskManager taskManager;
 	@Inject private EnrichmentMapManager emManager;
+	
+	@Inject private @Nodes HeatMapPanel nodesOverlapPanel;
+	@Inject private @Edges HeatMapPanel edgesOverlapPanel;
 	
 	@Inject private Provider<CreatePublicationVisualStyleTaskFactory> visualStyleTaskFactoryProvider;
 
@@ -122,7 +128,6 @@ public class ParametersPanel extends JPanel implements CytoPanelComponent {
 	 */
 	public void updatePanel(EnrichmentMap map) {
 		this.map = map;
-		this.emParams = map.getParams();
 		EnrichmentMapParameters params = map.getParams();
 
 		this.removeAll();
@@ -215,12 +220,12 @@ public class ParametersPanel extends JPanel implements CytoPanelComponent {
 				SwingUtilities.invokeLater(new Runnable() {
 					public void run() {
 						// toggle state of overrideHeatmapRevalidation
-						if (emParams.isDisableHeatmapAutofocus()) {
-							emParams.setDisableHeatmapAutofocus(false);
+						if (map.getParams().isDisableHeatmapAutofocus()) {
+							map.getParams().setDisableHeatmapAutofocus(false);
 						} else {
-							emParams.setDisableHeatmapAutofocus(true);
+							map.getParams().setDisableHeatmapAutofocus(true);
 						}
-						heatmapAutofocusCheckbox.setSelected(!emParams.isDisableHeatmapAutofocus());
+						heatmapAutofocusCheckbox.setSelected(!map.getParams().isDisableHeatmapAutofocus());
 					}
 				});
 			}
@@ -258,13 +263,13 @@ public class ParametersPanel extends JPanel implements CytoPanelComponent {
 		if (params.getDefaultSortMethod().equalsIgnoreCase(HeatMapParameters.sort_column))
 			columns.setSelected(true);
 
-		hc.addActionListener(new ParametersPanelActionListener(map));
+		hc.addActionListener(e -> map.getParams().setDefaultSortMethod(HeatMapParameters.sort_hierarchical_cluster));
 		sorting_methods.add(hc);
-		nosort.addActionListener(new ParametersPanelActionListener(map));
+		nosort.addActionListener(e -> map.getParams().setDefaultSortMethod(HeatMapParameters.sort_none));
 		sorting_methods.add(nosort);
-		ranks.addActionListener(new ParametersPanelActionListener(map));
+		ranks.addActionListener(e -> map.getParams().setDefaultSortMethod(HeatMapParameters.sort_rank));
 		sorting_methods.add(ranks);
-		columns.addActionListener(new ParametersPanelActionListener(map));
+		columns.addActionListener(e -> map.getParams().setDefaultSortMethod(HeatMapParameters.sort_column));
 		sorting_methods.add(columns);
 
 		sortingPanel.add(new JLabel("Default Sorting Order:"));
@@ -301,11 +306,20 @@ public class ParametersPanel extends JPanel implements CytoPanelComponent {
 		if (params.getDefaultDistanceMetric().equalsIgnoreCase(HeatMapParameters.euclidean))
 			euclidean.setSelected(true);
 
-		pearson.addActionListener(new ParametersPanelActionListener(map));
+		pearson.addActionListener(e-> {
+			edgesOverlapPanel.updatePanel(map);
+			nodesOverlapPanel.updatePanel(map);
+		});
 		distance_metric.add(pearson);
-		cosine.addActionListener(new ParametersPanelActionListener(map));
+		cosine.addActionListener(e-> {
+			edgesOverlapPanel.updatePanel(map);
+			nodesOverlapPanel.updatePanel(map);
+		});
 		distance_metric.add(cosine);
-		euclidean.addActionListener(new ParametersPanelActionListener(map));
+		euclidean.addActionListener(e-> {
+			edgesOverlapPanel.updatePanel(map);
+			nodesOverlapPanel.updatePanel(map);
+		});
 		distance_metric.add(euclidean);
 
 		dm_Panel.add(new JLabel("Default Distance Metric:"));

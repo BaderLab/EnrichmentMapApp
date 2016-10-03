@@ -70,7 +70,7 @@ public class LoadSignatureSetsActionListener implements ActionListener {
 	
 	public void actionPerformed(ActionEvent event) {
 		// make sure that the minimum information is set in the current set of parameters
-		EnrichmentMap current_map = emManager.getMap(applicationManager.getCurrentNetwork().getSUID());
+		EnrichmentMap current_map = emManager.getEnrichmentMap(applicationManager.getCurrentNetwork().getSUID());
 
 		String errors = checkGMTfiles(fileName);
 		if(errors.isEmpty()) {

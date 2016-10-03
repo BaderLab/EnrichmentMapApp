@@ -99,7 +99,7 @@ public class LoadPostAnalysisPanelAction extends AbstractCyAction {
 			//set the input window in the instance so we can udate the instance window on network focus
 			emManager.setAnalysisWindow(inputPanel);
 
-			EnrichmentMap map = emManager.getMap(network.getSUID());
+			EnrichmentMap map = emManager.getEnrichmentMap(network.getSUID());
 			inputPanel.showPanelFor(map);
 		}
 

@@ -229,7 +229,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 				// the genes that are in this signature gene set as well as in the Universe of Enrichment-GMT Genes.    
 				Set<Integer> sigGenesInUniverse = Sets.intersection(sigGenes, geneUniverse);
 
-				emManager.getMap(current_network.getSUID()).getSignatureGenesets().put(hub_name, sigGeneSet);
+				emManager.getEnrichmentMap(current_network.getSUID()).getSignatureGenesets().put(hub_name, sigGeneSet);
 
 				// iterate over Enrichment Genesets
 				for(String geneset_name : EnrichmentGenesets.keySet()) {

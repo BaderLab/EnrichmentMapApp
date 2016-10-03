@@ -38,7 +38,7 @@ public class HeatMapHierarchicalClusterTask extends AbstractTask implements Obse
 
 	private TaskMonitor taskMonitor;
 
-	public HeatMapHierarchicalClusterTask(int numConditions, int numConditions2, HeatMapPanel heatmapPanel, EnrichmentMap map) {
+	public HeatMapHierarchicalClusterTask(int numConditions, int numConditions2, HeatMapPanel heatmapPanel, EnrichmentMap map, HeatMapParameters hmParams) {
 		this.numConditions = numConditions;
 		this.numConditions2 = numConditions2;
 		this.heatmapPanel = heatmapPanel;
@@ -46,7 +46,7 @@ public class HeatMapHierarchicalClusterTask extends AbstractTask implements Obse
 		this.currentExpressionSet2 = this.heatmapPanel.getCurrentExpressionSet2();
 		this.map = map;
 		this.params = map.getParams();
-		this.hmParams = this.params.getHmParams();
+		this.hmParams = hmParams;
 	}
 
 	/**
