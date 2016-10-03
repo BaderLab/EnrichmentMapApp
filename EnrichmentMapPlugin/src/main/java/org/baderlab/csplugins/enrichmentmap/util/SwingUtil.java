@@ -3,9 +3,14 @@ package org.baderlab.csplugins.enrichmentmap.util;
 import java.awt.Component;
 import java.awt.Container;
 
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JList;
 import javax.swing.JPanel;
+
+import org.cytoscape.util.swing.LookAndFeelUtil;
 
 
 public class SwingUtil {
@@ -42,4 +47,31 @@ public class SwingUtil {
 		}
 	}
 
+	
+	public static void makeSmall(final JComponent... components) {
+		if (components == null || components.length == 0)
+			return;
+		
+		for (JComponent c : components) {
+			if (LookAndFeelUtil.isAquaLAF()) {
+				c.putClientProperty("JComponent.sizeVariant", "small");
+			} else {
+				if (c.getFont() != null)
+					c.setFont(c.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
+			}
+			
+			if (c instanceof JList) {
+				((JList<?>) c).setCellRenderer(new DefaultListCellRenderer() {
+					@Override
+					public Component getListCellRendererComponent(JList<?> list, Object value, int index,
+							boolean isSelected, boolean cellHasFocus) {
+						super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+						setFont(getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
+						
+						return this;
+					}
+				});
+			}
+		}
+	}
 }

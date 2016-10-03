@@ -1,5 +1,9 @@
 package org.baderlab.csplugins.enrichmentmap.mastermap.view;
 
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
+
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FileDialog;
@@ -17,11 +21,11 @@ import java.util.stream.Stream;
 
 import javax.swing.ButtonGroup;
 import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
@@ -31,7 +35,9 @@ import org.baderlab.csplugins.enrichmentmap.mastermap.task.MasterMapTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.util.NiceDialogCallback;
 import org.baderlab.csplugins.enrichmentmap.util.NiceDialogCallback.Message;
 import org.baderlab.csplugins.enrichmentmap.util.NiceDialogController;
+import org.baderlab.csplugins.enrichmentmap.util.SwingUtil;
 import org.baderlab.csplugins.enrichmentmap.view.AboutPanel;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.swing.DialogTaskManager;
 
@@ -70,7 +76,7 @@ public class MasterMapDialogController implements NiceDialogController {
 	
 	@Override
 	public Dimension getMinimumSize() {
-		return new Dimension(600, 500);
+		return new Dimension(700, 500);
 	}
 	
 
@@ -100,13 +106,11 @@ public class MasterMapDialogController implements NiceDialogController {
 	public JPanel createBodyPanel(NiceDialogCallback callback) {
 		this.callback = callback;
 		
-		panel = new JPanel(new BorderLayout());
-		
 		JPanel analysisPanel = createAnalysisTypePanel();
-		JPanel browsePanel   = createBrowsePanel();
-		JPanel listPanel     = createListPanel();
+		JPanel gseaPanel     = createGSEAPanel();
 		JPanel cutoffPanel   = createCutoffPanel();
 		
+		panel = new JPanel(new BorderLayout());
 		GroupLayout layout = new GroupLayout(panel);
 		panel.setLayout(layout);
 		layout.setAutoCreateContainerGaps(true);
@@ -115,16 +119,13 @@ public class MasterMapDialogController implements NiceDialogController {
 		layout.setHorizontalGroup(
 			layout.createParallelGroup()
 				.addComponent(analysisPanel)
-				.addComponent(browsePanel)
-				.addComponent(listPanel)
+				.addComponent(gseaPanel)
 				.addComponent(cutoffPanel)
 		);
-		
 		layout.setVerticalGroup(
 			layout.createSequentialGroup()
 				.addComponent(analysisPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-				.addComponent(browsePanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-				.addComponent(listPanel)
+				.addComponent(gseaPanel)
 				.addComponent(cutoffPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
 		);
 		
@@ -135,41 +136,81 @@ public class MasterMapDialogController implements NiceDialogController {
 
 	
 	private JPanel createAnalysisTypePanel() {
-		JLabel label = new JLabel("Analysis Type:");
-		
-		JRadioButton buttonGsea = new JRadioButton("GSEA");
-		JRadioButton buttonGeneric = new JRadioButton("Generic/g:Profiler");
+		JRadioButton gseaRadio = new JRadioButton("GSEA");
+		JRadioButton genericRadio = new JRadioButton("Generic/g:Profiler");
 		
 		ButtonGroup buttonGroup = new ButtonGroup();
-		buttonGroup.add(buttonGsea);
-		buttonGroup.add(buttonGeneric);
-		buttonGsea.setSelected(true);
-		buttonGeneric.setEnabled(false); // Temporary
+		buttonGroup.add(gseaRadio);
+		buttonGroup.add(genericRadio);
+		gseaRadio.setSelected(true);
+		genericRadio.setEnabled(false); // Temporary
 		
-		JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
-		buttonPanel.add(buttonGsea);
-		buttonPanel.add(buttonGeneric);
+		SwingUtil.makeSmall(gseaRadio, genericRadio);
+
+		JPanel panel = new JPanel();
+		panel.setBorder(LookAndFeelUtil.createTitledBorder("Analysis Type"));
 		
-		JPanel panel = new JPanel(new BorderLayout());
-		panel.add(label, BorderLayout.NORTH);
-		panel.add(buttonPanel, BorderLayout.CENTER);
-		return panel;
+		final GroupLayout layout = new GroupLayout(panel);
+		panel.setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(true);
+	   		
+   		layout.setHorizontalGroup(layout.createSequentialGroup()
+   				.addComponent(gseaRadio)
+   				.addComponent(genericRadio)
+   				.addGap(0, 0, Short.MAX_VALUE)
+   		);
+   		layout.setVerticalGroup(layout.createParallelGroup(Alignment.LEADING, true)
+   				.addComponent(gseaRadio, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+   				.addComponent(genericRadio, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+   		);
+   		
+   		if (LookAndFeelUtil.isAquaLAF())
+			panel.setOpaque(false);
+   		
+   		return panel;
 	}
 	
 	private JPanel createBrowsePanel() {
 		JPanel panel = new JPanel(new BorderLayout());
-		JLabel label = new JLabel("Root folder containing GSEA result folders");
 		
 		pathTextField = new JTextField();
 		JButton browseButton = new JButton("Browse...");
 		browseButton.addActionListener(e -> browseForRootFolder());
 		
-		panel.add(label, BorderLayout.NORTH);
 		panel.add(pathTextField, BorderLayout.CENTER);
 		panel.add(browseButton, BorderLayout.EAST);
+		panel.setOpaque(false);
 		return panel;
 	}
 	
+	private JPanel createGSEAPanel() {
+		JPanel browsePanel = createBrowsePanel();
+		JPanel listPanel = createListPanel();
+		
+		JPanel panel = new JPanel(new BorderLayout());
+		panel.setBorder(LookAndFeelUtil.createTitledBorder("Root folder containing GSEA result folders"));
+		
+		final GroupLayout layout = new GroupLayout(panel);
+		panel.setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(true);
+		
+		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
+				.addComponent(browsePanel)
+				.addComponent(listPanel)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addGap(10, 10, 10)
+				.addComponent(browsePanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+				.addComponent(listPanel, 100, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+		);
+		
+		if (LookAndFeelUtil.isAquaLAF())
+			panel.setOpaque(false);
+   		
+   		return panel;
+	}
 	
 	private void browseForRootFolder() {
 		final String osName = System.getProperty("os.name");
@@ -290,11 +331,23 @@ public class MasterMapDialogController implements NiceDialogController {
 		selectAllButton.setEnabled(false);
 		selectNoneButton.setEnabled(false);
 		
+		if(isAquaLAF()) {
+			selectAllButton.putClientProperty("JButton.buttonType", "gradient");
+			selectAllButton.putClientProperty("JComponent.sizeVariant", "small");
+			selectNoneButton.putClientProperty("JButton.buttonType", "gradient");
+			selectNoneButton.putClientProperty("JComponent.sizeVariant", "small");
+		}
+		
+		LookAndFeelUtil.equalizeSize(selectAllButton, selectNoneButton);
+		
 		buttonPanel.add(selectAllButton);
 		buttonPanel.add(selectNoneButton);
 		
+		buttonPanel.setOpaque(false);
+		
 		panel.add(scrollPane, BorderLayout.CENTER);
 		panel.add(buttonPanel, BorderLayout.SOUTH);
+		panel.setOpaque(false);
 		
 		return panel;
 	}
