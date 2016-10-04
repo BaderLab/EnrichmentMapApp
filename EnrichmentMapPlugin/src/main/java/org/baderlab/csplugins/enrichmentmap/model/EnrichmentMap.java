@@ -169,24 +169,17 @@ public class EnrichmentMap {
 	 * not match up, after a filtering there will be no genes in any of the
 	 * genesets
 	 * 
-	 * @return true if Genesets have genes, return false if all the genesets are
-	 *         empty
+	 * @return true if Genesets have genes, return false if all the genesets are empty
 	 */
 	public boolean checkGenesets() {
-
-		for(Iterator<String> k = datasets.keySet().iterator(); k.hasNext();) {
-			Map<String, GeneSet> genesets = (datasets.get(k.next())).getSetofgenesets().getGenesets();
-			for(Iterator j = genesets.keySet().iterator(); j.hasNext();) {
-				String geneset2_name = j.next().toString();
-				GeneSet current_set = genesets.get(geneset2_name);
-
-				//get the genes in the geneset
-				Set<Integer> geneset_genes = current_set.getGenes();
-
+		for(DataSet dataset : datasets.values()) {
+			Map<String, GeneSet> genesets = dataset.getSetofgenesets().getGenesets();
+			for(GeneSet geneset : genesets.values()) {
+				Set<Integer> genesetGenes = geneset.getGenes();
 				//if there is at least one gene in any of the genesets then the ids match.
-				if(!geneset_genes.isEmpty())
+				if(!genesetGenes.isEmpty()) {
 					return true;
-
+				}
 			}
 		}
 		if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_Specialized))
@@ -246,34 +239,23 @@ public class EnrichmentMap {
 	 * Given a set of genesets Go through the genesets and extract all the genes
 	 * Return - hashmap of genes to hash keys (used to create an expression file
 	 * when it is not present so user can use expression viewer to navigate
-	 * genes in a geneset without have to generate their own dummy expression
-	 * file)
+	 * genes in a geneset without have to generate their own dummy expression file)
 	 */
-	public Map<String, Integer> getGenesetsGenes(Map<String, GeneSet> current_genesets) {
+	public Map<String, Integer> getGenesetsGenes(Collection<GeneSet> currentGenesets) {
+		Map<String, Integer> genesetGenes = new HashMap<>();
 
-		HashMap<String, Integer> genesetGenes = new HashMap<String, Integer>();
-
-		for(Iterator j = current_genesets.keySet().iterator(); j.hasNext();) {
-
-			String geneset_name = j.next().toString();
-			GeneSet current_set = current_genesets.get(geneset_name);
-
+		for(GeneSet geneset : currentGenesets) {
 			//compare the HashSet of dataset genes to the HashSet of the current Geneset
 			//only keep the genes from the geneset that are in the dataset genes
-			Set<Integer> geneset_genes = current_set.getGenes();
-
-			for(Iterator k = geneset_genes.iterator(); k.hasNext();) {
-				Integer current_genekey = (Integer) k.next();
+			for(Integer genekey : geneset.getGenes()) {
 				//get the current geneName
-				if(genes.containsKey(current_genekey)) {
-					String name = genes.get(current_genekey);
-					genesetGenes.put(name, current_genekey);
+				if(genes.containsKey(genekey)) {
+					String name = genes.get(genekey);
+					genesetGenes.put(name, genekey);
 				}
-
 			}
 		}
 		return genesetGenes;
-
 	}
 
 	/*
@@ -281,11 +263,11 @@ public class EnrichmentMap {
 	 * of genesets make sure to filter by the specific dataset genes
 	 */
 	public void filterGenesets() {
-		for(Iterator<String> k = datasets.keySet().iterator(); k.hasNext();) {
-			DataSet current_set = datasets.get(k.next());
+		for(DataSet dataset : datasets.values()) {
 			//only filter the genesets if dataset genes are not null or empty
-			if(current_set.getDatasetGenes() != null && !current_set.getDatasetGenes().isEmpty())
-				current_set.getSetofgenesets().filterGenesets(current_set.getDatasetGenes());
+			if(dataset.getDatasetGenes() != null && !dataset.getDatasetGenes().isEmpty()) {
+				dataset.getSetofgenesets().filterGenesets(dataset.getDatasetGenes());
+			}
 		}
 	}
 
@@ -298,33 +280,33 @@ public class EnrichmentMap {
 	}
 
 	/*
-	 * Return a hash of all the genesets in the set of genesets regardless of
-	 * which dataset it comes from
+	 * Return a hash of all the genesets in the set of genesets regardless of which dataset it comes from.
 	 */
 	public Map<String, GeneSet> getAllGenesets() {
 		//go through each dataset and get the genesets from each
-		HashMap<String, GeneSet> all_genesets = new HashMap<String, GeneSet>();
-		for(Iterator<String> k = datasets.keySet().iterator(); k.hasNext();) {
-			Map<String, GeneSet> current_genesets = (datasets.get(k.next())).getSetofgenesets().getGenesets();
-			all_genesets.putAll(current_genesets);
+		Map<String, GeneSet> allGenesets = new HashMap<>();
+		
+		for(DataSet dataset : datasets.values()) {
+			Map<String, GeneSet> genesets = dataset.getSetofgenesets().getGenesets();
+			allGenesets.putAll(genesets);
 		}
 		if(signatureGenesets != null && !signatureGenesets.isEmpty())
-			all_genesets.putAll(signatureGenesets);
-		return all_genesets;
+			allGenesets.putAll(signatureGenesets);
+		
+		return allGenesets;
 	}
 
 	/*
-	 * Return a hash of all the genesets but not inlcuding the signature
-	 * genesets.
+	 * Return a hash of all the genesets but not inlcuding the signature genesets.
 	 */
 	public Map<String, GeneSet> getEnrichmentGenesets() {
 		//go through each dataset and get the genesets from each
-		HashMap<String, GeneSet> all_genesets = new HashMap<String, GeneSet>();
-		for(Iterator<String> k = datasets.keySet().iterator(); k.hasNext();) {
-			Map<String, GeneSet> current_genesets = (datasets.get(k.next())).getSetofgenesets().getGenesets();
-			all_genesets.putAll(current_genesets);
+		Map<String, GeneSet> allGenesets = new HashMap<>();
+		for(DataSet dataset : datasets.values()) {
+			Map<String, GeneSet> genesets = dataset.getSetofgenesets().getGenesets();
+			allGenesets.putAll(genesets);
 		}
-		return all_genesets;
+		return allGenesets;
 	}
 
 	/*
@@ -333,15 +315,17 @@ public class EnrichmentMap {
 	 */
 	public Map<String, GeneSet> getAllGenesetsOfInterest() {
 		//go through each dataset and get the genesets from each
-		HashMap<String, GeneSet> all_genesetsOfInterest = new HashMap<String, GeneSet>();
-		for(Iterator<String> k = datasets.keySet().iterator(); k.hasNext();) {
-			Map<String, GeneSet> current_genesets = (datasets.get(k.next())).getGenesetsOfInterest().getGenesets();
-			all_genesetsOfInterest.putAll(current_genesets);
+		Map<String, GeneSet> allGenesetsOfInterest = new HashMap<>();
+		
+		for(DataSet dataset : datasets.values()) {
+			Map<String, GeneSet> genesets = dataset.getGenesetsOfInterest().getGenesets();
+			allGenesetsOfInterest.putAll(genesets);
 		}
 		//if there are post analysis genesets, add them to the set of all genesets
 		if(signatureGenesets != null && !signatureGenesets.isEmpty())
-			all_genesetsOfInterest.putAll(signatureGenesets);
-		return all_genesetsOfInterest;
+			allGenesetsOfInterest.putAll(signatureGenesets);
+		
+		return allGenesetsOfInterest;
 	}
 
 	public Map<String, GenesetSimilarity> getGenesetSimilarity() {
@@ -387,27 +371,25 @@ public class EnrichmentMap {
 	}
 
 	public Set<String> getAllRankNames() {
-		HashSet<String> allRankNames = new HashSet<String>();
+		Set<String> allRankNames = new HashSet<>();
 		//go through each Dataset
-		for(Iterator<String> k = datasets.keySet().iterator(); k.hasNext();) {
-			String current_ds = k.next();
+		for(DataSet dataset : datasets.values()) {
 			//there could be duplicate ranking names for two different datasets. Add the dataset to the ranks name
-			Set<String> all_names = (datasets.get(current_ds)).getExpressionSets().getAllRanksNames();
-			for(Iterator<String> l = all_names.iterator(); l.hasNext();)
-				allRankNames.add(l.next() + "-" + current_ds);
+			Set<String> all_names = dataset.getExpressionSets().getAllRanksNames();
+			for(String name : all_names) {
+				allRankNames.add(name + "-" + dataset.getName());
+			}
 
 		}
 		return allRankNames;
 	}
 
 	public Map<String, Ranking> getAllRanks() {
-		HashMap<String, Ranking> allranks = new HashMap<String, Ranking>();
-		for(Iterator<String> k = datasets.keySet().iterator(); k.hasNext();) {
-			allranks.putAll((datasets.get(k.next())).getExpressionSets().getRanks());
-
+		Map<String, Ranking> allranks = new HashMap<>();
+		for(DataSet dataset : datasets.values()) {
+			allranks.putAll(dataset.getExpressionSets().getRanks());
 		}
 		return allranks;
-
 	}
 
 	public Ranking getRanksByName(String ranks_name) {
@@ -443,12 +425,12 @@ public class EnrichmentMap {
 	 */
 	public Set<String> getAllGenesetTypes() {
 		//go through each dataset and get the genesets from each
-		HashSet<String> all_genesetTypes = new HashSet<String>();
-		for(Iterator<String> k = datasets.keySet().iterator(); k.hasNext();) {
-			Set<String> current_genesets_types = (datasets.get(k.next())).getSetofgenesets().getGenesetTypes();
-			all_genesetTypes.addAll(current_genesets_types);
+		Set<String> allGenesetTypes = new HashSet<>();
+		for(DataSet dataset : datasets.values()) {
+			Set<String> genesetsTypes = dataset.getSetofgenesets().getGenesetTypes();
+			allGenesetTypes.addAll(genesetsTypes);
 		}
-		return all_genesetTypes;
+		return allGenesetTypes;
 	}
 
 	/**

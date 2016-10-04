@@ -31,7 +31,7 @@ public class CreateDummyExpressionTask extends AbstractTask {
 		//HashMap<String, Integer> genes= dataset.getMap().getGenes();
 		Set<Integer> datasetGenes;
 
-		Map<String, Integer> genes = dataset.getMap().getGenesetsGenes(dataset.getSetofgenesets().getGenesets());
+		Map<String, Integer> genes = dataset.getMap().getGenesetsGenes(dataset.getSetofgenesets().getGenesets().values());
 		datasetGenes = dataset.getDatasetGenes();
 
 		String[] titletokens = new String[3];
