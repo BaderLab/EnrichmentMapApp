@@ -36,6 +36,7 @@ import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
 
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 
 public class LegacyEnrichmentMapSessionListener implements SessionLoadedListener  /*, SessionAboutToBeSavedListener */ {
 
@@ -43,6 +44,7 @@ public class LegacyEnrichmentMapSessionListener implements SessionLoadedListener
 	@Inject private CyApplicationManager cyApplicationManager;
 	@Inject private StreamUtil streamUtil;
 	@Inject private EnrichmentMapManager emManager;
+	@Inject private Provider<ParametersPanel> parametersPanelProvider;
 	@Inject private EnrichmentMapParameters.Factory enrichmentMapParametersFactory;
 
 
@@ -350,7 +352,7 @@ public class LegacyEnrichmentMapSessionListener implements SessionLoadedListener
 			 */
 
 			//register the action listeners for all the networks.
-			emManager.registerServices();
+			emManager.showPanels();
 			Map<Long, EnrichmentMap> networks = emManager.getAllEnrichmentMaps();
 
 			//iterate over the networks
@@ -380,7 +382,7 @@ public class LegacyEnrichmentMapSessionListener implements SessionLoadedListener
 					//set the last network to be the one viewed and initialize the parameters panel
 					if(!j.hasNext()){
 						cyApplicationManager.setCurrentNetwork(currentNetwork);
-						ParametersPanel paramPanel = emManager.getParameterPanel();
+						ParametersPanel paramPanel = parametersPanelProvider.get();
 						paramPanel.updatePanel(map);
 						paramPanel.revalidate();
 					}

@@ -48,8 +48,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.annotation.Nullable;
-
 import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Edges;
 import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Nodes;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapPanel;
@@ -69,38 +67,44 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 import com.google.inject.Singleton;
 
 /**
  * Main class managing all instances of enrichment map as well as singular
- * instances of heatmap panel, parameters panel and input panel. (implemented as
- * singular class)
+ * instances of heatmap panel, parameters panel and input panel. (implemented as singular class)
  */
 @Singleton
 public class EnrichmentMapManager implements SetCurrentNetworkListener, NetworkAboutToBeDestroyedListener, SetCurrentNetworkViewListener {
 		
 	@Inject private CyServiceRegistrar registrar;
-	@Inject private @Nullable ParametersPanel parameterPanel;
-	@Inject private @Nodes @Nullable HeatMapPanel nodesOverlapPanel;
-	@Inject private @Edges @Nullable HeatMapPanel edgesOverlapPanel;
+	
+	@Inject private Provider<ParametersPanel> parameterPanelProvider;
+	@Inject private Provider<EnrichmentMapInputPanel> inputPanelProvider;
+	@Inject private Provider<PostAnalysisPanel> postAnalysisPanelProvider;
+	@Inject private @Nodes Provider<HeatMapPanel> nodesOverlapPanelProvider;
+	@Inject private @Edges Provider<HeatMapPanel> edgesOverlapPanelProvider;
 
 	private Map<Long, EnrichmentMap> enrichmentMaps = new HashMap<>();
 	private Map<Long, HeatMapParameters> heatMapParameterMap = new HashMap<>();
 	
 	
-	private EnrichmentMapInputPanel inputWindow;
-	private PostAnalysisPanel analysisWindow;
+//	private EnrichmentMapInputPanel inputWindow;
+//	private PostAnalysisPanel analysisWindow;
 
 	private boolean overrideHeatmapRevalidation = false;
 	
 
-	public void registerServices() {
-		if(nodesOverlapPanel != null)
-			registrar.registerService(nodesOverlapPanel, CytoPanelComponent.class, new Properties());
-		if(edgesOverlapPanel != null)
-			registrar.registerService(edgesOverlapPanel, CytoPanelComponent.class, new Properties());
-		if(parameterPanel != null)
-			registrar.registerService(parameterPanel,    CytoPanelComponent.class, new Properties());
+	public void showPanels() {
+		HeatMapPanel nodeOverlapPanel = nodesOverlapPanelProvider.get();
+		HeatMapPanel edgeOverlapPanel = edgesOverlapPanelProvider.get();
+		ParametersPanel parametersPanel = parameterPanelProvider.get();
+		
+		if(nodeOverlapPanel != null && edgeOverlapPanel != null && parametersPanel != null) {
+			registrar.registerService(nodeOverlapPanel, CytoPanelComponent.class, new Properties());
+			registrar.registerService(edgeOverlapPanel, CytoPanelComponent.class, new Properties());
+			registrar.registerService(parametersPanel,  CytoPanelComponent.class, new Properties());
+		}
 	}
 
 	/**
@@ -127,46 +131,25 @@ public class EnrichmentMapManager implements SetCurrentNetworkListener, NetworkA
 	}
 	
 
-	public ParametersPanel getParameterPanel() {
-		return parameterPanel;
-	}
-
-	public HeatMapPanel getNodesOverlapPanel() {
-		return nodesOverlapPanel;
-	}
-
-	public HeatMapPanel getEdgesOverlapPanel() {
-		return edgesOverlapPanel;
-	}
-	
-	
-	/**
-	 * @return reference to the Enrichment Map Input Panel (WEST)
-	 */
-	public EnrichmentMapInputPanel getInputWindow() {
-		return inputWindow;
-	}
-
-	/**
-	 * @param reference to the Enrichment Map Input Panel (WEST)
-	 */
-	public void setInputWindow(EnrichmentMapInputPanel inputWindow) {
-		this.inputWindow = inputWindow;
-	}
-
-	/**
-	 * @return reference to the Post Analysis Input Panel (WEST)
-	 */
-	public PostAnalysisPanel getAnalysisWindow() {
-		return analysisWindow;
-	}
-
-	/**
-	 * @param reference to the Post Analysis Input Panel (WEST)
-	 */
-	public void setAnalysisWindow(PostAnalysisPanel analysisWindow) {
-		this.analysisWindow = analysisWindow;
-	}
+//	public ParametersPanel getParameterPanel() {
+//		return parameterPanelProvider.get();
+//	}
+//
+//	public HeatMapPanel getNodesOverlapPanel() {
+//		return nodesOverlapPanelProvider.get();
+//	}
+//
+//	public HeatMapPanel getEdgesOverlapPanel() {
+//		return edgesOverlapPanelProvider.get();
+//	}
+//	
+//	public EnrichmentMapInputPanel getInputWindow() {
+//		return inputPanelProvider.get();
+//	}
+//
+//	public PostAnalysisPanel getAnalysisWindow() {
+//		return postAnalysisPanelProvider.get();
+//	}
 
 	/**
 	 * Returns true if the network with the identifier networkID an
@@ -180,10 +163,15 @@ public class EnrichmentMapManager implements SetCurrentNetworkListener, NetworkA
 	 * Network Focus Event.
 	 */
 	public void handleEvent(SetCurrentNetworkEvent event) {
-		// get network id
 		long networkId = event.getNetwork().getSUID();
-
 		if(networkId > 0) {
+			
+			HeatMapPanel nodesOverlapPanel = nodesOverlapPanelProvider.get();
+			HeatMapPanel edgesOverlapPanel = edgesOverlapPanelProvider.get();
+			ParametersPanel parameterPanel = parameterPanelProvider.get();
+			EnrichmentMapInputPanel inputWindow = inputPanelProvider.get();
+			PostAnalysisPanel analysisWindow = postAnalysisPanelProvider.get();
+			
 			// update view
 			if(enrichmentMaps.containsKey(networkId)) {
 				// clear the panels before re-initializing them
@@ -217,6 +205,8 @@ public class EnrichmentMapManager implements SetCurrentNetworkListener, NetworkA
 
 	public void handleEvent(SetCurrentNetworkViewEvent e) {
 		// make sure to clear the panel if there is no network view
+		PostAnalysisPanel analysisWindow = postAnalysisPanelProvider.get();
+		
 		if(analysisWindow != null) {
 			CyNetworkView view = e.getNetworkView();
 			if(view == null) {
@@ -233,6 +223,8 @@ public class EnrichmentMapManager implements SetCurrentNetworkListener, NetworkA
 	 * Network about to be destroyed Event.
 	 */
 	public void handleEvent(NetworkAboutToBeDestroyedEvent event) {
+		PostAnalysisPanel analysisWindow = postAnalysisPanelProvider.get();
+		
 		Long networkId = event.getNetwork().getSUID();
 		EnrichmentMap removed = enrichmentMaps.remove(networkId);
 		if(analysisWindow != null && removed != null)

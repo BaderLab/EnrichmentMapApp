@@ -44,7 +44,6 @@
 package org.baderlab.csplugins.enrichmentmap.task;
 
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.style.EnrichmentMapVisualStyle;
 import org.baderlab.csplugins.enrichmentmap.view.ParametersPanel;
 import org.cytoscape.model.CyNetwork;
@@ -61,6 +60,7 @@ import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 import com.google.inject.assistedinject.Assisted;
 
 /**
@@ -78,7 +78,7 @@ public class VisualizeEnrichmentMapTask extends AbstractTask {
 	@Inject private CyLayoutAlgorithmManager layoutManager;
 
 	@Inject private EnrichmentMapVisualStyle.Factory emVisualStyleFactory;
-	@Inject private EnrichmentMapManager emManager;
+	@Inject private Provider<ParametersPanel> parametersPanelProvider;
 	
 
 	public interface Factory {
@@ -124,7 +124,7 @@ public class VisualizeEnrichmentMapTask extends AbstractTask {
 		}
 		
 		//update Parameter panel
-		ParametersPanel parametersPanel = emManager.getParameterPanel();
+		ParametersPanel parametersPanel = parametersPanelProvider.get();
 		parametersPanel.initializeSliders(map);
 		parametersPanel.updatePanel(map);
 	}

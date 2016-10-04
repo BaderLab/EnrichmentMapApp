@@ -17,6 +17,7 @@ import org.cytoscape.application.swing.CytoPanelName;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
+import com.google.inject.Singleton;
 
 /**
  * A simple top-level panel which manages an instance of PostAnalysisInputPanel
@@ -25,6 +26,7 @@ import com.google.inject.Provider;
  * works.
  */
 @SuppressWarnings("serial")
+@Singleton
 public class PostAnalysisPanel extends JPanel implements CytoPanelComponent {
 
 	@Inject private Provider<PostAnalysisInputPanel> panelProvider;

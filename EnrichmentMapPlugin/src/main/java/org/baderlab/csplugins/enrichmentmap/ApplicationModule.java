@@ -41,9 +41,7 @@ public class ApplicationModule extends AbstractModule {
 	
 	@Override
 	protected void configure() {
-		requestStaticInjection(EnrichmentMapManager.class); // TEMPORARY
-		bind(EnrichmentMapManager.class).asEagerSingleton();
-		
+		bind(EnrichmentMapManager.class).asEagerSingleton();		
 		install(new FactoryModule());
 	}
 	

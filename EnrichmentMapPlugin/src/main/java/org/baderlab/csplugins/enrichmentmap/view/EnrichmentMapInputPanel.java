@@ -107,8 +107,10 @@ import org.cytoscape.work.swing.DialogTaskManager;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
+import com.google.inject.Singleton;
 
 @SuppressWarnings("serial")
+@Singleton
 public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponent {
 
 	@Inject private StreamUtil streamUtil;
@@ -1049,7 +1051,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 		dialog.execute(buildmap.createTaskIterator(), observer);
 
 		//After the network is built register the HeatMap and Parameters panel
-		emManager.registerServices();
+		emManager.showPanels();
 	}
 
 	private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {

@@ -241,7 +241,7 @@ public class BuildEnrichmentMapTuneableTask extends AbstractTask {
 		EnrichmentMapBuildMapTaskFactory buildmap = taskFactoryProvider.create(map);
 		insertTasksAfterCurrentTask(buildmap.createTaskIterator());
 
-		emManager.registerServices();
+		emManager.showPanels();
 	}
 
 	public void run() {

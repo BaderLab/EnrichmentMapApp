@@ -133,6 +133,7 @@ import com.google.inject.Inject;
  * Creates a Heat map Panel - (heat map can consists of either one or two expression files depending on what
  * was supplied by the user)
  */
+// Note: Not a singleton because there are two panels.
 public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 
 	@Inject private EnrichmentMapManager emManager;

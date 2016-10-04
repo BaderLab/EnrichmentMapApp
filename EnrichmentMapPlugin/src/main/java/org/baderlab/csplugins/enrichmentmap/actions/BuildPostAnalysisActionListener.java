@@ -68,6 +68,7 @@ import org.cytoscape.work.TaskObserver;
 import org.cytoscape.work.swing.DialogTaskManager;
 
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 import com.google.inject.assistedinject.Assisted;
 
 public class BuildPostAnalysisActionListener implements ActionListener {
@@ -78,6 +79,7 @@ public class BuildPostAnalysisActionListener implements ActionListener {
 	@Inject private CySwingApplication swingApplication;
 	@Inject private DialogTaskManager dialog;
 	@Inject private EnrichmentMapManager emManager;
+	@Inject private Provider<ParametersPanel> paramsPanelProvider;
 
 	private final PostAnalysisParameters paParams;
 
@@ -115,7 +117,7 @@ public class BuildPostAnalysisActionListener implements ActionListener {
 			CreatePostAnalysisVisualStyleTask visualStyleTask = paStyleTaskFactory.create(map);
 			currentTasks.append(visualStyleTask);
 
-			ParametersPanel paramsPanel = emManager.getParameterPanel();
+			ParametersPanel paramsPanel = paramsPanelProvider.get();
 			ShowPanelTask show_parameters_panel = new ShowPanelTask(swingApplication, paramsPanel);
 			currentTasks.append(show_parameters_panel);
 

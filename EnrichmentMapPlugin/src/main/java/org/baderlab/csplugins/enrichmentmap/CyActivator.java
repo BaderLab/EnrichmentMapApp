@@ -15,8 +15,6 @@ import org.baderlab.csplugins.enrichmentmap.commands.EnrichmentMapGSEACommandHan
 import org.baderlab.csplugins.enrichmentmap.mastermap.view.MasterMapDialogAction;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.task.EdgeWidthTableColumnTaskFactory;
-import org.baderlab.csplugins.enrichmentmap.view.EnrichmentMapInputPanel;
-import org.baderlab.csplugins.enrichmentmap.view.PostAnalysisPanel;
 import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.application.swing.AbstractCyAction;
@@ -55,9 +53,6 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, manager, NetworkAboutToBeDestroyedListener.class, new Properties());
 		registerService(bc, manager, SetCurrentNetworkListener.class, new Properties());
 		registerService(bc, manager, SetCurrentNetworkViewListener.class, new Properties());
-
-		EnrichmentMapInputPanel emPanel = injector.getInstance(EnrichmentMapInputPanel.class);		
-		PostAnalysisPanel postEMPanel   = injector.getInstance(PostAnalysisPanel.class);
 		
 		//associate them with the action listener
 		HeatMapSelectionListener selectionListener = injector.getInstance(HeatMapSelectionListener.class);
@@ -65,8 +60,8 @@ public class CyActivator extends AbstractCyActivator {
 
 		//register the services
 		registerAction(bc, injector.getInstance(MasterMapDialogAction.class));
-		registerAction(bc, injector.getInstance(LoadEnrichmentsPanelAction.class).init(emPanel));
-		registerAction(bc, injector.getInstance(LoadPostAnalysisPanelAction.class).init(postEMPanel));	
+		registerAction(bc, injector.getInstance(LoadEnrichmentsPanelAction.class));
+		registerAction(bc, injector.getInstance(LoadPostAnalysisPanelAction.class));	
 		registerAction(bc, injector.getInstance(ShowEdgeWidthDialogAction.class));
 		registerAction(bc, injector.getInstance(ShowAboutPanelAction.class));
 
@@ -84,6 +79,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		//gsea specifc commandtool
 		TaskFactory gseaCommandTask = injector.getInstance(EnrichmentMapGSEACommandHandlerTaskFactory.class);
+		
 		props = new Properties();
 		props.put(ServiceProperties.COMMAND, "gseabuild");
 		props.put(ServiceProperties.COMMAND_NAMESPACE, "enrichmentmap");
