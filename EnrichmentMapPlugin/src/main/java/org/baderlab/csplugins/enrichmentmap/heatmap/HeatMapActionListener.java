@@ -56,7 +56,6 @@ import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
 
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.parsers.RanksFileReaderTask;
 import org.cytoscape.application.swing.CySwingApplication;
@@ -81,7 +80,6 @@ public class HeatMapActionListener implements ActionListener {
 	private JComboBox box;
 
 	//Need to add the enrichment map parameters here in order to add an additional ranks to the EM
-	private EnrichmentMapParameters params;
 	private EnrichmentMap map;
 
 	public HeatMapActionListener(HeatMapPanel edgeOverlapPanel, HeatMapPanel nodeOverlapPanel, JComboBox box,
@@ -94,7 +92,6 @@ public class HeatMapActionListener implements ActionListener {
 		this.streamUtil = streamUtil;
 		this.hmParams = hmParams;
 		this.box = box;
-		this.params = map.getParams();
 		this.map = map;
 	}
 

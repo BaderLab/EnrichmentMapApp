@@ -53,9 +53,6 @@ import java.util.Scanner;
 import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters;
-import org.baderlab.csplugins.enrichmentmap.style.EnrichmentMapVisualStyle;
-import org.baderlab.csplugins.enrichmentmap.view.ParametersPanel;
-import org.baderlab.csplugins.enrichmentmap.view.SliderBarPanel;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.property.CyProperty;
@@ -132,13 +129,6 @@ public class EnrichmentMapParameters {
 	private double similarityCutOff;
 	//value to store the constant needed for constructing the combined similarity metric
 	private double combinedConstant;
-
-	//pvalue slider bar
-	private SliderBarPanel pvalueSlider;
-	//qvalue slider bar
-	private SliderBarPanel qvalueSlider;
-	//similarity cutoff slider bar
-	private SliderBarPanel similaritySlider;
 
 	private Set<CyProperty<?>> cyto_prop;
 	private double defaultJaccardCutOff;
@@ -238,27 +228,6 @@ public class EnrichmentMapParameters {
 		//initialize first dataset
 		this.files.put(EnrichmentMap.DATASET1, new DataSetFiles());
 	}
-
-	public void initSliders(EnrichmentMapManager emManager) {
-		//create the slider for this pvalue
-		pvalueSlider = new SliderBarPanel(
-				((this.pvalue_min == 1 || this.pvalue_min >= this.pvalue) ? 0 : this.pvalue_min), this.pvalue,
-				"P-value Cutoff", this, EnrichmentMapVisualStyle.PVALUE_DATASET1,
-				EnrichmentMapVisualStyle.PVALUE_DATASET2, ParametersPanel.summaryPanelWidth, false, this.pvalue,
-				applicationManager, emManager);
-		//create the slider for the qvalue
-		qvalueSlider = new SliderBarPanel(
-				((this.qvalue_min == 1 || this.qvalue_min >= this.qvalue) ? 0 : this.qvalue_min), this.qvalue,
-				"Q-value Cutoff", this, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1,
-				EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2, ParametersPanel.summaryPanelWidth, false, this.qvalue,
-				applicationManager, emManager);
-		//create the slider for the similarity cutoff
-		similaritySlider = new SliderBarPanel(this.similarityCutOff, 1, "Similarity Cutoff", this,
-				EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT, EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT,
-				ParametersPanel.summaryPanelWidth, true, this.similarityCutOff, applicationManager, emManager);
-
-	}
-
 
 	public void initializeDefaultParameters() {
 
@@ -442,22 +411,6 @@ public class EnrichmentMapParameters {
 			reconstruct_ver1(this.props);
 		else if(Double.parseDouble(this.props.get("Version")) >= 2.0)
 			reconstruct_ver2(this.props);
-
-		//create the slider for this pvalue
-		pvalueSlider = new SliderBarPanel((this.pvalue_min == 1 ? 0 : this.pvalue_min), this.pvalue, "P-value Cutoff",
-				this, EnrichmentMapVisualStyle.PVALUE_DATASET1, EnrichmentMapVisualStyle.PVALUE_DATASET2,
-				ParametersPanel.summaryPanelWidth, false, this.pvalue, applicationManager, emManager);
-
-		//create the slider for the qvalue
-		qvalueSlider = new SliderBarPanel((this.qvalue_min == 1 ? 0 : this.qvalue_min), this.qvalue, "Q-value Cutoff",
-				this, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2,
-				ParametersPanel.summaryPanelWidth, false, this.qvalue, applicationManager, emManager);
-
-		//create the slider for the similarity cutoff
-		similaritySlider = new SliderBarPanel(this.similarityCutOff, 1, "Similarity Cutoff", this,
-				EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT, EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT,
-				ParametersPanel.summaryPanelWidth, true, this.similarityCutOff, applicationManager, emManager);
-
 	}
 
 	/*
@@ -797,13 +750,8 @@ public class EnrichmentMapParameters {
 		}
 
 		this.pvalue = copy.getPvalue();
-		this.pvalueSlider = copy.getPvalueSlider();
-
 		this.qvalue = copy.getQvalue();
-		qvalueSlider = copy.getQvalueSlider();
-
 		this.similarityCutOff = copy.getSimilarityCutOff();
-		this.similaritySlider = copy.getSimilaritySlider();
 
 		this.twoDatasets = copy.isTwoDatasets();
 		this.method = copy.getMethod();
@@ -1257,18 +1205,6 @@ public class EnrichmentMapParameters {
 
 	public void setFDR(boolean FDR) {
 		this.FDR = FDR;
-	}
-
-	public SliderBarPanel getPvalueSlider() {
-		return pvalueSlider;
-	}
-
-	public SliderBarPanel getQvalueSlider() {
-		return qvalueSlider;
-	}
-
-	public SliderBarPanel getSimilaritySlider() {
-		return similaritySlider;
 	}
 
 	/* create a method to re-create rank to gene given the gene to rank */

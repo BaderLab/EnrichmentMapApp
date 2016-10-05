@@ -53,6 +53,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 
 import javax.swing.AbstractAction;
 import javax.swing.BoxLayout;
@@ -82,6 +85,9 @@ import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
+import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.work.swing.DialogTaskManager;
 
@@ -94,17 +100,13 @@ import com.google.inject.Singleton;
  * p-value,q-value sliders.
  */
 @Singleton
-public class ParametersPanel extends JPanel implements CytoPanelComponent {
+public class ParametersPanel extends JPanel implements CytoPanelComponent, NetworkAboutToBeDestroyedListener {
 
 	private static final long serialVersionUID = 2230165793903119571L;
 
 	public static int summaryPanelWidth = 150;
 	public static int summaryPanelHeight = 1000;
 	
-	private JCheckBox heatmapAutofocusCheckbox;
-	
-	private EnrichmentMap map;
-
 	@Inject private OpenBrowser browser;
 	@Inject private CyApplicationManager cyApplicationManager;
 	@Inject private DialogTaskManager taskManager;
@@ -114,12 +116,17 @@ public class ParametersPanel extends JPanel implements CytoPanelComponent {
 	@Inject private @Edges HeatMapPanel edgesOverlapPanel;
 	
 	@Inject private Provider<CreatePublicationVisualStyleTaskFactory> visualStyleTaskFactoryProvider;
+	
+	private Map<Long, SliderBarPanel> pvalueSliderPanels = new HashMap<>();
+	private Map<Long, SliderBarPanel> qvalueSliderPanels = new HashMap<>();
+	private Map<Long, SliderBarPanel> similaritySliderPanels = new HashMap<>();
+	
+	private JCheckBox heatmapAutofocusCheckbox;
+	
+	private EnrichmentMap map;
 
+	
 
-	public void initializeSliders(EnrichmentMap map) {
-		if (map != null)
-			map.getParams().initSliders(emManager);
-	}
 
 	/**
 	 * Update parameters panel based on given enrichment map parameters
@@ -491,13 +498,13 @@ public class ParametersPanel extends JPanel implements CytoPanelComponent {
 		c.fill = GridBagConstraints.NONE;
 		c.gridwidth = GridBagConstraints.REMAINDER;
 		c.anchor = GridBagConstraints.LINE_START;
-		SliderBarPanel pvalueSlider = params.getPvalueSlider();
+		SliderBarPanel pvalueSlider = createPvalueSlider(params);
 
 		gridbag.setConstraints(pvalueSlider, c);
 		legends.add(pvalueSlider);
 
 		if (params.isFDR()) {
-			SliderBarPanel qvalueSlider = params.getQvalueSlider();
+			SliderBarPanel qvalueSlider = createQvalueSlider(params);
 
 			c.gridx = 0;
 			c.gridy = 5;
@@ -507,7 +514,7 @@ public class ParametersPanel extends JPanel implements CytoPanelComponent {
 			gridbag.setConstraints(qvalueSlider, c);
 			legends.add(qvalueSlider);
 
-			SliderBarPanel similaritySlider = params.getSimilaritySlider();
+			SliderBarPanel similaritySlider = createSimilaritySlider(params);
 
 			c.gridx = 0;
 			c.gridy = 6;
@@ -518,7 +525,7 @@ public class ParametersPanel extends JPanel implements CytoPanelComponent {
 			legends.add(similaritySlider);
 
 		} else {
-			SliderBarPanel similaritySlider = params.getSimilaritySlider();
+			SliderBarPanel similaritySlider = createSimilaritySlider(params);
 
 			c.gridx = 0;
 			c.gridy = 5;
@@ -532,7 +539,54 @@ public class ParametersPanel extends JPanel implements CytoPanelComponent {
 		return legends;
 
 	}
-
+	
+	
+	private SliderBarPanel createPvalueSlider(EnrichmentMapParameters params) {
+		return pvalueSliderPanels.computeIfAbsent(params.getNetworkID(), suid -> {
+			double pvalue_min = params.getPvalue_min();
+			double pvalue = params.getPvalue();
+			return new SliderBarPanel(
+					((pvalue_min == 1 || pvalue_min >= pvalue) ? 0 : pvalue_min), pvalue,
+					"P-value Cutoff", params, EnrichmentMapVisualStyle.PVALUE_DATASET1,
+					EnrichmentMapVisualStyle.PVALUE_DATASET2, ParametersPanel.summaryPanelWidth, false, pvalue,
+					cyApplicationManager, emManager);
+		});
+	}
+	
+	private SliderBarPanel createQvalueSlider(EnrichmentMapParameters params) {
+		return qvalueSliderPanels.computeIfAbsent(params.getNetworkID(), suid -> {
+			double qvalue_min = params.getQvalue_min();
+			double qvalue = params.getQvalue();
+			return new SliderBarPanel(
+					((qvalue_min == 1 || qvalue_min >= qvalue) ? 0 : qvalue_min), qvalue,
+					"Q-value Cutoff", params, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1,
+					EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2, ParametersPanel.summaryPanelWidth, false, qvalue,
+					cyApplicationManager, emManager);
+		});
+	}
+	
+	private SliderBarPanel createSimilaritySlider(EnrichmentMapParameters params) {
+		return similaritySliderPanels.computeIfAbsent(params.getNetworkID(), suid -> {
+			double similarityCutOff = params.getSimilarityCutOff();
+			return new SliderBarPanel(similarityCutOff, 1, "Similarity Cutoff", params,
+					EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT, EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT,
+					ParametersPanel.summaryPanelWidth, true, similarityCutOff, cyApplicationManager, emManager);
+		});
+	}
+	
+	@Override
+	public void handleEvent(NetworkAboutToBeDestroyedEvent event) {
+		Long suid = event.getNetwork().getSUID();
+		pvalueSliderPanels.remove(suid);
+		qvalueSliderPanels.remove(suid);
+		similaritySliderPanels.remove(suid);
+	}
+	
+	@Inject
+	public void registerListener(CyServiceRegistrar registrar) {
+		registrar.registerService(this, NetworkAboutToBeDestroyedListener.class, new Properties());
+	}
+	
 	/**
 	 * Shorten path name to only contain the parent directory
 	 *

@@ -51,7 +51,6 @@ public class DataSet {
 		this.expressionSets = new GeneExpressionMatrix();
 
 		//get the file name parameters for this map
-		EnrichmentMapParameters params = map.getParams();
 		//initialize all the filenames from the parameters for this dataset
 		if(name != null) {
 			this.datasetFiles = files;
