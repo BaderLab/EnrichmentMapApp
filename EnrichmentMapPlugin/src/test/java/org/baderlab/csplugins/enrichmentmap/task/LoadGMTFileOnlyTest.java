@@ -27,7 +27,7 @@ public class LoadGMTFileOnlyTest {
 		params.addFiles(EnrichmentMap.DATASET1, files);
 	
 		//create an new enrichment Map
-		EnrichmentMap em = new EnrichmentMap(params);
+		EnrichmentMap em = new EnrichmentMap("TestEM", params);
 		
 		//Load data set
 		//create a dataset

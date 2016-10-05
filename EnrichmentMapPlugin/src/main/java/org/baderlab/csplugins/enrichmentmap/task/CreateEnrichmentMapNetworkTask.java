@@ -90,7 +90,6 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 	private final EnrichmentMap map;
 
 	private Map<String, GenesetSimilarity> geneset_similarities;
-	private String mapName;
 	
 	public interface Factory {
 		CreateEnrichmentMapNetworkTask create(EnrichmentMap map);
@@ -100,7 +99,6 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 	public CreateEnrichmentMapNetworkTask(@Assisted EnrichmentMap map) {
 		this.map = map;
 		this.geneset_similarities = map.getGenesetSimilarity();
-		this.mapName = "Enrichment Map";
 	}
 
 	/**
@@ -114,20 +112,10 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 		//be created but it is possible that they have different values for the attributes.  How do
 		//we resolve this?
 		CyNetwork network;
-		//if(map.getParams().getAttributePrefix() == null)
-		map.getParams().setAttributePrefix(emManager);
 		String prefix = map.getParams().getAttributePrefix();
 
 		//create the new network.
 		network = networkFactory.createNetwork();
-
-		//Check to see if there is already a name specifed for the network
-		//We still need to calculate the number of networks so that we can specify the paramters for
-		//each network.
-
-		if(map.getName() == null) {
-			map.setName(prefix + mapName);
-		}
 		network.getRow(network).set(CyNetwork.NAME, map.getName());
 
 		//set the NetworkID in the EM parameters

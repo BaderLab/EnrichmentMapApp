@@ -38,7 +38,7 @@ public class FileReaderTest {
         params.getFiles().get(EnrichmentMap.DATASET1).setGMTFileName(testDataFileName);
         
         //Create a new Enrichment map
-        EnrichmentMap map = new EnrichmentMap(params);
+        EnrichmentMap map = new EnrichmentMap("TestEM", params);
                 
         //get the default dataset
         DataSet dataset = map.getDataset(EnrichmentMap.DATASET1);
@@ -65,7 +65,7 @@ public class FileReaderTest {
         params.getFiles().get(EnrichmentMap.DATASET1).setExpressionFileName(testDataFileName);
         
         //Create a new Enrichment map
-        EnrichmentMap map = new EnrichmentMap(params);
+        EnrichmentMap map = new EnrichmentMap("TestEM", params);
                 
         //get the default dataset
         DataSet dataset = map.getDataset(EnrichmentMap.DATASET1);
@@ -111,7 +111,7 @@ public class FileReaderTest {
         params.getFiles().get(EnrichmentMap.DATASET1).setExpressionFileName(testDataFileName);
         
         //Create a new Enrichment map
-        EnrichmentMap map = new EnrichmentMap(params);
+        EnrichmentMap map = new EnrichmentMap("TestEM", params);
                 
         //get the default dataset
         DataSet dataset = map.getDataset(EnrichmentMap.DATASET1);
@@ -157,7 +157,7 @@ public class FileReaderTest {
         params.getFiles().get(EnrichmentMap.DATASET1).setExpressionFileName(testDataFileName);
         
         //Create a new Enrichment map
-        EnrichmentMap map = new EnrichmentMap(params);
+        EnrichmentMap map = new EnrichmentMap("TestEM", params);
                 
         //get the default dataset
         DataSet dataset = map.getDataset(EnrichmentMap.DATASET1);
@@ -202,7 +202,7 @@ public class FileReaderTest {
         params.getFiles().get(EnrichmentMap.DATASET1).setExpressionFileName(testDataFileName);
         
         //Create a new Enrichment map
-        EnrichmentMap map = new EnrichmentMap(params);
+        EnrichmentMap map = new EnrichmentMap("TestEM", params);
                 
         //get the default dataset
         DataSet dataset = map.getDataset(EnrichmentMap.DATASET1);
@@ -246,7 +246,7 @@ public class FileReaderTest {
         params.getFiles().get(EnrichmentMap.DATASET1).setEnrichmentFileName1(testDataFileName);
         
         //Create a new Enrichment map
-        EnrichmentMap map = new EnrichmentMap(params);
+        EnrichmentMap map = new EnrichmentMap("TestEM", params);
                 
         //get the default dataset
         DataSet dataset = map.getDataset(EnrichmentMap.DATASET1);
@@ -299,7 +299,7 @@ public class FileReaderTest {
         params.getFiles().get(EnrichmentMap.DATASET1).setEnrichmentFileName1(testDataFileName);
         params.getFiles().get(EnrichmentMap.DATASET1).setEnrichmentFileName2(testDataFileName2);
         //Create a new Enrichment map
-        EnrichmentMap map = new EnrichmentMap(params);
+        EnrichmentMap map = new EnrichmentMap("TestEM", params);
                 
         //get the default dataset
         DataSet dataset = map.getDataset(EnrichmentMap.DATASET1);
@@ -357,7 +357,7 @@ public class FileReaderTest {
         params.getFiles().get(EnrichmentMap.DATASET1).setEnrichmentFileName1(testDataFileName);
  
         //Create a new Enrichment map
-        EnrichmentMap map = new EnrichmentMap(params);
+        EnrichmentMap map = new EnrichmentMap("TestEM", params);
                 
         //get the default dataset
         DataSet dataset = map.getDataset(EnrichmentMap.DATASET1);
@@ -420,7 +420,7 @@ public class FileReaderTest {
         params.getFiles().get(EnrichmentMap.DATASET1).setEnrichmentFileName1(testDataFileName);
 
         //Create a new Enrichment map
-        EnrichmentMap map = new EnrichmentMap(params);
+        EnrichmentMap map = new EnrichmentMap("TestEM", params);
                 
         //get the default dataset
         DataSet dataset = map.getDataset(EnrichmentMap.DATASET1);
@@ -464,7 +464,7 @@ public class FileReaderTest {
         params.getFiles().get(EnrichmentMap.DATASET1).setEnrichmentFileName1(testDataFileName);
 
         //Create a new Enrichment map
-        EnrichmentMap map = new EnrichmentMap(params);
+        EnrichmentMap map = new EnrichmentMap("TestEM", params);
                 
         //get the default dataset
         DataSet dataset = map.getDataset(EnrichmentMap.DATASET1);

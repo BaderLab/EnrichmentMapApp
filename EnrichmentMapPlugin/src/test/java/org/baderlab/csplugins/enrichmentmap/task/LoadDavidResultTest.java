@@ -36,7 +36,7 @@ public class LoadDavidResultTest {
 		params.setQvalue(0.005); // 5.0 X 10-3
 	
 		//create an new enrichment Map
-		EnrichmentMap em = new EnrichmentMap(params);
+		EnrichmentMap em = new EnrichmentMap("TestEM", params);
 		
 		//Load data set
 		//create a dataset
@@ -103,7 +103,7 @@ public class LoadDavidResultTest {
 		params.setQvalue(0.005); // 5.0 X 10-3
 	
 		//create an new enrichment Map
-		EnrichmentMap em = new EnrichmentMap(params);
+		EnrichmentMap em = new EnrichmentMap("TestEM", params);
 		
 		//Load first dataset
 		//create a dataset

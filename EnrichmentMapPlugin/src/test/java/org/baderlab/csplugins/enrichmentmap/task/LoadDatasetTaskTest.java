@@ -36,7 +36,7 @@ public class LoadDatasetTaskTest {
 		params.addFiles(EnrichmentMap.DATASET1, files);
 		
 		//create an new enrichment Map
-		EnrichmentMap em = new EnrichmentMap(params);
+		EnrichmentMap em = new EnrichmentMap("TestEM", params);
 		
 		//create a dataset
 		DataSet dataset = new DataSet(em, EnrichmentMap.DATASET1,files);

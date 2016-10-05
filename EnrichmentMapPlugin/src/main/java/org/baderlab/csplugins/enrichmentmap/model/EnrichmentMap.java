@@ -12,17 +12,13 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
 /***
- * An Enrichment Map object contains the minimal information needed to build an
- * enrichment map.
- * 
- * @author risserlin
- *
+ * An Enrichment Map object contains the minimal information needed to build an enrichment map.
  */
-
 public class EnrichmentMap {
 
 	//name of Enrichment map
-	private String name = null;
+	private final String name;
+	
 
 	//The set of Datasets
 	private Map<String, DataSet> datasets;
@@ -55,9 +51,9 @@ public class EnrichmentMap {
 	 * the analysis
 	 */
 
-	public EnrichmentMap(EnrichmentMapParameters params) {
+	public EnrichmentMap(String name, EnrichmentMapParameters params) {
 		this.params = params;
-		this.name = null;
+		this.name = name;
 		this.datasets = new HashMap<String, DataSet>();
 		
 		//initialize a new Dataset if the params have enrichment result or a GMT file
@@ -87,12 +83,6 @@ public class EnrichmentMap {
 		this.signatureGenesets = new HashMap<>();
 		initialize_files();
 	}
-
-	public EnrichmentMap(EnrichmentMapParameters params, String name) {
-		this(params);
-		this.name = name;
-	}
-
 
 	/**
 	 * Method to transfer files specified in the parameters to the objects they
@@ -275,9 +265,6 @@ public class EnrichmentMap {
 		return name;
 	}
 
-	public void setName(String name) {
-		this.name = name;
-	}
 
 	/*
 	 * Return a hash of all the genesets in the set of genesets regardless of which dataset it comes from.

@@ -45,15 +45,12 @@ package org.baderlab.csplugins.enrichmentmap.commands;
 
 import java.io.File;
 
-import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Continuous;
-import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Discrete;
-import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Passthrough;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
+import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.task.EnrichmentMapBuildMapTaskFactory;
-import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
@@ -155,10 +152,8 @@ public class BuildEnrichmentMapTuneableTask extends AbstractTask {
 	@Inject private EnrichmentMapManager emManager;
 	@Inject private EnrichmentMapParameters.Factory enrichmentMapParametersFactory;
 	@Inject private EnrichmentMapBuildMapTaskFactory.Factory taskFactoryProvider;
+	@Inject private LegacySupport legacySupport;
 	
-	@Inject private @Continuous  VisualMappingFunctionFactory vmfFactoryContinuous;
-	@Inject private @Discrete    VisualMappingFunctionFactory vmfFactoryDiscrete;
-	@Inject private @Passthrough VisualMappingFunctionFactory vmfFactoryPassthrough;
 	
 	
 	public BuildEnrichmentMapTuneableTask() {
@@ -236,7 +231,11 @@ public class BuildEnrichmentMapTuneableTask extends AbstractTask {
 		if(!dataset2files.isEmpty())
 			new_params.addFiles(EnrichmentMap.DATASET2, dataset2files);
 
-		EnrichmentMap map = new EnrichmentMap(new_params);
+		String prefix = legacySupport.getNextAttributePrefix();
+		new_params.setAttributePrefix(prefix);
+		String name = prefix + LegacySupport.EM_NAME;
+		
+		EnrichmentMap map = new EnrichmentMap(name, new_params);
 
 		EnrichmentMapBuildMapTaskFactory buildmap = taskFactoryProvider.create(map);
 		insertTasksAfterCurrentTask(buildmap.createTaskIterator());

@@ -37,7 +37,7 @@ public class LoadBingoResultsTest {
 		params.setQvalue(0.00000005); // 5.0 X 10-8
 	
 		//create an new enrichment Map
-		EnrichmentMap em = new EnrichmentMap(params);
+		EnrichmentMap em = new EnrichmentMap("TestEM", params);
 		
 		//Load data set
 		//create a dataset
@@ -104,7 +104,7 @@ public class LoadBingoResultsTest {
 		params.setQvalue(0.00000005); // 5.0 X 10-8
 	
 		//create an new enrichment Map
-		EnrichmentMap em = new EnrichmentMap(params);
+		EnrichmentMap em = new EnrichmentMap("TestEM", params);
 		
 		//Load first dataset
 		//create a dataset

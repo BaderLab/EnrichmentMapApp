@@ -15,6 +15,7 @@ import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapPanel;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
+import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.view.ParametersPanel;
 import org.cytoscape.application.CyApplicationManager;
@@ -92,7 +93,9 @@ public abstract class BaseNetworkTest {
 	
 	
 	protected void buildEnrichmentMap(EnrichmentMapParameters emParams) {
-		EnrichmentMap map = new EnrichmentMap(emParams);
+		String prefix = emParams.getAttributePrefix();
+		String name = prefix + LegacySupport.EM_NAME;
+		EnrichmentMap map = new EnrichmentMap(name, emParams);
 	   	EnrichmentMapBuildMapTaskFactory buildmap = enrichmentMapBuildMapTaskFactoryFactory.create(map);
 	    
 	   	TaskIterator taskIterator = buildmap.createTaskIterator();

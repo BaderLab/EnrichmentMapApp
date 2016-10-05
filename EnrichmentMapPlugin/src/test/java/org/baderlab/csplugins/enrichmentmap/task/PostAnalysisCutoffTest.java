@@ -69,6 +69,7 @@ public class PostAnalysisCutoffTest extends BaseNetworkTest {
 		dataset1files.setEnrichmentFileName1(PATH + "fakeEnrichments.txt");
 		dataset1files.setRankedFile(PATH + "FakeRank.rnk");  
 		emParams.addFiles(EnrichmentMap.DATASET1, dataset1files);
+		emParams.setAttributePrefix("EM1_");
 		
 	    buildEnrichmentMap(emParams);
 	    

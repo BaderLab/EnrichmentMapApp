@@ -89,6 +89,7 @@ import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
+import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.task.EnrichmentMapBuildMapTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.task.ResultTaskObserver;
 import org.baderlab.csplugins.enrichmentmap.util.JMultiLineToolTip;
@@ -125,6 +126,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 	@Inject private Provider<ShowAboutPanelAction> aboutPanelActionProvider;
 	@Inject private EnrichmentMapBuildMapTaskFactory.Factory taskFactoryFactory;
 	@Inject private EnrichmentMapManager emManager;
+	@Inject private LegacySupport legacySupport;
 	
 	
 	private EnrichmentMapParameters params;
@@ -1038,7 +1040,10 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 		if(!dataset2files.isEmpty())
 			new_params.addFiles(EnrichmentMap.DATASET2, dataset2files);
 
-		EnrichmentMap map = new EnrichmentMap(new_params);
+		String prefix = legacySupport.getNextAttributePrefix();
+		new_params.setAttributePrefix(prefix);
+		String name = prefix + LegacySupport.EM_NAME;
+		EnrichmentMap map = new EnrichmentMap(name, new_params);
 
 		//EnrichmentMapParseInputEvent parseInput = new EnrichmentMapParseInputEvent(empanel,map , dialog,  streamUtil);
 		//parseInput.build();

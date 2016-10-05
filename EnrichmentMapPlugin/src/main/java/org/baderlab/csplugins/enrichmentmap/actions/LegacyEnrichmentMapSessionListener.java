@@ -74,23 +74,10 @@ public class LegacyEnrichmentMapSessionListener implements SessionLoadedListener
 
 					//Given the file with all the parameters create a new parameter
 					EnrichmentMapParameters params = enrichmentMapParametersFactory.create(fullText);
-					EnrichmentMap em = new EnrichmentMap(params);
-
-					//get the network name
-					String param_name = em.getName();
-
-					//TODO:distinguish between GSEA and EM saved sessions
 					String props_name = (prop_file.getName().split("\\."))[0];
-					String name = param_name;
+					
+					EnrichmentMap em = new EnrichmentMap(props_name, params);
 
-					//check to see if the network name matches the name of the file
-					//the network name specified in the props file is different from the name of the props
-					//file then assume the name in the props file is wrong and set it to the file name (legacy issue)
-					//related to bug ticket #49
-					if(!props_name.equalsIgnoreCase(param_name)){
-						name = props_name;
-						em.setName(name);
-					}
 
 					//after associated the properties with the network
 					//initialized each Dataset that we have files for
@@ -101,7 +88,9 @@ public class LegacyEnrichmentMapSessionListener implements SessionLoadedListener
 					}
 
 					//register network and parameters
-					emManager.registerEnrichmentMap(getNetworkByName(name),em);
+					CyNetwork network = getNetworkByName(em.getName());
+					params.setNetworkID(network.getSUID());
+					emManager.registerEnrichmentMap(network, em);
 				}
 			}
 			//go through the rest of the files

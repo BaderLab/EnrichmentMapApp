@@ -60,7 +60,6 @@ import org.baderlab.csplugins.enrichmentmap.view.SliderBarPanel;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.session.CySessionManager;
@@ -1159,41 +1158,6 @@ public class EnrichmentMapParameters {
 
 	public String getAttributePrefix() {
 		return attributePrefix;
-	}
-
-	//Set up the attributePrefix
-	//The attribute prefix is based on the number of nextworks in cytoscape.
-	//TODO:make attribute prefix independent of cytoscape
-	public void setAttributePrefix(EnrichmentMapManager emManager) {
-		Set<CyNetwork> networks = sessionManager.getCurrentSession().getNetworks();
-
-		if(networks == null || networks.isEmpty())
-			this.attributePrefix = "EM1_";
-		else {
-			// how many enrichment maps are there?
-			int num_networks = 1;
-			int max_prefix = 0;
-			// go through all the networks, check to see if they are enrichment
-			// maps
-			// if they are then calculate the max EM_# and use the max number +
-			// 1 for the
-			// current attributes
-			for(Iterator<CyNetwork> i = networks.iterator(); i.hasNext();) {
-				CyNetwork current_network = i.next();
-				Long networkId = current_network.getSUID();
-				if(emManager.isEnrichmentMap(networkId)) {// fails
-					num_networks++;
-					EnrichmentMap tmpMap = emManager.getEnrichmentMap(networkId);
-					String tmpPrefix = tmpMap.getParams().getAttributePrefix();
-					tmpPrefix = tmpPrefix.replace("EM", "");
-					tmpPrefix = tmpPrefix.replace("_", "");
-					int tmpNum = Integer.parseInt(tmpPrefix);
-					if(tmpNum > max_prefix)
-						max_prefix = tmpNum;
-				}
-			}
-			this.attributePrefix = "EM" + (max_prefix + 1) + "_";
-		}
 	}
 
 	public void setAttributePrefix(String attributePrefix) {

@@ -342,8 +342,8 @@ public class ComputeSimilarityTask extends AbstractTask {
 		private int total;
 		private TaskMonitor taskMonitor;
 		
-		public ProgressMonitor(TaskMonitor taskMonitor, int total) {
-			this.taskMonitor = taskMonitor == null ? new NullTaskMonitor() : taskMonitor;
+		public ProgressMonitor(TaskMonitor tm, int total) {
+			this.taskMonitor = tm == null ? new NullTaskMonitor() : tm;
 			this.total = total;
 			taskMonitor.setTitle("Computing geneset similarities");
 		}

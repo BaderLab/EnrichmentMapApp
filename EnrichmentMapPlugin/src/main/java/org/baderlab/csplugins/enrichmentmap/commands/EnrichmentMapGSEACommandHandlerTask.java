@@ -6,6 +6,7 @@ import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
+import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.task.EnrichmentMapBuildMapTaskFactory;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
@@ -48,6 +49,7 @@ public class EnrichmentMapGSEACommandHandlerTask extends AbstractTask {
 	@Inject private EnrichmentMapParameters.Factory enrichmentMapParametersFactory;
 	@Inject private EnrichmentMapBuildMapTaskFactory.Factory taskFactoryProvider;
 	@Inject private EnrichmentMapManager emManager;
+	@Inject private LegacySupport legacySupport;
 
 	
 	public EnrichmentMapGSEACommandHandlerTask() {
@@ -91,8 +93,11 @@ public class EnrichmentMapGSEACommandHandlerTask extends AbstractTask {
 		new_params.setFDR(true);
 		new_params.setCombinedConstant(combinedconstant);
 	
-		EnrichmentMap map = new EnrichmentMap(new_params);
-		
+		String prefix = legacySupport.getNextAttributePrefix();
+		new_params.setAttributePrefix(prefix);
+		String name = prefix + LegacySupport.EM_NAME;
+		EnrichmentMap map = new EnrichmentMap(name, new_params);
+
 		EnrichmentMapBuildMapTaskFactory buildmap = taskFactoryProvider.create(map);
 
 		insertTasksAfterCurrentTask(buildmap.createTaskIterator());

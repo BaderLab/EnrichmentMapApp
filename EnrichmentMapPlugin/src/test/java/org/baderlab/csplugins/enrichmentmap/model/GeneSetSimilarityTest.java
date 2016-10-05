@@ -33,7 +33,7 @@ public class GeneSetSimilarityTest {
         params.getFiles().get(EnrichmentMap.DATASET1).setGMTFileName(testDataFileName);
         
         //Create a new Enrichment map
-        map = new EnrichmentMap(params);
+        map = new EnrichmentMap("TestEM", params);
                 
         //get the default dataset
         dataset = map.getDataset(EnrichmentMap.DATASET1);

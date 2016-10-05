@@ -41,7 +41,7 @@ public class LoadEdbDatasetTest {
 		params.setQvalue(1.0); 
 	
 		//create an new enrichment Map
-		EnrichmentMap em = new EnrichmentMap(params);
+		EnrichmentMap em = new EnrichmentMap("TestEM", params);
 		
 		//Load data set
 		//create a dataset
