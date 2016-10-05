@@ -34,24 +34,18 @@
  ** Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
  **
  **/
-
-// $Id: HeatMapPanel.java 383 2009-10-08 20:06:35Z risserlin $
-// $LastChangedDate: 2009-10-08 16:06:35 -0400 (Thu, 08 Oct 2009) $
-// $LastChangedRevision: 383 $
-// $LastChangedBy: risserlin $
-// $HeadURL: svn+ssh://risserlin@server1.baderlab.med.utoronto.ca/svn/EnrichmentMap/trunk/EnrichmentMapPlugin/src/org/baderlab/csplugins/enrichmentmap/HeatMapPanel.java $
-
 package org.baderlab.csplugins.enrichmentmap.view;
 
+
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static org.baderlab.csplugins.enrichmentmap.util.SwingUtil.makeSmall;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -74,6 +68,10 @@ import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
+import javax.swing.GroupLayout.ParallelGroup;
+import javax.swing.GroupLayout.SequentialGroup;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -84,7 +82,6 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.border.TitledBorder;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumnModel;
 
@@ -125,6 +122,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.swing.DialogTaskManager;
@@ -137,14 +135,10 @@ import com.google.inject.Inject;
 
 
 /**
- * Created by
- * User: risserlin
- * Date: Jan 30, 2009
- * Time: 9:15:32 AM
- * <p>
  * Creates a Heat map Panel - (heat map can consists of either one or two expression files depending on what
  * was supplied by the user)
  */
+@SuppressWarnings("serial")
 public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 
 	@Inject private CySwingApplication application;
@@ -153,8 +147,6 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 	@Inject private OpenBrowser openBrowser;
 	@Inject private DialogTaskManager dialogTaskMonitor;
 	@Inject private StreamUtil streamUtil;
-
-	private static final long serialVersionUID = 1903063204304411983L;
 
 	//Column names for expression set for data set 1
 	private Object[] columnNames;
@@ -171,7 +163,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 	private Object[][] expValue;
 
 	//private JRadioButton colorOn;
-	private JCheckBox showValues;
+	private JCheckBox showValuesCheck;
 
 	private int numConditions = 0;
 	private int numConditions2 = 0;
@@ -191,7 +183,6 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 	private ColorGradientRange[] rangeHalfRow2;
 	//private boolean[] isHalfRow1;
 	//private boolean[] isHalfRow2;
-	private final Insets insets = new Insets(0, 0, 0, 0);
 
 	//current subset of expression data from dataset 1 expression set
 	private HashMap<Integer, GeneExpression> currentExpressionSet;
@@ -231,16 +222,14 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 
 	//objects needed access to in order to print to pdf
 	//private JScrollPane jScrollPane;
-	private JTable jTable1;
-	private JTableHeader tableHdr;
-	private JPanel northPanel;
-	private JComboBox rankOptionComboBox;
+	private JTable table;
+	private JTableHeader tableHeader;
+	private JComboBox<String> rankOptionComboBox;
 
 	//Up and down sort button
 	final static int Ascending = 0, Descending = 1; // image States
 	private ImageIcon[] iconArrow = createExpandAndCollapseIcon();
 
-	
 	public HeatMapPanel setNode(boolean node) {
 		this.node = node;
 		return this;
@@ -248,20 +237,20 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 
 	@AfterInjection
 	public void createContents() {
-		this.setLayout(new java.awt.BorderLayout());
-		
-		//initialize the linkout props
-		initialize_linkouts();
+		this.setLayout(new BorderLayout());
 
-		//initialize pop up menu
+		// initialize the linkout props
+		initializeLinkouts();
+
+		// initialize pop up menu
 		rightClickPopupMenu = new JPopupMenu();
+
+		if (LookAndFeelUtil.isAquaLAF())
+			setOpaque(false);
 	}
-	
+
 	/**
-	 * Set the Heat map Panel to the variables in the given enrichment map
-	 * parameters set
-	 *
-	 * @param params - enrichment map parameters to reset the heat map to.
+	 * Set the Heat map Panel to the variables in the given enrichment map parameters set
 	 */
 	public void resetVariables(EnrichmentMap map) {
 		this.map = map;
@@ -327,9 +316,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 
 				this.Dataset2phenotype1 = params.getFiles().get(EnrichmentMap.DATASET2).getPhenotype1();
 				this.Dataset2phenotype2 = params.getFiles().get(EnrichmentMap.DATASET2).getPhenotype2();
-
 			}
-
 		}
 	}
 
@@ -339,7 +326,6 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 	 * @param params - enrichment map parameters to update the heat map to.
 	 */
 	public void updatePanel(EnrichmentMap map) {
-
 		resetVariables(map);
 		updatePanel();
 	}
@@ -350,12 +336,8 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 	public void updatePanel() {
 		//EnrichmentMapParameters params = map.getParams();
 		if ((currentExpressionSet != null) || (currentExpressionSet2 != null)) {
-
 			JTable rowTable;
 			String[] mergedcolumnNames = null;
-
-			JPanel mainPanel = new JPanel();
-			mainPanel.setLayout(new BorderLayout());
 			TableSort sort;
 
 			HeatMapTableModel OGT;
@@ -383,22 +365,21 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 				data = createSortedTableData(getExpValue());
 
 				OGT = new HeatMapTableModel(columnNames, data, expValue);
-
 			}
 
 			CellHighlightRenderer highlightCellRenderer = new CellHighlightRenderer();
 
 			sort = new TableSort(OGT);
-			jTable1 = new JTable(sort);
+			table = new JTable(sort);
 
 			//add a listener to the table
-			jTable1.addMouseListener(new HeatMapTableActionListener(jTable1, OGT, rightClickPopupMenu, linkoutProps, openBrowser));
+			table.addMouseListener(new HeatMapTableActionListener(table, OGT, rightClickPopupMenu, linkoutProps, openBrowser));
 
 			// used for listening to columns when clicked
-			TableHeader header = new TableHeader(sort, jTable1, hmParams, this);
+			TableHeader header = new TableHeader(sort, table, hmParams, this);
 
-			tableHdr = jTable1.getTableHeader();
-			tableHdr.addMouseListener(header);
+			tableHeader = table.getTableHeader();
+			tableHeader.addMouseListener(header);
 
 			//check to see if there is already a sort been defined for this table
 			//if(hmParams.isSortbycolumn()){
@@ -419,29 +400,29 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 			//default column width.  If we are using coloring default should be 10.  If we are using values default should be 50
 			int defaultColumnwidth = 10;
 			if (this.hmParams.isShowValues()) {
-				jTable1.setDefaultRenderer(ExpressionTableValue.class, new RawExpressionValueRenderer());
+				table.setDefaultRenderer(ExpressionTableValue.class, new RawExpressionValueRenderer());
 				defaultColumnwidth = 50;
 			} else
-				jTable1.setDefaultRenderer(ExpressionTableValue.class, new ColorRenderer());
+				table.setDefaultRenderer(ExpressionTableValue.class, new ColorRenderer());
 
 			//renderer for leading edge
-			jTable1.setDefaultRenderer(String.class, highlightCellRenderer);
+			table.setDefaultRenderer(String.class, highlightCellRenderer);
 
 			//even though the renderer takes into account what to do with significantGene type
 			//it is very important to define the renderer for the type specifically as the JTable
 			//makes the assumption that the type of the first object in the table is the same for the rest
 			//of the column and if it is a Significant gene it will default a general object renderer to the
 			//whole column
-			jTable1.setDefaultRenderer(SignificantGene.class, highlightCellRenderer);
-			TableColumnModel tcModel = jTable1.getColumnModel();
-			jTable1.setDragEnabled(false);
-			jTable1.setCellSelectionEnabled(true);
+			table.setDefaultRenderer(SignificantGene.class, highlightCellRenderer);
+			TableColumnModel tcModel = table.getColumnModel();
+			table.setDragEnabled(false);
+			table.setCellSelectionEnabled(true);
 
 			//set the table header renderer to the vertical renderer
 			ColumnHeaderVerticalRenderer pheno1_renderer = new ColumnHeaderVerticalRenderer();
-			pheno1_renderer.setBackground(EnrichmentMapVisualStyle.lightest_phenotype1);
+			pheno1_renderer.setBackground(EnrichmentMapVisualStyle.LIGHTEST_PHENOTYPE_1);
 			ColumnHeaderVerticalRenderer pheno2_renderer = new ColumnHeaderVerticalRenderer();
-			pheno2_renderer.setBackground(EnrichmentMapVisualStyle.lightest_phenotype2);
+			pheno2_renderer.setBackground(EnrichmentMapVisualStyle.LIGHTEST_PHENOTYPE_2);
 
 			ColumnHeaderVerticalRenderer default_renderer = new ColumnHeaderVerticalRenderer();
 			default_renderer.setBackground(Color.white);
@@ -517,24 +498,27 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 				}
 			}
 
-			JScrollPane jScrollPane;
-			jTable1.setColumnModel(tcModel);
-			jScrollPane = new javax.swing.JScrollPane(jTable1);
-			rowTable = new RowNumberTable(jTable1);
-			jScrollPane.setRowHeaderView(rowTable);
+			JScrollPane scrollPane;
+			table.setColumnModel(tcModel);
+			scrollPane = new JScrollPane(table);
+			rowTable = new RowNumberTable(table);
+			scrollPane.setRowHeaderView(rowTable);
 
 			if (columnNames.length > 20)
-				jTable1.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+				table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
-			mainPanel.add(jScrollPane);
-			mainPanel.revalidate();
+			JPanel panel = new JPanel(new BorderLayout());
+			panel.add(scrollPane);
+			panel.revalidate();
+			
+			if (LookAndFeelUtil.isAquaLAF())
+				panel.setOpaque(false);
 
-			this.add(createNorthPanel(), java.awt.BorderLayout.NORTH);
-			this.add(jScrollPane, java.awt.BorderLayout.CENTER);
-
+			this.add(createNorthPanel(), BorderLayout.NORTH);
+			this.add(scrollPane, BorderLayout.CENTER);
 		}
+		
 		this.revalidate();
-
 	}
 
 	private Object[][] createSortedTableData(Object[][] expValue2) {
@@ -664,7 +648,6 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 	}
 
 	private Object[][] createSortedTableData() {
-
 		expValue = new Object[currentExpressionSet.size()][numConditions];
 		rowLength = new int[currentExpressionSet.size()];
 		rowTheme = new ColorGradientTheme[currentExpressionSet.size()];
@@ -1115,11 +1098,9 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 	/**
 	 * Given the gene expression row
 	 * 
-	 * @return The expression set, transformed according the user specified
-	 *         transformation.
+	 * @return The expression set, transformed according the user specified transformation.
 	 */
 	private Double[] getExpression(GeneExpression row, int dataset) {
-
 		Double[] expression_values1 = null;
 
 		if (hmParams.getTransformation() == HeatMapParameters.Transformation.ROWNORM) {
@@ -1147,174 +1128,172 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 		return expression_values1;
 	}
 
-	// created new North panel to accommodate the expression legend, normalization options,sorting options, saving option
-	private JPanel showValuesPanel() {
+	private JPanel createExpressionLegendPanel() {
+		JPanel panel = new JPanel();
+		panel.setBorder(LookAndFeelUtil.createTitledBorder("Expression Legend"));
+		
+		GroupLayout layout = new GroupLayout(panel);
+		panel.setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
 
-		JPanel showValuesPanel = new JPanel();
-		showValuesPanel.setMaximumSize(new Dimension(50, 100));
-		showValuesPanel.setMinimumSize(new Dimension(50, 100));
-
-		showValues = new JCheckBox("Show values");
-
-		if (this.hmParams.isShowValues()) {
-			showValues.setSelected(true);
-		}
-
-		showValues.addItemListener(new java.awt.event.ItemListener() {
-			public void itemStateChanged(ItemEvent evt) {
-				showValuesStateChanged(evt);
-
-			}
-		});
-
-		//create a panel for the two buttons;
-		showValuesPanel.setLayout(new BorderLayout());
-		showValuesPanel.add(showValues, BorderLayout.SOUTH);
-		return showValuesPanel;
-	}
-
-	/**
-	 * create legend panel
-	 * 
-	 * @return legend panel
-	 */
-	private JPanel expressionLegendPanel() {
-		JPanel expLegendPanel = new JPanel(new BorderLayout());
-		expLegendPanel.setPreferredSize(new Dimension(200, 75));
-
-		TitledBorder expBorder = BorderFactory.createTitledBorder("Expression legend");
-		expBorder.setTitleJustification(TitledBorder.LEFT);
-		expLegendPanel.setBorder(expBorder);
+		ParallelGroup hGroup = layout.createParallelGroup(Alignment.CENTER, true);
+		SequentialGroup vGroup = layout.createSequentialGroup();
+		layout.setHorizontalGroup(hGroup);
+		layout.setVerticalGroup(vGroup);
 
 		if (this.currentExpressionSet2 != null && !this.currentExpressionSet2.isEmpty()) {
-			ColorGradientWidget new_legend_ds1 = ColorGradientWidget.getInstance("", 100, 30, 5, 5, hmParams.getTheme_ds1(), hmParams.getRange_ds1(), true,
-					ColorGradientWidget.LEGEND_POSITION.LEFT);
-			ColorGradientWidget new_legend_ds2 = ColorGradientWidget.getInstance("", 100, 30, 5, 5, hmParams.getTheme_ds2(), hmParams.getRange_ds2(), true,
-					ColorGradientWidget.LEGEND_POSITION.LEFT);
+			ColorGradientWidget legend1 = ColorGradientWidget.getInstance("", hmParams.getTheme_ds1(),
+					hmParams.getRange_ds1(), true, ColorGradientWidget.LEGEND_POSITION.NA);
+			ColorGradientWidget legend2 = ColorGradientWidget.getInstance("", hmParams.getTheme_ds2(),
+					hmParams.getRange_ds2(), true, ColorGradientWidget.LEGEND_POSITION.NA);
 
-			expLegendPanel.add(new_legend_ds1, BorderLayout.NORTH);
-			expLegendPanel.add(new_legend_ds2, BorderLayout.SOUTH);
+			hGroup.addComponent(legend1, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE);
+			hGroup.addComponent(legend2, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE);
+			
+			vGroup.addComponent(legend1, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE);
+			vGroup.addComponent(legend2, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE);
 		} else {
-			ColorGradientWidget new_legend = ColorGradientWidget.getInstance("", 200, 30, 5, 5, hmParams.getTheme_ds1(), hmParams.getRange_ds1(), true,
-					ColorGradientWidget.LEGEND_POSITION.LEFT);
+			ColorGradientWidget legend = ColorGradientWidget.getInstance("", hmParams.getTheme_ds1(),
+					hmParams.getRange_ds1(), true, ColorGradientWidget.LEGEND_POSITION.NA);
 
-			expLegendPanel.add(new_legend, BorderLayout.CENTER);
+			hGroup.addComponent(legend, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE);
+			
+			vGroup.addComponent(legend, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+						.addGap(0, panel.getPreferredSize().height / 2, PREFERRED_SIZE);
 		}
+		
+		if (LookAndFeelUtil.isAquaLAF())
+			panel.setOpaque(false);
 
-		expLegendPanel.revalidate();
-		return expLegendPanel;
+		panel.revalidate();
+		
+		return panel;
 	}
 
 	/**
 	 * Creates north panel containing panels for legend, sort by combo box, data
-	 * tranformation combo box, save expression set button
-	 *
-	 * @return panel
+	 * transformation combo box, save expression set button
 	 */
 	private JPanel createNorthPanel() {
-
-		northPanel = new JPanel();// new north panel
-		JPanel buttonPanel = new JPanel();// brought button panel from westPanel
-		buttonPanel.setLayout(new BorderLayout());
-		northPanel.setLayout(new GridBagLayout());
-
-		JButton SaveExpressionSet = new JButton("Save Expression Set");
-		SaveExpressionSet.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				saveExpressionSetActionPerformed(evt);
-			}
+		JButton saveButton = new JButton("Save Expression Set");
+		saveButton.addActionListener((ActionEvent evt) -> {
+			saveExpressionSetActionPerformed(evt);
 		});
 
-		JButton exportExpressionSet = new JButton("Export Expression Set (PDF)");
-		exportExpressionSet.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				exportExpressionSetActionPerformed(evt);
-			}
+		JButton exportButton = new JButton("Export Expression Set (PDF)");
+		exportButton.addActionListener((ActionEvent evt) -> {
+			exportExpressionSetActionPerformed(evt);
 		});
 
-		buttonPanel.add(SaveExpressionSet, BorderLayout.NORTH);
-		buttonPanel.add(exportExpressionSet, BorderLayout.SOUTH);
+		makeSmall(saveButton, exportButton);
+		LookAndFeelUtil.equalizeSize(saveButton, exportButton);
+		
+		JPanel expressionLegendPanel = createExpressionLegendPanel();
+		JPanel dataTransformPanel = createDataTransformationOptionsPanel();
+		JPanel sortOptionsPanel = createSortOptionsPanel();
 
-		addComponent(northPanel, expressionLegendPanel(), 0, 0, 2, 1, GridBagConstraints.CENTER, GridBagConstraints.NONE);
+		JPanel panel = new JPanel();
+		
+		GroupLayout layout = new GroupLayout(panel);
+		panel.setLayout(layout);
+		layout.setAutoCreateContainerGaps(false);
+		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
 
-		//add the show data values to the transformation drop down panel.	
-		JPanel datatransformPanel = createDataTransformationOptionsPanel();
-		datatransformPanel.add(showValuesPanel(), BorderLayout.SOUTH);
-
-		addComponent(northPanel, datatransformPanel, 2, 0, 1, 1, GridBagConstraints.CENTER, GridBagConstraints.NONE);
-
-		addComponent(northPanel, createSortOptionsPanel(), 3, 0, 2, 1, GridBagConstraints.CENTER, GridBagConstraints.NONE);
-
-		addComponent(northPanel, buttonPanel, 5, 0, 1, 1, GridBagConstraints.CENTER, GridBagConstraints.NONE);
-
-		northPanel.revalidate();
-		return northPanel;
+		layout.setHorizontalGroup(layout.createSequentialGroup()
+				.addComponent(expressionLegendPanel, 160, 200, PREFERRED_SIZE)
+				.addComponent(dataTransformPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(sortOptionsPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+						.addComponent(saveButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(exportButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
+				.addGap(0, 0, Short.MAX_VALUE)
+		);
+		layout.setVerticalGroup(layout.createParallelGroup(Alignment.CENTER, true)
+				.addComponent(expressionLegendPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(dataTransformPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(sortOptionsPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addGroup(layout.createSequentialGroup()
+						.addComponent(saveButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(exportButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
+		);
+		
+		if (LookAndFeelUtil.isAquaLAF())
+			panel.setOpaque(false);
+		
+		return panel;
 	}
 
-	/**
-	 * method to create Data Transformations Options combo box
-	 *
-	 * @param params - enrichment map parameters of current map
-	 * @return - panel with the Data Transformations Options combo box
-	 */
 	public JPanel createDataTransformationOptionsPanel() {
-		JPanel heatmapOptions;
-		JComboBox hmOptionComboBox;
-
-		TitledBorder HMBorder = BorderFactory.createTitledBorder("Normalization");
-		HMBorder.setTitleJustification(TitledBorder.LEFT);
-		heatmapOptions = new JPanel();
-		heatmapOptions.setLayout(new BorderLayout());
-		hmOptionComboBox = new JComboBox();
-		hmOptionComboBox.addItem(HeatMapParameters.asis);
-		hmOptionComboBox.addItem(HeatMapParameters.rownorm);
-		hmOptionComboBox.addItem(HeatMapParameters.logtrans);
+		JComboBox<String> hmOptionsComboBox = new JComboBox<>();
+		hmOptionsComboBox.addItem(HeatMapParameters.asis);
+		hmOptionsComboBox.addItem(HeatMapParameters.rownorm);
+		hmOptionsComboBox.addItem(HeatMapParameters.logtrans);
 
 		switch (hmParams.getTransformation()) {
-		case ASIS:
-			hmOptionComboBox.setSelectedItem(HeatMapParameters.asis);
-			break;
-		case ROWNORM:
-			hmOptionComboBox.setSelectedItem(HeatMapParameters.rownorm);
-			break;
-		case LOGTRANSFORM:
-			hmOptionComboBox.setSelectedItem(HeatMapParameters.logtrans);
-			break;
+			case ASIS:
+				hmOptionsComboBox.setSelectedItem(HeatMapParameters.asis);
+				break;
+			case ROWNORM:
+				hmOptionsComboBox.setSelectedItem(HeatMapParameters.rownorm);
+				break;
+			case LOGTRANSFORM:
+				hmOptionsComboBox.setSelectedItem(HeatMapParameters.logtrans);
+				break;
 		}
 
-		hmOptionComboBox.addActionListener(new HeatMapActionListener(hmParams.getEdgeOverlapPanel(), hmParams.getNodeOverlapPanel(), hmOptionComboBox,
-				this.hmParams, map, fileUtil, streamUtil, application));
-		heatmapOptions.add(hmOptionComboBox, BorderLayout.NORTH);
-		heatmapOptions.setBorder(HMBorder);
-		return heatmapOptions;
+		hmOptionsComboBox.addActionListener(
+				new HeatMapActionListener(hmParams.getEdgeOverlapPanel(), hmParams.getNodeOverlapPanel(),
+						hmOptionsComboBox, this.hmParams, map, fileUtil, streamUtil, application));
+		
+		showValuesCheck = new JCheckBox("Show values");
+
+		if (hmParams.isShowValues())
+			showValuesCheck.setSelected(true);
+
+		showValuesCheck.addItemListener((ItemEvent evt) -> {
+			showValuesStateChanged(evt);
+		});
+		
+		makeSmall(hmOptionsComboBox, showValuesCheck);
+		
+		JPanel panel = new JPanel();
+		panel.setBorder(LookAndFeelUtil.createTitledBorder("Normalization"));
+		
+		GroupLayout layout = new GroupLayout(panel);
+		panel.setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
+
+		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
+				.addComponent(hmOptionsComboBox, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(showValuesCheck, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addComponent(hmOptionsComboBox, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(showValuesCheck, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+		);
+		
+		if (LookAndFeelUtil.isAquaLAF())
+			panel.setOpaque(false);
+
+		return panel;
 	}
 
-	/**
-	 * method to create Sort by combo box
-	 *
-	 * @param params - enrichment map parameters of current map
-	 * @return - panel with the sort by combo box
-	 */
 	public JPanel createSortOptionsPanel() {
+		JPanel panel = new JPanel(new FlowLayout());
+		panel.setBorder(LookAndFeelUtil.createTitledBorder("Sorting"));
 
-		JPanel RankOptions;
-
-		TitledBorder RankBorder = BorderFactory.createTitledBorder("Sorting");
 		HashSet<String> ranks = map.getAllRankNames();
-		RankBorder.setTitleJustification(TitledBorder.LEFT);
-		RankOptions = new JPanel();
-		rankOptionComboBox = new JComboBox();
-
-		//create a panel for the combobox and button
-		JPanel ComboButton = new JPanel();
-
+		rankOptionComboBox = new JComboBox<>();
 		rankOptionComboBox.addItem(HeatMapParameters.sort_hierarchical_cluster);
 
 		//create the rank options based on what we have in the set of ranks
 		//Go through the ranks hashmap and insert each ranking as an option
 		if (ranks != null) {
 			//convert the ranks into a treeset so that they are ordered
-
 			for (Iterator<String> j = ranks.iterator(); j.hasNext();) {
 				String ranks_name = j.next().toString();
 				rankOptionComboBox.addItem(ranks_name);
@@ -1381,30 +1360,33 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 		//if this is the initial creation then set the rank to the default
 		//add the option to add another rank file
 		rankOptionComboBox.addItem("Add Rankings ... ");
-
-		ComboButton.add(rankOptionComboBox);
+		
+		panel.add(rankOptionComboBox);
 
 		//include the button only if we are sorting by column or ranks
 		if (hmParams.getSort() == Sort.RANK || hmParams.getSort() == Sort.COLUMN) {
-			JButton arrow;
+			final JButton arrowButton;
+			
 			if (hmParams.isAscending(hmParams.getSortIndex()))
-				arrow = createArrowButton(Ascending);
+				arrowButton = createArrowButton(Ascending);
 			else
-				arrow = createArrowButton(Descending);
-			ComboButton.add(arrow);
-			arrow.addActionListener(new ChangeSortAction(arrow));
+				arrowButton = createArrowButton(Descending);
+			
+			arrowButton.addActionListener(new ChangeSortAction(arrowButton));
+			panel.add(arrowButton);
 		}
 
 		rankOptionComboBox.addActionListener(new HeatMapActionListener(hmParams.getEdgeOverlapPanel(), hmParams.getNodeOverlapPanel(), rankOptionComboBox,
 				hmParams, map, fileUtil, streamUtil, application));
 
-		ComboButton.revalidate();
+		makeSmall(rankOptionComboBox);
+		
+		if (LookAndFeelUtil.isAquaLAF())
+			panel.setOpaque(false);
+		
+		panel.revalidate();
 
-		RankOptions.add(ComboButton);
-		RankOptions.setBorder(RankBorder);
-		RankOptions.revalidate();
-
-		return RankOptions;
+		return panel;
 	}
 
 	/**
@@ -1427,6 +1409,8 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 		button.setForeground(color);
 		button.setFocusable(false);
 		button.setContentAreaFilled(false);
+		
+		makeSmall(button);
 
 		return button;
 	}
@@ -1452,10 +1436,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 	 * the titledBorder component.
 	 */
 	private class ChangeSortAction extends AbstractAction implements ActionListener, ItemListener {
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = -8951978251258210440L;
+		
 		private JButton arrow;
 
 		private ChangeSortAction(JButton arrow) {
@@ -1482,11 +1463,6 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 		public void itemStateChanged(ItemEvent e) {
 			hmParams.flipAscending(hmParams.getSortIndex());
 		}
-	}
-
-	private void addComponent(Container container, Component component, int gridx, int gridy, int gridwidth, int gridheight, int anchor, int fill) {
-		GridBagConstraints gbc = new GridBagConstraints(gridx, gridy, gridwidth, gridheight, 1.0, 1.0, anchor, fill, insets, 0, 0);
-		container.add(component, gbc);
 	}
 
 	private void saveExpressionSetActionPerformed(ActionEvent evt) {
@@ -1579,7 +1555,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 				file = new File(fileName);
 			}
 			
-			HeatMapExporterTask task = new HeatMapExporterTask(getjTable1(), getTableHeader(), file);
+			HeatMapExporterTask task = new HeatMapExporterTask(table, tableHeader, file);
 			dialogTaskMonitor.execute(new TaskIterator(task));
 		}
 	}
@@ -1588,12 +1564,8 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 	 * Collates the current selected nodes genes to represent the expression of
 	 * the genes that are in all the selected nodes. and sets the expression
 	 * sets (both if there are two datasets)
-	 *
-	 * @param params - enrichment map parameters of the current map
-	 *
 	 */
 	private void initializeLeadingEdge(EnrichmentMapParameters params) {
-
 		Object[] nodes = params.getSelectedNodes().toArray();
 
 		//if only one node is selected activate leading edge potential
@@ -1743,7 +1715,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 	 *
 	 */
 	//TODO:initialize linkouts using cytoscape default properties
-	private void initialize_linkouts() {
+	private void initializeLinkouts() {
 		// First, load existing property
 		/*
 		 * Properties props = CytoscapeInit.getProperties();
@@ -1843,26 +1815,17 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 		return isNegative;
 	}
 
-	/*
-	 * Showvalue toggle action listener
-	 */
 	private void showValuesStateChanged(ItemEvent e) {
-		//JCheckBox source = (JCheckBox)e.getItemSelectable();
-		JCheckBox source = (JCheckBox) e.getSource();
-
-		//if (source == showValues) {
 		if (e.getStateChange() == ItemEvent.DESELECTED) {
-			showValues.setSelected(false);
+			showValuesCheck.setSelected(false);
 			this.hmParams.setShowValues(false);
 		}
 		if (e.getStateChange() == ItemEvent.SELECTED) {
 			this.hmParams.setShowValues(true);
-			showValues.setSelected(true);
+			showValuesCheck.setSelected(true);
 		}
 		this.updatePanel();
 		this.revalidate();
-		//}
-
 	}
 
 	//Getters and Setters
@@ -2034,18 +1997,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 		return rowTheme;
 	}
 
-	public JTableHeader getTableHeader() {
-		return tableHdr;
-	}
-
-	public JTable getjTable1() {
-		return jTable1;
-	}
-
-	public JPanel getNorthPanel() {
-		return northPanel;
-	}
-
+	@Override
 	public Component getComponent() {
 		return this;
 	}
@@ -2074,10 +2026,12 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 		this.ranks = ranks;
 	}
 
+	@Override
 	public CytoPanelName getCytoPanelName() {
 		return CytoPanelName.SOUTH;
 	}
 
+	@Override
 	public Icon getIcon() {
 		URL EMIconURL = this.getClass().getResource("enrichmentmap_logo_notext_small.png");
 		ImageIcon EMIcon = null;
@@ -2087,6 +2041,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 		return EMIcon;
 	}
 
+	@Override
 	public String getTitle() {
 		if (node)
 			return "Heat Map (nodes)";

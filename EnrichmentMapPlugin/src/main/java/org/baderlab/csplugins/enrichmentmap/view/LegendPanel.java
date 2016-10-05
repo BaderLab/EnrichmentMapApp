@@ -45,130 +45,127 @@ package org.baderlab.csplugins.enrichmentmap.view;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
-import javax.swing.BorderFactory;
 import javax.swing.JPanel;
+import javax.swing.UIManager;
+
+import org.cytoscape.util.swing.LookAndFeelUtil;
 
 /**
- * Created by User: risserlin Date: Feb 5, 2009 Time: 3:55:52 PM
+ * Created by
+ * User: risserlin
+ * Date: Feb 5, 2009
+ * Time: 3:55:52 PM
  * <p>
  * enrichment map legend panel
  */
 
+@SuppressWarnings("serial")
 public class LegendPanel extends JPanel {
 
-	/**
-	 * the height of the panel
-	 */
-	private final int DIM_HEIGHT = 35;
-	/**
-	 * the width of the panel
-	 */
-	private final int DIM_WIDTH = 150;
+	private static final int WIDTH = 150;
+	private static final int HEIGHT = 36;
+	
+    private final Color minColor;
+    private final Color maxColor;
+    private final String phenotype1;
+    private final String phenotype2;
 
-	/*--------------------------------------------------------------
-	Fields.
-	--------------------------------------------------------------*/
-	private static Color mincolor;
-	private static Color maxcolor;
-	private String phenotype1;
-	private String phenotype2;
+	public LegendPanel(Color minColor, Color maxColor, String phenotype1, String phenotype2) {
+        this.minColor = minColor;
+        this.maxColor = maxColor;
+        this.phenotype1 = phenotype1;
+        this.phenotype2 = phenotype2;
+        
+        setPreferredSize(new Dimension(WIDTH, HEIGHT));
+        setOpaque(false);
+    }
 
-	/**
-	 * Class constructor
-	 *
-	 * @param mincolor
-	 * @param maxcolor
-	 * @param phenotype1
-	 * @param phenotype2
-	 */
-	public LegendPanel(Color mincolor, Color maxcolor, String phenotype1, String phenotype2) {
-		super();
-		this.mincolor = mincolor;
-		this.maxcolor = maxcolor;
-		this.phenotype1 = phenotype1;
-		this.phenotype2 = phenotype2;
-		setPreferredSize(new Dimension(DIM_WIDTH, DIM_HEIGHT));
-		setOpaque(false);
-		//setBackground(Color.WHITE);
-		//create border.
-		setBorder(BorderFactory.createEtchedBorder());
-	}
-
-	/*----------------------------------------------------------------
-	PAINT.
-	----------------------------------------------------------------*/
-
-	/**
-	 * Paint legend
-	 *
-	 * @param g
-	 */
+	@Override
 	public void paint(Graphics g) {
+		final int w = getWidth();
+		final int h = getHeight();
+		
+		if (w <= 0 || h <= 0)
+			return;
+		
+		Graphics2D g2d = (Graphics2D) g;
+		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+		
+		float ww = w / 5.f;
+		float hPad = ww / 2.f; // To center the legend horizontally
+        
+        Point2D.Float p1 = new Point2D.Float(hPad, 0.f);  //Gradient line start
+        Point2D.Float p2 = new Point2D.Float(hPad + ww, 0.f);  //Gradient line end
 
-		Graphics2D g2D = (Graphics2D) g;
-		Point2D.Float p1 = new Point2D.Float(00.f, 0.f); //Gradient line start
-		Point2D.Float p2 = new Point2D.Float(30.f, 0.f); //Gradient line end
+        //empty white box
+        Point2D.Float p3 = new Point2D.Float(hPad + ww, 0.f);  //Gradient line start
 
-		//empty white box
-		Point2D.Float p3 = new Point2D.Float(30.f, 0.f); //Gradient line start
-		Point2D.Float p4 = new Point2D.Float(60.f, 0.f); //Gradient line end
+        Point2D.Float p5 = new Point2D.Float(hPad + 2 * ww, 0.f);  //Gradient line start
 
-		Point2D.Float p5 = new Point2D.Float(60.f, 0.f); //Gradient line start
-		Point2D.Float p6 = new Point2D.Float(90.f, 0.f); //Gradient line end
+        Point2D.Float p7 = new Point2D.Float(hPad + 3 * ww, 0.f);  //Gradient line start
+        Point2D.Float p8 = new Point2D.Float(hPad + 4 * ww, 0.f);  //Gradient line end
+        
+        float w1 = 30;
+        float w2 = 30;
+        float hh = h / 2;
+        
+        // Need to create two gradients, one one for the max and one for the min
+        GradientPaint g1 = new GradientPaint(p1, minColor, p2, Color.WHITE, false); //Acyclic gradient
+        GradientPaint g2 = new GradientPaint(p7, Color.WHITE, p8, maxColor, false); //Acyclic gradient
+        Rectangle2D.Float rect1 = new Rectangle2D.Float(p1.x , p1.y, w1, hh);
+        Rectangle2D.Float rect2 = new Rectangle2D.Float(p3.x , p3.y, w2, hh);
+        Rectangle2D.Float rect3 = new Rectangle2D.Float(p5.x , p5.y, w2, hh);
+        Rectangle2D.Float rect4 = new Rectangle2D.Float(p7.x , p7.y, w1, hh);
 
-		Point2D.Float p7 = new Point2D.Float(90.f, 0.f); //Gradient line start
-		Point2D.Float p8 = new Point2D.Float(120.f, 0.f); //Gradient line end
-		float width1 = 30;
-		float width2 = 30;
-		float height = 15;
-		//Need to create two gradients, one one for the max and one for the min
-		GradientPaint g1 = new GradientPaint(p1, mincolor, p2, Color.WHITE, false); //Acyclic gradient
-		GradientPaint g2 = new GradientPaint(p7, Color.WHITE, p8, maxcolor, false); //Acyclic gradient
-		Rectangle2D.Float rect1 = new Rectangle2D.Float(p1.x, p1.y, width1, height);
-		Rectangle2D.Float rect2 = new Rectangle2D.Float(p3.x, p3.y, width2, height);
-		Rectangle2D.Float rect3 = new Rectangle2D.Float(p5.x, p5.y, width2, height);
-		Rectangle2D.Float rect4 = new Rectangle2D.Float(p7.x, p7.y, width1, height);
+        g2d.setFont(getLabelFont());
+        float tyOffset = hh + h / 3.f; // Text y offset
+        
+		if (minColor != Color.WHITE) {
+			g2d.setPaint(g1);
+			g2d.fill(rect1);
+			g2d.setPaint(Color.WHITE);
+			g2d.draw(rect1);
 
-		if(mincolor != Color.WHITE) {
+			// make a white block
+			g2d.setPaint(Color.WHITE);
+			g2d.fill(rect2);
+			g2d.draw(rect2);
 
-			g2D.setPaint(g1);
-			g2D.fill(rect1);
-			g2D.setPaint(Color.WHITE);
-			g2D.draw(rect1);
-
-			//make a white block
-			g2D.setPaint(Color.WHITE);
-			g2D.fill(rect2);
-			g2D.draw(rect2);
-
-			g2D.setPaint(Color.BLACK);
-			//g2D.drawString(""+min, p1.x , p1.y - 5);
-			g2D.drawString(phenotype1, p1.x, p1.y + height + 10);
-
+			g2d.setPaint(getLabelForeground());
+			g2d.drawString(phenotype1, p1.x, p1.y + tyOffset);
 		} else {
-			g2D.setPaint(Color.BLACK);
-			//g2D.drawString(""+min, p5.x , p5.y - 5);
-			g2D.drawString(phenotype1, p5.x, p5.y + height + 10);
+			g2d.setPaint(getLabelForeground());
+			g2d.drawString(phenotype1, p5.x, p5.y + tyOffset);
 		}
 
-		//make a white block
-		g2D.setPaint(Color.WHITE);
-		g2D.fill(rect3);
-		g2D.draw(rect3);
+        // Make a white block
+        g2d.setPaint(Color.WHITE);
+        g2d.fill(rect3);
+        g2d.draw(rect3);
 
-		g2D.setPaint(g2);
-		g2D.fill(rect4);
-		g2D.setPaint(Color.WHITE);
-		g2D.draw(rect4);
+		g2d.setPaint(g2);
+		g2d.fill(rect4);
+		g2d.setPaint(Color.WHITE);
+		g2d.draw(rect4);
 
-		g2D.setPaint(Color.BLACK);
-		//g2D.drawString("< " + max, p7.x , p8.y - 5);
-		g2D.drawString(phenotype2, p7.x, p7.y + height + 10);
+		g2d.setPaint(getLabelForeground());
+		g2d.drawString(phenotype2, p7.x, p7.y + tyOffset);
+	}
+
+	private static Font getLabelFont() {
+		return UIManager.getFont("Label.font").deriveFont(LookAndFeelUtil.getSmallFontSize());
+	}
+
+	private static Color getLabelForeground() {
+		return UIManager.getColor("Label.foreground");
 	}
 }

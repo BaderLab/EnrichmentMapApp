@@ -164,7 +164,7 @@ public class HeatMapParameters {
 			theme_ds1 = ColorGradientTheme.GREEN_ONECOLOR_GRADIENT_THEME;
 		} else {
 			range_ds1 = ColorGradientRange.getInstance(-max, median, median, max, -max, median, median, max);
-			theme_ds1 = ColorGradientTheme.GREEN_MAGENTA_GRADIENT_THEME;
+			theme_ds1 = ColorGradientTheme.PR_GN_GRADIENT_THEME;
 		}
 
 	}
@@ -195,7 +195,7 @@ public class HeatMapParameters {
 			theme_ds1 = ColorGradientTheme.GREEN_ONECOLOR_GRADIENT_THEME;
 		} else {
 			range_ds1 = ColorGradientRange.getInstance(-max, median, median, max, -max, median, median, max);
-			theme_ds1 = ColorGradientTheme.GREEN_MAGENTA_GRADIENT_THEME;
+			theme_ds1 = ColorGradientTheme.PR_GN_GRADIENT_THEME;
 		}
 
 		//Do the same for dataset 2
@@ -215,7 +215,7 @@ public class HeatMapParameters {
 			theme_ds2 = ColorGradientTheme.GREEN_ONECOLOR_GRADIENT_THEME;
 		} else {
 			range_ds2 = ColorGradientRange.getInstance(-max, median, median, max, -max, median, median, max);
-			theme_ds2 = ColorGradientTheme.GREEN_MAGENTA_GRADIENT_THEME;
+			theme_ds2 = ColorGradientTheme.PR_GN_GRADIENT_THEME;
 		}
 
 	}
@@ -285,7 +285,7 @@ public class HeatMapParameters {
 		} else {
 			median = 0;
 			range_ds1 = ColorGradientRange.getInstance(-max, 0, 0, max, -max, 0, 0, max);
-			theme_ds1 = ColorGradientTheme.GREEN_MAGENTA_GRADIENT_THEME;
+			theme_ds1 = ColorGradientTheme.PR_GN_GRADIENT_THEME;
 		}
 
 	}
@@ -355,7 +355,7 @@ public class HeatMapParameters {
 		} else {
 			median = 0;
 			range_ds2 = ColorGradientRange.getInstance(-max, 0, 0, max, -max, 0, 0, max);
-			theme_ds2 = ColorGradientTheme.GREEN_MAGENTA_GRADIENT_THEME;
+			theme_ds2 = ColorGradientTheme.PR_GN_GRADIENT_THEME;
 		}
 
 	}

@@ -58,7 +58,6 @@ public class LoadSignatureSetsActionListener implements ActionListener {
 		this.taskManager = taskManager;
 	}
 	
-	
 	public void setGeneSetCallback(Consumer<SetOfGeneSets> geneSetCallback) {
 		this.geneSetCallback = geneSetCallback;
 	}
@@ -67,39 +66,37 @@ public class LoadSignatureSetsActionListener implements ActionListener {
 		this.loadedSignatureSetsCallback = loadedSignatureSetsCallback;
 	}
 	
-	
+	@Override
 	public void actionPerformed(ActionEvent event) {
 		// make sure that the minimum information is set in the current set of parameters
-		EnrichmentMap current_map = emManager.getMap(applicationManager.getCurrentNetwork().getSUID());
+		EnrichmentMap currentMap = emManager.getMap(applicationManager.getCurrentNetwork().getSUID());
 
 		String errors = checkGMTfiles(fileName);
-		if(errors.isEmpty()) {
+		if (errors.isEmpty()) {
 
 			// MKTODO warning LoadSignatureGMTFilesTask is side-effecting, it pulls the loaded genes into the EnrichmentMap object
-			LoadSignatureGMTFilesTask load_GMTs = new LoadSignatureGMTFilesTask(fileName, current_map, filterMetric);
+			LoadSignatureGMTFilesTask loadGMTs = new LoadSignatureGMTFilesTask(fileName, currentMap, filterMetric);
 
 			TaskObserver taskObserver = new ResultTaskObserver() {
 				private SetOfGeneSets resultGeneSets;
 				private Set<String> loadedSignatureSets;
-				
-				/**
-				 * @see FilterSignatureGSTask#getResults
-				 */
+
+				@Override
 				public void taskFinished(ObservableTask task) {
-					if(task instanceof FilterSignatureGSTask) {
+					if (task instanceof FilterSignatureGSTask) {
 						resultGeneSets = task.getResults(SetOfGeneSets.class);
 						loadedSignatureSets = task.getResults(Set.class);
 					}
 				}
 				
+				@Override
 				public void allFinished(FinishStatus finishStatus) {
 					geneSetCallback.accept(resultGeneSets);
 					loadedSignatureSetsCallback.accept(loadedSignatureSets);
 				}
 			};
 			
-			taskManager.execute(load_GMTs.createTaskIterator(), taskObserver);
-
+			taskManager.execute(loadGMTs.createTaskIterator(), taskObserver);
 		} else {
 			JOptionPane.showMessageDialog(application.getJFrame(), errors, "Invalid Input", JOptionPane.WARNING_MESSAGE);
 		}
