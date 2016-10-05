@@ -199,7 +199,7 @@ public class HeatMapActionListener implements ActionListener {
 			int i = 0;
 			int columns = 0;
 			//calculate the number of indexes used for the column names
-			if(params.isData2() && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null
+			if(map.getDataset(EnrichmentMap.DATASET2) != null && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null
 					&& !map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getFilename()
 							.equalsIgnoreCase(map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getFilename()))
 				columns = map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getColumnNames().length
@@ -243,7 +243,7 @@ public class HeatMapActionListener implements ActionListener {
 
 		hmParams.ResetColorGradient_ds1();
 
-		if(params.isData2() && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null
+		if(map.getDataset(EnrichmentMap.DATASET2) != null && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null
 				&& !map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getFilename()
 						.equalsIgnoreCase(map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getFilename()))
 			hmParams.ResetColorGradient_ds2();

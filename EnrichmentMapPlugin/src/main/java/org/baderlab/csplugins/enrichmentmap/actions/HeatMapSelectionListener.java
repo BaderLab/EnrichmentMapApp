@@ -91,14 +91,14 @@ public class HeatMapSelectionListener implements RowsSetListener {
 		Long suid = network.getSUID();
 		
 		EnrichmentMap map = manager.getEnrichmentMap(suid);
-		if(map != null && map.getParams().isData()) {
+		if(map != null && map.getDataset(EnrichmentMap.DATASET1) != null) {
 			
 			HeatMapParameters hmParams = manager.getHeatMapParameters(suid);
 			if(hmParams == null) {
 				hmParams = heatMapParametersProvider.get();
 				
 				// If there are two distinct datasets intialize the theme and range for the heatmap coloring separately.
-				if (map.getParams().isData2() && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null && !map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getFilename().equalsIgnoreCase(map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getFilename()))
+				if (map.getDataset(EnrichmentMap.DATASET2) != null && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null && !map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getFilename().equalsIgnoreCase(map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getFilename()))
 					hmParams.initColorGradients(map.getDataset(EnrichmentMap.DATASET1).getExpressionSets(), map.getDataset(EnrichmentMap.DATASET2).getExpressionSets());
 				else
 					hmParams.initColorGradients(map.getDataset(EnrichmentMap.DATASET1).getExpressionSets());

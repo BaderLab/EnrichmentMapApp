@@ -64,17 +64,11 @@ public class EnrichmentMapGSEACommandHandlerTask extends AbstractTask {
 	
 		//set all files as extracted from the edb directory
 		DataSetFiles files = this.InitializeFiles(edbdir, expressionfile);
-		if(!expressionfile.equals("")){
-			new_params.setData(true);
-		}
 		new_params.addFiles(EnrichmentMap.DATASET1, files);
 		//only add second dataset if there is a second edb directory.
 		if(edbdir2 != null && !edbdir2.equalsIgnoreCase("")){
 			new_params.setTwoDatasets(true);
 			DataSetFiles files2 = this.InitializeFiles(edbdir2, expressionfile2);
-			if(!expressionfile2.equals("")){
-				new_params.setData2(true);
-			}
 			new_params.addFiles(EnrichmentMap.DATASET2, files2);
 		}
 	

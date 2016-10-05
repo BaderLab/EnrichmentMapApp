@@ -259,7 +259,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 		this.params = map.getParams();
 		this.ranks = null;
 
-		if (params.isData() || params.isData2()) {
+//		if (params.isData() || params.isData2()) {
 			GeneExpressionMatrix expression = map.getDataset(EnrichmentMap.DATASET1).getExpressionSets();
 			numConditions = expression.getNumConditions();
 			columnNames = expression.getColumnNames();
@@ -293,7 +293,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 			if (node)
 				initializeLeadingEdge(params);
 
-			if (params.isData2() && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null && !map.getDataset(EnrichmentMap.DATASET1)
+			if (map.getDataset(EnrichmentMap.DATASET2) != null && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null && !map.getDataset(EnrichmentMap.DATASET1)
 					.getExpressionSets().getFilename().equalsIgnoreCase(map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getFilename())) {
 
 				GeneExpressionMatrix expression2 = map.getDataset(EnrichmentMap.DATASET2).getExpressionSets();
@@ -313,7 +313,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 			}
 
 			//if there are two expression sets, regardless if they are the same get the phenotypes of the second file.
-			if (params.isData2() && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null) {
+			if (map.getDataset(EnrichmentMap.DATASET2) != null && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null) {
 
 				phenotypes2 = map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getPhenotypes();
 
@@ -322,7 +322,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 
 			}
 
-		}
+//		}
 	}
 
 	/**
@@ -354,7 +354,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 			Object[][] data;
 
 			//create data subset
-			if (params.isData2() && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null && !map.getDataset(EnrichmentMap.DATASET1)
+			if (map.getDataset(EnrichmentMap.DATASET2) != null && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null && !map.getDataset(EnrichmentMap.DATASET1)
 					.getExpressionSets().getFilename().equalsIgnoreCase(map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getFilename())) {
 
 				// used exp[][] value to store all the expression values needed to create data[][]
@@ -438,7 +438,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 			ColumnHeaderVerticalRenderer default_renderer = new ColumnHeaderVerticalRenderer();
 			default_renderer.setBackground(Color.white);
 
-			if (params.isData2() && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null && !map.getDataset(EnrichmentMap.DATASET1)
+			if (map.getDataset(EnrichmentMap.DATASET2) != null && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null && !map.getDataset(EnrichmentMap.DATASET1)
 					.getExpressionSets().getFilename().equalsIgnoreCase(map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getFilename())) {
 				//go through the first data set
 				for (int i = 0; i < columnNames.length; i++) {
@@ -1343,7 +1343,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 			int k = 0;
 			int columns = 0;
 			//add columns to the colum set but make sure the expression files are not the same dile
-			if (map.getParams().isData2() && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null && !map.getDataset(EnrichmentMap.DATASET1)
+			if (map.getDataset(EnrichmentMap.DATASET2) != null && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null && !map.getDataset(EnrichmentMap.DATASET1)
 					.getExpressionSets().getFilename().equalsIgnoreCase(map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getFilename()))
 				columns = map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getColumnNames().length
 						+ map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getColumnNames().length - 2;
@@ -1512,7 +1512,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 					}
 					BufferedWriter output = new BufferedWriter(new FileWriter(file));
 					String[] currentColumns;
-					if (params.isData2() && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null && !map.getDataset(EnrichmentMap.DATASET1)
+					if (map.getDataset(EnrichmentMap.DATASET2) != null && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null && !map.getDataset(EnrichmentMap.DATASET1)
 							.getExpressionSets().getFilename().equalsIgnoreCase(map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getFilename())) {
 						currentColumns = new String[columnNames.length + columnNames2.length - 2];
 
@@ -1529,7 +1529,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 
 					//get the sorted expression set
 					Object[][] sortedExpression;
-					if (params.isData2() && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null && !map.getDataset(EnrichmentMap.DATASET1)
+					if (map.getDataset(EnrichmentMap.DATASET2) != null && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null && !map.getDataset(EnrichmentMap.DATASET1)
 							.getExpressionSets().getFilename().equalsIgnoreCase(map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getFilename()))
 						sortedExpression = createSortedMergedTableData();
 					else

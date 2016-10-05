@@ -960,15 +960,11 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 			//the rest of the text textboxes
 			else {
 				String value = source.getText();
-				if(source == GCTFileName1TextField) {
+				if(source == GCTFileName1TextField)
 					dataset1files.setExpressionFileName(value);
-					if(value.equalsIgnoreCase(""))
-						params.setData(false);
-				} else if(source == GCTFileName2TextField) {
+				else if(source == GCTFileName2TextField)
 					dataset2files.setExpressionFileName(value);
-					if(value.equalsIgnoreCase(""))
-						params.setData2(false);
-				} else if(source == Dataset1FileNameTextField)
+				else if(source == Dataset1FileNameTextField)
 					dataset1files.setEnrichmentFileName1(value);
 				else if(source == Dataset1FileName2TextField)
 					dataset1files.setEnrichmentFileName2(value);
@@ -1436,7 +1432,6 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 					GCTFileName1TextField.setForeground(checkFile(data));
 					GCTFileName1TextField.setText(data);
 					dataset1files.setExpressionFileName(data);
-					params.setData(true);
 					GCTFileName1TextField.setToolTipText(data);
 
 					Dataset1RankFileTextField.setForeground(checkFile(ranks));
@@ -1482,7 +1477,6 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 					GCTFileName2TextField.setForeground(checkFile(data));
 					GCTFileName2TextField.setText(data);
 					dataset2files.setExpressionFileName(data);
-					params.setData2(true);
 					GCTFileName2TextField.setToolTipText(data);
 
 					Dataset2RankFileTextField.setForeground(checkFile(ranks));
@@ -1955,8 +1949,6 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 				dataset1files.setExpressionFileName(file.getAbsolutePath());
 				GCTFileName1TextField.setToolTipText(file.getAbsolutePath());
 			}
-			params.setData(true);
-
 		}
 	}
 
@@ -2001,7 +1993,6 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 				GCTFileName2TextField.setToolTipText(file.getAbsolutePath());
 			}
 			params.setTwoDatasets(true);
-			params.setData2(true);
 		}
 	}
 

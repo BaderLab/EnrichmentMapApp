@@ -115,7 +115,7 @@ public class HeatMapHierarchicalClusterTask extends AbstractTask implements Obse
 
 							Double[] x = ((GeneExpression) currentExpressionSet.get(key)).getExpression();
 							Double[] z;
-							if(params.isData2() && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null
+							if(map.getDataset(EnrichmentMap.DATASET2) != null && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null
 									&& currentExpressionSet2.containsKey(key)
 									&& !map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getFilename()
 											.equalsIgnoreCase(map.getDataset(EnrichmentMap.DATASET2).getExpressionSets()
@@ -157,7 +157,7 @@ public class HeatMapHierarchicalClusterTask extends AbstractTask implements Obse
 
 							Double[] x = ((GeneExpression) currentExpressionSet.get(key)).getExpression();
 							Double[] z;
-							if(params.isData2() && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null
+							if(map.getDataset(EnrichmentMap.DATASET2) != null && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null
 									&& currentExpressionSet2.containsKey(key)
 									&& !map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getFilename()
 											.equalsIgnoreCase(map.getDataset(EnrichmentMap.DATASET2).getExpressionSets()
@@ -234,7 +234,7 @@ public class HeatMapHierarchicalClusterTask extends AbstractTask implements Obse
 
 							Double[] x = ((GeneExpression) currentExpressionSet.get(key)).getExpression();
 							Double[] z;
-							if(params.isData2() && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null
+							if(map.getDataset(EnrichmentMap.DATASET2) != null && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null
 									&& currentExpressionSet2.containsKey(key)
 									&& !map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getFilename()
 											.equalsIgnoreCase(map.getDataset(EnrichmentMap.DATASET2).getExpressionSets()

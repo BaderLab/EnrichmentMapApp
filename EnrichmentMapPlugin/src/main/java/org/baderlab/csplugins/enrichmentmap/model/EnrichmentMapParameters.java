@@ -106,10 +106,6 @@ public class EnrichmentMapParameters {
 	private HashMap<String, DataSetFiles> files = new HashMap<String, DataSetFiles>();
 
 	//FLAGS used in the analysis.
-	//flag to indicate if the user has supplied a data/expression file
-	private boolean Data = false;
-	//flag to indicate if the user has supplied a second data/expression file
-	private boolean Data2 = false;
 	//flag to indicate there are two datasets.
 	private boolean twoDatasets = false;
 	//flag to indicate if there are FDR Q-values
@@ -247,8 +243,6 @@ public class EnrichmentMapParameters {
 
 		//reset all boolean values
 		this.setFDR(false);
-		this.setData(false);
-		this.setData2(false);
 		this.setTwoDatasets(false);
 		this.setTwoDistinctExpressionSets(false);
 
@@ -431,10 +425,11 @@ public class EnrichmentMapParameters {
 			else
 				this.method = EnrichmentMapParameters.method_GSEA;
 		}
-		if((this.props.get("Data")).equalsIgnoreCase("true"))
-			this.Data = true;
-		if((this.props.get("Data2")).equalsIgnoreCase("true"))
-			this.Data2 = true;
+//		if((this.props.get("Data")).equalsIgnoreCase("true"))
+//			this.Data = true;
+//		if((this.props.get("Data2")).equalsIgnoreCase("true"))
+//			this.Data2 = true;
+		
 		if((this.props.get("FDR")).equalsIgnoreCase("true"))
 			this.FDR = true;
 
@@ -484,6 +479,8 @@ public class EnrichmentMapParameters {
 	 */
 	private void reconstruct_ver1(HashMap<String, String> props) {
 
+		boolean data2 = props.get("Data2").equalsIgnoreCase("true");
+		
 		//create a new dataset Files
 		DataSetFiles files1 = new DataSetFiles();
 
@@ -513,7 +510,7 @@ public class EnrichmentMapParameters {
 		if(twoDatasets) {
 			DataSetFiles files2 = new DataSetFiles();
 
-			if(Data2) {
+			if(data2) {
 				if(props.get("expressionFileName2") != null)
 					files2.setExpressionFileName(checkForNull(props, "expressionFileName2"));
 				//account for legacy issue with rename of parameter
@@ -783,7 +780,6 @@ public class EnrichmentMapParameters {
 		//than the one specified in the rpt file if the user has moved their results and files around
 		this.getFiles().get(EnrichmentMap.DATASET1).setGMTFileName(gmt);
 		this.getFiles().get(EnrichmentMap.DATASET1).setExpressionFileName(data);
-		this.setData(true);
 		this.getFiles().get(EnrichmentMap.DATASET1).setRankedFile(ranks);
 
 		this.getFiles().get(EnrichmentMap.DATASET1).setEnrichmentFileName1(results1);
@@ -823,8 +819,6 @@ public class EnrichmentMapParameters {
 		this.similarityCutOff = copy.getSimilarityCutOff();
 		this.similaritySlider = copy.getSimilaritySlider();
 
-		this.Data = copy.isData();
-		this.Data2 = copy.isData2();
 		this.twoDatasets = copy.isTwoDatasets();
 		this.method = copy.getMethod();
 		this.FDR = copy.isFDR();
@@ -969,8 +963,6 @@ public class EnrichmentMapParameters {
 		//add the combined constant
 		paramVariables.append("CombinedConstant" + combinedConstant + "\n");
 
-		paramVariables.append("Data\t" + Data + "\n");
-		paramVariables.append("Data2\t" + Data2 + "\n");
 		paramVariables.append("FDR\t" + FDR + "\n");
 
 		//cutoffs
@@ -1276,29 +1268,6 @@ public class EnrichmentMapParameters {
 		this.twoDatasets = twoDatasets;
 	}
 
-	/**
-	 * @return flag to indicate if the user has supplied a data/expression file
-	 */
-	public boolean isData() {
-		return Data;
-	}
-
-	public void setData(boolean data) {
-		Data = data;
-	}
-
-	/**
-	 * @return flag to indicate if the user has supplied a second
-	 *         data/expression file
-	 */
-	public boolean isData2() {
-		return Data2;
-	}
-
-	public void setData2(boolean data2) {
-		Data2 = data2;
-	}
-
 	public boolean isFDR() {
 		return FDR;
 	}
@@ -1334,14 +1303,6 @@ public class EnrichmentMapParameters {
 	public void setSelectedEdges(ArrayList<CyEdge> selectedEdges) {
 		this.selectedEdges = selectedEdges;
 	}
-
-//	public HeatMapParameters getHmParams() {
-//		return hmParams;
-//	}
-//
-//	public void setHmParams(HeatMapParameters hmParams) {
-//		this.hmParams = hmParams;
-//	}
 
 	/* create a method to re-create rank to gene given the gene to rank */
 	public HashMap<Integer, Integer> getRank2geneDataset(HashMap<Integer, Rank> gene2rank) {

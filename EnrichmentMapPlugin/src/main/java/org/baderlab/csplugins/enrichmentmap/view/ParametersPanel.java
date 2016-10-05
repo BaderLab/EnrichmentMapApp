@@ -348,6 +348,7 @@ public class ParametersPanel extends JPanel implements CytoPanelComponent {
 	 */
 	private String getRunInfo(EnrichmentMapParameters params) {
 
+		// MKTODO OMG! this needs to use a StringBuilder!
 		String runInfoText = "<html>";
 
 		// runInfoText = runInfoText + " <h1>Parameters:</h1>";
@@ -375,9 +376,7 @@ public class ParametersPanel extends JPanel implements CytoPanelComponent {
 					+ shortenPathname(map.getParams().getFiles().get(EnrichmentMap.DATASET2).getEnrichmentFileName1()) + ",<br>"
 					+ shortenPathname(map.getParams().getFiles().get(EnrichmentMap.DATASET2).getEnrichmentFileName2()) + "<br>";
 		}
-		if (params.isData()) {
-			runInfoText = runInfoText + "<b>Data file:</b>" + shortenPathname(map.getParams().getFiles().get(EnrichmentMap.DATASET1).getExpressionFileName()) + "<br>";
-		}
+		runInfoText = runInfoText + "<b>Data file:</b>" + shortenPathname(map.getParams().getFiles().get(EnrichmentMap.DATASET1).getExpressionFileName()) + "<br>";
 		// TODO:fix second dataset viewing.
 		/*
 		 * if(params.isData2() &&

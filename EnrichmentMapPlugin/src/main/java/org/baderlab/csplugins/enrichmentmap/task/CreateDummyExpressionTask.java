@@ -1,6 +1,5 @@
 package org.baderlab.csplugins.enrichmentmap.task;
 
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -10,16 +9,15 @@ import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
-/* When there is no expression provided create a fake expression matrix so you can 
- * still view the genes associated with genesets in the heatmap panel
+/**
+ * When there is no expression provided create a fake expression matrix so you can 
+ * still view the genes associated with genesets in the heatmap panel.
  */
 public class CreateDummyExpressionTask extends AbstractTask {
 
-	private DataSet dataset;
-	private TaskMonitor taskMonitor;
+	private final DataSet dataset;
 
 	public CreateDummyExpressionTask(DataSet dataset) {
-		super();
 		this.dataset = dataset;
 	}
 
@@ -34,24 +32,16 @@ public class CreateDummyExpressionTask extends AbstractTask {
 		Map<String, Integer> genes = dataset.getMap().getGenesetsGenes(dataset.getSetofgenesets().getGenesets().values());
 		datasetGenes = dataset.getDatasetGenes();
 
-		String[] titletokens = new String[3];
-		titletokens[0] = "Name";
-		titletokens[1] = "Description";
-		titletokens[2] = "Dummy Expression";
+		String[] titletokens = {"Name", "Description", "Dummy Expression"};
 
 		GeneExpressionMatrix expressionMatrix = dataset.getExpressionSets();
 		expressionMatrix.setColumnNames(titletokens);
 		Map<Integer, GeneExpression> expression = expressionMatrix.getExpressionMatrix();
 		expressionMatrix.setExpressionMatrix(expression);
 
-		String[] tokens = new String[3];
-		tokens[0] = "tmp";
-		tokens[1] = "tmp";
-		tokens[2] = "0.25";
+		String[] tokens = {"tmp", "tmp", "0.25"};
 
-		for(Iterator i = genes.keySet().iterator(); i.hasNext();) {
-			String currentGene = (String) i.next();
-
+		for(String currentGene : genes.keySet()) {
 			int genekey = genes.get(currentGene);
 			if(datasetGenes != null)
 				datasetGenes.add(genekey);
@@ -76,17 +66,14 @@ public class CreateDummyExpressionTask extends AbstractTask {
 		//set the number of genes
 		//expressionMatrix.setNumGenes(expressionMatrix.getExpressionMatrix().size());
 		expressionMatrix.setNumConditions(3);
-
 		expressionMatrix.setFilename("Dummy Expression_" + dataset.getName().toString());
 
-		//set that there is data for the expression viewer
-		dataset.getMap().getParams().setData(true);
+		dataset.setDummyExpressionData(true);
 	}
 
-	public void run(TaskMonitor taskMonitor) throws Exception {
-		this.taskMonitor = taskMonitor;
+	
+	public void run(TaskMonitor taskMonitor) {
 		createDummyExpression();
-
 	}
 
 }

@@ -57,30 +57,24 @@ public class UpdateHeatMapTask extends AbstractTask {
 	}
 
 	public void createEdgesData() {
-		if(map.getParams().isData()) {
-			this.setEdgeExpressionSet();
-			edgeOverlapPanel.updatePanel(map);
-			focusPanel(edgeOverlapPanel);
-			edgeOverlapPanel.revalidate();
-		}
+		this.setEdgeExpressionSet();
+		edgeOverlapPanel.updatePanel(map);
+		focusPanel(edgeOverlapPanel);
+		edgeOverlapPanel.revalidate();
 	}
 
 	private void createNodesData() {
-		if(map.getParams().isData()) {
-			this.setNodeExpressionSet();
-			nodeOverlapPanel.updatePanel(map);
-			focusPanel(nodeOverlapPanel);
-			nodeOverlapPanel.revalidate();
-		}
+		this.setNodeExpressionSet();
+		nodeOverlapPanel.updatePanel(map);
+		focusPanel(nodeOverlapPanel);
+		nodeOverlapPanel.revalidate();
 	}
 
 	public void clearPanels() {
-		if(map.getParams().isData()) {
-			nodeOverlapPanel.clearPanel();
-			edgeOverlapPanel.clearPanel();
-			focusPanel(nodeOverlapPanel);
-			focusPanel(edgeOverlapPanel);
-		}
+		nodeOverlapPanel.clearPanel();
+		edgeOverlapPanel.clearPanel();
+		focusPanel(nodeOverlapPanel);
+		focusPanel(edgeOverlapPanel);
 	}
 
 	private void focusPanel(final HeatMapPanel panel) {
@@ -174,7 +168,7 @@ public class UpdateHeatMapTask extends AbstractTask {
 			HashSet<Integer> genes = union;
 			this.nodeOverlapPanel.setCurrentExpressionSet(
 					map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getExpressionMatrix(genes));
-			if(map.getParams().isData2() && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null)
+			if(map.getDataset(EnrichmentMap.DATASET2) != null && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null)
 				this.nodeOverlapPanel.setCurrentExpressionSet2(
 						map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getExpressionMatrix(genes));
 
@@ -228,7 +222,7 @@ public class UpdateHeatMapTask extends AbstractTask {
 			}
 			this.edgeOverlapPanel.setCurrentExpressionSet(
 					map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getExpressionMatrix(intersect));
-			if(map.getParams().isData2() && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null)
+			if(map.getDataset(EnrichmentMap.DATASET2) != null && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null)
 				this.edgeOverlapPanel.setCurrentExpressionSet2(
 						map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getExpressionMatrix(intersect));
 		} else {

@@ -21,6 +21,7 @@ public class DataSet {
 
 	//The Expression
 	private GeneExpressionMatrix expressionSets;
+	private boolean dummyExpressionData;
 
 	//Hashmap of all genesets in the geneset file (gmt file)
 	private SetOfGeneSets setofgenesets;
@@ -130,6 +131,14 @@ public class DataSet {
 
 	public void setDatasetFiles(DataSetFiles datasetFiles) {
 		this.datasetFiles = datasetFiles;
+	}
+
+	public boolean isDummyExpressionData() {
+		return dummyExpressionData;
+	}
+
+	public void setDummyExpressionData(boolean dummyExpressionData) {
+		this.dummyExpressionData = dummyExpressionData;
 	}
 
 }
