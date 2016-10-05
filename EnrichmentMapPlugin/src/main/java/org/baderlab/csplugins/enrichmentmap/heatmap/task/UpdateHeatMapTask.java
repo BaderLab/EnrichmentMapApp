@@ -56,7 +56,7 @@ public class UpdateHeatMapTask extends AbstractTask {
 		this.cytoPanelSouth = cytoPanelSouth;
 	}
 
-	public void createEdgesData() {
+	private void createEdgesData() {
 		this.setEdgeExpressionSet();
 		edgeOverlapPanel.updatePanel(map);
 		focusPanel(edgeOverlapPanel);
@@ -65,12 +65,13 @@ public class UpdateHeatMapTask extends AbstractTask {
 
 	private void createNodesData() {
 		this.setNodeExpressionSet();
+		nodeOverlapPanel.setLeadingEdgeGenesetNode(nodes.isEmpty() ? null : nodes.get(0));
 		nodeOverlapPanel.updatePanel(map);
 		focusPanel(nodeOverlapPanel);
 		nodeOverlapPanel.revalidate();
 	}
 
-	public void clearPanels() {
+	private void clearPanels() {
 		nodeOverlapPanel.clearPanel();
 		edgeOverlapPanel.clearPanel();
 		focusPanel(nodeOverlapPanel);
@@ -107,7 +108,6 @@ public class UpdateHeatMapTask extends AbstractTask {
 	 */
 	private void setNodeExpressionSet() {
 
-		Object[] nodes = map.getParams().getSelectedNodes().toArray();
 		// all unique genesets - if there are two identical genesets in the two
 		// sets then
 		// one of them will get over written in the hash.
@@ -123,14 +123,11 @@ public class UpdateHeatMapTask extends AbstractTask {
 		CyNetwork network = applicationManager.getCurrentNetwork();
 
 		// go through the nodes only if there are some
-		if(nodes.length > 0) {
+		if(!nodes.isEmpty()) {
 
 			HashSet<Integer> union = new HashSet<Integer>();
 
-			for(Object node1 : nodes) {
-
-				CyNode current_node = (CyNode) node1;
-
+			for(CyNode current_node : nodes) {
 				String nodename = network.getRow(current_node).get(CyNetwork.NAME, String.class);
 				GeneSet current_geneset = genesets.get(nodename);
 				Set<Integer> additional_set = null;
@@ -188,19 +185,14 @@ public class UpdateHeatMapTask extends AbstractTask {
 	 *
 	 */
 	private void setEdgeExpressionSet() {
-
-		Object[] edges = map.getParams().getSelectedEdges().toArray();
-
 		// get the current Network
 		CyNetwork network = applicationManager.getCurrentNetwork();
 
-		if(edges.length > 0) {
+		if(!edges.isEmpty()) {
 			HashSet<Integer> intersect = null;
 			// HashSet union = null;
 
-			for(int i = 0; i < edges.length; i++) {
-
-				CyEdge current_edge = (CyEdge) edges[i];
+			for(CyEdge current_edge : edges) {
 				String edgename = network.getRow(current_edge).get(CyNetwork.NAME, String.class);
 
 				GenesetSimilarity similarity = map.getGenesetSimilarity().get(edgename);

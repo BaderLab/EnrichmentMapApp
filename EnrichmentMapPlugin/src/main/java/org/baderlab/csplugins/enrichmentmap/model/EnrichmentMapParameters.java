@@ -46,7 +46,6 @@ package org.baderlab.csplugins.enrichmentmap.model;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Properties;
@@ -59,8 +58,6 @@ import org.baderlab.csplugins.enrichmentmap.view.ParametersPanel;
 import org.baderlab.csplugins.enrichmentmap.view.SliderBarPanel;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.util.StreamUtil;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNode;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.session.CySessionManager;
 
@@ -142,14 +139,6 @@ public class EnrichmentMapParameters {
 	private SliderBarPanel qvalueSlider;
 	//similarity cutoff slider bar
 	private SliderBarPanel similaritySlider;
-	//list associated with slider bars.  As the slider bar is moved the removed nodes
-	//and edges are stored in these lists
-	//TODO: currently this is not stored in the session file.  So if the user moves the slider bar and saves a session the nodes or edges stored are lost.
-	private ArrayList<CyNode> selectedNodes;
-	private ArrayList<CyEdge> selectedEdges;
-
-//	//Heat map parameters for this enrichment map - user specified current normalization, and sorting.
-//	private HeatMapParameters hmParams;
 
 	private Set<CyProperty<?>> cyto_prop;
 	private double defaultJaccardCutOff;
@@ -245,9 +234,6 @@ public class EnrichmentMapParameters {
 		this.setFDR(false);
 		this.setTwoDatasets(false);
 		this.setTwoDistinctExpressionSets(false);
-
-		this.selectedNodes = new ArrayList<CyNode>();
-		this.selectedEdges = new ArrayList<CyEdge>();
 
 		//initialize first dataset
 		this.files.put(EnrichmentMap.DATASET1, new DataSetFiles());
@@ -826,9 +812,6 @@ public class EnrichmentMapParameters {
 		this.combinedConstant = copy.getCombinedConstant();
 		this.twoDistinctExpressionSets = copy.isTwoDistinctExpressionSets();
 
-		this.selectedEdges = copy.getSelectedEdges();
-		this.selectedNodes = copy.getSelectedNodes();
-//		this.hmParams = copy.getHmParams();
 		this.enrichment_edge_type = copy.getEnrichment_edge_type();
 
 		//field needed when calculating bulk enrichment maps.
@@ -1286,22 +1269,6 @@ public class EnrichmentMapParameters {
 
 	public SliderBarPanel getSimilaritySlider() {
 		return similaritySlider;
-	}
-
-	public ArrayList<CyNode> getSelectedNodes() {
-		return selectedNodes;
-	}
-
-	public ArrayList<CyEdge> getSelectedEdges() {
-		return selectedEdges;
-	}
-
-	public void setSelectedNodes(ArrayList<CyNode> selectedNodes) {
-		this.selectedNodes = selectedNodes;
-	}
-
-	public void setSelectedEdges(ArrayList<CyEdge> selectedEdges) {
-		this.selectedEdges = selectedEdges;
 	}
 
 	/* create a method to re-create rank to gene given the gene to rank */

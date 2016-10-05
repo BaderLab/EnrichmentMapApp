@@ -192,6 +192,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 	private Ranking ranks;
 
 	private boolean node = true;
+	private CyNode leadingEdgeGenesetNode;
 
 	//phenotypes specified by the user (if correspond to the class file definition the colour of the column can
 	//be changed to indicate its phenotype.
@@ -232,6 +233,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 	private ImageIcon[] iconArrow = createExpandAndCollapseIcon();
 
 	
+	// MKTODO this is only here to avoid AssistedInject for now
 	public HeatMapPanel setNode(boolean node) {
 		this.node = node;
 		return this;
@@ -331,7 +333,6 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 	 * @param params - enrichment map parameters to update the heat map to.
 	 */
 	public void updatePanel(EnrichmentMap map) {
-
 		resetVariables(map);
 		updatePanel();
 	}
@@ -1583,54 +1584,44 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 	 *
 	 */
 	private void initializeLeadingEdge(EnrichmentMapParameters params) {
-
-		Object[] nodes = params.getSelectedNodes().toArray();
-
-		//if only one node is selected activate leading edge potential
-		//and if at least one rankfile is present
+		//if only one node is selected activate leading edge potential and if at least one rankfile is present
 		//TODO: we probably have to catch cases where we have only a rank file for one of the datasets
-		if (nodes.length == 1) {
-			//get the current Network
+		if (leadingEdgeGenesetNode != null) {
 			CyNetwork network = applicationManager.getCurrentNetwork();
-			for (Object node1 : nodes) {
+			String nodename = network.getRow(leadingEdgeGenesetNode).get(CyNetwork.NAME, String.class);
 
-				CyNode current_node = (CyNode) node1;
+			displayLeadingEdge = true;
+			if (params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)) {
 
-				String nodename = network.getRow(current_node).get(CyNetwork.NAME, String.class);
+				Map<String, EnrichmentResult> results1 = map.getDataset(EnrichmentMap.DATASET1).getEnrichments().getEnrichments();
+				if (results1.containsKey(nodename)) {
+					GSEAResult current_result = (GSEAResult) results1.get(nodename);
+					leadingEdgeScoreAtMax1 = current_result.getScoreAtMax();
+					//if the  score at max is set to the default then get the direction of the leading edge
+					//from the NES
+					if (leadingEdgeScoreAtMax1 == DetermineEnrichmentResultFileReader.DefaultScoreAtMax)
+						leadingEdgeScoreAtMax1 = current_result.getNES();
 
-				displayLeadingEdge = true;
-				if (params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)) {
-
-					Map<String, EnrichmentResult> results1 = map.getDataset(EnrichmentMap.DATASET1).getEnrichments().getEnrichments();
-					if (results1.containsKey(nodename)) {
-						GSEAResult current_result = (GSEAResult) results1.get(nodename);
-						leadingEdgeScoreAtMax1 = current_result.getScoreAtMax();
+					leadingEdgeRankAtMax1 = current_result.getRankAtMax();
+				}
+				if (map.getParams().isTwoDatasets()) {
+					Map<String, EnrichmentResult> results2 = map.getDataset(EnrichmentMap.DATASET2).getEnrichments().getEnrichments();
+					if (results2.containsKey(nodename)) {
+						GSEAResult current_result = (GSEAResult) results2.get(nodename);
+						leadingEdgeScoreAtMax2 = current_result.getScoreAtMax();
 						//if the  score at max is set to the default then get the direction of the leading edge
 						//from the NES
-						if (leadingEdgeScoreAtMax1 == DetermineEnrichmentResultFileReader.DefaultScoreAtMax)
-							leadingEdgeScoreAtMax1 = current_result.getNES();
+						if (leadingEdgeScoreAtMax2 == DetermineEnrichmentResultFileReader.DefaultScoreAtMax)
+							leadingEdgeScoreAtMax2 = current_result.getNES();
 
-						leadingEdgeRankAtMax1 = current_result.getRankAtMax();
-					}
-					if (map.getParams().isTwoDatasets()) {
-						Map<String, EnrichmentResult> results2 = map.getDataset(EnrichmentMap.DATASET2).getEnrichments().getEnrichments();
-						if (results2.containsKey(nodename)) {
-							GSEAResult current_result = (GSEAResult) results2.get(nodename);
-							leadingEdgeScoreAtMax2 = current_result.getScoreAtMax();
-							//if the  score at max is set to the default then get the direction of the leading edge
-							//from the NES
-							if (leadingEdgeScoreAtMax2 == DetermineEnrichmentResultFileReader.DefaultScoreAtMax)
-								leadingEdgeScoreAtMax2 = current_result.getNES();
-
-							leadingEdgeRankAtMax2 = current_result.getRankAtMax();
-						}
+						leadingEdgeRankAtMax2 = current_result.getRankAtMax();
 					}
 				}
 			}
 		}
-
 	}
 
+	
 	private Ranking getEmptyRanks(Map<Integer, GeneExpression> expressionSet) {
 		Ranking ranks = new Ranking();
 
@@ -2081,6 +2072,14 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 			return "Heat Map (nodes)";
 		else
 			return "Heat Map (edges)";
+	}
+
+	public CyNode getLeadingEdgeGenesetNode() {
+		return leadingEdgeGenesetNode;
+	}
+
+	public void setLeadingEdgeGenesetNode(CyNode leadingEdgeGenesetNode) {
+		this.leadingEdgeGenesetNode = leadingEdgeGenesetNode;
 	}
 
 }

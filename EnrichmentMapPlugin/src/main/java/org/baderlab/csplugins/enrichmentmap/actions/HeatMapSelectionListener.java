@@ -133,20 +133,11 @@ public class HeatMapSelectionListener implements RowsSetListener {
 					List<CyNode> selectedNodes = CyTableUtil.getNodesInState(network, CyNetwork.SELECTED, true);
 					List<CyEdge> selectedEdges = CyTableUtil.getEdgesInState(network, CyNetwork.SELECTED, true);
 					
-					final List<CyNode> Nodes = map.getParams().getSelectedNodes();
-					final List<CyEdge> Edges = map.getParams().getSelectedEdges();
-					
-					Nodes.clear();
-					Nodes.addAll(selectedNodes);
-					
-					Edges.clear();
-					Edges.addAll(selectedEdges);
-					
 					CytoPanel cytoPanelSouth = swingApplication.getCytoPanel(CytoPanelName.SOUTH);
 					// Once we have amalgamated all the nodes and edges, launch a task to update the heatmap.
 					// Start the task in a separate thread to avoid Cytoscape deadlock bug (redmine issue #3370)
 					ForkJoinPool.commonPool().execute(() -> {
-						UpdateHeatMapTask updateHeatmap = updateHeatMapTaskFactory.create(map, Nodes, Edges, cytoPanelSouth);
+						UpdateHeatMapTask updateHeatmap = updateHeatMapTaskFactory.create(map, selectedNodes, selectedEdges, cytoPanelSouth);
 						syncTaskManager.execute(new TaskIterator(updateHeatmap));
 					});
 				}
