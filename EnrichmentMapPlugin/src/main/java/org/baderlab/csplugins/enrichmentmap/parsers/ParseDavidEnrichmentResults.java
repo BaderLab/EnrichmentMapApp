@@ -1,14 +1,17 @@
 package org.baderlab.csplugins.enrichmentmap.parsers;
 
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.GenericResult;
 import org.baderlab.csplugins.enrichmentmap.task.NullTaskMonitor;
 import org.cytoscape.work.TaskMonitor;
+
+import com.google.common.collect.ImmutableSet;
 
 public class ParseDavidEnrichmentResults extends DatasetLineParser {
 	
@@ -38,12 +41,11 @@ public class ParseDavidEnrichmentResults extends DatasetLineParser {
 		// Column 2 is the geneset name
 		// Column 1 is the category (and can be used for the description)
 		// Column 6 is the list of genes (from the loaded list) in this geneset -- therefore pre-filtered.
-		HashMap<String, GeneSet> genesets = dataset.getSetofgenesets().getGenesets();
+		Map<String, GeneSet> genesets = dataset.getSetofgenesets().getGenesets();
 
-		//get the genes (which should also be empty
-		HashMap<String, Integer> genes = dataset.getMap().getGenes();
-		HashMap<Integer, String> key2gene = dataset.getMap().getHashkey2gene();
-		HashMap<String, EnrichmentResult> results = dataset.getEnrichments().getEnrichments();
+
+		EnrichmentMap map = dataset.getMap();
+		Map<String, EnrichmentResult> results = dataset.getEnrichments().getEnrichments();
 
 		int currentProgress = 0;
 		int maxValue = lines.size();
@@ -72,22 +74,17 @@ public class ParseDavidEnrichmentResults extends DatasetLineParser {
 			double NES = 1.0;
 
 			//The second column of the file is the name of the geneset
-			String name = tokens[1].toUpperCase().trim();
+			final String name = tokens[1].toUpperCase().trim();
 
 			//the first column of the file is the description
-			String description = tokens[0].toUpperCase();
+			final String description = tokens[0].toUpperCase();
 
 			//when there are two different species it is possible that the gene set could
 			//already exist in the set of genesets.  if it does exist then add the genes
 			//in this set to the geneset
-			GeneSet.Builder builder;
+			ImmutableSet.Builder<Integer> builder = ImmutableSet.builder();
 			if(genesets.containsKey(name))
-				builder = GeneSet.Builder.from(genesets.get(name));
-
-			//load the geneset and the genes to their respective data structures.
-			//create an object of type Geneset with the above Name and description
-			else
-				builder = new GeneSet.Builder(name, description);
+				builder = builder.addAll(genesets.get(name).getGenes());
 
 			String[] gene_tokens = tokens[5].split(", ");
 
@@ -95,32 +92,21 @@ public class ParseDavidEnrichmentResults extends DatasetLineParser {
 			for(int j = 0; j < gene_tokens.length; j++) {
 
 				String gene = gene_tokens[j].toUpperCase();
+				
 				//Check to see if the gene is already in the hashmap of genes
-				//if it is already in the hash then get its associated key and put it
-				//into the set of genes
-				if(genes.containsKey(gene)) {
-					builder.addGene(genes.get(gene));
+				//if it is already in the hash then get its associated key and put it into the set of genes
+				if(map.containsGene(gene)) {
+					builder.add(map.getHashFromGene(gene));
 				}
-
-				//If the gene is not in the list then get the next value to be used and put it in the list
-				else {
-					if(!gene.equalsIgnoreCase("")) {
-
-						//add the gene to the master list of genes
-						int value = dataset.getMap().getNumberOfGenes();
-						genes.put(gene, value);
-						key2gene.put(value, gene);
-						dataset.getMap().setNumberOfGenes(value + 1);
-
-						//add the gene to the genelist
-						builder.addGene(genes.get(gene));
-					}
+				else if(!gene.isEmpty()) {
+					Integer hash = map.addGene(gene).get();
+					builder.add(hash);
 				}
 			}
 
 			//finished parsing that geneset
 			//add the current geneset to the hashmap of genesets
-			GeneSet gs = builder.build();
+			GeneSet gs = new GeneSet(name, description, builder.build());
 			genesets.put(name, gs);
 
 			//The 5th column is the nominal p-value

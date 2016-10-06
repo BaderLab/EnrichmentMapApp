@@ -6,16 +6,13 @@ import java.util.Iterator;
 
 import org.baderlab.csplugins.brainlib.AvgLinkHierarchicalClustering;
 import org.baderlab.csplugins.brainlib.DistanceMatrix;
+import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapPanel;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters;
-import org.baderlab.csplugins.enrichmentmap.model.CosineDistance;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
-import org.baderlab.csplugins.enrichmentmap.model.EuclideanDistance;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpression;
-import org.baderlab.csplugins.enrichmentmap.model.PearsonCorrelation;
 import org.baderlab.csplugins.enrichmentmap.model.Rank;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
-import org.baderlab.csplugins.enrichmentmap.view.HeatMapPanel;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
@@ -41,7 +38,7 @@ public class HeatMapHierarchicalClusterTask extends AbstractTask implements Obse
 
 	private TaskMonitor taskMonitor;
 
-	public HeatMapHierarchicalClusterTask(int numConditions, int numConditions2, HeatMapPanel heatmapPanel, EnrichmentMap map) {
+	public HeatMapHierarchicalClusterTask(int numConditions, int numConditions2, HeatMapPanel heatmapPanel, EnrichmentMap map, HeatMapParameters hmParams) {
 		this.numConditions = numConditions;
 		this.numConditions2 = numConditions2;
 		this.heatmapPanel = heatmapPanel;
@@ -49,7 +46,7 @@ public class HeatMapHierarchicalClusterTask extends AbstractTask implements Obse
 		this.currentExpressionSet2 = this.heatmapPanel.getCurrentExpressionSet2();
 		this.map = map;
 		this.params = map.getParams();
-		this.hmParams = this.params.getHmParams();
+		this.hmParams = hmParams;
 	}
 
 	/**

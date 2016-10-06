@@ -75,7 +75,7 @@ public class WidthFunction {
 	
 	private void calculateAndSetEdgeWidths(CyNetwork network, String prefix, TaskMonitor taskMonitor) {
 		EdgeWidthParams edgeWidthParams = EdgeWidthParams.restore(network);
-		EnrichmentMap map = emManager.getMap(network.getSUID());
+		EnrichmentMap map = emManager.getEnrichmentMap(network.getSUID());
 		String widthAttribute = prefix + EDGE_WIDTH_FORMULA_COLUMN;
 		
 		int n = network.getDefaultEdgeTable().getRowCount();

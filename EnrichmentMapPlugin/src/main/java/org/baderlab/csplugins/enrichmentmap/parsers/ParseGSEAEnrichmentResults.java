@@ -1,7 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap.parsers;
 
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
@@ -28,7 +28,7 @@ public class ParseGSEAEnrichmentResults extends DatasetLineParser {
 		int maxValue = lines.size();
 		taskMonitor.setStatusMessage("Parsing Enrichment Results file - " + maxValue + " rows");
 
-		HashMap<String, EnrichmentResult> results = dataset.getEnrichments().getEnrichments();
+		Map<String, EnrichmentResult> results = dataset.getEnrichments().getEnrichments();
 		
 		for(int i = 1; i < lines.size(); i++) {
 			String line = lines.get(i);

@@ -11,11 +11,12 @@ import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Nodes;
 import org.baderlab.csplugins.enrichmentmap.LogSilenceRule;
 import org.baderlab.csplugins.enrichmentmap.SerialTestTaskManager;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadSignatureSetsActionListener;
+import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapPanel;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
-import org.baderlab.csplugins.enrichmentmap.view.HeatMapPanel;
+import org.baderlab.csplugins.enrichmentmap.view.ParametersPanel;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
@@ -68,7 +69,8 @@ public abstract class BaseNetworkTest {
 			// Bind all AssistedInjection factories
 			install(ApplicationModule.createFactoryModule());
 						
-			// why do I have to do this?
+			// MKTODO get rid of these fields in EnrichmentMapManager
+			bind(ParametersPanel.class).toProvider(Providers.of(null));
 			bind(HeatMapPanel.class).annotatedWith(Edges.class).toProvider(Providers.of(null));
 			bind(HeatMapPanel.class).annotatedWith(Nodes.class).toProvider(Providers.of(null));
 		}
@@ -122,7 +124,7 @@ public abstract class BaseNetworkTest {
 		when(networkViewMock.getNodeView(Matchers.<CyNode>anyObject())).thenReturn(nodeViewMock);
 		when(nodeViewMock.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION)).thenReturn(Double.valueOf(0.0));
 		
-		EnrichmentMap map = emManager.getMap(emNetwork.getSUID());
+		EnrichmentMap map = emManager.getEnrichmentMap(emNetwork.getSUID());
 		assertNotNull(map);
 		
 		// Load the gene-sets from the file

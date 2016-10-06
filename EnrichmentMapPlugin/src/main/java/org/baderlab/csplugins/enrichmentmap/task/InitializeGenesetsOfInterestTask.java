@@ -44,7 +44,7 @@
 package org.baderlab.csplugins.enrichmentmap.task;
 
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
@@ -54,7 +54,6 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
 import org.baderlab.csplugins.enrichmentmap.model.GSEAResult;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.GenericResult;
-import org.baderlab.csplugins.enrichmentmap.model.Rank;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
@@ -89,13 +88,13 @@ public class InitializeGenesetsOfInterestTask extends AbstractTask {
 		//specified by the user.
 
 		//Go through each Dataset populating the Gene set of interest in each dataset object
-		HashMap<String, DataSet> datasets = map.getDatasets();
+		Map<String, DataSet> datasets = map.getDatasets();
 		for(String current_dataset_name : datasets.keySet()) {
 			DataSet current_dataset = datasets.get(current_dataset_name);
 
-			HashMap<String, EnrichmentResult> enrichmentResults = current_dataset.getEnrichments().getEnrichments();
-			HashMap<String, GeneSet> genesets = current_dataset.getSetofgenesets().getGenesets();
-			HashMap<String, GeneSet> genesetsOfInterest = current_dataset.getGenesetsOfInterest().getGenesets();
+			Map<String, EnrichmentResult> enrichmentResults = current_dataset.getEnrichments().getEnrichments();
+			Map<String, GeneSet> genesets = current_dataset.getSetofgenesets().getGenesets();
+			Map<String, GeneSet> genesetsOfInterest = current_dataset.getGenesetsOfInterest().getGenesets();
 
 			//If there are no genesets associated with this dataset then get the complete set
 			//assumption being that the gmt file applies to all datasets.
@@ -107,12 +106,10 @@ public class InitializeGenesetsOfInterestTask extends AbstractTask {
 			//get ranking files.
 			Ranking ranks = current_dataset.getExpressionSets().getRanksByName(current_dataset_name);
 
-			HashMap<Integer, Integer> rank2gene = null;
-			HashMap<Integer, Rank> gene2rank = null;
-			if(ranks != null) {
-				rank2gene = ranks.getRank2gene();
-				gene2rank = ranks.getRanking();
-			}
+//			Map<Integer, Rank> gene2rank = null;
+//			if(ranks != null) {
+//				gene2rank = ranks.getRanking();
+//			}
 			int currentProgress = 0;
 			int maxValue = enrichmentResults.size();
 
@@ -137,9 +134,10 @@ public class InitializeGenesetsOfInterestTask extends AbstractTask {
 					GSEAResult current_result = (GSEAResult) enrichmentResults.get(current_name);
 
 					//update the current geneset to reflect score at max
-					if((gene2rank != null) && (rank2gene != null)) {
+					if(ranks != null) {
 
-						Set<Integer> allranks = rank2gene.keySet();
+						Set<Integer> allranks = ranks.getAllRanks();
+						
 						Integer largestRank = Collections.max(allranks);
 
 						//get the max at rank for this geneset
@@ -160,9 +158,12 @@ public class InitializeGenesetsOfInterestTask extends AbstractTask {
 
 								//reset the rank at max to reflect that it is counted from the bottom of the list.
 								current_result.setRankAtMax(currentRankAtMax);
-							} //check to see if this rank is in the conversion map
-							if(rank2gene.containsKey(currentRankAtMax))
-								genekey = rank2gene.get(currentRankAtMax);
+							}
+							
+							
+							//check to see if this rank is in the conversion map
+							if(ranks.containsRank(currentRankAtMax))
+								genekey = ranks.getGene(currentRankAtMax);
 							else {
 								//if is possible that the gene associated with the max is not found in
 								//our gene 2 rank conversions because the rank by GSEA are off by 1 or two
@@ -175,14 +176,14 @@ public class InitializeGenesetsOfInterestTask extends AbstractTask {
 										currentRankAtMax = currentRankAtMax + 1;
 									else
 										currentRankAtMax = currentRankAtMax - 1;
-									if(rank2gene.containsKey(currentRankAtMax))
-										genekey = rank2gene.get(currentRankAtMax);
+									if(ranks.containsRank(currentRankAtMax))
+										genekey = ranks.getGene(currentRankAtMax);
 								}
 							}
 
 							if(genekey > -1) {
 								//what is the score for that gene
-								double scoreAtMax = gene2rank.get(genekey).getScore();
+								double scoreAtMax = ranks.getRank(genekey).getScore();
 
 								current_result.setScoreAtMax(scoreAtMax);
 

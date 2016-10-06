@@ -45,10 +45,10 @@ package org.baderlab.csplugins.enrichmentmap.task;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -89,7 +89,7 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 	
 	private final EnrichmentMap map;
 
-	private HashMap<String, GenesetSimilarity> geneset_similarities;
+	private Map<String, GenesetSimilarity> geneset_similarities;
 	private String mapName;
 	
 	public interface Factory {
@@ -170,8 +170,8 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 		//TODO:add multiple dataset support.
 		//go through the datasets to get the enrichments
 		//currently only 2 datasets are supported in the visualization
-		HashMap<String, EnrichmentResult> enrichmentResults1 = null;
-		HashMap<String, EnrichmentResult> enrichmentResults2 = null;
+		Map<String, EnrichmentResult> enrichmentResults1 = null;
+		Map<String, EnrichmentResult> enrichmentResults2 = null;
 		Set<String> dataset_names = map.getDatasets().keySet();
 		for(Iterator<String> m = dataset_names.iterator(); m.hasNext();) {
 			String current_dataset = m.next();
@@ -182,8 +182,8 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 				enrichmentResults2 = map.getDataset(current_dataset).getEnrichments().getEnrichments();
 		}
 
-		HashMap<String, GeneSet> genesetsOfInterest = map.getDataset(EnrichmentMap.DATASET1).getGenesetsOfInterest().getGenesets();
-		HashMap<String, GeneSet> genesetsOfInterest_set2 = null;
+		Map<String, GeneSet> genesetsOfInterest = map.getDataset(EnrichmentMap.DATASET1).getGenesetsOfInterest().getGenesets();
+		Map<String, GeneSet> genesetsOfInterest_set2 = null;
 		if(map.getParams().isTwoDatasets())
 			genesetsOfInterest_set2 = map.getDataset(EnrichmentMap.DATASET2).getGenesetsOfInterest().getGenesets();
 
@@ -224,14 +224,14 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 
 			//create an attribute that stores the genes that are associated with this node as an attribute list
 			//only create the list if the hashkey 2 genes is not null Otherwise it take too much time to populate the list
-			if(map.getHashkey2gene() != null) {
+//			if(map.getHashkey2gene() != null) {
 				Set<Integer> genes = gs.getGenes();
 				if(gs2 != null)
 					genes = Sets.union(genes, gs2.getGenes());
 				
 				List<String> gene_list = genes.stream().map(map::getGeneFromHashKey).collect(Collectors.toList());
 				current_row.set(prefix + EnrichmentMapVisualStyle.GENES, gene_list);
-			}
+//			}
 
 			if(map.getParams().getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)) {
 				GSEAResult current_result = (GSEAResult) enrichmentResults1.get(current_name);
@@ -297,7 +297,7 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 
 					//create an attribute that stores the genes that are associated with this node as an attribute list
 					//only create the list if the hashkey 2 genes is not null Otherwise it take too much time to populate the list
-					if(map.getHashkey2gene() != null) {
+//					if(map.getHashkey2gene() != null) {
 						List<String> gene_list = new ArrayList<String>();
 						HashSet<Integer> genes_hash = new HashSet<Integer>();
 						genes_hash.addAll(gs.getGenes());
@@ -313,7 +313,7 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 						}
 
 						current_row.set(prefix + EnrichmentMapVisualStyle.GENES, gene_list);
-					}
+//					}
 
 					if(map.getParams().getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)) {
 						if(enrichmentResults1.containsKey(current_name)) {
@@ -395,13 +395,13 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 
 				//create an attribute that stores the genes that are associated with this edge as an attribute list
 				//only create the list if the hashkey 2 genes is not null Otherwise it take too much time to populate the list
-				if(map.getHashkey2gene() != null) {
+//				if(map.getHashkey2gene() != null) {
 					List<String> gene_list = 
 							current_result.getOverlapping_genes().stream()
 							.map(map::getGeneFromHashKey)
 							.collect(Collectors.toList());
 					current_edgerow.set(prefix + EnrichmentMapVisualStyle.OVERLAP_GENES, gene_list);
-				}
+//				}
 
 			}
 		}
@@ -424,7 +424,7 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 		 * networkSet,CyEdge.class));
 		 */
 		//register the new Network with EM
-		emManager.registerNetwork(network, map);
+		emManager.registerEnrichmentMap(network, map);
 
 		map.getParams().setNetworkID(network.getSUID());
 
@@ -453,7 +453,7 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 		current_row.set(prefix + EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1, result.getFdrqvalue());
 		current_row.set(prefix + EnrichmentMapVisualStyle.GS_SIZE_DATASET1, result.getGsSize());
 		current_row.set(prefix + EnrichmentMapVisualStyle.GS_TYPE, EnrichmentMapVisualStyle.GS_TYPE_ENRICHMENT);
-		current_row.set(prefix + EnrichmentMapVisualStyle.GS_SOURCE, result.getSource());
+		current_row.set(prefix + EnrichmentMapVisualStyle.GS_SOURCE, result.getSource().orElse(null));
 		if(result.getNES() >= 0) {
 			current_row.set(prefix + EnrichmentMapVisualStyle.COLOURING_DATASET1, (1 - result.getPvalue()));
 		} else {
@@ -483,7 +483,7 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 		current_row.set(prefix + EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2, result.getFdrqvalue());
 		current_row.set(prefix + EnrichmentMapVisualStyle.GS_SIZE_DATASET2, result.getGsSize());
 		current_row.set(prefix + EnrichmentMapVisualStyle.GS_TYPE, EnrichmentMapVisualStyle.GS_TYPE_ENRICHMENT);
-		current_row.set(prefix + EnrichmentMapVisualStyle.GS_SOURCE, result.getSource());
+		current_row.set(prefix + EnrichmentMapVisualStyle.GS_SOURCE, result.getSource().orElse(null));
 		if(result.getNES() >= 0) {
 			current_row.set(prefix + EnrichmentMapVisualStyle.COLOURING_DATASET2, (1 - result.getPvalue()));
 		} else {
@@ -513,7 +513,7 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 		current_row.set(prefix + EnrichmentMapVisualStyle.ES_DATASET1, result.getES());
 		current_row.set(prefix + EnrichmentMapVisualStyle.NES_DATASET1, result.getNES());
 		current_row.set(prefix + EnrichmentMapVisualStyle.GS_TYPE, EnrichmentMapVisualStyle.GS_TYPE_ENRICHMENT);
-		current_row.set(prefix + EnrichmentMapVisualStyle.GS_SOURCE, result.getSource());
+		current_row.set(prefix + EnrichmentMapVisualStyle.GS_SOURCE, result.getSource().orElse(null));
 		if(result.getNES() >= 0) {
 			double current_pvalue = result.getPvalue();
 			current_row.set(prefix + EnrichmentMapVisualStyle.COLOURING_DATASET1, (1 - current_pvalue));
@@ -545,7 +545,7 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 		current_row.set(prefix + EnrichmentMapVisualStyle.ES_DATASET2, result.getES());
 		current_row.set(prefix + EnrichmentMapVisualStyle.NES_DATASET2, result.getNES());
 		current_row.set(prefix + EnrichmentMapVisualStyle.GS_TYPE, EnrichmentMapVisualStyle.GS_TYPE_ENRICHMENT);
-		current_row.set(prefix + EnrichmentMapVisualStyle.GS_SOURCE, result.getSource());
+		current_row.set(prefix + EnrichmentMapVisualStyle.GS_SOURCE, result.getSource().orElse(null));
 		if(result.getNES() >= 0) {
 			double current_pvalue = result.getPvalue();
 			current_row.set(prefix + EnrichmentMapVisualStyle.COLOURING_DATASET2, (1 - current_pvalue));

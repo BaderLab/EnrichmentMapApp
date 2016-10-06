@@ -7,7 +7,9 @@ import static org.junit.Assert.assertTrue;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.Test;
 
@@ -26,16 +28,15 @@ public class GeneSetTest {
 	@Test
 	public void testCreateEmptyGeneSet(){
 		//create a new GeneSet
-		GeneSet.Builder builder = new GeneSet.Builder("Gene Set 1", "fake geneset");
-		
-		builder.addGene(10);
-		builder.addGene(12);
-		builder.addGene(-1);
-		builder.addGene(0);
+		Set<Integer> genes = new HashSet<>();
+		genes.add(10);
+		genes.add(12);
+		genes.add(-1);
+		genes.add(0);
 		//check if it handles duplicates
-		builder.addGene(10);
+		genes.add(10);
 		
-		GeneSet gs = builder.build();
+		GeneSet gs = new GeneSet("Gene Set 1", "fake geneset", genes);
 		assertEquals("Gene Set 1", gs.getName());
 		assertEquals("fake geneset", gs.getDescription());
 		
@@ -60,8 +61,7 @@ public class GeneSetTest {
 		saved_gs[6] = "0";
 		
 		
-		GeneSet.Builder builder = new GeneSet.Builder(saved_gs);
-		GeneSet gs = builder.build();
+		GeneSet gs = GeneSet.fromTokens(saved_gs);
 		
 		assertEquals("Gene Set 1", gs.getName());
 		assertEquals("fake geneset", gs.getDescription());
@@ -73,26 +73,28 @@ public class GeneSetTest {
 		assertEquals(Arrays.asList(-1,0,10,12), geneIds);
 		
 		//test equals function
-		GeneSet.Builder builder2 = new GeneSet.Builder("Gene Set 1", "fake geneset");
-		builder2.addGene(10);
-		builder2.addGene(12);
-		builder2.addGene(-1);
+		Set<Integer> genes = new HashSet<>();
+		genes.add(10);
+		genes.add(12);
+		genes.add(-1);
 		
-		GeneSet gs2 = builder2.build();
+		GeneSet gs2 = new GeneSet("Gene Set 1", "fake geneset", genes);
 		assertFalse(gs.equals(gs2));
 		
-		builder2 = GeneSet.Builder.from(gs2);
-		builder2.addGene(0);
+		genes = new HashSet<>();
+		genes.add(10);
+		genes.add(12);
+		genes.add(-1);
+		genes.add(0);
 		
-		gs2 = builder2.build();
+		gs2 = new GeneSet("Gene Set 1", "fake geneset", genes);
 		assertTrue(gs.equals(gs2));
 	}
 	
 	@Test
-	public void testImbeddedSource(){
-			
+	public void testImbeddedSource() {
 		//create a new GeneSet from the structure used in the internally generated gene set files
-		GeneSet gs = new GeneSet.Builder("alanine biosynthesis II%HumanCyc%ALANINE-SYN2-PWY", "alanine biosynthesis II").build();
+		GeneSet gs = new GeneSet("alanine biosynthesis II%HumanCyc%ALANINE-SYN2-PWY", "alanine biosynthesis II", Collections.emptySet());
 		
 		assertEquals("alanine biosynthesis II%HumanCyc%ALANINE-SYN2-PWY", gs.getName());
 		assertEquals("alanine biosynthesis II", gs.getDescription());

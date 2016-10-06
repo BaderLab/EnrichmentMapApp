@@ -44,14 +44,12 @@
 package org.baderlab.csplugins.enrichmentmap.actions;
 
 import java.util.List;
+import java.util.concurrent.ForkJoinPool;
 
-import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Edges;
-import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Nodes;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters;
 import org.baderlab.csplugins.enrichmentmap.heatmap.task.UpdateHeatMapTask;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
-import org.baderlab.csplugins.enrichmentmap.view.HeatMapPanel;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanel;
@@ -66,41 +64,47 @@ import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskIterator;
 
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 
 /**
  * Class listener for node and edge selections. For each enrichment map there is
  * a separate instance of this class specifying the enrichment map parameters,
  * selected nodes, selected edges and heatmap panels
  */
-public class EnrichmentMapActionListener implements RowsSetListener {
+public class HeatMapSelectionListener implements RowsSetListener {
 	
 	@Inject private EnrichmentMapManager manager;
+	@Inject private Provider<HeatMapParameters> heatMapParametersProvider;
 	
 	@Inject private CyApplicationManager applicationManager;
 	@Inject private SynchronousTaskManager<?> syncTaskManager;
 	@Inject private CySwingApplication swingApplication;
 	
-	@Inject private @Edges HeatMapPanel edgeOverlapPanel;
-	@Inject private @Nodes HeatMapPanel nodeOverlapPanel;
+	@Inject private UpdateHeatMapTask.Factory updateHeatMapTaskFactory;
+	
 	
 
 	/**
 	 * intialize the parameters needed for this instance of the action
 	 */
 	private EnrichmentMap getAndInitializeEnrichmentMap(CyNetwork network) {
-		// get the static enrichment map manager.
-		EnrichmentMap map = manager.getMap(network.getSUID());
-		if (map != null) {
-			if (map.getParams().isData() && map.getParams().getHmParams() == null) {
-				// create a heatmap parameters instance for this action listener
-				HeatMapParameters hmParams = new HeatMapParameters(edgeOverlapPanel, nodeOverlapPanel);
+		Long suid = network.getSUID();
+		
+		EnrichmentMap map = manager.getEnrichmentMap(suid);
+		if(map != null && map.getParams().isData()) {
+			
+			HeatMapParameters hmParams = manager.getHeatMapParameters(suid);
+			if(hmParams == null) {
+				hmParams = heatMapParametersProvider.get();
+				
 				// If there are two distinct datasets intialize the theme and range for the heatmap coloring separately.
 				if (map.getParams().isData2() && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null && !map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getFilename().equalsIgnoreCase(map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getFilename()))
 					hmParams.initColorGradients(map.getDataset(EnrichmentMap.DATASET1).getExpressionSets(), map.getDataset(EnrichmentMap.DATASET2).getExpressionSets());
 				else
 					hmParams.initColorGradients(map.getDataset(EnrichmentMap.DATASET1).getExpressionSets());
+				
 				// associate the newly created heatmap parameters with the current enrichment map paramters
-				map.getParams().setHmParams(hmParams);
+				manager.setHeatMapParameters(suid, hmParams);
 			}
 
 		}
@@ -141,10 +145,10 @@ public class EnrichmentMapActionListener implements RowsSetListener {
 					CytoPanel cytoPanelSouth = swingApplication.getCytoPanel(CytoPanelName.SOUTH);
 					// Once we have amalgamated all the nodes and edges, launch a task to update the heatmap.
 					// Start the task in a separate thread to avoid Cytoscape deadlock bug (redmine issue #3370)
-					new Thread(() -> {
-						UpdateHeatMapTask updateHeatmap = new UpdateHeatMapTask(map, Nodes, Edges, edgeOverlapPanel, nodeOverlapPanel, cytoPanelSouth, applicationManager);
+					ForkJoinPool.commonPool().execute(() -> {
+						UpdateHeatMapTask updateHeatmap = updateHeatMapTaskFactory.create(map, Nodes, Edges, cytoPanelSouth);
 						syncTaskManager.execute(new TaskIterator(updateHeatmap));
-					}).start();
+					});
 				}
 			}
 		} // end of if e.getSource check

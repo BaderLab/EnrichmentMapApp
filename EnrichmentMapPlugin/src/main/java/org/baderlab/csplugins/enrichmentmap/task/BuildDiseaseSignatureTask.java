@@ -229,7 +229,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 				// the genes that are in this signature gene set as well as in the Universe of Enrichment-GMT Genes.    
 				Set<Integer> sigGenesInUniverse = Sets.intersection(sigGenes, geneUniverse);
 
-				emManager.getMap(current_network.getSUID()).getSignatureGenesets().put(hub_name, sigGeneSet);
+				emManager.getEnrichmentMap(current_network.getSUID()).getSignatureGenesets().put(hub_name, sigGeneSet);
 
 				// iterate over Enrichment Genesets
 				for(String geneset_name : EnrichmentGenesets.keySet()) {
@@ -411,7 +411,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 		//create an attribute that stores the genes that are associated with this node as an attribute list
 		//only create the list if the hashkey 2 genes is not null Otherwise it takes too much time to populate the list
 		//                GeneSet sigGeneSet = SelectedSignatureGenesets.get(hub_name);
-		if(map.getHashkey2gene() != null) {
+//		if(map.getHashkey2gene() != null) {
 			List<String> gene_list = sigGeneSet.getGenes().stream()
 					.map(map::getGeneFromHashKey)
 					.filter(Objects::nonNull)
@@ -431,13 +431,13 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 			current_row.set(prefix + EnrichmentMapVisualStyle.GS_TYPE, EnrichmentMapVisualStyle.GS_TYPE_SIGNATURE);
 			current_row.set(prefix + EnrichmentMapVisualStyle.NAME, sigGeneSet.getName());
 			current_row.set(prefix + EnrichmentMapVisualStyle.GS_SIZE_SIGNATURE, sigGeneSet.getGenes().size());
-		}
+//		}
 
 		// add the geneset of the signature node to the GenesetsOfInterest,
 		// as the Heatmap will grep it's data from there.
 		DataSet dataset = map.getDataset(paParams.getSignatureDataSet());
 		Set<Integer> signatureGenesInDataSet = ImmutableSet.copyOf(Sets.intersection(sigGeneSet.getGenes(), dataset.getDatasetGenes()));
-		GeneSet geneSetInDataSet = new GeneSet.Builder(sigGeneSet.getName(), sigGeneSet.getDescription()).addAllGenes(signatureGenesInDataSet).build();
+		GeneSet geneSetInDataSet = new GeneSet(sigGeneSet.getName(), sigGeneSet.getDescription(), signatureGenesInDataSet);
 		dataset.getGenesetsOfInterest().getGenesets().put(hub_name, geneSetInDataSet);
 
 		return created;
@@ -481,7 +481,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 		//View<CyEdge> edgeView = current_view.getEdgeView(edge);
 		//create an attribute that stores the genes that are associated with this edge as an attribute list
 		//only create the list if the hashkey 2 genes is not null Otherwise it take too much time to populate the list
-		if(map.getHashkey2gene() != null) {
+//		if(map.getHashkey2gene() != null) {
 			List<String> gene_list = new ArrayList<>();
 			Set<Integer> genes_hash = genesetSimilarity.getOverlapping_genes();
 			for(Integer current : genes_hash) {
@@ -493,7 +493,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 			Collections.sort(gene_list);
 
 			current_edgerow.set(prefix + EnrichmentMapVisualStyle.OVERLAP_GENES, gene_list);
-		}
+//		}
 
 		current_edgerow.set(prefix + EnrichmentMapVisualStyle.OVERLAP_SIZE, genesetSimilarity.getSizeOfOverlap());
 		current_edgerow.set(prefix + EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT, genesetSimilarity.getSimilarity_coeffecient());
@@ -542,43 +542,36 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 	}
 
 	private void mannWhitney(Set<Integer> intersection, GenesetSimilarity comparison) {
-		Map<Integer, Double> gene2score = ranks.getGene2Score();
-		if(gene2score == null || gene2score.isEmpty()) {
-			comparison.setMann_Whit_pValue_twoSided(1.5);
+		// Calculate Mann-Whitney U pValue for Overlap
+		Integer[] overlap_gene_ids = intersection.toArray(new Integer[intersection.size()]);
+
+		double[] overlap_gene_scores = new double[overlap_gene_ids.length];
+		int j = 0;
+		for(Integer gene_id : overlap_gene_ids) {
+			Double score = ranks.getScore(gene_id);
+			if(score != null) {
+				overlap_gene_scores[j++] = score; // unbox
+			}
+		}
+
+		overlap_gene_scores = Arrays.copyOf(overlap_gene_scores, j);
+		
+
+		if(ranks.isEmpty()) {
+			comparison.setMann_Whit_pValue_twoSided(1.5); // avoid NoDataException
 			comparison.setMann_Whit_pValue_greater(1.5);
 			comparison.setMann_Whit_pValue_less(1.5);
 			comparison.setMannWhitMissingRanks(true);
 		} else {
-			// Calculate Mann-Whitney U pValue for Overlap
-			Integer[] overlap_gene_ids = intersection.toArray(new Integer[intersection.size()]);
-
-			double[] overlap_gene_scores = new double[overlap_gene_ids.length];
-			int j = 0;
-			for(Integer gene_id : overlap_gene_ids) {
-				Double score = gene2score.get(gene_id);
-				if(score != null) {
-					overlap_gene_scores[j++] = score; // unbox
-				}
-			}
-
-			overlap_gene_scores = Arrays.copyOf(overlap_gene_scores, j);
 			double[] scores = ranks.getScores();
-
-			if(scores.length == 0 || overlap_gene_scores.length == 0) {
-				comparison.setMann_Whit_pValue_twoSided(1.5); // avoid NoDataException
-				comparison.setMann_Whit_pValue_greater(1.5);
-				comparison.setMann_Whit_pValue_less(1.5);
-				comparison.setMannWhitMissingRanks(true);
-			} else {
-				// MKTODO could modify MannWHitneyUTestSided to return all three values from one call
-				MannWhitneyUTestSided mann_whit = new MannWhitneyUTestSided();
-				double mannPvalTwoSided = mann_whit.mannWhitneyUTest(overlap_gene_scores, scores, MannWhitneyUTestSided.Type.TWO_SIDED);
-				comparison.setMann_Whit_pValue_twoSided(mannPvalTwoSided);
-				double mannPvalGreater = mann_whit.mannWhitneyUTest(overlap_gene_scores, scores, MannWhitneyUTestSided.Type.GREATER);
-				comparison.setMann_Whit_pValue_greater(mannPvalGreater);
-				double mannPvalLess = mann_whit.mannWhitneyUTest(overlap_gene_scores, scores, MannWhitneyUTestSided.Type.LESS);
-				comparison.setMann_Whit_pValue_less(mannPvalLess);
-			}
+			// MKTODO could modify MannWHitneyUTestSided to return all three values from one call
+			MannWhitneyUTestSided mann_whit = new MannWhitneyUTestSided();
+			double mannPvalTwoSided = mann_whit.mannWhitneyUTest(overlap_gene_scores, scores, MannWhitneyUTestSided.Type.TWO_SIDED);
+			comparison.setMann_Whit_pValue_twoSided(mannPvalTwoSided);
+			double mannPvalGreater = mann_whit.mannWhitneyUTest(overlap_gene_scores, scores, MannWhitneyUTestSided.Type.GREATER);
+			comparison.setMann_Whit_pValue_greater(mannPvalGreater);
+			double mannPvalLess = mann_whit.mannWhitneyUTest(overlap_gene_scores, scores, MannWhitneyUTestSided.Type.LESS);
+			comparison.setMann_Whit_pValue_less(mannPvalLess);
 		}
 	}
 

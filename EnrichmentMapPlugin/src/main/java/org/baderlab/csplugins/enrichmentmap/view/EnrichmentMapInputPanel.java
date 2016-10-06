@@ -1208,40 +1208,13 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 				"Online Manual...", registrar);
 		
 		JButton resetButton = new JButton("Reset");
-		resetButton.addActionListener((ActionEvent evt) -> {
-			resetPanel();
-		});
+		resetButton.addActionListener(e -> resetPanel());
 
 		JButton closeButton = new JButton("Close");
-		closeButton.addActionListener((ActionEvent evt) -> {
-			cancelButtonActionPerformed(evt);
-		});
+		closeButton.addActionListener(this::cancelButtonActionPerformed);
 
 		JButton importButton = new JButton("Build");
-		importButton.addActionListener(e -> {
-			// make sure that the minimum information is set in the current set of parameters
-
-			// create a new params for the new EM and add the dataset files to it
-			EnrichmentMapParameters newParams = new EnrichmentMapParameters(sessionManager, streamUtil,
-					applicationManager);
-			newParams.copy(EnrichmentMapInputPanel.this.getParams());
-			newParams.addFiles(EnrichmentMap.DATASET1, dataset1files);
-
-			if (!dataset2files.isEmpty())
-				newParams.addFiles(EnrichmentMap.DATASET2, dataset2files);
-
-			EnrichmentMap map = new EnrichmentMap(newParams);
-
-			// add observer to catch if the input is a GREAT file so we can determine which p-value to use
-			ResultTaskObserver observer = new ResultTaskObserver();
-
-			EnrichmentMapBuildMapTaskFactory buildmap = taskFactoryFactory.create(map);
-			//buildmap.build();
-			dialog.execute(buildmap.createTaskIterator(), observer);
-
-			//After the network is built register the HeatMap and Parameters panel
-			emManager.registerServices();
-		});
+		importButton.addActionListener(e -> build());
 
 		JPanel panel = LookAndFeelUtil.createOkCancelPanel(importButton, closeButton, helpButton, resetButton);
 
@@ -1250,14 +1223,38 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 
 		return panel;
 	}
+	
+	private void build() {
+		//create a new params for the new EM and add the dataset files to it
+		EnrichmentMapParameters new_params = new EnrichmentMapParameters(sessionManager, streamUtil, applicationManager);
+		new_params.copy(EnrichmentMapInputPanel.this.getParams());
+		new_params.addFiles(EnrichmentMap.DATASET1, dataset1files);
+		if(!dataset2files.isEmpty())
+			new_params.addFiles(EnrichmentMap.DATASET2, dataset2files);
+
+		EnrichmentMap map = new EnrichmentMap(new_params);
+
+		//EnrichmentMapParseInputEvent parseInput = new EnrichmentMapParseInputEvent(empanel,map , dialog,  streamUtil);
+		//parseInput.build();
+
+		//add observer to catch if the input is a GREAT file so we can determine which p-value to use
+		ResultTaskObserver observer = new ResultTaskObserver();
+
+		EnrichmentMapBuildMapTaskFactory buildmap = taskFactoryFactory.create(map);
+		//buildmap.build();
+		dialog.execute(buildmap.createTaskIterator(), observer);
+
+		//After the network is built register the HeatMap and Parameters panel
+		emManager.showPanels();
+	}
 
 	private void cancelButtonActionPerformed(ActionEvent evt) {
-    		this.registrar.unregisterService(this, CytoPanelComponent.class);
-    }
+		this.registrar.unregisterService(this, CytoPanelComponent.class);
+	}
 
 	public void close() {
-    		this.registrar.unregisterService(this, CytoPanelComponent.class);
-    	}
+		this.registrar.unregisterService(this, CytoPanelComponent.class);
+	}
 
     /*
      * Populate fields based on edb directory.

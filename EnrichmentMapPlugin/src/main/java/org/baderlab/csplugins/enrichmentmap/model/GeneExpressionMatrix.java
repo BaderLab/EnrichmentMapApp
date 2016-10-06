@@ -50,8 +50,6 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Created by User: risserlin Date: Jan 30, 2009 Time: 9:32:17 AM
- * <p>
  * Class representing a set of genes/proteins expresion profile
  */
 public class GeneExpressionMatrix {
@@ -65,8 +63,8 @@ public class GeneExpressionMatrix {
 	//Store two instances of the expression matrix, one with the raw expression values
 	//and one with the row normalized values.  The row normalizes values are stored as opposed
 	//to being computing on the fly to decrease the time needed to update a heatmap.
-	private HashMap<Integer, GeneExpression> expressionMatrix;
-	private HashMap<Integer, GeneExpression> expressionMatrix_rowNormalized;
+	private Map<Integer, GeneExpression> expressionMatrix;
+	private Map<Integer, GeneExpression> expressionMatrix_rowNormalized;
 
 	//maximum expression value of all expression values in the array - computed as matrix is
 	//loaded in.
@@ -88,15 +86,15 @@ public class GeneExpressionMatrix {
 	//Set of Rankings - (HashMap of Hashmaps)
 	//Stores the dataset rank files if they were loaded on input but also has
 	//the capability of storing more rank files
-	private HashMap<String, Ranking> ranks;
+	private Map<String, Ranking> ranks;
 
 	//File associated with this expression set
 	private String filename;
 
 	public GeneExpressionMatrix() {
-		this.expressionMatrix = new HashMap<Integer, GeneExpression>();
-		this.expressionMatrix_rowNormalized = new HashMap<Integer, GeneExpression>();
-		this.ranks = new HashMap<String, Ranking>();
+		this.expressionMatrix = new HashMap<>();
+		this.expressionMatrix_rowNormalized = new HashMap<>();
+		this.ranks = new HashMap<>();
 
 	}
 
@@ -189,7 +187,7 @@ public class GeneExpressionMatrix {
 	 *            - subset of gene expression matrix
 	 * @return maximum expression value of the expression subset
 	 */
-	public double getMaxExpression(HashMap<Integer, GeneExpression> currentMatrix) {
+	public double getMaxExpression(Map<Integer, GeneExpression> currentMatrix) {
 		double max = 0.0;
 		if(currentMatrix != null) {
 			//go through the expression matrix
@@ -214,7 +212,7 @@ public class GeneExpressionMatrix {
 	 *            - subset of gene expression matrix
 	 * @return minimum expression value of the expression subset
 	 */
-	public double getMinExpression(HashMap<Integer, GeneExpression> currentMatrix) {
+	public double getMinExpression(Map<Integer, GeneExpression> currentMatrix) {
 		double min = 0.0;
 		//go through the expression matrix
 		if(currentMatrix != null) {
@@ -298,19 +296,19 @@ public class GeneExpressionMatrix {
 		return expressionMatrix.size();
 	}
 
-	public HashMap<Integer, GeneExpression> getExpressionMatrix() {
+	public Map<Integer, GeneExpression> getExpressionMatrix() {
 		return expressionMatrix;
 	}
 
-	public void setExpressionMatrix(HashMap<Integer, GeneExpression> expressionMatrix) {
+	public void setExpressionMatrix(Map<Integer, GeneExpression> expressionMatrix) {
 		this.expressionMatrix = expressionMatrix;
 	}
 
-	public HashMap<Integer, GeneExpression> getExpressionMatrix_rowNormalized() {
+	public Map<Integer, GeneExpression> getExpressionMatrix_rowNormalized() {
 		return expressionMatrix_rowNormalized;
 	}
 
-	public void setExpressionMatrix_rowNormalized(HashMap<Integer, GeneExpression> expressionMatrix_rowNormalized) {
+	public void setExpressionMatrix_rowNormalized(Map<Integer, GeneExpression> expressionMatrix_rowNormalized) {
 		this.expressionMatrix_rowNormalized = expressionMatrix_rowNormalized;
 	}
 
@@ -433,11 +431,11 @@ public class GeneExpressionMatrix {
 		return expressionMatrix.keySet();
 	}
 
-	public HashMap<String, Ranking> getRanks() {
+	public Map<String, Ranking> getRanks() {
 		return ranks;
 	}
 
-	public void setRanks(HashMap<String, Ranking> ranks) {
+	public void setRanks(Map<String, Ranking> ranks) {
 		this.ranks = ranks;
 	}
 
@@ -454,7 +452,7 @@ public class GeneExpressionMatrix {
 		}
 	}
 
-	public HashSet<String> getAllRanksNames() {
+	public Set<String> getAllRanksNames() {
 		HashSet<String> allnames = new HashSet<String>();
 		if(ranks != null && !ranks.isEmpty()) {
 			for(Iterator<String> i = ranks.keySet().iterator(); i.hasNext();) {

@@ -4,8 +4,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.parsers.GMTFileReaderTask;
 import org.cytoscape.work.TaskMonitor;
@@ -71,21 +71,20 @@ public class SetOfGenesetsTest {
 		SetOfGeneSets gs_set = map.getDataset(EnrichmentMap.DATASET1).getSetofgenesets();			
 		
 		//get the genes to hash so we can create our own dataset genes to filter by
-		HashMap<String, Integer> genes = map.getGenes();
 		
-		HashSet<Integer> datasetgenes = new HashSet<Integer>();
+		Set<Integer> datasetgenes = new HashSet<>();
 		
 		//define a dataset							
-		if(genes.containsKey("HIST1H1B"))
-			datasetgenes.add(genes.get("HIST1H1B"));
-		if(genes.containsKey("HIST1H1A"))
-			datasetgenes.add(genes.get("HIST1H1A"));
-		if(genes.containsKey("HIST1H1C"))
-			datasetgenes.add(genes.get("HIST1H1C"));
-		if(genes.containsKey("HIST1H1D"))
-			datasetgenes.add(genes.get("HIST1H1D"));
-		if(genes.containsKey("HIST1H1E"))
-			datasetgenes.add(genes.get("HIST1H1E"));
+		if(map.containsGene("HIST1H1B"))
+			datasetgenes.add(map.getHashFromGene("HIST1H1B"));
+		if(map.containsGene("HIST1H1A"))
+			datasetgenes.add(map.getHashFromGene("HIST1H1A"));
+		if(map.containsGene("HIST1H1C"))
+			datasetgenes.add(map.getHashFromGene("HIST1H1C"));
+		if(map.containsGene("HIST1H1D"))
+			datasetgenes.add(map.getHashFromGene("HIST1H1D"));
+		if(map.containsGene("HIST1H1E"))
+			datasetgenes.add(map.getHashFromGene("HIST1H1E"));
 		
 		assertEquals(5, datasetgenes.size());
 		

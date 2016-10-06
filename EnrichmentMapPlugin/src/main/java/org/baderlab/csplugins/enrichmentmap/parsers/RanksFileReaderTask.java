@@ -50,10 +50,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.Rank;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
@@ -136,14 +138,13 @@ public class RanksFileReaderTask extends AbstractTask {
 		int maxValue = lines.size();
 		taskMonitor.setStatusMessage("Parsing Rank file - " + maxValue + " rows");
 
-		HashMap<String, Integer> genes = dataset.getMap().getGenes();
+		EnrichmentMap map = dataset.getMap();
 		// we don't know the number of scores in the rank file yet, but it can't be more than the number of lines.
 		Double[] score_collector = new Double[lines.size()];
 
 		boolean gseaDefinedRanks = false;
 
-		HashMap<Integer, Rank> ranks = new HashMap<Integer, Rank>();
-		HashMap<Integer, Integer> rank2gene = new HashMap<Integer, Integer>();
+		Map<Integer, Rank> ranks = new HashMap<>();
 
 		/*
 		 * there are two possible Rank files: If loaded through the rpt file the
@@ -217,8 +218,8 @@ public class RanksFileReaderTask extends AbstractTask {
 			score_collector[nScores - 1] = score;
 
 			//check to see if the gene is in the genelist
-			if(genes.containsKey(name)) {
-				Integer genekey = genes.get(name);
+			Integer genekey = map.getHashFromGene(name);
+			if(genekey != null) {
 				Rank current_ranking;
 				//if their were 5 tokens in the rank file then the assumption
 				//is that this is a GSEA rank file and the order of the scores
@@ -232,7 +233,6 @@ public class RanksFileReaderTask extends AbstractTask {
 				// edge compatible files.
 				if((tokens.length == 5) || (dataset.getMap().getParams().getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA) && !loadFromHeatmap)) {
 					current_ranking = new Rank(name, score, nScores);
-					rank2gene.put(nScores, genekey);
 				} else {
 					current_ranking = new Rank(name, score);
 				}
@@ -286,16 +286,15 @@ public class RanksFileReaderTask extends AbstractTask {
 				Integer rank = score2ranks.get(current_ranking.getScore());
 				current_ranking.setRank(rank);
 				// update rank2gene and gene2score as well
-				rank2gene.put(rank, gene_key);
 			}
 		}
 		//check to see if some of the dataset genes are not in this rank file
-		HashSet<Integer> current_genes = dataset.getDatasetGenes();
+		Set<Integer> current_genes = dataset.getDatasetGenes();
 
 		Set<Integer> current_ranks = ranks.keySet();
 
 		//intersect the genes with the ranks.  only retain the genes that have ranks.
-		Set<Integer> intersection = new HashSet<Integer>(current_genes);
+		Set<Integer> intersection = new HashSet<>(current_genes);
 		intersection.retainAll(current_ranks);
 
 		//see if there more genes than there are ranks
@@ -306,8 +305,7 @@ public class RanksFileReaderTask extends AbstractTask {
 
 		//create a new Ranking
 		Ranking new_ranking = new Ranking();
-		new_ranking.setRanking(ranks);
-		new_ranking.setRank2gene(rank2gene);
+		ranks.forEach(new_ranking::addRank);
 
 		//add the Ranks to the expression file ranking
 		dataset.getExpressionSets().addRanks(ranks_name, new_ranking);

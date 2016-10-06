@@ -1,8 +1,8 @@
 package org.baderlab.csplugins.enrichmentmap.task;
 
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpression;
@@ -29,9 +29,9 @@ public class CreateDummyExpressionTask extends AbstractTask {
 		//in order to see the gene in the expression viewer we also need a dummy expression file
 		//get all the genes
 		//HashMap<String, Integer> genes= dataset.getMap().getGenes();
-		HashSet<Integer> datasetGenes;
+		Set<Integer> datasetGenes;
 
-		HashMap<String, Integer> genes = dataset.getMap().getGenesetsGenes(dataset.getSetofgenesets().getGenesets());
+		Map<String, Integer> genes = dataset.getMap().getGenesetsGenes(dataset.getSetofgenesets().getGenesets().values());
 		datasetGenes = dataset.getDatasetGenes();
 
 		String[] titletokens = new String[3];
@@ -41,7 +41,7 @@ public class CreateDummyExpressionTask extends AbstractTask {
 
 		GeneExpressionMatrix expressionMatrix = dataset.getExpressionSets();
 		expressionMatrix.setColumnNames(titletokens);
-		HashMap<Integer, GeneExpression> expression = expressionMatrix.getExpressionMatrix();
+		Map<Integer, GeneExpression> expression = expressionMatrix.getExpressionMatrix();
 		expressionMatrix.setExpressionMatrix(expression);
 
 		String[] tokens = new String[3];

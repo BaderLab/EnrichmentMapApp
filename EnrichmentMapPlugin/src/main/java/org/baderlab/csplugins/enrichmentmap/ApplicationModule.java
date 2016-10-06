@@ -6,6 +6,8 @@ import java.lang.annotation.Retention;
 
 import org.baderlab.csplugins.enrichmentmap.actions.BuildPostAnalysisActionListener;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadSignatureSetsActionListener;
+import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapPanel;
+import org.baderlab.csplugins.enrichmentmap.heatmap.task.UpdateHeatMapTask;
 import org.baderlab.csplugins.enrichmentmap.mastermap.task.MasterMapTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
@@ -16,7 +18,6 @@ import org.baderlab.csplugins.enrichmentmap.task.CreateEnrichmentMapNetworkTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreatePostAnalysisVisualStyleTask;
 import org.baderlab.csplugins.enrichmentmap.task.EnrichmentMapBuildMapTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.task.VisualizeEnrichmentMapTask;
-import org.baderlab.csplugins.enrichmentmap.view.HeatMapPanel;
 import org.baderlab.csplugins.enrichmentmap.view.PostAnalysisKnownSignaturePanel;
 import org.baderlab.csplugins.enrichmentmap.view.PostAnalysisSignatureDiscoveryPanel;
 
@@ -40,9 +41,7 @@ public class ApplicationModule extends AbstractModule {
 	
 	@Override
 	protected void configure() {
-		requestStaticInjection(EnrichmentMapManager.class); // TEMPORARY
-		bind(EnrichmentMapManager.class).asEagerSingleton();
-		
+		bind(EnrichmentMapManager.class).asEagerSingleton();		
 		install(new FactoryModule());
 	}
 	
@@ -68,6 +67,7 @@ public class ApplicationModule extends AbstractModule {
 }
 
 
+// This is a separate class so it can be used by the integration tests
 class FactoryModule extends AbstractModule {
 	
 	@Override
@@ -86,6 +86,7 @@ class FactoryModule extends AbstractModule {
 		installFactory(PostAnalysisSignatureDiscoveryPanel.Factory.class);
 		installFactory(EnrichmentMapParameters.Factory.class);
 		installFactory(MasterMapTaskFactory.Factory.class);
+		installFactory(UpdateHeatMapTask.Factory.class);
 	}
 	
 	private void installFactory(Class<?> factoryInterface) {

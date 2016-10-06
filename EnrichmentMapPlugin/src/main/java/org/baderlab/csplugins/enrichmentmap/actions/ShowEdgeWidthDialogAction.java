@@ -25,6 +25,7 @@ public class ShowEdgeWidthDialogAction extends AbstractCyAction {
 		super("Post Analysis Edge Width...");
 	}
 	
+	@Override
 	public void actionPerformed(ActionEvent e) {
 		if(WidthFunction.appliesTo(applicationManager.getCurrentNetwork())) {
 			EdgeWidthDialog dialog = dialogProvider.get();

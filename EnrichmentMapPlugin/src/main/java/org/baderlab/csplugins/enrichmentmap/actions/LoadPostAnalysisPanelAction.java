@@ -62,6 +62,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 
 
 @SuppressWarnings("serial")
@@ -70,18 +71,14 @@ public class LoadPostAnalysisPanelAction extends AbstractCyAction {
 	@Inject private CyServiceRegistrar registrar;
 	@Inject private CyApplicationManager applicationManager;
 	@Inject private CySwingApplication swingApplication;
+	@Inject private Provider<PostAnalysisPanel> postAnalysisPanelProvider;
 	@Inject private EnrichmentMapManager emManager;
 	
-	private PostAnalysisPanel inputPanel;
 
 	public LoadPostAnalysisPanelAction() {
 		super("Load Post Analysis Panel");
 	}
 	
-	public LoadPostAnalysisPanelAction init(PostAnalysisPanel inputPanel) {
-		this.inputPanel = inputPanel;
-		return this;
-	}
 
 	public void actionPerformed(ActionEvent event) {
 		CyNetwork network = applicationManager.getCurrentNetwork();
@@ -91,15 +88,12 @@ public class LoadPostAnalysisPanelAction extends AbstractCyAction {
 		}
 
 		CytoPanel cytoPanel = swingApplication.getCytoPanel(CytoPanelName.WEST);
+		PostAnalysisPanel inputPanel = postAnalysisPanelProvider.get();
 		
 		//if the service has not been registered
 		if(cytoPanel.indexOfComponent(inputPanel) == -1) {
 			registrar.registerService(inputPanel, CytoPanelComponent.class, new Properties());
-
-			//set the input window in the instance so we can udate the instance window on network focus
-			emManager.setAnalysisWindow(inputPanel);
-
-			EnrichmentMap map = emManager.getMap(network.getSUID());
+			EnrichmentMap map = emManager.getEnrichmentMap(network.getSUID());
 			inputPanel.showPanelFor(map);
 		}
 

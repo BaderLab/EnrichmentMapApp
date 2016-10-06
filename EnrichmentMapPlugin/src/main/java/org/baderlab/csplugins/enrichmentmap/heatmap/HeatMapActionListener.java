@@ -48,9 +48,9 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
@@ -59,7 +59,6 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.parsers.RanksFileReaderTask;
-import org.baderlab.csplugins.enrichmentmap.view.HeatMapPanel;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.util.swing.FileChooserFilter;
@@ -122,8 +121,7 @@ public class HeatMapActionListener implements ActionListener {
 		}
 		//Add a ranking file
 		else if(select.equalsIgnoreCase("Add Rankings ... ")) {
-
-			HashMap<String, Ranking> all_ranks = map.getAllRanks();
+			Map<String, Ranking> all_ranks = map.getAllRanks();
 			FileChooserFilter filter_rnk = new FileChooserFilter("rnk Files", "rnk");
 			FileChooserFilter filter_txt = new FileChooserFilter("txt Files", "txt");
 			FileChooserFilter filter_xls = new FileChooserFilter("xls Files", "xls");
@@ -193,7 +191,7 @@ public class HeatMapActionListener implements ActionListener {
 				hmParams.flipAscending(hmParams.getSortIndex());
 			}
 		} else {
-			HashSet<String> ranks = map.getAllRankNames();
+			Set<String> ranks = map.getAllRankNames();
 
 			//iterate through all the rank files.
 			//the order should always be the same get a counter to find which index to

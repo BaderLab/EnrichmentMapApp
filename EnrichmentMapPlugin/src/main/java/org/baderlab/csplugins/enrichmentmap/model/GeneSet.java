@@ -43,8 +43,6 @@
 
 package org.baderlab.csplugins.enrichmentmap.model;
 
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
@@ -52,10 +50,6 @@ import java.util.Set;
 import com.google.common.collect.ImmutableSet;
 
 
-/**
- * @author mkucera
- *
- */
 public class GeneSet {
 
 	private final String name;
@@ -63,12 +57,18 @@ public class GeneSet {
 	private final Set<Integer> genes;
 	private final Optional<String> source;
 	
-	private GeneSet(String name, String description, Set<Integer> genes, Optional<String> source) {
+	public GeneSet(String name, String description, Set<Integer> genes) {
 		this.name = name;
 		this.description = description;
 		this.genes = genes;
-		this.source = source;
+		
+		String[] name_tokens = name.split("%");
+		if(name_tokens.length > 1)
+			this.source = Optional.of(name_tokens[1]);
+		else 
+			this.source = Optional.empty();
 	}
+	
 
 	public String getName() {
 		return name;
@@ -86,84 +86,25 @@ public class GeneSet {
 		return source;
 	}
 	
-	
-	public static class Builder {
+	public static GeneSet fromTokens(String[] tokens) {
+		String name = tokens[1];
+		String description = tokens[2];
+		if(tokens.length < 3)
+			return new GeneSet(name, description, ImmutableSet.of());
 		
-		private String name;
-		private String description;
-		private Set<Integer> genes = new HashSet<>();
-		private Optional<String> source = Optional.empty();
-		
-		
-		public static Builder from(GeneSet gs) {
-			Builder b = new Builder(gs.name, gs.description);
-			b.addAllGenes(gs.genes);
-			gs.source.ifPresent(s -> b.setSource(s));
-			return b;
+		ImmutableSet.Builder<Integer> builder = ImmutableSet.builder();
+		for(int i = 3; i < tokens.length; i++) {
+			builder.add(Integer.parseInt(tokens[i]));
 		}
-		
-		
-		public Builder(String name, String descrip) {
-			setName(name);
-			setDescription(descrip);
-			
-			//if you can split the name using '|', take the second token to be the gene set type
-			String[] name_tokens = name.split("%");
-			if(name_tokens.length > 1)
-				setSource(name_tokens[1]);
-		}
-		
-		public Builder(String[] tokens) {
-			this(tokens[1], tokens[2]);
-			if(tokens.length < 3)
-				return;
-			for(int i = 3; i < tokens.length; i++)
-				addGene(Integer.parseInt(tokens[i]));
-		}
-		
-		
-		public Builder setName(String name) {
-			this.name = name;
-			return this;
-		}
-		
-		public Builder setDescription(String description) {
-			this.description = description;
-			return this;
-		}
-		
-		public Builder addGene(Integer gene) {
-			genes.add(gene);
-			return this;
-		}
-		
-		public Builder addAllGenes(Collection<Integer> genes) {
-			genes.forEach(this::addGene);
-			return this;
-		}
-		
-		public Builder setSource(String source) {
-			this.source = Optional.of(source);
-			return this;
-		}
-		
-		public GeneSet build() {
-			if(name == null || description == null)
-				throw new IllegalStateException();
-			return new GeneSet(name, description, ImmutableSet.copyOf(genes), source);
-		}
+		return new GeneSet(name, description, builder.build());
 	}
-	
 
 	@Override
 	public  String toString() {
 		StringBuffer geneset = new StringBuffer();
-
 		geneset.append(getName() + "\t" + getDescription() + "\t");
-
 		for(Iterator<Integer> i = getGenes().iterator(); i.hasNext();)
 			geneset.append(i.next().toString() + "\t");
-
 		return geneset.toString();
 	}
 

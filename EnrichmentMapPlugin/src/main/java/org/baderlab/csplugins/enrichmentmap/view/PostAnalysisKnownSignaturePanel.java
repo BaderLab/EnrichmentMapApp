@@ -53,7 +53,7 @@ public class PostAnalysisKnownSignaturePanel extends JPanel {
 	}
 	
 	@AfterInjection
-	private void init() {
+	private void createContents() {
 		// Gene set file panel
 		JPanel gmtPanel = createKnownSignatureGMTPanel();
 
@@ -84,7 +84,7 @@ public class PostAnalysisKnownSignaturePanel extends JPanel {
 	private JPanel createKnownSignatureGMTPanel() {
 		knownSignatureGMTFileNameTextField = new JFormattedTextField();
 		knownSignatureGMTFileNameTextField.setColumns(15);
-		knownSignatureGMTFileNameTextField.setToolTipText(EnrichmentMapInputPanel.gmtTip);
+		knownSignatureGMTFileNameTextField.setToolTipText(EnrichmentMapInputPanel.gmt_instruction);
 
 		final Color textFieldForeground = knownSignatureGMTFileNameTextField.getForeground();
 		knownSignatureGMTFileNameTextField.addPropertyChangeListener("value", new PropertyChangeListener() {
@@ -96,7 +96,7 @@ public class PostAnalysisKnownSignaturePanel extends JPanel {
 		});
 
 		JButton selectSigGMTFileButton = new JButton("Browse...");
-		selectSigGMTFileButton.setToolTipText(EnrichmentMapInputPanel.gmtTip);
+		selectSigGMTFileButton.setToolTipText(EnrichmentMapInputPanel.gmt_instruction);
 		selectSigGMTFileButton.setActionCommand("Known Signature");
 		selectSigGMTFileButton.addActionListener(e -> {
 			parentPanel.chooseGMTFile(knownSignatureGMTFileNameTextField);

@@ -2,6 +2,7 @@ package org.baderlab.csplugins.enrichmentmap.model;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import com.google.common.collect.Sets;
@@ -18,7 +19,7 @@ public class SetOfGeneSets {
 	//the set of genesets
 	// Hash Key = name of gene set
 	// Hash Value = Gene set
-	private HashMap<String, GeneSet> genesets;
+	private Map<String, GeneSet> genesets;
 
 	//filename
 	private String filename;
@@ -28,12 +29,12 @@ public class SetOfGeneSets {
 
 	//Genesets can have multiple sources.  
 	//Keep a list of all the different types of genesets that are contained in this set of genesets.
-	private HashSet<String> GenesetTypes = new HashSet<String>();
+	private Set<String> GenesetTypes = new HashSet<String>();
 
 	public SetOfGeneSets() {
 		name = "";
 		filename = "";
-		genesets = new HashMap<String, GeneSet>();
+		genesets = new HashMap<>();
 		totalUniverseSize = 0;
 	}
 
@@ -42,7 +43,6 @@ public class SetOfGeneSets {
 	 * are associated with and the loaded in EM property file
 	 */
 	public SetOfGeneSets(String ds, HashMap<String, String> props) {
-		this();
 		if(props.containsKey(ds + "%" + this.getClass().getSimpleName() + "%name"))
 			this.name = props.get(ds + "%" + this.getClass().getSimpleName() + "%name");
 		if(props.containsKey(ds + "%" + this.getClass().getSimpleName() + "%filename"))
@@ -61,7 +61,7 @@ public class SetOfGeneSets {
 	 * FilterGenesets - restrict the genes contained in each gene set to only
 	 * the genes found in the expression file.
 	 */
-	public void filterGenesets(HashSet<Integer> datasetGenes) {
+	public void filterGenesets(Set<Integer> datasetGenes) {
 		//create a new hashmap to store the filtered geneset
 		HashMap<String, GeneSet> filteredGenesets = new HashMap<String, GeneSet>();
 
@@ -73,9 +73,7 @@ public class SetOfGeneSets {
 			//only keep the genes from the geneset that are in the dataset genes
 			Set<Integer> intersection = Sets.intersection(current_set.getGenes(), datasetGenes);
 
-			GeneSet.Builder builder = new GeneSet.Builder(geneset2_name, current_set.getDescription());
-			builder.addAllGenes(intersection);
-			GeneSet new_set = builder.build();
+			GeneSet new_set = new GeneSet(geneset2_name, current_set.getDescription(), intersection);
 
 			filteredGenesets.put(geneset2_name, new_set);
 		}
@@ -92,7 +90,7 @@ public class SetOfGeneSets {
 		this.name = name;
 	}
 
-	public HashMap<String, GeneSet> getGenesets() {
+	public Map<String, GeneSet> getGenesets() {
 		return genesets;
 	}
 
@@ -112,7 +110,7 @@ public class SetOfGeneSets {
 		this.GenesetTypes = types;
 	}
 
-	public HashSet<String> getGenesetTypes() {
+	public Set<String> getGenesetTypes() {
 		return this.GenesetTypes;
 	}
 

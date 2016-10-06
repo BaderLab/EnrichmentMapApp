@@ -45,11 +45,12 @@ package org.baderlab.csplugins.enrichmentmap.parsers;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpression;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
 import org.baderlab.csplugins.enrichmentmap.task.NullTaskMonitor;
@@ -97,8 +98,9 @@ public class ExpressionFileReaderTask extends AbstractTask {
 
 		boolean twoColumns = false;
 
-		HashSet<Integer> datasetGenes = dataset.getDatasetGenes();
-		HashMap<String,Integer> genes = dataset.getMap().getGenes();
+		Set<Integer> datasetGenes = dataset.getDatasetGenes();
+//		Map<Integer,String> genes = dataset.getMap().getGenes();
+		EnrichmentMap map = dataset.getMap();
 
 		String expressionFileName = dataset.getExpressionSets().getFilename();
 		List<String> lines = DatasetLineParser.readLines(expressionFileName);
@@ -112,7 +114,7 @@ public class ExpressionFileReaderTask extends AbstractTask {
 		GeneExpressionMatrix expressionMatrix = dataset.getExpressionSets();
 		//GeneExpressionMatrix expressionMatrix = new GeneExpressionMatrix(lines[0].split("\t"));
 		//HashMap<Integer,GeneExpression> expression = new HashMap<Integer, GeneExpression>();
-		HashMap<Integer, GeneExpression> expression = expressionMatrix.getExpressionMatrix();
+		Map<Integer, GeneExpression> expression = expressionMatrix.getExpressionMatrix();
 
 		for(int i = 0; i < lines.size(); i++) {
 			String line = lines.get(i);
@@ -177,8 +179,8 @@ public class ExpressionFileReaderTask extends AbstractTask {
 			//Check to see if this gene is in the genes list
 			//Currently we only load gene expression data for genes that are already in the gene list (i.e. are listed in at least one geneset)
 			//TODO:is there the possibility that we need all the expression genes?  Currently this great decreases space when saving sessions
-			if(genes.containsKey(Name)) {
-				Integer genekey = genes.get(Name);
+			Integer genekey = map.getHashFromGene(Name);
+			if(genekey != null) {
 				//we want the genes hashmap and dataset genes hashmap to have the same keys so it is easier to compare.
 				datasetGenes.add(genekey);
 

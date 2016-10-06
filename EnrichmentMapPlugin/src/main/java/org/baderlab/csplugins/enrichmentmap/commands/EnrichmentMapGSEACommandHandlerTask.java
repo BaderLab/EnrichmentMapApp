@@ -97,7 +97,7 @@ public class EnrichmentMapGSEACommandHandlerTask extends AbstractTask {
 
 		insertTasksAfterCurrentTask(buildmap.createTaskIterator());
 		
-		emManager.registerServices();
+		emManager.showPanels();
 	}
 	
 	private DataSetFiles InitializeFiles(String edb, String exp){

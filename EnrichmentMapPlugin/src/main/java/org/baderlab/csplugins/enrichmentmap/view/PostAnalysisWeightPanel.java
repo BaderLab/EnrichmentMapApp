@@ -80,10 +80,10 @@ public class PostAnalysisWeightPanel extends JPanel {
 		// override the default value for HYPERGEOM
 		savedFilterValues.put(FilterType.HYPERGEOM, HYPERGOM_DEFAULT);
 		
-		init();
+		createContents();
 	}
 	
-	private void init() {
+	private void createContents() {
 		setBorder(LookAndFeelUtil.createTitledBorder("Edge Weight Parameters"));
 
 		JPanel selectPanel = createRankTestSelectPanel();

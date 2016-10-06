@@ -2,8 +2,9 @@ package org.baderlab.csplugins.enrichmentmap.model;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class Ranking {
 
@@ -14,14 +15,11 @@ public class Ranking {
 	//Set of Ranks
 	//key - gene hash key
 	//value - Rank
-	private HashMap<Integer, Rank> ranking;
+	private Map<Integer, Rank> ranking = new HashMap<>(); 
 
-	//hashes for easy conversion between geneid and rank
-	private HashMap<Integer, Integer> gene2rank;
-	private HashMap<Integer, Integer> rank2gene;
-
-	// Lazily computed values
+	// Lazily computed views
 	//hash for easy conversion between geneid and score
+	private Map<Integer, Integer> rank2gene = null;
 	private Map<Integer, Double> gene2score = null;
 	//array for storing scores of all genes in map
 	private double[] scores = null;
@@ -30,57 +28,38 @@ public class Ranking {
 	private String filename;
 
 	public Ranking() {
-		ranking = new HashMap<Integer, Rank>();
-		gene2rank = new HashMap<Integer, Integer>();
-		rank2gene = new HashMap<Integer, Integer>();
+	}
+	
+	public boolean isEmpty() {
+		return ranking.isEmpty();
+	}
+	
+	public boolean contains(int gene) {
+		return ranking.containsKey(gene);
 	}
 
-	public HashMap<Integer, Rank> getRanking() {
-		return ranking;
+	public Rank getRank(int gene) {
+		return ranking.get(gene);
 	}
-
-	public void setRanking(HashMap<Integer, Rank> ranking) {
-		this.ranking = ranking;
-		for(Iterator<Integer> i = ranking.keySet().iterator(); i.hasNext();) {
-			Integer cur = (Integer) i.next();
-			gene2rank.put(cur, ranking.get(cur).getRank());
-			rank2gene.put(ranking.get(cur).getRank(), cur);
-		}
+	
+	public void addRank(Integer geneKey, Integer rank) {
+		ranking.put(geneKey, new Rank(geneKey.toString(), 0.0, rank));
 		invalidateLazyValues();
 	}
 
-	public HashMap<Integer, Integer> getGene2rank() {
-		return gene2rank;
-	}
-
-	public void setGene2rank(HashMap<Integer, Integer> gene2rank) {
-		this.gene2rank = gene2rank;
-		if(this.rank2gene == null || this.rank2gene.isEmpty()) {
-			for(Iterator<Integer> i = gene2rank.keySet().iterator(); i.hasNext();) {
-				Integer cur = (Integer) i.next();
-				rank2gene.put(gene2rank.get(cur), cur);
-				ranking.put(cur, new Rank(cur.toString(), 0.0, gene2rank.get(cur)));
-			}
-		}
+	public void addRank(Integer gene, Rank rank) {
+		ranking.put(gene, rank);
 		invalidateLazyValues();
 	}
 
-	public HashMap<Integer, Integer> getRank2gene() {
-		return rank2gene;
+	public int getMaxRank() {
+		return Collections.max(getAllRanks());
 	}
 
-	public void setRank2gene(HashMap<Integer, Integer> rank2gene) {
-		this.rank2gene = rank2gene;
-		if(this.gene2rank == null || this.gene2rank.isEmpty()) {
-			for(Iterator<Integer> i = rank2gene.keySet().iterator(); i.hasNext();) {
-				Integer cur = (Integer) i.next();
-				gene2rank.put(rank2gene.get(cur), cur);
-				ranking.put(rank2gene.get(cur), new Rank(rank2gene.get(cur).toString(), 0.0, cur));
-			}
-		}
-		invalidateLazyValues();
+	public Set<Integer> getAllRanks() {
+		return ranking.values().stream().map(Rank::getRank).collect(Collectors.toSet());
 	}
-
+	
 	public String getFilename() {
 		return filename;
 	}
@@ -88,18 +67,7 @@ public class Ranking {
 	public void setFilename(String filename) {
 		this.filename = filename;
 	}
-
-	public void addRank(Integer gene, Rank rank) {
-		ranking.put(gene, rank);
-		gene2rank.put(gene, rank.getRank());
-		rank2gene.put(rank.getRank(), gene);
-		invalidateLazyValues();
-	}
-
-	public int getMaxRank() {
-		return Collections.max(rank2gene.keySet());
-	}
-
+	
 	public String toString() {
 		StringBuffer paramVariables = new StringBuffer();
 		paramVariables.append(filename + "%fileName\t" + filename + "\n");
@@ -111,16 +79,35 @@ public class Ranking {
 	 * 
 	 * @return HashMap gene2score
 	 */
-	public Map<Integer, Double> getGene2Score() {
+	private Map<Integer, Double> getGene2Score() {
 		if(gene2score == null) {
 			gene2score = new HashMap<>();
-			for(Map.Entry<Integer, Rank> entry : ranking.entrySet()) {
-				gene2score.put(entry.getKey(), entry.getValue().getScore());
-			}
+			ranking.forEach((gene,rank) -> gene2score.put(gene, rank.getScore()));
 		}
 		return gene2score;
 	}
+	
+	public Double getScore(int gene) {
+		return getGene2Score().get(gene);
+	}
 
+	
+	private Map<Integer,Integer> getRank2Gene() {
+		if(rank2gene == null) {
+			rank2gene = new HashMap<>();
+			ranking.forEach((gene,rank) -> rank2gene.put(rank.getRank(), gene));
+		}
+		return rank2gene;
+	}
+	
+	public int getGene(int rank) {
+		return getRank2Gene().get(rank);
+	}
+	
+	public boolean containsRank(int rank) {
+		return getRank2Gene().containsKey(rank);
+	}
+	
 	/**
 	 * Get scores array (elements are in no particualr order)
 	 * 
@@ -139,6 +126,7 @@ public class Ranking {
 	}
 
 	private void invalidateLazyValues() {
+		rank2gene = null;
 		gene2score = null;
 		scores = null;
 	}

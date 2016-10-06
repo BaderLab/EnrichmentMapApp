@@ -107,14 +107,12 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel implements ListS
 	}
 
 	public void update() {
-		availSigSetsField.updateUI();
-		selectedSigSetsField.updateUI();
 		setAvSigCount(availSigSetsModel.size());
 		setSelSigCount(selectedSigSetsModel.size());
 	}
 	
 	@AfterInjection
-	private void init() {
+	private void createContents() {
 		JPanel gmtPanel = createSignatureDiscoveryGMTPanel();
 		JPanel sigGenesetsPanel = createSignatureGenesetsPanel();
 		weightPanel = new PostAnalysisWeightPanel(serviceRegistrar);
@@ -144,7 +142,7 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel implements ListS
 		availableLabel = new JLabel();
 		setAvSigCount(0);
 
-		availSigSetsField = new JList<>();
+		availSigSetsField = new JList<>(availSigSetsModel);
 
 		JScrollPane availSigSetsScroll = new JScrollPane(availSigSetsField,
 				ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
@@ -153,7 +151,7 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel implements ListS
 		selectedLabel = new JLabel();
 		setSelSigCount(0);
 
-		selectedSigSetsField = new JList<>();
+		selectedSigSetsField = new JList<>(selectedSigSetsModel);
 
 		JScrollPane selectedSigSetsScroll = new JScrollPane(selectedSigSetsField,
 				ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
@@ -275,7 +273,7 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel implements ListS
     private JPanel createSignatureDiscoveryGMTPanel() {
     	signatureDiscoveryGMTFileNameTextField = new JFormattedTextField();
     	signatureDiscoveryGMTFileNameTextField.setColumns(15);
-    	signatureDiscoveryGMTFileNameTextField.setToolTipText(EnrichmentMapInputPanel.gmtTip);
+    	signatureDiscoveryGMTFileNameTextField.setToolTipText(EnrichmentMapInputPanel.gmt_instruction);
         
 		final Color textFieldForeground = signatureDiscoveryGMTFileNameTextField.getForeground();
 		signatureDiscoveryGMTFileNameTextField.addPropertyChangeListener("value", (PropertyChangeEvent e) -> {
@@ -284,7 +282,7 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel implements ListS
 		});
 
 		JButton selectSigGMTFileButton = new JButton("Browse...");
-		selectSigGMTFileButton.setToolTipText(EnrichmentMapInputPanel.gmtTip);
+		selectSigGMTFileButton.setToolTipText(EnrichmentMapInputPanel.gmt_instruction);
 		selectSigGMTFileButton.setActionCommand("Signature Discovery");
 		selectSigGMTFileButton.addActionListener((ActionEvent evt) -> {
 			parentPanel.chooseGMTFile(signatureDiscoveryGMTFileNameTextField);
@@ -362,8 +360,7 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel implements ListS
 				for (String name : selected)
 					availSigSetsModel.addElement(name);
 				
-				availSigSetsField.updateUI();
-				selectedSigSetsField.updateUI();
+				update();
 			});
 			
 			action.actionPerformed(null);

@@ -1,6 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap.model;
 
 import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -17,7 +18,7 @@ public class SetOfEnrichmentResults {
 	//the set of the enrichments
 	// Hash Key = name of enriched set
 	// Hash Value = the entire enrichment results containing: name, description, pvalue, fdr...
-	private HashMap<String, EnrichmentResult> enrichments;
+	private Map<String, EnrichmentResult> enrichments;
 
 	//method
 	
@@ -31,7 +32,7 @@ public class SetOfEnrichmentResults {
 	private String phenotype2 = DataSetFiles.default_pheno2;
 	
 	public SetOfEnrichmentResults() {
-		this.enrichments = new HashMap<String, EnrichmentResult>();
+		this.enrichments = new HashMap<>();
 	}
 	
 	public SetOfEnrichmentResults(HashMap<String, EnrichmentResult> enrichments) {
@@ -57,11 +58,11 @@ public class SetOfEnrichmentResults {
 		
 	}
 
-	public HashMap<String, EnrichmentResult> getEnrichments() {
+	public Map<String, EnrichmentResult> getEnrichments() {
 		return enrichments;
 	}
 
-	public void setEnrichments(HashMap<String, EnrichmentResult> enrichments) {
+	public void setEnrichments(Map<String, EnrichmentResult> enrichments) {
 		this.enrichments = enrichments;
 	}
 
@@ -105,14 +106,6 @@ public class SetOfEnrichmentResults {
 		this.filename2 = filename2;
 	}
 
-	public void copy(SetOfEnrichmentResults copy){
-		this.name = copy.getName();
-		this.enrichments = copy.getEnrichments();
-		this.phenotype1 = copy.getPhenotype1();
-		this.phenotype2 = copy.getPhenotype2();
-		this.filename1 = copy.getFilename1();
-		this.filename2 = copy.getFilename2();
-	}
 	
 	public String toString(String ds){
 		StringBuffer paramVariables = new StringBuffer();

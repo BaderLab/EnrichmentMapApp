@@ -68,7 +68,7 @@ public class LoadBingoResultsTest {
 		//there should be 6 edges
 		assertEquals(10,em.getGenesetSimilarity().size());
 		//there should be a total of 366 genes
-		assertEquals(446, em.getGenes().size());
+		assertEquals(446, em.getNumberOfGenes());
 		//there should be 43 genes in the geneset "nucleolus"
 		assertEquals(43, em.getAllGenesets().get("NUCLEOLUS").getGenes().size());
 
@@ -172,6 +172,6 @@ public class LoadBingoResultsTest {
 		//there should be 20 edges (2 edges for every node because of the distinct expresison sets)
 		//assertEquals(24,em.getGenesetSimilarity().size());
 		//there should be a total of 366 genes
-		assertEquals(704, em.getGenes().size());
+		assertEquals(704, em.getNumberOfGenes());
 	}
 }

@@ -1,6 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.task;
 
-import java.util.HashMap;
+import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -8,7 +8,6 @@ import javax.annotation.Nullable;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.parsers.DetermineEnrichmentResultFileReader;
@@ -22,13 +21,14 @@ import org.cytoscape.work.TaskIterator;
 
 import com.google.common.base.Strings;
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 import com.google.inject.assistedinject.Assisted;
 
 public class EnrichmentMapBuildMapTaskFactory implements TaskFactory {
 
 	@Inject private VisualizeEnrichmentMapTask.Factory visualizeEnrichmentMapTaskFactory;
 	@Inject private CreateEnrichmentMapNetworkTask.Factory createEnrichmentMapNetworkTaskFactory;
-	@Inject private EnrichmentMapManager emManager;
+	@Inject private Provider<ParametersPanel> parametersPanelProvider;
 	@Inject private @Nullable CySwingApplication swingApplication;
 	
 
@@ -50,7 +50,7 @@ public class EnrichmentMapBuildMapTaskFactory implements TaskFactory {
 		//initialize with 8 tasks so the progress bar can be set better.
 		TaskIterator currentTasks = new TaskIterator(8, dummyTaskToSetTitle);
 
-		HashMap<String, DataSet> datasets = map.getDatasets();
+		Map<String, DataSet> datasets = map.getDatasets();
 
 		//Make sure that Dataset 1 gets parsed first because if there are 2 datasets
 		//the geneset file is only associated with the first dataset.
@@ -121,7 +121,7 @@ public class EnrichmentMapBuildMapTaskFactory implements TaskFactory {
 
 		// don't visualize the map if running headless
 		if(swingApplication != null) {
-			ParametersPanel paramsPanel = emManager.getParameterPanel();
+			ParametersPanel paramsPanel = parametersPanelProvider.get();
 			ShowPanelTask show_parameters_panel = new ShowPanelTask(swingApplication, paramsPanel);
 			currentTasks.append(show_parameters_panel);
 			

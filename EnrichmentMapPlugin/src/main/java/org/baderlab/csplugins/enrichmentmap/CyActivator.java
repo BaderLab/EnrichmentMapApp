@@ -4,8 +4,8 @@ import static org.cytoscape.work.ServiceProperties.TITLE;
 
 import java.util.Properties;
 
-import org.baderlab.csplugins.enrichmentmap.actions.EnrichmentMapActionListener;
-import org.baderlab.csplugins.enrichmentmap.actions.EnrichmentMapSessionAction;
+import org.baderlab.csplugins.enrichmentmap.actions.HeatMapSelectionListener;
+import org.baderlab.csplugins.enrichmentmap.actions.LegacyEnrichmentMapSessionListener;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadEnrichmentsPanelAction;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadPostAnalysisPanelAction;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowAboutPanelAction;
@@ -15,8 +15,6 @@ import org.baderlab.csplugins.enrichmentmap.commands.EnrichmentMapGSEACommandHan
 import org.baderlab.csplugins.enrichmentmap.mastermap.view.MasterMapDialogAction;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.task.EdgeWidthTableColumnTaskFactory;
-import org.baderlab.csplugins.enrichmentmap.view.EnrichmentMapInputPanel;
-import org.baderlab.csplugins.enrichmentmap.view.PostAnalysisPanel;
 import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.application.swing.AbstractCyAction;
@@ -25,7 +23,6 @@ import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
 import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.service.util.AbstractCyActivator;
-import org.cytoscape.session.events.SessionAboutToBeSavedListener;
 import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.task.TableColumnTaskFactory;
 import org.cytoscape.work.ServiceProperties;
@@ -41,6 +38,9 @@ import com.google.inject.Injector;
 
 public class CyActivator extends AbstractCyActivator {
 
+	public static final String APP_NAME = "EnrichmentMap";
+	
+	
 	public void start(BundleContext bc) {
 		ServiceReference ref = bc.getServiceReference(CySwingApplication.class.getName());
 		if(ref == null) {
@@ -53,52 +53,45 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, manager, NetworkAboutToBeDestroyedListener.class, new Properties());
 		registerService(bc, manager, SetCurrentNetworkListener.class, new Properties());
 		registerService(bc, manager, SetCurrentNetworkViewListener.class, new Properties());
-
-		EnrichmentMapInputPanel emPanel = injector.getInstance(EnrichmentMapInputPanel.class);		
-		PostAnalysisPanel postEMPanel   = injector.getInstance(PostAnalysisPanel.class);
 		
 		//associate them with the action listener
-		EnrichmentMapActionListener EMActionListener = injector.getInstance(EnrichmentMapActionListener.class);
-		registerService(bc, EMActionListener, RowsSetListener.class, new Properties());		
-
-		AbstractCyAction mmAction           = injector.getInstance(MasterMapDialogAction.class);
-		AbstractCyAction aboutAction        = injector.getInstance(ShowAboutPanelAction.class);
-		AbstractCyAction inputPanelAction   = injector.getInstance(LoadEnrichmentsPanelAction.class).init(emPanel);
-		AbstractCyAction postAnalysisAction = injector.getInstance(LoadPostAnalysisPanelAction.class).init(postEMPanel);
-		AbstractCyAction edgePanelAction    = injector.getInstance(ShowEdgeWidthDialogAction.class);
+		HeatMapSelectionListener selectionListener = injector.getInstance(HeatMapSelectionListener.class);
+		registerService(bc, selectionListener, RowsSetListener.class, new Properties());		
 
 		//register the services
-		registerAction(bc, mmAction);
-		registerAction(bc, inputPanelAction);
-		registerAction(bc, postAnalysisAction);	
-		registerAction(bc, edgePanelAction);
-		registerAction(bc, aboutAction);
+		registerAction(bc, injector.getInstance(MasterMapDialogAction.class));
+		registerAction(bc, injector.getInstance(LoadEnrichmentsPanelAction.class));
+		registerAction(bc, injector.getInstance(LoadPostAnalysisPanelAction.class));	
+		registerAction(bc, injector.getInstance(ShowEdgeWidthDialogAction.class));
+		registerAction(bc, injector.getInstance(ShowAboutPanelAction.class));
 
 		//register the session save and restore
-		EnrichmentMapSessionAction sessionAction = injector.getInstance(EnrichmentMapSessionAction.class);
-		registerService(bc, sessionAction, SessionAboutToBeSavedListener.class, new Properties());
+		LegacyEnrichmentMapSessionListener sessionAction = injector.getInstance(LegacyEnrichmentMapSessionListener.class);
+//		registerService(bc, sessionAction, SessionAboutToBeSavedListener.class, new Properties());
 		registerService(bc, sessionAction, SessionLoadedListener.class, new Properties());
 
 		//generic EM command line option
 		TaskFactory buildCommandTask = injector.getInstance(BuildEnrichmentMapTuneableTaskFactory.class);
-		Properties properties = new Properties();
-		properties.put(ServiceProperties.COMMAND, "build");
-		properties.put(ServiceProperties.COMMAND_NAMESPACE, "enrichmentmap");
-		registerService(bc, buildCommandTask, TaskFactory.class, properties);
+		Properties props = new Properties();
+		props.put(ServiceProperties.COMMAND, "build");
+		props.put(ServiceProperties.COMMAND_NAMESPACE, "enrichmentmap");
+		registerService(bc, buildCommandTask, TaskFactory.class, props);
 
 		//gsea specifc commandtool
 		TaskFactory gseaCommandTask = injector.getInstance(EnrichmentMapGSEACommandHandlerTaskFactory.class);
-		properties = new Properties();
-		properties.put(ServiceProperties.COMMAND, "gseabuild");
-		properties.put(ServiceProperties.COMMAND_NAMESPACE, "enrichmentmap");
-		registerService(bc, gseaCommandTask, TaskFactory.class, properties);
+		
+		props = new Properties();
+		props.put(ServiceProperties.COMMAND, "gseabuild");
+		props.put(ServiceProperties.COMMAND_NAMESPACE, "enrichmentmap");
+		registerService(bc, gseaCommandTask, TaskFactory.class, props);
 
 		//edge table context menu
-		EdgeWidthTableColumnTaskFactory tableColumnTaskFactory = new EdgeWidthTableColumnTaskFactory(edgePanelAction);
-		Properties tableColumnTaskFactoryProps = new Properties();
-		tableColumnTaskFactoryProps.setProperty(TITLE, "Post Analysis Edge Width...");
-		tableColumnTaskFactoryProps.setProperty("tableTypes", "edge");
-		registerService(bc, tableColumnTaskFactory, TableColumnTaskFactory.class, tableColumnTaskFactoryProps);
+		AbstractCyAction edgeWidthDialogAction = injector.getInstance(ShowEdgeWidthDialogAction.class);
+		EdgeWidthTableColumnTaskFactory tableColumnTaskFactory = new EdgeWidthTableColumnTaskFactory(edgeWidthDialogAction);
+		props = new Properties();
+		props.setProperty(TITLE, "Post Analysis Edge Width...");
+		props.setProperty("tableTypes", "edge");
+		registerService(bc, tableColumnTaskFactory, TableColumnTaskFactory.class, props);
 
 	}
 	

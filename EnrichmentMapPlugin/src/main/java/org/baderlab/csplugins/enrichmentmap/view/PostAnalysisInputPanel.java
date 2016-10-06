@@ -154,10 +154,6 @@ public class PostAnalysisInputPanel extends JPanel {
 		}
 	}
 
-	public void update() {
-		signatureDiscoveryPanel.update();
-	}
-
 	private void flipPanels(JPanel toRemove, JPanel toAdd) {
 		userInputPanel.remove(toRemove);
 		userInputPanel.add(toAdd, BorderLayout.CENTER);
