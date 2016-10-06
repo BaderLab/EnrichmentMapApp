@@ -5,6 +5,7 @@
 *.jar
 *.war
 *.ear
+.settings
 
 #ignore anything in the compiled directory
 target/**/*
