@@ -55,11 +55,15 @@ public class LegacyEnrichmentMapSessionListener implements SessionLoadedListener
 	 */
 	@Override
 	public void handleEvent(SessionLoadedEvent e) {
-		if (e.getLoadedSession().getAppFileListMap() == null || e.getLoadedSession().getAppFileListMap().size() ==0){
+		Map<String, List<File>> appFileListMap = e.getLoadedSession().getAppFileListMap();
+		if (appFileListMap == null || appFileListMap.isEmpty()) {
 			return;
 		}
-
-		List<File> pStateFileList = e.getLoadedSession().getAppFileListMap().get(CyActivator.APP_NAME);
+		List<File> pStateFileList = appFileListMap.get(CyActivator.APP_NAME);
+		if(pStateFileList == null || pStateFileList.isEmpty()) {
+			return;
+		}
+			
 		try {
 			//go through the prop files first to create the correct objects to be able
 			//to add other files to.
