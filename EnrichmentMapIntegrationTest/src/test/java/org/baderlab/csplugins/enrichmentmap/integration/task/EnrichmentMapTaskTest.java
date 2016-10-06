@@ -48,9 +48,9 @@ public class EnrichmentMapTaskTest extends BaseIntegrationTest {
 	
 	
 	protected void buildEnrichmentMap(EnrichmentMapParameters emParams) {
-		EnrichmentMap map = new EnrichmentMap(emParams);
+		EnrichmentMap map = new EnrichmentMap("MyEM", emParams);
 		
-		Injector injector = Guice.createInjector(new OSGiModule(bc), new AfterInjectionModule(), new CytoscapeServiceModule(), ApplicationModule.headless());
+		Injector injector = Guice.createInjector(new OSGiModule(bc), new AfterInjectionModule(), new CytoscapeServiceModule(), new ApplicationModule());
 		EnrichmentMapBuildMapTaskFactory.Factory factory = injector.getInstance(EnrichmentMapBuildMapTaskFactory.Factory.class);
 		
 	   	EnrichmentMapBuildMapTaskFactory buildmap = factory.create(map);

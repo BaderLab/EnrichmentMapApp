@@ -20,6 +20,9 @@ import org.baderlab.csplugins.enrichmentmap.task.EnrichmentMapBuildMapTaskFactor
 import org.baderlab.csplugins.enrichmentmap.task.VisualizeEnrichmentMapTask;
 import org.baderlab.csplugins.enrichmentmap.view.PostAnalysisKnownSignaturePanel;
 import org.baderlab.csplugins.enrichmentmap.view.PostAnalysisSignatureDiscoveryPanel;
+import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.osgi.framework.BundleContext;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.BindingAnnotation;
@@ -37,7 +40,7 @@ public class ApplicationModule extends AbstractModule {
 	@BindingAnnotation @Retention(RUNTIME) public @interface Nodes {}
 	@BindingAnnotation @Retention(RUNTIME) public @interface Edges {}
 	
-	private boolean headless = false;
+	@BindingAnnotation @Retention(RUNTIME) public @interface Headless {}
 	
 	@Override
 	protected void configure() {
@@ -46,12 +49,12 @@ public class ApplicationModule extends AbstractModule {
 	}
 	
 	@Provides @Edges @Singleton
-	public HeatMapPanel heatMapPanelForEdges(Provider<HeatMapPanel> panelProvider) {
+	public HeatMapPanel heatMapPanelForEdges(Provider<HeatMapPanel> panelProvider, @Headless Boolean headless) {
 		return headless ? null : panelProvider.get().setNode(false);
 	}
 	
 	@Provides @Nodes @Singleton
-	public HeatMapPanel heatMapPanelForNodes(Provider<HeatMapPanel> panelProvider) {
+	public HeatMapPanel heatMapPanelForNodes(Provider<HeatMapPanel> panelProvider, @Headless Boolean headless) {
 		return headless ? null : panelProvider.get().setNode(true);
 	}
 	
@@ -59,11 +62,11 @@ public class ApplicationModule extends AbstractModule {
 		return new FactoryModule();
 	}
 	
-	public static ApplicationModule headless() {
-		ApplicationModule module = new ApplicationModule();
-		module.headless = true;
-		return module;
+	@Provides @Headless
+	public Boolean provideHeadlessFlag(BundleContext bc) {
+		return bc.getServiceReference(CySwingApplication.class.getName()) == null;
 	}
+	
 }
 
 

@@ -32,7 +32,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 
 import com.google.inject.Guice;
-import com.google.inject.Injector;
+import com.google.inject.Injector; 
 
 
 

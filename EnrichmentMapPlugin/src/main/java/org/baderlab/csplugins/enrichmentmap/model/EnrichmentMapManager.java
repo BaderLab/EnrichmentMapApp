@@ -49,6 +49,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Edges;
+import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Headless;
 import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Nodes;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapPanel;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters;
@@ -85,17 +86,19 @@ public class EnrichmentMapManager implements SetCurrentNetworkListener, NetworkA
 	@Inject private @Nodes Provider<HeatMapPanel> nodesOverlapPanelProvider;
 	@Inject private @Edges Provider<HeatMapPanel> edgesOverlapPanelProvider;
 
+	@Inject private @Headless boolean headless;
+	
 	private Map<Long, EnrichmentMap> enrichmentMaps = new HashMap<>();
 	private Map<Long, HeatMapParameters> heatMapParameterMap = new HashMap<>();
 	
-	
-//	private EnrichmentMapInputPanel inputWindow;
-//	private PostAnalysisPanel analysisWindow;
 
 	private boolean overrideHeatmapRevalidation = false;
 	
 
 	public void showPanels() {
+		if(headless)
+			return;
+		
 		HeatMapPanel nodeOverlapPanel = nodesOverlapPanelProvider.get();
 		HeatMapPanel edgeOverlapPanel = edgesOverlapPanelProvider.get();
 		ParametersPanel parametersPanel = parameterPanelProvider.get();
@@ -130,27 +133,6 @@ public class EnrichmentMapManager implements SetCurrentNetworkListener, NetworkA
 		return heatMapParameterMap.get(suid);
 	}
 	
-
-//	public ParametersPanel getParameterPanel() {
-//		return parameterPanelProvider.get();
-//	}
-//
-//	public HeatMapPanel getNodesOverlapPanel() {
-//		return nodesOverlapPanelProvider.get();
-//	}
-//
-//	public HeatMapPanel getEdgesOverlapPanel() {
-//		return edgesOverlapPanelProvider.get();
-//	}
-//	
-//	public EnrichmentMapInputPanel getInputWindow() {
-//		return inputPanelProvider.get();
-//	}
-//
-//	public PostAnalysisPanel getAnalysisWindow() {
-//		return postAnalysisPanelProvider.get();
-//	}
-
 	/**
 	 * Returns true if the network with the identifier networkID an
 	 * EnrichmentMap.<br> (and therefore an instance EnrichmentMapParameters is present)
