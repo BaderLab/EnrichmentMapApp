@@ -40,7 +40,6 @@
 // $LastChangedRevision$
 // $LastChangedBy$
 // $HeadURL$
-
 package org.baderlab.csplugins.enrichmentmap.actions;
 
 import java.awt.event.ActionEvent;
@@ -92,7 +91,7 @@ public class BuildPostAnalysisActionListener implements ActionListener {
 		this.paParams = paParams;
 	}
 	
-
+	@Override
 	public void actionPerformed(ActionEvent event) {
 		runPostAnalysis();
 	}

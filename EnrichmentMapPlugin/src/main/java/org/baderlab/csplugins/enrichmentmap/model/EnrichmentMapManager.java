@@ -73,7 +73,8 @@ import com.google.inject.Singleton;
 
 /**
  * Main class managing all instances of enrichment map as well as singular
- * instances of heatmap panel, parameters panel and input panel. (implemented as singular class)
+ * instances of heatmap panel, parameters panel and input panel. (implemented as
+ * singular class)
  */
 @Singleton
 public class EnrichmentMapManager implements SetCurrentNetworkListener, NetworkAboutToBeDestroyedListener, SetCurrentNetworkViewListener {

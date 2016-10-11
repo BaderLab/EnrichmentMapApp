@@ -229,6 +229,7 @@ public class EnrichmentMapParameters {
 		this.files.put(EnrichmentMap.DATASET1, new DataSetFiles());
 	}
 
+
 	public void initializeDefaultParameters() {
 
 		//the set of default parameters we want to get 
