@@ -48,15 +48,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Properties;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
 
+import org.baderlab.csplugins.enrichmentmap.PropertyManager;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.Method;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.property.CyProperty;
-import org.cytoscape.session.CySessionManager;
 
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
@@ -72,7 +74,6 @@ import com.google.inject.assistedinject.AssistedInject;
  */
 public class EnrichmentMapParameters {
 
-	@Inject private CySessionManager sessionManager;
 	@Inject private StreamUtil streamUtil;
 	@Inject private CyApplicationManager applicationManager;
 
@@ -89,8 +90,6 @@ public class EnrichmentMapParameters {
 	private String GMTDirName = null;
 	private String GCTDirName = null;
 	private String GSEAResultsDirName = null;
-	private int lowerlimit = 1;
-	private int upperlimit = 1;
 	//value specifying whether bulk EM is being used (needed to transfer file name to the network names)
 	private boolean BulkEM = false;
 	//value specifying if during the bulk build if the user wants sessions created for each em
@@ -181,32 +180,30 @@ public class EnrichmentMapParameters {
 
 	
 	public interface Factory {
-		EnrichmentMapParameters create();
 		EnrichmentMapParameters create(String propFile);
 	}
 	
 	
-	/**
-	 * Just for tests.
-	 * Marked as deprecated to remind you not to use in real code.
-	 * @deprecated
-	 */
-	public EnrichmentMapParameters() {
-		this(null, null, null);
-	}
-	
-	@AssistedInject
-	public EnrichmentMapParameters(CySessionManager sessionManager, StreamUtil streamUtil, CyApplicationManager applicationManager) {
-		this.sessionManager = sessionManager;
+	@Inject
+	public EnrichmentMapParameters(StreamUtil streamUtil, CyApplicationManager applicationManager, PropertyManager propertyManager) {
 		this.streamUtil = streamUtil;
 		this.applicationManager = applicationManager;
 		
 		//by default GSEA is the method.
 		this.method = EnrichmentMapParameters.method_GSEA;
 
-		//default Values from Cytoscape properties
-		initializeDefaultParameters();
+		//the set of default parameters we want to get 
+		this.defaultJaccardCutOff = propertyManager.getDefaultJaccardCutOff();
+		this.defaultOverlapCutOff = propertyManager.getDefaultOverlapCutOff();
+		this.defaultSimilarityMetric = similarityMetricToString(propertyManager.getDefaultSimilarityMetric());
+		this.defaultSortMethod = HeatMapParameters.Sort.CLUSTER.display;
+		this.defaultDistanceMetric = HeatMapParameters.DistanceMetric.PEARSON_CORRELATION.display;
 
+		this.pvalue = propertyManager.getDefaultPvalue();
+		this.qvalue = propertyManager.getDefaultQvalue();
+		this.combinedConstant = propertyManager.getDefaultCombinedConstant();
+		this.disable_heatmap_autofocus = false;
+		
 		//choose Jaccard or Overlap as default
 		if(this.defaultSimilarityMetric.equalsIgnoreCase(SM_OVERLAP)) {
 			this.similarityCutOff = this.defaultOverlapCutOff;
@@ -226,101 +223,55 @@ public class EnrichmentMapParameters {
 		this.setTwoDistinctExpressionSets(false);
 
 		//initialize first dataset
-		this.files.put(EnrichmentMap.DATASET1, new DataSetFiles());
+		this.files.put(LegacySupport.DATASET1, new DataSetFiles());
 	}
 
-
-	public void initializeDefaultParameters() {
-
-		//the set of default parameters we want to get 
-		this.defaultJaccardCutOff = 0.25;
-		this.defaultOverlapCutOff = 0.5;
-		this.defaultSimilarityMetric = SM_OVERLAP;
-		this.defaultSortMethod = HeatMapParameters.sort_hierarchical_cluster;
-		this.defaultDistanceMetric = HeatMapParameters.pearson_correlation;
-
-		this.pvalue = 0.005;
-		this.qvalue = 0.1;
-		this.combinedConstant = 0.5;
-		this.disable_heatmap_autofocus = false;
-
-		CyProperty<Properties> defaultJaccardCutOff_prop;
-		CyProperty<Properties> defaultOverlapCutOff_prop;
-		CyProperty<Properties> defaultSimilarityMetric_prop;
-		CyProperty<Properties> disable_heatmap_autofocus_prop;
-		CyProperty<Properties> defaultSortMethod_prop;
-		CyProperty<Properties> defaultDistanceMetric_prop;
-		CyProperty<Properties> defaultPvalue_prop;
-		CyProperty<Properties> defaultQvalue_prop;
-		//get the default combined metric constant
-		CyProperty<Properties> defaultCombinedConstant_prop;
-
-		//get the session properties
-		//only get the sessionProperties if the sessionManager is not null
-		if(sessionManager != null) {
-			this.cyto_prop = sessionManager.getCurrentSession().getProperties();
-
-			//go through the session properties.
-			//If the session property is there then get its value and put it in the default.
-			for(CyProperty<?> prop : this.cyto_prop) {
-				if(prop.getName() != null) {
-					if(prop.getName().equals(defaultJaccardCutOff_propname)) {
-						defaultJaccardCutOff_prop = (CyProperty<Properties>) prop;
-						this.defaultJaccardCutOff = Double.valueOf((String) (defaultJaccardCutOff_prop.getProperties())
-								.getProperty(defaultJaccardCutOff_propname));
-					}
-					if(prop.getName().equals(defaultOverlapCutOff_propname)) {
-						defaultOverlapCutOff_prop = (CyProperty<Properties>) prop;
-						this.defaultOverlapCutOff = Double.valueOf((String) (defaultOverlapCutOff_prop.getProperties())
-								.getProperty(defaultOverlapCutOff_propname));
-					}
-					if(prop.getName().equals(defaultOverlapCutOff_propname)) {
-						defaultOverlapCutOff_prop = (CyProperty<Properties>) prop;
-						this.defaultOverlapCutOff = Double.valueOf((String) (defaultOverlapCutOff_prop.getProperties())
-								.getProperty(defaultOverlapCutOff_propname));
-					}
-					if(prop.getName().equals(defaultPvalue_propname)) {
-						defaultPvalue_prop = (CyProperty<Properties>) prop;
-						this.pvalue = Double.valueOf(
-								(String) (defaultPvalue_prop.getProperties()).getProperty(defaultPvalue_propname));
-					}
-					if(prop.getName().equals(defaultQvalue_propname)) {
-						defaultQvalue_prop = (CyProperty<Properties>) prop;
-						this.qvalue = Double.valueOf(
-								(String) (defaultQvalue_prop.getProperties()).getProperty(defaultQvalue_propname));
-					}
-					if(prop.getName().equals(defaultCombinedConstant_propname)) {
-						defaultCombinedConstant_prop = (CyProperty<Properties>) prop;
-						this.combinedConstant = Double.valueOf((String) (defaultCombinedConstant_prop.getProperties())
-								.getProperty(defaultCombinedConstant_propname));
-					}
-					if(prop.getName().equals(defaultSimilarityMetric_propname)) {
-						defaultSimilarityMetric_prop = (CyProperty<Properties>) prop;
-						this.defaultSimilarityMetric = (String) (defaultSimilarityMetric_prop.getProperties())
-								.getProperty(defaultSimilarityMetric_propname);
-					}
-					if(prop.getName().equals(defaultSortMethod_propname)) {
-						defaultSortMethod_prop = (CyProperty<Properties>) prop;
-						this.defaultSortMethod = (String) (defaultSortMethod_prop.getProperties())
-								.getProperty(defaultSortMethod_propname);
-					}
-					if(prop.getName().equals(defaultDistanceMetric_propname)) {
-						defaultDistanceMetric_prop = (CyProperty<Properties>) prop;
-						this.defaultDistanceMetric = (String) (defaultDistanceMetric_prop.getProperties())
-								.getProperty(defaultDistanceMetric_propname);
-					}
-					if(prop.getName().equals(disable_heatmap_autofocus_propname)) {
-						disable_heatmap_autofocus_prop = (CyProperty<Properties>) prop;
-						this.disable_heatmap_autofocus = Boolean
-								.valueOf((String) (disable_heatmap_autofocus_prop.getProperties())
-										.getProperty(disable_heatmap_autofocus_propname));
-					}
-				}
-			}
+	
+	public EMCreationParameters getCreationParameters() {
+		Method method = stringToMethod(getMethod());
+		SimilarityMetric similarityMetric = stringToSimilarityMethod(getSimilarityMetric());
+		EMCreationParameters params = new EMCreationParameters(method, getAttributePrefix(), 
+				similarityMetric, getPvalue(), getQvalue(), getSimilarityCutOff(), getCombinedConstant());
+		params.setEnrichmentEdgeType(enrichment_edge_type);
+		return params;
+	}
+	
+	private static String methodToString(Method method) {
+		switch(method) {
+			default:
+			case GSEA:        return method_GSEA;
+			case Generic:     return method_generic;
+			case Specialized: return method_Specialized;
 		}
-
 	}
 
+	private static String similarityMetricToString(SimilarityMetric metric) {
+		switch(metric) {
+			default:
+			case COMBINED: return SM_COMBINED;
+			case JACCARD:  return SM_JACCARD;
+			case OVERLAP:  return SM_OVERLAP;
+		}
+	}
+	
+	private static Method stringToMethod(String name) {
+		switch(name) {
+			default:
+			case method_generic:     return Method.Generic;
+			case method_GSEA:        return Method.GSEA;
+			case method_Specialized: return Method.Specialized;
+		}
+	}
+	
+	private static SimilarityMetric stringToSimilarityMethod(String name) {
+		switch(name) {
+			default:
+			case SM_COMBINED: return SimilarityMetric.COMBINED;
+			case SM_JACCARD:  return SimilarityMetric.JACCARD;
+			case SM_OVERLAP:  return SimilarityMetric.OVERLAP;
+		}
+	}
+	
 	/**
 	 * Constructor to create enrichment map parameters from a cytoscape property
 	 * file while restoring a Session (property file is created when an
@@ -330,8 +281,8 @@ public class EnrichmentMapParameters {
 	 *            the name of the property file as a String
 	 */
 	@AssistedInject
-	public EnrichmentMapParameters(@Assisted String propFile, CySessionManager sessionManager, StreamUtil streamUtil, CyApplicationManager applicationManager, EnrichmentMapManager emManager) {
-		this(sessionManager, streamUtil, applicationManager);
+	public EnrichmentMapParameters(@Assisted String propFile, StreamUtil streamUtil, CyApplicationManager applicationManager, EnrichmentMapManager emManager, PropertyManager propertyManager) {
+		this(streamUtil, applicationManager, propertyManager);
 
 		//Create a hashmap to contain all the values in the rpt file.
 		this.props = new HashMap<String, String>();
@@ -445,7 +396,7 @@ public class EnrichmentMapParameters {
 		files1.setClassFile(checkForNull(props, "classFile1"));
 
 		//add the first set of files
-		this.files.put(EnrichmentMap.DATASET1, files1);
+		this.files.put(LegacySupport.DATASET1, files1);
 
 		if(twoDatasets) {
 			DataSetFiles files2 = new DataSetFiles();
@@ -469,8 +420,8 @@ public class EnrichmentMapParameters {
 			files2.setPhenotype2(checkForNull(props, "dataset2Phenotype2"));
 
 			//Add Dataset 2 files
-			if(!this.files.containsKey(EnrichmentMap.DATASET2))
-				this.files.put(EnrichmentMap.DATASET2, files2);
+			if(!this.files.containsKey(LegacySupport.DATASET2))
+				this.files.put(LegacySupport.DATASET2, files2);
 		}
 
 	}
@@ -596,9 +547,9 @@ public class EnrichmentMapParameters {
 			phenotype1 = phenotypes_split[0];
 			phenotype2 = phenotypes_split[1];
 
-			this.getFiles().get(EnrichmentMap.DATASET1).setClassFile(classes_split[0]);
-			this.getFiles().get(EnrichmentMap.DATASET1).setPhenotype1(phenotype1);
-			this.getFiles().get(EnrichmentMap.DATASET1).setPhenotype2(phenotype2);
+			this.getFiles().get(LegacySupport.DATASET1).setClassFile(classes_split[0]);
+			this.getFiles().get(LegacySupport.DATASET1).setPhenotype1(phenotype1);
+			this.getFiles().get(LegacySupport.DATASET1).setPhenotype2(phenotype2);
 
 		}
 
@@ -608,8 +559,8 @@ public class EnrichmentMapParameters {
 			data = (String) rpt.get("param rnk");
 			phenotype1 = "na_pos";
 			phenotype2 = "na_neg";
-			this.getFiles().get(EnrichmentMap.DATASET1).setPhenotype1(phenotype1);
-			this.getFiles().get(EnrichmentMap.DATASET1).setPhenotype2(phenotype2);
+			this.getFiles().get(LegacySupport.DATASET1).setPhenotype1(phenotype1);
+			this.getFiles().get(LegacySupport.DATASET1).setPhenotype2(phenotype2);
 
 			/*
 			 * XXX: BEGIN optional parameters for phenotypes and expression
@@ -628,8 +579,8 @@ public class EnrichmentMapParameters {
 				String phenotypes = (String) rpt.get("param phenotypes");
 				String[] phenotypes_split = phenotypes.split("_versus_");
 
-				this.getFiles().get(EnrichmentMap.DATASET1).setPhenotype1(phenotypes_split[0]);
-				this.getFiles().get(EnrichmentMap.DATASET1).setPhenotype2(phenotypes_split[1]);
+				this.getFiles().get(LegacySupport.DATASET1).setPhenotype1(phenotypes_split[0]);
+				this.getFiles().get(LegacySupport.DATASET1).setPhenotype2(phenotypes_split[1]);
 
 			}
 			if(rpt.containsKey("param expressionMatrix")) {
@@ -718,36 +669,57 @@ public class EnrichmentMapParameters {
 		//ranks, results file will be in the same directory as the rpt file
 		//it is possible that the data and the gmt file are in different directories
 		//than the one specified in the rpt file if the user has moved their results and files around
-		this.getFiles().get(EnrichmentMap.DATASET1).setGMTFileName(gmt);
-		this.getFiles().get(EnrichmentMap.DATASET1).setExpressionFileName(data);
-		this.getFiles().get(EnrichmentMap.DATASET1).setRankedFile(ranks);
+		this.getFiles().get(LegacySupport.DATASET1).setGMTFileName(gmt);
+		this.getFiles().get(LegacySupport.DATASET1).setExpressionFileName(data);
+		this.getFiles().get(LegacySupport.DATASET1).setRankedFile(ranks);
 
-		this.getFiles().get(EnrichmentMap.DATASET1).setEnrichmentFileName1(results1);
-		this.getFiles().get(EnrichmentMap.DATASET1).setEnrichmentFileName2(results2);
-		this.getFiles().get(EnrichmentMap.DATASET1).setGseaHtmlReportFile(gseaHtmlReportFile);
+		this.getFiles().get(LegacySupport.DATASET1).setEnrichmentFileName1(results1);
+		this.getFiles().get(LegacySupport.DATASET1).setEnrichmentFileName2(results2);
+		this.getFiles().get(LegacySupport.DATASET1).setGseaHtmlReportFile(gseaHtmlReportFile);
 
 	}
 
 
 	/**
-	 * Method to copy the contents of one set of parameters into another
-	 * instance
+	 * Method to copy the contents of one set of parameters into another instance
+	 */
+	public void copyValuesFrom(EnrichmentMap map) {
+		EMCreationParameters params = map.getParams();
+		
+		for(Map.Entry<String,DataSet> entry : map.getDatasets().entrySet()) {
+			DataSet dataset = entry.getValue();
+			DataSetFiles newDsFiles = new DataSetFiles();
+			newDsFiles.copy(dataset.getDatasetFiles());
+			this.files.put(entry.getKey(), newDsFiles);
+		}
+
+		this.pvalue = params.getPvalue();
+		this.qvalue = params.getQvalue();
+		this.similarityCutOff = params.getSimilarityCutoff();
+
+		this.method = methodToString(params.getMethod());
+		this.FDR = params.isFDR();
+		this.similarityMetric = similarityMetricToString(params.getSimilarityMetric());
+		this.combinedConstant = params.getCombinedConstant();
+		this.twoDistinctExpressionSets = params.isTwoDistinctExpressionSets();
+
+//		this.enrichment_edge_type = copy.getEnrichment_edge_type();
+		this.EMgmt = params.isEMgmt();
+		this.attributePrefix = params.getAttributePrefix();
+	}
+
+	/**
+	 * Method to copy the contents of one set of parameters into another instance
 	 *
 	 * @param copy   the parameters to copy from.
 	 */
 	public void copy(EnrichmentMapParameters copy) {
-
-		//this.NetworkName = copy.getNetworkName();
-
 		//go through each dataset and copy it into the current em
 		for(Iterator<?> i = copy.getFiles().keySet().iterator(); i.hasNext();) {
 			String ds = (String) i.next();
 			DataSetFiles new_ds = new DataSetFiles();
 			new_ds.copy(copy.getFiles().get(ds));
-
-			//put the new dataset in
 			this.files.put(ds, new_ds);
-
 		}
 
 		this.pvalue = copy.getPvalue();
@@ -767,16 +739,13 @@ public class EnrichmentMapParameters {
 		this.GMTDirName = copy.getGMTDirName();
 		this.GCTDirName = copy.getGCTDirName();
 		this.GSEAResultsDirName = copy.getGSEAResultsDirName();
-		this.upperlimit = copy.getUpperlimit();
-		this.lowerlimit = copy.getLowerlimit();
 
 		//copy loadRpt, EGgmt and genesettypes
 		this.EMgmt = copy.isEMgmt();
 
 		this.attributePrefix = copy.getAttributePrefix();
-
 	}
-
+	
 	/**
 	 * Checks all values of the EnrichmentMapInputPanel to see if the current
 	 * set of enrichment map parameters has the minimal amount of information to
@@ -841,14 +810,13 @@ public class EnrichmentMapParameters {
 		 */
 		//if there are no expression files and this is a david analysis there is no way of telling if they are from the same gmt file so use different one
 		/* else */ if((this.twoDatasets) && this.method.equalsIgnoreCase(EnrichmentMapParameters.method_Specialized)
-				&& (this.files.get(EnrichmentMap.DATASET1).getExpressionFileName() != null)
-				&& (this.files.get(EnrichmentMap.DATASET2) != null)
-				&& (this.files.get(EnrichmentMap.DATASET2).getExpressionFileName() != null)) {
+				&& (this.files.get(LegacySupport.DATASET1).getExpressionFileName() != null)
+				&& (this.files.get(LegacySupport.DATASET2) != null)
+				&& (this.files.get(LegacySupport.DATASET2).getExpressionFileName() != null)) {
 			this.setTwoDistinctExpressionSets(true);
 		}
 		//make sure that if the user added Dataset2 files but subsequently deleted them that we have updated twodataset parameter
-		if((this.twoDatasets) && ((this.files.get(EnrichmentMap.DATASET1) == null)
-				|| (this.files.get(EnrichmentMap.DATASET2) == null)))
+		if((this.twoDatasets) && ((this.files.get(LegacySupport.DATASET1) == null) || (this.files.get(LegacySupport.DATASET2) == null)))
 			this.setTwoDatasets(false);
 
 		return errors;
@@ -1313,22 +1281,6 @@ public class EnrichmentMapParameters {
 		this.GCTDirName = GCTDirName;
 	}
 
-	public int getLowerlimit() {
-		return lowerlimit;
-	}
-
-	public void setLowerlimit(int lowerlimit) {
-		this.lowerlimit = lowerlimit;
-	}
-
-	public int getUpperlimit() {
-		return upperlimit;
-	}
-
-	public void setUpperlimit(int upperlimit) {
-		this.upperlimit = upperlimit;
-	}
-
 	public String getGSEAResultsDirName() {
 		return GSEAResultsDirName;
 	}
@@ -1384,7 +1336,7 @@ public class EnrichmentMapParameters {
 	 * of this dependancy
 	 */
 	public void setGMTFileName(String name) {
-		this.files.get(EnrichmentMap.DATASET1).setGMTFileName(name);
+		this.files.get(LegacySupport.DATASET1).setGMTFileName(name);
 	}
 
 	public HashMap<String, String> getProps() {

@@ -3,11 +3,13 @@ package org.baderlab.csplugins.enrichmentmap.task;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 
-import org.baderlab.csplugins.enrichmentmap.StreamUtil;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.Method;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
+import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.parsers.ParseBingoEnrichmentResults;
 import org.cytoscape.work.TaskMonitor;
 import org.junit.Test;
@@ -15,34 +17,25 @@ import org.junit.Test;
 public class LoadBingoResultsTest {
 	
 	private TaskMonitor taskMonitor = mock(TaskMonitor.class);
-	private StreamUtil streamUtil = new StreamUtil();
 	
 
 	@Test
 	public void testLoadBingoResult_withoutexpression() throws Exception{
-		EnrichmentMapParameters params = new EnrichmentMapParameters();
-	
 		//for a dataset we require genesets, an expression file (optional), enrichment results
 		String testBingoResultsFileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/task/bingo_output/12Hr_topgenes.bgo";
 		
 		DataSetFiles files = new DataSetFiles();		
 		files.setEnrichmentFileName1(testBingoResultsFileName);
-		params.addFiles(EnrichmentMap.DATASET1, files);
 		
 		//set the method to Bingo
-		params.setMethod(EnrichmentMapParameters.method_Specialized);
-		params.setSimilarityMetric(EnrichmentMapParameters.SM_JACCARD);
-		params.setSimilarityCutOff(0.25);
-		params.setPvalue(0.00005);
-		params.setQvalue(0.00000005); // 5.0 X 10-8
-	
+		double pvalue = 0.00005;
+		double qvaule = 0.00000005; // 5.0 X 10-8
+		double similarityCutoff = 0.25;
+		EMCreationParameters params = new EMCreationParameters(Method.Specialized, "EM1_", SimilarityMetric.JACCARD, pvalue, qvaule, similarityCutoff, 0.5);
 		//create an new enrichment Map
 		EnrichmentMap em = new EnrichmentMap("TestEM", params);
-		
-		//Load data set
-		//create a dataset
-		DataSet dataset = new DataSet(em, EnrichmentMap.DATASET1,files);		
-		em.addDataset(EnrichmentMap.DATASET1, dataset);				
+		DataSet dataset = new DataSet(em, LegacySupport.DATASET1, files);		
+		em.addDataSet(LegacySupport.DATASET1, dataset);				
 		
 		ParseBingoEnrichmentResults enrichmentResultsFilesTask = new ParseBingoEnrichmentResults(dataset);
         enrichmentResultsFilesTask.run(taskMonitor); 
@@ -80,44 +73,37 @@ public class LoadBingoResultsTest {
 	
 	@Test
 	public void testLoad2BingoResult_withoutexpression() throws Exception{
-		EnrichmentMapParameters params = new EnrichmentMapParameters();
 	
 		//for a dataset we require genesets, an expression file (optional), enrichment results
 		String testBingoResultsFileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/task/bingo_output/12Hr_topgenes.bgo";
 		
 		DataSetFiles files = new DataSetFiles();		
 		files.setEnrichmentFileName1(testBingoResultsFileName);
-		params.addFiles(EnrichmentMap.DATASET1, files);
 		
 		//for a dataset we require genesets, an expression file (optional), enrichment results
 		String testBingoResultsFileName2 = "src/test/resources/org/baderlab/csplugins/enrichmentmap/task/bingo_output/24Hr_topgenes.bgo";
 				
 		DataSetFiles files2 = new DataSetFiles();		
 		files2.setEnrichmentFileName1(testBingoResultsFileName2);
-		params.addFiles(EnrichmentMap.DATASET2, files2);
 		
 		//set the method to Bingo
-		params.setMethod(EnrichmentMapParameters.method_Specialized);
-		params.setSimilarityMetric(EnrichmentMapParameters.SM_JACCARD);
-		params.setSimilarityCutOff(0.25);
-		params.setPvalue(0.00005);
-		params.setQvalue(0.00000005); // 5.0 X 10-8
-	
+		double pvalue = 0.00005;
+		double qvaule = 0.00000005; // 5.0 X 10-8
+		double similarityCutoff = 0.25;
+		EMCreationParameters params = new EMCreationParameters(Method.Specialized, "EM1_", SimilarityMetric.JACCARD, pvalue, qvaule, similarityCutoff, 0.5);
+		
 		//create an new enrichment Map
 		EnrichmentMap em = new EnrichmentMap("TestEM", params);
+		DataSet dataset = new DataSet(em, LegacySupport.DATASET1, files);		
+		em.addDataSet(LegacySupport.DATASET1, dataset);				
 		
-		//Load first dataset
-		//create a dataset
-		DataSet dataset = new DataSet(em, EnrichmentMap.DATASET1,files);		
-		em.addDataset(EnrichmentMap.DATASET1, dataset);
-
 		ParseBingoEnrichmentResults  enrichmentResultsFilesTask = new ParseBingoEnrichmentResults(dataset);
         enrichmentResultsFilesTask.run(taskMonitor); 
 		
 		//Load second dataset
 		//create a dataset
-		DataSet dataset2 = new DataSet(em, EnrichmentMap.DATASET2,files2);		
-		em.addDataset(EnrichmentMap.DATASET2, dataset2);						
+		DataSet dataset2 = new DataSet(em, LegacySupport.DATASET2, files2);		
+		em.addDataSet(LegacySupport.DATASET2, dataset2);						
 		//create a DatasetTask
 		
 		ParseBingoEnrichmentResults  enrichmentResultsFiles2Task = new ParseBingoEnrichmentResults(dataset2);
@@ -141,7 +127,7 @@ public class LoadBingoResultsTest {
 		ComputeSimilarityTask similarities = new ComputeSimilarityTask(em);
 		similarities.run(taskMonitor);
 
-        dataset = em.getDataset(EnrichmentMap.DATASET1);
+        dataset = em.getDataset(LegacySupport.DATASET1);
 		//get the stats for the first dataset		
 		//check to see if the dataset loaded - there should be 74 genesets
 		assertEquals(74, dataset.getSetofgenesets().getGenesets().size());
@@ -155,7 +141,7 @@ public class LoadBingoResultsTest {
 		assertEquals(446, dataset.getExpressionSets().getNumGenes());
 		assertEquals(446,dataset.getDatasetGenes().size());
 		
-		dataset2 = em.getDataset(EnrichmentMap.DATASET2);
+		dataset2 = em.getDataset(LegacySupport.DATASET2);
 		//check the stats for dataset2
 		//check to see if the dataset loaded - there should be 74 genesets
 		assertEquals(87, dataset2.getSetofgenesets().getGenesets().size());

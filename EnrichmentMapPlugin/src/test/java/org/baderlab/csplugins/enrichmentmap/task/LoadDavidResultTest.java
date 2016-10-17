@@ -3,10 +3,13 @@ package org.baderlab.csplugins.enrichmentmap.task;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.Method;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
+import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.parsers.ParseDavidEnrichmentResults;
 import org.cytoscape.work.TaskMonitor;
 import org.junit.Test;
@@ -19,29 +22,25 @@ public class LoadDavidResultTest {
 	
 	@Test
 	public void testLoadDavidResult_withoutexpression() throws Exception{
-		EnrichmentMapParameters params = new EnrichmentMapParameters();
-	
 		//for a dataset we require genesets, an expression file (optional), enrichment results
 		String testDavidResultsFileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/task/david_output/12hr_David_Output.txt";
 		
 		DataSetFiles files = new DataSetFiles();		
 		files.setEnrichmentFileName1(testDavidResultsFileName);
-		params.addFiles(EnrichmentMap.DATASET1, files);
 		
 		//set the method to David
-		params.setMethod(EnrichmentMapParameters.method_Specialized);
-		params.setSimilarityMetric(EnrichmentMapParameters.SM_JACCARD);
-		params.setSimilarityCutOff(0.25);
-		params.setPvalue(0.005);
-		params.setQvalue(0.005); // 5.0 X 10-3
+		double similarityCutoff = 0.25;
+		double pvalue = 0.005;
+		double qvalue = 0.005; // 5.0 X 10-3
+		EMCreationParameters params = new EMCreationParameters(Method.Specialized, "EM1_", SimilarityMetric.JACCARD, pvalue, qvalue, similarityCutoff, 0.5);
 	
 		//create an new enrichment Map
 		EnrichmentMap em = new EnrichmentMap("TestEM", params);
 		
 		//Load data set
 		//create a dataset
-		DataSet dataset = new DataSet(em, EnrichmentMap.DATASET1,files);		
-		em.addDataset(EnrichmentMap.DATASET1, dataset);
+		DataSet dataset = new DataSet(em, LegacySupport.DATASET1, files);		
+		em.addDataSet(LegacySupport.DATASET1, dataset);
 				
 		//create a DatasetTask
 		ParseDavidEnrichmentResults  enrichmentResultsFilesTask = new ParseDavidEnrichmentResults(dataset);
@@ -79,36 +78,31 @@ public class LoadDavidResultTest {
 	
 	@Test
 	public void testLoad2DavidResult_withoutexpression() throws Exception{
-		EnrichmentMapParameters params = new EnrichmentMapParameters();
-	
 		//for a dataset we require genesets, an expression file (optional), enrichment results
 		String testDavidResultsFileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/task/david_output/12hr_David_Output.txt";
 		
 		DataSetFiles files = new DataSetFiles();		
 		files.setEnrichmentFileName1(testDavidResultsFileName);
-		params.addFiles(EnrichmentMap.DATASET1, files);
 		
 		//for a dataset we require genesets, an expression file (optional), enrichment results
 		String testDavidResultsFileName2 = "src/test/resources/org/baderlab/csplugins/enrichmentmap/task/david_output/24hr_David_Output.txt";
 				
 		DataSetFiles files2 = new DataSetFiles();		
 		files2.setEnrichmentFileName1(testDavidResultsFileName2);
-		params.addFiles(EnrichmentMap.DATASET2, files2);
 		
 		//set the method to David
-		params.setMethod(EnrichmentMapParameters.method_Specialized);
-		params.setSimilarityMetric(EnrichmentMapParameters.SM_JACCARD);
-		params.setSimilarityCutOff(0.25);
-		params.setPvalue(0.005);
-		params.setQvalue(0.005); // 5.0 X 10-3
-	
+		double similarityCutoff = 0.25;
+		double pvalue = 0.005;
+		double qvalue = 0.005; // 5.0 X 10-3
+		EMCreationParameters params = new EMCreationParameters(Method.Specialized, "EM1_", SimilarityMetric.JACCARD, pvalue, qvalue, similarityCutoff, 0.5);
+		
 		//create an new enrichment Map
 		EnrichmentMap em = new EnrichmentMap("TestEM", params);
 		
 		//Load first dataset
 		//create a dataset
-		DataSet dataset = new DataSet(em, EnrichmentMap.DATASET1,files);		
-		em.addDataset(EnrichmentMap.DATASET1, dataset);
+		DataSet dataset = new DataSet(em, LegacySupport.DATASET1, files);		
+		em.addDataSet(LegacySupport.DATASET1, dataset);
 				
 		//create a DatasetTask
 		ParseDavidEnrichmentResults enrichmentResultsFilesTask = new ParseDavidEnrichmentResults(dataset);
@@ -118,8 +112,9 @@ public class LoadDavidResultTest {
 		
 		//Load second dataset
 		//create a dataset
-		DataSet dataset2 = new DataSet(em, EnrichmentMap.DATASET2,files2);		
-		em.addDataset(EnrichmentMap.DATASET2, dataset2);						
+		DataSet dataset2 = new DataSet(em, LegacySupport.DATASET2, files2);		
+		em.addDataSet(LegacySupport.DATASET2, dataset2);
+		
 		//create a DatasetTask
 		ParseDavidEnrichmentResults enrichmentResultsFiles2Task = new ParseDavidEnrichmentResults(dataset2);
 		enrichmentResultsFiles2Task.run(taskMonitor);
@@ -150,10 +145,10 @@ public class LoadDavidResultTest {
 		assertEquals(7, dataset.getGenesetsOfInterest().getGenesets().size());
 
 		// there should be 114 genes in the geneset "acetylation"
-		assertEquals(114, em.getDataset(EnrichmentMap.DATASET1).getSetofgenesets().getGenesets().get("ACETYLATION").getGenes().size());
+		assertEquals(114, em.getDataset(LegacySupport.DATASET1).getSetofgenesets().getGenesets().get("ACETYLATION").getGenes().size());
 //		assertEquals(114, em.getAllGenesets().get("ACETYLATION").getGenes().size());
 
-		dataset2 = em.getDataset(EnrichmentMap.DATASET2);
+		dataset2 = em.getDataset(LegacySupport.DATASET2);
 		// check the stats for dataset2
 		// check to see if the dataset loaded - there should be 263 genesets
 		assertEquals(263, dataset2.getSetofgenesets().getGenesets().size());

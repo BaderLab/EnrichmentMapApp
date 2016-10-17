@@ -61,7 +61,6 @@ import javax.swing.JSlider;
 
 import org.baderlab.csplugins.enrichmentmap.actions.SliderBarActionListener;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
@@ -105,7 +104,6 @@ public class SliderBarPanel extends JPanel {
 			double min,
 			double max,
 			String sliderLabel,
-			EnrichmentMapParameters params,
 			String attrib1,
 			String attrib2,
 			boolean edgesOnly,
@@ -143,7 +141,7 @@ public class SliderBarPanel extends JPanel {
 		this.sliderLabel = sliderLabel;
 		this.edgesOnly = edgesOnly;
 
-		initPanel(params, attrib1, attrib2);
+		initPanel(attrib1, attrib2);
     }
 
     /**
@@ -154,13 +152,12 @@ public class SliderBarPanel extends JPanel {
      * @param attrib2 - attribute for dataset 2 that the slider bar is specific to (i.e. p-value or q-value)
      * @param desiredWidth
      */
-	public void initPanel(EnrichmentMapParameters params, String attrib1, String attrib2) {
+	public void initPanel(String attrib1, String attrib2) {
 		setBorder(LookAndFeelUtil.createTitledBorder(sliderLabel));
 		
 		JSlider slider = new JSlider(JSlider.HORIZONTAL, min, max, initialValue);
         
-		slider.addChangeListener(new SliderBarActionListener(this, attrib1, attrib2, edgesOnly, applicationManager,
-				emManager));
+		slider.addChangeListener(new SliderBarActionListener(this, attrib1, attrib2, edgesOnly, applicationManager, emManager));
 		slider.setMajorTickSpacing((max - min) / 5);
 		slider.setPaintTicks(true);
 

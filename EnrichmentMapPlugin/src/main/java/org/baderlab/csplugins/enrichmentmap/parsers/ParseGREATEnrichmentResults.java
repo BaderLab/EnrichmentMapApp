@@ -3,9 +3,10 @@ package org.baderlab.csplugins.enrichmentmap.parsers;
 import java.util.List;
 import java.util.Map;
 
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.GreatFilter;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.GenericResult;
@@ -27,13 +28,13 @@ public class ParseGREATEnrichmentResults extends DatasetLineParser {
 
 		boolean hasBackground = false;
 
-		EnrichmentMapParameters params = dataset.getMap().getParams();
+		EMCreationParameters params = dataset.getMap().getParams();
 
 		//Get the type of filter user specified on the GREAT results
 		//If it is hyper use column 14 Hypergeometric p-value and 16 FDR for hyper
 		//If it is binom use column 5 bionomial p-value and 7 FDR for binom
 		//If they specify both use the highest p-value and q-value from the above columns
-		String filterType = dataset.getMap().getParams().getGreat_Filter();
+		GreatFilter filterType = dataset.getMap().getParams().getGreatFilter();
 
 		Map<String, GeneSet> genesets = dataset.getSetofgenesets().getGenesets();
 
@@ -154,16 +155,16 @@ public class ParseGREATEnrichmentResults extends DatasetLineParser {
 				if(!tokens[6].equalsIgnoreCase(""))
 					hyper_fdr = Double.parseDouble(tokens[6]);
 			}
-			if(filterType.equalsIgnoreCase(EnrichmentMapParameters.GREAT_hyper)) {
+			if(filterType == GreatFilter.HYPER) {
 				pvalue = hyper_pvalue;
 				FDRqvalue = hyper_fdr;
-			} else if(filterType.equalsIgnoreCase(EnrichmentMapParameters.GREAT_binom)) {
+			} else if(filterType == GreatFilter.BINOM) {
 				pvalue = binom_pvalue;
 				FDRqvalue = binom_fdr;
-			} else if(filterType.equalsIgnoreCase(EnrichmentMapParameters.GREAT_both)) {
+			} else if(filterType == GreatFilter.BOTH) {
 				pvalue = (hyper_pvalue >= binom_pvalue) ? hyper_pvalue : binom_pvalue;
 				FDRqvalue = (hyper_fdr >= binom_fdr) ? hyper_fdr : binom_fdr;
-			} else if(filterType.equalsIgnoreCase(EnrichmentMapParameters.GREAT_either)) {
+			} else if(filterType == GreatFilter.EITHER) {
 				pvalue = (hyper_pvalue >= binom_pvalue) ? binom_pvalue : hyper_pvalue;
 				FDRqvalue = (hyper_fdr >= binom_fdr) ? binom_fdr : hyper_fdr;
 			} else {
@@ -171,11 +172,11 @@ public class ParseGREATEnrichmentResults extends DatasetLineParser {
 			}
 
 			//Keep track of minimum p-value to better calculate jslider
-			if(pvalue < params.getPvalue_min())
-				params.setPvalue_min(pvalue);
+			if(pvalue < params.getPvalueMin())
+				params.setPvalueMin(pvalue);
 
-			if(FDRqvalue < params.getQvalue_min())
-				params.setQvalue_min(FDRqvalue);
+			if(FDRqvalue < params.getQvalueMin())
+				params.setQvalueMin(FDRqvalue);
 
 			//the Count is the size of the geneset - not restricted to the genes of interest
 			//the 20th column total genes, a.k.a "annotation count" (K)

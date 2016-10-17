@@ -1,7 +1,8 @@
 package org.baderlab.csplugins.enrichmentmap.parsers;
 
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.GreatFilter;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
@@ -18,34 +19,34 @@ public class GREATWhichPvalueQuestionTask extends AbstractTask implements Observ
 	private static String both  = "Both";
 	private static String either = "Either";
 	
-	private EnrichmentMapParameters params;
+	private EMCreationParameters params;
 
 	public GREATWhichPvalueQuestionTask(EnrichmentMap map) {
-		filterResponse = new ListSingleSelection<String>( hyper,binom,both, either);
-		this.params = map.getParams();
+		filterResponse = new ListSingleSelection<String>(hyper, binom, both, either);
+		params = map.getParams();
 	}
 	
 	@Override
 	public void run(TaskMonitor arg0) throws Exception {
 		if(filterResponse.getSelectedValue().equals(hyper))
-			params.setGreat_Filter(EnrichmentMapParameters.GREAT_hyper);
+			params.setGreatFilter(GreatFilter.HYPER);
 		if(filterResponse.getSelectedValue().equals(binom))
-			params.setGreat_Filter(EnrichmentMapParameters.GREAT_binom);
+			params.setGreatFilter(GreatFilter.BINOM);
 		if(filterResponse.getSelectedValue().equals(both))
-			params.setGreat_Filter(EnrichmentMapParameters.GREAT_both);
+			params.setGreatFilter(GreatFilter.BOTH);
 		if(filterResponse.getSelectedValue().equals(either))
-			params.setGreat_Filter(EnrichmentMapParameters.GREAT_either);
+			params.setGreatFilter(GreatFilter.EITHER);
 	}
 	
 	public void run() throws Exception {
 		if(filterResponse.getSelectedValue().equals(hyper))
-			params.setGreat_Filter(EnrichmentMapParameters.GREAT_hyper);
+			params.setGreatFilter(GreatFilter.HYPER);
 		if(filterResponse.getSelectedValue().equals(binom))
-			params.setGreat_Filter(EnrichmentMapParameters.GREAT_binom);
+			params.setGreatFilter(GreatFilter.BINOM);
 		if(filterResponse.getSelectedValue().equals(both))
-			params.setGreat_Filter(EnrichmentMapParameters.GREAT_both);
+			params.setGreatFilter(GreatFilter.BOTH);
 		if(filterResponse.getSelectedValue().equals(either))
-			params.setGreat_Filter(EnrichmentMapParameters.GREAT_either);
+			params.setGreatFilter(GreatFilter.EITHER);
 	}
 
 	public <R> R getResults(Class<? extends R> arg0) {

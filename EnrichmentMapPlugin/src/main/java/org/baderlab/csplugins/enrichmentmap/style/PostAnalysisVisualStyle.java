@@ -6,7 +6,7 @@ import java.awt.Paint;
 import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Continuous;
 import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Discrete;
 import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Passthrough;
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.task.BuildDiseaseSignatureTaskResult;
 import org.cytoscape.model.CyEdge;
@@ -46,15 +46,15 @@ public class PostAnalysisVisualStyle {
 	private final EnrichmentMapVisualStyle delegateStyle;
 	
 	public interface Factory {
-		PostAnalysisVisualStyle create(EnrichmentMapParameters emParsms);
+		PostAnalysisVisualStyle create(EnrichmentMap map);
 	}
 	
 	@Inject
 	public PostAnalysisVisualStyle(
-			@Assisted EnrichmentMapParameters emParsms,
+			@Assisted EnrichmentMap map,
 			EnrichmentMapVisualStyle.Factory emStyleFactory) {
 
-		this.delegateStyle = emStyleFactory.create(emParsms);
+		this.delegateStyle = emStyleFactory.create(map);
 	}
 
 	/**

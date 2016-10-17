@@ -32,8 +32,6 @@ public class Protocol1Test extends BaseIntegrationTest {
 	
 	@Test
 	public void testProtocol1() throws Exception {
-		System.out.println("Protocol1Test.testProtocol1()");
-		
 		Injector injector = Guice.createInjector(new OSGiModule(bc), new AfterInjectionModule(), new CytoscapeServiceModule(), new ApplicationModule());
 		
 		BuildEnrichmentMapTuneableTask task = injector.getInstance(BuildEnrichmentMapTuneableTask.class);

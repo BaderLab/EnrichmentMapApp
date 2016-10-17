@@ -14,6 +14,7 @@ import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
 
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 
 
 public class EnrichmentMapGSEACommandHandlerTask extends AbstractTask {
@@ -46,7 +47,7 @@ public class EnrichmentMapGSEACommandHandlerTask extends AbstractTask {
 	public Double combinedconstant ;
 
 	
-	@Inject private EnrichmentMapParameters.Factory enrichmentMapParametersFactory;
+	@Inject private Provider<EnrichmentMapParameters> emParamsProvider;
 	@Inject private EnrichmentMapBuildMapTaskFactory.Factory taskFactoryProvider;
 	@Inject private EnrichmentMapManager emManager;
 	@Inject private LegacySupport legacySupport;
@@ -59,17 +60,17 @@ public class EnrichmentMapGSEACommandHandlerTask extends AbstractTask {
 	
 	private void buildEnrichmentMap(){
 		//Initialize Data create a new params for the new EM and add the dataset files to it
-		EnrichmentMapParameters new_params = enrichmentMapParametersFactory.create();
+		EnrichmentMapParameters new_params = emParamsProvider.get();
 	
 	
 		//set all files as extracted from the edb directory
 		DataSetFiles files = this.InitializeFiles(edbdir, expressionfile);
-		new_params.addFiles(EnrichmentMap.DATASET1, files);
+		new_params.addFiles(LegacySupport.DATASET1, files);
 		//only add second dataset if there is a second edb directory.
 		if(edbdir2 != null && !edbdir2.equalsIgnoreCase("")){
 			new_params.setTwoDatasets(true);
 			DataSetFiles files2 = this.InitializeFiles(edbdir2, expressionfile2);
-			new_params.addFiles(EnrichmentMap.DATASET2, files2);
+			new_params.addFiles(LegacySupport.DATASET2, files2);
 		}
 	
 		//set the method to gsea
@@ -90,7 +91,7 @@ public class EnrichmentMapGSEACommandHandlerTask extends AbstractTask {
 		String prefix = legacySupport.getNextAttributePrefix();
 		new_params.setAttributePrefix(prefix);
 		String name = prefix + LegacySupport.EM_NAME;
-		EnrichmentMap map = new EnrichmentMap(name, new_params);
+		EnrichmentMap map = new EnrichmentMap(name, new_params.getCreationParameters());
 
 		EnrichmentMapBuildMapTaskFactory buildmap = taskFactoryProvider.create(map);
 

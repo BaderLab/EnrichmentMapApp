@@ -1,6 +1,5 @@
 package org.baderlab.csplugins.enrichmentmap.style;
 
-import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule;
 import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Continuous;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
@@ -143,7 +142,7 @@ public class WidthFunction {
 				// Create boundary conditions                  less than,   equals,  greater than
 				BoundaryRangeValues<Double> bv4 = new BoundaryRangeValues<Double>(under_width, min_width, min_width);
 				BoundaryRangeValues<Double> bv5 = new BoundaryRangeValues<Double>(max_width, max_width, over_width);
-				conmapping_edgewidth.addPoint(map.getParams().getSimilarityCutOff(), bv4);
+				conmapping_edgewidth.addPoint(map.getParams().getSimilarityCutoff(), bv4);
 				conmapping_edgewidth.addPoint(1.0, bv5);
 				
 				Double value = conmapping_edgewidth.getMappedValue(row);

@@ -67,7 +67,7 @@ public class CreatePostAnalysisVisualStyleTask extends AbstractTask {
 		String vs_name = prefix + PostAnalysisVisualStyle.NAME;
 		CyNetworkView view = applicationManager.getCurrentNetworkView();
 
-		PostAnalysisVisualStyle pa_vs = paStyleFactory.create(map.getParams());
+		PostAnalysisVisualStyle pa_vs = paStyleFactory.create(map);
 		pa_vs.applyNetworkSpeficifProperties(taskResult, prefix, taskMonitor);
 
 		VisualStyle vs = attemptToGetExistingStyle(vs_name);

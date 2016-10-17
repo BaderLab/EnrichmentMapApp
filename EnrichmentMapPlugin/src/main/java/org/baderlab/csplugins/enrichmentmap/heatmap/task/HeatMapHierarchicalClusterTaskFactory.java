@@ -1,5 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.heatmap.task;
 
+import org.baderlab.csplugins.enrichmentmap.PropertyManager;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapPanel;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
@@ -14,13 +15,15 @@ public class HeatMapHierarchicalClusterTaskFactory implements TaskFactory {
 	private HeatMapPanel heatmapPanel;
 	private EnrichmentMap map;
 	private HeatMapParameters hmParams;
+	private PropertyManager propertyManager;
 
-	public HeatMapHierarchicalClusterTaskFactory(int numConditions, int numConditions2, HeatMapPanel heatmapPanel, EnrichmentMap map, HeatMapParameters hmParams) {
+	public HeatMapHierarchicalClusterTaskFactory(int numConditions, int numConditions2, HeatMapPanel heatmapPanel, EnrichmentMap map, HeatMapParameters hmParams, PropertyManager propertyManager) {
 		this.numConditions = numConditions;
 		this.numConditions2 = numConditions2;
 		this.heatmapPanel = heatmapPanel;
 		this.map = map;
 		this.hmParams = hmParams;
+		this.propertyManager = propertyManager;
 	}
 
 	public TaskIterator createTaskIterator() {
@@ -36,10 +39,10 @@ public class HeatMapHierarchicalClusterTaskFactory implements TaskFactory {
 
 		//if there are too many genes then check that the user wants to do clustering
 		if(size > hierarchicalClusterMax) {
-			HeatMapHierarchicalClusterQuestionTask clusterquesttask = new HeatMapHierarchicalClusterQuestionTask(numConditions, numConditions2, heatmapPanel, map, hmParams);
+			HeatMapHierarchicalClusterQuestionTask clusterquesttask = new HeatMapHierarchicalClusterQuestionTask(numConditions, numConditions2, heatmapPanel, map, hmParams, propertyManager);
 			clusterIterator.append(clusterquesttask);
 		} else {
-			HeatMapHierarchicalClusterTask clustertask = new HeatMapHierarchicalClusterTask(numConditions, numConditions2, heatmapPanel, map, hmParams);
+			HeatMapHierarchicalClusterTask clustertask = new HeatMapHierarchicalClusterTask(numConditions, numConditions2, heatmapPanel, map, hmParams, propertyManager);
 			clusterIterator.append(clustertask);
 		}
 

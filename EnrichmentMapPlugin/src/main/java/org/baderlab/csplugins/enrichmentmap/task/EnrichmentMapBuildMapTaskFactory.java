@@ -6,9 +6,10 @@ import java.util.TreeSet;
 
 import javax.annotation.Nullable;
 
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.Method;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
+import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.parsers.DetermineEnrichmentResultFileReader;
 import org.baderlab.csplugins.enrichmentmap.parsers.ExpressionFileReaderTask;
@@ -83,21 +84,21 @@ public class EnrichmentMapBuildMapTaskFactory implements TaskFactory {
 			
 			//fourth step: Load ranks
 			//check to see if we have ranking files
-			if(dataset.getMap().getParams().getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)) {
+			if(dataset.getMap().getParams().getMethod() == Method.GSEA) {
 				if(dataset.getExpressionSets().getRanksByName(Ranking.GSEARanking) != null) {
 					RanksFileReaderTask ranking1 = new RanksFileReaderTask(
 							dataset.getExpressionSets().getRanksByName(Ranking.GSEARanking).getFilename(), dataset, Ranking.GSEARanking, false);
 					currentTasks.append(ranking1);
 				}
 			} else {
-				if(dataset.getExpressionSets().getRanksByName(EnrichmentMap.DATASET1) != null) {
+				if(dataset.getExpressionSets().getRanksByName(LegacySupport.DATASET1) != null) {
 					RanksFileReaderTask ranking1 = new RanksFileReaderTask(
-							dataset.getExpressionSets().getRanksByName(EnrichmentMap.DATASET1).getFilename(), dataset, EnrichmentMap.DATASET1, false);
+							dataset.getExpressionSets().getRanksByName(LegacySupport.DATASET1).getFilename(), dataset, LegacySupport.DATASET1, false);
 					currentTasks.append(ranking1);
 				}
-				if(dataset.getExpressionSets().getRanksByName(EnrichmentMap.DATASET2) != null) {
+				if(dataset.getExpressionSets().getRanksByName(LegacySupport.DATASET2) != null) {
 					RanksFileReaderTask ranking1 = new RanksFileReaderTask(
-							dataset.getExpressionSets().getRanksByName(EnrichmentMap.DATASET2).getFilename(), dataset, EnrichmentMap.DATASET2, false);
+							dataset.getExpressionSets().getRanksByName(LegacySupport.DATASET2).getFilename(), dataset, LegacySupport.DATASET2, false);
 					currentTasks.append(ranking1);
 				}
 			}

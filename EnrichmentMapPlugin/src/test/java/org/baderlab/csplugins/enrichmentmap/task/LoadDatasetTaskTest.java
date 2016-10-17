@@ -3,10 +3,13 @@ package org.baderlab.csplugins.enrichmentmap.task;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.Method;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
+import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.parsers.ExpressionFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.parsers.GMTFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.parsers.ParseGSEAEnrichmentResults;
@@ -20,8 +23,6 @@ public class LoadDatasetTaskTest {
 	
 	@Test
     public void testLoadDataset1GSEAResult_withexpression() throws Exception{
-    	EnrichmentMapParameters params = new EnrichmentMapParameters();
-		
 		//for a dataset we require genesets, an expression file (optional), enrichment results
 		String testGMTFileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/task/LoadDataset/gs_apop_mouse.gmt";
 		String testExpressionFileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/task/LoadDataset/Expressiontestfile.gct";
@@ -33,13 +34,15 @@ public class LoadDatasetTaskTest {
 		files.setExpressionFileName(testExpressionFileName);
 		files.setEnrichmentFileName1(testGSEAResults1FileName);
 		files.setEnrichmentFileName2(testGSEAResults2FileName);
-		params.addFiles(EnrichmentMap.DATASET1, files);
+		
+		EMCreationParameters params = new EMCreationParameters(Method.Generic, "EM1_", SimilarityMetric.JACCARD, 0.1, 0.1, 0.1, 0.1);
 		
 		//create an new enrichment Map
 		EnrichmentMap em = new EnrichmentMap("TestEM", params);
 		
 		//create a dataset
-		DataSet dataset = new DataSet(em, EnrichmentMap.DATASET1,files);
+		DataSet dataset = new DataSet(em, LegacySupport.DATASET1, files);
+		em.addDataSet(LegacySupport.DATASET1, dataset);
 		
 		//load Data
 		GMTFileReaderTask task = new GMTFileReaderTask(dataset);

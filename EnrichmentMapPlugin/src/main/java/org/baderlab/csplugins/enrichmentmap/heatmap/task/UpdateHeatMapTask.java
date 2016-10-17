@@ -9,8 +9,10 @@ import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Edges;
 import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Nodes;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapPanel;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.GenesetSimilarity;
+import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelState;
@@ -25,6 +27,7 @@ import com.google.inject.assistedinject.Assisted;
 
 public class UpdateHeatMapTask extends AbstractTask {
 	
+	@Inject private EnrichmentMapManager emManager;
 	@Inject private CyApplicationManager applicationManager;
 	@Inject private @Edges HeatMapPanel edgeOverlapPanel;
 	@Inject private @Nodes HeatMapPanel nodeOverlapPanel;
@@ -79,7 +82,7 @@ public class UpdateHeatMapTask extends AbstractTask {
 	}
 
 	private void focusPanel(final HeatMapPanel panel) {
-		if(!map.getParams().isDisableHeatmapAutofocus() && !isCurrentlyFocusing.get()) {
+		if(emManager.isDisableHeatmapAutofocus() && !isCurrentlyFocusing.get()) {
 			// Prevent this code from being reentrant.
 			// There was a problem with the cytoscape event system that caused the panels to be focused over and over.
 			isCurrentlyFocusing.set(true);
@@ -114,10 +117,10 @@ public class UpdateHeatMapTask extends AbstractTask {
 		// when using two distinct genesets we need to pull the gene info from
 		// each set separately.
 		Map<String, GeneSet> genesets = map.getAllGenesetsOfInterest();
-		Map<String, GeneSet> genesets_set1 = (map.getDatasets().containsKey(EnrichmentMap.DATASET1))
-				? map.getDataset(EnrichmentMap.DATASET1).getSetofgenesets().getGenesets() : null;
-		Map<String, GeneSet> genesets_set2 = (map.getDatasets().containsKey(EnrichmentMap.DATASET2))
-				? map.getDataset(EnrichmentMap.DATASET2).getSetofgenesets().getGenesets() : null;
+		Map<String, GeneSet> genesets_set1 = (map.getDatasets().containsKey(LegacySupport.DATASET1))
+				? map.getDataset(LegacySupport.DATASET1).getSetofgenesets().getGenesets() : null;
+		Map<String, GeneSet> genesets_set2 = (map.getDatasets().containsKey(LegacySupport.DATASET2))
+				? map.getDataset(LegacySupport.DATASET2).getSetofgenesets().getGenesets() : null;
 
 		// get the current Network
 		CyNetwork network = applicationManager.getCurrentNetwork();
@@ -164,10 +167,10 @@ public class UpdateHeatMapTask extends AbstractTask {
 
 			HashSet<Integer> genes = union;
 			this.nodeOverlapPanel.setCurrentExpressionSet(
-					map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getExpressionMatrix(genes));
-			if(map.getDataset(EnrichmentMap.DATASET2) != null && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null)
+					map.getDataset(LegacySupport.DATASET1).getExpressionSets().getExpressionMatrix(genes));
+			if(map.getDataset(LegacySupport.DATASET2) != null && map.getDataset(LegacySupport.DATASET2).getExpressionSets() != null)
 				this.nodeOverlapPanel.setCurrentExpressionSet2(
-						map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getExpressionMatrix(genes));
+						map.getDataset(LegacySupport.DATASET2).getExpressionSets().getExpressionMatrix(genes));
 
 		} else {
 			this.nodeOverlapPanel.setCurrentExpressionSet(null);
@@ -213,10 +216,10 @@ public class UpdateHeatMapTask extends AbstractTask {
 
 			}
 			this.edgeOverlapPanel.setCurrentExpressionSet(
-					map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getExpressionMatrix(intersect));
-			if(map.getDataset(EnrichmentMap.DATASET2) != null && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null)
+					map.getDataset(LegacySupport.DATASET1).getExpressionSets().getExpressionMatrix(intersect));
+			if(map.getDataset(LegacySupport.DATASET2) != null && map.getDataset(LegacySupport.DATASET2).getExpressionSets() != null)
 				this.edgeOverlapPanel.setCurrentExpressionSet2(
-						map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getExpressionMatrix(intersect));
+						map.getDataset(LegacySupport.DATASET2).getExpressionSets().getExpressionMatrix(intersect));
 		} else {
 			this.edgeOverlapPanel.setCurrentExpressionSet(null);
 			this.edgeOverlapPanel.setCurrentExpressionSet2(null);

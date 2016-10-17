@@ -47,9 +47,9 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.Method;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
 import org.baderlab.csplugins.enrichmentmap.model.GSEAResult;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
@@ -130,7 +130,7 @@ public class InitializeGenesetsOfInterestTask extends AbstractTask {
 				//check geneset result to see if it meets the required cutoffs
 
 				//if it is a GSEA Result then
-				if(map.getParams().getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)) {
+				if(map.getParams().getMethod() == Method.GSEA) {
 					GSEAResult current_result = (GSEAResult) enrichmentResults.get(current_name);
 
 					//update the current geneset to reflect score at max

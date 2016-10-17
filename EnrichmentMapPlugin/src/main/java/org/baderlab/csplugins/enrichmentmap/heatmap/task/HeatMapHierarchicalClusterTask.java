@@ -6,11 +6,14 @@ import java.util.Iterator;
 
 import org.baderlab.csplugins.brainlib.AvgLinkHierarchicalClustering;
 import org.baderlab.csplugins.brainlib.DistanceMatrix;
+import org.baderlab.csplugins.enrichmentmap.PropertyManager;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapPanel;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters;
+import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters.DistanceMetric;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpression;
+import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.model.Rank;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.cytoscape.work.AbstractTask;
@@ -28,7 +31,7 @@ public class HeatMapHierarchicalClusterTask extends AbstractTask implements Obse
 
 	private HeatMapPanel heatmapPanel;
 	private EnrichmentMap map;
-	private EnrichmentMapParameters params;
+	private EMCreationParameters params;
 	private HeatMapParameters hmParams;
 
 	//data that we are hoping to populate
@@ -37,8 +40,9 @@ public class HeatMapHierarchicalClusterTask extends AbstractTask implements Obse
 	private boolean shownPearsonErrorMsg = false;
 
 	private TaskMonitor taskMonitor;
+	private PropertyManager propertyManager;
 
-	public HeatMapHierarchicalClusterTask(int numConditions, int numConditions2, HeatMapPanel heatmapPanel, EnrichmentMap map, HeatMapParameters hmParams) {
+	public HeatMapHierarchicalClusterTask(int numConditions, int numConditions2, HeatMapPanel heatmapPanel, EnrichmentMap map, HeatMapParameters hmParams, PropertyManager propertyManager) {
 		this.numConditions = numConditions;
 		this.numConditions2 = numConditions2;
 		this.heatmapPanel = heatmapPanel;
@@ -47,6 +51,7 @@ public class HeatMapHierarchicalClusterTask extends AbstractTask implements Obse
 		this.map = map;
 		this.params = map.getParams();
 		this.hmParams = hmParams;
+		this.propertyManager = propertyManager;
 	}
 
 	/**
@@ -115,11 +120,10 @@ public class HeatMapHierarchicalClusterTask extends AbstractTask implements Obse
 
 							Double[] x = ((GeneExpression) currentExpressionSet.get(key)).getExpression();
 							Double[] z;
-							if(map.getDataset(EnrichmentMap.DATASET2) != null && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null
+							if(map.getDataset(LegacySupport.DATASET2) != null && map.getDataset(LegacySupport.DATASET2).getExpressionSets() != null
 									&& currentExpressionSet2.containsKey(key)
-									&& !map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getFilename()
-											.equalsIgnoreCase(map.getDataset(EnrichmentMap.DATASET2).getExpressionSets()
-													.getFilename())) {
+									&& !map.getDataset(LegacySupport.DATASET1).getExpressionSets().getFilename()
+											.equalsIgnoreCase(map.getDataset(LegacySupport.DATASET2).getExpressionSets().getFilename())) {
 								Double[] y = ((GeneExpression) currentExpressionSet2.get(key)).getExpression();
 								z = new Double[x.length + y.length];
 								System.arraycopy(x, 0, z, 0, x.length);
@@ -157,10 +161,10 @@ public class HeatMapHierarchicalClusterTask extends AbstractTask implements Obse
 
 							Double[] x = ((GeneExpression) currentExpressionSet.get(key)).getExpression();
 							Double[] z;
-							if(map.getDataset(EnrichmentMap.DATASET2) != null && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null
+							if(map.getDataset(LegacySupport.DATASET2) != null && map.getDataset(LegacySupport.DATASET2).getExpressionSets() != null
 									&& currentExpressionSet2.containsKey(key)
-									&& !map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getFilename()
-											.equalsIgnoreCase(map.getDataset(EnrichmentMap.DATASET2).getExpressionSets()
+									&& !map.getDataset(LegacySupport.DATASET1).getExpressionSets().getFilename()
+											.equalsIgnoreCase(map.getDataset(LegacySupport.DATASET2).getExpressionSets()
 													.getFilename())) {
 								Double[] y = ((GeneExpression) currentExpressionSet2.get(key)).getExpression();
 								z = new Double[x.length + y.length];
@@ -234,10 +238,10 @@ public class HeatMapHierarchicalClusterTask extends AbstractTask implements Obse
 
 							Double[] x = ((GeneExpression) currentExpressionSet.get(key)).getExpression();
 							Double[] z;
-							if(map.getDataset(EnrichmentMap.DATASET2) != null && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null
+							if(map.getDataset(LegacySupport.DATASET2) != null && map.getDataset(LegacySupport.DATASET2).getExpressionSets() != null
 									&& currentExpressionSet2.containsKey(key)
-									&& !map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getFilename()
-											.equalsIgnoreCase(map.getDataset(EnrichmentMap.DATASET2).getExpressionSets()
+									&& !map.getDataset(LegacySupport.DATASET1).getExpressionSets().getFilename()
+											.equalsIgnoreCase(map.getDataset(LegacySupport.DATASET2).getExpressionSets()
 													.getFilename())) {
 								Double[] y = ((GeneExpression) currentExpressionSet2.get(key)).getExpression();
 								z = new Double[x.length + y.length];
@@ -315,7 +319,7 @@ public class HeatMapHierarchicalClusterTask extends AbstractTask implements Obse
 						distanceMatrix = new DistanceMatrix(
 								currentExpressionSet2.keySet().size() + currentExpressionSet.keySet().size());
 					//calculate the distance metric based on the user choice of distance metric
-					if(params.getDefaultDistanceMetric().equalsIgnoreCase(HeatMapParameters.pearson_correlation)) {
+					if(propertyManager.getDefaultDistanceMetric() == DistanceMetric.PEARSON_CORRELATION) {
 						//if the user choice is pearson still have to check to make sure
 						//there are no errors with pearson calculation.  If can't calculate pearson
 						//then it calculates the cosine.
@@ -333,9 +337,9 @@ public class HeatMapHierarchicalClusterTask extends AbstractTask implements Obse
 								distanceMatrix.calcDistances(clustering_expressionset, new EuclideanDistance());
 							}
 						}
-					} else if(params.getDefaultDistanceMetric().equalsIgnoreCase(HeatMapParameters.cosine))
+					} else if(propertyManager.getDefaultDistanceMetric() == DistanceMetric.COSINE)
 						distanceMatrix.calcDistances(clustering_expressionset, new CosineDistance());
-					else if(params.getDefaultDistanceMetric().equalsIgnoreCase(HeatMapParameters.euclidean))
+					else if(propertyManager.getDefaultDistanceMetric() == DistanceMetric.EUCLIDEAN)
 						distanceMatrix.calcDistances(clustering_expressionset, new EuclideanDistance());
 
 					distanceMatrix.setLabels(labels);

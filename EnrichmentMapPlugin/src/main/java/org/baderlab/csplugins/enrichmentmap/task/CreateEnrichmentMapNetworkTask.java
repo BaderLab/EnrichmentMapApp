@@ -52,6 +52,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
@@ -60,6 +61,7 @@ import org.baderlab.csplugins.enrichmentmap.model.GSEAResult;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.GenericResult;
 import org.baderlab.csplugins.enrichmentmap.model.GenesetSimilarity;
+import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.style.EnrichmentMapVisualStyle;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -119,18 +121,18 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 		network.getRow(network).set(CyNetwork.NAME, map.getName());
 
 		//set the NetworkID in the EM parameters
-		map.getParams().setNetworkID(network.getSUID());
+		map.setNetworkID(network.getSUID());
 
 		CyTable nodeTable = createNodeAttributes(network, map.getName().trim(), prefix);
 		CyTable edgeTable = createEdgeAttributes(network, map.getName().trim(), prefix);
 
 		// store path to GSEA report in Network Attribute
-		if(map.getParams().getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)) {
+		if(map.getParams().getMethod() == Method.GSEA) {
 			CyTable network_table = createNetworkAttributes(network, map.getName().trim(), prefix);
 			CyRow network_row = network_table.getRow(network.getSUID());
-			if(map.getParams().getFiles().containsKey(EnrichmentMap.DATASET1)
-					&& map.getParams().getFiles().get(EnrichmentMap.DATASET1).getGseaHtmlReportFile() != null) {
-				String report1Path = map.getParams().getFiles().get(EnrichmentMap.DATASET1).getGseaHtmlReportFile();
+			if(map.getDataset(LegacySupport.DATASET1) != null
+					&& map.getDataset(LegacySupport.DATASET1).getDatasetFiles().getGseaHtmlReportFile() != null) {
+				String report1Path = map.getDataset(LegacySupport.DATASET1).getDatasetFiles().getGseaHtmlReportFile();
 				// On Windows we need to replace the Back-Slashes by forward-Slashes.
 				// Otherwise we might produce special characters (\r, \n, \t, ...) 
 				// when editing the attribute in Cytoscape.
@@ -140,9 +142,9 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 				report1Path = report1Path.substring(0, report1Path.lastIndexOf('/'));
 				network_row.set(EnrichmentMapVisualStyle.NETW_REPORT1_DIR, report1Path);
 			}
-			if(map.getParams().getFiles().containsKey(EnrichmentMap.DATASET2)
-					&& map.getParams().getFiles().get(EnrichmentMap.DATASET2).getGseaHtmlReportFile() != null) {
-				String report2Path = map.getParams().getFiles().get(EnrichmentMap.DATASET2).getGseaHtmlReportFile();
+			if(map.getDataset(LegacySupport.DATASET2) != null
+					&& map.getDataset(LegacySupport.DATASET2).getDatasetFiles().getGseaHtmlReportFile() != null) {
+				String report2Path = map.getDataset(LegacySupport.DATASET2).getDatasetFiles().getGseaHtmlReportFile();
 				// On Windows we need to replace the Back-Slashes by forward-Slashes.
 				// Otherwise we might produce special characters (\r, \n, \t, ...) 
 				// when editing the attribute in Cytoscape.
@@ -163,17 +165,17 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 		Set<String> dataset_names = map.getDatasets().keySet();
 		for(Iterator<String> m = dataset_names.iterator(); m.hasNext();) {
 			String current_dataset = m.next();
-			if(current_dataset.equalsIgnoreCase(EnrichmentMap.DATASET1))
+			if(current_dataset.equalsIgnoreCase(LegacySupport.DATASET1))
 				//get the enrichment results from the first one and place it in enrichment results 1
 				enrichmentResults1 = map.getDataset(current_dataset).getEnrichments().getEnrichments();
 			else
 				enrichmentResults2 = map.getDataset(current_dataset).getEnrichments().getEnrichments();
 		}
 
-		Map<String, GeneSet> genesetsOfInterest = map.getDataset(EnrichmentMap.DATASET1).getGenesetsOfInterest().getGenesets();
+		Map<String, GeneSet> genesetsOfInterest = map.getDataset(LegacySupport.DATASET1).getGenesetsOfInterest().getGenesets();
 		Map<String, GeneSet> genesetsOfInterest_set2 = null;
-		if(map.getParams().isTwoDatasets())
-			genesetsOfInterest_set2 = map.getDataset(EnrichmentMap.DATASET2).getGenesetsOfInterest().getGenesets();
+		if(LegacySupport.isLegacyTwoDatasets(map))
+			genesetsOfInterest_set2 = map.getDataset(LegacySupport.DATASET2).getGenesetsOfInterest().getGenesets();
 
 		int currentProgress = 0;
 		int maxValue = genesetsOfInterest.size();
@@ -196,7 +198,7 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 			//Add the description to the node
 			GeneSet gs = null;
 			GeneSet gs2 = null;
-			if(!map.getParams().isTwoDatasets())
+			if(!LegacySupport.isLegacyTwoDatasets(map))
 				gs = (GeneSet) genesetsOfInterest.get(current_name);
 			else {
 				if(genesetsOfInterest.containsKey(current_name))
@@ -221,7 +223,7 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 				current_row.set(prefix + EnrichmentMapVisualStyle.GENES, gene_list);
 //			}
 
-			if(map.getParams().getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)) {
+			if(map.getParams().getMethod() == Method.GSEA) {
 				GSEAResult current_result = (GSEAResult) enrichmentResults1.get(current_name);
 				setGSEAResultDataset1Attributes(current_row, current_result, prefix);
 			} else {
@@ -230,8 +232,8 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 			}
 
 			//if we are using two datasets check to see if there is data for this node
-			if(map.getParams().isTwoDatasets()) {
-				if(map.getParams().getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)) {
+			if(LegacySupport.isLegacyTwoDatasets(map)) {
+				if(map.getParams().getMethod() == Method.GSEA) {
 					if(enrichmentResults2.containsKey(current_name)) {
 						GSEAResult second_result = (GSEAResult) enrichmentResults2.get(current_name);
 						setGSEAResultDataset2Attributes(current_row, second_result, prefix);
@@ -253,7 +255,7 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 		}
 
 		//Add any additional nodes from the second dataset that haven't been added yet
-		if(map.getParams().isTwoDatasets()) {
+		if(LegacySupport.isLegacyTwoDatasets(map)) {
 			for(Iterator<String> i = genesetsOfInterest_set2.keySet().iterator(); i.hasNext();) {
 				String current_name = i.next();
 
@@ -267,7 +269,7 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 					//Add the description to the node
 					GeneSet gs = null;
 					GeneSet gs2 = null;
-					if(!map.getParams().isTwoDatasets())
+					if(!LegacySupport.isLegacyTwoDatasets(map))
 						gs = (GeneSet) genesetsOfInterest.get(current_name);
 					else {
 						if(genesetsOfInterest.containsKey(current_name))
@@ -303,7 +305,7 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 						current_row.set(prefix + EnrichmentMapVisualStyle.GENES, gene_list);
 //					}
 
-					if(map.getParams().getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)) {
+					if(map.getParams().getMethod() == Method.GSEA) {
 						if(enrichmentResults1.containsKey(current_name)) {
 							GSEAResult result = (GSEAResult) enrichmentResults1.get(current_name);
 							setGSEAResultDataset1Attributes(current_row, result, prefix);
@@ -347,7 +349,7 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 			 * EnrichmentMapVisualStyle.NAME,current_result.getGeneset2_Name());
 			 */
 			double similarity_coeffecient = current_result.getSimilarity_coeffecient();
-			if(similarity_coeffecient >= map.getParams().getSimilarityCutOff()
+			if(similarity_coeffecient >= map.getParams().getSimilarityCutoff()
 					&& !getNodesWithValue(network, network.getDefaultNodeTable(), CyNetwork.NAME,
 							current_result.getGeneset1_Name()).isEmpty()
 					&& !getNodesWithValue(network, network.getDefaultNodeTable(), CyNetwork.NAME,
@@ -413,8 +415,6 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 		 */
 		//register the new Network with EM
 		emManager.registerEnrichmentMap(network, map);
-
-		map.getParams().setNetworkID(network.getSUID());
 
 		return true;
 	}
@@ -611,8 +611,8 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 		//CyTable nodeTable = tableFactory.createTable(/*name*/ prefix + "_" + node_table_suffix, CyNetwork.SUID, Long.class, true, true);
 		CyTable networkTable = network.getDefaultNetworkTable();
 		networkTable.createColumn(EnrichmentMapVisualStyle.NETW_REPORT1_DIR, String.class, false);
-		if(map.getParams().getFiles().containsKey(EnrichmentMap.DATASET2)
-				&& map.getParams().getFiles().get(EnrichmentMap.DATASET2).getGseaHtmlReportFile() != null)
+		if(map.getDataset(LegacySupport.DATASET2) != null
+				&& map.getDataset(LegacySupport.DATASET2).getDatasetFiles().getGseaHtmlReportFile() != null)
 			networkTable.createColumn(EnrichmentMapVisualStyle.NETW_REPORT2_DIR, String.class, false);
 
 		return networkTable;

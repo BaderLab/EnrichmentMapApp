@@ -93,7 +93,9 @@ public class EnrichmentMapManager implements SetCurrentNetworkListener, NetworkA
 	private Map<Long, HeatMapParameters> heatMapParameterMap = new HashMap<>();
 	
 
+	// MKTODO move these to PropertyManager?
 	private boolean overrideHeatmapRevalidation = false;
+	private boolean disableHeatmapAutofocus = false;
 	
 
 	public void showPanels() {
@@ -161,21 +163,21 @@ public class EnrichmentMapManager implements SetCurrentNetworkListener, NetworkA
 				nodesOverlapPanel.clearPanel();
 				edgesOverlapPanel.clearPanel();
 
-				EnrichmentMap currentNetwork = enrichmentMaps.get(networkId);
+				EnrichmentMap map = enrichmentMaps.get(networkId);
 				// update the parameters panel
-				parameterPanel.updatePanel(currentNetwork);
+				parameterPanel.updatePanel(map);
 
 				// update the input window to contain the parameters of the
 				// selected network
 				// only if there is a input window
 				if(inputWindow != null)
-					inputWindow.updateContents(currentNetwork.getParams());
+					inputWindow.updateContents(map);
 
 				if(analysisWindow != null)
-					analysisWindow.showPanelFor(currentNetwork);
+					analysisWindow.showPanelFor(map);
 
-				nodesOverlapPanel.updatePanel(currentNetwork);
-				edgesOverlapPanel.updatePanel(currentNetwork);
+				nodesOverlapPanel.updatePanel(map);
+				edgesOverlapPanel.updatePanel(map);
 
 				nodesOverlapPanel.revalidate();
 				edgesOverlapPanel.revalidate();
@@ -223,4 +225,14 @@ public class EnrichmentMapManager implements SetCurrentNetworkListener, NetworkA
 	public void setOverrideHeatmapRevalidation(boolean overrideHeatmapRevalidation) {
 		this.overrideHeatmapRevalidation = overrideHeatmapRevalidation;
 	}
+
+	public boolean isDisableHeatmapAutofocus() {
+		return disableHeatmapAutofocus;
+	}
+
+	public void setDisableHeatmapAutofocus(boolean disableHeatmapAutofocus) {
+		this.disableHeatmapAutofocus = disableHeatmapAutofocus;
+	}
+	
+	
 }

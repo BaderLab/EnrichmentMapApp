@@ -11,20 +11,22 @@ import javax.inject.Inject;
 import org.baderlab.csplugins.enrichmentmap.AfterInjectionModule;
 import org.baderlab.csplugins.enrichmentmap.ApplicationModule;
 import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule;
+import org.baderlab.csplugins.enrichmentmap.PropertyManager;
 import org.baderlab.csplugins.enrichmentmap.integration.BaseIntegrationTest;
 import org.baderlab.csplugins.enrichmentmap.integration.EdgeSimilarities;
 import org.baderlab.csplugins.enrichmentmap.integration.SerialTestTaskManager;
 import org.baderlab.csplugins.enrichmentmap.integration.TestUtils;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.Method;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
+import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
+import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.task.EnrichmentMapBuildMapTaskFactory;
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.session.CySessionManager;
 import org.cytoscape.work.TaskIterator;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -41,14 +43,14 @@ public class EnrichmentMapTaskTest extends BaseIntegrationTest {
 	private static final String PATH = "/EnrichmentMapTaskTest/";
 	
 	@Inject private CyNetworkManager networkManager;
-	@Inject private CyApplicationManager applicationManager;
-	@Inject private CySessionManager sessionManager;
-	@Inject private StreamUtil streamUtil;
 	@Inject private BundleContext bc;
 	
 	
-	protected void buildEnrichmentMap(EnrichmentMapParameters emParams) {
-		EnrichmentMap map = new EnrichmentMap("MyEM", emParams);
+	protected void buildEnrichmentMap(EMCreationParameters params, DataSetFiles datasetFiles, String datasetName) {
+		EnrichmentMap map = new EnrichmentMap("MyEM", params);
+		
+		DataSet dataset = new DataSet(map, datasetName, datasetFiles);
+		map.addDataSet(datasetName, dataset);
 		
 		Injector injector = Guice.createInjector(new OSGiModule(bc), new AfterInjectionModule(), new CytoscapeServiceModule(), new ApplicationModule());
 		EnrichmentMapBuildMapTaskFactory.Factory factory = injector.getInstance(EnrichmentMapBuildMapTaskFactory.Factory.class);
@@ -68,16 +70,16 @@ public class EnrichmentMapTaskTest extends BaseIntegrationTest {
 		String enrichmentFile = createTempFile(PATH, "fakeEnrichments.txt").getAbsolutePath();
 		String rankFile       = createTempFile(PATH, "FakeRank.rnk").getAbsolutePath();
 		
-		EnrichmentMapParameters emParams = new EnrichmentMapParameters(sessionManager, streamUtil, applicationManager);
-		emParams.setMethod(EnrichmentMapParameters.method_generic);
+		PropertyManager pm = new PropertyManager();
+		EMCreationParameters params = new EMCreationParameters(Method.Generic, "EM1_", SimilarityMetric.JACCARD, pm.getDefaultPvalue(), pm.getDefaultQvalue(), pm.getDefaultJaccardCutOff(), pm.getDefaultCombinedConstant());
+		
 		DataSetFiles dataset1files = new DataSetFiles();
 		dataset1files.setGMTFileName(geneSetsFile);  
 		dataset1files.setExpressionFileName(expressionFile);
 		dataset1files.setEnrichmentFileName1(enrichmentFile);
 		dataset1files.setRankedFile(rankFile);  
-		emParams.addFiles(EnrichmentMap.DATASET1, dataset1files);
 		
-	    buildEnrichmentMap(emParams);
+	    buildEnrichmentMap(params, dataset1files, LegacySupport.DATASET1);
 	   	
 	   	// Assert the network is as expected
 	   	Set<CyNetwork> networks = networkManager.getNetworkSet();

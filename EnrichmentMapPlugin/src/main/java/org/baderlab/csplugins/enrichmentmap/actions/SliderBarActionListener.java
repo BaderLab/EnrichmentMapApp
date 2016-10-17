@@ -51,11 +51,13 @@ import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.style.EnrichmentMapVisualStyle;
 import org.baderlab.csplugins.enrichmentmap.view.SliderBarPanel;
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -82,7 +84,6 @@ public class SliderBarActionListener implements ChangeListener {
 	private String attrib_dataset2;
 
 	private boolean onlyEdges = false;
-
 	
 	
 	/**
@@ -134,7 +135,8 @@ public class SliderBarActionListener implements ChangeListener {
 
 		List<CyNode> nodes = network.getNodeList();
 
-		EnrichmentMapParameters params = emManager.getEnrichmentMap(network.getSUID()).getParams();
+		EnrichmentMap em = emManager.getEnrichmentMap(network.getSUID());
+		EMCreationParameters params = em.getParams();
 		//get the prefix of the current network
 		String prefix = params.getAttributePrefix();
 
@@ -197,9 +199,10 @@ public class SliderBarActionListener implements ChangeListener {
 				pvalue_dataset1 = 0.99;
 
 			if((pvalue_dataset1 > max_cutoff) || (pvalue_dataset1 < min_cutoff)) {
-				if(params.isTwoDatasets()) {
+				CyColumn col = network.getDefaultNodeTable().getColumn(prefix + attrib_dataset2);
+				if(col != null) {
 					Double pvalue_dataset2 = network.getRow(currentNode).get(prefix + attrib_dataset2, Double.class);
-
+					
 					if(pvalue_dataset2 == null)
 						pvalue_dataset2 = 0.99;
 
@@ -263,7 +266,9 @@ public class SliderBarActionListener implements ChangeListener {
 				unhiddenNodes.add(currentHN);
 
 			}
-			if(params.isTwoDatasets()) {
+			
+			CyColumn col = network.getDefaultNodeTable().getColumn(prefix + attrib_dataset2);
+			if(col != null) {
 				Double pvalue_dataset2 = network.getRow(currentNode).get(prefix + attrib_dataset2, Double.class);
 
 				if(pvalue_dataset2 == null)

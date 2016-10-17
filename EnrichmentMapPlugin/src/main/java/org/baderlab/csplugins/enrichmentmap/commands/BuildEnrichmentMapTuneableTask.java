@@ -57,6 +57,7 @@ import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
 
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 
 /**
  * This class builds an Enrichment map from GSEA (Gene set Enrichment analysis)
@@ -150,7 +151,7 @@ public class BuildEnrichmentMapTuneableTask extends AbstractTask {
 
 
 	@Inject private EnrichmentMapManager emManager;
-	@Inject private EnrichmentMapParameters.Factory enrichmentMapParametersFactory;
+	@Inject private Provider<EnrichmentMapParameters> emParamsProvider;
 	@Inject private EnrichmentMapBuildMapTaskFactory.Factory taskFactoryProvider;
 	@Inject private LegacySupport legacySupport;
 	
@@ -170,7 +171,8 @@ public class BuildEnrichmentMapTuneableTask extends AbstractTask {
 	 */
 	public void buildEnrichmentMap() {
 		//create a new params for the new EM and add the dataset files to it
-		EnrichmentMapParameters new_params = enrichmentMapParametersFactory.create();
+		EnrichmentMapParameters new_params = emParamsProvider.get();
+		
 		if(analysisType.getSelectedValue() == EnrichmentMapParameters.method_Specialized)
 			new_params.setMethod(EnrichmentMapParameters.method_Specialized);
 		if(analysisType.getSelectedValue() == EnrichmentMapParameters.method_GSEA)
@@ -195,7 +197,7 @@ public class BuildEnrichmentMapTuneableTask extends AbstractTask {
 			dataset1files.setPhenotype1(phenotype1Dataset1);
 		if(phenotype2Dataset1 != null)
 			dataset1files.setPhenotype2(phenotype2Dataset1);
-		new_params.addFiles(EnrichmentMap.DATASET1, dataset1files);
+		new_params.addFiles(LegacySupport.DATASET1, dataset1files);
 
 		//Set the parameters
 		new_params.setPvalue(pvalue);
@@ -225,13 +227,13 @@ public class BuildEnrichmentMapTuneableTask extends AbstractTask {
 			dataset2files.setPhenotype2(phenotype2Dataset2);
 
 		if(!dataset2files.isEmpty())
-			new_params.addFiles(EnrichmentMap.DATASET2, dataset2files);
+			new_params.addFiles(LegacySupport.DATASET2, dataset2files);
 
 		String prefix = legacySupport.getNextAttributePrefix();
 		new_params.setAttributePrefix(prefix);
 		String name = prefix + LegacySupport.EM_NAME;
 		
-		EnrichmentMap map = new EnrichmentMap(name, new_params);
+		EnrichmentMap map = new EnrichmentMap(name, new_params.getCreationParameters());
 
 		EnrichmentMapBuildMapTaskFactory buildmap = taskFactoryProvider.create(map);
 		insertTasksAfterCurrentTask(buildmap.createTaskIterator());

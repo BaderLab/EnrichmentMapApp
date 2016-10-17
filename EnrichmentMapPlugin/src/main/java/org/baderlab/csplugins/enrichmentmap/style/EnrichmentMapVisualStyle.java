@@ -49,7 +49,8 @@ import java.awt.Paint;
 import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Continuous;
 import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Discrete;
 import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Passthrough;
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
@@ -67,7 +68,7 @@ import com.google.inject.assistedinject.Assisted;
  */
 public class EnrichmentMapVisualStyle {
 
-	private final EnrichmentMapParameters params;
+	private final EnrichmentMap map;
 
 	@Inject private @Continuous  VisualMappingFunctionFactory vmfFactoryContinuous;
 	@Inject private @Discrete    VisualMappingFunctionFactory vmfFactoryDiscrete;
@@ -150,12 +151,12 @@ public class EnrichmentMapVisualStyle {
 	private static final Color EDGE_COLOR_2 = new Color(117, 112, 179);
 
 	public interface Factory {
-		EnrichmentMapVisualStyle create(EnrichmentMapParameters params);
+		EnrichmentMapVisualStyle create(EnrichmentMap map);
 	}
 	
 	@Inject
-	public EnrichmentMapVisualStyle(@Assisted EnrichmentMapParameters params) {
-		this.params = params;
+	public EnrichmentMapVisualStyle(@Assisted EnrichmentMap map) {
+		this.map = map;
 	}
 
 	/**
@@ -214,7 +215,7 @@ public class EnrichmentMapVisualStyle {
 		// Create boundary conditions                  less than,   equals,  greater than
 		BoundaryRangeValues<Double> bv4 = new BoundaryRangeValues<Double>(under_width, min_width, min_width);
 		BoundaryRangeValues<Double> bv5 = new BoundaryRangeValues<Double>(max_width, max_width, over_width);
-		conmapping_edgewidth.addPoint(params.getSimilarityCutOff(), bv4);
+		conmapping_edgewidth.addPoint(map.getParams().getSimilarityCutoff(), bv4);
 		conmapping_edgewidth.addPoint(1.0, bv5);
 
 		vs.addVisualMappingFunction(conmapping_edgewidth);
@@ -253,7 +254,7 @@ public class EnrichmentMapVisualStyle {
 		vs.setDefaultValue(BasicVisualLexicon.NODE_SHAPE, NodeShapeVisualProperty.ELLIPSE);
 
 		//change the default node and border size only when using two distinct dataset to be more equal.
-		if(params.isTwoDistinctExpressionSets()) {
+		if(map.getParams().isTwoDistinctExpressionSets()) {
 			vs.setDefaultValue(BasicVisualLexicon.NODE_SIZE, new Double(15.0));
 			vs.setDefaultValue(BasicVisualLexicon.NODE_BORDER_WIDTH, new Double(15.0));
 		} else {
@@ -282,7 +283,7 @@ public class EnrichmentMapVisualStyle {
 
 		vs.addVisualMappingFunction(continuousMapping_size);
 
-		if(params.isTwoDatasets()) {
+		if(LegacySupport.isLegacyTwoDatasets(map)) {
 			//Continuous Mapping - set node size based on the size of the geneset
 			ContinuousMapping<Integer, Double> continuousMapping_size_dataset2 = (ContinuousMapping<Integer, Double>) vmfFactoryContinuous
 					.createVisualMappingFunction(prefix + GS_SIZE_DATASET2, Integer.class, BasicVisualLexicon.NODE_BORDER_WIDTH);

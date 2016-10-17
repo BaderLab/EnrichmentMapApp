@@ -14,14 +14,16 @@ import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Continuous;
 import org.baderlab.csplugins.enrichmentmap.EdgeSimilarities;
-import org.baderlab.csplugins.enrichmentmap.StreamUtil;
 import org.baderlab.csplugins.enrichmentmap.TestUtils;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.Method;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.FilterParameters;
 import org.baderlab.csplugins.enrichmentmap.model.FilterType;
+import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters.AnalysisType;
 import org.baderlab.csplugins.enrichmentmap.style.WidthFunction;
@@ -31,7 +33,6 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
-import org.cytoscape.session.CySessionManager;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
@@ -62,18 +63,16 @@ public class PostAnalysisTaskTest extends BaseNetworkTest {
 	
 	
 	@Test
-	public void test_1_EnrichmentMapBuildMapTask(CySessionManager sessionManager, CyApplicationManager applicationManager, CyNetworkManager networkManager) {
-		EnrichmentMapParameters emParams = new EnrichmentMapParameters(sessionManager, new StreamUtil(), applicationManager);
-		emParams.setMethod(EnrichmentMapParameters.method_generic);
+	public void test_1_EnrichmentMapBuildMapTask(CyApplicationManager applicationManager, CyNetworkManager networkManager) {
 		DataSetFiles dataset1files = new DataSetFiles();
 		dataset1files.setGMTFileName(PATH + "gene_sets.gmt");  
 		dataset1files.setExpressionFileName(PATH + "FakeExpression.txt");
 		dataset1files.setEnrichmentFileName1(PATH + "fakeEnrichments.txt");
 		dataset1files.setRankedFile(PATH + "FakeRank.rnk");  
-		emParams.addFiles(EnrichmentMap.DATASET1, dataset1files);
-		emParams.setAttributePrefix("EM1_");
 		
-	    buildEnrichmentMap(emParams);
+		EMCreationParameters params = new EMCreationParameters(Method.Generic, "EM1_", SimilarityMetric.JACCARD, 0.1, 0.1, 0.1, 0.1);
+		
+	    buildEnrichmentMap(params, dataset1files, LegacySupport.DATASET1);
 	   	
 	   	// Assert the network is as expected
 	   	Set<CyNetwork> networks = networkManager.getNetworkSet();
@@ -109,8 +108,8 @@ public class PostAnalysisTaskTest extends BaseNetworkTest {
 	@Test
 	public void test_2_PostAnalysisMannWhitney() throws Exception {
 		PostAnalysisParameters.Builder builder = new PostAnalysisParameters.Builder();
-		builder.setSignatureDataSet(EnrichmentMap.DATASET1);
-		builder.setSignatureRankFile(EnrichmentMap.DATASET1);
+		builder.setSignatureDataSet(LegacySupport.DATASET1);
+		builder.setSignatureRankFile(LegacySupport.DATASET1);
 		builder.setAnalysisType(AnalysisType.KNOWN_SIGNATURE);
 		builder.setUniverseSize(11445);
 		builder.setSignatureGMTFileName(PATH + "PA_top8_middle8_bottom8.gmt");
@@ -149,8 +148,8 @@ public class PostAnalysisTaskTest extends BaseNetworkTest {
 	@Test
 	public void test_3_PostAnalysisHypergeometric_overlap() throws Exception {
 		PostAnalysisParameters.Builder builder = new PostAnalysisParameters.Builder();
-		builder.setSignatureDataSet(EnrichmentMap.DATASET1);
-		builder.setSignatureRankFile(EnrichmentMap.DATASET1);
+		builder.setSignatureDataSet(LegacySupport.DATASET1);
+		builder.setSignatureRankFile(LegacySupport.DATASET1);
 		builder.setAnalysisType(AnalysisType.KNOWN_SIGNATURE);
 		builder.setUniverseSize(11445);
 		builder.setSignatureGMTFileName(PATH + "PA_top8_middle8_bottom8.gmt");

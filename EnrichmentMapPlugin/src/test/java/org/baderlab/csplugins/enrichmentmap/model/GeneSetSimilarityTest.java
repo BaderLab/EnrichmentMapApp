@@ -14,6 +14,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import com.google.inject.Provider;
+
 @RunWith(JukitoRunner.class)
 public class GeneSetSimilarityTest {
 	
@@ -23,23 +25,21 @@ public class GeneSetSimilarityTest {
 	private TaskMonitor taskMonitor = mock(TaskMonitor.class);
 	
 	@Before
-	public void before(EnrichmentMapParameters.Factory empFactory) throws Exception {
+	public void before(Provider<EnrichmentMapParameters> empFactory) throws Exception {
 		//load Genesets from the gmt file associated with this test
 		String testDataFileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/model/Genesetstestfile.gmt";
         
         //create a new instance of the parameters
-        EnrichmentMapParameters params = new EnrichmentMapParameters();        
+        EnrichmentMapParameters params = empFactory.get();      
         //set gmt file name 
-        params.getFiles().get(EnrichmentMap.DATASET1).setGMTFileName(testDataFileName);
+        params.getFiles().get(LegacySupport.DATASET1).setGMTFileName(testDataFileName);
         
         //Create a new Enrichment map
-        map = new EnrichmentMap("TestEM", params);
-                
-        //get the default dataset
-        dataset = map.getDataset(EnrichmentMap.DATASET1);
+        map = new EnrichmentMap("TestEM", params.getCreationParameters());
+        dataset = new DataSet(map, LegacySupport.DATASET1, params.getFiles().get(LegacySupport.DATASET1));
+        map.addDataSet(LegacySupport.DATASET1, dataset);
 
-
-      //set up task
+        //set up task
         GMTFileReaderTask task = new GMTFileReaderTask(dataset);
         task.run(taskMonitor);
         
@@ -50,9 +50,9 @@ public class GeneSetSimilarityTest {
 	public void testJaccardCalculations() throws Exception{
 		
 		//set the parameters in the params to use jaccard coeffecient calculation
-		map.getParams().setSimilarityMetric(EnrichmentMapParameters.SM_JACCARD);
+		map.getParams().setSimilarityMetric(EMCreationParameters.SimilarityMetric.JACCARD);
 		//set the cutoff to the max
-		map.getParams().setSimilarityCutOff(0);
+		map.getParams().setSimilarityCutoff(0);
 		
 		ComputeSimilarityTask sim_task = new ComputeSimilarityTask(map);		
 		sim_task.run(taskMonitor);
@@ -125,9 +125,9 @@ public class GeneSetSimilarityTest {
 	@Test
 	public void testOverlapCalculations() throws Exception{
 		//set the parameters in the params to use jaccard coeffecient calculation
-		map.getParams().setSimilarityMetric(EnrichmentMapParameters.SM_OVERLAP);
+		map.getParams().setSimilarityMetric(EMCreationParameters.SimilarityMetric.OVERLAP);
 		//set the cutoff to the max
-		map.getParams().setSimilarityCutOff(0);
+		map.getParams().setSimilarityCutoff(0);
 		
 		ComputeSimilarityTask sim_task = new ComputeSimilarityTask(map);		
 		sim_task.run(taskMonitor);
@@ -203,9 +203,9 @@ public class GeneSetSimilarityTest {
 		double combined_constant = 0.5;
 		
 		//set the parameters in the params to use jaccard coeffecient calculation
-		map.getParams().setSimilarityMetric(EnrichmentMapParameters.SM_COMBINED);
+		map.getParams().setSimilarityMetric(EMCreationParameters.SimilarityMetric.COMBINED);
 		//set the cutoff to the max
-		map.getParams().setSimilarityCutOff(0);
+		map.getParams().setSimilarityCutoff(0);
 		map.getParams().setCombinedConstant(combined_constant);
 		
 		ComputeSimilarityTask sim_task = new ComputeSimilarityTask(map);		

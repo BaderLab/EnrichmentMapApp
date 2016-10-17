@@ -86,15 +86,21 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumnModel;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
+import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Edges;
+import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Nodes;
+import org.baderlab.csplugins.enrichmentmap.PropertyManager;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters.Sort;
+import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters.Transformation;
 import org.baderlab.csplugins.enrichmentmap.heatmap.task.HeatMapHierarchicalClusterTaskFactory;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
 import org.baderlab.csplugins.enrichmentmap.model.GSEAResult;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpression;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
+import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.model.Rank;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.model.SignificantGene;
@@ -105,7 +111,6 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
-import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.util.swing.FileChooserFilter;
@@ -119,6 +124,7 @@ import org.mskcc.colorgradient.ColorGradientTheme;
 import org.mskcc.colorgradient.ColorGradientWidget;
 
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 
 
 
@@ -130,13 +136,21 @@ import com.google.inject.Inject;
 public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 
 	@Inject private EnrichmentMapManager emManager;
+	@Inject private PropertyManager propertyManager;
 	
 	@Inject private CySwingApplication application;
 	@Inject private CyApplicationManager applicationManager;
 	@Inject private FileUtil fileUtil;
 	@Inject private OpenBrowser openBrowser;
 	@Inject private DialogTaskManager dialogTaskMonitor;
-	@Inject private StreamUtil streamUtil;
+	
+	
+	// MKTOD HeatMapPanel should not have circular references to itself!!!
+	@Inject private @Nodes Provider<HeatMapPanel> nodesPanelProvider;
+	@Inject private @Edges Provider<HeatMapPanel> edgesPanelProvider;
+
+	@Inject private HeatMapSortActionListener.Factory sortListenerFactory;
+	@Inject private HeatMapTransformActionListener.Factory transformListenerFactory;
 
 	//Column names for expression set for data set 1
 	private Object[] columnNames;
@@ -194,7 +208,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 	//heat map parameters for heat map
 	private HeatMapParameters hmParams;
 	//enrichment map parameters for heat map
-	private EnrichmentMapParameters params;
+	private EMCreationParameters params;
 	private EnrichmentMap map;
 
 	//create a pop up menu for linkouts
@@ -251,16 +265,16 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 		this.ranks = null;
 
 //		if (params.isData() || params.isData2()) {
-			GeneExpressionMatrix expression = map.getDataset(EnrichmentMap.DATASET1).getExpressionSets();
+			GeneExpressionMatrix expression = map.getDataset(LegacySupport.DATASET1).getExpressionSets();
 			numConditions = expression.getNumConditions();
 			columnNames = expression.getColumnNames();
 
 			phenotypes = expression.getPhenotypes();
 
-			this.Dataset1phenotype1 = params.getFiles().get(EnrichmentMap.DATASET1).getPhenotype1();
-			this.Dataset1phenotype2 = params.getFiles().get(EnrichmentMap.DATASET1).getPhenotype2();
+			this.Dataset1phenotype1 = map.getDataset(LegacySupport.DATASET1).getDatasetFiles().getPhenotype1();
+			this.Dataset1phenotype2 = map.getDataset(LegacySupport.DATASET1).getDatasetFiles().getPhenotype2();
 
-			long suid = map.getParams().getNetworkID();
+			long suid = map.getNetworkID();
 			hmParams = emManager.getHeatMapParameters(suid);
 			boolean[] ascending;
 			if (expression.getRanks() != null) {
@@ -284,10 +298,10 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 			if (node)
 				initializeLeadingEdge(params);
 
-			if (map.getDataset(EnrichmentMap.DATASET2) != null && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null && !map.getDataset(EnrichmentMap.DATASET1)
-					.getExpressionSets().getFilename().equalsIgnoreCase(map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getFilename())) {
+			if (map.getDataset(LegacySupport.DATASET2) != null && map.getDataset(LegacySupport.DATASET2).getExpressionSets() != null && !map.getDataset(LegacySupport.DATASET1)
+					.getExpressionSets().getFilename().equalsIgnoreCase(map.getDataset(LegacySupport.DATASET2).getExpressionSets().getFilename())) {
 
-				GeneExpressionMatrix expression2 = map.getDataset(EnrichmentMap.DATASET2).getExpressionSets();
+				GeneExpressionMatrix expression2 = map.getDataset(LegacySupport.DATASET2).getExpressionSets();
 
 				numConditions2 = expression2.getNumConditions();
 				columnNames2 = expression2.getColumnNames();
@@ -304,11 +318,11 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 			}
 
 			//if there are two expression sets, regardless if they are the same get the phenotypes of the second file.
-			if (map.getDataset(EnrichmentMap.DATASET2) != null && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null) {
-				phenotypes2 = map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getPhenotypes();
+			if (map.getDataset(LegacySupport.DATASET2) != null && map.getDataset(LegacySupport.DATASET2).getExpressionSets() != null) {
+				phenotypes2 = map.getDataset(LegacySupport.DATASET2).getExpressionSets().getPhenotypes();
 
-				this.Dataset2phenotype1 = params.getFiles().get(EnrichmentMap.DATASET2).getPhenotype1();
-				this.Dataset2phenotype2 = params.getFiles().get(EnrichmentMap.DATASET2).getPhenotype2();
+				this.Dataset2phenotype1 = map.getDataset(LegacySupport.DATASET1).getDatasetFiles().getPhenotype1();
+				this.Dataset2phenotype2 = map.getDataset(LegacySupport.DATASET1).getDatasetFiles().getPhenotype2();
 			}
 
 //		}
@@ -338,8 +352,8 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 			Object[][] data;
 
 			//create data subset
-			if (map.getDataset(EnrichmentMap.DATASET2) != null && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null && !map.getDataset(EnrichmentMap.DATASET1)
-					.getExpressionSets().getFilename().equalsIgnoreCase(map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getFilename())) {
+			if (map.getDataset(LegacySupport.DATASET2) != null && map.getDataset(LegacySupport.DATASET2).getExpressionSets() != null && !map.getDataset(LegacySupport.DATASET1)
+					.getExpressionSets().getFilename().equalsIgnoreCase(map.getDataset(LegacySupport.DATASET2).getExpressionSets().getFilename())) {
 
 				// used exp[][] value to store all the expression values needed to create data[][]
 				expValue = createSortedMergedTableData();
@@ -421,8 +435,8 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 			ColumnHeaderVerticalRenderer default_renderer = new ColumnHeaderVerticalRenderer();
 			default_renderer.setBackground(Color.white);
 
-			if (map.getDataset(EnrichmentMap.DATASET2) != null && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null && !map.getDataset(EnrichmentMap.DATASET1)
-					.getExpressionSets().getFilename().equalsIgnoreCase(map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getFilename())) {
+			if (map.getDataset(LegacySupport.DATASET2) != null && map.getDataset(LegacySupport.DATASET2).getExpressionSets() != null && !map.getDataset(LegacySupport.DATASET1)
+					.getExpressionSets().getFilename().equalsIgnoreCase(map.getDataset(LegacySupport.DATASET2).getExpressionSets().getFilename())) {
 				//go through the first data set
 				for (int i = 0; i < columnNames.length; i++) {
 					if (i == 0 || columnNames[i].equals("Name"))
@@ -665,14 +679,14 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 		//The issue is that the expression subset is only updated on node selection and that is where we determine if it is
 		//a selection qualified for leadingedge annotation but the user can change the sorting option without updating the
 		//selection.
-		if (this.displayLeadingEdge && map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().haveRanks()
-				&& (hmParams.getSort() == HeatMapParameters.Sort.RANK || params.getDefaultSortMethod().equalsIgnoreCase(hmParams.getSort().toString()))) {
+		if (this.displayLeadingEdge && map.getDataset(LegacySupport.DATASET1).getExpressionSets().haveRanks()
+				&& (hmParams.getSort() == HeatMapParameters.Sort.RANK /*|| params.getDefaultSortMethod().equalsIgnoreCase(hmParams.getSort().toString())*/)) {
 			topRank = getTopRank();
 			if (hmParams.getRankFileIndex().equalsIgnoreCase("Dataset 1 Ranking")
-					|| hmParams.getRankFileIndex().equalsIgnoreCase(Ranking.GSEARanking + "-" + EnrichmentMap.DATASET1))
+					|| hmParams.getRankFileIndex().equalsIgnoreCase(Ranking.GSEARanking + "-" + LegacySupport.DATASET1))
 				isNegative = isNegativeGS(1);
 			else if (hmParams.getRankFileIndex().equalsIgnoreCase("Dataset 2 Ranking")
-					|| hmParams.getRankFileIndex().equalsIgnoreCase(Ranking.GSEARanking + "-" + EnrichmentMap.DATASET2))
+					|| hmParams.getRankFileIndex().equalsIgnoreCase(Ranking.GSEARanking + "-" + LegacySupport.DATASET2))
 				isNegative = isNegativeGS(2);
 		}
 
@@ -867,10 +881,10 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 		int topRank = getTopRank();
 		boolean isNegative = false;
 		if (hmParams.getRankFileIndex().equalsIgnoreCase("Dataset 1 Ranking")
-				|| hmParams.getRankFileIndex().equalsIgnoreCase(Ranking.GSEARanking + "-" + EnrichmentMap.DATASET1))
+				|| hmParams.getRankFileIndex().equalsIgnoreCase(Ranking.GSEARanking + "-" + LegacySupport.DATASET1))
 			isNegative = isNegativeGS(1);
 		else if (hmParams.getRankFileIndex().equalsIgnoreCase("Dataset 2 Ranking")
-				|| hmParams.getRankFileIndex().equalsIgnoreCase(Ranking.GSEARanking + "-" + EnrichmentMap.DATASET2))
+				|| hmParams.getRankFileIndex().equalsIgnoreCase(Ranking.GSEARanking + "-" + LegacySupport.DATASET2))
 			isNegative = isNegativeGS(2);
 
 		int n = 0;
@@ -1224,25 +1238,12 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 
 	public JPanel createDataTransformationOptionsPanel() {
 		JComboBox<String> hmOptionsComboBox = new JComboBox<>();
-		hmOptionsComboBox.addItem(HeatMapParameters.asis);
-		hmOptionsComboBox.addItem(HeatMapParameters.rownorm);
-		hmOptionsComboBox.addItem(HeatMapParameters.logtrans);
+		hmOptionsComboBox.addItem(Transformation.ASIS.display);
+		hmOptionsComboBox.addItem(Transformation.ROWNORM.display);
+		hmOptionsComboBox.addItem(Transformation.LOGTRANSFORM.display);
+		hmOptionsComboBox.setSelectedItem(hmParams.getTransformation().display);
 
-		switch (hmParams.getTransformation()) {
-			case ASIS:
-				hmOptionsComboBox.setSelectedItem(HeatMapParameters.asis);
-				break;
-			case ROWNORM:
-				hmOptionsComboBox.setSelectedItem(HeatMapParameters.rownorm);
-				break;
-			case LOGTRANSFORM:
-				hmOptionsComboBox.setSelectedItem(HeatMapParameters.logtrans);
-				break;
-		}
-
-		hmOptionsComboBox.addActionListener(
-				new HeatMapActionListener(hmParams.getEdgeOverlapPanel(), hmParams.getNodeOverlapPanel(),
-						hmOptionsComboBox, this.hmParams, map, fileUtil, streamUtil, application));
+		hmOptionsComboBox.addActionListener(transformListenerFactory.create(hmParams, map));
 		
 		showValuesCheck = new JCheckBox("Show values");
 
@@ -1281,59 +1282,58 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 	public JPanel createSortOptionsPanel() {
 		JPanel panel = new JPanel(new FlowLayout());
 		panel.setBorder(LookAndFeelUtil.createTitledBorder("Sorting"));
-
-		Set<String> ranks = map.getAllRankNames();
+		
 		rankOptionComboBox = new JComboBox<>();
-		rankOptionComboBox.addItem(HeatMapParameters.sort_hierarchical_cluster);
+		rankOptionComboBox.addItem(HeatMapParameters.Sort.CLUSTER.display);
 
 		//create the rank options based on what we have in the set of ranks
 		//Go through the ranks hashmap and insert each ranking as an option
+		Set<String> ranks = map.getAllRankNames();
 		if (ranks != null) {
 			//convert the ranks into a treeset so that they are ordered
-			for (Iterator<String> j = ranks.iterator(); j.hasNext();) {
-				String ranks_name = j.next().toString();
-				rankOptionComboBox.addItem(ranks_name);
+			for (String ranksName : ranks) {
+				rankOptionComboBox.addItem(ranksName);
 			}
 		}
 
-		rankOptionComboBox.addItem(HeatMapParameters.sort_none);
+		rankOptionComboBox.addItem(HeatMapParameters.Sort.NONE.display);
 
 		switch (hmParams.getSort()) {
 		case DEFAULT:
-			rankOptionComboBox.setSelectedItem(map.getParams().getDefaultSortMethod());
-			if (map.getParams().getDefaultSortMethod().equalsIgnoreCase(HeatMapParameters.sort_rank)) {
+			rankOptionComboBox.setSelectedItem(hmParams.getDefaultSort().display);
+			if (hmParams.getDefaultSort() == Sort.RANK) {
 				hmParams.setSort(Sort.RANK);
 				if (ranks != null) {
 					hmParams.setRankFileIndex(ranks.iterator().next());
 					hmParams.setSortIndex(hmParams.getAscending().length - ranks.size());
 				} else {
-					rankOptionComboBox.setSelectedItem(HeatMapParameters.sort_none);
+					rankOptionComboBox.setSelectedItem(Sort.NONE.display);
 					hmParams.setSort(Sort.NONE);
 				}
-			} else if (map.getParams().getDefaultSortMethod().equalsIgnoreCase(HeatMapParameters.sort_none))
+			} else if (hmParams.getDefaultSort() == Sort.NONE)
 				hmParams.setSort(Sort.NONE);
-			else if (map.getParams().getDefaultSortMethod().equalsIgnoreCase(HeatMapParameters.sort_hierarchical_cluster))
+			else if (hmParams.getDefaultSort() == Sort.CLUSTER)
 				hmParams.setSort(Sort.CLUSTER);
 			break;
 
 		case CLUSTER:
-			rankOptionComboBox.setSelectedItem(HeatMapParameters.sort_hierarchical_cluster);
+			rankOptionComboBox.setSelectedItem(Sort.CLUSTER.display);
 			break;
 
 		case NONE:
-			rankOptionComboBox.setSelectedItem(HeatMapParameters.sort_none);
+			rankOptionComboBox.setSelectedItem(Sort.NONE.display);
 			break;
 
 		case RANK:
 			int k = 0;
 			int columns = 0;
 			//add columns to the colum set but make sure the expression files are not the same dile
-			if (map.getDataset(EnrichmentMap.DATASET2) != null && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null && !map.getDataset(EnrichmentMap.DATASET1)
-					.getExpressionSets().getFilename().equalsIgnoreCase(map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getFilename()))
-				columns = map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getColumnNames().length
-						+ map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getColumnNames().length - 2;
+			if (map.getDataset(LegacySupport.DATASET2) != null && map.getDataset(LegacySupport.DATASET2).getExpressionSets() != null && !map.getDataset(LegacySupport.DATASET1)
+					.getExpressionSets().getFilename().equalsIgnoreCase(map.getDataset(LegacySupport.DATASET2).getExpressionSets().getFilename()))
+				columns = map.getDataset(LegacySupport.DATASET1).getExpressionSets().getColumnNames().length
+						+ map.getDataset(LegacySupport.DATASET2).getExpressionSets().getColumnNames().length - 2;
 			else
-				columns = map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getColumnNames().length;
+				columns = map.getDataset(LegacySupport.DATASET1).getExpressionSets().getColumnNames().length;
 
 			for (Iterator<String> j = ranks.iterator(); j.hasNext();) {
 				String ranks_name = j.next().toString();
@@ -1346,8 +1346,8 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 			break;
 
 		case COLUMN:
-			rankOptionComboBox.addItem(HeatMapParameters.sort_column + ":" + hmParams.getSortbycolumnName());
-			rankOptionComboBox.setSelectedItem(HeatMapParameters.sort_column + ":" + hmParams.getSortbycolumnName());
+			rankOptionComboBox.addItem(Sort.COLUMN.display + ":" + hmParams.getSortbycolumnName());
+			rankOptionComboBox.setSelectedItem(Sort.COLUMN.display + ":" + hmParams.getSortbycolumnName());
 			break;
 
 		}
@@ -1372,8 +1372,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 			panel.add(arrowButton);
 		}
 
-		rankOptionComboBox.addActionListener(new HeatMapActionListener(hmParams.getEdgeOverlapPanel(), hmParams.getNodeOverlapPanel(), rankOptionComboBox,
-				hmParams, map, fileUtil, streamUtil, application));
+		rankOptionComboBox.addActionListener(sortListenerFactory.create(hmParams, map));
 
 		makeSmall(rankOptionComboBox);
 		
@@ -1448,12 +1447,14 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 			else
 				arrow.setIcon(iconArrow[Descending]);
 
-			hmParams.getEdgeOverlapPanel().clearPanel();
-			hmParams.getNodeOverlapPanel().clearPanel();
+			HeatMapPanel edgesPanel = edgesPanelProvider.get();
+			HeatMapPanel nodesPanel = nodesPanelProvider.get();
+			
+			edgesPanel.clearPanel();
+			nodesPanel.clearPanel();
 
-			hmParams.getEdgeOverlapPanel().updatePanel();
-			hmParams.getNodeOverlapPanel().updatePanel();
-
+			edgesPanel.updatePanel();
+			nodesPanel.updatePanel();
 		}
 
 		public void itemStateChanged(ItemEvent e) {
@@ -1486,16 +1487,15 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 
 					//ask user if they want to export only the leading edge.
 					//only ask if the leadingedge is displayed
-					if (this.displayLeadingEdge == true && hmParams.getSort() == HeatMapParameters.Sort.RANK
-							&& params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)) {
+					if (this.displayLeadingEdge == true && hmParams.getSort() == HeatMapParameters.Sort.RANK && params.getMethod() == Method.GSEA) {
 						int response2 = JOptionPane.showConfirmDialog(this, "Would you like to save the leading edge only?");
 						if (response2 == JOptionPane.YES_OPTION || response2 == JOptionPane.OK_OPTION)
 							this.OnlyLeadingEdge = true;
 					}
 					BufferedWriter output = new BufferedWriter(new FileWriter(file));
 					String[] currentColumns;
-					if (map.getDataset(EnrichmentMap.DATASET2) != null && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null && !map.getDataset(EnrichmentMap.DATASET1)
-							.getExpressionSets().getFilename().equalsIgnoreCase(map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getFilename())) {
+					if (map.getDataset(LegacySupport.DATASET2) != null && map.getDataset(LegacySupport.DATASET2).getExpressionSets() != null && !map.getDataset(LegacySupport.DATASET1)
+							.getExpressionSets().getFilename().equalsIgnoreCase(map.getDataset(LegacySupport.DATASET2).getExpressionSets().getFilename())) {
 						currentColumns = new String[columnNames.length + columnNames2.length - 2];
 
 						System.arraycopy(columnNames, 0, currentColumns, 0, columnNames.length);
@@ -1511,8 +1511,8 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 
 					//get the sorted expression set
 					Object[][] sortedExpression;
-					if (map.getDataset(EnrichmentMap.DATASET2) != null && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null && !map.getDataset(EnrichmentMap.DATASET1)
-							.getExpressionSets().getFilename().equalsIgnoreCase(map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getFilename()))
+					if (map.getDataset(LegacySupport.DATASET2) != null && map.getDataset(LegacySupport.DATASET2).getExpressionSets() != null && !map.getDataset(LegacySupport.DATASET1)
+							.getExpressionSets().getFilename().equalsIgnoreCase(map.getDataset(LegacySupport.DATASET2).getExpressionSets().getFilename()))
 						sortedExpression = createSortedMergedTableData();
 					else
 						sortedExpression = createSortedTableData();
@@ -1561,7 +1561,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 	 * the genes that are in all the selected nodes. and sets the expression
 	 * sets (both if there are two datasets)
 	 */
-	private void initializeLeadingEdge(EnrichmentMapParameters params) {
+	private void initializeLeadingEdge(EMCreationParameters params) {
 		//if only one node is selected activate leading edge potential and if at least one rankfile is present
 		//TODO: we probably have to catch cases where we have only a rank file for one of the datasets
 		if (leadingEdgeGenesetNode != null) {
@@ -1569,9 +1569,9 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 			String nodename = network.getRow(leadingEdgeGenesetNode).get(CyNetwork.NAME, String.class);
 
 			displayLeadingEdge = true;
-			if (params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)) {
+			if (params.getMethod() == Method.GSEA) {
 
-				Map<String, EnrichmentResult> results1 = map.getDataset(EnrichmentMap.DATASET1).getEnrichments().getEnrichments();
+				Map<String, EnrichmentResult> results1 = map.getDataset(LegacySupport.DATASET1).getEnrichments().getEnrichments();
 				if (results1.containsKey(nodename)) {
 					GSEAResult current_result = (GSEAResult) results1.get(nodename);
 					leadingEdgeScoreAtMax1 = current_result.getScoreAtMax();
@@ -1582,8 +1582,8 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 
 					leadingEdgeRankAtMax1 = current_result.getRankAtMax();
 				}
-				if (map.getParams().isTwoDatasets()) {
-					Map<String, EnrichmentResult> results2 = map.getDataset(EnrichmentMap.DATASET2).getEnrichments().getEnrichments();
+				if (LegacySupport.isLegacyTwoDatasets(map)) {
+					Map<String, EnrichmentResult> results2 = map.getDataset(LegacySupport.DATASET2).getEnrichments().getEnrichments();
 					if (results2.containsKey(nodename)) {
 						GSEAResult current_result = (GSEAResult) results2.get(nodename);
 						leadingEdgeScoreAtMax2 = current_result.getScoreAtMax();
@@ -1622,29 +1622,29 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 		Ranking ranks = null;
 
 		//check to see if any of the ordering have been initialized
-		if (hmParams.getSort() == HeatMapParameters.Sort.DEFAULT) {
+		if (hmParams.getSort() == Sort.DEFAULT) {
 			//initialize the default value
-			if (params.getDefaultSortMethod().equalsIgnoreCase(HeatMapParameters.sort_hierarchical_cluster))
-				hmParams.setSort(HeatMapParameters.Sort.CLUSTER);
-			if (params.getDefaultSortMethod().equalsIgnoreCase(HeatMapParameters.sort_rank)) {
-				hmParams.setSort(HeatMapParameters.Sort.RANK);
+			if (hmParams.getDefaultSort() == Sort.CLUSTER)
+				hmParams.setSort(Sort.CLUSTER);
+			if (hmParams.getDefaultSort() == Sort.RANK) {
+				hmParams.setSort(Sort.RANK);
 				Set<String> ranksnames = map.getAllRankNames();
 				if (!ranksnames.isEmpty())
 					hmParams.setRankFileIndex(ranksnames.iterator().next());
 				else {
-					hmParams.setSort(HeatMapParameters.Sort.NONE);
+					hmParams.setSort(Sort.NONE);
 				}
 			}
-			if (params.getDefaultSortMethod().equalsIgnoreCase(HeatMapParameters.sort_none))
-				hmParams.setSort(HeatMapParameters.Sort.NONE);
-			if (params.getDefaultSortMethod().equalsIgnoreCase(HeatMapParameters.sort_column)) {
-				hmParams.setSort(HeatMapParameters.Sort.COLUMN);
+			if (hmParams.getDefaultSort() == Sort.NONE)
+				hmParams.setSort(Sort.NONE);
+			if (hmParams.getDefaultSort() == Sort.COLUMN) {
+				hmParams.setSort(Sort.COLUMN);
 				hmParams.setSortIndex(0);
 			}
 		}
 
 		Set<String> all_ranks = map.getAllRankNames();
-		if (hmParams.getSort() == HeatMapParameters.Sort.RANK) {
+		if (hmParams.getSort() == Sort.RANK) {
 			for (Iterator<String> j = all_ranks.iterator(); j.hasNext();) {
 				String ranks_name = j.next().toString();
 				if (ranks_name.equalsIgnoreCase(hmParams.getRankFileIndex()))
@@ -1654,7 +1654,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 			if (ranks == null)
 				throw new IllegalThreadStateException("invalid sort index for rank files.");
 
-		} else if ((hmParams.getSort() == HeatMapParameters.Sort.COLUMN) || (hmParams.getSort() == HeatMapParameters.Sort.NONE)) {
+		} else if ((hmParams.getSort() == Sort.COLUMN) || (hmParams.getSort() == Sort.NONE)) {
 			ranks = new Ranking();
 
 			for (Iterator<Integer> i = expressionSet.keySet().iterator(); i.hasNext();) {
@@ -1664,10 +1664,10 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 				//ranks..put(key,temp);
 			}
 
-			if (hmParams.getSort() == HeatMapParameters.Sort.COLUMN)
+			if (hmParams.getSort() == Sort.COLUMN)
 				hmParams.setSortbycolumn_event_triggered(true);
-		} else if (hmParams.getSort() == HeatMapParameters.Sort.CLUSTER) {
-			HeatMapHierarchicalClusterTaskFactory clustertask = new HeatMapHierarchicalClusterTaskFactory(numConditions, numConditions2, this, map, hmParams);
+		} else if (hmParams.getSort() == Sort.CLUSTER) {
+			HeatMapHierarchicalClusterTaskFactory clustertask = new HeatMapHierarchicalClusterTaskFactory(numConditions, numConditions2, this, map, hmParams, propertyManager);
 			ResultTaskObserver observer = new ResultTaskObserver();
 
 			this.dialogTaskMonitor.execute(clustertask.createTaskIterator(), observer);
@@ -1683,7 +1683,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 		}
 
 		//after trying to sort by hierarchical just check that sorting hasn't defaulted to no sort
-		if (hmParams.getSort() == HeatMapParameters.Sort.NONE) {
+		if (hmParams.getSort() == Sort.NONE) {
 			ranks = getEmptyRanks(expressionSet);
 		}
 
@@ -1750,12 +1750,12 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 		//a selection qualified for leadingedge annotation but the user can change the sorting option without updating the
 		//selection.
 		if (displayLeadingEdge
-				&& (map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().haveRanks()
-						|| map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().haveRanks())
-				&& (hmParams.getSort() == HeatMapParameters.Sort.RANK || params.getDefaultSortMethod().equalsIgnoreCase(hmParams.getSort().toString()))) {
+				&& (map.getDataset(LegacySupport.DATASET1).getExpressionSets().haveRanks()
+						|| map.getDataset(LegacySupport.DATASET2).getExpressionSets().haveRanks())
+				&& (hmParams.getSort() == Sort.RANK || hmParams.getDefaultSort() == hmParams.getSort())) {
 			//get the rank under (or over) which everything should be higlighted
 			if (hmParams.getRankFileIndex().equalsIgnoreCase("Dataset 1 Ranking")
-					|| hmParams.getRankFileIndex().equalsIgnoreCase(Ranking.GSEARanking + "-" + EnrichmentMap.DATASET1)) {
+					|| hmParams.getRankFileIndex().equalsIgnoreCase(Ranking.GSEARanking + "-" + LegacySupport.DATASET1)) {
 				topRank = leadingEdgeRankAtMax1 + 3;
 				//the rank at max is counted starting as if the bottom of the list were at the top
 				//if this is a negative gene set then subtract it from the total number of ranks
@@ -1763,18 +1763,18 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 				//is based on the entire expression file being ranked.
 				if (leadingEdgeScoreAtMax1 < 0) {
 					if (hmParams.getRankFileIndex().equalsIgnoreCase("Dataset 1 Ranking"))
-						topRank = map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getRanksByName("Dataset 1 Ranking").getMaxRank() - topRank;
-					else if (hmParams.getRankFileIndex().equalsIgnoreCase(Ranking.GSEARanking + "-" + EnrichmentMap.DATASET1))
-						topRank = map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getRanksByName(Ranking.GSEARanking).getMaxRank() - topRank;
+						topRank = map.getDataset(LegacySupport.DATASET1).getExpressionSets().getRanksByName("Dataset 1 Ranking").getMaxRank() - topRank;
+					else if (hmParams.getRankFileIndex().equalsIgnoreCase(Ranking.GSEARanking + "-" + LegacySupport.DATASET1))
+						topRank = map.getDataset(LegacySupport.DATASET1).getExpressionSets().getRanksByName(Ranking.GSEARanking).getMaxRank() - topRank;
 				}
 			} else if (hmParams.getRankFileIndex().equalsIgnoreCase("Dataset 2 Ranking")
-					|| hmParams.getRankFileIndex().equalsIgnoreCase(Ranking.GSEARanking + "-" + EnrichmentMap.DATASET2)) {
+					|| hmParams.getRankFileIndex().equalsIgnoreCase(Ranking.GSEARanking + "-" + LegacySupport.DATASET2)) {
 				topRank = leadingEdgeRankAtMax2 + 3;
 				if (leadingEdgeScoreAtMax2 < 0) {
 					if (hmParams.getRankFileIndex().equalsIgnoreCase("Dataset 2 Ranking"))
-						topRank = map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getRanksByName("Dataset 2 Ranking").getMaxRank() - topRank;
-					else if (hmParams.getRankFileIndex().equalsIgnoreCase(Ranking.GSEARanking + "-" + EnrichmentMap.DATASET2))
-						topRank = map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getRanksByName(Ranking.GSEARanking).getMaxRank() - topRank;
+						topRank = map.getDataset(LegacySupport.DATASET2).getExpressionSets().getRanksByName("Dataset 2 Ranking").getMaxRank() - topRank;
+					else if (hmParams.getRankFileIndex().equalsIgnoreCase(Ranking.GSEARanking + "-" + LegacySupport.DATASET2))
+						topRank = map.getDataset(LegacySupport.DATASET2).getExpressionSets().getRanksByName(Ranking.GSEARanking).getMaxRank() - topRank;
 				}
 			}
 		}
@@ -1819,8 +1819,8 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 	}
 
 	public void setColumnSort() {
-		rankOptionComboBox.addItem(HeatMapParameters.sort_column + ":" + hmParams.getSortbycolumnName());
-		rankOptionComboBox.setSelectedItem(HeatMapParameters.sort_column + ":" + hmParams.getSortbycolumnName());
+		rankOptionComboBox.addItem(Sort.COLUMN.display + ":" + hmParams.getSortbycolumnName());
+		rankOptionComboBox.setSelectedItem(Sort.COLUMN.display + ":" + hmParams.getSortbycolumnName());
 	}
 
 	private String[] gethRow1() {

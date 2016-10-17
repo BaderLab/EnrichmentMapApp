@@ -5,8 +5,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import com.google.common.collect.Sets;
-
 /*
  * Class represents a set of genesets.  In GSEA the set of genesets is contained
  * in a gmt file.
@@ -62,22 +60,19 @@ public class SetOfGeneSets {
 	 * the genes found in the expression file.
 	 */
 	public void filterGenesets(Set<Integer> datasetGenes) {
-		//create a new hashmap to store the filtered geneset
-		HashMap<String, GeneSet> filteredGenesets = new HashMap<String, GeneSet>();
+		Map<String, GeneSet> filteredGenesets = new HashMap<>();
 
 		//iterate through each geneset and filter each one
-		for(String geneset2_name : genesets.keySet()) {
-			GeneSet current_set = genesets.get(geneset2_name);
-
-			//compare the HashSet of dataset genes to the HashSet of the current Geneset
-			//only keep the genes from the geneset that are in the dataset genes
-			Set<Integer> intersection = Sets.intersection(current_set.getGenes(), datasetGenes);
-
-			GeneSet new_set = new GeneSet(geneset2_name, current_set.getDescription(), intersection);
-
-			filteredGenesets.put(geneset2_name, new_set);
+		for(String genesetName : genesets.keySet()) {
+			GeneSet geneset = genesets.get(genesetName);
+			Set<Integer> genesetGenes = geneset.getGenes();
+			
+			Set<Integer> intersection = new HashSet<>(genesetGenes);
+			intersection.retainAll(datasetGenes);
+			
+			GeneSet newGeneset = new GeneSet(genesetName, geneset.getDescription(), intersection);
+			filteredGenesets.put(genesetName, newGeneset);
 		}
-		
 		genesets = filteredGenesets;
 	}
 

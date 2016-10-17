@@ -1,5 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap.model;
 
+import static com.google.common.base.Strings.isNullOrEmpty;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -7,6 +9,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.Method;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -16,148 +20,92 @@ import com.google.common.collect.HashBiMap;
  */
 public class EnrichmentMap {
 
-	//name of Enrichment map
 	private final String name;
+	private long networkID;
 	
+	//reference to the parameters used to create this map
+	private final EMCreationParameters params;
 
-	//The set of Datasets
-	private Map<String, DataSet> datasets;
+	private Map<String, DataSet> datasets = new HashMap<>();
 
 	//Hashmap of all the similarities between all the genesets
 	//key = geneset1 + geneset2
 	//value = geneset similarity 
-	private Map<String, GenesetSimilarity> genesetSimilarity;
+	// MKTODO use SimilarityKey instead of String
+	private Map<String, GenesetSimilarity> genesetSimilarity = new HashMap<>();
 
 	//The set of genes defined in the Enrichment map
-	private BiMap<Integer,String> genes;
-
-
-	// Temporary constants for Dataset 1 and Dataset 2
-	// Will eventually get rid of them
-	final public static String DATASET1 = "Dataset 1";
-	final public static String DATASET2 = "Dataset 2";
-
-	//reference to the parameters used to create this map
-	private EnrichmentMapParameters params;
-
-	private int NumberOfGenes = 0;
+	private BiMap<Integer,String> genes = HashBiMap.create();
 
 	//post analysis signature genesets associated with this map.
-	private Map<String, GeneSet> signatureGenesets;
+	private Map<String, GeneSet> signatureGenesets = new HashMap<>();
 
-	/*
+	private int NumberOfGenes = 0;
+	
+	
+	/**
 	 * Class Constructor Given - EnrichmentnMapParameters create a new
-	 * enrichment map. The parameters contain all cut-offs and file names for
-	 * the analysis
+	 * enrichment map. The parameters contain all cut-offs and file names for the analysis
 	 */
-
-	public EnrichmentMap(String name, EnrichmentMapParameters params) {
+	public EnrichmentMap(String name, EMCreationParameters params) {
 		this.params = params;
 		this.name = name;
-		this.datasets = new HashMap<String, DataSet>();
-		
-		//initialize a new Dataset if the params have enrichment result or a GMT file
-		if(params.getFiles().containsKey(EnrichmentMap.DATASET1)) {
-			DataSetFiles dataset1files = params.getFiles().get(EnrichmentMap.DATASET1);
-			if((dataset1files.getEnrichmentFileName1() != null && !dataset1files.getEnrichmentFileName1().isEmpty())
-					|| (dataset1files.getGMTFileName() != null && !dataset1files.getGMTFileName().isEmpty())
-					|| (dataset1files.getExpressionFileName() != null
-							&& !dataset1files.getExpressionFileName().isEmpty())) {
-				DataSet dataset1 = new DataSet(this, EnrichmentMap.DATASET1, dataset1files);
-				this.datasets.put(EnrichmentMap.DATASET1, dataset1);
-			}
-		}
-		//intialize a new Dataset 2 if the params have enrichment results for a second dataset.
-		if(params.getFiles().containsKey(EnrichmentMap.DATASET2)) {
-			DataSetFiles dataset2files = params.getFiles().get(EnrichmentMap.DATASET2);
-			if((dataset2files.getEnrichmentFileName1() != null && !dataset2files.getEnrichmentFileName1().isEmpty())
-					|| (dataset2files.getExpressionFileName() != null
-							&& !dataset2files.getExpressionFileName().isEmpty())) {
-				DataSet dataset2 = new DataSet(this, EnrichmentMap.DATASET2, dataset2files);
-				this.datasets.put(EnrichmentMap.DATASET2, dataset2);
-			}
-		}
-
-		this.genes = HashBiMap.create();
-		this.genesetSimilarity = new HashMap<>();
-		this.signatureGenesets = new HashMap<>();
-		initialize_files();
 	}
 
+	
+	public void addDataSet(String name, DataSet dataset) {
+		if(datasets.containsKey(name)) {
+			throw new IllegalArgumentException("DataSet with name " + name + " already exists in this enrichment map");
+		}
+		
+		DataSetFiles files = dataset.getDatasetFiles();
+		if(isNullOrEmpty(files.getEnrichmentFileName1()) && isNullOrEmpty(files.getGMTFileName()) && isNullOrEmpty(files.getExpressionFileName())) {
+			throw new IllegalArgumentException("At least one of the required files must be given");
+		}
+			
+		datasets.put(name, dataset);
+		initializeFiles(dataset);
+	}
+	
 	/**
-	 * Method to transfer files specified in the parameters to the objects they
-	 * correspond to
+	 * Method to transfer files specified in the parameters to the objects they correspond to.
 	 */
-
-	private void initialize_files() {
-		DataSetFiles dataset1files = params.getFiles().get(EnrichmentMap.DATASET1);
-		if(dataset1files.getGMTFileName() != null && !dataset1files.getGMTFileName().isEmpty())
-			this.getDataset(DATASET1).getSetofgenesets().setFilename(dataset1files.getGMTFileName());
+	private void initializeFiles(DataSet dataset) {
+		DataSetFiles files = dataset.getDatasetFiles();
+		if(!isNullOrEmpty(files.getGMTFileName()))
+			dataset.getSetofgenesets().setFilename(files.getGMTFileName());
 
 		//expression files
-		if(dataset1files.getExpressionFileName() != null && !dataset1files.getExpressionFileName().isEmpty())
-			this.getDataset(DATASET1).getExpressionSets().setFilename(dataset1files.getExpressionFileName());
+		if(!isNullOrEmpty(files.getExpressionFileName()))
+			dataset.getExpressionSets().setFilename(files.getExpressionFileName());
 
 		//enrichment results files
-		if(dataset1files.getEnrichmentFileName1() != null && !dataset1files.getEnrichmentFileName1().isEmpty())
-			this.getDataset(DATASET1).getEnrichments().setFilename1(dataset1files.getEnrichmentFileName1());
-		if(dataset1files.getEnrichmentFileName2() != null && !dataset1files.getEnrichmentFileName2().isEmpty())
-			this.getDataset(DATASET1).getEnrichments().setFilename2(dataset1files.getEnrichmentFileName2());
+		if(!isNullOrEmpty(files.getEnrichmentFileName1()))
+			dataset.getEnrichments().setFilename1(files.getEnrichmentFileName1());
+		if(files.getEnrichmentFileName2() != null && !files.getEnrichmentFileName2().isEmpty())
+			dataset.getEnrichments().setFilename2(files.getEnrichmentFileName2());
 
 		//phenotypes
-		if(dataset1files.getPhenotype1() != null && !dataset1files.getPhenotype1().isEmpty())
-			this.getDataset(DATASET1).getEnrichments().setPhenotype1(dataset1files.getPhenotype1());
-		if(dataset1files.getPhenotype2() != null && !dataset1files.getPhenotype2().isEmpty())
-			this.getDataset(DATASET1).getEnrichments().setPhenotype2(dataset1files.getPhenotype2());
+		if(!isNullOrEmpty(files.getPhenotype1()))
+			dataset.getEnrichments().setPhenotype1(files.getPhenotype1());
+		if(!isNullOrEmpty(files.getPhenotype2()))
+			dataset.getEnrichments().setPhenotype2(files.getPhenotype2());
 
 		//rank files - dataset1 
-		if(dataset1files.getRankedFile() != null && !dataset1files.getRankedFile().isEmpty())
-			if(params.getMethod().equals(EnrichmentMapParameters.method_GSEA)) {
-				this.getDataset(DATASET1).getExpressionSets().createNewRanking(Ranking.GSEARanking);
-				this.getDataset(DATASET1).getExpressionSets().getRanksByName(Ranking.GSEARanking)
-						.setFilename(dataset1files.getRankedFile());
+		if(!isNullOrEmpty(files.getRankedFile())) {
+			if(params.getMethod() == Method.GSEA) {
+				dataset.getExpressionSets().createNewRanking(Ranking.GSEARanking);
+				dataset.getExpressionSets().getRanksByName(Ranking.GSEARanking).setFilename(files.getRankedFile());
 			} else {
-				this.getDataset(DATASET1).getExpressionSets().createNewRanking(DATASET1);
-				this.getDataset(DATASET1).getExpressionSets().getRanksByName(DATASET1)
-						.setFilename(dataset1files.getRankedFile());
-			}
-
-		if(params.getFiles().containsKey(EnrichmentMap.DATASET2)) {
-			DataSetFiles dataset2files = params.getFiles().get(EnrichmentMap.DATASET2);
-			if(dataset2files.getExpressionFileName() != null && !dataset2files.getExpressionFileName().isEmpty())
-				this.getDataset(DATASET2).getExpressionSets().setFilename(dataset2files.getExpressionFileName());
-
-			if(dataset2files.getEnrichmentFileName1() != null && !dataset2files.getEnrichmentFileName1().isEmpty())
-				this.getDataset(DATASET2).getEnrichments().setFilename1(dataset2files.getEnrichmentFileName1());
-			if(dataset2files.getEnrichmentFileName2() != null && !dataset2files.getEnrichmentFileName2().isEmpty())
-				this.getDataset(DATASET2).getEnrichments().setFilename2(dataset2files.getEnrichmentFileName2());
-
-			//phenotypes
-			if(dataset2files.getPhenotype1() != null && !dataset2files.getPhenotype1().isEmpty())
-				this.getDataset(DATASET2).getEnrichments().setPhenotype1(dataset2files.getPhenotype1());
-			if(dataset2files.getPhenotype2() != null && !dataset2files.getPhenotype2().isEmpty())
-				this.getDataset(DATASET2).getEnrichments().setPhenotype2(dataset2files.getPhenotype2());
-
-			//rank files - dataset 2
-			if(dataset2files.getRankedFile() != null && !dataset2files.getRankedFile().isEmpty()) {
-				if(params.getMethod().equals(EnrichmentMapParameters.method_GSEA)) {
-					this.getDataset(DATASET2).getExpressionSets().createNewRanking(Ranking.GSEARanking);
-					this.getDataset(DATASET2).getExpressionSets().getRanksByName(Ranking.GSEARanking)
-							.setFilename(dataset2files.getRankedFile());
-				} else {
-					this.getDataset(DATASET2).getExpressionSets().createNewRanking(DATASET2);
-					this.getDataset(DATASET2).getExpressionSets().getRanksByName(DATASET2)
-							.setFilename(dataset2files.getRankedFile());
-
-				}
+				dataset.getExpressionSets().createNewRanking(dataset.getName());
+				dataset.getExpressionSets().getRanksByName(dataset.getName()).setFilename(files.getRankedFile());
 			}
 		}
 	}
 
 	/**
 	 * Check to see that there are genes in the filtered genesets If the ids do
-	 * not match up, after a filtering there will be no genes in any of the
-	 * genesets
+	 * not match up, after a filtering there will be no genes in any of the genesets
 	 * 
 	 * @return true if Genesets have genes, return false if all the genesets are empty
 	 */
@@ -172,10 +120,9 @@ public class EnrichmentMap {
 				}
 			}
 		}
-		if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_Specialized))
+		if(params.getMethod() == Method.Specialized)
 			return true;
 		return false;
-
 	}
 
 	public boolean containsGene(String gene) {
@@ -331,32 +278,27 @@ public class EnrichmentMap {
 		this.datasets = datasets;
 	}
 
-	/*
-	 * Adds a new dataset of name datasetName. If dataset is null, it creates a
-	 * new dataset
-	 */
-	public void addDataset(String datasetName, DataSet dataset) {
-		if(this.datasets != null)
-			this.datasets.put(datasetName, dataset);
-		if(dataset == null)
-			this.datasets.put(datasetName, new DataSet(this, datasetName, new DataSetFiles()));
+	public int getDataSetCount() {
+		return datasets.size();
 	}
-
+	
 	public DataSet getDataset(String datasetname) {
-		if(this.datasets != null && this.datasets.containsKey(datasetname))
-			return this.datasets.get(datasetname);
-		else
-			return null;
+		return datasets.get(datasetname);
 	}
 
-	public EnrichmentMapParameters getParams() {
+	public EMCreationParameters getParams() {
 		return params;
 	}
 
-	public void setParams(EnrichmentMapParameters params) {
-		this.params = params;
+	public long getNetworkID() {
+		return networkID;
 	}
 
+	public void setNetworkID(long networkID) {
+		this.networkID = networkID;
+	}
+
+	
 	public Set<String> getAllRankNames() {
 		Set<String> allRankNames = new HashSet<>();
 		//go through each Dataset

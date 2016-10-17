@@ -3,10 +3,13 @@ package org.baderlab.csplugins.enrichmentmap.task;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.Method;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
+import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.parsers.GMTFileReaderTask;
 import org.cytoscape.work.TaskMonitor;
 import org.junit.Test;
@@ -17,22 +20,24 @@ public class LoadGMTFileOnlyTest {
 	
 	@Test
 	public void testGMTOnly() throws Exception{
-		EnrichmentMapParameters params = new EnrichmentMapParameters();
-	
 		//for a dataset we require genesets, an expression file (optional), enrichment results
 		String testGmtFileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/task/genesets_subset.gmt";
 		
 		DataSetFiles files = new DataSetFiles();		
 		files.setGMTFileName(testGmtFileName);
-		params.addFiles(EnrichmentMap.DATASET1, files);
 	
 		//create an new enrichment Map
+		double similarityCutoff = 0.5;
+		double pvalue = 1.0;
+		double qvalue = 1.0;
+		EMCreationParameters params = new EMCreationParameters(Method.GSEA, "EM1_", SimilarityMetric.JACCARD, pvalue, qvalue, similarityCutoff, 0.5);
+	
 		EnrichmentMap em = new EnrichmentMap("TestEM", params);
 		
 		//Load data set
 		//create a dataset
-		DataSet dataset = new DataSet(em, EnrichmentMap.DATASET1,files);		
-		em.addDataset(EnrichmentMap.DATASET1, dataset);
+		DataSet dataset = new DataSet(em, LegacySupport.DATASET1, files);		
+		em.addDataSet(LegacySupport.DATASET1, dataset);
 				
 		//create a DatasetTask
 				//set up task

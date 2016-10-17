@@ -5,43 +5,43 @@ import static org.mockito.Mockito.mock;
 
 import java.util.Map;
 
-import org.baderlab.csplugins.enrichmentmap.StreamUtil;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
 import org.baderlab.csplugins.enrichmentmap.model.GSEAResult;
 import org.baderlab.csplugins.enrichmentmap.model.GenericResult;
+import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.cytoscape.work.TaskMonitor;
+import org.jukito.JukitoRunner;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
-/**
- * Created by
- * User: risserlin
- * Date: Mar 26, 2010
- * Time: 8:42:21 AM
- */
+import com.google.inject.Provider;
+
+@RunWith(JukitoRunner.class)
 public class FileReaderTest {
 
 	private TaskMonitor taskMonitor = mock(TaskMonitor.class);
-	private StreamUtil streamUtil = new StreamUtil();
 	
     
 	@Test
-    public void testGMTFileReader() throws Exception{
+    public void testGMTFileReader(Provider<EnrichmentMapParameters> empFactory) throws Exception{
 
         String testDataFileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/Genesetstestfile.gmt";
         
         //create a new instance of the parameters
-        EnrichmentMapParameters params = new EnrichmentMapParameters();        
+        EnrichmentMapParameters params = empFactory.get();        
         //set gmt file name 
-        params.getFiles().get(EnrichmentMap.DATASET1).setGMTFileName(testDataFileName);
+        params.getFiles().get(LegacySupport.DATASET1).setGMTFileName(testDataFileName);
         
         //Create a new Enrichment map
-        EnrichmentMap map = new EnrichmentMap("TestEM", params);
+        EnrichmentMap map = new EnrichmentMap("TestEM", params.getCreationParameters());
                 
         //get the default dataset
-        DataSet dataset = map.getDataset(EnrichmentMap.DATASET1);
+        DataSet dataset = new DataSet(map, LegacySupport.DATASET1, params.getFiles().get(LegacySupport.DATASET1));
+        map.addDataSet(LegacySupport.DATASET1, dataset);
+        
 
       //set up task
         GMTFileReaderTask task = new GMTFileReaderTask(dataset);
@@ -54,21 +54,22 @@ public class FileReaderTest {
     }
 
 	@Test
-    public void testExpression1ReaderNormal() throws Exception{
+    public void testExpression1ReaderNormal(Provider<EnrichmentMapParameters> empFactory) throws Exception{
 
         //load the test expression file
         String testDataFileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/Expressiontestfile.gct";
 
         //create a new instance of the parameters
-        EnrichmentMapParameters params = new EnrichmentMapParameters();        
+        EnrichmentMapParameters params = empFactory.get();
         //set expression file name 
-        params.getFiles().get(EnrichmentMap.DATASET1).setExpressionFileName(testDataFileName);
+        params.getFiles().get(LegacySupport.DATASET1).setExpressionFileName(testDataFileName);
         
         //Create a new Enrichment map
-        EnrichmentMap map = new EnrichmentMap("TestEM", params);
-                
+        EnrichmentMap map = new EnrichmentMap("TestEM", params.getCreationParameters());
+        
         //get the default dataset
-        DataSet dataset = map.getDataset(EnrichmentMap.DATASET1);
+        DataSet dataset = new DataSet(map, LegacySupport.DATASET1, params.getFiles().get(LegacySupport.DATASET1));
+        map.addDataSet(LegacySupport.DATASET1, dataset);
 
         //in order to load expression data the genes have to be registered with the application
 
@@ -92,29 +93,30 @@ public class FileReaderTest {
         //make sure it was was added
         assertEquals(4, map.getNumberOfGenes());
         
-        assertEquals(4, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getNumGenes());
-        assertEquals(59, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getNumConditions());
-        assertEquals(0.008720342, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getMinExpression(),0.0);
-        assertEquals(5.131481026, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getMaxExpression(),0.0);
+        assertEquals(4, map.getDataset(LegacySupport.DATASET1).getExpressionSets().getNumGenes());
+        assertEquals(59, map.getDataset(LegacySupport.DATASET1).getExpressionSets().getNumConditions());
+        assertEquals(0.008720342, map.getDataset(LegacySupport.DATASET1).getExpressionSets().getMinExpression(),0.0);
+        assertEquals(5.131481026, map.getDataset(LegacySupport.DATASET1).getExpressionSets().getMaxExpression(),0.0);
 
     }
 	
 	@Test
-    public void testExpression1ReaderCommentLines() throws Exception{
+    public void testExpression1ReaderCommentLines(Provider<EnrichmentMapParameters> empFactory) throws Exception{
 
         //load the test expression file
         String testDataFileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/Expressiontestfile_comments.gct";
 
         //create a new instance of the parameters
-        EnrichmentMapParameters params = new EnrichmentMapParameters();        
+        EnrichmentMapParameters params = empFactory.get();
         //set gmt file name 
-        params.getFiles().get(EnrichmentMap.DATASET1).setExpressionFileName(testDataFileName);
+        params.getFiles().get(LegacySupport.DATASET1).setExpressionFileName(testDataFileName);
         
         //Create a new Enrichment map
-        EnrichmentMap map = new EnrichmentMap("TestEM", params);
+        EnrichmentMap map = new EnrichmentMap("TestEM", params.getCreationParameters());
                 
         //get the default dataset
-        DataSet dataset = map.getDataset(EnrichmentMap.DATASET1);
+        DataSet dataset = new DataSet(map, LegacySupport.DATASET1, params.getFiles().get(LegacySupport.DATASET1));
+        map.addDataSet(LegacySupport.DATASET1, dataset);
 
         //make sure that the genes are empty
         assertEquals(0, map.getNumberOfGenes());
@@ -136,32 +138,33 @@ public class FileReaderTest {
         //There was one more gene in the expression file that wasn't in the set of genes
         //make sure it was was added
         assertEquals(4, map.getNumberOfGenes());
-        assertEquals(5.131481026, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getMaxExpression(),0.0);
+        assertEquals(5.131481026, map.getDataset(LegacySupport.DATASET1).getExpressionSets().getMaxExpression(),0.0);
 
-        assertEquals(4, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getNumGenes());
-        assertEquals(59, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getNumConditions());
-        assertEquals(0.008720342, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getMinExpression(),0.0);
+        assertEquals(4, map.getDataset(LegacySupport.DATASET1).getExpressionSets().getNumGenes());
+        assertEquals(59, map.getDataset(LegacySupport.DATASET1).getExpressionSets().getNumConditions());
+        assertEquals(0.008720342, map.getDataset(LegacySupport.DATASET1).getExpressionSets().getMinExpression(),0.0);
 
 
     }
 
 	@Test
-    public void testExpression1ReaderRnk() throws Exception{
+    public void testExpression1ReaderRnk(Provider<EnrichmentMapParameters> empFactory) throws Exception{
 
         //load the test expression file
         String testDataFileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/ExpressionTestFile.rnk";
 
       //create a new instance of the parameters
-        EnrichmentMapParameters params = new EnrichmentMapParameters();        
+        EnrichmentMapParameters params = empFactory.get();
         //set expression file name 
-        params.getFiles().get(EnrichmentMap.DATASET1).setExpressionFileName(testDataFileName);
+        params.getFiles().get(LegacySupport.DATASET1).setExpressionFileName(testDataFileName);
         
         //Create a new Enrichment map
-        EnrichmentMap map = new EnrichmentMap("TestEM", params);
+        EnrichmentMap map = new EnrichmentMap("TestEM", params.getCreationParameters());
                 
         //get the default dataset
-        DataSet dataset = map.getDataset(EnrichmentMap.DATASET1);
-
+        DataSet dataset = new DataSet(map, LegacySupport.DATASET1, params.getFiles().get(LegacySupport.DATASET1));
+        map.addDataSet(LegacySupport.DATASET1, dataset);
+        
         //make sure that the genes are empty
         assertEquals(0, map.getNumberOfGenes());
 
@@ -183,29 +186,30 @@ public class FileReaderTest {
         //make sure it was was added
         assertEquals(4, map.getNumberOfGenes());
 
-        assertEquals(4, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getNumGenes());
-        assertEquals(3, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getNumConditions());
-        assertEquals(0.47536945, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getMinExpression(),0.0);
-        assertEquals(0.5418719, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getMaxExpression(),0.0);
+        assertEquals(4, map.getDataset(LegacySupport.DATASET1).getExpressionSets().getNumGenes());
+        assertEquals(3, map.getDataset(LegacySupport.DATASET1).getExpressionSets().getNumConditions());
+        assertEquals(0.47536945, map.getDataset(LegacySupport.DATASET1).getExpressionSets().getMinExpression(),0.0);
+        assertEquals(0.5418719, map.getDataset(LegacySupport.DATASET1).getExpressionSets().getMaxExpression(),0.0);
 
     }
 
 	@Test
-    public void testExpression1ReaderEDBRnk() throws Exception{
+    public void testExpression1ReaderEDBRnk(Provider<EnrichmentMapParameters> empFactory) throws Exception{
 
         //load the test expression file
         String testDataFileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/ExpressionTestFile_edbrnk.rnk";
 
       //create a new instance of the parameters
-        EnrichmentMapParameters params = new EnrichmentMapParameters();        
+        EnrichmentMapParameters params = empFactory.get();
         //set gmt file name 
-        params.getFiles().get(EnrichmentMap.DATASET1).setExpressionFileName(testDataFileName);
+        params.getFiles().get(LegacySupport.DATASET1).setExpressionFileName(testDataFileName);
         
         //Create a new Enrichment map
-        EnrichmentMap map = new EnrichmentMap("TestEM", params);
+        EnrichmentMap map = new EnrichmentMap("TestEM", params.getCreationParameters());
                 
         //get the default dataset
-        DataSet dataset = map.getDataset(EnrichmentMap.DATASET1);
+        DataSet dataset = new DataSet(map, LegacySupport.DATASET1, params.getFiles().get(LegacySupport.DATASET1));
+        map.addDataSet(LegacySupport.DATASET1, dataset);
 
         //make sure that the genes are empty
         assertEquals(0, map.getNumberOfGenes());
@@ -228,39 +232,39 @@ public class FileReaderTest {
         //make sure it was was added
         assertEquals(4, map.getNumberOfGenes());
 
-        assertEquals(4, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getNumGenes());
-        assertEquals(3, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getNumConditions());
-        assertEquals(0.47536945, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getMinExpression(),0.0);
-        assertEquals(0.5418719, map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getMaxExpression(),0.0);
+        assertEquals(4, map.getDataset(LegacySupport.DATASET1).getExpressionSets().getNumGenes());
+        assertEquals(3, map.getDataset(LegacySupport.DATASET1).getExpressionSets().getNumConditions());
+        assertEquals(0.47536945, map.getDataset(LegacySupport.DATASET1).getExpressionSets().getMinExpression(),0.0);
+        assertEquals(0.5418719, map.getDataset(LegacySupport.DATASET1).getExpressionSets().getMaxExpression(),0.0);
 
     }
     
 	@Test
-    public void testGenericFileReader_5columns() throws Exception{
+    public void testGenericFileReader_5columns(Provider<EnrichmentMapParameters> empFactory) throws Exception{
         //load the test expression file
         String testDataFileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/generic_enr_5col.txt";
         
       //create a new instance of the parameters
-        EnrichmentMapParameters params = new EnrichmentMapParameters();        
+        EnrichmentMapParameters params = empFactory.get();
         //set enrichment results file name
-        params.getFiles().get(EnrichmentMap.DATASET1).setEnrichmentFileName1(testDataFileName);
+        params.getFiles().get(LegacySupport.DATASET1).setEnrichmentFileName1(testDataFileName);
         
         //Create a new Enrichment map
-        EnrichmentMap map = new EnrichmentMap("TestEM", params);
+        EnrichmentMap map = new EnrichmentMap("TestEM", params.getCreationParameters());
                 
         //get the default dataset
-        DataSet dataset = map.getDataset(EnrichmentMap.DATASET1);
-
+        DataSet dataset = new DataSet(map, LegacySupport.DATASET1, params.getFiles().get(LegacySupport.DATASET1));
+        map.addDataSet(LegacySupport.DATASET1, dataset);
         
         // check if empty
-        assertEquals(0, map.getDataset(EnrichmentMap.DATASET1).getEnrichments().getEnrichments().size());
+        assertEquals(0, map.getDataset(LegacySupport.DATASET1).getEnrichments().getEnrichments().size());
         
         // read
         ParseGenericEnrichmentResults task = new ParseGenericEnrichmentResults(dataset);
         task.run(taskMonitor);
 
 
-        Map<String, EnrichmentResult> results = map.getDataset(EnrichmentMap.DATASET1).getEnrichments().getEnrichments();
+        Map<String, EnrichmentResult> results = map.getDataset(LegacySupport.DATASET1).getEnrichments().getEnrichments();
         // check we have 4 results
         assertEquals(4, results.size() );
         
@@ -287,28 +291,29 @@ public class FileReaderTest {
     
     //test GSEA enrichment results reader
 	@Test
-    public void testGSEAEnrichmentsReader() throws Exception{
+    public void testGSEAEnrichmentsReader(Provider<EnrichmentMapParameters> empFactory) throws Exception{
 
         //load the test enrichment files - GSEA creates two enrichment results files.
         String testDataFileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/GSEA_enrichments1.xls";
         String testDataFileName2 ="src/test/resources/org/baderlab/csplugins/enrichmentmap/GSEA_enrichments2.xls";
 
       //create a new instance of the parameters
-        EnrichmentMapParameters params = new EnrichmentMapParameters();        
+        EnrichmentMapParameters params = empFactory.get();
         //set enrichment file name 
-        params.getFiles().get(EnrichmentMap.DATASET1).setEnrichmentFileName1(testDataFileName);
-        params.getFiles().get(EnrichmentMap.DATASET1).setEnrichmentFileName2(testDataFileName2);
+        params.getFiles().get(LegacySupport.DATASET1).setEnrichmentFileName1(testDataFileName);
+        params.getFiles().get(LegacySupport.DATASET1).setEnrichmentFileName2(testDataFileName2);
         //Create a new Enrichment map
-        EnrichmentMap map = new EnrichmentMap("TestEM", params);
+        EnrichmentMap map = new EnrichmentMap("TestEM", params.getCreationParameters());
                 
         //get the default dataset
-        DataSet dataset = map.getDataset(EnrichmentMap.DATASET1);
+        DataSet dataset = new DataSet(map, LegacySupport.DATASET1, params.getFiles().get(LegacySupport.DATASET1));
+        map.addDataSet(LegacySupport.DATASET1, dataset);
         
         ParseGSEAEnrichmentResults task = new ParseGSEAEnrichmentResults(dataset);
         task.run(taskMonitor);
         
         //Get the enrichment
-        Map<String, EnrichmentResult> enrichments = map.getDataset(EnrichmentMap.DATASET1).getEnrichments().getEnrichments();
+        Map<String, EnrichmentResult> enrichments = map.getDataset(LegacySupport.DATASET1).getEnrichments().getEnrichments();
         
         assertEquals(40,enrichments.size());
         
@@ -346,27 +351,28 @@ public class FileReaderTest {
 
 	//test GSEA enrichment results reader
 	@Test
-    public void testGSEAEDBEnrichmentsReader() throws Exception{
+    public void testGSEAEDBEnrichmentsReader(Provider<EnrichmentMapParameters> empFactory) throws Exception{
 
         //load the test enrichment files - GSEA creates two enrichment results files.
         String testDataFileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/task/LoadDataset/GSEA_example_results/edb/results.edb";
        
       //create a new instance of the parameters
-        EnrichmentMapParameters params = new EnrichmentMapParameters();        
+        EnrichmentMapParameters params = empFactory.get();
         //set enrichment file name 
-        params.getFiles().get(EnrichmentMap.DATASET1).setEnrichmentFileName1(testDataFileName);
+        params.getFiles().get(LegacySupport.DATASET1).setEnrichmentFileName1(testDataFileName);
  
         //Create a new Enrichment map
-        EnrichmentMap map = new EnrichmentMap("TestEM", params);
+        EnrichmentMap map = new EnrichmentMap("TestEM", params.getCreationParameters());
                 
         //get the default dataset
-        DataSet dataset = map.getDataset(EnrichmentMap.DATASET1);
+        DataSet dataset = new DataSet(map, LegacySupport.DATASET1, params.getFiles().get(LegacySupport.DATASET1));
+        map.addDataSet(LegacySupport.DATASET1, dataset);
         
         ParseEDBEnrichmentResults task = new ParseEDBEnrichmentResults(dataset);
         task.run(taskMonitor);
         
         //Get the enrichment
-        Map<String, EnrichmentResult> enrichments = map.getDataset(EnrichmentMap.DATASET1).getEnrichments().getEnrichments();
+        Map<String, EnrichmentResult> enrichments = map.getDataset(LegacySupport.DATASET1).getEnrichments().getEnrichments();
         
         assertEquals(14,enrichments.size());
         
@@ -409,28 +415,28 @@ public class FileReaderTest {
    
     //test Bingo enrichment results
 	@Test
-    public void testBingoEnrichmentsReader() throws Exception{
+    public void testBingoEnrichmentsReader(Provider<EnrichmentMapParameters> empFactory) throws Exception{
 
         //load the test enrichment files - Bingo
         String testDataFileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/BingoResults.bgo";
 
       //create a new instance of the parameters
-        EnrichmentMapParameters params = new EnrichmentMapParameters();        
+        EnrichmentMapParameters params = empFactory.get();
         //set enrichment file name 
-        params.getFiles().get(EnrichmentMap.DATASET1).setEnrichmentFileName1(testDataFileName);
+        params.getFiles().get(LegacySupport.DATASET1).setEnrichmentFileName1(testDataFileName);
 
         //Create a new Enrichment map
-        EnrichmentMap map = new EnrichmentMap("TestEM", params);
+        EnrichmentMap map = new EnrichmentMap("TestEM", params.getCreationParameters());
                 
         //get the default dataset
-        DataSet dataset = map.getDataset(EnrichmentMap.DATASET1);
+        DataSet dataset = new DataSet(map, LegacySupport.DATASET1, params.getFiles().get(LegacySupport.DATASET1));
+        map.addDataSet(LegacySupport.DATASET1, dataset);
         
-
         ParseBingoEnrichmentResults task = new ParseBingoEnrichmentResults(dataset);
         task.run(taskMonitor);
         
         //Get the enrichment
-        Map<String, EnrichmentResult> enrichments = map.getDataset(EnrichmentMap.DATASET1).getEnrichments().getEnrichments();
+        Map<String, EnrichmentResult> enrichments = map.getDataset(LegacySupport.DATASET1).getEnrichments().getEnrichments();
         
         assertEquals(74,enrichments.size());
         
@@ -453,28 +459,28 @@ public class FileReaderTest {
     
     //test David enrichment results reader
 	@Test
-    public void testDavidEnrichmentsReader() throws Exception{
+    public void testDavidEnrichmentsReader(Provider<EnrichmentMapParameters> empFactory) throws Exception{
 
         //load the test enrichment files - Bingo
         String testDataFileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/DavidResults.txt";
 
       //create a new instance of the parameters
-        EnrichmentMapParameters params = new EnrichmentMapParameters();        
+        EnrichmentMapParameters params = empFactory.get();
         //set enrichment file name 
-        params.getFiles().get(EnrichmentMap.DATASET1).setEnrichmentFileName1(testDataFileName);
+        params.getFiles().get(LegacySupport.DATASET1).setEnrichmentFileName1(testDataFileName);
 
         //Create a new Enrichment map
-        EnrichmentMap map = new EnrichmentMap("TestEM", params);
+        EnrichmentMap map = new EnrichmentMap("TestEM", params.getCreationParameters());
                 
         //get the default dataset
-        DataSet dataset = map.getDataset(EnrichmentMap.DATASET1);
-        
+        DataSet dataset = new DataSet(map, LegacySupport.DATASET1, params.getFiles().get(LegacySupport.DATASET1));
+        map.addDataSet(LegacySupport.DATASET1, dataset);
 
         ParseDavidEnrichmentResults task = new ParseDavidEnrichmentResults(dataset);
         task.run(taskMonitor);
         
         //Get the enrichment
-        Map<String, EnrichmentResult> enrichments = map.getDataset(EnrichmentMap.DATASET1).getEnrichments().getEnrichments();
+        Map<String, EnrichmentResult> enrichments = map.getDataset(LegacySupport.DATASET1).getEnrichments().getEnrichments();
         
         assertEquals(215,enrichments.size());
         

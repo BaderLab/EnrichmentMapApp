@@ -9,12 +9,15 @@ import org.baderlab.csplugins.enrichmentmap.ApplicationModule;
 import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Edges;
 import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Nodes;
 import org.baderlab.csplugins.enrichmentmap.LogSilenceRule;
+import org.baderlab.csplugins.enrichmentmap.PropertyManager;
 import org.baderlab.csplugins.enrichmentmap.SerialTestTaskManager;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadSignatureSetsActionListener;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapPanel;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
+import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.view.ParametersPanel;
@@ -79,6 +82,7 @@ public abstract class BaseNetworkTest {
     
     @Inject private CyApplicationManager applicationManager;
     @Inject private EnrichmentMapManager emManager;
+    @Inject private PropertyManager propertyManager;
     
     @Inject private EnrichmentMapBuildMapTaskFactory.Factory enrichmentMapBuildMapTaskFactoryFactory;
     @Inject private LoadSignatureSetsActionListener.Factory  loadSignatureSetsActionListenerFactory;
@@ -92,10 +96,14 @@ public abstract class BaseNetworkTest {
 	}
 	
 	
-	protected void buildEnrichmentMap(EnrichmentMapParameters emParams) {
-		String prefix = emParams.getAttributePrefix();
+	protected void buildEnrichmentMap(EMCreationParameters params, DataSetFiles datasetFiles, String datasetName) {
+		String prefix = params.getAttributePrefix();
 		String name = prefix + LegacySupport.EM_NAME;
-		EnrichmentMap map = new EnrichmentMap(name, emParams);
+		
+		EnrichmentMap map = new EnrichmentMap(name, params);
+		DataSet dataset = new DataSet(map, datasetName, datasetFiles);
+		map.addDataSet(datasetName, dataset);
+		
 	   	EnrichmentMapBuildMapTaskFactory buildmap = enrichmentMapBuildMapTaskFactoryFactory.create(map);
 	    
 	   	TaskIterator taskIterator = buildmap.createTaskIterator();

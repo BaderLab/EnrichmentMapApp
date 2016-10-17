@@ -50,6 +50,7 @@ import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters;
 import org.baderlab.csplugins.enrichmentmap.heatmap.task.UpdateHeatMapTask;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
+import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanel;
@@ -64,7 +65,6 @@ import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskIterator;
 
 import com.google.inject.Inject;
-import com.google.inject.Provider;
 
 /**
  * Class listener for node and edge selections. For each enrichment map there is
@@ -73,15 +73,12 @@ import com.google.inject.Provider;
  */
 public class HeatMapSelectionListener implements RowsSetListener {
 	
-	@Inject private EnrichmentMapManager manager;
-	@Inject private Provider<HeatMapParameters> heatMapParametersProvider;
-	
 	@Inject private CyApplicationManager applicationManager;
 	@Inject private SynchronousTaskManager<?> syncTaskManager;
 	@Inject private CySwingApplication swingApplication;
 	
+	@Inject private EnrichmentMapManager manager;
 	@Inject private UpdateHeatMapTask.Factory updateHeatMapTaskFactory;
-	
 	
 
 	/**
@@ -89,26 +86,17 @@ public class HeatMapSelectionListener implements RowsSetListener {
 	 */
 	private EnrichmentMap getAndInitializeEnrichmentMap(CyNetwork network) {
 		Long suid = network.getSUID();
-		
 		EnrichmentMap map = manager.getEnrichmentMap(suid);
-		if(map != null && map.getDataset(EnrichmentMap.DATASET1) != null) {
-			
+		
+		if(LegacySupport.isLegacyEnrichmentMap(map)) {
 			HeatMapParameters hmParams = manager.getHeatMapParameters(suid);
 			if(hmParams == null) {
-				hmParams = heatMapParametersProvider.get();
-				
-				// If there are two distinct datasets intialize the theme and range for the heatmap coloring separately.
-				if (map.getDataset(EnrichmentMap.DATASET2) != null && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null && !map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getFilename().equalsIgnoreCase(map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getFilename()))
-					hmParams.initColorGradients(map.getDataset(EnrichmentMap.DATASET1).getExpressionSets(), map.getDataset(EnrichmentMap.DATASET2).getExpressionSets());
-				else
-					hmParams.initColorGradients(map.getDataset(EnrichmentMap.DATASET1).getExpressionSets());
-				
-				// associate the newly created heatmap parameters with the current enrichment map paramters
+				hmParams = new HeatMapParameters(map);
 				manager.setHeatMapParameters(suid, hmParams);
 			}
-
+			return map;
 		}
-		return map;
+		return null;
 	}
 
 	/**
@@ -118,8 +106,7 @@ public class HeatMapSelectionListener implements RowsSetListener {
 		// TODO: improve performance of calculating the Union of genesets (Nodes) and intersection of overlaps (Edges)
 		// Meanwhile we have a flag to skip the updating of the Heatmap, which can be toggled by a check-mark in the EM-Menu
 		boolean override_revalidate_heatmap = manager.isOverrideHeatmapRevalidation();
-
-		CyNetwork network = this.applicationManager.getCurrentNetwork();
+		CyNetwork network = applicationManager.getCurrentNetwork();
 
 		// only handle event if it is a selected node
 		if (network != null && e != null && (e.getSource() == network.getDefaultEdgeTable() || e.getSource() == network.getDefaultNodeTable())) {

@@ -77,12 +77,17 @@ import javax.swing.SwingUtilities;
 
 import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Edges;
 import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Nodes;
+import org.baderlab.csplugins.enrichmentmap.PropertyManager;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapPanel;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters;
-import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
+import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters.DistanceMetric;
+import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters.Sort;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.Method;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
+import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.style.EnrichmentMapVisualStyle;
 import org.baderlab.csplugins.enrichmentmap.task.CreatePublicationVisualStyleTaskFactory;
 import org.cytoscape.application.CyApplicationManager;
@@ -114,6 +119,7 @@ public class ParametersPanel extends JPanel implements CytoPanelComponent, Netwo
 	@Inject private CyApplicationManager cyApplicationManager;
 	@Inject private DialogTaskManager taskManager;
 	@Inject private EnrichmentMapManager emManager;
+	@Inject private PropertyManager propertyManager;
 	
 	@Inject private @Nodes HeatMapPanel nodesOverlapPanel;
 	@Inject private @Edges HeatMapPanel edgesOverlapPanel;
@@ -134,7 +140,7 @@ public class ParametersPanel extends JPanel implements CytoPanelComponent, Netwo
 	 */
 	public void updatePanel(EnrichmentMap map) {
 		this.map = map;
-		EnrichmentMapParameters params = map.getParams();
+		EMCreationParameters params = map.getParams();
 
 		this.removeAll();
 		this.revalidate();
@@ -147,9 +153,9 @@ public class ParametersPanel extends JPanel implements CytoPanelComponent, Netwo
 		JButton openReport2Button = new JButton("Open GSEA-report Dataset 2");
 		openReport2Button.setVisible(false);
 		
-		if (params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)) {
-			final String reportFileDataset1 = resolveGseaReportFilePath(params, 1);
-			final String reportFileDataset2 = resolveGseaReportFilePath(params, 2);
+		if (params.getMethod() == Method.GSEA) {
+			final String reportFileDataset1 = resolveGseaReportFilePath(map, 1);
+			final String reportFileDataset2 = resolveGseaReportFilePath(map, 2);
 
 			if (!(reportFileDataset1 == null)) {
 				openReport1Button.setVisible(true);
@@ -210,7 +216,7 @@ public class ParametersPanel extends JPanel implements CytoPanelComponent, Netwo
 	}
 
 	private BasicCollapsiblePanel createPreferencesPanel(EnrichmentMap map) {
-		EnrichmentMapParameters params = map.getParams();
+		EMCreationParameters params = map.getParams();
 		
 		JButton togglePublicationButton = new JButton("Toggle Publication-Ready");
 		togglePublicationButton.addActionListener((ActionEvent e) -> {
@@ -224,92 +230,110 @@ public class ParametersPanel extends JPanel implements CytoPanelComponent, Netwo
 				// Do this in the GUI Event Dispatch thread...
 				SwingUtilities.invokeLater(() -> {
 					// toggle state of overrideHeatmapRevalidation
-					if (map.getParams().isDisableHeatmapAutofocus()) {
-						map.getParams().setDisableHeatmapAutofocus(false);
+					if (emManager.isDisableHeatmapAutofocus()) {
+						emManager.setDisableHeatmapAutofocus(false);
 					} else {
-						map.getParams().setDisableHeatmapAutofocus(true);
+						emManager.setDisableHeatmapAutofocus(true);
 					}
-					heatmapAutofocusCheckbox.setSelected(!map.getParams().isDisableHeatmapAutofocus());
+					heatmapAutofocusCheckbox.setSelected(!emManager.isDisableHeatmapAutofocus());
 				});
 			}
 		});
-		heatmapAutofocusCheckbox.setSelected(!params.isDisableHeatmapAutofocus());
+		heatmapAutofocusCheckbox.setSelected(!emManager.isDisableHeatmapAutofocus());
 
-		// add a radio button to set default sort method for the heat map
-		ButtonGroup sortingMethodsGroup = new ButtonGroup();
-
-		JRadioButton hc = new JRadioButton(HeatMapParameters.sort_hierarchical_cluster);
-		hc.setActionCommand(HeatMapParameters.sort_hierarchical_cluster);
+		JRadioButton hc = new JRadioButton(Sort.CLUSTER.display);
+		hc.setActionCommand(Sort.CLUSTER.name());
 		hc.setSelected(false);
 
-		JRadioButton nosort = new JRadioButton(HeatMapParameters.sort_none);
-		nosort.setActionCommand(HeatMapParameters.sort_none);
+		JRadioButton nosort = new JRadioButton(Sort.NONE.display);
+		nosort.setActionCommand(Sort.NONE.name());
 		nosort.setSelected(false);
 
-		JRadioButton ranks = new JRadioButton(HeatMapParameters.sort_rank);
-		ranks.setActionCommand(HeatMapParameters.sort_rank);
+		JRadioButton ranks = new JRadioButton(Sort.RANK.display);
+		ranks.setActionCommand(Sort.RANK.name());
 		ranks.setSelected(false);
 
-		JRadioButton columns = new JRadioButton(HeatMapParameters.sort_column);
-		columns.setActionCommand(HeatMapParameters.sort_column);
+		JRadioButton columns = new JRadioButton(Sort.COLUMN.display);
+		columns.setActionCommand(Sort.COLUMN.name());
 		columns.setSelected(false);
+		
+		HeatMapParameters hmParams = emManager.getHeatMapParameters(map.getNetworkID());
+		
+		if(hmParams == null) {
+			hc.setEnabled(false);
+			nosort.setEnabled(false);
+			ranks.setEnabled(false);
+			columns.setEnabled(false);
+		} 
+		else {
+			if (hmParams.getSort() == Sort.CLUSTER)
+				hc.setSelected(true);
+			if (hmParams.getSort() == Sort.NONE)
+				nosort.setSelected(true);
+			if (hmParams.getSort() == Sort.RANK)
+				ranks.setSelected(true);
+			if (hmParams.getSort() == Sort.COLUMN)
+				columns.setSelected(true);
+			
+			hc.addActionListener(e -> hmParams.setDefaultSort(Sort.CLUSTER));
+			nosort.addActionListener(e -> hmParams.setDefaultSort(Sort.NONE));
+			ranks.addActionListener(e -> hmParams.setDefaultSort(Sort.RANK));
+			columns.addActionListener(e -> hmParams.setDefaultSort(Sort.COLUMN));
+		}
 
-		if (params.getDefaultSortMethod().equalsIgnoreCase(HeatMapParameters.sort_hierarchical_cluster))
-			hc.setSelected(true);
-		if (params.getDefaultSortMethod().equalsIgnoreCase(HeatMapParameters.sort_none))
-			nosort.setSelected(true);
-		if (params.getDefaultSortMethod().equalsIgnoreCase(HeatMapParameters.sort_rank))
-			ranks.setSelected(true);
-		if (params.getDefaultSortMethod().equalsIgnoreCase(HeatMapParameters.sort_column))
-			columns.setSelected(true);
-
-		hc.addActionListener(e -> map.getParams().setDefaultSortMethod(HeatMapParameters.sort_hierarchical_cluster));
+		ButtonGroup sortingMethodsGroup = new ButtonGroup();
 		sortingMethodsGroup.add(hc);
-		nosort.addActionListener(e -> map.getParams().setDefaultSortMethod(HeatMapParameters.sort_none));
 		sortingMethodsGroup.add(nosort);
-		ranks.addActionListener(e -> map.getParams().setDefaultSortMethod(HeatMapParameters.sort_rank));
 		sortingMethodsGroup.add(ranks);
-		columns.addActionListener(e -> map.getParams().setDefaultSortMethod(HeatMapParameters.sort_column));
 		sortingMethodsGroup.add(columns);
 
 		JLabel defSortingOrderLabel = new JLabel("Default Sorting Order:");
 
-		// add a radio button to set default distance metric for the hierarchical cluster
-		ButtonGroup distanceMetricGroup = new ButtonGroup();
-
-		JRadioButton pearson = new JRadioButton(HeatMapParameters.pearson_correlation);
-		pearson.setActionCommand(HeatMapParameters.pearson_correlation);
+		JRadioButton pearson = new JRadioButton(DistanceMetric.PEARSON_CORRELATION.display);
+		pearson.setActionCommand(DistanceMetric.PEARSON_CORRELATION.name());
 		pearson.setSelected(false);
 
-		JRadioButton cosine = new JRadioButton(HeatMapParameters.cosine);
-		cosine.setActionCommand(HeatMapParameters.cosine);
+		JRadioButton cosine = new JRadioButton(DistanceMetric.COSINE.display);
+		cosine.setActionCommand(DistanceMetric.COSINE.name());
 		cosine.setSelected(false);
 
-		JRadioButton euclidean = new JRadioButton(HeatMapParameters.euclidean);
-		euclidean.setActionCommand(HeatMapParameters.euclidean);
+		JRadioButton euclidean = new JRadioButton(DistanceMetric.EUCLIDEAN.display);
+		euclidean.setActionCommand(DistanceMetric.EUCLIDEAN.name());
 		euclidean.setSelected(false);
 
-		if (params.getDefaultDistanceMetric().equalsIgnoreCase(HeatMapParameters.pearson_correlation))
-			pearson.setSelected(true);
-		if (params.getDefaultDistanceMetric().equalsIgnoreCase(HeatMapParameters.cosine))
-			cosine.setSelected(true);
-		if (params.getDefaultDistanceMetric().equalsIgnoreCase(HeatMapParameters.euclidean))
-			euclidean.setSelected(true);
+		if(hmParams == null) {
+			pearson.setEnabled(false);
+			cosine.setEnabled(false);
+			euclidean.setEnabled(false);
+		}
+		else  {
+			if (hmParams.getDistanceMetric() == DistanceMetric.PEARSON_CORRELATION)
+				pearson.setSelected(true);
+			if (hmParams.getDistanceMetric() == DistanceMetric.COSINE)
+				cosine.setSelected(true);
+			if (hmParams.getDistanceMetric() == DistanceMetric.EUCLIDEAN)
+				euclidean.setSelected(true);
+			
+			pearson.addActionListener(e-> {
+				hmParams.setDistanceMetric(DistanceMetric.PEARSON_CORRELATION);
+				edgesOverlapPanel.updatePanel(map);
+				nodesOverlapPanel.updatePanel(map);
+			});
+			cosine.addActionListener(e-> {
+				hmParams.setDistanceMetric(DistanceMetric.COSINE);
+				edgesOverlapPanel.updatePanel(map);
+				nodesOverlapPanel.updatePanel(map);
+			});
+			euclidean.addActionListener(e-> {
+				hmParams.setDistanceMetric(DistanceMetric.EUCLIDEAN);
+				edgesOverlapPanel.updatePanel(map);
+				nodesOverlapPanel.updatePanel(map);
+			});
+		}
 
-		pearson.addActionListener(e-> {
-			edgesOverlapPanel.updatePanel(map);
-			nodesOverlapPanel.updatePanel(map);
-		});
+		ButtonGroup distanceMetricGroup = new ButtonGroup();
 		distanceMetricGroup.add(pearson);
-		cosine.addActionListener(e-> {
-			edgesOverlapPanel.updatePanel(map);
-			nodesOverlapPanel.updatePanel(map);
-		});
 		distanceMetricGroup.add(cosine);
-		euclidean.addActionListener(e-> {
-			edgesOverlapPanel.updatePanel(map);
-			nodesOverlapPanel.updatePanel(map);
-		});
 		distanceMetricGroup.add(euclidean);
 
 		JLabel defDistanceMetricLabel = new JLabel("Default Distance Metric:");
@@ -370,7 +394,7 @@ public class ParametersPanel extends JPanel implements CytoPanelComponent, Netwo
 		return panel;
 	}
 
-	private BasicCollapsiblePanel createCurrentParamsPanel(EnrichmentMapParameters params) {
+	private BasicCollapsiblePanel createCurrentParamsPanel(EMCreationParameters params) {
 		// information about the current analysis
 		JTextPane runInfoPane = new JTextPane();
 		runInfoPane.setEditable(false);
@@ -400,8 +424,7 @@ public class ParametersPanel extends JPanel implements CytoPanelComponent, Netwo
 	/**
 	 * Get the files and parameters corresponding to the current enrichment map
 	 */
-	private String getRunInfo(EnrichmentMapParameters params) {
-		HashMap<String, DataSetFiles> files = params.getFiles();
+	private String getRunInfo(EMCreationParameters params) {
 		
 		final String INDENT = "&nbsp;&nbsp;&nbsp;&nbsp;";
 		
@@ -410,22 +433,22 @@ public class ParametersPanel extends JPanel implements CytoPanelComponent, Netwo
 		s = s + "<b>P-value Cut-off:</b> " + params.getPvalue() + "<br>";
 		s = s + "<b>FDR Q-value Cut-off:</b> " + params.getQvalue() + "<br>";
 
-		if (params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_JACCARD)) {
-			s = s + "<b>Jaccard Cut-off:</b> " + params.getSimilarityCutOff() + "<br>";
+		if (params.getSimilarityMetric() == SimilarityMetric.JACCARD) {
+			s = s + "<b>Jaccard Cut-off:</b> " + params.getSimilarityCutoff() + "<br>";
 			s = s + "<b>Test used:</b> Jaccard Index<br>";
-		} else if (params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_OVERLAP)) {
-			s = s + "<b>Overlap Cut-off:</b> " + params.getSimilarityCutOff() + "<br>";
+		} else if (params.getSimilarityMetric() == SimilarityMetric.OVERLAP) {
+			s = s + "<b>Overlap Cut-off:</b> " + params.getSimilarityCutoff() + "<br>";
 			s = s + "<b>Test Used:</b> Overlap Index<br>";
-		} else if (params.getSimilarityMetric().equalsIgnoreCase(EnrichmentMapParameters.SM_COMBINED)) {
-			s = s + "<b>Jaccard Overlap Combined Cut-off:</b> " + params.getSimilarityCutOff() + "<br>";
+		} else if (params.getSimilarityMetric() == SimilarityMetric.COMBINED) {
+			s = s + "<b>Jaccard Overlap Combined Cut-off:</b> " + params.getSimilarityCutoff() + "<br>";
 			s = s + "<b>Test Used:</b> Jaccard Overlap Combined Index (k constant = " + params.getCombinedConstant() + ")<br>";
 		}
 		
 		s = s + "<b>Genesets File: </b><br>"
-				+ INDENT + shortenPathname(files.get(EnrichmentMap.DATASET1).getGMTFileName()) + "<br>";
+				+ INDENT + shortenPathname(map.getDataset(LegacySupport.DATASET1).getDatasetFiles().getGMTFileName()) + "<br>";
 		
-		String enrichmentFileName1 = files.get(EnrichmentMap.DATASET1).getEnrichmentFileName1();
-		String enrichmentFileName2 = files.get(EnrichmentMap.DATASET1).getEnrichmentFileName2();
+		String enrichmentFileName1 = map.getDataset(LegacySupport.DATASET1).getDatasetFiles().getEnrichmentFileName1();
+		String enrichmentFileName2 = map.getDataset(LegacySupport.DATASET1).getDatasetFiles().getEnrichmentFileName2();
 		
 		if (enrichmentFileName1 != null || enrichmentFileName2 != null) {
 			s = s + "<b>Dataset 1 Data Files: </b><br>";
@@ -437,9 +460,9 @@ public class ParametersPanel extends JPanel implements CytoPanelComponent, Netwo
 				s = s + INDENT + shortenPathname(enrichmentFileName2) + "<br>";
 		}
 		
-		if (params.isTwoDatasets()) {
-			enrichmentFileName1 = files.get(EnrichmentMap.DATASET2).getEnrichmentFileName1();
-			enrichmentFileName2 = files.get(EnrichmentMap.DATASET2).getEnrichmentFileName2();
+		if (LegacySupport.isLegacyTwoDatasets(map)) {
+			enrichmentFileName1 = map.getDataset(LegacySupport.DATASET2).getDatasetFiles().getEnrichmentFileName1();
+			enrichmentFileName2 = map.getDataset(LegacySupport.DATASET2).getDatasetFiles().getEnrichmentFileName2();
 			
 			if (enrichmentFileName1 != null || enrichmentFileName2 != null) {
 				s = s + "<b>Dataset 2 Data Files: </b><br>";
@@ -451,23 +474,23 @@ public class ParametersPanel extends JPanel implements CytoPanelComponent, Netwo
 					s = s + INDENT + shortenPathname(enrichmentFileName2) + "<br>";
 			}
 		}
-		s = s + "<b>Data file:</b>" + shortenPathname(map.getParams().getFiles().get(EnrichmentMap.DATASET1).getExpressionFileName())
+		s = s + "<b>Data file:</b>" + shortenPathname(map.getDataset(LegacySupport.DATASET1).getDatasetFiles().getExpressionFileName())
 		+ "<br>";
 		// TODO:fix second dataset viewing.
 		/*
-		 * if(params.isData2() && params.getEM().getExpression(EnrichmentMap.DATASET2) != null)
+		 * if(params.isData2() && params.getEM().getExpression(LegacySupport.DATASET2) != null)
 		 * runInfoText = runInfoText + "<b>Data file 2:</b>" + shortenPathname(params.getExpressionFileName2()) + "<br>";
 		 */
 		
-		if (files.containsKey(EnrichmentMap.DATASET1)
-				&& files.get(EnrichmentMap.DATASET1).getGseaHtmlReportFile() != null) {
+		if (map.getDataset(LegacySupport.DATASET1) != null
+				&& map.getDataset(LegacySupport.DATASET1).getDatasetFiles().getGseaHtmlReportFile() != null) {
 			s = s + "<b>GSEA Report 1:</b>"
-					+ shortenPathname(files.get(EnrichmentMap.DATASET1).getGseaHtmlReportFile()) + "<br>";
+					+ shortenPathname(map.getDataset(LegacySupport.DATASET1).getDatasetFiles().getGseaHtmlReportFile()) + "<br>";
 		}
-		if (files.containsKey(EnrichmentMap.DATASET2)
-				&& files.get(EnrichmentMap.DATASET2).getGseaHtmlReportFile() != null) {
+		if (map.getDataset(LegacySupport.DATASET2) != null
+				&& map.getDataset(LegacySupport.DATASET2).getDatasetFiles().getGseaHtmlReportFile() != null) {
 			s = s + "<b>GSEA Report 2:</b>"
-					+ shortenPathname(files.get(EnrichmentMap.DATASET2).getGseaHtmlReportFile()) + "<br>";
+					+ shortenPathname(map.getDataset(LegacySupport.DATASET2).getDatasetFiles().getGseaHtmlReportFile()) + "<br>";
 		}
 
 		s = s + "</font></html>";
@@ -478,7 +501,7 @@ public class ParametersPanel extends JPanel implements CytoPanelComponent, Netwo
 	/**
 	 * Create the legend - contains the enrichment score colour mapper and diagram where the colours are
 	 */
-	private JPanel createLegendPanel(EnrichmentMapParameters params, EnrichmentMap map) {
+	private JPanel createLegendPanel(EMCreationParameters params, EnrichmentMap map) {
 		JPanel panel = new JPanel();
 		
 		if (LookAndFeelUtil.isAquaLAF())
@@ -513,15 +536,15 @@ public class ParametersPanel extends JPanel implements CytoPanelComponent, Netwo
 		LegendPanel nodeLegendPanel = new LegendPanel(
 				EnrichmentMapVisualStyle.MAX_PHENOTYPE_1,
 				EnrichmentMapVisualStyle.MAX_PHENOTYPE_2,
-				map.getDataset(EnrichmentMap.DATASET1).getEnrichments().getPhenotype1(),
-				map.getDataset(EnrichmentMap.DATASET1).getEnrichments().getPhenotype2());
+				map.getDataset(LegacySupport.DATASET1).getEnrichments().getPhenotype1(),
+				map.getDataset(LegacySupport.DATASET1).getEnrichments().getPhenotype2());
 		nodeLegendPanel.setToolTipText("Phenotype * (1-P_value)");
 		
 		hGroup.addComponent(nodeLegendPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
 		vGroup.addComponent(nodeLegendPanel).addPreferredGap(ComponentPlacement.UNRELATED);
 
 		// If there are two datasets then we need to define the node border legend as well.
-		if (params.isTwoDatasets()) {
+		if (LegacySupport.isLegacyTwoDatasets(map)) {
 			// represent the node border color as an png/gif instead of using java to generate the representation
 			URL nodeborderIconURL = this.getClass().getResource("node_border_color_small.png");
 
@@ -536,26 +559,26 @@ public class ParametersPanel extends JPanel implements CytoPanelComponent, Netwo
 			LegendPanel nodeLegendPanel2 = new LegendPanel(
 					EnrichmentMapVisualStyle.MAX_PHENOTYPE_1,
 					EnrichmentMapVisualStyle.MAX_PHENOTYPE_2,
-					map.getDataset(EnrichmentMap.DATASET2).getEnrichments().getPhenotype1(),
-					map.getDataset(EnrichmentMap.DATASET2).getEnrichments().getPhenotype2());
+					map.getDataset(LegacySupport.DATASET2).getEnrichments().getPhenotype1(),
+					map.getDataset(LegacySupport.DATASET2).getEnrichments().getPhenotype2());
 			nodeLegendPanel2.setToolTipText("Phenotype * (1-P_value)");
 			
 			hGroup.addComponent(nodeLegendPanel2, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
 			vGroup.addComponent(nodeLegendPanel2).addPreferredGap(ComponentPlacement.UNRELATED);
 		}
 
-		SliderBarPanel pValueSliderPanel = createPvalueSlider(params);
+		SliderBarPanel pValueSliderPanel = createPvalueSlider(map);
 		
 		hGroup.addComponent(pValueSliderPanel);
 		vGroup.addComponent(pValueSliderPanel);
 		if (params.isFDR()) {
-			SliderBarPanel qValueSliderPanel = createQvalueSlider(params);
+			SliderBarPanel qValueSliderPanel = createQvalueSlider(map);
 			
 			hGroup.addComponent(qValueSliderPanel);
 			vGroup.addComponent(qValueSliderPanel);
 		}
 		
-		SliderBarPanel similaritySliderPanel = createSimilaritySlider(params);
+		SliderBarPanel similaritySliderPanel = createSimilaritySlider(map);
 		
 		hGroup.addComponent(similaritySliderPanel);
 		vGroup.addComponent(similaritySliderPanel);
@@ -564,34 +587,34 @@ public class ParametersPanel extends JPanel implements CytoPanelComponent, Netwo
 	}
 	
 	
-	private SliderBarPanel createPvalueSlider(EnrichmentMapParameters params) {
-		return pvalueSliderPanels.computeIfAbsent(params.getNetworkID(), suid -> {
-			double pvalue_min = params.getPvalue_min();
-			double pvalue = params.getPvalue();
+	private SliderBarPanel createPvalueSlider(EnrichmentMap map) {
+		return pvalueSliderPanels.computeIfAbsent(map.getNetworkID(), suid -> {
+			double pvalue_min = map.getParams().getPvalueMin();
+			double pvalue = map.getParams().getPvalue();
 			return new SliderBarPanel(
 					((pvalue_min == 1 || pvalue_min >= pvalue) ? 0 : pvalue_min), pvalue,
-					"P-value Cutoff", params, EnrichmentMapVisualStyle.PVALUE_DATASET1,
+					"P-value Cutoff", EnrichmentMapVisualStyle.PVALUE_DATASET1,
 					EnrichmentMapVisualStyle.PVALUE_DATASET2, false, pvalue,
 					cyApplicationManager, emManager);
 		});
 	}
 	
-	private SliderBarPanel createQvalueSlider(EnrichmentMapParameters params) {
-		return qvalueSliderPanels.computeIfAbsent(params.getNetworkID(), suid -> {
-			double qvalue_min = params.getQvalue_min();
-			double qvalue = params.getQvalue();
+	private SliderBarPanel createQvalueSlider(EnrichmentMap map) {
+		return qvalueSliderPanels.computeIfAbsent(map.getNetworkID(), suid -> {
+			double qvalue_min = map.getParams().getQvalueMin();
+			double qvalue = map.getParams().getQvalue();
 			return new SliderBarPanel(
 					((qvalue_min == 1 || qvalue_min >= qvalue) ? 0 : qvalue_min), qvalue,
-					"Q-value Cutoff", params, EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1,
+					"Q-value Cutoff", EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1,
 					EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2, false, qvalue,
 					cyApplicationManager, emManager);
 		});
 	}
 	
-	private SliderBarPanel createSimilaritySlider(EnrichmentMapParameters params) {
-		return similaritySliderPanels.computeIfAbsent(params.getNetworkID(), suid -> {
-			double similarityCutOff = params.getSimilarityCutOff();
-			return new SliderBarPanel(similarityCutOff, 1, "Similarity Cutoff", params,
+	private SliderBarPanel createSimilaritySlider(EnrichmentMap map) {
+		return similaritySliderPanels.computeIfAbsent(map.getNetworkID(), suid -> {
+			double similarityCutOff = map.getParams().getSimilarityCutoff();
+			return new SliderBarPanel(similarityCutOff, 1, "Similarity Cutoff",
 					EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT, EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT,
 					true, similarityCutOff, cyApplicationManager, emManager);
 		});
@@ -631,17 +654,17 @@ public class ParametersPanel extends JPanel implements CytoPanelComponent, Netwo
 		return "";
 	}
 
-	private String resolveGseaReportFilePath(EnrichmentMapParameters params, int dataset) {
+	private String resolveGseaReportFilePath(EnrichmentMap map, int dataset) {
 		String reportFile = null;
 		String netwAttrName = null;
 		if (dataset == 1) {
-			if (params.getFiles().containsKey(EnrichmentMap.DATASET1)) {
-				reportFile = params.getFiles().get(EnrichmentMap.DATASET1).getGseaHtmlReportFile();
+			if (map.getDataset(LegacySupport.DATASET1) != null) {
+				reportFile = map.getDataset(LegacySupport.DATASET1).getDatasetFiles().getGseaHtmlReportFile();
 				netwAttrName = EnrichmentMapVisualStyle.NETW_REPORT1_DIR;
 			}
 		} else {
-			if (params.getFiles().containsKey(EnrichmentMap.DATASET2)) {
-				reportFile = params.getFiles().get(EnrichmentMap.DATASET2).getGseaHtmlReportFile();
+			if (map.getDataset(LegacySupport.DATASET2) != null) {
+				reportFile = map.getDataset(LegacySupport.DATASET2).getDatasetFiles().getGseaHtmlReportFile();
 				netwAttrName = EnrichmentMapVisualStyle.NETW_REPORT2_DIR;
 			}
 		}

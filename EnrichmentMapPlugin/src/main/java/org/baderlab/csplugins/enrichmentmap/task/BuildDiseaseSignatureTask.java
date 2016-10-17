@@ -61,6 +61,7 @@ import org.baderlab.csplugins.enrichmentmap.model.FilterParameters;
 import org.baderlab.csplugins.enrichmentmap.model.FilterType;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.GenesetSimilarity;
+import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.style.EnrichmentMapVisualStyle;
@@ -138,7 +139,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 		this.SignatureGenesets = this.paParams.getSignatureGenesets().getGenesets();
 
 		if(map.getGenesetSimilarity() == null)
-			this.geneset_similarities = new HashMap<String, GenesetSimilarity>();
+			this.geneset_similarities = new HashMap<>();
 		else
 			this.geneset_similarities = map.getGenesetSimilarity();
 
@@ -163,10 +164,10 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 	}
 
 	private String getInteraction() {
-		if(map.getParams().isTwoDatasets()) {
-			if(EnrichmentMap.DATASET1.equals(paParams.getSignatureDataSet())) {
+		if(LegacySupport.isLegacyTwoDatasets(map)) {
+			if(LegacySupport.DATASET1.equals(paParams.getSignatureDataSet())) {
 				return PostAnalysisParameters.SIGNATURE_INTERACTION_TYPE_SET1;
-			} else if(EnrichmentMap.DATASET2.equals(paParams.getSignatureDataSet())) {
+			} else if(LegacySupport.DATASET2.equals(paParams.getSignatureDataSet())) {
 				return PostAnalysisParameters.SIGNATURE_INTERACTION_TYPE_SET2;
 			}
 		}

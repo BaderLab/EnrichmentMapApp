@@ -43,36 +43,68 @@
 
 package org.baderlab.csplugins.enrichmentmap.heatmap;
 
-import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Edges;
-import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Nodes;
+import java.util.Arrays;
+
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
+import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.mskcc.colorgradient.ColorGradientRange;
 import org.mskcc.colorgradient.ColorGradientTheme;
 
-import com.google.inject.Inject;
-
 /**
- * Created by User: risserlin Date: Feb 11, 2009 Time: 12:23:01 PM
- * <p>
  * Parameters specific to the heat map functioning
  */
 public class HeatMapParameters {
-
-	private org.mskcc.colorgradient.ColorGradientRange range_ds1;
-	private org.mskcc.colorgradient.ColorGradientTheme theme_ds1;
-
+	
 	//data transformation options (row normalized, as if or log transformed)
 	public static enum Transformation {
-		ROWNORM, ASIS, LOGTRANSFORM
+		ROWNORM("Row Normalize Data"), 
+		ASIS("Data As Is"), 
+		LOGTRANSFORM("Log Transform Data");
+		
+		public final String display;
+		private Transformation(String display) { this.display = display; }
+		public static Transformation fromDisplay(String display) {
+			return Arrays.stream(values()).filter(s -> s.display.equals(display)).findFirst().orElse(null);
+		}
 	}
 
 	//there are 5 sorting type, either by rank file or by a specific column, clustering, no order or default
 	public static enum Sort {
-		RANK, COLUMN, CLUSTER, NONE, DEFAULT
+		RANK("Ranks"), 
+		COLUMN("Columns"), 
+		CLUSTER("Hierarchical Cluster"), 
+		NONE("No Sort"),
+		DEFAULT("default"); // MKTODO why not just set the default to one of the above options?!?!
+		
+		
+		public final String display;
+		private Sort(String display) { this.display = display; }
+		public static Sort fromDisplay(String display) {
+			return Arrays.stream(values()).filter(s -> s.display.equals(display)).findFirst().orElse(null);
+		}
+	}
+	
+	
+	public static enum DistanceMetric {
+		PEARSON_CORRELATION("Pearson Correlation"),
+		COSINE("Cosine Distance"),
+		EUCLIDEAN("Euclidean Distance");
+		
+		public final String display;
+		private DistanceMetric(String display) { this.display = display; }
+		public static DistanceMetric fromDisplay(String display) {
+			return Arrays.stream(values()).filter(s -> s.display.equals(display)).findFirst().orElse(null);
+		}
 	}
 
-	Sort sort;
-	public Transformation transformation;
+	
+	private Sort sort = Sort.DEFAULT;
+	private Sort defaultSort = Sort.CLUSTER; // MKTODO This is a bad idea because defaultSort can't be DEFAULT
+	
+	private Transformation transformation;
+	
+	private DistanceMetric distanceMetric;
 
 	//name of column currently sorted by
 	private String sortbycolumnName;
@@ -109,49 +141,26 @@ public class HeatMapParameters {
 	private double minExpression_rownorm_ds2;
 	private double maxExpression_rownorm_ds2;
 
-	//pointer to panels containing the heatmaps.
-	private HeatMapPanel edgeOverlapPanel;
-	private HeatMapPanel nodeOverlapPanel;
+	private org.mskcc.colorgradient.ColorGradientRange range_ds1;
+	private org.mskcc.colorgradient.ColorGradientTheme theme_ds1;
 
-	public static String sort_hierarchical_cluster = "Hierarchical Cluster";
-	public static String sort_rank = "Ranks";
-	public static String sort_column = "Columns";
-	public static String sort_none = "No Sort";
 
-	public static String pearson_correlation = "Pearson Correlation";
-	public static String cosine = "Cosine Distance";
-	public static String euclidean = "Euclidean Distance";
-
-	public static String asis = "Data As Is";
-	public static String rownorm = "Row Normalize Data";
-	public static String logtrans = "Log Transform Data";
-
-	/**
-	 * Class constructor -
-	 *
-	 * @param edgeOverlapPanel
-	 *            - heatmap for edge genes overlaps
-	 * @param nodeOverlapPanel
-	 *            - heatmap for node genes unions
-	 */
-	@Inject
-	public HeatMapParameters(@Edges HeatMapPanel edgeOverlapPanel, @Nodes HeatMapPanel nodeOverlapPanel) {
-		this.edgeOverlapPanel = edgeOverlapPanel;
-		this.nodeOverlapPanel = nodeOverlapPanel;
+	public HeatMapParameters(EnrichmentMap map) {
 		sort = Sort.DEFAULT;
 		transformation = Transformation.ASIS;
+		
+		// If there are two distinct datasets intialize the theme and range for the heatmap coloring separately.
+		if (map.getDataset(LegacySupport.DATASET2) != null && map.getDataset(LegacySupport.DATASET2).getExpressionSets() != null && !map.getDataset(LegacySupport.DATASET1).getExpressionSets().getFilename().equalsIgnoreCase(map.getDataset(LegacySupport.DATASET2).getExpressionSets().getFilename()))
+			initColorGradients(map.getDataset(LegacySupport.DATASET1).getExpressionSets(), map.getDataset(LegacySupport.DATASET2).getExpressionSets());
+		else
+			initColorGradients(map.getDataset(LegacySupport.DATASET1).getExpressionSets());
 	}
 
 	/**
 	 * Initialize the the color gradients based on the expression matrix
-	 * associated with this set of heatmap panels (ie. both node and edge
-	 * heatmap panels)
-	 *
-	 * @param expression
-	 *            - expression matrix used for this heatmap set
+	 * associated with this set of heatmap panels (ie. both node and edge heatmap panels)
 	 */
 	public void initColorGradients(GeneExpressionMatrix expression) {
-
 		minExpression_ds1 = expression.getMinExpression();
 		maxExpression_ds1 = expression.getMaxExpression();
 		closestToZeroExpression_ds1 = expression.getClosesttoZero();
@@ -170,7 +179,6 @@ public class HeatMapParameters {
 			range_ds1 = ColorGradientRange.getInstance(-max, median, median, max, -max, median, median, max);
 			theme_ds1 = ColorGradientTheme.PR_GN_GRADIENT_THEME;
 		}
-
 	}
 
 	/**
@@ -376,15 +384,6 @@ public class HeatMapParameters {
 	 * }
 	 */
 
-	//Getters and Setters.
-	public HeatMapPanel getEdgeOverlapPanel() {
-		return edgeOverlapPanel;
-	}
-
-	public HeatMapPanel getNodeOverlapPanel() {
-		return nodeOverlapPanel;
-	}
-
 	public ColorGradientRange getRange_ds1() {
 		return range_ds1;
 	}
@@ -429,8 +428,24 @@ public class HeatMapParameters {
 		return sort;
 	}
 
+	public DistanceMetric getDistanceMetric() {
+		return distanceMetric;
+	}
+
+	public void setDistanceMetric(DistanceMetric distanceMetric) {
+		this.distanceMetric = distanceMetric;
+	}
+
 	public void setSort(Sort sort) {
 		this.sort = sort;
+	}
+	
+	public Sort getDefaultSort() {
+		return defaultSort;
+	}
+	
+	public void setDefaultSort(Sort sort) {
+		this.defaultSort = sort;
 	}
 
 	public int getSortIndex() {

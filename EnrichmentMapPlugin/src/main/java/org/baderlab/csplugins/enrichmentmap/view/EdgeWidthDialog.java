@@ -63,7 +63,7 @@ public class EdgeWidthDialog extends JDialog {
 		super(application.getJFrame(), true);
 		this.network = applicationManager.getCurrentNetwork();
 		EnrichmentMap map = emManager.getEnrichmentMap(network.getSUID());
-		this.similarityCutoff = map.getParams().getSimilarityCutOff();
+		this.similarityCutoff = map.getParams().getSimilarityCutoff();
 		this.prefix = map.getParams().getAttributePrefix();
 		
 		setTitle("EnrichmentMap Edge Width");

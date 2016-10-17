@@ -9,15 +9,14 @@ import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.parsers.GMTFileReaderTask;
 import org.cytoscape.work.TaskMonitor;
+import org.jukito.JukitoRunner;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
+import com.google.inject.Provider;
 
-/*
- * A Set of Genesets comes from a gmt file
- * 
- */
-
+@RunWith(JukitoRunner.class)
 public class SetOfGenesetsTest {
 		
 	private TaskMonitor taskMonitor = mock(TaskMonitor.class);
@@ -26,31 +25,31 @@ public class SetOfGenesetsTest {
 
 	
 	@Before
-	public void before() throws Exception {
+	public void before(Provider<EnrichmentMapParameters> empFactory) throws Exception {
 		//load Genesets from the gmt file associated with this test
 		String testDataFileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/model/Genesetstestfile.gmt";
         
         //create a new instance of the parameters
-        EnrichmentMapParameters params = new EnrichmentMapParameters();        
+        EnrichmentMapParameters params = empFactory.get();        
         //set gmt file name 
-        params.getFiles().get(EnrichmentMap.DATASET1).setGMTFileName(testDataFileName);
+        params.getFiles().get(LegacySupport.DATASET1).setGMTFileName(testDataFileName);
         
         //Create a new Enrichment map
-        map = new EnrichmentMap("TestEM", params);
+        map = new EnrichmentMap("TestEM", params.getCreationParameters());
                 
         //get the default dataset
-        dataset = map.getDataset(EnrichmentMap.DATASET1);
+        dataset = new DataSet(map, LegacySupport.DATASET1, params.getFiles().get(LegacySupport.DATASET1));
+        map.addDataSet(LegacySupport.DATASET1, dataset);
 
         //set up task
         GMTFileReaderTask task = new GMTFileReaderTask(dataset);
         task.run(taskMonitor);
-        	
     }
 	
 	@Test
 	public void testGSSetVar(){
 		
-		SetOfGeneSets gs_set = map.getDataset(EnrichmentMap.DATASET1).getSetofgenesets();
+		SetOfGeneSets gs_set = map.getDataset(LegacySupport.DATASET1).getSetofgenesets();
 		
 		assertEquals("src/test/resources/org/baderlab/csplugins/enrichmentmap/model/Genesetstestfile.gmt", gs_set.getFilename());
 		
@@ -68,7 +67,7 @@ public class SetOfGenesetsTest {
 	@Test
 	public void testGSFilter(){
 		
-		SetOfGeneSets gs_set = map.getDataset(EnrichmentMap.DATASET1).getSetofgenesets();			
+		SetOfGeneSets gs_set = map.getDataset(LegacySupport.DATASET1).getSetofgenesets();			
 		
 		//get the genes to hash so we can create our own dataset genes to filter by
 		

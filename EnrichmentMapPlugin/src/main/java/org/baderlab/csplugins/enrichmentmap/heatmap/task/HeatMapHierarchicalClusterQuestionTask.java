@@ -1,5 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.heatmap.task;
 
+import org.baderlab.csplugins.enrichmentmap.PropertyManager;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapPanel;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
@@ -26,13 +27,16 @@ public class HeatMapHierarchicalClusterQuestionTask extends AbstractTask impleme
 	private HeatMapPanel heatmapPanel;
 	private EnrichmentMap map;
 	private HeatMapParameters hmParams;
+	
+	private PropertyManager propertyManager;
 
-	public HeatMapHierarchicalClusterQuestionTask(int numConditions, int numConditions2, HeatMapPanel heatmapPanel, EnrichmentMap map, HeatMapParameters hmParams) {
+	public HeatMapHierarchicalClusterQuestionTask(int numConditions, int numConditions2, HeatMapPanel heatmapPanel, EnrichmentMap map, HeatMapParameters hmParams, PropertyManager propertyManager) {
 		this.numConditions = numConditions;
 		this.numConditions2 = numConditions2;
 		this.heatmapPanel = heatmapPanel;
 		this.map = map;
 		this.hmParams = hmParams;
+		this.propertyManager = propertyManager;
 
 		clusterResponse = new ListSingleSelection<>(no_sort, cluster);
 	}
@@ -40,7 +44,7 @@ public class HeatMapHierarchicalClusterQuestionTask extends AbstractTask impleme
 	@Override
 	public void run(TaskMonitor arg0) throws Exception {
 		if(clusterResponse.getSelectedValue().equals(cluster)) {
-			HeatMapHierarchicalClusterTask clusterTask = new HeatMapHierarchicalClusterTask(numConditions, numConditions2, heatmapPanel, map, hmParams);
+			HeatMapHierarchicalClusterTask clusterTask = new HeatMapHierarchicalClusterTask(numConditions, numConditions2, heatmapPanel, map, hmParams, propertyManager);
 			insertTasksAfterCurrentTask(clusterTask);
 		} else
 			hmParams.setSort(HeatMapParameters.Sort.NONE);
@@ -49,7 +53,7 @@ public class HeatMapHierarchicalClusterQuestionTask extends AbstractTask impleme
 
 	public void run() throws Exception {
 		if(clusterResponse.getSelectedValue().equals(cluster)) {
-			HeatMapHierarchicalClusterTask clusterTask = new HeatMapHierarchicalClusterTask(numConditions, numConditions2, heatmapPanel, map, hmParams);
+			HeatMapHierarchicalClusterTask clusterTask = new HeatMapHierarchicalClusterTask(numConditions, numConditions2, heatmapPanel, map, hmParams, propertyManager);
 			insertTasksAfterCurrentTask(clusterTask);
 		} else
 			hmParams.setSort(HeatMapParameters.Sort.NONE);

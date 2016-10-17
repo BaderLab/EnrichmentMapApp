@@ -150,7 +150,7 @@ public class DataSetFiles {
 
 		//in order to backwards compatible we need to add variables that older version of cytoscape will recognize
 		paramVariables.append("GMTFileName\t" + GMTFileName + "\n");
-		if(dataset.equals(EnrichmentMap.DATASET1)) {
+		if(dataset.equals(LegacySupport.DATASET1)) {
 			paramVariables.append("expressionFileName1\t" + expressionFileName + "\n");
 			paramVariables.append("enerichmentDataset1FileName1\t" + enrichmentFileName1 + "\n");//TODO: fix Typo and take care of legacy issue!
 			paramVariables.append("enrichmentDataset1FileName2\t" + enrichmentFileName2 + "\n");
@@ -160,7 +160,7 @@ public class DataSetFiles {
 			paramVariables.append("rankFile1\t" + RankedFile + "\n");
 			paramVariables.append("classFile1\t" + classFile + "\n");
 		}
-		if(dataset.equals(EnrichmentMap.DATASET2)) {
+		if(dataset.equals(LegacySupport.DATASET2)) {
 			paramVariables.append("expressionFileName2\t" + expressionFileName + "\n");
 			paramVariables.append("enerichmentDataset2FileName1\t" + enrichmentFileName1 + "\n");//TODO: fix Typo and take care of legacy issue!
 			paramVariables.append("enrichmentDataset2FileName2\t" + enrichmentFileName2 + "\n");

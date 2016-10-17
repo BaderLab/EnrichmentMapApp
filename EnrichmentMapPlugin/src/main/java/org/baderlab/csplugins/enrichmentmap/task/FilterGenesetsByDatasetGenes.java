@@ -5,6 +5,7 @@ import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
@@ -40,8 +41,8 @@ public class FilterGenesetsByDatasetGenes extends AbstractTask {
 
 		//if there are two dataset check to see if they have the same set of genes
 		if(datasets.size() > 1) {
-			Set<Integer> dataset1_genes = datasets.get(EnrichmentMap.DATASET1).getDatasetGenes();
-			Set<Integer> dataset2_genes = datasets.get(EnrichmentMap.DATASET2).getDatasetGenes();
+			Set<Integer> dataset1_genes = datasets.get(LegacySupport.DATASET1).getDatasetGenes();
+			Set<Integer> dataset2_genes = datasets.get(LegacySupport.DATASET2).getDatasetGenes();
 
 			if(!dataset1_genes.equals(dataset2_genes)) {
 				map.getParams().setTwoDistinctExpressionSets(true);

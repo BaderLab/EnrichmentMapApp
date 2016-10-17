@@ -47,51 +47,50 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
 
+import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Edges;
+import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Nodes;
+import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters.Sort;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.parsers.RanksFileReaderTask;
 import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
 
+import com.google.inject.Inject;
+import com.google.inject.Provider;
+import com.google.inject.assistedinject.Assisted;
+
 /**
- * Created by User: risserlin Date: Feb 12, 2009 Time: 10:04:33 AM
- * <p>
  * Heat map action listener
  */
-public class HeatMapActionListener implements ActionListener {
+public class HeatMapSortActionListener implements ActionListener {
 
-	private HeatMapPanel edgeOverlapPanel;
-	private HeatMapPanel nodeOverlapPanel;
-	private FileUtil fileUtil;
-	private StreamUtil streamUtil;
-	private CySwingApplication application;
+	@Inject private FileUtil fileUtil;
+	@Inject private CySwingApplication application;
 
+	@Inject private @Nodes Provider<HeatMapPanel> nodesPanelProvider;
+	@Inject private @Edges Provider<HeatMapPanel> edgesPanelProvider;
+	
 	private HeatMapParameters hmParams;
-	private JComboBox box;
-
-	//Need to add the enrichment map parameters here in order to add an additional ranks to the EM
 	private EnrichmentMap map;
 
-	public HeatMapActionListener(HeatMapPanel edgeOverlapPanel, HeatMapPanel nodeOverlapPanel, JComboBox box,
-			HeatMapParameters hmParams, EnrichmentMap map, FileUtil fileUtil, StreamUtil streamUtil,
-			CySwingApplication application) {
-		this.edgeOverlapPanel = edgeOverlapPanel;
-		this.nodeOverlapPanel = nodeOverlapPanel;
-		this.fileUtil = fileUtil;
-		this.application = application;
-		this.streamUtil = streamUtil;
+	public interface Factory {
+		HeatMapSortActionListener create(HeatMapParameters hmParams, EnrichmentMap map);
+	}
+	
+	@Inject
+	public HeatMapSortActionListener(@Assisted HeatMapParameters hmParams, @Assisted EnrichmentMap map) {
 		this.hmParams = hmParams;
-		this.box = box;
 		this.map = map;
 	}
 
@@ -99,20 +98,20 @@ public class HeatMapActionListener implements ActionListener {
 	 * Update heat map according to action selection
 	 */
 	public void actionPerformed(ActionEvent evt) {
-
+		HeatMapPanel edgeOverlapPanel = edgesPanelProvider.get();
+		HeatMapPanel nodeOverlapPanel = nodesPanelProvider.get();
+		
 		boolean updateAscendingButton = false;
 
 		edgeOverlapPanel.clearPanel();
 		nodeOverlapPanel.clearPanel();
+		
+		JComboBox box = (JComboBox) evt.getSource();
 		String select = (String) box.getSelectedItem();
 
-		if(select.equalsIgnoreCase("Data As Is")) {
-			hmParams.setTransformation(HeatMapParameters.Transformation.ASIS);
-		} else if(select.equalsIgnoreCase("Row Normalize Data")) {
-			hmParams.setTransformation(HeatMapParameters.Transformation.ROWNORM);
-		} else if(select.equalsIgnoreCase("Log Transform Data")) {
-			hmParams.setTransformation(HeatMapParameters.Transformation.LOGTRANSFORM);
-		} else if(select.equalsIgnoreCase(HeatMapParameters.sort_hierarchical_cluster)) {
+		Sort sort = Sort.fromDisplay(select);
+		
+		if(sort == Sort.CLUSTER) {
 			hmParams.setSort(HeatMapParameters.Sort.CLUSTER);
 			hmParams.setSortIndex(-1);
 		}
@@ -124,29 +123,23 @@ public class HeatMapActionListener implements ActionListener {
 			FileChooserFilter filter_xls = new FileChooserFilter("xls Files", "xls");
 
 			//the set of filter (required by the file util method
-			ArrayList<FileChooserFilter> all_filters = new ArrayList<FileChooserFilter>();
-			all_filters.add(filter_rnk);
-			all_filters.add(filter_txt);
-			all_filters.add(filter_xls);
+			List<FileChooserFilter> all_filters = Arrays.asList(filter_rnk, filter_txt, filter_xls);
 
 			// Get the file name
-			File file = fileUtil.getFile(this.application.getJFrame(), "Import rank File", FileUtil.LOAD, all_filters);
-			//File file = fileUtil.getFile(this.nodeOverlapPanel,"Import rank File", FileUtil.LOAD, all_filters);
+			File file = fileUtil.getFile(application.getJFrame(), "Import rank File", FileUtil.LOAD, all_filters);
 
 			if(file != null) {
 				//find out from the user what they want to name these ranking
 
-				String ranks_name = JOptionPane.showInputDialog(this.nodeOverlapPanel, "What would you like to name these Rankings?", "My Rankings");
+				String ranks_name = JOptionPane.showInputDialog(nodeOverlapPanel, "What would you like to name these Rankings?", "My Rankings");
 				boolean noname = true;
 				while(noname) {
 					noname = false;
 					//make sure the name is not already in the rankings
-					for(Iterator j = all_ranks.keySet().iterator(); j.hasNext();) {
-						String current_name = j.next().toString();
+					for(String current_name : all_ranks.keySet()) {
 						if(current_name.equalsIgnoreCase(ranks_name)) {
 							noname = true;
-							ranks_name = JOptionPane.showInputDialog(this.nodeOverlapPanel,
-									"Sorry that name already exists.Please choose another name.");
+							ranks_name = JOptionPane.showInputDialog(nodeOverlapPanel, "Sorry that name already exists.Please choose another name.");
 						}
 					}
 				}
@@ -154,7 +147,7 @@ public class HeatMapActionListener implements ActionListener {
 				//load the new ranks file
 				//the new rank file is not associated with a dataset.
 				//simply add it to Dataset 1
-				RanksFileReaderTask ranking1 = new RanksFileReaderTask(file.getAbsolutePath(), map.getDataset(EnrichmentMap.DATASET1), ranks_name, true);
+				RanksFileReaderTask ranking1 = new RanksFileReaderTask(file.getAbsolutePath(), map.getDataset(LegacySupport.DATASET1), ranks_name, true);
 				try {
 					ranking1.parse(null);
 				} catch(IOException e) {
@@ -173,11 +166,11 @@ public class HeatMapActionListener implements ActionListener {
 
 				hmParams.setAscending(new_ascending);
 			}
-		} else if(select.equalsIgnoreCase(HeatMapParameters.sort_none)) {
+		} else if(sort == Sort.NONE) {
 			hmParams.setSort(HeatMapParameters.Sort.NONE);
 			hmParams.setSortIndex(-1);
 			hmParams.setRankFileIndex("");
-		} else if(select.contains(HeatMapParameters.sort_column)) {
+		} else if(sort == Sort.COLUMN) {
 			hmParams.setRankFileIndex("");
 			hmParams.setSort(HeatMapParameters.Sort.COLUMN);
 			if(hmParams.isSortbycolumn_event_triggered()) {
@@ -196,16 +189,15 @@ public class HeatMapActionListener implements ActionListener {
 			int i = 0;
 			int columns = 0;
 			//calculate the number of indexes used for the column names
-			if(map.getDataset(EnrichmentMap.DATASET2) != null && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null
-					&& !map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getFilename()
-							.equalsIgnoreCase(map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getFilename()))
-				columns = map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getColumnNames().length
-						+ map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getColumnNames().length - 2;
+			if(map.getDataset(LegacySupport.DATASET2) != null && map.getDataset(LegacySupport.DATASET2).getExpressionSets() != null
+					&& !map.getDataset(LegacySupport.DATASET1).getExpressionSets().getFilename()
+							.equalsIgnoreCase(map.getDataset(LegacySupport.DATASET2).getExpressionSets().getFilename()))
+				columns = map.getDataset(LegacySupport.DATASET1).getExpressionSets().getColumnNames().length
+						+ map.getDataset(LegacySupport.DATASET2).getExpressionSets().getColumnNames().length - 2;
 			else
-				columns = map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getColumnNames().length;
+				columns = map.getDataset(LegacySupport.DATASET1).getExpressionSets().getColumnNames().length;
 
-			for(Iterator j = ranks.iterator(); j.hasNext();) {
-				String ranks_name = j.next().toString();
+			for(String ranks_name : ranks) {
 				if(ranks_name.equalsIgnoreCase(select)) {
 					hmParams.setSort(HeatMapParameters.Sort.RANK);
 					hmParams.setRankFileIndex(ranks_name);
@@ -240,9 +232,9 @@ public class HeatMapActionListener implements ActionListener {
 
 		hmParams.ResetColorGradient_ds1();
 
-		if(map.getDataset(EnrichmentMap.DATASET2) != null && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null
-				&& !map.getDataset(EnrichmentMap.DATASET1).getExpressionSets().getFilename()
-						.equalsIgnoreCase(map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getFilename()))
+		if(map.getDataset(LegacySupport.DATASET2) != null && map.getDataset(LegacySupport.DATASET2).getExpressionSets() != null
+				&& !map.getDataset(LegacySupport.DATASET1).getExpressionSets().getFilename()
+						.equalsIgnoreCase(map.getDataset(LegacySupport.DATASET2).getExpressionSets().getFilename()))
 			hmParams.ResetColorGradient_ds2();
 
 		edgeOverlapPanel.updatePanel();

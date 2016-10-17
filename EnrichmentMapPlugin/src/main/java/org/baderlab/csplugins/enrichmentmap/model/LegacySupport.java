@@ -8,12 +8,15 @@ import org.cytoscape.session.CySessionManager;
 import com.google.inject.Inject;
 
 /**
- * Temporary repositor for methods that work with legacy EnrichmentMaps.
- * Eventually all this code shoudl be deprecated and/or removed.
+ * Temporary repository for methods that work with legacy EnrichmentMaps.
+ * Eventually all this code should be deprecated and/or removed.
  */
 public class LegacySupport {
 	
 	public static final String EM_NAME = "Enrichment Map";
+	
+	public static final String DATASET1 = "Dataset 1";
+	public static final String DATASET2 = "Dataset 2";
 	
 	
 	@Inject private EnrichmentMapManager emManager;
@@ -53,5 +56,20 @@ public class LegacySupport {
 			}
 			return "EM" + (max_prefix + 1) + "_";
 		}
+	}
+	
+	
+	public static boolean isLegacyEnrichmentMap(EnrichmentMap map) {
+		if(map == null)
+			return false;
+		return  
+				(map.getDataSetCount() == 1 && map.getDataset(DATASET1) != null)
+			||  (map.getDataSetCount() == 2 && map.getDataset(DATASET1) != null && map.getDataset(DATASET2) != null);
+	}
+	
+	public static boolean isLegacyTwoDatasets(EnrichmentMap map) {
+		if(map == null)
+			return false;
+		return map.getDataSetCount() == 2 && map.getDataset(DATASET1) != null && map.getDataset(DATASET2) != null;
 	}
 }

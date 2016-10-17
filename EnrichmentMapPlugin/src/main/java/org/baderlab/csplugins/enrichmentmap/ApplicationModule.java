@@ -7,6 +7,8 @@ import java.lang.annotation.Retention;
 import org.baderlab.csplugins.enrichmentmap.actions.BuildPostAnalysisActionListener;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadSignatureSetsActionListener;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapPanel;
+import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapSortActionListener;
+import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapTransformActionListener;
 import org.baderlab.csplugins.enrichmentmap.heatmap.task.UpdateHeatMapTask;
 import org.baderlab.csplugins.enrichmentmap.mastermap.task.MasterMapTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
@@ -21,7 +23,6 @@ import org.baderlab.csplugins.enrichmentmap.task.VisualizeEnrichmentMapTask;
 import org.baderlab.csplugins.enrichmentmap.view.PostAnalysisKnownSignaturePanel;
 import org.baderlab.csplugins.enrichmentmap.view.PostAnalysisSignatureDiscoveryPanel;
 import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.service.util.CyServiceRegistrar;
 import org.osgi.framework.BundleContext;
 
 import com.google.inject.AbstractModule;
@@ -90,6 +91,8 @@ class FactoryModule extends AbstractModule {
 		installFactory(EnrichmentMapParameters.Factory.class);
 		installFactory(MasterMapTaskFactory.Factory.class);
 		installFactory(UpdateHeatMapTask.Factory.class);
+		installFactory(HeatMapSortActionListener.Factory.class);
+		installFactory(HeatMapTransformActionListener.Factory.class);
 	}
 	
 	private void installFactory(Class<?> factoryInterface) {

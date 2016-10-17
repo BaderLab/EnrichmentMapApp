@@ -43,6 +43,7 @@
 
 package org.baderlab.csplugins.enrichmentmap.model;
 
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -98,6 +99,8 @@ public class GenesetSimilarity {
 	 */
 	public GenesetSimilarity(String geneset1_Name, String geneset2_Name, double similarity_coeffecient,
 			String interaction_type, Set<Integer> overlapping_genes, int enrichment_set) {
+		Objects.requireNonNull(interaction_type);
+		
 		this.geneset1_Name = geneset1_Name;
 		this.geneset2_Name = geneset2_Name;
 		this.similarity_coeffecient = similarity_coeffecient;
@@ -118,6 +121,8 @@ public class GenesetSimilarity {
 	 */
 	public GenesetSimilarity(String geneset1_Name, String geneset2_Name, double similarity_coeffecient,
 			String interaction_type, Set<Integer> overlapping_genes) {
+		Objects.requireNonNull(interaction_type);
+		
 		this.geneset1_Name = geneset1_Name;
 		this.geneset2_Name = geneset2_Name;
 		this.similarity_coeffecient = similarity_coeffecient;
@@ -140,6 +145,8 @@ public class GenesetSimilarity {
 	 */
 	public GenesetSimilarity(String geneset1_Name, String geneset2_Name, double similarity_coeffecient,
 			double hypergeom_pvalue, String interaction_type, Set<Integer> overlapping_genes) {
+		Objects.requireNonNull(interaction_type);
+		
 		this.geneset1_Name = geneset1_Name;
 		this.geneset2_Name = geneset2_Name;
 		this.similarity_coeffecient = similarity_coeffecient;
@@ -169,16 +176,6 @@ public class GenesetSimilarity {
 		this.geneset2_Name = geneset2_Name;
 	}
 
-	/**
-	 * @param interaction_type - set the Interaction Type
-	 */
-	public void setInteractionType(String interaction_type) {
-		this.interaction_type = interaction_type;
-	}
-
-	/**
-	 * @return the Interaction Type
-	 */
 	public String getInteractionType() {
 		return interaction_type;
 	}

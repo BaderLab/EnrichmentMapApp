@@ -93,6 +93,7 @@ import javax.swing.text.InternationalFormatter;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapBuildProperties;
+import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
@@ -101,13 +102,11 @@ import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.task.EnrichmentMapBuildMapTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.task.ResultTaskObserver;
 import org.baderlab.csplugins.enrichmentmap.util.SwingUtil;
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.session.CySessionManager;
 import org.cytoscape.util.swing.BasicCollapsiblePanel;
 import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
@@ -115,19 +114,19 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.work.swing.DialogTaskManager;
 
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 
 @SuppressWarnings("serial")
 public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponent {
 
 	@Inject private StreamUtil streamUtil;
-	@Inject private CyApplicationManager applicationManager;
 	@Inject private DialogTaskManager dialog;
-	@Inject private CySessionManager sessionManager;
 	@Inject private CySwingApplication application;
 	@Inject private FileUtil fileUtil;
 	@Inject private CyServiceRegistrar registrar;
 	
 	@Inject private EnrichmentMapBuildMapTaskFactory.Factory taskFactoryFactory;
+	@Inject private Provider<EnrichmentMapParameters> emParamsFactory;
 	@Inject private EnrichmentMapManager emManager;
 	@Inject private LegacySupport legacySupport;
 	
@@ -216,10 +215,10 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
         
         //get the current enrichment map parameters
         //params = EnrichmentMapManager.getInstance().getParameters(Cytoscape.getCurrentNetwork().getIdentifier());
-         params = new EnrichmentMapParameters(sessionManager,streamUtil,applicationManager);
-
-         if (LookAndFeelUtil.isAquaLAF())
-        	 setOpaque(false);
+	     params = emParamsFactory.get();
+	
+	     if (LookAndFeelUtil.isAquaLAF())
+	    	 setOpaque(false);
          
         //create the three main panels: scope, advanced options, and bottom
         JPanel analysisTypePanel = createAnalysisTypePanel();
@@ -1224,16 +1223,22 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 	
 	private void build() {
 		//create a new params for the new EM and add the dataset files to it
-		EnrichmentMapParameters new_params = new EnrichmentMapParameters(sessionManager, streamUtil, applicationManager);
+		EnrichmentMapParameters new_params = emParamsFactory.get();
 		new_params.copy(EnrichmentMapInputPanel.this.getParams());
-		new_params.addFiles(EnrichmentMap.DATASET1, dataset1files);
+		new_params.addFiles(LegacySupport.DATASET1, dataset1files);
 		if(!dataset2files.isEmpty())
-			new_params.addFiles(EnrichmentMap.DATASET2, dataset2files);
+			new_params.addFiles(LegacySupport.DATASET2, dataset2files);
 
 		String prefix = legacySupport.getNextAttributePrefix();
 		new_params.setAttributePrefix(prefix);
 		String name = prefix + LegacySupport.EM_NAME;
-		EnrichmentMap map = new EnrichmentMap(name, new_params);
+		EnrichmentMap map = new EnrichmentMap(name, new_params.getCreationParameters());
+		
+		// TEMPORARY
+		// This code is kind of ugly because it is bridging the gap between the old EnrichmentMapParameters and the new style
+		map.addDataSet(LegacySupport.DATASET1, new DataSet(map, LegacySupport.DATASET1, dataset1files));
+		if(!dataset2files.isEmpty())
+			map.addDataSet(LegacySupport.DATASET2, new DataSet(map, LegacySupport.DATASET2, dataset2files));
 
 		//EnrichmentMapParseInputEvent parseInput = new EnrichmentMapParseInputEvent(empanel,map , dialog,  streamUtil);
 		//parseInput.build();
@@ -2466,9 +2471,8 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
     /**
      *  Clear the current panel and clear the params associated with this panel
      */
-    private void resetPanel(){
-
-        this.params = new EnrichmentMapParameters(sessionManager, streamUtil, applicationManager);
+    private void resetPanel() {
+        this.params = emParamsFactory.get();
         this.panelUpdate = false;
         //reset the datafiles as well
         this.dataset1files = new DataSetFiles();
@@ -2568,17 +2572,17 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
      *
      * @param current_params - enrichment map paramters to use to update the panel
      */
-    public void updateContents(EnrichmentMapParameters current_params){
+    public void updateContents(EnrichmentMap map) {
     	resetPanel();
     	
-        this.params = new EnrichmentMapParameters(sessionManager, streamUtil, applicationManager);
-        this.params.copy(current_params);
+        this.params = emParamsFactory.get();
+        this.params.copyValuesFrom(map);
         this.panelUpdate = true;
         
-        if(params.getFiles().containsKey(EnrichmentMap.DATASET1))
-  		  	this.dataset1files = params.getFiles().get(EnrichmentMap.DATASET1);
-  	  	if(params.getFiles().containsKey(EnrichmentMap.DATASET2))
-  	  		this.dataset2files = params.getFiles().get(EnrichmentMap.DATASET2);
+        if(params.getFiles().containsKey(LegacySupport.DATASET1))
+  		  	this.dataset1files = params.getFiles().get(LegacySupport.DATASET1);
+  	  	if(params.getFiles().containsKey(LegacySupport.DATASET2))
+  	  		this.dataset2files = params.getFiles().get(LegacySupport.DATASET2);
 
   	    gmtFileNameTextField.setText((dataset1files.getGMTFileName() == null)? "" :dataset1files.getGMTFileName());
   	    gmtFileNameTextField.setForeground(checkFile(gmtFileNameTextField.getText()));
@@ -2613,26 +2617,26 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
         ds1ClassesTextField.setValue(dataset1files.getClassFile());
         ds2ClassesTextField.setValue(dataset2files.getClassFile());
 
-        pvalueTextField.setText(Double.toString(current_params.getPvalue()));
-        qvalueTextField.setText(Double.toString(current_params.getQvalue()));
-        coeffecientTextField.setText(Double.toString(current_params.getSimilarityCutOff()));
+        pvalueTextField.setText(Double.toString(params.getPvalue()));
+        qvalueTextField.setText(Double.toString(params.getQvalue()));
+        coeffecientTextField.setText(Double.toString(params.getSimilarityCutOff()));
 
-        pvalueTextField.setValue(current_params.getPvalue());
-        qvalueTextField.setValue(current_params.getQvalue());
-        coeffecientTextField.setValue(current_params.getSimilarityCutOff());
-        combinedConstantTextField.setValue(current_params.getCombinedConstant());
+        pvalueTextField.setValue(params.getPvalue());
+        qvalueTextField.setValue(params.getQvalue());
+        coeffecientTextField.setValue(params.getSimilarityCutOff());
+        combinedConstantTextField.setValue(params.getCombinedConstant());
 
-        if(current_params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)){
+        if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)){
             gseaRadio.setSelected(true);
             genericRadio.setSelected(false);
             davidRadio.setSelected(false);
         }
-        else if(current_params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_generic)){
+        else if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_generic)){
             gseaRadio.setSelected(false);
             genericRadio.setSelected(true);
             davidRadio.setSelected(false);
         }
-        else if(current_params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_Specialized)){
+        else if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_Specialized)){
             gseaRadio.setSelected(false);
             genericRadio.setSelected(false);
             davidRadio.setSelected(true);
@@ -2654,6 +2658,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
         }
     }
 
+    
     public EnrichmentMapParameters getParams() {
         return params;
     }
