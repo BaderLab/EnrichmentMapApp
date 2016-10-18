@@ -10,7 +10,6 @@ import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapPanel;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapSortActionListener;
 import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapTransformActionListener;
 import org.baderlab.csplugins.enrichmentmap.heatmap.task.UpdateHeatMapTask;
-import org.baderlab.csplugins.enrichmentmap.mastermap.task.MasterMapTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.style.EnrichmentMapVisualStyle;
@@ -89,7 +88,6 @@ class FactoryModule extends AbstractModule {
 		installFactory(PostAnalysisKnownSignaturePanel.Factory.class);
 		installFactory(PostAnalysisSignatureDiscoveryPanel.Factory.class);
 		installFactory(EnrichmentMapParameters.Factory.class);
-		installFactory(MasterMapTaskFactory.Factory.class);
 		installFactory(UpdateHeatMapTask.Factory.class);
 		installFactory(HeatMapSortActionListener.Factory.class);
 		installFactory(HeatMapTransformActionListener.Factory.class);

@@ -46,6 +46,7 @@ public class PropertyManager {
 	//the set of default parameters we want to get 
 	private double defaultJaccardCutOff = 0.25;
 	private double defaultOverlapCutOff = 0.5;
+	private double defaultCombinedCutOff = 0.375;
 	private SimilarityMetric defaultSimilarityMetric = SimilarityMetric.OVERLAP;
 	private DistanceMetric defaultDistanceMetric = DistanceMetric.PEARSON_CORRELATION;
 
@@ -62,6 +63,19 @@ public class PropertyManager {
 
 	public double getDefaultOverlapCutOff() {
 		return defaultOverlapCutOff;
+	}
+	
+	public double getDefaultCombinedCutOff() {
+		return defaultCombinedCutOff;
+	}
+	
+	public double getDefaultCutOff(SimilarityMetric metric) {
+		switch(metric) {
+			default:
+			case COMBINED: return defaultCombinedCutOff;
+			case JACCARD:  return defaultJaccardCutOff;
+			case OVERLAP:  return defaultOverlapCutOff;
+		}
 	}
 
 	public SimilarityMetric getDefaultSimilarityMetric() {
@@ -134,5 +148,5 @@ public class PropertyManager {
 			}
 		}
 	}
-	
+
 }

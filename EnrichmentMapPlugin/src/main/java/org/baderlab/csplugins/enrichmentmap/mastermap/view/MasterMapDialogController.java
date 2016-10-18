@@ -31,24 +31,23 @@ import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 
-import org.baderlab.csplugins.enrichmentmap.mastermap.task.MasterMapTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.util.NiceDialogCallback;
 import org.baderlab.csplugins.enrichmentmap.util.NiceDialogCallback.Message;
 import org.baderlab.csplugins.enrichmentmap.util.NiceDialogController;
 import org.baderlab.csplugins.enrichmentmap.util.SwingUtil;
 import org.baderlab.csplugins.enrichmentmap.view.AboutPanel;
 import org.cytoscape.util.swing.LookAndFeelUtil;
-import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.swing.DialogTaskManager;
 
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 import com.google.inject.Singleton;
 
 @Singleton
 public class MasterMapDialogController implements NiceDialogController {
 	
 	@Inject private DialogTaskManager taskManager;
-	@Inject private MasterMapTaskFactory.Factory taskFactoryFactory;
+	@Inject private Provider<CutoffPropertiesPanel> cutoffPropertiesPanelProvider;
 	
 	private JTextField pathTextField;
 	private CheckboxList checkboxList;
@@ -88,9 +87,9 @@ public class MasterMapDialogController implements NiceDialogController {
 			.map(CheckboxData::getPath)
 			.collect(Collectors.toList());
 		
-		MasterMapTaskFactory taskFactory = taskFactoryFactory.create(paths);
-		TaskIterator tasks = taskFactory.createTaskIterator();
-		taskManager.execute(tasks);
+//		MasterMapTaskFactory taskFactory = taskFactoryFactory.create(paths);
+//		TaskIterator tasks = taskFactory.createTaskIterator();
+//		taskManager.execute(tasks);
 	}
 	
 	
@@ -108,7 +107,7 @@ public class MasterMapDialogController implements NiceDialogController {
 		
 		JPanel analysisPanel = createAnalysisTypePanel();
 		JPanel gseaPanel     = createGSEAPanel();
-		JPanel cutoffPanel   = createCutoffPanel();
+		JPanel cutoffPanel   = cutoffPropertiesPanelProvider.get();
 		
 		panel = new JPanel(new BorderLayout());
 		GroupLayout layout = new GroupLayout(panel);
@@ -350,11 +349,6 @@ public class MasterMapDialogController implements NiceDialogController {
 		panel.setOpaque(false);
 		
 		return panel;
-	}
-
-	private JPanel createCutoffPanel() {
-		CutoffPropertiesPanel cutoffPanel = new CutoffPropertiesPanel();
-		return cutoffPanel;
 	}
 	
 	private void updateBuildButton() {
