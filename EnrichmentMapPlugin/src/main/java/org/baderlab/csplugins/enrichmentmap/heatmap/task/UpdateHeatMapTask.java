@@ -139,7 +139,7 @@ public class UpdateHeatMapTask extends AbstractTask {
 				// two-distinct expression sets, check for the gene set in the
 				// second set
 				// TODO:Add multi species support
-				if(map.getParams().isTwoDistinctExpressionSets()) {
+				if(map.getParams().isDistinctExpressionSets()) {
 					GeneSet current_geneset_set1 = genesets_set1.get(nodename);
 					GeneSet current_geneset_set2 = genesets_set2.get(nodename);
 					if(current_geneset_set1 != null && current_geneset.equals(current_geneset_set1)

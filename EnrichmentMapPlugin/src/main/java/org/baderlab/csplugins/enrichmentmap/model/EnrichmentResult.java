@@ -16,16 +16,20 @@ public class EnrichmentResult {
 
 	//p-value associated with the enrichment
 	private final double pvalue;
+	
+	//gene set size
+	private int gsSize;
 
 	// source of the enrichment map 
 	// if the enrichment was done using the Baderlab gmt files the source for each
 	// geneset is encoded in the geneset name.  Track that source for displaying on the network
 	private final Optional<String> source;
 
-	public EnrichmentResult(String name, String desc, double pvalue) {
+	public EnrichmentResult(String name, String desc, double pvalue, int gsSize) {
 		this.name = name;
 		this.desc = desc;
 		this.pvalue = pvalue;
+		this.gsSize = gsSize;
 		
 		//if we can tokenize the name by "%" then set the source to the second item in the name
 		//if you can split the name using '|', take the second token to be the gene set type
@@ -57,7 +61,14 @@ public class EnrichmentResult {
 		return desc;
 	}
 
-
+	public int getGsSize() {
+		return gsSize;
+	}
+	
+	public void setGsSize(int size) {
+		this.gsSize = size;
+	}
+	
 	public Optional<String> getSource() {
 		return source;
 	}

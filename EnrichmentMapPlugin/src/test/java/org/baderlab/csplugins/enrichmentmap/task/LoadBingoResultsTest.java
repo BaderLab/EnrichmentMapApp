@@ -3,11 +3,11 @@ package org.baderlab.csplugins.enrichmentmap.task;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 
+import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
-import org.baderlab.csplugins.enrichmentmap.model.DataSet;
-import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.parsers.ParseBingoEnrichmentResults;
@@ -117,7 +117,7 @@ public class LoadBingoResultsTest {
 		//check to see if the two datasets are distinct
 		if(!((dataset.getDatasetGenes().containsAll(dataset2.getDatasetGenes())) && 
 					(dataset2.getDatasetGenes().containsAll(dataset.getDatasetGenes()))))
-				params.setTwoDistinctExpressionSets(true);	
+				params.setDistinctExpressionSets(true);	
 				
 		em.filterGenesets();
 				

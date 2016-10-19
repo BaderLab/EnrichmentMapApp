@@ -615,7 +615,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 
 		int kValue;
 
-		if (params.isTwoDistinctExpressionSets())
+		if (params.isDistinctExpressionSets())
 			kValue = expValue.length;
 		//kValue = currentExpressionSet.size() + currentExpressionSet2.size();
 		else
@@ -853,7 +853,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 
 		int kValue;
 
-		if (params.isTwoDistinctExpressionSets())
+		if (params.isDistinctExpressionSets())
 			kValue = expressionUsing.size();
 		else
 			kValue = Math.max(currentExpressionSet.size(), currentExpressionSet2.size());
@@ -917,7 +917,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 
 		//A rank of -1 can indicate a missing rank which is expected when you have two distinct datasets
 		//We want to make sure the -1 are at the bottom of the list with two distinct data sets
-		if (params.isTwoDistinctExpressionSets() && missingRanksCount > 0) {
+		if (params.isDistinctExpressionSets() && missingRanksCount > 0) {
 			int fakeRank = 0;
 			if (isNegative)
 				fakeRank = 1;

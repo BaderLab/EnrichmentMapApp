@@ -51,8 +51,6 @@ package org.baderlab.csplugins.enrichmentmap.model;
  */
 public class GSEAResult extends EnrichmentResult {
 
-	//gene set size
-	private int gsSize;
 	//enrichment score
 	private final double ES;
 	//normalized enrichment score
@@ -78,8 +76,7 @@ public class GSEAResult extends EnrichmentResult {
 	 * @param fwerqvalue
 	 */
 	public GSEAResult(String name, int size, double ES, double NES, double pvalue, double fdrqvalue, double fwerqvalue, int rankAtMax, double scoreAtMax) {
-		super(name, name, pvalue);
-		this.gsSize = size;
+		super(name, name, pvalue, size);
 		this.ES = ES;
 		this.NES = NES;
 		this.fdrqvalue = fdrqvalue;
@@ -97,13 +94,12 @@ public class GSEAResult extends EnrichmentResult {
 	 */
 	@Deprecated
 	public GSEAResult(String[] tokens) {
-		super(tokens[1], tokens[1], Double.parseDouble(tokens[5]));
+		super(tokens[1], tokens[1], Double.parseDouble(tokens[5]), Integer.parseInt(tokens[2]));
 		
 		//old session files will be missing rankatmax and scoreatmax
 		if(tokens.length != 8 || tokens.length != 10)
 			throw new IllegalArgumentException("Length of tokens[] must be 8 or 10");
 		
-		this.gsSize = Integer.parseInt(tokens[2]);
 		this.ES = Double.parseDouble(tokens[3]);
 		this.NES = Double.parseDouble(tokens[4]);
 		this.fdrqvalue = Double.parseDouble(tokens[6]);
@@ -126,15 +122,6 @@ public class GSEAResult extends EnrichmentResult {
 		return (getPvalue() <= pvalue) && (this.fdrqvalue <= fdrqvalue);
 	}
 
-	//Getters and Settters
-
-	public int getGsSize() {
-		return gsSize;
-	}
-
-	public void setGsSize(int gsSize) {
-		this.gsSize = gsSize;
-	}
 
 	public double getES() {
 		return ES;
@@ -169,7 +156,7 @@ public class GSEAResult extends EnrichmentResult {
 	}
 
 	public String toString() {
-		return getName() + "\t" + gsSize + "\t" + ES + "\t" + NES + "\t" + getPvalue() + "\t" + fdrqvalue + "\t" + fwerqvalue
+		return getName() + "\t" + getGsSize() + "\t" + ES + "\t" + NES + "\t" + getPvalue() + "\t" + fdrqvalue + "\t" + fwerqvalue
 				+ "\t" + rankAtMax + "\t" + scoreAtMax;
 	}
 

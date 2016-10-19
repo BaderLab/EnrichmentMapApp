@@ -50,9 +50,6 @@ package org.baderlab.csplugins.enrichmentmap.model;
  */
 public class GenericResult extends EnrichmentResult {
 
-	//minimum requirement of a generic enrichment results
-	private int gsSize;
-
 	//optional parameters
 	private final double fdrqvalue;
 
@@ -70,9 +67,7 @@ public class GenericResult extends EnrichmentResult {
 	@Deprecated
 	public GenericResult(String[] tokens) {
 		//ignore the first token as it is from the hash
-		super(tokens[1], tokens[2], Double.parseDouble(tokens[3]));
-		
-		this.gsSize = Integer.parseInt(tokens[4]);
+		super(tokens[1], tokens[2], Double.parseDouble(tokens[3]), Integer.parseInt(tokens[4]));
 		this.fdrqvalue = Double.parseDouble(tokens[5]);
 		this.NES = Double.parseDouble(tokens[6]);
 	}
@@ -86,8 +81,7 @@ public class GenericResult extends EnrichmentResult {
 	 * @param gssize - gene set size
 	 */
 	public GenericResult(String name, String description, double pvalue, int gssize) {
-		super(name, description, pvalue);
-		this.gsSize = gssize;
+		super(name, description, pvalue, gssize);
 		this.fdrqvalue = 1.0;
 		this.NES = 1.0;
 	}
@@ -102,8 +96,7 @@ public class GenericResult extends EnrichmentResult {
 	 * @param fdrqvalue - enrichment fdr q-value
 	 */
 	public GenericResult(String name, String description, double pvalue, int gssize, double fdrqvalue) {
-		super(name, description, pvalue);
-		this.gsSize = gssize;
+		super(name, description, pvalue, gssize);
 		this.fdrqvalue = fdrqvalue;
 		this.NES = 1.0;
 	}
@@ -119,8 +112,7 @@ public class GenericResult extends EnrichmentResult {
 	 * @param phenotype - which phenotype or class is this enrichment results associated with
 	 */
 	public GenericResult(String name, String description, double pvalue, int gssize, double fdrqvalue, double phenotype) {
-		super(name, description, pvalue);
-		this.gsSize = gssize;
+		super(name, description, pvalue, gssize);
 		this.fdrqvalue = fdrqvalue;
 		this.NES = phenotype;
 	}
@@ -159,16 +151,6 @@ public class GenericResult extends EnrichmentResult {
 	}
 
 
-	public int getGsSize() {
-		return gsSize;
-	}
-	
-	// MKTODO why?
-	public void setGsSize(int size) {
-		this.gsSize = size;
-	}
-
-
 	/**
 	 * @return 1.0 for Phenotype A or -1.0 for Phenotype B
 	 */
@@ -178,7 +160,7 @@ public class GenericResult extends EnrichmentResult {
 
 
 	public String toString() {
-		return getName() + "\t" + getDescription() + "\t" + getPvalue() + "\t" + gsSize + "\t" + fdrqvalue + "\t" + NES;
+		return getName() + "\t" + getDescription() + "\t" + getPvalue() + "\t" + getGsSize() + "\t" + fdrqvalue + "\t" + NES;
 	}
 
 }

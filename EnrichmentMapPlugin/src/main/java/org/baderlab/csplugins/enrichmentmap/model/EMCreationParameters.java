@@ -31,7 +31,7 @@ public class EMCreationParameters {
 	private double pvalueMin = 1.0;
 	
 	// TEMPORARY - this shouldn't be here need to generalize this
-	private boolean isTwoDistinctExpressionSets;
+	private boolean isDistinctExpressionSets;
 	// TEMPORARY - this shouldn't be here this won't work for mastermap
 	private String enrichmentEdgeType = "Geneset_Overlap";
 	
@@ -121,16 +121,12 @@ public class EMCreationParameters {
 	}
 
 	
-	
-	
-	@Deprecated
-	public void setTwoDistinctExpressionSets(boolean d) {
-		this.isTwoDistinctExpressionSets = d;
+	public void setDistinctExpressionSets(boolean d) {
+		this.isDistinctExpressionSets = d;
 	}
 	
-	@Deprecated
-	public boolean isTwoDistinctExpressionSets() {
-		return isTwoDistinctExpressionSets;
+	public boolean isDistinctExpressionSets() {
+		return isDistinctExpressionSets;
 	}
 
 	public String getEnrichmentEdgeType() {

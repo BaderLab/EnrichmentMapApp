@@ -23,7 +23,7 @@ public class EnrichmentResultTest {
 		double pvalue = (0.01);
 		
 		//create a new GeneSet
-		EnrichmentResult results = new EnrichmentResult(name, description, pvalue);
+		EnrichmentResult results = new EnrichmentResult(name, description, pvalue, 0);
 				
 		assertEquals("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4", results.getName());
 		assertEquals("Apoptosis induced DNA fragmentation", results.getDescription());

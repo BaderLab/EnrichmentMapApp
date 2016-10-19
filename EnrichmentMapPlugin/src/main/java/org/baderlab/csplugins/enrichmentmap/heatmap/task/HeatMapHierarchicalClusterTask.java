@@ -379,7 +379,7 @@ public class HeatMapHierarchicalClusterTask extends AbstractTask implements Obse
 				} catch(OutOfMemoryError e) {
 					throw new Exception("Unable to complete clustering of genes due to insufficient memory.", e);
 				}
-			} else if(cluster && params.isTwoDistinctExpressionSets()) {
+			} else if(cluster && params.isDistinctExpressionSets()) {
 				cluster = false;
 				hmParams.setSort(HeatMapParameters.Sort.NONE);
 			}

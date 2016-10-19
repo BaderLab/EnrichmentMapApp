@@ -1,11 +1,12 @@
 package org.baderlab.csplugins.enrichmentmap.task;
 
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
@@ -40,19 +41,32 @@ public class FilterGenesetsByDatasetGenes extends AbstractTask {
 			throw new IllegalThreadStateException("No genes in the expression file are found in the GMT file ");
 
 		//if there are two dataset check to see if they have the same set of genes
-		if(datasets.size() > 1) {
-			Set<Integer> dataset1_genes = datasets.get(LegacySupport.DATASET1).getDatasetGenes();
-			Set<Integer> dataset2_genes = datasets.get(LegacySupport.DATASET2).getDatasetGenes();
-
-			if(!dataset1_genes.equals(dataset2_genes)) {
-				map.getParams().setTwoDistinctExpressionSets(true);
-			}
+		if(datasetsAreDistinct(datasets.values())) {
+			map.getParams().setDistinctExpressionSets(true);
 		}
 	}
 
 	@Override
-	public void run(TaskMonitor arg0) throws Exception {
+	public void run(TaskMonitor taskMonitor) throws Exception {
+		taskMonitor.setStatusMessage("Filtering Gene Sets");
 		filterGenesets();
 	}
+	
+	
+	private static boolean datasetsAreDistinct(Collection<DataSet> datasets) {
+		Set<Set<Integer>> uniqueGeneSets = new HashSet<>();
+		for(DataSet dataset : datasets) {
+			Set<Integer> genes = dataset.getDatasetGenes();
+			uniqueGeneSets.add(genes);
+			if(uniqueGeneSets.size() > 1) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	
+	
+	
 
 }

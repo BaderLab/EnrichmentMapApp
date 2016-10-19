@@ -103,10 +103,14 @@ public class ComputeSimilarityTask extends AbstractTask {
 
 	
 	public Map<String,GenesetSimilarity> computeGenesetSimilarities(TaskMonitor taskMonitor) {
+		if(!LegacySupport.isLegacyEnrichmentMap(map)) {
+			throw new IllegalArgumentException("This task only works for legacy enrichment maps");
+		}
+		
 		Map<String,GenesetSimilarity> similarities = new HashMap<>();
 		
 		Map<String, GeneSet> genesetsOfInterest;
-		if (map.getParams().isTwoDistinctExpressionSets())
+		if (map.getParams().isDistinctExpressionSets())
 			genesetsOfInterest = map.getDataset(LegacySupport.DATASET1).getGenesetsOfInterest().getGenesets();
 		else
 			genesetsOfInterest = map.getAllGenesetsOfInterest();
@@ -126,7 +130,7 @@ public class ComputeSimilarityTask extends AbstractTask {
 		}
 
 		int total = genesetsOfInterest.size();
-		if(map.getParams().isTwoDistinctExpressionSets())
+		if(map.getParams().isDistinctExpressionSets())
 			total += genesetSize(LegacySupport.DATASET1) + genesetSize(LegacySupport.DATASET2);
 		
 		ProgressMonitor progress = new ProgressMonitor(taskMonitor, total);
@@ -134,7 +138,7 @@ public class ComputeSimilarityTask extends AbstractTask {
 
 		//figure out if we need to compute edges for two different expression sets or one.
 		int enrichment_set = 0;
-		if (map.getParams().isTwoDistinctExpressionSets()) {
+		if (map.getParams().isDistinctExpressionSets()) {
 			//TODO if there are multiple species or different expression we need to loop through the datasets instead of treating all genesets as the same.
 			enrichment_set = 1;
 		}
@@ -191,7 +195,7 @@ public class ComputeSimilarityTask extends AbstractTask {
 		
 		//need to go through the second set of genesets in order to calculate the additional similarities
 		//TODO:add two species support
-		if (map.getParams().isTwoDistinctExpressionSets()) {
+		if (map.getParams().isDistinctExpressionSets()) {
 
 			Map<String, GeneSet> sig_genesets_set1 = map.getDataset(LegacySupport.DATASET1).getGenesetsOfInterest().getGenesets();
 			Map<String, GeneSet> sig_genesets_set2 = map.getDataset(LegacySupport.DATASET2).getGenesetsOfInterest().getGenesets();

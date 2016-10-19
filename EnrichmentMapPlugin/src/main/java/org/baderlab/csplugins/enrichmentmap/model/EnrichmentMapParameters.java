@@ -701,7 +701,7 @@ public class EnrichmentMapParameters {
 		this.FDR = params.isFDR();
 		this.similarityMetric = similarityMetricToString(params.getSimilarityMetric());
 		this.combinedConstant = params.getCombinedConstant();
-		this.twoDistinctExpressionSets = params.isTwoDistinctExpressionSets();
+		this.twoDistinctExpressionSets = params.isDistinctExpressionSets();
 
 //		this.enrichment_edge_type = copy.getEnrichment_edge_type();
 		this.EMgmt = params.isEMgmt();
