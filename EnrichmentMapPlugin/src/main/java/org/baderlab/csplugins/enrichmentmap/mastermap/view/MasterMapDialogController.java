@@ -31,31 +31,44 @@ import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.Method;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
+import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
+import org.baderlab.csplugins.enrichmentmap.task.MasterMapGSEATaskFactory;
 import org.baderlab.csplugins.enrichmentmap.util.NiceDialogCallback;
 import org.baderlab.csplugins.enrichmentmap.util.NiceDialogCallback.Message;
 import org.baderlab.csplugins.enrichmentmap.util.NiceDialogController;
 import org.baderlab.csplugins.enrichmentmap.util.SwingUtil;
 import org.baderlab.csplugins.enrichmentmap.view.AboutPanel;
 import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.swing.DialogTaskManager;
 
 import com.google.inject.Inject;
-import com.google.inject.Provider;
 import com.google.inject.Singleton;
 
 @Singleton
 public class MasterMapDialogController implements NiceDialogController {
 	
 	@Inject private DialogTaskManager taskManager;
-	@Inject private Provider<CutoffPropertiesPanel> cutoffPropertiesPanelProvider;
+	@Inject private CutoffPropertiesPanel cutoffPanel;
+	@Inject private LegacySupport legacySupport;
+	@Inject private MasterMapGSEATaskFactory.Factory taskFactoryFactory;
+	
+	private NiceDialogCallback callback;
+	private JPanel panel;
+	
+	private JRadioButton gseaRadio;
+	private JRadioButton genericRadio;
 	
 	private JTextField pathTextField;
 	private CheckboxList checkboxList;
 	private CheckboxListModel checkboxListModel;
 	private JButton selectAllButton;
 	private JButton selectNoneButton;
-	private NiceDialogCallback callback;
-	private JPanel panel;
 	
 	
 	@Override
@@ -81,17 +94,45 @@ public class MasterMapDialogController implements NiceDialogController {
 
 	@Override
 	public void finish() {
-		List<Path> paths = 
-			checkboxListModel.stream()
-			.filter(CheckboxData::isSelected)
-			.map(CheckboxData::getPath)
-			.collect(Collectors.toList());
+		Method method = getMethod();
+		String prefix = legacySupport.getNextAttributePrefix();
+		SimilarityMetric similarityMetric = cutoffPanel.getSimilarityMetric();
+		double pvalue = cutoffPanel.getPValue();
+		double qvalue = cutoffPanel.getQValue();
+		double cutoff = cutoffPanel.getCutoff();
+		double combined = cutoffPanel.getCombinedConstant();
 		
-//		MasterMapTaskFactory taskFactory = taskFactoryFactory.create(paths);
-//		TaskIterator tasks = taskFactory.createTaskIterator();
-//		taskManager.execute(tasks);
+		EMCreationParameters params = 
+			new EMCreationParameters(method, prefix, similarityMetric, pvalue, qvalue, cutoff, combined);
+		
+		List<Path> paths = getPaths();
+		
+		MasterMapGSEATaskFactory taskFactory = taskFactoryFactory.create(params, paths);
+		TaskIterator tasks = taskFactory.createTaskIterator();
+		
+		// Close this dialog after the progress dialog finishes normally
+		tasks.append(new AbstractTask() {
+			public void run(TaskMonitor taskMonitor) {
+				callback.close();
+			}
+		});
+		
+		taskManager.execute(tasks);
 	}
 	
+	public Method getMethod() {
+		if(gseaRadio.isSelected())
+			return Method.GSEA;
+		else
+			return Method.Generic;
+	}
+	
+	private List<Path> getPaths() {
+		return checkboxListModel.stream()
+				.filter(CheckboxData::isSelected)
+				.map(CheckboxData::getPath)
+				.collect(Collectors.toList());
+	}
 	
 	@Override
 	public Icon getIcon() {
@@ -107,7 +148,6 @@ public class MasterMapDialogController implements NiceDialogController {
 		
 		JPanel analysisPanel = createAnalysisTypePanel();
 		JPanel gseaPanel     = createGSEAPanel();
-		JPanel cutoffPanel   = cutoffPropertiesPanelProvider.get();
 		
 		panel = new JPanel(new BorderLayout());
 		GroupLayout layout = new GroupLayout(panel);
@@ -135,8 +175,8 @@ public class MasterMapDialogController implements NiceDialogController {
 
 	
 	private JPanel createAnalysisTypePanel() {
-		JRadioButton gseaRadio = new JRadioButton("GSEA");
-		JRadioButton genericRadio = new JRadioButton("Generic/g:Profiler");
+		gseaRadio = new JRadioButton("GSEA");
+		genericRadio = new JRadioButton("Generic/g:Profiler");
 		
 		ButtonGroup buttonGroup = new ButtonGroup();
 		buttonGroup.add(gseaRadio);
@@ -155,13 +195,13 @@ public class MasterMapDialogController implements NiceDialogController {
 		layout.setAutoCreateGaps(true);
 	   		
    		layout.setHorizontalGroup(layout.createSequentialGroup()
-   				.addComponent(gseaRadio)
-   				.addComponent(genericRadio)
-   				.addGap(0, 0, Short.MAX_VALUE)
+			.addComponent(gseaRadio)
+			.addComponent(genericRadio)
+			.addGap(0, 0, Short.MAX_VALUE)
    		);
    		layout.setVerticalGroup(layout.createParallelGroup(Alignment.LEADING, true)
-   				.addComponent(gseaRadio, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-   				.addComponent(genericRadio, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+			.addComponent(gseaRadio, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+			.addComponent(genericRadio, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    		);
    		
    		if (LookAndFeelUtil.isAquaLAF())

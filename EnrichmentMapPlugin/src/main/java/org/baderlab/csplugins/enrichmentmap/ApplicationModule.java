@@ -18,6 +18,7 @@ import org.baderlab.csplugins.enrichmentmap.task.BuildDiseaseSignatureTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreateEnrichmentMapNetworkTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreatePostAnalysisVisualStyleTask;
 import org.baderlab.csplugins.enrichmentmap.task.EnrichmentMapBuildMapTaskFactory;
+import org.baderlab.csplugins.enrichmentmap.task.MasterMapGSEATaskFactory;
 import org.baderlab.csplugins.enrichmentmap.task.VisualizeEnrichmentMapTask;
 import org.baderlab.csplugins.enrichmentmap.view.PostAnalysisKnownSignaturePanel;
 import org.baderlab.csplugins.enrichmentmap.view.PostAnalysisSignatureDiscoveryPanel;
@@ -91,6 +92,7 @@ class FactoryModule extends AbstractModule {
 		installFactory(UpdateHeatMapTask.Factory.class);
 		installFactory(HeatMapSortActionListener.Factory.class);
 		installFactory(HeatMapTransformActionListener.Factory.class);
+		installFactory(MasterMapGSEATaskFactory.Factory.class);
 	}
 	
 	private void installFactory(Class<?> factoryInterface) {

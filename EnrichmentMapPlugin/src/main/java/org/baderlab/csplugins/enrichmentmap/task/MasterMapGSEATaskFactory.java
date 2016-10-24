@@ -21,8 +21,8 @@ public class MasterMapGSEATaskFactory extends AbstractTaskFactory {
 
 	@Inject private LegacySupport legacySupport;
 	
-	private EMCreationParameters params;
-	private List<Path> gseaResultsFolders;
+	private final EMCreationParameters params;
+	private final List<Path> gseaResultsFolders;
 	
 	
 	public static interface Factory {
@@ -32,6 +32,7 @@ public class MasterMapGSEATaskFactory extends AbstractTaskFactory {
 	@Inject
 	public MasterMapGSEATaskFactory(@Assisted EMCreationParameters params, @Assisted List<Path> gseaResultsFolders) {
 		this.gseaResultsFolders = gseaResultsFolders;
+		this.params = params;
 	}
 	
 	
@@ -49,10 +50,11 @@ public class MasterMapGSEATaskFactory extends AbstractTaskFactory {
 		for(Path path : gseaResultsFolders) {
 			DataSetFiles files = new DataSetFiles();
 			files.setEnrichmentFileName1(path.resolve(Paths.get("edb/results.edb")).toString());
-			files.setGMTFileName(path.resolve(Paths.get("edb/results.edb")).toString());
+			files.setGMTFileName(path.resolve(Paths.get("edb/gene_sets.gmt")).toString());
 			
 			String datasetName = getDatasetName(path);
 			DataSet dataset = new DataSet(map, datasetName, files);
+			map.addDataSet(datasetName, dataset);
 			
 			// Load GMT File
 			GMTFileReaderTask gmtTask = new GMTFileReaderTask(dataset);
@@ -77,12 +79,27 @@ public class MasterMapGSEATaskFactory extends AbstractTaskFactory {
 
 		// Filter out genesets that don't pass the p-value and q-value thresholds
 		InitializeGenesetsOfInterestTask genesetsTask = new InitializeGenesetsOfInterestTask(map);
+		genesetsTask.setThrowIfMissing(false); // TEMPORARY
 		tasks.append(genesetsTask);
 
-//		//compute the geneset similarities
-//		ComputeSimilarityTask similarities = new ComputeSimilarityTask(map);
-//		currentTasks.append(similarities);
-//
+		//compute the geneset similarities
+		ComputeSimilarityTaskParallel similarityTask = new ComputeSimilarityTaskParallel(map);
+		tasks.append(similarityTask);
+
+//		tasks.append(new AbstractTask() {
+//			@Override
+//			public void run(TaskMonitor taskMonitor) throws Exception {
+//				System.out.println("DataSets:");
+//				map.getDatasets().keySet().forEach(System.out::println);
+//				System.out.println("Similarities:");
+//				map.getGenesetSimilarity().forEach((k,v) -> {
+//					System.out.println("Edge: " + k + " Similarity: " + v.getSimilarity_coeffecient());
+//				});
+//			}
+//		});
+		
+		
+		
 //		//build the resulting map
 //		CreateEnrichmentMapNetworkTask create_map = createEnrichmentMapNetworkTaskFactory.create(map);
 //		currentTasks.append(create_map);
@@ -99,8 +116,6 @@ public class MasterMapGSEATaskFactory extends AbstractTaskFactory {
 //		}
 //
 //		return currentTasks;
-		
-		
 		
 		return tasks;
 	}

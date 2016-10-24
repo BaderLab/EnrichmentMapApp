@@ -183,5 +183,10 @@ public class NiceDialog {
 			return dialog;
 		}
 		
+		@Override
+		public void close() {
+			dialog.setVisible(false);
+		}
+		
 	}
 }

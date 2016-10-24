@@ -57,6 +57,7 @@ import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.GenesetSimilarity;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
+import org.baderlab.csplugins.enrichmentmap.model.SimilarityKey;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
@@ -107,7 +108,7 @@ public class ComputeSimilarityTask extends AbstractTask {
 			throw new IllegalArgumentException("This task only works for legacy enrichment maps");
 		}
 		
-		Map<String,GenesetSimilarity> similarities = new HashMap<>();
+		Map<SimilarityKey,GenesetSimilarity> similarities = new HashMap<>();
 		
 		Map<String, GeneSet> genesetsOfInterest;
 		if (map.getParams().isDistinctExpressionSets())
@@ -134,6 +135,7 @@ public class ComputeSimilarityTask extends AbstractTask {
 			total += genesetSize(LegacySupport.DATASET1) + genesetSize(LegacySupport.DATASET2);
 		
 		ProgressMonitor progress = new ProgressMonitor(taskMonitor, total);
+		System.out.println("ComputeSimilarityTask.computeGenesetSimilarities() " + total);
 		
 
 		//figure out if we need to compute edges for two different expression sets or one.
@@ -151,43 +153,41 @@ public class ComputeSimilarityTask extends AbstractTask {
 
 			//for each individual geneset compute its jaccard index with all other genesets
 			for(String geneset2_name : genesetsInnerLoop.keySet()) {
-
+				if (geneset1_name.equalsIgnoreCase(geneset2_name))
+					continue; //don't compare two identical genesets
+				
 				//Check to see if this comparison has been done
 				//The key for the set of geneset similarities is the combination of the two names.  Check for either variation name1_name2 or name2_name1
-				String similarity_key1;
-				String similarity_key2;
+				SimilarityKey similarity_key;
 				if (enrichment_set == 0) {
-					similarity_key1 = geneset1_name + " (" + edgeType + ") " + geneset2_name;
-					similarity_key2 = geneset2_name + " (" + edgeType + ") " + geneset1_name;
+					similarity_key = new SimilarityKey(geneset1_name, edgeType, geneset2_name);
 				} else {
-					similarity_key1 = geneset1_name + " (" + EnrichmentMapParameters.ENRICHMENT_INTERACTION_TYPE_SET1 + ") " + geneset2_name;
-					similarity_key2 = geneset2_name + " (" + EnrichmentMapParameters.ENRICHMENT_INTERACTION_TYPE_SET1 + ") " + geneset1_name;
+					similarity_key = new SimilarityKey(geneset1_name, EnrichmentMapParameters.ENRICHMENT_INTERACTION_TYPE_SET1, geneset2_name);
 				}
-
-				//first check to see if the terms are the same
-				if (geneset1_name.equalsIgnoreCase(geneset2_name)) {
-					//don't compare two identical genesets
-				} else if (similarities.containsKey(similarity_key1) || similarities.containsKey(similarity_key2)) {
-					//skip this geneset comparison.  It has already been done.
-				} else {
-					GeneSet geneset1 = (GeneSet) genesetsOfInterest.get(geneset1_name);
-					GeneSet geneset2 = (GeneSet) genesetsOfInterest.get(geneset2_name);
+				
+				if (!similarities.containsKey(similarity_key) ) { // Skip this geneset comparison if it has already been done.
+					
+					GeneSet geneset1 = genesetsOfInterest.get(geneset1_name);
+					GeneSet geneset2 = genesetsOfInterest.get(geneset2_name);
 
 					//if the geneset1 is null, check to see if it is post analysis node
 					if (geneset1 == null) {
-						geneset1 = (GeneSet) genesetsInnerLoop.get(geneset1_name);
+						geneset1 = genesetsInnerLoop.get(geneset1_name);
 					}
 					//if the geneset1 is null, check to see if it is post analysis node
 					if (geneset2 == null) {
-						geneset2 = (GeneSet) genesetsInnerLoop.get(geneset2_name);
+						geneset2 = genesetsInnerLoop.get(geneset2_name);
 					}
 					
 					GenesetSimilarity comparison = computeGenesetSimilarity(map.getParams(), geneset1_name, geneset2_name, geneset1, geneset2, enrichment_set);
 
+					// MKTODO using swap() won't work
+					// the reason it previoulsy used a different key was so that the enrichment and signature sets could live side-by side for the same pair of gene-sets
+					
 					if (type == SIGNATURE) {// as we iterate over the signature nodes in the inner loop, we have to switch the nodes in the edge name
-						similarities.put(similarity_key2, comparison);
+						similarities.put(similarity_key.swap(), comparison);
 					} else {
-						similarities.put(similarity_key1, comparison);
+						similarities.put(similarity_key, comparison);
 					}
 				}
 			}
@@ -210,27 +210,23 @@ public class ComputeSimilarityTask extends AbstractTask {
 
 				//for each individual geneset compute its jaccard index with all other genesets
 				for (String geneset2_name : sig_genesets_set2.keySet()) {
-
+					if (geneset1_name.equalsIgnoreCase(geneset2_name))
+						continue; //don't compare two identical genesets
+					
 					//Check to see if this comparison has been done
 					//The key for the set of geneset similarities is the combination of the two names.  Check for either variation name1_name2 or name2_name1
-					String similarity_key1 = geneset1_name + " (" + EnrichmentMapParameters.ENRICHMENT_INTERACTION_TYPE_SET2 + ") " + geneset2_name;
-					String similarity_key2 = geneset2_name + " (" + EnrichmentMapParameters.ENRICHMENT_INTERACTION_TYPE_SET2 + ") " + geneset1_name;
+					SimilarityKey similarity_key = new SimilarityKey(geneset1_name, EnrichmentMapParameters.ENRICHMENT_INTERACTION_TYPE_SET2, geneset2_name);
 
-					//first check to see if the terms are the same
-					if (geneset1_name.equalsIgnoreCase(geneset2_name)) {
-						//don't compare two identical genesets
-					} else if (similarities.containsKey(similarity_key1) || similarities.containsKey(similarity_key2)) {
-						//skip this geneset comparison.  It has already been done.
-					} else {
-						GeneSet geneset1 = (GeneSet) sig_genesets_set2.get(geneset1_name);
-						GeneSet geneset2 = (GeneSet) sig_genesets_set2.get(geneset2_name);
+					if (!similarities.containsKey(similarity_key)) { //skip this geneset comparison if it has already been done.
+						GeneSet geneset1 = sig_genesets_set2.get(geneset1_name);
+						GeneSet geneset2 = sig_genesets_set2.get(geneset2_name);
 
 						GenesetSimilarity comparison = computeGenesetSimilarity(map.getParams(), geneset1_name, geneset2_name, geneset1, geneset2, enrichment_set);
 						
 						if (type == SIGNATURE) {// as we iterate over the signature nodes in the inner loop, we have to switch the nodes in the edge name
-							similarities.put(similarity_key2, comparison);
+							similarities.put(similarity_key.swap(), comparison);
 						} else {
-							similarities.put(similarity_key1, comparison);
+							similarities.put(similarity_key, comparison);
 						}
 					}
 				}
@@ -258,18 +254,15 @@ public class ComputeSimilarityTask extends AbstractTask {
 					//only look at this geneset if it is in dataset1
 					if (!dataset1_results.containsKey(geneset2_name))
 						continue;
+					
+					if (geneset1_name.equalsIgnoreCase(geneset2_name))
+						continue; //don't compare two identical genesets
 
 					//Check to see if this comparison has been done
 					//The key for the set of geneset similarities is the combination of the two names.  Check for either variation name1_name2 or name2_name1
-					String similarity_key1 = geneset1_name + " (" + EnrichmentMapParameters.ENRICHMENT_INTERACTION_TYPE_SET1 + ") " + geneset2_name;
-					String similarity_key2 = geneset2_name + " (" + EnrichmentMapParameters.ENRICHMENT_INTERACTION_TYPE_SET1 + ") " + geneset1_name;
+					SimilarityKey similarity_key = new SimilarityKey(geneset1_name, EnrichmentMapParameters.ENRICHMENT_INTERACTION_TYPE_SET1, geneset2_name);
 
-					//first check to see if the terms are the same
-					if (geneset1_name.equalsIgnoreCase(geneset2_name)) {
-						//don't compare two identical genesets
-					} else if (similarities.containsKey(similarity_key1) || similarities.containsKey(similarity_key2)) {
-						//skip this geneset comparison.  It has already been done.
-					} else {
+					if (!similarities.containsKey(similarity_key)) {
 						boolean s1g1 = sig_genesets_set1.containsKey(geneset1_name);
 						boolean s2g1 = sig_genesets_set2.containsKey(geneset1_name);
 						boolean s1g2 = sig_genesets_set1.containsKey(geneset2_name);
@@ -277,15 +270,15 @@ public class ComputeSimilarityTask extends AbstractTask {
 						
 						// both genesets must be significant in both datasets
 						if(s1g1 && s2g1 && s1g2 && s2g2) {
-							GeneSet geneset1 = (GeneSet) genesetsOfInterest_missingedges.get(geneset1_name);
-							GeneSet geneset2 = (GeneSet) genesetsOfInterest_missingedges.get(geneset2_name);
+							GeneSet geneset1 = genesetsOfInterest_missingedges.get(geneset1_name);
+							GeneSet geneset2 = genesetsOfInterest_missingedges.get(geneset2_name);
 
 							GenesetSimilarity comparison = computeGenesetSimilarity(map.getParams(), geneset1_name, geneset2_name, geneset1, geneset2, enrichment_set);
 
 							if (type == SIGNATURE) {// as we iterate over the signature nodes in the inner loop, we have to switch the nodes in the edge name
-								similarities.put(similarity_key2, comparison);
+								similarities.put(similarity_key.swap(), comparison);
 							} else {
-								similarities.put(similarity_key1, comparison);
+								similarities.put(similarity_key, comparison);
 							}
 						}
 					}
@@ -293,7 +286,11 @@ public class ComputeSimilarityTask extends AbstractTask {
 			}
 		}
 		
-		return similarities;
+		Map<String,GenesetSimilarity> genesetSimilarities = new HashMap<>();
+		for(Map.Entry<SimilarityKey,GenesetSimilarity> entry : similarities.entrySet()) {
+			genesetSimilarities.put(entry.getKey().toString(), entry.getValue());
+		}
+		return genesetSimilarities;
 	}
 	
 	
@@ -326,7 +323,7 @@ public class ComputeSimilarityTask extends AbstractTask {
 	}
 
 	
-	private GenesetSimilarity computeGenesetSimilarity(EMCreationParameters params, String geneset1Name, String geneset2Name, GeneSet geneset1, GeneSet geneset2, int enrichment_set) {
+	private static GenesetSimilarity computeGenesetSimilarity(EMCreationParameters params, String geneset1Name, String geneset2Name, GeneSet geneset1, GeneSet geneset2, int enrichment_set) {
 		// MKTODO: Should not need to pass in the geneset names, should just use geneset.getName(), but I'm nervous I might break something.
 		
 		Set<Integer> genes1 = geneset1.getGenes();

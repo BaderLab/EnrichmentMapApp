@@ -22,9 +22,10 @@ public class FilterGenesetsByDatasetGenes extends AbstractTask {
 	 * Filter all the genesets by the dataset genes. If there are multiple sets
 	 * of genesets make sure to filter by the specific dataset genes.
 	 */
-	public void filterGenesets() {
+	public void filterGenesets(TaskMonitor taskMonitor) {
 		Map<String, DataSet> datasets = map.getDatasets();
 		for(String k : datasets.keySet()) {
+			taskMonitor.setStatusMessage("Filtering Data Set: " + k);
 			DataSet current_set = datasets.get(k);
 			
 			//only filter the genesets if dataset genes are not null or empty
@@ -49,7 +50,8 @@ public class FilterGenesetsByDatasetGenes extends AbstractTask {
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		taskMonitor.setStatusMessage("Filtering Gene Sets");
-		filterGenesets();
+		filterGenesets(taskMonitor);
+		taskMonitor.setStatusMessage("");
 	}
 	
 	

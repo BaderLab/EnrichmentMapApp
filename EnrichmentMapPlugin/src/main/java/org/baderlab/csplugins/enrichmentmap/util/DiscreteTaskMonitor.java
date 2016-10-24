@@ -1,5 +1,8 @@
 package org.baderlab.csplugins.enrichmentmap.util;
 
+import java.text.MessageFormat;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.cytoscape.work.TaskMonitor;
 
 public class DiscreteTaskMonitor implements TaskMonitor {
@@ -7,7 +10,8 @@ public class DiscreteTaskMonitor implements TaskMonitor {
 	private final TaskMonitor delegate;
 	
 	private final int totalWork;
-	private int currentWork = 0;
+	private AtomicInteger currentWork = new AtomicInteger(0);
+	private String messageTemplate;
 	
 	
 	public DiscreteTaskMonitor(TaskMonitor delegate, int totalWork) {
@@ -15,6 +19,9 @@ public class DiscreteTaskMonitor implements TaskMonitor {
 		this.totalWork = totalWork;
 	}
 	
+	public void setStatusMessageTemplate(String template) {
+		this.messageTemplate = template;
+	}
 	
 	private static double map(double in, double inStart, double inEnd, double outStart, double outEnd) {
 		double slope = (outEnd - outStart) / (inEnd - inStart);
@@ -25,16 +32,16 @@ public class DiscreteTaskMonitor implements TaskMonitor {
 	public void setProgress(double progress) {
 		double mappedProgress = map(progress, 0.0, 1.0, 0.0, 1.0);
 		delegate.setProgress(mappedProgress);
+		if(messageTemplate != null) {
+			String message = MessageFormat.format(messageTemplate, getCurrentWork(), getTotalWork());
+			delegate.setStatusMessage(message);
+		}
 	}
 	
-	public void setWork(int currentWork) {
-		this.currentWork = currentWork;
-		double mappedProgress = map(currentWork, 0, totalWork, 0.0, 1.0);
+	public void addWork(int delta) {
+		int work = currentWork.getAndAdd(delta);
+		double mappedProgress = map(work, 0, totalWork, 0.0, 1.0);
 		setProgress(mappedProgress);
-	}
-	
-	public void addWork(int workToAdd) {
-		setWork(currentWork + workToAdd);
 	}
 	
 	public void inc() {
@@ -46,7 +53,6 @@ public class DiscreteTaskMonitor implements TaskMonitor {
 		delegate.setTitle(title);
 	}
 
-
 	@Override
 	public void setStatusMessage(String statusMessage) {
 		delegate.setStatusMessage(statusMessage);
@@ -57,4 +63,11 @@ public class DiscreteTaskMonitor implements TaskMonitor {
 		delegate.showMessage(level, message);
 	}
 
+	public int getTotalWork() {
+		return totalWork;
+	}
+	
+	public int getCurrentWork() {
+		return currentWork.get();
+	}
 }

@@ -99,7 +99,7 @@ public class GMTFileReaderTask extends AbstractTask {
 	
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
-		taskMonitor.setTitle("parsing GMT file");
+		taskMonitor.setTitle("Parsing GMT file");
 		parse();
 	}
 	

@@ -69,11 +69,18 @@ public class InitializeGenesetsOfInterestTask extends AbstractTask {
 
 	private EnrichmentMap map;
 
-
+	// TEMPORARY - this flag exists to turn off throwing of exception if a gene set is missing
+	private boolean throwIfMissing = true;
+	
 
 	public InitializeGenesetsOfInterestTask(EnrichmentMap map) {
 		this.map = map;
 	}
+	
+	public void setThrowIfMissing(boolean throwIfMissing) {
+		this.throwIfMissing = throwIfMissing;
+	}
+	
 
 	/**
 	 * filter the genesets, restricting them to only those passing the user
@@ -126,10 +133,13 @@ public class InitializeGenesetsOfInterestTask extends AbstractTask {
 				}
 				
 				if(isGenesetOfInterest(result)) {
-					if(geneset == null) {
+					if(geneset != null) {
+						genesetsOfInterest.put(genesetName, geneset);
+					}
+					else if(throwIfMissing) {
 						throw new IllegalThreadStateException("The Geneset: " + genesetName + " is not found in the GMT file.");
 					}
-					genesetsOfInterest.put(genesetName, geneset);
+					
 				}
 			}
 		}
@@ -212,6 +222,7 @@ public class InitializeGenesetsOfInterestTask extends AbstractTask {
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		taskMonitor.setTitle("Initializing subset of genesets and GSEA results of interest");
 		initializeSets(taskMonitor);
+		taskMonitor.setStatusMessage("");
 	}
 
 }

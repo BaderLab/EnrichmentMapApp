@@ -21,4 +21,6 @@ public interface NiceDialogCallback {
 	void setFinishButtonEnabled(boolean enabled);
 
 	JDialog getDialogFrame();
+	
+	void close();
 }
