@@ -50,7 +50,7 @@ import javax.swing.JOptionPane;
 
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
-import org.baderlab.csplugins.enrichmentmap.view.PostAnalysisPanel;
+import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PostAnalysisPanel;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;

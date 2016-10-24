@@ -53,9 +53,9 @@ import java.util.Scanner;
 import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.PropertyManager;
-import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
+import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParameters;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.property.CyProperty;

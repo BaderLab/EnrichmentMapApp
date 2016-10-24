@@ -5,7 +5,7 @@ import java.awt.event.ActionEvent;
 import javax.swing.JOptionPane;
 
 import org.baderlab.csplugins.enrichmentmap.style.WidthFunction;
-import org.baderlab.csplugins.enrichmentmap.view.EdgeWidthDialog;
+import org.baderlab.csplugins.enrichmentmap.view.postanalysis.EdgeWidthDialog;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;

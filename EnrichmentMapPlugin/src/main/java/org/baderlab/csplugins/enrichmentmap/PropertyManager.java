@@ -3,8 +3,8 @@ package org.baderlab.csplugins.enrichmentmap;
 import java.util.Properties;
 import java.util.Set;
 
-import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters.DistanceMetric;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
+import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParameters.DistanceMetric;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.session.CySessionManager;
 

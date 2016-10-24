@@ -46,11 +46,11 @@ package org.baderlab.csplugins.enrichmentmap.actions;
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;
 
-import org.baderlab.csplugins.enrichmentmap.heatmap.HeatMapParameters;
-import org.baderlab.csplugins.enrichmentmap.heatmap.task.UpdateHeatMapTask;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
+import org.baderlab.csplugins.enrichmentmap.task.heatmap.UpdateHeatMapTask;
+import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParameters;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanel;
