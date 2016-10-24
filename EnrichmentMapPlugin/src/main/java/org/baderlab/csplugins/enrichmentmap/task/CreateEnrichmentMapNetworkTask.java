@@ -114,7 +114,7 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 		//be created but it is possible that they have different values for the attributes.  How do
 		//we resolve this?
 		CyNetwork network;
-		String prefix = map.getParams().getAttributePrefix();
+		final String prefix = map.getParams().getAttributePrefix();
 
 		//create the new network.
 		network = networkFactory.createNetwork();

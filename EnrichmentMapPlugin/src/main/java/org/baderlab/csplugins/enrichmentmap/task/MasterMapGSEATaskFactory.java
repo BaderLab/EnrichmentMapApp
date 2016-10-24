@@ -86,19 +86,6 @@ public class MasterMapGSEATaskFactory extends AbstractTaskFactory {
 		ComputeSimilarityTaskParallel similarityTask = new ComputeSimilarityTaskParallel(map);
 		tasks.append(similarityTask);
 
-//		tasks.append(new AbstractTask() {
-//			@Override
-//			public void run(TaskMonitor taskMonitor) throws Exception {
-//				System.out.println("DataSets:");
-//				map.getDatasets().keySet().forEach(System.out::println);
-//				System.out.println("Similarities:");
-//				map.getGenesetSimilarity().forEach((k,v) -> {
-//					System.out.println("Edge: " + k + " Similarity: " + v.getSimilarity_coeffecient());
-//				});
-//			}
-//		});
-		
-		
 		
 //		//build the resulting map
 //		CreateEnrichmentMapNetworkTask create_map = createEnrichmentMapNetworkTaskFactory.create(map);

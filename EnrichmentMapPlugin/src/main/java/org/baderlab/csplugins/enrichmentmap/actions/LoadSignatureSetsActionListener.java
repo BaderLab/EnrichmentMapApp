@@ -15,7 +15,7 @@ import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
 import org.baderlab.csplugins.enrichmentmap.task.FilterMetric;
 import org.baderlab.csplugins.enrichmentmap.task.FilterSignatureGSTask;
 import org.baderlab.csplugins.enrichmentmap.task.LoadSignatureGMTFilesTask;
-import org.baderlab.csplugins.enrichmentmap.task.ResultTaskObserver;
+import org.baderlab.csplugins.enrichmentmap.util.ResultTaskObserver;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.work.FinishStatus;

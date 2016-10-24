@@ -6,7 +6,7 @@ import java.util.Map;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
 import org.baderlab.csplugins.enrichmentmap.model.GSEAResult;
-import org.baderlab.csplugins.enrichmentmap.task.NullTaskMonitor;
+import org.baderlab.csplugins.enrichmentmap.util.NullTaskMonitor;
 import org.cytoscape.work.TaskMonitor;
 
 public class ParseGSEAEnrichmentResults extends DatasetLineParser {

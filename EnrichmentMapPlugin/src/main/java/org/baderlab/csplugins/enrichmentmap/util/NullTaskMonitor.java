@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap.task;
+package org.baderlab.csplugins.enrichmentmap.util;
 
 import org.cytoscape.work.TaskMonitor;
 

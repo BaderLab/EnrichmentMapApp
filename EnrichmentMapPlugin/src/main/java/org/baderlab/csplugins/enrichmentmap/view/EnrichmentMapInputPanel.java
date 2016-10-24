@@ -100,7 +100,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.task.EnrichmentMapBuildMapTaskFactory;
-import org.baderlab.csplugins.enrichmentmap.task.ResultTaskObserver;
+import org.baderlab.csplugins.enrichmentmap.util.ResultTaskObserver;
 import org.baderlab.csplugins.enrichmentmap.util.SwingUtil;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanelComponent;
