@@ -133,7 +133,7 @@ public class VisualizeEnrichmentMapTask extends AbstractTask {
 	}
 
 	@Override
-	public void run(TaskMonitor taskMonitor) throws Exception {
+	public void run(TaskMonitor taskMonitor) {
 		taskMonitor.setTitle("Creating Network View");
 		visualizeMap(taskMonitor);
 	}

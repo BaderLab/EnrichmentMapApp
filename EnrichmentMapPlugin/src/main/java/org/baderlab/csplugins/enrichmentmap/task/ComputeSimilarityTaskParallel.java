@@ -43,8 +43,6 @@ public class ComputeSimilarityTaskParallel extends AbstractTask {
         Map<String,GeneSet> genesetsOfInterest = map.getAllGenesetsOfInterest();
         final String edgeType = map.getParams().getEnrichmentEdgeType();
         
-        System.out.println("ComputeSimilarityTaskParallel.run() " + genesetsOfInterest.size());
-        
         DiscreteTaskMonitor taskMonitor = new DiscreteTaskMonitor(tm, genesetsOfInterest.size());
         taskMonitor.setTitle("Computing Geneset Similarities...");
         taskMonitor.setStatusMessageTemplate("Computing Geneset similarity: {0} of {1} similarities");
@@ -56,7 +54,6 @@ public class ComputeSimilarityTaskParallel extends AbstractTask {
 			
 			// Compute similarities in batches, creating a Runnable for every similarity pair would create to many objects
 			executor.execute(() -> {
-				
 				for(final String geneset2Name : genesetsOfInterest.keySet()) {
 					if (geneset1Name.equalsIgnoreCase(geneset2Name))
 						continue; //don't compare two identical gene sets
@@ -66,8 +63,12 @@ public class ComputeSimilarityTaskParallel extends AbstractTask {
 					if(similaritiesVisited.add(key)) {
 						GeneSet geneset1 = genesetsOfInterest.get(geneset1Name);
 						GeneSet geneset2 = genesetsOfInterest.get(geneset2Name);
+						
+						// returns null if the similarity coefficient doesn't pass the cutoff
 						GenesetSimilarity similarity = computeGenesetSimilarity(map.getParams(), geneset1Name, geneset2Name, geneset1, geneset2, 0);
-						similarities.put(key.toString(), similarity);
+						if(similarity != null) {
+							similarities.put(key.toString(), similarity);
+						}
 					}
 				}
 				
@@ -88,8 +89,6 @@ public class ComputeSimilarityTaskParallel extends AbstractTask {
 		executor.shutdown();
 		executor.awaitTermination(3, TimeUnit.HOURS);
 		timer.cancel();
-
-		System.out.println("DONE WITH SIMILARITIES");
 		
 		if(!cancelled)
 			map.getGenesetSimilarity().putAll(similarities);
@@ -98,7 +97,6 @@ public class ComputeSimilarityTaskParallel extends AbstractTask {
 	
 	private static GenesetSimilarity computeGenesetSimilarity(EMCreationParameters params, String geneset1Name, String geneset2Name, GeneSet geneset1, GeneSet geneset2, int enrichment_set) {
 		// MKTODO: Should not need to pass in the geneset names, should just use geneset.getName(), but I'm nervous I might break something.
-		
 		Set<Integer> genes1 = geneset1.getGenes();
 		Set<Integer> genes2 = geneset2.getGenes();
 
@@ -106,6 +104,10 @@ public class ComputeSimilarityTaskParallel extends AbstractTask {
 		Set<Integer> union = Sets.union(genes1, genes2);
 
 		double coeffecient = computeSimilarityCoeffecient(params, intersection, union, genes1, genes2);
+		
+		// Don't even bother creating the object if it doesn't pass the cutoff
+		if(coeffecient < params.getSimilarityCutoff())
+			return null;
 		
 		String edgeType = params.getEnrichmentEdgeType();
 		GenesetSimilarity similarity = new GenesetSimilarity(geneset1Name, geneset2Name, coeffecient, edgeType, intersection, enrichment_set);

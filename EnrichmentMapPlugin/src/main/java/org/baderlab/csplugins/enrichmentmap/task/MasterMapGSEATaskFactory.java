@@ -4,6 +4,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
+import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Headless;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
@@ -20,6 +21,11 @@ import com.google.inject.assistedinject.Assisted;
 public class MasterMapGSEATaskFactory extends AbstractTaskFactory {
 
 	@Inject private LegacySupport legacySupport;
+	@Inject private @Headless boolean headless;
+	
+	@Inject private MasterMapNetworkTask.Factory masterMapNetworkTaskFactory;
+	@Inject private VisualizeMasterMapTask.Factory visualizeMasterMapTaskFactory;
+	
 	
 	private final EMCreationParameters params;
 	private final List<Path> gseaResultsFolders;
@@ -68,8 +74,6 @@ public class MasterMapGSEATaskFactory extends AbstractTaskFactory {
 			// MKTODO we don't have expression data per-se
 			// Use Dummy task?
 			// Load ranks as usual, but what does that do without expressions?
-			
-			
 		}
 		
 		// trim the genesets to only contain the genes that are in the data file.
@@ -82,14 +86,18 @@ public class MasterMapGSEATaskFactory extends AbstractTaskFactory {
 		genesetsTask.setThrowIfMissing(false); // TEMPORARY
 		tasks.append(genesetsTask);
 
-		//compute the geneset similarities
+		// compute the geneset similarities
 		ComputeSimilarityTaskParallel similarityTask = new ComputeSimilarityTaskParallel(map);
 		tasks.append(similarityTask);
 
+		// create the network
+		MasterMapNetworkTask networkTask = masterMapNetworkTaskFactory.create(map);
+		tasks.append(networkTask);
 		
-//		//build the resulting map
-//		CreateEnrichmentMapNetworkTask create_map = createEnrichmentMapNetworkTaskFactory.create(map);
-//		currentTasks.append(create_map);
+		if(!headless) {
+			VisualizeMasterMapTask visualizeTask = visualizeMasterMapTaskFactory.create(map);
+			tasks.append(visualizeTask);
+		}
 //
 //		// don't visualize the map if running headless
 //		if(swingApplication != null) {

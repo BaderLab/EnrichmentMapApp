@@ -2,10 +2,13 @@ package org.baderlab.csplugins.enrichmentmap.model;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -273,6 +276,15 @@ public class EnrichmentMap {
 	public Map<String, DataSet> getDatasets() {
 		return datasets;
 	}
+	
+	/**
+	 * Returns all the DataSets in a predictable order.
+	 */
+	public List<DataSet> getDatasetList() {
+		List<DataSet> datasetList = new ArrayList<>(datasets.values());
+		datasetList.sort(Comparator.comparing(DataSet::getName));
+		return datasetList;
+	}
 
 	public void setDatasets(Map<String, DataSet> datasets) {
 		this.datasets = datasets;
@@ -284,6 +296,15 @@ public class EnrichmentMap {
 	
 	public DataSet getDataset(String datasetname) {
 		return datasets.get(datasetname);
+	}
+	
+	/**
+	 * Returns all the DataSet names in a predictable order.
+	 */
+	public List<String> getDatasetNames() {
+		List<String> names = new ArrayList<>(datasets.keySet());
+		names.sort(Comparator.naturalOrder());
+		return names;
 	}
 
 	public EMCreationParameters getParams() {

@@ -15,7 +15,9 @@ import org.baderlab.csplugins.enrichmentmap.task.CreateEnrichmentMapNetworkTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreatePostAnalysisVisualStyleTask;
 import org.baderlab.csplugins.enrichmentmap.task.EnrichmentMapBuildMapTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.task.MasterMapGSEATaskFactory;
+import org.baderlab.csplugins.enrichmentmap.task.MasterMapNetworkTask;
 import org.baderlab.csplugins.enrichmentmap.task.VisualizeEnrichmentMapTask;
+import org.baderlab.csplugins.enrichmentmap.task.VisualizeMasterMapTask;
 import org.baderlab.csplugins.enrichmentmap.task.heatmap.UpdateHeatMapTask;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapPanel;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapSortActionListener;
@@ -93,6 +95,8 @@ class FactoryModule extends AbstractModule {
 		installFactory(HeatMapSortActionListener.Factory.class);
 		installFactory(HeatMapTransformActionListener.Factory.class);
 		installFactory(MasterMapGSEATaskFactory.Factory.class);
+		installFactory(MasterMapNetworkTask.Factory.class);
+		installFactory(VisualizeMasterMapTask.Factory.class);
 	}
 	
 	private void installFactory(Class<?> factoryInterface) {

@@ -549,7 +549,7 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 	 * @param label - current one line representation of label
 	 * @return formatted, wrapped label
 	 */
-	static String formatLabel(String label) {
+	public static String formatLabel(String label) {
 		String formattedLabel = "";
 
 		int i = 0;
