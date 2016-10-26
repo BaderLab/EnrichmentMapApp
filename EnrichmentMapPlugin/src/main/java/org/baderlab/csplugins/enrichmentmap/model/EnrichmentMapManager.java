@@ -143,9 +143,15 @@ public class EnrichmentMapManager implements SetCurrentNetworkListener, NetworkA
 	public boolean isEnrichmentMap(Long networkID) {
 		return enrichmentMaps.containsKey(networkID);
 	}
+	
+	public boolean isEnrichmentMap(CyNetworkView networkView) {
+		return isEnrichmentMap(networkView.getModel().getSUID());
+	}
 
 	/**
 	 * Network Focus Event.
+	 * MKTODO Replace this centralized event handling with the new model.event events.
+	 * There should not be direct references to these panels.
 	 */
 	public void handleEvent(SetCurrentNetworkEvent event) {
 		long networkId = event.getNetwork().getSUID();

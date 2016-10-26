@@ -36,7 +36,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.task.MasterMapGSEATaskFactory;
-import org.baderlab.csplugins.enrichmentmap.view.AboutPanel;
+import org.baderlab.csplugins.enrichmentmap.view.AboutDialog;
 import org.baderlab.csplugins.enrichmentmap.view.util.NiceDialogCallback;
 import org.baderlab.csplugins.enrichmentmap.view.util.NiceDialogController;
 import org.baderlab.csplugins.enrichmentmap.view.util.NiceDialogCallback.Message;
@@ -136,7 +136,7 @@ public class MasterMapDialogController implements NiceDialogController {
 	
 	@Override
 	public Icon getIcon() {
-		URL iconURL = AboutPanel.class.getResource("enrichmentmap_logo.png");
+		URL iconURL = AboutDialog.class.getResource("enrichmentmap_logo.png");
 		ImageIcon original = new ImageIcon(iconURL);
 		Image scaled = original.getImage().getScaledInstance(80, 49, Image.SCALE_SMOOTH);
 		return new ImageIcon(scaled);

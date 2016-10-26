@@ -77,7 +77,6 @@ import javax.swing.SwingUtilities;
 
 import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Edges;
 import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Nodes;
-import org.baderlab.csplugins.enrichmentmap.PropertyManager;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
@@ -119,7 +118,6 @@ public class ParametersPanel extends JPanel implements CytoPanelComponent, Netwo
 	@Inject private CyApplicationManager cyApplicationManager;
 	@Inject private DialogTaskManager taskManager;
 	@Inject private EnrichmentMapManager emManager;
-	@Inject private PropertyManager propertyManager;
 	
 	@Inject private @Nodes HeatMapPanel nodesOverlapPanel;
 	@Inject private @Edges HeatMapPanel edgesOverlapPanel;

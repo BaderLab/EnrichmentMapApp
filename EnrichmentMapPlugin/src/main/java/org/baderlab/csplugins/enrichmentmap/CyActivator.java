@@ -9,7 +9,8 @@ import org.baderlab.csplugins.enrichmentmap.actions.HeatMapSelectionListener;
 import org.baderlab.csplugins.enrichmentmap.actions.LegacyEnrichmentMapSessionListener;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadEnrichmentsPanelAction;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadPostAnalysisPanelAction;
-import org.baderlab.csplugins.enrichmentmap.actions.ShowAboutPanelAction;
+import org.baderlab.csplugins.enrichmentmap.actions.ShowAboutDialogAction;
+import org.baderlab.csplugins.enrichmentmap.actions.ShowControlPanelAction;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowEdgeWidthDialogAction;
 import org.baderlab.csplugins.enrichmentmap.commands.BuildEnrichmentMapTuneableTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.commands.EnrichmentMapGSEACommandHandlerTaskFactory;
@@ -63,7 +64,8 @@ public class CyActivator extends AbstractCyActivator {
 		registerAction(bc, injector.getInstance(LoadEnrichmentsPanelAction.class));
 		registerAction(bc, injector.getInstance(LoadPostAnalysisPanelAction.class));	
 		registerAction(bc, injector.getInstance(ShowEdgeWidthDialogAction.class));
-		registerAction(bc, injector.getInstance(ShowAboutPanelAction.class));
+		registerAction(bc, injector.getInstance(ShowControlPanelAction.class));
+		registerAction(bc, injector.getInstance(ShowAboutDialogAction.class));
 
 		//register the session save and restore
 		LegacyEnrichmentMapSessionListener sessionAction = injector.getInstance(LegacyEnrichmentMapSessionListener.class);

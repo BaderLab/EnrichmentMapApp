@@ -50,7 +50,6 @@ import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
-import org.baderlab.csplugins.enrichmentmap.util.NullTaskMonitor;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
@@ -59,6 +58,7 @@ import org.baderlab.csplugins.enrichmentmap.model.GenesetSimilarity;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.SimilarityKey;
+import org.baderlab.csplugins.enrichmentmap.util.NullTaskMonitor;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
@@ -136,8 +136,6 @@ public class ComputeSimilarityTask extends AbstractTask {
 			total += genesetSize(LegacySupport.DATASET1) + genesetSize(LegacySupport.DATASET2);
 		
 		ProgressMonitor progress = new ProgressMonitor(taskMonitor, total);
-		System.out.println("ComputeSimilarityTask.computeGenesetSimilarities() " + total);
-		
 
 		//figure out if we need to compute edges for two different expression sets or one.
 		int enrichment_set = 0;
@@ -180,7 +178,7 @@ public class ComputeSimilarityTask extends AbstractTask {
 						geneset2 = genesetsInnerLoop.get(geneset2_name);
 					}
 					
-					GenesetSimilarity comparison = computeGenesetSimilarity(map.getParams(), geneset1_name, geneset2_name, geneset1, geneset2, enrichment_set);
+					GenesetSimilarity comparison = computeGenesetSimilarity(map.getParams(), geneset1_name, geneset2_name, geneset1, geneset2, enrichment_set, false);
 
 					// MKTODO using swap() won't work
 					// the reason it previoulsy used a different key was so that the enrichment and signature sets could live side-by side for the same pair of gene-sets
@@ -222,7 +220,7 @@ public class ComputeSimilarityTask extends AbstractTask {
 						GeneSet geneset1 = sig_genesets_set2.get(geneset1_name);
 						GeneSet geneset2 = sig_genesets_set2.get(geneset2_name);
 
-						GenesetSimilarity comparison = computeGenesetSimilarity(map.getParams(), geneset1_name, geneset2_name, geneset1, geneset2, enrichment_set);
+						GenesetSimilarity comparison = computeGenesetSimilarity(map.getParams(), geneset1_name, geneset2_name, geneset1, geneset2, enrichment_set, false);
 						
 						if (type == SIGNATURE) {// as we iterate over the signature nodes in the inner loop, we have to switch the nodes in the edge name
 							similarities.put(similarity_key.swap(), comparison);
@@ -274,7 +272,7 @@ public class ComputeSimilarityTask extends AbstractTask {
 							GeneSet geneset1 = genesetsOfInterest_missingedges.get(geneset1_name);
 							GeneSet geneset2 = genesetsOfInterest_missingedges.get(geneset2_name);
 
-							GenesetSimilarity comparison = computeGenesetSimilarity(map.getParams(), geneset1_name, geneset2_name, geneset1, geneset2, enrichment_set);
+							GenesetSimilarity comparison = computeGenesetSimilarity(map.getParams(), geneset1_name, geneset2_name, geneset1, geneset2, enrichment_set, false);
 
 							if (type == SIGNATURE) {// as we iterate over the signature nodes in the inner loop, we have to switch the nodes in the edge name
 								similarities.put(similarity_key.swap(), comparison);
@@ -324,7 +322,7 @@ public class ComputeSimilarityTask extends AbstractTask {
 	}
 
 	
-	private static GenesetSimilarity computeGenesetSimilarity(EMCreationParameters params, String geneset1Name, String geneset2Name, GeneSet geneset1, GeneSet geneset2, int enrichment_set) {
+	static GenesetSimilarity computeGenesetSimilarity(EMCreationParameters params, String geneset1Name, String geneset2Name, GeneSet geneset1, GeneSet geneset2, int enrichment_set, boolean filter) {
 		// MKTODO: Should not need to pass in the geneset names, should just use geneset.getName(), but I'm nervous I might break something.
 		
 		Set<Integer> genes1 = geneset1.getGenes();
@@ -335,6 +333,9 @@ public class ComputeSimilarityTask extends AbstractTask {
 
 		double coeffecient = computeSimilarityCoeffecient(params, intersection, union, genes1, genes2);
 		
+		if(filter && coeffecient < params.getSimilarityCutoff())
+			return null;
+			
 		String edgeType = params.getEnrichmentEdgeType();
 		GenesetSimilarity similarity = new GenesetSimilarity(geneset1Name, geneset2Name, coeffecient, edgeType, intersection, enrichment_set);
 		return similarity;

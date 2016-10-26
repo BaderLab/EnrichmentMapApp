@@ -47,7 +47,7 @@ import java.awt.event.ActionEvent;
 
 import javax.swing.JFrame;
 
-import org.baderlab.csplugins.enrichmentmap.view.AboutPanel;
+import org.baderlab.csplugins.enrichmentmap.view.AboutDialog;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.util.swing.OpenBrowser;
@@ -56,17 +56,17 @@ import com.google.inject.Inject;
 
 
 @SuppressWarnings("serial")
-public class ShowAboutPanelAction extends AbstractCyAction {
+public class ShowAboutDialogAction extends AbstractCyAction {
 
 	@Inject private CySwingApplication application;
 	@Inject private OpenBrowser browser;
 
-	public ShowAboutPanelAction() {
+	public ShowAboutDialogAction() {
 		super("About...");
 	}
 
 	public void actionPerformed(ActionEvent event) {
-		AboutPanel aboutPanel = new AboutPanel(application, browser);
+		AboutDialog aboutPanel = new AboutDialog(application, browser);
 		aboutPanel.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		aboutPanel.pack();
 		aboutPanel.setLocationRelativeTo(application.getJFrame());
