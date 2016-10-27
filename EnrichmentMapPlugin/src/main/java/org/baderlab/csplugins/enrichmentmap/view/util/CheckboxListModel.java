@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap.view.mastermap;
+package org.baderlab.csplugins.enrichmentmap.view.util;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -9,27 +9,27 @@ import java.util.stream.StreamSupport;
 import javax.swing.DefaultListModel;
 
 @SuppressWarnings("serial")
-public class CheckboxListModel extends DefaultListModel<CheckboxData> implements Iterable<CheckboxData> {
+public class CheckboxListModel<T> extends DefaultListModel<CheckboxData<T>> implements Iterable<CheckboxData<T>> {
 
 	public CheckboxListModel() {
 		super();
 	}
 	
-	public List<CheckboxData> toList() {
+	public List<CheckboxData<T>> toList() {
 		int n = getSize();
-		List<CheckboxData> list = new ArrayList<>(n);
+		List<CheckboxData<T>> list = new ArrayList<>(n);
 		for(int i = 0; i < n; i++) {
 			list.add(get(i));
 		}
 		return list;
 	}
 	
-	public Stream<CheckboxData> stream() {
+	public Stream<CheckboxData<T>> stream() {
 		return StreamSupport.stream(spliterator(), false);
 	}
 	
-	public Iterator<CheckboxData> iterator() {
-		return new Iterator<CheckboxData>() {
+	public Iterator<CheckboxData<T>> iterator() {
+		return new Iterator<CheckboxData<T>>() {
 
 			int i = 0;
 			int n = getSize();
@@ -40,7 +40,7 @@ public class CheckboxListModel extends DefaultListModel<CheckboxData> implements
 			}
 
 			@Override
-			public CheckboxData next() {
+			public CheckboxData<T> next() {
 				return get(i++);
 			}
 		};

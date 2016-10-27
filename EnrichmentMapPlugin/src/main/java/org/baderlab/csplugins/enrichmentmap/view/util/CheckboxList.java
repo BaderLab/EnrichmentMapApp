@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap.view.mastermap;
+package org.baderlab.csplugins.enrichmentmap.view.util;
 
 import java.awt.Component;
 import java.awt.event.MouseAdapter;
@@ -16,9 +16,9 @@ import javax.swing.UIManager;
 import javax.swing.border.Border;
 
 @SuppressWarnings("serial")
-public class CheckboxList extends JList<CheckboxData> {
+public class CheckboxList<T> extends JList<CheckboxData<T>> {
 
-	public CheckboxList(ListModel<CheckboxData> model) {
+	public CheckboxList(ListModel<CheckboxData<T>> model) {
 		setModel(model);
 		create();
 	}
@@ -29,7 +29,7 @@ public class CheckboxList extends JList<CheckboxData> {
 			public void mousePressed(MouseEvent e) {
 				int index = locationToIndex(e.getPoint());
 				if(index != -1) {
-					CheckboxData checkbox = (CheckboxData) getModel().getElementAt(index);
+					CheckboxData<T> checkbox = (CheckboxData<T>) getModel().getElementAt(index);
 					checkbox.setSelected(!checkbox.isSelected());
 					repaint();
 				}
@@ -39,12 +39,12 @@ public class CheckboxList extends JList<CheckboxData> {
 	}
 	
 	
-	private class CellRenderer implements ListCellRenderer<CheckboxData> {
+	private class CellRenderer implements ListCellRenderer<CheckboxData<T>> {
 
 		private final Border noFocusBorder = BorderFactory.createEmptyBorder(1, 1, 1, 1);
 		
 		@Override
-		public Component getListCellRendererComponent(JList<? extends CheckboxData> list, CheckboxData data, int index,
+		public Component getListCellRendererComponent(JList<? extends CheckboxData<T>> list, CheckboxData<T> data, int index,
 				boolean isSelected, boolean cellHasFocus) {
 			
 			JCheckBox checkbox = new JCheckBox(data.getDisplay());
