@@ -9,6 +9,7 @@ import org.baderlab.csplugins.enrichmentmap.actions.LoadSignatureSetsActionListe
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.style.EnrichmentMapVisualStyle;
+import org.baderlab.csplugins.enrichmentmap.style.MasterMapVisualStyleTask;
 import org.baderlab.csplugins.enrichmentmap.style.PostAnalysisVisualStyle;
 import org.baderlab.csplugins.enrichmentmap.task.BuildDiseaseSignatureTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreateEnrichmentMapNetworkTask;
@@ -99,6 +100,7 @@ class FactoryModule extends AbstractModule {
 		installFactory(MasterMapNetworkTask.Factory.class);
 		installFactory(VisualizeMasterMapTask.Factory.class);
 		installFactory(NetworkList.Factory.class);
+		installFactory(MasterMapVisualStyleTask.Factory.class);
 	}
 	
 	private void installFactory(Class<?> factoryInterface) {

@@ -68,12 +68,12 @@ public class NetworkList extends JList<CyNetworkView> {
 			sb.append("<html>");
 			sb.append(name);
 			if(map!= null) {
-				sb.append("<font color='grey'>");
+				sb.append("<font color=\"gray\">");
 				int dscount = map.getDataSetCount();
 				if(dscount == 1) {
-					sb.append("(1 data set)");
+					sb.append(" (1 data set)");
 				} else {
-					sb.append("(").append(dscount).append(" data sets");
+					sb.append(" (").append(dscount).append(" data sets").append(")");
 				}
 				sb.append("</font>");
 			}

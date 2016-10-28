@@ -1,5 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap.style;
 
+import org.cytoscape.view.vizmap.VisualStyle;
+
 public class MasterMapVisualStyle {
 	
 	// Common attributes that apply to the entire network
@@ -22,5 +24,17 @@ public class MasterMapVisualStyle {
 	public static final ColumnDescriptor<Double>     EDGE_SIMILARITY_COEFF = new ColumnDescriptor<>("similarity_coefficient", Double.class);
 	public static final ColumnDescriptor<Integer>    EDGE_OVERLAP_SIZE     = new ColumnDescriptor<>("Overlap_size", Integer.class);
 	public static final ListColumnDescriptor<String> EDGE_OVERLAP_GENES    = new ListColumnDescriptor<>("Overlap_genes", String.class);
+	
+	
+	
+	public void applyVisualStyle(VisualStyle vs) {
+		// Edge Thickness -> similarity score...
+		//   There is a single similarity score because we use the union of genesets when calculating similarity
+		// Node size -> size of gene set
+		//    But.. union of genes across data sets?
+		
+		
+	}
+	
 	
 }

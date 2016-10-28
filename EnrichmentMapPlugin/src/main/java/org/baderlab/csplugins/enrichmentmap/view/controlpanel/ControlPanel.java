@@ -5,10 +5,12 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.net.URL;
+import java.util.Set;
 
 import javax.swing.ButtonGroup;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -22,9 +24,14 @@ import javax.swing.event.ListSelectionListener;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
+import org.baderlab.csplugins.enrichmentmap.style.MasterMapStyleOptions;
+import org.baderlab.csplugins.enrichmentmap.style.MasterMapVisualStyleTask;
 import org.baderlab.csplugins.enrichmentmap.util.SwingUtil;
 import org.baderlab.csplugins.enrichmentmap.view.mastermap.MasterMapDialogAction;
+import org.baderlab.csplugins.enrichmentmap.view.util.CheckboxData;
+import org.baderlab.csplugins.enrichmentmap.view.util.CheckboxListModel;
 import org.baderlab.csplugins.enrichmentmap.view.util.CheckboxListPanel;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
@@ -39,7 +46,10 @@ import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
 import org.cytoscape.view.model.events.NetworkViewAddedEvent;
 import org.cytoscape.view.model.events.NetworkViewAddedListener;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.swing.DialogTaskManager;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 
@@ -51,9 +61,11 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 	
 	@Inject private CyApplicationManager applicationManager;
 	@Inject private CyNetworkViewManager networkViewManager;
-	@Inject private EnrichmentMapManager emManager;
+	@Inject private DialogTaskManager dialogTaskManager;
 	
+	@Inject private EnrichmentMapManager emManager;
 	@Inject private Provider<MasterMapDialogAction> masterMapDialogActionProvider;
+	@Inject private MasterMapVisualStyleTask.Factory visualStyleTaskFactory;
 	@Inject private NetworkList.Factory networkListFactory;
 	
 	private SortedListModel<CyNetworkView> networkListModel;
@@ -73,12 +85,28 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		JPanel networkListPanel = createNetworkListPanel();
 		JPanel datasetListPanel = createDataSetListPanel();
 		
+		JButton applyButton = new JButton("Apply");
+		applyButton.addActionListener(e -> applyVisualStyle());
+		
 		JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, networkListPanel, datasetListPanel);
 		
 		add(menuBar, BorderLayout.PAGE_START);
 		add(splitPane, BorderLayout.CENTER);
+		add(applyButton, BorderLayout.SOUTH);
+		
+		initialize();
 	}
 	
+	private void initialize() {
+		// Initialize the newtork list
+		networkViewManager.getNetworkViewSet().stream()
+			.filter(emManager::isEnrichmentMap)
+			.forEach(networkListModel::add);
+		
+		// Initialize the dataset list
+		CyNetworkView currentView = applicationManager.getCurrentNetworkView();
+		networkList.setSelectedValue(currentView, true);
+	}
 	
 	private JMenuBar createMenuBar() {
 		JMenuBar menuBar = new JMenuBar();
@@ -108,10 +136,6 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		networkList = networkListFactory.create(networkListModel);
 		networkList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		
-		networkViewManager.getNetworkViewSet().stream()
-			.filter(emManager::isEnrichmentMap)
-			.forEach(networkListModel::add);
-		
 		listSelectionListener = e -> {
 			int index = e.getFirstIndex();
 			CyNetworkView selectedView = networkListModel.getElementAt(index);
@@ -140,6 +164,8 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		ButtonGroup buttonGroup = new ButtonGroup();
 		buttonGroup.add(anyButton);
 		buttonGroup.add(allButton);
+		anyButton.setSelected(true);
+		allButton.setEnabled(false); // TEMPORARY
 		radioPanel.add(edgesLabel);
 		radioPanel.add(anyButton);
 		radioPanel.add(allButton);
@@ -159,6 +185,24 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		return panel;
 	}
 	
+	private void updateDataSetList(EnrichmentMap map) {
+		// MKTODO remember the datasets that were selected
+		CheckboxListModel<DataSet> model = checkboxListPanel.getModel();
+		model.clear();
+		for(DataSet dataset : map.getDatasetList()) {
+			model.addElement(new CheckboxData<>(dataset.getName(), dataset));
+		}
+	}
+	
+	private void applyVisualStyle() {
+		CyNetworkView networkView = applicationManager.getCurrentNetworkView();
+		EnrichmentMap map = emManager.getEnrichmentMap(networkView.getModel().getSUID());
+		Set<DataSet> dataSets = ImmutableSet.copyOf(checkboxListPanel.getSelectedDataItems());
+		MasterMapStyleOptions options = new MasterMapStyleOptions(map, dataSets::contains);
+		MasterMapVisualStyleTask task = visualStyleTaskFactory.create(options);
+		dialogTaskManager.execute(new TaskIterator(task));
+	}
+
 	@Override
 	public void handleEvent(NetworkViewAddedEvent e) {
 		CyNetworkView networkView = e.getNetworkView();
@@ -176,14 +220,22 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 	@Override
 	public void handleEvent(SetCurrentNetworkViewEvent e) {
 		ListSelectionModel selectionModel = networkList.getSelectionModel();
-		int index = networkListModel.indexOf(e.getNetworkView());
-		if(index > 0) {
+		selectionModel.removeListSelectionListener(listSelectionListener);
+		CyNetworkView networkView = e.getNetworkView();
+		int index = networkListModel.indexOf(networkView);
+		if(index >= 0) {
+			selectionModel.clearSelection();
 			selectionModel.setSelectionInterval(index, index);
+			// The network list only contains networks that are EnrichmentMaps
+			EnrichmentMap map = emManager.getEnrichmentMap(networkView.getModel().getSUID());
+			updateDataSetList(map);
 		} else {
 			selectionModel.clearSelection();
 			// MKTODO disable the panel controls
 		}
+		selectionModel.addListSelectionListener(listSelectionListener);
 	}
+	
 	
 	@Override
 	public void dispose() {
@@ -216,11 +268,5 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 	public Component getComponent() {
 		return this;
 	}
-
-
-	
-
-
-	
 
 }

@@ -117,6 +117,7 @@ public class EnrichmentMapManager implements SetCurrentNetworkListener, NetworkA
 	 * Registers a newly created Network.
 	 */
 	public void registerEnrichmentMap(CyNetwork cyNetwork, EnrichmentMap map) {
+		System.out.println("EnrichmentMapManager.registerEnrichmentMap() " + cyNetwork.getSUID());
 		enrichmentMaps.put(cyNetwork.getSUID(), map);
 	}
 

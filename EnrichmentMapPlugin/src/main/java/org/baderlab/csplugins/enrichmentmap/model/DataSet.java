@@ -120,7 +120,7 @@ public class DataSet {
 		return datasetGenes;
 	}
 
-	public void setDatasetGenes(HashSet<Integer> datasetGenes) {
+	public void setDatasetGenes(Set<Integer> datasetGenes) {
 		this.datasetGenes = datasetGenes;
 	}
 

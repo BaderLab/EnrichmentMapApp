@@ -36,7 +36,11 @@ public class ComputeSimilarityTaskParallel extends AbstractTask {
 		int cpus = Runtime.getRuntime().availableProcessors();
         ExecutorService executor = Executors.newFixedThreadPool(cpus);
         
+        
+        // MKTODO I think this is wrong... shoudn't it union the genes across all datasets????
         Map<String,GeneSet> genesetsOfInterest = map.getAllGenesetsOfInterest();
+        
+        
         final String edgeType = map.getParams().getEnrichmentEdgeType();
         
         DiscreteTaskMonitor taskMonitor = new DiscreteTaskMonitor(tm, genesetsOfInterest.size());

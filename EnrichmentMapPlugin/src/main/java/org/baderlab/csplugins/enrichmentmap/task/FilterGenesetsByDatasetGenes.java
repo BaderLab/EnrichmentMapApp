@@ -32,6 +32,8 @@ public class FilterGenesetsByDatasetGenes extends AbstractTask {
 			Set<Integer> datasetGenes = current_set.getDatasetGenes();
 			if(datasetGenes != null && !datasetGenes.isEmpty()) {
 				current_set.getSetofgenesets().filterGenesets(datasetGenes);
+			} else {
+				System.out.println("Dataset Genes is empty, because expression and ranks not provided: " + current_set.getName());
 			}
 		}
 
