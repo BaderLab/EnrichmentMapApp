@@ -1,6 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap.task;
 
 import java.util.ConcurrentModificationException;
+import java.util.Optional;
 
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.style.PostAnalysisVisualStyle;
@@ -47,13 +48,13 @@ public class CreatePostAnalysisVisualStyleTask extends AbstractTask {
 	 * identify the visual style. This is just a heuristic, it is possible the
 	 * user changed the name. In that case a new visual style will be generated.
 	 */
-	private VisualStyle attemptToGetExistingStyle(String vs_name) {
+	private Optional<VisualStyle> attemptToGetExistingStyle(String name) {
 		for(VisualStyle vs : visualMappingManager.getAllVisualStyles()) {
-			if(vs.getTitle() != null && vs.getTitle().equals(vs_name)) {
-				return vs;
+			if(vs.getTitle() != null && vs.getTitle().equals(name)) {
+				return Optional.of(vs);
 			}
 		}
-		return null;
+		return Optional.empty();
 	}
 
 	@Override
@@ -70,8 +71,12 @@ public class CreatePostAnalysisVisualStyleTask extends AbstractTask {
 		PostAnalysisVisualStyle pa_vs = paStyleFactory.create(map);
 		pa_vs.applyNetworkSpeficifProperties(taskResult, prefix, taskMonitor);
 
-		VisualStyle vs = attemptToGetExistingStyle(vs_name);
-		if(vs == null) {
+		Optional<VisualStyle> currentStyle = attemptToGetExistingStyle(vs_name);
+		
+		VisualStyle vs;
+		if(currentStyle.isPresent()) {
+			vs = currentStyle.get();
+		} else {
 			vs = visualStyleFactory.createVisualStyle(vs_name);
 			pa_vs.createVisualStyle(vs, prefix);
 			visualMappingManager.addVisualStyle(vs);

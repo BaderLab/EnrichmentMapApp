@@ -1,20 +1,24 @@
 package org.baderlab.csplugins.enrichmentmap.style;
 
-import java.util.Collection;
+import java.util.Optional;
 
-import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 import com.google.inject.assistedinject.Assisted;
 
 public class MasterMapVisualStyleTask extends AbstractTask {
 
 	@Inject private VisualMappingManager visualMappingManager;
 	@Inject private VisualStyleFactory visualStyleFactory;
+	
+	@Inject private Provider<MasterMapVisualStyle> masterMapVisualStyleProvider;
 	
 	private final MasterMapStyleOptions options;
 	
@@ -37,18 +41,39 @@ public class MasterMapVisualStyleTask extends AbstractTask {
 
 	
 	private void applyVisualStyle() {
-		Collection<DataSet> dataSets = options.getDataSets();
+		VisualStyle vs = getVisualStyle(options.getEnrichmentMap());
+		MasterMapVisualStyle masterMapStyle = masterMapVisualStyleProvider.get();
+		masterMapStyle.applyVisualStyle(vs, options);
+	}
+	
+	
+	private VisualStyle getVisualStyle(EnrichmentMap map) {
+		String prefix = map.getParams().getAttributePrefix();
+		String vsName = prefix + MasterMapVisualStyle.DEFAULT_NAME_SUFFIX;
 		
-		dataSets.stream().map(DataSet::getName).forEach(System.out::println);
+		Optional<VisualStyle> currentStyle = attemptToGetExistingStyle(vsName);
 		
-		// MKTODO updating the visual style will have two parts
-		// 1) Create the Visual Style if it doesn't already exist (or if the user renamed/deleted)
-		// 2) Update the attributes that the VS uses
-		
-		// Part 2) is the new part that makes the VS "dynamic"
-		
-		// get the visual style with the same name as the enrichment map
-		// - if not found then create it
-		// pass the visual style to MasterMapVisualStyle
+		if(currentStyle.isPresent()) {
+			return currentStyle.get();
+		} else {
+			VisualStyle vs = visualStyleFactory.createVisualStyle(vsName);
+			visualMappingManager.addVisualStyle(vs);
+			return vs;
+		}
+	}
+	
+	/**
+	 * Note: Cytoscape does not provide a way to uniquely identify a visual
+	 * style. Here we use the name we previously generated to attempt to
+	 * identify the visual style. This is just a heuristic, it is possible the
+	 * user changed the name. In that case a new visual style will be generated.
+	 */
+	private Optional<VisualStyle> attemptToGetExistingStyle(String name) {
+		for(VisualStyle vs : visualMappingManager.getAllVisualStyles()) {
+			if(vs.getTitle() != null && vs.getTitle().equals(name)) {
+				return Optional.of(vs);
+			}
+		}
+		return Optional.empty();
 	}
 }

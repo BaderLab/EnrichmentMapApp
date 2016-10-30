@@ -17,10 +17,13 @@ public class EMCreationParameters {
 	
 	private Method method;
 	private String attributePrefix; // MKTODO this shouldn't be here
-	// similarity filtering
-	private SimilarityMetric similarityMetric;
+	
+	// Node filtering (gene-sets)
 	private double pvalue;
 	private double qvaule;
+	
+	// Edge filtering (similarity)
+	private SimilarityMetric similarityMetric;
 	private double similarityCutoff;
 	private double combinedConstant;
 	
@@ -30,7 +33,7 @@ public class EMCreationParameters {
 	private double qvalueMin = 1.0;
 	private double pvalueMin = 1.0;
 	
-	// TEMPORARY - this shouldn't be here need to generalize this
+	// TEMPORARY - this shouldn't be here need to generalize this or put in normal model
 	private boolean isDistinctExpressionSets;
 	// TEMPORARY - this shouldn't be here this won't work for mastermap
 	private String enrichmentEdgeType = "Geneset_Overlap";
