@@ -56,7 +56,7 @@ public class VisualizeMasterMapTask extends AbstractTask {
 		if(layout == null)
 			layout = layoutManager.getDefaultLayout();
 		
-		Task styleTask = masterMapVisualStyleTaskFactory.create(new MasterMapStyleOptions(map));
+		Task styleTask = masterMapVisualStyleTaskFactory.create(new MasterMapStyleOptions(view, map));
 		TaskIterator layoutTasks = layout.createTaskIterator(view, layout.createLayoutContext(), CyLayoutAlgorithm.ALL_NODE_VIEWS, null);
 		
 		TaskIterator moreTasks = new TaskIterator();

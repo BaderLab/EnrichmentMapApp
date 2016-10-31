@@ -198,7 +198,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		CyNetworkView networkView = applicationManager.getCurrentNetworkView();
 		EnrichmentMap map = emManager.getEnrichmentMap(networkView.getModel().getSUID());
 		Set<DataSet> dataSets = ImmutableSet.copyOf(checkboxListPanel.getSelectedDataItems());
-		MasterMapStyleOptions options = new MasterMapStyleOptions(map, dataSets::contains);
+		MasterMapStyleOptions options = new MasterMapStyleOptions(networkView, map, dataSets::contains);
 		MasterMapVisualStyleTask task = visualStyleTaskFactory.create(options);
 		dialogTaskManager.execute(new TaskIterator(task));
 	}

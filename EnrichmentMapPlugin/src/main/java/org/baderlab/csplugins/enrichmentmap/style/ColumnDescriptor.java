@@ -26,6 +26,10 @@ public class ColumnDescriptor<T> {
 		return row.get(name, type);
 	}
 	
+	public T get(CyRow row, String suffix) {
+		return row.get(nameWith(suffix), type);
+	}
+	
 	public void set(CyRow row, T value) {
 		set(row, null, value);
 	}

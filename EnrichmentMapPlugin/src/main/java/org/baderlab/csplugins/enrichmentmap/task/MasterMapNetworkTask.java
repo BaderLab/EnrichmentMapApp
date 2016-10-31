@@ -115,6 +115,7 @@ public class MasterMapNetworkTask extends AbstractTask {
 			CyRow row = network.getRow(node);
 			List<String> genes = geneIds.stream().map(map::getGeneFromHashKey).collect(Collectors.toList());
 			MasterMapVisualStyle.NODE_GENES.set(row, genes);
+			MasterMapVisualStyle.NODE_GS_SIZE.set(row, genes.size());
 		});
 		
 		return nodes;
@@ -156,15 +157,17 @@ public class MasterMapNetworkTask extends AbstractTask {
 //		MasterMapVisualStyle.NODE_GS_TYPE.createColumn(table);
 		MasterMapVisualStyle.NODE_FORMATTED_NAME.createColumn(table);
 		MasterMapVisualStyle.NODE_GENES.createColumn(table); // Union of geneset genes across all datasets
+		MasterMapVisualStyle.NODE_GS_SIZE.createColumn(table); // Size of the union
+		
 		for(String datasetName : map.getDatasetNames()) {
 			MasterMapVisualStyle.NODE_PVALUE.createColumn(table, datasetName);
 			MasterMapVisualStyle.NODE_FDR_QVALUE.createColumn(table, datasetName);
-			MasterMapVisualStyle.NODE_GS_SIZE.createColumn(table, datasetName);
 			MasterMapVisualStyle.NODE_FWER_QVALUE.createColumn(table, datasetName);
 			// MKTODO only create these if method is GSEA?
 			MasterMapVisualStyle.NODE_ES.createColumn(table, datasetName);
 			MasterMapVisualStyle.NODE_NES.createColumn(table, datasetName);   
 		}
+		
 		return table;
 	}
 	

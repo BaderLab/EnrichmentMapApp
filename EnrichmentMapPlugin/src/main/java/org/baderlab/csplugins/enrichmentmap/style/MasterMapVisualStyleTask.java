@@ -3,6 +3,7 @@ package org.baderlab.csplugins.enrichmentmap.style;
 import java.util.Optional;
 
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
@@ -42,8 +43,13 @@ public class MasterMapVisualStyleTask extends AbstractTask {
 	
 	private void applyVisualStyle() {
 		VisualStyle vs = getVisualStyle(options.getEnrichmentMap());
+		
 		MasterMapVisualStyle masterMapStyle = masterMapVisualStyleProvider.get();
 		masterMapStyle.applyVisualStyle(vs, options);
+		
+		CyNetworkView view = options.getNetworkView();
+		vs.apply(view);
+		view.updateView();
 	}
 	
 	
@@ -58,6 +64,7 @@ public class MasterMapVisualStyleTask extends AbstractTask {
 		} else {
 			VisualStyle vs = visualStyleFactory.createVisualStyle(vsName);
 			visualMappingManager.addVisualStyle(vs);
+			visualMappingManager.setCurrentVisualStyle(vs);
 			return vs;
 		}
 	}
