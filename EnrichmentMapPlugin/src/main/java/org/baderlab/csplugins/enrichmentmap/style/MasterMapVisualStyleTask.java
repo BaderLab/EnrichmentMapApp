@@ -37,9 +37,46 @@ public class MasterMapVisualStyleTask extends AbstractTask {
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		taskMonitor.setTitle("Apply Visual Style");
 		applyVisualStyle();
+//		updateChartValues();
 		taskMonitor.setStatusMessage("");
 	}
-
+	
+//	private void updateChartValues() {
+//		List<DataSet> datasets = new ArrayList<>(options.getDataSets());
+//		datasets.sort(Comparator.naturalOrder());
+//		
+//		// For each node (gene-set)
+//		CyNetwork network = options.getNetworkView().getModel();
+//		CyTable nodeTable = network.getDefaultNodeTable();
+//		for(CyRow row : nodeTable.getAllRows()) {
+//			String genesetName = row.get(CyNetwork.NAME, String.class);
+//			
+//			String chartdef =
+//				datasets.stream()
+//				.map(ds -> ds.getEnrichments().getEnrichments().get(genesetName))
+//				.map(this::getScore)
+//				.map(Object::toString)
+//				.collect(Collectors.joining(", ", getDefaultChartName() + ": ", ""));
+//
+//			MasterMapVisualStyle.NODE_CHART_VALUES.set(row, chartdef);
+//		}
+//	}
+//	
+//	private double getScore(EnrichmentResult result) {
+//		if(result == null)
+//			return 0.0;
+//		
+//		double nes;
+//		if(result instanceof GSEAResult)
+//			nes = ((GSEAResult)result).getNES();
+//		else
+//			nes = ((GenericResult)result).getNES();
+//			
+//		if(nes >= 0)
+//			return 1 - result.getPvalue();
+//		else
+//			return (-1) * (1 - result.getPvalue());
+//	}
 	
 	private void applyVisualStyle() {
 		VisualStyle vs = getVisualStyle(options.getEnrichmentMap());

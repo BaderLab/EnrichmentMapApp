@@ -32,6 +32,8 @@ import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.presentation.RenderingEngineManager;
+import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
@@ -91,6 +93,8 @@ public class CytoscapeServiceModule extends AbstractModule {
 		bindService(FileUtil.class);
 		bindService(StreamUtil.class);
 		bindService(MapTableToNetworkTablesTaskFactory.class);
+		bindService(RenderingEngineManager.class);
+		bindService(CyColumnIdentifierFactory.class);
 		
 		bindService(DialogTaskManager.class);
 		TypeLiteral<SynchronousTaskManager<?>> synchronousManager = new TypeLiteral<SynchronousTaskManager<?>>(){};

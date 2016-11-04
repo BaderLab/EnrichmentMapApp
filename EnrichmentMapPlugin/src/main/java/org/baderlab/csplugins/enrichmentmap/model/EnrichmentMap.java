@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.Method;
 
@@ -282,7 +283,7 @@ public class EnrichmentMap {
 	 */
 	public List<DataSet> getDatasetList() {
 		List<DataSet> datasetList = new ArrayList<>(datasets.values());
-		datasetList.sort(Comparator.comparing(DataSet::getName));
+		datasetList.sort(Comparator.naturalOrder());
 		return datasetList;
 	}
 
@@ -302,9 +303,7 @@ public class EnrichmentMap {
 	 * Returns all the DataSet names in a predictable order.
 	 */
 	public List<String> getDatasetNames() {
-		List<String> names = new ArrayList<>(datasets.keySet());
-		names.sort(Comparator.naturalOrder());
-		return names;
+		return getDatasetList().stream().map(DataSet::getName).collect(Collectors.toList());
 	}
 
 	public EMCreationParameters getParams() {

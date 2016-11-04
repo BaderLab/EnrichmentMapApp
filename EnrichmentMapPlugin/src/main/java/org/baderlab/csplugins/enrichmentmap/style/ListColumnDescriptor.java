@@ -32,7 +32,7 @@ public class ListColumnDescriptor<T> {
 	}
 	
 	public void set(CyRow row, String suffix, List<T> value) {
-		row.set(nameWith(suffix), value);
+		row.set(with(suffix), value);
 	}
 	
 	public void createColumn(CyTable table) {
@@ -40,10 +40,10 @@ public class ListColumnDescriptor<T> {
 	}
 	
 	public void createColumn(CyTable table, String suffix) {
-		table.createListColumn(nameWith(suffix), elementType, true);
+		table.createListColumn(with(suffix), elementType, true);
 	}
 	
-	private String nameWith(String suffix) {
+	public String with(String suffix) {
 		StringBuilder sb = new StringBuilder(name);
 		if(suffix != null)
 			sb.append(" (").append(suffix).append(")");

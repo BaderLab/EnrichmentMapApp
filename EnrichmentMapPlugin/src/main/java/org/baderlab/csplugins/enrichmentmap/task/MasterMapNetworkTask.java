@@ -14,6 +14,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
 import org.baderlab.csplugins.enrichmentmap.model.GSEAResult;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
+import org.baderlab.csplugins.enrichmentmap.model.GenericResult;
 import org.baderlab.csplugins.enrichmentmap.model.GenesetSimilarity;
 import org.baderlab.csplugins.enrichmentmap.style.MasterMapVisualStyle;
 import org.cytoscape.model.CyEdge;
@@ -151,6 +152,23 @@ public class MasterMapNetworkTask extends AbstractTask {
 	}
 	
 	
+	private static double getColorScore(EnrichmentResult result) {
+		if(result == null)
+			return 0.0;
+		
+		double nes;
+		if(result instanceof GSEAResult)
+			nes = ((GSEAResult)result).getNES();
+		else
+			nes = ((GenericResult)result).getNES();
+			
+		if(nes >= 0)
+			return 1 - result.getPvalue();
+		else
+			return (-1) * (1 - result.getPvalue());
+	}
+	
+	
 	private CyTable createNodeAttributes(CyNetwork network) {
 		CyTable table = network.getDefaultNodeTable();
 		MasterMapVisualStyle.NODE_GS_DESCR.createColumn(table);
@@ -165,7 +183,8 @@ public class MasterMapNetworkTask extends AbstractTask {
 			MasterMapVisualStyle.NODE_FWER_QVALUE.createColumn(table, datasetName);
 			// MKTODO only create these if method is GSEA?
 			MasterMapVisualStyle.NODE_ES.createColumn(table, datasetName);
-			MasterMapVisualStyle.NODE_NES.createColumn(table, datasetName);   
+			MasterMapVisualStyle.NODE_NES.createColumn(table, datasetName); 
+			MasterMapVisualStyle.NODE_COLOURING.createColumn(table, datasetName);
 		}
 		
 		return table;
@@ -187,5 +206,6 @@ public class MasterMapNetworkTask extends AbstractTask {
 	private void setGSEAResultNodeAttributes(CyRow row, String datasetName, GSEAResult result) {
 		MasterMapVisualStyle.NODE_PVALUE.set(row, datasetName, result.getPvalue());
 		MasterMapVisualStyle.NODE_NES.set(row, datasetName, result.getNES());
+		MasterMapVisualStyle.NODE_COLOURING.set(row, datasetName, getColorScore(result));
 	}
 }

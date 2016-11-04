@@ -9,12 +9,11 @@ import org.baderlab.csplugins.enrichmentmap.ApplicationModule;
 import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Edges;
 import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Nodes;
 import org.baderlab.csplugins.enrichmentmap.LogSilenceRule;
-import org.baderlab.csplugins.enrichmentmap.PropertyManager;
 import org.baderlab.csplugins.enrichmentmap.SerialTestTaskManager;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadSignatureSetsActionListener;
-import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
@@ -34,7 +33,9 @@ import org.cytoscape.session.CySession;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
+import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskIterator;
@@ -79,10 +80,15 @@ public abstract class BaseNetworkTest {
 			bind(HeatMapPanel.class).annotatedWith(Nodes.class).toProvider(Providers.of(null));
 		}
 	}
-    
+
+	// If you get a Guice error when initializing your test that a cytoscape service 
+	// can't be bound then just add it here, even if its not actually used here.
+	// OR You can explicitly bind the service in the TestModule above.
+	@Inject private RenderingEngineManager renderingEngineManager;
+	@Inject private CyColumnIdentifierFactory columnIdentifierFactory;
+	
     @Inject private CyApplicationManager applicationManager;
     @Inject private EnrichmentMapManager emManager;
-    @Inject private PropertyManager propertyManager;
     
     @Inject private EnrichmentMapBuildMapTaskFactory.Factory enrichmentMapBuildMapTaskFactoryFactory;
     @Inject private LoadSignatureSetsActionListener.Factory  loadSignatureSetsActionListenerFactory;

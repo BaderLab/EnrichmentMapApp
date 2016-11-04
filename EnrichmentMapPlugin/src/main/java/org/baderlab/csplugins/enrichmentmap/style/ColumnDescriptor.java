@@ -27,7 +27,7 @@ public class ColumnDescriptor<T> {
 	}
 	
 	public T get(CyRow row, String suffix) {
-		return row.get(nameWith(suffix), type);
+		return row.get(with(suffix), type);
 	}
 	
 	public void set(CyRow row, T value) {
@@ -35,7 +35,7 @@ public class ColumnDescriptor<T> {
 	}
 	
 	public void set(CyRow row, String suffix, T value) {
-		row.set(nameWith(suffix), value);
+		row.set(with(suffix), value);
 	}
 	
 	public void createColumn(CyTable table) {
@@ -43,10 +43,10 @@ public class ColumnDescriptor<T> {
 	}
 	
 	public void createColumn(CyTable table, String suffix) {
-		table.createColumn(nameWith(suffix), type, true);
+		table.createColumn(with(suffix), type, true);
 	}
 	
-	private String nameWith(String suffix) {
+	public String with(String suffix) {
 		StringBuilder sb = new StringBuilder(name);
 		if(suffix != null)
 			sb.append(" (").append(suffix).append(")");

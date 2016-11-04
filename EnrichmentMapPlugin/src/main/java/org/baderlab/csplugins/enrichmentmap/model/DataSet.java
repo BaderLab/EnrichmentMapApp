@@ -11,7 +11,7 @@ import java.util.Set;
  * Expression of genes used to calculate the enrichment
  */
 
-public class DataSet {
+public class DataSet implements Comparable<DataSet> {
 	//name of Dataset
 	private String name;
 
@@ -68,6 +68,11 @@ public class DataSet {
 	}
 
 
+	@Override
+	public int compareTo(DataSet ds2) {
+		return this.getName().compareTo(ds2.getName());
+	}
+	
 	public String getName() {
 		return name;
 	}

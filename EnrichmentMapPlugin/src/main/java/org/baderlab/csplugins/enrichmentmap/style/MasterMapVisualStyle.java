@@ -1,14 +1,25 @@
 package org.baderlab.csplugins.enrichmentmap.style;
 
 import java.awt.Color;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Continuous;
 import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Discrete;
 import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Passthrough;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.view.model.VisualLexicon;
+import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.presentation.RenderingEngineManager;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
+import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
+import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.mappings.BoundaryRangeValues;
@@ -32,11 +43,12 @@ public class MasterMapVisualStyle {
 	
 	// Per-DataSet attributes
 	// GSEA attributes
-	public static final ColumnDescriptor<Double>  NODE_PVALUE      = new ColumnDescriptor<>("pvalue", Double.class);
-	public static final ColumnDescriptor<Double>  NODE_FDR_QVALUE  = new ColumnDescriptor<>("fdr_qvalue", Double.class);
-	public static final ColumnDescriptor<Double>  NODE_FWER_QVALUE = new ColumnDescriptor<>("fwer_qvalue", Double.class);
-	public static final ColumnDescriptor<Double>  NODE_ES          = new ColumnDescriptor<>("ES", Double.class);
-	public static final ColumnDescriptor<Double>  NODE_NES         = new ColumnDescriptor<>("NES", Double.class);
+	public static final ColumnDescriptor<Double> NODE_PVALUE      = new ColumnDescriptor<>("pvalue", Double.class);
+	public static final ColumnDescriptor<Double> NODE_FDR_QVALUE  = new ColumnDescriptor<>("fdr_qvalue", Double.class);
+	public static final ColumnDescriptor<Double> NODE_FWER_QVALUE = new ColumnDescriptor<>("fwer_qvalue", Double.class);
+	public static final ColumnDescriptor<Double> NODE_ES          = new ColumnDescriptor<>("ES", Double.class);
+	public static final ColumnDescriptor<Double> NODE_NES         = new ColumnDescriptor<>("NES", Double.class);
+	public static final ColumnDescriptor<Double> NODE_COLOURING   = new ColumnDescriptor<>("Colouring", Double.class);
 	
 	// Per-DataSet attributes
 	// Edge attributes
@@ -45,11 +57,14 @@ public class MasterMapVisualStyle {
 	public static final ListColumnDescriptor<String> EDGE_OVERLAP_GENES    = new ListColumnDescriptor<>("Overlap_genes", String.class);
 	
 	
-	@Inject private CyNetworkManager networkManager;
-	
 	@Inject private @Continuous  VisualMappingFunctionFactory vmfFactoryContinuous;
 	@Inject private @Discrete    VisualMappingFunctionFactory vmfFactoryDiscrete;
 	@Inject private @Passthrough VisualMappingFunctionFactory vmfFactoryPassthrough;
+	
+	@Inject private RenderingEngineManager renderingEngineManager;
+	@Inject private CustomChartListener customChartListener;
+	@Inject private CyColumnIdentifierFactory columnIdFactory;
+	
 	
 	
 	// TEMPORARY MKTODO support color themes
@@ -57,8 +72,6 @@ public class MasterMapVisualStyle {
 	private static final Color BG_COLOR = Color.WHITE;
 	private static final Color EDGE_COLOR = new Color(27, 158, 119);
 	private static final Color LIGHT_GREY = new Color(190, 190, 190);
-	
-//	@Inject private CyEventHelper eventHelper;
 	
 	
 	public void applyVisualStyle(VisualStyle vs, MasterMapStyleOptions options) {
@@ -74,43 +87,10 @@ public class MasterMapVisualStyle {
 		setNodeDefaults(vs);
 		setNodeLabels(vs);
 		setNodeSize(vs);
-		
-//		 
+		setNodeChart(vs, options);
 	}
 	
 	
-//	private void setNodeColorUsingAveraging(VisualStyle vs, MasterMapStyleOptions options) {
-//		long suid = options.getEnrichmentMap().getNetworkID();
-//		CyNetwork network = networkManager.getNetwork(suid);
-//		
-//		Collection<DataSet> datasets = options.getDataSets();
-//		
-//		for(CyNode node : network.getNodeList()) {
-//			CyRow row = network.getRow(node);
-//			
-//			double nesSum = 0.0;
-//			double pvalueSum = 0.0;
-//			
-//			for(DataSet dataset : datasets) {
-//				// MKTODO what if null?
-//				Double nes = NODE_NES.get(row, dataset.getName());
-//				nesSum += nes == null ? 0 : nes;
-//				
-//				Double pvalue = NODE_PVALUE.get(row, dataset.getName());
-//				pvalueSum += pvalue == null ? 0 : pvalue;
-//			}
-//			
-//			double pvalueAvg = pvalueSum / datasets.size();
-//			
-//			if(nesSum >= 0) {
-//				NODE_COLORING.set(row, (1 - pvalueAvg));
-//			} else {
-//				NODE_COLORING.set(row, ((-1) * (1 - pvalueAvg)));
-//			}
-//		}
-//	}
-
-
 	private void setEdgeDefaults(VisualStyle vs) {
 		vs.setDefaultValue(BasicVisualLexicon.EDGE_UNSELECTED_PAINT, EDGE_COLOR);
 		vs.setDefaultValue(BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT, EDGE_COLOR);
@@ -171,4 +151,28 @@ public class MasterMapVisualStyle {
 	}
 	
 	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private void setNodeChart(VisualStyle vs, MasterMapStyleOptions options) {
+		VisualLexicon lexicon = renderingEngineManager.getDefaultVisualLexicon(); 
+		VisualProperty customPaint1 = lexicon.lookup(CyNode.class, "NODE_CUSTOMGRAPHICS_1");
+		
+		if(customPaint1 != null) {
+			List<CyColumnIdentifier> columns = 
+				options.getDataSets().stream()
+				.map(ds -> NODE_COLOURING.with(ds.getName()))  // column name
+				.map(columnIdFactory::createColumnIdentifier)  // column id
+				.collect(Collectors.toList());
+			
+			Map<String,Object> props = new HashMap<>();
+			props.put("cy_dataColumns", columns);
+			props.put("cy_colorScheme", "CONTRASTING");
+			props.put("cy_type", "HEAT_STRIPS");
+			
+			CyCustomGraphics2Factory<?> factory = customChartListener.getFactory();
+			CyCustomGraphics2<?> graphics = factory.getInstance(props);
+			
+			vs.setDefaultValue(customPaint1, graphics);
+		} 
+	}
+		
 }
