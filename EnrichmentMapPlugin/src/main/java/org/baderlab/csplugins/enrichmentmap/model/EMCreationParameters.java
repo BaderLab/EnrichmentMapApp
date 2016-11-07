@@ -1,5 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap.model;
 
+import java.util.Optional;
+
 public class EMCreationParameters {
 
 	public static enum Method {
@@ -21,6 +23,7 @@ public class EMCreationParameters {
 	// Node filtering (gene-sets)
 	private double pvalue;
 	private double qvaule;
+	private Optional<Integer> minExperiments;
 	
 	// Edge filtering (similarity)
 	private SimilarityMetric similarityMetric;
@@ -40,12 +43,13 @@ public class EMCreationParameters {
 	
 	
 	public EMCreationParameters(Method method, String attributePrefix, 
-			SimilarityMetric similarityMetric, double pvalue,  double qvaule, double similarityCutoff, double combinedConstant) {
+			SimilarityMetric similarityMetric, double pvalue,  double qvaule, Optional<Integer> minExperiments, double similarityCutoff, double combinedConstant) {
 		this.method = method;
 		this.similarityMetric = similarityMetric;
 		this.attributePrefix = attributePrefix;
 		this.pvalue = pvalue;
 		this.qvaule = qvaule;
+		this.minExperiments = minExperiments;
 		this.similarityCutoff = similarityCutoff;
 		this.combinedConstant = combinedConstant;
 	}
@@ -71,6 +75,9 @@ public class EMCreationParameters {
 		return qvaule;
 	}
 
+	public Optional<Integer> getMinExperiments() {
+		return minExperiments;
+	}
 	public double getSimilarityCutoff() {
 		return similarityCutoff;
 	}

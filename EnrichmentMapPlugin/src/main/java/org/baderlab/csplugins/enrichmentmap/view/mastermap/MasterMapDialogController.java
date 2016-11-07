@@ -90,6 +90,8 @@ public class MasterMapDialogController implements NiceDialogController {
 
 	@Override
 	public void finish() {
+		// MKTODO if the advanced options (p-value etc) are not visible then should use the defaults
+		
 		Method method = getMethod();
 		String prefix = legacySupport.getNextAttributePrefix();
 		SimilarityMetric similarityMetric = cutoffPanel.getSimilarityMetric();
@@ -97,9 +99,10 @@ public class MasterMapDialogController implements NiceDialogController {
 		double qvalue = cutoffPanel.getQValue();
 		double cutoff = cutoffPanel.getCutoff();
 		double combined = cutoffPanel.getCombinedConstant();
+		Optional<Integer> minExperiments = cutoffPanel.getMinimumExperiments();
 		
 		EMCreationParameters params = 
-			new EMCreationParameters(method, prefix, similarityMetric, pvalue, qvalue, cutoff, combined);
+			new EMCreationParameters(method, prefix, similarityMetric, pvalue, qvalue, minExperiments, cutoff, combined);
 		
 		List<Path> paths = checkboxListPanel.getSelectedDataItems();
 		

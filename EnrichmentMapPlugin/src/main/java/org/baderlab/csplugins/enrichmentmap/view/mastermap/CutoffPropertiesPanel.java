@@ -7,8 +7,10 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
@@ -32,15 +34,23 @@ public class CutoffPropertiesPanel extends JPanel {
 
 	@Inject private PropertyManager propertyManager;
 	
-	private JLabel pValueLabel;
-	private JFormattedTextField pvalueTextField;
-	private JFormattedTextField qvalueTextField;
-	private JFormattedTextField cutoffTextField;
+	// node filtering
+	private JFormattedTextField qvalueText;
+	private JLabel pvalueLabel;
+	private JFormattedTextField pvalueText;
+	private JLabel shouldFilterMinLabel;
+	private JCheckBox shouldFilterMinCheckbox;
+	private JLabel minExperimentsLabel;
+	private JFormattedTextField minExperimentsText;
+	
+	// edge filtering
+	private JFormattedTextField similarityCutoffText;
 	private JComboBox<ComboItem<SimilarityMetric>> cutoffMetricCombo;
 	private CombinedConstantSlider combinedConstantSlider;
+	
+	// options
 	private JCheckBox notationCheckBox;
 	private JCheckBox advancedCheckBox;
-	
 	private Map<SimilarityMetric,Double> cutoffValues;
 	
 	
@@ -60,17 +70,15 @@ public class CutoffPropertiesPanel extends JPanel {
 		notationCheckBox.addActionListener(e -> {
 			boolean scientific = notationCheckBox.isSelected();
 			AbstractFormatterFactory factory = getFormatterFactory(scientific);
-			pvalueTextField.setFormatterFactory(factory);
-			qvalueTextField.setFormatterFactory(factory);	
-			cutoffTextField.setFormatterFactory(factory);
+			pvalueText.setFormatterFactory(factory);
+			qvalueText.setFormatterFactory(factory);	
+			similarityCutoffText.setFormatterFactory(factory);
 		});
 		
-		advancedCheckBox = new JCheckBox("Show P-value");
-		advancedCheckBox.addActionListener(e -> {
-			boolean advanced = advancedCheckBox.isSelected();
-			pValueLabel.setVisible(advanced);
-			pvalueTextField.setVisible(advanced);
-		});
+		advancedCheckBox = new JCheckBox("Show Advanced Options");
+		advancedCheckBox.addActionListener(e -> 
+			showAdvancedOptions(advancedCheckBox.isSelected())
+		);
 		
 		SwingUtil.makeSmall(notationCheckBox, advancedCheckBox);
 		
@@ -80,8 +88,10 @@ public class CutoffPropertiesPanel extends JPanel {
 		layout.setAutoCreateGaps(true);
 		
    		layout.setHorizontalGroup(layout.createParallelGroup()
-   			.addComponent(filterNodesPanel)
-   			.addComponent(filterEdgesPanel)
+   			.addGroup(layout.createSequentialGroup()
+   				.addComponent(filterNodesPanel)
+   				.addComponent(filterEdgesPanel)
+   			)
    			.addGroup(layout.createSequentialGroup()
 				.addGap(0, 0, Short.MAX_VALUE)
 				.addComponent(notationCheckBox)
@@ -90,8 +100,10 @@ public class CutoffPropertiesPanel extends JPanel {
 			)
    		);
    		layout.setVerticalGroup(layout.createSequentialGroup()
-   			.addComponent(filterNodesPanel)
-   			.addComponent(filterEdgesPanel)
+   			.addGroup(layout.createParallelGroup()
+   				.addComponent(filterNodesPanel)
+   				.addComponent(filterEdgesPanel)
+   			)
    			.addGroup(layout.createParallelGroup()
 				.addComponent(notationCheckBox)
 				.addComponent(advancedCheckBox)
@@ -99,25 +111,37 @@ public class CutoffPropertiesPanel extends JPanel {
    		);
 	}
 	
-	
 	private JPanel createFilterNodesPanel() {
 		JPanel panel = new JPanel();
 		panel.setBorder(LookAndFeelUtil.createTitledBorder("Gene-Set Filtering (Nodes)"));
 		
-		pValueLabel = new JLabel("p-value cutoff");
-		JLabel qValueLabel = new JLabel("FDR q-value cutoff");
+		pvalueLabel = new JLabel("p-value cutoff");
+		JLabel qvalueLabel = new JLabel("FDR q-value cutoff");
+		shouldFilterMinLabel = new JLabel("Filter by minimum experiments");
+		minExperimentsLabel = new JLabel("Minimum experiments");
 		
-		SwingUtil.makeSmall(qValueLabel, pValueLabel);
+		SwingUtil.makeSmall(qvalueLabel, pvalueLabel, minExperimentsLabel, shouldFilterMinLabel);
 		
 		AbstractFormatterFactory formatterFactory = getFormatterFactory(false);
-		pvalueTextField = new JFormattedTextField(formatterFactory);
-		qvalueTextField = new JFormattedTextField(formatterFactory);
+		pvalueText = new JFormattedTextField(formatterFactory);
+		qvalueText = new JFormattedTextField(formatterFactory);
 		
-		pvalueTextField.setValue(propertyManager.getDefaultPvalue());
-		qvalueTextField.setValue(propertyManager.getDefaultQvalue());
+		shouldFilterMinCheckbox = new JCheckBox("");
+		minExperimentsText = new JFormattedTextField(NumberFormat.getIntegerInstance());
 		
-		pValueLabel.setVisible(false);
-		pvalueTextField.setVisible(false);
+		pvalueText.setValue(propertyManager.getDefaultPvalue());
+		qvalueText.setValue(propertyManager.getDefaultQvalue());
+		minExperimentsText.setValue(3);
+		
+		minExperimentsLabel.setEnabled(false);
+		minExperimentsText.setEnabled(false);
+		showAdvancedOptions(false);
+		
+		shouldFilterMinCheckbox.addActionListener(e -> {
+			boolean enable = shouldFilterMinCheckbox.isSelected();
+			minExperimentsLabel.setEnabled(enable);
+			minExperimentsText.setEnabled(enable);
+		});
 		
 		final GroupLayout layout = new GroupLayout(panel);
 		panel.setLayout(layout);
@@ -126,27 +150,40 @@ public class CutoffPropertiesPanel extends JPanel {
 		
 		layout.setHorizontalGroup(
 			layout.createSequentialGroup()
-				.addGroup(layout.createParallelGroup()
-					.addComponent(qValueLabel)
-					.addComponent(qvalueTextField, PREFERRED_SIZE, 100, PREFERRED_SIZE)
+				.addGroup(layout.createParallelGroup(Alignment.TRAILING)
+					.addComponent(qvalueLabel)
+					.addComponent(pvalueLabel)
+					.addComponent(shouldFilterMinLabel)
+					.addComponent(minExperimentsLabel)
 				)
-				.addGap(30)
-				.addGroup(layout.createParallelGroup()
-					.addComponent(pValueLabel)
-					.addComponent(pvalueTextField, PREFERRED_SIZE, 100, PREFERRED_SIZE)
+				.addGroup(layout.createParallelGroup(Alignment.LEADING)
+					.addComponent(qvalueText, PREFERRED_SIZE, 100, PREFERRED_SIZE)
+					.addComponent(pvalueText, PREFERRED_SIZE, 100, PREFERRED_SIZE)
+					.addComponent(shouldFilterMinCheckbox)
+					.addComponent(minExperimentsText, PREFERRED_SIZE, 100, PREFERRED_SIZE)
 				)
 				.addGap(0, 0, Short.MAX_VALUE)
 		);
+		
 		layout.setVerticalGroup(
 			layout.createSequentialGroup()
-				.addGroup(layout.createParallelGroup()
-					.addComponent(qValueLabel)
-					.addComponent(pValueLabel)
+				.addGroup(layout.createParallelGroup(Alignment.BASELINE)
+					.addComponent(qvalueLabel)
+					.addComponent(qvalueText)
 				)
-				.addGroup(layout.createParallelGroup()
-					.addComponent(qvalueTextField)
-					.addComponent(pvalueTextField)
+				.addGroup(layout.createParallelGroup(Alignment.BASELINE)
+					.addComponent(pvalueLabel)
+					.addComponent(pvalueText)
 				)
+				.addGroup(layout.createParallelGroup(Alignment.TRAILING)
+					.addComponent(shouldFilterMinLabel)
+					.addComponent(shouldFilterMinCheckbox)
+				)
+				.addGroup(layout.createParallelGroup(Alignment.BASELINE)
+					.addComponent(minExperimentsLabel)
+					.addComponent(minExperimentsText)
+				)
+				.addGap(0, 0, Short.MAX_VALUE)
 		);
 		
 		if (LookAndFeelUtil.isAquaLAF())
@@ -167,8 +204,8 @@ public class CutoffPropertiesPanel extends JPanel {
 		SimilarityMetric defaultMetric = propertyManager.getDefaultSimilarityMetric();
 		double defaultCutoff = propertyManager.getDefaultCutOff(defaultMetric);
 		
-		cutoffTextField = new JFormattedTextField(getFormatterFactory(false));
-		cutoffTextField.setValue(defaultCutoff);
+		similarityCutoffText = new JFormattedTextField(getFormatterFactory(false));
+		similarityCutoffText.setValue(defaultCutoff);
 		
 		cutoffMetricCombo = new JComboBox<>();
 		cutoffMetricCombo.addItem(new ComboItem<>(SimilarityMetric.JACCARD,  "Jaccard"));
@@ -177,7 +214,7 @@ public class CutoffPropertiesPanel extends JPanel {
 		
 		ActionListener sliderUpdate = e -> {
 			SimilarityMetric type = getSimilarityMetric();
-			cutoffTextField.setValue(cutoffValues.get(type));
+			similarityCutoffText.setValue(cutoffValues.get(type));
 			combinedConstantSlider.setVisible(type == SimilarityMetric.COMBINED);
 		};
 		
@@ -190,7 +227,7 @@ public class CutoffPropertiesPanel extends JPanel {
 		cutoffMetricCombo.setSelectedItem(ComboItem.of(defaultMetric)); // default
 		cutoffMetricCombo.addActionListener(sliderUpdate);
 		
-		cutoffTextField.addPropertyChangeListener("value", e -> {
+		similarityCutoffText.addPropertyChangeListener("value", e -> {
 			double value = ((Number)e.getNewValue()).doubleValue();
 			cutoffValues.put(getSimilarityMetric(), value);
 		});
@@ -206,36 +243,44 @@ public class CutoffPropertiesPanel extends JPanel {
 			layout.createSequentialGroup()
 				.addGroup(layout.createParallelGroup()
 					.addComponent(cutoffLabel)
-					.addComponent(cutoffTextField, PREFERRED_SIZE, 100, PREFERRED_SIZE)
-				)
-				.addGap(30)
-				.addGroup(layout.createParallelGroup()
 					.addComponent(metricLabel)
-					.addComponent(cutoffMetricCombo, PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE)
 				)
-				.addGap(30)
-				.addComponent(combinedConstantSlider, PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE)
+				.addGroup(layout.createParallelGroup()
+					.addComponent(similarityCutoffText, PREFERRED_SIZE, 100, PREFERRED_SIZE)
+					.addComponent(cutoffMetricCombo, PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE)
+					.addComponent(combinedConstantSlider, PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE)
+				)
 				.addGap(0, 0, Short.MAX_VALUE)
 		);
+		
 		layout.setVerticalGroup(
-			layout.createParallelGroup()
-				.addGroup(layout.createSequentialGroup()
-					.addGroup(layout.createParallelGroup()
-						.addComponent(cutoffLabel)
-						.addComponent(metricLabel)
-					)
-					.addGroup(layout.createParallelGroup()
-						.addComponent(cutoffTextField)
-						.addComponent(cutoffMetricCombo)
-					)
+			layout.createSequentialGroup()
+				.addGroup(layout.createParallelGroup(Alignment.BASELINE)
+					.addComponent(cutoffLabel)
+					.addComponent(similarityCutoffText)
+				)
+				.addGroup(layout.createParallelGroup(Alignment.BASELINE)
+					.addComponent(metricLabel)
+					.addComponent(cutoffMetricCombo)
 				)
 				.addComponent(combinedConstantSlider, PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE)
+				.addGap(0, 0, Short.MAX_VALUE)
 		);
 		
 		if (LookAndFeelUtil.isAquaLAF())
 			panel.setOpaque(false);
    		
    		return panel;
+	}
+	
+	
+	private void showAdvancedOptions(boolean show) {
+		pvalueLabel.setVisible(show);
+		pvalueText.setVisible(show);
+		minExperimentsLabel.setVisible(show);
+		minExperimentsText.setVisible(show);
+		shouldFilterMinLabel.setVisible(show);
+		shouldFilterMinCheckbox.setVisible(show);
 	}
 	
 	
@@ -255,11 +300,24 @@ public class CutoffPropertiesPanel extends JPanel {
 	
 	
 	public double getPValue() {
-		return getValue(pvalueTextField);
+		if(pvalueText.isVisible())
+			return getValue(pvalueText);
+		else
+			return propertyManager.getDefaultPvalue();
+	}
+	
+	public Optional<Integer> getMinimumExperiments() {
+		if(minExperimentsText.isVisible() && shouldFilterMinCheckbox.isSelected()) {
+ 			Integer value = (Integer)minExperimentsText.getValue();
+ 			if(value != null && value.intValue() > 0) {
+ 				return Optional.of(value);
+ 			}
+		}
+		return Optional.empty();
 	}
 	
 	public double getQValue() {
-		return getValue(qvalueTextField);
+		return getValue(qvalueText);
 	}
 	
 	public double getCombinedConstant() {
@@ -267,7 +325,7 @@ public class CutoffPropertiesPanel extends JPanel {
 	}
 	
 	public double getCutoff() {
-		return getValue(cutoffTextField);
+		return getValue(similarityCutoffText);
 	}
 	
 	private static double getValue(JFormattedTextField textField) {

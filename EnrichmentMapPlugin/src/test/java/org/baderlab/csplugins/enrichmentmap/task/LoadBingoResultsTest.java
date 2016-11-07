@@ -3,6 +3,8 @@ package org.baderlab.csplugins.enrichmentmap.task;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 
+import java.util.Optional;
+
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
@@ -31,7 +33,7 @@ public class LoadBingoResultsTest {
 		double pvalue = 0.00005;
 		double qvaule = 0.00000005; // 5.0 X 10-8
 		double similarityCutoff = 0.25;
-		EMCreationParameters params = new EMCreationParameters(Method.Specialized, "EM1_", SimilarityMetric.JACCARD, pvalue, qvaule, similarityCutoff, 0.5);
+		EMCreationParameters params = new EMCreationParameters(Method.Specialized, "EM1_", SimilarityMetric.JACCARD, pvalue, qvaule, Optional.empty(), similarityCutoff, 0.5);
 		//create an new enrichment Map
 		EnrichmentMap em = new EnrichmentMap("TestEM", params);
 		DataSet dataset = new DataSet(em, LegacySupport.DATASET1, files);		
@@ -90,7 +92,7 @@ public class LoadBingoResultsTest {
 		double pvalue = 0.00005;
 		double qvaule = 0.00000005; // 5.0 X 10-8
 		double similarityCutoff = 0.25;
-		EMCreationParameters params = new EMCreationParameters(Method.Specialized, "EM1_", SimilarityMetric.JACCARD, pvalue, qvaule, similarityCutoff, 0.5);
+		EMCreationParameters params = new EMCreationParameters(Method.Specialized, "EM1_", SimilarityMetric.JACCARD, pvalue, qvaule, Optional.empty(), similarityCutoff, 0.5);
 		
 		//create an new enrichment Map
 		EnrichmentMap em = new EnrichmentMap("TestEM", params);

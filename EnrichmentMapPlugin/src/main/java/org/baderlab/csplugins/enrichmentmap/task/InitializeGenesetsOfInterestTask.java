@@ -44,7 +44,9 @@
 package org.baderlab.csplugins.enrichmentmap.task;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
@@ -95,6 +97,10 @@ public class InitializeGenesetsOfInterestTask extends AbstractTask {
 		//Go through each Dataset populating the Gene set of interest in each dataset object
 		Map<String, DataSet> datasets = map.getDatasets();
 		
+		// count how many experiments (DataSets) contain the geneset
+		Optional<Integer> minExperiments = map.getParams().getMinExperiments();
+		Map<String,Integer> occurrences = minExperiments.isPresent() ? new HashMap<>() : null;
+		
 		for(String datasetName : datasets.keySet()) {
 			taskMonitor.inc();
 			
@@ -126,24 +132,34 @@ public class InitializeGenesetsOfInterestTask extends AbstractTask {
 				}
 				
 				GeneSet geneset = genesets.get(genesetName);
-				
 				if(geneset != null) {
 					// while we are checking, update the size of the genesets based on post filtered data
 					result.setGsSize(geneset.getGenes().size());
-				}
-				
-				if(isGenesetOfInterest(result)) {
-					if(geneset != null) {
+					
+					if(isGenesetOfInterest(result)) {
+						if(occurrences != null) {
+							occurrences.merge(genesetName, 1, (v,d) -> v + 1);
+						}
 						genesetsOfInterest.put(genesetName, geneset);
 					}
-					else if(throwIfMissing) {
-						throw new IllegalThreadStateException("The Geneset: " + genesetName + " is not found in the GMT file.");
-					}
-					
+				}
+				else if(throwIfMissing) { // TEMPORARY
+					throw new IllegalThreadStateException("The Geneset: " + genesetName + " is not found in the GMT file.");
 				}
 			}
 		}
-
+		
+		// Remove gene-sets that don't pass the minimum occurrence cutoff
+		if(occurrences != null) {
+			for(DataSet dataset : datasets.values()) {
+				Map<String,GeneSet> genesetsOfInterest = dataset.getGenesetsOfInterest().getGenesets();
+				
+				genesetsOfInterest.keySet().removeIf(geneset -> 
+					occurrences.getOrDefault(geneset, 0) < minExperiments.get()
+				);
+			}
+		}
+		
 		return true;
 	}
 

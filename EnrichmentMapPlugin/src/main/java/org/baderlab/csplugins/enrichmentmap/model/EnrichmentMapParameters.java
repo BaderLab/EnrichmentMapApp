@@ -49,6 +49,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Scanner;
 import java.util.Set;
 
@@ -231,7 +232,7 @@ public class EnrichmentMapParameters {
 		Method method = stringToMethod(getMethod());
 		SimilarityMetric similarityMetric = stringToSimilarityMethod(getSimilarityMetric());
 		EMCreationParameters params = new EMCreationParameters(method, getAttributePrefix(), 
-				similarityMetric, getPvalue(), getQvalue(), getSimilarityCutOff(), getCombinedConstant());
+				similarityMetric, getPvalue(), getQvalue(), Optional.empty(), getSimilarityCutOff(), getCombinedConstant());
 		params.setEnrichmentEdgeType(enrichment_edge_type);
 		return params;
 	}
