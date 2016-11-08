@@ -26,8 +26,8 @@ import javax.swing.LayoutStyle.ComponentPlacement;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.model.FilterParameters;
-import org.baderlab.csplugins.enrichmentmap.model.FilterType;
+import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterParameters;
+import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterType;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
@@ -56,7 +56,7 @@ public class PostAnalysisWeightPanel extends JPanel {
 	
 	private JComboBox<String> datasetCombo;
 	private JComboBox<String> rankingCombo;
-	private JComboBox<FilterType> rankTestCombo;
+	private JComboBox<PostAnalysisFilterType> rankTestCombo;
 	private JFormattedTextField rankTestTextField;
 	
 	private JRadioButton gmtRadioButton;
@@ -71,7 +71,7 @@ public class PostAnalysisWeightPanel extends JPanel {
     
     private JPanel cardPanel;
     
-    private Map<FilterType,Double> savedFilterValues = FilterType.createMapOfDefaults();
+    private Map<PostAnalysisFilterType,Double> savedFilterValues = PostAnalysisFilterType.createMapOfDefaults();
     
     private final CyServiceRegistrar serviceRegistrar;
     
@@ -79,7 +79,7 @@ public class PostAnalysisWeightPanel extends JPanel {
 		this.serviceRegistrar = serviceRegistrar;
 		
 		// override the default value for HYPERGEOM
-		savedFilterValues.put(FilterType.HYPERGEOM, HYPERGOM_DEFAULT);
+		savedFilterValues.put(PostAnalysisFilterType.HYPERGEOM, HYPERGOM_DEFAULT);
 		
 		createContents();
 	}
@@ -93,13 +93,13 @@ public class PostAnalysisWeightPanel extends JPanel {
 		JPanel warnCard = createWarningPanel();
 		
 		cardPanel = new JPanel(new CardLayout());
-		cardPanel.add(mannWhittCard, FilterType.MANN_WHIT_TWO_SIDED.toString());
-		cardPanel.add(mannWhittCard, FilterType.MANN_WHIT_GREATER.toString());
-		cardPanel.add(mannWhittCard, FilterType.MANN_WHIT_LESS.toString());
-		cardPanel.add(hypergeomCard, FilterType.HYPERGEOM.toString());
-		cardPanel.add(createEmptyPanel(), FilterType.PERCENT.toString());
-		cardPanel.add(createEmptyPanel(), FilterType.NUMBER.toString());
-		cardPanel.add(createEmptyPanel(), FilterType.SPECIFIC.toString());
+		cardPanel.add(mannWhittCard, PostAnalysisFilterType.MANN_WHIT_TWO_SIDED.toString());
+		cardPanel.add(mannWhittCard, PostAnalysisFilterType.MANN_WHIT_GREATER.toString());
+		cardPanel.add(mannWhittCard, PostAnalysisFilterType.MANN_WHIT_LESS.toString());
+		cardPanel.add(hypergeomCard, PostAnalysisFilterType.HYPERGEOM.toString());
+		cardPanel.add(createEmptyPanel(), PostAnalysisFilterType.PERCENT.toString());
+		cardPanel.add(createEmptyPanel(), PostAnalysisFilterType.NUMBER.toString());
+		cardPanel.add(createEmptyPanel(), PostAnalysisFilterType.SPECIFIC.toString());
 		cardPanel.add(warnCard, "warn");
         
         GroupLayout layout = new GroupLayout(this);
@@ -179,10 +179,10 @@ public class PostAnalysisWeightPanel extends JPanel {
 		rankTestTextField.addPropertyChangeListener("value", e -> {
 			StringBuilder message = new StringBuilder("The value you have entered is invalid.\n");
 			Number number = (Number) rankTestTextField.getValue();
-			FilterType filterType = getFilterType();
+			PostAnalysisFilterType filterType = getFilterType();
 
 			Optional<Double> value = PostAnalysisInputPanel.validateAndGetFilterValue(number, filterType, message);
-			double def = filterType == FilterType.HYPERGEOM ? HYPERGOM_DEFAULT : filterType.defaultValue;
+			double def = filterType == PostAnalysisFilterType.HYPERGEOM ? HYPERGOM_DEFAULT : filterType.defaultValue;
 			savedFilterValues.put(filterType, value.orElse(def));
 			
 			if (!value.isPresent()) {
@@ -197,16 +197,16 @@ public class PostAnalysisWeightPanel extends JPanel {
 		rankTestCombo = new JComboBox<>();
 		rankTestCombo.setRenderer(rankingEnablementRenderer);
 
-		rankTestCombo.addItem(FilterType.MANN_WHIT_TWO_SIDED);
-		rankTestCombo.addItem(FilterType.MANN_WHIT_GREATER);
-		rankTestCombo.addItem(FilterType.MANN_WHIT_LESS);
-		rankTestCombo.addItem(FilterType.HYPERGEOM);
-		rankTestCombo.addItem(FilterType.NUMBER);
-		rankTestCombo.addItem(FilterType.PERCENT);
-		rankTestCombo.addItem(FilterType.SPECIFIC);
+		rankTestCombo.addItem(PostAnalysisFilterType.MANN_WHIT_TWO_SIDED);
+		rankTestCombo.addItem(PostAnalysisFilterType.MANN_WHIT_GREATER);
+		rankTestCombo.addItem(PostAnalysisFilterType.MANN_WHIT_LESS);
+		rankTestCombo.addItem(PostAnalysisFilterType.HYPERGEOM);
+		rankTestCombo.addItem(PostAnalysisFilterType.NUMBER);
+		rankTestCombo.addItem(PostAnalysisFilterType.PERCENT);
+		rankTestCombo.addItem(PostAnalysisFilterType.SPECIFIC);
         
 		rankTestCombo.addActionListener(e -> {
-			FilterType filterType = (FilterType) rankTestCombo.getSelectedItem();
+			PostAnalysisFilterType filterType = (PostAnalysisFilterType) rankTestCombo.getSelectedItem();
 			rankTestTextField.setValue(savedFilterValues.get(filterType));
 			CardLayout cardLayout = (CardLayout) cardPanel.getLayout();
 
@@ -400,12 +400,12 @@ public class PostAnalysisWeightPanel extends JPanel {
 	
 	void resetPanel() {
 		gmtRadioButton.setSelected(true);
-		FilterType filterType = FilterType.MANN_WHIT_TWO_SIDED;
+		PostAnalysisFilterType filterType = PostAnalysisFilterType.MANN_WHIT_TWO_SIDED;
 		rankTestCombo.setSelectedItem(filterType);
 		rankTestTextField.setValue(filterType.defaultValue);
 		
-		savedFilterValues = FilterType.createMapOfDefaults();
-		savedFilterValues.put(FilterType.HYPERGEOM, HYPERGOM_DEFAULT);
+		savedFilterValues = PostAnalysisFilterType.createMapOfDefaults();
+		savedFilterValues.put(PostAnalysisFilterType.HYPERGEOM, HYPERGOM_DEFAULT);
 	}
 
 	void initialize(EnrichmentMap currentMap) {
@@ -435,7 +435,7 @@ public class PostAnalysisWeightPanel extends JPanel {
 			rankingCombo.setSelectedIndex(0);
 		}
 
-		FilterType typeToUse = rankingArray.length == 0 ? FilterType.HYPERGEOM : FilterType.MANN_WHIT_TWO_SIDED;
+		PostAnalysisFilterType typeToUse = rankingArray.length == 0 ? PostAnalysisFilterType.HYPERGEOM : PostAnalysisFilterType.MANN_WHIT_TWO_SIDED;
 		rankTestCombo.setSelectedItem(typeToUse);
 		rankTestTextField.setValue(typeToUse.defaultValue);
 
@@ -445,8 +445,8 @@ public class PostAnalysisWeightPanel extends JPanel {
 		}
 	}
 	
-	protected FilterType getFilterType() {
-		return (FilterType) rankTestCombo.getSelectedItem();
+	protected PostAnalysisFilterType getFilterType() {
+		return (PostAnalysisFilterType) rankTestCombo.getSelectedItem();
 	}
 	
 	protected String getDataSet() {
@@ -472,7 +472,7 @@ public class PostAnalysisWeightPanel extends JPanel {
 	
 	public void build(PostAnalysisParameters.Builder builder) {
 		double value = ((Number) rankTestTextField.getValue()).doubleValue();
-		FilterParameters rankTest = new FilterParameters(getFilterType(), value);
+		PostAnalysisFilterParameters rankTest = new PostAnalysisFilterParameters(getFilterType(), value);
 		
 		builder.setRankTestParameters(rankTest);
 		builder.setSignatureDataSet(getDataSet());

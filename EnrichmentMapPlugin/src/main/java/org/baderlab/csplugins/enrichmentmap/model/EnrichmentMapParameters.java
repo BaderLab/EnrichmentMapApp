@@ -56,6 +56,7 @@ import java.util.Set;
 import org.baderlab.csplugins.enrichmentmap.PropertyManager;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParameters;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.util.StreamUtil;
@@ -232,7 +233,7 @@ public class EnrichmentMapParameters {
 		Method method = stringToMethod(getMethod());
 		SimilarityMetric similarityMetric = stringToSimilarityMethod(getSimilarityMetric());
 		EMCreationParameters params = new EMCreationParameters(method, getAttributePrefix(), 
-				similarityMetric, getPvalue(), getQvalue(), Optional.empty(), getSimilarityCutOff(), getCombinedConstant());
+				getPvalue(), getQvalue(), NESFilter.ALL, Optional.empty(), similarityMetric, getSimilarityCutOff(), getCombinedConstant());
 		params.setEnrichmentEdgeType(enrichment_edge_type);
 		return params;
 	}

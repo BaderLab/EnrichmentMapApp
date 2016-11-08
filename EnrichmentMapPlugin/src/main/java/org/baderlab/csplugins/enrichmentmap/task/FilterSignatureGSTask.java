@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.model.FilterType;
+import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterType;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
 import org.cytoscape.work.AbstractTask;
@@ -66,7 +66,7 @@ public class FilterSignatureGSTask extends AbstractTask implements ObservableTas
 
 			boolean matchfound = false;
 
-			if(filterMetric.getFilterType() != FilterType.NO_FILTER) {
+			if(filterMetric.getFilterType() != PostAnalysisFilterType.NO_FILTER) {
 				//only add the name if it overlaps with the sets in the map.
 				for(String mapGeneset : genesets_in_map.keySet()) {
 					//check if this set overlaps with current geneset

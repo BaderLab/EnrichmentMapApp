@@ -11,6 +11,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.parsers.ParseBingoEnrichmentResults;
 import org.cytoscape.work.TaskMonitor;
@@ -33,7 +34,7 @@ public class LoadBingoResultsTest {
 		double pvalue = 0.00005;
 		double qvaule = 0.00000005; // 5.0 X 10-8
 		double similarityCutoff = 0.25;
-		EMCreationParameters params = new EMCreationParameters(Method.Specialized, "EM1_", SimilarityMetric.JACCARD, pvalue, qvaule, Optional.empty(), similarityCutoff, 0.5);
+		EMCreationParameters params = new EMCreationParameters(Method.Specialized, "EM1_", pvalue, qvaule, NESFilter.ALL, Optional.empty(), SimilarityMetric.JACCARD, similarityCutoff, 0.5);
 		//create an new enrichment Map
 		EnrichmentMap em = new EnrichmentMap("TestEM", params);
 		DataSet dataset = new DataSet(em, LegacySupport.DATASET1, files);		
@@ -92,7 +93,7 @@ public class LoadBingoResultsTest {
 		double pvalue = 0.00005;
 		double qvaule = 0.00000005; // 5.0 X 10-8
 		double similarityCutoff = 0.25;
-		EMCreationParameters params = new EMCreationParameters(Method.Specialized, "EM1_", SimilarityMetric.JACCARD, pvalue, qvaule, Optional.empty(), similarityCutoff, 0.5);
+		EMCreationParameters params = new EMCreationParameters(Method.Specialized, "EM1_", pvalue, qvaule, NESFilter.ALL, Optional.empty(), SimilarityMetric.JACCARD, similarityCutoff, 0.5);
 		
 		//create an new enrichment Map
 		EnrichmentMap em = new EnrichmentMap("TestEM", params);

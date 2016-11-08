@@ -22,9 +22,10 @@ import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
-import org.baderlab.csplugins.enrichmentmap.model.FilterParameters;
-import org.baderlab.csplugins.enrichmentmap.model.FilterType;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
+import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterParameters;
+import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterType;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters.AnalysisType;
 import org.baderlab.csplugins.enrichmentmap.style.WidthFunction;
@@ -71,7 +72,7 @@ public class PostAnalysisTaskTest extends BaseNetworkTest {
 		dataset1files.setEnrichmentFileName1(PATH + "fakeEnrichments.txt");
 		dataset1files.setRankedFile(PATH + "FakeRank.rnk");  
 		
-		EMCreationParameters params = new EMCreationParameters(Method.Generic, "EM1_", SimilarityMetric.JACCARD, 0.1, 0.1, Optional.empty(), 0.1, 0.1);
+		EMCreationParameters params = new EMCreationParameters(Method.Generic, "EM1_", 0.1, 0.1, NESFilter.ALL, Optional.empty(), SimilarityMetric.JACCARD, 0.1, 0.1);
 		
 	    buildEnrichmentMap(params, dataset1files, LegacySupport.DATASET1);
 	   	
@@ -116,7 +117,7 @@ public class PostAnalysisTaskTest extends BaseNetworkTest {
 		builder.setSignatureGMTFileName(PATH + "PA_top8_middle8_bottom8.gmt");
 		builder.setAttributePrefix("EM1_");
 		
-		FilterParameters rankTest = new FilterParameters(FilterType.MANN_WHIT_TWO_SIDED);
+		PostAnalysisFilterParameters rankTest = new PostAnalysisFilterParameters(PostAnalysisFilterType.MANN_WHIT_TWO_SIDED);
 		builder.setRankTestParameters(rankTest);
 		
 		runPostAnalysis(emNetwork, builder);
@@ -132,12 +133,12 @@ public class PostAnalysisTaskTest extends BaseNetworkTest {
 	   	CyEdge edge1 = edges.getEdge("PA_TOP8_MIDDLE8_BOTTOM8 (sig) TOP8_PLUS100");
 	   	assertNotNull(edge1);
 	   	assertEquals(1.40E-6, emNetwork.getRow(edge1).get("EM1_Overlap_Mann_Whit_pVal", Double.class), 0.001);
-	   	assertEquals(FilterType.MANN_WHIT_TWO_SIDED.toString(), emNetwork.getRow(edge1).get("EM1_Overlap_cutoff", String.class));
+	   	assertEquals(PostAnalysisFilterType.MANN_WHIT_TWO_SIDED.toString(), emNetwork.getRow(edge1).get("EM1_Overlap_cutoff", String.class));
 	   	
 	   	CyEdge edge2 = edges.getEdge("PA_TOP8_MIDDLE8_BOTTOM8 (sig) BOTTOM8_PLUS100");
 	   	assertNotNull(edge2);
 	   	assertEquals(1.40E-6, emNetwork.getRow(edge2).get("EM1_Overlap_Mann_Whit_pVal", Double.class), 0.001);
-	   	assertEquals(FilterType.MANN_WHIT_TWO_SIDED.toString(), emNetwork.getRow(edge2).get("EM1_Overlap_cutoff", String.class));
+	   	assertEquals(PostAnalysisFilterType.MANN_WHIT_TWO_SIDED.toString(), emNetwork.getRow(edge2).get("EM1_Overlap_cutoff", String.class));
 	}
 	
 	
@@ -156,7 +157,7 @@ public class PostAnalysisTaskTest extends BaseNetworkTest {
 		builder.setSignatureGMTFileName(PATH + "PA_top8_middle8_bottom8.gmt");
 		builder.setAttributePrefix("EM1_");
 		
-		FilterParameters rankTest = new FilterParameters(FilterType.HYPERGEOM, 0.25);
+		PostAnalysisFilterParameters rankTest = new PostAnalysisFilterParameters(PostAnalysisFilterType.HYPERGEOM, 0.25);
 		builder.setRankTestParameters(rankTest);
 		
 		runPostAnalysis(emNetwork, builder);
@@ -173,25 +174,25 @@ public class PostAnalysisTaskTest extends BaseNetworkTest {
 	   	assertNotNull(edge1);
 	   	assertEquals(1.40E-6,  emNetwork.getRow(edge1).get("EM1_Overlap_Mann_Whit_pVal", Double.class), 0.001);
 	   	assertEquals(4.21E-11, emNetwork.getRow(edge1).get("EM1_Overlap_Hypergeom_pVal", Double.class), 0.001);
-	   	assertEquals(FilterType.HYPERGEOM.toString(), emNetwork.getRow(edge1).get("EM1_Overlap_cutoff", String.class));
+	   	assertEquals(PostAnalysisFilterType.HYPERGEOM.toString(), emNetwork.getRow(edge1).get("EM1_Overlap_cutoff", String.class));
 	   	
 	   	CyEdge edge2 = edges.getEdge("PA_TOP8_MIDDLE8_BOTTOM8 (sig) BOTTOM8_PLUS100");
 	   	assertNotNull(edge2);
 	   	assertEquals(1.40E-6,  emNetwork.getRow(edge2).get("EM1_Overlap_Mann_Whit_pVal", Double.class), 0.001);
 	   	assertEquals(4.21E-11, emNetwork.getRow(edge2).get("EM1_Overlap_Hypergeom_pVal", Double.class), 0.001);
-	   	assertEquals(FilterType.HYPERGEOM.toString(), emNetwork.getRow(edge2).get("EM1_Overlap_cutoff", String.class));
+	   	assertEquals(PostAnalysisFilterType.HYPERGEOM.toString(), emNetwork.getRow(edge2).get("EM1_Overlap_cutoff", String.class));
 	   	
 	   	CyEdge edge3 = edges.getEdge("PA_TOP8_MIDDLE8_BOTTOM8 (sig) MIDDLE8_PLUS100");
 	   	assertNotNull(edge3);
 		assertNull(emNetwork.getRow(edge3).get("EM1_Overlap_Mann_Whit_pVal", Double.class));
 	   	assertEquals(4.21E-11, emNetwork.getRow(edge3).get("EM1_Overlap_Hypergeom_pVal", Double.class), 0.001);
-	   	assertEquals(FilterType.HYPERGEOM.toString(), emNetwork.getRow(edge3).get("EM1_Overlap_cutoff", String.class));
+	   	assertEquals(PostAnalysisFilterType.HYPERGEOM.toString(), emNetwork.getRow(edge3).get("EM1_Overlap_cutoff", String.class));
 	   	
 	   	CyEdge edge4 = edges.getEdge("PA_TOP8_MIDDLE8_BOTTOM8 (sig) TOP1_PLUS100");
 	   	assertNotNull(edge4);
 	   	assertNull(emNetwork.getRow(edge4).get("EM1_Overlap_Mann_Whit_pVal", Double.class));
 	   	assertEquals(0.19, emNetwork.getRow(edge4).get("EM1_Overlap_Hypergeom_pVal", Double.class), 0.01);
-	   	assertEquals(FilterType.HYPERGEOM.toString(), emNetwork.getRow(edge4).get("EM1_Overlap_cutoff", String.class));
+	   	assertEquals(PostAnalysisFilterType.HYPERGEOM.toString(), emNetwork.getRow(edge4).get("EM1_Overlap_cutoff", String.class));
 	}
 
 	

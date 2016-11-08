@@ -3,22 +3,22 @@ package org.baderlab.csplugins.enrichmentmap.model;
 /**
  * Parameters used for specifying filters and cutoffs for post-analysis.
  */
-public class FilterParameters {
+public class PostAnalysisFilterParameters {
 	
-	private final FilterType type;
+	private final PostAnalysisFilterType type;
 	private final double value;
 	
 
-	public FilterParameters(FilterType type, double value) {
+	public PostAnalysisFilterParameters(PostAnalysisFilterType type, double value) {
 		this.type = type;
 		this.value = value;
 	}
 	
-	public FilterParameters(FilterType type) {
+	public PostAnalysisFilterParameters(PostAnalysisFilterType type) {
 		this(type, type.defaultValue);
 	}
 	
-	public FilterType getType() {
+	public PostAnalysisFilterType getType() {
 		return type;
 	}
 

@@ -30,6 +30,7 @@ import javax.swing.JTextField;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.task.MasterMapGSEATaskFactory;
 import org.baderlab.csplugins.enrichmentmap.util.SwingUtil;
@@ -90,19 +91,18 @@ public class MasterMapDialogController implements NiceDialogController {
 
 	@Override
 	public void finish() {
-		// MKTODO if the advanced options (p-value etc) are not visible then should use the defaults
-		
 		Method method = getMethod();
 		String prefix = legacySupport.getNextAttributePrefix();
 		SimilarityMetric similarityMetric = cutoffPanel.getSimilarityMetric();
 		double pvalue = cutoffPanel.getPValue();
 		double qvalue = cutoffPanel.getQValue();
+		NESFilter nesFilter = cutoffPanel.getNESFilter();
 		double cutoff = cutoffPanel.getCutoff();
 		double combined = cutoffPanel.getCombinedConstant();
 		Optional<Integer> minExperiments = cutoffPanel.getMinimumExperiments();
 		
 		EMCreationParameters params = 
-			new EMCreationParameters(method, prefix, similarityMetric, pvalue, qvalue, minExperiments, cutoff, combined);
+			new EMCreationParameters(method, prefix, pvalue, qvalue, nesFilter, minExperiments, similarityMetric, cutoff, combined);
 		
 		List<Path> paths = checkboxListPanel.getSelectedDataItems();
 		

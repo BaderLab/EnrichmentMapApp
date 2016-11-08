@@ -2,7 +2,7 @@ package org.baderlab.csplugins.enrichmentmap.task;
 
 import java.util.Set;
 
-import org.baderlab.csplugins.enrichmentmap.model.FilterType;
+import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterType;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.mannwhit.MannWhitneyUTestSided;
 
@@ -13,19 +13,19 @@ public interface FilterMetric {
 	
 	boolean match(int mapGenesetSize, Set<Integer> intersection, Set<Integer> signatureSet);
 	
-	FilterType getFilterType(); // Used for optimization, to avoid processing when the filter type is None
+	PostAnalysisFilterType getFilterType(); // Used for optimization, to avoid processing when the filter type is None
 	
 	
 	abstract class BaseFilterMetric implements FilterMetric {
 		protected final double filter;
-		protected final FilterType type;
+		protected final PostAnalysisFilterType type;
 		
-		public BaseFilterMetric(FilterType type, double filter) {
+		public BaseFilterMetric(PostAnalysisFilterType type, double filter) {
 			this.filter = filter;
 			this.type = type;
 		}
 		
-		public FilterType getFilterType() {
+		public PostAnalysisFilterType getFilterType() {
 			return type;
 		}
 	}
@@ -34,7 +34,7 @@ public interface FilterMetric {
 	class None extends BaseFilterMetric {
 		
 		public None() {
-			super(FilterType.NO_FILTER, 0.0);
+			super(PostAnalysisFilterType.NO_FILTER, 0.0);
 		}
 		
 		public boolean match(int mapGenesetSize, Set<Integer> intersection, Set<Integer> signatureSet) {
@@ -46,7 +46,7 @@ public interface FilterMetric {
 	class Percent extends BaseFilterMetric {
 		
 		public Percent(double filter) {
-			super(FilterType.PERCENT, filter);
+			super(PostAnalysisFilterType.PERCENT, filter);
 		}
 		
 		public boolean match(int mapGenesetSize, Set<Integer> intersection, Set<Integer> signatureSet) {
@@ -59,7 +59,7 @@ public interface FilterMetric {
 	class Number extends BaseFilterMetric {
 		
 		public Number(double filter) {
-			super(FilterType.NUMBER, filter);
+			super(PostAnalysisFilterType.NUMBER, filter);
 		}
 		
 		public boolean match(int mapGenesetSize, Set<Integer> intersection, Set<Integer> signatureSet) {
@@ -71,7 +71,7 @@ public interface FilterMetric {
 	class Specific extends BaseFilterMetric {
 		
 		public Specific(double filter) {
-			super(FilterType.SPECIFIC, filter);
+			super(PostAnalysisFilterType.SPECIFIC, filter);
 		}
 		
 		public boolean match(int mapGenesetSize, Set<Integer> intersection, Set<Integer> signatureSet) {
@@ -86,7 +86,7 @@ public interface FilterMetric {
 		private final int N;
 		
 		public Hypergeom(double filter, int N) {
-			super(FilterType.HYPERGEOM, filter);
+			super(PostAnalysisFilterType.HYPERGEOM, filter);
 			this.N = N;
 		}
 
@@ -117,7 +117,7 @@ public interface FilterMetric {
 
 		private final Ranking ranks;
 		
-		public MannWhit(double filter, Ranking ranks, FilterType type) {
+		public MannWhit(double filter, Ranking ranks, PostAnalysisFilterType type) {
 			super(type, filter);
 			if(!type.isMannWhitney())
 				throw new IllegalArgumentException("FilterType is not Mann Whitney: " + type);

@@ -61,8 +61,8 @@ public class PostAnalysisParameters {
 	}
 	
 	private final AnalysisType analysisType;
-	private final FilterParameters filterParameters;
-	private final FilterParameters rankTestParameters;
+	private final PostAnalysisFilterParameters filterParameters;
+	private final PostAnalysisFilterParameters rankTestParameters;
 	private final String signatureGMTFileName;
 	private final SetOfGeneSets signatureGenesets;
 	private final Collection<String> selectedSignatureSetNames;
@@ -74,8 +74,8 @@ public class PostAnalysisParameters {
 	
 	
 	
-	private PostAnalysisParameters(AnalysisType analysisType, FilterParameters filterParameters,
-			FilterParameters rankTestParameters, String signatureGMTFileName, SetOfGeneSets signatureGenesets,
+	private PostAnalysisParameters(AnalysisType analysisType, PostAnalysisFilterParameters filterParameters,
+			PostAnalysisFilterParameters rankTestParameters, String signatureGMTFileName, SetOfGeneSets signatureGenesets,
 			Collection<String> selectedSignatureSetNames, double currentNodePlacementYOffset, String signatureRankFile,
 			String signatureDataSet, int universeSize, String attributePrefix) {
 		this.analysisType = analysisType;
@@ -95,11 +95,11 @@ public class PostAnalysisParameters {
 		return analysisType;
 	}
 	
-	public FilterParameters getFilterParameters() {
+	public PostAnalysisFilterParameters getFilterParameters() {
 		return filterParameters;
 	}
 
-	public FilterParameters getRankTestParameters() {
+	public PostAnalysisFilterParameters getRankTestParameters() {
 		return rankTestParameters;
 	}
 	
@@ -145,8 +145,8 @@ public class PostAnalysisParameters {
 	public static class Builder {
 		
 		private AnalysisType analysisType;
-		private FilterParameters filterParameters;
-		private FilterParameters rankTestParameters;
+		private PostAnalysisFilterParameters filterParameters;
+		private PostAnalysisFilterParameters rankTestParameters;
 		private String signatureGMTFileName;
 		private SetOfGeneSets signatureGenesets;
 		private Set<String> selectedSignatureSetNames = new HashSet<>();
@@ -195,13 +195,13 @@ public class PostAnalysisParameters {
 		}
 
 
-		public Builder setFilterParameters(FilterParameters filterParameters) {
+		public Builder setFilterParameters(PostAnalysisFilterParameters filterParameters) {
 			this.filterParameters = filterParameters;
 			return this;
 		}
 
 
-		public Builder setRankTestParameters(FilterParameters rankTestParameters) {
+		public Builder setRankTestParameters(PostAnalysisFilterParameters rankTestParameters) {
 			this.rankTestParameters = rankTestParameters;
 			return this;
 		}

@@ -23,6 +23,7 @@ import javax.swing.text.InternationalFormatter;
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.PropertyManager;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
 import org.baderlab.csplugins.enrichmentmap.util.SwingUtil;
 import org.baderlab.csplugins.enrichmentmap.view.util.ComboItem;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -38,6 +39,8 @@ public class CutoffPropertiesPanel extends JPanel {
 	private JFormattedTextField qvalueText;
 	private JLabel pvalueLabel;
 	private JFormattedTextField pvalueText;
+	private JLabel nesFilterLabel;
+	private JComboBox<ComboItem<NESFilter>> nesFilterCombo;
 	private JLabel shouldFilterMinLabel;
 	private JCheckBox shouldFilterMinCheckbox;
 	private JLabel minExperimentsLabel;
@@ -115,12 +118,13 @@ public class CutoffPropertiesPanel extends JPanel {
 		JPanel panel = new JPanel();
 		panel.setBorder(LookAndFeelUtil.createTitledBorder("Gene-Set Filtering (Nodes)"));
 		
-		pvalueLabel = new JLabel("p-value cutoff");
-		JLabel qvalueLabel = new JLabel("FDR q-value cutoff");
-		shouldFilterMinLabel = new JLabel("Filter by minimum experiments");
-		minExperimentsLabel = new JLabel("Minimum experiments");
+		pvalueLabel = new JLabel("p-value cutoff:");
+		JLabel qvalueLabel = new JLabel("FDR q-value cutoff:");
+		nesFilterLabel = new JLabel("NES:");
+		shouldFilterMinLabel = new JLabel("Filter by minimum experiments:");
+		minExperimentsLabel = new JLabel("Minimum experiments:");
 		
-		SwingUtil.makeSmall(qvalueLabel, pvalueLabel, minExperimentsLabel, shouldFilterMinLabel);
+		SwingUtil.makeSmall(qvalueLabel, pvalueLabel, minExperimentsLabel, shouldFilterMinLabel, nesFilterLabel);
 		
 		AbstractFormatterFactory formatterFactory = getFormatterFactory(false);
 		pvalueText = new JFormattedTextField(formatterFactory);
@@ -132,6 +136,12 @@ public class CutoffPropertiesPanel extends JPanel {
 		pvalueText.setValue(propertyManager.getDefaultPvalue());
 		qvalueText.setValue(propertyManager.getDefaultQvalue());
 		minExperimentsText.setValue(3);
+		
+		nesFilterCombo = new JComboBox<>();
+		nesFilterCombo.addItem(new ComboItem<>(NESFilter.ALL, "All"));
+		nesFilterCombo.addItem(new ComboItem<>(NESFilter.POSITIVE, "Positive"));
+		nesFilterCombo.addItem(new ComboItem<>(NESFilter.NEGATIVE, "Negative"));
+		nesFilterCombo.setSelectedItem(ComboItem.of(NESFilter.ALL));
 		
 		minExperimentsLabel.setEnabled(false);
 		minExperimentsText.setEnabled(false);
@@ -153,12 +163,14 @@ public class CutoffPropertiesPanel extends JPanel {
 				.addGroup(layout.createParallelGroup(Alignment.TRAILING)
 					.addComponent(qvalueLabel)
 					.addComponent(pvalueLabel)
+					.addComponent(nesFilterLabel)
 					.addComponent(shouldFilterMinLabel)
 					.addComponent(minExperimentsLabel)
 				)
 				.addGroup(layout.createParallelGroup(Alignment.LEADING)
 					.addComponent(qvalueText, PREFERRED_SIZE, 100, PREFERRED_SIZE)
 					.addComponent(pvalueText, PREFERRED_SIZE, 100, PREFERRED_SIZE)
+					.addComponent(nesFilterCombo)
 					.addComponent(shouldFilterMinCheckbox)
 					.addComponent(minExperimentsText, PREFERRED_SIZE, 100, PREFERRED_SIZE)
 				)
@@ -174,6 +186,10 @@ public class CutoffPropertiesPanel extends JPanel {
 				.addGroup(layout.createParallelGroup(Alignment.BASELINE)
 					.addComponent(pvalueLabel)
 					.addComponent(pvalueText)
+				)
+				.addGroup(layout.createParallelGroup(Alignment.BASELINE)
+					.addComponent(nesFilterLabel)
+					.addComponent(nesFilterCombo)
 				)
 				.addGroup(layout.createParallelGroup(Alignment.TRAILING)
 					.addComponent(shouldFilterMinLabel)
@@ -196,8 +212,8 @@ public class CutoffPropertiesPanel extends JPanel {
 		JPanel panel = new JPanel();
 		panel.setBorder(LookAndFeelUtil.createTitledBorder("Similarity Filtering (Edges)"));
 		
-		JLabel cutoffLabel = new JLabel("Cutoff");
-		JLabel metricLabel = new JLabel("Metric");
+		JLabel cutoffLabel = new JLabel("Cutoff:");
+		JLabel metricLabel = new JLabel("Metric:");
 		
 		SwingUtil.makeSmall(cutoffLabel, metricLabel);
 		
@@ -277,6 +293,8 @@ public class CutoffPropertiesPanel extends JPanel {
 	private void showAdvancedOptions(boolean show) {
 		pvalueLabel.setVisible(show);
 		pvalueText.setVisible(show);
+		nesFilterLabel.setVisible(show);
+		nesFilterCombo.setVisible(show);
 		minExperimentsLabel.setVisible(show);
 		minExperimentsText.setVisible(show);
 		shouldFilterMinLabel.setVisible(show);
@@ -300,10 +318,15 @@ public class CutoffPropertiesPanel extends JPanel {
 	
 	
 	public double getPValue() {
-		if(pvalueText.isVisible())
-			return getValue(pvalueText);
-		else
-			return propertyManager.getDefaultPvalue();
+		return pvalueText.isVisible()
+			? getValue(pvalueText)
+			: propertyManager.getDefaultPvalue();
+	}
+	
+	public NESFilter getNESFilter() {
+		return nesFilterCombo.isVisible()
+			? nesFilterCombo.getItemAt(nesFilterCombo.getSelectedIndex()).getValue()
+			: NESFilter.ALL;
 	}
 	
 	public Optional<Integer> getMinimumExperiments() {

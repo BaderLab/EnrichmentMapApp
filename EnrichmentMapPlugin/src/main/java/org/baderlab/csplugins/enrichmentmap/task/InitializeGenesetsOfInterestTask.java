@@ -55,7 +55,6 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
 import org.baderlab.csplugins.enrichmentmap.model.GSEAResult;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
-import org.baderlab.csplugins.enrichmentmap.model.GenericResult;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.util.DiscreteTaskMonitor;
 import org.cytoscape.work.AbstractTask;
@@ -136,7 +135,7 @@ public class InitializeGenesetsOfInterestTask extends AbstractTask {
 					// while we are checking, update the size of the genesets based on post filtered data
 					result.setGsSize(geneset.getGenes().size());
 					
-					if(isGenesetOfInterest(result)) {
+					if(result.geneSetOfInterest(map.getParams())) {
 						if(occurrences != null) {
 							occurrences.merge(genesetName, 1, (v,d) -> v + 1);
 						}
@@ -217,22 +216,6 @@ public class InitializeGenesetsOfInterestTask extends AbstractTask {
 			}
 		} // end of determining the leading edge
 	}
-	
-
-	/**
-	 * Returns true if the geneset passes the cutoffs.
-	 */
-	private boolean isGenesetOfInterest(EnrichmentResult result) {
-		double pvalue = map.getParams().getPvalue();
-		double qvalue = map.getParams().getQvalue();
-		boolean isFDR = map.getParams().isFDR();
-		
-		if(map.getParams().getMethod() == Method.GSEA)
-			return ((GSEAResult)result).geneSetOfInterest(pvalue, qvalue);
-		else
-			return ((GenericResult)result).geneSetOfInterest(pvalue, qvalue, isFDR);
-	}
-	
 	
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {

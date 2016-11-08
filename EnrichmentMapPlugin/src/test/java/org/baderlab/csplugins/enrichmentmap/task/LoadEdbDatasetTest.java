@@ -11,6 +11,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.parsers.GMTFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.parsers.ParseEDBEnrichmentResults;
@@ -27,8 +28,8 @@ public class LoadEdbDatasetTest {
 	public void testEdbLoad() throws Exception{
 		//for a dataset we require genesets, an expression file (optional), enrichment results
 		String testEdbResultsFileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/task/LoadDataset/GSEA_example_results/edb/results.edb";
-		String testgmtFileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/task/LoadDataset/GSEA_example_results/edb/gene_sets.gmt";
-		String testrnkFileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/task/LoadDataset/GSEA_example_results/edb/Expressionfile.rnk";		
+		String testgmtFileName        = "src/test/resources/org/baderlab/csplugins/enrichmentmap/task/LoadDataset/GSEA_example_results/edb/gene_sets.gmt";
+		String testrnkFileName        = "src/test/resources/org/baderlab/csplugins/enrichmentmap/task/LoadDataset/GSEA_example_results/edb/Expressionfile.rnk";		
 		
 		DataSetFiles files = new DataSetFiles();		
 		files.setEnrichmentFileName1(testEdbResultsFileName);
@@ -39,7 +40,7 @@ public class LoadEdbDatasetTest {
 		double similarityCutoff = 0.5;
 		double pvalue = 1.0;
 		double qvalue = 1.0;
-		EMCreationParameters params = new EMCreationParameters(Method.GSEA, "EM1_", SimilarityMetric.JACCARD, pvalue, qvalue, Optional.empty(), similarityCutoff, 0.5);
+		EMCreationParameters params = new EMCreationParameters(Method.GSEA, "EM1_", pvalue, qvalue, NESFilter.ALL, Optional.empty(), SimilarityMetric.JACCARD, similarityCutoff, 0.5);
 	
 		//create an new enrichment Map
 		EnrichmentMap em = new EnrichmentMap("TestEM", params);

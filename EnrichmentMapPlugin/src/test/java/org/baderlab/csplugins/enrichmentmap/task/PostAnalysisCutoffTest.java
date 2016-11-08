@@ -14,9 +14,10 @@ import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
-import org.baderlab.csplugins.enrichmentmap.model.FilterParameters;
-import org.baderlab.csplugins.enrichmentmap.model.FilterType;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
+import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterParameters;
+import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterType;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyEdge;
@@ -62,8 +63,9 @@ public class PostAnalysisCutoffTest extends BaseNetworkTest {
 	
 	@Test
 	public void _setup(PropertyManager pm, CyApplicationManager applicationManager, CyNetworkManager networkManager) {
-		EMCreationParameters params = new EMCreationParameters(Method.Generic, "EM1_", SimilarityMetric.JACCARD, 
-				pm.getDefaultPvalue(), pm.getDefaultQvalue(), Optional.empty(), pm.getDefaultJaccardCutOff(), pm.getDefaultCombinedConstant());
+		EMCreationParameters params = new EMCreationParameters(Method.Generic, "EM1_", 
+				pm.getDefaultPvalue(), pm.getDefaultQvalue(), NESFilter.ALL, Optional.empty(), 
+				SimilarityMetric.JACCARD, pm.getDefaultJaccardCutOff(), pm.getDefaultCombinedConstant());
 		
 		DataSetFiles dataset1files = new DataSetFiles();
 		dataset1files.setGMTFileName(PATH + "gene_sets.gmt");  
@@ -84,7 +86,7 @@ public class PostAnalysisCutoffTest extends BaseNetworkTest {
 	public void test_1_FilterType_Number() throws Exception {
 		PostAnalysisParameters.Builder builder = getBuilder();
 		
-		FilterParameters rankTest = new FilterParameters(FilterType.NUMBER, 5);
+		PostAnalysisFilterParameters rankTest = new PostAnalysisFilterParameters(PostAnalysisFilterType.NUMBER, 5);
 		builder.setRankTestParameters(rankTest);
 		
 		runPostAnalysis(emNetwork, builder);
@@ -95,17 +97,17 @@ public class PostAnalysisCutoffTest extends BaseNetworkTest {
 	   	CyEdge edge = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig) MIDDLE8_PLUS100");
 	   	assertNotNull(edge);
 	   	assertEquals(8, emNetwork.getRow(edge).get("EM1_k_intersection", Integer.class).intValue());
-	   	assertEquals(FilterType.NUMBER.toString(), emNetwork.getRow(edge).get("EM1_Overlap_cutoff", String.class));
+	   	assertEquals(PostAnalysisFilterType.NUMBER.toString(), emNetwork.getRow(edge).get("EM1_Overlap_cutoff", String.class));
 	   	
 	   	edge = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig) BOTTOM8_PLUS100");
 	   	assertNotNull(edge);
 	   	assertEquals(8, emNetwork.getRow(edge).get("EM1_k_intersection", Integer.class).intValue());
-	   	assertEquals(FilterType.NUMBER.toString(), emNetwork.getRow(edge).get("EM1_Overlap_cutoff", String.class));
+	   	assertEquals(PostAnalysisFilterType.NUMBER.toString(), emNetwork.getRow(edge).get("EM1_Overlap_cutoff", String.class));
 	   	
 	   	edge = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig) TOP8_PLUS100");
 	   	assertNotNull(edge);
 	   	assertEquals(8, emNetwork.getRow(edge).get("EM1_k_intersection", Integer.class).intValue());
-	   	assertEquals(FilterType.NUMBER.toString(), emNetwork.getRow(edge).get("EM1_Overlap_cutoff", String.class));
+	   	assertEquals(PostAnalysisFilterType.NUMBER.toString(), emNetwork.getRow(edge).get("EM1_Overlap_cutoff", String.class));
 	   	
 	   	edge = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig) TOP1_PLUS100");
 	   	assertNull(edge);
@@ -115,7 +117,7 @@ public class PostAnalysisCutoffTest extends BaseNetworkTest {
 	public void test_2_FilterType_Percent() throws Exception {
 		PostAnalysisParameters.Builder builder = getBuilder();
 		
-		FilterParameters rankTest = new FilterParameters(FilterType.PERCENT, 7);
+		PostAnalysisFilterParameters rankTest = new PostAnalysisFilterParameters(PostAnalysisFilterType.PERCENT, 7);
 		builder.setRankTestParameters(rankTest);
 		
 		runPostAnalysis(emNetwork, builder);
@@ -126,17 +128,17 @@ public class PostAnalysisCutoffTest extends BaseNetworkTest {
 	   	CyEdge edge = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig) MIDDLE8_PLUS100");
 	   	assertNotNull(edge);
 	   	assertEquals(8, emNetwork.getRow(edge).get("EM1_k_intersection", Integer.class).intValue());
-	   	assertEquals(FilterType.PERCENT.toString(), emNetwork.getRow(edge).get("EM1_Overlap_cutoff", String.class));
+	   	assertEquals(PostAnalysisFilterType.PERCENT.toString(), emNetwork.getRow(edge).get("EM1_Overlap_cutoff", String.class));
 	   	
 	   	edge = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig) BOTTOM8_PLUS100");
 	   	assertNotNull(edge);
 	   	assertEquals(8, emNetwork.getRow(edge).get("EM1_k_intersection", Integer.class).intValue());
-	   	assertEquals(FilterType.PERCENT.toString(), emNetwork.getRow(edge).get("EM1_Overlap_cutoff", String.class));
+	   	assertEquals(PostAnalysisFilterType.PERCENT.toString(), emNetwork.getRow(edge).get("EM1_Overlap_cutoff", String.class));
 	   	
 	   	edge = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig) TOP8_PLUS100");
 	   	assertNotNull(edge);
 	   	assertEquals(8, emNetwork.getRow(edge).get("EM1_k_intersection", Integer.class).intValue());
-	   	assertEquals(FilterType.PERCENT.toString(), emNetwork.getRow(edge).get("EM1_Overlap_cutoff", String.class));
+	   	assertEquals(PostAnalysisFilterType.PERCENT.toString(), emNetwork.getRow(edge).get("EM1_Overlap_cutoff", String.class));
 	   	
 	   	edge = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig) TOP1_PLUS100");
 	   	assertNull(edge);
@@ -146,7 +148,7 @@ public class PostAnalysisCutoffTest extends BaseNetworkTest {
 	public void test_3_FilterType_Specific() throws Exception {		
 		PostAnalysisParameters.Builder builder = getBuilder();
 		
-		FilterParameters rankTest = new FilterParameters(FilterType.SPECIFIC, 25);
+		PostAnalysisFilterParameters rankTest = new PostAnalysisFilterParameters(PostAnalysisFilterType.SPECIFIC, 25);
 		builder.setRankTestParameters(rankTest);
 		
 		runPostAnalysis(emNetwork, builder);
@@ -157,17 +159,17 @@ public class PostAnalysisCutoffTest extends BaseNetworkTest {
 	   	CyEdge edge = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig) MIDDLE8_PLUS100");
 	   	assertNotNull(edge);
 	   	assertEquals(8, emNetwork.getRow(edge).get("EM1_k_intersection", Integer.class).intValue());
-	   	assertEquals(FilterType.SPECIFIC.toString(), emNetwork.getRow(edge).get("EM1_Overlap_cutoff", String.class));
+	   	assertEquals(PostAnalysisFilterType.SPECIFIC.toString(), emNetwork.getRow(edge).get("EM1_Overlap_cutoff", String.class));
 	   	
 	   	edge = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig) BOTTOM8_PLUS100");
 	   	assertNotNull(edge);
 	   	assertEquals(8, emNetwork.getRow(edge).get("EM1_k_intersection", Integer.class).intValue());
-	   	assertEquals(FilterType.SPECIFIC.toString(), emNetwork.getRow(edge).get("EM1_Overlap_cutoff", String.class));
+	   	assertEquals(PostAnalysisFilterType.SPECIFIC.toString(), emNetwork.getRow(edge).get("EM1_Overlap_cutoff", String.class));
 	   	
 	   	edge = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig) TOP8_PLUS100");
 	   	assertNotNull(edge);
 	   	assertEquals(8, emNetwork.getRow(edge).get("EM1_k_intersection", Integer.class).intValue());
-	   	assertEquals(FilterType.SPECIFIC.toString(), emNetwork.getRow(edge).get("EM1_Overlap_cutoff", String.class));
+	   	assertEquals(PostAnalysisFilterType.SPECIFIC.toString(), emNetwork.getRow(edge).get("EM1_Overlap_cutoff", String.class));
 	   	
 	   	edge = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig) TOP1_PLUS100");
 	   	assertNull(edge);

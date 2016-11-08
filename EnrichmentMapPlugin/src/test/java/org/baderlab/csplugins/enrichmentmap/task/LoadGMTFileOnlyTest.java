@@ -11,6 +11,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.parsers.GMTFileReaderTask;
 import org.cytoscape.work.TaskMonitor;
@@ -32,7 +33,7 @@ public class LoadGMTFileOnlyTest {
 		double similarityCutoff = 0.5;
 		double pvalue = 1.0;
 		double qvalue = 1.0;
-		EMCreationParameters params = new EMCreationParameters(Method.GSEA, "EM1_", SimilarityMetric.JACCARD, pvalue, qvalue, Optional.empty(), similarityCutoff, 0.5);
+		EMCreationParameters params = new EMCreationParameters(Method.GSEA, "EM1_", pvalue, qvalue, NESFilter.ALL, Optional.empty(), SimilarityMetric.JACCARD, similarityCutoff, 0.5);
 	
 		EnrichmentMap em = new EnrichmentMap("TestEM", params);
 		

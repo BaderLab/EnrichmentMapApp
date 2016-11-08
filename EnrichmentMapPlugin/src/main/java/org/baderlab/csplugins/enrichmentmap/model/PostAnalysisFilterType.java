@@ -8,7 +8,7 @@ import org.baderlab.csplugins.mannwhit.MannWhitneyUTestSided;
 /**
  * Filter type constants shown in the UI.
  */
-public enum FilterType {
+public enum PostAnalysisFilterType {
 	
 	NO_FILTER("-- no filter --", 0.0), 
 	HYPERGEOM("Hypergeometric Test", 0.05), 
@@ -25,7 +25,7 @@ public enum FilterType {
 	public final String display;
 	public final double defaultValue;
 
-	private FilterType(String display, double defaultValue) {
+	private PostAnalysisFilterType(String display, double defaultValue) {
 		this.display = display;
 		this.defaultValue = defaultValue;
 	}
@@ -58,11 +58,11 @@ public enum FilterType {
 		}
 	}
 
-	public static FilterType fromDisplayString(String val) {
+	public static PostAnalysisFilterType fromDisplayString(String val) {
 		if(OLD_MANN_WHIT_LABEL.equals(val))
 			return MANN_WHIT_TWO_SIDED;
 
-		for(FilterType metric : values()) {
+		for(PostAnalysisFilterType metric : values()) {
 			if(metric.display.equals(val)) {
 				return metric;
 			}
@@ -73,9 +73,9 @@ public enum FilterType {
 	/**
 	 * Returns a new mutable Map that contains all the default values.
 	 */
-	public static Map<FilterType,Double> createMapOfDefaults() {
-		Map<FilterType,Double> map = new HashMap<>();
-		for(FilterType type : FilterType.values()) {
+	public static Map<PostAnalysisFilterType,Double> createMapOfDefaults() {
+		Map<PostAnalysisFilterType,Double> map = new HashMap<>();
+		for(PostAnalysisFilterType type : PostAnalysisFilterType.values()) {
 			map.put(type, type.defaultValue);
 		}
 		return map;

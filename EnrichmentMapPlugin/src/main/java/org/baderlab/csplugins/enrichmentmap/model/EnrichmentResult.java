@@ -40,6 +40,14 @@ public class EnrichmentResult {
 			this.source = Optional.empty();
 	}
 
+	/**
+	 * This method is meant to be overridden in subclasses. The only reason its not
+	 * abstract is because in JUnits its convenient to just create an instance of this class.
+	 */
+	public boolean geneSetOfInterest(EnrichmentResultFilterParams params) {
+		return true;
+	}
+	
 	//Method to print out into the session file for future loads.
 	//tab delimited string with all the variables of the enrichment.
 	public String toString() {

@@ -57,8 +57,8 @@ import java.util.stream.Collectors;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
-import org.baderlab.csplugins.enrichmentmap.model.FilterParameters;
-import org.baderlab.csplugins.enrichmentmap.model.FilterType;
+import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterParameters;
+import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterType;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.GenesetSimilarity;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
@@ -285,7 +285,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 							double coeffecient = ComputeSimilarityTask.computeSimilarityCoeffecient(map.getParams(), intersection, union, sigGenes, enrGenes);
 							GenesetSimilarity comparison = new GenesetSimilarity(hub_name, geneset_name, coeffecient, interaction, intersection);
 
-							FilterType filterType = paParams.getRankTestParameters().getType();
+							PostAnalysisFilterType filterType = paParams.getRankTestParameters().getType();
 							switch(filterType) {
 								case HYPERGEOM:
 									int universeSize1 = paParams.getUniverseSize();
@@ -346,7 +346,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 
 	private boolean passesCutoff(String edge_name) {
 		GenesetSimilarity similarity = geneset_similarities.get(edge_name);
-		FilterParameters filterParams = paParams.getRankTestParameters();
+		PostAnalysisFilterParameters filterParams = paParams.getRankTestParameters();
 
 		switch(filterParams.getType()) {
 			case HYPERGEOM:
@@ -503,7 +503,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 		if(passed_cutoff)
 			current_edgerow.set(prefix + EnrichmentMapVisualStyle.CUTOFF_TYPE, paParams.getRankTestParameters().getType().display);
 
-		FilterType filterType = paParams.getRankTestParameters().getType();
+		PostAnalysisFilterType filterType = paParams.getRankTestParameters().getType();
 
 		if(filterType.isMannWhitney()) {
 			current_edgerow.set(prefix + EnrichmentMapVisualStyle.MANN_WHIT_TWOSIDED_PVALUE, genesetSimilarity.getMann_Whit_pValue_twoSided());

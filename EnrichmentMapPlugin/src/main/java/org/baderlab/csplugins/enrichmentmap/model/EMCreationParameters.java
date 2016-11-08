@@ -2,7 +2,7 @@ package org.baderlab.csplugins.enrichmentmap.model;
 
 import java.util.Optional;
 
-public class EMCreationParameters {
+public class EMCreationParameters implements EnrichmentResultFilterParams {
 
 	public static enum Method {
 		GSEA, Generic, Specialized
@@ -16,7 +16,6 @@ public class EMCreationParameters {
 		HYPER, BINOM, BOTH, EITHER
 	}
 	
-	
 	private Method method;
 	private String attributePrefix; // MKTODO this shouldn't be here
 	
@@ -24,6 +23,7 @@ public class EMCreationParameters {
 	private double pvalue;
 	private double qvaule;
 	private Optional<Integer> minExperiments;
+	private NESFilter nesFilter;
 	
 	// Edge filtering (similarity)
 	private SimilarityMetric similarityMetric;
@@ -43,12 +43,14 @@ public class EMCreationParameters {
 	
 	
 	public EMCreationParameters(Method method, String attributePrefix, 
-			SimilarityMetric similarityMetric, double pvalue,  double qvaule, Optional<Integer> minExperiments, double similarityCutoff, double combinedConstant) {
+			 double pvalue, double qvaule, NESFilter nesFilter, Optional<Integer> minExperiments,  // NODE
+			 SimilarityMetric similarityMetric, double similarityCutoff, double combinedConstant) { // EDGE
 		this.method = method;
 		this.similarityMetric = similarityMetric;
 		this.attributePrefix = attributePrefix;
 		this.pvalue = pvalue;
 		this.qvaule = qvaule;
+		this.nesFilter = nesFilter;
 		this.minExperiments = minExperiments;
 		this.similarityCutoff = similarityCutoff;
 		this.combinedConstant = combinedConstant;
@@ -67,17 +69,26 @@ public class EMCreationParameters {
 		return attributePrefix;
 	}
 
+	@Override
 	public double getPvalue() {
 		return pvalue;
 	}
 
+	@Override
 	public double getQvalue() {
 		return qvaule;
 	}
 
+	@Override
+	public NESFilter getNESFilter() {
+		return nesFilter;
+	}
+	
+	@Override
 	public Optional<Integer> getMinExperiments() {
 		return minExperiments;
 	}
+	
 	public double getSimilarityCutoff() {
 		return similarityCutoff;
 	}
@@ -114,6 +125,7 @@ public class EMCreationParameters {
 		this.greatFilter = greatFilter;
 	}
 	
+	@Override
 	public boolean isFDR() {
 		return fdr;
 	}

@@ -70,7 +70,7 @@ import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapBuildProperties;
 import org.baderlab.csplugins.enrichmentmap.actions.BuildPostAnalysisActionListener;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.model.FilterType;
+import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterType;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters.AnalysisType;
 import org.baderlab.csplugins.enrichmentmap.util.SwingUtil;
@@ -258,7 +258,7 @@ public class PostAnalysisInputPanel extends JPanel {
 		return file;
 	}
 
-	protected static Optional<Double> validateAndGetFilterValue(Number value, FilterType type, StringBuilder message) {
+	protected static Optional<Double> validateAndGetFilterValue(Number value, PostAnalysisFilterType type, StringBuilder message) {
 		boolean valid = false;
 
 		switch (type) {

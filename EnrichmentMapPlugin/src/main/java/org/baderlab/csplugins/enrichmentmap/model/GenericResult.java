@@ -43,6 +43,8 @@
 
 package org.baderlab.csplugins.enrichmentmap.model;
 
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
+
 /**
  * Created by User: risserlin Date: Jan 28, 2009 Time: 3:25:51 PM
  * <p>
@@ -129,20 +131,21 @@ public class GenericResult extends EnrichmentResult {
 	 *         enrichment fall into our gene sets of interest category (i.e. do
 	 *         these values pass the specified thresholds)
 	 */
-	public boolean geneSetOfInterest(double pvalue, double fdrqvalue, boolean useFDR) {
-		if(useFDR) {
-			if((getPvalue() <= pvalue) && (this.fdrqvalue <= fdrqvalue)) {
-				return true;
-			} else {
-				return false;
-			}
-		} else {
-			if(getPvalue() <= pvalue) {
-				return true;
-			} else {
-				return false;
-			}
-		}
+	@Override
+	public boolean geneSetOfInterest(EnrichmentResultFilterParams params) {
+		if(params.getNESFilter() == NESFilter.POSITIVE && getNES() < 0)
+			return false;
+		if(params.getNESFilter() == NESFilter.NEGATIVE && getNES() > 0)
+			return false;
+		
+		double pvalue = params.getPvalue();
+		double fdrqvalue = params.getQvalue();
+		boolean useFDR = params.isFDR();
+		
+		if(useFDR)
+			return (getPvalue() <= pvalue) && (this.fdrqvalue <= fdrqvalue);
+		else
+			return (getPvalue() <= pvalue);
 	}
 
 	//Getters and Setters

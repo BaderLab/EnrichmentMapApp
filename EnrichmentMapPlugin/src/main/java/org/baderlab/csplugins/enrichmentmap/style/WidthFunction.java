@@ -3,7 +3,7 @@ package org.baderlab.csplugins.enrichmentmap.style;
 import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Continuous;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
-import org.baderlab.csplugins.enrichmentmap.model.FilterType;
+import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterType;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -90,7 +90,7 @@ public class WidthFunction {
 			
 			if(isSignature(interaction)) {
 				String cutoffType = row.get(prefix + EnrichmentMapVisualStyle.CUTOFF_TYPE, String.class);
-				FilterType filterType = FilterType.fromDisplayString(cutoffType);
+				PostAnalysisFilterType filterType = PostAnalysisFilterType.fromDisplayString(cutoffType);
 				if(filterType == null) {
 					row.set(widthAttribute, null);
 					continue;

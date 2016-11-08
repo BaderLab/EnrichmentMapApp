@@ -34,8 +34,8 @@ import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadSignatureSetsActionListener;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.model.FilterParameters;
-import org.baderlab.csplugins.enrichmentmap.model.FilterType;
+import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterParameters;
+import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterType;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
@@ -77,14 +77,14 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel implements ListS
 	private DefaultListModel<String> selectedSigSetsModel = new DefaultListModel<>();
 
 	private JFormattedTextField filterTextField;
-	private JComboBox<FilterType> filterTypeCombo;
+	private JComboBox<PostAnalysisFilterType> filterTypeCombo;
 
 	// used for filtering
 	private int hypergomUniverseSize;
 	private Ranking mannWhitRanks;
     
 	private SetOfGeneSets signatureGenesets;
-	private final Map<FilterType, Double> savedFilterValues = FilterType.createMapOfDefaults();
+	private final Map<PostAnalysisFilterType, Double> savedFilterValues = PostAnalysisFilterType.createMapOfDefaults();
 	
 	public interface Factory {
 		PostAnalysisSignatureDiscoveryPanel create(PostAnalysisInputPanel parentPanel);
@@ -297,7 +297,7 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel implements ListS
 		filterTextField.addPropertyChangeListener("value", (PropertyChangeEvent e) -> {
 			StringBuilder message = new StringBuilder("The value you have entered is invalid.\n");
 			Number number = (Number) filterTextField.getValue();
-			FilterType filterType = getFilterType();
+			PostAnalysisFilterType filterType = getFilterType();
 
 			Optional<Double> value = PostAnalysisInputPanel.validateAndGetFilterValue(number, filterType, message);
 			savedFilterValues.put(filterType, value.orElse(filterType.defaultValue));
@@ -317,14 +317,14 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel implements ListS
 		// 3. filter by specificity, i.e looking for the signature genesets that are more specific than other genesets
 		//    for instance a drug A that targets only X and Y as opposed to drug B that targets X,y,L,M,N,O,P.
 		filterTypeCombo = new JComboBox<>();
-		filterTypeCombo.addItem(FilterType.NO_FILTER); // default
-		filterTypeCombo.addItem(FilterType.MANN_WHIT_TWO_SIDED);
-		filterTypeCombo.addItem(FilterType.MANN_WHIT_GREATER);
-		filterTypeCombo.addItem(FilterType.MANN_WHIT_LESS);
-		filterTypeCombo.addItem(FilterType.HYPERGEOM);
-		filterTypeCombo.addItem(FilterType.NUMBER);
-		filterTypeCombo.addItem(FilterType.PERCENT);
-		filterTypeCombo.addItem(FilterType.SPECIFIC);
+		filterTypeCombo.addItem(PostAnalysisFilterType.NO_FILTER); // default
+		filterTypeCombo.addItem(PostAnalysisFilterType.MANN_WHIT_TWO_SIDED);
+		filterTypeCombo.addItem(PostAnalysisFilterType.MANN_WHIT_GREATER);
+		filterTypeCombo.addItem(PostAnalysisFilterType.MANN_WHIT_LESS);
+		filterTypeCombo.addItem(PostAnalysisFilterType.HYPERGEOM);
+		filterTypeCombo.addItem(PostAnalysisFilterType.NUMBER);
+		filterTypeCombo.addItem(PostAnalysisFilterType.PERCENT);
+		filterTypeCombo.addItem(PostAnalysisFilterType.SPECIFIC);
 
 		filterTypeCombo.addActionListener(e -> {
 			updateFilterTextField();
@@ -410,9 +410,9 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel implements ListS
 	}
 
 	private void updateFilterTextField() {
-		FilterType filterType = (FilterType) filterTypeCombo.getSelectedItem();
+		PostAnalysisFilterType filterType = (PostAnalysisFilterType) filterTypeCombo.getSelectedItem();
 		filterTextField.setValue(savedFilterValues.get(filterType));
-		filterTextField.setEnabled(filterType != FilterType.NO_FILTER);
+		filterTextField.setEnabled(filterType != PostAnalysisFilterType.NO_FILTER);
 	}
     
 	void resetPanel() {
@@ -431,14 +431,14 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel implements ListS
 		setSelSigCount(0);
 
 		// Reset the filter field
-		filterTypeCombo.setSelectedItem(FilterType.NO_FILTER);
+		filterTypeCombo.setSelectedItem(PostAnalysisFilterType.NO_FILTER);
 		weightPanel.resetPanel();
 	}
     
 	private FilterMetric createFilterMetric() {
 		Number number = (Number) filterTextField.getValue();
 		double value = number.doubleValue();
-		FilterType type = getFilterType();
+		PostAnalysisFilterType type = getFilterType();
 		
 		switch(type) {
 			case NUMBER:
@@ -458,8 +458,8 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel implements ListS
 		}
 	}
 	
-	private FilterType getFilterType() {
-		return (FilterType) filterTypeCombo.getSelectedItem();
+	private PostAnalysisFilterType getFilterType() {
+		return (PostAnalysisFilterType) filterTypeCombo.getSelectedItem();
 	}
 	
 	void initialize(EnrichmentMap currentMap) {
@@ -482,7 +482,7 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel implements ListS
 		}
 		
 		Number number = (Number) filterTextField.getValue();
-		FilterParameters filterParameters = new FilterParameters(getFilterType(), number.doubleValue());
+		PostAnalysisFilterParameters filterParameters = new PostAnalysisFilterParameters(getFilterType(), number.doubleValue());
 		builder.setFilterParameters(filterParameters);
 		
 		String filePath = (String) signatureDiscoveryGMTFileNameTextField.getValue();

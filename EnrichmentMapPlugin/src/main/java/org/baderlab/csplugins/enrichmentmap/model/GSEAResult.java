@@ -43,6 +43,8 @@
 
 package org.baderlab.csplugins.enrichmentmap.model;
 
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
+
 /**
  * Class representing a specialized enrichment result generated from Gene set
  * enrichment Analysis(GSEa) GSEA enrichment result contain additional
@@ -118,10 +120,15 @@ public class GSEAResult extends EnrichmentResult {
 	//if the current enrichment result is of interest to the analysis or not
 	//returns true if the enrichment passes both pvalue and qvalue cut-offs 
 	//returns false if it doesn't pass one or both the pvalue or qvalue cut-offs
-	public boolean geneSetOfInterest(double pvalue, double fdrqvalue) {
-		return (getPvalue() <= pvalue) && (this.fdrqvalue <= fdrqvalue);
+	@Override
+	public boolean geneSetOfInterest(EnrichmentResultFilterParams params) {
+		if(params.getNESFilter() == NESFilter.POSITIVE && getNES() < 0)
+			return false;
+		if(params.getNESFilter() == NESFilter.NEGATIVE && getNES() > 0)
+			return false;
+		
+		return (getPvalue() <= params.getPvalue()) && (this.fdrqvalue <= params.getQvalue());
 	}
-
 
 	public double getES() {
 		return ES;

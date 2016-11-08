@@ -11,6 +11,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.parsers.ParseDavidEnrichmentResults;
 import org.cytoscape.work.TaskMonitor;
@@ -34,7 +35,7 @@ public class LoadDavidResultTest {
 		double similarityCutoff = 0.25;
 		double pvalue = 0.005;
 		double qvalue = 0.005; // 5.0 X 10-3
-		EMCreationParameters params = new EMCreationParameters(Method.Specialized, "EM1_", SimilarityMetric.JACCARD, pvalue, qvalue, Optional.empty(), similarityCutoff, 0.5);
+		EMCreationParameters params = new EMCreationParameters(Method.Specialized, "EM1_", pvalue, qvalue, NESFilter.ALL, Optional.empty(), SimilarityMetric.JACCARD, similarityCutoff, 0.5);
 	
 		//create an new enrichment Map
 		EnrichmentMap em = new EnrichmentMap("TestEM", params);
@@ -96,7 +97,7 @@ public class LoadDavidResultTest {
 		double similarityCutoff = 0.25;
 		double pvalue = 0.005;
 		double qvalue = 0.005; // 5.0 X 10-3
-		EMCreationParameters params = new EMCreationParameters(Method.Specialized, "EM1_", SimilarityMetric.JACCARD, pvalue, qvalue, Optional.empty(), similarityCutoff, 0.5);
+		EMCreationParameters params = new EMCreationParameters(Method.Specialized, "EM1_", pvalue, qvalue, NESFilter.ALL, Optional.empty(), SimilarityMetric.JACCARD, similarityCutoff, 0.5);
 		
 		//create an new enrichment Map
 		EnrichmentMap em = new EnrichmentMap("TestEM", params);
