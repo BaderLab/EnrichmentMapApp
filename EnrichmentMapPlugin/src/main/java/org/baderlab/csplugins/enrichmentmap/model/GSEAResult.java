@@ -122,9 +122,9 @@ public class GSEAResult extends EnrichmentResult {
 	//returns false if it doesn't pass one or both the pvalue or qvalue cut-offs
 	@Override
 	public boolean geneSetOfInterest(EnrichmentResultFilterParams params) {
-		if(params.getNESFilter() == NESFilter.POSITIVE && getNES() < 0)
+		if(params.getNESFilter() == NESFilter.POSITIVE && getNES() <= 0)
 			return false;
-		if(params.getNESFilter() == NESFilter.NEGATIVE && getNES() > 0)
+		if(params.getNESFilter() == NESFilter.NEGATIVE && getNES() >= 0)
 			return false;
 		
 		return (getPvalue() <= params.getPvalue()) && (this.fdrqvalue <= params.getQvalue());

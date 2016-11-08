@@ -85,7 +85,7 @@ public class MasterMapDialogController implements NiceDialogController {
 	
 	@Override
 	public Dimension getMinimumSize() {
-		return new Dimension(700, 500);
+		return new Dimension(750, 700);
 	}
 	
 
@@ -208,6 +208,7 @@ public class MasterMapDialogController implements NiceDialogController {
 		
 		pathTextField = new JTextField();
 		JButton browseButton = new JButton("Browse...");
+		SwingUtil.makeSmall(browseButton);
 		browseButton.addActionListener(e -> browseForRootFolder());
 		
 		panel.add(pathTextField, BorderLayout.CENTER);

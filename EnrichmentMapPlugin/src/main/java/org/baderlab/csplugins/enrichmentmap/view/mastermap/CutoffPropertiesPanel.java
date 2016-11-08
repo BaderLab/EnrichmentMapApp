@@ -153,6 +153,8 @@ public class CutoffPropertiesPanel extends JPanel {
 			minExperimentsText.setEnabled(enable);
 		});
 		
+		SwingUtil.makeSmall(pvalueText, qvalueText, shouldFilterMinCheckbox, nesFilterCombo, minExperimentsText);
+		
 		final GroupLayout layout = new GroupLayout(panel);
 		panel.setLayout(layout);
 		layout.setAutoCreateContainerGaps(true);
@@ -191,7 +193,7 @@ public class CutoffPropertiesPanel extends JPanel {
 					.addComponent(nesFilterLabel)
 					.addComponent(nesFilterCombo)
 				)
-				.addGroup(layout.createParallelGroup(Alignment.TRAILING)
+				.addGroup(layout.createParallelGroup(Alignment.CENTER)
 					.addComponent(shouldFilterMinLabel)
 					.addComponent(shouldFilterMinCheckbox)
 				)
@@ -228,6 +230,8 @@ public class CutoffPropertiesPanel extends JPanel {
 		cutoffMetricCombo.addItem(new ComboItem<>(SimilarityMetric.OVERLAP,  "Overlap"));
 		cutoffMetricCombo.addItem(new ComboItem<>(SimilarityMetric.COMBINED, "Jaccard+Overlap Combined"));
 		
+		SwingUtil.makeSmall(similarityCutoffText, cutoffMetricCombo);
+				
 		ActionListener sliderUpdate = e -> {
 			SimilarityMetric type = getSimilarityMetric();
 			similarityCutoffText.setValue(cutoffValues.get(type));

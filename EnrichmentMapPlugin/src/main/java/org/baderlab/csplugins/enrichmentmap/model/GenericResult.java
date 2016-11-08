@@ -133,9 +133,9 @@ public class GenericResult extends EnrichmentResult {
 	 */
 	@Override
 	public boolean geneSetOfInterest(EnrichmentResultFilterParams params) {
-		if(params.getNESFilter() == NESFilter.POSITIVE && getNES() < 0)
+		if(params.getNESFilter() == NESFilter.POSITIVE && getNES() <= 0)
 			return false;
-		if(params.getNESFilter() == NESFilter.NEGATIVE && getNES() > 0)
+		if(params.getNESFilter() == NESFilter.NEGATIVE && getNES() >= 0)
 			return false;
 		
 		double pvalue = params.getPvalue();
