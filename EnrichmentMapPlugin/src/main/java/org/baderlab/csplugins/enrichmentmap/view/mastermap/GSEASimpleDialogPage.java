@@ -1,26 +1,17 @@
 package org.baderlab.csplugins.enrichmentmap.view.mastermap;
 
-import static javax.swing.GroupLayout.DEFAULT_SIZE;
-import static javax.swing.GroupLayout.PREFERRED_SIZE;
-
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.FileDialog;
-import java.awt.Image;
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import javax.swing.ButtonGroup;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
@@ -34,13 +25,12 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.N
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.task.MasterMapGSEATaskFactory;
 import org.baderlab.csplugins.enrichmentmap.util.SwingUtil;
-import org.baderlab.csplugins.enrichmentmap.view.AboutDialog;
 import org.baderlab.csplugins.enrichmentmap.view.util.CheckboxData;
 import org.baderlab.csplugins.enrichmentmap.view.util.CheckboxListModel;
 import org.baderlab.csplugins.enrichmentmap.view.util.CheckboxListPanel;
-import org.baderlab.csplugins.enrichmentmap.view.util.NiceDialogCallback;
-import org.baderlab.csplugins.enrichmentmap.view.util.NiceDialogCallback.Message;
-import org.baderlab.csplugins.enrichmentmap.view.util.NiceDialogController;
+import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogCallback;
+import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogCallback.Message;
+import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogPage;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskIterator;
@@ -51,14 +41,14 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 @Singleton
-public class MasterMapDialogController implements NiceDialogController {
+public class GSEASimpleDialogPage implements CardDialogPage {
 	
 	@Inject private DialogTaskManager taskManager;
 	@Inject private CutoffPropertiesPanel cutoffPanel;
 	@Inject private LegacySupport legacySupport;
 	@Inject private MasterMapGSEATaskFactory.Factory taskFactoryFactory;
 	
-	private NiceDialogCallback callback;
+	private CardDialogCallback callback;
 	private JPanel panel;
 	
 	private JRadioButton gseaRadio;
@@ -69,25 +59,19 @@ public class MasterMapDialogController implements NiceDialogController {
 	
 	
 	@Override
-	public String getTitle() {
-		return "MasterMap";
+	public String getID() {
+		return "mastermap.GSEASimpleDialogPage";
 	}
 	
 	@Override
-	public String getSubTitle() {
-		return "Create MasterMap Network";
+	public String getPageTitle() {
+		return "Create Enrichment Map from GSEA Results";
 	}
 	
 	@Override
-	public String getFinishButtonText() {
-		return "Build";
+	public String getPageComboText() {
+		return "GSEA - Common Root Folder";
 	}
-	
-	@Override
-	public Dimension getMinimumSize() {
-		return new Dimension(750, 700);
-	}
-	
 
 	@Override
 	public void finish() {
@@ -126,37 +110,25 @@ public class MasterMapDialogController implements NiceDialogController {
 			return Method.Generic;
 	}
 	
-	
 	@Override
-	public Icon getIcon() {
-		URL iconURL = AboutDialog.class.getResource("enrichmentmap_logo.png");
-		ImageIcon original = new ImageIcon(iconURL);
-		Image scaled = original.getImage().getScaledInstance(80, 49, Image.SCALE_SMOOTH);
-		return new ImageIcon(scaled);
-	}
-	
-	@Override
-	public JPanel createBodyPanel(NiceDialogCallback callback) {
+	public JPanel createBodyPanel(CardDialogCallback callback) {
 		this.callback = callback;
 		
-		JPanel analysisPanel = createAnalysisTypePanel();
-		JPanel gseaPanel     = createGSEAPanel();
+		JPanel gseaPanel = createGSEAPanel();
 		
 		panel = new JPanel(new BorderLayout());
 		GroupLayout layout = new GroupLayout(panel);
 		panel.setLayout(layout);
-		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateContainerGaps(false);
 		layout.setAutoCreateGaps(true);
 		
 		layout.setHorizontalGroup(
 			layout.createParallelGroup()
-				.addComponent(analysisPanel)
 				.addComponent(gseaPanel)
 				.addComponent(cutoffPanel)
 		);
 		layout.setVerticalGroup(
 			layout.createSequentialGroup()
-				.addComponent(analysisPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
 				.addComponent(gseaPanel)
 				.addComponent(cutoffPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
 		);
@@ -166,43 +138,7 @@ public class MasterMapDialogController implements NiceDialogController {
 		return panel;
 	}
 
-	
-	private JPanel createAnalysisTypePanel() {
-		gseaRadio = new JRadioButton("GSEA");
-		genericRadio = new JRadioButton("Generic/g:Profiler");
-		
-		ButtonGroup buttonGroup = new ButtonGroup();
-		buttonGroup.add(gseaRadio);
-		buttonGroup.add(genericRadio);
-		gseaRadio.setSelected(true);
-		genericRadio.setEnabled(false); // Temporary
-		
-		SwingUtil.makeSmall(gseaRadio, genericRadio);
 
-		JPanel panel = new JPanel();
-		panel.setBorder(LookAndFeelUtil.createTitledBorder("Analysis Type"));
-		
-		final GroupLayout layout = new GroupLayout(panel);
-		panel.setLayout(layout);
-		layout.setAutoCreateContainerGaps(true);
-		layout.setAutoCreateGaps(true);
-	   		
-   		layout.setHorizontalGroup(layout.createSequentialGroup()
-			.addComponent(gseaRadio)
-			.addComponent(genericRadio)
-			.addGap(0, 0, Short.MAX_VALUE)
-   		);
-   		layout.setVerticalGroup(layout.createParallelGroup(Alignment.LEADING, true)
-			.addComponent(gseaRadio, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-			.addComponent(genericRadio, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-   		);
-   		
-   		if (LookAndFeelUtil.isAquaLAF())
-			panel.setOpaque(false);
-   		
-   		return panel;
-	}
-	
 	private JPanel createBrowsePanel() {
 		JPanel panel = new JPanel(new BorderLayout());
 		
@@ -216,6 +152,7 @@ public class MasterMapDialogController implements NiceDialogController {
 		panel.setOpaque(false);
 		return panel;
 	}
+	
 	
 	private JPanel createGSEAPanel() {
 		JPanel browsePanel = createBrowsePanel();
@@ -339,4 +276,6 @@ public class MasterMapDialogController implements NiceDialogController {
 		boolean hasSelected = checkboxListPanel.getModel().stream().anyMatch(cb -> cb.isSelected());
 		callback.setFinishButtonEnabled(hasSelected);
 	}
+
+	
 }

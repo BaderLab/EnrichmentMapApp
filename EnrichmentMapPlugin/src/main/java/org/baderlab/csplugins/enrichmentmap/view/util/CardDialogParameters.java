@@ -1,20 +1,15 @@
 package org.baderlab.csplugins.enrichmentmap.view.util;
 
 import java.awt.Dimension;
+import java.util.List;
 
 import javax.swing.Icon;
-import javax.swing.JPanel;
 
-public interface NiceDialogController {
+public interface CardDialogParameters {
 	
 	String getTitle();
 	
-	String getSubTitle();
-	
-	JPanel createBodyPanel(NiceDialogCallback callback);
-	
-	void finish();
-	
+	List<CardDialogPage> getPages();
 
 	default Icon getIcon() {
 		return null;
@@ -22,6 +17,10 @@ public interface NiceDialogController {
 	
 	default String getFinishButtonText() {
 		return "Finish";
+	}
+	
+	default String getPageChooserLabelText() {
+		return null;
 	}
 	
 	default Dimension getMinimumSize() {

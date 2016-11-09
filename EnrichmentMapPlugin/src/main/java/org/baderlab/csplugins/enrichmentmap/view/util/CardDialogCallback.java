@@ -2,7 +2,7 @@ package org.baderlab.csplugins.enrichmentmap.view.util;
 
 import javax.swing.JDialog;
 
-public interface NiceDialogCallback {
+public interface CardDialogCallback {
 	
 	public static enum Message {
 		INFO, WARN, ERROR

@@ -1,36 +1,50 @@
 package org.baderlab.csplugins.enrichmentmap.view.util;
 
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+
 import java.awt.BorderLayout;
+import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
+import java.util.List;
 
 import javax.swing.BorderFactory;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.Icon;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import org.baderlab.csplugins.enrichmentmap.view.util.NiceDialogCallback.Message;
+import org.baderlab.csplugins.enrichmentmap.util.SwingUtil;
+import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogCallback.Message;
 import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 
-public class NiceDialog {
+public class CardDialog {
 	
 	private JLabel subTitle;
 	private JPanel message;
 	
 	private JDialog dialog;
+	
+	private JComboBox<ComboItem<CardDialogPage>> pageChooserCombo;
+	private CardDialogPage currentPage;
+	
 	private JButton finishButton;
 	
-	private final NiceDialogController controller;
+	private final CardDialogParameters params;
 	private final IconManager iconManager;
 	
 	
-	public NiceDialog(JFrame parent, IconManager iconManager, NiceDialogController controller) {
-		if(controller == null || iconManager == null)
+	public CardDialog(JFrame parent, IconManager iconManager, CardDialogParameters params) {
+		if(params == null || iconManager == null)
 			throw new NullPointerException();
-		this.controller = controller;
+		this.params = params;
 		this.iconManager = iconManager;
 		
 		dialog = new JDialog(parent);
@@ -48,8 +62,8 @@ public class NiceDialog {
 	
 	private void createComponents() {
 		dialog.setLayout(new BorderLayout());
-		dialog.setMinimumSize(controller.getMinimumSize());
-		dialog.setTitle(controller.getTitle());
+		dialog.setMinimumSize(params.getMinimumSize());
+		dialog.setTitle(params.getTitle());
 		
 		// Create message and button panel first because 
 		// the controller can call callbacks from inside createBodyPanel()
@@ -64,18 +78,94 @@ public class NiceDialog {
 	    dialog.add(bodyPanel,    BorderLayout.CENTER);
 	    dialog.add(buttonPanel,  BorderLayout.SOUTH);
 	}
+
 	
 	private JPanel createBodyPanel() {
 	    Callback callback = new Callback();
-	    JPanel body = controller.createBodyPanel(callback);
-	    if(body == null) {
-	    	throw new NullPointerException("body panel is null");
+	    
+	    List<CardDialogPage> pages = params.getPages();
+	    if(pages == null || pages.isEmpty()) {
+	    	throw new IllegalArgumentException("must be at least one page");
 	    }
 	    
-	    JPanel bodyPanel = new JPanel(new BorderLayout());
-	    bodyPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-	    bodyPanel.add(body, BorderLayout.CENTER);
-	    return bodyPanel;
+		if(pages.size() == 1) {
+			CardDialogPage page = pages.get(0);
+	    	
+	    	JPanel body = page.createBodyPanel(callback);
+		    if(body == null) {
+		    	throw new NullPointerException("body panel is null");
+		    }
+		    
+		    JPanel bodyPanel = new JPanel(new BorderLayout());
+		    bodyPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+		    bodyPanel.add(body, BorderLayout.CENTER);
+		    
+		    currentPage = page;
+		    subTitle.setText("<html><b>" + currentPage.getPageTitle() + "</b></html>");
+		    
+		    return bodyPanel;
+	    }
+	    
+		JPanel chooserPanel = createChooserPanel(pages);
+		
+	    CardLayout cardLayout = new CardLayout();
+	    JPanel cards = new JPanel(cardLayout);
+	    
+	    for(CardDialogPage page : pages) {
+	    	JPanel pagePanel = page.createBodyPanel(callback);
+	    	cards.add(pagePanel, page.getID());
+	    }
+	    
+	    pageChooserCombo.addActionListener(e -> {
+	    	ComboItem<CardDialogPage> selected = pageChooserCombo.getItemAt(pageChooserCombo.getSelectedIndex());
+	    	CardDialogPage page = selected.getValue();
+			cardLayout.show(cards, page.getID());
+	    	subTitle.setText("<html><b>" + page.getPageTitle() + "</b></html>");
+	    	currentPage = page;
+	    });
+	    
+	    currentPage = pages.get(0);
+	    subTitle.setText("<html><b>" + currentPage.getPageTitle() + "</b></html>");
+	    
+	    JPanel body = new JPanel(new BorderLayout());
+	    body.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+	    body.add(chooserPanel, BorderLayout.NORTH);
+	    body.add(cards, BorderLayout.CENTER);
+	    return body;
+	}
+	
+	
+	private JPanel createChooserPanel(List<CardDialogPage> pages) {
+		JLabel label = new JLabel(params.getPageChooserLabelText());
+		pageChooserCombo = new JComboBox<>();
+		
+		for(CardDialogPage page : pages) {
+			pageChooserCombo.addItem(new ComboItem<>(page, page.getPageComboText()));
+		}
+
+		SwingUtil.makeSmall(label, pageChooserCombo);
+
+		JPanel panel = new JPanel();
+		final GroupLayout layout = new GroupLayout(panel);
+		panel.setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(true);
+	   		
+   		layout.setHorizontalGroup(layout.createSequentialGroup()
+   			.addComponent(label)
+			.addComponent(pageChooserCombo)
+			.addGap(0, 0, Short.MAX_VALUE)
+   		);
+   		layout.setVerticalGroup(layout.createParallelGroup(Alignment.CENTER, true)
+   			.addComponent(label)
+			.addComponent(pageChooserCombo, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+   		);
+   		
+   		panel.setBorder(LookAndFeelUtil.createPanelBorder());
+   		if (LookAndFeelUtil.isAquaLAF())
+			panel.setOpaque(false);
+   		
+   		return panel;
 	}
 	
 	
@@ -84,7 +174,7 @@ public class NiceDialog {
 		panel.setBackground(panel.getBackground().brighter());
 
 		JPanel messagePanel = new JPanel(new BorderLayout());
-		subTitle = new JLabel("<html><b>" + controller.getSubTitle() + "</b></html>");
+		subTitle = new JLabel();
 		message = new JPanel(new BorderLayout());
 		message.setOpaque(false);
 		
@@ -98,7 +188,7 @@ public class NiceDialog {
 		
 		panel.add(messagePanel, BorderLayout.CENTER);
 		
-		Icon icon = controller.getIcon();
+		Icon icon = params.getIcon();
 		if(icon != null) {
 			JPanel iconPanel = new JPanel(new BorderLayout());
 			iconPanel.add(new JLabel(icon), BorderLayout.CENTER);
@@ -154,16 +244,16 @@ public class NiceDialog {
 		buttonPanel.add(cancelButton);
 		cancelButton.addActionListener(e -> dialog.setVisible(false));
 		
-		finishButton = new JButton(controller.getFinishButtonText());
+		finishButton = new JButton(params.getFinishButtonText());
 		buttonPanel.add(finishButton);
-		finishButton.addActionListener(e -> controller.finish());
+		finishButton.addActionListener(e -> currentPage.finish());
 		
 		panel.add(buttonPanel, BorderLayout.CENTER);
 		return panel;
 	}
 	
 	
-	public class Callback implements NiceDialogCallback {
+	public class Callback implements CardDialogCallback {
 
 		@Override
 		public void setMessage(Message severity, String text) {
