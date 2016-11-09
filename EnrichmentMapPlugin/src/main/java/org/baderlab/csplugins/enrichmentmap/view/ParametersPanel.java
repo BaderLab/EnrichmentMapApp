@@ -81,7 +81,6 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.style.EnrichmentMapVisualStyle;
-import org.baderlab.csplugins.enrichmentmap.task.CreatePublicationVisualStyleTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapPanel;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParameters;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParameters.DistanceMetric;
@@ -94,10 +93,8 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.util.swing.BasicCollapsiblePanel;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.util.swing.OpenBrowser;
-import org.cytoscape.work.swing.DialogTaskManager;
 
 import com.google.inject.Inject;
-import com.google.inject.Provider;
 import com.google.inject.Singleton;
 
 /**
@@ -110,13 +107,10 @@ public class ParametersPanel extends JPanel implements CytoPanelComponent {
 
 	@Inject private OpenBrowser browser;
 	@Inject private CyApplicationManager applicationManager;
-	@Inject private DialogTaskManager taskManager;
 	@Inject private EnrichmentMapManager emManager;
 	
 	@Inject private @Nodes HeatMapPanel nodesOverlapPanel;
 	@Inject private @Edges HeatMapPanel edgesOverlapPanel;
-	
-	@Inject private Provider<CreatePublicationVisualStyleTaskFactory> visualStyleTaskFactoryProvider;
 	
 	private JCheckBox heatmapAutofocusCheckbox;
 	
@@ -204,11 +198,6 @@ public class ParametersPanel extends JPanel implements CytoPanelComponent {
 	}
 
 	private BasicCollapsiblePanel createPreferencesPanel(EnrichmentMap map) {
-		JButton togglePublicationButton = new JButton("Toggle Publication-Ready");
-		togglePublicationButton.addActionListener((ActionEvent e) -> {
-			taskManager.execute(visualStyleTaskFactoryProvider.get().createTaskIterator());
-		});
-		
 		// Begin of Code to toggle "Disable Heatmap autofocus"
 		heatmapAutofocusCheckbox = new JCheckBox(new AbstractAction("Heatmap autofocus") {
 			@Override
@@ -324,7 +313,7 @@ public class ParametersPanel extends JPanel implements CytoPanelComponent {
 
 		JLabel defDistanceMetricLabel = new JLabel("Default Distance Metric:");
 
-		makeSmall(togglePublicationButton, heatmapAutofocusCheckbox);
+		makeSmall(heatmapAutofocusCheckbox);
 		makeSmall(defSortingOrderLabel, hc, ranks, columns, nosort);
 		makeSmall(defDistanceMetricLabel, pearson, cosine, euclidean);
 		
@@ -343,7 +332,6 @@ public class ParametersPanel extends JPanel implements CytoPanelComponent {
 				)
 				.addPreferredGap(ComponentPlacement.RELATED)
 				.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
-						.addComponent(togglePublicationButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addComponent(heatmapAutofocusCheckbox, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addComponent(hc, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addComponent(ranks, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -355,7 +343,6 @@ public class ParametersPanel extends JPanel implements CytoPanelComponent {
 				)
 		);
 		layout.setVerticalGroup(layout.createSequentialGroup()
-				.addComponent(togglePublicationButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addComponent(heatmapAutofocusCheckbox, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addPreferredGap(ComponentPlacement.RELATED)
 				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)

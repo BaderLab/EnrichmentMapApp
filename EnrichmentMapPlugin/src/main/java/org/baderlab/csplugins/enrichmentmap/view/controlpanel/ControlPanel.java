@@ -1,9 +1,14 @@
 package org.baderlab.csplugins.enrichmentmap.view.controlpanel;
 
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static org.baderlab.csplugins.enrichmentmap.util.SwingUtil.makeSmall;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,6 +30,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.JToggleButton;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionListener;
 
@@ -36,6 +42,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.style.EnrichmentMapVisualStyle;
 import org.baderlab.csplugins.enrichmentmap.style.MasterMapStyleOptions;
 import org.baderlab.csplugins.enrichmentmap.style.MasterMapVisualStyleTask;
+import org.baderlab.csplugins.enrichmentmap.task.CreatePublicationVisualStyleTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.util.SwingUtil;
 import org.baderlab.csplugins.enrichmentmap.view.mastermap.MasterMapDialogAction;
 import org.baderlab.csplugins.enrichmentmap.view.util.CheckboxData;
@@ -80,6 +87,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 	@Inject private Provider<MasterMapDialogAction> masterMapDialogActionProvider;
 	@Inject private MasterMapVisualStyleTask.Factory visualStyleTaskFactory;
 	@Inject private NetworkList.Factory networkListFactory;
+	@Inject private Provider<CreatePublicationVisualStyleTaskFactory> visualStyleTaskFactoryProvider;
 	
 	private SortedListModel<CyNetworkView> networkListModel;
 	private NetworkList networkList;
@@ -214,6 +222,16 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		hGroup.addComponent(similaritySliderPanel);
 		vGroup.addComponent(similaritySliderPanel);
 		
+		JToggleButton togglePublicationButton = new JToggleButton("Publication-Ready Visual Style");
+		togglePublicationButton.addActionListener((ActionEvent e) -> {
+			dialogTaskManager.execute(visualStyleTaskFactoryProvider.get().createTaskIterator());
+		});
+		
+		makeSmall(togglePublicationButton);
+		
+		hGroup.addComponent(togglePublicationButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
+		vGroup.addComponent(togglePublicationButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
+		
 		JPanel datasetListPanel = createDataSetListPanel();
 		hGroup.addComponent(datasetListPanel);
 		vGroup.addComponent(datasetListPanel);
@@ -293,6 +311,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		JPanel panel = new JPanel(new BorderLayout());
 		panel.add(topPanel, BorderLayout.NORTH);
 		panel.add(checkboxListPanel, BorderLayout.CENTER);
+		
 		return panel;
 	}
 	
