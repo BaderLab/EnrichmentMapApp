@@ -15,7 +15,6 @@ import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
@@ -25,12 +24,12 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.N
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.task.MasterMapGSEATaskFactory;
 import org.baderlab.csplugins.enrichmentmap.util.SwingUtil;
-import org.baderlab.csplugins.enrichmentmap.view.util.CheckboxData;
-import org.baderlab.csplugins.enrichmentmap.view.util.CheckboxListModel;
-import org.baderlab.csplugins.enrichmentmap.view.util.CheckboxListPanel;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogCallback;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogCallback.Message;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogPage;
+import org.baderlab.csplugins.enrichmentmap.view.util.CheckboxData;
+import org.baderlab.csplugins.enrichmentmap.view.util.CheckboxListModel;
+import org.baderlab.csplugins.enrichmentmap.view.util.CheckboxListPanel;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskIterator;
@@ -50,9 +49,6 @@ public class GSEASimpleDialogPage implements CardDialogPage {
 	
 	private CardDialogCallback callback;
 	private JPanel panel;
-	
-	private JRadioButton gseaRadio;
-	private JRadioButton genericRadio;
 	
 	private JTextField pathTextField;
 	private CheckboxListPanel<Path> checkboxListPanel;
@@ -75,7 +71,6 @@ public class GSEASimpleDialogPage implements CardDialogPage {
 
 	@Override
 	public void finish() {
-		Method method = getMethod();
 		String prefix = legacySupport.getNextAttributePrefix();
 		SimilarityMetric similarityMetric = cutoffPanel.getSimilarityMetric();
 		double pvalue = cutoffPanel.getPValue();
@@ -86,7 +81,7 @@ public class GSEASimpleDialogPage implements CardDialogPage {
 		Optional<Integer> minExperiments = cutoffPanel.getMinimumExperiments();
 		
 		EMCreationParameters params = 
-			new EMCreationParameters(method, prefix, pvalue, qvalue, nesFilter, minExperiments, similarityMetric, cutoff, combined);
+			new EMCreationParameters(Method.GSEA, prefix, pvalue, qvalue, nesFilter, minExperiments, similarityMetric, cutoff, combined);
 		
 		List<Path> paths = checkboxListPanel.getSelectedDataItems();
 		
@@ -103,12 +98,6 @@ public class GSEASimpleDialogPage implements CardDialogPage {
 		taskManager.execute(tasks);
 	}
 	
-	public Method getMethod() {
-		if(gseaRadio.isSelected())
-			return Method.GSEA;
-		else
-			return Method.Generic;
-	}
 	
 	@Override
 	public JPanel createBodyPanel(CardDialogCallback callback) {
@@ -116,7 +105,7 @@ public class GSEASimpleDialogPage implements CardDialogPage {
 		
 		JPanel gseaPanel = createGSEAPanel();
 		
-		panel = new JPanel(new BorderLayout());
+		panel = new JPanel();
 		GroupLayout layout = new GroupLayout(panel);
 		panel.setLayout(layout);
 		layout.setAutoCreateContainerGaps(false);

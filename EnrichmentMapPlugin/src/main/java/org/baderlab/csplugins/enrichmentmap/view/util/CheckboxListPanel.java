@@ -5,6 +5,8 @@ import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import javax.swing.JButton;
@@ -22,31 +24,52 @@ public class CheckboxListPanel<T> extends JPanel {
 	private CheckboxListModel<T> checkboxListModel;
 	private JButton selectAllButton;
 	private JButton selectNoneButton;
+	private JButton addButton;
+	private JButton removeButton;
 	
+	private Optional<Consumer<CheckboxListModel<T>>> addButtonCallback = Optional.empty(); // :)
 	
 	public CheckboxListPanel() {
+		this(false);
+	}
+	
+	public CheckboxListPanel(boolean addRemoveButtons) {
 		checkboxListModel = new CheckboxListModel<>();
 		checkboxList = new CheckboxList<>(checkboxListModel);
 		
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setViewportView(checkboxList);
 		
-		JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.TRAILING));
+		
 		selectAllButton  = new JButton("Select All");
 		selectNoneButton = new JButton("Select None");
+		addButton = new JButton("Add...");
+		removeButton = new JButton("Remove");
 		
 		selectAllButton.addActionListener(e -> {
 			checkboxListModel.forEach(cb -> cb.setSelected(true));
 			checkboxList.invalidate();
 			checkboxList.repaint();
-//			updateBuildButton();
+			
 		});
 		selectNoneButton.addActionListener(e -> {
 			checkboxListModel.forEach(cb -> cb.setSelected(false));
 			checkboxList.invalidate();
 			checkboxList.repaint();
-//			updateBuildButton();
 		});
+		addButton.addActionListener(e -> {
+			addButtonCallback.ifPresent(cb -> cb.accept(checkboxListModel));
+			checkboxList.invalidate();
+			checkboxList.repaint();
+		});
+		removeButton.addActionListener(e -> {
+			checkboxList.getSelectedValuesList().forEach(checkboxListModel::removeElement);
+			checkboxList.invalidate();
+			checkboxList.repaint();
+		});
+		
+		addButton.setVisible(addRemoveButtons);
+		removeButton.setVisible(addRemoveButtons);
 		
 		selectAllButton.setEnabled(false);
 		selectNoneButton.setEnabled(false);
@@ -75,6 +98,8 @@ public class CheckboxListPanel<T> extends JPanel {
 		
 		LookAndFeelUtil.equalizeSize(selectAllButton, selectNoneButton);
 		
+		
+		JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.TRAILING));
 		buttonPanel.add(selectAllButton);
 		buttonPanel.add(selectNoneButton);
 		buttonPanel.setOpaque(false);
@@ -82,6 +107,10 @@ public class CheckboxListPanel<T> extends JPanel {
 		setLayout(new BorderLayout());
 		add(scrollPane, BorderLayout.CENTER);
 		add(buttonPanel, BorderLayout.SOUTH);
+	}
+	
+	public void setAddButtonCallback(Consumer<CheckboxListModel<T>> consumer) {
+		this.addButtonCallback = Optional.ofNullable(consumer);
 	}
 	
 	private void updateButtons() {
