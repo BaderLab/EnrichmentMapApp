@@ -1,16 +1,27 @@
 package org.baderlab.csplugins.enrichmentmap.view.controlpanel;
 
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static org.baderlab.csplugins.enrichmentmap.util.SwingUtil.makeSmall;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import javax.swing.ButtonGroup;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
+import javax.swing.GroupLayout.ParallelGroup;
+import javax.swing.GroupLayout.SequentialGroup;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -19,15 +30,19 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.JToggleButton;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionListener;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
+import org.baderlab.csplugins.enrichmentmap.style.EnrichmentMapVisualStyle;
 import org.baderlab.csplugins.enrichmentmap.style.MasterMapStyleOptions;
 import org.baderlab.csplugins.enrichmentmap.style.MasterMapVisualStyleTask;
+import org.baderlab.csplugins.enrichmentmap.task.CreatePublicationVisualStyleTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.util.SwingUtil;
 import org.baderlab.csplugins.enrichmentmap.view.mastermap.MasterMapDialogAction;
 import org.baderlab.csplugins.enrichmentmap.view.util.CheckboxData;
@@ -40,6 +55,10 @@ import org.cytoscape.application.swing.CytoPanelComponent2;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.model.CyDisposable;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
+import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
@@ -55,7 +74,8 @@ import com.google.inject.Provider;
 
 @SuppressWarnings("serial")
 public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDisposable, 
-				NetworkViewAboutToBeDestroyedListener, NetworkViewAddedListener, SetCurrentNetworkViewListener {
+				NetworkViewAboutToBeDestroyedListener, NetworkViewAddedListener, SetCurrentNetworkViewListener,
+				NetworkAboutToBeDestroyedListener {
 	
 	public static final String ID = "enrichmentmap.view.ControlPanel";
 	
@@ -67,6 +87,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 	@Inject private Provider<MasterMapDialogAction> masterMapDialogActionProvider;
 	@Inject private MasterMapVisualStyleTask.Factory visualStyleTaskFactory;
 	@Inject private NetworkList.Factory networkListFactory;
+	@Inject private Provider<CreatePublicationVisualStyleTaskFactory> visualStyleTaskFactoryProvider;
 	
 	private SortedListModel<CyNetworkView> networkListModel;
 	private NetworkList networkList;
@@ -76,6 +97,9 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 	private JRadioButton anyButton;
 	private JRadioButton allButton;
 	
+	private Map<Long, SliderBarPanel> pvalueSliderPanels = new HashMap<>();
+	private Map<Long, SliderBarPanel> qvalueSliderPanels = new HashMap<>();
+	private Map<Long, SliderBarPanel> similaritySliderPanels = new HashMap<>();
 	
 	@AfterInjection
 	private void createContents() {
@@ -83,18 +107,29 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		
 		JMenuBar menuBar = createMenuBar();
 		JPanel networkListPanel = createNetworkListPanel();
-		JPanel datasetListPanel = createDataSetListPanel();
-		
-		JButton applyButton = new JButton("Apply");
-		applyButton.addActionListener(e -> applyVisualStyle());
-		
-		JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, networkListPanel, datasetListPanel);
+		JPanel bottomPane = createBottomPane();
+		JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, networkListPanel, bottomPane);
 		
 		add(menuBar, BorderLayout.PAGE_START);
 		add(splitPane, BorderLayout.CENTER);
-		add(applyButton, BorderLayout.SOUTH);
+		
+		if (LookAndFeelUtil.isAquaLAF())
+			setOpaque(false);
 		
 		initialize();
+	}
+	
+	@Override
+	public void handleEvent(NetworkAboutToBeDestroyedEvent event) {
+		Long suid = event.getNetwork().getSUID();
+		pvalueSliderPanels.remove(suid);
+		qvalueSliderPanels.remove(suid);
+		similaritySliderPanels.remove(suid);
+	}
+	
+	@Inject
+	public void registerListener(CyServiceRegistrar registrar) {
+		registrar.registerService(this, NetworkAboutToBeDestroyedListener.class, new Properties());
 	}
 	
 	private void initialize() {
@@ -153,6 +188,100 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		return panel;
 	}
 	
+	private JPanel createBottomPane() {
+		JPanel panel = new JPanel();
+		
+		final GroupLayout layout = new GroupLayout(panel);
+		panel.setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
+		
+		ParallelGroup hGroup = layout.createParallelGroup(Alignment.CENTER, true);
+		SequentialGroup vGroup = layout.createSequentialGroup();
+		layout.setHorizontalGroup(hGroup);
+		layout.setVerticalGroup(vGroup);
+		
+		CyNetworkView networkView = applicationManager.getCurrentNetworkView();
+		EnrichmentMap map = emManager.getEnrichmentMap(networkView.getModel().getSUID());
+		EMCreationParameters params = map.getParams();
+		
+		SliderBarPanel pValueSliderPanel = createPvalueSlider(map);
+		
+		hGroup.addComponent(pValueSliderPanel);
+		vGroup.addComponent(pValueSliderPanel);
+		
+		if (params.isFDR()) {
+			SliderBarPanel qValueSliderPanel = createQvalueSlider(map);
+			
+			hGroup.addComponent(qValueSliderPanel);
+			vGroup.addComponent(qValueSliderPanel);
+		}
+		
+		SliderBarPanel similaritySliderPanel = createSimilaritySlider(map);
+		
+		hGroup.addComponent(similaritySliderPanel);
+		vGroup.addComponent(similaritySliderPanel);
+		
+		JToggleButton togglePublicationButton = new JToggleButton("Publication-Ready Visual Style");
+		togglePublicationButton.addActionListener((ActionEvent e) -> {
+			dialogTaskManager.execute(visualStyleTaskFactoryProvider.get().createTaskIterator());
+		});
+		
+		makeSmall(togglePublicationButton);
+		
+		hGroup.addComponent(togglePublicationButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
+		vGroup.addComponent(togglePublicationButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
+		
+		JPanel datasetListPanel = createDataSetListPanel();
+		hGroup.addComponent(datasetListPanel);
+		vGroup.addComponent(datasetListPanel);
+		
+		if (LookAndFeelUtil.isAquaLAF())
+			panel.setOpaque(false);
+		
+		return panel;
+	}
+	
+	private SliderBarPanel createPvalueSlider(EnrichmentMap map) {
+		return pvalueSliderPanels.computeIfAbsent(map.getNetworkID(), suid -> {
+			double pvalue_min = map.getParams().getPvalueMin();
+			double pvalue = map.getParams().getPvalue();
+			return new SliderBarPanel(
+					((pvalue_min == 1 || pvalue_min >= pvalue) ? 0 : pvalue_min), pvalue,
+					"P-value Cutoff",
+					EnrichmentMapVisualStyle.PVALUE_DATASET1,
+					EnrichmentMapVisualStyle.PVALUE_DATASET2,
+					false, pvalue,
+					applicationManager, emManager);
+		});
+	}
+	
+	private SliderBarPanel createQvalueSlider(EnrichmentMap map) {
+		return qvalueSliderPanels.computeIfAbsent(map.getNetworkID(), suid -> {
+			double qvalue_min = map.getParams().getQvalueMin();
+			double qvalue = map.getParams().getQvalue();
+			return new SliderBarPanel(
+					((qvalue_min == 1 || qvalue_min >= qvalue) ? 0 : qvalue_min), qvalue,
+					"Q-value Cutoff",
+					EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1,
+					EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2,
+					false, qvalue,
+					applicationManager, emManager);
+		});
+	}
+	
+	private SliderBarPanel createSimilaritySlider(EnrichmentMap map) {
+		return similaritySliderPanels.computeIfAbsent(map.getNetworkID(), suid -> {
+			double similarityCutOff = map.getParams().getSimilarityCutoff();
+			return new SliderBarPanel(
+					similarityCutOff, 1,
+					"Similarity Cutoff",
+					EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT,
+					EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT,
+					true, similarityCutOff,
+					applicationManager, emManager);
+		});
+	}
 	
 	private JPanel createDataSetListPanel() {
 		// Radio button panel
@@ -182,6 +311,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		JPanel panel = new JPanel(new BorderLayout());
 		panel.add(topPanel, BorderLayout.NORTH);
 		panel.add(checkboxListPanel, BorderLayout.CENTER);
+		
 		return panel;
 	}
 	

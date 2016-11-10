@@ -53,9 +53,6 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
 
 import javax.swing.AbstractAction;
 import javax.swing.ButtonGroup;
@@ -84,7 +81,6 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.style.EnrichmentMapVisualStyle;
-import org.baderlab.csplugins.enrichmentmap.task.CreatePublicationVisualStyleTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapPanel;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParameters;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParameters.DistanceMetric;
@@ -94,16 +90,11 @@ import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
-import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
-import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.BasicCollapsiblePanel;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.util.swing.OpenBrowser;
-import org.cytoscape.work.swing.DialogTaskManager;
 
 import com.google.inject.Inject;
-import com.google.inject.Provider;
 import com.google.inject.Singleton;
 
 /**
@@ -112,21 +103,14 @@ import com.google.inject.Singleton;
  */
 @Singleton
 @SuppressWarnings("serial")
-public class ParametersPanel extends JPanel implements CytoPanelComponent, NetworkAboutToBeDestroyedListener {
+public class ParametersPanel extends JPanel implements CytoPanelComponent {
 
 	@Inject private OpenBrowser browser;
-	@Inject private CyApplicationManager cyApplicationManager;
-	@Inject private DialogTaskManager taskManager;
+	@Inject private CyApplicationManager applicationManager;
 	@Inject private EnrichmentMapManager emManager;
 	
 	@Inject private @Nodes HeatMapPanel nodesOverlapPanel;
 	@Inject private @Edges HeatMapPanel edgesOverlapPanel;
-	
-	@Inject private Provider<CreatePublicationVisualStyleTaskFactory> visualStyleTaskFactoryProvider;
-	
-	private Map<Long, SliderBarPanel> pvalueSliderPanels = new HashMap<>();
-	private Map<Long, SliderBarPanel> qvalueSliderPanels = new HashMap<>();
-	private Map<Long, SliderBarPanel> similaritySliderPanels = new HashMap<>();
 	
 	private JCheckBox heatmapAutofocusCheckbox;
 	
@@ -214,13 +198,6 @@ public class ParametersPanel extends JPanel implements CytoPanelComponent, Netwo
 	}
 
 	private BasicCollapsiblePanel createPreferencesPanel(EnrichmentMap map) {
-		EMCreationParameters params = map.getParams();
-		
-		JButton togglePublicationButton = new JButton("Toggle Publication-Ready");
-		togglePublicationButton.addActionListener((ActionEvent e) -> {
-			taskManager.execute(visualStyleTaskFactoryProvider.get().createTaskIterator());
-		});
-		
 		// Begin of Code to toggle "Disable Heatmap autofocus"
 		heatmapAutofocusCheckbox = new JCheckBox(new AbstractAction("Heatmap autofocus") {
 			@Override
@@ -336,7 +313,7 @@ public class ParametersPanel extends JPanel implements CytoPanelComponent, Netwo
 
 		JLabel defDistanceMetricLabel = new JLabel("Default Distance Metric:");
 
-		makeSmall(togglePublicationButton, heatmapAutofocusCheckbox);
+		makeSmall(heatmapAutofocusCheckbox);
 		makeSmall(defSortingOrderLabel, hc, ranks, columns, nosort);
 		makeSmall(defDistanceMetricLabel, pearson, cosine, euclidean);
 		
@@ -355,7 +332,6 @@ public class ParametersPanel extends JPanel implements CytoPanelComponent, Netwo
 				)
 				.addPreferredGap(ComponentPlacement.RELATED)
 				.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
-						.addComponent(togglePublicationButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addComponent(heatmapAutofocusCheckbox, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addComponent(hc, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addComponent(ranks, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -367,7 +343,6 @@ public class ParametersPanel extends JPanel implements CytoPanelComponent, Netwo
 				)
 		);
 		layout.setVerticalGroup(layout.createSequentialGroup()
-				.addComponent(togglePublicationButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addComponent(heatmapAutofocusCheckbox, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addPreferredGap(ComponentPlacement.RELATED)
 				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
@@ -565,70 +540,7 @@ public class ParametersPanel extends JPanel implements CytoPanelComponent, Netwo
 			vGroup.addComponent(nodeLegendPanel2).addPreferredGap(ComponentPlacement.UNRELATED);
 		}
 
-		SliderBarPanel pValueSliderPanel = createPvalueSlider(map);
-		
-		hGroup.addComponent(pValueSliderPanel);
-		vGroup.addComponent(pValueSliderPanel);
-		if (params.isFDR()) {
-			SliderBarPanel qValueSliderPanel = createQvalueSlider(map);
-			
-			hGroup.addComponent(qValueSliderPanel);
-			vGroup.addComponent(qValueSliderPanel);
-		}
-		
-		SliderBarPanel similaritySliderPanel = createSimilaritySlider(map);
-		
-		hGroup.addComponent(similaritySliderPanel);
-		vGroup.addComponent(similaritySliderPanel);
-		
 		return panel;
-	}
-	
-	
-	private SliderBarPanel createPvalueSlider(EnrichmentMap map) {
-		return pvalueSliderPanels.computeIfAbsent(map.getNetworkID(), suid -> {
-			double pvalue_min = map.getParams().getPvalueMin();
-			double pvalue = map.getParams().getPvalue();
-			return new SliderBarPanel(
-					((pvalue_min == 1 || pvalue_min >= pvalue) ? 0 : pvalue_min), pvalue,
-					"P-value Cutoff", EnrichmentMapVisualStyle.PVALUE_DATASET1,
-					EnrichmentMapVisualStyle.PVALUE_DATASET2, false, pvalue,
-					cyApplicationManager, emManager);
-		});
-	}
-	
-	private SliderBarPanel createQvalueSlider(EnrichmentMap map) {
-		return qvalueSliderPanels.computeIfAbsent(map.getNetworkID(), suid -> {
-			double qvalue_min = map.getParams().getQvalueMin();
-			double qvalue = map.getParams().getQvalue();
-			return new SliderBarPanel(
-					((qvalue_min == 1 || qvalue_min >= qvalue) ? 0 : qvalue_min), qvalue,
-					"Q-value Cutoff", EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1,
-					EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2, false, qvalue,
-					cyApplicationManager, emManager);
-		});
-	}
-	
-	private SliderBarPanel createSimilaritySlider(EnrichmentMap map) {
-		return similaritySliderPanels.computeIfAbsent(map.getNetworkID(), suid -> {
-			double similarityCutOff = map.getParams().getSimilarityCutoff();
-			return new SliderBarPanel(similarityCutOff, 1, "Similarity Cutoff",
-					EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT, EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT,
-					true, similarityCutOff, cyApplicationManager, emManager);
-		});
-	}
-	
-	@Override
-	public void handleEvent(NetworkAboutToBeDestroyedEvent event) {
-		Long suid = event.getNetwork().getSUID();
-		pvalueSliderPanels.remove(suid);
-		qvalueSliderPanels.remove(suid);
-		similaritySliderPanels.remove(suid);
-	}
-	
-	@Inject
-	public void registerListener(CyServiceRegistrar registrar) {
-		registrar.registerService(this, NetworkAboutToBeDestroyedListener.class, new Properties());
 	}
 	
 	/**
@@ -672,7 +584,7 @@ public class ParametersPanel extends JPanel implements CytoPanelComponent, Netwo
 			return reportFile;
 		} else if (netwAttrName != null) { // if not: try from Network
 											// attributes:
-			CyNetwork network = cyApplicationManager.getCurrentNetwork();
+			CyNetwork network = applicationManager.getCurrentNetwork();
 			CyTable networkTable = network.getDefaultNetworkTable();
 			String tryPath = networkTable.getRow(network.getSUID()).get(netwAttrName, String.class);
 

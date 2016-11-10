@@ -41,7 +41,7 @@
 // $LastChangedBy$
 // $HeadURL$
 
-package org.baderlab.csplugins.enrichmentmap.view;
+package org.baderlab.csplugins.enrichmentmap.view.controlpanel;
 
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
@@ -64,12 +64,11 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
-/**
- * Slider bar panel - it a panel contained within legend panel
- */
 @SuppressWarnings("serial")
 public class SliderBarPanel extends JPanel {
 
+	private JLabel label = new JLabel();
+	
 	// required services
 	private CyApplicationManager applicationManager;
 	private EnrichmentMapManager emManager;
@@ -80,14 +79,14 @@ public class SliderBarPanel extends JPanel {
 	// private NumberRangeModel rangeModel;
 
 	// flag to indicate very small number
-	private boolean smallNumber = false;
+	private boolean smallNumber;
 
 	/** Precision that the slider can be adjusted to */
 	private double precision = 1000.0;
 	/** The number of decimals for given precision */
 	private int decPrecision = (int) Math.log10(precision);
 
-	private String sliderLabel;
+	private String labelText;
 
 	private boolean edgesOnly;
 	private int initialValue;
@@ -95,15 +94,14 @@ public class SliderBarPanel extends JPanel {
     /**
      * @param min - slider mininmum value
      * @param max - slider maximum value
-     * @param sliderLabel
-     * @param params - enrichment map parameters for current map
+     * @param labelText
      * @param attrib1 - attribute for dataset 1 that the slider bar is specific to (i.e. p-value or q-value)
      * @param attrib2 - attribute for dataset 2 that the slider bar is specific to (i.e. p-value or q-value)
      */
 	public SliderBarPanel(
 			double min,
 			double max,
-			String sliderLabel,
+			String labelText,
 			String attrib1,
 			String attrib2,
 			boolean edgesOnly,
@@ -138,7 +136,7 @@ public class SliderBarPanel extends JPanel {
 			this.initialValue = (int) initialValue;
 		}
 
-		this.sliderLabel = sliderLabel;
+		this.labelText = labelText;
 		this.edgesOnly = edgesOnly;
 
 		initPanel(attrib1, attrib2);
@@ -153,11 +151,10 @@ public class SliderBarPanel extends JPanel {
      * @param desiredWidth
      */
 	public void initPanel(String attrib1, String attrib2) {
-		setBorder(LookAndFeelUtil.createTitledBorder(sliderLabel));
-		
 		JSlider slider = new JSlider(JSlider.HORIZONTAL, min, max, initialValue);
         
-		slider.addChangeListener(new SliderBarActionListener(this, attrib1, attrib2, edgesOnly, applicationManager, emManager));
+		slider.addChangeListener(
+				new SliderBarActionListener(this, attrib1, attrib2, edgesOnly, applicationManager, emManager));
 		slider.setMajorTickSpacing((max - min) / 5);
 		slider.setPaintTicks(true);
 
@@ -179,17 +176,19 @@ public class SliderBarPanel extends JPanel {
 		slider.setLabelTable(labelTable);
 		slider.setPaintLabels(true);
 
-		makeSmall(slider);
+		makeSmall(label, slider);
 		
         final GroupLayout layout = new GroupLayout(this);
        	this.setLayout(layout);
    		layout.setAutoCreateContainerGaps(LookAndFeelUtil.isWinLAF());
    		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
    		
-   		layout.setHorizontalGroup(layout.createSequentialGroup()
+   		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
+   				.addComponent(label)
    				.addComponent(slider, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
    		);
-   		layout.setVerticalGroup(layout.createParallelGroup(Alignment.CENTER, false)
+   		layout.setVerticalGroup(layout.createSequentialGroup()
+   				.addComponent(label, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    				.addComponent(slider, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    		);
    		
@@ -208,20 +207,22 @@ public class SliderBarPanel extends JPanel {
 		}
 
         this.revalidate();
+        
+        setLabel(initialValue);
     }
 
-    //Getters and Setters
+    // Getters and Setters
 
     public void setLabel(int currentValue) {
     	// Show the current P/Q-value cutoff
     	final String title;
     	
 		if (smallNumber)
-			title = sliderLabel + " (" + (currentValue / Math.pow(10, (decPrecision + precision))) + ")";
+			title = labelText + " (" + (currentValue / Math.pow(10, (decPrecision + precision))) + "):";
 		else
-			title = String.format(sliderLabel + " (%." + decPrecision + "f", (currentValue / precision)) + ")";
+			title = String.format(labelText + " (%." + decPrecision + "f", (currentValue / precision)) + "):";
 
-		setBorder(LookAndFeelUtil.createTitledBorder(title));
+		label.setText(title);
 	}
 
 	public double getPrecision() {
