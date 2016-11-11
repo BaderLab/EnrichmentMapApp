@@ -20,7 +20,6 @@ import org.baderlab.csplugins.enrichmentmap.task.MasterMapNetworkTask;
 import org.baderlab.csplugins.enrichmentmap.task.VisualizeEnrichmentMapTask;
 import org.baderlab.csplugins.enrichmentmap.task.VisualizeMasterMapTask;
 import org.baderlab.csplugins.enrichmentmap.task.heatmap.UpdateHeatMapTask;
-import org.baderlab.csplugins.enrichmentmap.view.controlpanel.NetworkList;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapPanel;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapSortActionListener;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapTransformActionListener;
@@ -99,7 +98,6 @@ class FactoryModule extends AbstractModule {
 		installFactory(MasterMapGSEATaskFactory.Factory.class);
 		installFactory(MasterMapNetworkTask.Factory.class);
 		installFactory(VisualizeMasterMapTask.Factory.class);
-		installFactory(NetworkList.Factory.class);
 		installFactory(MasterMapVisualStyleTask.Factory.class);
 	}
 	

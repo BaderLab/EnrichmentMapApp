@@ -40,7 +40,6 @@ public class CheckboxListPanel<T> extends JPanel {
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setViewportView(checkboxList);
 		
-		
 		selectAllButton  = new JButton("Select All");
 		selectNoneButton = new JButton("Select None");
 		addButton = new JButton("Add...");
@@ -89,7 +88,7 @@ public class CheckboxListPanel<T> extends JPanel {
 			}
 		});
 		
-		if(isAquaLAF()) {
+		if (isAquaLAF()) {
 			selectAllButton.putClientProperty("JButton.buttonType", "gradient");
 			selectAllButton.putClientProperty("JComponent.sizeVariant", "small");
 			selectNoneButton.putClientProperty("JButton.buttonType", "gradient");
@@ -97,7 +96,6 @@ public class CheckboxListPanel<T> extends JPanel {
 		}
 		
 		LookAndFeelUtil.equalizeSize(selectAllButton, selectNoneButton);
-		
 		
 		JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.TRAILING));
 		buttonPanel.add(selectAllButton);
@@ -107,6 +105,11 @@ public class CheckboxListPanel<T> extends JPanel {
 		setLayout(new BorderLayout());
 		add(scrollPane, BorderLayout.CENTER);
 		add(buttonPanel, BorderLayout.SOUTH);
+		
+		if (LookAndFeelUtil.isAquaLAF()) {
+			setOpaque(false);
+			buttonPanel.setOpaque(false);
+		}
 	}
 	
 	public void setAddButtonCallback(Consumer<CheckboxListModel<T>> consumer) {

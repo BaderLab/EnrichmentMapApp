@@ -41,7 +41,7 @@
 // $LastChangedBy$
 // $HeadURL$
 
-package org.baderlab.csplugins.enrichmentmap.actions;
+package org.baderlab.csplugins.enrichmentmap.view.util;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -55,7 +55,6 @@ import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.style.EnrichmentMapVisualStyle;
-import org.baderlab.csplugins.enrichmentmap.view.controlpanel.SliderBarPanel;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
@@ -87,10 +86,6 @@ public class SliderBarActionListener implements ChangeListener {
 	
 	
 	/**
-	 * Class constructor
-	 *
-	 * @param panel
-	 * @param params enchrichment map parameters for current map
 	 * @param attrib1 attribute for dataset 1 that the slider bar is specific to (i.e. p-value or q-value)
 	 * @param attrib2 attribute for dataset 2 that the slider bar is specific to (i.e. p-value or q-value)
 	 */
@@ -110,24 +105,25 @@ public class SliderBarActionListener implements ChangeListener {
 	}
 
 	/**
-	 * Go through the current map and hide or unhide any nodes or edges
-	 * associated with the threshold change.
-	 *
-	 * @param e
+	 * Go through the current map and hide or unhide any nodes or edges associated with the threshold change.
 	 */
+	@Override
 	public void stateChanged(ChangeEvent e) {
-
+		JSlider source = (JSlider) e.getSource();
+		
+		if (source.getValueIsAdjusting())
+			return;
+		
+		panel.setValue(source.getValue());
+		
 		//check to see if the event is associated with only edges
-		if(onlyEdges) {
+		if (onlyEdges) {
 			hideEdgesOnly(e);
 			return;
 		}
-
-		JSlider source = (JSlider) e.getSource();
-		Double max_cutoff = source.getValue() / panel.getPrecision();
-		Double min_cutoff = source.getMinimum() / panel.getPrecision();
-
-		panel.setLabel(source.getValue());
+		
+		Double maxCutoff = source.getValue() / panel.getPrecision();
+		Double minCutoff = source.getMinimum() / panel.getPrecision();
 
 		CyNetwork network = this.applicationManager.getCurrentNetwork();
 		CyNetworkView view = this.applicationManager.getCurrentNetworkView();
@@ -198,7 +194,7 @@ public class SliderBarActionListener implements ChangeListener {
 			if(pvalue_dataset1 == null)
 				pvalue_dataset1 = 0.99;
 
-			if((pvalue_dataset1 > max_cutoff) || (pvalue_dataset1 < min_cutoff)) {
+			if((pvalue_dataset1 > maxCutoff) || (pvalue_dataset1 < minCutoff)) {
 				CyColumn col = network.getDefaultNodeTable().getColumn(prefix + attrib_dataset2);
 				if(col != null) {
 					Double pvalue_dataset2 = network.getRow(currentNode).get(prefix + attrib_dataset2, Double.class);
@@ -206,7 +202,7 @@ public class SliderBarActionListener implements ChangeListener {
 					if(pvalue_dataset2 == null)
 						pvalue_dataset2 = 0.99;
 
-					if((pvalue_dataset2 > max_cutoff) || (pvalue_dataset2 < min_cutoff)) {
+					if((pvalue_dataset2 > maxCutoff) || (pvalue_dataset2 < minCutoff)) {
 
 						List<CyEdge> edges = network.getAdjacentEdgeList(currentNode, CyEdge.Type.ANY);
 						for(CyEdge m : edges) {
@@ -243,10 +239,10 @@ public class SliderBarActionListener implements ChangeListener {
 		}
 
 		//go through all the hidden nodes to see if we need to restore any of them
-		ArrayList<HiddenNodes> unhiddenNodes = new ArrayList();
-		ArrayList<CyEdge> unhiddenEdges = new ArrayList();
+		ArrayList<HiddenNodes> unhiddenNodes = new ArrayList<>();
+		ArrayList<CyEdge> unhiddenEdges = new ArrayList<>();
 
-		for(Iterator j = hiddenNodes.iterator(); j.hasNext();) {
+		for(Iterator<HiddenNodes> j = hiddenNodes.iterator(); j.hasNext();) {
 			HiddenNodes currentHN = (HiddenNodes) j.next();
 			CyNode currentNode = currentHN.getNode();
 			Double pvalue_dataset1 = network.getRow(currentNode).get(prefix + attrib_dataset1, Double.class);
@@ -255,8 +251,7 @@ public class SliderBarActionListener implements ChangeListener {
 			if(pvalue_dataset1 == null)
 				pvalue_dataset1 = 0.99;
 
-			if((pvalue_dataset1 <= max_cutoff) && (pvalue_dataset1 >= min_cutoff)) {
-
+			if((pvalue_dataset1 <= maxCutoff) && (pvalue_dataset1 >= minCutoff)) {
 				//network.restoreNode(currentNode);
 				View<CyNode> currentNodeView = view.getNodeView(currentNode);
 				currentNodeView.setLockedValue(BasicVisualLexicon.NODE_VISIBLE, true);
@@ -264,7 +259,6 @@ public class SliderBarActionListener implements ChangeListener {
 				currentNodeView.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, currentHN.getY());
 				view.updateView();
 				unhiddenNodes.add(currentHN);
-
 			}
 			
 			CyColumn col = network.getDefaultNodeTable().getColumn(prefix + attrib_dataset2);
@@ -274,7 +268,7 @@ public class SliderBarActionListener implements ChangeListener {
 				if(pvalue_dataset2 == null)
 					pvalue_dataset2 = 0.99;
 
-				if((pvalue_dataset2 <= max_cutoff) && (pvalue_dataset2 >= min_cutoff)) {
+				if((pvalue_dataset2 <= maxCutoff) && (pvalue_dataset2 >= minCutoff)) {
 					//network.restoreNode(currentNode);
 					View<CyNode> currentNodeView = view.getNodeView(currentNode);
 					currentNodeView.setLockedValue(BasicVisualLexicon.NODE_VISIBLE, true);
@@ -303,11 +297,11 @@ public class SliderBarActionListener implements ChangeListener {
 		}
 
 		//remove the unhidden nodes from the list of hiddenNodes.
-		for(Iterator k = unhiddenNodes.iterator(); k.hasNext();)
+		for(Iterator<HiddenNodes> k = unhiddenNodes.iterator(); k.hasNext();)
 			hiddenNodes.remove(k.next());
 
 		//remove the unhidden edges from the list of hiddenEdges.
-		for(Iterator k = unhiddenEdges.iterator(); k.hasNext();)
+		for(Iterator<CyEdge> k = unhiddenEdges.iterator(); k.hasNext();)
 			hiddenEdges.remove(k.next());
 		view.updateView();
 
@@ -315,10 +309,8 @@ public class SliderBarActionListener implements ChangeListener {
 
 	public void hideEdgesOnly(ChangeEvent e) {
 		JSlider source = (JSlider) e.getSource();
-		Double min_cutoff = source.getValue() / panel.getPrecision();
-		Double max_cutoff = source.getMaximum() / panel.getPrecision();
-
-		panel.setLabel(source.getValue());
+		Double minCutoff = source.getValue() / panel.getPrecision();
+		Double maxCutoff = source.getMaximum() / panel.getPrecision();
 
 		CyNetwork network = this.applicationManager.getCurrentNetwork();
 		CyNetworkView view = this.applicationManager.getCurrentNetworkView();
@@ -345,7 +337,7 @@ public class SliderBarActionListener implements ChangeListener {
 			if(similarity_cutoff == null)
 				similarity_cutoff = 0.1;
 
-			if((similarity_cutoff > max_cutoff) || (similarity_cutoff < min_cutoff)) {
+			if((similarity_cutoff > maxCutoff) || (similarity_cutoff < minCutoff)) {
 				hiddenEdges.add(currentEdge);
 				View<CyEdge> currentView = view.getEdgeView(currentEdge);
 				currentView.setLockedValue(BasicVisualLexicon.EDGE_VISIBLE, false);
@@ -356,7 +348,7 @@ public class SliderBarActionListener implements ChangeListener {
 		//go through all the hidden edges to see if we need to restore any of them
 		ArrayList<CyEdge> unhiddenEdges = new ArrayList<CyEdge>();
 
-		for(Iterator j = hiddenEdges.iterator(); j.hasNext();) {
+		for(Iterator<CyEdge> j = hiddenEdges.iterator(); j.hasNext();) {
 			CyEdge currentEdge = (CyEdge) j.next();
 			Double similarity_curoff = network.getRow(currentEdge).get(prefix + attrib_dataset1, Double.class);
 
@@ -364,7 +356,7 @@ public class SliderBarActionListener implements ChangeListener {
 			if(similarity_curoff == null)
 				similarity_curoff = 0.1;
 
-			if((similarity_curoff <= max_cutoff) && (similarity_curoff >= min_cutoff)) {
+			if((similarity_curoff <= maxCutoff) && (similarity_curoff >= minCutoff)) {
 				//network.restoreEdge(currentEdge);
 				View<CyEdge> currentView = view.getEdgeView(currentEdge);
 				currentView.setLockedValue(BasicVisualLexicon.EDGE_VISIBLE, true);
@@ -374,7 +366,7 @@ public class SliderBarActionListener implements ChangeListener {
 		}
 
 		//remove the unhidden edges from the list of hiddenEdges.
-		for(Iterator k = unhiddenEdges.iterator(); k.hasNext();)
+		for(Iterator<CyEdge> k = unhiddenEdges.iterator(); k.hasNext();)
 			hiddenEdges.remove(k.next());
 
 		view.updateView();

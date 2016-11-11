@@ -6,11 +6,12 @@ import static org.baderlab.csplugins.enrichmentmap.util.SwingUtil.makeSmall;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -22,17 +23,12 @@ import javax.swing.GroupLayout.ParallelGroup;
 import javax.swing.GroupLayout.SequentialGroup;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
+import javax.swing.JTextField;
 import javax.swing.JToggleButton;
-import javax.swing.ListSelectionModel;
-import javax.swing.event.ListSelectionListener;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
@@ -44,27 +40,21 @@ import org.baderlab.csplugins.enrichmentmap.style.MasterMapStyleOptions;
 import org.baderlab.csplugins.enrichmentmap.style.MasterMapVisualStyleTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreatePublicationVisualStyleTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.util.SwingUtil;
-import org.baderlab.csplugins.enrichmentmap.view.mastermap.MasterMapDialogAction;
 import org.baderlab.csplugins.enrichmentmap.view.util.CheckboxData;
 import org.baderlab.csplugins.enrichmentmap.view.util.CheckboxListModel;
 import org.baderlab.csplugins.enrichmentmap.view.util.CheckboxListPanel;
+import org.baderlab.csplugins.enrichmentmap.view.util.SliderBarPanel;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.application.swing.CytoPanelComponent2;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.model.CyDisposable;
-import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
-import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
-import org.cytoscape.view.model.events.NetworkViewAddedEvent;
-import org.cytoscape.view.model.events.NetworkViewAddedListener;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.swing.DialogTaskManager;
 
@@ -73,126 +63,31 @@ import com.google.inject.Inject;
 import com.google.inject.Provider;
 
 @SuppressWarnings("serial")
-public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDisposable, 
-				NetworkViewAboutToBeDestroyedListener, NetworkViewAddedListener, SetCurrentNetworkViewListener,
-				NetworkAboutToBeDestroyedListener {
+public class ControlPanel extends JPanel
+		implements CytoPanelComponent2, CyDisposable, SetCurrentNetworkViewListener, NetworkAboutToBeDestroyedListener {
 	
 	public static final String ID = "enrichmentmap.view.ControlPanel";
 	
 	@Inject private CyApplicationManager applicationManager;
-	@Inject private CyNetworkViewManager networkViewManager;
 	@Inject private DialogTaskManager dialogTaskManager;
 	
 	@Inject private EnrichmentMapManager emManager;
-	@Inject private Provider<MasterMapDialogAction> masterMapDialogActionProvider;
+//	@Inject private Provider<MasterMapDialogAction> masterMapDialogActionProvider;
 	@Inject private MasterMapVisualStyleTask.Factory visualStyleTaskFactory;
-	@Inject private NetworkList.Factory networkListFactory;
 	@Inject private Provider<CreatePublicationVisualStyleTaskFactory> visualStyleTaskFactoryProvider;
-	
-	private SortedListModel<CyNetworkView> networkListModel;
-	private NetworkList networkList;
-	private ListSelectionListener listSelectionListener;
 	
 	private CheckboxListPanel<DataSet> checkboxListPanel;
 	private JRadioButton anyButton;
 	private JRadioButton allButton;
 	
-	private Map<Long, SliderBarPanel> pvalueSliderPanels = new HashMap<>();
+	private Map<Long, SliderBarPanel> pvalueSliderPanels = new HashMap<>(); // TODO: Delete??? Or advanced options
 	private Map<Long, SliderBarPanel> qvalueSliderPanels = new HashMap<>();
 	private Map<Long, SliderBarPanel> similaritySliderPanels = new HashMap<>();
 	
 	@AfterInjection
 	private void createContents() {
-		setLayout(new BorderLayout());
-		
-		JMenuBar menuBar = createMenuBar();
-		JPanel networkListPanel = createNetworkListPanel();
-		JPanel bottomPane = createBottomPane();
-		JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, networkListPanel, bottomPane);
-		
-		add(menuBar, BorderLayout.PAGE_START);
-		add(splitPane, BorderLayout.CENTER);
-		
-		if (LookAndFeelUtil.isAquaLAF())
-			setOpaque(false);
-		
-		initialize();
-	}
-	
-	@Override
-	public void handleEvent(NetworkAboutToBeDestroyedEvent event) {
-		Long suid = event.getNetwork().getSUID();
-		pvalueSliderPanels.remove(suid);
-		qvalueSliderPanels.remove(suid);
-		similaritySliderPanels.remove(suid);
-	}
-	
-	@Inject
-	public void registerListener(CyServiceRegistrar registrar) {
-		registrar.registerService(this, NetworkAboutToBeDestroyedListener.class, new Properties());
-	}
-	
-	private void initialize() {
-		// Initialize the newtork list
-		networkViewManager.getNetworkViewSet().stream()
-			.filter(emManager::isEnrichmentMap)
-			.forEach(networkListModel::add);
-		
-		// Initialize the dataset list
-		CyNetworkView currentView = applicationManager.getCurrentNetworkView();
-		networkList.setSelectedValue(currentView, true);
-	}
-	
-	private JMenuBar createMenuBar() {
-		JMenuBar menuBar = new JMenuBar();
-		
-		JMenu newMenu = new JMenu("New");
-		newMenu.add(new JMenuItem(masterMapDialogActionProvider.get()));
-		
-		JMenu optionsMenu = new JMenu("Options");
-		JMenu helpMenu = new JMenu("Help");
-		
-		menuBar.add(newMenu);
-		menuBar.add(optionsMenu);
-		menuBar.add(helpMenu);
-		
-		return menuBar;
-	}
-	
-	private JPanel createNetworkListPanel() {
-		networkListModel = new SortedListModel<>(
-			(nv1, nv2) -> {
-				String name1 = nv1.getModel().getRow(nv1.getModel()).get(CyNetwork.NAME, String.class);
-				String name2 = nv2.getModel().getRow(nv2.getModel()).get(CyNetwork.NAME, String.class);
-				return name1.compareToIgnoreCase(name2);
-			}
-		);
-		
-		networkList = networkListFactory.create(networkListModel);
-		networkList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		
-		listSelectionListener = e -> {
-			int index = e.getFirstIndex();
-			CyNetworkView selectedView = networkListModel.getElementAt(index);
-			applicationManager.setCurrentNetworkView(selectedView);
-		};
-		networkList.getSelectionModel().addListSelectionListener(listSelectionListener);
-		
-		JScrollPane scrollPane = new JScrollPane();
-		scrollPane.setViewportView(networkList);
-		
-		JPanel panel = new JPanel();
-		panel.setLayout(new BorderLayout());
-		panel.add(scrollPane, BorderLayout.CENTER);
-		panel.setPreferredSize(new Dimension(300, 200));
-		return panel;
-	}
-	
-	private JPanel createBottomPane() {
-		JPanel panel = new JPanel();
-		
-		final GroupLayout layout = new GroupLayout(panel);
-		panel.setLayout(layout);
+		final GroupLayout layout = new GroupLayout(this);
+		setLayout(layout);
 		layout.setAutoCreateContainerGaps(true);
 		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
 		
@@ -205,22 +100,29 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		EnrichmentMap map = emManager.getEnrichmentMap(networkView.getModel().getSUID());
 		EMCreationParameters params = map.getParams();
 		
+		List<JTextField> sliderPanelFields = new ArrayList<>();
+		
 		SliderBarPanel pValueSliderPanel = createPvalueSlider(map);
+		sliderPanelFields.add(pValueSliderPanel.getTextField());
 		
 		hGroup.addComponent(pValueSliderPanel);
 		vGroup.addComponent(pValueSliderPanel);
 		
 		if (params.isFDR()) {
 			SliderBarPanel qValueSliderPanel = createQvalueSlider(map);
+			sliderPanelFields.add(qValueSliderPanel.getTextField());
 			
 			hGroup.addComponent(qValueSliderPanel);
 			vGroup.addComponent(qValueSliderPanel);
 		}
 		
 		SliderBarPanel similaritySliderPanel = createSimilaritySlider(map);
+		sliderPanelFields.add(similaritySliderPanel.getTextField());
 		
 		hGroup.addComponent(similaritySliderPanel);
 		vGroup.addComponent(similaritySliderPanel);
+		
+		LookAndFeelUtil.equalizeSize(sliderPanelFields.toArray(new JComponent[sliderPanelFields.size()]));
 		
 		JToggleButton togglePublicationButton = new JToggleButton("Publication-Ready Visual Style");
 		togglePublicationButton.addActionListener((ActionEvent e) -> {
@@ -237,10 +139,37 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		vGroup.addComponent(datasetListPanel);
 		
 		if (LookAndFeelUtil.isAquaLAF())
-			panel.setOpaque(false);
-		
-		return panel;
+			setOpaque(false);
 	}
+	
+	@Override
+	public void handleEvent(NetworkAboutToBeDestroyedEvent event) {
+		Long suid = event.getNetwork().getSUID();
+		pvalueSliderPanels.remove(suid);
+		qvalueSliderPanels.remove(suid);
+		similaritySliderPanels.remove(suid);
+	}
+	
+	@Inject
+	public void registerListener(CyServiceRegistrar registrar) {
+		registrar.registerService(this, NetworkAboutToBeDestroyedListener.class, new Properties());
+	}
+	
+//	private JMenuBar createMenuBar() {
+//		JMenuBar menuBar = new JMenuBar();
+//		
+//		JMenu newMenu = new JMenu("New");
+//		newMenu.add(new JMenuItem(masterMapDialogActionProvider.get()));
+//		
+//		JMenu optionsMenu = new JMenu("Options");
+//		JMenu helpMenu = new JMenu("Help");
+//		
+//		menuBar.add(newMenu);
+//		menuBar.add(optionsMenu);
+//		menuBar.add(helpMenu);
+//		
+//		return menuBar;
+//	}
 	
 	private SliderBarPanel createPvalueSlider(EnrichmentMap map) {
 		return pvalueSliderPanels.computeIfAbsent(map.getNetworkID(), suid -> {
@@ -290,11 +219,14 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		anyButton = new JRadioButton("Any of");
 		allButton = new JRadioButton("All of");
 		SwingUtil.makeSmall(edgesLabel, anyButton, allButton);
+		
 		ButtonGroup buttonGroup = new ButtonGroup();
 		buttonGroup.add(anyButton);
 		buttonGroup.add(allButton);
+		
 		anyButton.setSelected(true);
 		allButton.setEnabled(false); // TEMPORARY
+		
 		radioPanel.add(edgesLabel);
 		radioPanel.add(anyButton);
 		radioPanel.add(allButton);
@@ -311,6 +243,12 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		JPanel panel = new JPanel(new BorderLayout());
 		panel.add(topPanel, BorderLayout.NORTH);
 		panel.add(checkboxListPanel, BorderLayout.CENTER);
+		
+		if (LookAndFeelUtil.isAquaLAF()) {
+			panel.setOpaque(false);
+			topPanel.setOpaque(false);
+			radioPanel.setOpaque(false);
+		}
 		
 		return panel;
 	}
@@ -334,38 +272,13 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 	}
 
 	@Override
-	public void handleEvent(NetworkViewAddedEvent e) {
-		CyNetworkView networkView = e.getNetworkView();
-		if(emManager.isEnrichmentMap(networkView.getModel().getSUID())) {
-			networkListModel.add(networkView);
-		}
-	}
-	
-	@Override
-	public void handleEvent(NetworkViewAboutToBeDestroyedEvent e) {
-		CyNetworkView networkView = e.getNetworkView();
-		networkListModel.remove(networkView);
-	}
-	
-	@Override
 	public void handleEvent(SetCurrentNetworkViewEvent e) {
-		ListSelectionModel selectionModel = networkList.getSelectionModel();
-		selectionModel.removeListSelectionListener(listSelectionListener);
 		CyNetworkView networkView = e.getNetworkView();
-		int index = networkListModel.indexOf(networkView);
-		if(index >= 0) {
-			selectionModel.clearSelection();
-			selectionModel.setSelectionInterval(index, index);
-			// The network list only contains networks that are EnrichmentMaps
-			EnrichmentMap map = emManager.getEnrichmentMap(networkView.getModel().getSUID());
+		EnrichmentMap map = emManager.getEnrichmentMap(networkView.getModel().getSUID());
+		
+		if (map != null)
 			updateDataSetList(map);
-		} else {
-			selectionModel.clearSelection();
-			// MKTODO disable the panel controls
-		}
-		selectionModel.addListSelectionListener(listSelectionListener);
 	}
-	
 	
 	@Override
 	public void dispose() {

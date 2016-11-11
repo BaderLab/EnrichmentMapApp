@@ -41,7 +41,7 @@
 // $LastChangedBy$
 // $HeadURL$
 
-package org.baderlab.csplugins.enrichmentmap.view.controlpanel;
+package org.baderlab.csplugins.enrichmentmap.view.util;
 
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
@@ -59,7 +59,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
 
-import org.baderlab.csplugins.enrichmentmap.actions.SliderBarActionListener;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -68,15 +67,15 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
 public class SliderBarPanel extends JPanel {
 
 	private JLabel label = new JLabel();
+	private JSlider slider;
+	private BoundedTextField textField;
 	
 	// required services
 	private CyApplicationManager applicationManager;
 	private EnrichmentMapManager emManager;
 
 	// min and max values for the slider
-	private int min;
-	private int max;
-	// private NumberRangeModel rangeModel;
+	private final int min, max, initialValue;
 
 	// flag to indicate very small number
 	private boolean smallNumber;
@@ -89,7 +88,6 @@ public class SliderBarPanel extends JPanel {
 	private String labelText;
 
 	private boolean edgesOnly;
-	private int initialValue;
 
     /**
      * @param min - slider mininmum value
@@ -151,8 +149,9 @@ public class SliderBarPanel extends JPanel {
      * @param desiredWidth
      */
 	public void initPanel(String attrib1, String attrib2) {
-		JSlider slider = new JSlider(JSlider.HORIZONTAL, min, max, initialValue);
-        
+		label = new JLabel(labelText);
+		
+		slider = new JSlider(JSlider.HORIZONTAL, min, max, initialValue);
 		slider.addChangeListener(
 				new SliderBarActionListener(this, attrib1, attrib2, edgesOnly, applicationManager, emManager));
 		slider.setMajorTickSpacing((max - min) / 5);
@@ -175,8 +174,13 @@ public class SliderBarPanel extends JPanel {
         
 		slider.setLabelTable(labelTable);
 		slider.setPaintLabels(true);
+		
+		textField = new BoundedTextField(initialValue, min, max, precision, decPrecision, smallNumber);
+		textField.addPropertyChangeListener("value", evt -> {
+			slider.setValue((int) evt.getNewValue());
+		});
 
-		makeSmall(label, slider);
+		makeSmall(label, slider, textField);
 		
         final GroupLayout layout = new GroupLayout(this);
        	this.setLayout(layout);
@@ -185,11 +189,17 @@ public class SliderBarPanel extends JPanel {
    		
    		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
    				.addComponent(label)
-   				.addComponent(slider, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+   				.addGroup(layout.createSequentialGroup()
+   						.addComponent(slider, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+   						.addComponent(textField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+   				)
    		);
    		layout.setVerticalGroup(layout.createSequentialGroup()
    				.addComponent(label, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-   				.addComponent(slider, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+   				.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
+   						.addComponent(slider, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+   						.addComponent(textField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+   				)
    		);
    		
    		if (LookAndFeelUtil.isAquaLAF())
@@ -207,29 +217,20 @@ public class SliderBarPanel extends JPanel {
 		}
 
         this.revalidate();
-        
-        setLabel(initialValue);
     }
 
     // Getters and Setters
-
-    public void setLabel(int currentValue) {
-    	// Show the current P/Q-value cutoff
-    	final String title;
-    	
-		if (smallNumber)
-			title = labelText + " (" + (currentValue / Math.pow(10, (decPrecision + precision))) + "):";
-		else
-			title = String.format(labelText + " (%." + decPrecision + "f", (currentValue / precision)) + "):";
-
-		label.setText(title);
+	
+	public BoundedTextField getTextField() {
+		return textField;
 	}
 
-	public double getPrecision() {
-		if (smallNumber)
-			return Math.pow(10, this.precision + this.decPrecision);
-		else
-			return precision;
+    protected void setValue(final int newValue) {
+    	textField.setValue(newValue);
+	}
+
+	protected double getPrecision() {
+		return textField.getPrecision();
 	}
 
     
