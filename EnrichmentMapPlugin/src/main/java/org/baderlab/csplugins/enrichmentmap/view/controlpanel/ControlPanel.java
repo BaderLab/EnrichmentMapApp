@@ -4,9 +4,7 @@ import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static org.baderlab.csplugins.enrichmentmap.util.SwingUtil.makeSmall;
 
-import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.net.URL;
 import java.util.ArrayList;
@@ -77,8 +75,8 @@ public class ControlPanel extends JPanel
 	@Inject private Provider<CreatePublicationVisualStyleTaskFactory> visualStyleTaskFactoryProvider;
 	
 	private CheckboxListPanel<DataSet> checkboxListPanel;
-	private JRadioButton anyButton;
-	private JRadioButton allButton;
+	private JRadioButton anyRadio;
+	private JRadioButton allRadio;
 	
 	private Map<Long, SliderBarPanel> pvalueSliderPanels = new HashMap<>(); // TODO: Delete??? Or advanced options
 	private Map<Long, SliderBarPanel> qvalueSliderPanels = new HashMap<>();
@@ -177,7 +175,7 @@ public class ControlPanel extends JPanel
 			double pvalue = map.getParams().getPvalue();
 			return new SliderBarPanel(
 					((pvalue_min == 1 || pvalue_min >= pvalue) ? 0 : pvalue_min), pvalue,
-					"P-value Cutoff",
+					"P-value Cutoff:",
 					EnrichmentMapVisualStyle.PVALUE_DATASET1,
 					EnrichmentMapVisualStyle.PVALUE_DATASET2,
 					false, pvalue,
@@ -191,7 +189,7 @@ public class ControlPanel extends JPanel
 			double qvalue = map.getParams().getQvalue();
 			return new SliderBarPanel(
 					((qvalue_min == 1 || qvalue_min >= qvalue) ? 0 : qvalue_min), qvalue,
-					"Q-value Cutoff",
+					"Q-value Cutoff:",
 					EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1,
 					EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2,
 					false, qvalue,
@@ -204,7 +202,7 @@ public class ControlPanel extends JPanel
 			double similarityCutOff = map.getParams().getSimilarityCutoff();
 			return new SliderBarPanel(
 					similarityCutOff, 1,
-					"Similarity Cutoff",
+					"Similarity Cutoff:",
 					EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT,
 					EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT,
 					true, similarityCutOff,
@@ -213,42 +211,50 @@ public class ControlPanel extends JPanel
 	}
 	
 	private JPanel createDataSetListPanel() {
-		// Radio button panel
-		JPanel radioPanel = new JPanel(new FlowLayout(FlowLayout.TRAILING));
-		JLabel edgesLabel = new JLabel("Edges:");
-		anyButton = new JRadioButton("Any of");
-		allButton = new JRadioButton("All of");
-		SwingUtil.makeSmall(edgesLabel, anyButton, allButton);
+		JLabel label1 = new JLabel("Show edges from ");
+		JLabel label2 = new JLabel(" of these data sets:");
+		
+		anyRadio = new JRadioButton("any");
+		allRadio = new JRadioButton("all");
 		
 		ButtonGroup buttonGroup = new ButtonGroup();
-		buttonGroup.add(anyButton);
-		buttonGroup.add(allButton);
+		buttonGroup.add(anyRadio);
+		buttonGroup.add(allRadio);
 		
-		anyButton.setSelected(true);
-		allButton.setEnabled(false); // TEMPORARY
+		anyRadio.setSelected(true);
+		allRadio.setEnabled(false); // TODO TEMPORARY
 		
-		radioPanel.add(edgesLabel);
-		radioPanel.add(anyButton);
-		radioPanel.add(allButton);
-		
-		// Top panel
-		JPanel topPanel = new JPanel(new BorderLayout());
-		JLabel visualizeLabel = new JLabel("Visualize Data Sets");
-		SwingUtil.makeSmall(visualizeLabel);
-		topPanel.add(visualizeLabel, BorderLayout.CENTER);
-		topPanel.add(radioPanel, BorderLayout.EAST);
+		SwingUtil.makeSmall(label1, label2, anyRadio, allRadio);
 		
 		checkboxListPanel = new CheckboxListPanel<>();
 		
-		JPanel panel = new JPanel(new BorderLayout());
-		panel.add(topPanel, BorderLayout.NORTH);
-		panel.add(checkboxListPanel, BorderLayout.CENTER);
+		final JPanel panel = new JPanel();
+		final GroupLayout layout = new GroupLayout(panel);
+       	panel.setLayout(layout);
+   		layout.setAutoCreateContainerGaps(true);
+   		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
+   		
+   		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
+   				.addGroup(layout.createSequentialGroup()
+   						.addComponent(label1, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+   						.addComponent(anyRadio, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+   						.addComponent(allRadio, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+   						.addComponent(label2, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+   				)
+   				.addComponent(checkboxListPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+   		);
+   		layout.setVerticalGroup(layout.createSequentialGroup()
+   				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+   						.addComponent(label1, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+   						.addComponent(anyRadio, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+   						.addComponent(allRadio, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+   						.addComponent(label2, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+   				)
+   				.addComponent(checkboxListPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+   		);
 		
-		if (LookAndFeelUtil.isAquaLAF()) {
+		if (LookAndFeelUtil.isAquaLAF())
 			panel.setOpaque(false);
-			topPanel.setOpaque(false);
-			radioPanel.setOpaque(false);
-		}
 		
 		return panel;
 	}
