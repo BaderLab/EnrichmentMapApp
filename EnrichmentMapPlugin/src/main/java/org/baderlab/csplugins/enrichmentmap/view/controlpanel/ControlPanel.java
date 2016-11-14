@@ -21,12 +21,15 @@ import javax.swing.GroupLayout.ParallelGroup;
 import javax.swing.GroupLayout.SequentialGroup;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
-import javax.swing.JToggleButton;
+import javax.swing.LayoutStyle.ComponentPlacement;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
@@ -77,6 +80,7 @@ public class ControlPanel extends JPanel
 	private CheckboxListPanel<DataSet> checkboxListPanel;
 	private JRadioButton anyRadio;
 	private JRadioButton allRadio;
+	private JButton resetStyleButton;
 	
 	private Map<Long, SliderBarPanel> pvalueSliderPanels = new HashMap<>(); // TODO: Delete??? Or advanced options
 	private Map<Long, SliderBarPanel> qvalueSliderPanels = new HashMap<>();
@@ -84,11 +88,49 @@ public class ControlPanel extends JPanel
 	
 	@AfterInjection
 	private void createContents() {
+		final JPanel filterPanel = createFilterPanel();
+		final JPanel stylePanel = createStylePanel();
+		
 		final GroupLayout layout = new GroupLayout(this);
 		setLayout(layout);
-		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateContainerGaps(LookAndFeelUtil.isWinLAF());
 		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
 		
+   		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
+				.addComponent(filterPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(stylePanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+   		);
+   		layout.setVerticalGroup(layout.createSequentialGroup()
+   				.addComponent(filterPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(stylePanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+   		);
+		
+		if (LookAndFeelUtil.isAquaLAF())
+			setOpaque(false);
+	}
+	
+	@Override
+	public void handleEvent(NetworkAboutToBeDestroyedEvent event) {
+		Long suid = event.getNetwork().getSUID();
+		pvalueSliderPanels.remove(suid);
+		qvalueSliderPanels.remove(suid);
+		similaritySliderPanels.remove(suid);
+	}
+	
+	@Inject
+	public void registerListener(CyServiceRegistrar registrar) {
+		registrar.registerService(this, NetworkAboutToBeDestroyedListener.class, new Properties());
+	}
+	
+	private JPanel createFilterPanel() {
+		final JPanel panel = new JPanel();
+		panel.setBorder(LookAndFeelUtil.createTitledBorder("Filter"));
+		
+		final GroupLayout layout = new GroupLayout(panel);
+       	panel.setLayout(layout);
+   		layout.setAutoCreateContainerGaps(true);
+   		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
+   		
 		ParallelGroup hGroup = layout.createParallelGroup(Alignment.CENTER, true);
 		SequentialGroup vGroup = layout.createSequentialGroup();
 		layout.setHorizontalGroup(hGroup);
@@ -122,52 +164,79 @@ public class ControlPanel extends JPanel
 		
 		LookAndFeelUtil.equalizeSize(sliderPanelFields.toArray(new JComponent[sliderPanelFields.size()]));
 		
-		JToggleButton togglePublicationButton = new JToggleButton("Publication-Ready Visual Style");
-		togglePublicationButton.addActionListener((ActionEvent e) -> {
-			dialogTaskManager.execute(visualStyleTaskFactoryProvider.get().createTaskIterator());
-		});
-		
-		makeSmall(togglePublicationButton);
-		
-		hGroup.addComponent(togglePublicationButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
-		vGroup.addComponent(togglePublicationButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
-		
 		JPanel datasetListPanel = createDataSetListPanel();
 		hGroup.addComponent(datasetListPanel);
 		vGroup.addComponent(datasetListPanel);
+   		
+		if (LookAndFeelUtil.isAquaLAF())
+			panel.setOpaque(false);
+		
+		return panel;
+	}
+	
+	private JPanel createStylePanel() {
+		JLabel chartTypeLabel = new JLabel("Chart Type:");
+		JLabel chartColorsLabel = new JLabel("Chart Colors:");
+		
+		JComboBox<String> chartTypeCombo = new JComboBox<>();
+		JComboBox<String> chartColorsCombo = new JComboBox<>();
+		
+		JCheckBox togglePublicationCheck = new JCheckBox("Publication-Ready Style");
+		togglePublicationCheck.addActionListener((ActionEvent e) -> {
+			dialogTaskManager.execute(visualStyleTaskFactoryProvider.get().createTaskIterator());
+		});
+		
+		resetStyleButton = new JButton("Reset Style");
+		resetStyleButton.addActionListener(evt -> {
+			applyVisualStyle();
+			// TODO update style fields
+		});
+		
+		makeSmall(chartTypeLabel, chartColorsLabel, chartTypeCombo, chartColorsCombo, togglePublicationCheck,
+				resetStyleButton);
+		
+		final JPanel panel = new JPanel();
+		panel.setBorder(LookAndFeelUtil.createTitledBorder("Style"));
+		
+		final GroupLayout layout = new GroupLayout(panel);
+       	panel.setLayout(layout);
+   		layout.setAutoCreateContainerGaps(true);
+   		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
+   		
+		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
+				.addGroup(layout.createSequentialGroup()
+						.addGroup(layout.createParallelGroup(Alignment.TRAILING, true)
+								.addComponent(chartTypeLabel)
+								.addComponent(chartColorsLabel)
+						)
+						.addPreferredGap(ComponentPlacement.RELATED)
+						.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
+								.addComponent(chartTypeCombo, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+								.addComponent(chartColorsCombo, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+								.addComponent(togglePublicationCheck, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+						)
+				)
+				.addComponent(resetStyleButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+						.addComponent(chartTypeLabel)
+						.addComponent(chartTypeCombo, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
+				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+						.addComponent(chartColorsLabel)
+						.addComponent(chartColorsCombo, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
+				.addComponent(togglePublicationCheck, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addPreferredGap(ComponentPlacement.UNRELATED)
+				.addComponent(resetStyleButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+		);
 		
 		if (LookAndFeelUtil.isAquaLAF())
-			setOpaque(false);
+			panel.setOpaque(false);
+		
+		return panel;
 	}
-	
-	@Override
-	public void handleEvent(NetworkAboutToBeDestroyedEvent event) {
-		Long suid = event.getNetwork().getSUID();
-		pvalueSliderPanels.remove(suid);
-		qvalueSliderPanels.remove(suid);
-		similaritySliderPanels.remove(suid);
-	}
-	
-	@Inject
-	public void registerListener(CyServiceRegistrar registrar) {
-		registrar.registerService(this, NetworkAboutToBeDestroyedListener.class, new Properties());
-	}
-	
-//	private JMenuBar createMenuBar() {
-//		JMenuBar menuBar = new JMenuBar();
-//		
-//		JMenu newMenu = new JMenu("New");
-//		newMenu.add(new JMenuItem(masterMapDialogActionProvider.get()));
-//		
-//		JMenu optionsMenu = new JMenu("Options");
-//		JMenu helpMenu = new JMenu("Help");
-//		
-//		menuBar.add(newMenu);
-//		menuBar.add(optionsMenu);
-//		menuBar.add(helpMenu);
-//		
-//		return menuBar;
-//	}
 	
 	private SliderBarPanel createPvalueSlider(EnrichmentMap map) {
 		return pvalueSliderPanels.computeIfAbsent(map.getNetworkID(), suid -> {
@@ -269,6 +338,7 @@ public class ControlPanel extends JPanel
 	}
 	
 	private void applyVisualStyle() {
+		// FIXME
 		CyNetworkView networkView = applicationManager.getCurrentNetworkView();
 		EnrichmentMap map = emManager.getEnrichmentMap(networkView.getModel().getSUID());
 		Set<DataSet> dataSets = ImmutableSet.copyOf(checkboxListPanel.getSelectedDataItems());

@@ -59,7 +59,7 @@ public class BoundedTextField extends JTextField {
 	
 	private void initUI() {
 		setHorizontalAlignment(JTextField.RIGHT);
-		setColumns(8);
+		setColumns(6);
 		
 		addActionListener(new AbstractAction() {
 			@Override
