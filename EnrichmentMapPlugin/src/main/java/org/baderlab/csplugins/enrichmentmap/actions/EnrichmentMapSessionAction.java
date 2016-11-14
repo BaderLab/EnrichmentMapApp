@@ -360,6 +360,15 @@ public class EnrichmentMapSessionAction implements SessionAboutToBeSavedListener
 				EnrichmentMap map = manager.getMap(id);
 				//only initialize objects if there is a map for this network
 				if(map != null){
+
+					if(map.getDatasets().size() > 1) {
+						HashSet<Integer> dataset1_genes = map.getDatasets().get(EnrichmentMap.DATASET1).getDatasetGenes();
+						HashSet<Integer> dataset2_genes = map.getDatasets().get(EnrichmentMap.DATASET2).getDatasetGenes();
+						
+						if(!(dataset1_genes.containsAll(dataset2_genes) && dataset2_genes.containsAll(dataset1_genes)))
+							map.getParams().setTwoDistinctExpressionSets(true);
+					}
+					
 					//initialize the Genesets (makes sure the leading edge is set correctly)
 					//Initialize the set of genesets and GSEA results that we want to compute over
 					InitializeGenesetsOfInterestTask genesets_init = new InitializeGenesetsOfInterestTask(map);
