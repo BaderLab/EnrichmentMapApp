@@ -12,6 +12,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.parsers.GMTFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.parsers.ParseEDBEnrichmentResults;
+import org.baderlab.csplugins.enrichmentmap.view.mastermap.DataSetParameters;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
@@ -28,16 +29,16 @@ public class MasterMapGSEATaskFactory extends AbstractTaskFactory {
 	
 	
 	private final EMCreationParameters params;
-	private final List<Path> gseaResultsFolders;
+	private final List<DataSetParameters> dataSets;
 	
 	
 	public static interface Factory {
-		MasterMapGSEATaskFactory create(EMCreationParameters params, List<Path> gseaResultsFolders);
+		MasterMapGSEATaskFactory create(EMCreationParameters params, List<DataSetParameters> dataSets);
 	}
 	
 	@Inject
-	public MasterMapGSEATaskFactory(@Assisted EMCreationParameters params, @Assisted List<Path> gseaResultsFolders) {
-		this.gseaResultsFolders = gseaResultsFolders;
+	public MasterMapGSEATaskFactory(@Assisted EMCreationParameters params, @Assisted List<DataSetParameters> dataSets) {
+		this.dataSets = dataSets;
 		this.params = params;
 	}
 	
@@ -45,7 +46,7 @@ public class MasterMapGSEATaskFactory extends AbstractTaskFactory {
 	@Override
 	public TaskIterator createTaskIterator() {
 		TaskIterator tasks = new TaskIterator();
-		if(gseaResultsFolders.isEmpty())
+		if(dataSets.isEmpty())
 			return tasks;
 		
 		tasks.append(new TitleTask("Building EnrichmentMap"));
@@ -53,12 +54,9 @@ public class MasterMapGSEATaskFactory extends AbstractTaskFactory {
 		String name = legacySupport.getNextAttributePrefix() + "MasterMap";
 		EnrichmentMap map = new EnrichmentMap(name, params);
 		
-		for(Path path : gseaResultsFolders) {
-			DataSetFiles files = new DataSetFiles();
-			files.setEnrichmentFileName1(path.resolve(Paths.get("edb/results.edb")).toString());
-			files.setGMTFileName(path.resolve(Paths.get("edb/gene_sets.gmt")).toString());
-			
-			String datasetName = getDatasetName(path);
+		for(DataSetParameters dataSetParameters : dataSets) {
+			DataSetFiles files = dataSetParameters.getFiles();
+			String datasetName = dataSetParameters.getName();
 			DataSet dataset = new DataSet(map, datasetName, files);
 			map.addDataSet(datasetName, dataset);
 			
@@ -115,12 +113,24 @@ public class MasterMapGSEATaskFactory extends AbstractTaskFactory {
 		return tasks;
 	}
 
-	private String getDatasetName(Path folder) {
+	public static String getDatasetNameGSEA(Path folder) {
 		String folderName = folder.getFileName().toString();
 		int dotIndex = folderName.indexOf('.');
 		if(dotIndex == -1)
 			return folderName;
 		else
 			return folderName.substring(0, dotIndex);
+	}
+	
+	public static DataSetFiles toDataSetFilesGSEA(Path path) {
+		DataSetFiles files = new DataSetFiles();
+		files.setEnrichmentFileName1(path.resolve(Paths.get("edb/results.edb")).toString());
+		files.setGMTFileName(path.resolve(Paths.get("edb/gene_sets.gmt")).toString());
+		return files;
+	}
+	
+	
+	public static DataSetParameters toDataSetParametersGSEA(Path path) {
+		return new DataSetParameters(getDatasetNameGSEA(path), toDataSetFilesGSEA(path));
 	}
 }

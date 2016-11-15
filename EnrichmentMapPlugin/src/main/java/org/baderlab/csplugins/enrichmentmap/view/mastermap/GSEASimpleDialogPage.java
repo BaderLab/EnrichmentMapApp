@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.swing.GroupLayout;
@@ -84,8 +85,9 @@ public class GSEASimpleDialogPage implements CardDialogPage {
 			new EMCreationParameters(Method.GSEA, prefix, pvalue, qvalue, nesFilter, minExperiments, similarityMetric, cutoff, combined);
 		
 		List<Path> paths = checkboxListPanel.getSelectedDataItems();
+		List<DataSetParameters> dataSets = paths.stream().map(MasterMapGSEATaskFactory::toDataSetParametersGSEA).collect(Collectors.toList());
 		
-		MasterMapGSEATaskFactory taskFactory = taskFactoryFactory.create(params, paths);
+		MasterMapGSEATaskFactory taskFactory = taskFactoryFactory.create(params, dataSets);
 		TaskIterator tasks = taskFactory.createTaskIterator();
 		
 		// Close this dialog after the progress dialog finishes normally

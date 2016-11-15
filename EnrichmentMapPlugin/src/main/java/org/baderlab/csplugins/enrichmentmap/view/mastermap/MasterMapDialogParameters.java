@@ -19,13 +19,14 @@ import com.google.inject.Provider;
 public class MasterMapDialogParameters implements CardDialogParameters {
 
 	@Inject private Provider<GSEASimpleDialogPage> gseaSimpleDialogPageProvider;
-	@Inject private Provider<GenericOneExpressionPage> genericSimmpleDialogPageProvider;
+//	@Inject private Provider<GenericOneExpressionPage> genericSimmpleDialogPageProvider;
+	@Inject private Provider<MixedFormatDialogPage> mixedFormatDialogPage;
 	
 	@Override
 	public List<CardDialogPage> getPages() {
 		return Arrays.asList(
 			gseaSimpleDialogPageProvider.get(),
-			genericSimmpleDialogPageProvider.get()
+			mixedFormatDialogPage.get()
 		);
 	}
 	
