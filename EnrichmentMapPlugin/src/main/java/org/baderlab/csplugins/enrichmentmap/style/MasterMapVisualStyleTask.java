@@ -2,8 +2,11 @@ package org.baderlab.csplugins.enrichmentmap.style;
 
 import java.util.Optional;
 
+import javax.annotation.Nullable;
+
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
@@ -22,21 +25,23 @@ public class MasterMapVisualStyleTask extends AbstractTask {
 	@Inject private Provider<MasterMapVisualStyle> masterMapVisualStyleProvider;
 	
 	private final MasterMapStyleOptions options;
-	
+	private final CyCustomGraphics2<?> chart;
 	
 	public interface Factory {
-		MasterMapVisualStyleTask create(MasterMapStyleOptions options);
+		MasterMapVisualStyleTask create(MasterMapStyleOptions options, CyCustomGraphics2<?> chart);
 	}
 	
 	@Inject
-	public MasterMapVisualStyleTask(@Assisted MasterMapStyleOptions options) {
+	public MasterMapVisualStyleTask(@Assisted MasterMapStyleOptions options,
+			@Assisted @Nullable CyCustomGraphics2<?> chart) {
 		this.options = options;
+		this.chart = chart;
 	}
 	
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		taskMonitor.setTitle("Apply Visual Style");
-		applyVisualStyle();
+		applyVisualStyle(chart);
 //		updateChartValues();
 		taskMonitor.setStatusMessage("");
 	}
@@ -78,17 +83,16 @@ public class MasterMapVisualStyleTask extends AbstractTask {
 //			return (-1) * (1 - result.getPvalue());
 //	}
 	
-	private void applyVisualStyle() {
+	private void applyVisualStyle(CyCustomGraphics2<?> chart) {
 		VisualStyle vs = getVisualStyle(options.getEnrichmentMap());
 		
 		MasterMapVisualStyle masterMapStyle = masterMapVisualStyleProvider.get();
-		masterMapStyle.applyVisualStyle(vs, options);
+		masterMapStyle.updateProperties(vs, options, chart);
 		
 		CyNetworkView view = options.getNetworkView();
 		vs.apply(view);
 		view.updateView();
 	}
-	
 	
 	private VisualStyle getVisualStyle(EnrichmentMap map) {
 		String prefix = map.getParams().getAttributePrefix();

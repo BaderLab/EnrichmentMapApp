@@ -2,8 +2,14 @@ package org.baderlab.csplugins.enrichmentmap.view.controlpanel;
 
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static org.baderlab.csplugins.enrichmentmap.style.ColorScheme.CONTRASTING;
+import static org.baderlab.csplugins.enrichmentmap.style.ColorScheme.CUSTOM;
+import static org.baderlab.csplugins.enrichmentmap.style.ColorScheme.MODULATED;
+import static org.baderlab.csplugins.enrichmentmap.style.ColorScheme.RAINBOW;
+import static org.baderlab.csplugins.enrichmentmap.style.ColorScheme.RANDOM;
 import static org.baderlab.csplugins.enrichmentmap.util.SwingUtil.makeSmall;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.net.URL;
@@ -13,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.swing.ButtonGroup;
 import javax.swing.GroupLayout;
@@ -36,8 +43,13 @@ import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
+import org.baderlab.csplugins.enrichmentmap.style.ChartFactoryManager;
+import org.baderlab.csplugins.enrichmentmap.style.ChartType;
+import org.baderlab.csplugins.enrichmentmap.style.ColorGradient;
+import org.baderlab.csplugins.enrichmentmap.style.ColorScheme;
 import org.baderlab.csplugins.enrichmentmap.style.EnrichmentMapVisualStyle;
 import org.baderlab.csplugins.enrichmentmap.style.MasterMapStyleOptions;
+import org.baderlab.csplugins.enrichmentmap.style.MasterMapVisualStyle;
 import org.baderlab.csplugins.enrichmentmap.style.MasterMapVisualStyleTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreatePublicationVisualStyleTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.util.SwingUtil;
@@ -56,6 +68,10 @@ import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
+import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
+import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.swing.DialogTaskManager;
 
@@ -69,22 +85,97 @@ public class ControlPanel extends JPanel
 	
 	public static final String ID = "enrichmentmap.view.ControlPanel";
 	
+	private final ColorScheme[] REGULAR_COLOR_SCHEMES = new ColorScheme[] {
+			CONTRASTING, MODULATED, RAINBOW, RANDOM, CUSTOM
+	};
+	private final ColorScheme[] HEAT_STRIP_COLOR_SCHEMES;
+	
 	@Inject private CyApplicationManager applicationManager;
 	@Inject private DialogTaskManager dialogTaskManager;
+	@Inject private CyColumnIdentifierFactory columnIdFactory;
 	
 	@Inject private EnrichmentMapManager emManager;
 //	@Inject private Provider<MasterMapDialogAction> masterMapDialogActionProvider;
 	@Inject private MasterMapVisualStyleTask.Factory visualStyleTaskFactory;
 	@Inject private Provider<CreatePublicationVisualStyleTaskFactory> visualStyleTaskFactoryProvider;
+	@Inject private ChartFactoryManager chartFactoryManager;
+	
+	private JLabel chartTypeLabel = new JLabel("Chart Type:");
+	private JLabel chartColorsLabel = new JLabel("Chart Colors:");
+	private JLabel dsFilterLabel1 = new JLabel("Show edges from ");
+	private JLabel dsFilterLabel2 = new JLabel(" of these data sets:");
 	
 	private CheckboxListPanel<DataSet> checkboxListPanel;
 	private JRadioButton anyRadio;
 	private JRadioButton allRadio;
+	private JCheckBox togglePublicationCheck;
 	private JButton resetStyleButton;
 	
-	private Map<Long, SliderBarPanel> pvalueSliderPanels = new HashMap<>(); // TODO: Delete??? Or advanced options
-	private Map<Long, SliderBarPanel> qvalueSliderPanels = new HashMap<>();
-	private Map<Long, SliderBarPanel> similaritySliderPanels = new HashMap<>();
+	private Map<Long/*CyNetwork SUID*/, SliderBarPanel> pvalueSliderPanels = new HashMap<>(); // TODO: Delete??? Or advanced options
+	private Map<Long/*CyNetwork SUID*/, SliderBarPanel> qvalueSliderPanels = new HashMap<>();
+	private Map<Long/*CyNetwork SUID*/, SliderBarPanel> similaritySliderPanels = new HashMap<>();
+	
+	private JComboBox<ChartType> chartTypeCombo = new JComboBox<>();
+	private JComboBox<ColorScheme> chartColorsCombo = new JComboBox<>();
+	
+	public ControlPanel() {
+		// Init colors
+		final List<ColorScheme> heatStripSchemeList = new ArrayList<>();
+		
+		for (final ColorGradient cg : ColorGradient.values()) {
+			if (cg.getColors().size() == 3)
+				heatStripSchemeList.add(new ColorScheme(cg));
+		}
+		
+		heatStripSchemeList.add(CUSTOM);
+		
+		HEAT_STRIP_COLOR_SCHEMES = heatStripSchemeList.toArray(new ColorScheme[heatStripSchemeList.size()]);
+	}
+	
+	@Override
+	public void handleEvent(SetCurrentNetworkViewEvent e) {
+		update(e.getNetworkView());
+	}
+	
+	@Override
+	public void handleEvent(NetworkAboutToBeDestroyedEvent event) {
+		Long suid = event.getNetwork().getSUID();
+		pvalueSliderPanels.remove(suid);
+		qvalueSliderPanels.remove(suid);
+		similaritySliderPanels.remove(suid);
+	}
+	
+	@Override
+	public void dispose() {
+		
+	}
+
+	@Override
+	public CytoPanelName getCytoPanelName() {
+		return CytoPanelName.WEST;
+	}
+
+	@Override
+	public String getTitle() {
+		return "EnrichmentMap";
+	}
+
+	@Override
+	public Icon getIcon() {
+		String path = "org/baderlab/csplugins/enrichmentmap/view/enrichmentmap_logo_notext_small.png";
+		URL url = getClass().getClassLoader().getResource(path);
+		return url == null ? null : new ImageIcon(url);
+	}
+
+	@Override
+	public String getIdentifier() {
+		return ID;
+	}
+
+	@Override
+	public Component getComponent() {
+		return this;
+	}
 	
 	@AfterInjection
 	private void createContents() {
@@ -107,14 +198,8 @@ public class ControlPanel extends JPanel
 		
 		if (LookAndFeelUtil.isAquaLAF())
 			setOpaque(false);
-	}
-	
-	@Override
-	public void handleEvent(NetworkAboutToBeDestroyedEvent event) {
-		Long suid = event.getNetwork().getSUID();
-		pvalueSliderPanels.remove(suid);
-		qvalueSliderPanels.remove(suid);
-		similaritySliderPanels.remove(suid);
+		
+		update(applicationManager.getCurrentNetworkView());
 	}
 	
 	@Inject
@@ -136,8 +221,8 @@ public class ControlPanel extends JPanel
 		layout.setHorizontalGroup(hGroup);
 		layout.setVerticalGroup(vGroup);
 		
-		CyNetworkView networkView = applicationManager.getCurrentNetworkView();
-		EnrichmentMap map = emManager.getEnrichmentMap(networkView.getModel().getSUID());
+		CyNetworkView netView = applicationManager.getCurrentNetworkView();
+		EnrichmentMap map = emManager.getEnrichmentMap(netView.getModel().getSUID());
 		EMCreationParameters params = map.getParams();
 		
 		List<JTextField> sliderPanelFields = new ArrayList<>();
@@ -175,13 +260,14 @@ public class ControlPanel extends JPanel
 	}
 	
 	private JPanel createStylePanel() {
-		JLabel chartTypeLabel = new JLabel("Chart Type:");
-		JLabel chartColorsLabel = new JLabel("Chart Colors:");
+		for (ChartType chart : ChartType.values())
+			chartTypeCombo.addItem(chart);
 		
-		JComboBox<String> chartTypeCombo = new JComboBox<>();
-		JComboBox<String> chartColorsCombo = new JComboBox<>();
+		chartTypeCombo.addActionListener(evt -> {
+			updateChartColorsCombo();
+		});
 		
-		JCheckBox togglePublicationCheck = new JCheckBox("Publication-Ready Style");
+		togglePublicationCheck = new JCheckBox("Publication-Ready Style");
 		togglePublicationCheck.addActionListener((ActionEvent e) -> {
 			dialogTaskManager.execute(visualStyleTaskFactoryProvider.get().createTaskIterator());
 		});
@@ -280,9 +366,6 @@ public class ControlPanel extends JPanel
 	}
 	
 	private JPanel createDataSetListPanel() {
-		JLabel label1 = new JLabel("Show edges from ");
-		JLabel label2 = new JLabel(" of these data sets:");
-		
 		anyRadio = new JRadioButton("any");
 		allRadio = new JRadioButton("all");
 		
@@ -293,7 +376,7 @@ public class ControlPanel extends JPanel
 		anyRadio.setSelected(true);
 		allRadio.setEnabled(false); // TODO TEMPORARY
 		
-		SwingUtil.makeSmall(label1, label2, anyRadio, allRadio);
+		SwingUtil.makeSmall(dsFilterLabel1, dsFilterLabel2, anyRadio, allRadio);
 		
 		checkboxListPanel = new CheckboxListPanel<>();
 		
@@ -305,19 +388,19 @@ public class ControlPanel extends JPanel
    		
    		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
    				.addGroup(layout.createSequentialGroup()
-   						.addComponent(label1, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+   						.addComponent(dsFilterLabel1, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    						.addComponent(anyRadio, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    						.addComponent(allRadio, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-   						.addComponent(label2, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+   						.addComponent(dsFilterLabel2, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    				)
    				.addComponent(checkboxListPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
    		);
    		layout.setVerticalGroup(layout.createSequentialGroup()
    				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
-   						.addComponent(label1, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+   						.addComponent(dsFilterLabel1, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    						.addComponent(anyRadio, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    						.addComponent(allRadio, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-   						.addComponent(label2, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+   						.addComponent(dsFilterLabel2, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    				)
    				.addComponent(checkboxListPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
    		);
@@ -328,64 +411,120 @@ public class ControlPanel extends JPanel
 		return panel;
 	}
 	
-	private void updateDataSetList(EnrichmentMap map) {
-		// MKTODO remember the datasets that were selected
-		CheckboxListModel<DataSet> model = checkboxListPanel.getModel();
-		model.clear();
-		for(DataSet dataset : map.getDatasetList()) {
-			model.addElement(new CheckboxData<>(dataset.getName(), dataset));
-		}
-	}
-	
 	private void applyVisualStyle() {
 		// FIXME
-		CyNetworkView networkView = applicationManager.getCurrentNetworkView();
-		EnrichmentMap map = emManager.getEnrichmentMap(networkView.getModel().getSUID());
+		CyNetworkView netView = applicationManager.getCurrentNetworkView();
+		EnrichmentMap map = emManager.getEnrichmentMap(netView.getModel().getSUID());
 		Set<DataSet> dataSets = ImmutableSet.copyOf(checkboxListPanel.getSelectedDataItems());
-		MasterMapStyleOptions options = new MasterMapStyleOptions(networkView, map, dataSets::contains);
-		MasterMapVisualStyleTask task = visualStyleTaskFactory.create(options);
+		MasterMapStyleOptions options = new MasterMapStyleOptions(netView, map, dataSets::contains);
+		MasterMapVisualStyleTask task = visualStyleTaskFactory.create(options, getChart(options));
 		dialogTaskManager.execute(new TaskIterator(task));
 	}
 
-	@Override
-	public void handleEvent(SetCurrentNetworkViewEvent e) {
-		CyNetworkView networkView = e.getNetworkView();
-		EnrichmentMap map = emManager.getEnrichmentMap(networkView.getModel().getSUID());
+	private CyCustomGraphics2<?> getChart(MasterMapStyleOptions options) {
+		CyCustomGraphics2<?> chart = null;
+		ChartType type = (ChartType) chartTypeCombo.getSelectedItem();
 		
-		if (map != null)
-			updateDataSetList(map);
+		if (type != null) {
+			// TODO move to another class
+			ColorScheme colorScheme = (ColorScheme) chartColorsCombo.getSelectedItem();
+			
+			List<CyColumnIdentifier> columns = 
+					options.getDataSets().stream()
+					.map(ds -> MasterMapVisualStyle.NODE_COLOURING.with(ds.getName()))  // column name
+					.map(columnIdFactory::createColumnIdentifier)  // column id
+					.collect(Collectors.toList());
+			
+			Map<String, Object> props = new HashMap<>(type.getProperties());
+			props.put("cy_colorScheme", colorScheme.getKey());
+			props.put("cy_dataColumns", columns);
+			
+			try {
+				CyCustomGraphics2Factory<?> factory = chartFactoryManager.getChartFactory(type.getId());
+				
+				if (factory != null)
+					chart = factory.getInstance(props);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		
+		return chart;
 	}
 	
-	@Override
-	public void dispose() {
+	private List<Color> getColors(final ColorScheme scheme, final Map<String, List<Double>> data) {
+		List<Color> colors = null;
 		
+		if (scheme != null && data != null && !data.isEmpty()) {
+			int nColors = 0;
+			
+			for (final List<Double> values : data.values()) {
+				if (values != null)
+					nColors = Math.max(nColors, values.size());
+			}
+			
+			colors = scheme.getColors(nColors);
+		}
+		
+		return colors;
 	}
-
-	@Override
-	public CytoPanelName getCytoPanelName() {
-		return CytoPanelName.WEST;
+	
+	private void update(CyNetworkView netView) {
+		Long netId = netView != null ? netView.getModel().getSUID() : null;
+		EnrichmentMap map = netId != null ? emManager.getEnrichmentMap(netId) : null;
+		
+		boolean enabled = map != null;
+		
+		chartTypeLabel.setEnabled(enabled);
+		chartColorsLabel.setEnabled(enabled);
+		dsFilterLabel1.setEnabled(enabled);
+		dsFilterLabel2.setEnabled(enabled);
+		
+		checkboxListPanel.setEnabled(enabled);
+		anyRadio.setEnabled(enabled);
+//		allRadio.setEnabled(enabled); TODO
+		chartTypeCombo.setEnabled(enabled);
+		chartColorsCombo.setEnabled(enabled);
+		togglePublicationCheck.setEnabled(enabled);
+		resetStyleButton.setEnabled(enabled);
+		
+		pvalueSliderPanels.forEach((id, p) -> p.setEnabled(id.equals(netId)));
+		qvalueSliderPanels.forEach((id, p) -> p.setEnabled(id.equals(netId)));
+		similaritySliderPanels.forEach((id, p) -> p.setEnabled(id.equals(netId)));
+		
+		updateDataSetList(netView);
+		updateChartColorsCombo();
 	}
-
-	@Override
-	public String getTitle() {
-		return "EnrichmentMap";
+	
+	private void updateDataSetList(CyNetworkView networkView) {
+		// MKTODO remember the datasets that were selected
+		CheckboxListModel<DataSet> model = checkboxListPanel.getModel();
+		model.clear();
+		
+		EnrichmentMap map = emManager.getEnrichmentMap(networkView.getModel().getSUID());
+		
+		if (map != null) {
+			for (DataSet dataset : map.getDatasetList())
+				model.addElement(new CheckboxData<>(dataset.getName(), dataset));
+		}
 	}
-
-	@Override
-	public Icon getIcon() {
-		String path = "org/baderlab/csplugins/enrichmentmap/view/enrichmentmap_logo_notext_small.png";
-		URL url = getClass().getClassLoader().getResource(path);
-		return url == null ? null : new ImageIcon(url);
+	
+	private void updateChartColorsCombo() {
+		ChartType type = (ChartType) chartTypeCombo.getSelectedItem();
+		ColorScheme[] colorSchemes = null;
+		
+		switch (type) {
+			case HEAT_STRIPS:
+				colorSchemes = HEAT_STRIP_COLOR_SCHEMES;
+				break;
+			default:
+				colorSchemes = REGULAR_COLOR_SCHEMES;
+				break;
+		}
+		
+		chartColorsCombo.removeAllItems();
+		
+		for (ColorScheme scheme : colorSchemes)
+			chartColorsCombo.addItem(scheme);
 	}
-
-	@Override
-	public String getIdentifier() {
-		return ID;
-	}
-
-	@Override
-	public Component getComponent() {
-		return this;
-	}
-
 }

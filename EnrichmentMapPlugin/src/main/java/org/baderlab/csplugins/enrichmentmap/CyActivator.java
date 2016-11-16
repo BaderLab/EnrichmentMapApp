@@ -15,7 +15,7 @@ import org.baderlab.csplugins.enrichmentmap.actions.ShowEdgeWidthDialogAction;
 import org.baderlab.csplugins.enrichmentmap.commands.BuildEnrichmentMapTuneableTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.commands.EnrichmentMapGSEACommandHandlerTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
-import org.baderlab.csplugins.enrichmentmap.style.CustomChartListener;
+import org.baderlab.csplugins.enrichmentmap.style.ChartFactoryManager;
 import org.baderlab.csplugins.enrichmentmap.view.mastermap.MasterMapDialogAction;
 import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
@@ -38,12 +38,11 @@ import com.google.inject.Guice;
 import com.google.inject.Injector; 
 
 
-
 public class CyActivator extends AbstractCyActivator {
 
 	public static final String APP_NAME = "EnrichmentMap";
 	
-	
+	@Override
 	public void start(BundleContext bc) {
 		ServiceReference ref = bc.getServiceReference(CySwingApplication.class.getName());
 		if(ref == null) {
@@ -77,8 +76,8 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, sessionAction, SessionLoadedListener.class, new Properties());
 
 		// chart listener
-		CustomChartListener chartListener = injector.getInstance(CustomChartListener.class);
-		registerServiceListener(bc, chartListener, "addFactory", "removeFactory", CyCustomGraphics2Factory.class);
+		ChartFactoryManager chartFactoryManager = injector.getInstance(ChartFactoryManager.class);
+		registerServiceListener(bc, chartFactoryManager, "addFactory", "removeFactory", CyCustomGraphics2Factory.class);
 		
 		// commands
 		TaskFactory buildCommandTask = injector.getInstance(BuildEnrichmentMapTuneableTaskFactory.class);

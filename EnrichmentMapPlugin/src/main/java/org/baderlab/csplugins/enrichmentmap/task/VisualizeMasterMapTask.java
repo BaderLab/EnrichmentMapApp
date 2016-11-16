@@ -27,7 +27,6 @@ public class VisualizeMasterMapTask extends AbstractTask {
 	@Inject private MasterMapVisualStyleTask.Factory masterMapVisualStyleTaskFactory;
 	
 	private final EnrichmentMap map;
-	
 
 	public interface Factory {
 		VisualizeMasterMapTask create(EnrichmentMap map);
@@ -53,11 +52,13 @@ public class VisualizeMasterMapTask extends AbstractTask {
 		
 		//apply force directed layout
 		CyLayoutAlgorithm layout = layoutManager.getLayout("force-directed");
-		if(layout == null)
+		
+		if (layout == null)
 			layout = layoutManager.getDefaultLayout();
 		
-		Task styleTask = masterMapVisualStyleTaskFactory.create(new MasterMapStyleOptions(view, map));
-		TaskIterator layoutTasks = layout.createTaskIterator(view, layout.createLayoutContext(), CyLayoutAlgorithm.ALL_NODE_VIEWS, null);
+		Task styleTask = masterMapVisualStyleTaskFactory.create(new MasterMapStyleOptions(view, map), null);
+		TaskIterator layoutTasks = layout.createTaskIterator(view, layout.createLayoutContext(),
+				CyLayoutAlgorithm.ALL_NODE_VIEWS, null);
 		
 		TaskIterator moreTasks = new TaskIterator();
 		moreTasks.append(styleTask);

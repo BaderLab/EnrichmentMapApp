@@ -225,6 +225,15 @@ public class SliderBarPanel extends JPanel {
 		return textField;
 	}
 
+	@Override
+	public void setEnabled(boolean enabled) {
+		super.setEnabled(enabled);
+		
+		label.setEnabled(enabled);
+		slider.setEnabled(enabled);
+		textField.setEnabled(enabled);
+	}
+	
     protected void setValue(final int newValue) {
     	textField.setValue(newValue);
 	}

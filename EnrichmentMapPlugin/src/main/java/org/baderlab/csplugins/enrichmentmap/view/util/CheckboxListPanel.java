@@ -117,7 +117,7 @@ public class CheckboxListPanel<T> extends JPanel {
 	}
 	
 	private void updateButtons() {
-		boolean enabled = !checkboxListModel.isEmpty();
+		boolean enabled = isEnabled() && !checkboxListModel.isEmpty();
 		selectAllButton.setEnabled(enabled);
 		selectNoneButton.setEnabled(enabled);
 	}
@@ -126,11 +126,18 @@ public class CheckboxListPanel<T> extends JPanel {
 		return checkboxListModel;
 	}
 	
-	
 	public List<T> getSelectedDataItems() {
 		return checkboxListModel.stream()
 				.filter(CheckboxData::isSelected)
 				.map(CheckboxData::getData)
 				.collect(Collectors.toList());
+	}
+	
+	@Override
+	public void setEnabled(boolean enabled) {
+		super.setEnabled(enabled);
+		
+		checkboxList.setEnabled(enabled);
+		updateButtons();
 	}
 }
