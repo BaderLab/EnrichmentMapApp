@@ -19,6 +19,7 @@ import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogCallback;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogPage;
 import org.baderlab.csplugins.enrichmentmap.view.util.CheckboxData;
 import org.baderlab.csplugins.enrichmentmap.view.util.CheckboxListPanel;
+import org.baderlab.csplugins.enrichmentmap.view.util.FileBrowser;
 import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -83,8 +84,8 @@ public class GenericOneExpressionPage implements CardDialogPage {
 		JButton gmtBrowseButton = new JButton("Browse...");
 		JButton expBrowseButton = new JButton("Browse...");
 		
-		gmtBrowseButton.addActionListener(e -> browse(gmtPathText, true));
-		expBrowseButton.addActionListener(e -> browse(expPathText, false));
+		gmtBrowseButton.addActionListener(e -> FileBrowser.browseGMT(fileUtil, callback.getDialogFrame()));
+		expBrowseButton.addActionListener(e -> FileBrowser.browseExpression(fileUtil, callback.getDialogFrame()));
 		
 		SwingUtil.makeSmall(gmtLabel, extLabel, gmtPathText, expPathText, gmtBrowseButton, expBrowseButton);
 		
@@ -127,26 +128,6 @@ public class GenericOneExpressionPage implements CardDialogPage {
 			);
 		
 		return panel;
-	}
-	
-	
-	private void browse(JTextField textField, boolean forGMT) {
-		List<FileChooserFilter> filters;
-		String title;
-		if(forGMT) {
-			title = "GMT Files";
-			filters = Arrays.asList(new FileChooserFilter("gmt Files", "gmt")); 
-		} else {
-			title = "Expression Files";
-			FileChooserFilter gct = new FileChooserFilter("gct Files", "gct");          
-	        FileChooserFilter rnk = new FileChooserFilter("rnk Files", "rnk");
-	        FileChooserFilter txt = new FileChooserFilter("txt Files", "txt");
-	        filters = Arrays.asList(gct, rnk, txt);
-		}
-		
-		File file = fileUtil.getFile(callback.getDialogFrame(), title, FileUtil.LOAD, filters);
-		if(file != null)
-			textField.setText(file.getPath());
 	}
 	
 	
