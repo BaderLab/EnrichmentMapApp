@@ -12,8 +12,14 @@ import java.util.Set;
  */
 
 public class DataSet implements Comparable<DataSet> {
+	
+	public static enum Method {
+		GSEA, Generic, Specialized
+	}
+	
 	//name of Dataset
 	private String name;
+	private Method method;
 
 	// The set of enrichments
 	//An enrichment result can either be an Generic or GSEA result.
@@ -39,9 +45,10 @@ public class DataSet implements Comparable<DataSet> {
 	//The list of files associated with this Dataset
 	private DataSetFiles datasetFiles;
 
-	public DataSet(EnrichmentMap map, String name, DataSetFiles files) {
+	public DataSet(EnrichmentMap map, String name, Method method, DataSetFiles files) {
 		this.map = map;
 		this.name = name;
+		this.method = method;
 		this.datasetGenes = new HashSet<>();
 
 		this.setofgenesets = new SetOfGeneSets();
@@ -80,7 +87,15 @@ public class DataSet implements Comparable<DataSet> {
 	public void setName(String name) {
 		this.name = name;
 	}
+	
+	public Method getMethod() {
+		return method;
+	}
 
+	public void setMethod(Method method) {
+		this.method = method;
+	}
+	
 	public SetOfEnrichmentResults getEnrichments() {
 		return enrichments;
 	}

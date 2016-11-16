@@ -55,7 +55,7 @@ public class MasterMapGSEATaskFactory extends AbstractTaskFactory {
 		for(DataSetParameters dataSetParameters : dataSets) {
 			DataSetFiles files = dataSetParameters.getFiles();
 			String datasetName = dataSetParameters.getName();
-			DataSet dataset = new DataSet(map, datasetName, files);
+			DataSet dataset = new DataSet(map, datasetName, dataSetParameters.getMethod(), files);
 			map.addDataSet(datasetName, dataset);
 			
 			// Load GMT File

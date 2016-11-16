@@ -22,7 +22,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
-import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.Method;
+import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
@@ -115,7 +115,7 @@ public class MasterMapNetworkTask extends AbstractTask {
 				EnrichmentResult result = enrichmentResults.get(genesetName);
 				CyRow row = network.getRow(node);
 				
-				if(map.getParams().getMethod() == Method.GSEA)
+				if(dataset.getMethod() == Method.GSEA)
 					setGSEAResultNodeAttributes(row, dataset.getName(), (GSEAResult) result);
 				else
 					throw new UnsupportedOperationException("Generic not ready yet, stay tuned");

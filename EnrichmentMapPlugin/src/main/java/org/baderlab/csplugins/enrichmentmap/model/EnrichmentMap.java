@@ -14,7 +14,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.Method;
+import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -97,7 +97,7 @@ public class EnrichmentMap {
 
 		//rank files - dataset1 
 		if(!isNullOrEmpty(files.getRankedFile())) {
-			if(params.getMethod() == Method.GSEA) {
+			if(dataset.getMethod() == Method.GSEA) {
 				dataset.getExpressionSets().createNewRanking(Ranking.GSEARanking);
 				dataset.getExpressionSets().getRanksByName(Ranking.GSEARanking).setFilename(files.getRankedFile());
 			} else {
@@ -124,8 +124,8 @@ public class EnrichmentMap {
 				}
 			}
 		}
-		if(params.getMethod() == Method.Specialized)
-			return true;
+//		if(params.getMethod() == Method.Specialized)
+//			return true;
 		return false;
 	}
 

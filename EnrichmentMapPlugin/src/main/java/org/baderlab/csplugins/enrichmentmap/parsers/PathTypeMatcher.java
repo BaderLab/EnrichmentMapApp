@@ -21,6 +21,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
+import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.view.mastermap.DataSetParameters;
 
@@ -97,7 +98,7 @@ public class PathTypeMatcher {
 			});
 			
 			String name = getDatasetNameGeneric(enrichment.getFileName());
-			dataSets.add(new DataSetParameters(name, files));
+			dataSets.add(new DataSetParameters(name, Method.Generic, files));
 		}
 		
 		return dataSets;
@@ -314,7 +315,7 @@ public class PathTypeMatcher {
 	
 	
 	public static DataSetParameters toDataSetParametersGSEA(Path path) {
-		return new DataSetParameters(getDatasetNameGSEA(path), toDataSetFilesGSEA(path));
+		return new DataSetParameters(getDatasetNameGSEA(path), Method.GSEA, toDataSetFilesGSEA(path));
 	}
 	
 }

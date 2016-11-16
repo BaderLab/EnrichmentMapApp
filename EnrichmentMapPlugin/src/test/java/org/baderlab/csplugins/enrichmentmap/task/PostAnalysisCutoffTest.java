@@ -10,9 +10,9 @@ import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.PropertyManager;
 import org.baderlab.csplugins.enrichmentmap.TestUtils;
+import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
-import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
@@ -63,7 +63,7 @@ public class PostAnalysisCutoffTest extends BaseNetworkTest {
 	
 	@Test
 	public void _setup(PropertyManager pm, CyApplicationManager applicationManager, CyNetworkManager networkManager) {
-		EMCreationParameters params = new EMCreationParameters(Method.Generic, "EM1_", 
+		EMCreationParameters params = new EMCreationParameters("EM1_", 
 				pm.getDefaultPvalue(), pm.getDefaultQvalue(), NESFilter.ALL, Optional.empty(), 
 				SimilarityMetric.JACCARD, pm.getDefaultJaccardCutOff(), pm.getDefaultCombinedConstant());
 		
@@ -73,7 +73,7 @@ public class PostAnalysisCutoffTest extends BaseNetworkTest {
 		dataset1files.setEnrichmentFileName1(PATH + "fakeEnrichments.txt");
 		dataset1files.setRankedFile(PATH + "FakeRank.rnk");  
 		
-	    buildEnrichmentMap(params, dataset1files, LegacySupport.DATASET1);
+	    buildEnrichmentMap(params, dataset1files, Method.Generic, LegacySupport.DATASET1);
 	    
 	    // Assert the network is as expected
 	   	Set<CyNetwork> networks = networkManager.getNetworkSet();

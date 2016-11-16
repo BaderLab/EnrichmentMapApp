@@ -75,7 +75,6 @@ import javax.swing.SwingUtilities;
 import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Edges;
 import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Nodes;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
-import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
@@ -135,34 +134,35 @@ public class ParametersPanel extends JPanel implements CytoPanelComponent {
 		JButton openReport2Button = new JButton("Open GSEA-report Dataset 2");
 		openReport2Button.setVisible(false);
 		
-		if (params.getMethod() == Method.GSEA) {
-			final String reportFileDataset1 = resolveGseaReportFilePath(map, 1);
-			final String reportFileDataset2 = resolveGseaReportFilePath(map, 2);
-
-			if (!(reportFileDataset1 == null)) {
-				openReport1Button.setVisible(true);
-				openReport1Button.addActionListener((ActionEvent evt) -> {
-					browser.openURL("file://" + reportFileDataset1);
-				});
-				// Disable button if we can't read the file:
-				if (!new File(reportFileDataset1).canRead()) {
-					openReport1Button.setEnabled(false);
-					openReport1Button.setToolTipText("Report file not found: " + reportFileDataset1);
-				}
-			}
-			
-			if (!(reportFileDataset2 == null)) {
-				openReport2Button.setVisible(true);
-				openReport2Button.addActionListener((ActionEvent evt) -> {
-					browser.openURL("file://" + reportFileDataset2);
-				});
-				// Disable button if we can't read the file:
-				if (!(new File(reportFileDataset2)).canRead()) {
-					openReport2Button.setEnabled(false);
-					openReport2Button.setToolTipText("Report file not found: " + reportFileDataset2);
-				}
-			}
-		}
+		// MKTODO fix this... or aren't we getting rid of this panel in favor of the new ControlPanel?
+//		if (params.getMethod() == Method.GSEA) {
+//			final String reportFileDataset1 = resolveGseaReportFilePath(map, 1);
+//			final String reportFileDataset2 = resolveGseaReportFilePath(map, 2);
+//
+//			if (!(reportFileDataset1 == null)) {
+//				openReport1Button.setVisible(true);
+//				openReport1Button.addActionListener((ActionEvent evt) -> {
+//					browser.openURL("file://" + reportFileDataset1);
+//				});
+//				// Disable button if we can't read the file:
+//				if (!new File(reportFileDataset1).canRead()) {
+//					openReport1Button.setEnabled(false);
+//					openReport1Button.setToolTipText("Report file not found: " + reportFileDataset1);
+//				}
+//			}
+//			
+//			if (!(reportFileDataset2 == null)) {
+//				openReport2Button.setVisible(true);
+//				openReport2Button.addActionListener((ActionEvent evt) -> {
+//					browser.openURL("file://" + reportFileDataset2);
+//				});
+//				// Disable button if we can't read the file:
+//				if (!(new File(reportFileDataset2)).canRead()) {
+//					openReport2Button.setEnabled(false);
+//					openReport2Button.setToolTipText("Report file not found: " + reportFileDataset2);
+//				}
+//			}
+//		}
 		
 		makeSmall(openReport1Button, openReport2Button);
 		

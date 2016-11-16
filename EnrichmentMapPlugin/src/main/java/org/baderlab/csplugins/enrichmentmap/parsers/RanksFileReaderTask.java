@@ -54,12 +54,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.Method;
-import org.baderlab.csplugins.enrichmentmap.util.NullTaskMonitor;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.Rank;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
+import org.baderlab.csplugins.enrichmentmap.util.NullTaskMonitor;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
@@ -209,9 +209,7 @@ public class RanksFileReaderTask extends AbstractTask {
 				continue;
 			}
 
-			if((tokens.length == 5)
-					|| (dataset.getMap().getParams().getMethod() == Method.GSEA
-							&& !loadFromHeatmap))
+			if((tokens.length == 5) || (dataset.getMethod() == Method.GSEA && !loadFromHeatmap))
 				gseaDefinedRanks = true;
 
 			//add score to array of scores
@@ -231,7 +229,7 @@ public class RanksFileReaderTask extends AbstractTask {
 				// based on the order of the scores.
 				// Making the assumption that all rank files loaded for GSEA results from EM input panel are leading
 				// edge compatible files.
-				if((tokens.length == 5) || (dataset.getMap().getParams().getMethod() == Method.GSEA && !loadFromHeatmap)) {
+				if((tokens.length == 5) || (dataset.getMethod() == Method.GSEA && !loadFromHeatmap)) {
 					current_ranking = new Rank(name, score, nScores);
 				} else {
 					current_ranking = new Rank(name, score);

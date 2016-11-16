@@ -6,9 +6,9 @@ import static org.mockito.Mockito.mock;
 import java.util.Optional;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
-import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
@@ -38,13 +38,13 @@ public class LoadDatasetTaskTest {
 		files.setEnrichmentFileName1(testGSEAResults1FileName);
 		files.setEnrichmentFileName2(testGSEAResults2FileName);
 		
-		EMCreationParameters params = new EMCreationParameters(Method.Generic, "EM1_", 0.1, 0.1, NESFilter.ALL, Optional.empty(), SimilarityMetric.JACCARD, 0.1, 0.1);
+		EMCreationParameters params = new EMCreationParameters("EM1_", 0.1, 0.1, NESFilter.ALL, Optional.empty(), SimilarityMetric.JACCARD, 0.1, 0.1);
 		
 		//create an new enrichment Map
 		EnrichmentMap em = new EnrichmentMap("TestEM", params);
 		
 		//create a dataset
-		DataSet dataset = new DataSet(em, LegacySupport.DATASET1, files);
+		DataSet dataset = new DataSet(em, LegacySupport.DATASET1, Method.Generic, files);
 		em.addDataSet(LegacySupport.DATASET1, dataset);
 		
 		//load Data

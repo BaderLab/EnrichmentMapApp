@@ -39,7 +39,7 @@ public class FileReaderTest {
         EnrichmentMap map = new EnrichmentMap("TestEM", params.getCreationParameters());
                 
         //get the default dataset
-        DataSet dataset = new DataSet(map, LegacySupport.DATASET1, params.getFiles().get(LegacySupport.DATASET1));
+        DataSet dataset = new DataSet(map, LegacySupport.DATASET1, EnrichmentMapParameters.stringToMethod(params.getMethod()), params.getFiles().get(LegacySupport.DATASET1));
         map.addDataSet(LegacySupport.DATASET1, dataset);
         
 
@@ -68,7 +68,7 @@ public class FileReaderTest {
         EnrichmentMap map = new EnrichmentMap("TestEM", params.getCreationParameters());
         
         //get the default dataset
-        DataSet dataset = new DataSet(map, LegacySupport.DATASET1, params.getFiles().get(LegacySupport.DATASET1));
+        DataSet dataset = new DataSet(map, LegacySupport.DATASET1, EnrichmentMapParameters.stringToMethod(params.getMethod()), params.getFiles().get(LegacySupport.DATASET1));
         map.addDataSet(LegacySupport.DATASET1, dataset);
 
         //in order to load expression data the genes have to be registered with the application
@@ -115,7 +115,7 @@ public class FileReaderTest {
         EnrichmentMap map = new EnrichmentMap("TestEM", params.getCreationParameters());
                 
         //get the default dataset
-        DataSet dataset = new DataSet(map, LegacySupport.DATASET1, params.getFiles().get(LegacySupport.DATASET1));
+        DataSet dataset = new DataSet(map, LegacySupport.DATASET1, EnrichmentMapParameters.stringToMethod(params.getMethod()), params.getFiles().get(LegacySupport.DATASET1));
         map.addDataSet(LegacySupport.DATASET1, dataset);
 
         //make sure that the genes are empty
@@ -162,7 +162,7 @@ public class FileReaderTest {
         EnrichmentMap map = new EnrichmentMap("TestEM", params.getCreationParameters());
                 
         //get the default dataset
-        DataSet dataset = new DataSet(map, LegacySupport.DATASET1, params.getFiles().get(LegacySupport.DATASET1));
+        DataSet dataset = new DataSet(map, LegacySupport.DATASET1, EnrichmentMapParameters.stringToMethod(params.getMethod()), params.getFiles().get(LegacySupport.DATASET1));
         map.addDataSet(LegacySupport.DATASET1, dataset);
         
         //make sure that the genes are empty
@@ -208,7 +208,7 @@ public class FileReaderTest {
         EnrichmentMap map = new EnrichmentMap("TestEM", params.getCreationParameters());
                 
         //get the default dataset
-        DataSet dataset = new DataSet(map, LegacySupport.DATASET1, params.getFiles().get(LegacySupport.DATASET1));
+        DataSet dataset = new DataSet(map, LegacySupport.DATASET1, EnrichmentMapParameters.stringToMethod(params.getMethod()), params.getFiles().get(LegacySupport.DATASET1));
         map.addDataSet(LegacySupport.DATASET1, dataset);
 
         //make sure that the genes are empty
@@ -253,7 +253,7 @@ public class FileReaderTest {
         EnrichmentMap map = new EnrichmentMap("TestEM", params.getCreationParameters());
                 
         //get the default dataset
-        DataSet dataset = new DataSet(map, LegacySupport.DATASET1, params.getFiles().get(LegacySupport.DATASET1));
+        DataSet dataset = new DataSet(map, LegacySupport.DATASET1, EnrichmentMapParameters.stringToMethod(params.getMethod()), params.getFiles().get(LegacySupport.DATASET1));
         map.addDataSet(LegacySupport.DATASET1, dataset);
         
         // check if empty
@@ -306,7 +306,7 @@ public class FileReaderTest {
         EnrichmentMap map = new EnrichmentMap("TestEM", params.getCreationParameters());
                 
         //get the default dataset
-        DataSet dataset = new DataSet(map, LegacySupport.DATASET1, params.getFiles().get(LegacySupport.DATASET1));
+        DataSet dataset = new DataSet(map, LegacySupport.DATASET1, EnrichmentMapParameters.stringToMethod(params.getMethod()), params.getFiles().get(LegacySupport.DATASET1));
         map.addDataSet(LegacySupport.DATASET1, dataset);
         
         ParseGSEAEnrichmentResults task = new ParseGSEAEnrichmentResults(dataset);
@@ -365,7 +365,7 @@ public class FileReaderTest {
         EnrichmentMap map = new EnrichmentMap("TestEM", params.getCreationParameters());
                 
         //get the default dataset
-        DataSet dataset = new DataSet(map, LegacySupport.DATASET1, params.getFiles().get(LegacySupport.DATASET1));
+        DataSet dataset = new DataSet(map, LegacySupport.DATASET1, EnrichmentMapParameters.stringToMethod(params.getMethod()), params.getFiles().get(LegacySupport.DATASET1));
         map.addDataSet(LegacySupport.DATASET1, dataset);
         
         ParseEDBEnrichmentResults task = new ParseEDBEnrichmentResults(dataset);
@@ -429,7 +429,7 @@ public class FileReaderTest {
         EnrichmentMap map = new EnrichmentMap("TestEM", params.getCreationParameters());
                 
         //get the default dataset
-        DataSet dataset = new DataSet(map, LegacySupport.DATASET1, params.getFiles().get(LegacySupport.DATASET1));
+        DataSet dataset = new DataSet(map, LegacySupport.DATASET1, EnrichmentMapParameters.stringToMethod(params.getMethod()), params.getFiles().get(LegacySupport.DATASET1));
         map.addDataSet(LegacySupport.DATASET1, dataset);
         
         ParseBingoEnrichmentResults task = new ParseBingoEnrichmentResults(dataset);
@@ -473,7 +473,7 @@ public class FileReaderTest {
         EnrichmentMap map = new EnrichmentMap("TestEM", params.getCreationParameters());
                 
         //get the default dataset
-        DataSet dataset = new DataSet(map, LegacySupport.DATASET1, params.getFiles().get(LegacySupport.DATASET1));
+        DataSet dataset = new DataSet(map, LegacySupport.DATASET1, EnrichmentMapParameters.stringToMethod(params.getMethod()), params.getFiles().get(LegacySupport.DATASET1));
         map.addDataSet(LegacySupport.DATASET1, dataset);
 
         ParseDavidEnrichmentResults task = new ParseDavidEnrichmentResults(dataset);

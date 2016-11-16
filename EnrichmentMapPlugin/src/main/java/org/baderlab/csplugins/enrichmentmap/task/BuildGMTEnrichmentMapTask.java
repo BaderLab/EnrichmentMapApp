@@ -3,8 +3,8 @@ package org.baderlab.csplugins.enrichmentmap.task;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.Method;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.GenericResult;
@@ -31,7 +31,7 @@ public class BuildGMTEnrichmentMapTask extends AbstractTask {
 	}
 
 	public void buildEnrichmentMap() {
-		this.dataset.getMap().getParams().setMethod(Method.Generic);
+		this.dataset.setMethod(Method.Generic);
 
 		//in this case all the genesets are of interest
 		this.dataset.setGenesetsOfInterest(this.dataset.getSetofgenesets());

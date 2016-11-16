@@ -6,9 +6,9 @@ import static org.mockito.Mockito.mock;
 import java.util.Optional;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
-import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
@@ -35,14 +35,14 @@ public class LoadDavidResultTest {
 		double similarityCutoff = 0.25;
 		double pvalue = 0.005;
 		double qvalue = 0.005; // 5.0 X 10-3
-		EMCreationParameters params = new EMCreationParameters(Method.Specialized, "EM1_", pvalue, qvalue, NESFilter.ALL, Optional.empty(), SimilarityMetric.JACCARD, similarityCutoff, 0.5);
+		EMCreationParameters params = new EMCreationParameters("EM1_", pvalue, qvalue, NESFilter.ALL, Optional.empty(), SimilarityMetric.JACCARD, similarityCutoff, 0.5);
 	
 		//create an new enrichment Map
 		EnrichmentMap em = new EnrichmentMap("TestEM", params);
 		
 		//Load data set
 		//create a dataset
-		DataSet dataset = new DataSet(em, LegacySupport.DATASET1, files);		
+		DataSet dataset = new DataSet(em, LegacySupport.DATASET1, Method.Specialized, files);		
 		em.addDataSet(LegacySupport.DATASET1, dataset);
 				
 		//create a DatasetTask
@@ -97,14 +97,14 @@ public class LoadDavidResultTest {
 		double similarityCutoff = 0.25;
 		double pvalue = 0.005;
 		double qvalue = 0.005; // 5.0 X 10-3
-		EMCreationParameters params = new EMCreationParameters(Method.Specialized, "EM1_", pvalue, qvalue, NESFilter.ALL, Optional.empty(), SimilarityMetric.JACCARD, similarityCutoff, 0.5);
+		EMCreationParameters params = new EMCreationParameters("EM1_", pvalue, qvalue, NESFilter.ALL, Optional.empty(), SimilarityMetric.JACCARD, similarityCutoff, 0.5);
 		
 		//create an new enrichment Map
 		EnrichmentMap em = new EnrichmentMap("TestEM", params);
 		
 		//Load first dataset
 		//create a dataset
-		DataSet dataset = new DataSet(em, LegacySupport.DATASET1, files);		
+		DataSet dataset = new DataSet(em, LegacySupport.DATASET1, Method.Specialized, files);		
 		em.addDataSet(LegacySupport.DATASET1, dataset);
 				
 		//create a DatasetTask
@@ -115,7 +115,7 @@ public class LoadDavidResultTest {
 		
 		//Load second dataset
 		//create a dataset
-		DataSet dataset2 = new DataSet(em, LegacySupport.DATASET2, files2);		
+		DataSet dataset2 = new DataSet(em, LegacySupport.DATASET2, Method.Specialized, files2);		
 		em.addDataSet(LegacySupport.DATASET2, dataset2);
 		
 		//create a DatasetTask

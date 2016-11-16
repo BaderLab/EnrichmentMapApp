@@ -50,7 +50,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
-import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.Method;
+import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
 import org.baderlab.csplugins.enrichmentmap.model.GSEAResult;
@@ -125,7 +125,7 @@ public class InitializeGenesetsOfInterestTask extends AbstractTask {
 				EnrichmentResult result = enrichmentResults.get(genesetName);
 				 
 				// update rank at max for leading edge calculation
-				if(map.getParams().getMethod() == Method.GSEA) {
+				if(dataset.getMethod() == Method.GSEA) {
 					Ranking ranks = dataset.getExpressionSets().getRanksByName(datasetName);
 					updateRankAtMax((GSEAResult)result, ranks);
 				}
