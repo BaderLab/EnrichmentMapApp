@@ -1,7 +1,5 @@
 package org.baderlab.csplugins.enrichmentmap.task;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
 import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Headless;
@@ -111,26 +109,5 @@ public class MasterMapGSEATaskFactory extends AbstractTaskFactory {
 //		return currentTasks;
 		
 		return tasks;
-	}
-
-	public static String getDatasetNameGSEA(Path folder) {
-		String folderName = folder.getFileName().toString();
-		int dotIndex = folderName.indexOf('.');
-		if(dotIndex == -1)
-			return folderName;
-		else
-			return folderName.substring(0, dotIndex);
-	}
-	
-	public static DataSetFiles toDataSetFilesGSEA(Path path) {
-		DataSetFiles files = new DataSetFiles();
-		files.setEnrichmentFileName1(path.resolve(Paths.get("edb/results.edb")).toString());
-		files.setGMTFileName(path.resolve(Paths.get("edb/gene_sets.gmt")).toString());
-		return files;
-	}
-	
-	
-	public static DataSetParameters toDataSetParametersGSEA(Path path) {
-		return new DataSetParameters(getDatasetNameGSEA(path), toDataSetFilesGSEA(path));
 	}
 }

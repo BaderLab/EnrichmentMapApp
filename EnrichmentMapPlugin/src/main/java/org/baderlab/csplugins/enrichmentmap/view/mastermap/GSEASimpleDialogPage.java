@@ -23,6 +23,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
+import org.baderlab.csplugins.enrichmentmap.parsers.PathTypeMatcher;
 import org.baderlab.csplugins.enrichmentmap.task.MasterMapGSEATaskFactory;
 import org.baderlab.csplugins.enrichmentmap.util.SwingUtil;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogCallback;
@@ -85,7 +86,7 @@ public class GSEASimpleDialogPage implements CardDialogPage {
 			new EMCreationParameters(Method.GSEA, prefix, pvalue, qvalue, nesFilter, minExperiments, similarityMetric, cutoff, combined);
 		
 		List<Path> paths = checkboxListPanel.getSelectedDataItems();
-		List<DataSetParameters> dataSets = paths.stream().map(MasterMapGSEATaskFactory::toDataSetParametersGSEA).collect(Collectors.toList());
+		List<DataSetParameters> dataSets = paths.stream().map(PathTypeMatcher::toDataSetParametersGSEA).collect(Collectors.toList());
 		
 		MasterMapGSEATaskFactory taskFactory = taskFactoryFactory.create(params, dataSets);
 		TaskIterator tasks = taskFactory.createTaskIterator();
@@ -243,7 +244,7 @@ public class GSEASimpleDialogPage implements CardDialogPage {
 			try(Stream<Path> contents = Files.list(path)) {
 				contents
 				.filter(Files::isDirectory)
-				.filter(new GSEAFolderPredicate())
+				.filter(PathTypeMatcher::isGSEAResultsFolder)
 				.map(folder -> new CheckboxData<>(folder.getFileName().toString(), folder))
 				.forEach(model::addElement);
 			}
