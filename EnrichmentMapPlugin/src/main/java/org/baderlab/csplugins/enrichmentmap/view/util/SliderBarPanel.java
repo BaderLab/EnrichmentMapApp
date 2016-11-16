@@ -184,7 +184,7 @@ public class SliderBarPanel extends JPanel {
 		
         final GroupLayout layout = new GroupLayout(this);
        	this.setLayout(layout);
-   		layout.setAutoCreateContainerGaps(LookAndFeelUtil.isWinLAF());
+   		layout.setAutoCreateContainerGaps(false);
    		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
    		
    		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)

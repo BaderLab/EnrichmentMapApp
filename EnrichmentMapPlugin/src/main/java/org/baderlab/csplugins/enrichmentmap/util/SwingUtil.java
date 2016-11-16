@@ -13,6 +13,7 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
@@ -39,7 +40,6 @@ public class SwingUtil {
 		}
 		return current;
 	}
-	
 	
 	/**
 	 * Call setEnabled(enabled) on the given component and all its children recursively.
@@ -101,5 +101,28 @@ public class SwingUtil {
 		}
 		
 		return btn;
+	}
+	
+	/**
+	 * Utility method that invokes the code in Runnable.run on the AWT Event Dispatch Thread.
+	 * @param runnable
+	 */
+	public static void invokeOnEDT(final Runnable runnable) {
+		if (SwingUtilities.isEventDispatchThread())
+			runnable.run();
+		else
+			SwingUtilities.invokeLater(runnable);
+	}
+	
+	public static void invokeOnEDTAndWait(final Runnable runnable) {
+		if (SwingUtilities.isEventDispatchThread()) {
+			runnable.run();
+		} else {
+			try {
+				SwingUtilities.invokeAndWait(runnable);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
 	}
 }
