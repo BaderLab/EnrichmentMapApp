@@ -54,7 +54,7 @@ import java.util.Scanner;
 import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.PropertyManager;
-import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.Method;
+import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParameters;
@@ -230,15 +230,14 @@ public class EnrichmentMapParameters {
 
 	
 	public EMCreationParameters getCreationParameters() {
-		Method method = stringToMethod(getMethod());
 		SimilarityMetric similarityMetric = stringToSimilarityMethod(getSimilarityMetric());
-		EMCreationParameters params = new EMCreationParameters(method, getAttributePrefix(), 
+		EMCreationParameters params = new EMCreationParameters(getAttributePrefix(), 
 				getPvalue(), getQvalue(), NESFilter.ALL, Optional.empty(), similarityMetric, getSimilarityCutOff(), getCombinedConstant());
 		params.setEnrichmentEdgeType(enrichment_edge_type);
 		return params;
 	}
 	
-	private static String methodToString(Method method) {
+	public static String methodToString(Method method) {
 		switch(method) {
 			default:
 			case GSEA:        return method_GSEA;
@@ -256,7 +255,7 @@ public class EnrichmentMapParameters {
 		}
 	}
 	
-	private static Method stringToMethod(String name) {
+	public static Method stringToMethod(String name) {
 		switch(name) {
 			default:
 			case method_generic:     return Method.Generic;
@@ -699,7 +698,9 @@ public class EnrichmentMapParameters {
 		this.qvalue = params.getQvalue();
 		this.similarityCutOff = params.getSimilarityCutoff();
 
-		this.method = methodToString(params.getMethod());
+		// MKTODO how to set the method properly?
+		this.method = methodToString(Method.GSEA); //methodToString(params.getMethod());
+		
 		this.FDR = params.isFDR();
 		this.similarityMetric = similarityMetricToString(params.getSimilarityMetric());
 		this.combinedConstant = params.getCombinedConstant();

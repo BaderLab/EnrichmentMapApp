@@ -89,8 +89,8 @@ import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Edges;
 import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Nodes;
 import org.baderlab.csplugins.enrichmentmap.PropertyManager;
+import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
-import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
@@ -1487,7 +1487,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 
 					//ask user if they want to export only the leading edge.
 					//only ask if the leadingedge is displayed
-					if (this.displayLeadingEdge == true && hmParams.getSort() == HeatMapParameters.Sort.RANK && params.getMethod() == Method.GSEA) {
+					if (this.displayLeadingEdge == true && hmParams.getSort() == HeatMapParameters.Sort.RANK && map.getDataset(LegacySupport.DATASET1).getMethod() == Method.GSEA) {
 						int response2 = JOptionPane.showConfirmDialog(this, "Would you like to save the leading edge only?");
 						if (response2 == JOptionPane.YES_OPTION || response2 == JOptionPane.OK_OPTION)
 							this.OnlyLeadingEdge = true;
@@ -1569,7 +1569,8 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 			String nodename = network.getRow(leadingEdgeGenesetNode).get(CyNetwork.NAME, String.class);
 
 			displayLeadingEdge = true;
-			if (params.getMethod() == Method.GSEA) {
+			// MKTODO refactor now that the method is stored in the DataSet
+			if (map.getDataset(LegacySupport.DATASET1).getMethod() == Method.GSEA) {
 
 				Map<String, EnrichmentResult> results1 = map.getDataset(LegacySupport.DATASET1).getEnrichments().getEnrichments();
 				if (results1.containsKey(nodename)) {

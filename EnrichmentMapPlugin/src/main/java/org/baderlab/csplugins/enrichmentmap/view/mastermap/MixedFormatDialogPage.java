@@ -7,6 +7,7 @@ import java.awt.FlowLayout;
 import java.awt.GridBagLayout;
 import java.io.File;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -27,13 +28,13 @@ import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.Border;
 
+import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
-import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
-import org.baderlab.csplugins.enrichmentmap.parsers.PathTypeMatcher;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
+import org.baderlab.csplugins.enrichmentmap.parsers.PathTypeMatcher;
 import org.baderlab.csplugins.enrichmentmap.task.MasterMapGSEATaskFactory;
 import org.baderlab.csplugins.enrichmentmap.util.SwingUtil;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogCallback;
@@ -50,6 +51,7 @@ import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.swing.DialogTaskManager;
 
+import com.google.common.base.Strings;
 import com.google.inject.Inject;
 import com.lowagie.text.Font;
 
@@ -67,7 +69,6 @@ public class MixedFormatDialogPage implements CardDialogPage {
 	private CardDialogCallback callback;
 	
 	private IterableListModel<DataSetParameters> dataSetListModel;
-//	private IterableListModel<Path> gmtListModel;
 	
 	
 	@Override
@@ -97,7 +98,7 @@ public class MixedFormatDialogPage implements CardDialogPage {
 		Optional<Integer> minExperiments = cutoffPanel.getMinimumExperiments();
 		
 		EMCreationParameters params = 
-			new EMCreationParameters(Method.GSEA, prefix, pvalue, qvalue, nesFilter, minExperiments, similarityMetric, cutoff, combined);
+			new EMCreationParameters(prefix, pvalue, qvalue, nesFilter, minExperiments, similarityMetric, cutoff, combined);
 		
 		List<DataSetParameters> dataSets = dataSetListModel.toList();
 		
@@ -148,21 +149,9 @@ public class MixedFormatDialogPage implements CardDialogPage {
 	private JPanel createDataSetPanel() {
 		dataSetListModel = new IterableListModel<>();
 		JList<DataSetParameters> dataSetList = new DataSetList(dataSetListModel);
-		return createAddRemovePanel(dataSetList, "Enrichment Data Sets (GSEA only at the moment)", this::browseForDataSets);
+		// MKTODO probably just inline createAddRemovePanel
+		return createAddRemovePanel(dataSetList, "Enrichment Data Sets (0)", this::browseForDataSets);
 	}
-	
-//	private JPanel createGMTPanel() {
-//		gmtListModel = new IterableListModel<>();
-//		JList<Path> gmtFileList = new GMTList(gmtListModel);
-//		return createAddRemovePanel(gmtFileList, "GMT Files", this::browseForGMTFiles);
-//	}
-//	
-//	
-//	private List<Path> browseForGMTFiles() {
-//		List<FileChooserFilter> filters = Arrays.asList(new FileChooserFilter("gmt Files", "gmt")); 
-//		File file = fileUtil.getFile(callback.getDialogFrame(), "GMT Files", FileUtil.LOAD, filters);
-//		return file == null ? Collections.emptyList() : Arrays.asList(file.toPath());
-//	}
 	
 	
 	private List<DataSetParameters> browseForDataSets() {
@@ -189,8 +178,8 @@ public class MixedFormatDialogPage implements CardDialogPage {
 	
 	
 	private JPanel createTextFieldPanel() {
-		JLabel gmtLabel = new JLabel("GMT File (optional):");
-		JLabel extLabel = new JLabel("Expression File (optional):");
+		JLabel gmtLabel = new JLabel(" GMT File (optional):");
+		JLabel extLabel = new JLabel(" Expression File (optional):");
 		
 		JTextField gmtPathText = new JTextField();
 		JTextField expPathText = new JTextField();
@@ -305,41 +294,7 @@ public class MixedFormatDialogPage implements CardDialogPage {
 		return panel;
 	}
 
-	
-	
-//	private class GMTList extends JList<Path> {
-//		
-//		@Inject
-//		public GMTList(ListModel<Path> model) {
-//			setModel(model);
-//			setCellRenderer(new CellRenderer());
-//			setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-//		}
-//		
-//		private class CellRenderer implements ListCellRenderer<Path> {
-//
-//			@Override
-//			public Component getListCellRendererComponent(JList<? extends Path> list, Path path, 
-//					int index, boolean isSelected, boolean cellHasFocus) {
-//				
-//				JLabel iconLabel = new JLabel(" " + IconManager.ICON_DATABASE);
-//				iconLabel.setFont(iconManager.getIconFont(13.0f));
-//				
-//				JLabel nameLabel = new JLabel("  " + path.getFileName().toString());
-//				nameLabel.setFont(nameLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
-//				
-//				JPanel panel = new JPanel();
-//				panel.setLayout(new BorderLayout());
-//				panel.add(iconLabel, BorderLayout.WEST);
-//				panel.add(nameLabel, BorderLayout.CENTER);
-//				panel.setBackground(getBackground());
-//				
-//				return panel;
-//			}
-//		}
-//	}
 
-	
 	private class DataSetList extends JList<DataSetParameters> {
 		@Inject
 		public DataSetList(ListModel<DataSetParameters> model) {
@@ -357,7 +312,7 @@ public class MixedFormatDialogPage implements CardDialogPage {
 				JLabel icon = new JLabel(" " + IconManager.ICON_FILE_TEXT + "  ");
 				icon.setFont(iconManager.getIconFont(13.0f));
 				
-				JLabel title = new JLabel(dataSet.getName() + "  (GSEA)");
+				JLabel title = new JLabel(dataSet.getName() + "  (" + methodToString(dataSet.getMethod()) + ")");
 				SwingUtil.makeSmall(title);
 				title.setFont(title.getFont().deriveFont(Font.BOLD));
 				
@@ -384,14 +339,26 @@ public class MixedFormatDialogPage implements CardDialogPage {
 				return panel;
 			}
 			
+			private String methodToString(Method method) {
+				switch(method) {
+					case GSEA:        return "GSEA";
+					case Generic:     return "Generic/gProfiler";
+					case Specialized: return "DAVID/BINGO/Great";
+					default:          return "Unknown";
+				}
+			}
 			
 			private JPanel createFilePanel(DataSetFiles files) {
 				JPanel filePanel = new JPanel(new GridBagLayout());
 				int y = 0;
-				
-				y = addFileLabel("Enrichments: ", files.getEnrichmentFileName1(), filePanel, y);
-				y = addFileLabel("GMT File: ",    files.getGMTFileName(),         filePanel, y);
-				
+				String enrichmentFileName1 = files.getEnrichmentFileName1();
+				if(!Strings.isNullOrEmpty(enrichmentFileName1)) {
+					y = addFileLabel("Enrichments: ", Paths.get(enrichmentFileName1).getFileName().toString(), filePanel, y);
+				}
+				String gmtFileName = files.getGMTFileName();
+				if(!Strings.isNullOrEmpty(gmtFileName)) {
+					y = addFileLabel("GMT File: ", Paths.get(gmtFileName).getFileName().toString(), filePanel, y);
+				}
 				return filePanel;
 			}
 			

@@ -52,7 +52,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
@@ -126,35 +125,36 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 		CyTable nodeTable = createNodeAttributes(network, map.getName().trim(), prefix);
 		CyTable edgeTable = createEdgeAttributes(network, map.getName().trim(), prefix);
 
-		// store path to GSEA report in Network Attribute
-		if(map.getParams().getMethod() == Method.GSEA) {
-			CyTable network_table = createNetworkAttributes(network, map.getName().trim(), prefix);
-			CyRow network_row = network_table.getRow(network.getSUID());
-			if(map.getDataset(LegacySupport.DATASET1) != null
-					&& map.getDataset(LegacySupport.DATASET1).getDatasetFiles().getGseaHtmlReportFile() != null) {
-				String report1Path = map.getDataset(LegacySupport.DATASET1).getDatasetFiles().getGseaHtmlReportFile();
-				// On Windows we need to replace the Back-Slashes by forward-Slashes.
-				// Otherwise we might produce special characters (\r, \n, \t, ...) 
-				// when editing the attribute in Cytoscape.
-				// Anyway Windows supports slashes as separator in all NT based versions 
-				// (NT4, 2000, XP, Vista and newer)
-				report1Path = report1Path.replaceAll("\\\\", "/");
-				report1Path = report1Path.substring(0, report1Path.lastIndexOf('/'));
-				network_row.set(EnrichmentMapVisualStyle.NETW_REPORT1_DIR, report1Path);
-			}
-			if(map.getDataset(LegacySupport.DATASET2) != null
-					&& map.getDataset(LegacySupport.DATASET2).getDatasetFiles().getGseaHtmlReportFile() != null) {
-				String report2Path = map.getDataset(LegacySupport.DATASET2).getDatasetFiles().getGseaHtmlReportFile();
-				// On Windows we need to replace the Back-Slashes by forward-Slashes.
-				// Otherwise we might produce special characters (\r, \n, \t, ...) 
-				// when editing the attribute in Cytoscape.
-				// Anyway Windows supports slashes as separator in all NT based versions 
-				// (NT4, 2000, XP, Vista and newer)
-				report2Path = report2Path.replaceAll("\\\\", "/");
-				report2Path = report2Path.substring(0, report2Path.lastIndexOf('/'));
-				network_row.set(EnrichmentMapVisualStyle.NETW_REPORT2_DIR, report2Path);
-			}
-		}
+		// MKTODO create one attribute per dataset?xx
+//		// store path to GSEA report in Network Attribute
+//		if(map.getParams().getMethod() == Method.GSEA) {
+//			CyTable network_table = createNetworkAttributes(network, map.getName().trim(), prefix);
+//			CyRow network_row = network_table.getRow(network.getSUID());
+//			if(map.getDataset(LegacySupport.DATASET1) != null
+//					&& map.getDataset(LegacySupport.DATASET1).getDatasetFiles().getGseaHtmlReportFile() != null) {
+//				String report1Path = map.getDataset(LegacySupport.DATASET1).getDatasetFiles().getGseaHtmlReportFile();
+//				// On Windows we need to replace the Back-Slashes by forward-Slashes.
+//				// Otherwise we might produce special characters (\r, \n, \t, ...) 
+//				// when editing the attribute in Cytoscape.
+//				// Anyway Windows supports slashes as separator in all NT based versions 
+//				// (NT4, 2000, XP, Vista and newer)
+//				report1Path = report1Path.replaceAll("\\\\", "/");
+//				report1Path = report1Path.substring(0, report1Path.lastIndexOf('/'));
+//				network_row.set(EnrichmentMapVisualStyle.NETW_REPORT1_DIR, report1Path);
+//			}
+//			if(map.getDataset(LegacySupport.DATASET2) != null
+//					&& map.getDataset(LegacySupport.DATASET2).getDatasetFiles().getGseaHtmlReportFile() != null) {
+//				String report2Path = map.getDataset(LegacySupport.DATASET2).getDatasetFiles().getGseaHtmlReportFile();
+//				// On Windows we need to replace the Back-Slashes by forward-Slashes.
+//				// Otherwise we might produce special characters (\r, \n, \t, ...) 
+//				// when editing the attribute in Cytoscape.
+//				// Anyway Windows supports slashes as separator in all NT based versions 
+//				// (NT4, 2000, XP, Vista and newer)
+//				report2Path = report2Path.replaceAll("\\\\", "/");
+//				report2Path = report2Path.substring(0, report2Path.lastIndexOf('/'));
+//				network_row.set(EnrichmentMapVisualStyle.NETW_REPORT2_DIR, report2Path);
+//			}
+//		}
 
 		//Currently this supports two dataset
 		//TODO:add multiple dataset support.
@@ -223,27 +223,13 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 				current_row.set(prefix + EnrichmentMapVisualStyle.GENES, gene_list);
 //			}
 
-			if(map.getParams().getMethod() == Method.GSEA) {
-				GSEAResult current_result = (GSEAResult) enrichmentResults1.get(current_name);
-				setGSEAResultDataset1Attributes(current_row, current_result, prefix);
-			} else {
-				GenericResult current_result = (GenericResult) enrichmentResults1.get(current_name);
-				setGenericResultDataset1Attributes(current_row, current_result, prefix);
-			}
+			EnrichmentResult current_result = enrichmentResults1.get(current_name);
+			setDataset1Attributes(current_row, current_result, prefix);
 
 			//if we are using two datasets check to see if there is data for this node
-			if(LegacySupport.isLegacyTwoDatasets(map)) {
-				if(map.getParams().getMethod() == Method.GSEA) {
-					if(enrichmentResults2.containsKey(current_name)) {
-						GSEAResult second_result = (GSEAResult) enrichmentResults2.get(current_name);
-						setGSEAResultDataset2Attributes(current_row, second_result, prefix);
-					}
-				} else {
-					if(enrichmentResults2.containsKey(current_name)) {
-						GenericResult second_result = (GenericResult) enrichmentResults2.get(current_name);
-						setGenericResultDataset2Attributes(current_row, second_result, prefix);
-					}
-				}
+			if(LegacySupport.isLegacyTwoDatasets(map) && enrichmentResults2.containsKey(current_name)) {
+				EnrichmentResult second_result = enrichmentResults2.get(current_name);
+				setDataset2Attributes(current_row, second_result, prefix);
 			}
 
 			// Calculate Percentage.  This must be a value between 0..100.
@@ -305,28 +291,16 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 						current_row.set(prefix + EnrichmentMapVisualStyle.GENES, gene_list);
 //					}
 
-					if(map.getParams().getMethod() == Method.GSEA) {
-						if(enrichmentResults1.containsKey(current_name)) {
-							GSEAResult result = (GSEAResult) enrichmentResults1.get(current_name);
-							setGSEAResultDataset1Attributes(current_row, result, prefix);
-						}
-
-						GSEAResult second_result = (GSEAResult) enrichmentResults2.get(current_name);
-						setGSEAResultDataset2Attributes(current_row, second_result, prefix);
-					} else {
-						if(enrichmentResults1.containsKey(current_name)) {
-							GenericResult result = (GenericResult) enrichmentResults1.get(current_name);
-							setGenericResultDataset1Attributes(current_row, result, prefix);
-						}
-
-						GenericResult second_result = (GenericResult) enrichmentResults2.get(current_name);
-						setGenericResultDataset2Attributes(current_row, second_result, prefix);
+					if(enrichmentResults1.containsKey(current_name)) {
+						EnrichmentResult result = enrichmentResults1.get(current_name);
+						setDataset1Attributes(current_row, result, prefix);
 					}
+					EnrichmentResult second_result = enrichmentResults2.get(current_name);
+					setDataset2Attributes(current_row, second_result, prefix);
 				}
 			}
 		}
 
-		int k = 0;
 		//iterate through the similarities to create the edges
 		for(Iterator<String> j = geneset_similarities.keySet().iterator(); j.hasNext();) {
 			String current_name = j.next().toString();
@@ -419,6 +393,22 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 		return true;
 	}
 
+	
+	private void setDataset1Attributes(CyRow row, EnrichmentResult result, String prefix) {
+		if(result instanceof GSEAResult)
+			setGSEAResultDataset1Attributes(row, (GSEAResult)result, prefix);
+		else
+			setGenericResultDataset1Attributes(row, (GenericResult)result, prefix);
+	}
+	
+	private void setDataset2Attributes(CyRow row, EnrichmentResult result, String prefix) {
+		if(result instanceof GSEAResult)
+			setGSEAResultDataset2Attributes(row, (GSEAResult)result, prefix);
+		else
+			setGenericResultDataset2Attributes(row, (GenericResult)result, prefix);
+	}
+	
+	
 	/**
 	 * set node attributes for dataset1 generic results
 	 *

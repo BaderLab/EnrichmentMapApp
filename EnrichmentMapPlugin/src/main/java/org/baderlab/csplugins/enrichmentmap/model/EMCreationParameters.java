@@ -2,12 +2,11 @@ package org.baderlab.csplugins.enrichmentmap.model;
 
 import java.util.Optional;
 
+/**
+ * MKTODO This class should only contain filtering parameters, to make it more cohesive.
+ */
 public class EMCreationParameters implements EnrichmentResultFilterParams {
 
-	public static enum Method {
-		GSEA, Generic, Specialized
-	}
-	
 	public static enum SimilarityMetric {
 		JACCARD, OVERLAP, COMBINED
 	}
@@ -16,7 +15,6 @@ public class EMCreationParameters implements EnrichmentResultFilterParams {
 		HYPER, BINOM, BOTH, EITHER
 	}
 	
-	private Method method;
 	private String attributePrefix; // MKTODO this shouldn't be here
 	
 	// Node filtering (gene-sets)
@@ -42,10 +40,9 @@ public class EMCreationParameters implements EnrichmentResultFilterParams {
 	private String enrichmentEdgeType = "Geneset_Overlap";
 	
 	
-	public EMCreationParameters(Method method, String attributePrefix, 
+	public EMCreationParameters(String attributePrefix, 
 			 double pvalue, double qvaule, NESFilter nesFilter, Optional<Integer> minExperiments,  // NODE
 			 SimilarityMetric similarityMetric, double similarityCutoff, double combinedConstant) { // EDGE
-		this.method = method;
 		this.similarityMetric = similarityMetric;
 		this.attributePrefix = attributePrefix;
 		this.pvalue = pvalue;
@@ -56,14 +53,6 @@ public class EMCreationParameters implements EnrichmentResultFilterParams {
 		this.combinedConstant = combinedConstant;
 	}
 
-	
-	public Method getMethod() {
-		return method;
-	}
-	
-	public void setMethod(Method method) {
-		this.method = method;
-	}
 	
 	public String getAttributePrefix() {
 		return attributePrefix;

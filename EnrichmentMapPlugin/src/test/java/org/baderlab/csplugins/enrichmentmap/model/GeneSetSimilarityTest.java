@@ -36,7 +36,7 @@ public class GeneSetSimilarityTest {
         
         //Create a new Enrichment map
         map = new EnrichmentMap("TestEM", params.getCreationParameters());
-        dataset = new DataSet(map, LegacySupport.DATASET1, params.getFiles().get(LegacySupport.DATASET1));
+        dataset = new DataSet(map, LegacySupport.DATASET1, EnrichmentMapParameters.stringToMethod(params.getMethod()), params.getFiles().get(LegacySupport.DATASET1));
         map.addDataSet(LegacySupport.DATASET1, dataset);
 
         //set up task
