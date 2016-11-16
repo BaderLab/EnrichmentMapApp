@@ -12,6 +12,7 @@ import org.baderlab.csplugins.enrichmentmap.LogSilenceRule;
 import org.baderlab.csplugins.enrichmentmap.SerialTestTaskManager;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadSignatureSetsActionListener;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
@@ -102,12 +103,12 @@ public abstract class BaseNetworkTest {
 	}
 	
 	
-	protected void buildEnrichmentMap(EMCreationParameters params, DataSetFiles datasetFiles, String datasetName) {
+	protected void buildEnrichmentMap(EMCreationParameters params, DataSetFiles datasetFiles, Method method, String datasetName) {
 		String prefix = params.getAttributePrefix();
 		String name = prefix + LegacySupport.EM_NAME;
 		
 		EnrichmentMap map = new EnrichmentMap(name, params);
-		DataSet dataset = new DataSet(map, datasetName, datasetFiles);
+		DataSet dataset = new DataSet(map, datasetName, method, datasetFiles);
 		map.addDataSet(datasetName, dataset);
 		
 	   	EnrichmentMapBuildMapTaskFactory buildmap = enrichmentMapBuildMapTaskFactoryFactory.create(map);

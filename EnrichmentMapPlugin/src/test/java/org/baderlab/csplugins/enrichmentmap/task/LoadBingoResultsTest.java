@@ -6,9 +6,9 @@ import static org.mockito.Mockito.mock;
 import java.util.Optional;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
-import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
@@ -34,10 +34,10 @@ public class LoadBingoResultsTest {
 		double pvalue = 0.00005;
 		double qvaule = 0.00000005; // 5.0 X 10-8
 		double similarityCutoff = 0.25;
-		EMCreationParameters params = new EMCreationParameters(Method.Specialized, "EM1_", pvalue, qvaule, NESFilter.ALL, Optional.empty(), SimilarityMetric.JACCARD, similarityCutoff, 0.5);
+		EMCreationParameters params = new EMCreationParameters("EM1_", pvalue, qvaule, NESFilter.ALL, Optional.empty(), SimilarityMetric.JACCARD, similarityCutoff, 0.5);
 		//create an new enrichment Map
 		EnrichmentMap em = new EnrichmentMap("TestEM", params);
-		DataSet dataset = new DataSet(em, LegacySupport.DATASET1, files);		
+		DataSet dataset = new DataSet(em, LegacySupport.DATASET1, Method.Specialized, files);		
 		em.addDataSet(LegacySupport.DATASET1, dataset);				
 		
 		ParseBingoEnrichmentResults enrichmentResultsFilesTask = new ParseBingoEnrichmentResults(dataset);
@@ -93,11 +93,11 @@ public class LoadBingoResultsTest {
 		double pvalue = 0.00005;
 		double qvaule = 0.00000005; // 5.0 X 10-8
 		double similarityCutoff = 0.25;
-		EMCreationParameters params = new EMCreationParameters(Method.Specialized, "EM1_", pvalue, qvaule, NESFilter.ALL, Optional.empty(), SimilarityMetric.JACCARD, similarityCutoff, 0.5);
+		EMCreationParameters params = new EMCreationParameters("EM1_", pvalue, qvaule, NESFilter.ALL, Optional.empty(), SimilarityMetric.JACCARD, similarityCutoff, 0.5);
 		
 		//create an new enrichment Map
 		EnrichmentMap em = new EnrichmentMap("TestEM", params);
-		DataSet dataset = new DataSet(em, LegacySupport.DATASET1, files);		
+		DataSet dataset = new DataSet(em, LegacySupport.DATASET1, Method.Specialized, files);		
 		em.addDataSet(LegacySupport.DATASET1, dataset);				
 		
 		ParseBingoEnrichmentResults  enrichmentResultsFilesTask = new ParseBingoEnrichmentResults(dataset);
@@ -105,7 +105,7 @@ public class LoadBingoResultsTest {
 		
 		//Load second dataset
 		//create a dataset
-		DataSet dataset2 = new DataSet(em, LegacySupport.DATASET2, files2);		
+		DataSet dataset2 = new DataSet(em, LegacySupport.DATASET2, Method.Specialized, files2);		
 		em.addDataSet(LegacySupport.DATASET2, dataset2);						
 		//create a DatasetTask
 		

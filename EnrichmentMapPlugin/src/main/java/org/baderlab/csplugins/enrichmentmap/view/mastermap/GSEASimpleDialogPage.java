@@ -19,7 +19,6 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
-import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
@@ -83,7 +82,7 @@ public class GSEASimpleDialogPage implements CardDialogPage {
 		Optional<Integer> minExperiments = cutoffPanel.getMinimumExperiments();
 		
 		EMCreationParameters params = 
-			new EMCreationParameters(Method.GSEA, prefix, pvalue, qvalue, nesFilter, minExperiments, similarityMetric, cutoff, combined);
+			new EMCreationParameters(prefix, pvalue, qvalue, nesFilter, minExperiments, similarityMetric, cutoff, combined);
 		
 		List<Path> paths = checkboxListPanel.getSelectedDataItems();
 		List<DataSetParameters> dataSets = paths.stream().map(PathTypeMatcher::toDataSetParametersGSEA).collect(Collectors.toList());

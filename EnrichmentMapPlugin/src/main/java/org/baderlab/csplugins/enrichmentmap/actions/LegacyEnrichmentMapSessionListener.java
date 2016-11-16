@@ -12,9 +12,10 @@ import java.util.Scanner;
 import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.CyActivator;
-import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
@@ -89,7 +90,8 @@ public class LegacyEnrichmentMapSessionListener implements SessionLoadedListener
 						if((files.getEnrichmentFileName1() != null && !files.getEnrichmentFileName1().isEmpty())
 								|| (files.getGMTFileName() != null && !files.getGMTFileName().isEmpty())
 								|| (files.getExpressionFileName() != null && !files.getExpressionFileName().isEmpty())) {
-							DataSet dataset = new DataSet(em, LegacySupport.DATASET1, files);
+							Method method = EnrichmentMapParameters.stringToMethod(params.getMethod());
+							DataSet dataset = new DataSet(em, LegacySupport.DATASET1, method, files);
 							em.addDataSet(LegacySupport.DATASET1, dataset);
 						}
 					}
@@ -99,7 +101,8 @@ public class LegacyEnrichmentMapSessionListener implements SessionLoadedListener
 						if((files.getEnrichmentFileName1() != null && !files.getEnrichmentFileName1().isEmpty())
 								|| (files.getGMTFileName() != null && !files.getGMTFileName().isEmpty())
 								|| (files.getExpressionFileName() != null && !files.getExpressionFileName().isEmpty())) {
-							DataSet dataset = new DataSet(em, LegacySupport.DATASET2, files);
+							Method method = EnrichmentMapParameters.stringToMethod(params.getMethod());
+							DataSet dataset = new DataSet(em, LegacySupport.DATASET2, method, files);
 							em.addDataSet(LegacySupport.DATASET2, dataset);
 						}
 					}
@@ -132,6 +135,7 @@ public class LegacyEnrichmentMapSessionListener implements SessionLoadedListener
 				CyNetwork net = getNetworkByName(parts.name);
 				EnrichmentMap em  = (net != null) ? emManager.getEnrichmentMap(net.getSUID()) : null;
 				EnrichmentMapParameters params = paramsMap.get(net.getSUID());
+				Method method = EnrichmentMapParameters.stringToMethod(params.getMethod());
 
 				if(em == null)
 					System.out.println("network for file" + prop_file.getName() + " does not exist.");
@@ -142,7 +146,7 @@ public class LegacyEnrichmentMapSessionListener implements SessionLoadedListener
 					HashMap<String,String> props = params.getProps();
 					//if this a dataset specific file make sure there is a dataset object for it
 					if(!(parts.dataset == null) && em.getDataset(parts.dataset) == null && !parts.dataset.equalsIgnoreCase("signature"))
-						em.addDataSet(parts.dataset, new DataSet(em,parts.name,params.getFiles().get(parts.dataset)));
+						em.addDataSet(parts.dataset, new DataSet(em, parts.name, method, params.getFiles().get(parts.dataset)));
 					if(parts.type == null)
 						System.out.println("Sorry, unable to determine the type of the file: "+ prop_file.getName());
 
@@ -269,7 +273,7 @@ public class LegacyEnrichmentMapSessionListener implements SessionLoadedListener
 					if(params.isTwoDatasets()){
 						//make sure there is a Dataset2
 						if(!em.getDatasets().containsKey(LegacySupport.DATASET2))
-							em.addDataSet(LegacySupport.DATASET2, new DataSet(em, LegacySupport.DATASET2, new DataSetFiles()));
+							em.addDataSet(LegacySupport.DATASET2, new DataSet(em, LegacySupport.DATASET2, method, new DataSetFiles()));
 						if( prop_file.getName().contains(".ENR2.txt") || prop_file.getName().contains(".SubENR2.txt")){
 							SetOfEnrichmentResults enrichments;
 							//check to see if this dataset has enrichment results already

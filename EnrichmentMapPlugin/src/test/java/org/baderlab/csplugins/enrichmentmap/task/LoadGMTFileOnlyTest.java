@@ -6,9 +6,9 @@ import static org.mockito.Mockito.mock;
 import java.util.Optional;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
-import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
@@ -33,13 +33,13 @@ public class LoadGMTFileOnlyTest {
 		double similarityCutoff = 0.5;
 		double pvalue = 1.0;
 		double qvalue = 1.0;
-		EMCreationParameters params = new EMCreationParameters(Method.GSEA, "EM1_", pvalue, qvalue, NESFilter.ALL, Optional.empty(), SimilarityMetric.JACCARD, similarityCutoff, 0.5);
+		EMCreationParameters params = new EMCreationParameters("EM1_", pvalue, qvalue, NESFilter.ALL, Optional.empty(), SimilarityMetric.JACCARD, similarityCutoff, 0.5);
 	
 		EnrichmentMap em = new EnrichmentMap("TestEM", params);
 		
 		//Load data set
 		//create a dataset
-		DataSet dataset = new DataSet(em, LegacySupport.DATASET1, files);		
+		DataSet dataset = new DataSet(em, LegacySupport.DATASET1, Method.GSEA, files);		
 		em.addDataSet(LegacySupport.DATASET1, dataset);
 				
 		//create a DatasetTask

@@ -94,6 +94,7 @@ import javax.swing.text.InternationalFormatter;
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapBuildProperties;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
@@ -1236,9 +1237,10 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 		
 		// TEMPORARY
 		// This code is kind of ugly because it is bridging the gap between the old EnrichmentMapParameters and the new style
-		map.addDataSet(LegacySupport.DATASET1, new DataSet(map, LegacySupport.DATASET1, dataset1files));
+		Method method = EnrichmentMapParameters.stringToMethod(new_params.getMethod());
+		map.addDataSet(LegacySupport.DATASET1, new DataSet(map, LegacySupport.DATASET1, method, dataset1files));
 		if(!dataset2files.isEmpty())
-			map.addDataSet(LegacySupport.DATASET2, new DataSet(map, LegacySupport.DATASET2, dataset2files));
+			map.addDataSet(LegacySupport.DATASET2, new DataSet(map, LegacySupport.DATASET2, method, dataset2files));
 
 		//EnrichmentMapParseInputEvent parseInput = new EnrichmentMapParseInputEvent(empanel,map , dialog,  streamUtil);
 		//parseInput.build();

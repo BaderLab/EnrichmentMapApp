@@ -6,9 +6,9 @@ import java.util.TreeSet;
 
 import javax.annotation.Nullable;
 
-import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.Method;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowPanelTask;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
@@ -85,7 +85,7 @@ public class EnrichmentMapBuildMapTaskFactory implements TaskFactory {
 			
 			//fourth step: Load ranks
 			//check to see if we have ranking files
-			if(dataset.getMap().getParams().getMethod() == Method.GSEA) {
+			if(dataset.getMethod() == Method.GSEA) {
 				if(dataset.getExpressionSets().getRanksByName(Ranking.GSEARanking) != null) {
 					RanksFileReaderTask ranking1 = new RanksFileReaderTask(
 							dataset.getExpressionSets().getRanksByName(Ranking.GSEARanking).getFilename(), dataset, Ranking.GSEARanking, false);
