@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap.util;
+package org.baderlab.csplugins.enrichmentmap.view.util;
 
 import java.awt.Component;
 import java.awt.Container;

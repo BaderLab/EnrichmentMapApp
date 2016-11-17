@@ -51,6 +51,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.task.EnrichmentMapBuildMapTaskFactory;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
@@ -155,7 +156,7 @@ public class BuildEnrichmentMapTuneableTask extends AbstractTask {
 	@Inject private EnrichmentMapBuildMapTaskFactory.Factory taskFactoryProvider;
 	@Inject private LegacySupport legacySupport;
 	
-	
+	@Inject private CyServiceRegistrar serviceRegistrar;
 	
 	public BuildEnrichmentMapTuneableTask() {
 		analysisType = new ListSingleSelection<String>(EnrichmentMapParameters.method_GSEA,
@@ -233,7 +234,7 @@ public class BuildEnrichmentMapTuneableTask extends AbstractTask {
 		new_params.setAttributePrefix(prefix);
 		String name = prefix + LegacySupport.EM_NAME;
 		
-		EnrichmentMap map = new EnrichmentMap(name, new_params.getCreationParameters());
+		EnrichmentMap map = new EnrichmentMap(new_params.getCreationParameters(), serviceRegistrar);
 
 		EnrichmentMapBuildMapTaskFactory buildmap = taskFactoryProvider.create(map);
 		insertTasksAfterCurrentTask(buildmap.createTaskIterator());

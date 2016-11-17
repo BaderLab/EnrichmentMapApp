@@ -35,6 +35,7 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
 
@@ -43,13 +44,13 @@ import com.google.inject.Provider;
 
 public class LegacyEnrichmentMapSessionListener implements SessionLoadedListener  /*, SessionAboutToBeSavedListener */ {
 
+	@Inject private CyServiceRegistrar serviceRegistrar;
 	@Inject private CyNetworkManager cyNetworkManager;
 	@Inject private CyApplicationManager cyApplicationManager;
 	@Inject private StreamUtil streamUtil;
 	@Inject private EnrichmentMapManager emManager;
 	@Inject private Provider<ParametersPanel> parametersPanelProvider;
 	@Inject private EnrichmentMapParameters.Factory enrichmentMapParametersFactory;
-
 
 	/**
 	 * Restore Enrichment maps
@@ -80,10 +81,10 @@ public class LegacyEnrichmentMapSessionListener implements SessionLoadedListener
 
 					//Given the file with all the parameters create a new parameter
 					EnrichmentMapParameters params = enrichmentMapParametersFactory.create(fullText);
-					String props_name = (prop_file.getName().split("\\."))[0];
+					String emName = (prop_file.getName().split("\\."))[0];
 					
 					EMCreationParameters newParams = params.getCreationParameters();
-					EnrichmentMap em = new EnrichmentMap(props_name, newParams);
+					EnrichmentMap em = new EnrichmentMap(newParams, serviceRegistrar);
 					
 					if(params.getFiles().containsKey(LegacySupport.DATASET1)) {
 						DataSetFiles files = params.getFiles().get(LegacySupport.DATASET1);
@@ -116,7 +117,7 @@ public class LegacyEnrichmentMapSessionListener implements SessionLoadedListener
 //					}
 
 					//register network and parameters
-					CyNetwork network = getNetworkByName(em.getName());
+					CyNetwork network = getNetworkByName(emName);
 					params.setNetworkID(network.getSUID());
 					em.setNetworkID(network.getSUID());
 					emManager.registerEnrichmentMap(network, em);

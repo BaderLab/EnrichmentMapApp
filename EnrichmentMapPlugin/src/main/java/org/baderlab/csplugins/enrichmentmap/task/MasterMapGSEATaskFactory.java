@@ -11,6 +11,7 @@ import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.parsers.GMTFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.parsers.ParseEDBEnrichmentResults;
 import org.baderlab.csplugins.enrichmentmap.view.mastermap.DataSetParameters;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
@@ -19,6 +20,8 @@ import com.google.inject.assistedinject.Assisted;
 
 public class MasterMapGSEATaskFactory extends AbstractTaskFactory {
 
+	@Inject private CyServiceRegistrar serviceRegistrar;
+	
 	@Inject private LegacySupport legacySupport;
 	@Inject private @Headless boolean headless;
 	
@@ -49,8 +52,7 @@ public class MasterMapGSEATaskFactory extends AbstractTaskFactory {
 		
 		tasks.append(new TitleTask("Building EnrichmentMap"));
 		
-		String name = legacySupport.getNextAttributePrefix() + "MasterMap";
-		EnrichmentMap map = new EnrichmentMap(name, params);
+		EnrichmentMap map = new EnrichmentMap(params, serviceRegistrar);
 		
 		for(DataSetParameters dataSetParameters : dataSets) {
 			DataSetFiles files = dataSetParameters.getFiles();

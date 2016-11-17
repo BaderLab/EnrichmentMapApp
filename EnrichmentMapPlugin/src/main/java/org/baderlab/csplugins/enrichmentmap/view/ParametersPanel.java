@@ -45,7 +45,7 @@ package org.baderlab.csplugins.enrichmentmap.view;
 
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
-import static org.baderlab.csplugins.enrichmentmap.util.SwingUtil.makeSmall;
+import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.makeSmall;
 
 import java.awt.BorderLayout;
 import java.awt.Component;

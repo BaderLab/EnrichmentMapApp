@@ -11,12 +11,35 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 public class NetworkUtil {
 
 	private NetworkUtil() { }
 	
+	public static String getName(final CyNetwork network) {
+		String name = "";
+		
+		try {
+			name = network.getRow(network).get(CyNetwork.NAME, String.class);
+		} catch (Exception e) {
+		}
+		
+		if (name == null || name.trim().isEmpty())
+			name = "? (SUID: " + network.getSUID() + ")";
+		
+		return name;
+	}
 	
+	public static String getTitle(final CyNetworkView view) {
+		String title = view.getVisualProperty(BasicVisualLexicon.NETWORK_TITLE);
+		
+		if (title == null || title.trim().isEmpty())
+			title = getName(view.getModel());
+		
+		return title;
+	}
 	
 	/**
 	 * Returns a single node that matches the given value.

@@ -8,6 +8,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.task.EnrichmentMapBuildMapTaskFactory;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
@@ -52,6 +53,7 @@ public class EnrichmentMapGSEACommandHandlerTask extends AbstractTask {
 	@Inject private EnrichmentMapManager emManager;
 	@Inject private LegacySupport legacySupport;
 
+	@Inject private CyServiceRegistrar serviceRegistrar;
 	
 	public EnrichmentMapGSEACommandHandlerTask() {
 		similaritymetric = new ListSingleSelection<String>(EnrichmentMapParameters.SM_OVERLAP, EnrichmentMapParameters.SM_JACCARD, EnrichmentMapParameters.SM_COMBINED);
@@ -91,7 +93,7 @@ public class EnrichmentMapGSEACommandHandlerTask extends AbstractTask {
 		String prefix = legacySupport.getNextAttributePrefix();
 		new_params.setAttributePrefix(prefix);
 		String name = prefix + LegacySupport.EM_NAME;
-		EnrichmentMap map = new EnrichmentMap(name, new_params.getCreationParameters());
+		EnrichmentMap map = new EnrichmentMap(new_params.getCreationParameters(), serviceRegistrar);
 
 		EnrichmentMapBuildMapTaskFactory buildmap = taskFactoryProvider.create(map);
 

@@ -15,6 +15,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
+import org.baderlab.csplugins.enrichmentmap.util.NetworkUtil;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -24,7 +28,6 @@ import com.google.common.collect.HashBiMap;
  */
 public class EnrichmentMap {
 
-	private final String name;
 	private long networkID;
 	
 	//reference to the parameters used to create this map
@@ -45,18 +48,18 @@ public class EnrichmentMap {
 	private Map<String, GeneSet> signatureGenesets = new HashMap<>();
 
 	private int NumberOfGenes = 0;
-	
+
+	private final CyServiceRegistrar serviceRegistrar;
 	
 	/**
 	 * Class Constructor Given - EnrichmentnMapParameters create a new
 	 * enrichment map. The parameters contain all cut-offs and file names for the analysis
 	 */
-	public EnrichmentMap(String name, EMCreationParameters params) {
+	public EnrichmentMap(EMCreationParameters params, CyServiceRegistrar serviceRegistrar) {
 		this.params = params;
-		this.name = name;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
-	
 	public void addDataSet(String name, DataSet dataset) {
 		if(datasets.containsKey(name)) {
 			throw new IllegalArgumentException("DataSet with name " + name + " already exists in this enrichment map");
@@ -167,7 +170,6 @@ public class EnrichmentMap {
 			NumberOfGenes = id;
 	}
 	
-
 	public int getNumberOfGenes() {
 		return NumberOfGenes;
 	}
@@ -213,9 +215,10 @@ public class EnrichmentMap {
 	}
 
 	public String getName() {
-		return name;
+		CyNetwork net = serviceRegistrar.getService(CyNetworkManager.class).getNetwork(networkID);
+		
+		return net != null ? NetworkUtil.getName(net) : "-- UNDEFINED --";
 	}
-
 
 	/*
 	 * Return a hash of all the genesets in the set of genesets regardless of which dataset it comes from.
@@ -421,6 +424,6 @@ public class EnrichmentMap {
 
 	@Override
 	public String toString() {
-		return name;
+		return getName();
 	}
 }

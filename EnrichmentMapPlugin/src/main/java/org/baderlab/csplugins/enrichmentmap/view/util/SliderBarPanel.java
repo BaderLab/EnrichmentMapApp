@@ -45,7 +45,7 @@ package org.baderlab.csplugins.enrichmentmap.view.util;
 
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
-import static org.baderlab.csplugins.enrichmentmap.util.SwingUtil.makeSmall;
+import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.makeSmall;
 import static org.cytoscape.util.swing.LookAndFeelUtil.getSmallFontSize;
 
 import java.awt.Font;

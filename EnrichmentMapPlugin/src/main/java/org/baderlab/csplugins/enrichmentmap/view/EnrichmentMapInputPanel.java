@@ -45,7 +45,7 @@ package org.baderlab.csplugins.enrichmentmap.view;
 
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
-import static org.baderlab.csplugins.enrichmentmap.util.SwingUtil.makeSmall;
+import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.makeSmall;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -102,7 +102,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.task.EnrichmentMapBuildMapTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.util.ResultTaskObserver;
-import org.baderlab.csplugins.enrichmentmap.util.SwingUtil;
+import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
@@ -1232,8 +1232,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 
 		String prefix = legacySupport.getNextAttributePrefix();
 		new_params.setAttributePrefix(prefix);
-		String name = prefix + LegacySupport.EM_NAME;
-		EnrichmentMap map = new EnrichmentMap(name, new_params.getCreationParameters());
+		EnrichmentMap map = new EnrichmentMap(new_params.getCreationParameters(), registrar);
 		
 		// TEMPORARY
 		// This code is kind of ugly because it is bridging the gap between the old EnrichmentMapParameters and the new style

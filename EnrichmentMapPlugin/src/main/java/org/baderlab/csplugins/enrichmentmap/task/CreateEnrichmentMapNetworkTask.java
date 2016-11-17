@@ -69,6 +69,7 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
@@ -86,6 +87,7 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 	
 	@Inject private CyNetworkManager networkManager;
 	@Inject private CyNetworkFactory networkFactory;
+	@Inject private CyNetworkNaming networkNaming;
 	@Inject private EnrichmentMapManager emManager;
 	
 	private final EnrichmentMap map;
@@ -108,7 +110,6 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 	 * @return true if successful
 	 */
 	public boolean computeMap(TaskMonitor taskMonitor) {
-
 		//on multiple runs of the program some of the nodes or all of them might already
 		//be created but it is possible that they have different values for the attributes.  How do
 		//we resolve this?
@@ -117,7 +118,7 @@ public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 
 		//create the new network.
 		network = networkFactory.createNetwork();
-		network.getRow(network).set(CyNetwork.NAME, map.getName());
+		network.getRow(network).set(CyNetwork.NAME, networkNaming.getSuggestedNetworkTitle(LegacySupport.EM_NAME));
 
 		//set the NetworkID in the EM parameters
 		map.setNetworkID(network.getSUID());

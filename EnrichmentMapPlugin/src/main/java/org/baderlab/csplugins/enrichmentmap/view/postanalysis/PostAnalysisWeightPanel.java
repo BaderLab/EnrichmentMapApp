@@ -2,7 +2,7 @@ package org.baderlab.csplugins.enrichmentmap.view.postanalysis;
 
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
-import static org.baderlab.csplugins.enrichmentmap.util.SwingUtil.makeSmall;
+import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.makeSmall;
 
 import java.awt.CardLayout;
 import java.awt.event.ActionListener;

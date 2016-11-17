@@ -30,6 +30,7 @@ import org.baderlab.csplugins.enrichmentmap.model.GSEAResult;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.GenericResult;
 import org.baderlab.csplugins.enrichmentmap.model.GenesetSimilarity;
+import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
@@ -37,6 +38,7 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
@@ -47,6 +49,7 @@ public class MasterMapNetworkTask extends AbstractTask {
 
 	@Inject private CyNetworkManager networkManager;
 	@Inject private CyNetworkFactory networkFactory;
+	@Inject private CyNetworkNaming networkNaming;
 	@Inject private EnrichmentMapManager emManager;
 	
 	private final EnrichmentMap map;
@@ -70,7 +73,8 @@ public class MasterMapNetworkTask extends AbstractTask {
 	private void createMasterMapNetwork() {
 		// Create the CyNetwork
 		CyNetwork network = networkFactory.createNetwork();
-		network.getRow(network).set(CyNetwork.NAME, map.getName());
+		
+		network.getRow(network).set(CyNetwork.NAME, networkNaming.getSuggestedNetworkTitle(LegacySupport.EM_NAME));
 		map.setNetworkID(network.getSUID());
 		
 		createNodeAttributes(network);
