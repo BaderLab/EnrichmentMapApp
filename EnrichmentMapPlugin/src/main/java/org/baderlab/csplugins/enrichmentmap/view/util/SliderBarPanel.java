@@ -59,8 +59,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
 
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
 @SuppressWarnings("serial")
@@ -70,10 +68,6 @@ public class SliderBarPanel extends JPanel {
 	private JSlider slider;
 	private BoundedTextField textField;
 	
-	// required services
-	private CyApplicationManager applicationManager;
-	private EnrichmentMapManager emManager;
-
 	// min and max values for the slider
 	private final int min, max, initialValue;
 
@@ -87,7 +81,9 @@ public class SliderBarPanel extends JPanel {
 
 	private String labelText;
 
-	private boolean edgesOnly;
+	private final String attrib1;
+	private final String attrib2;
+	private final boolean edgesOnly;
 
     /**
      * @param min - slider mininmum value
@@ -103,13 +99,11 @@ public class SliderBarPanel extends JPanel {
 			String attrib1,
 			String attrib2,
 			boolean edgesOnly,
-			double initialValue,
-			CyApplicationManager applicationManager,
-			EnrichmentMapManager emManager
+			double initialValue
 	) {
-		this.applicationManager = applicationManager;
-		this.emManager = emManager;
-
+		this.attrib1 = attrib1;
+		this.attrib2 = attrib2;
+		
 		if ((min <= 1) && (max <= 1)) {
 			// if the max is a very small number then use the precision to filter the results
 			if (max <= 0.0001) {
@@ -137,7 +131,7 @@ public class SliderBarPanel extends JPanel {
 		this.labelText = labelText;
 		this.edgesOnly = edgesOnly;
 
-		initPanel(attrib1, attrib2);
+		initPanel();
     }
 
     /**
@@ -148,12 +142,10 @@ public class SliderBarPanel extends JPanel {
      * @param attrib2 - attribute for dataset 2 that the slider bar is specific to (i.e. p-value or q-value)
      * @param desiredWidth
      */
-	public void initPanel(String attrib1, String attrib2) {
+	private void initPanel() {
 		label = new JLabel(labelText);
 		
 		slider = new JSlider(JSlider.HORIZONTAL, min, max, initialValue);
-		slider.addChangeListener(
-				new SliderBarActionListener(this, attrib1, attrib2, edgesOnly, applicationManager, emManager));
 		slider.setMajorTickSpacing((max - min) / 5);
 		slider.setPaintTicks(true);
 
@@ -220,6 +212,22 @@ public class SliderBarPanel extends JPanel {
     }
 
     // Getters and Setters
+	
+	public String getAttrib1() {
+		return attrib1;
+	}
+	
+	public String getAttrib2() {
+		return attrib2;
+	}
+	
+	public boolean isEdgesOnly() {
+		return edgesOnly;
+	}
+	
+	public JSlider getSlider() {
+		return slider;
+	}
 	
 	public BoundedTextField getTextField() {
 		return textField;

@@ -65,6 +65,7 @@ public class ShowAboutDialogAction extends AbstractCyAction {
 		super("About...");
 	}
 
+	@Override
 	public void actionPerformed(ActionEvent event) {
 		AboutDialog aboutPanel = new AboutDialog(application, browser);
 		aboutPanel.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -72,5 +73,4 @@ public class ShowAboutDialogAction extends AbstractCyAction {
 		aboutPanel.setLocationRelativeTo(application.getJFrame());
 		aboutPanel.setVisible(true);
 	}
-	
 }

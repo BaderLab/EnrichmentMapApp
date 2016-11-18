@@ -77,31 +77,13 @@ public class SliderBarActionListener implements ChangeListener {
 	private ArrayList<HiddenNodes> hiddenNodes;
 	private ArrayList<CyEdge> hiddenEdges;
 
-	//attribute for dataset 1 that the slider bar is specific to
-	private String attrib_dataset1;
-	//attribute for dataset 2 that the slider bar is specific to
-	private String attrib_dataset2;
-
-	private boolean onlyEdges = false;
-	
-	
-	/**
-	 * @param attrib1 attribute for dataset 1 that the slider bar is specific to (i.e. p-value or q-value)
-	 * @param attrib2 attribute for dataset 2 that the slider bar is specific to (i.e. p-value or q-value)
-	 */
-	public SliderBarActionListener(SliderBarPanel panel, String attrib1, String attrib2, boolean onlyEdges,
-			 CyApplicationManager applicationManager, EnrichmentMapManager emManager) {
+	public SliderBarActionListener(SliderBarPanel panel, CyApplicationManager applicationManager,
+			EnrichmentMapManager emManager) {
 		this.panel = panel;
 		this.applicationManager = applicationManager;
 		this.emManager = emManager;
 		hiddenNodes = new ArrayList<>();
 		hiddenEdges = new ArrayList<>();
-
-		attrib_dataset1 = attrib1;
-		attrib_dataset2 = attrib2;
-
-		this.onlyEdges = onlyEdges;
-		
 	}
 
 	/**
@@ -117,7 +99,7 @@ public class SliderBarActionListener implements ChangeListener {
 		panel.setValue(source.getValue());
 		
 		//check to see if the event is associated with only edges
-		if (onlyEdges) {
+		if (panel.isEdgesOnly()) {
 			hideEdgesOnly(e);
 			return;
 		}
@@ -177,6 +159,9 @@ public class SliderBarActionListener implements ChangeListener {
 		 * } }
 		 */
 
+		String attrib1 = panel.getAttrib1();
+		String attrib2 = panel.getAttrib2();
+		
 		//go through all the existing nodes to see if we need to hide any new nodes.
 		for(CyNode i : nodes) {
 			CyNode currentNode = network.getNode(i.getSUID());
@@ -188,16 +173,16 @@ public class SliderBarActionListener implements ChangeListener {
 							network.getRow(currentNode).get(prefix + EnrichmentMapVisualStyle.GS_TYPE, String.class)))
 				continue;
 
-			Double pvalue_dataset1 = network.getRow(currentNode).get(prefix + attrib_dataset1, Double.class);
+			Double pvalue_dataset1 = network.getRow(currentNode).get(prefix + attrib1, Double.class);
 
 			//possible that there isn't a p-value for this geneset
 			if(pvalue_dataset1 == null)
 				pvalue_dataset1 = 0.99;
 
 			if((pvalue_dataset1 > maxCutoff) || (pvalue_dataset1 < minCutoff)) {
-				CyColumn col = network.getDefaultNodeTable().getColumn(prefix + attrib_dataset2);
+				CyColumn col = network.getDefaultNodeTable().getColumn(prefix + attrib2);
 				if(col != null) {
-					Double pvalue_dataset2 = network.getRow(currentNode).get(prefix + attrib_dataset2, Double.class);
+					Double pvalue_dataset2 = network.getRow(currentNode).get(prefix + attrib2, Double.class);
 					
 					if(pvalue_dataset2 == null)
 						pvalue_dataset2 = 0.99;
@@ -245,7 +230,7 @@ public class SliderBarActionListener implements ChangeListener {
 		for(Iterator<HiddenNodes> j = hiddenNodes.iterator(); j.hasNext();) {
 			HiddenNodes currentHN = (HiddenNodes) j.next();
 			CyNode currentNode = currentHN.getNode();
-			Double pvalue_dataset1 = network.getRow(currentNode).get(prefix + attrib_dataset1, Double.class);
+			Double pvalue_dataset1 = network.getRow(currentNode).get(prefix + attrib1, Double.class);
 
 			//possible that there isn't a p-value for this geneset
 			if(pvalue_dataset1 == null)
@@ -261,9 +246,9 @@ public class SliderBarActionListener implements ChangeListener {
 				unhiddenNodes.add(currentHN);
 			}
 			
-			CyColumn col = network.getDefaultNodeTable().getColumn(prefix + attrib_dataset2);
+			CyColumn col = network.getDefaultNodeTable().getColumn(prefix + attrib2);
 			if(col != null) {
-				Double pvalue_dataset2 = network.getRow(currentNode).get(prefix + attrib_dataset2, Double.class);
+				Double pvalue_dataset2 = network.getRow(currentNode).get(prefix + attrib2, Double.class);
 
 				if(pvalue_dataset2 == null)
 					pvalue_dataset2 = 0.99;
@@ -322,6 +307,8 @@ public class SliderBarActionListener implements ChangeListener {
 		String prefix = emManager.getEnrichmentMap(network.getSUID()).getParams().getAttributePrefix();
 		//go through all the existing nodes to see if we need to hide any new nodes.
 
+		String attrib1 = panel.getAttrib1();
+		
 		for(CyEdge i : edges) {
 			CyEdge currentEdge = network.getEdge(i.getSUID());
 
@@ -331,7 +318,7 @@ public class SliderBarActionListener implements ChangeListener {
 							network.getRow(currentEdge).get(prefix + EnrichmentMapVisualStyle.GS_TYPE, String.class)))
 				continue;
 
-			Double similarity_cutoff = network.getRow(currentEdge).get(prefix + attrib_dataset1, Double.class);
+			Double similarity_cutoff = network.getRow(currentEdge).get(prefix + attrib1, Double.class);
 
 			//possible that there isn't a p-value for this geneset
 			if(similarity_cutoff == null)
@@ -350,7 +337,7 @@ public class SliderBarActionListener implements ChangeListener {
 
 		for(Iterator<CyEdge> j = hiddenEdges.iterator(); j.hasNext();) {
 			CyEdge currentEdge = (CyEdge) j.next();
-			Double similarity_curoff = network.getRow(currentEdge).get(prefix + attrib_dataset1, Double.class);
+			Double similarity_curoff = network.getRow(currentEdge).get(prefix + attrib1, Double.class);
 
 			//possible that there isn't a p-value for this geneset
 			if(similarity_curoff == null)

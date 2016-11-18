@@ -9,13 +9,13 @@ import org.baderlab.csplugins.enrichmentmap.actions.HeatMapSelectionListener;
 import org.baderlab.csplugins.enrichmentmap.actions.LegacyEnrichmentMapSessionListener;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadEnrichmentsPanelAction;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadPostAnalysisPanelAction;
-import org.baderlab.csplugins.enrichmentmap.actions.ShowAboutDialogAction;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowControlPanelAction;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowEdgeWidthDialogAction;
 import org.baderlab.csplugins.enrichmentmap.commands.BuildEnrichmentMapTuneableTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.commands.EnrichmentMapGSEACommandHandlerTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.style.ChartFactoryManager;
+import org.baderlab.csplugins.enrichmentmap.view.controlpanel.ControlPanelMediator;
 import org.baderlab.csplugins.enrichmentmap.view.mastermap.MasterMapDialogAction;
 import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
@@ -63,12 +63,11 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, selectionListener, RowsSetListener.class, new Properties());		
 
 		// register actions
+		registerAction(bc, injector.getInstance(ShowControlPanelAction.class));
 		registerAction(bc, injector.getInstance(MasterMapDialogAction.class));
 		registerAction(bc, injector.getInstance(LoadEnrichmentsPanelAction.class));
 		registerAction(bc, injector.getInstance(LoadPostAnalysisPanelAction.class));	
 		registerAction(bc, injector.getInstance(ShowEdgeWidthDialogAction.class));
-		registerAction(bc, injector.getInstance(ShowControlPanelAction.class));
-		registerAction(bc, injector.getInstance(ShowAboutDialogAction.class));
 
 		// session save and restore
 		LegacyEnrichmentMapSessionListener sessionAction = injector.getInstance(LegacyEnrichmentMapSessionListener.class);
@@ -99,8 +98,10 @@ public class CyActivator extends AbstractCyActivator {
 		props.setProperty(TITLE, "Post Analysis Edge Width...");
 		props.setProperty("tableTypes", "edge");
 		registerService(bc, tableColumnTaskFactory, TableColumnTaskFactory.class, props);
+		
+		ControlPanelMediator controlPanelMediator = injector.getInstance(ControlPanelMediator.class);
+		registerAllServices(bc, controlPanelMediator, new Properties());
 	}
-	
 	
 	private void registerAction(BundleContext bc, AbstractCyAction action) {
 		action.setPreferredMenu("Apps.EnrichmentMap");
