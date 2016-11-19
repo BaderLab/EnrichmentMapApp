@@ -576,9 +576,17 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 		if (theme == null || range == null || measurement == null)
 			return Color.GRAY;
 
-		float rLow = theme.getMinColor().getRed() / 255, gLow = theme.getMinColor().getGreen() / 255, bLow = theme.getMinColor().getBlue() / 255;
-		float rMid = theme.getCenterColor().getRed() / 255, gMid = theme.getCenterColor().getGreen() / 255, bMid = theme.getCenterColor().getBlue() / 255;
-		float rHigh = theme.getMaxColor().getRed() / 255, gHigh = theme.getMaxColor().getGreen() / 255, bHigh = theme.getMaxColor().getBlue() / 255;
+		float rLow = (float)theme.getMinColor().getRed()   / 255f;
+		float gLow = (float)theme.getMinColor().getGreen() / 255f;
+		float bLow = (float)theme.getMinColor().getBlue()  / 255f;
+		
+		float rMid = (float)theme.getCenterColor().getRed()   / 255f;
+		float gMid = (float)theme.getCenterColor().getGreen() / 255f;
+		float bMid = (float)theme.getCenterColor().getBlue()  / 255f;
+		 
+		float rHigh = (float)theme.getMaxColor().getRed()   / 255f;
+		float gHigh = (float)theme.getMaxColor().getGreen() / 255f;
+		float bHigh = (float)theme.getMaxColor().getBlue()  / 255f;
 
 		double median;
 		if (range.getMinValue() >= 0)
