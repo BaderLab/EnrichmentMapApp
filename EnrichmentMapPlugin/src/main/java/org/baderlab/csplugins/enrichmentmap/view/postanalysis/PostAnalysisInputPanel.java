@@ -74,13 +74,13 @@ import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterType;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters.AnalysisType;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
-import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
 import com.google.inject.Inject;
+import com.google.inject.assistedinject.Assisted;
 
 @SuppressWarnings("serial")
 public class PostAnalysisInputPanel extends JPanel {
@@ -102,17 +102,26 @@ public class PostAnalysisInputPanel extends JPanel {
 	private PostAnalysisSignatureDiscoveryPanel signatureDiscoveryPanel;
 	private PostAnalysisKnownSignaturePanel knownSignaturePanel;
 	
-	private EnrichmentMap map;
+	private final PostAnalysisPanel parent;
+	private final EnrichmentMap map;
 
+	public interface Factory {
+		PostAnalysisInputPanel create(PostAnalysisPanel parent, EnrichmentMap map);
+	}
+	
 	/**
 	 * Note: The initialize() method must be called before the panel can be
 	 * used.
 	 */
 	@Inject
 	public PostAnalysisInputPanel(
+			@Assisted PostAnalysisPanel parent,
+			@Assisted EnrichmentMap map,
 			PostAnalysisKnownSignaturePanel.Factory knownSignaturePanelFactory,
 			PostAnalysisSignatureDiscoveryPanel.Factory signatureDiscoveryPanelFactory
 	) {
+		this.parent = parent;
+		this.map = map;
 		// Create the two main panels, set the default one
 		knownSignaturePanel = knownSignaturePanelFactory.create(this);
 		signatureDiscoveryPanel = signatureDiscoveryPanelFactory.create(this);
@@ -152,8 +161,19 @@ public class PostAnalysisInputPanel extends JPanel {
 			setOpaque(false);
 			userInputPanel.setOpaque(false);
 		}
+		
+		initialize();
 	}
 
+
+	private void initialize() {
+		if(map != null) {
+			knownSignaturePanel.initialize(map);
+			signatureDiscoveryPanel.initialize(map);
+			knownSignatureRadio.setToolTipText(map.getName());
+		}
+	}
+	
 	private void flipPanels(JPanel toRemove, JPanel toAdd) {
 		userInputPanel.remove(toRemove);
 		userInputPanel.add(toAdd, BorderLayout.CENTER);
@@ -219,7 +239,7 @@ public class PostAnalysisInputPanel extends JPanel {
 		resetButton.addActionListener(e -> resetPanel());
 
 		JButton closeButton = new JButton("Close");
-		closeButton.addActionListener(e -> close());
+		closeButton.addActionListener(e -> parent.close());
 
 		JButton runButton = new JButton("Run");
 		runButton.addActionListener(e -> {
@@ -297,10 +317,6 @@ public class PostAnalysisInputPanel extends JPanel {
 		return valid ? Optional.of(value.doubleValue()) : Optional.empty();
 	}
 
-	public void close() {
-		registrar.unregisterService(this, CytoPanelComponent.class);
-	}
-
 	protected static Color checkFile(String filename) {
 		// check to see if the files exist and are readable.
 		// if the file is unreadable change the color of the font to red
@@ -321,16 +337,6 @@ public class PostAnalysisInputPanel extends JPanel {
 		signatureDiscoveryPanel.resetPanel();
 	}
 
-	/**
-	 * Refresh content of PostAnalysisInputPanel when Network is changed or
-	 * Panel is re-opened.
-	 */
-	public void initialize(EnrichmentMap currentMap) {
-		this.map = currentMap;
-		knownSignaturePanel.initialize(currentMap);
-		signatureDiscoveryPanel.initialize(currentMap);
-		knownSignatureRadio.setToolTipText(currentMap.getName());
-	}
 
 	/**
 	 * Creates a PostAnalysisParameters object based on the user's input.

@@ -23,6 +23,7 @@ import org.baderlab.csplugins.enrichmentmap.task.heatmap.UpdateHeatMapTask;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapPanel;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapSortActionListener;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapTransformActionListener;
+import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PostAnalysisInputPanel;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PostAnalysisKnownSignaturePanel;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PostAnalysisSignatureDiscoveryPanel;
 import org.cytoscape.application.swing.CySwingApplication;
@@ -84,6 +85,7 @@ class FactoryModule extends AbstractModule {
 		installFactory(EnrichmentMapBuildMapTaskFactory.Factory.class);
 		installFactory(EnrichmentMapVisualStyle.Factory.class);
 		installFactory(PostAnalysisVisualStyle.Factory.class);
+		installFactory(PostAnalysisInputPanel.Factory.class);
 		installFactory(BuildPostAnalysisActionListener.Factory.class);
 		installFactory(CreatePostAnalysisVisualStyleTask.Factory.class);
 		installFactory(BuildDiseaseSignatureTask.Factory.class);

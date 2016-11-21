@@ -14,10 +14,10 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
 import com.google.inject.Inject;
-import com.google.inject.Provider;
 import com.google.inject.Singleton;
 
 /**
@@ -29,7 +29,8 @@ import com.google.inject.Singleton;
 @Singleton
 public class PostAnalysisPanel extends JPanel implements CytoPanelComponent {
 	
-	@Inject private Provider<PostAnalysisInputPanel> panelProvider;
+	@Inject private PostAnalysisInputPanel.Factory panelFactory;
+	@Inject private CyServiceRegistrar registrar;
 	
 	private WeakHashMap<EnrichmentMap, PostAnalysisInputPanel> panels = new WeakHashMap<>();
     
@@ -62,14 +63,14 @@ public class PostAnalysisPanel extends JPanel implements CytoPanelComponent {
 	}
 
 	private PostAnalysisInputPanel newPostAnalysisInputPanel(EnrichmentMap map) {
-		PostAnalysisInputPanel panel = panelProvider.get();
-		
-		if (map != null)
-			panel.initialize(map);
-		
+		PostAnalysisInputPanel panel = panelFactory.create(this, map);
 		return panel;
 	}
 
+	void close() {
+    	registrar.unregisterService(this, CytoPanelComponent.class);
+    }
+	
 	@Override
 	public Component getComponent() {
 		return this;
