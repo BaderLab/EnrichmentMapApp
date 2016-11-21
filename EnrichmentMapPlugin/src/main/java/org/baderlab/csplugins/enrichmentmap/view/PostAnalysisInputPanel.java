@@ -125,13 +125,17 @@ public class PostAnalysisInputPanel extends JPanel {
     private PostAnalysisParameters sigDiscoveryPaParams;
     private PostAnalysisParameters knownSigPaParams;
     
+    private final PostAnalysisPanel parent;
     
-	public PostAnalysisInputPanel(CyApplicationManager cyApplicationManager, CySwingApplication application,
+	public PostAnalysisInputPanel(PostAnalysisPanel parent, 
+			CyApplicationManager cyApplicationManager, CySwingApplication application,
 			FileUtil fileUtil, CySessionManager sessionManager, StreamUtil streamUtil, CyServiceRegistrar registrar,
 			DialogTaskManager dialog, SynchronousTaskManager syncTaskManager, CyEventHelper eventHelper,
 			VisualMappingManager visualMappingManager, VisualStyleFactory visualStyleFactory,
 			VisualMappingFunctionFactory vmfFactoryContinuous, VisualMappingFunctionFactory vmfFactoryDiscrete,
 			VisualMappingFunctionFactory vmfFactoryPassthrough) {
+		this.parent = parent;
+		
     	this.cyApplicationManager = cyApplicationManager;
     	this.application = application;
         this.fileUtil = fileUtil;
@@ -255,7 +259,7 @@ public class PostAnalysisInputPanel extends JPanel {
 
 		JButton closeButton = new JButton("Close");
 		closeButton.addActionListener((ActionEvent e) -> {
-			close();
+			parent.close();
 		});
 
 		JButton importButton = new JButton("Run");
@@ -345,11 +349,6 @@ public class PostAnalysisInputPanel extends JPanel {
     	return valid;
     }
     
-    
-    public void close() {
-    	registrar.unregisterService(this, CytoPanelComponent.class);
-    }
-
     protected static Color checkFile(String filename){
         //check to see if the files exist and are readable.
         //if the file is unreadable change the color of the font to red

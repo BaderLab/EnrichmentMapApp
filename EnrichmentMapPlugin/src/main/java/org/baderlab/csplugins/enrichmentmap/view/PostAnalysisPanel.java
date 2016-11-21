@@ -112,9 +112,13 @@ public class PostAnalysisPanel extends JPanel implements CytoPanelComponent {
     }    
     
     private PostAnalysisInputPanel newPostAnalysisInputPanel() {
-		return new PostAnalysisInputPanel(cyApplicationManager, application, fileUtil, sessionManager, streamUtil,
+		return new PostAnalysisInputPanel(this, cyApplicationManager, application, fileUtil, sessionManager, streamUtil,
 				registrar, dialog, syncTaskManager, eventHelper, visualMappingManager, visualStyleFactory,
 				vmfFactoryContinuous, vmfFactoryDiscrete, vmfFactoryPassthrough);
+    }
+    
+    void close() {
+    	registrar.unregisterService(this, CytoPanelComponent.class);
     }
     
 	@Override
