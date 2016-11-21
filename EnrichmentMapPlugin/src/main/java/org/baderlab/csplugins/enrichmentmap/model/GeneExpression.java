@@ -226,8 +226,13 @@ public class GeneExpression {
         double mean = getMean();
         double std = getSTD(mean);
 
-        for(int i = 0;i<expression.length;i++)
-            normalize[i] = (expression[i] - mean)/std;
+        if(std == 0.0) {
+        	for(int i = 0;i<expression.length;i++)
+                normalize[i] = 0.0;
+        } else {
+        	for(int i = 0;i<expression.length;i++)
+                normalize[i] = (expression[i] - mean)/std;
+        }
 
         return normalize;
     }
