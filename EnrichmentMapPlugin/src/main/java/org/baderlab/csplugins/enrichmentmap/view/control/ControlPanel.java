@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap.view.controlpanel;
+package org.baderlab.csplugins.enrichmentmap.view.control;
 
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.GroupLayout;
@@ -77,6 +78,8 @@ import com.google.inject.Singleton;
 public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDisposable {
 	
 	public static final String ID = "enrichmentmap.view.ControlPanel";
+	
+	private static final String BORDER_COLOR_KEY = "Separator.foreground";
 	
 	@Inject private CyNetworkViewManager networkViewManager;
 	@Inject private IconManager iconManager;
@@ -177,7 +180,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 					if (value instanceof CyNetworkView)
 						this.setText(NetworkUtil.getTitle((CyNetworkView) value));
 					else
-						this.setText("-- Select Enrichment Map View --");
+						this.setText("-- Select EnrichmentMap View --");
 					
 					return this;
 				}
@@ -346,6 +349,8 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		
 		private JComboBox<ChartType> chartTypeCombo;
 		private JComboBox<ColorScheme> chartColorsCombo;
+		
+		private JButton advancedOptionsButton;
 
 		private final CyNetworkView networkView;
 		
@@ -355,6 +360,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		private EMViewControlPanel(final CyNetworkView networkView) {
 			this.networkView = networkView;
 			setName("__EM_VIEW_CONTROL_PANEL_" + networkView.getSUID());
+			setBorder(BorderFactory.createLineBorder(UIManager.getColor(BORDER_COLOR_KEY)));
 			
 			// Init colors
 			final List<ColorScheme> heatStripSchemeList = new ArrayList<>();
@@ -379,10 +385,15 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 	   		layout.setHorizontalGroup(layout.createParallelGroup(CENTER, true)
 					.addComponent(filterPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addComponent(stylePanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addGroup(layout.createSequentialGroup()
+							.addGap(0, 0, Short.MAX_VALUE)
+							.addComponent(getAdvancedOptionsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					)
 	   		);
 	   		layout.setVerticalGroup(layout.createSequentialGroup()
 	   				.addComponent(filterPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addComponent(stylePanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getAdvancedOptionsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 	   		);
 			
 			if (LookAndFeelUtil.isAquaLAF())
@@ -635,6 +646,14 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			return resetStyleButton;
 		}
 		
+		JButton getAdvancedOptionsButton() {
+			if (advancedOptionsButton == null) {
+				advancedOptionsButton = new JButton("Advanced Options...");
+			}
+			
+			return advancedOptionsButton;
+		}
+		
 		private JPanel createDataSetListPanel() {
 			anyRadio = new JRadioButton("any");
 			allRadio = new JRadioButton("all");
@@ -705,6 +724,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		
 		NullViewControlPanel() {
 			setName(NAME);
+			setBorder(BorderFactory.createLineBorder(UIManager.getColor(BORDER_COLOR_KEY)));
 			
 			final GroupLayout layout = new GroupLayout(this);
 			this.setLayout(layout);
@@ -728,7 +748,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		
 		private JLabel getInfoLabel() {
 			if (infoLabel == null) {
-				infoLabel = new JLabel("-- No Enrichment Map View selected --");
+				infoLabel = new JLabel("No EnrichmentMap View selected");
 				infoLabel.setEnabled(false);
 				infoLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
 			}

@@ -6,7 +6,6 @@ import java.util.TreeSet;
 
 import javax.annotation.Nullable;
 
-import org.baderlab.csplugins.enrichmentmap.actions.ShowPanelTask;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
@@ -16,24 +15,20 @@ import org.baderlab.csplugins.enrichmentmap.parsers.DetermineEnrichmentResultFil
 import org.baderlab.csplugins.enrichmentmap.parsers.ExpressionFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.parsers.GMTFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.parsers.RanksFileReaderTask;
-import org.baderlab.csplugins.enrichmentmap.view.ParametersPanel;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 
 import com.google.common.base.Strings;
 import com.google.inject.Inject;
-import com.google.inject.Provider;
 import com.google.inject.assistedinject.Assisted;
 
 public class EnrichmentMapBuildMapTaskFactory implements TaskFactory {
 
 	@Inject private VisualizeEnrichmentMapTask.Factory visualizeEnrichmentMapTaskFactory;
 	@Inject private CreateEnrichmentMapNetworkTask.Factory createEnrichmentMapNetworkTaskFactory;
-	@Inject private Provider<ParametersPanel> parametersPanelProvider;
 	@Inject private @Nullable CySwingApplication swingApplication;
 	
-
 	private EnrichmentMap map;
 	
 	public interface Factory {
@@ -45,7 +40,7 @@ public class EnrichmentMapBuildMapTaskFactory implements TaskFactory {
 		this.map = map;
 	}
 
-	
+	@Override
 	public TaskIterator createTaskIterator() {
 		TitleTask dummyTaskToSetTitle = new TitleTask("Building Enrichment Map");
 
@@ -122,11 +117,7 @@ public class EnrichmentMapBuildMapTaskFactory implements TaskFactory {
 		currentTasks.append(create_map);
 
 		// don't visualize the map if running headless
-		if(swingApplication != null) {
-			ParametersPanel paramsPanel = parametersPanelProvider.get();
-			ShowPanelTask show_parameters_panel = new ShowPanelTask(swingApplication, paramsPanel);
-			currentTasks.append(show_parameters_panel);
-			
+		if (swingApplication != null) {
 			//visualize Network
 			VisualizeEnrichmentMapTask map_viz = visualizeEnrichmentMapTaskFactory.create(map);
 			currentTasks.append(map_viz);
@@ -135,9 +126,8 @@ public class EnrichmentMapBuildMapTaskFactory implements TaskFactory {
 		return currentTasks;
 	}
 
-	
+	@Override
 	public boolean isReady() {
 		return map != null && !map.getDatasets().isEmpty();
 	}
-
 }

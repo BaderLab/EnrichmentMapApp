@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap.view.controlpanel;
+package org.baderlab.csplugins.enrichmentmap.view.control;
 
 import java.util.ArrayList;
 import java.util.Comparator;

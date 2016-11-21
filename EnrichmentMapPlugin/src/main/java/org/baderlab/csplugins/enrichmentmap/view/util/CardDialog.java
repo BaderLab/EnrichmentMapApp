@@ -39,17 +39,18 @@ public class CardDialog {
 	private final CardDialogParameters params;
 	private final IconManager iconManager;
 	
-	
 	public CardDialog(JFrame parent, IconManager iconManager, CardDialogParameters params) {
-		if(params == null || iconManager == null)
-			throw new NullPointerException();
+		if (iconManager == null)
+			throw new IllegalArgumentException("'iconManager' must not be null.");
+		if (params == null)
+			throw new IllegalArgumentException("'params' must not be null.");
+		
 		this.params = params;
 		this.iconManager = iconManager;
 		
 		dialog = new JDialog(parent);
 		createComponents();
 	}
-	
 	
 	public void open() {
 		dialog.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -58,6 +59,9 @@ public class CardDialog {
 		dialog.setVisible(true);
 	}
 	
+	public boolean isVisible() {
+		return dialog != null && dialog.isVisible();
+	}
 	
 	private void createComponents() {
 		dialog.setLayout(new BorderLayout());

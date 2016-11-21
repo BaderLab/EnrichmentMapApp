@@ -117,6 +117,7 @@ import org.cytoscape.work.swing.DialogTaskManager;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 
+@Deprecated
 @SuppressWarnings("serial")
 public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponent {
 

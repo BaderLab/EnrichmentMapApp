@@ -41,14 +41,13 @@
 // $LastChangedBy$
 // $HeadURL$
 
-package org.baderlab.csplugins.enrichmentmap.view;
+package org.baderlab.csplugins.enrichmentmap.view.parameters;
 
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.makeSmall;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.io.File;
@@ -60,7 +59,6 @@ import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.GroupLayout.ParallelGroup;
 import javax.swing.GroupLayout.SequentialGroup;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -71,6 +69,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.border.EmptyBorder;
 
 import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Edges;
 import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Nodes;
@@ -85,8 +85,6 @@ import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParameters;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParameters.DistanceMetric;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParameters.Sort;
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.application.swing.CytoPanelComponent;
-import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.util.swing.BasicCollapsiblePanel;
@@ -97,12 +95,11 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 /**
- * Right hand information Panel containing files uploaded, legends and
- * p-value,q-value sliders.
+ * Right hand information Panel containing files uploaded and legends
  */
 @Singleton
 @SuppressWarnings("serial")
-public class ParametersPanel extends JPanel implements CytoPanelComponent {
+public class ParametersPanel extends JPanel {
 
 	@Inject private OpenBrowser browser;
 	@Inject private CyApplicationManager applicationManager;
@@ -115,16 +112,32 @@ public class ParametersPanel extends JPanel implements CytoPanelComponent {
 	
 	private EnrichmentMap map;
 
-
+	public ParametersPanel() {
+		setLayout(new BorderLayout());
+	}
+	
 	/**
 	 * Update parameters panel based on given enrichment map parameters
 	 */
-	public void updatePanel(EnrichmentMap map) {
+	 void update(EnrichmentMap map) {
 		this.map = map;
-		EMCreationParameters params = map.getParams();
+		EMCreationParameters params = map != null ? map.getParams() : null;
 
-		this.removeAll();
-		this.revalidate();
+		removeAll();
+		
+		if (params == null) {
+			JLabel infoLabel = new JLabel("No EnrichmentMap View selected");
+			infoLabel.setEnabled(false);
+			infoLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
+			infoLabel.setHorizontalAlignment(JLabel.CENTER);
+			infoLabel.setVerticalAlignment(JLabel.CENTER);
+			infoLabel.setBorder(new EmptyBorder(120, 40, 120, 40));
+			
+			add(infoLabel, BorderLayout.CENTER);
+			revalidate();
+			
+			return;
+		}
 
 		JPanel legendsPanel = createLegendPanel(params, map);
 
@@ -192,9 +205,8 @@ public class ParametersPanel extends JPanel implements CytoPanelComponent {
 		
 		JScrollPane scrollPane = new JScrollPane(mainPanel);
 		
-		this.setLayout(new BorderLayout());
-		this.add(scrollPane, BorderLayout.CENTER);
-		this.revalidate();
+		add(scrollPane, BorderLayout.CENTER);
+		revalidate();
 	}
 
 	private BasicCollapsiblePanel createPreferencesPanel(EnrichmentMap map) {
@@ -398,7 +410,6 @@ public class ParametersPanel extends JPanel implements CytoPanelComponent {
 	 * Get the files and parameters corresponding to the current enrichment map
 	 */
 	private String getRunInfo(EMCreationParameters params) {
-		
 		final String INDENT = "&nbsp;&nbsp;&nbsp;&nbsp;";
 		
 		String s = "<html><font size='-2' face='sans-serif'>";
@@ -417,28 +428,15 @@ public class ParametersPanel extends JPanel implements CytoPanelComponent {
 			s = s + "<b>Test Used:</b> Jaccard Overlap Combined Index (k constant = " + params.getCombinedConstant() + ")<br>";
 		}
 		
-		s = s + "<b>Genesets File: </b><br>"
-				+ INDENT + shortenPathname(map.getDataset(LegacySupport.DATASET1).getDatasetFiles().getGMTFileName()) + "<br>";
+		if (map.getDataset(LegacySupport.DATASET1) != null) {
+			s = s + "<b>Genesets File: </b><br>"
+					+ INDENT + shortenPathname(map.getDataset(LegacySupport.DATASET1).getDatasetFiles().getGMTFileName()) + "<br>";
 		
-		String enrichmentFileName1 = map.getDataset(LegacySupport.DATASET1).getDatasetFiles().getEnrichmentFileName1();
-		String enrichmentFileName2 = map.getDataset(LegacySupport.DATASET1).getDatasetFiles().getEnrichmentFileName2();
+			String enrichmentFileName1 = map.getDataset(LegacySupport.DATASET1).getDatasetFiles().getEnrichmentFileName1();
+			String enrichmentFileName2 = map.getDataset(LegacySupport.DATASET1).getDatasetFiles().getEnrichmentFileName2();
 		
-		if (enrichmentFileName1 != null || enrichmentFileName2 != null) {
-			s = s + "<b>Dataset 1 Data Files: </b><br>";
-			
-			if (enrichmentFileName1 != null)
-				s = s + INDENT + shortenPathname(enrichmentFileName1) + "<br>";
-			
-			if (enrichmentFileName2 != null)
-				s = s + INDENT + shortenPathname(enrichmentFileName2) + "<br>";
-		}
-		
-		if (LegacySupport.isLegacyTwoDatasets(map)) {
-			enrichmentFileName1 = map.getDataset(LegacySupport.DATASET2).getDatasetFiles().getEnrichmentFileName1();
-			enrichmentFileName2 = map.getDataset(LegacySupport.DATASET2).getDatasetFiles().getEnrichmentFileName2();
-			
 			if (enrichmentFileName1 != null || enrichmentFileName2 != null) {
-				s = s + "<b>Dataset 2 Data Files: </b><br>";
+				s = s + "<b>Dataset 1 Data Files: </b><br>";
 				
 				if (enrichmentFileName1 != null)
 					s = s + INDENT + shortenPathname(enrichmentFileName1) + "<br>";
@@ -446,24 +444,40 @@ public class ParametersPanel extends JPanel implements CytoPanelComponent {
 				if (enrichmentFileName2 != null)
 					s = s + INDENT + shortenPathname(enrichmentFileName2) + "<br>";
 			}
-		}
-		s = s + "<b>Data file:</b>" + shortenPathname(map.getDataset(LegacySupport.DATASET1).getDatasetFiles().getExpressionFileName())
-		+ "<br>";
-		// TODO:fix second dataset viewing.
-		/*
-		 * if(params.isData2() && params.getEM().getExpression(LegacySupport.DATASET2) != null)
-		 * runInfoText = runInfoText + "<b>Data file 2:</b>" + shortenPathname(params.getExpressionFileName2()) + "<br>";
-		 */
-		
-		if (map.getDataset(LegacySupport.DATASET1) != null
-				&& map.getDataset(LegacySupport.DATASET1).getDatasetFiles().getGseaHtmlReportFile() != null) {
-			s = s + "<b>GSEA Report 1:</b>"
-					+ shortenPathname(map.getDataset(LegacySupport.DATASET1).getDatasetFiles().getGseaHtmlReportFile()) + "<br>";
-		}
-		if (map.getDataset(LegacySupport.DATASET2) != null
-				&& map.getDataset(LegacySupport.DATASET2).getDatasetFiles().getGseaHtmlReportFile() != null) {
-			s = s + "<b>GSEA Report 2:</b>"
-					+ shortenPathname(map.getDataset(LegacySupport.DATASET2).getDatasetFiles().getGseaHtmlReportFile()) + "<br>";
+			
+			if (LegacySupport.isLegacyTwoDatasets(map)) {
+				enrichmentFileName1 = map.getDataset(LegacySupport.DATASET2).getDatasetFiles().getEnrichmentFileName1();
+				enrichmentFileName2 = map.getDataset(LegacySupport.DATASET2).getDatasetFiles().getEnrichmentFileName2();
+				
+				if (enrichmentFileName1 != null || enrichmentFileName2 != null) {
+					s = s + "<b>Dataset 2 Data Files: </b><br>";
+					
+					if (enrichmentFileName1 != null)
+						s = s + INDENT + shortenPathname(enrichmentFileName1) + "<br>";
+					
+					if (enrichmentFileName2 != null)
+						s = s + INDENT + shortenPathname(enrichmentFileName2) + "<br>";
+				}
+			}
+			
+			s = s + "<b>Data file:</b>" + shortenPathname(map.getDataset(LegacySupport.DATASET1).getDatasetFiles().getExpressionFileName())
+			+ "<br>";
+			// TODO:fix second dataset viewing.
+			/*
+			 * if(params.isData2() && params.getEM().getExpression(LegacySupport.DATASET2) != null)
+			 * runInfoText = runInfoText + "<b>Data file 2:</b>" + shortenPathname(params.getExpressionFileName2()) + "<br>";
+			 */
+			
+			if (map.getDataset(LegacySupport.DATASET1) != null
+					&& map.getDataset(LegacySupport.DATASET1).getDatasetFiles().getGseaHtmlReportFile() != null) {
+				s = s + "<b>GSEA Report 1:</b>"
+						+ shortenPathname(map.getDataset(LegacySupport.DATASET1).getDatasetFiles().getGseaHtmlReportFile()) + "<br>";
+			}
+			if (map.getDataset(LegacySupport.DATASET2) != null
+					&& map.getDataset(LegacySupport.DATASET2).getDatasetFiles().getGseaHtmlReportFile() != null) {
+				s = s + "<b>GSEA Report 2:</b>"
+						+ shortenPathname(map.getDataset(LegacySupport.DATASET2).getDatasetFiles().getGseaHtmlReportFile()) + "<br>";
+			}
 		}
 
 		s = s + "</font></html>";
@@ -506,15 +520,17 @@ public class ParametersPanel extends JPanel implements CytoPanelComponent {
 			vGroup.addComponent(nodeColorLabel).addPreferredGap(ComponentPlacement.RELATED);
 		}
 		
-		LegendPanel nodeLegendPanel = new LegendPanel(
-				EnrichmentMapVisualStyle.MAX_PHENOTYPE_1,
-				EnrichmentMapVisualStyle.MAX_PHENOTYPE_2,
-				map.getDataset(LegacySupport.DATASET1).getEnrichments().getPhenotype1(),
-				map.getDataset(LegacySupport.DATASET1).getEnrichments().getPhenotype2());
-		nodeLegendPanel.setToolTipText("Phenotype * (1-P_value)");
+		if (map.getDataset(LegacySupport.DATASET1) != null) {
+			LegendPanel nodeLegendPanel = new LegendPanel(
+					EnrichmentMapVisualStyle.MAX_PHENOTYPE_1,
+					EnrichmentMapVisualStyle.MAX_PHENOTYPE_2,
+					map.getDataset(LegacySupport.DATASET1).getEnrichments().getPhenotype1(),
+					map.getDataset(LegacySupport.DATASET1).getEnrichments().getPhenotype2());
+			nodeLegendPanel.setToolTipText("Phenotype * (1-P_value)");
 		
-		hGroup.addComponent(nodeLegendPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
-		vGroup.addComponent(nodeLegendPanel).addPreferredGap(ComponentPlacement.UNRELATED);
+			hGroup.addComponent(nodeLegendPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
+			vGroup.addComponent(nodeLegendPanel).addPreferredGap(ComponentPlacement.UNRELATED);
+		}
 
 		// If there are two datasets then we need to define the node border legend as well.
 		if (LegacySupport.isLegacyTwoDatasets(map)) {
@@ -597,32 +613,8 @@ public class ParametersPanel extends JPanel implements CytoPanelComponent {
 				else
 					return reportFile;
 			}
-		} else
+		} else {
 			return null;
-	}
-
-	@Override
-	public Component getComponent() {
-		return this;
-	}
-
-	@Override
-	public CytoPanelName getCytoPanelName() {
-		return CytoPanelName.EAST;
-	}
-
-	@Override
-	public Icon getIcon() {
-		URL EMIconURL = this.getClass().getResource("enrichmentmap_logo_notext_small.png");
-		ImageIcon EMIcon = null;
-		if (EMIconURL != null) {
-			EMIcon = new ImageIcon(EMIconURL);
 		}
-		return EMIcon;
-	}
-
-	@Override
-	public String getTitle() {
-		return "Legend";
 	}
 }

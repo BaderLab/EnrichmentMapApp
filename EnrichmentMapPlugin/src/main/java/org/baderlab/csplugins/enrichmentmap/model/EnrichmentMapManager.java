@@ -52,7 +52,6 @@ import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Edges;
 import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Headless;
 import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Nodes;
 import org.baderlab.csplugins.enrichmentmap.view.EnrichmentMapInputPanel;
-import org.baderlab.csplugins.enrichmentmap.view.ParametersPanel;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapPanel;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParameters;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PostAnalysisPanel;
@@ -81,7 +80,6 @@ public class EnrichmentMapManager implements SetCurrentNetworkListener, NetworkA
 		
 	@Inject private CyServiceRegistrar registrar;
 	
-	@Inject private Provider<ParametersPanel> parameterPanelProvider;
 	@Inject private Provider<EnrichmentMapInputPanel> inputPanelProvider;
 	@Inject private Provider<PostAnalysisPanel> postAnalysisPanelProvider;
 	@Inject private @Nodes Provider<HeatMapPanel> nodesOverlapPanelProvider;
@@ -104,12 +102,10 @@ public class EnrichmentMapManager implements SetCurrentNetworkListener, NetworkA
 		
 		HeatMapPanel nodeOverlapPanel = nodesOverlapPanelProvider.get();
 		HeatMapPanel edgeOverlapPanel = edgesOverlapPanelProvider.get();
-		ParametersPanel parametersPanel = parameterPanelProvider.get();
 		
-		if(nodeOverlapPanel != null && edgeOverlapPanel != null && parametersPanel != null) {
+		if (nodeOverlapPanel != null && edgeOverlapPanel != null) {
 			registrar.registerService(nodeOverlapPanel, CytoPanelComponent.class, new Properties());
 			registrar.registerService(edgeOverlapPanel, CytoPanelComponent.class, new Properties());
-			registrar.registerService(parametersPanel,  CytoPanelComponent.class, new Properties());
 		}
 	}
 
@@ -160,7 +156,6 @@ public class EnrichmentMapManager implements SetCurrentNetworkListener, NetworkA
 			
 			HeatMapPanel nodesOverlapPanel = nodesOverlapPanelProvider.get();
 			HeatMapPanel edgesOverlapPanel = edgesOverlapPanelProvider.get();
-			ParametersPanel parameterPanel = parameterPanelProvider.get();
 			EnrichmentMapInputPanel inputWindow = inputPanelProvider.get();
 			PostAnalysisPanel analysisWindow = postAnalysisPanelProvider.get();
 			
@@ -171,8 +166,6 @@ public class EnrichmentMapManager implements SetCurrentNetworkListener, NetworkA
 				edgesOverlapPanel.clearPanel();
 
 				EnrichmentMap map = enrichmentMaps.get(networkId);
-				// update the parameters panel
-				parameterPanel.updatePanel(map);
 
 				// update the input window to contain the parameters of the
 				// selected network

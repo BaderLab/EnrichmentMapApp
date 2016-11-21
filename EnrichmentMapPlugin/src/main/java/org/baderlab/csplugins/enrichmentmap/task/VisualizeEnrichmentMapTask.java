@@ -45,7 +45,6 @@ package org.baderlab.csplugins.enrichmentmap.task;
 
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.style.EnrichmentMapVisualStyle;
-import org.baderlab.csplugins.enrichmentmap.view.ParametersPanel;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
@@ -60,7 +59,6 @@ import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
 import com.google.inject.Inject;
-import com.google.inject.Provider;
 import com.google.inject.assistedinject.Assisted;
 
 /**
@@ -78,9 +76,7 @@ public class VisualizeEnrichmentMapTask extends AbstractTask {
 	@Inject private CyLayoutAlgorithmManager layoutManager;
 
 	@Inject private EnrichmentMapVisualStyle.Factory emVisualStyleFactory;
-	@Inject private Provider<ParametersPanel> parametersPanelProvider;
 	
-
 	public interface Factory {
 		VisualizeEnrichmentMapTask create(EnrichmentMap map);
 	}
@@ -90,7 +86,6 @@ public class VisualizeEnrichmentMapTask extends AbstractTask {
 		this.map = map;
 	}
 
-	
 	/**
 	 * Compute, and create cytoscape enrichment map
 	 */
@@ -117,15 +112,11 @@ public class VisualizeEnrichmentMapTask extends AbstractTask {
 
 		//apply force directed layout
 		CyLayoutAlgorithm layout = layoutManager.getLayout("force-directed");
-		if(layout != null) {
+		if (layout != null) {
 			String layoutAttribute = null;
 			insertTasksAfterCurrentTask(layout.createTaskIterator(view, layout.createLayoutContext(),
 					CyLayoutAlgorithm.ALL_NODE_VIEWS, layoutAttribute));
 		}
-		
-		//update Parameter panel
-		ParametersPanel parametersPanel = parametersPanelProvider.get();
-		parametersPanel.updatePanel(map);
 	}
 
 	public String getTitle() {
@@ -137,5 +128,4 @@ public class VisualizeEnrichmentMapTask extends AbstractTask {
 		taskMonitor.setTitle("Creating Network View");
 		visualizeMap(taskMonitor);
 	}
-
 }

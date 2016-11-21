@@ -1,8 +1,11 @@
-package org.baderlab.csplugins.enrichmentmap.view.controlpanel;
+package org.baderlab.csplugins.enrichmentmap.view.control;
 
 import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.invokeOnEDT;
 
+import java.awt.Dialog.ModalityType;
 import java.awt.event.ActionEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,9 +13,12 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.swing.Action;
 import javax.swing.JComboBox;
+import javax.swing.JDialog;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
+import org.baderlab.csplugins.enrichmentmap.actions.ShowEnrichmentMapDialogAction;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
@@ -23,8 +29,9 @@ import org.baderlab.csplugins.enrichmentmap.style.MasterMapStyleOptions;
 import org.baderlab.csplugins.enrichmentmap.style.MasterMapVisualStyle;
 import org.baderlab.csplugins.enrichmentmap.style.MasterMapVisualStyleTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreatePublicationVisualStyleTaskFactory;
-import org.baderlab.csplugins.enrichmentmap.view.controlpanel.ControlPanel.EMViewControlPanel;
-import org.baderlab.csplugins.enrichmentmap.view.mastermap.MasterMapDialogAction;
+import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanel.EMViewControlPanel;
+import org.baderlab.csplugins.enrichmentmap.view.parameters.ParametersPanelMediator;
+import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PostAnalysisPanel;
 import org.baderlab.csplugins.enrichmentmap.view.util.SliderBarActionListener;
 import org.baderlab.csplugins.enrichmentmap.view.util.SliderBarPanel;
 import org.cytoscape.application.CyApplicationManager;
@@ -56,8 +63,10 @@ public class ControlPanelMediator
 		implements SetCurrentNetworkViewListener, NetworkViewAddedListener, NetworkViewAboutToBeDestroyedListener {
 
 	@Inject private Provider<ControlPanel> controlPanelProvider;
+	@Inject private Provider<ParametersPanelMediator> parametersPanelMediatorProvider;
+	@Inject private Provider<PostAnalysisPanel> postAnalysisPanelProvider;
 	@Inject private EnrichmentMapManager emManager;
-	@Inject private MasterMapDialogAction masterMapDialogAction;
+	@Inject private ShowEnrichmentMapDialogAction masterMapDialogAction;
 	@Inject private Provider<CreatePublicationVisualStyleTaskFactory> visualStyleTaskFactoryProvider;
 
 	@Inject private CyServiceRegistrar serviceRegistrar;
@@ -119,6 +128,18 @@ public class ControlPanelMediator
 						applyVisualStyle(options, chart);
 						// TODO update style fields
 					});
+					
+					viewPanel.getAdvancedOptionsButton().addActionListener(ae -> {
+						// TODO Move to PostAnalysisPanelMediator
+						JDialog dialog = new JDialog(swingApplication.getJFrame(), "EnrichmentMap Options",
+								ModalityType.APPLICATION_MODAL);
+						dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+						dialog.getContentPane().add(postAnalysisPanelProvider.get());
+						
+						postAnalysisPanelProvider.get().showPanelFor(getCurrentMap());
+						dialog.pack();
+						dialog.setVisible(true);
+					});
 				}
 			}
 		});
@@ -168,7 +189,31 @@ public class ControlPanelMediator
 		ctrlPanel.getCreateEmButton().addActionListener(evt -> {
 			masterMapDialogAction.actionPerformed(evt);
 		});
-		ctrlPanel.getCreateEmButton().setToolTipText(masterMapDialogAction.getName());
+		ctrlPanel.getCreateEmButton().setToolTipText("" + masterMapDialogAction.getValue(Action.NAME));
+		
+		ctrlPanel.getOpenLegendsButton().addActionListener(evt -> {
+			if (parametersPanelMediatorProvider.get().getDialog().isVisible()) {
+				parametersPanelMediatorProvider.get().hideDialog();
+			} else {
+				EnrichmentMap map = getCurrentMap();
+				parametersPanelMediatorProvider.get().showDialog(map);
+			}
+		});
+		
+		parametersPanelMediatorProvider.get().getDialog().addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowOpened(WindowEvent e) {
+				updateButton();
+			}
+			@Override
+			public void windowClosed(WindowEvent we) {
+				updateButton();
+			}
+			private void updateButton() {
+				ctrlPanel.getOpenLegendsButton().setSelected(
+						parametersPanelMediatorProvider.get().getDialog().isVisible());
+			}
+		});
 		
 		ctrlPanel.getClosePanelButton().addActionListener(evt -> {
 			closeControlPanel();
@@ -188,6 +233,12 @@ public class ControlPanelMediator
 	
 	private void setCurrentView(CyNetworkView netView) {
 		applicationManager.setCurrentNetworkView(netView);
+	}
+	
+	private EnrichmentMap getCurrentMap() {
+		CyNetworkView view  = (CyNetworkView) getControlPanel().getEmViewCombo().getSelectedItem();
+		
+		return view != null ? emManager.getEnrichmentMap(view.getModel().getSUID()) : null;
 	}
 	
 	private void applyVisualStyle(MasterMapStyleOptions options, CyCustomGraphics2<?> chart) {

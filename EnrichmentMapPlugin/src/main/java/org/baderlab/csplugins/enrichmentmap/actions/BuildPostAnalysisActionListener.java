@@ -54,7 +54,6 @@ import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.task.BuildDiseaseSignatureTask;
 import org.baderlab.csplugins.enrichmentmap.task.BuildDiseaseSignatureTaskResult;
 import org.baderlab.csplugins.enrichmentmap.task.CreatePostAnalysisVisualStyleTask;
-import org.baderlab.csplugins.enrichmentmap.view.ParametersPanel;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.model.CyEdge;
@@ -66,7 +65,6 @@ import org.cytoscape.work.TaskObserver;
 import org.cytoscape.work.swing.DialogTaskManager;
 
 import com.google.inject.Inject;
-import com.google.inject.Provider;
 import com.google.inject.assistedinject.Assisted;
 
 public class BuildPostAnalysisActionListener implements ActionListener {
@@ -77,7 +75,6 @@ public class BuildPostAnalysisActionListener implements ActionListener {
 	@Inject private CySwingApplication swingApplication;
 	@Inject private DialogTaskManager dialog;
 	@Inject private EnrichmentMapManager emManager;
-	@Inject private Provider<ParametersPanel> paramsPanelProvider;
 
 	private final PostAnalysisParameters paParams;
 
@@ -114,10 +111,6 @@ public class BuildPostAnalysisActionListener implements ActionListener {
 
 			CreatePostAnalysisVisualStyleTask visualStyleTask = paStyleTaskFactory.create(map);
 			currentTasks.append(visualStyleTask);
-
-			ParametersPanel paramsPanel = paramsPanelProvider.get();
-			ShowPanelTask show_parameters_panel = new ShowPanelTask(swingApplication, paramsPanel);
-			currentTasks.append(show_parameters_panel);
 
 			TaskObserver dialogObserver = new DialogObserver(visualStyleTask);
 			dialog.execute(currentTasks, dialogObserver);

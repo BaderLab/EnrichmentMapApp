@@ -58,7 +58,7 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 
-
+@Deprecated
 @SuppressWarnings("serial")
 public class LoadEnrichmentsPanelAction extends AbstractCyAction {
 
@@ -68,7 +68,7 @@ public class LoadEnrichmentsPanelAction extends AbstractCyAction {
 	
 	
 	public LoadEnrichmentsPanelAction() {
-		super("Create Enrichment Map");
+		super("Create Enrichment Map (DEPRECATED)...");
 	}
 
 	public void actionPerformed(ActionEvent event) {

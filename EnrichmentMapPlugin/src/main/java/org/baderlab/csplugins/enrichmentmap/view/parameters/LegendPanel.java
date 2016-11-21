@@ -41,7 +41,7 @@
 // $LastChangedBy$
 // $HeadURL$
 
-package org.baderlab.csplugins.enrichmentmap.view;
+package org.baderlab.csplugins.enrichmentmap.view.parameters;
 
 import java.awt.Color;
 import java.awt.Dimension;

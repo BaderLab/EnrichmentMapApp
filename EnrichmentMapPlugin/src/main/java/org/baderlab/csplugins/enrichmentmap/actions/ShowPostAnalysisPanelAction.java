@@ -64,9 +64,9 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 
-
+@Deprecated
 @SuppressWarnings("serial")
-public class LoadPostAnalysisPanelAction extends AbstractCyAction {
+public class ShowPostAnalysisPanelAction extends AbstractCyAction {
 
 	@Inject private CyServiceRegistrar registrar;
 	@Inject private CyApplicationManager applicationManager;
@@ -75,11 +75,10 @@ public class LoadPostAnalysisPanelAction extends AbstractCyAction {
 	@Inject private EnrichmentMapManager emManager;
 	
 
-	public LoadPostAnalysisPanelAction() {
-		super("Load Post Analysis Panel");
+	public ShowPostAnalysisPanelAction() {
+		super("Show Post Analysis Panel");
 	}
 	
-
 	public void actionPerformed(ActionEvent event) {
 		CyNetwork network = applicationManager.getCurrentNetwork();
 		if(network == null) {

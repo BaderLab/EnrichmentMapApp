@@ -2,7 +2,7 @@ package org.baderlab.csplugins.enrichmentmap.actions;
 
 import java.awt.event.ActionEvent;
 
-import org.baderlab.csplugins.enrichmentmap.view.controlpanel.ControlPanelMediator;
+import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanelMediator;
 import org.cytoscape.application.swing.AbstractCyAction;
 
 import com.google.inject.Inject;
@@ -11,14 +11,15 @@ import com.google.inject.Singleton;
 
 @SuppressWarnings("serial")
 @Singleton
-public class ShowControlPanelAction extends AbstractCyAction {
+public class OpenEnrichmentMapAction extends AbstractCyAction {
 	
-	public static final String SHOW_NAME = "Show EnrichmentMap Panel";
+	public static final String NAME = "EnrichmentMap";
 
 	@Inject private Provider<ControlPanelMediator> controlPanelMediatorProvider;
 
-	public ShowControlPanelAction() {
-		super(SHOW_NAME);
+	public OpenEnrichmentMapAction() {
+		super(NAME);
+		setPreferredMenu("Apps");
 	}
 
 	@Override

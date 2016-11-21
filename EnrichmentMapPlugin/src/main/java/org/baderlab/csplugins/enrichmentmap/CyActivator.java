@@ -7,20 +7,17 @@ import java.util.Properties;
 import org.baderlab.csplugins.enrichmentmap.actions.EdgeWidthTableColumnTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.actions.HeatMapSelectionListener;
 import org.baderlab.csplugins.enrichmentmap.actions.LegacyEnrichmentMapSessionListener;
-import org.baderlab.csplugins.enrichmentmap.actions.LoadEnrichmentsPanelAction;
-import org.baderlab.csplugins.enrichmentmap.actions.LoadPostAnalysisPanelAction;
-import org.baderlab.csplugins.enrichmentmap.actions.ShowControlPanelAction;
+import org.baderlab.csplugins.enrichmentmap.actions.OpenEnrichmentMapAction;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowEdgeWidthDialogAction;
 import org.baderlab.csplugins.enrichmentmap.commands.BuildEnrichmentMapTuneableTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.commands.EnrichmentMapGSEACommandHandlerTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.style.ChartFactoryManager;
-import org.baderlab.csplugins.enrichmentmap.view.controlpanel.ControlPanelMediator;
-import org.baderlab.csplugins.enrichmentmap.view.mastermap.MasterMapDialogAction;
+import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanelMediator;
+import org.baderlab.csplugins.enrichmentmap.view.parameters.ParametersPanelMediator;
 import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.application.swing.AbstractCyAction;
-import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
 import org.cytoscape.model.events.RowsSetListener;
@@ -45,9 +42,9 @@ public class CyActivator extends AbstractCyActivator {
 	@Override
 	public void start(BundleContext bc) {
 		ServiceReference ref = bc.getServiceReference(CySwingApplication.class.getName());
-		if(ref == null) {
+		
+		if (ref == null)
 			return; // Cytoscape is running headless or integration tests are running, don't register UI components
-		}
 		
 		Injector injector = Guice.createInjector(new OSGiModule(bc), new AfterInjectionModule(), 
 												 new CytoscapeServiceModule(), new ApplicationModule());
@@ -63,11 +60,8 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, selectionListener, RowsSetListener.class, new Properties());		
 
 		// register actions
-		registerAction(bc, injector.getInstance(ShowControlPanelAction.class));
-		registerAction(bc, injector.getInstance(MasterMapDialogAction.class));
-		registerAction(bc, injector.getInstance(LoadEnrichmentsPanelAction.class));
-		registerAction(bc, injector.getInstance(LoadPostAnalysisPanelAction.class));	
-		registerAction(bc, injector.getInstance(ShowEdgeWidthDialogAction.class));
+		registerAllServices(bc, injector.getInstance(OpenEnrichmentMapAction.class), new Properties());
+//		registerAction(bc, injector.getInstance(ShowEdgeWidthDialogAction.class));
 
 		// session save and restore
 		LegacyEnrichmentMapSessionListener sessionAction = injector.getInstance(LegacyEnrichmentMapSessionListener.class);
@@ -101,11 +95,8 @@ public class CyActivator extends AbstractCyActivator {
 		
 		ControlPanelMediator controlPanelMediator = injector.getInstance(ControlPanelMediator.class);
 		registerAllServices(bc, controlPanelMediator, new Properties());
+		
+		ParametersPanelMediator parametersPanelMediator = injector.getInstance(ParametersPanelMediator.class);
+		registerAllServices(bc, parametersPanelMediator, new Properties());
 	}
-	
-	private void registerAction(BundleContext bc, AbstractCyAction action) {
-		action.setPreferredMenu("Apps.EnrichmentMap");
-		registerService(bc, action, CyAction.class, new Properties());
-	}
-	
 }
