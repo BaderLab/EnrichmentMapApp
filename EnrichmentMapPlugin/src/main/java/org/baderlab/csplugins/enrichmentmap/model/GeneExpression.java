@@ -214,7 +214,7 @@ public class GeneExpression {
 
     
     /**
-     * Row normalize the current gene expression set.  Row normalization involved subtracting the mena
+     * Row normalize the current gene expression set.  Row normalization involved subtracting the mean
      * of the row from each expression value in the row and subsequently dividing it by the standard deviation
      * of the expression row.
      *
@@ -225,9 +225,14 @@ public class GeneExpression {
 
         double mean = getMean();
         double std = getSTD(mean);
-
-        for(int i = 0;i<expression.length;i++)
-            normalize[i] = (expression[i] - mean)/std;
+        
+        if(std == 0.0) {
+        	for(int i = 0;i<expression.length;i++)
+                normalize[i] = 0.0;
+        } else {
+        	for(int i = 0;i<expression.length;i++)
+                normalize[i] = (expression[i] - mean)/std;
+        }
 
         return normalize;
     }
@@ -269,8 +274,10 @@ public class GeneExpression {
    public Double[] rowLogTransform(){
         Double[] logtransformed = new Double[expression.length];
 
-        for(int i = 0;i<expression.length;i++)
-            logtransformed[i] = Math.log1p(expression[i]);
+        for(int i = 0;i<expression.length;i++) {
+            double log1p = Math.log1p(expression[i]);
+			logtransformed[i] = Double.isNaN(log1p) ? 0.0 : log1p;
+        }
 
         return logtransformed;
     }

@@ -575,6 +575,8 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 	private Color getColor(ColorGradientTheme theme, ColorGradientRange range, String gene, Double measurement) {
 		if (theme == null || range == null || measurement == null)
 			return Color.GRAY;
+		if(Double.isNaN(measurement))
+			return theme.getNoDataColor();
 
 		float rLow = (float)theme.getMinColor().getRed()   / 255f;
 		float gLow = (float)theme.getMinColor().getGreen() / 255f;
@@ -593,6 +595,12 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 			median = (range.getMaxValue() / 2);
 		else
 			median = 0.0;
+		
+		// This happens when you row-normalize but there is only one column. This is probably
+		// not the best way to fix it...
+		if(median == 0.0 && measurement == 0.0) {
+			return theme.getCenterColor();
+		} 
 
 		if (measurement <= median) {
 			float prop = (float) ((float) (measurement - range.getMinValue()) / (median - range.getMinValue()));
