@@ -15,14 +15,10 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.style.ChartFactoryManager;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanelMediator;
 import org.baderlab.csplugins.enrichmentmap.view.parameters.ParametersPanelMediator;
-import org.cytoscape.application.events.SetCurrentNetworkListener;
-import org.cytoscape.application.events.SetCurrentNetworkViewListener;
+import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PostAnalysisPanelMediator;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
-import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.service.util.AbstractCyActivator;
-import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.task.TableColumnTaskFactory;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
 import org.cytoscape.work.ServiceProperties;
@@ -51,13 +47,11 @@ public class CyActivator extends AbstractCyActivator {
 		
 		// manager
 		EnrichmentMapManager manager = injector.getInstance(EnrichmentMapManager.class);
-		registerService(bc, manager, NetworkAboutToBeDestroyedListener.class, new Properties());
-		registerService(bc, manager, SetCurrentNetworkListener.class, new Properties());
-		registerService(bc, manager, SetCurrentNetworkViewListener.class, new Properties());
+		registerAllServices(bc, manager, new Properties());
 		
 		// heat map
 		HeatMapSelectionListener selectionListener = injector.getInstance(HeatMapSelectionListener.class);
-		registerService(bc, selectionListener, RowsSetListener.class, new Properties());		
+		registerAllServices(bc, selectionListener, new Properties());		
 
 		// register actions
 		registerAllServices(bc, injector.getInstance(OpenEnrichmentMapAction.class), new Properties());
@@ -65,8 +59,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		// session save and restore
 		LegacyEnrichmentMapSessionListener sessionAction = injector.getInstance(LegacyEnrichmentMapSessionListener.class);
-//		registerService(bc, sessionAction, SessionAboutToBeSavedListener.class, new Properties());
-		registerService(bc, sessionAction, SessionLoadedListener.class, new Properties());
+		registerAllServices(bc, sessionAction, new Properties());
 
 		// chart listener
 		ChartFactoryManager chartFactoryManager = injector.getInstance(ChartFactoryManager.class);
@@ -98,5 +91,8 @@ public class CyActivator extends AbstractCyActivator {
 		
 		ParametersPanelMediator parametersPanelMediator = injector.getInstance(ParametersPanelMediator.class);
 		registerAllServices(bc, parametersPanelMediator, new Properties());
+		
+		PostAnalysisPanelMediator postAnalysisPanelMediator = injector.getInstance(PostAnalysisPanelMediator.class);
+		registerAllServices(bc, postAnalysisPanelMediator, new Properties());
 	}
 }

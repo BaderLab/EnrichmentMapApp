@@ -54,15 +54,11 @@ import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Nodes;
 import org.baderlab.csplugins.enrichmentmap.view.EnrichmentMapInputPanel;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapPanel;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParameters;
-import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PostAnalysisPanel;
+import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PostAnalysisPanelMediator;
 import org.cytoscape.application.events.SetCurrentNetworkEvent;
 import org.cytoscape.application.events.SetCurrentNetworkListener;
-import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
-import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
-import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 
@@ -76,12 +72,12 @@ import com.google.inject.Singleton;
  * singular class)
  */
 @Singleton
-public class EnrichmentMapManager implements SetCurrentNetworkListener, NetworkAboutToBeDestroyedListener, SetCurrentNetworkViewListener {
+public class EnrichmentMapManager implements SetCurrentNetworkListener {
 		
 	@Inject private CyServiceRegistrar registrar;
 	
 	@Inject private Provider<EnrichmentMapInputPanel> inputPanelProvider;
-	@Inject private Provider<PostAnalysisPanel> postAnalysisPanelProvider;
+	@Inject private Provider<PostAnalysisPanelMediator> postAnalysisPanelMediatorProvider;
 	@Inject private @Nodes Provider<HeatMapPanel> nodesOverlapPanelProvider;
 	@Inject private @Edges Provider<HeatMapPanel> edgesOverlapPanelProvider;
 
@@ -113,7 +109,6 @@ public class EnrichmentMapManager implements SetCurrentNetworkListener, NetworkA
 	 * Registers a newly created Network.
 	 */
 	public void registerEnrichmentMap(CyNetwork cyNetwork, EnrichmentMap map) {
-		System.out.println("EnrichmentMapManager.registerEnrichmentMap() " + cyNetwork.getSUID());
 		enrichmentMaps.put(cyNetwork.getSUID(), map);
 	}
 
@@ -123,6 +118,10 @@ public class EnrichmentMapManager implements SetCurrentNetworkListener, NetworkA
 
 	public EnrichmentMap getEnrichmentMap(Long id) {
 		return enrichmentMaps.get(id);
+	}
+	
+	public EnrichmentMap removeEnrichmentMap(Long id) {
+		return enrichmentMaps.remove(id);
 	}
 
 	public void setHeatMapParameters(Long suid, HeatMapParameters parameters) {
@@ -150,6 +149,7 @@ public class EnrichmentMapManager implements SetCurrentNetworkListener, NetworkA
 	 * MKTODO Replace this centralized event handling with the new model.event events.
 	 * There should not be direct references to these panels.
 	 */
+	@Override
 	public void handleEvent(SetCurrentNetworkEvent event) {
 		long networkId = event.getNetwork().getSUID();
 		if(networkId > 0) {
@@ -157,7 +157,6 @@ public class EnrichmentMapManager implements SetCurrentNetworkListener, NetworkA
 			HeatMapPanel nodesOverlapPanel = nodesOverlapPanelProvider.get();
 			HeatMapPanel edgesOverlapPanel = edgesOverlapPanelProvider.get();
 			EnrichmentMapInputPanel inputWindow = inputPanelProvider.get();
-			PostAnalysisPanel analysisWindow = postAnalysisPanelProvider.get();
 			
 			// update view
 			if(enrichmentMaps.containsKey(networkId)) {
@@ -173,51 +172,20 @@ public class EnrichmentMapManager implements SetCurrentNetworkListener, NetworkA
 				if(inputWindow != null)
 					inputWindow.updateContents(map);
 
-				if(analysisWindow != null)
-					analysisWindow.showPanelFor(map);
-
+				postAnalysisPanelMediatorProvider.get().updateUI(map);
+				
 				nodesOverlapPanel.updatePanel(map);
 				edgesOverlapPanel.updatePanel(map);
 
 				nodesOverlapPanel.revalidate();
 				edgesOverlapPanel.revalidate();
 			} else {
-				if(analysisWindow != null)
-					analysisWindow.showPanelFor(null);
+				postAnalysisPanelMediatorProvider.get().updateUI(null);
 			}
 		}
 	}
 
-	public void handleEvent(SetCurrentNetworkViewEvent e) {
-		// make sure to clear the panel if there is no network view
-		PostAnalysisPanel analysisWindow = postAnalysisPanelProvider.get();
-		
-		if(analysisWindow != null) {
-			CyNetworkView view = e.getNetworkView();
-			if(view == null) {
-				analysisWindow.showPanelFor(null);
-			} else {
-				EnrichmentMap currentNetwork = enrichmentMaps.get(view.getModel().getSUID());
-				analysisWindow.showPanelFor(currentNetwork); // may be null
-			}
-		}
-	}
-
-	
-	/**
-	 * Network about to be destroyed Event.
-	 */
-	public void handleEvent(NetworkAboutToBeDestroyedEvent event) {
-		PostAnalysisPanel analysisWindow = postAnalysisPanelProvider.get();
-		
-		Long networkId = event.getNetwork().getSUID();
-		EnrichmentMap removed = enrichmentMaps.remove(networkId);
-		if(analysisWindow != null && removed != null)
-			analysisWindow.removeEnrichmentMap(removed);
-	}
-
-	
-	// MKTODO what is the difference between this and EnrichmentMapParameters.isDisableHeatmapAutofocus()?
+	// TODO what is the difference between this and EnrichmentMapParameters.isDisableHeatmapAutofocus()?
 	public boolean isOverrideHeatmapRevalidation() {
 		return overrideHeatmapRevalidation;
 	}
@@ -233,6 +201,4 @@ public class EnrichmentMapManager implements SetCurrentNetworkListener, NetworkA
 	public void setDisableHeatmapAutofocus(boolean disableHeatmapAutofocus) {
 		this.disableHeatmapAutofocus = disableHeatmapAutofocus;
 	}
-	
-	
 }

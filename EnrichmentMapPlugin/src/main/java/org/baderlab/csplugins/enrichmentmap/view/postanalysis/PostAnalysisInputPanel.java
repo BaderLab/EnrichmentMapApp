@@ -58,7 +58,6 @@ import java.util.Optional;
 import javax.swing.ButtonGroup;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
-import javax.swing.JButton;
 import javax.swing.JFormattedTextField;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
@@ -67,14 +66,12 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.UIManager;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
-import org.baderlab.csplugins.enrichmentmap.EnrichmentMapBuildProperties;
 import org.baderlab.csplugins.enrichmentmap.actions.BuildPostAnalysisActionListener;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterType;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters.AnalysisType;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
-import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -90,7 +87,6 @@ public class PostAnalysisInputPanel extends JPanel {
 	protected static final String siggmt_instruction = "Please select the Signature Gene Set file (.gmt)...";
 
 	@Inject private FileUtil fileUtil;
-	@Inject private CyServiceRegistrar registrar;
 	@Inject private BuildPostAnalysisActionListener.Factory buildPostAnalysisActionListenerFactory;
 	
 	private JRadioButton knownSignatureRadio;
@@ -102,7 +98,6 @@ public class PostAnalysisInputPanel extends JPanel {
 	private PostAnalysisSignatureDiscoveryPanel signatureDiscoveryPanel;
 	private PostAnalysisKnownSignaturePanel knownSignaturePanel;
 	
-	private final PostAnalysisPanel parent;
 	private final EnrichmentMap map;
 
 	public interface Factory {
@@ -110,17 +105,14 @@ public class PostAnalysisInputPanel extends JPanel {
 	}
 	
 	/**
-	 * Note: The initialize() method must be called before the panel can be
-	 * used.
+	 * Note: The initialize() method must be called before the panel can be used.
 	 */
 	@Inject
 	public PostAnalysisInputPanel(
-			@Assisted PostAnalysisPanel parent,
 			@Assisted EnrichmentMap map,
 			PostAnalysisKnownSignaturePanel.Factory knownSignaturePanelFactory,
 			PostAnalysisSignatureDiscoveryPanel.Factory signatureDiscoveryPanelFactory
 	) {
-		this.parent = parent;
 		this.map = map;
 		// Create the two main panels, set the default one
 		knownSignaturePanel = knownSignaturePanelFactory.create(this);
@@ -139,8 +131,6 @@ public class PostAnalysisInputPanel extends JPanel {
 		scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		scrollPane.getViewport().setBackground(UIManager.getColor("Panel.background"));
 
-		JPanel bottomPanel = createBottomPanel();
-
 		final GroupLayout layout = new GroupLayout(this);
 		setLayout(layout);
 		layout.setAutoCreateContainerGaps(false);
@@ -149,12 +139,10 @@ public class PostAnalysisInputPanel extends JPanel {
 		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
    				.addComponent(analysisTypePanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
    				.addComponent(scrollPane, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-   				.addComponent(bottomPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 		);
    		layout.setVerticalGroup(layout.createSequentialGroup()
    				.addComponent(analysisTypePanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    				.addComponent(scrollPane, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-   				.addComponent(bottomPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    		);
 
 		if (LookAndFeelUtil.isAquaLAF()) {
@@ -165,9 +153,8 @@ public class PostAnalysisInputPanel extends JPanel {
 		initialize();
 	}
 
-
 	private void initialize() {
-		if(map != null) {
+		if (map != null) {
 			knownSignaturePanel.initialize(map);
 			signatureDiscoveryPanel.initialize(map);
 			knownSignatureRadio.setToolTipText(map.getName());
@@ -220,37 +207,6 @@ public class PostAnalysisInputPanel extends JPanel {
    				.addComponent(knownSignatureRadio, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    				.addComponent(signatureDiscoveryRadio, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    		);
-
-		if (LookAndFeelUtil.isAquaLAF())
-			panel.setOpaque(false);
-
-		return panel;
-	}
-
-	/**
-	 * Utility method that creates a panel for buttons at the bottom of the
-	 * Enrichment Map Panel
-	 */
-	private JPanel createBottomPanel() {
-		JButton helpButton = SwingUtil.createOnlineHelpButton(EnrichmentMapBuildProperties.USER_MANUAL_URL,
-				"Online Manual...", registrar);
-
-		JButton resetButton = new JButton("Reset");
-		resetButton.addActionListener(e -> resetPanel());
-
-		JButton closeButton = new JButton("Close");
-		closeButton.addActionListener(e -> parent.close());
-
-		JButton runButton = new JButton("Run");
-		runButton.addActionListener(e -> {
-			if (okToRun()) {
-				PostAnalysisParameters paParams = buildPostAnalysisParameters();
-				BuildPostAnalysisActionListener action = buildPostAnalysisActionListenerFactory.create(paParams);
-				action.runPostAnalysis();
-			}
-		});
-
-		JPanel panel = LookAndFeelUtil.createOkCancelPanel(runButton, closeButton, helpButton, resetButton);
 
 		if (LookAndFeelUtil.isAquaLAF())
 			panel.setOpaque(false);
@@ -332,11 +288,10 @@ public class PostAnalysisInputPanel extends JPanel {
 	/**
 	 * Clear the current panel and clear the paParams associated with each panel
 	 */
-	private void resetPanel() {
-		knownSignaturePanel.resetPanel();
-		signatureDiscoveryPanel.resetPanel();
+	void reset() {
+		knownSignaturePanel.reset();
+		signatureDiscoveryPanel.reset();
 	}
-
 
 	/**
 	 * Creates a PostAnalysisParameters object based on the user's input.
@@ -366,10 +321,18 @@ public class PostAnalysisInputPanel extends JPanel {
 //		}
 //	}
 
-	public boolean okToRun() {
+	boolean okToRun() {
 		if (knownSignatureRadio.isSelected())
 			return knownSignaturePanel.okToRun();
 		else
 			return true;
+	}
+
+	void run() {
+		if (okToRun()) {
+			PostAnalysisParameters paParams = buildPostAnalysisParameters();
+			BuildPostAnalysisActionListener action = buildPostAnalysisActionListenerFactory.create(paParams);
+			action.runPostAnalysis();
+		}
 	}
 }

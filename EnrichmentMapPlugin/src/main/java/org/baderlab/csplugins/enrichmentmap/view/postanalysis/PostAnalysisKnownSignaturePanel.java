@@ -159,13 +159,13 @@ public class PostAnalysisKnownSignaturePanel extends JPanel {
 		return true;
 	}
 
-	void resetPanel() {
+	void reset() {
 		// Gene-Sets Panel
 		knownSignatureGMTFileNameTextField.setText("");
 		knownSignatureGMTFileNameTextField.setValue("");
 		knownSignatureGMTFileNameTextField.setToolTipText(null);
 
-		weightPanel.resetPanel();
+		weightPanel.reset();
 	}
 
 	void initialize(EnrichmentMap currentMap) {

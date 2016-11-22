@@ -398,7 +398,7 @@ public class PostAnalysisWeightPanel extends JPanel {
 		universeSelectionTextField.setValue(universeExpression);
 	}
 	
-	void resetPanel() {
+	void reset() {
 		gmtRadioButton.setSelected(true);
 		PostAnalysisFilterType filterType = PostAnalysisFilterType.MANN_WHIT_TWO_SIDED;
 		rankTestCombo.setSelectedItem(filterType);

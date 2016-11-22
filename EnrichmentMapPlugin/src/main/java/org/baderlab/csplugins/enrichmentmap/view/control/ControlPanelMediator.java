@@ -2,7 +2,6 @@ package org.baderlab.csplugins.enrichmentmap.view.control;
 
 import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.invokeOnEDT;
 
-import java.awt.Dialog.ModalityType;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -15,7 +14,6 @@ import java.util.stream.Collectors;
 
 import javax.swing.Action;
 import javax.swing.JComboBox;
-import javax.swing.JDialog;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowEnrichmentMapDialogAction;
@@ -31,7 +29,7 @@ import org.baderlab.csplugins.enrichmentmap.style.MasterMapVisualStyleTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreatePublicationVisualStyleTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanel.EMViewControlPanel;
 import org.baderlab.csplugins.enrichmentmap.view.parameters.ParametersPanelMediator;
-import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PostAnalysisPanel;
+import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PostAnalysisPanelMediator;
 import org.baderlab.csplugins.enrichmentmap.view.util.SliderBarActionListener;
 import org.baderlab.csplugins.enrichmentmap.view.util.SliderBarPanel;
 import org.cytoscape.application.CyApplicationManager;
@@ -64,7 +62,7 @@ public class ControlPanelMediator
 
 	@Inject private Provider<ControlPanel> controlPanelProvider;
 	@Inject private Provider<ParametersPanelMediator> parametersPanelMediatorProvider;
-	@Inject private Provider<PostAnalysisPanel> postAnalysisPanelProvider;
+	@Inject private Provider<PostAnalysisPanelMediator> postAnalysisPanelMediatorProvider;
 	@Inject private EnrichmentMapManager emManager;
 	@Inject private ShowEnrichmentMapDialogAction masterMapDialogAction;
 	@Inject private Provider<CreatePublicationVisualStyleTaskFactory> visualStyleTaskFactoryProvider;
@@ -77,6 +75,7 @@ public class ControlPanelMediator
 	@Inject private CyColumnIdentifierFactory columnIdFactory;
 	@Inject private ChartFactoryManager chartFactoryManager;
 	
+	private boolean firstTime = true;
 	private boolean updatingEmViewCombo;
 	
 	@Override
@@ -130,15 +129,7 @@ public class ControlPanelMediator
 					});
 					
 					viewPanel.getAdvancedOptionsButton().addActionListener(ae -> {
-						// TODO Move to PostAnalysisPanelMediator
-						JDialog dialog = new JDialog(swingApplication.getJFrame(), "EnrichmentMap Options",
-								ModalityType.APPLICATION_MODAL);
-						dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-						dialog.getContentPane().add(postAnalysisPanelProvider.get());
-						
-						postAnalysisPanelProvider.get().showPanelFor(getCurrentMap());
-						dialog.pack();
-						dialog.setVisible(true);
+						postAnalysisPanelMediatorProvider.get().showDialog(getCurrentMap());
 					});
 				}
 			}
@@ -166,6 +157,11 @@ public class ControlPanelMediator
 			Properties props = new Properties();
 			props.setProperty("id", ControlPanel.ID);
 			serviceRegistrar.registerService(panel, CytoPanelComponent.class, props);
+			
+			if (firstTime) {
+				firstTime = false;
+				controlPanelProvider.get().getCreateEmButton().doClick();
+			}
 		}
 		
 		// Select the panel

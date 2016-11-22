@@ -415,7 +415,7 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel implements ListS
 		filterTextField.setEnabled(filterType != PostAnalysisFilterType.NO_FILTER);
 	}
     
-	void resetPanel() {
+	void reset() {
 		// Reset the text field
 		signatureDiscoveryGMTFileNameTextField.setText("");
 		signatureDiscoveryGMTFileNameTextField.setValue("");
@@ -432,7 +432,7 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel implements ListS
 
 		// Reset the filter field
 		filterTypeCombo.setSelectedItem(PostAnalysisFilterType.NO_FILTER);
-		weightPanel.resetPanel();
+		weightPanel.reset();
 	}
     
 	private FilterMetric createFilterMetric() {
