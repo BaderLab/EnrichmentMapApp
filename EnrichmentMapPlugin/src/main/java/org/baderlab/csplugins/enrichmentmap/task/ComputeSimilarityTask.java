@@ -84,15 +84,9 @@ public class ComputeSimilarityTask extends AbstractTask {
 	
 	@Override
 	public void run(TaskMonitor taskMonitor) {
-		System.out.println("ComputeSimilarityTask.run() START");
-		try {
-			Map<String,GenesetSimilarity> similarities = computeGenesetSimilarities(taskMonitor);
-			if(!cancelled)
-				map.getGenesetSimilarity().putAll(similarities);
-		} catch(Throwable t) {
-			t.printStackTrace();
-		}
-		System.out.println("ComputeSimilarityTask.run() DONE");
+		Map<String,GenesetSimilarity> similarities = computeGenesetSimilarities(taskMonitor);
+		if(!cancelled)
+			map.getGenesetSimilarity().putAll(similarities);
 	}
 
 	
