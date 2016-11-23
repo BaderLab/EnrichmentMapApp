@@ -16,17 +16,18 @@ import org.baderlab.csplugins.enrichmentmap.integration.BaseIntegrationTest;
 import org.baderlab.csplugins.enrichmentmap.integration.EdgeSimilarities;
 import org.baderlab.csplugins.enrichmentmap.integration.SerialTestTaskManager;
 import org.baderlab.csplugins.enrichmentmap.integration.TestUtils;
+import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
-import org.baderlab.csplugins.enrichmentmap.model.DataSet;
-import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.task.EnrichmentMapBuildMapTaskFactory;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.TaskIterator;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,12 +43,13 @@ public class EnrichmentMapTaskTest extends BaseIntegrationTest {
 	
 	private static final String PATH = "/EnrichmentMapTaskTest/";
 	
+	@Inject private CyServiceRegistrar serviceRegistrar;
 	@Inject private CyNetworkManager networkManager;
 	@Inject private BundleContext bc;
 	
 	
 	protected void buildEnrichmentMap(EMCreationParameters params, DataSetFiles datasetFiles, String datasetName) {
-		EnrichmentMap map = new EnrichmentMap("MyEM", params);
+		EnrichmentMap map = new EnrichmentMap(params, serviceRegistrar);
 		
 		DataSet dataset = new DataSet(map, datasetName, datasetFiles);
 		map.addDataSet(datasetName, dataset);

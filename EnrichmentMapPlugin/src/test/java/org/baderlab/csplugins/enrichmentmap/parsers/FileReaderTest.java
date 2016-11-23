@@ -5,6 +5,7 @@ import static org.mockito.Mockito.mock;
 
 import java.util.Map;
 
+import org.baderlab.csplugins.enrichmentmap.TestUtils;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
@@ -12,6 +13,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
 import org.baderlab.csplugins.enrichmentmap.model.GSEAResult;
 import org.baderlab.csplugins.enrichmentmap.model.GenericResult;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.TaskMonitor;
 import org.jukito.JukitoRunner;
 import org.junit.Test;
@@ -22,8 +24,8 @@ import com.google.inject.Provider;
 @RunWith(JukitoRunner.class)
 public class FileReaderTest {
 
+	private CyServiceRegistrar serviceRegistrar = TestUtils.mockServiceRegistrar();
 	private TaskMonitor taskMonitor = mock(TaskMonitor.class);
-	
     
 	@Test
     public void testGMTFileReader(Provider<EnrichmentMapParameters> empFactory) throws Exception{
@@ -36,7 +38,7 @@ public class FileReaderTest {
         params.getFiles().get(LegacySupport.DATASET1).setGMTFileName(testDataFileName);
         
         //Create a new Enrichment map
-        EnrichmentMap map = new EnrichmentMap("TestEM", params.getCreationParameters());
+        EnrichmentMap map = new EnrichmentMap(params.getCreationParameters(), serviceRegistrar);
                 
         //get the default dataset
         DataSet dataset = new DataSet(map, LegacySupport.DATASET1, EnrichmentMapParameters.stringToMethod(params.getMethod()), params.getFiles().get(LegacySupport.DATASET1));
@@ -65,7 +67,7 @@ public class FileReaderTest {
         params.getFiles().get(LegacySupport.DATASET1).setExpressionFileName(testDataFileName);
         
         //Create a new Enrichment map
-        EnrichmentMap map = new EnrichmentMap("TestEM", params.getCreationParameters());
+        EnrichmentMap map = new EnrichmentMap(params.getCreationParameters(), serviceRegistrar);
         
         //get the default dataset
         DataSet dataset = new DataSet(map, LegacySupport.DATASET1, EnrichmentMapParameters.stringToMethod(params.getMethod()), params.getFiles().get(LegacySupport.DATASET1));
@@ -112,7 +114,7 @@ public class FileReaderTest {
         params.getFiles().get(LegacySupport.DATASET1).setExpressionFileName(testDataFileName);
         
         //Create a new Enrichment map
-        EnrichmentMap map = new EnrichmentMap("TestEM", params.getCreationParameters());
+        EnrichmentMap map = new EnrichmentMap(params.getCreationParameters(), serviceRegistrar);
                 
         //get the default dataset
         DataSet dataset = new DataSet(map, LegacySupport.DATASET1, EnrichmentMapParameters.stringToMethod(params.getMethod()), params.getFiles().get(LegacySupport.DATASET1));
@@ -159,7 +161,7 @@ public class FileReaderTest {
         params.getFiles().get(LegacySupport.DATASET1).setExpressionFileName(testDataFileName);
         
         //Create a new Enrichment map
-        EnrichmentMap map = new EnrichmentMap("TestEM", params.getCreationParameters());
+        EnrichmentMap map = new EnrichmentMap(params.getCreationParameters(), serviceRegistrar);
                 
         //get the default dataset
         DataSet dataset = new DataSet(map, LegacySupport.DATASET1, EnrichmentMapParameters.stringToMethod(params.getMethod()), params.getFiles().get(LegacySupport.DATASET1));
@@ -205,7 +207,7 @@ public class FileReaderTest {
         params.getFiles().get(LegacySupport.DATASET1).setExpressionFileName(testDataFileName);
         
         //Create a new Enrichment map
-        EnrichmentMap map = new EnrichmentMap("TestEM", params.getCreationParameters());
+        EnrichmentMap map = new EnrichmentMap(params.getCreationParameters(), serviceRegistrar);
                 
         //get the default dataset
         DataSet dataset = new DataSet(map, LegacySupport.DATASET1, EnrichmentMapParameters.stringToMethod(params.getMethod()), params.getFiles().get(LegacySupport.DATASET1));
@@ -250,7 +252,7 @@ public class FileReaderTest {
         params.getFiles().get(LegacySupport.DATASET1).setEnrichmentFileName1(testDataFileName);
         
         //Create a new Enrichment map
-        EnrichmentMap map = new EnrichmentMap("TestEM", params.getCreationParameters());
+        EnrichmentMap map = new EnrichmentMap(params.getCreationParameters(), serviceRegistrar);
                 
         //get the default dataset
         DataSet dataset = new DataSet(map, LegacySupport.DATASET1, EnrichmentMapParameters.stringToMethod(params.getMethod()), params.getFiles().get(LegacySupport.DATASET1));
@@ -303,7 +305,7 @@ public class FileReaderTest {
         params.getFiles().get(LegacySupport.DATASET1).setEnrichmentFileName1(testDataFileName);
         params.getFiles().get(LegacySupport.DATASET1).setEnrichmentFileName2(testDataFileName2);
         //Create a new Enrichment map
-        EnrichmentMap map = new EnrichmentMap("TestEM", params.getCreationParameters());
+        EnrichmentMap map = new EnrichmentMap(params.getCreationParameters(), serviceRegistrar);
                 
         //get the default dataset
         DataSet dataset = new DataSet(map, LegacySupport.DATASET1, EnrichmentMapParameters.stringToMethod(params.getMethod()), params.getFiles().get(LegacySupport.DATASET1));
@@ -362,7 +364,7 @@ public class FileReaderTest {
         params.getFiles().get(LegacySupport.DATASET1).setEnrichmentFileName1(testDataFileName);
  
         //Create a new Enrichment map
-        EnrichmentMap map = new EnrichmentMap("TestEM", params.getCreationParameters());
+        EnrichmentMap map = new EnrichmentMap(params.getCreationParameters(), serviceRegistrar);
                 
         //get the default dataset
         DataSet dataset = new DataSet(map, LegacySupport.DATASET1, EnrichmentMapParameters.stringToMethod(params.getMethod()), params.getFiles().get(LegacySupport.DATASET1));
@@ -426,7 +428,7 @@ public class FileReaderTest {
         params.getFiles().get(LegacySupport.DATASET1).setEnrichmentFileName1(testDataFileName);
 
         //Create a new Enrichment map
-        EnrichmentMap map = new EnrichmentMap("TestEM", params.getCreationParameters());
+        EnrichmentMap map = new EnrichmentMap(params.getCreationParameters(), serviceRegistrar);
                 
         //get the default dataset
         DataSet dataset = new DataSet(map, LegacySupport.DATASET1, EnrichmentMapParameters.stringToMethod(params.getMethod()), params.getFiles().get(LegacySupport.DATASET1));
@@ -470,7 +472,7 @@ public class FileReaderTest {
         params.getFiles().get(LegacySupport.DATASET1).setEnrichmentFileName1(testDataFileName);
 
         //Create a new Enrichment map
-        EnrichmentMap map = new EnrichmentMap("TestEM", params.getCreationParameters());
+        EnrichmentMap map = new EnrichmentMap(params.getCreationParameters(), serviceRegistrar);
                 
         //get the default dataset
         DataSet dataset = new DataSet(map, LegacySupport.DATASET1, EnrichmentMapParameters.stringToMethod(params.getMethod()), params.getFiles().get(LegacySupport.DATASET1));

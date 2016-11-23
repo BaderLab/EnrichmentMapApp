@@ -5,6 +5,7 @@ import static org.mockito.Mockito.mock;
 
 import java.util.Optional;
 
+import org.baderlab.csplugins.enrichmentmap.TestUtils;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
@@ -14,14 +15,15 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.parsers.ParseBingoEnrichmentResults;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.TaskMonitor;
 import org.junit.Test;
 
 public class LoadBingoResultsTest {
 	
+	private CyServiceRegistrar serviceRegistrar = TestUtils.mockServiceRegistrar();
 	private TaskMonitor taskMonitor = mock(TaskMonitor.class);
 	
-
 	@Test
 	public void testLoadBingoResult_withoutexpression() throws Exception{
 		//for a dataset we require genesets, an expression file (optional), enrichment results
@@ -36,7 +38,7 @@ public class LoadBingoResultsTest {
 		double similarityCutoff = 0.25;
 		EMCreationParameters params = new EMCreationParameters("EM1_", pvalue, qvaule, NESFilter.ALL, Optional.empty(), SimilarityMetric.JACCARD, similarityCutoff, 0.5);
 		//create an new enrichment Map
-		EnrichmentMap em = new EnrichmentMap("TestEM", params);
+		EnrichmentMap em = new EnrichmentMap(params, serviceRegistrar);
 		DataSet dataset = new DataSet(em, LegacySupport.DATASET1, Method.Specialized, files);		
 		em.addDataSet(LegacySupport.DATASET1, dataset);				
 		
@@ -96,7 +98,7 @@ public class LoadBingoResultsTest {
 		EMCreationParameters params = new EMCreationParameters("EM1_", pvalue, qvaule, NESFilter.ALL, Optional.empty(), SimilarityMetric.JACCARD, similarityCutoff, 0.5);
 		
 		//create an new enrichment Map
-		EnrichmentMap em = new EnrichmentMap("TestEM", params);
+		EnrichmentMap em = new EnrichmentMap(params, serviceRegistrar);
 		DataSet dataset = new DataSet(em, LegacySupport.DATASET1, Method.Specialized, files);		
 		em.addDataSet(LegacySupport.DATASET1, dataset);				
 		

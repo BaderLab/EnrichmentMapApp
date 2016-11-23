@@ -7,7 +7,9 @@ import static org.mockito.Mockito.mock;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.baderlab.csplugins.enrichmentmap.TestUtils;
 import org.baderlab.csplugins.enrichmentmap.parsers.GMTFileReaderTask;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.TaskMonitor;
 import org.jukito.JukitoRunner;
 import org.junit.Before;
@@ -18,12 +20,12 @@ import com.google.inject.Provider;
 
 @RunWith(JukitoRunner.class)
 public class SetOfGenesetsTest {
-		
+	
+	private CyServiceRegistrar serviceRegistrar = TestUtils.mockServiceRegistrar();
 	private TaskMonitor taskMonitor = mock(TaskMonitor.class);
 	EnrichmentMap map;
 	DataSet dataset;
 
-	
 	@Before
 	public void before(Provider<EnrichmentMapParameters> empFactory) throws Exception {
 		//load Genesets from the gmt file associated with this test
@@ -35,7 +37,7 @@ public class SetOfGenesetsTest {
         params.getFiles().get(LegacySupport.DATASET1).setGMTFileName(testDataFileName);
         
         //Create a new Enrichment map
-        map = new EnrichmentMap("TestEM", params.getCreationParameters());
+        map = new EnrichmentMap(params.getCreationParameters(), serviceRegistrar);
                 
         //get the default dataset
         dataset = new DataSet(map, LegacySupport.DATASET1, EnrichmentMapParameters.stringToMethod(params.getMethod()), params.getFiles().get(LegacySupport.DATASET1));

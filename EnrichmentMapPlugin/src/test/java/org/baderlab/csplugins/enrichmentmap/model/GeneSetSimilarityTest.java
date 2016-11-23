@@ -6,8 +6,10 @@ import static org.mockito.Mockito.mock;
 
 import java.util.Map;
 
+import org.baderlab.csplugins.enrichmentmap.TestUtils;
 import org.baderlab.csplugins.enrichmentmap.parsers.GMTFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.task.ComputeSimilarityTask;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.TaskMonitor;
 import org.jukito.JukitoRunner;
 import org.junit.Before;
@@ -23,6 +25,7 @@ public class GeneSetSimilarityTest {
 	DataSet dataset;
 
 	private TaskMonitor taskMonitor = mock(TaskMonitor.class);
+	private CyServiceRegistrar serviceRegistrar = TestUtils.mockServiceRegistrar();
 	
 	@Before
 	public void before(Provider<EnrichmentMapParameters> empFactory) throws Exception {
@@ -35,7 +38,7 @@ public class GeneSetSimilarityTest {
         params.getFiles().get(LegacySupport.DATASET1).setGMTFileName(testDataFileName);
         
         //Create a new Enrichment map
-        map = new EnrichmentMap("TestEM", params.getCreationParameters());
+        map = new EnrichmentMap(params.getCreationParameters(), serviceRegistrar);
         dataset = new DataSet(map, LegacySupport.DATASET1, EnrichmentMapParameters.stringToMethod(params.getMethod()), params.getFiles().get(LegacySupport.DATASET1));
         map.addDataSet(LegacySupport.DATASET1, dataset);
 

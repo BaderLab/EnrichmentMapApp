@@ -1,11 +1,16 @@
 package org.baderlab.csplugins.enrichmentmap;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.util.HashMap;
 import java.util.Map;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.service.util.CyServiceRegistrar;
 
 public class TestUtils {
 
@@ -33,4 +38,12 @@ public class TestUtils {
 	   	return edges;
 	}
 	
+	public static CyServiceRegistrar mockServiceRegistrar() {
+		CyNetworkManager netManager = mock(CyNetworkManager.class);
+		
+		CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
+		when(serviceRegistrar.getService(CyNetworkManager.class)).thenReturn(netManager);
+		
+		return serviceRegistrar;
+	}
 }

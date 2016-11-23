@@ -5,6 +5,7 @@ import static org.mockito.Mockito.mock;
 
 import java.util.Optional;
 
+import org.baderlab.csplugins.enrichmentmap.TestUtils;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
@@ -16,13 +17,14 @@ import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.parsers.ExpressionFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.parsers.GMTFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.parsers.ParseGSEAEnrichmentResults;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.TaskMonitor;
 import org.junit.Test;
 
 public class LoadDatasetTaskTest {
 	
+	private CyServiceRegistrar serviceRegistrar = TestUtils.mockServiceRegistrar();
 	private TaskMonitor taskMonitor = mock(TaskMonitor.class);
-	
 	
 	@Test
     public void testLoadDataset1GSEAResult_withexpression() throws Exception{
@@ -41,7 +43,7 @@ public class LoadDatasetTaskTest {
 		EMCreationParameters params = new EMCreationParameters("EM1_", 0.1, 0.1, NESFilter.ALL, Optional.empty(), SimilarityMetric.JACCARD, 0.1, 0.1);
 		
 		//create an new enrichment Map
-		EnrichmentMap em = new EnrichmentMap("TestEM", params);
+		EnrichmentMap em = new EnrichmentMap(params, serviceRegistrar);
 		
 		//create a dataset
 		DataSet dataset = new DataSet(em, LegacySupport.DATASET1, Method.Generic, files);

@@ -10,6 +10,7 @@ import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Edges;
 import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Nodes;
 import org.baderlab.csplugins.enrichmentmap.LogSilenceRule;
 import org.baderlab.csplugins.enrichmentmap.SerialTestTaskManager;
+import org.baderlab.csplugins.enrichmentmap.TestUtils;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadSignatureSetsActionListener;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
@@ -17,7 +18,6 @@ import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
-import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapPanel;
 import org.baderlab.csplugins.enrichmentmap.view.parameters.ParametersPanel;
@@ -30,6 +30,7 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.model.TableTestSupport;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CySession;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.view.model.CyNetworkView;
@@ -58,6 +59,8 @@ import com.google.inject.util.Providers;
 public abstract class BaseNetworkTest {
 
 	@Rule public TestRule logSilenceRule = new LogSilenceRule();
+	
+	private CyServiceRegistrar serviceRegistrar = TestUtils.mockServiceRegistrar();
 	
 	public static class TestModule extends JukitoModule {
 		@Override
@@ -105,9 +108,7 @@ public abstract class BaseNetworkTest {
 	
 	protected void buildEnrichmentMap(EMCreationParameters params, DataSetFiles datasetFiles, Method method, String datasetName) {
 		String prefix = params.getAttributePrefix();
-		String name = prefix + LegacySupport.EM_NAME;
-		
-		EnrichmentMap map = new EnrichmentMap(name, params);
+		EnrichmentMap map = new EnrichmentMap(params, serviceRegistrar);
 		DataSet dataset = new DataSet(map, datasetName, method, datasetFiles);
 		map.addDataSet(datasetName, dataset);
 		

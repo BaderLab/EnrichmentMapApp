@@ -5,6 +5,7 @@ import static org.mockito.Mockito.mock;
 
 import java.util.Optional;
 
+import org.baderlab.csplugins.enrichmentmap.TestUtils;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
@@ -14,14 +15,14 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.parsers.ParseDavidEnrichmentResults;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.TaskMonitor;
 import org.junit.Test;
 
 public class LoadDavidResultTest {
 
+	private CyServiceRegistrar serviceRegistrar = TestUtils.mockServiceRegistrar();
 	private TaskMonitor taskMonitor = mock(TaskMonitor.class);
-	
-	
 	
 	@Test
 	public void testLoadDavidResult_withoutexpression() throws Exception{
@@ -38,7 +39,7 @@ public class LoadDavidResultTest {
 		EMCreationParameters params = new EMCreationParameters("EM1_", pvalue, qvalue, NESFilter.ALL, Optional.empty(), SimilarityMetric.JACCARD, similarityCutoff, 0.5);
 	
 		//create an new enrichment Map
-		EnrichmentMap em = new EnrichmentMap("TestEM", params);
+		EnrichmentMap em = new EnrichmentMap(params, serviceRegistrar);
 		
 		//Load data set
 		//create a dataset
@@ -100,7 +101,7 @@ public class LoadDavidResultTest {
 		EMCreationParameters params = new EMCreationParameters("EM1_", pvalue, qvalue, NESFilter.ALL, Optional.empty(), SimilarityMetric.JACCARD, similarityCutoff, 0.5);
 		
 		//create an new enrichment Map
-		EnrichmentMap em = new EnrichmentMap("TestEM", params);
+		EnrichmentMap em = new EnrichmentMap(params, serviceRegistrar);
 		
 		//Load first dataset
 		//create a dataset
