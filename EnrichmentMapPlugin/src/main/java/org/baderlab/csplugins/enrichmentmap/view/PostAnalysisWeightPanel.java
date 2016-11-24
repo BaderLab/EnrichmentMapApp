@@ -67,7 +67,7 @@ public class PostAnalysisWeightPanel extends JPanel {
 	
     private DefaultComboBoxModel<String> rankingModel;
     private DefaultComboBoxModel<String> datasetModel;
-	private EnablementComboBoxRenderer rankingEnablementRenderer;
+	private EnablementComboBoxRenderer<FilterType> rankingEnablementRenderer;
     
     private JPanel cardPanel;
     
@@ -88,13 +88,13 @@ public class PostAnalysisWeightPanel extends JPanel {
 		JPanel warnCard = createWarningPanel();
 		
 		cardPanel = new JPanel(new CardLayout());
-		cardPanel.add(mannWhittCard, FilterType.MANN_WHIT_TWO_SIDED.toString());
-		cardPanel.add(mannWhittCard, FilterType.MANN_WHIT_GREATER.toString());
-		cardPanel.add(mannWhittCard, FilterType.MANN_WHIT_LESS.toString());
-		cardPanel.add(hypergeomCard, FilterType.HYPERGEOM.toString());
-		cardPanel.add(createEmptyPanel(), FilterType.PERCENT.toString());
-		cardPanel.add(createEmptyPanel(), FilterType.NUMBER.toString());
-		cardPanel.add(createEmptyPanel(), FilterType.SPECIFIC.toString());
+		cardPanel.add(mannWhittCard, FilterType.MANN_WHIT_TWO_SIDED.name());
+		cardPanel.add(mannWhittCard, FilterType.MANN_WHIT_GREATER.name());
+		cardPanel.add(mannWhittCard, FilterType.MANN_WHIT_LESS.name());
+		cardPanel.add(hypergeomCard, FilterType.HYPERGEOM.name());
+		cardPanel.add(createEmptyPanel(), FilterType.PERCENT.name());
+		cardPanel.add(createEmptyPanel(), FilterType.NUMBER.name());
+		cardPanel.add(createEmptyPanel(), FilterType.SPECIFIC.name());
 		cardPanel.add(warnCard, "warn");
         
         GroupLayout layout = new GroupLayout(this);
@@ -117,7 +117,7 @@ public class PostAnalysisWeightPanel extends JPanel {
 		}
     }
 	
-	private JPanel createEmptyPanel() {
+	private static JPanel createEmptyPanel() {
 		JPanel panel = new JPanel();
 		
 		if (LookAndFeelUtil.isAquaLAF())
@@ -173,7 +173,7 @@ public class PostAnalysisWeightPanel extends JPanel {
 		rankTestTextField.setHorizontalAlignment(JTextField.RIGHT);
 		rankTestTextField.addPropertyChangeListener("value", new FormattedTextFieldAction());
 
-		rankingEnablementRenderer = new EnablementComboBoxRenderer();
+		rankingEnablementRenderer = new EnablementComboBoxRenderer<>();
 		rankTestCombo = new JComboBox<>();
 		rankTestCombo.setRenderer(rankingEnablementRenderer);
 
@@ -197,7 +197,7 @@ public class PostAnalysisWeightPanel extends JPanel {
 				if (rankTest.isMannWhitney() && map.getAllRanks().isEmpty())
 					cardLayout.show(cardPanel, "warn");
 				else
-					cardLayout.show(cardPanel, rankTest.toString());
+					cardLayout.show(cardPanel, rankTest.name());
 			}
 		});
         
@@ -460,9 +460,12 @@ public class PostAnalysisWeightPanel extends JPanel {
         double value = filterParams.getValue(filterParams.getType());
 		rankTestTextField.setValue(value);
 		
-		rankingEnablementRenderer.enableIndex(0);
+		rankingEnablementRenderer.enableAll();
 		if(rankingArray.length == 0) {
-			rankingEnablementRenderer.disableIndex(0);
+			rankingEnablementRenderer.disableItems(
+					FilterType.MANN_WHIT_TWO_SIDED, 
+					FilterType.MANN_WHIT_LESS, 
+					FilterType.MANN_WHIT_GREATER);
 		}
     }
     

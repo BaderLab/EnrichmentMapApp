@@ -67,9 +67,10 @@ public class FilterSignatureGSTask extends AbstractTask{
 	            if(!selectedSignatureSetNames.contains(signatureGeneset)) {
 	            	boolean matchfound = false;
 	            	
-	                if(paParams.getFilterParameters().getType() != FilterType.NO_FILTER) {
+	                FilterType type = paParams.getFilterParameters().getType();
+					if(type != FilterType.NO_FILTER) {
 	                	if(filterMetric == null) {
-		            		filterMetric = createFilterMetric(paParams);
+		            		filterMetric = createFilterMetric(type);
 		                 	filterMetric.init();
 		            	}
 	                	
@@ -109,8 +110,7 @@ public class FilterSignatureGSTask extends AbstractTask{
 	
 	
 	
-	private FilterMetric createFilterMetric(PostAnalysisParameters paParams) {
-		FilterType type = paParams.getFilterParameters().getType();
+	private FilterMetric createFilterMetric(FilterType type) {
 		switch(type) {
 			case NUMBER:    
 				return new NumberFilterMetric();
