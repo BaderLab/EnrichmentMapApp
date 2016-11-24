@@ -26,9 +26,9 @@ import javax.swing.LayoutStyle.ComponentPlacement;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterParameters;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterType;
-import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.view.EnablementComboBoxRenderer;
@@ -67,7 +67,7 @@ public class PostAnalysisWeightPanel extends JPanel {
 	
     private DefaultComboBoxModel<String> rankingModel;
     private DefaultComboBoxModel<String> datasetModel;
-	private EnablementComboBoxRenderer rankingEnablementRenderer;
+	private EnablementComboBoxRenderer<PostAnalysisFilterType> rankingEnablementRenderer;
     
     private JPanel cardPanel;
     
@@ -93,13 +93,13 @@ public class PostAnalysisWeightPanel extends JPanel {
 		JPanel warnCard = createWarningPanel();
 		
 		cardPanel = new JPanel(new CardLayout());
-		cardPanel.add(mannWhittCard, PostAnalysisFilterType.MANN_WHIT_TWO_SIDED.toString());
-		cardPanel.add(mannWhittCard, PostAnalysisFilterType.MANN_WHIT_GREATER.toString());
-		cardPanel.add(mannWhittCard, PostAnalysisFilterType.MANN_WHIT_LESS.toString());
-		cardPanel.add(hypergeomCard, PostAnalysisFilterType.HYPERGEOM.toString());
-		cardPanel.add(createEmptyPanel(), PostAnalysisFilterType.PERCENT.toString());
-		cardPanel.add(createEmptyPanel(), PostAnalysisFilterType.NUMBER.toString());
-		cardPanel.add(createEmptyPanel(), PostAnalysisFilterType.SPECIFIC.toString());
+		cardPanel.add(mannWhittCard, PostAnalysisFilterType.MANN_WHIT_TWO_SIDED.name());
+		cardPanel.add(mannWhittCard, PostAnalysisFilterType.MANN_WHIT_GREATER.name());
+		cardPanel.add(mannWhittCard, PostAnalysisFilterType.MANN_WHIT_LESS.name());
+		cardPanel.add(hypergeomCard, PostAnalysisFilterType.HYPERGEOM.name());
+		cardPanel.add(createEmptyPanel(), PostAnalysisFilterType.PERCENT.name());
+		cardPanel.add(createEmptyPanel(), PostAnalysisFilterType.NUMBER.name());
+		cardPanel.add(createEmptyPanel(), PostAnalysisFilterType.SPECIFIC.name());
 		cardPanel.add(warnCard, "warn");
         
         GroupLayout layout = new GroupLayout(this);
@@ -122,7 +122,7 @@ public class PostAnalysisWeightPanel extends JPanel {
 		}
 	}
 
-	private JPanel createEmptyPanel() {
+	private static JPanel createEmptyPanel() {
 		JPanel panel = new JPanel();
 
 		if (LookAndFeelUtil.isAquaLAF())
@@ -193,7 +193,7 @@ public class PostAnalysisWeightPanel extends JPanel {
 			}
 		});
 
-		rankingEnablementRenderer = new EnablementComboBoxRenderer();
+		rankingEnablementRenderer = new EnablementComboBoxRenderer<>();
 		rankTestCombo = new JComboBox<>();
 		rankTestCombo.setRenderer(rankingEnablementRenderer);
 
@@ -213,7 +213,7 @@ public class PostAnalysisWeightPanel extends JPanel {
 			if (filterType.isMannWhitney() && map.getAllRanks().isEmpty())
 				cardLayout.show(cardPanel, "warn");
 			else
-				cardLayout.show(cardPanel, filterType.toString());
+				cardLayout.show(cardPanel, filterType.name());
 		});
 		
 		datasetCombo = new JComboBox<>();
@@ -439,9 +439,12 @@ public class PostAnalysisWeightPanel extends JPanel {
 		rankTestCombo.setSelectedItem(typeToUse);
 		rankTestTextField.setValue(typeToUse.defaultValue);
 
-		rankingEnablementRenderer.enableIndex(0);
+		rankingEnablementRenderer.enableAll();
 		if (rankingArray.length == 0) {
-			rankingEnablementRenderer.disableIndex(0);
+			rankingEnablementRenderer.disableItems(
+					PostAnalysisFilterType.MANN_WHIT_TWO_SIDED, 
+					PostAnalysisFilterType.MANN_WHIT_LESS, 
+					PostAnalysisFilterType.MANN_WHIT_GREATER);
 		}
 	}
 	

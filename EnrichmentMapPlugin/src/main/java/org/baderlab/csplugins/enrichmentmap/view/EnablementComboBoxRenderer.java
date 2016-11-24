@@ -12,25 +12,33 @@ import javax.swing.plaf.basic.BasicComboBoxRenderer;
  * Allows items in a JCombo box to look disabled.
  */
 @SuppressWarnings("serial")
-public class EnablementComboBoxRenderer extends BasicComboBoxRenderer {
+public class EnablementComboBoxRenderer<T> extends BasicComboBoxRenderer {
 	
-	private final Set<Integer> disabledIndicies = new HashSet<>();
+	private final Set<T> disabledItems = new HashSet<>();
 	
-	public void disableIndex(int index) {
-		disabledIndicies.add(index);
+	@SafeVarargs
+	public final void disableItems(T ... items) {
+		for(T item : items)
+			disabledItems.add(item);
 	}
 	
-	public void enableIndex(int index) {
-		disabledIndicies.remove(index);
+	@SafeVarargs
+	public final void enableItems(T ... items) {
+		for(T item : items)
+			disabledItems.remove(item);
+	}
+	
+	public void enableAll() {
+		disabledItems.clear();
 	}
 	
 	@Override
 	public Component getListCellRendererComponent(@SuppressWarnings("rawtypes") JList list, Object value, 
-			int index, boolean isSelected, boolean cellHasFocus) {
+			                                      int index, boolean isSelected, boolean cellHasFocus) {
 		
 		Component component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 		
-		if(disabledIndicies.contains(index)) {
+		if(disabledItems.contains(value)) {
 			component.setForeground(Color.LIGHT_GRAY);
 		}
 		else {
