@@ -40,7 +40,7 @@ public class PostAnalysisPanelMediator implements SetCurrentNetworkViewListener,
 	@SuppressWarnings("serial")
 	public void showDialog(EnrichmentMap map) {
 		invokeOnEDT(() -> {
-			JDialog dialog = new JDialog(swingApplication.getJFrame(), "EnrichmentMap - Advanced Options",
+			JDialog dialog = new JDialog(swingApplication.getJFrame(), "Add Signature Gene Sets",
 					ModalityType.APPLICATION_MODAL);
 			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 			dialog.getContentPane().add(postAnalysisPanelProvider.get());

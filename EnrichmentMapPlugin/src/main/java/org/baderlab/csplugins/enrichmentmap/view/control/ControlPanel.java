@@ -15,6 +15,7 @@ import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.makeSmall
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.net.URL;
 import java.text.Collator;
 import java.util.ArrayList;
@@ -47,6 +48,7 @@ import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.UIManager;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
+import org.baderlab.csplugins.enrichmentmap.EnrichmentMapBuildProperties;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowAboutDialogAction;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
@@ -65,6 +67,7 @@ import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 import org.cytoscape.application.swing.CytoPanelComponent2;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.model.CyDisposable;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkView;
@@ -81,6 +84,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 	
 	private static final String BORDER_COLOR_KEY = "Separator.foreground";
 	
+	@Inject private CyServiceRegistrar serviceRegistrar;
 	@Inject private CyNetworkViewManager networkViewManager;
 	@Inject private IconManager iconManager;
 	@Inject private EnrichmentMapManager emManager;
@@ -130,7 +134,15 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 	
 	@AfterInjection
 	private void createContents() {
+		setMinimumSize(new Dimension(390, 400));
+		setPreferredSize(new Dimension(390, 600));
+		
 		LookAndFeelUtil.equalizeSize(getOpenLegendsButton(), getCreateEmButton());
+		
+		JButton helpButton = SwingUtil.createOnlineHelpButton(EnrichmentMapBuildProperties.USER_MANUAL_URL,
+				"Online Manual...", serviceRegistrar);
+		
+		makeSmall(getAboutButton(), getClosePanelButton());
 		
 		final GroupLayout layout = new GroupLayout(this);
 		setLayout(layout);
@@ -145,6 +157,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
    				)
 				.addComponent(getCtrlPanelsContainer(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addGroup(layout.createSequentialGroup()
+   						.addComponent(helpButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    						.addComponent(getAboutButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    						.addGap(0, 0, Short.MAX_VALUE)
    						.addComponent(getClosePanelButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -158,6 +171,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
    				)
    				.addComponent(getCtrlPanelsContainer(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
    				.addGroup(layout.createParallelGroup(CENTER, false)
+   						.addComponent(helpButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    						.addComponent(getAboutButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    						.addComponent(getClosePanelButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    				)
@@ -345,13 +359,12 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		private JRadioButton anyRadio;
 		private JRadioButton allRadio;
 		private JCheckBox togglePublicationCheck;
+		private JButton setEdgeWidthButton;
 		private JButton resetStyleButton;
 		
 		private JComboBox<ChartType> chartTypeCombo;
 		private JComboBox<ColorScheme> chartColorsCombo;
 		
-		private JButton advancedOptionsButton;
-
 		private final CyNetworkView networkView;
 		
 		private boolean updatingDataSetList;
@@ -385,15 +398,10 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 	   		layout.setHorizontalGroup(layout.createParallelGroup(CENTER, true)
 					.addComponent(filterPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addComponent(stylePanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-					.addGroup(layout.createSequentialGroup()
-							.addGap(0, 0, Short.MAX_VALUE)
-							.addComponent(getAdvancedOptionsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					)
 	   		);
 	   		layout.setVerticalGroup(layout.createSequentialGroup()
 	   				.addComponent(filterPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addComponent(stylePanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(getAdvancedOptionsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 	   		);
 			
 			if (LookAndFeelUtil.isAquaLAF())
@@ -507,7 +515,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		
 		private JPanel createStylePanel() {
 			makeSmall(chartTypeLabel, chartColorsLabel, getChartTypeCombo(), getChartColorsCombo(),
-					getTogglePublicationCheck(), getResetStyleButton());
+					getTogglePublicationCheck(), getSetEdgeWidthButton(), getResetStyleButton());
 			
 			final JPanel panel = new JPanel();
 			panel.setBorder(LookAndFeelUtil.createTitledBorder("Style"));
@@ -527,6 +535,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 							.addGroup(layout.createParallelGroup(LEADING, true)
 									.addComponent(getChartTypeCombo(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 									.addComponent(getChartColorsCombo(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+									.addComponent(getSetEdgeWidthButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 									.addComponent(getTogglePublicationCheck(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 							)
 					)
@@ -541,6 +550,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 							.addComponent(chartColorsLabel)
 							.addComponent(getChartColorsCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					)
+					.addComponent(getSetEdgeWidthButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getTogglePublicationCheck(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addPreferredGap(ComponentPlacement.UNRELATED)
 					.addComponent(getResetStyleButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -601,7 +611,12 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		
 		CheckboxListPanel<DataSet> getCheckboxListPanel() {
 			if (checkboxListPanel == null) {
-				checkboxListPanel = new CheckboxListPanel<>();
+				checkboxListPanel = new CheckboxListPanel<>(true, false);
+				
+				JButton addButton = checkboxListPanel.getAddButton();
+				addButton.setText(" " + IconManager.ICON_PLUS + " ");
+				addButton.setFont(iconManager.getIconFont(11.0f));
+				addButton.setToolTipText("Add Signature Gene Sets...");
 			}
 			
 			return checkboxListPanel;
@@ -638,20 +653,20 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			return togglePublicationCheck;
 		}
 		
+		public JButton getSetEdgeWidthButton() {
+			if (setEdgeWidthButton == null) {
+				setEdgeWidthButton = new JButton("Set Signature Edge Width...");
+			}
+			
+			return setEdgeWidthButton;
+		}
+		
 		JButton getResetStyleButton() {
 			if (resetStyleButton == null) {
 				resetStyleButton = new JButton("Reset Style");
 			}
 			
 			return resetStyleButton;
-		}
-		
-		JButton getAdvancedOptionsButton() {
-			if (advancedOptionsButton == null) {
-				advancedOptionsButton = new JButton("Advanced Options...");
-			}
-			
-			return advancedOptionsButton;
 		}
 		
 		private JPanel createDataSetListPanel() {

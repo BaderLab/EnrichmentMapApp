@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 
 import javax.swing.Action;
 import javax.swing.JComboBox;
+import javax.swing.JOptionPane;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowEnrichmentMapDialogAction;
@@ -26,9 +27,11 @@ import org.baderlab.csplugins.enrichmentmap.style.ColorScheme;
 import org.baderlab.csplugins.enrichmentmap.style.MasterMapStyleOptions;
 import org.baderlab.csplugins.enrichmentmap.style.MasterMapVisualStyle;
 import org.baderlab.csplugins.enrichmentmap.style.MasterMapVisualStyleTask;
+import org.baderlab.csplugins.enrichmentmap.style.WidthFunction;
 import org.baderlab.csplugins.enrichmentmap.task.CreatePublicationVisualStyleTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanel.EMViewControlPanel;
 import org.baderlab.csplugins.enrichmentmap.view.parameters.ParametersPanelMediator;
+import org.baderlab.csplugins.enrichmentmap.view.postanalysis.EdgeWidthDialog;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PostAnalysisPanelMediator;
 import org.baderlab.csplugins.enrichmentmap.view.util.SliderBarActionListener;
 import org.baderlab.csplugins.enrichmentmap.view.util.SliderBarPanel;
@@ -63,6 +66,7 @@ public class ControlPanelMediator
 	@Inject private Provider<ControlPanel> controlPanelProvider;
 	@Inject private Provider<ParametersPanelMediator> parametersPanelMediatorProvider;
 	@Inject private Provider<PostAnalysisPanelMediator> postAnalysisPanelMediatorProvider;
+	@Inject private Provider<EdgeWidthDialog> dialogProvider;
 	@Inject private EnrichmentMapManager emManager;
 	@Inject private ShowEnrichmentMapDialogAction masterMapDialogAction;
 	@Inject private Provider<CreatePublicationVisualStyleTaskFactory> visualStyleTaskFactoryProvider;
@@ -89,9 +93,10 @@ public class ControlPanelMediator
 	public void handleEvent(NetworkViewAddedEvent e) {
 		invokeOnEDT(() -> {
 			CyNetworkView netView = e.getNetworkView();
+			EnrichmentMap map = emManager.getEnrichmentMap(netView.getModel().getSUID());
 			
 			// Is the new view an Enrichment Map one?
-			if (emManager.getEnrichmentMap(netView.getModel().getSUID()) != null) {
+			if (map != null) {
 				EMViewControlPanel viewPanel = getControlPanel().addEnrichmentMapView(netView);
 				
 				if (viewPanel != null) {
@@ -110,6 +115,10 @@ public class ControlPanelMediator
 						sSliderPanel.getSlider().addChangeListener(
 								new SliderBarActionListener(sSliderPanel, applicationManager, emManager));
 					
+					viewPanel.getCheckboxListPanel().setAddButtonCallback(model -> {
+						postAnalysisPanelMediatorProvider.get().showDialog(getCurrentMap());
+					});
+					
 					viewPanel.getTogglePublicationCheck().addActionListener((ActionEvent ae) -> {
 						dialogTaskManager.execute(visualStyleTaskFactoryProvider.get().createTaskIterator());
 					});
@@ -117,7 +126,6 @@ public class ControlPanelMediator
 					viewPanel.getResetStyleButton().addActionListener(ae -> {
 						Set<DataSet> dataSets = ImmutableSet.copyOf(
 								viewPanel.getCheckboxListPanel().getSelectedDataItems());
-						EnrichmentMap map = emManager.getEnrichmentMap(netView.getModel().getSUID());
 						MasterMapStyleOptions options = new MasterMapStyleOptions(netView, map, dataSets::contains);
 						
 						ChartType type = (ChartType) viewPanel.getChartTypeCombo().getSelectedItem();
@@ -128,8 +136,8 @@ public class ControlPanelMediator
 						// TODO update style fields
 					});
 					
-					viewPanel.getAdvancedOptionsButton().addActionListener(ae -> {
-						postAnalysisPanelMediatorProvider.get().showDialog(getCurrentMap());
+					viewPanel.getSetEdgeWidthButton().addActionListener(ae -> {
+						showEdgeWidthDialog();
 					});
 				}
 			}
@@ -267,5 +275,24 @@ public class ControlPanelMediator
 		}
 		
 		return chart;
+	}
+	
+	/**
+	 * Show Post Analysis Edge Width dialog"
+	 */
+	private void showEdgeWidthDialog() {
+		if (WidthFunction.appliesTo(applicationManager.getCurrentNetwork())) {
+			EdgeWidthDialog dialog = dialogProvider.get();
+			dialog.pack();
+			dialog.setLocationRelativeTo(swingApplication.getJFrame());
+			dialog.setVisible(true);
+		} else {
+			JOptionPane.showMessageDialog(
+					swingApplication.getJFrame(),
+					"Please add signature gene sets first.",
+					"EnrichmentMap Edge Width",
+					JOptionPane.WARNING_MESSAGE
+			);
+		}
 	}
 }

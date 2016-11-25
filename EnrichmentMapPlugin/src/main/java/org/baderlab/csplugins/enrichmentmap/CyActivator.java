@@ -1,14 +1,10 @@
 package org.baderlab.csplugins.enrichmentmap;
 
-import static org.cytoscape.work.ServiceProperties.TITLE;
-
 import java.util.Properties;
 
-import org.baderlab.csplugins.enrichmentmap.actions.EdgeWidthTableColumnTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.actions.HeatMapSelectionListener;
 import org.baderlab.csplugins.enrichmentmap.actions.LegacyEnrichmentMapSessionListener;
 import org.baderlab.csplugins.enrichmentmap.actions.OpenEnrichmentMapAction;
-import org.baderlab.csplugins.enrichmentmap.actions.ShowEdgeWidthDialogAction;
 import org.baderlab.csplugins.enrichmentmap.commands.BuildEnrichmentMapTuneableTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.commands.EnrichmentMapGSEACommandHandlerTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
@@ -16,10 +12,8 @@ import org.baderlab.csplugins.enrichmentmap.style.ChartFactoryManager;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanelMediator;
 import org.baderlab.csplugins.enrichmentmap.view.parameters.ParametersPanelMediator;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PostAnalysisPanelMediator;
-import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.service.util.AbstractCyActivator;
-import org.cytoscape.task.TableColumnTaskFactory;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
 import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.TaskFactory;
@@ -78,14 +72,7 @@ public class CyActivator extends AbstractCyActivator {
 		props.put(ServiceProperties.COMMAND_NAMESPACE, "enrichmentmap");
 		registerService(bc, gseaCommandTask, TaskFactory.class, props);
 
-		// edge table context menu
-		AbstractCyAction edgeWidthDialogAction = injector.getInstance(ShowEdgeWidthDialogAction.class);
-		EdgeWidthTableColumnTaskFactory tableColumnTaskFactory = new EdgeWidthTableColumnTaskFactory(edgeWidthDialogAction);
-		props = new Properties();
-		props.setProperty(TITLE, "Post Analysis Edge Width...");
-		props.setProperty("tableTypes", "edge");
-		registerService(bc, tableColumnTaskFactory, TableColumnTaskFactory.class, props);
-		
+		// UI Mediators
 		ControlPanelMediator controlPanelMediator = injector.getInstance(ControlPanelMediator.class);
 		registerAllServices(bc, controlPanelMediator, new Properties());
 		

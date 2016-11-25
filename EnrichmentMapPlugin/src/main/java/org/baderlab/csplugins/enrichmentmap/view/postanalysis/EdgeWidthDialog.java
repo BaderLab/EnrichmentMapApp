@@ -4,16 +4,14 @@ import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.makeSmall;
 
-import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.text.DecimalFormat;
 
+import javax.swing.AbstractAction;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.GroupLayout;
@@ -240,32 +238,20 @@ public class EdgeWidthDialog extends JDialog {
 	}
 	
 	private JPanel createButtonPanel() {
-		JPanel parentPanel = new JPanel(new BorderLayout());
-		JPanel defautsPanel = new JPanel(new FlowLayout(FlowLayout.TRAILING));
-		JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.TRAILING));
-		
 		JButton restoreDefaultsButton = new JButton("Restore Defaults");
-		restoreDefaultsButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				setTextFieldValues(EdgeWidthParams.defaultValues());
-			}
+		restoreDefaultsButton.addActionListener(e -> {
+			setTextFieldValues(EdgeWidthParams.defaultValues());
 		});
-		defautsPanel.add(restoreDefaultsButton);
 		
-		
-		JButton cancelButton = new JButton("Cancel");
-		buttonPanel.add(cancelButton);
-		
-		cancelButton.addActionListener(new ActionListener() {
+		JButton cancelButton = new JButton(new AbstractAction("Cancel") {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				dispose();
 			}
 		});
 		
-		JButton createButton = new JButton("OK");
-		buttonPanel.add(createButton);
-		
-		createButton.addActionListener(new ActionListener() {
+		JButton okButton = new JButton(new AbstractAction("OK") {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				double emLowerWidth = ((Number)emLowerWidthText.getValue()).doubleValue();
 				double emUpperWidth = ((Number)emUpperWidthText.getValue()).doubleValue();
@@ -287,14 +273,16 @@ public class EdgeWidthDialog extends JDialog {
 				};
 				
 				taskManager.execute(new TaskIterator(task));
-				
 				dispose();
 			}
 		});
 		
-		parentPanel.add(defautsPanel, BorderLayout.WEST);
-		parentPanel.add(buttonPanel, BorderLayout.EAST);
-		return parentPanel;
+		JPanel bottomPanel = LookAndFeelUtil.createOkCancelPanel(okButton, cancelButton, restoreDefaultsButton);
+		
+		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), okButton.getAction(), cancelButton.getAction());
+		getRootPane().setDefaultButton(okButton);
+		
+		return bottomPanel;
 	}
 	
 	private static GridBagConstraints gridBagConstraints(int gridx, int gridy) {

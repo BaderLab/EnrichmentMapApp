@@ -143,7 +143,7 @@ public class GenericOneExpressionPage implements CardDialogPage {
 	
 	
 	private JPanel createEnrichmentFileListPanel() {
-		checkboxListPanel = new CheckboxListPanel<>(true);
+		checkboxListPanel = new CheckboxListPanel<>(true, true);
 		checkboxListPanel.setAddButtonCallback((checkboxListModel) -> {
 			List<File> files = browseEnrichments();
 			for(File file : files) {
