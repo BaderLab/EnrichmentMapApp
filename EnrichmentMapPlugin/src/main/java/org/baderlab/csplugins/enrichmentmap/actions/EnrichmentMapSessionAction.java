@@ -415,7 +415,7 @@ public class EnrichmentMapSessionAction implements SessionAboutToBeSavedListener
 		String tmpDir = System.getProperty("java.io.tmpdir");
 		System.out.println("java.io.tmpdir: [" + tmpDir + "]");
 
-		String prop_file_content = "";
+		StringBuilder prop_file_content = new StringBuilder();
 
 		//get the networks
 		HashMap<Long, EnrichmentMap> networks = EnrichmentMapManager.getInstance().getCyNetworkList();
@@ -447,8 +447,9 @@ public class EnrichmentMapSessionAction implements SessionAboutToBeSavedListener
 			//geneset file for PostAnalysis Signature Genesets
 			File siggmt = new File(tmpDir,name+".signature.gmt");
 
-			prop_file_content = prop_file_content + "Version\t2.0\n";
-			prop_file_content = prop_file_content + params.toString();
+			prop_file_content.append("Version\t2.0\n");
+			prop_file_content.append(params.toString());
+			
 			try{
 				if (!em.getSignatureGenesets().isEmpty() ) {
 					BufferedWriter sigGmtwriter = new BufferedWriter(new FileWriter(siggmt));
@@ -474,7 +475,7 @@ public class EnrichmentMapSessionAction implements SessionAboutToBeSavedListener
 					HashMap<String, DataSet> all_datasets = em.getDatasets();
 
 					//output to the property file how many datasets we have (so we know on reload)
-					prop_file_content = prop_file_content + "Datasets\t"+  all_datasets.keySet().toString() +"\n";
+					prop_file_content.append("Datasets\t"+  all_datasets.keySet().toString() + "\n");
 
 					for(Iterator<String> k  = all_datasets.keySet().iterator(); k.hasNext();){
 						String dataset_name = k.next().toString();
@@ -499,7 +500,7 @@ public class EnrichmentMapSessionAction implements SessionAboutToBeSavedListener
 						enr1writer_backcomp.close();
 						pFileList.add(enrichmentresults_backcomp);    
 
-						prop_file_content = prop_file_content + em.getDataset(current).getSetofgenesets().toString(current);
+						prop_file_content.append(em.getDataset(current).getSetofgenesets().toString(current));
 
 						//enrichments
 						File enrichmentresults = new File(tmpDir, name+"." + dataset_name +".ENR.txt");
@@ -509,7 +510,7 @@ public class EnrichmentMapSessionAction implements SessionAboutToBeSavedListener
 						enr1writer.close();
 						pFileList.add(enrichmentresults);            				
 
-						prop_file_content = prop_file_content + em.getDataset(current).getEnrichments().toString(current);
+						prop_file_content.append(em.getDataset(current).getEnrichments().toString(current));
 
 						//expression
 						if(em.getDataset(current).getExpressionSets() != null){
@@ -521,7 +522,7 @@ public class EnrichmentMapSessionAction implements SessionAboutToBeSavedListener
 							pFileList.add(expression);
 
 							//print out the information about the expression files
-							prop_file_content = prop_file_content + em.getDataset(current).getExpressionSets().toString(current);
+							prop_file_content.append(em.getDataset(current).getExpressionSets().toString(current));
 
 							//save all the rank files
 							if(!em.getDataset(current).getExpressionSets().getRanks().isEmpty()){
@@ -553,7 +554,7 @@ public class EnrichmentMapSessionAction implements SessionAboutToBeSavedListener
 						}        			        			
 					}
 					BufferedWriter writer = new BufferedWriter(new FileWriter(session_prop_file));
-					writer.write(prop_file_content);
+					writer.write(prop_file_content.toString());
 					writer.close();
 					pFileList.add(session_prop_file);
 				}  

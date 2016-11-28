@@ -43,6 +43,7 @@
 
 package org.baderlab.csplugins.enrichmentmap.model;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -409,7 +410,7 @@ public class GeneExpressionMatrix {
         paramVariables.append(ds + "%" + simpleName + "%expressionUniverse\t" + expressionUniverse   + "\n");
         
         if(phenotypes != null)
-            paramVariables.append(ds + "%" + simpleName + "%phenotypes\t" + phenotypes.toString()   + "\n");
+            paramVariables.append(ds + "%" + simpleName + "%phenotypes\t" + Arrays.toString(phenotypes)   + "\n");
         
         return paramVariables.toString();
     }
@@ -418,13 +419,40 @@ public class GeneExpressionMatrix {
      * Restores parameters saved in the session file.
      * Note, most of this object is restored by the ExpressionFileReaderTask.
      */
-    public void restoreProps(String ds, Map<String, String> props) {
+	public void restoreProps(String ds, Map<String, String> props) {
     	String simpleName = this.getClass().getSimpleName();
 		String val = props.get(ds + "%" + simpleName + "%expressionUniverse");
 		if(val != null) {
 			try {
 				expressionUniverse = Integer.parseInt(val);
 			} catch(NumberFormatException e) {}
+		}
+		
+		if(props.containsKey(ds + "%" + simpleName + "%phenotype1")) {
+			String prop = props.get(ds + "%" + simpleName + "%phenotype1");
+			if(!"null".equals(prop)) {
+				this.phenotype1 = prop;
+			}
+		}
+		if(props.containsKey(ds + "%" + simpleName + "%phenotype2")) {
+			String prop = props.get(ds + "%" + simpleName + "%phenotype2");
+			if(!"null".equals(prop)) {
+				this.phenotype2 = prop;
+			}
+		}
+		
+		String[] col_names = getColumnNames();
+		
+		if(props.containsKey(ds + "%" + simpleName + "%phenotypes") && col_names != null && col_names.length > 0) {
+			try {
+				String prop = props.get(ds + "%" + simpleName + "%phenotypes");
+				if(!prop.startsWith("[Ljava.lang.String")) { // avoid bug #144
+					String[] restored_phenotypes = prop.replace("[", "").replace("]", "").split(", ");
+					if(restored_phenotypes.length == col_names.length-2) {
+						this.phenotypes = restored_phenotypes;
+					}
+				}
+			} catch(Exception e) { }
 		}
 	}
     

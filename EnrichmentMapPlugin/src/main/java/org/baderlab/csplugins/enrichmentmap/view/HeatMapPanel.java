@@ -439,13 +439,9 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 			table.setCellSelectionEnabled(true);
 
 			//set the table header renderer to the vertical renderer
-			ColumnHeaderVerticalRenderer pheno1_renderer = new ColumnHeaderVerticalRenderer();
-			pheno1_renderer.setBackground(EnrichmentMapVisualStyle.LIGHTEST_PHENOTYPE_1);
-			ColumnHeaderVerticalRenderer pheno2_renderer = new ColumnHeaderVerticalRenderer();
-			pheno2_renderer.setBackground(EnrichmentMapVisualStyle.LIGHTEST_PHENOTYPE_2);
-
+			ColumnHeaderVerticalRenderer pheno1_renderer  = new ColumnHeaderVerticalRenderer(EnrichmentMapVisualStyle.LIGHTEST_PHENOTYPE_1);
+			ColumnHeaderVerticalRenderer pheno2_renderer  = new ColumnHeaderVerticalRenderer(EnrichmentMapVisualStyle.LIGHTEST_PHENOTYPE_2);
 			ColumnHeaderVerticalRenderer default_renderer = new ColumnHeaderVerticalRenderer();
-			default_renderer.setBackground(Color.white);
 
 			if (params.isData2() && map.getDataset(EnrichmentMap.DATASET2).getExpressionSets() != null && !map.getDataset(EnrichmentMap.DATASET1)
 					.getExpressionSets().getFilename().equalsIgnoreCase(map.getDataset(EnrichmentMap.DATASET2).getExpressionSets().getFilename())) {

@@ -43,12 +43,14 @@
 
 package org.baderlab.csplugins.enrichmentmap.heatmap;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
+import java.util.Optional;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -66,14 +68,24 @@ import javax.swing.table.DefaultTableCellRenderer;
  * <p>
  * Flips column headers to vertical position
  */
+@SuppressWarnings("serial")
 public class ColumnHeaderVerticalRenderer extends DefaultTableCellRenderer {
 
+	private Optional<Color> labelBackgroundColor;
+	
+	public ColumnHeaderVerticalRenderer(Color labelBackgroundColor) {
+		this.labelBackgroundColor = Optional.ofNullable(labelBackgroundColor);
+	}
+	
+	public ColumnHeaderVerticalRenderer() {
+		this.labelBackgroundColor = Optional.empty();
+	}
+	
 
     @Override
     public Component getTableCellRendererComponent(JTable table,
                                                    Object value, boolean isSelected, boolean hasFocus,
                                                    int row, int column) {
-
         JLabel label = new JLabel();
 
         label.setBorder(UIManager.getBorder("TableHeader.cellBorder"));
@@ -81,7 +93,7 @@ public class ColumnHeaderVerticalRenderer extends DefaultTableCellRenderer {
         label.setForeground(UIManager.getColor("TableHeader.foreground"));
         label.setFont(UIManager.getFont("TableHeader.font"));
 
-        Icon icon = VerticalCaption.getVerticalCaption(label, value.toString(), false);
+        Icon icon = getVerticalCaption(label, value.toString(), false);
 
         label.setIcon(icon);
         label.setVerticalAlignment(JLabel.BOTTOM);
@@ -89,11 +101,9 @@ public class ColumnHeaderVerticalRenderer extends DefaultTableCellRenderer {
 
         return label;
     }
-}
 
-class VerticalCaption {
-
-    static Icon getVerticalCaption(JComponent component, String caption, boolean clockwise) {
+    
+    private Icon getVerticalCaption(JComponent component, String caption, boolean clockwise) {
 		Font f = component.getFont();
 		FontMetrics fm = component.getFontMetrics(f);
 		int captionHeight = fm.getHeight();
@@ -101,6 +111,11 @@ class VerticalCaption {
 		BufferedImage bi = new BufferedImage(captionHeight + 4, captionWidth + 4, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = (Graphics2D) bi.getGraphics();
 
+        if(labelBackgroundColor.isPresent()) {
+	        g.setColor(labelBackgroundColor.get()); 
+	        g.fillRect(0, 0, bi.getWidth(), bi.getHeight());
+        }
+        
         g.setColor(component.getForeground());
         g.setFont(f);
         g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
