@@ -45,6 +45,8 @@ package org.baderlab.csplugins.enrichmentmap.commands;
 
 import java.io.File;
 
+import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
@@ -72,9 +74,6 @@ import com.google.inject.Provider;
  * score(NES).
  */
 public class BuildEnrichmentMapTuneableTask extends AbstractTask {
-
-	private DataSetFiles dataset1files = new DataSetFiles();
-	private DataSetFiles dataset2files = new DataSetFiles();
 
 	@Tunable(description = "Analysis Type", groups = { "Analysis Type" }, gravity = 1.0)
 	public ListSingleSelection<String> analysisType;
@@ -182,6 +181,7 @@ public class BuildEnrichmentMapTuneableTask extends AbstractTask {
 			new_params.setMethod(EnrichmentMapParameters.method_generic);
 
 		//Set Dataset1 Files
+		DataSetFiles dataset1files = new DataSetFiles();
 		if(gmtFile != null)
 			dataset1files.setGMTFileName(gmtFile.getAbsolutePath());
 		if(expressionDataset1!=null)
@@ -212,6 +212,7 @@ public class BuildEnrichmentMapTuneableTask extends AbstractTask {
 			new_params.setSimilarityMetric(EnrichmentMapParameters.SM_COMBINED);
 
 		//Set Dataset2 Files
+		DataSetFiles dataset2files = new DataSetFiles();
 		if(expressionDataset2!=null)
 			dataset2files.setExpressionFileName(expressionDataset2.getAbsolutePath());
 		if(enrichmentsDataset2 != null)
@@ -232,10 +233,14 @@ public class BuildEnrichmentMapTuneableTask extends AbstractTask {
 
 		String prefix = legacySupport.getNextAttributePrefix();
 		new_params.setAttributePrefix(prefix);
-		String name = prefix + LegacySupport.EM_NAME;
 		
 		EnrichmentMap map = new EnrichmentMap(new_params.getCreationParameters(), serviceRegistrar);
-
+		
+		Method method = EnrichmentMapParameters.stringToMethod(new_params.getMethod());
+		map.addDataSet(LegacySupport.DATASET1, new DataSet(map, LegacySupport.DATASET1, method, dataset1files));
+		if(!dataset2files.isEmpty())
+			map.addDataSet(LegacySupport.DATASET2, new DataSet(map, LegacySupport.DATASET2, method, dataset2files));
+		
 		EnrichmentMapBuildMapTaskFactory buildmap = taskFactoryProvider.create(map);
 		insertTasksAfterCurrentTask(buildmap.createTaskIterator());
 

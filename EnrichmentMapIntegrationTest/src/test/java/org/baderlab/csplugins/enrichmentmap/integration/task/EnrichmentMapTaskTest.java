@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.inject.Inject;
@@ -17,11 +18,12 @@ import org.baderlab.csplugins.enrichmentmap.integration.EdgeSimilarities;
 import org.baderlab.csplugins.enrichmentmap.integration.SerialTestTaskManager;
 import org.baderlab.csplugins.enrichmentmap.integration.TestUtils;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
-import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.task.EnrichmentMapBuildMapTaskFactory;
 import org.cytoscape.model.CyNetwork;
@@ -51,7 +53,7 @@ public class EnrichmentMapTaskTest extends BaseIntegrationTest {
 	protected void buildEnrichmentMap(EMCreationParameters params, DataSetFiles datasetFiles, String datasetName) {
 		EnrichmentMap map = new EnrichmentMap(params, serviceRegistrar);
 		
-		DataSet dataset = new DataSet(map, datasetName, datasetFiles);
+		DataSet dataset = new DataSet(map, datasetName, Method.Generic, datasetFiles);
 		map.addDataSet(datasetName, dataset);
 		
 		Injector injector = Guice.createInjector(new OSGiModule(bc), new AfterInjectionModule(), new CytoscapeServiceModule(), new ApplicationModule());
@@ -73,7 +75,7 @@ public class EnrichmentMapTaskTest extends BaseIntegrationTest {
 		String rankFile       = createTempFile(PATH, "FakeRank.rnk").getAbsolutePath();
 		
 		PropertyManager pm = new PropertyManager();
-		EMCreationParameters params = new EMCreationParameters(Method.Generic, "EM1_", SimilarityMetric.JACCARD, pm.getDefaultPvalue(), pm.getDefaultQvalue(), pm.getDefaultJaccardCutOff(), pm.getDefaultCombinedConstant());
+		EMCreationParameters params = new EMCreationParameters("EM1_", pm.getDefaultPvalue(), pm.getDefaultQvalue(), NESFilter.ALL, Optional.empty(), SimilarityMetric.JACCARD, pm.getDefaultJaccardCutOff(), pm.getDefaultCombinedConstant());
 		
 		DataSetFiles dataset1files = new DataSetFiles();
 		dataset1files.setGMTFileName(geneSetsFile);  
