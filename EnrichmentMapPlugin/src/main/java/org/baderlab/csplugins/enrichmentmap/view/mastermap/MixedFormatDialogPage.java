@@ -11,10 +11,8 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Supplier;
 
 import javax.swing.BorderFactory;
-import javax.swing.DefaultListModel;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
@@ -146,14 +144,6 @@ public class MixedFormatDialogPage implements CardDialogPage {
 	}
 	
 	
-	private JPanel createDataSetPanel() {
-		dataSetListModel = new IterableListModel<>();
-		JList<DataSetParameters> dataSetList = new DataSetList(dataSetListModel);
-		// MKTODO probably just inline createAddRemovePanel
-		return createAddRemovePanel(dataSetList, "Enrichment Data Sets (0)", this::browseForDataSets);
-	}
-	
-	
 	private List<DataSetParameters> browseForDataSets() {
 		Optional<File> rootFolder = FileBrowser.browseForRootFolder(callback.getDialogFrame());
 		if(rootFolder.isPresent()) {
@@ -233,28 +223,52 @@ public class MixedFormatDialogPage implements CardDialogPage {
 		return panel;
 	}
 	
-	private <T> JPanel createAddRemovePanel(JList<T> list, String title, Supplier<List<T>> listSupplier) {
-		JButton addButton = new JButton("Add...");
+	private JPanel createDataSetPanel() {
+		dataSetListModel = new IterableListModel<>();
+		JList<DataSetParameters> list = new DataSetList(dataSetListModel);
+		String title = "Enrichment Data Sets (0)";
+		
+		JButton addFolderButton = new JButton("Add Folder...");
+		JButton addManualButton = new JButton("Add Single...");
+		JButton editButton = new JButton("Edit...");
 		JButton removeButton = new JButton("Remove");
 		JButton removeAllButton = new JButton("Clear");
 		
-		SwingUtil.makeSmall(addButton, removeButton, removeAllButton);
+		SwingUtil.makeSmall(addFolderButton, addManualButton, editButton, removeButton, removeAllButton);
 		
 		// MKTODO check for duplicates, might even make sense to use a Set for the list model
-		addButton.addActionListener(e -> {
-			DefaultListModel<T> model = (DefaultListModel<T>)list.getModel();
-			listSupplier.get().forEach(model::addElement);
+		addFolderButton.addActionListener(e -> {
+			browseForDataSets().forEach(dataSetListModel::addElement);
+		});
+		
+		addManualButton.addActionListener(e -> {
+			EditDataSetDialog dialog = new EditDataSetDialog(callback.getDialogFrame(), null);
+			DataSetParameters dataSet = dialog.open();
+			if(dataSet != null) {
+				dataSetListModel.addElement(dataSet);
+			}
+		});
+		
+		editButton.addActionListener(e -> {
+			int index = list.getSelectedIndex();
+			if(index != -1) {
+				DataSetParameters dataSet = dataSetListModel.getElementAt(index);
+				EditDataSetDialog dialog = new EditDataSetDialog(callback.getDialogFrame(), dataSet);
+				DataSetParameters newDataSet = dialog.open();
+				if(newDataSet != null) {
+					dataSetListModel.removeElementAt(index);
+					dataSetListModel.add(index, newDataSet);
+				}
+			}
 		});
 		
 		removeButton.addActionListener(e -> {
-			List<T> selected = list.getSelectedValuesList();
-			DefaultListModel<T> model = (DefaultListModel<T>)list.getModel();
-			selected.forEach(model::removeElement);
+			List<DataSetParameters> selected = list.getSelectedValuesList();
+			selected.forEach(dataSetListModel::removeElement);
 		});
 		
 		removeAllButton.addActionListener(e -> {
-			DefaultListModel<T> model = (DefaultListModel<T>)list.getModel();
-			model.clear();
+			dataSetListModel.clear();
 		});
 		
 		JScrollPane scrollPane = new JScrollPane();
@@ -265,15 +279,17 @@ public class MixedFormatDialogPage implements CardDialogPage {
 		panel.setLayout(layout);
 		layout.setAutoCreateGaps(true);
 		
-		int buttonWidth = 80;
+		final int bwidth = 120;
 		
 		layout.setHorizontalGroup(
 			layout.createSequentialGroup()
 				.addComponent(scrollPane, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
 				.addGroup(layout.createParallelGroup()
-					.addComponent(addButton, buttonWidth, buttonWidth, buttonWidth)
-					.addComponent(removeButton, buttonWidth, buttonWidth, buttonWidth)
-					.addComponent(removeAllButton, buttonWidth, buttonWidth, buttonWidth)
+					.addComponent(addFolderButton, bwidth, bwidth, bwidth)
+					.addComponent(addManualButton, bwidth, bwidth, bwidth)
+					.addComponent(editButton,      bwidth, bwidth, bwidth)
+					.addComponent(removeButton,    bwidth, bwidth, bwidth)
+					.addComponent(removeAllButton, bwidth, bwidth, bwidth)
 				)
 		);
 		layout.setVerticalGroup(
@@ -282,7 +298,9 @@ public class MixedFormatDialogPage implements CardDialogPage {
 				.addGroup(layout.createParallelGroup()
 					.addComponent(scrollPane, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
 					.addGroup(layout.createSequentialGroup()
-						.addComponent(addButton)
+						.addComponent(addFolderButton)
+						.addComponent(addManualButton)
+						.addComponent(editButton)
 						.addComponent(removeButton)
 						.addComponent(removeAllButton)
 					)

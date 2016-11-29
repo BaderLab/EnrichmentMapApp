@@ -37,6 +37,21 @@ public abstract class DatasetLineParser extends AbstractTask {
 			readFile(enrichmentResultFileName2, taskMonitor);
 	}
 	
+	public static List<String> readLines(String fileName, int limit) throws IOException {
+		try(BufferedReader reader = new BufferedReader(new FileReader(fileName))) {
+			List<String> lines = new ArrayList<>();
+			int count = 0;
+            for(String line; (line = reader.readLine()) != null;) {
+                lines.add(line);
+                count++;
+                if(count >= limit) {
+                	break;
+                }
+            }
+            return lines;
+        }
+	}
+	
 	public static List<String> readLines(String fileName) throws IOException {
 		try(BufferedReader reader = new BufferedReader(new FileReader(fileName))) {
 			List<String> lines = new ArrayList<>();
