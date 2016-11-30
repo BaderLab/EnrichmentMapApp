@@ -4,13 +4,23 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.makeSmall;
+import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.simpleDocumentListener;
 
+import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
 
 import javax.annotation.Nullable;
 import javax.swing.AbstractAction;
@@ -27,8 +37,12 @@ import javax.swing.JTextField;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.parsers.DatasetLineParser;
+import org.baderlab.csplugins.enrichmentmap.view.util.FileBrowser;
 import org.cytoscape.util.swing.BasicCollapsiblePanel;
+import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.util.swing.LookAndFeelUtil;
+
+import com.google.common.base.Strings;
 
 /**
  * MKTODO set the phenotypes automatically by scanning the classes file
@@ -36,6 +50,8 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
  */
 @SuppressWarnings("serial")
 public class EditDataSetDialog extends JDialog {
+	
+	private final FileUtil fileUtil;
 	
 	private JRadioButton gseaRadio;
 	private JRadioButton genericRadio;
@@ -48,24 +64,23 @@ public class EditDataSetDialog extends JDialog {
 	private JTextField positiveText;
 	private JTextField negativeText;
 	
+	private JButton okButton;
+	
 	private String[] classes;
 	
 	boolean okClicked = false;
 	
 
-	public EditDataSetDialog(JDialog parent, @Nullable DataSetParameters dataSet) {
+	public EditDataSetDialog(JDialog parent, FileUtil fileUtil, @Nullable DataSetParameters dataSet) {
 		super(parent, null, true);
+		this.fileUtil = fileUtil;
 		setMinimumSize(new Dimension(650, 400));
 		setResizable(false);
-		
-		if(dataSet == null) 
-			setTitle("Add Enrichment Results");
-		else
-			setTitle("Edit Enrichment Results");
-		
+		setTitle(dataSet == null ? "Add Enrichment Results" : "Edit Enrichment Results");
 		createContents(dataSet);
 		pack();
 		setLocationRelativeTo(parent);
+		validateInput();
 	}
 	
 	
@@ -182,15 +197,19 @@ public class EditDataSetDialog extends JDialog {
 		return panel;
 	}
 	
-	
+
 	private JPanel createTextFieldPanel(@Nullable DataSetParameters dataSet) {
 		JLabel enrichmentsLabel = new JLabel("Enrichments:");
 		enrichmentsText = new JTextField();
 		JButton enrichmentsBrowse = new JButton("Browse...");
+		enrichmentsText.getDocument().addDocumentListener(simpleDocumentListener(this::validateInput));
+		enrichmentsBrowse.addActionListener(e -> browse(enrichmentsText, FileBrowser.Filter.ENRICHMENT));
 		
 		JLabel expressionsLabel = new JLabel("Expressions:");
 		expressionsText = new JTextField();
 		JButton expressionsBrowse = new JButton("Browse...");
+		expressionsText.getDocument().addDocumentListener(simpleDocumentListener(this::validateInput));
+		expressionsBrowse.addActionListener(e -> browse(expressionsText, FileBrowser.Filter.EXPRESSION));
 		
 		makeSmall(enrichmentsLabel, enrichmentsText, enrichmentsBrowse);
 		makeSmall(expressionsLabel, expressionsText, expressionsBrowse);
@@ -242,10 +261,14 @@ public class EditDataSetDialog extends JDialog {
 		JLabel ranksLabel = new JLabel("Ranks:");
 		ranksText = new JTextField();
 		JButton ranksBrowse = new JButton("Browse...");
+		ranksText.getDocument().addDocumentListener(simpleDocumentListener(this::validateInput));
+		ranksBrowse.addActionListener(e -> browse(ranksText, FileBrowser.Filter.RANK));
 		
 		JLabel classesLabel = new JLabel("Classes:");
 		classesText = new JTextField();
 		JButton classesBrowse = new JButton("Browse...");
+		classesText.getDocument().addDocumentListener(simpleDocumentListener(this::updateClasses));
+		classesBrowse.addActionListener(e -> browse(classesText, FileBrowser.Filter.CLASS));
 		
 		makeSmall(ranksLabel, ranksText, ranksBrowse);
 		makeSmall(classesLabel, classesText, classesBrowse);
@@ -314,13 +337,12 @@ public class EditDataSetDialog extends JDialog {
 	
 	
 	private JPanel createButtonPanel() {
-		JButton okButton = new JButton(new AbstractAction("OK") {
+		okButton = new JButton(new AbstractAction("OK") {
 			public void actionPerformed(ActionEvent e) {
 				okClicked = true;
 				dispose();
 			}
 		});
-
 		JButton cancelButton = new JButton(new AbstractAction("Cancel") {
 			public void actionPerformed(ActionEvent e) {
 				dispose();
@@ -330,14 +352,55 @@ public class EditDataSetDialog extends JDialog {
 		JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(okButton, cancelButton);
 		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), okButton.getAction(), cancelButton.getAction());
 		getRootPane().setDefaultButton(okButton);
-		
 		return buttonPanel;
 	}
 	
 	
-	private static String[] parseClasses(String classFile) {
+	private void validateInput() {
+		System.out.println("EditDataSetDialog.validateInput()");
+		boolean valid = true;
+		valid &= validatePathTextField(enrichmentsText);
+		valid &= validatePathTextField(expressionsText);
+		valid &= validatePathTextField(ranksText);
+		valid &= validatePathTextField(classesText);
+		okButton.setEnabled(valid);
+	}
+	
+	private static boolean validatePathTextField(JTextField textField) {
+		boolean valid;
+		try {
+			String text = textField.getText();
+			if(Strings.isNullOrEmpty(text.trim())) {
+				valid = true;
+			} else { 
+				valid = Files.isReadable(Paths.get(text));
+			}
+		} catch(InvalidPathException e) {
+			valid = false;
+		}
+		textField.setForeground(valid ? Color.BLACK : Color.RED); // MKTODO don't hardcode Color.BLACK
+		return valid;
+	}
+	
+	
+	private void updateClasses() {
+		if(positiveText.getText().trim().isEmpty() && negativeText.getText().trim().isEmpty() && validatePathTextField(classesText)) {
+			String classFile = classesText.getText();
+			List<String> phenotypes = parseClasses(classFile);
+			if(phenotypes != null) {
+				LinkedHashSet<String> distinctOrdererd = new LinkedHashSet<>(phenotypes);
+				if(distinctOrdererd.size() >= 2) {
+					Iterator<String> iter = distinctOrdererd.iterator();
+					positiveText.setText(iter.next());
+					negativeText.setText(iter.next());
+				}
+			}
+		}
+	}
+	
+	private static List<String> parseClasses(String classFile) {
 		if (isNullOrEmpty(classFile))
-			return new String[] { "NA_pos", "NA_neg" };
+			return Arrays.asList("NA_pos", "NA_neg");
 
 		File f = new File(classFile);
 		if(!f.exists())
@@ -357,9 +420,9 @@ public class EditDataSetDialog extends JDialog {
 			 * the class file can be split by a space or a tab
 			 */
 			if(lines.size() >= 3)
-				return lines.get(2).split("\\s");
+				return Arrays.asList(lines.get(2).split("\\s"));
 			else if(lines.size() == 1)
-				return lines.get(0).split("\\s");
+				return Arrays.asList(lines.get(0).split("\\s"));
 			else
 				return null;
 			
@@ -367,6 +430,13 @@ public class EditDataSetDialog extends JDialog {
 			System.err.println("unable to open class file: " + classFile);
 			return null;
 		}
+	}
+	
+	
+	private void browse(JTextField textField, FileBrowser.Filter filter) {
+		Optional<Path> path = FileBrowser.browse(fileUtil, this, filter);
+		path.map(Path::toString).ifPresent(textField::setText);
+		validateInput();
 	}
 	
 	

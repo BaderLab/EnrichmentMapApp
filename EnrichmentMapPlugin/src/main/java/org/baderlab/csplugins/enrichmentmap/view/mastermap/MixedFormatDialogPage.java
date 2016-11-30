@@ -177,8 +177,8 @@ public class MixedFormatDialogPage implements CardDialogPage {
 		JButton gmtBrowseButton = new JButton("Browse...");
 		JButton expBrowseButton = new JButton("Browse...");
 		
-		gmtBrowseButton.addActionListener(e -> FileBrowser.browseGMT(fileUtil, callback.getDialogFrame()));
-		expBrowseButton.addActionListener(e -> FileBrowser.browseExpression(fileUtil, callback.getDialogFrame()));
+		gmtBrowseButton.addActionListener(e -> FileBrowser.browse(fileUtil, callback.getDialogFrame(), FileBrowser.Filter.GMT));
+		expBrowseButton.addActionListener(e -> FileBrowser.browse(fileUtil, callback.getDialogFrame(), FileBrowser.Filter.EXPRESSION));
 		
 		SwingUtil.makeSmall(gmtLabel, extLabel, gmtPathText, expPathText, gmtBrowseButton, expBrowseButton);
 		
@@ -242,7 +242,7 @@ public class MixedFormatDialogPage implements CardDialogPage {
 		});
 		
 		addManualButton.addActionListener(e -> {
-			EditDataSetDialog dialog = new EditDataSetDialog(callback.getDialogFrame(), null);
+			EditDataSetDialog dialog = new EditDataSetDialog(callback.getDialogFrame(), fileUtil, null);
 			DataSetParameters dataSet = dialog.open();
 			if(dataSet != null) {
 				dataSetListModel.addElement(dataSet);
@@ -253,7 +253,7 @@ public class MixedFormatDialogPage implements CardDialogPage {
 			int index = list.getSelectedIndex();
 			if(index != -1) {
 				DataSetParameters dataSet = dataSetListModel.getElementAt(index);
-				EditDataSetDialog dialog = new EditDataSetDialog(callback.getDialogFrame(), dataSet);
+				EditDataSetDialog dialog = new EditDataSetDialog(callback.getDialogFrame(), fileUtil, dataSet);
 				DataSetParameters newDataSet = dialog.open();
 				if(newDataSet != null) {
 					dataSetListModel.removeElementAt(index);

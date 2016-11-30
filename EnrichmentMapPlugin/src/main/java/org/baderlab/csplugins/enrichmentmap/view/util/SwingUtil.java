@@ -14,6 +14,8 @@ import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
@@ -125,4 +127,23 @@ public class SwingUtil {
 			}
 		}
 	}
+	
+	
+	public static DocumentListener simpleDocumentListener(Runnable r) {
+		return new DocumentListener() {
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				r.run();
+			}
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				r.run();
+			}
+			@Override
+			public void changedUpdate(DocumentEvent e) {
+				r.run();
+			}
+		};
+	}
+	
 }
