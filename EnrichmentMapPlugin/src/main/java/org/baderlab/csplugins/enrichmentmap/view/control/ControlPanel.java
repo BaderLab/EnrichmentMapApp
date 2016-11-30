@@ -429,15 +429,27 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		}
 		
 		void updateDataSetList() {
-			// MKTODO remember the datasets that were selected
+			// Save the current datasets selection
+			Map<DataSet, Boolean> dataSetSelection = new HashMap<>();
 			CheckboxListModel<DataSet> model = getCheckboxListPanel().getModel();
-			model.clear();
 			
+			for (int i = 0; i < model.getSize(); i++) {
+				CheckboxData<DataSet> cd = model.get(i);
+				dataSetSelection.put(cd.getData(), cd.isSelected());
+			}
+			
+			// Clear the list and add the new datasets
+			model.clear();
 			EnrichmentMap map = emManager.getEnrichmentMap(networkView.getModel().getSUID());
 			
 			if (map != null) {
-				for (DataSet dataset : map.getDatasetList())
-					model.addElement(new CheckboxData<>(dataset.getName(), dataset));
+				for (DataSet dataset : map.getDatasetList()) {
+					// Restore the previous selection
+					Boolean selected = dataSetSelection.get(dataset);
+					selected = selected != null ? selected : Boolean.TRUE; // The datasets are selected by default!
+					
+					model.addElement(new CheckboxData<>(dataset.getName(), dataset, selected));
+				}
 			}
 		}
 		

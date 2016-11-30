@@ -13,8 +13,13 @@ public class CheckboxData<T> {
 	private final T data;
 
 	public CheckboxData(String display, T data) {
+		this(display, data, false);
+	}
+	
+	public CheckboxData(String display, T data, boolean selected) {
 		this.display = display;
 		this.data = data;
+		this.selected = selected;
 	}
 
 	public boolean isSelected() {
@@ -44,5 +49,4 @@ public class CheckboxData<T> {
 	public void removePropertyChangeListener(String propName, PropertyChangeListener listener) {
 		this.pcs.removePropertyChangeListener(propName, listener);
 	}
-
 }

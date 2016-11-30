@@ -74,7 +74,6 @@ public class DataSet implements Comparable<DataSet> {
 
 	}
 
-
 	@Override
 	public int compareTo(DataSet ds2) {
 		return this.getName().compareTo(ds2.getName());
@@ -160,4 +159,37 @@ public class DataSet implements Comparable<DataSet> {
 		this.dummyExpressionData = dummyExpressionData;
 	}
 
+	@Override
+	public int hashCode() {
+		final int prime = 11;
+		int result = 5;
+		result = prime * result + ((method == null) ? 0 : method.hashCode());
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		DataSet other = (DataSet) obj;
+		if (method != other.method)
+			return false;
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name)) {
+			return false;
+		}
+		return true;
+	}
+
+	@Override
+	public String toString() {
+		return "DataSet [name=" + name + ", method=" + method + "]";
+	}
 }
