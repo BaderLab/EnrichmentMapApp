@@ -19,34 +19,64 @@ import org.cytoscape.util.swing.FileUtil;
  */
 public class FileBrowser {
 
-	public static Optional<Path> browseGMT(FileUtil fileUtil, Component parent) {
-		String title = "GMT Files";
-		List<FileChooserFilter> filters = Arrays.asList(new FileChooserFilter("gmt Files", "gmt")); 
-		File file = fileUtil.getFile(parent, title, FileUtil.LOAD, filters);
-		return Optional.ofNullable(file).map(File::toPath);
+	public static enum Filter {
+		GMT("GMT Files") {
+			public List<FileChooserFilter> getFilters() {
+				return Arrays.asList(
+					new FileChooserFilter("gmt Files", "gmt")
+		        );
+			}
+		},
+		ENRICHMENT("Enrichment Files") {
+			public List<FileChooserFilter> getFilters() {
+				return Arrays.asList(
+					new FileChooserFilter("gct Files", "xls"),  
+		        	new FileChooserFilter("rnk Files", "bgo"),
+		        	new FileChooserFilter("txt Files", "txt"),
+		        	new FileChooserFilter("tsv Files", "tsv")
+		        );
+			}
+		}, 
+		EXPRESSION("Expression Files") {
+			public List<FileChooserFilter> getFilters() {
+				return Arrays.asList(
+					new FileChooserFilter("gct Files", "gct"),          
+				    new FileChooserFilter("txt Files", "txt")
+		        );
+			}
+		}, 
+		RANK("Rank Files") {
+			public List<FileChooserFilter> getFilters() {
+				return Arrays.asList(
+					new FileChooserFilter("rnk Files", "rnk"),          
+				    new FileChooserFilter("txt Files", "txt")
+		        );
+			}
+		}, 
+		CLASS("Class (Phenotype) Files") {
+			public List<FileChooserFilter> getFilters() {
+				return Arrays.asList(
+					new FileChooserFilter("cls Files", "cls"),          
+				    new FileChooserFilter("txt Files", "txt")
+		        );
+			}
+		};
+		
+		public final String title;
+		
+		public abstract List<FileChooserFilter> getFilters();
+		
+		private Filter(String title) {
+			this.title = title;
+		}
 	}
 	
 	
-	public static Optional<Path> browseExpression(FileUtil fileUtil, Component parent) {
-		String title= "Expression Files";
-		FileChooserFilter gct = new FileChooserFilter("gct Files", "gct");          
-        FileChooserFilter rnk = new FileChooserFilter("rnk Files", "rnk");
-        FileChooserFilter txt = new FileChooserFilter("txt Files", "txt");
-        List<FileChooserFilter> filters = Arrays.asList(gct, rnk, txt);
-        File file = fileUtil.getFile(parent, title, FileUtil.LOAD, filters);
+	
+	public static Optional<Path> browse(FileUtil fileUtil, Component parent, Filter filter) {
+		File file = fileUtil.getFile(parent, filter.title, FileUtil.LOAD, filter.getFilters());
 		return Optional.ofNullable(file).map(File::toPath);
 	}
-	
-	
-//	private List<File> browseEnrichments() {
-//		FileChooserFilter xls = new FileChooserFilter("gct Files", "xls");          
-//        FileChooserFilter bgo = new FileChooserFilter("rnk Files", "bgo");
-//        FileChooserFilter txt = new FileChooserFilter("txt Files", "txt");
-//        FileChooserFilter tsv = new FileChooserFilter("tsv Files", "tsv");
-//        List<FileChooserFilter> filters = Arrays.asList(xls, bgo, txt, tsv);
-//        File[] files = fileUtil.getFiles(callback.getDialogFrame(), "Enrichment Files", FileUtil.LOAD, filters);
-//        return files == null ? Collections.emptyList() : Arrays.asList(files);
-//	}
 	
 	
 	public static Optional<File> browseForRootFolder(Dialog parent) {
