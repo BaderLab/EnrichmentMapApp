@@ -1,9 +1,13 @@
 package org.baderlab.csplugins.enrichmentmap.view.util;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Paths;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
@@ -13,14 +17,19 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
 
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.util.swing.OpenBrowser;
+
+import com.google.common.base.Strings;
 
 
 public class SwingUtil {
@@ -128,6 +137,21 @@ public class SwingUtil {
 		}
 	}
 	
+	public static boolean validatePathTextField(JTextField textField) {
+		boolean valid;
+		try {
+			String text = textField.getText();
+			if(Strings.isNullOrEmpty(text.trim())) {
+				valid = true;
+			} else { 
+				valid = Files.isReadable(Paths.get(text));
+			}
+		} catch(InvalidPathException e) {
+			valid = false;
+		}
+		textField.setForeground(valid ? Color.BLACK : Color.RED); // MKTODO don't hardcode Color.BLACK
+		return valid;
+	}
 	
 	public static DocumentListener simpleDocumentListener(Runnable r) {
 		return new DocumentListener() {
@@ -141,6 +165,23 @@ public class SwingUtil {
 			}
 			@Override
 			public void changedUpdate(DocumentEvent e) {
+				r.run();
+			}
+		};
+	}
+	
+	public static ListDataListener simpleListDataListener(Runnable r) {
+		return new ListDataListener() {
+			@Override
+			public void intervalRemoved(ListDataEvent e) {
+				r.run();
+			}
+			@Override
+			public void intervalAdded(ListDataEvent e) {
+				r.run();
+			}
+			@Override
+			public void contentsChanged(ListDataEvent e) {
 				r.run();
 			}
 		};

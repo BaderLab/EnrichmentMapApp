@@ -5,17 +5,14 @@ import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.makeSmall;
 import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.simpleDocumentListener;
+import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.validatePathTextField;
 
-import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -41,8 +38,6 @@ import org.baderlab.csplugins.enrichmentmap.view.util.FileBrowser;
 import org.cytoscape.util.swing.BasicCollapsiblePanel;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.util.swing.LookAndFeelUtil;
-
-import com.google.common.base.Strings;
 
 /**
  * MKTODO set the phenotypes automatically by scanning the classes file
@@ -71,13 +66,13 @@ public class EditDataSetDialog extends JDialog {
 	boolean okClicked = false;
 	
 
-	public EditDataSetDialog(JDialog parent, FileUtil fileUtil, @Nullable DataSetParameters dataSet) {
+	public EditDataSetDialog(JDialog parent, FileUtil fileUtil, @Nullable DataSetParameters initDataSet) {
 		super(parent, null, true);
 		this.fileUtil = fileUtil;
 		setMinimumSize(new Dimension(650, 400));
 		setResizable(false);
-		setTitle(dataSet == null ? "Add Enrichment Results" : "Edit Enrichment Results");
-		createContents(dataSet);
+		setTitle(initDataSet == null ? "Add Enrichment Results" : "Edit Enrichment Results");
+		createContents(initDataSet);
 		pack();
 		setLocationRelativeTo(parent);
 		validateInput();
@@ -92,7 +87,7 @@ public class EditDataSetDialog extends JDialog {
 	}
 	
 	private DataSetParameters createDataSetParameters() {
-		String name = "Temp for now";
+		String name = "My DataSet";
 		Method method = getMethod();
 		
 		DataSetFiles files = new DataSetFiles();
@@ -110,10 +105,9 @@ public class EditDataSetDialog extends JDialog {
 		if(!isNullOrEmpty(ranksFileName))
 			files.setRankedFile(ranksFileName);
 		
-//		// MKTODO can auto fill the positive and negative phenotypes from the class file
-//		String classesFileName = classesText.getText();
-//		if(!isNullOrEmpty(classesFileName))
-//			files.setClassFile(classesFileName);
+		String classesFileName = classesText.getText();
+		if(!isNullOrEmpty(classesFileName))
+			files.setClassFile(classesFileName);
 		
 		String positive = positiveText.getText();
 		String negative = negativeText.getText();
@@ -155,7 +149,7 @@ public class EditDataSetDialog extends JDialog {
 	}
 	
 
-	private JPanel createAnalysisTypePanel(@Nullable DataSetParameters dataSet) {
+	private JPanel createAnalysisTypePanel(@Nullable DataSetParameters initDataSet) {
 		gseaRadio    = new JRadioButton("GSEA", true);
 		genericRadio = new JRadioButton("generic/gProfiler");
 		davidRadio   = new JRadioButton("DAVID/BiNGO/Great");
@@ -167,10 +161,10 @@ public class EditDataSetDialog extends JDialog {
 		analysisOptions.add(genericRadio);
 		analysisOptions.add(davidRadio);
 		
-		if(dataSet != null) {
-			gseaRadio.setSelected(dataSet.getMethod() == Method.GSEA);
-			genericRadio.setSelected(dataSet.getMethod() == Method.Generic);
-			davidRadio.setSelected(dataSet.getMethod() == Method.Specialized);
+		if(initDataSet != null) {
+			gseaRadio.setSelected(initDataSet.getMethod() == Method.GSEA);
+			genericRadio.setSelected(initDataSet.getMethod() == Method.Generic);
+			davidRadio.setSelected(initDataSet.getMethod() == Method.Specialized);
 		}
 
 		JPanel panel = new JPanel();
@@ -198,15 +192,17 @@ public class EditDataSetDialog extends JDialog {
 	}
 	
 
-	private JPanel createTextFieldPanel(@Nullable DataSetParameters dataSet) {
+	private JPanel createTextFieldPanel(@Nullable DataSetParameters initDataSet) {
 		JLabel enrichmentsLabel = new JLabel("Enrichments:");
 		enrichmentsText = new JTextField();
+		enrichmentsText.setText(initDataSet != null ? initDataSet.getFiles().getEnrichmentFileName1() : null);
 		JButton enrichmentsBrowse = new JButton("Browse...");
 		enrichmentsText.getDocument().addDocumentListener(simpleDocumentListener(this::validateInput));
 		enrichmentsBrowse.addActionListener(e -> browse(enrichmentsText, FileBrowser.Filter.ENRICHMENT));
 		
 		JLabel expressionsLabel = new JLabel("Expressions:");
 		expressionsText = new JTextField();
+		expressionsText.setText(initDataSet != null ? initDataSet.getFiles().getExpressionFileName() : null);
 		JButton expressionsBrowse = new JButton("Browse...");
 		expressionsText.getDocument().addDocumentListener(simpleDocumentListener(this::validateInput));
 		expressionsBrowse.addActionListener(e -> browse(expressionsText, FileBrowser.Filter.EXPRESSION));
@@ -257,15 +253,17 @@ public class EditDataSetDialog extends JDialog {
 	}
 	
 	
-	private JPanel createPhenotypesPanel(@Nullable DataSetParameters dataSet) {
+	private JPanel createPhenotypesPanel(@Nullable DataSetParameters initDataSet) {
 		JLabel ranksLabel = new JLabel("Ranks:");
 		ranksText = new JTextField();
+		ranksText.setText(initDataSet != null ? initDataSet.getFiles().getRankedFile() : null);
 		JButton ranksBrowse = new JButton("Browse...");
 		ranksText.getDocument().addDocumentListener(simpleDocumentListener(this::validateInput));
 		ranksBrowse.addActionListener(e -> browse(ranksText, FileBrowser.Filter.RANK));
 		
 		JLabel classesLabel = new JLabel("Classes:");
 		classesText = new JTextField();
+		classesText.setText(initDataSet != null ? initDataSet.getFiles().getClassFile() : null);
 		JButton classesBrowse = new JButton("Browse...");
 		classesText.getDocument().addDocumentListener(simpleDocumentListener(this::updateClasses));
 		classesBrowse.addActionListener(e -> browse(classesText, FileBrowser.Filter.CLASS));
@@ -277,6 +275,8 @@ public class EditDataSetDialog extends JDialog {
 		JLabel negative = new JLabel("Negative:");
 		positiveText = new JTextField();
 		negativeText = new JTextField();
+		positiveText.setText(initDataSet != null ? initDataSet.getFiles().getPhenotype1() : null);
+		negativeText.setText(initDataSet != null ? initDataSet.getFiles().getPhenotype2() : null);
 		
 		makeSmall(positive, negative, positiveText, negativeText);
 		
@@ -286,6 +286,12 @@ public class EditDataSetDialog extends JDialog {
 		layout.setAutoCreateContainerGaps(true);
 		layout.setAutoCreateGaps(true);
 		
+		if(initDataSet != null) {
+			DataSetFiles files = initDataSet.getFiles();
+			if(!isNullOrEmpty(files.getClassFile()) || !isNullOrEmpty(files.getRankedFile())) {
+				panel.setCollapsed(false);
+			}
+		}
 
 		layout.setHorizontalGroup(
 			layout.createSequentialGroup()
@@ -357,7 +363,6 @@ public class EditDataSetDialog extends JDialog {
 	
 	
 	private void validateInput() {
-		System.out.println("EditDataSetDialog.validateInput()");
 		boolean valid = true;
 		valid &= validatePathTextField(enrichmentsText);
 		valid &= validatePathTextField(expressionsText);
@@ -366,21 +371,7 @@ public class EditDataSetDialog extends JDialog {
 		okButton.setEnabled(valid);
 	}
 	
-	private static boolean validatePathTextField(JTextField textField) {
-		boolean valid;
-		try {
-			String text = textField.getText();
-			if(Strings.isNullOrEmpty(text.trim())) {
-				valid = true;
-			} else { 
-				valid = Files.isReadable(Paths.get(text));
-			}
-		} catch(InvalidPathException e) {
-			valid = false;
-		}
-		textField.setForeground(valid ? Color.BLACK : Color.RED); // MKTODO don't hardcode Color.BLACK
-		return valid;
-	}
+	
 	
 	
 	private void updateClasses() {
