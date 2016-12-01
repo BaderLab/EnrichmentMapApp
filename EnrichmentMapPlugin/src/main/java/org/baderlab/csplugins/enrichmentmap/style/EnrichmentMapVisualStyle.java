@@ -66,6 +66,7 @@ import com.google.inject.assistedinject.Assisted;
 /**
  * Class defining all the attributes of the Enrichment map Visual style
  */
+@Deprecated
 public class EnrichmentMapVisualStyle {
 
 	private final EnrichmentMap map;

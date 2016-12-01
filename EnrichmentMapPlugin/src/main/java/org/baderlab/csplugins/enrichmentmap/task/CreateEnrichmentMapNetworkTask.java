@@ -80,6 +80,7 @@ import com.google.inject.assistedinject.Assisted;
 /**
  * Create visual representation of enrichment map in cytoscape
  */
+@Deprecated
 public class CreateEnrichmentMapNetworkTask extends AbstractTask {
 
 	public static String node_table_suffix = "node_attribs";
