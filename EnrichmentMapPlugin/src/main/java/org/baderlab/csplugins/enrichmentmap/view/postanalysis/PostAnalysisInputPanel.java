@@ -101,7 +101,7 @@ public class PostAnalysisInputPanel extends JPanel {
 	private final EnrichmentMap map;
 
 	public interface Factory {
-		PostAnalysisInputPanel create(PostAnalysisPanel parent, EnrichmentMap map);
+		PostAnalysisInputPanel create(EnrichmentMap map);
 	}
 	
 	/**
@@ -296,7 +296,7 @@ public class PostAnalysisInputPanel extends JPanel {
 	/**
 	 * Creates a PostAnalysisParameters object based on the user's input.
 	 */
-	public PostAnalysisParameters buildPostAnalysisParameters() {
+	private PostAnalysisParameters buildPostAnalysisParameters() {
 		PostAnalysisParameters.Builder builder = new PostAnalysisParameters.Builder();
 
 		if (knownSignatureRadio.isSelected()) {

@@ -54,7 +54,6 @@ import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Nodes;
 import org.baderlab.csplugins.enrichmentmap.view.EnrichmentMapInputPanel;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapPanel;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParameters;
-import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PostAnalysisPanelMediator;
 import org.cytoscape.application.events.SetCurrentNetworkEvent;
 import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.cytoscape.application.swing.CytoPanelComponent;
@@ -77,7 +76,6 @@ public class EnrichmentMapManager implements SetCurrentNetworkListener {
 	@Inject private CyServiceRegistrar registrar;
 	
 	@Inject private Provider<EnrichmentMapInputPanel> inputPanelProvider;
-	@Inject private Provider<PostAnalysisPanelMediator> postAnalysisPanelMediatorProvider;
 	@Inject private @Nodes Provider<HeatMapPanel> nodesOverlapPanelProvider;
 	@Inject private @Edges Provider<HeatMapPanel> edgesOverlapPanelProvider;
 
@@ -150,37 +148,33 @@ public class EnrichmentMapManager implements SetCurrentNetworkListener {
 	 * There should not be direct references to these panels.
 	 */
 	@Override
-	public void handleEvent(SetCurrentNetworkEvent event) {
-		long networkId = event.getNetwork().getSUID();
-		if(networkId > 0) {
+	public void handleEvent(SetCurrentNetworkEvent evt) {
+		if (evt.getNetwork() != null) {
+			Long netId = evt.getNetwork().getSUID();
 			
 			HeatMapPanel nodesOverlapPanel = nodesOverlapPanelProvider.get();
 			HeatMapPanel edgesOverlapPanel = edgesOverlapPanelProvider.get();
 			EnrichmentMapInputPanel inputWindow = inputPanelProvider.get();
 			
 			// update view
-			if(enrichmentMaps.containsKey(networkId)) {
+			if (enrichmentMaps.containsKey(netId)) {
 				// clear the panels before re-initializing them
 				nodesOverlapPanel.clearPanel();
 				edgesOverlapPanel.clearPanel();
 
-				EnrichmentMap map = enrichmentMaps.get(networkId);
+				EnrichmentMap map = enrichmentMaps.get(netId);
 
 				// update the input window to contain the parameters of the
 				// selected network
 				// only if there is a input window
-				if(inputWindow != null)
+				if (inputWindow != null)
 					inputWindow.updateContents(map);
 
-				postAnalysisPanelMediatorProvider.get().updateUI(map);
-				
 				nodesOverlapPanel.updatePanel(map);
 				edgesOverlapPanel.updatePanel(map);
 
 				nodesOverlapPanel.revalidate();
 				edgesOverlapPanel.revalidate();
-			} else {
-				postAnalysisPanelMediatorProvider.get().updateUI(null);
 			}
 		}
 	}
