@@ -4,7 +4,7 @@ import java.util.ConcurrentModificationException;
 import java.util.Optional;
 
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.style.PostAnalysisVisualStyle;
+import org.baderlab.csplugins.enrichmentmap.style.LegacyPostAnalysisVisualStyle;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.view.model.CyNetworkView;
@@ -21,7 +21,7 @@ public class CreatePostAnalysisVisualStyleTask extends AbstractTask {
 
 	private final EnrichmentMap map;
 
-	@Inject private PostAnalysisVisualStyle.Factory paStyleFactory;
+	@Inject private LegacyPostAnalysisVisualStyle.Factory paStyleFactory;
 	@Inject private CyApplicationManager applicationManager;
 	@Inject private VisualMappingManager visualMappingManager;
 	@Inject private VisualStyleFactory visualStyleFactory;
@@ -65,10 +65,10 @@ public class CreatePostAnalysisVisualStyleTask extends AbstractTask {
 			return;
 
 		String prefix = map.getParams().getAttributePrefix();
-		String vs_name = prefix + PostAnalysisVisualStyle.NAME;
+		String vs_name = prefix + LegacyPostAnalysisVisualStyle.NAME;
 		CyNetworkView view = applicationManager.getCurrentNetworkView();
 
-		PostAnalysisVisualStyle pa_vs = paStyleFactory.create(map);
+		LegacyPostAnalysisVisualStyle pa_vs = paStyleFactory.create(map);
 		pa_vs.applyNetworkSpeficifProperties(taskResult, prefix, taskMonitor);
 
 		Optional<VisualStyle> currentStyle = attemptToGetExistingStyle(vs_name);

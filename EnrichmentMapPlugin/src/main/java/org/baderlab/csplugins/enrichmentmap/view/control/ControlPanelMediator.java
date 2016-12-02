@@ -256,7 +256,7 @@ public class ControlPanelMediator
 		if (type != null) {
 			List<CyColumnIdentifier> columns = 
 					options.getDataSets().stream()
-					.map(ds -> MasterMapVisualStyle.NODE_COLOURING.with(ds.getName()))  // column name
+					.map(ds -> MasterMapVisualStyle.Columns.NODE_COLOURING.with(options.getAttributePrefix(),ds.getName()))  // column name
 					.map(columnIdFactory::createColumnIdentifier)  // column id
 					.collect(Collectors.toList());
 			

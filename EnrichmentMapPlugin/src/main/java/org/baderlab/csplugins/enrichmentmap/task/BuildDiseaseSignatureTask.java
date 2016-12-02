@@ -57,14 +57,13 @@ import java.util.stream.Collectors;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
-import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterParameters;
-import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterType;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.GenesetSimilarity;
-import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
+import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterParameters;
+import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterType;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
-import org.baderlab.csplugins.enrichmentmap.style.EnrichmentMapVisualStyle;
+import org.baderlab.csplugins.enrichmentmap.style.MasterMapVisualStyle.Columns;
 import org.baderlab.csplugins.enrichmentmap.util.NetworkUtil;
 import org.baderlab.csplugins.mannwhit.MannWhitneyUTestSided;
 import org.cytoscape.application.CyApplicationManager;
@@ -164,22 +163,11 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 	}
 
 	private String getInteraction() {
-		if(LegacySupport.isLegacyTwoDatasets(map)) {
-			if(LegacySupport.DATASET1.equals(paParams.getSignatureDataSet())) {
-				return PostAnalysisParameters.SIGNATURE_INTERACTION_TYPE_SET1;
-			} else if(LegacySupport.DATASET2.equals(paParams.getSignatureDataSet())) {
-				return PostAnalysisParameters.SIGNATURE_INTERACTION_TYPE_SET2;
-			}
-		}
 		return PostAnalysisParameters.SIGNATURE_INTERACTION_TYPE;
 	}
 
 	public void buildDiseaseSignature(TaskMonitor taskMonitor) {
-
-		/*
-		 * ************************************************** Calculate
-		 * Similarity between Signature Gene Sets * and Enrichment Genesets. *
-		 ****************************************************/
+		// Calculate Similarity between Signature Gene Sets * and Enrichment Genesets.
 		int maxValue = SelectedSignatureGenesets.size() * EnrichmentGenesets.size();
 		if(taskMonitor != null)
 			taskMonitor.setStatusMessage("Computing Geneset similarity - " + maxValue + " rows");
@@ -188,7 +176,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 		double currentNodeY_increment = 150.0;
 
 		try {
-			CyNetwork current_network = applicationManager.getCurrentNetwork();
+			CyNetwork current_network  = applicationManager.getCurrentNetwork();
 			CyNetworkView current_view = applicationManager.getCurrentNetworkView();
 			taskResult.setNetwork(current_network);
 			taskResult.setNetworkView(current_view);
@@ -260,9 +248,8 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 						//don't compare two identical genesets
 					} else if(!nodesMap.containsKey(geneset_name)) {
 						// skip if the Geneset is not in the Network
-					} else if(cyNodeAttrs.getRow(nodesMap.get(geneset_name).getSUID())
-							.get(prefix + EnrichmentMapVisualStyle.GS_TYPE, String.class)
-							.equalsIgnoreCase(EnrichmentMapVisualStyle.GS_TYPE_SIGNATURE)) {
+					} else if(Columns.NODE_GS_TYPE.get(cyNodeAttrs.getRow(nodesMap.get(geneset_name).getSUID()), prefix, null)
+							.equalsIgnoreCase(Columns.NODE_GS_TYPE_SIGNATURE)) {
 						// skip if the Geneset is a Signature Node from a previous analysis
 					}
 					/*
@@ -307,8 +294,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 				} // End: iterate over Enrichment Genesets
 
 				// Create Signature Hub Node
-				boolean created = createHubNode(hub_name, current_network, current_view, currentNodeY_offset, prefix,
-						cyEdgeAttrs, cyNodeAttrs, geneUniverse, sigGeneSet);
+				boolean created = createHubNode(hub_name, current_network, current_view, currentNodeY_offset, prefix, cyEdgeAttrs, cyNodeAttrs, geneUniverse, sigGeneSet);
 				if(created)
 					currentNodeY_offset += currentNodeY_increment;
 
@@ -406,33 +392,28 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 		}
 
 		String formatted_label = CreateEnrichmentMapNetworkTask.formatLabel(hub_name);
-		CyRow current_row = cyNodeAttrs.getRow(hub_node.getSUID());
-		current_row.set(prefix + EnrichmentMapVisualStyle.FORMATTED_NAME, formatted_label);
+		CyRow row = cyNodeAttrs.getRow(hub_node.getSUID());
+		Columns.NODE_FORMATTED_NAME.set(row, prefix, null, formatted_label);
 
-		//create an attribute that stores the genes that are associated with this node as an attribute list
-		//only create the list if the hashkey 2 genes is not null Otherwise it takes too much time to populate the list
-		//                GeneSet sigGeneSet = SelectedSignatureGenesets.get(hub_name);
-//		if(map.getHashkey2gene() != null) {
-			List<String> gene_list = sigGeneSet.getGenes().stream()
-					.map(map::getGeneFromHashKey)
-					.filter(Objects::nonNull)
-					.sorted()
-					.collect(Collectors.toList());
-			
-			List<String> enr_gene_list = sigGeneSet.getGenes().stream()
-					.filter(geneUniverse::contains)
-					.map(map::getGeneFromHashKey)
-					.filter(Objects::nonNull)
-					.sorted()
-					.collect(Collectors.toList());
-			
-			current_row.set(prefix + EnrichmentMapVisualStyle.GENES, gene_list);
-			current_row.set(prefix + EnrichmentMapVisualStyle.ENR_GENES, enr_gene_list);
-			current_row.set(prefix + EnrichmentMapVisualStyle.GS_DESCR, sigGeneSet.getDescription());
-			current_row.set(prefix + EnrichmentMapVisualStyle.GS_TYPE, EnrichmentMapVisualStyle.GS_TYPE_SIGNATURE);
-			current_row.set(prefix + EnrichmentMapVisualStyle.NAME, sigGeneSet.getName());
-			current_row.set(prefix + EnrichmentMapVisualStyle.GS_SIZE_SIGNATURE, sigGeneSet.getGenes().size());
-//		}
+		List<String> gene_list = sigGeneSet.getGenes().stream()
+				.map(map::getGeneFromHashKey)
+				.filter(Objects::nonNull)
+				.sorted()
+				.collect(Collectors.toList());
+		
+		List<String> enr_gene_list = sigGeneSet.getGenes().stream()
+				.filter(geneUniverse::contains)
+				.map(map::getGeneFromHashKey)
+				.filter(Objects::nonNull)
+				.sorted()
+				.collect(Collectors.toList());
+		
+		Columns.NODE_GENES.set(row, prefix, null, gene_list);
+		Columns.NODE_ENR_GENES.set(row, prefix, null, enr_gene_list);
+		Columns.NODE_GS_DESCR.set(row, prefix, null, sigGeneSet.getDescription());
+		Columns.NODE_GS_TYPE.set(row, prefix, null, Columns.NODE_GS_TYPE_SIGNATURE);
+		Columns.NODE_NAME.set(row, prefix, null, sigGeneSet.getName());
+		Columns.NODE_GS_SIZE_SIGNATURE.set(row, prefix, null, sigGeneSet.getGenes().size());
 
 		// add the geneset of the signature node to the GenesetsOfInterest,
 		// as the Heatmap will grep it's data from there.
@@ -449,19 +430,19 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 	 * does not pass the new cutoff. If the edge already exists it will be
 	 * returned, if the edge had to be created it will not be returned.
 	 */
-	private void createEdge(String edge_name, CyNetwork current_network, CyNetworkView current_view, String prefix,
+	private void createEdge(String edge_name, CyNetwork network, CyNetworkView current_view, String prefix,
 			CyTable cyEdgeAttrs, CyTable cyNodeAttrs, boolean passed_cutoff) {
 
-		CyEdge edge = NetworkUtil.getEdgeWithValue(current_network, cyEdgeAttrs, CyNetwork.NAME, edge_name);
+		CyEdge edge = NetworkUtil.getEdgeWithValue(network, cyEdgeAttrs, CyNetwork.NAME, edge_name);
 		GenesetSimilarity genesetSimilarity = geneset_similarities.get(edge_name);
 
 		if(edge == null) {
 			if(passed_cutoff) {
-				CyNode hub_node = NetworkUtil.getNodeWithValue(current_network, cyNodeAttrs, CyNetwork.NAME, genesetSimilarity.getGeneset1_Name());
-				CyNode gene_set = NetworkUtil.getNodeWithValue(current_network, cyNodeAttrs, CyNetwork.NAME, genesetSimilarity.getGeneset2_Name());
+				CyNode hub_node = NetworkUtil.getNodeWithValue(network, cyNodeAttrs, CyNetwork.NAME, genesetSimilarity.getGeneset1_Name());
+				CyNode gene_set = NetworkUtil.getNodeWithValue(network, cyNodeAttrs, CyNetwork.NAME, genesetSimilarity.getGeneset2_Name());
 				if(hub_node == null || gene_set == null)
 					return;
-				edge = current_network.addEdge(hub_node, gene_set, false);
+				edge = network.addEdge(hub_node, gene_set, false);
 				taskResult.addNewEdge(edge);
 			} else {
 				return; // edge does not exist and does not pass cutoff, do nothing
@@ -475,54 +456,48 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 		if(passed_cutoff)
 			taskResult.incrementPassedCutoffCount();
 
-		CyRow current_edgerow = cyEdgeAttrs.getRow(edge.getSUID());
-		current_edgerow.set(CyNetwork.NAME, edge_name);
-		current_edgerow.set(CyEdge.INTERACTION, interaction);
+		CyRow row = cyEdgeAttrs.getRow(edge.getSUID());
+		row.set(CyNetwork.NAME, edge_name);
+		row.set(CyEdge.INTERACTION, interaction);
 
-		//View<CyEdge> edgeView = current_view.getEdgeView(edge);
-		//create an attribute that stores the genes that are associated with this edge as an attribute list
-		//only create the list if the hashkey 2 genes is not null Otherwise it take too much time to populate the list
-//		if(map.getHashkey2gene() != null) {
-			List<String> gene_list = new ArrayList<>();
-			Set<Integer> genes_hash = genesetSimilarity.getOverlapping_genes();
-			for(Integer current : genes_hash) {
-				String gene = map.getGeneFromHashKey(current);
-				if(gene != null) {
-					gene_list.add(gene);
-				}
+		List<String> gene_list = new ArrayList<>();
+		Set<Integer> genes_hash = genesetSimilarity.getOverlapping_genes();
+		for(Integer current : genes_hash) {
+			String gene = map.getGeneFromHashKey(current);
+			if(gene != null) {
+				gene_list.add(gene);
 			}
-			Collections.sort(gene_list);
+		}
+		Collections.sort(gene_list);
 
-			current_edgerow.set(prefix + EnrichmentMapVisualStyle.OVERLAP_GENES, gene_list);
-//		}
-
-		current_edgerow.set(prefix + EnrichmentMapVisualStyle.OVERLAP_SIZE, genesetSimilarity.getSizeOfOverlap());
-		current_edgerow.set(prefix + EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT, genesetSimilarity.getSimilarity_coeffecient());
-		current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_PVALUE, genesetSimilarity.getHypergeom_pvalue());
-		current_edgerow.set(prefix + EnrichmentMapVisualStyle.ENRICHMENT_SET, 4 /* genesetSimilarity.getEnrichment_set() */);
+		Columns.EDGE_OVERLAP_GENES.set(row, prefix, null, gene_list);
+		Columns.EDGE_OVERLAP_SIZE.set(row, prefix, null, genesetSimilarity.getSizeOfOverlap());
+		Columns.EDGE_SIMILARITY_COEFF.set(row, prefix, null, genesetSimilarity.getSimilarity_coeffecient());
+		Columns.EDGE_ENRICHMENT_SET.set(row, prefix, null, Columns.EDGE_ENRICHMENT_SET_SIG);
+		
 		if(passed_cutoff)
-			current_edgerow.set(prefix + EnrichmentMapVisualStyle.CUTOFF_TYPE, paParams.getRankTestParameters().getType().display);
+			Columns.EDGE_CUTOFF_TYPE.set(row, prefix, null, paParams.getRankTestParameters().getType().display);
 
 		PostAnalysisFilterType filterType = paParams.getRankTestParameters().getType();
 
 		if(filterType.isMannWhitney()) {
-			current_edgerow.set(prefix + EnrichmentMapVisualStyle.MANN_WHIT_TWOSIDED_PVALUE, genesetSimilarity.getMann_Whit_pValue_twoSided());
-			current_edgerow.set(prefix + EnrichmentMapVisualStyle.MANN_WHIT_GREATER_PVALUE, genesetSimilarity.getMann_Whit_pValue_greater());
-			current_edgerow.set(prefix + EnrichmentMapVisualStyle.MANN_WHIT_LESS_PVALUE, genesetSimilarity.getMann_Whit_pValue_less());
-			current_edgerow.set(prefix + EnrichmentMapVisualStyle.MANN_WHIT_CUTOFF, paParams.getRankTestParameters().getValue());
+			Columns.EDGE_MANN_WHIT_TWOSIDED_PVALUE.set(row, prefix, null, genesetSimilarity.getMann_Whit_pValue_twoSided());
+			Columns.EDGE_MANN_WHIT_GREATER_PVALUE.set(row, prefix, null, genesetSimilarity.getMann_Whit_pValue_greater());
+			Columns.EDGE_MANN_WHIT_LESS_PVALUE.set(row, prefix, null, genesetSimilarity.getMann_Whit_pValue_less());
+			Columns.EDGE_MANN_WHIT_CUTOFF.set(row, prefix, null, paParams.getRankTestParameters().getValue());
 		}
 
 		// always calculate hypergeometric
-		current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_PVALUE, genesetSimilarity.getHypergeom_pvalue());
-		current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_N, genesetSimilarity.getHypergeom_N());
-		current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_n, genesetSimilarity.getHypergeom_n());
-		current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_m, genesetSimilarity.getHypergeom_m());
-		current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_k, genesetSimilarity.getHypergeom_k());
-		current_edgerow.set(prefix + EnrichmentMapVisualStyle.HYPERGEOM_CUTOFF, paParams.getRankTestParameters().getValue());
+		Columns.EDGE_HYPERGEOM_PVALUE.set(row, prefix, null, genesetSimilarity.getHypergeom_pvalue());
+		Columns.EDGE_HYPERGEOM_N.set(row, prefix, null, genesetSimilarity.getHypergeom_N());
+		Columns.EDGE_HYPERGEOM_n.set(row, prefix, null, genesetSimilarity.getHypergeom_n());
+		Columns.EDGE_HYPERGEOM_m.set(row, prefix, null, genesetSimilarity.getHypergeom_m());
+		Columns.EDGE_HYPERGEOM_k.set(row, prefix, null, genesetSimilarity.getHypergeom_k());
+		Columns.EDGE_HYPERGEOM_CUTOFF.set(row, prefix, null, paParams.getRankTestParameters().getValue());
 	}
+	
 
 	private void hypergeometric(int universeSize, Set<Integer> sigGenesInUniverse, Set<Integer> enrGenes, Set<Integer> intersection, GenesetSimilarity comparison) {
-
 		// Calculate Hypergeometric pValue for Overlap
 		int N = universeSize; //number of total genes (size of population / total number of balls)
 		int n = sigGenesInUniverse.size(); //size of signature geneset (sample size / number of extracted balls)
@@ -577,10 +552,11 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 	}
 
 	private Map<String, CyNode> createNodeMap(CyNetwork current_network, CyTable cyNodeAttrs, String prefix) {
-		HashMap<String, CyNode> nodesMap = new HashMap<String, CyNode>();
-		for(CyNode aNode : current_network.getNodeList()) {
-			nodesMap.put(cyNodeAttrs.getRow(aNode.getSUID()).get(prefix + EnrichmentMapVisualStyle.NAME, String.class),
-					aNode);
+		Map<String, CyNode> nodesMap = new HashMap<>();
+		for(CyNode node : current_network.getNodeList()) {
+			CyRow row = cyNodeAttrs.getRow(node.getSUID());
+			String name = Columns.NODE_NAME.get(row, prefix, null);
+			nodesMap.put(name, node);
 		}
 		return nodesMap;
 	}
@@ -590,55 +566,28 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 	 * EM table
 	 */
 	private CyTable createNodeAttributes(CyNetwork network, String name, String prefix) {
-		//TODO:change back to creating our own table.  Currently can only map to a string column.
-		//in mean time use the default node table
-		//CyTable nodeTable = tableFactory.createTable(/*name*/ prefix + "_" + node_table_suffix, CyNetwork.SUID, Long.class, true, true);
-
-		CyTable nodeTable = network.getDefaultNodeTable();
-		//check to see if column exists.  If it doesn't then create it
-		if(nodeTable.getColumn(prefix + EnrichmentMapVisualStyle.ENR_GENES) == null)
-			nodeTable.createListColumn(prefix + EnrichmentMapVisualStyle.ENR_GENES, String.class, false);
-		if(nodeTable.getColumn(prefix + EnrichmentMapVisualStyle.GS_SIZE_SIGNATURE) == null)
-			nodeTable.createColumn(prefix + EnrichmentMapVisualStyle.GS_SIZE_SIGNATURE, Integer.class, false);
-
-		return nodeTable;
+		CyTable table = network.getDefaultNodeTable();
+		Columns.NODE_ENR_GENES.createColumnIfAbsent(table, prefix, null);
+		Columns.NODE_GS_SIZE_SIGNATURE.createColumnIfAbsent(table, prefix, null);
+		return table;
 	}
 
 	//create the edge attribue table
 	private CyTable createEdgeAttributes(CyNetwork network, String name, String prefix) {
-		//TODO:change back to creating our own table.  Currently can only map to a string column.
-		//in mean time use the default edge table
-		//CyTable edgeTable = tableFactory.createTable(/*name*/ prefix + "_" + edge_table_suffix, CyNetwork.SUID,Long.class, true, true);
-		CyTable edgeTable = network.getDefaultEdgeTable();
-
+		CyTable table = network.getDefaultEdgeTable();
 		//check to see if column exists.  If it doesn't then create it
-		if(edgeTable.getColumn(prefix + EnrichmentMapVisualStyle.HYPERGEOM_PVALUE) == null)
-			edgeTable.createColumn(prefix + EnrichmentMapVisualStyle.HYPERGEOM_PVALUE, Double.class, false);
-		if(edgeTable.getColumn(prefix + EnrichmentMapVisualStyle.HYPERGEOM_N) == null)
-			edgeTable.createColumn(prefix + EnrichmentMapVisualStyle.HYPERGEOM_N, Integer.class, false);
-		if(edgeTable.getColumn(prefix + EnrichmentMapVisualStyle.HYPERGEOM_n) == null)
-			edgeTable.createColumn(prefix + EnrichmentMapVisualStyle.HYPERGEOM_n, Integer.class, false);
-		if(edgeTable.getColumn(prefix + EnrichmentMapVisualStyle.HYPERGEOM_m) == null)
-			edgeTable.createColumn(prefix + EnrichmentMapVisualStyle.HYPERGEOM_m, Integer.class, false);
-		if(edgeTable.getColumn(prefix + EnrichmentMapVisualStyle.HYPERGEOM_k) == null)
-			edgeTable.createColumn(prefix + EnrichmentMapVisualStyle.HYPERGEOM_k, Integer.class, false);
-		if(edgeTable.getColumn(prefix + EnrichmentMapVisualStyle.HYPERGEOM_CUTOFF) == null)
-			edgeTable.createColumn(prefix + EnrichmentMapVisualStyle.HYPERGEOM_CUTOFF, Double.class, false);
-
-		if(edgeTable.getColumn(prefix + EnrichmentMapVisualStyle.MANN_WHIT_TWOSIDED_PVALUE) == null)
-			edgeTable.createColumn(prefix + EnrichmentMapVisualStyle.MANN_WHIT_TWOSIDED_PVALUE, Double.class, false);
-		if(edgeTable.getColumn(prefix + EnrichmentMapVisualStyle.MANN_WHIT_GREATER_PVALUE) == null)
-			edgeTable.createColumn(prefix + EnrichmentMapVisualStyle.MANN_WHIT_GREATER_PVALUE, Double.class, false);
-		if(edgeTable.getColumn(prefix + EnrichmentMapVisualStyle.MANN_WHIT_LESS_PVALUE) == null)
-			edgeTable.createColumn(prefix + EnrichmentMapVisualStyle.MANN_WHIT_LESS_PVALUE, Double.class, false);
-
-		if(edgeTable.getColumn(prefix + EnrichmentMapVisualStyle.MANN_WHIT_CUTOFF) == null)
-			edgeTable.createColumn(prefix + EnrichmentMapVisualStyle.MANN_WHIT_CUTOFF, Double.class, false);
-
-		if(edgeTable.getColumn(prefix + EnrichmentMapVisualStyle.CUTOFF_TYPE) == null)
-			edgeTable.createColumn(prefix + EnrichmentMapVisualStyle.CUTOFF_TYPE, String.class, false);
-
-		return edgeTable;
+		Columns.EDGE_HYPERGEOM_PVALUE.createColumnIfAbsent(table, prefix, null);
+		Columns.EDGE_HYPERGEOM_N.createColumnIfAbsent(table, prefix, null);
+		Columns.EDGE_HYPERGEOM_n.createColumnIfAbsent(table, prefix, null);
+		Columns.EDGE_HYPERGEOM_k.createColumnIfAbsent(table, prefix, null);
+		Columns.EDGE_HYPERGEOM_m.createColumnIfAbsent(table, prefix, null);
+		Columns.EDGE_HYPERGEOM_CUTOFF.createColumnIfAbsent(table, prefix, null);
+		Columns.EDGE_MANN_WHIT_TWOSIDED_PVALUE.createColumnIfAbsent(table, prefix, null);
+		Columns.EDGE_MANN_WHIT_GREATER_PVALUE.createColumnIfAbsent(table, prefix, null);
+		Columns.EDGE_MANN_WHIT_LESS_PVALUE.createColumnIfAbsent(table, prefix, null);
+		Columns.EDGE_MANN_WHIT_CUTOFF.createColumnIfAbsent(table, prefix, null);
+		Columns.EDGE_CUTOFF_TYPE.createColumnIfAbsent(table, prefix, null);
+		return table;
 	}
 
 	@Override

@@ -28,7 +28,12 @@ import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.assistedinject.Assisted;
 
-public class PostAnalysisVisualStyle {
+/**
+ * This allows to apply a post-analysis visual style to legacy EM networks.
+ * This is only used for legacy networks. New MasterMap networks have post analysis
+ * style properties already set in MasterMapVisualStyle. 
+ */
+public class LegacyPostAnalysisVisualStyle {
 	
 	public static final String NAME = "Post_analysis_style";
 	
@@ -46,14 +51,11 @@ public class PostAnalysisVisualStyle {
 	private final EnrichmentMapVisualStyle delegateStyle;
 	
 	public interface Factory {
-		PostAnalysisVisualStyle create(EnrichmentMap map);
+		LegacyPostAnalysisVisualStyle create(EnrichmentMap map);
 	}
 	
 	@Inject
-	public PostAnalysisVisualStyle(
-			@Assisted EnrichmentMap map,
-			EnrichmentMapVisualStyle.Factory emStyleFactory) {
-
+	public LegacyPostAnalysisVisualStyle(@Assisted EnrichmentMap map, EnrichmentMapVisualStyle.Factory emStyleFactory) {
 		this.delegateStyle = emStyleFactory.create(map);
 	}
 

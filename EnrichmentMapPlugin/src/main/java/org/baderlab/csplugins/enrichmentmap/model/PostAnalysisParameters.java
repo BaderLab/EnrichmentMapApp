@@ -52,8 +52,11 @@ import com.google.common.collect.ImmutableSet;
 public class PostAnalysisParameters {
 
 	final public static String SIGNATURE_INTERACTION_TYPE = "sig";
+	@Deprecated
 	final public static String SIGNATURE_INTERACTION_TYPE_SET1 = "sig_set1";
+	@Deprecated
 	final public static String SIGNATURE_INTERACTION_TYPE_SET2 = "sig_set2";
+	
 	
 	public enum AnalysisType {
 		KNOWN_SIGNATURE,

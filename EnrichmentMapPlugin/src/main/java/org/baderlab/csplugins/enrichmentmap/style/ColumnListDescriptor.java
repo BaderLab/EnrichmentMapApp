@@ -1,32 +1,38 @@
 package org.baderlab.csplugins.enrichmentmap.style;
 
+import java.util.List;
+
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 
-public class ColumnDescriptor<T> {
+public class ColumnListDescriptor<T> {
 
 	private final String name;
-	private final Class<T> type;
+	private final Class<T> elementType;
 	
-	public ColumnDescriptor(String name, Class<T> type) {
+	public ColumnListDescriptor(String name, Class<T> elementType) {
 		this.name = name;
-		this.type = type;
+		this.elementType = elementType;
 	}
 
-	public Class<?> getType() {
-		return type;
+	public String getBaseName() {
+		return name;
+	}
+
+	public Class<?> getElementType() {
+		return elementType;
 	}
 	
-	public T get(CyRow row, String prefix, String suffix) {
-		return row.get(with(prefix,suffix), type);
+	public List<T> get(CyRow row, String prefix, String suffix) {
+		return row.getList(with(prefix,suffix), elementType);
 	}
 	
-	public void set(CyRow row, String prefix, String suffix, T value) {
+	public void set(CyRow row, String prefix, String suffix, List<T> value) {
 		row.set(with(prefix,suffix), value);
 	}
 	
 	public void createColumn(CyTable table, String prefix, String suffix) {
-		table.createColumn(with(prefix,suffix), type, true);
+		table.createListColumn(with(prefix,suffix), elementType, true);
 	}
 	
 	public void createColumnIfAbsent(CyTable table, String prefix, String suffix) {

@@ -10,7 +10,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.style.EnrichmentMapVisualStyle;
 import org.baderlab.csplugins.enrichmentmap.style.MasterMapVisualStyleTask;
-import org.baderlab.csplugins.enrichmentmap.style.PostAnalysisVisualStyle;
+import org.baderlab.csplugins.enrichmentmap.style.LegacyPostAnalysisVisualStyle;
 import org.baderlab.csplugins.enrichmentmap.task.BuildDiseaseSignatureTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreateEnrichmentMapNetworkTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreatePostAnalysisVisualStyleTask;
@@ -84,7 +84,7 @@ class FactoryModule extends AbstractModule {
 		installFactory(VisualizeEnrichmentMapTask.Factory.class);
 		installFactory(EnrichmentMapBuildMapTaskFactory.Factory.class);
 		installFactory(EnrichmentMapVisualStyle.Factory.class);
-		installFactory(PostAnalysisVisualStyle.Factory.class);
+		installFactory(LegacyPostAnalysisVisualStyle.Factory.class);
 		installFactory(PostAnalysisInputPanel.Factory.class);
 		installFactory(BuildPostAnalysisActionListener.Factory.class);
 		installFactory(CreatePostAnalysisVisualStyleTask.Factory.class);

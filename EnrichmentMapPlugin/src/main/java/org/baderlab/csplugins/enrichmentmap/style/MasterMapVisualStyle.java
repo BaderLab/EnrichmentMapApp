@@ -20,35 +20,77 @@ import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
 
 import com.google.inject.Inject;
-
+ 
 public class MasterMapVisualStyle {
 	
 	public final static String DEFAULT_NAME_SUFFIX = "MasterMap_Visual_Style"; // TEMPORARY probably won't be called 'MasterMap' in the final version
 	public final static String COMBINED = "Combined";
 	
-	// Common attributes that apply to the entire network
-	public static final ColumnDescriptor<String> NODE_GS_DESCR       = new ColumnDescriptor<>("GS_DESCR", String.class);
-//		public static final ColumnDescriptor<String> NODE_GS_TYPE        = new ColumnDescriptor<>("GS_Type", String.class);
-	public static final ColumnDescriptor<String> NODE_FORMATTED_NAME = new ColumnDescriptor<>("Formatted_name", String.class);
-	// Take the union of all the genes across all the data-sets
-	public static final ListColumnDescriptor<String> NODE_GENES      = new ListColumnDescriptor<>("Genes", String.class);
-	public static final ColumnDescriptor<Integer> NODE_GS_SIZE       = new ColumnDescriptor<>("gs_size", Integer.class);
-	
-	// Per-DataSet attributes
-	// GSEA attributes
-	public static final ColumnDescriptor<Double> NODE_PVALUE      = new ColumnDescriptor<>("pvalue", Double.class);
-	public static final ColumnDescriptor<Double> NODE_FDR_QVALUE  = new ColumnDescriptor<>("fdr_qvalue", Double.class);
-	public static final ColumnDescriptor<Double> NODE_FWER_QVALUE = new ColumnDescriptor<>("fwer_qvalue", Double.class);
-	public static final ColumnDescriptor<Double> NODE_ES          = new ColumnDescriptor<>("ES", Double.class);
-	public static final ColumnDescriptor<Double> NODE_NES         = new ColumnDescriptor<>("NES", Double.class);
-	public static final ColumnDescriptor<Double> NODE_COLOURING   = new ColumnDescriptor<>("Colouring", Double.class);
-	
-	// Per-DataSet attributes
-	// Edge attributes
-	public static final ColumnDescriptor<Double>     EDGE_SIMILARITY_COEFF = new ColumnDescriptor<>("similarity_coefficient", Double.class);
-	public static final ColumnDescriptor<Integer>    EDGE_OVERLAP_SIZE     = new ColumnDescriptor<>("Overlap_size", Integer.class);
-	public static final ListColumnDescriptor<String> EDGE_OVERLAP_GENES    = new ListColumnDescriptor<>("Overlap_genes", String.class);
+	public static class Columns {
+		// Common attributes that apply to the entire network
+		public static final ColumnDescriptor<String> NODE_NAME = new ColumnDescriptor<>("Name", String.class);
+		public static final ColumnDescriptor<String> NODE_GS_DESCR = new ColumnDescriptor<>("GS_DESCR", String.class);
+		public static final ColumnDescriptor<String> NODE_GS_TYPE  = new ColumnDescriptor<>("GS_Type", String.class);
+		public static final String NODE_GS_TYPE_ENRICHMENT = "ENR";
+		public static final String NODE_GS_TYPE_SIGNATURE  = "SIG";
+		public static final ColumnDescriptor<String> NODE_FORMATTED_NAME = new ColumnDescriptor<>("Formatted_name", String.class);
+		public static final ColumnListDescriptor<String> NODE_GENES = new ColumnListDescriptor<>("Genes", String.class);
+		public static final ColumnDescriptor<Integer> NODE_GS_SIZE  = new ColumnDescriptor<>("gs_size", Integer.class);
+		
+		// Per-DataSet attributes
+		// GSEA attributes
+		public static final ColumnDescriptor<Double> NODE_PVALUE      = new ColumnDescriptor<>("pvalue", Double.class);
+		public static final ColumnDescriptor<Double> NODE_FDR_QVALUE  = new ColumnDescriptor<>("fdr_qvalue", Double.class);
+		public static final ColumnDescriptor<Double> NODE_FWER_QVALUE = new ColumnDescriptor<>("fwer_qvalue", Double.class);
+		public static final ColumnDescriptor<Double> NODE_ES          = new ColumnDescriptor<>("ES", Double.class);
+		public static final ColumnDescriptor<Double> NODE_NES         = new ColumnDescriptor<>("NES", Double.class);
+		public static final ColumnDescriptor<Double> NODE_COLOURING   = new ColumnDescriptor<>("Colouring", Double.class);
+		
+		// Post-analysis Node attributes
+		public static final ColumnListDescriptor<String> NODE_ENR_GENES = new ColumnListDescriptor<>("Enrichment_Genes", String.class);
+		public static final ColumnDescriptor<Integer> NODE_GS_SIZE_SIGNATURE  = new ColumnDescriptor<>("gs_size_signature", Integer.class);
+		
+		// Per-DataSet attributes
+		// Edge attributes
+		public static final ColumnDescriptor<Double> EDGE_SIMILARITY_COEFF = new ColumnDescriptor<>("similarity_coefficient", Double.class);
+		public static final ColumnDescriptor<Integer> EDGE_OVERLAP_SIZE     = new ColumnDescriptor<>("Overlap_size", Integer.class);
+		public static final ColumnListDescriptor<String> EDGE_OVERLAP_GENES    = new ColumnListDescriptor<>("Overlap_genes", String.class);
+		public static final ColumnDescriptor<Integer> EDGE_ENRICHMENT_SET  = new ColumnDescriptor<>("ENRICHMENT_SET", Integer.class);
+		public static final Integer EDGE_ENRICHMENT_SET_ENR = 1;
+		public static final Integer EDGE_ENRICHMENT_SET_SIG = 4; // for backwards compatibility
+		
+		
+		// Post-analysis Edge Attributes
+		public static final ColumnDescriptor<Double> EDGE_HYPERGEOM_PVALUE = new ColumnDescriptor<>("Overlap_Hypergeom_pVal", Double.class);
+		public static final ColumnDescriptor<Double> EDGE_HYPERGEOM_CUTOFF = new ColumnDescriptor<>("Overlap_Hypergeom_cutoff", Double.class);
+		public static final ColumnDescriptor<Integer> EDGE_HYPERGEOM_N = new ColumnDescriptor<>("HyperGeom_N_Universe", Integer.class);
+		public static final ColumnDescriptor<Integer> EDGE_HYPERGEOM_n = new ColumnDescriptor<>("HyperGeom_n_Sig_Universe", Integer.class);
+		public static final ColumnDescriptor<Integer> EDGE_HYPERGEOM_k = new ColumnDescriptor<>("k_Intersection", Integer.class);
+		public static final ColumnDescriptor<Integer> EDGE_HYPERGEOM_m = new ColumnDescriptor<>("m_Enr_Genes", Integer.class);
+		public static final ColumnDescriptor<Double> EDGE_MANN_WHIT_TWOSIDED_PVALUE = new ColumnDescriptor<>("Overlap_Mann_Whit_pVal", Double.class);
+		public static final ColumnDescriptor<Double> EDGE_MANN_WHIT_GREATER_PVALUE = new ColumnDescriptor<>("Overlap_Mann_Whit_greater_pVal", Double.class);
+		public static final ColumnDescriptor<Double> EDGE_MANN_WHIT_LESS_PVALUE = new ColumnDescriptor<>("Overlap_Mann_Whit_less_pVal", Double.class);
+		public static final ColumnDescriptor<Double> EDGE_MANN_WHIT_CUTOFF = new ColumnDescriptor<>("Overlap_Mann_Whit_cutoff", Double.class);
+		public static final ColumnDescriptor<String> EDGE_CUTOFF_TYPE = new ColumnDescriptor<>("Overlap_cutoff", String.class);
+	}
 
+	public static class Colors {
+		/* See http://colorbrewer2.org/#type=diverging&scheme=RdBu&n=9 */
+		public static final Color MAX_PHENOTYPE_1 = new Color(178, 24, 43);
+		public static final Color LIGHTER_PHENOTYPE_1 = new Color(214, 96, 77);
+		public static final Color LIGHTEST_PHENOTYPE_1 = new Color(244, 165, 130);
+		public static final Color OVER_COLOR = new Color(247, 247, 247);
+		public static final Color MAX_PHENOTYPE_2 = new Color(33, 102, 172);
+		public static final Color LIGHTER_PHENOTYPE_2 = new Color(67, 147, 195);
+		public static final Color LIGHTEST_PHENOTYPE_2 = new Color(146, 197, 222);
+	
+		public static final Color LIGHT_GREY = new Color(190, 190, 190);
+	
+		/* See http://colorbrewer2.org/#type=qualitative&scheme=Dark2&n=3 */
+		private static final Color EDGE_COLOR = new Color(27, 158, 119);
+	}
+	
+	
 	@Inject private @Continuous  VisualMappingFunctionFactory vmfFactoryContinuous;
 	@Inject private @Discrete    VisualMappingFunctionFactory vmfFactoryDiscrete;
 	@Inject private @Passthrough VisualMappingFunctionFactory vmfFactoryPassthrough;
@@ -60,6 +102,7 @@ public class MasterMapVisualStyle {
 	private static final Color BG_COLOR = Color.WHITE;
 	private static final Color EDGE_COLOR = new Color(27, 158, 119);
 	
+	
 	public void updateProperties(VisualStyle vs, MasterMapStyleOptions options, CyCustomGraphics2<?> chart) {
 		// MKTODO silence events?
 		
@@ -70,9 +113,9 @@ public class MasterMapVisualStyle {
 		setEdgeDefaults(vs);
 		setEdgeWidth(vs, options);
  		
-		setNodeDefaults(vs);
-		setNodeLabels(vs);
-		setNodeSize(vs);
+		setNodeDefaults(vs, options);
+		setNodeLabels(vs, options);
+		setNodeSize(vs, options);
 		setNodeChart(vs, chart);
 	}
 	
@@ -91,10 +134,12 @@ public class MasterMapVisualStyle {
 	}
 	
 	private void setEdgeWidth(VisualStyle vs, MasterMapStyleOptions options) {
+		String prefix = options.getAttributePrefix();
+		
 		EnrichmentMap map = options.getEnrichmentMap();
 		//Continous Mapping - set edge line thickness based on the number of genes in the overlap
 		ContinuousMapping<Double, Double> edgewidth = (ContinuousMapping<Double, Double>) vmfFactoryContinuous
-				.createVisualMappingFunction(EDGE_SIMILARITY_COEFF.getName(), Double.class, BasicVisualLexicon.EDGE_WIDTH);
+				.createVisualMappingFunction(Columns.EDGE_SIMILARITY_COEFF.with(prefix,null), Double.class, BasicVisualLexicon.EDGE_WIDTH);
 		
 		Double under_width = 0.5;
 		Double min_width   = 1.0;
@@ -110,24 +155,26 @@ public class MasterMapVisualStyle {
 		vs.addVisualMappingFunction(edgewidth);
 	}
 	
-	private void setNodeDefaults(VisualStyle vs) {
+	private void setNodeDefaults(VisualStyle vs, MasterMapStyleOptions options) {
 		//set the default node appearance
-		vs.setDefaultValue(BasicVisualLexicon.NODE_FILL_COLOR, EnrichmentMapVisualStyle.MAX_PHENOTYPE_1);
-		vs.setDefaultValue(BasicVisualLexicon.NODE_BORDER_PAINT, EnrichmentMapVisualStyle.MAX_PHENOTYPE_1);
+		vs.setDefaultValue(BasicVisualLexicon.NODE_FILL_COLOR, Colors.MAX_PHENOTYPE_1);
+		vs.setDefaultValue(BasicVisualLexicon.NODE_BORDER_PAINT, Colors.MAX_PHENOTYPE_1);
 		vs.setDefaultValue(BasicVisualLexicon.NODE_SHAPE, NodeShapeVisualProperty.ELLIPSE);
 		vs.setDefaultValue(BasicVisualLexicon.NODE_SIZE, new Double(15.0));
 		vs.setDefaultValue(BasicVisualLexicon.NODE_BORDER_WIDTH, new Double(15.0));
 	}
 	
-	private void setNodeLabels(VisualStyle vs) {
+	private void setNodeLabels(VisualStyle vs, MasterMapStyleOptions options) {
+		String prefix = options.getAttributePrefix();
 		PassthroughMapping<String, String> nodeLabel = (PassthroughMapping<String, String>) vmfFactoryPassthrough
-				.createVisualMappingFunction(NODE_GS_DESCR.getName(), String.class, BasicVisualLexicon.NODE_LABEL);
+				.createVisualMappingFunction(Columns.NODE_GS_DESCR.with(prefix,null), String.class, BasicVisualLexicon.NODE_LABEL);
 		vs.addVisualMappingFunction(nodeLabel);
 	}
 	
-	private void setNodeSize(VisualStyle vs) {
+	private void setNodeSize(VisualStyle vs, MasterMapStyleOptions options) {
+		String prefix = options.getAttributePrefix();
 		ContinuousMapping<Integer, Double> nodeSize = (ContinuousMapping<Integer, Double>) vmfFactoryContinuous
-				.createVisualMappingFunction(NODE_GS_SIZE.getName(), Integer.class, BasicVisualLexicon.NODE_SIZE);
+				.createVisualMappingFunction(Columns.NODE_GS_SIZE.with(prefix,null), Integer.class, BasicVisualLexicon.NODE_SIZE);
 
 		Double min = 20.0;
 		Double max = 65.0;

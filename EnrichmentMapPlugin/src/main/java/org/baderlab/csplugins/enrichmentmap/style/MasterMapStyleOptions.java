@@ -40,4 +40,8 @@ public class MasterMapStyleOptions {
 		return map;
 	}
 	
+	public String getAttributePrefix() {
+		return map.getParams().getAttributePrefix();
+	}
+	
 }

@@ -1,19 +1,5 @@
 package org.baderlab.csplugins.enrichmentmap.task;
 
-import static org.baderlab.csplugins.enrichmentmap.style.MasterMapVisualStyle.EDGE_OVERLAP_GENES;
-import static org.baderlab.csplugins.enrichmentmap.style.MasterMapVisualStyle.EDGE_OVERLAP_SIZE;
-import static org.baderlab.csplugins.enrichmentmap.style.MasterMapVisualStyle.EDGE_SIMILARITY_COEFF;
-import static org.baderlab.csplugins.enrichmentmap.style.MasterMapVisualStyle.NODE_COLOURING;
-import static org.baderlab.csplugins.enrichmentmap.style.MasterMapVisualStyle.NODE_ES;
-import static org.baderlab.csplugins.enrichmentmap.style.MasterMapVisualStyle.NODE_FDR_QVALUE;
-import static org.baderlab.csplugins.enrichmentmap.style.MasterMapVisualStyle.NODE_FORMATTED_NAME;
-import static org.baderlab.csplugins.enrichmentmap.style.MasterMapVisualStyle.NODE_FWER_QVALUE;
-import static org.baderlab.csplugins.enrichmentmap.style.MasterMapVisualStyle.NODE_GENES;
-import static org.baderlab.csplugins.enrichmentmap.style.MasterMapVisualStyle.NODE_GS_DESCR;
-import static org.baderlab.csplugins.enrichmentmap.style.MasterMapVisualStyle.NODE_GS_SIZE;
-import static org.baderlab.csplugins.enrichmentmap.style.MasterMapVisualStyle.NODE_NES;
-import static org.baderlab.csplugins.enrichmentmap.style.MasterMapVisualStyle.NODE_PVALUE;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -31,6 +17,7 @@ import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.GenericResult;
 import org.baderlab.csplugins.enrichmentmap.model.GenesetSimilarity;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
+import org.baderlab.csplugins.enrichmentmap.style.MasterMapVisualStyle.Columns;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
@@ -53,6 +40,7 @@ public class MasterMapNetworkTask extends AbstractTask {
 	@Inject private EnrichmentMapManager emManager;
 	
 	private final EnrichmentMap map;
+	private final String prefix;
 	
 	public interface Factory {
 		MasterMapNetworkTask create(EnrichmentMap map);
@@ -61,6 +49,7 @@ public class MasterMapNetworkTask extends AbstractTask {
 	@Inject
 	public MasterMapNetworkTask(@Assisted EnrichmentMap map) {
 		this.map = map;
+		this.prefix = map.getParams().getAttributePrefix();
 	}
 	
 	@Override
@@ -109,8 +98,10 @@ public class MasterMapNetworkTask extends AbstractTask {
 					
 					CyRow row = network.getRow(node);
 					row.set(CyNetwork.NAME, genesetName);
-					NODE_FORMATTED_NAME.set(row, CreateEnrichmentMapNetworkTask.formatLabel(genesetName));
-					NODE_GS_DESCR.set(row, gs.getDescription());
+					Columns.NODE_FORMATTED_NAME.set(row, prefix, null, CreateEnrichmentMapNetworkTask.formatLabel(genesetName));
+					Columns.NODE_NAME.set(row, prefix, null, genesetName); // MKTODO why is this column needed?
+					Columns.NODE_GS_DESCR.set(row, prefix, null, gs.getDescription());
+					Columns.NODE_GS_TYPE.set(row, prefix, null, Columns.NODE_GS_TYPE_ENRICHMENT);
 				}
 				else {
 					genesetGenes.get(genesetName).addAll(gs.getGenes());
@@ -131,8 +122,8 @@ public class MasterMapNetworkTask extends AbstractTask {
 			CyNode node = nodes.get(genesetName);
 			CyRow row = network.getRow(node);
 			List<String> genes = geneIds.stream().map(map::getGeneFromHashKey).collect(Collectors.toList());
-			NODE_GENES.set(row, genes);
-			NODE_GS_SIZE.set(row, genes.size());
+			Columns.NODE_GENES.set(row, prefix, null, genes);
+			Columns.NODE_GS_SIZE.set(row, prefix, null, genes.size());
 		});
 		
 		return nodes;
@@ -161,9 +152,10 @@ public class MasterMapNetworkTask extends AbstractTask {
 			CyRow row = network.getRow(edge);
 			row.set(CyNetwork.NAME, edgeName);
 			row.set(CyEdge.INTERACTION, similarity.getInteractionType());
-			EDGE_SIMILARITY_COEFF.set(row, similarity.getSimilarity_coeffecient());
-			EDGE_OVERLAP_SIZE.set(row, similarity.getSizeOfOverlap());
-			EDGE_OVERLAP_GENES.set(row, overlapGenes);
+			Columns.EDGE_SIMILARITY_COEFF.set(row, prefix, null, similarity.getSimilarity_coeffecient());
+			Columns.EDGE_OVERLAP_SIZE.set(row, prefix, null, similarity.getSizeOfOverlap());
+			Columns.EDGE_OVERLAP_GENES.set(row, prefix, null, overlapGenes);
+			Columns.EDGE_ENRICHMENT_SET.set(row, prefix, null, Columns.EDGE_ENRICHMENT_SET_ENR);
 		}
 	}
 	
@@ -186,20 +178,21 @@ public class MasterMapNetworkTask extends AbstractTask {
 	
 	private CyTable createNodeAttributes(CyNetwork network) {
 		CyTable table = network.getDefaultNodeTable();
-		NODE_GS_DESCR.createColumn(table);
-//		NODE_GS_TYPE.createColumn(table);
-		NODE_FORMATTED_NAME.createColumn(table);
-		NODE_GENES.createColumn(table); // Union of geneset genes across all datasets
-		NODE_GS_SIZE.createColumn(table); // Size of the union
+		Columns.NODE_NAME.createColumn(table, prefix, null);
+		Columns.NODE_GS_DESCR.createColumn(table, prefix, null);
+		Columns.NODE_GS_TYPE.createColumn(table, prefix, null);
+		Columns.NODE_FORMATTED_NAME.createColumn(table, prefix, null);
+		Columns.NODE_GENES.createColumn(table, prefix, null); // Union of geneset genes across all datasets
+		Columns.NODE_GS_SIZE.createColumn(table, prefix, null); // Size of the union
 		
 		for(String datasetName : map.getDatasetNames()) {
-			NODE_PVALUE.createColumn(table, datasetName);
-			NODE_FDR_QVALUE.createColumn(table, datasetName);
-			NODE_FWER_QVALUE.createColumn(table, datasetName);
+			Columns.NODE_PVALUE.createColumn(table, prefix, datasetName);
+			Columns.NODE_FDR_QVALUE.createColumn(table, prefix, datasetName);
+			Columns.NODE_FWER_QVALUE.createColumn(table, prefix, datasetName);
 			// MKTODO only create these if method is GSEA?
-			NODE_ES.createColumn(table, datasetName);
-			NODE_NES.createColumn(table, datasetName); 
-			NODE_COLOURING.createColumn(table, datasetName);
+			Columns.NODE_ES.createColumn(table, prefix, datasetName);
+			Columns.NODE_NES.createColumn(table, prefix, datasetName); 
+			Columns.NODE_COLOURING.createColumn(table, prefix, datasetName);
 		}
 		
 		return table;
@@ -207,20 +200,16 @@ public class MasterMapNetworkTask extends AbstractTask {
 	
 	private CyTable createEdgeAttributes(CyNetwork network) {
 		CyTable table = network.getDefaultEdgeTable();
-//		for(String datasetName : map.getDatasetNames()) {
-//			EDGE_SIMILARITY_COEFF.createColumn(table, datasetName);
-//			EDGE_OVERLAP_SIZE.createColumn(table, datasetName);
-//			EDGE_OVERLAP_GENES.createColumn(table, datasetName);
-//		}
-		EDGE_SIMILARITY_COEFF.createColumn(table);
-		EDGE_OVERLAP_SIZE.createColumn(table);
-		EDGE_OVERLAP_GENES.createColumn(table);
+		Columns.EDGE_SIMILARITY_COEFF.createColumn(table, prefix, null);
+		Columns.EDGE_OVERLAP_SIZE.createColumn(table, prefix, null);
+		Columns.EDGE_ENRICHMENT_SET.createColumn(table, prefix, null);
+		Columns.EDGE_OVERLAP_GENES.createColumn(table, prefix, null);
 		return table;
 	}
 	
 	private void setGSEAResultNodeAttributes(CyRow row, String datasetName, GSEAResult result) {
-		NODE_PVALUE.set(row, datasetName, result.getPvalue());
-		NODE_NES.set(row, datasetName, result.getNES());
-		NODE_COLOURING.set(row, datasetName, getColorScore(result));
+		Columns.NODE_PVALUE.set(row, prefix, datasetName, result.getPvalue());
+		Columns.NODE_NES.set(row, prefix, datasetName, result.getNES());
+		Columns.NODE_COLOURING.set(row, prefix, datasetName, getColorScore(result));
 	}
 }
