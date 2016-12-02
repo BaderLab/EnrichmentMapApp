@@ -11,7 +11,6 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.style.ChartFactoryManager;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanelMediator;
 import org.baderlab.csplugins.enrichmentmap.view.parameters.ParametersPanelMediator;
-import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PostAnalysisPanelMediator;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
@@ -78,8 +77,5 @@ public class CyActivator extends AbstractCyActivator {
 		
 		ParametersPanelMediator parametersPanelMediator = injector.getInstance(ParametersPanelMediator.class);
 		registerAllServices(bc, parametersPanelMediator, new Properties());
-		
-		PostAnalysisPanelMediator postAnalysisPanelMediator = injector.getInstance(PostAnalysisPanelMediator.class);
-		registerAllServices(bc, postAnalysisPanelMediator, new Properties());
 	}
 }

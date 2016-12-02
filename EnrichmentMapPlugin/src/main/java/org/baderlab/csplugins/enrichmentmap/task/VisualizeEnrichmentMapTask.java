@@ -64,6 +64,7 @@ import com.google.inject.assistedinject.Assisted;
 /**
  * Create visual representation of enrichment map in cytoscape
  */
+@Deprecated
 public class VisualizeEnrichmentMapTask extends AbstractTask {
 
 	private final EnrichmentMap map;

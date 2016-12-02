@@ -116,7 +116,7 @@ public class ControlPanelMediator
 								new SliderBarActionListener(sSliderPanel, applicationManager, emManager));
 					
 					viewPanel.getCheckboxListPanel().setAddButtonCallback(model -> {
-						postAnalysisPanelMediatorProvider.get().showDialog(getCurrentMap());
+						postAnalysisPanelMediatorProvider.get().showDialog(viewPanel, getCurrentMap());
 					});
 					
 					viewPanel.getTogglePublicationCheck().addActionListener((ActionEvent ae) -> {

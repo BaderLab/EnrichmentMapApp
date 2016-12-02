@@ -75,6 +75,7 @@ import com.google.common.collect.Sets;
  * pair of gene sets.  (all pairwise comparisons are performed but only those passing
  * the user specified are stored in the hash map of gene set similarityes)
 */
+@Deprecated
 public class ComputeSimilarityTask extends AbstractTask {
 	public static final int ENRICHMENT = 0, SIGNATURE = 1;
 
