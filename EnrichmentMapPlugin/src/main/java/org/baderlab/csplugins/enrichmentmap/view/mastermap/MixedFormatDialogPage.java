@@ -9,6 +9,8 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.GridBagLayout;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
@@ -29,6 +31,7 @@ import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
@@ -245,8 +248,18 @@ public class MixedFormatDialogPage implements CardDialogPage {
 		removeButton.setEnabled(false);
 		removeAllButton.setEnabled(false);
 		
-		SwingUtil.makeSmall(addFolderButton, addManualButton, editButton, removeButton, removeAllButton);
+		// Double-click to edit a data set
+		list.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if (e.getClickCount() == 2 && !e.isConsumed()) {
+				     e.consume();
+				     editDataSet(list);
+				}
+			}
+		});
 		
+		SwingUtil.makeSmall(addFolderButton, addManualButton, editButton, removeButton, removeAllButton);
 		
 		// Button Action Listeners
 		addFolderButton.addActionListener(e -> {
@@ -260,16 +273,7 @@ public class MixedFormatDialogPage implements CardDialogPage {
 			}
 		});
 		editButton.addActionListener(e -> {
-			int index = list.getSelectedIndex();
-			if(index != -1) {
-				DataSetParameters dataSet = dataSetListModel.getElementAt(index);
-				EditDataSetDialog dialog = new EditDataSetDialog(callback.getDialogFrame(), fileUtil, dataSet);
-				DataSetParameters newDataSet = dialog.open();
-				if(newDataSet != null) {
-					dataSetListModel.removeElementAt(index);
-					dataSetListModel.add(index, newDataSet);
-				}
-			}
+			editDataSet(list);
 		});
 		removeButton.addActionListener(e -> {
 			List<DataSetParameters> selected = list.getSelectedValuesList();
@@ -278,7 +282,6 @@ public class MixedFormatDialogPage implements CardDialogPage {
 		removeAllButton.addActionListener(e -> {
 			dataSetListModel.clear();
 		});
-		
 		
 		// Button Enablement Listeners
 		list.addListSelectionListener(e -> {
@@ -290,7 +293,6 @@ public class MixedFormatDialogPage implements CardDialogPage {
 			removeAllButton.setEnabled(!dataSetListModel.isEmpty());
 			validateInput();
 		}));
-		
 		
 		// Layout
 		JScrollPane scrollPane = new JScrollPane();
@@ -333,6 +335,20 @@ public class MixedFormatDialogPage implements CardDialogPage {
 		return panel;
 	}
 
+	private void editDataSet(JList<DataSetParameters> list) {
+		int index = list.getSelectedIndex();
+
+		if (index != -1) {
+			DataSetParameters dataSet = dataSetListModel.getElementAt(index);
+			EditDataSetDialog dialog = new EditDataSetDialog(callback.getDialogFrame(), fileUtil, dataSet);
+			DataSetParameters newDataSet = dialog.open();
+			
+			if (newDataSet != null) {
+				dataSetListModel.removeElementAt(index);
+				dataSetListModel.add(index, newDataSet);
+			}
+		}
+	}
 
 	private void browse(JTextField textField, FileBrowser.Filter filter) {
 		Optional<Path> path = FileBrowser.browse(fileUtil, callback.getDialogFrame(), filter);
@@ -343,12 +359,12 @@ public class MixedFormatDialogPage implements CardDialogPage {
 	private void validateInput() {
 		boolean valid = true;
 		valid &= validatePathTextField(gmtPathText);
-//		valid &= validatePathTextField(expPathText);
+		// valid &= validatePathTextField(expPathText);
 		callback.setFinishButtonEnabled(valid && !dataSetListModel.isEmpty());
 	}
-	
-	
+
 	private class DataSetList extends JList<DataSetParameters> {
+		
 		@Inject
 		public DataSetList(ListModel<DataSetParameters> model) {
 			setModel(model);
@@ -359,15 +375,19 @@ public class MixedFormatDialogPage implements CardDialogPage {
 		private class CellRenderer implements ListCellRenderer<DataSetParameters> {
 
 			@Override
-			public Component getListCellRendererComponent(JList<? extends DataSetParameters> list, DataSetParameters dataSet, 
-					int index, boolean isSelected, boolean cellHasFocus) {
+			public Component getListCellRendererComponent(JList<? extends DataSetParameters> list,
+					DataSetParameters dataSet, int index, boolean isSelected, boolean cellHasFocus) {
+				Color bgColor = UIManager.getColor(isSelected ? "Table.selectionBackground" : "Table.background");
+				Color fgColor = UIManager.getColor(isSelected ? "Table.selectionForeground" : "Table.foreground");
 				
 				JLabel icon = new JLabel(" " + IconManager.ICON_FILE_TEXT + "  ");
 				icon.setFont(iconManager.getIconFont(13.0f));
+				icon.setForeground(fgColor);
 				
 				JLabel title = new JLabel(dataSet.getName() + "  (" + methodToString(dataSet.getMethod()) + ")");
 				SwingUtil.makeSmall(title);
 				title.setFont(title.getFont().deriveFont(Font.BOLD));
+				title.setForeground(fgColor);
 				
 				JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
 				titlePanel.add(icon);
@@ -382,11 +402,11 @@ public class MixedFormatDialogPage implements CardDialogPage {
 				panel.add(titlePanel, BorderLayout.NORTH);
 				panel.add(new JLabel("  "), BorderLayout.WEST);
 				panel.add(filePanel, BorderLayout.CENTER);
-				panel.setBackground(isSelected ? list.getSelectionBackground().brighter() : getBackground());
+				panel.setBackground(bgColor);
 				
 				Border emptyBorder = BorderFactory.createEmptyBorder(2, 4, 2, 4);
-				Border lineBorder  = BorderFactory.createMatteBorder(0, 0, 1, 0, Color.LIGHT_GRAY);
-				Border compound    = BorderFactory.createCompoundBorder(lineBorder, emptyBorder);
+				Border lineBorder  = BorderFactory.createMatteBorder(0, 0, 1, 0, UIManager.getColor("Separator.foreground"));
+				Border compound = BorderFactory.createCompoundBorder(lineBorder, emptyBorder);
 				panel.setBorder(compound);
 				
 				return panel;
@@ -449,7 +469,4 @@ public class MixedFormatDialogPage implements CardDialogPage {
 			}
 		}
 	}
-	
-	
-	
 }
