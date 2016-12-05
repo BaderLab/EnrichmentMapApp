@@ -177,8 +177,8 @@ public class MasterMapVisualStyle {
 		vs.setDefaultValue(BasicVisualLexicon.NODE_FILL_COLOR, Colors.MAX_PHENOTYPE_1);
 		vs.setDefaultValue(BasicVisualLexicon.NODE_BORDER_PAINT, Colors.MAX_PHENOTYPE_1);
 		vs.setDefaultValue(BasicVisualLexicon.NODE_SHAPE, NodeShapeVisualProperty.ELLIPSE);
-		vs.setDefaultValue(BasicVisualLexicon.NODE_SIZE, new Double(15.0));
-		vs.setDefaultValue(BasicVisualLexicon.NODE_BORDER_WIDTH, new Double(15.0));
+		vs.setDefaultValue(BasicVisualLexicon.NODE_SIZE, 15.0);
+		vs.setDefaultValue(BasicVisualLexicon.NODE_BORDER_WIDTH, 0.0);
 		
 		// Add mapping function for node shape
 		DiscreteMapping<String, NodeShape> nodeShape = (DiscreteMapping<String, NodeShape>) vmfFactoryDiscrete
@@ -186,7 +186,6 @@ public class MasterMapVisualStyle {
 		nodeShape.putMapValue(Columns.NODE_GS_TYPE_ENRICHMENT, NodeShapeVisualProperty.ELLIPSE);
 		nodeShape.putMapValue(Columns.NODE_GS_TYPE_SIGNATURE, NodeShapeVisualProperty.TRIANGLE);
 		vs.addVisualMappingFunction(nodeShape);
-
 	}
 	
 	private void setNodeLabels(VisualStyle vs, MasterMapStyleOptions options) {

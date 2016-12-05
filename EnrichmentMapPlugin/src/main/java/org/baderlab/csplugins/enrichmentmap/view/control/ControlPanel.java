@@ -27,7 +27,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.ParallelGroup;
@@ -41,7 +40,6 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.LayoutStyle.ComponentPlacement;
@@ -352,12 +350,9 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		
 		private JLabel chartTypeLabel = new JLabel("Chart Type:");
 		private JLabel chartColorsLabel = new JLabel("Chart Colors:");
-		private JLabel dsFilterLabel1 = new JLabel("Show edges from ");
-		private JLabel dsFilterLabel2 = new JLabel(" of these data sets:");
+		private JLabel dsFilterLabel = new JLabel("Data Sets:");
 		
 		private CheckboxListPanel<DataSet> checkboxListPanel;
-		private JRadioButton anyRadio;
-		private JRadioButton allRadio;
 		private JCheckBox togglePublicationCheck;
 		private JButton setEdgeWidthButton;
 		private JButton resetStyleButton;
@@ -682,17 +677,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		}
 		
 		private JPanel createDataSetListPanel() {
-			anyRadio = new JRadioButton("any");
-			allRadio = new JRadioButton("all");
-			
-			ButtonGroup buttonGroup = new ButtonGroup();
-			buttonGroup.add(anyRadio);
-			buttonGroup.add(allRadio);
-			
-			anyRadio.setSelected(true);
-			allRadio.setEnabled(false); // TODO TEMPORARY
-			
-			SwingUtil.makeSmall(dsFilterLabel1, dsFilterLabel2, anyRadio, allRadio);
+			SwingUtil.makeSmall(dsFilterLabel);
 			
 			final JPanel panel = new JPanel();
 			final GroupLayout layout = new GroupLayout(panel);
@@ -701,21 +686,11 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 	   		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
 	   		
 	   		layout.setHorizontalGroup(layout.createParallelGroup(LEADING, true)
-	   				.addGroup(layout.createSequentialGroup()
-	   						.addComponent(dsFilterLabel1, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-	   						.addComponent(anyRadio, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-	   						.addComponent(allRadio, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-	   						.addComponent(dsFilterLabel2, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-	   				)
+	   				.addComponent(dsFilterLabel)
 	   				.addComponent(getCheckboxListPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 	   		);
 	   		layout.setVerticalGroup(layout.createSequentialGroup()
-	   				.addGroup(layout.createParallelGroup(CENTER, false)
-	   						.addComponent(dsFilterLabel1, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-	   						.addComponent(anyRadio, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-	   						.addComponent(allRadio, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-	   						.addComponent(dsFilterLabel2, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-	   				)
+	   				.addComponent(dsFilterLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 	   				.addComponent(getCheckboxListPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 	   		);
 			

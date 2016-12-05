@@ -63,7 +63,7 @@ public class ParametersPanelMediator implements SetCurrentNetworkViewListener {
 		CyNetworkView view = e.getNetworkView();
 		EnrichmentMap map = view != null ? emManager.getEnrichmentMap(view.getModel().getSUID()) : null;
 		
-		// TODO Get cuttofs and other params associated with the NetView
+		// TODO Get cutoffs and other params associated with the NetView
 		
 		invokeOnEDT(() -> {
 			if (dialog != null && dialog.isVisible())

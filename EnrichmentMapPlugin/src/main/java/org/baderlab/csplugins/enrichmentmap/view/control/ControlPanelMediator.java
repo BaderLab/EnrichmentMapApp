@@ -80,12 +80,18 @@ public class ControlPanelMediator
 	@Inject private ChartFactoryManager chartFactoryManager;
 	
 	private boolean firstTime = true;
-	private boolean updatingEmViewCombo;
+	private boolean updating;
 	
 	@Override
 	public void handleEvent(SetCurrentNetworkViewEvent e) {
 		invokeOnEDT(() -> {
-			getControlPanel().update(e.getNetworkView());
+			updating = true;
+			
+			try {
+				getControlPanel().update(e.getNetworkView());
+			} finally {
+				updating = false;
+			}
 		});
 	}
 	
@@ -186,7 +192,7 @@ public class ControlPanelMediator
 		
 		JComboBox<CyNetworkView> cmb = ctrlPanel.getEmViewCombo();
 		cmb.addActionListener(evt -> {
-			if (!updatingEmViewCombo)
+			if (!updating)
 				setCurrentView((CyNetworkView) cmb.getSelectedItem());
 		});
 		
@@ -222,6 +228,7 @@ public class ControlPanelMediator
 		ctrlPanel.getClosePanelButton().addActionListener(evt -> {
 			closeControlPanel();
 		});
+		
 		
 		ctrlPanel.update(applicationManager.getCurrentNetworkView());
 	}
