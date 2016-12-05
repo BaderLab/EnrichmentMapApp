@@ -426,4 +426,9 @@ public class EnrichmentMap {
 	public String toString() {
 		return getName();
 	}
+
+	public boolean isLegacy() {
+		// MKTODO Files loaded by LegacyEnrichmentMapSessionListener should set this flag to true
+		return false;
+	}
 }

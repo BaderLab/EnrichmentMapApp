@@ -101,13 +101,18 @@ public class LegacyPostAnalysisVisualStyle {
 		vs.addVisualMappingFunction(disMapping_nodeShape);
 
 		// Replace the edge width mapping that was created by EnrichmentMapVisualStyle
-		String widthAttribute = prefix + WidthFunction.EDGE_WIDTH_FORMULA_COLUMN;
+		useFormulaForEdgeWidth(vs, prefix, vmfFactoryPassthrough);
+	}
+	
+	public static void useFormulaForEdgeWidth(VisualStyle vs, String prefix, VisualMappingFunctionFactory vmfFactoryPassthrough) {
+		// Replace the edge width mapping that was created by EnrichmentMapVisualStyle
+		String widthAttribute = WidthFunction.EDGE_WIDTH_FORMULA_COLUMN.with(prefix, null);
 		PassthroughMapping<Double, Double> edgeWidthMapping = (PassthroughMapping<Double, Double>) vmfFactoryPassthrough
 				.createVisualMappingFunction(widthAttribute, Double.class, BasicVisualLexicon.EDGE_WIDTH);
 		vs.addVisualMappingFunction(edgeWidthMapping);
 	}
 
-	private void createNodeBypassForColor(BuildDiseaseSignatureTaskResult taskResult) {
+	public static void createNodeBypassForColor(BuildDiseaseSignatureTaskResult taskResult) {
 		for(CyNode node : taskResult.getNewNodes()) {
 			View<CyNode> hubNodeView = taskResult.getNetworkView().getNodeView(node);
 			if(hubNodeView != null) {

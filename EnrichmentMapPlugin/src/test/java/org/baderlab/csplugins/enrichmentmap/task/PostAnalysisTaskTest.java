@@ -216,7 +216,7 @@ public class PostAnalysisTaskTest extends BaseNetworkTest {
 		WidthFunction widthFunction = widthFunctionProvider.get();
 		widthFunction.setEdgeWidths(emNetwork, "EM1_", null);
 		
-		String widthCol = "EM1_" + WidthFunction.EDGE_WIDTH_FORMULA_COLUMN;
+		String widthCol = WidthFunction.EDGE_WIDTH_FORMULA_COLUMN.with("EM1_", null);
 		
 		double sigWidth1 = emNetwork.getRow(sigEdge1).get(widthCol, Double.class);
 		assertEquals(8.0, sigWidth1, 0.0);

@@ -5,6 +5,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterType;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
+import org.baderlab.csplugins.enrichmentmap.style.MasterMapVisualStyle.Columns;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
@@ -27,9 +28,9 @@ public class WidthFunction {
 	
 	
 	// Column in edge table that holds the formula
-	public static final String EDGE_WIDTH_FORMULA_COLUMN = "Edge_width_formula";
+	public static final ColumnDescriptor<Double> EDGE_WIDTH_FORMULA_COLUMN = new ColumnDescriptor<>("Edge_width_formula", Double.class);
 	// Column in network table that holds the edge parameters
-	public static final String EDGE_WIDTH_PARAMETERS_COLUMN = "EM_Edge_width_parameters";
+	public static final ColumnDescriptor<String> NETWORK_EDGE_WIDTH_PARAMETERS_COLUMN = new ColumnDescriptor<>("EM_Edge_width_parameters", String.class);
 	
 	
 	private final VisualMappingFunctionFactory vmfFactoryContinuous;
@@ -49,7 +50,7 @@ public class WidthFunction {
 	
 	public static boolean appliesTo(CyNetwork network) {
 		CyTable networkTable = network.getDefaultNetworkTable();
-	    return networkTable.getColumn(EDGE_WIDTH_PARAMETERS_COLUMN) != null;
+	    return networkTable.getColumn(NETWORK_EDGE_WIDTH_PARAMETERS_COLUMN.with(null,null)) != null;
 	}
 	
 	
@@ -61,21 +62,15 @@ public class WidthFunction {
 	
 	private void createColumns(CyNetwork network, String prefix) {
 		CyTable networkTable = network.getDefaultNetworkTable();
-		if(networkTable.getColumn(EDGE_WIDTH_PARAMETERS_COLUMN) == null) {
-			networkTable.createColumn(EDGE_WIDTH_PARAMETERS_COLUMN, String.class, false);
-		}
-
-		String widthAttribute = prefix + EDGE_WIDTH_FORMULA_COLUMN;
+		NETWORK_EDGE_WIDTH_PARAMETERS_COLUMN.createColumnIfAbsent(networkTable, null, null);
 		CyTable edgeTable = network.getDefaultEdgeTable();
-		if(edgeTable.getColumn(widthAttribute) == null) {
-			edgeTable.createColumn(widthAttribute, Double.class, false);
-		}
+		EDGE_WIDTH_FORMULA_COLUMN.createColumnIfAbsent(edgeTable, prefix, null);
 	}
 	
 	private void calculateAndSetEdgeWidths(CyNetwork network, String prefix, TaskMonitor taskMonitor) {
 		EdgeWidthParams edgeWidthParams = EdgeWidthParams.restore(network);
 		EnrichmentMap map = emManager.getEnrichmentMap(network.getSUID());
-		String widthAttribute = prefix + EDGE_WIDTH_FORMULA_COLUMN;
+//		String widthAttribute = prefix + EDGE_WIDTH_FORMULA_COLUMN;
 		
 		int n = network.getDefaultEdgeTable().getRowCount();
 		int i = 0;
@@ -89,44 +84,44 @@ public class WidthFunction {
 			String interaction = row.get(CyEdge.INTERACTION, String.class);
 			
 			if(isSignature(interaction)) {
-				String cutoffType = row.get(prefix + EnrichmentMapVisualStyle.CUTOFF_TYPE, String.class);
+				String cutoffType = Columns.EDGE_CUTOFF_TYPE.get(row, prefix, null);
 				PostAnalysisFilterType filterType = PostAnalysisFilterType.fromDisplayString(cutoffType);
 				if(filterType == null) {
-					row.set(widthAttribute, null);
+					EDGE_WIDTH_FORMULA_COLUMN.set(row, prefix, null, null);
 					continue;
 				}
 				
 				Double pvalue, cutoff;
 				switch(filterType) {
 				case MANN_WHIT_TWO_SIDED:
-					pvalue = row.get(prefix + EnrichmentMapVisualStyle.MANN_WHIT_TWOSIDED_PVALUE, Double.class);
-					cutoff = row.get(prefix + EnrichmentMapVisualStyle.MANN_WHIT_CUTOFF, Double.class);
+					pvalue = Columns.EDGE_MANN_WHIT_TWOSIDED_PVALUE.get(row, prefix);
+					cutoff = Columns.EDGE_MANN_WHIT_CUTOFF.get(row, prefix); 
 					break;
 				case MANN_WHIT_GREATER:
-					pvalue = row.get(prefix + EnrichmentMapVisualStyle.MANN_WHIT_GREATER_PVALUE, Double.class);
-					cutoff = row.get(prefix + EnrichmentMapVisualStyle.MANN_WHIT_CUTOFF, Double.class);
+					pvalue = Columns.EDGE_MANN_WHIT_GREATER_PVALUE.get(row, prefix);
+					cutoff = Columns.EDGE_MANN_WHIT_CUTOFF.get(row, prefix); 
 					break;
 				case MANN_WHIT_LESS:
-					pvalue = row.get(prefix + EnrichmentMapVisualStyle.MANN_WHIT_LESS_PVALUE, Double.class);
-					cutoff = row.get(prefix + EnrichmentMapVisualStyle.MANN_WHIT_CUTOFF, Double.class);
+					pvalue = Columns.EDGE_MANN_WHIT_LESS_PVALUE.get(row, prefix);
+					cutoff = Columns.EDGE_MANN_WHIT_CUTOFF.get(row, prefix); 
 					break;
 				default:
-					pvalue = row.get(prefix + EnrichmentMapVisualStyle.HYPERGEOM_PVALUE, Double.class);
-					cutoff = row.get(prefix + EnrichmentMapVisualStyle.HYPERGEOM_CUTOFF, Double.class);
+					pvalue = Columns.EDGE_HYPERGEOM_PVALUE.get(row, prefix);
+					cutoff = Columns.EDGE_HYPERGEOM_CUTOFF.get(row, prefix); 
 					break;
 				}
 				
 				if(pvalue == null || cutoff == null) {
-					row.set(widthAttribute, null);
+					EDGE_WIDTH_FORMULA_COLUMN.set(row, prefix, null);
 				}
 				else if(pvalue <= cutoff/100) {
-					row.set(widthAttribute, edgeWidthParams.pa_lessThan100);
+					EDGE_WIDTH_FORMULA_COLUMN.set(row, prefix, edgeWidthParams.pa_lessThan100);
 				}
 				else if(pvalue <= cutoff/10) {
-					row.set(widthAttribute, edgeWidthParams.pa_lessThan10);
+					EDGE_WIDTH_FORMULA_COLUMN.set(row, prefix, edgeWidthParams.pa_lessThan10);
 				}
 				else {
-					row.set(widthAttribute, edgeWidthParams.pa_greater);
+					EDGE_WIDTH_FORMULA_COLUMN.set(row, prefix, edgeWidthParams.pa_greater);
 				}
 				
 			} 
@@ -146,7 +141,7 @@ public class WidthFunction {
 				conmapping_edgewidth.addPoint(1.0, bv5);
 				
 				Double value = conmapping_edgewidth.getMappedValue(row);
-				row.set(widthAttribute, value);
+				EDGE_WIDTH_FORMULA_COLUMN.set(row, prefix, value);
 			}
 		}
 	}
@@ -177,7 +172,7 @@ public class WidthFunction {
 		
 		public static EdgeWidthParams restore(CyNetwork network) {
 			try {
-				String val = network.getRow(network).get(EDGE_WIDTH_PARAMETERS_COLUMN, String.class);
+				String val = NETWORK_EDGE_WIDTH_PARAMETERS_COLUMN.get(network.getRow(network), null);
 				String[] params = val.split(",");
 				double em_lower = Double.parseDouble(params[0]);
 				double em_upper = Double.parseDouble(params[1]);
@@ -193,7 +188,7 @@ public class WidthFunction {
 		public void save(CyNetwork network) {
 			CyRow row = network.getRow(network);
 			String val = String.format("%f,%f,%f,%f,%f", em_lower, em_upper, pa_lessThan100, pa_lessThan10, pa_greater);
-			row.set(EDGE_WIDTH_PARAMETERS_COLUMN, val);
+			NETWORK_EDGE_WIDTH_PARAMETERS_COLUMN.set(row, null, val);
 		}
 	}
 	

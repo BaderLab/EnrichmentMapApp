@@ -413,7 +413,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 		Columns.NODE_GS_DESCR.set(row, prefix, null, sigGeneSet.getDescription());
 		Columns.NODE_GS_TYPE.set(row, prefix, null, Columns.NODE_GS_TYPE_SIGNATURE);
 		Columns.NODE_NAME.set(row, prefix, null, sigGeneSet.getName());
-		Columns.NODE_GS_SIZE_SIGNATURE.set(row, prefix, null, sigGeneSet.getGenes().size());
+		Columns.NODE_GS_SIZE.set(row, prefix, null, sigGeneSet.getGenes().size());
 
 		// add the geneset of the signature node to the GenesetsOfInterest,
 		// as the Heatmap will grep it's data from there.
@@ -568,7 +568,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 	private CyTable createNodeAttributes(CyNetwork network, String name, String prefix) {
 		CyTable table = network.getDefaultNodeTable();
 		Columns.NODE_ENR_GENES.createColumnIfAbsent(table, prefix, null);
-		Columns.NODE_GS_SIZE_SIGNATURE.createColumnIfAbsent(table, prefix, null);
+		Columns.NODE_GS_SIZE.createColumnIfAbsent(table, prefix, null);
 		return table;
 	}
 

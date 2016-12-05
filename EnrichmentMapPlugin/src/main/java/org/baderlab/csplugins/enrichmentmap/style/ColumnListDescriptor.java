@@ -36,7 +36,7 @@ public class ColumnListDescriptor<T> {
 	}
 	
 	public void createColumnIfAbsent(CyTable table, String prefix, String suffix) {
-		if(table.getColumn(with(suffix,prefix)) == null)
+		if(table.getColumn(with(prefix,suffix)) == null)
 			createColumn(table, prefix, suffix);
 	}
 	

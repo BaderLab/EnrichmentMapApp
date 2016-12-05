@@ -21,8 +21,16 @@ public class ColumnDescriptor<T> {
 		return row.get(with(prefix,suffix), type);
 	}
 	
+	public T get(CyRow row, String prefix) {
+		return row.get(with(prefix,null), type);
+	}
+	
 	public void set(CyRow row, String prefix, String suffix, T value) {
 		row.set(with(prefix,suffix), value);
+	}
+	
+	public void set(CyRow row, String prefix, T value) {
+		row.set(with(prefix,null), value);
 	}
 	
 	public void createColumn(CyTable table, String prefix, String suffix) {
@@ -30,7 +38,7 @@ public class ColumnDescriptor<T> {
 	}
 	
 	public void createColumnIfAbsent(CyTable table, String prefix, String suffix) {
-		if(table.getColumn(with(suffix,prefix)) == null)
+		if(table.getColumn(with(prefix,suffix)) == null)
 			createColumn(table, prefix, suffix);
 	}
 	

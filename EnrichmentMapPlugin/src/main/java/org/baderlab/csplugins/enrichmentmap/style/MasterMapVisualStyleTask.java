@@ -58,10 +58,10 @@ public class MasterMapVisualStyleTask extends AbstractTask {
 	}
 	
 	
+	
+	
 	private VisualStyle getVisualStyle(EnrichmentMap map) {
-		String prefix = map.getParams().getAttributePrefix();
-		String vsName = prefix + MasterMapVisualStyle.DEFAULT_NAME_SUFFIX;
-		
+		String vsName = MasterMapVisualStyle.getStyleName(map);
 		Optional<VisualStyle> currentStyle = attemptToGetExistingStyle(vsName);
 		
 		if(currentStyle.isPresent()) {
