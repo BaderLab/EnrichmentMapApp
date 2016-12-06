@@ -47,9 +47,8 @@ import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.makeSmall;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.event.ActionEvent;
+import java.awt.Dimension;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
@@ -62,15 +61,10 @@ import javax.swing.JFormattedTextField;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
-import javax.swing.ScrollPaneConstants;
-import javax.swing.UIManager;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
-import org.baderlab.csplugins.enrichmentmap.actions.BuildPostAnalysisActionListener;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterType;
-import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
-import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters.AnalysisType;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
@@ -87,18 +81,19 @@ public class PostAnalysisInputPanel extends JPanel {
 	protected static final String siggmt_instruction = "Please select the Signature Gene Set file (.gmt)...";
 
 	@Inject private FileUtil fileUtil;
-	@Inject private BuildPostAnalysisActionListener.Factory buildPostAnalysisActionListenerFactory;
 	
 	private JRadioButton knownSignatureRadio;
 	private JRadioButton signatureDiscoveryRadio;
 
 	// Top level panel for signature discovery or known signature
-	private JPanel userInputPanel;
+	private JScrollPane userInputScrollPane;
 
 	private PostAnalysisSignatureDiscoveryPanel signatureDiscoveryPanel;
 	private PostAnalysisKnownSignaturePanel knownSignaturePanel;
 	
 	private final EnrichmentMap map;
+	private final PostAnalysisKnownSignaturePanel.Factory knownSignaturePanelFactory;
+	private final PostAnalysisSignatureDiscoveryPanel.Factory signatureDiscoveryPanelFactory;
 
 	public interface Factory {
 		PostAnalysisInputPanel create(EnrichmentMap map);
@@ -114,23 +109,14 @@ public class PostAnalysisInputPanel extends JPanel {
 			PostAnalysisSignatureDiscoveryPanel.Factory signatureDiscoveryPanelFactory
 	) {
 		this.map = map;
-		// Create the two main panels, set the default one
-		knownSignaturePanel = knownSignaturePanelFactory.create(this);
-		signatureDiscoveryPanel = signatureDiscoveryPanelFactory.create(this);
-
-		userInputPanel = new JPanel(new BorderLayout());
-		userInputPanel.add(knownSignaturePanel, BorderLayout.CENTER); // Default panel
+		this.knownSignaturePanelFactory = knownSignaturePanelFactory;
+		this.signatureDiscoveryPanelFactory = signatureDiscoveryPanelFactory;
 	}
 	
 	@AfterInjection
 	private void createContent() {
 		JPanel analysisTypePanel = createAnalysisTypePanel();
-
-		JScrollPane scrollPane = new JScrollPane(userInputPanel);
-		scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
-		scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-		scrollPane.getViewport().setBackground(UIManager.getColor("Panel.background"));
-
+		
 		final GroupLayout layout = new GroupLayout(this);
 		setLayout(layout);
 		layout.setAutoCreateContainerGaps(false);
@@ -138,56 +124,40 @@ public class PostAnalysisInputPanel extends JPanel {
 
 		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
    				.addComponent(analysisTypePanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-   				.addComponent(scrollPane, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+   				.addComponent(getUserInputScrollPane(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 		);
    		layout.setVerticalGroup(layout.createSequentialGroup()
    				.addComponent(analysisTypePanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-   				.addComponent(scrollPane, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+   				.addComponent(getUserInputScrollPane(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
    		);
 
-		if (LookAndFeelUtil.isAquaLAF()) {
+		if (LookAndFeelUtil.isAquaLAF())
 			setOpaque(false);
-			userInputPanel.setOpaque(false);
-		}
 		
 		initialize();
 	}
 
 	private void initialize() {
 		if (map != null) {
-			knownSignaturePanel.initialize(map);
-			signatureDiscoveryPanel.initialize(map);
-			knownSignatureRadio.setToolTipText(map.getName());
+			getKnownSignaturePanel().initialize(map);
+			getSignatureDiscoveryPanel().initialize(map);
+			getKnownSignatureRadio().setToolTipText(map.getName());
 		}
 	}
 	
-	private void flipPanels(JPanel toRemove, JPanel toAdd) {
-		userInputPanel.remove(toRemove);
-		userInputPanel.add(toAdd, BorderLayout.CENTER);
-		userInputPanel.revalidate();
-		userInputPanel.repaint();
+	private void showInputPanel(JPanel panel) {
+		getUserInputScrollPane().setViewportView(panel);
 	}
 
 	/**
 	 * Creates a JPanel containing scope radio buttons
 	 */
 	private JPanel createAnalysisTypePanel() {
-		knownSignatureRadio = new JRadioButton("Known Signature");
-		knownSignatureRadio.setSelected(true);
-		knownSignatureRadio.addActionListener((ActionEvent e) -> {
-			flipPanels(signatureDiscoveryPanel, knownSignaturePanel);
-		});
-
-		signatureDiscoveryRadio = new JRadioButton("Signature Discovery");
-		signatureDiscoveryRadio.addActionListener((ActionEvent e) -> {
-			flipPanels(knownSignaturePanel, signatureDiscoveryPanel);
-		});
-
-		makeSmall(knownSignatureRadio, signatureDiscoveryRadio);
+		makeSmall(getKnownSignatureRadio(), getSignatureDiscoveryRadio());
 		
 		ButtonGroup analysisOptions = new ButtonGroup();
-		analysisOptions.add(knownSignatureRadio);
-		analysisOptions.add(signatureDiscoveryRadio);
+		analysisOptions.add(getKnownSignatureRadio());
+		analysisOptions.add(getSignatureDiscoveryRadio());
 
 		JPanel panel = new JPanel();
 		panel.setBorder(LookAndFeelUtil.createTitledBorder("Post Analysis Type"));
@@ -199,19 +169,72 @@ public class PostAnalysisInputPanel extends JPanel {
 
    		layout.setHorizontalGroup(layout.createSequentialGroup()
    				.addGap(0, 0, Short.MAX_VALUE)
-   				.addComponent(knownSignatureRadio)
-   				.addComponent(signatureDiscoveryRadio)
+   				.addComponent(getKnownSignatureRadio())
+   				.addComponent(getSignatureDiscoveryRadio())
    				.addGap(0, 0, Short.MAX_VALUE)
    		);
    		layout.setVerticalGroup(layout.createParallelGroup(Alignment.CENTER, true)
-   				.addComponent(knownSignatureRadio, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-   				.addComponent(signatureDiscoveryRadio, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+   				.addComponent(getKnownSignatureRadio(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+   				.addComponent(getSignatureDiscoveryRadio(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    		);
 
 		if (LookAndFeelUtil.isAquaLAF())
 			panel.setOpaque(false);
 
 		return panel;
+	}
+	
+	JScrollPane getUserInputScrollPane() {
+		if (userInputScrollPane == null) {
+			userInputScrollPane = new JScrollPane(getKnownSignaturePanel()); // Default panel
+			
+			int w = Math.max(
+					getKnownSignaturePanel().getPreferredSize().width,
+					getSignatureDiscoveryPanel().getPreferredSize().width
+			);
+			userInputScrollPane.setPreferredSize(new Dimension(w + 40, userInputScrollPane.getPreferredSize().height));
+		}
+		
+		return userInputScrollPane;
+	}
+	
+	PostAnalysisKnownSignaturePanel getKnownSignaturePanel() {
+		if (knownSignaturePanel == null) {
+			knownSignaturePanel = knownSignaturePanelFactory.create(this);
+		}
+		
+		return knownSignaturePanel;
+	}
+	
+	PostAnalysisSignatureDiscoveryPanel getSignatureDiscoveryPanel() {
+		if (signatureDiscoveryPanel == null) {
+			signatureDiscoveryPanel = signatureDiscoveryPanelFactory.create(this);
+		}
+		
+		return signatureDiscoveryPanel;
+	}
+	
+	JRadioButton getKnownSignatureRadio() {
+		if (knownSignatureRadio == null) {
+			knownSignatureRadio = new JRadioButton("Known Signature");
+			knownSignatureRadio.setSelected(true);
+			knownSignatureRadio.addActionListener(evt -> {
+				showInputPanel(getKnownSignaturePanel());
+			});
+		}
+		
+		return knownSignatureRadio;
+	}
+	
+	JRadioButton getSignatureDiscoveryRadio() {
+		if (signatureDiscoveryRadio == null) {
+			signatureDiscoveryRadio = new JRadioButton("Signature Discovery");
+			signatureDiscoveryRadio.addActionListener(evt -> {
+				showInputPanel(getSignatureDiscoveryPanel());
+			});
+		}
+		
+		return signatureDiscoveryRadio;
 	}
 
 	protected File chooseGMTFile(JFormattedTextField textField) {
@@ -274,6 +297,7 @@ public class PostAnalysisInputPanel extends JPanel {
 	}
 
 	protected static Color checkFile(String filename) {
+		// TODO Don't use color as a boolean!
 		// check to see if the files exist and are readable.
 		// if the file is unreadable change the color of the font to red
 		// otherwise the font should be black.
@@ -285,54 +309,27 @@ public class PostAnalysisInputPanel extends JPanel {
 		return Color.BLACK;
 	}
 
+	boolean isReady() {
+		if (knownSignatureRadio.isSelected())
+			return getKnownSignaturePanel().isReady();
+		else
+			return true;
+	}
+	
 	/**
 	 * Clear the current panel and clear the paParams associated with each panel
 	 */
 	void reset() {
-		knownSignaturePanel.reset();
-		signatureDiscoveryPanel.reset();
-	}
-
-	/**
-	 * Creates a PostAnalysisParameters object based on the user's input.
-	 */
-	private PostAnalysisParameters buildPostAnalysisParameters() {
-		PostAnalysisParameters.Builder builder = new PostAnalysisParameters.Builder();
-
-		if (knownSignatureRadio.isSelected()) {
-			builder.setAnalysisType(AnalysisType.KNOWN_SIGNATURE);
-			knownSignaturePanel.build(builder);
-		} else {
-			builder.setAnalysisType(AnalysisType.SIGNATURE_DISCOVERY);
-			signatureDiscoveryPanel.build(builder);
-		}
-		
-		builder.setAttributePrefix(map.getParams().getAttributePrefix());
-		
-		return builder.build();
+		getKnownSignaturePanel().reset();
+		getSignatureDiscoveryPanel().reset();
 	}
 
 //	/**
 //	 * Set available signature gene set count to specified value
 //	 */
 //	public void setAvSigCount(int avSigCount) {
-//		if (signatureDiscoveryRadio.isSelected()) {
-//			signatureDiscoveryPanel.setAvSigCount(avSigCount);
+//		if (getSignatureDiscoveryRadio().isSelected()) {
+//			getSignatureDiscoveryPanel().setAvSigCount(avSigCount);
 //		}
 //	}
-
-	boolean okToRun() {
-		if (knownSignatureRadio.isSelected())
-			return knownSignaturePanel.okToRun();
-		else
-			return true;
-	}
-
-	void run() {
-		if (okToRun()) {
-			PostAnalysisParameters paParams = buildPostAnalysisParameters();
-			BuildPostAnalysisActionListener action = buildPostAnalysisActionListenerFactory.create(paParams);
-			action.runPostAnalysis();
-		}
-	}
 }

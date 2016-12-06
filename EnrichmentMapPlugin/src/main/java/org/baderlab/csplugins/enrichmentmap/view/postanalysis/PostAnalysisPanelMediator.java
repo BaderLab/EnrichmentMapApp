@@ -13,8 +13,10 @@ import javax.swing.JDialog;
 import javax.swing.JPanel;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapBuildProperties;
+import org.baderlab.csplugins.enrichmentmap.actions.BuildPostAnalysisActionListener;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
+import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
+import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters.AnalysisType;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -26,8 +28,8 @@ import com.google.inject.Singleton;
 @Singleton
 public class PostAnalysisPanelMediator {
 
-	@Inject private EnrichmentMapManager emManager;
 	@Inject private PostAnalysisInputPanel.Factory panelFactory;
+	@Inject private BuildPostAnalysisActionListener.Factory buildPostAnalysisActionListenerFactory;
 	
 	@Inject private CyServiceRegistrar serviceRegistrar;
 	@Inject private CySwingApplication swingApplication;
@@ -53,10 +55,13 @@ public class PostAnalysisPanelMediator {
 					dialog.dispose();
 				}
 			});
-			JButton runButton = new JButton(new AbstractAction("Run") {
+			JButton runButton = new JButton(new AbstractAction("Add") {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					panel.run();
+					if (panel.isReady()) {
+						addGeneSets(buildPostAnalysisParameters(panel, map));
+						dialog.dispose();
+					}
 				}
 			});
 
@@ -73,5 +78,30 @@ public class PostAnalysisPanelMediator {
 			dialog.setLocationRelativeTo(parent);
 			dialog.setVisible(true);
 		});
+	}
+	
+	private void addGeneSets(PostAnalysisParameters paParams) {
+		BuildPostAnalysisActionListener action = buildPostAnalysisActionListenerFactory.create(paParams);
+		action.runPostAnalysis();
+	}
+	
+	/**
+	 * Creates a PostAnalysisParameters object based on the user's input.
+	 * @param map 
+	 */
+	private PostAnalysisParameters buildPostAnalysisParameters(PostAnalysisInputPanel panel, EnrichmentMap map) {
+		PostAnalysisParameters.Builder builder = new PostAnalysisParameters.Builder();
+
+		if (panel.getKnownSignatureRadio().isSelected()) {
+			builder.setAnalysisType(AnalysisType.KNOWN_SIGNATURE);
+			panel.getKnownSignaturePanel().build(builder);
+		} else {
+			builder.setAnalysisType(AnalysisType.SIGNATURE_DISCOVERY);
+			panel.getSignatureDiscoveryPanel().build(builder);
+		}
+		
+		builder.setAttributePrefix(map.getParams().getAttributePrefix());
+		
+		return builder.build();
 	}
 }

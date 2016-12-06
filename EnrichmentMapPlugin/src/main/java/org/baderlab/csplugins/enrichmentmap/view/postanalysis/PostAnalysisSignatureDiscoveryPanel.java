@@ -133,9 +133,6 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel implements ListS
    				.addComponent(sigGenesetsPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    				.addComponent(weightPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    		);
-
-		if (LookAndFeelUtil.isAquaLAF())
-			setOpaque(false);
     }
 
 	private JPanel createSignatureGenesetsPanel() {

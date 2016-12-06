@@ -74,9 +74,6 @@ public class PostAnalysisKnownSignaturePanel extends JPanel {
 				.addComponent(gmtPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addComponent(weightPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 		);
-
-		if (LookAndFeelUtil.isAquaLAF())
-			setOpaque(false);
 	}
 
 	/**
@@ -128,7 +125,7 @@ public class PostAnalysisKnownSignaturePanel extends JPanel {
 		return panel;
 	}
 
-	public boolean okToRun() {
+	public boolean isReady() {
 		String filePath = (String) knownSignatureGMTFileNameTextField.getValue();
 
 		if(filePath == null || PostAnalysisInputPanel.checkFile(filePath).equals(Color.RED)) {
