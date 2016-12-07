@@ -43,7 +43,6 @@ import com.google.inject.Provider;
 public class EdgeWidthDialog extends JDialog {
 
 	@Inject private DialogTaskManager taskManager;
-	@Inject private EnrichmentMapManager emManager;
 	@Inject private Provider<WidthFunction> widthFunctionProvider;
 	
 	private final CyNetwork network;
@@ -57,7 +56,8 @@ public class EdgeWidthDialog extends JDialog {
 	private JFormattedTextField greaterThanText;
 	
 	@Inject
-	public EdgeWidthDialog(CySwingApplication application, CyApplicationManager applicationManager) {
+	public EdgeWidthDialog(EnrichmentMapManager emManager, CySwingApplication application,
+			CyApplicationManager applicationManager) {
 		super(application.getJFrame(), true);
 		this.network = applicationManager.getCurrentNetwork();
 		EnrichmentMap map = emManager.getEnrichmentMap(network.getSUID());
@@ -70,12 +70,10 @@ public class EdgeWidthDialog extends JDialog {
 		createContents();
 		setTextFieldValues(EdgeWidthParams.restore(network));
 		
-		pack();
 		setMinimumSize(getPreferredSize());
 	}
 
 	private void createContents() {
-		JPanel netPanel = createNetworkPanel();
 		JPanel genesetOverlapPanel = createGenesetOverlapPanel();
 		JPanel signatureSetPanel   = createSignatureSetPanel();
 		
@@ -94,12 +92,10 @@ public class EdgeWidthDialog extends JDialog {
 		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
 
 		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
-				.addComponent(netPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addComponent(widthPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addComponent(buttonPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 		);
 		layout.setVerticalGroup(layout.createSequentialGroup()
-				.addComponent(netPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addComponent(widthPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addComponent(buttonPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 		);
@@ -107,18 +103,6 @@ public class EdgeWidthDialog extends JDialog {
 		add(panel);
 	}
 	
-	private JPanel createNetworkPanel() {
-		JPanel panel = new JPanel();
-		panel.setBorder(LookAndFeelUtil.createTitledBorder("Network"));
-
-		String networkName = network.getRow(network).get(CyNetwork.NAME, String.class);
-		JLabel networkLabel = new JLabel(networkName);
-
-		panel.add(networkLabel);
-
-		return panel;
-	}
-
 	private JPanel createGenesetOverlapPanel() {
 		JPanel panel = new JPanel();
 		panel.setBorder(LookAndFeelUtil.createTitledBorder("Geneset Overlap"));
