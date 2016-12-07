@@ -51,4 +51,12 @@ public class ColumnDescriptor<T> {
 			sb.append(" (").append(suffix).append(")");
 		return sb.toString();
 	}
+	
+	/**
+	 * Returns the name.
+	 */
+	@Override
+	public String toString() {
+		return name;
+	}
 }
