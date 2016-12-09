@@ -1,5 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.model;
 
+import java.nio.file.Path;
 import java.util.Optional;
 
 /**
@@ -39,6 +40,8 @@ public class EMCreationParameters implements EnrichmentResultFilterParams {
 	// TEMPORARY - this shouldn't be here this won't work for mastermap
 	private String enrichmentEdgeType = "Geneset_Overlap";
 	
+	private Path globalGmtFile = null;
+	
 	
 	public EMCreationParameters(String attributePrefix, 
 			 double pvalue, double qvaule, NESFilter nesFilter, Optional<Integer> minExperiments,  // NODE
@@ -53,6 +56,13 @@ public class EMCreationParameters implements EnrichmentResultFilterParams {
 		this.combinedConstant = combinedConstant;
 	}
 
+	public void setGlobalGmtFile(Path path) {
+		this.globalGmtFile = path;
+	}
+	
+	public Path getGlobalGmtFile() {
+		return globalGmtFile;
+	}
 	
 	public String getAttributePrefix() {
 		return attributePrefix;

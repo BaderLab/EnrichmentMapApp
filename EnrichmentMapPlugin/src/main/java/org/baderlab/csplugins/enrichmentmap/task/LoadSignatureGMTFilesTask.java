@@ -26,25 +26,22 @@ public class LoadSignatureGMTFilesTask implements TaskFactory {
 		return "Loading Signature Geneset Files...";
 	}
 
-
 	@Override
 	public TaskIterator createTaskIterator() {
-		TaskIterator taskIterator = new TaskIterator();
+		TaskIterator tasks = new TaskIterator();
 		
 		// this is an out-paramter for GMTFileReaderTask and an in-parameter for FilterSignatureGSTask
 		// MKTODO: find a better way to pass data from one task to another
 		// doesn't this need to be made available to paParams?
 		SetOfGeneSets setOfGeneSets = new SetOfGeneSets();
 		
-		taskIterator.append(new GMTFileReaderTask(map, fileName, setOfGeneSets, GMTFileReaderTask.SIGNATURE_GMT));
-		taskIterator.append(new FilterSignatureGSTask(map, setOfGeneSets, filterMetric));
-		
-		return taskIterator;
+		tasks.append(new GMTFileReaderTask(map, fileName, setOfGeneSets));
+		tasks.append(new FilterSignatureGSTask(map, setOfGeneSets, filterMetric));
+		return tasks;
 	}
-
+	
 	@Override
 	public boolean isReady() {
 		return true;
 	}
-
 }

@@ -1,21 +1,26 @@
 package org.baderlab.csplugins.enrichmentmap.commands;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
+import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
-import org.baderlab.csplugins.enrichmentmap.task.EnrichmentMapBuildMapTaskFactory;
-import org.cytoscape.service.util.CyServiceRegistrar;
+import org.baderlab.csplugins.enrichmentmap.task.MasterMapTaskFactory;
+import org.baderlab.csplugins.enrichmentmap.view.mastermap.DataSetParameters;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
 
 import com.google.inject.Inject;
-import com.google.inject.Provider;
 
 
 public class EnrichmentMapGSEACommandHandlerTask extends AbstractTask {
@@ -48,12 +53,9 @@ public class EnrichmentMapGSEACommandHandlerTask extends AbstractTask {
 	public Double combinedconstant ;
 
 	
-	@Inject private Provider<EnrichmentMapParameters> emParamsProvider;
-	@Inject private EnrichmentMapBuildMapTaskFactory.Factory taskFactoryProvider;
+	@Inject private MasterMapTaskFactory.Factory taskFactoryFactory;
 	@Inject private EnrichmentMapManager emManager;
 	@Inject private LegacySupport legacySupport;
-
-	@Inject private CyServiceRegistrar serviceRegistrar;
 	
 	public EnrichmentMapGSEACommandHandlerTask() {
 		similaritymetric = new ListSingleSelection<String>(EnrichmentMapParameters.SM_OVERLAP, EnrichmentMapParameters.SM_JACCARD, EnrichmentMapParameters.SM_COMBINED);
@@ -61,48 +63,31 @@ public class EnrichmentMapGSEACommandHandlerTask extends AbstractTask {
 
 	
 	private void buildEnrichmentMap(){
-		//Initialize Data create a new params for the new EM and add the dataset files to it
-		EnrichmentMapParameters new_params = emParamsProvider.get();
-	
-	
 		//set all files as extracted from the edb directory
-		DataSetFiles files = this.InitializeFiles(edbdir, expressionfile);
-		new_params.addFiles(LegacySupport.DATASET1, files);
+		List<DataSetParameters> dataSets = new ArrayList<>(2);
+		DataSetFiles files1 = initializeFiles(edbdir, expressionfile);
+		dataSets.add(new DataSetParameters(LegacySupport.DATASET1, Method.GSEA, files1));
+		
 		//only add second dataset if there is a second edb directory.
 		if(edbdir2 != null && !edbdir2.equalsIgnoreCase("")){
-			new_params.setTwoDatasets(true);
-			DataSetFiles files2 = this.InitializeFiles(edbdir2, expressionfile2);
-			new_params.addFiles(LegacySupport.DATASET2, files2);
+			DataSetFiles files2 = initializeFiles(edbdir2, expressionfile2);
+			dataSets.add(new DataSetParameters(LegacySupport.DATASET2, Method.GSEA, files2));
 		}
-	
-		//set the method to gsea
-		new_params.setMethod(EnrichmentMapParameters.method_GSEA);
-		if(similaritymetric.getSelectedValue() == EnrichmentMapParameters.SM_JACCARD)
-			new_params.setSimilarityMetric(EnrichmentMapParameters.SM_JACCARD);
-		if(similaritymetric.getSelectedValue() == EnrichmentMapParameters.SM_OVERLAP)
-			new_params.setSimilarityMetric(EnrichmentMapParameters.SM_OVERLAP);
-		if(similaritymetric.getSelectedValue() == EnrichmentMapParameters.SM_COMBINED)
-			new_params.setSimilarityMetric(EnrichmentMapParameters.SM_COMBINED);
 		
-		new_params.setSimilarityCutOff(overlap);
-		new_params.setPvalue(pvalue);
-		new_params.setQvalue(qvalue);
-		new_params.setFDR(true);
-		new_params.setCombinedConstant(combinedconstant);
-	
+		SimilarityMetric metric = EnrichmentMapParameters.stringToSimilarityMetric(similaritymetric.getSelectedValue());
+		
 		String prefix = legacySupport.getNextAttributePrefix();
-		new_params.setAttributePrefix(prefix);
-		String name = prefix + LegacySupport.EM_NAME;
-		EnrichmentMap map = new EnrichmentMap(new_params.getCreationParameters(), serviceRegistrar);
-
-		EnrichmentMapBuildMapTaskFactory buildmap = taskFactoryProvider.create(map);
-
-		insertTasksAfterCurrentTask(buildmap.createTaskIterator());
+		EMCreationParameters creationParams = 
+				new EMCreationParameters(prefix, pvalue, qvalue, NESFilter.ALL, Optional.empty(), 
+						metric, overlap, combinedconstant);
+		
+		MasterMapTaskFactory taskFactory = taskFactoryFactory.create(creationParams, dataSets);
+		insertTasksAfterCurrentTask(taskFactory.createTaskIterator());
 		
 		emManager.showPanels();
 	}
 	
-	private DataSetFiles InitializeFiles(String edb, String exp){
+	private DataSetFiles initializeFiles(String edb, String exp){
 		//for a dataset we require genesets, an expression file (optional), enrichment results
 		String file_sep = System.getProperty("file.separator");
 		String testEdbResultsFileName = edb + file_sep + "results.edb";
@@ -134,7 +119,6 @@ public class EnrichmentMapGSEACommandHandlerTask extends AbstractTask {
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
-		// TODO Auto-generated method stub
 		buildEnrichmentMap();
 	}
 

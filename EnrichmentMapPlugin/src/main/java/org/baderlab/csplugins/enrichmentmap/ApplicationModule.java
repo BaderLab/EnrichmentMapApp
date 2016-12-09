@@ -9,14 +9,14 @@ import org.baderlab.csplugins.enrichmentmap.actions.LoadSignatureSetsActionListe
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.style.EnrichmentMapVisualStyle;
-import org.baderlab.csplugins.enrichmentmap.style.MasterMapVisualStyleTask;
 import org.baderlab.csplugins.enrichmentmap.style.LegacyPostAnalysisVisualStyle;
+import org.baderlab.csplugins.enrichmentmap.style.MasterMapVisualStyleTask;
 import org.baderlab.csplugins.enrichmentmap.task.BuildDiseaseSignatureTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreateEnrichmentMapNetworkTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreatePostAnalysisVisualStyleTask;
 import org.baderlab.csplugins.enrichmentmap.task.EnrichmentMapBuildMapTaskFactory;
-import org.baderlab.csplugins.enrichmentmap.task.MasterMapGSEATaskFactory;
 import org.baderlab.csplugins.enrichmentmap.task.MasterMapNetworkTask;
+import org.baderlab.csplugins.enrichmentmap.task.MasterMapTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.task.VisualizeEnrichmentMapTask;
 import org.baderlab.csplugins.enrichmentmap.task.VisualizeMasterMapTask;
 import org.baderlab.csplugins.enrichmentmap.task.heatmap.UpdateHeatMapTask;
@@ -97,7 +97,7 @@ class FactoryModule extends AbstractModule {
 		installFactory(UpdateHeatMapTask.Factory.class);
 		installFactory(HeatMapSortActionListener.Factory.class);
 		installFactory(HeatMapTransformActionListener.Factory.class);
-		installFactory(MasterMapGSEATaskFactory.Factory.class);
+		installFactory(MasterMapTaskFactory.Factory.class);
 		installFactory(MasterMapNetworkTask.Factory.class);
 		installFactory(VisualizeMasterMapTask.Factory.class);
 		installFactory(MasterMapVisualStyleTask.Factory.class);

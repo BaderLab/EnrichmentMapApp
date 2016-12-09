@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap.model;
+package org.baderlab.csplugins.enrichmentmap.integration;
 
 import java.util.Objects;
 

@@ -111,9 +111,9 @@ public class MasterMapNetworkTask extends AbstractTask {
 				CyRow row = network.getRow(node);
 				
 				if(dataset.getMethod() == Method.GSEA)
-					setGSEAResultNodeAttributes(row, dataset.getName(), (GSEAResult) result);
+					setGSEAResultNodeAttributes(row, dataset.getName(), (GSEAResult)result);
 				else
-					throw new UnsupportedOperationException("Generic not ready yet, stay tuned");
+					setGenericResultNodeAttributes(row, dataset.getName(), (GenericResult)result); 
 			}
 		}
 		
@@ -159,31 +159,14 @@ public class MasterMapNetworkTask extends AbstractTask {
 		}
 	}
 	
-	private static double getColorScore(EnrichmentResult result) {
-		if(result == null)
-			return 0.0;
-		
-		double nes;
-		if(result instanceof GSEAResult)
-			nes = ((GSEAResult)result).getNES();
-		else
-			nes = ((GenericResult)result).getNES();
-			
-		if(nes >= 0)
-			return 1 - result.getPvalue();
-		else
-			return (-1) * (1 - result.getPvalue());
-	}
-	
-	
 	private CyTable createNodeAttributes(CyNetwork network) {
 		CyTable table = network.getDefaultNodeTable();
-		Columns.NODE_NAME.createColumn(table, prefix, null);
-		Columns.NODE_GS_DESCR.createColumn(table, prefix, null);
-		Columns.NODE_GS_TYPE.createColumn(table, prefix, null);
-		Columns.NODE_FORMATTED_NAME.createColumn(table, prefix, null);
-		Columns.NODE_GENES.createColumn(table, prefix, null); // Union of geneset genes across all datasets
-		Columns.NODE_GS_SIZE.createColumn(table, prefix, null); // Size of the union
+		Columns.NODE_NAME.createColumn(table, prefix, null);// !
+		Columns.NODE_GS_DESCR.createColumn(table, prefix, null);// !
+		Columns.NODE_GS_TYPE.createColumn(table, prefix, null);// !
+		Columns.NODE_FORMATTED_NAME.createColumn(table, prefix, null); // !
+		Columns.NODE_GENES.createColumn(table, prefix, null); // Union of geneset genes across all datasets // !
+		Columns.NODE_GS_SIZE.createColumn(table, prefix, null); // Size of the union // !
 		
 		for(String datasetName : map.getDatasetNames()) {
 			Columns.NODE_PVALUE.createColumn(table, prefix, datasetName);
@@ -207,9 +190,37 @@ public class MasterMapNetworkTask extends AbstractTask {
 		return table;
 	}
 	
-	private void setGSEAResultNodeAttributes(CyRow row, String datasetName, GSEAResult result) {
+	
+	private void setGenericResultNodeAttributes(CyRow row, String datasetName, GenericResult result) {
 		Columns.NODE_PVALUE.set(row, prefix, datasetName, result.getPvalue());
+		Columns.NODE_FDR_QVALUE.set(row, prefix, datasetName, result.getFdrqvalue());
 		Columns.NODE_NES.set(row, prefix, datasetName, result.getNES());
 		Columns.NODE_COLOURING.set(row, prefix, datasetName, getColorScore(result));
+	}
+	
+	private void setGSEAResultNodeAttributes(CyRow row, String datasetName, GSEAResult result) {
+		Columns.NODE_PVALUE.set(row, prefix, datasetName, result.getPvalue());
+		Columns.NODE_FDR_QVALUE.set(row, prefix, datasetName, result.getFdrqvalue());
+		Columns.NODE_FWER_QVALUE.set(row, prefix, datasetName, result.getFwerqvalue());
+		Columns.NODE_ES.set(row, prefix, datasetName, result.getES());
+		Columns.NODE_NES.set(row, prefix, datasetName, result.getNES());
+		Columns.NODE_COLOURING.set(row, prefix, datasetName, getColorScore(result));
+	}
+	
+	
+	private static double getColorScore(EnrichmentResult result) {
+		if(result == null)
+			return 0.0;
+		
+		double nes;
+		if(result instanceof GSEAResult)
+			nes = ((GSEAResult)result).getNES();
+		else
+			nes = ((GenericResult)result).getNES();
+			
+		if(nes >= 0)
+			return 1 - result.getPvalue();
+		else
+			return (-1) * (1 - result.getPvalue());
 	}
 }

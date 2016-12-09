@@ -46,6 +46,8 @@ public class EnrichmentMap {
 
 	//post analysis signature genesets associated with this map.
 	private Map<String, GeneSet> signatureGenesets = new HashMap<>();
+	
+	private SetOfGeneSets globalGenesets = new SetOfGeneSets();
 
 	private int NumberOfGenes = 0;
 
@@ -110,27 +112,6 @@ public class EnrichmentMap {
 		}
 	}
 
-	/**
-	 * Check to see that there are genes in the filtered genesets If the ids do
-	 * not match up, after a filtering there will be no genes in any of the genesets
-	 * 
-	 * @return true if Genesets have genes, return false if all the genesets are empty
-	 */
-	public boolean checkGenesets() {
-		for(DataSet dataset : datasets.values()) {
-			Map<String, GeneSet> genesets = dataset.getSetofgenesets().getGenesets();
-			for(GeneSet geneset : genesets.values()) {
-				Set<Integer> genesetGenes = geneset.getGenes();
-				//if there is at least one gene in any of the genesets then the ids match.
-				if(!genesetGenes.isEmpty()) {
-					return true;
-				}
-			}
-		}
-//		if(params.getMethod() == Method.Specialized)
-//			return true;
-		return false;
-	}
 
 	public boolean containsGene(String gene) {
 		return genes.containsValue(gene);
@@ -227,11 +208,15 @@ public class EnrichmentMap {
 		//go through each dataset and get the genesets from each
 		Map<String, GeneSet> allGenesets = new HashMap<>();
 		
+		allGenesets.putAll(globalGenesets.getGenesets());
+		
+		// If a GeneSet appears in more than one DataSet, then its totally arbitrary which version of it gets picked
+		// If a GeneSet appears in an enrichment file it will override the one with the same name in the global GMT file
 		for(DataSet dataset : datasets.values()) {
-			Map<String, GeneSet> genesets = dataset.getSetofgenesets().getGenesets();
-			allGenesets.putAll(genesets);
+			allGenesets.putAll(dataset.getSetofgenesets().getGenesets());
 		}
-		if(signatureGenesets != null && !signatureGenesets.isEmpty())
+		
+		if(signatureGenesets != null)
 			allGenesets.putAll(signatureGenesets);
 		
 		return allGenesets;
@@ -263,12 +248,16 @@ public class EnrichmentMap {
 			allGenesetsOfInterest.putAll(genesets);
 		}
 		//if there are post analysis genesets, add them to the set of all genesets
-		if(signatureGenesets != null && !signatureGenesets.isEmpty())
+		if(signatureGenesets != null)
 			allGenesetsOfInterest.putAll(signatureGenesets);
 		
 		return allGenesetsOfInterest;
 	}
 
+	public SetOfGeneSets getGlobalGenesets() {
+		return globalGenesets;
+	}
+	
 	public Map<String, GenesetSimilarity> getGenesetSimilarity() {
 		return genesetSimilarity;
 	}

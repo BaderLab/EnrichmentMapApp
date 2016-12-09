@@ -13,8 +13,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -23,10 +26,13 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.task.read.LoadNetworkFileTaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.junit.runner.RunWith;
 import org.ops4j.pax.exam.junit.PaxExam;
+
+import com.google.common.collect.ImmutableSet;
 
 /**
  * Most of this was copied from the gui-distribution/integration-test project.
@@ -73,12 +79,12 @@ public abstract class BaseIntegrationTest extends PaxExamConfiguration {
 	
 	
 	public void assertNetworksEqual(CyNetwork expectedNetwork, CyNetwork actualNetwork) {
-		assertTablesEqual(expectedNetwork.getDefaultNodeTable(), actualNetwork.getDefaultNodeTable());
-		assertTablesEqual(expectedNetwork.getDefaultEdgeTable(), actualNetwork.getDefaultEdgeTable());
+		assertTablesEqual(expectedNetwork.getDefaultNodeTable(), actualNetwork.getDefaultNodeTable(), false);
+		assertTablesEqual(expectedNetwork.getDefaultEdgeTable(), actualNetwork.getDefaultEdgeTable(), true);
 	}
 	
 	
-	public void assertTablesEqual(CyTable expectedTable, CyTable actualTable) {
+	public void assertTablesEqual(CyTable expectedTable, CyTable actualTable, boolean edgeTable) {
 		List<CyColumn> expectedColumns = new ArrayList<>(expectedTable.getColumns());
 		
 		// Test columns are the same
@@ -96,32 +102,60 @@ public abstract class BaseIntegrationTest extends PaxExamConfiguration {
 		
 		assertEquals("Tables are not the same size", expectedRows.size(), actualRows.size());
 		
-		// need to sort both Lists 
-		sort(expectedColumns, expectedRows);
-		sort(expectedColumns, actualRows);
+		if(edgeTable) {
+			assertEdgeTableRowsEqual(expectedColumns, expectedRows, actualRows);
+		}
+		else { // node table or other table
+			// need to sort both Lists 
+			sort(expectedColumns, expectedRows);
+			sort(expectedColumns, actualRows);
+			
+			for(int i = 0; i < expectedRows.size(); i++) {
+				CyRow expectedRow = expectedRows.get(i);
+				CyRow actualRow   = actualRows.get(i);
+				assertAttributesEqual(expectedColumns, expectedRow, actualRow);
+			}
+		}
+	}
+
+	/**
+	 * For edges we need to ignore the directionality.
+	 */
+	private void assertEdgeTableRowsEqual(List<CyColumn> expectedColumns, List<CyRow> expectedRows, List<CyRow> actualRows) {
+		Set<String> columnsToIgnore = ImmutableSet.of(CyNetwork.NAME, CyRootNetwork.SHARED_NAME);
+		List<CyColumn> columnsToTest = expectedColumns.stream().filter(c->!columnsToIgnore.contains(c.getName())).collect(Collectors.toList());
 		
-//		System.out.println("Expected Rows:");
-//		printList(expectedRows);
-//		System.out.println("\nActual Rows:");
-//		printList(actualRows);
-//		System.out.println();
+		Map<SimilarityKey, CyRow> expectedRowsByKey = new HashMap<>();
+		for(CyRow row : expectedRows) {
+			SimilarityKey key = SimilarityKey.parse(row.get(CyNetwork.NAME, String.class));
+			expectedRowsByKey.put(key, row);
+		}
 		
-		// Assert that all the values in all the rows are the same
-		for(int i = 0; i < expectedRows.size(); i++) {
-			for(CyColumn column : expectedColumns) {
-				String name = column.getName();
-				Class<?> type = column.getType();
-				if(!CyNetwork.SUID.equals(name)) {
-					Object expectedValue = expectedRows.get(i).get(name, type);
-					Object actualValue   = actualRows.get(i).get(name, type);
-					String message = "Row: " + i + ", Col: " + name + ",";
-					
-					if(type.equals(List.class)) { // because CyListImpl doesn't implement equals()
-						assertArrayEquals(message, ((List<?>)expectedValue).toArray(), ((List<?>)actualValue).toArray() );
-					}
-					else {
-						assertEquals(message, expectedValue, actualValue);
-					}
+		for(CyRow actual : actualRows) {
+			SimilarityKey key = SimilarityKey.parse(actual.get(CyNetwork.NAME, String.class));
+			CyRow expected = expectedRowsByKey.remove(key);
+			assertNotNull(key.toString(), expected);
+			assertAttributesEqual(columnsToTest, expected, actual);
+			
+		}
+		assertTrue(expectedRowsByKey.isEmpty());
+	}
+	
+	
+	private void assertAttributesEqual(List<CyColumn> columnsToTest, CyRow expected, CyRow actual) {
+		for(CyColumn column : columnsToTest) {
+			String name = column.getName();
+			Class<?> type = column.getType();
+			if(!CyNetwork.SUID.equals(name)) {
+				Object expectedValue = expected.get(name, type);
+				Object actualValue   = actual.get(name, type);
+				String message = "Col: " + name + ",";
+				
+				if(type.equals(List.class)) { // because CyListImpl doesn't implement equals()
+					assertArrayEquals(message, ((List<?>)expectedValue).toArray(), ((List<?>)actualValue).toArray() );
+				}
+				else {
+					assertEquals(message, expectedValue, actualValue);
 				}
 			}
 		}

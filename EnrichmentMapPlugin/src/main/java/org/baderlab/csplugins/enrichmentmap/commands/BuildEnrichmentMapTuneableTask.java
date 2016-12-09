@@ -44,23 +44,27 @@
 package org.baderlab.csplugins.enrichmentmap.commands;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
-import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.PropertyManager;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
-import org.baderlab.csplugins.enrichmentmap.task.EnrichmentMapBuildMapTaskFactory;
-import org.cytoscape.service.util.CyServiceRegistrar;
+import org.baderlab.csplugins.enrichmentmap.task.MasterMapTaskFactory;
+import org.baderlab.csplugins.enrichmentmap.view.mastermap.DataSetParameters;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
 
 import com.google.inject.Inject;
-import com.google.inject.Provider;
 
 /**
  * This class builds an Enrichment map from GSEA (Gene set Enrichment analysis)
@@ -151,12 +155,11 @@ public class BuildEnrichmentMapTuneableTask extends AbstractTask {
 
 
 	@Inject private EnrichmentMapManager emManager;
-	@Inject private Provider<EnrichmentMapParameters> emParamsProvider;
-	@Inject private EnrichmentMapBuildMapTaskFactory.Factory taskFactoryProvider;
+	@Inject private MasterMapTaskFactory.Factory taskFactoryFactory;
 	@Inject private LegacySupport legacySupport;
+	@Inject private PropertyManager propertyManager;
 	
-	@Inject private CyServiceRegistrar serviceRegistrar;
-	
+
 	public BuildEnrichmentMapTuneableTask() {
 		analysisType = new ListSingleSelection<String>(EnrichmentMapParameters.method_GSEA,
 				EnrichmentMapParameters.method_generic, EnrichmentMapParameters.method_Specialized);
@@ -170,16 +173,10 @@ public class BuildEnrichmentMapTuneableTask extends AbstractTask {
 	 * buildEnrichmentMap - parses all GSEA input files and creates an enrichment map
 	 */
 	public void buildEnrichmentMap() {
-		//create a new params for the new EM and add the dataset files to it
-		EnrichmentMapParameters new_params = emParamsProvider.get();
+		// Note we must continue to use the old constants from EnrichmentMapParameters for backwards compatibility
+		Method method = EnrichmentMapParameters.stringToMethod(analysisType.getSelectedValue());
+		SimilarityMetric metric = EnrichmentMapParameters.stringToSimilarityMetric(coeffecients.getSelectedValue());
 		
-		if(analysisType.getSelectedValue() == EnrichmentMapParameters.method_Specialized)
-			new_params.setMethod(EnrichmentMapParameters.method_Specialized);
-		if(analysisType.getSelectedValue() == EnrichmentMapParameters.method_GSEA)
-			new_params.setMethod(EnrichmentMapParameters.method_GSEA);
-		if(analysisType.getSelectedValue() == EnrichmentMapParameters.method_generic)
-			new_params.setMethod(EnrichmentMapParameters.method_generic);
-
 		//Set Dataset1 Files
 		DataSetFiles dataset1files = new DataSetFiles();
 		if(gmtFile != null)
@@ -198,18 +195,6 @@ public class BuildEnrichmentMapTuneableTask extends AbstractTask {
 			dataset1files.setPhenotype1(phenotype1Dataset1);
 		if(phenotype2Dataset1 != null)
 			dataset1files.setPhenotype2(phenotype2Dataset1);
-		new_params.addFiles(LegacySupport.DATASET1, dataset1files);
-
-		//Set the parameters
-		new_params.setPvalue(pvalue);
-		new_params.setQvalue(qvalue);
-		new_params.setSimilarityCutOff(similaritycutoff);
-		if(coeffecients.getSelectedValue() == EnrichmentMapParameters.SM_JACCARD)
-			new_params.setSimilarityMetric(EnrichmentMapParameters.SM_JACCARD);
-		if(coeffecients.getSelectedValue() == EnrichmentMapParameters.SM_OVERLAP)
-			new_params.setSimilarityMetric(EnrichmentMapParameters.SM_OVERLAP);
-		if(coeffecients.getSelectedValue() == EnrichmentMapParameters.SM_COMBINED)
-			new_params.setSimilarityMetric(EnrichmentMapParameters.SM_COMBINED);
 
 		//Set Dataset2 Files
 		DataSetFiles dataset2files = new DataSetFiles();
@@ -228,28 +213,25 @@ public class BuildEnrichmentMapTuneableTask extends AbstractTask {
 		if(phenotype2Dataset2 != null)
 			dataset2files.setPhenotype2(phenotype2Dataset2);
 
-		if(!dataset2files.isEmpty())
-			new_params.addFiles(LegacySupport.DATASET2, dataset2files);
-
+		
+		List<DataSetParameters> dataSets = new ArrayList<>(2);
+		dataSets.add(new DataSetParameters(LegacySupport.DATASET1, method, dataset1files));
+		if(!dataset2files.isEmpty()) {
+			dataSets.add(new DataSetParameters(LegacySupport.DATASET2, method, dataset2files));
+		}
+		
 		String prefix = legacySupport.getNextAttributePrefix();
-		new_params.setAttributePrefix(prefix);
+		EMCreationParameters creationParams = 
+				new EMCreationParameters(prefix, pvalue, qvalue, NESFilter.ALL, Optional.empty(), 
+						metric, similaritycutoff, propertyManager.getDefaultCombinedConstant());
 		
-		EnrichmentMap map = new EnrichmentMap(new_params.getCreationParameters(), serviceRegistrar);
 		
-		Method method = EnrichmentMapParameters.stringToMethod(new_params.getMethod());
-		map.addDataSet(LegacySupport.DATASET1, new DataSet(map, LegacySupport.DATASET1, method, dataset1files));
-		if(!dataset2files.isEmpty())
-			map.addDataSet(LegacySupport.DATASET2, new DataSet(map, LegacySupport.DATASET2, method, dataset2files));
-		
-		EnrichmentMapBuildMapTaskFactory buildmap = taskFactoryProvider.create(map);
-		insertTasksAfterCurrentTask(buildmap.createTaskIterator());
+		MasterMapTaskFactory taskFactory = taskFactoryFactory.create(creationParams, dataSets);
+		insertTasksAfterCurrentTask(taskFactory.createTaskIterator());
 
 		emManager.showPanels();
 	}
 
-	public void run() {
-		buildEnrichmentMap();
-	}
 
 	public String getTitle() {
 		return "Enrichment Map Tuneable build";

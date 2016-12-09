@@ -159,6 +159,8 @@ public class InitializeGenesetsOfInterestTask extends AbstractTask {
 			}
 		}
 		
+		// MKTODO clear all the genesets that are not "of interest" just to free up memory
+		
 		return true;
 	}
 

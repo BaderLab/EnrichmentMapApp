@@ -230,7 +230,7 @@ public class EnrichmentMapParameters {
 
 	
 	public EMCreationParameters getCreationParameters() {
-		SimilarityMetric similarityMetric = stringToSimilarityMethod(getSimilarityMetric());
+		SimilarityMetric similarityMetric = stringToSimilarityMetric(getSimilarityMetric());
 		EMCreationParameters params = new EMCreationParameters(getAttributePrefix(), 
 				getPvalue(), getQvalue(), NESFilter.ALL, Optional.empty(), similarityMetric, getSimilarityCutOff(), getCombinedConstant());
 		params.setEnrichmentEdgeType(enrichment_edge_type);
@@ -246,7 +246,7 @@ public class EnrichmentMapParameters {
 		}
 	}
 
-	private static String similarityMetricToString(SimilarityMetric metric) {
+	public static String similarityMetricToString(SimilarityMetric metric) {
 		switch(metric) {
 			default:
 			case COMBINED: return SM_COMBINED;
@@ -264,7 +264,7 @@ public class EnrichmentMapParameters {
 		}
 	}
 	
-	private static SimilarityMetric stringToSimilarityMethod(String name) {
+	public static SimilarityMetric stringToSimilarityMetric(String name) {
 		switch(name) {
 			default:
 			case SM_COMBINED: return SimilarityMetric.COMBINED;

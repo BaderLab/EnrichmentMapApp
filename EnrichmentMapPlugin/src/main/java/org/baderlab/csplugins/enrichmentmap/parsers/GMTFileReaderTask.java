@@ -64,36 +64,24 @@ import com.google.common.collect.ImmutableSet;
  */
 public class GMTFileReaderTask extends AbstractTask {
 
-	private EnrichmentMap map;
-	private String gmtFileName;
-	private SetOfGeneSets setOfgenesets;
-
-	public final static int ENRICHMENT_GMT = 1, SIGNATURE_GMT = 2;
+	private final EnrichmentMap map;
+	private final String gmtFileName;
+	private final SetOfGeneSets setOfgenesets;
 
 
 	public GMTFileReaderTask(DataSet dataset) {
+		this.map = dataset.getMap();
 		this.gmtFileName = dataset.getSetofgenesets().getFilename();
 		this.setOfgenesets = dataset.getSetofgenesets();
-		this.map = dataset.getMap();
 	}
-
+	
 	/**
 	 * for BuildDiseaseSignatureTask
 	 */
-	public GMTFileReaderTask(EnrichmentMap map, String gmtFileName, SetOfGeneSets setOfgensets, int genesets_file) {
+	public GMTFileReaderTask(EnrichmentMap map, String gmtFileName, SetOfGeneSets setOfgensets) {
 		this.map = map;
-
-		if(genesets_file == ENRICHMENT_GMT) {
-			//open GMT file
-			//this.GMTFileName = params.getGMTFileName();
-			//this.genesets = params.getEM().getGenesets();
-			//this.setOfgenesets = map.get
-		} else if(genesets_file == SIGNATURE_GMT) {
-			//open signature-GMT file
-			this.gmtFileName = gmtFileName;
-			this.setOfgenesets = setOfgensets;
-		} else
-			throw new IllegalArgumentException("argument not allowed:" + genesets_file);
+		this.gmtFileName = gmtFileName;
+		this.setOfgenesets = setOfgensets;
 	}
 	
 	
@@ -105,25 +93,24 @@ public class GMTFileReaderTask extends AbstractTask {
 	
 	
 	public void parse() throws IOException, InterruptedException {
-		Map<String, GeneSet> genesets = setOfgenesets.getGenesets();
-		
 		try(BufferedReader reader = new BufferedReader(new FileReader(gmtFileName))) {
 		    for(String line; (line = reader.readLine()) != null;) {
 		    	if(cancelled) {
 					throw new InterruptedException();
 		    	}
-		    	GeneSet gs = readGeneSet(line);
-		    	if(gs != null) {
+		    	GeneSet gs = readGeneSet(map, line);
+		    	if(gs != null && setOfgenesets != null) {
+		    		Map<String, GeneSet> genesets = setOfgenesets.getGenesets();
 					genesets.put(gs.getName(), gs);
 					//add the geneset type to the list of types
-					gs.getSource().ifPresent(source -> setOfgenesets.addGenesetType(source));
+					gs.getSource().ifPresent(setOfgenesets::addGenesetType);
 		    	}
 		    }
 		}
 	}
 
 
-	private GeneSet readGeneSet(String line) {
+	private static GeneSet readGeneSet(EnrichmentMap map, String line) {
 		String[] tokens = line.split("\t");
 		//only go through the lines that have at least a gene set name and description.
 		if(tokens.length >= 2) {

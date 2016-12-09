@@ -41,7 +41,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.Similarit
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.parsers.PathTypeMatcher;
-import org.baderlab.csplugins.enrichmentmap.task.MasterMapGSEATaskFactory;
+import org.baderlab.csplugins.enrichmentmap.task.MasterMapTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogCallback;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogCallback.Message;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogPage;
@@ -69,7 +69,7 @@ public class MixedFormatDialogPage implements CardDialogPage {
 	
 	@Inject private LegacySupport legacySupport;
 	@Inject private CutoffPropertiesPanel cutoffPanel;
-	@Inject private MasterMapGSEATaskFactory.Factory taskFactoryFactory;
+	@Inject private MasterMapTaskFactory.Factory taskFactoryFactory;
 	
 	private CardDialogCallback callback;
 	
@@ -106,9 +106,14 @@ public class MixedFormatDialogPage implements CardDialogPage {
 		EMCreationParameters params = 
 			new EMCreationParameters(prefix, pvalue, qvalue, nesFilter, minExperiments, similarityMetric, cutoff, combined);
 		
+		String text = gmtPathText.getText();
+		if(!isNullOrEmpty(text)) {
+			params.setGlobalGmtFile(Paths.get(text));
+		}
+		
 		List<DataSetParameters> dataSets = dataSetListModel.toList();
 		
-		MasterMapGSEATaskFactory taskFactory = taskFactoryFactory.create(params, dataSets);
+		MasterMapTaskFactory taskFactory = taskFactoryFactory.create(params, dataSets);
 		TaskIterator tasks = taskFactory.createTaskIterator();
 		
 		// Close this dialog after the progress dialog finishes normally
@@ -120,6 +125,8 @@ public class MixedFormatDialogPage implements CardDialogPage {
 		
 		taskManager.execute(tasks);
 	}
+	
+	
 	
 	@Override
 	public JPanel createBodyPanel(CardDialogCallback callback) {
@@ -232,6 +239,7 @@ public class MixedFormatDialogPage implements CardDialogPage {
 		
 		return panel;
 	}
+	
 	
 	private JPanel createDataSetPanel() {
 		// MKTODO check for duplicates, might even make sense to use a Set for the list model

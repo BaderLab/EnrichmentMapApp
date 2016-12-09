@@ -23,6 +23,10 @@ import com.google.common.base.Strings;
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 
+/**
+ * @deprecated Use {@link MasterMapTaskFactory} instead
+ */
+@Deprecated
 public class EnrichmentMapBuildMapTaskFactory implements TaskFactory {
 
 	@Inject private VisualizeEnrichmentMapTask.Factory visualizeEnrichmentMapTaskFactory;

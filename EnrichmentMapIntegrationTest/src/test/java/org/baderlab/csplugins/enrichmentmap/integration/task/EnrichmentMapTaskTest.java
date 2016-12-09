@@ -3,6 +3,8 @@ package org.baderlab.csplugins.enrichmentmap.integration.task;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -17,19 +19,17 @@ import org.baderlab.csplugins.enrichmentmap.integration.BaseIntegrationTest;
 import org.baderlab.csplugins.enrichmentmap.integration.EdgeSimilarities;
 import org.baderlab.csplugins.enrichmentmap.integration.SerialTestTaskManager;
 import org.baderlab.csplugins.enrichmentmap.integration.TestUtils;
-import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
-import org.baderlab.csplugins.enrichmentmap.task.EnrichmentMapBuildMapTaskFactory;
+import org.baderlab.csplugins.enrichmentmap.task.MasterMapTaskFactory;
+import org.baderlab.csplugins.enrichmentmap.view.mastermap.DataSetParameters;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.TaskIterator;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -45,23 +45,18 @@ public class EnrichmentMapTaskTest extends BaseIntegrationTest {
 	
 	private static final String PATH = "/EnrichmentMapTaskTest/";
 	
-	@Inject private CyServiceRegistrar serviceRegistrar;
 	@Inject private CyNetworkManager networkManager;
 	@Inject private BundleContext bc;
 	
 	
 	protected void buildEnrichmentMap(EMCreationParameters params, DataSetFiles datasetFiles, String datasetName) {
-		EnrichmentMap map = new EnrichmentMap(params, serviceRegistrar);
-		
-		DataSet dataset = new DataSet(map, datasetName, Method.Generic, datasetFiles);
-		map.addDataSet(datasetName, dataset);
+		List<DataSetParameters> dataSets = Arrays.asList(new DataSetParameters(datasetName, Method.Generic, datasetFiles));
 		
 		Injector injector = Guice.createInjector(new OSGiModule(bc), new AfterInjectionModule(), new CytoscapeServiceModule(), new ApplicationModule());
-		EnrichmentMapBuildMapTaskFactory.Factory factory = injector.getInstance(EnrichmentMapBuildMapTaskFactory.Factory.class);
-		
-	   	EnrichmentMapBuildMapTaskFactory buildmap = factory.create(map);
+		MasterMapTaskFactory.Factory masterMapTaskFactoryFactory = injector.getInstance(MasterMapTaskFactory.Factory.class);
+		MasterMapTaskFactory taskFactory = masterMapTaskFactoryFactory.create(params, dataSets);
 	    
-	   	TaskIterator taskIterator = buildmap.createTaskIterator();
+		TaskIterator taskIterator = taskFactory.createTaskIterator();
 	   	SerialTestTaskManager taskManager = new SerialTestTaskManager();
 	   	taskManager.execute(taskIterator);
 	}

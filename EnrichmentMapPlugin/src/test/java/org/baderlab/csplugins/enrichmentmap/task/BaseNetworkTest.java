@@ -5,6 +5,9 @@ import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.baderlab.csplugins.enrichmentmap.ApplicationModule;
 import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Edges;
 import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Nodes;
@@ -12,7 +15,6 @@ import org.baderlab.csplugins.enrichmentmap.LogSilenceRule;
 import org.baderlab.csplugins.enrichmentmap.SerialTestTaskManager;
 import org.baderlab.csplugins.enrichmentmap.TestUtils;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadSignatureSetsActionListener;
-import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
@@ -20,6 +22,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapPanel;
+import org.baderlab.csplugins.enrichmentmap.view.mastermap.DataSetParameters;
 import org.baderlab.csplugins.enrichmentmap.view.parameters.ParametersPanel;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
@@ -94,7 +97,7 @@ public abstract class BaseNetworkTest {
     @Inject private CyApplicationManager applicationManager;
     @Inject private EnrichmentMapManager emManager;
     
-    @Inject private EnrichmentMapBuildMapTaskFactory.Factory enrichmentMapBuildMapTaskFactoryFactory;
+    @Inject private MasterMapTaskFactory.Factory masterMapTaskFactoryFactory;
     @Inject private LoadSignatureSetsActionListener.Factory  loadSignatureSetsActionListenerFactory;
     @Inject private BuildDiseaseSignatureTask.Factory buildDiseaseSignatureTaskFactory;
     
@@ -107,15 +110,10 @@ public abstract class BaseNetworkTest {
 	
 	
 	protected void buildEnrichmentMap(EMCreationParameters params, DataSetFiles datasetFiles, Method method, String datasetName) {
-		String prefix = params.getAttributePrefix();
-		EnrichmentMap map = new EnrichmentMap(params, serviceRegistrar);
-		DataSet dataset = new DataSet(map, datasetName, method, datasetFiles);
-		map.addDataSet(datasetName, dataset);
+		List<DataSetParameters> dataSets = Arrays.asList(new DataSetParameters(datasetName, method, datasetFiles));
+		MasterMapTaskFactory taskFactory = masterMapTaskFactoryFactory.create(params, dataSets);
+		TaskIterator taskIterator = taskFactory.createTaskIterator();
 		
-	   	EnrichmentMapBuildMapTaskFactory buildmap = enrichmentMapBuildMapTaskFactoryFactory.create(map);
-	    
-	   	TaskIterator taskIterator = buildmap.createTaskIterator();
-	   	
 	    // make sure the task iterator completes
 	    TaskObserver observer = new TaskObserver() {
 			public void taskFinished(ObservableTask task) { }
@@ -128,7 +126,7 @@ public abstract class BaseNetworkTest {
 		};
 
 	   	SerialTestTaskManager testTaskManager = new SerialTestTaskManager();
-	   	testTaskManager.ignoreTask(VisualizeEnrichmentMapTask.class);
+	   	testTaskManager.ignoreTask(VisualizeMasterMapTask.class);
 	   	testTaskManager.execute(taskIterator, observer);
 	}
 	
