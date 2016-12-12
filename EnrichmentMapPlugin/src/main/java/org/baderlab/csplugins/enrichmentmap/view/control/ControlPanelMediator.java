@@ -113,13 +113,13 @@ public class ControlPanelMediator
 					
 					if (pvSliderPanel != null)
 						pvSliderPanel.getSlider().addChangeListener(
-								new SliderBarActionListener(pvSliderPanel, applicationManager, emManager));
+								new SliderBarActionListener(pvSliderPanel, map, netView));
 					if (qvSliderPanel != null)
 						qvSliderPanel.getSlider().addChangeListener(
-								new SliderBarActionListener(qvSliderPanel, applicationManager, emManager));
+								new SliderBarActionListener(qvSliderPanel, map, netView));
 					if (sSliderPanel != null)
 						sSliderPanel.getSlider().addChangeListener(
-								new SliderBarActionListener(sSliderPanel, applicationManager, emManager));
+								new SliderBarActionListener(sSliderPanel, map, netView));
 					
 					viewPanel.getCheckboxListPanel().setAddButtonCallback(model -> {
 						postAnalysisPanelMediatorProvider.get().showDialog(viewPanel, getCurrentMap());

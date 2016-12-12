@@ -1,7 +1,9 @@
 package org.baderlab.csplugins.enrichmentmap.model;
 
 import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * MKTODO This class should only contain filtering parameters, to make it more cohesive.
@@ -40,12 +42,22 @@ public class EMCreationParameters implements EnrichmentResultFilterParams {
 	// TEMPORARY - this shouldn't be here this won't work for mastermap
 	private String enrichmentEdgeType = "Geneset_Overlap";
 	
-	private Path globalGmtFile = null;
+	private Path globalGmtFile;
 	
+	private final Set<String> pValueColumnNames = new HashSet<>();
+	private final Set<String> qValueColumnNames = new HashSet<>();
+	private final Set<String> similarityCutoffColumnNames = new HashSet<>();
 	
-	public EMCreationParameters(String attributePrefix, 
-			 double pvalue, double qvaule, NESFilter nesFilter, Optional<Integer> minExperiments,  // NODE
-			 SimilarityMetric similarityMetric, double similarityCutoff, double combinedConstant) { // EDGE
+	public EMCreationParameters(
+			String attributePrefix, 
+			double pvalue,
+			double qvaule,
+			NESFilter nesFilter,
+			Optional<Integer> minExperiments, // NODE
+			SimilarityMetric similarityMetric,
+			double similarityCutoff,
+			double combinedConstant
+	) { // EDGE
 		this.similarityMetric = similarityMetric;
 		this.attributePrefix = attributePrefix;
 		this.pvalue = pvalue;
@@ -141,7 +153,6 @@ public class EMCreationParameters implements EnrichmentResultFilterParams {
 		emgmt = eMgmt;
 	}
 
-	
 	public void setDistinctExpressionSets(boolean d) {
 		this.isDistinctExpressionSets = d;
 	}
@@ -158,58 +169,71 @@ public class EMCreationParameters implements EnrichmentResultFilterParams {
 		this.enrichmentEdgeType = enrichmentEdgeType;
 	}
 
-
 	public double getQvaule() {
 		return qvaule;
 	}
-
 
 	public void setQvaule(double qvaule) {
 		this.qvaule = qvaule;
 	}
 
-
 	public boolean isFdr() {
 		return fdr;
 	}
-
 
 	public void setFdr(boolean fdr) {
 		this.fdr = fdr;
 	}
 
-
 	public boolean isEmgmt() {
 		return emgmt;
 	}
-
 
 	public void setEmgmt(boolean emgmt) {
 		this.emgmt = emgmt;
 	}
 
-
 	public void setAttributePrefix(String attributePrefix) {
 		this.attributePrefix = attributePrefix;
 	}
-
 
 	public void setSimilarityMetric(SimilarityMetric similarityMetric) {
 		this.similarityMetric = similarityMetric;
 	}
 
-
 	public void setPvalue(double pvalue) {
 		this.pvalue = pvalue;
 	}
-
 
 	public void setSimilarityCutoff(double similarityCutoff) {
 		this.similarityCutoff = similarityCutoff;
 	}
 
-
 	public void setCombinedConstant(double combinedConstant) {
 		this.combinedConstant = combinedConstant;
+	}
+
+	public void addPValueColumnName(String name) {
+		pValueColumnNames.add(name);
+	}
+
+	public void addQValueColumnName(String name) {
+		qValueColumnNames.add(name);
+	}
+	
+	public void addSimilarityCutoffColumnName(String name) {
+		similarityCutoffColumnNames.add(name);
+	}
+	
+	public Set<String> getPValueColumnNames() {
+		return new HashSet<>(pValueColumnNames);
+	}
+	
+	public Set<String> getQValueColumnNames() {
+		return new HashSet<>(qValueColumnNames);
+	}
+	
+	public Set<String> getSimilarityCutoffColumnNames() {
+		return new HashSet<>(similarityCutoffColumnNames);
 	}
 }
