@@ -46,8 +46,7 @@ public class LoadDatasetTaskTest {
 		EnrichmentMap em = new EnrichmentMap(params, serviceRegistrar);
 		
 		//create a dataset
-		DataSet dataset = new DataSet(em, LegacySupport.DATASET1, Method.Generic, files);
-		em.addDataSet(LegacySupport.DATASET1, dataset);
+		DataSet dataset = em.createDataSet(LegacySupport.DATASET1, Method.Generic, files);
 		
 		//load Data
 		GMTFileReaderTask task = new GMTFileReaderTask(dataset);

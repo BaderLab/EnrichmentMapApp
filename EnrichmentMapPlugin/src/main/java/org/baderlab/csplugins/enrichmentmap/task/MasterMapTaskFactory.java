@@ -61,10 +61,11 @@ public class MasterMapTaskFactory extends AbstractTaskFactory {
 		}
 
 		for(DataSetParameters dataSetParameters : dataSets) {
-			DataSetFiles files = dataSetParameters.getFiles();
 			String datasetName = dataSetParameters.getName();
-			DataSet dataset = new DataSet(map, datasetName, dataSetParameters.getMethod(), files);
-			map.addDataSet(datasetName, dataset);
+			Method method = dataSetParameters.getMethod();
+			DataSetFiles files = dataSetParameters.getFiles();
+			
+			DataSet dataset = map.createDataSet(datasetName, method, files);
 			
 			// Load GMT File
 			if(!Strings.isNullOrEmpty(dataset.getSetofgenesets().getFilename())) {

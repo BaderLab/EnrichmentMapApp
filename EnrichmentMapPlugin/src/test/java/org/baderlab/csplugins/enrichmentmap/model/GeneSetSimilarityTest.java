@@ -7,6 +7,7 @@ import static org.mockito.Mockito.mock;
 import java.util.Map;
 
 import org.baderlab.csplugins.enrichmentmap.TestUtils;
+import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.parsers.GMTFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.task.ComputeSimilarityTask;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -39,8 +40,9 @@ public class GeneSetSimilarityTest {
         
         //Create a new Enrichment map
         map = new EnrichmentMap(params.getCreationParameters(), serviceRegistrar);
-        dataset = new DataSet(map, LegacySupport.DATASET1, EnrichmentMapParameters.stringToMethod(params.getMethod()), params.getFiles().get(LegacySupport.DATASET1));
-        map.addDataSet(LegacySupport.DATASET1, dataset);
+        Method method = EnrichmentMapParameters.stringToMethod(params.getMethod());
+        DataSetFiles files = params.getFiles().get(LegacySupport.DATASET1);
+        dataset = map.createDataSet(LegacySupport.DATASET1, method, files);
 
         //set up task
         GMTFileReaderTask task = new GMTFileReaderTask(dataset);

@@ -43,8 +43,7 @@ public class LoadDavidResultTest {
 		
 		//Load data set
 		//create a dataset
-		DataSet dataset = new DataSet(em, LegacySupport.DATASET1, Method.Specialized, files);		
-		em.addDataSet(LegacySupport.DATASET1, dataset);
+		DataSet dataset = em.createDataSet(LegacySupport.DATASET1, Method.Specialized, files);
 				
 		//create a DatasetTask
 		ParseDavidEnrichmentResults  enrichmentResultsFilesTask = new ParseDavidEnrichmentResults(dataset);
@@ -105,8 +104,7 @@ public class LoadDavidResultTest {
 		
 		//Load first dataset
 		//create a dataset
-		DataSet dataset = new DataSet(em, LegacySupport.DATASET1, Method.Specialized, files);		
-		em.addDataSet(LegacySupport.DATASET1, dataset);
+		DataSet dataset = em.createDataSet(LegacySupport.DATASET1, Method.Specialized, files);
 				
 		//create a DatasetTask
 		ParseDavidEnrichmentResults enrichmentResultsFilesTask = new ParseDavidEnrichmentResults(dataset);
@@ -116,8 +114,7 @@ public class LoadDavidResultTest {
 		
 		//Load second dataset
 		//create a dataset
-		DataSet dataset2 = new DataSet(em, LegacySupport.DATASET2, Method.Specialized, files2);		
-		em.addDataSet(LegacySupport.DATASET2, dataset2);
+		DataSet dataset2 = em.createDataSet(LegacySupport.DATASET2, Method.Specialized, files2);
 		
 		//create a DatasetTask
 		ParseDavidEnrichmentResults enrichmentResultsFiles2Task = new ParseDavidEnrichmentResults(dataset2);

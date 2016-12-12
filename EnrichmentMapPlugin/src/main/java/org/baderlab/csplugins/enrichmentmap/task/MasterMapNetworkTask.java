@@ -94,6 +94,7 @@ public class MasterMapNetworkTask extends AbstractTask {
 				if(node == null) {
 					node = network.addNode();
 					nodes.put(genesetName, node);
+					dataset.getNodeSuids().put(genesetName, node.getSUID());
 					genesetGenes.put(genesetName, new HashSet<>(gs.getGenes()));
 					
 					CyRow row = network.getRow(node);

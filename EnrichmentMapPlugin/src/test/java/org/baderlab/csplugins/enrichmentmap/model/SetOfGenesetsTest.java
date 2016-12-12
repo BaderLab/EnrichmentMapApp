@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.TestUtils;
+import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.parsers.GMTFileReaderTask;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.TaskMonitor;
@@ -39,10 +40,10 @@ public class SetOfGenesetsTest {
         //Create a new Enrichment map
         map = new EnrichmentMap(params.getCreationParameters(), serviceRegistrar);
                 
-        //get the default dataset
-        dataset = new DataSet(map, LegacySupport.DATASET1, EnrichmentMapParameters.stringToMethod(params.getMethod()), params.getFiles().get(LegacySupport.DATASET1));
-        map.addDataSet(LegacySupport.DATASET1, dataset);
-
+        Method method = EnrichmentMapParameters.stringToMethod(params.getMethod());
+        DataSetFiles files = params.getFiles().get(LegacySupport.DATASET1);
+        dataset = map.createDataSet(LegacySupport.DATASET1, method, files);
+        
         //set up task
         GMTFileReaderTask task = new GMTFileReaderTask(dataset);
         task.run(taskMonitor);

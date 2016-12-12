@@ -4,6 +4,7 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -62,18 +63,18 @@ public class EnrichmentMap {
 		this.serviceRegistrar = serviceRegistrar;
 	}
 
-	public void addDataSet(String name, DataSet dataset) {
+	public DataSet createDataSet(String name, Method method, DataSetFiles files) {
 		if(datasets.containsKey(name)) {
 			throw new IllegalArgumentException("DataSet with name " + name + " already exists in this enrichment map");
 		}
-		
-		DataSetFiles files = dataset.getDatasetFiles();
 		if(isNullOrEmpty(files.getEnrichmentFileName1()) && isNullOrEmpty(files.getGMTFileName()) && isNullOrEmpty(files.getExpressionFileName())) {
 			throw new IllegalArgumentException("At least one of the required files must be given");
 		}
 			
+		DataSet dataset = new DataSet(this, name, method, files);
 		datasets.put(name, dataset);
 		initializeFiles(dataset);
+		return dataset;
 	}
 	
 	/**
@@ -310,6 +311,42 @@ public class EnrichmentMap {
 		this.networkID = networkID;
 	}
 
+	
+	/**
+	 * Returns the node SUIDs for all the gene-sets in the given collection of DataSets.
+	 * Each returned gene-set is contained in at least one of the given DataSets.
+	 */
+	public static Set<Long> getNodesUnion(Collection<DataSet> queryDatasets) {
+		if(queryDatasets.isEmpty())
+			return Collections.emptySet();
+		
+		Set<Long> suids = new HashSet<>();
+		for(DataSet dataset : queryDatasets) {
+			suids.addAll(dataset.getNodeSuids().values());
+		}
+		return suids;
+	}
+	
+	/**
+	 * Returns the node SUIDs for all the gene-sets in the given collection of DataSets.
+	 * Each returned gene-set is contained all of the given DataSets.
+	 */
+	public static Set<Long> getNodesIntersection(Collection<DataSet> queryDatasets) {
+		if(queryDatasets.isEmpty())
+			return Collections.emptySet();
+		
+		Iterator<DataSet> iter = queryDatasets.iterator();
+		DataSet first = iter.next();
+		Set<Long> suids = new HashSet<>(first.getNodeSuids().values());
+		
+		while(iter.hasNext()) {
+			DataSet dataset = iter.next();
+			suids.retainAll(dataset.getNodeSuids().values());
+		}
+		return suids;
+	}
+	
+	
 	
 	public Set<String> getAllRankNames() {
 		Set<String> allRankNames = new HashSet<>();

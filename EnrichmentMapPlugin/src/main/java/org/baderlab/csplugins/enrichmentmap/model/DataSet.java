@@ -1,6 +1,8 @@
 package org.baderlab.csplugins.enrichmentmap.model;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /*
@@ -23,19 +25,20 @@ public class DataSet implements Comparable<DataSet> {
 
 	// The set of enrichments
 	//An enrichment result can either be an Generic or GSEA result.
-	private SetOfEnrichmentResults enrichments;
+	private SetOfEnrichmentResults enrichments = new SetOfEnrichmentResults();
 
 	//The Expression
-	private GeneExpressionMatrix expressionSets;
+	private GeneExpressionMatrix expressionSets = new GeneExpressionMatrix();
 	private boolean dummyExpressionData;
 
 	//Hashmap of all genesets in the geneset file (gmt file)
-	private SetOfGeneSets setofgenesets;
-	private SetOfGeneSets genesetsOfInterest;
+	private SetOfGeneSets setofgenesets = new SetOfGeneSets();
+	private SetOfGeneSets genesetsOfInterest = new SetOfGeneSets();
+	private Map<String,Long> nodeSuids = new HashMap<>();
 
 	//The set of genes in the analysis
 	//(there might be genes in the gmt file that are not in expression set)
-	private Set<Integer> datasetGenes;
+	private Set<Integer> datasetGenes = new HashSet<>();
 
 	//Enrichment Map
 	//A dataset is associated with an Enrichment map.
@@ -45,17 +48,10 @@ public class DataSet implements Comparable<DataSet> {
 	//The list of files associated with this Dataset
 	private DataSetFiles datasetFiles;
 
-	public DataSet(EnrichmentMap map, String name, Method method, DataSetFiles files) {
+	protected DataSet(EnrichmentMap map, String name, Method method, DataSetFiles files) {
 		this.map = map;
 		this.name = name;
 		this.method = method;
-		this.datasetGenes = new HashSet<>();
-
-		this.setofgenesets = new SetOfGeneSets();
-		this.genesetsOfInterest = new SetOfGeneSets();
-
-		this.enrichments = new SetOfEnrichmentResults();
-		this.expressionSets = new GeneExpressionMatrix();
 
 		//get the file name parameters for this map
 		//initialize all the filenames from the parameters for this dataset
@@ -115,10 +111,6 @@ public class DataSet implements Comparable<DataSet> {
 		return map;
 	}
 
-	public void setMap(EnrichmentMap map) {
-		this.map = map;
-	}
-
 	public SetOfGeneSets getSetofgenesets() {
 		return setofgenesets;
 	}
@@ -159,6 +151,10 @@ public class DataSet implements Comparable<DataSet> {
 		this.dummyExpressionData = dummyExpressionData;
 	}
 
+	public Map<String,Long> getNodeSuids() {
+		return nodeSuids;
+	}
+	
 	@Override
 	public int hashCode() {
 		final int prime = 11;

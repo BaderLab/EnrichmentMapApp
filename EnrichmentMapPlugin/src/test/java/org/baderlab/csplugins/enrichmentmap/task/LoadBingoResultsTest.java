@@ -39,8 +39,7 @@ public class LoadBingoResultsTest {
 		EMCreationParameters params = new EMCreationParameters("EM1_", pvalue, qvaule, NESFilter.ALL, Optional.empty(), SimilarityMetric.JACCARD, similarityCutoff, 0.5);
 		//create an new enrichment Map
 		EnrichmentMap em = new EnrichmentMap(params, serviceRegistrar);
-		DataSet dataset = new DataSet(em, LegacySupport.DATASET1, Method.Specialized, files);		
-		em.addDataSet(LegacySupport.DATASET1, dataset);				
+		DataSet dataset = em.createDataSet(LegacySupport.DATASET1, Method.Specialized, files);				
 		
 		ParseBingoEnrichmentResults enrichmentResultsFilesTask = new ParseBingoEnrichmentResults(dataset);
         enrichmentResultsFilesTask.run(taskMonitor); 
@@ -99,16 +98,14 @@ public class LoadBingoResultsTest {
 		
 		//create an new enrichment Map
 		EnrichmentMap em = new EnrichmentMap(params, serviceRegistrar);
-		DataSet dataset = new DataSet(em, LegacySupport.DATASET1, Method.Specialized, files);		
-		em.addDataSet(LegacySupport.DATASET1, dataset);				
+		DataSet dataset = em.createDataSet(LegacySupport.DATASET1, Method.Specialized, files);				
 		
 		ParseBingoEnrichmentResults  enrichmentResultsFilesTask = new ParseBingoEnrichmentResults(dataset);
         enrichmentResultsFilesTask.run(taskMonitor); 
 		
 		//Load second dataset
 		//create a dataset
-		DataSet dataset2 = new DataSet(em, LegacySupport.DATASET2, Method.Specialized, files2);		
-		em.addDataSet(LegacySupport.DATASET2, dataset2);						
+		DataSet dataset2 = em.createDataSet(LegacySupport.DATASET2, Method.Specialized, files2);						
 		//create a DatasetTask
 		
 		ParseBingoEnrichmentResults  enrichmentResultsFiles2Task = new ParseBingoEnrichmentResults(dataset2);

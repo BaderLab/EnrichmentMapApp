@@ -7,6 +7,8 @@ import java.util.Map;
 
 import org.baderlab.csplugins.enrichmentmap.TestUtils;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
+import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
@@ -27,6 +29,8 @@ public class FileReaderTest {
 	private CyServiceRegistrar serviceRegistrar = TestUtils.mockServiceRegistrar();
 	private TaskMonitor taskMonitor = mock(TaskMonitor.class);
     
+	
+	
 	@Test
     public void testGMTFileReader(Provider<EnrichmentMapParameters> empFactory) throws Exception{
 
@@ -41,13 +45,13 @@ public class FileReaderTest {
         EnrichmentMap map = new EnrichmentMap(params.getCreationParameters(), serviceRegistrar);
                 
         //get the default dataset
-        DataSet dataset = new DataSet(map, LegacySupport.DATASET1, EnrichmentMapParameters.stringToMethod(params.getMethod()), params.getFiles().get(LegacySupport.DATASET1));
-        map.addDataSet(LegacySupport.DATASET1, dataset);
+        Method method = EnrichmentMapParameters.stringToMethod(params.getMethod());
+        DataSetFiles files = params.getFiles().get(LegacySupport.DATASET1);
+        DataSet dataset = map.createDataSet(LegacySupport.DATASET1, method, files);
         
-
-      //set up task
+        //set up task
         GMTFileReaderTask task = new GMTFileReaderTask(dataset);
-        	task.run(taskMonitor);
+        task.run(taskMonitor);
 
         //test to make sure that the file loaded in 10 genesets with a total of 75 genes
         assertEquals(10, map.getAllGenesets().size());
@@ -70,9 +74,10 @@ public class FileReaderTest {
         EnrichmentMap map = new EnrichmentMap(params.getCreationParameters(), serviceRegistrar);
         
         //get the default dataset
-        DataSet dataset = new DataSet(map, LegacySupport.DATASET1, EnrichmentMapParameters.stringToMethod(params.getMethod()), params.getFiles().get(LegacySupport.DATASET1));
-        map.addDataSet(LegacySupport.DATASET1, dataset);
-
+        Method method = EnrichmentMapParameters.stringToMethod(params.getMethod());
+        DataSetFiles files = params.getFiles().get(LegacySupport.DATASET1);
+        DataSet dataset = map.createDataSet(LegacySupport.DATASET1, method, files);
+        
         //in order to load expression data the genes have to be registered with the application
 
         //make sure that the genes are empty
@@ -117,8 +122,9 @@ public class FileReaderTest {
         EnrichmentMap map = new EnrichmentMap(params.getCreationParameters(), serviceRegistrar);
                 
         //get the default dataset
-        DataSet dataset = new DataSet(map, LegacySupport.DATASET1, EnrichmentMapParameters.stringToMethod(params.getMethod()), params.getFiles().get(LegacySupport.DATASET1));
-        map.addDataSet(LegacySupport.DATASET1, dataset);
+        Method method = EnrichmentMapParameters.stringToMethod(params.getMethod());
+        DataSetFiles files = params.getFiles().get(LegacySupport.DATASET1);
+        DataSet dataset = map.createDataSet(LegacySupport.DATASET1, method, files);
 
         //make sure that the genes are empty
         assertEquals(0, map.getNumberOfGenes());
@@ -151,11 +157,10 @@ public class FileReaderTest {
 
 	@Test
     public void testExpression1ReaderRnk(Provider<EnrichmentMapParameters> empFactory) throws Exception{
-
         //load the test expression file
         String testDataFileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/ExpressionTestFile.rnk";
 
-      //create a new instance of the parameters
+        //create a new instance of the parameters
         EnrichmentMapParameters params = empFactory.get();
         //set expression file name 
         params.getFiles().get(LegacySupport.DATASET1).setExpressionFileName(testDataFileName);
@@ -164,8 +169,9 @@ public class FileReaderTest {
         EnrichmentMap map = new EnrichmentMap(params.getCreationParameters(), serviceRegistrar);
                 
         //get the default dataset
-        DataSet dataset = new DataSet(map, LegacySupport.DATASET1, EnrichmentMapParameters.stringToMethod(params.getMethod()), params.getFiles().get(LegacySupport.DATASET1));
-        map.addDataSet(LegacySupport.DATASET1, dataset);
+        Method method = EnrichmentMapParameters.stringToMethod(params.getMethod());
+        DataSetFiles files = params.getFiles().get(LegacySupport.DATASET1);
+        DataSet dataset = map.createDataSet(LegacySupport.DATASET1, method, files);
         
         //make sure that the genes are empty
         assertEquals(0, map.getNumberOfGenes());
@@ -210,8 +216,9 @@ public class FileReaderTest {
         EnrichmentMap map = new EnrichmentMap(params.getCreationParameters(), serviceRegistrar);
                 
         //get the default dataset
-        DataSet dataset = new DataSet(map, LegacySupport.DATASET1, EnrichmentMapParameters.stringToMethod(params.getMethod()), params.getFiles().get(LegacySupport.DATASET1));
-        map.addDataSet(LegacySupport.DATASET1, dataset);
+        Method method = EnrichmentMapParameters.stringToMethod(params.getMethod());
+        DataSetFiles files = params.getFiles().get(LegacySupport.DATASET1);
+        DataSet dataset = map.createDataSet(LegacySupport.DATASET1, method, files);
 
         //make sure that the genes are empty
         assertEquals(0, map.getNumberOfGenes());
@@ -255,8 +262,9 @@ public class FileReaderTest {
         EnrichmentMap map = new EnrichmentMap(params.getCreationParameters(), serviceRegistrar);
                 
         //get the default dataset
-        DataSet dataset = new DataSet(map, LegacySupport.DATASET1, EnrichmentMapParameters.stringToMethod(params.getMethod()), params.getFiles().get(LegacySupport.DATASET1));
-        map.addDataSet(LegacySupport.DATASET1, dataset);
+        Method method = EnrichmentMapParameters.stringToMethod(params.getMethod());
+        DataSetFiles files = params.getFiles().get(LegacySupport.DATASET1);
+        DataSet dataset = map.createDataSet(LegacySupport.DATASET1, method, files);
         
         // check if empty
         assertEquals(0, map.getDataset(LegacySupport.DATASET1).getEnrichments().getEnrichments().size());
@@ -308,8 +316,9 @@ public class FileReaderTest {
         EnrichmentMap map = new EnrichmentMap(params.getCreationParameters(), serviceRegistrar);
                 
         //get the default dataset
-        DataSet dataset = new DataSet(map, LegacySupport.DATASET1, EnrichmentMapParameters.stringToMethod(params.getMethod()), params.getFiles().get(LegacySupport.DATASET1));
-        map.addDataSet(LegacySupport.DATASET1, dataset);
+        Method method = EnrichmentMapParameters.stringToMethod(params.getMethod());
+        DataSetFiles files = params.getFiles().get(LegacySupport.DATASET1);
+        DataSet dataset = map.createDataSet(LegacySupport.DATASET1, method, files);
         
         ParseGSEAEnrichmentResults task = new ParseGSEAEnrichmentResults(dataset);
         task.run(taskMonitor);
@@ -367,8 +376,9 @@ public class FileReaderTest {
         EnrichmentMap map = new EnrichmentMap(params.getCreationParameters(), serviceRegistrar);
                 
         //get the default dataset
-        DataSet dataset = new DataSet(map, LegacySupport.DATASET1, EnrichmentMapParameters.stringToMethod(params.getMethod()), params.getFiles().get(LegacySupport.DATASET1));
-        map.addDataSet(LegacySupport.DATASET1, dataset);
+        Method method = EnrichmentMapParameters.stringToMethod(params.getMethod());
+        DataSetFiles files = params.getFiles().get(LegacySupport.DATASET1);
+        DataSet dataset = map.createDataSet(LegacySupport.DATASET1, method, files);
         
         ParseEDBEnrichmentResults task = new ParseEDBEnrichmentResults(dataset);
         task.run(taskMonitor);
@@ -431,8 +441,9 @@ public class FileReaderTest {
         EnrichmentMap map = new EnrichmentMap(params.getCreationParameters(), serviceRegistrar);
                 
         //get the default dataset
-        DataSet dataset = new DataSet(map, LegacySupport.DATASET1, EnrichmentMapParameters.stringToMethod(params.getMethod()), params.getFiles().get(LegacySupport.DATASET1));
-        map.addDataSet(LegacySupport.DATASET1, dataset);
+        Method method = EnrichmentMapParameters.stringToMethod(params.getMethod());
+        DataSetFiles files = params.getFiles().get(LegacySupport.DATASET1);
+        DataSet dataset = map.createDataSet(LegacySupport.DATASET1, method, files);
         
         ParseBingoEnrichmentResults task = new ParseBingoEnrichmentResults(dataset);
         task.run(taskMonitor);
@@ -475,8 +486,9 @@ public class FileReaderTest {
         EnrichmentMap map = new EnrichmentMap(params.getCreationParameters(), serviceRegistrar);
                 
         //get the default dataset
-        DataSet dataset = new DataSet(map, LegacySupport.DATASET1, EnrichmentMapParameters.stringToMethod(params.getMethod()), params.getFiles().get(LegacySupport.DATASET1));
-        map.addDataSet(LegacySupport.DATASET1, dataset);
+        Method method = EnrichmentMapParameters.stringToMethod(params.getMethod());
+        DataSetFiles files = params.getFiles().get(LegacySupport.DATASET1);
+        DataSet dataset = map.createDataSet(LegacySupport.DATASET1, method, files);
 
         ParseDavidEnrichmentResults task = new ParseDavidEnrichmentResults(dataset);
         task.run(taskMonitor);

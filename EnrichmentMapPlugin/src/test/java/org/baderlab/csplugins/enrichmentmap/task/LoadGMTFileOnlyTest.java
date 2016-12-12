@@ -42,8 +42,7 @@ public class LoadGMTFileOnlyTest {
 		
 		//Load data set
 		//create a dataset
-		DataSet dataset = new DataSet(em, LegacySupport.DATASET1, Method.GSEA, files);		
-		em.addDataSet(LegacySupport.DATASET1, dataset);
+		DataSet dataset = em.createDataSet(LegacySupport.DATASET1, Method.GSEA, files);
 				
 		//create a DatasetTask
 				//set up task

@@ -89,8 +89,7 @@ public class LegacyEnrichmentMapSessionListener implements SessionLoadedListener
 								|| (files.getGMTFileName() != null && !files.getGMTFileName().isEmpty())
 								|| (files.getExpressionFileName() != null && !files.getExpressionFileName().isEmpty())) {
 							Method method = EnrichmentMapParameters.stringToMethod(params.getMethod());
-							DataSet dataset = new DataSet(em, LegacySupport.DATASET1, method, files);
-							em.addDataSet(LegacySupport.DATASET1, dataset);
+							em.createDataSet(LegacySupport.DATASET1, method, files);
 						}
 					}
 					
@@ -100,8 +99,7 @@ public class LegacyEnrichmentMapSessionListener implements SessionLoadedListener
 								|| (files.getGMTFileName() != null && !files.getGMTFileName().isEmpty())
 								|| (files.getExpressionFileName() != null && !files.getExpressionFileName().isEmpty())) {
 							Method method = EnrichmentMapParameters.stringToMethod(params.getMethod());
-							DataSet dataset = new DataSet(em, LegacySupport.DATASET2, method, files);
-							em.addDataSet(LegacySupport.DATASET2, dataset);
+							em.createDataSet(LegacySupport.DATASET2, method, files);
 						}
 					}
 
@@ -144,7 +142,7 @@ public class LegacyEnrichmentMapSessionListener implements SessionLoadedListener
 					HashMap<String,String> props = params.getProps();
 					//if this a dataset specific file make sure there is a dataset object for it
 					if(!(parts.dataset == null) && em.getDataset(parts.dataset) == null && !parts.dataset.equalsIgnoreCase("signature"))
-						em.addDataSet(parts.dataset, new DataSet(em, parts.name, method, params.getFiles().get(parts.dataset)));
+						em.createDataSet(parts.dataset, method, params.getFiles().get(parts.dataset));
 					if(parts.type == null)
 						System.out.println("Sorry, unable to determine the type of the file: "+ prop_file.getName());
 
@@ -271,7 +269,7 @@ public class LegacyEnrichmentMapSessionListener implements SessionLoadedListener
 					if(params.isTwoDatasets()){
 						//make sure there is a Dataset2
 						if(!em.getDatasets().containsKey(LegacySupport.DATASET2))
-							em.addDataSet(LegacySupport.DATASET2, new DataSet(em, LegacySupport.DATASET2, method, new DataSetFiles()));
+							em.createDataSet(LegacySupport.DATASET2, method, new DataSetFiles());
 						if( prop_file.getName().contains(".ENR2.txt") || prop_file.getName().contains(".SubENR2.txt")){
 							SetOfEnrichmentResults enrichments;
 							//check to see if this dataset has enrichment results already
