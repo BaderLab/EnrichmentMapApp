@@ -576,7 +576,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 					(pvalueMin == 1 || pvalueMin >= pvalue ? 0 : pvalueMin),
 					pvalue,
 					"P-value Cutoff:",
-					false, pvalue
+					pvalue
 			);
 		}
 		
@@ -588,7 +588,6 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 					(qvalueMin == 1 || qvalueMin >= qvalue ? 0 : qvalueMin),
 					qvalue,
 					"Q-value Cutoff:",
-					false,
 					qvalue
 			);
 		}
@@ -600,7 +599,6 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 					similarityCutOff,
 					1,
 					"Similarity Cutoff:",
-					true,
 					similarityCutOff
 			);
 		}

@@ -80,15 +80,8 @@ public class SliderBarPanel extends JPanel {
 	private int decPrecision = (int) Math.log10(precision);
 
 	private String labelText;
-	private final boolean edgesOnly;
 
-	public SliderBarPanel(
-			double min,
-			double max,
-			String labelText,
-			boolean edgesOnly,
-			double initialValue
-	) {
+	public SliderBarPanel(double min, double max, String labelText, double initialValue) {
 		if (min <= 1 && max <= 1) {
 			// if the max is a very small number then use the precision to filter the results
 			if (max <= 0.0001) {
@@ -114,7 +107,6 @@ public class SliderBarPanel extends JPanel {
 		}
 
 		this.labelText = labelText;
-		this.edgesOnly = edgesOnly;
 
 		initPanel();
     }
@@ -198,10 +190,6 @@ public class SliderBarPanel extends JPanel {
 
     // Getters and Setters
 	
-	public boolean isEdgesOnly() {
-		return edgesOnly;
-	}
-	
 	public JSlider getSlider() {
 		return slider;
 	}
@@ -219,11 +207,11 @@ public class SliderBarPanel extends JPanel {
 		textField.setEnabled(enabled);
 	}
 	
-    protected void setValue(final int newValue) {
+    public void setValue(final int newValue) {
     	textField.setValue(newValue);
 	}
 
-	protected double getPrecision() {
+	public double getPrecision() {
 		return textField.getPrecision();
 	}
     

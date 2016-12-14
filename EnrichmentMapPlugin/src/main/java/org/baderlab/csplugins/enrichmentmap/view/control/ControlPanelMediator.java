@@ -1,11 +1,17 @@
 package org.baderlab.csplugins.enrichmentmap.view.control;
 
+import static org.baderlab.csplugins.enrichmentmap.style.MasterMapVisualStyle.Columns.NODE_GS_TYPE;
+import static org.baderlab.csplugins.enrichmentmap.style.MasterMapVisualStyle.Columns.NODE_GS_TYPE_ENRICHMENT;
 import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.invokeOnEDT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_VISIBLE;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_VISIBLE;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -15,10 +21,13 @@ import java.util.stream.Collectors;
 import javax.swing.Action;
 import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
+import javax.swing.JSlider;
+import javax.swing.event.ChangeEvent;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowEnrichmentMapDialogAction;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.style.ChartFactoryManager;
@@ -33,7 +42,6 @@ import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanel.EMViewCont
 import org.baderlab.csplugins.enrichmentmap.view.parameters.ParametersPanelMediator;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.EdgeWidthDialog;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PostAnalysisPanelMediator;
-import org.baderlab.csplugins.enrichmentmap.view.util.SliderBarActionListener;
 import org.baderlab.csplugins.enrichmentmap.view.util.SliderBarPanel;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
@@ -41,8 +49,15 @@ import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelComponent;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
 import org.cytoscape.view.model.events.NetworkViewAddedEvent;
@@ -112,15 +127,18 @@ public class ControlPanelMediator
 					SliderBarPanel sSliderPanel = viewPanel.getSimilaritySliderPanel();
 					
 					if (pvSliderPanel != null)
-						pvSliderPanel.getSlider().addChangeListener(
-								new SliderBarActionListener(pvSliderPanel, map, netView));
+						pvSliderPanel.getSlider().addChangeListener(evt ->
+								onCutoffSliderChanged(evt, pvSliderPanel, viewPanel, map, netView, CyNode.class)
+						);
 					if (qvSliderPanel != null)
-						qvSliderPanel.getSlider().addChangeListener(
-								new SliderBarActionListener(qvSliderPanel, map, netView));
+						qvSliderPanel.getSlider().addChangeListener(evt ->
+								onCutoffSliderChanged(evt, pvSliderPanel, viewPanel, map, netView, CyNode.class)
+					);
 					if (sSliderPanel != null)
-						sSliderPanel.getSlider().addChangeListener(
-								new SliderBarActionListener(sSliderPanel, map, netView));
-					
+						sSliderPanel.getSlider().addChangeListener(evt ->
+								onCutoffSliderChanged(evt, pvSliderPanel, viewPanel, map, netView, CyEdge.class)
+					);
+
 					viewPanel.getCheckboxListPanel().setAddButtonCallback(model -> {
 						postAnalysisPanelMediatorProvider.get().showDialog(viewPanel, getCurrentMap());
 					});
@@ -301,5 +319,227 @@ public class ControlPanelMediator
 					JOptionPane.WARNING_MESSAGE
 			);
 		}
+	}
+	
+	public void onCutoffSliderChanged(ChangeEvent e, SliderBarPanel sliderPanel, EMViewControlPanel viewPanel,
+			EnrichmentMap map, CyNetworkView netView, Class<? extends CyIdentifiable> targetType) {
+		JSlider slider = (JSlider) e.getSource();
+		
+		if (slider.getValueIsAdjusting())
+			return;
+		
+		sliderPanel.setValue(slider.getValue());
+		
+		// Check to see if the event is associated with only edges
+		if (targetType == CyEdge.class)
+			filterEdges(viewPanel, map, netView);
+		else
+			filterNodes(viewPanel, map, netView);
+		
+		netView.updateView();
+	}
+	
+	private void filterNodes(EMViewControlPanel viewPanel, EnrichmentMap map, CyNetworkView netView) {
+		Set<CyNode> nodesToShow = new HashSet<>();
+		Set<CyEdge> edgesToShow = Collections.emptySet();
+		
+		EMCreationParameters params = map.getParams();
+		
+		if (viewPanel.getPValueSliderPanel() != null)
+			nodesToShow.addAll(
+					getFilteredInNodes(viewPanel.getPValueSliderPanel(), map, netView, params.getPValueColumnNames()));
+		if (viewPanel.getQValueSliderPanel() != null)
+			nodesToShow.addAll(
+					getFilteredInNodes(viewPanel.getQValueSliderPanel(), map, netView, params.getPValueColumnNames()));
+		if (viewPanel.getSimilaritySliderPanel() != null)
+			edgesToShow = getFilteredInEdges(viewPanel.getSimilaritySliderPanel(), map, netView,
+							params.getSimilarityCutoffColumnNames());
+		
+		CyNetwork net = netView.getModel();
+		
+System.out.println("\n# Nodes: " + nodesToShow.size());
+		// Hide or show nodes and their edges
+		for (CyNode n : net.getNodeList()) {
+			final View<CyNode> nv = netView.getNodeView(n);
+			
+			if (nv == null)
+				continue; // Should never happen!
+			
+			boolean show = nodesToShow.contains(n);
+			
+			if (show) {
+				nv.clearValueLock(NODE_VISIBLE);
+			} else {
+				net.getRow(n).set(CyNetwork.SELECTED, false);
+				nv.setLockedValue(NODE_VISIBLE, false);
+			}
+
+			for (CyNode n2 : net.getNeighborList(n, CyEdge.Type.ANY)) {
+				for (CyEdge e : net.getConnectingEdgeList(n, n2, CyEdge.Type.ANY)) {
+					if (show)
+						edgesToShow.add(e);
+				}
+			}
+		}
+		
+		for (CyEdge e : net.getEdgeList()) {
+			final View<CyEdge> ev = netView.getEdgeView(e);
+			
+			if (ev == null)
+				continue; // Should never happen!
+			
+			boolean show = edgesToShow.contains(e);
+			
+			if (show) {
+				ev.clearValueLock(EDGE_VISIBLE);
+			} else {
+				net.getRow(ev.getModel()).set(CyNetwork.SELECTED, false);
+				ev.setLockedValue(EDGE_VISIBLE, false);
+			}
+		}
+	}
+	
+	private void filterEdges(EMViewControlPanel viewPanel, EnrichmentMap map, CyNetworkView netView) {
+		final Set<CyEdge> edgesToShow;
+		EMCreationParameters params = map.getParams();
+		CyNetwork net = netView.getModel();
+		
+		if (viewPanel.getSimilaritySliderPanel() != null)
+			edgesToShow = getFilteredInEdges(viewPanel.getSimilaritySliderPanel(), map, netView,
+							params.getSimilarityCutoffColumnNames());
+		else
+			edgesToShow = new HashSet<>(netView.getModel().getEdgeList());
+		
+		// Hide or show edges
+		for (CyEdge e : net.getEdgeList()) {
+			final View<CyEdge> ev = netView.getEdgeView(e);
+			
+			if (ev == null)
+				continue; // Should not happen!
+			
+			boolean show = edgesToShow.contains(e);
+			
+			if (show) {
+				// Also check if the source and target nodes are visible
+				final View<CyNode> snv = netView.getNodeView(e.getSource());
+				final View<CyNode> tnv = netView.getNodeView(e.getTarget());
+				show = show && snv != null && tnv != null;
+				
+				if (show)
+					show = snv.getVisualProperty(NODE_VISIBLE) == Boolean.TRUE;
+				if (show)
+					show = tnv.getVisualProperty(NODE_VISIBLE) == Boolean.TRUE;
+			}
+			
+			if (show) {
+				ev.clearValueLock(EDGE_VISIBLE);
+			} else {
+				net.getRow(ev.getModel()).set(CyNetwork.SELECTED, false);
+				ev.setLockedValue(EDGE_VISIBLE, false);
+			}
+		}
+	}
+
+	private Set<CyNode> getFilteredInNodes(SliderBarPanel sliderPanel, EnrichmentMap map, CyNetworkView networkView,
+			Set<String> columnNames) {
+		Set<CyNode> nodes = new HashSet<>();
+		
+		JSlider slider = sliderPanel.getSlider();
+		Double maxCutoff = slider.getValue() / sliderPanel.getPrecision();
+		Double minCutoff = slider.getMinimum() / sliderPanel.getPrecision();
+		System.out.println(minCutoff + " <<>> " + maxCutoff);
+
+		CyNetwork network = networkView.getModel();
+		CyTable table = network.getDefaultNodeTable();
+
+		EMCreationParameters params = map.getParams();
+		
+		// Get the prefix of the current network
+		final String prefix = params.getAttributePrefix();
+		
+		// Go through all the existing nodes to see if we need to hide any new nodes.
+		for (CyNode n : network.getNodeList()) {
+			CyRow row = network.getRow(n);
+
+			// Skip Node if it's not an Enrichment-Geneset (but e.g. a Signature-Hub)
+			if (table.getColumn(prefix + NODE_GS_TYPE) != null
+					&& !NODE_GS_TYPE_ENRICHMENT.equalsIgnoreCase(row.get(prefix + NODE_GS_TYPE, String.class)))
+				continue;
+
+			boolean showNode = false;
+			
+			for (String colName : columnNames) {
+				if (table.getColumn(colName) == null) // TODO show or hide?
+					continue;
+				
+				Double value = row.get(colName, Double.class);
+	
+				// Possible that there isn't a p-value for this geneset
+				if (value == null)
+					value = 0.99;
+	
+				if (value >= minCutoff && value <= maxCutoff) {
+					showNode = true;
+					break;
+				}
+			}
+			
+			if (showNode)
+				nodes.add(n);
+		}
+		
+		return nodes;
+	}
+
+	private Set<CyEdge> getFilteredInEdges(SliderBarPanel sliderPanel, EnrichmentMap map, CyNetworkView networkView,
+			Set<String> columnNames) {
+		Set<CyEdge> edges = new HashSet<>();
+		
+		JSlider slider = sliderPanel.getSlider();
+		Double maxCutoff = slider.getValue() / sliderPanel.getPrecision();
+		Double minCutoff = slider.getMinimum() / sliderPanel.getPrecision();
+		System.out.println(minCutoff + " ---- " + maxCutoff);
+
+		CyNetwork network = networkView.getModel();
+		CyTable table = network.getDefaultEdgeTable();
+
+		EMCreationParameters params = map.getParams();
+		
+		// Get the prefix of the current network
+		final String prefix = params.getAttributePrefix();
+		
+		// Go through all the existing edges to see if we need to hide any new ones.
+		for (CyEdge e : network.getEdgeList()) {
+			CyRow row = network.getRow(e);
+
+			// Skip Edge if it's not an Enrichment-Geneset (but e.g. a Signature-Hub)
+			// TODO Why check node column here???
+//			if (table.getColumn(prefix + NODE_GS_TYPE) != null
+//					&& !NODE_GS_TYPE_ENRICHMENT.equalsIgnoreCase(row.get(prefix + NODE_GS_TYPE, String.class)))
+//				continue;
+
+			boolean showEdge = false;
+			
+			for (String colName : columnNames) {
+				if (table.getColumn(colName) == null) // TODO show or hide?
+					continue;
+				
+				Double value = row.get(colName, Double.class);
+	
+				// Possible that there isn't a p-value for this geneset
+				if (value == null)
+					value = 0.1;
+	
+				if (value >= minCutoff && value <= maxCutoff) {
+					showEdge = true;
+					break;
+				}
+			}
+			
+			if (showEdge)
+				edges.add(e);
+		}
+		
+		return edges;
 	}
 }

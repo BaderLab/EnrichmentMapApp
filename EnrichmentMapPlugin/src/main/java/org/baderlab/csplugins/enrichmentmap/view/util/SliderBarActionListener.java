@@ -65,6 +65,7 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
+@Deprecated
 public class SliderBarActionListener implements ChangeListener {
 
 	private final SliderBarPanel panel;
@@ -105,10 +106,10 @@ public class SliderBarActionListener implements ChangeListener {
 		panel.setValue(source.getValue());
 		
 		// Check to see if the event is associated with only edges
-		if (panel.isEdgesOnly()) {
-			hideEdgesOnly(e);
-			return;
-		}
+//		if (panel.isEdgesOnly()) {
+//			hideEdgesOnly(e);
+//			return;
+//		}
 		
 		Double maxCutoff = source.getValue() / panel.getPrecision();
 		Double minCutoff = source.getMinimum() / panel.getPrecision();
