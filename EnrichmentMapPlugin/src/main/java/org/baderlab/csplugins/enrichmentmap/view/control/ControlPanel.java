@@ -404,6 +404,10 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			update();
 		}
 		
+		List<DataSet> getSelectedDataSets() {
+			return getCheckboxListPanel().getSelectedDataItems();
+		}
+		
 		void update() {
 			updatingDataSetList = true;
 			

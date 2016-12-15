@@ -139,6 +139,10 @@ public class ControlPanelMediator
 								onCutoffSliderChanged(evt, pvSliderPanel, viewPanel, map, netView, CyEdge.class)
 					);
 
+					viewPanel.getCheckboxListPanel().getCheckboxList().addListSelectionListener(evt -> {
+						filterNodesAndEdges(viewPanel, map, netView);
+						netView.updateView();
+					});
 					viewPanel.getCheckboxListPanel().setAddButtonCallback(model -> {
 						postAnalysisPanelMediatorProvider.get().showDialog(viewPanel, getCurrentMap());
 					});
@@ -334,17 +338,18 @@ public class ControlPanelMediator
 		if (targetType == CyEdge.class)
 			filterEdges(viewPanel, map, netView);
 		else
-			filterNodes(viewPanel, map, netView);
+			filterNodesAndEdges(viewPanel, map, netView);
 		
 		netView.updateView();
 	}
 	
-	private void filterNodes(EMViewControlPanel viewPanel, EnrichmentMap map, CyNetworkView netView) {
+	private void filterNodesAndEdges(EMViewControlPanel viewPanel, EnrichmentMap map, CyNetworkView netView) {
 		Set<CyNode> nodesToShow = new HashSet<>();
 		Set<CyEdge> edgesToShow = Collections.emptySet();
 		
 		EMCreationParameters params = map.getParams();
 		
+		// TODO: Only p or q value, but not both
 		if (viewPanel.getPValueSliderPanel() != null)
 			nodesToShow.addAll(
 					getFilteredInNodes(viewPanel.getPValueSliderPanel(), map, netView, params.getPValueColumnNames()));
@@ -356,6 +361,7 @@ public class ControlPanelMediator
 							params.getSimilarityCutoffColumnNames());
 		
 		CyNetwork net = netView.getModel();
+		Set<Long> dataSetNodes = EnrichmentMap.getNodesUnion(viewPanel.getSelectedDataSets());
 		
 System.out.println("\n# Nodes: " + nodesToShow.size());
 		// Hide or show nodes and their edges
@@ -365,7 +371,7 @@ System.out.println("\n# Nodes: " + nodesToShow.size());
 			if (nv == null)
 				continue; // Should never happen!
 			
-			boolean show = nodesToShow.contains(n);
+			boolean show = nodesToShow.contains(n) && dataSetNodes.contains(n.getSUID());
 			
 			if (show) {
 				nv.clearValueLock(NODE_VISIBLE);
@@ -469,8 +475,10 @@ System.out.println("\n# Nodes: " + nodesToShow.size());
 			boolean showNode = false;
 			
 			for (String colName : columnNames) {
-				if (table.getColumn(colName) == null) // TODO show or hide?
+				if (table.getColumn(colName) == null) {
+					nodes.add(n);
 					continue;
+				}
 				
 				Double value = row.get(colName, Double.class);
 	
@@ -503,30 +511,20 @@ System.out.println("\n# Nodes: " + nodesToShow.size());
 		CyNetwork network = networkView.getModel();
 		CyTable table = network.getDefaultEdgeTable();
 
-		EMCreationParameters params = map.getParams();
-		
-		// Get the prefix of the current network
-		final String prefix = params.getAttributePrefix();
-		
 		// Go through all the existing edges to see if we need to hide any new ones.
 		for (CyEdge e : network.getEdgeList()) {
 			CyRow row = network.getRow(e);
-
-			// Skip Edge if it's not an Enrichment-Geneset (but e.g. a Signature-Hub)
-			// TODO Why check node column here???
-//			if (table.getColumn(prefix + NODE_GS_TYPE) != null
-//					&& !NODE_GS_TYPE_ENRICHMENT.equalsIgnoreCase(row.get(prefix + NODE_GS_TYPE, String.class)))
-//				continue;
-
 			boolean showEdge = false;
 			
 			for (String colName : columnNames) {
-				if (table.getColumn(colName) == null) // TODO show or hide?
+				if (table.getColumn(colName) == null) {
+					edges.add(e);
 					continue;
+				}
 				
 				Double value = row.get(colName, Double.class);
 	
-				// Possible that there isn't a p-value for this geneset
+				// Possible that there isn't value for this interaction
 				if (value == null)
 					value = 0.1;
 	
