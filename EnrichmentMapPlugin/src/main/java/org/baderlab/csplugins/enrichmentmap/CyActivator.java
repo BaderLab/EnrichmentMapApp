@@ -3,14 +3,16 @@ package org.baderlab.csplugins.enrichmentmap;
 import java.util.Properties;
 
 import org.baderlab.csplugins.enrichmentmap.actions.HeatMapSelectionListener;
-import org.baderlab.csplugins.enrichmentmap.actions.LegacyEnrichmentMapSessionListener;
 import org.baderlab.csplugins.enrichmentmap.actions.OpenEnrichmentMapAction;
 import org.baderlab.csplugins.enrichmentmap.commands.BuildEnrichmentMapTuneableTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.commands.EnrichmentMapGSEACommandHandlerTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
+import org.baderlab.csplugins.enrichmentmap.model.io.LegacyEnrichmentMapSessionListener;
+import org.baderlab.csplugins.enrichmentmap.model.io.SessionModelListener;
 import org.baderlab.csplugins.enrichmentmap.style.ChartFactoryManager;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanelMediator;
 import org.baderlab.csplugins.enrichmentmap.view.parameters.ParametersPanelMediator;
+import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
@@ -27,16 +29,16 @@ import com.google.inject.Injector;
 public class CyActivator extends AbstractCyActivator {
 
 	public static final String APP_NAME = "EnrichmentMap";
+	private Injector injector;
 	
 	@Override
 	public void start(BundleContext bc) {
 		ServiceReference ref = bc.getServiceReference(CySwingApplication.class.getName());
-		
 		if (ref == null)
 			return; // Cytoscape is running headless or integration tests are running, don't register UI components
 		
-		Injector injector = Guice.createInjector(new OSGiModule(bc), new AfterInjectionModule(), 
-												 new CytoscapeServiceModule(), new ApplicationModule());
+		injector = Guice.createInjector(new OSGiModule(bc), new AfterInjectionModule(), 
+										new CytoscapeServiceModule(), new ApplicationModule());
 		
 		// manager
 		EnrichmentMapManager manager = injector.getInstance(EnrichmentMapManager.class);
@@ -48,11 +50,14 @@ public class CyActivator extends AbstractCyActivator {
 
 		// register actions
 		registerAllServices(bc, injector.getInstance(OpenEnrichmentMapAction.class), new Properties());
-//		registerAction(bc, injector.getInstance(ShowEdgeWidthDialogAction.class));
 
 		// session save and restore
-		LegacyEnrichmentMapSessionListener sessionAction = injector.getInstance(LegacyEnrichmentMapSessionListener.class);
-		registerAllServices(bc, sessionAction, new Properties());
+		SessionModelListener sessionListener = injector.getInstance(SessionModelListener.class);
+		registerAllServices(bc, sessionListener, new Properties());
+		sessionListener.getDebugActions().forEach(a -> registerService(bc, a, CyAction.class, new Properties())); // TEMPORARY
+		
+		LegacyEnrichmentMapSessionListener legacyListener = injector.getInstance(LegacyEnrichmentMapSessionListener.class);
+		registerAllServices(bc, legacyListener, new Properties());
 
 		// chart listener
 		ChartFactoryManager chartFactoryManager = injector.getInstance(ChartFactoryManager.class);
@@ -77,5 +82,14 @@ public class CyActivator extends AbstractCyActivator {
 		
 		ParametersPanelMediator parametersPanelMediator = injector.getInstance(ParametersPanelMediator.class);
 		registerAllServices(bc, parametersPanelMediator, new Properties());
+	}
+	
+	@Override
+	public void shutDown() {
+		// If the App gets updated or restarted we need to save all the data first
+		if(injector != null) {
+			SessionModelListener sessionListener = injector.getInstance(SessionModelListener.class);
+			sessionListener.saveModel();
+		}
 	}
 }

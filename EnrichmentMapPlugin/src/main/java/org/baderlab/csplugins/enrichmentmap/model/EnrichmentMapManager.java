@@ -121,6 +121,11 @@ public class EnrichmentMapManager implements SetCurrentNetworkListener {
 	public EnrichmentMap removeEnrichmentMap(Long id) {
 		return enrichmentMaps.remove(id);
 	}
+	
+	public void reset() {
+		enrichmentMaps.clear();
+		heatMapParameterMap.clear();
+	}
 
 	public void setHeatMapParameters(Long suid, HeatMapParameters parameters) {
 		heatMapParameterMap.put(suid, parameters);

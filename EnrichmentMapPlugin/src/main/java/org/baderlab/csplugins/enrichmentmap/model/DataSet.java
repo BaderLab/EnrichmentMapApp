@@ -43,12 +43,13 @@ public class DataSet implements Comparable<DataSet> {
 	//Enrichment Map
 	//A dataset is associated with an Enrichment map.
 	//TODO: Can a dataset be associated to multiple Enrichment maps?
-	private EnrichmentMap map;
+	private transient EnrichmentMap map;
 
 	//The list of files associated with this Dataset
 	private DataSetFiles datasetFiles;
 
 	protected DataSet(EnrichmentMap map, String name, Method method, DataSetFiles files) {
+		System.out.println("DataSet.DataSet() " + name);
 		this.map = map;
 		this.name = name;
 		this.method = method;

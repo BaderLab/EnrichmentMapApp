@@ -160,4 +160,6 @@ public abstract class BaseNetworkTest {
 		BuildDiseaseSignatureTask signatureTask = buildDiseaseSignatureTaskFactory.create(map, paParams);
 		signatureTask.run(mock(TaskMonitor.class));
 	}
+	
+	
 }

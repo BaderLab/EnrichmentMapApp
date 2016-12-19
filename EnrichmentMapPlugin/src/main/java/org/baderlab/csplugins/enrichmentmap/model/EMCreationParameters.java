@@ -20,7 +20,7 @@ public class EMCreationParameters implements EnrichmentResultFilterParams {
 	
 	// Node filtering (gene-sets)
 	private double pvalue;
-	private double qvaule;
+	private double qvalue;
 	private Optional<Integer> minExperiments;
 	private NESFilter nesFilter;
 	
@@ -44,12 +44,12 @@ public class EMCreationParameters implements EnrichmentResultFilterParams {
 	
 	
 	public EMCreationParameters(String attributePrefix, 
-			 double pvalue, double qvaule, NESFilter nesFilter, Optional<Integer> minExperiments,  // NODE
+			 double pvalue, double qvalue, NESFilter nesFilter, Optional<Integer> minExperiments,  // NODE
 			 SimilarityMetric similarityMetric, double similarityCutoff, double combinedConstant) { // EDGE
 		this.similarityMetric = similarityMetric;
 		this.attributePrefix = attributePrefix;
 		this.pvalue = pvalue;
-		this.qvaule = qvaule;
+		this.qvalue = qvalue;
 		this.nesFilter = nesFilter;
 		this.minExperiments = minExperiments;
 		this.similarityCutoff = similarityCutoff;
@@ -75,7 +75,7 @@ public class EMCreationParameters implements EnrichmentResultFilterParams {
 
 	@Override
 	public double getQvalue() {
-		return qvaule;
+		return qvalue;
 	}
 
 	@Override
@@ -158,37 +158,6 @@ public class EMCreationParameters implements EnrichmentResultFilterParams {
 		this.enrichmentEdgeType = enrichmentEdgeType;
 	}
 
-
-	public double getQvaule() {
-		return qvaule;
-	}
-
-
-	public void setQvaule(double qvaule) {
-		this.qvaule = qvaule;
-	}
-
-
-	public boolean isFdr() {
-		return fdr;
-	}
-
-
-	public void setFdr(boolean fdr) {
-		this.fdr = fdr;
-	}
-
-
-	public boolean isEmgmt() {
-		return emgmt;
-	}
-
-
-	public void setEmgmt(boolean emgmt) {
-		this.emgmt = emgmt;
-	}
-
-
 	public void setAttributePrefix(String attributePrefix) {
 		this.attributePrefix = attributePrefix;
 	}
@@ -212,4 +181,5 @@ public class EMCreationParameters implements EnrichmentResultFilterParams {
 	public void setCombinedConstant(double combinedConstant) {
 		this.combinedConstant = combinedConstant;
 	}
+	
 }

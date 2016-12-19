@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap.actions;
+package org.baderlab.csplugins.enrichmentmap.model.io;
 
 import java.io.File;
 import java.io.InputStream;

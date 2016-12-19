@@ -29,8 +29,9 @@ import com.google.common.collect.HashBiMap;
  */
 public class EnrichmentMap {
 
-	private long networkID;
+	private transient CyServiceRegistrar serviceRegistrar;
 	
+	private long networkID;
 	//reference to the parameters used to create this map
 	private final EMCreationParameters params;
 
@@ -52,7 +53,6 @@ public class EnrichmentMap {
 
 	private int NumberOfGenes = 0;
 
-	private final CyServiceRegistrar serviceRegistrar;
 	
 	/**
 	 * Class Constructor Given - EnrichmentnMapParameters create a new
@@ -113,6 +113,9 @@ public class EnrichmentMap {
 		}
 	}
 
+	public void setServiceRegistrar(CyServiceRegistrar registrar) {
+		this.serviceRegistrar = registrar;
+	}
 
 	public boolean containsGene(String gene) {
 		return genes.containsValue(gene);
@@ -197,9 +200,16 @@ public class EnrichmentMap {
 	}
 
 	public String getName() {
-		CyNetwork net = serviceRegistrar.getService(CyNetworkManager.class).getNetwork(networkID);
-		
-		return net != null ? NetworkUtil.getName(net) : "-- UNDEFINED --";
+		final String undefined = "-- UNDEFINED --";
+		if(serviceRegistrar == null)
+			return undefined;
+		CyNetworkManager networkManager = serviceRegistrar.getService(CyNetworkManager.class);
+		if(networkManager == null)
+			return undefined;
+		CyNetwork net = networkManager.getNetwork(networkID);
+		if(net == null)
+			return undefined;
+		return NetworkUtil.getName(net);
 	}
 
 	/*
@@ -427,34 +437,14 @@ public class EnrichmentMap {
 	}
 
 	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 3;
-		result = prime * result + (int) (networkID ^ (networkID >>> 32));
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		EnrichmentMap other = (EnrichmentMap) obj;
-		if (networkID != other.networkID)
-			return false;
-		return true;
-	}
-
-	@Override
 	public String toString() {
 		return getName();
 	}
 
+	/**
+	 * Files loaded by LegacyEnrichmentMapSessionListener should set this flag to true
+	 */
 	public boolean isLegacy() {
-		// MKTODO Files loaded by LegacyEnrichmentMapSessionListener should set this flag to true
 		return false;
 	}
 }

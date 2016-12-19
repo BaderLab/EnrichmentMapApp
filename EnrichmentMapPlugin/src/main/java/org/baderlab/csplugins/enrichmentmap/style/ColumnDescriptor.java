@@ -12,7 +12,22 @@ public class ColumnDescriptor<T> {
 		this.name = name;
 		this.type = type;
 	}
+	
+	public String getBaseName() {
+		return name;
+	}
 
+	public String with(String prefix, String suffix) {
+		StringBuilder sb = new StringBuilder();
+		if(prefix != null)
+			sb.append(prefix);
+		sb.append(name);
+		if(suffix != null)
+			sb.append(" (").append(suffix).append(")");
+		return sb.toString();
+	}
+	
+	
 	public Class<?> getType() {
 		return type;
 	}
@@ -25,6 +40,10 @@ public class ColumnDescriptor<T> {
 		return row.get(with(prefix,null), type);
 	}
 	
+	public T get(CyRow row) {
+		return row.get(name, type);
+	}
+	
 	public void set(CyRow row, String prefix, String suffix, T value) {
 		row.set(with(prefix,suffix), value);
 	}
@@ -33,8 +52,16 @@ public class ColumnDescriptor<T> {
 		row.set(with(prefix,null), value);
 	}
 	
+	public void set(CyRow row, T value) {
+		row.set(name, value);
+	}
+	
 	public void createColumn(CyTable table, String prefix, String suffix) {
 		table.createColumn(with(prefix,suffix), type, true);
+	}
+	
+	public void createColumn(CyTable table) {
+		table.createColumn(name, type, true);
 	}
 	
 	public void createColumnIfAbsent(CyTable table, String prefix, String suffix) {
@@ -42,14 +69,9 @@ public class ColumnDescriptor<T> {
 			createColumn(table, prefix, suffix);
 	}
 	
-	public String with(String prefix, String suffix) {
-		StringBuilder sb = new StringBuilder();
-		if(prefix != null)
-			sb.append(prefix);
-		sb.append(name);
-		if(suffix != null)
-			sb.append(" (").append(suffix).append(")");
-		return sb.toString();
+	public void createColumnIfAbsent(CyTable table) {
+		if(table.getColumn(name) == null)
+			createColumn(table);
 	}
 	
 	/**

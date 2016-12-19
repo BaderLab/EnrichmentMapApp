@@ -19,8 +19,8 @@ public class Ranking {
 
 	// Lazily computed views
 	//hash for easy conversion between geneid and score
-	private Map<Integer, Integer> rank2gene = null;
-	private Map<Integer, Double> gene2score = null;
+	private transient Map<Integer, Integer> rank2gene = null;
+	private transient Map<Integer, Double> gene2score = null;
 	//array for storing scores of all genes in map
 	private double[] scores = null;
 
@@ -58,6 +58,10 @@ public class Ranking {
 
 	public Set<Integer> getAllRanks() {
 		return ranking.values().stream().map(Rank::getRank).collect(Collectors.toSet());
+	}
+	
+	public Map<Integer,Rank> getRanking() {
+		return ranking;
 	}
 	
 	public String getFilename() {
