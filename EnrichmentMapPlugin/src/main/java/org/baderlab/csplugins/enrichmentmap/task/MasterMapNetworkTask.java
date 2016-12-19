@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
@@ -169,7 +170,9 @@ public class MasterMapNetworkTask extends AbstractTask {
 		Columns.NODE_GENES.createColumn(table, prefix, null); // Union of geneset genes across all datasets // !
 		Columns.NODE_GS_SIZE.createColumn(table, prefix, null); // Size of the union // !
 		
-		for(String datasetName : map.getDatasetNames()) {
+		EMCreationParameters params = map.getParams();
+		
+		for (String datasetName : map.getDatasetNames()) {
 			Columns.NODE_PVALUE.createColumn(table, prefix, datasetName);
 			Columns.NODE_FDR_QVALUE.createColumn(table, prefix, datasetName);
 			Columns.NODE_FWER_QVALUE.createColumn(table, prefix, datasetName);
@@ -177,6 +180,9 @@ public class MasterMapNetworkTask extends AbstractTask {
 			Columns.NODE_ES.createColumn(table, prefix, datasetName);
 			Columns.NODE_NES.createColumn(table, prefix, datasetName); 
 			Columns.NODE_COLOURING.createColumn(table, prefix, datasetName);
+			
+			params.addPValueColumnName(Columns.NODE_PVALUE.with(prefix, datasetName));
+			params.addQValueColumnName(Columns.NODE_FDR_QVALUE.with(prefix, datasetName));
 		}
 		
 		return table;
@@ -188,9 +194,11 @@ public class MasterMapNetworkTask extends AbstractTask {
 		Columns.EDGE_OVERLAP_SIZE.createColumn(table, prefix, null);
 		Columns.EDGE_ENRICHMENT_SET.createColumn(table, prefix, null);
 		Columns.EDGE_OVERLAP_GENES.createColumn(table, prefix, null);
+		
+		map.getParams().addSimilarityCutoffColumnName(Columns.EDGE_SIMILARITY_COEFF.with(prefix, null));
+		
 		return table;
 	}
-	
 	
 	private void setGenericResultNodeAttributes(CyRow row, String datasetName, GenericResult result) {
 		Columns.NODE_PVALUE.set(row, prefix, datasetName, result.getPvalue());
@@ -206,8 +214,10 @@ public class MasterMapNetworkTask extends AbstractTask {
 		Columns.NODE_ES.set(row, prefix, datasetName, result.getES());
 		Columns.NODE_NES.set(row, prefix, datasetName, result.getNES());
 		Columns.NODE_COLOURING.set(row, prefix, datasetName, getColorScore(result));
+		
+		EMCreationParameters params = map.getParams();
+		params.addPValueColumnName(Columns.NODE_PVALUE.with(prefix, datasetName));
 	}
-	
 	
 	private static double getColorScore(EnrichmentResult result) {
 		if(result == null)

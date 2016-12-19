@@ -150,6 +150,10 @@ public class CheckboxListPanel<T> extends JPanel {
 		selectNoneButton.setEnabled(enabled);
 	}
 	
+	public CheckboxList<T> getCheckboxList() {
+		return checkboxList;
+	}
+	
 	public CheckboxListModel<T> getModel() {
 		return checkboxListModel;
 	}

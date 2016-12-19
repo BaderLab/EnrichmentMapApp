@@ -55,7 +55,6 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.style.ChartType;
 import org.baderlab.csplugins.enrichmentmap.style.ColorGradient;
 import org.baderlab.csplugins.enrichmentmap.style.ColorScheme;
-import org.baderlab.csplugins.enrichmentmap.style.EnrichmentMapVisualStyle;
 import org.baderlab.csplugins.enrichmentmap.util.NetworkUtil;
 import org.baderlab.csplugins.enrichmentmap.view.util.CheckboxData;
 import org.baderlab.csplugins.enrichmentmap.view.util.CheckboxListModel;
@@ -405,6 +404,10 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			update();
 		}
 		
+		List<DataSet> getSelectedDataSets() {
+			return getCheckboxListPanel().getSelectedDataItems();
+		}
+		
 		void update() {
 			updatingDataSetList = true;
 			
@@ -574,11 +577,11 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			double pvalue = map.getParams().getPvalue();
 			
 			return new SliderBarPanel(
-					((pvalueMin == 1 || pvalueMin >= pvalue) ? 0 : pvalueMin), pvalue,
+					(pvalueMin == 1 || pvalueMin >= pvalue ? 0 : pvalueMin),
+					pvalue,
 					"P-value Cutoff:",
-					EnrichmentMapVisualStyle.PVALUE_DATASET1,
-					EnrichmentMapVisualStyle.PVALUE_DATASET2,
-					false, pvalue);
+					pvalue
+			);
 		}
 		
 		private SliderBarPanel createQvalueSlider(EnrichmentMap map) {
@@ -586,22 +589,22 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			double qvalue = map.getParams().getQvalue();
 			
 			return new SliderBarPanel(
-					((qvalueMin == 1 || qvalueMin >= qvalue) ? 0 : qvalueMin), qvalue,
+					(qvalueMin == 1 || qvalueMin >= qvalue ? 0 : qvalueMin),
+					qvalue,
 					"Q-value Cutoff:",
-					EnrichmentMapVisualStyle.FDR_QVALUE_DATASET1,
-					EnrichmentMapVisualStyle.FDR_QVALUE_DATASET2,
-					false, qvalue);
+					qvalue
+			);
 		}
 		
 		private SliderBarPanel createSimilaritySlider(EnrichmentMap map) {
 			double similarityCutOff = map.getParams().getSimilarityCutoff();
 			
 			return new SliderBarPanel(
-					similarityCutOff, 1,
+					similarityCutOff,
+					1,
 					"Similarity Cutoff:",
-					EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT,
-					EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT,
-					true, similarityCutOff);
+					similarityCutOff
+			);
 		}
 		
 		SliderBarPanel getPValueSliderPanel() {

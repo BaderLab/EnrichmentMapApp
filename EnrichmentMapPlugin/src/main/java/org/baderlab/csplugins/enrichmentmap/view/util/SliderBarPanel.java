@@ -81,30 +81,8 @@ public class SliderBarPanel extends JPanel {
 
 	private String labelText;
 
-	private final String attrib1;
-	private final String attrib2;
-	private final boolean edgesOnly;
-
-    /**
-     * @param min - slider mininmum value
-     * @param max - slider maximum value
-     * @param labelText
-     * @param attrib1 - attribute for dataset 1 that the slider bar is specific to (i.e. p-value or q-value)
-     * @param attrib2 - attribute for dataset 2 that the slider bar is specific to (i.e. p-value or q-value)
-     */
-	public SliderBarPanel(
-			double min,
-			double max,
-			String labelText,
-			String attrib1,
-			String attrib2,
-			boolean edgesOnly,
-			double initialValue
-	) {
-		this.attrib1 = attrib1;
-		this.attrib2 = attrib2;
-		
-		if ((min <= 1) && (max <= 1)) {
+	public SliderBarPanel(double min, double max, String labelText, double initialValue) {
+		if (min <= 1 && max <= 1) {
 			// if the max is a very small number then use the precision to filter the results
 			if (max <= 0.0001) {
 				DecimalFormat df = new DecimalFormat("#.##############################");
@@ -129,7 +107,6 @@ public class SliderBarPanel extends JPanel {
 		}
 
 		this.labelText = labelText;
-		this.edgesOnly = edgesOnly;
 
 		initPanel();
     }
@@ -213,18 +190,6 @@ public class SliderBarPanel extends JPanel {
 
     // Getters and Setters
 	
-	public String getAttrib1() {
-		return attrib1;
-	}
-	
-	public String getAttrib2() {
-		return attrib2;
-	}
-	
-	public boolean isEdgesOnly() {
-		return edgesOnly;
-	}
-	
 	public JSlider getSlider() {
 		return slider;
 	}
@@ -242,14 +207,13 @@ public class SliderBarPanel extends JPanel {
 		textField.setEnabled(enabled);
 	}
 	
-    protected void setValue(final int newValue) {
+    public void setValue(final int newValue) {
     	textField.setValue(newValue);
 	}
 
-	protected double getPrecision() {
+	public double getPrecision() {
 		return textField.getPrecision();
 	}
-
     
     //Methods are currently not used.  If they become useful in the future need to add case for smallNumbers case
     

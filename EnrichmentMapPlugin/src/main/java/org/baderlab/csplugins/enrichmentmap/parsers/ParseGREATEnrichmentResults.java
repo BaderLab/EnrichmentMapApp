@@ -3,14 +3,14 @@ package org.baderlab.csplugins.enrichmentmap.parsers;
 import java.util.List;
 import java.util.Map;
 
+import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.GreatFilter;
-import org.baderlab.csplugins.enrichmentmap.util.NullTaskMonitor;
-import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.GenericResult;
+import org.baderlab.csplugins.enrichmentmap.util.NullTaskMonitor;
 import org.cytoscape.work.TaskMonitor;
 
 import com.google.common.collect.ImmutableSet;
@@ -162,11 +162,11 @@ public class ParseGREATEnrichmentResults extends DatasetLineParser {
 				pvalue = binom_pvalue;
 				FDRqvalue = binom_fdr;
 			} else if(filterType == GreatFilter.BOTH) {
-				pvalue = (hyper_pvalue >= binom_pvalue) ? hyper_pvalue : binom_pvalue;
-				FDRqvalue = (hyper_fdr >= binom_fdr) ? hyper_fdr : binom_fdr;
+				pvalue = Math.max(hyper_pvalue, binom_pvalue);
+				FDRqvalue = Math.max(hyper_fdr, binom_fdr);
 			} else if(filterType == GreatFilter.EITHER) {
-				pvalue = (hyper_pvalue >= binom_pvalue) ? binom_pvalue : hyper_pvalue;
-				FDRqvalue = (hyper_fdr >= binom_fdr) ? binom_fdr : hyper_fdr;
+				pvalue = Math.min(hyper_pvalue, binom_pvalue);
+				FDRqvalue = Math.min(hyper_fdr, binom_fdr);
 			} else {
 				System.out.println("Invalid attribute setting for GREAT p-value specification");
 			}
