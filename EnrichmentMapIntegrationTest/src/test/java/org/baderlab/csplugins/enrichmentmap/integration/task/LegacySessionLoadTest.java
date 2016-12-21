@@ -32,12 +32,14 @@ import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.Rank;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfEnrichmentResults;
+import org.baderlab.csplugins.enrichmentmap.model.io.SessionModelListener;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.task.read.OpenSessionTaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.inject.Injector;
@@ -86,10 +88,8 @@ public class LegacySessionLoadTest extends BaseIntegrationTest {
 		assertEquals(14067, map.getNumberOfGenes());
 		assertEquals(14067, map.getAllGenes().size());
 		
-		// MKTODO WRONG! this should be the same as the number of edges
-		// MKTODO add test that similarity count == number of edges to the create network unit test
 		// Number of edges: 3339 - that's how many geneset similarity objects there should be!!!
-//		assertEquals(75466, map.getGenesetSimilarity().size()); 
+		assertEquals(3339, map.getGenesetSimilarity().size()); 
 		
 		EMCreationParameters params = map.getParams();
 		assertEquals("EM1_", params.getAttributePrefix());
@@ -192,6 +192,15 @@ public class LegacySessionLoadTest extends BaseIntegrationTest {
 	}
 	
 	
+	@Ignore
+	private static void testLoadTwoDataSetLegacySession() {
+		// Need to test loading of a session with 2 datasets
+		// this is because I think I broke ComputeSimilarityTask by using SimilarityKey.swap()
+		// and that won't get exposed unless there's 2 datasets
+		fail("not implemented yet");
+	}
+	
+	
 	private static void assertEndsWith(String expected, String ending) {
 		if(!expected.endsWith(ending)) {
 			fail("Expected " + expected + " to end with '" + ending);
@@ -199,16 +208,15 @@ public class LegacySessionLoadTest extends BaseIntegrationTest {
 	}
 	
 	
-//	@Test
-//	public void testSavingSession() throws Exception {
-//		EnrichmentMapManager emManager = injector.getInstance(EnrichmentMapManager.class);
-//		Map<Long, EnrichmentMap> maps = emManager.getAllEnrichmentMaps();
-//		assertEquals(1, maps.size());
-//		
-//		SessionModelListener listener = injector.getInstance(SessionModelListener.class);
-//		listener.saveModel();
-//		emManager.reset(); // Don't save the model again on shutdown
-//	}
+	@Ignore
+	public void testSavingSession() throws Exception {
+		EnrichmentMapManager emManager = injector.getInstance(EnrichmentMapManager.class);
+		Map<Long, EnrichmentMap> maps = emManager.getAllEnrichmentMaps();
+		assertEquals(1, maps.size());
+		
+		SessionModelListener listener = injector.getInstance(SessionModelListener.class);
+		listener.saveModel();
+	}
 	
 
 }

@@ -67,7 +67,7 @@ public class LoadGMTFileOnlyTest {
 		//check to see if the dataset loaded - there should be 36 genesets
 		assertEquals(36, dataset.getSetofgenesets().getGenesets().size());
 		//there should be (36 * 35)/2 edges (geneset similarities)
-		assertEquals((36*35)/2, em.getGenesetSimilarity().size());
+		assertEquals(18, em.getGenesetSimilarity().size());
 		//there should be 523 genes
 		assertEquals(523, em.getNumberOfGenes());
 		assertEquals(523, dataset.getExpressionSets().getNumGenes());

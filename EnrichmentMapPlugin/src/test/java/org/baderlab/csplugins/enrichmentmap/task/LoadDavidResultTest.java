@@ -68,7 +68,7 @@ public class LoadDavidResultTest {
 		//there should be 7 genesets in the enrichments of interest
 		assertEquals(7, dataset.getGenesetsOfInterest().getGenesets().size());
 		//there should be 7 * 6 edges
-		assertEquals((7 * 6)/2,em.getGenesetSimilarity().size());
+		assertEquals(11, em.getGenesetSimilarity().size());
 		//there should be a total of 366 genes
 		assertEquals(414, em.getNumberOfGenes());
 		//there should be 43 genes in the geneset "nucleolus"

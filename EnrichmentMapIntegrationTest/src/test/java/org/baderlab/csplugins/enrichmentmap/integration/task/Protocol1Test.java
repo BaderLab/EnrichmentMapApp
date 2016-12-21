@@ -1,5 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.integration.task;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -10,6 +11,8 @@ import org.baderlab.csplugins.enrichmentmap.commands.BuildEnrichmentMapTuneableT
 import org.baderlab.csplugins.enrichmentmap.integration.BaseIntegrationTest;
 import org.baderlab.csplugins.enrichmentmap.integration.SerialTestTaskManager;
 import org.baderlab.csplugins.enrichmentmap.integration.TestUtils;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.work.TaskIterator;
@@ -46,5 +49,11 @@ public class Protocol1Test extends BaseIntegrationTest {
 		CyNetwork expectedNetwork  = importNetworkFromFile(PATH, "protocol_1_expected.xgmml");
 		
 		assertNetworksEqual(expectedNetwork, generatedNetwork);
+		
+		// There should be the same number of GenesetSimilarity objects as there are edges
+		EnrichmentMapManager emManager = injector.getInstance(EnrichmentMapManager.class);
+		EnrichmentMap map = emManager.getEnrichmentMap(generatedNetwork.getSUID());
+		
+		assertEquals(generatedNetwork.getEdgeCount(), map.getGenesetSimilarity().size());
 	}
 }

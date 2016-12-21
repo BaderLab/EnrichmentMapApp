@@ -269,7 +269,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 
 						// Only calculate Mann-Whitney pValue if there is overlap
 						if(intersection.size() > 0) {
-							double coeffecient = ComputeSimilarityTask.computeSimilarityCoeffecient(map.getParams(), intersection, union, sigGenes, enrGenes);
+							double coeffecient = ComputeSimilarityTaskParallel.computeSimilarityCoeffecient(map.getParams(), intersection, union, sigGenes, enrGenes);
 							GenesetSimilarity comparison = new GenesetSimilarity(hub_name, geneset_name, coeffecient, interaction, intersection);
 
 							PostAnalysisFilterType filterType = paParams.getRankTestParameters().getType();

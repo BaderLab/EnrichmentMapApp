@@ -65,7 +65,7 @@ public class PostAnalysisTaskTest extends BaseNetworkTest {
 	
 	
 	@Test
-	public void test_1_EnrichmentMapBuildMapTask(CyApplicationManager applicationManager, CyNetworkManager networkManager) {
+	public void test_1_EnrichmentMapBuildMapTask(CyApplicationManager applicationManager, CyNetworkManager networkManager, EnrichmentMapManager emManager) {
 		DataSetFiles dataset1files = new DataSetFiles();
 		dataset1files.setGMTFileName(PATH + "gene_sets.gmt");  
 		dataset1files.setExpressionFileName(PATH + "FakeExpression.txt");

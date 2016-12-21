@@ -63,7 +63,7 @@ public class LoadBingoResultsTest {
 		//there should be 11 genesets in the enrichments of interest
 		assertEquals(5, dataset.getGenesetsOfInterest().getGenesets().size());
 		//there should be 6 edges
-		assertEquals(10,em.getGenesetSimilarity().size());
+		assertEquals(6,em.getGenesetSimilarity().size());
 		//there should be a total of 366 genes
 		assertEquals(446, em.getNumberOfGenes());
 		//there should be 43 genes in the geneset "nucleolus"

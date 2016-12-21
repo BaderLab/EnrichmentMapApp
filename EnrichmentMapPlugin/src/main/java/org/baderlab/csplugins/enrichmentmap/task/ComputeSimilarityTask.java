@@ -46,10 +46,7 @@ package org.baderlab.csplugins.enrichmentmap.task;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
-import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
-import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
@@ -61,8 +58,6 @@ import org.baderlab.csplugins.enrichmentmap.model.SimilarityKey;
 import org.baderlab.csplugins.enrichmentmap.util.NullTaskMonitor;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
-
-import com.google.common.collect.Sets;
 
 /**
  * Created by
@@ -179,15 +174,16 @@ public class ComputeSimilarityTask extends AbstractTask {
 						geneset2 = genesetsInnerLoop.get(geneset2_name);
 					}
 					
-					GenesetSimilarity comparison = computeGenesetSimilarity(map.getParams(), geneset1_name, geneset2_name, geneset1, geneset2, enrichment_set, false);
+					GenesetSimilarity comparison = ComputeSimilarityTaskParallel.computeGenesetSimilarity(map.getParams(), geneset1_name, geneset2_name, geneset1, geneset2, enrichment_set);
 
 					// MKTODO using swap() won't work
 					// the reason it previoulsy used a different key was so that the enrichment and signature sets could live side-by side for the same pair of gene-sets
-					
-					if (type == SIGNATURE) {// as we iterate over the signature nodes in the inner loop, we have to switch the nodes in the edge name
-						similarities.put(similarity_key.swap(), comparison);
-					} else {
-						similarities.put(similarity_key, comparison);
+					if(comparison != null) {
+						if (type == SIGNATURE) {// as we iterate over the signature nodes in the inner loop, we have to switch the nodes in the edge name
+							similarities.put(similarity_key.swap(), comparison);
+						} else {
+							similarities.put(similarity_key, comparison);
+						}
 					}
 				}
 			}
@@ -221,12 +217,14 @@ public class ComputeSimilarityTask extends AbstractTask {
 						GeneSet geneset1 = sig_genesets_set2.get(geneset1_name);
 						GeneSet geneset2 = sig_genesets_set2.get(geneset2_name);
 
-						GenesetSimilarity comparison = computeGenesetSimilarity(map.getParams(), geneset1_name, geneset2_name, geneset1, geneset2, enrichment_set, false);
+						GenesetSimilarity comparison = ComputeSimilarityTaskParallel.computeGenesetSimilarity(map.getParams(), geneset1_name, geneset2_name, geneset1, geneset2, enrichment_set);
 						
-						if (type == SIGNATURE) {// as we iterate over the signature nodes in the inner loop, we have to switch the nodes in the edge name
-							similarities.put(similarity_key.swap(), comparison);
-						} else {
-							similarities.put(similarity_key, comparison);
+						if(comparison != null) {
+							if (type == SIGNATURE) {// as we iterate over the signature nodes in the inner loop, we have to switch the nodes in the edge name
+								similarities.put(similarity_key.swap(), comparison);
+							} else {
+								similarities.put(similarity_key, comparison);
+							}
 						}
 					}
 				}
@@ -273,12 +271,13 @@ public class ComputeSimilarityTask extends AbstractTask {
 							GeneSet geneset1 = genesetsOfInterest_missingedges.get(geneset1_name);
 							GeneSet geneset2 = genesetsOfInterest_missingedges.get(geneset2_name);
 
-							GenesetSimilarity comparison = computeGenesetSimilarity(map.getParams(), geneset1_name, geneset2_name, geneset1, geneset2, enrichment_set, false);
-
-							if (type == SIGNATURE) {// as we iterate over the signature nodes in the inner loop, we have to switch the nodes in the edge name
-								similarities.put(similarity_key.swap(), comparison);
-							} else {
-								similarities.put(similarity_key, comparison);
+							GenesetSimilarity comparison = ComputeSimilarityTaskParallel.computeGenesetSimilarity(map.getParams(), geneset1_name, geneset2_name, geneset1, geneset2, enrichment_set);
+							if(comparison != null) {
+								if (type == SIGNATURE) {// as we iterate over the signature nodes in the inner loop, we have to switch the nodes in the edge name
+									similarities.put(similarity_key.swap(), comparison);
+								} else {
+									similarities.put(similarity_key, comparison);
+								}
 							}
 						}
 					}
@@ -297,51 +296,6 @@ public class ComputeSimilarityTask extends AbstractTask {
 	private int genesetSize(String dataSet) {
 		return map.getDataset(dataSet).getGenesetsOfInterest().getGenesets().size();
 	}
-	
-	
-	public static double computeSimilarityCoeffecient(EMCreationParameters params, Set<?> intersection, Set<?> union, Set<?> genes1, Set<?> genes2) {
-		// Note: Do not call intersection.size() or union.size() more than once on a Guava SetView! 
-		// It is a potentially slow operation that needs to be recalcuated each time it is called.
-		
-		if (params.getSimilarityMetric() == SimilarityMetric.JACCARD) {
-			return (double) intersection.size() / (double) union.size();
-		} 
-		else if (params.getSimilarityMetric() == SimilarityMetric.OVERLAP) {
-			return (double) intersection.size() / Math.min((double) genes1.size(), (double) genes2.size());
-		} 
-		else { 
-			// It must be combined. Compute a combination of the overlap and jaccard coefecient. We need both the Jaccard and the Overlap.
-			double intersectionSize = (double) intersection.size(); // do not call size() more than once on the same SetView
-			
-			double jaccard = intersectionSize / (double) union.size();
-			double overlap = intersectionSize / Math.min((double) genes1.size(), (double) genes2.size());
-
-			double k = params.getCombinedConstant();
-
-			return (k * overlap) + ((1 - k) * jaccard);
-		}
-	}
-
-	
-	static GenesetSimilarity computeGenesetSimilarity(EMCreationParameters params, String geneset1Name, String geneset2Name, GeneSet geneset1, GeneSet geneset2, int enrichment_set, boolean filter) {
-		// MKTODO: Should not need to pass in the geneset names, should just use geneset.getName(), but I'm nervous I might break something.
-		
-		Set<Integer> genes1 = geneset1.getGenes();
-		Set<Integer> genes2 = geneset2.getGenes();
-
-		Set<Integer> intersection = Sets.intersection(genes1, genes2);
-		Set<Integer> union = Sets.union(genes1, genes2);
-
-		double coeffecient = computeSimilarityCoeffecient(params, intersection, union, genes1, genes2);
-		
-		if(filter && coeffecient < params.getSimilarityCutoff())
-			return null;
-			
-		String edgeType = params.getEnrichmentEdgeType();
-		GenesetSimilarity similarity = new GenesetSimilarity(geneset1Name, geneset2Name, coeffecient, edgeType, intersection, enrichment_set);
-		return similarity;
-	}
-	
 	
 	
 	private class ProgressMonitor {

@@ -9,6 +9,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.GenesetSimilarity;
@@ -16,6 +18,8 @@ import org.baderlab.csplugins.enrichmentmap.model.SimilarityKey;
 import org.baderlab.csplugins.enrichmentmap.util.DiscreteTaskMonitor;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
+
+import com.google.common.collect.Sets;
 
 public class ComputeSimilarityTaskParallel extends AbstractTask {
 
@@ -65,7 +69,7 @@ public class ComputeSimilarityTaskParallel extends AbstractTask {
 						GeneSet geneset2 = genesetsOfInterest.get(geneset2Name);
 						
 						// returns null if the similarity coefficient doesn't pass the cutoff
-						GenesetSimilarity similarity = ComputeSimilarityTask.computeGenesetSimilarity(map.getParams(), geneset1Name, geneset2Name, geneset1, geneset2, 0, true);
+						GenesetSimilarity similarity = computeGenesetSimilarity(map.getParams(), geneset1Name, geneset2Name, geneset1, geneset2, 0);
 						if(similarity != null) {
 							similarities.put(key.toString(), similarity);
 						}
@@ -94,5 +98,48 @@ public class ComputeSimilarityTaskParallel extends AbstractTask {
 			map.getGenesetSimilarity().putAll(similarities);
 	}
 
+	
+	public static double computeSimilarityCoeffecient(EMCreationParameters params, Set<?> intersection, Set<?> union, Set<?> genes1, Set<?> genes2) {
+		// Note: Do not call intersection.size() or union.size() more than once on a Guava SetView! 
+		// It is a potentially slow operation that needs to be recalcuated each time it is called.
+		
+		if (params.getSimilarityMetric() == SimilarityMetric.JACCARD) {
+			return (double) intersection.size() / (double) union.size();
+		} 
+		else if (params.getSimilarityMetric() == SimilarityMetric.OVERLAP) {
+			return (double) intersection.size() / Math.min((double) genes1.size(), (double) genes2.size());
+		} 
+		else { 
+			// It must be combined. Compute a combination of the overlap and jaccard coefecient. We need both the Jaccard and the Overlap.
+			double intersectionSize = (double) intersection.size(); // do not call size() more than once on the same SetView
+			
+			double jaccard = intersectionSize / (double) union.size();
+			double overlap = intersectionSize / Math.min((double) genes1.size(), (double) genes2.size());
+
+			double k = params.getCombinedConstant();
+
+			return (k * overlap) + ((1 - k) * jaccard);
+		}
+	}
+
+	
+	static GenesetSimilarity computeGenesetSimilarity(EMCreationParameters params, String geneset1Name, String geneset2Name, GeneSet geneset1, GeneSet geneset2, int enrichment_set) {
+		// MKTODO: Should not need to pass in the geneset names, should just use geneset.getName(), but I'm nervous I might break something.
+		
+		Set<Integer> genes1 = geneset1.getGenes();
+		Set<Integer> genes2 = geneset2.getGenes();
+
+		Set<Integer> intersection = Sets.intersection(genes1, genes2);
+		Set<Integer> union = Sets.union(genes1, genes2);
+
+		double coeffecient = computeSimilarityCoeffecient(params, intersection, union, genes1, genes2);
+		
+		if(coeffecient < params.getSimilarityCutoff())
+			return null;
+			
+		String edgeType = params.getEnrichmentEdgeType();
+		GenesetSimilarity similarity = new GenesetSimilarity(geneset1Name, geneset2Name, coeffecient, edgeType, intersection, enrichment_set);
+		return similarity;
+	}
 	
 }
