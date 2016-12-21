@@ -11,9 +11,6 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
-import org.baderlab.csplugins.enrichmentmap.AfterInjectionModule;
-import org.baderlab.csplugins.enrichmentmap.ApplicationModule;
-import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule;
 import org.baderlab.csplugins.enrichmentmap.PropertyManager;
 import org.baderlab.csplugins.enrichmentmap.integration.BaseIntegrationTest;
 import org.baderlab.csplugins.enrichmentmap.integration.EdgeSimilarities;
@@ -34,10 +31,7 @@ import org.cytoscape.work.TaskIterator;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.ops4j.pax.exam.junit.PaxExam;
-import org.ops4j.peaberry.osgi.OSGiModule;
-import org.osgi.framework.BundleContext;
 
-import com.google.inject.Guice;
 import com.google.inject.Injector;
 
 @RunWith(PaxExam.class)
@@ -46,13 +40,12 @@ public class EnrichmentMapTaskTest extends BaseIntegrationTest {
 	private static final String PATH = "/EnrichmentMapTaskTest/";
 	
 	@Inject private CyNetworkManager networkManager;
-	@Inject private BundleContext bc;
+	@Inject private Injector injector;
 	
 	
 	protected void buildEnrichmentMap(EMCreationParameters params, DataSetFiles datasetFiles, String datasetName) {
 		List<DataSetParameters> dataSets = Arrays.asList(new DataSetParameters(datasetName, Method.Generic, datasetFiles));
 		
-		Injector injector = Guice.createInjector(new OSGiModule(bc), new AfterInjectionModule(), new CytoscapeServiceModule(), new ApplicationModule());
 		MasterMapTaskFactory.Factory masterMapTaskFactoryFactory = injector.getInstance(MasterMapTaskFactory.Factory.class);
 		MasterMapTaskFactory taskFactory = masterMapTaskFactoryFactory.create(params, dataSets);
 	    
@@ -64,10 +57,10 @@ public class EnrichmentMapTaskTest extends BaseIntegrationTest {
 	
 	@Test
 	public void testEnrichmentMapBuildMapTask() throws Exception {
-		String geneSetsFile   = createTempFile(PATH, "gene_sets.gmt").getAbsolutePath();
-		String expressionFile = createTempFile(PATH, "FakeExpression.txt").getAbsolutePath();
-		String enrichmentFile = createTempFile(PATH, "fakeEnrichments.txt").getAbsolutePath();
-		String rankFile       = createTempFile(PATH, "FakeRank.rnk").getAbsolutePath();
+		String geneSetsFile   = TestUtils.createTempFile(PATH, "gene_sets.gmt").getAbsolutePath();
+		String expressionFile = TestUtils.createTempFile(PATH, "FakeExpression.txt").getAbsolutePath();
+		String enrichmentFile = TestUtils.createTempFile(PATH, "fakeEnrichments.txt").getAbsolutePath();
+		String rankFile       = TestUtils.createTempFile(PATH, "FakeRank.rnk").getAbsolutePath();
 		
 		PropertyManager pm = new PropertyManager();
 		EMCreationParameters params = new EMCreationParameters("EM1_", pm.getDefaultPvalue(), pm.getDefaultQvalue(), NESFilter.ALL, Optional.empty(), SimilarityMetric.JACCARD, pm.getDefaultJaccardCutOff(), pm.getDefaultCombinedConstant());

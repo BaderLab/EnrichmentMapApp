@@ -154,6 +154,9 @@ public class EnrichmentMapManager implements SetCurrentNetworkListener {
 	 */
 	@Override
 	public void handleEvent(SetCurrentNetworkEvent evt) {
+		if(headless)
+			return;
+		
 		if (evt.getNetwork() != null) {
 			Long netId = evt.getNetwork().getSUID();
 			

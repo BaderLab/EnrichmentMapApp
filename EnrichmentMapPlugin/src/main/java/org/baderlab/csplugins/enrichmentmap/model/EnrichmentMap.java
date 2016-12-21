@@ -131,7 +131,7 @@ public class EnrichmentMap {
 	}
 	
 	public Collection<String> getAllGenes() {
-		return genes.values();
+		return Collections.unmodifiableCollection(genes.values());
 	}
 	
 	public Optional<Integer> addGene(String gene) {
@@ -148,7 +148,7 @@ public class EnrichmentMap {
 		return Optional.of(newHash);
 	}
 	
-	@Deprecated // MKTODO this is here to support legacy session loading, TEMPORARY until a builder is available
+	@Deprecated // this is here to support legacy session loading
 	public void addGene(String gene, int id) {
 		genes.put(id, gene);
 		if(id > NumberOfGenes)

@@ -19,7 +19,7 @@ import org.cytoscape.work.TaskObserver;
  * Only useful for testing.
  * 
  * One advantage of this TaskManager is that it will fail the test
- * when a Task throws an exception, wheras the Cytoscape SynchronousTaskManager
+ * when a Task throws an exception, the Cytoscape SynchronousTaskManager
  * swallows exceptions.
  * 
  * @author mkucera

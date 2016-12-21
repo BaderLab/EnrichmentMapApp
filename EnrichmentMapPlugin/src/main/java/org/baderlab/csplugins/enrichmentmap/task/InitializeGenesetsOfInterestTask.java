@@ -57,6 +57,7 @@ import org.baderlab.csplugins.enrichmentmap.model.GSEAResult;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.util.DiscreteTaskMonitor;
+import org.baderlab.csplugins.enrichmentmap.util.NullTaskMonitor;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
@@ -90,6 +91,8 @@ public class InitializeGenesetsOfInterestTask extends AbstractTask {
 	 * @return true if successful and false otherwise.
 	 */
 	public boolean initializeSets(TaskMonitor tm) {
+		if(tm == null)
+			tm = new NullTaskMonitor();
 		DiscreteTaskMonitor taskMonitor = new DiscreteTaskMonitor(tm, map.getDataSetCount());
 
 		//create subset of genesets that contains only the genesets of interest with pvalue and qbalue less than values specified by the user.

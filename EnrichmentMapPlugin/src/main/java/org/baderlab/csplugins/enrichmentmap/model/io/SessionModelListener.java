@@ -28,6 +28,7 @@ import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
 
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 import com.google.inject.Singleton;
 
 
@@ -54,9 +55,10 @@ public class SessionModelListener implements SessionLoadedListener, SessionAbout
 	@Inject private CyTableFactory tableFactory;
 	@Inject private CyServiceRegistrar serviceRegistrar;
 	
+	@Inject private Provider<LegacySessionLoader> legacySessionLoaderProvider;
 	@Inject private EnrichmentMapManager emManager;
 	
-	private static final boolean debug = true;
+	private static final boolean debug = false;
 	
 	
 	@Override
@@ -85,7 +87,7 @@ public class SessionModelListener implements SessionLoadedListener, SessionAbout
 			CyNetwork network = networkManager.getNetwork(suid);
 			if(network != null) { // MKTODO big error if its null
 				String json = ModelSerializer.serialize(em);
-				CyRow row = table.getRow(id[0]);
+				CyRow row = table.getRow(Integer.valueOf(id[0]));
 				COL_NETWORK_ID.set(row, suid);
 				COL_EM_JSON.set(row, json);
 				id[0]++;
@@ -99,8 +101,28 @@ public class SessionModelListener implements SessionLoadedListener, SessionAbout
 			System.out.println("SessionModelListener.restoreModel()");
 		
 		emManager.reset();
-		CyTable table = getPrivateTable();
 		
+		if(LegacySessionLoader.isLegacy(session)) {
+			legacySessionLoaderProvider.get().loadSession(session);
+		} else {
+			restoreModelFromTables(session);
+		}
+		
+		if(debug) {
+			System.out.println("Session Restore Finished");
+			System.out.println("Enrichment Maps:");
+			emManager.getAllEnrichmentMaps().forEach((suid, em) -> {
+				System.out.println("suid:" + suid);
+				System.out.println("datasets:");
+				em.getDatasetList().forEach(dataset -> System.out.println(dataset.getName()));
+			});
+			System.out.println();
+		}
+	}
+	
+	
+	private void restoreModelFromTables(CySession session) {
+		CyTable table = getPrivateTable();
 		if(table != null) {
 			for(CyRow row : table.getAllRows()) {
 				Long suid = COL_NETWORK_ID.get(row);
@@ -119,19 +141,7 @@ public class SessionModelListener implements SessionLoadedListener, SessionAbout
 				}
 			}
 		}
-		
-		if(debug) {
-			System.out.println("Session Restore Finished");
-			System.out.println("Enrichment Maps:");
-			emManager.getAllEnrichmentMaps().forEach((suid, em) -> {
-				System.out.println("suid:" + suid);
-				System.out.println("datasets:");
-				em.getDatasetList().forEach(dataset -> System.out.println(dataset.getName()));
-			});
-			System.out.println();
-		}
 	}
-	
 	
 	private void updateNodeSuids(EnrichmentMap map, CySession session) {
 		for(DataSet dataset : map.getDatasetList()) {

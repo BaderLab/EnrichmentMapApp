@@ -1,5 +1,12 @@
 package org.baderlab.csplugins.enrichmentmap.integration;
 
+import static org.junit.Assert.assertNotNull;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,6 +38,17 @@ public class TestUtils {
 	   		edges.addEdge(network.getRow(edge).get("name", String.class), edge);
 	   	}
 	   	return edges;
+	}
+	
+	public static File createTempFile(String path, String fileName) throws IOException {
+		int dot = fileName.indexOf('.');
+		String prefix = fileName.substring(0, dot);
+		String suffix = fileName.substring(dot+1);
+		File tempFile = File.createTempFile(prefix, suffix);
+		InputStream in = TestUtils.class.getResourceAsStream(path + prefix + "." + suffix);
+		assertNotNull(in);
+		Files.copy(in, tempFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+		return tempFile;
 	}
 	
 }

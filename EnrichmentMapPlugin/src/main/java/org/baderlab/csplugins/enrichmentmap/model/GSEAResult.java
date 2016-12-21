@@ -99,8 +99,8 @@ public class GSEAResult extends EnrichmentResult {
 		super(tokens[1], tokens[1], Double.parseDouble(tokens[5]), Integer.parseInt(tokens[2]));
 		
 		//old session files will be missing rankatmax and scoreatmax
-		if(tokens.length != 8 || tokens.length != 10)
-			throw new IllegalArgumentException("Length of tokens[] must be 8 or 10");
+		if(tokens.length != 8 && tokens.length != 10)
+			throw new IllegalArgumentException("Length of tokens[] must be 8 or 10, got: " + tokens.length);
 		
 		this.ES = Double.parseDouble(tokens[3]);
 		this.NES = Double.parseDouble(tokens[4]);

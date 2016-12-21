@@ -49,7 +49,6 @@ public class DataSet implements Comparable<DataSet> {
 	private DataSetFiles datasetFiles;
 
 	protected DataSet(EnrichmentMap map, String name, Method method, DataSetFiles files) {
-		System.out.println("DataSet.DataSet() " + name);
 		this.map = map;
 		this.name = name;
 		this.method = method;

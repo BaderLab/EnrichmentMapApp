@@ -6,9 +6,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -43,21 +40,12 @@ public abstract class BaseIntegrationTest extends PaxExamConfiguration {
 	@Inject private LoadNetworkFileTaskFactory loadNetworkFileTaskFactory;
 	@Inject private CyNetworkManager networkManager;
 
-	protected File createTempFile(String path, String fileName) throws IOException {
-		int dot = fileName.indexOf('.');
-		String prefix = fileName.substring(0, dot);
-		String suffix = fileName.substring(dot+1);
-		File tempFile = File.createTempFile(prefix, suffix);
-		InputStream in = getClass().getResourceAsStream(path + prefix + "." + suffix);
-		assertNotNull(in);
-		Files.copy(in, tempFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-		return tempFile;
-	}
+	
 	
 	protected CyNetwork importNetworkFromFile(String path, String fileName) throws IOException {
 		Set<CyNetwork> existingNetworks = networkManager.getNetworkSet();
 		// import the network
-		File file = createTempFile(path, fileName);
+		File file = TestUtils.createTempFile(path, fileName);
 		TaskIterator taskIterator = loadNetworkFileTaskFactory.createTaskIterator(file);
 		SerialTestTaskManager taskManager = new SerialTestTaskManager();
 		taskManager.execute(taskIterator);
