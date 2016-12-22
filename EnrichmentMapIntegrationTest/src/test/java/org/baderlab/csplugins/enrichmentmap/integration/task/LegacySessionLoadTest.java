@@ -29,6 +29,7 @@ import org.baderlab.csplugins.enrichmentmap.model.GSEAResult;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpression;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
+import org.baderlab.csplugins.enrichmentmap.model.GenesetSimilarity;
 import org.baderlab.csplugins.enrichmentmap.model.Rank;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfEnrichmentResults;
@@ -79,7 +80,7 @@ public class LegacySessionLoadTest extends BaseIntegrationTest {
 		assertEquals(1, maps.size());
 		EnrichmentMap map = maps.values().iterator().next();
 		
-//		assertEquals("EM1_Enrichment Map", map.getName());
+		assertEquals("EM1_Enrichment Map", map.getName());
 		
 		CyNetwork network = networkManager.getNetwork(map.getNetworkID());
 		assertNotNull(network);
@@ -96,7 +97,7 @@ public class LegacySessionLoadTest extends BaseIntegrationTest {
 		assertEquals(0.5, params.getCombinedConstant(), 0.0);
 		assertFalse(params.isEMgmt());
 		assertEquals("Geneset_Overlap", params.getEnrichmentEdgeType());
-//		assertTrue(params.isFDR());
+		assertTrue(params.isFDR());
 		assertEquals(GreatFilter.HYPER, params.getGreatFilter());
 		assertEquals(0.005, params.getPvalue(), 0.0);
 		assertEquals(1.0, params.getPvalueMin(), 0.0);
@@ -106,14 +107,14 @@ public class LegacySessionLoadTest extends BaseIntegrationTest {
 		assertEquals(SimilarityMetric.OVERLAP, params.getSimilarityMetric());
 		assertFalse(params.isDistinctExpressionSets());
 		
-		// Number of edges: 3339 - that's how many geneset similarity objects there should be!!!
-//		GenesetSimilarity similarity = map.getGenesetSimilarity().get("RIBOSOME%GO%GO:0005840 (Geneset_Overlap) NUCLEAR DNA-DIRECTED RNA POLYMERASE COMPLEX%GO%GO:0055029");
-//		assertNotNull(similarity);
-//		assertEquals("RIBOSOME%GO%GO:0005840", similarity.getGeneset1_Name());
-//		assertEquals("NUCLEAR DNA-DIRECTED RNA POLYMERASE COMPLEX%GO%GO:0055029", similarity.getGeneset2_Name());
-//		assertEquals("Geneset_Overlap", similarity.getInteractionType());
-//		assertEquals(x.x, similarity.getSimilarity_coeffecient());
-		
+		String geneset1 = "RESOLUTION OF SISTER CHROMATID COHESION%REACTOME%REACT_150425.2";
+		String geneset2 = "CHROMOSOME, CENTROMERIC REGION%GO%GO:0000775";
+		GenesetSimilarity similarity = map.getGenesetSimilarity().get(geneset1 + " (Geneset_Overlap) " + geneset2);
+		assertNotNull(similarity);
+		assertEquals(geneset1, similarity.getGeneset1_Name());
+		assertEquals(geneset2, similarity.getGeneset2_Name());
+		assertEquals("Geneset_Overlap", similarity.getInteractionType());
+		assertEquals(0.6097560975609756, similarity.getSimilarity_coeffecient(), 0.0);
 		
 		DataSet dataset = map.getDataset("Dataset 1");
 		assertNotNull(dataset);
@@ -156,7 +157,7 @@ public class LegacySessionLoadTest extends BaseIntegrationTest {
 		GeneExpressionMatrix expressions = dataset.getExpressionSets();
 		assertEquals(20326, expressions.getExpressionUniverse());
 		assertEquals(3.686190609, expressions.getClosesttoZero(), 0.0);
-//		assertEndsWith(expressions.getFilename(), "MCF7_ExprMx_v2_names.gct");
+		assertEndsWith(expressions.getFilename(), "MCF7_ExprMx_v2_names.gct");
 		assertEquals(15380.42388, expressions.getMaxExpression(), 0.0);
 		assertEquals(3.686190609, expressions.getMinExpression(), 0.0);
 		assertEquals(20, expressions.getNumConditions());
@@ -182,13 +183,12 @@ public class LegacySessionLoadTest extends BaseIntegrationTest {
 		assertEndsWith(files.getClassFile(), "ES_NT.cls");
 		assertEndsWith(files.getEnrichmentFileName1(), "gsea_report_for_ES12_1473194913081.xls");
 		assertEndsWith(files.getEnrichmentFileName2(), "gsea_report_for_NT12_1473194913081.xls");
-//		assertEndsWith(files.getExpressionFileName(), "MCF7_ExprMx_v2_names.gct");
+		assertEndsWith(files.getExpressionFileName(), "MCF7_ExprMx_v2_names.gct");
 		assertEndsWith(files.getGMTFileName(), "Human_GO_AllPathways_no_GO_iea_April_15_2013_symbol.gmt");
 		assertEndsWith(files.getGseaHtmlReportFile(), "estrogen_treatment_12hr_gsea_enrichment_results.Gsea.1473194913081/index.html");
 		assertEndsWith(files.getRankedFile(), "ranked_gene_list_ES12_versus_NT12_1473194913081.xls");
 		assertEquals("ES12", files.getPhenotype1());
 		assertEquals("NT12", files.getPhenotype2());
-//		assertArrayEquals("ES12,ES12,ES12,NT12,NT12,NT12,ES24,ES24,ES24,NT24,NT24,NT24,ES48,ES48,ES48,NT48,NT48,NT48".split(","), files.getTemp_class1());
 	}
 	
 	

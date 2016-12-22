@@ -234,6 +234,7 @@ public class EnrichmentMapParameters {
 		EMCreationParameters params = new EMCreationParameters(getAttributePrefix(), 
 				getPvalue(), getQvalue(), NESFilter.ALL, Optional.empty(), similarityMetric, getSimilarityCutOff(), getCombinedConstant());
 		params.setEnrichmentEdgeType(enrichment_edge_type);
+		params.setFDR(FDR);
 		return params;
 	}
 	

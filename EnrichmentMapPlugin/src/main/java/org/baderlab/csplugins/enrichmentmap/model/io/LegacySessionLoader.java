@@ -312,8 +312,6 @@ public class LegacySessionLoader {
 				if(parts_exp.type != null && parts_exp.type.equalsIgnoreCase("expression")){
 					if(map.getDatasets().containsKey(parts_exp.dataset)){
 						DataSet ds = map.getDataset(parts_exp.dataset);
-						ds.getDatasetFiles().setExpressionFileName(prop_file.getAbsolutePath());
-						ds.getExpressionSets().setFilename(prop_file.getAbsolutePath());
 						ExpressionFileReaderTask expressionFile1 = new ExpressionFileReaderTask(ds);
 						GeneExpressionMatrix matrix = expressionFile1.parse();
 						matrix.restoreProps(parts_exp.dataset, props);
@@ -321,22 +319,15 @@ public class LegacySessionLoader {
 				}
 				//Deal with legacy session files.
 				if(prop_file.getName().contains("expression1.txt")){                  
-					//Load the GCT file
-					//get Dataset1
 					DataSet ds1 = map.getDataset(LegacySupport.DATASET1);
-					ds1.getDatasetFiles().setExpressionFileName(prop_file.getAbsolutePath());
-					ds1.getExpressionSets().setFilename(prop_file.getAbsolutePath());
 					ExpressionFileReaderTask expressionFile1 = new ExpressionFileReaderTask(ds1);
 					expressionFile1.parse();
 
 				}
 				if(prop_file.getName().contains("expression2.txt")){                    
 					DataSet ds2 = map.getDataset(LegacySupport.DATASET2);
-					ds2.getDatasetFiles().setExpressionFileName(prop_file.getAbsolutePath());
-					ds2.getExpressionSets().setFilename(prop_file.getAbsolutePath());
 					ExpressionFileReaderTask expressionFile2 = new ExpressionFileReaderTask(ds2);
 					expressionFile2.parse();
-
 					//if there are two expression sets and there is a second set of genesets of interest then we
 					//are dealing with two distinct expression files.
 					if( map.getDataset(LegacySupport.DATASET2) != null && map.getDataset(LegacySupport.DATASET2).getGenesetsOfInterest() != null && !map.getDataset(LegacySupport.DATASET2).getGenesetsOfInterest().getGenesets().isEmpty() ){
