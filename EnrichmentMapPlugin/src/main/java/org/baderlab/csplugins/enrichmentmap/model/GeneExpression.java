@@ -44,11 +44,6 @@
 package org.baderlab.csplugins.enrichmentmap.model;
 
 /**
- * Created by
- * User: risserlin
- * Date: Jan 29, 2009
- * Time: 3:49:44 PM
- * <p>
  * Class representing the expression of one gene/protein
  */
 public class GeneExpression {
@@ -74,29 +69,6 @@ public class GeneExpression {
     public GeneExpression(String name, String description) {
         this.name = name;
         this.description = description;
-    }
-
-    /**
-     * Convert Object into a string of the contents
-     *
-     * @return String representation of object as tab separate items followed by newline.
-     */
-    public String toString(){
-        StringBuffer GE_StrBuff = new StringBuffer();
-
-        GE_StrBuff.append(name);
-        GE_StrBuff.append(separator);
-        GE_StrBuff.append(description);
-
-        for(int i =0;i<expression.length;i++){
-
-            GE_StrBuff.append(separator);
-            GE_StrBuff.append(expression[i]);
-        }
-
-        GE_StrBuff.append("\n");
-
-        return GE_StrBuff.toString();
     }
 
 

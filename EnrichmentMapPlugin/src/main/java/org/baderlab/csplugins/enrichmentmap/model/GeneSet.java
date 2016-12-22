@@ -43,7 +43,6 @@
 
 package org.baderlab.csplugins.enrichmentmap.model;
 
-import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
 
@@ -99,14 +98,6 @@ public class GeneSet {
 		return new GeneSet(name, description, builder.build());
 	}
 
-	@Override
-	public  String toString() {
-		StringBuffer geneset = new StringBuffer();
-		geneset.append(getName() + "\t" + getDescription() + "\t");
-		for(Iterator<Integer> i = getGenes().iterator(); i.hasNext();)
-			geneset.append(i.next().toString() + "\t");
-		return geneset.toString();
-	}
 
 	@Override
 	public int hashCode() {

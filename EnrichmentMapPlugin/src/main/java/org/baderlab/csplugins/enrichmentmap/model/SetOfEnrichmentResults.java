@@ -105,20 +105,5 @@ public class SetOfEnrichmentResults {
 	public void setFilename2(String filename2) {
 		this.filename2 = filename2;
 	}
-
-	
-	public String toString(String ds){
-		StringBuffer paramVariables = new StringBuffer();
-		paramVariables.append(ds + "%" + this.getClass().getSimpleName() + "%name\t" + name + "\n");
-		paramVariables.append(ds + "%" + this.getClass().getSimpleName() + "%filename1\t" + filename1 + "\n");
-		paramVariables.append(ds + "%" + this.getClass().getSimpleName() + "%filename2\t" + filename2 + "\n");
-		paramVariables.append(ds + "%" + this.getClass().getSimpleName() + "%phenotype1\t" + phenotype1 + "\n");
-		paramVariables.append(ds + "%" + this.getClass().getSimpleName() + "%phenotype2\t" + phenotype2 + "\n");
-
-		return paramVariables.toString();
-
-	}
-	
-	
 	
 }

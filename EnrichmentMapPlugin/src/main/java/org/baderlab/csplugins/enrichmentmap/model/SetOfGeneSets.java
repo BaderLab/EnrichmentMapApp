@@ -124,16 +124,6 @@ public class SetOfGeneSets {
 		return null;
 	}
 
-	public String toString(String ds) {
-		StringBuffer paramVariables = new StringBuffer();
-
-		paramVariables.append(ds + "%" + this.getClass().getSimpleName() + "%name\t" + name + "\n");
-		paramVariables.append(ds + "%" + this.getClass().getSimpleName() + "%filename\t" + filename + "\n");
-		paramVariables.append(
-				ds + "%" + this.getClass().getSimpleName() + "%GenesetTypes\t" + GenesetTypes.toString() + "\n");
-		return paramVariables.toString();
-	}
-
 	public void clear() {
 		genesets.clear();
 		GenesetTypes.clear();

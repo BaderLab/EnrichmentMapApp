@@ -845,60 +845,7 @@ public class EnrichmentMapParameters {
 		return true;
 	}
 
-	/**
-	 * String representation of EnrichmentMapParameters. Is used to store the
-	 * persistent Attributes as a property file in the Cytoscape Session file.
-	 *
-	 * @see java.lang.Object#toString()
-	 */
-	public String toString() {
-		StringBuffer paramVariables = new StringBuffer();
-
-		paramVariables.append("enrichment_edge_type\t" + enrichment_edge_type + "\n");
-		paramVariables.append("attributePrefix\t" + this.attributePrefix + "\n");
-
-		//enrichment method.
-		paramVariables.append("method\t" + this.method + "\n");
-
-		//boolean flags
-		paramVariables.append("twoDatasets\t" + twoDatasets + "\n");
-		paramVariables.append("jaccard\t" + similarityMetric + "\n");
-
-		//add the combined constant
-		paramVariables.append("CombinedConstant" + combinedConstant + "\n");
-
-		paramVariables.append("FDR\t" + FDR + "\n");
-
-		//cutoffs
-		paramVariables.append("pvalue\t" + pvalue + "\n");
-		paramVariables.append("qvalue\t" + qvalue + "\n");
-		paramVariables.append("similarityCutOff\t" + similarityCutOff + "\n");
-
-		//go through each dataset and copy it into the current em
-		for(Iterator<?> i = this.files.keySet().iterator(); i.hasNext();) {
-			String ds = (String) i.next();
-			paramVariables.append(this.files.get(ds).toString(ds));
-
-		}
-
-		//Write the classes/phenotypes as a comma separated list.
-		//TODO:print classes out to prop file
-		/*
-		 * if(!EM.getExpressionSets().isEmpty()){ for(Iterator<String> k =
-		 * EM.getExpressionSets().keySet().iterator();k.hasNext();){ String
-		 * current_expression = k.next().toString(); GeneExpressionMatrix
-		 * expression = EM.getExpression(current_expression); if(expression !=
-		 * null){ String[] current_pheno = expression.getPhenotypes(); if
-		 * (current_pheno != null){ StringBuffer output = new StringBuffer();
-		 * for(int j = 0; j < current_pheno.length;j++)
-		 * output.append(current_pheno[j] + ",");
-		 * paramVariables.append("class%"+current_expression+"\t" +
-		 * output.toString() + "\n"); } } }
-		 * 
-		 * }
-		 */
-		return paramVariables.toString();
-	}
+	
 
 	/**
 	 * go through Hashmap and print all the objects

@@ -368,49 +368,6 @@ public class GeneExpressionMatrix {
 		this.closesttoZero = closesttoZero;
 	}
 
-	/**
-	 * Converts gene expression into a string representation
-	 *
-	 * @return String representation of the gene expression matrix
-	 */
-	public String toString() {
-
-		StringBuilder expressionSb = new StringBuilder();
-
-		for(int i = 0; i < columnNames.length; i++)
-			expressionSb.append(columnNames[i] + "\t");
-
-		expressionSb.append("\n");
-
-		for(Iterator<Integer> i = expressionMatrix.keySet().iterator(); i.hasNext();) {
-			expressionSb.append(((GeneExpression) expressionMatrix.get(i.next())).toString());
-		}
-
-		return expressionSb.toString();
-	}
-
-	/*
-	 * Prints out just the parameters associated with this expression set
-	 */
-	public String toString(String ds) {
-		StringBuilder paramVariables = new StringBuilder();
-		String simpleName = this.getClass().getSimpleName();
-
-		paramVariables.append(ds + "%" + simpleName + "%filename\t" + filename + "\n");
-		paramVariables.append(ds + "%" + simpleName + "%phenotype1\t" + phenotype1 + "\n");
-		paramVariables.append(ds + "%" + simpleName + "%phenotype2\t" + phenotype2 + "\n");
-
-		paramVariables.append(ds + "%" + simpleName + "%numConditions\t" + numConditions + "\n");
-		paramVariables.append(ds + "%" + simpleName + "%numGenes\t" + getNumGenes() + "\n");
-		paramVariables.append(ds + "%" + simpleName + "%minExpression\t" + minExpression + "\n");
-		paramVariables.append(ds + "%" + simpleName + "%maxExpression\t" + maxExpression + "\n");
-		paramVariables.append(ds + "%" + simpleName + "%expressionUniverse\t" + expressionUniverse + "\n");
-
-		if(phenotypes != null)
-			paramVariables.append(ds + "%" + simpleName + "%phenotypes\t" + phenotypes.toString() + "\n");
-
-		return paramVariables.toString();
-	}
 
 	/**
 	 * Restores parameters saved in the session file. Note, most of this object
