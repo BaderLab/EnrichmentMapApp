@@ -37,12 +37,6 @@ public class EnrichmentMap {
 
 	private Map<String, DataSet> datasets = new HashMap<>();
 
-	//Hashmap of all the similarities between all the genesets
-	//key = geneset1 + geneset2
-	//value = geneset similarity 
-	// MKTODO use SimilarityKey instead of String
-	private Map<String, GenesetSimilarity> genesetSimilarity = new HashMap<>();
-
 	//The set of genes defined in the Enrichment map
 	private BiMap<Integer,String> genes = HashBiMap.create();
 
@@ -269,13 +263,6 @@ public class EnrichmentMap {
 		return globalGenesets;
 	}
 	
-	public Map<String, GenesetSimilarity> getGenesetSimilarity() {
-		return genesetSimilarity;
-	}
-
-	public void setGenesetSimilarity(Map<String, GenesetSimilarity> genesetSimilarity) {
-		this.genesetSimilarity = genesetSimilarity;
-	}
 	
 	public Map<String, DataSet> getDatasets() {
 		return datasets;
@@ -396,8 +383,7 @@ public class EnrichmentMap {
 			String current_dataset = k.next();
 			if(!ds.equalsIgnoreCase("") && !rank.equalsIgnoreCase("")) {
 				//check that this is the right dataset
-				if(ds.equalsIgnoreCase(current_dataset)
-						&& (datasets.get(current_dataset)).getExpressionSets().getAllRanksNames().contains(rank)) {
+				if(ds.equalsIgnoreCase(current_dataset) && (datasets.get(current_dataset)).getExpressionSets().getAllRanksNames().contains(rank)) {
 					return datasets.get(current_dataset).getExpressionSets().getRanksByName(rank);
 				}
 			} else if((datasets.get(current_dataset)).getExpressionSets().getAllRanksNames().contains(ranks_name)) {

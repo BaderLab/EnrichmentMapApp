@@ -136,11 +136,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 			}
 		}
 		this.SignatureGenesets = this.paParams.getSignatureGenesets().getGenesets();
-
-		if(map.getGenesetSimilarity() == null)
-			this.geneset_similarities = new HashMap<>();
-		else
-			this.geneset_similarities = map.getGenesetSimilarity();
+		this.geneset_similarities = new HashMap<>();
 
 		this.SelectedSignatureGenesets = new HashMap<String, GeneSet>();
 		for(String geneset : paParams.getSelectedSignatureSetNames()) {
@@ -391,7 +387,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 			hubNodeView.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, hubNodeY + currentNodeY_offset);
 		}
 
-		String formatted_label = CreateEnrichmentMapNetworkTask.formatLabel(hub_name);
+		String formatted_label = MasterMapNetworkTask.formatLabel(hub_name);
 		CyRow row = cyNodeAttrs.getRow(hub_node.getSUID());
 		Columns.NODE_FORMATTED_NAME.set(row, prefix, null, formatted_label);
 
@@ -604,5 +600,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 		}
 		return null;
 	}
+	
+	
 
 }

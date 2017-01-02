@@ -3,6 +3,7 @@ package org.baderlab.csplugins.enrichmentmap.task;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 
+import java.util.Map;
 import java.util.Optional;
 
 import org.baderlab.csplugins.enrichmentmap.TestUtils;
@@ -13,8 +14,10 @@ import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
+import org.baderlab.csplugins.enrichmentmap.model.GenesetSimilarity;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.parsers.ParseBingoEnrichmentResults;
+import org.baderlab.csplugins.enrichmentmap.util.Baton;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.TaskMonitor;
 import org.junit.Test;
@@ -52,7 +55,9 @@ public class LoadBingoResultsTest {
 		InitializeGenesetsOfInterestTask genesets_init = new InitializeGenesetsOfInterestTask(em);
 		genesets_init.run(taskMonitor);  
         
-        ComputeSimilarityTask similarities = new ComputeSimilarityTask(em);
+		
+		Baton<Map<String, GenesetSimilarity>> baton = new Baton<>();
+		ComputeSimilarityTaskParallel similarities = new ComputeSimilarityTaskParallel(em, baton.consumer());	
         similarities.run(taskMonitor);
 
 				
@@ -63,7 +68,7 @@ public class LoadBingoResultsTest {
 		//there should be 11 genesets in the enrichments of interest
 		assertEquals(5, dataset.getGenesetsOfInterest().getGenesets().size());
 		//there should be 6 edges
-		assertEquals(6,em.getGenesetSimilarity().size());
+		assertEquals(6, baton.supplier().get().size());
 		//there should be a total of 366 genes
 		assertEquals(446, em.getNumberOfGenes());
 		//there should be 43 genes in the geneset "nucleolus"
@@ -126,8 +131,8 @@ public class LoadBingoResultsTest {
 		InitializeGenesetsOfInterestTask genesets_init = new InitializeGenesetsOfInterestTask(em);
 		genesets_init.run(taskMonitor);  
 		        
-		ComputeSimilarityTask similarities = new ComputeSimilarityTask(em);
-		similarities.run(taskMonitor);
+//		ComputeSimilarityTask similarities = new ComputeSimilarityTask(em);
+//		similarities.run(taskMonitor);
 
         dataset = em.getDataset(LegacySupport.DATASET1);
 		//get the stats for the first dataset		

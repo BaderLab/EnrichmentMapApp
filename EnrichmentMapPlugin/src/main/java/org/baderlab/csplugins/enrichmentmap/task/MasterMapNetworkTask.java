@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
@@ -43,14 +44,17 @@ public class MasterMapNetworkTask extends AbstractTask {
 	private final EnrichmentMap map;
 	private final String prefix;
 	
+	private final Supplier<Map<String,GenesetSimilarity>> supplier;
+	
 	public interface Factory {
-		MasterMapNetworkTask create(EnrichmentMap map);
+		MasterMapNetworkTask create(EnrichmentMap map, Supplier<Map<String,GenesetSimilarity>> supplier);
 	}
 	
 	@Inject
-	public MasterMapNetworkTask(@Assisted EnrichmentMap map) {
+	public MasterMapNetworkTask(@Assisted EnrichmentMap map, @Assisted Supplier<Map<String,GenesetSimilarity>> supplier) {
 		this.map = map;
 		this.prefix = map.getParams().getAttributePrefix();
+		this.supplier = supplier;
 	}
 	
 	@Override
@@ -100,7 +104,7 @@ public class MasterMapNetworkTask extends AbstractTask {
 					
 					CyRow row = network.getRow(node);
 					row.set(CyNetwork.NAME, genesetName);
-					Columns.NODE_FORMATTED_NAME.set(row, prefix, null, CreateEnrichmentMapNetworkTask.formatLabel(genesetName));
+					Columns.NODE_FORMATTED_NAME.set(row, prefix, null, formatLabel(genesetName));
 					Columns.NODE_NAME.set(row, prefix, null, genesetName); // MKTODO why is this column needed?
 					Columns.NODE_GS_DESCR.set(row, prefix, null, gs.getDescription());
 					Columns.NODE_GS_TYPE.set(row, prefix, null, Columns.NODE_GS_TYPE_ENRICHMENT);
@@ -137,7 +141,7 @@ public class MasterMapNetworkTask extends AbstractTask {
 	 * @param nodes
 	 */
 	private void createEdges(CyNetwork network, Map<String,CyNode> nodes) {
-		Map<String, GenesetSimilarity> similarities = map.getGenesetSimilarity();
+		Map<String,GenesetSimilarity> similarities = supplier.get();
 		for(String edgeName : similarities.keySet()) {
 			GenesetSimilarity similarity = similarities.get(edgeName);
 			
@@ -233,5 +237,68 @@ public class MasterMapNetworkTask extends AbstractTask {
 			return 1 - result.getPvalue();
 		else
 			return (-1) * (1 - result.getPvalue());
+	}
+	
+	
+	/**
+	 * Wrap label
+	 *
+	 * @param label - current one line representation of label
+	 * @return formatted, wrapped label
+	 */
+	public static String formatLabel(String label) {
+		final int maxNodeLabelLength = 15;
+		String formattedLabel = "";
+
+		int i = 0;
+		int k = 1;
+
+		//only wrap at spaces
+		String[] tokens = label.split(" ");
+		//first try and wrap label based on spacing
+		if(tokens.length > 1) {
+			int current_count = 0;
+			for(int j = 0; j < tokens.length; j++) {
+				if(current_count + tokens[j].length() <= maxNodeLabelLength) {
+					formattedLabel = formattedLabel + tokens[j] + " ";
+					current_count = current_count + tokens[j].length();
+				} else if(current_count + tokens[j].length() > maxNodeLabelLength) {
+					formattedLabel = formattedLabel + "\n" + tokens[j] + " ";
+					current_count = tokens[j].length();
+				}
+			}
+		} else {
+			tokens = label.split("_");
+
+			if(tokens.length > 1) {
+				int current_count = 0;
+				for(int j = 0; j < tokens.length; j++) {
+					if(j != 0)
+						formattedLabel = formattedLabel + "_";
+					if(current_count + tokens[j].length() <= maxNodeLabelLength) {
+						formattedLabel = formattedLabel + tokens[j];
+						current_count = current_count + tokens[j].length();
+					} else if(current_count + tokens[j].length() > maxNodeLabelLength) {
+						formattedLabel = formattedLabel + "\n" + tokens[j];
+						current_count = tokens[j].length();
+					}
+				}
+			}
+
+			//if there is only one token wrap it anyways.
+			else if(tokens.length == 1) {
+				while(i <= label.length()) {
+
+					if(i + maxNodeLabelLength > label.length())
+						formattedLabel = formattedLabel + label.substring(i, label.length()) + "\n";
+					else
+						formattedLabel = formattedLabel + label.substring(i, k * maxNodeLabelLength) + "\n";
+					i = (k * maxNodeLabelLength);
+					k++;
+				}
+			}
+		}
+
+		return formattedLabel;
 	}
 }

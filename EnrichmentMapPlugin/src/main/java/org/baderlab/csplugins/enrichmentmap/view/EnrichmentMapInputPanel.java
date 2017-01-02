@@ -99,7 +99,6 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
-import org.baderlab.csplugins.enrichmentmap.task.EnrichmentMapBuildMapTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.util.ResultTaskObserver;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 import org.cytoscape.application.swing.CySwingApplication;
@@ -126,7 +125,7 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 	@Inject private FileUtil fileUtil;
 	@Inject private CyServiceRegistrar registrar;
 	
-	@Inject private EnrichmentMapBuildMapTaskFactory.Factory taskFactoryFactory;
+//	@Inject private EnrichmentMapBuildMapTaskFactory.Factory taskFactoryFactory;
 	@Inject private Provider<EnrichmentMapParameters> emParamsFactory;
 	@Inject private EnrichmentMapManager emManager;
 	@Inject private LegacySupport legacySupport;
@@ -1248,12 +1247,12 @@ public class EnrichmentMapInputPanel extends JPanel implements CytoPanelComponen
 		//add observer to catch if the input is a GREAT file so we can determine which p-value to use
 		ResultTaskObserver observer = new ResultTaskObserver();
 
-		EnrichmentMapBuildMapTaskFactory buildmap = taskFactoryFactory.create(map);
-		//buildmap.build();
-		dialog.execute(buildmap.createTaskIterator(), observer);
-
-		//After the network is built register the HeatMap and Parameters panel
-		emManager.showPanels();
+//		EnrichmentMapBuildMapTaskFactory buildmap = taskFactoryFactory.create(map);
+//		//buildmap.build();
+//		dialog.execute(buildmap.createTaskIterator(), observer);
+//
+//		//After the network is built register the HeatMap and Parameters panel
+//		emManager.showPanels();
 	}
 
 	private void cancelButtonActionPerformed(ActionEvent evt) {

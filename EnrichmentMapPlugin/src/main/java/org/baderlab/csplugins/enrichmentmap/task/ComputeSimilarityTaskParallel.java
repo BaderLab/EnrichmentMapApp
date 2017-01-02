@@ -8,6 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
@@ -24,11 +25,13 @@ import com.google.common.collect.Sets;
 public class ComputeSimilarityTaskParallel extends AbstractTask {
 
 	private final EnrichmentMap map;
+	private final Consumer<Map<String,GenesetSimilarity>> consumer;
 	
-	public ComputeSimilarityTaskParallel(EnrichmentMap map) {
+	public ComputeSimilarityTaskParallel(EnrichmentMap map, Consumer<Map<String,GenesetSimilarity>> consumer) {
 		this.map = map;
+		this.consumer = consumer;
 	}
-
+	
 	@Override
 	public void run(TaskMonitor tm) throws InterruptedException {
 		// If the expression sets are distinct the do we need to generate separate edges for each dataset as well as edges between each data set?
@@ -52,7 +55,7 @@ public class ComputeSimilarityTaskParallel extends AbstractTask {
         taskMonitor.setStatusMessageTemplate("Computing Geneset similarity: {0} of {1} similarities");
 		
 		Set<SimilarityKey> similaritiesVisited = ConcurrentHashMap.newKeySet();
-		Map<String,GenesetSimilarity> similarities = new ConcurrentHashMap<>();
+		final Map<String,GenesetSimilarity> similarities = new ConcurrentHashMap<>();
 		
 		for(final String geneset1Name : genesetsOfInterest.keySet()) {
 			
@@ -95,7 +98,7 @@ public class ComputeSimilarityTaskParallel extends AbstractTask {
 		timer.cancel();
 		
 		if(!cancelled)
-			map.getGenesetSimilarity().putAll(similarities);
+			consumer.accept(similarities);
 	}
 
 	

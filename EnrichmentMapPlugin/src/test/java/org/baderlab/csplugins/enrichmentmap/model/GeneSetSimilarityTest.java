@@ -9,7 +9,8 @@ import java.util.Map;
 import org.baderlab.csplugins.enrichmentmap.TestUtils;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.parsers.GMTFileReaderTask;
-import org.baderlab.csplugins.enrichmentmap.task.ComputeSimilarityTask;
+import org.baderlab.csplugins.enrichmentmap.task.ComputeSimilarityTaskParallel;
+import org.baderlab.csplugins.enrichmentmap.util.Baton;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.TaskMonitor;
 import org.jukito.JukitoRunner;
@@ -59,13 +60,13 @@ public class GeneSetSimilarityTest {
 		//set the cutoff to the max
 		map.getParams().setSimilarityCutoff(0);
 		
-		ComputeSimilarityTask sim_task = new ComputeSimilarityTask(map);		
+		Baton<Map<String, GenesetSimilarity>> baton = new Baton<>();
+		ComputeSimilarityTaskParallel sim_task = new ComputeSimilarityTaskParallel(map, baton.consumer());		
 		sim_task.run(taskMonitor);
 		
-		Map<String,GenesetSimilarity> similarities = map.getGenesetSimilarity();
+		Map<String,GenesetSimilarity> similarities = baton.supplier().get();
 		
 		assertEquals(15, similarities.size());
-		
 		
 		//check the gene set similarity between APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4
 		//and APOPTOSIS%REACTOME%REACT_578.5
@@ -134,10 +135,11 @@ public class GeneSetSimilarityTest {
 		//set the cutoff to the max
 		map.getParams().setSimilarityCutoff(0);
 		
-		ComputeSimilarityTask sim_task = new ComputeSimilarityTask(map);		
+		Baton<Map<String, GenesetSimilarity>> baton = new Baton<>();
+		ComputeSimilarityTaskParallel sim_task = new ComputeSimilarityTaskParallel(map, baton.consumer());		
 		sim_task.run(taskMonitor);
 		
-		Map<String,GenesetSimilarity> similarities = map.getGenesetSimilarity();
+		Map<String,GenesetSimilarity> similarities = baton.supplier().get();
 		
 		assertEquals(15, similarities.size());
 		
@@ -213,10 +215,11 @@ public class GeneSetSimilarityTest {
 		map.getParams().setSimilarityCutoff(0);
 		map.getParams().setCombinedConstant(combined_constant);
 		
-		ComputeSimilarityTask sim_task = new ComputeSimilarityTask(map);		
+		Baton<Map<String, GenesetSimilarity>> baton = new Baton<>();
+		ComputeSimilarityTaskParallel sim_task = new ComputeSimilarityTaskParallel(map, baton.consumer());
 		sim_task.run(taskMonitor);
 		
-		Map<String,GenesetSimilarity> similarities = map.getGenesetSimilarity();
+		Map<String,GenesetSimilarity> similarities = baton.supplier().get();
 		
 		assertEquals(15, similarities.size());
 		

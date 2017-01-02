@@ -5,9 +5,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 
@@ -15,6 +15,7 @@ import javax.inject.Inject;
 
 import org.baderlab.csplugins.enrichmentmap.integration.BaseIntegrationTest;
 import org.baderlab.csplugins.enrichmentmap.integration.SerialTestTaskManager;
+import org.baderlab.csplugins.enrichmentmap.integration.SessionFile;
 import org.baderlab.csplugins.enrichmentmap.integration.TestUtils;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
@@ -29,35 +30,48 @@ import org.baderlab.csplugins.enrichmentmap.model.GSEAResult;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpression;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
-import org.baderlab.csplugins.enrichmentmap.model.GenesetSimilarity;
 import org.baderlab.csplugins.enrichmentmap.model.Rank;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfEnrichmentResults;
 import org.baderlab.csplugins.enrichmentmap.model.io.SessionModelListener;
+import org.baderlab.csplugins.enrichmentmap.style.MasterMapVisualStyle;
+import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.task.read.OpenSessionTaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.FixMethodOrder;
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
+import org.junit.runners.MethodSorters;
 
 import com.google.inject.Injector;
 
-//@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class LegacySessionLoadTest extends BaseIntegrationTest {
 
 	private static final String PATH = "/LegacySessionLoadTest/";
 
+	@Rule public TestName testName = new TestName();
+	
 	@Inject private OpenSessionTaskFactory openSessionTF;
 	@Inject private CyNetworkManager networkManager;
 	@Inject private Injector injector;
 	
 	@Before
 	public void loadSessionFile() throws Exception {
+		java.lang.reflect.Method testMethod = getClass().getMethod(testName.getMethodName());
+		SessionFile annotation = testMethod.getAnnotation(SessionFile.class);
+		String fileName = annotation.value();
+		assertNotNull(fileName);
 		assertNotNull(openSessionTF);
-		File sessionFile = TestUtils.createTempFile(PATH, "em_session_2.2.cys");
+		File sessionFile = TestUtils.createTempFile(PATH, fileName);
 		TaskIterator tasks = openSessionTF.createTaskIterator(sessionFile);
 		SerialTestTaskManager taskManager = new SerialTestTaskManager();
 		taskManager.execute(tasks);
@@ -71,15 +85,24 @@ public class LegacySessionLoadTest extends BaseIntegrationTest {
 	}
 	
 	
-	@Test
-	public void testLoadedLegacyData() throws Exception {
-		// MKTODO fix below assertions that are broken
-	
+	private EnrichmentMap getEnrichmentMap() {
 		EnrichmentMapManager emManager = injector.getInstance(EnrichmentMapManager.class);
 		Map<Long, EnrichmentMap> maps = emManager.getAllEnrichmentMaps();
 		assertEquals(1, maps.size());
 		EnrichmentMap map = maps.values().iterator().next();
-		
+		return map;
+	}
+	
+	private static void assertEndsWith(String expected, String ending) {
+		String message = "Expected '" + expected + "' to end with '" + ending +"'";
+		assertTrue(message, expected.endsWith(ending));
+	}
+	
+	
+	@Test
+	@SessionFile("em_session_2.2.cys")
+	public void test_1_LoadedLegacyData() throws Exception {
+		EnrichmentMap map = getEnrichmentMap();
 		assertEquals("EM1_Enrichment Map", map.getName());
 		
 		CyNetwork network = networkManager.getNetwork(map.getNetworkID());
@@ -90,10 +113,14 @@ public class LegacySessionLoadTest extends BaseIntegrationTest {
 		assertEquals(14067, map.getAllGenes().size());
 		
 		// Number of edges: 3339 - that's how many geneset similarity objects there should be!!!
-		assertEquals(3339, map.getGenesetSimilarity().size()); 
+		
+		CyTable edgeTable = network.getDefaultEdgeTable();
+		
+		assertEquals(3339, edgeTable.getRowCount()); 
 		
 		EMCreationParameters params = map.getParams();
-		assertEquals("EM1_", params.getAttributePrefix());
+		String prefix = params.getAttributePrefix();
+		assertEquals("EM1_", prefix);
 		assertEquals(0.5, params.getCombinedConstant(), 0.0);
 		assertFalse(params.isEMgmt());
 		assertEquals("Geneset_Overlap", params.getEnrichmentEdgeType());
@@ -109,12 +136,11 @@ public class LegacySessionLoadTest extends BaseIntegrationTest {
 		
 		String geneset1 = "RESOLUTION OF SISTER CHROMATID COHESION%REACTOME%REACT_150425.2";
 		String geneset2 = "CHROMOSOME, CENTROMERIC REGION%GO%GO:0000775";
-		GenesetSimilarity similarity = map.getGenesetSimilarity().get(geneset1 + " (Geneset_Overlap) " + geneset2);
-		assertNotNull(similarity);
-		assertEquals(geneset1, similarity.getGeneset1_Name());
-		assertEquals(geneset2, similarity.getGeneset2_Name());
-		assertEquals("Geneset_Overlap", similarity.getInteractionType());
-		assertEquals(0.6097560975609756, similarity.getSimilarity_coeffecient(), 0.0);
+		Collection<CyRow> rows = edgeTable.getMatchingRows(CyNetwork.NAME, geneset1 + " (Geneset_Overlap) " + geneset2);
+		assertEquals(1, rows.size());
+		CyRow row = rows.iterator().next();
+		assertEquals("Geneset_Overlap", row.get(CyEdge.INTERACTION, String.class));
+		assertEquals(0.6097560975609756, MasterMapVisualStyle.Columns.EDGE_SIMILARITY_COEFF.get(row, prefix), 0.0);
 		
 		DataSet dataset = map.getDataset("Dataset 1");
 		assertNotNull(dataset);
@@ -192,23 +218,51 @@ public class LegacySessionLoadTest extends BaseIntegrationTest {
 	}
 	
 	
-	@Ignore
-	private static void testLoadTwoDataSetLegacySession() {
-		// Need to test loading of a session with 2 datasets
-		// this is because I think I broke ComputeSimilarityTask by using SimilarityKey.swap()
-		// and that won't get exposed unless there's 2 datasets
-		fail("not implemented yet");
+	@Test
+	@SessionFile("em_session_2.2_twodataset.cys")
+	public void test_2_LoadTwoDataSetLegacySession() {
+		EnrichmentMap map = getEnrichmentMap();
+		assertEquals(2, map.getDataSetCount());
+		assertEquals(11445, map.getAllGenes().size());
+		
+		CyNetwork network = networkManager.getNetwork(map.getNetworkID());
+		Map<String, CyEdge> edges = TestUtils.getEdges(network);
+		
+		assertEquals(12, edges.size());
+		assertTrue(edges.containsKey("BOTTOM8_PLUS100 (Geneset_Overlap_set2) MIDDLE8_PLUS100"));
+		assertTrue(edges.containsKey("BOTTOM8_PLUS100 (Geneset_Overlap_set2) TOP8_PLUS100"));
+		assertTrue(edges.containsKey("MIDDLE8_PLUS100 (Geneset_Overlap_set2) TOP8_PLUS100"));
+		assertTrue(edges.containsKey("MIDDLE8_PLUS100 (Geneset_Overlap_set2) TOP1_PLUS100"));
+		assertTrue(edges.containsKey("TOP8_PLUS100 (Geneset_Overlap_set2) TOP1_PLUS100"));
+		assertTrue(edges.containsKey("TOP8_PLUS100 (Geneset_Overlap_set1) TOP1_PLUS100"));
+		assertTrue(edges.containsKey("BOTTOM8_PLUS100 (Geneset_Overlap_set2) TOP1_PLUS100"));
+		assertTrue(edges.containsKey("BOTTOM8_PLUS100 (Geneset_Overlap_set1) TOP1_PLUS100"));
+		assertTrue(edges.containsKey("BOTTOM8_PLUS100 (Geneset_Overlap_set1) MIDDLE8_PLUS100"));
+		assertTrue(edges.containsKey("MIDDLE8_PLUS100 (Geneset_Overlap_set1) TOP1_PLUS100"));
+		assertTrue(edges.containsKey("BOTTOM8_PLUS100 (Geneset_Overlap_set1) TOP8_PLUS100"));
+		assertTrue(edges.containsKey("MIDDLE8_PLUS100 (Geneset_Overlap_set1) TOP8_PLUS100"));
 	}
 	
 	
-	private static void assertEndsWith(String expected, String ending) {
-		if(!expected.endsWith(ending)) {
-			fail("Expected " + expected + " to end with '" + ending);
-		}
+	@Test
+	@SessionFile("em_session_2.2_twodataset_pa.cys")
+	public void test_2_LoadTwoDataSetWithPostAnalysisLegacySession() {
+		EnrichmentMap map = getEnrichmentMap();
+		assertEquals(2, map.getDataSetCount());
+		assertEquals(11445, map.getAllGenes().size());
+		
+		CyNetwork network = networkManager.getNetwork(map.getNetworkID());
+		Map<String, CyEdge> edges = TestUtils.getEdges(network);
+		
+		assertEquals(15, edges.size());
+		assertTrue(edges.containsKey("PA_TOP8_MIDDLE8_BOTTOM8 (sig_set1) BOTTOM8_PLUS100"));
+		assertTrue(edges.containsKey("PA_TOP8_MIDDLE8_BOTTOM8 (sig_set1) TOP8_PLUS100"));
+		assertTrue(edges.containsKey("PA_TOP8_MIDDLE8_BOTTOM8 (sig_set1) MIDDLE8_PLUS100"));
 	}
 	
 	
 	@Ignore
+	@SessionFile("em_session_2.2.cys")
 	public void testSavingSession() throws Exception {
 		EnrichmentMapManager emManager = injector.getInstance(EnrichmentMapManager.class);
 		Map<Long, EnrichmentMap> maps = emManager.getAllEnrichmentMaps();

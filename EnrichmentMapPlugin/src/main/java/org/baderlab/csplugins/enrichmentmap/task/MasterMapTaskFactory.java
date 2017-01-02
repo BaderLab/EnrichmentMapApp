@@ -1,6 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap.task;
 
 import java.util.List;
+import java.util.Map;
 
 import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Headless;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
@@ -8,11 +9,13 @@ import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.model.GenesetSimilarity;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.parsers.DetermineEnrichmentResultFileReader;
 import org.baderlab.csplugins.enrichmentmap.parsers.ExpressionFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.parsers.GMTFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.parsers.RanksFileReaderTask;
+import org.baderlab.csplugins.enrichmentmap.util.Baton;
 import org.baderlab.csplugins.enrichmentmap.view.mastermap.DataSetParameters;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.AbstractTaskFactory;
@@ -107,11 +110,14 @@ public class MasterMapTaskFactory extends AbstractTaskFactory {
 		// Trim the genesets to only contain the genes that are in the data file.
 		tasks.append(new FilterGenesetsByDatasetGenes(map));
 
+		// Link the ComputeSimilarityTask to the MasterMapNetworkTask by a "pipe"
+		Baton<Map<String,GenesetSimilarity>> pipe = new Baton<>();
+		
 		// Compute the geneset similarities
-		tasks.append(new ComputeSimilarityTaskParallel(map));
+		tasks.append(new ComputeSimilarityTaskParallel(map, pipe.consumer()));
 
 		// Create the network
-		tasks.append(masterMapNetworkTaskFactory.create(map));
+		tasks.append(masterMapNetworkTaskFactory.create(map, pipe.supplier()));
 		
 		// Create style and layout
 		if(!headless) {

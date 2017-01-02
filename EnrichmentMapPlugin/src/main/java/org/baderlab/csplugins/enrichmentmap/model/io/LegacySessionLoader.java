@@ -20,14 +20,12 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
-import org.baderlab.csplugins.enrichmentmap.model.GenesetSimilarity;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.model.Rank;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfEnrichmentResults;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
 import org.baderlab.csplugins.enrichmentmap.parsers.ExpressionFileReaderTask;
-import org.baderlab.csplugins.enrichmentmap.task.ComputeSimilarityTask;
 import org.baderlab.csplugins.enrichmentmap.task.InitializeGenesetsOfInterestTask;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.util.StreamUtil;
@@ -365,17 +363,17 @@ public class LegacySessionLoader {
 					genesets_init.setThrowIfMissing(false); // MKTODO really?
 					genesets_init.initializeSets(null);
 
-					//for each map compute the similarity matrix, (easier than storing it) compute the geneset similarities
-					ComputeSimilarityTask similarities = new ComputeSimilarityTask(map, ComputeSimilarityTask.ENRICHMENT);
-					Map<String, GenesetSimilarity> similarity_results = similarities.computeGenesetSimilarities(null);
-					map.setGenesetSimilarity(similarity_results);
-
-					// also compute geneset similarities between Enrichment- and Signature Genesets (if any)
-					if (! map.getSignatureGenesets().isEmpty()){
-						ComputeSimilarityTask sigSimilarities = new ComputeSimilarityTask(map, ComputeSimilarityTask.SIGNATURE);
-						Map<String, GenesetSimilarity> sig_similarity_results = sigSimilarities.computeGenesetSimilarities(null);
-						map.getGenesetSimilarity().putAll(sig_similarity_results);
-					}
+//					//for each map compute the similarity matrix, (easier than storing it) compute the geneset similarities
+//					ComputeSimilarityTask similarities = new ComputeSimilarityTask(map, ComputeSimilarityTask.ENRICHMENT);
+//					Map<String, GenesetSimilarity> similarity_results = similarities.computeGenesetSimilarities(null);
+//					map.setGenesetSimilarity(similarity_results);
+//
+//					// also compute geneset similarities between Enrichment- and Signature Genesets (if any)
+//					if (! map.getSignatureGenesets().isEmpty()){
+//						ComputeSimilarityTask sigSimilarities = new ComputeSimilarityTask(map, ComputeSimilarityTask.SIGNATURE);
+//						Map<String, GenesetSimilarity> sig_similarity_results = sigSimilarities.computeGenesetSimilarities(null);
+//						map.getGenesetSimilarity().putAll(sig_similarity_results);
+//					}
 				}//end of if(map != null)
 			}
 			

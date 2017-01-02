@@ -68,10 +68,6 @@ public class LoadEdbDatasetTest {
 		InitializeGenesetsOfInterestTask genesets_init = new InitializeGenesetsOfInterestTask(em);
         genesets_init.run(taskMonitor);
         
-        ComputeSimilarityTask similarities = new ComputeSimilarityTask(em);
-        similarities.run(taskMonitor);
-		
-        
         //check to see if the dataset loaded
         //although the original analysis had 193 genesets because this is loaded from
         //edb version it only stores the genesets that overlapped with the dataset analyzed.

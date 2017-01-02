@@ -198,7 +198,8 @@ public class UpdateHeatMapTask extends AbstractTask {
 			for(CyEdge current_edge : edges) {
 				String edgename = network.getRow(current_edge).get(CyNetwork.NAME, String.class);
 
-				GenesetSimilarity similarity = map.getGenesetSimilarity().get(edgename);
+				// MKTODO fix this... no wait rewrite the entire HeatMap
+				GenesetSimilarity similarity = null; //map.getGenesetSimilarity().get(edgename);
 				if(similarity == null)
 					continue;
 

@@ -3,6 +3,7 @@ package org.baderlab.csplugins.enrichmentmap.task;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 
+import java.util.Map;
 import java.util.Optional;
 
 import org.baderlab.csplugins.enrichmentmap.TestUtils;
@@ -13,8 +14,10 @@ import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
+import org.baderlab.csplugins.enrichmentmap.model.GenesetSimilarity;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.parsers.GMTFileReaderTask;
+import org.baderlab.csplugins.enrichmentmap.util.Baton;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.TaskMonitor;
 import org.junit.Test;
@@ -60,14 +63,15 @@ public class LoadGMTFileOnlyTest {
 		InitializeGenesetsOfInterestTask genesets_init = new InitializeGenesetsOfInterestTask(em);
 		genesets_init.run(taskMonitor);
 		        
-		ComputeSimilarityTask similarities = new ComputeSimilarityTask(em);
+		Baton<Map<String, GenesetSimilarity>> baton = new Baton<>();
+		ComputeSimilarityTaskParallel similarities = new ComputeSimilarityTaskParallel(em, baton.consumer());	
 		similarities.run(taskMonitor);
 
 				
 		//check to see if the dataset loaded - there should be 36 genesets
 		assertEquals(36, dataset.getSetofgenesets().getGenesets().size());
 		//there should be (36 * 35)/2 edges (geneset similarities)
-		assertEquals(18, em.getGenesetSimilarity().size());
+		assertEquals(18, baton.supplier().get().size());
 		//there should be 523 genes
 		assertEquals(523, em.getNumberOfGenes());
 		assertEquals(523, dataset.getExpressionSets().getNumGenes());
