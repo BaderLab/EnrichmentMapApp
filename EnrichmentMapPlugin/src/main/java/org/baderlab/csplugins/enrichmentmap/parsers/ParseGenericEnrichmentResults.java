@@ -16,11 +16,11 @@ import com.google.common.collect.ImmutableSet;
 
 public class ParseGenericEnrichmentResults extends DatasetLineParser {
 	
-
 	public ParseGenericEnrichmentResults(DataSet dataset) {
 		super(dataset);
-
 	}
+	
+	@Override
 	public void parseLines(List<String> lines, DataSet dataset, TaskMonitor taskMonitor) {
 		if(taskMonitor == null)
 			taskMonitor = new NullTaskMonitor();

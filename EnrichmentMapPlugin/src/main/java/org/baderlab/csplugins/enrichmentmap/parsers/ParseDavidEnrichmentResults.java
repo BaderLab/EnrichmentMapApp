@@ -21,8 +21,8 @@ public class ParseDavidEnrichmentResults extends DatasetLineParser {
 
 	/**
 	 * Parse david enrichment results file
-	 *
 	 */
+	@Override
 	public void parseLines(List<String> lines, DataSet dataset, TaskMonitor taskMonitor) {
 		if(taskMonitor == null)
 			taskMonitor = new NullTaskMonitor();

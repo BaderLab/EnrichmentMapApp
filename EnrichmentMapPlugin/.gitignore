@@ -23,3 +23,5 @@ temp_resources/
 /target
 /bin
 /.apt_generated/
+
+local.properties

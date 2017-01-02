@@ -19,6 +19,7 @@ public class ParseBingoEnrichmentResults extends DatasetLineParser {
 		super(dataset);
 	}
 
+	@Override
 	public void parseLines(List<String> lines, DataSet dataset, TaskMonitor taskMonitor) {
 		if(taskMonitor == null)
 			taskMonitor = new NullTaskMonitor();

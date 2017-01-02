@@ -170,14 +170,6 @@ public class EMCreationParameters implements EnrichmentResultFilterParams {
 		this.enrichmentEdgeType = enrichmentEdgeType;
 	}
 
-	public boolean isFdr() {
-		return fdr;
-	}
-
-	public void setFdr(boolean fdr) {
-		this.fdr = fdr;
-	}
-
 	public void setAttributePrefix(String attributePrefix) {
 		this.attributePrefix = attributePrefix;
 	}
