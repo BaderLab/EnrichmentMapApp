@@ -121,6 +121,7 @@ public class SliderBarPanel extends JPanel {
      */
 	private void initPanel() {
 		label = new JLabel(labelText);
+		label.setVisible(labelText != null && !labelText.trim().isEmpty());
 		
 		slider = new JSlider(JSlider.HORIZONTAL, min, max, initialValue);
 		slider.setMajorTickSpacing((max - min) / 5);
