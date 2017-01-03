@@ -63,6 +63,11 @@ import com.lowagie.text.Font;
 @SuppressWarnings("serial")
 public class MixedFormatDialogPage implements CardDialogPage {
 
+	private static final String LABEL_GSEA = "GSEA";
+	private static final String LABEL_GENERIC = "Generic/gProfiler";
+	private static final String LABEL_SPECIALIZED = "DAVID/BINGO/Great";
+	
+	
 	@Inject private DialogTaskManager taskManager;
 	@Inject private FileUtil fileUtil;
 	@Inject private IconManager iconManager;
@@ -304,6 +309,12 @@ public class MixedFormatDialogPage implements CardDialogPage {
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setViewportView(list);
 		
+		JLabel status = new JLabel("");
+		SwingUtil.makeSmall(status);
+		dataSetListModel.addListDataListener(SwingUtil.simpleListDataListener(() -> {
+			status.setText(formatStatusLabel(dataSetListModel.toList()));
+		}));
+		
 		JPanel panel = new JPanel();
 		GroupLayout layout = new GroupLayout(panel);
 		panel.setLayout(layout);
@@ -313,7 +324,10 @@ public class MixedFormatDialogPage implements CardDialogPage {
 		
 		layout.setHorizontalGroup(
 			layout.createSequentialGroup()
-				.addComponent(scrollPane, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+				.addGroup(layout.createParallelGroup()
+					.addComponent(scrollPane, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(status)
+				)
 				.addGroup(layout.createParallelGroup()
 					.addComponent(addFolderButton, bwidth, bwidth, bwidth)
 					.addComponent(addManualButton, bwidth, bwidth, bwidth)
@@ -326,7 +340,10 @@ public class MixedFormatDialogPage implements CardDialogPage {
 			layout.createSequentialGroup()
 				.addGap(10, 10, 10)
 				.addGroup(layout.createParallelGroup()
-					.addComponent(scrollPane, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+					.addGroup(layout.createSequentialGroup()
+						.addComponent(scrollPane, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+						.addComponent(status)
+					)
 					.addGroup(layout.createSequentialGroup()
 						.addComponent(addFolderButton)
 						.addComponent(addManualButton)
@@ -341,6 +358,63 @@ public class MixedFormatDialogPage implements CardDialogPage {
 		return panel;
 	}
 
+	
+	private static String formatStatusLabel(List<DataSetParameters> datasets) {
+		if(datasets.isEmpty())
+			return "";
+		
+		int n = datasets.size();
+		int n_gsea = 0, n_generic = 0, n_specialized = 0;
+		
+		for(DataSetParameters dataset : datasets) {
+			switch(dataset.getMethod()) {
+				case GSEA:        n_gsea++;        break;
+				case Generic:     n_generic++;     break;
+				case Specialized: n_specialized++; break;
+			}
+		}
+		
+		if(n == 1) {
+			if(n_gsea == 1) {
+				return "1 " + LABEL_GSEA + " Data Set";
+			} else if(n_generic == 1) {
+				return "1 " + LABEL_GENERIC + " Data Set";
+			} else if(n_specialized == 1) {
+				return "1 " + LABEL_SPECIALIZED + " Data Set";
+			}
+			return "";
+		} else {
+			if(n_gsea > 0 && n_generic == 0 && n_specialized == 0) {
+				return n + " " + LABEL_GSEA + " Data Sets";
+			} else if(n_gsea == 0 && n_generic > 0 && n_specialized == 0) {
+				return n + " " + LABEL_GENERIC + " Data Sets";
+			} else if(n_gsea == 0 && n_generic == 0 && n_specialized > 0) {
+				return n + " " + LABEL_SPECIALIZED + " Data Sets";
+			}
+			
+			StringBuilder sb = new StringBuilder();
+			sb.append(n).append(" Data Sets: ");
+			boolean first = true;
+			if(n_gsea > 0) {
+				sb.append(n_gsea).append(" ").append(LABEL_GSEA);
+				first = false;
+			}
+			if(n_generic > 0) {
+				if(!first)
+					sb.append(", ");
+				sb.append(n_generic).append(" ").append(LABEL_GENERIC);
+				first = false;
+			}
+			if(n_specialized > 0) {
+				if(!first)
+					sb.append(", ");
+				sb.append(n_specialized).append(" ").append(LABEL_SPECIALIZED);
+			}
+			return sb.toString();
+		}
+	}
+	
+	
 	private void editDataSet(JList<DataSetParameters> list) {
 		int index = list.getSelectedIndex();
 
@@ -418,15 +492,6 @@ public class MixedFormatDialogPage implements CardDialogPage {
 				return panel;
 			}
 			
-			private String methodToString(Method method) {
-				switch(method) {
-					case GSEA:        return "GSEA";
-					case Generic:     return "Generic/gProfiler";
-					case Specialized: return "DAVID/BINGO/Great";
-					default:          return "Unknown";
-				}
-			}
-			
 			private JPanel createFilePanel(DataSetFiles files) {
 				JPanel filePanel = new JPanel(new GridBagLayout());
 				int y = 0;
@@ -453,6 +518,14 @@ public class MixedFormatDialogPage implements CardDialogPage {
 				return filePanel;
 			}
 			
+			private String methodToString(Method method) {
+				switch(method) {
+					case GSEA:        return LABEL_GSEA;
+					case Generic:     return LABEL_GENERIC;
+					case Specialized: return LABEL_SPECIALIZED;
+					default:          return "Unknown";
+				}
+			}
 			
 			private int addFileLabel(String name, String path, JPanel filePanel, int y) {
 				if(path == null)

@@ -66,7 +66,9 @@ public class PathTypeMatcher {
 	
 	
 	private static List<DataSetParameters> createDataSets(Map<Type,List<Path>> types) {
-		System.out.println(types);
+		types.forEach((type, files) -> {
+			System.out.println(type + ": " + files);
+		});
 		
 		List<DataSetParameters> dataSets = new ArrayList<>();
 		
@@ -245,8 +247,6 @@ public class PathTypeMatcher {
 				return Type.ENRICHMENT_BINGO;
 			} else if(firstLine.contains("GREAT version")) {
 				return Type.ENRICHMENT_GREAT;
-			} else {
-				return Type.ENRICHMENT_GENERIC;
 			}
 		}
 		catch(IOException e) {
