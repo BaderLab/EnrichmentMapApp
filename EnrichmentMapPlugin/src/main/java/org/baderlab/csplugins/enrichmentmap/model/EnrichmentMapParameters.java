@@ -104,10 +104,10 @@ public class EnrichmentMapParameters {
 	//flag to indicate there are two datasets.
 	private boolean twoDatasets = false;
 	//flag to indicate if there are FDR Q-values
-	private boolean FDR = false;
+	private boolean fdr = false;
 	//add boolean to indicate whether the geneset files are EM specific gmt files
 	//if they are the visual style changes slightly
-	private boolean EMgmt = false;
+	private boolean emgmt = false;
 	//a flag to indicate if the two expression files have the exact same set of genes
 	private boolean twoDistinctExpressionSets = false;
 	//flag to indicate if the results are from GSEA or generic or DAVID or other method
@@ -234,7 +234,7 @@ public class EnrichmentMapParameters {
 		EMCreationParameters params = new EMCreationParameters(getAttributePrefix(), 
 				getPvalue(), getQvalue(), NESFilter.ALL, Optional.empty(), similarityMetric, getSimilarityCutOff(), getCombinedConstant());
 		params.setEnrichmentEdgeType(enrichment_edge_type);
-		params.setFDR(FDR);
+		params.setFDR(fdr);
 		return params;
 	}
 	
@@ -340,7 +340,7 @@ public class EnrichmentMapParameters {
 //			this.Data2 = true;
 		
 		if((this.props.get("FDR")).equalsIgnoreCase("true"))
-			this.FDR = true;
+			this.fdr = true;
 
 		if(this.props.get("method") != null)
 			this.method = this.props.get("method");
@@ -702,13 +702,13 @@ public class EnrichmentMapParameters {
 		// MKTODO how to set the method properly?
 		this.method = methodToString(Method.GSEA); //methodToString(params.getMethod());
 		
-		this.FDR = params.isFDR();
+		this.fdr = params.isFDR();
 		this.similarityMetric = similarityMetricToString(params.getSimilarityMetric());
 		this.combinedConstant = params.getCombinedConstant();
 		this.twoDistinctExpressionSets = params.isDistinctExpressionSets();
 
 //		this.enrichment_edge_type = copy.getEnrichment_edge_type();
-		this.EMgmt = params.isEMgmt();
+		this.emgmt = params.isEMgmt();
 		this.attributePrefix = params.getAttributePrefix();
 	}
 
@@ -732,7 +732,7 @@ public class EnrichmentMapParameters {
 
 		this.twoDatasets = copy.isTwoDatasets();
 		this.method = copy.getMethod();
-		this.FDR = copy.isFDR();
+		this.fdr = copy.isFDR();
 		this.similarityMetric = copy.getSimilarityMetric();
 		this.combinedConstant = copy.getCombinedConstant();
 		this.twoDistinctExpressionSets = copy.isTwoDistinctExpressionSets();
@@ -745,7 +745,7 @@ public class EnrichmentMapParameters {
 		this.GSEAResultsDirName = copy.getGSEAResultsDirName();
 
 		//copy loadRpt, EGgmt and genesettypes
-		this.EMgmt = copy.isEMgmt();
+		this.emgmt = copy.isEMgmt();
 
 		this.attributePrefix = copy.getAttributePrefix();
 	}
@@ -1120,11 +1120,11 @@ public class EnrichmentMapParameters {
 	}
 
 	public boolean isFDR() {
-		return FDR;
+		return fdr;
 	}
 
 	public void setFDR(boolean FDR) {
-		this.FDR = FDR;
+		this.fdr = FDR;
 	}
 
 	/* create a method to re-create rank to gene given the gene to rank */
@@ -1257,11 +1257,11 @@ public class EnrichmentMapParameters {
 	}
 
 	public boolean isEMgmt() {
-		return EMgmt;
+		return emgmt;
 	}
 
 	public void setEMgmt(boolean flag) {
-		this.EMgmt = flag;
+		this.emgmt = flag;
 	}
 
 	/*

@@ -27,8 +27,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.GroupLayout.ParallelGroup;
 import javax.swing.GroupLayout.SequentialGroup;
 import javax.swing.Icon;
@@ -40,6 +42,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.LayoutStyle.ComponentPlacement;
@@ -343,7 +346,10 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		};
 		private final ColorScheme[] HEAT_STRIP_COLOR_SCHEMES;
 		
-		private SliderBarPanel pValueSliderPanel; // TODO: Delete??? Or advanced options
+		private JRadioButton pValueRadio;
+		private JRadioButton qValueRadio;
+		private final ButtonGroup nodeCutoffGroup = new ButtonGroup();
+		private SliderBarPanel pValueSliderPanel;
 		private SliderBarPanel qValueSliderPanel;
 		private SliderBarPanel similaritySliderPanel;
 		
@@ -490,19 +496,46 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 				EMCreationParameters params = map.getParams();
 				List<JTextField> sliderPanelFields = new ArrayList<>();
 				
+				JLabel nodeCutoffLabel = new JLabel();
+				makeSmall(nodeCutoffLabel);
+				
+				if (params != null) {
+					if (params.isFDR()) {
+						nodeCutoffLabel.setText("Node Cutoff:");
+					
+						qValueSliderPanel = createQvalueSlider(map);
+						sliderPanelFields.add(qValueSliderPanel.getTextField());
+						
+						hGroup.addGroup(layout.createSequentialGroup()
+								.addComponent(nodeCutoffLabel)
+								.addGap(10, 20, Short.MAX_VALUE)
+								.addComponent(getPValueRadio())
+								.addComponent(getQValueRadio())
+						);
+						vGroup.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+								.addComponent(nodeCutoffLabel)
+								.addComponent(getPValueRadio())
+								.addComponent(getQValueRadio())
+						);
+						
+						hGroup.addComponent(qValueSliderPanel);
+						vGroup.addComponent(qValueSliderPanel);
+						
+						nodeCutoffGroup.add(getPValueRadio());
+						nodeCutoffGroup.add(getQValueRadio());
+						nodeCutoffGroup.setSelected(getQValueRadio().getModel(), true);
+					} else {
+						nodeCutoffLabel.setText("Node Cutoff (P-value):");
+						hGroup.addComponent(nodeCutoffLabel, Alignment.LEADING);
+						vGroup.addComponent(nodeCutoffLabel);
+					}
+				}
+				
 				pValueSliderPanel = createPvalueSlider(map);
 				sliderPanelFields.add(pValueSliderPanel.getTextField());
 				
 				hGroup.addComponent(pValueSliderPanel);
 				vGroup.addComponent(pValueSliderPanel);
-				
-				if (params != null && params.isFDR()) {
-					qValueSliderPanel = createQvalueSlider(map);
-					sliderPanelFields.add(qValueSliderPanel.getTextField());
-					
-					hGroup.addComponent(qValueSliderPanel);
-					vGroup.addComponent(qValueSliderPanel);
-				}
 				
 				similaritySliderPanel = createSimilaritySlider(map);
 				sliderPanelFields.add(similaritySliderPanel.getTextField());
@@ -519,6 +552,8 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 	   		
 			if (LookAndFeelUtil.isAquaLAF())
 				panel.setOpaque(false);
+			
+			updateFilterPanel();
 			
 			return panel;
 		}
@@ -579,7 +614,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			return new SliderBarPanel(
 					(pvalueMin == 1 || pvalueMin >= pvalue ? 0 : pvalueMin),
 					pvalue,
-					"P-value Cutoff:",
+					null,
 					pvalue
 			);
 		}
@@ -591,7 +626,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			return new SliderBarPanel(
 					(qvalueMin == 1 || qvalueMin >= qvalue ? 0 : qvalueMin),
 					qvalue,
-					"Q-value Cutoff:",
+					null,
 					qvalue
 			);
 		}
@@ -602,9 +637,27 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			return new SliderBarPanel(
 					similarityCutOff,
 					1,
-					"Similarity Cutoff:",
+					"Edge Cutoff (Similarity):",
 					similarityCutOff
 			);
+		}
+		
+		JRadioButton getPValueRadio() {
+			if (pValueRadio == null) {
+				pValueRadio = new JRadioButton("P-value");
+				makeSmall(pValueRadio);
+			}
+			
+			return pValueRadio;
+		}
+		
+		JRadioButton getQValueRadio() {
+			if (qValueRadio == null) {
+				qValueRadio = new JRadioButton("Q-value");
+				makeSmall(qValueRadio);
+			}
+			
+			return qValueRadio;
 		}
 		
 		SliderBarPanel getPValueSliderPanel() {
@@ -718,6 +771,14 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			}
 			
 			return colors;
+		}
+		
+		void updateFilterPanel() {
+			if (nodeCutoffGroup.getSelection() != null) {
+				boolean isQValue = nodeCutoffGroup.getSelection().equals(getQValueRadio().getModel());
+				getPValueSliderPanel().setVisible(!isQValue);
+				getQValueSliderPanel().setVisible(isQValue);
+			}
 		}
 	}
 	

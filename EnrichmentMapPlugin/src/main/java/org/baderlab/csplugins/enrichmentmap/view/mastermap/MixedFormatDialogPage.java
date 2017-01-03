@@ -126,8 +126,6 @@ public class MixedFormatDialogPage implements CardDialogPage {
 		taskManager.execute(tasks);
 	}
 	
-	
-	
 	@Override
 	public JPanel createBodyPanel(CardDialogCallback callback) {
 		this.callback = callback;

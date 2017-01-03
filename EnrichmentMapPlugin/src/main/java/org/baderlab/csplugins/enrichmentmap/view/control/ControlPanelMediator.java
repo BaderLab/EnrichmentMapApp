@@ -122,6 +122,15 @@ public class ControlPanelMediator
 				
 				if (viewPanel != null) {
 					// Add listeners to the new panel's fields
+					viewPanel.getQValueRadio().addActionListener(evt -> {
+						viewPanel.updateFilterPanel();
+						filterNodesAndEdges(viewPanel, map, netView);
+					});
+					viewPanel.getPValueRadio().addActionListener(evt -> {
+						viewPanel.updateFilterPanel();
+						filterNodesAndEdges(viewPanel, map, netView);
+					});
+					
 					SliderBarPanel pvSliderPanel = viewPanel.getPValueSliderPanel();
 					SliderBarPanel qvSliderPanel = viewPanel.getQValueSliderPanel();
 					SliderBarPanel sSliderPanel = viewPanel.getSimilaritySliderPanel();
@@ -133,11 +142,11 @@ public class ControlPanelMediator
 					if (qvSliderPanel != null)
 						qvSliderPanel.getSlider().addChangeListener(evt ->
 								onCutoffSliderChanged(evt, pvSliderPanel, viewPanel, map, netView, CyNode.class)
-					);
+						);
 					if (sSliderPanel != null)
 						sSliderPanel.getSlider().addChangeListener(evt ->
 								onCutoffSliderChanged(evt, pvSliderPanel, viewPanel, map, netView, CyEdge.class)
-					);
+						);
 
 					viewPanel.getCheckboxListPanel().getCheckboxList().addListSelectionListener(evt -> {
 						filterNodesAndEdges(viewPanel, map, netView);
@@ -349,13 +358,14 @@ public class ControlPanelMediator
 		
 		EMCreationParameters params = map.getParams();
 		
-		// TODO: Only p or q value, but not both
-		if (viewPanel.getPValueSliderPanel() != null)
+		// Only p or q value, but not both!
+		if (viewPanel.getPValueSliderPanel() != null && viewPanel.getPValueSliderPanel().isVisible())
 			nodesToShow.addAll(
 					getFilteredInNodes(viewPanel.getPValueSliderPanel(), map, netView, params.getPValueColumnNames()));
-		if (viewPanel.getQValueSliderPanel() != null)
+		else if (viewPanel.getQValueSliderPanel() != null && viewPanel.getQValueSliderPanel().isVisible())
 			nodesToShow.addAll(
-					getFilteredInNodes(viewPanel.getQValueSliderPanel(), map, netView, params.getPValueColumnNames()));
+					getFilteredInNodes(viewPanel.getQValueSliderPanel(), map, netView, params.getQValueColumnNames()));
+		
 		if (viewPanel.getSimilaritySliderPanel() != null)
 			edgesToShow = getFilteredInEdges(viewPanel.getSimilaritySliderPanel(), map, netView,
 							params.getSimilarityCutoffColumnNames());
@@ -363,7 +373,6 @@ public class ControlPanelMediator
 		CyNetwork net = netView.getModel();
 		Set<Long> dataSetNodes = EnrichmentMap.getNodesUnion(viewPanel.getSelectedDataSets());
 		
-System.out.println("\n# Nodes: " + nodesToShow.size());
 		// Hide or show nodes and their edges
 		for (CyNode n : net.getNodeList()) {
 			final View<CyNode> nv = netView.getNodeView(n);
@@ -453,8 +462,7 @@ System.out.println("\n# Nodes: " + nodesToShow.size());
 		JSlider slider = sliderPanel.getSlider();
 		Double maxCutoff = slider.getValue() / sliderPanel.getPrecision();
 		Double minCutoff = slider.getMinimum() / sliderPanel.getPrecision();
-		System.out.println(minCutoff + " <<>> " + maxCutoff);
-
+		
 		CyNetwork network = networkView.getModel();
 		CyTable table = network.getDefaultNodeTable();
 
@@ -506,8 +514,7 @@ System.out.println("\n# Nodes: " + nodesToShow.size());
 		JSlider slider = sliderPanel.getSlider();
 		Double maxCutoff = slider.getValue() / sliderPanel.getPrecision();
 		Double minCutoff = slider.getMinimum() / sliderPanel.getPrecision();
-		System.out.println(minCutoff + " ---- " + maxCutoff);
-
+		
 		CyNetwork network = networkView.getModel();
 		CyTable table = network.getDefaultEdgeTable();
 

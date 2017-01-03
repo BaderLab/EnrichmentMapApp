@@ -40,6 +40,7 @@ import org.cytoscape.work.swing.DialogTaskManager;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
+@Deprecated
 @Singleton
 public class GSEASimpleDialogPage implements CardDialogPage {
 	
@@ -83,6 +84,7 @@ public class GSEASimpleDialogPage implements CardDialogPage {
 		
 		EMCreationParameters params = 
 			new EMCreationParameters(prefix, pvalue, qvalue, nesFilter, minExperiments, similarityMetric, cutoff, combined);
+		params.setFDR(true);
 		
 		List<Path> paths = checkboxListPanel.getSelectedDataItems();
 		List<DataSetParameters> dataSets = paths.stream().map(PathTypeMatcher::toDataSetParametersGSEA).collect(Collectors.toList());
@@ -99,7 +101,6 @@ public class GSEASimpleDialogPage implements CardDialogPage {
 		
 		taskManager.execute(tasks);
 	}
-	
 	
 	@Override
 	public JPanel createBodyPanel(CardDialogCallback callback) {
@@ -267,6 +268,4 @@ public class GSEASimpleDialogPage implements CardDialogPage {
 		boolean hasSelected = checkboxListPanel.getModel().stream().anyMatch(cb -> cb.isSelected());
 		callback.setFinishButtonEnabled(hasSelected);
 	}
-
-	
 }
