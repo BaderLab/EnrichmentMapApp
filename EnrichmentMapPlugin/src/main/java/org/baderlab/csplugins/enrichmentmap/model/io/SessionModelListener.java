@@ -18,6 +18,7 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTable.Mutability;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -87,7 +88,7 @@ public class SessionModelListener implements SessionLoadedListener, SessionAbout
 			CyNetwork network = networkManager.getNetwork(suid);
 			if(network != null) { // MKTODO big error if its null
 				String json = ModelSerializer.serialize(em);
-				CyRow row = table.getRow(Integer.valueOf(id[0]));
+				CyRow row = table.getRow(id[0]);
 				COL_NETWORK_ID.set(row, suid);
 				COL_EM_JSON.set(row, json);
 				id[0]++;
@@ -158,15 +159,35 @@ public class SessionModelListener implements SessionLoadedListener, SessionAbout
 
 	private CyTable getPrivateTable() {
 		for(CyTable table : tableManager.getAllTables(true)) {
-			if(MODEL_TABLE_TITLE.equals(table.getTitle())) {
+			if(MODEL_TABLE_TITLE.equals(table.getTitle()) && validateTableStructure(table)) {
 				return table;
 			}
 		}
 		return null;
 	}
 	
+	
+	private CyTable deleteRedundantTables() {
+		for(CyTable table : tableManager.getAllTables(true)) {
+			if(MODEL_TABLE_TITLE.equals(table.getTitle()) && !validateTableStructure(table) && table.getMutability() == Mutability.MUTABLE) {
+				if(debug) {
+					System.out.println("Deleting table: " + table.getTitle());
+				}
+				tableManager.deleteTable(table.getSUID());
+			}
+		}
+		return null;
+	}
+	
+	private static boolean validateTableStructure(CyTable table) {
+		return hasColumn(table, COL_PK) 
+			&& hasColumn(table, COL_NETWORK_ID)
+			&& hasColumn(table, COL_EM_JSON)
+			&& table.getColumn(COL_PK.getBaseName()).isPrimaryKey();
+	}
+	
 	private CyTable createPrivateTable() {
-		CyTable table = tableFactory.createTable(MODEL_TABLE_TITLE, COL_PK.getBaseName(), COL_PK.getType(), true, true);
+		CyTable table = tableFactory.createTable(MODEL_TABLE_TITLE, COL_PK.getBaseName(), COL_PK.getType(), false, false);
 		COL_NETWORK_ID.createColumn(table);
 		COL_EM_JSON.createColumn(table);
 		table.setPublic(false);
@@ -175,7 +196,13 @@ public class SessionModelListener implements SessionLoadedListener, SessionAbout
 	}
 	
 	
+	private static boolean hasColumn(CyTable table, ColumnDescriptor<?> colDesc) {
+		CyColumn col = table.getColumn(COL_NETWORK_ID.getBaseName());
+		return col.getName().equals(colDesc.getBaseName()) && col.getType().equals(colDesc.getType());
+	}
+	
 	private CyTable getOrCreatePrivateModelTable() {
+		deleteRedundantTables();
 		CyTable table = getPrivateTable();
 		if(table == null)
 			table = createPrivateTable();
