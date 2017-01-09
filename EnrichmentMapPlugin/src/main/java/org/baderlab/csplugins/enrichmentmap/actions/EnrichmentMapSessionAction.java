@@ -68,6 +68,8 @@ public class EnrichmentMapSessionAction implements SessionAboutToBeSavedListener
 			return;
 		}
 
+		Map<Long,EnrichmentMap> enrichmentMaps = new HashMap<>();
+		
 		List<File> pStateFileList = e.getLoadedSession().getAppFileListMap().get(appName);
 		try {
 			//go through the prop files first to create the correct objects to be able
@@ -109,8 +111,8 @@ public class EnrichmentMapSessionAction implements SessionAboutToBeSavedListener
 						em.addDataset(current_dataset, new DataSet(em,current_dataset,files.get(current_dataset)));                    		
 					}
 
-					//register network and parameters
-					EnrichmentMapManager.getInstance().registerNetwork(getNetworkByName(name),em);
+					CyNetwork network = getNetworkByName(name);
+					enrichmentMaps.put(network.getSUID(), em);
 				}
 			}
 			//go through the rest of the files
@@ -123,7 +125,7 @@ public class EnrichmentMapSessionAction implements SessionAboutToBeSavedListener
 					continue;
 
 				CyNetwork net = getNetworkByName(parts.name);
-				EnrichmentMap em  = (net != null) ? EnrichmentMapManager.getInstance().getMap(net.getSUID()) : null;
+				EnrichmentMap em = net == null ? null : enrichmentMaps.get(net.getSUID());
 
 				if(em == null)
 					System.out.println("network for file" + prop_file.getName() + " does not exist.");
@@ -302,7 +304,7 @@ public class EnrichmentMapSessionAction implements SessionAboutToBeSavedListener
 				if((parts_exp == null) || (parts_exp.name == null) )continue;
 
 				CyNetwork net = getNetworkByName(parts_exp.name);
-				EnrichmentMap map  = (net != null) ? EnrichmentMapManager.getInstance().getMap(net.getSUID()) : null;
+				EnrichmentMap map = net == null ? null : enrichmentMaps.get(net.getSUID());
 				Map<String,String> props = map.getParams().getProps();
 
 				if(parts_exp.type != null && parts_exp.type.equalsIgnoreCase("expression")){
@@ -349,18 +351,13 @@ public class EnrichmentMapSessionAction implements SessionAboutToBeSavedListener
 			 */
 
 			//register the action listeners for all the networks.
-			EnrichmentMapManager manager = EnrichmentMapManager.getInstance();
-			manager.registerServices();
-			HashMap<Long, EnrichmentMap> networks = manager.getCyNetworkList();
 
 			//iterate over the networks
-			for(Iterator<Long> j = networks.keySet().iterator();j.hasNext();){
+			for(Iterator<Long> j = enrichmentMaps.keySet().iterator(); j.hasNext();){
 				Long id = j.next();
-				CyNetwork currentNetwork = cyNetworkManager.getNetwork(id);
-				EnrichmentMap map = manager.getMap(id);
+				EnrichmentMap map = enrichmentMaps.get(id);
 				//only initialize objects if there is a map for this network
 				if(map != null){
-
 					if(map.getDatasets().size() > 1) {
 						HashSet<Integer> dataset1_genes = map.getDatasets().get(EnrichmentMap.DATASET1).getDatasetGenes();
 						HashSet<Integer> dataset2_genes = map.getDatasets().get(EnrichmentMap.DATASET2).getDatasetGenes();
@@ -383,20 +380,30 @@ public class EnrichmentMapSessionAction implements SessionAboutToBeSavedListener
 					if (! map.getSignatureGenesets().isEmpty()){
 						ComputeSimilarityTask sigSimilarities = new ComputeSimilarityTask(map, ComputeSimilarityTask.SIGNATURE);
 						HashMap<String, GenesetSimilarity> sig_similarity_results = sigSimilarities.computeGenesetSimilarities(null);
-
 						map.getGenesetSimilarity().putAll(sig_similarity_results);
-					}
-
-					//set the last network to be the one viewed and initialize the parameters panel
-					if(!j.hasNext()){
-						cyApplicationManager.setCurrentNetwork(currentNetwork);
-						ParametersPanel paramPanel = manager.getParameterPanel();
-						paramPanel.updatePanel(map);
-						paramPanel.revalidate();
 					}
 				}//end of if(map != null)
 			}
 
+			
+			// Register the enrichment maps
+			EnrichmentMapManager manager = EnrichmentMapManager.getInstance();
+			manager.registerServices();
+			
+			for(Iterator<Long> j = enrichmentMaps.keySet().iterator(); j.hasNext();) {
+				Long id = j.next();
+				CyNetwork currentNetwork = cyNetworkManager.getNetwork(id);
+				EnrichmentMap map = enrichmentMaps.get(id);
+				manager.registerNetwork(currentNetwork, map);
+				
+				if(!j.hasNext()) {
+					//set the last network to be the one viewed and initialize the parameters panel
+					cyApplicationManager.setCurrentNetwork(currentNetwork);
+					ParametersPanel paramPanel = manager.getParameterPanel();
+					paramPanel.updatePanel(map);
+					paramPanel.revalidate();
+				}
+			}
 		} catch (Exception ee) {
 			ee.printStackTrace();
 		}	
