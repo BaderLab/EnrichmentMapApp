@@ -55,6 +55,7 @@ public class CheckboxList<T> extends JList<CheckboxData<T>> {
 				int index, boolean isSelected, boolean cellHasFocus) {
 			checkbox.setText(data.getDisplay());
 			checkbox.setSelected(data.isSelected());
+			checkbox.setEnabled(list.isEnabled());
 			
 			data.addPropertyChangeListener("selected", evt -> {
 				checkbox.setSelected(Boolean.TRUE.equals(evt.getNewValue()));

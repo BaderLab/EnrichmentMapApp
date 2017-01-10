@@ -78,15 +78,15 @@ public class CheckboxListPanel<T> extends JPanel {
 		checkboxListModel.addListDataListener(new ListDataListener() {
 			@Override
 			public void intervalRemoved(ListDataEvent e) {
-				updateButtons();
+				updateSelectionButtons();
 			}
 			@Override
 			public void intervalAdded(ListDataEvent e) {
-				updateButtons();
+				updateSelectionButtons();
 			}
 			@Override
 			public void contentsChanged(ListDataEvent e) {
-				updateButtons();
+				updateSelectionButtons();
 			}
 		});
 		
@@ -141,10 +141,10 @@ public class CheckboxListPanel<T> extends JPanel {
 	}
 	
 	public void setAddButtonCallback(Consumer<CheckboxListModel<T>> consumer) {
-		this.addButtonCallback = Optional.ofNullable(consumer);
+		addButtonCallback = Optional.ofNullable(consumer);
 	}
 	
-	private void updateButtons() {
+	private void updateSelectionButtons() {
 		boolean enabled = isEnabled() && !checkboxListModel.isEmpty();
 		selectAllButton.setEnabled(enabled);
 		selectNoneButton.setEnabled(enabled);
@@ -170,6 +170,7 @@ public class CheckboxListPanel<T> extends JPanel {
 		super.setEnabled(enabled);
 		
 		checkboxList.setEnabled(enabled);
-		updateButtons();
+		addButton.setEnabled(enabled);
+		updateSelectionButtons();
 	}
 }
