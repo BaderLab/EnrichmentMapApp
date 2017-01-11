@@ -40,7 +40,8 @@ import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
-import org.baderlab.csplugins.enrichmentmap.parsers.PathTypeMatcher;
+import org.baderlab.csplugins.enrichmentmap.resolver.DataSetParameters;
+import org.baderlab.csplugins.enrichmentmap.resolver.DataSetResolver;
 import org.baderlab.csplugins.enrichmentmap.task.MasterMapTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogCallback;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogCallback.Message;
@@ -164,7 +165,11 @@ public class MixedFormatDialogPage implements CardDialogPage {
 	private List<DataSetParameters> browseForDataSets() {
 		Optional<File> rootFolder = FileBrowser.browseForRootFolder(callback.getDialogFrame());
 		if(rootFolder.isPresent()) {
-			return scanRootFolder(rootFolder.get());
+			List<DataSetParameters> datasets = scanRootFolder(rootFolder.get());
+			if(datasets.isEmpty()) {
+				callback.setMessage(Message.WARN, "No Data Sets found under: " + rootFolder.get());
+			}
+			return datasets;
 		}
 		return Collections.emptyList();
 	}
@@ -179,7 +184,7 @@ public class MixedFormatDialogPage implements CardDialogPage {
 		}
 		
 		Path path = root.toPath();
-		List<DataSetParameters> dataSets = PathTypeMatcher.guessDataSets(path);
+		List<DataSetParameters> dataSets = DataSetResolver.guessDataSets(path);
 		return dataSets;
 	}
 	

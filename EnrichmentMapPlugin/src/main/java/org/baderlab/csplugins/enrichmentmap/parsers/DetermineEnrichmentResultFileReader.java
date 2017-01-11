@@ -46,6 +46,7 @@ package org.baderlab.csplugins.enrichmentmap.parsers;
 import java.io.IOException;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.resolver.DataSetResolver;
 import org.baderlab.csplugins.enrichmentmap.task.BuildGMTEnrichmentMapTask;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskIterator;
@@ -114,7 +115,7 @@ public class DetermineEnrichmentResultFileReader {
 			return new ParseEDBEnrichmentResults(dataset);
 		}
 		else {
-			PathTypeMatcher.Type fileType = PathTypeMatcher.guessEnrichmentType(fileName);
+			DataSetResolver.Type fileType = DataSetResolver.guessEnrichmentType(fileName);
 			switch(fileType) {
 				case ENRICHMENT_GSEA:  return new ParseGSEAEnrichmentResults(dataset);
 				case ENRICHMENT_BINGO: return new ParseBingoEnrichmentResults(dataset);

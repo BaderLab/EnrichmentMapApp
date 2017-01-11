@@ -15,8 +15,8 @@ import org.baderlab.csplugins.enrichmentmap.parsers.DetermineEnrichmentResultFil
 import org.baderlab.csplugins.enrichmentmap.parsers.ExpressionFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.parsers.GMTFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.parsers.RanksFileReaderTask;
+import org.baderlab.csplugins.enrichmentmap.resolver.DataSetParameters;
 import org.baderlab.csplugins.enrichmentmap.util.Baton;
-import org.baderlab.csplugins.enrichmentmap.view.mastermap.DataSetParameters;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;

@@ -27,6 +27,7 @@ import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
@@ -34,6 +35,8 @@ import javax.swing.JTextField;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.parsers.DatasetLineParser;
+import org.baderlab.csplugins.enrichmentmap.resolver.DataSetParameters;
+import org.baderlab.csplugins.enrichmentmap.resolver.GSEAResolver;
 import org.baderlab.csplugins.enrichmentmap.view.util.FileBrowser;
 import org.cytoscape.util.swing.BasicCollapsiblePanel;
 import org.cytoscape.util.swing.FileUtil;
@@ -52,14 +55,19 @@ public class EditDataSetDialog extends JDialog {
 	private JRadioButton genericRadio;
 	private JRadioButton davidRadio;
 	
-	private JTextField enrichmentsText;
+	private JTextField enrichments1Text;
+	private JTextField enrichments2Text;
 	private JTextField expressionsText;
 	private JTextField ranksText;
 	private JTextField classesText;
 	private JTextField positiveText;
 	private JTextField negativeText;
 	
+	private BasicCollapsiblePanel advancedPanel;
+	private JLabel enrichments2Label;
 	private JButton okButton;
+	private JButton rptButton;
+	private JButton enrichments2Browse;
 	
 	private String[] classes;
 	
@@ -69,8 +77,8 @@ public class EditDataSetDialog extends JDialog {
 	public EditDataSetDialog(JDialog parent, FileUtil fileUtil, @Nullable DataSetParameters initDataSet) {
 		super(parent, null, true);
 		this.fileUtil = fileUtil;
-		setMinimumSize(new Dimension(650, 400));
-		setResizable(false);
+		setMinimumSize(new Dimension(650, 450));
+		setResizable(true);
 		setTitle(initDataSet == null ? "Add Enrichment Results" : "Edit Enrichment Results");
 		createContents(initDataSet);
 		pack();
@@ -92,10 +100,13 @@ public class EditDataSetDialog extends JDialog {
 		
 		DataSetFiles files = new DataSetFiles();
 		
-		// MKTODO add field for enrichments file 2
-		String enrichmentFileName1 = enrichmentsText.getText();
+		String enrichmentFileName1 = enrichments1Text.getText();
 		if(!isNullOrEmpty(enrichmentFileName1))
 			files.setEnrichmentFileName1(enrichmentFileName1);
+		
+		String enrichmentFileName2 = enrichments2Text.getText();
+		if(!isNullOrEmpty(enrichmentFileName2))
+			files.setEnrichmentFileName1(enrichmentFileName2);
 		
 		String expressionFileName = expressionsText.getText();
 		if(!isNullOrEmpty(expressionFileName))
@@ -156,10 +167,14 @@ public class EditDataSetDialog extends JDialog {
 
 		makeSmall(gseaRadio, genericRadio, davidRadio);
 
-		ButtonGroup analysisOptions = new ButtonGroup();
-		analysisOptions.add(gseaRadio);
-		analysisOptions.add(genericRadio);
-		analysisOptions.add(davidRadio);
+		ButtonGroup buttonGroup = new ButtonGroup();
+		buttonGroup.add(gseaRadio);
+		buttonGroup.add(genericRadio);
+		buttonGroup.add(davidRadio);
+		
+		gseaRadio.addActionListener(e -> updateEnablement());
+		genericRadio.addActionListener(e -> updateEnablement());
+		davidRadio.addActionListener(e -> updateEnablement());
 		
 		if(initDataSet != null) {
 			gseaRadio.setSelected(initDataSet.getMethod() == Method.GSEA);
@@ -194,11 +209,18 @@ public class EditDataSetDialog extends JDialog {
 
 	private JPanel createTextFieldPanel(@Nullable DataSetParameters initDataSet) {
 		JLabel enrichmentsLabel = new JLabel("Enrichments:");
-		enrichmentsText = new JTextField();
-		enrichmentsText.setText(initDataSet != null ? initDataSet.getFiles().getEnrichmentFileName1() : null);
+		enrichments1Text = new JTextField();
+		enrichments1Text.setText(initDataSet != null ? initDataSet.getFiles().getEnrichmentFileName1() : null);
 		JButton enrichmentsBrowse = new JButton("Browse...");
-		enrichmentsText.getDocument().addDocumentListener(simpleDocumentListener(this::validateInput));
-		enrichmentsBrowse.addActionListener(e -> browse(enrichmentsText, FileBrowser.Filter.ENRICHMENT));
+		enrichments1Text.getDocument().addDocumentListener(simpleDocumentListener(this::validateInput));
+		enrichmentsBrowse.addActionListener(e -> browse(enrichments1Text, FileBrowser.Filter.ENRICHMENT));
+		
+		enrichments2Label = new JLabel("Enrichments 2:");
+		enrichments2Text = new JTextField();
+		enrichments2Text.setText(initDataSet != null ? initDataSet.getFiles().getEnrichmentFileName1() : null);
+		enrichments2Browse = new JButton("Browse...");
+		enrichments2Text.getDocument().addDocumentListener(simpleDocumentListener(this::validateInput));
+		enrichments2Browse.addActionListener(e -> browse(enrichments2Text, FileBrowser.Filter.ENRICHMENT));
 		
 		JLabel expressionsLabel = new JLabel("Expressions:");
 		expressionsText = new JTextField();
@@ -207,7 +229,8 @@ public class EditDataSetDialog extends JDialog {
 		expressionsText.getDocument().addDocumentListener(simpleDocumentListener(this::validateInput));
 		expressionsBrowse.addActionListener(e -> browse(expressionsText, FileBrowser.Filter.EXPRESSION));
 		
-		makeSmall(enrichmentsLabel, enrichmentsText, enrichmentsBrowse);
+		makeSmall(enrichmentsLabel, enrichments1Text, enrichmentsBrowse);
+		makeSmall(enrichments2Label, enrichments2Text, enrichments2Browse);
 		makeSmall(expressionsLabel, expressionsText, expressionsBrowse);
 		
 		JPanel panel = new JPanel();
@@ -220,14 +243,17 @@ public class EditDataSetDialog extends JDialog {
 			layout.createSequentialGroup()
 				.addGroup(layout.createParallelGroup(Alignment.TRAILING)
 					.addComponent(enrichmentsLabel)
+					.addComponent(enrichments2Label)
 					.addComponent(expressionsLabel)
 				)
 				.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
-					.addComponent(enrichmentsText, 0, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(enrichments1Text, 0, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(enrichments2Text, 0, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addComponent(expressionsText, 0, DEFAULT_SIZE, Short.MAX_VALUE)
 				)
 				.addGroup(layout.createParallelGroup()
 					.addComponent(enrichmentsBrowse)
+					.addComponent(enrichments2Browse)
 					.addComponent(expressionsBrowse)
 				)
 		);
@@ -236,8 +262,13 @@ public class EditDataSetDialog extends JDialog {
 			layout.createSequentialGroup()
 				.addGroup(layout.createParallelGroup(Alignment.BASELINE)
 					.addComponent(enrichmentsLabel)
-					.addComponent(enrichmentsText)
+					.addComponent(enrichments1Text)
 					.addComponent(enrichmentsBrowse)
+				)
+				.addGroup(layout.createParallelGroup(Alignment.BASELINE)
+					.addComponent(enrichments2Label)
+					.addComponent(enrichments2Text)
+					.addComponent(enrichments2Browse)
 				)
 				.addGroup(layout.createParallelGroup(Alignment.BASELINE)
 					.addComponent(expressionsLabel)
@@ -280,16 +311,16 @@ public class EditDataSetDialog extends JDialog {
 		
 		makeSmall(positive, negative, positiveText, negativeText);
 		
-		BasicCollapsiblePanel panel = new BasicCollapsiblePanel("Advanced");
-		GroupLayout layout = new GroupLayout(panel.getContentPane());
-		panel.getContentPane().setLayout(layout);
+		advancedPanel = new BasicCollapsiblePanel("Advanced");
+		GroupLayout layout = new GroupLayout(advancedPanel.getContentPane());
+		advancedPanel.getContentPane().setLayout(layout);
 		layout.setAutoCreateContainerGaps(true);
 		layout.setAutoCreateGaps(true);
 		
 		if(initDataSet != null) {
 			DataSetFiles files = initDataSet.getFiles();
 			if(!isNullOrEmpty(files.getClassFile()) || !isNullOrEmpty(files.getRankedFile())) {
-				panel.setCollapsed(false);
+				advancedPanel.setCollapsed(false);
 			}
 		}
 
@@ -337,8 +368,8 @@ public class EditDataSetDialog extends JDialog {
 		);
 			
    		if (LookAndFeelUtil.isAquaLAF())
-			panel.setOpaque(false);
-		return panel;
+   			advancedPanel.setOpaque(false);
+		return advancedPanel;
 	}
 	
 	
@@ -354,24 +385,72 @@ public class EditDataSetDialog extends JDialog {
 				dispose();
 			}
 		});
+		rptButton = new JButton(new AbstractAction("Load RPT file...") { 
+			public void actionPerformed(ActionEvent e) {
+				loadRptFile();
+			}
+		});
 
-		JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(okButton, cancelButton);
+		JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(okButton, cancelButton, rptButton);
 		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), okButton.getAction(), cancelButton.getAction());
 		getRootPane().setDefaultButton(okButton);
 		return buttonPanel;
 	}
 	
 	
+	private void updateEnablement() {
+		boolean isGsea = gseaRadio.isSelected();
+		rptButton.setEnabled(isGsea);
+		enrichments2Label.setEnabled(isGsea);
+		enrichments2Text.setEnabled(isGsea);
+		enrichments2Browse.setEnabled(isGsea);
+	}
+	
+	
 	private void validateInput() {
 		boolean valid = true;
-		valid &= validatePathTextField(enrichmentsText);
+		valid &= validatePathTextField(enrichments1Text);
+		valid &= validatePathTextField(enrichments2Text);
 		valid &= validatePathTextField(expressionsText);
 		valid &= validatePathTextField(ranksText);
 		valid &= validatePathTextField(classesText);
 		okButton.setEnabled(valid);
 	}
+
 	
+	private void loadRptFile() {
+		Optional<Path> rptPath = FileBrowser.browse(fileUtil, this, FileBrowser.Filter.RPT);
+		boolean error = false;
+		if(rptPath.isPresent()) {
+			try {
+				Optional<DataSetParameters> dataset = GSEAResolver.resolveRPTFile(rptPath.get());
+				if(dataset.isPresent()) {
+					DataSetFiles files = dataset.get().getFiles();
+					setText(enrichments1Text, files.getEnrichmentFileName1());
+					setText(enrichments2Text, files.getEnrichmentFileName2());
+					setText(expressionsText, files.getExpressionFileName());
+					setText(ranksText, files.getRankedFile());
+					setText(classesText, files.getClassFile());
+					setText(positiveText, files.getPhenotype1());
+					setText(negativeText, files.getPhenotype2());
+					
+					// MKTODO expand the advanced section
+					advancedPanel.setCollapsed(false);
+				} else {
+					error = true;
+				}
+			} catch (IOException e) {
+				error = true;
+			}
+		}
+		if(error) {
+			JOptionPane.showMessageDialog(this, "Could not load the RPT file.", "Error loading RPT file", JOptionPane.WARNING_MESSAGE);
+		}
+	}
 	
+	private static void setText(JTextField textField, String s) {
+		textField.setText(isNullOrEmpty(s) ? "" : s);
+	}
 	
 	
 	private void updateClasses() {

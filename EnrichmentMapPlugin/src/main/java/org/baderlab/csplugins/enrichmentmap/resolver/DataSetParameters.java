@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap.view.mastermap;
+package org.baderlab.csplugins.enrichmentmap.resolver;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;

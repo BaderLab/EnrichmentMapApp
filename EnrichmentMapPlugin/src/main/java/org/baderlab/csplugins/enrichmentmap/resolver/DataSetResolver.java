@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap.parsers;
+package org.baderlab.csplugins.enrichmentmap.resolver;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -23,9 +23,10 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
-import org.baderlab.csplugins.enrichmentmap.view.mastermap.DataSetParameters;
 
-public class PathTypeMatcher {
+import com.google.common.collect.ImmutableList;
+
+public class DataSetResolver {
 	
 	public static enum Type {
 		ENRICHMENT_BINGO,
@@ -44,9 +45,31 @@ public class PathTypeMatcher {
 	}
 	
 	
+	/**
+	 * Algorithm
+	 * if rootFolder is a GSEA folder
+	 * 		attempt to load RPT
+	 * 		attempt to load edb dir
+	 * else
+	 * 		for item in rootFolder
+	 * 			if item is a GSEA folder
+	 * 				attempt to load RPT file
+	 * 				attempt to load edb dir
+	 * 			if item is a tab-delimited text file
+	 * 				guess the type of the file
+	 * 				add file to guessedFiles list
+	 * 		try to match together files in the guessFiles list
+	 * 
+	 * 	//NOTES:
+	 * 		gsea folders don't need to be in guessedFiles list
+	 */
 	public static List<DataSetParameters> guessDataSets(Path rootFolder) {
+		// First test if rootFolder is itself a GSEA results folder
+		Optional<DataSetParameters> dataset = GSEAResolver.resolveGSEAResultsFolder(rootFolder);
+		if(dataset.isPresent())
+			return ImmutableList.of(dataset.get());
+		
 		try(Stream<Path> contents = Files.list(rootFolder)) {
-			
 			Map<Type,List<Path>> types = new EnumMap<>(Type.class);
 			for(Type type : Type.values()) {
 				types.put(type, new ArrayList<>());
@@ -74,8 +97,9 @@ public class PathTypeMatcher {
 		
 		// All GSEA results are fine
 		for(Path gseaFolder : types.get(Type.GSEA_FOLDER)) {
-			DataSetParameters gseaDataSet = toDataSetParametersGSEA(gseaFolder);
-			dataSets.add(gseaDataSet);
+			Optional<DataSetParameters> gseaDataSet = GSEAResolver.resolveGSEAResultsFolder(gseaFolder);
+			if(gseaDataSet.isPresent())
+				dataSets.add(gseaDataSet.get());
 		}
 		
 		// Now, iterate over Enrichments, and try to pair up with Ranks and Expressions
@@ -135,18 +159,27 @@ public class PathTypeMatcher {
 	
 	
 	public static Type guessType(Path path) {
-		if(Files.isDirectory(path)) {
-			if(isGSEAResultsFolder(path)) {
-				return Type.GSEA_FOLDER;
-			} else {
+		try {
+			if(Files.isHidden(path)) 
 				return Type.IGNORE;
-			}
+		} catch (IOException e) {
+			e.printStackTrace();
+			return Type.IGNORE;
+		}
+		if(Files.isDirectory(path)) {
+//			if(isGSEAResultsFolder(path)) {
+//				return Type.GSEA_FOLDER;
+//			} else {
+				return Type.IGNORE;
+//			}
 		}
 		if(maybeRankFile(path))
 			return Type.RANKS;
 		if(maybeExpressionFile(path))
 			return Type.EXPRESSION;
-		return guessEnrichmentType(path);
+		if(maybeEnrichmentFile(path))
+			return guessEnrichmentType(path);
+		return Type.IGNORE;
 	}
 	
 	
@@ -159,19 +192,40 @@ public class PathTypeMatcher {
 		}
 	}
 	
+	
+	private static boolean maybeEnrichmentFile(Path path) {
+		if(!hasExtension(path, "xls", "bgo", "txt", "tsv"))
+			return false;
+		return true;
+	}
+	
 	private static boolean maybeExpressionFile(Path path) {
+		if(!hasExtension(path, "gct", "rnk", "txt"))
+			return false;
 		if(path.getFileName().toString().toLowerCase().contains("expr"))
 			return true;
-		return matchFirstDataLine(path, PathTypeMatcher::isRankLine);
+		return matchFirstDataLine(path, DataSetResolver::isRankLine);
 	}
 	
 	private static boolean maybeRankFile(Path path) {
-		if(path.getFileName().endsWith(".rnk"))
-			return true;
+        if(!hasExtension(path, "rnk", "txt"))
+        	return false;
 		if(path.getFileName().toString().toLowerCase().contains("rank"))
 			return true;
-		return matchFirstDataLine(path, PathTypeMatcher::isExpressionLine);
+		return matchFirstDataLine(path, DataSetResolver::isExpressionLine);
 	}
+	
+	
+	private static boolean hasExtension(Path path, String... extensions) {
+		Path fileName = path.getFileName();
+		for(String ext : extensions) {
+			if(fileName.endsWith("." + ext.toLowerCase()) || fileName.endsWith("." + ext.toUpperCase())) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	
 	private static boolean matchFirstDataLine(Path path, Function<String,Boolean> matcher) {
 		try(Stream<String> lines = Files.lines(path)) {
@@ -190,7 +244,7 @@ public class PathTypeMatcher {
 	private static boolean isExpressionLine(String line) {
 		String[] tokens = line.split("\t");
 		if(tokens.length > 2) {
-			return Arrays.stream(tokens).skip(2).allMatch(PathTypeMatcher::isDouble);
+			return Arrays.stream(tokens).skip(2).allMatch(DataSetResolver::isDouble);
 		} else if(tokens.length == 2) {
 			return isDouble(tokens[1]);
 		} else {
@@ -247,6 +301,8 @@ public class PathTypeMatcher {
 				return Type.ENRICHMENT_BINGO;
 			} else if(firstLine.contains("GREAT version")) {
 				return Type.ENRICHMENT_GREAT;
+			} else {
+				return Type.ENRICHMENT_GENERIC;
 			}
 		}
 		catch(IOException e) {
@@ -257,46 +313,42 @@ public class PathTypeMatcher {
 	}
 	
 
-	public static boolean isGSEAResultsFolder(Path p) {
-		Path edbPath = p.resolve("edb");
-		
-		try {
-			if(!Files.exists(edbPath)) {
-				return false;
-			}
-			if(!containsFileEndingWith(edbPath, ".rnk")) {
-				return false;
-			}
-			if(!containsFileEndingWith(edbPath, ".gmt")) {
-				return false;
-			}
-			if(!containsFileEndingWith(edbPath, ".edb")) {
-				return false;
-			}
-		} catch(IOException e) {
-			e.printStackTrace();
-			return false;
-		}
-		
-		return true;
-	}
+//	public static boolean isGSEAResultsFolder(Path p) {
+//		Path edbPath = p.resolve("edb");
+//		
+//		try {
+//			if(!Files.exists(edbPath))
+//				return false;
+//			if(!containsFileEndingWith(edbPath, ".rnk"))
+//				return false;
+//			if(!containsFileEndingWith(edbPath, ".gmt"))
+//				return false;
+//			if(!containsFileEndingWith(edbPath, ".edb"))
+//				return false;
+//		} catch(IOException e) {
+//			e.printStackTrace();
+//			return false;
+//		}
+//		
+//		return true;
+//	}
 	
-	private static boolean containsFileEndingWith(Path p, String suffix) throws IOException {
-		return Files.find(p, 1, (path, attributes) -> {
-			return path.getFileName().toString().endsWith(suffix);
-		}).limit(1).count() > 0;
-	}
+//	private static boolean containsFileEndingWith(Path p, String suffix) throws IOException {
+//		return Files.find(p, 1, (path, attributes) -> {
+//			return path.getFileName().toString().endsWith(suffix);
+//		}).limit(1).count() > 0;
+//	}
+//	
 	
 	
-	
-	public static String getDatasetNameGSEA(Path folder) {
-		String folderName = folder.getFileName().toString();
-		int dotIndex = folderName.indexOf('.');
-		if(dotIndex == -1)
-			return folderName;
-		else
-			return folderName.substring(0, dotIndex);
-	}
+//	public static String getDatasetNameGSEA(Path folder) {
+//		String folderName = folder.getFileName().toString();
+//		int dotIndex = folderName.indexOf('.');
+//		if(dotIndex == -1)
+//			return folderName;
+//		else
+//			return folderName.substring(0, dotIndex);
+//	}
 	
 	public static String getDatasetNameGeneric(Path file) {
 		String name = file.getFileName().toString();
@@ -306,16 +358,16 @@ public class PathTypeMatcher {
 			return name;
 	}
 	
-	public static DataSetFiles toDataSetFilesGSEA(Path path) {
-		DataSetFiles files = new DataSetFiles();
-		files.setEnrichmentFileName1(path.resolve(Paths.get("edb/results.edb")).toString());
-		files.setGMTFileName(path.resolve(Paths.get("edb/gene_sets.gmt")).toString());
-		return files;
-	}
-	
-	
-	public static DataSetParameters toDataSetParametersGSEA(Path path) {
-		return new DataSetParameters(getDatasetNameGSEA(path), Method.GSEA, toDataSetFilesGSEA(path));
-	}
+//	public static DataSetFiles toDataSetFilesGSEA(Path path) {
+//		DataSetFiles files = new DataSetFiles();
+//		files.setEnrichmentFileName1(path.resolve(Paths.get("edb/results.edb")).toString());
+//		files.setGMTFileName(path.resolve(Paths.get("edb/gene_sets.gmt")).toString());
+//		return files;
+//	}
+//	
+//	
+//	public static DataSetParameters toDataSetParametersGSEA(Path path) {
+//		return new DataSetParameters(getDatasetNameGSEA(path), Method.GSEA, toDataSetFilesGSEA(path));
+//	}
 	
 }

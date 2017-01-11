@@ -20,54 +20,41 @@ import org.cytoscape.util.swing.FileUtil;
 public class FileBrowser {
 
 	public static enum Filter {
-		GMT("GMT Files") {
-			public List<FileChooserFilter> getFilters() {
-				return Arrays.asList(
-					new FileChooserFilter("gmt Files", "gmt")
-		        );
-			}
-		},
-		ENRICHMENT("Enrichment Files") {
-			public List<FileChooserFilter> getFilters() {
-				return Arrays.asList(
-					new FileChooserFilter("gct Files", "xls"),  
-		        	new FileChooserFilter("rnk Files", "bgo"),
-		        	new FileChooserFilter("txt Files", "txt"),
-		        	new FileChooserFilter("tsv Files", "tsv")
-		        );
-			}
-		}, 
-		EXPRESSION("Expression Files") {
-			public List<FileChooserFilter> getFilters() {
-				return Arrays.asList(
-					new FileChooserFilter("gct Files", "gct"),          
-				    new FileChooserFilter("txt Files", "txt")
-		        );
-			}
-		}, 
-		RANK("Rank Files") {
-			public List<FileChooserFilter> getFilters() {
-				return Arrays.asList(
-					new FileChooserFilter("rnk Files", "rnk"),          
-				    new FileChooserFilter("txt Files", "txt")
-		        );
-			}
-		}, 
-		CLASS("Class (Phenotype) Files") {
-			public List<FileChooserFilter> getFilters() {
-				return Arrays.asList(
-					new FileChooserFilter("cls Files", "cls"),          
-				    new FileChooserFilter("txt Files", "txt")
-		        );
-			}
-		};
+		GMT("GMT Files",
+			new FileChooserFilter("gmt Files", "gmt")
+		),
+		ENRICHMENT("Enrichment Files",
+			new FileChooserFilter("gct Files", "xls"),
+			new FileChooserFilter("rnk Files", "bgo"),
+			new FileChooserFilter("txt Files", "txt"),
+			new FileChooserFilter("tsv Files", "tsv")
+		),
+		EXPRESSION("Expression Files",
+			new FileChooserFilter("gct Files", "gct"),
+			new FileChooserFilter("txt Files", "txt")
+		), 
+		RANK("Rank Files",
+			new FileChooserFilter("rnk Files", "rnk"),
+			new FileChooserFilter("txt Files", "txt")
+		), 
+		CLASS("Class (Phenotype) Files",
+			new FileChooserFilter("cls Files", "cls"),
+			new FileChooserFilter("txt Files", "txt")
+		),
+		RPT("RPT Files",
+			new FileChooserFilter("rpt Files", "rpt")
+		);
 		
 		public final String title;
+		private final List<FileChooserFilter> filters;
 		
-		public abstract List<FileChooserFilter> getFilters();
+		public List<FileChooserFilter> getFilters() {
+			return filters;
+		}
 		
-		private Filter(String title) {
+		private Filter(String title, FileChooserFilter... filters) {
 			this.title = title;
+			this.filters = Arrays.asList(filters);
 		}
 	}
 	
