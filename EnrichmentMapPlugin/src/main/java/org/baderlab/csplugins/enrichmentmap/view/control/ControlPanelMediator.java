@@ -7,6 +7,7 @@ import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_V
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_VISIBLE;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Collections;
@@ -22,6 +23,7 @@ import javax.swing.Action;
 import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
 import javax.swing.JSlider;
+import javax.swing.Timer;
 import javax.swing.event.ChangeEvent;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
@@ -93,6 +95,8 @@ public class ControlPanelMediator
 	@Inject private DialogTaskManager dialogTaskManager;
 	@Inject private CyColumnIdentifierFactory columnIdFactory;
 	@Inject private ChartFactoryManager chartFactoryManager;
+	
+	private Map<CyNetworkView, Timer> filterTimers = new HashMap<>();
 	
 	private boolean firstTime = true;
 	private boolean updating;
@@ -183,8 +187,14 @@ public class ControlPanelMediator
 	
 	@Override
 	public void handleEvent(NetworkViewAboutToBeDestroyedEvent event) {
+		final CyNetworkView netView = event.getNetworkView();
+		Timer timer = filterTimers.remove(netView);
+		
+		if (timer != null)
+			timer.stop();
+		
 		invokeOnEDT(() -> {
-			getControlPanel().removeEnrichmentMapView(event.getNetworkView());
+			getControlPanel().removeEnrichmentMapView(netView);
 		});
 	}
 	
@@ -342,119 +352,25 @@ public class ControlPanelMediator
 			return;
 		
 		sliderPanel.setValue(slider.getValue());
-		
-		// Check to see if the event is associated with only edges
-		if (targetType == CyEdge.class)
-			filterEdges(viewPanel, map, netView);
-		else
-			filterNodesAndEdges(viewPanel, map, netView);
-		
-		netView.updateView();
+		filterNodesAndEdges(viewPanel, map, netView);
 	}
 	
 	private void filterNodesAndEdges(EMViewControlPanel viewPanel, EnrichmentMap map, CyNetworkView netView) {
-		Set<CyNode> nodesToShow = new HashSet<>();
-		Set<CyEdge> edgesToShow = Collections.emptySet();
+		Timer timer = filterTimers.get(netView);
 		
-		EMCreationParameters params = map.getParams();
-		
-		// Only p or q value, but not both!
-		if (viewPanel.getPValueSliderPanel() != null && viewPanel.getPValueSliderPanel().isVisible())
-			nodesToShow.addAll(
-					getFilteredInNodes(viewPanel.getPValueSliderPanel(), map, netView, params.getPValueColumnNames()));
-		else if (viewPanel.getQValueSliderPanel() != null && viewPanel.getQValueSliderPanel().isVisible())
-			nodesToShow.addAll(
-					getFilteredInNodes(viewPanel.getQValueSliderPanel(), map, netView, params.getQValueColumnNames()));
-		
-		if (viewPanel.getSimilaritySliderPanel() != null)
-			edgesToShow = getFilteredInEdges(viewPanel.getSimilaritySliderPanel(), map, netView,
-							params.getSimilarityCutoffColumnNames());
-		
-		CyNetwork net = netView.getModel();
-		Set<Long> dataSetNodes = EnrichmentMap.getNodesUnion(viewPanel.getSelectedDataSets());
-		
-		// Hide or show nodes and their edges
-		for (CyNode n : net.getNodeList()) {
-			final View<CyNode> nv = netView.getNodeView(n);
-			
-			if (nv == null)
-				continue; // Should never happen!
-			
-			boolean show = nodesToShow.contains(n) && dataSetNodes.contains(n.getSUID());
-			
-			if (show) {
-				nv.clearValueLock(NODE_VISIBLE);
-			} else {
-				net.getRow(n).set(CyNetwork.SELECTED, false);
-				nv.setLockedValue(NODE_VISIBLE, false);
-			}
-
-			for (CyNode n2 : net.getNeighborList(n, CyEdge.Type.ANY)) {
-				for (CyEdge e : net.getConnectingEdgeList(n, n2, CyEdge.Type.ANY)) {
-					if (show)
-						edgesToShow.add(e);
-				}
-			}
+		if (timer == null) {
+			timer = new Timer(0, new FilterActionListener(viewPanel, map, netView));
+			timer.setRepeats(false);
+			timer.setCoalesce(true);
+			filterTimers.put(netView, timer);
+		} else {
+			timer.stop();
 		}
 		
-		for (CyEdge e : net.getEdgeList()) {
-			final View<CyEdge> ev = netView.getEdgeView(e);
-			
-			if (ev == null)
-				continue; // Should never happen!
-			
-			boolean show = edgesToShow.contains(e);
-			
-			if (show) {
-				ev.clearValueLock(EDGE_VISIBLE);
-			} else {
-				net.getRow(ev.getModel()).set(CyNetwork.SELECTED, false);
-				ev.setLockedValue(EDGE_VISIBLE, false);
-			}
-		}
+		timer.setInitialDelay(250);
+		timer.start();
 	}
 	
-	private void filterEdges(EMViewControlPanel viewPanel, EnrichmentMap map, CyNetworkView netView) {
-		final Set<CyEdge> edgesToShow;
-		EMCreationParameters params = map.getParams();
-		CyNetwork net = netView.getModel();
-		
-		if (viewPanel.getSimilaritySliderPanel() != null)
-			edgesToShow = getFilteredInEdges(viewPanel.getSimilaritySliderPanel(), map, netView,
-							params.getSimilarityCutoffColumnNames());
-		else
-			edgesToShow = new HashSet<>(netView.getModel().getEdgeList());
-		
-		// Hide or show edges
-		for (CyEdge e : net.getEdgeList()) {
-			final View<CyEdge> ev = netView.getEdgeView(e);
-			
-			if (ev == null)
-				continue; // Should not happen!
-			
-			boolean show = edgesToShow.contains(e);
-			
-			if (show) {
-				// Also check if the source and target nodes are visible
-				final View<CyNode> snv = netView.getNodeView(e.getSource());
-				final View<CyNode> tnv = netView.getNodeView(e.getTarget());
-				show = show && snv != null && tnv != null;
-				
-				if (show)
-					show = snv.getVisualProperty(NODE_VISIBLE) == Boolean.TRUE;
-				if (show)
-					show = tnv.getVisualProperty(NODE_VISIBLE) == Boolean.TRUE;
-			}
-			
-			if (show) {
-				ev.clearValueLock(EDGE_VISIBLE);
-			} else {
-				net.getRow(ev.getModel()).set(CyNetwork.SELECTED, false);
-				ev.setLockedValue(EDGE_VISIBLE, false);
-			}
-		}
-	}
-
 	private Set<CyNode> getFilteredInNodes(SliderBarPanel sliderPanel, EnrichmentMap map, CyNetworkView networkView,
 			Set<String> columnNames) {
 		Set<CyNode> nodes = new HashSet<>();
@@ -546,5 +462,88 @@ public class ControlPanelMediator
 		}
 		
 		return edges;
+	}
+	
+	private class FilterActionListener implements ActionListener {
+
+		private final EMViewControlPanel viewPanel;
+		private final EnrichmentMap map;
+		private final CyNetworkView netView;
+		
+		public FilterActionListener(EMViewControlPanel viewPanel, EnrichmentMap map, CyNetworkView netView) {
+			this.viewPanel = viewPanel;
+			this.map = map;
+			this.netView = netView;
+		}
+		
+		@Override
+		public void actionPerformed(ActionEvent evt) {
+			Set<CyNode> nodesToShow = new HashSet<>();
+			Set<CyEdge> edgesToShow = Collections.emptySet();
+			
+			EMCreationParameters params = map.getParams();
+			
+			// Only p or q value, but not both!
+			if (viewPanel.getPValueSliderPanel() != null && viewPanel.getPValueSliderPanel().isVisible())
+				nodesToShow.addAll(getFilteredInNodes(viewPanel.getPValueSliderPanel(), map, netView,
+						params.getPValueColumnNames()));
+			else if (viewPanel.getQValueSliderPanel() != null && viewPanel.getQValueSliderPanel().isVisible())
+				nodesToShow.addAll(getFilteredInNodes(viewPanel.getQValueSliderPanel(), map, netView,
+						params.getQValueColumnNames()));
+
+			if (viewPanel.getSimilaritySliderPanel() != null)
+				edgesToShow = getFilteredInEdges(viewPanel.getSimilaritySliderPanel(), map, netView,
+						params.getSimilarityCutoffColumnNames());
+			
+			CyNetwork net = netView.getModel();
+			Set<Long> dataSetNodes = EnrichmentMap.getNodesUnion(viewPanel.getSelectedDataSets());
+			
+			// Hide or show nodes and their edges
+			for (CyNode n : net.getNodeList()) {
+				final View<CyNode> nv = netView.getNodeView(n);
+				
+				if (nv == null)
+					continue; // Should never happen!
+				
+				boolean show = nodesToShow.contains(n) && dataSetNodes.contains(n.getSUID());
+				
+				if (show) {
+					nv.clearValueLock(NODE_VISIBLE);
+				} else {
+					net.getRow(n).set(CyNetwork.SELECTED, false);
+					nv.setLockedValue(NODE_VISIBLE, false);
+				}
+
+				for (CyNode n2 : net.getNeighborList(n, CyEdge.Type.ANY)) {
+					for (CyEdge e : net.getConnectingEdgeList(n, n2, CyEdge.Type.ANY)) {
+						if (show)
+							edgesToShow.add(e);
+					}
+				}
+			}
+			
+			for (CyEdge e : net.getEdgeList()) {
+				final View<CyEdge> ev = netView.getEdgeView(e);
+				
+				if (ev == null)
+					continue; // Should never happen!
+				
+				boolean show = edgesToShow.contains(e);
+				
+				if (show) {
+					ev.clearValueLock(EDGE_VISIBLE);
+				} else {
+					net.getRow(ev.getModel()).set(CyNetwork.SELECTED, false);
+					ev.setLockedValue(EDGE_VISIBLE, false);
+				}
+			}
+			
+			netView.updateView();
+			
+			Timer timer = filterTimers.get(netView);
+			
+			if (timer != null)
+				timer.stop();
+		}
 	}
 }
