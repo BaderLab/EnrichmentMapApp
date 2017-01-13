@@ -144,10 +144,15 @@ public class SliderBarPanel extends JPanel {
         
 		slider.setLabelTable(labelTable);
 		slider.setPaintLabels(true);
+		slider.addChangeListener(evt -> {
+			if (!slider.getValueIsAdjusting())
+				setValue(slider.getValue());
+		});
 		
 		textField = new BoundedTextField(initialValue, min, max, precision, decPrecision, smallNumber);
 		textField.addPropertyChangeListener("value", evt -> {
 			slider.setValue((int) evt.getNewValue());
+			firePropertyChange("value", (int) evt.getOldValue(), (int) evt.getNewValue());
 		});
 
 		makeSmall(label, slider, textField);
@@ -211,11 +216,23 @@ public class SliderBarPanel extends JPanel {
     public void setValue(final int newValue) {
     	textField.setValue(newValue);
 	}
+    
+    public int getValue() {
+		return slider.getValue();
+	}
+    
+    public int getMin() {
+		return min;
+	}
+    
+    public int getMax() {
+		return max;
+	}
 
 	public double getPrecision() {
 		return textField.getPrecision();
 	}
-    
+
     //Methods are currently not used.  If they become useful in the future need to add case for smallNumbers case
     
     /*public double getMin() {

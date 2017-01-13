@@ -24,7 +24,6 @@ import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
 import javax.swing.JSlider;
 import javax.swing.Timer;
-import javax.swing.event.ChangeEvent;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowEnrichmentMapDialogAction;
@@ -52,7 +51,6 @@ import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
@@ -140,17 +138,14 @@ public class ControlPanelMediator
 					SliderBarPanel sSliderPanel = viewPanel.getSimilaritySliderPanel();
 					
 					if (pvSliderPanel != null)
-						pvSliderPanel.getSlider().addChangeListener(evt ->
-								onCutoffSliderChanged(evt, pvSliderPanel, viewPanel, map, netView, CyNode.class)
-						);
+						pvSliderPanel.addPropertyChangeListener("value",
+								evt -> filterNodesAndEdges(viewPanel, map, netView));
 					if (qvSliderPanel != null)
-						qvSliderPanel.getSlider().addChangeListener(evt ->
-								onCutoffSliderChanged(evt, pvSliderPanel, viewPanel, map, netView, CyNode.class)
-						);
+						qvSliderPanel.addPropertyChangeListener("value",
+								evt -> filterNodesAndEdges(viewPanel, map, netView));
 					if (sSliderPanel != null)
-						sSliderPanel.getSlider().addChangeListener(evt ->
-								onCutoffSliderChanged(evt, pvSliderPanel, viewPanel, map, netView, CyEdge.class)
-						);
+						sSliderPanel.addPropertyChangeListener("value",
+								evt -> filterNodesAndEdges(viewPanel, map, netView));
 
 					viewPanel.getCheckboxListPanel().getCheckboxList().addListSelectionListener(evt -> {
 						filterNodesAndEdges(viewPanel, map, netView);
@@ -344,17 +339,6 @@ public class ControlPanelMediator
 		}
 	}
 	
-	public void onCutoffSliderChanged(ChangeEvent e, SliderBarPanel sliderPanel, EMViewControlPanel viewPanel,
-			EnrichmentMap map, CyNetworkView netView, Class<? extends CyIdentifiable> targetType) {
-		JSlider slider = (JSlider) e.getSource();
-		
-		if (slider.getValueIsAdjusting())
-			return;
-		
-		sliderPanel.setValue(slider.getValue());
-		filterNodesAndEdges(viewPanel, map, netView);
-	}
-	
 	private void filterNodesAndEdges(EMViewControlPanel viewPanel, EnrichmentMap map, CyNetworkView netView) {
 		Timer timer = filterTimers.get(netView);
 		
@@ -375,9 +359,8 @@ public class ControlPanelMediator
 			Set<String> columnNames) {
 		Set<CyNode> nodes = new HashSet<>();
 		
-		JSlider slider = sliderPanel.getSlider();
-		Double maxCutoff = slider.getValue() / sliderPanel.getPrecision();
-		Double minCutoff = slider.getMinimum() / sliderPanel.getPrecision();
+		Double maxCutoff = (double) sliderPanel.getValue() / sliderPanel.getPrecision();
+		Double minCutoff = (double) sliderPanel.getMin() / sliderPanel.getPrecision();
 		
 		CyNetwork network = networkView.getModel();
 		CyTable table = network.getDefaultNodeTable();
