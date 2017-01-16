@@ -57,7 +57,6 @@ import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParameters;
 import org.cytoscape.application.events.SetCurrentNetworkEvent;
 import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.cytoscape.application.swing.CytoPanelComponent;
-import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 
@@ -106,8 +105,8 @@ public class EnrichmentMapManager implements SetCurrentNetworkListener {
 	/**
 	 * Registers a newly created Network.
 	 */
-	public void registerEnrichmentMap(CyNetwork cyNetwork, EnrichmentMap map) {
-		enrichmentMaps.put(cyNetwork.getSUID(), map);
+	public void registerEnrichmentMap(EnrichmentMap map) {
+		enrichmentMaps.put(map.getNetworkID(), map);
 	}
 
 	public Map<Long, EnrichmentMap> getAllEnrichmentMaps() {

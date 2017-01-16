@@ -11,6 +11,7 @@ import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.style.ColumnDescriptor;
+import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanelMediator;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
@@ -57,6 +58,7 @@ public class SessionModelListener implements SessionLoadedListener, SessionAbout
 	@Inject private CyServiceRegistrar serviceRegistrar;
 	
 	@Inject private Provider<LegacySessionLoader> legacySessionLoaderProvider;
+	@Inject private Provider<ControlPanelMediator> controlPanelMediatorProvider;
 	@Inject private EnrichmentMapManager emManager;
 	
 	private static final boolean debug = false;
@@ -103,10 +105,18 @@ public class SessionModelListener implements SessionLoadedListener, SessionAbout
 		
 		emManager.reset();
 		
+		boolean sessionHasEM = false;
 		if(LegacySessionLoader.isLegacy(session)) {
+			sessionHasEM = true;
 			legacySessionLoaderProvider.get().loadSession(session);
 		} else {
-			restoreModelFromTables(session);
+			sessionHasEM = restoreModelFromTables(session);
+		}
+		
+		ControlPanelMediator controlPanelMediator = controlPanelMediatorProvider.get();
+		controlPanelMediator.reset();
+		if(sessionHasEM) {
+			controlPanelMediator.showControlPanel();
 		}
 		
 		if(debug) {
@@ -122,7 +132,8 @@ public class SessionModelListener implements SessionLoadedListener, SessionAbout
 	}
 	
 	
-	private void restoreModelFromTables(CySession session) {
+	private boolean restoreModelFromTables(CySession session) {
+		boolean sessionHasEM = false;
 		CyTable table = getPrivateTable();
 		if(table != null) {
 			for(CyRow row : table.getAllRows()) {
@@ -136,12 +147,14 @@ public class SessionModelListener implements SessionLoadedListener, SessionAbout
 							em.setServiceRegistrar(serviceRegistrar);
 							em.setNetworkID(network.getSUID());
 							updateNodeSuids(em, session);
-							emManager.registerEnrichmentMap(network, em);
+							emManager.registerEnrichmentMap(em);
+							sessionHasEM = true;
 						}
 					}
 				}
 			}
 		}
+		return sessionHasEM;
 	}
 	
 	private void updateNodeSuids(EnrichmentMap map, CySession session) {
@@ -197,7 +210,7 @@ public class SessionModelListener implements SessionLoadedListener, SessionAbout
 	
 	
 	private static boolean hasColumn(CyTable table, ColumnDescriptor<?> colDesc) {
-		CyColumn col = table.getColumn(COL_NETWORK_ID.getBaseName());
+		CyColumn col = table.getColumn(colDesc.getBaseName());
 		return col.getName().equals(colDesc.getBaseName()) && col.getType().equals(colDesc.getType());
 	}
 	
