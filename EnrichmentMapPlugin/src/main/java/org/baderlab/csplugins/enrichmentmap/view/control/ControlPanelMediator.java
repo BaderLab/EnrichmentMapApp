@@ -356,7 +356,7 @@ public class ControlPanelMediator
 	}
 	
 	private Set<CyNode> getFilteredInNodes(SliderBarPanel sliderPanel, EnrichmentMap map, CyNetworkView networkView,
-			Set<String> columnNames) {
+			Set<String> columnNames, Set<Long> dataSetNodes) {
 		Set<CyNode> nodes = new HashSet<>();
 		
 		Double maxCutoff = (double) sliderPanel.getValue() / sliderPanel.getPrecision();
@@ -372,19 +372,22 @@ public class ControlPanelMediator
 		
 		// Go through all the existing nodes to see if we need to hide any new nodes.
 		for (CyNode n : network.getNodeList()) {
+			if (!dataSetNodes.contains(n.getSUID()))
+				continue; // Do not include this node
+			
 			CyRow row = network.getRow(n);
 
 			// Skip Node if it's not an Enrichment-Geneset (but e.g. a Signature-Hub)
 			if (table.getColumn(prefix + NODE_GS_TYPE) != null
 					&& !NODE_GS_TYPE_ENRICHMENT.equalsIgnoreCase(row.get(prefix + NODE_GS_TYPE, String.class)))
-				continue;
+				continue; // Do not include this node
 
 			boolean showNode = false;
 			
 			for (String colName : columnNames) {
 				if (table.getColumn(colName) == null) {
-					nodes.add(n);
-					continue;
+					showNode = true;
+					break;
 				}
 				
 				Double value = row.get(colName, Double.class);
@@ -424,22 +427,22 @@ public class ControlPanelMediator
 			
 			for (String colName : columnNames) {
 				if (table.getColumn(colName) == null) {
-					edges.add(e);
-					continue;
+					showEdge = true;
+					break;
 				}
-				
+
 				Double value = row.get(colName, Double.class);
-	
+
 				// Possible that there isn't value for this interaction
 				if (value == null)
 					value = 0.1;
-	
+
 				if (value >= minCutoff && value <= maxCutoff) {
 					showEdge = true;
 					break;
 				}
 			}
-			
+		
 			if (showEdge)
 				edges.add(e);
 		}
@@ -465,21 +468,25 @@ public class ControlPanelMediator
 			Set<CyEdge> edgesToShow = Collections.emptySet();
 			
 			EMCreationParameters params = map.getParams();
+			List<DataSet> selectedDataSets = viewPanel.getSelectedDataSets();
+			Set<Long> dataSetNodes = EnrichmentMap.getNodesUnion(selectedDataSets);
 			
 			// Only p or q value, but not both!
-			if (viewPanel.getPValueSliderPanel() != null && viewPanel.getPValueSliderPanel().isVisible())
-				nodesToShow.addAll(getFilteredInNodes(viewPanel.getPValueSliderPanel(), map, netView,
-						params.getPValueColumnNames()));
-			else if (viewPanel.getQValueSliderPanel() != null && viewPanel.getQValueSliderPanel().isVisible())
-				nodesToShow.addAll(getFilteredInNodes(viewPanel.getQValueSliderPanel(), map, netView,
-						params.getQValueColumnNames()));
+			if (viewPanel.getPValueSliderPanel() != null && viewPanel.getPValueSliderPanel().isVisible()) {
+				Set<String> columnNames = getFilteredColumnNames(params.getPValueColumnNames(), selectedDataSets);
+				nodesToShow.addAll(
+						getFilteredInNodes(viewPanel.getPValueSliderPanel(), map, netView, columnNames, dataSetNodes));
+			} else if (viewPanel.getQValueSliderPanel() != null && viewPanel.getQValueSliderPanel().isVisible()) {
+				Set<String> columnNames = getFilteredColumnNames(params.getQValueColumnNames(), selectedDataSets);
+				nodesToShow.addAll(
+						getFilteredInNodes(viewPanel.getQValueSliderPanel(), map, netView, columnNames, dataSetNodes));
+			}
 
 			if (viewPanel.getSimilaritySliderPanel() != null)
 				edgesToShow = getFilteredInEdges(viewPanel.getSimilaritySliderPanel(), map, netView,
 						params.getSimilarityCutoffColumnNames());
 			
 			CyNetwork net = netView.getModel();
-			Set<Long> dataSetNodes = EnrichmentMap.getNodesUnion(viewPanel.getSelectedDataSets());
 			
 			// Hide or show nodes and their edges
 			for (CyNode n : net.getNodeList()) {
@@ -488,7 +495,7 @@ public class ControlPanelMediator
 				if (nv == null)
 					continue; // Should never happen!
 				
-				boolean show = nodesToShow.contains(n) && dataSetNodes.contains(n.getSUID());
+				boolean show = nodesToShow.contains(n);
 				
 				if (show) {
 					nv.clearValueLock(NODE_VISIBLE);
@@ -511,8 +518,9 @@ public class ControlPanelMediator
 				if (ev == null)
 					continue; // Should never happen!
 				
-				boolean show = edgesToShow.contains(e);
-				
+				boolean show = edgesToShow.contains(e) && nodesToShow.contains(e.getSource())
+						&& nodesToShow.contains(e.getTarget());
+
 				if (show) {
 					ev.clearValueLock(EDGE_VISIBLE);
 				} else {
@@ -527,6 +535,22 @@ public class ControlPanelMediator
 			
 			if (timer != null)
 				timer.stop();
+		}
+
+		private Set<String> getFilteredColumnNames(Set<String> columnNames, List<DataSet> dataSets) {
+			Set<String> filteredNames = new HashSet<>();
+			
+			for (String name : columnNames) {
+				for (DataSet ds : dataSets) {
+					// TODO What about 2.x columns?
+					if (name.endsWith(" (" + ds.getName() + ")")) {
+						filteredNames.add(name);
+						break;
+					}
+				}
+			}
+			
+			return filteredNames;
 		}
 	}
 }
