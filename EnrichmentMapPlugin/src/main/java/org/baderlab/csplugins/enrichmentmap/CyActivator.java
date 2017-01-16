@@ -7,6 +7,10 @@ import static org.cytoscape.work.ServiceProperties.IN_MENU_BAR;
 import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
 import static org.cytoscape.work.ServiceProperties.TITLE;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -26,6 +30,7 @@ import org.baderlab.csplugins.enrichmentmap.view.EnrichmentMapInputPanel;
 import org.baderlab.csplugins.enrichmentmap.view.HeatMapPanel;
 import org.baderlab.csplugins.enrichmentmap.view.ParametersPanel;
 import org.baderlab.csplugins.enrichmentmap.view.PostAnalysisPanel;
+import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
@@ -64,7 +69,9 @@ import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.Version;
 
 
 
@@ -98,17 +105,7 @@ public class CyActivator extends AbstractCyActivator {
 		@SuppressWarnings("rawtypes")
 		SynchronousTaskManager syncTaskManager = getService(bc, SynchronousTaskManager.class);
 		DialogTaskManager dialogTaskManager = getService(bc, DialogTaskManager.class);
-		// Used with annotations to make Groups of nodes
-		CyGroupFactory groupFactory = getService(bc, CyGroupFactory.class);
-		CyGroupManager groupManager = getService(bc, CyGroupManager.class);
-		// Used to create/remove the annotations (ellipses and text labels)
-		AnnotationManager annotationManager = getService(bc, AnnotationManager.class);
-		@SuppressWarnings("unchecked")
-		AnnotationFactory<ShapeAnnotation> shapeFactory = (AnnotationFactory<ShapeAnnotation>) getService(bc, AnnotationFactory.class, "(type=ShapeAnnotation.class)");    	
-		@SuppressWarnings("unchecked")
-		AnnotationFactory<TextAnnotation> textFactory = (AnnotationFactory<TextAnnotation>) getService(bc, AnnotationFactory.class, "(type=TextAnnotation.class)");
-		CommandExecutorTaskFactory commandExecutor = getService(bc, CommandExecutorTaskFactory.class);
-		//get the service registrar so we can register new services in different classes
+		CyApplicationConfiguration applicationConfiguration = getService(bc, CyApplicationConfiguration.class);
 		CyServiceRegistrar registrar = getService(bc, CyServiceRegistrar.class);
 		
 						
@@ -142,8 +139,7 @@ public class CyActivator extends AbstractCyActivator {
 		serviceProperties.put(IN_MENU_BAR, "true");
 		serviceProperties.put(PREFERRED_MENU, APP_MENU);
 		serviceProperties.put(INSERT_SEPARATOR_BEFORE, "true");
-		HelpAction helpAction = new HelpAction(serviceProperties, cyApplicationManagerRef, cyNetworkViewManagerRef,
-				registrar);
+		HelpAction helpAction = new HelpAction(serviceProperties, cyApplicationManagerRef, cyNetworkViewManagerRef, registrar);
 		helpAction.setMenuGravity(2.1f);
 
 		//About Action
@@ -210,5 +206,7 @@ public class CyActivator extends AbstractCyActivator {
 		tableColumnTaskFactoryProps.setProperty("tableTypes", "edge");
 		registerService(bc, tableColumnTaskFactory, TableColumnTaskFactory.class, tableColumnTaskFactoryProps);
 		
+		Em21Handler.removeVersion21(bc, applicationConfiguration);
 	}
+	
 }
