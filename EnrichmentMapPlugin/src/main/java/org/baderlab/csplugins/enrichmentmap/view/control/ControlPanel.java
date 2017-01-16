@@ -282,6 +282,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 	}
 	
 	void update(CyNetworkView currentView) {
+		System.out.println("ControlPanel.update() " + currentView);
 		// Is there an EnrichmentMap for this view?
 		EnrichmentMap em = currentView != null ? emManager.getEnrichmentMap(currentView.getModel().getSUID()) : null;
 		

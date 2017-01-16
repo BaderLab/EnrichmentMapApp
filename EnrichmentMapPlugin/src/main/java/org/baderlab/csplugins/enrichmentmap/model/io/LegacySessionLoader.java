@@ -383,7 +383,7 @@ public class LegacySessionLoader {
 				CyNetwork currentNetwork = cyNetworkManager.getNetwork(id);
 				EnrichmentMap map = enrichmentMapMap.get(id);
 				
-				emManager.registerEnrichmentMap(currentNetwork, map);
+				emManager.registerEnrichmentMap(map);
 				
 				if(!j.hasNext()) {
 					//set the last network to be the one viewed and initialize the parameters panel

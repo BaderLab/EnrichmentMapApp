@@ -3,7 +3,7 @@ package org.baderlab.csplugins.enrichmentmap.model;
 import java.util.Set;
 
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.session.CySessionManager;
+import org.cytoscape.model.CyNetworkTableManager;
 
 import com.google.inject.Inject;
 
@@ -20,7 +20,7 @@ public class LegacySupport {
 	
 	
 	@Inject private EnrichmentMapManager emManager;
-	@Inject private CySessionManager sessionManager;
+	@Inject private CyNetworkTableManager networkTableManager;
 
 	
 	/**
@@ -28,7 +28,7 @@ public class LegacySupport {
 	 * make attribute prefix independent of cytoscape
 	 */
 	public String getNextAttributePrefix() {
-		Set<CyNetwork> networks = sessionManager.getCurrentSession().getNetworks();
+		Set<CyNetwork> networks = networkTableManager.getNetworkSet();
 
 		if(networks == null || networks.isEmpty()) {
 			return "EM1_";
@@ -36,11 +36,8 @@ public class LegacySupport {
 		else {
 			// how many enrichment maps are there?
 			int max_prefix = 0;
-			// go through all the networks, check to see if they are enrichment
-			// maps
-			// if they are then calculate the max EM_# and use the max number +
-			// 1 for the
-			// current attributes
+			// go through all the networks, check to see if they are enrichment maps
+			// if they are then calculate the max EM_# and use the max number + 1 for the current attributes
 			for(CyNetwork current_network : networks) {
 				Long networkId = current_network.getSUID();
 				if(emManager.isEnrichmentMap(networkId)) {// fails

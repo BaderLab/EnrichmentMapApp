@@ -10,6 +10,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -52,11 +53,13 @@ import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
@@ -89,6 +92,8 @@ public class ControlPanelMediator
 	@Inject private CyServiceRegistrar serviceRegistrar;
 	@Inject private CyApplicationManager applicationManager;
 	@Inject private CySwingApplication swingApplication;
+	@Inject private CyNetworkViewManager networkViewManager;
+	@Inject private CyNetworkManager networkManager;
 	@Inject private MasterMapVisualStyleTask.Factory visualStyleTaskFactory;
 	@Inject private DialogTaskManager dialogTaskManager;
 	@Inject private CyColumnIdentifierFactory columnIdFactory;
@@ -101,21 +106,31 @@ public class ControlPanelMediator
 	
 	@Override
 	public void handleEvent(SetCurrentNetworkViewEvent e) {
+		setCurrentNetworkView(e.getNetworkView());
+	}
+	
+	
+	private void setCurrentNetworkView(CyNetworkView view) {
 		invokeOnEDT(() -> {
 			updating = true;
 			
 			try {
-				getControlPanel().update(e.getNetworkView());
+				getControlPanel().update(view);
 			} finally {
 				updating = false;
 			}
 		});
 	}
 	
+	
 	@Override
 	public void handleEvent(NetworkViewAddedEvent e) {
+		addNetworkView(e.getNetworkView());
+	}
+	
+	
+	private void addNetworkView(CyNetworkView netView) {
 		invokeOnEDT(() -> {
-			CyNetworkView netView = e.getNetworkView();
 			EnrichmentMap map = emManager.getEnrichmentMap(netView.getModel().getSUID());
 			
 			// Is the new view an Enrichment Map one?
@@ -179,6 +194,27 @@ public class ControlPanelMediator
 			}
 		});
 	}
+
+	
+	public void reset() {
+		invokeOnEDT(() -> {
+			for(CyNetworkView view : networkViewManager.getNetworkViewSet()) {
+				getControlPanel().removeEnrichmentMapView(view);
+			}
+			
+			Map<Long, EnrichmentMap> maps = emManager.getAllEnrichmentMaps();
+			for(EnrichmentMap map : maps.values()) {
+				CyNetwork network = networkManager.getNetwork(map.getNetworkID());
+				Collection<CyNetworkView> networkViews = networkViewManager.getNetworkViews(network);
+				for(CyNetworkView netView : networkViews) {
+					addNetworkView(netView);
+				}
+			}
+			
+			setCurrentNetworkView(applicationManager.getCurrentNetworkView());
+		});
+	}
+	
 	
 	@Override
 	public void handleEvent(NetworkViewAboutToBeDestroyedEvent event) {

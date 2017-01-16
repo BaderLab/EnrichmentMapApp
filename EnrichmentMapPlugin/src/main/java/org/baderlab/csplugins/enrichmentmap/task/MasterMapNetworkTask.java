@@ -78,7 +78,7 @@ public class MasterMapNetworkTask extends AbstractTask {
 		createEdges(network, nodes);
 		
 		networkManager.addNetwork(network);
-		emManager.registerEnrichmentMap(network, map);
+		emManager.registerEnrichmentMap(map);
 	}
 	
 	private Map<String,CyNode> createNodes(CyNetwork network) {
