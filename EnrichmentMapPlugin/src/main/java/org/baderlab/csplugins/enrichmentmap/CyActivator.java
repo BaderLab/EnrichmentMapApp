@@ -87,6 +87,9 @@ public class CyActivator extends AbstractCyActivator {
 			ParametersPanelMediator parametersPanelMediator = injector.getInstance(ParametersPanelMediator.class);
 			registerAllServices(bc, parametersPanelMediator, new Properties());
 		}
+		
+		// If the App is updated or restarted then we want to reload the model from the tables
+		sessionListener.restoreModel();
 	}
 	
 	

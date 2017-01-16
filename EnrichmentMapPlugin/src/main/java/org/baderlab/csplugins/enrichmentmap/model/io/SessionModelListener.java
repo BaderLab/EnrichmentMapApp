@@ -98,6 +98,9 @@ public class SessionModelListener implements SessionLoadedListener, SessionAbout
 		});
 	}
 	
+	public void restoreModel() {
+		restoreModel(null);
+	}
 	
 	public void restoreModel(CySession session) {
 		if(debug)
@@ -106,7 +109,7 @@ public class SessionModelListener implements SessionLoadedListener, SessionAbout
 		emManager.reset();
 		
 		boolean sessionHasEM = false;
-		if(LegacySessionLoader.isLegacy(session)) {
+		if(session != null && LegacySessionLoader.isLegacy(session)) {
 			sessionHasEM = true;
 			legacySessionLoaderProvider.get().loadSession(session);
 		} else {
@@ -161,10 +164,13 @@ public class SessionModelListener implements SessionLoadedListener, SessionAbout
 		for(DataSet dataset : map.getDatasetList()) {
 			Map<String,Long> nodes = dataset.getNodeSuids();
 			for(String key : nodes.keySet()) {
-				Long oldSuid = nodes.get(key);
-				CyNode node = session.getObject(oldSuid, CyNode.class);
-				Long newSuid = node.getSUID();
-				nodes.put(key, newSuid);
+				Long suid = nodes.get(key);
+				if(session != null) {
+					// If we are loading from a session file then we need to re-map the ids
+					CyNode node = session.getObject(suid, CyNode.class);
+					suid = node.getSUID();
+				}
+				nodes.put(key, suid);
 			}
 		}
 	}
