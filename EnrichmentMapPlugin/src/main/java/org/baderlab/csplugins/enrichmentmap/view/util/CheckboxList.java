@@ -32,6 +32,7 @@ public class CheckboxList<T> extends JList<CheckboxData<T>> {
 					CheckboxData<T> checkbox = (CheckboxData<T>) getModel().getElementAt(index);
 					checkbox.setSelected(!checkbox.isSelected());
 					repaint();
+					fireSelectionValueChanged(index, index, false);
 				}
 			}
 		});
