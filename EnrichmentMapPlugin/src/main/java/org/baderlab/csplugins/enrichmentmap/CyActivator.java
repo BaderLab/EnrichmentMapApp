@@ -13,6 +13,7 @@ import org.baderlab.csplugins.enrichmentmap.model.io.SessionModelListener;
 import org.baderlab.csplugins.enrichmentmap.style.ChartFactoryManager;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanelMediator;
 import org.baderlab.csplugins.enrichmentmap.view.parameters.ParametersPanelMediator;
+import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
@@ -90,6 +91,8 @@ public class CyActivator extends AbstractCyActivator {
 		
 		// If the App is updated or restarted then we want to reload the model from the tables
 		sessionListener.restoreModel();
+		
+		Em21Handler.removeVersion21(bc, injector.getInstance(CyApplicationConfiguration.class));
 	}
 	
 	

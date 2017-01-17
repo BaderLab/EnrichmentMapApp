@@ -8,6 +8,7 @@ import java.lang.annotation.Retention;
 
 import javax.swing.JFrame;
 
+import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.command.AvailableCommands;
@@ -97,6 +98,7 @@ public class CytoscapeServiceModule extends AbstractModule {
 		bindService(RenderingEngineManager.class);
 		bindService(CyColumnIdentifierFactory.class);
 		bindService(CyNetworkNaming.class);
+		bindService(CyApplicationConfiguration.class);
 		
 		bindService(DialogTaskManager.class);
 		TypeLiteral<SynchronousTaskManager<?>> synchronousManager = new TypeLiteral<SynchronousTaskManager<?>>(){};

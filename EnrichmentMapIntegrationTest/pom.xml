@@ -87,7 +87,7 @@
 	
 		<dependency>
 			<groupId>org.baderlab.csplugins</groupId>
-			<artifactId>enrichmentmap-app</artifactId>
+			<artifactId>enrichmentmap</artifactId>
 			<version>3.0.0-SNAPSHOT</version>
 			<scope>test</scope>
 		</dependency>

@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Headless;
 import org.baderlab.csplugins.enrichmentmap.CyActivator;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
@@ -60,6 +61,9 @@ public class SessionModelListener implements SessionLoadedListener, SessionAbout
 	@Inject private Provider<LegacySessionLoader> legacySessionLoaderProvider;
 	@Inject private Provider<ControlPanelMediator> controlPanelMediatorProvider;
 	@Inject private EnrichmentMapManager emManager;
+	
+	@Inject private @Headless boolean headless;
+	
 	
 	private static final boolean debug = false;
 	
@@ -116,10 +120,12 @@ public class SessionModelListener implements SessionLoadedListener, SessionAbout
 			sessionHasEM = restoreModelFromTables(session);
 		}
 		
-		ControlPanelMediator controlPanelMediator = controlPanelMediatorProvider.get();
-		controlPanelMediator.reset();
-		if(sessionHasEM) {
-			controlPanelMediator.showControlPanel();
+		if(!headless) {
+			ControlPanelMediator controlPanelMediator = controlPanelMediatorProvider.get();
+			controlPanelMediator.reset();
+			if(sessionHasEM) {
+				controlPanelMediator.showControlPanel();
+			}
 		}
 		
 		if(debug) {

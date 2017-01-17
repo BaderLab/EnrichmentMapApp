@@ -26,6 +26,8 @@ public abstract class PaxExamConfiguration {
 		// Don't get these values from system properties because I want to run these tests in eclipse
 		final String cyVersion = "3.4.0"; 
 		final String emVersion = "3.0.0-SNAPSHOT";
+		final String groupId   = "org.baderlab.csplugins";
+		final String appBundle = "EnrichmentMap";
  
 		return options(
 			karafDistributionConfiguration()
@@ -80,7 +82,7 @@ public abstract class PaxExamConfiguration {
 			//mavenBundle().groupId("org.cytoscape").artifactId("filter2-impl").version(implBundleVersion).startLevel(25)
 			//mavenBundle().groupId("org.cytoscape").artifactId("vizmap-gui-impl").version(implBundleVersion).startLevel(27)
 			
-			mavenBundle().groupId("org.baderlab.csplugins").artifactId("enrichmentmap-app").version(emVersion).startLevel(30)
+			mavenBundle().groupId(groupId).artifactId(appBundle).version(emVersion).startLevel(30)
 		);
 	}
 	

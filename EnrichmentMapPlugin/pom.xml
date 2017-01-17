@@ -8,8 +8,9 @@
 	    <version>3.0.0-SNAPSHOT</version>
 	</parent>
    
-	<artifactId>enrichmentmap-app</artifactId>
+	<artifactId>enrichmentmap</artifactId>
 	<packaging>bundle</packaging>
+	<name>EnrichmentMap</name>
 	
 	<dependencies>
 		<!-- Cytoscape API -->
@@ -361,6 +362,4 @@
 	      	</resource>
         </resources>
 	</build>
-
-	
 </project>
