@@ -539,13 +539,6 @@ public class ControlPanelMediator
 					net.getRow(n).set(CyNetwork.SELECTED, false);
 					nv.setLockedValue(NODE_VISIBLE, false);
 				}
-
-				for (CyNode n2 : net.getNeighborList(n, CyEdge.Type.ANY)) {
-					for (CyEdge e : net.getConnectingEdgeList(n, n2, CyEdge.Type.ANY)) {
-						if (show)
-							edgesToShow.add(e);
-					}
-				}
 			}
 			
 			for (CyEdge e : net.getEdgeList()) {
