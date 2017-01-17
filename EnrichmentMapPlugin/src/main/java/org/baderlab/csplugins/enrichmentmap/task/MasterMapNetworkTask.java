@@ -29,12 +29,13 @@ import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 
-public class MasterMapNetworkTask extends AbstractTask {
+public class MasterMapNetworkTask extends AbstractTask implements ObservableTask {
 
 	@Inject private CyNetworkManager networkManager;
 	@Inject private CyNetworkFactory networkFactory;
@@ -45,6 +46,8 @@ public class MasterMapNetworkTask extends AbstractTask {
 	private final String prefix;
 	
 	private final Supplier<Map<String,GenesetSimilarity>> supplier;
+	
+	private long networkSuidResult;
 	
 	public interface Factory {
 		MasterMapNetworkTask create(EnrichmentMap map, Supplier<Map<String,GenesetSimilarity>> supplier);
@@ -60,11 +63,21 @@ public class MasterMapNetworkTask extends AbstractTask {
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		taskMonitor.setTitle("Building Enrichment Map Network");
-		createMasterMapNetwork();
+		networkSuidResult = createMasterMapNetwork();
 		taskMonitor.setStatusMessage("");
 	}
 	
-	private void createMasterMapNetwork() {
+	@Override
+	public <R> R getResults(Class<? extends R> type) {
+		if(String.class.equals(type)) {
+			return type.cast(String.valueOf(networkSuidResult));
+		} else if(Long.class.equals(type)) {
+			return type.cast(networkSuidResult);
+		}
+		return null;
+	}
+	
+	private long createMasterMapNetwork() {
 		// Create the CyNetwork
 		CyNetwork network = networkFactory.createNetwork();
 		
@@ -79,6 +92,7 @@ public class MasterMapNetworkTask extends AbstractTask {
 		
 		networkManager.addNetwork(network);
 		emManager.registerEnrichmentMap(map);
+		return network.getSUID();
 	}
 	
 	private Map<String,CyNode> createNodes(CyNetwork network) {
