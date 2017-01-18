@@ -15,7 +15,6 @@ import org.baderlab.csplugins.enrichmentmap.task.BuildDiseaseSignatureTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreatePostAnalysisVisualStyleTask;
 import org.baderlab.csplugins.enrichmentmap.task.MasterMapNetworkTask;
 import org.baderlab.csplugins.enrichmentmap.task.MasterMapTaskFactory;
-import org.baderlab.csplugins.enrichmentmap.task.VisualizeEnrichmentMapTask;
 import org.baderlab.csplugins.enrichmentmap.task.VisualizeMasterMapTask;
 import org.baderlab.csplugins.enrichmentmap.task.heatmap.UpdateHeatMapTask;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapPanel;
@@ -79,7 +78,6 @@ class FactoryModule extends AbstractModule {
 	@Override
 	protected void configure() {
 		// Factories using AssistedInject
-		installFactory(VisualizeEnrichmentMapTask.Factory.class);
 		installFactory(EnrichmentMapVisualStyle.Factory.class);
 		installFactory(LegacyPostAnalysisVisualStyle.Factory.class);
 		installFactory(PostAnalysisInputPanel.Factory.class);
