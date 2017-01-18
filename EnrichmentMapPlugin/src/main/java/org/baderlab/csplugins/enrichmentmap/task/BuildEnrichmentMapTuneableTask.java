@@ -309,8 +309,10 @@ public class BuildEnrichmentMapTuneableTask extends AbstractTask {
 		if(phenotype1Dataset2!= null) dataset2files.setPhenotype1(phenotype1Dataset2);
 		if(phenotype2Dataset2!= null) dataset2files.setPhenotype2(phenotype2Dataset2);
 		
-		if(!dataset2files.isEmpty())
+		if(!dataset2files.isEmpty()) {
+			new_params.setTwoDatasets(true);
 			new_params.addFiles(EnrichmentMap.DATASET2, dataset2files);
+		}
 	
     EnrichmentMap map = new EnrichmentMap(new_params);
 
