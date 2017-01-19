@@ -408,37 +408,36 @@ public class ControlPanelMediator
 		
 		// Go through all the existing nodes to see if we need to hide any new nodes.
 		for (CyNode n : network.getNodeList()) {
-			if (!dataSetNodes.contains(n.getSUID()))
-				continue; // Do not include this node
-			
+			boolean show = true;
 			CyRow row = network.getRow(n);
-
+			
 			// Skip Node if it's not an Enrichment-Geneset (but e.g. a Signature-Hub)
 			if (table.getColumn(prefix + NODE_GS_TYPE) != null
-					&& !NODE_GS_TYPE_ENRICHMENT.equalsIgnoreCase(row.get(prefix + NODE_GS_TYPE, String.class)))
-				continue; // Do not include this node
-
-			boolean showNode = false;
+					&& NODE_GS_TYPE_ENRICHMENT.equalsIgnoreCase(row.get(prefix + NODE_GS_TYPE, String.class))) {
+				if (!dataSetNodes.contains(n.getSUID())) {
+					show = false;
+				} else {
+					for (String colName : columnNames) {
+						if (table.getColumn(colName) == null)
+							continue; // Ignore this column name (maybe the user deleted it)
+						
+						Double value = row.get(colName, Double.class);
 			
-			for (String colName : columnNames) {
-				if (table.getColumn(colName) == null) {
-					showNode = true;
-					break;
-				}
-				
-				Double value = row.get(colName, Double.class);
-	
-				// Possible that there isn't a p-value for this geneset
-				if (value == null)
-					value = 0.99;
-	
-				if (value >= minCutoff && value <= maxCutoff) {
-					showNode = true;
-					break;
+						// Possible that there isn't a cutoff value for this geneset
+						if (value == null)
+							continue;
+			
+						if (value >= minCutoff && value <= maxCutoff) {
+							show = true;
+							break;
+						} else {
+							show = false;
+						}
+					}
 				}
 			}
 			
-			if (showNode)
+			if (show)
 				nodes.add(n);
 		}
 		
@@ -450,36 +449,36 @@ public class ControlPanelMediator
 		Set<CyEdge> edges = new HashSet<>();
 		
 		JSlider slider = sliderPanel.getSlider();
-		Double maxCutoff = slider.getValue() / sliderPanel.getPrecision();
-		Double minCutoff = slider.getMinimum() / sliderPanel.getPrecision();
+		Double maxCutoff = slider.getMaximum() / sliderPanel.getPrecision();
+		Double minCutoff = slider.getValue() / sliderPanel.getPrecision();
 		
 		CyNetwork network = networkView.getModel();
 		CyTable table = network.getDefaultEdgeTable();
 
 		// Go through all the existing edges to see if we need to hide any new ones.
 		for (CyEdge e : network.getEdgeList()) {
+			boolean show = true;
 			CyRow row = network.getRow(e);
-			boolean showEdge = false;
 			
 			for (String colName : columnNames) {
-				if (table.getColumn(colName) == null) {
-					showEdge = true;
-					break;
-				}
+				if (table.getColumn(colName) == null)
+					continue; // Ignore this column name (maybe the user deleted it)
 
 				Double value = row.get(colName, Double.class);
 
 				// Possible that there isn't value for this interaction
 				if (value == null)
-					value = 0.1;
+					continue;
 
 				if (value >= minCutoff && value <= maxCutoff) {
-					showEdge = true;
+					show = true;
 					break;
+				} else {
+					show = false;
 				}
 			}
 		
-			if (showEdge)
+			if (show)
 				edges.add(e);
 		}
 		
