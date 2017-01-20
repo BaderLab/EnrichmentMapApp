@@ -229,7 +229,7 @@ public class GSEAResolver {
 		return Optional.empty();
 	}
 	
-	public static boolean hasEdbData(Path p) {
+	private static boolean hasEdbData(Path p) {
 		Path edbPath = p.resolve("edb");
 		try {
 			return Files.exists(edbPath)
@@ -240,6 +240,10 @@ public class GSEAResolver {
 			e.printStackTrace();
 			return false;
 		}
+	}
+	
+	public static boolean isGSEAResultsFolder(Path p) {
+		return hasEdbData(p);
 	}
 	
 	

@@ -245,7 +245,7 @@ public class GSEASimpleDialogPage implements CardDialogPage {
 			try(Stream<Path> contents = Files.list(path)) {
 				contents
 				.filter(Files::isDirectory)
-				.filter(GSEAResolver::hasEdbData)
+				.filter(GSEAResolver::isGSEAResultsFolder)
 				.map(folder -> new CheckboxData<>(folder.getFileName().toString(), folder))
 				.forEach(model::addElement);
 			}
