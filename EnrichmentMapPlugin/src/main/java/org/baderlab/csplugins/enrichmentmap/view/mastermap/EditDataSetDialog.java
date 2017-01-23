@@ -42,9 +42,10 @@ import org.cytoscape.util.swing.BasicCollapsiblePanel;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
+import com.google.common.base.Strings;
+
 /**
- * MKTODO set the phenotypes automatically by scanning the classes file
- * MKTODO add validation
+ * MKTODO Change when validation runs. Right now its running on every keystroke, which is not very elegant.
  */
 @SuppressWarnings("serial")
 public class EditDataSetDialog extends JDialog {
@@ -54,6 +55,8 @@ public class EditDataSetDialog extends JDialog {
 	private JRadioButton gseaRadio;
 	private JRadioButton genericRadio;
 	private JRadioButton davidRadio;
+	
+	private JTextField nameText;
 	
 	private JTextField enrichments1Text;
 	private JTextField enrichments2Text;
@@ -77,7 +80,7 @@ public class EditDataSetDialog extends JDialog {
 	public EditDataSetDialog(JDialog parent, FileUtil fileUtil, @Nullable DataSetParameters initDataSet) {
 		super(parent, null, true);
 		this.fileUtil = fileUtil;
-		setMinimumSize(new Dimension(650, 450));
+		setMinimumSize(new Dimension(650, 500));
 		setResizable(true);
 		setTitle(initDataSet == null ? "Add Enrichment Results" : "Edit Enrichment Results");
 		createContents(initDataSet);
@@ -95,7 +98,7 @@ public class EditDataSetDialog extends JDialog {
 	}
 	
 	private DataSetParameters createDataSetParameters() {
-		String name = "My DataSet";
+		String name = nameText.getText().trim();
 		Method method = getMethod();
 		
 		DataSetFiles files = new DataSetFiles();
@@ -134,6 +137,7 @@ public class EditDataSetDialog extends JDialog {
 	
 	private void createContents(@Nullable DataSetParameters initDataSet) {
 		JPanel analysisTypePanel = createAnalysisTypePanel(initDataSet);
+		JPanel namePanel = createNamePanel(initDataSet);
 		JPanel textFieldPanel = createTextFieldPanel(initDataSet);
 		JPanel phenotypePanel = createPhenotypesPanel(initDataSet);
 		JPanel buttonPanel = createButtonPanel();
@@ -145,6 +149,7 @@ public class EditDataSetDialog extends JDialog {
 		layout.setHorizontalGroup(
 			layout.createParallelGroup()
 				.addComponent(analysisTypePanel)
+				.addComponent(namePanel)
 				.addComponent(textFieldPanel)
 				.addComponent(phenotypePanel)
 				.addComponent(buttonPanel)
@@ -152,6 +157,7 @@ public class EditDataSetDialog extends JDialog {
 		layout.setVerticalGroup(
 			layout.createSequentialGroup()
 				.addComponent(analysisTypePanel)
+				.addComponent(namePanel)
 				.addComponent(textFieldPanel)
 				.addComponent(phenotypePanel)
 				.addGap(0, 0, Short.MAX_VALUE)
@@ -201,6 +207,31 @@ public class EditDataSetDialog extends JDialog {
    		);
    		
    		panel.setBorder(LookAndFeelUtil.createTitledBorder("Analysis Type"));
+   		if (LookAndFeelUtil.isAquaLAF())
+			panel.setOpaque(false);
+		return panel;
+	}
+	
+	
+	private JPanel createNamePanel(@Nullable DataSetParameters initDataSet) {
+		nameText = new JTextField();
+		nameText.setText(initDataSet == null ? "" : initDataSet.getName());
+		makeSmall(nameText);
+		
+		JPanel panel = new JPanel();
+		GroupLayout layout = new GroupLayout(panel);
+		panel.setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(true);
+	   		
+   		layout.setHorizontalGroup(layout.createSequentialGroup()
+			.addComponent(nameText)
+   		);
+   		layout.setVerticalGroup(layout.createParallelGroup(Alignment.CENTER, true)
+			.addComponent(nameText, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+   		);
+   		
+		panel.setBorder(LookAndFeelUtil.createTitledBorder("Name"));
    		if (LookAndFeelUtil.isAquaLAF())
 			panel.setOpaque(false);
 		return panel;
@@ -409,6 +440,7 @@ public class EditDataSetDialog extends JDialog {
 	
 	private void validateInput() {
 		boolean valid = true;
+		valid &= !Strings.isNullOrEmpty(nameText.getText().trim());
 		valid &= validatePathTextField(enrichments1Text);
 		valid &= validatePathTextField(enrichments2Text);
 		valid &= validatePathTextField(expressionsText);
