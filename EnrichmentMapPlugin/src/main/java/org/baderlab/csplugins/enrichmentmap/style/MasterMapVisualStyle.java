@@ -1,5 +1,18 @@
 package org.baderlab.csplugins.enrichmentmap.style;
 
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_TRANSPARENCY;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_UNSELECTED_PAINT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_WIDTH;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_BACKGROUND_PAINT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_BORDER_PAINT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_BORDER_WIDTH;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_FILL_COLOR;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_LABEL;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_SHAPE;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_SIZE;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_TRANSPARENCY;
+
 import java.awt.Color;
 import java.awt.Paint;
 
@@ -12,7 +25,6 @@ import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
 import org.cytoscape.view.presentation.property.values.NodeShape;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
@@ -28,6 +40,9 @@ public class MasterMapVisualStyle {
 	
 	public final static String DEFAULT_NAME_SUFFIX = "Visual_Style"; // TEMPORARY probably won't be called 'MasterMap' in the final version
 	public final static String COMBINED = "Combined";
+	
+	private final static Double MIN_NODE_SIZE = 20.0;
+	private final static Double MAX_NODE_SIZE = 60.0;
 	
 	public static class Columns {
 		// Common attributes that apply to the entire network
@@ -82,7 +97,6 @@ public class MasterMapVisualStyle {
 		public static final Color LIGHTER_PHENOTYPE_1 = new Color(214, 96, 77);
 		public static final Color LIGHTEST_PHENOTYPE_1 = new Color(244, 165, 130);
 		public static final Color OVER_COLOR = new Color(247, 247, 247);
-		public static final Color MAX_PHENOTYPE_2 = new Color(33, 102, 172);
 		public static final Color LIGHTER_PHENOTYPE_2 = new Color(67, 147, 195);
 		public static final Color LIGHTEST_PHENOTYPE_2 = new Color(146, 197, 222);
 	
@@ -112,8 +126,8 @@ public class MasterMapVisualStyle {
 		// MKTODO silence events?
 		
 		// Network Properties
-		vs.setDefaultValue(BasicVisualLexicon.NETWORK_BACKGROUND_PAINT, Colors.BG_COLOR);    	        
-    	vs.setDefaultValue(BasicVisualLexicon.EDGE_TRANSPARENCY, 100);
+		vs.setDefaultValue(NETWORK_BACKGROUND_PAINT, Colors.BG_COLOR);    	        
+    	vs.setDefaultValue(EDGE_TRANSPARENCY, 100);
     	
 		setEdgeDefaults(vs, options);
 		setEdgeWidth(vs, options);
@@ -137,13 +151,13 @@ public class MasterMapVisualStyle {
 		String prefix = options.getAttributePrefix();
 		
 		DiscreteMapping<Integer, Paint> edgePaint = (DiscreteMapping<Integer, Paint>) vmfFactoryDiscrete
-				.createVisualMappingFunction(Columns.EDGE_ENRICHMENT_SET.with(prefix, null), Integer.class, BasicVisualLexicon.EDGE_UNSELECTED_PAINT);
+				.createVisualMappingFunction(Columns.EDGE_ENRICHMENT_SET.with(prefix, null), Integer.class, EDGE_UNSELECTED_PAINT);
 		edgePaint.putMapValue(Columns.EDGE_ENRICHMENT_SET_ENR, Colors.EDGE_COLOR);
 		edgePaint.putMapValue(Columns.EDGE_ENRICHMENT_SET_SIG, Colors.EDGE_COLOR_SIG);
 		vs.addVisualMappingFunction(edgePaint);
 		
 		DiscreteMapping<Integer, Paint> edgeStrokePaint = (DiscreteMapping<Integer, Paint>) vmfFactoryDiscrete
-				.createVisualMappingFunction(Columns.EDGE_ENRICHMENT_SET.with(prefix, null), Integer.class, BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT);
+				.createVisualMappingFunction(Columns.EDGE_ENRICHMENT_SET.with(prefix, null), Integer.class, EDGE_STROKE_UNSELECTED_PAINT);
 		edgeStrokePaint.putMapValue(Columns.EDGE_ENRICHMENT_SET_ENR, Colors.EDGE_COLOR);
 		edgeStrokePaint.putMapValue(Columns.EDGE_ENRICHMENT_SET_SIG, Colors.EDGE_COLOR_SIG);
 		vs.addVisualMappingFunction(edgeStrokePaint);
@@ -155,16 +169,16 @@ public class MasterMapVisualStyle {
 		EnrichmentMap map = options.getEnrichmentMap();
 		//Continous Mapping - set edge line thickness based on the number of genes in the overlap
 		ContinuousMapping<Double, Double> edgewidth = (ContinuousMapping<Double, Double>) vmfFactoryContinuous
-				.createVisualMappingFunction(Columns.EDGE_SIMILARITY_COEFF.with(prefix,null), Double.class, BasicVisualLexicon.EDGE_WIDTH);
+				.createVisualMappingFunction(Columns.EDGE_SIMILARITY_COEFF.with(prefix,null), Double.class, EDGE_WIDTH);
 		
-		Double under_width = 0.5;
-		Double min_width   = 1.0;
-		Double max_width   = 5.0;
-		Double over_width  = 6.0;
+		Double underWidth = 0.5;
+		Double minWidth   = 1.0;
+		Double maxWidth   = 5.0;
+		Double overWidth  = 6.0;
 
 		// Create boundary conditions                  less than,   equals,  greater than
-		BoundaryRangeValues<Double> bv4 = new BoundaryRangeValues<>(under_width, min_width, min_width);
-		BoundaryRangeValues<Double> bv5 = new BoundaryRangeValues<>(max_width, max_width, over_width);
+		BoundaryRangeValues<Double> bv4 = new BoundaryRangeValues<>(underWidth, minWidth, minWidth);
+		BoundaryRangeValues<Double> bv5 = new BoundaryRangeValues<>(maxWidth, maxWidth, overWidth);
 		edgewidth.addPoint(map.getParams().getSimilarityCutoff(), bv4);
 		edgewidth.addPoint(1.0, bv5);
 
@@ -173,16 +187,17 @@ public class MasterMapVisualStyle {
 	
 	private void setNodeDefaults(VisualStyle vs, MasterMapStyleOptions options) {
 		String prefix = options.getAttributePrefix();
-		//set the default node appearance
-		vs.setDefaultValue(BasicVisualLexicon.NODE_FILL_COLOR, Colors.MAX_PHENOTYPE_1);
-		vs.setDefaultValue(BasicVisualLexicon.NODE_BORDER_PAINT, Colors.MAX_PHENOTYPE_1);
-		vs.setDefaultValue(BasicVisualLexicon.NODE_SHAPE, NodeShapeVisualProperty.ELLIPSE);
-		vs.setDefaultValue(BasicVisualLexicon.NODE_SIZE, 15.0);
-		vs.setDefaultValue(BasicVisualLexicon.NODE_BORDER_WIDTH, 0.0);
+		// Set the default node appearance
+		vs.setDefaultValue(NODE_FILL_COLOR, Color.LIGHT_GRAY);
+		vs.setDefaultValue(NODE_BORDER_PAINT, Colors.MAX_PHENOTYPE_1);
+		vs.setDefaultValue(NODE_SHAPE, NodeShapeVisualProperty.ELLIPSE);
+		vs.setDefaultValue(NODE_SIZE, MIN_NODE_SIZE);
+		vs.setDefaultValue(NODE_BORDER_WIDTH, 1.0);
+		vs.setDefaultValue(NODE_TRANSPARENCY, 220);
 		
 		// Add mapping function for node shape
 		DiscreteMapping<String, NodeShape> nodeShape = (DiscreteMapping<String, NodeShape>) vmfFactoryDiscrete
-				.createVisualMappingFunction(Columns.NODE_GS_TYPE.with(prefix, null), String.class, BasicVisualLexicon.NODE_SHAPE);
+				.createVisualMappingFunction(Columns.NODE_GS_TYPE.with(prefix, null), String.class, NODE_SHAPE);
 		nodeShape.putMapValue(Columns.NODE_GS_TYPE_ENRICHMENT, NodeShapeVisualProperty.ELLIPSE);
 		nodeShape.putMapValue(Columns.NODE_GS_TYPE_SIGNATURE, NodeShapeVisualProperty.TRIANGLE);
 		vs.addVisualMappingFunction(nodeShape);
@@ -191,20 +206,17 @@ public class MasterMapVisualStyle {
 	private void setNodeLabels(VisualStyle vs, MasterMapStyleOptions options) {
 		String prefix = options.getAttributePrefix();
 		PassthroughMapping<String, String> nodeLabel = (PassthroughMapping<String, String>) vmfFactoryPassthrough
-				.createVisualMappingFunction(Columns.NODE_GS_DESCR.with(prefix,null), String.class, BasicVisualLexicon.NODE_LABEL);
+				.createVisualMappingFunction(Columns.NODE_GS_DESCR.with(prefix,null), String.class, NODE_LABEL);
 		vs.addVisualMappingFunction(nodeLabel);
 	}
 	
 	private void setNodeSize(VisualStyle vs, MasterMapStyleOptions options) {
 		String prefix = options.getAttributePrefix();
 		ContinuousMapping<Integer, Double> nodeSize = (ContinuousMapping<Integer, Double>) vmfFactoryContinuous
-				.createVisualMappingFunction(Columns.NODE_GS_SIZE.with(prefix,null), Integer.class, BasicVisualLexicon.NODE_SIZE);
+				.createVisualMappingFunction(Columns.NODE_GS_SIZE.with(prefix,null), Integer.class, NODE_SIZE);
 
-		Double min = 20.0;
-		Double max = 65.0;
-
-		BoundaryRangeValues<Double> bv0 = new BoundaryRangeValues<Double>(min, min, min);
-		BoundaryRangeValues<Double> bv1 = new BoundaryRangeValues<Double>(max, max, max);
+		BoundaryRangeValues<Double> bv0 = new BoundaryRangeValues<Double>(MIN_NODE_SIZE, MIN_NODE_SIZE, MIN_NODE_SIZE);
+		BoundaryRangeValues<Double> bv1 = new BoundaryRangeValues<Double>(MAX_NODE_SIZE, MAX_NODE_SIZE, MAX_NODE_SIZE);
 		nodeSize.addPoint(10, bv0);
 		nodeSize.addPoint(474, bv1);
 

@@ -163,11 +163,35 @@ public class ControlPanelMediator
 								evt -> filterNodesAndEdges(viewPanel, map, netView));
 
 					viewPanel.getCheckboxListPanel().getCheckboxList().addListSelectionListener(evt -> {
-						filterNodesAndEdges(viewPanel, map, netView);
-						netView.updateView();
+						if (!updating) {
+							filterNodesAndEdges(viewPanel, map, netView);
+							
+							ChartType type = (ChartType) viewPanel.getChartTypeCombo().getSelectedItem();
+							
+							if (type != null && type != ChartType.NONE)
+								updateVisualStyle(netView, map, viewPanel);
+							else
+								netView.updateView();
+						}
 					});
 					viewPanel.getCheckboxListPanel().setAddButtonCallback(model -> {
 						postAnalysisPanelMediatorProvider.get().showDialog(viewPanel, getCurrentMap());
+					});
+					
+					viewPanel.getChartTypeCombo().addActionListener(evt -> {
+						updating = true;
+						
+						try {
+							viewPanel.updateChartColorsCombo();
+						} finally {
+							updating = false;
+						}
+						
+						updateVisualStyle(netView, map, viewPanel);
+					});
+					viewPanel.getChartColorsCombo().addActionListener(evt -> {
+						if (!updating)
+							updateVisualStyle(netView, map, viewPanel);
 					});
 					
 					viewPanel.getTogglePublicationCheck().addActionListener((ActionEvent ae) -> {
@@ -175,16 +199,7 @@ public class ControlPanelMediator
 					});
 					
 					viewPanel.getResetStyleButton().addActionListener(ae -> {
-						Set<DataSet> dataSets = ImmutableSet.copyOf(
-								viewPanel.getCheckboxListPanel().getSelectedDataItems());
-						MasterMapStyleOptions options = new MasterMapStyleOptions(netView, map, dataSets::contains);
-						
-						ChartType type = (ChartType) viewPanel.getChartTypeCombo().getSelectedItem();
-						ColorScheme colorScheme = (ColorScheme) viewPanel.getChartColorsCombo().getSelectedItem();
-						CyCustomGraphics2<?> chart = getChart(type, colorScheme, options);
-						
-						applyVisualStyle(options, chart);
-						// TODO update style fields
+						updateVisualStyle(netView, map, viewPanel);
 					});
 					
 					viewPanel.getSetEdgeWidthButton().addActionListener(ae -> {
@@ -195,7 +210,6 @@ public class ControlPanelMediator
 		});
 	}
 
-	
 	public void reset() {
 		invokeOnEDT(() -> {
 			for(CyNetworkView view : networkViewManager.getNetworkViewSet()) {
@@ -214,7 +228,6 @@ public class ControlPanelMediator
 			setCurrentNetworkView(applicationManager.getCurrentNetworkView());
 		});
 	}
-	
 	
 	@Override
 	public void handleEvent(NetworkViewAboutToBeDestroyedEvent event) {
@@ -324,6 +337,18 @@ public class ControlPanelMediator
 		return view != null ? emManager.getEnrichmentMap(view.getModel().getSUID()) : null;
 	}
 	
+	private void updateVisualStyle(CyNetworkView netView, EnrichmentMap map, EMViewControlPanel viewPanel) {
+		Set<DataSet> dataSets = ImmutableSet.copyOf(viewPanel.getCheckboxListPanel().getSelectedDataItems());
+		MasterMapStyleOptions options = new MasterMapStyleOptions(netView, map, dataSets::contains);
+		
+		ChartType type = (ChartType) viewPanel.getChartTypeCombo().getSelectedItem();
+		ColorScheme colorScheme = (ColorScheme) viewPanel.getChartColorsCombo().getSelectedItem();
+		CyCustomGraphics2<?> chart = getChart(type, colorScheme, options);
+		
+		applyVisualStyle(options, chart);
+		// TODO update style fields
+	}
+	
 	private void applyVisualStyle(MasterMapStyleOptions options, CyCustomGraphics2<?> chart) {
 		MasterMapVisualStyleTask task = visualStyleTaskFactory.create(options, chart);
 		dialogTaskManager.execute(new TaskIterator(task));
@@ -332,10 +357,11 @@ public class ControlPanelMediator
 	private CyCustomGraphics2<?> getChart(ChartType type, ColorScheme colorScheme, MasterMapStyleOptions options) {
 		CyCustomGraphics2<?> chart = null;
 		
-		if (type != null) {
+		if (type != null && type != ChartType.NONE) {
 			List<CyColumnIdentifier> columns = 
 					options.getDataSets().stream()
-					.map(ds -> MasterMapVisualStyle.Columns.NODE_COLOURING.with(options.getAttributePrefix(),ds.getName()))  // column name
+					.map(ds -> MasterMapVisualStyle.Columns.NODE_FDR_QVALUE.with(
+							options.getAttributePrefix(), ds.getName()))  // column name
 					.map(columnIdFactory::createColumnIdentifier)  // column id
 					.collect(Collectors.toList());
 			

@@ -475,6 +475,8 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			
 			for (ColorScheme scheme : colorSchemes)
 				getChartColorsCombo().addItem(scheme);
+			
+			getChartColorsCombo().setEnabled(type != ChartType.NONE);
 		}
 		
 		private JPanel createFilterPanel() {
@@ -692,10 +694,6 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 				
 				for (ChartType chart : ChartType.values())
 					chartTypeCombo.addItem(chart);
-				
-				chartTypeCombo.addActionListener(evt -> {
-					updateChartColorsCombo();
-				});
 			}
 			
 			return chartTypeCombo;
