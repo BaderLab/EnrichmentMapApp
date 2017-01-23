@@ -443,7 +443,7 @@ public class MixedFormatDialogPage implements CardDialogPage {
 	
 	private void validateInput() {
 		boolean valid = true;
-		valid &= validatePathTextField(gmtPathText);
+		valid &= validatePathTextField(gmtPathText, null);
 		// valid &= validatePathTextField(expPathText);
 		callback.setFinishButtonEnabled(valid && !dataSetListModel.isEmpty());
 	}

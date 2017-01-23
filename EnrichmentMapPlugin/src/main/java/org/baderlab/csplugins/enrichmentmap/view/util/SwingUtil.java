@@ -5,10 +5,13 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
 
+import javax.annotation.Nullable;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
@@ -137,7 +140,8 @@ public class SwingUtil {
 		}
 	}
 	
-	public static boolean validatePathTextField(JTextField textField) {
+	public static boolean validatePathTextField(JTextField textField, @Nullable Color validForeground) {
+		Color fg = validForeground == null ? Color.BLACK : validForeground;
 		boolean valid;
 		try {
 			String text = textField.getText();
@@ -149,7 +153,7 @@ public class SwingUtil {
 		} catch(InvalidPathException e) {
 			valid = false;
 		}
-		textField.setForeground(valid ? Color.BLACK : Color.RED); // MKTODO don't hardcode Color.BLACK
+		textField.setForeground(valid ? fg : Color.RED);
 		return valid;
 	}
 	
@@ -182,6 +186,20 @@ public class SwingUtil {
 			}
 			@Override
 			public void contentsChanged(ListDataEvent e) {
+				r.run();
+			}
+		};
+	}
+	
+	public static FocusListener simpleFocusListener(Runnable r) {
+		return new FocusListener() {
+			@Override
+			public void focusLost(FocusEvent e) {
+				r.run();
+			}
+			
+			@Override
+			public void focusGained(FocusEvent e) {
 				r.run();
 			}
 		};

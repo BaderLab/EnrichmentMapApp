@@ -4,12 +4,14 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.makeSmall;
-import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.simpleDocumentListener;
 import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.validatePathTextField;
 
+import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -71,6 +73,8 @@ public class EditDataSetDialog extends JDialog {
 	private JButton okButton;
 	private JButton rptButton;
 	private JButton enrichments2Browse;
+	
+	private Color textFieldForeground;
 	
 	private String[] classes;
 	
@@ -215,7 +219,9 @@ public class EditDataSetDialog extends JDialog {
 	
 	private JPanel createNamePanel(@Nullable DataSetParameters initDataSet) {
 		nameText = new JTextField();
+		textFieldForeground = nameText.getForeground();
 		nameText.setText(initDataSet == null ? "" : initDataSet.getName());
+		nameText.addFocusListener(new FocusValidator(nameText));
 		makeSmall(nameText);
 		
 		JPanel panel = new JPanel();
@@ -243,21 +249,21 @@ public class EditDataSetDialog extends JDialog {
 		enrichments1Text = new JTextField();
 		enrichments1Text.setText(initDataSet != null ? initDataSet.getFiles().getEnrichmentFileName1() : null);
 		JButton enrichmentsBrowse = new JButton("Browse...");
-		enrichments1Text.getDocument().addDocumentListener(simpleDocumentListener(this::validateInput));
+		enrichments1Text.addFocusListener(new FocusValidator(enrichments1Text));
 		enrichmentsBrowse.addActionListener(e -> browse(enrichments1Text, FileBrowser.Filter.ENRICHMENT));
 		
 		enrichments2Label = new JLabel("Enrichments 2:");
 		enrichments2Text = new JTextField();
 		enrichments2Text.setText(initDataSet != null ? initDataSet.getFiles().getEnrichmentFileName1() : null);
 		enrichments2Browse = new JButton("Browse...");
-		enrichments2Text.getDocument().addDocumentListener(simpleDocumentListener(this::validateInput));
+		enrichments2Text.addFocusListener(new FocusValidator(enrichments2Text));
 		enrichments2Browse.addActionListener(e -> browse(enrichments2Text, FileBrowser.Filter.ENRICHMENT));
 		
 		JLabel expressionsLabel = new JLabel("Expressions:");
 		expressionsText = new JTextField();
 		expressionsText.setText(initDataSet != null ? initDataSet.getFiles().getExpressionFileName() : null);
 		JButton expressionsBrowse = new JButton("Browse...");
-		expressionsText.getDocument().addDocumentListener(simpleDocumentListener(this::validateInput));
+		expressionsText.addFocusListener(new FocusValidator(expressionsText));
 		expressionsBrowse.addActionListener(e -> browse(expressionsText, FileBrowser.Filter.EXPRESSION));
 		
 		makeSmall(enrichmentsLabel, enrichments1Text, enrichmentsBrowse);
@@ -320,14 +326,14 @@ public class EditDataSetDialog extends JDialog {
 		ranksText = new JTextField();
 		ranksText.setText(initDataSet != null ? initDataSet.getFiles().getRankedFile() : null);
 		JButton ranksBrowse = new JButton("Browse...");
-		ranksText.getDocument().addDocumentListener(simpleDocumentListener(this::validateInput));
+		ranksText.addFocusListener(new FocusValidator(ranksText));
 		ranksBrowse.addActionListener(e -> browse(ranksText, FileBrowser.Filter.RANK));
 		
 		JLabel classesLabel = new JLabel("Classes:");
 		classesText = new JTextField();
 		classesText.setText(initDataSet != null ? initDataSet.getFiles().getClassFile() : null);
 		JButton classesBrowse = new JButton("Browse...");
-		classesText.getDocument().addDocumentListener(simpleDocumentListener(this::updateClasses));
+		classesText.addFocusListener(new FocusValidator(classesText));
 		classesBrowse.addActionListener(e -> browse(classesText, FileBrowser.Filter.CLASS));
 		
 		makeSmall(ranksLabel, ranksText, ranksBrowse);
@@ -438,14 +444,30 @@ public class EditDataSetDialog extends JDialog {
 	}
 	
 	
+	private class FocusValidator implements FocusListener {
+		private final JTextField textField;
+		public FocusValidator(JTextField textField) {
+			this.textField = textField;
+		}
+		@Override
+		public void focusLost(FocusEvent e) {
+			validateInput();
+		}
+		@Override
+		public void focusGained(FocusEvent e) {
+			textField.setForeground(textFieldForeground);
+		}
+	};
+	
+	
 	private void validateInput() {
 		boolean valid = true;
 		valid &= !Strings.isNullOrEmpty(nameText.getText().trim());
-		valid &= validatePathTextField(enrichments1Text);
-		valid &= validatePathTextField(enrichments2Text);
-		valid &= validatePathTextField(expressionsText);
-		valid &= validatePathTextField(ranksText);
-		valid &= validatePathTextField(classesText);
+		valid &= validatePathTextField(enrichments1Text, textFieldForeground);
+		valid &= validatePathTextField(enrichments2Text, textFieldForeground);
+		valid &= validatePathTextField(expressionsText, textFieldForeground);
+		valid &= validatePathTextField(ranksText, textFieldForeground);
+		valid &= validatePathTextField(classesText, textFieldForeground);
 		okButton.setEnabled(valid);
 	}
 
@@ -486,7 +508,7 @@ public class EditDataSetDialog extends JDialog {
 	
 	
 	private void updateClasses() {
-		if(positiveText.getText().trim().isEmpty() && negativeText.getText().trim().isEmpty() && validatePathTextField(classesText)) {
+		if(positiveText.getText().trim().isEmpty() && negativeText.getText().trim().isEmpty() && validatePathTextField(classesText, textFieldForeground)) {
 			String classFile = classesText.getText();
 			List<String> phenotypes = parseClasses(classFile);
 			if(phenotypes != null) {
