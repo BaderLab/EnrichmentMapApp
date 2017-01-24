@@ -55,6 +55,7 @@ import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
+import org.baderlab.csplugins.enrichmentmap.style.ChartData;
 import org.baderlab.csplugins.enrichmentmap.style.ChartType;
 import org.baderlab.csplugins.enrichmentmap.style.ColorGradient;
 import org.baderlab.csplugins.enrichmentmap.style.ColorScheme;
@@ -354,6 +355,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		private SliderBarPanel qValueSliderPanel;
 		private SliderBarPanel similaritySliderPanel;
 		
+		private JLabel chartDataLabel = new JLabel("Chart Data:");
 		private JLabel chartTypeLabel = new JLabel("Chart Type:");
 		private JLabel chartColorsLabel = new JLabel("Chart Colors:");
 		private JLabel dsFilterLabel = new JLabel("Data Sets:");
@@ -363,13 +365,11 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		private JButton setEdgeWidthButton;
 		private JButton resetStyleButton;
 		
+		private JComboBox<ChartData> chartDataCombo;
 		private JComboBox<ChartType> chartTypeCombo;
 		private JComboBox<ColorScheme> chartColorsCombo;
 		
 		private final CyNetworkView networkView;
-		
-		private boolean updatingDataSetList;
-		private boolean updatingChartColorsCombo;
 		
 		private EMViewControlPanel(final CyNetworkView networkView) {
 			this.networkView = networkView;
@@ -416,21 +416,8 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		}
 		
 		void update() {
-			updatingDataSetList = true;
-			
-			try {
-				updateDataSetList();
-			} finally {
-				updatingDataSetList = false;
-			}
-			
-			updatingChartColorsCombo = true;
-			
-			try {
-				updateChartColorsCombo();
-			} finally {
-				updatingChartColorsCombo = false;
-			}
+			updateDataSetList();
+			updateChartCombos();
 		}
 		
 		void updateDataSetList() {
@@ -458,25 +445,39 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			}
 		}
 		
+		void updateChartCombos() {
+			updateChartTypeCombo();
+			updateChartColorsCombo();
+		}
+		
+		void updateChartTypeCombo() {
+			ChartData data = (ChartData) getChartDataCombo().getSelectedItem();
+			getChartTypeCombo().setEnabled(data != ChartData.NONE);
+		}
+		
 		void updateChartColorsCombo() {
-			ChartType type = (ChartType) getChartTypeCombo().getSelectedItem();
-			ColorScheme[] colorSchemes = null;
-			
-			switch (type) {
-				case HEAT_STRIPS:
-					colorSchemes = HEAT_STRIP_COLOR_SCHEMES;
-					break;
-				default:
-					colorSchemes = REGULAR_COLOR_SCHEMES;
-					break;
-			}
-			
 			getChartColorsCombo().removeAllItems();
 			
-			for (ColorScheme scheme : colorSchemes)
-				getChartColorsCombo().addItem(scheme);
+			ChartData data = (ChartData) getChartDataCombo().getSelectedItem();
 			
-			getChartColorsCombo().setEnabled(type != ChartType.NONE);
+			if (data != ChartData.NONE) {
+				ChartType type = (ChartType) getChartTypeCombo().getSelectedItem();
+				ColorScheme[] colorSchemes = null;
+				
+				switch (type) {
+					case HEAT_STRIPS:
+						colorSchemes = HEAT_STRIP_COLOR_SCHEMES;
+						break;
+					default:
+						colorSchemes = REGULAR_COLOR_SCHEMES;
+						break;
+				}
+				
+				for (ColorScheme scheme : colorSchemes)
+					getChartColorsCombo().addItem(scheme);
+			}
+			
+			getChartColorsCombo().setEnabled(data != ChartData.NONE);
 		}
 		
 		private JPanel createFilterPanel() {
@@ -562,8 +563,8 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		}
 		
 		private JPanel createStylePanel() {
-			makeSmall(chartTypeLabel, chartColorsLabel, getChartTypeCombo(), getChartColorsCombo(),
-					getTogglePublicationCheck(), getSetEdgeWidthButton(), getResetStyleButton());
+			makeSmall(chartDataLabel, chartTypeLabel, chartColorsLabel, getChartDataCombo(), getChartTypeCombo(),
+					getChartColorsCombo(), getTogglePublicationCheck(), getSetEdgeWidthButton(), getResetStyleButton());
 			
 			final JPanel panel = new JPanel();
 			panel.setBorder(LookAndFeelUtil.createTitledBorder("Style"));
@@ -576,11 +577,13 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			layout.setHorizontalGroup(layout.createParallelGroup(CENTER, true)
 					.addGroup(layout.createSequentialGroup()
 							.addGroup(layout.createParallelGroup(TRAILING, true)
+									.addComponent(chartDataLabel)
 									.addComponent(chartTypeLabel)
 									.addComponent(chartColorsLabel)
 							)
 							.addPreferredGap(ComponentPlacement.RELATED)
 							.addGroup(layout.createParallelGroup(LEADING, true)
+									.addComponent(getChartDataCombo(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 									.addComponent(getChartTypeCombo(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 									.addComponent(getChartColorsCombo(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 									.addComponent(getSetEdgeWidthButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -591,9 +594,13 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
 					.addGroup(layout.createParallelGroup(CENTER, false)
+							.addComponent(chartDataLabel)
+							.addComponent(getChartDataCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					)
+					.addGroup(layout.createParallelGroup(CENTER, false)
 							.addComponent(chartTypeLabel)
 							.addComponent(getChartTypeCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					)
+							)
 					.addGroup(layout.createParallelGroup(CENTER, false)
 							.addComponent(chartColorsLabel)
 							.addComponent(getChartColorsCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -686,6 +693,25 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			}
 			
 			return checkboxListPanel;
+		}
+		
+		public JComboBox<ChartData> getChartDataCombo() {
+			if (chartDataCombo == null) {
+				chartDataCombo = new JComboBox<>();
+				chartDataCombo.addItem(ChartData.NONE);
+				chartDataCombo.addItem(ChartData.P_VALUE);
+				
+				EnrichmentMap map = emManager.getEnrichmentMap(networkView.getModel().getSUID());
+				
+				if (map != null) {
+					EMCreationParameters params = map.getParams();
+					
+					if (params != null && params.isFDR())
+						chartDataCombo.addItem(ChartData.Q_VALUE);
+				}
+			}
+			
+			return chartDataCombo;
 		}
 		
 		JComboBox<ChartType> getChartTypeCombo() {

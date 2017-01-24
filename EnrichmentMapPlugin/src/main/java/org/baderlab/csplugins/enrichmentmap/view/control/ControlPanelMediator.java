@@ -8,6 +8,7 @@ import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_V
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Collection;
@@ -32,11 +33,12 @@ import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
+import org.baderlab.csplugins.enrichmentmap.style.ChartData;
 import org.baderlab.csplugins.enrichmentmap.style.ChartFactoryManager;
 import org.baderlab.csplugins.enrichmentmap.style.ChartType;
 import org.baderlab.csplugins.enrichmentmap.style.ColorScheme;
+import org.baderlab.csplugins.enrichmentmap.style.ColumnDescriptor;
 import org.baderlab.csplugins.enrichmentmap.style.MasterMapStyleOptions;
-import org.baderlab.csplugins.enrichmentmap.style.MasterMapVisualStyle;
 import org.baderlab.csplugins.enrichmentmap.style.MasterMapVisualStyleTask;
 import org.baderlab.csplugins.enrichmentmap.style.WidthFunction;
 import org.baderlab.csplugins.enrichmentmap.task.CreatePublicationVisualStyleTaskFactory;
@@ -166,9 +168,9 @@ public class ControlPanelMediator
 						if (!updating) {
 							filterNodesAndEdges(viewPanel, map, netView);
 							
-							ChartType type = (ChartType) viewPanel.getChartTypeCombo().getSelectedItem();
+							ChartData data = (ChartData) viewPanel.getChartDataCombo().getSelectedItem();
 							
-							if (type != null && type != ChartType.NONE)
+							if (data != null && data != ChartData.NONE)
 								updateVisualStyle(netView, map, viewPanel);
 							else
 								netView.updateView();
@@ -178,19 +180,34 @@ public class ControlPanelMediator
 						postAnalysisPanelMediatorProvider.get().showDialog(viewPanel, getCurrentMap());
 					});
 					
-					viewPanel.getChartTypeCombo().addActionListener(evt -> {
-						updating = true;
-						
-						try {
-							viewPanel.updateChartColorsCombo();
-						} finally {
-							updating = false;
+					viewPanel.getChartDataCombo().addItemListener(evt -> {
+						if (evt.getStateChange() == ItemEvent.SELECTED) {
+							updating = true;
+							
+							try {
+								viewPanel.updateChartCombos();
+							} finally {
+								updating = false;
+							}
+							
+							updateVisualStyle(netView, map, viewPanel);
 						}
-						
-						updateVisualStyle(netView, map, viewPanel);
 					});
-					viewPanel.getChartColorsCombo().addActionListener(evt -> {
-						if (!updating)
+					viewPanel.getChartTypeCombo().addItemListener(evt -> {
+						if (!updating && evt.getStateChange() == ItemEvent.SELECTED) {
+							updating = true;
+							
+							try {
+								viewPanel.updateChartColorsCombo();
+							} finally {
+								updating = false;
+							}
+							
+							updateVisualStyle(netView, map, viewPanel);
+						}
+					});
+					viewPanel.getChartColorsCombo().addItemListener(evt -> {
+						if (!updating && evt.getStateChange() == ItemEvent.SELECTED)
 							updateVisualStyle(netView, map, viewPanel);
 					});
 					
@@ -212,19 +229,21 @@ public class ControlPanelMediator
 
 	public void reset() {
 		invokeOnEDT(() -> {
-			for(CyNetworkView view : networkViewManager.getNetworkViewSet()) {
+			for (CyNetworkView view : networkViewManager.getNetworkViewSet()) {
 				getControlPanel().removeEnrichmentMapView(view);
 			}
-			
+
 			Map<Long, EnrichmentMap> maps = emManager.getAllEnrichmentMaps();
-			for(EnrichmentMap map : maps.values()) {
+			
+			for (EnrichmentMap map : maps.values()) {
 				CyNetwork network = networkManager.getNetwork(map.getNetworkID());
 				Collection<CyNetworkView> networkViews = networkViewManager.getNetworkViews(network);
-				for(CyNetworkView netView : networkViews) {
+				
+				for (CyNetworkView netView : networkViews) {
 					addNetworkView(netView);
 				}
 			}
-			
+
 			setCurrentNetworkView(applicationManager.getCurrentNetworkView());
 		});
 	}
@@ -341,9 +360,10 @@ public class ControlPanelMediator
 		Set<DataSet> dataSets = ImmutableSet.copyOf(viewPanel.getCheckboxListPanel().getSelectedDataItems());
 		MasterMapStyleOptions options = new MasterMapStyleOptions(netView, map, dataSets::contains);
 		
+		ChartData data = (ChartData) viewPanel.getChartDataCombo().getSelectedItem();
 		ChartType type = (ChartType) viewPanel.getChartTypeCombo().getSelectedItem();
 		ColorScheme colorScheme = (ColorScheme) viewPanel.getChartColorsCombo().getSelectedItem();
-		CyCustomGraphics2<?> chart = getChart(type, colorScheme, options);
+		CyCustomGraphics2<?> chart = getChart(data, type, colorScheme, options);
 		
 		applyVisualStyle(options, chart);
 		// TODO update style fields
@@ -354,15 +374,17 @@ public class ControlPanelMediator
 		dialogTaskManager.execute(new TaskIterator(task));
 	}
 	
-	private CyCustomGraphics2<?> getChart(ChartType type, ColorScheme colorScheme, MasterMapStyleOptions options) {
+	private CyCustomGraphics2<?> getChart(ChartData data, ChartType type, ColorScheme colorScheme,
+			MasterMapStyleOptions options) {
 		CyCustomGraphics2<?> chart = null;
 		
-		if (type != null && type != ChartType.NONE) {
+		if (data != null && data != ChartData.NONE) {
+			ColumnDescriptor<Double> columnDescriptor = data.getColumnDescriptor();
+			
 			List<CyColumnIdentifier> columns = 
 					options.getDataSets().stream()
-					.map(ds -> MasterMapVisualStyle.Columns.NODE_FDR_QVALUE.with(
-							options.getAttributePrefix(), ds.getName()))  // column name
-					.map(columnIdFactory::createColumnIdentifier)  // column id
+					.map(ds -> columnDescriptor.with(options.getAttributePrefix(), ds.getName()))  // column name
+					.map(columnIdFactory::createColumnIdentifier) // column id
 					.collect(Collectors.toList());
 			
 			Map<String, Object> props = new HashMap<>(type.getProperties());

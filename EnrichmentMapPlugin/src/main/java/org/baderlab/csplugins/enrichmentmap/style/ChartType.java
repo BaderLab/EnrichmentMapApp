@@ -7,11 +7,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public enum ChartType {
-	NONE(
-			"org.baderlab.csplugins.NullChart",
-			"-- None --",
-			Collections.emptyMap()
-	),
 //	HEAT_MAP(
 //			"org.cytoscape.HeatMapChart",
 //			"Heat Map",
