@@ -699,6 +699,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			if (chartDataCombo == null) {
 				chartDataCombo = new JComboBox<>();
 				chartDataCombo.addItem(ChartData.NONE);
+				chartDataCombo.addItem(ChartData.NES_VALUE);
 				chartDataCombo.addItem(ChartData.P_VALUE);
 				
 				EnrichmentMap map = emManager.getEnrichmentMap(networkView.getModel().getSUID());
@@ -707,7 +708,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 					EMCreationParameters params = map.getParams();
 					
 					if (params != null && params.isFDR())
-						chartDataCombo.addItem(ChartData.Q_VALUE);
+						chartDataCombo.addItem(ChartData.FDR_VALUE);
 				}
 			}
 			
