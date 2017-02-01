@@ -16,6 +16,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
 import org.baderlab.csplugins.enrichmentmap.model.GenesetSimilarity;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
+import org.baderlab.csplugins.enrichmentmap.model.SimilarityKey;
 import org.baderlab.csplugins.enrichmentmap.parsers.ParseBingoEnrichmentResults;
 import org.baderlab.csplugins.enrichmentmap.util.Baton;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -56,7 +57,7 @@ public class LoadBingoResultsTest {
 		genesets_init.run(taskMonitor);  
         
 		
-		Baton<Map<String, GenesetSimilarity>> baton = new Baton<>();
+		Baton<Map<SimilarityKey, GenesetSimilarity>> baton = new Baton<>();
 		ComputeSimilarityTaskParallel similarities = new ComputeSimilarityTaskParallel(em, baton.consumer());	
         similarities.run(taskMonitor);
 

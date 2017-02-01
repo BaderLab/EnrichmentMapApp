@@ -19,6 +19,7 @@ import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.GenericResult;
 import org.baderlab.csplugins.enrichmentmap.model.GenesetSimilarity;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
+import org.baderlab.csplugins.enrichmentmap.model.SimilarityKey;
 import org.baderlab.csplugins.enrichmentmap.style.MasterMapVisualStyle.Columns;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -45,16 +46,16 @@ public class MasterMapNetworkTask extends AbstractTask implements ObservableTask
 	private final EnrichmentMap map;
 	private final String prefix;
 	
-	private final Supplier<Map<String,GenesetSimilarity>> supplier;
+	private final Supplier<Map<SimilarityKey,GenesetSimilarity>> supplier;
 	
 	private long networkSuidResult;
 	
 	public interface Factory {
-		MasterMapNetworkTask create(EnrichmentMap map, Supplier<Map<String,GenesetSimilarity>> supplier);
+		MasterMapNetworkTask create(EnrichmentMap map, Supplier<Map<SimilarityKey,GenesetSimilarity>> supplier);
 	}
 	
 	@Inject
-	public MasterMapNetworkTask(@Assisted EnrichmentMap map, @Assisted Supplier<Map<String,GenesetSimilarity>> supplier) {
+	public MasterMapNetworkTask(@Assisted EnrichmentMap map, @Assisted Supplier<Map<SimilarityKey,GenesetSimilarity>> supplier) {
 		this.map = map;
 		this.prefix = map.getParams().getAttributePrefix();
 		this.supplier = supplier;
@@ -84,8 +85,8 @@ public class MasterMapNetworkTask extends AbstractTask implements ObservableTask
 		network.getRow(network).set(CyNetwork.NAME, networkNaming.getSuggestedNetworkTitle(LegacySupport.EM_NAME));
 		map.setNetworkID(network.getSUID());
 		
-		createNodeAttributes(network);
-		createEdgeAttributes(network);
+		createNodeColumns(network);
+		createEdgeColumns(network);
 		
 		Map<String,CyNode> nodes = createNodes(network);
 		createEdges(network, nodes);
@@ -155,9 +156,9 @@ public class MasterMapNetworkTask extends AbstractTask implements ObservableTask
 	 * @param nodes
 	 */
 	private void createEdges(CyNetwork network, Map<String,CyNode> nodes) {
-		Map<String,GenesetSimilarity> similarities = supplier.get();
-		for(String edgeName : similarities.keySet()) {
-			GenesetSimilarity similarity = similarities.get(edgeName);
+		Map<SimilarityKey,GenesetSimilarity> similarities = supplier.get();
+		for(SimilarityKey key : similarities.keySet()) {
+			GenesetSimilarity similarity = similarities.get(key);
 			
 			CyNode node1 = nodes.get(similarity.getGeneset1_Name());
 			CyNode node2 = nodes.get(similarity.getGeneset2_Name());
@@ -169,6 +170,8 @@ public class MasterMapNetworkTask extends AbstractTask implements ObservableTask
 				.map(map::getGeneFromHashKey)
 				.collect(Collectors.toList());
 			
+			String edgeName = key.toString();
+			
 			CyRow row = network.getRow(edge);
 			row.set(CyNetwork.NAME, edgeName);
 			row.set(CyEdge.INTERACTION, similarity.getInteractionType());
@@ -179,7 +182,7 @@ public class MasterMapNetworkTask extends AbstractTask implements ObservableTask
 		}
 	}
 	
-	private CyTable createNodeAttributes(CyNetwork network) {
+	private CyTable createNodeColumns(CyNetwork network) {
 		CyTable table = network.getDefaultNodeTable();
 		Columns.NODE_NAME.createColumn(table, prefix, null);// !
 		Columns.NODE_GS_DESCR.createColumn(table, prefix, null);// !
@@ -206,7 +209,7 @@ public class MasterMapNetworkTask extends AbstractTask implements ObservableTask
 		return table;
 	}
 	
-	private CyTable createEdgeAttributes(CyNetwork network) {
+	private CyTable createEdgeColumns(CyNetwork network) {
 		CyTable table = network.getDefaultEdgeTable();
 		Columns.EDGE_SIMILARITY_COEFF.createColumn(table, prefix, null);
 		Columns.EDGE_OVERLAP_SIZE.createColumn(table, prefix, null);

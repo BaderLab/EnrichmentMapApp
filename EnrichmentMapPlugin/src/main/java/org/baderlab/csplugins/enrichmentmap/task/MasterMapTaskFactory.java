@@ -11,6 +11,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GenesetSimilarity;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
+import org.baderlab.csplugins.enrichmentmap.model.SimilarityKey;
 import org.baderlab.csplugins.enrichmentmap.parsers.DetermineEnrichmentResultFileReader;
 import org.baderlab.csplugins.enrichmentmap.parsers.ExpressionFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.parsers.GMTFileReaderTask;
@@ -111,7 +112,7 @@ public class MasterMapTaskFactory extends AbstractTaskFactory {
 		tasks.append(new FilterGenesetsByDatasetGenes(map));
 
 		// Link the ComputeSimilarityTask to the MasterMapNetworkTask by a "pipe"
-		Baton<Map<String,GenesetSimilarity>> pipe = new Baton<>();
+		Baton<Map<SimilarityKey,GenesetSimilarity>> pipe = new Baton<>();
 		
 		// Compute the geneset similarities
 		tasks.append(new ComputeSimilarityTaskParallel(map, pipe.consumer()));

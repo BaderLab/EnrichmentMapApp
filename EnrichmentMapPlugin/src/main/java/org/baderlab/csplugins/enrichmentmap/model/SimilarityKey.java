@@ -5,25 +5,20 @@ import java.util.Objects;
 public class SimilarityKey {
 
 	private final String geneSet1;
-	private final String interaction;
 	private final String geneSet2;
+	private final String interaction;
+	// a set of zero indicates a compound edge
+	private final int set;
 	
-	public SimilarityKey(String geneSet1, String interaction, String geneSet2) {
+	
+	public SimilarityKey(String geneSet1, String geneSet2, String interaction, int set) {
 		Objects.requireNonNull(geneSet1);
 		Objects.requireNonNull(interaction);
 		Objects.requireNonNull(geneSet2);
 		this.geneSet1 = geneSet1;
-		this.interaction = interaction;
 		this.geneSet2 = geneSet2;
-	}
-	
-	public static SimilarityKey parse(String name) {
-		int open  = name.indexOf("(");
-		int close = name.indexOf(")", open);
-		String name1 = name.substring(0, open).trim();
-		String name2 = name.substring(close+1, name.length()).trim();
-		String interaction = name.substring(open+1, close);
-		return new SimilarityKey(name1, interaction, name2);
+		this.interaction = interaction;
+		this.set = set;
 	}
 	
 	public String getGeneSet1() {
@@ -38,13 +33,18 @@ public class SimilarityKey {
 		return interaction;
 	}
 	
-	public SimilarityKey swap() {
-		return new SimilarityKey(geneSet2, interaction, geneSet1);
+	public int getSet() {
+		return set;
+	}
+	
+	public boolean isCompound() {
+		return set == 0;
 	}
 	
 	@Override
 	public int hashCode() {
-		return geneSet1.hashCode() + interaction.hashCode() + geneSet2.hashCode();
+		// add the hash codes from the genesets so that we get the same hash code regardless of the order
+		return Objects.hash(geneSet1.hashCode() + geneSet2.hashCode(), interaction, set);
 	}
 	
 	@Override
@@ -53,6 +53,8 @@ public class SimilarityKey {
 			return false;
 		SimilarityKey other = (SimilarityKey)o;
 		
+		if(set != other.set)
+			return false;
 		if(!interaction.equals(other.interaction))
 			return false;
 		
@@ -63,7 +65,10 @@ public class SimilarityKey {
 	
 	@Override
 	public String toString() {
-		return geneSet1 + " (" + interaction + ") " + geneSet2;
+		if(set == 0)
+			return String.format("%s (%s) %s", geneSet1, interaction, geneSet2);
+		else
+			return String.format("%s (%s_set%d) %s", geneSet1, interaction, set, geneSet2);
 	}
 	
 }

@@ -7,7 +7,6 @@ import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterType;
-import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
@@ -44,7 +43,7 @@ public class FilterSignatureGSTask extends AbstractTask implements ObservableTas
 
 		// Use the same genesets that are saved to the session file (bug #66)
 		// HashMap<String, GeneSet> genesets_in_map = map.getAllGenesets();
-		Map<String, GeneSet> genesets_in_map = map.getAllGenesetsOfInterest();
+		Map<String, Set<Integer>> genesets_in_map = map.unionAllGeneSetsOfInterest();
 
 		String[] setNamesArray = signatureGenesets.getGenesets().keySet().toArray(new String[0]);
 		Arrays.sort(setNamesArray);
@@ -70,7 +69,7 @@ public class FilterSignatureGSTask extends AbstractTask implements ObservableTas
 				//only add the name if it overlaps with the sets in the map.
 				for(String mapGeneset : genesets_in_map.keySet()) {
 					//check if this set overlaps with current geneset
-					Set<Integer> mapset = new HashSet<>(genesets_in_map.get(mapGeneset).getGenes());
+					Set<Integer> mapset = new HashSet<>(genesets_in_map.get(mapGeneset));
 					int original_size = mapset.size();
 					Set<Integer> paset = new HashSet<>(signatureGenesets.getGenesets().get(signatureGeneset).getGenes());
 					mapset.retainAll(paset);

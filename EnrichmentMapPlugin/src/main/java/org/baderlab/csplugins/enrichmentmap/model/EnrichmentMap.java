@@ -209,6 +209,7 @@ public class EnrichmentMap {
 	/*
 	 * Return a hash of all the genesets in the set of genesets regardless of which dataset it comes from.
 	 */
+	@Deprecated
 	public Map<String, GeneSet> getAllGenesets() {
 		//go through each dataset and get the genesets from each
 		Map<String, GeneSet> allGenesets = new HashMap<>();
@@ -230,6 +231,7 @@ public class EnrichmentMap {
 	/*
 	 * Return a hash of all the genesets but not inlcuding the signature genesets.
 	 */
+	@Deprecated
 	public Map<String, GeneSet> getEnrichmentGenesets() {
 		//go through each dataset and get the genesets from each
 		Map<String, GeneSet> allGenesets = new HashMap<>();
@@ -240,10 +242,7 @@ public class EnrichmentMap {
 		return allGenesets;
 	}
 
-	/*
-	 * Return a hash of all the genesets in the set of genesets of interest
-	 * regardless of which dataset it comes from
-	 */
+	@Deprecated
 	public Map<String, GeneSet> getAllGenesetsOfInterest() {
 		//go through each dataset and get the genesets from each
 		Map<String, GeneSet> allGenesetsOfInterest = new HashMap<>();
@@ -258,7 +257,33 @@ public class EnrichmentMap {
 		
 		return allGenesetsOfInterest;
 	}
+	
+	// MKTODO write a JUnit
+	public Map<String,Set<Integer>> unionAllGeneSetsOfInterest() {
+		Map<String,Set<Integer>> unionedGenesets = new HashMap<>();
+		for(DataSet dataset : getDatasetList()) {
+			Map<String,GeneSet> genesets = dataset.getGenesetsOfInterest().getGenesets();
+			for(Map.Entry<String, GeneSet> entry : genesets.entrySet()) {
+				String name = entry.getKey();
+				GeneSet gs = entry.getValue();
+				unionedGenesets.computeIfAbsent(name, k->new HashSet<>()).addAll(gs.getGenes());
+			}
+		}
+		return unionedGenesets;
+	}
+	
+	// MKTODO write a JUnit
+	public Set<String> getAllGenesetNames() {
+		Set<String> genesetNames = new HashSet<>();
+		for(DataSet dataset : getDatasetList()) {
+			Map<String,GeneSet> genesets = dataset.getGenesetsOfInterest().getGenesets();
+			genesetNames.addAll(genesets.keySet());
+		}
+		return genesetNames;
+	}
 
+	
+	
 	public SetOfGeneSets getGlobalGenesets() {
 		return globalGenesets;
 	}
