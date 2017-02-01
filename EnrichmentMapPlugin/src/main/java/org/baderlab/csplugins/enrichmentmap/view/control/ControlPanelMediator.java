@@ -1,9 +1,16 @@
 package org.baderlab.csplugins.enrichmentmap.view.control;
 
+import static org.baderlab.csplugins.enrichmentmap.style.MasterMapVisualStyle.FILTERED_OUT_EDGE_TRANSPARENCY;
+import static org.baderlab.csplugins.enrichmentmap.style.MasterMapVisualStyle.FILTERED_OUT_NODE_TRANSPARENCY;
 import static org.baderlab.csplugins.enrichmentmap.style.MasterMapVisualStyle.Columns.NODE_GS_TYPE;
 import static org.baderlab.csplugins.enrichmentmap.style.MasterMapVisualStyle.Columns.NODE_GS_TYPE_ENRICHMENT;
 import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.invokeOnEDT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_LABEL_TRANSPARENCY;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_TRANSPARENCY;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_VISIBLE;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_BORDER_TRANSPARENCY;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_LABEL_TRANSPARENCY;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_TRANSPARENCY;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_VISIBLE;
 
 import java.awt.event.ActionEvent;
@@ -22,8 +29,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.swing.Action;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComboBox;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
 import javax.swing.JSlider;
 import javax.swing.Timer;
 
@@ -100,6 +110,8 @@ public class ControlPanelMediator
 	@Inject private DialogTaskManager dialogTaskManager;
 	@Inject private CyColumnIdentifierFactory columnIdFactory;
 	@Inject private ChartFactoryManager chartFactoryManager;
+	
+	private boolean hideFilteredOutElements = true;
 	
 	private Map<CyNetworkView, Timer> filterTimers = new HashMap<>();
 	
@@ -304,6 +316,10 @@ public class ControlPanelMediator
 			masterMapDialogAction.actionPerformed(evt);
 		});
 		ctrlPanel.getCreateEmButton().setToolTipText("" + masterMapDialogAction.getValue(Action.NAME));
+		
+		ctrlPanel.getOptionsButton().addActionListener(evt -> {
+			getOptionsMenu().show(ctrlPanel.getOptionsButton(), 0, ctrlPanel.getOptionsButton().getHeight());
+		});
 		
 		ctrlPanel.getOpenLegendsButton().addActionListener(evt -> {
 			if (parametersPanelMediatorProvider.get().getDialog().isVisible()) {
@@ -533,6 +549,29 @@ public class ControlPanelMediator
 		return edges;
 	}
 	
+	private JPopupMenu getOptionsMenu() {
+		final JPopupMenu menu = new JPopupMenu();
+		
+		{
+			final JMenuItem mi = new JCheckBoxMenuItem("Hide filtered out nodes and edges");
+			mi.addActionListener(evt -> setHideFilteredOutElements(true));
+			mi.setSelected(hideFilteredOutElements);
+			menu.add(mi);
+		}
+		{
+			final JMenuItem mi = new JCheckBoxMenuItem("Highlight filtered nodes and edges");
+			mi.addActionListener(evt -> setHideFilteredOutElements(false));
+			mi.setSelected(!hideFilteredOutElements);
+			menu.add(mi);
+		}
+		
+		return menu;
+	}
+	
+	private void setHideFilteredOutElements(boolean b) {
+		hideFilteredOutElements = b;
+	}
+	
 	private class FilterActionListener implements ActionListener {
 
 		private final EMViewControlPanel viewPanel;
@@ -581,10 +620,26 @@ public class ControlPanelMediator
 				boolean show = nodesToShow.contains(n);
 				
 				if (show) {
+					// Don't forget to remove all locked values!
 					nv.clearValueLock(NODE_VISIBLE);
+					nv.clearValueLock(NODE_TRANSPARENCY);
+					nv.clearValueLock(NODE_BORDER_TRANSPARENCY);
+					nv.clearValueLock(NODE_LABEL_TRANSPARENCY);
 				} else {
-					net.getRow(n).set(CyNetwork.SELECTED, false);
-					nv.setLockedValue(NODE_VISIBLE, false);
+					if (hideFilteredOutElements) {
+						nv.clearValueLock(NODE_TRANSPARENCY);
+						nv.clearValueLock(NODE_BORDER_TRANSPARENCY);
+						nv.clearValueLock(NODE_LABEL_TRANSPARENCY);
+						
+						net.getRow(n).set(CyNetwork.SELECTED, false);
+						nv.setLockedValue(NODE_VISIBLE, false);
+					} else {
+						nv.clearValueLock(NODE_VISIBLE);
+						
+						nv.setLockedValue(NODE_TRANSPARENCY, FILTERED_OUT_NODE_TRANSPARENCY);
+						nv.setLockedValue(NODE_BORDER_TRANSPARENCY, FILTERED_OUT_NODE_TRANSPARENCY);
+						nv.setLockedValue(NODE_LABEL_TRANSPARENCY, FILTERED_OUT_NODE_TRANSPARENCY);
+					}
 				}
 			}
 			
@@ -598,10 +653,23 @@ public class ControlPanelMediator
 						&& nodesToShow.contains(e.getTarget());
 
 				if (show) {
+					// Don't forget to remove all locked values!
 					ev.clearValueLock(EDGE_VISIBLE);
+					ev.clearValueLock(EDGE_TRANSPARENCY);
+					ev.clearValueLock(EDGE_LABEL_TRANSPARENCY);
 				} else {
-					net.getRow(ev.getModel()).set(CyNetwork.SELECTED, false);
-					ev.setLockedValue(EDGE_VISIBLE, false);
+					if (hideFilteredOutElements) {
+						ev.clearValueLock(EDGE_TRANSPARENCY);
+						ev.clearValueLock(EDGE_LABEL_TRANSPARENCY);
+						
+						net.getRow(ev.getModel()).set(CyNetwork.SELECTED, false);
+						ev.setLockedValue(EDGE_VISIBLE, false);
+					} else {
+						ev.clearValueLock(EDGE_VISIBLE);
+						
+						ev.setLockedValue(EDGE_TRANSPARENCY, FILTERED_OUT_EDGE_TRANSPARENCY);
+						ev.setLockedValue(EDGE_LABEL_TRANSPARENCY, FILTERED_OUT_EDGE_TRANSPARENCY);
+					}
 				}
 			}
 			

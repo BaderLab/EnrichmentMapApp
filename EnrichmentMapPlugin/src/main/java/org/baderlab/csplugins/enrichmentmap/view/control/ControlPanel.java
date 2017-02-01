@@ -11,6 +11,7 @@ import static org.baderlab.csplugins.enrichmentmap.style.ColorScheme.MODULATED;
 import static org.baderlab.csplugins.enrichmentmap.style.ColorScheme.RAINBOW;
 import static org.baderlab.csplugins.enrichmentmap.style.ColorScheme.RANDOM;
 import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.makeSmall;
+import static org.cytoscape.util.swing.IconManager.ICON_COG;
 
 import java.awt.CardLayout;
 import java.awt.Color;
@@ -97,6 +98,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 	private JComboBox<CyNetworkView> emViewCombo;
 	private JButton createEmButton;
 	private JToggleButton openLegendsButton;
+	private JButton optionsButton;
 	private JButton aboutButton;
 	private JButton closePanelButton;
 	
@@ -138,7 +140,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		setMinimumSize(new Dimension(390, 400));
 		setPreferredSize(new Dimension(390, 600));
 		
-		LookAndFeelUtil.equalizeSize(getOpenLegendsButton(), getCreateEmButton());
+		LookAndFeelUtil.equalizeSize(getOpenLegendsButton(), getCreateEmButton(), getOptionsButton());
 		
 		JButton helpButton = SwingUtil.createOnlineHelpButton(EnrichmentMapBuildProperties.USER_MANUAL_URL,
 				"Online Manual...", serviceRegistrar);
@@ -155,6 +157,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
    						.addComponent(getEmViewCombo(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
    						.addComponent(getCreateEmButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    						.addComponent(getOpenLegendsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+   						.addComponent(getOptionsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    				)
 				.addComponent(getCtrlPanelsContainer(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addGroup(layout.createSequentialGroup()
@@ -169,6 +172,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
    						.addComponent(getEmViewCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    						.addComponent(getCreateEmButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    						.addComponent(getOpenLegendsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+   						.addComponent(getOptionsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    				)
    				.addComponent(getCtrlPanelsContainer(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
    				.addGroup(layout.createParallelGroup(CENTER, false)
@@ -232,6 +236,20 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		}
 		
 		return openLegendsButton;
+	}
+	
+	JButton getOptionsButton() {
+		if (optionsButton == null) {
+			optionsButton = new JButton(ICON_COG);
+			optionsButton.setFont(iconManager.getIconFont(18.0f));
+			optionsButton.setToolTipText("Options...");
+			optionsButton.setBorderPainted(false);
+			optionsButton.setContentAreaFilled(false);
+			optionsButton.setFocusPainted(false);
+			optionsButton.setBorder(BorderFactory.createEmptyBorder());
+		}
+		
+		return optionsButton;
 	}
 	
 	JButton getAboutButton() {

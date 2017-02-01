@@ -27,7 +27,6 @@ public class MasterMapStyleOptions {
 		this(networkView, map, x -> true);
 	}
 	
-	
 	public CyNetworkView getNetworkView() {
 		return networkView;
 	}
@@ -43,5 +42,4 @@ public class MasterMapStyleOptions {
 	public String getAttributePrefix() {
 		return map.getParams().getAttributePrefix();
 	}
-	
 }

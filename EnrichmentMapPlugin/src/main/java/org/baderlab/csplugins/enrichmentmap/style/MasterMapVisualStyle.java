@@ -1,14 +1,17 @@
 package org.baderlab.csplugins.enrichmentmap.style;
 
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_LABEL_TRANSPARENCY;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_TRANSPARENCY;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_UNSELECTED_PAINT;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_WIDTH;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_BACKGROUND_PAINT;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_BORDER_PAINT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_BORDER_TRANSPARENCY;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_BORDER_WIDTH;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_FILL_COLOR;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_LABEL;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_LABEL_TRANSPARENCY;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_SHAPE;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_SIZE;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_TRANSPARENCY;
@@ -41,8 +44,14 @@ public class MasterMapVisualStyle {
 	public final static String DEFAULT_NAME_SUFFIX = "Visual_Style"; // TEMPORARY probably won't be called 'MasterMap' in the final version
 	public final static String COMBINED = "Combined";
 	
+	public final static Integer DEF_NODE_TRANSPARENCY = 220;
+	public final static Integer FILTERED_OUT_NODE_TRANSPARENCY = 30;
+	
 	private final static Double MIN_NODE_SIZE = 20.0;
 	private final static Double MAX_NODE_SIZE = 60.0;
+	
+	public final static Integer DEF_EDGE_TRANSPARENCY = 160;
+	public final static Integer FILTERED_OUT_EDGE_TRANSPARENCY = 10;
 	
 	public static class Columns {
 		// Common attributes that apply to the entire network
@@ -76,7 +85,6 @@ public class MasterMapVisualStyle {
 		public static final Integer EDGE_ENRICHMENT_SET_ENR = 0;
 		public static final Integer EDGE_ENRICHMENT_SET_SIG = 4; // for backwards compatibility
 		
-		
 		// Post-analysis Edge Attributes
 		public static final ColumnDescriptor<Double> EDGE_HYPERGEOM_PVALUE = new ColumnDescriptor<>("Overlap_Hypergeom_pVal", Double.class);
 		public static final ColumnDescriptor<Double> EDGE_HYPERGEOM_CUTOFF = new ColumnDescriptor<>("Overlap_Hypergeom_cutoff", Double.class);
@@ -106,16 +114,13 @@ public class MasterMapVisualStyle {
 		private static final Color EDGE_COLOR = new Color(27, 158, 119);
 		private static final Color EDGE_COLOR_SIG = new Color(217, 95, 2);
 		private static final Color BG_COLOR = Color.WHITE;
-		
 	}
 	
-	
-	@Inject private @Continuous  VisualMappingFunctionFactory vmfFactoryContinuous;
-	@Inject private @Discrete    VisualMappingFunctionFactory vmfFactoryDiscrete;
-	@Inject private @Passthrough VisualMappingFunctionFactory vmfFactoryPassthrough;
+	@Inject private @Continuous  VisualMappingFunctionFactory cmFactory;
+	@Inject private @Discrete    VisualMappingFunctionFactory dmFactory;
+	@Inject private @Passthrough VisualMappingFunctionFactory pmFactory;
 	
 	@Inject private RenderingEngineManager renderingEngineManager;
-	
 	
 	public static String getStyleName(EnrichmentMap map) {
 		String prefix = map.getParams().getAttributePrefix();
@@ -127,12 +132,13 @@ public class MasterMapVisualStyle {
 		
 		// Network Properties
 		vs.setDefaultValue(NETWORK_BACKGROUND_PAINT, Colors.BG_COLOR);    	        
-    	vs.setDefaultValue(EDGE_TRANSPARENCY, 100);
     	
 		setEdgeDefaults(vs, options);
+		setEdgePaint(vs, options);
 		setEdgeWidth(vs, options);
  		
 		setNodeDefaults(vs, options);
+		setNodeShapes(vs, options);
 		setNodeLabels(vs, options);
 		setNodeSize(vs, options);
 		setNodeChart(vs, chart);
@@ -148,16 +154,23 @@ public class MasterMapVisualStyle {
 	}
 	
 	private void setEdgeDefaults(VisualStyle vs, MasterMapStyleOptions options) {
+		vs.setDefaultValue(EDGE_TRANSPARENCY, DEF_EDGE_TRANSPARENCY);
+		vs.setDefaultValue(EDGE_LABEL_TRANSPARENCY, DEF_EDGE_TRANSPARENCY);
+	}
+	
+	private void setEdgePaint(VisualStyle vs, MasterMapStyleOptions options) {
 		String prefix = options.getAttributePrefix();
-		
-		DiscreteMapping<Integer, Paint> edgePaint = (DiscreteMapping<Integer, Paint>) vmfFactoryDiscrete
-				.createVisualMappingFunction(Columns.EDGE_ENRICHMENT_SET.with(prefix, null), Integer.class, EDGE_UNSELECTED_PAINT);
+
+		DiscreteMapping<Integer, Paint> edgePaint = (DiscreteMapping<Integer, Paint>) dmFactory
+				.createVisualMappingFunction(Columns.EDGE_ENRICHMENT_SET.with(prefix, null), Integer.class,
+						EDGE_UNSELECTED_PAINT);
 		edgePaint.putMapValue(Columns.EDGE_ENRICHMENT_SET_ENR, Colors.EDGE_COLOR);
 		edgePaint.putMapValue(Columns.EDGE_ENRICHMENT_SET_SIG, Colors.EDGE_COLOR_SIG);
 		vs.addVisualMappingFunction(edgePaint);
-		
-		DiscreteMapping<Integer, Paint> edgeStrokePaint = (DiscreteMapping<Integer, Paint>) vmfFactoryDiscrete
-				.createVisualMappingFunction(Columns.EDGE_ENRICHMENT_SET.with(prefix, null), Integer.class, EDGE_STROKE_UNSELECTED_PAINT);
+
+		DiscreteMapping<Integer, Paint> edgeStrokePaint = (DiscreteMapping<Integer, Paint>) dmFactory
+				.createVisualMappingFunction(Columns.EDGE_ENRICHMENT_SET.with(prefix, null), Integer.class,
+						EDGE_STROKE_UNSELECTED_PAINT);
 		edgeStrokePaint.putMapValue(Columns.EDGE_ENRICHMENT_SET_ENR, Colors.EDGE_COLOR);
 		edgeStrokePaint.putMapValue(Columns.EDGE_ENRICHMENT_SET_SIG, Colors.EDGE_COLOR_SIG);
 		vs.addVisualMappingFunction(edgeStrokePaint);
@@ -165,10 +178,10 @@ public class MasterMapVisualStyle {
 	
 	private void setEdgeWidth(VisualStyle vs, MasterMapStyleOptions options) {
 		String prefix = options.getAttributePrefix();
-		
 		EnrichmentMap map = options.getEnrichmentMap();
-		//Continous Mapping - set edge line thickness based on the number of genes in the overlap
-		ContinuousMapping<Double, Double> edgewidth = (ContinuousMapping<Double, Double>) vmfFactoryContinuous
+		
+		// Continous Mapping - set edge line thickness based on the number of genes in the overlap
+		ContinuousMapping<Double, Double> edgewidth = (ContinuousMapping<Double, Double>) cmFactory
 				.createVisualMappingFunction(Columns.EDGE_SIMILARITY_COEFF.with(prefix,null), Double.class, EDGE_WIDTH);
 		
 		Double underWidth = 0.5;
@@ -186,17 +199,22 @@ public class MasterMapVisualStyle {
 	}
 	
 	private void setNodeDefaults(VisualStyle vs, MasterMapStyleOptions options) {
-		String prefix = options.getAttributePrefix();
 		// Set the default node appearance
 		vs.setDefaultValue(NODE_FILL_COLOR, Color.LIGHT_GRAY);
 		vs.setDefaultValue(NODE_BORDER_PAINT, Colors.MAX_PHENOTYPE_1);
 		vs.setDefaultValue(NODE_SHAPE, NodeShapeVisualProperty.ELLIPSE);
 		vs.setDefaultValue(NODE_SIZE, MIN_NODE_SIZE);
 		vs.setDefaultValue(NODE_BORDER_WIDTH, 1.0);
-		vs.setDefaultValue(NODE_TRANSPARENCY, 220);
+		vs.setDefaultValue(NODE_TRANSPARENCY, DEF_NODE_TRANSPARENCY);
+		vs.setDefaultValue(NODE_BORDER_TRANSPARENCY, DEF_NODE_TRANSPARENCY);
+		vs.setDefaultValue(NODE_LABEL_TRANSPARENCY, DEF_NODE_TRANSPARENCY);
+	}
+	
+	private void setNodeShapes(VisualStyle vs, MasterMapStyleOptions options) {
+		String prefix = options.getAttributePrefix();
 		
 		// Add mapping function for node shape
-		DiscreteMapping<String, NodeShape> nodeShape = (DiscreteMapping<String, NodeShape>) vmfFactoryDiscrete
+		DiscreteMapping<String, NodeShape> nodeShape = (DiscreteMapping<String, NodeShape>) dmFactory
 				.createVisualMappingFunction(Columns.NODE_GS_TYPE.with(prefix, null), String.class, NODE_SHAPE);
 		nodeShape.putMapValue(Columns.NODE_GS_TYPE_ENRICHMENT, NodeShapeVisualProperty.ELLIPSE);
 		nodeShape.putMapValue(Columns.NODE_GS_TYPE_SIGNATURE, NodeShapeVisualProperty.TRIANGLE);
@@ -205,14 +223,14 @@ public class MasterMapVisualStyle {
 	
 	private void setNodeLabels(VisualStyle vs, MasterMapStyleOptions options) {
 		String prefix = options.getAttributePrefix();
-		PassthroughMapping<String, String> nodeLabel = (PassthroughMapping<String, String>) vmfFactoryPassthrough
+		PassthroughMapping<String, String> nodeLabel = (PassthroughMapping<String, String>) pmFactory
 				.createVisualMappingFunction(Columns.NODE_GS_DESCR.with(prefix,null), String.class, NODE_LABEL);
 		vs.addVisualMappingFunction(nodeLabel);
 	}
 	
 	private void setNodeSize(VisualStyle vs, MasterMapStyleOptions options) {
 		String prefix = options.getAttributePrefix();
-		ContinuousMapping<Integer, Double> nodeSize = (ContinuousMapping<Integer, Double>) vmfFactoryContinuous
+		ContinuousMapping<Integer, Double> nodeSize = (ContinuousMapping<Integer, Double>) cmFactory
 				.createVisualMappingFunction(Columns.NODE_GS_SIZE.with(prefix,null), Integer.class, NODE_SIZE);
 
 		BoundaryRangeValues<Double> bv0 = new BoundaryRangeValues<Double>(MIN_NODE_SIZE, MIN_NODE_SIZE, MIN_NODE_SIZE);
