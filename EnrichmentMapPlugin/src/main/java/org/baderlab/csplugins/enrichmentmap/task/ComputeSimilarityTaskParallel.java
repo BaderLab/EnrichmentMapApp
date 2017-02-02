@@ -131,89 +131,6 @@ public class ComputeSimilarityTaskParallel extends AbstractTask {
 	}
 	
 	
-//	private Map<SimilarityKey,GenesetSimilarity> startComputeSimilaritiesDistinct(TaskMonitor tm, ExecutorService executor) {
-//		Set<String> names = getAllGenesetNames(map);
-//		
-//		DiscreteTaskMonitor taskMonitor = discreteTaskMonitor(tm, names.size());
-//		String edgeType = map.getParams().getEnrichmentEdgeType();
-//		Map<SimilarityKey,GenesetSimilarity> similarities = new ConcurrentHashMap<>();
-//		
-//		Collection<DataSet> dataSets = map.getDatasetList();
-//		
-//		for(final String geneset1Name : names) {
-//			// Compute similarities in batches, creating a Runnable for every similarity pair would create too many objects
-//			executor.execute(() -> {
-//				for(final String geneset2Name : names) {
-//					if (geneset1Name.equalsIgnoreCase(geneset2Name))
-//						continue; //don't compare two identical gene sets
-//					
-//					int i = 1;
-//					for(DataSet dataset : dataSets) {
-//						String edgeInteraction = edgeType + "_set" + (i++);
-//						SimilarityKey key = new SimilarityKey(geneset1Name, edgeInteraction, geneset2Name);
-//						
-//						if(!similarities.containsKey(key)) {
-//							Map<String,GeneSet> genesets = dataset.getGenesetsOfInterest().getGenesets();
-//							GeneSet geneset1 = genesets.get(geneset1Name);
-//							GeneSet geneset2 = genesets.get(geneset2Name);
-//							
-//							if(geneset1 != null && geneset2 != null) {
-//								// returns null if the similarity coefficient doesn't pass the cutoff
-//								GenesetSimilarity similarity = computeGenesetSimilarity(map.getParams(), geneset1Name, geneset2Name, geneset1.getGenes(), geneset2.getGenes(), 0);
-//								if(similarity != null) {
-//									similarities.put(key, similarity);
-//								}
-//							}
-//						}
-//					}
-//				}
-//				
-//				taskMonitor.inc();
-//			});
-//		}
-//		
-//		return similarities;
-//	}
-//	
-//	
-//	private Map<SimilarityKey,GenesetSimilarity> startComputeSimilaritiesOneExpressionSet(TaskMonitor tm, ExecutorService executor) {
-//		Map<String,Set<Integer>> genesetsOfInterest = unionGeneSetsOfInterest(map);
-//		DiscreteTaskMonitor taskMonitor = discreteTaskMonitor(tm, genesetsOfInterest.size());
-//        final String edgeType = map.getParams().getEnrichmentEdgeType();
-//        
-//		final Map<SimilarityKey,GenesetSimilarity> similarities = new ConcurrentHashMap<>();
-//
-//		// Iterate over unioned genesets, dataset doesn't matter anymore since we did the union
-//		for(final String geneset1Name : genesetsOfInterest.keySet()) {
-//			
-//			// Compute similarities in batches, creating a Runnable for every similarity pair would create too many objects
-//			executor.execute(() -> {
-//				for(final String geneset2Name : genesetsOfInterest.keySet()) {
-//					if (geneset1Name.equalsIgnoreCase(geneset2Name))
-//						continue; //don't compare two identical gene sets
-//					
-//					SimilarityKey key = new SimilarityKey(geneset1Name, edgeType, geneset2Name);
-//					
-//					if(!similarities.containsKey(key)) {
-//						Set<Integer> geneset1 = genesetsOfInterest.get(geneset1Name);
-//						Set<Integer> geneset2 = genesetsOfInterest.get(geneset2Name);
-//						
-//						// returns null if the similarity coefficient doesn't pass the cutoff
-//						GenesetSimilarity similarity = computeGenesetSimilarity(map.getParams(), geneset1Name, geneset2Name, geneset1, geneset2, 0);
-//						if(similarity != null) {
-//							similarities.put(key, similarity);
-//						}
-//					}
-//				}
-//				
-//				taskMonitor.inc();
-//			});
-//		}
-//		
-//		return similarities;
-//	}
-	
-	
 	private static DiscreteTaskMonitor discreteTaskMonitor(TaskMonitor tm, int size) {
 		DiscreteTaskMonitor taskMonitor = new DiscreteTaskMonitor(tm, size);
         taskMonitor.setTitle("Computing Geneset Similarities...");
@@ -221,30 +138,6 @@ public class ComputeSimilarityTaskParallel extends AbstractTask {
         return taskMonitor;
 	}
 
-	
-//	private static Map<String,Set<Integer>> unionGeneSetsOfInterest(EnrichmentMap map) {
-//		Map<String,Set<Integer>> unionedGenesets = new HashMap<>();
-//		for(DataSet dataset : map.getDatasetList()) {
-//			Map<String,GeneSet> genesets = dataset.getGenesetsOfInterest().getGenesets();
-//			for(Map.Entry<String, GeneSet> entry : genesets.entrySet()) {
-//				String name = entry.getKey();
-//				GeneSet gs = entry.getValue();
-//				unionedGenesets.computeIfAbsent(name, k->new HashSet<>()).addAll(gs.getGenes());
-//			}
-//		}
-//		return unionedGenesets;
-//	}
-//	
-//	
-//	private static Set<String> getAllGenesetNames(EnrichmentMap map) {
-//		Set<String> genesetNames = new HashSet<>();
-//		for(DataSet dataset : map.getDatasetList()) {
-//			Map<String,GeneSet> genesets = dataset.getGenesetsOfInterest().getGenesets();
-//			genesetNames.addAll(genesets.keySet());
-//		}
-//		return genesetNames;
-//	}
-	
 	
 	public static double computeSimilarityCoeffecient(EMCreationParameters params, Set<?> intersection, Set<?> union, Set<?> genes1, Set<?> genes2) {
 		// Note: Do not call intersection.size() or union.size() more than once on a Guava SetView! 
