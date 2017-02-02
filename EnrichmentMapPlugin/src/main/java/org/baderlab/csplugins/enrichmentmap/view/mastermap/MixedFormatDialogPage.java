@@ -282,7 +282,7 @@ public class MixedFormatDialogPage implements CardDialogPage {
 			browseForDataSets().forEach(dataSetListModel::addElement);
 		});
 		addManualButton.addActionListener(e -> {
-			EditDataSetDialog dialog = new EditDataSetDialog(callback.getDialogFrame(), fileUtil, null);
+			EditDataSetDialog dialog = new EditDataSetDialog(callback.getDialogFrame(), fileUtil, null, dataSetListModel.getSize());
 			DataSetParameters dataSet = dialog.open();
 			if(dataSet != null) {
 				dataSetListModel.addElement(dataSet);
@@ -425,7 +425,7 @@ public class MixedFormatDialogPage implements CardDialogPage {
 
 		if (index != -1) {
 			DataSetParameters dataSet = dataSetListModel.getElementAt(index);
-			EditDataSetDialog dialog = new EditDataSetDialog(callback.getDialogFrame(), fileUtil, dataSet);
+			EditDataSetDialog dialog = new EditDataSetDialog(callback.getDialogFrame(), fileUtil, dataSet, dataSetListModel.getSize());
 			DataSetParameters newDataSet = dialog.open();
 			
 			if (newDataSet != null) {
@@ -502,23 +502,28 @@ public class MixedFormatDialogPage implements CardDialogPage {
 				int y = 0;
 				String gmtFileName = files.getGMTFileName();
 				if(!isNullOrEmpty(gmtFileName)) {
-					y = addFileLabel("GMT File: ", fileName(gmtFileName), filePanel, y);
+					y += addFileLabel("GMT File: ", fileName(gmtFileName), filePanel, y);
 				}
 				String enrichmentFileName1 = files.getEnrichmentFileName1();
+				String enrichmentFileName2 = files.getEnrichmentFileName2();
 				if(!isNullOrEmpty(enrichmentFileName1)) {
-					y = addFileLabel("Enrichments: ", fileName(enrichmentFileName1), filePanel, y);
+					String label = isNullOrEmpty(enrichmentFileName2) ? "Enrichments: " : "Enrichments 1:";
+					y += addFileLabel(label, fileName(enrichmentFileName1), filePanel, y);
+				}
+				if(!isNullOrEmpty(enrichmentFileName2)) {
+					y += addFileLabel("Enrichments 2: ", fileName(enrichmentFileName2), filePanel, y);
 				}
 				String expressionFile = files.getExpressionFileName();
 				if(!isNullOrEmpty(expressionFile)) {
-					y = addFileLabel("Expressions: ", fileName(expressionFile), filePanel, y);
+					y += addFileLabel("Expressions: ", fileName(expressionFile), filePanel, y);
 				}
 				String ranksFile = files.getRankedFile();
 				if(!isNullOrEmpty(ranksFile)) {
-					y = addFileLabel("Ranks: ", fileName(ranksFile), filePanel, y);
+					y += addFileLabel("Ranks: ", fileName(ranksFile), filePanel, y);
 				}
 				String classFile = files.getClassFile();
 				if(!isNullOrEmpty(classFile)) {
-					y = addFileLabel("Classes: ", fileName(classFile), filePanel, y);
+					y += addFileLabel("Classes: ", fileName(classFile), filePanel, y);
 				}
 				return filePanel;
 			}
@@ -534,13 +539,13 @@ public class MixedFormatDialogPage implements CardDialogPage {
 			
 			private int addFileLabel(String name, String path, JPanel filePanel, int y) {
 				if(path == null)
-					return y;
+					return 0;
 				JLabel type = new JLabel(name);
 				JLabel comp = new JLabel(path);
 				SwingUtil.makeSmall(type, comp);
 				filePanel.add(type, GBCFactory.grid(0,y).get());
 				filePanel.add(comp, GBCFactory.grid(1,y).weightx(1.0).get());
-				return y+1;
+				return 1;
 			}
 			
 			private String fileName(String path) {

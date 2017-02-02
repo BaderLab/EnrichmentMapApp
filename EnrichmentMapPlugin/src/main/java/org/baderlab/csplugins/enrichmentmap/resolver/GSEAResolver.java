@@ -69,9 +69,7 @@ public class GSEAResolver {
 		Optional<Path> rnk      = getRptResultsFile(gseaFolder, rnkFileName, params);
 		Optional<Path> expr     = getRptExpressionFile(params);
 		
-		// If certain files can't be found then abort
-		// MKTODO need some standards, for now let's be very conservative
-		if(!gmtPath.isPresent() || !results1.isPresent() || !results2.isPresent() || !rnk.isPresent() || !expr.isPresent())
+		if(!gmtPath.isPresent() && !results1.isPresent() && !results2.isPresent() && !rnk.isPresent() && !expr.isPresent())
 			return Optional.empty();
 		
 		DataSetFiles files = new DataSetFiles();

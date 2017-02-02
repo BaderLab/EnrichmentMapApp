@@ -469,7 +469,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 		Columns.EDGE_OVERLAP_GENES.set(row, prefix, null, gene_list);
 		Columns.EDGE_OVERLAP_SIZE.set(row, prefix, null, genesetSimilarity.getSizeOfOverlap());
 		Columns.EDGE_SIMILARITY_COEFF.set(row, prefix, null, genesetSimilarity.getSimilarity_coeffecient());
-		Columns.EDGE_ENRICHMENT_SET.set(row, prefix, null, Columns.EDGE_ENRICHMENT_SET_SIG);
+		Columns.EDGE_ENR_SET.set(row, prefix, null, Columns.EDGE_ENR_SET_VALUE_SIG);
 		
 		if(passed_cutoff)
 			Columns.EDGE_CUTOFF_TYPE.set(row, prefix, null, paParams.getRankTestParameters().getType().display);
