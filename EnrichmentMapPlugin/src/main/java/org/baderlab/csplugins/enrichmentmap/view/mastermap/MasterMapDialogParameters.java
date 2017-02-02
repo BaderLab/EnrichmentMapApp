@@ -25,8 +25,8 @@ public class MasterMapDialogParameters implements CardDialogParameters {
 	@Override
 	public List<CardDialogPage> getPages() {
 		return Arrays.asList(
-			gseaSimpleDialogPageProvider.get(),
-			mixedFormatDialogPage.get()
+			mixedFormatDialogPage.get(),
+			gseaSimpleDialogPageProvider.get()
 		);
 	}
 	
