@@ -45,12 +45,12 @@ public class MasterMapVisualStyle {
 	public final static String COMBINED = "Combined";
 	
 	public final static Integer DEF_NODE_TRANSPARENCY = 220;
-	public final static Integer FILTERED_OUT_NODE_TRANSPARENCY = 30;
+	public final static Integer FILTERED_OUT_NODE_TRANSPARENCY = 40;
 	
 	private final static Double MIN_NODE_SIZE = 20.0;
 	private final static Double MAX_NODE_SIZE = 60.0;
 	
-	public final static Integer DEF_EDGE_TRANSPARENCY = 160;
+	public final static Integer DEF_EDGE_TRANSPARENCY = 140;
 	public final static Integer FILTERED_OUT_EDGE_TRANSPARENCY = 10;
 	
 	public static class Columns {

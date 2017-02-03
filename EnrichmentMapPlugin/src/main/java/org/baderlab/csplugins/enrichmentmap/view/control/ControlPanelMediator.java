@@ -93,6 +93,23 @@ import com.google.inject.Singleton;
 public class ControlPanelMediator
 		implements SetCurrentNetworkViewListener, NetworkViewAddedListener, NetworkViewAboutToBeDestroyedListener {
 
+	private enum FilterMode {
+		HIDE("Hide filtered out nodes and edges"),
+		HIGHLIGHT("Highlight filtered nodes and edges"),
+		SELECT("Select filtered nodes and edges");
+		
+		private final String label;
+
+		private FilterMode(String label) {
+			this.label = label;
+		}
+		
+		@Override
+		public String toString() {
+			return label;
+		}
+	}
+
 	@Inject private Provider<ControlPanel> controlPanelProvider;
 	@Inject private Provider<ParametersPanelMediator> parametersPanelMediatorProvider;
 	@Inject private Provider<PostAnalysisPanelMediator> postAnalysisPanelMediatorProvider;
@@ -111,7 +128,7 @@ public class ControlPanelMediator
 	@Inject private CyColumnIdentifierFactory columnIdFactory;
 	@Inject private ChartFactoryManager chartFactoryManager;
 	
-	private boolean hideFilteredOutElements = true;
+	private FilterMode filterMode = FilterMode.HIDE;
 	
 	private Map<CyNetworkView, Timer> filterTimers = new HashMap<>();
 	
@@ -122,7 +139,6 @@ public class ControlPanelMediator
 	public void handleEvent(SetCurrentNetworkViewEvent e) {
 		setCurrentNetworkView(e.getNetworkView());
 	}
-	
 	
 	private void setCurrentNetworkView(CyNetworkView view) {
 		invokeOnEDT(() -> {
@@ -136,12 +152,10 @@ public class ControlPanelMediator
 		});
 	}
 	
-	
 	@Override
 	public void handleEvent(NetworkViewAddedEvent e) {
 		addNetworkView(e.getNetworkView());
 	}
-	
 	
 	private void addNetworkView(CyNetworkView netView) {
 		invokeOnEDT(() -> {
@@ -288,7 +302,7 @@ public class ControlPanelMediator
 			props.setProperty("id", ControlPanel.ID);
 			serviceRegistrar.registerService(panel, CytoPanelComponent.class, props);
 			
-			if (firstTime) {
+			if (firstTime && emManager.getAllEnrichmentMaps().isEmpty()) {
 				firstTime = false;
 				controlPanelProvider.get().getCreateEmButton().doClick();
 			}
@@ -552,24 +566,18 @@ public class ControlPanelMediator
 	private JPopupMenu getOptionsMenu() {
 		final JPopupMenu menu = new JPopupMenu();
 		
-		{
-			final JMenuItem mi = new JCheckBoxMenuItem("Hide filtered out nodes and edges");
-			mi.addActionListener(evt -> setHideFilteredOutElements(true));
-			mi.setSelected(hideFilteredOutElements);
-			menu.add(mi);
-		}
-		{
-			final JMenuItem mi = new JCheckBoxMenuItem("Highlight filtered nodes and edges");
-			mi.addActionListener(evt -> setHideFilteredOutElements(false));
-			mi.setSelected(!hideFilteredOutElements);
+		for (FilterMode mode : FilterMode.values()) {
+			final JMenuItem mi = new JCheckBoxMenuItem(mode.toString());
+			mi.addActionListener(evt -> setFilterMode(mode));
+			mi.setSelected(filterMode == mode);
 			menu.add(mi);
 		}
 		
 		return menu;
 	}
 	
-	private void setHideFilteredOutElements(boolean b) {
-		hideFilteredOutElements = b;
+	private void setFilterMode(FilterMode filterMode) {
+		this.filterMode = filterMode;
 	}
 	
 	private class FilterActionListener implements ActionListener {
@@ -586,8 +594,8 @@ public class ControlPanelMediator
 		
 		@Override
 		public void actionPerformed(ActionEvent evt) {
-			Set<CyNode> nodesToShow = new HashSet<>();
-			Set<CyEdge> edgesToShow = Collections.emptySet();
+			Set<CyNode> filteredInNodes = new HashSet<>();
+			Set<CyEdge> filteredInEdges = Collections.emptySet();
 			
 			EMCreationParameters params = map.getParams();
 			List<DataSet> selectedDataSets = viewPanel.getSelectedDataSets();
@@ -596,16 +604,16 @@ public class ControlPanelMediator
 			// Only p or q value, but not both!
 			if (viewPanel.getPValueSliderPanel() != null && viewPanel.getPValueSliderPanel().isVisible()) {
 				Set<String> columnNames = getFilteredColumnNames(params.getPValueColumnNames(), selectedDataSets);
-				nodesToShow.addAll(
+				filteredInNodes.addAll(
 						getFilteredInNodes(viewPanel.getPValueSliderPanel(), map, netView, columnNames, dataSetNodes));
 			} else if (viewPanel.getQValueSliderPanel() != null && viewPanel.getQValueSliderPanel().isVisible()) {
 				Set<String> columnNames = getFilteredColumnNames(params.getQValueColumnNames(), selectedDataSets);
-				nodesToShow.addAll(
+				filteredInNodes.addAll(
 						getFilteredInNodes(viewPanel.getQValueSliderPanel(), map, netView, columnNames, dataSetNodes));
 			}
 
 			if (viewPanel.getSimilaritySliderPanel() != null)
-				edgesToShow = getFilteredInEdges(viewPanel.getSimilaritySliderPanel(), map, netView,
+				filteredInEdges = getFilteredInEdges(viewPanel.getSimilaritySliderPanel(), map, netView,
 						params.getSimilarityCutoffColumnNames());
 			
 			CyNetwork net = netView.getModel();
@@ -617,28 +625,31 @@ public class ControlPanelMediator
 				if (nv == null)
 					continue; // Should never happen!
 				
-				boolean show = nodesToShow.contains(n);
+				boolean filteredIn = filteredInNodes.contains(n);
 				
-				if (show) {
-					// Don't forget to remove all locked values!
-					nv.clearValueLock(NODE_VISIBLE);
-					nv.clearValueLock(NODE_TRANSPARENCY);
-					nv.clearValueLock(NODE_BORDER_TRANSPARENCY);
-					nv.clearValueLock(NODE_LABEL_TRANSPARENCY);
+				// Don't forget to remove all previous locked values first!
+				nv.clearValueLock(NODE_VISIBLE);
+				nv.clearValueLock(NODE_TRANSPARENCY);
+				nv.clearValueLock(NODE_BORDER_TRANSPARENCY);
+				nv.clearValueLock(NODE_LABEL_TRANSPARENCY);
+				
+				if (filteredIn) {
+					if (filterMode == FilterMode.SELECT)
+						net.getRow(n).set(CyNetwork.SELECTED, true);
 				} else {
-					if (hideFilteredOutElements) {
-						nv.clearValueLock(NODE_TRANSPARENCY);
-						nv.clearValueLock(NODE_BORDER_TRANSPARENCY);
-						nv.clearValueLock(NODE_LABEL_TRANSPARENCY);
-						
-						net.getRow(n).set(CyNetwork.SELECTED, false);
-						nv.setLockedValue(NODE_VISIBLE, false);
-					} else {
-						nv.clearValueLock(NODE_VISIBLE);
-						
-						nv.setLockedValue(NODE_TRANSPARENCY, FILTERED_OUT_NODE_TRANSPARENCY);
-						nv.setLockedValue(NODE_BORDER_TRANSPARENCY, FILTERED_OUT_NODE_TRANSPARENCY);
-						nv.setLockedValue(NODE_LABEL_TRANSPARENCY, FILTERED_OUT_NODE_TRANSPARENCY);
+					switch (filterMode) {
+						case HIDE:
+							net.getRow(n).set(CyNetwork.SELECTED, false);
+							nv.setLockedValue(NODE_VISIBLE, false);
+							break;
+						case HIGHLIGHT:
+							nv.setLockedValue(NODE_TRANSPARENCY, FILTERED_OUT_NODE_TRANSPARENCY);
+							nv.setLockedValue(NODE_BORDER_TRANSPARENCY, FILTERED_OUT_NODE_TRANSPARENCY);
+							nv.setLockedValue(NODE_LABEL_TRANSPARENCY, 0);
+							break;
+						case SELECT:
+							net.getRow(n).set(CyNetwork.SELECTED, false);
+							break;
 					}
 				}
 			}
@@ -649,26 +660,30 @@ public class ControlPanelMediator
 				if (ev == null)
 					continue; // Should never happen!
 				
-				boolean show = edgesToShow.contains(e) && nodesToShow.contains(e.getSource())
-						&& nodesToShow.contains(e.getTarget());
+				boolean filteredIn = filteredInEdges.contains(e) && filteredInNodes.contains(e.getSource())
+						&& filteredInNodes.contains(e.getTarget());
 
-				if (show) {
-					// Don't forget to remove all locked values!
-					ev.clearValueLock(EDGE_VISIBLE);
-					ev.clearValueLock(EDGE_TRANSPARENCY);
-					ev.clearValueLock(EDGE_LABEL_TRANSPARENCY);
+				// Don't forget to remove all locked values first!
+				ev.clearValueLock(EDGE_VISIBLE);
+				ev.clearValueLock(EDGE_TRANSPARENCY);
+				ev.clearValueLock(EDGE_LABEL_TRANSPARENCY);
+				
+				if (filteredIn) {
+					if (filterMode == FilterMode.SELECT)
+						net.getRow(e).set(CyNetwork.SELECTED, true);
 				} else {
-					if (hideFilteredOutElements) {
-						ev.clearValueLock(EDGE_TRANSPARENCY);
-						ev.clearValueLock(EDGE_LABEL_TRANSPARENCY);
-						
-						net.getRow(ev.getModel()).set(CyNetwork.SELECTED, false);
-						ev.setLockedValue(EDGE_VISIBLE, false);
-					} else {
-						ev.clearValueLock(EDGE_VISIBLE);
-						
-						ev.setLockedValue(EDGE_TRANSPARENCY, FILTERED_OUT_EDGE_TRANSPARENCY);
-						ev.setLockedValue(EDGE_LABEL_TRANSPARENCY, FILTERED_OUT_EDGE_TRANSPARENCY);
+					switch (filterMode) {
+						case HIDE:
+							net.getRow(e).set(CyNetwork.SELECTED, false);
+							ev.setLockedValue(EDGE_VISIBLE, false);
+							break;
+						case HIGHLIGHT:
+							ev.setLockedValue(EDGE_TRANSPARENCY, FILTERED_OUT_EDGE_TRANSPARENCY);
+							ev.setLockedValue(EDGE_LABEL_TRANSPARENCY, FILTERED_OUT_EDGE_TRANSPARENCY);
+							break;
+						case SELECT:
+							net.getRow(e).set(CyNetwork.SELECTED, false);
+							break;
 					}
 				}
 			}
