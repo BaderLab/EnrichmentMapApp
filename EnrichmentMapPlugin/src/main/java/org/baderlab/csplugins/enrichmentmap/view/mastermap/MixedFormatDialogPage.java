@@ -17,6 +17,7 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
@@ -31,6 +32,7 @@ import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingWorker;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 
@@ -61,6 +63,7 @@ import org.cytoscape.work.swing.DialogTaskManager;
 import com.google.inject.Inject;
 import com.lowagie.text.Font;
 
+
 @SuppressWarnings("serial")
 public class MixedFormatDialogPage implements CardDialogPage {
 
@@ -79,6 +82,13 @@ public class MixedFormatDialogPage implements CardDialogPage {
 	
 	private CardDialogCallback callback;
 	
+	private JButton addFolderButton;
+	private JButton addManualButton;
+	private JButton editButton;
+	private JButton removeButton;
+	private JButton removeAllButton;
+	
+	private JList<DataSetParameters> datasetList;
 	private IterableListModel<DataSetParameters> dataSetListModel;
 	private JTextField gmtPathText;
 	private JCheckBox distinctEdgesCheckbox;
@@ -162,37 +172,64 @@ public class MixedFormatDialogPage implements CardDialogPage {
 	}
 	
 	
-	private List<DataSetParameters> browseForDataSets() {
-		Optional<File> rootFolder = FileBrowser.browseForRootFolder(callback.getDialogFrame());
-		if(rootFolder.isPresent()) {
-			List<DataSetParameters> datasets = scanRootFolder(rootFolder.get());
-			if(datasets.isEmpty()) {
-				callback.setMessage(Message.WARN, "No Data Sets found under: " + rootFolder.get());
-			}
-			return datasets;
-		}
-		return Collections.emptyList();
-	}
-	
-	
-	private List<DataSetParameters> scanRootFolder(File root) {
-		callback.clearMessage();
+	private class ResolverWorker extends SwingWorker<List<DataSetParameters>, String> {
+
+		private Optional<File> rootFolder;
 		
-		if(!root.isDirectory()) {
-			callback.setMessage(Message.ERROR, "Not a folder");
+		public void executeWithBefore() {
+			SwingUtil.invokeOnEDTAndWait(this::before);
+			execute();
+		}
+		
+		private void before() {
+			callback.clearMessage();
+			rootFolder = FileBrowser.browseForRootFolder(callback.getDialogFrame());
+			updateButtonEnablement(false);
+			datasetList.setEnabled(false);
+		}
+		
+		@Override
+		protected List<DataSetParameters> doInBackground() {
+			if(rootFolder.isPresent()) {
+				File root = rootFolder.get();
+				if(!root.isDirectory()) {
+					publish("Not a folder");
+					return Collections.emptyList();
+				}
+				List<DataSetParameters> datasets = DataSetResolver.guessDataSets(root.toPath());
+				if(datasets.isEmpty()) {
+					publish("No Data Sets found under: " + rootFolder.get());
+				}
+				return datasets;
+			}
 			return Collections.emptyList();
 		}
 		
-		Path path = root.toPath();
-		List<DataSetParameters> dataSets = DataSetResolver.guessDataSets(path);
-		return dataSets;
+		@Override
+		protected void process(List<String> warnings) {
+			callback.setMessage(Message.WARN, warnings.get(0)); // There won't be more than one warning
+		}
+		
+		@Override
+		protected void done() {
+			try {
+				List<DataSetParameters> datasets = get();
+				datasets.forEach(dataSetListModel::addElement);
+			} catch (InterruptedException | ExecutionException e) {
+				callback.setMessage(Message.ERROR, "Error loading data sets.");
+				e.printStackTrace();
+			} finally {
+				updateButtonEnablement(true);
+				datasetList.setEnabled(true);
+			}
+		}
+		
 	}
 	
 	
 	private JPanel createDataSetPanel() {
-		// MKTODO check for duplicates, might even make sense to use a Set for the list model
 		dataSetListModel = new IterableListModel<>();
-		JList<DataSetParameters> list = new DataSetList(dataSetListModel);
+		datasetList = new DataSetList(dataSetListModel);
 		String title = "Enrichment Data Sets";
 		
 		JLabel gmtLabel = new JLabel(" GMT File (optional):");
@@ -204,64 +241,54 @@ public class MixedFormatDialogPage implements CardDialogPage {
 
 		distinctEdgesCheckbox = new JCheckBox("Create separate edges when expression sets are distinct");
 		
-		JButton addFolderButton = new JButton("Add Folder...");
-		JButton addManualButton = new JButton("Add Single...");
-		JButton editButton = new JButton("Edit...");
-		JButton removeButton = new JButton("Remove");
-		JButton removeAllButton = new JButton("Clear");
+		addFolderButton = new JButton("Add Folder...");
+		addManualButton = new JButton("Add Single...");
+		editButton = new JButton("Edit...");
+		removeButton = new JButton("Remove");
+		removeAllButton = new JButton("Clear");
 		editButton.setEnabled(false);
 		removeButton.setEnabled(false);
 		removeAllButton.setEnabled(false);
 		
+		SwingUtil.makeSmall(addFolderButton, addManualButton, editButton, removeButton, removeAllButton, distinctEdgesCheckbox);
+		
 		// Double-click to edit a data set
-		list.addMouseListener(new MouseAdapter() {
-			@Override
+		datasetList.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
 				if (e.getClickCount() == 2 && !e.isConsumed()) {
 				     e.consume();
-				     editDataSet(list);
+				     editDataSet(datasetList);
 				}
 			}
 		});
 		
-		SwingUtil.makeSmall(addFolderButton, addManualButton, editButton, removeButton, removeAllButton, distinctEdgesCheckbox);
-		
-		// Button Action Listeners
+		// Button Action and Enablement Listeners
 		addFolderButton.addActionListener(e -> {
-			browseForDataSets().forEach(dataSetListModel::addElement);
+			new ResolverWorker().executeWithBefore();
 		});
 		addManualButton.addActionListener(e -> {
 			EditDataSetDialog dialog = new EditDataSetDialog(callback.getDialogFrame(), fileUtil, null, dataSetListModel.getSize());
 			DataSetParameters dataSet = dialog.open();
-			if(dataSet != null) {
+			if(dataSet != null)
 				dataSetListModel.addElement(dataSet);
-			}
 		});
 		editButton.addActionListener(e -> {
-			editDataSet(list);
+			editDataSet(datasetList);
 		});
 		removeButton.addActionListener(e -> {
-			List<DataSetParameters> selected = list.getSelectedValuesList();
+			List<DataSetParameters> selected = datasetList.getSelectedValuesList();
 			selected.forEach(dataSetListModel::removeElement);
 		});
 		removeAllButton.addActionListener(e -> {
 			dataSetListModel.clear();
 		});
-		
-		// Button Enablement Listeners
-		list.addListSelectionListener(e -> {
-			List<DataSetParameters> selected = list.getSelectedValuesList();
-			editButton.setEnabled(selected.size() == 1);
-			removeButton.setEnabled(!selected.isEmpty());
+		datasetList.addListSelectionListener(e -> {
+			updateButtonEnablement(true);
 		});
 		dataSetListModel.addListDataListener(SwingUtil.simpleListDataListener(() -> {
-			removeAllButton.setEnabled(!dataSetListModel.isEmpty());
-			validateInput();
+			updateButtonEnablement(true);
 		}));
 		
-		// Layout
-		JScrollPane scrollPane = new JScrollPane();
-		scrollPane.setViewportView(list);
 		
 		JLabel status = new JLabel("");
 		status.setEnabled(false);
@@ -270,6 +297,10 @@ public class MixedFormatDialogPage implements CardDialogPage {
 			status.setText(formatStatusLabel(dataSetListModel.toList()));
 		}));
 		
+		
+		// Layout
+		JScrollPane scrollPane = new JScrollPane();
+		scrollPane.setViewportView(datasetList);
 		JPanel panel = new JPanel();
 		GroupLayout layout = new GroupLayout(panel);
 		panel.setLayout(layout);
@@ -328,6 +359,27 @@ public class MixedFormatDialogPage implements CardDialogPage {
 		return panel;
 	}
 
+	
+	private void updateButtonEnablement(boolean enable) {
+		if(enable) {
+			addFolderButton.setEnabled(true);
+			addManualButton.setEnabled(true);
+			List<DataSetParameters> selected = datasetList.getSelectedValuesList();
+			editButton.setEnabled(selected.size() == 1);
+			removeButton.setEnabled(!selected.isEmpty());
+			removeAllButton.setEnabled(!dataSetListModel.isEmpty());
+			validateInput();
+		} else {
+			addFolderButton.setEnabled(false);
+			addManualButton.setEnabled(false);
+			editButton.setEnabled(false);
+			removeButton.setEnabled(false);
+			removeAllButton.setEnabled(false);
+			// MKTODO what about the cancel button?
+			callback.setFinishButtonEnabled(false);
+		}
+	}
+	
 	
 	private static String formatStatusLabel(List<DataSetParameters> datasets) {
 		if(datasets.isEmpty())
