@@ -18,6 +18,8 @@ import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_T
 
 import java.awt.Color;
 import java.awt.Paint;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Continuous;
 import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Discrete;
@@ -81,9 +83,13 @@ public class MasterMapVisualStyle {
 		public static final ColumnDescriptor<Double> EDGE_SIMILARITY_COEFF = new ColumnDescriptor<>("similarity_coefficient", Double.class);
 		public static final ColumnDescriptor<Integer> EDGE_OVERLAP_SIZE = new ColumnDescriptor<>("Overlap_size", Integer.class);
 		public static final ColumnListDescriptor<String> EDGE_OVERLAP_GENES = new ColumnListDescriptor<>("Overlap_genes", String.class);
-		public static final ColumnDescriptor<Integer> EDGE_ENRICHMENT_SET = new ColumnDescriptor<>("ENRICHMENT_SET", Integer.class);
-		public static final Integer EDGE_ENRICHMENT_SET_ENR = 0;
-		public static final Integer EDGE_ENRICHMENT_SET_SIG = 4; // for backwards compatibility
+		
+		// Multi-edge case
+		public static final ColumnDescriptor<String> EDGE_ENR_SET = new ColumnDescriptor<>("ENRICHMENT_SET", String.class);
+		public static final String EDGE_ENR_SET_VALUE_PREFIX = "ENR_"; // Enrichment set edges, 1-8
+		public static final String EDGE_ENR_SET_VALUE_COMPOUND = "ENR"; // Compound edges
+		public static final String EDGE_ENR_SET_VALUE_SIG = "SIG"; // post-analysis edges
+		public static final int EDGE_ENR_SET_VALUE_MAX = 7; // Maximum number of distinct edge colors, starting at 1, 0 is for compound edges
 		
 		// Post-analysis Edge Attributes
 		public static final ColumnDescriptor<Double> EDGE_HYPERGEOM_PVALUE = new ColumnDescriptor<>("Overlap_Hypergeom_pVal", Double.class);
@@ -100,19 +106,31 @@ public class MasterMapVisualStyle {
 	}
 
 	public static class Colors {
-		/* See http://colorbrewer2.org/#type=diverging&scheme=RdBu&n=9 */
-		public static final Color MAX_PHENOTYPE_1 = new Color(178, 24, 43);
-		public static final Color LIGHTER_PHENOTYPE_1 = new Color(214, 96, 77);
-		public static final Color LIGHTEST_PHENOTYPE_1 = new Color(244, 165, 130);
-		public static final Color OVER_COLOR = new Color(247, 247, 247);
-		public static final Color LIGHTER_PHENOTYPE_2 = new Color(67, 147, 195);
-		public static final Color LIGHTEST_PHENOTYPE_2 = new Color(146, 197, 222);
+		// See http://colorbrewer2.org/#type=diverging&scheme=RdBu&n=9 
+		public static final Color NODE_MAX_PHENOTYPE_1 = new Color(178, 24, 43);
+		public static final Color NODE_LIGHTER_PHENOTYPE_1 = new Color(214, 96, 77);
+		public static final Color NODE_LIGHTEST_PHENOTYPE_1 = new Color(244, 165, 130);
+		public static final Color NODE_OVER_COLOR = new Color(247, 247, 247);
+		public static final Color NODE_LIGHTER_PHENOTYPE_2 = new Color(67, 147, 195);
+		public static final Color NODE_LIGHTEST_PHENOTYPE_2 = new Color(146, 197, 222);
+
+		private static final Color EDGE_COLOR_SIG = new Color(231,41,138);
+		
+		// see http://colorbrewer2.org/?type=qualitative&scheme=Dark2&n=8#type=qualitative&scheme=Dark2&n=8
+		public static final Map<String,Color> EDGE_COLORS = new HashMap<>(); 
+		static {
+			EDGE_COLORS.put(Columns.EDGE_ENR_SET_VALUE_SIG,        EDGE_COLOR_SIG);
+			EDGE_COLORS.put(Columns.EDGE_ENR_SET_VALUE_COMPOUND,   new Color(27,158,119));
+			EDGE_COLORS.put(Columns.EDGE_ENR_SET_VALUE_PREFIX + 1, new Color(217,95,2));
+			EDGE_COLORS.put(Columns.EDGE_ENR_SET_VALUE_PREFIX + 2, new Color(117,112,179));
+			EDGE_COLORS.put(Columns.EDGE_ENR_SET_VALUE_PREFIX + 3, new Color(231,41,138));
+			EDGE_COLORS.put(Columns.EDGE_ENR_SET_VALUE_PREFIX + 4, new Color(102,166,30));
+			EDGE_COLORS.put(Columns.EDGE_ENR_SET_VALUE_PREFIX + 5, new Color(230,171,2));
+			EDGE_COLORS.put(Columns.EDGE_ENR_SET_VALUE_PREFIX + 6, new Color(166,118,29));
+			EDGE_COLORS.put(Columns.EDGE_ENR_SET_VALUE_PREFIX + 7, new Color(102,102,102));
+		};
 	
 		public static final Color LIGHT_GREY = new Color(190, 190, 190);
-	
-		/* See http://colorbrewer2.org/#type=qualitative&scheme=Dark2&n=3 */
-		private static final Color EDGE_COLOR = new Color(27, 158, 119);
-		private static final Color EDGE_COLOR_SIG = new Color(217, 95, 2);
 		private static final Color BG_COLOR = Color.WHITE;
 	}
 	
@@ -161,19 +179,15 @@ public class MasterMapVisualStyle {
 	private void setEdgePaint(VisualStyle vs, MasterMapStyleOptions options) {
 		String prefix = options.getAttributePrefix();
 
-		DiscreteMapping<Integer, Paint> edgePaint = (DiscreteMapping<Integer, Paint>) dmFactory
-				.createVisualMappingFunction(Columns.EDGE_ENRICHMENT_SET.with(prefix, null), Integer.class,
-						EDGE_UNSELECTED_PAINT);
-		edgePaint.putMapValue(Columns.EDGE_ENRICHMENT_SET_ENR, Colors.EDGE_COLOR);
-		edgePaint.putMapValue(Columns.EDGE_ENRICHMENT_SET_SIG, Colors.EDGE_COLOR_SIG);
+		DiscreteMapping<String, Paint> edgePaint = (DiscreteMapping<String, Paint>) dmFactory
+				.createVisualMappingFunction(Columns.EDGE_ENR_SET.with(prefix, null), String.class, EDGE_UNSELECTED_PAINT);
 		vs.addVisualMappingFunction(edgePaint);
+		Colors.EDGE_COLORS.forEach(edgePaint::putMapValue);
 
-		DiscreteMapping<Integer, Paint> edgeStrokePaint = (DiscreteMapping<Integer, Paint>) dmFactory
-				.createVisualMappingFunction(Columns.EDGE_ENRICHMENT_SET.with(prefix, null), Integer.class,
-						EDGE_STROKE_UNSELECTED_PAINT);
-		edgeStrokePaint.putMapValue(Columns.EDGE_ENRICHMENT_SET_ENR, Colors.EDGE_COLOR);
-		edgeStrokePaint.putMapValue(Columns.EDGE_ENRICHMENT_SET_SIG, Colors.EDGE_COLOR_SIG);
+		DiscreteMapping<String, Paint> edgeStrokePaint = (DiscreteMapping<String, Paint>) dmFactory
+				.createVisualMappingFunction(Columns.EDGE_ENR_SET.with(prefix, null), String.class, EDGE_STROKE_UNSELECTED_PAINT);
 		vs.addVisualMappingFunction(edgeStrokePaint);
+		Colors.EDGE_COLORS.forEach(edgeStrokePaint::putMapValue);
 	}
 	
 	private void setEdgeWidth(VisualStyle vs, MasterMapStyleOptions options) {
@@ -201,7 +215,7 @@ public class MasterMapVisualStyle {
 	private void setNodeDefaults(VisualStyle vs, MasterMapStyleOptions options) {
 		// Set the default node appearance
 		vs.setDefaultValue(NODE_FILL_COLOR, Color.LIGHT_GRAY);
-		vs.setDefaultValue(NODE_BORDER_PAINT, Colors.MAX_PHENOTYPE_1);
+		vs.setDefaultValue(NODE_BORDER_PAINT, Colors.NODE_MAX_PHENOTYPE_1);
 		vs.setDefaultValue(NODE_SHAPE, NodeShapeVisualProperty.ELLIPSE);
 		vs.setDefaultValue(NODE_SIZE, MIN_NODE_SIZE);
 		vs.setDefaultValue(NODE_BORDER_WIDTH, 1.0);

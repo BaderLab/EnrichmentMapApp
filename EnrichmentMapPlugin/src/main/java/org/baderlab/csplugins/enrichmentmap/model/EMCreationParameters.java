@@ -37,9 +37,7 @@ public class EMCreationParameters implements EnrichmentResultFilterParams {
 	private double qvalueMin = 1.0;
 	private double pvalueMin = 1.0;
 	
-	// TEMPORARY - this shouldn't be here need to generalize this or put in normal model
-	private boolean isDistinctExpressionSets;
-	// TEMPORARY - this shouldn't be here this won't work for mastermap
+	private boolean createDistinctEdges;
 	private String enrichmentEdgeType = "Geneset_Overlap";
 	
 	private Path globalGmtFile;
@@ -54,11 +52,11 @@ public class EMCreationParameters implements EnrichmentResultFilterParams {
 			double pvalue,
 			double qvalue,
 			NESFilter nesFilter,
-			Optional<Integer> minExperiments, // NODE
+			Optional<Integer> minExperiments,
 			SimilarityMetric similarityMetric,
 			double similarityCutoff,
 			double combinedConstant
-	) { // EDGE
+	) { 
 		this.similarityMetric = similarityMetric;
 		this.attributePrefix = attributePrefix;
 		this.pvalue = pvalue;
@@ -154,12 +152,12 @@ public class EMCreationParameters implements EnrichmentResultFilterParams {
 		emgmt = eMgmt;
 	}
 
-	public void setDistinctExpressionSets(boolean d) {
-		this.isDistinctExpressionSets = d;
+	public void setCreateDistinctEdges(boolean d) {
+		this.createDistinctEdges = d;
 	}
 	
-	public boolean isDistinctExpressionSets() {
-		return isDistinctExpressionSets;
+	public boolean getCreateDistinctEdges() {
+		return createDistinctEdges;
 	}
 
 	public String getEnrichmentEdgeType() {

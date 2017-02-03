@@ -99,7 +99,6 @@ public class ModelSerializerTest extends BaseNetworkTest {
 		assertEquals(expected.isEMgmt(), actual.isEMgmt());
 		assertEquals(expected.getQvalueMin(), actual.getQvalueMin(), 0.0);
 		assertEquals(expected.getPvalueMin(), actual.getPvalueMin(), 0.0);
-		assertEquals(expected.isDistinctExpressionSets(), actual.isDistinctExpressionSets()); // MKTODO move into EnrichmentMap
 		assertEquals(expected.getEnrichmentEdgeType(), actual.getEnrichmentEdgeType()); // MKTODO remove this field
 		assertEquals(expected.getGlobalGmtFile(), actual.getGlobalGmtFile());
 	}

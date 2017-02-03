@@ -4,6 +4,7 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.makeSmall;
+import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.simpleDocumentListener;
 import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.validatePathTextField;
 
 import java.awt.Color;
@@ -81,13 +82,13 @@ public class EditDataSetDialog extends JDialog {
 	boolean okClicked = false;
 	
 
-	public EditDataSetDialog(JDialog parent, FileUtil fileUtil, @Nullable DataSetParameters initDataSet) {
+	public EditDataSetDialog(JDialog parent, FileUtil fileUtil, @Nullable DataSetParameters initDataSet, int numDataSets) {
 		super(parent, null, true);
 		this.fileUtil = fileUtil;
 		setMinimumSize(new Dimension(650, 500));
 		setResizable(true);
 		setTitle(initDataSet == null ? "Add Enrichment Results" : "Edit Enrichment Results");
-		createContents(initDataSet);
+		createContents(initDataSet, numDataSets);
 		pack();
 		setLocationRelativeTo(parent);
 		validateInput();
@@ -113,7 +114,7 @@ public class EditDataSetDialog extends JDialog {
 		
 		String enrichmentFileName2 = enrichments2Text.getText();
 		if(!isNullOrEmpty(enrichmentFileName2))
-			files.setEnrichmentFileName1(enrichmentFileName2);
+			files.setEnrichmentFileName2(enrichmentFileName2);
 		
 		String expressionFileName = expressionsText.getText();
 		if(!isNullOrEmpty(expressionFileName))
@@ -139,9 +140,9 @@ public class EditDataSetDialog extends JDialog {
 	}
 	
 	
-	private void createContents(@Nullable DataSetParameters initDataSet) {
+	private void createContents(@Nullable DataSetParameters initDataSet, int numDataSets) {
 		JPanel analysisTypePanel = createAnalysisTypePanel(initDataSet);
-		JPanel namePanel = createNamePanel(initDataSet);
+		JPanel namePanel = createNamePanel(initDataSet, numDataSets);
 		JPanel textFieldPanel = createTextFieldPanel(initDataSet);
 		JPanel phenotypePanel = createPhenotypesPanel(initDataSet);
 		JPanel buttonPanel = createButtonPanel();
@@ -217,10 +218,10 @@ public class EditDataSetDialog extends JDialog {
 	}
 	
 	
-	private JPanel createNamePanel(@Nullable DataSetParameters initDataSet) {
+	private JPanel createNamePanel(@Nullable DataSetParameters initDataSet, int numDataSets) {
 		nameText = new JTextField();
 		textFieldForeground = nameText.getForeground();
-		nameText.setText(initDataSet == null ? "" : initDataSet.getName());
+		nameText.setText(initDataSet == null ? "Data Set " + (numDataSets + 1) : initDataSet.getName());
 		nameText.addFocusListener(new FocusValidator(nameText));
 		makeSmall(nameText);
 		
@@ -334,6 +335,7 @@ public class EditDataSetDialog extends JDialog {
 		classesText.setText(initDataSet != null ? initDataSet.getFiles().getClassFile() : null);
 		JButton classesBrowse = new JButton("Browse...");
 		classesText.addFocusListener(new FocusValidator(classesText));
+		classesText.getDocument().addDocumentListener(simpleDocumentListener(this::updateClasses));
 		classesBrowse.addActionListener(e -> browse(classesText, FileBrowser.Filter.CLASS));
 		
 		makeSmall(ranksLabel, ranksText, ranksBrowse);
@@ -494,6 +496,7 @@ public class EditDataSetDialog extends JDialog {
 					error = true;
 				}
 			} catch (IOException e) {
+				e.printStackTrace();
 				error = true;
 			}
 		}

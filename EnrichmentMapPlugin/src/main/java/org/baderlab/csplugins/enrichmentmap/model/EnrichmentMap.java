@@ -46,6 +46,8 @@ public class EnrichmentMap {
 	private SetOfGeneSets globalGenesets = new SetOfGeneSets();
 
 	private int NumberOfGenes = 0;
+	private boolean isLegacy = false;
+	private boolean isDistinctExpressionSets = false;
 
 	
 	/**
@@ -451,11 +453,24 @@ public class EnrichmentMap {
 	public String toString() {
 		return getName();
 	}
+	
+	public void setDistinctExpressionSets(boolean d) {
+		this.isDistinctExpressionSets = d;
+	}
+	
+	public boolean isDistinctExpressionSets() {
+		return isDistinctExpressionSets;
+	}
+	
 
+	public void setLegacy(boolean legacy) {
+		this.isLegacy = legacy;
+	}
+	
 	/**
-	 * Files loaded by LegacyEnrichmentMapSessionListener should set this flag to true
+	 * Files loaded by LegacySessionLoader should set this flag to true
 	 */
 	public boolean isLegacy() {
-		return false;
+		return isLegacy;
 	}
 }

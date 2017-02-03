@@ -329,7 +329,7 @@ public class LegacySessionLoader {
 					//if there are two expression sets and there is a second set of genesets of interest then we
 					//are dealing with two distinct expression files.
 					if( map.getDataset(LegacySupport.DATASET2) != null && map.getDataset(LegacySupport.DATASET2).getGenesetsOfInterest() != null && !map.getDataset(LegacySupport.DATASET2).getGenesetsOfInterest().getGenesets().isEmpty() ){
-						map.getParams().setDistinctExpressionSets(true);
+						map.setDistinctExpressionSets(true);
 						map.getDataset(LegacySupport.DATASET1).setDatasetGenes(new HashSet<Integer>((Set<Integer>)map.getDataset(LegacySupport.DATASET1).getExpressionSets().getGeneIds()));
 						map.getDataset(LegacySupport.DATASET2).setDatasetGenes(new HashSet<Integer>((Set<Integer>)map.getDataset(LegacySupport.DATASET2).getExpressionSets().getGeneIds()));
 					}
@@ -354,7 +354,7 @@ public class LegacySessionLoader {
 						Set<Integer> dataset2_genes = map.getDatasets().get(LegacySupport.DATASET2).getDatasetGenes();
 						
 						if(!dataset1_genes.equals(dataset2_genes))
-							map.getParams().setDistinctExpressionSets(true);
+							map.setDistinctExpressionSets(true);
 					}
 					
 					//initialize the Genesets (makes sure the leading edge is set correctly)
@@ -382,7 +382,7 @@ public class LegacySessionLoader {
 				Long id = j.next();
 				CyNetwork currentNetwork = cyNetworkManager.getNetwork(id);
 				EnrichmentMap map = enrichmentMapMap.get(id);
-				
+				map.setLegacy(true);
 				emManager.registerEnrichmentMap(map);
 				
 				if(!j.hasNext()) {

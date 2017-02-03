@@ -631,7 +631,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 
 		int kValue;
 
-		if (params.isDistinctExpressionSets())
+		if (map.isDistinctExpressionSets())
 			kValue = expValue.length;
 		//kValue = currentExpressionSet.size() + currentExpressionSet2.size();
 		else
@@ -869,7 +869,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 
 		int kValue;
 
-		if (params.isDistinctExpressionSets())
+		if (map.isDistinctExpressionSets())
 			kValue = expressionUsing.size();
 		else
 			kValue = Math.max(currentExpressionSet.size(), currentExpressionSet2.size());
@@ -933,7 +933,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 
 		//A rank of -1 can indicate a missing rank which is expected when you have two distinct datasets
 		//We want to make sure the -1 are at the bottom of the list with two distinct data sets
-		if (params.isDistinctExpressionSets() && missingRanksCount > 0) {
+		if (map.isDistinctExpressionSets() && missingRanksCount > 0) {
 			int fakeRank = 0;
 			if (isNegative)
 				fakeRank = 1;
@@ -1168,7 +1168,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 		layout.setHorizontalGroup(hGroup);
 		layout.setVerticalGroup(vGroup);
 
-		if (params.isDistinctExpressionSets()) {
+		if (map.isDistinctExpressionSets()) {
 			ColorGradientWidget legend1 = ColorGradientWidget.getInstance("", hmParams.getTheme_ds1(),
 					hmParams.getRange_ds1(), true, ColorGradientWidget.LEGEND_POSITION.NA);
 			ColorGradientWidget legend2 = ColorGradientWidget.getInstance("", hmParams.getTheme_ds2(),

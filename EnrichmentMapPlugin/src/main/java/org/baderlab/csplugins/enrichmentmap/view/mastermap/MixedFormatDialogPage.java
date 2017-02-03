@@ -1,7 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.view.mastermap;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
-import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.simpleDocumentListener;
 import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.validatePathTextField;
 
 import java.awt.BorderLayout;
@@ -23,6 +22,7 @@ import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -81,6 +81,7 @@ public class MixedFormatDialogPage implements CardDialogPage {
 	
 	private IterableListModel<DataSetParameters> dataSetListModel;
 	private JTextField gmtPathText;
+	private JCheckBox distinctEdgesCheckbox;
 	
 	
 	@Override
@@ -109,6 +110,7 @@ public class MixedFormatDialogPage implements CardDialogPage {
 		double combined = cutoffPanel.getCombinedConstant();
 		Optional<Integer> minExperiments = cutoffPanel.getMinimumExperiments();
 		
+		
 		EMCreationParameters params = 
 			new EMCreationParameters(prefix, pvalue, qvalue, nesFilter, minExperiments, similarityMetric, cutoff, combined);
 		
@@ -116,6 +118,7 @@ public class MixedFormatDialogPage implements CardDialogPage {
 		if(!isNullOrEmpty(text)) {
 			params.setGlobalGmtFile(Paths.get(text));
 		}
+		params.setCreateDistinctEdges(distinctEdgesCheckbox.isSelected());
 		
 		List<DataSetParameters> dataSets = dataSetListModel.toList();
 		
@@ -137,7 +140,6 @@ public class MixedFormatDialogPage implements CardDialogPage {
 		this.callback = callback;
 		
 		JPanel dataPanel = createDataSetPanel();
-		JPanel gmtPanel  = createTextFieldPanel();
 		
 		JPanel panel = new JPanel();
 		GroupLayout layout = new GroupLayout(panel);
@@ -147,13 +149,11 @@ public class MixedFormatDialogPage implements CardDialogPage {
 		layout.setHorizontalGroup(
 			layout.createParallelGroup()
 				.addComponent(dataPanel)
-				.addComponent(gmtPanel)
 				.addComponent(cutoffPanel)
 		);
 		layout.setVerticalGroup(
 			layout.createSequentialGroup()
 				.addComponent(dataPanel, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-				.addComponent(gmtPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
 				.addComponent(cutoffPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
 		);
 			
@@ -189,71 +189,20 @@ public class MixedFormatDialogPage implements CardDialogPage {
 	}
 	
 	
-	private JPanel createTextFieldPanel() {
-		JLabel gmtLabel = new JLabel(" GMT File (optional):");
-//		JLabel extLabel = new JLabel(" Expression File (optional):");
-		
-		gmtPathText = new JTextField();
-//		expPathText = new JTextField();
-		gmtPathText.getDocument().addDocumentListener(simpleDocumentListener(this::validateInput));
-//		expPathText.getDocument().addDocumentListener(simpleDocumentListener(this::validateInput));
-		
-		JButton gmtBrowseButton = new JButton("Browse...");
-//		JButton expBrowseButton = new JButton("Browse...");
-		
-		gmtBrowseButton.addActionListener(e -> browse(gmtPathText, FileBrowser.Filter.GMT));
-//		expBrowseButton.addActionListener(e -> browse(expPathText, FileBrowser.Filter.EXPRESSION));
-		
-		SwingUtil.makeSmall(gmtLabel, gmtPathText, gmtBrowseButton);
-//		SwingUtil.makeSmall(extLabel, expPathText, expBrowseButton);
-		
-		JPanel panel = new JPanel();
-		panel.setBorder(LookAndFeelUtil.createPanelBorder());
-		
-		GroupLayout layout = new GroupLayout(panel);
-		panel.setLayout(layout);
-		layout.setAutoCreateContainerGaps(false);
-		layout.setAutoCreateGaps(true);
-
-		layout.setHorizontalGroup(
-			layout.createSequentialGroup()
-				.addGroup(layout.createParallelGroup(Alignment.TRAILING)
-					.addComponent(gmtLabel)
-//					.addComponent(extLabel)
-				)
-				.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
-					.addComponent(gmtPathText, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-//					.addComponent(expPathText, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-				)
-				.addGroup(layout.createParallelGroup()
-					.addComponent(gmtBrowseButton)
-//					.addComponent(expBrowseButton)
-				)
-		);
-		
-		layout.setVerticalGroup(
-			layout.createSequentialGroup()
-				.addGroup(layout.createParallelGroup(Alignment.BASELINE)
-					.addComponent(gmtLabel)
-					.addComponent(gmtPathText)
-					.addComponent(gmtBrowseButton)
-				)
-//				.addGroup(layout.createParallelGroup(Alignment.BASELINE)
-//					.addComponent(extLabel)
-//					.addComponent(expPathText)
-//					.addComponent(expBrowseButton)
-//				)
-			);
-		
-		return panel;
-	}
-	
-	
 	private JPanel createDataSetPanel() {
 		// MKTODO check for duplicates, might even make sense to use a Set for the list model
 		dataSetListModel = new IterableListModel<>();
 		JList<DataSetParameters> list = new DataSetList(dataSetListModel);
 		String title = "Enrichment Data Sets";
+		
+		JLabel gmtLabel = new JLabel(" GMT File (optional):");
+		gmtPathText = new JTextField();
+		gmtPathText.getDocument().addDocumentListener(SwingUtil.simpleDocumentListener(this::validateInput));
+		JButton gmtBrowseButton = new JButton("Browse...");
+		gmtBrowseButton.addActionListener(e -> browse(gmtPathText, FileBrowser.Filter.GMT));
+		SwingUtil.makeSmall(gmtLabel, gmtPathText, gmtBrowseButton);
+
+		distinctEdgesCheckbox = new JCheckBox("Create separate edges when expression sets are distinct");
 		
 		JButton addFolderButton = new JButton("Add Folder...");
 		JButton addManualButton = new JButton("Add Single...");
@@ -275,14 +224,14 @@ public class MixedFormatDialogPage implements CardDialogPage {
 			}
 		});
 		
-		SwingUtil.makeSmall(addFolderButton, addManualButton, editButton, removeButton, removeAllButton);
+		SwingUtil.makeSmall(addFolderButton, addManualButton, editButton, removeButton, removeAllButton, distinctEdgesCheckbox);
 		
 		// Button Action Listeners
 		addFolderButton.addActionListener(e -> {
 			browseForDataSets().forEach(dataSetListModel::addElement);
 		});
 		addManualButton.addActionListener(e -> {
-			EditDataSetDialog dialog = new EditDataSetDialog(callback.getDialogFrame(), fileUtil, null);
+			EditDataSetDialog dialog = new EditDataSetDialog(callback.getDialogFrame(), fileUtil, null, dataSetListModel.getSize());
 			DataSetParameters dataSet = dialog.open();
 			if(dataSet != null) {
 				dataSetListModel.addElement(dataSet);
@@ -315,6 +264,7 @@ public class MixedFormatDialogPage implements CardDialogPage {
 		scrollPane.setViewportView(list);
 		
 		JLabel status = new JLabel("");
+		status.setEnabled(false);
 		SwingUtil.makeSmall(status);
 		dataSetListModel.addListDataListener(SwingUtil.simpleListDataListener(() -> {
 			status.setText(formatStatusLabel(dataSetListModel.toList()));
@@ -328,19 +278,28 @@ public class MixedFormatDialogPage implements CardDialogPage {
 		final int bwidth = 120;
 		
 		layout.setHorizontalGroup(
-			layout.createSequentialGroup()
-				.addGroup(layout.createParallelGroup()
-					.addComponent(scrollPane, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-					.addComponent(status)
+			layout.createParallelGroup()
+				.addGroup(layout.createSequentialGroup()
+					.addGroup(layout.createParallelGroup()
+						.addComponent(scrollPane, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+						.addComponent(status)
+					)
+					.addGroup(layout.createParallelGroup()
+						.addComponent(addFolderButton, bwidth, bwidth, bwidth)
+						.addComponent(addManualButton, bwidth, bwidth, bwidth)
+						.addComponent(editButton,      bwidth, bwidth, bwidth)
+						.addComponent(removeButton,    bwidth, bwidth, bwidth)
+						.addComponent(removeAllButton, bwidth, bwidth, bwidth)
+					)
 				)
-				.addGroup(layout.createParallelGroup()
-					.addComponent(addFolderButton, bwidth, bwidth, bwidth)
-					.addComponent(addManualButton, bwidth, bwidth, bwidth)
-					.addComponent(editButton,      bwidth, bwidth, bwidth)
-					.addComponent(removeButton,    bwidth, bwidth, bwidth)
-					.addComponent(removeAllButton, bwidth, bwidth, bwidth)
+				.addGroup(layout.createSequentialGroup()
+					.addComponent(gmtLabel)
+					.addComponent(gmtPathText, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(gmtBrowseButton, bwidth, bwidth, bwidth)
 				)
+				.addComponent(distinctEdgesCheckbox)
 		);
+		
 		layout.setVerticalGroup(
 			layout.createSequentialGroup()
 				.addGap(10, 10, 10)
@@ -357,6 +316,12 @@ public class MixedFormatDialogPage implements CardDialogPage {
 						.addComponent(removeAllButton)
 					)
 				)
+				.addGroup(layout.createParallelGroup(Alignment.BASELINE)
+					.addComponent(gmtLabel)
+					.addComponent(gmtPathText, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+					.addComponent(gmtBrowseButton)
+				)
+				.addComponent(distinctEdgesCheckbox)
 		);
 		
 		panel.setBorder(LookAndFeelUtil.createTitledBorder(title));
@@ -425,7 +390,7 @@ public class MixedFormatDialogPage implements CardDialogPage {
 
 		if (index != -1) {
 			DataSetParameters dataSet = dataSetListModel.getElementAt(index);
-			EditDataSetDialog dialog = new EditDataSetDialog(callback.getDialogFrame(), fileUtil, dataSet);
+			EditDataSetDialog dialog = new EditDataSetDialog(callback.getDialogFrame(), fileUtil, dataSet, dataSetListModel.getSize());
 			DataSetParameters newDataSet = dialog.open();
 			
 			if (newDataSet != null) {
@@ -502,23 +467,28 @@ public class MixedFormatDialogPage implements CardDialogPage {
 				int y = 0;
 				String gmtFileName = files.getGMTFileName();
 				if(!isNullOrEmpty(gmtFileName)) {
-					y = addFileLabel("GMT File: ", fileName(gmtFileName), filePanel, y);
+					y += addFileLabel("GMT File: ", fileName(gmtFileName), filePanel, y);
 				}
 				String enrichmentFileName1 = files.getEnrichmentFileName1();
+				String enrichmentFileName2 = files.getEnrichmentFileName2();
 				if(!isNullOrEmpty(enrichmentFileName1)) {
-					y = addFileLabel("Enrichments: ", fileName(enrichmentFileName1), filePanel, y);
+					String label = isNullOrEmpty(enrichmentFileName2) ? "Enrichments: " : "Enrichments 1:";
+					y += addFileLabel(label, fileName(enrichmentFileName1), filePanel, y);
+				}
+				if(!isNullOrEmpty(enrichmentFileName2)) {
+					y += addFileLabel("Enrichments 2: ", fileName(enrichmentFileName2), filePanel, y);
 				}
 				String expressionFile = files.getExpressionFileName();
 				if(!isNullOrEmpty(expressionFile)) {
-					y = addFileLabel("Expressions: ", fileName(expressionFile), filePanel, y);
+					y += addFileLabel("Expressions: ", fileName(expressionFile), filePanel, y);
 				}
 				String ranksFile = files.getRankedFile();
 				if(!isNullOrEmpty(ranksFile)) {
-					y = addFileLabel("Ranks: ", fileName(ranksFile), filePanel, y);
+					y += addFileLabel("Ranks: ", fileName(ranksFile), filePanel, y);
 				}
 				String classFile = files.getClassFile();
 				if(!isNullOrEmpty(classFile)) {
-					y = addFileLabel("Classes: ", fileName(classFile), filePanel, y);
+					y += addFileLabel("Classes: ", fileName(classFile), filePanel, y);
 				}
 				return filePanel;
 			}
@@ -534,13 +504,13 @@ public class MixedFormatDialogPage implements CardDialogPage {
 			
 			private int addFileLabel(String name, String path, JPanel filePanel, int y) {
 				if(path == null)
-					return y;
+					return 0;
 				JLabel type = new JLabel(name);
 				JLabel comp = new JLabel(path);
 				SwingUtil.makeSmall(type, comp);
 				filePanel.add(type, GBCFactory.grid(0,y).get());
 				filePanel.add(comp, GBCFactory.grid(1,y).weightx(1.0).get());
-				return y+1;
+				return 1;
 			}
 			
 			private String fileName(String path) {

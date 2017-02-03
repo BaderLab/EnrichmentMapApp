@@ -132,7 +132,7 @@ public class LegacySessionLoadTest extends BaseIntegrationTest {
 		assertEquals(1.0, params.getQvalueMin(), 0.0);
 		assertEquals(0.5, params.getSimilarityCutoff(), 0.0);
 		assertEquals(SimilarityMetric.OVERLAP, params.getSimilarityMetric());
-		assertFalse(params.isDistinctExpressionSets());
+//		assertFalse(params.isDistinctExpressionSets());
 		
 		String geneset1 = "RESOLUTION OF SISTER CHROMATID COHESION%REACTOME%REACT_150425.2";
 		String geneset2 = "CHROMOSOME, CENTROMERIC REGION%GO%GO:0000775";

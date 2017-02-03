@@ -53,7 +53,7 @@ public class FilterGenesetsByDatasetGenes extends AbstractTask {
 
 		// if there are multiple datasets check to see if they have the same set of genes
 		if(datasetsAreDistinct(datasets.values())) {
-			map.getParams().setDistinctExpressionSets(true);
+			map.setDistinctExpressionSets(true);
 		}
 	}
 

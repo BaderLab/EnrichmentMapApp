@@ -178,7 +178,12 @@ public class MasterMapNetworkTask extends AbstractTask implements ObservableTask
 			Columns.EDGE_SIMILARITY_COEFF.set(row, prefix, null, similarity.getSimilarity_coeffecient());
 			Columns.EDGE_OVERLAP_SIZE.set(row, prefix, null, similarity.getSizeOfOverlap());
 			Columns.EDGE_OVERLAP_GENES.set(row, prefix, null, overlapGenes);
-			Columns.EDGE_ENRICHMENT_SET.set(row, prefix, null, Columns.EDGE_ENRICHMENT_SET_ENR);
+			
+			if(key.isCompound()) {
+				Columns.EDGE_ENR_SET.set(row, prefix, null, Columns.EDGE_ENR_SET_VALUE_COMPOUND);
+			} else {
+				Columns.EDGE_ENR_SET.set(row, prefix, null, Columns.EDGE_ENR_SET_VALUE_PREFIX + key.getSet());
+			}
 		}
 	}
 	
@@ -213,7 +218,7 @@ public class MasterMapNetworkTask extends AbstractTask implements ObservableTask
 		CyTable table = network.getDefaultEdgeTable();
 		Columns.EDGE_SIMILARITY_COEFF.createColumn(table, prefix, null);
 		Columns.EDGE_OVERLAP_SIZE.createColumn(table, prefix, null);
-		Columns.EDGE_ENRICHMENT_SET.createColumn(table, prefix, null);
+		Columns.EDGE_ENR_SET.createColumn(table, prefix, null);
 		Columns.EDGE_OVERLAP_GENES.createColumn(table, prefix, null);
 		
 		map.getParams().addSimilarityCutoffColumnName(Columns.EDGE_SIMILARITY_COEFF.with(prefix, null));
