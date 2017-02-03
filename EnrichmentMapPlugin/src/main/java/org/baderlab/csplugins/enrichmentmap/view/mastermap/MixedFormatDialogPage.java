@@ -22,6 +22,7 @@ import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -80,6 +81,7 @@ public class MixedFormatDialogPage implements CardDialogPage {
 	
 	private IterableListModel<DataSetParameters> dataSetListModel;
 	private JTextField gmtPathText;
+	private JCheckBox distinctEdgesCheckbox;
 	
 	
 	@Override
@@ -108,6 +110,7 @@ public class MixedFormatDialogPage implements CardDialogPage {
 		double combined = cutoffPanel.getCombinedConstant();
 		Optional<Integer> minExperiments = cutoffPanel.getMinimumExperiments();
 		
+		
 		EMCreationParameters params = 
 			new EMCreationParameters(prefix, pvalue, qvalue, nesFilter, minExperiments, similarityMetric, cutoff, combined);
 		
@@ -115,6 +118,7 @@ public class MixedFormatDialogPage implements CardDialogPage {
 		if(!isNullOrEmpty(text)) {
 			params.setGlobalGmtFile(Paths.get(text));
 		}
+		params.setCreateDistinctEdges(distinctEdgesCheckbox.isSelected());
 		
 		List<DataSetParameters> dataSets = dataSetListModel.toList();
 		
@@ -136,7 +140,6 @@ public class MixedFormatDialogPage implements CardDialogPage {
 		this.callback = callback;
 		
 		JPanel dataPanel = createDataSetPanel();
-//		JPanel gmtPanel  = createTextFieldPanel();
 		
 		JPanel panel = new JPanel();
 		GroupLayout layout = new GroupLayout(panel);
@@ -146,13 +149,11 @@ public class MixedFormatDialogPage implements CardDialogPage {
 		layout.setHorizontalGroup(
 			layout.createParallelGroup()
 				.addComponent(dataPanel)
-//				.addComponent(gmtPanel)
 				.addComponent(cutoffPanel)
 		);
 		layout.setVerticalGroup(
 			layout.createSequentialGroup()
 				.addComponent(dataPanel, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-//				.addComponent(gmtPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
 				.addComponent(cutoffPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
 		);
 			
@@ -200,7 +201,8 @@ public class MixedFormatDialogPage implements CardDialogPage {
 		JButton gmtBrowseButton = new JButton("Browse...");
 		gmtBrowseButton.addActionListener(e -> browse(gmtPathText, FileBrowser.Filter.GMT));
 		SwingUtil.makeSmall(gmtLabel, gmtPathText, gmtBrowseButton);
-		
+
+		distinctEdgesCheckbox = new JCheckBox("Create separate edges when expression sets are distinct");
 		
 		JButton addFolderButton = new JButton("Add Folder...");
 		JButton addManualButton = new JButton("Add Single...");
@@ -222,7 +224,7 @@ public class MixedFormatDialogPage implements CardDialogPage {
 			}
 		});
 		
-		SwingUtil.makeSmall(addFolderButton, addManualButton, editButton, removeButton, removeAllButton);
+		SwingUtil.makeSmall(addFolderButton, addManualButton, editButton, removeButton, removeAllButton, distinctEdgesCheckbox);
 		
 		// Button Action Listeners
 		addFolderButton.addActionListener(e -> {
@@ -295,12 +297,12 @@ public class MixedFormatDialogPage implements CardDialogPage {
 					.addComponent(gmtPathText, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
 					.addComponent(gmtBrowseButton, bwidth, bwidth, bwidth)
 				)
+				.addComponent(distinctEdgesCheckbox)
 		);
 		
 		layout.setVerticalGroup(
 			layout.createSequentialGroup()
 				.addGap(10, 10, 10)
-				
 				.addGroup(layout.createParallelGroup()
 					.addGroup(layout.createSequentialGroup()
 						.addComponent(scrollPane, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -319,6 +321,7 @@ public class MixedFormatDialogPage implements CardDialogPage {
 					.addComponent(gmtPathText, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
 					.addComponent(gmtBrowseButton)
 				)
+				.addComponent(distinctEdgesCheckbox)
 		);
 		
 		panel.setBorder(LookAndFeelUtil.createTitledBorder(title));

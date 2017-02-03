@@ -125,7 +125,7 @@ public class LoadBingoResultsTest {
 		//check to see if the two datasets are distinct
 		if(!((dataset.getDatasetGenes().containsAll(dataset2.getDatasetGenes())) && 
 					(dataset2.getDatasetGenes().containsAll(dataset.getDatasetGenes()))))
-				params.setDistinctExpressionSets(true);	
+				em.setDistinctExpressionSets(true);	
 				
 		em.filterGenesets();
 				

@@ -255,7 +255,7 @@ public class EnrichmentMapVisualStyle {
 		vs.setDefaultValue(BasicVisualLexicon.NODE_SHAPE, NodeShapeVisualProperty.ELLIPSE);
 
 		//change the default node and border size only when using two distinct dataset to be more equal.
-		if(map.getParams().isDistinctExpressionSets()) {
+		if(map.isDistinctExpressionSets()) {
 			vs.setDefaultValue(BasicVisualLexicon.NODE_SIZE, new Double(15.0));
 			vs.setDefaultValue(BasicVisualLexicon.NODE_BORDER_WIDTH, new Double(15.0));
 		} else {

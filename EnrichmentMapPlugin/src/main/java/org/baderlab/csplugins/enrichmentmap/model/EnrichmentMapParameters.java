@@ -108,8 +108,6 @@ public class EnrichmentMapParameters {
 	//add boolean to indicate whether the geneset files are EM specific gmt files
 	//if they are the visual style changes slightly
 	private boolean emgmt = false;
-	//a flag to indicate if the two expression files have the exact same set of genes
-	private boolean twoDistinctExpressionSets = false;
 	//flag to indicate if the results are from GSEA or generic or DAVID or other method
 	private String method;
 	//private boolean GSEA = true;
@@ -222,7 +220,6 @@ public class EnrichmentMapParameters {
 		//reset all boolean values
 		this.setFDR(false);
 		this.setTwoDatasets(false);
-		this.setTwoDistinctExpressionSets(false);
 
 		//initialize first dataset
 		this.files.put(LegacySupport.DATASET1, new DataSetFiles());
@@ -705,7 +702,6 @@ public class EnrichmentMapParameters {
 		this.fdr = params.isFDR();
 		this.similarityMetric = similarityMetricToString(params.getSimilarityMetric());
 		this.combinedConstant = params.getCombinedConstant();
-		this.twoDistinctExpressionSets = params.isDistinctExpressionSets();
 
 //		this.enrichment_edge_type = copy.getEnrichment_edge_type();
 		this.emgmt = params.isEMgmt();
@@ -735,7 +731,6 @@ public class EnrichmentMapParameters {
 		this.fdr = copy.isFDR();
 		this.similarityMetric = copy.getSimilarityMetric();
 		this.combinedConstant = copy.getCombinedConstant();
-		this.twoDistinctExpressionSets = copy.isTwoDistinctExpressionSets();
 
 		this.enrichment_edge_type = copy.getEnrichment_edge_type();
 
@@ -750,81 +745,81 @@ public class EnrichmentMapParameters {
 		this.attributePrefix = copy.getAttributePrefix();
 	}
 	
-	/**
-	 * Checks all values of the EnrichmentMapInputPanel to see if the current
-	 * set of enrichment map parameters has the minimal amount of information to
-	 * run enrichment maps.
-	 *
-	 * If it is a GSEA run then gmt,gct,2 enrichment files are needed OR gmt and
-	 * edb file If it is a generic run then gmt and 1 enrichment file is needed
-	 * if there are two datasets then depending on type it requires the same as
-	 * above.
-	 *
-	 * @return A String with error messages (one error per line) or empty String
-	 *         if everything is okay.
-	 */
-	public String checkMinimalRequirements() {
-		String errors = "";
-
-		//Go through each Dataset
-		for(Iterator<?> i = this.getFiles().keySet().iterator(); i.hasNext();) {
-			String ds = (String) i.next();
-			DataSetFiles dsFiles = this.getFiles().get(ds);
-
-			//minimal for either analysis
-			//check to see if GMT is not null but everything else is
-			if((dsFiles.getEnrichmentFileName1() == null || dsFiles.getEnrichmentFileName1().equalsIgnoreCase(""))
-					&& (dsFiles.getEnrichmentFileName2() == null
-							|| dsFiles.getEnrichmentFileName2().equalsIgnoreCase(""))
-					&& dsFiles.getGMTFileName() != null && !dsFiles.getGMTFileName().equalsIgnoreCase(""))
-				errors = "GMTONLY";
-			else {
-
-				if(dsFiles.getEnrichmentFileName1() == null || (dsFiles.getEnrichmentFileName1().equalsIgnoreCase("")
-						|| !checkFile(dsFiles.getEnrichmentFileName1())))
-					errors = errors + "Dataset 1, enrichment file 1 can not be found\n";
-
-				//GMT file is not required for David analysis
-				if(!this.method.equalsIgnoreCase(EnrichmentMapParameters.method_Specialized))
-					if(dsFiles.getGMTFileName() == null || dsFiles.getGMTFileName().equalsIgnoreCase("")
-							|| !checkFile(dsFiles.getGMTFileName()))
-						errors = errors + "GMT file can not be found \n";
-
-				// /GSEA inputs
-				if(this.method.equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)) {
-					if(dsFiles.getEnrichmentFileName2() != null
-							&& (dsFiles.getEnrichmentFileName2().equalsIgnoreCase("")
-									|| !checkFile(dsFiles.getEnrichmentFileName2()))
-							&& !dsFiles.getEnrichmentFileName1().contains("results.edb"))
-						errors = errors + "Dataset 1, enrichment file 2 can not be found\n";
-				}
-			}
-		}
-
-		//if there is more than one dataset
-		//check to see if there are two datasets if the two gct files are the same
-		/*
-		 * if((this.twoDatasets) &&
-		 * (this.files.get(EnrichmentMap.DATASET1).getExpressionFileName() !=
-		 * null) &&
-		 * (this.files.get(EnrichmentMap.DATASET1).getExpressionFileName().
-		 * equalsIgnoreCase(this.files.get(EnrichmentMap.DATASET2).
-		 * getExpressionFileName()))){ this.Data2 = false;
-		 * this.files.get(EnrichmentMap.DATASET2).setExpressionFileName(""); }
-		 */
-		//if there are no expression files and this is a david analysis there is no way of telling if they are from the same gmt file so use different one
-		/* else */ if((this.twoDatasets) && this.method.equalsIgnoreCase(EnrichmentMapParameters.method_Specialized)
-				&& (this.files.get(LegacySupport.DATASET1).getExpressionFileName() != null)
-				&& (this.files.get(LegacySupport.DATASET2) != null)
-				&& (this.files.get(LegacySupport.DATASET2).getExpressionFileName() != null)) {
-			this.setTwoDistinctExpressionSets(true);
-		}
-		//make sure that if the user added Dataset2 files but subsequently deleted them that we have updated twodataset parameter
-		if((this.twoDatasets) && ((this.files.get(LegacySupport.DATASET1) == null) || (this.files.get(LegacySupport.DATASET2) == null)))
-			this.setTwoDatasets(false);
-
-		return errors;
-	}
+//	/**
+//	 * Checks all values of the EnrichmentMapInputPanel to see if the current
+//	 * set of enrichment map parameters has the minimal amount of information to
+//	 * run enrichment maps.
+//	 *
+//	 * If it is a GSEA run then gmt,gct,2 enrichment files are needed OR gmt and
+//	 * edb file If it is a generic run then gmt and 1 enrichment file is needed
+//	 * if there are two datasets then depending on type it requires the same as
+//	 * above.
+//	 *
+//	 * @return A String with error messages (one error per line) or empty String
+//	 *         if everything is okay.
+//	 */
+//	public String checkMinimalRequirements() {
+//		String errors = "";
+//
+//		//Go through each Dataset
+//		for(Iterator<?> i = this.getFiles().keySet().iterator(); i.hasNext();) {
+//			String ds = (String) i.next();
+//			DataSetFiles dsFiles = this.getFiles().get(ds);
+//
+//			//minimal for either analysis
+//			//check to see if GMT is not null but everything else is
+//			if((dsFiles.getEnrichmentFileName1() == null || dsFiles.getEnrichmentFileName1().equalsIgnoreCase(""))
+//					&& (dsFiles.getEnrichmentFileName2() == null
+//							|| dsFiles.getEnrichmentFileName2().equalsIgnoreCase(""))
+//					&& dsFiles.getGMTFileName() != null && !dsFiles.getGMTFileName().equalsIgnoreCase(""))
+//				errors = "GMTONLY";
+//			else {
+//
+//				if(dsFiles.getEnrichmentFileName1() == null || (dsFiles.getEnrichmentFileName1().equalsIgnoreCase("")
+//						|| !checkFile(dsFiles.getEnrichmentFileName1())))
+//					errors = errors + "Dataset 1, enrichment file 1 can not be found\n";
+//
+//				//GMT file is not required for David analysis
+//				if(!this.method.equalsIgnoreCase(EnrichmentMapParameters.method_Specialized))
+//					if(dsFiles.getGMTFileName() == null || dsFiles.getGMTFileName().equalsIgnoreCase("")
+//							|| !checkFile(dsFiles.getGMTFileName()))
+//						errors = errors + "GMT file can not be found \n";
+//
+//				// /GSEA inputs
+//				if(this.method.equalsIgnoreCase(EnrichmentMapParameters.method_GSEA)) {
+//					if(dsFiles.getEnrichmentFileName2() != null
+//							&& (dsFiles.getEnrichmentFileName2().equalsIgnoreCase("")
+//									|| !checkFile(dsFiles.getEnrichmentFileName2()))
+//							&& !dsFiles.getEnrichmentFileName1().contains("results.edb"))
+//						errors = errors + "Dataset 1, enrichment file 2 can not be found\n";
+//				}
+//			}
+//		}
+//
+//		//if there is more than one dataset
+//		//check to see if there are two datasets if the two gct files are the same
+//		/*
+//		 * if((this.twoDatasets) &&
+//		 * (this.files.get(EnrichmentMap.DATASET1).getExpressionFileName() !=
+//		 * null) &&
+//		 * (this.files.get(EnrichmentMap.DATASET1).getExpressionFileName().
+//		 * equalsIgnoreCase(this.files.get(EnrichmentMap.DATASET2).
+//		 * getExpressionFileName()))){ this.Data2 = false;
+//		 * this.files.get(EnrichmentMap.DATASET2).setExpressionFileName(""); }
+//		 */
+//		//if there are no expression files and this is a david analysis there is no way of telling if they are from the same gmt file so use different one
+//		/* else */ if((this.twoDatasets) && this.method.equalsIgnoreCase(EnrichmentMapParameters.method_Specialized)
+//				&& (this.files.get(LegacySupport.DATASET1).getExpressionFileName() != null)
+//				&& (this.files.get(LegacySupport.DATASET2) != null)
+//				&& (this.files.get(LegacySupport.DATASET2).getExpressionFileName() != null)) {
+//			this.setTwoDistinctExpressionSets(true);
+//		}
+//		//make sure that if the user added Dataset2 files but subsequently deleted them that we have updated twodataset parameter
+//		if((this.twoDatasets) && ((this.files.get(LegacySupport.DATASET1) == null) || (this.files.get(LegacySupport.DATASET2) == null)))
+//			this.setTwoDatasets(false);
+//
+//		return errors;
+//	}
 
 	/**
 	 * Check to see if the file is readable.
@@ -1208,16 +1203,8 @@ public class EnrichmentMapParameters {
 		this.method = method;
 	}
 
-	public boolean isTwoDistinctExpressionSets() {
-		return twoDistinctExpressionSets;
-	}
-
 	public String getGMTDirName() {
 		return GMTDirName;
-	}
-
-	public void setTwoDistinctExpressionSets(boolean twoDistinctExpressionSets) {
-		this.twoDistinctExpressionSets = twoDistinctExpressionSets;
 	}
 
 	public void setGMTDirName(String GMTDirName) {

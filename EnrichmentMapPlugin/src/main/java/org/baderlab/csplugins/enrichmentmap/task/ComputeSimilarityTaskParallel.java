@@ -45,10 +45,10 @@ public class ComputeSimilarityTaskParallel extends AbstractTask {
 		int cpus = Runtime.getRuntime().availableProcessors();
         ExecutorService executor = Executors.newFixedThreadPool(cpus);
         
-        boolean distinct = map.getParams().isDistinctExpressionSets();
-//        boolean compound = true; //= map.getParams().isCompoundEdges();
+        boolean compound = map.isDistinctExpressionSets() ? !map.getParams().getCreateDistinctEdges() : true;
+        boolean distinct = map.isDistinctExpressionSets() && map.getParams().getCreateDistinctEdges();
         
-        Map<SimilarityKey,GenesetSimilarity> similarities = startComputeSimilarities(tm, executor, distinct, !distinct);
+        Map<SimilarityKey,GenesetSimilarity> similarities = startComputeSimilarities(tm, executor, distinct, compound);
 
         // Support cancellation
 		Timer timer = new Timer();
