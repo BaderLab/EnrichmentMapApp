@@ -50,6 +50,7 @@ import org.baderlab.csplugins.enrichmentmap.style.ColorScheme;
 import org.baderlab.csplugins.enrichmentmap.style.ColumnDescriptor;
 import org.baderlab.csplugins.enrichmentmap.style.MasterMapStyleOptions;
 import org.baderlab.csplugins.enrichmentmap.style.MasterMapVisualStyleTask;
+import org.baderlab.csplugins.enrichmentmap.style.NullCustomGraphics;
 import org.baderlab.csplugins.enrichmentmap.style.WidthFunction;
 import org.baderlab.csplugins.enrichmentmap.task.CreatePublicationVisualStyleTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanel.EMViewControlPanel;
@@ -73,10 +74,13 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
+import org.cytoscape.view.model.VisualLexicon;
+import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
 import org.cytoscape.view.model.events.NetworkViewAddedEvent;
 import org.cytoscape.view.model.events.NetworkViewAddedListener;
+import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
@@ -123,6 +127,7 @@ public class ControlPanelMediator
 	@Inject private CySwingApplication swingApplication;
 	@Inject private CyNetworkViewManager networkViewManager;
 	@Inject private CyNetworkManager networkManager;
+	@Inject private RenderingEngineManager renderingEngineManager;
 	@Inject private MasterMapVisualStyleTask.Factory visualStyleTaskFactory;
 	@Inject private DialogTaskManager dialogTaskManager;
 	@Inject private CyColumnIdentifierFactory columnIdFactory;
@@ -627,11 +632,17 @@ public class ControlPanelMediator
 				
 				boolean filteredIn = filteredInNodes.contains(n);
 				
+				VisualLexicon lexicon = renderingEngineManager.getDefaultVisualLexicon(); 
+				VisualProperty<?> customGraphics1 = lexicon.lookup(CyNode.class, "NODE_CUSTOMGRAPHICS_1");
+				
 				// Don't forget to remove all previous locked values first!
 				nv.clearValueLock(NODE_VISIBLE);
 				nv.clearValueLock(NODE_TRANSPARENCY);
 				nv.clearValueLock(NODE_BORDER_TRANSPARENCY);
 				nv.clearValueLock(NODE_LABEL_TRANSPARENCY);
+				
+				if (customGraphics1 != null)
+					nv.clearValueLock(customGraphics1);
 				
 				if (filteredIn) {
 					if (filterMode == FilterMode.SELECT)
@@ -646,6 +657,8 @@ public class ControlPanelMediator
 							nv.setLockedValue(NODE_TRANSPARENCY, FILTERED_OUT_NODE_TRANSPARENCY);
 							nv.setLockedValue(NODE_BORDER_TRANSPARENCY, FILTERED_OUT_NODE_TRANSPARENCY);
 							nv.setLockedValue(NODE_LABEL_TRANSPARENCY, 0);
+							if (customGraphics1 != null)
+								nv.setLockedValue(customGraphics1, NullCustomGraphics.getNullObject());
 							break;
 						case SELECT:
 							net.getRow(n).set(CyNetwork.SELECTED, false);
