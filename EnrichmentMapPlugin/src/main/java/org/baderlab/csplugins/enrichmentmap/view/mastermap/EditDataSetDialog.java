@@ -470,6 +470,7 @@ public class EditDataSetDialog extends JDialog {
 		valid &= validatePathTextField(expressionsText, textFieldForeground);
 		valid &= validatePathTextField(ranksText, textFieldForeground);
 		valid &= validatePathTextField(classesText, textFieldForeground);
+		// MKTODO need to make at least enrichments mandatory?
 		okButton.setEnabled(valid);
 	}
 

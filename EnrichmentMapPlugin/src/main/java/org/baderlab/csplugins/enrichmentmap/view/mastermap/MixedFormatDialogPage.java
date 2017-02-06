@@ -71,6 +71,8 @@ public class MixedFormatDialogPage implements CardDialogPage {
 	private static final String LABEL_GENERIC = "Generic/gProfiler";
 	private static final String LABEL_SPECIALIZED = "DAVID/BINGO/Great";
 	
+	// Placeholder for the DataSetList that will render as "Loading..."
+	public static final DataSetParameters LOADING = new DataSetParameters(null,null,null);
 	
 	@Inject private DialogTaskManager taskManager;
 	@Inject private FileUtil fileUtil;
@@ -88,7 +90,7 @@ public class MixedFormatDialogPage implements CardDialogPage {
 	private JButton removeButton;
 	private JButton removeAllButton;
 	
-	private JList<DataSetParameters> datasetList;
+	private DataSetList datasetList;
 	private IterableListModel<DataSetParameters> dataSetListModel;
 	private JTextField gmtPathText;
 	private JCheckBox distinctEdgesCheckbox;
@@ -172,61 +174,6 @@ public class MixedFormatDialogPage implements CardDialogPage {
 	}
 	
 	
-	private class ResolverWorker extends SwingWorker<List<DataSetParameters>, String> {
-
-		private Optional<File> rootFolder;
-		
-		public void executeWithBefore() {
-			SwingUtil.invokeOnEDTAndWait(this::before);
-			execute();
-		}
-		
-		private void before() {
-			callback.clearMessage();
-			rootFolder = FileBrowser.browseForRootFolder(callback.getDialogFrame());
-			updateButtonEnablement(false);
-			datasetList.setEnabled(false);
-		}
-		
-		@Override
-		protected List<DataSetParameters> doInBackground() {
-			if(rootFolder.isPresent()) {
-				File root = rootFolder.get();
-				if(!root.isDirectory()) {
-					publish("Not a folder");
-					return Collections.emptyList();
-				}
-				List<DataSetParameters> datasets = DataSetResolver.guessDataSets(root.toPath());
-				if(datasets.isEmpty()) {
-					publish("No Data Sets found under: " + rootFolder.get());
-				}
-				return datasets;
-			}
-			return Collections.emptyList();
-		}
-		
-		@Override
-		protected void process(List<String> warnings) {
-			callback.setMessage(Message.WARN, warnings.get(0)); // There won't be more than one warning
-		}
-		
-		@Override
-		protected void done() {
-			try {
-				List<DataSetParameters> datasets = get();
-				datasets.forEach(dataSetListModel::addElement);
-			} catch (InterruptedException | ExecutionException e) {
-				callback.setMessage(Message.ERROR, "Error loading data sets.");
-				e.printStackTrace();
-			} finally {
-				updateButtonEnablement(true);
-				datasetList.setEnabled(true);
-			}
-		}
-		
-	}
-	
-	
 	private JPanel createDataSetPanel() {
 		dataSetListModel = new IterableListModel<>();
 		datasetList = new DataSetList(dataSetListModel);
@@ -269,8 +216,12 @@ public class MixedFormatDialogPage implements CardDialogPage {
 		addManualButton.addActionListener(e -> {
 			EditDataSetDialog dialog = new EditDataSetDialog(callback.getDialogFrame(), fileUtil, null, dataSetListModel.getSize());
 			DataSetParameters dataSet = dialog.open();
-			if(dataSet != null)
+			if(dataSet != null) {
 				dataSetListModel.addElement(dataSet);
+				int i = dataSetListModel.size()-1;
+				datasetList.ensureIndexIsVisible(i);
+				datasetList.setSelectedIndex(i);
+			}
 		});
 		editButton.addActionListener(e -> {
 			editDataSet(datasetList);
@@ -285,9 +236,6 @@ public class MixedFormatDialogPage implements CardDialogPage {
 		datasetList.addListSelectionListener(e -> {
 			updateButtonEnablement(true);
 		});
-		dataSetListModel.addListDataListener(SwingUtil.simpleListDataListener(() -> {
-			updateButtonEnablement(true);
-		}));
 		
 		
 		JLabel status = new JLabel("");
@@ -380,6 +328,64 @@ public class MixedFormatDialogPage implements CardDialogPage {
 		}
 	}
 	
+	private class ResolverWorker extends SwingWorker<List<DataSetParameters>, String> {
+
+		private Optional<File> rootFolder;
+		
+		public void executeWithBefore() {
+			SwingUtil.invokeOnEDTAndWait(this::before);
+			execute();
+		}
+		
+		private void before() {
+			callback.clearMessage();
+			rootFolder = FileBrowser.browseForRootFolder(callback.getDialogFrame());
+			dataSetListModel.addElement(LOADING);
+			datasetList.ensureIndexIsVisible(dataSetListModel.size()-1);
+			updateButtonEnablement(false);
+		}
+		
+		@Override
+		protected List<DataSetParameters> doInBackground() {
+			if(rootFolder.isPresent()) {
+				File root = rootFolder.get();
+				if(!root.isDirectory()) {
+					publish("Not a folder");
+					return Collections.emptyList();
+				}
+				List<DataSetParameters> datasets = DataSetResolver.guessDataSets(root.toPath());
+				if(datasets.isEmpty()) {
+					publish("No Data Sets found under: " + rootFolder.get());
+				}
+				return datasets;
+			}
+			return Collections.emptyList();
+		}
+		
+		@Override
+		protected void process(List<String> warnings) {
+			callback.setMessage(Message.WARN, warnings.get(0)); // There won't be more than one warning
+		}
+		
+		@Override
+		protected void done() {
+			try {
+				dataSetListModel.removeElementAt(dataSetListModel.size()-1); // remove LOADING
+				List<DataSetParameters> datasets = get();
+				if(!datasets.isEmpty()) {
+					int i = dataSetListModel.size();
+					datasets.forEach(dataSetListModel::addElement);
+					datasetList.ensureIndexIsVisible(i);
+				}
+			} catch (InterruptedException | ExecutionException e) {
+				callback.setMessage(Message.ERROR, "Error loading data sets.");
+				e.printStackTrace();
+			} finally {
+				updateButtonEnablement(true);
+			}
+		}
+	}
+	
 	
 	private static String formatStatusLabel(List<DataSetParameters> datasets) {
 		if(datasets.isEmpty())
@@ -389,10 +395,13 @@ public class MixedFormatDialogPage implements CardDialogPage {
 		int n_gsea = 0, n_generic = 0, n_specialized = 0;
 		
 		for(DataSetParameters dataset : datasets) {
-			switch(dataset.getMethod()) {
-				case GSEA:        n_gsea++;        break;
-				case Generic:     n_generic++;     break;
-				case Specialized: n_specialized++; break;
+			Method method = dataset.getMethod();
+			if(method != null) {
+				switch(method) {
+					case GSEA:        n_gsea++;        break;
+					case Generic:     n_generic++;     break;
+					case Specialized: n_specialized++; break;
+				}
 			}
 		}
 		
@@ -439,7 +448,6 @@ public class MixedFormatDialogPage implements CardDialogPage {
 	
 	private void editDataSet(JList<DataSetParameters> list) {
 		int index = list.getSelectedIndex();
-
 		if (index != -1) {
 			DataSetParameters dataSet = dataSetListModel.getElementAt(index);
 			EditDataSetDialog dialog = new EditDataSetDialog(callback.getDialogFrame(), fileUtil, dataSet, dataSetListModel.getSize());
@@ -461,17 +469,18 @@ public class MixedFormatDialogPage implements CardDialogPage {
 	private void validateInput() {
 		boolean valid = true;
 		valid &= validatePathTextField(gmtPathText, null);
-		// valid &= validatePathTextField(expPathText);
 		callback.setFinishButtonEnabled(valid && !dataSetListModel.isEmpty());
 	}
 
+	
+	
 	private class DataSetList extends JList<DataSetParameters> {
 		
 		@Inject
 		public DataSetList(ListModel<DataSetParameters> model) {
 			setModel(model);
 			setCellRenderer(new CellRenderer());
-			setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+			setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
 		}
 		
 		private class CellRenderer implements ListCellRenderer<DataSetParameters> {
@@ -479,31 +488,41 @@ public class MixedFormatDialogPage implements CardDialogPage {
 			@Override
 			public Component getListCellRendererComponent(JList<? extends DataSetParameters> list,
 					DataSetParameters dataSet, int index, boolean isSelected, boolean cellHasFocus) {
+				
+				boolean loading = dataSet == LOADING;
+				
 				Color bgColor = UIManager.getColor(isSelected ? "Table.selectionBackground" : "Table.background");
 				Color fgColor = UIManager.getColor(isSelected ? "Table.selectionForeground" : "Table.foreground");
 				
-				JLabel icon = new JLabel(" " + IconManager.ICON_FILE_TEXT + "  ");
-				icon.setFont(iconManager.getIconFont(13.0f));
-				icon.setForeground(fgColor);
+				String icon = loading ? IconManager.ICON_FILE_O : IconManager.ICON_FILE_TEXT;
+				JLabel iconLabel = new JLabel(" " + icon + "  ");
+				iconLabel.setFont(iconManager.getIconFont(13.0f));
+				iconLabel.setForeground(fgColor);
 				
-				JLabel title = new JLabel(dataSet.getName() + "  (" + methodToString(dataSet.getMethod()) + ")");
-				SwingUtil.makeSmall(title);
-				title.setFont(title.getFont().deriveFont(Font.BOLD));
-				title.setForeground(fgColor);
+				String title = loading ? "Loading..." : dataSet.getName() + "  (" + methodToString(dataSet.getMethod()) + ")";
+				JLabel titleLabel = new JLabel(title);
+				SwingUtil.makeSmall(titleLabel);
+				titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD));
+				titleLabel.setForeground(fgColor);
 				
 				JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
-				titlePanel.add(icon);
-				titlePanel.add(title);
+				titlePanel.add(iconLabel);
+				titlePanel.add(titleLabel);
 				titlePanel.setOpaque(false);
 				
-				JPanel filePanel = createFilePanel(dataSet.getFiles());
-				filePanel.setBackground(getBackground());
-				filePanel.setOpaque(false);
+				JPanel filePanel = null;
+				if(!loading) {
+					filePanel = createFilePanel(dataSet.getFiles());
+					filePanel.setBackground(getBackground());
+					filePanel.setOpaque(false);
+				}
 				
 				JPanel panel = new JPanel(new BorderLayout());
 				panel.add(titlePanel, BorderLayout.NORTH);
-				panel.add(new JLabel("  "), BorderLayout.WEST);
-				panel.add(filePanel, BorderLayout.CENTER);
+				if(!loading) {
+					panel.add(new JLabel("  "), BorderLayout.WEST);
+					panel.add(filePanel, BorderLayout.CENTER);
+				}
 				panel.setBackground(bgColor);
 				
 				Border emptyBorder = BorderFactory.createEmptyBorder(2, 4, 2, 4);
