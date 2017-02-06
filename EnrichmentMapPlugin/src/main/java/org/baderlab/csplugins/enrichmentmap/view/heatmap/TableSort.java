@@ -49,6 +49,7 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 
+@Deprecated
 public class TableSort extends Mapper {
 	int indexes[];
 	Vector sortingColumns = new Vector();

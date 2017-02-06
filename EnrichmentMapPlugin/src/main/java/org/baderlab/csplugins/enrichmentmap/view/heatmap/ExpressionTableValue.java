@@ -4,6 +4,7 @@ import java.awt.Color;
 /* object to represent both value and color of the expression values in the heatmap
  *  used so we can render both value and color in the heatmap.
  */
+@Deprecated
 public class ExpressionTableValue {
 	private Double expression_value;
 	private Color expression_color;

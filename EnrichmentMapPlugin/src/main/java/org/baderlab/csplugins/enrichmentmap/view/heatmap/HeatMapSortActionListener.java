@@ -73,6 +73,7 @@ import com.google.inject.assistedinject.Assisted;
 /**
  * Heat map action listener
  */
+@Deprecated
 public class HeatMapSortActionListener implements ActionListener {
 
 	@Inject private FileUtil fileUtil;

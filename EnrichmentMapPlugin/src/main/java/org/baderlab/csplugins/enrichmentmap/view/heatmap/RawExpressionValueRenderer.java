@@ -14,6 +14,7 @@ import javax.swing.border.Border;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 
+@Deprecated
 public class RawExpressionValueRenderer extends JLabel implements TableCellRenderer {
 
 	private static final long serialVersionUID = 1L;

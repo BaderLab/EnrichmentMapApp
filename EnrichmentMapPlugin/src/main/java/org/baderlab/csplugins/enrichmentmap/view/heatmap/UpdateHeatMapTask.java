@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap.task.heatmap;
+package org.baderlab.csplugins.enrichmentmap.view.heatmap;
 
 import java.util.HashSet;
 import java.util.List;
@@ -12,7 +12,6 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.GenesetSimilarity;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
-import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapPanel;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelState;
@@ -25,6 +24,7 @@ import org.cytoscape.work.TaskMonitor;
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 
+@Deprecated
 public class UpdateHeatMapTask extends AbstractTask {
 	
 	@Inject private EnrichmentMapManager emManager;
@@ -82,7 +82,7 @@ public class UpdateHeatMapTask extends AbstractTask {
 	}
 
 	private void focusPanel(final HeatMapPanel panel) {
-		if(emManager.isDisableHeatmapAutofocus() && !isCurrentlyFocusing.get()) {
+		if(!isCurrentlyFocusing.get()) {
 			// Prevent this code from being reentrant.
 			// There was a problem with the cytoscape event system that caused the panels to be focused over and over.
 			isCurrentlyFocusing.set(true);

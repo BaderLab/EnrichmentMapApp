@@ -61,6 +61,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 /**
  * Flips column headers to vertical position
  */
+@Deprecated
 @SuppressWarnings("serial")
 public class ColumnHeaderVerticalRenderer extends DefaultTableCellRenderer {
 

@@ -1,15 +1,14 @@
-package org.baderlab.csplugins.enrichmentmap.task.heatmap;
+package org.baderlab.csplugins.enrichmentmap.view.heatmap;
 
 import org.baderlab.csplugins.enrichmentmap.PropertyManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapPanel;
-import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParameters;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
 
+@Deprecated
 public class HeatMapHierarchicalClusterQuestionTask extends AbstractTask implements ObservableTask {
 
 	//@Tunable(description="<html>The combination of the selected gene sets contains more than 1000 genes.<BR>  Clustering will take a while.<BR>  Would you like to cluster anyways?")                                              	

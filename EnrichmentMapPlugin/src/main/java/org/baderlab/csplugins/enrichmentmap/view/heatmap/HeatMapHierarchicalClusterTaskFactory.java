@@ -1,12 +1,11 @@
-package org.baderlab.csplugins.enrichmentmap.task.heatmap;
+package org.baderlab.csplugins.enrichmentmap.view.heatmap;
 
 import org.baderlab.csplugins.enrichmentmap.PropertyManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapPanel;
-import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParameters;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 
+@Deprecated
 public class HeatMapHierarchicalClusterTaskFactory implements TaskFactory {
 
 	private int numConditions = 0;

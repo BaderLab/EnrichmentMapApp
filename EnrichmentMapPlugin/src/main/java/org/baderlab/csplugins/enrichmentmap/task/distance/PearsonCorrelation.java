@@ -41,7 +41,7 @@
 // $LastChangedBy: risserlin $
 // $HeadURL: svn+ssh://risserlin@server1.baderlab.med.utoronto.ca/svn/EnrichmentMap/trunk/EnrichmentMapPlugin/src/org/baderlab/csplugins/enrichmentmap/PearsonCorrelation.java $
 
-package org.baderlab.csplugins.enrichmentmap.task.heatmap;
+package org.baderlab.csplugins.enrichmentmap.task.distance;
 
 import org.baderlab.csplugins.brainlib.DistanceMetric;
 

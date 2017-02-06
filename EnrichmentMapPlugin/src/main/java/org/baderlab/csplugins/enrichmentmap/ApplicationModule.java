@@ -16,10 +16,6 @@ import org.baderlab.csplugins.enrichmentmap.task.CreatePostAnalysisVisualStyleTa
 import org.baderlab.csplugins.enrichmentmap.task.MasterMapNetworkTask;
 import org.baderlab.csplugins.enrichmentmap.task.MasterMapTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.task.VisualizeMasterMapTask;
-import org.baderlab.csplugins.enrichmentmap.task.heatmap.UpdateHeatMapTask;
-import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapPanel;
-import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapSortActionListener;
-import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapTransformActionListener;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PostAnalysisInputPanel;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PostAnalysisKnownSignaturePanel;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PostAnalysisSignatureDiscoveryPanel;
@@ -29,9 +25,7 @@ import org.osgi.framework.BundleContext;
 import com.google.inject.AbstractModule;
 import com.google.inject.BindingAnnotation;
 import com.google.inject.Module;
-import com.google.inject.Provider;
 import com.google.inject.Provides;
-import com.google.inject.Singleton;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
 
 /**
@@ -48,16 +42,6 @@ public class ApplicationModule extends AbstractModule {
 	protected void configure() {
 		bind(EnrichmentMapManager.class).asEagerSingleton();		
 		install(new FactoryModule());
-	}
-	
-	@Provides @Edges @Singleton
-	public HeatMapPanel heatMapPanelForEdges(Provider<HeatMapPanel> panelProvider, @Headless Boolean headless) {
-		return headless ? null : panelProvider.get().setNode(false);
-	}
-	
-	@Provides @Nodes @Singleton
-	public HeatMapPanel heatMapPanelForNodes(Provider<HeatMapPanel> panelProvider, @Headless Boolean headless) {
-		return headless ? null : panelProvider.get().setNode(true);
 	}
 	
 	public static Module createFactoryModule() {
@@ -88,9 +72,7 @@ class FactoryModule extends AbstractModule {
 		installFactory(PostAnalysisKnownSignaturePanel.Factory.class);
 		installFactory(PostAnalysisSignatureDiscoveryPanel.Factory.class);
 		installFactory(EnrichmentMapParameters.Factory.class);
-		installFactory(UpdateHeatMapTask.Factory.class);
-		installFactory(HeatMapSortActionListener.Factory.class);
-		installFactory(HeatMapTransformActionListener.Factory.class);
+//		installFactory(UpdateHeatMapTask.Factory.class);
 		installFactory(MasterMapTaskFactory.Factory.class);
 		installFactory(MasterMapNetworkTask.Factory.class);
 		installFactory(VisualizeMasterMapTask.Factory.class);

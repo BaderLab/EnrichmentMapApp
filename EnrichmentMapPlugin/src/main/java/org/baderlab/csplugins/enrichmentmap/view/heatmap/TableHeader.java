@@ -43,6 +43,7 @@
 
 package org.baderlab.csplugins.enrichmentmap.view.heatmap;
 
+
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -55,6 +56,7 @@ import javax.swing.table.TableColumnModel;
  * <p>
  * Mouse click active table header
  */
+@Deprecated
 public class TableHeader extends MouseAdapter {
 
 	private JTable table;

@@ -17,7 +17,7 @@ import com.lowagie.text.Rectangle;
 import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfWriter;
 
-
+@Deprecated
 public class HeatMapExporterTask extends AbstractTask {
 
 	final JTable jtable1;

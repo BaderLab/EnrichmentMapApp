@@ -1,5 +1,5 @@
 /**
- **                       EnrichmentMap Cytoscape Plugin
+d **                       EnrichmentMap Cytoscape Plugin
  **
  ** Copyright (c) 2008-2009 Bader Lab, Donnelly Centre for Cellular and Biomolecular 
  ** Research, University of Toronto
@@ -49,12 +49,9 @@ import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.makeSmall
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
 import java.io.File;
 import java.net.URL;
 
-import javax.swing.AbstractAction;
-import javax.swing.ButtonGroup;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.GroupLayout.ParallelGroup;
@@ -64,26 +61,18 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.LayoutStyle.ComponentPlacement;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 
-import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Edges;
-import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Nodes;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.style.EnrichmentMapVisualStyle;
-import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapPanel;
-import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParameters;
-import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParameters.DistanceMetric;
-import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParameters.Sort;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
@@ -105,9 +94,9 @@ public class ParametersPanel extends JPanel {
 	@Inject private CyApplicationManager applicationManager;
 	@Inject private EnrichmentMapManager emManager;
 	
-	@Inject private @Nodes HeatMapPanel nodesOverlapPanel;
-	@Inject private @Edges HeatMapPanel edgesOverlapPanel;
-	
+//	@Inject private @Nodes HeatMapPanel nodesOverlapPanel;
+//	@Inject private @Edges HeatMapPanel edgesOverlapPanel;
+//	
 	private JCheckBox heatmapAutofocusCheckbox;
 	
 	private EnrichmentMap map;
@@ -180,7 +169,7 @@ public class ParametersPanel extends JPanel {
 		makeSmall(openReport1Button, openReport2Button);
 		
 		BasicCollapsiblePanel currentParamsPanel = createCurrentParamsPanel(params);
-		BasicCollapsiblePanel preferencesPanel = createPreferencesPanel(map);
+//		BasicCollapsiblePanel preferencesPanel = createPreferencesPanel(map);
 
 		JPanel mainPanel = new JPanel();
 		final GroupLayout layout = new GroupLayout(mainPanel);
@@ -193,14 +182,14 @@ public class ParametersPanel extends JPanel {
 				.addComponent(openReport1Button, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addComponent(openReport2Button, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addComponent(currentParamsPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-				.addComponent(preferencesPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+//				.addComponent(preferencesPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 		);
 		layout.setVerticalGroup(layout.createSequentialGroup()
 				.addComponent(legendsPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addComponent(openReport1Button, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addComponent(openReport2Button, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addComponent(currentParamsPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-				.addComponent(preferencesPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+//				.addComponent(preferencesPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 		);
 		
 		JScrollPane scrollPane = new JScrollPane(mainPanel);
@@ -209,175 +198,175 @@ public class ParametersPanel extends JPanel {
 		revalidate();
 	}
 
-	private BasicCollapsiblePanel createPreferencesPanel(EnrichmentMap map) {
-		// Begin of Code to toggle "Disable Heatmap autofocus"
-		heatmapAutofocusCheckbox = new JCheckBox(new AbstractAction("Heatmap autofocus") {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				// Do this in the GUI Event Dispatch thread...
-				SwingUtilities.invokeLater(() -> {
-					// toggle state of overrideHeatmapRevalidation
-					if (emManager.isDisableHeatmapAutofocus()) {
-						emManager.setDisableHeatmapAutofocus(false);
-					} else {
-						emManager.setDisableHeatmapAutofocus(true);
-					}
-					heatmapAutofocusCheckbox.setSelected(!emManager.isDisableHeatmapAutofocus());
-				});
-			}
-		});
-		heatmapAutofocusCheckbox.setSelected(!emManager.isDisableHeatmapAutofocus());
-
-		JRadioButton hc = new JRadioButton(Sort.CLUSTER.display);
-		hc.setActionCommand(Sort.CLUSTER.name());
-		hc.setSelected(false);
-
-		JRadioButton nosort = new JRadioButton(Sort.NONE.display);
-		nosort.setActionCommand(Sort.NONE.name());
-		nosort.setSelected(false);
-
-		JRadioButton ranks = new JRadioButton(Sort.RANK.display);
-		ranks.setActionCommand(Sort.RANK.name());
-		ranks.setSelected(false);
-
-		JRadioButton columns = new JRadioButton(Sort.COLUMN.display);
-		columns.setActionCommand(Sort.COLUMN.name());
-		columns.setSelected(false);
-		
-		HeatMapParameters hmParams = emManager.getHeatMapParameters(map.getNetworkID());
-		
-		if(hmParams == null) {
-			hc.setEnabled(false);
-			nosort.setEnabled(false);
-			ranks.setEnabled(false);
-			columns.setEnabled(false);
-		} 
-		else {
-			if (hmParams.getSort() == Sort.CLUSTER)
-				hc.setSelected(true);
-			if (hmParams.getSort() == Sort.NONE)
-				nosort.setSelected(true);
-			if (hmParams.getSort() == Sort.RANK)
-				ranks.setSelected(true);
-			if (hmParams.getSort() == Sort.COLUMN)
-				columns.setSelected(true);
-			
-			hc.addActionListener(e -> hmParams.setDefaultSort(Sort.CLUSTER));
-			nosort.addActionListener(e -> hmParams.setDefaultSort(Sort.NONE));
-			ranks.addActionListener(e -> hmParams.setDefaultSort(Sort.RANK));
-			columns.addActionListener(e -> hmParams.setDefaultSort(Sort.COLUMN));
-		}
-
-		ButtonGroup sortingMethodsGroup = new ButtonGroup();
-		sortingMethodsGroup.add(hc);
-		sortingMethodsGroup.add(nosort);
-		sortingMethodsGroup.add(ranks);
-		sortingMethodsGroup.add(columns);
-
-		JLabel defSortingOrderLabel = new JLabel("Default Sorting Order:");
-
-		JRadioButton pearson = new JRadioButton(DistanceMetric.PEARSON_CORRELATION.display);
-		pearson.setActionCommand(DistanceMetric.PEARSON_CORRELATION.name());
-		pearson.setSelected(false);
-
-		JRadioButton cosine = new JRadioButton(DistanceMetric.COSINE.display);
-		cosine.setActionCommand(DistanceMetric.COSINE.name());
-		cosine.setSelected(false);
-
-		JRadioButton euclidean = new JRadioButton(DistanceMetric.EUCLIDEAN.display);
-		euclidean.setActionCommand(DistanceMetric.EUCLIDEAN.name());
-		euclidean.setSelected(false);
-
-		if(hmParams == null) {
-			pearson.setEnabled(false);
-			cosine.setEnabled(false);
-			euclidean.setEnabled(false);
-		}
-		else  {
-			if (hmParams.getDistanceMetric() == DistanceMetric.PEARSON_CORRELATION)
-				pearson.setSelected(true);
-			if (hmParams.getDistanceMetric() == DistanceMetric.COSINE)
-				cosine.setSelected(true);
-			if (hmParams.getDistanceMetric() == DistanceMetric.EUCLIDEAN)
-				euclidean.setSelected(true);
-			
-			pearson.addActionListener(e-> {
-				hmParams.setDistanceMetric(DistanceMetric.PEARSON_CORRELATION);
-				edgesOverlapPanel.updatePanel(map);
-				nodesOverlapPanel.updatePanel(map);
-			});
-			cosine.addActionListener(e-> {
-				hmParams.setDistanceMetric(DistanceMetric.COSINE);
-				edgesOverlapPanel.updatePanel(map);
-				nodesOverlapPanel.updatePanel(map);
-			});
-			euclidean.addActionListener(e-> {
-				hmParams.setDistanceMetric(DistanceMetric.EUCLIDEAN);
-				edgesOverlapPanel.updatePanel(map);
-				nodesOverlapPanel.updatePanel(map);
-			});
-		}
-
-		ButtonGroup distanceMetricGroup = new ButtonGroup();
-		distanceMetricGroup.add(pearson);
-		distanceMetricGroup.add(cosine);
-		distanceMetricGroup.add(euclidean);
-
-		JLabel defDistanceMetricLabel = new JLabel("Default Distance Metric:");
-
-		makeSmall(heatmapAutofocusCheckbox);
-		makeSmall(defSortingOrderLabel, hc, ranks, columns, nosort);
-		makeSmall(defDistanceMetricLabel, pearson, cosine, euclidean);
-		
-		BasicCollapsiblePanel panel = new BasicCollapsiblePanel("Advanced Preferences");
-		panel.setCollapsed(true);
-		
-		final GroupLayout layout = new GroupLayout(panel.getContentPane());
-		panel.getContentPane().setLayout(layout);
-		layout.setAutoCreateContainerGaps(true);
-		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
-		
-		layout.setHorizontalGroup(layout.createSequentialGroup()
-				.addGroup(layout.createParallelGroup(Alignment.TRAILING, true)
-						.addComponent(defSortingOrderLabel)
-						.addComponent(defDistanceMetricLabel)
-				)
-				.addPreferredGap(ComponentPlacement.RELATED)
-				.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
-						.addComponent(heatmapAutofocusCheckbox, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addComponent(hc, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addComponent(ranks, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addComponent(columns, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addComponent(nosort, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addComponent(pearson, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addComponent(cosine, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addComponent(euclidean, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-				)
-		);
-		layout.setVerticalGroup(layout.createSequentialGroup()
-				.addComponent(heatmapAutofocusCheckbox, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-				.addPreferredGap(ComponentPlacement.RELATED)
-				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
-						.addComponent(defSortingOrderLabel)
-						.addComponent(hc, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-				)
-				.addComponent(ranks, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-				.addComponent(columns, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-				.addComponent(nosort, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-				.addPreferredGap(ComponentPlacement.RELATED)
-				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
-						.addComponent(defDistanceMetricLabel)
-						.addComponent(pearson, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-				)
-				.addComponent(cosine, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-				.addComponent(euclidean, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-		);
-		
-		if (LookAndFeelUtil.isAquaLAF())
-			panel.setOpaque(false);
-		
-		return panel;
-	}
+//	private BasicCollapsiblePanel createPreferencesPanel(EnrichmentMap map) {
+//		// Begin of Code to toggle "Disable Heatmap autofocus"
+//		heatmapAutofocusCheckbox = new JCheckBox(new AbstractAction("Heatmap autofocus") {
+//			@Override
+//			public void actionPerformed(ActionEvent e) {
+//				// Do this in the GUI Event Dispatch thread...
+//				SwingUtilities.invokeLater(() -> {
+//					// toggle state of overrideHeatmapRevalidation
+//					if (emManager.isDisableHeatmapAutofocus()) {
+//						emManager.setDisableHeatmapAutofocus(false);
+//					} else {
+//						emManager.setDisableHeatmapAutofocus(true);
+//					}
+//					heatmapAutofocusCheckbox.setSelected(!emManager.isDisableHeatmapAutofocus());
+//				});
+//			}
+//		});
+//		heatmapAutofocusCheckbox.setSelected(!emManager.isDisableHeatmapAutofocus());
+//
+//		JRadioButton hc = new JRadioButton(Sort.CLUSTER.display);
+//		hc.setActionCommand(Sort.CLUSTER.name());
+//		hc.setSelected(false);
+//
+//		JRadioButton nosort = new JRadioButton(Sort.NONE.display);
+//		nosort.setActionCommand(Sort.NONE.name());
+//		nosort.setSelected(false);
+//
+//		JRadioButton ranks = new JRadioButton(Sort.RANK.display);
+//		ranks.setActionCommand(Sort.RANK.name());
+//		ranks.setSelected(false);
+//
+//		JRadioButton columns = new JRadioButton(Sort.COLUMN.display);
+//		columns.setActionCommand(Sort.COLUMN.name());
+//		columns.setSelected(false);
+//		
+//		HeatMapParameters hmParams = emManager.getHeatMapParameters(map.getNetworkID());
+//		
+//		if(hmParams == null) {
+//			hc.setEnabled(false);
+//			nosort.setEnabled(false);
+//			ranks.setEnabled(false);
+//			columns.setEnabled(false);
+//		} 
+//		else {
+//			if (hmParams.getSort() == Sort.CLUSTER)
+//				hc.setSelected(true);
+//			if (hmParams.getSort() == Sort.NONE)
+//				nosort.setSelected(true);
+//			if (hmParams.getSort() == Sort.RANK)
+//				ranks.setSelected(true);
+//			if (hmParams.getSort() == Sort.COLUMN)
+//				columns.setSelected(true);
+//			
+//			hc.addActionListener(e -> hmParams.setDefaultSort(Sort.CLUSTER));
+//			nosort.addActionListener(e -> hmParams.setDefaultSort(Sort.NONE));
+//			ranks.addActionListener(e -> hmParams.setDefaultSort(Sort.RANK));
+//			columns.addActionListener(e -> hmParams.setDefaultSort(Sort.COLUMN));
+//		}
+//
+//		ButtonGroup sortingMethodsGroup = new ButtonGroup();
+//		sortingMethodsGroup.add(hc);
+//		sortingMethodsGroup.add(nosort);
+//		sortingMethodsGroup.add(ranks);
+//		sortingMethodsGroup.add(columns);
+//
+//		JLabel defSortingOrderLabel = new JLabel("Default Sorting Order:");
+//
+//		JRadioButton pearson = new JRadioButton(DistanceMetric.PEARSON_CORRELATION.display);
+//		pearson.setActionCommand(DistanceMetric.PEARSON_CORRELATION.name());
+//		pearson.setSelected(false);
+//
+//		JRadioButton cosine = new JRadioButton(DistanceMetric.COSINE.display);
+//		cosine.setActionCommand(DistanceMetric.COSINE.name());
+//		cosine.setSelected(false);
+//
+//		JRadioButton euclidean = new JRadioButton(DistanceMetric.EUCLIDEAN.display);
+//		euclidean.setActionCommand(DistanceMetric.EUCLIDEAN.name());
+//		euclidean.setSelected(false);
+//
+//		if(hmParams == null) {
+//			pearson.setEnabled(false);
+//			cosine.setEnabled(false);
+//			euclidean.setEnabled(false);
+//		}
+//		else  {
+//			if (hmParams.getDistanceMetric() == DistanceMetric.PEARSON_CORRELATION)
+//				pearson.setSelected(true);
+//			if (hmParams.getDistanceMetric() == DistanceMetric.COSINE)
+//				cosine.setSelected(true);
+//			if (hmParams.getDistanceMetric() == DistanceMetric.EUCLIDEAN)
+//				euclidean.setSelected(true);
+//			
+//			pearson.addActionListener(e-> {
+//				hmParams.setDistanceMetric(DistanceMetric.PEARSON_CORRELATION);
+//				edgesOverlapPanel.updatePanel(map);
+//				nodesOverlapPanel.updatePanel(map);
+//			});
+//			cosine.addActionListener(e-> {
+//				hmParams.setDistanceMetric(DistanceMetric.COSINE);
+//				edgesOverlapPanel.updatePanel(map);
+//				nodesOverlapPanel.updatePanel(map);
+//			});
+//			euclidean.addActionListener(e-> {
+//				hmParams.setDistanceMetric(DistanceMetric.EUCLIDEAN);
+//				edgesOverlapPanel.updatePanel(map);
+//				nodesOverlapPanel.updatePanel(map);
+//			});
+//		}
+//
+//		ButtonGroup distanceMetricGroup = new ButtonGroup();
+//		distanceMetricGroup.add(pearson);
+//		distanceMetricGroup.add(cosine);
+//		distanceMetricGroup.add(euclidean);
+//
+//		JLabel defDistanceMetricLabel = new JLabel("Default Distance Metric:");
+//
+//		makeSmall(heatmapAutofocusCheckbox);
+//		makeSmall(defSortingOrderLabel, hc, ranks, columns, nosort);
+//		makeSmall(defDistanceMetricLabel, pearson, cosine, euclidean);
+//		
+//		BasicCollapsiblePanel panel = new BasicCollapsiblePanel("Advanced Preferences");
+//		panel.setCollapsed(true);
+//		
+//		final GroupLayout layout = new GroupLayout(panel.getContentPane());
+//		panel.getContentPane().setLayout(layout);
+//		layout.setAutoCreateContainerGaps(true);
+//		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
+//		
+//		layout.setHorizontalGroup(layout.createSequentialGroup()
+//				.addGroup(layout.createParallelGroup(Alignment.TRAILING, true)
+//						.addComponent(defSortingOrderLabel)
+//						.addComponent(defDistanceMetricLabel)
+//				)
+//				.addPreferredGap(ComponentPlacement.RELATED)
+//				.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
+//						.addComponent(heatmapAutofocusCheckbox, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+//						.addComponent(hc, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+//						.addComponent(ranks, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+//						.addComponent(columns, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+//						.addComponent(nosort, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+//						.addComponent(pearson, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+//						.addComponent(cosine, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+//						.addComponent(euclidean, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+//				)
+//		);
+//		layout.setVerticalGroup(layout.createSequentialGroup()
+//				.addComponent(heatmapAutofocusCheckbox, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+//				.addPreferredGap(ComponentPlacement.RELATED)
+//				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+//						.addComponent(defSortingOrderLabel)
+//						.addComponent(hc, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+//				)
+//				.addComponent(ranks, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+//				.addComponent(columns, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+//				.addComponent(nosort, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+//				.addPreferredGap(ComponentPlacement.RELATED)
+//				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+//						.addComponent(defDistanceMetricLabel)
+//						.addComponent(pearson, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+//				)
+//				.addComponent(cosine, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+//				.addComponent(euclidean, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+//		);
+//		
+//		if (LookAndFeelUtil.isAquaLAF())
+//			panel.setOpaque(false);
+//		
+//		return panel;
+//	}
 
 	private BasicCollapsiblePanel createCurrentParamsPanel(EMCreationParameters params) {
 		// information about the current analysis

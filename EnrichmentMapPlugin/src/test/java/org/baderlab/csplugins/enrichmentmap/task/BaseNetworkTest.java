@@ -9,21 +9,17 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.baderlab.csplugins.enrichmentmap.ApplicationModule;
-import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Edges;
-import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Nodes;
 import org.baderlab.csplugins.enrichmentmap.LogSilenceRule;
 import org.baderlab.csplugins.enrichmentmap.SerialTestTaskManager;
 import org.baderlab.csplugins.enrichmentmap.TestUtils;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadSignatureSetsActionListener;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
-import org.baderlab.csplugins.enrichmentmap.resolver.DataSetParameters;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
-import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapPanel;
-import org.baderlab.csplugins.enrichmentmap.view.parameters.ParametersPanel;
+import org.baderlab.csplugins.enrichmentmap.resolver.DataSetParameters;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
@@ -56,7 +52,6 @@ import org.mockito.Matchers;
 import org.mockito.Mockito;
 
 import com.google.inject.Inject;
-import com.google.inject.util.Providers;
 
 @RunWith(JukitoRunner.class)
 public abstract class BaseNetworkTest {
@@ -81,10 +76,10 @@ public abstract class BaseNetworkTest {
 			// Bind all AssistedInjection factories
 			install(ApplicationModule.createFactoryModule());
 						
-			// MKTODO get rid of these fields in EnrichmentMapManager
-			bind(ParametersPanel.class).toProvider(Providers.of(null));
-			bind(HeatMapPanel.class).annotatedWith(Edges.class).toProvider(Providers.of(null));
-			bind(HeatMapPanel.class).annotatedWith(Nodes.class).toProvider(Providers.of(null));
+//			// MKTODO get rid of these fields in EnrichmentMapManager
+//			bind(ParametersPanel.class).toProvider(Providers.of(null));
+//			bind(HeatMapPanel.class).annotatedWith(Edges.class).toProvider(Providers.of(null));
+//			bind(HeatMapPanel.class).annotatedWith(Nodes.class).toProvider(Providers.of(null));
 		}
 	}
 

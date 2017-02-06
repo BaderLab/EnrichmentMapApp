@@ -54,6 +54,7 @@ import org.mskcc.colorgradient.ColorGradientTheme;
 /**
  * Parameters specific to the heat map functioning
  */
+@Deprecated
 public class HeatMapParameters {
 	
 	//data transformation options (row normalized, as if or log transformed)

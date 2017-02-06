@@ -41,7 +41,7 @@
 // $LastChangedBy$
 // $HeadURL$
 
-package org.baderlab.csplugins.enrichmentmap.actions;
+package org.baderlab.csplugins.enrichmentmap.view.heatmap;
 
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;
@@ -49,8 +49,6 @@ import java.util.concurrent.ForkJoinPool;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
-import org.baderlab.csplugins.enrichmentmap.task.heatmap.UpdateHeatMapTask;
-import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParameters;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanel;
@@ -71,6 +69,7 @@ import com.google.inject.Inject;
  * a separate instance of this class specifying the enrichment map parameters,
  * selected nodes, selected edges and heatmap panels
  */
+@Deprecated
 public class HeatMapSelectionListener implements RowsSetListener {
 	
 	@Inject private CyApplicationManager applicationManager;
@@ -105,7 +104,7 @@ public class HeatMapSelectionListener implements RowsSetListener {
 	public void handleEvent(RowsSetEvent e) {
 		// TODO: improve performance of calculating the Union of genesets (Nodes) and intersection of overlaps (Edges)
 		// Meanwhile we have a flag to skip the updating of the Heatmap, which can be toggled by a check-mark in the EM-Menu
-		boolean override_revalidate_heatmap = manager.isOverrideHeatmapRevalidation();
+		boolean override_revalidate_heatmap = false; //manager.isOverrideHeatmapRevalidation();
 		CyNetwork network = applicationManager.getCurrentNetwork();
 
 		// only handle event if it is a selected node

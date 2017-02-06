@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap.task.heatmap;
+package org.baderlab.csplugins.enrichmentmap.view.heatmap;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,13 +13,15 @@ import org.baderlab.csplugins.enrichmentmap.model.GeneExpression;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.model.Rank;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
-import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapPanel;
-import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParameters;
+import org.baderlab.csplugins.enrichmentmap.task.distance.CosineDistance;
+import org.baderlab.csplugins.enrichmentmap.task.distance.EuclideanDistance;
+import org.baderlab.csplugins.enrichmentmap.task.distance.PearsonCorrelation;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParameters.DistanceMetric;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 
+@Deprecated
 public class HeatMapHierarchicalClusterTask extends AbstractTask implements ObservableTask {
 
 	private int numConditions = 0;

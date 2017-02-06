@@ -3,7 +3,6 @@ package org.baderlab.csplugins.enrichmentmap;
 import java.util.Properties;
 
 import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Headless;
-import org.baderlab.csplugins.enrichmentmap.actions.HeatMapSelectionListener;
 import org.baderlab.csplugins.enrichmentmap.actions.OpenEnrichmentMapAction;
 import org.baderlab.csplugins.enrichmentmap.commands.BuildEnrichmentMapTuneableTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.commands.EnrichmentMapGSEACommandHandlerTaskFactory;
@@ -12,7 +11,6 @@ import org.baderlab.csplugins.enrichmentmap.model.io.LegacySessionLoader;
 import org.baderlab.csplugins.enrichmentmap.model.io.SessionModelListener;
 import org.baderlab.csplugins.enrichmentmap.style.ChartFactoryManager;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanelMediator;
-import org.baderlab.csplugins.enrichmentmap.view.parameters.ParametersPanelMediator;
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
@@ -69,8 +67,8 @@ public class CyActivator extends AbstractCyActivator {
 		boolean headless = injector.getInstance(Key.get(Boolean.class, Headless.class));
 		if(!headless) {
 			// heat map
-			HeatMapSelectionListener selectionListener = injector.getInstance(HeatMapSelectionListener.class);
-			registerAllServices(bc, selectionListener, new Properties());	
+//			HeatMapSelectionListener selectionListener = injector.getInstance(HeatMapSelectionListener.class);
+//			registerAllServices(bc, selectionListener, new Properties());	
 					
 			// register actions
 			registerAllServices(bc, injector.getInstance(OpenEnrichmentMapAction.class), new Properties());
@@ -83,8 +81,8 @@ public class CyActivator extends AbstractCyActivator {
 			ControlPanelMediator controlPanelMediator = injector.getInstance(ControlPanelMediator.class);
 			registerAllServices(bc, controlPanelMediator, new Properties());
 			
-			ParametersPanelMediator parametersPanelMediator = injector.getInstance(ParametersPanelMediator.class);
-			registerAllServices(bc, parametersPanelMediator, new Properties());
+//			ParametersPanelMediator parametersPanelMediator = injector.getInstance(ParametersPanelMediator.class);
+//			registerAllServices(bc, parametersPanelMediator, new Properties());
 		}
 		
 		// If the App is updated or restarted then we want to reload the model from the tables

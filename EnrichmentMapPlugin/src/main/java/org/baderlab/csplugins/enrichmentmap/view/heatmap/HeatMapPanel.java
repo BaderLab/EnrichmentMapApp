@@ -103,7 +103,6 @@ import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.model.SignificantGene;
 import org.baderlab.csplugins.enrichmentmap.parsers.DetermineEnrichmentResultFileReader;
 import org.baderlab.csplugins.enrichmentmap.style.EnrichmentMapVisualStyle;
-import org.baderlab.csplugins.enrichmentmap.task.heatmap.HeatMapHierarchicalClusterTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.util.ResultTaskObserver;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParameters.Sort;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParameters.Transformation;
@@ -132,6 +131,7 @@ import com.google.inject.Provider;
  * Creates a Heat map Panel - (heat map can consists of either one or two expression files depending on what
  * was supplied by the user)
  */
+@Deprecated
 @SuppressWarnings("serial")
 public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 

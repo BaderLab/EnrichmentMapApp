@@ -48,7 +48,7 @@ import javax.swing.JMenuItem;
 
 import org.cytoscape.util.swing.OpenBrowser;
 
-
+@Deprecated
 public class HyperLinkOut extends JMenu {
 	private static final String TITLE = "Search";
 	private final String value;

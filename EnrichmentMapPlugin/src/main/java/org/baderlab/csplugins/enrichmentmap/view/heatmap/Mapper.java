@@ -24,6 +24,7 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
 
+@Deprecated
 public class Mapper extends AbstractTableModel implements TableModelListener {
 	protected HeatMapTableModel model;
 

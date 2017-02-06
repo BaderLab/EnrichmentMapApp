@@ -52,6 +52,7 @@ import javax.swing.table.AbstractTableModel;
  *
  * Table model for Heat map table
  */
+@Deprecated
 public class HeatMapTableModel extends AbstractTableModel implements TableModelListener {
 
 	private Object[] columnNames;

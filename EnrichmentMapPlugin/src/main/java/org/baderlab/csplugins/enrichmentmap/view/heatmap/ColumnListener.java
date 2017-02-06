@@ -7,6 +7,7 @@ import javax.swing.JTable;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
+@Deprecated
 public class ColumnListener extends MouseAdapter {
 	protected JTable table;
 	protected int sortCol = 0;

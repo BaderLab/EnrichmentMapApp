@@ -61,6 +61,7 @@ import com.google.inject.assistedinject.Assisted;
 /**
  * Heat map action listener
  */
+@Deprecated
 public class HeatMapTransformActionListener implements ActionListener {
 
 	@Inject private @Nodes Provider<HeatMapPanel> nodesPanelProvider;

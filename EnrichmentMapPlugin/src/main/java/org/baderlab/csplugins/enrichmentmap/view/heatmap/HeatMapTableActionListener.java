@@ -19,6 +19,7 @@ import org.cytoscape.util.swing.OpenBrowser;
  * of the cell.
  *
  */
+@Deprecated
 public class HeatMapTableActionListener implements MouseListener {
 
 	private OpenBrowser openBrowser;

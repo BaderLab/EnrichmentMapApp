@@ -50,6 +50,7 @@ import javax.swing.table.TableColumn;
  * <p>
  * public class LineNumberTable
  */
+@Deprecated
 public class RowNumberTable extends JTable {
 
 	private JTable mainTable;

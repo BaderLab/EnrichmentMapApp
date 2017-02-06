@@ -11,6 +11,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 
 import org.baderlab.csplugins.enrichmentmap.model.SignificantGene;
 
+@Deprecated
 @SuppressWarnings("serial")
 public class CellHighlightRenderer extends DefaultTableCellRenderer {
 

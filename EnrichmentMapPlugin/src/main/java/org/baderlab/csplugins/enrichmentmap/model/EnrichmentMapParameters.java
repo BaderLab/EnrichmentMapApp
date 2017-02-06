@@ -57,7 +57,6 @@ import org.baderlab.csplugins.enrichmentmap.PropertyManager;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
-import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParameters;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.property.CyProperty;
@@ -196,8 +195,8 @@ public class EnrichmentMapParameters {
 		this.defaultJaccardCutOff = propertyManager.getDefaultJaccardCutOff();
 		this.defaultOverlapCutOff = propertyManager.getDefaultOverlapCutOff();
 		this.defaultSimilarityMetric = similarityMetricToString(propertyManager.getDefaultSimilarityMetric());
-		this.defaultSortMethod = HeatMapParameters.Sort.CLUSTER.display;
-		this.defaultDistanceMetric = HeatMapParameters.DistanceMetric.PEARSON_CORRELATION.display;
+//		this.defaultSortMethod = HeatMapParameters.Sort.CLUSTER.display;
+//		this.defaultDistanceMetric = HeatMapParameters.DistanceMetric.PEARSON_CORRELATION.display;
 
 		this.pvalue = propertyManager.getDefaultPvalue();
 		this.qvalue = propertyManager.getDefaultQvalue();
