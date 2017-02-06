@@ -14,7 +14,6 @@ import org.baderlab.csplugins.enrichmentmap.style.ChartFactoryManager;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanelMediator;
 import org.baderlab.csplugins.enrichmentmap.view.parameters.ParametersPanelMediator;
 import org.cytoscape.application.CyApplicationConfiguration;
-import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
 import org.cytoscape.work.ServiceProperties;
@@ -49,7 +48,6 @@ public class CyActivator extends AbstractCyActivator {
 		// session save and restore
 		SessionModelListener sessionListener = injector.getInstance(SessionModelListener.class);
 		registerAllServices(bc, sessionListener, new Properties());
-		sessionListener.getDebugActions().forEach(a -> registerService(bc, a, CyAction.class, new Properties())); // TEMPORARY
 		
 		LegacySessionLoader legacyListener = injector.getInstance(LegacySessionLoader.class);
 		registerAllServices(bc, legacyListener, new Properties());
