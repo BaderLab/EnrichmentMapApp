@@ -66,23 +66,31 @@ public abstract class BaseIntegrationTest extends PaxExamConfiguration {
 	}
 	
 	
-	public void assertNetworksEqual(CyNetwork expectedNetwork, CyNetwork actualNetwork) {
-		assertTablesEqual(expectedNetwork.getDefaultNodeTable(), actualNetwork.getDefaultNodeTable(), false);
-		assertTablesEqual(expectedNetwork.getDefaultEdgeTable(), actualNetwork.getDefaultEdgeTable(), true);
+	public void assertNetworksEqual(CyNetwork expectedNetwork, CyNetwork actualNetwork, Set<String> columnsToIgnore) {
+		columnsToIgnore = columnsToIgnore == null ? Collections.emptySet() : columnsToIgnore;
+		assertTablesEqual(expectedNetwork.getDefaultNodeTable(), actualNetwork.getDefaultNodeTable(), false, columnsToIgnore);
+		assertTablesEqual(expectedNetwork.getDefaultEdgeTable(), actualNetwork.getDefaultEdgeTable(), true, columnsToIgnore);
 	}
 	
 	
-	public void assertTablesEqual(CyTable expectedTable, CyTable actualTable, boolean edgeTable) {
+	public void assertTablesEqual(CyTable expectedTable, CyTable actualTable, boolean edgeTable, Set<String> columnsToIgnore) {
 		List<CyColumn> expectedColumns = new ArrayList<>(expectedTable.getColumns());
 		
+		// Remove columns to ignore
+		expectedColumns = expectedColumns.stream()
+			.filter(c -> !columnsToIgnore.contains(c.getName()))
+			.filter(c -> !CyNetwork.SUID.equals(c.getName()))
+			.collect(Collectors.toList());
+		
+		// Note if the two networks are in the same collection they will probably have the same columns.
 		// Test columns are the same
 		for(CyColumn expectedColumn : expectedColumns) {
 			String name = expectedColumn.getName();
-			if(!CyNetwork.SUID.equals(name)) {
+//			if(!CyNetwork.SUID.equals(name)) {
 				CyColumn actualColumn = actualTable.getColumn(name);
 				assertNotNull("Column '" + name + "' does not exist", actualColumn);
 				assertEquals ("Column '" + name + "' is wrong type", expectedColumn.getType(), actualColumn.getType());
-			}
+//			}
 		}
 		
 		List<CyRow> expectedRows = expectedTable.getAllRows();
@@ -134,7 +142,7 @@ public abstract class BaseIntegrationTest extends PaxExamConfiguration {
 		for(CyColumn column : columnsToTest) {
 			String name = column.getName();
 			Class<?> type = column.getType();
-			if(!CyNetwork.SUID.equals(name)) {
+//			if(!CyNetwork.SUID.equals(name)) {
 				Object expectedValue = expected.get(name, type);
 				Object actualValue   = actual.get(name, type);
 				String message = "Col: " + name + ",";
@@ -145,7 +153,7 @@ public abstract class BaseIntegrationTest extends PaxExamConfiguration {
 				else {
 					assertEquals(message, expectedValue, actualValue);
 				}
-			}
+//			}
 		}
 	}
 	
@@ -156,10 +164,10 @@ public abstract class BaseIntegrationTest extends PaxExamConfiguration {
 	public void sort(List<CyColumn> columns, List<CyRow> rows) {
 		Comparator<CyRow> rowComparator = null;
 		for(CyColumn column : columns) {
-			if(!CyNetwork.SUID.equals(column.getName())) {
+//			if(!CyNetwork.SUID.equals(column.getName())) {
 				Comparator<CyRow> c = Comparator.comparing((CyRow row) -> row.get(column.getName(), column.getType()).toString());
 				rowComparator = rowComparator == null ? c : rowComparator.thenComparing(c);
-			}
+//			}
 		}
 		Collections.sort(rows, rowComparator);
 	}

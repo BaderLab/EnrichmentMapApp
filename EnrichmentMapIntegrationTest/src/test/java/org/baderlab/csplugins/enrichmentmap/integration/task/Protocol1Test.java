@@ -3,6 +3,7 @@ package org.baderlab.csplugins.enrichmentmap.integration.task;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.util.Set;
 
 import javax.inject.Inject;
 
@@ -15,6 +16,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.work.TaskIterator;
 import org.junit.Test;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.inject.Injector;
 
 
@@ -45,6 +47,7 @@ public class Protocol1Test extends BaseIntegrationTest {
 	   	CyNetwork generatedNetwork = assertAndGetOnlyNetwork();
 		CyNetwork expectedNetwork  = importNetworkFromFile(PATH, "protocol_1_expected.xgmml");
 		
-		assertNetworksEqual(expectedNetwork, generatedNetwork);
+		Set<String> columnsToIgnore = ImmutableSet.of("EM1_ENR_SET", "EM1_ENRICHMENT_SET");
+		assertNetworksEqual(expectedNetwork, generatedNetwork, columnsToIgnore);
 	}
 }

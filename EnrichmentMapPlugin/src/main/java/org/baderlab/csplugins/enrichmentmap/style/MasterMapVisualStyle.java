@@ -87,7 +87,7 @@ public class MasterMapVisualStyle {
 		public static final ColumnListDescriptor<String> EDGE_OVERLAP_GENES = new ColumnListDescriptor<>("Overlap_genes", String.class);
 		
 		// Multi-edge case
-		public static final ColumnDescriptor<String> EDGE_ENR_SET = new ColumnDescriptor<>("ENRICHMENT_SET", String.class);
+		public static final ColumnDescriptor<String> EDGE_ENR_SET = new ColumnDescriptor<>("ENR_SET", String.class);
 		public static final String EDGE_ENR_SET_VALUE_PREFIX = "ENR_"; // Enrichment set edges, 1-8
 		public static final String EDGE_ENR_SET_VALUE_COMPOUND = "ENR"; // Compound edges
 		public static final String EDGE_ENR_SET_VALUE_SIG = "SIG"; // post-analysis edges
