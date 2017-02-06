@@ -15,6 +15,9 @@ import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_L
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_SHAPE;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_SIZE;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_TRANSPARENCY;
+import static org.cytoscape.view.presentation.property.NodeShapeVisualProperty.ELLIPSE;
+import static org.cytoscape.view.presentation.property.NodeShapeVisualProperty.RECTANGLE;
+import static org.cytoscape.view.presentation.property.NodeShapeVisualProperty.TRIANGLE;
 
 import java.awt.Color;
 import java.awt.Paint;
@@ -30,7 +33,6 @@ import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
-import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
 import org.cytoscape.view.presentation.property.values.NodeShape;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualStyle;
@@ -155,16 +157,18 @@ public class MasterMapVisualStyle {
 		setEdgePaint(vs, options);
 		setEdgeWidth(vs, options);
  		
-		setNodeDefaults(vs, options);
-		setNodeShapes(vs, options);
+		boolean hasChart = chart != null && !chart.getDisplayName().toLowerCase().startsWith("ring");
+		
+		setNodeDefaults(vs, options, hasChart);
+		setNodeShapes(vs, options, hasChart);
+		setNodeSize(vs, options, hasChart);
 		setNodeLabels(vs, options);
-		setNodeSize(vs, options);
 		setNodeChart(vs, chart);
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void setNodeChart(VisualStyle vs, CyCustomGraphics2<?> chart) {
-		VisualLexicon lexicon = renderingEngineManager.getDefaultVisualLexicon(); 
+		VisualLexicon lexicon = renderingEngineManager.getDefaultVisualLexicon();
 		VisualProperty customPaint1 = lexicon.lookup(CyNode.class, "NODE_CUSTOMGRAPHICS_1");
 		
 		if (customPaint1 != null)
@@ -212,26 +216,26 @@ public class MasterMapVisualStyle {
 		vs.addVisualMappingFunction(edgewidth);
 	}
 	
-	private void setNodeDefaults(VisualStyle vs, MasterMapStyleOptions options) {
+	private void setNodeDefaults(VisualStyle vs, MasterMapStyleOptions options, boolean hasChart) {
 		// Set the default node appearance
 		vs.setDefaultValue(NODE_FILL_COLOR, Color.LIGHT_GRAY);
 		vs.setDefaultValue(NODE_BORDER_PAINT, Colors.NODE_MAX_PHENOTYPE_1);
-		vs.setDefaultValue(NODE_SHAPE, NodeShapeVisualProperty.ELLIPSE);
-		vs.setDefaultValue(NODE_SIZE, MIN_NODE_SIZE);
+		vs.setDefaultValue(NODE_SHAPE, hasChart ? RECTANGLE : ELLIPSE);
+		vs.setDefaultValue(NODE_SIZE, hasChart ? (MAX_NODE_SIZE + MIN_NODE_SIZE) / 2 : MIN_NODE_SIZE);
 		vs.setDefaultValue(NODE_BORDER_WIDTH, 1.0);
 		vs.setDefaultValue(NODE_TRANSPARENCY, DEF_NODE_TRANSPARENCY);
 		vs.setDefaultValue(NODE_BORDER_TRANSPARENCY, DEF_NODE_TRANSPARENCY);
 		vs.setDefaultValue(NODE_LABEL_TRANSPARENCY, DEF_NODE_TRANSPARENCY);
 	}
 	
-	private void setNodeShapes(VisualStyle vs, MasterMapStyleOptions options) {
+	private void setNodeShapes(VisualStyle vs, MasterMapStyleOptions options, boolean hasChart) {
 		String prefix = options.getAttributePrefix();
 		
 		// Add mapping function for node shape
 		DiscreteMapping<String, NodeShape> nodeShape = (DiscreteMapping<String, NodeShape>) dmFactory
 				.createVisualMappingFunction(Columns.NODE_GS_TYPE.with(prefix, null), String.class, NODE_SHAPE);
-		nodeShape.putMapValue(Columns.NODE_GS_TYPE_ENRICHMENT, NodeShapeVisualProperty.ELLIPSE);
-		nodeShape.putMapValue(Columns.NODE_GS_TYPE_SIGNATURE, NodeShapeVisualProperty.TRIANGLE);
+		nodeShape.putMapValue(Columns.NODE_GS_TYPE_ENRICHMENT, hasChart ? RECTANGLE : ELLIPSE);
+		nodeShape.putMapValue(Columns.NODE_GS_TYPE_SIGNATURE, TRIANGLE);
 		vs.addVisualMappingFunction(nodeShape);
 	}
 	
@@ -242,16 +246,20 @@ public class MasterMapVisualStyle {
 		vs.addVisualMappingFunction(nodeLabel);
 	}
 	
-	private void setNodeSize(VisualStyle vs, MasterMapStyleOptions options) {
-		String prefix = options.getAttributePrefix();
-		ContinuousMapping<Integer, Double> nodeSize = (ContinuousMapping<Integer, Double>) cmFactory
-				.createVisualMappingFunction(Columns.NODE_GS_SIZE.with(prefix,null), Integer.class, NODE_SIZE);
-
-		BoundaryRangeValues<Double> bv0 = new BoundaryRangeValues<Double>(MIN_NODE_SIZE, MIN_NODE_SIZE, MIN_NODE_SIZE);
-		BoundaryRangeValues<Double> bv1 = new BoundaryRangeValues<Double>(MAX_NODE_SIZE, MAX_NODE_SIZE, MAX_NODE_SIZE);
-		nodeSize.addPoint(10, bv0);
-		nodeSize.addPoint(474, bv1);
-
-		vs.addVisualMappingFunction(nodeSize);
+	private void setNodeSize(VisualStyle vs, MasterMapStyleOptions options, boolean hasChart) {
+		if (hasChart) {
+			vs.removeVisualMappingFunction(NODE_SIZE);
+		} else {
+			String prefix = options.getAttributePrefix();
+			ContinuousMapping<Integer, Double> nodeSize = (ContinuousMapping<Integer, Double>) cmFactory
+					.createVisualMappingFunction(Columns.NODE_GS_SIZE.with(prefix,null), Integer.class, NODE_SIZE);
+	
+			BoundaryRangeValues<Double> bv0 = new BoundaryRangeValues<Double>(MIN_NODE_SIZE, MIN_NODE_SIZE, MIN_NODE_SIZE);
+			BoundaryRangeValues<Double> bv1 = new BoundaryRangeValues<Double>(MAX_NODE_SIZE, MAX_NODE_SIZE, MAX_NODE_SIZE);
+			nodeSize.addPoint(10, bv0);
+			nodeSize.addPoint(474, bv1);
+	
+			vs.addVisualMappingFunction(nodeSize);
+		}
 	}
 }
