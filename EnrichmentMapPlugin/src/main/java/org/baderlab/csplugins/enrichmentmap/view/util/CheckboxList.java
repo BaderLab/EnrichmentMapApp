@@ -5,6 +5,8 @@ import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.makeSmall
 import java.awt.Component;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 import javax.swing.JCheckBox;
 import javax.swing.JList;
@@ -18,32 +20,32 @@ public class CheckboxList<T> extends JList<CheckboxData<T>> {
 
 	public CheckboxList(ListModel<CheckboxData<T>> model) {
 		setModel(model);
-		create();
-	}
-
-	private void create() {
-		setCellRenderer(new CellRenderer());
+		setCellRenderer(new CheckBoxCellRenderer());
+		
 		addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent e) {
 				int index = locationToIndex(e.getPoint());
 				
 				if (index != -1) {
-					CheckboxData<T> checkbox = (CheckboxData<T>) getModel().getElementAt(index);
-					checkbox.setSelected(!checkbox.isSelected());
+					if (getSelectionModel().isSelectedIndex(index))
+						getSelectionModel().clearSelection();
+					
+					CheckboxData<T> data = (CheckboxData<T>) getModel().getElementAt(index);
+					data.setSelected(!data.isSelected());
 					repaint();
-					fireSelectionValueChanged(index, index, false);
 				}
 			}
 		});
 		setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 	}
-	
-	private class CellRenderer implements ListCellRenderer<CheckboxData<T>> {
 
-		JCheckBox checkbox = new JCheckBox();
+	private class CheckBoxCellRenderer implements ListCellRenderer<CheckboxData<T>> {
+
+		final JCheckBox checkbox = new JCheckBox();
+		final SelectedPropertyChangeListener selectedListener = new SelectedPropertyChangeListener();
 		
-		CellRenderer() {
+		CheckBoxCellRenderer() {
 			checkbox.setFocusPainted(false);
 			checkbox.setBorderPainted(false);
 			checkbox.setBackground(UIManager.getColor("Table.background"));
@@ -58,11 +60,18 @@ public class CheckboxList<T> extends JList<CheckboxData<T>> {
 			checkbox.setSelected(data.isSelected());
 			checkbox.setEnabled(list.isEnabled());
 			
-			data.addPropertyChangeListener("selected", evt -> {
-				checkbox.setSelected(Boolean.TRUE.equals(evt.getNewValue()));
-			});
+			data.removePropertyChangeListener("selected", selectedListener);
+			data.addPropertyChangeListener("selected", selectedListener);
 			
 			return checkbox;
+		}
+		
+		private class SelectedPropertyChangeListener implements PropertyChangeListener {
+
+			@Override
+			public void propertyChange(PropertyChangeEvent evt) {
+				checkbox.setSelected(Boolean.TRUE.equals(evt.getNewValue()));
+			}
 		}
 	}
 }

@@ -195,7 +195,7 @@ public class ControlPanelMediator
 						sSliderPanel.addPropertyChangeListener("value",
 								evt -> filterNodesAndEdges(viewPanel, map, netView));
 
-					viewPanel.getCheckboxListPanel().getCheckboxList().addListSelectionListener(evt -> {
+					viewPanel.getCheckboxListPanel().addPropertyChangeListener("selectedData", evt -> {
 						if (!updating) {
 							filterNodesAndEdges(viewPanel, map, netView);
 							
