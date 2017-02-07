@@ -11,6 +11,7 @@ import org.baderlab.csplugins.enrichmentmap.model.io.LegacySessionLoader;
 import org.baderlab.csplugins.enrichmentmap.model.io.SessionModelListener;
 import org.baderlab.csplugins.enrichmentmap.style.ChartFactoryManager;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanelMediator;
+import org.baderlab.csplugins.enrichmentmap.view.expression.ExpressionViewerMediator;
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
@@ -66,10 +67,6 @@ public class CyActivator extends AbstractCyActivator {
 		// Don't load UI services if running headless
 		boolean headless = injector.getInstance(Key.get(Boolean.class, Headless.class));
 		if(!headless) {
-			// heat map
-//			HeatMapSelectionListener selectionListener = injector.getInstance(HeatMapSelectionListener.class);
-//			registerAllServices(bc, selectionListener, new Properties());	
-					
 			// register actions
 			registerAllServices(bc, injector.getInstance(OpenEnrichmentMapAction.class), new Properties());
 				
@@ -80,9 +77,8 @@ public class CyActivator extends AbstractCyActivator {
 			// UI Mediators
 			ControlPanelMediator controlPanelMediator = injector.getInstance(ControlPanelMediator.class);
 			registerAllServices(bc, controlPanelMediator, new Properties());
-			
-//			ParametersPanelMediator parametersPanelMediator = injector.getInstance(ParametersPanelMediator.class);
-//			registerAllServices(bc, parametersPanelMediator, new Properties());
+			ExpressionViewerMediator expressionViewerMediator = injector.getInstance(ExpressionViewerMediator.class);
+			registerAllServices(bc, expressionViewerMediator, new Properties());
 		}
 		
 		// If the App is updated or restarted then we want to reload the model from the tables
