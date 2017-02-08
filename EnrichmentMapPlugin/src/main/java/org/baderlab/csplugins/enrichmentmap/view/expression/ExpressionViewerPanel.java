@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Set;
 
 import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -21,6 +22,7 @@ import javax.swing.JToggleButton;
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.view.expression.ExpressionViewerParams.Transform;
 import org.baderlab.csplugins.enrichmentmap.view.util.CheckboxListPanel;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 import org.cytoscape.application.swing.CytoPanelComponent2;
@@ -59,6 +61,7 @@ public class ExpressionViewerPanel extends JPanel implements CytoPanelComponent2
 		
 		setLayout(new BorderLayout());
 		add(expressionPanel, BorderLayout.CENTER);
+		setOpaque(false);
 	}
 
 
@@ -94,12 +97,15 @@ public class ExpressionViewerPanel extends JPanel implements CytoPanelComponent2
 	}
 
 	private JPanel createExpressionPanel() {
-		JLabel title = new JLabel("Expression Data");
+		JLabel title = new JLabel(" Expression Data");
 		SwingUtil.makeSmall(title);
 		
 		table = new JTable();
 		JScrollPane scrollPane = new JScrollPane(table);
+		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		table.setFillsViewportHeight(true);
+		table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 		
 		gearButton = createIconButton(IconManager.ICON_GEAR, "Settings");
 		menuButton = createIconButton(IconManager.ICON_BARS, "Extras");
@@ -120,7 +126,7 @@ public class ExpressionViewerPanel extends JPanel implements CytoPanelComponent2
    			.addComponent(scrollPane)
    		);
    		layout.setVerticalGroup(layout.createSequentialGroup()
-   			.addGroup(layout.createParallelGroup()
+   			.addGroup(layout.createParallelGroup(Alignment.BASELINE)
    				.addComponent(title)
    				.addComponent(gearButton)
    				.addComponent(menuButton)
@@ -128,6 +134,7 @@ public class ExpressionViewerPanel extends JPanel implements CytoPanelComponent2
    			.addComponent(scrollPane)
    		);
 		
+   		panel.setOpaque(false);
 		return panel;
 	}
 	
@@ -159,9 +166,8 @@ public class ExpressionViewerPanel extends JPanel implements CytoPanelComponent2
 	public void update(EnrichmentMap map, Set<String> genes) {
 		List<String> geneList = new ArrayList<>(genes);
 		geneList.sort(Comparator.naturalOrder());
-		ExpressionTableModel tableModel = new ExpressionTableModel(map, geneList);
+		ExpressionTableModel tableModel = new ExpressionTableModel(new ExpressionViewerParams(Transform.AS_IS), map, geneList);
 		table.setModel(tableModel);
-		
 	}
 	
 	

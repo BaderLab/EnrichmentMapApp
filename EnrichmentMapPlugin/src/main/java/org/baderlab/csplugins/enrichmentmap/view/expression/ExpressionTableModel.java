@@ -1,21 +1,50 @@
 package org.baderlab.csplugins.enrichmentmap.view.expression;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.NavigableMap;
+import java.util.TreeMap;
 
 import javax.swing.table.AbstractTableModel;
 
+import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.model.GeneExpression;
+import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
 
+
+/**
+ * MKTODO GeneExpressionMatrix is still kind of a mess. There are several methods in this class that
+ * really should be in GeneExpressionMatrix. Refactoring should be done eventually.
+ */
 @SuppressWarnings("serial")
 public class ExpressionTableModel extends AbstractTableModel {
 
+	private final ExpressionViewerParams params;
 	private final EnrichmentMap map;
 	private final List<String> genes;
+	private final int colCount;
 	
-	public ExpressionTableModel(EnrichmentMap map, List<String> genes) {
+	private final NavigableMap<Integer,DataSet> colToDataSet = new TreeMap<>();
+	
+	public ExpressionTableModel(ExpressionViewerParams params, EnrichmentMap map, List<String> genes) {
+		this.params = params;
 		this.map = map;
 		this.genes = genes;
+		
+		// populate colToDataSet
+		int rangeFloor = 1; // because col 0 is gene name
+		List<DataSet> datasets = map.getDatasetList();
+		colToDataSet.put(0, null);
+		for(DataSet dataset : datasets) {
+			GeneExpressionMatrix matrix = dataset.getExpressionSets();
+			rangeFloor += getNumCols(matrix);
+			colToDataSet.put(rangeFloor, dataset);
+		}
+		colCount = rangeFloor;
 	}
+	
 
 	@Override
 	public int getRowCount() {
@@ -24,19 +53,77 @@ public class ExpressionTableModel extends AbstractTableModel {
 
 	@Override
 	public int getColumnCount() {
-		return 1;
+		return colCount;
 	}
 	
 	@Override
 	public String getColumnName(int col) {
+		System.out.println("ExpressionTableModel.getColumnName(): " + col);
 		if(col == 0)
 			return "Gene";
-		return null;
+		
+		try {
+			DataSet dataset = getDataSet(col);
+			int index = getIndex(col) + 2;
+			String[] columns = dataset.getExpressionSets().getColumnNames();
+//			System.out.println(Arrays.toString(columns));
+			return columns[index];
+		} catch(Exception e) {
+			e.printStackTrace();
+			return "blah";
+		}
 	}
 
 	@Override
-	public Object getValueAt(int rowIndex, int columnIndex) {
-		return genes.get(rowIndex);
+	public Object getValueAt(int row, int col) {
+		String gene = genes.get(row);
+		if(col == 0)
+			return gene;
+		
+		try {
+			int geneID = map.getHashFromGene(gene);
+			DataSet dataset = getDataSet(col);
+			int index = getIndex(col);
+			
+//			System.out.println("Col: " + col + ", index: " + index);
+			Double[] vals = getExpression(dataset, geneID);
+			return vals[index];
+		} catch(Exception e) {
+			e.printStackTrace();
+			return 0;
+		}
+	}
+	
+	private int getIndex(int col) {
+		int start = colToDataSet.floorKey(col);
+		return col - start - 1;
+	}
+	
+	private DataSet getDataSet(int col) {
+		return colToDataSet.ceilingEntry(col).getValue();
+	}
+	
+	private int getNumCols(GeneExpressionMatrix matrix) {
+		// ugh! so ugly
+		return matrix.getExpressionMatrix().values().iterator().next().getExpression().length - 2;
 	}
 
+	
+	private Double[] getExpression(DataSet dataset, int geneID) {
+		GeneExpressionMatrix matrix = dataset.getExpressionSets();
+		Map<Integer,GeneExpression> expressions = matrix.getExpressionMatrix();
+		GeneExpression row = expressions.get(geneID);
+		
+		Double[] values = null;
+		switch(params.getTransform()) {
+			case ROW_NORMALIZE:  values = row.rowNormalize();    break;
+			case LOG_TRANSFORM:  values = row.rowLogTransform(); break;
+			case AS_IS:          values = row.getExpression();   break;
+		}
+		if(values == null) {
+			values = new Double[matrix.getNumConditions() - 2];
+			Arrays.fill(values, Double.NaN);
+		}
+		return values;
+	}
 }

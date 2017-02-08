@@ -58,8 +58,6 @@ public class GeneExpression {
     //the entire row as read in from the expression file
     private String[] row;
 
-    private String separator = "\t";
-
     /**
      * Class constructor
      *
@@ -78,7 +76,6 @@ public class GeneExpression {
      * @param expres - a string representing a line in the expression file
      */
     public void setExpression(String[] expres){
-
         row = expres;
         //ignore the first two cells --> only if there are at least 3 cells
         int size = expres.length;
@@ -99,8 +96,6 @@ public class GeneExpression {
                 expression[0] = 0.0;
             }
         }
-
-
     }
 
     /**
