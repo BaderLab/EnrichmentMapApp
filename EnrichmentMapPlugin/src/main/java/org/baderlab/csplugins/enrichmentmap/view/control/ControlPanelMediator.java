@@ -455,8 +455,12 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 					.collect(Collectors.toList());
 			
 			Map<String, Object> props = new HashMap<>(type.getProperties());
-			props.put("cy_colorScheme", colorScheme.getKey());
 			props.put("cy_dataColumns", columns);
+			
+			if (type == ChartType.LINE)
+				props.put("cy_colors", colorScheme.getColors(1));
+			else
+				props.put("cy_colorScheme", colorScheme.getKey());
 			
 			try {
 				CyCustomGraphics2Factory<?> factory = chartFactoryManager.getChartFactory(type.getId());

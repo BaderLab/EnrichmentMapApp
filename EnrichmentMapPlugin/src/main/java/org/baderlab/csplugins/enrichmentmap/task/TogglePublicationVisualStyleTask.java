@@ -25,6 +25,7 @@ public class TogglePublicationVisualStyleTask extends AbstractTask {
 	@Inject private VisualStyleFactory visualStyleFactory;
 	@Inject private CyEventHelper eventHelper;
 	@Inject private MasterMapVisualStyleTask.Factory visualStyleTaskFactory;
+	@Inject private MasterMapVisualStyle masterMapVisualStyle;
 	
 	private final MasterMapStyleOptions options;
 	private final CyCustomGraphics2<?> chart;
@@ -69,6 +70,8 @@ public class TogglePublicationVisualStyleTask extends AbstractTask {
 				style.setTitle(title);
 
 				visualMappingManager.addVisualStyle(style);
+			} else {
+				masterMapVisualStyle.updateProperties(style, options, chart);
 			}
 			
 			// Always reset these properties:
