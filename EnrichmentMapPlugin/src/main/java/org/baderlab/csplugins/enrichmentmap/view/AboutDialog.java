@@ -45,7 +45,6 @@ package org.baderlab.csplugins.enrichmentmap.view;
 
 import static org.baderlab.csplugins.enrichmentmap.EnrichmentMapBuildProperties.APP_URL;
 import static org.baderlab.csplugins.enrichmentmap.EnrichmentMapBuildProperties.APP_VERSION;
-import static org.baderlab.csplugins.enrichmentmap.EnrichmentMapBuildProperties.BUILD_ID;
 
 import java.awt.Insets;
 import java.net.URL;
@@ -96,7 +95,7 @@ public class AboutDialog extends JDialog {
 				+ "Merico D, Isserlin R, Stueker O, Emili A, Bader GD<BR>"
 				+ "Enrichment Map: A Network-Based Method for <BR>"
 				+ "Gene-Set Enrichment Visualization and Interpretation<BR>" + "<i>PLoS One. 2010 Nov 15;5(11)</i><BR>"
-				+ "<BR>" + "<font size='-1'>" + BUILD_ID + "</font>" + "</p></body></html>");
+				+ "</p></body></html>");
 
 		setContentPane(editorPane);
 	}

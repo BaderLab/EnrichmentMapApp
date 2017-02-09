@@ -174,7 +174,6 @@
 	
 	<!-- repository settings are required for the build number maven plugin -->
 	<build>
-		<!--  <finalName>${project.artifactId}-${project.version}-r${git.commit.id.abbrev}_${buildNumber}_${git.branch}</finalName> -->
 		<plugins>
 			<plugin>
 				<groupId>org.ops4j</groupId>
@@ -199,27 +198,6 @@
 					</instructions>
 				</configuration>
 				<extensions>true</extensions>
-			</plugin>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>buildnumber-maven-plugin</artifactId>
-				<version>1.1</version>
-				<executions>
-					<execution>
-						<phase>validate</phase>
-						<goals>
-							<goal>create</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<doCheck>true</doCheck>
-					<doUpdate>false</doUpdate>
-					<format>{0,number}</format>
-					<items>
-						<item>buildNumber</item>
-					</items>
-				</configuration>
 			</plugin>
 			<!-- 
 			<plugin>
@@ -253,38 +231,6 @@
 				</configuration>
 			</plugin>
 			-->
-			<plugin>
-				<groupId>pl.project13.maven</groupId>
-				<artifactId>git-commit-id-plugin</artifactId>
-				<version>2.1.15</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>revision</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<prefix>git</prefix>
-					<dateFormat>dd.MM.yyyy '@' HH:mm:ss z</dateFormat>
-					<verbose>false</verbose>
-					<dotGitDirectory>${project.basedir}/.git</dotGitDirectory>
-					<skipPoms>true</skipPoms>
-					<generateGitPropertiesFile>false</generateGitPropertiesFile>
-					<generateGitPropertiesFilename>src/main/resources/revision.txt</generateGitPropertiesFilename>
-					<failOnNoGitDirectory>false</failOnNoGitDirectory>
-					<excludeProperties>
-                    	<excludeProperty>git.commit.message.*</excludeProperty>
-                    </excludeProperties>
-					<gitDescribe>
-						<skip>false</skip>
-						<always>false</always>
-						<abbrev>7</abbrev>
-						<dirty>-dirty</dirty>
-						<forceLongFormat>false</forceLongFormat>
-					</gitDescribe>
-				</configuration>
-			</plugin>
 			<!-- Run the FreeBuilder annotation processor to generate Builders -->
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
