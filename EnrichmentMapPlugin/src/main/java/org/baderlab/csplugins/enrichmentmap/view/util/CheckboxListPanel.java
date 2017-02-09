@@ -5,6 +5,8 @@ import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -48,15 +50,20 @@ public class CheckboxListPanel<T> extends JPanel {
 		removeButton = new JButton("Remove");
 		
 		selectAllButton.addActionListener(e -> {
+			List<CheckboxData<T>> oldValue = getSelectedData();
 			checkboxListModel.forEach(cb -> cb.setSelected(true));
 			checkboxList.invalidate();
 			checkboxList.repaint();
-			
+			updateSelectionButtons();
+			firePropertyChange("selectedData", oldValue, getSelectedData());
 		});
 		selectNoneButton.addActionListener(e -> {
+			List<CheckboxData<T>> oldValue = getSelectedData();
 			checkboxListModel.forEach(cb -> cb.setSelected(false));
 			checkboxList.invalidate();
 			checkboxList.repaint();
+			updateSelectionButtons();
+			firePropertyChange("selectedData", oldValue, Collections.emptyList());
 		});
 		addButton.addActionListener(e -> {
 			addButtonCallback.ifPresent(cb -> cb.accept(checkboxListModel));
@@ -87,6 +94,13 @@ public class CheckboxListPanel<T> extends JPanel {
 			@Override
 			public void contentsChanged(ListDataEvent e) {
 				updateSelectionButtons();
+			}
+		});
+		
+		checkboxList.addListSelectionListener(evt -> {
+			if (!evt.getValueIsAdjusting()) {
+				updateSelectionButtons();
+				firePropertyChange("selectedData", null, getSelectedData());
 			}
 		});
 		
@@ -146,8 +160,10 @@ public class CheckboxListPanel<T> extends JPanel {
 	
 	private void updateSelectionButtons() {
 		boolean enabled = isEnabled() && !checkboxListModel.isEmpty();
-		selectAllButton.setEnabled(enabled);
-		selectNoneButton.setEnabled(enabled);
+		List<CheckboxData<T>> selectedData = getSelectedData();
+		
+		selectAllButton.setEnabled(enabled && selectedData.size() < checkboxListModel.size());
+		selectNoneButton.setEnabled(enabled && selectedData.size() > 0);
 	}
 	
 	public CheckboxList<T> getCheckboxList() {
@@ -172,5 +188,19 @@ public class CheckboxListPanel<T> extends JPanel {
 		checkboxList.setEnabled(enabled);
 		addButton.setEnabled(enabled);
 		updateSelectionButtons();
+	}
+	
+	public List<CheckboxData<T>> getSelectedData() {
+		List<CheckboxData<T>> list = new ArrayList<>();
+		int size = getModel().getSize();
+		
+		for (int i = 0; i < size; i++) {
+			CheckboxData<T> data = (CheckboxData<T>) getModel().getElementAt(i);
+			
+			if (data.isSelected())
+				list.add(data);
+		}
+		
+		return list;
 	}
 }

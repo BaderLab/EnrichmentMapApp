@@ -46,6 +46,8 @@ import com.google.inject.Inject;
 public class MasterMapVisualStyle {
 	
 	public final static String DEFAULT_NAME_SUFFIX = "Visual_Style"; // TEMPORARY probably won't be called 'MasterMap' in the final version
+	public final static String PUBLICATION_SUFFIX = "_publication";
+	
 	public final static String COMBINED = "Combined";
 	
 	public final static Integer DEF_NODE_TRANSPARENCY = 220;
@@ -145,6 +147,10 @@ public class MasterMapVisualStyle {
 	public static String getStyleName(EnrichmentMap map) {
 		String prefix = map.getParams().getAttributePrefix();
 		return prefix + DEFAULT_NAME_SUFFIX;
+	}
+	
+	public static boolean isPublicationReady(String styleTitle) {
+		return styleTitle != null && styleTitle.endsWith(PUBLICATION_SUFFIX);
 	}
 	
 	public void updateProperties(VisualStyle vs, MasterMapStyleOptions options, CyCustomGraphics2<?> chart) {

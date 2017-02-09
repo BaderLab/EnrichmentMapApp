@@ -15,6 +15,7 @@ import org.baderlab.csplugins.enrichmentmap.task.BuildDiseaseSignatureTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreatePostAnalysisVisualStyleTask;
 import org.baderlab.csplugins.enrichmentmap.task.MasterMapNetworkTask;
 import org.baderlab.csplugins.enrichmentmap.task.MasterMapTaskFactory;
+import org.baderlab.csplugins.enrichmentmap.task.TogglePublicationVisualStyleTask;
 import org.baderlab.csplugins.enrichmentmap.task.VisualizeMasterMapTask;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PostAnalysisInputPanel;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PostAnalysisKnownSignaturePanel;
@@ -67,6 +68,7 @@ class FactoryModule extends AbstractModule {
 		installFactory(PostAnalysisInputPanel.Factory.class);
 		installFactory(BuildPostAnalysisActionListener.Factory.class);
 		installFactory(CreatePostAnalysisVisualStyleTask.Factory.class);
+		installFactory(TogglePublicationVisualStyleTask.Factory.class);
 		installFactory(BuildDiseaseSignatureTask.Factory.class);
 		installFactory(LoadSignatureSetsActionListener.Factory.class);
 		installFactory(PostAnalysisKnownSignaturePanel.Factory.class);

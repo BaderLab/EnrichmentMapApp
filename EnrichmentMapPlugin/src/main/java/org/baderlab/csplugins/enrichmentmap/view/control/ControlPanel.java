@@ -20,6 +20,7 @@ import java.awt.Dimension;
 import java.net.URL;
 import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -301,7 +302,6 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 	}
 	
 	void update(CyNetworkView currentView) {
-		System.out.println("ControlPanel.update() " + currentView);
 		// Is there an EnrichmentMap for this view?
 		EnrichmentMap em = currentView != null ? emManager.getEnrichmentMap(currentView.getModel().getSUID()) : null;
 		
@@ -361,8 +361,46 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 	
 	class EMViewControlPanel extends JPanel {
 		
+		private final Color BLUE = new Color(44, 123, 182);
+		private final Color DARK_BLUE = new Color(37, 52, 148);
+		private final Color BROWN = new Color(166, 97, 26);
+		private final Color ORANGE = new Color(253, 141, 60);
+		private final Color PURPLE = new Color(118, 42, 131);
+		private final Color RED = new Color(215, 25, 28);
+		private final Color DARK_RED = new Color(165, 15, 21);
+		
 		private final ColorScheme[] REGULAR_COLOR_SCHEMES = new ColorScheme[] {
 				CONTRASTING, MODULATED, RAINBOW, RANDOM
+		};
+		private final ColorScheme[] ONE_COLOR_SCHEMES = new ColorScheme[] {
+				new ColorScheme("BLUE", "Blue") {
+					@Override
+					public List<Color> getColors(int nColors) { return Collections.singletonList(BLUE); }
+				},
+				new ColorScheme("DARK_BLUE", "Dark Blue") {
+					@Override
+					public List<Color> getColors(int nColors) { return Collections.singletonList(DARK_BLUE); }
+				},
+				new ColorScheme("BROWN", "Brown") {
+					@Override
+					public List<Color> getColors(int nColors) { return Collections.singletonList(BROWN); }
+				},
+				new ColorScheme("ORANGE", "Orange") {
+					@Override
+					public List<Color> getColors(int nColors) { return Collections.singletonList(ORANGE); }
+				},
+				new ColorScheme("PURPLE", "Purple") {
+					@Override
+					public List<Color> getColors(int nColors) { return Collections.singletonList(PURPLE); }
+				},
+				new ColorScheme("RED", "Red") {
+					@Override
+					public List<Color> getColors(int nColors) { return Collections.singletonList(RED); }
+				},
+				new ColorScheme("DARK_RED", "Dark Red") {
+					@Override
+					public List<Color> getColors(int nColors) { return Collections.singletonList(DARK_RED); }
+				}
 		};
 		private final ColorScheme[] HEAT_STRIP_COLOR_SCHEMES;
 		
@@ -485,6 +523,9 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 				switch (type) {
 					case HEAT_STRIPS:
 						colorSchemes = HEAT_STRIP_COLOR_SCHEMES;
+						break;
+					case LINE:
+						colorSchemes = ONE_COLOR_SCHEMES;
 						break;
 					default:
 						colorSchemes = REGULAR_COLOR_SCHEMES;

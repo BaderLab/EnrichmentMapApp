@@ -49,10 +49,11 @@ import org.baderlab.csplugins.enrichmentmap.style.ChartType;
 import org.baderlab.csplugins.enrichmentmap.style.ColorScheme;
 import org.baderlab.csplugins.enrichmentmap.style.ColumnDescriptor;
 import org.baderlab.csplugins.enrichmentmap.style.MasterMapStyleOptions;
+import org.baderlab.csplugins.enrichmentmap.style.MasterMapVisualStyle;
 import org.baderlab.csplugins.enrichmentmap.style.MasterMapVisualStyleTask;
 import org.baderlab.csplugins.enrichmentmap.style.NullCustomGraphics;
 import org.baderlab.csplugins.enrichmentmap.style.WidthFunction;
-import org.baderlab.csplugins.enrichmentmap.task.CreatePublicationVisualStyleTaskFactory;
+import org.baderlab.csplugins.enrichmentmap.task.TogglePublicationVisualStyleTask;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanel.EMViewControlPanel;
 import org.baderlab.csplugins.enrichmentmap.view.parameters.ParametersPanelMediator;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.EdgeWidthDialog;
@@ -85,6 +86,9 @@ import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
+import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.view.vizmap.events.VisualStyleSetEvent;
+import org.cytoscape.view.vizmap.events.VisualStyleSetListener;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.swing.DialogTaskManager;
 
@@ -94,8 +98,8 @@ import com.google.inject.Provider;
 import com.google.inject.Singleton;
 
 @Singleton
-public class ControlPanelMediator
-		implements SetCurrentNetworkViewListener, NetworkViewAddedListener, NetworkViewAboutToBeDestroyedListener {
+public class ControlPanelMediator implements SetCurrentNetworkViewListener, NetworkViewAddedListener,
+		NetworkViewAboutToBeDestroyedListener, VisualStyleSetListener {
 
 	private enum FilterMode {
 		HIDE("Hide filtered out nodes and edges"),
@@ -120,7 +124,7 @@ public class ControlPanelMediator
 	@Inject private Provider<EdgeWidthDialog> dialogProvider;
 	@Inject private EnrichmentMapManager emManager;
 	@Inject private ShowEnrichmentMapDialogAction masterMapDialogAction;
-	@Inject private Provider<CreatePublicationVisualStyleTaskFactory> visualStyleTaskFactoryProvider;
+	@Inject private TogglePublicationVisualStyleTask.Factory togglePubStyleTaskFactory;
 
 	@Inject private CyServiceRegistrar serviceRegistrar;
 	@Inject private CyApplicationManager applicationManager;
@@ -195,7 +199,7 @@ public class ControlPanelMediator
 						sSliderPanel.addPropertyChangeListener("value",
 								evt -> filterNodesAndEdges(viewPanel, map, netView));
 
-					viewPanel.getCheckboxListPanel().getCheckboxList().addListSelectionListener(evt -> {
+					viewPanel.getCheckboxListPanel().addPropertyChangeListener("selectedData", evt -> {
 						if (!updating) {
 							filterNodesAndEdges(viewPanel, map, netView);
 							
@@ -242,15 +246,18 @@ public class ControlPanelMediator
 							updateVisualStyle(netView, map, viewPanel);
 					});
 					
-					viewPanel.getTogglePublicationCheck().addActionListener((ActionEvent ae) -> {
-						dialogTaskManager.execute(visualStyleTaskFactoryProvider.get().createTaskIterator());
+					viewPanel.getTogglePublicationCheck().addActionListener(evt -> {
+						MasterMapStyleOptions options = createStyleOptions(netView, map, viewPanel);
+						CyCustomGraphics2<?> chart = createChart(viewPanel, options);
+						TaskIterator taskIterator = new TaskIterator(togglePubStyleTaskFactory.create(options, chart));
+						dialogTaskManager.execute(taskIterator);
 					});
 					
-					viewPanel.getResetStyleButton().addActionListener(ae -> {
+					viewPanel.getResetStyleButton().addActionListener(evt -> {
 						updateVisualStyle(netView, map, viewPanel);
 					});
 					
-					viewPanel.getSetEdgeWidthButton().addActionListener(ae -> {
+					viewPanel.getSetEdgeWidthButton().addActionListener(evt -> {
 						showEdgeWidthDialog();
 					});
 				}
@@ -280,8 +287,8 @@ public class ControlPanelMediator
 	}
 	
 	@Override
-	public void handleEvent(NetworkViewAboutToBeDestroyedEvent event) {
-		final CyNetworkView netView = event.getNetworkView();
+	public void handleEvent(NetworkViewAboutToBeDestroyedEvent e) {
+		final CyNetworkView netView = e.getNetworkView();
 		Timer timer = filterTimers.remove(netView);
 		
 		if (timer != null)
@@ -290,6 +297,21 @@ public class ControlPanelMediator
 		invokeOnEDT(() -> {
 			getControlPanel().removeEnrichmentMapView(netView);
 		});
+	}
+	
+	@Override
+	public void handleEvent(VisualStyleSetEvent e) {
+		final CyNetworkView netView = e.getNetworkView();
+		EMViewControlPanel viewPanel = controlPanelProvider.get().getViewControlPanel(netView);
+		
+		if (viewPanel != null) {
+			final VisualStyle style = e.getVisualStyle();
+			final boolean isPublication = MasterMapVisualStyle.isPublicationReady(style.getTitle());
+			
+			invokeOnEDT(() -> {
+				viewPanel.getTogglePublicationCheck().setSelected(isPublication);
+			});
+		}
 	}
 	
 	public void showControlPanel() {
@@ -392,24 +414,34 @@ public class ControlPanelMediator
 	}
 	
 	private void updateVisualStyle(CyNetworkView netView, EnrichmentMap map, EMViewControlPanel viewPanel) {
-		Set<DataSet> dataSets = ImmutableSet.copyOf(viewPanel.getCheckboxListPanel().getSelectedDataItems());
-		MasterMapStyleOptions options = new MasterMapStyleOptions(netView, map, dataSets::contains);
-		
-		ChartData data = (ChartData) viewPanel.getChartDataCombo().getSelectedItem();
-		ChartType type = (ChartType) viewPanel.getChartTypeCombo().getSelectedItem();
-		ColorScheme colorScheme = (ColorScheme) viewPanel.getChartColorsCombo().getSelectedItem();
-		CyCustomGraphics2<?> chart = getChart(data, type, colorScheme, options);
-		
+		MasterMapStyleOptions options = createStyleOptions(netView, map, viewPanel);
+		CyCustomGraphics2<?> chart = createChart(viewPanel, options);
 		applyVisualStyle(options, chart);
-		// TODO update style fields
 	}
-	
+
 	private void applyVisualStyle(MasterMapStyleOptions options, CyCustomGraphics2<?> chart) {
 		MasterMapVisualStyleTask task = visualStyleTaskFactory.create(options, chart);
 		dialogTaskManager.execute(new TaskIterator(task));
 	}
 	
-	private CyCustomGraphics2<?> getChart(ChartData data, ChartType type, ColorScheme colorScheme,
+	private MasterMapStyleOptions createStyleOptions(CyNetworkView netView, EnrichmentMap map,
+			EMViewControlPanel viewPanel) {
+		Set<DataSet> dataSets = ImmutableSet.copyOf(viewPanel.getCheckboxListPanel().getSelectedDataItems());
+		MasterMapStyleOptions options = new MasterMapStyleOptions(netView, map, dataSets::contains);
+
+		return options;
+	}
+	
+	private CyCustomGraphics2<?> createChart(EMViewControlPanel viewPanel, MasterMapStyleOptions options) {
+		ChartData data = (ChartData) viewPanel.getChartDataCombo().getSelectedItem();
+		ChartType type = (ChartType) viewPanel.getChartTypeCombo().getSelectedItem();
+		ColorScheme colorScheme = (ColorScheme) viewPanel.getChartColorsCombo().getSelectedItem();
+		CyCustomGraphics2<?> chart = createChart(data, type, colorScheme, options);
+		
+		return chart;
+	}
+	
+	private CyCustomGraphics2<?> createChart(ChartData data, ChartType type, ColorScheme colorScheme,
 			MasterMapStyleOptions options) {
 		CyCustomGraphics2<?> chart = null;
 		
@@ -423,8 +455,12 @@ public class ControlPanelMediator
 					.collect(Collectors.toList());
 			
 			Map<String, Object> props = new HashMap<>(type.getProperties());
-			props.put("cy_colorScheme", colorScheme.getKey());
 			props.put("cy_dataColumns", columns);
+			
+			if (type == ChartType.LINE)
+				props.put("cy_colors", colorScheme.getColors(1));
+			else
+				props.put("cy_colorScheme", colorScheme.getKey());
 			
 			try {
 				CyCustomGraphics2Factory<?> factory = chartFactoryManager.getChartFactory(type.getId());
