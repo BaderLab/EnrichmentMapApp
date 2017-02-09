@@ -48,7 +48,6 @@ import java.util.concurrent.ForkJoinPool;
 
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
-import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanel;
@@ -87,14 +86,14 @@ public class HeatMapSelectionListener implements RowsSetListener {
 		Long suid = network.getSUID();
 		EnrichmentMap map = manager.getEnrichmentMap(suid);
 		
-		if(LegacySupport.isLegacyEnrichmentMap(map)) {
-			HeatMapParameters hmParams = manager.getHeatMapParameters(suid);
-			if(hmParams == null) {
-				hmParams = new HeatMapParameters(map);
-				manager.setHeatMapParameters(suid, hmParams);
-			}
-			return map;
-		}
+//		if(LegacySupport.isLegacyEnrichmentMap(map)) {
+//			HeatMapParameters hmParams = manager.getHeatMapParameters(suid);
+//			if(hmParams == null) {
+//				hmParams = new HeatMapParameters(map);
+//				manager.setHeatMapParameters(suid, hmParams);
+//			}
+//			return map;
+//		}
 		return null;
 	}
 

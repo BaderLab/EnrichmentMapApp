@@ -275,7 +275,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 			this.Dataset1phenotype2 = map.getDataset(LegacySupport.DATASET1).getDatasetFiles().getPhenotype2();
 
 			long suid = map.getNetworkID();
-			hmParams = emManager.getHeatMapParameters(suid);
+			hmParams = null;//emManager.getHeatMapParameters(suid);
 			boolean[] ascending;
 			if (expression.getRanks() != null) {
 				ascending = new boolean[columnNames.length + map.getAllRankNames().size()];

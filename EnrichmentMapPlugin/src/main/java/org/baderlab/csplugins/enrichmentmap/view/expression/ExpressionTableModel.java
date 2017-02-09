@@ -58,20 +58,12 @@ public class ExpressionTableModel extends AbstractTableModel {
 	
 	@Override
 	public String getColumnName(int col) {
-		System.out.println("ExpressionTableModel.getColumnName(): " + col);
 		if(col == 0)
 			return "Gene";
-		
-		try {
-			DataSet dataset = getDataSet(col);
-			int index = getIndex(col) + 2;
-			String[] columns = dataset.getExpressionSets().getColumnNames();
-//			System.out.println(Arrays.toString(columns));
-			return columns[index];
-		} catch(Exception e) {
-			e.printStackTrace();
-			return "blah";
-		}
+		DataSet dataset = getDataSet(col);
+		int index = getIndex(col) + 2;
+		String[] columns = dataset.getExpressionSets().getColumnNames();
+		return columns[index];
 	}
 
 	@Override
@@ -80,18 +72,11 @@ public class ExpressionTableModel extends AbstractTableModel {
 		if(col == 0)
 			return gene;
 		
-		try {
-			int geneID = map.getHashFromGene(gene);
-			DataSet dataset = getDataSet(col);
-			int index = getIndex(col);
-			
-//			System.out.println("Col: " + col + ", index: " + index);
-			Double[] vals = getExpression(dataset, geneID);
-			return vals[index];
-		} catch(Exception e) {
-			e.printStackTrace();
-			return 0;
-		}
+		int geneID = map.getHashFromGene(gene);
+		DataSet dataset = getDataSet(col);
+		int index = getIndex(col);
+		Double[] vals = getExpression(dataset, geneID);
+		return vals[index];
 	}
 	
 	private int getIndex(int col) {
@@ -99,11 +84,11 @@ public class ExpressionTableModel extends AbstractTableModel {
 		return col - start - 1;
 	}
 	
-	private DataSet getDataSet(int col) {
+	public DataSet getDataSet(int col) {
 		return colToDataSet.ceilingEntry(col).getValue();
 	}
 	
-	private int getNumCols(GeneExpressionMatrix matrix) {
+	private static int getNumCols(GeneExpressionMatrix matrix) {
 		// ugh! so ugly
 		return matrix.getExpressionMatrix().values().iterator().next().getExpression().length - 2;
 	}

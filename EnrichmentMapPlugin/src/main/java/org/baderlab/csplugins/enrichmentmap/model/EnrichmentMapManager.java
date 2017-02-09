@@ -47,48 +47,16 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParameters;
 import org.cytoscape.view.model.CyNetworkView;
 
 import com.google.inject.Singleton;
 
-/**
- * Main class managing all instances of enrichment map as well as singular
- * instances of heatmap panel, parameters panel and input panel. (implemented as
- * singular class)
- */
+
 @Singleton
 public class EnrichmentMapManager /*implements SetCurrentNetworkListener*/ {
 		
-//	@Inject private CyServiceRegistrar registrar;
-	
-//	@Inject private Provider<EnrichmentMapInputPanel> inputPanelProvider;
-//	@Inject private @Nodes Provider<HeatMapPanel> nodesOverlapPanelProvider;
-//	@Inject private @Edges Provider<HeatMapPanel> edgesOverlapPanelProvider;
-
-//	@Inject private @Headless boolean headless;
-	
 	private Map<Long, EnrichmentMap> enrichmentMaps = new HashMap<>();
-	private Map<Long, HeatMapParameters> heatMapParameterMap = new HashMap<>();
 	
-
-	// MKTODO move these to PropertyManager?
-//	private boolean overrideHeatmapRevalidation = false;
-//	private boolean disableHeatmapAutofocus = false;
-	
-
-//	public void showPanels() {
-//		if(headless)
-//			return;
-//		
-//		HeatMapPanel nodeOverlapPanel = nodesOverlapPanelProvider.get();
-//		HeatMapPanel edgeOverlapPanel = edgesOverlapPanelProvider.get();
-//		
-//		if (nodeOverlapPanel != null && edgeOverlapPanel != null) {
-//			registrar.registerService(nodeOverlapPanel, CytoPanelComponent.class, new Properties());
-//			registrar.registerService(edgeOverlapPanel, CytoPanelComponent.class, new Properties());
-//		}
-//	}
 
 	/**
 	 * Registers a newly created Network.
@@ -111,15 +79,6 @@ public class EnrichmentMapManager /*implements SetCurrentNetworkListener*/ {
 	
 	public void reset() {
 		enrichmentMaps.clear();
-		heatMapParameterMap.clear();
-	}
-
-	public void setHeatMapParameters(Long suid, HeatMapParameters parameters) {
-		heatMapParameterMap.put(suid, parameters);
-	}
-	
-	public HeatMapParameters getHeatMapParameters(Long suid) {
-		return heatMapParameterMap.get(suid);
 	}
 	
 	/**
@@ -133,61 +92,4 @@ public class EnrichmentMapManager /*implements SetCurrentNetworkListener*/ {
 	public boolean isEnrichmentMap(CyNetworkView networkView) {
 		return isEnrichmentMap(networkView.getModel().getSUID());
 	}
-
-//	/**
-//	 * Network Focus Event.
-//	 * MKTODO Replace this centralized event handling with the new model.event events.
-//	 * There should not be direct references to these panels.
-//	 */
-//	@Override
-//	public void handleEvent(SetCurrentNetworkEvent evt) {
-//		if(headless)
-//			return;
-//		
-//		if (evt.getNetwork() != null) {
-//			Long netId = evt.getNetwork().getSUID();
-//			
-////			HeatMapPanel nodesOverlapPanel = nodesOverlapPanelProvider.get();
-////			HeatMapPanel edgesOverlapPanel = edgesOverlapPanelProvider.get();
-////			EnrichmentMapInputPanel inputWindow = inputPanelProvider.get();
-//			
-//			// update view
-//			if (enrichmentMaps.containsKey(netId)) {
-//				// clear the panels before re-initializing them
-//				nodesOverlapPanel.clearPanel();
-//				edgesOverlapPanel.clearPanel();
-//
-//				EnrichmentMap map = enrichmentMaps.get(netId);
-//
-//				// update the input window to contain the parameters of the
-//				// selected network
-//				// only if there is a input window
-//				if (inputWindow != null)
-//					inputWindow.updateContents(map);
-//
-//				nodesOverlapPanel.updatePanel(map);
-//				edgesOverlapPanel.updatePanel(map);
-//
-//				nodesOverlapPanel.revalidate();
-//				edgesOverlapPanel.revalidate();
-//			}
-//		}
-//	}
-
-//	// TODO what is the difference between this and EnrichmentMapParameters.isDisableHeatmapAutofocus()?
-//	public boolean isOverrideHeatmapRevalidation() {
-//		return overrideHeatmapRevalidation;
-//	}
-//
-//	public void setOverrideHeatmapRevalidation(boolean overrideHeatmapRevalidation) {
-//		this.overrideHeatmapRevalidation = overrideHeatmapRevalidation;
-//	}
-//
-//	public boolean isDisableHeatmapAutofocus() {
-//		return disableHeatmapAutofocus;
-//	}
-//
-//	public void setDisableHeatmapAutofocus(boolean disableHeatmapAutofocus) {
-//		this.disableHeatmapAutofocus = disableHeatmapAutofocus;
-//	}
 }

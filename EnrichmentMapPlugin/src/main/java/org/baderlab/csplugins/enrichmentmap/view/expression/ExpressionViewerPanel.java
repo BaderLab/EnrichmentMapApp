@@ -18,6 +18,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JToggleButton;
+import javax.swing.table.TableColumnModel;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
@@ -46,6 +47,7 @@ public class ExpressionViewerPanel extends JPanel implements CytoPanelComponent2
 	private JButton menuButton;
 	
 	private JTable table;
+	private JScrollPane scrollPane;
 	private CheckboxListPanel<DataSet> dataSetList;
 	
 	
@@ -53,9 +55,9 @@ public class ExpressionViewerPanel extends JPanel implements CytoPanelComponent2
 	private void createContents() {
 //		JPanel dataSetPanel    = createDataSetPanel();
 		JPanel expressionPanel = createExpressionPanel();
-		
+
 		LookAndFeelUtil.equalizeSize(gearButton, menuButton);
-		
+
 //		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, dataSetPanel, expressionPanel);
 //		splitPane.setBorder(BorderFactory.createEmptyBorder());
 		
@@ -73,25 +75,25 @@ public class ExpressionViewerPanel extends JPanel implements CytoPanelComponent2
 		
 		JPanel panel = new JPanel();
 		GroupLayout layout = new GroupLayout(panel);
-       	panel.setLayout(layout);
-   		layout.setAutoCreateContainerGaps(false);
-   		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
+		panel.setLayout(layout);
+		layout.setAutoCreateContainerGaps(false);
+		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
 		
-   		layout.setHorizontalGroup(layout.createParallelGroup()
-   			.addGroup(layout.createSequentialGroup()
-   				.addComponent(title)
-   				.addGap(0, 0, Short.MAX_VALUE)
-   				.addComponent(syncButton)
-   			)
-   			.addComponent(dataSetList)
-   		);
-   		layout.setVerticalGroup(layout.createSequentialGroup()
-   			.addGroup(layout.createParallelGroup()
-   				.addComponent(title)
-   				.addComponent(syncButton)
-   			)
-   			.addComponent(dataSetList)
-   		);
+		layout.setHorizontalGroup(layout.createParallelGroup()
+			.addGroup(layout.createSequentialGroup()
+				.addComponent(title)
+				.addGap(0, 0, Short.MAX_VALUE)
+				.addComponent(syncButton)
+			)
+			.addComponent(dataSetList)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+			.addGroup(layout.createParallelGroup()
+				.addComponent(title)
+				.addComponent(syncButton)
+			)
+			.addComponent(dataSetList)
+		);
 		
 		return panel;
 	}
@@ -101,7 +103,8 @@ public class ExpressionViewerPanel extends JPanel implements CytoPanelComponent2
 		SwingUtil.makeSmall(title);
 		
 		table = new JTable();
-		JScrollPane scrollPane = new JScrollPane(table);
+		
+		scrollPane = new JScrollPane(table);
 		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		table.setFillsViewportHeight(true);
@@ -112,29 +115,29 @@ public class ExpressionViewerPanel extends JPanel implements CytoPanelComponent2
 		
 		JPanel panel = new JPanel();
 		GroupLayout layout = new GroupLayout(panel);
-       	panel.setLayout(layout);
-   		layout.setAutoCreateContainerGaps(false);
-   		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
+		panel.setLayout(layout);
+		layout.setAutoCreateContainerGaps(false);
+		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
 		
-   		layout.setHorizontalGroup(layout.createParallelGroup()
-   			.addGroup(layout.createSequentialGroup()
-   				.addComponent(title)
-   				.addGap(0, 0, Short.MAX_VALUE)
-   				.addComponent(gearButton)
-   				.addComponent(menuButton)
-   			)
-   			.addComponent(scrollPane)
-   		);
-   		layout.setVerticalGroup(layout.createSequentialGroup()
-   			.addGroup(layout.createParallelGroup(Alignment.BASELINE)
-   				.addComponent(title)
-   				.addComponent(gearButton)
-   				.addComponent(menuButton)
-   			)
-   			.addComponent(scrollPane)
-   		);
+		layout.setHorizontalGroup(layout.createParallelGroup()
+			.addGroup(layout.createSequentialGroup()
+				.addComponent(title)
+				.addGap(0, 0, Short.MAX_VALUE)
+				.addComponent(gearButton)
+				.addComponent(menuButton)
+			)
+			.addComponent(scrollPane)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+			.addGroup(layout.createParallelGroup(Alignment.BASELINE)
+				.addComponent(title)
+				.addComponent(gearButton)
+				.addComponent(menuButton)
+			)
+			.addComponent(scrollPane)
+		);
 		
-   		panel.setOpaque(false);
+		panel.setOpaque(false);
 		return panel;
 	}
 	
@@ -163,11 +166,25 @@ public class ExpressionViewerPanel extends JPanel implements CytoPanelComponent2
 		return iconButton;
 	}
 	
+	
 	public void update(EnrichmentMap map, Set<String> genes) {
 		List<String> geneList = new ArrayList<>(genes);
 		geneList.sort(Comparator.naturalOrder());
 		ExpressionTableModel tableModel = new ExpressionTableModel(new ExpressionViewerParams(Transform.AS_IS), map, geneList);
 		table.setModel(tableModel);
+		createTableHeader();
+	}
+	
+	
+	private void createTableHeader() {
+		ExpressionTableModel tableModel = (ExpressionTableModel)table.getModel();
+		TableColumnModel columnModel = table.getColumnModel();
+		
+		int colCount = tableModel.getColumnCount();
+		ColumnHeaderVerticalRenderer vertRenderer = new ColumnHeaderVerticalRenderer();
+		for(int i = 1; i < colCount; i++) {
+			columnModel.getColumn(i).setHeaderRenderer(vertRenderer);
+		}
 	}
 	
 	
