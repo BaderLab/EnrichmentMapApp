@@ -16,9 +16,9 @@ public enum ChartType {
 //	                new SimpleEntry<>("cy_showRangeAxis", false))
 //	                .collect(Collectors.toMap((e) -> e.getKey(), (e) -> e.getValue())))
 //	),
-	RING(
-			"org.cytoscape.RingChart",
-			"Ring",
+	PIE(
+			"org.cytoscape.PieChart",
+			"Pie",
 			Collections.unmodifiableMap(Stream.of(
 	                new SimpleEntry<>("cy_borderWidth", 0.0f))
 	                .collect(Collectors.toMap((e) -> e.getKey(), (e) -> e.getValue())))

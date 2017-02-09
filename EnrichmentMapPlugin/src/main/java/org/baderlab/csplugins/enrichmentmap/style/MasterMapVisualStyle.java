@@ -28,6 +28,7 @@ import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Continuous;
 import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Discrete;
 import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Passthrough;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
@@ -36,6 +37,8 @@ import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
 import org.cytoscape.view.presentation.property.values.NodeShape;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.view.vizmap.events.VisualStyleChangeRecord;
+import org.cytoscape.view.vizmap.events.VisualStyleChangedEvent;
 import org.cytoscape.view.vizmap.mappings.BoundaryRangeValues;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
@@ -143,6 +146,7 @@ public class MasterMapVisualStyle {
 	@Inject private @Passthrough VisualMappingFunctionFactory pmFactory;
 	
 	@Inject private RenderingEngineManager renderingEngineManager;
+	@Inject private CyEventHelper eventHelper;
 	
 	public static String getStyleName(EnrichmentMap map) {
 		String prefix = map.getParams().getAttributePrefix();
@@ -154,26 +158,32 @@ public class MasterMapVisualStyle {
 	}
 	
 	public void updateProperties(VisualStyle vs, MasterMapStyleOptions options, CyCustomGraphics2<?> chart) {
-		// MKTODO silence events?
+		eventHelper.silenceEventSource(vs);
 		
-		// Network Properties
-		vs.setDefaultValue(NETWORK_BACKGROUND_PAINT, Colors.BG_COLOR);    	        
-    	
-		setEdgeDefaults(vs, options);
-		setEdgePaint(vs, options);
-		setEdgeWidth(vs, options);
- 		
-		boolean hasChart = chart != null && !chart.getDisplayName().toLowerCase().startsWith("ring");
-		
-		setNodeDefaults(vs, options, hasChart);
-		setNodeShapes(vs, options, hasChart);
-		setNodeSize(vs, options, hasChart);
-		setNodeLabels(vs, options);
-		setNodeChart(vs, chart);
+		try {
+			// Network Properties
+			vs.setDefaultValue(NETWORK_BACKGROUND_PAINT, Colors.BG_COLOR);    	        
+	    	
+			setEdgeDefaults(vs, options);
+			setEdgePaint(vs, options);
+			setEdgeWidth(vs, options);
+	 		
+			String chartName = chart != null ? chart.getDisplayName().toLowerCase() : null;
+			boolean hasChart = chartName != null && !chartName.startsWith("ring") && !chartName.startsWith("pie");
+			
+			setNodeDefaults(vs, options, hasChart);
+			setNodeShapes(vs, options, hasChart);
+			setNodeSize(vs, options, hasChart);
+			setNodeLabels(vs, options);
+			setNodeChart(vs, chart);
+		} finally {
+			eventHelper.unsilenceEventSource(vs);
+			eventHelper.addEventPayload(vs, new VisualStyleChangeRecord(), VisualStyleChangedEvent.class);
+		}
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public void setNodeChart(VisualStyle vs, CyCustomGraphics2<?> chart) {
+	private void setNodeChart(VisualStyle vs, CyCustomGraphics2<?> chart) {
 		VisualLexicon lexicon = renderingEngineManager.getDefaultVisualLexicon();
 		VisualProperty customPaint1 = lexicon.lookup(CyNode.class, "NODE_CUSTOMGRAPHICS_1");
 		

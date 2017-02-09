@@ -58,6 +58,7 @@ import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanel.EMViewCont
 import org.baderlab.csplugins.enrichmentmap.view.parameters.ParametersPanelMediator;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.EdgeWidthDialog;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PostAnalysisPanelMediator;
+import org.baderlab.csplugins.enrichmentmap.view.util.CheckboxData;
 import org.baderlab.csplugins.enrichmentmap.view.util.SliderBarPanel;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
@@ -201,8 +202,9 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 
 					viewPanel.getCheckboxListPanel().addPropertyChangeListener("selectedData", evt -> {
 						if (!updating) {
-							filterNodesAndEdges(viewPanel, map, netView);
+							viewPanel.updateChartDataCombo(viewPanel.getCheckboxListPanel().getSelectedData());
 							
+							filterNodesAndEdges(viewPanel, map, netView);
 							ChartData data = (ChartData) viewPanel.getChartDataCombo().getSelectedItem();
 							
 							if (data != null && data != ChartData.NONE)
@@ -260,6 +262,8 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 					viewPanel.getSetEdgeWidthButton().addActionListener(evt -> {
 						showEdgeWidthDialog();
 					});
+					
+					viewPanel.updateChartDataCombo(viewPanel.getCheckboxListPanel().getSelectedData());
 				}
 			}
 		});
@@ -433,10 +437,15 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 	}
 	
 	private CyCustomGraphics2<?> createChart(EMViewControlPanel viewPanel, MasterMapStyleOptions options) {
-		ChartData data = (ChartData) viewPanel.getChartDataCombo().getSelectedItem();
-		ChartType type = (ChartType) viewPanel.getChartTypeCombo().getSelectedItem();
-		ColorScheme colorScheme = (ColorScheme) viewPanel.getChartColorsCombo().getSelectedItem();
-		CyCustomGraphics2<?> chart = createChart(data, type, colorScheme, options);
+		CyCustomGraphics2<?> chart = null;
+		List<CheckboxData<DataSet>> selectedData = viewPanel.getCheckboxListPanel().getSelectedData();
+		
+		if (selectedData != null && selectedData.size() > 1) {
+			ChartData data = (ChartData) viewPanel.getChartDataCombo().getSelectedItem();
+			ChartType type = (ChartType) viewPanel.getChartTypeCombo().getSelectedItem();
+			ColorScheme colorScheme = (ColorScheme) viewPanel.getChartColorsCombo().getSelectedItem();
+			chart = createChart(data, type, colorScheme, options);
+		}
 		
 		return chart;
 	}

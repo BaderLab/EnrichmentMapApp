@@ -501,6 +501,16 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			}
 		}
 		
+		void updateChartDataCombo(List<CheckboxData<DataSet>> dataSets) {
+			boolean b1 = getChartDataCombo().isEnabled();
+			boolean b2 = dataSets != null && dataSets.size() > 1; // Can't have charts with less than 2 columns!
+			
+			if (b1 != b2) {
+				getChartDataCombo().setEnabled(b2);
+				updateChartCombos();
+			}
+		}
+		
 		void updateChartCombos() {
 			updateChartTypeCombo();
 			updateChartColorsCombo();
@@ -508,7 +518,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		
 		void updateChartTypeCombo() {
 			ChartData data = (ChartData) getChartDataCombo().getSelectedItem();
-			getChartTypeCombo().setEnabled(data != ChartData.NONE);
+			getChartTypeCombo().setEnabled(getChartDataCombo().isEnabled() && data != ChartData.NONE);
 		}
 		
 		void updateChartColorsCombo() {
@@ -536,7 +546,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 					getChartColorsCombo().addItem(scheme);
 			}
 			
-			getChartColorsCombo().setEnabled(data != ChartData.NONE);
+			getChartColorsCombo().setEnabled(getChartTypeCombo().isEnabled() && data != ChartData.NONE);
 		}
 		
 		private JPanel createFilterPanel() {
@@ -756,7 +766,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		
 		public JComboBox<ChartData> getChartDataCombo() {
 			if (chartDataCombo == null) {
-				chartDataCombo = new JComboBox<>();
+				chartDataCombo = new JComboBox<ChartData>();
 				chartDataCombo.addItem(ChartData.NONE);
 				chartDataCombo.addItem(ChartData.NES_VALUE);
 				chartDataCombo.addItem(ChartData.P_VALUE);
