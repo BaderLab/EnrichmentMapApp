@@ -79,6 +79,14 @@ public class ExpressionTableModel extends AbstractTableModel {
 		return vals[index];
 	}
 	
+	@Override
+	public Class<?> getColumnClass(int col) {
+		if(col == 0)
+			return String.class;
+		else
+			return Double.class;
+	}
+	
 	private int getIndex(int col) {
 		int start = colToDataSet.floorKey(col);
 		return col - start - 1;

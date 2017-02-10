@@ -18,6 +18,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JToggleButton;
+import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
@@ -39,6 +40,10 @@ import com.google.inject.Singleton;
 public class ExpressionViewerPanel extends JPanel implements CytoPanelComponent2 {
 
 	public static final String ID = "enrichmentmap.view.ExpressionViewerPanel";
+	
+	private static final int COLUMN_WIDTH_COLOR = 10;
+	private static final int COLUMN_WIDTH_VALUE = 50;
+	
 	
 	@Inject private IconManager iconManager;
 	
@@ -172,6 +177,7 @@ public class ExpressionViewerPanel extends JPanel implements CytoPanelComponent2
 		geneList.sort(Comparator.naturalOrder());
 		ExpressionTableModel tableModel = new ExpressionTableModel(new ExpressionViewerParams(Transform.AS_IS), map, geneList);
 		table.setModel(tableModel);
+		table.setDefaultRenderer(Double.class, new ColorRenderer());
 		createTableHeader();
 	}
 	
@@ -183,7 +189,9 @@ public class ExpressionViewerPanel extends JPanel implements CytoPanelComponent2
 		int colCount = tableModel.getColumnCount();
 		ColumnHeaderVerticalRenderer vertRenderer = new ColumnHeaderVerticalRenderer();
 		for(int i = 1; i < colCount; i++) {
-			columnModel.getColumn(i).setHeaderRenderer(vertRenderer);
+			TableColumn column = columnModel.getColumn(i);
+			column.setHeaderRenderer(vertRenderer);
+			column.setPreferredWidth(COLUMN_WIDTH_COLOR);
 		}
 	}
 	
