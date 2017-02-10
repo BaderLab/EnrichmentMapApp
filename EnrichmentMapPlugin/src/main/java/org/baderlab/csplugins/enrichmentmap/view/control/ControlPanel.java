@@ -136,6 +136,10 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		return this;
 	}
 	
+	public boolean contains(CyNetworkView networkView) {
+		return emViewCtrlPanels.containsKey(networkView.getSUID());
+	}
+	
 	@AfterInjection
 	private void createContents() {
 		setMinimumSize(new Dimension(390, 400));
@@ -312,7 +316,9 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		showViewControlPanel(currentView);
 	}
 	
-	private void updateEmViewCombo() {
+	void updateEmViewCombo() {
+		CyNetworkView selectedItem = (CyNetworkView) getEmViewCombo().getSelectedItem();
+		
 		Map<Long, EnrichmentMap> emMap = emManager.getAllEnrichmentMaps();
 		getEmViewCombo().setEnabled(!emMap.isEmpty());
 		getEmViewCombo().removeAllItems();
@@ -329,6 +335,8 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			});
 			
 			emViews.forEach((item) -> getEmViewCombo().addItem(item));
+			
+			getEmViewCombo().setSelectedItem(selectedItem);
 		}
 	}
 	

@@ -150,12 +150,15 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		setCurrentNetworkView(e.getNetworkView());
 	}
 	
-	private void setCurrentNetworkView(CyNetworkView view) {
+	private void setCurrentNetworkView(CyNetworkView netView) {
 		invokeOnEDT(() -> {
 			updating = true;
 			
 			try {
-				getControlPanel().update(view);
+				if (netView != null && !getControlPanel().contains(netView))
+					addNetworkView(netView);
+					
+				getControlPanel().update(netView);
 			} finally {
 				updating = false;
 			}
@@ -164,7 +167,19 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 	
 	@Override
 	public void handleEvent(NetworkViewAddedEvent e) {
-		addNetworkView(e.getNetworkView());
+		CyNetworkView netView = e.getNetworkView();
+		
+		if (netView != null && emManager.getEnrichmentMap(netView.getModel().getSUID()) != null) {
+			invokeOnEDT(() -> {
+				updating = true;
+			
+				try {
+					getControlPanel().updateEmViewCombo();
+				} finally {
+					updating = false;
+				}
+			});
+		}
 	}
 	
 	private void addNetworkView(CyNetworkView netView) {
