@@ -145,24 +145,62 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 	private boolean firstTime = true;
 	private boolean updating;
 	
-	@Override
-	public void handleEvent(SetCurrentNetworkViewEvent e) {
-		setCurrentNetworkView(e.getNetworkView());
+	public void showControlPanel() {
+		CytoPanelComponent panel = null;
+		
+		try {
+			panel = serviceRegistrar.getService(CytoPanelComponent.class, "(id=" + ControlPanel.ID + ")");
+		} catch (Exception ex) {
+		}
+		
+		if (panel == null) {
+			panel = controlPanelProvider.get();
+			
+			Properties props = new Properties();
+			props.setProperty("id", ControlPanel.ID);
+			serviceRegistrar.registerService(panel, CytoPanelComponent.class, props);
+			
+			if (firstTime && emManager.getAllEnrichmentMaps().isEmpty()) {
+				firstTime = false;
+				controlPanelProvider.get().getCreateEmButton().doClick();
+			} else {
+				setCurrentNetworkView(applicationManager.getCurrentNetworkView());
+			}
+		}
+		
+		// Select the panel
+		CytoPanel cytoPanel = swingApplication.getCytoPanel(panel.getCytoPanelName());
+		int index = cytoPanel.indexOfComponent(ControlPanel.ID);
+		
+		if (index >= 0)
+			cytoPanel.setSelectedIndex(index);
 	}
 	
-	private void setCurrentNetworkView(CyNetworkView netView) {
+	public void reset() {
 		invokeOnEDT(() -> {
-			updating = true;
-			
-			try {
-				if (netView != null && !getControlPanel().contains(netView))
-					addNetworkView(netView);
-					
-				getControlPanel().update(netView);
-			} finally {
-				updating = false;
+			for (CyNetworkView view : networkViewManager.getNetworkViewSet()) {
+				getControlPanel().removeEnrichmentMapView(view);
 			}
+
+			Map<Long, EnrichmentMap> maps = emManager.getAllEnrichmentMaps();
+			
+			for (EnrichmentMap map : maps.values()) {
+				CyNetwork network = networkManager.getNetwork(map.getNetworkID());
+				Collection<CyNetworkView> networkViews = networkViewManager.getNetworkViews(network);
+				
+				for (CyNetworkView netView : networkViews) {
+					addNetworkView(netView);
+				}
+			}
+
+			setCurrentNetworkView(applicationManager.getCurrentNetworkView());
 		});
+	}
+	
+	@Override
+	public void handleEvent(SetCurrentNetworkViewEvent e) {
+		if (getControlPanel().isDisplayable())
+			setCurrentNetworkView(e.getNetworkView());
 	}
 	
 	@Override
@@ -180,6 +218,49 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 				}
 			});
 		}
+	}
+	
+	@Override
+	public void handleEvent(NetworkViewAboutToBeDestroyedEvent e) {
+		final CyNetworkView netView = e.getNetworkView();
+		Timer timer = filterTimers.remove(netView);
+		
+		if (timer != null)
+			timer.stop();
+		
+		invokeOnEDT(() -> {
+			getControlPanel().removeEnrichmentMapView(netView);
+		});
+	}
+	
+	@Override
+	public void handleEvent(VisualStyleSetEvent e) {
+		final CyNetworkView netView = e.getNetworkView();
+		EMViewControlPanel viewPanel = controlPanelProvider.get().getViewControlPanel(netView);
+		
+		if (viewPanel != null) {
+			final VisualStyle style = e.getVisualStyle();
+			final boolean isPublication = MasterMapVisualStyle.isPublicationReady(style.getTitle());
+			
+			invokeOnEDT(() -> {
+				viewPanel.getTogglePublicationCheck().setSelected(isPublication);
+			});
+		}
+	}
+	
+	private void setCurrentNetworkView(CyNetworkView netView) {
+		invokeOnEDT(() -> {
+			updating = true;
+			
+			try {
+				if (netView != null && !getControlPanel().contains(netView))
+					addNetworkView(netView);
+					
+				getControlPanel().update(netView);
+			} finally {
+				updating = false;
+			}
+		});
 	}
 	
 	private void addNetworkView(CyNetworkView netView) {
@@ -284,84 +365,6 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		});
 	}
 
-	public void reset() {
-		invokeOnEDT(() -> {
-			for (CyNetworkView view : networkViewManager.getNetworkViewSet()) {
-				getControlPanel().removeEnrichmentMapView(view);
-			}
-
-			Map<Long, EnrichmentMap> maps = emManager.getAllEnrichmentMaps();
-			
-			for (EnrichmentMap map : maps.values()) {
-				CyNetwork network = networkManager.getNetwork(map.getNetworkID());
-				Collection<CyNetworkView> networkViews = networkViewManager.getNetworkViews(network);
-				
-				for (CyNetworkView netView : networkViews) {
-					addNetworkView(netView);
-				}
-			}
-
-			setCurrentNetworkView(applicationManager.getCurrentNetworkView());
-		});
-	}
-	
-	@Override
-	public void handleEvent(NetworkViewAboutToBeDestroyedEvent e) {
-		final CyNetworkView netView = e.getNetworkView();
-		Timer timer = filterTimers.remove(netView);
-		
-		if (timer != null)
-			timer.stop();
-		
-		invokeOnEDT(() -> {
-			getControlPanel().removeEnrichmentMapView(netView);
-		});
-	}
-	
-	@Override
-	public void handleEvent(VisualStyleSetEvent e) {
-		final CyNetworkView netView = e.getNetworkView();
-		EMViewControlPanel viewPanel = controlPanelProvider.get().getViewControlPanel(netView);
-		
-		if (viewPanel != null) {
-			final VisualStyle style = e.getVisualStyle();
-			final boolean isPublication = MasterMapVisualStyle.isPublicationReady(style.getTitle());
-			
-			invokeOnEDT(() -> {
-				viewPanel.getTogglePublicationCheck().setSelected(isPublication);
-			});
-		}
-	}
-	
-	public void showControlPanel() {
-		CytoPanelComponent panel = null;
-		
-		try {
-			panel = serviceRegistrar.getService(CytoPanelComponent.class, "(id=" + ControlPanel.ID + ")");
-		} catch (Exception ex) {
-		}
-		
-		if (panel == null) {
-			panel = controlPanelProvider.get();
-			
-			Properties props = new Properties();
-			props.setProperty("id", ControlPanel.ID);
-			serviceRegistrar.registerService(panel, CytoPanelComponent.class, props);
-			
-			if (firstTime && emManager.getAllEnrichmentMaps().isEmpty()) {
-				firstTime = false;
-				controlPanelProvider.get().getCreateEmButton().doClick();
-			}
-		}
-		
-		// Select the panel
-		CytoPanel cytoPanel = swingApplication.getCytoPanel(panel.getCytoPanelName());
-		int index = cytoPanel.indexOfComponent(ControlPanel.ID);
-		
-		if (index >= 0)
-			cytoPanel.setSelectedIndex(index);
-	}
-	
 	@AfterInjection
 	private void init() {
 		ControlPanel ctrlPanel = getControlPanel();
