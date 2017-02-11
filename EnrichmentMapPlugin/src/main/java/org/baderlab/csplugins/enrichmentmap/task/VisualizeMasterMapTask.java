@@ -65,4 +65,5 @@ public class VisualizeMasterMapTask extends AbstractTask {
 		moreTasks.append(layoutTasks);
 		insertTasksAfterCurrentTask(moreTasks);
 	}
+	
 }

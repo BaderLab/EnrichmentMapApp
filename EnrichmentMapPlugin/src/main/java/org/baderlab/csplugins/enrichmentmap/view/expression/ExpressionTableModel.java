@@ -39,8 +39,8 @@ public class ExpressionTableModel extends AbstractTableModel {
 		colToDataSet.put(0, null);
 		for(DataSet dataset : datasets) {
 			GeneExpressionMatrix matrix = dataset.getExpressionSets();
-			rangeFloor += getNumCols(matrix);
 			colToDataSet.put(rangeFloor, dataset);
+			rangeFloor += getNumCols(matrix);
 		}
 		colCount = rangeFloor;
 	}
@@ -89,16 +89,16 @@ public class ExpressionTableModel extends AbstractTableModel {
 	
 	private int getIndex(int col) {
 		int start = colToDataSet.floorKey(col);
-		return col - start - 1;
+		return col - start;
 	}
 	
 	public DataSet getDataSet(int col) {
-		return colToDataSet.ceilingEntry(col).getValue();
+		return colToDataSet.floorEntry(col).getValue();
 	}
 	
 	private static int getNumCols(GeneExpressionMatrix matrix) {
 		// ugh! so ugly
-		return matrix.getExpressionMatrix().values().iterator().next().getExpression().length - 2;
+		return matrix.getExpressionMatrix().values().iterator().next().getExpression().length;
 	}
 
 	
@@ -108,10 +108,12 @@ public class ExpressionTableModel extends AbstractTableModel {
 		GeneExpression row = expressions.get(geneID);
 		
 		Double[] values = null;
-		switch(params.getTransform()) {
-			case ROW_NORMALIZE:  values = row.rowNormalize();    break;
-			case LOG_TRANSFORM:  values = row.rowLogTransform(); break;
-			case AS_IS:          values = row.getExpression();   break;
+		if(row != null) {
+			switch(params.getTransform()) {
+				case ROW_NORMALIZE:  values = row.rowNormalize();    break;
+				case LOG_TRANSFORM:  values = row.rowLogTransform(); break;
+				case AS_IS:          values = row.getExpression();   break;
+			}
 		}
 		if(values == null) {
 			values = new Double[matrix.getNumConditions() - 2];

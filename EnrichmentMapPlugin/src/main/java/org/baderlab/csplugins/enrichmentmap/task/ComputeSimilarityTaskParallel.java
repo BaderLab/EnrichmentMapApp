@@ -98,7 +98,7 @@ public class ComputeSimilarityTaskParallel extends AbstractTask {
 								
 								if(geneset1 != null && geneset2 != null) {
 									// returns null if the similarity coefficient doesn't pass the cutoff
-									GenesetSimilarity similarity = computeGenesetSimilarity(map.getParams(), geneset1Name, geneset2Name, geneset1.getGenes(), geneset2.getGenes(), 0);
+									GenesetSimilarity similarity = computeGenesetSimilarity(map.getParams(), geneset1Name, geneset2Name, geneset1.getGenes(), geneset2.getGenes(), dataset.getName());
 									if(similarity != null) {
 										similarities.put(key, similarity);
 									}
@@ -115,7 +115,7 @@ public class ComputeSimilarityTaskParallel extends AbstractTask {
 							Set<Integer> geneset2 = unionedGenesets.get(geneset2Name);
 							
 							// returns null if the similarity coefficient doesn't pass the cutoff
-							GenesetSimilarity similarity = computeGenesetSimilarity(map.getParams(), geneset1Name, geneset2Name, geneset1, geneset2, 0);
+							GenesetSimilarity similarity = computeGenesetSimilarity(map.getParams(), geneset1Name, geneset2Name, geneset1, geneset2, "compound");
 							if(similarity != null) {
 								similarities.put(key, similarity);
 							}
@@ -163,7 +163,7 @@ public class ComputeSimilarityTaskParallel extends AbstractTask {
 	}
 
 	
-	static GenesetSimilarity computeGenesetSimilarity(EMCreationParameters params, String geneset1Name, String geneset2Name, Set<Integer> geneset1, Set<Integer> geneset2, int enrichment_set) {
+	static GenesetSimilarity computeGenesetSimilarity(EMCreationParameters params, String geneset1Name, String geneset2Name, Set<Integer> geneset1, Set<Integer> geneset2, String dataset) {
 		Set<Integer> intersection = Sets.intersection(geneset1, geneset2);
 		Set<Integer> union = Sets.union(geneset1, geneset2);
 
@@ -173,7 +173,7 @@ public class ComputeSimilarityTaskParallel extends AbstractTask {
 			return null;
 			
 		String edgeType = params.getEnrichmentEdgeType();
-		GenesetSimilarity similarity = new GenesetSimilarity(geneset1Name, geneset2Name, coeffecient, edgeType, intersection, enrichment_set);
+		GenesetSimilarity similarity = new GenesetSimilarity(geneset1Name, geneset2Name, coeffecient, edgeType, intersection, dataset);
 		return similarity;
 	}
 	

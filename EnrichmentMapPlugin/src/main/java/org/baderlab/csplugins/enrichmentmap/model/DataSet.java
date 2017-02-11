@@ -1,5 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.model;
 
+import java.awt.Color;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -30,6 +31,7 @@ public class DataSet implements Comparable<DataSet> {
 	//The Expression
 	private GeneExpressionMatrix expressionSets = new GeneExpressionMatrix();
 	private boolean dummyExpressionData;
+	private Color color;
 
 	//Hashmap of all genesets in the geneset file (gmt file)
 	private SetOfGeneSets setofgenesets = new SetOfGeneSets();
@@ -107,6 +109,14 @@ public class DataSet implements Comparable<DataSet> {
 		this.expressionSets = expressionSets;
 	}
 
+	/**
+	 * @noreference
+	 * This method is only meant to be called by the ModelSerializer.
+	 */
+	public void setParent(EnrichmentMap map) {
+		this.map = map;
+	}
+	
 	public EnrichmentMap getMap() {
 		return map;
 	}
@@ -187,5 +197,13 @@ public class DataSet implements Comparable<DataSet> {
 	@Override
 	public String toString() {
 		return "DataSet [name=" + name + ", method=" + method + "]";
+	}
+
+	public Color getColor() {
+		return color;
+	}
+
+	public void setColor(Color color) {
+		this.color = color;
 	}
 }

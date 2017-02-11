@@ -21,12 +21,11 @@ import static org.cytoscape.view.presentation.property.NodeShapeVisualProperty.T
 
 import java.awt.Color;
 import java.awt.Paint;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Continuous;
 import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Discrete;
 import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Passthrough;
+import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNode;
@@ -92,11 +91,9 @@ public class MasterMapVisualStyle {
 		public static final ColumnListDescriptor<String> EDGE_OVERLAP_GENES = new ColumnListDescriptor<>("Overlap_genes", String.class);
 		
 		// Multi-edge case
-		public static final ColumnDescriptor<String> EDGE_ENR_SET = new ColumnDescriptor<>("ENR_SET", String.class);
-		public static final String EDGE_ENR_SET_VALUE_PREFIX = "ENR_"; // Enrichment set edges, 1-8
-		public static final String EDGE_ENR_SET_VALUE_COMPOUND = "ENR"; // Compound edges
-		public static final String EDGE_ENR_SET_VALUE_SIG = "SIG"; // post-analysis edges
-		public static final int EDGE_ENR_SET_VALUE_MAX = 7; // Maximum number of distinct edge colors, starting at 1, 0 is for compound edges
+		public static final ColumnDescriptor<String> EDGE_DATASET = new ColumnDescriptor<>("Data Set", String.class);
+		public static final String EDGE_DATASET_VALUE_COMPOUND = "compound"; 
+		public static final String EDGE_DATASET_VALUE_SIG = "signature"; // post-analysis edges
 		
 		// Post-analysis Edge Attributes
 		public static final ColumnDescriptor<Double> EDGE_HYPERGEOM_PVALUE = new ColumnDescriptor<>("Overlap_Hypergeom_pVal", Double.class);
@@ -121,21 +118,12 @@ public class MasterMapVisualStyle {
 		public static final Color NODE_LIGHTER_PHENOTYPE_2 = new Color(67, 147, 195);
 		public static final Color NODE_LIGHTEST_PHENOTYPE_2 = new Color(146, 197, 222);
 
-		private static final Color EDGE_COLOR_SIG = new Color(231,41,138);
-		
 		// see http://colorbrewer2.org/?type=qualitative&scheme=Dark2&n=8#type=qualitative&scheme=Dark2&n=8
-		public static final Map<String,Color> EDGE_COLORS = new HashMap<>(); 
-		static {
-			EDGE_COLORS.put(Columns.EDGE_ENR_SET_VALUE_SIG,        EDGE_COLOR_SIG);
-			EDGE_COLORS.put(Columns.EDGE_ENR_SET_VALUE_COMPOUND,   new Color(27,158,119));
-			EDGE_COLORS.put(Columns.EDGE_ENR_SET_VALUE_PREFIX + 1, new Color(217,95,2));
-			EDGE_COLORS.put(Columns.EDGE_ENR_SET_VALUE_PREFIX + 2, new Color(117,112,179));
-			EDGE_COLORS.put(Columns.EDGE_ENR_SET_VALUE_PREFIX + 3, new Color(231,41,138));
-			EDGE_COLORS.put(Columns.EDGE_ENR_SET_VALUE_PREFIX + 4, new Color(102,166,30));
-			EDGE_COLORS.put(Columns.EDGE_ENR_SET_VALUE_PREFIX + 5, new Color(230,171,2));
-			EDGE_COLORS.put(Columns.EDGE_ENR_SET_VALUE_PREFIX + 6, new Color(166,118,29));
-			EDGE_COLORS.put(Columns.EDGE_ENR_SET_VALUE_PREFIX + 7, new Color(102,102,102));
-		};
+		private static final Color EDGE_COLOR_SIG = new Color(231,41,138);
+		private static final Color EDGE_COLOR_COMPOUND = new Color(27,158,119);
+		private static final Color[] EDGE_COLORS_DISTINCT = 
+			{new Color(217,95,2), new Color(117,112,179), new Color(231,41,138), new Color(102,166,30), 
+			 new Color(230,171,2), new Color(166,118,29), new Color(102,102,102)};
 	
 		public static final Color LIGHT_GREY = new Color(190, 190, 190);
 		private static final Color BG_COLOR = Color.WHITE;
@@ -197,17 +185,25 @@ public class MasterMapVisualStyle {
 	}
 	
 	private void setEdgePaint(VisualStyle vs, MasterMapStyleOptions options) {
-		String prefix = options.getAttributePrefix();
-
-		DiscreteMapping<String, Paint> edgePaint = (DiscreteMapping<String, Paint>) dmFactory
-				.createVisualMappingFunction(Columns.EDGE_ENR_SET.with(prefix, null), String.class, EDGE_UNSELECTED_PAINT);
+		DiscreteMapping<String, Paint> edgePaint = createEdgeColorMapping(options, EDGE_UNSELECTED_PAINT);
 		vs.addVisualMappingFunction(edgePaint);
-		Colors.EDGE_COLORS.forEach(edgePaint::putMapValue);
-
-		DiscreteMapping<String, Paint> edgeStrokePaint = (DiscreteMapping<String, Paint>) dmFactory
-				.createVisualMappingFunction(Columns.EDGE_ENR_SET.with(prefix, null), String.class, EDGE_STROKE_UNSELECTED_PAINT);
+		DiscreteMapping<String, Paint> edgeStrokePaint = createEdgeColorMapping(options, EDGE_STROKE_UNSELECTED_PAINT);
 		vs.addVisualMappingFunction(edgeStrokePaint);
-		Colors.EDGE_COLORS.forEach(edgeStrokePaint::putMapValue);
+	}
+	
+	private DiscreteMapping<String,Paint> createEdgeColorMapping(MasterMapStyleOptions options, VisualProperty<Paint> vp) {
+		String prefix = options.getAttributePrefix();
+		String col = Columns.EDGE_DATASET.with(prefix, null);
+		DiscreteMapping<String, Paint> edgePaint = (DiscreteMapping<String,Paint>) dmFactory.createVisualMappingFunction(col, String.class, vp);
+		edgePaint.putMapValue(Columns.EDGE_DATASET_VALUE_COMPOUND, Colors.EDGE_COLOR_COMPOUND);
+		edgePaint.putMapValue(Columns.EDGE_DATASET_VALUE_SIG, Colors.EDGE_COLOR_SIG);
+		int i = 0;
+		for(DataSet dataSet : options.getDataSets()) {
+			Color color = Colors.EDGE_COLORS_DISTINCT[i++ % Colors.EDGE_COLORS_DISTINCT.length];
+			edgePaint.putMapValue(dataSet.getName(), color);
+			dataSet.setColor(color);
+		}
+		return edgePaint;
 	}
 	
 	private void setEdgeWidth(VisualStyle vs, MasterMapStyleOptions options) {

@@ -43,6 +43,7 @@
 
 package org.baderlab.csplugins.enrichmentmap.view.expression;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -58,6 +59,8 @@ import javax.swing.JTable;
 import javax.swing.UIManager;
 import javax.swing.table.DefaultTableCellRenderer;
 
+import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+
 /**
  * Flips column headers to vertical position
  */
@@ -65,7 +68,10 @@ import javax.swing.table.DefaultTableCellRenderer;
 public class ColumnHeaderVerticalRenderer extends DefaultTableCellRenderer {
 
 	@Override
-	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
+		ExpressionTableModel model = (ExpressionTableModel) table.getModel();
+		DataSet dataset = model.getDataSet(col);
+		
 		JLabel label = new JLabel();
 
 		label.setBorder(UIManager.getBorder("TableHeader.cellBorder"));
@@ -73,7 +79,8 @@ public class ColumnHeaderVerticalRenderer extends DefaultTableCellRenderer {
 		label.setForeground(UIManager.getColor("TableHeader.foreground"));
 		label.setFont(UIManager.getFont("TableHeader.font"));
 
-		Icon icon = getVerticalCaption(label, value.toString(), false);
+		Color color = dataset.getMap().isDistinctExpressionSets() ? dataset.getColor() : null;
+		Icon icon = getVerticalCaption(label, value.toString(), color, false);
 
 		label.setIcon(icon);
 		label.setVerticalAlignment(JLabel.BOTTOM);
@@ -83,16 +90,20 @@ public class ColumnHeaderVerticalRenderer extends DefaultTableCellRenderer {
 	}
 
 	
-    private static Icon getVerticalCaption(JComponent component, String caption, boolean clockwise) {
+    private static Icon getVerticalCaption(JComponent component, String caption, Color barColor, boolean clockwise) {
+    	final int barHeight = 5;
 		Font f = component.getFont();
 		FontMetrics fm = component.getFontMetrics(f);
-		int captionHeight = fm.getHeight();
-		int captionWidth = fm.stringWidth(caption);
-		BufferedImage bi = new BufferedImage(captionHeight + 4, captionWidth + 4, BufferedImage.TYPE_INT_ARGB);
+		int height = fm.getHeight() + 4 ;
+		int width  = fm.stringWidth(caption) + 4 + (barColor == null ? 0 : barHeight);
+		BufferedImage bi = new BufferedImage(height, width, BufferedImage.TYPE_INT_ARGB);
 		Graphics2D g = (Graphics2D) bi.getGraphics();
 		
-//		g.fillRect(0, 0, bi.getWidth(), 2);
-
+		if(barColor != null) {
+			g.setColor(barColor);
+			g.fillRect(0, 0, bi.getWidth(), barHeight);
+		}
+		
 		g.setColor(component.getForeground());
 		g.setFont(f);
 		g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
