@@ -12,6 +12,7 @@ import javax.swing.border.Border;
 import javax.swing.table.TableCellRenderer;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.view.expression.ExpressionViewerParams.Transform;
 import org.mskcc.colorgradient.ColorGradientRange;
 import org.mskcc.colorgradient.ColorGradientTheme;
 
@@ -31,7 +32,9 @@ public class ColorRenderer implements TableCellRenderer {
 		ExpressionTableModel model = (ExpressionTableModel) table.getModel();
 		DataSet dataset = model.getDataSet(col);
 		
-		ColorRange range = colorRanges.computeIfAbsent(dataset, ds -> new ColorRange(ds));
+		Transform transform = model.getTransform();
+		
+		ColorRange range = colorRanges.computeIfAbsent(dataset, ds -> ColorRange.create(ds, transform));
 		
 		if(value instanceof Double) {
 			Color color = getColor(range.getTheme(), range.getRange(), (Double)value);

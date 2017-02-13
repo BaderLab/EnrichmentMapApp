@@ -1,5 +1,8 @@
 package org.baderlab.csplugins.enrichmentmap.view.expression;
 
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.net.URL;
@@ -13,19 +16,18 @@ import javax.swing.GroupLayout.Alignment;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.JToggleButton;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
-import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.view.expression.ExpressionViewerParams.Transform;
-import org.baderlab.csplugins.enrichmentmap.view.util.CheckboxListPanel;
+import org.baderlab.csplugins.enrichmentmap.view.util.ComboItem;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 import org.cytoscape.application.swing.CytoPanelComponent2;
 import org.cytoscape.application.swing.CytoPanelName;
@@ -44,39 +46,46 @@ public class ExpressionViewerPanel extends JPanel implements CytoPanelComponent2
 	private static final int COLUMN_WIDTH_COLOR = 10;
 	private static final int COLUMN_WIDTH_VALUE = 50;
 	
-	
 	@Inject private IconManager iconManager;
 	
-	private JToggleButton syncButton;
-	private JButton gearButton;
-	private JButton menuButton;
-	
 	private JTable table;
-	private JScrollPane scrollPane;
-	private CheckboxListPanel<DataSet> dataSetList;
 	
 	
 	@AfterInjection
 	private void createContents() {
-//		JPanel dataSetPanel    = createDataSetPanel();
+		JPanel toolbarPanel = createToolbarPanel();
 		JPanel expressionPanel = createExpressionPanel();
 
-		LookAndFeelUtil.equalizeSize(gearButton, menuButton);
-
-//		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, dataSetPanel, expressionPanel);
-//		splitPane.setBorder(BorderFactory.createEmptyBorder());
-		
 		setLayout(new BorderLayout());
+		add(toolbarPanel, BorderLayout.NORTH);
 		add(expressionPanel, BorderLayout.CENTER);
 		setOpaque(false);
 	}
-
-
-	private JPanel createDataSetPanel() {
-		JLabel title = new JLabel("Data Sets");
-		SwingUtil.makeSmall(title);
-		syncButton = createIconToggleButton(IconManager.ICON_EXCHANGE, "Sync selection with control panel");
-		CheckboxListPanel<DataSet> dataSetList = new CheckboxListPanel<>();
+	
+	
+	private JPanel createToolbarPanel() {
+		JLabel title = new JLabel(" Expression Data");
+		JLabel normLabel = new JLabel("Normalization:");
+		JComboBox<ComboItem<Transform>> normCombo = new JComboBox<>();
+		JLabel sortLabel = new JLabel("Sorting:");
+		JComboBox<String> sortCombo = new JComboBox<>();
+		SwingUtil.makeSmall(title, normLabel, normCombo, sortLabel, sortCombo);
+		
+		normCombo.addItem(new ComboItem<>(Transform.AS_IS, "None"));
+		normCombo.addItem(new ComboItem<>(Transform.ROW_NORMALIZE, "Row Normalize"));
+		normCombo.addItem(new ComboItem<>(Transform.LOG_TRANSFORM, "Log Transform"));
+		normCombo.setSelectedItem(ComboItem.of(Transform.AS_IS));
+		
+		normCombo.addActionListener(e -> {
+			Transform t = normCombo.getItemAt(normCombo.getSelectedIndex()).getValue();
+			ExpressionTableModel tableModel = (ExpressionTableModel) table.getModel();
+			table.setDefaultRenderer(Double.class, new ColorRenderer()); // clear cached data used by the ColorRenderer
+			tableModel.setTransform(t);
+		});
+		
+		JButton gearButton = createIconButton(IconManager.ICON_GEAR, "Settings");
+		JButton menuButton = createIconButton(IconManager.ICON_BARS, "Extras");
+		LookAndFeelUtil.equalizeSize(gearButton, menuButton);
 		
 		JPanel panel = new JPanel();
 		GroupLayout layout = new GroupLayout(panel);
@@ -84,80 +93,45 @@ public class ExpressionViewerPanel extends JPanel implements CytoPanelComponent2
 		layout.setAutoCreateContainerGaps(false);
 		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
 		
-		layout.setHorizontalGroup(layout.createParallelGroup()
-			.addGroup(layout.createSequentialGroup()
-				.addComponent(title)
-				.addGap(0, 0, Short.MAX_VALUE)
-				.addComponent(syncButton)
-			)
-			.addComponent(dataSetList)
+		layout.setHorizontalGroup(layout.createSequentialGroup()
+			.addComponent(title)
+			.addGap(0, 0, Short.MAX_VALUE)
+			.addComponent(normLabel)
+			.addComponent(normCombo, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+			.addGap(10, 10, 10)
+			.addComponent(sortLabel)
+			.addComponent(sortCombo, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+			.addComponent(gearButton)
+			.addComponent(menuButton)
 		);
-		layout.setVerticalGroup(layout.createSequentialGroup()
-			.addGroup(layout.createParallelGroup()
-				.addComponent(title)
-				.addComponent(syncButton)
-			)
-			.addComponent(dataSetList)
+		layout.setVerticalGroup(layout.createParallelGroup(Alignment.BASELINE)
+			.addComponent(title)
+			.addComponent(normLabel)
+			.addComponent(normCombo)
+			.addComponent(sortLabel)
+			.addComponent(sortCombo)
+			.addComponent(gearButton)
+			.addComponent(menuButton)
 		);
 		
 		return panel;
 	}
 
+
 	private JPanel createExpressionPanel() {
-		JLabel title = new JLabel(" Expression Data");
-		SwingUtil.makeSmall(title);
-		
 		table = new JTable();
-		
-		scrollPane = new JScrollPane(table);
+		JScrollPane scrollPane = new JScrollPane(table);
 		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		table.setFillsViewportHeight(true);
 		table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 		
-		gearButton = createIconButton(IconManager.ICON_GEAR, "Settings");
-		menuButton = createIconButton(IconManager.ICON_BARS, "Extras");
-		
-		JPanel panel = new JPanel();
-		GroupLayout layout = new GroupLayout(panel);
-		panel.setLayout(layout);
-		layout.setAutoCreateContainerGaps(false);
-		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
-		
-		layout.setHorizontalGroup(layout.createParallelGroup()
-			.addGroup(layout.createSequentialGroup()
-				.addComponent(title)
-				.addGap(0, 0, Short.MAX_VALUE)
-				.addComponent(gearButton)
-				.addComponent(menuButton)
-			)
-			.addComponent(scrollPane)
-		);
-		layout.setVerticalGroup(layout.createSequentialGroup()
-			.addGroup(layout.createParallelGroup(Alignment.BASELINE)
-				.addComponent(title)
-				.addComponent(gearButton)
-				.addComponent(menuButton)
-			)
-			.addComponent(scrollPane)
-		);
-		
+		JPanel panel = new JPanel(new BorderLayout());
+		panel.add(scrollPane, BorderLayout.CENTER);
 		panel.setOpaque(false);
 		return panel;
 	}
 	
-	
-	private JToggleButton createIconToggleButton(String icon, String toolTip) {
-		JToggleButton iconButton = new JToggleButton(icon);
-		iconButton.setFont(iconManager.getIconFont(13.0f));
-		iconButton.setToolTipText(toolTip);
-
-		if(LookAndFeelUtil.isAquaLAF()) {
-			iconButton.putClientProperty("JButton.buttonType", "gradient");
-			iconButton.putClientProperty("JComponent.sizeVariant", "small");
-		}
-		return iconButton;
-	}
 	
 	private JButton createIconButton(String icon, String toolTip) {
 		JButton iconButton = new JButton(icon);
@@ -175,7 +149,7 @@ public class ExpressionViewerPanel extends JPanel implements CytoPanelComponent2
 	public void update(EnrichmentMap map, Set<String> genes) {
 		List<String> geneList = new ArrayList<>(genes);
 		geneList.sort(Comparator.naturalOrder());
-		ExpressionTableModel tableModel = new ExpressionTableModel(new ExpressionViewerParams(Transform.AS_IS), map, geneList);
+		ExpressionTableModel tableModel = new ExpressionTableModel(map, geneList, Transform.AS_IS);
 		table.setModel(tableModel);
 		table.setDefaultRenderer(Double.class, new ColorRenderer());
 		createTableHeader();
@@ -194,7 +168,6 @@ public class ExpressionViewerPanel extends JPanel implements CytoPanelComponent2
 			column.setPreferredWidth(COLUMN_WIDTH_COLOR);
 		}
 	}
-	
 	
 	@Override
 	public CytoPanelName getCytoPanelName() {

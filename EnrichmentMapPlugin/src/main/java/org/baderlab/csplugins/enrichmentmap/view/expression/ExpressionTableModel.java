@@ -12,6 +12,7 @@ import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpression;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
+import org.baderlab.csplugins.enrichmentmap.view.expression.ExpressionViewerParams.Transform;
 
 
 /**
@@ -21,15 +22,15 @@ import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
 @SuppressWarnings("serial")
 public class ExpressionTableModel extends AbstractTableModel {
 
-	private final ExpressionViewerParams params;
+	private Transform transform;
 	private final EnrichmentMap map;
 	private final List<String> genes;
 	private final int colCount;
 	
 	private final NavigableMap<Integer,DataSet> colToDataSet = new TreeMap<>();
 	
-	public ExpressionTableModel(ExpressionViewerParams params, EnrichmentMap map, List<String> genes) {
-		this.params = params;
+	public ExpressionTableModel(EnrichmentMap map, List<String> genes, Transform transform) {
+		this.transform = transform;
 		this.map = map;
 		this.genes = genes;
 		
@@ -45,7 +46,16 @@ public class ExpressionTableModel extends AbstractTableModel {
 		colCount = rangeFloor;
 	}
 	
+	
+	public void setTransform(Transform transform) {
+		this.transform = transform;
+		fireTableDataChanged();
+	}
 
+	public Transform getTransform() {
+		return transform;
+	}
+	
 	@Override
 	public int getRowCount() {
 		return genes.size();
@@ -109,7 +119,7 @@ public class ExpressionTableModel extends AbstractTableModel {
 		
 		Double[] values = null;
 		if(row != null) {
-			switch(params.getTransform()) {
+			switch(transform) {
 				case ROW_NORMALIZE:  values = row.rowNormalize();    break;
 				case LOG_TRANSFORM:  values = row.rowLogTransform(); break;
 				case AS_IS:          values = row.getExpression();   break;
