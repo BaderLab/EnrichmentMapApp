@@ -45,7 +45,7 @@ import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
 
 import com.google.inject.Inject;
  
-public class MasterMapVisualStyle {
+public class EMStyleBuilder {
 	
 	public final static String DEFAULT_NAME_SUFFIX = "Visual_Style"; // TEMPORARY probably won't be called 'MasterMap' in the final version
 	public final static String PUBLICATION_SUFFIX = "_publication";
@@ -110,15 +110,13 @@ public class MasterMapVisualStyle {
 	}
 
 	public static class Colors {
-		// See http://colorbrewer2.org/#type=diverging&scheme=RdBu&n=9 
-		public static final Color NODE_MAX_PHENOTYPE_1 = new Color(178, 24, 43);
-		public static final Color NODE_LIGHTER_PHENOTYPE_1 = new Color(214, 96, 77);
-		public static final Color NODE_LIGHTEST_PHENOTYPE_1 = new Color(244, 165, 130);
-		public static final Color NODE_OVER_COLOR = new Color(247, 247, 247);
-		public static final Color NODE_LIGHTER_PHENOTYPE_2 = new Color(67, 147, 195);
-		public static final Color NODE_LIGHTEST_PHENOTYPE_2 = new Color(146, 197, 222);
+		// See http://colorbrewer2.org/#type=diverging&scheme=RdBu&n=6
+		public static final Color DEF_NODE_BORDER_COLOR = new Color(33, 102, 172);
+		public static final Color DEF_NODE_COLOR = new Color(209, 229, 240);
+		public static final Color SIG_NODE_BORDER_COLOR = new Color(239, 138, 98);
+		public static final Color SIG_NODE_COLOR = new Color(253, 219, 199);
 
-		// see http://colorbrewer2.org/?type=qualitative&scheme=Dark2&n=8#type=qualitative&scheme=Dark2&n=8
+		// See http://colorbrewer2.org/?type=qualitative&scheme=Dark2&n=8#type=qualitative&scheme=Dark2&n=8
 		private static final Color EDGE_COLOR_SIG = new Color(231,41,138);
 		private static final Color EDGE_COLOR_COMPOUND = new Color(27,158,119);
 		private static final Color[] EDGE_COLORS_DISTINCT = 
@@ -145,7 +143,7 @@ public class MasterMapVisualStyle {
 		return styleTitle != null && styleTitle.endsWith(PUBLICATION_SUFFIX);
 	}
 	
-	public void updateProperties(VisualStyle vs, MasterMapStyleOptions options, CyCustomGraphics2<?> chart) {
+	public void updateProperties(VisualStyle vs, EMStyleOptions options, CyCustomGraphics2<?> chart) {
 		eventHelper.silenceEventSource(vs);
 		
 		try {
@@ -162,6 +160,8 @@ public class MasterMapVisualStyle {
 			setNodeDefaults(vs, options, hasChart);
 			setNodeShapes(vs, options, hasChart);
 			setNodeSize(vs, options, hasChart);
+			setNodeBorderColors(vs, options, hasChart);
+			setNodeColors(vs, options, hasChart);
 			setNodeLabels(vs, options);
 			setNodeChart(vs, chart);
 		} finally {
@@ -179,19 +179,19 @@ public class MasterMapVisualStyle {
 			vs.setDefaultValue(customPaint1, chart);
 	}
 	
-	private void setEdgeDefaults(VisualStyle vs, MasterMapStyleOptions options) {
+	private void setEdgeDefaults(VisualStyle vs, EMStyleOptions options) {
 		vs.setDefaultValue(EDGE_TRANSPARENCY, DEF_EDGE_TRANSPARENCY);
 		vs.setDefaultValue(EDGE_LABEL_TRANSPARENCY, DEF_EDGE_TRANSPARENCY);
 	}
 	
-	private void setEdgePaint(VisualStyle vs, MasterMapStyleOptions options) {
+	private void setEdgePaint(VisualStyle vs, EMStyleOptions options) {
 		DiscreteMapping<String, Paint> edgePaint = createEdgeColorMapping(options, EDGE_UNSELECTED_PAINT);
 		vs.addVisualMappingFunction(edgePaint);
 		DiscreteMapping<String, Paint> edgeStrokePaint = createEdgeColorMapping(options, EDGE_STROKE_UNSELECTED_PAINT);
 		vs.addVisualMappingFunction(edgeStrokePaint);
 	}
 	
-	private DiscreteMapping<String,Paint> createEdgeColorMapping(MasterMapStyleOptions options, VisualProperty<Paint> vp) {
+	private DiscreteMapping<String,Paint> createEdgeColorMapping(EMStyleOptions options, VisualProperty<Paint> vp) {
 		String prefix = options.getAttributePrefix();
 		String col = Columns.EDGE_DATASET.with(prefix, null);
 		DiscreteMapping<String, Paint> edgePaint = (DiscreteMapping<String,Paint>) dmFactory.createVisualMappingFunction(col, String.class, vp);
@@ -206,7 +206,7 @@ public class MasterMapVisualStyle {
 		return edgePaint;
 	}
 	
-	private void setEdgeWidth(VisualStyle vs, MasterMapStyleOptions options) {
+	private void setEdgeWidth(VisualStyle vs, EMStyleOptions options) {
 		String prefix = options.getAttributePrefix();
 		EnrichmentMap map = options.getEnrichmentMap();
 		
@@ -228,10 +228,10 @@ public class MasterMapVisualStyle {
 		vs.addVisualMappingFunction(edgewidth);
 	}
 	
-	private void setNodeDefaults(VisualStyle vs, MasterMapStyleOptions options, boolean hasChart) {
+	private void setNodeDefaults(VisualStyle vs, EMStyleOptions options, boolean hasChart) {
 		// Set the default node appearance
-		vs.setDefaultValue(NODE_FILL_COLOR, Color.LIGHT_GRAY);
-		vs.setDefaultValue(NODE_BORDER_PAINT, Colors.NODE_MAX_PHENOTYPE_1);
+		vs.setDefaultValue(NODE_FILL_COLOR, Colors.DEF_NODE_COLOR);
+		vs.setDefaultValue(NODE_BORDER_PAINT, Colors.DEF_NODE_BORDER_COLOR);
 		vs.setDefaultValue(NODE_SHAPE, hasChart ? RECTANGLE : ELLIPSE);
 		vs.setDefaultValue(NODE_SIZE, hasChart ? (MAX_NODE_SIZE + MIN_NODE_SIZE) / 2 : MIN_NODE_SIZE);
 		vs.setDefaultValue(NODE_BORDER_WIDTH, 1.0);
@@ -240,7 +240,7 @@ public class MasterMapVisualStyle {
 		vs.setDefaultValue(NODE_LABEL_TRANSPARENCY, DEF_NODE_TRANSPARENCY);
 	}
 	
-	private void setNodeShapes(VisualStyle vs, MasterMapStyleOptions options, boolean hasChart) {
+	private void setNodeShapes(VisualStyle vs, EMStyleOptions options, boolean hasChart) {
 		String prefix = options.getAttributePrefix();
 		
 		// Add mapping function for node shape
@@ -251,14 +251,36 @@ public class MasterMapVisualStyle {
 		vs.addVisualMappingFunction(nodeShape);
 	}
 	
-	private void setNodeLabels(VisualStyle vs, MasterMapStyleOptions options) {
+	private void setNodeBorderColors(VisualStyle vs, EMStyleOptions options, boolean hasChart) {
+		String prefix = options.getAttributePrefix();
+		
+		// Add mapping function for node border color
+		DiscreteMapping<String, Paint> nodePaint = (DiscreteMapping<String, Paint>) dmFactory
+				.createVisualMappingFunction(Columns.NODE_GS_TYPE.with(prefix, null), String.class, NODE_BORDER_PAINT);
+		nodePaint.putMapValue(Columns.NODE_GS_TYPE_ENRICHMENT, Colors.DEF_NODE_BORDER_COLOR);
+		nodePaint.putMapValue(Columns.NODE_GS_TYPE_SIGNATURE, Colors.SIG_NODE_BORDER_COLOR);
+		vs.addVisualMappingFunction(nodePaint);
+	}
+	
+	private void setNodeColors(VisualStyle vs, EMStyleOptions options, boolean hasChart) {
+		String prefix = options.getAttributePrefix();
+		
+		// Add mapping function for node fill color
+		DiscreteMapping<String, Paint> nodePaint = (DiscreteMapping<String, Paint>) dmFactory
+				.createVisualMappingFunction(Columns.NODE_GS_TYPE.with(prefix, null), String.class, NODE_FILL_COLOR);
+		nodePaint.putMapValue(Columns.NODE_GS_TYPE_ENRICHMENT, Colors.DEF_NODE_COLOR);
+		nodePaint.putMapValue(Columns.NODE_GS_TYPE_SIGNATURE, Colors.SIG_NODE_COLOR);
+		vs.addVisualMappingFunction(nodePaint);
+	}
+	
+	private void setNodeLabels(VisualStyle vs, EMStyleOptions options) {
 		String prefix = options.getAttributePrefix();
 		PassthroughMapping<String, String> nodeLabel = (PassthroughMapping<String, String>) pmFactory
 				.createVisualMappingFunction(Columns.NODE_GS_DESCR.with(prefix,null), String.class, NODE_LABEL);
 		vs.addVisualMappingFunction(nodeLabel);
 	}
 	
-	private void setNodeSize(VisualStyle vs, MasterMapStyleOptions options, boolean hasChart) {
+	private void setNodeSize(VisualStyle vs, EMStyleOptions options, boolean hasChart) {
 		if (hasChart) {
 			vs.removeVisualMappingFunction(NODE_SIZE);
 		} else {

@@ -20,7 +20,7 @@ import org.baderlab.csplugins.enrichmentmap.model.GenericResult;
 import org.baderlab.csplugins.enrichmentmap.model.GenesetSimilarity;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.model.SimilarityKey;
-import org.baderlab.csplugins.enrichmentmap.style.MasterMapVisualStyle.Columns;
+import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;

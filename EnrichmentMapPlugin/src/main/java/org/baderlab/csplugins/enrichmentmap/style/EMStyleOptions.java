@@ -8,7 +8,7 @@ import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.cytoscape.view.model.CyNetworkView;
 
-public class MasterMapStyleOptions {
+public class EMStyleOptions {
 	
 	private final CyNetworkView networkView;
 	private final EnrichmentMap map;
@@ -17,13 +17,13 @@ public class MasterMapStyleOptions {
 	/**
 	 * It is assumed that all the given DataSets come from the same EnrichmentMap.
 	 */
-	public MasterMapStyleOptions(CyNetworkView networkView, EnrichmentMap map, Predicate<DataSet> filter) {
+	public EMStyleOptions(CyNetworkView networkView, EnrichmentMap map, Predicate<DataSet> filter) {
 		this.networkView = networkView;
 		this.map = map;
 		this.filter = filter;
 	}
 
-	public MasterMapStyleOptions(CyNetworkView networkView, EnrichmentMap map) {
+	public EMStyleOptions(CyNetworkView networkView, EnrichmentMap map) {
 		this(networkView, map, x -> true);
 	}
 	

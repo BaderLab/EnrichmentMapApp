@@ -4,8 +4,8 @@ import java.awt.Color;
 
 import javax.annotation.Nullable;
 
-import org.baderlab.csplugins.enrichmentmap.style.MasterMapStyleOptions;
-import org.baderlab.csplugins.enrichmentmap.style.MasterMapVisualStyle;
+import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
+import org.baderlab.csplugins.enrichmentmap.style.EMStyleOptions;
 import org.baderlab.csplugins.enrichmentmap.style.MasterMapVisualStyleTask;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
@@ -25,18 +25,18 @@ public class TogglePublicationVisualStyleTask extends AbstractTask {
 	@Inject private VisualStyleFactory visualStyleFactory;
 	@Inject private CyEventHelper eventHelper;
 	@Inject private MasterMapVisualStyleTask.Factory visualStyleTaskFactory;
-	@Inject private MasterMapVisualStyle masterMapVisualStyle;
+	@Inject private EMStyleBuilder styleBuilder;
 	
-	private final MasterMapStyleOptions options;
+	private final EMStyleOptions options;
 	private final CyCustomGraphics2<?> chart;
 	
 	public interface Factory {
-		TogglePublicationVisualStyleTask create(MasterMapStyleOptions options, CyCustomGraphics2<?> chart);
+		TogglePublicationVisualStyleTask create(EMStyleOptions options, CyCustomGraphics2<?> chart);
 	}
 	
 	@Inject
 	public TogglePublicationVisualStyleTask(
-			@Assisted MasterMapStyleOptions options,
+			@Assisted EMStyleOptions options,
 			@Assisted @Nullable CyCustomGraphics2<?> chart
 	) {
 		this.options = options;
@@ -55,13 +55,13 @@ public class TogglePublicationVisualStyleTask extends AbstractTask {
 		
 		String currentTitle = currentStyle.getTitle();
 
-		if (MasterMapVisualStyle.isPublicationReady(currentTitle)) {
+		if (EMStyleBuilder.isPublicationReady(currentTitle)) {
 			// If the current style is the publication one, then attempt to switch back...
 			MasterMapVisualStyleTask task = visualStyleTaskFactory.create(options, chart);
 			insertTasksAfterCurrentTask(task);
 		} else {
 			// If not, set the publication-ready style...
-			String title = currentTitle + MasterMapVisualStyle.PUBLICATION_SUFFIX;
+			String title = currentTitle + EMStyleBuilder.PUBLICATION_SUFFIX;
 			VisualStyle style = getStyle(title);
 			
 			if (style == null) {
@@ -71,7 +71,7 @@ public class TogglePublicationVisualStyleTask extends AbstractTask {
 
 				visualMappingManager.addVisualStyle(style);
 			} else {
-				masterMapVisualStyle.updateProperties(style, options, chart);
+				styleBuilder.updateProperties(style, options, chart);
 			}
 			
 			// Always reset these properties:

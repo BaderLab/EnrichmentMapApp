@@ -34,7 +34,7 @@ import org.baderlab.csplugins.enrichmentmap.model.Rank;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfEnrichmentResults;
 import org.baderlab.csplugins.enrichmentmap.model.io.SessionModelListener;
-import org.baderlab.csplugins.enrichmentmap.style.MasterMapVisualStyle;
+import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
@@ -140,7 +140,7 @@ public class LegacySessionLoadTest extends BaseIntegrationTest {
 		assertEquals(1, rows.size());
 		CyRow row = rows.iterator().next();
 		assertEquals("Geneset_Overlap", row.get(CyEdge.INTERACTION, String.class));
-		assertEquals(0.6097560975609756, MasterMapVisualStyle.Columns.EDGE_SIMILARITY_COEFF.get(row, prefix), 0.0);
+		assertEquals(0.6097560975609756, EMStyleBuilder.Columns.EDGE_SIMILARITY_COEFF.get(row, prefix), 0.0);
 		
 		DataSet dataset = map.getDataset("Dataset 1");
 		assertNotNull(dataset);

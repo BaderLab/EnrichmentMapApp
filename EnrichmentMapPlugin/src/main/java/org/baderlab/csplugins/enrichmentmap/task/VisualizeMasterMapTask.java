@@ -1,7 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap.task;
 
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.style.MasterMapStyleOptions;
+import org.baderlab.csplugins.enrichmentmap.style.EMStyleOptions;
 import org.baderlab.csplugins.enrichmentmap.style.MasterMapVisualStyleTask;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
@@ -56,7 +56,7 @@ public class VisualizeMasterMapTask extends AbstractTask {
 		if (layout == null)
 			layout = layoutManager.getDefaultLayout();
 		
-		Task styleTask = masterMapVisualStyleTaskFactory.create(new MasterMapStyleOptions(view, map), null);
+		Task styleTask = masterMapVisualStyleTaskFactory.create(new EMStyleOptions(view, map), null);
 		TaskIterator layoutTasks = layout.createTaskIterator(view, layout.createLayoutContext(),
 				CyLayoutAlgorithm.ALL_NODE_VIEWS, null);
 		

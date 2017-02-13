@@ -5,8 +5,8 @@ import java.util.Optional;
 
 import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Passthrough;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
 import org.baderlab.csplugins.enrichmentmap.style.LegacyPostAnalysisVisualStyle;
-import org.baderlab.csplugins.enrichmentmap.style.MasterMapVisualStyle;
 import org.baderlab.csplugins.enrichmentmap.style.WidthFunction;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.event.CyEventHelper;
@@ -24,6 +24,7 @@ import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.assistedinject.Assisted;
 
+@Deprecated
 public class CreatePostAnalysisVisualStyleTask extends AbstractTask {
 
 	@Inject private CyApplicationManager applicationManager;
@@ -83,7 +84,7 @@ public class CreatePostAnalysisVisualStyleTask extends AbstractTask {
 		
 	private void applyVisualStyle(TaskMonitor taskMonitor) {
 		String prefix = map.getParams().getAttributePrefix();
-		String vsName = MasterMapVisualStyle.getStyleName(map);
+		String vsName = EMStyleBuilder.getStyleName(map);
 		
 		Optional<VisualStyle> currentStyle = attemptToGetExistingStyle(vsName);
 		if(currentStyle.isPresent()) {
@@ -93,30 +94,30 @@ public class CreatePostAnalysisVisualStyleTask extends AbstractTask {
 			widthFunction.setEdgeWidths(network, prefix, taskMonitor);
 			LegacyPostAnalysisVisualStyle.useFormulaForEdgeWidth(vs, prefix, vmfFactoryPassthrough);
 		}
-		// MKTODO is there a better way to specify the PA node color?
-		LegacyPostAnalysisVisualStyle.createNodeBypassForColor(taskResult);
+		
+		// TODO is there a better way to specify the PA node color?
+//		LegacyPostAnalysisVisualStyle.createNodeBypassForColor(taskResult);
 		
 		CyNetworkView view = applicationManager.getCurrentNetworkView();
 		eventHelper.flushPayloadEvents(); // view won't update properly without this
 		view.updateView();
 	}
 	
-	
 	private void applyLegacyVisualStyle(TaskMonitor taskMonitor) {
 		String prefix = map.getParams().getAttributePrefix();
-		String vs_name = prefix + LegacyPostAnalysisVisualStyle.NAME;
+		String title = prefix + LegacyPostAnalysisVisualStyle.NAME;
 		CyNetworkView view = applicationManager.getCurrentNetworkView();
 
 		LegacyPostAnalysisVisualStyle pa_vs = paStyleFactory.create(map);
 		pa_vs.applyNetworkSpeficifProperties(taskResult, prefix, taskMonitor);
 
-		Optional<VisualStyle> currentStyle = attemptToGetExistingStyle(vs_name);
+		Optional<VisualStyle> currentStyle = attemptToGetExistingStyle(title);
+		final VisualStyle vs;
 		
-		VisualStyle vs;
-		if(currentStyle.isPresent()) {
+		if (currentStyle.isPresent()) {
 			vs = currentStyle.get();
 		} else {
-			vs = visualStyleFactory.createVisualStyle(vs_name);
+			vs = visualStyleFactory.createVisualStyle(title);
 			pa_vs.createVisualStyle(vs, prefix);
 			visualMappingManager.addVisualStyle(vs);
 		}
@@ -125,12 +126,10 @@ public class CreatePostAnalysisVisualStyleTask extends AbstractTask {
 
 		try {
 			vs.apply(view);
-		} catch(ConcurrentModificationException e) {
+		} catch (ConcurrentModificationException e) {
 		}
 
 		eventHelper.flushPayloadEvents(); // view won't update properly without this
-
 		view.updateView();
 	}
-
 }

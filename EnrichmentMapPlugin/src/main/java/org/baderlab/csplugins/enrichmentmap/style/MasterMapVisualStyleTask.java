@@ -20,17 +20,17 @@ public class MasterMapVisualStyleTask extends AbstractTask {
 	@Inject private VisualMappingManager visualMappingManager;
 	@Inject private VisualStyleFactory visualStyleFactory;
 	
-	@Inject private Provider<MasterMapVisualStyle> masterMapVisualStyleProvider;
+	@Inject private Provider<EMStyleBuilder> styleBuilderProvider;
 
-	private final MasterMapStyleOptions options;
+	private final EMStyleOptions options;
 	private final CyCustomGraphics2<?> chart;
 
 	public interface Factory {
-		MasterMapVisualStyleTask create(MasterMapStyleOptions options, CyCustomGraphics2<?> chart);
+		MasterMapVisualStyleTask create(EMStyleOptions options, CyCustomGraphics2<?> chart);
 	}
 
 	@Inject
-	public MasterMapVisualStyleTask(@Assisted MasterMapStyleOptions options,
+	public MasterMapVisualStyleTask(@Assisted EMStyleOptions options,
 			@Assisted @Nullable CyCustomGraphics2<?> chart) {
 		this.options = options;
 		this.chart = chart;
@@ -46,8 +46,8 @@ public class MasterMapVisualStyleTask extends AbstractTask {
 	private void applyVisualStyle(CyCustomGraphics2<?> chart) {
 		VisualStyle vs = getVisualStyle(options.getEnrichmentMap());
 
-		MasterMapVisualStyle masterMapStyle = masterMapVisualStyleProvider.get();
-		masterMapStyle.updateProperties(vs, options, chart);
+		EMStyleBuilder styleBuilder = styleBuilderProvider.get();
+		styleBuilder.updateProperties(vs, options, chart);
 
 		CyNetworkView view = options.getNetworkView();
 		
@@ -57,7 +57,7 @@ public class MasterMapVisualStyleTask extends AbstractTask {
 	}
 
 	private VisualStyle getVisualStyle(EnrichmentMap map) {
-		String vsName = MasterMapVisualStyle.getStyleName(map);
+		String vsName = EMStyleBuilder.getStyleName(map);
 		VisualStyle vs = getExistingVisualStyle(vsName);
 
 		if (vs == null) {

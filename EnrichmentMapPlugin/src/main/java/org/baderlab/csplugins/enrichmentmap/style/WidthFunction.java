@@ -5,7 +5,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterType;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
-import org.baderlab.csplugins.enrichmentmap.style.MasterMapVisualStyle.Columns;
+import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;

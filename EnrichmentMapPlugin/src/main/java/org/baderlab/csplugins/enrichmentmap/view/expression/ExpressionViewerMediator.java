@@ -8,7 +8,7 @@ import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
-import org.baderlab.csplugins.enrichmentmap.style.MasterMapVisualStyle;
+import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanel;
@@ -100,7 +100,7 @@ public class ExpressionViewerMediator implements RowsSetListener {
 	private static Collection<String> getGenes(CyNetwork network, CyNode node, String prefix) {
 		CyRow row = network.getRow(node);
 		// This is already the union of all the genes across data sets
-		return MasterMapVisualStyle.Columns.NODE_GENES.get(row, prefix, null);
+		return EMStyleBuilder.Columns.NODE_GENES.get(row, prefix, null);
 	}
 
 

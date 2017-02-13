@@ -63,7 +63,7 @@ import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterParameters;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterType;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
-import org.baderlab.csplugins.enrichmentmap.style.MasterMapVisualStyle.Columns;
+import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns;
 import org.baderlab.csplugins.enrichmentmap.util.NetworkUtil;
 import org.baderlab.csplugins.mannwhit.MannWhitneyUTestSided;
 import org.cytoscape.application.CyApplicationManager;

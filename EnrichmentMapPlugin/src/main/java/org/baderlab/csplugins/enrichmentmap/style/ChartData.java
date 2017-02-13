@@ -1,6 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.style;
 
-import org.baderlab.csplugins.enrichmentmap.style.MasterMapVisualStyle.Columns;
+import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns;
 
 public enum ChartData {
 	NONE("-- None --", null),
