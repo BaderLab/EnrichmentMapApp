@@ -4,7 +4,6 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
-import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParameters.DistanceMetric;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.session.CySessionManager;
 
@@ -48,7 +47,7 @@ public class PropertyManager {
 	private double defaultOverlapCutOff = 0.5;
 	private double defaultCombinedCutOff = 0.375;
 	private SimilarityMetric defaultSimilarityMetric = SimilarityMetric.OVERLAP;
-	private DistanceMetric defaultDistanceMetric = DistanceMetric.PEARSON_CORRELATION;
+//	private DistanceMetric defaultDistanceMetric = DistanceMetric.PEARSON_CORRELATION;
 
 	private double defaultPvalue = 0.005;
 	private double defaultQvalue = 0.1;
@@ -82,9 +81,9 @@ public class PropertyManager {
 		return defaultSimilarityMetric;
 	}
 
-	public DistanceMetric getDefaultDistanceMetric() {
-		return defaultDistanceMetric;
-	}
+//	public DistanceMetric getDefaultDistanceMetric() {
+//		return defaultDistanceMetric;
+//	}
 
 	public double getDefaultPvalue() {
 		return defaultPvalue;

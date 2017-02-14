@@ -1,104 +1,123 @@
-/**
- **                       EnrichmentMap Cytoscape Plugin
- **
- ** Copyright (c) 2008-2009 Bader Lab, Donnelly Centre for Cellular and Biomolecular 
- ** Research, University of Toronto
- **
- ** Contact: http://www.baderlab.org
- **
- ** Code written by: Ruth Isserlin
- ** Authors: Daniele Merico, Ruth Isserlin, Oliver Stueker, Gary D. Bader
- **
- ** This library is free software; you can redistribute it and/or modify it
- ** under the terms of the GNU Lesser General Public License as published
- ** by the Free Software Foundation; either version 2.1 of the License, or
- ** (at your option) any later version.
- **
- ** This library is distributed in the hope that it will be useful, but
- ** WITHOUT ANY WARRANTY, WITHOUT EVEN THE IMPLIED WARRANTY OF
- ** MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.  The software and
- ** documentation provided hereunder is on an "as is" basis, and
- ** University of Toronto
- ** has no obligations to provide maintenance, support, updates, 
- ** enhancements or modifications.  In no event shall the
- ** University of Toronto
- ** be liable to any party for direct, indirect, special,
- ** incidental or consequential damages, including lost profits, arising
- ** out of the use of this software and its documentation, even if
- ** University of Toronto
- ** has been advised of the possibility of such damage.  
- ** See the GNU Lesser General Public License for more details.
- **
- ** You should have received a copy of the GNU Lesser General Public License
- ** along with this library; if not, write to the Free Software Foundation,
- ** Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
- **
- **/
-
-// $Id$
-// $LastChangedDate$
-// $LastChangedRevision$
-// $LastChangedBy$
-// $HeadURL$
-
 package org.baderlab.csplugins.enrichmentmap.view.heatmap;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.border.Border;
 import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableModel;
 
-/**
- * Created by User: risserlin Date: Feb 2, 2009 Time: 9:50:34 AM
- */
-@Deprecated
-@SuppressWarnings("serial")
-public class ColorRenderer extends JLabel implements TableCellRenderer {
-	Border unselectedBorder = null;
-	Border selectedBorder = null;
-	boolean isBordered = true;
-	HeatMapTableModel ogt = new HeatMapTableModel();
+import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Transform;
+import org.mskcc.colorgradient.ColorGradientRange;
+import org.mskcc.colorgradient.ColorGradientTheme;
 
-	public ColorRenderer() {
-		setOpaque(true); //MUST do this for background to show up.
-	}
+public class ColorRenderer implements TableCellRenderer {
+	
+	private Map<DataSet,ColorRange> colorRanges = new HashMap<>();
+	
+	private Border unselectedBorder = null;
+	private Border selectedBorder = null;
+	private boolean isBordered = true;
 
-	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-		Color newColor = null;
-		Double numberValue = 0.0;
 
-		if((value != null) && (value instanceof ExpressionTableValue)) {
-			ExpressionTableValue avalue = (ExpressionTableValue) value;
-			numberValue = avalue.getExpression_value();
-			newColor = avalue.getExpression_color();
+	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
+		JLabel label = new JLabel();
+		label.setOpaque(true); //MUST do this for background to show up.
+		
+		HeatMapTableModel model = (HeatMapTableModel) table.getModel();
+		DataSet dataset = model.getDataSet(col);
+		
+		Transform transform = model.getTransform();
+		
+		ColorRange range = colorRanges.computeIfAbsent(dataset, ds -> ColorRange.create(ds, transform));
+		
+		if(value instanceof Double) {
+			Color color = getColor(range.getTheme(), range.getRange(), (Double)value);
+			label.setBackground(color);
 		}
-
-		TableModel tc = table.getModel();
-
-		//Object disp=tc.getExpValueAt(row, column);
-		setBackground(newColor);
+		
 		if(isBordered) {
-			if(isSelected) {
-				if(selectedBorder == null) {
-					selectedBorder = BorderFactory.createMatteBorder(0, 0, 0, 0, table.getSelectionBackground());
-				}
-				setBorder(selectedBorder);
-			} else {
-				if(unselectedBorder == null) {
-					unselectedBorder = BorderFactory.createMatteBorder(0, 0, 0, 0, table.getBackground());
-				}
-				setBorder(unselectedBorder);
-			}
+			label.setBorder(isSelected ? getSelectedBorder(table) : getUnselectedBorder(table));
 		}
+		
+		label.setToolTipText("Exp value: " + value);
+		return label;
+	}
+	
+	
+	private Border getSelectedBorder(JTable table) {
+		if(selectedBorder == null) {
+			selectedBorder = BorderFactory.createMatteBorder(0, 0, 0, 0, table.getSelectionBackground());
+		}
+		return selectedBorder;
+	}
+	
+	private Border getUnselectedBorder(JTable table) {
+		if(unselectedBorder == null) {
+			unselectedBorder = BorderFactory.createMatteBorder(0, 0, 0, 0, table.getBackground());
+		}
+		return unselectedBorder;
+	}
+	
+	
+	private static Color getColor(ColorGradientTheme theme, ColorGradientRange range, Double measurement) {
+		if (theme == null || range == null || measurement == null)
+			return Color.GRAY;
+		if(Double.isNaN(measurement))
+			return theme.getNoDataColor();
 
-		// setToolTipText("Exp Value: " + );
-		setToolTipText("Exp value: " + numberValue);
+		float rLow = (float)theme.getMinColor().getRed()   / 255f;
+		float gLow = (float)theme.getMinColor().getGreen() / 255f;
+		float bLow = (float)theme.getMinColor().getBlue()  / 255f;
+		
+		float rMid = (float)theme.getCenterColor().getRed()   / 255f;
+		float gMid = (float)theme.getCenterColor().getGreen() / 255f;
+		float bMid = (float)theme.getCenterColor().getBlue()  / 255f;
+		 
+		float rHigh = (float)theme.getMaxColor().getRed()   / 255f;
+		float gHigh = (float)theme.getMaxColor().getGreen() / 255f;
+		float bHigh = (float)theme.getMaxColor().getBlue()  / 255f;
+		
+		double median;
+		if (range.getMinValue() >= 0)
+			median = (range.getMaxValue() / 2);
+		else
+			median = 0.0;
+		
+		// This happens when you row-normalize but there is only one column. This is probably
+		// not the best way to fix it...
+		if(median == 0.0 && measurement == 0.0) {
+			return theme.getCenterColor();
+		} 
+		
+		if (measurement <= median) {
+			float prop = (float) ((float) (measurement - range.getMinValue()) / (median - range.getMinValue()));
+			float rVal = rLow + prop * (rMid - rLow);
+			float gVal = gLow + prop * (gMid - gLow);
+			float bVal = bLow + prop * (bMid - bLow);
 
-		return this;
+			return new Color(rVal, gVal, bVal);
+		} else {
+			//Related to bug https://github.com/BaderLab/EnrichmentMapApp/issues/116
+			//When there is differing max and mins for datasets then it will throw exception
+			//for the dataset2 if the value is bigger than the max
+			//This need to be fixed on the dataset but in the meantime if the value is bigger
+			//than the max set it to the max
+			if (measurement > range.getMaxValue())
+				measurement = range.getMaxValue();
+
+			float prop = (float) ((float) (measurement - median) / (range.getMaxValue() - median));
+			float rVal = rMid + prop * (rHigh - rMid);
+			float gVal = gMid + prop * (gHigh - gMid);
+			float bVal = bMid + prop * (bHigh - bMid);
+
+			return new Color(rVal, gVal, bVal);
+
+		}
 	}
 }

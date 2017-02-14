@@ -1,8 +1,8 @@
-package org.baderlab.csplugins.enrichmentmap.view.expression;
+package org.baderlab.csplugins.enrichmentmap.view.heatmap;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
-import org.baderlab.csplugins.enrichmentmap.view.expression.ExpressionViewerParams.Transform;
+import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Transform;
 import org.mskcc.colorgradient.ColorGradientRange;
 import org.mskcc.colorgradient.ColorGradientTheme;
 

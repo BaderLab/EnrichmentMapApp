@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap.view.expression;
+package org.baderlab.csplugins.enrichmentmap.view.heatmap;
 
 import java.awt.GridLayout;
 
@@ -15,9 +15,9 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
 
 @SuppressWarnings("serial")
 
-public class SettingsPanel extends JPanel {
+public class SettingsPopupPanel extends JPanel {
 	
-	public SettingsPanel() {
+	public SettingsPopupPanel() {
 		createContents();
 		setOpaque(false);
 	}

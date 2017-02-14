@@ -1,6 +1,6 @@
-package org.baderlab.csplugins.enrichmentmap.view.expression;
+package org.baderlab.csplugins.enrichmentmap.view.heatmap;
 
-public class ExpressionViewerParams {
+public class HeatMapParams {
 	
 	public static enum Transform {
 		AS_IS, 
@@ -17,7 +17,7 @@ public class ExpressionViewerParams {
 	private final Transform transform;
 	
 	
-	public ExpressionViewerParams(Transform transform) {
+	public HeatMapParams(Transform transform) {
 		this.transform = transform;
 	}
 	

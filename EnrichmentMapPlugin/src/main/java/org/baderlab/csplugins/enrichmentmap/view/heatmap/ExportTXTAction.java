@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap.view.expression;
+package org.baderlab.csplugins.enrichmentmap.view.heatmap;
 
 import java.awt.event.ActionEvent;
 

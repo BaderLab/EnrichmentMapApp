@@ -3,7 +3,7 @@ package org.baderlab.csplugins.enrichmentmap.actions;
 import java.awt.event.ActionEvent;
 
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanelMediator;
-import org.baderlab.csplugins.enrichmentmap.view.expression.ExpressionViewerMediator;
+import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapMediator;
 import org.cytoscape.application.swing.AbstractCyAction;
 
 import com.google.inject.Inject;
@@ -17,7 +17,7 @@ public class OpenEnrichmentMapAction extends AbstractCyAction {
 	public static final String NAME = "EnrichmentMap";
 
 	@Inject private Provider<ControlPanelMediator> controlPanelMediatorProvider;
-	@Inject private Provider<ExpressionViewerMediator> expressionViewerMediatorProvider;
+	@Inject private Provider<HeatMapMediator> expressionViewerMediatorProvider;
 
 	public OpenEnrichmentMapAction() {
 		super(NAME);

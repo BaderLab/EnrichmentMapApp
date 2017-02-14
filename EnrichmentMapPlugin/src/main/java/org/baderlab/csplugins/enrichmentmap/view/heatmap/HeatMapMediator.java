@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap.view.expression;
+package org.baderlab.csplugins.enrichmentmap.view.heatmap;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -27,9 +27,9 @@ import com.google.inject.Provider;
 import com.google.inject.Singleton;
 
 @Singleton
-public class ExpressionViewerMediator implements RowsSetListener {
+public class HeatMapMediator implements RowsSetListener {
 
-	@Inject private Provider<ExpressionViewerPanel> panelProvider;
+	@Inject private Provider<HeatMapPanel> panelProvider;
 	@Inject private EnrichmentMapManager emManager;
 	
 	@Inject private CyServiceRegistrar serviceRegistrar;
@@ -40,19 +40,19 @@ public class ExpressionViewerMediator implements RowsSetListener {
 	public void showExpressionViewerPanel() {
 		CytoPanelComponent panel = null;
 		try {
-			panel = serviceRegistrar.getService(CytoPanelComponent.class, "(id=" + ExpressionViewerPanel.ID + ")");
+			panel = serviceRegistrar.getService(CytoPanelComponent.class, "(id=" + HeatMapPanel.ID + ")");
 		} catch (Exception ex) { }
 		
 		if(panel == null) {
 			panel = panelProvider.get();
 			Properties props = new Properties();
-			props.setProperty("id", ExpressionViewerPanel.ID);
+			props.setProperty("id", HeatMapPanel.ID);
 			serviceRegistrar.registerService(panel, CytoPanelComponent.class, props);
 		}
 		
 		// Bring panel to frong
 		CytoPanel cytoPanel = swingApplication.getCytoPanel(panel.getCytoPanelName());
-		int index = cytoPanel.indexOfComponent(ExpressionViewerPanel.ID);
+		int index = cytoPanel.indexOfComponent(HeatMapPanel.ID);
 		if(index >= 0)
 			cytoPanel.setSelectedIndex(index);
 	}
