@@ -4,12 +4,10 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 import java.lang.annotation.Retention;
 
-import org.baderlab.csplugins.enrichmentmap.actions.BuildPostAnalysisActionListener;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadSignatureSetsActionListener;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.style.EnrichmentMapVisualStyle;
-import org.baderlab.csplugins.enrichmentmap.style.LegacyPostAnalysisVisualStyle;
 import org.baderlab.csplugins.enrichmentmap.style.MasterMapVisualStyleTask;
 import org.baderlab.csplugins.enrichmentmap.task.BuildDiseaseSignatureTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreatePostAnalysisVisualStyleTask;
@@ -64,9 +62,7 @@ class FactoryModule extends AbstractModule {
 	protected void configure() {
 		// Factories using AssistedInject
 		installFactory(EnrichmentMapVisualStyle.Factory.class);
-		installFactory(LegacyPostAnalysisVisualStyle.Factory.class);
 		installFactory(PostAnalysisInputPanel.Factory.class);
-		installFactory(BuildPostAnalysisActionListener.Factory.class);
 		installFactory(CreatePostAnalysisVisualStyleTask.Factory.class);
 		installFactory(TogglePublicationVisualStyleTask.Factory.class);
 		installFactory(BuildDiseaseSignatureTask.Factory.class);
