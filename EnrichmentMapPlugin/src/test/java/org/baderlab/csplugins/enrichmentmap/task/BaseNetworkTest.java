@@ -99,9 +99,9 @@ public abstract class BaseNetworkTest {
     @Inject private CyApplicationManager applicationManager;
     @Inject private EnrichmentMapManager emManager;
     
-    @Inject private MasterMapTaskFactory.Factory masterMapTaskFactoryFactory;
+    @Inject private CreateEnrichmentMapTaskFactory.Factory masterMapTaskFactoryFactory;
     @Inject private LoadSignatureSetsActionListener.Factory  loadSignatureSetsActionListenerFactory;
-    @Inject private BuildDiseaseSignatureTask.Factory buildDiseaseSignatureTaskFactory;
+    @Inject private CreateDiseaseSignatureTask.Factory buildDiseaseSignatureTaskFactory;
     
     
 	@Before
@@ -113,7 +113,7 @@ public abstract class BaseNetworkTest {
 	
 	protected void buildEnrichmentMap(EMCreationParameters params, DataSetFiles datasetFiles, Method method, String datasetName) {
 		List<DataSetParameters> dataSets = Arrays.asList(new DataSetParameters(datasetName, method, datasetFiles));
-		MasterMapTaskFactory taskFactory = masterMapTaskFactoryFactory.create(params, dataSets);
+		CreateEnrichmentMapTaskFactory taskFactory = masterMapTaskFactoryFactory.create(params, dataSets);
 		TaskIterator taskIterator = taskFactory.createTaskIterator();
 		
 	    // make sure the task iterator completes
@@ -128,7 +128,7 @@ public abstract class BaseNetworkTest {
 		};
 
 	   	SerialTestTaskManager testTaskManager = new SerialTestTaskManager();
-	   	testTaskManager.ignoreTask(VisualizeMasterMapTask.class);
+	   	testTaskManager.ignoreTask(CreateEMViewTask.class);
 	   	testTaskManager.execute(taskIterator, observer);
 	}
 	
@@ -159,7 +159,7 @@ public abstract class BaseNetworkTest {
 		PostAnalysisParameters paParams = builder.build();
 		
 		// Run post-analysis
-		BuildDiseaseSignatureTask signatureTask = buildDiseaseSignatureTaskFactory.create(map, paParams);
+		CreateDiseaseSignatureTask signatureTask = buildDiseaseSignatureTaskFactory.create(map, paParams);
 		signatureTask.run(mock(TaskMonitor.class));
 	}
 	

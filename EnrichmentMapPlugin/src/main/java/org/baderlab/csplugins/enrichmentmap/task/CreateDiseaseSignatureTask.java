@@ -88,7 +88,7 @@ import com.google.inject.assistedinject.Assisted;
 /**
  * Cytoscape-Task to perform Disease-Signature Post-Analysis
  */
-public class BuildDiseaseSignatureTask extends AbstractTask implements ObservableTask {
+public class CreateDiseaseSignatureTask extends AbstractTask implements ObservableTask {
 	
 	@Inject private CyApplicationManager applicationManager;
 	@Inject private CyEventHelper eventHelper;
@@ -112,15 +112,15 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 	private Ranking ranks;
 	private Map<String, GenesetSimilarity> geneset_similarities;
 
-	private BuildDiseaseSignatureTaskResult.Builder taskResult = new BuildDiseaseSignatureTaskResult.Builder();
+	private CreateDiseaseSignatureTaskResult.Builder taskResult = new CreateDiseaseSignatureTaskResult.Builder();
 
 	
 	public interface Factory {
-		BuildDiseaseSignatureTask create(EnrichmentMap map, PostAnalysisParameters paParams);
+		CreateDiseaseSignatureTask create(EnrichmentMap map, PostAnalysisParameters paParams);
 	}
 	
 	@Inject
-	public BuildDiseaseSignatureTask(@Assisted EnrichmentMap map, @Assisted PostAnalysisParameters paParams) {
+	public CreateDiseaseSignatureTask(@Assisted EnrichmentMap map, @Assisted PostAnalysisParameters paParams) {
 		this.map = map;
 		this.paParams = paParams; 
 		
@@ -387,7 +387,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 			hubNodeView.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, hubNodeY + currentNodeY_offset);
 		}
 
-		String formatted_label = MasterMapNetworkTask.formatLabel(hub_name);
+		String formatted_label = CreateEMNetworkTask.formatLabel(hub_name);
 		CyRow row = cyNodeAttrs.getRow(hub_node.getSUID());
 		Columns.NODE_FORMATTED_NAME.set(row, prefix, null, formatted_label);
 
@@ -594,7 +594,7 @@ public class BuildDiseaseSignatureTask extends AbstractTask implements Observabl
 
 	@Override
 	public <R> R getResults(Class<? extends R> type) {
-		if(BuildDiseaseSignatureTaskResult.class.equals(type)) {
+		if(CreateDiseaseSignatureTaskResult.class.equals(type)) {
 			taskResult.setCancelled(cancelled);
 			return type.cast(taskResult.build());
 		}

@@ -44,7 +44,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.N
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.resolver.DataSetParameters;
 import org.baderlab.csplugins.enrichmentmap.resolver.DataSetResolver;
-import org.baderlab.csplugins.enrichmentmap.task.MasterMapTaskFactory;
+import org.baderlab.csplugins.enrichmentmap.task.CreateEnrichmentMapTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogCallback;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogCallback.Message;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogPage;
@@ -80,7 +80,7 @@ public class MixedFormatDialogPage implements CardDialogPage {
 	
 	@Inject private LegacySupport legacySupport;
 	@Inject private CutoffPropertiesPanel cutoffPanel;
-	@Inject private MasterMapTaskFactory.Factory taskFactoryFactory;
+	@Inject private CreateEnrichmentMapTaskFactory.Factory taskFactoryFactory;
 	
 	private CardDialogCallback callback;
 	
@@ -134,7 +134,7 @@ public class MixedFormatDialogPage implements CardDialogPage {
 		
 		List<DataSetParameters> dataSets = dataSetListModel.toList();
 		
-		MasterMapTaskFactory taskFactory = taskFactoryFactory.create(params, dataSets);
+		CreateEnrichmentMapTaskFactory taskFactory = taskFactoryFactory.create(params, dataSets);
 		TaskIterator tasks = taskFactory.createTaskIterator();
 		
 		// Close this dialog after the progress dialog finishes normally

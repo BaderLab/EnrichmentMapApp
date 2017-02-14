@@ -26,29 +26,26 @@ import com.google.common.base.Strings;
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 
-public class MasterMapTaskFactory extends AbstractTaskFactory {
+public class CreateEnrichmentMapTaskFactory extends AbstractTaskFactory {
 
 	@Inject private CyServiceRegistrar serviceRegistrar;
 	@Inject private @Headless boolean headless;
 	
-	@Inject private MasterMapNetworkTask.Factory masterMapNetworkTaskFactory;
-	@Inject private VisualizeMasterMapTask.Factory visualizeMasterMapTaskFactory;
-	
+	@Inject private CreateEMNetworkTask.Factory createEMNetworkTaskFactory;
+	@Inject private CreateEMViewTask.Factory createEMViewTaskFactory;
 	
 	private final EMCreationParameters params;
 	private final List<DataSetParameters> dataSets;
 	
-	
 	public static interface Factory {
-		MasterMapTaskFactory create(EMCreationParameters params, List<DataSetParameters> dataSets);
+		CreateEnrichmentMapTaskFactory create(EMCreationParameters params, List<DataSetParameters> dataSets);
 	}
 	
 	@Inject
-	public MasterMapTaskFactory(@Assisted EMCreationParameters params, @Assisted List<DataSetParameters> dataSets) {
+	public CreateEnrichmentMapTaskFactory(@Assisted EMCreationParameters params, @Assisted List<DataSetParameters> dataSets) {
 		this.dataSets = dataSets;
 		this.params = params;
 	}
-	
 	
 	@Override
 	public TaskIterator createTaskIterator() {
@@ -118,11 +115,11 @@ public class MasterMapTaskFactory extends AbstractTaskFactory {
 		tasks.append(new ComputeSimilarityTaskParallel(map, pipe.consumer()));
 
 		// Create the network
-		tasks.append(masterMapNetworkTaskFactory.create(map, pipe.supplier()));
+		tasks.append(createEMNetworkTaskFactory.create(map, pipe.supplier()));
 		
 		// Create style and layout
 		if(!headless) {
-			tasks.append(visualizeMasterMapTaskFactory.create(map));
+			tasks.append(createEMViewTaskFactory.create(map));
 		}
 		
 		return tasks;

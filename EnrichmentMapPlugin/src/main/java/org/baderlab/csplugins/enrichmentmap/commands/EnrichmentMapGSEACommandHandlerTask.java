@@ -14,7 +14,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.resolver.DataSetParameters;
-import org.baderlab.csplugins.enrichmentmap.task.MasterMapTaskFactory;
+import org.baderlab.csplugins.enrichmentmap.task.CreateEnrichmentMapTaskFactory;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
@@ -53,7 +53,7 @@ public class EnrichmentMapGSEACommandHandlerTask extends AbstractTask {
 	public Double combinedconstant ;
 
 	
-	@Inject private MasterMapTaskFactory.Factory taskFactoryFactory;
+	@Inject private CreateEnrichmentMapTaskFactory.Factory taskFactoryFactory;
 	@Inject private EnrichmentMapManager emManager;
 	@Inject private LegacySupport legacySupport;
 	
@@ -81,7 +81,7 @@ public class EnrichmentMapGSEACommandHandlerTask extends AbstractTask {
 				new EMCreationParameters(prefix, pvalue, qvalue, NESFilter.ALL, Optional.empty(), 
 						metric, overlap, combinedconstant);
 		
-		MasterMapTaskFactory taskFactory = taskFactoryFactory.create(creationParams, dataSets);
+		CreateEnrichmentMapTaskFactory taskFactory = taskFactoryFactory.create(creationParams, dataSets);
 		insertTasksAfterCurrentTask(taskFactory.createTaskIterator());
 		
 //		emManager.showPanels();

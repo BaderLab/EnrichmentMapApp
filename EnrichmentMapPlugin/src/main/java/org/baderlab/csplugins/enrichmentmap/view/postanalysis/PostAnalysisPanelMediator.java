@@ -19,8 +19,8 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters.AnalysisType;
-import org.baderlab.csplugins.enrichmentmap.task.BuildDiseaseSignatureTask;
-import org.baderlab.csplugins.enrichmentmap.task.BuildDiseaseSignatureTaskResult;
+import org.baderlab.csplugins.enrichmentmap.task.CreateDiseaseSignatureTask;
+import org.baderlab.csplugins.enrichmentmap.task.CreateDiseaseSignatureTaskResult;
 import org.baderlab.csplugins.enrichmentmap.task.CreatePostAnalysisVisualStyleTask;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 import org.cytoscape.application.CyApplicationManager;
@@ -43,7 +43,7 @@ public class PostAnalysisPanelMediator {
 
 	@Inject private EnrichmentMapManager emManager;
 	@Inject private PostAnalysisInputPanel.Factory panelFactory;
-	@Inject private BuildDiseaseSignatureTask.Factory signatureTaskFactory;
+	@Inject private CreateDiseaseSignatureTask.Factory signatureTaskFactory;
 	@Inject private CreatePostAnalysisVisualStyleTask.Factory paStyleTaskFactory;
 	
 	@Inject private CyServiceRegistrar serviceRegistrar;
@@ -111,7 +111,7 @@ public class PostAnalysisPanelMediator {
 		if (errors.isEmpty()) {
 			TaskIterator currentTasks = new TaskIterator();
 
-			BuildDiseaseSignatureTask buildDiseaseSignatureTask = signatureTaskFactory.create(map, params);
+			CreateDiseaseSignatureTask buildDiseaseSignatureTask = signatureTaskFactory.create(map, params);
 			currentTasks.append(buildDiseaseSignatureTask);
 
 			CreatePostAnalysisVisualStyleTask visualStyleTask = paStyleTaskFactory.create(map);
@@ -146,7 +146,7 @@ public class PostAnalysisPanelMediator {
 	private class DialogObserver implements TaskObserver {
 
 		private CreatePostAnalysisVisualStyleTask visualStyleTask;
-		private BuildDiseaseSignatureTaskResult result;
+		private CreateDiseaseSignatureTaskResult result;
 
 		private DialogObserver(CreatePostAnalysisVisualStyleTask visualStyleTask) {
 			this.visualStyleTask = visualStyleTask;
@@ -154,8 +154,8 @@ public class PostAnalysisPanelMediator {
 
 		@Override
 		public void taskFinished(ObservableTask task) {
-			if (task instanceof BuildDiseaseSignatureTask) {
-				result = task.getResults(BuildDiseaseSignatureTaskResult.class);
+			if (task instanceof CreateDiseaseSignatureTask) {
+				result = task.getResults(CreateDiseaseSignatureTaskResult.class);
 				// Is there a better way to pass results from one task to another?
 				visualStyleTask.setBuildDiseaseSignatureTaskResult(result);
 			}

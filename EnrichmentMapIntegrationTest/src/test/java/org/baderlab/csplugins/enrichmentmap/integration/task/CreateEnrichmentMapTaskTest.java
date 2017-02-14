@@ -23,7 +23,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.Similarit
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
 import org.baderlab.csplugins.enrichmentmap.resolver.DataSetParameters;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
-import org.baderlab.csplugins.enrichmentmap.task.MasterMapTaskFactory;
+import org.baderlab.csplugins.enrichmentmap.task.CreateEnrichmentMapTaskFactory;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
@@ -35,7 +35,7 @@ import org.ops4j.pax.exam.junit.PaxExam;
 import com.google.inject.Injector;
 
 @RunWith(PaxExam.class)
-public class EnrichmentMapTaskTest extends BaseIntegrationTest {
+public class CreateEnrichmentMapTaskTest extends BaseIntegrationTest {
 	
 	private static final String PATH = "/EnrichmentMapTaskTest/";
 	
@@ -46,8 +46,8 @@ public class EnrichmentMapTaskTest extends BaseIntegrationTest {
 	protected void buildEnrichmentMap(EMCreationParameters params, DataSetFiles datasetFiles, String datasetName) {
 		List<DataSetParameters> dataSets = Arrays.asList(new DataSetParameters(datasetName, Method.Generic, datasetFiles));
 		
-		MasterMapTaskFactory.Factory masterMapTaskFactoryFactory = injector.getInstance(MasterMapTaskFactory.Factory.class);
-		MasterMapTaskFactory taskFactory = masterMapTaskFactoryFactory.create(params, dataSets);
+		CreateEnrichmentMapTaskFactory.Factory masterMapTaskFactoryFactory = injector.getInstance(CreateEnrichmentMapTaskFactory.Factory.class);
+		CreateEnrichmentMapTaskFactory taskFactory = masterMapTaskFactoryFactory.create(params, dataSets);
 	    
 		TaskIterator taskIterator = taskFactory.createTaskIterator();
 	   	SerialTestTaskManager taskManager = new SerialTestTaskManager();

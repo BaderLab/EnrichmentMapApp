@@ -36,7 +36,7 @@ import org.cytoscape.work.TaskMonitor;
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 
-public class MasterMapNetworkTask extends AbstractTask implements ObservableTask {
+public class CreateEMNetworkTask extends AbstractTask implements ObservableTask {
 
 	@Inject private CyNetworkManager networkManager;
 	@Inject private CyNetworkFactory networkFactory;
@@ -51,11 +51,11 @@ public class MasterMapNetworkTask extends AbstractTask implements ObservableTask
 	private long networkSuidResult;
 	
 	public interface Factory {
-		MasterMapNetworkTask create(EnrichmentMap map, Supplier<Map<SimilarityKey,GenesetSimilarity>> supplier);
+		CreateEMNetworkTask create(EnrichmentMap map, Supplier<Map<SimilarityKey,GenesetSimilarity>> supplier);
 	}
 	
 	@Inject
-	public MasterMapNetworkTask(@Assisted EnrichmentMap map, @Assisted Supplier<Map<SimilarityKey,GenesetSimilarity>> supplier) {
+	public CreateEMNetworkTask(@Assisted EnrichmentMap map, @Assisted Supplier<Map<SimilarityKey,GenesetSimilarity>> supplier) {
 		this.map = map;
 		this.prefix = map.getParams().getAttributePrefix();
 		this.supplier = supplier;
@@ -63,8 +63,8 @@ public class MasterMapNetworkTask extends AbstractTask implements ObservableTask
 	
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
-		taskMonitor.setTitle("Building Enrichment Map Network");
-		networkSuidResult = createMasterMapNetwork();
+		taskMonitor.setTitle("Creating EnrichmentMap Network");
+		networkSuidResult = createEMNetwork();
 		taskMonitor.setStatusMessage("");
 	}
 	
@@ -78,7 +78,7 @@ public class MasterMapNetworkTask extends AbstractTask implements ObservableTask
 		return null;
 	}
 	
-	private long createMasterMapNetwork() {
+	private long createEMNetwork() {
 		// Create the CyNetwork
 		CyNetwork network = networkFactory.createNetwork();
 		

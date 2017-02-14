@@ -16,7 +16,7 @@ import org.cytoscape.work.TaskMonitor;
  * Created by IntelliJ IDEA. User: risserlin Date: 11-02-16 Time: 4:27 PM To
  * change this template use File | Settings | File Templates.
  */
-public class BuildGMTEnrichmentMapTask extends AbstractTask {
+public class CreateGMTEnrichmentMapTask extends AbstractTask {
 
 	// Keep track of progress for monitoring:
 	private TaskMonitor taskMonitor = null;
@@ -24,7 +24,7 @@ public class BuildGMTEnrichmentMapTask extends AbstractTask {
 
 	private DataSet dataset;
 
-	public BuildGMTEnrichmentMapTask(DataSet dataset) {
+	public CreateGMTEnrichmentMapTask(DataSet dataset) {
 
 		this.dataset = dataset;
 

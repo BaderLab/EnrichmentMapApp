@@ -24,7 +24,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.N
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.resolver.DataSetParameters;
 import org.baderlab.csplugins.enrichmentmap.resolver.GSEAResolver;
-import org.baderlab.csplugins.enrichmentmap.task.MasterMapTaskFactory;
+import org.baderlab.csplugins.enrichmentmap.task.CreateEnrichmentMapTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogCallback;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogCallback.Message;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogPage;
@@ -48,7 +48,7 @@ public class GSEASimpleDialogPage implements CardDialogPage {
 	@Inject private DialogTaskManager taskManager;
 	@Inject private CutoffPropertiesPanel cutoffPanel;
 	@Inject private LegacySupport legacySupport;
-	@Inject private MasterMapTaskFactory.Factory taskFactoryFactory;
+	@Inject private CreateEnrichmentMapTaskFactory.Factory taskFactoryFactory;
 	
 	private CardDialogCallback callback;
 	private JPanel panel;
@@ -90,7 +90,7 @@ public class GSEASimpleDialogPage implements CardDialogPage {
 		List<Path> paths = checkboxListPanel.getSelectedDataItems();
 		List<DataSetParameters> dataSets = paths.stream().map(GSEAResolver::toDataSetParametersEDB).collect(Collectors.toList());
 		
-		MasterMapTaskFactory taskFactory = taskFactoryFactory.create(params, dataSets);
+		CreateEnrichmentMapTaskFactory taskFactory = taskFactoryFactory.create(params, dataSets);
 		TaskIterator tasks = taskFactory.createTaskIterator();
 		
 		// Close this dialog after the progress dialog finishes normally

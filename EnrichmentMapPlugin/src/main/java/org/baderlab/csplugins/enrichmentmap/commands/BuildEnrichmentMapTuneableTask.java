@@ -58,7 +58,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.resolver.DataSetParameters;
-import org.baderlab.csplugins.enrichmentmap.task.MasterMapTaskFactory;
+import org.baderlab.csplugins.enrichmentmap.task.CreateEnrichmentMapTaskFactory;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
@@ -155,7 +155,7 @@ public class BuildEnrichmentMapTuneableTask extends AbstractTask {
 
 
 	@Inject private EnrichmentMapManager emManager;
-	@Inject private MasterMapTaskFactory.Factory taskFactoryFactory;
+	@Inject private CreateEnrichmentMapTaskFactory.Factory taskFactoryFactory;
 	@Inject private LegacySupport legacySupport;
 	@Inject private PropertyManager propertyManager;
 	
@@ -226,7 +226,7 @@ public class BuildEnrichmentMapTuneableTask extends AbstractTask {
 						metric, similaritycutoff, propertyManager.getDefaultCombinedConstant());
 		
 		
-		MasterMapTaskFactory taskFactory = taskFactoryFactory.create(creationParams, dataSets);
+		CreateEnrichmentMapTaskFactory taskFactory = taskFactoryFactory.create(creationParams, dataSets);
 		insertTasksAfterCurrentTask(taskFactory.createTaskIterator());
 
 //		emManager.showPanels();

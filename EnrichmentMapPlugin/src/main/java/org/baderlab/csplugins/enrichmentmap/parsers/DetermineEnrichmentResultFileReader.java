@@ -47,7 +47,7 @@ import java.io.IOException;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.resolver.DataSetResolver;
-import org.baderlab.csplugins.enrichmentmap.task.BuildGMTEnrichmentMapTask;
+import org.baderlab.csplugins.enrichmentmap.task.CreateGMTEnrichmentMapTask;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskIterator;
 
@@ -99,7 +99,7 @@ public class DetermineEnrichmentResultFileReader {
 			
 			//If both of the enrichment files are null then we want to default to building a gmt file only build
 			if(Strings.isNullOrEmpty(enrichmentsFileName1) && Strings.isNullOrEmpty(enrichmentsFileName2)) {
-				parserTasks.append(new BuildGMTEnrichmentMapTask(dataset));
+				parserTasks.append(new CreateGMTEnrichmentMapTask(dataset));
 			}
 			
 		} catch(IOException e) {

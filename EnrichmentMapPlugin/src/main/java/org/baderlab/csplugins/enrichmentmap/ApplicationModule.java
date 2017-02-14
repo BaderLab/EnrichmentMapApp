@@ -8,11 +8,11 @@ import org.baderlab.csplugins.enrichmentmap.actions.LoadSignatureSetsActionListe
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.task.ApplyEMStyleTask;
-import org.baderlab.csplugins.enrichmentmap.task.BuildDiseaseSignatureTask;
+import org.baderlab.csplugins.enrichmentmap.task.CreateDiseaseSignatureTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreatePostAnalysisVisualStyleTask;
-import org.baderlab.csplugins.enrichmentmap.task.MasterMapNetworkTask;
-import org.baderlab.csplugins.enrichmentmap.task.MasterMapTaskFactory;
-import org.baderlab.csplugins.enrichmentmap.task.VisualizeMasterMapTask;
+import org.baderlab.csplugins.enrichmentmap.task.CreateEMNetworkTask;
+import org.baderlab.csplugins.enrichmentmap.task.CreateEnrichmentMapTaskFactory;
+import org.baderlab.csplugins.enrichmentmap.task.CreateEMViewTask;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PostAnalysisInputPanel;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PostAnalysisKnownSignaturePanel;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PostAnalysisSignatureDiscoveryPanel;
@@ -59,15 +59,15 @@ class FactoryModule extends AbstractModule {
 		// Factories using AssistedInject
 		installFactory(PostAnalysisInputPanel.Factory.class);
 		installFactory(CreatePostAnalysisVisualStyleTask.Factory.class);
-		installFactory(BuildDiseaseSignatureTask.Factory.class);
+		installFactory(CreateDiseaseSignatureTask.Factory.class);
 		installFactory(LoadSignatureSetsActionListener.Factory.class);
 		installFactory(PostAnalysisKnownSignaturePanel.Factory.class);
 		installFactory(PostAnalysisSignatureDiscoveryPanel.Factory.class);
 		installFactory(EnrichmentMapParameters.Factory.class);
 //		installFactory(UpdateHeatMapTask.Factory.class);
-		installFactory(MasterMapTaskFactory.Factory.class);
-		installFactory(MasterMapNetworkTask.Factory.class);
-		installFactory(VisualizeMasterMapTask.Factory.class);
+		installFactory(CreateEnrichmentMapTaskFactory.Factory.class);
+		installFactory(CreateEMNetworkTask.Factory.class);
+		installFactory(CreateEMViewTask.Factory.class);
 		installFactory(ApplyEMStyleTask.Factory.class);
 	}
 	

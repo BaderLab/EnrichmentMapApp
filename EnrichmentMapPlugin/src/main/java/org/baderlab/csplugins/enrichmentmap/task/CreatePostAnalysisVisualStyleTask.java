@@ -39,7 +39,7 @@ public class CreatePostAnalysisVisualStyleTask extends AbstractTask {
 	@Inject private Provider<WidthFunction> widthFunctionProvider;
 	
 	private final EnrichmentMap map;
-	private BuildDiseaseSignatureTaskResult taskResult;
+	private CreateDiseaseSignatureTaskResult taskResult;
 	
 
 	public interface Factory {
@@ -51,7 +51,7 @@ public class CreatePostAnalysisVisualStyleTask extends AbstractTask {
 		this.map = map;
 	}
 
-	public void setBuildDiseaseSignatureTaskResult(BuildDiseaseSignatureTaskResult result) {
+	public void setBuildDiseaseSignatureTaskResult(CreateDiseaseSignatureTaskResult result) {
 		this.taskResult = result;
 	}
 

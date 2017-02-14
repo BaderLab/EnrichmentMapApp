@@ -17,7 +17,7 @@ import org.cytoscape.work.TaskMonitor;
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 
-public class VisualizeMasterMapTask extends AbstractTask {
+public class CreateEMViewTask extends AbstractTask {
 
 	@Inject private CyNetworkManager networkManager;
 	@Inject private CyNetworkViewManager networkViewManager;
@@ -28,17 +28,17 @@ public class VisualizeMasterMapTask extends AbstractTask {
 	private final EnrichmentMap map;
 
 	public interface Factory {
-		VisualizeMasterMapTask create(EnrichmentMap map);
+		CreateEMViewTask create(EnrichmentMap map);
 	}
 	
 	@Inject
-	public VisualizeMasterMapTask(@Assisted EnrichmentMap map) {
+	public CreateEMViewTask(@Assisted EnrichmentMap map) {
 		this.map = map;
 	}
 	
 	@Override
 	public void run(TaskMonitor taskMonitor) {
-		taskMonitor.setTitle("Create Network View");
+		taskMonitor.setTitle("Creating EnrichmentMap View");
 		visualizeMap();
 		taskMonitor.setStatusMessage("");
 	}
