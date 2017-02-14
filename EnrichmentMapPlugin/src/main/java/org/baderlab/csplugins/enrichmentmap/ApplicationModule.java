@@ -12,7 +12,6 @@ import org.baderlab.csplugins.enrichmentmap.task.BuildDiseaseSignatureTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreatePostAnalysisVisualStyleTask;
 import org.baderlab.csplugins.enrichmentmap.task.MasterMapNetworkTask;
 import org.baderlab.csplugins.enrichmentmap.task.MasterMapTaskFactory;
-import org.baderlab.csplugins.enrichmentmap.task.TogglePublicationVisualStyleTask;
 import org.baderlab.csplugins.enrichmentmap.task.VisualizeMasterMapTask;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PostAnalysisInputPanel;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PostAnalysisKnownSignaturePanel;
@@ -50,9 +49,7 @@ public class ApplicationModule extends AbstractModule {
 	public Boolean provideHeadlessFlag(BundleContext bc) {
 		return bc.getServiceReference(CySwingApplication.class.getName()) == null;
 	}
-	
 }
-
 
 // This is a separate class so it can be used by the integration tests
 class FactoryModule extends AbstractModule {
@@ -62,7 +59,6 @@ class FactoryModule extends AbstractModule {
 		// Factories using AssistedInject
 		installFactory(PostAnalysisInputPanel.Factory.class);
 		installFactory(CreatePostAnalysisVisualStyleTask.Factory.class);
-		installFactory(TogglePublicationVisualStyleTask.Factory.class);
 		installFactory(BuildDiseaseSignatureTask.Factory.class);
 		installFactory(LoadSignatureSetsActionListener.Factory.class);
 		installFactory(PostAnalysisKnownSignaturePanel.Factory.class);

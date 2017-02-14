@@ -9,6 +9,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.baderlab.csplugins.enrichmentmap.ApplicationModule;
+import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Continuous;
+import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Discrete;
+import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Passthrough;
 import org.baderlab.csplugins.enrichmentmap.LogSilenceRule;
 import org.baderlab.csplugins.enrichmentmap.SerialTestTaskManager;
 import org.baderlab.csplugins.enrichmentmap.TestUtils;
@@ -37,6 +40,7 @@ import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
+import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskIterator;
@@ -88,6 +92,9 @@ public abstract class BaseNetworkTest {
 	// OR You can explicitly bind the service in the TestModule above.
 	@Inject private RenderingEngineManager renderingEngineManager;
 	@Inject private CyColumnIdentifierFactory columnIdentifierFactory;
+	@Inject private @Continuous  VisualMappingFunctionFactory cmFactory;
+	@Inject private @Discrete    VisualMappingFunctionFactory dmFactory;
+	@Inject private @Passthrough VisualMappingFunctionFactory pmFactory;
 	
     @Inject private CyApplicationManager applicationManager;
     @Inject private EnrichmentMapManager emManager;

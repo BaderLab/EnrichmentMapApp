@@ -49,11 +49,9 @@ import org.baderlab.csplugins.enrichmentmap.style.ChartType;
 import org.baderlab.csplugins.enrichmentmap.style.ColorScheme;
 import org.baderlab.csplugins.enrichmentmap.style.ColumnDescriptor;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleOptions;
-import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
 import org.baderlab.csplugins.enrichmentmap.style.NullCustomGraphics;
 import org.baderlab.csplugins.enrichmentmap.style.WidthFunction;
 import org.baderlab.csplugins.enrichmentmap.task.ApplyEMStyleTask;
-import org.baderlab.csplugins.enrichmentmap.task.TogglePublicationVisualStyleTask;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanel.EMViewControlPanel;
 import org.baderlab.csplugins.enrichmentmap.view.parameters.ParametersPanelMediator;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.EdgeWidthDialog;
@@ -87,9 +85,6 @@ import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
-import org.cytoscape.view.vizmap.VisualStyle;
-import org.cytoscape.view.vizmap.events.VisualStyleSetEvent;
-import org.cytoscape.view.vizmap.events.VisualStyleSetListener;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.swing.DialogTaskManager;
 
@@ -100,7 +95,7 @@ import com.google.inject.Singleton;
 
 @Singleton
 public class ControlPanelMediator implements SetCurrentNetworkViewListener, NetworkViewAddedListener,
-		NetworkViewAboutToBeDestroyedListener, VisualStyleSetListener {
+		NetworkViewAboutToBeDestroyedListener {
 
 	private enum FilterMode {
 		HIDE("Hide filtered out nodes and edges"),
@@ -125,8 +120,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 	@Inject private Provider<EdgeWidthDialog> dialogProvider;
 	@Inject private EnrichmentMapManager emManager;
 	@Inject private ShowEnrichmentMapDialogAction masterMapDialogAction;
-	@Inject private TogglePublicationVisualStyleTask.Factory togglePubStyleTaskFactory;
-
+	
 	@Inject private CyServiceRegistrar serviceRegistrar;
 	@Inject private CyApplicationManager applicationManager;
 	@Inject private CySwingApplication swingApplication;
@@ -233,21 +227,6 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		});
 	}
 	
-	@Override
-	public void handleEvent(VisualStyleSetEvent e) {
-		final CyNetworkView netView = e.getNetworkView();
-		EMViewControlPanel viewPanel = controlPanelProvider.get().getViewControlPanel(netView);
-		
-		if (viewPanel != null) {
-			final VisualStyle style = e.getVisualStyle();
-			final boolean isPublication = EMStyleBuilder.isPublicationReady(style.getTitle());
-			
-			invokeOnEDT(() -> {
-				viewPanel.getTogglePublicationCheck().setSelected(isPublication);
-			});
-		}
-	}
-	
 	private void setCurrentNetworkView(CyNetworkView netView) {
 		invokeOnEDT(() -> {
 			updating = true;
@@ -344,11 +323,8 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 							updateVisualStyle(netView, map, viewPanel);
 					});
 					
-					viewPanel.getTogglePublicationCheck().addActionListener(evt -> {
-						EMStyleOptions options = createStyleOptions(netView, map, viewPanel);
-						CyCustomGraphics2<?> chart = createChart(viewPanel, options);
-						TaskIterator taskIterator = new TaskIterator(togglePubStyleTaskFactory.create(options, chart));
-						dialogTaskManager.execute(taskIterator);
+					viewPanel.getPublicationReadyCheck().addActionListener(evt -> {
+						updateVisualStyle(netView, map, viewPanel);
 					});
 					
 					viewPanel.getResetStyleButton().addActionListener(evt -> {
@@ -446,10 +422,10 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		dialogTaskManager.execute(new TaskIterator(task));
 	}
 	
-	private EMStyleOptions createStyleOptions(CyNetworkView netView, EnrichmentMap map,
-			EMViewControlPanel viewPanel) {
+	private EMStyleOptions createStyleOptions(CyNetworkView netView, EnrichmentMap map, EMViewControlPanel viewPanel) {
 		Set<DataSet> dataSets = ImmutableSet.copyOf(viewPanel.getCheckboxListPanel().getSelectedDataItems());
-		EMStyleOptions options = new EMStyleOptions(netView, map, dataSets::contains);
+		boolean publicationReady = viewPanel.getPublicationReadyCheck().isSelected();
+		EMStyleOptions options = new EMStyleOptions(netView, map, dataSets::contains, publicationReady);
 
 		return options;
 	}

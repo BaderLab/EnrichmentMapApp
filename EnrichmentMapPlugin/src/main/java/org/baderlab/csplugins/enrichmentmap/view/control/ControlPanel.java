@@ -425,7 +425,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		private JLabel dsFilterLabel = new JLabel("Data Sets:");
 		
 		private CheckboxListPanel<DataSet> checkboxListPanel;
-		private JCheckBox togglePublicationCheck;
+		private JCheckBox publicationReadyCheck;
 		private JButton setEdgeWidthButton;
 		private JButton resetStyleButton;
 		
@@ -641,7 +641,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		
 		private JPanel createStylePanel() {
 			makeSmall(chartDataLabel, chartTypeLabel, chartColorsLabel, getChartDataCombo(), getChartTypeCombo(),
-					getChartColorsCombo(), getTogglePublicationCheck(), getSetEdgeWidthButton(), getResetStyleButton());
+					getChartColorsCombo(), getPublicationReadyCheck(), getSetEdgeWidthButton(), getResetStyleButton());
 			
 			final JPanel panel = new JPanel();
 			panel.setBorder(LookAndFeelUtil.createTitledBorder("Style"));
@@ -664,7 +664,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 									.addComponent(getChartTypeCombo(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 									.addComponent(getChartColorsCombo(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 									.addComponent(getSetEdgeWidthButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-									.addComponent(getTogglePublicationCheck(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+									.addComponent(getPublicationReadyCheck(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 							)
 					)
 					.addComponent(getResetStyleButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -683,7 +683,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 							.addComponent(getChartColorsCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					)
 					.addComponent(getSetEdgeWidthButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(getTogglePublicationCheck(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getPublicationReadyCheck(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addPreferredGap(ComponentPlacement.UNRELATED)
 					.addComponent(getResetStyleButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
@@ -811,12 +811,12 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			return chartColorsCombo;
 		}
 		
-		JCheckBox getTogglePublicationCheck() {
-			if (togglePublicationCheck == null) {
-				togglePublicationCheck = new JCheckBox("Publication-Ready Style");
+		JCheckBox getPublicationReadyCheck() {
+			if (publicationReadyCheck == null) {
+				publicationReadyCheck = new JCheckBox("Publication-Ready Style");
 			}
 			
-			return togglePublicationCheck;
+			return publicationReadyCheck;
 		}
 		
 		public JButton getSetEdgeWidthButton() {

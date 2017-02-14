@@ -33,6 +33,7 @@ import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.values.NodeShape;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualStyle;
@@ -48,7 +49,6 @@ import com.google.inject.Inject;
 public class EMStyleBuilder {
 	
 	public final static String DEFAULT_NAME_SUFFIX = "Visual_Style"; // TEMPORARY probably won't be called 'MasterMap' in the final version
-	public final static String PUBLICATION_SUFFIX = "_publication";
 	
 	public final static String COMBINED = "Combined";
 	
@@ -142,10 +142,6 @@ public class EMStyleBuilder {
 		return prefix + DEFAULT_NAME_SUFFIX;
 	}
 	
-	public static boolean isPublicationReady(String styleTitle) {
-		return styleTitle != null && styleTitle.endsWith(PUBLICATION_SUFFIX);
-	}
-	
 	public void updateProperties(VisualStyle vs, EMStyleOptions options, CyCustomGraphics2<?> chart) {
 		eventHelper.silenceEventSource(vs);
 		
@@ -167,6 +163,14 @@ public class EMStyleBuilder {
 			setNodeColors(vs, options, hasChart);
 			setNodeLabels(vs, options);
 			setNodeChart(vs, chart);
+			
+			if (options.isPublicationReady()) {
+				// TODO review:
+				vs.removeVisualMappingFunction(BasicVisualLexicon.NODE_LABEL);
+				vs.setDefaultValue(BasicVisualLexicon.NODE_LABEL, "");
+				vs.removeVisualMappingFunction(BasicVisualLexicon.NETWORK_BACKGROUND_PAINT);
+				vs.setDefaultValue(BasicVisualLexicon.NETWORK_BACKGROUND_PAINT, Color.WHITE);
+			}
 		} finally {
 			eventHelper.unsilenceEventSource(vs);
 			eventHelper.addEventPayload(vs, new VisualStyleChangeRecord(), VisualStyleChangedEvent.class);
