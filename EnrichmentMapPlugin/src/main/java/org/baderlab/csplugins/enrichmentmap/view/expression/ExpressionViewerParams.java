@@ -8,6 +8,12 @@ public class ExpressionViewerParams {
 		LOG_TRANSFORM
 	}
 	
+	public static enum Sort {
+		RANKS, 
+		COLUMN, 
+		CLUSTER 
+	}
+	
 	private final Transform transform;
 	
 	

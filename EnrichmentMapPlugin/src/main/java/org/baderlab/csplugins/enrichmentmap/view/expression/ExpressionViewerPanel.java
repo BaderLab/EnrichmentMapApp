@@ -5,12 +5,16 @@ import static javax.swing.GroupLayout.PREFERRED_SIZE;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
+import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.Icon;
@@ -19,13 +23,18 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.SwingUtilities;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.view.expression.ExpressionViewerParams.Sort;
 import org.baderlab.csplugins.enrichmentmap.view.expression.ExpressionViewerParams.Transform;
 import org.baderlab.csplugins.enrichmentmap.view.util.ComboItem;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
@@ -35,6 +44,7 @@ import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 import com.google.inject.Singleton;
 
 @Singleton
@@ -45,6 +55,9 @@ public class ExpressionViewerPanel extends JPanel implements CytoPanelComponent2
 	
 	private static final int COLUMN_WIDTH_COLOR = 10;
 	private static final int COLUMN_WIDTH_VALUE = 50;
+	
+	@Inject private Provider<ExportTXTAction> txtActionProvider;
+	@Inject private Provider<ExportPDFAction> pdfActionProvider;
 	
 	@Inject private IconManager iconManager;
 	
@@ -68,13 +81,20 @@ public class ExpressionViewerPanel extends JPanel implements CytoPanelComponent2
 		JLabel normLabel = new JLabel("Normalization:");
 		JComboBox<ComboItem<Transform>> normCombo = new JComboBox<>();
 		JLabel sortLabel = new JLabel("Sorting:");
-		JComboBox<String> sortCombo = new JComboBox<>();
+		JComboBox<ComboItem<Sort>> sortCombo = new JComboBox<>();
+		JButton sortDirectionButton = createSortDirectionButton();
+		
 		SwingUtil.makeSmall(title, normLabel, normCombo, sortLabel, sortCombo);
 		
 		normCombo.addItem(new ComboItem<>(Transform.AS_IS, "None"));
 		normCombo.addItem(new ComboItem<>(Transform.ROW_NORMALIZE, "Row Normalize"));
 		normCombo.addItem(new ComboItem<>(Transform.LOG_TRANSFORM, "Log Transform"));
 		normCombo.setSelectedItem(ComboItem.of(Transform.AS_IS));
+		
+		sortCombo.addItem(new ComboItem<>(Sort.CLUSTER, "Hierarchical Cluster"));
+		sortCombo.addItem(new ComboItem<>(Sort.RANKS, "Ranks"));
+		sortCombo.addItem(new ComboItem<>(Sort.COLUMN, "Column"));
+		sortCombo.setSelectedItem(ComboItem.of(Sort.CLUSTER));
 		
 		normCombo.addActionListener(e -> {
 			Transform t = normCombo.getItemAt(normCombo.getSelectedIndex()).getValue();
@@ -84,8 +104,10 @@ public class ExpressionViewerPanel extends JPanel implements CytoPanelComponent2
 		});
 		
 		JButton gearButton = createIconButton(IconManager.ICON_GEAR, "Settings");
-		JButton menuButton = createIconButton(IconManager.ICON_BARS, "Extras");
+		JButton menuButton = createIconButton(IconManager.ICON_EXTERNAL_LINK, "Export");
 		LookAndFeelUtil.equalizeSize(gearButton, menuButton);
+		gearButton.addActionListener(this::showSettings);
+		menuButton.addActionListener(this::showMenu);
 		
 		JPanel panel = new JPanel();
 		GroupLayout layout = new GroupLayout(panel);
@@ -101,6 +123,8 @@ public class ExpressionViewerPanel extends JPanel implements CytoPanelComponent2
 			.addGap(10, 10, 10)
 			.addComponent(sortLabel)
 			.addComponent(sortCombo, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+			.addComponent(sortDirectionButton)
+			.addGap(10, 10, 10)
 			.addComponent(gearButton)
 			.addComponent(menuButton)
 		);
@@ -110,6 +134,7 @@ public class ExpressionViewerPanel extends JPanel implements CytoPanelComponent2
 			.addComponent(normCombo)
 			.addComponent(sortLabel)
 			.addComponent(sortCombo)
+			.addComponent(sortDirectionButton)
 			.addComponent(gearButton)
 			.addComponent(menuButton)
 		);
@@ -146,6 +171,18 @@ public class ExpressionViewerPanel extends JPanel implements CytoPanelComponent2
 	}
 	
 	
+	private JButton createSortDirectionButton() {
+		JButton sortButton = new JButton(IconManager.ICON_CARET_UP);
+		sortButton.setFont(iconManager.getIconFont(10.0f));
+		sortButton.setToolTipText("Sort direction...");
+		sortButton.setBorderPainted(false);
+		sortButton.setContentAreaFilled(false);
+		sortButton.setFocusPainted(false);
+		sortButton.setBorder(BorderFactory.createEmptyBorder());
+		return sortButton;
+	}
+	
+	
 	public void update(EnrichmentMap map, Set<String> genes) {
 		List<String> geneList = new ArrayList<>(genes);
 		geneList.sort(Comparator.naturalOrder());
@@ -167,6 +204,35 @@ public class ExpressionViewerPanel extends JPanel implements CytoPanelComponent2
 			column.setHeaderRenderer(vertRenderer);
 			column.setPreferredWidth(COLUMN_WIDTH_COLOR);
 		}
+	}
+
+	private void showSettings(ActionEvent event) {
+		JPopupMenu menu = new JPopupMenu();
+		menu.add(new SettingsPanel());
+		menu.addMouseListener(new MouseAdapter() {
+			@Override public void mouseClicked(MouseEvent e) {
+				if(SwingUtilities.isRightMouseButton(e)) {
+					menu.setVisible(false);
+				}
+			}
+		});
+		menu.addPopupMenuListener(new PopupMenuListener() {
+			@Override public void popupMenuWillBecomeVisible(PopupMenuEvent e) { }
+			@Override public void popupMenuCanceled(PopupMenuEvent e) { }
+			@Override public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+				// Do stuff here
+			}
+		});
+		Component c = (Component) event.getSource();
+		menu.show(c, 0, c.getHeight());
+	}
+	
+	private void showMenu(ActionEvent event)  {
+		JPopupMenu menu = new JPopupMenu();
+		menu.add(txtActionProvider.get());
+		menu.add(pdfActionProvider.get());
+		Component c = (Component) event.getSource();
+		menu.show(c, 0, c.getHeight());
 	}
 	
 	@Override
