@@ -50,9 +50,9 @@ import org.baderlab.csplugins.enrichmentmap.style.ColorScheme;
 import org.baderlab.csplugins.enrichmentmap.style.ColumnDescriptor;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleOptions;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
-import org.baderlab.csplugins.enrichmentmap.style.MasterMapVisualStyleTask;
 import org.baderlab.csplugins.enrichmentmap.style.NullCustomGraphics;
 import org.baderlab.csplugins.enrichmentmap.style.WidthFunction;
+import org.baderlab.csplugins.enrichmentmap.task.ApplyEMStyleTask;
 import org.baderlab.csplugins.enrichmentmap.task.TogglePublicationVisualStyleTask;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanel.EMViewControlPanel;
 import org.baderlab.csplugins.enrichmentmap.view.parameters.ParametersPanelMediator;
@@ -133,7 +133,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 	@Inject private CyNetworkViewManager networkViewManager;
 	@Inject private CyNetworkManager networkManager;
 	@Inject private RenderingEngineManager renderingEngineManager;
-	@Inject private MasterMapVisualStyleTask.Factory visualStyleTaskFactory;
+	@Inject private ApplyEMStyleTask.Factory applyStyleTaskFactory;
 	@Inject private DialogTaskManager dialogTaskManager;
 	@Inject private CyColumnIdentifierFactory columnIdFactory;
 	@Inject private ChartFactoryManager chartFactoryManager;
@@ -442,7 +442,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 	}
 
 	private void applyVisualStyle(EMStyleOptions options, CyCustomGraphics2<?> chart) {
-		MasterMapVisualStyleTask task = visualStyleTaskFactory.create(options, chart);
+		ApplyEMStyleTask task = applyStyleTaskFactory.create(options, chart);
 		dialogTaskManager.execute(new TaskIterator(task));
 	}
 	

@@ -7,8 +7,7 @@ import java.lang.annotation.Retention;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadSignatureSetsActionListener;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
-import org.baderlab.csplugins.enrichmentmap.style.EnrichmentMapVisualStyle;
-import org.baderlab.csplugins.enrichmentmap.style.MasterMapVisualStyleTask;
+import org.baderlab.csplugins.enrichmentmap.task.ApplyEMStyleTask;
 import org.baderlab.csplugins.enrichmentmap.task.BuildDiseaseSignatureTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreatePostAnalysisVisualStyleTask;
 import org.baderlab.csplugins.enrichmentmap.task.MasterMapNetworkTask;
@@ -61,7 +60,6 @@ class FactoryModule extends AbstractModule {
 	@Override
 	protected void configure() {
 		// Factories using AssistedInject
-		installFactory(EnrichmentMapVisualStyle.Factory.class);
 		installFactory(PostAnalysisInputPanel.Factory.class);
 		installFactory(CreatePostAnalysisVisualStyleTask.Factory.class);
 		installFactory(TogglePublicationVisualStyleTask.Factory.class);
@@ -74,7 +72,7 @@ class FactoryModule extends AbstractModule {
 		installFactory(MasterMapTaskFactory.Factory.class);
 		installFactory(MasterMapNetworkTask.Factory.class);
 		installFactory(VisualizeMasterMapTask.Factory.class);
-		installFactory(MasterMapVisualStyleTask.Factory.class);
+		installFactory(ApplyEMStyleTask.Factory.class);
 	}
 	
 	private void installFactory(Class<?> factoryInterface) {

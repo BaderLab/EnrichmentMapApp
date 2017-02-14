@@ -126,8 +126,11 @@ public class WidthFunction {
 				
 			} 
 			else {
-				// Can use a continuous mapping object to perform calculation even though it won't be added to the visual style.
-				ContinuousMapping<Double,Double> conmapping_edgewidth = (ContinuousMapping<Double,Double>) vmfFactoryContinuous.createVisualMappingFunction(prefix + EnrichmentMapVisualStyle.SIMILARITY_COEFFICIENT, Double.class, BasicVisualLexicon.EDGE_WIDTH);
+				// Can use a continuous mapping object to perform calculation
+				// even though it won't be added to the visual style.
+				ContinuousMapping<Double, Double> conmapping_edgewidth = (ContinuousMapping<Double, Double>) vmfFactoryContinuous
+						.createVisualMappingFunction(prefix + Columns.EDGE_SIMILARITY_COEFF, Double.class,
+								BasicVisualLexicon.EDGE_WIDTH);
 	
 				Double under_width = 0.5;
 				Double min_width = edgeWidthParams.em_lower;

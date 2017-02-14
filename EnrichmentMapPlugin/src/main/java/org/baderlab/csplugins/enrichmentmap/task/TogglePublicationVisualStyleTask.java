@@ -6,7 +6,6 @@ import javax.annotation.Nullable;
 
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleOptions;
-import org.baderlab.csplugins.enrichmentmap.style.MasterMapVisualStyleTask;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
@@ -24,7 +23,7 @@ public class TogglePublicationVisualStyleTask extends AbstractTask {
 	@Inject private VisualMappingManager visualMappingManager;
 	@Inject private VisualStyleFactory visualStyleFactory;
 	@Inject private CyEventHelper eventHelper;
-	@Inject private MasterMapVisualStyleTask.Factory visualStyleTaskFactory;
+	@Inject private ApplyEMStyleTask.Factory applyStyleTaskFactory;
 	@Inject private EMStyleBuilder styleBuilder;
 	
 	private final EMStyleOptions options;
@@ -57,7 +56,7 @@ public class TogglePublicationVisualStyleTask extends AbstractTask {
 
 		if (EMStyleBuilder.isPublicationReady(currentTitle)) {
 			// If the current style is the publication one, then attempt to switch back...
-			MasterMapVisualStyleTask task = visualStyleTaskFactory.create(options, chart);
+			ApplyEMStyleTask task = applyStyleTaskFactory.create(options, chart);
 			insertTasksAfterCurrentTask(task);
 		} else {
 			// If not, set the publication-ready style...

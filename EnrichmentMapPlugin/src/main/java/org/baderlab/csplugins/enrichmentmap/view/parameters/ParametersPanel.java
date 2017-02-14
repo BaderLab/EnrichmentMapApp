@@ -48,6 +48,7 @@ import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.makeSmall;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.io.File;
 import java.net.URL;
@@ -72,7 +73,8 @@ import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.Similarit
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
-import org.baderlab.csplugins.enrichmentmap.style.EnrichmentMapVisualStyle;
+import org.baderlab.csplugins.enrichmentmap.style.ColumnDescriptor;
+import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
@@ -509,10 +511,20 @@ public class ParametersPanel extends JPanel {
 			vGroup.addComponent(nodeColorLabel).addPreferredGap(ComponentPlacement.RELATED);
 		}
 		
+		// TODO These colors are no longer used
+		/* See http://colorbrewer2.org/#type=diverging&scheme=RdBu&n=9 */
+		final Color MAX_PHENOTYPE_1 = new Color(178, 24, 43);
+		final Color LIGHTER_PHENOTYPE_1 = new Color(214, 96, 77);
+		final Color LIGHTEST_PHENOTYPE_1 = new Color(244, 165, 130);
+		final Color OVER_COLOR = new Color(247, 247, 247);
+		final Color MAX_PHENOTYPE_2 = new Color(33, 102, 172);
+		final Color LIGHTER_PHENOTYPE_2 = new Color(67, 147, 195);
+		final Color LIGHTEST_PHENOTYPE_2 = new Color(146, 197, 222);
+		
 		if (map.getDataset(LegacySupport.DATASET1) != null) {
 			LegendPanel nodeLegendPanel = new LegendPanel(
-					EnrichmentMapVisualStyle.MAX_PHENOTYPE_1,
-					EnrichmentMapVisualStyle.MAX_PHENOTYPE_2,
+					MAX_PHENOTYPE_1,
+					MAX_PHENOTYPE_2,
 					map.getDataset(LegacySupport.DATASET1).getEnrichments().getPhenotype1(),
 					map.getDataset(LegacySupport.DATASET1).getEnrichments().getPhenotype2());
 			nodeLegendPanel.setToolTipText("Phenotype * (1-P_value)");
@@ -535,8 +547,8 @@ public class ParametersPanel extends JPanel {
 			}
 
 			LegendPanel nodeLegendPanel2 = new LegendPanel(
-					EnrichmentMapVisualStyle.MAX_PHENOTYPE_1,
-					EnrichmentMapVisualStyle.MAX_PHENOTYPE_2,
+					MAX_PHENOTYPE_1,
+					MAX_PHENOTYPE_2,
 					map.getDataset(LegacySupport.DATASET2).getEnrichments().getPhenotype1(),
 					map.getDataset(LegacySupport.DATASET2).getEnrichments().getPhenotype2());
 			nodeLegendPanel2.setToolTipText("Phenotype * (1-P_value)");
@@ -571,29 +583,31 @@ public class ParametersPanel extends JPanel {
 
 	private String resolveGseaReportFilePath(EnrichmentMap map, int dataset) {
 		String reportFile = null;
-		String netwAttrName = null;
+		ColumnDescriptor<String> colDescr = null;
+		
 		if (dataset == 1) {
 			if (map.getDataset(LegacySupport.DATASET1) != null) {
 				reportFile = map.getDataset(LegacySupport.DATASET1).getDatasetFiles().getGseaHtmlReportFile();
-				netwAttrName = EnrichmentMapVisualStyle.NETW_REPORT1_DIR;
+				colDescr = Columns.NET_REPORT1_DIR;
 			}
 		} else {
 			if (map.getDataset(LegacySupport.DATASET2) != null) {
 				reportFile = map.getDataset(LegacySupport.DATASET2).getDatasetFiles().getGseaHtmlReportFile();
-				netwAttrName = EnrichmentMapVisualStyle.NETW_REPORT2_DIR;
+				colDescr = Columns.NET_REPORT2_DIR;
 			}
 		}
 
 		// Try the path that is stored in the params:
 		if (reportFile != null && new File(reportFile).canRead()) {
 			return reportFile;
-		} else if (netwAttrName != null) { // if not: try from Network
-											// attributes:
+		} else if (colDescr != null) {
+			// if not, try from Network attributes:
 			CyNetwork network = applicationManager.getCurrentNetwork();
 			CyTable networkTable = network.getDefaultNetworkTable();
-			String tryPath = networkTable.getRow(network.getSUID()).get(netwAttrName, String.class);
+			String tryPath = colDescr.get(networkTable.getRow(network.getSUID()));
 
 			String tryReportFile = tryPath + File.separator + "index.html";
+			
 			if (new File(tryReportFile).canRead()) {
 				return tryReportFile;
 			} else { // we found nothing

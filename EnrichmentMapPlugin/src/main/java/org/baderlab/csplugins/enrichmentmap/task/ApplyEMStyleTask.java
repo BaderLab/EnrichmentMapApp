@@ -1,8 +1,10 @@
-package org.baderlab.csplugins.enrichmentmap.style;
+package org.baderlab.csplugins.enrichmentmap.task;
 
 import javax.annotation.Nullable;
 
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
+import org.baderlab.csplugins.enrichmentmap.style.EMStyleOptions;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
 import org.cytoscape.view.vizmap.VisualMappingManager;
@@ -15,7 +17,7 @@ import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.assistedinject.Assisted;
 
-public class MasterMapVisualStyleTask extends AbstractTask {
+public class ApplyEMStyleTask extends AbstractTask {
 
 	@Inject private VisualMappingManager visualMappingManager;
 	@Inject private VisualStyleFactory visualStyleFactory;
@@ -26,12 +28,11 @@ public class MasterMapVisualStyleTask extends AbstractTask {
 	private final CyCustomGraphics2<?> chart;
 
 	public interface Factory {
-		MasterMapVisualStyleTask create(EMStyleOptions options, CyCustomGraphics2<?> chart);
+		ApplyEMStyleTask create(EMStyleOptions options, CyCustomGraphics2<?> chart);
 	}
 
 	@Inject
-	public MasterMapVisualStyleTask(@Assisted EMStyleOptions options,
-			@Assisted @Nullable CyCustomGraphics2<?> chart) {
+	public ApplyEMStyleTask(@Assisted EMStyleOptions options, @Assisted @Nullable CyCustomGraphics2<?> chart) {
 		this.options = options;
 		this.chart = chart;
 	}
