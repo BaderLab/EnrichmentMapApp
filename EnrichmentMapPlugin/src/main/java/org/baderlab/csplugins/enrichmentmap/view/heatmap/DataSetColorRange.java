@@ -6,12 +6,12 @@ import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Transform
 import org.mskcc.colorgradient.ColorGradientRange;
 import org.mskcc.colorgradient.ColorGradientTheme;
 
-public class ColorRange {
+public class DataSetColorRange {
 
 	private final ColorGradientTheme theme;
 	private final ColorGradientRange range;
 	
-	private ColorRange(ColorGradientTheme theme, ColorGradientRange range) {
+	private DataSetColorRange(ColorGradientTheme theme, ColorGradientRange range) {
 		this.theme = theme;
 		this.range = range;
 	}
@@ -19,7 +19,7 @@ public class ColorRange {
 	/**
 	 * Reset color gradients based on a change in the data transformation.
 	 */
-	public static ColorRange create(DataSet ds, Transform transform) {
+	public static DataSetColorRange create(DataSet ds, Transform transform) {
 		GeneExpressionMatrix expression = ds.getExpressionSets();
 		double minExpression = expression.getMinExpression();
 		double maxExpression = expression.getMaxExpression();
@@ -77,11 +77,11 @@ public class ColorRange {
 			double median = max / 2;
 			ColorGradientRange range = ColorGradientRange.getInstance(0, median, median, max, 0, median, median, max);
 			ColorGradientTheme theme = ColorGradientTheme.GREEN_ONECOLOR_GRADIENT_THEME;
-			return new ColorRange(theme, range);
+			return new DataSetColorRange(theme, range);
 		} else {
 			ColorGradientRange range = ColorGradientRange.getInstance(-max, 0, 0, max, -max, 0, 0, max);
 			ColorGradientTheme theme = ColorGradientTheme.PR_GN_GRADIENT_THEME;
-			return new ColorRange(theme, range);
+			return new DataSetColorRange(theme, range);
 		}
 	}
 	

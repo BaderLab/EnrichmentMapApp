@@ -1,7 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.view.heatmap;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,14 +17,14 @@ import org.mskcc.colorgradient.ColorGradientTheme;
 
 public class ColorRenderer implements TableCellRenderer {
 	
-	private Map<DataSet,ColorRange> colorRanges = new HashMap<>();
+	private Map<DataSet,DataSetColorRange> colorRanges = new HashMap<>();
 	
 	private Border unselectedBorder = null;
 	private Border selectedBorder = null;
 	private boolean isBordered = true;
 
 
-	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
+	public JLabel getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
 		JLabel label = new JLabel();
 		label.setOpaque(true); //MUST do this for background to show up.
 		
@@ -34,7 +33,7 @@ public class ColorRenderer implements TableCellRenderer {
 		
 		Transform transform = model.getTransform();
 		
-		ColorRange range = colorRanges.computeIfAbsent(dataset, ds -> ColorRange.create(ds, transform));
+		DataSetColorRange range = colorRanges.computeIfAbsent(dataset, ds -> DataSetColorRange.create(ds, transform));
 		
 		if(value instanceof Double) {
 			Color color = getColor(range.getTheme(), range.getRange(), (Double)value);

@@ -27,8 +27,6 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
-import javax.swing.event.PopupMenuEvent;
-import javax.swing.event.PopupMenuListener;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
@@ -62,10 +60,18 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent2 {
 	@Inject private IconManager iconManager;
 	
 	private JTable table;
+	private SettingsPopupPanel settingsPanel;
+	private JComboBox<ComboItem<Transform>> normCombo;
+	private JComboBox<ComboItem<Sort>> sortCombo;
 	
 	
 	@AfterInjection
 	private void createContents() {
+		// MKTODO get the HeatMapParameters from the EnrichmentMapManager
+		HeatMapParams params = HeatMapParams.defaults();
+		settingsPanel = new SettingsPopupPanel(params);
+		settingsPanel.setShowValuesListener(this::updateTableCellRenderer);
+		
 		JPanel toolbarPanel = createToolbarPanel();
 		JPanel expressionPanel = createExpressionPanel();
 
@@ -75,13 +81,12 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent2 {
 		setOpaque(false);
 	}
 	
-	
 	private JPanel createToolbarPanel() {
 		JLabel title = new JLabel(" Expression Data");
 		JLabel normLabel = new JLabel("Normalization:");
-		JComboBox<ComboItem<Transform>> normCombo = new JComboBox<>();
+		normCombo = new JComboBox<>();
 		JLabel sortLabel = new JLabel("Sorting:");
-		JComboBox<ComboItem<Sort>> sortCombo = new JComboBox<>();
+		sortCombo = new JComboBox<>();
 		JButton sortDirectionButton = createSortDirectionButton();
 		
 		SwingUtil.makeSmall(title, normLabel, normCombo, sortLabel, sortCombo);
@@ -100,6 +105,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent2 {
 			Transform t = normCombo.getItemAt(normCombo.getSelectedIndex()).getValue();
 			HeatMapTableModel tableModel = (HeatMapTableModel) table.getModel();
 			table.setDefaultRenderer(Double.class, new ColorRenderer()); // clear cached data used by the ColorRenderer
+			updateTableCellRenderer(settingsPanel.isShowValues());
 			tableModel.setTransform(t);
 		});
 		
@@ -189,11 +195,10 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent2 {
 		HeatMapTableModel tableModel = new HeatMapTableModel(map, geneList, Transform.AS_IS);
 		table.setModel(tableModel);
 		table.setDefaultRenderer(Double.class, new ColorRenderer());
-		createTableHeader();
+		createTableHeader(COLUMN_WIDTH_COLOR);
 	}
 	
-	
-	private void createTableHeader() {
+	private void createTableHeader(int width) {
 		HeatMapTableModel tableModel = (HeatMapTableModel)table.getModel();
 		TableColumnModel columnModel = table.getColumnModel();
 		
@@ -202,13 +207,19 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent2 {
 		for(int i = 1; i < colCount; i++) {
 			TableColumn column = columnModel.getColumn(i);
 			column.setHeaderRenderer(vertRenderer);
-			column.setPreferredWidth(COLUMN_WIDTH_COLOR);
+			column.setPreferredWidth(width);
 		}
+	}
+	
+	private void updateTableCellRenderer(boolean showValues) {
+		table.setDefaultRenderer(Double.class, showValues ? new ColorAndValueRenderer() : new ColorRenderer());
+		createTableHeader(showValues ? COLUMN_WIDTH_VALUE : COLUMN_WIDTH_COLOR);
+		table.revalidate();
 	}
 
 	private void showSettings(ActionEvent event) {
 		JPopupMenu menu = new JPopupMenu();
-		menu.add(new SettingsPopupPanel());
+		menu.add(settingsPanel);
 		menu.addMouseListener(new MouseAdapter() {
 			@Override public void mouseClicked(MouseEvent e) {
 				if(SwingUtilities.isRightMouseButton(e)) {
@@ -216,13 +227,13 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent2 {
 				}
 			}
 		});
-		menu.addPopupMenuListener(new PopupMenuListener() {
-			@Override public void popupMenuWillBecomeVisible(PopupMenuEvent e) { }
-			@Override public void popupMenuCanceled(PopupMenuEvent e) { }
-			@Override public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-				// Do stuff here
-			}
-		});
+//		menu.addPopupMenuListener(new PopupMenuListener() {
+//			@Override public void popupMenuWillBecomeVisible(PopupMenuEvent e) { }
+//			@Override public void popupMenuCanceled(PopupMenuEvent e) { }
+//			@Override public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+//				// Do stuff here
+//			}
+//		});
 		Component c = (Component) event.getSource();
 		menu.show(c, 0, c.getHeight());
 	}
@@ -234,6 +245,10 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent2 {
 		Component c = (Component) event.getSource();
 		menu.show(c, 0, c.getHeight());
 	}
+	
+	
+	
+	
 	
 	@Override
 	public CytoPanelName getCytoPanelName() {
