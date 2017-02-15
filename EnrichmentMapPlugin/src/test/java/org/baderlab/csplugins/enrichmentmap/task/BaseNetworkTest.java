@@ -29,6 +29,7 @@ import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.model.TableTestSupport;
@@ -37,10 +38,12 @@ import org.cytoscape.session.CySession;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
+import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
+import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskIterator;
@@ -163,5 +166,14 @@ public abstract class BaseNetworkTest {
 		signatureTask.run(mock(TaskMonitor.class));
 	}
 	
-	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	protected void mockContinuousMappingFactory(VisualMappingFunctionFactory cmFactory) {
+		ContinuousMapping<Double, Double> cm = mock(ContinuousMapping.class);
+		when(cm.getMappedValue(Matchers.<CyRow>anyObject())).thenReturn(-1.0);
+		when(cmFactory.createVisualMappingFunction(
+				Matchers.<String>anyObject(),
+				Matchers.<Class>anyObject(),
+				Matchers.<VisualProperty>anyObject())
+		).thenReturn(cm);
+	}
 }

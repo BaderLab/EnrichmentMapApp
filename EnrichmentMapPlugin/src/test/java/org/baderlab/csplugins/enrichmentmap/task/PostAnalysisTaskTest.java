@@ -34,16 +34,12 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
-import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import org.jukito.JukitoRunner;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
-import org.mockito.Matchers;
 
 import com.google.inject.Provider;
 
@@ -62,7 +58,6 @@ public class PostAnalysisTaskTest extends BaseNetworkTest {
 	}
 	
 	private static CyNetwork emNetwork;
-	
 	
 	@Test
 	public void test_1_EnrichmentMapBuildMapTask(CyApplicationManager applicationManager, CyNetworkManager networkManager, EnrichmentMapManager emManager) {
@@ -102,13 +97,14 @@ public class PostAnalysisTaskTest extends BaseNetworkTest {
 	   	emNetwork = network;
 	}
 	
-	
 	/**
 	 * Run post-analysis with the default mann-whitney test.
 	 * Uses the network that was created by the previous test method.
 	 */
 	@Test
-	public void test_2_PostAnalysisMannWhitney() throws Exception {
+	public void test_2_PostAnalysisMannWhitney(@Continuous VisualMappingFunctionFactory cmFactory) throws Exception {
+		mockContinuousMappingFactory(cmFactory);
+		
 		PostAnalysisParameters.Builder builder = new PostAnalysisParameters.Builder();
 		builder.setSignatureDataSet(LegacySupport.DATASET1);
 		builder.setSignatureRankFile(LegacySupport.DATASET1);
@@ -141,14 +137,16 @@ public class PostAnalysisTaskTest extends BaseNetworkTest {
 	   	assertEquals(PostAnalysisFilterType.MANN_WHIT_TWO_SIDED.toString(), emNetwork.getRow(edge2).get("EM1_Overlap_cutoff", String.class));
 	}
 	
-	
 	/**
 	 * Run post-analysis again, but with hypergeometric test this time.
 	 * The result should keep the 2 edges that were created by the previous run
 	 * plus add two new edges.
 	 */
 	@Test
-	public void test_3_PostAnalysisHypergeometric_overlap() throws Exception {
+	public void test_3_PostAnalysisHypergeometric_overlap(@Continuous VisualMappingFunctionFactory cmFactory)
+			throws Exception {
+		mockContinuousMappingFactory(cmFactory);
+		
 		PostAnalysisParameters.Builder builder = new PostAnalysisParameters.Builder();
 		builder.setSignatureDataSet(LegacySupport.DATASET1);
 		builder.setSignatureRankFile(LegacySupport.DATASET1);
@@ -195,16 +193,14 @@ public class PostAnalysisTaskTest extends BaseNetworkTest {
 	   	assertEquals(PostAnalysisFilterType.HYPERGEOM.toString(), emNetwork.getRow(edge4).get("EM1_Overlap_cutoff", String.class));
 	}
 
-	
 	@Test
-	public void test_4_WidthFunction(@Continuous VisualMappingFunctionFactory vmfFactoryContinuous, EnrichmentMapManager emManager, Provider<WidthFunction> widthFunctionProvider) {
+	public void test_4_WidthFunction(@Continuous VisualMappingFunctionFactory cmFactory, EnrichmentMapManager emManager,
+			Provider<WidthFunction> widthFunctionProvider) {
 		CyNetworkManager networkManager = mock(CyNetworkManager.class);
 		when(networkManager.getNetworkSet()).thenReturn(Collections.singleton(emNetwork));
+
+		mockContinuousMappingFactory(cmFactory);
 		
-		ContinuousMapping<Double,Double> mockFunction = mock(ContinuousMapping.class);
-		when(mockFunction.getMappedValue(Matchers.<CyRow>anyObject())).thenReturn(-1.0);
-		when(vmfFactoryContinuous.createVisualMappingFunction(Matchers.<String>anyObject(), Matchers.<Class>anyObject(), Matchers.<VisualProperty>anyObject())).thenReturn(mockFunction);
-	   	
 		EdgeSimilarities edges = TestUtils.getEdgeSimilarities(emNetwork);
 		
 		CyEdge sigEdge1 = edges.getEdge("PA_TOP8_MIDDLE8_BOTTOM8 (sig) TOP8_PLUS100");

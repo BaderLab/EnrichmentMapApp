@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Continuous;
 import org.baderlab.csplugins.enrichmentmap.PropertyManager;
 import org.baderlab.csplugins.enrichmentmap.TestUtils;
 import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
@@ -23,6 +24,7 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.jukito.JukitoRunner;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -46,7 +48,6 @@ public class PostAnalysisCutoffTest extends BaseNetworkTest {
 		}
 	}
 	
-	
 	private static CyNetwork emNetwork;
 	
 	private PostAnalysisParameters.Builder getBuilder() {
@@ -59,7 +60,6 @@ public class PostAnalysisCutoffTest extends BaseNetworkTest {
 		builder.setAttributePrefix("EM1_");
 		return builder;
 	}
-	
 	
 	@Test
 	public void _setup(PropertyManager pm, CyApplicationManager applicationManager, CyNetworkManager networkManager) {
@@ -80,10 +80,11 @@ public class PostAnalysisCutoffTest extends BaseNetworkTest {
 	   	assertEquals(1, networks.size());
 	   	emNetwork = networks.iterator().next();
 	}
-	 
 	
 	@Test
-	public void test_1_FilterType_Number() throws Exception {
+	public void test_1_FilterType_Number(@Continuous VisualMappingFunctionFactory cmFactory) throws Exception {
+		mockContinuousMappingFactory(cmFactory);
+		
 		PostAnalysisParameters.Builder builder = getBuilder();
 		
 		PostAnalysisFilterParameters rankTest = new PostAnalysisFilterParameters(PostAnalysisFilterType.NUMBER, 5);
@@ -114,7 +115,9 @@ public class PostAnalysisCutoffTest extends BaseNetworkTest {
 	}
 	
 	@Test
-	public void test_2_FilterType_Percent() throws Exception {
+	public void test_2_FilterType_Percent(@Continuous VisualMappingFunctionFactory cmFactory) throws Exception {
+		mockContinuousMappingFactory(cmFactory);
+		
 		PostAnalysisParameters.Builder builder = getBuilder();
 		
 		PostAnalysisFilterParameters rankTest = new PostAnalysisFilterParameters(PostAnalysisFilterType.PERCENT, 7);
@@ -145,7 +148,9 @@ public class PostAnalysisCutoffTest extends BaseNetworkTest {
 	}
 	
 	@Test
-	public void test_3_FilterType_Specific() throws Exception {		
+	public void test_3_FilterType_Specific(@Continuous VisualMappingFunctionFactory cmFactory) throws Exception {
+		mockContinuousMappingFactory(cmFactory);
+		
 		PostAnalysisParameters.Builder builder = getBuilder();
 		
 		PostAnalysisFilterParameters rankTest = new PostAnalysisFilterParameters(PostAnalysisFilterType.SPECIFIC, 25);
