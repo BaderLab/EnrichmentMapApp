@@ -13,25 +13,23 @@ public class EMStyleOptions {
 	private final CyNetworkView networkView;
 	private final EnrichmentMap map;
 	private final Predicate<DataSet> filter;
+	private final boolean postAnalysis;
 	private final boolean publicationReady;
 	
 	/**
 	 * It is assumed that all the given DataSets come from the same EnrichmentMap.
 	 */
 	public EMStyleOptions(CyNetworkView networkView, EnrichmentMap map, Predicate<DataSet> filter,
-			boolean publicationReady) {
+			 boolean postAnalysis, boolean publicationReady) {
 		this.networkView = networkView;
 		this.map = map;
 		this.filter = filter;
+		this.postAnalysis = postAnalysis;
 		this.publicationReady = publicationReady;
 	}
 	
-	public EMStyleOptions(CyNetworkView networkView, EnrichmentMap map, Predicate<DataSet> filter) {
-		this(networkView, map, filter, false);
-	}
-
 	public EMStyleOptions(CyNetworkView networkView, EnrichmentMap map) {
-		this(networkView, map, x -> true, false);
+		this(networkView, map, x -> true, false, false);
 	}
 	
 	public CyNetworkView getNetworkView() {
@@ -52,5 +50,9 @@ public class EMStyleOptions {
 	
 	public boolean isPublicationReady() {
 		return publicationReady;
+	}
+
+	public boolean isPostAnalysis() {
+		return postAnalysis;
 	}
 }

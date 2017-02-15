@@ -191,6 +191,19 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		});
 	}
 	
+	public EMStyleOptions createStyleOptions(CyNetworkView netView) {
+		EnrichmentMap map = emManager.getEnrichmentMap(netView.getModel().getSUID());
+		EMViewControlPanel viewPanel = getControlPanel().getViewControlPanel(netView);
+
+		return createStyleOptions(map, viewPanel);
+	}
+	
+	public CyCustomGraphics2<?> createChart(CyNetworkView netView, EMStyleOptions options) {
+		EMViewControlPanel viewPanel = getControlPanel().getViewControlPanel(netView);
+		
+		return createChart(viewPanel, options);
+	}
+	
 	@Override
 	public void handleEvent(SetCurrentNetworkViewEvent e) {
 		if (getControlPanel().isDisplayable())
@@ -283,13 +296,13 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 							ChartData data = (ChartData) viewPanel.getChartDataCombo().getSelectedItem();
 							
 							if (data != null && data != ChartData.NONE)
-								updateVisualStyle(netView, map, viewPanel);
+								updateVisualStyle(map, viewPanel);
 							else
 								netView.updateView();
 						}
 					});
 					viewPanel.getCheckboxListPanel().setAddButtonCallback(model -> {
-						postAnalysisPanelMediatorProvider.get().showDialog(viewPanel, getCurrentMap());
+						postAnalysisPanelMediatorProvider.get().showDialog(viewPanel, netView);
 					});
 					
 					viewPanel.getChartDataCombo().addItemListener(evt -> {
@@ -302,7 +315,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 								updating = false;
 							}
 							
-							updateVisualStyle(netView, map, viewPanel);
+							updateVisualStyle(map, viewPanel);
 						}
 					});
 					viewPanel.getChartTypeCombo().addItemListener(evt -> {
@@ -315,20 +328,20 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 								updating = false;
 							}
 							
-							updateVisualStyle(netView, map, viewPanel);
+							updateVisualStyle(map, viewPanel);
 						}
 					});
 					viewPanel.getChartColorsCombo().addItemListener(evt -> {
 						if (!updating && evt.getStateChange() == ItemEvent.SELECTED)
-							updateVisualStyle(netView, map, viewPanel);
+							updateVisualStyle(map, viewPanel);
 					});
 					
 					viewPanel.getPublicationReadyCheck().addActionListener(evt -> {
-						updateVisualStyle(netView, map, viewPanel);
+						updateVisualStyle(map, viewPanel);
 					});
 					
 					viewPanel.getResetStyleButton().addActionListener(evt -> {
-						updateVisualStyle(netView, map, viewPanel);
+						updateVisualStyle(map, viewPanel);
 					});
 					
 					viewPanel.getSetEdgeWidthButton().addActionListener(evt -> {
@@ -411,8 +424,8 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		return view != null ? emManager.getEnrichmentMap(view.getModel().getSUID()) : null;
 	}
 	
-	private void updateVisualStyle(CyNetworkView netView, EnrichmentMap map, EMViewControlPanel viewPanel) {
-		EMStyleOptions options = createStyleOptions(netView, map, viewPanel);
+	private void updateVisualStyle(EnrichmentMap map, EMViewControlPanel viewPanel) {
+		EMStyleOptions options = createStyleOptions(map, viewPanel);
 		CyCustomGraphics2<?> chart = createChart(viewPanel, options);
 		applyVisualStyle(options, chart);
 	}
@@ -422,10 +435,12 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		dialogTaskManager.execute(new TaskIterator(task));
 	}
 	
-	private EMStyleOptions createStyleOptions(CyNetworkView netView, EnrichmentMap map, EMViewControlPanel viewPanel) {
+	private EMStyleOptions createStyleOptions(EnrichmentMap map, EMViewControlPanel viewPanel) {
 		Set<DataSet> dataSets = ImmutableSet.copyOf(viewPanel.getCheckboxListPanel().getSelectedDataItems());
 		boolean publicationReady = viewPanel.getPublicationReadyCheck().isSelected();
-		EMStyleOptions options = new EMStyleOptions(netView, map, dataSets::contains, publicationReady);
+		boolean postAnalysis = !map.getSignatureGenesets().isEmpty();
+		EMStyleOptions options =
+				new EMStyleOptions(viewPanel.getNetworkView(), map, dataSets::contains, postAnalysis, publicationReady);
 
 		return options;
 	}

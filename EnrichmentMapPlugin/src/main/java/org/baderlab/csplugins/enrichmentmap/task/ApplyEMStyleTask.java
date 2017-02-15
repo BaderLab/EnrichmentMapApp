@@ -40,18 +40,17 @@ public class ApplyEMStyleTask extends AbstractTask {
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		taskMonitor.setTitle("Apply Visual Style");
-		applyVisualStyle(chart);
+		applyVisualStyle();
 		taskMonitor.setStatusMessage("");
 	}
 
-	private void applyVisualStyle(CyCustomGraphics2<?> chart) {
+	private void applyVisualStyle() {
+		CyNetworkView view = options.getNetworkView();
 		VisualStyle vs = getVisualStyle(options.getEnrichmentMap());
 
 		EMStyleBuilder styleBuilder = styleBuilderProvider.get();
 		styleBuilder.updateProperties(vs, options, chart);
 
-		CyNetworkView view = options.getNetworkView();
-		
 		visualMappingManager.setVisualStyle(vs, view);
 		vs.apply(view);
 		view.updateView();

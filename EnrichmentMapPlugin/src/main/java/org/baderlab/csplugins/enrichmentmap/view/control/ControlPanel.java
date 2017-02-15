@@ -557,6 +557,10 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			getChartColorsCombo().setEnabled(getChartTypeCombo().isEnabled() && data != ChartData.NONE);
 		}
 		
+		CyNetworkView getNetworkView() {
+			return networkView;
+		}
+		
 		private JPanel createFilterPanel() {
 			final JPanel panel = new JPanel();
 			panel.setBorder(LookAndFeelUtil.createTitledBorder("Filter"));

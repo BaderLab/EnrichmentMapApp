@@ -19,9 +19,11 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters.AnalysisType;
+import org.baderlab.csplugins.enrichmentmap.style.EMStyleOptions;
+import org.baderlab.csplugins.enrichmentmap.task.ApplyEMStyleTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreateDiseaseSignatureTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreateDiseaseSignatureTaskResult;
-import org.baderlab.csplugins.enrichmentmap.task.CreatePostAnalysisVisualStyleTask;
+import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanelMediator;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
@@ -29,6 +31,8 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
 import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskIterator;
@@ -36,6 +40,7 @@ import org.cytoscape.work.TaskObserver;
 import org.cytoscape.work.swing.DialogTaskManager;
 
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 import com.google.inject.Singleton;
 
 @Singleton
@@ -44,7 +49,8 @@ public class PostAnalysisPanelMediator {
 	@Inject private EnrichmentMapManager emManager;
 	@Inject private PostAnalysisInputPanel.Factory panelFactory;
 	@Inject private CreateDiseaseSignatureTask.Factory signatureTaskFactory;
-	@Inject private CreatePostAnalysisVisualStyleTask.Factory paStyleTaskFactory;
+	@Inject private ApplyEMStyleTask.Factory applyStyleTaskFactory;
+	@Inject private Provider<ControlPanelMediator> controlPanelMediatorProvider;
 	
 	@Inject private CyServiceRegistrar serviceRegistrar;
 	@Inject private CyApplicationManager applicationManager;
@@ -52,7 +58,9 @@ public class PostAnalysisPanelMediator {
 	@Inject private CySwingApplication swingApplication;
 	
 	@SuppressWarnings("serial")
-	public void showDialog(Component parent, EnrichmentMap map) {
+	public void showDialog(Component parent, CyNetworkView netView) {
+		final EnrichmentMap map = emManager.getEnrichmentMap(netView.getModel().getSUID());
+		
 		invokeOnEDT(() -> {
 			final PostAnalysisInputPanel panel = panelFactory.create(map);
 			
@@ -76,7 +84,7 @@ public class PostAnalysisPanelMediator {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					if (panel.isReady()) {
-						addGeneSets(buildPostAnalysisParameters(panel, map));
+						addGeneSets(netView, buildPostAnalysisParameters(panel, map));
 						dialog.dispose();
 					}
 				}
@@ -97,7 +105,7 @@ public class PostAnalysisPanelMediator {
 		});
 	}
 	
-	private void addGeneSets(PostAnalysisParameters params) {
+	private void addGeneSets(CyNetworkView netView, PostAnalysisParameters params) {
 		// Make sure that the minimum information is set in the current set of parameters
 		EnrichmentMap map = emManager.getEnrichmentMap(applicationManager.getCurrentNetwork().getSUID());
 		StringBuilder errorBuilder = new StringBuilder();
@@ -114,10 +122,11 @@ public class PostAnalysisPanelMediator {
 			CreateDiseaseSignatureTask buildDiseaseSignatureTask = signatureTaskFactory.create(map, params);
 			currentTasks.append(buildDiseaseSignatureTask);
 
-			CreatePostAnalysisVisualStyleTask visualStyleTask = paStyleTaskFactory.create(map);
-			currentTasks.append(visualStyleTask);
+			EMStyleOptions options = controlPanelMediatorProvider.get().createStyleOptions(netView);
+			CyCustomGraphics2<?> chart = controlPanelMediatorProvider.get().createChart(netView, options);
+			currentTasks.append(applyStyleTaskFactory.create(options, chart));
 
-			taskManager.execute(currentTasks, new DialogObserver(visualStyleTask));
+			taskManager.execute(currentTasks, new DialogObserver());
 		} else {
 			JOptionPane.showMessageDialog(swingApplication.getJFrame(), errors, "Invalid Input",
 					JOptionPane.WARNING_MESSAGE);
@@ -145,20 +154,12 @@ public class PostAnalysisPanelMediator {
 	
 	private class DialogObserver implements TaskObserver {
 
-		private CreatePostAnalysisVisualStyleTask visualStyleTask;
 		private CreateDiseaseSignatureTaskResult result;
-
-		private DialogObserver(CreatePostAnalysisVisualStyleTask visualStyleTask) {
-			this.visualStyleTask = visualStyleTask;
-		}
 
 		@Override
 		public void taskFinished(ObservableTask task) {
-			if (task instanceof CreateDiseaseSignatureTask) {
+			if (task instanceof CreateDiseaseSignatureTask)
 				result = task.getResults(CreateDiseaseSignatureTaskResult.class);
-				// Is there a better way to pass results from one task to another?
-				visualStyleTask.setBuildDiseaseSignatureTaskResult(result);
-			}
 		}
 
 		@Override
@@ -172,7 +173,8 @@ public class PostAnalysisPanelMediator {
 			if (result.getPassedCutoffCount() == 0)
 				JOptionPane.showMessageDialog(
 						swingApplication.getJFrame(),
-						"No edges were found passing the cutoff value for the signature set(s)", "Post Analysis",
+						"No edges were found passing the cutoff value for the signature set(s)",
+						"Post Analysis",
 						JOptionPane.WARNING_MESSAGE
 				);
 

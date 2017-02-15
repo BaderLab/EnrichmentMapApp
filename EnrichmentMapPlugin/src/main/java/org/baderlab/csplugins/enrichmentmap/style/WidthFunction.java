@@ -53,12 +53,10 @@ public class WidthFunction {
 	    return networkTable.getColumn(NETWORK_EDGE_WIDTH_PARAMETERS_COLUMN.with(null,null)) != null;
 	}
 	
-	
 	public void setEdgeWidths(CyNetwork network, String prefix, TaskMonitor taskMonitor) {
 		createColumns(network, prefix);
 		calculateAndSetEdgeWidths(network, prefix, taskMonitor);
 	}
-	
 	
 	private void createColumns(CyNetwork network, String prefix) {
 		CyTable networkTable = network.getDefaultNetworkTable();
@@ -75,18 +73,18 @@ public class WidthFunction {
 		int n = network.getDefaultEdgeTable().getRowCount();
 		int i = 0;
 		
-		for(CyRow row : network.getDefaultEdgeTable().getAllRows()) {
-			if(taskMonitor != null) {
-				taskMonitor.setProgress((double)i/(double)n);
-			}
-			i++;
+		for (CyRow row : network.getDefaultEdgeTable().getAllRows()) {
+			if (taskMonitor != null)
+				taskMonitor.setProgress((double) i / (double) n);
 			
+			i++;
 			String interaction = row.get(CyEdge.INTERACTION, String.class);
 			
-			if(isSignature(interaction)) {
+			if (isSignature(interaction)) {
 				String cutoffType = Columns.EDGE_CUTOFF_TYPE.get(row, prefix, null);
 				PostAnalysisFilterType filterType = PostAnalysisFilterType.fromDisplayString(cutoffType);
-				if(filterType == null) {
+				
+				if (filterType == null) {
 					EDGE_WIDTH_FORMULA_COLUMN.set(row, prefix, null, null);
 					continue;
 				}
@@ -111,21 +109,16 @@ public class WidthFunction {
 					break;
 				}
 				
-				if(pvalue == null || cutoff == null) {
+				if (pvalue == null || cutoff == null) {
 					EDGE_WIDTH_FORMULA_COLUMN.set(row, prefix, null);
-				}
-				else if(pvalue <= cutoff/100) {
+				} else if (pvalue <= cutoff / 100) {
 					EDGE_WIDTH_FORMULA_COLUMN.set(row, prefix, edgeWidthParams.pa_lessThan100);
-				}
-				else if(pvalue <= cutoff/10) {
+				} else if (pvalue <= cutoff / 10) {
 					EDGE_WIDTH_FORMULA_COLUMN.set(row, prefix, edgeWidthParams.pa_lessThan10);
-				}
-				else {
+				} else {
 					EDGE_WIDTH_FORMULA_COLUMN.set(row, prefix, edgeWidthParams.pa_greater);
 				}
-				
-			} 
-			else {
+			} else {
 				// Can use a continuous mapping object to perform calculation
 				// even though it won't be added to the visual style.
 				ContinuousMapping<Double, Double> conmapping_edgewidth = (ContinuousMapping<Double, Double>) vmfFactoryContinuous
@@ -138,8 +131,8 @@ public class WidthFunction {
 				Double over_width = 6.0;
 	
 				// Create boundary conditions                  less than,   equals,  greater than
-				BoundaryRangeValues<Double> bv4 = new BoundaryRangeValues<Double>(under_width, min_width, min_width);
-				BoundaryRangeValues<Double> bv5 = new BoundaryRangeValues<Double>(max_width, max_width, over_width);
+				BoundaryRangeValues<Double> bv4 = new BoundaryRangeValues<>(under_width, min_width, min_width);
+				BoundaryRangeValues<Double> bv5 = new BoundaryRangeValues<>(max_width, max_width, over_width);
 				conmapping_edgewidth.addPoint(map.getParams().getSimilarityCutoff(), bv4);
 				conmapping_edgewidth.addPoint(1.0, bv5);
 				
@@ -148,7 +141,6 @@ public class WidthFunction {
 			}
 		}
 	}
-	
 	
 	/**
 	 * Parameters typically used by the EdgeWidthDialog and stored in the network table.

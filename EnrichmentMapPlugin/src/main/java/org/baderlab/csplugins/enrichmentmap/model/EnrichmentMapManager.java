@@ -69,12 +69,16 @@ public class EnrichmentMapManager /*implements SetCurrentNetworkListener*/ {
 		return Collections.unmodifiableMap(enrichmentMaps);
 	}
 
-	public EnrichmentMap getEnrichmentMap(Long id) {
-		return enrichmentMaps.get(id);
+	/**
+	 * @param id The CyNetwork SUID.
+	 * @return
+	 */
+	public EnrichmentMap getEnrichmentMap(Long networkId) {
+		return enrichmentMaps.get(networkId);
 	}
 	
-	public EnrichmentMap removeEnrichmentMap(Long id) {
-		return enrichmentMaps.remove(id);
+	public EnrichmentMap removeEnrichmentMap(Long networkId) {
+		return enrichmentMaps.remove(networkId);
 	}
 	
 	public void reset() {
@@ -85,8 +89,8 @@ public class EnrichmentMapManager /*implements SetCurrentNetworkListener*/ {
 	 * Returns true if the network with the identifier networkID an
 	 * EnrichmentMap.<br> (and therefore an instance EnrichmentMapParameters is present)
 	 */
-	public boolean isEnrichmentMap(Long networkID) {
-		return enrichmentMaps.containsKey(networkID);
+	public boolean isEnrichmentMap(Long networkId) {
+		return enrichmentMaps.containsKey(networkId);
 	}
 	
 	public boolean isEnrichmentMap(CyNetworkView networkView) {

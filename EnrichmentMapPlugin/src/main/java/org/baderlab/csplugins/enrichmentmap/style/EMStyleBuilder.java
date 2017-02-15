@@ -217,22 +217,30 @@ public class EMStyleBuilder {
 		String prefix = options.getAttributePrefix();
 		EnrichmentMap map = options.getEnrichmentMap();
 		
-		// Continous Mapping - set edge line thickness based on the number of genes in the overlap
-		ContinuousMapping<Double, Double> edgewidth = (ContinuousMapping<Double, Double>) cmFactory
-				.createVisualMappingFunction(Columns.EDGE_SIMILARITY_COEFF.with(prefix,null), Double.class, EDGE_WIDTH);
-		
-		Double underWidth = 0.5;
-		Double minWidth   = 1.0;
-		Double maxWidth   = 5.0;
-		Double overWidth  = 6.0;
+		if (options.isPostAnalysis()) {
+			// Replace the edge width mapping that was created by EnrichmentMapVisualStyle
+			String widthAttribute = WidthFunction.EDGE_WIDTH_FORMULA_COLUMN.with(prefix, null);
+			PassthroughMapping<Double, Double> edgewidth = (PassthroughMapping<Double, Double>) pmFactory
+					.createVisualMappingFunction(widthAttribute, Double.class, BasicVisualLexicon.EDGE_WIDTH);
+			vs.addVisualMappingFunction(edgewidth);
+		} else {
+			// Continous Mapping - set edge line thickness based on the number of genes in the overlap
+			ContinuousMapping<Double, Double> edgewidth = (ContinuousMapping<Double, Double>) cmFactory
+					.createVisualMappingFunction(Columns.EDGE_SIMILARITY_COEFF.with(prefix, null), Double.class, EDGE_WIDTH);
+			
+			Double underWidth = 0.5;
+			Double minWidth   = 1.0;
+			Double maxWidth   = 5.0;
+			Double overWidth  = 6.0;
+	
+			// Create boundary conditions                  less than,   equals,  greater than
+			BoundaryRangeValues<Double> bv4 = new BoundaryRangeValues<>(underWidth, minWidth, minWidth);
+			BoundaryRangeValues<Double> bv5 = new BoundaryRangeValues<>(maxWidth, maxWidth, overWidth);
+			edgewidth.addPoint(map.getParams().getSimilarityCutoff(), bv4);
+			edgewidth.addPoint(1.0, bv5);
 
-		// Create boundary conditions                  less than,   equals,  greater than
-		BoundaryRangeValues<Double> bv4 = new BoundaryRangeValues<>(underWidth, minWidth, minWidth);
-		BoundaryRangeValues<Double> bv5 = new BoundaryRangeValues<>(maxWidth, maxWidth, overWidth);
-		edgewidth.addPoint(map.getParams().getSimilarityCutoff(), bv4);
-		edgewidth.addPoint(1.0, bv5);
-
-		vs.addVisualMappingFunction(edgewidth);
+			vs.addVisualMappingFunction(edgewidth);
+		}
 	}
 	
 	private void setNodeDefaults(VisualStyle vs, EMStyleOptions options, boolean hasChart) {

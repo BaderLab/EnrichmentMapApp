@@ -64,6 +64,7 @@ import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterType;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns;
+import org.baderlab.csplugins.enrichmentmap.style.WidthFunction;
 import org.baderlab.csplugins.enrichmentmap.util.NetworkUtil;
 import org.baderlab.csplugins.mannwhit.MannWhitneyUTestSided;
 import org.cytoscape.application.CyApplicationManager;
@@ -83,6 +84,7 @@ import org.cytoscape.work.TaskMonitor;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 import com.google.inject.assistedinject.Assisted;
 
 /**
@@ -93,6 +95,7 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 	@Inject private CyApplicationManager applicationManager;
 	@Inject private CyEventHelper eventHelper;
 	@Inject private EnrichmentMapManager emManager;
+	@Inject private Provider<WidthFunction> widthFunctionProvider;
 
 	private PostAnalysisParameters paParams;
 	private final EnrichmentMap map;
@@ -172,10 +175,10 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 		double currentNodeY_increment = 150.0;
 
 		try {
-			CyNetwork current_network  = applicationManager.getCurrentNetwork();
-			CyNetworkView current_view = applicationManager.getCurrentNetworkView();
-			taskResult.setNetwork(current_network);
-			taskResult.setNetworkView(current_view);
+			CyNetwork currentNetwork  = applicationManager.getCurrentNetwork();
+			CyNetworkView currentView = applicationManager.getCurrentNetworkView();
+			taskResult.setNetwork(currentNetwork);
+			taskResult.setNetworkView(currentView);
 
 			String prefix = paParams.getAttributePrefix();
 			if(prefix == null) {
@@ -184,11 +187,11 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 			}
 
 			//get the node attribute and edge attribute tables
-			CyTable cyEdgeAttrs = createEdgeAttributes(current_network, "", prefix);
-			CyTable cyNodeAttrs = createNodeAttributes(current_network, "", prefix);
+			CyTable cyEdgeAttrs = createEdgeAttributes(currentNetwork, "", prefix);
+			CyTable cyNodeAttrs = createNodeAttributes(currentNetwork, "", prefix);
 
 			// make a HashMap of all Nodes in the Network
-			Map<String, CyNode> nodesMap = createNodeMap(current_network, cyNodeAttrs, prefix);
+			Map<String, CyNode> nodesMap = createNodeMap(currentNetwork, cyNodeAttrs, prefix);
 
 			// Common gene universe: Intersection of EnrichmentGenes and SignatureGenes
 			Set<Integer> geneUniverse = ImmutableSet.copyOf(EnrichmentGenes);
@@ -214,7 +217,7 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 				// the genes that are in this signature gene set as well as in the Universe of Enrichment-GMT Genes.    
 				Set<Integer> sigGenesInUniverse = Sets.intersection(sigGenes, geneUniverse);
 
-				emManager.getEnrichmentMap(current_network.getSUID()).getSignatureGenesets().put(hub_name, sigGeneSet);
+				emManager.getEnrichmentMap(currentNetwork.getSUID()).getSignatureGenesets().put(hub_name, sigGeneSet);
 
 				// iterate over Enrichment Genesets
 				for(String geneset_name : EnrichmentGenesets.keySet()) {
@@ -290,7 +293,7 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 				} // End: iterate over Enrichment Genesets
 
 				// Create Signature Hub Node
-				boolean created = createHubNode(hub_name, current_network, current_view, currentNodeY_offset, prefix, cyEdgeAttrs, cyNodeAttrs, geneUniverse, sigGeneSet);
+				boolean created = createHubNode(hub_name, currentNetwork, currentView, currentNodeY_offset, prefix, cyEdgeAttrs, cyNodeAttrs, geneUniverse, sigGeneSet);
 				if(created)
 					currentNodeY_offset += currentNodeY_increment;
 
@@ -317,10 +320,11 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 					continue;
 
 				boolean passed_cutoff = passesCutoff(edge_name);
-				createEdge(edge_name, current_network, current_view, prefix, cyEdgeAttrs, cyNodeAttrs, passed_cutoff);
+				createEdge(edge_name, currentNetwork, currentView, prefix, cyEdgeAttrs, cyNodeAttrs, passed_cutoff);
 
 			}
 
+			widthFunctionProvider.get().setEdgeWidths(currentNetwork, prefix, taskMonitor);
 		} catch(InterruptedException e) {
 			// TODO cancel task
 		}
