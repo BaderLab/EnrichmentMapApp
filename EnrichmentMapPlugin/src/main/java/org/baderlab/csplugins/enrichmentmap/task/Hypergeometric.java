@@ -57,7 +57,7 @@ public class Hypergeometric {
 	 * 
 	 * @return the p-Value of the Hypergeometric Distribution for P(X>=k)
 	 */
-	public static double hyperGeomPvalue_sum(int N, int n, int m, int k, int mode) throws ArithmeticException {
+	public static double hyperGeomPvalueSum(int N, int n, int m, int k, int mode) throws ArithmeticException {
 		// the number of successes in the sample (k) cannot be larger than the sample (n) or the number of total successes (m)
 		double sum = 0.0;
 		int kMax;
@@ -93,18 +93,17 @@ public class Hypergeometric {
 	}
 
 	/**
-	 * Equivalent to hyperGeomPvalue_sum(N, n, m, k, 0)
+	 * Equivalent to hyperGeomPvalueSum(N, n, m, k, 0)
 	 */
-	public static double hyperGeomPvalue_sum(int N, int n, int m, int k) throws ArithmeticException {
-		return hyperGeomPvalue_sum(N, n, m, k, 0);
+	public static double hyperGeomPvalueSum(int N, int n, int m, int k) throws ArithmeticException {
+		return hyperGeomPvalueSum(N, n, m, k, 0);
 	}
 
 	/**
 	 * Calculate the log of Binomial coefficient "n over k" aka "n choose k"
 	 * 
 	 * adapted from
-	 * http://code.google.com/p/beast-mcmc/source/browse/trunk/src/dr/math/
-	 * Binomial.java?spec=svn1660&r=1660
+	 * http://code.google.com/p/beast-mcmc/source/browse/trunk/src/dr/math/Binomial.java?spec=svn1660&r=1660
 	 * 
 	 * @version Id: Binomial.java,v 1.11 2005/05/24 20:26:00 rambaut Exp
 	 *          Licensed under "LGPL 2.1 or later"
@@ -124,5 +123,4 @@ public class Hypergeometric {
 	public static double binomialLog(final int n, final int k) throws ArithmeticException {
 		return Gamma.logGamma(n + 1.0) - Gamma.logGamma(k + 1.0) - Gamma.logGamma(n - k + 1.0);
 	}
-
 }

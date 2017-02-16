@@ -160,13 +160,13 @@ public class CreateEMNetworkTask extends AbstractTask implements ObservableTask 
 		for(SimilarityKey key : similarities.keySet()) {
 			GenesetSimilarity similarity = similarities.get(key);
 			
-			CyNode node1 = nodes.get(similarity.getGeneset1_Name());
-			CyNode node2 = nodes.get(similarity.getGeneset2_Name());
+			CyNode node1 = nodes.get(similarity.getGeneset1Name());
+			CyNode node2 = nodes.get(similarity.getGeneset2Name());
 			
 			CyEdge edge = network.addEdge(node1, node2, false);
 			
 			List<String> overlapGenes = 
-				similarity.getOverlapping_genes().stream()
+				similarity.getOverlappingGenes().stream()
 				.map(map::getGeneFromHashKey)
 				.collect(Collectors.toList());
 			
@@ -175,7 +175,7 @@ public class CreateEMNetworkTask extends AbstractTask implements ObservableTask 
 			CyRow row = network.getRow(edge);
 			row.set(CyNetwork.NAME, edgeName);
 			row.set(CyEdge.INTERACTION, similarity.getInteractionType());
-			Columns.EDGE_SIMILARITY_COEFF.set(row, prefix, null, similarity.getSimilarity_coeffecient());
+			Columns.EDGE_SIMILARITY_COEFF.set(row, prefix, null, similarity.getSimilarityCoeffecient());
 			Columns.EDGE_OVERLAP_SIZE.set(row, prefix, null, similarity.getSizeOfOverlap());
 			Columns.EDGE_OVERLAP_GENES.set(row, prefix, null, overlapGenes);
 			if(key.isCompound()) {

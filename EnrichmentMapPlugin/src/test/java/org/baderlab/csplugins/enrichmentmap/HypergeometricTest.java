@@ -102,7 +102,7 @@ public class HypergeometricTest {
 	                m = Integer.parseInt(tokens[2]);
 	                k = Integer.parseInt(tokens[3]);
 	                expected_pVal = Double.parseDouble(tokens[4]);
-	                pValue = Hypergeometric.hyperGeomPvalue_sum(N, n, m, k, 1);
+	                pValue = Hypergeometric.hyperGeomPvalueSum(N, n, m, k, 1);
 	                
 	                assertEquals(expected_pVal, pValue, 0.00000005);
 	            }
@@ -112,7 +112,7 @@ public class HypergeometricTest {
     
     @Test(expected=ArithmeticException.class)
     public void testHyperGeomPvalueBad() {
-    	Hypergeometric.hyperGeomPvalue_sum(128, 63, 105, 2, 0);
+    	Hypergeometric.hyperGeomPvalueSum(128, 63, 105, 2, 0);
     }
     
 }

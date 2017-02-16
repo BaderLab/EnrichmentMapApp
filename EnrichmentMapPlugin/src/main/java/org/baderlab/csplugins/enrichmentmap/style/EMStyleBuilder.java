@@ -98,10 +98,10 @@ public class EMStyleBuilder {
 		// Post-analysis Edge Attributes
 		public static final ColumnDescriptor<Double> EDGE_HYPERGEOM_PVALUE = new ColumnDescriptor<>("Overlap_Hypergeom_pVal", Double.class);
 		public static final ColumnDescriptor<Double> EDGE_HYPERGEOM_CUTOFF = new ColumnDescriptor<>("Overlap_Hypergeom_cutoff", Double.class);
-		public static final ColumnDescriptor<Integer> EDGE_HYPERGEOM_N = new ColumnDescriptor<>("HyperGeom_N_Universe", Integer.class);
-		public static final ColumnDescriptor<Integer> EDGE_HYPERGEOM_n = new ColumnDescriptor<>("HyperGeom_n_Sig_Universe", Integer.class);
-		public static final ColumnDescriptor<Integer> EDGE_HYPERGEOM_k = new ColumnDescriptor<>("k_Intersection", Integer.class);
-		public static final ColumnDescriptor<Integer> EDGE_HYPERGEOM_m = new ColumnDescriptor<>("m_Enr_Genes", Integer.class);
+		public static final ColumnDescriptor<Integer> EDGE_HYPERGEOM_U = new ColumnDescriptor<>("HyperGeom_N_Universe", Integer.class);
+		public static final ColumnDescriptor<Integer> EDGE_HYPERGEOM_N = new ColumnDescriptor<>("HyperGeom_n_Sig_Universe", Integer.class);
+		public static final ColumnDescriptor<Integer> EDGE_HYPERGEOM_K = new ColumnDescriptor<>("k_Intersection", Integer.class);
+		public static final ColumnDescriptor<Integer> EDGE_HYPERGEOM_M = new ColumnDescriptor<>("m_Enr_Genes", Integer.class);
 		public static final ColumnDescriptor<Double> EDGE_MANN_WHIT_TWOSIDED_PVALUE = new ColumnDescriptor<>("Overlap_Mann_Whit_pVal", Double.class);
 		public static final ColumnDescriptor<Double> EDGE_MANN_WHIT_GREATER_PVALUE = new ColumnDescriptor<>("Overlap_Mann_Whit_greater_pVal", Double.class);
 		public static final ColumnDescriptor<Double> EDGE_MANN_WHIT_LESS_PVALUE = new ColumnDescriptor<>("Overlap_Mann_Whit_less_pVal", Double.class);

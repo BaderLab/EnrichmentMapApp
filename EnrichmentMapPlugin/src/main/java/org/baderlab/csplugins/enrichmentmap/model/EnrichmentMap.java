@@ -335,7 +335,6 @@ public class EnrichmentMap {
 		this.networkID = networkID;
 	}
 
-	
 	/**
 	 * Returns the node SUIDs for all the gene-sets in the given collection of DataSets.
 	 * Each returned gene-set is contained in at least one of the given DataSets.
@@ -462,7 +461,6 @@ public class EnrichmentMap {
 		return isDistinctExpressionSets;
 	}
 	
-
 	public void setLegacy(boolean legacy) {
 		this.isLegacy = legacy;
 	}

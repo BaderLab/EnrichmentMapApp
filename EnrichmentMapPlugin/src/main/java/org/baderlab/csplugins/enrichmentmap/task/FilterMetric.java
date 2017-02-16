@@ -100,7 +100,7 @@ public interface FilterMetric {
 			double hyperPval;
 			try {
 				if(k > 0)
-					hyperPval = Hypergeometric.hyperGeomPvalue_sum(N, n, m, k, 0);
+					hyperPval = Hypergeometric.hyperGeomPvalueSum(N, n, m, k, 0);
 				else // Correct p-value of empty intersections to 1 (i.e. not significant)
 					hyperPval = 1.0;
 			} catch(ArithmeticException e) {
